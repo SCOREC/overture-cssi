@@ -20,7 +20,9 @@ static int u1c=-1, u2c=-1, v1c=-1, v2c=-1, s11c=-1, s12c=-1, s21c=-1, s22c=-1;
 #define rotatingDiskSVK EXTERN_C_NAME(rotatingdisksvk)
 #define evalFibShearSolid EXTERN_C_NAME(evalfibshearsolid)
 #define evalFibShearSolidFull EXTERN_C_NAME(evalfibshearsolidfull)
+#define evalRadialFibShearSolid EXTERN_C_NAME(evalradialfibshearsolid)
 #define evalFibCartWaveSolid EXTERN_C_NAME(evalfibcartwavesolid)
+#define evalFibRadialWaveSolid EXTERN_C_NAME(evalfibradialwavesolid)
 
 extern "C"
 {
@@ -43,6 +45,13 @@ extern "C"
                               real & uyr, real & uyi,
                               const real & omegar, const real & omegai);
 
+  void evalRadialFibShearSolid( const real & ksr, const real & ksi,
+                                const real & omegar, const real & omegai,
+                                const real & cr, const real & ci,
+                                const real & r, const real & t,
+                                real & ut, real & vt, real & at, 
+                                real & utr, real & vtr);
+
   void evalFibCartWaveSolid( const real & omegar, const real & omegai,
                              const real & k, const real & mubar,
                              const real & rhobar, const real & lambdabar,
@@ -54,6 +63,20 @@ extern "C"
                              real & u1barr, real & u2barr, real & v1barr, 
                              real & v2barr, real & s11barr, 
                              real & s12barr, real & s22barr);
+
+  void evalFibRadialWaveSolid( const real & omegar, const real & omegai,
+                               const real & d1r, const real & d1i,
+                               const real & d2r, const real & d2i,
+                               const real & d3r, const real & d3i,
+                               const real & d4r, const real & d4i,
+                               const real & n, const real & rhobar,
+                               const real & muBar, const real & lambdaBar,
+                               const real & r,  const real & theta,
+                               const real & t,
+                               real & ur, real & ut, real & vr, real & vt, 
+                               real & ar, real & at,
+                               real & srr, real & srt, real & stt, 
+                               real & sdrr, real & sdrt, real & sdtt);
 
 }
 
@@ -950,12 +973,16 @@ getUserDefinedDeformingBodyKnownSolution(
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
-    real & mu = rpar[15];
+    const real & mu     = rpar[15];
+    const real & thetaR = rpar[16];
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(xLocal);
 
     printF("-- getUserDefinedDeformingBodyKnownSolution: fibShear, t=%9.3e\n",t);
+
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
 
     const int c0=C.getBase(), c1=c0+1;
     int i1,i2,i3;
@@ -965,36 +992,140 @@ getUserDefinedDeformingBodyKnownSolution(
 	real x= xLocal(i1,i2,i3,0);
 	real y= xLocal(i1,i2,i3,1);
 
+        real yRef = -st*x+ct*y;
+
         real ur,ui,vr,vi,uyr,uyi;
-	// evalFibShearSolid(ksr,ksi,ar,ai,br,bi,y,ur,ui,uyr,uyi);
+        // r: real part, i: imaginary part
+        // u:  x comp of displacement
+        // v:  x comp of velocity
+        // uy: y derivative of displacement
+
         // get the time dependent solution
-        evalFibShearSolidFull(ksr,ksi,ar,ai,br,bi,y,t,ur,ui,vr,vi,uyr,uyi,omegar,omegai);
+        evalFibShearSolidFull(ksr,ksi,ar,ai,br,bi,yRef,t,ur,ui,vr,vi,uyr,uyi,omegar,omegai);
 
 	if( stateOption==boundaryPosition )
 	  {
-	    state(i1,i2,i3,c0)=x+amp*ur;
-	    state(i1,i2,i3,c1)=0.;
+	    state(i1,i2,i3,c0)=x+amp*ur*ct;
+	    state(i1,i2,i3,c1)=y+amp*ur*st;
 	  }
 	else if( stateOption==boundaryVelocity )
 	  {
-	    state(i1,i2,i3,c0)=amp*vr;
-	    state(i1,i2,i3,c1)=0.;
+	    state(i1,i2,i3,c0)=amp*vr*ct;
+	    state(i1,i2,i3,c1)=amp*vr*st;
 	  }
 	else if( stateOption==boundaryAcceleration )
 	  {
-	    state(i1,i2,i3,c0)=amp*(omegai*vr+omegar*vi);
-	    state(i1,i2,i3,c1)=0.;
+	    state(i1,i2,i3,c0)=amp*(omegai*vr+omegar*vi)*ct;
+	    state(i1,i2,i3,c1)=amp*(omegai*vr+omegar*vi)*st;
 	  }
 	else if( stateOption==boundaryTraction )
 	  {
-	    state(i1,i2,i3,c0)= amp*mu*uyr;
-	    state(i1,i2,i3,c1)= 0.;
+	    state(i1,i2,i3,c0)= amp*mu*uyr*ct;
+	    state(i1,i2,i3,c1)= amp*mu*uyr*st;
 	  }
 	else if( stateOption==boundaryTractionRate )
 	  {
 	    // traction-rate: 
-	    state(i1,i2,i3,c0)= amp*mu*(omegai*uyr+omegar*uyi);
-	    state(i1,i2,i3,c1)= 0.;
+	    state(i1,i2,i3,c0)= amp*mu*(omegai*uyr+omegar*uyi)*ct;
+	    state(i1,i2,i3,c1)= amp*mu*(omegai*uyr+omegar*uyi)*st;
+	  }
+	else
+	  {
+	    OV_ABORT("Unknown state option");
+	  }
+      }
+
+  }
+  else if ( userKnownSolution=="radialFibShear" ) 
+  {
+    // ---- return the exact solution for fib shear solution ----
+
+    const real & omegar = rpar[0];
+    const real & omegai = rpar[1];
+    const real & ar     = rpar[2];
+    const real & ai     = rpar[3];
+    const real & br     = rpar[4];
+    const real & bi     = rpar[5];
+    const real & cr     = rpar[6];
+    const real & ci     = rpar[7];
+    const real & dr     = rpar[8];
+    const real & di     = rpar[9];
+    const real & ksr    = rpar[10];
+    const real & ksi    = rpar[11];
+    const real & kfr    = rpar[12];
+    const real & kfi    = rpar[13];
+    const real & amp    = rpar[14];
+    const real & mu     = rpar[15];
+
+    // -- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(xLocal);
+    const real eps = 10.*REAL_EPSILON;
+
+    printF("-- getUserDefinedDeformingBodyKnownSolution: radialFibShear, t=%9.3e\n",t);
+
+    if( stateOption==boundaryTraction ) {
+      printF("*** Recieving traction from UDKS... ***\n");
+    }
+
+    const int c0=C.getBase(), c1=c0+1;
+    int i1,i2,i3;
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+	real x= xLocal(i1,i2,i3,0);
+	real y= xLocal(i1,i2,i3,1);
+        real r= sqrt(SQR(x) + SQR(y));
+
+        // compute trig functions
+        real cosTheta, sinTheta;
+        if( abs(r)>eps )
+          {
+            cosTheta=x/r; sinTheta=y/r;
+          }
+        else
+          {
+            cosTheta=1.; sinTheta=0.;
+          }
+
+        real ut,vt,at,srt,sdrt;
+        evalRadialFibShearSolid(ksr,ksi,omegar,omegai,cr,ci,r,t,
+                                ut,vt,at,srt,sdrt);
+
+	if( stateOption==boundaryPosition )
+	  {
+            real u1 = -sinTheta*ut;
+            real u2 =  cosTheta*ut;
+
+	    state(i1,i2,i3,c0)=x+amp*u1;
+	    state(i1,i2,i3,c1)=y+amp*u2;
+	  }
+	else if( stateOption==boundaryVelocity )
+	  {
+            real v1 = -sinTheta*vt;
+            real v2 =  cosTheta*vt;
+
+	    state(i1,i2,i3,c0)=amp*v1;
+	    state(i1,i2,i3,c1)=amp*v2;
+	  }
+	else if( stateOption==boundaryAcceleration )
+	  {
+            real a1 = -sinTheta*at;
+            real a2 =  cosTheta*at;
+
+	    state(i1,i2,i3,c0)=amp*a1;
+	    state(i1,i2,i3,c1)=amp*a2;
+	  }
+	else if( stateOption==boundaryTraction )
+	  {
+            // check me: negative or positive?
+	    state(i1,i2,i3,c0)= -amp*mu*srt*sinTheta;
+	    state(i1,i2,i3,c1)= +amp*mu*srt*cosTheta;
+	  }
+	else if( stateOption==boundaryTractionRate )
+	  {
+	    // traction-rate: 
+	    state(i1,i2,i3,c0)= -amp*mu*sdrt*sinTheta;
+	    state(i1,i2,i3,c1)= +amp*mu*sdrt*cosTheta;
 	  }
 	else
 	  {
@@ -1035,6 +1166,12 @@ getUserDefinedDeformingBodyKnownSolution(
     GET_VERTEX_ARRAY(xLocal);
 
     printF("-- getUserDefinedDeformingBodyKnownSolution: fibCartWave, t=%9.3e\n",t);
+
+    if( stateOption==boundaryTractionRate ) {
+      printF("UDKS: **finish me** boundaryTractionRate");
+    } else if ( stateOption==boundaryAcceleration ) {
+      printF("UDKS: **finish me** boundaryAcceleration");
+    }
 
     const int c0=C.getBase(), c1=c0+1;
     int i1,i2,i3;
@@ -1078,8 +1215,131 @@ getUserDefinedDeformingBodyKnownSolution(
 	  {
 	    // traction-rate: 
             // OV_ABORT("finish me");
+            
 	    state(i1,i2,i3,c0)= 0.;
 	    state(i1,i2,i3,c1)= 0.;
+	  }
+	else
+	  {
+	    OV_ABORT("Unknown state option");
+	  }
+      }
+
+
+
+
+  }
+  else if (userKnownSolution=="fibRadialWave") 
+  {
+      // -- traveling wave solution for elastic solid and linearized fluid --
+      // 
+      // linearized fluid:     0 < r < Rbar
+      // solid reference:   Rbar < r < R
+      //
+      // Fluid solution: (hat vars)
+      //  p       = b (r/R)^n 
+      //  v_r     = a J_n(lambda r) / r + b n r^(n-1)/(mu lambda^2 R^n)
+      //  v_theta = i a (J_n(lambda r) / r - lambda/n J_{n+1}(lambda r)) 
+      //               + b i n r^(n-1) / (mu lambda^2 R^n)
+      //
+      // Solid solution: (hat vars)
+      //  u_r     = d1 (n J_n(kp r) / r - kp J_{n+1}(kp r))
+      //           +d2 (n Y_n(kp r) / r - kp Y_{n+1}(kp r))
+      //           +in/r( d3 J_n(ks r) + d4 Y_n(ks r))
+      //  u_theta =-d3 (n J_n(ks r) / r - ks J_{n+1}(ks r))
+      //           -d4 (n Y_n(ks r) / r - ks Y_{n+1}(ks r))
+      //           +in/r( d1 J_n(kp r) + d2 Y_n(kp r))
+      //
+      // kp = omega/cp, ks = omega/cs
+      // lambda = sqrt(i omega rho / mu)
+      //
+      // All scaled by: amp exp(i(n theta - omega t))
+      // *See fibr/notes.tex*
+
+      const real & omegar = rpar[0];
+      const real & omegai = rpar[1];
+      const real & n      = rpar[2];
+      const real & d1r    = rpar[3];
+      const real & d1i    = rpar[4];
+      const real & d2r    = rpar[5];
+      const real & d2i    = rpar[6];
+      const real & d3r    = rpar[7];
+      const real & d3i    = rpar[8];
+      const real & d4r    = rpar[9];
+      const real & d4i    = rpar[10];
+      const real & ar     = rpar[11];
+      const real & ai     = rpar[12];
+      const real & br     = rpar[13];
+      const real & bi     = rpar[14];
+      const real & nu     = rpar[15];
+      const real & cp     = rpar[16];
+      const real & cs     = rpar[17];
+      const real & amp    = rpar[18];
+      const real & scf    = rpar[19];
+
+    // -- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(xLocal);
+
+    printF("-- getUserDefinedDeformingBodyKnownSolution: fibRadialWave, t=%9.3e\n",t);
+
+    const real eps = 10.*REAL_EPSILON;
+    const int c0=C.getBase(), c1=c0+1;
+    int i1,i2,i3;
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+	real x= xLocal(i1,i2,i3,0);
+	real y= xLocal(i1,i2,i3,1);
+        const real r= sqrt(SQR(x)+SQR(y));
+
+	real ct,st;
+	// compute trig functions
+	real theta = atan2(y,x);
+	if( r>eps ) {
+	  ct=x/r; st=y/r;
+	} else {
+	  ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
+	}
+
+        real ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt;
+        evalFibRadialWaveSolid(omegar,omegai,d1r,d1i,d2r,d2i,d3r,d3i,d4r,d4i,
+                               n,scf,scf,scf,r,theta,t,
+                               ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt);
+
+	if( stateOption==boundaryPosition )
+	  {
+            real u1 = ct*ur-st*ut;
+            real u2 = st*ur+ct*ut;
+
+	    state(i1,i2,i3,c0)=x+amp*u1;
+	    state(i1,i2,i3,c1)=y+amp*u2;
+	  }
+	else if( stateOption==boundaryVelocity )
+	  {
+            real v1 = ct*vr-st*vt;
+            real v2 = st*vr+ct*vt;
+
+	    state(i1,i2,i3,c0)=amp*v1;
+	    state(i1,i2,i3,c1)=amp*v2;
+	  }
+	else if( stateOption==boundaryAcceleration )
+	  {
+            real a1 = ct*ar-st*at;
+            real a2 = st*ar+ct*at;
+
+	    state(i1,i2,i3,c0)=amp*a1;
+	    state(i1,i2,i3,c1)=amp*a2;
+	  }
+	else if( stateOption==boundaryTraction )
+	  {
+	    state(i1,i2,i3,c0)= -amp*(srr*ct-srt*st);
+	    state(i1,i2,i3,c1)= -amp*(srr*st+srt*ct);
+	  }
+	else if( stateOption==boundaryTractionRate )
+	  {
+	    // traction-rate: 
+	    state(i1,i2,i3,c0)= -amp*(sdrr*ct-sdrt*st);
+	    state(i1,i2,i3,c1)= -amp*(sdrr*st+sdrt*ct);
 	  }
 	else
 	  {
@@ -1149,6 +1409,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       "bulk solid piston",  // for INS+SM exact solution
       "radial elastic piston", // FSI : INS+SM
       "shearing fluid and elastic solid", // FSI : INS+SM
+      "radial shearing fluid and elastic solid", // FSI : INS+SM
       "fib cartesian traveling wave", // FSI: INS+SM, fluid on top, solid on bottom
       "fib polar traveling wave",
       "done",
@@ -1784,6 +2045,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       //     ins/src/userDefinedKnownSolution 
       //     sm/src/userDefinedKnownSolution 
       //    
+      // *See fibr/notes.tex*
       
       userKnownSolution="fibShear";
       dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
@@ -1804,6 +2066,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & kfi    = rpar[13];
       real & amp    = rpar[14];
       real & mu     = rpar[15];
+      real & thetaR = rpar[16];  
 
       printF("--------------------------------------------------------------------------------\n"
              "------ Exact solution for a parallel flow shearing a bulk elastic solid --------\n\n"
@@ -1816,6 +2079,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " omega  : time frequency of solution \n"
              " H,Hbar : Height of fluid and solid domains\n"
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
+             " thetaR : rotation angle of reference frame"
              "--------------------------------------------------------------------------------\n"
 	);
 
@@ -1823,7 +2087,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       
       int caseid = 0;
       gi.inputString(answer,"Enter amp, rhoBar\n");
-      sScanF(answer,"%e %e",&amp,&rhoBar);
+      sScanF(answer,"%e %e %e",&amp,&rhoBar,&thetaR);
 
       if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
 
@@ -1860,8 +2124,99 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         dr =  1.1961472168730864e+00; di = -5.6816165177804567e-01; 
       }
 
-      printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g\n",
-	     amp,H,Hbar,rho,rhoBar,muBar,mu);
+      printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g, thetaR=%f\n",
+	     amp,H,Hbar,rho,rhoBar,muBar,mu,thetaR);
+      printF("*** WARNING: these may not be the same as the solver parameters ***\n");
+
+      
+    }
+    else if ( answer=="radial shearing fluid and elastic solid" ) 
+    {
+      // -- radial shear solution for elastic solid and fluid --
+      // Exact FSI solution for INS + SM
+      //
+      // NOTE -- this function is implemented in 
+      //     ins/src/userDefinedKnownSolution 
+      //     sm/src/userDefinedKnownSolution 
+      //    
+      // *See fibr/notes.tex*
+      
+      userKnownSolution="radialFibShear";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      real & omegar = rpar[0];
+      real & omegai = rpar[1];
+      real & ar     = rpar[2];
+      real & ai     = rpar[3];
+      real & br     = rpar[4];
+      real & bi     = rpar[5];
+      real & cr     = rpar[6];
+      real & ci     = rpar[7];
+      real & R      = rpar[8];
+      real & Rbar   = rpar[9];
+      real & ksr    = rpar[10];
+      real & ksi    = rpar[11];
+      real & kfr    = rpar[12];
+      real & kfi    = rpar[13];
+      real & amp    = rpar[14];
+      real & mu     = rpar[15];
+
+      printF("--------------------------------------------------------------------------------\n"
+             "------ Exact solution for a radial flow shearing a bulk elastic solid ----------\n\n"
+             " \bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))\n"
+	     "     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))\n"
+	     "             ks = omega / cs\n"
+	     "             kf = sqrt(- i rho omega / mu)\n"
+             " Parameters: \n"
+             " amp    : maximum amplitude of the displacement \n"
+             " omega  : time frequency of solution \n"
+             " H,Hbar : Height of fluid and solid domains\n"
+             " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
+             "--------------------------------------------------------------------------------\n"
+	);
+
+      real rho, rhoBar, muBar;
+      
+      int caseid = 0;
+      gi.inputString(answer,"Enter amp, rhoBar\n");
+      sScanF(answer,"%e %e",&amp,&rhoBar);
+
+      if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+
+      if (caseid == 0) {
+	R      =  1.0;
+	Rbar   =  0.5;
+	rho    =  1.0;
+	rhoBar = 10.0;
+	muBar  = 10.0;
+	mu     = 10.0;
+
+        ksr = 7.6999492454582601e+00; ksi = 3.7460608153022529e-01;
+        kfr = 6.3575397445543058e-01; kfi = -6.0557617843080136e-01;
+        omegar = 7.6999492454582601e+00; omegai = 3.7460608153022529e-01;
+        ar = -1.0878778543002888e-04; ai = -5.7016648606277619e-05; 
+        br = -3.8593713541075395e-05; bi =  3.7430937154658840e-05; 
+        cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+      } else if (caseid == 1) {
+	R      =  1.0;
+	Rbar   =  0.5;
+	rho    =  1.0;
+	rhoBar = 1000.0;
+	muBar  = 1000.0;
+	mu     = 1000.0;
+
+        ksr = 1.0266332477575125e+01; ksi = 1.0666190506338059e-01;
+        kfr = 7.2019262870453926e-01; kfi = -7.1274906659638360e-01;
+        omegar = 1.0266332477575125e+01; omegai = 1.0666190506338059e-01;
+        ar = -3.8862733027920622e-04; ai =  5.7439954719816359e-04; 
+        br =  2.3118898646851490e-04; bi =  2.9010782744158417e-04; 
+        cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+      }
+
+      printF("Setting amp=%g, R=%g, Rbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g\n",
+	     amp,R,Rbar,rho,rhoBar,muBar,mu);
       printF("*** WARNING: these may not be the same as the solver parameters ***\n");
 
       
@@ -1946,6 +2301,119 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, mu=%g\n",
 	     amp,H,HBar,rho,rhoBar,mu);
+      
+    }
+    else if (answer == "fib radial traveling wave") 
+    {
+      // -- traveling wave solution for elastic solid and linearized fluid --
+      // 
+      // linearized fluid:     0 < r < Rbar
+      // solid reference:   Rbar < r < R
+      //
+      // Fluid solution: (hat vars)
+      //  p       = b (r/R)^n 
+      //  v_r     = a J_n(lambda r) / r + b n r^(n-1)/(mu lambda^2 R^n)
+      //  v_theta = i a (J_n(lambda r) / r - lambda/n J_{n+1}(lambda r)) 
+      //               + b i n r^(n-1) / (mu lambda^2 R^n)
+      //
+      // Solid solution: (hat vars)
+      //  u_r     = d1 (n J_n(kp r) / r - kp J_{n+1}(kp r))
+      //           +d2 (n Y_n(kp r) / r - kp Y_{n+1}(kp r))
+      //           +in/r( d3 J_n(ks r) + d4 Y_n(ks r))
+      //  u_theta =-d3 (n J_n(ks r) / r - ks J_{n+1}(ks r))
+      //           -d4 (n Y_n(ks r) / r - ks Y_{n+1}(ks r))
+      //           +in/r( d1 J_n(kp r) + d2 Y_n(kp r))
+      //
+      // kp = omega/cp, ks = omega/cs
+      // lambda = sqrt(i omega rho / mu)
+      //
+      // All scaled by: amp exp(i(n theta - omega t))
+      //
+      // needed rpars:
+      //  - a, b, d1, d2, d3, d4, (complex)
+      //  - omega, (complex)
+      //  - cs, cp, (real)
+      //  - amp, n, nu (real)
+      //
+      //
+      // *See fibr/notes.tex*
+
+      userKnownSolution="fibRadialWave";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      real & omegar = rpar[0];
+      real & omegai = rpar[1];
+      real & n      = rpar[2];
+      real & d1r    = rpar[3];
+      real & d1i    = rpar[4];
+      real & d2r    = rpar[5];
+      real & d2i    = rpar[6];
+      real & d3r    = rpar[7];
+      real & d3i    = rpar[8];
+      real & d4r    = rpar[9];
+      real & d4i    = rpar[10];
+      real & ar     = rpar[11];
+      real & ai     = rpar[12];
+      real & br     = rpar[13];
+      real & bi     = rpar[14];
+      real & nu     = rpar[15];
+      real & cp     = rpar[16];
+      real & cs     = rpar[17];
+      real & amp    = rpar[18];
+      real & scf    = rpar[19];
+
+      // note, cs and cp may not be needed since scf is given
+
+      int caseid = 0;
+      gi.inputString(answer,"Enter amp, case number\n");
+      sScanF(answer,"%e %d",&amp,&caseid);
+
+      cp = sqrt(3);
+      cs = 1.;
+
+      nu = .1;
+      if (caseid == 0) {
+        scf = 1.;
+
+        omegar = -3.4911574096952345e+00; omegai = -1.1542771968948464e+00;
+        d1r = 1.2703339534646554e-01; d1i = -3.1084578687188880e-01;
+        d2r = -6.1489261046392435e-02; d2i = 1.8490164050360778e-02;
+        d3r = 1.0355928624631068e-01; d3i = 2.0962205736269321e-01;
+        d4r = 1.6259881155916456e-01; d4i = -5.8775735169619550e-02;
+        ar  = -2.2391972671976085e-01; ai  = -2.1000480825281026e-02;
+        br  = 8.2260296683123990e-01; bi  = -6.6235370226945389e-01;
+
+        n = 3.;
+      } else if (caseid == 1) {
+        scf = 1000.;
+
+        omegar = -4.6424714004128473e+00; omegai = -1.6158225441015998e-03;
+        d1r = 3.8734764539944816e-02; d1i = -1.7383110567486020e-02;
+        d2r = -8.6716660911336334e-03; d2i = 5.7106874560512146e-06;
+        d3r = -1.4853273108880448e-02; d3i = 2.6740470099799629e-02;
+        d4r = -2.7341636140189121e-05; d4i = 7.4288567014237925e-03;
+        ar  = -1.7936988074140733e-02; ai  = -3.3356289939684386e-03;
+        br  = 3.1000340380994851e-01; bi  = -3.1044738982668224e-01;
+
+        n = 3;
+      } else if (caseid == 2) {
+        scf = .001;
+
+        omegar = -8.2059219776195143e+00; omegai = -3.6317357723676751e-03;
+        d1r = 4.0331903723621551e+01; d1i = 5.2255749921794518e+01;
+        d2r = 2.6532925736398855e+01; d2i = -1.9657495647823890e+01;
+        d3r = -1.0550997884436557e+01; d3i = -5.9831024757861051e+01;
+        d4r = -7.8813053200373799e+00; d4i = -1.1055632252835364e+01;
+        ar  = 5.6309957087512961e-03; ai  = -5.3948501810529396e-03;
+        br  = -3.9229926082653582e-01; bi  = 7.4851618360063599e-01;
+
+        n = 3;
+      } else {
+        OV_ABORT("finish me");
+      }
+
+      
+      printF("amp = %e, rhoBar = muBar = lambdaBar = %f, n = %f\n",amp,scf,n);
       
     }
     else

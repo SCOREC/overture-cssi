@@ -28,6 +28,21 @@ for(i3=I3Base; i3<=I3Bound; i3++) \
 for(i2=I2Base; i2<=I2Bound; i2++) \
 for(i1=I1Base; i1<=I1Bound; i1++)
 
+// lapack routines
+#ifdef OV_USE_DOUBLE
+  #define GECO EXTERN_C_NAME(dgeco)
+  #define GESL EXTERN_C_NAME(dgesl)
+#else
+  #define GECO EXTERN_C_NAME(sgeco)
+  #define GESL EXTERN_C_NAME(sgesl)
+#endif
+
+extern "C"
+{
+  void GECO( real & b, const int & nbd, const int & nb, int & ipvt, real & rcond, real & work );
+  void GESL( real & a, const int & lda,const int & n,const int & ipvt, real & b, const int & job);
+}
+
 // =======================================================================================
 /// \brief Project the velocity on the interface for FSI problems. 
 ///
@@ -37,9 +52,11 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 // =======================================================================================
 int Cgins::
 projectInterfaceVelocity(const real & t, realMappedGridFunction & u, 
-			realMappedGridFunction & gridVelocity,
-			const int & grid,
-			const real & dt0 /* =-1. */  )
+                         realMappedGridFunction & uOld,
+                         realMappedGridFunction & gridVelocity,
+                         const int & grid,
+                         const real & dt0 /* =-1. */)
+  
 {
 
   MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
@@ -66,7 +83,9 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
   //   return 0;
   // }
   
-
+  const real nu = parameters.dbase.get<real>("nu");
+  const real rho = parameters.dbase.get<real>("rho");
+  const real mu = rho*nu;
 
   const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
   const bool & projectAddedMassVelocity = parameters.dbase.get<bool>("projectAddedMassVelocity");
@@ -81,11 +100,14 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
 
   const bool gridIsMoving = parameters.gridIsMoving(grid);
 
+  // get components of solution
   const int uc = parameters.dbase.get<int >("uc");
   const int vc = parameters.dbase.get<int >("vc");
   const int wc = parameters.dbase.get<int >("wc");
   const int tc = parameters.dbase.get<int >("tc");
+  const int pc = parameters.dbase.get<int >("pc");
   const int & nc = parameters.dbase.get<int >("nc");
+
   const int orderOfAccuracy=min(4,parameters.dbase.get<int >("orderOfAccuracy"));
   Range V = Range(uc,uc+numberOfDimensions-1);
 
@@ -96,8 +118,17 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
   const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode= 
     parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
 
-  // -- extract parameters from any deforming solids ---
+  // get grid spacing
+  const bool isRectangular = mg.isRectangular();
 
+  mg.update(MappedGrid::THEinverseVertexDerivative);
+  const real dr[3]={mg.gridSpacing(0),mg.gridSpacing(1),mg.gridSpacing(2)};
+  const realArray & rsxy = mg.inverseVertexDerivative();
+#define RSXY(I1,I2,I3,m1,m2) rsxy(I1,I2,I3,(m1)+numberOfDimensions*(m2))
+#define RSXYR(I1,I2,I3,m1,m2) (rsxy(I1+1,I2  ,I3,(m1)+numberOfDimensions*(m2))-rsxy(I1-1,I2  ,I3,(m1)+numberOfDimensions*(m2)))*(1./(2.*dr[0]));
+#define RSXYS(I1,I2,I3,m1,m2) (rsxy(I1  ,I2+1,I3,(m1)+numberOfDimensions*(m2))-rsxy(I1  ,I2-1,I3,(m1)+numberOfDimensions*(m2)))*(1./(2.*dr[1]));
+
+  // -- extract parameters from any deforming solids ---
   
   if( bd.dbase.has_key("deformingBodyNumber") )
   {
@@ -107,7 +138,7 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
     const real fluidAddedMassLengthScale =  parameters.dbase.get<real>("fluidAddedMassLengthScale");
 
     int (&deformingBodyNumber)[2][3] = bd.dbase.get<int[2][3]>("deformingBodyNumber");
-    Index Ib1,Ib2,Ib3;
+    Index Ib1,Ib2,Ib3, Ig1,Ig2,Ig3, Ip1,Ip2,Ip3;
     for( int side=0; side<=1; side++ )
     {
       for( int axis=0; axis<numberOfDimensions; axis++ )
@@ -120,8 +151,10 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
 
 	  DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
 
-
 	  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,+1);  // first ghost line 
+          getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1);  // first line in
+
 	  Range Rx=numberOfDimensions;
 	  realArray vSolid(Ib1,Ib2,Ib3,Rx); // holds velocity of solid on the boundary
           #ifndef USE_PPP
@@ -130,10 +163,9 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
             OV_ABORT("finish me");
           #endif
 
-          
-
 	  OV_GET_SERIAL_ARRAY(real,gridVelocity,gridVelocityLocal);
-	  OV_GET_SERIAL_ARRAY(real,u,uLocal);
+	  OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
+          OV_GET_SERIAL_ARRAY(real,uOld,uP    );
 	  OV_GET_SERIAL_ARRAY(real,vSolid,vSolidLocal);
 
           if( projectNormalComponentOfAddedMassVelocity )
@@ -149,6 +181,7 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
 	  }
 	  else if( deform.isBulkSolidModel() )
 	  {
+
             // *******************************************************************
             // *************** PROJECT VELOCITY BULK SOLID ***********************
             // *******************************************************************
@@ -173,14 +206,14 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                 parameters,saveTimeHistory );
 
               solidTraction=interfaceData.u;
-              if( t <= 2.*dt && debug() & 4 )
+              if( t <= 2.*dt && debug() & 4 ) {
                 ::display(solidTraction(Ib1,Ib2,Ib3,1),"--INS-- PIV: Here is the SOLID TRACTION (I1,I2,I3,1)","%6.3f ");
+              }
             }
             else
             {
               OV_ABORT("finish me");
             }
-
 
 	    real zpOld;
             // old way:
@@ -212,44 +245,488 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
 	    assert( dt>0. );
             const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
             const real alpha = zf/(zf+zp);
+            const real theta = 0.5;
 
-	    if( true || t<=3.*dt )
+	    if( true || t<=3.*dt ) 
 	      printF("--INS-- PIV PROJECT INTERFACE VELOCITY FOR BULK SOLID MODEL, t=%9.3e dt=%9.3e zf=%9.3e zp=%9.3e "
-                     "alpha=%9.2e **FINISH ME: PROJECT n.v , mixed BC for t.v **\n",t,dt,zf,zp,alpha);
+                     "alpha=%9.2e **new**\n",t,dt,zf,zp,alpha);
 
-            if( true )
+            // check if uP is a null pointer
+            bool setAsSolidVelocity = false;
+            if (uP.getLength(0) == 0) {
+            // if (&uP == NULL) {
+              printF("projectInterfaceVelocity: u at previous time is a null  pointer ***FIX ME IMPLICIT***\n");
+              setAsSolidVelocity = true;
+            }
+
+            if( false || setAsSolidVelocity ) // set this to true for debugging
             {
               // ** do this for now****
-              // We should really scale tangential components by zs
-              // --- set the gridVelocity to the desired BC for the fluid velocity
-              gridVelocityLocal(Ib1,Ib2,Ib3,Rx)= alpha*uLocal(Ib1,Ib2,Ib3,V) + (1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,Rx);
+              // --- set the gridVelocity to the solid velocity
+              printF("--INS--PIV: SETTING FLUID VELOCITY AS THE SOLID VELOCITY ***TEMP***\n");
+              gridVelocityLocal(Ib1,Ib2,Ib3,Rx)= vSolidLocal(Ib1,Ib2,Ib3,Rx);
+              uLocal(Ib1,Ib2,Ib3,Rx) = vSolidLocal(Ib1,Ib2,Ib3,Rx);
+              return 0;
             }
-            else
-            {
-              // ---- assign all the interface conditions:
-              // 1) nv.vv = impedance-weighted
-              // 2) div( v ) = 0 
-	      // 3) tv . ( tauv.nv ) + zs tv.vv  = ....
-              // 4) Extrap tv.vv  or use tv.(Interior update) 
 
-              // RealArray vI(Rx), nDotV(Rx);
-              // FOR_3D(i1,i2,i3,Ib2,Ib2,Ib3)
-              // {
-              //   vI = alpha*uLocal(i1,i2,i3,V) + (1.-alpha)*vSolidLocal(i1,i2,i3,Rx);
-                
-              //   // tv. tauv . nv 
+            if(  false ){
+              // Use linearized conditions and assume that interface normal is [0,-1]
+              assert( axis == 1 && side == 0);
 
-              // }
+              // solve interior equation + mixed BC for lines 0 and ghost
+              // 
+              // Interior: 
+              //   v1(t) = v1(t-dt) + theta*(dt/rho)*( -p.x +mu*(v1.xx + v1.yy ) ) + (1-theta)*( -p.x(-dt) +mu*(v1.xy(-dt) + v1.yy(-dt) ) ) +dt*f
+              //
+              //   v1 - theta*dt*(mu/rho)*( v1.xx + v1.yy ) = G1 = v1(t-dt) + theta*(dt/rho)*( -p.x  ) 
+              //                                                    + (1-theta)*(dt/rho)*( -p.x(-dt) +mu*(v1.xx(-dt) + v1.yy(-dt) ) ) +dt*f
+              //   zs*v1 - mu*( v1_y )                      = G2 = mu*( v2_x ) + zs*vs1 - sigmas12 
+              //
+              //   Diagonal term from approximation to v1.xx is on LHS, off-diagonal terms are on the RHS
+              //   Mixed equation assumes that n = [0,-1]
+              //
+              //   a11*v1 + a12*v1g  = G1p
+              //   a21*v1 + a22*v1g  = G2p
+
+              // grid is approximately cartesian, for now use dx
+              real dx[3];
+              dx[0] = dr[0]/RSXY(0,0,0,0,0);
+              dx[1] = dr[1]/RSXY(0,0,0,1,1);
+
+              printF("dr = (%f,%f)\n",dr[0],dr[1]);
+              printF("dx = (%f,%f)\n",dx[0],dx[1]);
+
+              // apply impedance weighted average
+              // gridVelocityLocal(Ib1,Ib2,Ib3,Rx)= alpha*uLocal(Ib1,Ib2,Ib3,V) + (1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,Rx);
+              // uLocal(Ib1,Ib2,Ib3,vc)= alpha*uLocal(Ib1,Ib2,Ib3,vc) + (1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,1);
+              // ::display(alpha*uLocal(Ib1,Ib2,Ib3,vc) + (1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,1),"v2 on boundary (linearized)");
+
+              // solve the interior equation + mixed BC
+              real a11,a12,a21,a22,det;
+              RealArray g1(Ib1,Ib2,Ib3), g2(Ib1,Ib2,Ib3);  // forcings for BC 
+
+              real a = ((theta*dt*mu)/rho)/SQR(dx[1]);
+              real b = ((theta*dt*mu)/rho)/SQR(dx[0]);
+
+              a11=1.+2.*(a+b);   a12= -a;
+              a21=zs;            a22= +mu/(2.*dx[1]);
+
+              det = a11*a22-a21*a12;
+	  
+              // TODO: add any RHS forcing needed (eg twighlight zone)
+              g1(Ib1,Ib2,Ib3)=
+                ( uP(Ib1,Ib2,Ib3,uc)  
+                  +(theta*dt/rho)*(
+                                   -(uLocal(Ib1+1,Ib2,Ib3,pc)-uLocal(Ib1-1,Ib2,Ib3,pc) )*(1./(2.*dx[0]))  // -p.x(t)
+                                   +(uLocal(Ib1+1,Ib2,Ib3,uc)+uLocal(Ib1-1,Ib2,Ib3,uc) )*(mu/SQR(dx[0])) // part of mu*v1.xx
+                                   +(                         uLocal(Ib1,Ib2+1,Ib3,uc) )*(mu/SQR(dx[1])) // part of mu*v1.yy
+                                   )  
+                  +((1.-theta)*dt/rho)*(
+                                        -(uP(Ib1+1,Ib2,Ib3,pc)-uP(Ib1-1,Ib2,Ib3,pc))*(1./(2.*dx[0]))  // -p.x(t-dt)
+                                        +(uP(Ib1+1,Ib2,Ib3,uc)-2.*uP(Ib1,Ib2,Ib3,uc)+uP(Ib1-1,Ib2,Ib3,uc))*(mu/SQR(dx[0])) // mu*v1.xx(t-dt)
+                                        +(uP(Ib1,Ib2+1,Ib3,uc)-2.*uP(Ib1,Ib2,Ib3,uc)+uP(Ib1,Ib2-1,Ib3,uc))*(mu/SQR(dx[1])) // mu*v1.yy(t-dt)
+                                        )
+                  );
+		
+              g2(Ib1,Ib2,Ib3)=( +(mu/(2.*dx[0]))*( uLocal(Ib1+1,Ib2,Ib3,vc)- uLocal(Ib1-1,Ib2,Ib3,vc))
+                                +(mu/(2.*dx[1]))*( uLocal(Ib1,Ib2+1,Ib3,uc) )  // part of mu*v1.y 
+                                -solidTraction(Ib1,Ib2,Ib3,0) + zs*vSolidLocal(Ib1,Ib2,Ib3,0) 
+                                );
               
-              OV_ABORT("FINISH ME");
+              RealArray UB(Ib1,Ib2,Ib3), UG(Ib1,Ib2,Ib3);  // for checking
+              UB = ( a22/det)*g1 + (-a12/det)*g2;
+              UG = (-a21/det)*g1 + ( a11/det)*g2;
 
+              // ::display(UB,"v1 on boundary (linearized)");
+              // ::display(UG,"v1 on ghost    (linearized)");
+
+              // test the residual of the equations
+              RealArray res1(Ib1,Ib2,Ib3), res2(Ib1,Ib2,Ib3);  // forcings for BC 
+              res1 = (UB-uP(Ib1,Ib2,Ib3,uc))
+                -(theta*dt/rho)*(
+                                 -(uLocal(Ib1+1,Ib2,Ib3,pc)-uLocal(Ib1-1,Ib2,Ib3,pc) )*(1./(2.*dx[0])) // -p.x(t)
+                                 +(uLocal(Ib1+1,Ib2  ,Ib3,uc)-2.*UB+uLocal(Ib1-1,Ib2  ,Ib3,uc) )*(mu/SQR(dx[0])) // mu*v1.xx
+                                 +(uLocal(Ib1  ,Ib2+1,Ib3,uc)-2.*UB+UG )*(mu/SQR(dx[1])) // mu*v1.yy
+                                 )  
+                -((1.-theta)*dt/rho)*(
+                                      -(uP(Ib1+1,Ib2,Ib3,pc)-uP(Ib1-1,Ib2,Ib3,pc))*(1./(2.*dx[0]))  // -p.x(t-dt)
+                                      +(uP(Ib1+1,Ib2,Ib3,uc)-2.*uP(Ib1,Ib2,Ib3,uc)+uP(Ib1-1,Ib2,Ib3,uc))*(mu/SQR(dx[0])) // mu*v1.xx(t-dt)
+                                      +(uP(Ib1,Ib2+1,Ib3,uc)-2.*uP(Ib1,Ib2,Ib3,uc)+uP(Ib1,Ib2-1,Ib3,uc))*(mu/SQR(dx[1])) // mu*v1.yy(t-dt)
+                                      );
+              
+              res2 = zs*UB
+                - mu*(uLocal(Ib1  ,Ib2+1,Ib3,uc)-UG)*(1./(2.*dx[1]))
+                - mu*(uLocal(Ib1+1,Ib2  ,Ib3,uc)-uLocal(Ib1-1,Ib2  ,Ib3,uc))*(1./(2.*dx[0]))
+                -(zs*vSolidLocal(Ib1,Ib2,Ib3,0)-solidTraction(Ib1,Ib2,Ib3,0));
+                
+              // ::display(res1,sPrintF("FluidBC: residual for equation 1, t=%9.3e",t),"%8.2e ");
+              // ::display(res2,sPrintF("FluidBC: residual for equation 2, t=%9.3e",t),"%8.2e ");
+
+              // ::display(uLocal,sPrintF("FluidBC: uLocal before mixed robin update, t=%9.3e",t),"%8.2e ");
+              // uLocal(Ib1,Ib2,Ib3,uc) = ( a22/det)*g1 + (-a12/det)*g2;
+              // uLocal(Ig1,Ig2,Ig3,uc) = (-a21/det)*g1 + ( a11/det)*g2;
+              // ::display(uLocal,sPrintF("FluidBC: uLocal after mixed robin update, t=%9.3e",t),"%8.2e ");
+
+              // apply div.u = 0
+              // uLocal(Ib1,Ib2-1,Ib3,vc) = uLocal(Ib1,Ib2+1,Ib3,vc) + (dx[1]/dx[0])*(uLocal(Ib1+1,Ib2,Ib3,uc)-uLocal(Ib1-1,Ib2,Ib3,uc));
+
+              // gridVelocityLocal(Ib1,Ib2,Ib3,0)= uLocal(Ib1,Ib2,Ib3,uc);
+            }
+
+
+            // ::display(solidTraction(Ib1,Ib2,Ib3,0),"solid traction - x component");
+            // ::display(solidTraction(Ib1,Ib2,Ib3,1),"solid traction - y component");
+            // OV_ABORT("test traction now");
+
+            if ( true ) {
+              assert( axis == 1 && side == 0);
+              assert( numberOfDimensions == 2 );
+
+              // solve the system:
+              // n (div.u) + 1/mu (I-n.n') (tau n + zs v) = 1/mu (I-n.n') ( Ts + zs vs )
+              // v - (I + (alpha - 1) n.n') theta dt nu Delta v
+              //      = (I + (alpha - 1) n.n') (vp + theta dt / rho (- grad p)
+              //                                +(1-theta) dt / rho (-grad pp + mu Delta vp))
+              //        (1 - alpha) n.n' vs
+              //
+              // *** See Dropbox/CG/fibr/codes/curvilinearBC/* for maple file ***
+
+              const int numberOfEquations=4;
+              Range R(0,numberOfEquations-1);
+              
+              // solve: A.x = b
+              RealArray A(R,R), b(R), x(R);
+
+              intArray ipvt(R);
+              RealArray work(R);
+              real rcond;
+              int job=0;
+
+              real rx,ry,sx,sy, rxr,ryr,sxr,syr, rxs,rys,sxs,sys;
+              real n1,n2;
+              // predicted values for derivatives
+              real v1r, v1rr, v1s, v1ss, v1rs; 
+              real v2r, v2rr, v2s, v2ss, v2rs; 
+              // pressure gradient at current and old time level
+              real pr, ps, ppr, pps; 
+              real px, py, ppx, ppy; 
+              // second derivatives at old time level
+              real vp1r, vp1rr, vp1s, vp1ss, vp1rs; 
+              real vp2r, vp2rr, vp2s, vp2ss, vp2rs; 
+              real vp1xx, vp1yy, vp2xx, vp2yy;
+              // solid values for velocity and traction
+              real vs1, vs2, Ts1, Ts2;
+              // boundary ghost and interior values
+              real v1B, v1G, v1I, v2B, v2G, v2I, vp1, vp2; 
+              // RHS of equations
+              real g1,g2,g3,g4;
+
+              real s = (side==0) ? 1.0 : -1.0;
+              
+              // arrays for the boundary and ghost lines
+              Range rAssign(0,1);
+              RealArray UB(Ib1,Ib2,Ib3,rAssign), UG(Ib1,Ib2,Ib3,rAssign);  
+
+              int i1,i2,i3;
+              FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) {
+                // print
+                // printF("*** (%d,%d,%d): \n",i1,i2,i3);
+
+                // get metric terms
+                rx  = RSXY (i1,i2,i3,0,0); ry  = RSXY (i1,i2,i3,0,1); sx  = RSXY (i1,i2,i3,1,0); sy  = RSXY (i1,i2,i3,1,1);
+                rxr = RSXYR(i1,i2,i3,0,0); ryr = RSXYR(i1,i2,i3,0,1); sxr = RSXYR(i1,i2,i3,1,0); syr = RSXYR(i1,i2,i3,1,1);
+                rxs = RSXYS(i1,i2,i3,0,0); rys = RSXYS(i1,i2,i3,0,1); sxs = RSXYS(i1,i2,i3,1,0); sys = RSXYS(i1,i2,i3,1,1);
+
+                // get normal
+                n1 = normal(i1,i2,i3,0); n2 = normal(i1,i2,i3,1);
+                
+                // printF("  normal: (%f,%f)\n",n1,n2);
+                // printF("  (rx ,ry ,sx ,sy ) = (%f,%f,%f,%f)\n",rx ,ry ,sx ,sy );
+                // printF("  (rxr,ryr,sxr,syr) = (%f,%f,%f,%f)\n",rxr,ryr,sxr,syr);
+                // printF("  (rxs,rys,sxs,sys) = (%f,%f,%f,%f)\n",rxs,rys,sxs,sys);
+                // printF("  dr=%e, ds=%e, mu=%e, zs=%e\n\n",dr[0],dr[1],mu,zs);
+
+                // calculate predicted derivatives
+                v1r  = (uLocal(i1+1,i2,i3,uc)-uLocal(i1-1,i2,i3,uc))*(1./(2.*dr[0]));
+                v2r  = (uLocal(i1+1,i2,i3,vc)-uLocal(i1-1,i2,i3,vc))*(1./(2.*dr[0]));
+                v1rr = (uLocal(i1+1,i2,i3,uc)-2.*uLocal(i1,i2,i3,uc)+uLocal(i1-1,i2,i3,uc))*(1./(SQR(dr[0])));
+                v2rr = (uLocal(i1+1,i2,i3,vc)-2.*uLocal(i1,i2,i3,vc)+uLocal(i1-1,i2,i3,vc))*(1./(SQR(dr[0])));
+                v1rs  = (uLocal(i1+1,i2+1,i3,uc)-uLocal(i1-1,i2+1,i3,uc)-uLocal(i1+1,i2-1,i3,uc)+uLocal(i1-1,i2-1,i3,uc))*(1./(4.*dr[0]*dr[1]));
+                v2rs  = (uLocal(i1+1,i2+1,i3,vc)-uLocal(i1-1,i2+1,i3,vc)-uLocal(i1+1,i2-1,i3,vc)+uLocal(i1-1,i2-1,i3,vc))*(1./(4.*dr[0]*dr[1]));
+                
+                // previous time level
+                vp1 = uP(i1,i2,i3,uc); vp2 = uP(i1,i2,i3,vc);
+                vp1r  = (uP(i1+1,i2,i3,uc)-uP(i1-1,i2,i3,uc))*(1./(2.*dr[0]));
+                vp2r  = (uP(i1+1,i2,i3,vc)-uP(i1-1,i2,i3,vc))*(1./(2.*dr[0]));
+                vp1rr = (uP(i1+1,i2,i3,uc)-2.*uP(i1,i2,i3,uc)+uP(i1-1,i2,i3,uc))*(1./(SQR(dr[0])));
+                vp2rr = (uP(i1+1,i2,i3,vc)-2.*uP(i1,i2,i3,vc)+uP(i1-1,i2,i3,vc))*(1./(SQR(dr[0])));
+                vp1s  = (uP(i1,i2+1,i3,uc)-uP(i1,i2-1,i3,uc))*(1./(2.*dr[1]));
+                vp2s  = (uP(i1,i2+1,i3,vc)-uP(i1,i2-1,i3,vc))*(1./(2.*dr[1]));
+                vp1ss = (uP(i1,i2+1,i3,uc)-2.*uP(i1,i2,i3,uc)+uP(i1,i2-1,i3,uc))*(1./(SQR(dr[1])));
+                vp2ss = (uP(i1,i2+1,i3,vc)-2.*uP(i1,i2,i3,vc)+uP(i1,i2-1,i3,vc))*(1./(SQR(dr[1])));
+                vp1rs  = (uP(i1+1,i2+1,i3,uc)-uP(i1-1,i2+1,i3,uc)-uP(i1+1,i2-1,i3,uc)+uP(i1-1,i2-1,i3,uc))*(1./(4.*dr[0]*dr[1]));
+                vp2rs  = (uP(i1+1,i2+1,i3,vc)-uP(i1-1,i2+1,i3,vc)-uP(i1+1,i2-1,i3,vc)+uP(i1-1,i2-1,i3,vc))*(1./(4.*dr[0]*dr[1]));
+                vp1xx = SQR(rx)*vp1rr+rx*rxr*vp1r+2*rx*sx*vp1rs+rx*sxr*vp1s+rxs*sx*vp1r+SQR(sx)*vp1ss+sx*sxs*vp1s;
+                vp2xx = SQR(rx)*vp2rr+rx*rxr*vp2r+2*rx*sx*vp2rs+rx*sxr*vp2s+rxs*sx*vp2r+SQR(sx)*vp2ss+sx*sxs*vp2s;
+                vp1yy = SQR(ry)*vp1rr+ry*ryr*vp1r+2*ry*sy*vp1rs+ry*syr*vp1s+rys*sy*vp1r+SQR(sy)*vp1ss+sy*sys*vp1s;
+                vp2yy = SQR(ry)*vp2rr+ry*ryr*vp2r+2*ry*sy*vp2rs+ry*syr*vp2s+rys*sy*vp2r+SQR(sy)*vp2ss+sy*sys*vp2s;
+
+                // get solid values
+                vs1 = vSolidLocal(i1,i2,i3,0);   vs2 = vSolidLocal(i1,i2,i3,1);
+                Ts1 = -solidTraction(i1,i2,i3,0); Ts2 = -solidTraction(i1,i2,i3,1);
+                
+
+                // pressure gradient terms
+                pr  = (uLocal(i1+1,i2  ,i3,pc)-uLocal(i1-1,i2  ,i3,pc))*(1./(2.*dr[0]));
+                ps  = (uLocal(i1  ,i2+1,i3,pc)-uLocal(i1  ,i2-1,i3,pc))*(1./(2.*dr[1]));
+                ppr  = (uP(i1+1,i2  ,i3,pc)-uP(i1-1,i2  ,i3,pc))*(1./(2.*dr[0]));
+                pps  = (uP(i1  ,i2+1,i3,pc)-uP(i1  ,i2-1,i3,pc))*(1./(2.*dr[1]));
+                px = rx*pr+sx*ps;
+                py = ry*pr+sy*ps;
+                ppx = rx*ppr+sx*pps;
+                ppy = ry*ppr+sy*pps;
+
+                // interior points
+                v1I = uLocal(i1,i2+1,i3,uc); v2I = uLocal(i1,i2+1,i3,vc);
+
+                // printF("v1I=%e, v2I=%e, v1r=%e, v2r=%e\n\n",v1I,v2I,v1r,v2r);
+
+                // form A and b
+                // x = [v1B, v2B, v1G, v2G]
+
+                // *** Equation 1 ***
+                A(0,0) = (1.0/mu)*(1.0-SQR(n1))*zs; 
+                A(0,1) = -n1*n2*zs*(1.0/mu); 
+                A(0,2) = -.5*sx*s*n1/dr[1]
+                  -s*(1.0-SQR(n1))*(sx*n1/dr[1]+0.5*sy*n2/dr[1])
+                  +0.5*SQR(n1)*n2*sy*s/dr[1];
+                A(0,3) = -.5*sy*s*n1/dr[1]
+                  -0.5*(1-SQR(n1))*sx*s*n2/dr[1]
+                  +s*n1*n2*(0.5*sx*n1/dr[1]+sy*n2/dr[1]);
+                g1 = (1.-SQR(n1))*(vs1*zs+Ts1)/mu-n1*n2*(vs2*zs+Ts2)/mu; // RHS of equation
+                b(0) = -((rx*v1r+.5*sx*s*v1I/dr[1]+ry*v2r+.5*sy*s*v2I/dr[1])*n1 // terms from div.u
+                         +(1.0-SQR(n1))*(2.*(rx*v1r+.5*sx*s*v1I/dr[1])*n1
+                                         +(ry*v1r+.5*sy*s*v1I/dr[1]+rx*v2r+.5*sx*s*v2I/dr[1])*n2)
+                         -n1*n2*        (2.*(ry*v2r+.5*sy*s*v2I/dr[1])*n2
+                                         +(ry*v1r+.5*sy*s*v1I/dr[1]+rx*v2r+.5*sx*s*v2I/dr[1])*n1)) // terms from fluid traction
+                  +g1;
+
+                // printF("b0=%e, b1=%e",-10.*v1I-1.0*v2r,-v1r-10.*v2I);
+                // *** Equation 2 ***
+                A(1,0) = -n1*n2*zs*(1.0/mu); 
+                A(1,1) = (1.0/mu)*(1.0-SQR(n2))*zs; 
+                A(1,2) = -0.5*sx*s*n2/dr[1]
+                  -0.5*s*(1.0-SQR(n2))*sy*n1/dr[1]
+                  +s*n1*n2*(0.5*sy*n2/dr[1]+sx*n1/dr[1]);
+                A(1,3) = -0.5*sy*s*n2/dr[1]
+                  -s*(1.0-SQR(n2))*(sy*n2/dr[1]+0.5*sx*n1/dr[1])
+                  +0.5*s*SQR(n2)*n1*sx/dr[1]; 
+                g2 = -n1*n2*(vs1*zs+Ts1)/mu+(1-SQR(n2))*(vs2*zs+Ts2)/mu; // RHS of equation
+                b(1) = -((rx*v1r+.5*sx*s*v1I/dr[1]+ry*v2r+.5*sy*s*v2I/dr[1])*n2 // terms from div.u
+                         +(1.0-SQR(n2))*(2.*(ry*v2r+.5*sy*s*v2I/dr[1])*n2
+                                         +(ry*v1r+.5*sy*s*v1I/dr[1]+rx*v2r+.5*sx*s*v2I/dr[1])*n1)
+                         -n1*n2*        (2.*(rx*v1r+.5*sx*s*v1I/dr[1])*n1
+                                         +(ry*v1r+.5*sy*s*v1I/dr[1]+rx*v2r+.5*sx*s*v2I/dr[1])*n2)) // terms from fluid traction
+                  +g2;
+
+                // *** Equation 3 ***
+                A(2,0) = 1.
+                  -(1.+(alpha-1.)*SQR(n1))
+                  *theta*dt*nu*(-2.*SQR(sx/dr[1])
+                                -2.*SQR(sy/dr[1])); 
+                A(2,1) = -(alpha-1.)*n1*n2
+                  *theta*dt*nu*(-2.*SQR(sx/dr[1])
+                                -2.*SQR(sy/dr[1]));
+                A(2,2) = -(1.+(alpha-1.)*SQR(n1))
+                  *theta*dt*nu*(-.5*rx*sxr*s/dr[1]
+                                +SQR(sx/dr[1])
+                                -.5*sx*sxs*s/dr[1]
+                                -.5*ry*syr*s/dr[1]
+                                +SQR(sy/dr[1])
+                                -.5*sy*sys*s/dr[1]); 
+                A(2,3) = -(alpha-1.)*n1*n2
+                  *theta*dt*nu*(-.5*rx*sxr*s/dr[1]
+                                +SQR(sx/dr[1])
+                                -.5*sx*sxs*s/dr[1]
+                                -.5*ry*syr*s/dr[1]
+                                +SQR(sy/dr[1])
+                                -.5*sy*sys*s/dr[1]);
+                g3 = (1.+(alpha-1.)*SQR(n1))*(vp1-theta*dt*px/rho+(1.-theta)*dt*(mu*(vp1xx+vp1yy)-ppx)/rho)
+                  +(alpha-1.)*n1*n2*(vp2-theta*dt*py/rho+(1.-theta)*dt*(mu*(vp2xx+vp2yy)-ppy)/rho)
+                  -(alpha-1.)*SQR(n1)*vs1
+                  -(alpha-1.)*n1*n2*vs2; // RHS of equation
+                b(2) = -(-(1.+(alpha-1.)*SQR(n1))
+                         *theta*dt*nu*(SQR(rx)*v1rr+rx*rxr*v1r+2.*rx*sx*v1rs+.5*rx*sxr*s*v1I/dr[1]+rxs*sx*v1r
+                                       +SQR(sx)*v1I/SQR(dr[1])+.5*sx*sxs*s*v1I/dr[1]+SQR(ry)*v1rr+ry*ryr*v1r+2.*ry*sy*v1rs
+                                       +.5*ry*syr*s*v1I/dr[1]+rys*sy*v1r+SQR(sy)*v1I/SQR(dr[1])+.5*sy*sys*s*v1I/dr[1])
+                         -(alpha-1.)*n1*n2
+                         *theta*dt*nu*(SQR(rx)*v2rr+rx*rxr*v2r+2.*rx*sx*v2rs+.5*rx*sxr*s*v2I/dr[1]+rxs*sx*v2r
+                                       +SQR(sx)*v2I/SQR(dr[1])+.5*sx*sxs*s*v2I/dr[1]+SQR(ry)*v2rr+ry*ryr*v2r+2.*ry*sy*v2rs
+                                       +.5*ry*syr*s*v2I/dr[1]+rys*sy*v2r+SQR(sy)*v2I/SQR(dr[1])+.5*sy*sys*s*v2I/dr[1]))
+                  +g3;
+
+                // *testing* try setting to predicted values
+                // A(2,0) = 1.;
+                // A(2,1) = 0.;
+                // A(2,2) = 0.;
+                // A(2,3) = 0.;
+                // b(2) = uLocal(i1,i2,i3,uc)+(alpha-1)*(SQR(n1)*(uLocal(i1,i2,i3,uc)-vs1)+n1*n2*(uLocal(i1,i2,i3,vc)-vs2));
+
+                // *** Equation 4 ***
+                real ds = dr[1];
+                A(3,0) = -(alpha-1.)*n1*n2
+                  *theta*dt*nu*(-2.*SQR(sx/dr[1])
+                                -2.*SQR(sy/dr[1]));
+                A(3,1) = 1.
+                  -(1.+(alpha-1.)*SQR(n2))*theta*dt*nu*(-2.*SQR(sx/dr[1])
+                                                        -2.*SQR(sy/dr[1]));
+                A(3,2) = -(alpha-1.)*n1*n2
+                  *theta*dt*nu*(-.5*rx*sxr*s/dr[1]
+                                +SQR(sx/dr[1])
+                                -.5*sx*sxs*s/dr[1]
+                                -.5*ry*syr*s/dr[1]
+                                +SQR(sy/dr[1])-.5*sy*sys*s/dr[1]);
+                A(3,3) = -(1.+(alpha-1.)*SQR(n2))
+                  *theta*dt*nu*(-.5*rx*sxr*s/dr[1]
+                                +SQR(sx/dr[1])
+                                -.5*sx*sxs*s/dr[1]
+                                -.5*ry*syr*s/dr[1]
+                                +SQR(sy/dr[1])
+                                -.5*sy*sys*s/dr[1]);
+                g4 = (alpha-1.)*n1*n2*(vp1-theta*dt*px/rho+(1.-theta)*dt*(mu*(vp1xx+vp1yy)-ppx)/rho)
+                  +(1.+(alpha-1.)*SQR(n2))*(vp2-theta*dt*py/rho+(1.-theta)*dt*(mu*(vp2xx+vp2yy)-ppy)/rho)
+                  -(alpha-1.)*n1*n2*vs1
+                  -(alpha-1.)*SQR(n2)*vs2;
+                // g4 = (alpha-1)*n1*n2*(vp1-theta*dt*px/rho+(1-theta)*dt*(mu*(vp1xx+vp1yy)-ppx)/rho)
+                //   +(1+(alpha-1)*SQR(n2))*(vp2-theta*dt*py/rho+(1-theta)*dt*(mu*(vp2xx+vp2yy)-ppy)/rho)
+                //   -(alpha-1)*n1*n2*vs1-(alpha-1)*SQR(n2)*vs2;
+
+                // printF("%e\n",alpha);
+                // printF("%e,%e,%e,%e\n",(alpha-1)*n1*n2,
+                //        +(1.+(alpha-1.)*SQR(n2)),
+                //        -(alpha-1.)*n1*n2,
+                //        -(alpha-1.)*SQR(n2));
+                // printF("%e,%e\n",(vp2-theta*dt*py/rho+(1.-theta)*dt*(mu*(vp2xx+vp2yy)-ppy)/rho),vs2);
+                b(3) = -(-(alpha-1.)*n1*n2
+                         *theta*dt*nu*(SQR(rx)*v1rr+rx*rxr*v1r+2.*rx*sx*v1rs+.5*rx*sxr*s*v1I/dr[1]+rxs*sx*v1r
+                                       +SQR(sx)*v1I/SQR(dr[1])+.5*sx*sxs*s*v1I/dr[1]+SQR(ry)*v1rr+ry*ryr*v1r+2.*ry*sy*v1rs
+                                       +.5*ry*syr*s*v1I/dr[1]+rys*sy*v1r+SQR(sy)*v1I/SQR(dr[1])+.5*sy*sys*s*v1I/dr[1])
+                         -(1.+(alpha-1.)*SQR(n2))
+                         *theta*dt*nu*(SQR(rx)*v2rr+rx*rxr*v2r+2.*rx*sx*v2rs+.5*rx*sxr*s*v2I/dr[1]+rxs*sx*v2r
+                                       +SQR(sx)*v2I/SQR(dr[1])+.5*sx*sxs*s*v2I/dr[1]+SQR(ry)*v2rr+ry*ryr*v2r+2.*ry*sy*v2rs
+                                       +.5*ry*syr*s*v2I/dr[1]+rys*sy*v2r+SQR(sy)*v2I/SQR(dr[1])+.5*sy*sys*s*v2I/dr[1]))
+                  +g4;
+
+                // *testing* try setting to predicted values
+                // A(3,0) = 0.;
+                // A(3,1) = 1.;
+                // A(3,2) = 0.;
+                // A(3,3) = 0.;
+                // b(3) = uLocal(i1,i2,i3,vc)+(alpha-1)*(n1*n2*(uLocal(i1,i2,i3,uc)-vs1)+SQR(n2)*(uLocal(i1,i2,i3,vc)-vs2));
+
+                // printF("  A = \n");
+                // A.display("");
+                // printF("\n");
+                // printF("  b = \n");
+                // b.display("");
+                // printF("\n");
+
+                // printF("g1=%e, g2=%e, g3=%e, g4=%e\n",g1,g2,g3,g4);
+
+                // factor
+                GECO(A(0,0), numberOfEquations, numberOfEquations, ipvt(0), rcond, work(0));
+
+                // printF("  rcond = %f\n\n",rcond);
+                
+                // solve
+                x=b;
+                GESL(A(0,0), numberOfEquations, numberOfEquations, ipvt(0), x(0), job);
+                
+                // printF("  x = \n");
+                // x.display("");
+                // printF("\n");
+
+                // *** check ***
+                v1B = x(0);
+                v2B = x(1);
+                v1G = x(2);
+                v2G = x(3);
+
+                v1s = (v1I-v1G)*(1./(2*dr[1]));
+                v2s = (v2I-v2G)*(1./(2*dr[1]));
+                v1ss = (v1I-2*v1B+v1G)*(1./(SQR(dr[1])));
+                v2ss = (v2I-2*v2B+v2G)*(1./(SQR(dr[1])));
+                
+                // calculate residual
+                real resEq1 = (rx*v1r+ry*v2r+sx*v1s+sy*v2s)*n1
+                  +(1-SQR(n1))*(2*(rx*v1r+sx*v1s)*n1
+                                +(rx*v2r+ry*v1r+sx*v2s+sy*v1s)*n2
+                                +zs*v1B/mu)
+                  -n1*n2      *(2*(ry*v2r+sy*v2s)*n2
+                                +(rx*v2r+ry*v1r+sx*v2s+sy*v1s)*n1
+                                +zs*v2B/mu) 
+                  -g1;
+
+                real resEq2 = (rx*v1r+ry*v2r+sx*v1s+sy*v2s)*n2
+                  +(1-SQR(n2))*(2*(ry*v2r+sy*v2s)*n2
+                                +(rx*v2r+ry*v1r+sx*v2s+sy*v1s)*n1
+                                +zs*v2B/mu)
+                  -n1*n2      *(2*(rx*v1r+sx*v1s)*n1
+                                +(rx*v2r+ry*v1r+sx*v2s+sy*v1s)*n2
+                                +zs*v1B/mu)
+                  -g2;
+
+                real resEq3 = v1B-
+                  (1.+(alpha-1.)*SQR(n1))
+                  *theta*dt*nu*(SQR(rx)*v1rr+rx*rxr*v1r+2*rx*sx*v1rs+rx*sxr*v1s+rxs*sx*v1r
+                                +SQR(ry)*v1rr+ry*ryr*v1r+2*ry*sy*v1rs+ry*syr*v1s+rys*sy*v1r
+                                +SQR(sx)*v1ss+sx*sxs*v1s+SQR(sy)*v1ss+sy*sys*v1s)
+                  -(alpha-1.)*n1*n2
+                  *theta*dt*nu*(SQR(rx)*v2rr+rx*rxr*v2r+2*rx*sx*v2rs+rx*sxr*v2s+rxs*sx*v2r
+                                +SQR(ry)*v2rr+ry*ryr*v2r+2*ry*sy*v2rs+ry*syr*v2s+rys*sy*v2r
+                                +SQR(sx)*v2ss+sx*sxs*v2s+SQR(sy)*v2ss+sy*sys*v2s)
+                  -g3;
+                
+                real resEq4 = v2B-
+                  (alpha-1.)*n1*n2
+                  *theta*dt*nu*(SQR(rx)*v1rr+rx*rxr*v1r+2*rx*sx*v1rs+rx*sxr*v1s+rxs*sx*v1r
+                                +SQR(ry)*v1rr+ry*ryr*v1r+2*ry*sy*v1rs+ry*syr*v1s+rys*sy*v1r
+                                +SQR(sx)*v1ss+sx*sxs*v1s+SQR(sy)*v1ss+sy*sys*v1s)
+                  -(1.+(alpha-1.)*SQR(n2))
+                  *theta*dt*nu*(SQR(rx)*v2rr+rx*rxr*v2r+2*rx*sx*v2rs+rx*sxr*v2s+rxs*sx*v2r
+                                +SQR(ry)*v2rr+ry*ryr*v2r+2*ry*sy*v2rs+ry*syr*v2s+rys*sy*v2r
+                                +SQR(sx)*v2ss+sx*sxs*v2s+SQR(sy)*v2ss+sy*sys*v2s)
+                  -g4;
+
+                // printF("res1=%e, res2=%e, res3=%e, res4=%e \n",resEq1,resEq2,resEq3,resEq4);
+
+                // printF("uFp=%e, uS=%e, uF=%e\n",uLocal(i1,i2,i3,uc),v1s,v1B);
+                // printF("vFp=%e, vS=%e, vF=%e\n",uLocal(i1,i2,i3,vc),v2s,v2B);
+
+                // assign
+                UB(i1,i2,i3,0) = v1B;
+                UB(i1,i2,i3,1) = v2B;
+                UG(i1,i2,i3,0) = v1G;
+                UG(i1,i2,i3,1) = v2G;
+              }
+              
+              // ::display(UB(Ib1,Ib2,Ib3,1),"v2 on boundary (not linearized)");
+              // ::display(UB(Ib1,Ib2,Ib3,0),"v1 on boundary (not linearized)");
+              // ::display(UG(Ib1,Ib2,Ib3,0),"v1 on ghost (not linearized)");
+              uLocal(Ib1,Ib2,Ib3,uc) = UB(Ib1,Ib2,Ib3,0);
+              uLocal(Ib1,Ib2,Ib3,vc) = UB(Ib1,Ib2,Ib3,1);
+              uLocal(Ib1,Ib2-1,Ib3,uc) = UG(Ib1,Ib2,Ib3,0);
+              uLocal(Ib1,Ib2-1,Ib3,vc) = UG(Ib1,Ib2,Ib3,1);
+              gridVelocityLocal(Ib1,Ib2,Ib3,0)= uLocal(Ib1,Ib2,Ib3,uc);
+              gridVelocityLocal(Ib1,Ib2,Ib3,1)= uLocal(Ib1,Ib2,Ib3,vc);
+
+              // check divergence
+
+              // check traction
+
+              // OV_ABORT("stop here");
             }
             
-
-
-
-
-
             if( FALSE )
             {
               printF("\n >>>>>>>> PIV **TEMP** TESTING set v_1=0 \n");

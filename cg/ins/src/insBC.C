@@ -304,7 +304,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
             printF("--INSBC-- before getKnown: grid=%i: t=%12.5e, point (i1=0,i2=0) (x,y)=(%20.12e,%20.12e)\n",
            	     grid,t,x(i1,i2,i3,0),x(i1,i2,i3,1));
         }
-    //printF("--INSBC-- evaluate known ******************************\n");
+
         uKnownPointer = &parameters.getKnownSolution( t,grid,I1,I2,I3 );
     }
     realArray & uKnown = uKnownPointer!=NULL ? *uKnownPointer : u;
@@ -339,9 +339,9 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     // 	u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,pBoundaryData,t,bcParams,grid);
     //   }
     // }
-
-        projectInterfaceVelocity( t,u,gridVelocity,grid,dt );
-            
+        
+        assert( puOld != NULL );
+        projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
     } // end if useAddedMass 
   // =======================================================================================================
   // =======================================================================================================

@@ -1,8 +1,8 @@
 #
-# cgmp:   INS + Elasticity: elastic shear piston with exact solution
+# cgmp:   INS + Elasticity: RADIAL shear flow exact solution
 # 
 # Usage:
-#    cgmp [-noplot] elasticPiston -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
+#    cgmp [-noplot] radialShearFlow -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
 #           -solver=[yale|best] -psolver=[yale|best] -ktcFluid=<> -ktcFluid=<> -tz=[poly/trig/none] -bg=<backGroundGrid> ...
 #           -degreex=<num> -degreet=<num> -ts=[fe|be|im|pc] -nc=[] -d1=<> -d2=<> -smVariation=[nc|c|g|h] ...
 #           -sideBC=[noSlipWall|slipWall|dirichlet]
@@ -18,12 +18,12 @@
 $grid="deformingChannelGrid4.order2"; $domain1="fluidDomain"; $domain2="solidDomain";
 $method="ins"; $probeFile="probeFile"; $multiDomainAlgorithm=1;  $pi=0; $pOffset=0.; 
 $tFinal=20.; $tPlot=.1;  $cfl=.9; $show="";  $pdebug=0; $debug=0; $go="halt"; $cdv=""; 
-$muFluid=10.; $rhoFluid=1.0; $pFluid=1.; $TFluid=$pFluid/$rhoFluid; 
-$nu=10.; $rhoSolid=10.; $prandtl=.72; $cnsVariation="jameson"; $ktcFluid=-1.; $u0=0.; $xShock=-1.5; $uShock=1.25; 
+$muFluid=0.; $rhoFluid=1.4; $pFluid=1.; $TFluid=$pFluid/$rhoFluid; 
+$nu=.1; $rhoSolid=1.; $prandtl=.72; $cnsVariation="jameson"; $ktcFluid=-1.; $u0=0.; $xShock=-1.5; $uShock=1.25; 
 $p0=1.; 
 $cnsEOS="ideal"; 
 $cnsGammaStiff=1.4; $cnsPStiff=0.;   # for stiffened EOS -- by default make it look like an ideal gas
-$lambdaSolid=1.; $muSolid=10.;
+$lambdaSolid=1.; $muSolid=1.;
 ## $stressRelaxation=1; $relaxAlpha=0.1; $relaxDelta=0.1; 
 $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
@@ -47,14 +47,13 @@ $freqFullUpdate=1; # frequency for using full ogen update in moving grids
 #
 $smoothInterface=0;  # smooth the interface (in DeformingBodyMotion.C )
 $numberOfInterfaceSmooths=4; 
-$caseid=0;
 #
 # $option="beamUnderPressure"; # this currently means ramp the inflow
-$option="bulkSolidPiston"; # define pressure BC from known solution
+$option="radialElasticPiston"; # define pressure BC from known solution
 #
-$sideBC="noSlipWall"; 
+$sideBC="dirichlet"; 
 #
-$bcOption=4;   # does this do anything ? I think this is for cgcns
+$bcOption=4;   # does this do anything ? I thibnk this is for cgcns
 $orderOfExtrapForOutflow=3; $orderOfExtrapForGhost2=2; $orderOfExtrapForInterpNeighbours=2; 
 $projectInitialConditions=0; # for INS
 # 
@@ -65,18 +64,15 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
-# ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
+# ---- piston parameters: 
 $Pi=4.*atan2(1.,1.);
-$amp=.001; $k=.5; $t0=1./(4*$k);  $H=1.; $Hbar=.5; $rho=1.; 
-$rampOrder=2;  # number of zero derivatives at start and end of the ramp
-$ra=-10.; $rb=-9.; # ramp interval -- actual interval shifted by Hbar/cp 
-$thetad=0;
+$amp=.05; $k=.5; $t0=0.;  $R=1.; $Rbar=.5; $rho=1.; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"kappa=f"=>\$kappa, "bg=s"=>\$backGround,\
  "tp=f"=>\$tPlot, "solver=s"=>\$solver, "psolver=s"=>\$psolver,"useTP=i"=> \$useTP,\
  "tz=s"=>\$tz,"degreeSpace=i"=>\$degreeSpace, "degreeTime=i"=>\$degreeTime,\
  "show=s"=>\$show,"method=s"=>\$method,"ts=s"=>\$ts,"tsSM=s"=>\$tsSM,"noplot=s"=>\$noplot,"ktcFluid=f"=>\$ktcFluid,\
-  "ktcSolid=f"=>\$ktcSolid,"muSolid=f"=>\$muSolid,"lambdaSolid=f"=>\$lambdaSolid, "T0=f"=>\$T0,"Twall=f"=>\$Twall,\
+  "ktcSolid=f"=>\$ktcSolid,"muSolid=f"=>\$muSolid,"lambdaSolid=f"=>\$lambdaSolid, "t0=f"=>\$t0,"Twall=f"=>\$Twall,\
   "nc=i"=> \$numberOfCorrections, "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
   "d1=s"=>\$domain1,"d2=s"=>\$domain2,"dg=s"=>\$deformingGrid,"debug=i"=>\$debug,"kThermalFluid=f"=>\$kThermalFluid,\
   "cfl=f"=>\$cfl,"rhoSolid=f"=>\$rhoSolid,"cnsVariation=s"=>\$cnsVariation,"diss=f"=>\$diss,"fic=s"=>\$fic,"go=s"=>\$go,\
@@ -89,7 +85,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "p0=f"=>\$p0,"sideBC=s"=>\$sideBC,"iOmega=f"=>\$iOmega,"iTol=f"=>\$iTol,"addedMass=f"=>\$addedMass,\
    "projectInitialConditions=f"=>\$projectInitialConditions,"restart=s"=>\$restart,"append=i"=>\$append,\
    "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,\
-   "amp=f"=>\$amp,"thetad=f"=>\$thetad,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
+   "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths );
@@ -170,17 +166,38 @@ $domainName=$domain1; $solverName="fluid";
 $modelNameINS="none"; 
 #
 $T0=0.; 
+## $bc = "all=noSlipWall uniform(u=.0,T=$T0)\n bcNumber3=slipWall\n bcNumber4=slipWall\n bcNumber1=inflowWithVelocityGiven, uniform(u=$u0,T=0.)\n bcNumber2=outflow, pressure(1.*p+.1*p.n=0.)\n bcNumber100=tractionInterface";
+## $bc = "all=noSlipWall uniform(u=.0,T=$T0)\n bcNumber3=slipWall\n bcNumber4=slipWall\n bcNumber1=inflowWithVelocityGiven, parabolic(d=.1,u=$u0,T=0.)\n bcNumber2=outflow, pressure(1.*p+.1*p.n=0.)\n bcNumber100=tractionInterface";
+### $bc = "all=noSlipWall uniform(u=.0,T=$T0)\n bcNumber3=slipWall\n bcNumber4=slipWall\n bcNumber1=inflowWithPressureAndTangentialVelocityGiven uniform(p=1.,v=0.T=0.)\n bcNumber2=outflow, pressure(1.*p+0.*p.n=0.)\n bcNumber100=tractionInterface";
 # -- RAMP PRESSURE BC: 
-$sideBCFluid=DirichletBoundaryCondition;
-$bc = "all=$sideBC\n bcNumber4=dirichletBoundaryCondition\n bcNumber100=noSlipWall uniform(u=.0,T=$T0)\n bcNumber100=tractionInterface";
+if( $sideBC eq "dirichlet" ){ $sideBC = "dirichletBoundaryCondition"; }
+$bc = "all=$sideBC\n bcNumber100=noSlipWall uniform(u=.0,T=$T0)\n bcNumber100=tractionInterface\n bcNumber4=dirichletBoundaryCondition";
+    # #
+    # # **** ramp the pressure on the top ****
+    # $cmdRamp="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
+    # " pause\n" . \
+    # " time function option\n" . \
+    # "   ramp function\n" .\
+    # "   ramp end values: 0,1 (start,end)\n" .\
+    # "   ramp times: 0,1 (start,end)\n" .\
+    # "   ramp order: 3\n" .\
+    # " exit \n" .\
+    # "done";
+    # # pressure at top from the known radial elaastic piston solution
+    # $cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
+    # " known solution\n" . \
+    # " exit \n" .\
+    # "done";
+# if( $option ne "beamUnderPressure" ){ $cmdRamp = "bcNumber3=outflow, pressure(1.*p+0.*p.n=$p0)"; }
+# $bc = $bc . "\n" . $cmdRamp;
+if( $tz eq "turn off twilight zone" ){ $bc = $bc . "\n" . $cmdKnown; }
 #
 $ic="uniform flow\n" . "p=0., u=$u0, T=$T0";
 $rhoBar=$rhoSolid*$scf; $lambdaBar=$lambdaSolid*$scf; $muBar=$muSolid*$scf;
-$theta=$thetad*$Pi/180.;
 $ic="OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " shearing fluid and elastic solid\n" .\
-    "$amp, $rhoSolid, $theta\n" .\
+    "radial shearing fluid and elastic solid\n" .\
+    "  $amp, $rhoSolid\n" .\
     " done\n" .\
     "done"; 
 if( $tz ne "turn off twilight zone" ){ $ic="#"; }
@@ -194,15 +211,20 @@ echo to terminal 1
 $domainName=$domain2; $solverName="solid"; 
 # $bcCommands="all=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
 # $bcCommands="all=displacementBC\n bcNumber2=slipWall\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
-$bcCommands="all=tractionBC\n bcNumber1=displacementBC\n bcNumber2=displacementBC\n bcNumber3=dirichletBoundaryCondition\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
+$bcCommands="all=tractionBC\n bcNumber1=displacementBC\n bcNumber2=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
+# -- slipWall on sides and displacement on bottom:
+if( $sideBC eq "dirichlet" ){ $sideBC = "dirichletBoundaryCondition"; }
+$bcCommands="all=displacementBC\n bcNumber1=$sideBC\n bcNumber2=$sideBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
+#  -- for noSlipWall's we use displacement on sides of solid
+if( $sideBC eq "noSlipWall" ){ $bcCommands="all=displacementBC\n  bcNumber100=tractionBC\n bcNumber100=tractionInterface"; }
 $exponent=10.; $x0=.5; $y0=.5; $z0=.5;  $rhoSolid=$rhoSolid*$scf; $lambda=$lambdaSolid*$scf; $mu=$muSolid*$scf; 
 # $initialConditionCommands="gaussianPulseInitialCondition\n Gaussian pulse: 10 2 $exponent $x0 $y0 $z0 (beta,scale,exponent,x0,y0,z0)";
 $initialConditionCommands="zeroInitialCondition";
 $initialConditionCommands=\
     "OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " shearing fluid and elastic solid\n" .\
-    "$amp, $rhoSolid, $theta \n" .\
+    "radial shearing fluid and elastic solid\n" .\
+    "  $amp, $rhoSolid\n" .\
     " done\n" .\
   "done \n" .\
   "knownSolutionInitialCondition";
@@ -241,6 +263,7 @@ continue
   $tz
   # DEFINE THE MULTI_STAGE ALGORITHM --
   OBPDE:multi-stage
+##  actions=takeStep,applyBC classNames=Cgsm
   actions=takeStep classNames=Cgsm
   actions=takeStep,applyBC classNames=Cgins
   actions=applyBC classNames=Cgsm
@@ -267,17 +290,17 @@ continue
         erase
         plot domain: fluid
         contour
-          vertical scale factor 0.
+          ##vertical scale factor 0.
            # ghost lines 1
+           plot:v
            ##  wire frame
           exit
         plot domain: solid
         contour
-          vertical scale factor 0.
+         ## vertical scale factor 0.
           adjust grid for displacement 1
         exit
-        plot:fluid : u
-        plot:solid : v1
+        plot:solid : v2
         plot all
 $go
 

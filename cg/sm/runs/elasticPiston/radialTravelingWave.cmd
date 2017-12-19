@@ -21,17 +21,17 @@ $tFinal=10.; $cfl=.9; $pv="g";
 $noplot=""; $backGround="rectangle"; $grid="rectangle80.ar10"; $mu=10.; $lambda=1.; $rho=10.; 
 $debug = 0;  $tPlot=.1; $diss=0.; $dissOrder=2; $bcn="d"; $cons=1; $flushFrequency=10;
 $order = 2; $go="run"; 
-$amp=.0001; 
+$amp=.001; 
 $rampOrder=2;  # number of zero derivatives at start and end of the ramp
 $ra=.1; $rb=.6; # ramp interval -- actual interval shifted by Hbar/cp 
-$thetad=0;
+$caseid=0;
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"pv=s"=>\$pv,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
-  "rho=f"=>\$rho,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax,"amp=f"=>\$amp,"thetad=f"=>\$thetad,\
-  "rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb );
+  "rho=f"=>\$rho,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax,"amp=f"=>\$amp,\
+  "rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"caseid=i"=>\$caseid );
 # -------------------------------------------------------------------------------------------------
 if( $pv eq "nc" ){ $pv = "non-conservative"; $cons=0; }
 if( $pv eq "c" ){ $pv = "conservative"; $cons=1; }
@@ -44,6 +44,12 @@ if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 # 
+# Reset parameters. depending on caseid, choose scf
+$rho=1.; $mu=1.; $lambda=1.;
+if( $caseid eq 0 ){ $scf=1.; }
+if( $caseid eq 1 ){ $scf=1000.; }
+if( $caseid eq 2 ){ $scf=.001; }
+$rho=$rho*$scf; $mu=$mu*$scf; $lambda=$lambda*$scf;
 # $tFinal=10.; $tPlot=.05; $backGround="rectangle"; 
 # $diss=0.; $cfl=.9;
 # 
@@ -77,13 +83,14 @@ boundary conditions
  # $backGround(1,0)=displacementBC
 done  
 $Pi=4.*atan2(1.,1.);
+$k=2.; $t0=0; $H=1.; $Hbar=.5; $rho=1.; 
 $rhoBar=$rho; $lambdaBar=$lambda; $muBar=$mu;
 # 
-$theta=$thetad*$Pi/180.;
+$caseid=0;
 OBTZ:user defined known solution
  choose a common known solution
-  shearing fluid and elastic solid
-   $amp, $rhoBar, $theta
+  fib radial traveling wave
+   $amp, $caseid
   done
  done
 #

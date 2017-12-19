@@ -17,6 +17,7 @@
 #define evalOscillatingBubble EXTERN_C_NAME(evaloscillatingbubble)
 #define evalCapillaryFlow EXTERN_C_NAME(evalcapillaryflow)
 #define evalFibShearFluid EXTERN_C_NAME(evalfibshearfluid)
+#define evalRadialFibShearFluid EXTERN_C_NAME(evalradialfibshearfluid)
 #define evalFibCartWaveFluid EXTERN_C_NAME(evalfibcartwavefluid)
 
 extern "C"
@@ -29,7 +30,7 @@ extern "C"
   void cBesselY( const real& nu, const real&zr, const real &zi, real &yr,real &yi );
   void evalOscillatingBubble(const real& r, const real&R, 
 			     const int& n, const real& mu,
-			     const real& lr, const real& li,
+                             const real& omegar, const real& omegai,
 			     const real& cr, const real& ci,
 			     const real& dr, const real& di,
 			     real& vrr, real& vri,
@@ -48,6 +49,14 @@ extern "C"
 			  const real & dr, const real & di,
 			  const real & y, 
 			  real & vr, real & vi);
+
+  void evalRadialFibShearFluid( const real & kfr, const real & kfi,
+                                const real & omegar, const real & omegai,
+                                const real & ar, const real & ai,
+                                const real & br, const real & bi,
+                                const real & rho, const real & r,
+                                const real & r0, const real & t,
+                                real & vt, real & p);
 
   void evalFibCartWaveFluid(const real & omegar, const real & omegai, const real & k,
                             const real & mu, const real & rho, const real & mubar,
@@ -1181,7 +1190,10 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
 
 	      // get vrhat and vthetahat
-	      evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	      // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	      //   		     cr,ci,dr,di,
+	      //   		     vrr,vri,vtr,vti,pr,pi);
+	      evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
 				     cr,ci,dr,di,
 				     vrr,vri,vtr,vti,pr,pi);
 
@@ -1199,20 +1211,6 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	      ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
 	      ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
 	      ua(i1,i2,i3,pc) = p;
-
-	      // ua(i1,i2,i3,uc) = 0.0;
-	      // ua(i1,i2,i3,vc) = 0.0;
-	      // ua(i1,i2,i3,pc) = 0.0;
-
-	      // real kr = k*r;
-        
-	      // real j1 = jn(1,kr);  // Bessel function J_1
-
-
-	      // ua(i1,i2,i3,uc) = amp*j1*cosTheta;
-	      // ua(i1,i2,i3,vc) = amp*j1*sinTheta;
-	      // ua(i1,i2,i3,pc) = amp*j1;
-
 
 	    }
 	} else {
@@ -1245,7 +1243,10 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	    }
 
 	  // get vrhat and vthetahat
-	  evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	  // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	  //       		 cr,ci,dr,di,
+	  //       		 vrr,vri,vtr,vti,pr,pi);
+	  evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
 				 cr,ci,dr,di,
 				 vrr,vri,vtr,vti,pr,pi);
 
@@ -1465,6 +1466,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
+    const real & mu     = rpar[15];
+    const real & thetaR = rpar[16];
 
     if( true ) {
       printF("--INS-- evaluate fibShear at t=%9.3e \n",t,amp);
@@ -1475,16 +1478,20 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     real u0_r = amp*exp(-omegai*t)*cos(omegar*t);
     real u0_i = amp*exp(-omegai*t)*sin(omegar*t);
 
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
+
     int i1,i2,i3;
     if( numberOfTimeDerivatives==0 ) {
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+	const real x= xLocal(i1,i2,i3,0);
+	const real y= xLocal(i1,i2,i3,1);
 	
 	real vr, vi;
-	evalFibShearFluid(kfr,kfi,omegar,omegai,cr,ci,dr,di,y,vr,vi);
-	ua(i1,i2,i3,uc) = vr*u0_r-vi*u0_i;
-	ua(i1,i2,i3,vc) = 0.;
+        real yRef = -st*x+ct*y;
+	evalFibShearFluid(kfr,kfi,omegar,omegai,cr,ci,dr,di,yRef,vr,vi);
+	ua(i1,i2,i3,uc) = (vr*u0_r-vi*u0_i)*ct;
+	ua(i1,i2,i3,vc) = (vr*u0_r-vi*u0_i)*st;
 	ua(i1,i2,i3,pc) = 0.;
       }
     } else {
@@ -1492,7 +1499,87 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       OV_ABORT("FINISH ME");
     }
 
-  } else if (userKnownSolution=="fibCartWave") {
+  } else if( userKnownSolution=="radialFibShear" ) {
+    // --------------------------------------------------------------------------------
+    // ------ Exact solution for a radial flow shearing a bulk elastic solid ----------
+    // \bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))
+    //     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))
+    //              ks = omega / cs
+    //              kf = sqrt(- i rho omega / mu)
+    //  Parameters:
+    //  amp    : maximum amplitude of the displacement 
+    //  omega  : time frequency of solution 
+    //  H,Hbar : Height of fluid and solid domains
+    //  rhoBar,lambaBar,muBar : solid density and Lame parameters
+    // --------------------------------------------------------------------------------
+
+    const real & omegar = rpar[0];
+    const real & omegai = rpar[1];
+    const real & ar     = rpar[2];
+    const real & ai     = rpar[3];
+    const real & br     = rpar[4];
+    const real & bi     = rpar[5];
+    const real & cr     = rpar[6];
+    const real & ci     = rpar[7];
+    const real & R      = rpar[8];
+    const real & Rbar   = rpar[9];
+    const real & ksr    = rpar[10];
+    const real & ksi    = rpar[11];
+    const real & kfr    = rpar[12];
+    const real & kfi    = rpar[13];
+    const real & amp    = rpar[14];
+
+    if( true ) {
+      printF("--INS-- evaluate radialFibShear at t=%9.3e \n",t,amp);
+    }
+
+    GET_VERTEX_ARRAY(xLocal);
+    const real eps = 10.*REAL_EPSILON;
+
+    real u0_r = amp*exp(-omegai*t)*cos(omegar*t);
+    real u0_i = amp*exp(-omegai*t)*sin(omegar*t);
+
+    int i1,i2,i3;
+    if( numberOfTimeDerivatives==0 ) {
+      FOR_3D(i1,i2,i3,I1,I2,I3) {
+	real x= xLocal(i1,i2,i3,0);
+	real y= xLocal(i1,i2,i3,1);
+        real r = sqrt( SQR(x) + SQR(y) );
+	
+        // compute trig functions
+        real cosTheta, sinTheta;
+        if( abs(r)>eps )
+          {
+            cosTheta=x/r; sinTheta=y/r;
+          }
+        else
+          {
+            cosTheta=1.; sinTheta=0.;
+          }
+
+
+	real vt, p;
+        real r0  = Rbar;
+        real rho = 1.;
+	evalRadialFibShearFluid(kfr,kfi,omegar,omegai,ar,ai,br,bi,
+                                rho,r,r0,t,vt,p);
+
+        // convert to cartesian
+        real v1 = -sinTheta*vt;
+        real v2 =  cosTheta*vt;
+
+	ua(i1,i2,i3,uc) = amp*v1;
+	ua(i1,i2,i3,vc) = amp*v2;
+	ua(i1,i2,i3,pc) = SQR(amp)*p;
+      }
+    } else {
+      // some options may need a time derivative ...
+      OV_ABORT("FINISH ME");
+    }
+
+  } 
+  else if (userKnownSolution=="fibCartWave") 
+  {
     // -- traveling wave solution for elastic solid and linearized fluid --
     // 
     // linearized fluid: 0 < x < L,      0 < y < H
@@ -1542,13 +1629,108 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
         ua(i1,i2,i3,vc) = v2r;
         ua(i1,i2,i3,pc) = pr;
       }
-    } else {
+    } 
+  }
+  else if (userKnownSolution=="fibRadialWave") 
+  {
+      // -- traveling wave solution for elastic solid and linearized fluid --
+      // 
+      // linearized fluid:     0 < r < Rbar
+      // solid reference:   Rbar < r < R
+      //
+      // Fluid solution: (hat vars)
+      //  p       = b (r/R)^n 
+      //  v_r     = a J_n(lambda r) / r + b n r^(n-1)/(mu lambda^2 R^n)
+      //  v_theta = i a (J_n(lambda r) / r - lambda/n J_{n+1}(lambda r)) 
+      //               + b i n r^(n-1) / (mu lambda^2 R^n)
+      //
+      // Solid solution: (hat vars)
+      //  u_r     = d1 (n J_n(kp r) / r - kp J_{n+1}(kp r))
+      //           +d2 (n Y_n(kp r) / r - kp Y_{n+1}(kp r))
+      //           +in/r( d3 J_n(ks r) + d4 Y_n(ks r))
+      //  u_theta =-d3 (n J_n(ks r) / r - ks J_{n+1}(ks r))
+      //           -d4 (n Y_n(ks r) / r - ks Y_{n+1}(ks r))
+      //           +in/r( d1 J_n(kp r) + d2 Y_n(kp r))
+      //
+      // kp = omega/cp, ks = omega/cs
+      // lambda = sqrt(i omega rho / mu)
+      //
+      // All scaled by: amp exp(i(n theta - omega t))
+
+      const real & omegar = rpar[0];
+      const real & omegai = rpar[1];
+      const real & n      = rpar[2];
+      const real & d1r    = rpar[3];
+      const real & d1i    = rpar[4];
+      const real & d2r    = rpar[5];
+      const real & d2i    = rpar[6];
+      const real & d3r    = rpar[7];
+      const real & d3i    = rpar[8];
+      const real & d4r    = rpar[9];
+      const real & d4i    = rpar[10];
+      const real & ar     = rpar[11];
+      const real & ai     = rpar[12];
+      const real & br     = rpar[13];
+      const real & bi     = rpar[14];
+      const real & nu     = rpar[15];
+      const real & cp     = rpar[16];
+      const real & cs     = rpar[17];
+      const real & amp    = rpar[18];
+
+    GET_VERTEX_ARRAY(xLocal);
+
+    printF("--INS-- evaluate fibRadialWave at t=%9.3e \n",t);
+
+    real R = 1.;
+    const real eps = 10.*REAL_EPSILON;
+
+    int i1,i2,i3;
+    if( numberOfTimeDerivatives==0 ) {
+      FOR_3D(i1,i2,i3,I1,I2,I3) {
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
+        real r = sqrt( SQR(x) + SQR(y) );
+        real cosTheta, sinTheta;
+        real vrr, vri, vtr, vti, pr, pi;
+        real vr, vt, p;
+
+        // compute trig functions
+        real theta = atan2(y,x);
+        if( abs(r)>eps ) {
+          cosTheta=x/r; sinTheta=y/r;
+        } else {
+          cosTheta=1.; sinTheta=0.;
+        }
+
+        // get vrhat and vthetahat
+        evalOscillatingBubble( r, R, (int)round(n), nu,omegar,omegai,
+                               ar,ai,br,bi,
+                               vrr,vri,vtr,vti,pr,pi);
+
+        // compute phase
+        real phi = n*theta-omegar*t;
+
+        // compute decay factor
+        real A = exp(omegai*t)*amp; 
+
+        // evaluate real part
+        vr = (vrr*cos(phi)-vri*sin(phi))*A;
+        vt = (vtr*cos(phi)-vti*sin(phi))*A;
+        p  = ((pr)*cos(phi)-(pi)*sin(phi))*A;
+
+        ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
+        ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
+        ua(i1,i2,i3,pc) = p;
+
+      }
+    }
+    else {
       // some options may need a time derivative ...
       OV_ABORT("FINISH ME");
     }
       
-
-  } else 
+  }
+  else 
   {
     // look for a solution in the base class
     Parameters::getUserDefinedKnownSolution( t, cg, grid, ua, I1,I2,I3 );
@@ -1906,7 +2088,10 @@ getUserDefinedDeformingBodyKnownSolution(
 	    }
 
 	  // get vrhat and vthetahat
-	  evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	  // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	  //       		 cr,ci,dr,di,
+	  //       		 vrr,vri,vtr,vti,pr,pi);
+	  evalOscillatingBubble( r, R, (int)round(n), mu,omegar,omegai,
 				 cr,ci,dr,di,
 				 vrr,vri,vtr,vti,pr,pi);
 
@@ -1980,9 +2165,13 @@ getUserDefinedDeformingBodyKnownSolution(
 	}
 
 	// get vrhat and vthetahat
-	evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	// evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+	// 		       cr,ci,dr,di,
+	// 		       vrr,vri,vtr,vti,pr,pi);
+	evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
 			       cr,ci,dr,di,
 			       vrr,vri,vtr,vti,pr,pi);
+
 	// compute phase
 	real phi = n*theta-omegar*t;
 
@@ -2935,20 +3124,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       printf(" *** BESSEL: fnu=%3.1f, z=(%.16e,%.16e) Y=(%.16e,%.16e)\n",fnu,zr,zi,yr,yi);
 
       // * test evalOscillatingBubble solution * //
-      real r = .133;
+      // real r = .133;
 
-      real vrr, vri, vtr, vti, pr, pi;
-      evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-			     cr,ci,dr,di,
-			     vrr,vri,vtr,vti,pr,pi);
+      // real vrr, vri, vtr, vti, pr, pi;
+      // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+      //   		     cr,ci,dr,di,
+      //   		     vrr,vri,vtr,vti,pr,pi);
 
-      printf(" *** OSCILLATINGBUBBLE: \n");
-      printf(" vr = %23.16e + %23.16e i\n",vrr,vri);
-      printf(" vt = %23.16e + %23.16e i\n",vtr,vti);
-      printf(" p  = %23.16e + %23.16e i\n",pr ,pi);
-      printf("--------------------------------\n");
-      printf("--------------------------------\n");
-      printf("--------------------------------\n\n");
+      // printf(" *** OSCILLATINGBUBBLE: \n");
+      // printf(" vr = %23.16e + %23.16e i\n",vrr,vri);
+      // printf(" vt = %23.16e + %23.16e i\n",vtr,vti);
+      // printf(" p  = %23.16e + %23.16e i\n",pr ,pi);
+      // printf("--------------------------------\n");
+      // printf("--------------------------------\n");
+      // printf("--------------------------------\n\n");
 
       // OV_ABORT("stop for now");
       

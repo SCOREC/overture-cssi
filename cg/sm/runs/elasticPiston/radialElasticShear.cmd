@@ -24,13 +24,12 @@ $order = 2; $go="run";
 $amp=.0001; 
 $rampOrder=2;  # number of zero derivatives at start and end of the ramp
 $ra=.1; $rb=.6; # ramp interval -- actual interval shifted by Hbar/cp 
-$thetad=0;
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"pv=s"=>\$pv,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
-  "rho=f"=>\$rho,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax,"amp=f"=>\$amp,"thetad=f"=>\$thetad,\
+  "rho=f"=>\$rho,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax,"amp=f"=>\$amp,\
   "rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb );
 # -------------------------------------------------------------------------------------------------
 if( $pv eq "nc" ){ $pv = "non-conservative"; $cons=0; }
@@ -77,13 +76,13 @@ boundary conditions
  # $backGround(1,0)=displacementBC
 done  
 $Pi=4.*atan2(1.,1.);
+$k=2.; $t0=0; $H=1.; $Hbar=.5; $rho=1.; 
 $rhoBar=$rho; $lambdaBar=$lambda; $muBar=$mu;
 # 
-$theta=$thetad*$Pi/180.;
 OBTZ:user defined known solution
  choose a common known solution
-  shearing fluid and elastic solid
-   $amp, $rhoBar, $theta
+  radial shearing fluid and elastic solid
+   $amp, $rho
   done
  done
 #

@@ -1909,7 +1909,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         && t!=0.  // ****************************************** TEST ********************
       )
     {
-      projectInterfaceVelocity( t,u,gridVelocity,grid,dt );
+
+      projectInterfaceVelocity( t,u,uL,gridVelocity,grid,dt );
       
     } // end if useAddedMass 
     // =======================================================================================================

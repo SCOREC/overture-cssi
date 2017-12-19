@@ -561,17 +561,19 @@ advanceFreeSurface(real t1, real t2, real t3,
           // --- predictor --- 
           if( surfacePredictor == "free surface predictor leap-frog" )
           { // Leap-frog 
-
+            
             xNext(j1,j2,0) = xPrev(j1,j2,0) + 2.*dt*u(i1,i2,i3,uc)*vScale[0];
             xNext(j1,j2,1) = xPrev(j1,j2,1) + 2.*dt*u(i1,i2,i3,vc)*vScale[1];
             xNext(j1,j2,2) = xPrev(j1,j2,2) + 2.*dt*u(i1,i2,i3,wc)*vScale[2];
          }
           else
           {
+            
             // forward-Euler 
             xNext(j1,j2,0) = xCur(j1,j2,0) + dt*u(i1,i2,i3,uc)*vScale[0];
             xNext(j1,j2,1) = xCur(j1,j2,1) + dt*u(i1,i2,i3,vc)*vScale[1];
             xNext(j1,j2,2) = xCur(j1,j2,2) + dt*u(i1,i2,i3,wc)*vScale[2];
+
           }
           
         }
@@ -587,15 +589,33 @@ advanceFreeSurface(real t1, real t2, real t3,
 
 
       }
-	  
+
+      // if (advanceOption == 0) {
+      //   printF("\n\nPredictor---(Znp1,Zn,Znm1,Wn,tn,tnp1) = "
+      //          "(%e,%e,%e,%e,%e,%e)---\n",
+      //          xNext(0,0,2),xCur(0,0,2),xPrev(0,0,2),u(0,0,0,wc),tCur,tNext);
+      //   real zTrue = .5*(tNext*tNext+tNext);
+      //   real wTrue = 1.0*tNext+.5;
+      //   printF("zTrue    = %e\n\n",zTrue);
+      //   printF("zTrueErr = %e\n\n",zTrue-xNext(0,0,2));
+
+      // } else {
+      //   printF("\n\nCorrector---(Znp1,Zn,Wn,Wp,tn,tnp1) = "
+      //          "(%e,%e,%e,%e,%e,%e)---\n",
+      //          xCur(0,0,2),xPrev(0,0,2),uOld(0,0,0,wc),uNew(0,0,0,wc),tCur,tNext);
+      //   real zTrue = .5*(tCur*tCur+tCur);
+      //   real wTrue = 1.0*tNext+.5;
+      //   printF("zTrue = %e, wTrue = %e \n",zTrue,wTrue);
+      //   printF("zTrueErr = %e, wTrueErr = %e \n\n",zTrue-xCur(0,0,2),wTrue-uNew(0,0,0,wc));
+
+      // }
+
+
       // -- Optionally smooth the interface ---
-      smoothInterface( xNext, cg, sideToMove, axisToMove, gridToMove, vScale );
+      // smoothInterface( xNext, cg, sideToMove, axisToMove, gridToMove, vScale );
 
     }
 
-    printF("\n\n---(zNext,zCur,zPrev,w,tCur) = "
-	   "(%e,%e,%e,%e,%e)---\n\n",
-	   xNext(0,0,2),xCur(0,0,2),xPrev(0,0,2),u(0,0,0,wc),tCur);
 
 	
     // The "surface" Mapping holds the start curve in 2D

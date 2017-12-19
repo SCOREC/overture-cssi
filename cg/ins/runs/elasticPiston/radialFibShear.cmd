@@ -1,9 +1,10 @@
+# 
 #
-# Cgins: free surface in 3D
+# Cgins: fib shear 
 #
 # Usage:
 #   
-#  cgins [-noplot] freeSurface3d -g=<name> -pGrad=<f> -surfaceTension=<f> -tf=<tFinal> -tp=<tPlot> ...
+#  cgins [-noplot] FibShearDecoupled.cmd -g=<name> -pGrad=<f> -surfaceTension=<f> -tf=<tFinal> -tp=<tPlot> ...
 #        -solver=<yale/best> -order=<2/4> -model=<ins/boussinesq> -ts=<implicit> -debug=<num> ..,
 #        -ad2=<0|1> -project=<0/1> -iv=[viscous/adv/full] -imp=<val> -rf=<val> ...
 #        -smoothSurface=[0|1] -numberOfSurfaceSmooths=<i> -freeSurfaceOption=[none|tractionForce]
@@ -19,41 +20,32 @@
 #  -dg : the name of thee grid to deform or -dg="share=<num>" to choose all grids with a given share value 
 #  -df, -da : deformation frequency and amplitude. 
 # 
-# Examples: 
-#  Grid: ogen -noplot freeSurfaceGrid3d -interp=e -factor=1
-#  cgins freeSurface3d -g=freeSurfaceGrid3de1.order2.hdf -nu=.05 -tf=2. -tp=.01 -model=ins -surfaceTension=.0 -ad2=1 -go=halt 
-#
-# -- turn on gravity: 
-#  cgins freeSurface3d -g=freeSurfaceGrid3de1.order2.hdf -nu=.05 -tf=2. -tp=.01 -model=ins -surfaceTension=.0 -pGrad=-5. -ad2=1 -go=halt 
-#
-# --- set default values for parameters ---
-# 
 $grid="halfCylinder.hdf"; $backGround="backGround"; $bcn="noSlipWall"; $pGrad=0.; 
-$deformingGrid="share=100"; $deformFrequency=2.; $deformAmplitude=1.; $deformationType="free surface"; 
-$tFinal=1.; $tPlot=.1; $cfl=.9; $nu=.05; $Prandtl=.72; $thermalExpansivity=.1; 
+$deformingGrid="ice"; $deformFrequency=2.; $deformAmplitude=0.; $deformationType="free surface"; 
+$tFinal=1.; $tPlot=.1; $cfl=.9; $nu=10; $Prandtl=.72; $thermalExpansivity=.1; 
 $gravity = "0. 0. 0."; 
-$model="ins"; $ts="adams PC"; $noplot=""; $implicitVariation="full"; $refactorFrequency=100; 
+$model="ins"; $ts="adams PC"; $noplot=""; $implicitVariation="viscous"; $refactorFrequency=100; 
 $debug = 0;   $maxIterations=100; $tol=1.e-16; $atol=1.e-16; 
 $tz = "none"; $degreex=2; $degreet=2; $fx=1.; $fy=1.; $fz=1.; $ft=1.; $dtMax=.5; 
 $order = 2; $fullSystem=0; $go="halt"; 
-$solver="best"; $rtol=1.e-12; $atol=1.e-12; $ogesDebug=0; $project=0; $cdv=1.; $ad2=0; $ad22=1.; 
+$ogesDebug=0; $project=0; $cdv=1.; $ad2=0; $ad22=2.; 
+$psolver="yale"; $solver="yale"; 
+$iluLevels=1; $ogesDebug=0; 
+$rtolp=1.e-4; $atolp=1.e-5;  # tolerances for the pressure solve
+$rtol=1.e-4; $atol=1.e-5;    # tolerances for the implicit solver
 $bc="a"; 
 $surfaceTension=.1; $pAtmosphere=0.;
 $smoothSurface=1; $numberOfSurfaceSmooths=3;
 $freeSurfaceOption="none"; 
 $generatePastHistory=4;
-# Decouple implicit BCs (e.g. free surface) so we can solve scalar velociity implicit equations
-$decoupleImplicitBoundaryConditions=0;
-$freqFullUpdate=1; # frequency for using full ogen update in moving grids 
 # 
-$k=2.0; $ampA=0.0e-05; $ampB=1.0; $ampC=0.5;
-$predictorOrder=0; # 0=use default 
-$useNewTimeSteppingStartup=1;  # this will regenerate past time grids and solutions
-$surfacePredictor="leap-frog";
+$caseid=0;
+$amp=.0001;
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet, "model=s"=>\$model,\
- "tp=f"=>\$tPlot, "solver=s"=>\$solver, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
+ "tp=f"=>\$tPlot, "solver=s"=>\$solver, "psolver=s"=>\$psolver,"tz=s"=>\$tz, "show=s"=>\$show,\
+  "order=i"=>\$order,"debug=i"=>\$debug, \
  "ts=s"=>\$ts,"nu=f"=>\$nu,"cfl=f"=>\$cfl, "bg=s"=>\$backGround,"fullSystem=i"=>\$fullSystem, "go=s"=>\$go,\
  "noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"project=i"=>\$project,"rf=i"=> \$refactorFrequency,"bcn=s"=>\$bcn,\
  "iv=s"=>\$implicitVariation,"dtMax=f"=>\$dtMax,"ad2=i"=>\$ad2,"ad22=f"=>\$ad22,"imp=f"=>\$implicitFactor,\
@@ -61,13 +53,14 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "surfaceTension=f"=>\$surfaceTension,"pAtmosphere=f"=>\$pAtmosphere,"pGrad=f"=>\$pGrad,\
   "smoothSurface=i"=>\$smoothSurface,"numberOfSurfaceSmooths=i"=>\$numberOfSurfaceSmooths,\
   "freeSurfaceOption=s"=>\$freeSurfaceOption,"rtol=f"=>\$rtol,"atol=f"=>\$atol,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,\
-  "k=f"=>\$k,"ampA=f"=>\$ampA,"ampB=f"=>\$ampB,"ampC=f"=>\$ampC, "predictorOrder=s"=>\$predictorOrder,\
-  "useNewTimeSteppingStartup=i"=>\$useNewTimeSteppingStartup,"freqFullUpdate=i"=>\$freqFullUpdate,\
-  "decoupleImplicitBoundaryConditions=i"=>\$decoupleImplicitBoundaryConditions,\
-  "surfacePredictor=s"=>\$surfacePredictor );
+  "n=f"=>\$n,"amp=f"=>\$amp );
 # -------------------------------------------------------------------------------------------------
 $kThermal=$nu/$Prandtl; 
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
+if( $solver eq "mg" ){ $solver="multigrid"; }
+if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
+if( $psolver eq "mg" ){ $psolver="multigrid"; }
+#
 if( $tz eq "none" ){ $tz="turn off twilight zone"; }
 if( $tz eq "poly" ){ $tz="turn on twilight zone\n turn on polynomial"; $cdv=0.; }
 if( $tz eq "trig" ){ $tz="turn on twilight zone\n turn on trigonometric"; $cdv=0.; }
@@ -111,40 +104,12 @@ $grid
 # 
 # choose the time stepping:
   $ts
-# 
-  frequency for full grid gen update $freqFullUpdate
-# 
-#
 # -- testing: 
+$useNewTimeSteppingStartup=1; 
 use new time-stepping startup $useNewTimeSteppingStartup
-# test:
-if( $predictorOrder eq 1 ){ $predictorOrder = "first order predictor"; }else{ $predictorOrder="#"; }
-$predictorOrder
 # 
 #****************************
 if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
- turn on moving grids
-  specify grids to move
-    deforming body
-      user defined deforming body
-        $deformationType
-         debug
-            $debug
-        velocity order of accuracy\n $gridEvolutionVelocityAccuracy
-        acceleration order of accuracy\n $gridEvolutionAccelerationAccuracy
-        generate past history $generatePastHistory
-        # turn on surface smoothing:
-        smooth surface $smoothSurface
-	free surface predictor $surfacePredictor
-        use known solution for initial conditions $useKnown
-        number of surface smooths: $numberOfSurfaceSmooths
-	past time dt: $tPlot
-      done
-      if( $deformingGrid =~ /^share=/ ){ $deformingGrid =~ s/^share=//; \
-                 $deformingGrid="choose grids by share flag\n $deformingGrid"; };
-      $deformingGrid
-   done
- done
 #**************************
 ##  useNewImplicitMethod
   $implicitVariation
@@ -163,7 +128,7 @@ if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
  # no plotting
 #
 # Here is where we turn on gravity as a constant pressure gradient in the  negative y direction : 
-if( $pGrad != 0 ){ $cmds ="user defined forcing\n constant forcing\n 3 $pGrad\n  done\n exit";}else{ $cmds="*"; }
+if( $pGrad != 0 ){ $cmds ="user defined forcing\n constant forcing\n 2 $pGrad\n  done\n exit";}else{ $cmds="*"; }
 $cmds
 #
   pde parameters
@@ -176,8 +141,6 @@ $cmds
     OBPDE:ad21,ad22  $ad22, $ad22
     OBPDE:divergence damping  $cdv 
   done
-# Decouple implicit BCs (e.g. free surface) so we can solve scalar velociity implicit equations
-  OBPDE:decouple implicit boundary conditions $decoupleImplicitBoundaryConditions
 #
   maximum number of iterations for implicit interpolation
      10 
@@ -186,53 +149,40 @@ $cmds
   # turn off echo of command file to the terminal:
   echo to terminal 0
   pressure solver options
-     $solver
-     relative tolerance
-       $rtol
-     absolute tolerance
-       $atol
-    exit
+   # $ogesDebug=$debug; 
+   $ogesSolver=$psolver; $ogesRtol=$rtolp; $ogesAtol=$atolp; $ogesIluLevels=$iluLevels; $ogesDtol=1e20; 
+   include $ENV{CG}/ins/cmd/ogesOptions.h
+  exit
+#
   implicit time step solver options
-     $solver
-     relative tolerance
-       $rtol
-     absolute tolerance
-       $atol 
+   $ogesSolver=$solver; $ogesRtol=$rtol; $ogesAtol=$atol; $ogesIluLevels=1; 
+   include $ENV{CG}/ins/cmd/ogesOptions.h
   exit
   echo to terminal 1
+#
+#***************************************************
 # 
   boundary conditions
     $u=.0; $T=1.; 
     # all=slipWall
     # annulus(0,1)=noSlipWall, uniform(T=$T)
-    all=$bcn, uniform(T=$T)
-    # all=dirichletBoundaryCondition
-    #     all=slipWall, uniform(T=$T)
-    # $backGround=slipWall
-    # bcNumber1=slipWall
-    # bcNumber2=slipWall
-    # bcNumber3=slipWall
-    # bcNumber4=slipWall
-    bcNumber5=inflowWithPressureAndTangentialVelocityGiven, userDefinedBoundaryData
-    known solution
-    done
-    bcNumber6=freeSurfaceBoundaryCondition
-    # bcNumber5=dirichletBoundaryCondition
-    # bcNumber6=dirichletBoundaryCondition
+    all=dirichletBoundaryCondition
   done
 # 
+  $rhobar=10;
   initial conditions
-   #if( $tz eq "turn off twilight zone" ){ $ic = "uniform flow\n p=1., u=$u, T=0. \n done";}else{ $ic = "done"; }
-   #$ic 
+   # ****** DEFINE THE KNOWN SOLUTION ******
+   # TODO
    OBTZ:user defined known solution
-     free surface piston
-      $ampA $ampB $ampC $k
+     choose a common known solution
+       radial shearing fluid and elastic solid
+         $amp, $rhobar
     done
   done
-  debug $debug
-  $project
-  $projectForMoving=0;
-  project initial conditions for moving grids $projectForMoving 
+exit
+continue
+plot:u
+
 #
 #-    output options...
 #-    frequency to save probes 2
@@ -242,10 +192,6 @@ $cmds
 #-      exit
 #-    close output options
 #
-  exit
-#
- x-r 90
- set home
   $go
 
 

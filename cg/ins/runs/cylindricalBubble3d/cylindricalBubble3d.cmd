@@ -39,8 +39,8 @@ $ogesDebug=0; $project=0; $cdv=1.; $ad2=0; $ad22=2.;
 $projectForMoving=0;
 $psolver="petsc"; $solver="petsc"; 
 $iluLevels=1; $ogesDebug=0; 
-$rtolp=1.e-4; $atolp=1.e-5;  # tolerances for the pressure solve
-$rtol=1.e-4; $atol=1.e-5;    # tolerances for the implicit solver
+$rtolp=1.e-12; $atolp=1.e-12;  # tolerances for the pressure solve
+$rtol=1.e-12; $atol=1.e-12;    # tolerances for the implicit solver
 $surfaceTension=1.; $pAtmosphere=0.;
 $smoothSurface=0; $numberOfSurfaceSmooths=3;
 $freeSurfaceOption="none"; 

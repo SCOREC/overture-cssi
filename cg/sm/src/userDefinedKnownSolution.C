@@ -9,8 +9,10 @@
 
 #define rotatingDiskSVK   EXTERN_C_NAME(rotatingdisksvk)
 #define evalFibShearSolid EXTERN_C_NAME(evalfibshearsolid)
+#define evalRadialFibShearSolid EXTERN_C_NAME(evalradialfibshearsolid)
 #define evalFibShearSolidFull EXTERN_C_NAME(evalfibshearsolidfull)
 #define evalFibCartWaveSolid EXTERN_C_NAME(evalfibcartwavesolid)
+#define evalFibRadialWaveSolid EXTERN_C_NAME(evalfibradialwavesolid)
 
 extern "C"
 {
@@ -34,6 +36,13 @@ extern "C"
                               real & uyr, real & uyi,
                               const real & omegar, const real & omegai);
 
+  void evalRadialFibShearSolid( const real & ksr, const real & ksi,
+                                const real & omegar, const real & omegai,
+                                const real & cr, const real & ci,
+                                const real & r, const real & t,
+                                real & ut, real & vt, real & at, 
+                                real & utr, real & vtr);
+
   void evalFibCartWaveSolid( const real & omegar, const real & omegai,
                              const real & k, const real & mubar,
                              const real & rhobar, const real & lambdabar,
@@ -45,6 +54,20 @@ extern "C"
                              real & u1barr, real & u2barr, real & v1barr, 
                              real & v2barr, real & s11barr, 
                              real & s12barr, real & s22barr);
+
+  void evalFibRadialWaveSolid( const real & omegar, const real & omegai,
+                               const real & d1r, const real & d1i,
+                               const real & d2r, const real & d2i,
+                               const real & d3r, const real & d3i,
+                               const real & d4r, const real & d4i,
+                               const real & n, const real & rhobar,
+                               const real & muBar, const real & lambdaBar,
+                               const real & r,  const real & theta,
+                               const real & t,
+                               real & ur, real & ut, real & vr, real & vt, 
+                               real & ar, real & at,
+                               real & srr, real & srt, real & stt, 
+                               real & sdrr, real & sdrt, real & sdtt);
   
 }
 
@@ -497,6 +520,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
+    const real & mu     = rpar[15];
+    const real & thetaR = rpar[16];
 
     printF("--SM-- userDefinedKnownSolution: fibShear, t=%9.3e, "
 	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,mu);
@@ -521,13 +546,16 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     real v0_r =  omegai*u0_r + omegar*u0_i;
     real v0_i = -omegar*u0_r + omegai*u0_i;
 
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
+
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
     {
       // Reference coordinates:
-      // const real x= center(i1,i2,i3,0);
+      const real x= center(i1,i2,i3,0);
       const real y= center(i1,i2,i3,1);
-      
+      real yRef = -st*x+ct*y;      
       // Evaluate the solution for shear flow (FSI)
       //
       // u1  = amp    ( A cos(ks y) + B sin(ks y)) exp(-i omega t)
@@ -540,36 +568,143 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       //  uyi = imag( ks (-A sin(ks y) + B cos(ks y)) )
 
       real ur,ui,vr,vi,uyr,uyi;
-      // evalFibShearSolid(ksr,ksi,ar,ai,br,bi,y,ur,ui,uyr,uyi);
-      evalFibShearSolidFull(ksr,ksi,ar,ai,br,bi,y,t,ur,ui,vr,vi,uyr,uyi,omegar,omegai);
+      evalFibShearSolidFull(ksr,ksi,ar,ai,br,bi,yRef,t,ur,ui,vr,vi,uyr,uyi,omegar,omegai);
 
       // u(i1,i2,i3,u1c)=u0_r*ur-u0_i*ui;
-      u(i1,i2,i3,u1c)=amp*ur;
-      u(i1,i2,i3,u2c)=0.0;
+      u(i1,i2,i3,u1c)=amp*ur*ct;
+      u(i1,i2,i3,u2c)=amp*ur*st;
 
 
       // velocities
       if( assignVelocity )
       {
         // u(i1,i2,i3,v1c)=v0_r*ur-v0_i*ui;
-        u(i1,i2,i3,v1c)=amp*vr;
-        u(i1,i2,i3,v2c)=0.;
+        u(i1,i2,i3,v1c)=amp*vr*ct;
+        u(i1,i2,i3,v2c)=amp*vr*st;
       }
       
       // stresses
       if( assignStress )
       {
-	u(i1,i2,i3,s11c)=0.;
-	// u(i1,i2,i3,s12c)=mu*(u0_r*uyr-u0_i*uyi);
-	// u(i1,i2,i3,s21c)=mu*(u0_r*uyr-u0_i*uyi);
-	u(i1,i2,i3,s22c)=0.;
+        const real srt = amp*mu*uyr;
+	u(i1,i2,i3,s11c)=-2.*ct*st*srt;
+	u(i1,i2,i3,s12c)=(SQR(ct)-SQR(st))*srt;
+	u(i1,i2,i3,s21c)=(SQR(ct)-SQR(st))*srt;
+	u(i1,i2,i3,s22c)= 2.*ct*st*srt;
 
-	u(i1,i2,i3,s12c)=amp*mu*uyr;
-	u(i1,i2,i3,s21c)=amp*mu*uyr;
       }
       
     }
 
+
+  }
+  else if ( userKnownSolution == "radialFibShear" ) 
+  {
+    // --------------------------------------------------------------------------------
+    // ------ Exact solution for a radial flow shearing a bulk elastic solid ----------
+    // \bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))
+    //     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))
+    //              ks = omega / cs
+    //              kf = sqrt(- i rho omega / mu)
+    //  Parameters:
+    //  amp    : maximum amplitude of the displacement 
+    //  omega  : time frequency of solution 
+    //  H,Hbar : Height of fluid and solid domains
+    //  rhoBar,lambaBar,muBar : solid density and Lame parameters
+    // --------------------------------------------------------------------------------
+
+    const real & omegar = rpar[0];
+    const real & omegai = rpar[1];
+    const real & ar     = rpar[2];
+    const real & ai     = rpar[3];
+    const real & br     = rpar[4];
+    const real & bi     = rpar[5];
+    const real & cr     = rpar[6];
+    const real & ci     = rpar[7];
+    const real & R      = rpar[8];
+    const real & Rbar   = rpar[9];
+    const real & ksr    = rpar[10];
+    const real & ksi    = rpar[11];
+    const real & kfr    = rpar[12];
+    const real & kfi    = rpar[13];
+    const real & amp    = rpar[14];
+
+    printF("--SM-- userDefinedKnownSolution: radialFibShear, t=%9.3e, "
+	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,mu);
+
+    assert( numberOfTimeDerivatives==0 );
+
+
+    // fill in the solution
+    MappedGrid & mg = cg[grid];
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+    const real eps = 10.*REAL_EPSILON;
+
+    const realArray & center = mg.center();
+    RealArray & u = ua;
+
+    int i1,i2,i3;
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      // Reference coordinates:
+      const real x= center(i1,i2,i3,0);
+      const real y= center(i1,i2,i3,1);
+      const real r= sqrt(SQR(x) + SQR(y));
+
+      // compute trig functions
+      real cosTheta, sinTheta;
+      if( abs(r)>eps )
+        {
+          cosTheta=x/r; sinTheta=y/r;
+        }
+      else
+        {
+          cosTheta=1.; sinTheta=0.;
+        }
+      
+      // Evaluate the solution for shear flow (FSI)
+      //
+      // u_theta = 
+      // v_theta = 
+      // a_theta = 
+      // d/dr u_theta = 
+      // d/dr v_theta = 
+      //
+      // srt is the stress without mubar
+      real ut,vt,at,srt,vtr;
+      evalRadialFibShearSolid(ksr,ksi,omegar,omegai,cr,ci,r,t,
+                              ut,vt,at,srt,vtr);
+
+      real u1 = -sinTheta*ut;
+      real u2 =  cosTheta*ut;
+
+      u(i1,i2,i3,u1c)=amp*u1;
+      u(i1,i2,i3,u2c)=amp*u2;
+
+      // velocities
+      if( assignVelocity )
+      {
+        real v1 = -sinTheta*vt;
+        real v2 =  cosTheta*vt;
+
+        u(i1,i2,i3,v1c)=amp*v1;
+        u(i1,i2,i3,v2c)=amp*v2;
+      }
+      
+      // stresses
+      if( assignStress )
+      {
+        real sigmart;
+        sigmart = amp*mu*srt;
+
+	u(i1,i2,i3,s11c)= -2.*cosTheta*sinTheta*sigmart;
+	u(i1,i2,i3,s21c)=  (SQR(cosTheta)-SQR(sinTheta))*sigmart;
+	u(i1,i2,i3,s12c)=  (SQR(cosTheta)-SQR(sinTheta))*sigmart;
+	u(i1,i2,i3,s22c)=  2.*cosTheta*sinTheta*sigmart;
+      }
+      
+    }
+    // ::display(u(I1,I2,I3,v1c),"v1","%8.2e ");
 
   }
   else if (userKnownSolution=="fibCartWave") 
@@ -650,6 +785,131 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
 
 
+
+  }
+  else if (userKnownSolution=="fibRadialWave") 
+  {
+      // -- traveling wave solution for elastic solid and linearized fluid --
+      // 
+      // linearized fluid:     0 < r < Rbar
+      // solid reference:   Rbar < r < R
+      //
+      // Fluid solution: (hat vars)
+      //  p       = b (r/R)^n 
+      //  v_r     = a J_n(lambda r) / r + b n r^(n-1)/(mu lambda^2 R^n)
+      //  v_theta = i a (J_n(lambda r) / r - lambda/n J_{n+1}(lambda r)) 
+      //               + b i n r^(n-1) / (mu lambda^2 R^n)
+      //
+      // Solid solution: (hat vars)
+      //  u_r     = d1 (n J_n(kp r) / r - kp J_{n+1}(kp r))
+      //           +d2 (n Y_n(kp r) / r - kp Y_{n+1}(kp r))
+      //           +in/r( d3 J_n(ks r) + d4 Y_n(ks r))
+      //  u_theta =-d3 (n J_n(ks r) / r - ks J_{n+1}(ks r))
+      //           -d4 (n Y_n(ks r) / r - ks Y_{n+1}(ks r))
+      //           +in/r( d1 J_n(kp r) + d2 Y_n(kp r))
+      //
+      // kp = omega/cp, ks = omega/cs
+      // lambda = sqrt(i omega rho / mu)
+      //
+      // All scaled by: amp exp(i(n theta - omega t))
+      //
+
+      const real & omegar = rpar[0];
+      const real & omegai = rpar[1];
+      const real & n      = rpar[2];
+      const real & d1r    = rpar[3];
+      const real & d1i    = rpar[4];
+      const real & d2r    = rpar[5];
+      const real & d2i    = rpar[6];
+      const real & d3r    = rpar[7];
+      const real & d3i    = rpar[8];
+      const real & d4r    = rpar[9];
+      const real & d4i    = rpar[10];
+      const real & ar     = rpar[11];
+      const real & ai     = rpar[12];
+      const real & br     = rpar[13];
+      const real & bi     = rpar[14];
+      const real & nu     = rpar[15];
+      const real & cp     = rpar[16];
+      const real & cs     = rpar[17];
+      const real & amp    = rpar[18];
+
+    printF("--SM-- userDefinedKnownSolution: fibRadialWave, t=%9.3e, "
+	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,mu);
+
+    assert( numberOfTimeDerivatives==0 );
+
+    // fill in the solution
+    MappedGrid & mg = cg[grid];
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+
+    const realArray & center = mg.center();
+    RealArray & u = ua;
+
+    const real eps = 10.*REAL_EPSILON;
+    int i1,i2,i3;
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        // Reference coordinates:
+        const real x= center(i1,i2,i3,0);
+        const real y= center(i1,i2,i3,1);
+        const real r= sqrt(SQR(x)+SQR(y));
+
+	real ct,st;
+	// compute trig functions
+	real theta = atan2(y,x);
+	if( r>eps ) {
+	  ct=x/r; st=y/r;
+	} else {
+	  ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
+	}
+
+        real ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt;
+        evalFibRadialWaveSolid(omegar,omegai,d1r,d1i,d2r,d2i,d3r,d3i,d4r,d4i,
+                               n,rho,mu,lambda,r,theta,t,
+                               ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt);
+
+        real u1 = amp*(ct*ur-st*ut);
+        real u2 = amp*(st*ur+ct*ut);
+        u(i1,i2,i3,u1c)=u1;
+        u(i1,i2,i3,u2c)=u2;
+
+        // velocities
+        if( assignVelocity )
+          {
+            real v1 = amp*(ct*vr-st*vt);
+            real v2 = amp*(st*vr+ct*vt);
+            u(i1,i2,i3,v1c) = v1;
+            u(i1,i2,i3,v2c) = v2;
+            // printF("(%d,%d,%d), amp=%f, t=%f\n",i1,i2,i3,amp,t);
+            // printF("  r=%f, theta=%f\n",r,theta);
+            // printF("  ur=%e, ut=%e\n",ur,ut);
+            // printF("  u1=%e, u2=%e\n",u1,u2);
+            // printF("  vr=%e, vt=%e\n",vr,vt);
+            // printF("  v1=%e, v2=%e\n",v1,v2);
+            // printF("  omega = %e + i %e\n",omegar,omegai);
+
+          }
+      
+        // stresses
+        if( assignStress )
+          {
+            u(i1,i2,i3,s11c)=amp*(srr*SQR(ct)
+                                  -2.0*srt*ct*st
+                                  +stt*SQR(st));
+            u(i1,i2,i3,s12c)=amp*(srr*ct*st
+                                  +srt*(2.0*SQR(ct)-1)
+                                  -stt*ct*st);
+            u(i1,i2,i3,s21c)=u(i1,i2,i3,s12c);
+            u(i1,i2,i3,s22c)=amp*(srr*SQR(st)
+                                  +2.0*srt*ct*st
+                                  +stt*SQR(ct));
+            // printF("(%d,%d,%d), amp=%f, t=%f\n",i1,i2,i3,amp,t);
+            // printF("  r=%f, theta=%f\n",r,theta);
+            // printF("  srr=%e, srt=%e, stt=%e\n",srr,srt,stt);
+
+          }
+      }
 
   }
   else 

@@ -707,9 +707,9 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     // 	u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,pBoundaryData,t,bcParams,grid);
     //   }
     // }
-
-    projectInterfaceVelocity( t,u,gridVelocity,grid,dt );
-      
+    
+    assert( puOld != NULL );
+    projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
   } // end if useAddedMass 
   // =======================================================================================================
   // =======================================================================================================

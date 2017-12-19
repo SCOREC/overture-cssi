@@ -14,6 +14,8 @@
       call zbesj( zr,zi,nu,kode,np,cjr,cji,nz,ierr)
       if( nz.ne.0 .or. ierr.ne.0 )then
         write(*,'("WARNING: zbesj: nz,ierr=",2i4)') nz,ierr
+        write(*,'("         nu,zr,zi,jr,ji=",5e12.4)') 
+     +       nu,zr,zi,cjr(1),cji(1)
       end if
 
       jr=cjr(1)
@@ -76,36 +78,38 @@
 !    pi:  imag part of \tilde{p}
 !
 
-      subroutine evalOscillatingBubble(r,Rb, n, mu, lr,li, 
+      subroutine evalOscillatingBubble(r,Rb, n, mu, omegar,omegai,
      +     cr,ci,dr,di,vrr,vri,vtr,vti,pr,pi)
 
       implicit none
       double precision r,Rb,mu,
-     +     lr,li,cr,ci,dr,di,
+     +     lr,li,cr,ci,dr,di,omegar,omegai,
      +     vrr,vri,vtr,vti,pr,pi,
      +     jnr,jni,
      +     jnpr,jnpi,jnmr,jnmi,
      +     fnu,zr,zi
       integer n
-      complex*16 vr,vt,p, ! final solution 
-     +     l,c,d,nc,      ! complex versions of inputs
-     +     rl,rc,Rbc,muc, ! 
-     +     jn,jnp,jnm,    ! bessel functions
-     +     f,I            ! dummy variable
+      complex*16 vr,vt,p,  ! final solution 
+     +     l,c,d,nc,omega, ! complex versions of inputs
+     +     rl,rc,Rbc,muc,  ! 
+     +     jn,jnp,jnm,     ! bessel functions
+     +     f,I             ! dummy variable
 
 
 c     get complex vars
-      l = dcmplx(lr,li)
+c$$$      l = dcmplx(lr,li)
       c = dcmplx(cr,ci)
       d = dcmplx(dr,di)
       I = dcmplx(0.0d0,1.0d0)
+      omega = dcmplx(omegar,omegai)
 
       rc  = dcmplx(r ,0.0d0) ! complex r
       Rbc = dcmplx(Rb,0.0d0) ! complex Rb
       muc = dcmplx(mu,0.0d0) ! complex mu
-      rl  = l*rc             ! r * lambda
       nc  = dcmplx(dble(n),0.0d0) ! complex n
 
+      l = zsqrt(I*omega/muc)
+      rl  = l*rc             ! r * lambda
       f = (d * nc) / (muc * (Rbc ** n) * (l ** 2))
 
 c     check if r is close to 0 or not
@@ -336,6 +340,131 @@ c     take real and imaginary parts
       end
 
 
+      subroutine evalRadialFibShearFluid(kfr,kfi,omegar,omegai,
+     +     ar,ai,br,bi,rho,r,r0,t,vt,p)
+      implicit none
+      double precision kfr,kfi,ar,ai,br,bi,r,r0,t,omegar,omegai,
+     +     rho,vt,p,j1r,j1i,y1r,y1i,j0r,j0i,y0r,y0i,
+     +     j1r0,j1i0,y1r0,y1i0,j0r0,j0i0,y0r0,y0i0
+      complex*16 kf,rk,rk0,a,b,vc,pc,I,omega,
+     +     j1,y1,j0,y0,j10,y10,j00,y00,
+     +     term1,term2,term3,term4,term5,term6,term7
+      
+c     get complex vars
+      kf = dcmplx(kfr,kfi)
+      omega = dcmplx(omegar,omegai)
+      a  = dcmplx(ar ,ai )
+      b  = dcmplx(br ,bi )
+      I  = dcmplx(0.0d0,1.0d0)
+      
+      rk  = r*kf
+      rk0 = r0*kf
+
+c     evaluate bessel funcs
+      call cBesselJ( dble(1),dreal(rk),dimag(rk),j1r,j1i)
+      call cBesselY( dble(1),dreal(rk),dimag(rk),y1r,y1i)
+      call cBesselJ( dble(0),dreal(rk),dimag(rk),j0r,j0i)
+      call cBesselY( dble(0),dreal(rk),dimag(rk),y0r,y0i)
+      call cBesselJ( dble(1),dreal(rk0),dimag(rk0),j1r0,j1i0)
+      call cBesselY( dble(1),dreal(rk0),dimag(rk0),y1r0,y1i0)
+      call cBesselJ( dble(0),dreal(rk0),dimag(rk0),j0r0,j0i0)
+      call cBesselY( dble(0),dreal(rk0),dimag(rk0),y0r0,y0i0)
+
+      j1 = dcmplx(j1r,j1i)
+      y1 = dcmplx(y1r,y1i)
+      j0 = dcmplx(j0r,j0i)
+      y0 = dcmplx(y0r,y0i)
+      j10 = dcmplx(j1r0,j1i0)
+      y10 = dcmplx(y1r0,y1i0)
+      j00 = dcmplx(j0r0,j0i0)
+      y00 = dcmplx(y0r0,y0i0)
+
+c     calculate terms in pressure
+      term1 = dble(.5)*(j00**2 + j10**2 - j0**2 - j1**2)
+      term2 = dble(.5)*(j00*y00 + j10*y10 - j0*y0 - j1*y1)
+      term3 = dble(.5)*(y00**2 + y10**2 - y0**2 - y1**2)
+      term4 = dble(.5)*(j00*conjg(j00) + j10*conjg(j10) 
+     +     - j0*conjg(j0) - j1*conjg(j1))
+      term5 = dble(.5)*(j00*conjg(y00) + j10*conjg(y10) 
+     +     - j0*conjg(y0) - j1*conjg(y1))
+      term6 = dble(.5)*(y00*conjg(j00) + y10*conjg(j10) 
+     +     - y0*conjg(j0) - y1*conjg(j1))
+      term7 = dble(.5)*(y00*conjg(y00) + y10*conjg(y10) 
+     +     - y0*conjg(y0) - y1*conjg(y1))
+
+
+c     get solution
+      vc = (a*j1+b*y1)*exp(I*omega*t)
+c$$$      pc = dble(1)*rho*((a**2)*term1+dble(2)*a*b*term2+(b**2)*term3 
+c$$$     +     +a*conjg(a)*term4+a*conjg(b)*term5
+c$$$     +     +b*conjg(a)*term6+b*conjg(b)*term7) / dble(2)
+      pc = dble(1)*rho*((a**2)*term1+dble(2)*a*b*term2+(b**2)*term3)
+
+c     take real and imaginary parts
+      vt = dreal(vc)
+      p  = dreal(pc)
+      
+
+
+      return
+      end
+
+
+      subroutine evalRadialFibShearSolid(ksr,ksi,omegar,omegai,
+     +     cr,ci,r,t,ut,vt,at,utr,vtr)
+      implicit none
+      double precision ksr,ksi,cr,ci,r,t,omegar,omegai,
+     +     ut,vt,at,utr,vtr,
+     +     j1r,j1i,y1r,y1i,j0r,j0i,y0r,y0i
+      complex*16 ks,rk,rk0,c,uc,vc,ac,ucr,vcr,I,omega,
+     +     j1,y1,j0,y0
+
+      
+c     get complex vars
+      ks = dcmplx(ksr,ksi)
+      omega = dcmplx(omegar,omegai)
+      c  = dcmplx(cr ,ci )
+      I  = dcmplx(0.0d0,1.0d0)
+      
+      rk  = r*ks
+
+c     evaluate bessel funcs
+      call cBesselJ( dble(1),dreal(rk),dimag(rk),j1r,j1i)
+      call cBesselJ( dble(0),dreal(rk),dimag(rk),j0r,j0i)
+
+      j1 = dcmplx(j1r,j1i)
+      j0 = dcmplx(j0r,j0i)
+
+c     get solution
+      uc  =         c*j1*exp(I*omega*t)
+      vc  = I*omega*uc
+      ac  = -(omega**2)*uc
+
+c     calculate the stress, srt, normalized by mubar
+      if (abs(r) > 1.0d-14) then
+        ucr = c*(ks*j0-2.0d0*j1/r)*exp(I*omega*t)
+      else
+        ucr = c*(ks*j0-ks)*exp(I*omega*t)
+      end if
+
+      vcr = I*omega*ucr
+
+c$$$      write(*,'("exp(i omega t) = ",1f10.3)')abs(exp(I*omega*t))
+c$$$      write(*,'("vchat = ",2f10.3)')vc/exp(I*omega*t)
+
+c     take real and imaginary parts
+      ut  = dreal(uc)
+      vt  = dreal(vc)
+      at  = dreal(ac)
+      utr = dreal(ucr)
+      vtr = dreal(vcr)
+
+      return
+      end
+
+
+
+
       subroutine evalFibCartWaveFluid(omegar,omegai,k,mu,rho,mubar,
      +     lambdabar,Ar,Ai,Br,Bi,epsilon,
      +     x,y,t,H,
@@ -500,6 +629,138 @@ c     take real part
 
       return
       end
+
+
+      subroutine evalFibRadialWaveSolid(omegar,omegai, d1r,d1i,d2r,d2i,
+     +     d3r,d3i,d4r,d4i, n, rhoBar,muBar,lambdaBar, r,theta,t,
+     +     ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt)
+      implicit none
+      double precision omegar,omegai, d1r,d1i,d2r,d2i,
+     +     d3r,d3i,d4r,d4i, n, rhoBar,muBar,lambdaBar, r,theta,t,
+     +     ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt,
+     +     cp,cs, jpnr,jpni,jpnpr,jpnpi,
+     +            ypnr,ypni,ypnpr,ypnpi,
+     +            jsnr,jsni,jsnpr,jsnpi,
+     +            ysnr,ysni,ysnpr,ysnpi
+      complex*16 omega,d1,d2,d3,d4, kp,ks,I,
+     +     urc,utc,vrc,vtc,arc,atc,srrc,srtc,sttc,sdrrc,sdrtc,sdttc,
+     +     rkp,rks, jpn,jpnp,
+     +              ypn,ypnp,
+     +              jsn,jsnp,
+     +              ysn,ysnp
+
+c     get complex vars
+      omega = dcmplx(omegar,omegai)
+      d1    = dcmplx(   d1r,   d1i)
+      d2    = dcmplx(   d2r,   d2i)
+      d3    = dcmplx(   d3r,   d3i)
+      d4    = dcmplx(   d4r,   d4i)
+      I     = dcmplx( 0.0d0, 1.0d0)
+
+      cp = sqrt((lambdaBar+2.0d0*muBar)/(rhoBar))
+      cs = sqrt((muBar)/(rhoBar))
+      
+      kp = omega/cp
+      ks = omega/cs
+
+      rkp = r*kp
+      rks = r*ks
+
+      if (r.eq.0.0d0) then
+        r = 1.0d-16
+      end if
+
+c     get bessel functions
+      call cBesselJ(n      ,dreal(rkp),dimag(rkp), jpnr, jpni)
+      call cBesselJ(n+1.0d0,dreal(rkp),dimag(rkp),jpnpr,jpnpi)
+      call cBesselJ(n      ,dreal(rks),dimag(rks), jsnr, jsni)
+      call cBesselJ(n+1.0d0,dreal(rks),dimag(rks),jsnpr,jsnpi)
+      call cBesselY(n      ,dreal(rkp),dimag(rkp), ypnr, ypni)
+      call cBesselY(n+1.0d0,dreal(rkp),dimag(rkp),ypnpr,ypnpi)
+      call cBesselY(n      ,dreal(rks),dimag(rks), ysnr, ysni)
+      call cBesselY(n+1.0d0,dreal(rks),dimag(rks),ysnpr,ysnpi)
+      
+      jpn  = dcmplx( jpnr, jpni)
+      jpnp = dcmplx(jpnpr,jpnpi)
+      jsn  = dcmplx( jsnr, jsni)
+      jsnp = dcmplx(jsnpr,jsnpi)
+      ypn  = dcmplx( ypnr, ypni)
+      ypnp = dcmplx(ypnpr,ypnpi)
+      ysn  = dcmplx( ysnr, ysni)
+      ysnp = dcmplx(ysnpr,ysnpi)
+
+c     compute solution
+      urc = ( d1*(n*jpn/r-kp*jpnp)
+     +      +d2*(n*ypn/r-kp*ypnp)
+     +      +I*n/r*(d3*jsn+d4*ysn))*exp(I*(n*theta-omega*t))
+      utc = (-d3*(n*jsn/r-ks*jsnp)
+     +      -d4*(n*ysn/r-ks*ysnp)
+     +      +I*n/r*(d1*jpn+d2*ypn))*exp(I*(n*theta-omega*t))
+
+      vrc = -I*omega*urc
+      vtc = -I*omega*utc
+      
+      arc = -I*omega*vrc
+      atc = -I*omega*vtc
+      
+      srrc = ((2.d0*jpnp*d1*kp*muBar*r-(2.d0*I)*jsnp*d3*ks*muBar*n*r
+     +     +2.d0*ypnp*d2*kp*muBar*r-(2.d0*I)*ysnp*d4*ks*muBar*n*r
+     +     +2.d0*d1*((-kp**2*r**2+n**2-n)*muBar-.5d0*lambdaBar
+     +     *kp**2*r**2)*jpn+(2.d0*((-kp**2*r**2+n**2-n)*muBar-.5d0
+     +     *lambdaBar*kp**2*r**2))*d2*ypn+(2.d0*I)*n*muBar*(n-1)
+     +     *(d3*jsn+d4*ysn))/r**2)
+     +     *exp(I*(n*theta-omega*t))
+
+c$$$      srrc = ((2*jpnp*kp*muBar*r+(2*((-kp**2*r**2+n**2-n)*muBar-
+c$$$     +     .5d0*lambdaBar*r**2*kp**2))*jpn)/r**2*d1)
+c$$$     +     *exp(I*(n*theta-omega*t))
+c$$$      srrc = jpnp*exp(I*(n*theta-omega*t))
+
+      srtc = (muBar*(I*n*(d1*(n*jpn/r-kp*jpnp)+d2*(n*ypn/r-kp*ypnp)
+     +     +I*n*(d3*jsn+d4*ysn)/r)/r-d3*(n*(-jsnp+n*jsn/(ks*r))*ks/r
+     +     -n*jsn/r**2-ks**2*(jsn-(n+1)*jsnp/(ks*r)))-d4*(n*(-ysnp
+     +     +n*ysn/(ks*r))*ks/r-n*ysn/r**2-ks**2*(ysn-(n+1)*ysnp/(ks*r)))
+     +     -I*n*(d1*jpn+d2*ypn)/r**2+I*n*(d1*(-jpnp+n*jpn/(kp*r))*kp
+     +     +d2*(-ypnp+n*ypn/(kp*r))*kp)/r-(-d3*(n*jsn/r-ks*jsnp)
+     +     -d4*(n*ysn/r-ks*ysnp)+I*n*(d1*jpn+d2*ypn)/r)/r))
+     +     *exp(I*(n*theta-omega*t))
+
+      sttc = (lambdabar*((d1*(n*jpn/r-kp*jpnp)+d2*(n*ypn/r-kp*ypnp)
+     +     +I*n*(d3*jsn+d4*ysn)/r+r*(d1*(n*(-jpnp+n*jpn/(kp*r))*kp/r
+     +     -n*jpn/r**2-kp**2*(jpn-(n+1)*jpnp/(kp*r)))+d2*(n*(-ypnp
+     +     +n*ypn/(kp*r))*kp/r-n*ypn/r**2-kp**2*(ypn-(n+1)*ypnp/(kp*r)))
+     +     -I*n*(d3*jsn+d4*ysn)/r**2+I*n*(d3*(-jsnp+n*jsn/(ks*r))*ks
+     +     +d4*(-ysnp+n*ysn/(ks*r))*ks)/r))/r+I*n*(-d3*(n*jsn/r-ks*jsnp)
+     +     -d4*(n*ysn/r-ks*ysnp)+I*n*(d1*jpn+d2*ypn)/r)/r)+2*muBar*(I*n*
+     +     (-d3*(n*jsn/r-ks*jsnp)-d4*(n*ysn/r-ks*ysnp)+I*n*(d1*jpn
+     +     +d2*ypn)/r)+d1*(n*jpn/r-kp*jpnp)+d2*(n*ypn/r-kp*ypnp)
+     +     +I*n*(d3*jsn+d4*ysn)/r)/r)
+     +     *exp(I*(n*theta-omega*t))
+
+      sdrrc = -I*omega*srrc
+      sdrtc = -I*omega*srtc
+      sdttc = -I*omega*sttc
+
+c     return real parts
+      ur = dreal(urc)
+      ut = dreal(utc)
+      vr = dreal(vrc)
+      vt = dreal(vtc)
+      ar = dreal(arc)
+      at = dreal(atc)
+      srr = dreal(srrc)
+      srt = dreal(srtc)
+      stt = dreal(sttc)
+      sdrr = dreal(srrc)
+      sdrt = dreal(sdrtc)
+      sdtt = dreal(sdttc)
+
+      return
+      end
+
+
+
+
 
 
 

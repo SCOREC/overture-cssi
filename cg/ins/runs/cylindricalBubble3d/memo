@@ -1,4 +1,32 @@
 *****************************************
+***********  Nov 15, 2017
+
+run:
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere2.order.hdf -tf=.2 -tp=.01 -ts=im
+
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere2.order.hdf -tf=.05 -tp=.01
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (35 steps)
+   0.050 5.51e-09 1.02e-09 1.05e-09 1.18e-13 7.57e-09  1.00e+00 1.43e-03 3.58e+01 
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (120 steps)
+   0.050 1.43e-09 2.67e-10 3.54e-10 3.15e-14 2.91e-09  1.00e+00 4.17e-04 3.79e+02 
+
+Move to IM
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (5 steps)
+   0.050 5.54e-09 8.89e-10 8.15e-10 1.02e-13 6.87e-09  1.00e+00 1.00e-02 2.42e+01
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (10 steps)
+   0.050 1.47e-09 2.68e-10 2.95e-10 1.18e-12 2.79e-09  1.00e+00 5.00e-03 2.40e+02
+
+too much memory!
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere1.order.hdf -tf=.2 -tp=.01 -ts=im
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (20 steps)
+   0.200 8.51e-07 4.98e-07 4.53e-07 8.24e-14 6.84e-08  1.00e+00 1.00e-02 1.15e+01 
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (40 steps)
+   0.200 2.96e-09 2.02e-09 2.12e-09 1.49e-13 7.64e-09  1.00e+00 5.00e-03 1.01e+02 
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (80 steps)
+   0.200 6.98e-10 5.41e-10 6.82e-10 1.28e-13 2.58e-09  1.00e+00 2.50e-03 8.74e+02 
+
+
+*****************************************
 ***********  Oct 29, 2017
 
 cgins cylindricalBubble3d -g=FreeSurfaceCylindere2.order.hdf -tf=.1 -tp=.01

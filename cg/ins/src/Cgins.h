@@ -236,9 +236,10 @@ projectInitialConditionsForMovingGrids(int gfIndex);
 
 // Project the velocity on FSI interfaces
 int projectInterfaceVelocity(const real & t, realMappedGridFunction & u, 
+                             realMappedGridFunction & uOld,
 			     realMappedGridFunction & gridVelocity,
 			     const int & grid,
-			     const real & dt =-1. );
+			     const real & dt =-1.);
 virtual void 
 outputSolution( realCompositeGridFunction & u, const real & t,
 		const aString & label =nullString,
