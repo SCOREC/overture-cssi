@@ -1137,8 +1137,10 @@ getResidual( real t, real dt, GridFunction & cgf, realCompositeGridFunction & re
     // -- assign the BC's to the forcing 
     // assert( parameters.getGridIsImplicit(grid) ) ; // do this for now 
     
+    // *wdh* Dec 20, 2017 -- the 3rd arg below should be uOld -- used for some BC's -- may not be needed currently
     applyBoundaryConditionsForImplicitTimeStepping(f,
 						   cgf.u[grid],  // -- fix this -- should be uL
+						   cgf.u[grid],  // -- fix this -- should be uOld *wdh& Dec 20,2017
 						   cgf.getGridVelocity(grid),
 						   cgf.t,
 						   parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping"),
@@ -1751,6 +1753,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 int Cgins::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
                                                realMappedGridFunction &uL,
+                                               realMappedGridFunction &uOld,  // *wdh* Dec 20, 2017
 					       realMappedGridFunction & gridVelocity,
 					       real t,
 					       int scalarSystem,
@@ -1910,7 +1913,7 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
       )
     {
 
-      projectInterfaceVelocity( t,u,uL,gridVelocity,grid,dt );
+      projectInterfaceVelocity( t,u,uOld,gridVelocity,grid,dt ); // *wdh* Dec 20, 2017 -- uOld passed
       
     } // end if useAddedMass 
     // =======================================================================================================

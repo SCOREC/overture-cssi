@@ -856,6 +856,7 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
 int Cgcns::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & rhs, 
 					       realMappedGridFunction & uL,
+					       realMappedGridFunction & uOld,  // *wdh* Dec 20, 2017 -- added uOld
 					       realMappedGridFunction & gridVelocity,
 					       real t,
 					       int scalarSystem,

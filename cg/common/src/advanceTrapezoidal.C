@@ -167,7 +167,8 @@ advanceTrapezoidal( real & t0, real & dt0, int & numberOfSubSteps, int & init, i
 
     if ( (1.-parameters.dbase.get<real >("implicitFactor"))>(100.*REAL_EPSILON) )
       { // only do this part if we are NOT using backward Euler 
-	applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew] );
+        // *wdh* Dec 20, 2017 -- added gf[iuOld]
+	applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew],gf[iuOld] );
 
 	for ( int grid=0; grid<uOld.cg.numberOfComponentGrids(); grid++ )
 	  {
@@ -292,7 +293,7 @@ advanceTrapezoidal( real & t0, real & dt0, int & numberOfSubSteps, int & init, i
     //    if( debug() & 4 ) 
     //      gf[iuNew].u.display("advanceTrapezoidal : RHS before implicit bc ",parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
     if ( parameters.dbase.get<real >("implicitFactor")>10*REAL_EPSILON ) // otherwise we have forward Euler and uNew is finished
-      applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew] );
+	applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew],gf[iuOld] );  // *wdh* Dec 20, 2017 -- added gf[iuOld]
     
     // // at this point we should have both coeff and the rhs computed correctly
     

@@ -69,10 +69,12 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 			realMappedGridFunction *pGridVelocityOld =NULL,
 			const real & dt =-1. );
 
+// *wdh* Dec 20, 2017 -- added uOld
 virtual int
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
-					       realMappedGridFunction &uL,
-                                               realMappedGridFunction & gridVelocity,
+                                               realMappedGridFunction &uL,
+                                               realMappedGridFunction &uOld,
+					       realMappedGridFunction & gridVelocity,
 					       real t,
 					       int scalarSystem,
 					       int grid );
@@ -236,7 +238,7 @@ projectInitialConditionsForMovingGrids(int gfIndex);
 
 // Project the velocity on FSI interfaces
 int projectInterfaceVelocity(const real & t, realMappedGridFunction & u, 
-                             realMappedGridFunction & uOld,
+                             realMappedGridFunction & uOld,   // *wdh* uOld  added by DAS -- Dec 18, 2017
 			     realMappedGridFunction & gridVelocity,
 			     const int & grid,
 			     const real & dt =-1.);

@@ -708,8 +708,22 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     //   }
     // }
     
-    assert( puOld != NULL );
-    projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
+    if( puOld == NULL )
+    {
+      MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+      if( movingGrids.getNumberOfDeformingBodies() >0 )
+      {
+        printF("--INSBC--ERROR: projectInterfaceVelocity called for deforming bodies but uOld is not available\n");
+        OV_ABORT("fix me");
+      }
+      
+      projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
+    }
+    else
+    {
+      projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
+    }
+    
   } // end if useAddedMass 
   // =======================================================================================================
   // =======================================================================================================

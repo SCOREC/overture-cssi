@@ -1,4 +1,11 @@
 ********************************
+***** Dec 20, 2017
+
+WDH: ins/src/projectInterfaceVelocity.C need uOld for AMP BC 
+
+cgmp -noplot elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -scf=.1 -nu=.01 -tp=.01 -tf=2 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=og
+
+********************************
 ***** Dec 18, 2017
 
 check that there is no seg fault:

@@ -332,7 +332,7 @@ advanceNewton( real & t0, real & dt0, int & numberOfSubSteps, int & init, int in
     gf[iuNew].t = t0 + dt0;
 
     Range RR(0,0),all;
-    applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew] );
+    applyBoundaryConditionsForImplicitTimeStepping( gf[iuNew],gf[iuOld] );  // *wdh* Dec 20, 2017 -- added gf[iuOld]
 
     // compute the residual from the previous time step (basically F(u^n))
     //    ::residual(coeff, uOld.u, uNew.u, residual.u);
@@ -451,7 +451,7 @@ advanceNewton( real & t0, real & dt0, int & numberOfSubSteps, int & init, int in
 	  }
 	int old_current = current;
 	current = iuNew;
-	applyBoundaryConditionsForImplicitTimeStepping( rhs );
+	applyBoundaryConditionsForImplicitTimeStepping( rhs,gf[iuOld] );  // *wdh* Dec 20, 2017 -- added gf[iuOld]
 	current = old_current;
 
 	//	::residual(coeff, uNew.u, rhs.u, residual.u);

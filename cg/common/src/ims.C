@@ -2123,7 +2123,7 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
             
 
       // *** assign boundary conditions for the implicit method 
-            applyBoundaryConditionsForImplicitTimeStepping( gf[mNew] ); // ***** gf[mNew].gridVelocity must be correct here
+            applyBoundaryConditionsForImplicitTimeStepping( gf[mNew], gf[mCur] ); // ***** gf[mNew].gridVelocity must be correct here
         
             if( debug() & 4 )
             {
@@ -2218,7 +2218,8 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
             }
 
       // apply explicit BC's  --- > really only have to apply to implicit grids I think?
-            applyBoundaryConditions(gf[mNew]);   // ***** gf[mNew].gridVelocity must be correct here!
+            const int option=-1, grid=-1; // *wdh* Dec 20, 2017 -- pass old time grid function too
+            applyBoundaryConditions(gf[mNew],option,grid, &(gf[mCur]));   // ***** gf[mNew].gridVelocity must be correct here!
 
 
             updateStateVariables( gf[mNew],1 );  
@@ -2446,13 +2447,14 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
 
 //\begin{>>CompositeGridSolverInclude.tex}{\subsection{applyBoundaryConditionsForImplicitTimeStepping}} 
 int DomainSolver::
-applyBoundaryConditionsForImplicitTimeStepping(GridFunction & cgf )
+applyBoundaryConditionsForImplicitTimeStepping(GridFunction & cgf, GridFunction & cgfOld )
 // ======================================================================================
 //  /Description:
 //     On implicit grids, apply boundary conditions to the rhs side grid function used in the implicit solve;
 //  on explicit grids apply the normal explicit boundary conditions. 
 // /cgf (input) : use this grid function as the right-hand-side. cgf.t should be the time corresponding to the
 //      next time step.
+// \cgfOld (input): solution at current time (used by some BC's, e.g. AMP bulk-solid)
 //\end{CompositeGridSolverInclude.tex}  
 // ==========================================================================================
 {
@@ -2480,15 +2482,17 @@ applyBoundaryConditionsForImplicitTimeStepping(GridFunction & cgf )
 
         if( parameters.getGridIsImplicit(grid) )
         {
-            applyBoundaryConditionsForImplicitTimeStepping(cgf.u[grid],
+            applyBoundaryConditionsForImplicitTimeStepping(cgf.u[grid],          // new time
                                          						     gf[current].u[grid],  // -- fix this -- should be uL
+                                         						     cgfOld.u[grid],       // current time soution
                                          						     cgf.getGridVelocity(grid),
                                          						     cgf.t,
                                          						     parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping"),grid );
         }
         else
         { // apply explicit BC's **** could be trouble if these require interpolation points ??   **********
-            applyBoundaryConditions(cgf.t,cgf.u[grid],cgf.getGridVelocity(grid),grid);
+            const int option=-1;
+            applyBoundaryConditions(cgf.t,cgf.u[grid],cgf.getGridVelocity(grid),grid,option,&(cgfOld.u[grid]));
         }
 
 

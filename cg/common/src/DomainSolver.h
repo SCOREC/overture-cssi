@@ -155,12 +155,15 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 			realMappedGridFunction *pGridVelocityOld=NULL,
 			const real & dt=-1.);
 
+// *wdh* Dec 20, 2017 -- added cgfOld
 virtual int
-applyBoundaryConditionsForImplicitTimeStepping(GridFunction & cgf );
+applyBoundaryConditionsForImplicitTimeStepping(GridFunction & cgf, GridFunction & cgfOld );
 
+// *wdh* Dec 20, 2017 -- added uOld
 virtual int
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
                                                realMappedGridFunction &uL,
+                                               realMappedGridFunction &uOld,
 					       realMappedGridFunction & gridVelocity,
 					       real t,
 					       int scalarSystem,

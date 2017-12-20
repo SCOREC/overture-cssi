@@ -1451,7 +1451,8 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
             
 
     // *** assign boundary conditions for the implicit method 
-        applyBoundaryConditionsForImplicitTimeStepping( gf[mNew] ); // ***** gf[mNew].gridVelocity must be correct here
+    // *wdh* Dec 20, 2017 -- added gf[mCur]
+        applyBoundaryConditionsForImplicitTimeStepping( gf[mNew], gf[mCur] ); // ***** gf[mNew].gridVelocity must be correct here
         
         if( Parameters::checkForFloatingPointErrors!=0 )
             checkSolution(gf[mNew].u,"advanceStepsIM: after applyBCIMP",true);
@@ -1531,7 +1532,8 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     // }
 
     // apply explicit BC's  --- > really only have to apply to implicit grids I think?
-        applyBoundaryConditions(gf[mNew]);   // ***** gf[mNew].gridVelocity must be correct here!
+        const int option=-1, grid=-1; // *wdh* Dec 20, 2017 -- pass old time grid function too
+        applyBoundaryConditions(gf[mNew],option,grid, &(gf[mCur]));   // ***** gf[mNew].gridVelocity must be correct here!
 
 
         updateStateVariables( gf[mNew],1 );  

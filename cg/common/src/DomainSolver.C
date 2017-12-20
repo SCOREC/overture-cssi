@@ -766,6 +766,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 int DomainSolver::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
                                                realMappedGridFunction &uL,
+                                               realMappedGridFunction &uOld, // *wdh* Dec 20, 2017 -- added uOld
 					       realMappedGridFunction & gridVelocity,
 					       real t,
 					       int scalarSystem,
