@@ -1,4 +1,24 @@
 ********************************
+***** Dec 25, 2017
+
+WDH: Add option to predict pressure for AMP boundary conditions:
+
+*NEW* OPTION added to elasticPiston.cmd: (later make this the default)
+     $predictedBoundaryPressureNeeded=1;
+
+
+TEST:
+
+
+cgmp -noplot elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -scf=.1 -nu=.01 -tp=.01 -tf=.02 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=go >! junk
+
+********************************
+***** Dec 21, 2017
+
+WDH: START to add option to predict pressure for AMP boundary conditions:
+
+
+********************************
 ***** Dec 20, 2017
 
 WDH: ins/src/projectInterfaceVelocity.C need uOld for AMP BC 

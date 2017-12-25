@@ -17,6 +17,7 @@
 #   $pdebug 
 #   $axisymmetric : if non-null turn on the axisymmetric flow option
 #   $implicitFactor : for implicit time-stepping: .5=CN, 1.=BE, 0.=FE
+#   $predictedBoundaryPressureNeeded : some BC's need a predicted pressure on the boundary
 #   $projectInitialConditions : 
 #   $numberOfTimeStepCorrections : numnber of correction steps for predictor-corrector time-stepping
 #   $extraCmds : extra commands
@@ -53,6 +54,7 @@ if( $ad21 eq "" ){ $ad21=1.; }
 if( $ad22 eq "" ){ $ad22=1.; }
 if( $implicitFactor eq "" ){ $implicitFactor=.5; }
 if( $implicitVariation eq "" ){ $implicitVariation = "implicitViscous"; }
+if( $predictedBoundaryPressureNeeded eq "" ){ $predictedBoundaryPressureNeeded=0; } 
 if( $projectInitialConditions eq "" ){ $projectInitialConditions="#";} 
 if( $extraCmds eq "" ){ $extraCmds="#"; }
 if( $moveCmds eq "" ){ $moveCmds="#"; }
@@ -99,6 +101,8 @@ setup $domainName
   # for now we let the solver know that the added mass algorithm needed predicted values for the pressure:
   predicted pressure needed $addedMass
   use new time-stepping startup $useNewTimeSteppingStartup
+#
+  predicted boundary pressure needed $predictedBoundaryPressureNeeded
 # 
   frequency for full grid gen update $freqFullUpdate
 # 

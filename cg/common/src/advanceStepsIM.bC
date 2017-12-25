@@ -566,29 +566,38 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     if( debug() & 2 )
       printP("++++++++++++ apply BCs t0+dt0=%9.3e\n\n",t0+dt0);
 
-    // *added this for fourth order *FINISH ME*
-    // if( correction==0 ) 
-    // {
-    //   // --- For fourth-order in space we need to extrapolate p in time at ghost points --
-    //   //    We extrapolate in time using 
-    //   //               uCur : t
-    //   //               uOld : t-dt
-    //   //               fCur : t-2*dt   (holds boundary p and u in unuesd ghost points)
-    //   //               fOld : t-3*dt   (holds boundary p and u in unused ghost points)
-    //   if( true )
-    //   {
-    //     int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 4;
-    //     // int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 5;
-    //     boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, 
-    //                                 mNew,mCur,mOld,&fCur,&fOld,&fOld2,&fOld3 );
-    //   }
-    //   else
-    //   {
-    //     const int orderOfExtrapolation = 3;
-    //     boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, mNew,mCur,mOld,&fCur,&fOld );
-    //   }
+    if( correction==0 )
+    {
+      // Some schemes needa guess for the pressure near the boundary, for boundary conditions
+
+
+      // --- For fourth-order in space we need to extrapolate p in time at ghost points --
+      //    We extrapolate in time using 
+      //               uCur : t
+      //               uOld : t-dt
+      //               fCur : t-2*dt   (holds boundary p and u in unuesd ghost points)
+      //               fOld : t-3*dt   (holds boundary p and u in unused ghost points)
+      if( FALSE )
+      {
+        // FIX ME FOR HIGHER ORDER EXTRAPOLATION IN TIME --- *wdh* Dec 25, 2017
+
+        // // *new* way June 7, 2017 -- extrapolate in time to higher order ---
+        // int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 4;
+        // // int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 5;
+        // boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, 
+        //                             mNew,mCur,mOld,&fCur,&fOld,&fOld2,&fOld3 );
+      }
+      else
+      {
+        // *wdh* Dec 25, 2017 -- do this for now: 
+
+        // do this for now: 
+        const int orderOfExtrapolation = 2;
+        boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, mNew,mCur,mOld,&ua,&ub );
+      }
         
-    // }
+    }
+
 
     // apply explicit BC's  --- > really only have to apply to implicit grids I think?
     const int option=-1, grid=-1; // *wdh* Dec 20, 2017 -- pass old time grid function too

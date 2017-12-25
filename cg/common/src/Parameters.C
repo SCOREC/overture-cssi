@@ -207,6 +207,8 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   //  be obtained by extrapolation in time.
   if (!dbase.has_key("predictedPressureNeeded")) dbase.put<bool>("predictedPressureNeeded")=false;
   if (!dbase.has_key("orderOfTimeExtrapolationForPressure")) dbase.put<int>("orderOfTimeExtrapolationForPressure");
+  // Some schemes need predicted pressure for boundary conditions
+  if (!dbase.has_key("predictedBoundaryPressureNeeded")) dbase.put<bool>("predictedBoundaryPressureNeeded")=false;
 
   if (!dbase.has_key("reducedInterpolationWidth")) dbase.put<int>("reducedInterpolationWidth");
   if (!dbase.has_key("bcInfo")) dbase.put<IntegerArray>("bcInfo");

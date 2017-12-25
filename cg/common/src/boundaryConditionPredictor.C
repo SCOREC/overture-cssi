@@ -28,7 +28,8 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
   // -- This routine is really only used with Cgins and maybe Cgasf  : where should this routine be put?
 
     const int orderOfAccuracy = parameters.dbase.get<int >("orderOfAccuracy");
-    if( orderOfAccuracy==4 )
+    const bool & predictedBoundaryPressureNeeded = parameters.dbase.get<bool>("predictedBoundaryPressureNeeded");
+    if( predictedBoundaryPressureNeeded || orderOfAccuracy==4 )
     {
     // -------------------------------------------------
     // ---- extrapolate pressure in time for BC's ------
@@ -96,7 +97,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
         const int orderOfExtrapForP=orderOfExtrapolation;  
         const int orderOfExtrapForU=orderOfExtrapolation;
 
-        if( debug() & 4 )
+        if( TRUE || debug() & 4 )
             fprintf(debugFile, " *** bcPredictor: orderOfPredictorCorrector=%i, orderOfExtrapForP=%i,"
             	      "orderOfExtrapForU=%i \n",orderOfPredictorCorrector,orderOfExtrapForP,orderOfExtrapForU);
         
@@ -255,18 +256,29 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             {
 	// for the next time step ua should be equal to uOld of this time step
 	// but ua of the next time step equals ub of the time step ... therefore save uOld in ub
-      	if( debug() & 8 )
-        	  fPrintF(debugFile," *** advPC:Order4: extrap in time (3-points)\n");
-          	    
-        // save p(t-dt) in ub : 
-      	ubLocal(I1,I2,I3,pc)=uOldLocal(I1,I2,I3,pc);  // assumes ub -> ua on the next step 
-        // Guess p(t+dt) : 
-      	unLocal(I1,I2,I3,pc)=cex30*u0Local(I1,I2,I3,pc)+cex31*uOldLocal(I1,I2,I3,pc)+cex32*uaLocal(I1,I2,I3,pc);
+                if( orderOfExtrapForP==2 ) // *wdh* Dec 21, 2017
+                {
+                    if( TRUE || debug() & 8 )
+                        printF(" ######## boundaryConditionPredictor: Extrap p in time (2-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
+
+          	    unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
+
+                }
+                else
+                {
+                    if( TRUE || debug() & 8 )
+                        printF(" ######## boundaryConditionPredictor: Extrap p in time (3-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
+
+          // save p(t-dt) in ub : 
+                    ubLocal(I1,I2,I3,pc)=uOldLocal(I1,I2,I3,pc);  // assumes ub -> ua on the next step 
+          // Guess p(t+dt) : 
+                    unLocal(I1,I2,I3,pc)=cex30*u0Local(I1,I2,I3,pc)+cex31*uOldLocal(I1,I2,I3,pc)+cex32*uaLocal(I1,I2,I3,pc);
 
 
-      	if( debug() & 8 )
-        	  fPrintF(debugFile," *** advPC:Order4: extrap in time (3-points) DONE.\n");
-
+                    if( debug() & 8 )
+                        fPrintF(debugFile," *** advPC:Order4: extrap in time (3-points) DONE.\n");
+                }
+                
         	  
             }
             else
@@ -306,7 +318,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
                           				  cex42*uaLocal(I1,I2,I3,pc)+
                           				  cex43*ubLocal(I1,I2,I3,pc));
         	  }
-        	  else
+        	  else if( orderOfExtrapForP==5 )
         	  {
           	    unLocal(I1,I2,I3,pc)=(cex50*u0Local(I1,I2,I3,pc)+
                           				  cex51*uOldLocal(I1,I2,I3,pc)+
@@ -314,6 +326,11 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
                           				  cex53*ubLocal(I1,I2,I3,pc)+
                           				  cex54*ucLocal(I1,I2,I3,pc));
         	  }
+        	  else
+        	  {
+          	    OV_ABORT(" unimplemented orderOfExtrapForP");
+        	  }
+        	  
           	    
 
         	  if( debug() & 2 && twilightZoneFlow() )
@@ -409,6 +426,10 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
                 		    +cex52*uaLocal(I1,I2,I3,V)
                 		    +cex53*ubLocal(I1,I2,I3,V)
                 		    +cex54*ucLocal(I1,I2,I3,V);
+            		}
+            		else
+            		{
+              		  OV_ABORT(" unimplemented orderOfExtrapForU");
             		}
             	      }
           	    }

@@ -186,6 +186,10 @@ buildTimeSteppingDialog(DialogData & dialog )
   tbState[ntb]=parameters.dbase.get<bool>("predictedPressureNeeded");
   ntb++;
 
+  tbCommands[ntb]="predicted boundary pressure needed";
+  tbState[ntb]=parameters.dbase.get<bool>("predictedBoundaryPressureNeeded");
+  ntb++;
+
   tbCommands[ntb]="use moving grid sub-iterations";
   tbState[ntb]=parameters.dbase.get<bool>("useMovingGridSubIterations");
   ntb++;
@@ -814,6 +818,8 @@ getTimeSteppingOption(const aString & answer,
     
 
   else if( dialog.getToggleValue(answer,"predicted pressure needed",parameters.dbase.get<bool>("predictedPressureNeeded")) ){}  // 
+  
+  else if( dialog.getToggleValue(answer,"predicted boundary pressure needed",parameters.dbase.get<bool>("predictedBoundaryPressureNeeded")) ){}  // 
   
   else if ( dialog.getTextValue(answer,"preconditioner frequency", "%i", 
                                         parameters.dbase.get<int>("preconditionerFrequency"))){}
