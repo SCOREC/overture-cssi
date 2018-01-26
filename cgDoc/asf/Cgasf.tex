@@ -1,17 +1,22 @@
 %-----------------------------------------------------------------------
-% OverBlown -- the super de duper solver
+% All-speed flow solver documentation
 %
 %-----------------------------------------------------------------------
-\documentclass{article}
+\documentclass[10pt]{article}
+% \usepackage[bookmarks=true]{hyperref}  % this changes the page location !
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
 
-\addtolength{\oddsidemargin}{-.975in}
-\addtolength {\textwidth} {2.0in}
-
-\addtolength{\topmargin}{-.25in}
-\addtolength {\textheight} {1.5in}
-
-\hbadness=10000 % \tolerance=10000
+% \input documentationPageSize.tex
+\hbadness=10000 
 \sloppy \hfuzz=30pt
+
+% \voffset=-.25truein
+% \hoffset=-1.25truein
+% \setlength{\textwidth}{7in}      % page width
+% \setlength{\textheight}{9.5in}    % page height
+
+\usepackage{calc}
+\usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -123,11 +128,10 @@
 { \Large A Solution Adaptive Solver for the Navier-Stokes Equations for All-Speed Flows 
 }
 \vskip2\baselineskip
-Bill Henshaw \\
-\vskip\baselineskip
-Centre for Applied Scientific Computing, \\
-Lawrence Livermore National Laboratory, \\
-henshaw@llnl.gov 
+William D. Henshaw,\\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
  
 \vskip4\baselineskip
 
