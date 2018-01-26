@@ -1,4 +1,23 @@
 ***************************
+******* Jan 10, 2017
+
+NON-BOX:
+cgmx -noplot planeWave -g=nonBox2.order2 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.01 -tf=.1 -cfl=1 -checkErrors=1 -diss=0 -go=og
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=6.282e-03 max-err = 1.332e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.92e-04,0.00e+00,], max (u):[0.00e+00,9.93e-01,0.00e+00,] (1 steps)
+
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=6.282e-03 max-err = 1.332e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.92e-04,0.00e+00,], max (u):[0.00e+00,9.93e-01,0.00e+00,] (1 steps)
+
+
+BOX: 
+cgmx -noplot planeWave -g=box2.order2 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.01 -tf=.1 -cfl=1 -checkErrors=1 -go=og
+
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=6.282e-03 max-err = 1.332e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.92e-04,0.00e+00,], max (u):[0.00e+00,9.93e-01,0.00e+00,] (1 steps)
+
+
+***************************
 ******* Dec 17, 2017
 
 

@@ -1,4 +1,69 @@
 *************************************
+*********  Jan 23, 2018
+
+TEST AMP IMPLICT BC -- BULK SLID CASE -- CGINS ALONE
+
+--------- alpha = .5 --------
+
+*fixed* definition of P -->  P=(1-alpha) n n^T 
+
+ROTATED SQUARE DEGREE (X,T)=(2,1) -- EXACT
+cgins tz -g=rotatedSquare8.order2.hdf -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+Degree (X,T)=(2,1)   EXACT 
+cgins tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+
+cgins tz -g=square5.order2 -addedMass=1 -degreex=1 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+cgins tz -g=square5.order2 -addedMass=1 -degreex=0 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+---------- alpha=1 ------
+
+ROTATED SQUARE DEGREE (X,T)=(2,1) -- EXACT
+cgins tz -g=rotatedSquare8.order2.hdf -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+Degree (X,T)=(2,1) -- exact now 
+cgins tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+*************************************
+*********  Jan 19-20, 2018
+
+START TESTING AMP IMPLICIT BC -- CGINS ALONE 
+
+
+ROTATED SQUARE DEGREE (X,T)=(2,1) -- 
+
+cgins tz -g=rotatedSquare8.order2.hdf -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+
+DEGREE (X,T)=(2,1) -- 
+cgins tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=1 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+NOT EXACT -- WHY?
+cgins tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+Degree (1,0) -- exact 
+cgins -noplot tz -g=square5.order2 -addedMass=1 -degreex=1 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=og
+
+
+
+*************************************
+*********  Jan 16-17, 2018
+
+START TEST OF IMPLICIT AMP VELOCITY BC's for BULK solid
+
+TEST Cgins alone --
+
+cgins -noplot tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=og
+
+cgins tz -g=square5.order2 -addedMass=1 -degreex=2 -degreet=0 -ts=im -bcn=d -bc1=noSlip -tp=.01 -tf=1 -go=halt
+
+
+
+
+
+*************************************
 *********  Oct 1, 2017
 
 TROUBLE near corners:  

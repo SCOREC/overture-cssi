@@ -668,6 +668,8 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   if( !dbase.has_key("numberOfInterfaceVelocitySmooths") ) dbase.put<int>("numberOfInterfaceVelocitySmooths")=1;
   if( !dbase.has_key("fluidAddedMassLengthScale") ) dbase.put<real>("fluidAddedMassLengthScale")=1.;
 
+  if( !dbase.has_key("useImplicitAmpBCs") ) dbase.put<bool>("useImplicitAmpBCs")=false;
+
   // For the traditional FSI scheme we sometimes perform sub-iterations for FSI problems
   if( !dbase.has_key("useMovingGridSubIterations") ) dbase.put<bool>("useMovingGridSubIterations")=false;
 

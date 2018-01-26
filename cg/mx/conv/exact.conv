@@ -114,6 +114,14 @@ $grid4=$cg . "8";   $gName4 = "nonBox16npp.order$order$suffix"; \
 $grid5=$cg . "16";  $gName5 = "nonBox32npp.order$order$suffix";\
 $grid6=$cg . "32";  $gName6 = "nonBox64npp.order$order$suffix";\
 }
+if( $cg =~ /box/ ){\
+$grid1=$cg . "1";   $gName1 = "box1.order$order$suffix"; \
+$grid2=$cg . "2";   $gName2 = "box2.order$order$suffix"; \
+$grid3=$cg . "4";   $gName3 = "box4.order$order$suffix"; \
+$grid4=$cg . "8";   $gName4 = "box8.order$order$suffix"; \
+$grid5=$cg . "16";  $gName5 = "box16.order$order$suffix";\
+$grid6=$cg . "32";  $gName6 = "box32.order$order$suffix";\
+}
 if( $cg =~ /squarep/ ){\
 $grid1=$cg . "8";   $gName1 = "square8p.order$order$suffix"; \
 $grid2=$cg . "16";   $gName2 = "square16p.order$order$suffix"; \

@@ -1,7 +1,45 @@
+********************************
+***** Jan 25, 2017
+
+WDH: 
+TEST ELASTIC_PISTON + IMPLICIT VELOCITY BC 
+
+TEST IMPLICIT AMP BC's
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 6.21e-04 &      & 2.16e-04 &      & 3.06e-05 &      & 4.41e-05 &      & 4.62e-04 &      
+                epg2 &     2 & 2.05e-04 &  3.0 & 4.96e-05 &  4.4 & 6.51e-06 &  4.7 & 9.22e-06 &  4.8 & 1.11e-04 &  4.2 
+                epg4 &     4 & 5.29e-05 &  3.9 & 9.91e-06 &  5.0 & 1.55e-06 &  4.2 & 1.94e-06 &  4.8 & 2.75e-05 &  4.0 
+                epg8 &     8 & 1.40e-05 &  3.8 & 2.04e-06 &  4.9 & 4.20e-07 &  3.7 & 4.28e-07 &  4.5 & 7.04e-06 &  3.9 
+Convergence rates: c0=1.84 c1=2.25 c2=2.06 c3=2.23 c4=2.01 
+
+
+OLD: AMP: SCF=1 **TROUBLE FOR TF=.7
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -cfl=.9 -ng=3
+
+*** REPEAT --> Something is broken
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 7.81e-04 &      & 2.43e-04 &      & 3.63e-05 &      & 1.00e-04 &      & 6.85e-04 &      
+                epg2 &     2 & 9.25e-04 &  0.8 & 3.59e-04 &  0.7 & 1.86e-05 &  2.0 & 1.46e-04 &  0.7 & 1.42e-03 &  0.5 
+                epg4 &     4 & 1.60e-03 &  0.6 & 5.36e-04 &  0.7 & 5.09e-05 &  0.4 & 4.77e-04 &  0.3 & 7.70e-03 &  0.2 
+Convergence rates: c0=-0.52 c1=-0.57 c2=-0.24 c3=-1.13 c4=-1.75 
+
+
+
+
+**PREVIOUS RESULTS***
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 5.46e-04 &      & 6.21e-05 &      & 3.58e-05 &      & 5.96e-05 &      & 5.01e-04 &      
+                epg2 &     2 & 1.36e-04 &  4.0 & 1.68e-05 &  3.7 & 8.24e-06 &  4.3 & 1.34e-05 &  4.4 & 1.26e-04 &  4.0 
+                epg4 &     4 & 3.34e-05 &  4.1 & 4.30e-06 &  3.9 & 1.97e-06 &  4.2 & 2.90e-06 &  4.6 & 3.10e-05 &  4.1 
+Convergence rates: c0=2.02 c1=1.93 c2=2.09 c3=2.18 c4=2.01 
+
+
 ************************************
 ***** Mon July 10, 2017
 
-AMP -- 
+AMP -- RADIAL-ELASTIC-PISTON
 conv.p insElasticPiston.conv -tp=.3 -tf=.3 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -cfl=.9 -nu=.05 -ng=4
 
 

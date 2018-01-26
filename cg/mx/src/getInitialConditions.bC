@@ -1846,8 +1846,6 @@ assignInitialConditions(int current, real t, real dt )
 	    else // 3D
 	    {
 
-              assert( dispersionModel==noDispersion ); // FINISH ME
-              
 	      FOR_3D(i1,i2,i3,J1,J2,J3)
 	      {
 		real xde=X0(i1,i2,i3)-x0;
@@ -1858,6 +1856,7 @@ assignInitialConditions(int current, real t, real dt )
 		UEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiEy;  // 
 		UEZ(i1,i2,i3) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiEz;  // 
 
+                // This next is not needed for sosup: 
 		UMEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiExm;  // 
 		UMEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiEym;  // 
 		UMEZ(i1,i2,i3) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiEzm;  // 
@@ -1869,6 +1868,31 @@ assignInitialConditions(int current, real t, real dt )
 		// UMEX(i1,i2,i3) =  (a1/fx)*cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*cos(omega*(t-dt));  // 
 		// UMEY(i1,i2,i3) =  (a2/fy)*sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*cos(omega*(t-dt));  // 
 		// UMEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*cos(omega*(t-dt));  // 
+	      }
+              // -- dispersion model components --
+	      if( dispersionModel!=noDispersion )
+	      {
+		FOR_3(i1,i2,i3,J1,J2,J3)
+		{
+		  real xde=X0(i1,i2,i3)-x0;
+		  real yde=X1(i1,i2,i3)-y0;
+		  real zde=X2(i1,i2,i3)-z0;
+
+                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                  {
+                    const int pc= iv*numberOfDimensions;
+                    pLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiPx[iv];
+                    pLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiPy[iv];
+                    pLocal(i1,i2,i3,pc+2) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiPz[iv];
+
+                    pmLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiPxm[iv];
+                    pmLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiPym[iv];
+                    pmLocal(i1,i2,i3,pc+2) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiPzm[iv];
+
+
+                  }
+
+		}
 	      }
 	      if( method==sosup )
 	      {
@@ -1893,8 +1917,9 @@ assignInitialConditions(int current, real t, real dt )
 	  }
 	  else 
 	  {
-	    // --- curvilinear ---
-            assert( dispersionModel==noDispersion ); // FINISH ME
+            // ------------------------------------
+	    // --- CURVILINEAR BOX/SQUARE EIGEN ---
+            // ------------------------------------
 
 	    if( numberOfDimensions==2 )
 	    {
@@ -1904,9 +1929,10 @@ assignInitialConditions(int current, real t, real dt )
 
 	      FOR_3D(i1,i2,i3,J1,J2,J3)
 	      {
-		xd=XHP(i1,i2,i3,0)-x0;
-		yd=XHP(i1,i2,i3,1)-y0;
-		UHZ(i1,i2,i3) =cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+		real xdh=XHP(i1,i2,i3,0)-x0;
+		real ydh=XHP(i1,i2,i3,1)-y0;
+                UHZ(i1,i2,i3) = cos(fx*xdh)*cos(fy*ydh)*phiHz;  // Hz 
+		// UHZ(i1,i2,i3) =cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
 	      }
 
 	      J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -1914,28 +1940,54 @@ assignInitialConditions(int current, real t, real dt )
 	      J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 	      FOR_3(i1,i2,i3,J1,J2,J3)
 	      {
-		xd=XEP(i1,i2,i3,0)-x0;
-		yd=XEP(i1,i2,i3,1)-y0;
+		real xde=XEP(i1,i2,i3,0)-x0;
+		real yde=XEP(i1,i2,i3,1)-y0;
 		
-		UEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-		UEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+		UEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*phiEx;  
+		UEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*phiEy;
+		// UEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+		// UEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
 	      }            
 
 	      if ( method==nfdtd )
 	      {
 		FOR_3D(i1,i2,i3,J1,J2,J3)
 		{
-		  xd=XHP(i1,i2,i3,0)-x0;
-		  yd=XHP(i1,i2,i3,1)-y0;
-		  UMHZ(i1,i2,i3)=cos(fx*xd)*cos(fy*yd)*cos(omega*(t-dt));
+		  real xdh=XHP(i1,i2,i3,0)-x0;
+		  real ydh=XHP(i1,i2,i3,1)-y0;
+                  UMHZ(i1,i2,i3)=cos(fx*xdh)*cos(fy*ydh)*phiHzm;
+                   // UMHZ(i1,i2,i3)=cos(fx*xd)*cos(fy*yd)*cos(omega*(t-dt));
 		}
 		FOR_3(i1,i2,i3,J1,J2,J3)
 		{
-		  xd=XEP(i1,i2,i3,0)-x0;
-		  yd=XEP(i1,i2,i3,1)-y0;
+		  real xde=XEP(i1,i2,i3,0)-x0;
+		  real yde=XEP(i1,i2,i3,1)-y0;
 			
-		  UMEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*(t-dt));  // Ex.t = Hz.y
-		  UMEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*(t-dt));  // Ey.t = - Hz.x
+		  UMEX(i1,i2,i3) =  cos(fx*xde)*sin(fy*yde)*phiExm; 
+		  UMEY(i1,i2,i3) =  sin(fx*xde)*cos(fy*yde)*phiEym;
+		  // UMEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*(t-dt));  // Ex.t = Hz.y
+		  // UMEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*(t-dt));  // Ey.t = - Hz.x
+		}
+	      }
+
+              // -- dispersion model components --
+	      if( dispersionModel!=noDispersion )
+	      {
+		FOR_3(i1,i2,i3,J1,J2,J3)
+		{
+		  real xde=XEP(i1,i2,i3,0)-x0;
+		  real yde=XEP(i1,i2,i3,1)-y0;
+
+                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                  {
+                    const int pc= iv*numberOfDimensions;
+                    pLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*phiPx[iv];
+                    pLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*phiPy[iv];
+
+                    pmLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*phiPxm[iv];
+                    pmLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*phiPym[iv];
+                  }
+
 		}
 	      }
 
@@ -1957,30 +2009,59 @@ assignInitialConditions(int current, real t, real dt )
 	    } 
 	    else // 3D
 	    {
+              // --------------------------------------------------
+              // ----------   BOX EIGEN 3D CURVILINEAR ------------
+              // --------------------------------------------------
 
 	      FOR_3D(i1,i2,i3,J1,J2,J3)
 	      {
-		xd=XEP(i1,i2,i3,0)-x0;
-		yd=XEP(i1,i2,i3,1)-y0;
-		zd=XEP(i1,i2,i3,2)-z0;
+		real xde=XEP(i1,i2,i3,0)-x0;
+		real yde=XEP(i1,i2,i3,1)-y0;
+		real zde=XEP(i1,i2,i3,2)-z0;
 
-		UEX(i1,i2,i3) =  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*t);  // 
-		UEY(i1,i2,i3) =  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*t);  // 
-		UEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*t);  // 
+		UEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiEx;  // 
+		UEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiEy;  // 
+		UEZ(i1,i2,i3) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiEz;  // 
+
+		// UEX(i1,i2,i3) =  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*t);  // 
+		// UEY(i1,i2,i3) =  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*t);  // 
+		// UEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*t);  // 
 
 		if( method==nfdtd )
 		{
-		  UMEX(i1,i2,i3) =  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*(t-dt));  // 
-		  UMEY(i1,i2,i3) =  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*(t-dt));  // 
-		  UMEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*(t-dt));  // 
+                  UMEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiExm;  // 
+                  UMEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiEym;  // 
+                  UMEZ(i1,i2,i3) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiEzm;  // 
+
+		  // UMEX(i1,i2,i3) =  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*(t-dt));  // 
+		  // UMEY(i1,i2,i3) =  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*(t-dt));  // 
+		  // UMEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*(t-dt));  // 
 		}
 		else if( method==sosup )
 		{
 		  // time derivatives: 
-		  uLocal(i1,i2,i3,ext) =  (-omega*a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*sin(omega*t);  
-		  uLocal(i1,i2,i3,eyt) =  (-omega*a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*sin(omega*t);  
-		  uLocal(i1,i2,i3,ezt) =  (-omega*a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*sin(omega*t);  
+		  uLocal(i1,i2,i3,ext) =  (-omega*a1/fx)*cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*sin(omega*t);  
+		  uLocal(i1,i2,i3,eyt) =  (-omega*a2/fy)*sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*sin(omega*t);  
+		  uLocal(i1,i2,i3,ezt) =  (-omega*a3/fz)*sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*sin(omega*t);  
 		}
+                // -- dispersion model components --
+                if( dispersionModel!=noDispersion )
+                {
+                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                  {
+                    const int pc= iv*numberOfDimensions;
+                    pLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiPx[iv];
+                    pLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiPy[iv];
+                    pLocal(i1,i2,i3,pc+2) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiPz[iv];
+
+                    pmLocal(i1,i2,i3,pc  ) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiPxm[iv];
+                    pmLocal(i1,i2,i3,pc+1) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiPym[iv];
+                    pmLocal(i1,i2,i3,pc+2) = sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*phiPzm[iv];
+
+                  }
+
+                }
+
 	      }
 	    }
 	      

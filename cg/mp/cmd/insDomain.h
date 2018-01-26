@@ -62,7 +62,7 @@ if( $useNewTimeSteppingStartup eq "" ){ $useNewTimeSteppingStartup=0; }
 if( $checkForInflowAtOutflow eq "" ){ $checkForInflowAtOutflow=0; }
 if( $useNeumannAtOutflow eq "" ){ $useNeumannAtOutflow=0; }
 if( $fluidDensity eq "" ){ $fluidDensity=1.; }
-if( $addedMass eq "" ){ $addedMass=0; }
+if( $useImplicitAmpBCs eq "" ){ $useImplicitAmpBCs=0; }
 if( $ogesDtol eq "" ){ $ogesDtol=1e20; }
 if( $orderOfExtrapForOutflow eq "" ){ $orderOfExtrapForOutflow=2; }
 # 
@@ -101,6 +101,7 @@ setup $domainName
   # for now we let the solver know that the added mass algorithm needed predicted values for the pressure:
   predicted pressure needed $addedMass
   use new time-stepping startup $useNewTimeSteppingStartup
+  useImplicitAmpBCs $useImplicitAmpBCs
 #
   predicted boundary pressure needed $predictedBoundaryPressureNeeded
 # 

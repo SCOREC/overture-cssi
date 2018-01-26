@@ -147,6 +147,9 @@ applyBoundaryConditions( int option, real dt, int current, int prev )
     }
 
     // Projection of velocity (for INS-SM AMP scheme) **FINISH ME**
+    //  -- this routine assigns the velocity on the interface using the value from the
+    //     the fluid which should be equal to the projected interface velocity, the interface
+    //     traction from the fluid will be assigned below in the assignBC routine.
     projectInterface( grid, dt, current );
 
     assignBoundaryConditions( option, grid, t, dt, fieldCurrent, fieldPrev,current );

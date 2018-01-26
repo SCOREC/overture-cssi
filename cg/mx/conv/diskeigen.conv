@@ -58,7 +58,10 @@ if( $b1[0] eq "" ){ @b1=(1,0,0,0); }
 if( $cg =~ /square/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; $gStart=16; $name="squareEigen"; }
 #
 # eigenfunctions of a box:
-if( $cg =~ /box*/ || $cg =~ /nonBox*/ || $cg =~ /unitBox*/ || $cg =~ /unitNonBox*/ || $cg =~ /refineBox*/ || $cg =~ /refineNonBox*/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; }
+if( $cg =~ /box*/ || $cg =~ /nonBox*/ || $cg =~ /unitBox*/ || $cg =~ /unitNonBox*/ || $cg =~ /refineBox*/ || $cg =~ /refineNonBox*/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; $name="boxEigen"; }
+if( $cg =~ /box*/ ){ $name="boxEigen"; }
+if( $cg =~ /nonBox*/ ){ $name="nonBoxEigen"; }
+#
 #
 if( $cg =~ /tube*/ || $cg =~ /splitTube*/  || $cg =~ /refineTube*/  ){ $cmdFile = "../cmd/cyleigen"; }
 $caseName="$name$method\Order$order"; 

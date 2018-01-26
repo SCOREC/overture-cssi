@@ -17,6 +17,18 @@ Cgins(CompositeGrid & cg,
 
 virtual ~Cgins();
 
+// Assign the RHS to the added-mass implicit boundary conditions (or eval residual)
+int 
+addedMassImplicitBoundaryConditions(int option, 
+                                    realMappedGridFunction & u, 
+                                    realMappedGridFunction &uL,
+                                    realMappedGridFunction &uOld,  
+                                    realMappedGridFunction & gridVelocity,
+                                    real t,
+                                    int scalarSystem,
+                                    int grid, 
+                                    real dt0 );
+
 virtual
 void addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u, int iparam[], real rparam[],
 		realMappedGridFunction & dvdtImplicit = Overture::nullRealMappedGridFunction(),

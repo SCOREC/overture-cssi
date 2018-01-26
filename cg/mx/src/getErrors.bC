@@ -641,6 +641,25 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
         // ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
       }
 
+      if( dispersionModel!=noDispersion )
+      {
+        // -- dispersion model components --
+        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+        FOR_3(i1,i2,i3,J1,J2,J3)
+        {
+          xd=X0(i1,i2,i3)-x0;
+          yd=X1(i1,i2,i3)-y0;
+          zd=X2(i1,i2,i3)-z0;
+          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*phiPx[iv];
+            errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*phiPy[iv];
+            errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*phiPz[iv];
+          }
+        }
+      }
+
       if( method==sosup )
       {
         // Compute errors in the time derivative
@@ -674,7 +693,8 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
       {
         xd=XHP(i1,i2,i3,0)-x0;
         yd=XHP(i1,i2,i3,1)-y0;
-        ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+        ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*phiHz;
+        // ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
       }
 
       J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -685,10 +705,28 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
       {
         xd=XEP(i1,i2,i3,0)-x0;
         yd=XEP(i1,i2,i3,1)-y0;
-        ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-        ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+        ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*phiEx;  // Ex.t = Hz.y
+        ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*phiEy;  // Ey.t = - Hz.x
+        // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+        // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
       }
-
+      if( dispersionModel!=noDispersion )
+      {
+        // -- dispersion model components --
+        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+        FOR_3(i1,i2,i3,J1,J2,J3)
+        {
+          xd=XEP(i1,i2,i3,0)-x0;
+          yd=XEP(i1,i2,i3,1)-y0;
+          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - cos(fx*xd)*sin(fy*yd)*phiPx[iv];
+            errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - sin(fx*xd)*cos(fy*yd)*phiPy[iv];
+          }
+        }
+      }
+\
       if( method==sosup )
       {
         // Compute errors in the time derivative
@@ -717,9 +755,34 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
         yd=XEP(i1,i2,i3,1)-y0;
         zd=XEP(i1,i2,i3,2)-z0;
 
-        ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-        ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
-        ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
+        ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*phiEx;  // 
+        ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*phiEy;  // 
+        ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) - sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*phiEz;  // 
+
+        // ERREX(i1,i2,i3)=UEX(i1,i2,i3) -  (a1/fx)*cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+        // ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
+        // ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
+      }
+
+
+      if( dispersionModel!=noDispersion )
+      {
+        // -- dispersion model components --
+        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+        FOR_3(i1,i2,i3,J1,J2,J3)
+        {
+          xd=XEP(i1,i2,i3,0)-x0;
+          yd=XEP(i1,i2,i3,1)-y0;
+          zd=XEP(i1,i2,i3,2)-z0;
+
+          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - cos(fx*xd)*sin(fy*yd)*sin(fz*zd)*phiPx[iv];
+            errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*phiPy[iv];
+            errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*phiPz[iv];
+          }
+        }
       }
 
       if( method==sosup )

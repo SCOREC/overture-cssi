@@ -1,4 +1,79 @@
 ********************************
+*****Jan 25, 2017
+
+G8:
+cgmp elasticPiston -g=elasticPistonGride8.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=48==================
+-->t=1.0000e-01 dt=2.1e-03 maxNorm errors:[5.7199e-16,1.5038e-06,2.3317e-07,1.4765e-16,1.4765e-16,3.3196e-07,5.7914e-18,2.7164e-07,], maxNorm(u):[5.72e-16,4.71e-01,1.12e-02,1.48e-16,1.48e-16,3.36e-02,5.79e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=48==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 2.716e-07 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[8.25e-06,2.90e-16,5.43e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (49 steps)
+   0.100 8.25e-06 2.90e-16 5.43e-06 1.75e-04  4.71e-01 2.08e-03 9.97e+00 
+
+
+G4:
+cgmp elasticPiston -g=elasticPistonGride4.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=24==================
+-->t=1.0000e-01 dt=4.2e-03 maxNorm errors:[2.2081e-16,5.7695e-06,9.4586e-07,5.9420e-17,5.9420e-17,1.3833e-06,3.9455e-18,1.0924e-06,], maxNorm(u):[2.21e-16,4.71e-01,1.12e-02,5.94e-17,5.94e-17,3.36e-02,3.95e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=24==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.092e-06 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[3.19e-05,2.46e-16,2.67e-05,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (25 steps)
+   0.100 3.19e-05 2.46e-16 2.67e-05 5.07e-04  4.71e-01 4.17e-03 8.24e+00 
+
+G2: 
+cgmp elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=12==================
+-->t=1.0000e-01 dt=8.3e-03 maxNorm errors:[9.3592e-17,2.2351e-05,3.6691e-06,2.0919e-17,2.0919e-17,5.1088e-06,2.0866e-18,4.3652e-06,], maxNorm(u):[9.36e-17,4.71e-01,1.12e-02,2.09e-17,2.09e-17,3.36e-02,2.09e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=12==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 4.365e-06 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[1.09e-04,1.37e-16,1.07e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (13 steps)
+   0.100 1.09e-04 1.37e-16 1.07e-04 1.14e-03  4.71e-01 8.33e-03 4.74e+00 
+
+
+********************************
+*****Jan 24, 2017
+
+START TEST OF IMPLICIT AMP VELCOITY BCS (BULK SOLID)
+
+LOOKS MAYBE OK ?? 
+cgmp elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=120==================
+-->t=1.0000e+00 dt=8.3e-03 maxNorm errors:[4.4074e-16,2.7518e-05,8.9266e-06,3.2575e-16,3.2575e-16,2.1606e-05,5.7942e-17,3.2132e-05,], maxNorm(u):[4.41e-16,4.95e-01,8.93e-06,3.26e-16,3.26e-16,2.16e-05,5.79e-17,3.21e-05,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=120==================
+ --UDKS--  ERROR IN INTERFACE POSITION = -3.213e-05 at t=1.000e+00
+--INS-- determineErrors: t=1.000e+00, maxNorm errors: [p,u,v,T]=[1.40e-04,1.21e-15,1.85e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (121 steps)
+   1.000 1.40e-04 1.21e-15 1.85e-04 1.35e-03  4.95e-01 8.33e-03 5.13e+01 
+
+
+
+cgmp elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.01 -tf=.01 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+
+NEW IMP_BC's -- USE_IMP_BCS: 
+cgmp -noplot elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=.1 -nu=.01 -tp=.01 -tf=.01 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=go >! epi.out
+
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[4.57e-06,1.91e-17,5.53e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.010 4.57e-06 1.91e-17 5.53e-06 5.78e-05  4.95e-01 5.00e-03 7.13e-02 
+
+EXPLICT-TS -- (was broken --<> fixed )
+cgmp -noplot elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -scf=.1 -nu=.01 -tp=.01 -tf=.01 -smVariation=g -debug=1 -debug=3 -tsINS=pc -cfl=.9 -go=go >! epe.out
+
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[8.94e-07,2.57e-18,2.54e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.010 8.94e-07 2.57e-18 2.54e-06 2.68e-05  4.95e-01 5.00e-03 5.03e-02 
+
+
+
+********************************
 ***** Dec 25, 2017
 
 WDH: Add option to predict pressure for AMP boundary conditions:
