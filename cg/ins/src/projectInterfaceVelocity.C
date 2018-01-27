@@ -313,7 +313,7 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
 
               det = a11*a22-a21*a12;
 	  
-              // TODO: add any RHS forcing needed (eg twighlight zone)
+              // TODO: add any RHS forcing needed (eg twilight zone)
               g1(Ib1,Ib2,Ib3)=
                 ( uP(Ib1,Ib2,Ib3,uc)  
                   +(theta*dt/rho)*(

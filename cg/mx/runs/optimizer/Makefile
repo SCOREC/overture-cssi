@@ -12,6 +12,11 @@ doc:
 	bibtex cgmxOpt
 
 
+# Copy files to Dropbox 
+copyFiles:
+	cp {optimizer.m,runMaxwell.m,readProbeFile.m,runMaxwell.m,rgb.m} ~/Dropbox/DARPA/RPI/optimizer
+	cp {Readme,Makefile,memo,curvedBlockGrid2d.cmd,cgmxOpt.pdf} ~/Dropbox/DARPA/RPI/optimizer
+
 getBib:
 #	cp /Users/henshaw/papers/common/{henshaw.bib,henshawPapers.bib,fsi.bib} .
 	cp /Users/henshaw/papers/common/{henshaw.bib,henshawPapers.bib} .

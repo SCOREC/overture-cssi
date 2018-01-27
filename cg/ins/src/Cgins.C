@@ -485,6 +485,7 @@ writeParameterSummary( FILE * file )
   }
 
   // *** ALL these parameters should be in the DeformingBody ****
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
   if( parameters.isMovingGridProblem() )
   {
     const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
@@ -504,6 +505,7 @@ writeParameterSummary( FILE * file )
       const real & addedDampingCoefficient = parameters.dbase.get<real>("addedDampingCoefficient");
       const bool & scaleAddedDampingWithDt = parameters.dbase.get<bool>("scaleAddedDampingWithDt");
       const bool & addedDampingProjectVelocity = parameters.dbase.get<bool>("addedDampingProjectVelocity");
+      const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
       
 
       fPrintF(file,"\n");
@@ -511,7 +513,8 @@ writeParameterSummary( FILE * file )
 	      " projectAddedMassVelocity=%i, projectNormalComponentOfAddedMassVelocity=%i,\n"
 	      " projectVelocityOnBeamEnds=%i, projectBeamVelocity=%i, predicted pressure needed=%i,\n" 
 	      " smoothInterfaceVelocity=%i, numberOfInterfaceVelocitySmooths=%i, fluidAddedMassLengthScale=%9.3e,\n"
-              " useAddedDampingAlgorithm=%i, addedDampingCoefficient=%8.2e, scaleAddedDampingWithDt=%i, addedDampingProjectVelocity=%i.\n",
+              " useAddedDampingAlgorithm=%i, addedDampingCoefficient=%8.2e, scaleAddedDampingWithDt=%i, addedDampingProjectVelocity=%i.\n"
+              " useImplicitAmpBCs=%i\n", 
 	      (int)useAddedMassAlgorithm,
               (int)useApproximateAMPcondition,
               (int)projectAddedMassVelocity,
@@ -520,7 +523,7 @@ writeParameterSummary( FILE * file )
 	      (int)smoothInterfaceVelocity, numberOfInterfaceVelocitySmooths,
 	      fluidAddedMassLengthScale,
               (int)useAddedDampingAlgorithm,addedDampingCoefficient,
-              (int)scaleAddedDampingWithDt,(int)addedDampingProjectVelocity
+              (int)scaleAddedDampingWithDt,(int)addedDampingProjectVelocity,(int)useImplicitAmpBCs
 	);
       fPrintF(file,"\n");
     }
@@ -533,11 +536,13 @@ writeParameterSummary( FILE * file )
   else
   {
     const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
+    const bool & projectAddedMassVelocity = parameters.dbase.get<bool>("projectAddedMassVelocity");
+    const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
     fPrintF(file,"\n");
-    fPrintF(file," useAddedMassAlgorithm=%i,\n"
-	    " predicted pressure needed=%i,\n",
-	    (int)useAddedMassAlgorithm,
-	    (int)parameters.dbase.get<bool>("predictedPressureNeeded")
+    fPrintF(file," useAddedMassAlgorithm=%i, projectAddedMassVelocity=%i \n"
+	    " predicted pressure needed=%i, useImplicitAmpBCs=%i\n",
+	    (int)useAddedMassAlgorithm,(int)projectAddedMassVelocity,
+	    (int)parameters.dbase.get<bool>("predictedPressureNeeded"),(int)useImplicitAmpBCs
       );
     fPrintF(file,"\n");
   }

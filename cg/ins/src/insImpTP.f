@@ -1131,7 +1131,11 @@
       integer matIndex(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real matValpc(0:ndMatProp-1,0:*)
       real matVal(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
-!     ---- local variables -----
+      ! -- added mass options
+      integer useAddedMassAlgorithm, projectAddedMassVelocity, 
+     & useImplicitAmpBCs, isBulkSolid
+      integer extrapolateGhostByDefault
+      !     ---- local variables -----
       integer c,e,i1,i2,i3,m1,m2,m3,j1,j2,j3,ghostLine,n,i1m,i2m,i3m,
      & i1p,i2p,i3p,ndu
       integer side,axis,is1,is2,is3,mm,eqnTemp,debug,ntdc,normalAxis,
@@ -1146,6 +1150,7 @@
      & advectPassiveScalar
       real nu,dt,nuPassiveScalar,adcPassiveScalar
       real gravity(0:2), thermalExpansivity, adcBoussinesq,kThermal
+      real zs,alpha,beta,fluidDensity,mu
       real dxi,dyi,dzi,dri,dsi,dti,dr2i,ds2i,dt2i
       real ad21,ad22,ad41,ad42,cd22,cd42,adc,adCoeff,adCoeffl
       real ad21n,ad22n,ad41n,ad42n,cd22n,cd42n
@@ -2044,6 +2049,10 @@
       numberOfComponents= ipar(49)
       rc                =ipar(50)
       materialFormat    =ipar(51)
+      useAddedMassAlgorithm = ipar(52)
+      projectAddedMassVelocity = ipar(53)
+      useImplicitAmpBCs = ipar(54)
+      isBulkSolid       = ipar(55)
       dr(0)             =rpar(0)
       dr(1)             =rpar(1)
       dr(2)             =rpar(2)
@@ -2070,9 +2079,16 @@
       thermalExpansivity=rpar(23)
       adcBoussinesq     =rpar(24) ! coefficient of artificial diffusion for Boussinesq T equation
       kThermal          =rpar(25)
+      ! The AMP BC requires zs and alpha
+      zs                =rpar(26)
+      alpha             =rpar(27)
+      fluidDensity      =rpar(28)
+      mu = nu*fluidDensity
       epsX = 1.e-30  ! epsilon used to avoid division by zero in the normal computation -- should be REAL_MIN*100 ??
       normalTol=1.e-10  ! tolerance for a face being flat
       ncc=numberOfComponentsForCoefficients ! number of components for coefficients
+      ! Some Bc's like no-slip wall use extrapolation for ghost, sometimes we turn this off
+      extrapolateGhostByDefault=1
       ok = getInt(pdb,'checkForInflowAtOutFlow',
      & checkForInflowAtOutFlow)
       if( ok.eq.0 )then

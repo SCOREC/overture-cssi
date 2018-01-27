@@ -1,4 +1,22 @@
-\documentclass{article} 
+%-----------------------------------------------------------------------
+% reactions: combustion cheat sheet
+%-----------------------------------------------------------------------
+\documentclass[10pt]{article}
+% \usepackage[bookmarks=true]{hyperref}  % this changes the page location !
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
+
+% \input documentationPageSize.tex
+\hbadness=10000 
+\sloppy \hfuzz=30pt
+
+% \voffset=-.25truein
+% \hoffset=-1.25truein
+% \setlength{\textwidth}{7in}      % page width
+% \setlength{\textheight}{9.5in}    % page height
+
+\usepackage{calc}
+\usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
+
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -10,36 +28,38 @@
 \usepackage{epsfig}    
 \usepackage{fancybox}    
 
-\addtolength{\oddsidemargin}{-.975in}
-\addtolength {\textwidth} {2.0in}
+% \addtolength{\oddsidemargin}{-.975in}
+% \addtolength {\textwidth} {2.0in}
+% 
+% \addtolength{\topmargin}{-1.0in}
+% \addtolength {\textheight} {1.5in}
+% 
+% % \voffset=-1.25truein
+% % \hoffset=-1.truein
+% % \setlength{\textwidth}{6.75in}      % page width
+% % \setlength{\textheight}{9.5in}    % page height
 
-\addtolength{\topmargin}{-1.0in}
-\addtolength {\textheight} {1.5in}
 
-% \voffset=-1.25truein
-% \hoffset=-1.truein
-% \setlength{\textwidth}{6.75in}      % page width
-% \setlength{\textheight}{9.5in}    % page height
-
-
-\newcommand{\homeHenshaw}{/home/henshaw.0}
+% \newcommand{\homeHenshaw}{/home/henshaw.0}
+% \newcommand{\homeHenshaw}{/home/henshaw.0}
+\input homeHenshaw
 
 % \newcommand{\obFigures}{../docFigures}  % note: local version for OverBlown
 \newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % note: local version for OverBlown
 
 \newcommand{\primer}{\homeHenshaw/res/primer}
 
+% ---------------------------- START DOCUMENT ----------------------------------
 \begin{document}
  
 \title{Combustion Cheat Sheet}
 
 \author{
-Bill Henshaw \\
-\  \\
-Scientific Computing Group \\
-Computing Information and Communications Division\\
-Los Alamos, NM, USA, 87545 \\
-henshaw@lanl.gov }
+William D. Henshaw,\\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
+}
  
 \maketitle
 

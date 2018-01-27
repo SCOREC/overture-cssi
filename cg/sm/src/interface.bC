@@ -943,7 +943,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
 // ================================================================================================
 /// \brief project interface values for the AMP scheme.
-/// \notes: Current this routine projects the velocity on the interface for the INS-SM AMP scheme.
+/// \notes: Currently this routine projects the velocity on the interface for the INS-SM AMP scheme.
+
+//  -- This routine assigns the velocity on the interface using the value from the
+//     the fluid which should be equal to the projected interface velocity, the interface
+//     traction from the fluid will be assigned following tis routine in the assignBC routine.
 // ================================================================================================
 int Cgsm::
 projectInterface( int grid, real dt, int current )

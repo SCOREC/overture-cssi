@@ -219,6 +219,8 @@ $gridCmdFileName = "";
 $uplot="p";
 $ogmgMaxIts = 50;
 # $ksp="gmres"; 
+# ------------------------- turn on added mass here ----------------
+$addedMass=0; 
 #
 # ----------------------------- get command line arguments ---------------------------------------
 Getopt::Long::Configure("prefix_pattern=(--tz|--|-)");
@@ -238,7 +240,7 @@ GetOptions( "g=s"=>\$grid,"gf=s"=>\$gridCmdFileName,"tf=f"=>\$tFinal,"degreex=i"
   "aftol=f"=>\$aftol, "afit=i"=>\$afit,"project=i"=>\$project,"cp0=f"=>\$cp0,"varMat=i"=>\$varMat,\
   "thermalConductivity=i"=>\$thermalConductivity,"xshift=f"=>\$xshift,"yshift=f"=>\$yshift,"zshift=f"=>\$zshift,\
   "uplot=s"=>\$uplot, "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrder,\
-  "decoupleImplicitBoundaryConditions=i"=>\$decoupleImplicitBoundaryConditions );
+  "decoupleImplicitBoundaryConditions=i"=>\$decoupleImplicitBoundaryConditions,"addedMass=f"=>\$addedMass );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }
@@ -375,6 +377,13 @@ $order
   $ao
   upwind order: $upwindOrder
 #
+# For testing turn on added-mass option: 
+  use added mass algorithm $addedMass
+  # for now we let the solver know that the added mass algorithm needed predicted values for the pressure:
+  predicted pressure needed $addedMass
+  predicted boundary pressure needed $addedMass
+  useImplicitAmpBCs $addedMass
+  project added mass velocity $addedMass
 # 
   show file options
     compressed
@@ -410,6 +419,8 @@ $order
     OBPDE:ad21,ad22  $ad21, $ad22
     OBPDE:fourth-order artificial diffusion $ad4
     OBPDE:ad41,ad42 $ad41, $ad42
+   fluid density 
+      1.
    gravity
      $gravity
    # This will use a Neumann BC at outflow: 

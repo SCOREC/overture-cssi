@@ -6,7 +6,8 @@ SRC_FILES += Cgins.C project.C InsParameters.C ins.C insp.C pressureEquation.C d
              setupGridFunctions.C insAugmentedSolution.C viscoPlastic.C updateStateVariables.C \
              turbulenceModelVariables.C getModelVariables.C twoPhaseFlow.C interface.C  \
              PenaltySlipWallBC.C PenaltyWallFunction.C dbAccessCgins.C userDefinedInitialConditions.C \
-             userDefinedKnownSolution.C adjustPressureCoefficients.C projectInterfaceVelocity.C userDefinedBoundaryValues.C
+             userDefinedKnownSolution.C adjustPressureCoefficients.C projectInterfaceVelocity.C userDefinedBoundaryValues.C \
+             addedMassImplicitBoundaryConditions.C
 
 # C++ files to be always compiled optimized
 CSRCO += insFactors.C
@@ -114,6 +115,8 @@ src/insBC4.C : src/insBC4.bC boundaryMacros.h; $(BPP) -quiet -clean -I$(Overture
 src/interface.C : src/interface.bC ../common/src/interfaceMacros.h; $(BPP) -quiet -clean -I../common/src $<
 
 src/pressureEquation.C : src/pressureEquation.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
+
+src/addedMassImplicitBoundaryConditions.C : src/addedMassImplicitBoundaryConditions.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 # we need to add these explicitly since the implicit rule for %.bf doesn't work for some reason (?)
 src/insbcOpt4.f : src/insbcOpt4.bf; $(BPP) -quiet -clean -I$(Overture)/include $<

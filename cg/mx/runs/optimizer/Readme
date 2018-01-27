@@ -1,0 +1,16 @@
+
+
+=======================================================================================================================
+Shape Optimization of a lens: 
+
+(1) Build the target grid:
+ogen -noplot curvedBlockGrid2d -prefix=convexBlockGrid -order=4 -interp=e -width=.25 -dxLeft=0 0 0 -.2 0 0 0 -dxRight=0 0 0 .2 0 0 0 -interfaceGridWidth=.4 -factor=4
+
+
+(2) TARGET RUN
+cgmx -noplot dielectricBodies -g=convexBlockGride4.order4 -backGround=leftBackGround -rbc=rbcNonLocal -kx=2 -eps1=4 -eps2=1. -diss=2 -tf=5. -tp=.5 -xb=-1. -probeFileName=TargetLens -show=lensG4.show -go=go >! lensG4.out
+
+(3) Run optimizer (plotGrid=1 : plot grid at each stage and pause)
+optimizer -caseName=lens -probeType=transmission -kx=2 -eps1=4 -tf=5 -infoLevel=0 -plotGrid=1 -plotSolution=0 -method=fminsearch -objective=targetTransmission -targetFile=TargetLens.dat -tolFun=.001 -tolX=.05 -x0=-.1
+
+=======================================================================================================================

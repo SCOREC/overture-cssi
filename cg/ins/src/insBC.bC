@@ -693,35 +693,49 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
   const bool & projectNormalComponentOfAddedMassVelocity =
                parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
   const int initialConditionsAreBeingProjected = parameters.dbase.get<int>("initialConditionsAreBeingProjected");
-  if( useAddedMassAlgorithm && projectAddedMassVelocity && parameters.gridIsMoving(grid)
-       && !initialConditionsAreBeingProjected 
-       && t!=0.  // ****************************************** TEST ********************
-    )
-  {
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
 
-    // // TRY THIS: set no-slip walls before velocity projection
-    // if( assignNoSlipWall )
-    // {
-    //   if( !gridIsMoving )
-    //   {
-    // 	u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,pBoundaryData,t,bcParams,grid);
-    //   }
-    // }
-    
-    if( puOld == NULL )
+  bool applyAddedMass = ( useAddedMassAlgorithm && 
+                          projectAddedMassVelocity && 
+                          parameters.gridIsMoving(grid)
+                          && !initialConditionsAreBeingProjected 
+                          && t!=0. );
+
+  // For testing with Cgins we may fill in the implicit AMP BCs even when running Cgins alone
+  applyAddedMass = applyAddedMass || (useAddedMassAlgorithm && useImplicitAmpBCs);
+  
+
+
+  if( applyAddedMass )
+  {
+    if( useImplicitAmpBCs )
     {
-      MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
-      if( movingGrids.getNumberOfDeformingBodies() >0 )
-      {
-        printF("--INSBC--ERROR: projectInterfaceVelocity called for deforming bodies but uOld is not available\n");
-        OV_ABORT("fix me");
-      }
+      // Sanity check: 
+      assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
+
+      printF("HHHHH insBC: TEST: do NOT apply explicit BCs to AMP noSlipWall, t=%9.3e HHHHH\n",t);
       
-      projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
+      assignNoSlipWall=false;
     }
     else
     {
-      projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
+
+      if( puOld == NULL )
+      {
+        MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+        if( movingGrids.getNumberOfDeformingBodies() >0 )
+        {
+          printF("--INSBC--ERROR: projectInterfaceVelocity called for deforming bodies but uOld is not available\n");
+          OV_ABORT("fix me");
+        }
+      
+        projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
+      }
+      else
+      {
+        projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
+      }
+    
     }
     
   } // end if useAddedMass 

@@ -42,7 +42,7 @@ function optimizer(varargin)
  eps1=4.;          % default block epsilon
  tolFun=.1; tolX=.1; % tolerences for fminserach
  x0Default=-1234567.; 
- x0 = x0Default;     % initial guess  set to a real number to chnge the default initial guess
+ x0 = x0Default;     % initial guess  set to a real number to change the default initial guess
 
   % --- read command line args ---
   for i = 1 : nargin
@@ -79,13 +79,22 @@ function optimizer(varargin)
   % ----------------------------------------------------
   function ff = cgmxFunction( xx )
     % fprintf(' objectiveFunction: x=%g\n',xx(1)); 
+    % fprintf(' objectiveFunction: size(xx,2)=%d\n',size(xx,2));
 
     if( strcmp(objective,'targetTransmission') )
 
       % -- LENS: for now just adjust the right control point: 
       par(1)=kx;
       par(2)=eps1; 
-      dxLeft =-.2; dxRight=.2 + xx(1); 
+
+      if( size(xx,2)==1 )
+        % shift right control point
+        dxLeft =-.2; dxRight=.2 + xx(1); 
+      else
+        % shift left and right control points 
+        dxLeft =-.2 + xx(1); dxRight=.2 + xx(2); 
+      end
+
       par(3)=dxLeft;    % shift left control point
       par(4)=dxRight;   % shift right control point
 	
@@ -122,15 +131,15 @@ function optimizer(varargin)
 
     options = optimset('Display','iter','TolFun',tolFun, 'TolX',tolX,'PlotFcns',@optimplotfval);
 
-    % ------ INITIAL GUESS FOR fminsearch -----
+    % ------ INITIAL GUESS FOR FMINSEARCH -----
     if( strcmp(objective,'targetTransmission') )
 
-      % Lens: 
+      % --- Adjust the shape of the lens: 
 
       if( x0 == x0Default  )
-        x0 = [ -.05 ]; % initial guess for dxRight (offset from 'exact') 
+        x0 = [ -.05, .05  ]; % initial guess for dxRight (offset from 'exact') 
       else
-        x0 = [ x0 ];  % user specified initial guess 
+        x0 = [ x0, -x0 ];  % user specified initial guess 
       end; 	
 
     elseif( strcmp(objective,'minimizeReflection') )
@@ -155,8 +164,17 @@ function optimizer(varargin)
     % [x,fval] = fminsearch(myObjectiveFunction,x0,options);
     [x,fval] = fminsearch(ff,x0,options);
 
-    fprintf('...DONE fminsearch: x=%g, fval=%g\n',x(1),fval);
-
+    if( size(x,2)==1 )
+      fprintf('...DONE fminsearch: x=%g, fval=%g\n',x(1),fval);
+    else
+      fprintf('...DONE fminsearch: x=[%g,%g], fval=%g\n',x(1),x(2),fval);
+    end; 
+    if( plotOption > 0  )
+      grid on; set(gca,'FontSize',fontSize);
+      plotFileName=sprintf('%sFminsearchConvergence.eps',caseName);
+      fprintf('optimizer: save plot file=[%s]\n',plotFileName);
+      print('-depsc2',plotFileName); % save as an eps file
+    end
 
   else
 

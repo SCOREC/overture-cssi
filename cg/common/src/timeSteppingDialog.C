@@ -22,6 +22,8 @@
 int DomainSolver::
 buildTimeSteppingDialog(DialogData & dialog )
 {
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
+
   const int numColumns=2;
   
   dialog.setWindowTitle("Time Stepping Parameters");
@@ -102,7 +104,7 @@ buildTimeSteppingDialog(DialogData & dialog )
 //     delete [] initialState;
 //   }
 
-  const int maxNumberOfToggleButtons=30;
+  const int maxNumberOfToggleButtons=40;
   aString tbCommands[maxNumberOfToggleButtons]; 
   int tbState[maxNumberOfToggleButtons];
   int ntb=0;
@@ -169,8 +171,8 @@ buildTimeSteppingDialog(DialogData & dialog )
   tbState[ntb]=parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
   ntb++;
 
-  tbCommands[ntb]="project beam velocity";
-  tbState[ntb]=parameters.dbase.get<bool>("projectBeamVelocity");
+  tbCommands[ntb]="useImplicitAmpBCs";
+  tbState[ntb]=useImplicitAmpBCs;
   ntb++;
 
   tbCommands[ntb]="smooth interface velocity";
@@ -332,6 +334,7 @@ getTimeSteppingOption(const aString & answer,
   bool & useMovingGridSubIterations = parameters.dbase.get<bool>("useMovingGridSubIterations");
   bool & useFullSystemForImplicitTimeStepping = parameters.dbase.get<bool>("useFullSystemForImplicitTimeStepping");
   bool & exitOnInstablity = parameters.dbase.get<bool>("exitOnInstablity");
+  bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
   int upwindOrder=-1;
   
   int found=true; 
@@ -764,6 +767,14 @@ getTimeSteppingOption(const aString & answer,
       printF("project the NORMAL component only of the added mass velocity.\n");
     else
       printF("project all components of the added mass velocity.\n");
+  }
+  
+  else if( dialog.getToggleValue(answer,"useImplicitAmpBCs",useImplicitAmpBCs) )
+  {
+    if( useImplicitAmpBCs )
+      printF("Use implicit AMP velocity boundary conditions (bulk solid).\n");
+    else
+      printF("Do NOT use implicit AMP velocity boundary conditions (bulk solid).\n");
   }
 
   else if( dialog.getToggleValue(answer,"project beam velocity",projectBeamVelocity) )

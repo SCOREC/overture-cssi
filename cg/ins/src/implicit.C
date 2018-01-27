@@ -7,6 +7,8 @@
 #include "SparseRep.h"
 #include "App.h"
 #include "GridMaterialProperties.h"
+#include "Interface.h"
+#include "DeformingBodyMotion.h"
 
 #define insimp EXTERN_C_NAME(insimp)
 extern "C"
@@ -98,6 +100,9 @@ buildImplicitSolvers(CompositeGrid & cg)
   int & implicitSolverForTemperature = parameters.dbase.get<int>("implicitSolverForTemperature");
   bool & useFullSystemForImplicitTimeStepping = parameters.dbase.get<bool >("useFullSystemForImplicitTimeStepping");
   const bool & decoupleImplicitBoundaryConditions= parameters.dbase.get<bool>("decoupleImplicitBoundaryConditions");
+
+  const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
 
   int grid, n;
   int & scalarSystemForImplicitTimeStepping = parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping");
@@ -198,7 +203,7 @@ buildImplicitSolvers(CompositeGrid & cg)
                 // *** FREE SURFACE : this boundary condition couples the velocity components ****
                 if( decoupleImplicitBoundaryConditions )
                 {
-		  // We approximatelt decouple the coupled BC's -- but we need separate scale solvers: 
+		  // We approximately decouple the coupled BC's -- but we need separate scale solvers: 
 		  numberOfImplicitSolversNeeded=cg.numberOfDimensions();
 		}
                 else
@@ -226,11 +231,19 @@ buildImplicitSolvers(CompositeGrid & cg)
                        "grid=%s\n",side,axis,bc,(const char*)cg[grid].getName());
                 Overture::abort("error");
 	      }
-	    }
-	  }
-	}
+            }
+            else if( bc==Parameters::noSlipWall && useImplicitAmpBCs && useAddedMassAlgorithm )
+            {
+              // implicit added mass algorithm uses implicitly coupled BCs
+              numberOfImplicitSolversNeeded=1;
+              scalarSystemForImplicitTimeStepping=false;
+              useFullSystemForImplicitTimeStepping=true; 
+            }
+            
+          } // end for side
+        } // end for axis 
       }
-    }
+    } // end for grid
   }
   else
   {
@@ -1424,6 +1437,59 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     }
 
 
+    // ----- The AMP BC requires zs and alpha ------
+
+    // Retrieve the parameters from the bulk solid
+    // -- extract parameters from any deforming solids ---
+    // FIX ME -- lookup first time and then save locally 
+    real zs=1., alpha=.5; // defaults for testing cgins alone
+    const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+
+    std::vector<BoundaryData> & boundaryDataArray =parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
+    BoundaryData & bd = boundaryDataArray[grid];
+    // If useImplicitAmpBCs=true then we treat this as a bulk solid
+    bool isBulkSolid=parameters.dbase.get<bool>("useImplicitAmpBCs"); // set to true below if this is a bulk solid
+    if( bd.dbase.has_key("deformingBodyNumber") )
+    {
+      MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+      const real fluidAddedMassLengthScale =  parameters.dbase.get<real>("fluidAddedMassLengthScale");
+
+      int (&deformingBodyNumber)[2][3] = bd.dbase.get<int[2][3]>("deformingBodyNumber");
+      Index Ib1,Ib2,Ib3, Ig1,Ig2,Ig3, Ip1,Ip2,Ip3;
+      for( int side=0; side<=1; side++ )
+      {
+        for( int axis=0; axis<numberOfDimensions; axis++ )
+        {
+          if( deformingBodyNumber[side][axis]>=0 )
+          {
+            int body=deformingBodyNumber[side][axis];
+            DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+            if( deform.isBulkSolidModel() )
+            {
+              isBulkSolid=true;
+              
+              Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+              real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+              real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+              real muSolid=bulkSolidParams.dbase.get<real>("mu");
+              real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+              real cs=sqrt(muSolid/rhoSolid);
+          
+              real zp=rhoSolid*cp;
+              zs=rhoSolid*cs;
+              // fluid impedance = rho*H/dt 
+              const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+              assert( dt>0. );
+              const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
+              alpha = zf/(zf+zp);
+            }
+            
+          }
+        }
+      }
+    }
+    
+
     const int ndipar=60, ndrpar=40;
     int ipar[ndipar];
     real rpar[ndrpar];
@@ -1507,6 +1573,7 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
      
     ipar[45]=orderOfExtrapolationForOutflow;
 
+
     int evalResidual=option==InsParameters::evalResidual;
     ipar[46]=evalResidual;
     ipar[47]=int(option==InsParameters::evalResidualForBoundaryConditions);
@@ -1515,6 +1582,12 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     ipar[50]=parameters.dbase.get<int >("rc");
     ipar[51]=materialFormat;
     
+    // added: *wdh* Jan 11, 2018
+    ipar[52]= parameters.dbase.get<bool>("useAddedMassAlgorithm");
+    ipar[53]= parameters.dbase.get<bool>("projectAddedMassVelocity");
+    ipar[54]= parameters.dbase.get<bool>("useImplicitAmpBCs");
+    ipar[55]= isBulkSolid; 
+
     rpar[0] = mg.gridSpacing(0);
     rpar[1] = mg.gridSpacing(1);
     rpar[2] = mg.gridSpacing(2);
@@ -1583,6 +1656,11 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("adcBoussinesq",adcBoussinesq);
     rpar[24]=adcBoussinesq;
     rpar[25]= parameters.dbase.get<real >("kThermal");
+
+
+    rpar[26]=zs;
+    rpar[27]=alpha;
+    rpar[28]=fluidDensity;
 
     if( option==InsParameters::buildMatrix )
       coeffLocal=0.;  // is this needed ?
@@ -1907,11 +1985,30 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     const bool & projectNormalComponentOfAddedMassVelocity =
       parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
     const int initialConditionsAreBeingProjected = parameters.dbase.get<int>("initialConditionsAreBeingProjected");
-    if( useAddedMassAlgorithm && projectAddedMassVelocity && parameters.gridIsMoving(grid)
+    const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
+    int applied=0;
+    if( useAddedMassAlgorithm && useImplicitAmpBCs )
+    {
+      // --- Fill in the AMP implicit boundary conditions for BULK SOLIDS ---  **NEW WAY** Jan 16, 2018
+      int option=0; // fill in the implicit BCs
+      
+      applied = addedMassImplicitBoundaryConditions(option,u,uL,uOld,gridVelocity,t,scalarSystem,grid,dt );
+
+      if( applied )
+        assignNoSlipWall=false;   // do not assign no-slip walls below
+      
+    }
+
+    if( !applied &&
+        useAddedMassAlgorithm && 
+        projectAddedMassVelocity && 
+        parameters.gridIsMoving(grid)
         && !initialConditionsAreBeingProjected 
         && t!=0.  // ****************************************** TEST ********************
       )
     {
+      // ** OLD WAY***
+      // BEAMS ARE DONE HERE 
 
       projectInterfaceVelocity( t,u,uOld,gridVelocity,grid,dt ); // *wdh* Dec 20, 2017 -- uOld passed
       
@@ -1968,28 +2065,32 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     }
     
 
-    if( parameters.gridIsMoving(grid) )
+    if( assignNoSlipWall )
     {
-      // if( true )
-      // { // *** TEMP**  OUTPUT FOR SHEAR-BLOCK
-      // 	int i1=0, i2=0, i3=0;
-      // 	printF("--INS--IMP-BC: t=%9.3e gridVelocity on boundary=[%14.6e,%14.6e]\n",
-      // 	       t,gridVelocity(i1,i2,i3,0),gridVelocity(i1,i2,i3,1));
-      // }
+      if( parameters.gridIsMoving(grid) )
+      {
+        // if( true )
+        // { // *** TEMP**  OUTPUT FOR SHEAR-BLOCK
+        // 	int i1=0, i2=0, i3=0;
+        // 	printF("--INS--IMP-BC: t=%9.3e gridVelocity on boundary=[%14.6e,%14.6e]\n",
+        // 	       t,gridVelocity(i1,i2,i3,0),gridVelocity(i1,i2,i3,1));
+        // }
       
-      u.applyBoundaryCondition(V,dirichlet,noSlipWall,gridVelocity,t);
-      // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,gridVelocity,t);
-    }
-    else
-    {
-      // u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,t,Overture::defaultBoundaryConditionParameters(),grid);
-      // Allow for variable inflow on a wall by passing pBoundaryData:  *wdh* 2011/08/29
-      u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,pBoundaryData,t,
-                               Overture::defaultBoundaryConditionParameters(),grid);
+        u.applyBoundaryCondition(V,dirichlet,noSlipWall,gridVelocity,t);
+        // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,gridVelocity,t);
+      }
+      else
+      {
+        // u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,t,Overture::defaultBoundaryConditionParameters(),grid);
+        // Allow for variable inflow on a wall by passing pBoundaryData:  *wdh* 2011/08/29
+        u.applyBoundaryCondition(V,dirichlet,noSlipWall,bcData,pBoundaryData,t,
+                                 Overture::defaultBoundaryConditionParameters(),grid);
 
-       // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,bcData,t,
-       //				Overture::defaultBoundaryConditionParameters(),grid);
+        // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,bcData,t,
+        //				Overture::defaultBoundaryConditionParameters(),grid);
+      }
     }
+    
 
     if( turbulenceModel==Parameters::kEpsilon ||
 	turbulenceModel==Parameters::kOmega ||

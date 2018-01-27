@@ -2,6 +2,15 @@ cd /Users/henshaw/runs/mx/optimizer
 
 
 ****************************************
+**** Nov 25, 2017
+
+
+optimizer -caseName=lens -probeType=transmission -kx=2 -eps1=4 -tf=5 -infoLevel=0 -plotGrid=0 -plotSolution=0 -method=fminsearch -objective=targetTransmission -targetFile=TargetLens.dat -tolFun=.001 -tolX=.05 -x0=-.1
+
+Try changing control points on both faces 
+optimizer -caseName=lens -probeType=transmission -kx=2 -eps1=4 -tf=5 -infoLevel=0 -plotGrid=1 -plotSolution=0 -method=fminsearch -objective=targetTransmission -targetFile=TargetLens.dat -tolFun=.001 -tolX=.05 -x0=-.1
+
+****************************************
 **** Nov 24, 2017
 
 Moved optimized files to cg/mx/runs/optimizer
