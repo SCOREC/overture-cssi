@@ -66,6 +66,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
+$predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 $amp=.05; $caseid=0;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"kappa=f"=>\$kappa, "bg=s"=>\$backGround,\
@@ -130,6 +131,10 @@ $rhoSolid=1.; $muSolid=1.; $lambdaSolid=1.; $nu=.1;
 if( $caseid eq 0 ){ $scf=1.; }
 if( $caseid eq 1 ){ $scf=1000.; }
 if( $caseid eq 2 ){ $scf=.001; }
+if( $caseid eq 3 ){ $scf=1000.; }
+if( $caseid eq 4 ){ $scf=10.; }
+if( $caseid eq 5 ){ $scf=.1; }
+if( $caseid eq 6 ){ $scf=1.; }
 $grid
 # ----------  define deforming bodies by a share flag of 100 ----
 # ----------  NOTE: we parameterize the boundary by index so grid points match! ---

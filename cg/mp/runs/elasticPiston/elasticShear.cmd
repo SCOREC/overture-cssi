@@ -65,6 +65,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
+$predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 # ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
 $Pi=4.*atan2(1.,1.);
 $amp=.001; $k=.5; $t0=1./(4*$k);  $H=1.; $Hbar=.5; $rho=1.; 
