@@ -38,6 +38,7 @@ $backGround="outerSquare"; $deformingGrid="interface";
 #
 $ts="pc";   # MP solver
 $tsINS="pc"; # INS time-stepping method 
+$dtMax=.1;
 $numberOfCorrections=1;  # cgmp and cgins 
 $coupled=0; $iTol=1.e-3; $iOmega=1.; $flushFrequency=10; $useNewInterfaceTransfer=0; 
 $useTP=0; # 1=use traditional partitioned scheme
@@ -64,6 +65,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
+$useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
 $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 # ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
 $Pi=4.*atan2(1.,1.);
@@ -92,7 +94,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths );
+   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
+   "dtMax=f"=>\$dtMax );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -171,7 +174,7 @@ $modelNameINS="none";
 #
 $T0=0.; 
 # -- RAMP PRESSURE BC: 
-$bc = "all=$sideBC\n bcNumber100=noSlipWall uniform(u=.0,T=$T0)\n bcNumber100=tractionInterface";
+$bc = "all=dirichletBoundaryCondition\n bcNumber100=noSlipWall \n bcNumber100=tractionInterface";
 #
 $ic="uniform flow\n" . "p=0., u=$u0, T=$T0";
 $rhoBar=$rhoSolid*$scf; $lambdaBar=$lambdaSolid*$scf; $muBar=$muSolid*$scf;
@@ -214,7 +217,7 @@ continue
   final time $tFinal
   times to plot $tPlot
   cfl $cfl
-  dtMax .1
+  dtMax $dtMax
   $ts
   number of PC corrections $numberOfCorrections
   OBPDE:interface tolerance $iTol

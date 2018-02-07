@@ -24,6 +24,7 @@ $p0=1.;
 $cnsEOS="ideal"; 
 $cnsGammaStiff=1.4; $cnsPStiff=0.;   # for stiffened EOS -- by default make it look like an ideal gas
 $lambdaSolid=1.; $muSolid=1.;
+$thetad=0.; # rotation of domain (degrees)
 ## $stressRelaxation=1; $relaxAlpha=0.1; $relaxDelta=0.1; 
 $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
@@ -92,7 +93,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs );
+   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
+   "dtMax=f"=>\$dtMax, "thetad=f"=>\$thetad );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -198,10 +200,11 @@ if( $tz eq "turn off twilight zone" ){ $bc = $bc . "\n" . $cmdKnown; }
 #
 $ic="uniform flow\n" . "p=0., u=$u0, T=$T0";
 $rhoBar=$rhoSolid*$scf; $lambdaBar=$lambdaSolid*$scf; $muBar=$muSolid*$scf;
+$thetaR=$thetad*$Pi/180.;
 $ic="OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
     " bulk solid piston\n" .\
-    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar\n" .\
+    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
     "  $rampOrder $ra $rb\n" .\
     " done\n" .\
     "done"; 
@@ -229,7 +232,7 @@ $initialConditionCommands=\
     "OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
     " bulk solid piston\n" .\
-    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar\n" .\
+    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
     "  $rampOrder $ra $rb\n" .\
     " done\n" .\
   "done \n" .\
@@ -249,7 +252,7 @@ continue
   final time $tFinal
   times to plot $tPlot
   cfl $cfl
-  dtMax .1
+  dtMax $dtMax
   $ts
   number of PC corrections $numberOfCorrections
   OBPDE:interface tolerance $iTol

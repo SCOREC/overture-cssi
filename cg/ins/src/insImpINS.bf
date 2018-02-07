@@ -280,7 +280,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 
 ! Here are the coefficients of the Added Mass equation for the GHOST -- needs normal an(0:2) and delta function
 #defineMacro AMG(i,j,k) (delta(j,k)*an(i) + delta(i,j)*an(k) + delta(i,k)*an(j) - 2.*an(i)*an(j)*an(k))
-#defineMacro AMG0(i,j) ( -( delta(i,j) - an(i)*an(j) )*(zs/mu) )
+#defineMacro AMG0(i,j) ( +( delta(i,j) - an(i)*an(j) )*(zs/mu) )
 ! AMGDelta(i,j) =  -theta*dt*nu*[ I - P ]
 !     P = (1-alpha)*n n^T
 !     beta = theta*dt*nu 
@@ -319,7 +319,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 !   (II)  v - theta*dt*nu*(I+P) Delta v = RHS
 !
 ! (I): 
-!        (d_k v_k) n_i + (delta_ij - n_i n_j)*( (d_j v_k + d_k v_j) n_k  - zs v_j/mu ) = RHS(I)
+!        (d_k v_k) n_i + (delta_ij - n_i n_j)*( (d_j v_k + d_k v_j) n_k  + zs v_j/mu ) = RHS(I)
 !        (d_k v_j) delta_jk n_i +
 !                     + (delta_ij - n_i n_j)*( d_j v_k ) n_k 
 !                     + (delta_ij - n_i n_j)*( d_k v_j ) n_k 
@@ -327,14 +327,14 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 !        (d_k v_j) delta_jk n_i +
 !                     + (delta_ik - n_i n_k)*( d_k v_j ) n_j 
 !                     + (delta_ij - n_i n_j)*( d_k v_j ) n_k 
-!                     - (delta_ij - n_i n_j)* (v_j zs/mu )            = RHS(i)
+!                     + (delta_ij - n_i n_j)* (v_j zs/mu )            = RHS(i)
 !
 !
 !   =>  sum_j sum_k  AMG(i,j,k) * (partial v_j/partial x_k)    + sum_j AMG0(i,j) v_j  = RHS(m),  i=0,1,2
 !
 !      AMG(i,j,k) = delta_jk  n_i + (delta_ik - n_i n_k) n_j + (delta_ij - n_i n_j) n_k
 !                 =  delta_jk  n_i + delta_ik n_j + delta_ij n_k -2* n_i n_j n_k 
-!      AMG0(ij) = - (delta_ij - n_i n_j) *zs/mu 
+!      AMG0(ij) = + (delta_ij - n_i n_j) *zs/mu 
 ! 
 !  (II)   (I+P) Delta v = (I - (alpha-1)*n_i n_j) Delta(v_j) 
 !                       = [ delta_ij - (alpha-1)*n_i n_j ] * Delta(v_j)

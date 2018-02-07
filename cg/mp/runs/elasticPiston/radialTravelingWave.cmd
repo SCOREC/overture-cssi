@@ -38,6 +38,7 @@ $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2;
 $fic = "uniform";  # fluid initial condition
 $backGround="outerSquare"; $deformingGrid="interface"; 
 #
+$dtMax = .1;
 $ts="pc";   # MP solver
 $tsINS="pc"; # INS time-stepping method 
 $numberOfCorrections=1;  # cgmp and cgins 
@@ -66,6 +67,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
+$useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 $amp=.05; $caseid=0;
 # ----------------------------- get command line arguments ---------------------------------------
@@ -89,7 +91,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"caseid=i"=>\$caseid,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths );
+   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
+   "dtMax=f"=>\$dtMax );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -222,7 +225,7 @@ continue
   final time $tFinal
   times to plot $tPlot
   cfl $cfl
-  dtMax .1
+  dtMax $dtMax
   $ts
   number of PC corrections $numberOfCorrections
   OBPDE:interface tolerance $iTol

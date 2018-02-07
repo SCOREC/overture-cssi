@@ -769,6 +769,7 @@ getUserDefinedDeformingBodyKnownSolution(
     const real & rhoBar   = rpar[3];
     const real & lambdaBar= rpar[4];
     const real & muBar    = rpar[5];
+    const real & thetaR   = rpar[6]; // rotation of domain (radians)
 
     const real cp = sqrt((lambdaBar+2.*muBar)/rhoBar);
   
@@ -794,6 +795,8 @@ getUserDefinedDeformingBodyKnownSolution(
     const real pI = -(lambdaBar+2.*muBar)*(fpd + fmd)/cp;  // interface p
     const real pIt= -(lambdaBar+2.*muBar)*(fpdd + fmdd)/cp;  // interface p_t
 
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
     
     if( t <= 2.*dt )
     {
@@ -801,31 +804,34 @@ getUserDefinedDeformingBodyKnownSolution(
              t,fm,fp);
     }
 
+
     const int c0=C.getBase(), c1=c0+1;
     if( stateOption==boundaryPosition )
     {
+      // state(I1,I2,I3,c0)= ct*xLocal(I1,I2,I3,0)+st*xLocal(I1,I2,I3,1);
+      // state(I1,I2,I3,c1)=-st*xLocal(I1,I2,I3,0)+ct*xLocal(I1,I2,I3,1);
       state(I1,I2,I3,c0)=xLocal(I1,I2,I3,0);
-      state(I1,I2,I3,c1)=yI;
+      state(I1,I2,I3,c1)=xLocal(I1,I2,I3,1);
     }
     else if( stateOption==boundaryVelocity )
     {
-      state(I1,I2,I3,c0)=0.;
-      state(I1,I2,I3,c1)=vI;
+      state(I1,I2,I3,c0)=-vI*st;
+      state(I1,I2,I3,c1)= vI*ct;
     }
     else if( stateOption==boundaryAcceleration )
     {
-      state(I1,I2,I3,c0)=0.;
-      state(I1,I2,I3,c1)=aI;
+      state(I1,I2,I3,c0)=-aI*st;
+      state(I1,I2,I3,c1)= aI*ct;
     }
     else if( stateOption==boundaryTraction )
     {
-      state(I1,I2,I3,c0)=0.;
-      state(I1,I2,I3,c1)=-pI;
+      state(I1,I2,I3,c0)= pI*st;
+      state(I1,I2,I3,c1)=-pI*ct;
     }
     else if( stateOption==boundaryTractionRate )
     {
-      state(I1,I2,I3,c0)=0.;
-      state(I1,I2,I3,c1)=-pIt;
+      state(I1,I2,I3,c0)= pIt*st;
+      state(I1,I2,I3,c1)=-pIt*ct;
     }
   }
   else if( userKnownSolution=="radialElasticPiston" )
@@ -1913,7 +1919,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & rhoBar   = rpar[3];
       real & lambdaBar= rpar[4];
       real & muBar    = rpar[5];
-      
+      real & thetaR   = rpar[6]; // rotation of domain (radians)
+
       real amp,k,t0,ra,rb;
       int rampOrder;
 
@@ -1931,8 +1938,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " rampOrder, ra,rb : order-of-ramp (1,2,3,4), start and end of ramp transition\n"
              "--------------------------------------------------------------------------------\n"
 	);
-      gi.inputString(answer,"Enter amp, k,t0,H,Hbar,rho,rhoBar,lambdaBar,muBar");
-      sScanF(answer,"%e %e %e %e %e %e %e %e %e",&amp,&k,&t0,&H,&Hbar,&rho,&rhoBar,&lambdaBar,&muBar);
+      gi.inputString(answer,"Enter amp, k,t0,H,Hbar,rho,rhoBar,lambdaBar,muBar,thetaR");
+      sScanF(answer,"%e %e %e %e %e %e %e %e %e %e",&amp,&k,&t0,&H,&Hbar,&rho,&rhoBar,&lambdaBar,&muBar,&thetaR);
 
       gi.inputString(answer,"Enter rampOrder,ra,rb");
       sScanF(answer,"%i %e %e",&rampOrder,&ra,&rb);

@@ -935,6 +935,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & rhoBar   = rpar[3];
     const real & lambdaBar= rpar[4];
     const real & muBar    = rpar[5];
+    const real & thetaR   = rpar[6]; // rotation of domain (radians)
 
     const real & fluidDensity = dbase.get<real >("fluidDensity");
     assert( rho==fluidDensity );
@@ -998,18 +999,23 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       printF(" --UDKS--  ERROR IN INTERFACE POSITION = %9.3e at t=%9.3e\n",yIerr,t);
     }
     
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
+
     int i1,i2,i3;
 
     if( numberOfTimeDerivatives==0 )
     {
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-        // const real x = xLocal(i1,i2,i3,0);
+        const real x = xLocal(i1,i2,i3,0);
         const real y = xLocal(i1,i2,i3,1);
+        const real yRef = -st*x+ct*y;
 
-        ua(i1,i2,i3,uc) = 0.;
-        ua(i1,i2,i3,vc) = vI;
-        ua(i1,i2,i3,pc) = p0 - pAmp*(H-y);
+        // printF("thetaR=%f\n",thetaR);
+        ua(i1,i2,i3,uc) = -st*vI;
+        ua(i1,i2,i3,vc) =  ct*vI;
+        ua(i1,i2,i3,pc) = p0 - pAmp*(H-yRef);
 
       }
     }
@@ -1030,12 +1036,13 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-        // const real x = xLocal(i1,i2,i3,0);
+        const real x = xLocal(i1,i2,i3,0);
         const real y = xLocal(i1,i2,i3,1);
+        const real yRef = -st*x+ct*y;
 
         ua(i1,i2,i3,uc) = 0.;
         ua(i1,i2,i3,vc) = aI;
-        ua(i1,i2,i3,pc) = p0t - pAmpt*(H-y);
+        ua(i1,i2,i3,pc) = p0t - pAmpt*(H-yRef);
 
       }
     }

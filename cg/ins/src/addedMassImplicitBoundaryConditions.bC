@@ -59,10 +59,10 @@ for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
 
 
 #define AMP(n,m) (delta(n,m) - an[n]*an[m])
-// Here is the "P" operator, (alpha-1) n n^T 
-#define AMGP(n,m) ((alpha-1.)*an[n]*an[m])
-// Here is I+P 
-#define AMG(n,m) (delta(n,m) + (alpha-1.)*an[n]*an[m])
+// Here is the "P" operator, (1-alpha) n n^T 
+#define AMGP(n,m) ((1.-alpha)*an[n]*an[m])
+// Here is I-P 
+#define AMG(n,m) (delta(n,m) - (1.-alpha)*an[n]*an[m])
 
 // ===============================================================================================
 // Macro: evalRightHandSide: evaluate the right-hand-side to the AMP velocity BCs
@@ -109,7 +109,7 @@ for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
   RealArray fluidRhs(Ib1,Ib2,Ib3,Rx);    // fluid interior update without implicit viscous term
  
   // Solid characteristic variable used in the RHS 
-  solidChar(Ib1,Ib2,Ib3,Rx) = solidTraction(Ib1,Ib2,Ib3,Rx) - zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
+  solidChar(Ib1,Ib2,Ib3,Rx) = -solidTraction(Ib1,Ib2,Ib3,Rx) + zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
 
   // fluidRhs(Ib1,Ib2,Ib3,dir) = fluid interior update without implicit viscous term 
   for( int dir=0; dir<numberOfDimensions; dir++ )
@@ -191,7 +191,7 @@ for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
 
     }
 
-    solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) - zs*ue(Ib1,Ib2,Ib3,V);
+    solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) + zs*ue(Ib1,Ib2,Ib3,V);
 
     
     // fluidRhs = v^{n-1} + (theta*dt/rho)*grad(p)^n + ((1-theta)*dt/rho)*( -grad(p)^{n-1} + mu*Delta(v)^{n-1} )
@@ -231,7 +231,7 @@ for(int i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
   for( int n=0; n<numberOfDimensions; n++ )
   {
     // --- RHS FOR GHOST EQUATION: ---
-    //  RHS = (1/mu)*( I - n n^T)( solidTraction - zs*vs )
+    //  RHS = (1/mu)*( I - n n^T)( solidTraction + zs*vs )
     uLocal(Ig1,Ig2,Ig3,uc+n) = (1./mu)*( AMPV(n,0)*solidChar(Ib1,Ib2,Ib3,0) + AMPV(n,1)*solidChar(Ib1,Ib2,Ib3,1) );
 
     // --- RHS FOR BOUNDARY EQUATION: ---

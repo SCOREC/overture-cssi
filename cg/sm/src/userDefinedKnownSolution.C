@@ -327,6 +327,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & rhoBar   = rpar[3];
     const real & lambdaBar= rpar[4];
     const real & muBar    = rpar[5];
+    const real & thetaR   = rpar[6]; // rotation of domain (radians)
 
     const real cp2 = sqrt((lambdaBar+2.*muBar)/rhoBar);
     assert( cp==cp2 ); // sanity check
@@ -349,28 +350,33 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const realArray & center = mg.center();
     RealArray & u = ua;
 
+    const real ct = cos(thetaR);
+    const real st = sin(thetaR);
+
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
     {
       // Reference coordinates:
-      // real x= center(i1,i2,i3,0);
+      const real x= center(i1,i2,i3,0);
       const real y= center(i1,i2,i3,1);
+      const real yRef = -st*x+ct*y;
 
+      // printF("thetaR=%f\n",thetaR);
       real xim,xip, fm,fp, fmd,fpd;
-      xim=t-(y+Hbar)/cp;
-      xip=t+(y+Hbar)/cp;  
+      xim=t-(yRef+Hbar)/cp;
+      xip=t+(yRef+Hbar)/cp;  
         
       bsp.eval(xim, fm,fmd );  // fmd = d(fm(xi))/d(xi)
       bsp.eval(xip, fp,fpd );
 
-      u(i1,i2,i3,u1c)=0.;
-      u(i1,i2,i3,u2c)= fp - fm;
+      u(i1,i2,i3,u1c)= -(fp - fm)*st;
+      u(i1,i2,i3,u2c)=  (fp - fm)*ct;
 
       // velocities
       if( assignVelocity )
       {
-        u(i1,i2,i3,v1c)=0.;
-        u(i1,i2,i3,v2c)= fpd - fmd;
+        u(i1,i2,i3,v1c)= -(fpd - fmd)*st;
+        u(i1,i2,i3,v2c)=  (fpd - fmd)*ct;
       }
       
       // stresses
@@ -379,10 +385,16 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       {
         u2y = (fpd + fmd)/cp; // note "+" sign
         
-	u(i1,i2,i3,s11c)=lambda*u2y;
-	u(i1,i2,i3,s12c)=0.;
-	u(i1,i2,i3,s21c)=0.;
-	u(i1,i2,i3,s22c)=(lambda+2.*mu)*u2y;
+        const real s11 = lambda*u2y;
+        const real s22 = (lambda+2.*mu)*u2y;
+
+        // e1 = [ct,st], e2 = [-st,ct]
+        // sigma = s11 e1 e1^T + s22 e2 e2^T
+
+	u(i1,i2,i3,s11c)= s11*ct*ct+s22*st*st;
+	u(i1,i2,i3,s12c)= s11*st*ct-s22*st*ct;
+	u(i1,i2,i3,s21c)= s11*st*ct-s22*st*ct;
+	u(i1,i2,i3,s22c)= s11*st*st+s22*ct*ct;;
       }
       
     }

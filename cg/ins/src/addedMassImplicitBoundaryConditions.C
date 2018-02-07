@@ -41,10 +41,10 @@
 
 
 #define AMP(n,m) (delta(n,m) - an[n]*an[m])
-// Here is the "P" operator, (alpha-1) n n^T 
-#define AMGP(n,m) ((alpha-1.)*an[n]*an[m])
-// Here is I+P 
-#define AMG(n,m) (delta(n,m) + (alpha-1.)*an[n]*an[m])
+// Here is the "P" operator, (1-alpha) n n^T 
+#define AMGP(n,m) ((1.-alpha)*an[n]*an[m])
+// Here is I-P 
+#define AMG(n,m) (delta(n,m) - (1.-alpha)*an[n]*an[m])
 
 // ===============================================================================================
 // Macro: evalRightHandSide: evaluate the right-hand-side to the AMP velocity BCs
@@ -214,12 +214,12 @@ addedMassImplicitBoundaryConditions(int option,
                         pz.redim(Ib1,Ib2,Ib3);
                         op.derivative(MappedGridOperators::zDerivative ,uLocal,pz,Ib1,Ib2,Ib3,pc);
                     }
-                    RealArray delta(3,3); // Dirak delta
+                    RealArray delta(3,3); // Dirac delta
                     delta=0.; delta(0,0)=1.; delta(1,1)=1.; delta(2,2)=1.;
                     RealArray solidChar(Ib1,Ib2,Ib3,Rx);   // solid characteristic variable 
                     RealArray fluidRhs(Ib1,Ib2,Ib3,Rx);    // fluid interior update without implicit viscous term
           // Solid characteristic variable used in the RHS 
-                    solidChar(Ib1,Ib2,Ib3,Rx) = solidTraction(Ib1,Ib2,Ib3,Rx) - zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
+                    solidChar(Ib1,Ib2,Ib3,Rx) = -solidTraction(Ib1,Ib2,Ib3,Rx) + zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
           // fluidRhs(Ib1,Ib2,Ib3,dir) = fluid interior update without implicit viscous term 
                     for( int dir=0; dir<numberOfDimensions; dir++ )
                     {
@@ -247,6 +247,7 @@ addedMassImplicitBoundaryConditions(int option,
             // tau_ij = mu*( partial_j u_i + partial_i u_j )
                         if( numberOfDimensions==2 )
                         {
+              // ====== Get traction in two dimensions =====
                             RealArray taue(Ib1,Ib2,Ib3,3); // hold viscous stress tensor tau
                             taue(Ib1,Ib2,Ib3,0) = (2.*mu)*( uex(Ib1,Ib2,Ib3,uc) );                        // tau_11
                             taue(Ib1,Ib2,Ib3,1) = (   mu)*( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) );  // tau_12 = tau_21
@@ -258,6 +259,7 @@ addedMassImplicitBoundaryConditions(int option,
                         }
                         else 
                         {
+              // ====== Get traction in three dimensions =====
                             RealArray uez(Ib1,Ib2,Ib3,V);
                             e.gd( uez ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t); 
                             RealArray taue(Ib1,Ib2,Ib3,6);
@@ -280,7 +282,7 @@ addedMassImplicitBoundaryConditions(int option,
                                                                                       taue(Ib1,Ib2,Ib3,4)*normal(Ib1,Ib2,Ib3,1) +
                                                                                       taue(Ib1,Ib2,Ib3,5)*normal(Ib1,Ib2,Ib3,2) );
                         }
-                        solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) - zs*ue(Ib1,Ib2,Ib3,V);
+                        solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) + zs*ue(Ib1,Ib2,Ib3,V);
             // fluidRhs = v^{n-1} + (theta*dt/rho)*grad(p)^n + ((1-theta)*dt/rho)*( -grad(p)^{n-1} + mu*Delta(v)^{n-1} )
             //          = [ I - (mu*theta*dt/rho)*Delta ]* v^n 
                         RealArray & uexx = uex; RealArray & ueyy =uey;  // Reuse arrays
@@ -311,7 +313,7 @@ addedMassImplicitBoundaryConditions(int option,
                     for( int n=0; n<numberOfDimensions; n++ )
                     {
             // --- RHS FOR GHOST EQUATION: ---
-            //  RHS = (1/mu)*( I - n n^T)( solidTraction - zs*vs )
+            //  RHS = (1/mu)*( I - n n^T)( solidTraction + zs*vs )
                         uLocal(Ig1,Ig2,Ig3,uc+n) = (1./mu)*( AMPV(n,0)*solidChar(Ib1,Ib2,Ib3,0) + AMPV(n,1)*solidChar(Ib1,Ib2,Ib3,1) );
             // --- RHS FOR BOUNDARY EQUATION: ---
                         if( false )
@@ -528,12 +530,12 @@ addedMassImplicitBoundaryConditions(int option,
                                 pz.redim(Ib1,Ib2,Ib3);
                                 op.derivative(MappedGridOperators::zDerivative ,uLocal,pz,Ib1,Ib2,Ib3,pc);
                             }
-                            RealArray delta(3,3); // Dirak delta
+                            RealArray delta(3,3); // Dirac delta
                             delta=0.; delta(0,0)=1.; delta(1,1)=1.; delta(2,2)=1.;
                             RealArray solidChar(Ib1,Ib2,Ib3,Rx);   // solid characteristic variable 
                             RealArray fluidRhs(Ib1,Ib2,Ib3,Rx);    // fluid interior update without implicit viscous term
               // Solid characteristic variable used in the RHS 
-                            solidChar(Ib1,Ib2,Ib3,Rx) = solidTraction(Ib1,Ib2,Ib3,Rx) - zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
+                            solidChar(Ib1,Ib2,Ib3,Rx) = -solidTraction(Ib1,Ib2,Ib3,Rx) + zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
               // fluidRhs(Ib1,Ib2,Ib3,dir) = fluid interior update without implicit viscous term 
                             for( int dir=0; dir<numberOfDimensions; dir++ )
                             {
@@ -561,6 +563,7 @@ addedMassImplicitBoundaryConditions(int option,
                 // tau_ij = mu*( partial_j u_i + partial_i u_j )
                                 if( numberOfDimensions==2 )
                                 {
+                  // ====== Get traction in two dimensions =====
                                     RealArray taue(Ib1,Ib2,Ib3,3); // hold viscous stress tensor tau
                                     taue(Ib1,Ib2,Ib3,0) = (2.*mu)*( uex(Ib1,Ib2,Ib3,uc) );                        // tau_11
                                     taue(Ib1,Ib2,Ib3,1) = (   mu)*( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) );  // tau_12 = tau_21
@@ -572,6 +575,7 @@ addedMassImplicitBoundaryConditions(int option,
                                 }
                                 else 
                                 {
+                  // ====== Get traction in three dimensions =====
                                     RealArray uez(Ib1,Ib2,Ib3,V);
                                     e.gd( uez ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t); 
                                     RealArray taue(Ib1,Ib2,Ib3,6);
@@ -594,7 +598,7 @@ addedMassImplicitBoundaryConditions(int option,
                                                                                               taue(Ib1,Ib2,Ib3,4)*normal(Ib1,Ib2,Ib3,1) +
                                                                                               taue(Ib1,Ib2,Ib3,5)*normal(Ib1,Ib2,Ib3,2) );
                                 }
-                                solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) - zs*ue(Ib1,Ib2,Ib3,V);
+                                solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) + zs*ue(Ib1,Ib2,Ib3,V);
                 // fluidRhs = v^{n-1} + (theta*dt/rho)*grad(p)^n + ((1-theta)*dt/rho)*( -grad(p)^{n-1} + mu*Delta(v)^{n-1} )
                 //          = [ I - (mu*theta*dt/rho)*Delta ]* v^n 
                                 RealArray & uexx = uex; RealArray & ueyy =uey;  // Reuse arrays
@@ -625,7 +629,7 @@ addedMassImplicitBoundaryConditions(int option,
                             for( int n=0; n<numberOfDimensions; n++ )
                             {
                 // --- RHS FOR GHOST EQUATION: ---
-                //  RHS = (1/mu)*( I - n n^T)( solidTraction - zs*vs )
+                //  RHS = (1/mu)*( I - n n^T)( solidTraction + zs*vs )
                                 uLocal(Ig1,Ig2,Ig3,uc+n) = (1./mu)*( AMPV(n,0)*solidChar(Ib1,Ib2,Ib3,0) + AMPV(n,1)*solidChar(Ib1,Ib2,Ib3,1) );
                 // --- RHS FOR BOUNDARY EQUATION: ---
                                 if( false )

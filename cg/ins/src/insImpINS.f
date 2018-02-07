@@ -1088,7 +1088,7 @@
 !   (II)  v - theta*dt*nu*(I+P) Delta v = RHS
 !
 ! (I): 
-!        (d_k v_k) n_i + (delta_ij - n_i n_j)*( (d_j v_k + d_k v_j) n_k  - zs v_j/mu ) = RHS(I)
+!        (d_k v_k) n_i + (delta_ij - n_i n_j)*( (d_j v_k + d_k v_j) n_k  + zs v_j/mu ) = RHS(I)
 !        (d_k v_j) delta_jk n_i +
 !                     + (delta_ij - n_i n_j)*( d_j v_k ) n_k 
 !                     + (delta_ij - n_i n_j)*( d_k v_j ) n_k 
@@ -1096,14 +1096,14 @@
 !        (d_k v_j) delta_jk n_i +
 !                     + (delta_ik - n_i n_k)*( d_k v_j ) n_j 
 !                     + (delta_ij - n_i n_j)*( d_k v_j ) n_k 
-!                     - (delta_ij - n_i n_j)* (v_j zs/mu )            = RHS(i)
+!                     + (delta_ij - n_i n_j)* (v_j zs/mu )            = RHS(i)
 !
 !
 !   =>  sum_j sum_k  AMG(i,j,k) * (partial v_j/partial x_k)    + sum_j AMG0(i,j) v_j  = RHS(m),  i=0,1,2
 !
 !      AMG(i,j,k) = delta_jk  n_i + (delta_ik - n_i n_k) n_j + (delta_ij - n_i n_j) n_k
 !                 =  delta_jk  n_i + delta_ik n_j + delta_ij n_k -2* n_i n_j n_k 
-!      AMG0(ij) = - (delta_ij - n_i n_j) *zs/mu 
+!      AMG0(ij) = + (delta_ij - n_i n_j) *zs/mu 
 ! 
 !  (II)   (I+P) Delta v = (I - (alpha-1)*n_i n_j) Delta(v_j) 
 !                       = [ delta_ij - (alpha-1)*n_i n_j ] * Delta(v_j)
@@ -3266,6 +3266,7 @@
            write(*,'("  ")')
            write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+           ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
             do i3=n3a,n3b
             do i2=n2a,n2b
             do i1=n1a,n1b
@@ -3345,10 +3346,10 @@
                  write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-
      & coeff=",6e10.2)') i1,i2,n,(delta(0,0)*an(n)+delta(n,0)*an(0)+
      & delta(n,0)*an(0)-2.*an(n)*an(0)*an(0)),(delta(0,1)*an(n)+delta(
-     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(-(delta(n,0)
+     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(+(delta(n,0)
      & -an(n)*an(0))*(zs/mu)),(delta(1,0)*an(n)+delta(n,1)*an(0)+
      & delta(n,0)*an(1)-2.*an(n)*an(1)*an(0)),(delta(1,1)*an(n)+delta(
-     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(-(delta(n,1)
+     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(+(delta(n,1)
      & -an(n)*an(1))*(zs/mu))
                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
                   do m3=-halfWidth3,halfWidth3
@@ -3358,7 +3359,7 @@
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
-     & m3)))+((-(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
      & ))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -3377,7 +3378,7 @@
      & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
      & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                     equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
      & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -3399,7 +3400,7 @@
      & 0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(0)*an(
      & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*an(1)+
      & delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                   ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
      & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -3420,7 +3421,7 @@
      & 1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(
      & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                   ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
      & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -6426,6 +6427,7 @@
            write(*,'("  ")')
            write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+           ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
             do i3=n3a,n3b
             do i2=n2a,n2b
             do i1=n1a,n1b
@@ -6553,10 +6555,10 @@
                  write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-
      & coeff=",6e10.2)') i1,i2,n,(delta(0,0)*an(n)+delta(n,0)*an(0)+
      & delta(n,0)*an(0)-2.*an(n)*an(0)*an(0)),(delta(0,1)*an(n)+delta(
-     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(-(delta(n,0)
+     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(+(delta(n,0)
      & -an(n)*an(0))*(zs/mu)),(delta(1,0)*an(n)+delta(n,1)*an(0)+
      & delta(n,0)*an(1)-2.*an(n)*an(1)*an(0)),(delta(1,1)*an(n)+delta(
-     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(-(delta(n,1)
+     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(+(delta(n,1)
      & -an(n)*an(1))*(zs/mu))
                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
                   do m3=-halfWidth3,halfWidth3
@@ -6566,7 +6568,7 @@
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
-     & m3)))+((-(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
      & ))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -6585,7 +6587,7 @@
      & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
      & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                     equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
      & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -6607,7 +6609,7 @@
      & 0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(0)*an(
      & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*an(1)+
      & delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                   ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
      & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -6628,7 +6630,7 @@
      & 1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(
      & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (-(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
                   ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
      & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
@@ -10098,6 +10100,7 @@
            write(*,'("  ")')
            write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+           ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
             do i3=n3a,n3b
             do i2=n2a,n2b
             do i1=n1a,n1b
@@ -10284,7 +10287,7 @@
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
-     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,0)-an(n)*
+     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -10304,7 +10307,7 @@
      & xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,m3)))+(
      & (delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*an(n)*
-     & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,1)-an(n)*an(1))
+     & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*an(1))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
@@ -10324,7 +10327,7 @@
      & xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*an(1)+
      & delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,m3)))+(
      & (delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*an(n)*
-     & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,2)-an(n)*an(2))
+     & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*an(2))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
@@ -10348,7 +10351,7 @@
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
-     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,0)-an(n)*
+     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -10371,7 +10374,7 @@
      & 1)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
      & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*
-     & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,1)-an(n)*
+     & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*
      & an(1))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
@@ -10394,7 +10397,7 @@
      & 2)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*
      & an(1)+delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*
-     & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,2)-an(n)*
+     & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*
      & an(2))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
@@ -15049,6 +15052,7 @@
            write(*,'("  ")')
            write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+           ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
             do i3=n3a,n3b
             do i2=n2a,n2b
             do i1=n1a,n1b
@@ -15356,7 +15360,7 @@
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
-     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,0)-an(n)*
+     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -15376,7 +15380,7 @@
      & xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
      & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,m3)))+(
      & (delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*an(n)*
-     & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,1)-an(n)*an(1))
+     & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*an(1))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
@@ -15396,7 +15400,7 @@
      & xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*an(1)+
      & delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,m3)))+(
      & (delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*an(n)*
-     & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,2)-an(n)*an(2))
+     & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*an(2))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
                     equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
@@ -15420,7 +15424,7 @@
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
-     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,0)-an(n)*
+     & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
@@ -15443,7 +15447,7 @@
      & 1)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
      & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*
-     & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,1)-an(n)*
+     & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*
      & an(1))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
@@ -15466,7 +15470,7 @@
      & 2)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*
      & an(1)+delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*
-     & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((-(delta(n,2)-an(n)*
+     & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*
      & an(2))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
                    equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
