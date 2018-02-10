@@ -1754,6 +1754,7 @@ c===============================================================================
             ! --- pre-calculations for the dispersive plane wave ---
             ! kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz)
             ! ck2 = (c*kk)**2
+            ! write(*,'(" init-dispersive-plane wave: sr=",e10.2," si=",e10.2)') sr,si
             ! si=-si
             ! s^2 E = -(ck)^2 E - (s^2/eps) P --> gives P = -eps*( 1 + (ck)^2/s^2 ) E 
             sNormSq=sr**2+si**2
@@ -1976,6 +1977,12 @@ c===============================================================================
                                  stop 1738
                                end if
                            else
+                             ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                             !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,ubv)
+                             ! end if
+                             ! if( .true. )then
+                             !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                             ! end if
                                xi = twoPi*(kx*(x0)+ky*(y0))
                                sinxi = sin(xi)
                                cosxi = cos(xi)
@@ -1984,19 +1991,31 @@ c===============================================================================
                                sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
                                  if( polarizationOption.eq.0 )then
-                                   amp = cosxi*cost-sinxi*sint
+                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                    ! 
+                                   amp = sinxi*cost+cosxi*sint
+                                   ! For testing we first fill in ubv with the non-dispersive answer, and compare here:
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," ubv=",2e12.4," ubv(disp)=",2e12.4)') i1,i2,sr,si,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
-                                   amph = (hr*cost-hi*sint)*cosxi - (
-     & hr*sint+hi*cost)*sinxi
+                                   ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                   !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                   !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                   !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                   ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                   amph = (hr*cost-hi*sint)*sinxi + (
+     & hr*sint+hi*cost)*cosxi
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                    ubv(hz) = amph
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
      & 1
                                      pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                      amp=(psir(iv)*cost-psii(iv)*sint)*
-     & cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                      ubv(pxc  ) = pwc(0)*amp
                                      ubv(pxc+1) = pwc(1)*amp
                                    end do
@@ -2010,19 +2029,24 @@ c===============================================================================
                                  costp=-si*sint+sr*cost  ! d/dt( cost)
                                  sintp= si*cost+sr*sint ! d/dt
                                  if( polarizationOption.eq.0 )then
-                                   amp = cosxi*costp-sinxi*sintp
+                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                   amp = sinxi*costp+cosxi*sintp
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t=",2e12.4," ubv.t(disp)=",2e12.4)') i1,i2,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
-                                   amph = (hr*costp-hi*sintp)*cosxi - (
-     & hr*sintp+hi*costp)*sinxi
+                                   ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                   amph = (hr*costp-hi*sintp)*sinxi + (
+     & hr*sintp+hi*costp)*cosxi
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,ubv(hz),amph,ubv(hz)-amph
                                    ubv(hz) = amph
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
      & 1
                                      pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                      amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                      ubv(pxc  ) = pwc(0)*amp
                                      ubv(pxc+1) = pwc(1)*amp
                                    end do
@@ -2313,6 +2337,12 @@ c===============================================================================
                                  stop 1738
                                end if
                            else
+                             ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                             !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,uv)
+                             ! end if
+                             ! if( .true. )then
+                             !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                             ! end if
                                xi = twoPi*(kx*(x0)+ky*(y0))
                                sinxi = sin(xi)
                                cosxi = cos(xi)
@@ -2321,19 +2351,31 @@ c===============================================================================
                                sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
                                  if( polarizationOption.eq.0 )then
-                                   amp = cosxi*cost-sinxi*sint
+                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                    ! 
+                                   amp = sinxi*cost+cosxi*sint
+                                   ! For testing we first fill in uv with the non-dispersive answer, and compare here:
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," uv=",2e12.4," uv(disp)=",2e12.4)') i1,i2,sr,si,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                    uv(ex) = pwc(0)*amp
                                    uv(ey) = pwc(1)*amp
-                                   amph = (hr*cost-hi*sint)*cosxi - (
-     & hr*sint+hi*cost)*sinxi
+                                   ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                   !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                   !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                   !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                   ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                   amph = (hr*cost-hi*sint)*sinxi + (
+     & hr*sint+hi*cost)*cosxi
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv[Hz]=",e12.4," uv(disp)[Hz]=",e12.4)') i1,i2,uv(hz),amph
                                    uv(hz) = amph
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
      & 1
                                      pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                      amp=(psir(iv)*cost-psii(iv)*sint)*
-     & cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                      uv(pxc  ) = pwc(0)*amp
                                      uv(pxc+1) = pwc(1)*amp
                                    end do
@@ -2347,19 +2389,24 @@ c===============================================================================
                                  costp=-si*sint+sr*cost  ! d/dt( cost)
                                  sintp= si*cost+sr*sint ! d/dt
                                  if( polarizationOption.eq.0 )then
-                                   amp = cosxi*costp-sinxi*sintp
+                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                   amp = sinxi*costp+cosxi*sintp
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t=",2e12.4," uv.t(disp)=",2e12.4)') i1,i2,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                    uv(ex) = pwc(0)*amp
                                    uv(ey) = pwc(1)*amp
-                                   amph = (hr*costp-hi*sintp)*cosxi - (
-     & hr*sintp+hi*costp)*sinxi
+                                   ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                   amph = (hr*costp-hi*sintp)*sinxi + (
+     & hr*sintp+hi*costp)*cosxi
+                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,uv(hz),amph,uv(hz)-amph
                                    uv(hz) = amph
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
      & 1
                                      pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                      amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                      uv(pxc  ) = pwc(0)*amp
                                      uv(pxc+1) = pwc(1)*amp
                                    end do
@@ -2748,34 +2795,70 @@ c===============================================================================
                                  stop 1739
                                end if
                            else
-                               write(*,'(" GDPW3D : fix me")')
-                               stop 2739
+                               xi = twoPi*(kx*(x0)+ky*(y0)+kz*(z0))
+                               sinxi = sin(xi)
+                               cosxi = cos(xi)
+                               expt = exp(sr*t)
+                               cost=cos(si*t)*expt
+                               sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
-                                 ! ubv(ex) = planeWave3Dex(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Dey(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dez(x0,y0,z0,t)
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                   amp = sinxi*cost+cosxi*sint
+                                   ubv(ex) = pwc(0)*amp
+                                   ubv(ey) = pwc(1)*amp
+                                   ubv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     ubv(pxc  ) = pwc(0)*amp
+                                     ubv(pxc+1) = pwc(1)*amp
+                                     ubv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==1 )
      & then
-                                 ! ubv(ex) = planeWave3Dext(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deyt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dezt(x0,y0,z0,t)
+                                 costp=-si*sint+sr*cost  ! d/dt( cost)
+                                 sintp= si*cost+sr*sint ! d/dt
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                   amp = sinxi*costp+cosxi*sintp
+                                   ubv(ex) = pwc(0)*amp
+                                   ubv(ey) = pwc(1)*amp
+                                   ubv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                     amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                     ubv(pxc  ) = pwc(0)*amp
+                                     ubv(pxc+1) = pwc(1)*amp
+                                     ubv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==2 )
      & then
-                                 ! ubv(ex) = planeWave3Dextt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deytt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Deztt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=2 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==3 )
      & then
-                                 ! ubv(ex) = planeWave3Dexttt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deyttt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dezttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=3 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==4 )
      & then
-                                 ! ubv(ex) = planeWave3Dextttt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deytttt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Deztttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=4 : fix me")')
+                                 stop 3738
                                else
-                                 stop 2739
+                                 stop 3738
                                end if
                            end if
                          else if(  
@@ -3061,34 +3144,70 @@ c===============================================================================
                                  stop 1739
                                end if
                            else
-                               write(*,'(" GDPW3D : fix me")')
-                               stop 2739
+                               xi = twoPi*(kx*(x0)+ky*(y0)+kz*(z0))
+                               sinxi = sin(xi)
+                               cosxi = cos(xi)
+                               expt = exp(sr*t)
+                               cost=cos(si*t)*expt
+                               sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
-                                 ! ubv(ex) = planeWave3Dex(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Dey(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dez(x0,y0,z0,t)
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                   amp = sinxi*cost+cosxi*sint
+                                   ubv(ex) = pwc(0)*amp
+                                   ubv(ey) = pwc(1)*amp
+                                   ubv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     ubv(pxc  ) = pwc(0)*amp
+                                     ubv(pxc+1) = pwc(1)*amp
+                                     ubv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==1 )
      & then
-                                 ! ubv(ex) = planeWave3Dext(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deyt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dezt(x0,y0,z0,t)
+                                 costp=-si*sint+sr*cost  ! d/dt( cost)
+                                 sintp= si*cost+sr*sint ! d/dt
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                   amp = sinxi*costp+cosxi*sintp
+                                   ubv(ex) = pwc(0)*amp
+                                   ubv(ey) = pwc(1)*amp
+                                   ubv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                     amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                     ubv(pxc  ) = pwc(0)*amp
+                                     ubv(pxc+1) = pwc(1)*amp
+                                     ubv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==2 )
      & then
-                                 ! ubv(ex) = planeWave3Dextt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deytt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Deztt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=2 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==3 )
      & then
-                                 ! ubv(ex) = planeWave3Dexttt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deyttt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Dezttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=3 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==4 )
      & then
-                                 ! ubv(ex) = planeWave3Dextttt(x0,y0,z0,t)
-                                 ! ubv(ey) = planeWave3Deytttt(x0,y0,z0,t)
-                                 ! ubv(ez) = planeWave3Deztttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=4 : fix me")')
+                                 stop 3738
                                else
-                                 stop 2739
+                                 stop 3738
                                end if
                            end if
                          else if(  
@@ -3379,34 +3498,70 @@ c===============================================================================
                                  stop 1739
                                end if
                            else
-                               write(*,'(" GDPW3D : fix me")')
-                               stop 2739
+                               xi = twoPi*(kx*(x0)+ky*(y0)+kz*(z0))
+                               sinxi = sin(xi)
+                               cosxi = cos(xi)
+                               expt = exp(sr*t)
+                               cost=cos(si*t)*expt
+                               sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
-                                 ! uv(ex) = planeWave3Dex(x0,y0,z0,t)
-                                 ! uv(ey) = planeWave3Dey(x0,y0,z0,t)
-                                 ! uv(ez) = planeWave3Dez(x0,y0,z0,t)
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                   amp = sinxi*cost+cosxi*sint
+                                   uv(ex) = pwc(0)*amp
+                                   uv(ey) = pwc(1)*amp
+                                   uv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     uv(pxc  ) = pwc(0)*amp
+                                     uv(pxc+1) = pwc(1)*amp
+                                     uv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==1 )
      & then
-                                 ! uv(ex) = planeWave3Dext(x0,y0,z0,t)
-                                 ! uv(ey) = planeWave3Deyt(x0,y0,z0,t)
-                                 ! uv(ez) = planeWave3Dezt(x0,y0,z0,t)
+                                 costp=-si*sint+sr*cost  ! d/dt( cost)
+                                 sintp= si*cost+sr*sint ! d/dt
+                                 if( polarizationOption.eq.0 )then
+                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                   amp = sinxi*costp+cosxi*sintp
+                                   uv(ex) = pwc(0)*amp
+                                   uv(ey) = pwc(1)*amp
+                                   uv(ez) = pwc(2)*amp
+                                 else
+                                   ! polarization vector: (ex=pxc, ey=pyc) 
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     pxc = ex + iv*nd
+                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                     amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                     uv(pxc  ) = pwc(0)*amp
+                                     uv(pxc+1) = pwc(1)*amp
+                                     uv(pxc+2) = pwc(2)*amp
+                                   end do
+                                 end if
                                else if( numberOfTimeDerivatives==2 )
      & then
-                                 ! uv(ex) = planeWave3Dextt(x0,y0,z0,t)
-                                 ! uv(ey) = planeWave3Deytt(x0,y0,z0,t)
-                                 ! uv(ez) = planeWave3Deztt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=2 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==3 )
      & then
-                                 ! uv(ex) = planeWave3Dexttt(x0,y0,z0,t)
-                                 ! uv(ey) = planeWave3Deyttt(x0,y0,z0,t)
-                                 ! uv(ez) = planeWave3Dezttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=3 : fix me")')
+                                 stop 3738
                                else if( numberOfTimeDerivatives==4 )
      & then
-                                 ! uv(ex) = planeWave3Dextttt(x0,y0,z0,t)
-                                 ! uv(ey) = planeWave3Deytttt(x0,y0,z0,t)
-                                 ! uv(ez) = planeWave3Deztttt(x0,y0,z0,t)
+                                 write(*,'(" GDPW ntd=4 : fix me")')
+                                 stop 3738
                                else
-                                 stop 2739
+                                 stop 3738
                                end if
                            end if
                          else if(  

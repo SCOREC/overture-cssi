@@ -1756,6 +1756,7 @@ c===============================================================================
             ! --- pre-calculations for the dispersive plane wave ---
             ! kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz)
             ! ck2 = (c*kk)**2
+            ! write(*,'(" init-dispersive-plane wave: sr=",e10.2," si=",e10.2)') sr,si
             ! si=-si
             ! s^2 E = -(ck)^2 E - (s^2/eps) P --> gives P = -eps*( 1 + (ck)^2/s^2 ) E 
             sNormSq=sr**2+si**2

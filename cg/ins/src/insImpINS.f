@@ -3343,14 +3343,7 @@
                ! -------------Coefficients in the the ghost point equation ----------
                do n=0,nd-1
                  ! equation n:  (equation numbers and classify  are set in these calls)
-                 write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-
-     & coeff=",6e10.2)') i1,i2,n,(delta(0,0)*an(n)+delta(n,0)*an(0)+
-     & delta(n,0)*an(0)-2.*an(n)*an(0)*an(0)),(delta(0,1)*an(n)+delta(
-     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(+(delta(n,0)
-     & -an(n)*an(0))*(zs/mu)),(delta(1,0)*an(n)+delta(n,1)*an(0)+
-     & delta(n,0)*an(1)-2.*an(n)*an(1)*an(0)),(delta(1,1)*an(n)+delta(
-     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(+(delta(n,1)
-     & -an(n)*an(1))*(zs/mu))
+                 ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
                   do m3=-halfWidth3,halfWidth3
                   do m2=-halfWidth,halfWidth
@@ -6552,14 +6545,7 @@
                ! -------------Coefficients in the the ghost point equation ----------
                do n=0,nd-1
                  ! equation n:  (equation numbers and classify  are set in these calls)
-                 write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-
-     & coeff=",6e10.2)') i1,i2,n,(delta(0,0)*an(n)+delta(n,0)*an(0)+
-     & delta(n,0)*an(0)-2.*an(n)*an(0)*an(0)),(delta(0,1)*an(n)+delta(
-     & n,0)*an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1)),(+(delta(n,0)
-     & -an(n)*an(0))*(zs/mu)),(delta(1,0)*an(n)+delta(n,1)*an(0)+
-     & delta(n,0)*an(1)-2.*an(n)*an(1)*an(0)),(delta(1,1)*an(n)+delta(
-     & n,1)*an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1)),(+(delta(n,1)
-     & -an(n)*an(1))*(zs/mu))
+                 ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
                   do m3=-halfWidth3,halfWidth3
                   do m2=-halfWidth,halfWidth

@@ -1756,6 +1756,7 @@ c===============================================================================
             ! --- pre-calculations for the dispersive plane wave ---
             ! kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz)
             ! ck2 = (c*kk)**2
+            ! write(*,'(" init-dispersive-plane wave: sr=",e10.2," si=",e10.2)') sr,si
             ! si=-si
             ! s^2 E = -(ck)^2 E - (s^2/eps) P --> gives P = -eps*( 1 + (ck)^2/s^2 ) E 
             sNormSq=sr**2+si**2
@@ -2164,6 +2165,12 @@ c===============================================================================
                                   stop 1738
                                 end if
                             else
+                              ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                              !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,ubv)
+                              ! end if
+                              ! if( .true. )then
+                              !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                              ! end if
                                 xi = twoPi*(kx*(x0)+ky*(y0))
                                 sinxi = sin(xi)
                                 cosxi = cos(xi)
@@ -2172,19 +2179,31 @@ c===============================================================================
                                 sint=sin(si*t)*expt
                                 if( numberOfTimeDerivatives==0 )then
                                   if( polarizationOption.eq.0 )then
-                                    amp = cosxi*cost-sinxi*sint
+                                    ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                    ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                     ! 
+                                    amp = sinxi*cost+cosxi*sint
+                                    ! For testing we first fill in ubv with the non-dispersive answer, and compare here:
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," ubv=",2e12.4," ubv(disp)=",2e12.4)') i1,i2,sr,si,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                     ubv(ex) = pwc(0)*amp
                                     ubv(ey) = pwc(1)*amp
-                                    amph = (hr*cost-hi*sint)*cosxi - (
-     & hr*sint+hi*cost)*sinxi
+                                    ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                    !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                    !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                    !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                    ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                    amph = (hr*cost-hi*sint)*sinxi + (
+     & hr*sint+hi*cost)*cosxi
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                     ubv(hz) = amph
                                   else
                                     ! polarization vector: (ex=pxc, ey=pyc) 
                                     do iv=0,
      & numberOfPolarizationVectors-1
                                       pxc = ex + iv*nd
+                                      ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                       amp=(psir(iv)*cost-psii(iv)*sint)
-     & *cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & *sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                       ubv(pxc  ) = pwc(0)*amp
                                       ubv(pxc+1) = pwc(1)*amp
                                     end do
@@ -2198,19 +2217,24 @@ c===============================================================================
                                   costp=-si*sint+sr*cost  ! d/dt( cost)
                                   sintp= si*cost+sr*sint ! d/dt
                                   if( polarizationOption.eq.0 )then
-                                    amp = cosxi*costp-sinxi*sintp
+                                    ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                    amp = sinxi*costp+cosxi*sintp
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t=",2e12.4," ubv.t(disp)=",2e12.4)') i1,i2,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                     ubv(ex) = pwc(0)*amp
                                     ubv(ey) = pwc(1)*amp
-                                    amph = (hr*costp-hi*sintp)*cosxi - 
-     & (hr*sintp+hi*costp)*sinxi
+                                    ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                    amph = (hr*costp-hi*sintp)*sinxi + 
+     & (hr*sintp+hi*costp)*cosxi
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,ubv(hz),amph,ubv(hz)-amph
                                     ubv(hz) = amph
                                   else
                                     ! polarization vector: (ex=pxc, ey=pyc) 
                                     do iv=0,
      & numberOfPolarizationVectors-1
                                       pxc = ex + iv*nd
+                                      ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                       amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                       ubv(pxc  ) = pwc(0)*amp
                                       ubv(pxc+1) = pwc(1)*amp
                                     end do
@@ -2460,6 +2484,12 @@ c===============================================================================
                                     stop 1738
                                   end if
                               else
+                                ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                                !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,uv)
+                                ! end if
+                                ! if( .true. )then
+                                !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                                ! end if
                                   xi = twoPi*(kx*(x0)+ky*(y0))
                                   sinxi = sin(xi)
                                   cosxi = cos(xi)
@@ -2468,19 +2498,31 @@ c===============================================================================
                                   sint=sin(si*t)*expt
                                   if( numberOfTimeDerivatives==0 )then
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*cost-sinxi*sint
+                                      ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                      ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                       ! 
+                                      amp = sinxi*cost+cosxi*sint
+                                      ! For testing we first fill in uv with the non-dispersive answer, and compare here:
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," uv=",2e12.4," uv(disp)=",2e12.4)') i1,i2,sr,si,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                       uv(ex) = pwc(0)*amp
                                       uv(ey) = pwc(1)*amp
-                                      amph = (hr*cost-hi*sint)*cosxi - 
-     & (hr*sint+hi*cost)*sinxi
+                                      ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                      !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                      !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                      !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                      ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                      amph = (hr*cost-hi*sint)*sinxi + 
+     & (hr*sint+hi*cost)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv[Hz]=",e12.4," uv(disp)[Hz]=",e12.4)') i1,i2,uv(hz),amph
                                       uv(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                         amp=(psir(iv)*cost-psii(iv)*
-     & sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                         uv(pxc  ) = pwc(0)*amp
                                         uv(pxc+1) = pwc(1)*amp
                                       end do
@@ -2494,19 +2536,24 @@ c===============================================================================
                                     costp=-si*sint+sr*cost  ! d/dt( cost)
                                     sintp= si*cost+sr*sint ! d/dt
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*costp-sinxi*sintp
+                                      ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                      amp = sinxi*costp+cosxi*sintp
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t=",2e12.4," uv.t(disp)=",2e12.4)') i1,i2,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                       uv(ex) = pwc(0)*amp
                                       uv(ey) = pwc(1)*amp
-                                      amph = (hr*costp-hi*sintp)*cosxi 
-     & - (hr*sintp+hi*costp)*sinxi
+                                      ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                      amph = (hr*costp-hi*sintp)*sinxi 
+     & + (hr*sintp+hi*costp)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,uv(hz),amph,uv(hz)-amph
                                       uv(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                         uv(pxc  ) = pwc(0)*amp
                                         uv(pxc+1) = pwc(1)*amp
                                       end do
@@ -2753,6 +2800,12 @@ c===============================================================================
                                     stop 1738
                                   end if
                               else
+                                ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                                !   getPlaneWave2D(x0,y0,t-dteps,numberOfTimeDerivatives,uvm)
+                                ! end if
+                                ! if( .true. )then
+                                !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                                ! end if
                                   xi = twoPi*(kx*(x0)+ky*(y0))
                                   sinxi = sin(xi)
                                   cosxi = cos(xi)
@@ -2761,19 +2814,31 @@ c===============================================================================
                                   sint=sin(si*t-dteps)*expt
                                   if( numberOfTimeDerivatives==0 )then
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*cost-sinxi*sint
+                                      ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                      ! solution is sin( k*x0 + si*t-dteps)*exp(sr*t-dteps) *wdh* 2018/01/28
+                                       ! 
+                                      amp = sinxi*cost+cosxi*sint
+                                      ! For testing we first fill in uvm with the non-dispersive answer, and compare here:
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," uvm=",2e12.4," uvm(disp)=",2e12.4)') i1,i2,sr,si,uvm(ex),uvm(ey),pwc(0)*amp,pwc(1)*amp 
                                       uvm(ex) = pwc(0)*amp
                                       uvm(ey) = pwc(1)*amp
-                                      amph = (hr*cost-hi*sint)*cosxi - 
-     & (hr*sint+hi*cost)*sinxi
+                                      ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                      !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                      !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                      !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                      ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                      amph = (hr*cost-hi*sint)*sinxi + 
+     & (hr*sint+hi*cost)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm[Hz]=",e12.4," uvm(disp)[Hz]=",e12.4)') i1,i2,uvm(hz),amph
                                       uvm(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                         amp=(psir(iv)*cost-psii(iv)*
-     & sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                         uvm(pxc  ) = pwc(0)*amp
                                         uvm(pxc+1) = pwc(1)*amp
                                       end do
@@ -2787,19 +2852,24 @@ c===============================================================================
                                     costp=-si*sint+sr*cost  ! d/dt( cost)
                                     sintp= si*cost+sr*sint ! d/dt
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*costp-sinxi*sintp
+                                      ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                      amp = sinxi*costp+cosxi*sintp
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm.t-dteps=",2e12.4," uvm.t-dteps(disp)=",2e12.4)') i1,i2,uvm(ex),uvm(ey),pwc(0)*amp,pwc(1)*amp 
                                       uvm(ex) = pwc(0)*amp
                                       uvm(ey) = pwc(1)*amp
-                                      amph = (hr*costp-hi*sintp)*cosxi 
-     & - (hr*sintp+hi*costp)*sinxi
+                                      ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                      amph = (hr*costp-hi*sintp)*sinxi 
+     & + (hr*sintp+hi*costp)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm.t-dteps[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,uvm(hz),amph,uvm(hz)-amph
                                       uvm(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                         uvm(pxc  ) = pwc(0)*amp
                                         uvm(pxc+1) = pwc(1)*amp
                                       end do
@@ -3223,6 +3293,12 @@ c===============================================================================
                                   stop 1738
                                 end if
                             else
+                              ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                              !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,ubv)
+                              ! end if
+                              ! if( .true. )then
+                              !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                              ! end if
                                 xi = twoPi*(kx*(x0)+ky*(y0))
                                 sinxi = sin(xi)
                                 cosxi = cos(xi)
@@ -3231,19 +3307,31 @@ c===============================================================================
                                 sint=sin(si*t)*expt
                                 if( numberOfTimeDerivatives==0 )then
                                   if( polarizationOption.eq.0 )then
-                                    amp = cosxi*cost-sinxi*sint
+                                    ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                    ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                     ! 
+                                    amp = sinxi*cost+cosxi*sint
+                                    ! For testing we first fill in ubv with the non-dispersive answer, and compare here:
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," ubv=",2e12.4," ubv(disp)=",2e12.4)') i1,i2,sr,si,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                     ubv(ex) = pwc(0)*amp
                                     ubv(ey) = pwc(1)*amp
-                                    amph = (hr*cost-hi*sint)*cosxi - (
-     & hr*sint+hi*cost)*sinxi
+                                    ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                    !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                    !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                    !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                    ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                    amph = (hr*cost-hi*sint)*sinxi + (
+     & hr*sint+hi*cost)*cosxi
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                     ubv(hz) = amph
                                   else
                                     ! polarization vector: (ex=pxc, ey=pyc) 
                                     do iv=0,
      & numberOfPolarizationVectors-1
                                       pxc = ex + iv*nd
+                                      ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                       amp=(psir(iv)*cost-psii(iv)*sint)
-     & *cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & *sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                       ubv(pxc  ) = pwc(0)*amp
                                       ubv(pxc+1) = pwc(1)*amp
                                     end do
@@ -3257,19 +3345,24 @@ c===============================================================================
                                   costp=-si*sint+sr*cost  ! d/dt( cost)
                                   sintp= si*cost+sr*sint ! d/dt
                                   if( polarizationOption.eq.0 )then
-                                    amp = cosxi*costp-sinxi*sintp
+                                    ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                    amp = sinxi*costp+cosxi*sintp
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t=",2e12.4," ubv.t(disp)=",2e12.4)') i1,i2,ubv(ex),ubv(ey),pwc(0)*amp,pwc(1)*amp 
                                     ubv(ex) = pwc(0)*amp
                                     ubv(ey) = pwc(1)*amp
-                                    amph = (hr*costp-hi*sintp)*cosxi - 
-     & (hr*sintp+hi*costp)*sinxi
+                                    ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                    amph = (hr*costp-hi*sintp)*sinxi + 
+     & (hr*sintp+hi*costp)*cosxi
+                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,ubv(hz),amph,ubv(hz)-amph
                                     ubv(hz) = amph
                                   else
                                     ! polarization vector: (ex=pxc, ey=pyc) 
                                     do iv=0,
      & numberOfPolarizationVectors-1
                                       pxc = ex + iv*nd
+                                      ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                       amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                       ubv(pxc  ) = pwc(0)*amp
                                       ubv(pxc+1) = pwc(1)*amp
                                     end do
@@ -3519,6 +3612,12 @@ c===============================================================================
                                     stop 1738
                                   end if
                               else
+                                ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                                !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,uv)
+                                ! end if
+                                ! if( .true. )then
+                                !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                                ! end if
                                   xi = twoPi*(kx*(x0)+ky*(y0))
                                   sinxi = sin(xi)
                                   cosxi = cos(xi)
@@ -3527,19 +3626,31 @@ c===============================================================================
                                   sint=sin(si*t)*expt
                                   if( numberOfTimeDerivatives==0 )then
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*cost-sinxi*sint
+                                      ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                      ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                       ! 
+                                      amp = sinxi*cost+cosxi*sint
+                                      ! For testing we first fill in uv with the non-dispersive answer, and compare here:
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," uv=",2e12.4," uv(disp)=",2e12.4)') i1,i2,sr,si,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                       uv(ex) = pwc(0)*amp
                                       uv(ey) = pwc(1)*amp
-                                      amph = (hr*cost-hi*sint)*cosxi - 
-     & (hr*sint+hi*cost)*sinxi
+                                      ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                      !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                      !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                      !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                      ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                      amph = (hr*cost-hi*sint)*sinxi + 
+     & (hr*sint+hi*cost)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv[Hz]=",e12.4," uv(disp)[Hz]=",e12.4)') i1,i2,uv(hz),amph
                                       uv(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                         amp=(psir(iv)*cost-psii(iv)*
-     & sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                         uv(pxc  ) = pwc(0)*amp
                                         uv(pxc+1) = pwc(1)*amp
                                       end do
@@ -3553,19 +3664,24 @@ c===============================================================================
                                     costp=-si*sint+sr*cost  ! d/dt( cost)
                                     sintp= si*cost+sr*sint ! d/dt
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*costp-sinxi*sintp
+                                      ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                      amp = sinxi*costp+cosxi*sintp
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t=",2e12.4," uv.t(disp)=",2e12.4)') i1,i2,uv(ex),uv(ey),pwc(0)*amp,pwc(1)*amp 
                                       uv(ex) = pwc(0)*amp
                                       uv(ey) = pwc(1)*amp
-                                      amph = (hr*costp-hi*sintp)*cosxi 
-     & - (hr*sintp+hi*costp)*sinxi
+                                      ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                      amph = (hr*costp-hi*sintp)*sinxi 
+     & + (hr*sintp+hi*costp)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv.t[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,uv(hz),amph,uv(hz)-amph
                                       uv(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                         uv(pxc  ) = pwc(0)*amp
                                         uv(pxc+1) = pwc(1)*amp
                                       end do
@@ -3812,6 +3928,12 @@ c===============================================================================
                                     stop 1738
                                   end if
                               else
+                                ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+                                !   getPlaneWave2D(x0,y0,t-dteps,numberOfTimeDerivatives,uvm)
+                                ! end if
+                                ! if( .true. )then
+                                !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+                                ! end if
                                   xi = twoPi*(kx*(x0)+ky*(y0))
                                   sinxi = sin(xi)
                                   cosxi = cos(xi)
@@ -3820,19 +3942,31 @@ c===============================================================================
                                   sint=sin(si*t-dteps)*expt
                                   if( numberOfTimeDerivatives==0 )then
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*cost-sinxi*sint
+                                      ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                      ! solution is sin( k*x0 + si*t-dteps)*exp(sr*t-dteps) *wdh* 2018/01/28
+                                       ! 
+                                      amp = sinxi*cost+cosxi*sint
+                                      ! For testing we first fill in uvm with the non-dispersive answer, and compare here:
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") sr=",e10.2," si=",e10.2," uvm=",2e12.4," uvm(disp)=",2e12.4)') i1,i2,sr,si,uvm(ex),uvm(ey),pwc(0)*amp,pwc(1)*amp 
                                       uvm(ex) = pwc(0)*amp
                                       uvm(ey) = pwc(1)*amp
-                                      amph = (hr*cost-hi*sint)*cosxi - 
-     & (hr*sint+hi*cost)*sinxi
+                                      ! amph = Im( (hr+i*hi)*(cosxi + i sinxi)*( cost + i*sint ) )
+                                      !      = Im( (hr+i*hi)*( [cosxi*cost - sinxi*sint] + i[ cosxi*sint + sinxi*cost] )
+                                      !      = [ cosxi*sint + sinxi*cost]*hr + [cosxi*cost - sinxi*sint]*hi
+                                      !      = [ hr*cost - hi*sint ] *sinxi + [ hr*sint+hi*cost ] *cosxi
+                                      ! amph = (hr*cost-hi*sint)*cosxi - (hr*sint+hi*cost)*sinxi *wdh* 2018/01/28 
+                                      amph = (hr*cost-hi*sint)*sinxi + 
+     & (hr*sint+hi*cost)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm[Hz]=",e12.4," uvm(disp)[Hz]=",e12.4)') i1,i2,uvm(hz),amph
                                       uvm(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
                                         amp=(psir(iv)*cost-psii(iv)*
-     & sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
                                         uvm(pxc  ) = pwc(0)*amp
                                         uvm(pxc+1) = pwc(1)*amp
                                       end do
@@ -3846,19 +3980,24 @@ c===============================================================================
                                     costp=-si*sint+sr*cost  ! d/dt( cost)
                                     sintp= si*cost+sr*sint ! d/dt
                                     if( polarizationOption.eq.0 )then
-                                      amp = cosxi*costp-sinxi*sintp
+                                      ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                      amp = sinxi*costp+cosxi*sintp
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm.t-dteps=",2e12.4," uvm.t-dteps(disp)=",2e12.4)') i1,i2,uvm(ex),uvm(ey),pwc(0)*amp,pwc(1)*amp 
                                       uvm(ex) = pwc(0)*amp
                                       uvm(ey) = pwc(1)*amp
-                                      amph = (hr*costp-hi*sintp)*cosxi 
-     & - (hr*sintp+hi*costp)*sinxi
+                                      ! amph = (hr*costp-hi*sintp)*cosxi - (hr*sintp+hi*costp)*sinxi  *wdh* 2018/01/28
+                                      amph = (hr*costp-hi*sintp)*sinxi 
+     & + (hr*sintp+hi*costp)*cosxi
+                                      ! write(*,'(" (i1,i2)=(",i3,",",i3,") uvm.t-dteps[Hz](nd,d)=",2e12.4," diff=",e12.4)') i1,i2,uvm(hz),amph,uvm(hz)-amph
                                       uvm(hz) = amph
                                     else
                                       ! polarization vector: (ex=pxc, ey=pyc) 
                                       do iv=0,
      & numberOfPolarizationVectors-1
                                         pxc = ex + iv*nd
+                                        ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
                                         uvm(pxc  ) = pwc(0)*amp
                                         uvm(pxc+1) = pwc(1)*amp
                                       end do

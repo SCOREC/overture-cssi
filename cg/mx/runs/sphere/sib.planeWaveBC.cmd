@@ -5,7 +5,7 @@
 # Usage:
 #   
 #  cgmx [-noplot] sib.planeWaveBC -g=<name> -tf=<tFinal> -tp=<tPlot> -diss=<> -debug=<num> -cons=[0/1] ...
-#                     -ic=[exact|zero] -go=[run/halt/og]
+#                     -ic=[exact|zero] -dm=[none|gdm] -go=[run/halt/og]
 #
 # Examples:
 #   cgmx sib.planeWaveBC -g=sib1.order4.hdf
@@ -35,12 +35,18 @@ $tFinal=10.; $tPlot=.1; $diss=.1; $dissOrder=4; $cfl=.9; $method="NFDTD";
 $grid="sib1.order4.hdf"; $bg="box"; $ic="exact"; 
 $radius=.5; 
 $cons=0; $go="halt"; 
+$dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"bg=s"=>\$bg,\
   "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,"diss=f"=>\$diss,"dissOrder=i"=>\$dissOrder,\
-  "radius=f"=>\$radius,"ic=s"=>\$ic );
+  "radius=f"=>\$radius,"ic=s"=>\$ic,\
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1 );
 # -------------------------------------------------------------------------------------------------
+#
+if( $dm eq "none" ){ $dm="no dispersion"; }
+if( $dm eq"gdm" ){ $dm="GDM"; }
+#
 if( $method eq "sosup" ){ $diss=0.; }
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -54,6 +60,9 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 $grid
 # 
 $method
+# dispersion model:
+$dm
+GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 #
 # -- When we solve for the scattered field directly the PEC boundary conditions are
 #    changed to be inhomogeneous: 
@@ -104,10 +113,10 @@ check errors 1
 #
 continue
 # add contours on the surface of the sphere 
-contour
-  add coordinate surface 3 2 0 
-  add coordinate surface 1 2 1 
-exit
+# contour
+#   add coordinate surface 3 2 0 
+#   add coordinate surface 1 2 1 
+# exit
 $go 
 
 

@@ -207,6 +207,10 @@ void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,con
 //               XHP(i0,i1,i2,i3) - coordinates of h centering
 // OPTION: 
 //==================================================================================================
+// ============================================================
+// ============================================================
+
+
 //==================================================================================================
 // Evaluate the annulus eigenfunction or it's error
 // 
@@ -250,23 +254,18 @@ void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,con
  //  --- time derivative of transmitted wave ---
 
 // Macros for dispersive waves
-// -- dispersive plane wave solution
-//        w = wr + i wi   (complex dispersion relation)
-// You should define: 
-//    dpwExp := exp( wi* t )
-#define exDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[0]*(dpwExp))
-#define eyDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[1]*(dpwExp))
-#define hzDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
-
-// ** FIX ME -- THIS IS WRONG
-// #define extDpw(x,y,t,dpwExp) (-twoPi*omegaDpwRe)*cos(twoPi*(kx*(x)+ky*(y)-omegaDpwRe*(t)))*(pwc[0]*(dpwExp))
-// #define eytDpw(x,y,t,dpwExp) (-twoPi*omegaDpwRe)*cos(twoPi*(kx*(x)+ky*(y)-omegaDpwRe*(t)))*(pwc[1]*(dpwExp))
-// #define hztDpw(x,y,t,dpwExp) (-twoPi*cc)*cos(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
+// 
+//   Macros to adjust non-dispersive known solutions (e.g. scattering from a cylinder)
+//   to the dispersive case 
+//
+//#define exDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[0]*(dpwExp))
+//#define eyDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[1]*(dpwExp))
+//#define hzDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
 
 // ====================================================================================
 /// Macro: Return the time-dependent coefficients for a known solution
 // 
-// NOTE: This next section is repeated in getInitialConditions.bC,
+// NOTE: This next section is used in getInitialConditions.bC,
 //        getErrors.bC and assignBoundaryConditions.bC 
 // ====================================================================================
 
@@ -2800,30 +2799,41 @@ assignInitialConditions(int current, real t, real dt )
                                         real xi = twoPi*(kx*x+ky*y);
                                         real cx=cos(xi), sx=sin(xi);
                                         
-                                        real amp=cx*ct-sx*st;
+                    // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+                    // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28 
+                                        real amp=sx*ct+cx*st;
                 		    UEX(i1,i2,i3)=pwc[0]*amp;
                 		    UEY(i1,i2,i3)=pwc[1]*amp;
 
-                                        real amph = (hr*ct-hi*st)*cx - (hr*st+hi*ct)*sx;
+                                        real amph = (hr*ct-hi*st)*sx + (hr*st+hi*ct)*cx;
                 		    UHZ(i1,i2,i3)=amph;
 
-                                        amp=cx*ctm-sx*stm;
+                    // amp=cx*ctm-sx*stm;      *wdh* 2018/01/28
+                                        amp=sx*ctm+cx*stm;
                 		    UMEX(i1,i2,i3)=pwc[0]*amp;
                 		    UMEY(i1,i2,i3)=pwc[1]*amp;
 
-                                        amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;
+                    // amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;  *wdh* 2018/01/28 
+                                        amph = (hr*ctm-hi*stm)*sx + (hr*stm+hi*ctm)*cx;
                 		    UMHZ(i1,i2,i3)=amph;
 
                     // -- POLARIZATION Vectors --
                                         if( dispersionModel != noDispersion  )
                                         {
                       // *new way:
+                      //   E = Im( exp( i*k*x )* exp( i*si*t )* exp(sr*t) 
+                      //   Er = cx*ct - sx*st
+                      //   Ei = sx*ct + cx*st 
+                      //     
+                      //   P = Im( psi(s) * E )  = Im( [psir + i*psii]*[ Er + i*Ei ] )
+                      //     = psir*Ei + psii*Er 
+                      //     = psir*(sx*ct + cx*st ) + psii*(cx*ct - sx*st) 
                                             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                                             {
                                                 const int pc= iv*numberOfDimensions;
 
-                                                real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
-                                                real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                                                real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
+                                                real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
 
               
                         // Do this for now -- set all vectors to be the same: 
@@ -3099,13 +3109,17 @@ assignInitialConditions(int current, real t, real dt )
                                             real cx=cos(xi), sx=sin(xi);
                                         
                       // --- assign (Ex,Ey,Ez) at time t ---
-                                            real amp=cx*ct-sx*st;
+                      // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+                      // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                            real amp=sx*ct+cx*st;  
+
                                             UEX(i1,i2,i3)=pwc[0]*amp;
                                             UEY(i1,i2,i3)=pwc[1]*amp;
                                             UEZ(i1,i2,i3)=pwc[2]*amp;
 
                       // --- assign (Ex,Ey,Ez) at time t-dt ---
-                                            real ampm=cx*ctm-sx*stm;
+                      // real ampm=cx*ctm-sx*stm; *wdh* 2018/01/28
+                                            real ampm=sx*ctm+cx*stm;
                                             UMEX(i1,i2,i3)=pwc[0]*ampm;
                                             UMEY(i1,i2,i3)=pwc[1]*ampm;
                                             UMEZ(i1,i2,i3)=pwc[2]*ampm;
@@ -3115,8 +3129,10 @@ assignInitialConditions(int current, real t, real dt )
                                             {
                                                 const int pc= iv*numberOfDimensions;
 
-                                                real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
-                                                real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                        // real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
+                        // real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                                                real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
+                                                real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
               
                         // Do this for now -- set all vectors to be the same: 
                                                 pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
@@ -4209,9 +4225,6 @@ assignInitialConditions(int current, real t, real dt )
 	  // This is a macro:
         //   printF(" I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0)=%i %i %i %i \n",
         // 	 I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0));
-        //  Index J1 = Range(max(I1.getBase(),uLocal.getBase(0)),min(I1.getBound(),uLocal.getBound(0)));
-        //  Index J2 = Range(max(I2.getBase(),uLocal.getBase(1)),min(I2.getBound(),uLocal.getBound(1)));
-        //  Index J3 = Range(max(I3.getBase(),uLocal.getBase(2)),min(I3.getBound(),uLocal.getBound(2)));
                   if( numberOfDimensions==2 )
                   {
                 #include "besselPrimeZeros.h"
@@ -4227,74 +4240,85 @@ assignInitialConditions(int current, real t, real dt )
                       int i1,i2,i3;
                       real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
                       real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn;
-                      real sint = sin(omega*t), cost = cos(omega*t);
-                      real sintp = omega*cost, costp = -omega*sint;
-                      real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                      real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
-                      real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
-                      real ampP[10], ampPm[10];
-                      if( dispersionModel==noDispersion )
-                      {
-                          ampH  = cost;   ampHp  =-omega*sint;
-                          ampE  = sint;   ampEp  = omega*cost;
-                          ampHm = costm;  ampHmp =-omega*sintm;
-                          ampEm = sintm;  ampEmp = omega*costm;
-                      }
-                      else 
-                      {
-             // --- DISPERSIVE ----
-                          DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-             // Evaluate the dispersion relation for "s"
-                          assert( dmp.numberOfPolarizationVectors<10 );
-                          const real kk = omega/c; //  *CHECK ME* 
-                          dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
-                          if( t<3.*dt )
-                              printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
-                          expt =exp(sr*t);
-                          st=sin(si*t)*expt; ct=cos(si*t)*expt;
-             // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
-                          const real tm=t-dt;
-                          exptm =exp(sr*tm);
-                          stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
-             // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
-                          const real sNormSq = sr*sr+si*si;
-                          ampH = ct;   
-             // ampHp = -si*st + sr*ct;
-             // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-             //   Pv_j = psi_j * Ev   
-             // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
-             // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
-             //   = Re( (phir+i*phii)*( ct + i sint )
-                          const real alphaP = dmp.alphaP;
-                          real psirSum=0., psiiSum=0.;
-                          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                          {
-                              psirSum += psir[iv]; 
-                              psiiSum += psii[iv];
+           // real sint = sin(omega*t), cost = cos(omega*t);
+           // real sintp = omega*cost, costp = -omega*sint;
+           // real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                        real sint = sin(omega*t), cost = cos(omega*t);
+                        real sintp = omega*cost, costp = -omega*sint;
+                        real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                        real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+                        real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
+                        real ampP[10], ampPm[10];
+                        if( dispersionModel==noDispersion )
+                        {
+                            if( numberOfDimensions==2 )
+                            {
+                                ampH  = cost;   ampHp  =-omega*sint;
+                                ampE  = sint;   ampEp  = omega*cost;
+                                ampHm = costm;  ampHmp =-omega*sintm;
+                                ampEm = sintm;  ampEmp = omega*costm;
+                            }
+                            else
+                            {
+                                ampE  = cost;   ampEp  = -omega*sint; 
+                                ampEm = costm;  ampEmp = -omega*sintm;
                           }
-                          real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
-             //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
-             //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
-             //      = phir +i*phii 
-                          real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-                          real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-                          ampE = phir*ct - phii*st;
-             // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
-             //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-             //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
-                          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                          {
-                              ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
-                          }
-             // tm = t-dt 
-                          ampHm = ctm;  
-             // ampHp = -si*stm + sr*ctm;
-                          ampEm = phir*ctm - phii*stm;
-                          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                          {
-                                ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
-                          }
-                      }
+                        }
+                        else 
+                        {
+              // --- DISPERSIVE ----
+                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+              // Evaluate the dispersion relation for "s"
+                            assert( dmp.numberOfPolarizationVectors<10 );
+                            const real kk = omega/c; //  *CHECK ME* 
+                            dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                            if( t<3.*dt )
+                                printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+                            expt =exp(sr*t);
+                            st=sin(si*t)*expt; ct=cos(si*t)*expt;
+              // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
+                            const real tm=t-dt;
+                            exptm =exp(sr*tm);
+                            stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
+              // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
+                            const real sNormSq = sr*sr+si*si;
+                            ampH = ct;   
+              // ampHp = -si*st + sr*ct;
+              // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
+              //   Pv_j = psi_j * Ev   
+              // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
+              // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+              //   = Re( (phir+i*phii)*( ct + i sint )
+                            const real alphaP = dmp.alphaP;
+                            real psirSum=0., psiiSum=0.;
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                psirSum += psir[iv]; 
+                                psiiSum += psii[iv];
+                            }
+                            real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
+              //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
+              //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+              //      = phir +i*phii 
+                            real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                            real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                            ampE = phir*ct - phii*st;
+              // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
+              //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+              //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+                            }
+              // tm = t-dt 
+                            ampHm = ctm;  
+              // ampHp = -si*stm + sr*ctm;
+                            ampEm = phir*ctm - phii*stm;
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                  ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+                            }
+                        }
                       FOR_3D(i1,i2,i3,J1,J2,J3)
                       {
                           xd=X(i1,i2,i3,0);
@@ -4347,8 +4371,8 @@ assignInitialConditions(int current, real t, real dt )
                               }
                           }
                               UHZ(i1,i2,i3)  = bj*cosn*ampH;
-                              UEX(i1,i2,i3) = uex*ampE;  // Ex.t = Hz.y
-                              UEY(i1,i2,i3) = uey*ampE;  // Ey.t = - Hz.x
+                              UEX(i1,i2,i3) = uex*ampE; 
+                              UEY(i1,i2,i3) = uey*ampE; 
                               if( method==nfdtd )
                               {
                                   UMHZ(i1,i2,i3) = bj*cosn*ampHm;
@@ -4357,7 +4381,7 @@ assignInitialConditions(int current, real t, real dt )
                               }
                               else if( method==sosup )
                               {
-                                  uLocal(i1,i2,i3,hzt) =  bj*cosn*ampHp;
+                                  uLocal(i1,i2,i3,hzt) = bj*cosn*ampHp;
                                   uLocal(i1,i2,i3,ext) = uex*ampEp;
                                   uLocal(i1,i2,i3,eyt) = uey*ampEp;
                               }
@@ -4396,7 +4420,83 @@ assignInitialConditions(int current, real t, real dt )
                           np1Factorial*=k;              //  (n+1)!
                       int i1,i2,i3;
                       real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
-                      real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz,cost,sint;
+                      real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz;
+                        real sint = sin(omega*t), cost = cos(omega*t);
+                        real sintp = omega*cost, costp = -omega*sint;
+                        real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                        real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+                        real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
+                        real ampP[10], ampPm[10];
+                        if( dispersionModel==noDispersion )
+                        {
+                            if( numberOfDimensions==2 )
+                            {
+                                ampH  = cost;   ampHp  =-omega*sint;
+                                ampE  = sint;   ampEp  = omega*cost;
+                                ampHm = costm;  ampHmp =-omega*sintm;
+                                ampEm = sintm;  ampEmp = omega*costm;
+                            }
+                            else
+                            {
+                                ampE  = cost;   ampEp  = -omega*sint; 
+                                ampEm = costm;  ampEmp = -omega*sintm;
+                          }
+                        }
+                        else 
+                        {
+              // --- DISPERSIVE ----
+                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+              // Evaluate the dispersion relation for "s"
+                            assert( dmp.numberOfPolarizationVectors<10 );
+                            const real kk = omega/c; //  *CHECK ME* 
+                            dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                            if( t<3.*dt )
+                                printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+                            expt =exp(sr*t);
+                            st=sin(si*t)*expt; ct=cos(si*t)*expt;
+              // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
+                            const real tm=t-dt;
+                            exptm =exp(sr*tm);
+                            stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
+              // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
+                            const real sNormSq = sr*sr+si*si;
+                            ampH = ct;   
+              // ampHp = -si*st + sr*ct;
+              // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
+              //   Pv_j = psi_j * Ev   
+              // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
+              // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+              //   = Re( (phir+i*phii)*( ct + i sint )
+                            const real alphaP = dmp.alphaP;
+                            real psirSum=0., psiiSum=0.;
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                psirSum += psir[iv]; 
+                                psiiSum += psii[iv];
+                            }
+                            real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
+              //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
+              //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+              //      = phir +i*phii 
+                            real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                            real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                            ampE = phir*ct - phii*st;
+              // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
+              //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+              //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+                            }
+              // tm = t-dt 
+                            ampHm = ctm;  
+              // ampHp = -si*stm + sr*ctm;
+                            ampEm = phir*ctm - phii*stm;
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                  ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+                            }
+                        }
                       FOR_3D(i1,i2,i3,J1,J2,J3)
                       {
                           xd=X(i1,i2,i3,0);
@@ -4410,7 +4510,7 @@ assignInitialConditions(int current, real t, real dt )
                           sinTheta=sin(theta);
                           cosn=cos(n*theta);
                           sinn=sin(n*theta);
-                          cost=cos(omega*t);
+             //  cost=cos(omega*t);
                           gr=lambda*r;
                           rx = cosTheta;  // x/r
                           ry = sinTheta;  // y/r
@@ -4435,19 +4535,46 @@ assignInitialConditions(int current, real t, real dt )
                               uex = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*rx*bjp*cosn -n*bjThetax*sinn);  // Ex.t = Hz.y
                               uey = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*ry*bjp*cosn -n*bjThetay*sinn);  // Ey.t = - Hz.x
                           }
-                              UEX(i1,i2,i3) = uex*sinkz*cost;
-                              UEY(i1,i2,i3) = uey*sinkz*cost;
-                              UEZ(i1,i2,i3) = bj*cosn*coskz*cost;
-                              cost=cos(omega*(t-dt)); 
-                              UMEX(i1,i2,i3) = uex*sinkz*cost;
-                              UMEY(i1,i2,i3) = uey*sinkz*cost;
-                              UMEZ(i1,i2,i3) = bj*cosn*coskz*cost;
+                          uex = uex*sinkz;
+                          uey = uey*sinkz;
+                          real uez = bj*cosn*coskz;
+                              UEX(i1,i2,i3) = uex*ampE;
+                              UEY(i1,i2,i3) = uey*ampE;
+                              UEZ(i1,i2,i3) = uez*ampE;
+               // UEX(i1,i2,i3) = uex*sinkz*cost;
+               // UEY(i1,i2,i3) = uey*sinkz*cost;
+               // UEZ(i1,i2,i3) = bj*cosn*coskz*cost;
+                              UMEX(i1,i2,i3) = uex*ampEm;
+                              UMEY(i1,i2,i3) = uey*ampEm;
+                              UMEZ(i1,i2,i3) = uez*ampEm;
+               // cost=cos(omega*(t-dt)); 
+               // UMEX(i1,i2,i3) = uex*sinkz*cost;
+               // UMEY(i1,i2,i3) = uey*sinkz*cost;
+               // UMEZ(i1,i2,i3) = bj*cosn*coskz*cost;
                               if( method==sosup )
                               {
+                                  assert( dispersionModel==noDispersion );
                                   sint=sin(omega*t); 
-                                  uLocal(i1,i2,i3,ext) = -omega*uex*sinkz*sint;
-                                  uLocal(i1,i2,i3,eyt) = -omega*uey*sinkz*sint;
-                                  uLocal(i1,i2,i3,ezt) = -omega*bj*cosn*coskz*sint;
+                                  uLocal(i1,i2,i3,ext) = -omega*uex*sint;
+                                  uLocal(i1,i2,i3,eyt) = -omega*uey*sint;
+                                  uLocal(i1,i2,i3,ezt) = -omega*uez*sint;
+                              }
+                              if( dispersionModel!=noDispersion )
+                              { // -- dispersive ---
+                                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                  {
+                                      const int pc= iv*numberOfDimensions;
+                   // Do this for now -- set all vectors to be the same: 
+                                      pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
+                                      pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+                                      pLocal(i1,i2,i3,pc+2) = uez*ampP[iv];
+                                      if( method==nfdtd )
+                                      {
+                                          pmLocal(i1,i2,i3,pc  ) = uex*ampPm[iv];
+                                          pmLocal(i1,i2,i3,pc+1) = uey*ampPm[iv];
+                                          pmLocal(i1,i2,i3,pc+2) = uez*ampPm[iv];
+                                      }
+                                  }
                               }
                     }
                   }
@@ -4490,24 +4617,42 @@ assignInitialConditions(int current, real t, real dt )
 
                         real cost,sint,costm,sintm,dcost,dsint;
                         real phiPc,phiPs, phiPcm,phiPsm;
+            // define coefficients of the real(E), Im(E), Re(H) and Im(H)
+                        real cEr, cEi, cHr, cHi;  // coefficients for time t
+                        real cErm, cEim, cHrm, cHim;  // coefficients for time t-dt
+            // coefficients of Polarization vector
+                        real cPr,cPi, cPrm, cPim;
                         if( dispersionModel==noDispersion )
                         {
+              //     --- NON-DISPERSIVE ---
+                            const real tm=t-dt;
                             cost = cos(-twoPi*cc0*t); // *wdh* 040626 add "-"
                             sint = sin(-twoPi*cc0*t); // *wdh* 040626 add "-"
-                            costm= cos(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-                            sintm= sin(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-                            dcost =  twoPi*cc0*sint;  // d(sin(..))/dt 
+                            costm= cos(-twoPi*cc0*tm); // *wdh* 040626 add "-"
+                            sintm= sin(-twoPi*cc0*tm); // *wdh* 040626 add "-"
+              // SOSUP needs the time derivative
+                            dcost =  twoPi*cc0*sint;  // d(cos(..))/dt 
                             dsint = -twoPi*cc0*cost;  // d(sin(..))/dt 
+              // new way: 
+              //   E = Im( (Er + i*Ei)*exp(-i*omega*t) )
+              //     = Im( (Er + i*Ei)*( cos(-i*omega*t) + i*sin(-i*omega*t) ) )
+              //     = Er*sin(-i*omega*t) + Ei*
+                            cEr = sin(-twoPi*cc0*t);  cErm = sin(-twoPi*cc0*tm);  
+                            cEi = cos(-twoPi*cc0*t);  cEim = cos(-twoPi*cc0*tm);
+                            cHr = sin(-twoPi*cc0*t);  cHrm = sin(-twoPi*cc0*tm);
+                            cHi = cos(-twoPi*cc0*t);  cHim = cos(-twoPi*cc0*tm);
                         }
                         else
                         {
-              // -- dispersive model -- *CHECK ME*
+              // -- DISPERSIVE MODEL -- *CHECK ME*
+                            const real tm=t-dt;
               // Evaluate the dispersion relation for "s"
                             DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                             const real kk = twoPi*cc0;  // Parameter in dispersion relation **check me**
               // *new way*
                             real sr,si,psir[10],psii[10];
                             dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                            const real alphaP = dmp.alphaP;
               // real reS, imS;
               // dmp.computeDispersionRelation( c,eps,mu,kk, reS, imS );
               // real expS = exp(reS*t), expSm=exp(reS*(t-dt));
@@ -4517,51 +4662,52 @@ assignInitialConditions(int current, real t, real dt )
                                 printF("--MX--GIC dispersion: s=(%12.4e,%12.4e) psi=(%12.4e,%12.4e)\n",sr,si,psir[0],psii[0]);
                                 printF("--MX--GIC scatCyl si/(twoPi*cc0)=%g\n",si/twoPi*cc0);
                             }
-              // Re( (Er+i*Ei)*( ct + i*st ) )
-              //   ct*Er - st*Ei 
-                            const real tm=t-dt;
+              // Im( (Er+i*Ei)*( ct + i*st ) )
+              //   st*Er + st*Ei 
                             real expt=exp(sr*t), exptm=exp(sr*tm);
                             real ct =cos( si*t  )*expt,  st =sin( si*t )*expt;
                             real ctm=cos( si*tm )*exptm, stm=sin( si*tm )*exptm;
+                            sint =  st;      // Coeff of Er
                             cost =  ct;      // Coeff of Ei
-                            sint =  st;     // Coeff of Er
-                            costm =  ctm;
                             sintm =  stm;
+                            costm =  ctm;
+              // SOSUP needs the time derivative **FIX ME**
+                            if( method==sosup )
+                            {
+                                OV_ABORT("finish me");
+                            }
                             dcost =  -si*st + sr*ct;  //  d/dt of "cost" 
                             dsint =  (si*ct + sr*st);  //  d/dt of "cost" 
-              // real alpha=reS, beta=imS;  // s= alpha + i*beta (
-              // real a,b;   // psi = a + i*b 
-              // P = Re{ psi(s)*E } = Re{ (psir+i*psi)*( Er + i*Ei)( ct+i*st ) }
-                            phiPc =  psir[0]*cost-psii[0]*sint;  // Coeff of Er 
-                            phiPs = -psir[0]*sint-psii[0]*cost;  // coeff of Ei
-                            phiPcm =  psir[0]*costm-psii[0]*sintm;
-                            phiPsm = -psir[0]*sintm-psii[0]*costm;
-                // *** TEST ****
+              // P = Im{ psi(s)*E } = Im{ (psir+i*psi)*( Er + i*Ei)( ct+i*st ) }
+              //   =  Im{ (psir+i*psi)*( Er*ct- Ei*st + i( Er*st + Ei*ct ) )
+              //   =  psir*(  Er*st + Ei*ct ) + psii*( Er*ct- Ei*st )
+              //   =  (psir*st + psii*ct)*Er + (psir*ct-psii*st )*Ei 
+                            phiPs = psir[0]*sint+psii[0]*cost;  // Coeff of Er 
+                            phiPc = psir[0]*cost-psii[0]*sint;  // coeff of Ei
+                            phiPsm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
+                            phiPcm = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
+              // *new* 
+                            cEr = st;  cErm = stm;
+                            cEi = ct;  cEim = ctm;
                             if( true )
                             {
-                                sint = ct;     // Coeff of Er    
-                                cost = -st;     // Coeff of Ei
-                                sintm = ctm;
-                                costm =-stm;
-                                dsint =  -si*st + sr*ct;  //  d/dt of "cost" 
-                                dcost =  -(si*ct + sr*st);  //  d/dt of "cost" 
+                                real coeffH=1./kk;  // is this right? -- probably should be +/- (eps*cc*kk)
+          // Coefficients generated by cg/mx/codes/gdm.maple
+                    real psirSum=psir[0], psiiSum=psii[0];
+                    cHr=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ct+st*(si*psirSum+sr*psiiSum))*alphaP-1.*ct*sr+si*st);
+                    cHi=-coeffH*(((si*psirSum+sr*psiiSum)*ct+psirSum*sr*st-1.*si*st*psiiSum)*alphaP+ct*si+sr*st);
+                    cHrm=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ctm+stm*(si*psirSum+sr*psiiSum))*alphaP-1.*ctm*sr+si*stm);
+                    cHim=-coeffH*(((si*psirSum+sr*psiiSum)*ctm+psirSum*sr*stm-1.*si*stm*psiiSum)*alphaP+ctm*si+sr*stm);
                             }
-              // *** TEST ****
-                            if( false )
+                            else
                             {
-                                cost = cos(-twoPi*cc0*t); // *wdh* 040626 add "-"
-                                sint = sin(-twoPi*cc0*t); // *wdh* 040626 add "-"
-                                costm= cos(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-                                sintm= sin(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-                                dcost =  twoPi*cc0*sint;  // d(sin(..))/dt 
-                                dsint = -twoPi*cc0*cost;  // d(sin(..))/dt 
-                                printF("--MX--GIC (cost,ct)=(%12.4e,%12.4e) (sint,st)=(%12.4e,%12.4e)\n",cost,ct,sint,st);
-                                printF("--MX--GIC (costm,ctm)=(%12.4e,%12.4e) (sintm,stm)=(%12.4e,%12.4e)\n",costm,ctm,sintm,stm);
-                                phiPc =  0.;
-                                phiPs =  0.;
-                                phiPcm = 0.;
-                                phiPsm = 0.;
+                                cHr = st;  cHrm = stm;
+                                cHi = ct;  cHim = ctm;
                             }
+                            cPr = psir[0]*sint+psii[0]*cost;  // Coeff of Er for P 
+                            cPi = psir[0]*cost-psii[0]*sint;  // coeff of Eifor P 
+                            cPrm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
+                            cPim = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
                         }
 
 	  //kkc XXX this only works for nfdtd right now (knownSolution will need to change a bit
@@ -4592,31 +4738,32 @@ assignInitialConditions(int current, real t, real dt )
           	    int i1,i2,i3;
           	    if( numberOfDimensions==2 )
           	    {
+              // ====== TWO DIMENSIONS ========
             	      if( method==nfdtd )
             	      {
             		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
-              		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-              		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-              		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+              		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr + UG(i1,i2,i3,ex+3)*cEi;
+              		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr + UG(i1,i2,i3,ey+3)*cEi;
+              		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHr + UG(i1,i2,i3,hz+3)*cHi;
 
-              		  UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sintm+UG(i1,i2,i3,ex+3)*costm;
-              		  UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sintm+UG(i1,i2,i3,ey+3)*costm;
-              		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sintm+UG(i1,i2,i3,hz+3)*costm;
+              		  UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cErm + UG(i1,i2,i3,ex+3)*cEim;
+              		  UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cErm + UG(i1,i2,i3,ey+3)*cEim;
+              		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHrm + UG(i1,i2,i3,hz+3)*cHim;
             		}
             	      }
             	      else if( method==sosup )
             	      {
             		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
-              		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-              		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-              		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+              		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr + UG(i1,i2,i3,ex+3)*cEi;
+              		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr + UG(i1,i2,i3,ey+3)*cEi;
+              		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHr + UG(i1,i2,i3,hz+3)*cHi;
 
 		  // -- time derivatives: 
-              		  uLocal(i1,i2,i3,ext)= UG(i1,i2,i3,ex)*dsint+UG(i1,i2,i3,ex+3)*dcost;
-              		  uLocal(i1,i2,i3,eyt)= UG(i1,i2,i3,ey)*dsint+UG(i1,i2,i3,ey+3)*dcost;
-              		  uLocal(i1,i2,i3,hzt)= UG(i1,i2,i3,hz)*dsint+UG(i1,i2,i3,hz+3)*dcost;
+              		  uLocal(i1,i2,i3,ext)= UG(i1,i2,i3,ex)*dsint + UG(i1,i2,i3,ex+3)*dcost;
+              		  uLocal(i1,i2,i3,eyt)= UG(i1,i2,i3,ey)*dsint + UG(i1,i2,i3,ey+3)*dcost;
+              		  uLocal(i1,i2,i3,hzt)= UG(i1,i2,i3,hz)*dsint + UG(i1,i2,i3,hz+3)*dcost;
             		}
             	      }
             	      else
@@ -4627,6 +4774,12 @@ assignInitialConditions(int current, real t, real dt )
               // -- dispersion model components --
             	      if( dispersionModel!=noDispersion )
             	      {
+                                if( numberOfPolarizationVectors>1 )
+                                {
+                                    OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
+                                }
+                                
+
             		if( method==nfdtd )
             		{
               		  FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -4636,18 +4789,13 @@ assignInitialConditions(int current, real t, real dt )
                                             const int pc= iv*numberOfDimensions;
               
                       // Do this for now -- set all vectors to be the same: 
-                                            pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;  
-                                            pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;  
+                                            pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
+                                            pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
                                                                                                                                                                                                 
-                                            pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-                                            pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
+                                            pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
+                                            pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
                                         }
 
-		    // uLocal(i1,i2,i3,pxc)  = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;
-		    // uLocal(i1,i2,i3,pyc)  = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;
-
-		    // umLocal(i1,i2,i3,pxc) = UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-		    // umLocal(i1,i2,i3,pyc) = UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
               		  }
             		}
             	      }
@@ -4656,24 +4804,31 @@ assignInitialConditions(int current, real t, real dt )
           	    }
           	    else 
           	    {
+              // ====== THREE DIMENSIONS ========
             	      if( solveForElectricField )
             	      {
             		if( method==nfdtd )
             		{
               		  FOR_3D(i1,i2,i3,J1,J2,J3)
               		  {
-                		    UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-                		    UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-                		    UEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*sint+UG(i1,i2,i3,ez+3)*cost;
+                		    UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr+UG(i1,i2,i3,ex+3)*cEi;
+                		    UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr+UG(i1,i2,i3,ey+3)*cEi;
+                		    UEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*cEr+UG(i1,i2,i3,ez+3)*cEi;
 
-                		    UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sintm+UG(i1,i2,i3,ex+3)*costm;
-                		    UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sintm+UG(i1,i2,i3,ey+3)*costm;
-                		    UMEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*sintm+UG(i1,i2,i3,ez+3)*costm;
+                		    UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cErm+UG(i1,i2,i3,ex+3)*cEim;
+                		    UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cErm+UG(i1,i2,i3,ey+3)*cEim;
+                		    UMEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*cErm+UG(i1,i2,i3,ez+3)*cEim;
               		  }
 
 		  // -- dispersion model components --
               		  if( dispersionModel!=noDispersion )
               		  {
+
+                                        if( numberOfPolarizationVectors>1 )
+                                        {
+                                            OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
+                                        }
+
                 		    if( method==nfdtd )
                 		    {
                   		      FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -4684,22 +4839,15 @@ assignInitialConditions(int current, real t, real dt )
                                                     const int pc= iv*numberOfDimensions;
               
                           // Do this for now -- set all vectors to be the same: 
-                                                    pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;  
-                                                    pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;  
-                                                    pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*phiPs + UG(i1,i2,i3,ez+3)*phiPc;  
+                                                    pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
+                                                    pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
+                                                    pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr + UG(i1,i2,i3,ez+3)*cPi;  
                                                                                                                                                                                                         
-                                                    pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-                                                    pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
-                                                    pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*phiPsm + UG(i1,i2,i3,ez+3)*phiPcm;
+                                                    pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
+                                                    pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
+                                                    pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*cPrm + UG(i1,i2,i3,ez+3)*cPim;
                                                 }
 
-			// uLocal(i1,i2,i3,pxc)  = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;
-			// uLocal(i1,i2,i3,pyc)  = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;
-			// uLocal(i1,i2,i3,pzc)  = UG(i1,i2,i3,ez)*phiPs + UG(i1,i2,i3,ez+3)*phiPc;
-
-			// umLocal(i1,i2,i3,pxc) = UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-			// umLocal(i1,i2,i3,pyc) = UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
-			// umLocal(i1,i2,i3,pzc) = UG(i1,i2,i3,ez)*phiPsm + UG(i1,i2,i3,ez+3)*phiPcm;
                   		      }
                 		    }
               		  }

@@ -389,7 +389,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
    ! -------------Coefficients in the the ghost point equation ----------
    do n=0,nd-1
      ! equation n:  (equation numbers and classify  are set in these calls)
-     write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
+     ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
      setCoeffGhost3(cmpu,eqnu+n,coeff,AMG(n,0,0)*xCoeff,AMG(n,0,1)*yCoeff,AMG0(n,0)*iCoeff)
      addCoeffGhost3(cmpv,eqnu+n,coeff,AMG(n,1,0)*xCoeff,AMG(n,1,1)*yCoeff,AMG0(n,1)*iCoeff)
    end do

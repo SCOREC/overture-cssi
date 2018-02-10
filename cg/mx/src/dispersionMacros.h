@@ -1,40 +1,58 @@
-// -- dispersive plane wave solution
-//        w = wr + i wi   (complex dispersion relation)
-// You should define: 
-//    dpwExp := exp( wi* t )
-#define exDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[0]*(dpwExp))
-#define eyDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[1]*(dpwExp))
-#define hzDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
-
-// ** FIX ME -- THIS IS WRONG
-// #define extDpw(x,y,t,dpwExp) (-twoPi*omegaDpwRe)*cos(twoPi*(kx*(x)+ky*(y)-omegaDpwRe*(t)))*(pwc[0]*(dpwExp))
-// #define eytDpw(x,y,t,dpwExp) (-twoPi*omegaDpwRe)*cos(twoPi*(kx*(x)+ky*(y)-omegaDpwRe*(t)))*(pwc[1]*(dpwExp))
-// #define hztDpw(x,y,t,dpwExp) (-twoPi*cc)*cos(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
+// 
+//   Macros to adjust non-dispersive known solutions (e.g. scattering from a cylinder)
+//   to the dispersive case 
+//
+//#define exDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[0]*(dpwExp))
+//#define eyDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y))-omegaDpwRe*(t))*(pwc[1]*(dpwExp))
+//#define hzDpw(x,y,t,dpwExp) sin(twoPi*(kx*(x)+ky*(y)-cc*(t)))*pwc[5]
 
 // ====================================================================================
 /// Macro: Return the time-dependent coefficients for a known solution
 // 
-// NOTE: This next section is repeated in getInitialConditions.bC,
+// NOTE: This next section is used in getInitialConditions.bC,
 //        getErrors.bC and assignBoundaryConditions.bC 
 // ====================================================================================
 #beginMacro getKnownSolutionTimeCoefficients();
   real cost,sint,costm,sintm,dcost,dsint;
   real phiPc,phiPs, phiPcm,phiPsm;
   	  
+  // define coefficients of the real(E), Im(E), Re(H) and Im(H)
+  real cEr, cEi, cHr, cHi;  // coefficients for time t
+  real cErm, cEim, cHrm, cHim;  // coefficients for time t-dt
+
+  // coefficients of Polarization vector
+  real cPr,cPi, cPrm, cPim;
+
+
   if( dispersionModel==noDispersion )
   {
+    //     --- NON-DISPERSIVE ---
+    const real tm=t-dt;
+
     cost = cos(-twoPi*cc0*t); // *wdh* 040626 add "-"
     sint = sin(-twoPi*cc0*t); // *wdh* 040626 add "-"
   
-    costm= cos(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-    sintm= sin(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
+    costm= cos(-twoPi*cc0*tm); // *wdh* 040626 add "-"
+    sintm= sin(-twoPi*cc0*tm); // *wdh* 040626 add "-"
   
-    dcost =  twoPi*cc0*sint;  // d(sin(..))/dt 
+    // SOSUP needs the time derivative
+    dcost =  twoPi*cc0*sint;  // d(cos(..))/dt 
     dsint = -twoPi*cc0*cost;  // d(sin(..))/dt 
+
+    // new way: 
+    //   E = Im( (Er + i*Ei)*exp(-i*omega*t) )
+    //     = Im( (Er + i*Ei)*( cos(-i*omega*t) + i*sin(-i*omega*t) ) )
+    //     = Er*sin(-i*omega*t) + Ei*
+    cEr = sin(-twoPi*cc0*t);  cErm = sin(-twoPi*cc0*tm);  
+    cEi = cos(-twoPi*cc0*t);  cEim = cos(-twoPi*cc0*tm);
+
+    cHr = sin(-twoPi*cc0*t);  cHrm = sin(-twoPi*cc0*tm);
+    cHi = cos(-twoPi*cc0*t);  cHim = cos(-twoPi*cc0*tm);
   }
   else
   {
-    // -- dispersive model -- *CHECK ME*
+    // -- DISPERSIVE MODEL -- *CHECK ME*
+    const real tm=t-dt;
   
     // Evaluate the dispersion relation for "s"
     DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
@@ -42,6 +60,7 @@
     // *new way*
     real sr,si,psir[10],psii[10];
     dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+    const real alphaP = dmp.alphaP;
 
 
     // real reS, imS;
@@ -56,72 +75,69 @@
       printF("--MX--GIC scatCyl si/(twoPi*cc0)=%g\n",si/twoPi*cc0);
     }
     
-    // Re( (Er+i*Ei)*( ct + i*st ) )
-    //   ct*Er - st*Ei 
-    const real tm=t-dt;
+    // Im( (Er+i*Ei)*( ct + i*st ) )
+    //   st*Er + st*Ei 
     real expt=exp(sr*t), exptm=exp(sr*tm);
     real ct =cos( si*t  )*expt,  st =sin( si*t )*expt;
     real ctm=cos( si*tm )*exptm, stm=sin( si*tm )*exptm;
     
+    sint =  st;      // Coeff of Er
     cost =  ct;      // Coeff of Ei
-    sint =  st;     // Coeff of Er
   
-    costm =  ctm;
     sintm =  stm;
+    costm =  ctm;
   
+    // SOSUP needs the time derivative **FIX ME**
+    if( method==sosup )
+    {
+      OV_ABORT("finish me");
+    }
+    
     dcost =  -si*st + sr*ct;  //  d/dt of "cost" 
     dsint =  (si*ct + sr*st);  //  d/dt of "cost" 
 
-    // real alpha=reS, beta=imS;  // s= alpha + i*beta (
-    // real a,b;   // psi = a + i*b 
   
-    // P = Re{ psi(s)*E } = Re{ (psir+i*psi)*( Er + i*Ei)( ct+i*st ) }
+    // P = Im{ psi(s)*E } = Im{ (psir+i*psi)*( Er + i*Ei)( ct+i*st ) }
+    //   =  Im{ (psir+i*psi)*( Er*ct- Ei*st + i( Er*st + Ei*ct ) )
+    //   =  psir*(  Er*st + Ei*ct ) + psii*( Er*ct- Ei*st )
+    //   =  (psir*st + psii*ct)*Er + (psir*ct-psii*st )*Ei 
   
-  
-    phiPc =  psir[0]*cost-psii[0]*sint;  // Coeff of Er 
-    phiPs = -psir[0]*sint-psii[0]*cost;  // coeff of Ei
+    phiPs = psir[0]*sint+psii[0]*cost;  // Coeff of Er 
+    phiPc = psir[0]*cost-psii[0]*sint;  // coeff of Ei
   	    
-    phiPcm =  psir[0]*costm-psii[0]*sintm;
-    phiPsm = -psir[0]*sintm-psii[0]*costm;
+    phiPsm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
+    phiPcm = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
 
-      // *** TEST ****
+    // *new* 
+    cEr = st;  cErm = stm;
+    cEi = ct;  cEim = ctm;
+
     if( true )
     {
-      sint = ct;     // Coeff of Er    
-      cost = -st;     // Coeff of Ei
+      real coeffH=1./kk;  // is this right? -- probably should be +/- (eps*cc*kk)
+      
+// Coefficients generated by cg/mx/codes/gdm.maple
+real psirSum=psir[0], psiiSum=psii[0];
+cHr=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ct+st*(si*psirSum+sr*psiiSum))*alphaP-1.*ct*sr+si*st);
+cHi=-coeffH*(((si*psirSum+sr*psiiSum)*ct+psirSum*sr*st-1.*si*st*psiiSum)*alphaP+ct*si+sr*st);
+cHrm=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ctm+stm*(si*psirSum+sr*psiiSum))*alphaP-1.*ctm*sr+si*stm);
+cHim=-coeffH*(((si*psirSum+sr*psiiSum)*ctm+psirSum*sr*stm-1.*si*stm*psiiSum)*alphaP+ctm*si+sr*stm);
 
-  
-      sintm = ctm;
-      costm =-stm;
-  
-      dsint =  -si*st + sr*ct;  //  d/dt of "cost" 
-      dcost =  -(si*ct + sr*st);  //  d/dt of "cost" 
 
+    }
+    else
+    {
+      cHr = st;  cHrm = stm;
+      cHi = ct;  cHim = ctm;
     }
     
-	    
-    // *** TEST ****
-    if( false )
-    {
-      cost = cos(-twoPi*cc0*t); // *wdh* 040626 add "-"
-      sint = sin(-twoPi*cc0*t); // *wdh* 040626 add "-"
 
-
-      costm= cos(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-      sintm= sin(-twoPi*cc0*(t-dt)); // *wdh* 040626 add "-"
-  
-      dcost =  twoPi*cc0*sint;  // d(sin(..))/dt 
-      dsint = -twoPi*cc0*cost;  // d(sin(..))/dt 
-
-      printF("--MX--GIC (cost,ct)=(%12.4e,%12.4e) (sint,st)=(%12.4e,%12.4e)\n",cost,ct,sint,st);
-      printF("--MX--GIC (costm,ctm)=(%12.4e,%12.4e) (sintm,stm)=(%12.4e,%12.4e)\n",costm,ctm,sintm,stm);
-
-      phiPc =  0.;
-      phiPs =  0.;
+    cPr = psir[0]*sint+psii[0]*cost;  // Coeff of Er for P 
+    cPi = psir[0]*cost-psii[0]*sint;  // coeff of Eifor P 
   	    
-      phiPcm = 0.;
-      phiPsm = 0.;
-    }
+    cPrm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
+    cPim = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
+
     
   }
 #endMacro

@@ -517,6 +517,12 @@ do i1=nn1a,nn1b
     if( dispersionModel.eq.noDispersion )then
       getPlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
     else
+      ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
+      !   getPlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
+      ! end if
+      ! if( .true. )then
+      !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
+      ! end if
       getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
     end if
   else if(  boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then

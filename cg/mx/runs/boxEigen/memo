@@ -1,3 +1,27 @@
+**********************************
+****** Feb 9, 2018
+
+
+BOX EIGENS -- *TROUBLE* WITH P ??
+
+cgmx -noplot boxEigen -g=box2.order2 -mx=1 -my=1 -tf=.5 -dm=gdm -a0=1 -a1=1 -b0=1. -b1=1. -go=og
+
+G2: 
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=5.645e-01 max-err = 1.303e-04
+>>> t=1.00e-01 dt=2.5e-02 max errors:[2.63e-06,5.27e-06,2.63e-06,], max (u):[8.48e-01,1.70e+00,8.48e-01,] (4 steps)
+
+G8
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=5.644e-01 max-err = 2.863e-05
+>>> t=1.00e-01 dt=1.3e-02 max errors:[1.65e-08,3.30e-08,1.65e-08,], max (u):[8.48e-01,1.70e+00,8.48e-01,] (8 steps)
+
+++++++++++++ -a0=1 -a1=0 -b0=0. -b1=1. +++++++++++
+G2
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=7.395e-02 max-err = 7.743e-07
+>>> t=1.00e-01 dt=2.5e-02 max errors:[1.75e-05,3.50e-05,1.75e-05,], max (u):[9.08e-01,1.82e+00,9.08e-01,] (4 steps)
+G4 
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=7.395e-02 max-err = 4.598e-09
+>>> t=1.00e-01 dt=1.3e-02 max errors:[4.59e-06,9.19e-06,4.59e-06,], max (u):[9.08e-01,1.82e+00,9.08e-01,] (8 steps)
+
 
 **********************************
 ****** Jan 10, 2018

@@ -63,7 +63,7 @@ if( $cg =~ /box*/ ){ $name="boxEigen"; }
 if( $cg =~ /nonBox*/ ){ $name="nonBoxEigen"; }
 #
 #
-if( $cg =~ /tube*/ || $cg =~ /splitTube*/  || $cg =~ /refineTube*/  ){ $cmdFile = "../cmd/cyleigen"; }
+if( $cg =~ /tube*/ || $cg =~ /splitTube*/  || $cg =~ /refineTube*/  ){ $cmdFile = "../cylEigen/cylEigen"; }
 $caseName="$name$method\Order$order"; 
 if( $dm ne "none" ){ $caseName .= "GDMNp$npv"; }
 if( $errorNorm eq 0 ){ $normName = "max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\

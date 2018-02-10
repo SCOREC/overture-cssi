@@ -4256,6 +4256,11 @@ c===============================================================================
      & i2,i3,hz) ! first order only **FIX ME**
                        end if
                      end if
+                ! if( .true. )then
+                !   ev=uxx42(i1,i2,i3,ex)
+                !   OGDERIV2D( 0,2,0,0,i1,i2,i3,t, ex, e0  )
+                !   write(*,'("->  uxx4,  uxxe, error=",3e10.2)') ev, e0,ev-e0
+                ! end if
                     !  --- advance E and P ---
                     do m=0,1
                      pc=pxc+m

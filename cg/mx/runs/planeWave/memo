@@ -1,4 +1,40 @@
 ***************************
+******* Jan 28, 2017
+
+
+REDFINE THE DISPERSIVE PLANE WAVE TO MACTH THE NON-DISPERSIVE
+     cos(k*x + si*t)*exp(sr*t) --> sin(k*x + si*t)*exp(sr*t) 
+
+---- NEW 
+
+BOX: 
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM ad2=0.50 |div(E)|/|grad(E)|=1.43e-03 (=3.27e-02/2.28e+01) 1 steps mem=49.4(Mb) cpu=8.45e+00(s)
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.580e-03 max-err = 5.011e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,1.63e-03,0.00e+00,], max (u):[0.00e+00,1.00e+00,0.00e+00,] (1 steps)
+
+SQUARE
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM ad2=0.50 |div(E)|/|grad(E)|=6.26e-04 (=1.52e-02/2.43e+01) 1 steps mem=22.1(Mb) cpu=3.26e+01(s)
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.567e-03 max-err = 5.269e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.75e-04,9.64e-04,], max (u):[0.00e+00,9.90e-01,9.90e-01,] (1 steps)
+
+--- OLD:
+
+BOX:
+cgmx -noplot planeWave -g=box4.order2 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.01 -tf=.1 -cfl=1 -checkErrors=1 -go=og
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM ad2=0.50 |div(E)|/|grad(E)|=1.46e-03 (=3.44e-02/2.35e+01) 1 steps mem=47.6(Mb) cpu=1.73e+01(s)
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.533e-03 max-err = 5.269e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,1.72e-03,0.00e+00,], max (u):[0.00e+00,9.70e-01,0.00e+00,] (1 steps)
+
+SQUARE
+cgmx -noplot planeWave -g=square64.order2 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.01 -tf=.1 -cfl=1 -checkErrors=1 -go=og
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM ad2=0.50 |div(E)|/|grad(E)|=6.26e-04 (=1.52e-02/2.43e+01) 1 steps mem=24.1(Mb) cpu=7.93e+00(s)
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.567e-03 max-err = 5.269e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.75e-04,9.64e-04,], max (u):[0.00e+00,9.90e-01,9.90e-01,] (1 steps)
+
+
+***************************
 ******* Jan 10, 2017
 
 NON-BOX:

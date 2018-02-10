@@ -1,3 +1,108 @@
+// ============================================================
+// ============================================================
+#beginMacro initializeAnnulusEigenfunction()
+
+ real sint = sin(omega*t), cost = cos(omega*t);
+ real sintp = omega*cost, costp = -omega*sint;
+
+ real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+
+ real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+ real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
+ real ampP[10], ampPm[10];
+ if( dispersionModel==noDispersion )
+ {
+   if( numberOfDimensions==2 )
+   {
+     ampH  = cost;   ampHp  =-omega*sint;
+     ampE  = sint;   ampEp  = omega*cost;
+
+     ampHm = costm;  ampHmp =-omega*sintm;
+     ampEm = sintm;  ampEmp = omega*costm;
+   }
+   else
+   {
+     ampE  = cost;   ampEp  = -omega*sint; 
+     ampEm = costm;  ampEmp = -omega*sintm;
+  }
+   
+ }
+ else 
+ {
+   // --- DISPERSIVE ----
+   DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+
+   // Evaluate the dispersion relation for "s"
+   assert( dmp.numberOfPolarizationVectors<10 );
+   
+   const real kk = omega/c; //  *CHECK ME* 
+   dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+
+   if( t<3.*dt )
+     printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+
+   expt =exp(sr*t);
+   st=sin(si*t)*expt; ct=cos(si*t)*expt;
+   // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
+
+   const real tm=t-dt;
+   exptm =exp(sr*tm);
+   stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
+   // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
+
+   const real sNormSq = sr*sr+si*si;
+
+   ampH = ct;   
+   // ampHp = -si*st + sr*ct;
+
+   // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
+   //   Pv_j = psi_j * Ev   
+   // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
+
+   // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+   //   = Re( (phir+i*phii)*( ct + i sint )
+   const real alphaP = dmp.alphaP;
+
+   real psirSum=0., psiiSum=0.;
+   for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+   {
+     psirSum += psir[iv]; 
+     psiiSum += psii[iv];
+   }
+   
+   real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
+
+   //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
+   //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+   //      = phir +i*phii 
+
+   real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+   real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+   
+   ampE = phir*ct - phii*st;
+
+   // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
+   //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+   //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+   for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+   {
+     ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+   }
+   
+   // tm = t-dt 
+   ampHm = ctm;  
+   // ampHp = -si*stm + sr*ctm;
+   ampEm = phir*ctm - phii*stm;
+   for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+   {
+      ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+   }
+   
+ }
+
+#endMacro 
+
+
 //==================================================================================================
 // Evaluate the annulus eigenfunction or it's error
 // 
@@ -8,9 +113,7 @@
 //   printF(" I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0)=%i %i %i %i \n",
 // 	 I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0));
 
-//  Index J1 = Range(max(I1.getBase(),uLocal.getBase(0)),min(I1.getBound(),uLocal.getBound(0)));
-//  Index J2 = Range(max(I2.getBase(),uLocal.getBase(1)),min(I2.getBound(),uLocal.getBound(1)));
-//  Index J3 = Range(max(I3.getBase(),uLocal.getBase(2)),min(I3.getBound(),uLocal.getBound(2)));
+
 
  if( numberOfDimensions==2 )
  {
@@ -35,95 +138,13 @@
    real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
    real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn;
 
-   real sint = sin(omega*t), cost = cos(omega*t);
-   real sintp = omega*cost, costp = -omega*sint;
+   // real sint = sin(omega*t), cost = cos(omega*t);
+   // real sintp = omega*cost, costp = -omega*sint;
 
-   real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+   // real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
 
-   real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
-   real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
-   real ampP[10], ampPm[10];
-   if( dispersionModel==noDispersion )
-   {
-     ampH  = cost;   ampHp  =-omega*sint;
-     ampE  = sint;   ampEp  = omega*cost;
-     ampHm = costm;  ampHmp =-omega*sintm;
-     ampEm = sintm;  ampEmp = omega*costm;
-   }
-   else 
-   {
-     // --- DISPERSIVE ----
-     DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+   initializeAnnulusEigenfunction();
 
-     // Evaluate the dispersion relation for "s"
-     assert( dmp.numberOfPolarizationVectors<10 );
-     
-     const real kk = omega/c; //  *CHECK ME* 
-     dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
-
-     if( t<3.*dt )
-       printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
-
-     expt =exp(sr*t);
-     st=sin(si*t)*expt; ct=cos(si*t)*expt;
-     // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
-
-     const real tm=t-dt;
-     exptm =exp(sr*tm);
-     stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
-     // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
-
-     const real sNormSq = sr*sr+si*si;
-
-     ampH = ct;   
-     // ampHp = -si*st + sr*ct;
-
-     // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-     //   Pv_j = psi_j * Ev   
-     // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
-  
-     // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
-     //   = Re( (phir+i*phii)*( ct + i sint )
-     const real alphaP = dmp.alphaP;
-
-     real psirSum=0., psiiSum=0.;
-     for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-     {
-       psirSum += psir[iv]; 
-       psiiSum += psii[iv];
-     }
-     
-     real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
-
-     //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
-     //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
-     //      = phir +i*phii 
-
-     real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-     real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-     
-     ampE = phir*ct - phii*st;
-
-     // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
-     //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-     //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
-     for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-     {
-       ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
-     }
-     
-     // tm = t-dt 
-     ampHm = ctm;  
-     // ampHp = -si*stm + sr*ctm;
-     ampEm = phir*ctm - phii*stm;
-     for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-     {
-        ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
-     }
-     
-   }
-   
-     
    FOR_3D(i1,i2,i3,J1,J2,J3)
    {
      xd=X(i1,i2,i3,0);
@@ -197,8 +218,8 @@
 
      #If #OPTION == "solution"
        UHZ(i1,i2,i3)  = bj*cosn*ampH;
-       UEX(i1,i2,i3) = uex*ampE;  // Ex.t = Hz.y
-       UEY(i1,i2,i3) = uey*ampE;  // Ey.t = - Hz.x
+       UEX(i1,i2,i3) = uex*ampE; 
+       UEY(i1,i2,i3) = uey*ampE; 
      
        if( method==nfdtd )
        {
@@ -208,7 +229,7 @@
        }
        else if( method==sosup )
        {
-         uLocal(i1,i2,i3,hzt) =  bj*cosn*ampHp;
+         uLocal(i1,i2,i3,hzt) = bj*cosn*ampHp;
          uLocal(i1,i2,i3,ext) = uex*ampEp;
          uLocal(i1,i2,i3,eyt) = uey*ampEp;
        }
@@ -235,9 +256,9 @@
 
      #Elif #OPTION == "boundaryCondition"
        // *check me*
-       uLocal(i1,i2,i3,hz)  = bj*cosn*ampH;
-       uLocal(i1,i2,i3,ex) = uex*ampE;  // Ex.t = Hz.y
-       uLocal(i1,i2,i3,ey) = uey*ampE;  // Ey.t = - Hz.x
+       uLocal(i1,i2,i3,hz) = bj*cosn*ampH;
+       uLocal(i1,i2,i3,ex) = uex*ampE; 
+       uLocal(i1,i2,i3,ey) = uey*ampE; 
        if( dispersionModel!=noDispersion )
        { // -- dispersive ---
          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -271,10 +292,8 @@
            errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - uex*ampP[iv];
            errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - uey*ampP[iv];
          }
-
-         // errLocal(i1,i2,i3,pxc) = uLocal(i1,i2,i3,pxc) - uex*ampP;
-         // errLocal(i1,i2,i3,pyc) = uLocal(i1,i2,i3,pyc) - uey*ampP;
        }
+
        if( method==sosup )
        {
          errLocal(i1,i2,i3,hzt) = uLocal(i1,i2,i3,hzt) - bj*cosn*ampHp;
@@ -313,8 +332,10 @@
 
    int i1,i2,i3;
    real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
-   real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz,cost,sint;
+   real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz;
    
+   initializeAnnulusEigenfunction();
+
    FOR_3D(i1,i2,i3,J1,J2,J3)
    {
      xd=X(i1,i2,i3,0);
@@ -333,7 +354,7 @@
      cosn=cos(n*theta);
      sinn=sin(n*theta);
 
-     cost=cos(omega*t);
+     //  cost=cos(omega*t);
      
      gr=lambda*r;
      
@@ -372,53 +393,118 @@
      
      }
 
+     uex = uex*sinkz;
+     uey = uey*sinkz;
+     real uez = bj*cosn*coskz;
+
      #If #OPTION == "solution"
 
-       UEX(i1,i2,i3) = uex*sinkz*cost;
-       UEY(i1,i2,i3) = uey*sinkz*cost;
-       UEZ(i1,i2,i3) = bj*cosn*coskz*cost;
+       UEX(i1,i2,i3) = uex*ampE;
+       UEY(i1,i2,i3) = uey*ampE;
+       UEZ(i1,i2,i3) = uez*ampE;
+       // UEX(i1,i2,i3) = uex*sinkz*cost;
+       // UEY(i1,i2,i3) = uey*sinkz*cost;
+       // UEZ(i1,i2,i3) = bj*cosn*coskz*cost;
      
-       cost=cos(omega*(t-dt)); 
-       UMEX(i1,i2,i3) = uex*sinkz*cost;
-       UMEY(i1,i2,i3) = uey*sinkz*cost;
-       UMEZ(i1,i2,i3) = bj*cosn*coskz*cost;
+       UMEX(i1,i2,i3) = uex*ampEm;
+       UMEY(i1,i2,i3) = uey*ampEm;
+       UMEZ(i1,i2,i3) = uez*ampEm;
+       // cost=cos(omega*(t-dt)); 
+       // UMEX(i1,i2,i3) = uex*sinkz*cost;
+       // UMEY(i1,i2,i3) = uey*sinkz*cost;
+       // UMEZ(i1,i2,i3) = bj*cosn*coskz*cost;
      
        if( method==sosup )
        {
+         assert( dispersionModel==noDispersion );
+         
          sint=sin(omega*t); 
-         uLocal(i1,i2,i3,ext) = -omega*uex*sinkz*sint;
-         uLocal(i1,i2,i3,eyt) = -omega*uey*sinkz*sint;
-         uLocal(i1,i2,i3,ezt) = -omega*bj*cosn*coskz*sint;
+         uLocal(i1,i2,i3,ext) = -omega*uex*sint;
+         uLocal(i1,i2,i3,eyt) = -omega*uey*sint;
+         uLocal(i1,i2,i3,ezt) = -omega*uez*sint;
+       }
+
+       if( dispersionModel!=noDispersion )
+       { // -- dispersive ---
+
+         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+         {
+           const int pc= iv*numberOfDimensions;
+       
+           // Do this for now -- set all vectors to be the same: 
+           pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
+           pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+           pLocal(i1,i2,i3,pc+2) = uez*ampP[iv];
+           if( method==nfdtd )
+           {
+             pmLocal(i1,i2,i3,pc  ) = uex*ampPm[iv];
+             pmLocal(i1,i2,i3,pc+1) = uey*ampPm[iv];
+             pmLocal(i1,i2,i3,pc+2) = uez*ampPm[iv];
+           }
+         }
        }
 
      #Elif #OPTION == "boundaryCondition"
 
        // *check me*
-       uLocal(i1,i2,i3,ex) = uex*sinkz*cost;
-       uLocal(i1,i2,i3,ey) = uey*sinkz*cost;
-       uLocal(i1,i2,i3,ez) = bj*cosn*coskz*cost;
+       uLocal(i1,i2,i3,ex) = uex*ampE;
+       uLocal(i1,i2,i3,ey) = uey*ampE;
+       uLocal(i1,i2,i3,ez) = uez*ampE;
+       // uLocal(i1,i2,i3,ex) = uex*sinkz*cost;
+       // uLocal(i1,i2,i3,ey) = uey*sinkz*cost;
+       // uLocal(i1,i2,i3,ez) = bj*cosn*coskz*cost;
      
        if( method==sosup )
        {
+         assert( dispersionModel==noDispersion );
          sint=sin(omega*t); 
-         uLocal(i1,i2,i3,ext) = -omega*uex*sinkz*sint;
-         uLocal(i1,i2,i3,eyt) = -omega*uey*sinkz*sint;
-         uLocal(i1,i2,i3,ezt) = -omega*bj*cosn*coskz*sint;
+         uLocal(i1,i2,i3,ext) = -omega*uex*sint;
+         uLocal(i1,i2,i3,eyt) = -omega*uey*sint;
+         uLocal(i1,i2,i3,ezt) = -omega*uez*sint;
        }
 
+       if( dispersionModel!=noDispersion )
+       { // -- dispersive ---
+
+         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+         {
+           const int pc= iv*numberOfDimensions;
+       
+           // Do this for now -- set all vectors to be the same: 
+           pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
+           pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+           pLocal(i1,i2,i3,pc+2) = uez*ampP[iv];
+         }
+       }
      #Elif #OPTION == "error"
 
 
-       ERREX(i1,i2,i3) = UEX(i1,i2,i3) - uex*sinkz*cost;
-       ERREY(i1,i2,i3) = UEY(i1,i2,i3) - uey*sinkz*cost;
-       ERREZ(i1,i2,i3) = UEZ(i1,i2,i3) - bj*cosn*coskz*cost;
+       ERREX(i1,i2,i3) = UEX(i1,i2,i3) - uex*ampE;
+       ERREY(i1,i2,i3) = UEY(i1,i2,i3) - uey*ampE;
+       ERREZ(i1,i2,i3) = UEZ(i1,i2,i3) - uez*ampE;
 
+       // ERREX(i1,i2,i3) = UEX(i1,i2,i3) - uex*sinkz*cost;
+       // ERREY(i1,i2,i3) = UEY(i1,i2,i3) - uey*sinkz*cost;
+       // ERREZ(i1,i2,i3) = UEZ(i1,i2,i3) - bj*cosn*coskz*cost;
+
+       if( dispersionModel!=noDispersion )
+       { // -- dispersive ---
+         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+         {
+           const int pc= iv*numberOfDimensions;
+           // Do this for now -- set all vectors to be the same: 
+           errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - uex*ampP[iv];
+           errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - uey*ampP[iv];
+           errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - uez*ampP[iv];
+         }
+       }
        if( method==sosup )
        {
+         assert( dispersionModel==noDispersion );
          sint=sin(omega*t); 
-         errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext) + omega*uex*sinkz*sint;
-         errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt) + omega*uey*sinkz*sint;
-         errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt) + omega*bj*cosn*coskz*sint;
+         errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext) + omega*uex*sint;
+         errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt) + omega*uey*sint;
+         errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt) + omega*uez*sint;
        }
      #Else
        Overture::abort("error");

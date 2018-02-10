@@ -1,3 +1,65 @@
+****************************************
+*********** Feb 9, 2018
+
+SOSUP dissipation 
+cgmx dielectricCyl -g=innerOutere8.order4.ng3.hdf -kx=2 -eps1=.25 -eps2=1. -useSosupDissipation=1 -tp=.01 -sosupParameter=1 -go=halt
+
+
+****************************************
+*********** Feb 8, 2018
+
+
+TEST 3D interfaces ---
+
+TEST dielectric-sphere + sosup dissipation
+
+
+FD44s -- sosup diss
+cgmx dielectricCyl -cyl=0 -g=solidSphereInABoxe4.order4.ng3 -kx=1 -eps1=.25 -eps2=1. -method=nfdtd  -useSosupDissipation=1 -tp=.05 -tf=5. -cfl=.8 -diss=0. -flushFrequency=2 -interit=5 -interfaceEquationOption=1 -interfaceOmega=.5 -go=halt
+
+
+FD44
+cgmx dielectricCyl -cyl=0 -g=solidSphereInABoxe4.order4.ng3 -kx=1 -eps1=.25 -eps2=1. -method=nfdtd -tp=.05 -tf=5. -cfl=.8 -diss=1. -flushFrequency=2 -interit=5 -interfaceEquationOption=1 -interfaceOmega=.5 -go=halt
+
+>>> Cgmx:FD: t=5.00e-02 dt=3.3e-03 TS=ME ad4=1.00 |div(E)|/|grad(E)|=8.54e-04 (=7.06e-03/8.26e+00) 15 steps mem=1.25e+03(Mb) cpu=4.54e+01(s)
+>>> t=5.00e-02 dt=3.3e-03 max errors:[1.23e-04,3.33e-04,3.05e-05,], max (u):[9.31e-01,1.53e+00,4.34e-01,] (15 steps)
+
+
+
+******************************************
+******* Feb 7-8, 2018
+
+TEST NEW SOSUP DISSIPATION
+
+BUG FIXED -- assignInterfaceBC's -- extrapolate extra ghost line
+
+
+SOSUP dissipation 
+cgmx dielectricCyl -g=innerOutere4.order4.ng3.hdf -kx=2 -eps1=.25 -eps2=1. -useSosupDissipation=1 -tp=.01 -sosupParameter=1 -go=halt
+>>> Cgmx:FD: t=1.00e-01 dt=2.8e-03 TS=ME |div(E)|/|grad(E)|=3.42e-05 (=5.98e-04/1.75e+01) 36 steps mem=43.4(Mb) cpu=8.47e+00(s)
+>>> t=1.00e-01 dt=2.8e-03 max errors:[1.26e-05,4.09e-05,2.33e-05,], max (u):[1.13e+00,1.65e+00,1.65e+00,] (36 steps)
+
+
+SOSUP -DISS + coefficient=0 -- Ok
+cgmx dielectricCyl -g=innerOutere4.order4.ng3.hdf -kx=2 -eps1=.25 -eps2=1. -useSosupDissipation=1 -sosupParameter=0 -go=halt
+
+>>> Cgmx:FD: t=1.00e-01 dt=2.8e-03 TS=ME |div(E)|/|grad(E)|=1.35e-05 (=2.37e-04/1.75e+01) 36 steps mem=43.4(Mb) cpu=1.90e+00(s)
+>>> t=1.00e-01 dt=2.8e-03 max errors:[4.63e-06,1.10e-05,6.71e-06,], max (u):[1.13e+00,1.65e+00,1.65e+00,] (36 steps)
+
+
+OLD-SOSUP -- OK
+cgmx dielectricCyl -g=innerOutere4.order4.ng3.hdf -kx=2 -eps1=.25 -eps2=1. -method=sosup -go=halt
+>>> Cgmx:SOSUP: t=1.00e-01 dt=3.0e-03 TS=ME |div(E)|/|grad(E)|=1.23e-05 (=2.15e-04/1.75e+01) 33 steps mem=50.6(Mb) cpu=4.78e+00(s)
+>>> t=1.00e-01 dt=3.0e-03 max errors:[1.11e-05,1.46e-05,1.28e-05,1.78e-04,2.12e-04,2.54e-04,], max (u):[1.13e+00,1.65e+00,1.65e+00,1.23e+01,2.03e+01,2.10e+01,] (33 steps)
+
+
+***** CGMX -- ORDER=4
+cgmx dielectricCyl -g=innerOutere4.order4.hdf -kx=2 -eps1=.25 -eps2=1. -tp=.01 -go=halt
+
+
+>>> Cgmx:FD: t=1.00e-01 dt=2.6e-03 TS=ME ad4=0.50 |div(E)|/|grad(E)|=2.10e-05 (=3.68e-04/1.75e+01) 38 steps mem=44.9(Mb) cpu=2.70e+00(s)
+>>> t=1.00e-01 dt=2.6e-03 max errors:[1.87e-05,2.07e-05,2.25e-05,], max (u):[1.13e+00,1.65e+00,1.65e+00,] (38 steps)
+
 ******************************************
 ******* Thurs July 30 29, 2016
 

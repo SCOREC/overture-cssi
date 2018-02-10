@@ -1743,6 +1743,12 @@ else if( updateSolution.eq.1 )then
                                                -1.5*uy42(i1,i2,i3,ex) +.5*umy42(i1,i2,i3,ex) )
     addtForcingHz()
 
+! if( .true. )then
+!   ev=uxx42(i1,i2,i3,ex)
+!   OGDERIV2D( 0,2,0,0,i1,i2,i3,t, ex, e0  )
+!   write(*,'("->  uxx4,  uxxe, error=",3e10.2)') ev, e0,ev-e0
+! end if
+
     !  --- advance E and P ---
     do m=0,1
      pc=pxc+m

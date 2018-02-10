@@ -1,3 +1,11 @@
+******************************
+******** Feb 7, 2018
+
+TEST NEW SOSUP dissipation
+
+OLD WAY FIRST -- trouble
+cgmx interface -g=twoSquaresInterfacee4.order2 -eps1=2. -eps2=1. -kx=2 -ky=1 -tp=.1 -ic=pmic -bc=d -go=halt
+
 
 ******************************
 ******** Oct 29, 2017 

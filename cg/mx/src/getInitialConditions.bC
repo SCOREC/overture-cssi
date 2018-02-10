@@ -1086,30 +1086,41 @@ assignInitialConditions(int current, real t, real dt )
                     real xi = twoPi*(kx*x+ky*y);
                     real cx=cos(xi), sx=sin(xi);
                     
-                    real amp=cx*ct-sx*st;
+                    // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+                    // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28 
+                    real amp=sx*ct+cx*st;
 		    UEX(i1,i2,i3)=pwc[0]*amp;
 		    UEY(i1,i2,i3)=pwc[1]*amp;
 
-                    real amph = (hr*ct-hi*st)*cx - (hr*st+hi*ct)*sx;
+                    real amph = (hr*ct-hi*st)*sx + (hr*st+hi*ct)*cx;
 		    UHZ(i1,i2,i3)=amph;
 
-                    amp=cx*ctm-sx*stm;
+                    // amp=cx*ctm-sx*stm;      *wdh* 2018/01/28
+                    amp=sx*ctm+cx*stm;
 		    UMEX(i1,i2,i3)=pwc[0]*amp;
 		    UMEY(i1,i2,i3)=pwc[1]*amp;
 
-                    amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;
+                    // amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;  *wdh* 2018/01/28 
+                    amph = (hr*ctm-hi*stm)*sx + (hr*stm+hi*ctm)*cx;
 		    UMHZ(i1,i2,i3)=amph;
 
                     // -- POLARIZATION Vectors --
                     if( dispersionModel != noDispersion  )
                     {
                       // *new way:
+                      //   E = Im( exp( i*k*x )* exp( i*si*t )* exp(sr*t) 
+                      //   Er = cx*ct - sx*st
+                      //   Ei = sx*ct + cx*st 
+                      //     
+                      //   P = Im( psi(s) * E )  = Im( [psir + i*psii]*[ Er + i*Ei ] )
+                      //     = psir*Ei + psii*Er 
+                      //     = psir*(sx*ct + cx*st ) + psii*(cx*ct - sx*st) 
                       for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                       {
                         const int pc= iv*numberOfDimensions;
 
-                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
-                        real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
+                        real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
 
        
                         // Do this for now -- set all vectors to be the same: 
@@ -1336,13 +1347,17 @@ assignInitialConditions(int current, real t, real dt )
                       real cx=cos(xi), sx=sin(xi);
                     
                       // --- assign (Ex,Ey,Ez) at time t ---
-                      real amp=cx*ct-sx*st;
+                      // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+                      // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28
+                      real amp=sx*ct+cx*st;  
+
                       UEX(i1,i2,i3)=pwc[0]*amp;
                       UEY(i1,i2,i3)=pwc[1]*amp;
                       UEZ(i1,i2,i3)=pwc[2]*amp;
 
                       // --- assign (Ex,Ey,Ez) at time t-dt ---
-                      real ampm=cx*ctm-sx*stm;
+                      // real ampm=cx*ctm-sx*stm; *wdh* 2018/01/28
+                      real ampm=sx*ctm+cx*stm;
                       UMEX(i1,i2,i3)=pwc[0]*ampm;
                       UMEY(i1,i2,i3)=pwc[1]*ampm;
                       UMEZ(i1,i2,i3)=pwc[2]*ampm;
@@ -1352,8 +1367,10 @@ assignInitialConditions(int current, real t, real dt )
                       {
                         const int pc= iv*numberOfDimensions;
 
-                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
-                        real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                        // real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
+                        // real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
+                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
+                        real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
        
                         // Do this for now -- set all vectors to be the same: 
                         pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
@@ -2148,31 +2165,32 @@ assignInitialConditions(int current, real t, real dt )
 	    int i1,i2,i3;
 	    if( numberOfDimensions==2 )
 	    {
+              // ====== TWO DIMENSIONS ========
 	      if( method==nfdtd )
 	      {
 		FOR_3D(i1,i2,i3,J1,J2,J3)
 		{
-		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr + UG(i1,i2,i3,ex+3)*cEi;
+		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr + UG(i1,i2,i3,ey+3)*cEi;
+		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHr + UG(i1,i2,i3,hz+3)*cHi;
 
-		  UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sintm+UG(i1,i2,i3,ex+3)*costm;
-		  UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sintm+UG(i1,i2,i3,ey+3)*costm;
-		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sintm+UG(i1,i2,i3,hz+3)*costm;
+		  UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cErm + UG(i1,i2,i3,ex+3)*cEim;
+		  UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cErm + UG(i1,i2,i3,ey+3)*cEim;
+		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHrm + UG(i1,i2,i3,hz+3)*cHim;
 		}
 	      }
 	      else if( method==sosup )
 	      {
 		FOR_3D(i1,i2,i3,J1,J2,J3)
 		{
-		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+		  UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr + UG(i1,i2,i3,ex+3)*cEi;
+		  UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr + UG(i1,i2,i3,ey+3)*cEi;
+		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*cHr + UG(i1,i2,i3,hz+3)*cHi;
 
 		  // -- time derivatives: 
-		  uLocal(i1,i2,i3,ext)= UG(i1,i2,i3,ex)*dsint+UG(i1,i2,i3,ex+3)*dcost;
-		  uLocal(i1,i2,i3,eyt)= UG(i1,i2,i3,ey)*dsint+UG(i1,i2,i3,ey+3)*dcost;
-		  uLocal(i1,i2,i3,hzt)= UG(i1,i2,i3,hz)*dsint+UG(i1,i2,i3,hz+3)*dcost;
+		  uLocal(i1,i2,i3,ext)= UG(i1,i2,i3,ex)*dsint + UG(i1,i2,i3,ex+3)*dcost;
+		  uLocal(i1,i2,i3,eyt)= UG(i1,i2,i3,ey)*dsint + UG(i1,i2,i3,ey+3)*dcost;
+		  uLocal(i1,i2,i3,hzt)= UG(i1,i2,i3,hz)*dsint + UG(i1,i2,i3,hz+3)*dcost;
 		}
 	      }
 	      else
@@ -2183,6 +2201,12 @@ assignInitialConditions(int current, real t, real dt )
               // -- dispersion model components --
 	      if( dispersionModel!=noDispersion )
 	      {
+                if( numberOfPolarizationVectors>1 )
+                {
+                  OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
+                }
+                
+
 		if( method==nfdtd )
 		{
 		  FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2192,18 +2216,13 @@ assignInitialConditions(int current, real t, real dt )
                       const int pc= iv*numberOfDimensions;
        
                       // Do this for now -- set all vectors to be the same: 
-                      pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;  
-                      pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;  
+                      pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
+                      pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
                                                                                                 
-                      pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-                      pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
+                      pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
+                      pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
                     }
 
-		    // uLocal(i1,i2,i3,pxc)  = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;
-		    // uLocal(i1,i2,i3,pyc)  = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;
-
-		    // umLocal(i1,i2,i3,pxc) = UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-		    // umLocal(i1,i2,i3,pyc) = UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
 		  }
 		}
 	      }
@@ -2212,24 +2231,31 @@ assignInitialConditions(int current, real t, real dt )
 	    }
 	    else 
 	    {
+              // ====== THREE DIMENSIONS ========
 	      if( solveForElectricField )
 	      {
 		if( method==nfdtd )
 		{
 		  FOR_3D(i1,i2,i3,J1,J2,J3)
 		  {
-		    UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sint+UG(i1,i2,i3,ex+3)*cost;
-		    UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sint+UG(i1,i2,i3,ey+3)*cost;
-		    UEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*sint+UG(i1,i2,i3,ez+3)*cost;
+		    UEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cEr+UG(i1,i2,i3,ex+3)*cEi;
+		    UEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cEr+UG(i1,i2,i3,ey+3)*cEi;
+		    UEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*cEr+UG(i1,i2,i3,ez+3)*cEi;
 
-		    UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*sintm+UG(i1,i2,i3,ex+3)*costm;
-		    UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*sintm+UG(i1,i2,i3,ey+3)*costm;
-		    UMEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*sintm+UG(i1,i2,i3,ez+3)*costm;
+		    UMEX(i1,i2,i3)= UG(i1,i2,i3,ex)*cErm+UG(i1,i2,i3,ex+3)*cEim;
+		    UMEY(i1,i2,i3)= UG(i1,i2,i3,ey)*cErm+UG(i1,i2,i3,ey+3)*cEim;
+		    UMEZ(i1,i2,i3)= UG(i1,i2,i3,ez)*cErm+UG(i1,i2,i3,ez+3)*cEim;
 		  }
 
 		  // -- dispersion model components --
 		  if( dispersionModel!=noDispersion )
 		  {
+
+                    if( numberOfPolarizationVectors>1 )
+                    {
+                      OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
+                    }
+
 		    if( method==nfdtd )
 		    {
 		      FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2240,22 +2266,15 @@ assignInitialConditions(int current, real t, real dt )
                           const int pc= iv*numberOfDimensions;
        
                           // Do this for now -- set all vectors to be the same: 
-                          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;  
-                          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;  
-                          pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*phiPs + UG(i1,i2,i3,ez+3)*phiPc;  
+                          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
+                          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
+                          pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr + UG(i1,i2,i3,ez+3)*cPi;  
                                                                                                     
-                          pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-                          pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
-                          pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*phiPsm + UG(i1,i2,i3,ez+3)*phiPcm;
+                          pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
+                          pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
+                          pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*cPrm + UG(i1,i2,i3,ez+3)*cPim;
                         }
 
-			// uLocal(i1,i2,i3,pxc)  = UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc;
-			// uLocal(i1,i2,i3,pyc)  = UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc;
-			// uLocal(i1,i2,i3,pzc)  = UG(i1,i2,i3,ez)*phiPs + UG(i1,i2,i3,ez+3)*phiPc;
-
-			// umLocal(i1,i2,i3,pxc) = UG(i1,i2,i3,ex)*phiPsm + UG(i1,i2,i3,ex+3)*phiPcm;
-			// umLocal(i1,i2,i3,pyc) = UG(i1,i2,i3,ey)*phiPsm + UG(i1,i2,i3,ey+3)*phiPcm;
-			// umLocal(i1,i2,i3,pzc) = UG(i1,i2,i3,ez)*phiPsm + UG(i1,i2,i3,ez+3)*phiPcm;
 		      }
 		    }
 		  }

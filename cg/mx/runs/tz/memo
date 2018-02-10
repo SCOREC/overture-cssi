@@ -1,4 +1,14 @@
 ***************************
+******* Jan 27, 2018
+
+CHECK CURVILINEAR ORDER 4 
+
+CURVILINEAR: EXACT: degree(4,2)
+cgmx -noplot tz -g=nonSquare8.order4 -npv=1 -degreex=4 -degreet=2 -dm=gdm -a0=1 -a1=1 -b0=1 -b1=1 -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.2 -go=og
+
+
+
+***************************
 ******* Dec 17, 2017
 
 

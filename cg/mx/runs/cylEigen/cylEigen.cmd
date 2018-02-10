@@ -10,11 +10,25 @@
 $tFinal=1.; $tPlot=.1; $cfl=.95; $diss=.5; $show=" "; $method="NFDTD";
 $n=1; $m=1; $k=1;   # n=Jn, m=m*theta, k=k*Pi*z
 $grid="tube1.order4.hdf"; $tPlot=.1; 
+$dm="none"; 
+# $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
+$npv=1; $alphaP=1.; $modeGDM=-1; 
+@a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below  
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
- "cfl=f"=>\$cfl,"go=s"=>\$go,"noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"n=i"=>\$n,"m=i"=>\$m,"method=s"=>\$method );
+ "cfl=f"=>\$cfl,"go=s"=>\$go,"noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"n=i"=>\$n,"m=i"=>\$m,"method=s"=>\$method,\
+   "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,\
+   "npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM  );
 # -------------------------------------------------------------------------------------------------
+if( $dm eq "none" ){ $dm="no dispersion"; }
+if( $dm eq"gdm" ){ $dm="GDM"; }
+# Give defaults here for array arguments: 
+if( $a0[0] eq "" ){ @a0=(1,0,0,0); }
+if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
+if( $b0[0] eq "" ){ @b0=(0,0,0,0); }
+if( $b1[0] eq "" ){ @b1=(0,0,0,0); }
+# 
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
@@ -42,6 +56,21 @@ $grid
 modifiedEquationTimeStepping
 #
 $method
+# dispersion model:
+$dm
+# GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
+GDM mode: $modeGDM
+$domain="all"; 
+$cmd="#"; 
+if( $npv == 1 ){ $cmd = "GDM params $a0[0] $a1[0] $b0[0] $b1[0] all (a0,a1,b0,b1,domain-name)"; }
+if( $npv == 2 ){ \
+   $cmd  = "GDM domain name: $domain\n"; \
+   $cmd .= " number of polarization vectors: $npv\n"; \
+   $cmd .= " GDM coeff: 0 $a0[0] $a1[0] $b0[0] $b1[0] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 1 $a0[1] $a1[1] $b0[1] $b1[1] (eqn, a0,a1,b0,b1)"; \
+      }
+$cmd
+#
 #**
 solve for magnetic field 0
 #**

@@ -2008,7 +2008,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
     
 
   // This code is partially duplicated from assignBoundaryConditions.bC 
-    if( method==sosup )
+    const int & useSosupDissipation = parameters.dbase.get<int>("useSosupDissipation");
+    if( method==sosup || 
+            (method==nfdtd && useSosupDissipation) ) // Added Feb 8, 2018 *wdh* 
     {
     // Extrapolate an extra ghost line for the wider upwind stencil in SOSUP
         BoundaryConditionParameters extrapParams;
@@ -2036,6 +2038,10 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
         {
             MappedGrid & mg = cg[grid];
             realMappedGridFunction & u = cgfields[next][grid];
+
+            MappedGridOperators & mgop = mgp!=NULL ? *op : (*cgop)[grid];
+            u.setOperators(mgop);
+
             bool hasInterface=false;
             for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
             {

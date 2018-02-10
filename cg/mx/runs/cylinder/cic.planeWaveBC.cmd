@@ -95,8 +95,6 @@ $grid
 $method
 # dispersion model:
 $dm
-# 
-# Drude params 1 1 all (gamma,omegap,domain-name)
 GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 #
 planeWaveBoundaryForcing

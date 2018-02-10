@@ -6,6 +6,7 @@
 #  cgmx [-noplot] dielectricCyl  -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> -show=<name> ...
 #                                -eps1=<> -eps2=<> -interit=<> -diss=<> -filter=[0|1] -dissc=<> -debug=<num> ...
 #                                -cons=[0/1] -plotIntensity=[0|1] ...
+#        -useSosupDissipation=[0|1] -sosupDissipationOption=[0|1] -sosupDissipationFrequency=<i> 
 #                                -method=[nfdtd|Yee|sosup] -errorNorm=[0|1|2] -go=[run/halt/og]
 # Arguments:
 #  -kx= -ky= -kz= : integer wave numbers of the incident wave
@@ -92,6 +93,9 @@ $interfaceEquationOption=1; $interfaceIterations=5;  $interfaceOmega=.5;
 $grid="innerOuter4.order4.hdf";
 $cons=0; $go="halt";  $errorNorm=0;
 $flushFrequency=10; 
+#
+$useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
+$selectiveDissipation=0;
 # 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
@@ -99,7 +103,10 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
  "interit=i"=>\$interfaceIterations,"cyl=i"=>\$cyl,"useNewInterface=i"=>\$useNewInterface,"errorNorm=i"=>\$errorNorm,\
  "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2, "cons=i"=>\$cons,\
  "method=s"=>\$method,"dissOrder=i"=>\$dissOrder,"filter=i"=>\$filter,"flushFrequency=i"=>\$flushFrequency,\
- "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega );
+ "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega,\
+  "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
+  "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
+  "selectiveDissipation=i"=>\$selectiveDissipation );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -174,6 +181,15 @@ order of dissipation $dissOrder
 apply filter $filter
 dissipation $diss
 dissipation (curvilinear) $dissc
+#
+if( $selectiveDissipation eq "1" ){ $cmd="selective dissipation...\n  turn off rectangular\n continue"; }else{ $cmd="#"; }
+$cmd 
+#
+use sosup dissipation $useSosupDissipation
+sosup parameter $sosupParameter
+sosup dissipation option $sosupDissipationOption
+sosup dissipation frequency $sosupDissipationFrequency
+#
 #
 # use conservative difference $cons 
 debug $debug
