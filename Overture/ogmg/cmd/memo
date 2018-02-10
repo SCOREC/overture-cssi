@@ -1,5 +1,15 @@
 set ogmgt = $ogmg/ogmgt
 
+****************************
+****** Feb 5, 2018
+
+Tests for Kamala: 
+
+ogmgt tz -noplot -g=square1024.order2
+
+ogmgt tz -noplot -g=square1024.order4
+
+
 *****************************
 *** May 3, 2017
 
