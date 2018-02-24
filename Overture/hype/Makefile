@@ -88,7 +88,10 @@ hype= hype.o generate.o update.o HyperbolicMapping.o util.o project.o applyBound
           DataPointMapping.o plotStructured.o dpmMap.o dpmScalar.o Mapping.o
 hype= hype.o generate.o update.o HyperbolicMapping.o util.o project.o applyBoundaryConditions.o startCurve.o \
           plot.o stretch.o GridSmoother.o GridStretcher.o MatchingCurve.o generateParallel.o \
-          ellipticSmooth.o DataPointMapping.o
+          ellipticSmooth.o DataPointMapping.o ../mapping/Mapping.o ../mapping/MatrixTransform.o
+hype= hype.o generate.o update.o HyperbolicMapping.o util.o project.o applyBoundaryConditions.o startCurve.o \
+          plot.o stretch.o GridSmoother.o GridStretcher.o MatchingCurve.o generateParallel.o \
+          ellipticSmooth.o DataPointMapping.o 
 hype: $(hype) 
 	$(CC) $(CCFLAGS) -o $@ $(hype) $(CLIBS) $(FLIBS) $(GLIBS)
 

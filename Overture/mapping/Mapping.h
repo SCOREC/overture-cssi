@@ -283,6 +283,8 @@ class Mapping : public ReferenceCounting
 
   void reinitialize();   // re-initialize a mapping that has changed (this will re-initialize the inverse)
   
+  int evaluatePeriodVector();
+
   int determineResolution(int numberOfGridPoints[], 
 			  bool collapsedEdge[2][3],
 			  real averageArclength[],
@@ -339,7 +341,8 @@ class Mapping : public ReferenceCounting
   int                      getNumberOfGhostPoints(int side, int axis );
   real                     getParameter( const MappingParameters::realParameter & param ) const;
   int                      getParameter( const MappingParameters::intParameter & param ) const;
-  real                     getPeriodVector( const int axis, const int direction ) const;
+  virtual int              getPeriodVector( const int direction, real vect[3] ) const;
+  virtual real             getPeriodVector( const int axis, const int direction ) const;
   Bound                    getRangeBound( const int side, const int axis ) const;
   coordinateSystem         getRangeCoordinateSystem() const;
   Bound                    getRangeCoordinateSystemBound( const int side, const int axis ) const;
@@ -381,8 +384,12 @@ class Mapping : public ReferenceCounting
   virtual void setParameter( const MappingParameters::realParameter & param, const real & value );
   virtual void setParameter( const MappingParameters::intParameter & param, const int & value );
           void setPartition( Partitioning_Type & partition );
+
+  virtual void setPeriodVector( const int direction, const real vect[3] );
+
   virtual void setPeriodVector( const int axis, const int direction, 
 				const real periodVectorComponent );
+
   virtual void setRangeBound( const int side, const int axis, const Bound rangeBound );
   virtual void setRangeCoordinateSystem( const coordinateSystem rangeCoordinateSystem );
   virtual void setRangeCoordinateSystemBound( const int side, const int axis,

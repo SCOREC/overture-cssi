@@ -1,4 +1,131 @@
 ********************************
+***** Feb 21-23, 2018
+
+CHANGED GRID SPACING ON solid grid for elasticPistonGrid
+
+
+BUG FIXED -- TFI had flipped top and bottom boundaries to match corners
+
+rebuild original grid with periodic BC's
+
+ogen -noplot elasticPistonGrid -factor=1 -per=1
+
+
+G2: ROTATED -- runs but errors are large
+cgmp elasticPiston -g=elasticPistonRotated30DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=1e3 -nu=.01 -tp=.01 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=30.
+
+G1: ROTATED -- runs but errors are large
+cgmp elasticPiston -g=elasticPistonRotated30DegreesGride1.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=1e3 -nu=.01 -tp=.01 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=30.
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.3756e-01,2.3825e-01,3.6134e+01,2.0862e+01,2.0862e+01,6.0220e+01,1.3760e-03,2.3833e-03,], maxNorm(u):[2.47e-01,4.28e-01,4.07e+01,2.35e+01,2.35e+01,6.79e+01,2.47e-03,4.29e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = -2.507e-01 at t=1.000e-02
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[2.03e-01,1.54e-02,2.67e-02,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 2.03e-01 1.54e-02 2.67e-02 1.46e-01  2.13e+01 1.00e-02 1.20e+00 
+
+
+ROTATED ZERO 
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+Cgsm:endTimeStep: t0+dt0=5.000e-02, dt=1.250e-02, current=1
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=4==================
+-->t=5.0000e-02 dt=1.3e-02 maxNorm errors:[6.7055e-17,6.1905e-05,2.9185e-06,2.8157e-17,2.8157e-17,5.2525e-06,2.4856e-18,4.9338e-06,], maxNorm(u):[6.71e-17,4.89e-01,5.67e-03,2.82e-17,2.82e-17,1.70e-02,2.49e-18,2.46e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=4==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 4.934e-06 at t=5.000e-02
+--INS-- determineErrors: t=5.000e-02, maxNorm errors: [p,u,v,T]=[1.53e-04,8.69e-17,1.63e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (5 steps)
+   0.050 1.53e-04 8.69e-17 1.63e-04 1.70e-03  4.89e-01 1.25e-02 2.94e+00 
+ *** getAugmentedSolution: errors at t=5.000e-02 ****
+-->t=5.0000e-02 dt=1.3e-02 maxNorm errors:[6.7055e-17,6.1905e-05,2.9185e-06,2.8157e-17,2.8157e-17,5.2525e-06,2.4856e-18,4.9338e-06,], maxNorm(u):[6.71e-17,4.89e-01,5.67e-03,2.82e-17,2.82e-17,1.70e-02,2.49e-18,2.46e-02,]
+ --UDKS--  ERROR IN INTERFACE POSITION = 4.934e-06 at t=5.000e-02
+
+
+--- UNROTATED 
+cgmp elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=4==================
+-->t=5.0000e-02 dt=1.3e-02 maxNorm errors:[5.9785e-17,6.1905e-05,2.9185e-06,3.7126e-17,3.7126e-17,5.2525e-06,2.2580e-18,4.9338e-06,], maxNorm(u):[5.98e-17,4.89e-01,5.67e-03,3.71e-17,3.71e-17,1.70e-02,2.26e-18,2.46e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=4==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 4.934e-06 at t=5.000e-02
+--INS-- determineErrors: t=5.000e-02, maxNorm errors: [p,u,v,T]=[1.53e-04,6.55e-17,1.63e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (5 steps)
+   0.050 1.53e-04 6.55e-17 1.63e-04 1.70e-03  4.89e-01 1.25e-02 2.77e+00 
+
+
+
+***OLD -- solid grid was too fine in one direction
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=6==================
+-->t=5.0000e-02 dt=8.3e-03 maxNorm errors:[7.3713e-17,1.4883e-05,1.2178e-06,5.4267e-17,5.4267e-17,9.3150e-07,1.9349e-18,2.3524e-06,], maxNorm(u):[7.37e-17,4.89e-01,5.67e-03,5.43e-17,5.43e-17,1.70e-02,1.93e-18,2.46e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=6==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 2.352e-06 at t=5.000e-02
+--INS-- determineErrors: t=5.000e-02, maxNorm errors: [p,u,v,T]=[7.09e-05,7.25e-17,7.44e-05,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (7 steps)
+   0.050 7.09e-05 7.25e-17 7.44e-05 7.83e-04  4.89e-01 8.33e-03 1.69e+00 
+ *** getAugmentedSolution: errors at t=5.000e-02 ****
+-->t=5.0000e-02 dt=8.3e-03 maxNorm errors:[7.3713e-17,1.4883e-05,1.2178e-06,5.4267e-17,5.4267e-17,9.3150e-07,1.9349e-18,2.3524e-06,], maxNorm(u):[7.37e-17,4.89e-01,5.67e-03,5.43e-17,5.43e-17,1.70e-02,1.93e-18,2.46e-02,]
+ --UDKS--  ERROR IN INTERFACE POSITION = 2.352e-06 at t=5.000e-02
+
+
+
+********************************
+***** Feb 2-221, 2018
+
+OGEN + MAPPINGS FIXED FOR rotated periodic
+
+ogen -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=0
+ogen -noplot elasticPistonGridRotated -factor=2 -per=1 -thetad=0
+
+ogen -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+ogen -noplot elasticPistonGridRotated -factor=2 -per=1 -thetad=30
+
+TEST HEAVY SOLID
+cgmp elasticPiston -g=elasticPistonRotated30DegreesGride1.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=1e3 -nu=.01 -tp=.01 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=30.
+
+ZERO ROTATION
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.01 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=0.
+
+ROTATED 0 degrees
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=0.
+
+********************************
+***** Feb 11, 2018
+
+
+WDH: test rotated elastic piston
+
+FIXES MADE TO 
+    (1) elasticPistonGridRotated.cmd
+    (2) cutHolesNew.bf -- turn off assert for periodicity vector
+
+ogen elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+
+ROTATED 30 degrees
+cgmp elasticPiston -g=elasticPistonRotated30DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=30.
+
+
+ROTATED 0 degrees
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt -thetad=0.
+
+
+UNROTATED 
+cgmp elasticPiston -g=elasticPistonGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.05 -tf=1 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=6==================
+-->t=5.0000e-02 dt=8.3e-03 maxNorm errors:[5.5678e-17,1.4883e-05,1.2178e-06,2.3647e-17,2.3647e-17,9.3150e-07,1.9349e-18,2.3524e-06,], maxNorm(u):[5.57e-17,4.89e-01,5.67e-03,2.36e-17,2.36e-17,1.70e-02,1.93e-18,2.46e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=6==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 2.352e-06 at t=5.000e-02
+--INS-- determineErrors: t=5.000e-02, maxNorm errors: [p,u,v,T]=[7.09e-05,1.05e-16,7.44e-05,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (7 steps)
+   0.050 7.09e-05 1.05e-16 7.44e-05 7.83e-04  4.89e-01 8.33e-03 3.08e+00 
+
+
+********************************
 ***** Feb 7, 2018
 
 Fixed signs in matrix routines

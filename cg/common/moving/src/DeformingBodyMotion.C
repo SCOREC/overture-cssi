@@ -1767,7 +1767,8 @@ initialize( CompositeGrid & cg, real t /* = 0. */ )
         // Here is the undeformed state
         x0=vertex(Ib1,Ib2,Ib3,Rx);
 
-        ::display(x0,"--DBM-- initialize: x0 (initial state)","%8.2e ");
+        if( debug & 4 )
+          ::display(x0,"--DBM-- initialize: x0 (initial state)","%8.2e ");
 
         // --- Check for periodic boundary conditions --
         MappedGrid & mg = cg[gridToMove];
@@ -2331,7 +2332,8 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
 
           // const RealArray & xBeam = pBeamModel->position(); // current degree's of freedom **FIX ME**
 
-          ::display(x0,"--DBM-- initializePast: x0 (initial state)","%9.3e ");
+          if( debug & 4 )
+            ::display(x0,"--DBM-- initializePast: x0 (initial state)","%9.3e ");
 
 	  RealArray xPast;
 	  xPast.redim(x0);
@@ -2365,7 +2367,8 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
             parameters.getUserDefinedDeformingBodyKnownSolution( 
               bodyNumber,Parameters::boundaryPosition, pastTime, gridToMove, mg,Ib1,Ib2,Ib3,Rx,xPast );
 	    
-            ::display(xPast,"--DBM-- initializePast: replace x0 with xPast","%9.3e ");
+            if( debug & 4 )
+              ::display(xPast,"--DBM-- initializePast: replace x0 with xPast","%9.3e ");
 
             if (( step==1 ) || ( step==0 )) // t=-dt or t=0
             // if (( step==1 )) // t=-dt 

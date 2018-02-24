@@ -60,6 +60,9 @@ private:
 
   int update( MappingInformation & mapInfo ) ;
 
+  // over-load the evaluation of the "period vector" for e.g. rotated period squares and boxes
+  int  getPeriodVector( const int direction, real vect[3] ) const;
+  real getPeriodVector( const int axis, const int direction ) const;
 
   private:
 

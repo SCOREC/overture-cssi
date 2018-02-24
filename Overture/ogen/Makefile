@@ -162,7 +162,8 @@ ogen=    ogenDriver.o $(ogenFiles) ../mapping/stretchUpdate.o
 ogen=    ogenDriver.o $(ogenFiles) TridiagonalSolver.o TridiagonalFactor.o
 ogen=    ogenDriver.o $(ogenFiles) GridStretcher.o generateParallel.o DataPointMapping.o ../hype/update.o
 ogen=    ogenDriver.o $(ogenFiles) ../hype/update.o
-ogen=    ogenDriver.o $(ogenFiles)
+ogen=    ogenDriver.o $(ogenFiles) ../mapping/MatrixTransform.o ../mapping/Mapping.o
+ogen=    ogenDriver.o $(ogenFiles) 
 ogen: $(ogen) ; $(CC) $(CCFLAGS) -o $@ $(ogen) $(PETSC_LIBS) $(CLIBS) $(FLIBS) $(FORTRAN_LIBS_FORT77) $(GLIBS)  
 
 # **************************************************************************************

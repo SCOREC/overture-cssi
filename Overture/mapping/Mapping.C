@@ -2011,6 +2011,31 @@ getParameter( const MappingParameters::intParameter & param ) const
   return returnValue;
 }
 
+int Mapping::
+getPeriodVector( const int direction, real vect[3] ) const
+// =====================================================================================
+/// \details 
+///   For a mapping with getIsPeriodic(direction)==derivativePeriodic this routine returns
+///  the vector that determines the shift from the `left' edge to the `right' edge.
+/// \param direction (input) : direction =0,1,...,domainDimension
+/// \param vect[3] (output) : the period vector
+// =====================================================================================
+{ 
+  if( direction >= 0 && direction < domainDimension )
+  {
+    for( int axis=0; axis<3; axis++ )
+      vect[axis] = periodVector[axis][direction];
+  }
+  else
+  {
+    printF(" Mapping::getPeriodVector: Invalid arguments: direction=%i, but domainDimension=%i\n",
+           direction,domainDimension);
+    OV_ABORT("error");
+  }
+  return 0;
+}
+
+
 real Mapping::
 getPeriodVector(const int axis, const int direction ) const
 // =====================================================================================
@@ -4121,7 +4146,6 @@ setIsPeriodic( const int axis, const periodicType isPeriodic0 )
       if( bc[Start][axis]<0 )  bc[Start][axis]=0;
       if( bc[End  ][axis]<0 )  bc[End  ][axis]=0;
     }
-    
   }
   else
     mappingError( "setIsPeriodic", 0,axis );
@@ -4256,6 +4280,66 @@ setParameter( const MappingParameters::intParameter & param, const int & value )
     cout << " Mapping::setParameter: fatal error, unknown value for intParameter\n";
     Overture::abort("error");
   }
+}
+
+
+int Mapping::
+evaluatePeriodVector()
+// =====================================================================================
+/// \brief Evaluate the periodVector for derivative periodic directions
+// *wdh* Feb 17, 2018
+// =====================================================================================
+{
+  for( int axis=0; axis<domainDimension; axis++ )
+  {
+    if( isPeriodic[axis]==derivativePeriodic )  
+    {
+      // Evaluate the period vector from the mapping
+      realArray r(2,3),x(2,3);
+      r=0.; x=0.;
+      r(1,axis)=1.;
+      map(r,x);
+      Range Rx(0,rangeDimension-1);
+      if( max(fabs(x(1,Rx)-x(0,Rx))) <= max(x)*REAL_EPSILON*100. )
+      {
+        printF("Mapping:evaluatePeriodVector: ERROR: derivativePeriodic[%i] but periodcVector has length ZERO!\n",
+         axis);
+        OV_ABORT("ERROR");
+      }
+      else
+      {
+        printF("Mapping:evaluatePeriodVector:info: setting periodicity=derivativePeriodic for axis=%i, "
+               "periodVector=(%g,%g,%g) \n",axis,
+               x(1,0)-x(0,0),x(1,1)-x(0,1),x(1,2)-x(0,2)  );
+        for( int dir=0; dir<rangeDimension; dir++ )
+          setPeriodVector(dir,axis,x(1,dir)-x(0,dir) );  
+      }
+    }
+  }
+  return 0;
+  
+}
+
+
+
+// ===================================================================================
+/// \brief Set the period vector (for derivative periodic mappings such as a square)
+/// \param direction (input) : direction =0,1,...,domainDimension
+/// \param vect[3] : period vector
+// ===================================================================================
+void Mapping::
+setPeriodVector( const int direction, const real vect[3] )
+{
+  if( direction >= 0 && direction < domainDimension )
+  {
+    for( int axis=0; axis<3; axis++ )
+      periodVector[axis][direction]=vect[axis];
+  }
+  else
+  {
+    OV_ABORT("Mapping::setPeriodVector:ERROR - invalid direction");
+  }
+  
 }
 
 
@@ -4557,7 +4641,12 @@ updateMappingDialogData( Mapping *map, DialogData &dialog )
 //     }
 
   for( axis=0; axis<map->getDomainDimension(); axis++ )
+  {
+    printF("Mapping::updateMappingDialogData: set optionMenu: periodic[%i]=%i\n",axis,(int)map->getIsPeriodic(axis));
+    
     dialog.getOptionMenu(axis).setCurrentChoice((int)map->getIsPeriodic(axis));
+  }
+  
 }
 
 static void 
@@ -5167,17 +5256,17 @@ update( MappingInformation & mapInfo )
 	  {
 	    if( option(len,len+2)=="not" )
 	    {
-	      periodic[axis]=(int)notPeriodic;
+	      periodic[axis]=(int)notPeriodic;          // local variable 
               break;
 	    }
 	    else if( option(len,len+2)=="der" )
 	    {
-              periodic[axis]=(int)derivativePeriodic;
+              periodic[axis]=(int)derivativePeriodic;   // local variable
               break;
 	    }
 	    else if( option(len,len+2)=="funt" )
 	    {
-              periodic[axis]=(int)functionPeriodic;
+              periodic[axis]=(int)functionPeriodic;   // local variable
               break;
 	    }
             len++;
@@ -5200,18 +5289,25 @@ update( MappingInformation & mapInfo )
       {
 	if( periodic[axis] < 0 || periodic[axis] > 2 )
 	{
-	  cout << "Mapping::update: Error setting isPeriodic(" << axis << ")=" << isPeriodic[axis] 
-	       << "??, answer must be in the range [0,2]\n ...setting isPeriodic(" << axis << ")=0\n";
-	  isPeriodic[axis]=notPeriodic;
+	  printF("Mapping::update: Error setting isPeriodic(%i)=%i, ??, answer must be in the range [0,2]\n",
+                 axis,isPeriodic[axis]);
+
+	  // printF("Mapping::update: Error setting isPeriodic(" << axis << ")=" << isPeriodic[axis] 
+	  //      << "??, answer must be in the range [0,2]\n ...setting isPeriodic(" << axis << ")=0\n";
+	  // isPeriodic[axis]=notPeriodic;
 	}
 	else
 	{
-	  isPeriodic[axis]=(periodicType)periodic[axis];
+	  // isPeriodic[axis]=(periodicType)periodic[axis]; // *wdh* Feb 17, 2018
+          setIsPeriodic(axis,(periodicType)periodic[axis]); // do this so period vector is set
+
 	}
       
 	// Make sure the BC array is consistent
 	if( isPeriodic[axis]>0 )
 	{
+          printF("Mapping::update: Setting boundary conditions to -1 along axis=% to match periodicity\n",axis);
+          
 	  if( bc[Start][axis]>=0 )
 	    bc[Start][axis]=-1;
 	  if( bc[End][axis]>=0 )

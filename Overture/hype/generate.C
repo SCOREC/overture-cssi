@@ -626,6 +626,9 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
 
   setBasicInverseOption(dpm->getBasicInverseOption());
   reinitialize();  // *wdh* 000503
+
+  // For derivativePeriodic BC's evaluate the period vector here after the grid is made. *wdh* Feb 19, 2018
+  evaluatePeriodVector(); 
       
   mappingHasChanged();
   

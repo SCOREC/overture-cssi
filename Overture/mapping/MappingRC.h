@@ -176,8 +176,9 @@ class MappingRC : public ReferenceCounting
   virtual const realArray& getGrid(MappingParameters & params=Overture::nullMappingParameters());
   int                   getID() const;
   int                   getInvertible() const;
-  aString                getName( const Mapping::mappingItemName item ) const;
+  aString               getName( const Mapping::mappingItemName item ) const;
   periodicType          getIsPeriodic( const int axis ) const;
+  int                   getPeriodVector( const int direction, real vect[3] ) const;
   real                  getPeriodVector( const int axis, const int direction ) const;
   int                   getRangeDimension() const;
   Bound                 getRangeBound( const int side, const int axis ) const;
@@ -207,6 +208,7 @@ class MappingRC : public ReferenceCounting
   void setID();
   void setIsPeriodic( const int axis, const Mapping::periodicType isPeriodic );
   void setName( const Mapping::mappingItemName item, const aString & name );
+  void setPeriodVector( const int direction, const real vect[3] );
   void setPeriodVector( const int axis, const int direction, const real periodVectorComponent );
   void setRangeDimension( const int rangeDimension );
   void setRangeSpace( const Mapping::mappingSpace rangeSpace ); 

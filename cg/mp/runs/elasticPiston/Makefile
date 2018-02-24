@@ -3,10 +3,10 @@
 #
 
 
-# ogen = /home/henshw/Overture.g/bin/ogen
-ogen = /home/dan/Documents/Overture.sf3/bin/ogen
+ogen = /home/henshw/Overture.g/bin/ogen
+# ogen = /home/dan/Documents/Overture.sf3/bin/ogen
 
-grids: elasticPiston radial
+grids: elasticPiston radial rotated
 
 elasticPiston:
 	$(ogen) -noplot elasticPistonGrid -factor=1
@@ -33,8 +33,15 @@ radial:
 	$(ogen) -noplot radialTravelingWaveGrid -interp=e -factor=16
 
 rotated:
-	$(ogen) -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=30
 	$(ogen) -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=0
+	$(ogen) -noplot elasticPistonGridRotated -factor=2 -per=1 -thetad=0
+	$(ogen) -noplot elasticPistonGridRotated -factor=4 -per=1 -thetad=0
+	$(ogen) -noplot elasticPistonGridRotated -factor=8 -per=1 -thetad=0
+	$(ogen) -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+	$(ogen) -noplot elasticPistonGridRotated -factor=2 -per=1 -thetad=30
+	$(ogen) -noplot elasticPistonGridRotated -factor=4 -per=1 -thetad=30
+	$(ogen) -noplot elasticPistonGridRotated -factor=8 -per=1 -thetad=30
+	# $(ogen) -noplot elasticPistonGridRotated -factor=1 -per=1 -thetad=0
 	# $(ogen) -noplot elasticPistonGridRotated -factor=2 -per=1 -thetad=30
 	# $(ogen) -noplot elasticPistonGridRotated -factor=4 -per=1 -thetad=30
 	# $(ogen) -noplot elasticPistonGridRotated -factor=8 -per=1 -thetad=30

@@ -773,6 +773,9 @@ setDataPoints(const realArray & xd,
 
   reinitialize();  // *wdh* we have to re-initialize the inverse 000503
    
+  // For derivativePeriodic BC's evaluate the period vector here after the grid is made. *wdh* Feb 20, 2018
+  evaluatePeriodVector(); 
+
 //   if( true )
 //   {
 //     int i1=4, i2=-3, i3=-1;
@@ -989,6 +992,10 @@ setDataPoints(const realSerialArray & x,
   
 
     reinitialize();  // we have to re-initialize the inverse
+
+    // For derivativePeriodic BC's evaluate the period vector here after the grid is made. *wdh* Feb 20, 2018
+    evaluatePeriodVector(); 
+
    
     mappingInitialized=true;
     mappingHasChanged();
@@ -1622,10 +1629,16 @@ setMapping( Mapping & map )
 //   computeGhostPoints( ngid,numberOfGhostLines );
 
   reinitialize();  
+  // For derivativePeriodic BC's evaluate the period vector here after the grid is made. *wdh* Feb 20, 2018
+  evaluatePeriodVector(); 
+
   mappingInitialized=true;
   mappingHasChanged();
 
   setGrid( xy,gridIndexRange ); // supply the grid 
+
+  // For derivativePeriodic BC's evaluate the period vector here after the grid is made. *wdh* Feb 20, 2018
+  evaluatePeriodVector(); 
 
   signForJacobian=map.getSignForJacobian();
 

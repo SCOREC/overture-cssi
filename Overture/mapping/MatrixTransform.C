@@ -95,6 +95,47 @@ operator=( const MatrixTransform & X )
   return *this;
 }
 
+// =================================================================================================
+/// \brief over-load the evaluation of the "period vector" for e.g. rotated period squares and boxes
+// ==================================================================================================
+int MatrixTransform::
+getPeriodVector( const int direction, real vect[3] ) const
+{
+  // First get the period vector from the un-transformed class: 
+  real pv[3];
+  map1.getPeriodVector(direction,pv);
+
+  // Now apply the matrix transform (ignore the shift)
+  RealArray & m = matrix->matrix;
+  for( int i=0; i<3; i++ )   
+  {
+    vect[i]=0.;
+    for( int j=0; j<3; j++ )   
+    {
+      vect[i] += m(i,j)*pv[j];
+    }
+  }
+
+  printF("***MatrixTransform::getPeriodVector: -- direction=%i, pv=[%9.2e,%9.2e,%9.2e] -> vect[%9.2e,%9.2e,%9.2e]\n",
+         direction,pv[0],pv[1],pv[2], vect[0],vect[1],vect[2]);
+  
+  // return Mapping::getPeriodVector( direction,vect );
+}
+
+// =================================================================================================
+/// \brief over-load the evaluation of the "period vector" for e.g. rotated period squares and boxes
+// =================================================================================================
+real MatrixTransform::
+getPeriodVector( const int axis, const int direction ) const
+{
+  printF("***MatrixTransform::getPeriodVector CALLED -- FINISH ME\n");
+  OV_ABORT("FINISH ME");
+  
+  return Mapping::getPeriodVector( axis,direction );
+}
+
+
+
 void MatrixTransform::
 reset()
 //===========================================================================

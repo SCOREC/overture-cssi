@@ -104,7 +104,8 @@ create mappings
     choose top curve    (r_2=1)
       lowerBoundary
     lines
-      $ny = int( ($yc-$yb)/$ds +1.5 ); 
+      # *wdh* Feb 23/2018 $ny = int( ($yc-$yb)/$ds +1.5 ); 
+      $ny = int( ($yb-$ya)/$ds +1.5 ); 
       $nx $ny
     mappingName
       elasticStrip
@@ -125,6 +126,10 @@ create mappings
     points on initial curve $nx
     BC: left fix x, float y and z
     BC: right fix x, float y and z
+    # *wdh* TRY THIS Feb 22, 2018
+    # -- periodicity: Note: setting hype BC's periodic --> will set derivativePeriodic 
+    if( $per eq 0 ){ $cmd="#"; }else { $cmd ="BC: left periodic\n BC: right periodic"; }
+    $cmd 
     generate
     # use fourth order interpolant to define the mapping:
     # fourth order

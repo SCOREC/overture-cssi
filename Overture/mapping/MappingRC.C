@@ -429,6 +429,11 @@ getInvertible() const
 {
   return mapPointer->getInvertible();
 }
+int MappingRC::
+getPeriodVector( const int direction, real vect[3] ) const
+{
+  return mapPointer->getPeriodVector( direction,vect );
+}
 real MappingRC::
 getPeriodVector( const int axis, const int direction ) const
 {
@@ -558,6 +563,11 @@ setID()
   mapPointer->setID();
 }
 
+void MappingRC::
+setPeriodVector( const int direction, const real vect[3] )
+{
+  mapPointer->setPeriodVector( direction,vect );
+}
 void MappingRC::
 setPeriodVector( const int axis, const int direction, const real periodVectorComponent )
 {

@@ -1,4 +1,23 @@
 *************************************
+*********  Feb 23, 2018
+
+BUG FIXED IN cutHolesNew.bC -- periodic in 3D
+
+
+REVISIT periodic 3D grids after fixes to derivative-periodic
+
+ogen -noplot freeSurfaceGrid3d -interp=e -factor=2 -bc=p
+
+G2: 
+cgins freeSurface3d -g=freeSurfaceGrid3de2p.order2.hdf -nu=.05 -tf=2. -tp=.01 -model=ins -surfaceTension=.0 -ad2=1 -ampA=0.0 -ampB=0.5 -ampC=.5 -surfacePredictor="leap-frog" -go=halt
+
+G1: OK to t=.3
+cgins freeSurface3d -g=freeSurfaceGrid3de1p.order2.hdf -nu=.05 -tf=2. -tp=.01 -model=ins -surfaceTension=.0 -ad2=1 -ampA=0.0 -ampB=0.5 -ampC=.5 -surfacePredictor="leap-frog" -go=halt
+
+COARSE: fails at t=.2 --> OK NOW 
+cgins freeSurface3d -g=freeSurfaceGrid3de.25p.order2.hdf -nu=.05 -tf=2. -tp=.01 -model=ins -surfaceTension=.0 -ad2=1 -ampA=0.0 -ampB=0.5 -ampC=.5 -surfacePredictor="leap-frog" -go=halt
+
+*************************************
 *********  Nov 15, 2017
 
 make grids 

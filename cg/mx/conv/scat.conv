@@ -50,6 +50,7 @@ if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
 if( $b0[0] eq "" ){ @b0=(0,0,0,0); }
 if( $b1[0] eq "" ){ @b1=(1,0,0,0); }
 # Scattering from a PEC sphere:
+if( $cg =~ /cic*/ ){ $cmdFile="../runs/cylinder/cic.planeWaveBC.cmd"; }
 if( $cg =~ /sib*/ || $cg =~ /sphere*/ ){ $cmdFile="../runs/sphere/sib.planeWaveBC.cmd"; $numberOfDimensions=3; }
 #
 $caseName="$name$method$cg\Order$order"; 

@@ -106,6 +106,11 @@ exit
      BC: right fix x, float y and z
      BC: bottom fix y, float x and z
      BC: top fix y, float x and z
+#
+     # -- periodicity: Note: setting hype BC's periodic --> will set derivativePeriodic *wdh* Feb 23, 2018
+     if( $per eq 0 ){ $cmd="#"; }else { $cmd ="BC: left periodic\n BC: right periodic\n BC: bottom periodic\n BC: top periodic"; }
+     $cmd 
+#
      # -- GHOST points go bad at lower-right corner, this seems to help:
      apply boundary conditions to start curve 1
      # 
@@ -114,12 +119,6 @@ exit
      $ny = intmg( $terrainFactor*($yb-$ya)/$ds + 1.5 );
      # points on initial curve 183, 145
      points on initial curve $nx, $ny
-     if( $bc eq "d" ){ $bcCmd ="1 2 3 4 6 0"; }else{ $bcCmd ="-1 -1 -1 -1 6 0" }; 
-     boundary conditions
-       $bcCmd
-       # 1 2 3 4 6 0
-     share
-       1 2 3 4 $freeSurfaceShare 0
      # We cannot use the boundary offset to shift the ghost points
      # since the resulting boundary faces will not flat. 
      boundary offset 0 0 0 0 0 1 (l r b t b f)
@@ -141,6 +140,12 @@ exit
      # evaluate as nurbs 1
      generate     
      # open graphics
+     if( $bc eq "d" ){ $bcCmd ="1 2 3 4 6 0"; }else{ $bcCmd ="-1 -1 -1 -1 6 0" }; 
+     boundary conditions
+       $bcCmd
+       # 1 2 3 4 6 0
+     share
+       1 2 3 4 $freeSurfaceShare 0
      mappingName freeSurface
    # pause
    exit

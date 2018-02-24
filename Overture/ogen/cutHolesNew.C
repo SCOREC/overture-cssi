@@ -33,8 +33,30 @@
 //   *OLD* if the point was NOT invertible then we double check to see it is outside of the boundary
 // **********************************************************************************************************
 
+// ===================================================================================
+// 
+// Macro: getDistanceToBoundary
+//    Compute the distance to a nearby point on the boundary. Also compute the distance
+//  between the closest point on grid2 to x2, and the closest grid point to xb
+//
+//   x2 (input) : point near a boundary
+//   xb (input) : nearby point on the boundary
+//   distToBndry (output) : distance to the boundary adjusted for periodic directions
+//   ia (input) : holds index of close point on grid2 to x2
+//   dx2 (output) : distance between closest point on grid2 to x2, and the closest grid point to xb
+// =====================================================================================
 
 
+// ===================================================================================
+// 
+// Macro: adjustDistanceForDerivativePeriodic
+//    Adjust the distance to the boundary for grids with "derivative periodic"
+//
+//   x2 (input) : point near a boundary
+//   xb (input) : nearby point on the boundary
+//   distToBndry (output) : distance to the boundary adjusted for periodic directions
+// 
+// =====================================================================================
 
 
 // ****************************************************************************************
@@ -627,8 +649,8 @@ cutHolesNew(CompositeGrid & cg)
                             bool isPeriodic2p[3]={false,false,false};       
 
                             bool isDerivativePeriodic2[3]={false,false,false};
-                            real derivativePeriod2[3]={0.,0.,0.};
-                    
+                            real periodVector2[3][3]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
+                                          
 
                             for( dir=0; dir<numberOfDimensions; dir++ )
             	      {
@@ -643,18 +665,23 @@ cutHolesNew(CompositeGrid & cg)
                 // here is the length of the periodic direction (e.g. for periodic box)
                                 if( isDerivativePeriodic2[dir] )
                                 {
-                                    derivativePeriod2[dir]=g2.mapping().getMapping().getPeriodVector(dir,dir);
-                  // printF(" grid2=%i dir=%i isDerivativePeriodic: derivativePeriod2[dir]=%g\n",
-                  //       grid2,dir,derivativePeriod2[dir]);
+                  //*** WARNING **** HERE WE ASSUME THE PERIODIC SQUARE IS NOT ROTATED !!  *** FIX ME ****
 
-                                    assert( derivativePeriod2[dir]>0. );
+                  // periodVector2[dir]=g2.mapping().getMapping().getPeriodVector(dir,dir);
+                                    g2.mapping().getMapping().getPeriodVector( dir,periodVector2[dir] );
+                                    printF(" grid2=%i dir=%i isDerivativePeriodic: periodVector2[dir]=(%g,%g,%g) (period-vector)\n",
+                                                  grid2,dir,periodVector2[dir][0],periodVector2[dir][1],periodVector2[dir][2]);
+
+                                    assert( fabs(periodVector2[dir][0]) + 
+                                                    fabs(periodVector2[dir][1]) + 
+                                                    fabs(periodVector2[dir][2]) > 0. );
                                 }
                                 
                                 
             	      }
-                            printF(" grid2=%i: isPeriodic2=[%i,%i,%i] isPeriodic2p=[%i,%i,%i]\n",grid2,
-                                isPeriodic2[0],isPeriodic2[1],isPeriodic2[2],
-                                isPeriodic2p[0],isPeriodic2p[1],isPeriodic2p[2]);
+              // printF(" grid2=%i: isPeriodic2=[%i,%i,%i] isPeriodic2p=[%i,%i,%i]\n",grid2,
+              //  isPeriodic2[0],isPeriodic2[1],isPeriodic2[2],
+              //  isPeriodic2p[0],isPeriodic2p[1],isPeriodic2p[2]);
                             
             	      
 
@@ -1465,46 +1492,141 @@ cutHolesNew(CompositeGrid & cg)
                                 	  ipv[axisp2]=ia(i,axisp2)+1; 
                                 	  if( ipv[axisp2] > g2.dimension(End,axisp2) )
                                   	    ipv[axisp2]=ia(i,axisp2)-1;
-                                	  int ax;		      
-                                	  if( !isRectangular2 )
-                                	  {
-                                  	    for( ax=0; ax<numberOfDimensions; ax++ )
-                                  	    {
-                                                    real distx = SQR(x2(i,ax)-xB(i,ax));
-                                                    if( isDerivativePeriodic2[ax] )
-                                                    { // For derivative periodic problems (e.g. periodic box) 
-                            // we may need to shift to the periodic image  *wdh* Nov 15, 2017
-                                                        if( sqrt(distx) > .5*derivativePeriod2[ax] )
+                                            if( true )
+                                            {
+                        // *new* way Feb 16, 2018 *wdh*
+                        // getDistanceToBoundary(xB,x2,distToBndry,ia,dx2);
+                                                    if( !isRectangular2 )
+                                                    {
+                                                        for( int ax=0; ax<numberOfDimensions; ax++ )
                                                         {
-                              // printF("cutHoles: ax=%i isDerivativePeriodic2=%i distx=%g derivativePeriod2=%g\n",
-                              //       ax,(int)isDerivativePeriodic2[ax],distx,derivativePeriod2[ax]);
-                                                            distx = fabs(1.-distx);
-                                                            assert( distx <= .5*derivativePeriod2[ax] );
+                                                            real distx = SQR(x2(i,ax)-xB(i,ax));  // moved inside loop *wdh* Feb 12, 2018 !!
+                                                            distToBndry+=distx;
+                                                            dx2+=SQR(center2(ia(i,0),ia(i,1),ia(i,2),ax)-center2(i1p,i2p,i3p,ax));
                                                         }
                                                     }
-                                    	      distToBndry+=distx;
-                                    	      dx2+=SQR(center2(ia(i,0),ia(i,1),ia(i,2),ax)-center2(i1p,i2p,i3p,ax));
-                                  	    }
-                                	  }
-                                	  else
-                                	  {
-                                  	    i1=ia(i,0), i2=ia(i,1), i3=ia(i,2);  // fill in iv[0..2]
-                                  	    for( ax=0; ax<numberOfDimensions; ax++ )
-                                  	    {
-                                    	      real distx = SQR(x2(i,ax)-xB(i,ax));
-                                                    if( isDerivativePeriodic2[ax] )
-                                                    { // For derivative periodic problems (e.g. periodic box) 
-                            // we may need to shift to the periodic image  *wdh* Nov 15, 2017
-                                                        if( sqrt(distx) > .5*derivativePeriod2[ax] )
+                                                    else
+                                                    {
+                                                        i1=ia(i,0), i2=ia(i,1), i3=ia(i,2);  // fill in iv[0..2]
+                                                        for( int ax=0; ax<numberOfDimensions; ax++ )
                                                         {
-                                                            distx = fabs(1.-distx);
-                                                            assert( distx <= .5*derivativePeriod2[ax] );
+                                                            real distx = SQR(x2(i,ax)-xB(i,ax));
+                                                            distToBndry+=distx;
+                                                            dx2+=SQR(XC2(iv,ax)-XC2(ipv,ax));
                                                         }
                                                     }
-                                    	      distToBndry+=distx;
-                                    	      dx2+=SQR(XC2(iv,ax)-XC2(ipv,ax));
-                                  	    }
-                                	  }
+                        // adjustDistanceToBoundaryForDerivativePeriodic(xB,x2,distToBndry);
+                                                    real xp[3];   // holds the point x2(i,:) adjusted for periodicity 
+                                                    bool firstTime=true, adjusted=false;
+                                                    for( int ax=0; ax<numberOfDimensions; ax++ )
+                                                    {
+                                                        if( isDerivativePeriodic2[ax] )
+                                                        {
+                              // Grid2 is periodic in direction "ax" (derivative-periodic)
+                              //
+                              //         +----------------+
+                              //         |                |
+                              //         |                | 
+                              //         xB               | x2
+                              //         |                |
+                              //         |                |
+                              //         +----------------+
+                              //         ------ pv ------->
+                              // 
+                                                            if( firstTime )
+                                                            { // set xp[:] =  x2(i,:)
+                                                                for( int dir=0; dir<numberOfDimensions; dir++ )
+                                                                    xp[dir]=x2(i,dir);
+                                                            }
+                                                            real pv[3]={periodVector2[ax][0],periodVector2[ax][1], periodVector2[ax][2]}; // 
+                                                            real pNormSq = ( numberOfDimensions==2 ? (pv[0]*pv[0] + pv[1]*pv[1]) : 
+                                                                                                                                              (pv[0]*pv[0] + pv[1]*pv[1]+ pv[2]*pv[2]) );
+                              // Compute the dot product of x2-xB with pv : 
+                                                            real xDotp = ( numberOfDimensions==2 ? 
+                                                                                          ( (xp[0]-xB(i,0))*pv[0] + (xp[1]-xB(i,1))*pv[1] ) :
+                                                                                          ( (xp[0]-xB(i,0))*pv[0] + (xp[1]-xB(i,1))*pv[1]+ (xp[2]-xB(i,2))*pv[2] ) );
+                                                            if( firstTime && debug & 4 )
+                                                            {
+                                                                distToBndry=0.;
+                                                                for( int dir=0; dir<numberOfDimensions; dir++ )
+                                                                    distToBndry += SQR(xp[dir]-xB(i,dir));
+                                                                fprintf(plogFile,"Ogen:adjustForDerivativePeriodic: pv=[%9.2e,%9.2e,%9.2e] xDotp=%9.2e pNormSq=%9.2e *old* distToBndry=%8.2e\n",
+                                                                                  pv[0],pv[1],pv[2],xDotp,pNormSq,distToBndry);
+                                                            }
+                                                            firstTime=false;
+                              // check if |x.pv | > .5 * |pv|^2 
+                                                            if( fabs(xDotp) > .5*pNormSq ) // periodic image is closer
+                                                            {
+                                                                adjusted=true;
+                                                                real signxp = xDotp >= 0. ? 1. : -1;
+                                                                for( int dir=0; dir<numberOfDimensions; dir++ )
+                                                                {
+                                                                    xp[dir] = xp[dir] - pv[dir]*signxp;  // xp = periodic image that is closer to xB
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    if(adjusted )
+                                                    {
+                                                        distToBndry=0.;
+                                                        for( int dir=0; dir<numberOfDimensions; dir++ )
+                                                        {
+                                                            distToBndry += SQR(xp[dir]-xB(i,dir));
+                                                        }
+                                                        if( debug & 4 )
+                                                            fprintf(plogFile,"... point was adjusted xB=(%9.2e,%9.2e) :  r2=(%9.2e,%9.2e) x2=(%9.2e,%9.2e) -> (%9.2e,%9.2e)"
+                                                                          " *new* distToBndry=%8.2e \n",
+                                                                          xB(i,0),xB(i,1), 
+                                                                          r2(i,0),r2(i,1), 
+                                                                          x2(i,0),x2(i,1), 
+                                                                          xp[0],xp[1],distToBndry);
+                                                    }
+                                            }
+                                            else
+                                            {
+                                                int ax;		      
+                                                if( !isRectangular2 )
+                                                {
+                          // *** FIX ME for general period vector ****
+                                                    for( ax=0; ax<numberOfDimensions; ax++ )
+                                                    {
+                                                        real distx = SQR(x2(i,ax)-xB(i,ax));  // moved inside loop *wdh* Feb 12, 2018 !!
+                                                        if( isDerivativePeriodic2[ax] )
+                                                        { // For derivative periodic problems (e.g. periodic box) 
+                              // we may need to shift to the periodic image  *wdh* Nov 15, 2017
+                                                            if( sqrt(distx) > .5*periodVector2[ax][ax] ) 
+                                                            {
+                                // printF("cutHoles: ax=%i isDerivativePeriodic2=%i distx=%g periodVector2=%g\n",
+                                //       ax,(int)isDerivativePeriodic2[ax],distx,periodVector2[ax]);
+                                                                distx = fabs(1.-distx);
+                                                                assert( distx <= .5*periodVector2[ax][ax] );
+                                                            }
+                                                        }
+                                                        distToBndry+=distx;
+                                                        dx2+=SQR(center2(ia(i,0),ia(i,1),ia(i,2),ax)-center2(i1p,i2p,i3p,ax));
+                                                    }
+                                                }
+                                                else
+                                                {
+                          // *** FIX ME for general period vector ****
+                                                    i1=ia(i,0), i2=ia(i,1), i3=ia(i,2);  // fill in iv[0..2]
+                                                    for( ax=0; ax<numberOfDimensions; ax++ )
+                                                    {
+                                                        real distx = SQR(x2(i,ax)-xB(i,ax));
+                                                        if( isDerivativePeriodic2[ax] )
+                                                        { // For derivative periodic problems (e.g. periodic box) 
+                              // we may need to shift to the periodic image  *wdh* Nov 15, 2017
+                                                            if( sqrt(distx) > .5*periodVector2[ax][ax] )
+                                                            {
+                                                                distx = fabs(1.-distx);
+                                                                assert( distx <= .5*periodVector2[ax][ax] );
+                                                            }
+                                                        }
+                                                        distToBndry+=distx;
+                                                        dx2+=SQR(XC2(iv,ax)-XC2(ipv,ax));
+                                                    }
+                                                }
+                                            }
                                 	  if( distToBndry > maxDistFactor*dx2 || distToBndry>maximumHoleCuttingDistanceSquared )
                                 	  {
                                   	    if( debug & 2 )
@@ -1512,13 +1634,13 @@ cutHolesNew(CompositeGrid & cg)
                                     	      fprintf(plogFile,"++cutHoles: un-cutting a hole (%i,%i,%i) on grid=%i by grid=%i. "
                                           		      " r=(%7.1e,%7.1e,%7.1e) pt is too far from boundary. \n"
                                           		      " distToBndry=%8.1e dx2=%8.1e x2=(%9.2e,%9.2e,%9.2e) xB=(%9.2e,%9.2e,%9.2e)"
-                                                                    " rB=(%9.2e,%9.2e,%9.2e) derivativePeriod2=(%g,%g,%g)\n",
+                                                                    " rB=(%9.2e,%9.2e,%9.2e) periodVector2=(%g,%g,%g)\n",
                                           		      ia(i,0),ia(i,1),ia(i,2),grid2,grid,r2(i,0),r2(i,1),
                                           		      numberOfDimensions==2 ? 0. : r2(i,2), sqrt(distToBndry),sqrt(dx2),
                                           		      x2(i,0),x2(i,1),numberOfDimensions==2 ? 0. : x2(i,2),
                                                                     xB(i,0),xB(i,1),numberOfDimensions==2 ? 0. : xB(i,2),
                                                                     rB(i,0),rB(i,1),numberOfDimensions==2 ? 0. : rB(i,2),
-                                                                    derivativePeriod2[0],derivativePeriod2[1],derivativePeriod2[2]
+                                                                    periodVector2[0][0],periodVector2[1][1],periodVector2[2][2]
                                                                           );
                                     	      if( distToBndry>maximumHoleCuttingDistanceSquared )
                                     		fprintf(plogFile,"since distToBndry=%7.2e >maximumHoleCuttingDistance=%7.2e\n",

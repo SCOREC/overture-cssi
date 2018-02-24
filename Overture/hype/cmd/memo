@@ -1,3 +1,16 @@
+alias hype $hype/hype
+
+
+
+*******************
+****  Feb 19, 2018
+
+
+TEST periodic boundary conditions -- seem to be broken
+
+hype hypeLinePeriodic
+
+
 *******************
 ****  Nov 12, 2017
 

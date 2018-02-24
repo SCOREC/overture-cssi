@@ -1,3 +1,13 @@
+********************************
+****** Feb 10, 2018
+
+Run for figure 
+cgmx -noplot cylEigen -g=tubeGride4.order2.hdf -dm=gdm -npv=1 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -tp=.1 -tf=1. -diss=0. -show=tubeG4gdm.show -go=go  >! tubeG4gdm.out
+
+cgmx -noplot cylEigen -g=tubeGride2.order2.hdf -dm=gdm -npv=1 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -tp=.1 -tf=1. -diss=0. -show=tubeG2gdm.show -go=go  >! tubeG2gdm.out
+
+
+********************************
 ****** Feb 9, 2018
 
 START on DISPERSIVE solutions

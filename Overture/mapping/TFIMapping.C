@@ -322,6 +322,9 @@ initialize()
   //
 {
 
+  int idebug=1; // 3
+  if( idebug &1 ) printF("TFI:INFO: checking that corners match.... may need to flip sides...\n");
+
   int axis;
   Range I2(0,1);
   Range IR=rangeDimension;
@@ -359,7 +362,7 @@ initialize()
       if (dist[1] < dist[0] && dist[2] < dist[3])
       {
 	flip(1,0) = !flip(1,0);
-	printf("Reversing curve[1][0]\n");
+	printF("TFI: Reversing curve[1][0]\n");
       }
     }
   }
@@ -378,7 +381,7 @@ initialize()
 
 // check if some curves need to be reversed or swapped
     bool reOrder=false;
-    if( debug & 1 ) printf("Checking corner #0\n");
+    if( idebug & 2 ) printF("TFI: Checking corner #0\n");
     do
     {
       if (flip(0,0) == 0)
@@ -409,8 +412,8 @@ initialize()
 	dist0[2] += SQR(x0(0,axis)-x3(0,axis));
 	dist0[3] += SQR(x0(0,axis)-x3(1,axis));
       }
-      if( debug & 1 ) 
-          printf("Corner gaps: dist00=%e, dist01=%e, dist02=%e, dist03=%e\n", dist0[0], dist0[1], dist0[2], dist0[3]);
+      if( idebug & 2 ) 
+          printF("TFI: Corner gaps: dist00=%e, dist01=%e, dist02=%e, dist03=%e\n", dist0[0], dist0[1], dist0[2], dist0[3]);
       int iMin=0;
       real dMin=dist0[0];
       for (int i=1; i<4; i++)
@@ -423,7 +426,7 @@ initialize()
 // reordering needed?
       if (iMin == 0)
       {
-	if( debug & 1 )  printf("No reordering needed for corner 0\n");
+	if( idebug & 2 )  printF("TFI: No reordering needed for corner 0\n");
 	reOrder = false;
       }
       else
@@ -434,12 +437,12 @@ initialize()
 	{
 	  // reverse curve[0][1]
 	  flip(0,1) = !flip(0,1);
-	  if( debug & 1 ) printf("Reversing curve[0][1]\n");
+	  if( idebug & 1 ) printF("TFI: Reversing curve[0][1]\n");
 	}
 	else if (iMin == 2 || iMin == 3 )
 	{
 	  // swap curve[0][1] and curve[1][1]
-	  if( debug & 1 ) printf("Swapping curve[0][1] and [1][1]\n");
+	  if( idebug & 1 ) printF("TFI: Swapping curve[0][1] and [1][1]\n");
 	  tmpMap = curve[0][1];
 	  curve[0][1] = curve[1][1];
 	  curve[1][1] = tmpMap;
@@ -447,14 +450,14 @@ initialize()
 	  {
 	    // reverse curve[1][1]
 	    flip(1,1) = !flip(1,1);
-	    if( debug & 1 ) printf("Reversing curve[1][1]\n");
+	    if( idebug & 1 ) printF("TFI: Reversing curve[1][1]\n");
 	  }
 	}
       }
     } while(reOrder);
 
 // corner 2
-    if( debug & 1 ) printf("Checking corner #2\n");
+    if( idebug & 2 ) printF("TFI: Checking corner #2\n");
     do
     {
       if (flip(0,0) == 0)
@@ -485,8 +488,8 @@ initialize()
 	dist2[2] += SQR(x0(1,axis)-x3(0,axis));
 	dist2[3] += SQR(x0(1,axis)-x3(1,axis));
       }
-      if( debug & 1 ) 
-        printf("Corner gaps: dist20=%e, dist21=%e, dist22=%e, dist23=%e\n", dist2[0], dist2[1], dist2[2], dist2[3]);
+      if( idebug & 2 ) 
+        printF("TFI: Corner gaps: dist20=%e, dist21=%e, dist22=%e, dist23=%e\n", dist2[0], dist2[1], dist2[2], dist2[3]);
       int iMin=0;
       real dMin=dist2[0];
       for (int i=1; i<4; i++)
@@ -499,7 +502,7 @@ initialize()
 // reordering needed?
       if (iMin == 2)
       {
-	if( debug & 1 ) printf("No reordering needed for corner 2\n");
+	if( idebug & 2 ) printF("TFI: No reordering needed for corner 2\n");
 	reOrder = false;
       }
       else
@@ -510,12 +513,12 @@ initialize()
 	{
 	  // reverse curve[1][1]
 	  flip(1,1) = !flip(1,1);
-	  if( debug & 1 ) printf("Reversing curve[1][1]\n");
+	  if( idebug & 1 ) printF("TFI: Reversing curve[1][1]\n");
 	}
 	else if (iMin == 0 || iMin == 1 )
 	{
 	  // swap curve[0][1] and curve[1][1]
-	  printf("Swapping curve[0][1] and [1][1]\n");
+	  if( idebug & 1 ) printF("TFI: Swapping curve[0][1] and [1][1]\n");
 	  tmpMap = curve[0][1];
 	  curve[0][1] = curve[1][1];
 	  curve[1][1] = tmpMap;
@@ -523,7 +526,7 @@ initialize()
 	  {
 	    // reverse curve[0][1]
 	    flip(0,1) = !flip(0,1);
-	    if( debug & 1 ) printf("Reversing curve[0][1]\n");
+	    if( idebug & 1 ) printF("TFI: Reversing curve[0][1]\n");
 	  }
 	}
       }
@@ -531,7 +534,7 @@ initialize()
 //
 // necessary to swap curve[1][0]?    
 //    
-    if( debug & 1 ) printf("Checking corner #1\n");
+    if( idebug & 2 ) printF("TFI: Checking corner #1\n");
     do
     {
       if (flip(0,0) == 0)
@@ -560,7 +563,7 @@ initialize()
 	dist1[1] += SQR(x1(0,axis)-x2(1,axis));
 	dist1[3] += SQR(x1(0,axis)-x3(1,axis));
       }
-      if( debug & 1 ) printf("Corner gaps: dist11=%e, dist13=%e\n", dist1[1], dist1[3]);
+      if( idebug & 2 ) printF("TFI: Corner gaps: dist11=%e, dist13=%e\n", dist1[1], dist1[3]);
       int iMin=0;
       real dMin=dist1[0];
       for (int i=1; i<4; i++)
@@ -573,7 +576,7 @@ initialize()
 // reordering needed?
       if (iMin == 1)
       {
-	if( debug & 1 ) printf("No reordering needed for corner 1\n");
+	if( idebug & 2 ) printF("TFI: No reordering needed for corner 1\n");
 	reOrder = false;
       }
       else
@@ -584,7 +587,7 @@ initialize()
 	{
 	  // reverse curve[1][0]
 	  flip(1,0) = !flip(1,0);
-	  if( debug & 1 ) printf("Reversing curve[1][0]\n");
+	  if( idebug & 1 ) printF("TFI: Reversing curve[1][0]\n");
 	}
       }
     } while(reOrder);
@@ -599,13 +602,13 @@ initialize()
 //      assert( SQR(x0(1,0)-x3(0,0))+SQR(x0(1,1)-x3(0,1)) < 1.e-6 );
 //      assert( SQR(x1(1,0)-x3(1,0))+SQR(x1(1,1)-x3(1,1)) < 1.e-6 );
     if ( SQR(x0(0,0)-x2(0,0))+SQR(x0(0,1)-x2(0,1)) >= 1.e-6 )
-      printf("Warning: missmatch at corner 0\n");
+      printF("Warning: missmatch at corner 0\n");
     if ( SQR(x1(0,0)-x2(1,0))+SQR(x1(0,1)-x2(1,1)) >= 1.e-6 )
-      printf("Warning: missmatch at corner 1\n");
+      printF("Warning: missmatch at corner 1\n");
     if ( SQR(x0(1,0)-x3(0,0))+SQR(x0(1,1)-x3(0,1)) >= 1.e-6 )
-      printf("Warning: missmatch at corner 2\n");
+      printF("Warning: missmatch at corner 2\n");
     if ( SQR(x1(1,0)-x3(1,0))+SQR(x1(1,1)-x3(1,1)) >= 1.e-6 )
-      printf("Warning: missmatch at corner 3\n");
+      printF("Warning: missmatch at corner 3\n");
 
     for( axis=0/*axis1*/; axis<rangeDimension; axis++ )
     {
@@ -719,12 +722,12 @@ flipper()
     if( det(0)*det(2) <= 0. || det(1)*det(3) <=0. )
     {
       ok=FALSE;
-      printf("TFIMapping::flipper: Mapping is flipped, reverse orientation of curve[1][0] to fix\n");
+      printF("TFIMapping::flipper: Mapping is flipped, reverse orientation of curve[1][0] to fix\n");
       flip(0,1)=1;
     }
   }
   if( ok )  
-      printf("TFIMapping::flipper: Mapping appears to be non-singular. no flipping needed\n");
+      printF("TFIMapping::flipper: Mapping appears to be non-singular. no flipping needed\n");
   else
     mappingHasChanged();
   

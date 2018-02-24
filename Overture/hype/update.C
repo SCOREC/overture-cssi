@@ -1809,8 +1809,21 @@ updateMarchingParameters(aString & answer, DialogData & marchingParametersDialog
       }
       else if( line=="periodic" )
       {
-        setIsPeriodic(axis,functionPeriodic);
-	
+        if( surfaceGrid )
+          assert( startCurve!=NULL );
+        Mapping & map = surfaceGrid ? *startCurve : *surface;
+
+        if( map.getIsPeriodic(axis)==Mapping::functionPeriodic )
+        {
+          printF("Hype:INFO: setting function periodic for axis=%i.\n",axis);
+          setIsPeriodic(axis,functionPeriodic);
+        }
+        else
+        {
+          printF("Hype:INFO: setting derivative periodic for axis=%i.\n",axis);
+          setIsPeriodic(axis,derivativePeriodic);
+        }
+        
 	for( int side1=Start; side1<=End; side1++ )
 	  setBoundaryCondition(side1,axis,-1);
       }

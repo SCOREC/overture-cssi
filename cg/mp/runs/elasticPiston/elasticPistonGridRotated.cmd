@@ -21,18 +21,18 @@
 #   -per = 0 = no-periodic in x,  1=periodic in x
 # 
 # examples:
-#     ogen -noplot elasticPistonGrid -factor=1
-#     ogen -noplot elasticPistonGrid -factor=2
-#     ogen -noplot elasticPistonGrid -factor=4
+#     ogen -noplot elasticPistonGridRotated -factor=1
+#     ogen -noplot elasticPistonGridRotated -factor=2
+#     ogen -noplot elasticPistonGridRotated -factor=4
 #
 # -- periodic in x:
-#    ogen -noplot elasticPistonGrid -factor=1 -per=1
-#    ogen -noplot elasticPistonGrid -factor=2 -per=1
-#    ogen -noplot elasticPistonGrid -factor=4 -per=1
-#    ogen -noplot elasticPistonGrid -factor=8 -per=1
+#    ogen -noplot elasticPistonGridRotated -factor=1 -per=1
+#    ogen -noplot elasticPistonGridRotated -factor=2 -per=1
+#    ogen -noplot elasticPistonGridRotated -factor=4 -per=1
+#    ogen -noplot elasticPistonGridRotated -factor=8 -per=1
 #
 # --- reduced grid points in x:
-#     ogen -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX5 -factor=4 
+#     ogen -noplot elasticPistonGridRotated -dsx=.2 -prefix=elasticPistonGridRotatedX5 -factor=4 
 #
 $prefix="elasticPistonRotated";
 $order=2; $factor=1; $interp="e"; # default values
@@ -94,10 +94,12 @@ for($i=0; $i<$nx; $i++){$x0=$i*$hx+$xa; $y0=$yb; \
 for($i=0; $i<$nx; $i++){$x0=$i*$hx+$xa; $y0=$yc; \
     $x=$cx+($x0-$cx)*cos($theta)-($y0-$cy)*sin($theta); $y=$cy+($x0-$cx)*sin($theta)+($y0-$cy)*cos($theta); \
     $cmd2=$cmd2 . "$x $y\n";}# top curve
-for($i=0; $i<$nys; $i++){$x0=$xa; $y0=$ya+$i*$hys; \
+# wdh: flip orientation of solid left and right boundaries
+for($i=0; $i<$nys; $i++){$x0=$xa; $y0=$yb-$i*$hys; \
     $x=$cx+($x0-$cx)*cos($theta)-($y0-$cy)*sin($theta); $y=$cy+($x0-$cx)*sin($theta)+($y0-$cy)*cos($theta); \
     $cmd3=$cmd3 . "$x $y\n";}# solid left curve
-for($i=0; $i<$nys; $i++){$x0=$xb; $y0=$ya+$i*$hys; \
+# wdh: flip orientation of solid left and right boundaries
+for($i=0; $i<$nys; $i++){$x0=$xb; $y0=$yb-$i*$hys; \
     $x=$cx+($x0-$cx)*cos($theta)-($y0-$cy)*sin($theta); $y=$cy+($x0-$cx)*sin($theta)+($y0-$cy)*cos($theta); \
     $cmd4=$cmd4 . "$x $y\n";}# solid right curve
 for($i=0; $i<$nyf; $i++){$x0=$xa; $y0=$yb+$i*$hyf; \
@@ -184,6 +186,9 @@ create mappings
 #
 # Grid for the elastic domain: 
 #   
+# *** WDH*** I reversed the orientation of the solidLeftBoundary and solidRightBoundary
+#  since otherwise the TFI mapping automatically flipped the top and bottom curves 
+#  to math the corners.
   tfi
     choose bottom curve (r_2=0)
       middleBoundary
@@ -211,24 +216,34 @@ create mappings
     backward
     distance to march $dist
     lines to march $nr
+    # $nxc = int( $nx*1.5 ); ## TEST 
     points on initial curve $nx
     BC: left outward splay
     BC: right outward splay
-    boundary condition options...
     outward splay 0.0, 0.0 (left, right for outward splay BC)
+    #
+    # -- periodicity: Note: setting hype BC's periodic --> will set derivativePeriodic 
+    if( $per eq 0 ){ $cmd="#"; }else { $cmd ="BC: left periodic\n BC: right periodic"; }
+    $cmd 
+    boundary conditions
+      if( $per eq 0 ){ $cmd="1 2 $bcInterface 0"; }else{ $cmd="-1 -1 $bcInterface 0"; }
+      $cmd
+    # 
     # BC: left match to a mapping
     # fluidLeftBoundary
     # BC: right match to a mapping
     # fluidRightBoundary
     # boundary condition options...
-    # march along normals 1
+    #wdh -- try this : Feb 11, 2018
+    march along normals 1
     generate
-    boundary conditions
-      if( $per eq 0 ){ $cmd="1 2 $bcInterface 0"; }else{ $cmd="-1 -1 $bcInterface 0"; }
-      $cmd
     share
      1 2 $shareInterface 0
     name fluidInterface
+#
+    mapping parameters
+      robust inverse 1
+    close mapping dialog
     # open graphics
   exit
 # Background grid for the fluid
@@ -284,6 +299,6 @@ exit
 # save an overlapping grid
 save a grid (compressed)
 $name
-elasticPistonGrid
+elasticPistonGridRotated
 exit
 
