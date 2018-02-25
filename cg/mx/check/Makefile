@@ -21,6 +21,12 @@ cici1.order4.hdf:
 box16.order4.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/box16.order4.cmd
 
+box1.order4.ng3.hdf:
+	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/boxArg.cmd  -order=4 -factor=1 -numGhost=3
+
+nonBox1.order4.ng3.hdf:
+	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/boxArg.cmd -prefix=nonBox -order=4 -factor=1 -numGhost=3
+
 innerOuter4.order4.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/innerOuter -factor=4 -order=4 -deltaRad=.5 -interp=e -name="innerOuter4.order4.hdf"
 
@@ -42,14 +48,15 @@ solidSphereInABoxe2.order4.ng3.hdf:
 
 
 # build grids that are used by the regression tests (and not already in Overture/sampleGrids)
-buildGrids: tube1.order4.hdf square16.order4.hdf cici1.order4.hdf box16.order4.hdf innerOuter4.order4.hdf \
+buildGrids: tube1.order4.hdf square16.order4.hdf cici1.order4.hdf box16.order4.hdf nonBox1.order4.ng3.hdf box1.order4.ng3.hdf \
+            innerOuter4.order4.hdf \
             twoBoxesInterfacee111.order4.hdf square20.order4.ng3.hdf square20.order6.ng4.hdf \
             solidSphereInABoxe2.order2.hdf solidSphereInABoxe2.order4.ng3.hdf
 	touch buildGrids
 
 
-# checkCheckFiles:	
-# 	@cd $(common); $(MAKE) -$(MAKEFLAGS) $(BINDIR)checkCheckFiles
+checkCheckFiles:	
+	@cd $(common); $(MAKE) -$(MAKEFLAGS) $(BINDIR)checkCheckFiles
 
 cgmx:
 	@cd ..;      $(MAKE) -$(MAKEFLAGS) cgmx

@@ -8,6 +8,10 @@ sqtz4
 cictz   # cic, TZ, fourth-order
 cic.planeWaveBC
 boxtz
+nonBoxtzSD #upwind dissipation, curvilinear routines
+nonBoxtzSDCons #upwind dissipation, curvilinear routines, conservative routines
+boxtzSD    #upwind dissipation, cartesian routines
+boxtzSDCons    #upwind dissipation, cartesian routines, conservative routines
 cyleigen
 curvedInterface     # two materials - dielectric cylinder
 twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee111.order4 -eps2=.25 -tf=.2 -tp=.1 -ic=tz -bc=d -diss=0. -left=leftBox -right=rightBox -debug=1 -degreex=4 -degreet=4 -go=go
@@ -22,10 +26,10 @@ dielectricSphereSosup44.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=
 # More sosup tests: 
 #
 sq4sosup.check ../runs/tz/tz.cmd -g=square20.order4.ng3 -degreex=3 -degreet=3 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
-# turn off order 6 test for now since we no-longer compile this
-# sq6sosup.check ../runs/tz/tz.cmd -g=square20.order6.ng4 -degreex=5 -degreet=5 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
-#
-# user defined forcing and user defined known solution
-#
+ turn off order 6 test for now since we no-longer compile this
+ sq6sosup.check ../runs/tz/tz.cmd -g=square20.order6.ng4 -degreex=5 -degreet=5 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
+
+ user defined forcing and user defined known solution
+
 userDefined.check ../cmd/userDefinedKnownSolution.cmd -g=square16.order4 -beta=60 -rbc=dirichlet -diss=1.0 -tf=.1 -tp=.1 -useNewForcingMethod=1 -go=go
 

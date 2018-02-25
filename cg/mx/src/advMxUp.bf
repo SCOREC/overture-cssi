@@ -6,7 +6,6 @@
 #Include "defineDiffOrder2f.h"
 #Include "defineDiffOrder4f.h"
 
-
 ! ---------------------------------------------------------------------------
 ! Macro : beginLoopsMask
 ! ---------------------------------------------------------------------------
@@ -59,6 +58,105 @@ else
   end do
 end if
 #endMacro
+
+! Optionally add the forcing terms
+#beginMacro loopsF2DUpwind(f1,e1,d1) 
+if( addForcing .eq. 0 ) then
+  if( useWhereMask .ne. 0 ) then
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1+d1
+    end do
+    endLoopsMask()
+  else ! no mask
+    do i3=n3a,n3b
+    do i2=n2a,n2b
+    do i1=n1a,n1b
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1 + d1
+    end do
+    enddo
+    enddo
+    enddo
+  endif ! end mask
+else ! forcing
+  if(useWhereMask .eq. 1 ) then
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)= e1 + d1 + f1
+    end do 
+    endLoopsMask()
+  else ! no mask
+    do i3=n3a,n3b
+    do i2=n2a,n2b
+    do i1=n1a,n1b
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1 + d1 + f1
+    end do 
+    enddo
+    enddo
+    enddo
+  endif ! end mask
+endif ! end forcing
+#endMacro
+
+#beginMacro loopsF3DUpwind(f1,e1,d1) 
+if( addForcing .eq. 0 ) then
+  if( useWhereMask .ne. 0 ) then
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1+d1
+    end do
+    endLoopsMask()
+  else ! no mask
+    do i3=n3a,n3b
+    do i2=n2a,n2b
+    do i1=n1a,n1b
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1 + d1
+    end do
+    enddo
+    enddo
+    enddo
+  endif ! end mask
+else ! forcing
+  if(useWhereMask .eq. 1 ) then
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)= e1 + d1 + f1
+    end do 
+    endLoopsMask()
+  else ! no mask
+    do i3=n3a,n3b
+    do i2=n2a,n2b
+    do i1=n1a,n1b
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=e1 + d1 + f1
+    end do 
+    enddo
+    enddo
+    enddo
+  endif ! end mask
+endif ! end forcing
+#endMacro
+
+
 
 
 #beginMacro loopse9(e1,e2,e3,e4,e5,e6,e7,e8,e9)
@@ -954,15 +1052,24 @@ end if
   ! note: forcing is already added to the rhs.
   INFO("FD22c-UP...update-solution-and-dissipation")
   uDotFactor=1. ! for D-minus-t do not scale by .5
+  if( addForcing .eq. 0 ) then
   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
    getSosupDissipationCoeff2d(adxSosup)
    do m=0,2 ! ex, ey, hz
      ec=ex+m
      un(i1,i2,i3,ec)=maxwellc22(i1,i2,i3,ec)+sosupDiss2d4(DmtU,i1,i2,i3,ec)
-!    un(i1,i2,i3,ec)=max2dc22me2(i1,i2,i3,ec)+sosupDiss2d4(DmtU,i1,i2,i3,ec)
-
    end do
   endLoopsMask()
+  else
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+   getSosupDissipationCoeff2d(adxSosup)
+   do m=0,2 ! ex, ey, hz
+     ec=ex+m
+     un(i1,i2,i3,ec)=maxwellc22(i1,i2,i3,ec)+sosupDiss2d4(DmtU,i1,i2,i3,ec)+ dtsq*f(i1,i2,i3,ec)
+   end do
+  endLoopsMask()
+endif 
+
   uDotFactor=.5 ! reset 
 
 else if( updateSolution.eq.1 )then
@@ -970,13 +1077,21 @@ else if( updateSolution.eq.1 )then
   INFO("FD22c-UP...update-solution")
   ! note: forcing is already added to the rhs.
   if( updateSolution.eq.1 )then
-   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-    do m=0,2 ! ex, ey, hz
-      ec=ex+m
-       un(i1,i2,i3,ec)= maxwellc22(i1,i2,i3,ec)
-!      un(i1,i2,i3,ec)= max2dc22me2(i1,i2,i3,ec)
-    end do
-   endLoopsMask()
+    if( addForcing .eq. 0 ) then
+      beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+      do m=0,2 ! ex, ey, hz
+        ec=ex+m
+        un(i1,i2,i3,ec)=maxwellc22(i1,i2,i3,ec)
+      end do
+     endLoopsMask()
+    else
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+      do m=0,2 ! ex, ey, hz
+        ec=ex+m
+        un(i1,i2,i3,ec)=maxwellc22(i1,i2,i3,ec)+ dtsq*f(i1,i2,i3,ec)
+      end do
+     endLoopsMask() 
+    endif
   end if
  else if( updateDissipation.eq.1 )then
   ! --- add dissipation only ----
@@ -1037,53 +1152,35 @@ else if( updateSolution.eq.1 )then
    write(*,'(" finish me: FD44 + sosup-dissipation && useNewForcingMethod")')
    stop 4487
   end if
-  if( updateSolution .eq. 1 .and. computeUt .eq. 0 ) then !use v to store curviliner op 
-        ! first evaluate Laplacian to 2nd-order
-       ! *** need to evaluate on one additional line ***
-       n1a=n1a-1
-       n1b=n1b+1
-       n2a=n2a-1
-       n2b=n2b+1
-       ! **** for this first loop we cannot use the mask -- 
-       useWhereMaskSave=useWhereMask
-       useWhereMask=0
-       loopse9(v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex),\
-               v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey),\
-               v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz),,,,,,)        
 
-       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-       n1a=n1a+1
-       n1b=n1b-1
-       n2a=n2a+1
-       n2b=n2b-1
-       useWhereMask=useWhereMaskSave
- endif
  ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
  if( updateSolution.eq.1 .and. updateDissipation.eq.1 )then
   ! advance + sosup dissipation: 
   ! note: forcing is already added to the rhs.
   INFO("FD44c-UP...update-solution-and-dissipation")
   uDotFactor=1. ! for D-minus-t do not scale by .5
-  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-   getSosupDissipationCoeff2d(adxSosup)
-   do m=0,2 ! ex, ey, hz
-     ec=ex+m
-!     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+sosupDiss2d6(DmtU,i1,i2,i3,ec)
-      un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+sosupDiss2d6(DmtU,i1,i2,i3,ec)
-   end do
-  endLoopsMask()
+  loopsF2DUpwind(dtsq*f(i1,i2,i3,ec),max2dc44me2(i1,i2,i3,ec),sosupDiss2d6(DmtU,i1,i2,i3,ec)) 
   uDotFactor=.5 ! reset 
  else if( updateSolution.eq.1 )then
    ! advance to time n+1
   INFO("FD44c-UP...update-solution")
+  if( addForcing .eq. 0 ) then
   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+   getSosupDissipationCoeff2d(adxSosup)
    do m=0,2 ! ex, ey, hz
      ec=ex+m
-!     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
       un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)
    end do
   endLoopsMask()
-
+  else
+  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+   getSosupDissipationCoeff2d(adxSosup)
+   do m=0,2 ! ex, ey, hz
+     ec=ex+m
+      un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+ dtsq*f(i1,i2,i3,ec)
+   end do
+  endLoopsMask()
+  endif
  else if( updateDissipation.eq.1 )then
   ! ----- add dissipation only  ----
 
@@ -1129,6 +1226,83 @@ else if( updateSolution.eq.1 )then
 
 
 #endMacro 
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, CURVILINEAR, 2D, ORDER 4, Conservative operators
+! ===========================================================================================
+#beginMacro updateUpwindDissipationCurvilinear2dOrder4Cons()
+  if( t.le.2.*dt )then
+    write(*,'(" advMxUp: FD44 + upwind-dissipation for curvilinear")')
+  end if 
+
+  if( useNewForcingMethod.ne.0 )then
+   write(*,'(" finish me: FD44 + sosup-dissipation && useNewForcingMethod")')
+   stop 4487
+  end if
+
+ ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
+ if( updateSolution.eq.1 .and. updateDissipation.eq.1 )then
+  ! advance + sosup dissipation: 
+  INFO("FD44c-UP...update-solution-and-dissipation")
+  uDotFactor=1. ! for D-minus-t do not scale by .5
+  ! note: forcing is already added to the rhs.
+  loopsF2DUpwind(0.,maxwellc44me(i1,i2,i3,ec),sosupDiss2d6(DmtU,i1,i2,i3,ec)) 
+  uDotFactor=.5 ! reset 
+ else if( updateSolution.eq.1 )then
+   ! advance to time n+1
+  INFO("FD44c-UP...update-solution")
+  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+   getSosupDissipationCoeff2d(adxSosup)
+   do m=0,2 ! ex, ey, hz
+     ec=ex+m
+      un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
+   end do
+  endLoopsMask()
+ else if( updateDissipation.eq.1 )then
+  ! ----- add dissipation only  ----
+
+  if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )then
+   ! apply sosup dissipation to time n+1 (use precomputed v=uDot)
+   INFO("FD44c-UP...update-un-with-dissipation-using-v")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      un(i1,i2,i3,ec)=un(i1,i2,i3,ec) + sosupDiss2d6(v,i1,i2,i3,ec) 
+    end do
+   endLoopsMask()   
+  else if( sosupDissipationOption.eq.0 .and. computeUt.eq.0 )then
+   ! apply sosup dissipation to time n+1
+   INFO("FD44c-UP...update-un-with-dissipation")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      ! Use D-zero = (un-um) 
+      un(i1,i2,i3,ec)=un(i1,i2,i3,ec) + sosupDiss2d6(DztU,i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+   else
+   ! apply sosup dissipation to time n using times n-1 and n-2
+   ! assume un holds u(t-2*dt) on input 
+   ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
+   INFO("FD44c-UP...update-u-with-dissipation")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff2d(adxSosup)
+    do m=0,2 ! ex, ey, hz
+      ec=ex+m
+      ! Use special D-zero = (u - un) , u=u(t), um=u(t-dt), un=u(t-2*dt)
+      u(i1,i2,i3,ec)=u(i1,i2,i3,ec) + sosupDiss2d6(DzstU,i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+  end if 
+ else
+   write(*,'("advMxUp:FD44c-UP ERROR: unexpected option? sosupDissipationOption=",i2)') sosupDissipationOption
+   stop 5050
+ end if
+
+
+#endMacro 
+
 ! ===========================================================================================
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 2
 ! ===========================================================================================
@@ -1231,59 +1405,14 @@ else if( updateSolution.eq.1 )then
   write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
   stop 7739
  end if 
-  if( updateSolution .eq. 0 .and. computeUt .eq. 1 ) then !use v to store curviliner op 
-       ! *** need to evaluate on one additional line ***
-       n1a=n1a-1
-       n1b=n1b+1
-       n2a=n2a-1
-       n2b=n2b+1
-       n3a=n3a-1
-       n3b=n3b+1
-       ! **** for this first loop we cannot use the mask -- 
-       useWhereMaskSave=useWhereMask
-       useWhereMask=0
-       if( solveForE.ne.0 .and. solveForH.ne.0 )then
-         stop 6666
-!$$$        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
-!$$$                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
-!$$$                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),\
-!$$$                v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
-!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
-!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,)
-       else if( solveForE.ne.0 )then
-        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
-                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
-                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),,,,,,)        
-       else
-!$$$        loopse9(v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
-!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
-!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,,,,)        
-       end if
 
-       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-       n1a=n1a+1
-       n1b=n1b-1
-       n2a=n2a+1
-       n2b=n2b-1
-       n3a=n3a+1
-       n3b=n3b-1
-       useWhereMask=useWhereMaskSave
-
-  endif
  ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
  if( updateSolution.eq.1 .and. updateDissipation.eq.1 )then
   ! advance + sosup dissipation: 
   ! note: forcing is already added to the rhs.
   INFO("FD44c-UP...update-solution-and-dissipation")
-  uDotFactor=1. ! for D-minus-t do not scale by .5
-  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-   getSosupDissipationCoeff3d(adxSosup)
-   do m=0,2 ! ex, ey, ez
-     ec=ex+m
-     un(i1,i2,i3,ec)=max3dc44me(i1,i2,i3,ec)+sosupDiss3d6(DmtU,i1,i2,i3,ec)
-!    un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+sosupDiss3d6(DmtU,i1,i2,i3,ec)
-   end do
-  endLoopsMask()
+  uDotFactor=1. ! for D-minus-t do not scale by .5 
+  loopsF3DUpwind(dtsq*f(i1,i2,i3,ec),max3dc44me(i1,i2,i3,ec),sosupDiss3d6(DmtU,i1,i2,i3,ec)) 
   uDotFactor=.5 ! reset 
 
 else if( updateSolution.eq.1 )then
@@ -1292,11 +1421,90 @@ else if( updateSolution.eq.1 )then
   ! note: forcing is already added to the rhs.
   if( updateSolution.eq.1 )then
    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-   getSosupDissipationCoeff3d(adxSosup)
     do m=0,2 ! ex, ey, ez
       ec=ex+m
       un(i1,i2,i3,ec)=max3dc44me(i1,i2,i3,ec)
-!     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+  end if
+ else if( updateDissipation.eq.1 )then
+  ! --- add dissipation only ----
+  if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )then
+   ! apply sosup dissipation to time n+1 (use precomputed v=uDot)
+   INFO("FD44c-UP...update-un-with-dissipation-using-v")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, ez
+      ec=ex+m
+      un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+sosupDiss3d6(v,i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+
+  else if( sosupDissipationOption.eq.0 .and. computeUt.eq.0 )then
+
+   ! apply sosup dissipation to time n+1
+   INFO("FD44c-UP...update-un-with-dissipation")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, ez
+      ec=ex+m
+      un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+sosupDiss3d6(DztU,i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+  else
+
+   ! apply sosup dissipation to time n using times n-1 and n-2
+   ! assume un holds u(t-2*dt) on input 
+   ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
+   INFO("FD44c-UP...update-u-with-dissipation")
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    getSosupDissipationCoeff3d(adxSosup)
+    do m=0,2 ! ex, ey, ez
+      ec=ex+m
+      u(i1,i2,i3,ec)=u(i1,i2,i3,ec)+sosupDiss3d6(DzstU,i1,i2,i3,ec)
+    end do
+   endLoopsMask()
+  end if 
+ else
+   write(*,'("advMxUp:FD44c-UP ERROR: unexpected option? sosupDissipationOption=",i2)') sosupDissipationOption
+   stop 2020
+ end if
+
+
+
+#endMacro 
+
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 4, Conservative
+! ===========================================================================================
+#beginMacro updateUpwindDissipationCurvilinear3dOrder4Cons()
+ if( t.le.2.*dt )then
+   write(*,'(" advMxUp: FD44 + sosup-dissipation for curvilinear")')
+ end if 
+
+ if( useNewForcingMethod.ne.0 )then
+  write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
+  stop 7739
+ end if 
+
+ ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
+ if( updateSolution.eq.1 .and. updateDissipation.eq.1 )then
+  ! advance + sosup dissipation: 
+  INFO("FD44c-UP...update-solution-and-dissipation")
+  uDotFactor=1. ! for D-minus-t do not scale by .5 
+  ! note: forcing is already added to the rhs.
+  loopsF3DUpwind(0.,maxwellc44me(i1,i2,i3,ec),sosupDiss3d6(DmtU,i1,i2,i3,ec)) 
+  uDotFactor=.5 ! reset 
+
+else if( updateSolution.eq.1 )then
+   ! advance to time n+1
+  INFO("FD44c-UP...update-solution")
+  ! note: forcing is already added to the rhs.
+  if( updateSolution.eq.1 )then
+   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+    do m=0,2 ! ex, ey, ez
+      ec=ex+m
+      un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
     end do
    endLoopsMask()
   end if
@@ -1466,7 +1674,6 @@ else if( updateSolution.eq.1 )then
  real maxwell3dr44me,maxwell3dr66me,maxwell3dr88me
  real maxwellc44me,maxwellc66me,maxwellc88me
  real max2dc44me,max2dc44me2,max3dc44me
- real max2dc22me2
  real mxdc2d2Ex,mxdc2d2Ey,mxdc2d4Ex,mxdc2d4Ey, mxdc2d4cEx,mxdc2d4cEy
  real mxdc2d2cEx,mxdc2d2cEy
  real mxdc3d2Ex,mxdc3d2Ey,mxdc3d2Ez,mxdc3d2Hx,mxdc3d2Hy,mxdc3d2Hz
@@ -1937,8 +2144,6 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 !$$$      2)*vss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*vr2(i1,\
 !$$$      i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*vs2(i1,i2,i3,kd)
 
- max2dc22me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*uLaplacian22(i1,i2,i3,n)
- 
  max2dc44me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*uLaplacian42(i1,i2,i3,n)\
                                                        +cdtsq12*vLaplacian22(i1,i2,i3,n)
 
@@ -2127,11 +2332,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  fprev = mod(fcur-1+numberOfForcingFunctions,max(1,numberOfForcingFunctions))
  fnext = mod(fcur+1                         ,max(1,numberOfForcingFunctions))
  
-  ! print some options - jba
-  if( t.le.2.*dt )then
-    write(*,*) 'useConservative = ', useConservative
-    write(*,*) 'useCurvilinearOpt = ', useCurvilinearOpt
-  end if 
+
  ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
  !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
  !  rather than pre-computing it in diss(i1,i2,i3,c)
@@ -2182,11 +2383,11 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  
   ! Coefficients in the sosup dissipation from Jordan Angel
   if( orderOfAccuracy.eq.2 )then
-   adSosup= -cc*dt*1./8.
+   adSosup=-cc*dt*1./8.
   else if( orderOfAccuracy.eq.4 )then 
-    adSosup= cc*dt*5./288.
+    adSosup=cc*dt*5./288.
   else if( orderOfAccuracy.eq.6 )then 
-    adSosup= -cc*dt*31./8640.
+    adSosup=-cc*dt*31./8640.
   else
     stop 1005
   end if
@@ -2378,12 +2579,10 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       nEnd=ez
    end if 
    ! Use Dot( un )
-   !write(*,*) 'nStart ', nStart, ' nEnd ',  nEnd
-   do n=nStart,nEnd 
-     loopse6(v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n),,,,,)
-     !beginLoopsMask(i1,i2,i3,m1a,m1b,m2a,m2b,m3a,m3b)
-     !  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
-     !endLoopsMask()
+   do n=nStart,nEnd
+     beginLoopsMask(i1,i2,i3,m1a,m1b,m2a,m2b,m3a,m3b)
+       v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
+     endLoopsMask()
    end do 
  endif 
 
@@ -2392,29 +2591,27 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
   !            if: (adc.gt.0. .and. combineDissipationWithAdvance.eq.0
   !   (2) add the divergence damping
   !         if( add.gt.0. )
- if( useSosupDissipation .eq. 0 ) then
-   if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
-     call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-       nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-       vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-   else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
-     call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-       nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-       vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-   else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
-     call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-       nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-       vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-   else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
-     call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-       nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-       vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-   else
-     if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) .or. add.gt.0. )then
-       stop 1116
-     end if
+ if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
+   call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+ else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
+   call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+ else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
+   call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+ else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
+   call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+ else
+   if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) .or. add.gt.0. )then
+     stop 1116
    end if
- endif
+ end if
 
 
  if( option.eq.1 ) then
@@ -2930,14 +3127,73 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
      stop 88044
 
    #Elif #ORDER eq "4"
-     
+      #If #DIM eq "3"
+       ! *** need to evaluate on one additional line ***
+       n1a=n1a-1
+       n1b=n1b+1
+       n2a=n2a-1
+       n2b=n2b+1
+       n3a=n3a-1
+       n3b=n3b+1
+       ! **** for this first loop we cannot use the mask -- 
+       useWhereMaskSave=useWhereMask
+       useWhereMask=0
+       if( solveForE.ne.0 .and. solveForH.ne.0 )then
+         stop 6666
+!$$$        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
+!$$$                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
+!$$$                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),\
+!$$$                v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
+!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
+!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,)
+       else if( solveForE.ne.0 )then
+        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
+                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
+                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),,,,,,)        
+       else
+!$$$        loopse9(v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
+!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
+!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,,,,)        
+       end if
+
+       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
+       n1a=n1a+1
+       n1b=n1b-1
+       n2a=n2a+1
+       n2b=n2b-1
+       n3a=n3a+1
+       n3b=n3b-1
+       useWhereMask=useWhereMaskSave
+       ! 4th order modified equation 
+
+      #Else
+        ! first evaluate Laplacian to 2nd-order
+       ! *** need to evaluate on one additional line ***
+       n1a=n1a-1
+       n1b=n1b+1
+       n2a=n2a-1
+       n2b=n2b+1
+       ! **** for this first loop we cannot use the mask -- 
+       useWhereMaskSave=useWhereMask
+       useWhereMask=0
+       loopse9(v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex),\
+               v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey),\
+               v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz),,,,,,)        
+
+       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
+       n1a=n1a+1
+       n1b=n1b-1
+       n2a=n2a+1
+       n2b=n2b-1
+       useWhereMask=useWhereMaskSave
+     #End
      if( useSosupDissipation.ne.0 )then
       #If #DIM eq "3"
        ! ---- use sosup dissipation (wider stencil) ---
       updateUpwindDissipationCurvilinear3dOrder4()
       !write(*,'(" finish me: FD44 non-cons && useSosupDissipation")')
       #Else 
- 
+
       updateUpwindDissipationCurvilinear2dOrder4()
       #End
       else if( useNewForcingMethod.ne.0 )then
@@ -2979,25 +3235,6 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 !$$$             un(i1,i2,i3,hz)=max2dc44me(i1,i2,i3,hz))
 
 
-        ! first evaluate Laplacian to 2nd-order
-       ! *** need to evaluate on one additional line ***
-       n1a=n1a-1
-       n1b=n1b+1
-       n2a=n2a-1
-       n2b=n2b+1
-       ! **** for this first loop we cannot use the mask -- 
-       useWhereMaskSave=useWhereMask
-       useWhereMask=0
-       loopse9(v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex),\
-               v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey),\
-               v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz),,,,,,)        
-
-       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-       n1a=n1a+1
-       n1b=n1b-1
-       n2a=n2a+1
-       n2b=n2b-1
-       useWhereMask=useWhereMaskSave
        
        if( useDivergenceCleaning.eq.0 )then
         if( useNewForcingMethod.eq.1 ) then
@@ -3026,43 +3263,6 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
       #Elif #DIM == "3"
 
-       ! *** need to evaluate on one additional line ***
-       n1a=n1a-1
-       n1b=n1b+1
-       n2a=n2a-1
-       n2b=n2b+1
-       n3a=n3a-1
-       n3b=n3b+1
-       ! **** for this first loop we cannot use the mask -- 
-       useWhereMaskSave=useWhereMask
-       useWhereMask=0
-       if( solveForE.ne.0 .and. solveForH.ne.0 )then
-         stop 6666
-!$$$        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
-!$$$                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
-!$$$                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),\
-!$$$                v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
-!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
-!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,)
-       else if( solveForE.ne.0 )then
-        loopse9(v(i1,i2,i3,ex)=uLaplacian23(i1,i2,i3,ex),\
-                v(i1,i2,i3,ey)=uLaplacian23(i1,i2,i3,ey),\
-                v(i1,i2,i3,ez)=uLaplacian23(i1,i2,i3,ez),,,,,,)        
-       else
-!$$$        loopse9(v(i1,i2,i3,hx)=uLaplacian23(i1,i2,i3,hx),\
-!$$$                v(i1,i2,i3,hy)=uLaplacian23(i1,i2,i3,hy),\
-!$$$                v(i1,i2,i3,hz)=uLaplacian23(i1,i2,i3,hz),,,,,,)        
-       end if
-
-       ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-       n1a=n1a+1
-       n1b=n1b-1
-       n2a=n2a+1
-       n2b=n2b-1
-       n3a=n3a+1
-       n3b=n3b-1
-       useWhereMask=useWhereMaskSave
-       ! 4th order modified equation 
 
        if( useDivergenceCleaning.eq.0 )then
          loopsF3DD(dtsq*f(i1,i2,i3,ex),dtsq*f(i1,i2,i3,ey),dtsq*f(i1,i2,i3,ez),\
@@ -3214,9 +3414,9 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
      if( useSosupDissipation.ne.0 )then
       #If #DIM eq "2"
        ! ---- use sosup dissipation (wider stencil) ---
-       updateUpwindDissipationCurvilinear2dOrder4()
+       updateUpwindDissipationCurvilinear2dOrder4Cons()
       #Else
-       updateUpwindDissipationCurvilinear3dOrder4()
+       updateUpwindDissipationCurvilinear3dOrder4Cons()
       #End
      else if( timeSteppingMethod.eq.modifiedEquationTimeStepping )then
 
