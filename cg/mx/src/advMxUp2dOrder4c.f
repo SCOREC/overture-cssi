@@ -961,7 +961,6 @@
         real maxwell3dr44me,maxwell3dr66me,maxwell3dr88me
         real maxwellc44me,maxwellc66me,maxwellc88me
         real max2dc44me,max2dc44me2,max3dc44me
-        real max2dc22me2
         real mxdc2d2Ex,mxdc2d2Ey,mxdc2d4Ex,mxdc2d4Ey, mxdc2d4cEx,
      & mxdc2d4cEy
         real mxdc2d2cEx,mxdc2d2cEy
@@ -3413,8 +3412,6 @@ c===============================================================================
        !$$$ vrs2(i1,i2,i3,kd)=(vr2(i1,i2+1,i3,kd)-vr2(i1,i2-1,i3,kd))*d12(1)
        !$$$
        !$$$ vlaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*!$$$      vrr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*!$$$      sy(i1,i2,i3))*vrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**!$$$      2)*vss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*vr2(i1,!$$$      i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*vs2(i1,i2,i3,kd)
-        max2dc22me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
-     & uLaplacian22(i1,i2,i3,n)
         max2dc44me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
      & uLaplacian42(i1,i2,i3,n)+cdtsq12*vLaplacian22(i1,i2,i3,n)
         max3dc44me(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
@@ -3520,11 +3517,6 @@ c===============================================================================
      & numberOfForcingFunctions))
         fnext = mod(fcur+1                         ,max(1,
      & numberOfForcingFunctions))
-         ! print some options - jba
-         if( t.le.2.*dt )then
-           write(*,*) 'useConservative = ', useConservative
-           write(*,*) 'useCurvilinearOpt = ', useCurvilinearOpt
-         end if
         ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
         !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
         !  rather than pre-computing it in diss(i1,i2,i3,c)
@@ -3564,11 +3556,11 @@ c===============================================================================
         if( useSosupDissipation.ne.0 )then
          ! Coefficients in the sosup dissipation from Jordan Angel
          if( orderOfAccuracy.eq.2 )then
-          adSosup= -cc*dt*1./8.
+          adSosup=-cc*dt*1./8.
          else if( orderOfAccuracy.eq.4 )then
-           adSosup= cc*dt*5./288.
+           adSosup=cc*dt*5./288.
          else if( orderOfAccuracy.eq.6 )then
-           adSosup= -cc*dt*31./8640.
+           adSosup=-cc*dt*31./8640.
          else
            stop 1005
          end if
@@ -3748,40 +3740,16 @@ c===============================================================================
              nEnd=ez
           end if
           ! Use Dot( un )
-          !write(*,*) 'nStart ', nStart, ' nEnd ',  nEnd
           do n=nStart,nEnd
-            if( useWhereMask.ne.0 )then
-              do i3=n3a,n3b
-              do i2=n2a,n2b
-              do i1=n1a,n1b
+              do i3=m3a,m3b
+              do i2=m2a,m2b
+              do i1=m1a,m1b
                 if( mask(i1,i2,i3).gt.0 )then
-                  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
-
-
-
-
-
+              v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
                 end if
               end do
               end do
               end do
-            else
-              do i3=n3a,n3b
-              do i2=n2a,n2b
-              do i1=n1a,n1b
-                  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
-
-
-
-
-
-              end do
-              end do
-              end do
-            end if
-            !beginLoopsMask(i1,i2,i3,m1a,m1b,m2a,m2b,m3a,m3b)
-            !  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
-            !endLoopsMask()
           end do
         endif
          ! This next function will:
@@ -3789,30 +3757,28 @@ c===============================================================================
          !            if: (adc.gt.0. .and. combineDissipationWithAdvance.eq.0
          !   (2) add the divergence damping
          !         if( add.gt.0. )
-        if( useSosupDissipation .eq. 0 ) then
-          if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
-            call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
-     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
-     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-          else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
-            call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
-     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
-     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-          else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
-            call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
-     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
-     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-          else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
-            call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
-     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
-     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-          else
-            if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 
+        if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
+          call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+        else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
+          call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+        else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
+          call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+        else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
+          call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+        else
+          if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 
      & .or. add.gt.0. )then
-              stop 1116
-            end if
+            stop 1116
           end if
-        endif
+        end if
         if( option.eq.1 ) then
           return
         end if
@@ -3833,6 +3799,56 @@ c===============================================================================
            ! ****************************************************************************
            ! *************** OPTIMIZED-CURVILINEAR AND NON-CONSERVATIVE *****************    
            ! ****************************************************************************
+               ! first evaluate Laplacian to 2nd-order
+              ! *** need to evaluate on one additional line ***
+              n1a=n1a-1
+              n1b=n1b+1
+              n2a=n2a-1
+              n2b=n2b+1
+              ! **** for this first loop we cannot use the mask -- 
+              useWhereMaskSave=useWhereMask
+              useWhereMask=0
+              if( useWhereMask.ne.0 )then
+               do i3=n3a,n3b
+               do i2=n2a,n2b
+               do i1=n1a,n1b
+                if( mask(i1,i2,i3).gt.0 )then
+                 v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
+                 v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
+                 v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
+
+
+
+
+
+
+                end if
+               end do
+               end do
+               end do
+              else
+               do i3=n3a,n3b
+               do i2=n2a,n2b
+               do i1=n1a,n1b
+                v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
+                v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
+                v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
+
+
+
+
+
+
+               end do
+               end do
+               end do
+              end if
+              ! write(*,*) 'advMxUp: 2d, rect, modified equation'
+              n1a=n1a+1
+              n1b=n1b-1
+              n2a=n2a+1
+              n2b=n2b-1
+              useWhereMask=useWhereMaskSave
             if( useSosupDissipation.ne.0 )then
                if( t.le.2.*dt )then
                  write(*,'(" advMxUp: FD44 + upwind-dissipation for 
@@ -3843,58 +3859,6 @@ c===============================================================================
      & useNewForcingMethod")')
                 stop 4487
                end if
-               if( updateSolution .eq. 1 .and. computeUt .eq. 0 ) then !use v to store curviliner op
-                     ! first evaluate Laplacian to 2nd-order
-                    ! *** need to evaluate on one additional line ***
-                    n1a=n1a-1
-                    n1b=n1b+1
-                    n2a=n2a-1
-                    n2b=n2b+1
-                    ! **** for this first loop we cannot use the mask -- 
-                    useWhereMaskSave=useWhereMask
-                    useWhereMask=0
-                    if( useWhereMask.ne.0 )then
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                      if( mask(i1,i2,i3).gt.0 )then
-                       v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                       v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                       v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-                      end if
-                     end do
-                     end do
-                     end do
-                    else
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                      v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                      v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                      v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-                     end do
-                     end do
-                     end do
-                    end if
-                    ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-                    n1a=n1a+1
-                    n1b=n1b-1
-                    n2a=n2a+1
-                    n2b=n2b-1
-                    useWhereMask=useWhereMaskSave
-              endif
               ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
               if( updateSolution.eq.1 .and. updateDissipation.eq.1 )
      & then
@@ -3905,6 +3869,114 @@ c===============================================================================
      & and-dissipation")')
                end if
                uDotFactor=1. ! for D-minus-t do not scale by .5
+               if( addForcing .eq. 0 ) then
+                 if( useWhereMask .ne. 0 ) then
+                     do i3=n3a,n3b
+                     do i2=n2a,n2b
+                     do i1=n1a,n1b
+                       if( mask(i1,i2,i3).gt.0 )then
+                    do dir=0,1
+                      ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                      ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                      adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
+     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                    end do
+                   do m=0,2 ! ex, ey, hz
+                     ec=ex+m
+                     un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+(-20.*
+     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
+     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
+     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
+     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
+     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
+     & i3,ec)))*adxSosup(1)
+                   end do
+                       end if
+                     end do
+                     end do
+                     end do
+                 else ! no mask
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                    do dir=0,1
+                      ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                      ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                      adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
+     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                    end do
+                   do m=0,2 ! ex, ey, hz
+                     ec=ex+m
+                     un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec) + (-20.*
+     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
+     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
+     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
+     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
+     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
+     & i3,ec)))*adxSosup(1)
+                   end do
+                   enddo
+                   enddo
+                   enddo
+                 endif ! end mask
+               else ! forcing
+                 if(useWhereMask .eq. 1 ) then
+                     do i3=n3a,n3b
+                     do i2=n2a,n2b
+                     do i1=n1a,n1b
+                       if( mask(i1,i2,i3).gt.0 )then
+                    do dir=0,1
+                      ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                      ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                      adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
+     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                    end do
+                   do m=0,2 ! ex, ey, hz
+                     ec=ex+m
+                     un(i1,i2,i3,ec)= max2dc44me2(i1,i2,i3,ec) + (-20.*
+     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
+     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
+     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
+     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
+     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
+     & i3,ec)))*adxSosup(1) + dtsq*f(i1,i2,i3,ec)
+                   end do
+                       end if
+                     end do
+                     end do
+                     end do
+                 else ! no mask
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                    do dir=0,1
+                      ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                      ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                      adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
+     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                    end do
+                   do m=0,2 ! ex, ey, hz
+                     ec=ex+m
+                     un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec) + (-20.*
+     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
+     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
+     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
+     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
+     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
+     & i3,ec)))*adxSosup(1) + dtsq*f(i1,i2,i3,ec)
+                   end do
+                   enddo
+                   enddo
+                   enddo
+                 endif ! end mask
+               endif ! end forcing
+               uDotFactor=.5 ! reset
+              else if( updateSolution.eq.1 )then
+                ! advance to time n+1
+               if( t.le.3.*dt )then
+                 write(*,'("advMxUp>>>","FD44c-UP...update-solution")')
+               end if
+               if( addForcing .eq. 0 ) then
                  do i3=n3a,n3b
                  do i2=n2a,n2b
                  do i1=n1a,n1b
@@ -3917,38 +3989,33 @@ c===============================================================================
                  end do
                 do m=0,2 ! ex, ey, hz
                   ec=ex+m
-             !     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+sosupDiss2d6(DmtU,i1,i2,i3,ec)
-                   un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+(-20.*DmtU(
-     & i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))-6.*(
-     & DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,ec)+
-     & DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+15.*(
-     & DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,i3,
-     & ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,i3,
-     & ec)))*adxSosup(1)
-                end do
-                   end if
-                 end do
-                 end do
-                 end do
-               uDotFactor=.5 ! reset
-              else if( updateSolution.eq.1 )then
-                ! advance to time n+1
-               if( t.le.3.*dt )then
-                 write(*,'("advMxUp>>>","FD44c-UP...update-solution")')
-               end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
-                   if( mask(i1,i2,i3).gt.0 )then
-                do m=0,2 ! ex, ey, hz
-                  ec=ex+m
-             !     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
                    un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)
                 end do
                    end if
                  end do
                  end do
                  end do
+               else
+                 do i3=n3a,n3b
+                 do i2=n2a,n2b
+                 do i1=n1a,n1b
+                   if( mask(i1,i2,i3).gt.0 )then
+                 do dir=0,1
+                   ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                   ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                   adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,i2,
+     & i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                 end do
+                do m=0,2 ! ex, ey, hz
+                  ec=ex+m
+                   un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+ dtsq*f(i1,
+     & i2,i3,ec)
+                end do
+                   end if
+                 end do
+                 end do
+                 end do
+               endif
               else if( updateDissipation.eq.1 )then
                ! ----- add dissipation only  ----
                if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )
@@ -4071,56 +4138,6 @@ c===============================================================================
        !$$$ loopsFCD2DA($$evalLapSq2dOrder2(ey),!$$$             dtsq*f(i1,i2,i3,ey),!$$$             un(i1,i2,i3,ey)=max2dc44me(i1,i2,i3,ey))
        !$$$
        !$$$ loopsFCD2DA($$evalLapSq2dOrder2(hz),!$$$             dtsq*f(i1,i2,i3,hz),!$$$             un(i1,i2,i3,hz)=max2dc44me(i1,i2,i3,hz))
-               ! first evaluate Laplacian to 2nd-order
-              ! *** need to evaluate on one additional line ***
-              n1a=n1a-1
-              n1b=n1b+1
-              n2a=n2a-1
-              n2b=n2b+1
-              ! **** for this first loop we cannot use the mask -- 
-              useWhereMaskSave=useWhereMask
-              useWhereMask=0
-              if( useWhereMask.ne.0 )then
-               do i3=n3a,n3b
-               do i2=n2a,n2b
-               do i1=n1a,n1b
-                if( mask(i1,i2,i3).gt.0 )then
-                 v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                 v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                 v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-                end if
-               end do
-               end do
-               end do
-              else
-               do i3=n3a,n3b
-               do i2=n2a,n2b
-               do i1=n1a,n1b
-                v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-               end do
-               end do
-               end do
-              end if
-              ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-              n1a=n1a+1
-              n1b=n1b-1
-              n2a=n2a+1
-              n2b=n2b-1
-              useWhereMask=useWhereMaskSave
               if( useDivergenceCleaning.eq.0 )then
                if( useNewForcingMethod.eq.1 ) then
                  ! fix forcing for ME scheme to be 4th-order
@@ -4656,68 +4673,124 @@ c===============================================================================
      & useNewForcingMethod")')
                  stop 4487
                 end if
-                if( updateSolution .eq. 1 .and. computeUt .eq. 0 ) then !use v to store curviliner op
-                      ! first evaluate Laplacian to 2nd-order
-                     ! *** need to evaluate on one additional line ***
-                     n1a=n1a-1
-                     n1b=n1b+1
-                     n2a=n2a-1
-                     n2b=n2b+1
-                     ! **** for this first loop we cannot use the mask -- 
-                     useWhereMaskSave=useWhereMask
-                     useWhereMask=0
-                     if( useWhereMask.ne.0 )then
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                        v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                        v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                        v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-                       end if
-                      end do
-                      end do
-                      end do
-                     else
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                       v(i1,i2,i3,ex)=uLaplacian22(i1,i2,i3,ex)
-                       v(i1,i2,i3,ey)=uLaplacian22(i1,i2,i3,ey)
-                       v(i1,i2,i3,hz)=uLaplacian22(i1,i2,i3,hz)
-
-
-
-
-
-
-                      end do
-                      end do
-                      end do
-                     end if
-                     ! write(*,*) 'advMxUp: 2d, rect, modified equation'
-                     n1a=n1a+1
-                     n1b=n1b-1
-                     n2a=n2a+1
-                     n2b=n2b-1
-                     useWhereMask=useWhereMaskSave
-               endif
                ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
                if( updateSolution.eq.1 .and. updateDissipation.eq.1 )
      & then
                 ! advance + sosup dissipation: 
-                ! note: forcing is already added to the rhs.
                 if( t.le.3.*dt )then
                   write(*,'("advMxUp>>>","FD44c-UP...update-solution-
      & and-dissipation")')
                 end if
                 uDotFactor=1. ! for D-minus-t do not scale by .5
+                ! note: forcing is already added to the rhs.
+                if( addForcing .eq. 0 ) then
+                  if( useWhereMask .ne. 0 ) then
+                      do i3=n3a,n3b
+                      do i2=n2a,n2b
+                      do i1=n1a,n1b
+                        if( mask(i1,i2,i3).gt.0 )then
+                     do dir=0,1
+                       ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                       ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                       adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(
+     & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                     end do
+                    do m=0,2 ! ex, ey, hz
+                      ec=ex+m
+                      un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+(-20.*
+     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
+     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
+     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
+     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
+     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
+     & i3,ec)))*adxSosup(1)
+                    end do
+                        end if
+                      end do
+                      end do
+                      end do
+                  else ! no mask
+                    do i3=n3a,n3b
+                    do i2=n2a,n2b
+                    do i1=n1a,n1b
+                     do dir=0,1
+                       ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                       ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                       adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(
+     & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                     end do
+                    do m=0,2 ! ex, ey, hz
+                      ec=ex+m
+                      un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec) + (-
+     & 20.*DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,
+     & ec))-6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,
+     & i2,i3,ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,
+     & i3,ec)+15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(
+     & i1,i2+2,i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(
+     & i1,i2-3,i3,ec)))*adxSosup(1)
+                    end do
+                    enddo
+                    enddo
+                    enddo
+                  endif ! end mask
+                else ! forcing
+                  if(useWhereMask .eq. 1 ) then
+                      do i3=n3a,n3b
+                      do i2=n2a,n2b
+                      do i1=n1a,n1b
+                        if( mask(i1,i2,i3).gt.0 )then
+                     do dir=0,1
+                       ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                       ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                       adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(
+     & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                     end do
+                    do m=0,2 ! ex, ey, hz
+                      ec=ex+m
+                      un(i1,i2,i3,ec)= maxwellc44me(i1,i2,i3,ec) + (-
+     & 20.*DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,
+     & ec))-6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,
+     & i2,i3,ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,
+     & i3,ec)+15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(
+     & i1,i2+2,i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(
+     & i1,i2-3,i3,ec)))*adxSosup(1) + 0.
+                    end do
+                        end if
+                      end do
+                      end do
+                      end do
+                  else ! no mask
+                    do i3=n3a,n3b
+                    do i2=n2a,n2b
+                    do i1=n1a,n1b
+                     do dir=0,1
+                       ! diss-coeff ~= 1/(change in x along direction r(dir) )
+                       ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
+                       adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(
+     & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
+                     end do
+                    do m=0,2 ! ex, ey, hz
+                      ec=ex+m
+                      un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec) + (-
+     & 20.*DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,
+     & ec))-6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,
+     & i2,i3,ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,
+     & i3,ec)+15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(
+     & i1,i2+2,i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(
+     & i1,i2-3,i3,ec)))*adxSosup(1) + 0.
+                    end do
+                    enddo
+                    enddo
+                    enddo
+                  endif ! end mask
+                endif ! end forcing
+                uDotFactor=.5 ! reset
+               else if( updateSolution.eq.1 )then
+                 ! advance to time n+1
+                if( t.le.3.*dt )then
+                  write(*,'("advMxUp>>>","FD44c-UP...update-solution")
+     & ')
+                end if
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
@@ -4730,34 +4803,7 @@ c===============================================================================
                   end do
                  do m=0,2 ! ex, ey, hz
                    ec=ex+m
-              !     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+sosupDiss2d6(DmtU,i1,i2,i3,ec)
-                    un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)+(-20.*
-     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
-     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
-     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
-     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
-     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
-     & i3,ec)))*adxSosup(1)
-                 end do
-                    end if
-                  end do
-                  end do
-                  end do
-                uDotFactor=.5 ! reset
-               else if( updateSolution.eq.1 )then
-                 ! advance to time n+1
-                if( t.le.3.*dt )then
-                  write(*,'("advMxUp>>>","FD44c-UP...update-solution")
-     & ')
-                end if
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                    if( mask(i1,i2,i3).gt.0 )then
-                 do m=0,2 ! ex, ey, hz
-                   ec=ex+m
-              !     un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
-                    un(i1,i2,i3,ec)=max2dc44me2(i1,i2,i3,ec)
+                    un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
                  end do
                     end if
                   end do
