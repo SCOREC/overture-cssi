@@ -22,7 +22,7 @@
         real f(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real fa(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b,0:*)  ! forcings at different times
         real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-        ! Polarization vectors 
+        ! Polarization vectors
         real pm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         real pn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
@@ -688,6 +688,198 @@
          real ffyyzz23r
          real ffLapSq22r
          real ffLapSq23r
+         real pr2
+         real ps2
+         real pt2
+         real prr2
+         real pss2
+         real prs2
+         real ptt2
+         real prt2
+         real pst2
+         real prrr2
+         real psss2
+         real pttt2
+         real px21
+         real py21
+         real pz21
+         real px22
+         real py22
+         real pz22
+         real px23
+         real py23
+         real pz23
+         real pxx21
+         real pyy21
+         real pxy21
+         real pxz21
+         real pyz21
+         real pzz21
+         real plaplacian21
+         real pxx22
+         real pyy22
+         real pxy22
+         real pxz22
+         real pyz22
+         real pzz22
+         real plaplacian22
+         real pxx23
+         real pyy23
+         real pzz23
+         real pxy23
+         real pxz23
+         real pyz23
+         real plaplacian23
+         real px23r
+         real py23r
+         real pz23r
+         real pxx23r
+         real pyy23r
+         real pxy23r
+         real pzz23r
+         real pxz23r
+         real pyz23r
+         real px21r
+         real py21r
+         real pz21r
+         real pxx21r
+         real pyy21r
+         real pzz21r
+         real pxy21r
+         real pxz21r
+         real pyz21r
+         real plaplacian21r
+         real px22r
+         real py22r
+         real pz22r
+         real pxx22r
+         real pyy22r
+         real pzz22r
+         real pxy22r
+         real pxz22r
+         real pyz22r
+         real plaplacian22r
+         real plaplacian23r
+         real pxxx22r
+         real pyyy22r
+         real pxxy22r
+         real pxyy22r
+         real pxxxx22r
+         real pyyyy22r
+         real pxxyy22r
+         real pxxx23r
+         real pyyy23r
+         real pzzz23r
+         real pxxy23r
+         real pxxz23r
+         real pxyy23r
+         real pyyz23r
+         real pxzz23r
+         real pyzz23r
+         real pxxxx23r
+         real pyyyy23r
+         real pzzzz23r
+         real pxxyy23r
+         real pxxzz23r
+         real pyyzz23r
+         real pLapSq22r
+         real pLapSq23r
+         real pmr2
+         real pms2
+         real pmt2
+         real pmrr2
+         real pmss2
+         real pmrs2
+         real pmtt2
+         real pmrt2
+         real pmst2
+         real pmrrr2
+         real pmsss2
+         real pmttt2
+         real pmx21
+         real pmy21
+         real pmz21
+         real pmx22
+         real pmy22
+         real pmz22
+         real pmx23
+         real pmy23
+         real pmz23
+         real pmxx21
+         real pmyy21
+         real pmxy21
+         real pmxz21
+         real pmyz21
+         real pmzz21
+         real pmlaplacian21
+         real pmxx22
+         real pmyy22
+         real pmxy22
+         real pmxz22
+         real pmyz22
+         real pmzz22
+         real pmlaplacian22
+         real pmxx23
+         real pmyy23
+         real pmzz23
+         real pmxy23
+         real pmxz23
+         real pmyz23
+         real pmlaplacian23
+         real pmx23r
+         real pmy23r
+         real pmz23r
+         real pmxx23r
+         real pmyy23r
+         real pmxy23r
+         real pmzz23r
+         real pmxz23r
+         real pmyz23r
+         real pmx21r
+         real pmy21r
+         real pmz21r
+         real pmxx21r
+         real pmyy21r
+         real pmzz21r
+         real pmxy21r
+         real pmxz21r
+         real pmyz21r
+         real pmlaplacian21r
+         real pmx22r
+         real pmy22r
+         real pmz22r
+         real pmxx22r
+         real pmyy22r
+         real pmzz22r
+         real pmxy22r
+         real pmxz22r
+         real pmyz22r
+         real pmlaplacian22r
+         real pmlaplacian23r
+         real pmxxx22r
+         real pmyyy22r
+         real pmxxy22r
+         real pmxyy22r
+         real pmxxxx22r
+         real pmyyyy22r
+         real pmxxyy22r
+         real pmxxx23r
+         real pmyyy23r
+         real pmzzz23r
+         real pmxxy23r
+         real pmxxz23r
+         real pmxyy23r
+         real pmyyz23r
+         real pmxzz23r
+         real pmyzz23r
+         real pmxxxx23r
+         real pmyyyy23r
+         real pmzzzz23r
+         real pmxxyy23r
+         real pmxxzz23r
+         real pmyyzz23r
+         real pmLapSq22r
+         real pmLapSq23r
          real d14
          real d24
          real h41
@@ -1041,6 +1233,144 @@
          real vyz42r
          real vlaplacian42r
          real vlaplacian43r
+         real pr4
+         real ps4
+         real pt4
+         real prr4
+         real pss4
+         real ptt4
+         real prs4
+         real prt4
+         real pst4
+         real px41
+         real py41
+         real pz41
+         real px42
+         real py42
+         real pz42
+         real px43
+         real py43
+         real pz43
+         real pxx41
+         real pyy41
+         real pxy41
+         real pxz41
+         real pyz41
+         real pzz41
+         real plaplacian41
+         real pxx42
+         real pyy42
+         real pxy42
+         real pxz42
+         real pyz42
+         real pzz42
+         real plaplacian42
+         real pxx43
+         real pyy43
+         real pzz43
+         real pxy43
+         real pxz43
+         real pyz43
+         real plaplacian43
+         real px43r
+         real py43r
+         real pz43r
+         real pxx43r
+         real pyy43r
+         real pzz43r
+         real pxy43r
+         real pxz43r
+         real pyz43r
+         real px41r
+         real py41r
+         real pz41r
+         real pxx41r
+         real pyy41r
+         real pzz41r
+         real pxy41r
+         real pxz41r
+         real pyz41r
+         real plaplacian41r
+         real px42r
+         real py42r
+         real pz42r
+         real pxx42r
+         real pyy42r
+         real pzz42r
+         real pxy42r
+         real pxz42r
+         real pyz42r
+         real plaplacian42r
+         real plaplacian43r
+         real pmr4
+         real pms4
+         real pmt4
+         real pmrr4
+         real pmss4
+         real pmtt4
+         real pmrs4
+         real pmrt4
+         real pmst4
+         real pmx41
+         real pmy41
+         real pmz41
+         real pmx42
+         real pmy42
+         real pmz42
+         real pmx43
+         real pmy43
+         real pmz43
+         real pmxx41
+         real pmyy41
+         real pmxy41
+         real pmxz41
+         real pmyz41
+         real pmzz41
+         real pmlaplacian41
+         real pmxx42
+         real pmyy42
+         real pmxy42
+         real pmxz42
+         real pmyz42
+         real pmzz42
+         real pmlaplacian42
+         real pmxx43
+         real pmyy43
+         real pmzz43
+         real pmxy43
+         real pmxz43
+         real pmyz43
+         real pmlaplacian43
+         real pmx43r
+         real pmy43r
+         real pmz43r
+         real pmxx43r
+         real pmyy43r
+         real pmzz43r
+         real pmxy43r
+         real pmxz43r
+         real pmyz43r
+         real pmx41r
+         real pmy41r
+         real pmz41r
+         real pmxx41r
+         real pmyy41r
+         real pmzz41r
+         real pmxy41r
+         real pmxz41r
+         real pmyz41r
+         real pmlaplacian41r
+         real pmx42r
+         real pmy42r
+         real pmz42r
+         real pmxx42r
+         real pmyy42r
+         real pmzz42r
+         real pmxy42r
+         real pmxz42r
+         real pmyz42r
+         real pmlaplacian42r
+         real pmlaplacian43r
         real maxwell2dr,maxwell3dr,maxwellr44,maxwellr66,maxwellr88
         real maxwellc22,maxwellc44,maxwellc66,maxwellc88, maxwellc23
         real maxwell2dr44me,maxwell2dr66me,maxwell2dr88me
@@ -1064,7 +1394,7 @@
         real ey0,ey0t,ey0x,ey0y,ey0z
         real ez0,ez0t,ez0x,ez0y,ez0z
         real p0,p0t,p0tt
-        real e0,e0t
+        real e0,e0t,e0tt
         real cdt4by360,cdt6by20160
         real lap2d2,lap3d2,lap2d4,lap3d4,lap2d6,lap3d6,lap2d8,lap3d8,
      & lap2d2Pow2,lap3d2Pow2,lap2d2Pow3,lap3d2Pow3,lap2d2Pow4,
@@ -1072,7 +1402,22 @@
      & lap2d6Pow2,lap3d6Pow2
         real lap2d2m,lap3d2m
         real du,fd22d,fd23d,fd42d,fd43d,fd62d,fd63d,fd82d,fd83d
-        ! forcing correction functions: 
+        real elap4, elap4m, lap2d4m, lap3d4m, elapsq2, elap2, elap2m, 
+     & plap2, plap2m, plap4, plap4m, plap2d2, plap2d2m, plap2d4, 
+     & plap2d4m
+        real a0ttt, a1ttt, a2ttt, b0ttt, b1ttt, Exx, Exxxx, En, Enm1, 
+     & Pnm1, Exxn, Exxnm1, betaP, Pxxn, Pxxnm1, Etxx,cStar, 
+     & PtttStarRhs, rhsExxnp1Predict, rhsPxxnp1Predict, Exxnp1Predict,
+     &  Pxxnp1Predict, A(2,2), b(2), y(2),f1, f2, f3, f4, f5, f6
+        real p0ttt, p0tttt, p0xx, p0yy, p0xxt, p0yyt, p0xxtt, p0yytt, 
+     & e0ttt, e0tttt,e0xx, e0yy, e0xxt, e0yyt, e0xxtt, e0yytt, e0xxxx,
+     &  e0xxyy, e0yyyy
+        real fp00, fp10, fp20, fp02x, fp02y, fp02, fe00, fe10, fe20, 
+     & fe02x, fe02y, fe02
+        real p0zz, p0zzt, p0zztt, e0zz, e0zzt, e0zztt, e0xxzz, e0yyzz, 
+     & e0zzzz, fp02z, fe02z
+        real plap3d2, plap3d2m, plap3d4, plap3d4m
+        ! forcing correction functions:
         real lap2d2f,f2drme44, lap3d2f, f3drme44, f2dcme44, f3dcme44, 
      & ff
         real cdSosupx,cdSosupy,cdSosupz, adSosup,sosupParameter, 
@@ -1080,7 +1425,7 @@
         integer useSosupDissipation,sosupDissipationOption
         integer updateSolution,updateDissipation,computeUt,
      & forcingOption
-        ! div cleaning: 
+        ! div cleaning:
         real dc,dcp,cdc0,cdc1,cdcxx,cdcyy,cdczz,cdcEdx,cdcEdy,cdcEdz,
      & cdcHdx,cdcHdy,cdcHdz,cdcf
         real cdcE,cdcELap,cdcELapsq,cdcELapm,cdcHzxLap,cdcHzyLap
@@ -1093,7 +1438,7 @@
         real gammaDt,omegapDtSq,ptt, fe,fp,fp2
         ! Generalized dispersion model parameters
         real alphaP, a0,a1,b0,b1
-        real ev,evm,evn,pv0,pvm0,deti,rhsE,rhsP
+        real ev,evm,evn,pv0,pvm0,pvx,pvxE,deti,rhsE,rhsP
         integer maxNumberOfParameters,maxNumberOfPolarizationVectors
         parameter( maxNumberOfParameters=4, 
      & maxNumberOfPolarizationVectors=20 )
@@ -1106,6 +1451,25 @@
         real rhspv(0:maxNumberOfPolarizationVectors-1)
         real betav(0:maxNumberOfPolarizationVectors-1)
         real fpv(0:maxNumberOfPolarizationVectors-1)
+       ! More Generalized dispersion model parameters
+        real pSum0tt, pSum0ttt, pSum0tttt, pSum0xxtt, pSum0yytt, 
+     & pSum0zztt, rhsPxx, pxxSum, PtttStar, QxxStar, EtxxStar, 
+     & EtttStar, rhsP4, LHSev, exxv, exxvm, exxvn, rhsExx
+        real b1tttv(0:maxNumberOfPolarizationVectors-1)
+        real b0tttv(0:maxNumberOfPolarizationVectors-1)
+        real a1tttv(0:maxNumberOfPolarizationVectors-1)
+        real a0tttv(0:maxNumberOfPolarizationVectors-1)
+        real a2tttv(0:maxNumberOfPolarizationVectors-1)
+        real f2v(0:maxNumberOfPolarizationVectors-1)
+        real f3v(0:maxNumberOfPolarizationVectors-1)
+        real f6v(0:maxNumberOfPolarizationVectors-1)
+        real pxxv(0:maxNumberOfPolarizationVectors-1)
+        real pxxvm(0:maxNumberOfPolarizationVectors-1)
+        real rhspxxv(0:maxNumberOfPolarizationVectors-1)
+        real LHSpv(0:maxNumberOfPolarizationVectors-1)
+        real fp00v(0:maxNumberOfPolarizationVectors-1)
+        real ptttStarv(0:maxNumberOfPolarizationVectors-1)
+        real pvn(0:maxNumberOfPolarizationVectors-1)
        ! .......statement functions for GDM parameters
         a0v(iv) = gdmPar(0,iv)
         a1v(iv) = gdmPar(1,iv)
@@ -3375,6 +3739,850 @@ c===============================================================================
      & 1,i3,kd)  +ff(i1,i2-1,i3,kd)  +ff(i1,i2  ,i3+1,kd)+ff(i1,i2  ,
      & i3-1,kd))   +2.*(ff(i1,i2+1,i3+1,kd)+ff(i1,i2-1,i3+1,kd)+ff(i1,
      & i2+1,i3-1,kd)+ff(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        pr2(i1,i2,i3,kd)=(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))*d12(0)
+        ps2(i1,i2,i3,kd)=(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))*d12(1)
+        pt2(i1,i2,i3,kd)=(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))*d12(2)
+        prr2(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1+1,i2,i3,kd)+p(i1-1,
+     & i2,i3,kd)) )*d22(0)
+        pss2(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1,i2+1,i3,kd)+p(i1,
+     & i2-1,i3,kd)) )*d22(1)
+        prs2(i1,i2,i3,kd)=(pr2(i1,i2+1,i3,kd)-pr2(i1,i2-1,i3,kd))*d12(
+     & 1)
+        ptt2(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1,i2,i3+1,kd)+p(i1,
+     & i2,i3-1,kd)) )*d22(2)
+        prt2(i1,i2,i3,kd)=(pr2(i1,i2,i3+1,kd)-pr2(i1,i2,i3-1,kd))*d12(
+     & 2)
+        pst2(i1,i2,i3,kd)=(ps2(i1,i2,i3+1,kd)-ps2(i1,i2,i3-1,kd))*d12(
+     & 2)
+        prrr2(i1,i2,i3,kd)=(-2.*(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))+(p(
+     & i1+2,i2,i3,kd)-p(i1-2,i2,i3,kd)) )*d22(0)*d12(0)
+        psss2(i1,i2,i3,kd)=(-2.*(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))+(p(
+     & i1,i2+2,i3,kd)-p(i1,i2-2,i3,kd)) )*d22(1)*d12(1)
+        pttt2(i1,i2,i3,kd)=(-2.*(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))+(p(
+     & i1,i2,i3+2,kd)-p(i1,i2,i3-2,kd)) )*d22(2)*d12(2)
+        px21(i1,i2,i3,kd)= rx(i1,i2,i3)*pr2(i1,i2,i3,kd)
+        py21(i1,i2,i3,kd)=0
+        pz21(i1,i2,i3,kd)=0
+        px22(i1,i2,i3,kd)= rx(i1,i2,i3)*pr2(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)
+        py22(i1,i2,i3,kd)= ry(i1,i2,i3)*pr2(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)
+        pz22(i1,i2,i3,kd)=0
+        px23(i1,i2,i3,kd)=rx(i1,i2,i3)*pr2(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+tx(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        py23(i1,i2,i3,kd)=ry(i1,i2,i3)*pr2(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+ty(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pz23(i1,i2,i3,kd)=rz(i1,i2,i3)*pr2(i1,i2,i3,kd)+sz(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+tz(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pxx21(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*prr2(i1,i2,i3,kd)+(rxx22(
+     & i1,i2,i3))*pr2(i1,i2,i3,kd)
+        pyy21(i1,i2,i3,kd)=0
+        pxy21(i1,i2,i3,kd)=0
+        pxz21(i1,i2,i3,kd)=0
+        pyz21(i1,i2,i3,kd)=0
+        pzz21(i1,i2,i3,kd)=0
+        plaplacian21(i1,i2,i3,kd)=pxx21(i1,i2,i3,kd)
+        pxx22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*prr2(i1,i2,i3,kd)+2.*(rx(
+     & i1,i2,i3)*sx(i1,i2,i3))*prs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2)*
+     & pss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3))*pr2(i1,i2,i3,kd)+(sxx22(i1,
+     & i2,i3))*ps2(i1,i2,i3,kd)
+        pyy22(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*prr2(i1,i2,i3,kd)+2.*(ry(
+     & i1,i2,i3)*sy(i1,i2,i3))*prs2(i1,i2,i3,kd)+(sy(i1,i2,i3)**2)*
+     & pss2(i1,i2,i3,kd)+(ryy22(i1,i2,i3))*pr2(i1,i2,i3,kd)+(syy22(i1,
+     & i2,i3))*ps2(i1,i2,i3,kd)
+        pxy22(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*prr2(i1,i2,i3,kd)+
+     & (rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*prs2(i1,
+     & i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pss2(i1,i2,i3,kd)+rxy22(i1,
+     & i2,i3)*pr2(i1,i2,i3,kd)+sxy22(i1,i2,i3)*ps2(i1,i2,i3,kd)
+        pxz22(i1,i2,i3,kd)=0
+        pyz22(i1,i2,i3,kd)=0
+        pzz22(i1,i2,i3,kd)=0
+        plaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & prr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & sy(i1,i2,i3))*prs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2)*pss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*pr2(i1,
+     & i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*ps2(i1,i2,i3,kd)
+        pxx23(i1,i2,i3,kd)=rx(i1,i2,i3)**2*prr2(i1,i2,i3,kd)+sx(i1,i2,
+     & i3)**2*pss2(i1,i2,i3,kd)+tx(i1,i2,i3)**2*ptt2(i1,i2,i3,kd)+2.*
+     & rx(i1,i2,i3)*sx(i1,i2,i3)*prs2(i1,i2,i3,kd)+2.*rx(i1,i2,i3)*tx(
+     & i1,i2,i3)*prt2(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,i2,i3)*pst2(
+     & i1,i2,i3,kd)+rxx23(i1,i2,i3)*pr2(i1,i2,i3,kd)+sxx23(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+txx23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pyy23(i1,i2,i3,kd)=ry(i1,i2,i3)**2*prr2(i1,i2,i3,kd)+sy(i1,i2,
+     & i3)**2*pss2(i1,i2,i3,kd)+ty(i1,i2,i3)**2*ptt2(i1,i2,i3,kd)+2.*
+     & ry(i1,i2,i3)*sy(i1,i2,i3)*prs2(i1,i2,i3,kd)+2.*ry(i1,i2,i3)*ty(
+     & i1,i2,i3)*prt2(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,i2,i3)*pst2(
+     & i1,i2,i3,kd)+ryy23(i1,i2,i3)*pr2(i1,i2,i3,kd)+syy23(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+tyy23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pzz23(i1,i2,i3,kd)=rz(i1,i2,i3)**2*prr2(i1,i2,i3,kd)+sz(i1,i2,
+     & i3)**2*pss2(i1,i2,i3,kd)+tz(i1,i2,i3)**2*ptt2(i1,i2,i3,kd)+2.*
+     & rz(i1,i2,i3)*sz(i1,i2,i3)*prs2(i1,i2,i3,kd)+2.*rz(i1,i2,i3)*tz(
+     & i1,i2,i3)*prt2(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,i2,i3)*pst2(
+     & i1,i2,i3,kd)+rzz23(i1,i2,i3)*pr2(i1,i2,i3,kd)+szz23(i1,i2,i3)*
+     & ps2(i1,i2,i3,kd)+tzz23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pxy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*prr2(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sy(i1,i2,i3)*pss2(i1,i2,i3,kd)+tx(i1,i2,i3)*ty(i1,
+     & i2,i3)*ptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,
+     & i3)*sx(i1,i2,i3))*prs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(i1,i2,i3)+
+     & ry(i1,i2,i3)*tx(i1,i2,i3))*prt2(i1,i2,i3,kd)+(sx(i1,i2,i3)*ty(
+     & i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*pst2(i1,i2,i3,kd)+rxy23(
+     & i1,i2,i3)*pr2(i1,i2,i3,kd)+sxy23(i1,i2,i3)*ps2(i1,i2,i3,kd)+
+     & txy23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pxz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*prr2(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sz(i1,i2,i3)*pss2(i1,i2,i3,kd)+tx(i1,i2,i3)*tz(i1,
+     & i2,i3)*ptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sx(i1,i2,i3))*prs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*tx(i1,i2,i3))*prt2(i1,i2,i3,kd)+(sx(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*pst2(i1,i2,i3,kd)+rxz23(
+     & i1,i2,i3)*pr2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*ps2(i1,i2,i3,kd)+
+     & txz23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        pyz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*prr2(i1,i2,i3,kd)+
+     & sy(i1,i2,i3)*sz(i1,i2,i3)*pss2(i1,i2,i3,kd)+ty(i1,i2,i3)*tz(i1,
+     & i2,i3)*ptt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sy(i1,i2,i3))*prs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*ty(i1,i2,i3))*prt2(i1,i2,i3,kd)+(sy(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*pst2(i1,i2,i3,kd)+ryz23(
+     & i1,i2,i3)*pr2(i1,i2,i3,kd)+syz23(i1,i2,i3)*ps2(i1,i2,i3,kd)+
+     & tyz23(i1,i2,i3)*pt2(i1,i2,i3,kd)
+        plaplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(
+     & i1,i2,i3)**2)*prr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2+sz(i1,i2,i3)**2)*pss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,i2,
+     & i3)**2+tz(i1,i2,i3)**2)*ptt2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(
+     & i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,i3))
+     & *prs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*prt2(i1,i2,i3,kd)+2.*(
+     & sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+sz(i1,i2,
+     & i3)*tz(i1,i2,i3))*pst2(i1,i2,i3,kd)+(rxx23(i1,i2,i3)+ryy23(i1,
+     & i2,i3)+rzz23(i1,i2,i3))*pr2(i1,i2,i3,kd)+(sxx23(i1,i2,i3)+
+     & syy23(i1,i2,i3)+szz23(i1,i2,i3))*ps2(i1,i2,i3,kd)+(txx23(i1,i2,
+     & i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*pt2(i1,i2,i3,kd)
+c============================================================================================
+c Define derivatives for a rectangular grid
+c
+c============================================================================================
+        px23r(i1,i2,i3,kd)=(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))*h12(0)
+        py23r(i1,i2,i3,kd)=(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))*h12(1)
+        pz23r(i1,i2,i3,kd)=(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))*h12(2)
+        pxx23r(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1+1,i2,i3,kd)+p(i1-
+     & 1,i2,i3,kd)) )*h22(0)
+        pyy23r(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1,i2+1,i3,kd)+p(i1,
+     & i2-1,i3,kd)) )*h22(1)
+        pxy23r(i1,i2,i3,kd)=(px23r(i1,i2+1,i3,kd)-px23r(i1,i2-1,i3,kd))
+     & *h12(1)
+        pzz23r(i1,i2,i3,kd)=(-2.*p(i1,i2,i3,kd)+(p(i1,i2,i3+1,kd)+p(i1,
+     & i2,i3-1,kd)) )*h22(2)
+        pxz23r(i1,i2,i3,kd)=(px23r(i1,i2,i3+1,kd)-px23r(i1,i2,i3-1,kd))
+     & *h12(2)
+        pyz23r(i1,i2,i3,kd)=(py23r(i1,i2,i3+1,kd)-py23r(i1,i2,i3-1,kd))
+     & *h12(2)
+        px21r(i1,i2,i3,kd)= px23r(i1,i2,i3,kd)
+        py21r(i1,i2,i3,kd)= py23r(i1,i2,i3,kd)
+        pz21r(i1,i2,i3,kd)= pz23r(i1,i2,i3,kd)
+        pxx21r(i1,i2,i3,kd)= pxx23r(i1,i2,i3,kd)
+        pyy21r(i1,i2,i3,kd)= pyy23r(i1,i2,i3,kd)
+        pzz21r(i1,i2,i3,kd)= pzz23r(i1,i2,i3,kd)
+        pxy21r(i1,i2,i3,kd)= pxy23r(i1,i2,i3,kd)
+        pxz21r(i1,i2,i3,kd)= pxz23r(i1,i2,i3,kd)
+        pyz21r(i1,i2,i3,kd)= pyz23r(i1,i2,i3,kd)
+        plaplacian21r(i1,i2,i3,kd)=pxx23r(i1,i2,i3,kd)
+        px22r(i1,i2,i3,kd)= px23r(i1,i2,i3,kd)
+        py22r(i1,i2,i3,kd)= py23r(i1,i2,i3,kd)
+        pz22r(i1,i2,i3,kd)= pz23r(i1,i2,i3,kd)
+        pxx22r(i1,i2,i3,kd)= pxx23r(i1,i2,i3,kd)
+        pyy22r(i1,i2,i3,kd)= pyy23r(i1,i2,i3,kd)
+        pzz22r(i1,i2,i3,kd)= pzz23r(i1,i2,i3,kd)
+        pxy22r(i1,i2,i3,kd)= pxy23r(i1,i2,i3,kd)
+        pxz22r(i1,i2,i3,kd)= pxz23r(i1,i2,i3,kd)
+        pyz22r(i1,i2,i3,kd)= pyz23r(i1,i2,i3,kd)
+        plaplacian22r(i1,i2,i3,kd)=pxx23r(i1,i2,i3,kd)+pyy23r(i1,i2,i3,
+     & kd)
+        plaplacian23r(i1,i2,i3,kd)=pxx23r(i1,i2,i3,kd)+pyy23r(i1,i2,i3,
+     & kd)+pzz23r(i1,i2,i3,kd)
+        pxxx22r(i1,i2,i3,kd)=(-2.*(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))+(
+     & p(i1+2,i2,i3,kd)-p(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        pyyy22r(i1,i2,i3,kd)=(-2.*(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))+(
+     & p(i1,i2+2,i3,kd)-p(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        pxxy22r(i1,i2,i3,kd)=( pxx22r(i1,i2+1,i3,kd)-pxx22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        pxyy22r(i1,i2,i3,kd)=( pyy22r(i1+1,i2,i3,kd)-pyy22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        pxxxx22r(i1,i2,i3,kd)=(6.*p(i1,i2,i3,kd)-4.*(p(i1+1,i2,i3,kd)+
+     & p(i1-1,i2,i3,kd))+(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)) )/(dx(0)*
+     & *4)
+        pyyyy22r(i1,i2,i3,kd)=(6.*p(i1,i2,i3,kd)-4.*(p(i1,i2+1,i3,kd)+
+     & p(i1,i2-1,i3,kd))+(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )/(dx(1)*
+     & *4)
+        pxxyy22r(i1,i2,i3,kd)=( 4.*p(i1,i2,i3,kd)     -2.*(p(i1+1,i2,
+     & i3,kd)+p(i1-1,i2,i3,kd)+p(i1,i2+1,i3,kd)+p(i1,i2-1,i3,kd))   + 
+     &   (p(i1+1,i2+1,i3,kd)+p(i1-1,i2+1,i3,kd)+p(i1+1,i2-1,i3,kd)+p(
+     & i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        ! 2D laplacian squared = p.xxxx + 2 p.xxyy + p.yyyy
+        pLapSq22r(i1,i2,i3,kd)= ( 6.*p(i1,i2,i3,kd)   - 4.*(p(i1+1,i2,
+     & i3,kd)+p(i1-1,i2,i3,kd))    +(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)
+     & ) )/(dx(0)**4) +( 6.*p(i1,i2,i3,kd)    -4.*(p(i1,i2+1,i3,kd)+p(
+     & i1,i2-1,i3,kd))    +(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )/(dx(
+     & 1)**4)  +( 8.*p(i1,i2,i3,kd)     -4.*(p(i1+1,i2,i3,kd)+p(i1-1,
+     & i2,i3,kd)+p(i1,i2+1,i3,kd)+p(i1,i2-1,i3,kd))   +2.*(p(i1+1,i2+
+     & 1,i3,kd)+p(i1-1,i2+1,i3,kd)+p(i1+1,i2-1,i3,kd)+p(i1-1,i2-1,i3,
+     & kd)) )/(dx(0)**2*dx(1)**2)
+        pxxx23r(i1,i2,i3,kd)=(-2.*(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))+(
+     & p(i1+2,i2,i3,kd)-p(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        pyyy23r(i1,i2,i3,kd)=(-2.*(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))+(
+     & p(i1,i2+2,i3,kd)-p(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        pzzz23r(i1,i2,i3,kd)=(-2.*(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))+(
+     & p(i1,i2,i3+2,kd)-p(i1,i2,i3-2,kd)) )*h22(1)*h12(2)
+        pxxy23r(i1,i2,i3,kd)=( pxx22r(i1,i2+1,i3,kd)-pxx22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        pxyy23r(i1,i2,i3,kd)=( pyy22r(i1+1,i2,i3,kd)-pyy22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        pxxz23r(i1,i2,i3,kd)=( pxx22r(i1,i2,i3+1,kd)-pxx22r(i1,i2,i3-1,
+     & kd))/(2.*dx(2))
+        pyyz23r(i1,i2,i3,kd)=( pyy22r(i1,i2,i3+1,kd)-pyy22r(i1,i2,i3-1,
+     & kd))/(2.*dx(2))
+        pxzz23r(i1,i2,i3,kd)=( pzz22r(i1+1,i2,i3,kd)-pzz22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        pyzz23r(i1,i2,i3,kd)=( pzz22r(i1,i2+1,i3,kd)-pzz22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        pxxxx23r(i1,i2,i3,kd)=(6.*p(i1,i2,i3,kd)-4.*(p(i1+1,i2,i3,kd)+
+     & p(i1-1,i2,i3,kd))+(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)) )/(dx(0)*
+     & *4)
+        pyyyy23r(i1,i2,i3,kd)=(6.*p(i1,i2,i3,kd)-4.*(p(i1,i2+1,i3,kd)+
+     & p(i1,i2-1,i3,kd))+(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )/(dx(1)*
+     & *4)
+        pzzzz23r(i1,i2,i3,kd)=(6.*p(i1,i2,i3,kd)-4.*(p(i1,i2,i3+1,kd)+
+     & p(i1,i2,i3-1,kd))+(p(i1,i2,i3+2,kd)+p(i1,i2,i3-2,kd)) )/(dx(2)*
+     & *4)
+        pxxyy23r(i1,i2,i3,kd)=( 4.*p(i1,i2,i3,kd)     -2.*(p(i1+1,i2,
+     & i3,kd)+p(i1-1,i2,i3,kd)+p(i1,i2+1,i3,kd)+p(i1,i2-1,i3,kd))   + 
+     &   (p(i1+1,i2+1,i3,kd)+p(i1-1,i2+1,i3,kd)+p(i1+1,i2-1,i3,kd)+p(
+     & i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        pxxzz23r(i1,i2,i3,kd)=( 4.*p(i1,i2,i3,kd)     -2.*(p(i1+1,i2,
+     & i3,kd)+p(i1-1,i2,i3,kd)+p(i1,i2,i3+1,kd)+p(i1,i2,i3-1,kd))   + 
+     &   (p(i1+1,i2,i3+1,kd)+p(i1-1,i2,i3+1,kd)+p(i1+1,i2,i3-1,kd)+p(
+     & i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)
+        pyyzz23r(i1,i2,i3,kd)=( 4.*p(i1,i2,i3,kd)     -2.*(p(i1,i2+1,
+     & i3,kd)  +p(i1,i2-1,i3,kd)+  p(i1,i2  ,i3+1,kd)+p(i1,i2  ,i3-1,
+     & kd))   +   (p(i1,i2+1,i3+1,kd)+p(i1,i2-1,i3+1,kd)+p(i1,i2+1,i3-
+     & 1,kd)+p(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        ! 3D laplacian squared = p.xxxx + p.yyyy + p.zzzz + 2 (p.xxyy + p.xxzz + p.yyzz )
+        pLapSq23r(i1,i2,i3,kd)= ( 6.*p(i1,i2,i3,kd)   - 4.*(p(i1+1,i2,
+     & i3,kd)+p(i1-1,i2,i3,kd))    +(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)
+     & ) )/(dx(0)**4) +( 6.*p(i1,i2,i3,kd)    -4.*(p(i1,i2+1,i3,kd)+p(
+     & i1,i2-1,i3,kd))    +(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )/(dx(
+     & 1)**4)  +( 6.*p(i1,i2,i3,kd)    -4.*(p(i1,i2,i3+1,kd)+p(i1,i2,
+     & i3-1,kd))    +(p(i1,i2,i3+2,kd)+p(i1,i2,i3-2,kd)) )/(dx(2)**4) 
+     &  +( 8.*p(i1,i2,i3,kd)     -4.*(p(i1+1,i2,i3,kd)  +p(i1-1,i2,i3,
+     & kd)  +p(i1  ,i2+1,i3,kd)+p(i1  ,i2-1,i3,kd))   +2.*(p(i1+1,i2+
+     & 1,i3,kd)+p(i1-1,i2+1,i3,kd)+p(i1+1,i2-1,i3,kd)+p(i1-1,i2-1,i3,
+     & kd)) )/(dx(0)**2*dx(1)**2)+( 8.*p(i1,i2,i3,kd)     -4.*(p(i1+1,
+     & i2,i3,kd)  +p(i1-1,i2,i3,kd)  +p(i1  ,i2,i3+1,kd)+p(i1  ,i2,i3-
+     & 1,kd))   +2.*(p(i1+1,i2,i3+1,kd)+p(i1-1,i2,i3+1,kd)+p(i1+1,i2,
+     & i3-1,kd)+p(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)+( 8.*p(i1,
+     & i2,i3,kd)     -4.*(p(i1,i2+1,i3,kd)  +p(i1,i2-1,i3,kd)  +p(i1,
+     & i2  ,i3+1,kd)+p(i1,i2  ,i3-1,kd))   +2.*(p(i1,i2+1,i3+1,kd)+p(
+     & i1,i2-1,i3+1,kd)+p(i1,i2+1,i3-1,kd)+p(i1,i2-1,i3-1,kd)) )/(dx(
+     & 1)**2*dx(2)**2)
+        pr4(i1,i2,i3,kd)=(8.*(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))-(p(i1+
+     & 2,i2,i3,kd)-p(i1-2,i2,i3,kd)))*d14(0)
+        ps4(i1,i2,i3,kd)=(8.*(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))-(p(i1,
+     & i2+2,i3,kd)-p(i1,i2-2,i3,kd)))*d14(1)
+        pt4(i1,i2,i3,kd)=(8.*(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))-(p(i1,
+     & i2,i3+2,kd)-p(i1,i2,i3-2,kd)))*d14(2)
+        prr4(i1,i2,i3,kd)=(-30.*p(i1,i2,i3,kd)+16.*(p(i1+1,i2,i3,kd)+p(
+     & i1-1,i2,i3,kd))-(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)) )*d24(0)
+        pss4(i1,i2,i3,kd)=(-30.*p(i1,i2,i3,kd)+16.*(p(i1,i2+1,i3,kd)+p(
+     & i1,i2-1,i3,kd))-(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )*d24(1)
+        ptt4(i1,i2,i3,kd)=(-30.*p(i1,i2,i3,kd)+16.*(p(i1,i2,i3+1,kd)+p(
+     & i1,i2,i3-1,kd))-(p(i1,i2,i3+2,kd)+p(i1,i2,i3-2,kd)) )*d24(2)
+        prs4(i1,i2,i3,kd)=(8.*(pr4(i1,i2+1,i3,kd)-pr4(i1,i2-1,i3,kd))-(
+     & pr4(i1,i2+2,i3,kd)-pr4(i1,i2-2,i3,kd)))*d14(1)
+        prt4(i1,i2,i3,kd)=(8.*(pr4(i1,i2,i3+1,kd)-pr4(i1,i2,i3-1,kd))-(
+     & pr4(i1,i2,i3+2,kd)-pr4(i1,i2,i3-2,kd)))*d14(2)
+        pst4(i1,i2,i3,kd)=(8.*(ps4(i1,i2,i3+1,kd)-ps4(i1,i2,i3-1,kd))-(
+     & ps4(i1,i2,i3+2,kd)-ps4(i1,i2,i3-2,kd)))*d14(2)
+        px41(i1,i2,i3,kd)= rx(i1,i2,i3)*pr4(i1,i2,i3,kd)
+        py41(i1,i2,i3,kd)=0
+        pz41(i1,i2,i3,kd)=0
+        px42(i1,i2,i3,kd)= rx(i1,i2,i3)*pr4(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)
+        py42(i1,i2,i3,kd)= ry(i1,i2,i3)*pr4(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)
+        pz42(i1,i2,i3,kd)=0
+        px43(i1,i2,i3,kd)=rx(i1,i2,i3)*pr4(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+tx(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        py43(i1,i2,i3,kd)=ry(i1,i2,i3)*pr4(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+ty(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pz43(i1,i2,i3,kd)=rz(i1,i2,i3)*pr4(i1,i2,i3,kd)+sz(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+tz(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pxx41(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*prr4(i1,i2,i3,kd)+(rxx42(
+     & i1,i2,i3))*pr4(i1,i2,i3,kd)
+        pyy41(i1,i2,i3,kd)=0
+        pxy41(i1,i2,i3,kd)=0
+        pxz41(i1,i2,i3,kd)=0
+        pyz41(i1,i2,i3,kd)=0
+        pzz41(i1,i2,i3,kd)=0
+        plaplacian41(i1,i2,i3,kd)=pxx41(i1,i2,i3,kd)
+        pxx42(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*prr4(i1,i2,i3,kd)+2.*(rx(
+     & i1,i2,i3)*sx(i1,i2,i3))*prs4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2)*
+     & pss4(i1,i2,i3,kd)+(rxx42(i1,i2,i3))*pr4(i1,i2,i3,kd)+(sxx42(i1,
+     & i2,i3))*ps4(i1,i2,i3,kd)
+        pyy42(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*prr4(i1,i2,i3,kd)+2.*(ry(
+     & i1,i2,i3)*sy(i1,i2,i3))*prs4(i1,i2,i3,kd)+(sy(i1,i2,i3)**2)*
+     & pss4(i1,i2,i3,kd)+(ryy42(i1,i2,i3))*pr4(i1,i2,i3,kd)+(syy42(i1,
+     & i2,i3))*ps4(i1,i2,i3,kd)
+        pxy42(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*prr4(i1,i2,i3,kd)+
+     & (rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*prs4(i1,
+     & i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pss4(i1,i2,i3,kd)+rxy42(i1,
+     & i2,i3)*pr4(i1,i2,i3,kd)+sxy42(i1,i2,i3)*ps4(i1,i2,i3,kd)
+        pxz42(i1,i2,i3,kd)=0
+        pyz42(i1,i2,i3,kd)=0
+        pzz42(i1,i2,i3,kd)=0
+        plaplacian42(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & prr4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & sy(i1,i2,i3))*prs4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2)*pss4(i1,i2,i3,kd)+(rxx42(i1,i2,i3)+ryy42(i1,i2,i3))*pr4(i1,
+     & i2,i3,kd)+(sxx42(i1,i2,i3)+syy42(i1,i2,i3))*ps4(i1,i2,i3,kd)
+        pxx43(i1,i2,i3,kd)=rx(i1,i2,i3)**2*prr4(i1,i2,i3,kd)+sx(i1,i2,
+     & i3)**2*pss4(i1,i2,i3,kd)+tx(i1,i2,i3)**2*ptt4(i1,i2,i3,kd)+2.*
+     & rx(i1,i2,i3)*sx(i1,i2,i3)*prs4(i1,i2,i3,kd)+2.*rx(i1,i2,i3)*tx(
+     & i1,i2,i3)*prt4(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,i2,i3)*pst4(
+     & i1,i2,i3,kd)+rxx43(i1,i2,i3)*pr4(i1,i2,i3,kd)+sxx43(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+txx43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pyy43(i1,i2,i3,kd)=ry(i1,i2,i3)**2*prr4(i1,i2,i3,kd)+sy(i1,i2,
+     & i3)**2*pss4(i1,i2,i3,kd)+ty(i1,i2,i3)**2*ptt4(i1,i2,i3,kd)+2.*
+     & ry(i1,i2,i3)*sy(i1,i2,i3)*prs4(i1,i2,i3,kd)+2.*ry(i1,i2,i3)*ty(
+     & i1,i2,i3)*prt4(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,i2,i3)*pst4(
+     & i1,i2,i3,kd)+ryy43(i1,i2,i3)*pr4(i1,i2,i3,kd)+syy43(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+tyy43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pzz43(i1,i2,i3,kd)=rz(i1,i2,i3)**2*prr4(i1,i2,i3,kd)+sz(i1,i2,
+     & i3)**2*pss4(i1,i2,i3,kd)+tz(i1,i2,i3)**2*ptt4(i1,i2,i3,kd)+2.*
+     & rz(i1,i2,i3)*sz(i1,i2,i3)*prs4(i1,i2,i3,kd)+2.*rz(i1,i2,i3)*tz(
+     & i1,i2,i3)*prt4(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,i2,i3)*pst4(
+     & i1,i2,i3,kd)+rzz43(i1,i2,i3)*pr4(i1,i2,i3,kd)+szz43(i1,i2,i3)*
+     & ps4(i1,i2,i3,kd)+tzz43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pxy43(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*prr4(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sy(i1,i2,i3)*pss4(i1,i2,i3,kd)+tx(i1,i2,i3)*ty(i1,
+     & i2,i3)*ptt4(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,
+     & i3)*sx(i1,i2,i3))*prs4(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(i1,i2,i3)+
+     & ry(i1,i2,i3)*tx(i1,i2,i3))*prt4(i1,i2,i3,kd)+(sx(i1,i2,i3)*ty(
+     & i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*pst4(i1,i2,i3,kd)+rxy43(
+     & i1,i2,i3)*pr4(i1,i2,i3,kd)+sxy43(i1,i2,i3)*ps4(i1,i2,i3,kd)+
+     & txy43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pxz43(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*prr4(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sz(i1,i2,i3)*pss4(i1,i2,i3,kd)+tx(i1,i2,i3)*tz(i1,
+     & i2,i3)*ptt4(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sx(i1,i2,i3))*prs4(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*tx(i1,i2,i3))*prt4(i1,i2,i3,kd)+(sx(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*pst4(i1,i2,i3,kd)+rxz43(
+     & i1,i2,i3)*pr4(i1,i2,i3,kd)+sxz43(i1,i2,i3)*ps4(i1,i2,i3,kd)+
+     & txz43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        pyz43(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*prr4(i1,i2,i3,kd)+
+     & sy(i1,i2,i3)*sz(i1,i2,i3)*pss4(i1,i2,i3,kd)+ty(i1,i2,i3)*tz(i1,
+     & i2,i3)*ptt4(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sy(i1,i2,i3))*prs4(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*ty(i1,i2,i3))*prt4(i1,i2,i3,kd)+(sy(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*pst4(i1,i2,i3,kd)+ryz43(
+     & i1,i2,i3)*pr4(i1,i2,i3,kd)+syz43(i1,i2,i3)*ps4(i1,i2,i3,kd)+
+     & tyz43(i1,i2,i3)*pt4(i1,i2,i3,kd)
+        plaplacian43(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(
+     & i1,i2,i3)**2)*prr4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2+sz(i1,i2,i3)**2)*pss4(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,i2,
+     & i3)**2+tz(i1,i2,i3)**2)*ptt4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(
+     & i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,i3))
+     & *prs4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*prt4(i1,i2,i3,kd)+2.*(
+     & sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+sz(i1,i2,
+     & i3)*tz(i1,i2,i3))*pst4(i1,i2,i3,kd)+(rxx43(i1,i2,i3)+ryy43(i1,
+     & i2,i3)+rzz43(i1,i2,i3))*pr4(i1,i2,i3,kd)+(sxx43(i1,i2,i3)+
+     & syy43(i1,i2,i3)+szz43(i1,i2,i3))*ps4(i1,i2,i3,kd)+(txx43(i1,i2,
+     & i3)+tyy43(i1,i2,i3)+tzz43(i1,i2,i3))*pt4(i1,i2,i3,kd)
+c============================================================================================
+c Define derivatives for a rectangular grid
+c
+c============================================================================================
+        px43r(i1,i2,i3,kd)=(8.*(p(i1+1,i2,i3,kd)-p(i1-1,i2,i3,kd))-(p(
+     & i1+2,i2,i3,kd)-p(i1-2,i2,i3,kd)))*h41(0)
+        py43r(i1,i2,i3,kd)=(8.*(p(i1,i2+1,i3,kd)-p(i1,i2-1,i3,kd))-(p(
+     & i1,i2+2,i3,kd)-p(i1,i2-2,i3,kd)))*h41(1)
+        pz43r(i1,i2,i3,kd)=(8.*(p(i1,i2,i3+1,kd)-p(i1,i2,i3-1,kd))-(p(
+     & i1,i2,i3+2,kd)-p(i1,i2,i3-2,kd)))*h41(2)
+        pxx43r(i1,i2,i3,kd)=( -30.*p(i1,i2,i3,kd)+16.*(p(i1+1,i2,i3,kd)
+     & +p(i1-1,i2,i3,kd))-(p(i1+2,i2,i3,kd)+p(i1-2,i2,i3,kd)) )*h42(0)
+        pyy43r(i1,i2,i3,kd)=( -30.*p(i1,i2,i3,kd)+16.*(p(i1,i2+1,i3,kd)
+     & +p(i1,i2-1,i3,kd))-(p(i1,i2+2,i3,kd)+p(i1,i2-2,i3,kd)) )*h42(1)
+        pzz43r(i1,i2,i3,kd)=( -30.*p(i1,i2,i3,kd)+16.*(p(i1,i2,i3+1,kd)
+     & +p(i1,i2,i3-1,kd))-(p(i1,i2,i3+2,kd)+p(i1,i2,i3-2,kd)) )*h42(2)
+        pxy43r(i1,i2,i3,kd)=( (p(i1+2,i2+2,i3,kd)-p(i1-2,i2+2,i3,kd)- 
+     & p(i1+2,i2-2,i3,kd)+p(i1-2,i2-2,i3,kd)) +8.*(p(i1-1,i2+2,i3,kd)-
+     & p(i1-1,i2-2,i3,kd)-p(i1+1,i2+2,i3,kd)+p(i1+1,i2-2,i3,kd) +p(i1+
+     & 2,i2-1,i3,kd)-p(i1-2,i2-1,i3,kd)-p(i1+2,i2+1,i3,kd)+p(i1-2,i2+
+     & 1,i3,kd))+64.*(p(i1+1,i2+1,i3,kd)-p(i1-1,i2+1,i3,kd)- p(i1+1,
+     & i2-1,i3,kd)+p(i1-1,i2-1,i3,kd)))*(h41(0)*h41(1))
+        pxz43r(i1,i2,i3,kd)=( (p(i1+2,i2,i3+2,kd)-p(i1-2,i2,i3+2,kd)-p(
+     & i1+2,i2,i3-2,kd)+p(i1-2,i2,i3-2,kd)) +8.*(p(i1-1,i2,i3+2,kd)-p(
+     & i1-1,i2,i3-2,kd)-p(i1+1,i2,i3+2,kd)+p(i1+1,i2,i3-2,kd) +p(i1+2,
+     & i2,i3-1,kd)-p(i1-2,i2,i3-1,kd)- p(i1+2,i2,i3+1,kd)+p(i1-2,i2,
+     & i3+1,kd)) +64.*(p(i1+1,i2,i3+1,kd)-p(i1-1,i2,i3+1,kd)-p(i1+1,
+     & i2,i3-1,kd)+p(i1-1,i2,i3-1,kd)) )*(h41(0)*h41(2))
+        pyz43r(i1,i2,i3,kd)=( (p(i1,i2+2,i3+2,kd)-p(i1,i2-2,i3+2,kd)-p(
+     & i1,i2+2,i3-2,kd)+p(i1,i2-2,i3-2,kd)) +8.*(p(i1,i2-1,i3+2,kd)-p(
+     & i1,i2-1,i3-2,kd)-p(i1,i2+1,i3+2,kd)+p(i1,i2+1,i3-2,kd) +p(i1,
+     & i2+2,i3-1,kd)-p(i1,i2-2,i3-1,kd)-p(i1,i2+2,i3+1,kd)+p(i1,i2-2,
+     & i3+1,kd)) +64.*(p(i1,i2+1,i3+1,kd)-p(i1,i2-1,i3+1,kd)-p(i1,i2+
+     & 1,i3-1,kd)+p(i1,i2-1,i3-1,kd)) )*(h41(1)*h41(2))
+        px41r(i1,i2,i3,kd)= px43r(i1,i2,i3,kd)
+        py41r(i1,i2,i3,kd)= py43r(i1,i2,i3,kd)
+        pz41r(i1,i2,i3,kd)= pz43r(i1,i2,i3,kd)
+        pxx41r(i1,i2,i3,kd)= pxx43r(i1,i2,i3,kd)
+        pyy41r(i1,i2,i3,kd)= pyy43r(i1,i2,i3,kd)
+        pzz41r(i1,i2,i3,kd)= pzz43r(i1,i2,i3,kd)
+        pxy41r(i1,i2,i3,kd)= pxy43r(i1,i2,i3,kd)
+        pxz41r(i1,i2,i3,kd)= pxz43r(i1,i2,i3,kd)
+        pyz41r(i1,i2,i3,kd)= pyz43r(i1,i2,i3,kd)
+        plaplacian41r(i1,i2,i3,kd)=pxx43r(i1,i2,i3,kd)
+        px42r(i1,i2,i3,kd)= px43r(i1,i2,i3,kd)
+        py42r(i1,i2,i3,kd)= py43r(i1,i2,i3,kd)
+        pz42r(i1,i2,i3,kd)= pz43r(i1,i2,i3,kd)
+        pxx42r(i1,i2,i3,kd)= pxx43r(i1,i2,i3,kd)
+        pyy42r(i1,i2,i3,kd)= pyy43r(i1,i2,i3,kd)
+        pzz42r(i1,i2,i3,kd)= pzz43r(i1,i2,i3,kd)
+        pxy42r(i1,i2,i3,kd)= pxy43r(i1,i2,i3,kd)
+        pxz42r(i1,i2,i3,kd)= pxz43r(i1,i2,i3,kd)
+        pyz42r(i1,i2,i3,kd)= pyz43r(i1,i2,i3,kd)
+        plaplacian42r(i1,i2,i3,kd)=pxx43r(i1,i2,i3,kd)+pyy43r(i1,i2,i3,
+     & kd)
+        plaplacian43r(i1,i2,i3,kd)=pxx43r(i1,i2,i3,kd)+pyy43r(i1,i2,i3,
+     & kd)+pzz43r(i1,i2,i3,kd)
+        pmr2(i1,i2,i3,kd)=(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd))*d12(0)
+        pms2(i1,i2,i3,kd)=(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd))*d12(1)
+        pmt2(i1,i2,i3,kd)=(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd))*d12(2)
+        pmrr2(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1+1,i2,i3,kd)+pm(
+     & i1-1,i2,i3,kd)) )*d22(0)
+        pmss2(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1,i2+1,i3,kd)+pm(
+     & i1,i2-1,i3,kd)) )*d22(1)
+        pmrs2(i1,i2,i3,kd)=(pmr2(i1,i2+1,i3,kd)-pmr2(i1,i2-1,i3,kd))*
+     & d12(1)
+        pmtt2(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1,i2,i3+1,kd)+pm(
+     & i1,i2,i3-1,kd)) )*d22(2)
+        pmrt2(i1,i2,i3,kd)=(pmr2(i1,i2,i3+1,kd)-pmr2(i1,i2,i3-1,kd))*
+     & d12(2)
+        pmst2(i1,i2,i3,kd)=(pms2(i1,i2,i3+1,kd)-pms2(i1,i2,i3-1,kd))*
+     & d12(2)
+        pmrrr2(i1,i2,i3,kd)=(-2.*(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd))+
+     & (pm(i1+2,i2,i3,kd)-pm(i1-2,i2,i3,kd)) )*d22(0)*d12(0)
+        pmsss2(i1,i2,i3,kd)=(-2.*(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd))+
+     & (pm(i1,i2+2,i3,kd)-pm(i1,i2-2,i3,kd)) )*d22(1)*d12(1)
+        pmttt2(i1,i2,i3,kd)=(-2.*(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd))+
+     & (pm(i1,i2,i3+2,kd)-pm(i1,i2,i3-2,kd)) )*d22(2)*d12(2)
+        pmx21(i1,i2,i3,kd)= rx(i1,i2,i3)*pmr2(i1,i2,i3,kd)
+        pmy21(i1,i2,i3,kd)=0
+        pmz21(i1,i2,i3,kd)=0
+        pmx22(i1,i2,i3,kd)= rx(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sx(i1,i2,i3)
+     & *pms2(i1,i2,i3,kd)
+        pmy22(i1,i2,i3,kd)= ry(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sy(i1,i2,i3)
+     & *pms2(i1,i2,i3,kd)
+        pmz22(i1,i2,i3,kd)=0
+        pmx23(i1,i2,i3,kd)=rx(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & pms2(i1,i2,i3,kd)+tx(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmy23(i1,i2,i3,kd)=ry(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & pms2(i1,i2,i3,kd)+ty(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmz23(i1,i2,i3,kd)=rz(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sz(i1,i2,i3)*
+     & pms2(i1,i2,i3,kd)+tz(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmxx21(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*pmrr2(i1,i2,i3,kd)+(
+     & rxx22(i1,i2,i3))*pmr2(i1,i2,i3,kd)
+        pmyy21(i1,i2,i3,kd)=0
+        pmxy21(i1,i2,i3,kd)=0
+        pmxz21(i1,i2,i3,kd)=0
+        pmyz21(i1,i2,i3,kd)=0
+        pmzz21(i1,i2,i3,kd)=0
+        pmlaplacian21(i1,i2,i3,kd)=pmxx21(i1,i2,i3,kd)
+        pmxx22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*pmrr2(i1,i2,i3,kd)+2.*(
+     & rx(i1,i2,i3)*sx(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2)
+     & *pmss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3))*pmr2(i1,i2,i3,kd)+(sxx22(
+     & i1,i2,i3))*pms2(i1,i2,i3,kd)
+        pmyy22(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*pmrr2(i1,i2,i3,kd)+2.*(
+     & ry(i1,i2,i3)*sy(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(sy(i1,i2,i3)**2)
+     & *pmss2(i1,i2,i3,kd)+(ryy22(i1,i2,i3))*pmr2(i1,i2,i3,kd)+(syy22(
+     & i1,i2,i3))*pms2(i1,i2,i3,kd)
+        pmxy22(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*pmrr2(i1,i2,i3,
+     & kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*
+     & pmrs2(i1,i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pmss2(i1,i2,i3,kd)
+     & +rxy22(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sxy22(i1,i2,i3)*pms2(i1,i2,
+     & i3,kd)
+        pmxz22(i1,i2,i3,kd)=0
+        pmyz22(i1,i2,i3,kd)=0
+        pmzz22(i1,i2,i3,kd)=0
+        pmlaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & pmrr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & sy(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)*
+     & *2)*pmss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*pmr2(
+     & i1,i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*pms2(i1,i2,i3,
+     & kd)
+        pmxx23(i1,i2,i3,kd)=rx(i1,i2,i3)**2*pmrr2(i1,i2,i3,kd)+sx(i1,
+     & i2,i3)**2*pmss2(i1,i2,i3,kd)+tx(i1,i2,i3)**2*pmtt2(i1,i2,i3,kd)
+     & +2.*rx(i1,i2,i3)*sx(i1,i2,i3)*pmrs2(i1,i2,i3,kd)+2.*rx(i1,i2,
+     & i3)*tx(i1,i2,i3)*pmrt2(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,i2,
+     & i3)*pmst2(i1,i2,i3,kd)+rxx23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sxx23(
+     & i1,i2,i3)*pms2(i1,i2,i3,kd)+txx23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmyy23(i1,i2,i3,kd)=ry(i1,i2,i3)**2*pmrr2(i1,i2,i3,kd)+sy(i1,
+     & i2,i3)**2*pmss2(i1,i2,i3,kd)+ty(i1,i2,i3)**2*pmtt2(i1,i2,i3,kd)
+     & +2.*ry(i1,i2,i3)*sy(i1,i2,i3)*pmrs2(i1,i2,i3,kd)+2.*ry(i1,i2,
+     & i3)*ty(i1,i2,i3)*pmrt2(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,i2,
+     & i3)*pmst2(i1,i2,i3,kd)+ryy23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+syy23(
+     & i1,i2,i3)*pms2(i1,i2,i3,kd)+tyy23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmzz23(i1,i2,i3,kd)=rz(i1,i2,i3)**2*pmrr2(i1,i2,i3,kd)+sz(i1,
+     & i2,i3)**2*pmss2(i1,i2,i3,kd)+tz(i1,i2,i3)**2*pmtt2(i1,i2,i3,kd)
+     & +2.*rz(i1,i2,i3)*sz(i1,i2,i3)*pmrs2(i1,i2,i3,kd)+2.*rz(i1,i2,
+     & i3)*tz(i1,i2,i3)*pmrt2(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,i2,
+     & i3)*pmst2(i1,i2,i3,kd)+rzz23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+szz23(
+     & i1,i2,i3)*pms2(i1,i2,i3,kd)+tzz23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmxy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*pmrr2(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pmss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & ty(i1,i2,i3)*pmtt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(
+     & i1,i2,i3)*sx(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(i1,
+     & i2,i3)+ry(i1,i2,i3)*tx(i1,i2,i3))*pmrt2(i1,i2,i3,kd)+(sx(i1,i2,
+     & i3)*ty(i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*pmst2(i1,i2,i3,kd)+
+     & rxy23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sxy23(i1,i2,i3)*pms2(i1,i2,
+     & i3,kd)+txy23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmxz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*pmrr2(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sz(i1,i2,i3)*pmss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & tz(i1,i2,i3)*pmtt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sx(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,
+     & i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*pmrt2(i1,i2,i3,kd)+(sx(i1,i2,
+     & i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*pmst2(i1,i2,i3,kd)+
+     & rxz23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*pms2(i1,i2,
+     & i3,kd)+txz23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmyz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*pmrr2(i1,i2,i3,
+     & kd)+sy(i1,i2,i3)*sz(i1,i2,i3)*pmss2(i1,i2,i3,kd)+ty(i1,i2,i3)*
+     & tz(i1,i2,i3)*pmtt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sy(i1,i2,i3))*pmrs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,
+     & i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*pmrt2(i1,i2,i3,kd)+(sy(i1,i2,
+     & i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*pmst2(i1,i2,i3,kd)+
+     & ryz23(i1,i2,i3)*pmr2(i1,i2,i3,kd)+syz23(i1,i2,i3)*pms2(i1,i2,
+     & i3,kd)+tyz23(i1,i2,i3)*pmt2(i1,i2,i3,kd)
+        pmlaplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(
+     & i1,i2,i3)**2)*pmrr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)*
+     & *2+sz(i1,i2,i3)**2)*pmss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,
+     & i2,i3)**2+tz(i1,i2,i3)**2)*pmtt2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*
+     & sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,
+     & i3))*pmrs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,
+     & i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*pmrt2(i1,i2,i3,
+     & kd)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+
+     & sz(i1,i2,i3)*tz(i1,i2,i3))*pmst2(i1,i2,i3,kd)+(rxx23(i1,i2,i3)+
+     & ryy23(i1,i2,i3)+rzz23(i1,i2,i3))*pmr2(i1,i2,i3,kd)+(sxx23(i1,
+     & i2,i3)+syy23(i1,i2,i3)+szz23(i1,i2,i3))*pms2(i1,i2,i3,kd)+(
+     & txx23(i1,i2,i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*pmt2(i1,i2,i3,
+     & kd)
+c============================================================================================
+c Define derivatives for a rectangular grid
+c
+c============================================================================================
+        pmx23r(i1,i2,i3,kd)=(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd))*h12(
+     & 0)
+        pmy23r(i1,i2,i3,kd)=(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd))*h12(
+     & 1)
+        pmz23r(i1,i2,i3,kd)=(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd))*h12(
+     & 2)
+        pmxx23r(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1+1,i2,i3,kd)+
+     & pm(i1-1,i2,i3,kd)) )*h22(0)
+        pmyy23r(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1,i2+1,i3,kd)+
+     & pm(i1,i2-1,i3,kd)) )*h22(1)
+        pmxy23r(i1,i2,i3,kd)=(pmx23r(i1,i2+1,i3,kd)-pmx23r(i1,i2-1,i3,
+     & kd))*h12(1)
+        pmzz23r(i1,i2,i3,kd)=(-2.*pm(i1,i2,i3,kd)+(pm(i1,i2,i3+1,kd)+
+     & pm(i1,i2,i3-1,kd)) )*h22(2)
+        pmxz23r(i1,i2,i3,kd)=(pmx23r(i1,i2,i3+1,kd)-pmx23r(i1,i2,i3-1,
+     & kd))*h12(2)
+        pmyz23r(i1,i2,i3,kd)=(pmy23r(i1,i2,i3+1,kd)-pmy23r(i1,i2,i3-1,
+     & kd))*h12(2)
+        pmx21r(i1,i2,i3,kd)= pmx23r(i1,i2,i3,kd)
+        pmy21r(i1,i2,i3,kd)= pmy23r(i1,i2,i3,kd)
+        pmz21r(i1,i2,i3,kd)= pmz23r(i1,i2,i3,kd)
+        pmxx21r(i1,i2,i3,kd)= pmxx23r(i1,i2,i3,kd)
+        pmyy21r(i1,i2,i3,kd)= pmyy23r(i1,i2,i3,kd)
+        pmzz21r(i1,i2,i3,kd)= pmzz23r(i1,i2,i3,kd)
+        pmxy21r(i1,i2,i3,kd)= pmxy23r(i1,i2,i3,kd)
+        pmxz21r(i1,i2,i3,kd)= pmxz23r(i1,i2,i3,kd)
+        pmyz21r(i1,i2,i3,kd)= pmyz23r(i1,i2,i3,kd)
+        pmlaplacian21r(i1,i2,i3,kd)=pmxx23r(i1,i2,i3,kd)
+        pmx22r(i1,i2,i3,kd)= pmx23r(i1,i2,i3,kd)
+        pmy22r(i1,i2,i3,kd)= pmy23r(i1,i2,i3,kd)
+        pmz22r(i1,i2,i3,kd)= pmz23r(i1,i2,i3,kd)
+        pmxx22r(i1,i2,i3,kd)= pmxx23r(i1,i2,i3,kd)
+        pmyy22r(i1,i2,i3,kd)= pmyy23r(i1,i2,i3,kd)
+        pmzz22r(i1,i2,i3,kd)= pmzz23r(i1,i2,i3,kd)
+        pmxy22r(i1,i2,i3,kd)= pmxy23r(i1,i2,i3,kd)
+        pmxz22r(i1,i2,i3,kd)= pmxz23r(i1,i2,i3,kd)
+        pmyz22r(i1,i2,i3,kd)= pmyz23r(i1,i2,i3,kd)
+        pmlaplacian22r(i1,i2,i3,kd)=pmxx23r(i1,i2,i3,kd)+pmyy23r(i1,i2,
+     & i3,kd)
+        pmlaplacian23r(i1,i2,i3,kd)=pmxx23r(i1,i2,i3,kd)+pmyy23r(i1,i2,
+     & i3,kd)+pmzz23r(i1,i2,i3,kd)
+        pmxxx22r(i1,i2,i3,kd)=(-2.*(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd)
+     & )+(pm(i1+2,i2,i3,kd)-pm(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        pmyyy22r(i1,i2,i3,kd)=(-2.*(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd)
+     & )+(pm(i1,i2+2,i3,kd)-pm(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        pmxxy22r(i1,i2,i3,kd)=( pmxx22r(i1,i2+1,i3,kd)-pmxx22r(i1,i2-1,
+     & i3,kd))/(2.*dx(1))
+        pmxyy22r(i1,i2,i3,kd)=( pmyy22r(i1+1,i2,i3,kd)-pmyy22r(i1-1,i2,
+     & i3,kd))/(2.*dx(0))
+        pmxxxx22r(i1,i2,i3,kd)=(6.*pm(i1,i2,i3,kd)-4.*(pm(i1+1,i2,i3,
+     & kd)+pm(i1-1,i2,i3,kd))+(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,i3,kd)) )
+     & /(dx(0)**4)
+        pmyyyy22r(i1,i2,i3,kd)=(6.*pm(i1,i2,i3,kd)-4.*(pm(i1,i2+1,i3,
+     & kd)+pm(i1,i2-1,i3,kd))+(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,kd)) )
+     & /(dx(1)**4)
+        pmxxyy22r(i1,i2,i3,kd)=( 4.*pm(i1,i2,i3,kd)     -2.*(pm(i1+1,
+     & i2,i3,kd)+pm(i1-1,i2,i3,kd)+pm(i1,i2+1,i3,kd)+pm(i1,i2-1,i3,kd)
+     & )   +   (pm(i1+1,i2+1,i3,kd)+pm(i1-1,i2+1,i3,kd)+pm(i1+1,i2-1,
+     & i3,kd)+pm(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        ! 2D laplacian squared = pm.xxxx + 2 pm.xxyy + pm.yyyy
+        pmLapSq22r(i1,i2,i3,kd)= ( 6.*pm(i1,i2,i3,kd)   - 4.*(pm(i1+1,
+     & i2,i3,kd)+pm(i1-1,i2,i3,kd))    +(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,
+     & i3,kd)) )/(dx(0)**4) +( 6.*pm(i1,i2,i3,kd)    -4.*(pm(i1,i2+1,
+     & i3,kd)+pm(i1,i2-1,i3,kd))    +(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,
+     & kd)) )/(dx(1)**4)  +( 8.*pm(i1,i2,i3,kd)     -4.*(pm(i1+1,i2,
+     & i3,kd)+pm(i1-1,i2,i3,kd)+pm(i1,i2+1,i3,kd)+pm(i1,i2-1,i3,kd))  
+     &  +2.*(pm(i1+1,i2+1,i3,kd)+pm(i1-1,i2+1,i3,kd)+pm(i1+1,i2-1,i3,
+     & kd)+pm(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        pmxxx23r(i1,i2,i3,kd)=(-2.*(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd)
+     & )+(pm(i1+2,i2,i3,kd)-pm(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        pmyyy23r(i1,i2,i3,kd)=(-2.*(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd)
+     & )+(pm(i1,i2+2,i3,kd)-pm(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        pmzzz23r(i1,i2,i3,kd)=(-2.*(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd)
+     & )+(pm(i1,i2,i3+2,kd)-pm(i1,i2,i3-2,kd)) )*h22(1)*h12(2)
+        pmxxy23r(i1,i2,i3,kd)=( pmxx22r(i1,i2+1,i3,kd)-pmxx22r(i1,i2-1,
+     & i3,kd))/(2.*dx(1))
+        pmxyy23r(i1,i2,i3,kd)=( pmyy22r(i1+1,i2,i3,kd)-pmyy22r(i1-1,i2,
+     & i3,kd))/(2.*dx(0))
+        pmxxz23r(i1,i2,i3,kd)=( pmxx22r(i1,i2,i3+1,kd)-pmxx22r(i1,i2,
+     & i3-1,kd))/(2.*dx(2))
+        pmyyz23r(i1,i2,i3,kd)=( pmyy22r(i1,i2,i3+1,kd)-pmyy22r(i1,i2,
+     & i3-1,kd))/(2.*dx(2))
+        pmxzz23r(i1,i2,i3,kd)=( pmzz22r(i1+1,i2,i3,kd)-pmzz22r(i1-1,i2,
+     & i3,kd))/(2.*dx(0))
+        pmyzz23r(i1,i2,i3,kd)=( pmzz22r(i1,i2+1,i3,kd)-pmzz22r(i1,i2-1,
+     & i3,kd))/(2.*dx(1))
+        pmxxxx23r(i1,i2,i3,kd)=(6.*pm(i1,i2,i3,kd)-4.*(pm(i1+1,i2,i3,
+     & kd)+pm(i1-1,i2,i3,kd))+(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,i3,kd)) )
+     & /(dx(0)**4)
+        pmyyyy23r(i1,i2,i3,kd)=(6.*pm(i1,i2,i3,kd)-4.*(pm(i1,i2+1,i3,
+     & kd)+pm(i1,i2-1,i3,kd))+(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,kd)) )
+     & /(dx(1)**4)
+        pmzzzz23r(i1,i2,i3,kd)=(6.*pm(i1,i2,i3,kd)-4.*(pm(i1,i2,i3+1,
+     & kd)+pm(i1,i2,i3-1,kd))+(pm(i1,i2,i3+2,kd)+pm(i1,i2,i3-2,kd)) )
+     & /(dx(2)**4)
+        pmxxyy23r(i1,i2,i3,kd)=( 4.*pm(i1,i2,i3,kd)     -2.*(pm(i1+1,
+     & i2,i3,kd)+pm(i1-1,i2,i3,kd)+pm(i1,i2+1,i3,kd)+pm(i1,i2-1,i3,kd)
+     & )   +   (pm(i1+1,i2+1,i3,kd)+pm(i1-1,i2+1,i3,kd)+pm(i1+1,i2-1,
+     & i3,kd)+pm(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        pmxxzz23r(i1,i2,i3,kd)=( 4.*pm(i1,i2,i3,kd)     -2.*(pm(i1+1,
+     & i2,i3,kd)+pm(i1-1,i2,i3,kd)+pm(i1,i2,i3+1,kd)+pm(i1,i2,i3-1,kd)
+     & )   +   (pm(i1+1,i2,i3+1,kd)+pm(i1-1,i2,i3+1,kd)+pm(i1+1,i2,i3-
+     & 1,kd)+pm(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)
+        pmyyzz23r(i1,i2,i3,kd)=( 4.*pm(i1,i2,i3,kd)     -2.*(pm(i1,i2+
+     & 1,i3,kd)  +pm(i1,i2-1,i3,kd)+  pm(i1,i2  ,i3+1,kd)+pm(i1,i2  ,
+     & i3-1,kd))   +   (pm(i1,i2+1,i3+1,kd)+pm(i1,i2-1,i3+1,kd)+pm(i1,
+     & i2+1,i3-1,kd)+pm(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        ! 3D laplacian squared = pm.xxxx + pm.yyyy + pm.zzzz + 2 (pm.xxyy + pm.xxzz + pm.yyzz )
+        pmLapSq23r(i1,i2,i3,kd)= ( 6.*pm(i1,i2,i3,kd)   - 4.*(pm(i1+1,
+     & i2,i3,kd)+pm(i1-1,i2,i3,kd))    +(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,
+     & i3,kd)) )/(dx(0)**4) +( 6.*pm(i1,i2,i3,kd)    -4.*(pm(i1,i2+1,
+     & i3,kd)+pm(i1,i2-1,i3,kd))    +(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,
+     & kd)) )/(dx(1)**4)  +( 6.*pm(i1,i2,i3,kd)    -4.*(pm(i1,i2,i3+1,
+     & kd)+pm(i1,i2,i3-1,kd))    +(pm(i1,i2,i3+2,kd)+pm(i1,i2,i3-2,kd)
+     & ) )/(dx(2)**4)  +( 8.*pm(i1,i2,i3,kd)     -4.*(pm(i1+1,i2,i3,
+     & kd)  +pm(i1-1,i2,i3,kd)  +pm(i1  ,i2+1,i3,kd)+pm(i1  ,i2-1,i3,
+     & kd))   +2.*(pm(i1+1,i2+1,i3,kd)+pm(i1-1,i2+1,i3,kd)+pm(i1+1,i2-
+     & 1,i3,kd)+pm(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)+( 8.*pm(i1,
+     & i2,i3,kd)     -4.*(pm(i1+1,i2,i3,kd)  +pm(i1-1,i2,i3,kd)  +pm(
+     & i1  ,i2,i3+1,kd)+pm(i1  ,i2,i3-1,kd))   +2.*(pm(i1+1,i2,i3+1,
+     & kd)+pm(i1-1,i2,i3+1,kd)+pm(i1+1,i2,i3-1,kd)+pm(i1-1,i2,i3-1,kd)
+     & ) )/(dx(0)**2*dx(2)**2)+( 8.*pm(i1,i2,i3,kd)     -4.*(pm(i1,i2+
+     & 1,i3,kd)  +pm(i1,i2-1,i3,kd)  +pm(i1,i2  ,i3+1,kd)+pm(i1,i2  ,
+     & i3-1,kd))   +2.*(pm(i1,i2+1,i3+1,kd)+pm(i1,i2-1,i3+1,kd)+pm(i1,
+     & i2+1,i3-1,kd)+pm(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        pmr4(i1,i2,i3,kd)=(8.*(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd))-(
+     & pm(i1+2,i2,i3,kd)-pm(i1-2,i2,i3,kd)))*d14(0)
+        pms4(i1,i2,i3,kd)=(8.*(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd))-(
+     & pm(i1,i2+2,i3,kd)-pm(i1,i2-2,i3,kd)))*d14(1)
+        pmt4(i1,i2,i3,kd)=(8.*(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd))-(
+     & pm(i1,i2,i3+2,kd)-pm(i1,i2,i3-2,kd)))*d14(2)
+        pmrr4(i1,i2,i3,kd)=(-30.*pm(i1,i2,i3,kd)+16.*(pm(i1+1,i2,i3,kd)
+     & +pm(i1-1,i2,i3,kd))-(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,i3,kd)) )*
+     & d24(0)
+        pmss4(i1,i2,i3,kd)=(-30.*pm(i1,i2,i3,kd)+16.*(pm(i1,i2+1,i3,kd)
+     & +pm(i1,i2-1,i3,kd))-(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,kd)) )*
+     & d24(1)
+        pmtt4(i1,i2,i3,kd)=(-30.*pm(i1,i2,i3,kd)+16.*(pm(i1,i2,i3+1,kd)
+     & +pm(i1,i2,i3-1,kd))-(pm(i1,i2,i3+2,kd)+pm(i1,i2,i3-2,kd)) )*
+     & d24(2)
+        pmrs4(i1,i2,i3,kd)=(8.*(pmr4(i1,i2+1,i3,kd)-pmr4(i1,i2-1,i3,kd)
+     & )-(pmr4(i1,i2+2,i3,kd)-pmr4(i1,i2-2,i3,kd)))*d14(1)
+        pmrt4(i1,i2,i3,kd)=(8.*(pmr4(i1,i2,i3+1,kd)-pmr4(i1,i2,i3-1,kd)
+     & )-(pmr4(i1,i2,i3+2,kd)-pmr4(i1,i2,i3-2,kd)))*d14(2)
+        pmst4(i1,i2,i3,kd)=(8.*(pms4(i1,i2,i3+1,kd)-pms4(i1,i2,i3-1,kd)
+     & )-(pms4(i1,i2,i3+2,kd)-pms4(i1,i2,i3-2,kd)))*d14(2)
+        pmx41(i1,i2,i3,kd)= rx(i1,i2,i3)*pmr4(i1,i2,i3,kd)
+        pmy41(i1,i2,i3,kd)=0
+        pmz41(i1,i2,i3,kd)=0
+        pmx42(i1,i2,i3,kd)= rx(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sx(i1,i2,i3)
+     & *pms4(i1,i2,i3,kd)
+        pmy42(i1,i2,i3,kd)= ry(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sy(i1,i2,i3)
+     & *pms4(i1,i2,i3,kd)
+        pmz42(i1,i2,i3,kd)=0
+        pmx43(i1,i2,i3,kd)=rx(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & pms4(i1,i2,i3,kd)+tx(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmy43(i1,i2,i3,kd)=ry(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & pms4(i1,i2,i3,kd)+ty(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmz43(i1,i2,i3,kd)=rz(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sz(i1,i2,i3)*
+     & pms4(i1,i2,i3,kd)+tz(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmxx41(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*pmrr4(i1,i2,i3,kd)+(
+     & rxx42(i1,i2,i3))*pmr4(i1,i2,i3,kd)
+        pmyy41(i1,i2,i3,kd)=0
+        pmxy41(i1,i2,i3,kd)=0
+        pmxz41(i1,i2,i3,kd)=0
+        pmyz41(i1,i2,i3,kd)=0
+        pmzz41(i1,i2,i3,kd)=0
+        pmlaplacian41(i1,i2,i3,kd)=pmxx41(i1,i2,i3,kd)
+        pmxx42(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*pmrr4(i1,i2,i3,kd)+2.*(
+     & rx(i1,i2,i3)*sx(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2)
+     & *pmss4(i1,i2,i3,kd)+(rxx42(i1,i2,i3))*pmr4(i1,i2,i3,kd)+(sxx42(
+     & i1,i2,i3))*pms4(i1,i2,i3,kd)
+        pmyy42(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*pmrr4(i1,i2,i3,kd)+2.*(
+     & ry(i1,i2,i3)*sy(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(sy(i1,i2,i3)**2)
+     & *pmss4(i1,i2,i3,kd)+(ryy42(i1,i2,i3))*pmr4(i1,i2,i3,kd)+(syy42(
+     & i1,i2,i3))*pms4(i1,i2,i3,kd)
+        pmxy42(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*pmrr4(i1,i2,i3,
+     & kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*
+     & pmrs4(i1,i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pmss4(i1,i2,i3,kd)
+     & +rxy42(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sxy42(i1,i2,i3)*pms4(i1,i2,
+     & i3,kd)
+        pmxz42(i1,i2,i3,kd)=0
+        pmyz42(i1,i2,i3,kd)=0
+        pmzz42(i1,i2,i3,kd)=0
+        pmlaplacian42(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & pmrr4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & sy(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)*
+     & *2)*pmss4(i1,i2,i3,kd)+(rxx42(i1,i2,i3)+ryy42(i1,i2,i3))*pmr4(
+     & i1,i2,i3,kd)+(sxx42(i1,i2,i3)+syy42(i1,i2,i3))*pms4(i1,i2,i3,
+     & kd)
+        pmxx43(i1,i2,i3,kd)=rx(i1,i2,i3)**2*pmrr4(i1,i2,i3,kd)+sx(i1,
+     & i2,i3)**2*pmss4(i1,i2,i3,kd)+tx(i1,i2,i3)**2*pmtt4(i1,i2,i3,kd)
+     & +2.*rx(i1,i2,i3)*sx(i1,i2,i3)*pmrs4(i1,i2,i3,kd)+2.*rx(i1,i2,
+     & i3)*tx(i1,i2,i3)*pmrt4(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,i2,
+     & i3)*pmst4(i1,i2,i3,kd)+rxx43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sxx43(
+     & i1,i2,i3)*pms4(i1,i2,i3,kd)+txx43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmyy43(i1,i2,i3,kd)=ry(i1,i2,i3)**2*pmrr4(i1,i2,i3,kd)+sy(i1,
+     & i2,i3)**2*pmss4(i1,i2,i3,kd)+ty(i1,i2,i3)**2*pmtt4(i1,i2,i3,kd)
+     & +2.*ry(i1,i2,i3)*sy(i1,i2,i3)*pmrs4(i1,i2,i3,kd)+2.*ry(i1,i2,
+     & i3)*ty(i1,i2,i3)*pmrt4(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,i2,
+     & i3)*pmst4(i1,i2,i3,kd)+ryy43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+syy43(
+     & i1,i2,i3)*pms4(i1,i2,i3,kd)+tyy43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmzz43(i1,i2,i3,kd)=rz(i1,i2,i3)**2*pmrr4(i1,i2,i3,kd)+sz(i1,
+     & i2,i3)**2*pmss4(i1,i2,i3,kd)+tz(i1,i2,i3)**2*pmtt4(i1,i2,i3,kd)
+     & +2.*rz(i1,i2,i3)*sz(i1,i2,i3)*pmrs4(i1,i2,i3,kd)+2.*rz(i1,i2,
+     & i3)*tz(i1,i2,i3)*pmrt4(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,i2,
+     & i3)*pmst4(i1,i2,i3,kd)+rzz43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+szz43(
+     & i1,i2,i3)*pms4(i1,i2,i3,kd)+tzz43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmxy43(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*pmrr4(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*pmss4(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & ty(i1,i2,i3)*pmtt4(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(
+     & i1,i2,i3)*sx(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(i1,
+     & i2,i3)+ry(i1,i2,i3)*tx(i1,i2,i3))*pmrt4(i1,i2,i3,kd)+(sx(i1,i2,
+     & i3)*ty(i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*pmst4(i1,i2,i3,kd)+
+     & rxy43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sxy43(i1,i2,i3)*pms4(i1,i2,
+     & i3,kd)+txy43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmxz43(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*pmrr4(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sz(i1,i2,i3)*pmss4(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & tz(i1,i2,i3)*pmtt4(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sx(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,
+     & i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*pmrt4(i1,i2,i3,kd)+(sx(i1,i2,
+     & i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*pmst4(i1,i2,i3,kd)+
+     & rxz43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+sxz43(i1,i2,i3)*pms4(i1,i2,
+     & i3,kd)+txz43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmyz43(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*pmrr4(i1,i2,i3,
+     & kd)+sy(i1,i2,i3)*sz(i1,i2,i3)*pmss4(i1,i2,i3,kd)+ty(i1,i2,i3)*
+     & tz(i1,i2,i3)*pmtt4(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sy(i1,i2,i3))*pmrs4(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,
+     & i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*pmrt4(i1,i2,i3,kd)+(sy(i1,i2,
+     & i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*pmst4(i1,i2,i3,kd)+
+     & ryz43(i1,i2,i3)*pmr4(i1,i2,i3,kd)+syz43(i1,i2,i3)*pms4(i1,i2,
+     & i3,kd)+tyz43(i1,i2,i3)*pmt4(i1,i2,i3,kd)
+        pmlaplacian43(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(
+     & i1,i2,i3)**2)*pmrr4(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)*
+     & *2+sz(i1,i2,i3)**2)*pmss4(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,
+     & i2,i3)**2+tz(i1,i2,i3)**2)*pmtt4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*
+     & sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,
+     & i3))*pmrs4(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,
+     & i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*pmrt4(i1,i2,i3,
+     & kd)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+
+     & sz(i1,i2,i3)*tz(i1,i2,i3))*pmst4(i1,i2,i3,kd)+(rxx43(i1,i2,i3)+
+     & ryy43(i1,i2,i3)+rzz43(i1,i2,i3))*pmr4(i1,i2,i3,kd)+(sxx43(i1,
+     & i2,i3)+syy43(i1,i2,i3)+szz43(i1,i2,i3))*pms4(i1,i2,i3,kd)+(
+     & txx43(i1,i2,i3)+tyy43(i1,i2,i3)+tzz43(i1,i2,i3))*pmt4(i1,i2,i3,
+     & kd)
+c============================================================================================
+c Define derivatives for a rectangular grid
+c
+c============================================================================================
+        pmx43r(i1,i2,i3,kd)=(8.*(pm(i1+1,i2,i3,kd)-pm(i1-1,i2,i3,kd))-(
+     & pm(i1+2,i2,i3,kd)-pm(i1-2,i2,i3,kd)))*h41(0)
+        pmy43r(i1,i2,i3,kd)=(8.*(pm(i1,i2+1,i3,kd)-pm(i1,i2-1,i3,kd))-(
+     & pm(i1,i2+2,i3,kd)-pm(i1,i2-2,i3,kd)))*h41(1)
+        pmz43r(i1,i2,i3,kd)=(8.*(pm(i1,i2,i3+1,kd)-pm(i1,i2,i3-1,kd))-(
+     & pm(i1,i2,i3+2,kd)-pm(i1,i2,i3-2,kd)))*h41(2)
+        pmxx43r(i1,i2,i3,kd)=( -30.*pm(i1,i2,i3,kd)+16.*(pm(i1+1,i2,i3,
+     & kd)+pm(i1-1,i2,i3,kd))-(pm(i1+2,i2,i3,kd)+pm(i1-2,i2,i3,kd)) )*
+     & h42(0)
+        pmyy43r(i1,i2,i3,kd)=( -30.*pm(i1,i2,i3,kd)+16.*(pm(i1,i2+1,i3,
+     & kd)+pm(i1,i2-1,i3,kd))-(pm(i1,i2+2,i3,kd)+pm(i1,i2-2,i3,kd)) )*
+     & h42(1)
+        pmzz43r(i1,i2,i3,kd)=( -30.*pm(i1,i2,i3,kd)+16.*(pm(i1,i2,i3+1,
+     & kd)+pm(i1,i2,i3-1,kd))-(pm(i1,i2,i3+2,kd)+pm(i1,i2,i3-2,kd)) )*
+     & h42(2)
+        pmxy43r(i1,i2,i3,kd)=( (pm(i1+2,i2+2,i3,kd)-pm(i1-2,i2+2,i3,kd)
+     & - pm(i1+2,i2-2,i3,kd)+pm(i1-2,i2-2,i3,kd)) +8.*(pm(i1-1,i2+2,
+     & i3,kd)-pm(i1-1,i2-2,i3,kd)-pm(i1+1,i2+2,i3,kd)+pm(i1+1,i2-2,i3,
+     & kd) +pm(i1+2,i2-1,i3,kd)-pm(i1-2,i2-1,i3,kd)-pm(i1+2,i2+1,i3,
+     & kd)+pm(i1-2,i2+1,i3,kd))+64.*(pm(i1+1,i2+1,i3,kd)-pm(i1-1,i2+1,
+     & i3,kd)- pm(i1+1,i2-1,i3,kd)+pm(i1-1,i2-1,i3,kd)))*(h41(0)*h41(
+     & 1))
+        pmxz43r(i1,i2,i3,kd)=( (pm(i1+2,i2,i3+2,kd)-pm(i1-2,i2,i3+2,kd)
+     & -pm(i1+2,i2,i3-2,kd)+pm(i1-2,i2,i3-2,kd)) +8.*(pm(i1-1,i2,i3+2,
+     & kd)-pm(i1-1,i2,i3-2,kd)-pm(i1+1,i2,i3+2,kd)+pm(i1+1,i2,i3-2,kd)
+     &  +pm(i1+2,i2,i3-1,kd)-pm(i1-2,i2,i3-1,kd)- pm(i1+2,i2,i3+1,kd)+
+     & pm(i1-2,i2,i3+1,kd)) +64.*(pm(i1+1,i2,i3+1,kd)-pm(i1-1,i2,i3+1,
+     & kd)-pm(i1+1,i2,i3-1,kd)+pm(i1-1,i2,i3-1,kd)) )*(h41(0)*h41(2))
+        pmyz43r(i1,i2,i3,kd)=( (pm(i1,i2+2,i3+2,kd)-pm(i1,i2-2,i3+2,kd)
+     & -pm(i1,i2+2,i3-2,kd)+pm(i1,i2-2,i3-2,kd)) +8.*(pm(i1,i2-1,i3+2,
+     & kd)-pm(i1,i2-1,i3-2,kd)-pm(i1,i2+1,i3+2,kd)+pm(i1,i2+1,i3-2,kd)
+     &  +pm(i1,i2+2,i3-1,kd)-pm(i1,i2-2,i3-1,kd)-pm(i1,i2+2,i3+1,kd)+
+     & pm(i1,i2-2,i3+1,kd)) +64.*(pm(i1,i2+1,i3+1,kd)-pm(i1,i2-1,i3+1,
+     & kd)-pm(i1,i2+1,i3-1,kd)+pm(i1,i2-1,i3-1,kd)) )*(h41(1)*h41(2))
+        pmx41r(i1,i2,i3,kd)= pmx43r(i1,i2,i3,kd)
+        pmy41r(i1,i2,i3,kd)= pmy43r(i1,i2,i3,kd)
+        pmz41r(i1,i2,i3,kd)= pmz43r(i1,i2,i3,kd)
+        pmxx41r(i1,i2,i3,kd)= pmxx43r(i1,i2,i3,kd)
+        pmyy41r(i1,i2,i3,kd)= pmyy43r(i1,i2,i3,kd)
+        pmzz41r(i1,i2,i3,kd)= pmzz43r(i1,i2,i3,kd)
+        pmxy41r(i1,i2,i3,kd)= pmxy43r(i1,i2,i3,kd)
+        pmxz41r(i1,i2,i3,kd)= pmxz43r(i1,i2,i3,kd)
+        pmyz41r(i1,i2,i3,kd)= pmyz43r(i1,i2,i3,kd)
+        pmlaplacian41r(i1,i2,i3,kd)=pmxx43r(i1,i2,i3,kd)
+        pmx42r(i1,i2,i3,kd)= pmx43r(i1,i2,i3,kd)
+        pmy42r(i1,i2,i3,kd)= pmy43r(i1,i2,i3,kd)
+        pmz42r(i1,i2,i3,kd)= pmz43r(i1,i2,i3,kd)
+        pmxx42r(i1,i2,i3,kd)= pmxx43r(i1,i2,i3,kd)
+        pmyy42r(i1,i2,i3,kd)= pmyy43r(i1,i2,i3,kd)
+        pmzz42r(i1,i2,i3,kd)= pmzz43r(i1,i2,i3,kd)
+        pmxy42r(i1,i2,i3,kd)= pmxy43r(i1,i2,i3,kd)
+        pmxz42r(i1,i2,i3,kd)= pmxz43r(i1,i2,i3,kd)
+        pmyz42r(i1,i2,i3,kd)= pmyz43r(i1,i2,i3,kd)
+        pmlaplacian42r(i1,i2,i3,kd)=pmxx43r(i1,i2,i3,kd)+pmyy43r(i1,i2,
+     & i3,kd)
+        pmlaplacian43r(i1,i2,i3,kd)=pmxx43r(i1,i2,i3,kd)+pmyy43r(i1,i2,
+     & i3,kd)+pmzz43r(i1,i2,i3,kd)
         ! 2nd-order in space and time
         maxwell2dr(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtdx*(
      & u(i1-1,i2,i3,n)+u(i1+1,i2,i3,n)-2.*u(i1,i2,i3,n))+cdtdy*(u(i1,
@@ -3382,9 +4590,9 @@ c===============================================================================
         du(i1,i2,i3,c)=u(i1,i2,i3,c)-um(i1,i2,i3,c)
         ! D-zero in time (really undivided)
         DztU(i1,i2,i3,n) = (un(i1,i2,i3,n)-um(i1,i2,i3,n))
-        ! D-plus in time (really undivided) (add factor of 2 below since formula assumes D0) 
+        ! D-plus in time (really undivided) (add factor of 2 below since formula assumes D0)
         DptU(i1,i2,i3,n) = (un(i1,i2,i3,n)-u(i1,i2,i3,n))
-        ! D-minus in time (add factor of 2 below since formula assumes D0) 
+        ! D-minus in time (add factor of 2 below since formula assumes D0)
         DmtU(i1,i2,i3,n) = (u(i1,i2,i3,n)-um(i1,i2,i3,n))*2.
         ! special D-zero in time : assume u=u(t), um=u(t-dt),  un=u(t-2*dt)
         DzstU(i1,i2,i3,n) = (u(i1,i2,i3,n)-un(i1,i2,i3,n))
@@ -3392,14 +4600,14 @@ c===============================================================================
      & u(i1-1,i2,i3,n)+u(i1+1,i2,i3,n)-2.*u(i1,i2,i3,n))+cdtdy*(u(i1,
      & i2-1,i3,n)+u(i1,i2+1,i3,n)-2.*u(i1,i2,i3,n))+cdtdz*(u(i1,i2,i3-
      & 1,n)+u(i1,i2,i3+1,n)-2.*u(i1,i2,i3,n))
-        ! these use pre-computed RHS in f 
+        ! these use pre-computed RHS in f
         maxwellc22(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+dtsq*f(
      & i1,i2,i3,n)
         maxwellc23(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+dtsq*f(
      & i1,i2,i3,n)
         ! 2D, 2nd-order, div cleaning:
         !    D+tD-t( E ) + alpha*( D0t E ) = c^2 Delta(E) + alpha*( (1/eps) Curl ( H ) )
-        ! - rectangular: 
+        ! - rectangular:
         mxdc2d2Ex(i1,i2,i3) = cdc0*u(i1,i2,i3,ex)+cdc1*um(i1,i2,i3,ex)+
      & cdcxx*(u(i1-1,i2,i3,ex)+u(i1+1,i2,i3,ex)-2.*u(i1,i2,i3,ex))+
      & cdcyy*(u(i1,i2-1,i3,ex)+u(i1,i2+1,i3,ex)-2.*u(i1,i2,i3,ex))+
@@ -3434,12 +4642,26 @@ c===============================================================================
         lap2d2m(i1,i2,i3,c)=(um(i1+1,i2,i3,c)-2.*um(i1,i2,i3,c)+um(i1-
      & 1,i2,i3,c))*dxsqi+(um(i1,i2+1,i3,c)-2.*um(i1,i2,i3,c)+um(i1,i2-
      & 1,i3,c))*dysqi
+        plap2d2(i1,i2,i3,c) =(p(i1+1,i2,i3,c)-2.*p(i1,i2,i3,c)+p(i1-1,
+     & i2,i3,c))*dxsqi+(p(i1,i2+1,i3,c)-2.*p(i1,i2,i3,c)+p(i1,i2-1,i3,
+     & c))*dysqi
+        plap2d2m(i1,i2,i3,c)=(pm(i1+1,i2,i3,c)-2.*pm(i1,i2,i3,c)+pm(i1-
+     & 1,i2,i3,c))*dxsqi+(pm(i1,i2+1,i3,c)-2.*pm(i1,i2,i3,c)+pm(i1,i2-
+     & 1,i3,c))*dysqi
         lap3d2(i1,i2,i3,c)=(u(i1+1,i2,i3,c)-2.*u(i1,i2,i3,c)+u(i1-1,i2,
      & i3,c))*dxsqi+(u(i1,i2+1,i3,c)-2.*u(i1,i2,i3,c)+u(i1,i2-1,i3,c))
      & *dysqi+(u(i1,i2,i3+1,c)-2.*u(i1,i2,i3,c)+u(i1,i2,i3-1,c))*dzsqi
         lap3d2m(i1,i2,i3,c)=(um(i1+1,i2,i3,c)-2.*um(i1,i2,i3,c)+um(i1-
      & 1,i2,i3,c))*dxsqi+(um(i1,i2+1,i3,c)-2.*um(i1,i2,i3,c)+um(i1,i2-
      & 1,i3,c))*dysqi+(um(i1,i2,i3+1,c)-2.*um(i1,i2,i3,c)+um(i1,i2,i3-
+     & 1,c))*dzsqi
+        plap3d2(i1,i2,i3,c)=(p(i1+1,i2,i3,c)-2.*p(i1,i2,i3,c)+p(i1-1,
+     & i2,i3,c))*dxsqi+(p(i1,i2+1,i3,c)-2.*p(i1,i2,i3,c)+p(i1,i2-1,i3,
+     & c))*dysqi+(p(i1,i2,i3+1,c)-2.*p(i1,i2,i3,c)+p(i1,i2,i3-1,c))*
+     & dzsqi
+        plap3d2m(i1,i2,i3,c)=(pm(i1+1,i2,i3,c)-2.*pm(i1,i2,i3,c)+pm(i1-
+     & 1,i2,i3,c))*dxsqi+(pm(i1,i2+1,i3,c)-2.*pm(i1,i2,i3,c)+pm(i1,i2-
+     & 1,i3,c))*dysqi+(pm(i1,i2,i3+1,c)-2.*pm(i1,i2,i3,c)+pm(i1,i2,i3-
      & 1,c))*dzsqi
         lap2d2f(i1,i2,i3,c,m)=(fa(i1+1,i2,i3,c,m)-2.*fa(i1,i2,i3,c,m)+
      & fa(i1-1,i2,i3,c,m))*dxsqi+(fa(i1,i2+1,i3,c,m)-2.*fa(i1,i2,i3,c,
@@ -3517,9 +4739,32 @@ c===============================================================================
      & c)+u(i1-1,i2,i3,c))     -(u(i1+2,i2,i3,c)+u(i1-2,i2,i3,c)) )*
      & dxsq12i + ( -30.*u(i1,i2,i3,c)     +16.*(u(i1,i2+1,i3,c)+u(i1,
      & i2-1,i3,c))     -(u(i1,i2+2,i3,c)+u(i1,i2-2,i3,c)) )*dysq12i
+        lap2d4m(i1,i2,i3,c)=( -30.*um(i1,i2,i3,c)     +16.*(um(i1+1,i2,
+     & i3,c)+um(i1-1,i2,i3,c))     -(um(i1+2,i2,i3,c)+um(i1-2,i2,i3,c)
+     & ) )*dxsq12i + ( -30.*um(i1,i2,i3,c)     +16.*(um(i1,i2+1,i3,c)+
+     & um(i1,i2-1,i3,c))     -(um(i1,i2+2,i3,c)+um(i1,i2-2,i3,c)) )*
+     & dysq12i
+        plap2d4(i1,i2,i3,c)=( -30.*p(i1,i2,i3,c)     +16.*(p(i1+1,i2,
+     & i3,c)+p(i1-1,i2,i3,c))     -(p(i1+2,i2,i3,c)+p(i1-2,i2,i3,c)) )
+     & *dxsq12i + ( -30.*p(i1,i2,i3,c)     +16.*(p(i1,i2+1,i3,c)+p(i1,
+     & i2-1,i3,c))     -(p(i1,i2+2,i3,c)+p(i1,i2-2,i3,c)) )*dysq12i
+        plap2d4m(i1,i2,i3,c)=( -30.*pm(i1,i2,i3,c)     +16.*(pm(i1+1,
+     & i2,i3,c)+pm(i1-1,i2,i3,c))     -(pm(i1+2,i2,i3,c)+pm(i1-2,i2,
+     & i3,c)) )*dxsq12i + ( -30.*pm(i1,i2,i3,c)     +16.*(pm(i1,i2+1,
+     & i3,c)+pm(i1,i2-1,i3,c))     -(pm(i1,i2+2,i3,c)+pm(i1,i2-2,i3,c)
+     & ) )*dysq12i
         lap3d4(i1,i2,i3,c)=lap2d4(i1,i2,i3,c)+ ( -30.*u(i1,i2,i3,c)    
      &   +16.*(u(i1,i2,i3+1,c)+u(i1,i2,i3-1,c))      -(u(i1,i2,i3+2,c)
      & +u(i1,i2,i3-2,c)) )*dzsq12i
+        lap3d4m(i1,i2,i3,c)=lap2d4m(i1,i2,i3,c)+ ( -30.*um(i1,i2,i3,c) 
+     &      +16.*(um(i1,i2,i3+1,c)+um(i1,i2,i3-1,c))      -(um(i1,i2,
+     & i3+2,c)+um(i1,i2,i3-2,c)) )*dzsq12i
+        plap3d4(i1,i2,i3,c)=plap2d4(i1,i2,i3,c)+ ( -30.*p(i1,i2,i3,c)  
+     &     +16.*(p(i1,i2,i3+1,c)+p(i1,i2,i3-1,c))      -(p(i1,i2,i3+2,
+     & c)+p(i1,i2,i3-2,c)) )*dzsq12i
+         plap3d4m(i1,i2,i3,c)=plap2d4m(i1,i2,i3,c)+ ( -30.*pm(i1,i2,i3,
+     & c)      +16.*(pm(i1,i2,i3+1,c)+pm(i1,i2,i3-1,c))      -(pm(i1,
+     & i2,i3+2,c)+pm(i1,i2,i3-2,c)) )*dzsq12i
         lap2d4Pow2(i1,i2,i3,c)=(-30.*lap2d4(i1,i2,i3,c)+16.*(lap2d4(i1+
      & 1,i2,i3,c)+lap2d4(i1-1,i2,i3,c))-(lap2d4(i1+2,i2,i3,c)+lap2d4(
      & i1-2,i2,i3,c)))*dxsq12i+(-30.*lap2d4(i1,i2,i3,c)+16.*(lap2d4(
@@ -3712,7 +4957,7 @@ c===============================================================================
        !!$
        !!$ mxdc2d4Ey(i1,i2,i3) = cdc0*u(i1,i2,i3,ey)+cdc1*um(i1,i2,i3,ey)!!$            +cdcLap*lap2d4(i1,i2,i3,ey)!!$            +cdcLapsq*lap2d2Pow2(i1,i2,i3,ey)!!$            -cdcHz*ux42r(i1,i2,i3,hz)!!$            -cdcHzxLap*( lap2d2(i1+1,i2,i3,hz)-lap2d2(i1-1,i2,i3,hz) )
         ! 2D, 4th-order, rectangular, div cleaning:
-        ! new version : here we replace curl( Delta H ) by an approx. to E_ttt that uses Delta E_t 
+        ! new version : here we replace curl( Delta H ) by an approx. to E_ttt that uses Delta E_t
         mxdc2d4Ex(i1,i2,i3) = cdc0*u(i1,i2,i3,ex)+cdc1*um(i1,i2,i3,ex)+
      & cdcELap*lap2d4(i1,i2,i3,ex)+cdcELapsq*lap2d2Pow2(i1,i2,i3,ex)+
      & cdcE*uy42r(i1,i2,i3,hz)+cdcELapm*( lap2d2m(i1,i2,i3,ex) )
@@ -3736,7 +4981,9 @@ c===============================================================================
      & i2,i3,ey)-cdcE*ux42(i1,i2,i3,hz)+cdcELapm*( umLaplacian22(i1,
      & i2,i3,ey) )
        !...........end   statement functions
-        ! write(*,*) 'Inside advMaxwell...'
+        if( t.le.3*dt )then
+          write(*,*) 'Inside advMaxwell...'
+        end if
         cc    =rpar(0)  ! this is c
         dt    =rpar(1)
         dx(0) =rpar(2)
@@ -3758,11 +5005,14 @@ c===============================================================================
         t     =rpar(18)
         ep    =rpar(19)  ! for TZ forcing  -- new *wdh* Sept 2, 2017
         rpar(20)=0.  ! return the time used for adding dissipation
+        ! dx(0) = dr(0)
+        ! dx(1) = dr(1)
+        ! dx(2) = dr(2)
         ! Drude-Lorentz dispersion model:
         gamma= rpar(21)
         omegap=rpar(22)
         sosupParameter=rpar(23)
-        ! No need to pass these anymore: 
+        ! No need to pass these anymore:
         alphaP=rpar(24)
         a0    =rpar(25)
         a1    =rpar(26)
@@ -3801,10 +5051,10 @@ c===============================================================================
         pzc                 =ipar(27)
         numberOfPolarizationVectors =ipar(28)
         grid                =ipar(29)
-        ! qzc                 =ipar(30) ! for future use 
-        ! rxc                 =ipar(31) ! for future use 
-        ! ryc                 =ipar(32) ! for future use 
-        ! rzc                 =ipar(33) ! for future use 
+        ! qzc                 =ipar(30) ! for future use
+        ! rxc                 =ipar(31) ! for future use
+        ! ryc                 =ipar(32) ! for future use
+        ! rzc                 =ipar(33) ! for future use
         useSosupDissipation   =ipar(34)
         sosupDissipationOption=ipar(35)
         updateSolution        =ipar(36)
@@ -3847,9 +5097,10 @@ c===============================================================================
         dydzi2=1./(dy*dy*dz*dz)
         gammaDt=gamma*dt
         omegapDtSq=(omegap*dt)**2
+        ! write(*,*) 'Before calling getGDMparameters...'
         if( dispersionModel.ne.noDispersion )then
          ! get the gdm parameters
-         !   gdmPar(0:3,iv) = (a0,a1,b0,b1) 
+         !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
          ! This routine returns numberOfPolarizationVectors (no need to pass)
          call getGDMParameters( grid,alphaP,gdmPar,
      & numberOfPolarizationVectors, maxNumberOfParameters,
@@ -4014,9 +5265,9 @@ c===============================================================================
        !   c63=(-276./240.)*dtsq
        !   c64=( 109./240.)*dtsq
        !   c65=( -18./240.)*dtsq
-       ! else if( orderInTime.eq.8 )then 
+       ! else if( orderInTime.eq.8 )then
        !
-       !!     g := 1/60480 (236568 fv[4] + 88324 fv[0] - 121797 fv[1] + 245598 fv[2] 
+       !!     g := 1/60480 (236568 fv[4] + 88324 fv[0] - 121797 fv[1] + 245598 fv[2]
        !!     + 33190 fv[6] - 4125 fv[7] - 300227 fv[3] - 117051 fv[5])
        !
        !   c80=(  88324./60480.)*dtsq ! from stoermer.maple
@@ -4029,8 +5280,8 @@ c===============================================================================
        !   c87=(  -4125./60480.)*dtsq
        ! end if
         if( computeUt.eq.1 .and. updateDissipation.eq.1 )then
-          ! precompute "uDot" = dt*du/dt used in the dissipation and store in v 
-          ! we uDot at enough ghost points for the dissipation operator 
+          ! precompute "uDot" = dt*du/dt used in the dissipation and store in v
+          ! we uDot at enough ghost points for the dissipation operator
           if( t.le.3.*dt )then
             write(*,'(" advOPT>>> Eval uDot...")')
           end if
@@ -4069,7 +5320,7 @@ c===============================================================================
           end do
         endif
          ! This next function will:
-         !   (1) optionally compute the dissipation and fill in the diss array 
+         !   (1) optionally compute the dissipation and fill in the diss array
          !            if: (adc.gt.0. .and. combineDissipationWithAdvance.eq.0
          !   (2) add the divergence damping
          !         if( add.gt.0. )
@@ -4106,155 +5357,43 @@ c===============================================================================
            ! '
          stop 83322
         end if
+        if( dispersionModel.ne.noDispersion .and. useConservative.eq.1 
+     & )then
+          write(*,'("advOpt:ERROR: useConservative not implemented for 
+     & dispersion model")')
+          stop 1213
+        end if
+       !      *********************************************************
+       !      *************** Dispersive Update Here ******************
+       !      *********************************************************
+       ! if( dispersionModel.ne.noDispersion )then
+       !   updateDispersive(2,4,rectangular)
+       ! end if
         if( gridType.eq.rectangular )then
+         ! write(*,*) 'Inside advMaxwell rectangular marker 1...'
        !       **********************************************
        !       *************** rectangular ******************
        !       **********************************************
+          ! write(*,*) 'Inside advMaxwell rectangular marker 2...'
           ! ======================================================================================
           ! ==================   4th order in space and 4th order in time: =======================
           ! ======================================================================================
-          ! write(*,*) 'Inside advMaxwell order=4...'
+          if( t.le.3*dt )then
+            write(*,*) 'Inside advMaxwell order=4 YOU ARE HERE'
+          end if
           if( timeSteppingMethod.eq.modifiedEquationTimeStepping )then
              ! ------------------------------------------------------------------------------
              !    2D : 4th order modified equation (rectangular)
              ! ------------------------------------------------------------------------------
              if( dispersionModel.ne.noDispersion )then
                ! --dispersion model --
-                if( .true. .and. numberOfPolarizationVectors.eq.1 )then
-                 if( t.le.3.*dt )then
-                   write(*,'("advOPT>>>","FD44r-dispersive")')
+               ! updateRectangular2dOrder4Dispersive()
+                 if( t.le.3*dt )then
+                   if( t.le.3.*dt )then
+                     write(*,'("advOPT>>>","update-
+     & dispersive_dim=DIM_order=ORDER_gridType=rectangular")')
+                   end if
                  end if
-                 write(*,'(" DISPERSIVE: RECTANGULAR, 2D, ORDER 4: 
-     & FINISH ME  ")')
-                 fp=0
-                 fe=0.
-                   do i3=n3a,n3b
-                   do i2=n2a,n2b
-                   do i1=n1a,n1b
-                     if( mask(i1,i2,i3).gt.0 )then
-                   ! Advance Hz first:
-                   ! For now solve H_t = -(1/mu)*(  (E_y)_x - (E_x)_y )
-                   !   USE AB2 -- note: this is just a quadrature so stability is not an issue
-                   un(i1,i2,i3,hz) = u(i1,i2,i3,hz) -(dt/mu)*( 1.5*
-     & ux42r(i1,i2,i3,ey) -.5*umx42r(i1,i2,i3,ey) -1.5*uy42r(i1,i2,i3,
-     & ex) +.5*umy42r(i1,i2,i3,ex) )
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        ! TESTING ...
-                        ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t+dt, hz, hz0)
-                        ! un(i1,i2,i3,hz)=hz0
-                        ! OGDERIV2D( ntd,nxd,nyd,nzd,i1,i2,i3,t, n,val)
-                        ! OGDERIV2D( 1,0,0,0,i1,i2,i3,t+.5*dt, hz, hz0t)
-                        ! OGDERIV2D( 0,1,0,0,i1,i2,i3,t+.5*dt, ey, ey0x)
-                        ! OGDERIV2D( 0,0,1,0,i1,i2,i3,t+.5*dt, ex, ex0y)
-                        ! fhz = ( ey0x - ex0y )/mu + hz0t 
-                          call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, hz,hz0t )
-                          call ogDeriv(ep, 0,1,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, ey,ey0x )
-                          call ogDeriv(ep, 0,0,1,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, ex,ex0y )
-                        fhz = -.5*( ( ey0x - ex0y )/mu + hz0t )
-                          call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, hz,hz0t )
-                          call ogDeriv(ep, 0,1,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, ey,ey0x )
-                          call ogDeriv(ep, 0,0,1,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, ex,ex0y )
-                        fhz = fhz + 1.5*( ( ey0x - ex0y )/mu + hz0t )
-                        un(i1,i2,i3,hz)=un(i1,i2,i3,hz) + dt*fhz
-                      else
-                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + dt*f(i1,i2,
-     & i3,hz) ! first order only **FIX ME**
-                      end if
-                    end if
-                   do m=0,1
-                    pc=pxc+m
-                    ec=ex+m
-                    if( addForcing.ne.0 )then
-                      fe = dtsq*f(i1,i2,i3,ec)
-                       if( addForcing.ne.0 )then
-                         ! fp = dtsq*f(i1,i2,i3,pc) 
-                         if( forcingOption.eq.twilightZoneForcing )then
-                           if( nd.eq.2 )then
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, ec,e0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, ec,e0t )
-                           else
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
-                           end if
-                           do iv=0,numberOfPolarizationVectors-1
-                             pce = pc+iv*nd
-                             if( nd.eq.2 )then
-                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),0.,t, pce,p0 )
-                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),0.,t, pce,p0t )
-                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),0.,t, pce,p0tt )
-                             else
-                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
-                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
-                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
-                             end if
-                             fe = fe + dtsq*alphaP*p0tt
-                             fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
-     & iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
-                           end do
-                           !if( abs(fp-fp2).gt. 1.e-14 )then
-                           !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
-                           !else
-                           !  fp=fp2
-                           !end if
-                         else
-                           do iv=0,numberOfPolarizationVectors-1
-                             fpv(iv)=0.
-                           end do
-                         end if
-                       end if
-                      fp=fpv(0)
-                    end if
-                    ! GDM: 
-                    !   (E^{n+1} -2 E^n + E^{n-1})/dt^2 = c^2*Delta(E) -alphaP*(P^{n+1} -2 P^n + P^{n-1})/dt^2
-                    !   (P^{n+1} -2 P^n + P^{n-1})/dt^2 + b1* (P^{n+1} - P^{n-1})/(2*dt) + b0*P^n =
-                    !                             a0*E^n + a1*(E^{n+1} - E^{n-1})/(2*dt)
-                    ! =>
-                    !            E^{n+1} +       alphaP*P^{n+1} = rhsE
-                    !  -.5*a1*dt*E^{n+1} + (1+.5*b1*dt)*P^{n+1} = rhsP
-                    !
-                    ev = u(i1,i2,i3,ec)
-                    evm=um(i1,i2,i3,ec)
-                    pv0 = p(i1,i2,i3,m)
-                    pvm0=pm(i1,i2,i3,m)
-                    rhsE = maxwell2dr44me(i1,i2,i3,ec) + alphaP*(2.*
-     & pv0-pvm0) + fe
-                    rhsP = 2.*pv0-pvm0 + .5*dt*( b1*pvm0 -a1*evm ) + 
-     & dt*dt*( -b0*pv0 + a0*ev ) + fp
-                    deti = 1./(1.+.5*dt*(b1+alphaP*a1))
-                    un(i1,i2,i3,ec) = ((1.+.5*dt*b1)*rhsE -alphaP*rhsP)
-     & *deti
-                    pn(i1,i2,i3,m)  = (.5*a1*dt*rhsE            + rhsP)
-     & *deti
-                    ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") pvm0,pv0,,pn=",3e16.8)') i1,i2,m,pvm0,pv0,pn(i1,i2,i3,m)
-                   end do
-                     end if
-                   end do
-                   end do
-                   end do
-                else
-                 ! ------- 2D DISPERSIVE RECTANGULAR MULTIPLE PV -------
-                 if( t.le.3.*dt )then
-                   write(*,'("advOPT>>>","FD44r-dispersive-MULTI-PV")')
-                 end if
-                 write(*,'(" DISPERSIVE: RECTANGULAR, 2D, ORDER 4: 
-     & FINISH ME  ")')
                  fe=0.
                  ! -- first compute some coefficients ---
                  beta=0.
@@ -4262,136 +5401,336 @@ c===============================================================================
                    betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
                    beta = beta + .5*dt*a1v(iv)*betav(iv)
                    fpv(iv)=0.  ! initialize if not used
+                   b1tttv(iv)=b1v(iv)*b1v(iv)-b0v(iv)
+                   b0tttv(iv)=b1v(iv)*b0v(iv)
+                   a0tttv(iv)=-a0v(iv)*b1v(iv)
+                   a1tttv(iv)=a0v(iv)-a1v(iv)*b1v(iv)
+                   a2tttv(iv)=a1v(iv)
                  end do
                    do i3=n3a,n3b
                    do i2=n2a,n2b
                    do i1=n1a,n1b
                      if( mask(i1,i2,i3).gt.0 )then
-                   ! Advance Hz first:
-                   ! For now solve H_t = -(1/mu)*(  (E_y)_x - (E_x)_y )
-                   !   USE AB2 -- note: this is just a quadrature so stability is not an issue
-                   un(i1,i2,i3,hz) = u(i1,i2,i3,hz) -(dt/mu)*( 1.5*
-     & ux42r(i1,i2,i3,ey) -.5*umx42r(i1,i2,i3,ey) -1.5*uy42r(i1,i2,i3,
-     & ex) +.5*umy42r(i1,i2,i3,ex) )
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        ! TESTING ...
-                        ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t+dt, hz, hz0)
-                        ! un(i1,i2,i3,hz)=hz0
-                        ! OGDERIV2D( ntd,nxd,nyd,nzd,i1,i2,i3,t, n,val)
-                        ! OGDERIV2D( 1,0,0,0,i1,i2,i3,t+.5*dt, hz, hz0t)
-                        ! OGDERIV2D( 0,1,0,0,i1,i2,i3,t+.5*dt, ey, ey0x)
-                        ! OGDERIV2D( 0,0,1,0,i1,i2,i3,t+.5*dt, ex, ex0y)
-                        ! fhz = ( ey0x - ex0y )/mu + hz0t 
-                          call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, hz,hz0t )
-                          call ogDeriv(ep, 0,1,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, ey,ey0x )
-                          call ogDeriv(ep, 0,0,1,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t-dt, ex,ex0y )
-                        fhz = -.5*( ( ey0x - ex0y )/mu + hz0t )
-                          call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, hz,hz0t )
-                          call ogDeriv(ep, 0,1,0,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, ey,ey0x )
-                          call ogDeriv(ep, 0,0,1,0, xy(i1,i2,i3,0),xy(
-     & i1,i2,i3,1),0.,t, ex,ex0y )
-                        fhz = fhz + 1.5*( ( ey0x - ex0y )/mu + hz0t )
-                        un(i1,i2,i3,hz)=un(i1,i2,i3,hz) + dt*fhz
-                      else
-                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + dt*f(i1,i2,
-     & i3,hz) ! first order only **FIX ME**
-                      end if
-                    end if
-                   ! -- loop over components of the vector --
-                   do m=0,1
-                    pc=pxc+m
-                    ec=ex+m
-                    if( addForcing.ne.0 )then
-                      fe = dtsq*f(i1,i2,i3,ec)
-                      ! Compute fpv(iv) : 
-                       if( addForcing.ne.0 )then
-                         ! fp = dtsq*f(i1,i2,i3,pc) 
-                         if( forcingOption.eq.twilightZoneForcing )then
-                           if( nd.eq.2 )then
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, ec,e0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, ec,e0t )
-                           else
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
-                           end if
-                           do iv=0,numberOfPolarizationVectors-1
-                             pce = pc+iv*nd
-                             if( nd.eq.2 )then
-                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+                 do m=0,nd-1
+                   pc=pxc+m
+                   ec=ex+m
+                   ! This is only needed for the second order code
+                   if( addForcing.ne.0 )then ! forcing in E equation already added to f
+                     ! fe = dtsq*f(i1,i2,i3,ec)  ! this term is already included
+                     fe=0.
+                      if( addForcing.ne.0 )then
+                        ! fp = dtsq*f(i1,i2,i3,pc)
+                        if( forcingOption.eq.twilightZoneForcing )then
+                          if( nd.eq.2 )then
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, ec,e0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, ec,e0t )
+                          else
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
+                          end if
+                          do iv=0,numberOfPolarizationVectors-1
+                            pce = pc+iv*nd
+                            if( nd.eq.2 )then
+                                call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),0.,t, pce,p0 )
-                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+                                call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),0.,t, pce,p0t )
-                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+                                call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),0.,t, pce,p0tt )
-                             else
-                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+                            else
+                                call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
-                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+                                call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
-                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+                                call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
      & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
-                             end if
-                             fe = fe + dtsq*alphaP*p0tt
-                             fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
+                            end if
+                            fe = fe + dtsq*alphaP*p0tt
+                            fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
      & iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
-                           end do
-                           !if( abs(fp-fp2).gt. 1.e-14 )then
-                           !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
-                           !else
-                           !  fp=fp2
-                           !end if
-                         else
-                           do iv=0,numberOfPolarizationVectors-1
-                             fpv(iv)=0.
-                           end do
-                         end if
-                       end if
-                    end if
-                    ! GDM: 
-                    !   (E^{n+1} -2 E^n + E^{n-1})/dt^2 = c^2*Delta(E) -alphaP*(P^{n+1} -2 P^n + P^{n-1})/dt^2
-                    !   (P^{n+1} -2 P^n + P^{n-1})/dt^2 + b1* (P^{n+1} - P^{n-1})/(2*dt) + b0*P^n =
-                    !                             a0*E^n + a1*(E^{n+1} - E^{n-1})/(2*dt)
-                    ! =>
-                    !            E^{n+1} +       alphaP*P^{n+1} = rhsE
-                    !  -.5*a1*dt*E^{n+1} + (1+.5*b1*dt)*P^{n+1} = rhsP
-                    !
-                    ev = u(i1,i2,i3,ec)
-                    evm=um(i1,i2,i3,ec)
-                    rhsP = 0.
-                    pSum=0.
-                    do iv=0,numberOfPolarizationVectors-1
-                      pv(iv) = p(i1,i2,i3,m+iv*nd)
-                      pvm(iv)=pm(i1,i2,i3,m+iv*nd)
-                      rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)*
-     & pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev ) 
-     & + fpv(iv)
-                      rhsP = rhsP + betav(iv)*rhspv(iv)
-                      pSum = pSum + 2.*pv(iv) - pvm(iv)
-                    end do
-                    rhsE = maxwell2dr44me(i1,i2,i3,ec) + alphaP*( pSum 
-     & - rhsP ) + fe
-                    evn = rhsE / (1.+ alphaP*beta)
-                    un(i1,i2,i3,ec) = evn
-                    do iv=0,numberOfPolarizationVectors-1
-                      pn(i1,i2,i3,m+iv*nd)  = betav(iv)*( .5*dt*a1v(iv)
-     & *evn + rhspv(iv) )
+                          end do
+                          !if( abs(fp-fp2).gt. 1.e-14 )then
+                          !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
+                          !else
+                          !  fp=fp2
+                          !end if
+                        else
+                          do iv=0,numberOfPolarizationVectors-1
+                            fpv(iv)=0.
+                          end do
+                        end if
+                      end if
+                     fp=fpv(0)
+                   end if
+                   ev = u(i1,i2,i3,ec)
+                   evm=um(i1,i2,i3,ec)
+                   do iv=0,numberOfPolarizationVectors-1
+                         pv(iv) = p(i1,i2,i3,m+iv*nd)
+                         pvm(iv)=pm(i1,i2,i3,m+iv*nd)
                    end do
-                  end do ! m=0,1
+                   rhsP = 0.
+                   pSum = 0.
+                   ! write(*,*) 'Inside updateDispersive'
+                       ! write(*,*) 'Inside updateDispersive order=4'
+                             ! INFO("FD44r-2D-dispersive-Any-PV");
+                             ! write(*,*) 'Inside updateDispersive 2D rectangular order=4'
+                             elap4   = lap2d4(i1,i2,i3,ec)
+                             elap4m  = lap2d4m(i1,i2,i3,ec)
+                             elapsq2 = lap2d2Pow2(i1,i2,i3,ec)
+                             elap2m  = lap2d2m(i1,i2,i3,ec)
+                             do iv=0,numberOfPolarizationVectors-1
+                               pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
+                               pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
+                             end do
+                         f1 = 0
+                         f4 = 0
+                         f5 = 0
+                         do iv=0,numberOfPolarizationVectors-1
+                           f2v(iv) = 0
+                           f3v(iv) = 0
+                           f6v(iv) = 0
+                           ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") f2,f3,f6=",3e16.8)') i1,i2,m,f2v(iv),f3v(iv),f6v(iv)
+                         end do
+                         if( addForcing.ne.0 )then
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tt )
+                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0ttt )
+                                 call ogDeriv(ep, 4,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tttt )
+                                 call ogDeriv(ep, 0,2,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xx )
+                                 call ogDeriv(ep, 0,0,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yy )
+                                 call ogDeriv(ep, 0,0,0,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zz )
+                                 call ogDeriv(ep, 1,2,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxt )
+                                 call ogDeriv(ep, 1,0,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyt )
+                                 call ogDeriv(ep, 1,0,0,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzt )
+                                 call ogDeriv(ep, 2,2,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxtt )
+                                 call ogDeriv(ep, 2,0,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yytt )
+                                 call ogDeriv(ep, 2,0,0,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zztt )
+                                 call ogDeriv(ep, 0,4,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxxx )
+                                 call ogDeriv(ep, 0,2,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxyy )
+                                 call ogDeriv(ep, 0,2,0,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxzz )
+                                 call ogDeriv(ep, 0,0,4,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyyy )
+                                 call ogDeriv(ep, 0,0,2,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyzz )
+                                 call ogDeriv(ep, 0,0,0,4, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzzz )
+                               pSum0tt    = 0
+                               pSum0ttt   = 0
+                               pSum0tttt  = 0
+                               pSum0xxtt  = 0
+                               pSum0yytt  = 0
+                               pSum0zztt  = 0
+                               do iv=0,numberOfPolarizationVectors-1
+                                 pce = pc+iv*nd
+                                   call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0 )
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0tt )
+                                   call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0ttt )
+                                   call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0tttt )
+                                   call ogDeriv(ep, 0,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xx )
+                                   call ogDeriv(ep, 0,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yy )
+                                   call ogDeriv(ep, 0,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zz )
+                                   call ogDeriv(ep, 1,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xxt )
+                                   call ogDeriv(ep, 1,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yyt )
+                                   call ogDeriv(ep, 1,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zzt )
+                                   call ogDeriv(ep, 2,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xxtt )
+                                   call ogDeriv(ep, 2,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yytt )
+                                   call ogDeriv(ep, 2,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zztt )
+                                 ! Derivatives of OG individual p eqn forcing terms fp
+                                 fp00      = p0tt   + b1v(iv)*p0t   + 
+     & b0v(iv)*p0   - a1v(iv)*e0t   - a0v(iv)*e0
+                                 fp10      = p0ttt  + b1v(iv)*p0tt  + 
+     & b0v(iv)*p0t  - a1v(iv)*e0tt  - a0v(iv)*e0t
+                                 fp20      = p0tttt + b1v(iv)*p0ttt + 
+     & b0v(iv)*p0tt - a1v(iv)*e0ttt - a0v(iv)*e0tt
+                                 fp02x     = p0xxtt + b1v(iv)*p0xxt + 
+     & b0v(iv)*p0xx - a1v(iv)*e0xxt - a0v(iv)*e0xx
+                                 fp02y     = p0yytt + b1v(iv)*p0yyt + 
+     & b0v(iv)*p0yy - a1v(iv)*e0yyt - a0v(iv)*e0yy
+                                 fp02z     = p0zztt + b1v(iv)*p0zzt + 
+     & b0v(iv)*p0zz - a1v(iv)*e0zzt - a0v(iv)*e0zz
+                                 fp02      = fp02x  + fp02y + fp02z
+                                 fp00v(iv) = fp00
+                                 ! Building derivatives of full P summation terms
+                                 pSum0tt   = pSum0tt    + p0tt
+                                 pSum0ttt  = pSum0ttt   + p0ttt
+                                 pSum0tttt = pSum0tttt  + p0tttt
+                                 pSum0xxtt = pSum0xxtt  + p0xxtt
+                                 pSum0yytt = pSum0yytt  + p0yytt
+                                 pSum0zztt = pSum0zztt  + p0zztt
+                                 ! Forcing on EACH individual p_ttt is (fp)_t - b1*fp :
+                                 f2v(iv) = fp10 - b1v(iv)*fp00
+                                 ! Forcing on EACH individual p eqn:
+                                 f3v(iv) = dtsq * (fp00 + (dtsq/12.) * 
+     & fp20)
+                                 ! Forcing for EACH individual pxx equation at second order predictor is (xx derivative of fp)
+                                 f6v(iv) = dtsq * fp02
+                               end do
+                               ! Build derivatives of E eqn forcing term
+                               fe00  = e0tt   + alphaP*pSum0tt   - csq*
+     & (e0xx   + e0yy    + e0zz  )
+                               fe10  = e0ttt  + alphaP*pSum0ttt  - csq*
+     & (e0xxt  + e0yyt   + e0zzt )
+                               fe20  = e0tttt + alphaP*pSum0tttt - csq*
+     & (e0xxtt + e0yytt  + e0zztt)
+                               fe02x = e0xxtt + alphaP*pSum0xxtt - csq*
+     & (e0xxxx + e0xxyy  + e0xxzz)
+                               fe02y = e0yytt + alphaP*pSum0yytt - csq*
+     & (e0xxyy + e0yyyy  + e0yyzz)
+                               fe02z = e0zztt + alphaP*pSum0zztt - csq*
+     & (e0xxzz + e0yyzz  + e0zzzz)
+                               fe02  = fe02x  + fe02y + fe02z
+                               fe    = fe00
+                               ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") e0xxxx,e0xxyy=",2e16.8)') i1,i2,m,e0xxxx,e0xxyy
+                               ! Forcing on Ettt = c^2 Etxx - alphaP Pttt is fet
+                               f1 = fe10
+                               ! Forcing on E equation is
+                               f4 = dtsq * (fe00 + (dtsq/12.) * (fe20 +
+     &  csq * fe02))
+                               ! Forcing for Exx equation at second order predictor is (xx derivative of fe)
+                               f5 = dtsq * fe02
+                         end if
+                        rhsPxx = 0.
+                        pxxSum = 0.
+                        exxv  = elap4
+                        exxvm = elap4m
+                        ! First we do the second order prediction on (i) E, (ii) Exx, (iii) Pxx, (iv) Individual pk
+                        do iv=0,numberOfPolarizationVectors-1
+                          rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(
+     & iv)*pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*
+     & ev ) + dtsq*fp00v(iv)
+                          rhsP = rhsP + betav(iv)*rhspv(iv)
+                          pSum = pSum + 2.*pv(iv) - pvm(iv)
+                          !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pv,pvm,rhspv,rhsP,pSum,fpv=",6e16.8)') i1,i2,m,pv(iv),pvm(iv),rhspv(iv),rhsP,pSum,fp00v(iv)
+                          !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") ev,evm,rhspv,rhsP,pSum,fpv=",6e16.8)') i1,i2,m,ev,evm,a1v(iv),a0v(iv),b1v(iv),b0v(iv)
+                          !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") first term=",1e16.8)') i1,i2,m,2.*pv(iv)-pvm(iv)
+                          !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm ),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
+                          rhspxxv(iv) = 2.*pxxv(iv)-pxxvm(iv) + .5*dt*(
+     &  b1v(iv)*pxxvm(iv) -a1v(iv)*exxvm ) + dtSq*( -b0v(iv)*pxxv(iv) 
+     & + a0v(iv)*exxv ) + f6v(iv)
+                          rhsPxx = rhsPxx + betav(iv)*rhspxxv(iv)
+                          pxxSum = pxxSum + 2.*pxxv(iv) - pxxvm(iv)
+                        end do
+                        rhsE   = 2.*ev   - evm   + cdtsq*elap4   + 
+     & alphaP*( pSum   - rhsP   ) + dtsq * fe00
+                        rhsExx = 2.*exxv - exxvm + cdtsq*elapsq2 + 
+     & alphaP*( pxxSum - rhsPxx ) + f5
+                        evn   = rhsE   / (1.+ alphaP*beta)
+                        exxvn = rhsExx / (1.+ alphaP*beta)
+                        ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") rhsE,evn,fe00=",3e16.8)') i1,i2,m,rhsE,evn,fe00
+                        ! Update x derivative of P
+                        Pxxn  = beta * exxvn + rhsPxx
+                        ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") exxvn,Pxxn=",2e16.8)') i1,i2,m,exxvn,Pxxn
+                        ! Now we predict individual pk (pvn) and their third time derivative to second order
+                        PtttStar = 0
+                        do iv=0,numberOfPolarizationVectors-1
+                          pvn(iv) = betav(iv)*( .5*dt*a1v(iv)*evn + 
+     & rhspv(iv) )
+                          ! Now update PtttStar for correction terms and use in Ettt
+                          ptttStarv(iv) = b1tttv(iv)*(pvn(iv)-pvm(iv))
+     & /(2.*dt) + b0tttv(iv)*pv(iv) + a0tttv(iv)*ev + a1tttv(iv)*(evn-
+     & evm)/(2.*dt) + a2tttv(iv)*(evn-2*ev+evm)/dtsq + f2v(iv)
+                          PtttStar = PtttStar + ptttStarv(iv)
+                          ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvm,pv,pvn,evm,ev,evn=",6e16.8)') i1,i2,m,pvm(iv),pv(iv),pvn(iv),evm,ev,evn
+                          ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") evn-evm, evn-2*ev+evm=",2e16.8)') i1,i2,m,evn-evm,evn-2*ev+evm
+                          ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") 1diff,2diff,3diff,f2v(iv)=",4e16.8)') i1,i2,m,(pvn(iv)-pvm(iv))/(2.*dt),(evn-evm)/(2.*dt),(evn-2*ev+evm)/dtsq,f2v(iv)   
+                          ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv),ptttStarv,dtsq=",3e16.8)') i1,i2,m,pvn(iv),ptttStarv(iv),dtsq
+                        end do
+                        ! Second Order Updates Complete, now we construct necessary terms
+                        ! LapPtt using prediction
+                        QxxStar = (Pxxn  - pxxSum)/dtsq
+                        EtxxStar    = (exxvn -  exxvm)/(2.*dt)
+                        EtttStar    = csq*EtxxStar - alphaP*PtttStar + 
+     & f1
+                        ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") QxxStar,exxvn,Pxxn,EtxxStar,PtttStar,EtttStar=",7e16.8)') i1,i2,m,QxxStar,exxvn,Pxxn,EtxxStar,PtttStar,EtttStar,f1
+                        rhsP4 = 0
+                        LHSev = 0
+                        do iv=0,numberOfPolarizationVectors-1
+                          ! Coeff for pk(n+1) for  LHS of invidiual p equation
+                          LHSpv(iv) = 1+ b1v(iv)*dt/2.  + b0v(iv)*
+     & dtsq/12.
+                          ! Build coeff for ev for left hand side of full P equation
+                          LHSev     = LHSev + ((-a1v(iv)*dt/2.  -a0v(
+     & iv)*dtsq/12.)/LHSpv(iv))
+                          ! LHS for pk for pk equation
+                          rhspv(iv) = ((2.*pv(iv)-pvm(iv))+ b1v(iv)*dt*
+     & pvm(iv)/(2.)- dtsq*b0v(iv)*pv(iv)+ dtsq*a0v(iv)*ev- a1v(iv)*(
+     & dt/2.)*evm- a1v(iv)*(dt**4/12.)*( EtttStar )+ b1v(iv)*(dt**
+     & 4/12.)*( ptttStarv(iv) )+ (dtsq/12.)*( -b0v(iv)*(0. -2.*pv(iv)+
+     & pvm(iv)) + a0v(iv)*(0. -2.*ev+evm) )+ f3v(iv))
+                          ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") LHSpv,rhspv=",2e16.8)') i1,i2,m,LHSpv(iv),rhspv(iv)
+                          rhsP4 = rhsP4 + ( rhspv(iv) )/LHSpv(iv)
+                        end do
+                        ! We have now built the equation for P
+                        A(1,1) = LHSev
+                        A(1,2) = 1.
+                        b(1) = rhsP4
+                        ! Now we build the equation for E in terms of E and P
+                        A(2,1) = 1.        ! coeff of E^{n+1}
+                        A(2,2) = alphaP    ! coeff of P^{n+1}
+                        ! Note that Psum - rhsP here is same as for second order code
+                        !  (but using 4th order accurate version of p to compute them)
+                        b(2) = (2.*ev-evm)+csq*dtsq*elap4+alphaP*( 
+     & Psum )+csq**2*dt**4*elapsq2/(12.)-csq*dt**4*alphaP*QxxStar/(
+     & 12.)+ f4
+                        ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") b2,f4=",2e16.8)') i1,i2,m,b(2),f4
+                        deti = 1./(A(1,1)*A(2,2) - A(1,2)*A(2,1))
+                        y(1) = deti *( A(2,2) * b(1) - A(1,2) * b(2))
+                        y(2) = deti *(-A(2,1) * b(1) + A(1,1) * b(2))
+                        ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") b1,b2,y1,y2,deti=",5e16.8)') i1,i2,m,b(1),b(2),y(1),y(2),deti
+                        ! Update E^{n+1}
+                        un(i1,i2,i3,ec) = y(1)
+                        evn             = y(1)
+                        ! Update pk using new E^{n+1} = evn
+                        do iv=0,numberOfPolarizationVectors-1
+                          rhspv(iv) = rhspv(iv) + (a1v(iv) * dt/(2.) + 
+     & a0v(iv)*dtsq/(12.))*evn
+                          pn(i1,i2,i3,m+iv*nd)  = (1/LHSpv(iv)) * 
+     & rhspv(iv)
+                        end do
+                        ! End of fourth order code
+                        ! End of fourth order code
+                 end do !m=0,nd-1
                      end if
                    end do
                    end do
                    end do
-                end if
              else if( useDivergenceCleaning.eq.0 )then
               if( useSosupDissipation.ne.0 )then
                 ! FD44 (rectangular grid) with Sosup dissipation (wide stencil dissiption)
@@ -4404,7 +5743,7 @@ c===============================================================================
                  adxSosup(1)=cdSosupy*uDotFactor
                  if( updateSolution.eq.1 .and. updateDissipation.eq.1 )
      & then
-                  ! advance + sosup dissipation: 
+                  ! advance + sosup dissipation:
                   if( t.le.3.*dt )then
                     write(*,'("advOPT>>>","FD44r-UP...update-solution-
      & and-dissipation")')
@@ -5023,7 +6362,7 @@ c===============================================================================
                    end if
                    else
                    ! apply sosup dissipation to time n using times n-1 and n-2
-                   ! assume un holds u(t-2*dt) on input 
+                   ! assume un holds u(t-2*dt) on input
                    ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
                    if( t.le.3.*dt )then
                      write(*,'("advOPT>>>","FD44r-UP...update-u-with-
@@ -5974,7 +7313,7 @@ c===============================================================================
               end if
              end if
           else  ! not modified equation
-            ! We no longer support Stoermer 
+            ! We no longer support Stoermer
             stop 4444
           end if
         else

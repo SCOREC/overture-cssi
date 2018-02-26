@@ -452,6 +452,14 @@ c To include derivatives of rx use OPTION=RX
 ! Macro: Initialize values needed to eval the dispersive plane wave 
 ! --------------------------------------------------------------------
 
+! =================================================================================
+!   Macro: add the correction from the polarization vector to the boundary forcing
+! ==================================================================================
+
+! =================================================================================
+!   Macro: add the correction from the polarization vector to the boundary forcing
+! ==================================================================================
+
 ! --------------------------------------------------------------------
 ! Macro: Evaluate the dispersive plane wave in 2D
 ! 

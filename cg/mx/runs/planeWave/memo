@@ -1,3 +1,73 @@
+***********************
+***** Feb 25, 2018
+
+Check MJJ's GDM 
+
+NON-BOX 
+cgmx -noplot planeWave -g=nonBox2.order4 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.550e-03 max-err = 5.353e-05
+>>> t=1.00e-01 dt=2.0e-02 max errors:[0.00e+00,3.21e-02,0.00e+00,], max (u):[0.00e+00,9.64e-01,0.00e+00,] (5 steps)
+
+
+BOX
+cgmx -noplot planeWave -g=box2.order4 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go 
+
+G2 --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.550e-03 max-err = 5.353e-05
+>>> t=1.00e-01 dt=2.0e-02 max errors:[0.00e+00,3.21e-02,0.00e+00,], max (u):[0.00e+00,9.64e-01,0.00e+00,] (5 steps)
+
+G4 --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.509e-03 max-err = 3.076e-06
+>>> t=1.00e-01 dt=1.1e-02 max errors:[0.00e+00,1.99e-03,0.00e+00,], max (u):[0.00e+00,9.52e-01,0.00e+00,] (9 steps)
+
+
+NON-SQUARE
+cgmx -noplot planeWave -g=nonSquare64.order4 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+ --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.563e-03 max-err = 3.885e-07
+>>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,2.11e-04,9.87e-01,], max (u):[0.00e+00,9.87e-01,9.87e-01,] (10 steps)
+
+SQUARE
+cgmx -noplot planeWave -g=square64.order4 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go 
+
+G64 --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.563e-03 max-err = 3.885e-07
+>>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,2.11e-04,9.87e-01,], max (u):[0.00e+00,9.87e-01,9.87e-01,] (10 steps)
+
+G128 --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=1.582e-03 max-err = 2.235e-08
+>>> t=1.00e-01 dt=5.3e-03 max errors:[0.00e+00,1.21e-05,9.99e-01,], max (u):[0.00e+00,9.99e-01,9.99e-01,] (19 steps)
+***********************
+***** Feb 24, 2018
+
+CHECKS OF SOSUP Dissipation
+
+***NEW*** advMxUp.bf 
+
+TEST 3D;
+cgmx -noplot planeWave -g=nonBox2.order4.ng3 -stageOption=IB-D -useSosupDissipation=1 -sosupDissipationOption=0 -kx=2 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+
+cgmx -noplot planeWave -g=box2.order4.ng3 -stageOption=IB-D -useSosupDissipation=1 -sosupDissipationOption=0 -kx=2 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+g2 >>> t=1.00e-01 dt=2.5e-02 max errors:[0.00e+00,1.66e-03,0.00e+00,], max (u):[0.00e+00,9.51e-01,0.00e+00,] (4 steps)
+G4 >>> t=1.00e-01 dt=1.4e-02 max errors:[0.00e+00,6.74e-05,0.00e+00,], max (u):[0.00e+00,1.00e+00,0.00e+00,] (7 steps)
+
+FD44c-UP  IB-D scheme 
+cgmx -noplot planeWave -g=nonSquare64.order4.ng3 -stageOption=IB-D -useSosupDissipation=1 -sosupDissipationOption=0 -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+new >>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,4.16e-04,4.16e-04,], max (u):[0.00e+00,9.88e-01,9.88e-01,] (10 steps)
+old >>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,4.16e-04,4.16e-04,], max (u):[0.00e+00,9.88e-01,9.88e-01,] (10 steps)
+
+
+
+FD22c-UP D-IB scheme 
+cgmx -noplot planeWave -g=nonSquare64.order2 -stageOption=D-IB -useSosupDissipation=1 -sosupDissipationOption=1 -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,2.16e-02,2.16e-02,], max (u):[0.00e+00,9.88e-01,9.88e-01,] (10 steps)
+
+FD44r-UP D-IB scheme 
+cgmx -noplot planeWave -g=square64.order4.ng3 -stageOption=D-IB -useSosupDissipation=1 -sosupDissipationOption=1 -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+>>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,3.99e-04,3.99e-04,], max (u):[0.00e+00,9.88e-01,9.88e-01,] (10 steps)
+
+
+
 ***************************
 ******* Jan 28, 2017
 

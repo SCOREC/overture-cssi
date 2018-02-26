@@ -27,10 +27,10 @@ FSRCO +=advOpt.f advOptNew.f \
         advMx2dOrder2r.f advMx3dOrder2r.f advMx2dOrder4r.f advMx3dOrder4r.f \
         advMx2dOrder2c.f advMx3dOrder2c.f advMx2dOrder4c.f advMx3dOrder4c.f 
 
-# New version with upwind-dissipation (3d versions are still empty)
+# New version with upwind-dissipation 
 FSRCO +=advMxUp.f  \
-        advMxUp2dOrder2r.f advMxUp3dOrder2rNull.f advMxUp2dOrder4r.f advMxUp3dOrder4rNull.f \
-        advMxUp2dOrder2c.f advMxUp3dOrder2cNull.f advMxUp2dOrder4c.f advMxUp3dOrder4cNull.f 
+        advMxUp2dOrder2r.f advMxUp3dOrder2r.f advMxUp2dOrder4r.f advMxUp3dOrder4r.f \
+        advMxUp2dOrder2c.f advMxUp3dOrder2c.f advMxUp2dOrder4c.f advMxUp3dOrder4c.f 
 
 # SOSUP files:
 FSRCO += advSOSUP.f \
@@ -215,11 +215,12 @@ src/bcOptMaxwell2dOrder2.f : src/bcOptMaxwell.f
 src/bcOptMaxwell4.f: src/bcOptMaxwellMacros.h src/jacobianDerivatives.h src/bcOptMaxwell4.bf \
                      src/bc4Maxwell.h src/bc4eMaxwell.h src/bcExtended4Maxwell.h src/bcdiv3dMaxwell.h \
                      src/bcHzExtended4Maxwell.h src/bc4Maxwell3d.h src/planeWave.h  src/chirpedPlaneWave.h \
+                     src/dispersivePlaneWave.h \
                      src/bcDefineFortranInclude.h src/forcingDefineFortranInclude.h src/dispersionFortranInclude.h 
 		     @cd src; $(BPP) -clean -quiet -I$(Overture)/include bcOptMaxwell4.bf
 
-src/bcOptMaxwell2dOrder4.f : src/bcOptMaxwell4.f
-src/bcOptMaxwell3dOrder4.f : src/bcOptMaxwell4.f
+src/bcOptMaxwell2dOrder4.f : src/bcOptMaxwell.f src/bcOptMaxwell4.f
+src/bcOptMaxwell3dOrder4.f : src/bcOptMaxwell.f src/bcOptMaxwell4.f
 
 src/mxYee.f: src/mxYee.bf src/bcDefineFortranInclude.h src/icDefineFortranInclude.h src/planeWave.h src/planeMaterialInterface.h
 	   @cd src; $(BPP) -clean -quiet -I$(Overture)/include mxYee.bf

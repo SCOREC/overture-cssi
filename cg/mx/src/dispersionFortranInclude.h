@@ -6,7 +6,10 @@
       real kk,ck2,sNormSq,sNorm4, pc,ps,hfactor,hs,hc
       real si,sr,expt,sinxi,cosxi
       real sinxip,cosxip, sinxid, cosxid, sinxid2, cosxid2, sinxid3, cosxid3
-      real amph,sint,cost,sintp,costp,hr,hi
+        real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,settt
+
+      integer getDispersiveBoundaryForcing
+      real alphaP, psum(0:2)
 
       integer maxNumberOfPolarizationVectors
       parameter( maxNumberOfPolarizationVectors=20 )

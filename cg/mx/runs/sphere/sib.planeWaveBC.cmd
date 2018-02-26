@@ -103,7 +103,7 @@ slow start interval -1.
 #***********************
 # divergence damping  0.0025   
 #***********************
-use conservative divergence $cons 
+use conservative difference $cons 
 cfl $cfl
 #
 # plot scattered field 1

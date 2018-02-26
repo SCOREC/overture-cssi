@@ -1,4 +1,29 @@
 ******************************
+****** Feb 25, 2018
+
+TEST MJJ's new GDM codes
+
+ORDER=4 :looks OK
+cgmx -noplot sib.planeWaveBC -g=sibe4.order4.hdf -dm=gdm -a0=1 -a1=1 -b0=1 -b1=1 -tp=.05 -cons=0 -diss=0 -go=og
+
+G4 --getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.062e-01 max-err = 1.129e-05
+>>> t=5.00e-02 dt=7.1e-03 max errors:[5.21e-04,5.89e-04,4.33e-04,], max (u):[1.15e+00,1.25e+00,7.17e-01,] (7 steps)
+
+G8 --getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.064e-01 max-err = 1.218e-06
+>>> t=5.00e-02 dt=4.5e-03 max errors:[4.30e-05,4.89e-05,3.73e-05,], max (u):[1.15e+00,1.25e+00,7.18e-01,] (11 steps)
+
+
+ORDER=2 : looks OK
+cgmx -noplot sib.planeWaveBC -g=sibe4.order2.hdf -dm=gdm -a0=1 -a1=1 -b0=1 -b1=1 -tp=.05 -cons=0 -diss=0 -go=og
+
+G4 --getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.061e-01 max-err = 1.159e-04
+>>> t=5.00e-02 dt=8.3e-03 max errors:[3.31e-03,2.95e-03,1.71e-03,], max (u):[1.15e+00,1.25e+00,7.11e-01,] (6 steps)
+
+G8 --getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.064e-01 max-err = 3.439e-05
+>>> t=5.00e-02 dt=5.0e-03 max errors:[8.31e-04,7.66e-04,4.82e-04,], max (u):[1.15e+00,1.25e+00,7.18e-01,] (10 steps)
+
+
+******************************
 ****** Jan 31, 2018
 
 

@@ -220,7 +220,11 @@
       real si,sr,expt,sinxi,cosxi
       real sinxip,cosxip, sinxid, cosxid, sinxid2, cosxid2, sinxid3, 
      & cosxid3
-      real amph,sint,cost,sintp,costp,hr,hi
+        real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
+     & settt
+
+      integer getDispersiveBoundaryForcing
+      real alphaP, psum(0:2)
 
       integer maxNumberOfPolarizationVectors
       parameter( maxNumberOfPolarizationVectors=20 )
@@ -1698,6 +1702,7 @@ c===============================================================================
         ! P = psi*E , psi = psir + i*psii
         psir(0)                 =rpar(39)
         psii(0)                 =rpar(40)
+        alphaP                  =rpar(41)
         if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
           ! sanity check
           stop 12345
@@ -1748,11 +1753,13 @@ c===============================================================================
           ssfttt = 0.
           ssftttt = 0.
         end if
+        getDispersiveBoundaryForcing=0 ! for boundary forcing with a dispersive plane wave
         ! initialize dispersive plane wave parameters
         if( dispersionModel .ne. noDispersion )then
           ! Retrieve the values of psir(iv) and psii(iv) 
           call getGDMPolarizationParameters( grid,psir,psii,
      & maxNumberOfPolarizationVectors )
+          getDispersiveBoundaryForcing=1
             ! --- pre-calculations for the dispersive plane wave ---
             ! kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz)
             ! ck2 = (c*kk)**2
@@ -2213,6 +2220,26 @@ c===============================================================================
                               ubv(ex) = pwc(0)*amp
                               ubv(ey) = pwc(1)*amp
                               ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
                             else
                               ! polarization vector: (ex=pxc, ey=pyc) 
                               do iv=0,numberOfPolarizationVectors-1
@@ -2226,11 +2253,103 @@ c===============================================================================
                               end do
                             end if
                           else if( numberOfTimeDerivatives==2 )then
-                            write(*,'(" GDPW ntd=2 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=2 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            costp=-si*( si*cost+sr*sint)+sr*(-si*sint+
+     & sr*cost)  ! d2/dt2( cost)
+                            sintp= si*(-si*sint+sr*cost)+sr*( si*cost+
+     & sr*sint) ! d2/dt2
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==3 )then
-                            write(*,'(" GDPW ntd=3 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=3 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                            ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                            costp=-si*( si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)
+     & )  ! d3/dt3( cost)
+                            sintp= si*(-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint)
+     & ) ! d3/dt3
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==4 )then
                             write(*,'(" GDPW ntd=4 : fix me")')
                             stop 3738
@@ -3952,6 +4071,26 @@ c===============================================================================
                               ubv(ex) = pwc(0)*amp
                               ubv(ey) = pwc(1)*amp
                               ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
                             else
                               ! polarization vector: (ex=pxc, ey=pyc) 
                               do iv=0,numberOfPolarizationVectors-1
@@ -3965,11 +4104,103 @@ c===============================================================================
                               end do
                             end if
                           else if( numberOfTimeDerivatives==2 )then
-                            write(*,'(" GDPW ntd=2 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=2 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            costp=-si*( si*cost+sr*sint)+sr*(-si*sint+
+     & sr*cost)  ! d2/dt2( cost)
+                            sintp= si*(-si*sint+sr*cost)+sr*( si*cost+
+     & sr*sint) ! d2/dt2
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==3 )then
-                            write(*,'(" GDPW ntd=3 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=3 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                            ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                            costp=-si*( si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)
+     & )  ! d3/dt3( cost)
+                            sintp= si*(-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint)
+     & ) ! d3/dt3
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==4 )then
                             write(*,'(" GDPW ntd=4 : fix me")')
                             stop 3738
@@ -5172,6 +5403,26 @@ c===============================================================================
                               ubv(ex) = pwc(0)*amp
                               ubv(ey) = pwc(1)*amp
                               ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
                             else
                               ! polarization vector: (ex=pxc, ey=pyc) 
                               do iv=0,numberOfPolarizationVectors-1
@@ -5185,11 +5436,103 @@ c===============================================================================
                               end do
                             end if
                           else if( numberOfTimeDerivatives==2 )then
-                            write(*,'(" GDPW ntd=2 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=2 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            costp=-si*( si*cost+sr*sint)+sr*(-si*sint+
+     & sr*cost)  ! d2/dt2( cost)
+                            sintp= si*(-si*sint+sr*cost)+sr*( si*cost+
+     & sr*sint) ! d2/dt2
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==3 )then
-                            write(*,'(" GDPW ntd=3 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=3 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                            ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                            costp=-si*( si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)
+     & )  ! d3/dt3( cost)
+                            sintp= si*(-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint)
+     & ) ! d3/dt3
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==4 )then
                             write(*,'(" GDPW ntd=4 : fix me")')
                             stop 3738
@@ -7006,6 +7349,26 @@ c===============================================================================
                               ubv(ex) = pwc(0)*amp
                               ubv(ey) = pwc(1)*amp
                               ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
                             else
                               ! polarization vector: (ex=pxc, ey=pyc) 
                               do iv=0,numberOfPolarizationVectors-1
@@ -7019,11 +7382,103 @@ c===============================================================================
                               end do
                             end if
                           else if( numberOfTimeDerivatives==2 )then
-                            write(*,'(" GDPW ntd=2 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=2 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            costp=-si*( si*cost+sr*sint)+sr*(-si*sint+
+     & sr*cost)  ! d2/dt2( cost)
+                            sintp= si*(-si*sint+sr*cost)+sr*( si*cost+
+     & sr*sint) ! d2/dt2
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==3 )then
-                            write(*,'(" GDPW ntd=3 : fix me")')
-                            stop 3738
+                            ! write(*,'(" GDPW ntd=3 : fix me")')
+                            ! stop 3738
+                            ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                            ! sintp= si*cost+sr*sint ! d/dt
+                            ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                            ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                            costp=-si*( si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)
+     & )  ! d3/dt3( cost)
+                            sintp= si*(-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint)
+     & ) ! d3/dt3
+                            if( polarizationOption.eq.0 )then
+                              ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                              amp = sinxi*costp+cosxi*sintp
+                              ubv(ex) = pwc(0)*amp
+                              ubv(ey) = pwc(1)*amp
+                              ubv(ez) = pwc(2)*amp
+                              ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                if( getDispersiveBoundaryForcing.eq.1 )
+     & then
+                                  ! if( t.le.5*dt )then
+                                  !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                  ! end if
+                                  psum(0)=0.
+                                  psum(1)=0.
+                                  psum(2)=0.
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    psum(0) = psum(0) + pwc(0)*amp
+                                    psum(1) = psum(1) + pwc(1)*amp
+                                    psum(2) = psum(2) + pwc(2)*amp
+                                  end do
+                                  ubv(ex) = ubv(ex) + alphaP*psum(0)
+                                  ubv(ey) = ubv(ey) + alphaP*psum(1)
+                                  ubv(ez) = ubv(ez) + alphaP*psum(2)
+                                end if
+                            else
+                              ! polarization vector: (ex=pxc, ey=pyc)
+                              do iv=0,numberOfPolarizationVectors-1
+                                pxc = ex + iv*nd
+                                ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                amp=(psir(iv)*costp-psii(iv)*sintp)*
+     & sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                ubv(pxc  ) = pwc(0)*amp
+                                ubv(pxc+1) = pwc(1)*amp
+                                ubv(pxc+2) = pwc(2)*amp
+                              end do
+                            end if
                           else if( numberOfTimeDerivatives==4 )then
                             write(*,'(" GDPW ntd=4 : fix me")')
                             stop 3738
@@ -8691,6 +9146,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -8704,11 +9183,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -8980,6 +9559,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -8993,11 +9596,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -9269,6 +9972,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -9282,11 +10009,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -9673,6 +10500,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -9686,11 +10537,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -9962,6 +10913,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -9975,11 +10950,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -11323,6 +12398,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -11336,11 +12435,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -11612,6 +12811,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -11625,11 +12848,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -11901,6 +13224,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -11914,11 +13261,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -12305,6 +13752,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -12318,11 +13789,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738
@@ -12594,6 +14165,30 @@ c===============================================================================
                                   ubv(ex) = pwc(0)*amp
                                   ubv(ey) = pwc(1)*amp
                                   ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -12607,11 +14202,111 @@ c===============================================================================
                                   end do
                                 end if
                               else if( numberOfTimeDerivatives==2 )then
-                                write(*,'(" GDPW ntd=2 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=2 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                costp=-si*( si*cost+sr*sint)+sr*(-si*
+     & sint+sr*cost)  ! d2/dt2( cost)
+                                sintp= si*(-si*sint+sr*cost)+sr*( si*
+     & cost+sr*sint) ! d2/dt2
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==3 )then
-                                write(*,'(" GDPW ntd=3 : fix me")')
-                                stop 3738
+                                ! write(*,'(" GDPW ntd=3 : fix me")')
+                                ! stop 3738
+                                ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                ! sintp= si*cost+sr*sint ! d/dt
+                                ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                costp=-si*( si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
+     & cost))  ! d3/dt3( cost)
+                                sintp= si*(-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
+     & sint)) ! d3/dt3
+                                if( polarizationOption.eq.0 )then
+                                  ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                  amp = sinxi*costp+cosxi*sintp
+                                  ubv(ex) = pwc(0)*amp
+                                  ubv(ey) = pwc(1)*amp
+                                  ubv(ez) = pwc(2)*amp
+                                  ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                    if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                      ! if( t.le.5*dt )then
+                                      !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                      ! end if
+                                      psum(0)=0.
+                                      psum(1)=0.
+                                      psum(2)=0.
+                                      do iv=0,
+     & numberOfPolarizationVectors-1
+                                        amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                        psum(0) = psum(0) + pwc(0)*amp
+                                        psum(1) = psum(1) + pwc(1)*amp
+                                        psum(2) = psum(2) + pwc(2)*amp
+                                      end do
+                                      ubv(ex) = ubv(ex) + alphaP*psum(
+     & 0)
+                                      ubv(ey) = ubv(ey) + alphaP*psum(
+     & 1)
+                                      ubv(ez) = ubv(ez) + alphaP*psum(
+     & 2)
+                                    end if
+                                else
+                                  ! polarization vector: (ex=pxc, ey=pyc)
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    pxc = ex + iv*nd
+                                    ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                    amp=(psir(iv)*costp-psii(iv)*sintp)
+     & *sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                    ubv(pxc  ) = pwc(0)*amp
+                                    ubv(pxc+1) = pwc(1)*amp
+                                    ubv(pxc+2) = pwc(2)*amp
+                                  end do
+                                end if
                               else if( numberOfTimeDerivatives==4 )then
                                 write(*,'(" GDPW ntd=4 : fix me")')
                                 stop 3738

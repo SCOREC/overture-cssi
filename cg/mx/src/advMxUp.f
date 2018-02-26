@@ -1,7 +1,7 @@
 ! This file automatically generated from advMxUp.bf with bpp.
 !
 ! Optimized advance routines for cgmx
-!
+!!
 ! These next include files will define the macros that will define the difference approximations
 ! The actual macro is called below
 c Use this next macro to declare the statement functions that are defined below
@@ -102,6 +102,7 @@ c To include derivatives of rx use OPTION=RX
 ! Macro: compute the coefficients in the sosup dissipation for curvilinear grids
 ! ===========================================================================================
 
+
 ! ===========================================================================================
 ! Macro: Output some debug info for the first few time-steps 
 ! ===========================================================================================
@@ -110,18 +111,31 @@ c To include derivatives of rx use OPTION=RX
 ! Upwind (sosup) dissipation (4th-order difference used with 2nd-order scheme) 
 ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ! Upwind (sosup) dissipation (6th-order difference used with 4th-order scheme)
 ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 ! ===========================================================================================
 ! Macro:     UPWIND DISSIPATION, RECTANGULAR, 2D, ORDER 2
 ! ===========================================================================================
 
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, RECTANGULAR, 3D, ORDER 2
+! ===========================================================================================
+
+
 
 ! ===========================================================================================
 ! Macro:     UPWIND DISSIPATION, RECTANGULAR, 2D, ORDER 4
 ! ===========================================================================================
+
+
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, RECTANGULAR, 3D, ORDER 4
+! ===========================================================================================
+
 
 
 
@@ -131,6 +145,16 @@ c To include derivatives of rx use OPTION=RX
 
 ! ===========================================================================================
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 2D, ORDER 4
+! ===========================================================================================
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 2
+! ===========================================================================================
+
+
+
+
+! ===========================================================================================
+! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 4
 ! ===========================================================================================
 
 
@@ -148,13 +172,9 @@ c To include derivatives of rx use OPTION=RX
 
     ! NOTE: For now 3D versions are just null versions below 
 
-!      buildFile(advMxUp3dOrder2r,3,2,rectangular)
 !
-!      buildFile(advMxUp3dOrder2c,3,2,curvilinear)
 !
-!      buildFile(advMxUp3dOrder4r,3,4,rectangular)
 !
-!      buildFile(advMxUp3dOrder4c,3,4,curvilinear)
 !
 !      buildFile(advMx2dOrder6r,2,6,rectangular)
 !      buildFile(advMx3dOrder6r,3,6,rectangular)
@@ -178,12 +198,16 @@ c To include derivatives of rx use OPTION=RX
 
 ! --- For now build null version is 3D for faster compiles ----
 !      buildFileNull(advMxUp2dOrder2r,2,2,rectangular)
+!      buildFileNull(advMxUp3dOrder2r,3,2,rectangular)
 !
 !      buildFileNull(advMxUp2dOrder2c,2,2,curvilinear)
+!      buildFileNull(advMxUp3dOrder2c,3,2,curvilinear)
 !
 !      buildFileNull(advMxUp2dOrder4r,2,4,rectangular)
+!      buildFileNull(advMxUp3dOrder4r,3,4,rectangular)
 !
 !      buildFileNull(advMxUp2dOrder4c,2,4,curvilinear)
+!      buildFileNull(advMxUp3dOrder4c,3,4,curvilinear)
 
 
 

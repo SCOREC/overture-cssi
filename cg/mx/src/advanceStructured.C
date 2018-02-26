@@ -313,8 +313,13 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
       // useCurvilinearOptNew: if true, use advOpt to advance full equations in curvilinear case
       //                       if false, evaluate RHS for curvilinear below and then use advOpt to update solution
       // bool useCurvilinearOptNew = !isRectangular && !useConservative && numberOfDimensions==2 ;
-            bool useCurvilinearOptNew = !isRectangular && !useConservative && 
-                (orderOfAccuracyInSpace==4 || orderOfAccuracyInSpace==6);
+      // *wdh* Feb 25, 2018 -- dispersion model implements optimized curvilinear non-conservative
+            bool useCurvilinearOptNew = (
+                ( dispersionModel!=noDispersion && !useConservative ) || 
+                ( (!isRectangular  && 
+           !useConservative && 
+                      (orderOfAccuracyInSpace==4 || orderOfAccuracyInSpace==6) )
+                    ) );
             realArray f; // *** SAVE FORCING HERE ***
             if( updateInterior )
             {

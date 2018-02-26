@@ -2329,6 +2329,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 rpar[38]=si;
                 rpar[39]=psir[0];  // *FIX ME*
                 rpar[40]=psii[0];
+                rpar[41]=dmp.alphaP;
         // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
             #ifdef USE_PPP 
                 realSerialArray uu;    getLocalArrayWithGhostBoundaries(u,uu);
@@ -2857,6 +2858,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     rpar[38]=si;
                     rpar[39]=psir[0];  // *FIX ME*
                     rpar[40]=psii[0];
+                    rpar[41]=dmp.alphaP;
           // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
                 #ifdef USE_PPP 
                     realSerialArray uu;    getLocalArrayWithGhostBoundaries(u,uu);
@@ -3389,6 +3391,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     rpar[38]=si;
                     rpar[39]=psir[0];  // *FIX ME*
                     rpar[40]=psii[0];
+                    rpar[41]=dmp.alphaP;
           // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
                 #ifdef USE_PPP 
                     realSerialArray uu;    getLocalArrayWithGhostBoundaries(u,uu);

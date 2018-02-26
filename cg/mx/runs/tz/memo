@@ -1,4 +1,27 @@
 ***************************
+******* Feb 24, 2018
+
+TEST Jordans Sosup-dissipation
+
+
+FD44s: curvilinear -- not exact 
+cgmx -noplot tz -g=nonSquare16.order4.ng3 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.01 -tf=.2 -cfl=.5 -go=go
+
+FD22s -- exact
+cgmx -noplot tz -g=nonSquare16.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.01 -tf=.2 -cfl=.5 -go=go
+
+
+
+cgmx -noplot tz -g=box2.order4.ng3 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.01 -tf=.2 -cfl=.5 -go=go
+
+
+FD44s: EXACT
+cgmx -noplot tz -g=square16.order4.ng3 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.01 -tf=.2 -cfl=.5 -go=go
+
+
+
+
+***************************
 ******* Jan 27, 2018
 
 CHECK CURVILINEAR ORDER 4 

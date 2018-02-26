@@ -220,7 +220,11 @@
       real si,sr,expt,sinxi,cosxi
       real sinxip,cosxip, sinxid, cosxid, sinxid2, cosxid2, sinxid3, 
      & cosxid3
-      real amph,sint,cost,sintp,costp,hr,hi
+        real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
+     & settt
+
+      integer getDispersiveBoundaryForcing
+      real alphaP, psum(0:2)
 
       integer maxNumberOfPolarizationVectors
       parameter( maxNumberOfPolarizationVectors=20 )
@@ -1698,6 +1702,7 @@ c===============================================================================
         ! P = psi*E , psi = psir + i*psii
         psir(0)                 =rpar(39)
         psii(0)                 =rpar(40)
+        alphaP                  =rpar(41)
         if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
           ! sanity check
           stop 12345
@@ -1748,11 +1753,13 @@ c===============================================================================
           ssfttt = 0.
           ssftttt = 0.
         end if
+        getDispersiveBoundaryForcing=0 ! for boundary forcing with a dispersive plane wave
         ! initialize dispersive plane wave parameters
         if( dispersionModel .ne. noDispersion )then
           ! Retrieve the values of psir(iv) and psii(iv) 
           call getGDMPolarizationParameters( grid,psir,psii,
      & maxNumberOfPolarizationVectors )
+          getDispersiveBoundaryForcing=1
             ! --- pre-calculations for the dispersive plane wave ---
             ! kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz)
             ! ck2 = (c*kk)**2

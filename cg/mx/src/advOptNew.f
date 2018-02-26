@@ -91,7 +91,6 @@ c To include derivatives of rx use OPTION=RX
 
 
 
-
 ! ** evaluate the laplacian on the 9 points centred at (i1,i2,i3)
 
 
@@ -110,7 +109,7 @@ c To include derivatives of rx use OPTION=RX
 ! ===========================================================================================
 
 ! ===========================================================================================
-! Macro: Output some debug info for the first few time-steps 
+! Macro: Output some debug info for the first few time-steps
 ! ===========================================================================================
 
 ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -141,13 +140,24 @@ c To include derivatives of rx use OPTION=RX
 ! ===========================================================================================
 
 ! ========================================================================
-! Macro: Getting forcing for GDM 
+! Macro: Getting forcing for GDM
 !  Input:
 !    ec : E component
 !    pc : P component
 !  Output:
 !    fe : forcing for E is updated
 !    fpv(iv) : forcing for polarization vector iv=0,1,2,...
+! ========================================================================
+
+
+! ========================================================================
+! Macro: Getting forcing for fourth-order accurate GDM
+!  Input:
+!    ec : E component
+!    pc : P component
+!  Output:
+!    fpv(iv) : forcing for polarization vector iv=0,1,2,...
+!    More forcing vectors, etc.
 ! ========================================================================
 
 ! ========================================================================
@@ -187,10 +197,28 @@ c To include derivatives of rx use OPTION=RX
 ! ===========================================================================================
 
 
+
 ! ===========================================================================================
-! Macro:     DISPERSIVE: CURVILINEAR, 2D, ORDER 4
+! Macro:     DISPERSIVE: CURVILINEAR (NEW), 2D, ORDER 4
 ! ===========================================================================================
 
+! XYZ3
+
+
+! ===========================================================================================
+! Macro:     DISPERSIVE: RECTANGULAR, 3D, ORDER 4
+! ===========================================================================================
+
+
+! ===========================================================================================
+! Macro:     DISPERSIVE: CURVILINEAR, 3D, ORDER 4
+! ===========================================================================================
+
+
+
+! **********************************************************************************
+! Macro UPDATE_DISPERSIVE: XYZ Please Finish
+! **********************************************************************************
 
 
 ! **********************************************************************************
@@ -208,9 +236,7 @@ c To include derivatives of rx use OPTION=RX
 
 !
 !
-!      buildFile(advMx3dOrder4r,3,4,rectangular)
 !
-!      buildFile(advMx3dOrder4c,3,4,curvilinear)
 !
 !      buildFile(advMx2dOrder6r,2,6,rectangular)
 !      buildFile(advMx3dOrder6r,3,6,rectangular)
@@ -396,11 +422,3 @@ c To include derivatives of rx use OPTION=RX
 
       return
       end
-
-
-
-
-
-
-
-

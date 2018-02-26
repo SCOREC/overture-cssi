@@ -117,7 +117,7 @@ squareEigenfunctionKnownSolution
 tFinal $tFinal
 tPlot  $tPlot
 cfl  $cfl
-use conservative divergence $cons 
+use conservative difference $cons
 #
 dissipation $diss
 apply filter $filter

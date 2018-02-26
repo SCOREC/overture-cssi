@@ -1237,6 +1237,8 @@ do i1=nn1a,nn1b
  ! P = psi*E , psi = psir + i*psii
  psir(0)                 =rpar(39)
  psii(0)                 =rpar(40)
+ alphaP                  =rpar(41)
+ 
 
  if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
    ! sanity check
@@ -1262,10 +1264,14 @@ do i1=nn1a,nn1b
 
  initializeBoundaryForcing(t,slowStartInterval)
 
+ getDispersiveBoundaryForcing=0 ! for boundary forcing with a dispersive plane wave
+
  ! initialize dispersive plane wave parameters
  if( dispersionModel .ne. noDispersion )then
    ! Retrieve the values of psir(iv) and psii(iv) 
    call getGDMPolarizationParameters( grid,psir,psii,maxNumberOfPolarizationVectors )
+
+   getDispersiveBoundaryForcing=1
 
    initializeDispersivePlaneWave()
  end if

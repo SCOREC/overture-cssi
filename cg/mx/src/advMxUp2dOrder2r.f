@@ -87,880 +87,881 @@
        !...........start statement function
         integer kd,m
         real rx,ry,rz,sx,sy,sz,tx,ty,tz
-         real d12
-         real d22
-         real h12
-         real h22
-         real rxr2
-         real rxs2
-         real rxt2
-         real rxrr2
-         real rxss2
-         real rxrs2
-         real ryr2
-         real rys2
-         real ryt2
-         real ryrr2
-         real ryss2
-         real ryrs2
-         real rzr2
-         real rzs2
-         real rzt2
-         real rzrr2
-         real rzss2
-         real rzrs2
-         real sxr2
-         real sxs2
-         real sxt2
-         real sxrr2
-         real sxss2
-         real sxrs2
-         real syr2
-         real sys2
-         real syt2
-         real syrr2
-         real syss2
-         real syrs2
-         real szr2
-         real szs2
-         real szt2
-         real szrr2
-         real szss2
-         real szrs2
-         real txr2
-         real txs2
-         real txt2
-         real txrr2
-         real txss2
-         real txrs2
-         real tyr2
-         real tys2
-         real tyt2
-         real tyrr2
-         real tyss2
-         real tyrs2
-         real tzr2
-         real tzs2
-         real tzt2
-         real tzrr2
-         real tzss2
-         real tzrs2
-         real rxx21
-         real rxx22
-         real rxy22
-         real rxx23
-         real rxy23
-         real rxz23
-         real ryx22
-         real ryy22
-         real ryx23
-         real ryy23
-         real ryz23
-         real rzx22
-         real rzy22
-         real rzx23
-         real rzy23
-         real rzz23
-         real sxx22
-         real sxy22
-         real sxx23
-         real sxy23
-         real sxz23
-         real syx22
-         real syy22
-         real syx23
-         real syy23
-         real syz23
-         real szx22
-         real szy22
-         real szx23
-         real szy23
-         real szz23
-         real txx22
-         real txy22
-         real txx23
-         real txy23
-         real txz23
-         real tyx22
-         real tyy22
-         real tyx23
-         real tyy23
-         real tyz23
-         real tzx22
-         real tzy22
-         real tzx23
-         real tzy23
-         real tzz23
-         real ur2
-         real us2
-         real ut2
-         real urr2
-         real uss2
-         real urs2
-         real utt2
-         real urt2
-         real ust2
-         real urrr2
-         real usss2
-         real uttt2
-         real ux21
-         real uy21
-         real uz21
-         real ux22
-         real uy22
-         real uz22
-         real ux23
-         real uy23
-         real uz23
-         real uxx21
-         real uyy21
-         real uxy21
-         real uxz21
-         real uyz21
-         real uzz21
-         real ulaplacian21
-         real uxx22
-         real uyy22
-         real uxy22
-         real uxz22
-         real uyz22
-         real uzz22
-         real ulaplacian22
-         real uxx23
-         real uyy23
-         real uzz23
-         real uxy23
-         real uxz23
-         real uyz23
-         real ulaplacian23
-         real ux23r
-         real uy23r
-         real uz23r
-         real uxx23r
-         real uyy23r
-         real uxy23r
-         real uzz23r
-         real uxz23r
-         real uyz23r
-         real ux21r
-         real uy21r
-         real uz21r
-         real uxx21r
-         real uyy21r
-         real uzz21r
-         real uxy21r
-         real uxz21r
-         real uyz21r
-         real ulaplacian21r
-         real ux22r
-         real uy22r
-         real uz22r
-         real uxx22r
-         real uyy22r
-         real uzz22r
-         real uxy22r
-         real uxz22r
-         real uyz22r
-         real ulaplacian22r
-         real ulaplacian23r
-         real uxxx22r
-         real uyyy22r
-         real uxxy22r
-         real uxyy22r
-         real uxxxx22r
-         real uyyyy22r
-         real uxxyy22r
-         real uxxx23r
-         real uyyy23r
-         real uzzz23r
-         real uxxy23r
-         real uxxz23r
-         real uxyy23r
-         real uyyz23r
-         real uxzz23r
-         real uyzz23r
-         real uxxxx23r
-         real uyyyy23r
-         real uzzzz23r
-         real uxxyy23r
-         real uxxzz23r
-         real uyyzz23r
-         real uLapSq22r
-         real uLapSq23r
-         real unr2
-         real uns2
-         real unt2
-         real unrr2
-         real unss2
-         real unrs2
-         real untt2
-         real unrt2
-         real unst2
-         real unrrr2
-         real unsss2
-         real unttt2
-         real unx21
-         real uny21
-         real unz21
-         real unx22
-         real uny22
-         real unz22
-         real unx23
-         real uny23
-         real unz23
-         real unxx21
-         real unyy21
-         real unxy21
-         real unxz21
-         real unyz21
-         real unzz21
-         real unlaplacian21
-         real unxx22
-         real unyy22
-         real unxy22
-         real unxz22
-         real unyz22
-         real unzz22
-         real unlaplacian22
-         real unxx23
-         real unyy23
-         real unzz23
-         real unxy23
-         real unxz23
-         real unyz23
-         real unlaplacian23
-         real unx23r
-         real uny23r
-         real unz23r
-         real unxx23r
-         real unyy23r
-         real unxy23r
-         real unzz23r
-         real unxz23r
-         real unyz23r
-         real unx21r
-         real uny21r
-         real unz21r
-         real unxx21r
-         real unyy21r
-         real unzz21r
-         real unxy21r
-         real unxz21r
-         real unyz21r
-         real unlaplacian21r
-         real unx22r
-         real uny22r
-         real unz22r
-         real unxx22r
-         real unyy22r
-         real unzz22r
-         real unxy22r
-         real unxz22r
-         real unyz22r
-         real unlaplacian22r
-         real unlaplacian23r
-         real unxxx22r
-         real unyyy22r
-         real unxxy22r
-         real unxyy22r
-         real unxxxx22r
-         real unyyyy22r
-         real unxxyy22r
-         real unxxx23r
-         real unyyy23r
-         real unzzz23r
-         real unxxy23r
-         real unxxz23r
-         real unxyy23r
-         real unyyz23r
-         real unxzz23r
-         real unyzz23r
-         real unxxxx23r
-         real unyyyy23r
-         real unzzzz23r
-         real unxxyy23r
-         real unxxzz23r
-         real unyyzz23r
-         real unLapSq22r
-         real unLapSq23r
-         real vr2
-         real vs2
-         real vt2
-         real vrr2
-         real vss2
-         real vrs2
-         real vtt2
-         real vrt2
-         real vst2
-         real vrrr2
-         real vsss2
-         real vttt2
-         real vx21
-         real vy21
-         real vz21
-         real vx22
-         real vy22
-         real vz22
-         real vx23
-         real vy23
-         real vz23
-         real vxx21
-         real vyy21
-         real vxy21
-         real vxz21
-         real vyz21
-         real vzz21
-         real vlaplacian21
-         real vxx22
-         real vyy22
-         real vxy22
-         real vxz22
-         real vyz22
-         real vzz22
-         real vlaplacian22
-         real vxx23
-         real vyy23
-         real vzz23
-         real vxy23
-         real vxz23
-         real vyz23
-         real vlaplacian23
-         real vx23r
-         real vy23r
-         real vz23r
-         real vxx23r
-         real vyy23r
-         real vxy23r
-         real vzz23r
-         real vxz23r
-         real vyz23r
-         real vx21r
-         real vy21r
-         real vz21r
-         real vxx21r
-         real vyy21r
-         real vzz21r
-         real vxy21r
-         real vxz21r
-         real vyz21r
-         real vlaplacian21r
-         real vx22r
-         real vy22r
-         real vz22r
-         real vxx22r
-         real vyy22r
-         real vzz22r
-         real vxy22r
-         real vxz22r
-         real vyz22r
-         real vlaplacian22r
-         real vlaplacian23r
-         real vxxx22r
-         real vyyy22r
-         real vxxy22r
-         real vxyy22r
-         real vxxxx22r
-         real vyyyy22r
-         real vxxyy22r
-         real vxxx23r
-         real vyyy23r
-         real vzzz23r
-         real vxxy23r
-         real vxxz23r
-         real vxyy23r
-         real vyyz23r
-         real vxzz23r
-         real vyzz23r
-         real vxxxx23r
-         real vyyyy23r
-         real vzzzz23r
-         real vxxyy23r
-         real vxxzz23r
-         real vyyzz23r
-         real vLapSq22r
-         real vLapSq23r
-         real umr2
-         real ums2
-         real umt2
-         real umrr2
-         real umss2
-         real umrs2
-         real umtt2
-         real umrt2
-         real umst2
-         real umrrr2
-         real umsss2
-         real umttt2
-         real umx21
-         real umy21
-         real umz21
-         real umx22
-         real umy22
-         real umz22
-         real umx23
-         real umy23
-         real umz23
-         real umxx21
-         real umyy21
-         real umxy21
-         real umxz21
-         real umyz21
-         real umzz21
-         real umlaplacian21
-         real umxx22
-         real umyy22
-         real umxy22
-         real umxz22
-         real umyz22
-         real umzz22
-         real umlaplacian22
-         real umxx23
-         real umyy23
-         real umzz23
-         real umxy23
-         real umxz23
-         real umyz23
-         real umlaplacian23
-         real umx23r
-         real umy23r
-         real umz23r
-         real umxx23r
-         real umyy23r
-         real umxy23r
-         real umzz23r
-         real umxz23r
-         real umyz23r
-         real umx21r
-         real umy21r
-         real umz21r
-         real umxx21r
-         real umyy21r
-         real umzz21r
-         real umxy21r
-         real umxz21r
-         real umyz21r
-         real umlaplacian21r
-         real umx22r
-         real umy22r
-         real umz22r
-         real umxx22r
-         real umyy22r
-         real umzz22r
-         real umxy22r
-         real umxz22r
-         real umyz22r
-         real umlaplacian22r
-         real umlaplacian23r
-         real umxxx22r
-         real umyyy22r
-         real umxxy22r
-         real umxyy22r
-         real umxxxx22r
-         real umyyyy22r
-         real umxxyy22r
-         real umxxx23r
-         real umyyy23r
-         real umzzz23r
-         real umxxy23r
-         real umxxz23r
-         real umxyy23r
-         real umyyz23r
-         real umxzz23r
-         real umyzz23r
-         real umxxxx23r
-         real umyyyy23r
-         real umzzzz23r
-         real umxxyy23r
-         real umxxzz23r
-         real umyyzz23r
-         real umLapSq22r
-         real umLapSq23r
-         real ffr2
-         real ffs2
-         real fft2
-         real ffrr2
-         real ffss2
-         real ffrs2
-         real fftt2
-         real ffrt2
-         real ffst2
-         real ffrrr2
-         real ffsss2
-         real ffttt2
-         real ffx21
-         real ffy21
-         real ffz21
-         real ffx22
-         real ffy22
-         real ffz22
-         real ffx23
-         real ffy23
-         real ffz23
-         real ffxx21
-         real ffyy21
-         real ffxy21
-         real ffxz21
-         real ffyz21
-         real ffzz21
-         real fflaplacian21
-         real ffxx22
-         real ffyy22
-         real ffxy22
-         real ffxz22
-         real ffyz22
-         real ffzz22
-         real fflaplacian22
-         real ffxx23
-         real ffyy23
-         real ffzz23
-         real ffxy23
-         real ffxz23
-         real ffyz23
-         real fflaplacian23
-         real ffx23r
-         real ffy23r
-         real ffz23r
-         real ffxx23r
-         real ffyy23r
-         real ffxy23r
-         real ffzz23r
-         real ffxz23r
-         real ffyz23r
-         real ffx21r
-         real ffy21r
-         real ffz21r
-         real ffxx21r
-         real ffyy21r
-         real ffzz21r
-         real ffxy21r
-         real ffxz21r
-         real ffyz21r
-         real fflaplacian21r
-         real ffx22r
-         real ffy22r
-         real ffz22r
-         real ffxx22r
-         real ffyy22r
-         real ffzz22r
-         real ffxy22r
-         real ffxz22r
-         real ffyz22r
-         real fflaplacian22r
-         real fflaplacian23r
-         real ffxxx22r
-         real ffyyy22r
-         real ffxxy22r
-         real ffxyy22r
-         real ffxxxx22r
-         real ffyyyy22r
-         real ffxxyy22r
-         real ffxxx23r
-         real ffyyy23r
-         real ffzzz23r
-         real ffxxy23r
-         real ffxxz23r
-         real ffxyy23r
-         real ffyyz23r
-         real ffxzz23r
-         real ffyzz23r
-         real ffxxxx23r
-         real ffyyyy23r
-         real ffzzzz23r
-         real ffxxyy23r
-         real ffxxzz23r
-         real ffyyzz23r
-         real ffLapSq22r
-         real ffLapSq23r
-         real d14
-         real d24
-         real h41
-         real h42
-         real rxr4
-         real rxs4
-         real rxt4
-         real ryr4
-         real rys4
-         real ryt4
-         real rzr4
-         real rzs4
-         real rzt4
-         real sxr4
-         real sxs4
-         real sxt4
-         real syr4
-         real sys4
-         real syt4
-         real szr4
-         real szs4
-         real szt4
-         real txr4
-         real txs4
-         real txt4
-         real tyr4
-         real tys4
-         real tyt4
-         real tzr4
-         real tzs4
-         real tzt4
-         real rxx41
-         real rxx42
-         real rxy42
-         real rxx43
-         real rxy43
-         real rxz43
-         real ryx42
-         real ryy42
-         real ryx43
-         real ryy43
-         real ryz43
-         real rzx42
-         real rzy42
-         real rzx43
-         real rzy43
-         real rzz43
-         real sxx42
-         real sxy42
-         real sxx43
-         real sxy43
-         real sxz43
-         real syx42
-         real syy42
-         real syx43
-         real syy43
-         real syz43
-         real szx42
-         real szy42
-         real szx43
-         real szy43
-         real szz43
-         real txx42
-         real txy42
-         real txx43
-         real txy43
-         real txz43
-         real tyx42
-         real tyy42
-         real tyx43
-         real tyy43
-         real tyz43
-         real tzx42
-         real tzy42
-         real tzx43
-         real tzy43
-         real tzz43
-         real ur4
-         real us4
-         real ut4
-         real urr4
-         real uss4
-         real utt4
-         real urs4
-         real urt4
-         real ust4
-         real ux41
-         real uy41
-         real uz41
-         real ux42
-         real uy42
-         real uz42
-         real ux43
-         real uy43
-         real uz43
-         real uxx41
-         real uyy41
-         real uxy41
-         real uxz41
-         real uyz41
-         real uzz41
-         real ulaplacian41
-         real uxx42
-         real uyy42
-         real uxy42
-         real uxz42
-         real uyz42
-         real uzz42
-         real ulaplacian42
-         real uxx43
-         real uyy43
-         real uzz43
-         real uxy43
-         real uxz43
-         real uyz43
-         real ulaplacian43
-         real ux43r
-         real uy43r
-         real uz43r
-         real uxx43r
-         real uyy43r
-         real uzz43r
-         real uxy43r
-         real uxz43r
-         real uyz43r
-         real ux41r
-         real uy41r
-         real uz41r
-         real uxx41r
-         real uyy41r
-         real uzz41r
-         real uxy41r
-         real uxz41r
-         real uyz41r
-         real ulaplacian41r
-         real ux42r
-         real uy42r
-         real uz42r
-         real uxx42r
-         real uyy42r
-         real uzz42r
-         real uxy42r
-         real uxz42r
-         real uyz42r
-         real ulaplacian42r
-         real ulaplacian43r
-         real unr4
-         real uns4
-         real unt4
-         real unrr4
-         real unss4
-         real untt4
-         real unrs4
-         real unrt4
-         real unst4
-         real unx41
-         real uny41
-         real unz41
-         real unx42
-         real uny42
-         real unz42
-         real unx43
-         real uny43
-         real unz43
-         real unxx41
-         real unyy41
-         real unxy41
-         real unxz41
-         real unyz41
-         real unzz41
-         real unlaplacian41
-         real unxx42
-         real unyy42
-         real unxy42
-         real unxz42
-         real unyz42
-         real unzz42
-         real unlaplacian42
-         real unxx43
-         real unyy43
-         real unzz43
-         real unxy43
-         real unxz43
-         real unyz43
-         real unlaplacian43
-         real unx43r
-         real uny43r
-         real unz43r
-         real unxx43r
-         real unyy43r
-         real unzz43r
-         real unxy43r
-         real unxz43r
-         real unyz43r
-         real unx41r
-         real uny41r
-         real unz41r
-         real unxx41r
-         real unyy41r
-         real unzz41r
-         real unxy41r
-         real unxz41r
-         real unyz41r
-         real unlaplacian41r
-         real unx42r
-         real uny42r
-         real unz42r
-         real unxx42r
-         real unyy42r
-         real unzz42r
-         real unxy42r
-         real unxz42r
-         real unyz42r
-         real unlaplacian42r
-         real unlaplacian43r
-         real vr4
-         real vs4
-         real vt4
-         real vrr4
-         real vss4
-         real vtt4
-         real vrs4
-         real vrt4
-         real vst4
-         real vx41
-         real vy41
-         real vz41
-         real vx42
-         real vy42
-         real vz42
-         real vx43
-         real vy43
-         real vz43
-         real vxx41
-         real vyy41
-         real vxy41
-         real vxz41
-         real vyz41
-         real vzz41
-         real vlaplacian41
-         real vxx42
-         real vyy42
-         real vxy42
-         real vxz42
-         real vyz42
-         real vzz42
-         real vlaplacian42
-         real vxx43
-         real vyy43
-         real vzz43
-         real vxy43
-         real vxz43
-         real vyz43
-         real vlaplacian43
-         real vx43r
-         real vy43r
-         real vz43r
-         real vxx43r
-         real vyy43r
-         real vzz43r
-         real vxy43r
-         real vxz43r
-         real vyz43r
-         real vx41r
-         real vy41r
-         real vz41r
-         real vxx41r
-         real vyy41r
-         real vzz41r
-         real vxy41r
-         real vxz41r
-         real vyz41r
-         real vlaplacian41r
-         real vx42r
-         real vy42r
-         real vz42r
-         real vxx42r
-         real vyy42r
-         real vzz42r
-         real vxy42r
-         real vxz42r
-         real vyz42r
-         real vlaplacian42r
-         real vlaplacian43r
+          real d12
+          real d22
+          real h12
+          real h22
+          real rxr2
+          real rxs2
+          real rxt2
+          real rxrr2
+          real rxss2
+          real rxrs2
+          real ryr2
+          real rys2
+          real ryt2
+          real ryrr2
+          real ryss2
+          real ryrs2
+          real rzr2
+          real rzs2
+          real rzt2
+          real rzrr2
+          real rzss2
+          real rzrs2
+          real sxr2
+          real sxs2
+          real sxt2
+          real sxrr2
+          real sxss2
+          real sxrs2
+          real syr2
+          real sys2
+          real syt2
+          real syrr2
+          real syss2
+          real syrs2
+          real szr2
+          real szs2
+          real szt2
+          real szrr2
+          real szss2
+          real szrs2
+          real txr2
+          real txs2
+          real txt2
+          real txrr2
+          real txss2
+          real txrs2
+          real tyr2
+          real tys2
+          real tyt2
+          real tyrr2
+          real tyss2
+          real tyrs2
+          real tzr2
+          real tzs2
+          real tzt2
+          real tzrr2
+          real tzss2
+          real tzrs2
+          real rxx21
+          real rxx22
+          real rxy22
+          real rxx23
+          real rxy23
+          real rxz23
+          real ryx22
+          real ryy22
+          real ryx23
+          real ryy23
+          real ryz23
+          real rzx22
+          real rzy22
+          real rzx23
+          real rzy23
+          real rzz23
+          real sxx22
+          real sxy22
+          real sxx23
+          real sxy23
+          real sxz23
+          real syx22
+          real syy22
+          real syx23
+          real syy23
+          real syz23
+          real szx22
+          real szy22
+          real szx23
+          real szy23
+          real szz23
+          real txx22
+          real txy22
+          real txx23
+          real txy23
+          real txz23
+          real tyx22
+          real tyy22
+          real tyx23
+          real tyy23
+          real tyz23
+          real tzx22
+          real tzy22
+          real tzx23
+          real tzy23
+          real tzz23
+          real ur2
+          real us2
+          real ut2
+          real urr2
+          real uss2
+          real urs2
+          real utt2
+          real urt2
+          real ust2
+          real urrr2
+          real usss2
+          real uttt2
+          real ux21
+          real uy21
+          real uz21
+          real ux22
+          real uy22
+          real uz22
+          real ux23
+          real uy23
+          real uz23
+          real uxx21
+          real uyy21
+          real uxy21
+          real uxz21
+          real uyz21
+          real uzz21
+          real ulaplacian21
+          real uxx22
+          real uyy22
+          real uxy22
+          real uxz22
+          real uyz22
+          real uzz22
+          real ulaplacian22
+          real uxx23
+          real uyy23
+          real uzz23
+          real uxy23
+          real uxz23
+          real uyz23
+          real ulaplacian23
+          real ux23r
+          real uy23r
+          real uz23r
+          real uxx23r
+          real uyy23r
+          real uxy23r
+          real uzz23r
+          real uxz23r
+          real uyz23r
+          real ux21r
+          real uy21r
+          real uz21r
+          real uxx21r
+          real uyy21r
+          real uzz21r
+          real uxy21r
+          real uxz21r
+          real uyz21r
+          real ulaplacian21r
+          real ux22r
+          real uy22r
+          real uz22r
+          real uxx22r
+          real uyy22r
+          real uzz22r
+          real uxy22r
+          real uxz22r
+          real uyz22r
+          real ulaplacian22r
+          real ulaplacian23r
+          real uxxx22r
+          real uyyy22r
+          real uxxy22r
+          real uxyy22r
+          real uxxxx22r
+          real uyyyy22r
+          real uxxyy22r
+          real uxxx23r
+          real uyyy23r
+          real uzzz23r
+          real uxxy23r
+          real uxxz23r
+          real uxyy23r
+          real uyyz23r
+          real uxzz23r
+          real uyzz23r
+          real uxxxx23r
+          real uyyyy23r
+          real uzzzz23r
+          real uxxyy23r
+          real uxxzz23r
+          real uyyzz23r
+          real uLapSq22r
+          real uLapSq23r
+          real unr2
+          real uns2
+          real unt2
+          real unrr2
+          real unss2
+          real unrs2
+          real untt2
+          real unrt2
+          real unst2
+          real unrrr2
+          real unsss2
+          real unttt2
+          real unx21
+          real uny21
+          real unz21
+          real unx22
+          real uny22
+          real unz22
+          real unx23
+          real uny23
+          real unz23
+          real unxx21
+          real unyy21
+          real unxy21
+          real unxz21
+          real unyz21
+          real unzz21
+          real unlaplacian21
+          real unxx22
+          real unyy22
+          real unxy22
+          real unxz22
+          real unyz22
+          real unzz22
+          real unlaplacian22
+          real unxx23
+          real unyy23
+          real unzz23
+          real unxy23
+          real unxz23
+          real unyz23
+          real unlaplacian23
+          real unx23r
+          real uny23r
+          real unz23r
+          real unxx23r
+          real unyy23r
+          real unxy23r
+          real unzz23r
+          real unxz23r
+          real unyz23r
+          real unx21r
+          real uny21r
+          real unz21r
+          real unxx21r
+          real unyy21r
+          real unzz21r
+          real unxy21r
+          real unxz21r
+          real unyz21r
+          real unlaplacian21r
+          real unx22r
+          real uny22r
+          real unz22r
+          real unxx22r
+          real unyy22r
+          real unzz22r
+          real unxy22r
+          real unxz22r
+          real unyz22r
+          real unlaplacian22r
+          real unlaplacian23r
+          real unxxx22r
+          real unyyy22r
+          real unxxy22r
+          real unxyy22r
+          real unxxxx22r
+          real unyyyy22r
+          real unxxyy22r
+          real unxxx23r
+          real unyyy23r
+          real unzzz23r
+          real unxxy23r
+          real unxxz23r
+          real unxyy23r
+          real unyyz23r
+          real unxzz23r
+          real unyzz23r
+          real unxxxx23r
+          real unyyyy23r
+          real unzzzz23r
+          real unxxyy23r
+          real unxxzz23r
+          real unyyzz23r
+          real unLapSq22r
+          real unLapSq23r
+          real vr2
+          real vs2
+          real vt2
+          real vrr2
+          real vss2
+          real vrs2
+          real vtt2
+          real vrt2
+          real vst2
+          real vrrr2
+          real vsss2
+          real vttt2
+          real vx21
+          real vy21
+          real vz21
+          real vx22
+          real vy22
+          real vz22
+          real vx23
+          real vy23
+          real vz23
+          real vxx21
+          real vyy21
+          real vxy21
+          real vxz21
+          real vyz21
+          real vzz21
+          real vlaplacian21
+          real vxx22
+          real vyy22
+          real vxy22
+          real vxz22
+          real vyz22
+          real vzz22
+          real vlaplacian22
+          real vxx23
+          real vyy23
+          real vzz23
+          real vxy23
+          real vxz23
+          real vyz23
+          real vlaplacian23
+          real vx23r
+          real vy23r
+          real vz23r
+          real vxx23r
+          real vyy23r
+          real vxy23r
+          real vzz23r
+          real vxz23r
+          real vyz23r
+          real vx21r
+          real vy21r
+          real vz21r
+          real vxx21r
+          real vyy21r
+          real vzz21r
+          real vxy21r
+          real vxz21r
+          real vyz21r
+          real vlaplacian21r
+          real vx22r
+          real vy22r
+          real vz22r
+          real vxx22r
+          real vyy22r
+          real vzz22r
+          real vxy22r
+          real vxz22r
+          real vyz22r
+          real vlaplacian22r
+          real vlaplacian23r
+          real vxxx22r
+          real vyyy22r
+          real vxxy22r
+          real vxyy22r
+          real vxxxx22r
+          real vyyyy22r
+          real vxxyy22r
+          real vxxx23r
+          real vyyy23r
+          real vzzz23r
+          real vxxy23r
+          real vxxz23r
+          real vxyy23r
+          real vyyz23r
+          real vxzz23r
+          real vyzz23r
+          real vxxxx23r
+          real vyyyy23r
+          real vzzzz23r
+          real vxxyy23r
+          real vxxzz23r
+          real vyyzz23r
+          real vLapSq22r
+          real vLapSq23r
+          real umr2
+          real ums2
+          real umt2
+          real umrr2
+          real umss2
+          real umrs2
+          real umtt2
+          real umrt2
+          real umst2
+          real umrrr2
+          real umsss2
+          real umttt2
+          real umx21
+          real umy21
+          real umz21
+          real umx22
+          real umy22
+          real umz22
+          real umx23
+          real umy23
+          real umz23
+          real umxx21
+          real umyy21
+          real umxy21
+          real umxz21
+          real umyz21
+          real umzz21
+          real umlaplacian21
+          real umxx22
+          real umyy22
+          real umxy22
+          real umxz22
+          real umyz22
+          real umzz22
+          real umlaplacian22
+          real umxx23
+          real umyy23
+          real umzz23
+          real umxy23
+          real umxz23
+          real umyz23
+          real umlaplacian23
+          real umx23r
+          real umy23r
+          real umz23r
+          real umxx23r
+          real umyy23r
+          real umxy23r
+          real umzz23r
+          real umxz23r
+          real umyz23r
+          real umx21r
+          real umy21r
+          real umz21r
+          real umxx21r
+          real umyy21r
+          real umzz21r
+          real umxy21r
+          real umxz21r
+          real umyz21r
+          real umlaplacian21r
+          real umx22r
+          real umy22r
+          real umz22r
+          real umxx22r
+          real umyy22r
+          real umzz22r
+          real umxy22r
+          real umxz22r
+          real umyz22r
+          real umlaplacian22r
+          real umlaplacian23r
+          real umxxx22r
+          real umyyy22r
+          real umxxy22r
+          real umxyy22r
+          real umxxxx22r
+          real umyyyy22r
+          real umxxyy22r
+          real umxxx23r
+          real umyyy23r
+          real umzzz23r
+          real umxxy23r
+          real umxxz23r
+          real umxyy23r
+          real umyyz23r
+          real umxzz23r
+          real umyzz23r
+          real umxxxx23r
+          real umyyyy23r
+          real umzzzz23r
+          real umxxyy23r
+          real umxxzz23r
+          real umyyzz23r
+          real umLapSq22r
+          real umLapSq23r
+          real ffr2
+          real ffs2
+          real fft2
+          real ffrr2
+          real ffss2
+          real ffrs2
+          real fftt2
+          real ffrt2
+          real ffst2
+          real ffrrr2
+          real ffsss2
+          real ffttt2
+          real ffx21
+          real ffy21
+          real ffz21
+          real ffx22
+          real ffy22
+          real ffz22
+          real ffx23
+          real ffy23
+          real ffz23
+          real ffxx21
+          real ffyy21
+          real ffxy21
+          real ffxz21
+          real ffyz21
+          real ffzz21
+          real fflaplacian21
+          real ffxx22
+          real ffyy22
+          real ffxy22
+          real ffxz22
+          real ffyz22
+          real ffzz22
+          real fflaplacian22
+          real ffxx23
+          real ffyy23
+          real ffzz23
+          real ffxy23
+          real ffxz23
+          real ffyz23
+          real fflaplacian23
+          real ffx23r
+          real ffy23r
+          real ffz23r
+          real ffxx23r
+          real ffyy23r
+          real ffxy23r
+          real ffzz23r
+          real ffxz23r
+          real ffyz23r
+          real ffx21r
+          real ffy21r
+          real ffz21r
+          real ffxx21r
+          real ffyy21r
+          real ffzz21r
+          real ffxy21r
+          real ffxz21r
+          real ffyz21r
+          real fflaplacian21r
+          real ffx22r
+          real ffy22r
+          real ffz22r
+          real ffxx22r
+          real ffyy22r
+          real ffzz22r
+          real ffxy22r
+          real ffxz22r
+          real ffyz22r
+          real fflaplacian22r
+          real fflaplacian23r
+          real ffxxx22r
+          real ffyyy22r
+          real ffxxy22r
+          real ffxyy22r
+          real ffxxxx22r
+          real ffyyyy22r
+          real ffxxyy22r
+          real ffxxx23r
+          real ffyyy23r
+          real ffzzz23r
+          real ffxxy23r
+          real ffxxz23r
+          real ffxyy23r
+          real ffyyz23r
+          real ffxzz23r
+          real ffyzz23r
+          real ffxxxx23r
+          real ffyyyy23r
+          real ffzzzz23r
+          real ffxxyy23r
+          real ffxxzz23r
+          real ffyyzz23r
+          real ffLapSq22r
+          real ffLapSq23r
+          real d14
+          real d24
+          real h41
+          real h42
+          real rxr4
+          real rxs4
+          real rxt4
+          real ryr4
+          real rys4
+          real ryt4
+          real rzr4
+          real rzs4
+          real rzt4
+          real sxr4
+          real sxs4
+          real sxt4
+          real syr4
+          real sys4
+          real syt4
+          real szr4
+          real szs4
+          real szt4
+          real txr4
+          real txs4
+          real txt4
+          real tyr4
+          real tys4
+          real tyt4
+          real tzr4
+          real tzs4
+          real tzt4
+          real rxx41
+          real rxx42
+          real rxy42
+          real rxx43
+          real rxy43
+          real rxz43
+          real ryx42
+          real ryy42
+          real ryx43
+          real ryy43
+          real ryz43
+          real rzx42
+          real rzy42
+          real rzx43
+          real rzy43
+          real rzz43
+          real sxx42
+          real sxy42
+          real sxx43
+          real sxy43
+          real sxz43
+          real syx42
+          real syy42
+          real syx43
+          real syy43
+          real syz43
+          real szx42
+          real szy42
+          real szx43
+          real szy43
+          real szz43
+          real txx42
+          real txy42
+          real txx43
+          real txy43
+          real txz43
+          real tyx42
+          real tyy42
+          real tyx43
+          real tyy43
+          real tyz43
+          real tzx42
+          real tzy42
+          real tzx43
+          real tzy43
+          real tzz43
+          real ur4
+          real us4
+          real ut4
+          real urr4
+          real uss4
+          real utt4
+          real urs4
+          real urt4
+          real ust4
+          real ux41
+          real uy41
+          real uz41
+          real ux42
+          real uy42
+          real uz42
+          real ux43
+          real uy43
+          real uz43
+          real uxx41
+          real uyy41
+          real uxy41
+          real uxz41
+          real uyz41
+          real uzz41
+          real ulaplacian41
+          real uxx42
+          real uyy42
+          real uxy42
+          real uxz42
+          real uyz42
+          real uzz42
+          real ulaplacian42
+          real uxx43
+          real uyy43
+          real uzz43
+          real uxy43
+          real uxz43
+          real uyz43
+          real ulaplacian43
+          real ux43r
+          real uy43r
+          real uz43r
+          real uxx43r
+          real uyy43r
+          real uzz43r
+          real uxy43r
+          real uxz43r
+          real uyz43r
+          real ux41r
+          real uy41r
+          real uz41r
+          real uxx41r
+          real uyy41r
+          real uzz41r
+          real uxy41r
+          real uxz41r
+          real uyz41r
+          real ulaplacian41r
+          real ux42r
+          real uy42r
+          real uz42r
+          real uxx42r
+          real uyy42r
+          real uzz42r
+          real uxy42r
+          real uxz42r
+          real uyz42r
+          real ulaplacian42r
+          real ulaplacian43r
+          real unr4
+          real uns4
+          real unt4
+          real unrr4
+          real unss4
+          real untt4
+          real unrs4
+          real unrt4
+          real unst4
+          real unx41
+          real uny41
+          real unz41
+          real unx42
+          real uny42
+          real unz42
+          real unx43
+          real uny43
+          real unz43
+          real unxx41
+          real unyy41
+          real unxy41
+          real unxz41
+          real unyz41
+          real unzz41
+          real unlaplacian41
+          real unxx42
+          real unyy42
+          real unxy42
+          real unxz42
+          real unyz42
+          real unzz42
+          real unlaplacian42
+          real unxx43
+          real unyy43
+          real unzz43
+          real unxy43
+          real unxz43
+          real unyz43
+          real unlaplacian43
+          real unx43r
+          real uny43r
+          real unz43r
+          real unxx43r
+          real unyy43r
+          real unzz43r
+          real unxy43r
+          real unxz43r
+          real unyz43r
+          real unx41r
+          real uny41r
+          real unz41r
+          real unxx41r
+          real unyy41r
+          real unzz41r
+          real unxy41r
+          real unxz41r
+          real unyz41r
+          real unlaplacian41r
+          real unx42r
+          real uny42r
+          real unz42r
+          real unxx42r
+          real unyy42r
+          real unzz42r
+          real unxy42r
+          real unxz42r
+          real unyz42r
+          real unlaplacian42r
+          real unlaplacian43r
+          real vr4
+          real vs4
+          real vt4
+          real vrr4
+          real vss4
+          real vtt4
+          real vrs4
+          real vrt4
+          real vst4
+          real vx41
+          real vy41
+          real vz41
+          real vx42
+          real vy42
+          real vz42
+          real vx43
+          real vy43
+          real vz43
+          real vxx41
+          real vyy41
+          real vxy41
+          real vxz41
+          real vyz41
+          real vzz41
+          real vlaplacian41
+          real vxx42
+          real vyy42
+          real vxy42
+          real vxz42
+          real vyz42
+          real vzz42
+          real vlaplacian42
+          real vxx43
+          real vyy43
+          real vzz43
+          real vxy43
+          real vxz43
+          real vyz43
+          real vlaplacian43
+          real vx43r
+          real vy43r
+          real vz43r
+          real vxx43r
+          real vyy43r
+          real vzz43r
+          real vxy43r
+          real vxz43r
+          real vyz43r
+          real vx41r
+          real vy41r
+          real vz41r
+          real vxx41r
+          real vyy41r
+          real vzz41r
+          real vxy41r
+          real vxz41r
+          real vyz41r
+          real vlaplacian41r
+          real vx42r
+          real vy42r
+          real vz42r
+          real vxx42r
+          real vyy42r
+          real vzz42r
+          real vxy42r
+          real vxz42r
+          real vyz42r
+          real vlaplacian42r
+          real vlaplacian43r
         real maxwell2dr,maxwell3dr,maxwellr44,maxwellr66,maxwellr88
         real maxwellc22,maxwellc44,maxwellc66,maxwellc88
         real maxwell2dr44me,maxwell2dr66me,maxwell2dr88me
         real maxwell3dr44me,maxwell3dr66me,maxwell3dr88me
         real maxwellc44me,maxwellc66me,maxwellc88me
         real max2dc44me,max2dc44me2,max3dc44me
+        real max2dc22me2
         real mxdc2d2Ex,mxdc2d2Ey,mxdc2d4Ex,mxdc2d4Ey, mxdc2d4cEx,
      & mxdc2d4cEy
         real mxdc2d2cEx,mxdc2d2cEy
@@ -3090,7 +3091,7 @@ c===============================================================================
         ! D-plus in time (really undivided) (add factor of 2 below since formula assumes D0) 
         DptU(i1,i2,i3,n) = (un(i1,i2,i3,n)-u(i1,i2,i3,n))
         ! D-minus in time (add factor of 2 below since formula assumes D0) 
-        DmtU(i1,i2,i3,n) = (u(i1,i2,i3,n)-um(i1,i2,i3,n))*2.
+        DmtU(i1,i2,i3,n) = (u(i1,i2,i3,n)-um(i1,i2,i3,n))*1.
         ! special D-zero in time : assume u=u(t), um=u(t-dt),  un=u(t-2*dt)
         DzstU(i1,i2,i3,n) = (u(i1,i2,i3,n)-un(i1,i2,i3,n))
         maxwell3dr(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtdx*(
@@ -3412,6 +3413,8 @@ c===============================================================================
        !$$$ vrs2(i1,i2,i3,kd)=(vr2(i1,i2+1,i3,kd)-vr2(i1,i2-1,i3,kd))*d12(1)
        !$$$
        !$$$ vlaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*!$$$      vrr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*!$$$      sy(i1,i2,i3))*vrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**!$$$      2)*vss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*vr2(i1,!$$$      i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*vs2(i1,i2,i3,kd)
+        max2dc22me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
+     & uLaplacian22(i1,i2,i3,n)
         max2dc44me2(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
      & uLaplacian42(i1,i2,i3,n)+cdtsq12*vLaplacian22(i1,i2,i3,n)
         max3dc44me(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtsq*
@@ -3517,6 +3520,11 @@ c===============================================================================
      & numberOfForcingFunctions))
         fnext = mod(fcur+1                         ,max(1,
      & numberOfForcingFunctions))
+         ! print some options - jba
+         if( t.le.2.*dt )then
+           write(*,*) 'useConservative = ', useConservative
+           write(*,*) 'useCurvilinearOpt = ', useCurvilinearOpt
+         end if
         ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
         !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
         !  rather than pre-computing it in diss(i1,i2,i3,c)
@@ -3556,9 +3564,11 @@ c===============================================================================
         if( useSosupDissipation.ne.0 )then
          ! Coefficients in the sosup dissipation from Jordan Angel
          if( orderOfAccuracy.eq.2 )then
-          adSosup=cc*dt*1./8.
+          adSosup= -cc*dt*1./8.
          else if( orderOfAccuracy.eq.4 )then
-           adSosup=cc*dt*5./288.
+           adSosup= cc*dt*5./288.
+         else if( orderOfAccuracy.eq.6 )then
+           adSosup= -cc*dt*31./8640.
          else
            stop 1005
          end if
@@ -3738,16 +3748,40 @@ c===============================================================================
              nEnd=ez
           end if
           ! Use Dot( un )
+          !write(*,*) 'nStart ', nStart, ' nEnd ',  nEnd
           do n=nStart,nEnd
-              do i3=m3a,m3b
-              do i2=m2a,m2b
-              do i1=m1a,m1b
+            if( useWhereMask.ne.0 )then
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
                 if( mask(i1,i2,i3).gt.0 )then
-              v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
+                  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
+
+
+
+
+
                 end if
               end do
               end do
               end do
+            else
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+                  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
+
+
+
+
+
+              end do
+              end do
+              end do
+            end if
+            !beginLoopsMask(i1,i2,i3,m1a,m1b,m2a,m2b,m3a,m3b)
+            !  v(i1,i2,i3,n)=un(i1,i2,i3,n)-um(i1,i2,i3,n)
+            !endLoopsMask()
           end do
         endif
          ! This next function will:
@@ -3755,28 +3789,30 @@ c===============================================================================
          !            if: (adc.gt.0. .and. combineDissipationWithAdvance.eq.0
          !   (2) add the divergence damping
          !         if( add.gt.0. )
-        if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
-          call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-        else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
-          call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-        else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
-          call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-        else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
-          call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
-        else
-          if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 
+        if( useSosupDissipation .eq. 0 ) then
+          if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
+            call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
+     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+          else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
+            call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
+     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+          else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
+            call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
+     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+          else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
+            call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
+     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+          else
+            if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 
      & .or. add.gt.0. )then
-            stop 1116
+              stop 1116
+            end if
           end if
-        end if
+        endif
         if( option.eq.1 ) then
           return
         end if
@@ -3849,26 +3885,26 @@ c===============================================================================
                end if
                adxSosup(0)=cdSosupx ! for D-minus-t do not scale by .5
                adxSosup(1)=cdSosupy
-               if( addForcing.eq.0 .and. .not.addDissipation )then
+               if( addForcing.eq.0 )then
                  if( useWhereMask.ne.0 )then
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
                    if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
+                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(+6.*DmtU(
+     & i1,i2,i3,ex)-4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))+(
+     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ex)-4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))+
      & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
+                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(+6.*DmtU(
+     & i1,i2,i3,ey)-4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))+(
+     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ey)-4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))+
      & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
+                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(+6.*DmtU(
+     & i1,i2,i3,hz)-4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))+(
+     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,hz)-4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))+
      & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)
 
 
@@ -3884,155 +3920,21 @@ c===============================================================================
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
+                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(+6.*DmtU(
+     & i1,i2,i3,ex)-4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))+(
+     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ex)-4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))+
      & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
+                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(+6.*DmtU(
+     & i1,i2,i3,ey)-4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))+(
+     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ey)-4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))+
      & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
+                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(+6.*DmtU(
+     & i1,i2,i3,hz)-4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))+(
+     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,hz)-4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))+
      & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)
-
-
-
-
-
-
-                  end do
-                  end do
-                  end do
-                 end if
-               else if( addForcing.ne.0 .and. .not.addDissipation )then
-               ! add forcing to the first 3 equations
-                 if( useWhereMask.ne.0 )then
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
-     & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ex)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
-     & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ey)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
-     & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,hz)
-
-
-
-
-
-
-                   end if
-                  end do
-                  end do
-                  end do
-                 else
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
-     & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ex)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
-     & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ey)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
-     & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,hz)
-
-
-
-
-
-
-                  end do
-                  end do
-                  end do
-                 end if
-               else if( addForcing.eq.0 .and. addDissipation )then
-               ! add dissipation to the first 3 equations
-                 if( useWhereMask.ne.0 )then
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
-     & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dis(i1,
-     & i2,i3,ex)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
-     & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dis(i1,
-     & i2,i3,ey)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
-     & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dis(i1,
-     & i2,i3,hz)
-
-
-
-
-
-
-                   end if
-                  end do
-                  end do
-                  end do
-                 else
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
-     & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dis(i1,
-     & i2,i3,ex)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
-     & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dis(i1,
-     & i2,i3,ey)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
-     & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dis(i1,
-     & i2,i3,hz)
 
 
 
@@ -4044,30 +3946,30 @@ c===============================================================================
                   end do
                  end if
                else
-               !  add forcing and dissipation
+               ! add forcing to the first 3 equations
                  if( useWhereMask.ne.0 )then
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
                    if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
+                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(+6.*DmtU(
+     & i1,i2,i3,ex)-4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))+(
+     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ex)-4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))+
      & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ex)+dis(i1,i2,i3,ex)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
+     & i1,i2,i3,ex)
+                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(+6.*DmtU(
+     & i1,i2,i3,ey)-4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))+(
+     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ey)-4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))+
      & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ey)+dis(i1,i2,i3,ey)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
+     & i1,i2,i3,ey)
+                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(+6.*DmtU(
+     & i1,i2,i3,hz)-4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))+(
+     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,hz)-4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))+
      & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,hz)+dis(i1,i2,i3,hz)
+     & i1,i2,i3,hz)
 
 
 
@@ -4082,24 +3984,24 @@ c===============================================================================
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(-6.*DmtU(
-     & i1,i2,i3,ex)+4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))-(
-     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ex)+4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))-
+                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+(+6.*DmtU(
+     & i1,i2,i3,ex)-4.*(DmtU(i1+1,i2,i3,ex)+DmtU(i1-1,i2,i3,ex))+(
+     & DmtU(i1+2,i2,i3,ex)+DmtU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ex)-4.*(DmtU(i1,i2+1,i3,ex)+DmtU(i1,i2-1,i3,ex))+
      & (DmtU(i1,i2+2,i3,ex)+DmtU(i1,i2-2,i3,ex)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ex)+dis(i1,i2,i3,ex)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(-6.*DmtU(
-     & i1,i2,i3,ey)+4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))-(
-     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,ey)+4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))-
+     & i1,i2,i3,ex)
+                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+(+6.*DmtU(
+     & i1,i2,i3,ey)-4.*(DmtU(i1+1,i2,i3,ey)+DmtU(i1-1,i2,i3,ey))+(
+     & DmtU(i1+2,i2,i3,ey)+DmtU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,ey)-4.*(DmtU(i1,i2+1,i3,ey)+DmtU(i1,i2-1,i3,ey))+
      & (DmtU(i1,i2+2,i3,ey)+DmtU(i1,i2-2,i3,ey)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,ey)+dis(i1,i2,i3,ey)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(-6.*DmtU(
-     & i1,i2,i3,hz)+4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))-(
-     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*
-     & DmtU(i1,i2,i3,hz)+4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))-
+     & i1,i2,i3,ey)
+                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+(+6.*DmtU(
+     & i1,i2,i3,hz)-4.*(DmtU(i1+1,i2,i3,hz)+DmtU(i1-1,i2,i3,hz))+(
+     & DmtU(i1+2,i2,i3,hz)+DmtU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*
+     & DmtU(i1,i2,i3,hz)-4.*(DmtU(i1,i2+1,i3,hz)+DmtU(i1,i2-1,i3,hz))+
      & (DmtU(i1,i2+2,i3,hz)+DmtU(i1,i2-2,i3,hz)))*adxSosup(1)+dtsq*f(
-     & i1,i2,i3,hz)+dis(i1,i2,i3,hz)
+     & i1,i2,i3,hz)
 
 
 
@@ -4116,7 +4018,7 @@ c===============================================================================
                if( t.le.3.*dt )then
                  write(*,'("advMxUp>>>","FD22r-UP...update-solution")')
                end if
-               if( addForcing.eq.0 .and. .not.addDissipation )then
+               if( addForcing.eq.0 )then
                  if( useWhereMask.ne.0 )then
                   do i3=n3a,n3b
                   do i2=n2a,n2b
@@ -4152,7 +4054,7 @@ c===============================================================================
                   end do
                   end do
                  end if
-               else if( addForcing.ne.0 .and. .not.addDissipation )then
+               else
                ! add forcing to the first 3 equations
                  if( useWhereMask.ne.0 )then
                   do i3=n3a,n3b
@@ -4195,92 +4097,6 @@ c===============================================================================
                   end do
                   end do
                  end if
-               else if( addForcing.eq.0 .and. addDissipation )then
-               ! add dissipation to the first 3 equations
-                 if( useWhereMask.ne.0 )then
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+dis(i1,i2,
-     & i3,ex)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+dis(i1,i2,
-     & i3,ey)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dis(i1,i2,
-     & i3,hz)
-
-
-
-
-
-
-                   end if
-                  end do
-                  end do
-                  end do
-                 else
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+dis(i1,i2,
-     & i3,ex)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+dis(i1,i2,
-     & i3,ey)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dis(i1,i2,
-     & i3,hz)
-
-
-
-
-
-
-                  end do
-                  end do
-                  end do
-                 end if
-               else
-               !  add forcing and dissipation
-                 if( useWhereMask.ne.0 )then
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   if( mask(i1,i2,i3).gt.0 )then
-                    un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+dtsq*f(i1,
-     & i2,i3,ex)+dis(i1,i2,i3,ex)
-                    un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+dtsq*f(i1,
-     & i2,i3,ey)+dis(i1,i2,i3,ey)
-                    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dtsq*f(i1,
-     & i2,i3,hz)+dis(i1,i2,i3,hz)
-
-
-
-
-
-
-                   end if
-                  end do
-                  end do
-                  end do
-                 else
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                   un(i1,i2,i3,ex)=maxwell2dr(i1,i2,i3,ex)+dtsq*f(i1,
-     & i2,i3,ex)+dis(i1,i2,i3,ex)
-                   un(i1,i2,i3,ey)=maxwell2dr(i1,i2,i3,ey)+dtsq*f(i1,
-     & i2,i3,ey)+dis(i1,i2,i3,ey)
-                   un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dtsq*f(i1,
-     & i2,i3,hz)+dis(i1,i2,i3,hz)
-
-
-
-
-
-
-                  end do
-                  end do
-                  end do
-                 end if
                end if
               else if( updateDissipation.eq.1 )then
                if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )
@@ -4295,20 +4111,20 @@ c===============================================================================
                   do i2=n2a,n2b
                   do i1=n1a,n1b
                     if( mask(i1,i2,i3).gt.0 )then
-                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(-6.*v(i1,i2,i3,
-     & ex)+4.*(v(i1+1,i2,i3,ex)+v(i1-1,i2,i3,ex))-(v(i1+2,i2,i3,ex)+v(
-     & i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*v(i1,i2,i3,ex)+4.*(v(i1,i2+1,
-     & i3,ex)+v(i1,i2-1,i3,ex))-(v(i1,i2+2,i3,ex)+v(i1,i2-2,i3,ex)))*
+                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(+6.*v(i1,i2,i3,
+     & ex)-4.*(v(i1+1,i2,i3,ex)+v(i1-1,i2,i3,ex))+(v(i1+2,i2,i3,ex)+v(
+     & i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*v(i1,i2,i3,ex)-4.*(v(i1,i2+1,
+     & i3,ex)+v(i1,i2-1,i3,ex))+(v(i1,i2+2,i3,ex)+v(i1,i2-2,i3,ex)))*
      & adxSosup(1)
-                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(-6.*v(i1,i2,i3,
-     & ey)+4.*(v(i1+1,i2,i3,ey)+v(i1-1,i2,i3,ey))-(v(i1+2,i2,i3,ey)+v(
-     & i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*v(i1,i2,i3,ey)+4.*(v(i1,i2+1,
-     & i3,ey)+v(i1,i2-1,i3,ey))-(v(i1,i2+2,i3,ey)+v(i1,i2-2,i3,ey)))*
+                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(+6.*v(i1,i2,i3,
+     & ey)-4.*(v(i1+1,i2,i3,ey)+v(i1-1,i2,i3,ey))+(v(i1+2,i2,i3,ey)+v(
+     & i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*v(i1,i2,i3,ey)-4.*(v(i1,i2+1,
+     & i3,ey)+v(i1,i2-1,i3,ey))+(v(i1,i2+2,i3,ey)+v(i1,i2-2,i3,ey)))*
      & adxSosup(1)
-                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(-6.*v(i1,i2,i3,
-     & hz)+4.*(v(i1+1,i2,i3,hz)+v(i1-1,i2,i3,hz))-(v(i1+2,i2,i3,hz)+v(
-     & i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*v(i1,i2,i3,hz)+4.*(v(i1,i2+1,
-     & i3,hz)+v(i1,i2-1,i3,hz))-(v(i1,i2+2,i3,hz)+v(i1,i2-2,i3,hz)))*
+                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(+6.*v(i1,i2,i3,
+     & hz)-4.*(v(i1+1,i2,i3,hz)+v(i1-1,i2,i3,hz))+(v(i1+2,i2,i3,hz)+v(
+     & i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*v(i1,i2,i3,hz)-4.*(v(i1,i2+1,
+     & i3,hz)+v(i1,i2-1,i3,hz))+(v(i1,i2+2,i3,hz)+v(i1,i2-2,i3,hz)))*
      & adxSosup(1)
 
 
@@ -4321,20 +4137,20 @@ c===============================================================================
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
-                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(-6.*v(i1,i2,i3,
-     & ex)+4.*(v(i1+1,i2,i3,ex)+v(i1-1,i2,i3,ex))-(v(i1+2,i2,i3,ex)+v(
-     & i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*v(i1,i2,i3,ex)+4.*(v(i1,i2+1,
-     & i3,ex)+v(i1,i2-1,i3,ex))-(v(i1,i2+2,i3,ex)+v(i1,i2-2,i3,ex)))*
+                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(+6.*v(i1,i2,i3,
+     & ex)-4.*(v(i1+1,i2,i3,ex)+v(i1-1,i2,i3,ex))+(v(i1+2,i2,i3,ex)+v(
+     & i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*v(i1,i2,i3,ex)-4.*(v(i1,i2+1,
+     & i3,ex)+v(i1,i2-1,i3,ex))+(v(i1,i2+2,i3,ex)+v(i1,i2-2,i3,ex)))*
      & adxSosup(1)
-                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(-6.*v(i1,i2,i3,
-     & ey)+4.*(v(i1+1,i2,i3,ey)+v(i1-1,i2,i3,ey))-(v(i1+2,i2,i3,ey)+v(
-     & i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*v(i1,i2,i3,ey)+4.*(v(i1,i2+1,
-     & i3,ey)+v(i1,i2-1,i3,ey))-(v(i1,i2+2,i3,ey)+v(i1,i2-2,i3,ey)))*
+                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(+6.*v(i1,i2,i3,
+     & ey)-4.*(v(i1+1,i2,i3,ey)+v(i1-1,i2,i3,ey))+(v(i1+2,i2,i3,ey)+v(
+     & i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*v(i1,i2,i3,ey)-4.*(v(i1,i2+1,
+     & i3,ey)+v(i1,i2-1,i3,ey))+(v(i1,i2+2,i3,ey)+v(i1,i2-2,i3,ey)))*
      & adxSosup(1)
-                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(-6.*v(i1,i2,i3,
-     & hz)+4.*(v(i1+1,i2,i3,hz)+v(i1-1,i2,i3,hz))-(v(i1+2,i2,i3,hz)+v(
-     & i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*v(i1,i2,i3,hz)+4.*(v(i1,i2+1,
-     & i3,hz)+v(i1,i2-1,i3,hz))-(v(i1,i2+2,i3,hz)+v(i1,i2-2,i3,hz)))*
+                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(+6.*v(i1,i2,i3,
+     & hz)-4.*(v(i1+1,i2,i3,hz)+v(i1-1,i2,i3,hz))+(v(i1+2,i2,i3,hz)+v(
+     & i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*v(i1,i2,i3,hz)-4.*(v(i1,i2+1,
+     & i3,hz)+v(i1,i2-1,i3,hz))+(v(i1,i2+2,i3,hz)+v(i1,i2-2,i3,hz)))*
      & adxSosup(1)
 
 
@@ -4354,20 +4170,20 @@ c===============================================================================
                   do i2=n2a,n2b
                   do i1=n1a,n1b
                     if( mask(i1,i2,i3).gt.0 )then
-                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(-6.*DztU(i1,i2,
-     & i3,ex)+4.*(DztU(i1+1,i2,i3,ex)+DztU(i1-1,i2,i3,ex))-(DztU(i1+2,
-     & i2,i3,ex)+DztU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & ex)+4.*(DztU(i1,i2+1,i3,ex)+DztU(i1,i2-1,i3,ex))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(+6.*DztU(i1,i2,
+     & i3,ex)-4.*(DztU(i1+1,i2,i3,ex)+DztU(i1-1,i2,i3,ex))+(DztU(i1+2,
+     & i2,i3,ex)+DztU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & ex)-4.*(DztU(i1,i2+1,i3,ex)+DztU(i1,i2-1,i3,ex))+(DztU(i1,i2+2,
      & i3,ex)+DztU(i1,i2-2,i3,ex)))*adxSosup(1)
-                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(-6.*DztU(i1,i2,
-     & i3,ey)+4.*(DztU(i1+1,i2,i3,ey)+DztU(i1-1,i2,i3,ey))-(DztU(i1+2,
-     & i2,i3,ey)+DztU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & ey)+4.*(DztU(i1,i2+1,i3,ey)+DztU(i1,i2-1,i3,ey))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(+6.*DztU(i1,i2,
+     & i3,ey)-4.*(DztU(i1+1,i2,i3,ey)+DztU(i1-1,i2,i3,ey))+(DztU(i1+2,
+     & i2,i3,ey)+DztU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & ey)-4.*(DztU(i1,i2+1,i3,ey)+DztU(i1,i2-1,i3,ey))+(DztU(i1,i2+2,
      & i3,ey)+DztU(i1,i2-2,i3,ey)))*adxSosup(1)
-                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(-6.*DztU(i1,i2,
-     & i3,hz)+4.*(DztU(i1+1,i2,i3,hz)+DztU(i1-1,i2,i3,hz))-(DztU(i1+2,
-     & i2,i3,hz)+DztU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & hz)+4.*(DztU(i1,i2+1,i3,hz)+DztU(i1,i2-1,i3,hz))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(+6.*DztU(i1,i2,
+     & i3,hz)-4.*(DztU(i1+1,i2,i3,hz)+DztU(i1-1,i2,i3,hz))+(DztU(i1+2,
+     & i2,i3,hz)+DztU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & hz)-4.*(DztU(i1,i2+1,i3,hz)+DztU(i1,i2-1,i3,hz))+(DztU(i1,i2+2,
      & i3,hz)+DztU(i1,i2-2,i3,hz)))*adxSosup(1)
 
 
@@ -4380,20 +4196,20 @@ c===============================================================================
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
-                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(-6.*DztU(i1,i2,
-     & i3,ex)+4.*(DztU(i1+1,i2,i3,ex)+DztU(i1-1,i2,i3,ex))-(DztU(i1+2,
-     & i2,i3,ex)+DztU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & ex)+4.*(DztU(i1,i2+1,i3,ex)+DztU(i1,i2-1,i3,ex))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,ex)=un(i1,i2,i3,ex)+(+6.*DztU(i1,i2,
+     & i3,ex)-4.*(DztU(i1+1,i2,i3,ex)+DztU(i1-1,i2,i3,ex))+(DztU(i1+2,
+     & i2,i3,ex)+DztU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & ex)-4.*(DztU(i1,i2+1,i3,ex)+DztU(i1,i2-1,i3,ex))+(DztU(i1,i2+2,
      & i3,ex)+DztU(i1,i2-2,i3,ex)))*adxSosup(1)
-                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(-6.*DztU(i1,i2,
-     & i3,ey)+4.*(DztU(i1+1,i2,i3,ey)+DztU(i1-1,i2,i3,ey))-(DztU(i1+2,
-     & i2,i3,ey)+DztU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & ey)+4.*(DztU(i1,i2+1,i3,ey)+DztU(i1,i2-1,i3,ey))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,ey)=un(i1,i2,i3,ey)+(+6.*DztU(i1,i2,
+     & i3,ey)-4.*(DztU(i1+1,i2,i3,ey)+DztU(i1-1,i2,i3,ey))+(DztU(i1+2,
+     & i2,i3,ey)+DztU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & ey)-4.*(DztU(i1,i2+1,i3,ey)+DztU(i1,i2-1,i3,ey))+(DztU(i1,i2+2,
      & i3,ey)+DztU(i1,i2-2,i3,ey)))*adxSosup(1)
-                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(-6.*DztU(i1,i2,
-     & i3,hz)+4.*(DztU(i1+1,i2,i3,hz)+DztU(i1-1,i2,i3,hz))-(DztU(i1+2,
-     & i2,i3,hz)+DztU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*DztU(i1,i2,i3,
-     & hz)+4.*(DztU(i1,i2+1,i3,hz)+DztU(i1,i2-1,i3,hz))-(DztU(i1,i2+2,
+                      un(i1,i2,i3,hz)=un(i1,i2,i3,hz)+(+6.*DztU(i1,i2,
+     & i3,hz)-4.*(DztU(i1+1,i2,i3,hz)+DztU(i1-1,i2,i3,hz))+(DztU(i1+2,
+     & i2,i3,hz)+DztU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*DztU(i1,i2,i3,
+     & hz)-4.*(DztU(i1,i2+1,i3,hz)+DztU(i1,i2-1,i3,hz))+(DztU(i1,i2+2,
      & i3,hz)+DztU(i1,i2-2,i3,hz)))*adxSosup(1)
 
 
@@ -4415,20 +4231,20 @@ c===============================================================================
                   do i2=n2a,n2b
                   do i1=n1a,n1b
                     if( mask(i1,i2,i3).gt.0 )then
-                      u(i1,i2,i3,ex)=u(i1,i2,i3,ex)+(-6.*DzstU(i1,i2,
-     & i3,ex)+4.*(DzstU(i1+1,i2,i3,ex)+DzstU(i1-1,i2,i3,ex))-(DzstU(
-     & i1+2,i2,i3,ex)+DzstU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,ex)+4.*(DzstU(i1,i2+1,i3,ex)+DzstU(i1,i2-1,i3,ex))-(
+                      u(i1,i2,i3,ex)=u(i1,i2,i3,ex)+(+6.*DzstU(i1,i2,
+     & i3,ex)-4.*(DzstU(i1+1,i2,i3,ex)+DzstU(i1-1,i2,i3,ex))+(DzstU(
+     & i1+2,i2,i3,ex)+DzstU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,ex)-4.*(DzstU(i1,i2+1,i3,ex)+DzstU(i1,i2-1,i3,ex))+(
      & DzstU(i1,i2+2,i3,ex)+DzstU(i1,i2-2,i3,ex)))*adxSosup(1)
-                      u(i1,i2,i3,ey)=u(i1,i2,i3,ey)+(-6.*DzstU(i1,i2,
-     & i3,ey)+4.*(DzstU(i1+1,i2,i3,ey)+DzstU(i1-1,i2,i3,ey))-(DzstU(
-     & i1+2,i2,i3,ey)+DzstU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,ey)+4.*(DzstU(i1,i2+1,i3,ey)+DzstU(i1,i2-1,i3,ey))-(
+                      u(i1,i2,i3,ey)=u(i1,i2,i3,ey)+(+6.*DzstU(i1,i2,
+     & i3,ey)-4.*(DzstU(i1+1,i2,i3,ey)+DzstU(i1-1,i2,i3,ey))+(DzstU(
+     & i1+2,i2,i3,ey)+DzstU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,ey)-4.*(DzstU(i1,i2+1,i3,ey)+DzstU(i1,i2-1,i3,ey))+(
      & DzstU(i1,i2+2,i3,ey)+DzstU(i1,i2-2,i3,ey)))*adxSosup(1)
-                      u(i1,i2,i3,hz)=u(i1,i2,i3,hz)+(-6.*DzstU(i1,i2,
-     & i3,hz)+4.*(DzstU(i1+1,i2,i3,hz)+DzstU(i1-1,i2,i3,hz))-(DzstU(
-     & i1+2,i2,i3,hz)+DzstU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,hz)+4.*(DzstU(i1,i2+1,i3,hz)+DzstU(i1,i2-1,i3,hz))-(
+                      u(i1,i2,i3,hz)=u(i1,i2,i3,hz)+(+6.*DzstU(i1,i2,
+     & i3,hz)-4.*(DzstU(i1+1,i2,i3,hz)+DzstU(i1-1,i2,i3,hz))+(DzstU(
+     & i1+2,i2,i3,hz)+DzstU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,hz)-4.*(DzstU(i1,i2+1,i3,hz)+DzstU(i1,i2-1,i3,hz))+(
      & DzstU(i1,i2+2,i3,hz)+DzstU(i1,i2-2,i3,hz)))*adxSosup(1)
 
 
@@ -4441,20 +4257,20 @@ c===============================================================================
                   do i3=n3a,n3b
                   do i2=n2a,n2b
                   do i1=n1a,n1b
-                      u(i1,i2,i3,ex)=u(i1,i2,i3,ex)+(-6.*DzstU(i1,i2,
-     & i3,ex)+4.*(DzstU(i1+1,i2,i3,ex)+DzstU(i1-1,i2,i3,ex))-(DzstU(
-     & i1+2,i2,i3,ex)+DzstU(i1-2,i2,i3,ex)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,ex)+4.*(DzstU(i1,i2+1,i3,ex)+DzstU(i1,i2-1,i3,ex))-(
+                      u(i1,i2,i3,ex)=u(i1,i2,i3,ex)+(+6.*DzstU(i1,i2,
+     & i3,ex)-4.*(DzstU(i1+1,i2,i3,ex)+DzstU(i1-1,i2,i3,ex))+(DzstU(
+     & i1+2,i2,i3,ex)+DzstU(i1-2,i2,i3,ex)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,ex)-4.*(DzstU(i1,i2+1,i3,ex)+DzstU(i1,i2-1,i3,ex))+(
      & DzstU(i1,i2+2,i3,ex)+DzstU(i1,i2-2,i3,ex)))*adxSosup(1)
-                      u(i1,i2,i3,ey)=u(i1,i2,i3,ey)+(-6.*DzstU(i1,i2,
-     & i3,ey)+4.*(DzstU(i1+1,i2,i3,ey)+DzstU(i1-1,i2,i3,ey))-(DzstU(
-     & i1+2,i2,i3,ey)+DzstU(i1-2,i2,i3,ey)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,ey)+4.*(DzstU(i1,i2+1,i3,ey)+DzstU(i1,i2-1,i3,ey))-(
+                      u(i1,i2,i3,ey)=u(i1,i2,i3,ey)+(+6.*DzstU(i1,i2,
+     & i3,ey)-4.*(DzstU(i1+1,i2,i3,ey)+DzstU(i1-1,i2,i3,ey))+(DzstU(
+     & i1+2,i2,i3,ey)+DzstU(i1-2,i2,i3,ey)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,ey)-4.*(DzstU(i1,i2+1,i3,ey)+DzstU(i1,i2-1,i3,ey))+(
      & DzstU(i1,i2+2,i3,ey)+DzstU(i1,i2-2,i3,ey)))*adxSosup(1)
-                      u(i1,i2,i3,hz)=u(i1,i2,i3,hz)+(-6.*DzstU(i1,i2,
-     & i3,hz)+4.*(DzstU(i1+1,i2,i3,hz)+DzstU(i1-1,i2,i3,hz))-(DzstU(
-     & i1+2,i2,i3,hz)+DzstU(i1-2,i2,i3,hz)))*adxSosup(0)+(-6.*DzstU(
-     & i1,i2,i3,hz)+4.*(DzstU(i1,i2+1,i3,hz)+DzstU(i1,i2-1,i3,hz))-(
+                      u(i1,i2,i3,hz)=u(i1,i2,i3,hz)+(+6.*DzstU(i1,i2,
+     & i3,hz)-4.*(DzstU(i1+1,i2,i3,hz)+DzstU(i1-1,i2,i3,hz))+(DzstU(
+     & i1+2,i2,i3,hz)+DzstU(i1-2,i2,i3,hz)))*adxSosup(0)+(+6.*DzstU(
+     & i1,i2,i3,hz)-4.*(DzstU(i1,i2+1,i3,hz)+DzstU(i1,i2-1,i3,hz))+(
      & DzstU(i1,i2+2,i3,hz)+DzstU(i1,i2-2,i3,hz)))*adxSosup(1)
 
 

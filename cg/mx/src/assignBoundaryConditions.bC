@@ -773,6 +773,8 @@ int polarizationOption=0;
   rpar[39]=psir[0];  // *FIX ME*
   rpar[40]=psii[0];
 
+  rpar[41]=dmp.alphaP;
+  
   
   // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
 
