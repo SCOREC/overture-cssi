@@ -5382,19 +5382,22 @@ c===============================================================================
            ! ****************************************************************************
            ! *************** OPTIMIZED-CURVILINEAR AND NON-CONSERVATIVE *****************
            ! ****************************************************************************
-            if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )
+       !-     if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )then
+       !-
+       !-       ! ---- use sosup dissipation (wider stencil) ---
+       !-
+       !-      write(*,'(" finish me: FD44 non-cons && useSosupDissipation")')
+       !-      stop 4486
+       !-
+       !-
+       !-       if( useNewForcingMethod.ne.0 )then
+       !-        write(*,'(" finish me: dispersion && useNewForcingMethod")')
+       !-        stop 4487
+       !-       end if
+       !-
+       !-     else 
+            if( timeSteppingMethod.eq.modifiedEquationTimeStepping )
      & then
-              ! ---- use sosup dissipation (wider stencil) ---
-             write(*,'(" finish me: FD44 non-cons && 
-     & useSosupDissipation")')
-             stop 4486
-              if( useNewForcingMethod.ne.0 )then
-               write(*,'(" finish me: dispersion && 
-     & useNewForcingMethod")')
-               stop 4487
-              end if
-            else if( 
-     & timeSteppingMethod.eq.modifiedEquationTimeStepping )then
               ! ----------------------------------------------------------
               ! ----- 4th order in space and 4th order in time ------------
               ! ---- Modified equation, NON-CONSERVATIVE difference ----
@@ -6330,179 +6333,14 @@ c===============================================================================
             ! **********************************************************************************
             !  --> The Laplacian and Laplacian squared have already been computed by the calling program
             !  --> For example, mainly when using conservative operators
-            if( useSosupDissipation.ne.0 )then
-              ! ---- use sosup dissipation (wider stencil) ---
-                if( t.le.2.*dt )then
-                  write(*,'(" advOpt: FD44 + upwind-dissipation for 
-     & curvilinear")')
-                end if
-                if( useNewForcingMethod.ne.0 )then
-                 write(*,'(" finish me: FD44 + sosup-dissipation && 
-     & useNewForcingMethod")')
-                 stop 4487
-                end if
-               ! FD44 (curvilinear grid) with Sosup (wide stencil dissiption)
-               if( updateSolution.eq.1 .and. updateDissipation.eq.1 )
-     & then
-                ! advance + sosup dissipation:
-                ! note: forcing is already added to the rhs.
-                if( t.le.3.*dt )then
-                  write(*,'("advOPT>>>","FD44c-UP...update-solution-
-     & and-dissipation")')
-                end if
-                uDotFactor=1. ! for D-minus-t do not scale by .5
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                    if( mask(i1,i2,i3).gt.0 )then
-                  do dir=0,1
-                    ! diss-coeff ~= 1/(change in x along direction r(dir) )
-                    ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
-                    adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
-     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
-                  end do
-                 do m=0,2 ! ex, ey, hz
-                   ec=ex+m
-                   un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+(-20.*
-     & DmtU(i1,i2,i3,ec)+15.*(DmtU(i1+1,i2,i3,ec)+DmtU(i1-1,i2,i3,ec))
-     & -6.*(DmtU(i1+2,i2,i3,ec)+DmtU(i1-2,i2,i3,ec))+(DmtU(i1+3,i2,i3,
-     & ec)+DmtU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DmtU(i1,i2,i3,ec)+
-     & 15.*(DmtU(i1,i2+1,i3,ec)+DmtU(i1,i2-1,i3,ec))-6.*(DmtU(i1,i2+2,
-     & i3,ec)+DmtU(i1,i2-2,i3,ec))+(DmtU(i1,i2+3,i3,ec)+DmtU(i1,i2-3,
-     & i3,ec)))*adxSosup(1)
-                 end do
-                    end if
-                  end do
-                  end do
-                  end do
-                uDotFactor=.5 ! reset
-               else if( updateSolution.eq.1 )then
-                 ! advance to time n+1
-                if( t.le.3.*dt )then
-                  write(*,'("advOPT>>>","FD44c-UP...update-solution")')
-                end if
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                    if( mask(i1,i2,i3).gt.0 )then
-                  do dir=0,1
-                    ! diss-coeff ~= 1/(change in x along direction r(dir) )
-                    ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
-                    adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
-     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
-                  end do
-                 do m=0,2 ! ex, ey, hz
-                   ec=ex+m
-                   un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)
-                 end do
-                    end if
-                  end do
-                  end do
-                  end do
-               else if( updateDissipation.eq.1 )then
-                ! ----- add dissipation only  ----
-                if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )
-     & then
-                 ! apply sosup dissipation to time n+1 (use precomputed v=uDot)
-                 if( t.le.3.*dt )then
-                   write(*,'("advOPT>>>","FD44c-UP...update-un-with-
-     & dissipation-using-v")')
-                 end if
-                   do i3=n3a,n3b
-                   do i2=n2a,n2b
-                   do i1=n1a,n1b
-                     if( mask(i1,i2,i3).gt.0 )then
-                   do dir=0,1
-                     ! diss-coeff ~= 1/(change in x along direction r(dir) )
-                     ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
-                     adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
-     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
-                   end do
-                  do m=0,2 ! ex, ey, hz
-                    ec=ex+m
-                    un(i1,i2,i3,ec)=un(i1,i2,i3,ec) + (-20.*v(i1,i2,i3,
-     & ec)+15.*(v(i1+1,i2,i3,ec)+v(i1-1,i2,i3,ec))-6.*(v(i1+2,i2,i3,
-     & ec)+v(i1-2,i2,i3,ec))+(v(i1+3,i2,i3,ec)+v(i1-3,i2,i3,ec)))*
-     & adxSosup(0)+(-20.*v(i1,i2,i3,ec)+15.*(v(i1,i2+1,i3,ec)+v(i1,i2-
-     & 1,i3,ec))-6.*(v(i1,i2+2,i3,ec)+v(i1,i2-2,i3,ec))+(v(i1,i2+3,i3,
-     & ec)+v(i1,i2-3,i3,ec)))*adxSosup(1)
-                  end do
-                     end if
-                   end do
-                   end do
-                   end do
-                else if( sosupDissipationOption.eq.0 .and. 
-     & computeUt.eq.0 )then
-                 ! apply sosup dissipation to time n+1
-                 if( t.le.3.*dt )then
-                   write(*,'("advOPT>>>","FD44c-UP...update-un-with-
-     & dissipation")')
-                 end if
-                   do i3=n3a,n3b
-                   do i2=n2a,n2b
-                   do i1=n1a,n1b
-                     if( mask(i1,i2,i3).gt.0 )then
-                   do dir=0,1
-                     ! diss-coeff ~= 1/(change in x along direction r(dir) )
-                     ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
-                     adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
-     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
-                   end do
-                  do m=0,2 ! ex, ey, hz
-                    ec=ex+m
-                    ! Use D-zero = (un-um)
-                    un(i1,i2,i3,ec)=un(i1,i2,i3,ec) + (-20.*DztU(i1,i2,
-     & i3,ec)+15.*(DztU(i1+1,i2,i3,ec)+DztU(i1-1,i2,i3,ec))-6.*(DztU(
-     & i1+2,i2,i3,ec)+DztU(i1-2,i2,i3,ec))+(DztU(i1+3,i2,i3,ec)+DztU(
-     & i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DztU(i1,i2,i3,ec)+15.*(DztU(
-     & i1,i2+1,i3,ec)+DztU(i1,i2-1,i3,ec))-6.*(DztU(i1,i2+2,i3,ec)+
-     & DztU(i1,i2-2,i3,ec))+(DztU(i1,i2+3,i3,ec)+DztU(i1,i2-3,i3,ec)))
-     & *adxSosup(1)
-                  end do
-                     end if
-                   end do
-                   end do
-                   end do
-                 else
-                 ! apply sosup dissipation to time n using times n-1 and n-2
-                 ! assume un holds u(t-2*dt) on input
-                 ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
-                 if( t.le.3.*dt )then
-                   write(*,'("advOPT>>>","FD44c-UP...update-u-with-
-     & dissipation")')
-                 end if
-                   do i3=n3a,n3b
-                   do i2=n2a,n2b
-                   do i1=n1a,n1b
-                     if( mask(i1,i2,i3).gt.0 )then
-                   do dir=0,1
-                     ! diss-coeff ~= 1/(change in x along direction r(dir) )
-                     ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
-                     adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,
-     & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2 )/dr(dir)
-                   end do
-                  do m=0,2 ! ex, ey, hz
-                    ec=ex+m
-                    ! Use special D-zero = (u - un) , u=u(t), um=u(t-dt), un=u(t-2*dt)
-                    u(i1,i2,i3,ec)=u(i1,i2,i3,ec) + (-20.*DzstU(i1,i2,
-     & i3,ec)+15.*(DzstU(i1+1,i2,i3,ec)+DzstU(i1-1,i2,i3,ec))-6.*(
-     & DzstU(i1+2,i2,i3,ec)+DzstU(i1-2,i2,i3,ec))+(DzstU(i1+3,i2,i3,
-     & ec)+DzstU(i1-3,i2,i3,ec)))*adxSosup(0)+(-20.*DzstU(i1,i2,i3,ec)
-     & +15.*(DzstU(i1,i2+1,i3,ec)+DzstU(i1,i2-1,i3,ec))-6.*(DzstU(i1,
-     & i2+2,i3,ec)+DzstU(i1,i2-2,i3,ec))+(DzstU(i1,i2+3,i3,ec)+DzstU(
-     & i1,i2-3,i3,ec)))*adxSosup(1)
-                  end do
-                     end if
-                   end do
-                   end do
-                   end do
-                end if
-               else
-                 write(*,'("advOpt:FD44c-UP ERROR: unexpected option? 
-     & sosupDissipationOption=",i2)') sosupDissipationOption
-                 stop 5050
-               end if
-            else if( dispersionModel.ne.noDispersion )then
+       !-     if( useSosupDissipation.ne.0 )then
+       !-
+       !-       ! ---- use sosup dissipation (wider stencil) ---
+       !-       updateUpwindDissipationCurvilinear2dOrder4()
+       !-
+       !-
+       !-     else 
+            if( dispersionModel.ne.noDispersion )then
              ! --dispersive model --
              stop 7777
             else if( 

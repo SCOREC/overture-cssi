@@ -238,7 +238,8 @@ main(int argc, char *argv[])
       else if( line(0,3)=="grid" )
       {
 	// this marks the start of a table
-	fprintf(outputFile,"\\begin{table}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
+	// fprintf(outputFile,"\\begin{table}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
+	fprintf(outputFile,"\\begin{table}[H]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
 	fprintf(outputFile,"%% \\newcommand{\\num}[2]{#1e{#2}} %% use this command to set the format of numbers in the table.\n");
 	fprintf(outputFile,"\\begin{center}\n");
 	// fprintf(outputFile,"\\hfill\n");

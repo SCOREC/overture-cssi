@@ -121,6 +121,14 @@ slow start interval -1.
 #***********************
 use conservative difference $cons 
 cfl $cfl
+#*********************************
+show file options...
+  MXSF:compressed
+  MXSF:open
+    $show
+  MXSF:frequency to flush 10
+exit
+#**********************************
 #
 # plot scattered field 1
 debug $debug

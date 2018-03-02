@@ -1,4 +1,12 @@
 **************************************
+******* March 2, 2017
+
+START on I-BEAM grid 
+
+ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=e -order=2 -factor=8
+ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=e -order=2 -factor=16
+
+**************************************
 ******* Sept 28, 2017
 
 REDO runs for 6 month review -- larger wavelength

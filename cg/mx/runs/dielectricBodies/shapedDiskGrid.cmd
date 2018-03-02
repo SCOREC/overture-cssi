@@ -2,8 +2,10 @@
 #     Solid shape in a channel
 #
 #
-# usage: ogen [-noplot] shapedDiskGrid -factor=<num> -order=[2/4/6/8] -interp=[e/i] -shape=[ellipse|starFish|cross] ...
-#                -ml=<>  -rgd=[fixed|var] -radX=<> -radY=<> -angle=<> -xa=<> -xb=<> -ya=<> -yb=<> -cx=<> -cy=<>
+# usage: ogen [-noplot] shapedDiskGrid -factor=<num> -order=[2/4/6/8] -interp=[e/i] ...
+#                -shape=[ellipse|starFish|cross|IBeam] ...
+#                -ml=<>  -rgd=[fixed|var] -radX=<> -radY=<> -angle=<> -xa=<> -xb=<> -ya=<> -yb=<>...
+#                -cx=<> -cy=<> -centerHeight=<f> -centerWidth=<> -edgeHeight=<f> -edgeWidth=<f>
 # 
 #  -blf : boundary-layer-factor : blf>1 : make grid lines near boundary this many times smaller
 #  -ml = number of (extra) multigrid levels to support
@@ -12,6 +14,7 @@
 #  -angle : angle of rotation (degrees)
 #  -xa, -xb, -ya, -yb : bounds on the back ground grid
 #  -cx, -cy : center for the ellipse
+#  -centerHeight, centerWidth, edgeHeight, edgeWidth (see figure in IBeamCurve.h)
 # 
 # Examples:
 # 
@@ -28,6 +31,10 @@
 #   ogen -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -interp=e -order=2 -factor=16
 #   ogen -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -interp=i -order=4 -factor=16
 #
+#  --- I-Beam
+#   ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=e -order=2 -factor=8
+#   ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=i -order=4 -factor=8
+#
 $shape="ellipse"; 
 $prefix="shapedDiskGrid";  $rgd="var"; $angle=0.; $branch=0; 
 $order=2; $factor=1; $interp="i"; $ml=0; # default values
@@ -37,12 +44,16 @@ $radX=.7; $radY=.35; # radii of the ellipse in the x and y directions
 $cx=0.; $cy=0.;  # center for the ellipse
 $blf=1;  # this means no stretching
 $deltaRadius0=.3; # radius for rgd fixed
+# For IBeam: 
+$centerHeight=.75; $centerWidth=.25;
+$edgeHeight=.25;   $edgeWidth=1.;
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"blf=f"=> \$blf, "prefix=s"=> \$prefix,\
             "cx=f"=>\$cx,"cy=f"=>\$cy,"rgd=s"=> \$rgd,"radX=f"=>\$radX,"radY=f"=>\$radY,"angle=f"=>\$angle,\
-            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape );
+            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,\
+            "edgeHeight=f"=>\$edgeHeight,"edgeWidth=f"=>\$edgeWidth, );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -96,6 +107,7 @@ $numberOfVolumeSmooths=50;
 #
 if( $shape eq "ellipse" ){ $cmd="include ellipseCurve.h"; }
 if( $shape eq "cross" ){ $cmd="include crossCurve.h"; }
+if( $shape eq "IBeam" ){ $cmd="include IBeamCurve.h"; }
 if( $shape eq "starFish" ){ $cmd="include starFishCurve.h"; }
 $cmd
 # 
@@ -105,6 +117,7 @@ $cmd
   hyperbolic
     forward
     $nDist=($nr-4)*$ds;
+    # if( $shape eq "IBeam" ){ $nr = intmg( 5 + $order/2 );  $nDist=($nr-1)*$ds; }
     distance to march $nDist
     $nrm=$nr-1; 
     lines to march $nrm
@@ -118,6 +131,7 @@ $cmd
     geometric stretch factor 1.05 
     #
     generate
+    # open graphics
     boundary conditions
       -1 -1 7 0 0 0
     share 
@@ -147,7 +161,7 @@ $cmd
 #
 # ------- inner background grid -----
 #
-$xai=-$radX;  $xbi=-$xai; $yai=-$radY; $ybi=-$yai;  # FIX ME FOR ROTATIONS
+$xai=-$radX;  $xbi=-$xai; $yai=-$radY; $ybi=-$yai;  
 rectangle
   set corners
     $xai $xbi $yai $ybi
@@ -158,8 +172,19 @@ rectangle
   boundary conditions
     0 0 0 0 
   mappingName
-    innerBackGround
+    innerBackGround 
 exit
+# -- rotate inner background ---
+rotate/scale/shift
+  transform which mapping?
+    innerBackGround
+  rotate
+    $angle
+    0 0 0
+  mappingName
+    innerBackGroundRotated
+exit
+if( $angle eq 0 ){ $innerBackGround="innerBackGround"; }else{ $innerBackGround="innerBackGroundRotated"; }
 #
 # Convert to a nurbs and rotate
 #
@@ -174,6 +199,7 @@ sub convertToNurbs\
               "mappingName\n" . "$new\n" . "exit\n"; \
 }
 convertToNurbs("outerShape0","outerShape",$angle);
+$commands
 convertToNurbs("innerShape0","innerShape",$angle);
 $commands
 #
@@ -185,13 +211,13 @@ exit
 generate an overlapping grid
     backGround
     outerShape
-    innerBackGround
+    $innerBackGround
     innerShape
   done
   change parameters
     specify a domain
       innerDomain
-      innerBackGround
+      $innerBackGround
       innerShape
     done
     specify a domain
@@ -211,7 +237,8 @@ generate an overlapping grid
       $ng $ng $ng $ngp $ng $ng
   exit
   #  display intermediate results
-  # open graphics
+  open graphics
+
   # 
   compute overlap
 #  plot

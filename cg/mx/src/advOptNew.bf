@@ -5955,11 +5955,11 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
       ! updateRectangular2dOrder2Dispersive()
 
-    else if( useSosupDissipation.ne.0 )then
-
-     ! FD22s (rectangular grid) with upwind (sosup) dissipation (wide stencil dissiption)
-      updateUpwindDissipationRectangular2dOrder2()
-
+!-    else if( useSosupDissipation.ne.0 )then
+!-
+!-     ! FD22s (rectangular grid) with upwind (sosup) dissipation (wide stencil dissiption)
+!-      updateUpwindDissipationRectangular2dOrder2()
+!-
     else if( useDivergenceCleaning.eq.0 )then
 
      ! FD22 with no dissipation
@@ -6010,7 +6010,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
     end if
    #End
 
-    write(*,*) 'Finished w/ order 2...'
+   ! write(*,*) 'Finished w/ order 2...'
 
  #Elif #ORDER eq "4"
 
@@ -6038,12 +6038,13 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
       else if( useDivergenceCleaning.eq.0 )then
 
-       if( useSosupDissipation.ne.0 )then
-
-         ! FD44 (rectangular grid) with Sosup dissipation (wide stencil dissiption)
-         updateUpwindDissipationRectangular2dOrder4()
-
-       else if( useNewForcingMethod.eq.1 ) then
+!-       if( useSosupDissipation.ne.0 )then
+!-
+!-         ! FD44 (rectangular grid) with Sosup dissipation (wide stencil dissiption)
+!-         updateUpwindDissipationRectangular2dOrder4()
+!-
+!-       else 
+         if( useNewForcingMethod.eq.1 ) then
 
          ! fix forcing for ME scheme to be 4th-order
          if( combineDissipationWithAdvance.eq.0 )then
@@ -6337,20 +6338,21 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
    #Elif #ORDER eq "4"
 
-     if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )then
-
-       ! ---- use sosup dissipation (wider stencil) ---
-
-      write(*,'(" finish me: FD44 non-cons && useSosupDissipation")')
-      stop 4486
-
-
-       if( useNewForcingMethod.ne.0 )then
-        write(*,'(" finish me: dispersion && useNewForcingMethod")')
-        stop 4487
-       end if
-
-     else if( timeSteppingMethod.eq.modifiedEquationTimeStepping )then
+!-     if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )then
+!-
+!-       ! ---- use sosup dissipation (wider stencil) ---
+!-
+!-      write(*,'(" finish me: FD44 non-cons && useSosupDissipation")')
+!-      stop 4486
+!-
+!-
+!-       if( useNewForcingMethod.ne.0 )then
+!-        write(*,'(" finish me: dispersion && useNewForcingMethod")')
+!-        stop 4487
+!-       end if
+!-
+!-     else 
+     if( timeSteppingMethod.eq.modifiedEquationTimeStepping )then
 
        ! ----------------------------------------------------------
        ! ----- 4th order in space and 4th order in time ------------
@@ -6531,17 +6533,18 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
    #If #ORDER eq "2"
 
-    if( useSosupDissipation.ne.0 )then
-
-      ! ---- use sosup dissipation (wider stencil) ---
-      #If #DIM eq "2"
-        updateUpwindDissipationCurvilinear2dOrder2()
-      #Else
-        write(*,'(" FINISH ME 3D")' )
-        stop 3313
-      #End
-
-    else if( dispersionModel.ne.noDispersion )then
+!-    if( useSosupDissipation.ne.0 )then
+!-
+!-      ! ---- use sosup dissipation (wider stencil) ---
+!-      #If #DIM eq "2"
+!-        updateUpwindDissipationCurvilinear2dOrder2()
+!-      #Else
+!-        write(*,'(" PRE-COMPUTED SPATIAL OPERATORS + GDM Not available")' )
+!-        stop 3313
+!-      #End
+!-
+!-    else 
+    if( dispersionModel.ne.noDispersion )then
 
       stop 8843
 
@@ -6600,13 +6603,14 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
    #Elif #ORDER eq "4"
 
-     if( useSosupDissipation.ne.0 )then
-
-       ! ---- use sosup dissipation (wider stencil) ---
-       updateUpwindDissipationCurvilinear2dOrder4()
-
-
-     else if( dispersionModel.ne.noDispersion )then
+!-     if( useSosupDissipation.ne.0 )then
+!-
+!-       ! ---- use sosup dissipation (wider stencil) ---
+!-       updateUpwindDissipationCurvilinear2dOrder4()
+!-
+!-
+!-     else 
+     if( dispersionModel.ne.noDispersion )then
 
       ! --dispersive model --
       stop 7777

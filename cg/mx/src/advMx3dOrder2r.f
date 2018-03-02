@@ -6440,7 +6440,7 @@ c===============================================================================
               end if
             end if
            end if
-           write(*,*) 'Finished w/ order 2...'
+          ! write(*,*) 'Finished w/ order 2...'
         else
         end if
         return

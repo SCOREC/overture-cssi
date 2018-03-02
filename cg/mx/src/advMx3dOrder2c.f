@@ -5573,11 +5573,18 @@ c===============================================================================
             ! **********************************************************************************
             !  --> The Laplacian and Laplacian squared have already been computed by the calling program
             !  --> For example, mainly when using conservative operators
-           if( useSosupDissipation.ne.0 )then
-             ! ---- use sosup dissipation (wider stencil) ---
-               write(*,'(" FINISH ME 3D")' )
-               stop 3313
-           else if( dispersionModel.ne.noDispersion )then
+       !-    if( useSosupDissipation.ne.0 )then
+       !-
+       !-      ! ---- use sosup dissipation (wider stencil) ---
+       !-      #If "3" eq "2"
+       !-        updateUpwindDissipationCurvilinear2dOrder2()
+       !-      #Else
+       !-        write(*,'(" PRE-COMPUTED SPATIAL OPERATORS + GDM Not available")' )
+       !-        stop 3313
+       !-      #End
+       !-
+       !-    else 
+           if( dispersionModel.ne.noDispersion )then
              stop 8843
              ! -- dispersive model --
               ! updateCurvilinear3dOrder2Dispersive()
