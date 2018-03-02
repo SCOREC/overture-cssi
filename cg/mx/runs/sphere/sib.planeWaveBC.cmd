@@ -35,13 +35,19 @@ $tFinal=10.; $tPlot=.1; $diss=.1; $dissOrder=4; $cfl=.9; $method="NFDTD";
 $grid="sib1.order4.hdf"; $bg="box"; $ic="exact"; 
 $radius=.5; 
 $cons=0; $go="halt"; 
+#
+$useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
+$selectiveDissipation=0;
 $dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"bg=s"=>\$bg,\
   "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,"diss=f"=>\$diss,"dissOrder=i"=>\$dissOrder,\
   "radius=f"=>\$radius,"ic=s"=>\$ic,\
-  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1 );
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,\
+  "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
+  "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
+  "selectiveDissipation=i"=>\$selectiveDissipation );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
@@ -83,6 +89,8 @@ scattering radius $radius
 # Gaussian plane wave: 100. -1.5 0. 0.
 # bc: box=abcEM2
 bc: all=perfectElectricalConductor
+# **** TESTING
+# **** bc: all=dirichlet
 #****
 bc: $bg=dirichlet
 # bc: box=abcEM2
@@ -98,6 +106,14 @@ tPlot  $tPlot
 # 
 order of dissipation $dissOrder
 dissipation  $diss
+#
+if( $selectiveDissipation eq "1" ){ $cmd="selective dissipation...\n  turn off rectangular\n continue"; }else{ $cmd="#"; }
+$cmd 
+#
+use sosup dissipation $useSosupDissipation
+sosup parameter $sosupParameter
+sosup dissipation option $sosupDissipationOption
+sosup dissipation frequency $sosupDissipationFrequency
 #***********************
 slow start interval -1.
 #***********************

@@ -16,13 +16,14 @@
 #define exmax EXTERN_C_NAME(exmax)
 #define adjustForIncident EXTERN_C_NAME(adjustforincident)
 
+#define ForBoundary(side,axis)   for( int axis=0; axis<cg.numberOfDimensions(); axis++ ) for( int side=0; side<=1; side++ )
 extern "C"
 {
             void bcOptMaxwell(const int&nd,
             const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
             const int&ndf1a,const int&ndf1b,const int&ndf2a,const int&ndf2b,const int&ndf3a,const int&ndf3b,
             const int & gid, const int & dimension,
-            const real&u, const real&f, const int&mask, const real&rsxy, const real&xy,
+            const real&u, const real&f, const int&mask, const real&rsxy, const real&xy, const real&v,
             const int&bc, const int&boundaryCondition, const int&ipar, const real&rpar, int&ierr );
 
             void abcMaxwell(const int&nd,
@@ -721,6 +722,27 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
     // do this for now for corners:  **** fix ****  Is this needed any more ?
         Range C(ex,hz);
+
+
+        if( FALSE )
+        {
+      // TESTING -- ADDING A 3RD GHOST LINE CAN CAUSE ERRORS ???
+            ForBoundary(side,axis)
+            {
+        // --- PUT BOGUS VALUES ----
+                int ghostStart=3;
+                int ghostEnd=mg.numberOfGhostPoints(side,axis);
+                for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
+                {
+                    printF("TESTING : SET GHOST LINE %i to BOGUS for (grid,side,axis)=(%i,%i,%i)\n",ghost,grid,side,axis);
+                    getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,ghost);
+                    uLocal(Ig1,Ig2,Ig3,C)=Mapping::bogus;
+          // uLocal(Ig1,Ig2,Ig3,C)=0.;
+                }
+            }
+            
+        }
+        
 
 
         bool useOpt=true; //  && bcOption!=Maxwell::useAllDirichletBoundaryConditions;  // don't do parallel for now
@@ -2400,6 +2422,28 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 {
                     ::display(uu,sPrintF("uu before bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                 }
+        // Allocate Workspace for the fourth-order curvilinear PEC BC's
+                const bool boundaryConditionWorkSpaceNeeded=(
+                    orderOfAccuracyInSpace==4 && !isRectangular &&
+                    (bc(0,0)==perfectElectricalConductor || 
+                      bc(1,0)==perfectElectricalConductor || 
+                      bc(0,1)==perfectElectricalConductor || 
+                      bc(1,1)==perfectElectricalConductor ||
+                      bc(0,2)==perfectElectricalConductor || 
+                      bc(1,2)==perfectElectricalConductor
+                        )
+                    );
+                RealArray v; 
+                real *vptr = uu.getDataPointer();  // default value when not used 
+                if( boundaryConditionWorkSpaceNeeded )
+                {
+                    if( t < 2.*dt )
+                    {
+                        printF("CGMX:AssignBC:INFO: allocate work-space for 4th-order curvilinear PEC BC\n");
+                    }
+                    v.redim(uu); // we could maybe use some of the forcing functions as work space ****** FIX ME ***
+                    vptr = v.getDataPointer();
+                }
         // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                 bcOptMaxwell( mg.numberOfDimensions(), 
                         		uu.getBase(0),uu.getBound(0),
@@ -2409,7 +2453,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         		ff.getBase(1),ff.getBound(1),
                         		ff.getBase(2),ff.getBound(2),
                         		*gid.getDataPointer(),*dim.getDataPointer(),
-                        		*uptr,*fptr,*maskptr,*rxptr, *xyptr,
+                        		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
                         		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                 if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                 real *uOldptr = uuOld.getDataPointer();
@@ -2929,6 +2973,28 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     {
                         ::display(uu,sPrintF("uu before bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     }
+          // Allocate Workspace for the fourth-order curvilinear PEC BC's
+                    const bool boundaryConditionWorkSpaceNeeded=(
+                        orderOfAccuracyInSpace==4 && !isRectangular &&
+                        (bc(0,0)==perfectElectricalConductor || 
+                          bc(1,0)==perfectElectricalConductor || 
+                          bc(0,1)==perfectElectricalConductor || 
+                          bc(1,1)==perfectElectricalConductor ||
+                          bc(0,2)==perfectElectricalConductor || 
+                          bc(1,2)==perfectElectricalConductor
+                            )
+                        );
+                    RealArray v; 
+                    real *vptr = uu.getDataPointer();  // default value when not used 
+                    if( boundaryConditionWorkSpaceNeeded )
+                    {
+                        if( t < 2.*dt )
+                        {
+                            printF("CGMX:AssignBC:INFO: allocate work-space for 4th-order curvilinear PEC BC\n");
+                        }
+                        v.redim(uu); // we could maybe use some of the forcing functions as work space ****** FIX ME ***
+                        vptr = v.getDataPointer();
+                    }
           // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                     bcOptMaxwell( mg.numberOfDimensions(), 
                             		uu.getBase(0),uu.getBound(0),
@@ -2938,7 +3004,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             		ff.getBase(1),ff.getBound(1),
                             		ff.getBase(2),ff.getBound(2),
                             		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr,
+                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
                             		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();
@@ -3462,6 +3528,28 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     {
                         ::display(uu,sPrintF("uu before bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     }
+          // Allocate Workspace for the fourth-order curvilinear PEC BC's
+                    const bool boundaryConditionWorkSpaceNeeded=(
+                        orderOfAccuracyInSpace==4 && !isRectangular &&
+                        (bc(0,0)==perfectElectricalConductor || 
+                          bc(1,0)==perfectElectricalConductor || 
+                          bc(0,1)==perfectElectricalConductor || 
+                          bc(1,1)==perfectElectricalConductor ||
+                          bc(0,2)==perfectElectricalConductor || 
+                          bc(1,2)==perfectElectricalConductor
+                            )
+                        );
+                    RealArray v; 
+                    real *vptr = uu.getDataPointer();  // default value when not used 
+                    if( boundaryConditionWorkSpaceNeeded )
+                    {
+                        if( t < 2.*dt )
+                        {
+                            printF("CGMX:AssignBC:INFO: allocate work-space for 4th-order curvilinear PEC BC\n");
+                        }
+                        v.redim(uu); // we could maybe use some of the forcing functions as work space ****** FIX ME ***
+                        vptr = v.getDataPointer();
+                    }
           // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                     bcOptMaxwell( mg.numberOfDimensions(), 
                             		uu.getBase(0),uu.getBound(0),
@@ -3471,7 +3559,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             		ff.getBase(1),ff.getBound(1),
                             		ff.getBase(2),ff.getBound(2),
                             		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr,
+                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
                             		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();

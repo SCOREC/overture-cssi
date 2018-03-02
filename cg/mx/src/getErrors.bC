@@ -1388,22 +1388,24 @@ getErrors( int current, real t, real dt )
           // printF(">> getErr >>> maxErrPolarization(domain=%i)=%e solutionNorm=%e\n",domain,maxErrPolarization(domain),
           //                solutionNorm(epc));
         
-          if( debug & 2 )
-          {
-            fprintf(pDebugFile," *** Max errors on this processor for grid %i at t=%8.2e: ",grid,t);
-            for( int c=C.getBase(); c<=C.getBound(); c++ )
-              fprintf(pDebugFile,"%10.4e,",errMax(c));
-            fprintf(pDebugFile,"\n");
-          }
+	    
+        } // end for_3d
+
+        if( debug & 2 )
+        {
+          fprintf(pDebugFile," *** Max errors on this processor for grid %i at t=%8.2e: ",grid,t);
           for( int c=C.getBase(); c<=C.getBound(); c++ )
-          {
+            fprintf(pDebugFile,"%10.4e,",errMax(c));
+          fprintf(pDebugFile,"\n");
+        }
+        for( int c=C.getBase(); c<=C.getBound(); c++ )
+        {
 // 	  errMax(c)=getMaxValue(errMax(c));
 // 	  solutionNorm(c)=getMaxValue(solutionNorm(c));
 	      
-            maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
-          }
-	    
+          maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
         }
+        
       }
       else // check inside radius
       {
@@ -1597,10 +1599,10 @@ getErrors( int current, real t, real dt )
       {
 	for( ghost=1; ghost<=numberOfGhost; ghost++ )
 	{
-	  printF(" t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
+	  fprintf(pDebugFile," t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
 	  for( c=C.getBase(); c<=C.getBound(); c++ )
-	    printF("%8.2e, ",ghostError(c,ghost));
-	  printF("\n");
+	    fprintf(pDebugFile,"%8.2e, ",ghostError(c,ghost));
+	  fprintf(pDebugFile,"\n");
 	}
       }
       

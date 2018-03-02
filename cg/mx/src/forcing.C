@@ -107,6 +107,10 @@ void
 ogf3d(OGFunction *&ep, const real &x, const real &y, const real &z, const real & t, real & u, real & v, real & w )
 {
     /* assumes ex=0, ey=1, hz=2 */
+  // cout << "ogf3d ep=" << ep << endl;
+  // printF("ogf3d x,y,z,t=%12.4e, %12.4e, %12.4e,%12.4e,\n",x,y,z,t);
+  assert( ep !=NULL );
+  
     u=(*ep)(x,y,z,0,t);
     v=(*ep)(x,y,z,1,t);
     w=(*ep)(x,y,z,2,t);

@@ -1,7 +1,45 @@
 ***************************
+******* March 1, 2018
+
+
+
+***************************
+******* Feb 28, 2018
+
+TEST SIB CASE that has trouble with scattering 
+
+cgmx -noplot tz -g=sibSmallBoxi1.order4.hdf -degreex=0 -degreet=0 -bc=pec -tp=.01 -tf=.02 -cons=0 -diss=0 -go=go >! junk
+
+
+RETURN AFTER STAGE 1 -- not exact but looks OK
+cgmx tz -g=sibSmallBoxi1.order4.hdf -degreex=0 -degreet=0 -bc=pec -tp=.01 -tf=.1 -cons=0 -diss=0 -go=halt
+>>> t=1.00e-01 dt=1.0e-02 max errors:[3.76e-04,3.76e-04,8.91e-04,], max (u):[1.00e+00,1.00e+00,1.00e+00,] (10 steps)
+
+
+**TROUBLE with PEC and CONSTANT IN SPACE AND TIME ** 
+cgmx tz -g=sibSmallBoxi1.order4.hdf -degreex=0 -degreet=0 -bc=pec -tp=.01 -tf=.1 -cons=0 -diss=0 -go=halt
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[8.88e-16,8.88e-16,8.88e-16,], max (u):[1.00e+00,1.00e+00,1.00e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.79e-03,4.79e-03,3.09e-03,], max (u):[1.00e+00,1.00e+00,1.00e+00,] (2 steps)
+
+
+**TROUBLE with PEC** 
+cgmx tz -g=sibSmallBoxi1.order4.hdf -degreex=2 -degreet=2 -bc=pec -tp=.01 -tf=.1 -cons=0 -diss=0 -go=halt
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.04e-01,2.04e-01,1.32e-01,], max (u):[1.53e+01,1.71e+01,7.16e+00,] (3 steps)
+
+BC=dirichlet = OKx
+cgmx tz -g=sibSmallBoxi1.order4.hdf -degreex=2 -degreet=2 -bc=d -tp=.01 -tf=.1 -cons=0 -diss=0 -go=halt
+
+
+***************************
 ******* Feb 24, 2018
 
 TEST Jordans Sosup-dissipation
+
+**BROKEN** Forcing added twice I think?
+cgmx -noplot tz -g=nonSquare16.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.01 -tf=.2 -cfl=.9 -go=go
+
+
 
 
 FD44s: curvilinear -- not exact 

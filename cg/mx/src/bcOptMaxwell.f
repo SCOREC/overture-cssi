@@ -522,7 +522,7 @@ c To include derivatives of rx use OPTION=RX
 
       subroutine bcOptMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,ndf1a,
      & ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,f,
-     & mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & mask,rsxy, xy,v, bc, boundaryCondition, ipar, rpar, ierr )
 ! ===================================================================================
 !  Optimised Boundary conditions for Maxwell's Equations.
 !
@@ -541,6 +541,7 @@ c To include derivatives of rx use OPTION=RX
       integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
       real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+      real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
 
       integer ipar(0:*),boundaryCondition(0:1,0:2)
@@ -582,19 +583,19 @@ c To include derivatives of rx use OPTION=RX
         if( orderOfAccuracy.eq.2 )then
           call bcOptMaxwell2dOrder2(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.4 )then
           call bcOptMaxwell2dOrder4(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.6 )then
           call bcOptMaxwell2dOrder6(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.8 )then
           call bcOptMaxwell2dOrder8(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else
           stop 5533
         end if
@@ -602,19 +603,19 @@ c To include derivatives of rx use OPTION=RX
         if( orderOfAccuracy.eq.2 )then
           call bcOptMaxwell3dOrder2(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.4 )then
           call bcOptMaxwell3dOrder4(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.6 )then
           call bcOptMaxwell3dOrder6(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.8 )then
           call bcOptMaxwell3dOrder8(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,bc, boundaryCondition, ipar, rpar, ierr )
         else
           stop 5533
         end if

@@ -38,6 +38,12 @@
        )/(rsxy(i1,i2,i3,axis,0)**2+rsxy(i1,i2,i3,axis,1)**2)
 
 ! -------------------------------------------------------------------------------------------------------
+! Macro: third-order extrapolation:
+! -------------------------------------------------------------------------------------------------------
+#defineMacro extrap3(ec,j1,j2,j3,is1,is2,is3)\
+      ( 3.*u(j1      ,j2      ,j3      ,ec)-3.*u(j1+  is1,j2+  is2,j3+  is3,ec)+u(j1+2*is1,j2+2*is2,j3+2*is3,ec) )
+
+! -------------------------------------------------------------------------------------------------------
 ! Macro: fifth-order extrapolation:
 ! -------------------------------------------------------------------------------------------------------
 #defineMacro extrap5(ec,j1,j2,j3,is1,is2,is3)\
@@ -952,7 +958,7 @@ else if( mask(i1,i2,i3).lt.0 )then
 #Include "bc4HzMaxwell.h"
 
 
- if( debug.gt.0 )then
+ if( debug.gt.0 .and. forcingOption.eq.twilightZoneForcing )then
   write(*,'(" ghost-interp: i=",3i3," ex=",e10.2," assign i=",3i3," ex=",e10.2," i=",3i3," ex=",e10.2)')\
      i1,i2,i3,u(i1,i2,i3,ex),i1-is1,i2-is2,i3-is3,u(i1-is1,i2-is2,i3-is3,ex),i1-2*is1,i2-2*is2,i3-2*is3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)
 
@@ -2322,6 +2328,9 @@ end if
         grid,side,axis,is1,is2,is3,ks1,ks2,ks3
  end if
 
+ ! **********************************************************
+ ! ******************** BEGIN LOOPS *************************
+ ! **********************************************************
  beginLoops()
  if( mask(i1,i2,i3).gt.0 )then
 
@@ -2504,8 +2513,8 @@ else if( mask(i1,i2,i3).lt.0 )then
 
  ! ** NEW WAY **  *wdh
  ! extrapolate ghost points next to boundary interpolation points  *wdh* 2015/08/11
- if( .false. .and. t.le.dt )then
-   write(*,'("--MX-- BC4 extrap ghost next to interp t,dt=",2e12.3)') t,dt
+ if( debug.gt.3. .and. t.le.dt )then
+   write(*,'("--MX-- BC4 extrap ghost next to interp t,dt=",2e12.3," grid,i=",i3,1x,3i4)') t,dt,grid,i1,i2,i3
  end if
 
   u(i1-is1,i2-is2,i3-is3,ex) = extrap5(ex,i1,i2,i3,is1,is2,is3)
@@ -2514,6 +2523,14 @@ else if( mask(i1,i2,i3).lt.0 )then
   u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = extrap5(ex,i1-is1,i2-is2,i3-is3,is1,is2,is3)
   u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = extrap5(ey,i1-is1,i2-is2,i3-is3,is1,is2,is3)
   u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = extrap5(ez,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+
+  ! **** TESTING **** *wdh* Feb 28, 2018
+  !u(i1-is1,i2-is2,i3-is3,ex) = extrap3(ex,i1,i2,i3,is1,is2,is3)
+  !u(i1-is1,i2-is2,i3-is3,ey) = extrap3(ey,i1,i2,i3,is1,is2,is3)
+  !u(i1-is1,i2-is2,i3-is3,ez) = extrap3(ez,i1,i2,i3,is1,is2,is3)
+  !u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = extrap3(ex,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+  !u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = extrap3(ey,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+  !u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = extrap3(ez,i1-is1,i2-is2,i3-is3,is1,is2,is3)
 
 
 else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
@@ -2656,7 +2673,7 @@ else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
    uss=USS2(ex)
    vss=USS2(ey)
    wss=USS2(ez)
-  if( debug.gt.0 )then
+  if( debug.gt.0 .and. forcingOption.eq.twilightZoneForcing )then
    OGF3D(i1-js1a,i2-js2a,i3-js3a,t, uvm(0),uvm(1),uvm(2))
    OGF3D(i1+js1a,i2+js2a,i3+js3a,t, uvp(0),uvp(1),uvp(2))
    write(*,'(" **ghost-interp3d: use central-diff: us,uss=",2f8.3," us2,usm,usp=",3f8.3)') us,uss,\
@@ -2722,7 +2739,7 @@ else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
    vtt=UTT2(ey)
    wtt=UTT2(ez)
 
-  if( debug.gt.0 )then
+  if( debug.gt.0 .and. forcingOption.eq.twilightZoneForcing )then
    OGF3D(i1-ks1a,i2-ks2a,i3-ks3a,t, uvm(0),uvm(1),uvm(2))
    OGF3D(i1+ks1a,i2+ks2a,i3+ks3a,t, uvp(0),uvp(1),uvp(2))
    write(*,'(" **ghost-interp3d: use central-diff: ut,utt=",2f8.3," ut2=",f8.3)') ut,utt,\
@@ -2763,7 +2780,7 @@ else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
   vtt = USSP(i1,i2,i3,ks1a,ks2a,ks3a,dtb,ey)
   wtt = USSP(i1,i2,i3,ks1a,ks2a,ks3a,dtb,ez)
 
-  if( debug.gt.0 )then
+  if( debug.gt.0 .and. forcingOption.eq.twilightZoneForcing )then
    OGF3D(i1,i2,i3,t, uv0(0),uv0(1),uv0(2))
    OGF3D(i1+ks1a,i2+ks2a,i3+ks3a,t, uvp(0),uvp(1),uvp(2))
    OGF3D(i1+2*ks1a,i2+2*ks2a,i3+2*ks3a,t, uvp2(0),uvp2(1),uvp2(2))
@@ -2933,7 +2950,7 @@ else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
 ! Now assign E at the ghost points:
 #Include "bc4Maxwell3dExtrap.h"
 
-  if( debug.gt.0 )then
+  if( debug.gt.0 .and. forcingOption.eq.twilightZoneForcing )then
    OGF3D(i1-is1,i2-is2,i3-is3,t, uvm(0),uvm(1),uvm(2))
    OGF3D(i1-2*is1,i2-2*is2,i3-2*is3,t, uvm2(0),uvm2(1),uvm2(2))
    write(*,'(" **ghost-interp3d: errors u(-1)=",3e10.2)') u(i1-is1,i2-is2,i3-is3,ex)-uvm(0),\
@@ -3020,6 +3037,22 @@ endLoops()
 ! We use the initial guess in order to compute the mixed derivatives urs, urss, urtt
 
 if( .true. )then
+
+! ***************** TEST FEB 28 2018 **********************
+if( .true. )then
+ if( t.le.3.*dt )then
+   write(*,'(" BC4:: COPY u to v -- FIX ME to be more efficient")') 
+ end if
+ do i3=nd3a,nd3b
+ do i2=nd2a,nd2b
+ do i1=nd1a,nd1b
+   v(i1,i2,i3,ex)=u(i1,i2,i3,ex)
+   v(i1,i2,i3,ey)=u(i1,i2,i3,ey)
+   v(i1,i2,i3,ez)=u(i1,i2,i3,ez)
+ end do
+ end do
+ end do
+end if
 
 ! ** Periodic update is now done in a previous step -- this doesn't work in parallel
 ! first do a periodic update
@@ -3353,13 +3386,38 @@ if( .true. )then
 !          u(i1-2*is1,i2-2*is2,i3-2*is3,ex),u(i1-2*is1,i2-2*is2,i3-2*is3,ey),u(i1-2*is1,i2-2*is2,i3-2*is3,ez)
 !  end if
 
-  if( debug.gt.0 )then
+  if( debug.gt.3 .and. forcingOption.eq.twilightZoneForcing )then
    OGF3D(i1-is1,i2-is2,i3-is3,t, uvm(0),uvm(1),uvm(2))
    OGF3D(i1-2*is1,i2-2*is2,i3-2*is3,t, uvm2(0),uvm2(1),uvm2(2))
-   write(*,'(" **bc4:correction: i=",3i4," errors u(-1)=",3e10.2)') i1,i2,i3,u(i1-is1,i2-is2,i3-is3,ex)-uvm(0),\
-               u(i1-is1,i2-is2,i3-is3,ey)-uvm(1),u(i1-is1,i2-is2,i3-is3,ez)-uvm(2)
-   write(*,'(" **bc4:correction: i=",3i4," errors u(-2)=",3e10.2)') i1,i2,i3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(0),\
-               u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1),u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm2(2)
+   t1 = abs(u(i1-is1,i2-is2,i3-is3,ex)-uvm(0))
+   t2 = abs(u(i1-is1,i2-is2,i3-is3,ey)-uvm(1))
+   t3 = abs(u(i1-is1,i2-is2,i3-is3,ez)-uvm(2))
+   t4 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(0))
+   t5 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1))
+   t6 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm2(2))
+   if( max(t1,t2,t3,t4,t5,t6).gt.0.01 )then
+  
+     write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4," errors u(-1)=",3e10.2)') grid,i1,i2,i3,t1,t2,t3
+     write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4," errors u(-2)=",3e10.2)') grid,i1,i2,i3,t4,t5,t6
+
+     if( max(t1,t2,t3,t4,t5,t6).gt.0.5 )then
+       ! Evaluate the jacobian at bad error locations
+       m1=-is1
+       m2=-is2
+       m3=-is3
+       jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+       m1=-2*is1
+       m2=-2*is2
+       m3=-2*is3
+       jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+
+       write(*,'(" **bc4: u=",3(1pe9.2)," 1/Jac(ghost1) 1/Jac(ghost2) =",2(e12.4,1x))') u(i1,i2,i3,ex),u(i1,i2,i3,ey),u(i1,i2,i3,ez),jac3di(-is1,-is2,-is3),jac3di(-2*is1,-2*is2,-2*is3)
+
+       write(*,'("Neighbours: (5x5)x5")') 
+       write(*,'(25(1pe10.2))') (((u(i1+m1,i2+m2,i3+m3,ex),m1=-2,2),m2=-2,2),m3=-2,2)
+
+     end if
+   end if
   end if
 
 
@@ -3377,6 +3435,22 @@ if( .true. )then
 
 end if ! mask
 endLoops()
+
+! ***************** TEST FEB 28 2018 **********************
+if( .true. )then
+ if( t.le.3.*dt )then
+   write(*,'(" BC4:: COPY v to u ** FIX ME TO BE MORE EFFICIENT **** ")') 
+ end if
+ do i3=nd3a,nd3b
+ do i2=nd2a,nd2b
+ do i1=nd1a,nd1b
+   u(i1,i2,i3,ex)=v(i1,i2,i3,ex)
+   u(i1,i2,i3,ey)=v(i1,i2,i3,ey)
+   u(i1,i2,i3,ez)=v(i1,i2,i3,ez)
+ end do
+ end do
+ end do
+end if
 
 end if ! if true
 

@@ -1,4 +1,73 @@
 ******************************
+****** Feb 27-28, 2018
+
+TEST TWILIGHT ZONE
+
+
+
+
+TRY COARSER ** TROUBLE **
+cgmx -noplot sib.planeWaveBC -g=sibSmallBoxi1.order4.hdf -tp=.01 -tf=.01 -cons=0 -diss=0 -debug=31 -go=go >! junk
+
+cgmx -noplot sib.planeWaveBC -g=sibSmallBoxi1.order4.hdf -tp=.01 -tf=.02 -cons=0 -diss=0 -debug=31 -go=go >! junk
+
+TRY THIS: -- TROUBLE --
+cgmx sib.planeWaveBC -g=sibSmallBoxi1.order4.hdf -tp=.01 -cons=0 -diss=0 -go=halt
+
+
+*TROUBLE* WITH ng3 !! Should not change anything****
+cgmx sib.planeWaveBC -g=sibSmallBoxe2.order4.ng3.hdf -tp=.01 -cons=0 -diss=0 -go=halt
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.48e+00 (=1.03e+03/6.96e+02) 1 steps mem=64.7(Mb) cpu=3.27e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.57e-03,1.53e-03,1.08e-03,], max (u):[1.44e+00,1.33e+00,7.97e-01,] (1 steps)
+
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.46e+00 (=1.33e+03/9.15e+02) 2 steps mem=68.7(Mb) cpu=4.56e+00(s)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.29e+00,7.45e-01,5.60e-01,], max (u):[1.38e+00,1.32e+00,7.81e-01,] (2 steps)
+
+
+NO EXTRA GHOST -- *TROUBLE HERE TOO** 
+cgmx sib.planeWaveBC -g=sibSmallBoxe2.order4.hdf -tp=.01 -cons=0 -diss=0 -go=halt
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.48e+00 (=1.03e+03/6.96e+02) 1 steps mem=59.6(Mb) cpu=1.71e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.57e-03,1.53e-03,1.08e-03,], max (u):[1.44e+00,1.33e+00,7.97e-01,] (1 steps)
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.46e+00 (=1.33e+03/9.15e+02) 2 steps mem=66.1(Mb) cpu=8.24e+00(s)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.29e+00,7.45e-01,5.60e-01,], max (u):[1.38e+00,1.32e+00,7.81e-01,] (2 steps)
+
+
+THIS IS OK: NO-EXTRA GHOST OK: 
+cgmx sib.planeWaveBC -g=sibe2.order4.hdf -tp=.01 -cons=0 -diss=0 -go=halt
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=8.87e-03 (=9.46e-02/1.07e+01) 2 steps mem=87.5(Mb) cpu=3.92e+00(s)
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.38e-04,1.82e-04,8.92e-05,], max (u):[1.44e+00,1.32e+00,7.96e-01,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[3.16e-04,3.26e-04,2.11e-04,], max (u):[1.38e+00,1.32e+00,7.80e-01,] (2 steps)
+
+
+
+*TROUBLE* WITH ng3 !! Should not change anything****
+cgmx sib.planeWaveBC -g=sibe2.order4.ng3.hdf -tp=.01 -cons=0 -diss=0 -go=halt
+
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.46e+00 (=1.33e+03/9.15e+02) 2 steps mem=88.6(Mb) cpu=3.74e+00(s)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.29e+00,7.45e-01,5.60e-01,], max (u):[1.38e+00,1.32e+00,7.81e-01,] (2 steps)
+
+
+
+sib2 TROUBLE??
+cgmx sib.planeWaveBC -g=sibe2.order4.ng3.hdf -dm=gdm -a0=1 -a1=1 -b0=1 -b1=1 -tp=.01 -cons=0 -useSosupDissipation=1 -diss=0 -go=halt
+
+sib2 : NO-GDM -- **TROUBLE***
+cgmx sib.planeWaveBC -g=sibe2.order4.ng3.hdf -dm=none -a0=1 -a1=1 -b0=1 -b1=1 -tp=.01 -cons=0 -useSosupDissipation=1 -diss=0 -go=halt
+
+GDM + SOSUP DISSIPATION:
+cgmx -noplot sib.planeWaveBC -g=sibe4.order4.ng3.hdf -dm=gdm -a0=1 -a1=1 -b0=1 -b1=1 -tp=.05 -cons=0 -useSosupDissipation=1 -diss=0 -go=og
+
+>>> Cgmx:FD: t=5.00e-02 dt=7.1e-03 TS=ME GDM |div(E)|/|grad(E)|=3.55e-03 (=3.34e-02/9.40e+00) 7 steps mem=306(Mb) cpu=1.48e+01(s)
+--getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.062e-01 max-err = 1.890e-05
+>>> t=5.00e-02 dt=7.1e-03 max errors:[8.21e-04,9.93e-04,6.38e-04,], max (u):[1.15e+00,1.25e+00,7.17e-01,] (7 steps)
+
+G8:
+--getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=1 P-norm=2.064e-01 max-err = 1.550e-06
+>>> t=5.00e-02 dt=4.5e-03 max errors:[5.38e-05,6.07e-05,4.47e-05,], max (u):[1.15e+00,1.25e+00,7.18e-01,] (11 steps)
+
+******************************
 ****** Feb 25, 2018
 
 TEST MJJ's new GDM codes

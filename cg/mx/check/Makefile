@@ -21,6 +21,12 @@ cici1.order4.hdf:
 box16.order4.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/box16.order4.cmd
 
+box1.order2.hdf:
+	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/boxArg.cmd -order=2 -factor=1 
+
+nonBox1.order2.hdf:
+	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/boxArg.cmd -prefix=nonBox -order=2 -factor=1
+
 box1.order4.ng3.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/boxArg.cmd  -order=4 -factor=1 -numGhost=3
 
@@ -61,7 +67,7 @@ buildGrids: tube1.order4.hdf square16.order4.hdf cici1.order4.hdf box16.order4.h
             innerOuter4.order4.hdf \
             twoBoxesInterfacee111.order4.hdf square20.order4.ng3.hdf square20.order6.ng4.hdf \
             solidSphereInABoxe2.order2.hdf solidSphereInABoxe2.order4.ng3.hdf square20.order2.hdf \
-            nonSquare20.order2.hdf nonSquare20.order4.ng3.hdf 
+            nonSquare20.order2.hdf nonSquare20.order4.ng3.hdf box1.order2.hdf nonBox1.order2.hdf
 	touch buildGrids
 
 

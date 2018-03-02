@@ -124,11 +124,11 @@ $kx=2; $ky=0; $kz=0;
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $omega=-1.; # time harmonic omega for intensity computations 
 $eps=1.; $mu=1.;
-$show=" "; $backGround="backGround"; $useNewInterface=0; $checkErrors=0; 
+$show=" "; $backGround="backGround"; $useNewInterface=0; $checkErrors=1; 
 $interfaceIterations=3;
 $grid="innerOuter4.order4.hdf";
 $cons=1; $go="halt";  $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=0;
-$stageOption ="IDB";
+$stageOption ="default";
 # GDM parameters
 $npv=1; $alphaP=1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
@@ -189,6 +189,9 @@ if( $npv == 2 ){ \
    $cmd .= " GDM coeff: 1 $a0[1] $a1[1] $b0[1] $b1[1] (eqn, a0,a1,b0,b1)"; \
       }
 $cmd
+# -- set default stage options
+if( $stageOption eq "default" && $useSosupDissipation eq 0 ){ $stageOption="IDB"; }
+if( $stageOption eq "default" && $useSosupDissipation eq 1 ){ $stageOption="D-IB"; }
 #
 # --- Define multi-stage time-step: 
 if( $stageOption eq "IDB" ){ $stages="updateInterior,addDissipation,applyBC"; }

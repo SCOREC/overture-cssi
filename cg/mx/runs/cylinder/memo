@@ -1,4 +1,25 @@
 **********************************
+*****  Feb 27, 2018
+
+TROUBLE with GDM -- NANS AFTER ONE STEP (3rd ghost set to bogus)
+cgmx cic.planeWaveBC -g=cicFixede2.order4.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1 -tf=20. -tp=.01 -diss=0. -useSosupDissipation=0 -go=og
+
+
+TEST:
+cgmx cic.planeWaveBC -g=cicFixede1.order4.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1 -tf=20. -tp=.1 -diss=0. -useSosupDissipation=0 -go=og
+
+GDM + SOSUP-DISS -- OK
+cgmx -noplot cic.planeWaveBC -g=cice8.order4.ng3.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1 -tf=20. -tp=.1 -diss=0. -useSosupDissipation=1 -go=og
+
+GDM -- NO DISSIPATION goes bad by t=15 
+cgmx -noplot cic.planeWaveBC -g=cice8.order4.ng3.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1 -tf=20. -tp=.1 -diss=0. -useSosupDissipation=0 -go=og
+
+
+FD44s 
+cgmx -noplot cic.planeWaveBC -g=cice8.order4.ng3.hdf -tf=20. -tp=1. -diss=0. -useSosupDissipation=1 -go=og
+
+
+**********************************
 *****  Feb 25, 2018
 
 CHECK MJJ's new GDM codes

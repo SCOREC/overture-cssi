@@ -55,7 +55,8 @@ $prefix="sib";
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"nrExtra=i"=> \$nrExtra,"interp=s"=> \$interp,\
             "loadBalance=i"=>\$loadBalance,"ml=i"=>\$ml,"numGhost=i"=>\$numGhost,\
-            "prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"deltaRadius=f"=>\$deltaRadius );
+            "prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"deltaRadius=f"=>\$deltaRadius,\
+            "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\

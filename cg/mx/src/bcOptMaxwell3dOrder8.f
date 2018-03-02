@@ -1,8 +1,8 @@
 ! This file automatically generated from bcOptMaxwell.bf with bpp.
         subroutine bcOptMaxwell3dOrder8( nd, nd1a,nd1b,nd2a,nd2b,nd3a,
      & nd3b,ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,
-     & dimension,u,f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, 
-     & ierr )
+     & dimension,u,f,mask,rsxy, xy,v, bc, boundaryCondition, ipar, 
+     & rpar, ierr )
        ! ===============================================================================================
        !  Optimised Boundary conditions for Maxwells Equations.
        !
@@ -23,6 +23,7 @@
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+        real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
         integer ipar(0:*),boundaryCondition(0:1,0:2)
         real rpar(0:*),pwc(0:5)

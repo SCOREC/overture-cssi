@@ -1,8 +1,8 @@
 ! This file automatically generated from bcOptMaxwell4.bf with bpp.
         subroutine bcOptMaxwell3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,
      & nd3b,ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,
-     & dimension,u,f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, 
-     & ierr )
+     & dimension,u,f,mask,rsxy, xy,v, bc, boundaryCondition, ipar, 
+     & rpar, ierr )
        ! ===============================================================================================
        !  Optimised Boundary conditions for Maxwells Equations.
        !
@@ -23,6 +23,7 @@
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+        real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
         integer ipar(0:*),boundaryCondition(0:1,0:2)
         real rpar(0:*),pwc(0:5)
@@ -1927,6 +1928,9 @@ c===============================================================================
      & side,axis=",3i2," is1,is2,is3=",3i3," ks1,ks2,ks3=",3i3)')grid,
      & side,axis,is1,is2,is3,ks1,ks2,ks3
               end if
+              ! **********************************************************
+              ! ******************** BEGIN LOOPS *************************
+              ! **********************************************************
               do i3=n3a,n3b
               do i2=n2a,n2b
               do i1=n1a,n1b
@@ -3214,9 +3218,9 @@ c===============================================================================
              else if( mask(i1,i2,i3).lt.0 )then
               ! ** NEW WAY **  *wdh
               ! extrapolate ghost points next to boundary interpolation points  *wdh* 2015/08/11
-              if( .false. .and. t.le.dt )then
+              if( debug.gt.3. .and. t.le.dt )then
                 write(*,'("--MX-- BC4 extrap ghost next to interp t,
-     & dt=",2e12.3)') t,dt
+     & dt=",2e12.3," grid,i=",i3,1x,3i4)') t,dt,grid,i1,i2,i3
               end if
                u(i1-is1,i2-is2,i3-is3,ex) = (5.*u(i1,i2,i3,ex)-10.*u(
      & i1+is1,i2+is2,i3+is3,ex)+10.*u(i1+2*is1,i2+2*is2,i3+2*is3,ex)-
@@ -3245,6 +3249,13 @@ c===============================================================================
      & is1+2*is1,i2-is2+2*is2,i3-is3+2*is3,ez)-5.*u(i1-is1+3*is1,i2-
      & is2+3*is2,i3-is3+3*is3,ez)+u(i1-is1+4*is1,i2-is2+4*is2,i3-is3+
      & 4*is3,ez))
+               ! **** TESTING **** *wdh* Feb 28, 2018
+               !u(i1-is1,i2-is2,i3-is3,ex) = extrap3(ex,i1,i2,i3,is1,is2,is3)
+               !u(i1-is1,i2-is2,i3-is3,ey) = extrap3(ey,i1,i2,i3,is1,is2,is3)
+               !u(i1-is1,i2-is2,i3-is3,ez) = extrap3(ez,i1,i2,i3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = extrap3(ex,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = extrap3(ey,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = extrap3(ez,i1-is1,i2-is2,i3-is3,is1,is2,is3)
              else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
                ! **OLD WAY**
               ! QUESTION: August 8, 2015 -- is this accurate enough ??
@@ -3529,7 +3540,8 @@ c===============================================================================
      & js1,i2-js2,i3-js3,ey))/(dsa**2)
                 wss=(u(i1+js1,i2+js2,i3+js3,ez)-2.*u(i1,i2,i3,ez)+u(i1-
      & js1,i2-js2,i3-js3,ez))/(dsa**2)
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-js1a,i2-js2a,i3-js3a,0),xy(i1-
      & js1a,i2-js2a,i3-js3a,1),xy(i1-js1a,i2-js2a,i3-js3a,2),t,uvm(0),
      & uvm(1),uvm(2))
@@ -3617,7 +3629,8 @@ c===============================================================================
      & ks1,i2-ks2,i3-ks3,ey))/(dta**2)
                 wtt=(u(i1+ks1,i2+ks2,i3+ks3,ez)-2.*u(i1,i2,i3,ez)+u(i1-
      & ks1,i2-ks2,i3-ks3,ez))/(dta**2)
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-ks1a,i2-ks2a,i3-ks3a,0),xy(i1-
      & ks1a,i2-ks2a,i3-ks3a,1),xy(i1-ks1a,i2-ks2a,i3-ks3a,2),t,uvm(0),
      & uvm(1),uvm(2))
@@ -3670,7 +3683,8 @@ c===============================================================================
                wtt = ((2.*u(i1,i2,i3,ez)-5.*u(i1+ks1a,i2+ks2a,i3+ks3a,
      & ez)+4.*u(i1+2*ks1a,i2+2*ks2a,i3+2*ks3a,ez)-u(i1+3*ks1a,i2+3*
      & ks2a,i3+3*ks3a,ez))/(dtb**2))
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,
      & i3,2),t,uv0(0),uv0(1),uv0(2))
                  call ogf3d(ep,xy(i1+ks1a,i2+ks2a,i3+ks3a,0),xy(i1+
@@ -5049,7 +5063,8 @@ c===============================================================================
 
 
  ! *********** done *********************
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-is1,i2-
      & is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,uvm(0),uvm(1),uvm(2)
      & )
@@ -5110,6 +5125,9 @@ c===============================================================================
      & side,axis=",3i2," is1,is2,is3=",3i3," ks1,ks2,ks3=",3i3)')grid,
      & side,axis,is1,is2,is3,ks1,ks2,ks3
               end if
+              ! **********************************************************
+              ! ******************** BEGIN LOOPS *************************
+              ! **********************************************************
               do i3=n3a,n3b
               do i2=n2a,n2b
               do i1=n1a,n1b
@@ -6492,9 +6510,9 @@ c===============================================================================
              else if( mask(i1,i2,i3).lt.0 )then
               ! ** NEW WAY **  *wdh
               ! extrapolate ghost points next to boundary interpolation points  *wdh* 2015/08/11
-              if( .false. .and. t.le.dt )then
+              if( debug.gt.3. .and. t.le.dt )then
                 write(*,'("--MX-- BC4 extrap ghost next to interp t,
-     & dt=",2e12.3)') t,dt
+     & dt=",2e12.3," grid,i=",i3,1x,3i4)') t,dt,grid,i1,i2,i3
               end if
                u(i1-is1,i2-is2,i3-is3,ex) = (5.*u(i1,i2,i3,ex)-10.*u(
      & i1+is1,i2+is2,i3+is3,ex)+10.*u(i1+2*is1,i2+2*is2,i3+2*is3,ex)-
@@ -6523,6 +6541,13 @@ c===============================================================================
      & is1+2*is1,i2-is2+2*is2,i3-is3+2*is3,ez)-5.*u(i1-is1+3*is1,i2-
      & is2+3*is2,i3-is3+3*is3,ez)+u(i1-is1+4*is1,i2-is2+4*is2,i3-is3+
      & 4*is3,ez))
+               ! **** TESTING **** *wdh* Feb 28, 2018
+               !u(i1-is1,i2-is2,i3-is3,ex) = extrap3(ex,i1,i2,i3,is1,is2,is3)
+               !u(i1-is1,i2-is2,i3-is3,ey) = extrap3(ey,i1,i2,i3,is1,is2,is3)
+               !u(i1-is1,i2-is2,i3-is3,ez) = extrap3(ez,i1,i2,i3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = extrap3(ex,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = extrap3(ey,i1-is1,i2-is2,i3-is3,is1,is2,is3)
+               !u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = extrap3(ez,i1-is1,i2-is2,i3-is3,is1,is2,is3)
              else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
                ! **OLD WAY**
               ! QUESTION: August 8, 2015 -- is this accurate enough ??
@@ -6807,7 +6832,8 @@ c===============================================================================
      & js1,i2-js2,i3-js3,ey))/(dsa**2)
                 wss=(u(i1+js1,i2+js2,i3+js3,ez)-2.*u(i1,i2,i3,ez)+u(i1-
      & js1,i2-js2,i3-js3,ez))/(dsa**2)
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-js1a,i2-js2a,i3-js3a,0),xy(i1-
      & js1a,i2-js2a,i3-js3a,1),xy(i1-js1a,i2-js2a,i3-js3a,2),t,uvm(0),
      & uvm(1),uvm(2))
@@ -6895,7 +6921,8 @@ c===============================================================================
      & ks1,i2-ks2,i3-ks3,ey))/(dta**2)
                 wtt=(u(i1+ks1,i2+ks2,i3+ks3,ez)-2.*u(i1,i2,i3,ez)+u(i1-
      & ks1,i2-ks2,i3-ks3,ez))/(dta**2)
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-ks1a,i2-ks2a,i3-ks3a,0),xy(i1-
      & ks1a,i2-ks2a,i3-ks3a,1),xy(i1-ks1a,i2-ks2a,i3-ks3a,2),t,uvm(0),
      & uvm(1),uvm(2))
@@ -6948,7 +6975,8 @@ c===============================================================================
                wtt = ((2.*u(i1,i2,i3,ez)-5.*u(i1+ks1a,i2+ks2a,i3+ks3a,
      & ez)+4.*u(i1+2*ks1a,i2+2*ks2a,i3+2*ks3a,ez)-u(i1+3*ks1a,i2+3*
      & ks2a,i3+3*ks3a,ez))/(dtb**2))
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,
      & i3,2),t,uv0(0),uv0(1),uv0(2))
                  call ogf3d(ep,xy(i1+ks1a,i2+ks2a,i3+ks3a,0),xy(i1+
@@ -8360,7 +8388,8 @@ c===============================================================================
 
 
  ! *********** done *********************
-               if( debug.gt.0 )then
+               if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                  call ogf3d(ep,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-is1,i2-
      & is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,uvm(0),uvm(1),uvm(2)
      & )
@@ -8418,7 +8447,11 @@ c===============================================================================
              end if
            end do
            end do
-          ! ok if( .true. ) return ! **********************************************************
+          if( .false. )then
+             write(*,'(" ************* TEST -- BC4 RETURN AFTER STAGE 
+     & 1 *************")')
+             return
+          end if
           ! In parallel we need to update ghost boundaries after stage 1
           ! **call updateGhostBoundaries(pu)
           call updateGhostAndPeriodic(pu)
@@ -8716,6 +8749,22 @@ c===============================================================================
                  ! from   div(u)=0 and (a1.Delta u).r = 0 
                  ! We use the initial guess in order to compute the mixed derivatives urs, urss, urtt
                  if( .true. )then
+                 ! ***************** TEST FEB 28 2018 **********************
+                 if( .true. )then
+                  if( t.le.3.*dt )then
+                    write(*,'(" BC4:: COPY u to v -- FIX ME to be more 
+     & efficient")')
+                  end if
+                  do i3=nd3a,nd3b
+                  do i2=nd2a,nd2b
+                  do i1=nd1a,nd1b
+                    v(i1,i2,i3,ex)=u(i1,i2,i3,ex)
+                    v(i1,i2,i3,ey)=u(i1,i2,i3,ey)
+                    v(i1,i2,i3,ez)=u(i1,i2,i3,ez)
+                  end do
+                  end do
+                  end do
+                 end if
                  ! ** Periodic update is now done in a previous step -- this doesn't work in parallel
                  ! first do a periodic update
                  ! if( .false. .and.(boundaryCondition(0,axisp1).lt.0 .or. boundaryCondition(0,axisp2).lt.0) )then
@@ -11292,7 +11341,7 @@ c===============================================================================
      & a32*vddt+ a33*wddt
                   end if
                  ! Now assign E at the ghost points:
-
+! *** CHANGED FEB 28, 2018 -- put result in v instead of u
 
 ! ************ Results from bc43d.maple *******************
       b3u=a11*c11
@@ -11354,7 +11403,7 @@ c===============================================================================
      & i2+2*is2,i3+2*is3,ey)-1/12.*a13p2*u(i1+2*is1,i2+2*is2,i3+2*is3,
      & ez)-Da1DotU*dra
 
-      u(i1-is1,i2-is2,i3-is3,ex) = (-2*tau13*f1f*tau22*f2um2*tau23*
+      v(i1-is1,i2-is2,i3-is3,ex) = (-2*tau13*f1f*tau22*f2um2*tau23*
      & tau12-tau13**2*f1f*tau22*f2vm2*tau21-tau13**2*f1um2*tau22**2*
      & f2f-f1um2*tau23**2*tau12**2*f2f+f1vm2*tau23**2*ttu12*f2um2*
      & tau12-f1vm2*tau23*ttu12*tau13*f2um2*tau22-f1vm2*tau23*ttu12*
@@ -11445,7 +11494,7 @@ c===============================================================================
      & tau21*f2vm2*tau23*tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*
      & tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = (tau21*tau13*ttu22*f1vm1*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ex) = (tau21*tau13*ttu22*f1vm1*
      & f2wm2*tau12+tau13*f2um1*tau22*f1wm1*tau12*ttu21+tau13*ttu22*
      & f1wm2*tau12*f2um1*tau22-tau13*f2vm1*tau23*ttu11*f1um1*tau22+
      & tau13*ttu22*f1vm2*f2um1*tau23*tau12+tau13*ttu22*f1vm2*f2wm1*
@@ -11537,7 +11586,7 @@ c===============================================================================
      & tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*tau23*tau11**2*f2wm2*
      & tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-is1,i2-is2,i3-is3,ey) = (ttu21*f1wm1*tau11**2*f2vm2*tau23+
+      v(i1-is1,i2-is2,i3-is3,ey) = (ttu21*f1wm1*tau11**2*f2vm2*tau23+
      & tau23**2*ttu11*f1um1*f2vm2*tau11-ttu21*f1vm2*tau23*tau11**2*
      & f2wm1-tau23**2*ttu11*f1um1*f2um2*tau12+tau23*tau11**2*f1wm2*
      & f2vm2*ttu22-tau23*ttu11*f1wm2*tau12*tau21*f2um1+tau21*f1vm2*
@@ -11629,7 +11678,7 @@ c===============================================================================
      & f2wm2+f1vm1*tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*
      & f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = -(tau23*ttu12*f1um2*f2wm1*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ey) = -(tau23*ttu12*f1um2*f2wm1*
      & tau12*tau21+tau23**2*ttu12*f1um2*f2vm1*tau11+tau13*ttu22*f1vm1*
      & tau23*tau11*f2um2+tau13*tau21**2*f2vm1*f1wm2*ttu12-tau13*tau21*
      & *2*f2wm1*tau12*f1f+tau13*tau21**2*f2f*f1wm1*tau12+tau13*tau21**
@@ -11721,7 +11770,7 @@ c===============================================================================
      & tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*tau23*tau11**2*f2wm2*
      & tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-is1,i2-is2,i3-is3,ez) = (tau12*tau13*ttu21*f1vm2*tau21*
+      v(i1-is1,i2-is2,i3-is3,ez) = (tau12*tau13*ttu21*f1vm2*tau21*
      & f2um1-tau21*f1f*f2um2*tau23*tau12**2+tau21*f1um2*f2f*tau23*
      & tau12**2+tau11*f1wm2*tau12*tau21*ttu21*f2vm1+tau11*ttu21*f1vm1*
      & f2um2*tau23*tau12+2*tau11*f1wm2*tau12*tau21*f2f*tau22-tau11*
@@ -11813,7 +11862,7 @@ c===============================================================================
      & f2wm2+f1vm1*tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*
      & f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = (tau12*tau22*tau23*ttu12*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ez) = (tau12*tau22*tau23*ttu12*
      & f1um1*f2um2-tau12*tau22*ttu22*f1wm1*tau11*f2um2-tau12*tau21*
      & ttu21*f2vm1*f1wm1*tau11+tau12*tau21*f2um1*f1vm1*tau23*ttu11-
      & tau12*tau21*f2vm1*tau23*ttu11*f1um1-tau12*ttu22*f1um2*f2vm1*
@@ -11910,20 +11959,54 @@ c===============================================================================
                  !  if( .true. .or. debug.gt.0 )then
                  !   write(*,'(" bc4:corr:   i1,i2,i3=",3i3," u(-1)=",3f8.2," u(-2)=",3f8.2)') i1,i2,i3,!          u(i1-is1,i2-is2,i3-is3,ex),u(i1-is1,i2-is2,i3-is3,ey),u(i1-is1,i2-is2,i3-is3,ez),!          u(i1-2*is1,i2-2*is2,i3-2*is3,ex),u(i1-2*is1,i2-2*is2,i3-2*is3,ey),u(i1-2*is1,i2-2*is2,i3-2*is3,ez)
                  !  end if
-                   if( debug.gt.0 )then
+                   if( debug.gt.3 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                      call ogf3d(ep,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-
      & is1,i2-is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,uvm(0),uvm(1)
      & ,uvm(2))
                      call ogf3d(ep,xy(i1-2*is1,i2-2*is2,i3-2*is3,0),xy(
      & i1-2*is1,i2-2*is2,i3-2*is3,1),xy(i1-2*is1,i2-2*is2,i3-2*is3,2),
      & t,uvm2(0),uvm2(1),uvm2(2))
-                    write(*,'(" **bc4:correction: i=",3i4," errors u(-
-     & 1)=",3e10.2)') i1,i2,i3,u(i1-is1,i2-is2,i3-is3,ex)-uvm(0),u(i1-
-     & is1,i2-is2,i3-is3,ey)-uvm(1),u(i1-is1,i2-is2,i3-is3,ez)-uvm(2)
-                    write(*,'(" **bc4:correction: i=",3i4," errors u(-
-     & 2)=",3e10.2)') i1,i2,i3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(
-     & 0),u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1),u(i1-2*is1,i2-2*
-     & is2,i3-2*is3,ez)-uvm2(2)
+                    t1 = abs(u(i1-is1,i2-is2,i3-is3,ex)-uvm(0))
+                    t2 = abs(u(i1-is1,i2-is2,i3-is3,ey)-uvm(1))
+                    t3 = abs(u(i1-is1,i2-is2,i3-is3,ez)-uvm(2))
+                    t4 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(0))
+                    t5 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1))
+                    t6 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm2(2))
+                    if( max(t1,t2,t3,t4,t5,t6).gt.0.01 )then
+                      write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4,
+     & " errors u(-1)=",3e10.2)') grid,i1,i2,i3,t1,t2,t3
+                      write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4,
+     & " errors u(-2)=",3e10.2)') grid,i1,i2,i3,t4,t5,t6
+                      if( max(t1,t2,t3,t4,t5,t6).gt.0.5 )then
+                        ! Evaluate the jacobian at bad error locations
+                        m1=-is1
+                        m2=-is2
+                        m3=-is3
+                        jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(
+     & i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*
+     & ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,
+     & i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+
+     & m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+
+     & m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+                        m1=-2*is1
+                        m2=-2*is2
+                        m3=-2*is3
+                        jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(
+     & i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*
+     & ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,
+     & i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+
+     & m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+
+     & m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+                        write(*,'(" **bc4: u=",3(1pe9.2)," 1/Jac(
+     & ghost1) 1/Jac(ghost2) =",2(e12.4,1x))') u(i1,i2,i3,ex),u(i1,i2,
+     & i3,ey),u(i1,i2,i3,ez),jac3di(-is1,-is2,-is3),jac3di(-2*is1,-2*
+     & is2,-2*is3)
+                        write(*,'("Neighbours: (5x5)x5")')
+                        write(*,'(25(1pe10.2))') (((u(i1+m1,i2+m2,i3+
+     & m3,ex),m1=-2,2),m2=-2,2),m3=-2,2)
+                      end if
+                    end if
                    end if
                    ! set to exact for testing
                    ! OGF3D(i1-is1,i2-is2,i3-is3,t, uvm(0),uvm(1),uvm(2))
@@ -11938,6 +12021,22 @@ c===============================================================================
                  end do
                  end do
                  end do
+                 ! ***************** TEST FEB 28 2018 **********************
+                 if( .true. )then
+                  if( t.le.3.*dt )then
+                    write(*,'(" BC4:: COPY v to u ** FIX ME TO BE MORE 
+     & EFFICIENT **** ")')
+                  end if
+                  do i3=nd3a,nd3b
+                  do i2=nd2a,nd2b
+                  do i1=nd1a,nd1b
+                    u(i1,i2,i3,ex)=v(i1,i2,i3,ex)
+                    u(i1,i2,i3,ey)=v(i1,i2,i3,ey)
+                    u(i1,i2,i3,ez)=v(i1,i2,i3,ez)
+                  end do
+                  end do
+                  end do
+                 end if
                  end if ! if true
                  if( debug.gt.0 )then
                  ! ============================DEBUG=======================================================
@@ -11968,6 +12067,22 @@ c===============================================================================
                  ! from   div(u)=0 and (a1.Delta u).r = 0 
                  ! We use the initial guess in order to compute the mixed derivatives urs, urss, urtt
                  if( .true. )then
+                 ! ***************** TEST FEB 28 2018 **********************
+                 if( .true. )then
+                  if( t.le.3.*dt )then
+                    write(*,'(" BC4:: COPY u to v -- FIX ME to be more 
+     & efficient")')
+                  end if
+                  do i3=nd3a,nd3b
+                  do i2=nd2a,nd2b
+                  do i1=nd1a,nd1b
+                    v(i1,i2,i3,ex)=u(i1,i2,i3,ex)
+                    v(i1,i2,i3,ey)=u(i1,i2,i3,ey)
+                    v(i1,i2,i3,ez)=u(i1,i2,i3,ez)
+                  end do
+                  end do
+                  end do
+                 end if
                  ! ** Periodic update is now done in a previous step -- this doesn't work in parallel
                  ! first do a periodic update
                  ! if( .false. .and.(boundaryCondition(0,axisp1).lt.0 .or. boundaryCondition(0,axisp2).lt.0) )then
@@ -14677,7 +14792,7 @@ c===============================================================================
      & ks3,ez)) )/(12.*dta)  )
                   end if
                  ! Now assign E at the ghost points:
-
+! *** CHANGED FEB 28, 2018 -- put result in v instead of u
 
 ! ************ Results from bc43d.maple *******************
       b3u=a11*c11
@@ -14739,7 +14854,7 @@ c===============================================================================
      & i2+2*is2,i3+2*is3,ey)-1/12.*a13p2*u(i1+2*is1,i2+2*is2,i3+2*is3,
      & ez)-Da1DotU*dra
 
-      u(i1-is1,i2-is2,i3-is3,ex) = (-2*tau13*f1f*tau22*f2um2*tau23*
+      v(i1-is1,i2-is2,i3-is3,ex) = (-2*tau13*f1f*tau22*f2um2*tau23*
      & tau12-tau13**2*f1f*tau22*f2vm2*tau21-tau13**2*f1um2*tau22**2*
      & f2f-f1um2*tau23**2*tau12**2*f2f+f1vm2*tau23**2*ttu12*f2um2*
      & tau12-f1vm2*tau23*ttu12*tau13*f2um2*tau22-f1vm2*tau23*ttu12*
@@ -14830,7 +14945,7 @@ c===============================================================================
      & tau21*f2vm2*tau23*tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*
      & tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ex) = (tau21*tau13*ttu22*f1vm1*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ex) = (tau21*tau13*ttu22*f1vm1*
      & f2wm2*tau12+tau13*f2um1*tau22*f1wm1*tau12*ttu21+tau13*ttu22*
      & f1wm2*tau12*f2um1*tau22-tau13*f2vm1*tau23*ttu11*f1um1*tau22+
      & tau13*ttu22*f1vm2*f2um1*tau23*tau12+tau13*ttu22*f1vm2*f2wm1*
@@ -14922,7 +15037,7 @@ c===============================================================================
      & tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*tau23*tau11**2*f2wm2*
      & tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-is1,i2-is2,i3-is3,ey) = (ttu21*f1wm1*tau11**2*f2vm2*tau23+
+      v(i1-is1,i2-is2,i3-is3,ey) = (ttu21*f1wm1*tau11**2*f2vm2*tau23+
      & tau23**2*ttu11*f1um1*f2vm2*tau11-ttu21*f1vm2*tau23*tau11**2*
      & f2wm1-tau23**2*ttu11*f1um1*f2um2*tau12+tau23*tau11**2*f1wm2*
      & f2vm2*ttu22-tau23*ttu11*f1wm2*tau12*tau21*f2um1+tau21*f1vm2*
@@ -15014,7 +15129,7 @@ c===============================================================================
      & f2wm2+f1vm1*tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*
      & f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ey) = -(tau23*ttu12*f1um2*f2wm1*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ey) = -(tau23*ttu12*f1um2*f2wm1*
      & tau12*tau21+tau23**2*ttu12*f1um2*f2vm1*tau11+tau13*ttu22*f1vm1*
      & tau23*tau11*f2um2+tau13*tau21**2*f2vm1*f1wm2*ttu12-tau13*tau21*
      & *2*f2wm1*tau12*f1f+tau13*tau21**2*f2f*f1wm1*tau12+tau13*tau21**
@@ -15106,7 +15221,7 @@ c===============================================================================
      & tau11-f1wm1*tau12**2*tau21**2*f2wm2+f1vm1*tau23*tau11**2*f2wm2*
      & tau22-tau13*f1um2*tau22**2*f2wm1*tau11)
 
-      u(i1-is1,i2-is2,i3-is3,ez) = (tau12*tau13*ttu21*f1vm2*tau21*
+      v(i1-is1,i2-is2,i3-is3,ez) = (tau12*tau13*ttu21*f1vm2*tau21*
      & f2um1-tau21*f1f*f2um2*tau23*tau12**2+tau21*f1um2*f2f*tau23*
      & tau12**2+tau11*f1wm2*tau12*tau21*ttu21*f2vm1+tau11*ttu21*f1vm1*
      & f2um2*tau23*tau12+2*tau11*f1wm2*tau12*tau21*f2f*tau22-tau11*
@@ -15198,7 +15313,7 @@ c===============================================================================
      & f2wm2+f1vm1*tau23*tau11**2*f2wm2*tau22-tau13*f1um2*tau22**2*
      & f2wm1*tau11)
 
-      u(i1-2*is1,i2-2*is2,i3-2*is3,ez) = (tau12*tau22*tau23*ttu12*
+      v(i1-2*is1,i2-2*is2,i3-2*is3,ez) = (tau12*tau22*tau23*ttu12*
      & f1um1*f2um2-tau12*tau22*ttu22*f1wm1*tau11*f2um2-tau12*tau21*
      & ttu21*f2vm1*f1wm1*tau11+tau12*tau21*f2um1*f1vm1*tau23*ttu11-
      & tau12*tau21*f2vm1*tau23*ttu11*f1um1-tau12*ttu22*f1um2*f2vm1*
@@ -15295,20 +15410,54 @@ c===============================================================================
                  !  if( .true. .or. debug.gt.0 )then
                  !   write(*,'(" bc4:corr:   i1,i2,i3=",3i3," u(-1)=",3f8.2," u(-2)=",3f8.2)') i1,i2,i3,!          u(i1-is1,i2-is2,i3-is3,ex),u(i1-is1,i2-is2,i3-is3,ey),u(i1-is1,i2-is2,i3-is3,ez),!          u(i1-2*is1,i2-2*is2,i3-2*is3,ex),u(i1-2*is1,i2-2*is2,i3-2*is3,ey),u(i1-2*is1,i2-2*is2,i3-2*is3,ez)
                  !  end if
-                   if( debug.gt.0 )then
+                   if( debug.gt.3 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                      call ogf3d(ep,xy(i1-is1,i2-is2,i3-is3,0),xy(i1-
      & is1,i2-is2,i3-is3,1),xy(i1-is1,i2-is2,i3-is3,2),t,uvm(0),uvm(1)
      & ,uvm(2))
                      call ogf3d(ep,xy(i1-2*is1,i2-2*is2,i3-2*is3,0),xy(
      & i1-2*is1,i2-2*is2,i3-2*is3,1),xy(i1-2*is1,i2-2*is2,i3-2*is3,2),
      & t,uvm2(0),uvm2(1),uvm2(2))
-                    write(*,'(" **bc4:correction: i=",3i4," errors u(-
-     & 1)=",3e10.2)') i1,i2,i3,u(i1-is1,i2-is2,i3-is3,ex)-uvm(0),u(i1-
-     & is1,i2-is2,i3-is3,ey)-uvm(1),u(i1-is1,i2-is2,i3-is3,ez)-uvm(2)
-                    write(*,'(" **bc4:correction: i=",3i4," errors u(-
-     & 2)=",3e10.2)') i1,i2,i3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(
-     & 0),u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1),u(i1-2*is1,i2-2*
-     & is2,i3-2*is3,ez)-uvm2(2)
+                    t1 = abs(u(i1-is1,i2-is2,i3-is3,ex)-uvm(0))
+                    t2 = abs(u(i1-is1,i2-is2,i3-is3,ey)-uvm(1))
+                    t3 = abs(u(i1-is1,i2-is2,i3-is3,ez)-uvm(2))
+                    t4 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm2(0))
+                    t5 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm2(1))
+                    t6 = abs(u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm2(2))
+                    if( max(t1,t2,t3,t4,t5,t6).gt.0.01 )then
+                      write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4,
+     & " errors u(-1)=",3e10.2)') grid,i1,i2,i3,t1,t2,t3
+                      write(*,'(" **bc4:correction: grid,i=",i3,1x,3i4,
+     & " errors u(-2)=",3e10.2)') grid,i1,i2,i3,t4,t5,t6
+                      if( max(t1,t2,t3,t4,t5,t6).gt.0.5 )then
+                        ! Evaluate the jacobian at bad error locations
+                        m1=-is1
+                        m2=-is2
+                        m3=-is3
+                        jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(
+     & i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*
+     & ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,
+     & i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+
+     & m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+
+     & m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+                        m1=-2*is1
+                        m2=-2*is2
+                        m3=-2*is3
+                        jac3di(m1,m2,m3)=1./(rx(i1+m1,i2+m2,i3+m3)*(sy(
+     & i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+m2,i3+m3)-sz(i1+m1,i2+m2,i3+m3)*
+     & ty(i1+m1,i2+m2,i3+m3))+ry(i1+m1,i2+m2,i3+m3)*(sz(i1+m1,i2+m2,
+     & i3+m3)*tx(i1+m1,i2+m2,i3+m3)-sx(i1+m1,i2+m2,i3+m3)*tz(i1+m1,i2+
+     & m2,i3+m3))+rz(i1+m1,i2+m2,i3+m3)*(sx(i1+m1,i2+m2,i3+m3)*ty(i1+
+     & m1,i2+m2,i3+m3)-sy(i1+m1,i2+m2,i3+m3)*tx(i1+m1,i2+m2,i3+m3)))
+                        write(*,'(" **bc4: u=",3(1pe9.2)," 1/Jac(
+     & ghost1) 1/Jac(ghost2) =",2(e12.4,1x))') u(i1,i2,i3,ex),u(i1,i2,
+     & i3,ey),u(i1,i2,i3,ez),jac3di(-is1,-is2,-is3),jac3di(-2*is1,-2*
+     & is2,-2*is3)
+                        write(*,'("Neighbours: (5x5)x5")')
+                        write(*,'(25(1pe10.2))') (((u(i1+m1,i2+m2,i3+
+     & m3,ex),m1=-2,2),m2=-2,2),m3=-2,2)
+                      end if
+                    end if
                    end if
                    ! set to exact for testing
                    ! OGF3D(i1-is1,i2-is2,i3-is3,t, uvm(0),uvm(1),uvm(2))
@@ -15323,6 +15472,22 @@ c===============================================================================
                  end do
                  end do
                  end do
+                 ! ***************** TEST FEB 28 2018 **********************
+                 if( .true. )then
+                  if( t.le.3.*dt )then
+                    write(*,'(" BC4:: COPY v to u ** FIX ME TO BE MORE 
+     & EFFICIENT **** ")')
+                  end if
+                  do i3=nd3a,nd3b
+                  do i2=nd2a,nd2b
+                  do i1=nd1a,nd1b
+                    u(i1,i2,i3,ex)=v(i1,i2,i3,ex)
+                    u(i1,i2,i3,ey)=v(i1,i2,i3,ey)
+                    u(i1,i2,i3,ez)=v(i1,i2,i3,ez)
+                  end do
+                  end do
+                  end do
+                 end if
                  end if ! if true
                  if( debug.gt.0 )then
                  ! ============================DEBUG=======================================================

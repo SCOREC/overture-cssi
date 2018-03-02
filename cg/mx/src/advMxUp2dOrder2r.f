@@ -3794,51 +3794,51 @@ c===============================================================================
        !       **********************************************
        !       *************** rectangular ******************
        !       **********************************************
-           if( dispersionModel.ne.noDispersion )then
-             ! --dispersion model --
-             write(*,'("--advMxUp-- advance 2D dispersive model")')
-             fp=0
-             fe=0.
-               do i3=n3a,n3b
-               do i2=n2a,n2b
-               do i1=n1a,n1b
-                 if( mask(i1,i2,i3).gt.0 )then
-               ! Advance Hz first:
-               ! For now solve H_t = -(1/mu)*(  (E_y)_x - (E_x)_y )
-               !   USE AB2 -- note: this is just a quadrature so stability is not an inssue
-               un(i1,i2,i3,hz) = u(i1,i2,i3,hz) -(dt/mu)*( 1.5*ux22r(
-     & i1,i2,i3,ey) -.5*umx22r(i1,i2,i3,ey) -1.5*uy22r(i1,i2,i3,ex) +
-     & .5*umy22r(i1,i2,i3,ex) )
-               if( addForcing.ne.0 )then
-                 un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + dt*f(i1,i2,i3,hz) ! first order only **FIX ME**
-               end if
-               !   H_tt = c^2 Delta(H) + c^2 curl( P_t)  -- equation for H , *check me*
-               !  **finish me**
-               !  if( addForcing.eq.0 )then
-               !    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)
-               !  else
-               !    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dtsq*f(i1,i2,i3,hz)
-               !  end if
-               ! scheme from Jeff: 
-               do m=0,1
-                pc=pxc+m
-                ec=ex+m
-                if( addForcing.ne.0 )then
-                  fp = dtsq*f(i1,i2,i3,pc)
-                  fe = dtsq*f(i1,i2,i3,ec)
-                end if
-                un(i1,i2,i3,pc)=( 2.*u(i1,i2,i3,pc)- (1.-gammaDt*.5)*
-     & um(i1,i2,i3,pc) + omegapDtSq*u(i1,i2,i3,ec) + fp )/(1.+gammaDt*
-     & .5)
-                ptt = un(i1,i2,i3,pc)-2.*u(i1,i2,i3,pc)+um(i1,i2,i3,pc)
-                ! write(*,'(" ptt=",e10.2)') ptt
-                un(i1,i2,i3,ec)=maxwell2dr(i1,i2,i3,ec)+ fe - ptt/eps
-               end do
-                 end if
-               end do
-               end do
-               end do
-           else if( useSosupDissipation.ne.0 )then
+       !-    if( dispersionModel.ne.noDispersion )then
+       !-      ! --dispersion model --
+       !-
+       !-
+       !-      write(*,'("--advMxUp-- advance 2D dispersive model")') 
+       !-      fp=0
+       !-      fe=0.
+       !-      beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+       !- 
+       !-        ! Advance Hz first:
+       !-        ! For now solve H_t = -(1/mu)*(  (E_y)_x - (E_x)_y )
+       !-        !   USE AB2 -- note: this is just a quadrature so stability is not an inssue
+       !-        un(i1,i2,i3,hz) = u(i1,i2,i3,hz) -(dt/mu)*( 1.5*ux22r(i1,i2,i3,ey) -.5*umx22r(i1,i2,i3,ey) !-                                                   -1.5*uy22r(i1,i2,i3,ex) +.5*umy22r(i1,i2,i3,ex) )
+       !-        if( addForcing.ne.0 )then
+       !-          un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + dt*f(i1,i2,i3,hz) ! first order only **FIX ME**
+       !-        end if
+       !-
+       !-        !   H_tt = c^2 Delta(H) + c^2 curl( P_t)  -- equation for H , *check me*
+       !-        !  **finish me**
+       !-        !  if( addForcing.eq.0 )then
+       !-        !    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)
+       !-        !  else
+       !-        !    un(i1,i2,i3,hz)=maxwell2dr(i1,i2,i3,hz)+dtsq*f(i1,i2,i3,hz)
+       !-        !  end if
+       !-
+       !-        ! scheme from Jeff: 
+       !-        
+       !-        do m=0,1
+       !-         pc=pxc+m
+       !-         ec=ex+m
+       !-
+       !-         if( addForcing.ne.0 )then
+       !-           fp = dtsq*f(i1,i2,i3,pc) 
+       !-           fe = dtsq*f(i1,i2,i3,ec) 
+       !-         end if 
+       !-         un(i1,i2,i3,pc)=( 2.*u(i1,i2,i3,pc)- (1.-gammaDt*.5)*um(i1,i2,i3,pc) + omegapDtSq*u(i1,i2,i3,ec) + fp )/(1.+gammaDt*.5)
+       !-         ptt = un(i1,i2,i3,pc)-2.*u(i1,i2,i3,pc)+um(i1,i2,i3,pc)
+       !-         ! write(*,'(" ptt=",e10.2)') ptt
+       !-         un(i1,i2,i3,ec)=maxwell2dr(i1,i2,i3,ec)+ fe - ptt/eps
+       !-
+       !-        end do
+       !-
+       !-
+       !-      endLoopsMask()
+           if( useSosupDissipation.ne.0 )then
             ! FD22s (rectangular grid) with upwind (sosup) dissipation (wide stencil dissiption)
               adxSosup(0)=cdSosupx*uDotFactor
               adxSosup(1)=cdSosupy*uDotFactor

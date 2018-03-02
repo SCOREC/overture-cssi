@@ -1,3 +1,41 @@
+
+***********************
+***** March 1, 2018
+
+create examples for regression tests 
+
+cgmx -noplot planeWave.cmd -g=nonBox1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+
+cgmx -noplot planeWave.cmd -g=box1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=5.0e-02 max errors:[0.00e+00,1.67e-02,0.00e+00,], max (u):[0.00e+00,9.63e-01,0.00e+00,] (2 steps)
+
+cgmx -noplot planeWave.cmd -g=nonBox1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+
+cgmx -noplot planeWave.cmd -g=box1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=5.0e-02 max errors:[0.00e+00,9.16e-02,0.00e+00,], max (u):[0.00e+00,1.02e+00,0.00e+00,] (2 steps)
+
+cgmx -noplot planeWave.cmd -g=nonSquare16.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+
+cgmx -noplot planeWave.cmd -g=square16.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=3.3e-02 max errors:[0.00e+00,2.18e-03,1.18e+00,], max (u):[0.00e+00,9.53e-01,1.03e+00,] (3 steps)
+
+cgmx -noplot planeWave.cmd -g=nonSquare16.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=3.3e-02 max errors:[0.00e+00,2.94e-02,1.19e+00,], max (u):[0.00e+00,9.62e-01,1.03e+00,] (3 steps)
+
+
+cgmx -noplot planeWave.cmd -g=square16.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0 -kx=2 -tp=.1 -tf=.1 -checkErrors=1 -go=go
+>>> t=1.00e-01 dt=3.3e-02 max errors:[0.00e+00,2.94e-02,1.19e+00,], max (u):[0.00e+00,9.62e-01,1.03e+00,] (3 steps)
+
+
+***********************
+***** Feb 27, 2018
+
+CHECK GDM + SOSUP DISSIPATION
+
+SQUARE
+cgmx -noplot planeWave -g=square64.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=4 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+
 ***********************
 ***** Feb 25, 2018
 

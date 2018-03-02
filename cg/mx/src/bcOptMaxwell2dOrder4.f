@@ -1,8 +1,8 @@
 ! This file automatically generated from bcOptMaxwell4.bf with bpp.
         subroutine bcOptMaxwell2dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,
      & nd3b,ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,
-     & dimension,u,f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, 
-     & ierr )
+     & dimension,u,f,mask,rsxy, xy,v, bc, boundaryCondition, ipar, 
+     & rpar, ierr )
        ! ===============================================================================================
        !  Optimised Boundary conditions for Maxwells Equations.
        !
@@ -23,6 +23,7 @@
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+        real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
         integer ipar(0:*),boundaryCondition(0:1,0:2)
         real rpar(0:*),pwc(0:5)
@@ -8176,7 +8177,8 @@ c===============================================================================
 
 
  ! *********** Hz done *********************
-                  if( debug.gt.0 )then
+                  if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                    write(*,'(" ghost-interp: i=",3i3," ex=",e10.2," 
      & assign i=",3i3," ex=",e10.2," i=",3i3," ex=",e10.2)')i1,i2,i3,
      & u(i1,i2,i3,ex),i1-is1,i2-is2,i3-is3,u(i1-is1,i2-is2,i3-is3,ex),
@@ -14568,7 +14570,8 @@ c===============================================================================
 
 
  ! *********** Hz done *********************
-                  if( debug.gt.0 )then
+                  if( debug.gt.0 .and. 
+     & forcingOption.eq.twilightZoneForcing )then
                    write(*,'(" ghost-interp: i=",3i3," ex=",e10.2," 
      & assign i=",3i3," ex=",e10.2," i=",3i3," ex=",e10.2)')i1,i2,i3,
      & u(i1,i2,i3,ex),i1-is1,i2-is2,i3-is3,u(i1-is1,i2-is2,i3-is3,ex),

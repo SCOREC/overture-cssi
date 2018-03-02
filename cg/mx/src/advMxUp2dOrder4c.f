@@ -3799,6 +3799,8 @@ c===============================================================================
            ! ****************************************************************************
            ! *************** OPTIMIZED-CURVILINEAR AND NON-CONSERVATIVE *****************    
            ! ****************************************************************************
+            if( updateSolution.eq.1 )then
+             ! =====Compute v = laplacian (second order)
                ! first evaluate Laplacian to 2nd-order
               ! *** need to evaluate on one additional line ***
               n1a=n1a-1
@@ -3849,6 +3851,7 @@ c===============================================================================
               n2a=n2a+1
               n2b=n2b-1
               useWhereMask=useWhereMaskSave
+            end if
             if( useSosupDissipation.ne.0 )then
                if( t.le.2.*dt )then
                  write(*,'(" advMxUp: FD44 + upwind-dissipation for 
@@ -4125,6 +4128,8 @@ c===============================================================================
                stop 4487
             else if( 
      & timeSteppingMethod.eq.modifiedEquationTimeStepping )then
+              write(*,'("advMxUp: This code should not be called!")')
+              stop 7777
               ! ----------------------------------------------------------
               ! ----- 4th order in space and 4th order in time ------------
               ! ---- Modified equation, NON-CONSERVATIVE difference ----

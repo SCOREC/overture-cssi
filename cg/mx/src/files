@@ -135,20 +135,18 @@ src/advOptNew.f: src/advOptNew.bf
 	      @cd src; $(BPP) -clean -quiet -I$(Overture)/include advOptNew.bf
 
 src/advMx2dOrder2r.f : src/advOptNew.f
-# src/advMx2dOrder2r.f : src/advOpt.f
-src/advMx3dOrder2r.f : src/advOpt.f
+src/advMx3dOrder2r.f : src/advOptNew.f
 src/advMx2dOrder4r.f : src/advOptNew.f
-src/advMx3dOrder4r.f : src/advOpt.f
+src/advMx3dOrder4r.f : src/advOptNew.f
 src/advMx2dOrder6r.f : src/advOpt.f
 src/advMx3dOrder6r.f : src/advOpt.f
 src/advMx2dOrder8r.f : src/advOpt.f
 src/advMx3dOrder8r.f : src/advOpt.f
 
 src/advMx2dOrder2c.f : src/advOptNew.f
-# src/advMx2dOrder2c.f : src/advOpt.f
-src/advMx3dOrder2c.f : src/advOpt.f
-src/advMx2dOrder4c.f : src/advOpt.f
-src/advMx3dOrder4c.f : src/advOpt.f
+src/advMx3dOrder2c.f : src/advOptNew.f
+src/advMx2dOrder4c.f : src/advOptNew.f
+src/advMx3dOrder4c.f : src/advOptNew.f
 src/advMx2dOrder6c.f : src/advOpt.f
 src/advMx3dOrder6c.f : src/advOpt.f
 src/advMx2dOrder8c.f : src/advOpt.f

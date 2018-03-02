@@ -5040,9 +5040,6 @@ c===============================================================================
      & cdcH*(-ux43r(i1,i2,i3,ey) +uy43r(i1,i2,i3,ex) )+cdcHLapm*( 
      & lap3d2m(i1,i2,i3,ez) )
        !...........end   statement functions
-        if( t.le.3*dt )then
-          write(*,*) 'Inside advMaxwell...'
-        end if
         cc    =rpar(0)  ! this is c
         dt    =rpar(1)
         dx(0) =rpar(2)
@@ -5124,6 +5121,10 @@ c===============================================================================
      & numberOfForcingFunctions))
         fnext = mod(fcur+1                         ,max(1,
      & numberOfForcingFunctions))
+        if( t.le.3*dt )then
+          write(*,'("Inside advOptNew... t=",e10.3," grid=",i3)') t,
+     & grid
+        end if
         ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
         !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
         !  rather than pre-computing it in diss(i1,i2,i3,c)
@@ -5440,7 +5441,8 @@ c===============================================================================
            ! ****************************************************************************
            ! *************** OPTIMIZED-CURVILINEAR AND NON-CONSERVATIVE *****************
            ! ****************************************************************************
-            if( useSosupDissipation.ne.0 )then
+            if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )
+     & then
               ! ---- use sosup dissipation (wider stencil) ---
              write(*,'(" finish me: FD44 non-cons && 
      & useSosupDissipation")')
@@ -5525,7 +5527,7 @@ c===============================================================================
                   if( t.le.3*dt )then
                     if( t.le.3.*dt )then
                       write(*,'("advOPT>>>","update-
-     & dispersive_dim=DIM_order=ORDER_gridType=curvilinear")')
+     & dispersive_dim=3_order=4_gridType=curvilinear")')
                     end if
                   end if
                   fe=0.

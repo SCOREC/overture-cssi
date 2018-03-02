@@ -4355,7 +4355,7 @@ else if( updateSolution.eq.1 )then
 #beginMacro updateDispersive(DIM,ORDER,GRIDTYPE)
 
   if( t.le.3*dt )then
-    INFO("update-dispersive_dim=DIM_order=ORDER_ gridType=GRIDTYPE");
+    INFO("update-dispersive_dim=DIM _order=ORDER _gridType=GRIDTYPE");
   end if
 
   fe=0.
@@ -5511,9 +5511,6 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 !...........end   statement functions
 
 
- if( t.le.3*dt )then
-   write(*,*) 'Inside advMaxwell...'
- end if
 
  cc    =rpar(0)  ! this is c
  dt    =rpar(1)
@@ -5605,6 +5602,9 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  fprev = mod(fcur-1+numberOfForcingFunctions,max(1,numberOfForcingFunctions))
  fnext = mod(fcur+1                         ,max(1,numberOfForcingFunctions))
 
+ if( t.le.3*dt )then
+   write(*,'("Inside advOptNew... t=",e10.3," grid=",i3)') t,grid
+ end if
 
  ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
  !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
@@ -6337,7 +6337,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
    #Elif #ORDER eq "4"
 
-     if( useSosupDissipation.ne.0 )then
+     if( useSosupDissipation.ne.0 .and. updateDissipation.eq.1 )then
 
        ! ---- use sosup dissipation (wider stencil) ---
 

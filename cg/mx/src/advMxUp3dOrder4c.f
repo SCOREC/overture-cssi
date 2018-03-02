@@ -3858,6 +3858,8 @@ c===============================================================================
            ! ****************************************************************************
            ! *************** OPTIMIZED-CURVILINEAR AND NON-CONSERVATIVE *****************    
            ! ****************************************************************************
+            if( updateSolution.eq.1 )then
+             ! =====Compute v = laplacian (second order)
               ! *** need to evaluate on one additional line ***
               n1a=n1a-1
               n1b=n1b+1
@@ -3919,6 +3921,7 @@ c===============================================================================
               n3b=n3b-1
               useWhereMask=useWhereMaskSave
               ! 4th order modified equation 
+            end if
             if( useSosupDissipation.ne.0 )then
               ! ---- use sosup dissipation (wider stencil) ---
               if( t.le.2.*dt )then
@@ -4196,6 +4199,8 @@ c===============================================================================
                stop 4487
             else if( 
      & timeSteppingMethod.eq.modifiedEquationTimeStepping )then
+              write(*,'("advMxUp: This code should not be called!")')
+              stop 7777
               ! ----------------------------------------------------------
               ! ----- 4th order in space and 4th order in time ------------
               ! ---- Modified equation, NON-CONSERVATIVE difference ----

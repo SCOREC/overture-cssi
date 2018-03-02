@@ -2,6 +2,31 @@ set tcm3x   = $OVHOME/Overture/op/tests/tcm3
 set tosx   = $OVHOME/Overture/oges/results/tos
 
 *****************************
+********** Feb 27, 2018
+
+LOOK AT SIB WITH AND WITHOUT EXTRA GHOST PTS
+
+$tcm3x sibe2.order4.ng3.hdf -order=4 -solver=petsc -dirichlet
+ grid=0 (box) max. rel. err=1.239887e-05 (1.239887e-05 with ghost)
+ grid=1 (north-pole) max. rel. err=6.410446e-05 (6.410446e-05 with ghost)
+ grid=2 (south-pole) max. rel. err=4.383166e-05 (4.494059e-05 with ghost)
+Maximum relative error with dirichlet bc's= 6.410446e-05 (6.410446e-05 with ghost)
+
+
+ grid=0 (box) max. rel. err=1.245414e-05 (1.245414e-05 with ghost)
+ grid=1 (north-pole) max. rel. err=6.421836e-05 (6.421836e-05 with ghost)
+ grid=2 (south-pole) max. rel. err=4.953360e-05 (4.953360e-05 with ghost)
+Maximum relative error with neumann bc's= 6.421836e-05
+
+$tcm3x sibe2.order4.hdf -order=4 -solver=petsc
+
+ grid=0 (box) max. rel. err=1.234861e-05 (1.234861e-05 with ghost)
+ grid=1 (north-pole) max. rel. err=6.511029e-05 (6.511029e-05 with ghost)
+ grid=2 (south-pole) max. rel. err=4.465248e-05 (4.465248e-05 with ghost)
+Maximum relative error with dirichlet bc's= 6.511029e-05 (6.511029e-05 with ghost)
+
+
+*****************************
 ********** March 23, 2016
 
 $tcm3x square2048.order2.hdf -solver=yale -dirichlet

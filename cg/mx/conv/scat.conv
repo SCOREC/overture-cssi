@@ -32,6 +32,8 @@ $diss=.0; $dissOrder=-1;
 $errorNorm=0; $method="NFDTD"; 
 $alwaysCompute=1;
 $numberOfDimensions=2;
+# 
+$useSosupDissipation=0;
 # -- dispersion parameters ---
 $dm="none"; # dispersive model 
 $npv=1; $modeGDM=-1; 
@@ -42,7 +44,8 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"inter
             "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"tp=f"=>\$tp,\
             "errorNorm=i"=>\$errorNorm,"m=f"=>\$m,"n=f"=>\$n,"dissOrder=i"=>\$dissOrder,"cg=s"=>\$cg,\
             "radius=f"=>\$radius,"bg=s"=>\$bg,"dm=s"=>\$dm,"npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM,\
-            "a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1 );
+            "a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,\
+            "useSosupDissipation=i"=>\$useSosupDissipation );
 # ------------------------ planeWave ------------------------------------------
 # Give defaults here for array arguments: 
 if( $a0[0] eq "" ){ @a0=(1,0,0,0); }
@@ -79,17 +82,17 @@ if( $numberOfComponents eq 4 && $numberOfDimensions eq 3 && $dm ne "none" )\
 # 
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
-$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, m=$m,  n=$n, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]), $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
+$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, m=$m,  n=$n, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, useSosupDissipation=$useSosupDissipation, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]), $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
 $extraLabel ="";
 if( $dm ne "none" ){ $extraLabel .= "GDMNp$npv"; }
 if( $modeGDM > 0 ){ $extraLabel .= "Mode$modeGDM"; }
 $outputFile="$name$method$cg$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 # 
-$options = "-m=$m -n=$n -diss=$diss -dissOrder=$dissOrder -radius=$radius -bg=$bg -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp  -dm=$dm -alphaP=$alphaP -npv=$npv -modeGDM=$modeGDM -a0=$a0[0] $a0[1] $a0[2] -a1=$a1[0] $a1[1] $a1[2] -b0=$b0[0] $b0[1] $b0[2] -b1=$b1[0] $b1[1] $b1[2] -go=go";
+$options = "-m=$m -n=$n -diss=$diss -dissOrder=$dissOrder -useSosupDissipation=$useSosupDissipation -radius=$radius -bg=$bg -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp  -dm=$dm -alphaP=$alphaP -npv=$npv -modeGDM=$modeGDM -a0=$a0[0] $a0[1] $a0[2] -a1=$a1[0] $a1[1] $a1[2] -b0=$b0[0] $b0[1] $b0[2] -b1=$b1[0] $b1[1] $b1[2] -go=go";
 #
 $suffix="";
-if( ($method eq "sosup") && ($order eq 4) ){ $suffix=".ng3"; }
-if( ($method eq "sosup") && ($order eq 6) ){ $suffix=".ng4"; }
+if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 4) ){ $suffix=".ng3"; }
+if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 6) ){ $suffix=".ng4"; }
 $grid1=$cg . "2";   $gName1 = $cg . "e2.order$order$suffix"; 
 $grid2=$cg . "4";   $gName2 = $cg . "e4.order$order$suffix"; 
 $grid3=$cg . "8";   $gName3 = $cg . "e8.order$order$suffix"; 

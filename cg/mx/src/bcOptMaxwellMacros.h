@@ -878,7 +878,7 @@ do i1=nn1a,nn1b
 #beginMacro BC_MAXWELL(NAME,DIM,ORDER)
  subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                   ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                  gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                  gridIndexRange,dimension,u,f,mask,rsxy, xy,v, \
                   bc, boundaryCondition, ipar, rpar, ierr )
 ! ===============================================================================================
 !  Optimised Boundary conditions for Maxwells Equations.
@@ -903,6 +903,7 @@ do i1=nn1a,nn1b
  integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+ real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
  integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
 
  integer ipar(0:*),boundaryCondition(0:1,0:2)
@@ -1309,7 +1310,10 @@ do i1=nn1a,nn1b
     end if
    endLoopOverSides()
 
-   ! ok if( .true. ) return ! **********************************************************
+   if( .false. )then
+      write(*,'(" ************* TEST -- BC4 RETURN AFTER STAGE 1 *************")') 
+      return 
+   end if
 
    ! In parallel we need to update ghost boundaries after stage 1
    ! **call updateGhostBoundaries(pu)

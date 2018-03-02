@@ -112,15 +112,19 @@ c To include derivatives of rx use OPTION=RX
 
 
 
-! some newer version of these are created in advOpt.bf
+! some newer version of these are created in advOptNew.bf
 
 !      buildFile(advMx2dOrder2r,2,2,rectangular)
+!      buildFile(advMx3dOrder2r,3,2,rectangular)
 
 !      buildFile(advMx2dOrder2c,2,2,curvilinear)
+!      buildFile(advMx3dOrder2c,3,2,curvilinear)
 
 !      buildFile(advMx2dOrder4r,2,4,rectangular)
+!      buildFile(advMx3dOrder4r,3,4,rectangular)
 
 !      buildFile(advMx2dOrder4c,2,4,curvilinear)
+!      buildFile(advMx3dOrder4c,3,4,curvilinear)
 
 
        ! build these for testing symmetric operators -- BC's not implemented yet
@@ -179,7 +183,9 @@ c To include derivatives of rx use OPTION=RX
 
 !     ---- local variables -----
       integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime
-      integer addForcing,orderOfDissipation,option,useSosupDissipation
+      integer addForcing,orderOfDissipation,option
+      integer useSosupDissipation,sosupDissipationOption
+      integer updateSolution,updateDissipation,computeUt
       integer useWhereMask,solveForE,solveForH,grid
       integer ex,ey,ez, hx,hy,hz
 
@@ -193,9 +199,17 @@ c To include derivatives of rx use OPTION=RX
       orderOfAccuracy    =ipar(2)
       gridType           =ipar(1)
       useSosupDissipation=ipar(34)
+      sosupDissipationOption=ipar(35)
+      updateSolution        =ipar(36)
+      updateDissipation     =ipar(37)
+      computeUt             =ipar(38)
 
-      if( useSosupDissipation.eq.0 )then
-       ! --old FD schemes -- no upwind dissipation 
+      if( useSosupDissipation.eq.0 .or. (updateSolution.eq.1 .and. 
+     & updateDissipation.eq.0 .and.computeUt.eq.0 ) )then
+
+       ! -- FD schemes : dispersive and non-dispersive -- 
+       !   These are also used when the sosup dissipation is applied in a separate stage 
+
        if( orderOfAccuracy.eq.2 )then
 
         if( nd.eq.2 .and. gridType.eq.rectangular ) then

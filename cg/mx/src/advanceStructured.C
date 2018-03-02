@@ -860,6 +860,16 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 int option=0; // not used.
                 assignBoundaryConditions( option, grid, t+dt, dt, fieldNext, fieldCurrent,current );
 
+        // if( true )
+        // {
+        //   printF("CGMX: TESTING: re-apply BC's\n");
+                    
+        //   fieldNext.periodicUpdate(); 
+        //   assignBoundaryConditions( option, grid, t+dt, dt, fieldNext, fieldCurrent,current );
+        // }
+                
+
+
         // Extrapolate neighbours of interpolation points for the wider upwind stencil
                 if( extrapolateInterpolationNeighbours ) 
                 {
@@ -892,6 +902,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         
 
             }
+            
             if( debug & 4 )
             {
                 if( mgp!=NULL )
@@ -902,8 +913,8 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
     
             if( debug & 4 )
             {
-                fPrintF(debugFile,"\n ***************** advanceStructured Errors BEFORE assignInterface t=%9.3e ********\n",t+dt);
-                fprintf(pDebugFile,"\n ***************** advanceStructured Errors BEFORE assignInterface t=%9.3e ********\n",t+dt);
+                fPrintF(debugFile,"\n ***************** advanceStructured Errors AFTER BC's and BEFORE assignInterface t=%9.3e ********\n",t+dt);
+                fprintf(pDebugFile,"\n ***************** advanceStructured Errors AFTER BC's and BEFORE assignInterface t=%9.3e ********\n",t+dt);
                 getErrors( next,t+dt,dt );
             }
 
@@ -914,7 +925,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
             assignInterfaceGhostValues=true;  // assign ghost 
             assignInterfaceBoundaryConditions( current, t+dt, dt,assignInterfaceValues,assignInterfaceGhostValues );  
 
-            if( debug & 4 )
+            if( debug & 4 && gridHasMaterialInterfaces )
             {
                 fPrintF(debugFile,"\n ***************** advanceStructured Errors after assignInterface t=%9.3e ********\n",t+dt);
                 fprintf(pDebugFile,"\n ***************** advanceStructured Errors after assignInterface t=%9.3e ********\n",t+dt);

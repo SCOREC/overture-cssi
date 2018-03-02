@@ -39,8 +39,20 @@ sq2Dorder4cSD.check ../runs/tz/tz.cmd -g=nonSquare20.order4.ng3 -degreex=4 -degr
 # 2D Curvilinear conservative
 sq2Dorder2cConsSD.check ../runs/tz/tz.cmd -g=nonSquare20.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.02 -tf=.02 -go=go
 sq2Dorder4cConsSD.check ../runs/tz/tz.cmd -g=nonSquare20.order4.ng3 -degreex=4 -degreet=4 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=1 -bc=d -tp=.02 -tf=.02 -go=go
-# 3D tests
+# 3D Sosup dissipation tests
 nonBoxtzSD #upwind dissipation, curvilinear routines
 nonBoxtzSDCons #upwind dissipation, curvilinear routines, conservative routines
 boxtzSD    #upwind dissipation, cartesian routines
 boxtzSDCons    #upwind dissipation, cartesian routines, conservative routines
+# 
+# GDM tests
+#
+sqOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=square20.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+sqOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+nonSqOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=nonSquare20.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+nonSqOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=nonSquare20.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+#
+boxOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=box1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+boxOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=box1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+nonBoxOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=nonBox1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+nonBoxOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=nonBox1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
