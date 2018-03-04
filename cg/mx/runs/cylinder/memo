@@ -1,4 +1,12 @@
 **********************************
+*****  Mar 3, 2018
+
+TEST SOSUP DISS 
+
+OK: 
+cgmx -noplot cic.planeWaveBC -g=cice4.order2.hdf -tf=200. -tp=1 -diss=0. -useSosupDissipation=1 -go=og
+
+**********************************
 *****  Feb 27, 2018
 
 TROUBLE with GDM -- NANS AFTER ONE STEP (3rd ghost set to bogus)

@@ -1,4 +1,12 @@
 ****************************************
+*********** March 3, 2018
+
+TEST SOSUP dissipation  -- OK
+cgmx -noplot dielectricCyl -g=innerOutere8.order2.hdf -kx=2 -eps1=.25 -eps2=1. -useSosupDissipation=1 -tp=1 -tf=200 -go=og
+
+
+
+****************************************
 *********** Feb 9, 2018
 
 SOSUP dissipation 

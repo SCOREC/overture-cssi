@@ -2736,24 +2736,26 @@
      & is1,i2+is2,i3+is3,ey)+u1(i1+2*is1,i2+2*is2,i3+2*is3,ey))
                u1(i1-is1,i2-is2,i3,hz)=(3.*u1(i1,i2,i3,hz)-3.*u1(i1+
      & is1,i2+is2,i3+is3,hz)+u1(i1+2*is1,i2+2*is2,i3+2*is3,hz))
-               do jv=0,numberOfPolarizationVectors1-1
-                 do n=0,nd-1
-                  p1(i1-is1,i2-is2,i3,n)=(3.*p1(i1,i2,i3,n)-3.*p1(i1+
-     & is1,i2+is2,i3+is3,n)+p1(i1+2*is1,i2+2*is2,i3+2*is3,n))
-                 end do
-               end do
                u2(j1-js1,j2-js2,j3,ex)=(3.*u2(j1,j2,j3,ex)-3.*u2(j1+
      & js1,j2+js2,j3+js3,ex)+u2(j1+2*js1,j2+2*js2,j3+2*js3,ex))
                u2(j1-js1,j2-js2,j3,ey)=(3.*u2(j1,j2,j3,ey)-3.*u2(j1+
      & js1,j2+js2,j3+js3,ey)+u2(j1+2*js1,j2+2*js2,j3+2*js3,ey))
                u2(j1-js1,j2-js2,j3,hz)=(3.*u2(j1,j2,j3,hz)-3.*u2(j1+
      & js1,j2+js2,j3+js3,hz)+u2(j1+2*js1,j2+2*js2,j3+2*js3,hz))
-               do jv=0,numberOfPolarizationVectors2-1
-                 do n=0,nd-1
-                   p2(j1-js1,j2-js2,j3,n)=(3.*p2(j1,j2,j3,n)-3.*p2(j1+
+               if( dispersive.ne.noDispersion )then
+                do jv=0,numberOfPolarizationVectors1-1
+                  do n=0,nd-1
+                   p1(i1-is1,i2-is2,i3,n)=(3.*p1(i1,i2,i3,n)-3.*p1(i1+
+     & is1,i2+is2,i3+is3,n)+p1(i1+2*is1,i2+2*is2,i3+2*is3,n))
+                  end do
+                end do
+                do jv=0,numberOfPolarizationVectors2-1
+                  do n=0,nd-1
+                    p2(j1-js1,j2-js2,j3,n)=(3.*p2(j1,j2,j3,n)-3.*p2(j1+
      & js1,j2+js2,j3+js3,n)+p2(j1+2*js1,j2+2*js2,j3+2*js3,n))
-                 end do
-               end do
+                  end do
+                end do
+               end if
                 j1=j1+1
                end do
                j2=j2+1
@@ -4389,24 +4391,26 @@
      & i2+is2,i3+is3,ey)+u1(i1+2*is1,i2+2*is2,i3+2*is3,ey))
               u1(i1-is1,i2-is2,i3,hz)=(3.*u1(i1,i2,i3,hz)-3.*u1(i1+is1,
      & i2+is2,i3+is3,hz)+u1(i1+2*is1,i2+2*is2,i3+2*is3,hz))
-              do jv=0,numberOfPolarizationVectors1-1
-                do n=0,nd-1
-                 p1(i1-is1,i2-is2,i3,n)=(3.*p1(i1,i2,i3,n)-3.*p1(i1+
-     & is1,i2+is2,i3+is3,n)+p1(i1+2*is1,i2+2*is2,i3+2*is3,n))
-                end do
-              end do
               u2(j1-js1,j2-js2,j3,ex)=(3.*u2(j1,j2,j3,ex)-3.*u2(j1+js1,
      & j2+js2,j3+js3,ex)+u2(j1+2*js1,j2+2*js2,j3+2*js3,ex))
               u2(j1-js1,j2-js2,j3,ey)=(3.*u2(j1,j2,j3,ey)-3.*u2(j1+js1,
      & j2+js2,j3+js3,ey)+u2(j1+2*js1,j2+2*js2,j3+2*js3,ey))
               u2(j1-js1,j2-js2,j3,hz)=(3.*u2(j1,j2,j3,hz)-3.*u2(j1+js1,
      & j2+js2,j3+js3,hz)+u2(j1+2*js1,j2+2*js2,j3+2*js3,hz))
-              do jv=0,numberOfPolarizationVectors2-1
-                do n=0,nd-1
-                  p2(j1-js1,j2-js2,j3,n)=(3.*p2(j1,j2,j3,n)-3.*p2(j1+
+              if( dispersive.ne.noDispersion )then
+               do jv=0,numberOfPolarizationVectors1-1
+                 do n=0,nd-1
+                  p1(i1-is1,i2-is2,i3,n)=(3.*p1(i1,i2,i3,n)-3.*p1(i1+
+     & is1,i2+is2,i3+is3,n)+p1(i1+2*is1,i2+2*is2,i3+2*is3,n))
+                 end do
+               end do
+               do jv=0,numberOfPolarizationVectors2-1
+                 do n=0,nd-1
+                   p2(j1-js1,j2-js2,j3,n)=(3.*p2(j1,j2,j3,n)-3.*p2(j1+
      & js1,j2+js2,j3+js3,n)+p2(j1+2*js1,j2+2*js2,j3+2*js3,n))
-                end do
-              end do
+                 end do
+               end do
+              end if
                j1=j1+1
               end do
               j2=j2+1

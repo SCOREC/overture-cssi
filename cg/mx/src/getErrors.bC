@@ -1100,6 +1100,9 @@ getErrors( int current, real t, real dt )
   maxErrPolarization=0.;
   
 
+  // *************************************************************
+  // *************** START LOOP OVER GRIDS ************************
+  // *************************************************************
   for( int grid=0; grid<numberOfComponentGrids; grid++ )
   {
 
@@ -1667,10 +1670,10 @@ getErrors( int current, real t, real dt )
       {
 	// compute the Lp norm
 	maximumError=0.;
+        const int maskOption=0;  // check points where mask != 0
+        const int checkErrorsAtGhostPoints=0;
 	for( int c=C.getBase(); c<=C.getBound(); c++ )
 	{
-	  const int maskOption=0;  // check points where mask != 0
-          const int checkErrorsAtGhostPoints=0;
 	  if( pNorm<10000 )
 	  {
 	    maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,checkErrorsAtGhostPoints);
@@ -1682,6 +1685,42 @@ getErrors( int current, real t, real dt )
 	    solutionNorm(c)=maxNorm(cgu  ,c,maskOption,checkErrorsAtGhostPoints);
 	  }
 	}
+
+        // ---- Compute Lp norm errors of polarization vectors ----
+        if( dispersionModel != noDispersion )
+        {
+          for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+          {
+            DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+            const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
+            if( numberOfPolarizationVectors>0 )
+            {
+        
+              realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+              assert( ppv!=NULL );
+              // get Pv error grid function
+              realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+              assert( pepv!=NULL );
+          
+              maxErrPolarization(domain)=0.;
+              polarizationNorm(domain)=0.;
+              for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+              {
+                for( int dir=0; dir<numberOfDimensions; dir++ )
+                {
+                  const int pc = dir+ iv*numberOfDimensions; // component 
+                  const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+                  const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+                  maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+                  polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+                }
+              }
+            }
+          }
+        }
+        
+
       }
       
       aString normName;

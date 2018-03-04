@@ -1,7 +1,7 @@
 ! This file automatically generated from bcMaxwellCorners.bf with bpp.
         subroutine cornersMxOrder8( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,dimension,u,
-     & f,mask,rsxy, xy,bc, boundaryCondition, ipar, rpar, ierr )
+     & f,mask,rsxy, xy,v,p,bc, boundaryCondition, ipar, rpar, ierr )
        ! ===================================================================================
        !  Optimised Boundary conditions for Maxwell's Equations.
        !
@@ -17,6 +17,8 @@
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+        real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+        real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
         integer ipar(0:*),boundaryCondition(0:1,0:2)
         real rpar(0:*),pwc(0:5)
@@ -76,7 +78,8 @@
         real tau11t,tau12t,tau13t, tau21t,tau22t,tau23t
         real tau1u,tau2u,tau1Up1,tau1Up2,tau1Up3,tau2Up1,tau2Up2,
      & tau2Up3
-        real tau1Dotu,tau2Dotu,tauU,tauUp1,tauUp2,tauUp3,ttu1,ttu2
+        real tau1Dotu,tau2Dotu,tauU,tauUp1,tauUp2,tauUp3,ttu1,ttu2, 
+     & tau1DotP, tau2DotP, tauSq
         real ttu11,ttu12,ttu13, ttu21,ttu22,ttu23
         real DtTau1DotUvr,DtTau2DotUvr,DsTau1DotUvr,DsTau2DotUvr,
      & tau1DotUtt,tau2DotUtt,Da1DotU,a1DotU
@@ -159,7 +162,7 @@
      & errLapex,errLapey,errLapez
         real aDot1,aDot2,aDotUm2,aDotUm1,aDotU,aDotUp1,aDotUp2,aDotUp3
         real xm,ym,x0,y0,z0,xp,yp,um,vm,wm,u0,v0,w0,up,vp,wp
-        real an(0:2), anNorm, nDotE, nDotE0, epsX
+        real an(0:2), anNorm, nDotE, nDotE0, epsX, nDotP, nDotP0
         real tdu10,tdu01,tdu20,tdu02,gLu,gLv,utt00,vtt00,wtt00
         real cu10,cu01,cu20,cu02,cv10,cv01,cv20,cv02
         real maxDivc,maxTauDotLapu,maxExtrap,maxDr3aDotU,dr3aDotU,
@@ -240,20 +243,25 @@
       real si,sr,expt,sinxi,cosxi
       real sinxip,cosxip, sinxid, cosxid, sinxid2, cosxid2, sinxid3, 
      & cosxid3
-        real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
+      real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
      & settt
 
       integer getDispersiveBoundaryForcing
       real alphaP, psum(0:2)
 
       integer maxNumberOfPolarizationVectors
-      parameter( maxNumberOfPolarizationVectors=20 )
+      parameter( maxNumberOfPolarizationVectors=50 )
       real psir(0:maxNumberOfPolarizationVectors-1), psii(
      & 0:maxNumberOfPolarizationVectors-1)
 
       ! Dispersion models
       integer noDispersion,drude
       parameter( noDispersion=0, drude=1 )
+
+      ! for boundary forcing:
+      real pbv(0:2,0:maxNumberOfPolarizationVectors-1)
+
+
        !     --- start statement function ----
         integer kd,m,n
         real rx,ry,rz,sx,sy,sz,tx,ty,tz
@@ -1896,8 +1904,9 @@ c===============================================================================
                  do i1=n1a,n1b
                    tau1=rsxy(i1,i2,i3,axisp1,0)
                    tau2=rsxy(i1,i2,i3,axisp1,1)
-                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))/(
-     & tau1**2+tau2**2)
+                   tauSq = tau1**2+tau2**2
+                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))
+     & /tauSq
                      ! -- Boundary Forcing : if we solve for scattered field directly ----
                      x0=xy(i1,i2,i3,0)
                      y0=xy(i1,i2,i3,1)
@@ -2012,6 +2021,14 @@ c===============================================================================
      & hr*sint+hi*cost)*cosxi
                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                    ubv(hz) = amph
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     pbv(0,iv) = pwc(0)*amp
+                                     pbv(1,iv) = pwc(1)*amp
+                                   end do
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
@@ -2406,8 +2423,7 @@ c===============================================================================
      & cc*(t)))*pwc(1)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)-cc*(t)))*pwc(1)
      & )
                      end if
-                     tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/(tau1*
-     & *2+tau2**2)
+                     tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/tauSq
                    u(i1,i2,i3,ex)=u(i1,i2,i3,ex)-tau1DotU*tau1
                    u(i1,i2,i3,ey)=u(i1,i2,i3,ey)-tau1DotU*tau2
                   ! if( .true. )then
@@ -2415,6 +2431,7 @@ c===============================================================================
                   !   write(*,'(" assignBndry: tau1,tau2=",2e10.2," err tau.u=",e10.2)') tau1,tau2,tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   !   ! write(*,'(" assignBndry: tau*uv - tau*uv0 = ",e10.2)') tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   ! end if
+                  ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do
@@ -2546,6 +2563,14 @@ c===============================================================================
      & hr*sint+hi*cost)*cosxi
                                    ! write(*,'(" (i1,i2)=(",i3,",",i3,") uv[Hz]=",e12.4," uv(disp)[Hz]=",e12.4)') i1,i2,uv(hz),amph
                                    uv(hz) = amph
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     pbv(0,iv) = pwc(0)*amp
+                                     pbv(1,iv) = pwc(1)*amp
+                                   end do
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
@@ -2939,6 +2964,7 @@ c===============================================================================
      & pwc(1))
                      end if
                      u(i1,i2,i3,et1)=uv(et1)
+                   ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do
@@ -2951,8 +2977,9 @@ c===============================================================================
                  do i1=n1a,n1b
                    tau1=rsxy(i1,i2,i3,axisp1,0)
                    tau2=rsxy(i1,i2,i3,axisp1,1)
-                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))/(
-     & tau1**2+tau2**2)
+                   tauSq = tau1**2+tau2**2
+                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))
+     & /tauSq
                    u(i1,i2,i3,ex)=u(i1,i2,i3,ex)-tau1DotU*tau1
                    u(i1,i2,i3,ey)=u(i1,i2,i3,ey)-tau1DotU*tau2
                   ! if( .true. )then
@@ -2960,6 +2987,17 @@ c===============================================================================
                   !   write(*,'(" assignBndry: tau1,tau2=",2e10.2," err tau.u=",e10.2)') tau1,tau2,tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   !   ! write(*,'(" assignBndry: tau*uv - tau*uv0 = ",e10.2)') tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   ! end if
+                  ! Set tau.Pv = 0 for dispersive models
+                   ! For now only do case with no forcing ***finish me***
+                   if( dispersionModel.ne.noDispersion )then
+                     do iv=0,numberOfPolarizationVectors-1
+                       m = iv*nd
+                       tau1DotP = (tau1*p(i1,i2,i3,m)+tau2*p(i1,i2,i3,
+     & m+1))/tauSq
+                       p(i1,i2,i3,m  )=p(i1,i2,i3,m  )-tau1DotP*tau1
+                       p(i1,i2,i3,m+1)=p(i1,i2,i3,m+1)-tau1DotP*tau2
+                     end do
+                   end if
                  end do
                  end do
                  end do
@@ -2978,6 +3016,14 @@ c===============================================================================
                  do i2=n2a,n2b
                  do i1=n1a,n1b
                      u(i1,i2,i3,et1)=0.
+                   ! Set tau.Pv = 0 for dispersive models
+                    ! For now only do case with no forcing ***finish me***
+                    if( dispersionModel.ne.noDispersion )then
+                      do iv=0,numberOfPolarizationVectors-1
+                        m = iv*nd + (1-axis) ! tangential component
+                        p(i1,i2,i3,m  )=0.
+                      end do
+                    end if
                  end do
                  end do
                  end do
@@ -2990,12 +3036,12 @@ c===============================================================================
                  do i1=n1a,n1b
                    tau1=rsxy(i1,i2,i3,axisp1,0)
                    tau2=rsxy(i1,i2,i3,axisp1,1)
-                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))/(
-     & tau1**2+tau2**2)
+                   tauSq = tau1**2+tau2**2
+                   tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))
+     & /tauSq
                      call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1    ,i2 
      &    ,i3,0),xy(i1    ,i2    ,i3,1),t, u0,v0,w0)
-                     tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/(tau1*
-     & *2+tau2**2)
+                     tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/tauSq
                    u(i1,i2,i3,ex)=u(i1,i2,i3,ex)-tau1DotU*tau1
                    u(i1,i2,i3,ey)=u(i1,i2,i3,ey)-tau1DotU*tau2
                   ! if( .true. )then
@@ -3003,6 +3049,7 @@ c===============================================================================
                   !   write(*,'(" assignBndry: tau1,tau2=",2e10.2," err tau.u=",e10.2)') tau1,tau2,tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   !   ! write(*,'(" assignBndry: tau*uv - tau*uv0 = ",e10.2)') tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
                   ! end if
+                  ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do
@@ -3025,6 +3072,7 @@ c===============================================================================
                      uv(ex)=u0
                      uv(ey)=v0
                      u(i1,i2,i3,et1)=uv(et1)
+                   ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do
@@ -3161,6 +3209,14 @@ c===============================================================================
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
                                    ubv(ez) = pwc(2)*amp
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     pbv(0,iv) = pwc(0)*amp
+                                     pbv(1,iv) = pwc(1)*amp
+                                     pbv(2,iv) = pwc(2)*amp
+                                   end do
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
@@ -3179,7 +3235,6 @@ c===============================================================================
                                  costp=-si*sint+sr*cost  ! d/dt( cost)
                                  sintp= si*cost+sr*sint ! d/dt
                                  if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
                                    amp = sinxi*costp+cosxi*sintp
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
@@ -3514,6 +3569,7 @@ c===============================================================================
      & 1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + w0 - nDotE0*an(
      & 2)
+                   ! Set tau.Pv = 0 for dispersive models
                    ! end if
                  end do
                  end do
@@ -3636,6 +3692,14 @@ c===============================================================================
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
                                    ubv(ez) = pwc(2)*amp
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     pbv(0,iv) = pwc(0)*amp
+                                     pbv(1,iv) = pwc(1)*amp
+                                     pbv(2,iv) = pwc(2)*amp
+                                   end do
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
@@ -3654,7 +3718,6 @@ c===============================================================================
                                  costp=-si*sint+sr*cost  ! d/dt( cost)
                                  sintp= si*cost+sr*sint ! d/dt
                                  if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
                                    amp = sinxi*costp+cosxi*sintp
                                    ubv(ex) = pwc(0)*amp
                                    ubv(ey) = pwc(1)*amp
@@ -4116,6 +4179,14 @@ c===============================================================================
                                    uv(ex) = pwc(0)*amp
                                    uv(ey) = pwc(1)*amp
                                    uv(ez) = pwc(2)*amp
+                                   do iv=0,numberOfPolarizationVectors-
+     & 1
+                                     amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                     pbv(0,iv) = pwc(0)*amp
+                                     pbv(1,iv) = pwc(1)*amp
+                                     pbv(2,iv) = pwc(2)*amp
+                                   end do
                                  else
                                    ! polarization vector: (ex=pxc, ey=pyc) 
                                    do iv=0,numberOfPolarizationVectors-
@@ -4134,7 +4205,6 @@ c===============================================================================
                                  costp=-si*sint+sr*cost  ! d/dt( cost)
                                  sintp= si*cost+sr*sint ! d/dt
                                  if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
                                    amp = sinxi*costp+cosxi*sintp
                                    uv(ex) = pwc(0)*amp
                                    uv(ey) = pwc(1)*amp
@@ -4461,6 +4531,7 @@ c===============================================================================
                      end if
                      u(i1,i2,i3,et1)=uv(et1)
                      u(i1,i2,i3,et2)=uv(et2)
+                   ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do
@@ -4489,6 +4560,19 @@ c===============================================================================
                      u(i1,i2,i3,ex) = nDotE*an(0)
                      u(i1,i2,i3,ey) = nDotE*an(1)
                      u(i1,i2,i3,ez) = nDotE*an(2)
+                   ! Set tau.Pv = 0 for dispersive models
+                    ! For now only do case with no forcing ***finish me***
+                    if( dispersionModel.ne.noDispersion )then
+                      do iv=0,numberOfPolarizationVectors-1
+                        m = iv*nd
+                        nDotP = an(0)*p(i1,i2,i3,m)+an(1)*p(i1,i2,i3,m+
+     & 1)+an(2)*p(i1,i2,i3,m+2)
+                        ! set tangential components to zero by eliminating all but the normal component
+                        p(i1,i2,i3,m  )=nDotP*an(0)
+                        p(i1,i2,i3,m+1)=nDotP*an(1)
+                        p(i1,i2,i3,m+2)=nDotP*an(2)
+                      end do
+                    end if
                    ! end if
                  end do
                  end do
@@ -4536,6 +4620,16 @@ c===============================================================================
                  do i1=n1a,n1b
                      u(i1,i2,i3,et1)=0.
                      u(i1,i2,i3,et2)=0.
+                   ! Set tau.Pv = 0 for dispersive models
+                    ! For now only do case with no forcing ***finish me***
+                    if( dispersionModel.ne.noDispersion )then
+                      do iv=0,numberOfPolarizationVectors-1
+                        m1 = iv*nd + mod(axis+1,nd) ! tangential component
+                        m2 = iv*nd + mod(axis+2,nd) ! tangential component
+                        p(i1,i2,i3,m1)=0.
+                        p(i1,i2,i3,m2)=0.
+                      end do
+                    end if
                  end do
                  end do
                  end do
@@ -4578,6 +4672,7 @@ c===============================================================================
      & 1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + w0 - nDotE0*an(
      & 2)
+                   ! Set tau.Pv = 0 for dispersive models
                    ! end if
                  end do
                  end do
@@ -4636,6 +4731,7 @@ c===============================================================================
                      uv(ez)=w0
                      u(i1,i2,i3,et1)=uv(et1)
                      u(i1,i2,i3,et2)=uv(et2)
+                   ! Set tau.Pv = 0 for dispersive models
                  end do
                  end do
                  end do

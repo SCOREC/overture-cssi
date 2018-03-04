@@ -101,6 +101,13 @@ cross:
 	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5. -xb=5. -interp=i -order=4 -factor=16
 	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
 
+IBeam:
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=2 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=i -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=4 -numGhost=3 -factor=16
+
 sphere:
 	$(ogen) -noplot solidSphereInABox -prefix=dielectricSphereGrid -xa=-3 -xb=3 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -outerBC=yzPeriodic -order=2 -interp=e -factor=2
 	$(ogen) -noplot solidSphereInABox -prefix=dielectricSphereGrid -xa=-3 -xb=3 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -outerBC=yzPeriodic -order=2 -interp=e -factor=4

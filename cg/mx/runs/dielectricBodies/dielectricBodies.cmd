@@ -1,6 +1,6 @@
 #================================================================================================
 #
-#  cgmx example:  scattering from 2d dielectric rod
+#  cgmx example:  scattering from various dielectric bodies
 #
 # Usage:
 #   
@@ -34,6 +34,9 @@
 # ---- DISK -----
 # GRID: ogen -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-2. -xb=2. -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
 # RUN: cgmx dielectricBodies -g=diskInBoxYpe4.order4.hdf -backGround=outerSquare -kx=4 -eps1=11.9025 -eps2=1. -go=halt
+#
+#  ---- IBeam ---
+#
 #================================================================================================
 # 
 $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $varDissSmooths=20; $sidebc="symmetry"; 
@@ -55,8 +58,10 @@ $probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=-.2;
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
 $xat= 1.; $xbt= 2.; # transmission probe x-bounds 
 $rbc="abcEM2"; $pmlLines=11; $pmlPower=6; $pmlStrength=50.; 
-$useSosupDissipation=0;  $sosupDissipationOption=0;
-$stageOption="";
+# -- sosup dissipation --
+$useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
+$selectiveDissipation=0;
+# 
 $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
@@ -64,16 +69,18 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
    "plotIntensity=i"=>\$plotIntensity,"ax=f"=>\$ax,"ay=f"=>\$ay,"az=f"=>\$az,"intensityOption=i"=>\$intensityOption,\
   "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz, "numBlocks=i"=>\$numBlocks,\
    "ii=i"=>\$interfaceIterations,"varDiss=i"=>\$varDiss ,"varDissSmooths=i"=>\$varDissSmooths,\
-   "xb=f"=>\$xb,"yb=f"=>\$yb,"stageOption=s"=>\$stageOption,"cons=i"=>\$cons,\
+   "xb=f"=>\$xb,"yb=f"=>\$yb,"cons=i"=>\$cons,\
    "probeFileName=s"=>\$probeFileName,"xLeftProbe=f"=>\$xLeftProbe,"xRightProbe=f"=>\$xRightProbe,\
    "yLeftProbe=f"=>\$yLeftProbe,"yRightProbe=f"=>\$yRightProbe,\
    "checkErrors=i"=>\$checkErrors,"sidebc=s"=>\$sidebc,"dissOrder=i"=>\$dissOrder,"method=s"=>\$method,\
    "filter=i"=>\$filter, "backGround=s"=>\$backGround,"rbc=s"=>\$rbc,"pmlLines=i"=>\$pmlLines,\
    "pmlPower=i"=>\$pmlPower,"pmlStrength=f"=>\$pmlStrength,"leftBC=s"=>\$leftBC,"bcBody=s"=>\$bcBody,\
-   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupDissipationOption=i"=>\$sosupDissipationOption,\
    "eps0=f"=>\$eps0,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"eps3=f"=>\$eps3,"eps4=f"=>\$eps4,\
-   "xar=f"=>\$xar,"xbr=f"=>\$xbr,"xat=f"=>\$xat,"xbt=f"=>\$xbt,"dm=s"=>\$dmn,\
-   "alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1   );
+   "xar=f"=>\$xar,"xbr=f"=>\$xbr,"xat=f"=>\$xat,"xbt=f"=>\$xbt,"dm=s"=>\$dm,\
+   "alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,\
+  "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
+  "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
+  "selectiveDissipation=i"=>\$selectiveDissipation );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -99,24 +106,6 @@ else{\
   for( $i=0; $i<$numBlocks; $i++ ){ $cmd .= "\n GDM params $a0 $a1 $b0 $b1 blockDomain$i (a0,a1,b0,b1,domain-name)"; }\
 }
 $cmd 
-#
-# Set the stage option for sosup dissipation: 
-$stages="#"; 
-if( $useSosupDissipation ne 0 && $stageOption eq "" ){ $stageOption="D-IB"; } # default for sosup
-# --- Define multi-stage time-step: 
-if( $stageOption eq "IDB" ){ $stages="updateInterior,addDissipation,applyBC"; }
-if( $stageOption eq "D-IB" ){ $stages="addDissipation\n updateInterior,applyBC"; }
-if( $stageOption eq "DB-IB" ){ $stages="addDissipation,applyBC\n updateInterior,applyBC"; }
-if( $stageOption eq "IB-DB" ){ $stages="updateInterior,applyBC\n addDissipation,applyBC"; }
-if( $stageOption eq "IB-D" ){ $stages="updateInterior,applyBC\n addDissipation"; }
-# -- options to precompute V=uDot used in the dissipation
-if( $stageOption eq "IVDB" ){ $stages="updateInterior,computeUt,addDissipation,applyBC"; }
-if( $stageOption eq "VD-IB" ){ $stages="computeUt,addDissipation\n updateInterior,applyBC"; }
-if( $stageOption eq "VDB-IB" ){ $stages="computeUt,addDissipation,applyBC\n updateInterior,applyBC"; }
-if( $stageOption eq "IB-VDB" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation,applyBC"; }
-if( $stageOption eq "IB-VD" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation"; }
-if( $stages ne "#" ){ $cmd="set stages...\n $stages\n done"; }else{ $cmd="#"; }
-$cmd
 #
 # planeWaveInitialCondition
 if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
@@ -199,8 +188,16 @@ apply filter $filter
 order of dissipation $dissOrder
 dissipation $diss
 #
+# -- sosup dissipation
+#
+if( $selectiveDissipation eq "1" ){ $cmd="selective dissipation...\n  turn off rectangular\n continue"; }else{ $cmd="#"; }
+$cmd 
+#
 use sosup dissipation $useSosupDissipation
+sosup parameter $sosupParameter
 sosup dissipation option $sosupDissipationOption
+sosup dissipation frequency $sosupDissipationFrequency
+#
 #*********************************
 show file options...
   MXSF:compressed

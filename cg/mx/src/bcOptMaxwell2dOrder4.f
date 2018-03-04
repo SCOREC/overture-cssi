@@ -1,7 +1,7 @@
 ! This file automatically generated from bcOptMaxwell4.bf with bpp.
         subroutine bcOptMaxwell2dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,
      & nd3b,ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,gridIndexRange,
-     & dimension,u,f,mask,rsxy, xy,v, bc, boundaryCondition, ipar, 
+     & dimension,u,f,mask,rsxy, xy,v,p, bc, boundaryCondition, ipar, 
      & rpar, ierr )
        ! ===============================================================================================
        !  Optimised Boundary conditions for Maxwells Equations.
@@ -24,6 +24,7 @@
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
         real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+        real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
         integer ipar(0:*),boundaryCondition(0:1,0:2)
         real rpar(0:*),pwc(0:5)
@@ -221,20 +222,25 @@
       real si,sr,expt,sinxi,cosxi
       real sinxip,cosxip, sinxid, cosxid, sinxid2, cosxid2, sinxid3, 
      & cosxid3
-        real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
+      real amph,sint,cost,sintp,costp,hr,hi, cet,set,cett,sett,cettt,
      & settt
 
       integer getDispersiveBoundaryForcing
       real alphaP, psum(0:2)
 
       integer maxNumberOfPolarizationVectors
-      parameter( maxNumberOfPolarizationVectors=20 )
+      parameter( maxNumberOfPolarizationVectors=50 )
       real psir(0:maxNumberOfPolarizationVectors-1), psii(
      & 0:maxNumberOfPolarizationVectors-1)
 
       ! Dispersion models
       integer noDispersion,drude
       parameter( noDispersion=0, drude=1 )
+
+      ! for boundary forcing:
+      real pbv(0:2,0:maxNumberOfPolarizationVectors-1)
+
+
       real rsxyr2,rsxys2,rsxyt2,rsxyx22,rsxyy22,rsxyr4,rsxys4,rsxyx42,
      & rsxyy42
       real rsxyxs42, rsxyys42, rsxyxr42, rsxyyr42
@@ -3039,6 +3045,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -3512,6 +3525,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -3985,6 +4005,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -4523,6 +4550,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -4996,6 +5030,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -5508,6 +5549,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -5981,6 +6029,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -6493,6 +6548,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -6991,6 +7053,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -9225,6 +9294,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -9698,6 +9774,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -10171,6 +10254,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -10709,6 +10799,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -11182,6 +11279,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -11694,6 +11798,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -12167,6 +12278,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -12679,6 +12797,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1
@@ -13177,6 +13302,13 @@ c===============================================================================
      & sint+hi*cost)*cosxi
                                   ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
                                   ubv(hz) = amph
+                                  do iv=0,numberOfPolarizationVectors-1
+                                    ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                    amp=(psir(iv)*cost-psii(iv)*sint)*
+     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                    pbv(0,iv) = pwc(0)*amp
+                                    pbv(1,iv) = pwc(1)*amp
+                                  end do
                                 else
                                   ! polarization vector: (ex=pxc, ey=pyc) 
                                   do iv=0,numberOfPolarizationVectors-1

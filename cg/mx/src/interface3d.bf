@@ -2643,20 +2643,23 @@ beginLoopsMask2d()
      u1(i1-is1,i2-is2,i3,ey)=extrap3(u1,i1,i2,i3,ey,is1,is2,is3)
      u1(i1-is1,i2-is2,i3,hz)=extrap3(u1,i1,i2,i3,hz,is1,is2,is3)
 
-     do jv=0,numberOfPolarizationVectors1-1
-       do n=0,nd-1
-        p1(i1-is1,i2-is2,i3,n)=extrap3(p1,i1,i2,i3,n,is1,is2,is3)
-       end do
-     end do
 
      u2(j1-js1,j2-js2,j3,ex)=extrap3(u2,j1,j2,j3,ex,js1,js2,js3)
      u2(j1-js1,j2-js2,j3,ey)=extrap3(u2,j1,j2,j3,ey,js1,js2,js3)
      u2(j1-js1,j2-js2,j3,hz)=extrap3(u2,j1,j2,j3,hz,js1,js2,js3)
-     do jv=0,numberOfPolarizationVectors2-1
-       do n=0,nd-1
-         p2(j1-js1,j2-js2,j3,n)=extrap3(p2,j1,j2,j3,n,js1,js2,js3)
-       end do
-     end do
+
+     if( dispersive.ne.noDispersion )then
+      do jv=0,numberOfPolarizationVectors1-1
+        do n=0,nd-1
+         p1(i1-is1,i2-is2,i3,n)=extrap3(p1,i1,i2,i3,n,is1,is2,is3)
+        end do
+      end do
+      do jv=0,numberOfPolarizationVectors2-1
+        do n=0,nd-1
+          p2(j1-js1,j2-js2,j3,n)=extrap3(p2,j1,j2,j3,n,js1,js2,js3)
+        end do
+      end do
+     end if
    endLoops2d()
 
   end if

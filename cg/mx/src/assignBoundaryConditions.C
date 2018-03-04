@@ -23,7 +23,7 @@ extern "C"
             const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
             const int&ndf1a,const int&ndf1b,const int&ndf2a,const int&ndf2b,const int&ndf3a,const int&ndf3b,
             const int & gid, const int & dimension,
-            const real&u, const real&f, const int&mask, const real&rsxy, const real&xy, const real&v,
+            const real&u, const real&f, const int&mask, const real&rsxy, const real&xy, const real&v, const real&p,
             const int&bc, const int&boundaryCondition, const int&ipar, const real&rpar, int&ierr );
 
             void abcMaxwell(const int&nd,
@@ -2396,6 +2396,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 real *rxptr  = rx.getDataPointer();
                 real *xyptr  = centerNeeded ? xy.getDataPointer() : uptr;
                 assert( xyptr!=NULL );
+                real *ppv = numberOfPolarizationVectors>0 ? pLocal.getDataPointer() : uptr;
                 if( !isRectangular )
                 {
           // display(mg.inverseVertexDerivative(),"inverseVertexDerivative","%7.4f ");
@@ -2453,7 +2454,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         		ff.getBase(1),ff.getBound(1),
                         		ff.getBase(2),ff.getBound(2),
                         		*gid.getDataPointer(),*dim.getDataPointer(),
-                        		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
+                        		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
                         		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                 if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                 real *uOldptr = uuOld.getDataPointer();
@@ -2947,6 +2948,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     real *rxptr  = rx.getDataPointer();
                     real *xyptr  = centerNeeded ? xy.getDataPointer() : uptr;
                     assert( xyptr!=NULL );
+                    real *ppv = numberOfPolarizationVectors>0 ? pLocal.getDataPointer() : uptr;
                     if( !isRectangular )
                     {
             // display(mg.inverseVertexDerivative(),"inverseVertexDerivative","%7.4f ");
@@ -3004,7 +3006,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             		ff.getBase(1),ff.getBound(1),
                             		ff.getBase(2),ff.getBound(2),
                             		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
+                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
                             		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();
@@ -3502,6 +3504,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     real *rxptr  = rx.getDataPointer();
                     real *xyptr  = centerNeeded ? xy.getDataPointer() : uptr;
                     assert( xyptr!=NULL );
+                    real *ppv = numberOfPolarizationVectors>0 ? pLocal.getDataPointer() : uptr;
                     if( !isRectangular )
                     {
             // display(mg.inverseVertexDerivative(),"inverseVertexDerivative","%7.4f ");
@@ -3559,7 +3562,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             		ff.getBase(1),ff.getBound(1),
                             		ff.getBase(2),ff.getBound(2),
                             		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, 
+                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
                             		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();

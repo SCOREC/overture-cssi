@@ -9,17 +9,20 @@
 #==================================================================
 $tFinal=1.; $tPlot=.1; $cfl=.95; $diss=.5; $show=" "; $method="NFDTD";
 $n=1; $m=1; $k=1;   # n=Jn, m=m*theta, k=k*Pi*z
-$grid="tube1.order4.hdf"; $tPlot=.1; 
+$grid="tube1.order4.hdf"; $tPlot=.1; $cons=0; $errorNorm=0; 
 $dm="none"; 
 # $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 $npv=1; $alphaP=1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below  
+# 
+$useSosupDissipation=0;
 #
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl,"go=s"=>\$go,"noplot=s"=>\$noplot,"dtMax=f"=>\$dtMax,"n=i"=>\$n,"m=i"=>\$m,"method=s"=>\$method,\
    "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,\
-   "npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM  );
+   "npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM,"cons=i"=>\$cons,"useSosupDissipation=i"=>\$useSosupDissipation,\
+   "errorNorm=i"=>\$errorNorm   );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"gdm" ){ $dm="GDM"; }
@@ -91,12 +94,14 @@ annulusEigenfunctionInitialCondition
 annulusEigenfunctionKnownSolution
 #**
 # 
-use conservative divergence 1
+use conservative difference $cons
 #
 #
 tFinal $tFinal
 tPlot  $tPlot
 dissipation $diss
+#
+use sosup dissipation $useSosupDissipation
 # accuracy in space 4
 # accuracy in time 4
 # order of dissipation 4
@@ -115,6 +120,7 @@ exit
 #**********************************
 plot errors 1
 check errors 1
+error norm $errorNorm
 #
 continue
 #

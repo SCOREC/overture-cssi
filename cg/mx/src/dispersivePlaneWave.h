@@ -109,9 +109,10 @@
 ! 
 !  x,y,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors for dispersive models
 ! --------------------------------------------------------------------
-#beginMacro getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
+#beginMacro getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv,pbv)
 
   xi = twoPi*(kx*(x)+ky*(y))
   sinxi = sin(xi)
@@ -141,6 +142,13 @@
       ! write(*,'(" (i1,i2)=(",i3,",",i3,") ubv[Hz]=",e12.4," ubv(disp)[Hz]=",e12.4)') i1,i2,ubv(hz),amph
 
       ubv(hz) = amph
+
+      do iv=0,numberOfPolarizationVectors-1
+        ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+        amp=(psir(iv)*cost-psii(iv)*sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+        pbv(0,iv) = pwc(0)*amp 
+        pbv(1,iv) = pwc(1)*amp 
+      end do 
 
     else
       ! polarization vector: (ex=pxc, ey=pyc) 
@@ -333,9 +341,10 @@
 ! 
 !  x,y,z,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors for dispersive models
 ! --------------------------------------------------------------------
-#beginMacro getDispersivePlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv)
+#beginMacro getDispersivePlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv,pbv)
 
   xi = twoPi*(kx*(x)+ky*(y)+kz*(z))
   sinxi = sin(xi)
@@ -353,6 +362,13 @@
       ubv(ex) = pwc(0)*amp 
       ubv(ey) = pwc(1)*amp 
       ubv(ez) = pwc(2)*amp 
+
+      do iv=0,numberOfPolarizationVectors-1
+        amp=(psir(iv)*cost-psii(iv)*sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+        pbv(0,iv) = pwc(0)*amp 
+        pbv(1,iv) = pwc(1)*amp 
+        pbv(2,iv) = pwc(2)*amp 
+      end do
 
     else
       ! polarization vector: (ex=pxc, ey=pyc) 
@@ -372,7 +388,6 @@
     costp=-si*sint+sr*cost  ! d/dt( cost) 
     sintp= si*cost+sr*sint ! d/dt 
     if( polarizationOption.eq.0 )then
-      ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
       amp = sinxi*costp+cosxi*sintp
       ubv(ex) = pwc(0)*amp 
       ubv(ey) = pwc(1)*amp 

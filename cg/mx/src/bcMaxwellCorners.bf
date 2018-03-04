@@ -92,11 +92,12 @@
    beginLoops()
      tau1=rsxy(i1,i2,i3,axisp1,0)
      tau2=rsxy(i1,i2,i3,axisp1,1)
-     tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))/(tau1**2+tau2**2)
+     tauSq = tau1**2+tau2**2
+     tau1DotU=(tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey))/tauSq
 
      #If #FORCING == "twilightZone"
        call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1    ,i2    ,i3,0),xy(i1    ,i2    ,i3,1),t, u0,v0,w0)
-       tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/(tau1**2+tau2**2)
+       tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/tauSq
      #Elif #FORCING == "none"
      #Elif #FORCING == "planeWaveBoundaryForcing"
        ! -- Boundary Forcing : if we solve for scattered field directly ----
@@ -104,7 +105,7 @@
        y0=xy(i1,i2,i3,1)
        if( .true. )then ! *new way*
          numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
          u0 = -ubv(ex)
          v0 = -ubv(ey)
 
@@ -116,7 +117,7 @@
          u0=-planeWave2Dext(x0,y0,t)
          v0=-planeWave2Deyt(x0,y0,t)
        end if
-       tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/(tau1**2+tau2**2)
+       tau1DotU = tau1DotU - ( tau1*u0 + tau2*v0 )/tauSq
      #Else
        stop 52785
      #End
@@ -130,6 +131,20 @@
     !   write(*,'(" assignBndry: tau1,tau2=",2e10.2," err tau.u=",e10.2)') tau1,tau2,tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
     !   ! write(*,'(" assignBndry: tau*uv - tau*uv0 = ",e10.2)') tau1*u(i1,i2,i3,ex)+tau2*u(i1,i2,i3,ey) - (tau1*u0 + tau2*v0)
     ! end if
+
+    ! Set tau.Pv = 0 for dispersive models
+    #If #FORCING == "none" 
+     ! For now only do case with no forcing ***finish me***
+     if( dispersionModel.ne.noDispersion )then
+       do iv=0,numberOfPolarizationVectors-1
+         m = iv*nd
+         tau1DotP = (tau1*p(i1,i2,i3,m)+tau2*p(i1,i2,i3,m+1))/tauSq
+         p(i1,i2,i3,m  )=p(i1,i2,i3,m  )-tau1DotP*tau1
+         p(i1,i2,i3,m+1)=p(i1,i2,i3,m+1)-tau1DotP*tau2
+       end do      
+     end if
+    #End
+
    endLoops()
  else
    if( axis.eq.0 )then
@@ -158,7 +173,7 @@
        if( .true. )then ! *new way*
        
          numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,uv) 
+         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,uv,pbv) 
 
        else if( fieldOption.eq.0 )then
          uv(ex)=planeWave2Dex(x0,y0,t)
@@ -172,6 +187,18 @@
      #Else
        stop 52785
      #End
+
+     ! Set tau.Pv = 0 for dispersive models
+     #If #FORCING == "none" 
+      ! For now only do case with no forcing ***finish me***
+      if( dispersionModel.ne.noDispersion )then
+        do iv=0,numberOfPolarizationVectors-1
+          m = iv*nd + (1-axis) ! tangential component
+          p(i1,i2,i3,m  )=0.
+        end do      
+      end if
+     #End
+
    endLoops()
  end if
 
@@ -218,7 +245,7 @@
        if( .true. )then ! *new way*
        
          numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv) 
+         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv) 
          u0=-ubv(ex)
          v0=-ubv(ey)
          w0=-ubv(ez)
@@ -240,6 +267,23 @@
      #Else
        stop 52784
      #End
+
+
+     ! Set tau.Pv = 0 for dispersive models
+     #If #FORCING == "none" 
+      ! For now only do case with no forcing ***finish me***
+      if( dispersionModel.ne.noDispersion )then
+        do iv=0,numberOfPolarizationVectors-1
+          m = iv*nd
+          nDotP = an(0)*p(i1,i2,i3,m)+an(1)*p(i1,i2,i3,m+1)+an(2)*p(i1,i2,i3,m+2)
+          ! set tangential components to zero by eliminating all but the normal component
+          p(i1,i2,i3,m  )=nDotP*an(0)
+          p(i1,i2,i3,m+1)=nDotP*an(1)
+          p(i1,i2,i3,m+2)=nDotP*an(2)
+        end do      
+      end if
+    #End
+
 
      ! end if
    endLoops()
@@ -272,7 +316,7 @@
        if( .true. )then ! *new way*
        
          numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv) 
+         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv) 
          u0=-ubv(ex)
          v0=-ubv(ey)
          w0=-ubv(ez)
@@ -337,7 +381,7 @@
        if( .true. )then ! *new way*
        
          numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,uv) 
+         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,uv,pbv) 
 
        else if( fieldOption.eq.0 )then
          uv(ex)=-planeWave3Dex(x0,y0,z0,t)
@@ -354,6 +398,20 @@
      #Else
        stop 52785
      #End
+
+     ! Set tau.Pv = 0 for dispersive models
+     #If #FORCING == "none" 
+      ! For now only do case with no forcing ***finish me***
+      if( dispersionModel.ne.noDispersion )then
+        do iv=0,numberOfPolarizationVectors-1
+          m1 = iv*nd + mod(axis+1,nd) ! tangential component
+          m2 = iv*nd + mod(axis+2,nd) ! tangential component
+          p(i1,i2,i3,m1)=0.
+          p(i1,i2,i3,m2)=0.
+        end do      
+      end if
+     #End
+
    endLoops()
  end if
 
@@ -3711,7 +3769,7 @@
 #beginMacro CORNERS_MAXWELL(NAME,ORDER)
  subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                   ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                  gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                  gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                   bc, boundaryCondition, ipar, rpar, ierr )
 ! ===================================================================================
 !  Optimised Boundary conditions for Maxwell's Equations.
@@ -3731,6 +3789,8 @@
  integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+ real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+ real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
  integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
 
  integer ipar(0:*),boundaryCondition(0:1,0:2)
@@ -3748,6 +3808,7 @@
  real dt,kx,ky,kz,eps,mu,c,cc,twoPi,slowStartInterval,ssf,ssft,ssftt,ssfttt,ssftttt,tt
 
  real dr(0:2), dx(0:2), t, uv(0:5), uvm(0:5), uv0(0:5), uvp(0:5), uvm2(0:5), uvp2(0:5), ubv(0:5) 
+
  real uvmm(0:2),uvzm(0:2),uvpm(0:2)
  real uvmz(0:2),uvzz(0:2),uvpz(0:2)
  real uvmp(0:2),uvzp(0:2),uvpp(0:2)
@@ -3780,7 +3841,7 @@
  real tau11t,tau12t,tau13t, tau21t,tau22t,tau23t
  real tau1u,tau2u,tau1Up1,tau1Up2,tau1Up3,tau2Up1,tau2Up2,tau2Up3
 
- real tau1Dotu,tau2Dotu,tauU,tauUp1,tauUp2,tauUp3,ttu1,ttu2
+ real tau1Dotu,tau2Dotu,tauU,tauUp1,tauUp2,tauUp3,ttu1,ttu2, tau1DotP, tau2DotP, tauSq
  real ttu11,ttu12,ttu13, ttu21,ttu22,ttu23
 
  real DtTau1DotUvr,DtTau2DotUvr,DsTau1DotUvr,DsTau2DotUvr,tau1DotUtt,tau2DotUtt,Da1DotU,a1DotU
@@ -3869,7 +3930,7 @@
  real aDot1,aDot2,aDotUm2,aDotUm1,aDotU,aDotUp1,aDotUp2,aDotUp3
 
  real xm,ym,x0,y0,z0,xp,yp,um,vm,wm,u0,v0,w0,up,vp,wp
- real an(0:2), anNorm, nDotE, nDotE0, epsX
+ real an(0:2), anNorm, nDotE, nDotE0, epsX, nDotP, nDotP0
 
  real tdu10,tdu01,tdu20,tdu02,gLu,gLv,utt00,vtt00,wtt00
  real cu10,cu01,cu20,cu02,cv10,cv01,cv20,cv02

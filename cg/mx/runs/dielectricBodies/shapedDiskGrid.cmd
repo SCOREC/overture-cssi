@@ -47,13 +47,14 @@ $deltaRadius0=.3; # radius for rgd fixed
 # For IBeam: 
 $centerHeight=.75; $centerWidth=.25;
 $edgeHeight=.25;   $edgeWidth=1.;
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"blf=f"=> \$blf, "prefix=s"=> \$prefix,\
             "cx=f"=>\$cx,"cy=f"=>\$cy,"rgd=s"=> \$rgd,"radX=f"=>\$radX,"radY=f"=>\$radY,"angle=f"=>\$angle,\
             "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,\
-            "edgeHeight=f"=>\$edgeHeight,"edgeWidth=f"=>\$edgeWidth, );
+            "edgeHeight=f"=>\$edgeHeight,"edgeWidth=f"=>\$edgeWidth,"numGhost=i"=>\$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -64,6 +65,8 @@ if( $rgd eq "fixed" ){ $prefix = $prefix . "Fixed"; }
 if( $branch ne 0 ){ $prefix = $prefix . "Branch"; }
 if( $angle ne 0 ){ $prefix = $prefix . "Angle$angle"; }
 $suffix = ".order$order"; 
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $blf ne 1 ){ $suffix .= ".s$blf"; }
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
 if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
@@ -117,7 +120,7 @@ $cmd
   hyperbolic
     forward
     $nDist=($nr-4)*$ds;
-    # if( $shape eq "IBeam" ){ $nr = intmg( 5 + $order/2 );  $nDist=($nr-1)*$ds; }
+    # if( $shape eq "IBeam" ){ $nr = intmg( 8 + $order/2 );  $nDist=($nr-6)*$ds; }
     distance to march $nDist
     $nrm=$nr-1; 
     lines to march $nrm
@@ -237,9 +240,7 @@ generate an overlapping grid
       $ng $ng $ng $ngp $ng $ng
   exit
   #  display intermediate results
-  open graphics
-
-  # 
+  # open graphics
   compute overlap
 #  plot
 #   query a point 

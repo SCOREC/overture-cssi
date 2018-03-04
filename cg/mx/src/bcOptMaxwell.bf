@@ -109,15 +109,15 @@
        numberOfTimeDerivatives=fieldOption+1
        x0=xy(i1,i2,i3,0)
        y0=xy(i1,i2,i3,1)
-       getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv)
+       getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv)
        u0t=-ubv(ex)
        v0t=-ubv(ey)
        if( .false. )then
          ! check time derivative by differences
          numberOfTimeDerivatives=0
          dteps=1.e-4
-         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,uv)
-         getBoundaryForcing2D(x0,y0,t-dteps,numberOfTimeDerivatives,uvm)
+         getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,uv,pbv)
+         getBoundaryForcing2D(x0,y0,t-dteps,numberOfTimeDerivatives,uvm,pbv)
          utDiff = (uv(ey)-uvm(ey))/dteps
          write(*,'(" Ey_t, Ey_t(diff) err=",3e12.3)') ubv(ey),utDiff,ubv(ey)-utDiff
        end if
@@ -486,7 +486,7 @@
 #beginMacro BC_MAXWELL_NULL(NAME,DIM,ORDER)
  subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                   ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                  gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                  gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p, \
                   bc, boundaryCondition, ipar, rpar, ierr )
     write(*,'("ERROR: NAME called!")')
     write(*,'("     : This routine is not implemented or not compiled!")')
@@ -511,7 +511,7 @@
 
       subroutine bcOptMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                               gridIndexRange,dimension,u,f,mask,rsxy, xy,v, \
+                               gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p, \
                                bc, boundaryCondition, ipar, rpar, ierr )
 ! ===================================================================================
 !  Optimised Boundary conditions for Maxwell's Equations.
@@ -532,6 +532,9 @@
       real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
       real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
       real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      ! Polarization vector
+      real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+
       integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
 
       integer ipar(0:*),boundaryCondition(0:1,0:2)
@@ -550,22 +553,22 @@
       if( orderOfAccuracy.eq.2 )then
         call cornersMxOrder2(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                               ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                              gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                              gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                               bc, boundaryCondition, ipar, rpar, ierr )
       else if( orderOfAccuracy.eq.4 )then
         call cornersMxOrder4(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                               ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                              gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                              gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                               bc, boundaryCondition, ipar, rpar, ierr )
       else if( orderOfAccuracy.eq.6 )then
         call cornersMxOrder6(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                               ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                              gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                              gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                               bc, boundaryCondition, ipar, rpar, ierr )
       else if( orderOfAccuracy.eq.8 )then
         call cornersMxOrder8(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                               ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                              gridIndexRange,dimension,u,f,mask,rsxy, xy,\
+                              gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                               bc, boundaryCondition, ipar, rpar, ierr )
       else
          stop 5533
@@ -577,22 +580,22 @@
         if( orderOfAccuracy.eq.2 )then
           call bcOptMaxwell2dOrder2(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.4 )then
           call bcOptMaxwell2dOrder4(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.6 )then
           call bcOptMaxwell2dOrder6(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.8 )then
           call bcOptMaxwell2dOrder8(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else
           stop 5533
@@ -601,22 +604,22 @@
         if( orderOfAccuracy.eq.2 )then
           call bcOptMaxwell3dOrder2(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.4 )then
           call bcOptMaxwell3dOrder4(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.6 )then
           call bcOptMaxwell3dOrder6(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else if( orderOfAccuracy.eq.8 )then
           call bcOptMaxwell3dOrder8(nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                     ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,\
+                                    gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p,\
                                     bc, boundaryCondition, ipar, rpar, ierr )
         else
           stop 5533

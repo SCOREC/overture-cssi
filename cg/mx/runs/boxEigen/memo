@@ -1,4 +1,18 @@
 **********************************
+****** March 4, 2018
+
+SET TANGENTIAL COMPONENTS OF P to zero on PEC Boundaries
+
+
+BOX -- 
+cgmx -noplot boxEigen -g=box2.order2 -mx=1 -my=1 -tf=.5 -dm=gdm -a0=1 -a1=1 -b0=1. -b1=1. -go=og
+
+--SQUARE
+cgmx -noplot boxEigen -g=square32.order4 -mx=4 -my=4 -tf=.5 -tp=.01 -dm=gdm -a0=1 -a1=0 -b0=0. -b1=1. -go=og
+
+cgmx -noplot boxEigen -g=square32.order2 -mx=4 -my=4 -tf=.5 -tp=.01 -dm=gdm -a0=1 -a1=0 -b0=0. -b1=1. -go=og
+
+**********************************
 ****** Feb 9, 2018
 
 

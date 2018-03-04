@@ -159,7 +159,8 @@ c To include derivatives of rx use OPTION=RX
 ! 
 !  x,y,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors fo for dispersive models
 ! --------------------------------------------------------------------
 
 ! --------------------------------------------------------------------
@@ -167,7 +168,8 @@ c To include derivatives of rx use OPTION=RX
 ! 
 !  x,y,z,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubv(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors fo for dispersive models
 ! --------------------------------------------------------------------
 
 
@@ -461,7 +463,8 @@ c To include derivatives of rx use OPTION=RX
 ! 
 !  x,y,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors for dispersive models
 ! --------------------------------------------------------------------
 
 
@@ -470,7 +473,8 @@ c To include derivatives of rx use OPTION=RX
 ! 
 !  x,y,z,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors for dispersive models
 ! --------------------------------------------------------------------
 
 

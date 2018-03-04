@@ -564,12 +564,12 @@ outputUserDefinedProbes( int current, real t, real dt, int stepNumber )
                boxIndexRange(0,1),boxIndexRange(1,1), 
                boxIndexRange(0,2),boxIndexRange(1,2),probeGrid);
       }
-      if( (stepNumber % 10 )==0  )
+      if( stepNumber <101 && (stepNumber % 10 )==0 )
       {
         // printF(" a11=%g, a12=%g, a22=%g, f1=%g, f2=%g det=%9.2e kx=%g\n",a11,a12,a22,f1,f2,det,kx);
       
         if( reflection )
-          printF(" relection probe:    t=%9.3e, R = (%8.6g,%8.6g) |R|=%8.6g (step=%i)\n",
+          printF(" reflection probe:    t=%9.3e, R = (%8.6g,%8.6g) |R|=%8.6g (step=%i)\n",
                  t,Tr,Ti,sqrt(Tr*Tr+Ti*Ti),stepNumber);
         else
           printF(" transmission probe: t=%9.3e, T = (%8.6g,%8.6g) |T|=%8.6g (step=%i) \n",

@@ -242,17 +242,17 @@
    y0=xy(i1,i2,i3,1)
    if( .true. )then ! *new way*
      numberOfTimeDerivatives=1+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      ut0 = -ubv(ex)
      vt0 = -ubv(ey)
 
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      utt00 = -ubv(ex)
      vtt00 = -ubv(ey)
 
      numberOfTimeDerivatives=3+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      uttt0 = -ubv(ex)
      vttt0 = -ubv(ey)
 
@@ -283,12 +283,12 @@
    y0=xy(i1+js1,i2+js2,i3,1)
    if( .true. )then ! *new way*
      numberOfTimeDerivatives=1+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      utp1 = -ubv(ex)
      vtp1 = -ubv(ey)
 
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      uttp1 = -ubv(ex)
      vttp1 = -ubv(ey)
 
@@ -309,12 +309,12 @@
    y0=xy(i1-js1,i2-js2,i3,1)
    if( .true. )then ! *new way*
      numberOfTimeDerivatives=1+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      utm1 = -ubv(ex)
      vtm1 = -ubv(ey)
 
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      uttm1 = -ubv(ex)
      vttm1 = -ubv(ey)
 
@@ -335,7 +335,7 @@
    y0=xy(i1+2*js1,i2+2*js2,i3,1)
    if( .true. )then ! *new way*
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      uttp2 = -ubv(ex)
      vttp2 = -ubv(ey)
 
@@ -352,7 +352,7 @@
    y0=xy(i1-2*js1,i2-2*js2,i3,1)
    if( .true. )then ! *new way*
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv) 
+     getBoundaryForcing2D(x0,y0,t,numberOfTimeDerivatives,ubv,pbv) 
      uttm2 = -ubv(ex)
      vttm2 = -ubv(ey)
 
@@ -2385,7 +2385,7 @@ end if
      y0=xy(i1,i2,i3,1)
      z0=xy(i1,i2,i3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      udd=-ubv(ex)
      vdd=-ubv(ey)
      wdd=-ubv(ez)
@@ -2875,7 +2875,7 @@ else if( .FALSE. .and. mask(i1,i2,i3).lt.0 )then
      y0=xy(i1,i2,i3,1)
      z0=xy(i1,i2,i3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      udd=-ubv(ex)
      vdd=-ubv(ey)
      wdd=-ubv(ez)
@@ -3211,7 +3211,7 @@ end if
      y0=xy(i1,i2,i3,1)
      z0=xy(i1,i2,i3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      udd=-ubv(ex)
      vdd=-ubv(ey)
      wdd=-ubv(ez)
@@ -3220,7 +3220,7 @@ end if
      y0=xy(i1+js1,i2+js2,i3+js3,1)
      z0=xy(i1+js1,i2+js2,i3+js3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      uddp1=-ubv(ex)
      vddp1=-ubv(ey)
      wddp1=-ubv(ez)
@@ -3229,7 +3229,7 @@ end if
      y0=xy(i1-js1,i2-js2,i3-js3,1)
      z0=xy(i1-js1,i2-js2,i3-js3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      uddm1=-ubv(ex)
      vddm1=-ubv(ey)
      wddm1=-ubv(ez)
@@ -3249,7 +3249,7 @@ end if
      y0=xy(i1+ks1,i2+ks2,i3+ks3,1)
      z0=xy(i1+ks1,i2+ks2,i3+ks3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      uddp1=-ubv(ex)
      vddp1=-ubv(ey)
      wddp1=-ubv(ez)
@@ -3258,7 +3258,7 @@ end if
      y0=xy(i1-ks1,i2-ks2,i3-ks3,1)
      z0=xy(i1-ks1,i2-ks2,i3-ks3,2)
      numberOfTimeDerivatives=2+fieldOption
-     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv)
+     getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,ubv,pbv)
      uddm1=-ubv(ex)
      vddm1=-ubv(ey)
      wddm1=-ubv(ez)

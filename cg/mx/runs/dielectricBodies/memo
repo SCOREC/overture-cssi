@@ -1,7 +1,39 @@
 **************************************
+******* March 3, 2017
+
+TEST SOSUP DISSIPATION -- START SIMPLER
+
+PROBLEM FOUND -- wrong options in cmd file 
+
+
+ADD SOSUP DISSIPATION  -- WORKS NOW!
+cgmx -noplot dielectricBodies -g=IBeamGride8.order2.hdf -eps1=4 -eps2=1. -kx=.5 -diss=0. -useSosupDissipation=1 -tp=.5 -tf=20 -rbc=abcEM2 -go=og
+
+DISK- SD *trouble ** Why? --> OK NOW FIXED SOSUP DISS PARAMETERS!
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -diss=0. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -xb=-2 -go=og
+
+DISK - AD = OK
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -diss=4. -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -xb=-2 -go=og
+
+**************************************
 ******* March 2, 2017
 
-START on I-BEAM grid 
+ADD SOSUP DISSIPATION *trouble*
+cgmx -noplot dielectricBodies -g=IBeamGride8.order2.hdf -eps1=4 -eps2=1. -kx=.5 -diss=0. -useSosupDissipation=1 -tp=.01 -tf=10 -rbc=abcEM2 -go=og
+
+cgmx -noplot dielectricBodies -g=IBeamGride16.order4.ng3.hdf -eps1=4 -eps2=1. -kx=.5 -diss=0. -useSosupDissipation=1 -tp=.01 -tf=10 -rbc=abcEM2 -go=og
+
+
+TEST  - OK
+cgmx -noplot dielectricBodies -g=IBeamGride8.order2.hdf -eps1=4 -eps2=1. -kx=.5 -diss=1. -tp=.01 -tf=10 -rbc=abcEM2 -go=og
+
+ORDER=2 TROUBLE --> fixed ( etrap P in interface 3d was done even when non-dispersive)
+cgmx -noplot dielectricBodies -g=ellipticalGride4.order2.hdf -eps1=4 -eps2=1. -kx=.25 -diss=8. -tp=.01 -tf=10 -rbc=rbcNonLocal -go=og
+
+cgmx -noplot dielectricBodies -g=ellipticalGride8.order4.hdf -eps1=4 -eps2=1. -kx=.25 -diss=8. -tp=.01 -tf=10 -rbc=rbcNonLocal -go=og
+
+
+START on 2D I-BEAM grid 
 
 ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=e -order=2 -factor=8
 ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=e -order=2 -factor=16

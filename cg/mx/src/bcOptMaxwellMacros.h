@@ -509,9 +509,10 @@ do i1=nn1a,nn1b
 ! 
 !  x,y,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubc(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors fo for dispersive models
 ! --------------------------------------------------------------------
-#beginMacro getBoundaryForcing2D(x,y,t,numberOfTimeDerivatives,ubv)
+#beginMacro getBoundaryForcing2D(x,y,t,numberOfTimeDerivatives,ubv,pbv)
   if( boundaryForcingOption.eq.noBoundaryForcing )then
   else if( boundaryForcingOption.eq.planeWaveBoundaryForcing )then
     if( dispersionModel.eq.noDispersion )then
@@ -523,7 +524,7 @@ do i1=nn1a,nn1b
       ! if( .true. )then
       !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
       ! end if
-      getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
+      getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv,pbv)
     end if
   else if(  boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then
     getChirpedPlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
@@ -537,15 +538,16 @@ do i1=nn1a,nn1b
 ! 
 !  x,y,z,t (input) : point to evaluate at 
 !  numberOfTimeDerivatives : evaluate this time derivative
-!  ubc(.)  (output) : ubc(ex), etc. 
+!  ubv(.)  (output) : ubv(ex), etc. 
+!  pbv(0:2,0...)  (output) : polarization vectors fo for dispersive models
 ! --------------------------------------------------------------------
-#beginMacro getBoundaryForcing3D(x,y,z,t,numberOfTimeDerivatives,ubv)
+#beginMacro getBoundaryForcing3D(x,y,z,t,numberOfTimeDerivatives,ubv,pbv)
   if( boundaryForcingOption.eq.noBoundaryForcing )then
   else if( boundaryForcingOption.eq.planeWaveBoundaryForcing )then
     if( dispersionModel.eq.noDispersion )then
       getPlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv)
     else
-      getDispersivePlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv)
+      getDispersivePlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv,pbv)
     end if
   else if(  boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then
     getChirpedPlaneWave3D(x,y,z,t,numberOfTimeDerivatives,ubv)
@@ -878,7 +880,7 @@ do i1=nn1a,nn1b
 #beginMacro BC_MAXWELL(NAME,DIM,ORDER)
  subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                   ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
-                  gridIndexRange,dimension,u,f,mask,rsxy, xy,v, \
+                  gridIndexRange,dimension,u,f,mask,rsxy, xy,v,p, \
                   bc, boundaryCondition, ipar, rpar, ierr )
 ! ===============================================================================================
 !  Optimised Boundary conditions for Maxwells Equations.
@@ -904,6 +906,8 @@ do i1=nn1a,nn1b
  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
  real v(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+ real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+
  integer gridIndexRange(0:1,0:2),dimension(0:1,0:2)
 
  integer ipar(0:*),boundaryCondition(0:1,0:2)

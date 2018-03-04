@@ -61,6 +61,7 @@ outputHeader()
     }
     else
     {
+      fPrintF(file,"\n");
       fPrintF(file," Use SOSUP dissipation, scaled by a factor %g (uses wider stencil and 1/h coefficient).\n",
                     sosupParameter);
       fPrintF(file," sosupDissipationOption=%i: 0=apply dissipation with update,"
@@ -68,6 +69,7 @@ outputHeader()
       
       fPrintF(file," sosupDissipationFrequency=%i: apply sosup dissipation every this many steps.",
                    sosupDissipationFrequency);
+      fPrintF(file,"\n");
     }
     
     if( applyFilter )

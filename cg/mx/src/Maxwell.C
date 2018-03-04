@@ -199,7 +199,7 @@ Maxwell:: Maxwell()
   // sosupDissipationOption:
   //         0 = apply dissipation when updating the solution
   //         1 = apply dissipation in a separate stage
-  parameters.dbase.put<int>("sosupDissipationOption")=0; 
+  parameters.dbase.put<int>("sosupDissipationOption")=1; 
 
   // apply sosup dissipation every this many steps: 
   parameters.dbase.put<int>("sosupDissipationFrequency")=1; 
