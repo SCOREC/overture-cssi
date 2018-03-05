@@ -42,6 +42,7 @@ $dm="none"; # dispersive model
 $errorNorm=0; $method="NFDTD"; 
 $alwaysCompute=1;
 $gStart=2; # start at this grid factor 
+$numberOfDimensions=2; 
 #
 GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"interp=s"=>\$interp,"diss=f"=>\$diss,\
             "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"tp=f"=>\$tp,\
@@ -59,29 +60,40 @@ if( $b1[0] eq "" ){ @b1=(1,0,0,0); }
 if( $cg =~ /square/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; $gStart=16; $name="squareEigen"; }
 #
 # eigenfunctions of a box:
-if( $cg =~ /box*/ || $cg =~ /nonBox*/ || $cg =~ /unitBox*/ || $cg =~ /unitNonBox*/ || $cg =~ /refineBox*/ || $cg =~ /refineNonBox*/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; $name="boxEigen"; }
+if( $cg =~ /box*/ || $cg =~ /nonBox*/ || $cg =~ /unitBox*/ || $cg =~ /unitNonBox*/ || $cg =~ /refineBox*/ || $cg =~ /refineNonBox*/ ){ $cmdFile = "../../runs/boxEigen/boxEigen"; $name="boxEigen"; $numberOfDimensions=3; }
 if( $cg =~ /box*/ ){ $name="boxEigen"; }
 if( $cg =~ /nonBox*/ ){ $name="nonBoxEigen"; }
 #
 #
-if( $cg =~ /tube*/ || $cg =~ /splitTube*/  || $cg =~ /refineTube*/  ){ $cmdFile = "../cylEigen/cylEigen"; }
+if( $cg =~ /tube*/ || $cg =~ /splitTube*/  || $cg =~ /refineTube*/  ){ $cmdFile = "../cylEigen/cylEigen"; $numberOfDimensions=3; }
 $caseName="$name$method\Order$order"; 
 if( $dm ne "none" ){ $caseName .= "GDMNp$npv"; }
 if( $errorNorm eq 0 ){ $normName = "max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\
    elsif( $errorNorm eq 2 ){ $normName = "L2"; }else{ $normName="UnknownNorm"; }
 $caseName .= $normName . "Norm";
-$numberOfComponents=4;
-if( $method eq "sosup" ){ $numberOfComponents=7; }
+# ---
+$numberOfComponents=5;
+if( $method eq "sosup" ){ $numberOfComponents=8; }
 # define the table heading and caption
-if( $numberOfComponents eq 4 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #
-if( $numberOfComponents eq 7 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 8  && $numberOfDimensions eq 2 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$   \&  \$\\Ev\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$    \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#
+if( $numberOfComponents eq 8  && $numberOfDimensions eq 3 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&    \&   \$\\Ev\$ \$Ex_t\$ \&  \$Ey_t\$ \& \$Ez_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #  -- Dispersive model 2D ---
-if( $numberOfComponents eq 4  && $dm ne "none" )\
-  { $numberOfComponents=5; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$   \&    \$H_z\$    \&     \$|\\Pv|\$   \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 && $dm ne "none" )\
+  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$H_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#  -- Dispersive model 3D ---
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
+  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 # 
+#
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 $caption= "\\caption\{Cgmx, $name, CG=$cg, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, m=$m,  n=$n, mk=$mk, mx=$mx, my=$my, mz=$mz, cfl=\$$cfl\$, diss=\$$diss\$, useSosupDissipation=$useSosupDissipation, cons=$cons, dissOrder=\$$dissOrder\$, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]), $date}\\label\{table:$name" . $method . "Order$order$normName}"; 

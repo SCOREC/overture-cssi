@@ -62,24 +62,31 @@ if( $npv > 1 ){ $caseName.="Np$npv"; }
 if( $errorNorm eq 0 ){ $normName = "max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\
    elsif( $errorNorm eq 2 ){ $normName = "L2"; }else{ $normName="UnknownNorm"; }
 $caseName .= $normName . "Norm";
-$numberOfComponents=4;
-if( $method eq "sosup" ){ $numberOfComponents=7; }
+$numberOfComponents=5;
+#
+#  ----
+if( $method eq "sosup" ){ $numberOfComponents=8; }
 # define the table heading and caption
-if( $numberOfComponents eq 4 && $numberOfDimensions eq 2 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
-if( $numberOfComponents eq 7  && $numberOfDimensions eq 2 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
-if( $numberOfComponents eq 4 && $numberOfDimensions eq 3 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
-if( $numberOfComponents eq 7  && $numberOfDimensions eq 3 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Ez_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#
+if( $numberOfComponents eq 8  && $numberOfDimensions eq 2 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$   \&  \$\\Ev\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 )\
+  { $title= "grid  \& N \&     \$E_x\$   \&     \$E_y\$   \&    \$E_z\$    \&    \$\\Ev\$  \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#
+if( $numberOfComponents eq 8  && $numberOfDimensions eq 3 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&    \&   \$\\Ev\$ \$Ex_t\$ \&  \$Ey_t\$ \& \$Ez_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #  -- Dispersive model 2D ---
-if( $numberOfComponents eq 4 && $numberOfDimensions eq 2 && $dm ne "none" )\
-  { $numberOfComponents=5; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$   \&    \$H_z\$    \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 && $dm ne "none" )\
+  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$H_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #  -- Dispersive model 3D ---
-if( $numberOfComponents eq 4 && $numberOfDimensions eq 3 && $dm ne "none" )\
-  { $numberOfComponents=5; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$   \&    \$E_z\$    \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
+  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 # 
+# ----
+#
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, m=$m,  n=$n, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, useSosupDissipation=$useSosupDissipation, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]), $date}\\label\{table:$name" . $method . "Order$order$normName}"; 

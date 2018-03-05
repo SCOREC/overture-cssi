@@ -246,11 +246,14 @@ outputResults( int current, real t, real dt )
   // int numberOfComponents= C.length(); 
   // int numberToOutput= numberOfComponents+1; // include div(E)
 
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+
   const int & numberOfComponents= dbase.get<int>("numberOfComponents");
   Range C = numberOfComponents;
 
   const int & numberOfErrorComponents= dbase.get<int>("numberOfErrorComponents");
-  int numberToOutput= numberOfErrorComponents+1; // include div(E)
+  int numberToOutput= numberOfErrorComponents+2; // include |Ev| and div(E)
 
   // For dispersive models keep track of the maximum errors in the polarization vector per domain  
   const RealArray & polarizationNorm  =  dbase.get<RealArray>("polarizationNorm");
@@ -279,6 +282,12 @@ outputResults( int current, real t, real dt )
       // if( uc<checkFileCutoff(c) ) uc=0.;
       fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
     }
+
+    // Output vector error in E too (*wdh* March 4, 2018)
+    Range Ec=cg.numberOfDimensions();
+    err = max(maximumError(Ec));
+    uc  = max(solutionNorm(Ec));
+    fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
 
     if( dispersionModel != noDispersion )
     {

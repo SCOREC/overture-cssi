@@ -5487,13 +5487,17 @@ c===============================================================================
                                pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
                                pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
                              end do
-                         f1 = 0
-                         f4 = 0
-                         f5 = 0
+                         f1 = 0.
+                         f4 = 0.
+                         f5 = 0.
+                         ! *wdh* March 4, 2018: initialize this:
+                         fe00=0.
                          do iv=0,numberOfPolarizationVectors-1
-                           f2v(iv) = 0
-                           f3v(iv) = 0
-                           f6v(iv) = 0
+                           f2v(iv) = 0.
+                           f3v(iv) = 0.
+                           f6v(iv) = 0.
+                           ! *wdh* March 4, 2018: initialize this:
+                           fp00v(iv)=0.
                            ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") f2,f3,f6=",3e16.8)') i1,i2,m,f2v(iv),f3v(iv),f6v(iv)
                          end do
                          if( addForcing.ne.0 )then
@@ -5726,7 +5730,7 @@ c===============================================================================
      & rhspv(iv)
                         end do
                         ! End of fourth order code
-                        ! End of fourth order code
+                   ! End of fourth order code
                  end do !m=0,nd-1
                      end if
                    end do
