@@ -74,11 +74,11 @@ GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 #    changed to be inhomogeneous: 
 planeWaveBoundaryForcing
 # ====  Initial condition ====
-# zeroInitialCondition
 # planeWaveInitialCondition
 # planeWaveScatteredFieldInitialCondition
 if( $ic eq "exact" ){ $cmd="planeWaveScatteredFieldInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
 $cmd
+# zeroInitialCondition
 # ====
 scatteringFromASphereKnownSolution
 #

@@ -20,6 +20,15 @@ elasticPiston:
 	$(ogen) -noplot elasticPistonGrid -factor=8 -per=1
 	$(ogen) -noplot elasticPistonGrid -factor=16 -per=1
 
+# coarse grid in x: 
+elasticPistonX:
+	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -per=1 -factor=1 
+	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -per=1 -factor=2 
+	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -per=1 -factor=4 
+	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -per=1 -factor=8 
+	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -per=1 -factor=16
+
+
 radial:
 	$(ogen) -noplot radialElasticPistonGrid -interp=e -factor=1
 	$(ogen) -noplot radialElasticPistonGrid -interp=e -factor=2

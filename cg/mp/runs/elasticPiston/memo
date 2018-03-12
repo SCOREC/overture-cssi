@@ -1,4 +1,119 @@
 ********************************
+***** March 8 , 2018
+
+LOOK AT AMP elastic piston -- *trouble* for heavy solid
+
+AMP- COARSE GRID IN X
+cgmp elasticPiston.cmd -g=elasticPistonGridXe4.order2p -method=ins -addedMass=1 -scf=1000 -u0=0. -nu=0.1 -tp=.01 -tf=0.3 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -diss=0.2 -cfl=.9 -useImplicitAmpBCs=1 -debug=7 -go=halt >! amp.out
+
+************************ AMP *****
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.9117e-18,2.3132e-06,1.8634e-03,4.6287e-14,4.6287e-14,3.3689e-03,6.0093e-21,8.1397e-07,], maxNorm(u):[1.91e-18,4.95e-01,1.14e+01,4.63e-14,4.63e-14,3.42e+01,6.01e-21,4.95e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.140e-07 at t=1.000e-02
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[1.61e-05,9.04e-16,7.33e-07,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 1.61e-05 9.04e-16 7.33e-07 1.32e-05  2.11e+01 1.00e-02 1.83e+00 
+
+--UDKS--  ERROR IN INTERFACE POSITION = 8.140e-07 at t=1.000e-02
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=2.0000e-02 dt=1.0e-02 maxNorm errors:[1.9212e-17,4.1080e-06,5.9495e-03,4.5242e-14,4.5242e-14,1.5756e-03,7.5860e-20,1.6108e-06,], maxNorm(u):[1.92e-17,4.94e-01,2.28e+01,4.52e-14,4.52e-14,6.83e+01,7.59e-20,9.89e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.611e-06 at t=2.000e-02
+--INS-- determineErrors: t=2.000e-02, maxNorm errors: [p,u,v,T]=[3.60e-05,3.08e-15,1.51e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.020 3.60e-05 3.08e-15 1.51e-06 1.73e-05  4.21e+01 1.00e-02 6.45e+00 
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.611e-06 at t=2.000e-02
+
+++++++++++ AMP: t=.1
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=9==================
+-->t=1.0000e-01 dt=1.1e-02 maxNorm errors:[4.6648e-17,1.6894e-05,1.9717e-02,1.1890e-13,1.1890e-13,3.7346e-02,1.6806e-18,8.5424e-06,], maxNorm(u):[4.66e-17,4.71e-01,1.12e+02,1.19e-13,1.19e-13,3.36e+02,1.68e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=9==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.542e-06 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[7.75e-04,6.59e-14,8.07e-05,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (10 steps)
+   0.100 7.75e-04 6.59e-14 8.07e-05 1.00e-03  2.07e+02 1.11e-02 5.52e+00 
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.542e-06 at t=1.000e-01
+
+
+********************************** TP ***
+cgmp elasticPiston.cmd -g=elasticPistonGridXe4.order2p -method=ins -addedMass=0 -scf=1000 -u0=0. -nu=0.1 -tp=.01 -tf=0.3 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -diss=0.2 -cfl=.9 -useImplicitAmpBCs=0 -debug=1 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.9117e-18,2.3132e-06,1.8634e-03,4.6287e-14,4.6287e-14,3.3689e-03,6.0093e-21,8.1397e-07,], maxNorm(u):[1.91e-18,4.95e-01,1.14e+01,4.63e-14,4.63e-14,3.42e+01,6.01e-21,4.95e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.140e-07 at t=1.000e-02
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[1.45e-04,7.31e-16,8.18e-07,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 1.45e-04 7.31e-16 8.18e-07 8.12e-07  2.11e+01 1.00e-02 1.83e+00 
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.140e-07 at t=1.000e-02
+
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=2.0000e-02 dt=1.0e-02 maxNorm errors:[1.9212e-17,4.1265e-06,5.9021e-03,4.5242e-14,4.5242e-14,1.7262e-03,7.5860e-20,1.6183e-06,], maxNorm(u):[1.92e-17,4.94e-01,2.28e+01,4.52e-14,4.52e-14,6.83e+01,7.59e-20,9.89e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.618e-06 at t=2.000e-02
+--INS-- determineErrors: t=2.000e-02, maxNorm errors: [p,u,v,T]=[3.25e-04,2.90e-15,3.37e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.020 3.25e-04 2.90e-15 3.37e-06 1.89e-06  4.21e+01 1.00e-02 3.07e+01 
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=2.000e-02, yI=9.891e-03 vI=4.939e-01,
+        rho=1.000e+00 aI=-9.762e-02, p0=-4.201e+01, pI=-4.211e+01, pAmp=9.762e-02, pIt=-2.103e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.618e-06 at t=2.000e-02
+
+++++++++ TP t=.1
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=9==================
+-->t=1.0000e-01 dt=1.1e-02 maxNorm errors:[6.2527e-17,2.8160e-05,2.2004e-02,7.7654e-14,7.7654e-14,3.7346e-02,4.0165e-18,8.0440e-06,], maxNorm(u):[6.25e-17,4.71e-01,1.12e+02,7.77e-14,7.77e-14,3.36e+02,4.02e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=9==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.044e-06 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[5.26e-04,4.64e-14,2.82e-05,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (10 steps)
+   0.100 5.26e-04 4.64e-14 2.82e-05 3.53e-05  2.07e+02 1.11e-02 5.47e+00 
+ --UDKS--  ERROR IN INTERFACE POSITION = 8.044e-06 at t=1.000e-01
+
+
+
+cgmp elasticPiston.cmd -g=elasticPistonGride4.order2p -method=ins -addedMass=1 -scf=1000 -u0=0. -nu=0.1 -tp=.01 -tf=0.3 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -diss=0.2 -cfl=.9 -useImplicitAmpBCs=1 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=1.0000e-02 dt=5.0e-03 maxNorm errors:[1.0272e-16,2.5878e-06,2.0672e-03,4.5385e-13,4.5385e-13,1.8940e-03,1.8589e-19,1.9879e-07,], maxNorm(u):[1.03e-16,4.95e-01,1.14e+01,4.54e-13,4.54e-13,3.42e+01,1.86e-19,4.95e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+--INS-- userDefinedKnownSolution: bulkSolidPiston, t=1.000e-02, yI=4.948e-03 vI=4.946e-01,
+        rho=1.000e+00 aI=-4.883e-02, p0=-2.102e+01, pI=-2.106e+01, pAmp=4.883e-02, pIt=-2.106e+03
+ --UDKS--  ERROR IN INTERFACE POSITION = 1.988e-07 at t=1.000e-02
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[3.39e-06,2.77e-15,1.07e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.010 3.39e-06 2.77e-15 1.07e-06 1.52e-05  2.11e+01 5.00e-03 9.68e+00 
+
+********************************
 ***** Feb 21-23, 2018
 
 CHANGED GRID SPACING ON solid grid for elasticPistonGrid

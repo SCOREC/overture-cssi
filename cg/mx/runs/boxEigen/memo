@@ -1,3 +1,53 @@
+***********************
+***** March 12, 2018
+
+TEST high modes -- is there an eigevalue near sqrt(b0)
+
+CHOOSE GDM MODE 0
+cgmx -noplot boxEigen -g=square128.order4 -mx=8 -my=8 -tp=.1 -tf=1 -dm=gdm -modeGDM=0 -a0=1 -a1=0 -b0=9.8606 -b1=0. -go=og
+
+
+
+pi^2 = 9.8696
+cgmx -noplot boxEigen -g=square128.order4 -mx=8 -my=8 -tp=.1 -tf=1 -dm=gdm -a0=1 -a1=0 -b0=9.8606 -b1=0. -go=og
+ evalEigGDM: i=  0 s=(  5.551115123126E-17,  3.138907380741E+00)
+ evalEigGDM: i=  1 s=(  5.551115123126E-17, -3.138907380741E+00)
+ evalEigGDM: i=  2 s=( -8.881784197001E-16,  3.555723869755E+01)
+ evalEigGDM: i=  3 s=( -8.881784197001E-16, -3.555723869755E+01)
+
+b0= pi^2
+
+
+cgmx -noplot boxEigen -g=square128.order4 -mx=8 -my=8 -tp=.1 -tf=1 -dm=gdm -modeGDM=0 -a0=1 -a1=0 -b0=100 -b1=0. -go=og
+ evalEigGDM: input: mode=     0
+ evalEigGDM: i=  0 s=(  0.000000000000E+00,  9.995705003089E+00)
+ evalEigGDM: i=  1 s=(  0.000000000000E+00, -9.995705003089E+00)
+ evalEigGDM: i=  2 s=(  0.000000000000E+00,  3.555833579951E+01)
+ evalEigGDM: i=  3 s=(  0.000000000000E+00, -3.555833579951E+01)
+--DMP-- GDM: s=(  0.000000000000e+00,  9.995705003089e+00) :
+  j=0 a0=1.000e+00 a1=0.000e+00 b0=1.000e+02 b1=0.000e+00 psir=  1.164395244831e+01 psii=  0.000000000000e+00
+
+
+cgmx -noplot boxEigen -g=square128.order4 -mx=8 -my=8 -tp=.1 -tf=1 -dm=gdm -modeGDM=0 -a0=1 -a1=0 -b0=39.4784 -b1=0. -go=og
+     
+bo = (2*pi)^2 = 39.4784: 
+ evalEigGDM: input: mode=     0
+ evalEigGDM: i=  0 s=( -7.771561172376E-16,  6.280618531260E+00)
+ evalEigGDM: i=  1 s=( -7.771561172376E-16, -6.280618531260E+00)
+ evalEigGDM: i=  2 s=( -1.776356839400E-15,  3.555758138856E+01)
+ evalEigGDM: i=  3 s=( -1.776356839400E-15, -3.555758138856E+01)
+--DMP-- GDM: s=( -7.771561172376e-16,  6.280618531260e+00) :
+  j=0 a0=1.000e+00 a1=0.000e+00 b0=3.948e+01 b1=0.000e+00 psir=  3.102616099448e+01 psii=  9.397163111050e-12
+
+
+
+***********************
+***** March 6, 2018
+
+PLOTS FOR PAPER
+
+cgmx -noplot boxEigen -g=square128.order4 -mx=4 -my=4 -tp=.1 -tf=1 -dm=gdm -a0=1 -a1=0 -b0=0. -b1=1. -show=squareEigen128.show -go=go >! squareEigen128.out
+
 **********************************
 ****** March 4, 2018
 

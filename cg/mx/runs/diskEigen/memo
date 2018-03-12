@@ -1,4 +1,36 @@
 ***********************
+***** March 12, 2017
+
+LOOK AT GDM MODE 0 
+cgmx diskeigen -g=sice16.order2.hdf -dm=gdm -npv=2 -a0=1 .5 -a1=.0 .2 -b0=.3 .4 -b1=0 .25 -m=8 -n=8 -cons=0 -diss=.0 -tp=.1 -tf=1 -modeGDM=0 -go=halt
+
+NOTE -- for modeGDM=0 : psi is very large
+
+ evalEigGDM: i=  0 s=( -8.187443883046E-08,  5.475290217926E-01)
+ evalEigGDM: i=  1 s=( -8.187443883046E-08, -5.475290217926E-01)
+ evalEigGDM: i=  2 s=( -1.249319736728E-01,  6.198911592919E-01)
+ evalEigGDM: i=  3 s=( -1.249319736728E-01, -6.198911592919E-01)
+ evalEigGDM: i=  4 s=( -1.000679444527E-01,  3.763921612579E+01)
+ evalEigGDM: i=  5 s=( -1.000679444527E-01, -3.763921612579E+01)
+--DMP-- GDM: s=( -8.187443883046e-08,  5.475290217926e-01) :
+  j=0 a0=1.000e+00 a1=0.000e+00 b0=3.000e-01 b1=0.000e+00 psir=  4.717641318714e+03 psii=  1.995424915219e+00
+  j=1 a0=5.000e-01 a1=2.000e-01 b0=4.000e-01 b1=2.500e-01 psir=  2.261892284702e+00 psii= -1.996836811421e+00
+--DISK-EIGEN-- (dispersive) t= 0.000e+00, sr=-8.18744e-08, si=0.547529 psir[0]=4717.64 psii[0]=1.99542
+--DISK-EIGEN-- (dispersive) t= 0.000e+00, sr=-8.18744e-08, si=0.547529 psir[0]=4717.64 psii[0]=1.99542
+
+
+cgmx diskeigen -g=sice16.order2.hdf -dm=gdm -npv=2 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -m=4 -n=4 -cons=0 -diss=.0 -tp=.1 -tf=1 -modeGDM=0 -go=halt
+
+***********************
+***** March 6, 2017
+
+RUN FOR PAPER -- showfile
+cgmx diskeigen -g=sice16.order4.hdf -dm=gdm -npv=2 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -m=2 -n=2 -cons=0 -diss=.0 -tp=.1 -tf=1 -show=diskEigen16Np2.show -go=halt >! diskEigen16Np2.out
+
+cgmx diskeigen -g=sice16.order2.hdf -dm=gdm -npv=2 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -m=2 -n=2 -cons=0 -diss=.0 -tp=.1 -tf=1 -show=diskEigen16Np2.show -go=halt >! diskEigen16Np2.out
+
+
+***********************
 ***** Sept 15, 2017
 
 NPV=2 
