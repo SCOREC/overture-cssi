@@ -1062,6 +1062,8 @@ getUserDefinedDeformingBodyKnownSolution(
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
     const real & mu     = rpar[15];
+    const real & thetaR = rpar[16];
+    const real & muBar  = rpar[17];
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(xLocal);
@@ -1124,14 +1126,14 @@ getUserDefinedDeformingBodyKnownSolution(
 	else if( stateOption==boundaryTraction )
 	  {
             // check me: negative or positive?
-	    state(i1,i2,i3,c0)= -amp*mu*srt*sinTheta;
-	    state(i1,i2,i3,c1)= +amp*mu*srt*cosTheta;
+	    state(i1,i2,i3,c0)= -amp*muBar*srt*sinTheta;
+	    state(i1,i2,i3,c1)= +amp*muBar*srt*cosTheta;
 	  }
 	else if( stateOption==boundaryTractionRate )
 	  {
 	    // traction-rate: 
-	    state(i1,i2,i3,c0)= -amp*mu*sdrt*sinTheta;
-	    state(i1,i2,i3,c1)= +amp*mu*sdrt*cosTheta;
+	    state(i1,i2,i3,c0)= -amp*muBar*sdrt*sinTheta;
+	    state(i1,i2,i3,c1)= +amp*muBar*sdrt*cosTheta;
 	  }
 	else
 	  {
@@ -2074,6 +2076,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & amp    = rpar[14];
       real & mu     = rpar[15];
       real & thetaR = rpar[16];  
+      real & muBar  = rpar[17];
 
       printF("--------------------------------------------------------------------------------\n"
              "------ Exact solution for a parallel flow shearing a bulk elastic solid --------\n\n"
@@ -2090,7 +2093,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              "--------------------------------------------------------------------------------\n"
 	);
 
-      real H, Hbar, rho, rhoBar, muBar;
+      real H, Hbar, rho, rhoBar;
       
       int caseid = 0;
       gi.inputString(answer,"Enter amp, rhoBar\n");
@@ -2122,13 +2125,14 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	muBar  = 1000.0;
 	mu     = 10.0;
 
-        ksr =  3.1395001947369421e+00; ksi =  2.0031082449210376e-02; 
-        kfr =  3.9493879362552758e-01; kfi =  3.9746667653440854e-01; 
-        omegar =  3.1395001947369421e+00; omegai =  2.0031082449210376e-02; 
+        ksr =  3.1395001947395866e+00; ksi =  2.0031082446118849e-02; 
+        kfr =  3.9493879362588946e-01; kfi =  3.9746667653437917e-01; 
+        omegar =  3.1395001947395866e+00; omegai =  2.0031082446118849e-02; 
         ar =  1.0000000000000000e+00; ai =  0.0000000000000000e+00; 
-        br =  1.0461248666343073e-03; bi = -1.0015217309682899e-02; 
-        cr = -1.9614721687308645e-01; ci =  5.6816165177804567e-01; 
-        dr =  1.1961472168730864e+00; di = -5.6816165177804567e-01; 
+        br =  1.0461248653121937e-03; bi = -1.0015217308137262e-02; 
+        cr = -1.9614721669217117e-01; ci =  5.6816165176278211e-01; 
+        dr =  1.1961472166921712e+00; di = -5.6816165176278211e-01; 
+
       }
 
       printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g, thetaR=%f\n",

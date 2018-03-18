@@ -534,9 +534,10 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & amp    = rpar[14];
     const real & mu     = rpar[15];
     const real & thetaR = rpar[16];
+    const real & muBar  = rpar[17];
 
     printF("--SM-- userDefinedKnownSolution: fibShear, t=%9.3e, "
-	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,mu);
+	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,muBar);
 
     // const real cs2 = sqrt((muBar)/rhoBar);
 
@@ -598,7 +599,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       // stresses
       if( assignStress )
       {
-        const real srt = amp*mu*uyr;
+        const real srt = amp*muBar*uyr;
 	u(i1,i2,i3,s11c)=-2.*ct*st*srt;
 	u(i1,i2,i3,s12c)=(SQR(ct)-SQR(st))*srt;
 	u(i1,i2,i3,s21c)=(SQR(ct)-SQR(st))*srt;
