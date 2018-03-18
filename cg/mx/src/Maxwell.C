@@ -3143,64 +3143,76 @@ interactiveUpdate(GL_GraphicsInterface &gi )
         
       }
 
-      
-      int domainStart=-1, domainEnd=-1;
-      if( domainName == "all" )
+      if( true )
       {
-	domainStart=0; domainEnd=cg.numberOfDomains()-1;
+        // *** NEW WAY 
+        int numberOfPolarizationVectors=1;
+        int eqn=0;
+        setDispersionParameters( domainName,numberOfPolarizationVectors,eqn,a0,a1,b0,b1,modeGDM );
       }
       else
       {
-	for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-	{
-	  if( cg.getDomainName(domain)==domainName )
-	  {
-	    printF("--MX-- setting Drude parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
-	    domainStart=domainEnd=domain;
-	    break;
-	  }
-	}
-      }
+        // ******* OLD **
+        
+        int domainStart=-1, domainEnd=-1;
+        if( domainName == "all" )
+        {
+          domainStart=0; domainEnd=cg.numberOfDomains()-1;
+        }
+        else
+        {
+          for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+          {
+            if( cg.getDomainName(domain)==domainName )
+            {
+              printF("--MX-- setting Drude parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+              domainStart=domainEnd=domain;
+              break;
+            }
+          }
+        }
       
-      if( domainStart<0  )
-      {
-	printF("--MX-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
-      }
-      else
-      {
-	// --- Set parameters for the dispersion model ---
-	std::vector<DispersiveMaterialParameters> & dmpVector = 
-	  dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+        if( domainStart<0  )
+        {
+          printF("--MX-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+        }
+        else
+        {
+          // --- Set parameters for the dispersion model ---
 
-	// --- allocate the dispersion material parameters vector ---
-	if( dmpVector.size()<cg.numberOfDomains() )
-	{
-	  dmpVector.resize(cg.numberOfDomains());
-	}
+          std::vector<DispersiveMaterialParameters> & dmpVector = 
+            dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
 
-	for( int domain=domainStart; domain<=domainEnd; domain++ )
-	{
-	  DispersiveMaterialParameters & dmp = dmpVector[domain];
-          if( setDrude )
+          // --- allocate the dispersion material parameters vector ---
+          if( dmpVector.size()<cg.numberOfDomains() )
           {
-            printF(" Setting Drude parameters gamma=%9.3e, omegap=%9.3e for domain=[%s]\n",
-                   gamma,omegap,(const char*)cg.getDomainName(domain));
-          }
-          else
-          {
-            printF(" Setting GDM parameters a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e for domain=[%s]\n",
-		 a0,a1,b0,b1,(const char*)cg.getDomainName(domain));
+            dmpVector.resize(cg.numberOfDomains());
           }
 
-          // real a0=omegap, a1=0., b0=0., b1=gamma;
-          dmp.numberOfPolarizationVectors=1; // Do this for now 
-          dmp.setParameters( a0,a1,b0,b1 );
+          for( int domain=domainStart; domain<=domainEnd; domain++ )
+          {
+            DispersiveMaterialParameters & dmp = dmpVector[domain];
+            if( setDrude )
+            {
+              printF(" Setting Drude parameters gamma=%9.3e, omegap=%9.3e for domain=[%s]\n",
+                     gamma,omegap,(const char*)cg.getDomainName(domain));
+            }
+            else
+            {
+              printF(" Setting GDM parameters a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e for domain=[%s]\n",
+                     a0,a1,b0,b1,(const char*)cg.getDomainName(domain));
+            }
+
+            // real a0=omegap, a1=0., b0=0., b1=gamma;
+            dmp.numberOfPolarizationVectors=1; // Do this for now 
+            dmp.setParameters( a0,a1,b0,b1 );
           
-          // old way: 
-	  dmp.gamma=gamma;
-	  dmp.omegap=omegap;
-	}
-      }
+            // old way: 
+            dmp.gamma=gamma;
+            dmp.omegap=omegap;
+          }
+        }
+      } // END OLD
       
       pdeParametersDialog.setTextLabel("Drude params",sPrintF(textStrings[nt], "%g %g %s (gamma,omegap,domain-name)",
 							      gamma,omegap,"all"));

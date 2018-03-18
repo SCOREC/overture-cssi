@@ -40,6 +40,11 @@ plot.bC
   - getTimeSteppingLabel( real dt, aString & label ) const
   - plot(int current, real t, real dt )
 
+saveShow.C
+ - saveShow( int current, real t, real dt )
+ - saveParametersToShowFile()
+ - saveSequenceInfo( real t0, RealArray & sequenceData )
+
 setup.C
  - computeTimeStep()
  - setupGrids()

@@ -2,6 +2,7 @@
 #include "ProbeInfo.h"
 #include "GenericGraphicsInterface.h"
 #include "InterpolatePointsOnAGrid.h"
+#include "DispersiveMaterialParameters.h"
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3)					\
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
@@ -9,6 +10,12 @@ int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
 for(i3=I3Base; i3<=I3Bound; i3++)					\
   for(i2=I2Base; i2<=I2Bound; i2++)					\
     for(i1=I1Base; i1<=I1Bound; i1++)
+
+// This next function is defined in ProbeInfo.C
+int
+getClosestGridPoint( CompositeGrid & cg, 
+                     RealArray & points, 
+                     IntegerArray & gridLocation );
 
 // =======================================================================================
 /// \brief Create a user defined probe. 
@@ -61,9 +68,11 @@ userDefinedProbe( GenericGraphicsInterface & gi )
 
   aString pbLabels[] = {"reflection probe",
                         "transmission probe",
+                        "grid point probe",
+                        "max norm probe",
                         ""};
   addPrefix(pbLabels,prefix,cmd,maxCommands);
-  int numRows=1;
+  int numRows=2;
   dialog.setPushButtons( cmd, pbLabels, numRows ); 
 
   // dialog.setOptionMenuColumns(1);
@@ -93,7 +102,6 @@ userDefinedProbe( GenericGraphicsInterface & gi )
 
   // textLabels[nt] = "nearest grid point to"; sPrintF(textStrings[nt], "%g %g %g",0.,0.,0.); nt++;
   // textLabels[nt] = "location"; sPrintF(textStrings[nt], "%g %g %g",0.,0.,0.); nt++;
-														      
 
   textLabels[nt] = "file name"; sPrintF(textStrings[nt], "%s",(const char*)fileName);  nt++; 
 
@@ -166,6 +174,74 @@ userDefinedProbe( GenericGraphicsInterface & gi )
       
     }
       
+    else if( answer=="grid point probe" )
+    {
+      probe.probeType=ProbeInfo::probeUserDefined;
+      aString & userProbeType = probe.dbase.put<aString>("userProbeType");
+
+      userProbeType="gridPointProbe";
+      
+      printF("The grid point probe will be located at the nearest grid point to a given position\n");
+      gi.inputString(answer,"Enter (x,y,z) for the probe location (approximate)");
+      RealArray points(1,3); points=0.;
+      sScanF(answer,"%e %e %e",&points(0,0),&points(0,1),&points(0,2));
+      
+      IntegerArray gridLocation(1,4); gridLocation=0;
+      /// \param points(0:numPoints,0:d-1) (input) : coordinates of points to check.
+      /// \param gridLocation(0:numPoints,0:3) (output) : (i1,i2,i3,grid) closest grid and point. 
+      getClosestGridPoint( cg,points,gridLocation);
+
+      int grid=gridLocation(0,3);
+      int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+      i1=gridLocation(0,0), i2=gridLocation(0,1), i3=gridLocation(0,2);
+      printF("UserDefineProbe: Point (x,y,x)=(%10.3e,%10.3e,%10.3e) is closest to grid=%i (i1,i2,i3)=(%i,%i,%i)\n",
+             points(0,0),points(0,1),points(0,2), grid,i1,i2,i3);
+
+      // Output actual position of the probe
+      real xv[3]={0.,0.,0.}; // 
+      MappedGrid & mg = cg[grid];
+      if( mg.isRectangular() )
+      {
+        real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+        int iv0[3]={0,0,0}; //
+        mg.getRectangularGridParameters( dvx, xab );
+        for( int dir=0; dir<numberOfDimensions; dir++ )
+          iv0[dir]=mg.gridIndexRange(0,dir);
+
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+          xv[axis]= xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]);
+
+      }
+      else
+      {
+        cg[grid].update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+        realArray & vertex = cg[grid].vertex();
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ ){ xv[axis]=vertex(i1,i2,i3,axis); }  // 
+      }
+        
+      printF(" Actual probe position is (%e,%e,%e)\n",xv[0],xv[1],xv[2]);
+
+      // Save position in the probe object
+      probe.grid=grid;
+      for( int dir=0; dir<3; dir++ )
+      {
+        probe.iv[dir]=iv[dir];
+        probe.xv[dir]=xv[dir];
+      }
+        
+    }
+    else if( answer=="max norm probe" )
+    {
+      probe.probeType=ProbeInfo::probeUserDefined;
+      aString & userProbeType = probe.dbase.put<aString>("userProbeType");
+
+      userProbeType="maxNormProbe";
+
+      printF("This probe computes the maximum value of the field over the domain\n");
+      
+      OV_ABORT("finish me");
+    }
+
     else if( answer=="reflection probe" ||
              answer=="transmission probe" )
     {
@@ -400,7 +476,117 @@ outputUserDefinedProbes( int current, real t, real dt, int stepNumber )
     // Output user defined probe data 
     aString & userProbeType = probe.dbase.get<aString>("userProbeType");
     
-    if( userProbeType=="reflection" ||
+    if( userProbeType=="gridPointProbe" )
+    {
+
+      // get position from the probe object
+      int grid =probe.grid;
+      int iv[3]={0,0,0}, &i1=iv[0], &i2=iv[1], &i3=iv[2];  // NOTE: iv[0]==i1, iv[1]==i2, iv[2]==i3
+      for( int dir=0; dir<3; dir++ )
+        iv[dir]=probe.iv[dir];
+
+      if( t<= 3.*dt )
+      {
+        printF("outputUserDefinedProbes: %s : t=%9.3e, stepNumber=%i",(const char*)userProbeType,t,stepNumber);
+        printF(" grid=%i iv=(%i,%i,%i)\n",grid,iv[0],iv[1],iv[2]);
+      }
+      
+      int numberOfComponents = 3;   // Ex, Ey, [Hx,Ez]
+      const int domain = cg.domainNumber(grid);
+      // --- check for dispersion model---
+      int numberOfPolarizationVectors=0;
+      if( dispersionModel != noDispersion )
+      {
+        const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+        numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+        numberOfComponents += numberOfPolarizationVectors*numberOfDimensions;
+      }
+
+      FILE *& file = probe.file;
+      if( file==NULL &&  stepNumber==0 )
+      { 
+        // ====== OPEN THE PROBE FILE =====
+
+        // print info message here for myid=0, but open file below on proc. that owns the data.
+	printF("Open user defined probe file %s for probe %i.\n",(const char*)probe.fileName,i);
+	file = fopen((const char*)probe.fileName,"w");
+	assert( file!=NULL );
+	assert( probe.file!=NULL );
+
+	if( i==0 )
+	{
+	  // printF("The probe files can be plotted with the matlab script plotProbes.m\n");
+	}
+
+	int numHeader=4;  // number of header comments 
+	int numColumns=1 + 3  + numberOfComponents;         // time + (x,y,z) + components 
+
+	// --- write header comments to the probe file  ---
+
+	// line 1 holds the number-of-header lines and the number of columns 
+	fprintf(file,"%i %i    (number-of-header-lines number-of-columns)\n",numHeader,numColumns);
+
+        // Note: this is the title on the matlab plot
+        fprintf(file,"%s, name=%s\n",(const char*)userProbeType,
+                (const char*)probe.dbase.get<aString>("probeName"));
+	fprintf(file,"This file can be read with the matlab script plotProbes.m, using >plotProbes %s\n",
+                (const char*)probe.fileName);
+
+
+	// Get the current date
+	time_t *tp= new time_t;
+	time(tp);
+	const char *dateString = ctime(tp);
+	fprintf(file,"File created on %s",dateString); // note: dateString ends in a newline.
+	delete tp;
+
+	fprintf(file,"        t                x                y                z");
+	// -- field component names ---
+        fprintf(file,"               Ex");
+        fprintf(file,"               Ey");
+        if( numberOfDimensions==2 )
+          fprintf(file,"               Hz");
+        else
+          fprintf(file,"               Ez");
+
+        // component names for polarization vectors 
+        if( dispersionModel != noDispersion )
+        {
+          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+          {
+            // -- polarization vector names ---
+            fprintf(file,"              Px%i",iv);
+            fprintf(file,"              Py%i",iv);
+            if( numberOfDimensions==3 )
+              fprintf(file,"              Pz%i",iv);
+          }
+        }
+	fprintf(file,"\n");
+      } // end open probe file 
+
+      fprintf(file,"%16.9e ",t);  // time
+      fprintf(file,"%16.9e %16.9e %16.9e ",probe.xv[0],probe.xv[1],probe.xv[2]); // print x location
+
+      realMappedGridFunction & u = gf[grid];
+
+      // Print field components
+      for( int c=0; c<3; c++ )
+        fprintf(file,"%16.9e ",u(i1,i2,i3,ex+c));
+
+      // Polarization vectors 
+      if( dispersionModel != noDispersion )
+      {
+        // --- Get Arrays for the dispersive model ----
+        realMappedGridFunction & pCur = getDispersionModelMappedGridFunction( grid,current );
+        for( int c=0; c<numberOfPolarizationVectors*numberOfDimensions; c++ )
+          fprintf(file,"%16.9e ",pCur(i1,i2,i3,c));        
+      }
+      
+      fprintf(file,"\n");
+      fflush(file); // flush the file
+
+    }
+    else if( userProbeType=="reflection" ||
         userProbeType=="transmission"  )
     {
       // ------ Reflection or Transmission probe  ------

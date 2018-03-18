@@ -1,5 +1,9 @@
 ******************************
+****** March 11, 2018
+
+******************************
 ****** March 2, 2018
+cgmx sib.planeWaveBC.cmd -g=sphereInABoxGride4.order4.ng3 -m=2 -n=2 -diss=0 -dissOrder=-1 -useSosupDissipation=1 -radius=1. -bg=backGround -cfl=0.9 -method=nfdtd -errorNorm=0 -tf=.5 -tp=.5 -dm=none -alphaP=1 -npv=1 -modeGDM=-1 -a0=1 0 0 -a1=0 0 0 -b0=0 0 0 -b1=1 0 0 -go=halt
 
 
 Make figures for adegdm paper --

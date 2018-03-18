@@ -2,10 +2,11 @@
 #  Plot results from Cgmx scattering from the crew reetnery vehichle
 #
 #    plotStuff plotScat.cmd -show=cicG4Order2.show
+#    plotStuff plotScat.cmd -show=cicG4Order4.show -name=cicG4Order4
 #
-$show="cicG4Order2.show"; 
+$show="cicG4Order2.show"; $name="cicG4Order2";
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "show=s"=>\$show );
+GetOptions( "show=s"=>\$show, "name=s"=>\$name );
 # -------------------------------------------------------------------------------------------------
 $show
 #
@@ -18,16 +19,20 @@ previous
 #
 contour
   plot:Ex
-  hardcopy file name:0 cicG4Order2Ex.ps
+  $plotName=$name . "Ex.ps"; 
+  hardcopy file name:0 $plotName
   hardcopy save:0
   plot:Ey
-  hardcopy file name:0 cicG4Order2Ey.ps
+  $plotName=$name . "Ey.ps"; 
+  hardcopy file name:0 $plotName
   hardcopy save:0
   plot:Ey error
-  hardcopy file name:0 cicG4Order2EyError.ps
+  $plotName=$name . "EyError.ps";
+  hardcopy file name:0 $plotName
   hardcopy save:0
   plot:Ex error
-  hardcopy file name:0 cicG4Order2ExError.ps
+  $plotName=$name . "ExError.ps";
+  hardcopy file name:0 $plotName
   hardcopy save:0
 
 

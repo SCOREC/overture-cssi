@@ -1,4 +1,68 @@
 ********************************
+***** March 7, 2017
+
+AMP: SCF=1000
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 9.62e-03 &      & 2.59e-03 &      & 5.05e-05 &      & 1.10e-04 &      & 1.59e+00 &      
+                epg2 &     2 & 7.80e-03 &  1.2 & 8.10e-04 &  3.2 & 1.32e-05 &  3.8 & 2.85e-05 &  3.9 & 3.25e-01 &  4.9 
+                epg4 &     4 & 4.42e-03 &  1.8 & 2.23e-04 &  3.6 & 3.50e-06 &  3.8 & 8.53e-06 &  3.3 & 7.26e-02 &  4.5 
+Convergence rates: c0=0.56 c1=1.77 c2=1.93 c3=1.84 c4=2.23 
+
+TP: SCF=1000
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -addedMass=0 -useImplicitAmpBCs=0 -cfl=.9 -ng=3
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 2.72e-03 &      & 4.75e-04 &      & 8.04e-05 &      & 4.03e-04 &      & 1.65e+00 &      
+                epg2 &     2 & 6.06e-04 &  4.5 & 1.27e-04 &  3.7 & 2.65e-05 &  3.0 & 1.15e-04 &  3.5 & 3.35e-01 &  4.9 
+                epg4 &     4 & 1.42e-04 &  4.3 & 3.04e-05 &  4.2 & 7.34e-06 &  3.6 & 3.02e-05 &  3.8 & 7.52e-02 &  4.5 
+Convergence rates: c0=2.13 c1=1.98 c2=1.73 c3=1.87 c4=2.23 
+
+********************************
+***** March 7, 2017
+
+REVIST ELASTIC PISTON -- CHECK AMP Scheme for large scf 
+
+-ng=4 TROUBLE ?? -cfl=.9 ==?> trouble
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=100 -addedMass=1 -useImplicitAmpBCs=1 -cfl=.7 -ng=4
+
+CFL=.7
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 4.71e-03 &      & 2.75e-03 &      & 9.16e-05 &      & 1.20e-04 &      & 1.91e-01 &      
+                epg2 &     2 & 3.28e-03 &  1.4 & 8.37e-04 &  3.3 & 2.27e-05 &  4.0 & 1.88e-05 &  6.4 & 4.08e-02 &  4.7 
+                epg4 &     4 & 1.14e-03 &  2.9 & 3.05e-04 &  2.7 & 5.47e-06 &  4.1 & 5.80e-06 &  3.2 & 9.36e-03 &  4.4 
+                epg8 &     8 & 2.69e-02 &  0.0 & 4.39e-02 &  0.0 & 1.28e-06 &  4.3 & 8.01e-06 &  0.7 & 8.67e-03 &  1.1 
+Convergence rates: c0=-0.60 c1=-1.05 c2=2.05 c3=1.34 c4=1.55 
+
+CFL=.5: 
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 5.01e-03 &      & 3.40e-03 &      & 1.29e-04 &      & 1.35e-04 &      & 2.23e-01 &      
+                epg2 &     2 & 3.90e-03 &  1.3 & 8.53e-04 &  4.0 & 3.14e-05 &  4.1 & 1.68e-05 &  8.0 & 4.89e-02 &  4.6 
+                epg4 &     4 & 1.23e-03 &  3.2 & 3.16e-04 &  2.7 & 7.53e-06 &  4.2 & 3.44e-06 &  4.9 & 1.13e-02 &  4.3 
+                epg8 &     8 & 2.05e-04 &  6.0 & 1.41e-04 &  2.2 & 1.77e-06 &  4.3 & 8.13e-07 &  4.2 & 2.70e-03 &  4.2 
+Convergence rates: c0=1.55 c1=1.52 c2=2.06 c3=2.44 c4=2.12 
+
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=100 -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3
+
+conv.p insElasticPiston.conv -tp=.1 -tf=0.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3
+
+SCF=100 -- trouble
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 3.90e-03 &      & 2.43e-03 &      & 4.97e-05 &      & 1.10e-04 &      & 1.59e-01 &      
+                epg2 &     2 & 2.79e-03 &  1.4 & 8.59e-04 &  2.8 & 1.29e-05 &  3.9 & 3.11e-05 &  3.5 & 3.25e-02 &  4.9 
+                epg4 &     4 & 1.05e-03 &  2.7 & 3.14e-04 &  2.7 & 3.25e-06 &  4.0 & 8.93e-06 &  3.5 & 7.32e-03 &  4.4 
+Convergence rates: c0=0.95 c1=1.48 c2=1.97 c3=1.81 c4=2.22 
+
+SCF=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 1.74e-03 &      & 5.67e-04 &      & 4.32e-05 &      & 2.28e-04 &      & 1.64e-03 &      
+                epg2 &     2 & 4.68e-04 &  3.7 & 1.28e-04 &  4.4 & 8.08e-06 &  5.3 & 5.54e-05 &  4.1 & 3.73e-04 &  4.4 
+                epg4 &     4 & 1.20e-04 &  3.9 & 2.70e-05 &  4.7 & 2.31e-06 &  3.5 & 1.21e-05 &  4.6 & 9.17e-05 &  4.1 
+Convergence rates: c0=1.93 c1=2.20 c2=2.11 c3=2.12 c4=2.08 
+
+
+********************************
 ***** Jan 25, 2017
 
 WDH: 

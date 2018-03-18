@@ -1,3 +1,11 @@
+********************************
+****** Feb 6, 2018
+
+Run AGAIN for figure -- ORDER=4 
+cgmx -noplot cylEigen -g=tubeGride4.order4.hdf -dm=gdm -npv=1 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -tp=.1 -tf=1. -diss=0. -show=tubeG4gdm.show -go=go  >! tubeG4gdm.out
+
+
+****************************
 
 GDM -- 2nd-order : trouble with P 
 

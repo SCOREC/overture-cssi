@@ -1,0 +1,131 @@
+#
+# Measure convergence rates for cgmp and 
+#         (1) The elastic piston + INS
+#         (2) The radial elastic piston + INS
+#
+# -conv= conv directory (and directory for output). .. So you can run the script outside the conv dir, e.g. for parallel
+# 
+# To run the convergence tests type: 
+#    -- TP scheme 
+#    conv.p insElasticPiston.conv -tp=.1 -tf=.2 -cg=epgp -showAllComponents=0 -ng=2
+# Radial elastic piston
+#    conv.p insElasticPiston.conv -tp=.1 -tf=.2 -cg=rep  -showAllComponents=0 -ng=2
+#
+# --------options: 
+#   -en : error norm: max, l1, l2
+#   -ng : number of grids to use (i.e. how many times is the grid refined)
+#   -cg : epgp=elasticPistonGrid (periodic)
+#   -alwaysCompute=1 : force each case to be re-run even if the check file exists
+#   -angle : angle in degrees for rotated case
+# ---------------------
+# Set default parameters: 
+$tz="none"; $bcn = "d";  $ng=4; $diss=0.2; $dissOrder=4; $tf=.5;  $tPlot=.1; $order=2; $nd=2; $scf=1.; 
+$cfl=.9; $ad=0.; $numberOfParallelGhost=2; $bcOption=0; $smVariation="g"; $pi=0; $piGhostOption=1; $adCns=0.; $angle=0;
+$problem=1; $en="max"; $trigTzScaleFactor=1.; 
+$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $godunovType=0; 
+$CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
+$cgsmCmd = "$CGBUILDPREFIX/mp/bin/cgmp";  # command for cgmp
+$cmdDir="$ENV{CG}/mp/runs/elasticPiston"; 
+$cmdFile="$cmdDir/elasticPiston.cmd"; 
+$cdv=1.; $nu=.1; $scf=200.; $addedMass=0; 
+$useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
+$cg = "elasticPistonGrid"; $bg="square"; $alwaysCompute=1; $ts="me"; $lambda=1; $filter=0; $filterOrder=6; $filterStages=2; 
+$tsINS="pc"; 
+$showAllComponents=0;  # set to 1 to include all components in the table.
+$gridDir="../elasticPiston"; 
+$case="default"; 
+#
+GetOptions( "cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"tf=f"=>\$tf,\
+            "diss=f"=>\$diss,"tp=f"=>\$tPlot,"alwaysCompute=i"=>\$alwaysCompute,"lambda=f"=>\$lambda,\
+            "filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
+            "showAllComponents=i"=>\$showAllComponents,"bg=s"=>\$bg,"amr=i"=>\$amr,"tol=f"=>\$tol,"nrl=i"=>\$nrl,\
+            "nbz=i"=>\$nbz,"ratio=i"=>\$ratio,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"cfl=f"=>\$cfl,"ad=f"=>\$ad,\
+            "cgsmCmd=s"=>\$cgsmCmd,"numberOfParallelGhost=i"=>\$numberOfParallelGhost,"dissOrder=i"=>\$dissOrder,\
+            "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
+            "bcOption=i"=>\$bcOption,"smVariation=s"=>\$smVariation,"pi=i"=>\$pi,"adCns=f"=>\$adCns,\
+            "angle=i"=>\$angle,"piGhostOption=i"=>\$piGhostOption,"godunovType=i"=>\$godunovType,"tz=s"=>\$tz,\
+            "problem=i"=>\$problem,"scf=f"=>\$scf,"case=s"=>\$case,"trigTzScaleFactor=f"=>\$trigTzScaleFactor,\
+            "nu=f"=>\$nu,"scf=f"=>\$scf,"addedMass=i"=>\$addedMass,"cdv=f"=>\$cdv,"tsINS=s"=>\$tsINS,\
+            "useImplicitAmpBCs=i"=>\$useImplicitAmpBCs );
+#
+if( $cg eq "rep" ){ $cmdFile="$cmdDir/radialElasticPiston.cmd"; }
+$check="mp.check";
+#
+$numberOfDomains=2; 
+$domainOrder="forward";
+# --- create a default case name: 
+if( $addedMass == 0 ){ $suffix = "TP"; }else{ $suffix="Amp"; }
+$suffix .= "SCF$scf"; 
+if( $tsINS eq "im" ){ $suffix .= "Im"; }
+$suffix .= "t$tf";
+$suffix =~ s/\./p/g; # change "." to "p" in numbers 
+if( $case eq "default" ){ $case=$suffix; }
+$caseName="insElasticPiston.$cg.$case"; 
+if( $saveVectorErrors eq 1 ){ $caseName.= ".vector"; }
+$name=$caseName;
+#
+# --- define the table heading and caption --
+# 
+#  --- Godunov solid: include |u|, |v|, |sigma| in table by default (these are the first three in the sm check file)
+#  --- SOS solid compnents are |u| u1 u2 [u3] 
+if( $smVariation eq "g" )\
+{\
+  if( $showAllComponents == 1 )\
+  { \
+    if( $nd eq 2 ){ $numberOfComponents= 5 + 11; }else{ $numberOfComponents= 5 + 18; }  \
+     $title ="grid  \& N    \&  \$\p\$     \&   \$v_1\$     \&    \$v_2\$    \&     \$vv\$    \&    \$div\$    \&     \$\\usv\$  \&    \$\\vv\$    \&    \$\\sigmav\$   \&   \$v_1\$   \&   \$v_2\$    \&   \$s_{11}\$   \&   \$s_{12}\$     \&   \$s_{21}\$  \&   \$s_{22}\$   \&   \$u_1\$   \&    \$u_2\$ ";\
+     @componentName = ( "p", "v0", "v1" , "vv" , "div", "u", "v", "s", "v0", "v1" , "s11", "s12", "s21", "s22", "u0", "u1" );\
+  }\
+  else\
+  { \
+    $numberOfComponents= 5+11; foreach $i (1,2,4,8..15) { $ignoreComponent[$i]=1; }  \
+    $title ="grid  \&    N \&   \$\p\$   \&     \$\\vv\$    \&    \$\\usv\$   \&     \$\\vsv\$   \&   \$\\sigmavs\$  "; \
+    @componentName = ( "p", "vv", "usv", "vsv", "ssv"  ); \
+  }\
+}\
+else{\
+  if( $showAllComponents == 1 )\
+  { \
+    if( $nd eq 2 ){ $numberOfComponents= 5 + 3; }else{ $numberOfComponents= 5 + 4; }  \
+     $title ="grid  \& N    \&  \$\p\$     \&   \$v_1\$     \&    \$v_2\$    \&     \$vv\$    \&    \$div\$    \&     \$\\usv\$  \&   \$u_1\$   \&    \$u_2\$ ";\
+     @componentName = ( "p", "v0", "v1" , "vv" , "div", "uv", "u0", "u1" );\
+  }\
+  else\
+  { \
+    $numberOfComponents= 5+3; foreach $i (1,2,4,6..7) { $ignoreComponent[$i]=1; }  \
+    $title ="grid  \&    N \&   \$\p\$   \&     \$\\vv\$    \&    \$\\usv\$   "; \
+    @componentName = ( "p", "vv", "usv"  ); \
+  }\
+}
+#
+if( $smVariation eq "g" ){ $smSolver = "SM-Godunov"; }
+if( $smVariation eq "c" ){ $smSolver = "SM-SOSC"; }
+$caption= "\\caption\{MP, $name, \$t=$tf\$, AM=$addedMass, cfl=$cfl, nu=$nu CgSm=$smSolver,Cgins=$tsINS, tz=$tz, scf=$scf, sm-diss=$diss, useImplicitAmpBCs=$useImplicitAmpBCs  $date}\\label\{table:$name}"; 
+$outputFile="$name" . ".ConvTable.tex"; 
+# 
+}
+# 
+# -- periodic elastic piston grid
+if( $cg eq "epgp" ){\
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs"; \
+$grid1="epg1";  $gName1 = "elasticPistonGride1.order2p"; \
+$grid2="epg2";  $gName2 = "elasticPistonGride2.order2p"; \
+$grid3="epg4";  $gName3 = "elasticPistonGride4.order2p"; \
+$grid4="epg8";  $gName4 = "elasticPistonGride8.order2p"; \
+$grid5="epg16"; $gName5 = "elasticPistonGride16.order2p"; }
+if( $cg eq "rep" ){\
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -nu=$nu -tp=$tPlot -tf=$tf -tsINS=$tsINS -smVariation=$smVariation -debug=0 -cdv=$cdv -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -go=go"; \
+$grid1="rep1";  $gName1 = "radialElasticPistonGride1.order2"; \
+$grid2="rep2";  $gName2 = "radialElasticPistonGride2.order2"; \
+$grid3="rep4";  $gName3 = "radialElasticPistonGride4.order2"; \
+$grid4="rep8";  $gName4 = "radialElasticPistonGride8.order2"; \
+$grid5="rep16"; $gName5 = "radialElasticPistonGride16.order2"; }
+# 
+$grid=$grid1; $res=1; $cmd="$cgsmCmd noplot $cmdFile -g=$gridDir/$gName1 $options";
+$grid=$grid2; $res=2; $cmd="$cgsmCmd noplot $cmdFile -g=$gridDir/$gName2 $options";
+if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName3 $options";}
+if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName4 $options";}
+if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName5 $options";}
+$closeFile="true";
+# -------------------------------------------------------------------------------
+exit
