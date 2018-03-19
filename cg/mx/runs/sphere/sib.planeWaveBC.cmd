@@ -38,13 +38,14 @@ $cons=0; $go="halt";
 #
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
+$modeGDM=-1; 
 $dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"bg=s"=>\$bg,\
   "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,"diss=f"=>\$diss,"dissOrder=i"=>\$dissOrder,\
   "radius=f"=>\$radius,"ic=s"=>\$ic,\
-  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,\
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"modeGDM=i"=>\$modeGDM,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation );
@@ -68,6 +69,7 @@ $grid
 $method
 # dispersion model:
 $dm
+GDM mode: $modeGDM
 GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 #
 # -- When we solve for the scattered field directly the PEC boundary conditions are

@@ -1,4 +1,10 @@
 **********************************
+*****  Mar 19, 2018
+
+cgmx -noplot cic.planeWaveBC -g=cice4.order4.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1  -tf=1. -tp=.1 -diss=0. -go=og 
+
+
+**********************************
 *****  Mar 4, 2018
 
 RUN FOR PAPER

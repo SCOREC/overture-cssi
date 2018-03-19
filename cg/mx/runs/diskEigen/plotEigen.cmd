@@ -1,6 +1,7 @@
 #
 #  plotStuff plotEigen.cmd -show=diskEigen16.show -name=diskEig
 #  plotStuff plotEigen.cmd -show=diskEigen16Np2.show -name=diskEig
+#  plotStuff plotEigen.cmd -show=diskEigen16Np2.show -name=diskEigM5N5
 #  
 GetOptions( "show=s"=>\$show,"name=s"=>\$name );
 #

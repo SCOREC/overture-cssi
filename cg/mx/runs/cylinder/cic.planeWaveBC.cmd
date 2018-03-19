@@ -68,6 +68,7 @@ $pmlWidth=11; $pmlStrength=50.; $pmlPower=4.;
 #
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
+$modeGDM=-1; 
 $dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
@@ -78,7 +79,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,\
-  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1  );
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"modeGDM=i"=>\$modeGDM  );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
@@ -95,6 +96,7 @@ $grid
 $method
 # dispersion model:
 $dm
+GDM mode: $modeGDM
 GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 #
 planeWaveBoundaryForcing

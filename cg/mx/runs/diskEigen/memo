@@ -1,4 +1,11 @@
 ***********************
+***** March 7, 2017
+
+RUN FOR PAPER -- HIGHER MODE showfile
+cgmx diskeigen -g=sice16.order4.hdf -dm=gdm -npv=2 -a0=1 .5 -a1=.1 .2 -b0=.3 .4 -b1=.5 .25 -m=5 -n=5 -cons=0 -diss=.0 -tp=.1 -tf=1 -show=diskEigen16Np2.show -go=halt >! diskEigen16Np2.out
+
+
+***********************
 ***** March 12, 2017
 
 LOOK AT GDM MODE 0 

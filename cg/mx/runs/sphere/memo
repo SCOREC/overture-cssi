@@ -1,5 +1,10 @@
 ******************************
-****** March 11, 2018
+****** March 19, 2018
+
+GDM Modes:
+
+cgmx -noplot sib.planeWaveBC.cmd -g=sphereInABoxGride2.order2 -m=2 -n=2 -diss=0 -dissOrder=-1 -useSosupDissipation=1 -radius=1. -bg=backGround -cfl=0.9 -method=nfdtd -errorNorm=0 -tf=.5 -tp=.5 -dm=gdm -alphaP=1 -npv=1 -modeGDM=-1 -a0=1 0 0 -a1=.1 0 0 -b0=1 0 0 -b1=.1 0 0 -modeGDM=0 -go=og
+
 
 ******************************
 ****** March 2, 2018
