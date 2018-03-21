@@ -6,6 +6,8 @@ VPATH = ../
 extractFiles = ../Ogmg.C ../smooth.C ../lineSmooth.C ../fineToCoarse.C ../coarseToFine.C ../defect.C ../boundaryConditions.C \
                ../buildExtraLevels.C  
 
+all: user ref results fourthOrder
+
 # User guide
 user: 
 	pdflatex ogmgUser
@@ -20,7 +22,12 @@ ref:
 # Convergence results
 results: ogmgResults.tex
 	pdflatex ogmgResults
+	bibtex ogmgResults
 
+# notes on fourth-order scheme
+fourthOrder:  ogmgFourthOrder.tex
+	pdflatex ogmgFourthOrder
+	bibtex ogmgFourthOrder
 
 # OLD: 
 ogmg.pdf: ogmg.ps
@@ -35,10 +42,6 @@ refOld:
 	ps2pdf ogmgRefOld.ps
 
 
-ogmgFourthOrder.pdf:  ogmgFourthOrder.tex
-	latex ogmgFourthOrder
-	dvips -P pdf -G0 -o ogmgFourthOrder.ps ogmgFourthOrder.dvi
-	ps2pdf ogmgFourthOrder.ps
 
 ogmg:
 	extract.p $(extractFiles)
