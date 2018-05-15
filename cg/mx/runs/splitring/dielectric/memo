@@ -1,0 +1,11 @@
+srrDielectric.cmd
+====
+Contains perl subroutine to generate a grid with inner and outer
+domains for a split ring resonator of fixed dimension
+
+Currently only works for fine grids
+======
+
+ogen noplot srrDielectric.cmd
+
+cgmx dielectricBodies.cmd -g=dielectricRes1 -useSosupDissipation=1

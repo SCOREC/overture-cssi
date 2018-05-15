@@ -1,0 +1,10 @@
+H-shaped resonator
+======
+(currently boundary grids is fixed width)
+ogen hShapedResonator.cmd -factor=2
+
+Rectangular resonator
+======
+ogen rectResonator.cmd  
+
+cgmx cic.planeWaveBC.cmd -g=rectResonator4.order2.hdf 
