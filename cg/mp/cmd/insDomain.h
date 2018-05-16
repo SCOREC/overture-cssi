@@ -54,6 +54,7 @@ if( $ad21 eq "" ){ $ad21=1.; }
 if( $ad22 eq "" ){ $ad22=1.; }
 if( $implicitFactor eq "" ){ $implicitFactor=.5; }
 if( $implicitVariation eq "" ){ $implicitVariation = "implicitViscous"; }
+if( $predictedPressureNeeded eq "" ){ $predictedPressureNeeded=0; } 
 if( $predictedBoundaryPressureNeeded eq "" ){ $predictedBoundaryPressureNeeded=0; } 
 if( $projectInitialConditions eq "" ){ $projectInitialConditions="#";} 
 if( $extraCmds eq "" ){ $extraCmds="#"; }
@@ -65,6 +66,8 @@ if( $fluidDensity eq "" ){ $fluidDensity=1.; }
 if( $useImplicitAmpBCs eq "" ){ $useImplicitAmpBCs=0; }
 if( $ogesDtol eq "" ){ $ogesDtol=1e20; }
 if( $orderOfExtrapForOutflow eq "" ){ $orderOfExtrapForOutflow=2; }
+if( $useExactPressureBC eq "" ){ $useExactPressureBC=0; }
+if( $useCurlFormOfTraction eq "" ){ $useCurlFormOfTraction=0; }
 # 
 setup $domainName
  set solver Cgins
@@ -99,7 +102,8 @@ setup $domainName
 #
   use added mass algorithm $addedMass
   # for now we let the solver know that the added mass algorithm needed predicted values for the pressure:
-  predicted pressure needed $addedMass
+  # *wdh* April 22, 2018 predicted pressure needed $addedMass
+  predicted pressure needed $predictedPressureNeeded
   use new time-stepping startup $useNewTimeSteppingStartup
   useImplicitAmpBCs $useImplicitAmpBCs
 #
@@ -127,6 +131,9 @@ setup $domainName
     OBPDE:ad21,ad22  $ad21, $ad22
     OBPDE:divergence damping  $cdv 
     OBPDE:cDt div damping $cDt
+    # Use exact RHS for pressure BC on a wall for testing known solutions and TZ: 
+    OBPDE:use exact pressure BC $useExactPressureBC 
+    OBPDE:use curl form of the traction $useCurlFormOfTraction
 # 
 $setAxi = $axisymmetric ? "turn on axisymmetric flow" : "#";
 $setAxi

@@ -44,10 +44,13 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     FILE *& debugFile = parameters.dbase.get<FILE* >("debugFile");
     FILE *& pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
+    const int numberOfDimensions = parameters.dbase.get<int >("numberOfDimensions");;
+    const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
+
     if( debug () & 1 ) 
       fPrintF(debugFile,"\n -------- boundaryConditionPredictor: Extrap pressure and ghost velocity to t=%e for "
-              "fourth-order, bcOption=%i, orderOfExtrapolation=%i ------- \n",gf[mNew].t,
-	      bcpOption, orderOfExtrapolation);
+              "order=%i, bcOption=%i, orderOfExtrapolation=%i ------- \n",gf[mNew].t,
+	      orderOfPredictorCorrector,bcpOption, orderOfExtrapolation);
 
 //     if( !parameters.dbase.get<DataBase >("modelData").has_key("AdamsPCData") )
 //       parameters.dbase.get<DataBase >("modelData").put<AdamsPCData>("AdamsPCData");
@@ -68,15 +71,13 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     if( debug() & 4 )
       fprintf(debugFile,"bcp: ndt0=%i, dt0=%e, dt1=%e dt2=%e\n",ndt0,dt0,dt1,dt2);
 
-    const int numberOfDimensions = parameters.dbase.get<int >("numberOfDimensions");;
-    const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
 
     if( debug() & 16  )
     {
       if( twilightZoneFlow() )
       {
-	gf[mNew].u.display(sPrintF("adamsPC: order4  gf[mNew].u before extrap p and u(ghost) (t=%8.2e)",
-				   gf[mNew].t),debugFile,"%8.5f ");
+	gf[mNew].u.display(sPrintF("adamsPC: order%i  gf[mNew].u before extrap p and u(ghost) (t=%8.2e)",
+				   orderOfPredictorCorrector,gf[mNew].t),debugFile,"%8.5f ");
 	determineErrors( gf[mNew],sPrintF(" ***Adams PC: before extrapolate t=%e\n",gf[mNew].t) );
       }
 	
@@ -93,10 +94,19 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     // const int orderOfExtrapForU= orderOfPredictorCorrector==2 ? 3 : 4; 
 
     // Use input order of extrapolation : June 8, 2017 *wdh*
-    const int orderOfExtrapForP=orderOfExtrapolation;  
-    const int orderOfExtrapForU=orderOfExtrapolation;
+    int orderOfExtrapForP=orderOfExtrapolation;  
+    int orderOfExtrapForU=orderOfExtrapolation;
 
-    if( TRUE || debug() & 4 )
+    // -- over-ride orders of time extrapolation for boundary values: *wdh* May 6, 2018
+    int orderOfTimeExtrapolationForBoundaryPressure = parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryPressure");
+    int orderOfTimeExtrapolationForBoundaryVelocity = parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryVelocity");
+    if( orderOfTimeExtrapolationForBoundaryPressure>0 )
+      orderOfExtrapForP=orderOfTimeExtrapolationForBoundaryPressure;
+    if( orderOfTimeExtrapolationForBoundaryVelocity>0 )
+      orderOfExtrapForU=orderOfTimeExtrapolationForBoundaryVelocity;
+
+
+    if( (t0 < 3.*dt0) && debug() & 4 )
       fprintf(debugFile, " *** bcPredictor: orderOfPredictorCorrector=%i, orderOfExtrapForP=%i,"
 	      "orderOfExtrapForU=%i \n",orderOfPredictorCorrector,orderOfExtrapForP,orderOfExtrapForU);
     
@@ -130,7 +140,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     const real cex54= (dt0+dt1+dt2+dt3)*(dt0+dt1+dt2)*(dt0+dt1)*dt0/dt4/(dt3+dt4)/
       (dt2+dt3+dt4)/(dt1+dt2+dt3+dt4);
 
-    if( debug () & 1 ) 
+    if( (t0 < 3.*dt0) && debug () & 1 ) 
     {
       if( orderOfExtrapForP==2 )
         fPrintF(debugFile,"bcp: cex2a=%e, cex2b=%e \n",cex2a,cex2b);
@@ -257,15 +267,15 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 	// but ua of the next time step equals ub of the time step ... therefore save uOld in ub
         if( orderOfExtrapForP==2 ) // *wdh* Dec 21, 2017
         {
-          if( TRUE || debug() & 8 )
-            printF(" ######## boundaryConditionPredictor: Extrap p in time (2-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
+          if( t0<2.*dt0 && debug() & 4 )
+            fPrintF(debugFile," ######## boundaryConditionPredictor: Extrap p in time (2-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
 
 	    unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
 
         }
         else
         {
-          if( TRUE || debug() & 8 )
+          if( t0<2.*dt0 && debug() & 4 )
             printF(" ######## boundaryConditionPredictor: Extrap p in time (3-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
 
           // save p(t-dt) in ub : 
@@ -351,6 +361,12 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 
       if( bcpOption==predictPressureAndVelocity )
       {
+        if( t0<=2.*dt && debug() & 4 )
+        {
+          fprintf(debugFile,"--INS-- BCP: Extrapolate ghost values of the velocity too\n");
+        }
+        
+
 	getIndex(gridIndexRange,I1,I2,I3,numberOfGhostLines);
 	Range V(uc,uc+numberOfDimensions-1);
 	for( int axis=0; axis<numberOfDimensions; axis++ )
@@ -369,70 +385,70 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 	      bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,I1,I2,I3);               
 	      if( !ok ) continue;
 
-	      if( orderOfPredictorCorrector==2 )
-	      {
-		// for the next time step ua should be equal to uOld of this time step
-		// but ua of the next time step equals ub of the time step ... therefore save uOld in ub
+              // This next section removed -- *wdh* May 6, 2018
+	      // if( orderOfPredictorCorrector==2 )
+	      // {
+	      //   // for the next time step ua should be equal to uOld of this time step
+	      //   // but ua of the next time step equals ub of the time step ... therefore save uOld in ub
 		  
-		ubLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-		unLocal(I1,I2,I3,V)=cex30*u0Local(I1,I2,I3,V)+cex31*uOldLocal(I1,I2,I3,V)+cex32*uaLocal(I1,I2,I3,V);
+	      //   ubLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+	      //   unLocal(I1,I2,I3,V)=cex30*u0Local(I1,I2,I3,V)+cex31*uOldLocal(I1,I2,I3,V)+cex32*uaLocal(I1,I2,I3,V);
 
-	      }
-	      else // fourth order in time
-	      {
-		if( orderOfExtrapForU==-1 )
-		{
-		  assert( twilightZoneFlow() );
-		  // u1Local(I1,I2,I3,V)=e(mg0,I1,I2,I3,V,t0+dt0); // **** do this for now ****
+	      // }
+	      // else // fourth order in time
+              if( orderOfExtrapForU==-1 )
+              {
+                assert( twilightZoneFlow() );
+                // u1Local(I1,I2,I3,V)=e(mg0,I1,I2,I3,V,t0+dt0); // **** do this for now ****
 
-		  realSerialArray ue(I1,I2,I3,V);
-		  const int isRectangular=false;
-		  e.gd( ue,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t0+dt0);
-		  unLocal(I1,I2,I3,V)=ue;
+                realSerialArray ue(I1,I2,I3,V);
+                const int isRectangular=false;
+                e.gd( ue,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t0+dt0);
+                unLocal(I1,I2,I3,V)=ue;
 	    
-		}
-		else if( orderOfExtrapForU==2 )
-		{
-		  // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
-		  udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-		  unLocal(I1,I2,I3,V)= cex2a*u0Local(I1,I2,I3,V)+cex2b*uOldLocal(I1,I2,I3,V);
-		}
-		else if( orderOfExtrapForU==3 )
-		{
-		  // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
-		  udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-		  unLocal(I1,I2,I3,V)= cex30*u0Local(I1,I2,I3,V)
-		    +cex31*uOldLocal(I1,I2,I3,V)
-		    +cex32*uaLocal(I1,I2,I3,V);
+              }
+              else if( orderOfExtrapForU==2 )
+              {
+                // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
+                udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+                unLocal(I1,I2,I3,V)= cex2a*u0Local(I1,I2,I3,V)+cex2b*uOldLocal(I1,I2,I3,V);
+              }
+              else if( orderOfExtrapForU==3 )
+              {
+                // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
+                udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+                unLocal(I1,I2,I3,V)= cex30*u0Local(I1,I2,I3,V)
+                  +cex31*uOldLocal(I1,I2,I3,V)
+                  +cex32*uaLocal(I1,I2,I3,V);
 
-		}
-		else if( orderOfExtrapForU==4 )
-		{
-		  // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
-		  udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-		  unLocal(I1,I2,I3,V)= cex40*u0Local(I1,I2,I3,V)
-		    +cex41*uOldLocal(I1,I2,I3,V)
-		    +cex42*uaLocal(I1,I2,I3,V)
-		    +cex43*ubLocal(I1,I2,I3,V);
-		}
-		else if( orderOfExtrapForU==5 )
-		{
-		  // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
+              }
+              else if( orderOfExtrapForU==4 )
+              {
+                // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
+                udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+                unLocal(I1,I2,I3,V)= cex40*u0Local(I1,I2,I3,V)
+                  +cex41*uOldLocal(I1,I2,I3,V)
+                  +cex42*uaLocal(I1,I2,I3,V)
+                  +cex43*ubLocal(I1,I2,I3,V);
+              }
+              else if( orderOfExtrapForU==5 )
+              {
+                // printf(" $$$$ extrap u ghost at t=%8.2e $$$$$\n",gf[mNew].t);
 
-		  udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-		  unLocal(I1,I2,I3,V)= cex50*u0Local(I1,I2,I3,V)
-		    +cex51*uOldLocal(I1,I2,I3,V)
-		    +cex52*uaLocal(I1,I2,I3,V)
-		    +cex53*ubLocal(I1,I2,I3,V)
-		    +cex54*ucLocal(I1,I2,I3,V);
-		}
-		else
-		{
-		  OV_ABORT(" unimplemented orderOfExtrapForU");
-		}
-	      }
-	    }
-	  }
+                udLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+                unLocal(I1,I2,I3,V)= cex50*u0Local(I1,I2,I3,V)
+                  +cex51*uOldLocal(I1,I2,I3,V)
+                  +cex52*uaLocal(I1,I2,I3,V)
+                  +cex53*ubLocal(I1,I2,I3,V)
+                  +cex54*ucLocal(I1,I2,I3,V);
+              }
+              else
+              {
+                OV_ABORT(" unimplemented orderOfExtrapForU");
+              }
+            }
+          }
+
 	  // set back to gridIndexRange to avoid re-doing corners: *** is this ok for 3D ???
 	  Iv[axis]=Range(gridIndexRange(0,axis),gridIndexRange(1,axis));
 	}

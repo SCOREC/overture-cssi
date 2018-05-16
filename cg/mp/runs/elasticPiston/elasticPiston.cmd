@@ -4,8 +4,8 @@
 # Usage:
 #    cgmp [-noplot] elasticPiston -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
 #           -solver=[yale|best] -psolver=[yale|best] -ktcFluid=<> -ktcFluid=<> -tz=[poly/trig/none] -bg=<backGroundGrid> ...
-#           -degreex=<num> -degreet=<num> -ts=[fe|be|im|pc] -nc=[] -d1=<> -d2=<> -smVariation=[nc|c|g|h] ...
-#           -sideBC=[noSlipWall|slipWall|dirichlet] -useImplicitAmpBCs=[0|1]
+#           -degreeSpace=<num> -degreeTime=<num> -ts=[fe|be|im|pc] -nc=[] -d1=<> -d2=<> -smVariation=[nc|c|g|h] ...
+#           -known=[piston|shear] -sideBC=[noSlipWall|slipWall|dirichlet] -useImplicitAmpBCs=[0|1]
 # 
 #  -ktcFluid -ktcSolid : thermal conductivities 
 #  -ts = time-stepping-method, be=backward-Euler, fe=forward-Euler, im=implicit-multistep
@@ -26,13 +26,17 @@ $cnsGammaStiff=1.4; $cnsPStiff=0.;   # for stiffened EOS -- by default make it l
 $lambdaSolid=1.; $muSolid=1.;
 $thetad=0.; # rotation of domain (degrees)
 ## $stressRelaxation=1; $relaxAlpha=0.1; $relaxDelta=0.1; 
-$stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
+# $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
+$stressRelaxation=0;  # *wdh* turn of stress-relaxation for testing TZ, may not be needed
+$displacementDissipation=0.; # for CgSm -- turn off for TZ
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
-$diss=.2;   # 2nd-order linear dissipation for cgsm --> increase from .1 to .2 : July 2, 2017
+## $diss=.2;   # 2nd-order linear dissipation for cgsm --> increase from .1 to .2 : July 2, 2017
+$diss=.0;   # TURN OFF FOR TZ *wdh* April 19, 2018
 $smVariation = "g"; 
 $tsSM="modifiedEquationTimeStepping";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
+$degreeSpaceSM=""; $degreeTimeSM=1;  # if set, use this as the degree for cgsm
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
 $fic = "uniform";  # fluid initial condition
 $backGround="outerSquare"; $deformingGrid="interface"; 
@@ -45,12 +49,15 @@ $useTP=0; # 1=use traditional partitioned scheme
 $projectMultiDomainInitialConditions=0; 
 $useNewTimeSteppingStartup=1;  # *NEW* July 1, 2017
 $freqFullUpdate=1; # frequency for using full ogen update in moving grids 
+$useExactPressureBC=0; # use exact RHS for pressure wall BC (variable used in insDomain.h)
 #
 $smoothInterface=0;  # smooth the interface (in DeformingBodyMotion.C )
 $numberOfInterfaceSmooths=4; 
+$startCurve="nurbs"; # start curve for the deforming body 
 #
 # $option="beamUnderPressure"; # this currently means ramp the inflow
 $option="bulkSolidPiston"; # define pressure BC from known solution
+$known="piston"; #  or "shear"
 #
 $sideBC="slipWall"; 
 #
@@ -65,8 +72,9 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
-$useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
-$predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
+$useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
+# $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
+$predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018
 # ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
 $Pi=4.*atan2(1.,1.);
 $amp=.1; $k=.5; $t0=1./(4*$k);  $H=1.; $Hbar=.5; $rho=1.; 
@@ -76,6 +84,7 @@ $ra=-10.; $rb=-9.; # ramp interval -- actual interval shifted by Hbar/cp
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"kappa=f"=>\$kappa, "bg=s"=>\$backGround,\
  "tp=f"=>\$tPlot, "solver=s"=>\$solver, "psolver=s"=>\$psolver,"useTP=i"=> \$useTP,\
  "tz=s"=>\$tz,"degreeSpace=i"=>\$degreeSpace, "degreeTime=i"=>\$degreeTime,\
+ "degreeSpaceSM=i"=>\$degreeSpaceSM,"degreeTimeSM=i"=>\$degreeTimeSM,\
  "show=s"=>\$show,"method=s"=>\$method,"ts=s"=>\$ts,"tsSM=s"=>\$tsSM,"noplot=s"=>\$noplot,"ktcFluid=f"=>\$ktcFluid,\
   "ktcSolid=f"=>\$ktcSolid,"muSolid=f"=>\$muSolid,"lambdaSolid=f"=>\$lambdaSolid, "T0=f"=>\$T0,"Twall=f"=>\$Twall,\
   "nc=i"=> \$numberOfCorrections, "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
@@ -89,12 +98,12 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
    "p0=f"=>\$p0,"sideBC=s"=>\$sideBC,"iOmega=f"=>\$iOmega,"iTol=f"=>\$iTol,"addedMass=f"=>\$addedMass,\
    "projectInitialConditions=f"=>\$projectInitialConditions,"restart=s"=>\$restart,"append=i"=>\$append,\
-   "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,\
+   "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,"known=s"=>\$known,\
    "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
-   "dtMax=f"=>\$dtMax, "thetad=f"=>\$thetad );
+   "dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,"useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -139,11 +148,16 @@ $grid
 $numberOfPastTimeLevels=3; 
 $gridEvolutionVelocityAccuracy=3; 
 $gridEvolutionAccelerationAccuracy=2; 
+# choose the start curve type:
+$startCurveCmd="#";
+if( $startCurve eq "nurbs"  ){ $startCurveCmd="nurbs start curve"; }
+if( $startCurve eq "spline" ){ $startCurveCmd="spline start curve"; }
 if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
 $moveCmds = \
   "turn on moving grids\n" . \
   "specify grids to move\n" . \
   "    deforming body\n" . \
+  "      $startCurveCmd\n" . \
   "      bulk solid\n" . \
   "        debug\n $debug \n" . \
   "      velocity order of accuracy\n $gridEvolutionVelocityAccuracy\n" . \
@@ -189,11 +203,14 @@ $bc = "all=$sideBC\n bcNumber100=noSlipWall uniform(u=.0,T=$T0)\n bcNumber100=tr
     "   ramp order: 3\n" .\
     " exit \n" .\
     "done";
-    # pressure at top from the known bulk solid piston solution
-    $cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
+# pressure at top from the known bulk solid piston solution
+$cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
     " known solution\n" . \
     " exit \n" .\
     "done";
+# TEST *wdh* May 7, 2018 Trouble with outflow at top for heavy solid, implicit time-stepping
+$cmdKnown="bcNumber4=dirichletBoundaryCondition";
+# 
 # if( $option ne "beamUnderPressure" ){ $cmdRamp = "bcNumber3=outflow, pressure(1.*p+0.*p.n=$p0)"; }
 # $bc = $bc . "\n" . $cmdRamp;
 if( $tz eq "turn off twilight zone" ){ $bc = $bc . "\n" . $cmdKnown; }
@@ -201,16 +218,33 @@ if( $tz eq "turn off twilight zone" ){ $bc = $bc . "\n" . $cmdKnown; }
 $ic="uniform flow\n" . "p=0., u=$u0, T=$T0";
 $rhoBar=$rhoSolid*$scf; $lambdaBar=$lambdaSolid*$scf; $muBar=$muSolid*$scf;
 $thetaR=$thetad*$Pi/180.;
+$knownCmds ="#";
+if( $known eq "piston" ){\
+  $knownCmds=" bulk solid piston\n" .\
+             "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
+             "  $rampOrder $ra $rb\n"; \
+}
+$ampS=.001;  $thetaS=$thetad*$Pi/180.; \
+if( $known eq "shear" ){ \
+  $knownCmds=" shearing fluid and elastic solid\n" .\
+             "$ampS, $rhoBar, $thetaS \n";\
+}
 $ic="OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " bulk solid piston\n" .\
-    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
-    "  $rampOrder $ra $rb\n" .\
+    " $knownCmds " .\
     " done\n" .\
     "done"; 
+# $ic="OBTZ:user defined known solution\n" .\
+#     "choose a common known solution\n" .\
+#     " bulk solid piston\n" .\
+#     "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
+#     "  $rampOrder $ra $rb\n" .\
+#     " done\n" .\
+#     "done"; 
 if( $tz ne "turn off twilight zone" ){ $ic="#"; }
 #
 echo to terminal 0
+$extraCmds="check error on ghost\n 1";
 include $ENV{CG}/mp/cmd/insDomain.h
 $extraCmds="#"; 
 echo to terminal 1
@@ -231,17 +265,26 @@ $initialConditionCommands="zeroInitialCondition";
 $initialConditionCommands=\
     "OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " bulk solid piston\n" .\
-    "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
-    "  $rampOrder $ra $rb\n" .\
+    " $knownCmds " .\
     " done\n" .\
   "done \n" .\
   "knownSolutionInitialCondition";
+# $initialConditionCommands=\
+#     "OBTZ:user defined known solution\n" .\
+#     "choose a common known solution\n" .\
+#     " bulk solid piston\n" .\
+#     "  $amp,$k,$t0,$H,$Hbar,$rho,$rhoBar,$lambdaBar,$muBar,$thetaR\n" .\
+#     "  $rampOrder $ra $rb\n" .\
+#     " done\n" .\
+#   "done \n" .\
+#  "knownSolutionInitialCondition";
 if( $tz ne "turn off twilight zone" ){ $initialConditionCommands="#"; }
 #
 $smCheckErrors=1;
 # 
 echo to terminal 0
+if( $degreeSpaceSM ne "" ){ $degreeSpace=$degreeSpaceSM; }
+if( $degreeTimeSM ne "" ){ $degreeTime=$degreeTimeSM; }
 include $ENV{CG}/mp/cmd/smDomain.h
 echo to terminal 1
 # 

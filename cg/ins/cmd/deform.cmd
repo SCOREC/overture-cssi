@@ -57,6 +57,7 @@ $solver="yale"; $rtol=1.e-4; $atol=1.e-6; $ogesDebug=0; $project=1; $cdv=1.; $ad
 $bc="a"; 
 $rhoe=10.; $te=1.; $ke=1.; $be=0.1; $ad2e=5.; # ellastic shell parameters
 $constantVolume=0; $volumePenalty=.5; 
+$startCurve="nurbs"; # start curve for the deforming body 
 * 
 $bc1="inflow"; $pInflow=0.; 
 $outflowOption="neumann";
@@ -71,7 +72,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "bc=s"=>\$bc,"dg=s"=>\$deformingGrid,"dt=s"=>\$deformationType,"da=f"=>\$deformAmplitude,"df=f"=>\$deformFrequency,\
   "rhoe=f"=>\$rhoe,"te=f"=>\$te,"ke=f"=>\$ke,"be=f"=>\$be,"ad2e=f"=>\$ad2e, "constantVolume=i"=>\$constantVolume,\
   "volumePenalty=f"=>\$volumePenalty,"bc1=s"=>\$bc1,"pInflow=f"=>\$pInflow, "sbcl=s"=>\$sbcl, "sbcr=s"=>\$sbcr,\
-  "deformFrequency=f"=>\$deformFrequency );
+  "deformFrequency=f"=>\$deformFrequency,"startCurve=s"=>\$startCurve );
 * -------------------------------------------------------------------------------------------------
 $kThermal=$nu/$Prandtl; 
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
@@ -128,6 +129,11 @@ $grid
   turn on moving grids
   specify grids to move
       deforming body
+        # choose the start curve type
+        if( $startCurve eq "nurbs" ){ $cmd="nurbs start curve"; }
+        if( $startCurve eq "spline" ){ $cmd="spline start curve"; }
+        $cmd 
+        #
         user defined deforming body
           $deformationType
           deformation frequency

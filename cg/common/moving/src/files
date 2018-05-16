@@ -11,3 +11,4 @@ SRC_FILES += getTravelingWave.C TravelingWaveFsi.C
 FSRCO += dispersionBulkElasticViscous.f dispersionShellViscous.f dispersionBulkAcousticViscous.f dispersionBulkAcousticInviscid.f
 
 
+src/deformingBodyMotion.C : src/deformingBodyMotion.bC; $(BPP) -quiet -clean $<

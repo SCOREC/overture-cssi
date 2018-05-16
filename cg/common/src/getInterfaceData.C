@@ -17,8 +17,13 @@ getInterfaceData( real tSource, int grid, int side, int axis,
                   Parameters & parameters,
                   bool saveTimeHistory /* = false */  )
 {
-  printF("\n =============== START getInterfaceData (grid,side,axis)=(%i,%i,%i) =======================\n",
-         grid,side,axis);
+  int debug = parameters.dbase.get<int>("debug");
+
+  if( debug & 4 )
+  {
+    printF("\n =============== START getInterfaceData (grid,side,axis)=(%i,%i,%i) =======================\n",
+           grid,side,axis);
+  }
   
 
 
@@ -34,9 +39,9 @@ getInterfaceData( real tSource, int grid, int side, int axis,
   assert( targetDomain>=0 );
   
   // int sourceDomain = sourfaceDomainNumber(targetDomainNumber,grid,side,axis);
-  
-  printF("--DS-- getInterfaceData: This is a multi-domain problem: targetDomain=%i, numberOfDomains=%i\n",
-	 targetDomain,numberOfDomains);
+  if( debug & 4 )
+    printF("--DS-- getInterfaceData: This is a multi-domain problem: targetDomain=%i, numberOfDomains=%i\n",
+           targetDomain,numberOfDomains);
   
 	
   InterfaceList & interfaceList = pCgmp->parameters.dbase.get<InterfaceList>("interfaceList");     
@@ -62,9 +67,10 @@ getInterfaceData( real tSource, int grid, int side, int axis,
 
       assert( d1>=0 && d1<numberOfDomains && d2>=0 && d2<numberOfDomains );
 
-      printF(" Interface =%i, face=%i "
-             "(domain1,grid1,side1,dir1)=(%i,%i,%i,%i) (domain2,grid2,side2,dir2)=(%i,%i,%i,%i)\n",
-	     inter,face,d1,grid1,side1,dir1,d2,grid2,side2,dir2);
+      if( debug & 4 )
+        printF(" Interface =%i, face=%i "
+               "(domain1,grid1,side1,dir1)=(%i,%i,%i,%i) (domain2,grid2,side2,dir2)=(%i,%i,%i,%i)\n",
+               inter,face,d1,grid1,side1,dir1,d2,grid2,side2,dir2);
       
       if( d1==targetDomain && grid1==grid && side1==side && dir1==axis )
       {
@@ -86,8 +92,9 @@ getInterfaceData( real tSource, int grid, int side, int axis,
 
   assert( interfaceNumber>=0 && sourceInterfaceSide>=0 && sourceFace>=0 );
 
-  printF("... source found: sourceDomain=%i, interfaceNumber=%i face=%i interfaceSide=%i \n",
-	 sourceDomain, interfaceNumber,sourceFace,sourceInterfaceSide);
+  if( debug & 4 )
+    printF("... source found: sourceDomain=%i, interfaceNumber=%i face=%i interfaceSide=%i \n",
+           sourceDomain, interfaceNumber,sourceFace,sourceInterfaceSide);
 
   InterfaceDescriptor & interfaceDescriptor = interfaceList[interfaceNumber]; 
   GridList & gridListSource = sourceInterfaceSide==0 ? interfaceDescriptor.gridListSide1 : 
@@ -132,8 +139,9 @@ getInterfaceData( real tSource, int grid, int side, int axis,
   // }
   
 
-  printF(" =============== END getInterfaceData (grid,side,axis)=(%i,%i,%i) =======================\n",
-         grid,side,axis);
+  if( debug & 4 )
+    printF(" =============== END getInterfaceData (grid,side,axis)=(%i,%i,%i) =======================\n",
+           grid,side,axis);
 
   // OV_ABORT("stop here for now");
   

@@ -797,6 +797,13 @@ implicitSolve(const real & dt0,
 
   assert( implicitSolver!=NULL );
   
+  if( debug() & 2 )
+  {
+    fprintf(debugFile,"\n ---INS--- ENTERING IMPLICIT SOLVE t=%.2e\n",cgf1.t);
+    
+  }
+  
+
   // *wdh* 071011 -- The user should now explicitly call formMatrixForImplicitSolve ----
 
 //   bool recomputeMatrix = (parameters.dbase.get<int >("globalStepNumber") % parameters.dbase.get<int >("refactorFrequency")) ==0;
@@ -954,7 +961,12 @@ implicitSolve(const real & dt0,
   }
   else
   {
-    // Solve for all implicit components at once.
+
+    // =============================================================================================
+    // ================ Solve for all implicit components at once ==================================
+    // =============================================================================================
+
+
     v.updateToMatchGrid(cgf1.cg,all,all,all,Rv);
 
     if( implicitSolver[0].isSolverIterative() )
@@ -993,7 +1005,19 @@ implicitSolve(const real & dt0,
     }
     else
     {
+      if( debug() & 4 ) 
+      {
+        v.display(sPrintF("RHS v before VECTOR implicit solve t=%.2e",cgf1.t),debugFile,"%.5e ");
+      }
+
+
       implicitSolver[0].solve( v,v );
+
+      if( debug() & 4 ) 
+      {
+        v.display(sPrintF("SOLUTION AFTER implicit solve t=%.2e",cgf1.t),debugFile,"%.5e ");
+      }
+
     }
     
     for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
@@ -1086,6 +1110,11 @@ implicitSolve(const real & dt0,
     }
   }
   
+
+  // This next routine will check the result from the implicit solve (e.g. AMP BC's) *wdh* May 9, 2018
+  checkResultFromImplicitTimeStepping( cgf1,cgf0 ); 
+
+
   parameters.dbase.get<int >("numberOfIterationsForImplicitTimeStepping")+=numberOfIterations;
   
   parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForImplicitSolve"))+=getCPU()-cpu0;
@@ -1489,7 +1518,6 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
       }
     }
     
-
     const int ndipar=60, ndrpar=40;
     int ipar[ndipar];
     real rpar[ndrpar];
@@ -3703,5 +3731,36 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
     
   }
 
+  return 0;
+}
+
+
+int Cgins::
+checkResultFromImplicitTimeStepping(GridFunction & cgf, GridFunction & cgfOld )
+// ====================================================================================================
+/// \brief Check the result from the implicit time-stepping solve (e.g. that the BCs are all correct)
+// ====================================================================================================
+{
+  const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
+
+  if( debug() & 4 )
+  {
+    for( int grid=0; grid<cgf.cg.numberOfComponentGrids(); grid++ )
+    {
+      // checkResultFromImplicitTimeStepping(cgf.u[grid],          // new time
+      //                                     gf[current].u[grid],  // -- fix this -- should be uL
+      //                                     cgfOld.u[grid],       // current time soution
+      //                                     cgf.getGridVelocity(grid),
+      //                                     cgf.t,
+      //                                     parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping"),grid );
+      if( useAddedMassAlgorithm && useImplicitAmpBCs )
+      {
+        checkAddedMassImplicitBoundaryConditions( cgf.u[grid],cgfOld.u[grid],cgf.t,grid,dt );
+      }
+    
+    }
+  }
+  
   return 0;
 }

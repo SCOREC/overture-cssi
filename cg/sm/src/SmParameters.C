@@ -208,6 +208,7 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if( !dbase.has_key("currentInterfaceTimeLevel") ) dbase.put<int>("currentInterfaceTimeLevel")=-1;
   if( !dbase.has_key("numberOfInterfaceTimeLevels") ) dbase.put<int>("numberOfInterfaceTimeLevels")=4;
 
+
   bcName[interpolation]="interpolation";
   bcName[displacementBC]="displacementBC";
   bcName[tractionBC]="tractionBC";

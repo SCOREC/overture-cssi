@@ -593,6 +593,9 @@ end if
    #If #DIM == "2"
      f(i1+is1,i2+is2,i3)=normal(i1,i2,i3,0)*( uDiffusion(i1,i2,i3)-advection(uc) artificialDissipation(uc) )\
                         +normal(i1,i2,i3,1)*( vDiffusion(i1,i2,i3)-advection(vc) artificialDissipation(vc) )
+     ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+     ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+     ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
    #Else
      f(i1+is1,i2+is2,i3+is3)=normal(i1,i2,i3,0)*( uDiffusion(i1,i2,i3)-advection(uc) artificialDissipation(uc) )\
                             +normal(i1,i2,i3,1)*( vDiffusion(i1,i2,i3)-advection(vc) artificialDissipation(vc) )\
@@ -1494,8 +1497,14 @@ defineDerivativeMacros(DIM,ORDER,GRIDTYPE)
  ! for non-moving grids, u=uu, and we need to multiply uu by advectionCoefficient in the pressure BC
  advectCoeff=advectionCoefficient  
  if( gridIsMoving.ne.0 .and. initialConditionsAreBeingProjected.eq.0 )then
-   ! For moving grids we need to multiply only u by advectionCoefficient, and mutiply by advectCoeff=1 in the pressure BC
+   ! For moving grids we need to multiply only u by advectionCoefficient, and multiply by advectCoeff=1 in the pressure BC
    advectCoeff=1. 
+   ! ************************* CHECK ME -- IS THIS THE RIGHT THING TO DO ??? *************************
+   if( twilightZoneFlow.ne.0 )then
+     ! For TZ, the grid-velocity may not match the velocity on the boundary -- TURN OFF the advection term in the pressure BC
+     !    *wdh* April 22, 2018
+     advectCoeff=0.
+   end if
  end if
 
  ! for visco-plastic

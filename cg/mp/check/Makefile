@@ -16,10 +16,10 @@ cgmp:
 
 # build grids that are used by the regression tests (and not already in Overture/sampleGrids)
 buildGrids: twoSquaresInterfacee1.order2.hdf elasticPistonGrid2.hdf diskDeformFixedBig2e.hdf deformingEllipseGride2.hdf
-	ln -sf ../cmd/adDomain.h .
-	ln -sf ../cmd/cnsDomain.h .
-	ln -sf ../cmd/insDomain.h .
-	ln -sf ../cmd/smDomain.h .
+	ln -sf $(CG)/mp/cmd/adDomain.h .
+	ln -sf $(CG)/mp/cmd/cnsDomain.h .
+	ln -sf $(CG)/mp/cmd/insDomain.h .
+	ln -sf $(CG)/mp/cmd/smDomain.h .
 
 twoSquaresInterfacee1.order2.hdf:
 	${Overture}/bin/ogen noplot ${Overture}/sampleGrids/twoSquaresInterface -factor=1 -yFactor=1 -interp=e

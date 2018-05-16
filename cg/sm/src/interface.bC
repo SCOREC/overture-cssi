@@ -112,6 +112,157 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
 }
 
 // =======================================================================================================
+// Macro: Adjust the traction for TZ
+//
+//   param: OPTION (input): OPTION=[GET|SET]
+//
+// =======================================================================================================
+#beginMacro adjustTractionForTZ(OPTION)
+
+  #ifdef USE_PPP
+  const realSerialArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+  #else
+  const realSerialArray & normal = mg.vertexBoundaryNormal(side,axis);
+  #endif
+
+  Range Dc(uc,uc+numberOfDimensions-1); // displacements
+  
+  RealArray & muGrid = parameters.dbase.get<RealArray>("muGrid");
+  RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
+  real lambda = lambdaGrid(grid);
+  real mu = muGrid(grid);
+  real alpha = lambda+2.*mu;
+
+  if( pdeVariation==SmParameters::nonConservative || pdeVariation==SmParameters::conservative )
+  {
+    // TZ forcing for traction for SOS codes: compute traction from displacements 
+  
+    realSerialArray uex(I1,I2,I3,Dc),uey(I1,I2,I3,Dc);
+    e.gd( uex,xLocal,numberOfDimensions,isRectangular,0,1,0,0,I1,I2,I3,Dc,t);  // u.x : exact solution 
+    e.gd( uey,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,Dc,t);  // u.y : exact solution 
+  
+    if( interfaceDataOptions & Parameters::tractionInterfaceData  )
+    {
+      #If #OPTION eq "SET"
+        bd(I1,I2,I3,0) += (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
+                           normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+  
+        bd(I1,I2,I3,1) += (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
+                           normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+      #Else
+        assert( baseTraction>=0 );
+        f(I1,I2,I3,baseTraction+0) -= (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
+                                       normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+  
+        f(I1,I2,I3,baseTraction+1) -= (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
+                                       normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+      #End 
+    }
+    
+    if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
+    {
+      // tractionRate: time derivative of the traction
+      // compute time derivatives of velocity spatial derivatives
+       // traction rate is filled into the velocity components (v1c,...)
+      e.gd( uex,xLocal,numberOfDimensions,isRectangular,1,1,0,0,I1,I2,I3,Dc,t);  // v.x : exact solution 
+      e.gd( uey,xLocal,numberOfDimensions,isRectangular,1,0,1,0,I1,I2,I3,Dc,t);  // v.y : exact solution 
+  
+  
+      // *note* uex is really vex
+      #If #OPTION eq "SET"
+        bd(I1,I2,I3,v1c+0) += (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
+       			       normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+  
+        bd(I1,I2,I3,v1c+1) += (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
+  			       normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+      #Else
+        assert( baseTractionRate>=0 );
+        f(I1,I2,I3,baseTractionRate+0) -= (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
+       			                   normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+  
+        f(I1,I2,I3,baseTractionRate+1) -= (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
+  			                   normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+      #End 
+
+    }
+    
+  
+  }
+  else if( pdeVariation==SmParameters::godunov )
+  {
+    // TZ forcing for traction for FOS codes: compute traction from stress	  
+    
+    Range Sc(s11c,s22c);
+    realSerialArray ue(I1,I2,I3,Sc);
+    e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Sc,t);   // exact values for the stress
+  
+    if( interfaceDataOptions & Parameters::tractionInterfaceData  )
+    {
+      // if( t<3.*dt && debug() & 4 )
+      // {
+      //   Range Ct=Range(baseTraction,baseTraction+1);
+      //   ::display(f(I1,I2,I3,Ct),sPrintF("--SM--IRHS: before adjust traction for TZ t=%9.3e",t),
+      //             debugFile,"%6.2f ");
+      // }
+
+      #If #OPTION eq "SET"
+        bd(I1,I2,I3,uc) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
+        bd(I1,I2,I3,vc) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
+      #Else
+        assert( baseTraction>=0 );
+        f(I1,I2,I3,baseTraction+0) -= normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
+        f(I1,I2,I3,baseTraction+1) -= normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
+      #End
+    }
+    
+    // if( t<3.*dt && debug() & 4 )
+    // {
+    //   RealArray te(I1,I2,I3,2);
+    //   te(I1,I2,I3,0) = normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
+    //   te(I1,I2,I3,1) = normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
+    //   ::display(te,sPrintF("--SM--IRHS: exact traction t=%9.3e",t),
+    //                   debugFile,"%6.2f ");
+    //   Range Ct=Range(baseTraction,baseTraction+1);
+    //   ::display(f(I1,I2,I3,Ct),sPrintF("--SM--IRHS: after adjust traction for TZ t=%9.3e",t),
+    //                   debugFile,"%6.2f ");
+    // }
+
+    // ::display(ue(I1,I2,I3,s11c),"TZ ue(I1,I2,I3,s11c)");
+    // ::display(bd(I1,I2,I3,uc),"TZ traction on solid boundary");
+    if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
+    {
+      // tractionRate: time derivative of the traction
+      // compute time derivatives of velocity spatial derivatives
+       // traction rate is filled into the velocity components (v1c,...)
+      
+      e.gd( ue,xLocal,numberOfDimensions,isRectangular,1,0,0,0,I1,I2,I3,Sc,t);   // exact values for the d(stress)/dt 
+      #If #OPTION eq "SET"
+        bd(I1,I2,I3,v1c+0) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
+        bd(I1,I2,I3,v1c+1) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
+      #Else
+        assert( baseTractionRate>=0 );
+        bd(I1,I2,I3,baseTractionRate+0) -= normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
+        bd(I1,I2,I3,baseTractionRate+1) -= normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
+      #End  
+    }
+    
+  }
+  else
+  {
+    printF("interface:ERROR: pdeVariation=%i not implemented yet. \n",(int)pdeVariation);
+  }
+  
+  if( numberOfDimensions==3 )
+  {
+    printP("interface:ERROR: adjust traction forcing in 3D for TZ. Finish me!\n");
+    OV_ABORT("error");
+  }
+#endMacro
+
+
+
+
+// =======================================================================================================
 /// \brief Set or get the right-hand-side for an interface boundary condition.
 /// \details This function is used when solving the interface equations 
 ///           by iteration.
@@ -192,6 +343,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
   CompositeGrid & cg = gf[gfIndex].cg;
   const int numberOfDimensions = cg.numberOfDimensions();
   const real epsT = REAL_EPSILON*100.*(1+fabs(t));
+  const int & correctionStage = parameters.dbase.get<int>("correctionStage");
   
   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
 
@@ -210,10 +362,18 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
   const int numberOfComponents = parameters.dbase.get<int >("numberOfComponents")- parameters.dbase.get<int >("numberOfExtraVariables");
   SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
+  const bool & twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
   assert( info.u != NULL );
   RealArray & f = *info.u;
   Index I1=f.dimension(0),I2=f.dimension(1),I3=f.dimension(2);
+  Range Rx=numberOfDimensions;
+
+  // For TZ we keep traction of where quanities are saved in the output array "f"
+  int baseVelocity=-1, baseAcceleration=-1, baseTraction=-1, baseTractionRate=-1;
+  
+  FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+  FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
   if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
   {
@@ -293,7 +453,6 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	}
 	InterfaceData & interfaceData = parameters.dbase.get<InterfaceData>(velocityDataName);
 	interfaceData.t=t;
-	Range Rx=numberOfDimensions;
 	interfaceData.u(I1,I2,I3,Rx)=f(I1,I2,I3,C);  
 
 
@@ -372,10 +531,19 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
       // For TESTING return exact values (if known)
       bool useExactInterfacePosition=false;
-      bool useExactInterfaceVelocity=false;
+      bool useExactInterfaceVelocity=false; 
       bool useExactInterfaceAcceleration=false;
-      bool useExactInterfaceTraction=false;  // 
+      bool useExactInterfaceTraction=false;
       
+      bool evalExactTraction=true;  // evaluate (but do not use) exact traction (for comparing to the computed)
+      
+      // Should we save the predicted values in the time history
+      bool savePredictedVelocityInHistory=true;  // *default* true
+      bool savePredictedTractionInHistory=true;  // *default* true
+      
+      // always eval traction from the time-history:
+      bool useTractionTimeHistory=false; // *default* false
+
       if( useExactInterfacePosition )
         printF("--SM--IRHS: USING EXACT INTERFACE POSITIONS t=%9.3e ***TEMP***\n",t);
       
@@ -401,7 +569,6 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- return the position of the boundary --
 
-	Range Rx(0,numberOfDimensions-1);                // vertex components 
 	C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
         Cd=C;  // Save me for TZ below
 
@@ -419,9 +586,36 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         if( t<=epsT || useExactInterfacePosition )
         {
           // -- get initial or past-time state of the interface  --
-          initialStateAssigned=getKnownInterfaceState(Parameters::boundaryPosition,t, side,axis,grid,
-                                                      mg,I1,I2,I3,Rx,displacement );
+          if( !twilightZoneFlow )
+          {
+            initialStateAssigned=getKnownInterfaceState(Parameters::boundaryPosition,t, side,axis,grid,
+                                                        mg,I1,I2,I3,Rx,displacement );
+            // if( true ||  t<=2.*dt & debug() & 2 )
+            // {
+            //   display(displacement,sPrintF("--SM-- displacement from known solution at t=%9.3e",t),"%.2e ");
+            // }
 
+          }
+          else
+          {
+            // --- set past time position from TZ solution ---- *wdh* April 17, 2018
+            initialStateAssigned=true;
+            
+            printP("interfaceRightHandSide:set past-time interface position from TZ solution, t=%9.3e\n",t);
+            
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            bool isRectangular=false;
+            if( !isRectangular )
+              mg.update(MappedGrid::THEcenter | MappedGrid::THEvertexBoundaryNormal );
+            OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+
+            Range Dc(uc,uc+numberOfDimensions-1); // displacements
+            realSerialArray ue(I1,I2,I3,Dc);
+            e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Dc,t);  // ue : exact solution        
+
+            displacement=xLocal(I1,I2,I3,Rx)+ue(I1,I2,I3,Dc); 
+          }
+          
         }
         if( !initialStateAssigned )
         {
@@ -434,11 +628,32 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
           }
           if( methodComputesDisplacements )
           {
-            if( debug() & 4 )
-              printP("interfaceRightHandSide:get interface position and save in components [%i,%i] \n",
-                     C.getBase(),C.getBound());
-
+            
             displacement=vertex(I1,I2,I3,Rx)+uLocal(I1,I2,I3,Dc);  
+
+            if( debug() & 4 && t <= 3.*dt )
+            {
+              printP("interfaceRightHandSide:get interface position and save in components [%i,%i] t=%9.3e\n",
+                     C.getBase(),C.getBound(),t);
+                 
+              ::display(uLocal(I1,I2,I3,Dc),sPrintF("Cgsm:interfaceRightHandSide: uLocal: displacement t=%9.3e (before any TZ fix)",t),debugFile);
+              if( twilightZoneFlow )
+              {
+                OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                bool isRectangular=false;
+                if( !isRectangular )
+                  mg.update(MappedGrid::THEcenter | MappedGrid::THEvertexBoundaryNormal );
+                OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+
+                Range Dc(uc,uc+numberOfDimensions-1); // displacements
+                realSerialArray ue(I1,I2,I3,Dc);
+                e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Dc,t);  // ue : exact solution        
+
+                ::display(ue(I1,I2,I3,Dc),sPrintF("Cgsm:interfaceRightHandSide: exactDisplacement, t=%9.3e",t),debugFile);
+                ::display(fabs(ue(I1,I2,I3,Dc)-uLocal(I1,I2,I3,Dc)),sPrintF("Cgsm:interfaceRightHandSide: error in displacement, t=%9.3e",t),debugFile);
+              }
+              
+            }
 
           }
           else
@@ -457,6 +672,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         }
         
 	f(I1,I2,I3,C)=displacement;
+        if( t<=2.*dt & debug() & 4 )
+        {
+          display(f(I1,I2,I3,C),sPrintF("--SM-- interface positions at t=%9.3e",t),debugFile,"%.2e ");
+        }
+        
         
         if( !methodComputesVelocity && saveTimeHistory )
         {
@@ -466,6 +686,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
           if( !gfd.dbase.has_key("displacementHistory") )
           {
             gfd.dbase.put<ArrayEvolution>("displacementHistory");
+
+            // *wdh* May 1, 2018 -- increase order of accuracy to 3 (3-pt)
+            ArrayEvolution & displacementHistory = gfd.dbase.get<ArrayEvolution>("displacementHistory");
+            const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+            displacementHistory.setOrderOfAccuracy(timeOrderOfAccuracy);
           }
           ArrayEvolution & displacementHistory = gfd.dbase.get<ArrayEvolution>("displacementHistory");
 
@@ -489,10 +714,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	// --- save the interface velocity ----
         // ------------------------------------
 
+        bool useTimeHistoryForPredictorStage=false;
+
 	if( debug() & 2 )
 	  printP("Cgsm:interfaceRightHandSide: Save the interface velocity.\n");
 	
         C=Range(numSaved,numSaved+numberOfDimensions-1);   // save velocity in these components of f
+
+        baseVelocity=C.getBase();  // save for TZ correction
 
 	const int v1c = parameters.dbase.get<int >("v1c");
         Range Rx=numberOfDimensions;
@@ -511,7 +740,22 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
           if( v1c>=0 )
           {
             Range V(v1c,v1c+numberOfDimensions-1);           
-            velocity=uLocal(I1,I2,I3,V);
+            if( !useTimeHistoryForPredictorStage || correctionStage!=0 )
+            {
+              velocity=uLocal(I1,I2,I3,V);
+            }
+            else
+            { // ** TEST** Use time extrap for predictor stage
+              assert( correctionStage==0 );
+              ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
+              int numberOfTimeDerivatives=0;
+              const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+              int order=timeOrderOfAccuracy;
+              printF("--SM--interface: Use time-history for velocity on predictor stage, correctionStage=%i, order=%i,  t=%.3e\n",
+                     correctionStage,order,t);
+              velocityHistory.eval( t, velocity, numberOfTimeDerivatives, order );  
+            }
+            
           }
           else
           {
@@ -524,12 +768,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
               ArrayEvolution & displacementHistory = gfd.dbase.get<ArrayEvolution>("displacementHistory");
 
               // Do we need this to higher order so we can get the acceleration to 2nd order?
-              int orderOfAccuracy=3;
-              printF("--SM----IRHS-- EVAL the velocity as d(u)/dt from displacement time history, order=%i t=%9.3e\n",
-                     orderOfAccuracy,t);
-              int numberOfTimeDerivatives=1;
-              
-              displacementHistory.eval( t,velocity,numberOfTimeDerivatives,orderOfAccuracy );
+              // const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+              // int orderOfAccuracy=3;
+              printF("--SM----IRHS-- EVAL the velocity as d(u)/dt from displacement time history, t=%9.3e\n",t);
+              const int numberOfTimeDerivatives=1;
+              displacementHistory.eval( t,velocity,numberOfTimeDerivatives ); // should be 3rd order accuracy now 
             }
             else
             {
@@ -545,19 +788,31 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
         // Save a time history of the velocity on the interface that can be used to
         // predict the acceleration
-        
         if( saveTimeHistory )
         {
           // -- save a time history of the velocity
           if( !gfd.dbase.has_key("velocityHistory") )
           {
             gfd.dbase.put<ArrayEvolution>("velocityHistory");
+            ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
+            // *wdh* May 1, 2018 -- increase order of accuracy to 3 (3-pt)
+            const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+
+            int order=timeOrderOfAccuracy;
+            // int order=2;  // *wdh* May 2, 2018
+            velocityHistory.setOrderOfAccuracy(order);
           }
           ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
 
-          printF("--SM----IRHS-- Save velocity time history at t=%9.3e\n",t);
-          velocityHistory.add( t, velocity);  
-
+          // *wdh* May 1, 2018-- do not save velocity from the predictor step -- this is bad for some reason
+          if( t<=0. || correctionStage!=0 || savePredictedVelocityInHistory )
+          {
+            if( debug() & 4 )
+              printF("--SM----IRHS-- Save interface velocity time history at t=%9.3e in ArrayEvolution - correctionStage=%i\n",
+                     t,correctionStage);
+            velocityHistory.add( t, velocity);  
+          }
+          
         }
 
         if( FALSE ) // **************** OLD *************
@@ -604,10 +859,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- save the interface acceleration --
 	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save acceleration in these components of f
+        baseAcceleration=C.getBase();  // save for TZ correction
 
-	if( true || debug() & 2 )
-	  printP("Cgsm:interfaceRightHandSide: return the interface acceleration.  \n");
-
+	if( debug() & 2 )
+        {
+	  printP("Cgsm:interfaceRightHandSide: return the interface acceleration, t=%9.3e.\n",t);
+          fprintf(debugFile,"Cgsm:interfaceRightHandSide: return the interface acceleration t=%9.3e.\n",t);
+        }
+        
         bool initialStateAssigned=false;
         if( t<=epsT || useExactInterfaceAcceleration )
         {
@@ -618,7 +877,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         }
         if( !initialStateAssigned )
         {
-          getInterfaceAcceleration( gfd, t, side,axis,grid, mg, I1,I2,I3,C, f );
+          getInterfaceAcceleration( gfd, t, side,axis,grid, mg, I1,I2,I3,C, f,useExactInterfaceAcceleration );
         }
         
 
@@ -631,8 +890,9 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
       {
 	// -- save the interface traction --
 	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction in these components of f
+        baseTraction=C.getBase();  // save for TZ correction
 
-	if( true || debug() & 2 )
+	if( debug() & 2 )
 	  printP(">>>Cgsm:interfaceRHS: Save interface traction.. t=%9.3e in C=[%i,%i] <<<\n",
                   t,C.getBase(),C.getBound());
 
@@ -660,7 +920,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             const int s22c = parameters.dbase.get<int >("s22c"); assert( s22c>=0 );
 
             // -- here is the normal to the un-deformed surface -- do this for now
-            printF("\n --SM-- IRHS WARNING Using REFERENCE NORMAL FOR TRACTION ***FIX ME \n\n");
+            printF("\n --SM-- IRHS WARNING Using REFERENCE NORMAL FOR TRACTION ***FIX ME*** ***TEMP*** \n\n");
             
             mg.update(MappedGrid::THEvertexBoundaryNormal);
             OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
@@ -684,13 +944,100 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             }
           }
           
-          if( debug() & 4 )
+          
+          RealArray traction2(I1,I2,I3,Rx);
+          if( useTractionTimeHistory && correctionStage==0 )
           {
-            ::display(f(I1,I2,I3,Range(numSaved,numSaved+1)),"--SM--IRHS: Traction","%6.2f ");
+            if( gfd.dbase.has_key("tractionHistory") )
+            {
+              ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+
+              // Do we need this to higher order so we can get the acceleration to 2nd order?
+              // const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+              // int orderOfAccuracy=3;
+              printF("--SM----IRHS-- EVAL the traction from the traction time history, t=%9.3e\n",t);
+              tractionHistory.eval( t,traction2 ); 
+
+            }
+            else
+            {
+              OV_ABORT("ERROR: tractionHistory not found. finish me");
+            }
           }
           
-        }
+          if( t<=3.*dt && debug() & 4 )
+          {
+            Range Ct=Range(baseTraction,baseTraction+numberOfDimensions-1);
+            // ::display(f(I1,I2,I3,Ct),sPrintF("--SM--IRHS: computed traction t=%9.3e",t), debugFile,"%6.2f ");
 
+            if( evalExactTraction )
+            {
+              RealArray traction(I1,I2,I3,Rx);
+              getKnownInterfaceState(Parameters::boundaryTraction,t, side,axis,grid,
+                                     mg,I1,I2,I3,Rx,traction );
+              real diff=max(fabs(f(I1,I2,I3,C)-traction));
+              printF("-SM--> Max error in traction = %9.3e, |traction|=%8.2e (correctionStage=%i)\n",
+                     diff,max(fabs(traction)),correctionStage);
+
+              if( useTractionTimeHistory && correctionStage==0 )
+              {
+                real diff=max(fabs(traction2-traction));
+                printF("-SM--> Max error in traction (time history) = %9.3e, |traction|=%8.2e (correctionStage=%i)\n",
+                       diff,max(fabs(traction)),correctionStage);
+              }
+              // if( false )
+              // {
+              //   printF("--SM-- interface ****TEMP*** use exact traction\n");
+              //   f(I1,I2,I3,C)=traction; // ************* TEMP *************
+              // }
+              
+            }
+            
+
+          }
+          if( useTractionTimeHistory && correctionStage==0 )
+          {
+            printF("--SM-- interface: use traction from time-history for predictor stage \n");
+            f(I1,I2,I3,C)=traction2;
+          }
+
+          
+        } // end if !initialStateAssigned
+        
+
+        // Save a time history of the traction on the interface *wdh* May 1, 2018
+        if( !saveTimeHistory )
+        {
+          OV_ABORT("ERROR : traction: saveTimeHistory=false");
+        }
+        
+        if( saveTimeHistory )
+        {
+          // -- save a time history of the traction
+          if( !gfd.dbase.has_key("tractionHistory") )
+          {
+            gfd.dbase.put<ArrayEvolution>("tractionHistory");
+            ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+            // *wdh* May 1, 2018 -- increase order of accuracy to 3 (3-pt)
+            const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+            int order=timeOrderOfAccuracy;
+            // int order=2;  // *wdh* May 2, 2018
+            tractionHistory.setOrderOfAccuracy(order);
+          }
+          ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+
+          // *wdh* May 1, 2018-- do not save traction from the predictor step -- this is bad for some reason
+          if( t<=0. || correctionStage!=0 || savePredictedTractionInHistory )
+          {
+            if( debug() & 4 )
+              printF("--SM----IRHS-- Save interface traction time history at t=%9.3e in ArrayEvolution - correctionStage=%i\n",
+                     t,correctionStage);
+            Range Rx=numberOfDimensions;
+            RealArray traction(I1,I2,I3,Rx);
+            traction=f(I1,I2,I3,C);
+            tractionHistory.add( t, traction );
+          }
+        } // end if saveTimeHistory 
         
 	
 
@@ -728,7 +1075,10 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	  printP("Cgsm:interfaceRightHandSide: Save the interface traction rate. FINISH ME \n");
 
 	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction rate in these components of f
+        baseTractionRate=C.getBase();  // save for TZ correction
 
+        OV_ABORT("ERROR");
+        
 	// f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
 
 	numSaved+=numberOfDimensions;
@@ -741,8 +1091,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
 
     // *****************************************************************************
-    // ******************** Traction Twilight Zone Forcing *************************
+    // ************************ Twilight Zone Forcing ******************************
     // *****************************************************************************
+    // if( t< 2.*dt && debug() & 4 )
+    // {
+    //   // ::display(ue(I1,I2,I3,Dc),"Exact displacements\n");
+    //   Range Ct=Range(baseTraction,baseTraction+numberOfDimensions-1);
+    //   ::display(f(I1,I2,I3,Ct),sPrintF("interface: traction *I* (t=%9.3e)\n",t),debugFile);
+    // }
 
     if( parameters.dbase.get<bool >("twilightZoneFlow") )
     {
@@ -786,90 +1142,9 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	//   bd <- bd + (true boundary traction)
 
         
-        #ifdef USE_PPP
- 	 const realSerialArray & normal = mg.vertexBoundaryNormalArray(side,axis);
-        #else
- 	 const realSerialArray & normal = mg.vertexBoundaryNormal(side,axis);
-        #endif
+        // -- adjust the traction and/or tractionRate by adding on the TZ traction
+        adjustTractionForTZ(SET);
 
-	Range Dc(uc,uc+numberOfDimensions-1); // displacements
-
-	RealArray & muGrid = parameters.dbase.get<RealArray>("muGrid");
-	RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
-	real lambda = lambdaGrid(grid);
-	real mu = muGrid(grid);
-	real alpha = lambda+2.*mu;
-  
-	if( pdeVariation==SmParameters::nonConservative || pdeVariation==SmParameters::conservative )
-	{
-          // TZ forcing for traction for SOS codes: compute traction from displacements 
-
-	  realSerialArray uex(I1,I2,I3,Dc),uey(I1,I2,I3,Dc);
-	  e.gd( uex,xLocal,numberOfDimensions,isRectangular,0,1,0,0,I1,I2,I3,Dc,t);  // u.x : exact solution 
-	  e.gd( uey,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,Dc,t);  // u.y : exact solution 
-
-	  bd(I1,I2,I3,0) += (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
-			     normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
-	
-	  bd(I1,I2,I3,1) += (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
-			     normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
-
-	  if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
-	  {
-	    // tractionRate: time derivative of the traction
-	    // compute time derivatives of velocity spatial derivatives
-             // traction rate is filled into the velocity components (v1c,...)
-	    e.gd( uex,xLocal,numberOfDimensions,isRectangular,1,1,0,0,I1,I2,I3,Dc,t);  // v.x : exact solution 
-	    e.gd( uey,xLocal,numberOfDimensions,isRectangular,1,0,1,0,I1,I2,I3,Dc,t);  // v.y : exact solution 
-
-
-	    // *note* uex is really vex
-	    bd(I1,I2,I3,v1c+0) += (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
-				   normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
-	
-	    bd(I1,I2,I3,v1c+1) += (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
-				   normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
-	  }
-	  
-
-	}
-	else if( pdeVariation==SmParameters::godunov )
-	{
-          // TZ forcing for traction for FOS codes: compute traction from stress	  
-	  
-	  Range Sc(s11c,s22c);
-	  realSerialArray ue(I1,I2,I3,Sc);
-	  e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Sc,t);   // exact values for the stress
-
-
-	  bd(I1,I2,I3,uc) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
-	  bd(I1,I2,I3,vc) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
-	
-   	  // ::display(ue(I1,I2,I3,s11c),"TZ ue(I1,I2,I3,s11c)");
-	  // ::display(bd(I1,I2,I3,uc),"TZ traction on solid boundary");
-	  if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
-	  {
-	    // tractionRate: time derivative of the traction
-	    // compute time derivatives of velocity spatial derivatives
-             // traction rate is filled into the velocity components (v1c,...)
-	    
-	    e.gd( ue,xLocal,numberOfDimensions,isRectangular,1,0,0,0,I1,I2,I3,Sc,t);   // exact values for the d(stress)/dt 
-	    bd(I1,I2,I3,v1c+0) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s11c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s21c);
-	    bd(I1,I2,I3,v1c+1) += normal(I1,I2,I3,0)*ue(I1,I2,I3,s12c) + normal(I1,I2,I3,1)*ue(I1,I2,I3,s22c);
-
-	  }
-	  
-	}
-	else
-	{
-	  printF("interface:ERROR: pdeVariation=%i not implemented yet. \n",(int)pdeVariation);
-	}
-
-	if( numberOfDimensions==3 )
-	{
-	  printP("interface:ERROR: add traction forcing in 3D for TZ. Finish me!\n");
-	  OV_ABORT("error");
-	}
 	
         // bd(I1,I2,I3,V) += xe(I1,I2,I3,V);
 	
@@ -879,42 +1154,136 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 	//   subtract off TZ flow:
         //   f <- f - ( sm-boundary-position )  +  ( TZ-interface-position)
 
-	Range D=numberOfDimensions;
-	Range Dc(uc,uc+numberOfDimensions-1); // displacements
-	realSerialArray ue(I1,I2,I3,Dc);
-	e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Dc,t);  // u : exact solution        
+        if( interfaceDataOptions & Parameters::positionInterfaceData ) // *wdh* April 20, 2018
+        {
+          Range D=numberOfDimensions;
+          Range Dc(uc,uc+numberOfDimensions-1); // displacements
+          realSerialArray ue(I1,I2,I3,Dc);
+          e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Dc,t);  // u : exact solution        
 
 
-	bool methodComputesDisplacements=true;
-	if( parameters.dbase.has_key("methodComputesDisplacements") )
-	  methodComputesDisplacements=parameters.dbase.get<bool>("methodComputesDisplacements");
+          bool methodComputesDisplacements=true;
+          if( parameters.dbase.has_key("methodComputesDisplacements") )
+            methodComputesDisplacements=parameters.dbase.get<bool>("methodComputesDisplacements");
 
-	// Some solid-mechanics solvers compute the displacements, others the full deformation.	
-	if( methodComputesDisplacements )
-	{
-	  f(I1,I2,I3,Cd) -= xLocal(I1,I2,I3,D) + ue(I1,I2,I3,Dc); 
+          // Some solid-mechanics solvers compute the displacements, others the full deformation.	
+          if( methodComputesDisplacements )
+          {
+            f(I1,I2,I3,Cd) -= xLocal(I1,I2,I3,D) + ue(I1,I2,I3,Dc); 
 
-          const real *v0 = parameters.dbase.get<real [3]>("tzInterfaceVelocity");  // this should match vg0 in the Deforming body motion 
-          const real *a0 = parameters.dbase.get<real [3]>("tzInterfaceAcceleration");         // this should match ag0 in the Deforming body motion 
-	  if( t<3.*dt )
-	  {
-	    printP("interface:INFO: set TZ interface at t=%9.3e for (grid,side,axis)=(%i,%i,%i) to be x0 + v0*t + a0*t^2\n"
-                   " v0=(%g,%g,%g), a0=(%g,%g,%g) (NOTE: these should match the values for the DeformingBodyMotion)\n",t,grid,side,axis,
-		   v0[0],v0[1],v0[2], a0[0],a0[1],a0[2]);
-	  }
+            const real *v0 = parameters.dbase.get<real [3]>("tzInterfaceVelocity");  // this should match vg0 in the Deforming body motion 
+            const real *a0 = parameters.dbase.get<real [3]>("tzInterfaceAcceleration");         // this should match ag0 in the Deforming body motion 
+            if( t<3.*dt )
+            {
+              printP("interface:INFO: set TZ interface at t=%9.3e for (grid,side,axis)=(%i,%i,%i) to be x0 + v0*t + a0*t^2\n"
+                     " v0=(%g,%g,%g), a0=(%g,%g,%g) (NOTE: these should match the values for the DeformingBodyMotion)\n",t,grid,side,axis,
+                     v0[0],v0[1],v0[2], a0[0],a0[1],a0[2]);
+              if( debug() & 4 )
+              {
+                // ::display(ue(I1,I2,I3,Dc),"Exact displacements\n");
+                ::display(f(I1,I2,I3,Cd),sPrintF(" Displacements before adding x0 + v0*t + a0*t^2 (t=%9.3e)",t),
+                         debugFile);
+              }
+            
+            }
 	  
-	  for( int axis=0; axis<numberOfDimensions; axis++ )
-	  {
-	    f(I1,I2,I3,Cd.getBase()+axis) += xLocal(I1,I2,I3,axis) + t*( v0[axis] + t*( a0[axis] ) );
-	  }
-	  
+            for( int axis=0; axis<numberOfDimensions; axis++ )
+            {
+              f(I1,I2,I3,Cd.getBase()+axis) += xLocal(I1,I2,I3,axis) + t*( v0[axis] + t*( a0[axis] ) );
+            }
 
-	}
-	else
-	{
-	  printP("interface:ERROR: subtract boundary position for TZ with !methodComputesDisplacements. Finish me!\n");
-	  OV_ABORT("error");
-	}
+            if( debug() & 4 &&  t<3.*dt )
+            {
+              ::display(f(I1,I2,I3,Cd)," positions xLocal+Displacements AFTER adding x0 + v0*t + a0*t^2\n",debugFile);
+            }
+
+          }
+          else
+          {
+            printP("interface:ERROR: subtract boundary position for TZ with !methodComputesDisplacements. Finish me!\n");
+            OV_ABORT("error");
+          }
+        }
+        
+        if( interfaceDataOptions & Parameters::tractionInterfaceData ||
+            interfaceDataOptions & Parameters::tractionRateInterfaceData )
+        {
+          // ADJUST REQUESTED TRACTION FOR TZ 
+
+          if( t<3.*dt )
+            printP("interface:INFO: adjust requested traction for TZ, t=%8.2e.\n",t);
+
+          // OV_ABORT("Cgsm:interface: interface traction requested -- fix for TZ");
+
+          // -- adjust the traction by subtractingthe TZ traction
+          // FIX ME -- NEED TO ADJUST CERTAIN COMPONENTS OF f, not bd
+          adjustTractionForTZ(GET);
+
+          if( t< 2.*dt && debug() & 4 )
+          {
+            // ::display(ue(I1,I2,I3,Dc),"Exact displacements\n");
+            Range Ct=Range(baseTraction,baseTraction+numberOfDimensions-1);
+            ::display(f(I1,I2,I3,Ct),sPrintF("interface:get traction (after adjust for TZ) (t=%9.3e)",t),debugFile);
+          }
+
+        }
+
+        if( interfaceDataOptions & Parameters::velocityInterfaceData )
+        {
+          if( v1c>=0 )
+          {
+            Range V(v1c,v1c+numberOfDimensions-1);           
+            RealArray vex(I1,I2,I3,V);
+            e.gd( vex,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t); // exact velocity
+
+            // OV_ABORT("Cgsm:interface: interface velocity requested -- fix for TZ");
+
+            assert( baseVelocity>=0 );
+            Range Rx=numberOfDimensions;
+            f(I1,I2,I3,Rx+baseVelocity) -= vex(I1,I2,I3,Rx+v1c);
+            
+          }
+          else
+          {
+             OV_ABORT("Cgsm:interface: interface velocity requested -- fix for TZ and SOS scheme");
+          }
+          
+        }
+
+        if( interfaceDataOptions & Parameters::accelerationInterfaceData )
+        {
+          // OV_ABORT("Cgsm:interface: interface acceleration requested -- fix for TZ");
+          if( v1c>=0 )
+          {
+            Range V(v1c,v1c+numberOfDimensions-1);           
+            RealArray aex(I1,I2,I3,V);
+            e.gd( aex,xLocal,numberOfDimensions,isRectangular,1,0,0,0,I1,I2,I3,V,t); // exact acceleration = v.t 
+
+            // OV_ABORT("Cgsm:interface: interface velocity requested -- fix for TZ");
+
+            assert( baseAcceleration>=0 );
+            Range Rx=numberOfDimensions;
+            f(I1,I2,I3,Rx+baseAcceleration) -= aex(I1,I2,I3,Rx+v1c);
+
+            if( t< 2.*dt && debug() & 4 )
+            {
+              // ::display(ue(I1,I2,I3,Dc),"Exact displacements\n");
+              Range Ct=Range(baseTraction,baseTraction+numberOfDimensions-1);
+              ::display(f(I1,I2,I3,Rx+baseAcceleration),
+                   sPrintF("interface:get acceleration (after adjust for TZ) (t=%9.3e)",t),debugFile);
+            }
+          }
+          else
+          {
+             OV_ABORT("Cgsm:interface: interface velocity requested -- fix for TZ and SOS scheme");
+          }
+        }
+        
+        if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
+        {
+          OV_ABORT("Cgsm:interface: interface tractionRate requested -- fix for TZ");
+        }
+        
 
       }
       else
@@ -963,13 +1332,24 @@ projectInterface( int grid, real dt, int current )
   if( !useAddedMassAlgorithm )
     return 0;
   
+  FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+  FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
+
   const bool projectInterface = parameters.dbase.get<bool>("projectInterface");
   GridFunction & cgf = gf[current];
   const real t= cgf.t; 
   if( t<2.*dt )
+  {
     printF("--SM-- projectInterface: t=%9.2e, grid=%i useAddedMassAlgorithm=%i projectInterface=%i\n",
 	   t,grid,useAddedMassAlgorithm,projectInterface);
-
+    if( debug() & 4 )
+    {
+      fPrintF(debugFile,"\n--SM-- projectInterface: t=%9.2e, grid=%i useAddedMassAlgorithm=%i projectInterface=%i\n",
+	   t,grid,useAddedMassAlgorithm,projectInterface);
+    }
+    
+  }
+  
   realMappedGridFunction & u = gf[current].u[grid];
   OV_GET_SERIAL_ARRAY(real,u,uLocal);
   MappedGrid & mg = cgf.cg[grid];
@@ -992,10 +1372,12 @@ projectInterface( int grid, real dt, int current )
     {
       if( interfaceType(side,axis,grid)==Parameters::tractionInterface )
       {
-	if( t <= 2.*dt )
-	  printF("\n--SM-- projectInterfaceVelocity for (side,axis,grid)=(%i,%i,%i) bc=%i\n",
+	if( t <= 2.*dt && debug() & 4 )
+        {
+	  fPrintF(debugFile,"--SM-- projectInterface for (side,axis,grid)=(%i,%i,%i) bc=%i\n",
 		 side,axis,grid,mg.boundaryCondition(side,axis));
-
+        }
+        
         int extra=1;
         getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3,extra);  
         bool ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,1);
@@ -1003,9 +1385,12 @@ projectInterface( int grid, real dt, int current )
         if( interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded )
         {
           // *new* way June 30, 2017 -- explicitly request interface data from Cgins, ...
-          if( true )
-            printF("--SM-- PIV: REQUEST interface velocity at t=%9.3e\n",t);
-            
+          if( t <= 2.*dt )
+          {
+            printF("--SM-- projectInterface: REQUEST interface velocity from fluid at t=%9.3e\n",t);
+            fPrintF(debugFile,"--SM-- projectInterface: REQUEST interface velocity from fluid at t=%9.3e\n",t);
+          }
+          
           if( ok )
             interfaceData.u.redim(Ib1,Ib2,Ib3,Rx);
           interfaceData.t=t;
@@ -1025,9 +1410,27 @@ projectInterface( int grid, real dt, int current )
             // Set the velocity on the interface for the INS-SM AMP scheme.
 
             uLocal(Ib1,Ib2,Ib3,Vc)=interfaceVelocity(Ib1,Ib2,Ib3,Rx);
-            if( t <= 2.*dt )
-              ::display(interfaceVelocity(Ib1,Ib2,Ib3,1),"--SM--PIV-- Here is fluid velocity(Ib1,In2,Ib3,1)","%6.3f ");
 
+            if( parameters.dbase.get<bool >("twilightZoneFlow") )
+            {
+              // ---add forcing for twilight-zone flow--- *wdh* March 20, 2018
+
+              OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+
+              const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
+              mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex);
+              OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+              realSerialArray ve(Ib1,Ib2,Ib3,Vc);
+    	      e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,Vc,t);  
+              uLocal(Ib1,Ib2,Ib3,Vc) +=ve;
+            }
+
+            if( t <= 2.*dt )
+            {
+              ::display(interfaceVelocity(Ib1,Ib2,Ib3,Vc),"--SM--PIV-- Here is fluid velocity (after any TZ correction)",
+                        debugFile,"%6.3f ");
+            }
+            
           }
           
         }
@@ -1065,7 +1468,10 @@ projectInterface( int grid, real dt, int current )
     }
   }
   
-
+  // *wdh* May 8, 2018 -- do a periodic update -- what about non-periodic ?? **FIX ME**
+  // really only need to do Vc
+  u.periodicUpdate();
+  
 
   return 0;
   
@@ -1082,13 +1488,14 @@ projectInterface( int grid, real dt, int current )
 int Cgsm::
 getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side, const int axis, const int grid, 
                           MappedGrid & mg, const Index & I1, const Index & I2, const Index & I3, const Range & C, 
-                          RealArray & f )
+                          RealArray & f, bool useExactInterfaceAcceleration )
 {
   const bool & twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
   const bool evalExactAcceleration=true; // eval exact accel. for testing 
-  const bool useExactAcceleration=false && !twilightZoneFlow;
-  bool useTimeHistory=!useExactAcceleration;
+  // const bool useExactAcceleration=false && !twilightZoneFlow;
+  bool useTimeHistory=!useExactInterfaceAcceleration;
+  const int & correctionStage = parameters.dbase.get<int>("correctionStage");
   
   RealArray accel;
   
@@ -1117,7 +1524,7 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
       // get exact accel from a known solution 
       const Parameters::KnownSolutionsEnum & knownSolution = 
         parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");  
-      printF("--SM-- getInterfaceAcceleration: knownSolution=%i\n",(int)knownSolution);
+      // printF("--SM-- getInterfaceAcceleration: knownSolution=%i\n",(int)knownSolution);
 
       int bodyNumber=0; // fix me for multiple deforming bodies
 	    
@@ -1129,7 +1536,7 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
     }
 
   }
-  if( useExactAcceleration )
+  if( useExactInterfaceAcceleration )
   {
     f(I1,I2,I3,C)=accel;
     
@@ -1149,20 +1556,38 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
       ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
       Range Rx=mg.numberOfDimensions();
       
-      RealArray acceleration(I1,I2,I3,Rx);
-      const int numberOfTimeDerivatives=1;
-      velocityHistory.eval( t, acceleration, numberOfTimeDerivatives );  
-      f(I1,I2,I3,C)=acceleration;
-
-      if( true || debug() & 2 )
+      if( velocityHistory.getNumberOfTimeLevels()<= 1 && twilightZoneFlow )
       {
-        printF("--SM-- getInterfaceAccel: ACCELERATION computed from VELOCITY TIME HISTORY t=%9.3e *NEW*\n",t);
-        if( evalExactAcceleration )
+        // ***** TEMP FIX FOR TZ -- use exact acceleration if we don't have enough time levels *wdh* March 14, 2018
+        f(I1,I2,I3,C)=accel;
+    
+        if( true || debug() & 2 )
         {
-          real diff=max(fabs(acceleration-accel));
-          printF("--> Max error in accel = %9.3e, |accel|=%8.2e\n",diff,max(fabs(accel)));
+          printF("--SM-- getInterfaceAcceleration: Setting acceleration from EXACT known solution ***TEMP**"
+                 " at t=%9.3e.\n",t);
         }
+      }
+      else
+      {
+        RealArray acceleration(I1,I2,I3,Rx);
+        const int numberOfTimeDerivatives=1;
+        const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+        int order= timeOrderOfAccuracy;
+        // order=2;  // *wdh* May 8, 2018
+        velocityHistory.eval( t, acceleration, numberOfTimeDerivatives,order );  
+        f(I1,I2,I3,C)=acceleration;
+
+        if( debug() & 2 )
+        {
+          printF("--SM-- getInterfaceAccel: ACCELERATION computed from VELOCITY TIME HISTORY t=%9.3e order=%i correctionStage=%i "
+                 "*NEW*\n",order,correctionStage,t);
+          if( evalExactAcceleration )
+          {
+            real diff=max(fabs(acceleration-accel));
+            printF("--> Max error in accel = %9.3e, |accel|=%8.2e\n",diff,max(fabs(accel)));
+          }
         
+        }
       }
       
     }

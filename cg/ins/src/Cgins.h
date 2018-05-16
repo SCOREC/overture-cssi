@@ -118,7 +118,19 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
 virtual int 
 buildTimeSteppingDialog(DialogData & dialog );
 
+
+int 
+checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u, 
+                                         realMappedGridFunction &uOld,  
+                                         real t,
+                                         int grid, 
+                                         real dt0 );
+
 int checkPressureConstraintValues( GridFunction & cgf );
+
+int 
+checkResultFromImplicitTimeStepping(GridFunction & cgf, GridFunction & cgfOld );
+
 
 int computeAxisymmetricDivergence(realArray & divergence, 
 				  Index & I1, Index & I2, Index & I3, MappedGrid & c,

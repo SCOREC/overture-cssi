@@ -532,6 +532,11 @@ tnurbs= tnurbs.o nurbsEvaluation.o NurbsMapping.o nurbs_eval.o
 tnurbs: $(tnurbs)
 	$(CC) $(CCFLAGS) -o $@ $(tnurbs) $(CLIBS) $(FLIBS) $(GLIBS)
 
+# test periodic nurbs
+tpn= testPeriodicNurbs.o NurbsMapping.o nurbsInterpolate.o
+tpn: $(tpn)
+	$(CC) $(CCFLAGS) -o $@ $(tpn) $(CLIBS) $(FLIBS) $(GLIBS)
+
 
 # test out hypgen interface
 hype= hype.o hypgen.o hypgen2.o hyper.o DataPointMapping.o
@@ -549,6 +554,11 @@ surgrd: $(surgrd)
 surGrd= surGrd.o surgrd.o cmpltm.o readPlot3d.o HyperbolicSurfaceMapping.o DataPointMapping.o
 surGrd: $(surGrd)
 	 $(CC) $(CCFLAGS) -o $@ $(surGrd)  $(CLIBS) $(FLIBS) $(GLIBS) $(ChimeraLib)
+
+# Check the DPM mapping (periodic boundaries)
+checkDPM= checkDPM.o 
+checkDPM: $(checkDPM)
+	$(CC) $(CCFLAGS) -o $@ $(checkDPM) $(CLIBS) $(FLIBS) $(GLIBS)
 
 
 # test out equi-distribution

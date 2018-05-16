@@ -36,6 +36,14 @@ public:
     cheryl // cheryl's format
   };
 
+  enum InterpolationKnotsOptionEnum
+  {
+    interpolateWithAveragedKnots=0,
+    interpolateWithEquallySpacedKnots
+  };
+
+
+
   NurbsMapping();
   NurbsMapping(const int & domainDimension , const int & rangeDimension_);  // make a default NURBS
 
@@ -261,6 +269,9 @@ public:
 			const real & r3Start  =0., 
 			const real & r3End    =1. );
 
+  int setInterpolateKnotsOption( InterpolationKnotsOptionEnum option );
+
+
   // shift in space
   int shift(const real & shiftx=0., 
 	    const real & shifty=0., 
@@ -311,6 +322,9 @@ public:
 
   // clip the nurb to the domain bounds ( ie, get rid of any extra control points and knots )
   int truncateToDomainBounds();
+
+  // This next function will change a clamped Nurbs to unclamped (for closed periodic curves)
+  int unClampCurve( int axis =0 );
 
   virtual int update( MappingInformation & mapInfo );
 
@@ -366,6 +380,8 @@ public:
   NurbsMapping **subCurves;
   char *subCurveState;
   int lastVisible;
+
+  InterpolationKnotsOptionEnum interpolationKnotsOption;
 
  public:
   bool use_kk_nrb_eval;

@@ -6,7 +6,7 @@
 #include "Insbc4WorkSpace.h"
 #include "App.h"
 #include "GridStatistics.h"
-
+#include "DeformingBodyMotion.h"
 
 //=========================================================================================
 /// \brief Allocate and initialize grid functions, based on the time-stepping method.
@@ -15,6 +15,9 @@
 int Cgins::
 setupGridFunctions()
 {
+  // printF("\n ++++++++++++++++++ INS-- setupGridFunctions ++++++++++++++++++++++++\n\n");
+  
+
   assert( current==0 );
   GridFunction & solution = gf[current];
   CompositeGrid & cg = *solution.u.getCompositeGrid();
@@ -42,6 +45,62 @@ setupGridFunctions()
   if( upwindOrder==-1 )
   {
     upwindOrder=parameters.dbase.get<int >("orderOfAccuracy");
+  }
+  
+  // --------- Check various parameter choices for consistency ------------
+  const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
+  bool & predictedBoundaryPressureNeeded = parameters.dbase.get<bool>("predictedBoundaryPressureNeeded");
+  if( useImplicitAmpBCs && !predictedBoundaryPressureNeeded )
+  {
+    printF("--INS-- setupGridFunctions: setting predictedBoundaryPressureNeeded =1 for useImplicitAmpBCs.\n");
+    predictedBoundaryPressureNeeded=1;
+  }
+
+
+  // The bulk solid AMP scheme with explicit time-stepping also needs a predicted boundary pressure
+  if( !predictedBoundaryPressureNeeded )
+  {
+    MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+    if( movingGrids.getNumberOfDeformingBodies()>0 )
+    {
+      // **FIX ME** There should be a separate function that returns whether there are bulk solids for AMP
+      std::vector<BoundaryData> & boundaryDataArray =parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
+
+      for( int grid=0; grid<cg.numberOfComponentGrids() &&!predictedBoundaryPressureNeeded ; grid++ )
+      {
+        BoundaryData & bd = boundaryDataArray[grid];
+        if( bd.dbase.has_key("deformingBodyNumber") )
+        {
+          int (&deformingBodyNumber)[2][3] = bd.dbase.get<int[2][3]>("deformingBodyNumber");
+          for( int side=0; side<=1&&!predictedBoundaryPressureNeeded; side++ )
+          {
+            for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+            {
+              if( deformingBodyNumber[side][axis]>=0 )
+              {
+                int body=deformingBodyNumber[side][axis];
+                DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+                if( deform.isBulkSolidModel() )
+                {
+                  predictedBoundaryPressureNeeded=1;
+                  printF("--INS-- setupGridFunctions: setting predictedBoundaryPressureNeeded =1 for AMP"
+                         "-BULK SOLID explicit time-stepping.\n");
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if( predictedBoundaryPressureNeeded )
+  {
+    // -- over-ride defaults: 
+    int orderOfAccuracy=parameters.dbase.get<int>("orderOfAccuracy");
+    parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryPressure")=orderOfAccuracy;
+    parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryVelocity")=orderOfAccuracy;
+    
   }
   
 
@@ -174,7 +233,7 @@ projectInitialConditionsForMovingGrids(int gfIndex)
     if( useAddedMassAlgorithm && useAddedDampingAlgorithm )
     {
       // For addedDamping, the pressure equation depends on dt so we need to update the
-      // pressure equaion here (NOTE: this was already done with dt=0 in Cgins::updateToMatchGrid)
+      // pressure equation here (NOTE: this was already done with dt=0 in Cgins::updateToMatchGrid)
       printF("--INS-PIC-- regenerate the pressure matrix (for addedDamping terms) now that dt=%9.3e is known.\n",dt);
       assert( dt>0. );
       updatePressureEquation(gf[gfIndex].cg,gf[gfIndex]);

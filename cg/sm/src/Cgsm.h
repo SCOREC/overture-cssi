@@ -269,7 +269,7 @@ getInitialConditions(const aString & command = nullString,
 int
 getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side, const int axis, const int grid, 
                           MappedGrid & mg, const Index & I1, const Index & I2, const Index & I3, const Range & C, 
-                          RealArray & f );
+                          RealArray & f, bool useExactInterfaceAcceleration );
 
 int 
 getInterfaceBoundaryData( int current );

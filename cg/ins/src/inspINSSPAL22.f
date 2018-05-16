@@ -3089,8 +3089,14 @@ c===============================================================================
          advectCoeff=advectionCoefficient
          if( gridIsMoving.ne.0 .and. 
      & initialConditionsAreBeingProjected.eq.0 )then
-           ! For moving grids we need to multiply only u by advectionCoefficient, and mutiply by advectCoeff=1 in the pressure BC
+           ! For moving grids we need to multiply only u by advectionCoefficient, and multiply by advectCoeff=1 in the pressure BC
            advectCoeff=1.
+           ! ************************* CHECK ME -- IS THIS THE RIGHT THING TO DO ??? *************************
+           if( twilightZoneFlow.ne.0 )then
+             ! For TZ, the grid-velocity may not match the velocity on the boundary -- TURN OFF the advection term in the pressure BC
+             !    *wdh* April 22, 2018
+             advectCoeff=0.
+           end if
          end if
          ! for visco-plastic
          if( orderOfAccuracy.ne.2 .and. orderOfAccuracy.ne.4 )then
@@ -4749,6 +4755,9 @@ c===============================================================================
      & i2,i3,vc)-uxy22(i1,i2,i3,uc))-2.*nuTy*(ux22(i1,i2,i3,uc))+nuTx*
      & (ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                            end if
                          end do
                          end do
@@ -4842,6 +4851,9 @@ c===============================================================================
      & ulaplacian22(i1,i2,i3,vc))+2.*nuTy*(uy22(i1,i2,i3,vc))+nuTx*(
      & ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                                end if
                              end do
                              end do
@@ -4931,6 +4943,9 @@ c===============================================================================
      & i2,i3,vc)-uxy22(i1,i2,i3,uc))-2.*nuTy*(ux22(i1,i2,i3,uc))+nuTx*
      & (ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                            end if
                          end do
                          end do
@@ -5024,6 +5039,9 @@ c===============================================================================
      & ulaplacian22(i1,i2,i3,vc))+2.*nuTy*(uy22(i1,i2,i3,vc))+nuTx*(
      & ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                                end if
                              end do
                              end do
@@ -5113,6 +5131,9 @@ c===============================================================================
      & i2,i3,vc)-uxy22(i1,i2,i3,uc))-2.*nuTy*(ux22(i1,i2,i3,uc))+nuTx*
      & (ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                            end if
                          end do
                          end do
@@ -5206,6 +5227,9 @@ c===============================================================================
      & ulaplacian22(i1,i2,i3,vc))+2.*nuTy*(uy22(i1,i2,i3,vc))+nuTx*(
      & ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                                end if
                              end do
                              end do
@@ -5295,6 +5319,9 @@ c===============================================================================
      & i2,i3,vc)-uxy22(i1,i2,i3,uc))-2.*nuTy*(ux22(i1,i2,i3,uc))+nuTx*
      & (ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                              ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                            end if
                          end do
                          end do
@@ -5388,6 +5415,9 @@ c===============================================================================
      & ulaplacian22(i1,i2,i3,vc))+2.*nuTy*(uy22(i1,i2,i3,vc))+nuTx*(
      & ux22(i1,i2,i3,vc)+uy22(i1,i2,i3,uc)))-(advectCoeff*(uu(i1,i2,
      & i3,uc)*ux22(i1,i2,i3,vc)+uu(i1,i2,i3,vc)*uy22(i1,i2,i3,vc)))  )
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", f=",e10.2," adCoeff=",2e10.2)') i1,i2,f(i1+is1,i2+is2,i3),adCoeff2,adCoeff4
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(u)=",e10.2)') i1,i2,uDiffusion(i1,i2,i3)
+                                  ! write(*,'(" inspf: (i1,i2)=",2i3,", Delta(v)=",e10.2)') i1,i2,vDiffusion(i1,i2,i3)
                                end if
                              end do
                              end do

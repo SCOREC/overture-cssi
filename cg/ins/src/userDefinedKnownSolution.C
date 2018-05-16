@@ -1078,9 +1078,9 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     bsp.eval(t, uI,vI );
     bsp.evalDerivative(t, aI, 2 ); // 2 derivatives 
 
-    if( t <= 2.*dt )
+    if( t <= 2.*dt && false )
     {
-      printF("--INS-- UD DB Known radialElasticPiston, t=%9.3e uI=%9.3e vI=%9.3e R=%6.3f Rbar=%6.3f\n"
+      printF("--INS-- UD DB Known radialElasticPiston, t=%9.3e uI=%9.3e vI=%9.3e R=%6.3f Rbar=%6.3f"
              "  grid=%i I1=[%i,%i] I2=[%i,%i]\n",
              t,uI,vI,R,Rbar,grid,I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound());
       // if( grid==1 )
@@ -1133,7 +1133,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     }
     else
     {
-      OV_ABORT("FINISH ME");
+      printF("\n ********** userDefinedKnownSolution:radialElasticPiston:ERROR -- FINISH ME for numberOfTimeDerivatives=%i\n\n");
     }
     
 
@@ -1503,7 +1503,16 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
     } else {
       // some options may need a time derivative ...
-      OV_ABORT("FINISH ME");
+      printF("--INS--UDKS:fibShear: WARNING numberOfTimeDerivatives=%i NOT IMPLEMENTED, RETURNING ZER0!\n",
+          numberOfTimeDerivatives);
+      FOR_3D(i1,i2,i3,I1,I2,I3) 
+      {
+	ua(i1,i2,i3,uc) = 0.;
+	ua(i1,i2,i3,vc) = 0.;
+	ua(i1,i2,i3,pc) = 0.;
+      }
+      
+      // OV_ABORT("FINISH ME");
     }
 
   } else if( userKnownSolution=="radialFibShear" ) {

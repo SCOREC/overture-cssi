@@ -152,12 +152,12 @@ if( ok && useOpt )
 
   // *** need to fix gridIndex Range and bc ***********************
 
-  if( debug & 4 )
+  if( debug & 16 )
   {
     ::display(uu,sPrintF("uu before bcOptSolidMechanics, t=%e",t),pDebugFile,"%8.1e ");
   }
       
-  if( !isRectangular && debug & 4  ) ::display(rx,sPrintF("rx before bcOptSolidMechanics, t=%e",t),debugFile,"%9.2e ");
+  if( !isRectangular && debug & 16  ) ::display(rx,sPrintF("rx before bcOptSolidMechanics, t=%e",t),debugFile,"%9.2e ");
 
 
   // The next macro is in boundaryMacros.h
@@ -223,7 +223,7 @@ if( ok && useOpt )
   }
   
  
-  if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptSolidMechanics, t=%e",t),pDebugFile,"%8.1e ");
+  if( debug & 16  ) ::display(uu,sPrintF("uu after bcOptSolidMechanics, t=%e",t),pDebugFile,"%8.1e ");
 
   real *uOldptr = uuOld.getDataPointer();
       
@@ -262,14 +262,99 @@ if( ok && useOpt )
 
 
     Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+    Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
     Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
 
-    //  -- new dirichlet boundary condition : assign the exact solution for testing ---
+    const int & s11c = parameters.dbase.get<int>("s11c");
+    const int & s12c = parameters.dbase.get<int>("s12c");
+    const int & s13c = parameters.dbase.get<int>("s13c");
+
     for( int axis=axis1; axis<mg.numberOfDimensions(); axis++ )
     {
       for( int side=Start; side<=End; side++ )
       {
-	if( mg.boundaryCondition(side,axis)==SmParameters::dirichletBoundaryCondition )
+	if( knownSolution==Parameters::userDefinedKnownSolution && 
+            (mg.boundaryCondition(side,axis)==SmParameters::tractionBC ||
+             mg.boundaryCondition(side,axis)==SmParameters::displacementBC ) 
+            && interfaceType(side,axis,grid)==Parameters::noInterface )
+        {
+          // *wdh* April 29, 2018 -- put this here for now 
+
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+
+          // -- here is where the boundary data is put:
+    	  RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+      
+          Range Rx=numberOfDimensions, C=numberOfDimensions;
+          RealArray state(Ib1,Ib2,Ib3,C);
+          int bodyNumber=0; // fix me for multiple deforming bodies
+          if( mg.boundaryCondition(side,axis)==SmParameters::tractionBC )
+          {
+            // =========== TRACTION BC ===========
+            printF("--SM-- set TRACTION BC FROM KNOWN SOLUTION at t=%9.3e\n",t);
+          
+            parameters.getUserDefinedDeformingBodyKnownSolution( 
+              bodyNumber,Parameters::boundaryTraction,t, grid, mg,Ib1,Ib2,Ib3,C, state );
+            // ::display(state,"exact traction on bndry","%.2f ");
+
+            bd(Ib1,Ib2,Ib3,Range(uc,uc +numberOfDimensions-1))=state; // set traction on the boundary
+            // Is hthis needed?
+          
+            bd(Ib1,Ib2,Ib3,s11c)=state(Ib1,Ib2,Ib3,0); 
+            bd(Ib1,Ib2,Ib3,s12c)=state(Ib1,Ib2,Ib3,1); 
+            if( numberOfDimensions==3 )
+              bd(Ib1,Ib2,Ib3,s13c)=state(Ib1,Ib2,Ib3,2); 
+
+            parameters.getUserDefinedDeformingBodyKnownSolution( 
+              bodyNumber,Parameters::boundaryTractionRate,t, grid, mg,Ib1,Ib2,Ib3,C, state );
+            bd(Ib1,Ib2,Ib3,Range(v1c,v1c+numberOfDimensions-1))=state;  // set traction-rate on the bndry
+          }
+          else if( mg.boundaryCondition(side,axis)==SmParameters::displacementBC )
+          {
+            // ========== DISPLACEMENT BC =============
+            printF("--SM-- set DISPLACEMENT BC FROM KNOWN SOLUTION at t=%9.3e\n",t);
+
+            parameters.getUserDefinedKnownSolution( t, cg, grid, bd, Ib1,Ib2,Ib3 );
+
+            // -- evaluate the acceleration and save in "stress" [s11c,s12c,s13c]
+            RealArray state(Ib1,Ib2,Ib3,bd.dimension(3));
+            int numberOfTimeDerivatives=1;
+            parameters.getUserDefinedKnownSolution( t, cg, grid, state, Ib1,Ib2,Ib3,numberOfTimeDerivatives );
+            bd(Ib1,Ib2,Ib3,s11c)=state(Ib1,Ib2,Ib3,v1c); // this is really the acceleration
+            bd(Ib1,Ib2,Ib3,s12c)=state(Ib1,Ib2,Ib3,v1c+1); 
+            if( numberOfDimensions==3 )
+              bd(Ib1,Ib2,Ib3,s13c)=state(Ib1,Ib2,Ib3,v1c+2); 
+
+            // *** FIX ACCELERATION***
+
+            // OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+            
+            // parameters.getUserDefinedDeformingBodyKnownSolution( 
+            //   bodyNumber,Parameters::boundaryPosition,t, grid, mg,Ib1,Ib2,Ib3,C, state );
+            // Range Uc=Range(uc,uc +numberOfDimensions-1);
+            // bd(Ib1,Ib2,Ib3,Uc)=state-xLocal(Ib1,Ib2,Ib3,Rx); // set displacement on the boundary
+
+            // parameters.getUserDefinedDeformingBodyKnownSolution( 
+            //   bodyNumber,Parameters::boundaryVelocity,t, grid, mg,Ib1,Ib2,Ib3,C, state );
+            // bd(Ib1,Ib2,Ib3,Range(v1c,v1c +numberOfDimensions-1))=state; // set displacement on the boundary
+
+            // parameters.getUserDefinedDeformingBodyKnownSolution( 
+            //   bodyNumber,Parameters::boundaryAcceleration,t, grid, mg,Ib1,Ib2,Ib3,C, state );
+            // // put acceleration here:         
+            // bd(Ib1,Ib2,Ib3,s11c)=state(Ib1,Ib2,Ib3,0); 
+            // bd(Ib1,Ib2,Ib3,s12c)=state(Ib1,Ib2,Ib3,1); 
+            // if( numberOfDimensions==3 )
+            //   bd(Ib1,Ib2,Ib3,s13c)=state(Ib1,Ib2,Ib3,2); 
+
+          }
+          else
+          {
+            OV_ABORT("ERROR- this should not happen");
+          }
+          
+
+        }
+        else if( mg.boundaryCondition(side,axis)==SmParameters::dirichletBoundaryCondition )
 	{
 	  int numberOfGhostLines = max(2,orderOfAccuracyInSpace/2);  // for godunov we need 2 ghost lines
 	  int extra=numberOfGhostLines;
@@ -380,6 +465,8 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
     return;
   }
   
+  if( debug() & 2 && t<3.*dt )
+    printP("***** assignBoundaryConditionsFOS: t=%.3e ******\n",t);
 
   FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
   FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
@@ -415,6 +502,10 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
   RealArray & lambdaGrid = parameters.dbase.get<RealArray>("lambdaGrid");
   // bool & gridHasMaterialInterfaces = parameters.dbase.get<bool>("gridHasMaterialInterfaces");
   int & debug = parameters.dbase.get<int >("debug");
+
+  const Parameters::KnownSolutionsEnum & knownSolution = 
+    parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"); 
+
 
   const bool projectInterface = parameters.dbase.get<bool>("projectInterface");
   if( projectInterface )
@@ -504,42 +595,6 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
 
   }
 
-//   // assign exact solution at boundaries for 3D code ... FIX ME ...
-//   if( false && debug > 3 && numberOfDimensions == 3 )
-//   {
-//     if( forcingOption==twilightZoneForcing )
-//     {
-//       // Temporary: assign exact values on boundaries for TZ
-//       printF(" assignBoundaryConditionsFOS: set exact BC's on all boundaries and ghost pts...\n");
-    
-//       // assign the boundary and 2 ghost with the exact solution
-//       int numGhost=2;
-//       for( int g=0; g<=numGhost; g++ )
-//       {
-// 	extrapParams.lineToAssign=g;
-// 	u.applyBoundaryCondition(C,BCTypes::dirichlet,BCTypes::allBoundaries,0.,t,extrapParams);
-//       }
-//       extrapParams.lineToAssign=1;
-//     }
-//     else
-//     {
-
-//       // -- both the displacement and velocities are given on a displacementBC
-//       u.applyBoundaryCondition(U,BCTypes::dirichlet,SmParameters::displacementBC,bcData,pBoundaryData,t,
-// 			       Overture::defaultBoundaryConditionParameters(),grid);
-
-//       u.applyBoundaryCondition(V,BCTypes::dirichlet,SmParameters::displacementBC,bcData,pBoundaryData,t,
-// 			       Overture::defaultBoundaryConditionParameters(),grid);
-
-//       u.applyBoundaryCondition(C,BCTypes::extrapolate,SmParameters::displacementBC,0.,t);
-	   
-           
-//       u.applyBoundaryCondition(C,BCTypes::evenSymmetry,SmParameters::symmetry,0.,t);
-    
-//     }
-//     u.finishBoundaryConditions();
-//   }
-  
 
   // **** now call the optimized BC routine *****
 

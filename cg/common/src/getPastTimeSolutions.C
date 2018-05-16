@@ -58,7 +58,7 @@ getPastTimeSolutions( int current, int numberOfPast, int *previous  )
       
       parameters.regenerateOverlappingGrid( cg , cg, true );
 
-      if( debug() & 4 )
+      if( debug() & 64 )
       {
         FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
         ::displayMask(cg[0].mask(),"Past time grid - mask on grid 0",debugFile);

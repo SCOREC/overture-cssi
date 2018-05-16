@@ -2607,8 +2607,9 @@ getGridVelocity( GridFunction & gf0, const real & tGV )
 	assert(numThisBodyGrids!=0); // should have at least the present component='grid'
 	// assert(numThisBodyGrids==1); // debug (only 1 grid):Full case (several grids) not impl. yet
 
-	if( debug() & 2 )
-          printF("++MOVING GRIDS(deformingBody): gridVelocity, grid = %i, def body = %i\n", grid, b);
+	if( true || debug() & 2 )
+          printF("\n @@@@@@@@ MOVING GRIDS: call deformingBodyMotion for: gridVelocity, grid=%i, body=%i, tGV=%.3e @@@@@@\n\n", 
+                 grid, b,tGV);
 
 	deformingBodyList[b]->getVelocity( tGV, grid, gf0.cg, gridVelocity  );
 
@@ -2618,7 +2619,8 @@ getGridVelocity( GridFunction & gf0, const real & tGV )
         //       terms in the pressure BC will cancel:
         //         p.n = n.(  -rho*v_t + (v-g_t).grad(v) + nu*\Delta(v)
         // *wdh* 2014/06/26 -- turn this back on 
-	if( true ) 
+        bool setGridVelocityOnBoundaryFromDeformingBody=true;
+	if( setGridVelocityOnBoundaryFromDeformingBody ) 
 	{
           // -- For each grid face that is on the deforming body we get the grid velocity ---
           //       boundaryFaces(0:2,f) = (side,axis,grid) for face f 

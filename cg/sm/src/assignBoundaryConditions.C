@@ -28,7 +28,6 @@ getInterfaceBoundaryData( int current )
 {
     const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode= 
         parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
-
     if( interfaceCommunicationMode!=Parameters::requestInterfaceDataWhenNeeded )
         return 0;
 
@@ -73,7 +72,7 @@ getInterfaceBoundaryData( int current )
         // --- This is an FSI interface ----
 
         // *new* way June 25, 2017 -- explicitly request interface data from other solver (e.g. Cgins)
-                if( true )
+                if( debug() & 4 )
                     printF("--SM-- getInterfaceBoundaryData: REQUEST interface data (grid,side,axis)=(%i,%i,%i) "
                                   "at t=%9.3e\n",grid,side,axis,t);
                         
@@ -125,7 +124,7 @@ applyBoundaryConditions( int option, real dt, int current, int prev )
     GridFunction & cgf = gf[current];
     const real t= cgf.t; 
 
-  // Get data for any interfaces 
+  // Get traction data for any interfaces 
     getInterfaceBoundaryData( current );
 
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )

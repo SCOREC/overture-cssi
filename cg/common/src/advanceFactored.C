@@ -134,7 +134,6 @@ initializeTimeSteppingAF( real & t0, real & dt0 )
 /// \details 
 /// \param t0 (input) : current time
 /// \param dt0 (input) : current time step
-/// \param correction (input) : for predictor corrector methods this indicates the correction step number.
 /// \param currentGF (output) : points to the grid-function holding the current solution (time t0)
 /// \param nextGF (output) : points to the grid-function holding the new solution (time t0+dt0)
 /// \param advanceOptions.numberOfCorrectorSteps (output) : return the number of corrector steps that will be used.
@@ -213,6 +212,7 @@ takeTimeStepAF(real &t0, real &dt0, int correction, AdvanceOptions & advanceOpti
     FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
     FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
 
+    parameters.dbase.get<int>("correctionStage")=correction;
 
     assert(parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")==Parameters::approximateFactorization);
     assert(factors.size());

@@ -45,7 +45,7 @@
 #  -- add a refinement grid
 #   ogen noplot diskDeform -factor=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-2.5 -yb=2.5 -refineInner=1 -name="diskDeformBigRefineInner2e.hdf"
 # outer-domain only:
-#     ogen noplot diskDeform -case=outer -factor=1 -interp=e   [creates diskDeformoutere1.hdf
+#     ogen noplot diskDeform -case=outer -prefix=diskDeformOuter -interp=e -factor=1   [creates diskDeformOutere1.hdf
 #     ogen noplot diskDeform -case=outer -factor=1 -interp=e -xa=-2.5 -xb=2.5 -ya=-2.5 -yb=2.5  -name=diskDeformOuterBige1.hdf
 #     ogen noplot diskDeform -case=outer -factor=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-2.5 -yb=2.5  -name=diskDeformOuterBige2.hdf
 # 
@@ -65,12 +65,13 @@ $interp="i"; $interpType = "implicit for all grids";
 $order=2; $orderOfAccuracy = "second order"; $ng=2; 
 $xa=-2.; $xb=2.; $ya=-2.; $yb=2.; $nExtra=0; 
 $refineInner=0; $refineOuter=0; $fixedRadius=-1; 
+$prefix = "diskDeform"; 
 # 
 # get command line arguments
 GetOptions("name=s"=> \$name,"order=i"=>\$order,"factor=f"=> \$factor,"interp=s"=> \$interp,"case=s"=> \$case,\
            "xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,"nExtra=i"=>\$nExtra,"factor2=f"=> \$factor2,\
            "refineInner=i"=>\$refineInner,"refineOuter=i"=>\$refineOuter,"fixedRadius=f"=>\$fixedRadius,\
-           "ae=f"=>\$ae,"be=f"=>\$be );
+           "ae=f"=>\$ae,"be=f"=>\$be,"prefix=s"=> \$prefix );
 #
 if( $factor2 < 0 ){ $factor2=$factor; }
 # 
@@ -79,7 +80,6 @@ elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
 elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 $suffix = ".order$order"; 
-$prefix = "diskDeform"; 
 if( $fixedRadius ne -1 ){ $prefix .= "Fixed"; }
 if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 #

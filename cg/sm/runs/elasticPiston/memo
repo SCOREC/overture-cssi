@@ -1,4 +1,69 @@
 ********************************
+***** May 16, 2018
+
+TEST FIB-SHEAR Solution with cgsm
+
+*** There are two cases for the shear flow rhoBar=muBar=LambdaBar=10 and =1000
+
+cgsm elasticPiston -g=rect4pn.order2.hdf -pv=g -tp=.001 -amp=.1 -tf=.5 -bcn=sf -known=shear -rho=10 -mu=10 -lambda=10 -go=halt
+
+cgsm elasticPiston -g=rect8pn.order2.hdf -pv=g -tp=.001 -amp=.1 -tf=.5 -bcn=sf -known=shear -rho=10 -mu=10 -lambda=10 -go=halt
+
+cgsm elasticPiston -g=rect16pn.order2.hdf -pv=g -tp=.001 -amp=.1 -tf=.5 -bcn=sf -known=shear -rho=10 -mu=10 -lambda=10 -go=halt
+
+G4 -- errors in v are small, errors in sigma not so good.
+-->t=1.0000e-03 dt=1.0e-03 maxNorm errors:[1.7989e-06,0.0000e+00,0.0000e+00,1.3546e-05,1.3546e-05,0.0000e+00,1.1601e-11,0.0000e+00,], maxNorm(u):[2.74e-03,0.00e+00,0.00e+00,2.68e-02,2.68e-02,0.00e+00,9.97e-04,0.00e+00,]
+
+
+G8
+->t=1.0000e-03 dt=1.0e-03 maxNorm errors:[1.8266e-06,0.0000e+00,0.0000e+00,1.2890e-05,1.2890e-05,0.0000e+00,6.0244e-12,0.0000e+00,], maxNorm(u):[2.74e-03,0.00e+00,0.00e+00,2.68e-02,2.68e-02,0.00e+00,9.97e-04,0.00e+00,]
+
+G16 
+->t=1.0000e-03 dt=1.0e-03 maxNorm errors:[2.1071e-06,0.0000e+00,0.0000e+00,1.1747e-05,1.1747e-05,0.0000e+00,4.6325e-12,0.0000e+00,], maxNorm(u):[2.74e-03,0.00e+00,0.00e+00,2.68e-02,2.68e-02,0.00e+00,9.97e-04,0.00e+00,]
+
+********************************
+***** April 29, 2018
+
+** REPLANCE BOTTON dirichletBC (which had large errors) by displacement BC
+
+========= TEST DISPLACMENT BC ON TOP AND BOTTOM
+cgsm elasticPiston -g=rect4pn.order2.hdf -pv=g -tp=.1 -amp=.1 -tf=.5 -bcn=d -go=halt
+
+G4
+-->t=1.0000e-01 dt=6.3e-03 maxNorm errors:[0.0000e+00,1.0497e-03,2.0741e-03,0.0000e+00,0.0000e+00,6.2224e-03,0.0000e+00,9.0578e-05,], maxNorm(u):[0.00e+00,2.38e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.16e-02,]
+
+G8 
+-->t=1.0000e-01 dt=3.2e-03 maxNorm errors:[0.0000e+00,1.0649e-04,2.4306e-04,0.0000e+00,0.0000e+00,7.2919e-04,0.0000e+00,3.1571e-05,], maxNorm(u):[0.00e+00,2.39e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.17e-02,]
+
+
+
+===================
+cgsm elasticPiston -g=rect4pn.order2.hdf -pv=g -tp=.1 -amp=.1 -tf=.5 -go=halt
+
+G4
+ -->t=1.0000e-01 dt=6.3e-03 maxNorm errors:[0.0000e+00,9.6528e-04,3.2309e-03,0.0000e+00,0.0000e+00,1.0137e-03,0.0000e+00,8.1102e-05,], maxNorm(u):[0.00e+00,2.38e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.16e-02,]
+         
+G8 
+-->t=1.0000e-01 dt=3.2e-03 maxNorm errors:[0.0000e+00,1.4233e-04,1.0804e-03,0.0000e+00,0.0000e+00,2.2225e-04,0.0000e+00,3.1571e-05,], maxNorm(u):[0.00e+00,2.39e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.17e-02,]
+
+G16 
+->t=1.0000e-01 dt=1.6e-03 maxNorm errors:[0.0000e+00,2.8446e-05,3.0385e-04,0.0000e+00,0.0000e+00,5.1829e-05,0.0000e+00,9.1829e-06,], maxNorm(u):[0.00e+00,2.39e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.18e-02,]
+
+********************************
+***** April 29, 2018
+
+TEST elastic piston again -- not 2nd order for FSI problem
+
+cgsm -noplot elasticPiston -g=rect8pn.order2.hdf -pv=g -tp=.1 -amp=.1 -tf=.5 -go=go
+cgsm -noplot elasticPiston -g=rect4pn.order2.hdf -pv=g -tp=.1 -amp=.1 -tf=.5 -go=go
+
+G8
+-->t=5.0000e-01 dt=3.2e-03 maxNorm errors:[0.0000e+00,2.3610e-04,2.0577e-04,0.0000e+00,0.0000e+00,6.1730e-04,0.0000e+00,4.9343e-05,], maxNorm(u):[0.00e+00,2.36e-04,1.45e+00,0.00e+00,0.00e+00,4.35e+00,0.00e+00,2.00e-01,]
+
+G4 - 
+-->t=5.0000e-01 dt=6.3e-03 maxNorm errors:[0.0000e+00,1.8128e-03,1.2933e-03,0.0000e+00,0.0000e+00,3.8800e-03,0.0000e+00,3.3795e-04,], maxNorm(u):[0.00e+00,1.81e-03,1.45e+00,0.00e+00,0.00e+00,4.35e+00,0.00e+00,2.00e-01,]
+
+********************************
 ***** Dec 19, 2017
 
 cgsm radialTravelingWave -g=radialTravelingWaveGride2.order2.hdf -pv=g -tp=.1 -tf=1 -go=halt -caseid=0 -amp=.001

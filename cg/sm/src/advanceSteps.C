@@ -135,6 +135,8 @@ takeTimeStep( real & t0, real & dt0, int correction, AdvanceOptions & advanceOpt
     const bool applyBC = ( advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
                    			 advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
 
+    parameters.dbase.get<int>("correctionStage")=correction;
+
     if( timeSteppingMethod==SmParameters::defaultTimeStepping ||
             timeSteppingMethod==SmParameters::modifiedEquationTimeStepping)
     {

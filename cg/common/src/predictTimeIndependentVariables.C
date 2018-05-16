@@ -22,9 +22,18 @@ predictTimeIndependentVariables( const int numberOfTimeLevels, const int *gfInde
 
   const bool predictPressure = predictedPressureNeeded || (poisson!=NULL && poisson->isSolverIterative() && orderOfAccuracy!=4);
 
-  if( TRUE || debug() & 4  )
-    printF("--DS-- predictTimeIndependentVariables: predictPressure=%i (t=%8.2e)\n",
-	   (int)predictPressure,gf[gfIndex[0]].t);
+  FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
+  FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
+
+  if( (gf[gfIndex[0]].t<3.*dt) || debug() & 4  )
+  {
+    if( predictPressure )
+      fPrintF(debugFile,"--DS-- predictTimeIndependentVariables: predictPressure=%i (t=%8.2e)\n",
+              (int)predictPressure,gf[gfIndex[0]].t);
+    else
+      fPrintF(debugFile,"--DS-- predictTimeIndependentVariables: do NOT predictPressure=%i (t=%8.2e)\n",
+              (int)predictPressure,gf[gfIndex[0]].t);
+  }
   
 
   if( !predictPressure )
@@ -36,9 +45,6 @@ predictTimeIndependentVariables( const int numberOfTimeLevels, const int *gfInde
     printF("WARNING: DomainSolver::predictTimeIndependentVariables: solver is not Cgins or Cgasf! className=%s\n",
 	   (const char*)getClassName() );
   }
-
- FILE *& debugFile = parameters.dbase.get<FILE* >("debugFile");
- FILE *& pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
   assert( numberOfTimeLevels>=3 );
   
@@ -110,7 +116,7 @@ predictTimeIndependentVariables( const int numberOfTimeLevels, const int *gfInde
     // 							   " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
     // }
     
-    if( debug() & 4 )
+    if( debug() & 16 )
     {
       ::display(uNew(I1,I2,I3,pc),sPrintF("--PTIV-- predictTimeIndependentVariables: after extrap p in time"
                                           " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%7.4f ");

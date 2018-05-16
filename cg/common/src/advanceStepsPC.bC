@@ -220,7 +220,6 @@ initializeTimeSteppingPC( real & t0, real & dt0 )
 /// \details 
 /// \param t0 (input) : current time
 /// \param dt0 (input) : current time step
-/// \param correction (input) : for predictor corrector methods this indicates the correction step number.
 /// \param currentGF (output) : points to the grid-function holding the current solution (time t0)
 /// \param nextGF (output) : points to the grid-function holding the new solution (time t0+dt0)
 /// \param advanceOptions.numberOfCorrectorSteps (output) : return the number of corrector steps that will be used.
@@ -285,6 +284,7 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     fPrintF(debugFile," *** takeTimeStepPC (start): t0=%e, dt0=%e correction=%i *** \n",t0,dt0,correction);
   }
 
+  parameters.dbase.get<int>("correctionStage")=correction;
   advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
   
   assert( parameters.dbase.get<DataBase >("modelData").has_key("AdamsPCData") );
@@ -832,7 +832,7 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
         printP("++++++++++++ apply BCs t0+dt0=%9.3e\n\n",t0+dt0);
       
       // --- predict values for boundary conditions -- ( e.g. for fractional-step methods) ---
-      const int orderOfExtrapolation = orderOfPredictorCorrector==2 ? 3 : 4;
+      int orderOfExtrapolation = orderOfPredictorCorrector==2 ? 3 : 4;
       boundaryConditionPredictor( predictPressureAndVelocity,adamsData,orderOfExtrapolation,
                                   mNew,mCur,mOld,&ua,&ub,&uc,&ud );
 
@@ -849,7 +849,7 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
       interpolateAndApplyBoundaryConditions( gf[mNew],&gf[mCur],dt0 );
 
 
-      if( debug() & 8 )
+      if( debug() & 4 || debug() & 8 )
       {
         label=sPrintF(" ***takeTimeStepPC: after boundary conditions in predictor, t=%e\n",gf[mNew].t);
         if( twilightZoneFlow() )
@@ -857,7 +857,7 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
         else
           outputSolution( gf[mNew].u,gf[mNew].t,label );
       }
-      if( debug() & 4 || debug() & 64 )
+      if( debug() & 64 )
       {
         for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
           ::display(gf[mNew].u[grid],sPrintF(" ***takeTimeStepPC: after apply boundary conditions in predictor"

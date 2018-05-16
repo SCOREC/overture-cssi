@@ -180,6 +180,8 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
         
     }
 
+    parameters.dbase.get<int>("correctionStage")=0;
+
     if( timeSteppingMethod==Parameters::adamsBashforth2 )
         numberOfCorrections=0;  // adams predictor only
     else
@@ -1772,6 +1774,7 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
 
         for( int correction=0; correction<numberOfCorrections; correction++ )
         {
+            parameters.dbase.get<int>("correctionStage")=correction;
             parameters.dbase.get<int>("totalNumberOfPCcorrections")++;  // count the total number of corrections.
 
       //       ---Adams Moulton Corrector

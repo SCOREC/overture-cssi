@@ -38,7 +38,7 @@ FSRCO += insad2dr.f insad2dc.f insad3dr.f insad3dc.f
 
 FSRCO += lineSolveINS.f inspINS22.f inspINS23.f inspINS42.f insbcOpt4.f insLineSolve.f insLineSolveNew.f
 
-FSRCO += bcOptTemperature.f insTractionBC.f
+FSRCO += bcOptTemperature.f insTractionBC.f insExplicitAMPVelocityBC.f
 
 FSRCO += lineSolveNewINS.f lineSolveResidualINS.f
 
@@ -116,6 +116,10 @@ src/interface.C : src/interface.bC ../common/src/interfaceMacros.h; $(BPP) -quie
 
 src/pressureEquation.C : src/pressureEquation.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
 
+src/boundaryConditions.C : src/boundaryConditions.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
+
+src/projectInterfaceVelocity.C : src/projectInterfaceVelocity.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
+
 src/addedMassImplicitBoundaryConditions.C : src/addedMassImplicitBoundaryConditions.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 # we need to add these explicitly since the implicit rule for %.bf doesn't work for some reason (?)
@@ -123,6 +127,8 @@ src/insbcOpt4.f : src/insbcOpt4.bf; $(BPP) -quiet -clean -I$(Overture)/include $
 src/inscr4.f : src/inscr4.bf; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 src/insTractionBC.f : src/insTractionBC.bf; $(BPP) -quiet -clean -I$(Overture)/include $<
+
+src/insExplicitAMPVelocityBC.f : src/insExplicitAMPVelocityBC.bf; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 src/bcOptTemperature.f : src//bcOptTemperature.bf; $(BPP) -quiet -clean -I$(Overture)/include $<
 

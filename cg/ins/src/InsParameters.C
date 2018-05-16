@@ -85,7 +85,14 @@ InsParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   Parameters::pdeName ="incompressibleNavierStokes";
   if (!dbase.has_key("pdeModel")) dbase.put<InsParameters::PDEModel>("pdeModel");
   dbase.get<InsParameters::PDEModel >("pdeModel")=standardModel;
-  if (!dbase.has_key("extrapolatePoissonSolveInTime")) dbase.put<bool >("extrapolatePoissonSolveInTime",true);
+  if (!dbase.has_key("extrapolatePoissonSolveInTime")) dbase.put<bool>("extrapolatePoissonSolveInTime",true);
+
+  // -- for known solutions and TZ the following will set the exact RHS for the pressure BC on walls
+  if (!dbase.has_key("useExactPressureBC")) dbase.put<bool>("useExactPressureBC",false);
+
+
+  // Evaluate the viscous traction by using div(v)=0 to alter some terms
+  if (!dbase.has_key("useCurlFormOfTraction")) dbase.put<bool>("useCurlFormOfTraction")=false;
 
   if (!dbase.has_key("numberOfImplicitVelocitySolvers")) dbase.put<int>("numberOfImplicitVelocitySolvers");
   dbase.get<int>("numberOfImplicitVelocitySolvers")=0;
@@ -1529,8 +1536,10 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 			  "use boundary dissipation in AF scheme",
                           "stabilize high order boundary conditions",
                           "decouple implicit boundary conditions",
+                          "use exact pressure BC",
+                          "use curl form of the traction",
 			  ""};
-    int tbState[12];
+    int tbState[14];
     tbState[ 0] =  dbase.get<bool>("projectInitialConditions");
     tbState[ 1] =  dbase.get<bool>("useSecondOrderArtificialDiffusion");
     tbState[ 2] =  dbase.get<bool>("useFourthOrderArtificialDiffusion");
@@ -1542,7 +1551,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     tbState[ 8] =  dbase.get<bool>("useBoundaryDissipationInAFScheme");
     tbState[ 9] =  dbase.get<bool>("stabilizeHighOrderBoundaryConditions");
     tbState[10] =  dbase.get<bool>("decoupleImplicitBoundaryConditions");
-    tbState[11]=0;
+    tbState[11] =  dbase.get<bool>("useExactPressureBC");
+    tbState[12] =  dbase.get<bool>("useCurlFormOfTraction");
+    tbState[13]=0;
 
     int numColumns=1;
     addPrefix(tbLabels,prefix,cmd,maxCommands);
@@ -1816,6 +1827,14 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       printF("decoupleImplicitBoundaryConditions=%i\n",(int)dbase.get<bool >("decoupleImplicitBoundaryConditions"));
     }
     
+    else if ( dialog.getToggleValue(answer,"use exact pressure BC",dbase.get<bool >("useExactPressureBC")) )
+    {
+      printF("useExactPressureBC=%i (1=use exact RHS for pressure wall BC)\n",(int)dbase.get<bool>("useExactPressureBC"));
+    }
+    else if ( dialog.getToggleValue(answer,"use curl form of the traction",dbase.get<bool >("useCurlFormOfTraction")) )
+    {
+      printF("useCurlFormOfTraction=%i (1=use div(v)=0 to adjust the traction)\n",(int)dbase.get<bool>("useCurlFormOfTraction"));
+    }
 
     else if( answer=="turn on second order artificial diffusion" )
     {
@@ -2639,31 +2658,75 @@ getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, in
       op.derivative(MappedGridOperators::zDerivative,uLocal,uz,Ib1,Ib2,Ib3,V);
     }
 
+    const bool & useCurlFormOfTraction = dbase.get<bool>("useCurlFormOfTraction");
     if( cg.numberOfDimensions()==2 )
     {
-      fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
-			  -(mu*((ux(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-				(uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)) ) );
-      fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
-			  -(mu*((ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-				(uy(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)) ) );
+      if( useCurlFormOfTraction )
+      {
+        // --- use div(v)=0 to adjust some terms ---
+        // u.x -> -v.y
+        // v.y -> -u.x 
+        if( false )
+          printF("--InsPar:: getNormalForce: compute curl-form of viscous traction t=%.3e\n",time);
+        
+        fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
+                            -(mu*((-2.*uy(Ib1,Ib2,Ib3,vc)               )*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)) ) );
+        fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
+                            -(mu*((ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (-2.*ux(Ib1,Ib2,Ib3,uc)               )*normal(Ib1,Ib2,Ib3,1)) ) );
+      }
+      else
+      {
+        fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
+                            -(mu*((ux(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)) ) );
+        fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
+                            -(mu*((ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)) ) );
+      }
     }
     else
     {
-      fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
-			  -(mu*((ux(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-				(uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
-				(uz(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+      if( useCurlFormOfTraction )
+      {
+        // --- use div(v)=0 to adjust some terms ---
+        // u.x -> - v.y - w.z
+        // v.y -> -u.x - w.z
+        // w.z -> -u.x - v.y
+        fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
+                            -(mu*((-2.*(uy(Ib1,Ib2,Ib3,vc)+uz(Ib1,Ib2,Ib3,wc)))*normal(Ib1,Ib2,Ib3,0)+
+                                  (     uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc) )*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (     uz(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,wc) )*normal(Ib1,Ib2,Ib3,2)) ) );
 
-      fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
-			  -(mu*((ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-				(uy(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
-				(uz(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+        fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
+                            -(mu*((     ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc) )*normal(Ib1,Ib2,Ib3,0)+
+                                  (-2.*(ux(Ib1,Ib2,Ib3,uc)+uz(Ib1,Ib2,Ib3,wc)))*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (     uz(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,wc) )*normal(Ib1,Ib2,Ib3,2)) ) );
 
-      fn(Ib1,Ib2,Ib3,2)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,2)
-			  -(mu*((ux(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-				(uy(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
-				(uz(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+        fn(Ib1,Ib2,Ib3,2)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,2)
+                            -(mu*((     ux(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,uc) )*normal(Ib1,Ib2,Ib3,0)+
+                                  (     uy(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,vc) )*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (-2.*(ux(Ib1,Ib2,Ib3,uc)+uy(Ib1,Ib2,Ib3,vc)))*normal(Ib1,Ib2,Ib3,2)) ) );
+      }
+      else
+      {
+        fn(Ib1,Ib2,Ib3,0)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,0)
+                            -(mu*((ux(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (uz(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+
+        fn(Ib1,Ib2,Ib3,1)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,1)
+                            -(mu*((ux(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (uz(Ib1,Ib2,Ib3,vc)+uy(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+
+        fn(Ib1,Ib2,Ib3,2)=( fluidDensity*uLocal(Ib1,Ib2,Ib3,pc)*normal(Ib1,Ib2,Ib3,2)
+                            -(mu*((ux(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                                  (uy(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+ 
+                                  (uz(Ib1,Ib2,Ib3,wc)+uz(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2)) ) );
+      }
+      
     }
   }
   else

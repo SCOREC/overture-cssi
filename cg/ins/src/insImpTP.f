@@ -1138,6 +1138,7 @@
       !     ---- local variables -----
       integer c,e,i1,i2,i3,m1,m2,m3,j1,j2,j3,ghostLine,n,i1m,i2m,i3m,
      & i1p,i2p,i3p,ndu
+      integer iv(0:2),ghost,kd2,sidep,axisp
       integer side,axis,is1,is2,is3,mm,eqnTemp,debug,ntdc,normalAxis,
      & axisp1,axisp2
       integer kd,kd3,orderOfAccuracy,gridIsMoving,orderOfExtrap,

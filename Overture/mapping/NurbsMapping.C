@@ -89,6 +89,9 @@ NurbsMapping() : Mapping(1,2,parameterSpace,cartesianSpace)
 
   initialized=false;
   mappingNeedsToBeReinitialized=false;  // **** no longer needed ***
+  // Specify how knots are computed when interpolating:
+  interpolationKnotsOption =interpolateWithAveragedKnots;
+
   numberOfCurves=1;
   subCurves=0;
   subCurveState = 0;
@@ -133,6 +136,9 @@ NurbsMapping(const int & domainDimension_ , const int & rangeDimension_ )
   inverseIsDistributed=false;
   initialized=false;
   mappingNeedsToBeReinitialized=false;
+  // Specify how knots are computed when interpolating:
+  interpolationKnotsOption =interpolateWithAveragedKnots;
+
   numberOfCurves=1;
   subCurves=0;
   subCurveState = 0;
@@ -343,6 +349,9 @@ operator=( const NurbsMapping & x )
   cPoint           =x.cPoint;
   initialized      =x.initialized;
   nonUniformWeights=x.nonUniformWeights;
+
+  interpolationKnotsOption =interpolateWithAveragedKnots;
+
   uMin             =x.uMin;
   uMax             =x.uMax;
   vMin             =x.vMin;
@@ -3324,6 +3333,24 @@ setDomainInterval(const real & r1Start /* =0. */,
   return 0;
 }
 
+//================================================================================
+/// \brief Specify how the knots should be chosen when creating a NURBS
+///    by interpolation.
+/// \param option (input) 
+///     interpolateWithAveragedKnots : (default) weights computed by averaging uBar. This
+///          will ensure a positive definite linear system when interpolating.
+///
+///     interpolateWithEquallySpacedKnots : use equally spaced knots -- usueful for periodic Nurbs.
+//================================================================================
+int NurbsMapping::
+setInterpolateKnotsOption( InterpolationKnotsOptionEnum option )
+{
+  interpolationKnotsOption=option;
+  return 0;
+}
+
+
+
 void NurbsMapping::
 initialize( bool setMappingHasChanged /* =true */  )
 //===========================================================================
@@ -3575,6 +3602,91 @@ distance4D( const RealArray & x, const RealArray & y )
   dist=sqrt(dist);
   return dist;
 }
+
+
+//====================================================================================================
+/// \brief  This next function will change a clamped Nurbs to unclamped (for closed periodic curves)
+/// \param axis (input) : unclamp in this (domain) direction (0,1,2)
+///
+/// NOTE: For best results for periodic curves, use NurbsMapping::parameterizeByIndex
+///
+/// *wdh* May 9, 2018 ALGORITH A12.1 from the Nurbs book
+//==================================================================================================
+int NurbsMapping::
+unClampCurve( int axis /* = 0 */)
+{
+  // for now we only do curves: 
+  if( !( domainDimension==1 && axis==0 ) )
+  {
+    return 0;
+  }
+  
+  if( false )
+  {
+    printF("unClampCurve: uKnot (before)\n");
+    for( int i=0; i<=m1; i++ )
+      printF("%.3e ",uKnot(i));
+    printF("\n");
+  }
+  
+  Range Rw(0,rangeDimension);
+
+  // ---- unclamp the left side  ----
+  for( int i=0; i<=p1-2; i++ )
+  {
+    uKnot(p1-i-1) = uKnot(p1-i) - (uKnot(n1-i+1)-uKnot(n1-i));
+    int k=p1-1;
+    for( int j=i; j>=0; j-- )
+    {
+      real alpha = (uKnot(p1)-uKnot(k))/(uKnot(p1+j+1)-uKnot(k));
+      printF("unClamp:left: alpha=%.3e j=%i\n",alpha,j);
+      cPoint(j,Rw) = (cPoint(j,Rw)-alpha*cPoint(j+1,Rw))/(1.-alpha);
+      k--;
+    }
+  }
+  uKnot(0) = uKnot(1) - (uKnot(n1-p1+2)-uKnot(n1-p1+1));  // set first knot
+
+  // ---- unclamp the right side ----
+  for( int i=0; i<=p1-2; i++ )
+  {
+    uKnot(n1+i+2) = uKnot(n1+i+1) + (uKnot(p1+i+1)-uKnot(p1+i));
+    for( int j=i; j>=0; j-- )
+    {
+      real alpha = (uKnot(n1+1)-uKnot(n1-j))/(uKnot(n1-j+i+2)-uKnot(n1-j));
+      printF("unClamp:left: alpha=%.3e n1-j=%i\n",alpha,n1-j);
+      cPoint(n1-j,Rw) = (cPoint(n1-j,Rw)-(1.-alpha)*cPoint(n1-j-1,Rw))/alpha;
+    }
+  }
+  uKnot(n1+p1+1) = uKnot(n1+p1) + (uKnot(2*p1)-uKnot(2*p1-1));  // set last knot
+  
+  if( FALSE )
+  { 
+    // NOTE: At this  stage the control points may not be exactly periodic -- see testPeriodicNurbs.C)
+    //   Note sure why? Somethig to do with interpolating and solvig the linear system?
+    // We can make the control points periodic but this will also the point on the branch cut a little bit.
+    for( int i=0; i<=p1-3; i++ )
+      cPoint(i,Rw)=cPoint(n1-(p1-1)-i,Rw);
+    for( int i=0; i<=p1-2; i++ )
+      cPoint(n1-i,Rw)=cPoint(p1-1-i   ,Rw);
+
+    // cPoint(n1  ,Rw)=cPoint(p1-1     ,Rw);
+    // cPoint(n1-1,Rw)=cPoint(p1-2     ,Rw);
+    // cPoint(   0,Rw)=cPoint(n1-(p1-1),Rw);
+  }
+  
+  if( false )
+  {
+    printF("unClampCurve: uKnot (after)\n");
+    for( int i=0; i<=m1; i++ )
+      printF("%.3e ",uKnot(i));
+    printF("\n");
+  }
+  
+
+  return 0;
+}
+
+
 
 int NurbsMapping::
 removeKnot(const int & index, 
@@ -6340,7 +6452,7 @@ display( const aString & label /* =blankString */ ) const
     {
       // *wdh* 100208 real w = cPoint(i,rangeDimension)!=0. ? 1./cPoint(i,rangeDimension) : 1.;
       real w = cPoint(i,rangeDimension)!=0. ? cPoint(i,rangeDimension) : 1.;
-      printF(" control-point/weight i=%i : (%e,%e,%e)  weight=%e \n",i,cPoint(i,0)/w,cPoint(i,1)/w,
+      printF(" control-point/weight i=%5i : (%14.6e,%14.6e,%14.6e)  weight=%e \n",i,cPoint(i,0)/w,cPoint(i,1)/w,
 	     (rangeDimension==2 ? 0. : cPoint(i,2)/w),cPoint(i,rangeDimension));
     }
   }
@@ -6350,7 +6462,7 @@ display( const aString & label /* =blankString */ ) const
       for( i=0; i<=n1; i++ )
       {
 	real w = cPoint(i,j,rangeDimension)!=0. ? cPoint(i,j,rangeDimension) : 1.;
-	printF(" control-point/weight i,j=%i,%i : (%e,%e,%e) weight=%e \n",i,j,cPoint(i,j,0)/w,cPoint(i,j,1)/w,
+	printF(" control-point/weight i,j=%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,cPoint(i,j,0)/w,cPoint(i,j,1)/w,
 	       (rangeDimension==2 ? 0. : cPoint(i,j,2)/w),cPoint(i,j,rangeDimension));
       }
   }
@@ -6361,7 +6473,7 @@ display( const aString & label /* =blankString */ ) const
       for( i=0; i<=n1; i++ )
       {
 	real w = cPoint(i,j,k,rangeDimension)!=0. ? cPoint(i,j,k,rangeDimension) : 1.;
-	printF(" control-point/weight i,j,k=%i,%i,%i : (%e,%e,%e) weight=%e \n",i,j,k,
+	printF(" control-point/weight i,j,k=%5i,%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,k,
                cPoint(i,j,k,0)/w,cPoint(i,j,k,1)/w,
 	       (rangeDimension==2 ? 0. : cPoint(i,j,k,2)/w),cPoint(i,j,k,rangeDimension));
       }
@@ -6408,6 +6520,10 @@ get( const GenericDataBase & dir, const aString & name)
   subDir.get(cPoint,"cPoint");
   subDir.get(initialized,"initialized");
   subDir.get(nonUniformWeights,"nonUniformWeights");
+
+  int temp;
+  subDir.get(temp,"interpolationKnotsOption");
+  interpolationKnotsOption=(InterpolationKnotsOptionEnum)temp;
 
   subDir.get(uMin,"uMin");
   subDir.get(uMax,"uMax");
@@ -6475,6 +6591,7 @@ put( GenericDataBase & dir, const aString & name) const
   subDir.put(cPoint,"cPoint");
   subDir.put(initialized,"initialized");
   subDir.put(nonUniformWeights,"nonUniformWeights");
+  subDir.put((int)interpolationKnotsOption,"interpolationKnotsOption");
 
   subDir.put(uMin,"uMin");
   subDir.put(uMax,"uMax");

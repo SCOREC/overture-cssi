@@ -1109,6 +1109,11 @@ addForcing(realMappedGridFunction & dvdt,
     
 
     // *** old way ***
+    if( debug() & 4 )
+    {
+      fPrintF(debugFile,"Cgins:addForcing: OLD WAY t=%9.3e\n",t);
+    }
+
 
     if( mg.numberOfDimensions()==1 )
     {
@@ -1171,12 +1176,12 @@ addForcing(realMappedGridFunction & dvdt,
 
       if( debug() & 64 )
       {
-	fprintf(parameters.dbase.get<FILE* >("debugFile")," *** evaluateTZ=%i *****\n",evaluateTZ);
-	display(mg.vertex()(I1,I2,I3,0),sPrintF(" mg.vertex(I1,I2,I3,0) at t=%e",t),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
+	fprintf(pDebugFile," *** evaluateTZ=%i *****\n",evaluateTZ);
+	display(mg.vertex()(I1,I2,I3,0),sPrintF(" mg.vertex(I1,I2,I3,0) at t=%e",t),pDebugFile,"%6.3f ");
 
-	display(ut(I1,I2,I3,uc),sPrintF("ut(I1,I2,I3,uc) before adding TZ at t=%e\n",t),parameters.dbase.get<FILE* >("debugFile"),"%7.4f ");
+	display(ut(I1,I2,I3,uc),sPrintF("ut(I1,I2,I3,uc) before adding TZ at t=%e\n",t),debugFile,"%7.4f ");
 	display(tzForcing[1](I1,I2,I3)+tzForcing[2](I1,I2,I3),
-	          sPrintF("u*ux+px (TZ) at t=%e\n",t),parameters.dbase.get<FILE* >("debugFile"),"%6.4f ");
+                sPrintF("u*ux+px (TZ) at t=%e\n",t),debugFile,"%6.4f ");
       }
       
       utLocal(I1,I2,I3,uc)+= scaleFactorT*tzForcing[0](I1,I2,I3)+

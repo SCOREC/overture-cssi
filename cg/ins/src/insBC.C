@@ -129,6 +129,9 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     const bool isRectangular = mg.isRectangular();
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
     
+    FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+    FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
+
   // *** turn off for stretched c-grid at outflow 
     bool applyDivergenceBoundaryCondition=true; // false; // true;
     bool applyDivergenceBoundaryConditionAtOutflow=true;
@@ -345,13 +348,14 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       // Sanity check: 
             assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
 
-            printF("HHHHH insBC: TEST: do NOT apply explicit BCs to AMP noSlipWall, t=%9.3e HHHHH\n",t);
+            if( t<3.*dt )
+                printF("HHHHH insBC:INFO do NOT apply explicit BCs to AMP noSlipWall with implicit-BCs , t=%9.3e HHHHH\n",t);
             
             assignNoSlipWall=false;
         }
         else
         {
-
+            bool interfaceWasProjected=false;
             if( puOld == NULL )
             {
                 MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
@@ -361,13 +365,22 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
                     OV_ABORT("fix me");
                 }
             
-                projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
+                interfaceWasProjected = projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
             }
             else
             {
-                projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
+                interfaceWasProjected = projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
             }
+
+      // Do not apply the usual no-slip wall BC's if the interface velocity was projected -- THIS ASSUMES THERE IS NO OTHER NO-SLIP WALL ***
+            if( interfaceWasProjected )
+                  assignNoSlipWall=false;
         
+            if( t<=3.*dt && debug() & 4 )
+            {
+                fPrintF(debugFile,"--insBC: interface velocity was assigned, SKIP usual no-slip wall BC's t=%9.3e\n",t);
+            }
+            
         }
         
     } // end if useAddedMass 

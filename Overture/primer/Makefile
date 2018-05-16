@@ -238,6 +238,10 @@ deform = deform.o DataPointMapping.o
 deform: $(deform) 
 	$(CC) $(CCFLAGS) -o deform $(deform) $(CLIBS) $(FLIBS) $(GLIBS)
 
+checkDeform = checkDeform.o 
+checkDeform: $(checkDeform) 
+	$(CC) $(CCFLAGS) -o checkDeform $(checkDeform) $(CLIBS) $(FLIBS) $(GLIBS)
+
 # Build an airfoil with the hyperolic grid generator (exmaple for Dominic)
 # also changed HyperbolicMapping.{h,C}
 airfoil = airfoil.o ../hype/update.o ../hype/HyperbolicMapping.o ../mapping/AirfoilMapping.o

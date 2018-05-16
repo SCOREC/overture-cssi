@@ -3089,8 +3089,14 @@ c===============================================================================
          advectCoeff=advectionCoefficient
          if( gridIsMoving.ne.0 .and. 
      & initialConditionsAreBeingProjected.eq.0 )then
-           ! For moving grids we need to multiply only u by advectionCoefficient, and mutiply by advectCoeff=1 in the pressure BC
+           ! For moving grids we need to multiply only u by advectionCoefficient, and multiply by advectCoeff=1 in the pressure BC
            advectCoeff=1.
+           ! ************************* CHECK ME -- IS THIS THE RIGHT THING TO DO ??? *************************
+           if( twilightZoneFlow.ne.0 )then
+             ! For TZ, the grid-velocity may not match the velocity on the boundary -- TURN OFF the advection term in the pressure BC
+             !    *wdh* April 22, 2018
+             advectCoeff=0.
+           end if
          end if
          ! for visco-plastic
          if( orderOfAccuracy.ne.2 .and. orderOfAccuracy.ne.4 )then

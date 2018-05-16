@@ -209,6 +209,10 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   if (!dbase.has_key("orderOfTimeExtrapolationForPressure")) dbase.put<int>("orderOfTimeExtrapolationForPressure");
   // Some schemes need predicted pressure for boundary conditions
   if (!dbase.has_key("predictedBoundaryPressureNeeded")) dbase.put<bool>("predictedBoundaryPressureNeeded")=false;
+  if (!dbase.has_key("orderOfTimeExtrapolationForBoundaryPressure")) 
+    dbase.put<int>("orderOfTimeExtrapolationForBoundaryPressure")=-1;
+  if (!dbase.has_key("orderOfTimeExtrapolationForBoundaryVelocity")) 
+    dbase.put<int>("orderOfTimeExtrapolationForBoundaryVelocity")=-1;
 
   if (!dbase.has_key("reducedInterpolationWidth")) dbase.put<int>("reducedInterpolationWidth");
   if (!dbase.has_key("bcInfo")) dbase.put<IntegerArray>("bcInfo");
@@ -526,6 +530,9 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   // keep count of the total number of PC corrections (the number per step can vary with some options)
   if (!dbase.has_key("totalNumberOfPCcorrections")) dbase.put<int>("totalNumberOfPCcorrections",0);
 
+  // For predictor-corrector schemes, correction holds the current current correction stage (0=predictor)
+  if (!dbase.has_key("correctionStage")) dbase.put<int>("correctionStage")=-1;
+
   // max number of correction steps for the approximate factorization method:
   if (!dbase.has_key("numberOfAFcorrections")) dbase.put<int>("numberOfAFcorrections");
   dbase.get<int>("numberOfAFcorrections")=10; 
@@ -571,6 +578,9 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
 
   // Apply a projection to the interface values
   if (!dbase.has_key("projectInterface")) dbase.put<bool>("projectInterface",false);
+
+  // order of accuracy (=number of pts in the interpolant) for the ArrayEvolution variables 
+  if( !dbase.has_key("interfaceArrayEvolutionTimeAccuracy") ) dbase.put<int>("interfaceArrayEvolutionTimeAccuracy")=3;
 
   // Apply a projection to the rigid body interface values
   if (!dbase.has_key("projectRigidBodyInterface")) dbase.put<bool>("projectRigidBodyInterface",false);

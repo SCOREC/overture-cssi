@@ -18,7 +18,7 @@ main(int argc, char *argv[])
   // create and read in a CompositeGrid
   CompositeGrid cg;
   getFromADataBase(cg,nameOfOGFile);
-  cg.update();
+  cg.update(MappedGrid::THEvertex);      // compute the vertex array of grid points
 
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )   // loop over component grids
   {

@@ -471,7 +471,7 @@ motion: $(motion)
         $(CLIBS) $(FLIBS) $(GLIBS)
 
 
-# test passing opaque pointers to fortarn
+# test passing opaque pointers to fortran
 passingPointers= passingPointers.o mySolver.o
 passingPointers: $(passingPointers)
 	$(CC) $(CCFLAGS) -o passingPointers $(passingPointers) \

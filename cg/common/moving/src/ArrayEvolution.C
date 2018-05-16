@@ -29,12 +29,14 @@ ArrayEvolution::
 // ===========================================================================
 int ArrayEvolution::add( real t, RealArray & x )
 {
+  int debug=0;
+
   int numberOfTimesLevels=times.size();
   const real epst = REAL_EPSILON*10.*(1.+fabs(t)); // epsilon for checking equivalent times. 
   
   if( numberOfTimesLevels==0 )
   {
-    if( true )
+    if( debug>0 )
       printF("ArrayEvolution::add:INFO: add initial entry x at t=%9.3e\n",t);
     current=0;
     times.push_back(t);
@@ -46,8 +48,8 @@ int ArrayEvolution::add( real t, RealArray & x )
   if( t > times[current] )
   {
     // -- a new time level has been supplied ---
-      if( true )
-        printF("ArrayEvolution::add:INFO: add a new entry x at t=%9.3e current=%i next=%i\n",t,current,next);
+    if( debug>0 )
+      printF("ArrayEvolution::add:INFO: add a new entry x at t=%9.3e current=%i next=%i\n",t,current,next);
     if( numberOfTimesLevels<maximumNumberOfTimeLevels )
     {
       times.push_back(t);
@@ -64,7 +66,7 @@ int ArrayEvolution::add( real t, RealArray & x )
   else if( fabs(t-times[current])< epst )
   {
     // replace the current time
-    if( true )
+    if( debug>0 )
       printF("ArrayEvolution::add:INFO: replace the current entry with new data, t=%9.3e, t[current=%i]=%9.3e\n",
              t,current,times[current]);
     times[current]=t;
@@ -89,6 +91,8 @@ int ArrayEvolution::add( real t, RealArray & x )
 // ========================================================================================
 int ArrayEvolution::eval( real t, RealArray & x, int numberOfDerivatives /* =0 */, int orderOfAccuracy /* =-1 */ )
 {
+  int debug=0;
+  
   const real tEps = REAL_EPSILON*10.*(1. + fabs(t));  // epsilon for checking equivalent times 
 
   const int numberOfTimesLevels=times.size();
@@ -102,12 +106,14 @@ int ArrayEvolution::eval( real t, RealArray & x, int numberOfDerivatives /* =0 *
   }
   assert( level>=0 && level<numberOfTimesLevels );
 
-  if( true )
-    printF("ArrayEvolution::eval:INFO: numDerivs=%i t=%9.3e t[level=%i]=%9.3e, t[cur=%i]=%9.3e numberOfTimesLevels=%i\n",
-           numberOfDerivatives,t,level,times[level],current,times[current],numberOfTimesLevels);
 
   if( orderOfAccuracy<0 ) orderOfAccuracy=orderOfTimeAccuracy; // use default 
   
+  if( debug & 2 )
+    printF("ArrayEvolution::eval:INFO: numDerivs=%i t=%9.3e t[level=%i]=%9.3e, t[cur=%i]=%9.3e numberOfTimesLevels=%i "
+           "orderOfAccuracy=%i (%i pt interpolation)\n",
+           numberOfDerivatives,t,level,times[level],current,times[current],numberOfTimesLevels,orderOfAccuracy,orderOfAccuracy);
+
   if( numberOfDerivatives==0 )
   {
     // ---------------------------------------------
@@ -252,7 +258,7 @@ int ArrayEvolution::eval( real t, RealArray & x, int numberOfDerivatives /* =0 *
     }
     else if( orderOfAccuracy==3 || numberOfTimesLevels<=4 )
     {
-      if( orderOfAccuracy>2 )
+      if( orderOfAccuracy>3 )
         printF("ArrayEvolution:eval:WARNING: computing 1st derivative, t=%9.3e: requested orderOfAccuracy=%i "
                "but only computing to order=3 since there are only %i time-levels\n",
                t,orderOfAccuracy,numberOfTimesLevels);

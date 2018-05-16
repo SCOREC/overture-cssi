@@ -124,6 +124,673 @@ conv.p insElasticShear.conv -tf=0.1 -cg=es -showAllComponents=0 -tsINS=im -smVar
 
 
 ********************************
+***** May 16, 2018
+
+ TEST OF ELASTIC SHEAR
+PC:
+cgmp -noplot elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.00001 -tf=.00001 -smVariation=g -debug=3 -tsINS=pc -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -useTP=0 -addedMass=1 -amp=.001 -debug=7 -go=go >! es.out
+
+IM: 
+cgmp -noplot elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.00001 -tf=.00001 -smVariation=g -debug=3 -tsINS=im -useImplicitAmpBCs=1 -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -useTP=0 -addedMass=1 -amp=.001 -debug=7 -go=go >! esi.out
+
+********************************
+***** May 15, 2018
+
+
+START TEST OF ELASTIC SHEAR
+
+
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride2.order2p.hdf -addedMass=1 -scf=1. -u0=0. -nu=.05 -tp=.01 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -tz=none -degreeTime=1 -useImplicitAmpBCs=1 -debug=3 -startCurve=spline -numberOfCorrections=2  -go=halt
+
+
+************* OLD ***
+cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVariation=g -debug=3 -tsINS=pc -go=halt -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -useTP=0 -addedMass=1 -amp=.001
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (76 steps)
+   0.002 4.27e-16 6.30e-07 4.70e-19 9.93e-18  2.74e-03 3.33e-05 5.69e+00
+    t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (226 steps)
+   0.003 1.17e-15 2.11e-07 8.55e-19 2.36e-17  2.74e-03 1.11e-05 1.53e+01 
+
+
+
+--------------------------------------------------------------------------------------------------------------
+FIXED UP ELASTIC PISTON GRIDS
+
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.01 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt 
+
+
+----- G4
+-->t=0.0000e+00 dt=0.0e+00 maxNorm errors:[0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,], maxNorm(u):[2.72e-01,2.72e-01,0.00e+00,0.00e+00,0.00e+00,0.00e+00,0.00e+00,0.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=0==================
+--INS-- determineErrors: t=0.000e+00, maxNorm errors: [p,u,v,T]=[3.54e-07,1.99e-06,1.97e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (0 steps)
+   0.000 3.54e-07 1.99e-06 1.97e-06 1.52e-03  2.72e-01 1.00e-01 7.73e-02 
+
+
+----G8
+-->t=0.0000e+00 dt=0.0e+00 maxNorm errors:[0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,0.0000e+00,], maxNorm(u):[2.72e-01,2.72e-01,0.00e+00,0.00e+00,0.00e+00,0.00e+00,0.00e+00,0.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=0==================
+--INS-- determineErrors: t=0.000e+00, maxNorm errors: [p,u,v,T]=[4.55e-08,2.52e-07,2.52e-07,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (0 steps)
+   0.000 4.55e-08 2.52e-07 2.52e-07 3.97e-04  2.72e-01 5.25e-02 1.04e-01 
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-03 dt=1.0e-03 maxNorm errors:[1.6091e-06,1.6090e-06,1.0762e-05,5.3742e-06,5.3742e-06,1.0721e-05,1.4262e-09,1.4262e-09,], maxNorm(u):[2.72e-01,2.72e-01,3.02e-03,3.71e-04,3.71e-04,3.02e-03,2.72e-04,2.72e-04,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- determineErrors: t=1.000e-03, maxNorm errors: [p,u,v,T]=[1.78e-04,1.61e-06,1.61e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.001 1.78e-04 1.61e-06 1.61e-06 2.49e-04  2.72e-01 1.00e-03 6.43e+01
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=2.0000e-03 dt=1.0e-03 maxNorm errors:[4.6667e-06,4.6663e-06,1.3359e-06,8.1672e-07,8.1672e-07,1.3418e-06,2.5831e-09,2.5821e-09,], maxNorm(u):[2.72e-01,2.72e-01,6.03e-03,7.54e-04,7.54e-04,6.03e-03,5.44e-04,5.44e-04,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+--INS-- determineErrors: t=2.000e-03, maxNorm errors: [p,u,v,T]=[1.71e-04,4.67e-06,4.67e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.002 1.71e-04 4.67e-06 4.67e-06 2.24e-04  2.72e-01 1.00e-03 7.79e+01
+
+********************************
+***** May 14, 2018
+
+NOTE: ORIGINAL FIB -- we REAPPLY VELOCITY BC's at end of stage
+
+
+----- Check convergence of pressure at t=0 and t=dt -------
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.01 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt 
+
+G2: 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (0 steps)
+   0.000 1.55e-06 1.30e-05 1.31e-05 2.97e-03  2.72e-01 1.00e-01 7.89e-02
+
+----G4 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (0 steps)
+   0.000 4.26e-08 1.51e-06 1.53e-06 1.11e-03  2.72e-01 1.00e-01 8.19e-02 
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=2.0000e-03 dt=2.0e-03 maxNorm errors:[5.2465e-06,5.2456e-06,2.0431e-05,1.0499e-05,1.0499e-05,2.0210e-05,1.1820e-08,1.1510e-08,], maxNorm(u):[2.72e-01,2.72e-01,6.03e-03,7.42e-04,7.42e-04,6.03e-03,5.44e-04,5.44e-04,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- determineErrors: t=2.000e-03, maxNorm errors: [p,u,v,T]=[2.95e-04,5.24e-06,5.24e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.002 2.95e-04 5.24e-06 5.24e-06 6.52e-04  2.72e-01 2.00e-03 1.66e+01
+
+grid     name              gridIndexRange(0:1,0:2)           gridPoints   hmx      hmn  
+   0:    outerRegion   ([ 0:  197],[ 0:   18],[ 0:    0])       2772   3.19e-02 1.75e-02 
+   1: fluidInterface   ([ 0:  126],[ 0:   12],[ 0:    0])       1778   3.54e-02 1.75e-02 
+
+
+----G8
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (0 steps)
+   0.000 2.89e-08 2.17e-07 2.21e-07 3.63e-04  2.72e-01 5.25e-02 9.53e-02  
+  
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-03 dt=1.0e-03 maxNorm errors:[1.5341e-06,1.5340e-06,1.2772e-05,6.3801e-06,6.3801e-06,1.2735e-05,1.4262e-09,1.4262e-09,], maxNorm(u):[2.72e-01,2.72e-01,3.02e-03,3.70e-04,3.70e-04,3.02e-03,2.72e-04,2.72e-04,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- determineErrors: t=1.000e-03, maxNorm errors: [p,u,v,T]=[1.71e-04,1.53e-06,1.53e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.001 1.71e-04 1.53e-06 1.53e-06 2.31e-04  2.72e-01 1.00e-03 7.74e+00 
+
+ ============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=2.0000e-03 dt=1.0e-03 maxNorm errors:[4.4486e-06,4.4482e-06,1.6287e-06,3.2929e-07,3.2929e-07,1.6340e-06,2.6300e-09,2.6291e-09,], maxNorm(u):[2.72e-01,2.72e-01,6.03e-03,7.53e-04,7.53e-04,6.03e-03,5.44e-04,5.44e-04,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+--INS-- determineErrors: t=2.000e-03, maxNorm errors: [p,u,v,T]=[1.65e-04,4.45e-06,4.45e-06,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.002 1.65e-04 4.45e-06 4.45e-06 2.07e-04  2.72e-01 1.00e-03 1.05e+02 
+
+
+
+grid     name              gridIndexRange(0:1,0:2)           gridPoints   hmx      hmn  
+   0:    outerRegion   ([ 0:  392],[ 0:   36],[ 0:    0])      10218   1.60e-02 8.82e-03 
+   1: fluidInterface   ([ 0:  251],[ 0:   20],[ 0:    0])       5544   1.77e-02 1.03e-02 
+
+
+
+
+
+
+
+
+
+------------------ REVISIT 1 CORRECION LOWER CFL ------------------------------
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -numberOfCorrections=1 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.01 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt -cfl=.2
+
+G8: SCF=1 nu=.01 CFL=.2 : OK
+
+G4: SCF=1 nu=.01 CFL=.2 : OK
+G4: SCF=1 nu=.05 CFL=.2 : OK
+G4: SCF=1 nu=.5  CFL=.2 : OK
+G4: SCF=1 nu=1.  CFL=.2  : *BAD* ,  CFL=.1 : OK 
+
+G2: SCF=1 nu=.01 cfl=.9 = *BAD*  CFL=.1,.2, .3=on-edge *OK* 
+
+
+-------------------- TEST LARGE nu + LOWER CFL ------------------
+---------------- LIGHT --------------
+CFL=.9=BAD, CFL=.1 OK CFL=.3 OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1e-3 -nu=1 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im -cdv=.01 -startCurve=spline -go=halt -useCurlFormOfTraction=1 -cfl=.9
+
+---------------- MEDIUM --------------
+G4: nu=1 BAD by t=.07,  nu=1+cfl=.1 or cfl=.2 or cfl=.3 : OK   cfl=.5 BAD
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=1 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im -cdv=.01 -startCurve=spline -go=halt -useCurlFormOfTraction=1 -cfl=.1
+
+
+G8: nu=.2 bad
+G4 nu=.1=OK, nu=.2=OK,  nu=.5 BAD
+$cgmpx radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.1 -tp=.05 -tf=3 -smVariation=g -debug=1 -tsINS=im -cdv=.01 -startCurve=spline -go=halt -useCurlFormOfTraction=1
+
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.1 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=.01 -startCurve=spline -go=halt -useCurlFormOfTraction=1
+
+
+
+REVISIT EXPLICIT TS --
+
+Heavy solid, nu=.1 --> wiggles
+             2-corrections --> wiggles go away!
+
+
+
+------------------------------------------------------------------------
+
+
+
+
+------------------------------------------------------------------------
+*NEW* USE CURL FORM OF VISCOUS TRACTION
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useCurlFormOfTraction=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+
+
+-scf=1e3 : OK with 1 correction (with or without)
+
+
+-scf=1 :  NOT OK with 1 correction
+
+
+
+
+-scf=1e-3 : OK with 1 correction (with or with-out curl-form)
+
+
+
+
+
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.7053e-04,1.4565e-04,1.0381e-03,5.3441e-04,5.3441e-04,1.0107e-03,1.9334e-06,2.1203e-06,], maxNorm(u):[2.72e-01,2.71e-01,3.02e-02,3.27e-03,3.27e-03,3.02e-02,2.72e-03,2.72e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[1.00e-03,1.46e-04,1.61e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 1.00e-03 1.46e-04 1.61e-04 9.62e-03  2.72e-01 1.00e-02 1.46e+01 
+
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+
+============ Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.9083e-04,1.7409e-04,1.4350e-03,7.9626e-04,7.9626e-04,1.4061e-03,1.6451e-06,1.5777e-06,], maxNorm(u):[2.72e-01,2.71e-01,3.02e-02,3.29e-03,3.29e-03,3.02e-02,2.72e-03,2.72e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[1.05e-03,1.50e-04,1.65e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 1.05e-03 1.50e-04 1.65e-04 9.62e-03  2.72e-01 1.00e-02 2.49e+00 
+
+
+
+********************************
+***** May 13, 2018
+
+CHECK ON THE GRID VELOCITY -- is it updated to match interface velocity??
+
+===================== TAKE TWO CORRECTIONS
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=.3 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=.02 -smVariation=g -debug=3 -tsINS=im -cdv=1 -startCurve=spline -go=go >! rep1.out
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -addedMass=1 -numberOfCorrections=2 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.05 -tf=1 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+SCF=1e3 O
+SCF=10 OK!
+SCF=1 OK!
+SCF=.1 OK!
+SCF=1e-3 
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -numberOfCorrections=2 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.05 -tf=1 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+
+
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=.02 -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+
+
+********************************
+***** May 11, 2018
+
+TEST NEW START CURVE OPTION
+
+-scf=1e3 OK to t=1
+
+-scf=1 -- still wiggles
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1e-3 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=halt
+-scf=1.-3 OKto t=1 -- some small wiggles on interface 
+
+SPLINE
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -startCurve=spline -go=go
+
+Divergence on the boundary
+    (     0) (     1) (     2) (     3) (     4) (     5) (     6) (     7) (     8) (     9) (    10) (    11) (    12) (    13) (    14) (    15) (    16) (    17) (    18) (    19) (    20) (    21) (    22) (    23) (    24) (    25) (    26) (    27) (    28) (    29) (    30) (    31) 
+(0) 0.00e+00 -2.22e-16 -5.55e-17 1.64e-15 2.22e-16 -5.83e-16 3.39e-15 -9.99e-16 1.22e-15 1.67e-16 -1.44e-15 3.61e-16 1.22e-15 -1.67e-16 -5.00e-16 1.78e-15 1.33e-15 -2.83e-15 -1.72e-15 2.33e-15 1.28e-15 2.00e-15 2.78e-16 -5.55e-16 6.66e-16 -4.44e-16 -3.14e-15 1.89e-15 3.05e-16 1.17e-15 1.72e-15 4.88e-15 
+--INS--check-AMP-MP-BC: max error in tv.( tau.nv + zs*v )= tv.( solidCharacteristic ) =2.51e-15
+Residual in  tv.( tau.nv + zs*v )= ... on the boundary
+    (      0) (      1) (      2) (      3) (      4) (      5) (      6) (      7) (      8) (      9) (     10) (     11) (     12) (     13) (     14) (     15) (     16) (     17) (     18) (     19) (     20) (     21) (     22) (     23) (     24) (     25) (     26) (     27) (     28) (     29) (     30) (     31) 
+(0) -1.85e-18 -6.94e-18 -6.25e-17 -2.78e-17 -1.39e-17 -1.39e-17 -1.73e-17 -1.56e-17 -7.81e-18 3.47e-18 -1.39e-17 1.39e-17 9.02e-17 -3.82e-17 -2.08e-17 3.47e-18 -1.04e-17 4.16e-17 0.00e+00 -2.08e-17 5.55e-17 -4.16e-17 -5.20e-18 -1.21e-17 8.67e-18 -2.08e-17 6.59e-17 -5.55e-17 2.08e-17 -2.08e-17 1.04e-17 -2.51e-15 
+--INS--check-AMP-MP-BC: max error in tv.( Eqn on boundary ) =3.66e-10
+Residual in  tv.( Eqn on boundary )= ... on the boundary
+    (      0) (      1) (      2) (      3) (      4) (      5) (      6) (      7) (      8) (      9) (     10) (     11) (     12) (     13) (     14) (     15) (     16) (     17) (     18) (     19) (     20) (     21) (     22) (     23) (     24) (     25) (     26) (     27) (     28) (     29) (     30) (     31) 
+(0) -6.54e-18 -3.76e-17 -1.34e-17 -6.62e-17 -1.54e-16 -1.03e-16 7.80e-17 -4.81e-17 1.73e-17 -2.35e-17 -6.40e-17 2.60e-16 6.76e-17 -2.37e-16 -1.77e-16 4.47e-17 -2.76e-17 9.05e-17 -1.19e-16 -1.27e-16 1.84e-16 1.10e-16 2.95e-17 -1.64e-18 5.73e-17 -7.50e-17 5.19e-17 -1.24e-18 3.36e-17 -1.90e-17 8.09e-17 3.66e-10 
+--INS--check-AMP-MP-BC: max error in nv.( vI - [alpha*vf + (1-alpha)*vs ] ) =1.76e-06
+Residual in  nv.( vI - [alpha*vf + (1-alpha)*vs ] )
+    (     0) (     1) (     2) (     3) (     4) (     5) (     6) (     7) (     8) (     9) (    10) (    11) (    12) (    13) (    14) (    15) (    16) (    17) (    18) (    19) (    20) (    21) (    22) (    23) (    24) (    25) (    26) (    27) (    28) (    29) (    30) (    31) 
+(0) 3.18e-16 -9.26e-17 -5.33e-17 -1.57e-16 1.78e-16 2.70e-17 -2.98e-17 9.58e-17 1.41e-16 -2.23e-16 -3.26e-17 -2.11e-17 -4.98e-17 2.94e-17 4.80e-16 -1.04e-16 -2.09e-16 5.59e-17 9.41e-17 8.30e-17 6.19e-17 -3.04e-17 -9.96e-17 5.16e-17 2.06e-16 -1.09e-16 7.85e-17 -9.40e-17 -8.02e-18 3.11e-18 -3.10e-16 1.76e-06 
+
+
+
+********************************
+***** May 9, 2018
+
+ADD CHECK after implicit solve that the AMP BC's were properly assigned
+
+
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -useExactPressureBC=1 -go=go
+
+
+********************************
+***** May 8, 2018
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -useExactPressureBC=1 -go=halt
+
+
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -useExactPressureBC=0 -go=halt
+
+
+=====================================
+RADIAL PISTON -- TEST TZ 
+
+TRIG Looks OK (scf=1 and scf=1e-3) no wiggles
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -tz=trig -degreeSpace=1 -degreeTime=0 -go=halt
+
+
+POLY -- looks OK -- no wiggles
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=0 -go=halt
+
+ =============== END getInterfaceData (grid,side,axis)=(1,0,1) =======================
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=1.0000e-02 dt=5.0e-03 maxNorm errors:[4.8378e-05,3.9482e-05,3.5666e-04,1.3827e-04,1.3827e-04,3.0737e-04,1.7496e-05,1.7233e-05,], maxNorm(u):[1.47e+00,1.33e+00,1.29e+00,1.28e+00,1.28e+00,1.26e+00,1.26e+00,1.26e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.010 1.79e-03 1.15e-03 1.12e-03 1.04e-02  3.41e+00 5.00e-03 3.61e+00 
+
+
+********************************
+***** May 7, 2018
+
+======================================================================================================
+============================== RADIAL ELASTIC PISTON ========================================================
+======================================================================================================
+
+INCREASE diss=.5 --> bit btter but still wiggles
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1e3 -nu=.05 -tp=.05 -tf=1. -smVariation=g -debug=1 -tsINS=im -cdv=1 -go=halt
+
+*** HEAVY
+
+G2 : OK, no wiggles
+
+
+*****MEDIUM
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.05 -tf=.25 -smVariation=g -debug=1 -tsINS=im -cdv=1 -go=halt
+
+G4: WIGGLES ON THE INTERFACE 
+
+
+G2:
+-->t=2.5000e-01 dt=8.3e-03 maxNorm errors:[3.5574e-04,1.8925e-04,4.8580e-03,1.1070e-03,1.1070e-03,1.5317e-03,8.9575e-05,8.6762e-05,], maxNorm(u):[5.67e-02,5.67e-02,5.41e-01,6.80e-02,6.80e-02,5.41e-01,4.88e-02,4.88e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=30==================
+--INS-- determineErrors: t=2.500e-01, maxNorm errors: [p,u,v,T]=[4.96e-03,3.31e-04,3.29e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (31 steps)
+   0.250 4.96e-03 3.31e-04 3.29e-04 3.37e-03  2.77e-01 8.33e-03 3.33e+01 
+
+G1: 
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=22==================
+-->t=2.5000e-01 dt=1.2e-02 maxNorm errors:[1.1118e-03,7.9353e-04,2.6645e-03,1.8491e-03,1.8491e-03,2.5934e-03,1.9359e-04,1.8767e-04,], maxNorm(u):[5.62e-02,5.62e-02,5.40e-01,6.70e-02,6.70e-02,5.40e-01,4.87e-02,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=22==================
+--INS-- determineErrors: t=2.500e-01, maxNorm errors: [p,u,v,T]=[7.09e-03,1.87e-03,1.88e-03,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (23 steps)
+   0.250 7.09e-03 1.87e-03 1.88e-03 8.25e-03  2.77e-01 1.25e-02 6.52e+01 
+
+
+**OLD***
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (26 steps)
+   0.250 3.85e-03 1.63e-03 1.62e-03 8.29e-03  2.77e-01 1.00e-02 2.43e+00 
+
+
+*** VERY LIGHT
+
+G4 : wiggles
+
+
+
+======================================================================================================
+============================== ELASTIC PISTON ========================================================
+======================================================================================================
+
+
+
+
+TEST IMP scheme + TZ
+AMP + PC (explicit) : DEGREE=(2,1) DEGREESM=(1,1) -- EXACT 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeTimeSM=1  -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=0 -go=go >! amptzi.out
+
+
+
+
+
+
+********************************
+***** May 6, 2018
+
+TEST NEW EXPLICIT AMP VELOCITY BC
+
+==== REAL RUN: 
+AMP + PC (explicit) 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=1. -u0=0. -nu=.05 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -degreeTime=1 -useImplicitAmpBCs=0 -debug=3 -useExactPressureBC=0 -go=go >! ampe.out
+
+
+======================================================================================================
+======================================================================================================
+TWILIGHTZONE:
+
+*** FIXED BUG WITH PREDICTED P *****
+
+
+**NEED PREDICTED p***
+
+AMP + PC (explicit) : DEGREE=(2,1) DEGREESM=(1,1) -- EXACT 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeTimeSM=1  -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=0 -go=go >! amptze.out
+
+********************************
+***** May 2, 2018
+
+
+IMPLICIT TIME-STEPPING
+
+TP -- 
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride4.order2p.hdf -addedMass=0 -scf=1. -u0=0. -nu=.1 -tp=.01 -tf=.5 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -useImplicitAmpBCs=0 -debug=3 -useExactPressureBC=0 -go=halt
+
+
+********************************
+***** May 1, 2018
+
+HEAVY -- check acceleration from the solid 
+
+cgmp -noplot /home/henshw/overtureFramework/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=../elasticPiston/elasticPistonGride4.order2p -method=ins -addedMass=1 -scf=1000 -u0=0. -nu=0.1 -tp=.1 -tf=0.1 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -diss=0.5 -cfl=.9 -useImplicitAmpBCs=0 -useExactPressureBC=0 -stressRelaxation=4  >! ep4.out 
+
+********************************
+***** April 29, 2018
+
+USE EXACT SOLID/FLUID interface values
+ts=PC : solid-sigma is only first order --> get traction-rate
+
+$cgmpx elasticPiston -method=ins -g=elasticPistonGrid4.order2p.hdf -addedMass=1 -scf=1. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -useImplicitAmpBCs=0 -debug=3 -useExactPressureBC=0 -go=halt
+
+G8:  REMAKE GRID
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGride8.order2p.hdf -addedMass=1 -scf=1. -u0=0. -nu=.1 -tp=.05 -tf=.1 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -useImplicitAmpBCs=0 -debug=3 -useExactPressureBC=0 -go=go >! ep8e.out
+
+G8: 
+$cgmpx elasticPiston -method=ins -g=elasticPistonGrid8.order2p.hdf -addedMass=1 -scf=1. -u0=0. -nu=.1 -tp=.05 -tf=.1 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -useImplicitAmpBCs=0 -debug=3 -useExactPressureBC=0 -go=halt
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=356==================
+-->t=1.0000e-01 dt=2.8e-04 maxNorm errors:[7.9075e-17,5.3566e-07,2.5941e-06,3.2162e-16,3.2162e-16,2.6098e-06,2.8204e-18,2.0023e-08,], maxNorm(u):[7.91e-17,4.71e-01,1.12e-01,3.22e-16,3.22e-16,3.36e-01,2.82e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=356==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 0.000e+00 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[1.89e-08,1.02e-16,1.43e-09,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (357 steps)
+   0.100 1.89e-08 1.02e-16 1.43e-09 5.13e-08  4.71e-01 2.80e-04 4.49e+01
+
+********************************
+***** April 28, 2018
+
+REVISIT ELASTIC PISTON (NO TZ)
+USE EXACT INTERFACE VALUES
+
+*BUG FOUND* known piston position was wrong (no motion)
+
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGrid4.order2.hdf -addedMass=1 -scf=1. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=none -useImplicitAmpBCs=1 -debug=3 -useExactPressureBC=0 -go=go >! ep4.out
+
+ 
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=3==================
+-->t=1.0000e-02 dt=3.3e-03 maxNorm errors:[5.2337e-09,1.5224e-07,6.2390e-07,1.3676e-08,1.3676e-08,7.5173e-07,6.1359e-11,9.0622e-08,], maxNorm(u):[5.23e-09,4.95e-01,1.14e-02,1.37e-08,1.37e-08,3.42e-02,6.14e-11,4.95e-03,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=3==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 0.000e+00 at t=1.000e-02
+--INS-- determineErrors: t=1.000e-02, maxNorm errors: [p,u,v,T]=[1.57e-08,1.79e-09,2.62e-09,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (4 steps)
+   0.010 1.57e-08 1.79e-09 2.62e-09 8.01e-09  4.95e-01 3.33e-03 1.74e-01 
+ 
+
+
+
+
+********************************
+***** April 27, 2018
+
+AMP + PC (explicit) : DEGREE=(2,2) DEGREESM=(1,1) -- EXACT 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeTimeSM=1  -degreeSpace=2 -degreeTime=2 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=0 -go=go >! amptze.out
+
+
+NEED TO FIX AMP-IMP-BC at a corner with a dirichlet BC ... **DONE**
+
+AMP + IMP degree=(1,1) -- exact,  FLUID=DEGREE=(2,1) SOLID=degree(1,1) --> **NOW** EXACT
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=0 -go=go >! amptz.out
+
+
+********************************
+***** April 25, 2018
+
+AMP + IMP degree=(1,1) -- exact,  FLUID=DEGREE=(2,1) SOLID=degree(1,1) --> NOT exact
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=0 -go=go >! amptz.out
+
+
+********************************
+***** April 24, 2018
+
+AMP + PC (explicit) : FLUID=DEGREE=(2,1) SOLID=degree(1,1) --> EXACT
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=0 -go=go >! amptze.out
+
+
+AMP + IMP degree=(1,1) -- exact,  FLUID=DEGREE=(2,1) SOLID=degree(1,1) --> NOT exact
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpaceSM=1 -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=0 -go=go >! amptz.out
+
+
+AMP + PC (explicit) : DEGREE=(2,1)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=0 -go=go >! amptze.out
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=2==================
+-->t=2.0000e-02 dt=1.0e-02 maxNorm errors:[1.3353e-05,5.8124e-06,1.6339e-04,1.9520e-04,1.9520e-04,2.6116e-04,6.6071e-08,2.8720e-08,], maxNorm(u):[1.01e+00,1.01e+00,1.01e+00,1.01e+00,1.01e+00,1.01e+00,1.01e+00,1.01e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=2==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (3 steps)
+   0.020 9.02e-07 2.72e-06 2.09e-06 7.68e-06  4.04e+00 1.00e-02 1.24e-01 
+
+
+AMP + PC (explicit)  --> EXACT (still setting exact velocity on interface)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=0 -go=go >! amptze.out
+
+********************************
+***** April 23, 2018
+
+AMP + PC (explicit)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=1 -go=go >! amptze.out
+
+********************************
+***** April 22, 2018
+
+AMP + PC (explicit)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=1 -useImplicitAmpBCs=0 -debug=7 -useExactPressureBC=1 -go=go >! amptze.out
+
+********************************
+***** April 21, 2018
+
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=1 -go=go >! amptz.out
+
+********************************
+***** April 20, 2018
+
+AMP+ TZ + IMP : (X,T)=(1,0)
+USE-EXACT-PRESSURE BC: small-errors but not exact 
+REAL-PRESSURE BC : large errors
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=1 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -useExactPressureBC=1 -go=go >! amptz.out
+
+
+TP + TZ + IMP: -- EXACT for degree=(1,1) , *NOW* EXACT for degree (X,T)+(2,0)
+  (X,T)=(2,1) -- not exact *WHY* 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=1 -debug=7 -useExactPressureBC=1 -go=go >! amptp.out
+
+
+TP + TZ: explicit time-stepping:, 
+  (X,T)=(2,1) and (1,2) -- not exact *WHY* --> cgsm not exact, forcing in Godunov
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.02 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=1 -debug=7 -useExactPressureBC=1 -go=go >! amptpe.out
+
+********************************
+***** April 19, 2018
+
+TURN OFF diss for cgsm
+
+
+AMP+ TZ + IMP : degree=(0,1) : NOT EXACT  , degree=(1,0) : *NOT EXACT* 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+TP + TZ + IMP: -- EXACT for degree=(1,1) , *NOW* EXACT for degree (0,2)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=0 -debug=7 -useExactPressureBC=1 -go=go >! amptp.out
+
+
+TP + TZ: explicit time-stepping:, *NOW* EXACT for degree (0,2)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.03 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=0 -debug=7 -useExactPressureBC=1 -go=go >! amptpe.out
+
+
+
+********************************
+***** April 18, 2018
+
+BUG fixed for TZ (pressureEquation.bC line 1199)
+
+TP + TZ: -- EXACT for degree=(1,1) , NOT EXACT for degree (0,2)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=0 -debug=7 -useExactPressureBC=1 -go=go >! amptp.out
+
+
+TP + TZ: explicit time-stepping:, NOT EXACT for degree (0,2)
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=pc -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=2 -degreeTime=0 -debug=7 -useExactPressureBC=1 -go=go >! amptpe.out
+
+********************************
+***** April 17, 2018
+
+
+- Question: is interface exact after one step ? --> yes 
+- Pressure is not exact on first solve 
+
+
+AMP+ TZ: --> fluid.debug 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+
+==
+
+TP + TZ: -- TP not exact for degree=(1,0) : p.n BC is not correct 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -debug=7 -go=go >! amptp.out
+
+
+********************************
+***** March 23, 2018
+
+
+AMP+ TZ
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+
+Pressure is not exact on first solve (using exact interface BC)
+
+Before solve: pressure rhs at t=1.00e-02, grid=0
+
+
+
+********************************
+***** March 20 , 2018
+
+AMP+ TZ
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+ERRORS WITH EXACT PRESSURE BC 
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[1.8981e-07,1.0663e-06,6.8834e-15,4.6629e-15,4.6629e-15,1.7986e-14,0.0000e+00,0.0000e+00,], maxNorm(u):[1.01e+00,1.00e+00,1.01e+00,1.01e+00,1.01e+00,1.00e+00,1.00e+00,1.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 4.66e-03 4.04e-05 4.86e-05 3.24e-04  1.01e+00 1.00e-02 8.07e-02 
+
+
+
+********************************
+***** March 14 , 2018
+
+AMP+ TZ
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.01 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+
+
+
+
+***** TP 
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[0.0000e+00,0.0000e+00,6.8834e-15,4.6629e-15,4.6629e-15,1.7986e-14,0.0000e+00,0.0000e+00,], maxNorm(u):[1.00e+00,1.00e+00,1.01e+00,1.01e+00,1.01e+00,1.00e+00,1.00e+00,1.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 8.88e-16 5.55e-17 5.55e-17 3.47e-16  1.01e+00 1.00e-02 7.45e-02 
+
+
+
+
+
+********************************
+***** March 13 , 2018
+
+CAN WE RUN TZ FOR THE ELASTIC PISTON GRID ???
+
+AMP + COARSE GRID 
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGridXe1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.05 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out
+
+AMP Scheme
+$cgmpx -noplot elasticPiston -method=ins -g=elasticPistonGride1.order2.hdf -addedMass=1 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.05 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -useImplicitAmpBCs=1 -debug=7 -go=go >! amptz.out 
+
+AMP -- NOT EXACT ** FIX ME**
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[9.0451e-01,1.1055e+00,3.7051e+01,1.5575e+01,1.5575e+01,4.8733e+01,9.0000e-03,1.1000e-02,], maxNorm(u):[1.02e+00,1.02e+00,3.81e+01,1.66e+01,1.66e+01,4.77e+01,1.00e+00,1.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 9.64e-02 1.11e-03 9.95e-04 6.46e-03  1.00e+00 1.00e-02 3.28e+00 
+
+TP scheme: EXACT 
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2.hdf -addedMass=0 -scf=200. -u0=0. -nu=.1 -tp=.01 -tf=.05 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=dirichlet -psolver=yale -ra=-10 -rb=-9 -cdv=1 -tz=poly -degreeSpace=0 -degreeTime=1 -debug=3 -go=halt
+
+============= Cgsm time-step info for domain 0 (solidDomain)(solid) steps=1==================
+-->t=1.0000e-02 dt=1.0e-02 maxNorm errors:[0.0000e+00,0.0000e+00,1.7986e-14,6.8834e-15,6.8834e-15,1.8208e-14,0.0000e+00,0.0000e+00,], maxNorm(u):[1.00e+00,1.00e+00,1.01e+00,1.01e+00,1.01e+00,1.01e+00,1.00e+00,1.00e+00,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=1==================
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (2 steps)
+   0.010 1.78e-15 5.55e-17 4.16e-17 5.55e-16  1.01e+00 1.00e-02 1.94e+00 
+
+
+AMP- COARSE GRID IN X
+cgmp elasticPiston.cmd -g=elasticPistonGridXe4.order2p -method=ins -addedMass=1 -scf=1000 -u0=0. -nu=0.1 -tp=.01 -tf=0.3 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -diss=0.2 -cfl=.9 -useImplicitAmpBCs=1 -debug=7 -go=halt >! amp.out
+
+********************************
 ***** March 8 , 2018
 
 LOOK AT AMP elastic piston -- *trouble* for heavy solid

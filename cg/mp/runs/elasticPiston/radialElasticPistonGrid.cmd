@@ -21,6 +21,7 @@ $order=2; $factor=1; $interp="e"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids"; $ml=0; 
 $name=""; 
 $ra=.35; $rb=.5; $rc=1.; 
+$numberOfVolumeSmooths=0;  # *wdh* May 14, 2018 this was missing before
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"ra=f"=> \$ra,"rb=f"=> \$rb,"rc=f"=> \$rc,\
@@ -61,7 +62,10 @@ include ellipseCurve.h
     forward
     # Fixed radial distance
     $nDistInterface=.2;
-    $nrm = intmg($nDistInterface/$ds+4.5);
+    # *wdh* May 14, 2018 $nrm = intmg($nDistInterface/$ds+4.5);
+    # Make sure the number of grid cells doubles when ds is halved.
+    $nDistExtraFactor=1.2; # make grid a bit finer in the normal direction
+    $nrm = intmg(($nDistInterface*$nDistExtraFactor)/$ds+.5);
     # $nDistInterface=($nr-3)*$ds;
     # $nrm=$nr-1; 
     distance to march $nDistInterface
@@ -76,6 +80,9 @@ include ellipseCurve.h
     # geometric stretch factor 1.05 
     #
     generate
+    # use fourth order interpolant to define the mapping: *wdh* May 8, 2018
+    fourth order
+    # evaluate as nurbs 1
     boundary conditions
       -1 -1 100 0 0 0
     share 
@@ -84,10 +91,12 @@ include ellipseCurve.h
   exit
 #
 # --- inner domain as a hyperbolic mapping
+# ***** NOT USED ****
   hyperbolic
     backward
     $nDist = $rb-$ra;
-    $nrm = intmg($nDist/$ds+4.5);
+    # $nrm = intmg($nDist/$ds+4.5);
+    $nrm = intmg(($nDist*$nDistExtraFactor)/$ds+.5);
     distance to march $nDist
     lines to march $nrm
     points on initial curve $nThetaInterface
@@ -95,10 +104,13 @@ include ellipseCurve.h
     volume smooths $numberOfVolumeSmooths
     equidistribution 0. (in [0,1])
     #
-    spacing: geometric
-    geometric stretch factor 1.05 
+    # spacing: geometric
+    # geometric stretch factor 1.05 
     #
     generate
+    # use fourth order interpolant to define the mapping:
+    fourth order
+    # evaluate as nurbs 1
     boundary conditions
       -1 -1 100 1 0 0
     share 
@@ -114,7 +126,8 @@ Annulus
     $innerRad=$ra + $nDistInterface -($order-2)*$ds; $outerRad=$rc; 
     $innerRad $outerRad
   lines
-    $nTheta = intmg( 2.*$pi*($innerRad+$outerRad)*.5/$ds + 3.5 );
+    # $nTheta = intmg( 2.*$pi*($innerRad+$outerRad)*.5/$ds + 3.5 );
+    $nTheta = intmg( 2.*$pi*($innerRad+$outerRad)*.5/$ds + 1.5 );
     $nr = intmg( ($outerRad-$innerRad)/$ds + 1.5 );
     $nTheta $nr
   boundary conditions
@@ -130,7 +143,9 @@ Annulus
     $innerRad=$rb; $outerRad=$ra; # note: reverse order so interface is at r2=0 
     $innerRad $outerRad
   lines
-    $nr = intmg( abs($outerRad-$innerRad)/$ds + 3.5 );
+    # $nr = intmg( abs($outerRad-$innerRad)/$ds + 3.5 );
+    $nDistExtraFactor=1.2; # make grid a bit finer in the normal direction
+    $nr = intmg( $nDistExtraFactor*abs($outerRad-$innerRad)/$ds + 1.5 );
     $nThetaInterface $nr
   boundary conditions
     -1 -1 100 0

@@ -161,7 +161,8 @@ solveForTimeIndependentVariables( GridFunction & cgf, bool updateSolutionDepende
   if( debug() & 4 || debug() & 8 ) // ABC 
   {
     aString buff;
-    u.display(sPrintF(buff,"Before pressure solve: u at t=%8.2e",t),debugFile,"%8.5f ");
+    if(  debug() & 16 ) 
+      u.display(sPrintF(buff,"Before pressure solve: u at t=%8.2e",t),debugFile,"%8.5f ");
 
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
     {
@@ -318,114 +319,6 @@ solveForTimeIndependentVariables( GridFunction & cgf, bool updateSolutionDepende
 
   checkPressureConstraintValues( cgf );
     
-//   else
-//   {
-//     // *************** THIS CODE MOVED TO THE ABOVE ROUTINE **************
-//     //--START--
-
-//     if( debug() & 4 )
-//     {
-//       fPrintF(debugFile," After pressure solve: compatibilityConstraint=%i, numberOfExtraEquations = %i\n",
-// 	      poisson->getCompatibilityConstraint(),poisson->numberOfExtraEquations);
-//       if( poisson->getCompatibilityConstraint() )
-//       {
-// 	real value=0.;
-// 	poisson->getExtraEquationValues( p(),&value );
-
-// //       int ne,i1e,i2e,i3e,gride;
-// //       poisson->equationToIndex( poisson->extraEquationNumber(0),ne,i1e,i2e,i3e,gride);
-// //       if( myid==0 )
-// //         fprintf(debugFile," After pressure solve: value of constraint = %e\n",p()[gride](i1e,i2e,i3e));
-// 	fPrintF(debugFile," After pressure solve: value of constraint = %e\n",value);
-
-
-//       }
-//     }
-
-//     // --- check values at constraint equations for added-mass rigid body solve
-//     const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
-//     if( useAddedMassAlgorithm )
-//     {
-//       const int numberOfExtraEquations = poisson->numberOfExtraEquations;
-//       if( numberOfExtraEquations>1 ) // AMP scheme will have more than 1 extra equation
-//       {
-// 	// ===== Get solutions to constraint equations =======
-// 	real *constraintValues = new real [numberOfExtraEquations];
-	
-// 	poisson->getExtraEquationValues( u, constraintValues );  
-// 	for( int i=0; i<numberOfExtraEquations; i++ )
-// 	{ // NOTE constraintValues are in reverse order
-// 	  printF("--INS-STI-- After pressure solve: extraEquation: i=%i : constraint value=%10.3e\n",i,constraintValues[numberOfExtraEquations-i-1]);
-// 	}
-
-// 	delete [] constraintValues;
-//       }
-    
-
-//     }
-  
-
-//     // if( myid==0 ) printf(" ** after pressure solve 3\n"); 
-
-//     if( poisson->getCompatibilityConstraint() )
-//     {
-//       // The solver may have trouble satisfying the compatability constraint (true for yale and ins/annulus.tz)
-//       // so we explicitly enforce it here by just shifting the solution by a constant 
-//       // *** note that we over-write the value of the constraint, p[gride](i1e,i2e,i3e)
-//       if( true )
-//       {
-// 	real nullVectorDotP=0., sumOfNullVector=0.;
-// 	poisson->evaluateExtraEquation(p(),nullVectorDotP,sumOfNullVector);    
-// 	//   "   ***not enforcing compatibility constraint for parallel *** FIX THIS *** \n",nullVectorDotP);
-
-// 	real constraintValue;
-// 	poisson->getExtraEquationValues(pressureRightHandSide, &constraintValue );
-
-// 	if( debug() & 4 )
-// 	{
-// 	  printF("solveForTimeIndepVarsINS INFO: nullVectorDotP=%14.9g, "
-// 		 "constraintValue=%g, diff=%g,  sumOfNullVector=%g \n",
-// 		 nullVectorDotP,constraintValue,fabs(nullVectorDotP-constraintValue),sumOfNullVector);
-// 	}
-      
-// 	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-// 	{
-// 	  getIndex(cg[grid].dimension(),I1,I2,I3);
-// 	  realSerialArray pLocal; getLocalArrayWithGhostBoundaries(p()[grid],pLocal);
-// 	  bool ok = ParallelUtility::getLocalArrayBounds(p()[grid],pLocal,I1,I2,I3);
-// 	  if( !ok ) continue;
-      
-// 	  pLocal+=(constraintValue-nullVectorDotP)/(max(1.,sumOfNullVector));
-// 	}
-//       }
-//       else
-//       {
-// 	// old way
-// 	real nullVectorDotP=0., sumOfNullVector=0.;
-// 	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-// 	{
-// 	  getIndex(cg[grid].dimension(),I1,I2,I3);
-// 	  nullVectorDotP+=sum(poisson->rightNullVector[grid](I1,I2,I3)*p()[grid](I1,I2,I3));
-// 	  sumOfNullVector+=sum(poisson->rightNullVector[grid](I1,I2,I3));
-// 	}
-// 	int ne,i1e,i2e,i3e,gride;
-// 	poisson->equationToIndex( poisson->extraEquationNumber(0),ne,i1e,i2e,i3e,gride);
-
-// 	if( debug() & 2 )
-// 	{
-// 	  real diff=nullVectorDotP-pressureRightHandSide[gride](i1e,i2e,i3e);
-// 	  if( myid==0 )
-// 	    fprintf(debugFile,"After solve: compatibility sum(null*p)= %14.10e,  nullVectorDotP-rhs=%e \n",
-// 		    nullVectorDotP,diff);
-// 	}
-    
-// 	p()+=(pressureRightHandSide[gride](i1e,i2e,i3e)-nullVectorDotP)/(max(1.,sumOfNullVector));
-//       }
-
-//     }
-
-//     // ----------- END
-//   }
   
   if( debug() & 8 )
     p().display("After solve: here is the pressure",debugFile,"%10.7f "); // "%8.1e ");
@@ -502,7 +395,7 @@ assignPressureRHS( GridFunction & gf0, realCompositeGridFunction & f )
 //======================================================================
 {
   if( debug() & 8 )
-    printf("OB_CompositeGridSolver:assignPressureRHS...\n");
+    printF("Cgins:assignPressureRHS...\n");
 //  real time0=getCPU();
   
 // ******
@@ -674,8 +567,9 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
   FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
   FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
-  if( debug() & 32 )
-    cout << "***Entering assignPressureRHS *** \n";
+  if( debug()& 2 || debug() & 32 )
+    printF("***Entering assignPressureRHS *** t=%9.3e\n",gf0.t);
+
   if( debug() & 64 )
     display(u0,"u at start of assignPressureRHS",debugFile,"%8.5f ");
 
@@ -699,6 +593,7 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
   }
 
   InsParameters::PDEModel pdeModel = parameters.dbase.get<InsParameters::PDEModel >("pdeModel");
+  const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
 
   realArray & u = u0;
   realArray & divergenceDamping = divDampingWeight[grid];
@@ -1011,8 +906,8 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
   {
     display(u,sPrintF("assignPressureRHS: sol u  grid=%i, after assignOPT",grid),debugFile,"%12.9f ");
   }
-  if( debug() & 16 )
-    display(f,sPrintF("assignPressureRHS: rhs f, grid=%i, after assignOPT",grid),debugFile,"%12.9f ");
+  if( debug()&4 || debug() & 16 )
+    display(f,sPrintF("assignPressureRHS: rhs f, grid=%i, after assignOPT",grid),debugFile,"%.4f ");
    
   bool boundaryConditionsAreTimeDependent=false;
   ForBoundary(side,axis)
@@ -1027,7 +922,7 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
   if( (parameters.gridIsMoving(grid) || 
        boundaryConditionsAreTimeDependent )  // *wdh* 2014/06/
       &&
-      !twilightZoneFlow  )  // *wdh* 040914 
+      ( !twilightZoneFlow || useAddedMassAlgorithm) )  // *wdh* Mar 13, 2018 -- call gridAccel BC for AMP schemes -- these are non-trivial
   {
     // add grid acceleration 
     // *wdh* 040914 -- for TZ no sense adding this on since we would have to subtract it off later  -- it
@@ -1193,8 +1088,14 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
 	case Parameters::axisymmetric:
 	  break;
 	default:
-	  if( parameters.dbase.get<int >("pressureBoundaryCondition")==2 )
+	  if( parameters.dbase.get<int >("pressureBoundaryCondition")==2 ||
+              useAddedMassAlgorithm )  // *wdh* Mar. 14, 2018 -- TZ is handled now in gridAccelerationBC
 	  {
+            if( t0<3.*dt && debug() & 4 )
+            {
+              fprintf(debugFile,">>>Cgins::assignPressureRHS: skip TZ adjustment for acceleration, t=%9.3e\n",t0);
+            }
+            
 	    break;
 	  }
 
@@ -1369,6 +1270,8 @@ addForcingToPressureEquation( const int & grid,
   const real & advectionCoefficient = parameters.dbase.get<real >("advectionCoefficient");
   const RealArray & bcData = parameters.dbase.get<RealArray >("bcData");
   const bool gridIsMoving = parameters.gridIsMoving(grid);
+  const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
+  const bool & useExactPressureBC = parameters.dbase.get<bool>("useExactPressureBC");
   
   const InsParameters::PDEModel & pdeModel = parameters.dbase.get<InsParameters::PDEModel >("pdeModel");
   const Parameters::TurbulenceModel & turbulenceModel = parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel");
@@ -1377,8 +1280,8 @@ addForcingToPressureEquation( const int & grid,
 
   OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
 
-  if( debug() & 32 )
-    cout << " ***Entering addForcingToPressureEquation *** \n";
+  if( debug() & 4 || debug() & 32)
+    printF("Cgins: ****Entering addForcingToPressureEquation(TZ forcing)  grid=%i, t=%9.3e*** \n",grid,t);
 
   if( debug() & 8 )
   {
@@ -1392,7 +1295,9 @@ addForcingToPressureEquation( const int & grid,
   Index I1g,I2g,I3g;
   Range R[3];
 
-  //     ..assign all interior points
+  // ************************************************************************************************
+  // ************************ ASSIGN ALL INTERIOR POINTS ********************************************
+  // ************************************************************************************************
  
   int side,axis;
   realSerialArray radiusInverse;
@@ -2079,6 +1984,8 @@ addForcingToPressureEquation( const int & grid,
 //       fflush(0);
 //     }
     
+  if( debug() & 32 )
+    printF("addForcingToPressureEquation: apply BC's grid=%i t=%.3e\n",grid,t);
 
   ForBoundary(side,axis)
   {
@@ -2152,6 +2059,8 @@ addForcingToPressureEquation( const int & grid,
       case Parameters::freeSurfaceBoundaryCondition:
       {
 	// const realArray & p0  = e   (c,I1,I2,I3,pc,t);
+        if( debug() & 16 ) fprintf(pDebugFile,"AddForcingToPressure: Set dirichlet BC for p (side,axis,grid)=(%i,%i,%i)\n",
+                                side,axis,grid);
         
 	// f(I1,I2,I3)=e(c,I1,I2,I3,pc,t);
         e.gd( fLocal,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t);
@@ -2184,7 +2093,14 @@ addForcingToPressureEquation( const int & grid,
       default:
       {
 
-	if( parameters.dbase.get<int >("pressureBoundaryCondition")==2 )
+        if( useAddedMassAlgorithm )
+        {
+          // *wdh* March 14, 2018 --- this is handled in gridAccelerationBC
+          if( t<= 3.*dt && debug() & 4 )
+            fprintf(debugFile,">>Cgins: skip add TZ correcion to AMP pressure BC, t=%9.3e\n",t);
+          
+        }
+        else if( parameters.dbase.get<int >("pressureBoundaryCondition")==2 )
 	{ // give  give p.n=P.n
           // printf("give p.n=P.n \n");
 	  
@@ -2219,8 +2135,11 @@ addForcingToPressureEquation( const int & grid,
 	    if( parameters.gridIsMoving(grid) )
 	    {
               // ******************************************
-              // *******Moving Grid************************
+              // ****** Moving Grid NO-SLIP WALL **********
               // ******************************************
+
+    if( debug() & 4 || debug() & 32 )
+      printF("addForcingToPressureEquation: apply BC noslipWall moving grid grid=%i t=%.3e\n",grid,t);
 
               assert( turbulenceModel==Parameters::noTurbulenceModel );
 	      
@@ -2249,8 +2168,25 @@ addForcingToPressureEquation( const int & grid,
 	      e.gd( p0y ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,pc,t);
 
 
-	      uuLocal(I1,I2,I3,uc)=advectionCoefficient*u0(I1,I2,I3) -gridVelocityLocal(I1,I2,I3,0);
-	      uuLocal(I1,I2,I3,vc)=advectionCoefficient*v0(I1,I2,I3) -gridVelocityLocal(I1,I2,I3,1);
+              if( true )
+              { // *new* way ignore advection terms for moving grid pressure BC *wdh* April 24, 2018.
+                uuLocal(I1,I2,I3,uc)=0.;
+                uuLocal(I1,I2,I3,vc)=0.;
+              }
+              else
+              {
+                // old way 
+                uuLocal(I1,I2,I3,uc)=advectionCoefficient*u0(I1,I2,I3) -gridVelocityLocal(I1,I2,I3,0);
+                uuLocal(I1,I2,I3,vc)=advectionCoefficient*v0(I1,I2,I3) -gridVelocityLocal(I1,I2,I3,1);
+              }
+              
+              // if( TRUE ) // *** TURN ON for testing the pressure BC ********************
+	      // {
+	      //   printF("addForcingToPressureEquation:  p.n BC *****TEMP*****\n");
+	      //   ::display(fLocal(I1g,I2g,I3g),"f on boundary before adding TZ","%.5f ");
+	      //   ::display(v0t,"v0t ","%.5f ");
+
+	      // }
 
 
               if( turbulenceModel==Parameters::noTurbulenceModel )
@@ -2263,9 +2199,32 @@ addForcingToPressureEquation( const int & grid,
                 Overture::abort("error: pressure-TZ-rhs: moving grid case not implemented");
 	      }
   
+              if( useExactPressureBC ) // *** USE EXACT RHS FOR PRESSUE BC FOR TESTING ********************
+	      {
+		realSerialArray p0x(I1,I2,I3),p0y(I1,I2,I3);
+		
+		e.gd( p0x ,xLocal,numberOfDimensions,isRectangular,0,1,0,0,I1,I2,I3,pc,t);
+		e.gd( p0y ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,pc,t);
+
+		real diff = max(fabs(fLocal(I1g,I2g,I3g)-( normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y) )));
+		printF("addForcingToPressureEquation: Error in p.n BC = %8.2e *****TEMP*****\n",diff);
+		::display(fLocal(I1g,I2g,I3g),"f on boundary","%5.2f ");
+		::display(( normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y) ),"pn on boundary","%5.2f ");
+                Range Rx=mg.numberOfDimensions();
+		::display(gridVelocityLocal(I1,I2,I3,Rx),"grid-velocity on boundary","%5.2f ");
+		  
+		printF("addForcingToPressureEquation: set p bc to p.n (exact)\n");
+		fLocal(I1g,I2g,I3g)=normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y);
+
+	      }
+
 	    }
-	    else
+	    else // non-moving no-slip wall
 	    {
+              // ******************************************
+              // *********** NO-SLIP WALL *****************
+              // ******************************************
+
 //  	      uu(I1,I2,I3,uc)=advectionCoefficient*u0(I1,I2,I3);
 //  	      uu(I1,I2,I3,vc)=advectionCoefficient*v0(I1,I2,I3);
 
@@ -2524,7 +2483,7 @@ addForcingToPressureEquation( const int & grid,
 	      fLocal(I1g,I2g,I3g)+=scaleFactorT*tzForcing[0](I1g,I2g,I3g)+
 		  (SQR(scaleFactor))*tzForcing[1](I1g,I2g,I3g)+ scaleFactor*tzForcing[2](I1g,I2g,I3g);
 
-              if( false ) // *** for testing the pressure BC ********************
+              if( useExactPressureBC ) // *** for testing the pressure BC ********************
 	      {
 		realSerialArray p0x(I1,I2,I3),p0y(I1,I2,I3);
 		
@@ -2532,18 +2491,20 @@ addForcingToPressureEquation( const int & grid,
 		e.gd( p0y ,xLocal,numberOfDimensions,isRectangular,0,0,1,0,I1,I2,I3,pc,t);
 
 		real diff = max(fabs(fLocal(I1g,I2g,I3g)-( normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y) )));
-		printf("addForcingToPressureEquation: Error in p.n BC = %8.2e\n",diff);
+		printF("addForcingToPressureEquation: Error in p.n BC = %8.2e ************** TEMP ***************\n",diff);
 		::display(fLocal(I1g,I2g,I3g),"f on boundary","%5.2f ");
 		::display(( normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y) ),"pn on boundary","%5.2f ");
 		  
-		printf("addForcingToPressureEquation: set p bc to p.n (exact)\n");
+		printF("addForcingToPressureEquation: set p bc to p.n (exact)\n");
 		fLocal(I1g,I2g,I3g)=normal(I1,I2,I3,0)*(p0x)+normal(I1,I2,I3,1)*(p0y);
 
 	      }
 	      
 
 
-	    }
+	    } // end non-moving no-slip wall
+            
+            
 	    if( pdeModel==InsParameters::BoussinesqModel || 
                 pdeModel==InsParameters::viscoPlasticModel)
 	    { // add terms for Boussinesq approximation
@@ -2551,7 +2512,7 @@ addForcingToPressureEquation( const int & grid,
               realSerialArray te0(I1,I2,I3);
               e.gd( te0 ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,tc,t);
 
-              // printf("TZ: add Boussinesq term to p rhs...gravity=[%e,%e]\n",gravity[0],gravity[1]);
+              // printF("TZ: add Boussinesq term to p rhs...gravity=[%e,%e]\n",gravity[0],gravity[1]);
 
               fLocal(I1g,I2g,I3g)+=thermalExpansivity*te0*(
 		gravity[0]*normal(I1,I2,I3,0)+gravity[1]*normal(I1,I2,I3,1));
@@ -2609,10 +2570,19 @@ addForcingToPressureEquation( const int & grid,
 	      e.gd( p0z ,xLocal,numberOfDimensions,isRectangular,0,0,0,1,I1,I2,I3,pc,t);
 
 
-	      uuLocal(I1,I2,I3,uc)=advectionCoefficient*u0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,0);
-	      uuLocal(I1,I2,I3,vc)=advectionCoefficient*v0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,1);
-	      uuLocal(I1,I2,I3,wc)=advectionCoefficient*w0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,2);
-
+              if( true )
+              { // *new* way ignore advection terms for moving grid pressure BC *wdh* April 24, 2018.
+                uuLocal(I1,I2,I3,uc)=0.;
+                uuLocal(I1,I2,I3,vc)=0.;
+                uuLocal(I1,I2,I3,wc)=0.;
+              }
+              else
+              { // old way
+                uuLocal(I1,I2,I3,uc)=advectionCoefficient*u0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,0);
+                uuLocal(I1,I2,I3,vc)=advectionCoefficient*v0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,1);
+                uuLocal(I1,I2,I3,wc)=advectionCoefficient*w0(I1,I2,I3)-gridVelocityLocal(I1,I2,I3,2);
+              }
+              
 
 	      if( turbulenceModel==Parameters::noTurbulenceModel )
 	      {

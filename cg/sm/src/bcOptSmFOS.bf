@@ -703,6 +703,47 @@ c ==============================================================================
       return 
       end
 
+! ===================================================================================================
+! Macro: update periodic boundaries
+! ===================================================================================================
+#beginMacro periodicUpdate()
+  ! *WDH* this periodic fix will not work in parallel -- fix me ---
+  ! fix up periodic boundaries (if necessary)
+  if (boundaryCondition(0,1).lt.0) then
+    if (boundaryCondition(1,1).lt.0) then
+      n1a=gridIndexRange(0,0)
+      n1b=gridIndexRange(1,0)
+      n2a=gridIndexRange(0,1)
+      n2b=gridIndexRange(1,1)
+      do i1=n1a-1,n1b+1
+        do n=0,numberOfComponents-1
+          u(i1,n2a-1,0,n)=u(i1,n2b-1,0,n)
+          u(i1,n2b+1,0,n)=u(i1,n2a+1,0,n)
+        end do
+      end do
+    else
+      write(*,'("bcOptSmFOS: bc<0 on only 1 side! Error")')
+      stop 2299
+    end if
+  end if
+  if (boundaryCondition(0,0).lt.0) then
+    if (boundaryCondition(1,0).lt.0) then
+      n1a=gridIndexRange(0,0)
+      n1b=gridIndexRange(1,0)
+      n2a=gridIndexRange(0,1)
+      n2b=gridIndexRange(1,1)
+      do i2=n2a-1,n2b+1
+        do n=0,numberOfComponents-1
+          u(n1a-1,i2,0,n)=u(n1b-1,i2,0,n)
+          u(n1b+1,i2,0,n)=u(n1a+1,i2,0,n)
+        end do
+      end do
+    else
+      write(*,'("bcOptSmFOS: bc<0 on only 1 side! Error")')
+      stop 2299
+    end if
+  end if
+#endMacro
 
 ! ===========================================================================================
 !  -- Fill in forcing arrays if they are not provided ---
@@ -764,6 +805,7 @@ c ==============================================================================
 
    else if( boundaryCondition(side,axis).eq.tractionBC )then
 
+    ! write(*,'(" bcOptSM: tractionBC: addBoundaryForcing(side,axis)=",i3)') addBoundaryForcing(side,axis)
     if( addBoundaryForcing(side,axis).eq.0 )then
      beginGhostLoops2d()
       if (mask(i1,i2,i3).ne.0) then
@@ -4340,6 +4382,8 @@ c              an22=-is2*rx(i1,i2,i3,axis2,1)*aNormi2
 
 #endMacro
 
+
+
 ! ===================================================================================================
 ! ******* Extrapolation of stress to the first ghost line (for the tractionBC case only) ********
 ! ===================================================================================================
@@ -5548,6 +5592,8 @@ c      ! '
 
         assignPrimaryDirichletTypeBoundaryConditionsMacro()
 
+        ! *wdh* May 8, 2018 
+        periodicUpdate()
 
         printSolution("After primary dirichlet")
 
@@ -5810,6 +5856,8 @@ c       end do
 
 ! TEMP TEMP TEMP TEMP
         assignPrimaryDirichletTypeBoundaryConditionsMacro()
+        ! *wdh* May 8, 2018 
+        periodicUpdate()
 
         fixupCornerStressMacro()
 ! TEMP TEMP TEMP TEMP

@@ -754,6 +754,11 @@ getUserDefinedDeformingBodyKnownSolution(
   int includeGhost=1;
   bool thisProcessorHasPoints=ParallelUtility::getLocalArrayBounds(mg.mask(),mask,I1,I2,I3,includeGhost);
 
+  if( true || t <= 2.*dt )
+  {
+    printF("getUserDefinedDeformingBodyKnownSolution:userKnownSolution=%s,  t=%9.3e\n",(const char*)userKnownSolution,t);
+  }
+
   if( userKnownSolution=="bulkSolidPiston" )
   {
     // ---- return the exact solution for the FSI INS+elastic piston ---
@@ -798,10 +803,10 @@ getUserDefinedDeformingBodyKnownSolution(
     const real ct = cos(thetaR);
     const real st = sin(thetaR);
     
-    if( t <= 2.*dt )
+    if( true || t <= 2.*dt )
     {
-      printF("--INS-- getUserDefinedDeformingBodyKnownSolution: bulkSolidPiston, t=%9.3e fm=%9.3e fp=%9.3e\n",
-             t,fm,fp);
+      printF("--INS-- getUserDefinedDeformingBodyKnownSolution: bulkSolidPiston, t=%9.3e fm=%9.3e fp=%9.3e thetaR=%.2e\n",
+             t,fm,fp,thetaR);
     }
 
 
@@ -811,7 +816,7 @@ getUserDefinedDeformingBodyKnownSolution(
       // state(I1,I2,I3,c0)= ct*xLocal(I1,I2,I3,0)+st*xLocal(I1,I2,I3,1);
       // state(I1,I2,I3,c1)=-st*xLocal(I1,I2,I3,0)+ct*xLocal(I1,I2,I3,1);
       state(I1,I2,I3,c0)=xLocal(I1,I2,I3,0);
-      state(I1,I2,I3,c1)=xLocal(I1,I2,I3,1);
+      state(I1,I2,I3,c1)=xLocal(I1,I2,I3,1)+yI; // *wdh* May28, 2018 yI was missing for some reason
     }
     else if( stateOption==boundaryVelocity )
     {
@@ -986,6 +991,7 @@ getUserDefinedDeformingBodyKnownSolution(
     GET_VERTEX_ARRAY(xLocal);
 
     printF("-- getUserDefinedDeformingBodyKnownSolution: fibShear, t=%9.3e\n",t);
+    
 
     const real ct = cos(thetaR);
     const real st = sin(thetaR);
@@ -2005,7 +2011,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & muBar    = rpar[5];
       real & kk       = rpar[6];
       
-      real amp,t0,k;
+      real amp,t0,k,ra,rb;
       int rampOrder;
 
       printF("------------------------------------------------------------------------------------------\n"
@@ -2022,6 +2028,10 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	);
       gi.inputString(answer,"Enter amp, k,t0,R,Rbar,rho,rhoBar,lambdaBar,muBar");
       sScanF(answer,"%e %e %e %e %e %e %e %e %e",&amp,&k,&t0,&R,&Rbar,&rho,&rhoBar,&lambdaBar,&muBar);
+
+      // // *wdh* May 15, 2018 -- add a ramp function? -- need to work how how...
+      // gi.inputString(answer,"Enter rampOrder,ra,rb");
+      // sScanF(answer,"%i %e %e",&rampOrder,&ra,&rb);
 
       printF("--UDKS-- Setting amp=%g, k=%g,t0=%g,R=%g,Rbar=%g,rho=%g,lambdaBar=%g,muBar=%g,rhoBar=%g\n",
              amp,k,t0,R,Rbar,rho,rhoBar,lambdaBar,muBar);
@@ -2045,6 +2055,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       const real b0=amp/jnRbar, f0=cp2*k;
       timeFunction.setSinusoidFunction( b0, f0, t0 );
 
+      // // *wdh* May 15, 2018 -- add a ramp function?
+      // TimeFunction & rampFunction = * new TimeFunction();  // TimeFunction compose will reference count 
+      // rampFunction.incrementReferenceCount();
+      
+      // real rampStart=0., rampEnd=1.; // Ramp  from 0 to 1
+      // real rampStartTime=ra, rampEndTime=rb; // Ramp up over [rampStartTime,rampEndTime]
+      // rampFunction.setRampFunction( rampStart,rampEnd,rampStartTime,rampEndTime,rampOrder );
+
+      // // F(t) = Ramp(t) * sin( ... )
+      // timeFunction.compose(&rampFunction);  // "compose" the two TimeFunction's 
+      
+      // if( rampFunction.decrementReferenceCount()==0 )
+      //   delete &rampFunction;
+      
     }
     else if ( answer=="shearing fluid and elastic solid" ) {
       // -- Shear solution for elastic solid and fluid --
@@ -2089,15 +2113,37 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " omega  : time frequency of solution \n"
              " H,Hbar : Height of fluid and solid domains\n"
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
-             " thetaR : rotation angle of reference frame"
+             " thetaR : rotation angle of reference frame\n"
              "--------------------------------------------------------------------------------\n"
 	);
 
-      real H, Hbar, rho, rhoBar;
+      real H, Hbar, rho, rhoBar, muBar, lambdaBar;
       
       int caseid = 0;
       gi.inputString(answer,"Enter amp, rhoBar\n");
       sScanF(answer,"%e %e %e",&amp,&rhoBar,&thetaR);
+
+      if( dbase.has_key("lambda") )
+      { // **CHECK INPUT PARAMETERS*** *wdh* May 16, 2018
+        const real & rho    = dbase.get<real>("rho");
+        const real & mu     = dbase.get<real>("mu");
+        const real & lambda = dbase.get<real>("lambda");
+    
+        muBar=rhoBar;
+        lambdaBar=rhoBar;
+
+        if( rhoBar!=10. && rhoBar!=1000. )
+        {
+          printF("UDKS:fibShear: ERROR: rhoBar=%e must be 10 or 1000.\n",rhoBar);
+          OV_ABORT("error");
+        }
+        if( rho!=rhoBar || lambda!=lambdaBar || mu!=muBar )
+        { 
+          printF("UDKS:fibShear: ERROR: rho!=rhoBar or or lambda!=lambdaBar or mu!=rho must be 10 or 1000\n");
+          OV_ABORT("error");
+        }
+      }
+      
 
       if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
       if (abs(rhoBar - 0.0010) < 1.0e-12) { caseid = 2;}

@@ -124,7 +124,9 @@ advance(  int current, real t, real dt, AdvanceOptions *pAdvanceOptions /* =NULL
 
     if( debug & 4 )
     {
-        getErrors( prev   ,t-dt,dt,sPrintF("\n ******** advance: Errors in prev    at start, t=%9.3e ********\n",t-dt) );
+        if( ((SmParameters&)parameters).isSecondOrderSystem() )
+            getErrors( prev   ,t-dt,dt,sPrintF("\n ******** advance: Errors in prev    at start, t=%9.3e ********\n",t-dt) );
+
         getErrors( current,t   ,dt,sPrintF("\n ******** advance: Errors in current at start, t=%9.3e ********\n",t) );
     }
 

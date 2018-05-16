@@ -444,7 +444,7 @@ initializeSolution()
       {
         assignInitialConditions( current );
       }
-      
+
     }
     
     // Note: below the initial conditions will be interpolated and BC's applied.

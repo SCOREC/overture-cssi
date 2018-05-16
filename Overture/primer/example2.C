@@ -17,7 +17,7 @@ main(int argc, char *argv[])
   // create and read in a CompositeGrid
   CompositeGrid cg;
   getFromADataBase(cg,nameOfOGFile);
-  cg.update();
+  cg.update(MappedGrid::THEvertex);  // compute the vertex array
 
   realCompositeGridFunction u(cg);                      // create a composite grid function
   u=0.;                                                 // initialize to zero

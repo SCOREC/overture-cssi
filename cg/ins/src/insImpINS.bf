@@ -301,7 +301,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 ! 
 !  Ghost-point equations:
 !     (1) div(v)=0
-!     (2) tauv.n - zs*v = RHS
+!     (2) tv.tauv.n + zs*tv.v = RHS
 !  
 !  New equation on the boundary: 
 !     (3a) n.v = n.( alpha * vf + (1-alpha) * vs )
@@ -315,7 +315,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 !
 ! SUMMARY: (1) and (2) can be combined into a vector equation for the ghost points thus given the
 !  two vector equations:
-!   (I)  (div(v))*n + (I-n n^T)(tauv.n - zs*v  )/mu = RHS 
+!   (I)  (div(v))*n + (I-n n^T)(tauv.n + zs*v  )/mu = RHS 
 !   (II)  v - theta*dt*nu*(I+P) Delta v = RHS
 !
 ! (I): 
@@ -349,7 +349,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 
  getNormalForCurvilinearGrid(side,axis,i1,i2,i3)
 
- write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+ ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
  ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
  ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
  ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
@@ -410,7 +410,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
   ! evaluate the coeff operators 
   if( fillCoefficientsScalarSystem.eq.0 )then
    ! Fill in the coupled equations for u and v  
-   write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
+   ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
    ! u equation:
    setCoeff2(cmpu,eqnu,coeff,iCoeff, AMGDelta(0,0)*lapCoeff)
    addCoeff1(cmpv,eqnu,coeff, AMGDelta(0,1)*lapCoeff)  ! coeff of Delta(v) in u eqn
@@ -1751,7 +1751,7 @@ if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVel
 
    write(*,'(" --- USE OLD WAY FOR IMPLICIT AMP BCS since useImplicitAmpBCs=0 --- ")') 
   
-   ! *** DO THIS FOR NOW ***
+   ! *** OLD WAY ***
   
    ! Dirichlet BC
    beginLoopsMixedBoundary()
@@ -1804,6 +1804,75 @@ if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVel
       bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
     write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
     stop 9099
+  end if
+  if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,axisp1).eq.dirichletBoundaryCondition .or. \
+      bc(0,axisp2).eq.dirichletBoundaryCondition .or. bc(1,axisp2).eq.dirichletBoundaryCondition )then
+
+    ! ----- set the corner point A and extended boundary point B to be a dirichlet BC ----
+    !                   B 
+    !                   |   AMP BC
+    !                   A---X---X---X---
+    !                   |
+    !      dirichlet BC |
+    !                   | 
+    ! ***** TWO DIMENSIONS ****
+    iv(0)=n1a
+    iv(1)=n2a
+    iv(2)=n3a
+    do kd2=1,nd-1
+      axisp=mod(axis+kd2,nd)
+      do sidep=0,1 
+
+        if( bc(sidep,axisp).eq.dirichletBoundaryCondition )then
+          ! Fill in the boundary pt and ghost: 
+            write(*,'("insImpINS: AMP BC+dirichlet BC at a corner side,axis,sidep,axisp=",4i2)') side,axis,sidep,axisp 
+          ! loop bounds are [n1a,n1b] [n2a,n2b]
+          ! indexRange(0:1,0:2)
+          iv(axis )=indexRange(side ,axis )
+          iv(axisp)=indexRange(sidep,axisp)
+          i1=iv(0)
+          i2=iv(1)
+          i3=iv(2)
+          i1m=i1-is1  ! ghost point
+          i2m=i2-is2
+          i3m=i3-is3
+          ! write(*,'("insImpINS: AMP BC+dirichlet BC at a corner - set dirichlet pt=",3i4)') i1,i2,i3
+          ! zero out equations for u,v, [w]    
+          do m=0,ndc-1
+            coeff(m,i1,i2,i3)=0.  ! init all elements to zero for bndry
+            coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero for ghost
+          end do
+          opEvalJacobianDerivatives(aj,1)
+          getCoeff(identity, iCoeff,aj)
+          if( fillCoefficientsScalarSystem.eq.0 )then
+            do n=0,ndu-1
+              setCoeff5(cmpu+n,eqnu+n,coeff,iCoeff,,,,)
+            end do 
+            ! To overwrite the eqnNumber and classify on the ghost point, set (i1,i2,i3)
+            ! to (i1m,i2m,i3m) and setCoeff for the ghost
+            i1=i1m
+            i2=i2m
+            i3=i3m
+            do n=0,ndu-1
+              setCoeffGhost5(cmpu+n,eqnu+n,coeff,iCoeff,,,,)
+            end do 
+
+          else if( fillCoefficientsScalarSystem.eq.fillCoeffu )then
+            write(*,'("insImpINS: AMP BC+dirichlet BC at a corner -- FINISH ME")')
+            stop 7193
+
+          else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
+            write(*,'("insImpINS: AMP BC+dirichlet BC at a corner -- FINISH ME")')
+            stop 7193
+          end if
+
+        end if
+      end do
+    end do
+    if( nd.eq.3 )then
+      write(*,'("insImpINS: ERROR: AMP BC meets a dirichletBC at a corner -- not implemented -- fix me")') 
+      stop 9099
+    end if
   end if
 
   ! write(*,'(" Finished filling in implicit AMP velocity BCs -- stop for now")')

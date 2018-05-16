@@ -859,7 +859,6 @@ interpolate(const RealArray & x,
   initialize();
 
 
-
 }
 
 
@@ -1722,7 +1721,7 @@ interpolate(const RealArray & x,
   if( rangeDimension<=0 || rangeDimension>3 )
   {
     cout << " NurbsMapping::interpolate:ERROR: the range is out of bounds, range =" << rangeDimension << endl;
-    {throw "error";}
+  {throw "error";}
   }
   
 
@@ -1780,7 +1779,7 @@ interpolate(const RealArray & x,
     if( uBar(n1)==0. )
     {
       cout << "NurbsMapping::interpolate: ERROR -- total chord length is zero ! \n";
-      {throw "error";}
+    {throw "error";}
     }
     uBar*=(1./uBar(n1));
     uBar(n1)=1.;
@@ -1788,15 +1787,36 @@ interpolate(const RealArray & x,
     
   }
   
-  // define the knots by averaging, this will ensure a positive definite matrix below
   uKnot.redim(m1+1);
-
   uKnot(Range(0,p1))=0.;
   uKnot(Range(m1-p1,m1))=1.;
+
   int i;
-  for( i=p1+1; i<m1-p1; i++ )
-    uKnot(i)=sum(uBar(Range(i-p1,i-1)))*(1./p1);
+  if( interpolationKnotsOption == interpolateWithAveragedKnots )
+  {
+    // Define the knots by averaging, this will ensure a positive definite matrix below (see Nurbs book)
+
+    for( i=p1+1; i<m1-p1; i++ )
+      uKnot(i)=sum(uBar(Range(i-p1,i-1)))*(1./p1);
+  }
+  else if( interpolationKnotsOption == interpolateWithEquallySpacedKnots )
+  {
+    // *wdh* May 10, 2018
+    // Choose uniform knots for periodic curves 
+    if( getIsPeriodic(axis1)==functionPeriodic )
+    {
+      for( int i=p1+1; i<m1-p1; i++ )
+        uKnot(i)= (i-p1)/(1.*(m1-2*p1));
+    }
+  }
+  else
+  {
+    printF("NurbsMapping::interpolate:ERROR: unknown interpolationKnotsOption=%i\n",
+           (int)interpolationKnotsOption);
+    OV_ABORT("ERROR");
+  }
   
+
 /* ----
   // ***** don't clamp if periodic *** this doesn't work
   for( i=p1; i<=m1-p1; i++ )
@@ -1865,7 +1885,21 @@ interpolate(const RealArray & x,
     rStart[0]=uBar(   numberOfGhostPoints);
     rEnd[0]  =uBar(n1-numberOfGhostPoints);
   }
-  
+
+  // *wdh* May 10, 2018 
+  if( FALSE && domainDimension==1 )
+  {
+    // *wdh* This did not seem to make a difference (?) to the evaluation -- the key seems
+    // to be to use equally spaced knots when interpolating.
+    // -- Unclamp the ends for periodic curves ----    
+    //  NOTE: For best results for periodic curves, use NurbsMapping::parameterizeByIndex
+    if( getIsPeriodic(axis1)==functionPeriodic ) // should we also do derivative periodic ? probably
+    {
+      printF("NurbsMapping::interpolate:INFO: Make NURBS curve periodic.\n");
+      unClampCurve( axis1 );
+    }
+    
+  }
 
   initialize();
 

@@ -433,9 +433,10 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
 	}
 
         // -- get the data from the source domain db : (save in infob.u == ub ) --
+        bool saveTimeHistory=true;
         if( okb )
   	  domainSolver[db]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,infob,
-                                                    gridDescriptorb,gfIndex[db],t );
+                                                    gridDescriptorb,gfIndex[db],t,saveTimeHistory );
 
       }
       else
@@ -1419,7 +1420,9 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
 	  u2.redim(J1,J2,J3,C2);
 
           // evaluate the interface data:
-  	  domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t );
+          bool saveTimeHistory=true;
+  	  domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t,
+                                                    saveTimeHistory );
 	}
 	
 	if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||

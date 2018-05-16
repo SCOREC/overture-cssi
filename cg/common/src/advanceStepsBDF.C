@@ -1198,7 +1198,7 @@ takeTimeStepBDF( real & t0, real & dt0, int correction, AdvanceOptions & advance
         fprintf(debugFile," *** DomainSolver::takeTimeStepBDF (start): t0=%e, dt0=%e, correction=%i*** \n",t0,dt0,correction);
     }
 
-
+    parameters.dbase.get<int>("correctionStage")=correction;
     advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
 
     assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );

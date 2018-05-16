@@ -536,6 +536,7 @@ setup(const real & time)
     fprintf(file,"\n"
 	    " cfl = %f, tFinal=%e, tPrint = %e \n"
 	    " time stepping method: %s.\n"
+	    " number of PC corrections = %i.\n"
 	    " solve coupled interface equations = %i.\n"
             " use %s interface transfer.\n"
             " relax correction steps = %i.\n"
@@ -548,6 +549,7 @@ setup(const real & time)
 	    parameters.dbase.get<real >("tFinal"),
 	    parameters.dbase.get<real >("tPrint"),
 	    (const char*)Parameters::timeSteppingName[timeSteppingMethod],
+            (int)parameters.dbase.get<int>("numberOfPCcorrections"),
             (int)parameters.dbase.get<bool>("solveCoupledInterfaceEquations"),
 	    (parameters.dbase.get<bool>("useNewInterfaceTransfer") ? "new" : "old"),
 	    (int)parameters.dbase.get<bool>("relaxCorrectionSteps"),

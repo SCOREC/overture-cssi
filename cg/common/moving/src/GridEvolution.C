@@ -336,8 +336,9 @@ getVelocity( real t, realSerialArray & gridVelocity,
       real dt0= time(ip1)-time(i);
       assert( dt0>0. );
 
-      printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) t=%9.3e (first-order)\n",
-             i,time(i),ip1,time(ip1),t);
+      if( debug & 4 )
+        printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) t=%9.3e (first-order)\n",
+               i,time(i),ip1,time(ip1),t);
 
       gridVelocity(I1,I2,I3,Rx) = (x1(I1,I2,I3,Rx) - x0(I1,I2,I3,Rx))/dt0;
 
@@ -371,8 +372,9 @@ getVelocity( real t, realSerialArray & gridVelocity,
       real l1t = (2.*t-(t2+t0))/( (t1-t2)*(t1-t0) );
       real l2t = (2.*t-(t0+t1))/( (t2-t0)*(t2-t1) );
       
-      printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) t=%9.3e current=%i (second-order)\n",
-             im1,t0,i,t1,ip1,t2,t,current);
+      if( debug & 4 )
+        printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) t=%9.3e current=%i (second-order)\n",
+               im1,t0,i,t1,ip1,t2,t,current);
 
       gridVelocity(I1,I2,I3,Rx) = l0t*x0(I1,I2,I3,Rx) + l1t*x1(I1,I2,I3,Rx) + l2t*x2(I1,I2,I3,Rx);
       
@@ -403,9 +405,10 @@ getVelocity( real t, realSerialArray & gridVelocity,
       real l2t = ( (t-t0)*(t-t1) + (t-t3)*(t-t1) + (t-t3)*(t-t0) )/( (t2-t3)*(t2-t0)*(t2-t1) );
       real l3t = ( (t-t1)*(t-t2) + (t-t0)*(t-t2) + (t-t0)*(t-t1) )/( (t3-t0)*(t3-t1)*(t3-t2) );
 
-      printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) "
-             "t=%9.3e current=%i (3rd-order)\n",
-             im2,t0,im1,t1,i,t2,ip1,t3,t,current);
+      if( debug & 4 )
+        printF("--GE-- gridVelocity: using levels (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) (%i,%9.3e) "
+               "t=%9.3e current=%i (3rd-order)\n",
+               im2,t0,im1,t1,i,t2,ip1,t3,t,current);
 
       gridVelocity(I1,I2,I3,Rx) = l0t*x0(I1,I2,I3,Rx) + l1t*x1(I1,I2,I3,Rx) + l2t*x2(I1,I2,I3,Rx)+ l3t*x3(I1,I2,I3,Rx);
       

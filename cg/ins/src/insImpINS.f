@@ -1070,7 +1070,7 @@
 ! 
 !  Ghost-point equations:
 !     (1) div(v)=0
-!     (2) tauv.n - zs*v = RHS
+!     (2) tv.tauv.n + zs*tv.v = RHS
 !  
 !  New equation on the boundary: 
 !     (3a) n.v = n.( alpha * vf + (1-alpha) * vs )
@@ -1084,7 +1084,7 @@
 !
 ! SUMMARY: (1) and (2) can be combined into a vector equation for the ghost points thus given the
 !  two vector equations:
-!   (I)  (div(v))*n + (I-n n^T)(tauv.n - zs*v  )/mu = RHS 
+!   (I)  (div(v))*n + (I-n n^T)(tauv.n + zs*v  )/mu = RHS 
 !   (II)  v - theta*dt*nu*(I+P) Delta v = RHS
 !
 ! (I): 
@@ -1302,6 +1302,7 @@
       !     ---- local variables -----
       integer c,e,i1,i2,i3,m1,m2,m3,j1,j2,j3,ghostLine,n,i1m,i2m,i3m,
      & i1p,i2p,i3p,ndu
+      integer iv(0:2),ghost,kd2,sidep,axisp
       integer side,axis,is1,is2,is3,mm,eqnTemp,debug,ntdc,normalAxis,
      & axisp1,axisp2
       integer kd,kd3,orderOfAccuracy,gridIsMoving,orderOfExtrap,
@@ -3218,7 +3219,7 @@
           if( useImplicitAmpBCs.eq.0 )then
             write(*,'(" --- USE OLD WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=0 --- ")')
-            ! *** DO THIS FOR NOW ***
+            ! *** OLD WAY ***
             ! Dirichlet BC
              do i3=n3a,n3b
              do i2=n2a,n2b
@@ -3278,8 +3279,7 @@
              i1m=i1-is1  ! ghost point
              i2m=i2-is2
              i3m=i3-is3
-             write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",
-     & 2e10.2)') i1,i2,ndu,an(0),an(1)
+             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
              ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
              ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
              ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
@@ -3429,11 +3429,7 @@
               ! evaluate the coeff operators 
               if( fillCoefficientsScalarSystem.eq.0 )then
                ! Fill in the coupled equations for u and v  
-               write(*,'(" insImpINS: beta=",e10.3," amg-delta=",
-     & 4e10.3)') beta,(-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0))),(-
-     & beta*(delta(0,1)-(1.-alpha)*an(0)*an(1))),(-beta*(delta(1,0)-(
-     & 1.-alpha)*an(1)*an(0))),(-beta*(delta(1,1)-(1.-alpha)*an(1)*an(
-     & 1)))
+               ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
                ! u equation:
                 do m3=-halfWidth3,halfWidth3
                 do m2=-halfWidth,halfWidth
@@ -3520,6 +3516,108 @@
              write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
      & at a corner -- not implemented -- fix me")')
              stop 9099
+           end if
+           if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
+     & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
+     & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
+     & .eq.dirichletBoundaryCondition )then
+             ! ----- set the corner point A and extended boundary point B to be a dirichlet BC ----
+             !                   B 
+             !                   |   AMP BC
+             !                   A---X---X---X---
+             !                   |
+             !      dirichlet BC |
+             !                   | 
+             ! ***** TWO DIMENSIONS ****
+             iv(0)=n1a
+             iv(1)=n2a
+             iv(2)=n3a
+             do kd2=1,nd-1
+               axisp=mod(axis+kd2,nd)
+               do sidep=0,1
+                 if( bc(sidep,axisp).eq.dirichletBoundaryCondition )
+     & then
+                   ! Fill in the boundary pt and ghost: 
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner side,axis,sidep,axisp=",4i2)') side,axis,sidep,axisp
+                   ! loop bounds are [n1a,n1b] [n2a,n2b]
+                   ! indexRange(0:1,0:2)
+                   iv(axis )=indexRange(side ,axis )
+                   iv(axisp)=indexRange(sidep,axisp)
+                   i1=iv(0)
+                   i2=iv(1)
+                   i3=iv(2)
+                   i1m=i1-is1  ! ghost point
+                   i2m=i2-is2
+                   i3m=i3-is3
+                   ! write(*,'("insImpINS: AMP BC+dirichlet BC at a corner - set dirichlet pt=",3i4)') i1,i2,i3
+                   ! zero out equations for u,v, [w]    
+                   do m=0,ndc-1
+                     coeff(m,i1,i2,i3)=0.  ! init all elements to zero for bndry
+                     coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero for ghost
+                   end do
+                     ! Operator identity 
+                      iCoeff(ma2(-1,-1, 0)) = 0
+                      iCoeff(ma2( 0,-1, 0)) = 0
+                      iCoeff(ma2( 1,-1, 0)) = 0
+                      iCoeff(ma2(-1, 0, 0)) = 0
+                      iCoeff(ma2( 0, 0, 0)) = 1.
+                      iCoeff(ma2( 1, 0, 0)) = 0
+                      iCoeff(ma2(-1, 1, 0)) = 0
+                      iCoeff(ma2( 0, 1, 0)) = 0
+                      iCoeff(ma2( 1, 1, 0)) = 0
+                   if( fillCoefficientsScalarSystem.eq.0 )then
+                     do n=0,ndu-1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce2(m1,m2,m3,cmpu+n,eqnu+n),i1,i2,i3)
+     & =(iCoeff(ma2(m1,m2,m3)))
+                        end do
+                        end do
+                        end do
+                     end do
+                     ! To overwrite the eqnNumber and classify on the ghost point, set (i1,i2,i3)
+                     ! to (i1m,i2m,i3m) and setCoeff for the ghost
+                     i1=i1m
+                     i2=i2m
+                     i3=i3m
+                     do n=0,ndu-1
+                         classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce2(m1,m2,m3,cmpu+n,eqnu+n),i1m,i2m,
+     & i3m)=(iCoeff(ma2(m1,m2,m3)))
+                         ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu+n,i1,i2,i3): 
+                          equationNumber(mce2(m1,m2,m3,cmpu+n,eqnu+n),
+     & i1m,i2m,i3m)=(cmpu+n+1+numberOfComponentsForCoefficients*(i1+
+     & m1-equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                        end do
+                        end do
+                        end do
+                     end do
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffu 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffv 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   end if
+                 end if
+               end do
+             end do
+             if( nd.eq.3 )then
+               write(*,'("insImpINS: ERROR: AMP BC meets a dirichletBC 
+     & at a corner -- not implemented -- fix me")')
+               stop 9099
+             end if
            end if
            ! write(*,'(" Finished filling in implicit AMP velocity BCs -- stop for now")')
            ! stop 1004
@@ -6372,7 +6470,7 @@
           if( useImplicitAmpBCs.eq.0 )then
             write(*,'(" --- USE OLD WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=0 --- ")')
-            ! *** DO THIS FOR NOW ***
+            ! *** OLD WAY ***
             ! Dirichlet BC
              do i3=n3a,n3b
              do i2=n2a,n2b
@@ -6439,8 +6537,7 @@
      & 1)**2 ) )
                    an(0)=an(0)*anNorm
                    an(1)=an(1)*anNorm
-             write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",
-     & 2e10.2)') i1,i2,ndu,an(0),an(1)
+             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
              ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
              ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
              ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
@@ -6631,11 +6728,7 @@
               ! evaluate the coeff operators 
               if( fillCoefficientsScalarSystem.eq.0 )then
                ! Fill in the coupled equations for u and v  
-               write(*,'(" insImpINS: beta=",e10.3," amg-delta=",
-     & 4e10.3)') beta,(-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0))),(-
-     & beta*(delta(0,1)-(1.-alpha)*an(0)*an(1))),(-beta*(delta(1,0)-(
-     & 1.-alpha)*an(1)*an(0))),(-beta*(delta(1,1)-(1.-alpha)*an(1)*an(
-     & 1)))
+               ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
                ! u equation:
                 do m3=-halfWidth3,halfWidth3
                 do m2=-halfWidth,halfWidth
@@ -6722,6 +6815,137 @@
              write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
      & at a corner -- not implemented -- fix me")')
              stop 9099
+           end if
+           if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
+     & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
+     & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
+     & .eq.dirichletBoundaryCondition )then
+             ! ----- set the corner point A and extended boundary point B to be a dirichlet BC ----
+             !                   B 
+             !                   |   AMP BC
+             !                   A---X---X---X---
+             !                   |
+             !      dirichlet BC |
+             !                   | 
+             ! ***** TWO DIMENSIONS ****
+             iv(0)=n1a
+             iv(1)=n2a
+             iv(2)=n3a
+             do kd2=1,nd-1
+               axisp=mod(axis+kd2,nd)
+               do sidep=0,1
+                 if( bc(sidep,axisp).eq.dirichletBoundaryCondition )
+     & then
+                   ! Fill in the boundary pt and ghost: 
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner side,axis,sidep,axisp=",4i2)') side,axis,sidep,axisp
+                   ! loop bounds are [n1a,n1b] [n2a,n2b]
+                   ! indexRange(0:1,0:2)
+                   iv(axis )=indexRange(side ,axis )
+                   iv(axisp)=indexRange(sidep,axisp)
+                   i1=iv(0)
+                   i2=iv(1)
+                   i3=iv(2)
+                   i1m=i1-is1  ! ghost point
+                   i2m=i2-is2
+                   i3m=i3-is3
+                   ! write(*,'("insImpINS: AMP BC+dirichlet BC at a corner - set dirichlet pt=",3i4)') i1,i2,i3
+                   ! zero out equations for u,v, [w]    
+                   do m=0,ndc-1
+                     coeff(m,i1,i2,i3)=0.  ! init all elements to zero for bndry
+                     coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero for ghost
+                   end do
+                    ! this next call will define the jacobian and its derivatives (parameteric and spatial)
+                    ajrx = rsxy(i1,i2,i3,0,0)
+                    ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0)
+     & )/(2.*dr(0))
+                    ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0)
+     & )/(2.*dr(1))
+                    ajsx = rsxy(i1,i2,i3,1,0)
+                    ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0)
+     & )/(2.*dr(0))
+                    ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0)
+     & )/(2.*dr(1))
+                    ajry = rsxy(i1,i2,i3,0,1)
+                    ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1)
+     & )/(2.*dr(0))
+                    ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1)
+     & )/(2.*dr(1))
+                    ajsy = rsxy(i1,i2,i3,1,1)
+                    ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1)
+     & )/(2.*dr(0))
+                    ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1)
+     & )/(2.*dr(1))
+                    ajrxx = ajrx*ajrxr+ajsx*ajrxs
+                    ajrxy = ajry*ajrxr+ajsy*ajrxs
+                    ajsxx = ajrx*ajsxr+ajsx*ajsxs
+                    ajsxy = ajry*ajsxr+ajsy*ajsxs
+                    ajryx = ajrx*ajryr+ajsx*ajrys
+                    ajryy = ajry*ajryr+ajsy*ajrys
+                    ajsyx = ajrx*ajsyr+ajsx*ajsys
+                    ajsyy = ajry*ajsyr+ajsy*ajsys
+                     ! Operator identity 
+                      iCoeff(ma2(-1,-1, 0)) = 0
+                      iCoeff(ma2( 0,-1, 0)) = 0
+                      iCoeff(ma2( 1,-1, 0)) = 0
+                      iCoeff(ma2(-1, 0, 0)) = 0
+                      iCoeff(ma2( 0, 0, 0)) = 1.
+                      iCoeff(ma2( 1, 0, 0)) = 0
+                      iCoeff(ma2(-1, 1, 0)) = 0
+                      iCoeff(ma2( 0, 1, 0)) = 0
+                      iCoeff(ma2( 1, 1, 0)) = 0
+                   if( fillCoefficientsScalarSystem.eq.0 )then
+                     do n=0,ndu-1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce2(m1,m2,m3,cmpu+n,eqnu+n),i1,i2,i3)
+     & =(iCoeff(ma2(m1,m2,m3)))
+                        end do
+                        end do
+                        end do
+                     end do
+                     ! To overwrite the eqnNumber and classify on the ghost point, set (i1,i2,i3)
+                     ! to (i1m,i2m,i3m) and setCoeff for the ghost
+                     i1=i1m
+                     i2=i2m
+                     i3=i3m
+                     do n=0,ndu-1
+                         classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce2(m1,m2,m3,cmpu+n,eqnu+n),i1m,i2m,
+     & i3m)=(iCoeff(ma2(m1,m2,m3)))
+                         ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu+n,i1,i2,i3): 
+                          equationNumber(mce2(m1,m2,m3,cmpu+n,eqnu+n),
+     & i1m,i2m,i3m)=(cmpu+n+1+numberOfComponentsForCoefficients*(i1+
+     & m1-equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                        end do
+                        end do
+                        end do
+                     end do
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffu 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffv 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   end if
+                 end if
+               end do
+             end do
+             if( nd.eq.3 )then
+               write(*,'("insImpINS: ERROR: AMP BC meets a dirichletBC 
+     & at a corner -- not implemented -- fix me")')
+               stop 9099
+             end if
            end if
            ! write(*,'(" Finished filling in implicit AMP velocity BCs -- stop for now")')
            ! stop 1004
@@ -10019,7 +10243,7 @@
           if( useImplicitAmpBCs.eq.0 )then
             write(*,'(" --- USE OLD WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=0 --- ")')
-            ! *** DO THIS FOR NOW ***
+            ! *** OLD WAY ***
             ! Dirichlet BC
              do i3=n3a,n3b
              do i2=n2a,n2b
@@ -10098,8 +10322,7 @@
              i1m=i1-is1  ! ghost point
              i2m=i2-is2
              i3m=i3-is3
-             write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",
-     & 2e10.2)') i1,i2,ndu,an(0),an(1)
+             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
              ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
              ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
              ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
@@ -10543,6 +10766,126 @@
              write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
      & at a corner -- not implemented -- fix me")')
              stop 9099
+           end if
+           if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
+     & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
+     & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
+     & .eq.dirichletBoundaryCondition )then
+             ! ----- set the corner point A and extended boundary point B to be a dirichlet BC ----
+             !                   B 
+             !                   |   AMP BC
+             !                   A---X---X---X---
+             !                   |
+             !      dirichlet BC |
+             !                   | 
+             ! ***** TWO DIMENSIONS ****
+             iv(0)=n1a
+             iv(1)=n2a
+             iv(2)=n3a
+             do kd2=1,nd-1
+               axisp=mod(axis+kd2,nd)
+               do sidep=0,1
+                 if( bc(sidep,axisp).eq.dirichletBoundaryCondition )
+     & then
+                   ! Fill in the boundary pt and ghost: 
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner side,axis,sidep,axisp=",4i2)') side,axis,sidep,axisp
+                   ! loop bounds are [n1a,n1b] [n2a,n2b]
+                   ! indexRange(0:1,0:2)
+                   iv(axis )=indexRange(side ,axis )
+                   iv(axisp)=indexRange(sidep,axisp)
+                   i1=iv(0)
+                   i2=iv(1)
+                   i3=iv(2)
+                   i1m=i1-is1  ! ghost point
+                   i2m=i2-is2
+                   i3m=i3-is3
+                   ! write(*,'("insImpINS: AMP BC+dirichlet BC at a corner - set dirichlet pt=",3i4)') i1,i2,i3
+                   ! zero out equations for u,v, [w]    
+                   do m=0,ndc-1
+                     coeff(m,i1,i2,i3)=0.  ! init all elements to zero for bndry
+                     coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero for ghost
+                   end do
+                     ! Operator identity 
+                      iCoeff(ma3(-1,-1,-1)) = 0
+                      iCoeff(ma3( 0,-1,-1)) = 0
+                      iCoeff(ma3( 1,-1,-1)) = 0
+                      iCoeff(ma3(-1, 0,-1)) = 0
+                      iCoeff(ma3( 0, 0,-1)) = 0
+                      iCoeff(ma3( 1, 0,-1)) = 0
+                      iCoeff(ma3(-1, 1,-1)) = 0
+                      iCoeff(ma3( 0, 1,-1)) = 0
+                      iCoeff(ma3( 1, 1,-1)) = 0
+                      iCoeff(ma3(-1,-1, 0)) = 0
+                      iCoeff(ma3( 0,-1, 0)) = 0
+                      iCoeff(ma3( 1,-1, 0)) = 0
+                      iCoeff(ma3(-1, 0, 0)) = 0
+                      iCoeff(ma3( 0, 0, 0)) = 1.
+                      iCoeff(ma3( 1, 0, 0)) = 0
+                      iCoeff(ma3(-1, 1, 0)) = 0
+                      iCoeff(ma3( 0, 1, 0)) = 0
+                      iCoeff(ma3( 1, 1, 0)) = 0
+                      iCoeff(ma3(-1,-1, 1)) = 0
+                      iCoeff(ma3( 0,-1, 1)) = 0
+                      iCoeff(ma3( 1,-1, 1)) = 0
+                      iCoeff(ma3(-1, 0, 1)) = 0
+                      iCoeff(ma3( 0, 0, 1)) = 0
+                      iCoeff(ma3( 1, 0, 1)) = 0
+                      iCoeff(ma3(-1, 1, 1)) = 0
+                      iCoeff(ma3( 0, 1, 1)) = 0
+                      iCoeff(ma3( 1, 1, 1)) = 0
+                   if( fillCoefficientsScalarSystem.eq.0 )then
+                     do n=0,ndu-1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce3(m1,m2,m3,cmpu+n,eqnu+n),i1,i2,i3)
+     & =(iCoeff(ma3(m1,m2,m3)))
+                        end do
+                        end do
+                        end do
+                     end do
+                     ! To overwrite the eqnNumber and classify on the ghost point, set (i1,i2,i3)
+                     ! to (i1m,i2m,i3m) and setCoeff for the ghost
+                     i1=i1m
+                     i2=i2m
+                     i3=i3m
+                     do n=0,ndu-1
+                         classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce3(m1,m2,m3,cmpu+n,eqnu+n),i1m,i2m,
+     & i3m)=(iCoeff(ma3(m1,m2,m3)))
+                         ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu+n,i1,i2,i3): 
+                          equationNumber(mce3(m1,m2,m3,cmpu+n,eqnu+n),
+     & i1m,i2m,i3m)=(cmpu+n+1+numberOfComponentsForCoefficients*(i1+
+     & m1-equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                        end do
+                        end do
+                        end do
+                     end do
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffu 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffv 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   end if
+                 end if
+               end do
+             end do
+             if( nd.eq.3 )then
+               write(*,'("insImpINS: ERROR: AMP BC meets a dirichletBC 
+     & at a corner -- not implemented -- fix me")')
+               stop 9099
+             end if
            end if
            ! write(*,'(" Finished filling in implicit AMP velocity BCs -- stop for now")')
            ! stop 1004
@@ -14971,7 +15314,7 @@
           if( useImplicitAmpBCs.eq.0 )then
             write(*,'(" --- USE OLD WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=0 --- ")')
-            ! *** DO THIS FOR NOW ***
+            ! *** OLD WAY ***
             ! Dirichlet BC
              do i3=n3a,n3b
              do i2=n2a,n2b
@@ -15059,8 +15402,7 @@
                    an(0)=an(0)*anNorm
                    an(1)=an(1)*anNorm
                    an(2)=an(2)*anNorm
-             write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",
-     & 2e10.2)') i1,i2,ndu,an(0),an(1)
+             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
              ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
              ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
              ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
@@ -15616,6 +15958,217 @@
              write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
      & at a corner -- not implemented -- fix me")')
              stop 9099
+           end if
+           if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
+     & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
+     & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
+     & .eq.dirichletBoundaryCondition )then
+             ! ----- set the corner point A and extended boundary point B to be a dirichlet BC ----
+             !                   B 
+             !                   |   AMP BC
+             !                   A---X---X---X---
+             !                   |
+             !      dirichlet BC |
+             !                   | 
+             ! ***** TWO DIMENSIONS ****
+             iv(0)=n1a
+             iv(1)=n2a
+             iv(2)=n3a
+             do kd2=1,nd-1
+               axisp=mod(axis+kd2,nd)
+               do sidep=0,1
+                 if( bc(sidep,axisp).eq.dirichletBoundaryCondition )
+     & then
+                   ! Fill in the boundary pt and ghost: 
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner side,axis,sidep,axisp=",4i2)') side,axis,sidep,axisp
+                   ! loop bounds are [n1a,n1b] [n2a,n2b]
+                   ! indexRange(0:1,0:2)
+                   iv(axis )=indexRange(side ,axis )
+                   iv(axisp)=indexRange(sidep,axisp)
+                   i1=iv(0)
+                   i2=iv(1)
+                   i3=iv(2)
+                   i1m=i1-is1  ! ghost point
+                   i2m=i2-is2
+                   i3m=i3-is3
+                   ! write(*,'("insImpINS: AMP BC+dirichlet BC at a corner - set dirichlet pt=",3i4)') i1,i2,i3
+                   ! zero out equations for u,v, [w]    
+                   do m=0,ndc-1
+                     coeff(m,i1,i2,i3)=0.  ! init all elements to zero for bndry
+                     coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero for ghost
+                   end do
+                    ! this next call will define the jacobian and its derivatives (parameteric and spatial)
+                    ajrx = rsxy(i1,i2,i3,0,0)
+                    ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0)
+     & )/(2.*dr(0))
+                    ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0)
+     & )/(2.*dr(1))
+                    ajrxt = (-rsxy(i1,i2,i3-1,0,0)+rsxy(i1,i2,i3+1,0,0)
+     & )/(2.*dr(2))
+                    ajsx = rsxy(i1,i2,i3,1,0)
+                    ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0)
+     & )/(2.*dr(0))
+                    ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0)
+     & )/(2.*dr(1))
+                    ajsxt = (-rsxy(i1,i2,i3-1,1,0)+rsxy(i1,i2,i3+1,1,0)
+     & )/(2.*dr(2))
+                    ajtx = rsxy(i1,i2,i3,2,0)
+                    ajtxr = (-rsxy(i1-1,i2,i3,2,0)+rsxy(i1+1,i2,i3,2,0)
+     & )/(2.*dr(0))
+                    ajtxs = (-rsxy(i1,i2-1,i3,2,0)+rsxy(i1,i2+1,i3,2,0)
+     & )/(2.*dr(1))
+                    ajtxt = (-rsxy(i1,i2,i3-1,2,0)+rsxy(i1,i2,i3+1,2,0)
+     & )/(2.*dr(2))
+                    ajry = rsxy(i1,i2,i3,0,1)
+                    ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1)
+     & )/(2.*dr(0))
+                    ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1)
+     & )/(2.*dr(1))
+                    ajryt = (-rsxy(i1,i2,i3-1,0,1)+rsxy(i1,i2,i3+1,0,1)
+     & )/(2.*dr(2))
+                    ajsy = rsxy(i1,i2,i3,1,1)
+                    ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1)
+     & )/(2.*dr(0))
+                    ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1)
+     & )/(2.*dr(1))
+                    ajsyt = (-rsxy(i1,i2,i3-1,1,1)+rsxy(i1,i2,i3+1,1,1)
+     & )/(2.*dr(2))
+                    ajty = rsxy(i1,i2,i3,2,1)
+                    ajtyr = (-rsxy(i1-1,i2,i3,2,1)+rsxy(i1+1,i2,i3,2,1)
+     & )/(2.*dr(0))
+                    ajtys = (-rsxy(i1,i2-1,i3,2,1)+rsxy(i1,i2+1,i3,2,1)
+     & )/(2.*dr(1))
+                    ajtyt = (-rsxy(i1,i2,i3-1,2,1)+rsxy(i1,i2,i3+1,2,1)
+     & )/(2.*dr(2))
+                    ajrz = rsxy(i1,i2,i3,0,2)
+                    ajrzr = (-rsxy(i1-1,i2,i3,0,2)+rsxy(i1+1,i2,i3,0,2)
+     & )/(2.*dr(0))
+                    ajrzs = (-rsxy(i1,i2-1,i3,0,2)+rsxy(i1,i2+1,i3,0,2)
+     & )/(2.*dr(1))
+                    ajrzt = (-rsxy(i1,i2,i3-1,0,2)+rsxy(i1,i2,i3+1,0,2)
+     & )/(2.*dr(2))
+                    ajsz = rsxy(i1,i2,i3,1,2)
+                    ajszr = (-rsxy(i1-1,i2,i3,1,2)+rsxy(i1+1,i2,i3,1,2)
+     & )/(2.*dr(0))
+                    ajszs = (-rsxy(i1,i2-1,i3,1,2)+rsxy(i1,i2+1,i3,1,2)
+     & )/(2.*dr(1))
+                    ajszt = (-rsxy(i1,i2,i3-1,1,2)+rsxy(i1,i2,i3+1,1,2)
+     & )/(2.*dr(2))
+                    ajtz = rsxy(i1,i2,i3,2,2)
+                    ajtzr = (-rsxy(i1-1,i2,i3,2,2)+rsxy(i1+1,i2,i3,2,2)
+     & )/(2.*dr(0))
+                    ajtzs = (-rsxy(i1,i2-1,i3,2,2)+rsxy(i1,i2+1,i3,2,2)
+     & )/(2.*dr(1))
+                    ajtzt = (-rsxy(i1,i2,i3-1,2,2)+rsxy(i1,i2,i3+1,2,2)
+     & )/(2.*dr(2))
+                    ajrxx = ajrx*ajrxr+ajsx*ajrxs+ajtx*ajrxt
+                    ajrxy = ajry*ajrxr+ajsy*ajrxs+ajty*ajrxt
+                    ajrxz = ajrz*ajrxr+ajsz*ajrxs+ajtz*ajrxt
+                    ajsxx = ajrx*ajsxr+ajsx*ajsxs+ajtx*ajsxt
+                    ajsxy = ajry*ajsxr+ajsy*ajsxs+ajty*ajsxt
+                    ajsxz = ajrz*ajsxr+ajsz*ajsxs+ajtz*ajsxt
+                    ajtxx = ajrx*ajtxr+ajsx*ajtxs+ajtx*ajtxt
+                    ajtxy = ajry*ajtxr+ajsy*ajtxs+ajty*ajtxt
+                    ajtxz = ajrz*ajtxr+ajsz*ajtxs+ajtz*ajtxt
+                    ajryx = ajrx*ajryr+ajsx*ajrys+ajtx*ajryt
+                    ajryy = ajry*ajryr+ajsy*ajrys+ajty*ajryt
+                    ajryz = ajrz*ajryr+ajsz*ajrys+ajtz*ajryt
+                    ajsyx = ajrx*ajsyr+ajsx*ajsys+ajtx*ajsyt
+                    ajsyy = ajry*ajsyr+ajsy*ajsys+ajty*ajsyt
+                    ajsyz = ajrz*ajsyr+ajsz*ajsys+ajtz*ajsyt
+                    ajtyx = ajrx*ajtyr+ajsx*ajtys+ajtx*ajtyt
+                    ajtyy = ajry*ajtyr+ajsy*ajtys+ajty*ajtyt
+                    ajtyz = ajrz*ajtyr+ajsz*ajtys+ajtz*ajtyt
+                    ajrzx = ajrx*ajrzr+ajsx*ajrzs+ajtx*ajrzt
+                    ajrzy = ajry*ajrzr+ajsy*ajrzs+ajty*ajrzt
+                    ajrzz = ajrz*ajrzr+ajsz*ajrzs+ajtz*ajrzt
+                    ajszx = ajrx*ajszr+ajsx*ajszs+ajtx*ajszt
+                    ajszy = ajry*ajszr+ajsy*ajszs+ajty*ajszt
+                    ajszz = ajrz*ajszr+ajsz*ajszs+ajtz*ajszt
+                    ajtzx = ajrx*ajtzr+ajsx*ajtzs+ajtx*ajtzt
+                    ajtzy = ajry*ajtzr+ajsy*ajtzs+ajty*ajtzt
+                    ajtzz = ajrz*ajtzr+ajsz*ajtzs+ajtz*ajtzt
+                     ! Operator identity 
+                      iCoeff(ma3(-1,-1,-1)) = 0
+                      iCoeff(ma3( 0,-1,-1)) = 0
+                      iCoeff(ma3( 1,-1,-1)) = 0
+                      iCoeff(ma3(-1, 0,-1)) = 0
+                      iCoeff(ma3( 0, 0,-1)) = 0
+                      iCoeff(ma3( 1, 0,-1)) = 0
+                      iCoeff(ma3(-1, 1,-1)) = 0
+                      iCoeff(ma3( 0, 1,-1)) = 0
+                      iCoeff(ma3( 1, 1,-1)) = 0
+                      iCoeff(ma3(-1,-1, 0)) = 0
+                      iCoeff(ma3( 0,-1, 0)) = 0
+                      iCoeff(ma3( 1,-1, 0)) = 0
+                      iCoeff(ma3(-1, 0, 0)) = 0
+                      iCoeff(ma3( 0, 0, 0)) = 1.
+                      iCoeff(ma3( 1, 0, 0)) = 0
+                      iCoeff(ma3(-1, 1, 0)) = 0
+                      iCoeff(ma3( 0, 1, 0)) = 0
+                      iCoeff(ma3( 1, 1, 0)) = 0
+                      iCoeff(ma3(-1,-1, 1)) = 0
+                      iCoeff(ma3( 0,-1, 1)) = 0
+                      iCoeff(ma3( 1,-1, 1)) = 0
+                      iCoeff(ma3(-1, 0, 1)) = 0
+                      iCoeff(ma3( 0, 0, 1)) = 0
+                      iCoeff(ma3( 1, 0, 1)) = 0
+                      iCoeff(ma3(-1, 1, 1)) = 0
+                      iCoeff(ma3( 0, 1, 1)) = 0
+                      iCoeff(ma3( 1, 1, 1)) = 0
+                   if( fillCoefficientsScalarSystem.eq.0 )then
+                     do n=0,ndu-1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce3(m1,m2,m3,cmpu+n,eqnu+n),i1,i2,i3)
+     & =(iCoeff(ma3(m1,m2,m3)))
+                        end do
+                        end do
+                        end do
+                     end do
+                     ! To overwrite the eqnNumber and classify on the ghost point, set (i1,i2,i3)
+                     ! to (i1m,i2m,i3m) and setCoeff for the ghost
+                     i1=i1m
+                     i2=i2m
+                     i3=i3m
+                     do n=0,ndu-1
+                         classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                        do m3=-halfWidth3,halfWidth3
+                        do m2=-halfWidth,halfWidth
+                        do m1=-halfWidth,halfWidth
+                          coeff(mce3(m1,m2,m3,cmpu+n,eqnu+n),i1m,i2m,
+     & i3m)=(iCoeff(ma3(m1,m2,m3)))
+                         ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu+n,i1,i2,i3): 
+                          equationNumber(mce3(m1,m2,m3,cmpu+n,eqnu+n),
+     & i1m,i2m,i3m)=(cmpu+n+1+numberOfComponentsForCoefficients*(i1+
+     & m1-equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                        end do
+                        end do
+                        end do
+                     end do
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffu 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   else if( fillCoefficientsScalarSystem.eq.fillCoeffv 
+     & )then
+                     write(*,'("insImpINS: AMP BC+dirichlet BC at a 
+     & corner -- FINISH ME")')
+                     stop 7193
+                   end if
+                 end if
+               end do
+             end do
+             if( nd.eq.3 )then
+               write(*,'("insImpINS: ERROR: AMP BC meets a dirichletBC 
+     & at a corner -- not implemented -- fix me")')
+               stop 9099
+             end if
            end if
            ! write(*,'(" Finished filling in implicit AMP velocity BCs -- stop for now")')
            ! stop 1004

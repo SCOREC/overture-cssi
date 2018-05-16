@@ -129,7 +129,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   const bool assignVelocity = v1c>=0 ;
   const bool assignStress   = s11c>=0 ;
 
-  assert( numberOfTimeDerivatives==0 );  // for now we don't use this in Cgsm
+  //  assert( numberOfTimeDerivatives==0 );  // for now we don't use this in Cgsm
 
   if( userKnownSolution=="rotatingDisk" )
   {
@@ -340,7 +340,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       
     }
     assert( lambda==lambdaBar && mu==muBar && rho==rhoBar );
-    assert( numberOfTimeDerivatives==0 );
+    // assert( numberOfTimeDerivatives==0 );
 
     TimeFunction & bsp = db.get<TimeFunction>("timeFunctionBSP");
 
@@ -375,8 +375,26 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       // velocities
       if( assignVelocity )
       {
-        u(i1,i2,i3,v1c)= -(fpd - fmd)*st;
-        u(i1,i2,i3,v2c)=  (fpd - fmd)*ct;
+        if( numberOfTimeDerivatives==0 )
+        {
+          u(i1,i2,i3,v1c)= -(fpd - fmd)*st;
+          u(i1,i2,i3,v2c)=  (fpd - fmd)*ct;
+        }
+        else if( numberOfTimeDerivatives==1 )
+        {
+          // ---- return the acceleration ----
+          // eval F''
+          real fmdd,fpdd;
+          bsp.evalDerivative(xim, fmdd, 2 ); // 2 derivatives 
+          bsp.evalDerivative(xip, fpdd, 2 );        
+          u(i1,i2,i3,v1c)= -(fpdd - fmdd)*st;
+          u(i1,i2,i3,v2c)=  (fpdd - fmdd)*ct;
+        }
+        else
+        {
+          OV_ABORT("error");
+        }
+        
       }
       
       // stresses
@@ -404,6 +422,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   else if( userKnownSolution=="radialElasticPiston" )
   {
     // ---- return the exact solution for radial elastic piston ----
+
+    assert( numberOfTimeDerivatives==0 );
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(xLocal);
@@ -539,12 +559,17 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     printF("--SM-- userDefinedKnownSolution: fibShear, t=%9.3e, "
 	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,muBar);
 
+    if( numberOfTimeDerivatives!=0 )
+    {
+      printF("\n --SM--UDKS:fibShear: ERROR: numberOfTimeDerivatives=%i NOT IMPLEMENTED! *****FIX ME**** \n\n",
+         numberOfTimeDerivatives);
+    }
+
     // const real cs2 = sqrt((muBar)/rhoBar);
 
     // sanity checks
     // assert( cs==cs2 ); 
     // assert( mu==muBar );
-    assert( numberOfTimeDerivatives==0 );
 
 
     // fill in the solution
@@ -592,19 +617,40 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       if( assignVelocity )
       {
         // u(i1,i2,i3,v1c)=v0_r*ur-v0_i*ui;
-        u(i1,i2,i3,v1c)=amp*vr*ct;
-        u(i1,i2,i3,v2c)=amp*vr*st;
+        if( numberOfTimeDerivatives==0 )
+        {
+          u(i1,i2,i3,v1c)=amp*vr*ct;
+          u(i1,i2,i3,v2c)=amp*vr*st;
+        }
+        else
+        {
+          printF("--SM--UDKS: WARNING numberOfTimeDerivatives=%i ! Setting acceleration to zero\n");
+          u(i1,i2,i3,v1c)=0.;
+          u(i1,i2,i3,v2c)=0.;
+          
+        }
+        
       }
       
       // stresses
       if( assignStress )
       {
-        const real srt = amp*muBar*uyr;
-	u(i1,i2,i3,s11c)=-2.*ct*st*srt;
-	u(i1,i2,i3,s12c)=(SQR(ct)-SQR(st))*srt;
-	u(i1,i2,i3,s21c)=(SQR(ct)-SQR(st))*srt;
-	u(i1,i2,i3,s22c)= 2.*ct*st*srt;
-
+        if( numberOfTimeDerivatives==0 )
+        {
+          const real srt = amp*muBar*uyr;
+          u(i1,i2,i3,s11c)=-2.*ct*st*srt;
+          u(i1,i2,i3,s12c)=(SQR(ct)-SQR(st))*srt;
+          u(i1,i2,i3,s21c)=(SQR(ct)-SQR(st))*srt;
+          u(i1,i2,i3,s22c)= 2.*ct*st*srt;
+        }
+        else
+        {
+          printF("--SM--UDKS: WARNING numberOfTimeDerivatives=%i ! Setting stress-rate to zero\n");
+          u(i1,i2,i3,s11c)=0.;
+          u(i1,i2,i3,s12c)=0.;
+          u(i1,i2,i3,s21c)=0.;
+          u(i1,i2,i3,s22c)=0.;
+        }
       }
       
     }

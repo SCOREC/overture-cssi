@@ -846,6 +846,7 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
       if( correction>1  && debug() & 4 )
         printF("ims: correction=%i\n",correction);
 
+      parameters.dbase.get<int>("correctionStage")=correction;
       parameters.dbase.get<int>("totalNumberOfPCcorrections")++;  // count the total number of corrections.
       
       // Predictor-Corrector. First time predict, subsequent times correct.
@@ -1066,7 +1067,7 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
         //    We extrapolate in time using 
         //               uCur : t
         //               uOld : t-dt
-        //               fCur : t-2*dt   (holds boundary p and u in unuesd ghost points)
+        //               fCur : t-2*dt   (holds boundary p and u in unused ghost points)
         //               fOld : t-3*dt   (holds boundary p and u in unused ghost points)
         if( true )
         {

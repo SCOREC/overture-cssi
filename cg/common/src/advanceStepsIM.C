@@ -943,6 +943,7 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
         fprintf(debugFile," *** DomainSolver::takeTimeStepIM (start): t0=%e, dt0=%e, correction=%i*** \n",t0,dt0,correction);
     }
 
+    parameters.dbase.get<int>("correctionStage")=correction;
     advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
 
     assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
@@ -1305,6 +1306,56 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
             if( movingGridProblem() )
                 parameters.dbase.get<int >("initializeImplicitTimeStepping")=true;
         }
+        else if( FALSE )
+        { // TRY THIS FOR AMP SCHEME *wdh* 
+            printF("--advanceStepsIM: ***TEMP*** correct for moving grids at start of correction\n");
+        // Correct for forces on moving bodies if we have more corrections.
+                bool movingGridCorrectionsHaveConverged = false;
+                real delta =0.; // holds relative correction when we are sub-cycling 
+                const bool useMovingGridSubIterations= parameters.dbase.get<bool>("useMovingGridSubIterations");
+        // *wdh* 2015/12/16 -- explicitly check for useMovingGridSubIterations, otherwise we can do multiple
+        //                     corrections always if requested,
+                if( movingGridProblem() && (numberOfCorrections==1  // *wdh* 2015/05/24 -- this case was missing in new version
+                                    			      || !useMovingGridSubIterations)  ) // *wdh* 2015/12/16 
+                {
+                    if( numberOfCorrections>10 )
+                    {
+                        printF("WARNING: movingGrid problem, useMovingGridSubIterations=false but numberOfCorrections>10\n");
+                        OV_ABORT("ERROR: this is an error for now");
+                    }
+                    correctMovingGrids( t0,t0+dt0,gf[mCur],gf[mNew] ); 
+                }
+      // else if( movingGridProblem() && (correction+1)<numberOfCorrections)
+                else if( movingGridProblem() )
+                {
+          // --- we may be iterating on the moving body motion (e.g.for light bodies) ---
+          //     After correcting for the motion, check for convergence
+                    correctMovingGrids( t0,t0+dt0,gf[mCur],gf[mNew] ); 
+          // Check if the correction step has converged
+                    bool isConverged = getMovingGridCorrectionHasConverged();
+                    delta = getMovingGridMaximumRelativeCorrection();
+                    if( debug() & 2 )
+                        printF("IMS: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
+                       	     delta,correction+1,(int)isConverged);
+                    if( isConverged && (correction+1) >=minimumNumberOfPCcorrections )  // note correction+1 
+                    {
+                        movingGridCorrectionsHaveConverged=true;  // we have converged -- we can break from correction steps
+                        if( delta!=0. && debug() & 1 )
+                  	printF("IMS: moving grid correction step : sub-iterations converged after %i corrections, rel-err =%8.2e\n",
+                         	       correction+1,delta);
+            // break;  // we have converged -- break from correction steps
+                    }
+                    if( (correction+1)>=numberOfCorrections )
+                    {
+                        printF("IMS:ERROR: moving grid corrections have not converged! numberOfCorrections=%i, rel-err =%8.2e\n",
+                       	     correction+1,delta);
+                    }
+                }
+                else 
+                {
+                }
+        }
+        
 
     // Optionally refactor the matrix : if parameters.dbase.get<int >("globalStepNumber") % refactorFrequency == 0 
     // (We need to do this after the grids have moved but before dudt is evaluated (for nonlinear problems)
@@ -1449,68 +1500,9 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
             gf[mNew].t=t0+dt0;  // gf[mNew] now lives at this time
         }
             
-
-    // *** assign boundary conditions for the implicit method 
-    // *wdh* Dec 20, 2017 -- added gf[mCur]
-        applyBoundaryConditionsForImplicitTimeStepping( gf[mNew], gf[mCur] ); // ***** gf[mNew].gridVelocity must be correct here
-        
-        if( Parameters::checkForFloatingPointErrors!=0 )
-            checkSolution(gf[mNew].u,"advanceStepsIM: after applyBCIMP",true);
-
-
-        if( debug() & 4 )
+        if( correction==0 ) // *wdh* moved here April 25, 2018 -- needed for AMP bulk solid velocity BC
         {
-            aString label = sPrintF(" ***ImplicitMS: RHS Before implicitSolve t=%e, ,correction=%i\n",gf[mNew].t,correction);
-            if( twilightZoneFlow() )
-            {
-                gf[mNew].u.display(label,debugFile,"%8.5f ");
-            }
-            label = sPrintF(" ***ImplicitMS: Errors in rhs gf before implicitSolve t=%e, correction=%i\n",gf[mNew].t,correction);
-            determineErrors( gf[mNew],label );
-        }
-
-    // **** fix this *** we could refactor for each correction here !
-    //       if( mst>1 || correction>0 )
-    //       {
-    //  // Optionally refactor the matrix : if parameters.dbase.get<int >("globalStepNumber") % refactorFrequency == 0 
-    // 	formMatrixForImplicitSolve(dt0,gf[mNew], gf[mCur] );
-    //       }
-            
-
-    // ------------------------------------
-    // --- Solve the implicit equations ---
-    // ------------------------------------
-  
-        implicitSolve( dt0,gf[mNew], gf[mCur] );  // gf[mNew]=RHS  gf[mCur]=used for initial guess and linearization
-
-        if( Parameters::checkForFloatingPointErrors!=0 )
-            checkSolution(gf[mNew].u,"advanceStepsIM: after implicitSolve",true);
-
-        if( debug() & 4 )
-        {
-            if( twilightZoneFlow() )
-            {
-                gf[mNew].u.display(sPrintF("ImplicitMS: gf[mNew].u after implicitSolve but BEFORE BC's (t=%8.2e), correction=%i",
-                                                                      gf[mNew].t,correction),debugFile,"%8.5f ");
-            }
-            aString label = sPrintF(" ***ImplicitMS: after implicitSolve but BEFORE BC's, t=%e, correction=%i\n",
-                                                            gf[mNew].t,correction);
-            determineErrors( gf[mNew],label );
-        }
-    } // end if takeTimeStep 
-    
-  // ------------------------------------------------------------------------------------------------
-  // --------------------------- Apply Boundary Conditions ------------------------------------------
-  // ------------------------------------------------------------------------------------------------
-    if( applyBC )
-    {
-        if( debug() & 2 )
-            printP("++++++++++++ apply BCs t0+dt0=%9.3e\n\n",t0+dt0);
-
-        if( correction==0 )
-        {
-      // Some schemes needa guess for the pressure near the boundary, for boundary conditions
-
+      // Some schemes need a guess for the pressure near the boundary, for boundary conditions
 
       // --- For fourth-order in space we need to extrapolate p in time at ghost points --
       //    We extrapolate in time using 
@@ -1539,6 +1531,95 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
                 
         }
 
+    // *** assign boundary conditions for the implicit method 
+    // *wdh* Dec 20, 2017 -- added gf[mCur]
+        applyBoundaryConditionsForImplicitTimeStepping( gf[mNew], gf[mCur] ); // ***** gf[mNew].gridVelocity must be correct here
+        
+        if( Parameters::checkForFloatingPointErrors!=0 )
+            checkSolution(gf[mNew].u,"advanceStepsIM: after applyBCIMP",true);
+
+
+        if( debug() & 8 )
+        {
+            aString label = sPrintF(" ***advanceStepsIM: RHS Before implicitSolve t=%e, ,correction=%i\n",gf[mNew].t,correction);
+            if( twilightZoneFlow() )
+            {
+                gf[mNew].u.display(label,debugFile,"%8.5f ");
+            }
+            label = sPrintF(" ***advanceStepsIM: Errors in rhs gf before implicitSolve t=%e, correction=%i\n",gf[mNew].t,correction);
+            determineErrors( gf[mNew],label );
+        }
+
+    // **** fix this *** we could refactor for each correction here !
+    //       if( mst>1 || correction>0 )
+    //       {
+    //  // Optionally refactor the matrix : if parameters.dbase.get<int >("globalStepNumber") % refactorFrequency == 0 
+    // 	formMatrixForImplicitSolve(dt0,gf[mNew], gf[mCur] );
+    //       }
+            
+
+    // ------------------------------------
+    // --- Solve the implicit equations ---
+    // ------------------------------------
+  
+        implicitSolve( dt0,gf[mNew], gf[mCur] );  // gf[mNew]=RHS  gf[mCur]=used for initial guess and linearization
+
+        if( Parameters::checkForFloatingPointErrors!=0 )
+            checkSolution(gf[mNew].u,"advanceStepsIM: after implicitSolve",true);
+
+        if( debug() & 4 )
+        {
+            if( twilightZoneFlow() )
+            {
+                gf[mNew].u.display(sPrintF("advanceStepsIM: gf[mNew].u after implicitSolve but BEFORE BC's (t=%8.2e), correction=%i",
+                                                                      gf[mNew].t,correction),debugFile,"%8.5f ");
+            }
+            aString label = sPrintF(" ***advanceStepsIM: after implicitSolve but BEFORE BC's, t=%e, correction=%i\n",
+                                                            gf[mNew].t,correction);
+            determineErrors( gf[mNew],label );
+        }
+    } // end if takeTimeStep 
+    
+  // ------------------------------------------------------------------------------------------------
+  // --------------------------- Apply Boundary Conditions ------------------------------------------
+  // ------------------------------------------------------------------------------------------------
+    if( applyBC )
+    {
+        if( debug() & 2 )
+            printP("++++++++++++ apply BCs t0+dt0=%9.3e\n\n",t0+dt0);
+
+    // if( correction==0 )
+    // {
+    //   // Some schemes need a guess for the pressure near the boundary, for boundary conditions
+
+
+    //   // --- For fourth-order in space we need to extrapolate p in time at ghost points --
+    //   //    We extrapolate in time using 
+    //   //               uCur : t
+    //   //               uOld : t-dt
+    //   //               fCur : t-2*dt   (holds boundary p and u in unuesd ghost points)
+    //   //               fOld : t-3*dt   (holds boundary p and u in unused ghost points)
+    //   if( FALSE )
+    //   {
+    //     // FIX ME FOR HIGHER ORDER EXTRAPOLATION IN TIME --- *wdh* Dec 25, 2017
+
+    //     // // *new* way June 7, 2017 -- extrapolate in time to higher order ---
+    //     // int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 4;
+    //     // // int orderOfExtrapolation = orderOfTimeAccuracy==2 ? 3 : 5;
+    //     // boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, 
+    //     //                             mNew,mCur,mOld,&fCur,&fOld,&fOld2,&fOld3 );
+    //   }
+    //   else
+    //   {
+    //     // *wdh* Dec 25, 2017 -- do this for now: 
+
+    //     // do this for now: 
+    //     const int orderOfExtrapolation = 2;
+    //     boundaryConditionPredictor( predictPressure,adamsData,orderOfExtrapolation, mNew,mCur,mOld,&ua,&ub );
+    //   }
+                
+    // }
+
 
     // apply explicit BC's  --- > really only have to apply to implicit grids I think?
         const int option=-1, grid=-1; // *wdh* Dec 20, 2017 -- pass old time grid function too
@@ -1551,10 +1632,10 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
         {
             if( twilightZoneFlow() )
             {
-                gf[mNew].u.display(sPrintF("ImplicitMS: gf[mNew].u after implicitSolve and BC's (t=%8.2e), correction=%i",
+                gf[mNew].u.display(sPrintF("advanceStepsIM: gf[mNew].u after implicitSolve and BC's (t=%8.2e), correction=%i",
                                                                       gf[mNew].t,correction),debugFile,"%8.5f ");
             }
-            aString label = sPrintF(" ***ImplicitMS: after implicitSolve and BC's, t=%e, correction=%i\n",gf[mNew].t,correction);
+            aString label = sPrintF(" ***advanceStepsIM: after implicitSolve and BC's, t=%e, correction=%i\n",gf[mNew].t,correction);
             determineErrors( gf[mNew],label );
         }
 
@@ -1574,7 +1655,7 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
 
         if( debug() & 8 )
         {
-            aString label =sPrintF(" ImplicitMS: Errors after pressure solve, t0+dt0: t0=%e, dt0=%e  \n",t0,dt0);
+            aString label =sPrintF(" advanceStepsIM: Errors after pressure solve, t0+dt0: t0=%e, dt0=%e  \n",t0,dt0);
             determineErrors( gf[mNew],label );
         }
 

@@ -91,8 +91,12 @@ enum InitialStateOptionEnum
   initialBoundaryAcceleration 
 };
 
-
-
+// Starting curve (or surface) for deforming body can be one of 
+enum StartCurveTypesEnum
+{
+  nurbsStartCurve=0,
+  splineStartCurve
+};
 
 DeformingBodyMotion(Parameters & params, 
 		    int numberOfTimeLevels               = 3,

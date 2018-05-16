@@ -4,7 +4,7 @@
 # Usage:
 #    cgmp [-noplot] radialElasticPiston -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
 #           -solver=[yale|best] -psolver=[yale|best] -ktcFluid=<> -ktcFluid=<> -tz=[poly/trig/none] -bg=<backGroundGrid> ...
-#           -degreex=<num> -degreet=<num> -ts=[fe|be|im|pc] -nc=[] -d1=<> -d2=<> -smVariation=[nc|c|g|h] ...
+#           -degreex=<num> -degreet=<num> -ts=[fe|be|im|pc] -numberOfCorrections=[] -d1=<> -d2=<> -smVariation=[nc|c|g|h] ...
 #           -sideBC=[noSlipWall|slipWall|dirichlet] -useImplicitAmpBCs=[0|1]
 # 
 #  -ktcFluid -ktcSolid : thermal conductivities 
@@ -28,7 +28,7 @@ $lambdaSolid=1.; $muSolid=1.;
 $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
-$diss=.2;   # 2nd-order linear dissipation for cgsm --> increase from .1 to .2 : July 2, 2017
+$diss=.5; 
 $smVariation = "g"; 
 $tsSM="modifiedEquationTimeStepping";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
@@ -44,9 +44,12 @@ $useTP=0; # 1=use traditional partitioned scheme
 $projectMultiDomainInitialConditions=0; 
 $useNewTimeSteppingStartup=1;  # *NEW* July 1, 2017
 $freqFullUpdate=1; # frequency for using full ogen update in moving grids 
+$useExactPressureBC=0; # use exact RHS for pressure wall BC (variable used in insDomain.h)
+$useCurlFormOfTraction=0; # use div(v)=0 to alter viscous traction
 #
 $smoothInterface=0;  # smooth the interface (in DeformingBodyMotion.C )
 $numberOfInterfaceSmooths=4; 
+$startCurve="spline"; # "nurbs"; # start curve for the deforming body 
 #
 # $option="beamUnderPressure"; # this currently means ramp the inflow
 $option="radialElasticPiston"; # define pressure BC from known solution
@@ -69,13 +72,16 @@ $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC
 # ---- piston parameters: 
 $Pi=4.*atan2(1.,1.);
 $amp=.05; $k=.5; $t0=0.;  $R=1.; $Rbar=.5; $rho=1.; 
+# Slow start:
+$rampOrder=2;  # number of zero derivatives at start and end of the ramp 
+$ra=-10.; $rb=-9.; # ramp interval -- actual interval shifted by Hbar/cp 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"kappa=f"=>\$kappa, "bg=s"=>\$backGround,\
  "tp=f"=>\$tPlot, "solver=s"=>\$solver, "psolver=s"=>\$psolver,"useTP=i"=> \$useTP,\
  "tz=s"=>\$tz,"degreeSpace=i"=>\$degreeSpace, "degreeTime=i"=>\$degreeTime,\
  "show=s"=>\$show,"method=s"=>\$method,"ts=s"=>\$ts,"tsSM=s"=>\$tsSM,"noplot=s"=>\$noplot,"ktcFluid=f"=>\$ktcFluid,\
   "ktcSolid=f"=>\$ktcSolid,"muSolid=f"=>\$muSolid,"lambdaSolid=f"=>\$lambdaSolid, "t0=f"=>\$t0,"Twall=f"=>\$Twall,\
-  "nc=i"=> \$numberOfCorrections, "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
+  "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
   "d1=s"=>\$domain1,"d2=s"=>\$domain2,"dg=s"=>\$deformingGrid,"debug=i"=>\$debug,"kThermalFluid=f"=>\$kThermalFluid,\
   "cfl=f"=>\$cfl,"rhoSolid=f"=>\$rhoSolid,"cnsVariation=s"=>\$cnsVariation,"diss=f"=>\$diss,"fic=s"=>\$fic,"go=s"=>\$go,\
    "smVariation=s"=>\$smVariation,"scf=f"=>\$scf,"probeFile=s"=>\$probeFile,"pOffset=f"=>\$boundaryPressureOffset,\
@@ -90,7 +96,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs );
+   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
+   "useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,"useCurlFormOfTraction=i"=>\$useCurlFormOfTraction, );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -135,11 +142,16 @@ $grid
 $numberOfPastTimeLevels=3; 
 $gridEvolutionVelocityAccuracy=3; 
 $gridEvolutionAccelerationAccuracy=2; 
+# choose the start curve type:
+$startCurveCmd="#";
+if( $startCurve eq "nurbs"  ){ $startCurveCmd="nurbs start curve"; }
+if( $startCurve eq "spline" ){ $startCurveCmd="spline start curve"; }
 if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
 $moveCmds = \
   "turn on moving grids\n" . \
   "specify grids to move\n" . \
   "    deforming body\n" . \
+  "      $startCurveCmd\n" . \
   "      bulk solid\n" . \
   "        debug\n $debug \n" . \
   "      velocity order of accuracy\n $gridEvolutionVelocityAccuracy\n" . \

@@ -71,7 +71,7 @@ static bool useNewExposedPoints=true;
 // ===============================================================================
 ///  MACRO:  Perform the initialization step for the PC method
 ///
-///  \METHOD (input) : name of the method: adamsPC or implicitPC
+///  \METHOD (input) : name of the method: e.g. adamsPC or implicitPC
 ///  Parameters:
 ///   numberOfPastTimes (input) : method needs u(t-dt), ... u(t-n*dt), n=numberOfPastTimes  
 ///   numberOfPastTimeDerivatives (input) : method needs u_t(t-dt), ..., u_t(t-m*dt) m=numberOfPastTimeDerivatives
@@ -663,6 +663,7 @@ takeTimeStepFE( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
     FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
     const int globalStepNumber = parameters.dbase.get<int >("globalStepNumber");
+    parameters.dbase.get<int>("correctionStage")=correction;
 
     if( debug() & 4 )
         printP("DomainSolver::takeTimeStepFE t0=%e, dt0=%e correction=%i globalStepNumber=%i ++++\n",t0,dt0,correction,
