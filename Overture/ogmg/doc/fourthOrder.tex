@@ -154,16 +154,39 @@ when using the extrapolation
 boundary condition and the equation boundary condition. Using the equation gives better convergence
 rates. 
 
-\renewcommand{\figWidth}{.495\linewidth}
-\begin{figure}
+
+{
+\renewcommand{\figWidth}{7.cm}
+\newcommand{\trimfig}[2]{\trimhb{#1}{#2}{.0}{.0}{.0}{.0}}
+\begin{figure}[hbt]
 \begin{center}
-\epsfig{file=\ogmgDir/fourthOrderBC.square1024.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/fourthOrderBC.cic6.eps,width=\figWidth}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.7) rectangle (16.,7.5);  % set the bounding box (so we have less surrounding white space)
+%
+  \draw (-1.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/fourthOrderBC-square1024}{\figWidth}};
+  \draw ( 8.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/fourthOrderBC-cic6}{\figWidth}};
+%
+ % \draw (current bounding box.south west) rectangle (current bounding box.north east);
+% grid:
+% \draw[step=1cm,gray] (0,0) grid (15,6);
+\end{tikzpicture}
 \end{center}
 \caption{A comparison of boundary conditions for the fourth-order accurate discretization.
 Results are shown for a V[2,1] cycle with $\omega=1$.}
 \label{fig:fourthOrderBC}
 \end{figure}
+}
+
+%\renewcommand{\figWidth}{.495\linewidth}
+%\begin{figure}
+%\begin{center}
+%\epsfig{file=\ogmgDir/fourthOrderBC.square1024.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/fourthOrderBC.cic6.eps,width=\figWidth}
+%\end{center}
+%\caption{A comparison of boundary conditions for the fourth-order accurate discretization.
+%Results are shown for a V[2,1] cycle with $\omega=1$.}
+%\label{fig:fourthOrderBC}
+%\end{figure}
 
 
 \begin{table}[hbt]
@@ -622,14 +645,23 @@ a sharp boundary layer which will not be well represented on the coarser grids.
 % since the application of the smoother and boundary conditions will generate high frequency
 % components near the boundary.
 
-
-\renewcommand{\figWidth}{.495\linewidth}
-\begin{figure}
+{
+\renewcommand{\figWidth}{6.cm}
+\newcommand{\trimfig}[2]{\trimhb{#1}{#2}{.0}{.0}{.0}{.0}}
+\begin{figure}[hbt]
 \begin{center}
-\epsfig{file=\ogmgDir/bceig-41-extrap-1.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceig-41-extrap-2.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceig-err-41-extrap-1.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceig-err-41-extrap-2.eps,width=\figWidth}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.7) rectangle (16.,13.5);  % set the bounding box (so we have less surrounding white space)
+%
+  \draw (-1.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceig-41-extrap-1}{\figWidth}};
+  \draw ( 8.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceig-41-extrap-2}{\figWidth}};
+  \draw (-1.0,6.5) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceig-err-41-extrap-1}{\figWidth}};
+  \draw ( 8.0,6.5) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceig-err-41-extrap-2}{\figWidth}};
+%
+ % \draw (current bounding box.south west) rectangle (current bounding box.north east);
+% grid:
+ \draw[step=1cm,gray] (-1,0) grid (15,12);
+\end{tikzpicture}
 \end{center}
 \caption{Eigenfunctions and errors in the eigenfunctions for the fourth-order accurate discretization of the Dirichlet problem
  with the $D_+^4U =0$ extrapolation BC. The solution is shown including ghost points.
@@ -637,17 +669,40 @@ a sharp boundary layer which will not be well represented on the coarser grids.
 be outside the scale shown. }
 \label{fig:fourthOrderExtrapBC}
 \end{figure}
+}
 
+%\renewcommand{\figWidth}{.495\linewidth}
+%\begin{figure}
+%\begin{center}
+%\epsfig{file=\ogmgDir/bceig-41-extrap-1.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceig-41-extrap-2.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceig-err-41-extrap-1.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceig-err-41-extrap-2.eps,width=\figWidth}
+%\end{center}
+%\caption{Eigenfunctions and errors in the eigenfunctions for the fourth-order accurate discretization of the Dirichlet problem
+% with the $D_+^4U =0$ extrapolation BC. The solution is shown including ghost points.
+% The errors are largest in a boundary layer.The value on the first ghost line may
+%be outside the scale shown. }
+%\label{fig:fourthOrderExtrapBC}
+%\end{figure}
 
-\renewcommand{\figWidth}{.495\linewidth}
-\begin{figure}
+{
+\renewcommand{\figWidth}{6.cm}
+\newcommand{\trimfig}[2]{\trimhb{#1}{#2}{.0}{.0}{.0}{.0}}
+\begin{figure}[hbt]
 \begin{center}
-\epsfig{file=\ogmgDir/bceign-41-extrap-1.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceign-41-extrap-2.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceign-err-41-extrap-1.eps,width=\figWidth}
-\epsfig{file=\ogmgDir/bceign-err-41-extrap-2.eps,width=\figWidth}
-% \epsfig{file=\ogmgDir/bceign-err-41-extrap-3.eps,width=\figWidth}
-% \epsfig{file=\ogmgDir/bceign-err-41-extrap-4.eps,width=\figWidth}
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0,.7) rectangle (16.,13.5);  % set the bounding box (so we have less surrounding white space)
+%
+  \draw (-1.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceign-41-extrap-1}{\figWidth}};
+  \draw ( 8.0,0.0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceign-41-extrap-2}{\figWidth}};
+  \draw (-1.0,6.5) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceign-err-41-extrap-1}{\figWidth}};
+  \draw ( 8.0,6.5) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfig{fig/bceign-err-41-extrap-2}{\figWidth}};
+%
+ % \draw (current bounding box.south west) rectangle (current bounding box.north east);
+% grid:
+ \draw[step=1cm,gray] (-1,0) grid (15,12);
+\end{tikzpicture}
 \end{center}
 \caption{Eigenfunctions and errors in the eigenfunctions for fourth-order discretization of the Neumann problem
  with the $D_+^5U_{-2} =0$ extrapolation BC. The solution is shown including ghost points.
@@ -655,3 +710,23 @@ be outside the scale shown. }
 be outside the scale shown.}
 \label{fig:fourthOrderNeumannExtrapBC}
 \end{figure}
+}
+
+%\renewcommand{\figWidth}{.495\linewidth}
+%\begin{figure}
+%\begin{center}
+%\epsfig{file=\ogmgDir/bceign-41-extrap-1.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceign-41-extrap-2.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceign-err-41-extrap-1.eps,width=\figWidth}
+%\epsfig{file=\ogmgDir/bceign-err-41-extrap-2.eps,width=\figWidth}
+%% \epsfig{file=\ogmgDir/bceign-err-41-extrap-3.eps,width=\figWidth}
+%% \epsfig{file=\ogmgDir/bceign-err-41-extrap-4.eps,width=\figWidth}
+%\end{center}
+%\caption{Eigenfunctions and errors in the eigenfunctions for fourth-order discretization of the Neumann problem
+% with the $D_+^5U_{-2} =0$ extrapolation BC. The solution is shown including ghost points.
+% The errors are largest in a boundary layer on each end. The value on the second ghost line may
+%be outside the scale shown.}
+%\label{fig:fourthOrderNeumannExtrapBC}
+%\end{figure}
+%
+
