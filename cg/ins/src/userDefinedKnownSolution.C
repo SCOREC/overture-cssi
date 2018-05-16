@@ -1010,7 +1010,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       {
         const real x = xLocal(i1,i2,i3,0);
         const real y = xLocal(i1,i2,i3,1);
-        const real yRef = -st*x+ct*y;
+        const real yRef = -st*(x-.5)+ct*y;
 
         // printF("thetaR=%f\n",thetaR);
         ua(i1,i2,i3,uc) = -st*vI;
@@ -1038,7 +1038,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       {
         const real x = xLocal(i1,i2,i3,0);
         const real y = xLocal(i1,i2,i3,1);
-        const real yRef = -st*x+ct*y;
+        const real yRef = -st*(x-.5)+ct*y;
 
         ua(i1,i2,i3,uc) = 0.;
         ua(i1,i2,i3,vc) = aI;
@@ -1495,7 +1495,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	const real y= xLocal(i1,i2,i3,1);
 	
 	real vr, vi;
-        real yRef = -st*x+ct*y;
+        real yRef = -st*(x-.5)+ct*y;
 	evalFibShearFluid(kfr,kfi,omegar,omegai,cr,ci,dr,di,yRef,vr,vi);
 	ua(i1,i2,i3,uc) = (vr*u0_r-vi*u0_i)*ct;
 	ua(i1,i2,i3,vc) = (vr*u0_r-vi*u0_i)*st;

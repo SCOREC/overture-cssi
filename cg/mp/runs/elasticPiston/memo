@@ -1,8 +1,41 @@
+
+
+cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVariation=g -debug=3 -tsINS=pc -go=halt -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -useTP=0 -addedMass=1 -amp=.001
+
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (76 steps)
+   0.002 5.24e-16 7.23e-07 8.50e-19 1.15e-17  2.74e-03 3.33e-05 7.94e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (226 steps)
+   0.003 1.54e-15 2.53e-07 1.27e-18 1.98e-17  2.74e-03 1.11e-05 1.19e+01
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (901 steps)
+   0.003 2.43e-15 5.60e-08 1.72e-18 5.08e-17  2.74e-03 2.78e-06 7.88e+01 
+
+
+***********************************************
+
+* make movies
+
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1  -scf=.1 -nu=.01 -tp=.005 -tf=2 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.005 -tf=2 -smVariation=g -debug=1 -debug=3 -tsINS=im -go=halt -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -useTP=0 -addedMass=1 -amp=.1 -useImplicitAmpBCs=1
+
+cgmp radialTravelingWave -g=radialTravelingWaveGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -smVariation=g -tsINS=im -cdv=1 -go=halt -tf=.3 -tp=.1 -amp=.00001 -caseid=0 -dtMax=.01
+
+cgmp radialElasticPiston -g=radialElasticPistonGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1 -nu=.05 -tp=.005 -tf=2 -smVariation=g -debug=1 -tsINS=im -cdv=1 -go=halt
+
+cgmp radialTravelingWave -g=radialTravelingWaveGride1.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -smVariation=g -tsINS=im -cdv=1 -go=halt -tf=1 -tp=.0025 -amp=.00001 -caseid=0 -dtMax=.01
+
+
+
+
+cgmp elasticPiston -g=elasticPistonRotated0DegreesGride2.order2p.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=.1 -nu=.01 -tp=.005 -tf=2 -smVariation=g -debug=1 -debug=3 -tsINS=im -cfl=.9 -go=halt
+
+
 *************************************************
 *** March 18, 2018
 
 * elastic shear, heavy solid, explicit
-cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=pc -go=halt -cfl=.9 -muFluid=10. -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000. -useTP=0 -addedMass=1 -amp=.001
+cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=pc -go=halt -cfl=.9 -muFluid=10. -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000. -addedMass=1 -useImplicitAmpBCs=1 -amp=.001
 
      t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (76 steps)
    0.002 6.02e-16 6.97e-08 3.48e-19 3.18e-18  4.46e-05 3.33e-05 4.61e+00 
@@ -32,21 +65,60 @@ cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVari
 -->t=2.5000e-03 dt=2.8e-06 maxNorm errors:[3.0098e-08,8.0970e-18,9.5142e-16,2.1615e-06,2.1615e-06,3.1157e-16,2.6453e-10,1.1130e-20,], maxNorm(u):[2.74e-03,8.10e-18,9.51e-16,2.68e-02,2.68e-02,3.12e-16,9.93e-04,1.11e-20,]
 
 * elastic shear, heavy solid, implicit
-  Issue: both p and v should be zero...
-cgmp elasticShear -g=elasticPistonGride2.order2p.hdf -tp=.0001 -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=im -go=halt -cfl=.9 -muFluid=10. -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000. -useTP=0 -addedMass=1 -amp=.001
+cgmp -noplot elasticShear -g=elasticPistonGride2.order2p.hdf -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=im -go=halt -cfl=.9 -muFluid=10. -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000. -addedMass=1 -useImplicitAmpBCs=1 -amp=.001 -dtMax=.0001
 
      t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (26 steps)
-   0.003 2.67e-05 6.72e-08 8.71e-08 7.08e-07  4.46e-05 1.00e-04 9.22e+00 
+   0.002 2.69e-16 6.82e-08 1.11e-19 9.10e-19  4.46e-05 1.00e-04 1.34e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (51 steps)
+   0.003 1.48e-15 8.72e-09 3.62e-19 2.07e-18  4.47e-05 5.00e-05 3.05e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (101 steps)
+   0.002 7.02e-15 1.12e-09 2.68e-18 2.84e-17  4.47e-05 2.50e-05 1.23e+01 
+
+-->t=2.5000e-03 dt=1.0e-04 maxNorm errors:[4.9576e-08,3.0054e-19,2.5855e-14,1.0466e-04,1.0466e-04,8.5917e-15,1.2288e-08,3.4917e-22,], maxNorm(u):[5.03e-05,3.01e-19,2.59e-14,3.14e+00,3.14e+00,8.59e-15,1.00e-03,3.49e-22,]
+-->t=2.5000e-03 dt=5.0e-05 maxNorm errors:[1.2100e-08,1.1810e-18,6.4841e-14,1.4457e-05,1.4457e-05,2.1540e-14,3.0812e-09,1.4526e-21,], maxNorm(u):[5.03e-05,1.18e-18,6.48e-14,3.14e+00,3.14e+00,2.15e-14,1.00e-03,1.45e-21,]
+-->t=2.5000e-03 dt=2.5e-05 maxNorm errors:[3.0687e-09,5.4020e-18,1.3124e-13,2.8716e-06,2.8716e-06,4.2998e-14,7.7179e-10,7.1698e-21,], maxNorm(u):[5.03e-05,5.40e-18,1.31e-13,3.14e+00,3.14e+00,4.30e-14,1.00e-03,7.17e-21,]
+
+* elastic shear, medium solid, implicit
+cgmp -noplot elasticShear -g=elasticPistonGride2.order2p.hdf -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=im -go=halt -cfl=.9 -muFluid=10. -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10. -addedMass=1 -useImplicitAmpBCs=1 -amp=.001 -dtMax=.0001
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (26 steps)
+   0.002 6.65e-16 5.82e-07 1.39e-18 3.21e-17  2.74e-03 1.00e-04 1.35e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (51 steps)
+   0.003 1.33e-15 1.65e-07 2.10e-18 9.91e-17  2.74e-03 5.00e-05 3.09e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (101 steps)
+   0.002 2.91e-15 4.40e-08 4.18e-18 3.90e-16  2.74e-03 2.50e-05 1.25e+01 
+
+-->t=2.5000e-03 dt=1.0e-04 maxNorm errors:[4.6219e-07,1.8392e-18,2.1997e-16,2.2171e-05,2.2171e-05,8.0076e-17,4.2073e-09,1.9080e-21,], maxNorm(u):[2.74e-03,1.84e-18,2.20e-16,2.68e-02,2.68e-02,8.01e-17,9.93e-04,1.91e-21,]
+-->t=2.5000e-03 dt=5.0e-05 maxNorm errors:[1.2817e-07,3.5419e-18,4.9954e-16,6.3857e-06,6.3857e-06,3.0287e-16,1.0547e-09,4.2758e-21,], maxNorm(u):[2.74e-03,3.54e-18,5.00e-16,2.68e-02,2.68e-02,3.03e-16,9.93e-04,4.28e-21,]
+-->t=2.5000e-03 dt=2.5e-05 maxNorm errors:[3.3828e-08,8.8514e-18,9.0428e-16,1.7206e-06,1.7206e-06,4.9501e-16,2.6439e-10,1.0706e-20,], maxNorm(u):[2.74e-03,8.85e-18,9.04e-16,2.68e-02,2.68e-02,4.95e-16,9.93e-04,1.07e-20,]
+
+* elastic shear light solid implicit
+cgmp -noplot elasticShear -g=elasticPistonGride2.order2p.hdf -tf=.0025 -smVariation=g -debug=1 -debug=3 -tsINS=im -go=halt -cfl=.9 -muFluid=.1 -muSolid=.001 -rhoSolid=.001 -nu=.1 -lambdaSolid=.001 -addedMass=1 -useImplicitAmpBCs=1 -amp=.001 -dtMax=.0001
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (26 steps)
+   0.002 2.07e-19 2.60e-11 4.35e-21 2.23e-18  2.82e-05 1.00e-04 1.33e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (51 steps)
+   0.003 5.61e-19 1.16e-11 1.78e-20 5.67e-18  2.82e-05 5.00e-05 3.03e+00 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (101 steps)
+   0.002 1.42e-18 4.27e-12 4.16e-20 8.24e-18  2.82e-05 2.50e-05 1.23e+01 
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (201 steps)
+   0.002 4.15e-18 1.95e-12 8.28e-20 1.35e-17  2.82e-05 1.25e-05 2.33e+02 
 
 
--->t=2.5000e-03 dt=1.0e-04 maxNorm errors:[4.9941e-08,3.4531e-09,8.4522e-06,1.0466e-04,1.0466e-04,3.0814e-05,1.2288e-08,3.6327e-12,], maxNorm(u):[5.03e-05,3.45e-09,8.45e-06,3.14e+00,3.14e+00,3.08e-05,1.00e-03,3.63e-12,]
+
+-->t=2.5000e-03 dt=1.0e-04 maxNorm errors:[1.6056e-07,2.5644e-19,1.4140e-20,1.8277e-11,1.8277e-11,4.7000e-21,4.1831e-10,2.5234e-22,], maxNorm(u):[2.82e-05,2.56e-19,1.41e-20,2.00e-06,2.00e-06,4.70e-21,1.00e-03,2.52e-22,]
+-->t=2.5000e-03 dt=5.0e-05 maxNorm errors:[6.4077e-08,9.6509e-19,4.4216e-20,1.3203e-11,1.3203e-11,1.4662e-20,1.7278e-10,1.0035e-21,], maxNorm(u):[2.82e-05,9.65e-19,4.42e-20,2.00e-06,2.00e-06,1.47e-20,1.00e-03,1.00e-21,]
+-->t=2.5000e-03 dt=2.5e-05 maxNorm errors:[2.6987e-08,4.6369e-18,8.6172e-20,1.1272e-11,1.1272e-11,2.8091e-20,7.4053e-11,4.7577e-21,], maxNorm(u):[2.82e-05,4.64e-18,8.62e-20,2.00e-06,2.00e-06,2.81e-20,1.00e-03,4.76e-21,]
+-->t=2.5000e-03 dt=1.3e-05 maxNorm errors:[1.0910e-08,1.4845e-17,1.4157e-19,9.6882e-12,9.6882e-12,4.5764e-20,3.2268e-11,1.9757e-20,], maxNorm(u):[2.82e-05,1.48e-17,1.42e-19,2.00e-06,2.00e-06,4.58e-20,1.00e-03,1.98e-20,]
+
+
 
 
 
 * convergence tests
-conv.p insElasticShear.conv -tf=0.0025 -cg=es -showAllComponents=0 -tsINS=im -smVariation=g -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3 -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000.
+conv.p insElasticShear.conv -tf=0.1 -cg=es -showAllComponents=0 -tsINS=im -smVariation=g -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3 -muSolid=1000. -rhoSolid=1000. -nu=10. -lambdaSolid=1000.
 
-conv.p insElasticShear.conv -tf=0.0025 -cg=es -showAllComponents=0 -tsINS=im -smVariation=g -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3 -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10.
+conv.p insElasticShear.conv -tf=0.1 -cg=es -showAllComponents=0 -tsINS=im -smVariation=g -addedMass=1 -useImplicitAmpBCs=1 -cfl=.9 -ng=3 -muSolid=10. -rhoSolid=10. -nu=10. -lambdaSolid=10.
 
 
 

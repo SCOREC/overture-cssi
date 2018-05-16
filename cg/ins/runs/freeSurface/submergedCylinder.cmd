@@ -27,7 +27,7 @@
 # --- set default values for parameters ---
 # 
 $grid="halfCylinder.hdf"; $backGround="backGround"; $bcn="noSlipWall"; $pGrad=0.; 
-$deformingGrid="ice"; $deformFrequency=2.; $deformAmplitude=1.; $deformationType="advect body"; 
+$deformingGrid="ice"; $deformFrequency=2.; $deformAmplitude=1.; $deformationType="free surface"; 
 $tFinal=1.; $tPlot=.1; $cfl=.9; $nu=.05; $Prandtl=.72; $thermalExpansivity=.1; 
 $gravity = "0. 0. 0."; 
 $model="ins"; $ts="pc"; $noplot=""; $implicitVariation="viscous"; $refactorFrequency=100; 
@@ -42,6 +42,13 @@ $rtol=1.e-4; $atol=1.e-5;    # tolerances for the implicit solver
 $bc="a"; 
 $surfaceTension=.1; $pAtmosphere=0.;
 $smoothSurface=1; $numberOfSurfaceSmooths=3;
+$freeSurfaceOption="none"; 
+$generatePastHistory=0;
+# Decouple implicit BCs (e.g. free surface) so we can solve scalar velociity implicit equations
+$decoupleImplicitBoundaryConditions=0;
+$predictorOrder=0; # 0=use default 
+$useNewTimeSteppingStartup=1;  # this will regenerate past time grids and solutions
+$surfacePredictor="leap-frog";
 # 
 #
 # use warnings;
@@ -115,6 +122,10 @@ $grid
 # 
 # choose the time stepping:
   $ts
+use new time-stepping startup $useNewTimeSteppingStartup
+# test:
+if( $predictorOrder eq 1 ){ $predictorOrder = "first order predictor"; }else{ $predictorOrder="#"; }
+$predictorOrder
 # 
 #****************************
  turn on moving grids
@@ -122,16 +133,18 @@ $grid
     deforming body
       user defined deforming body
         $deformationType
-        # free surface options: 
+         debug
+            $debug
         restrict to y direction
-        # --- free surface boundary conditions ----
-        BC left: Neumann
-        # BC right: Neumann
-        # BC left: Dirichlet
-        BC right: Dirichlet
+        velocity order of accuracy\n $gridEvolutionVelocityAccuracy
+        acceleration order of accuracy\n $gridEvolutionAccelerationAccuracy
+        generate past history $generatePastHistory
         # turn on surface smoothing:
         smooth surface $smoothSurface
+	free surface predictor $surfacePredictor
+        use known solution for initial conditions $useKnown
         number of surface smooths: $numberOfSurfaceSmooths
+	past time dt: $tPlot
       done
       if( $deformingGrid =~ /^share=/ ){ $deformingGrid =~ s/^share=//; \
                  $deformingGrid="choose grids by share flag\n $deformingGrid"; };
@@ -170,6 +183,7 @@ $cmds
     OBPDE:divergence damping  $cdv 
     OBPDE:expect inflow at outflow
   done
+  OBPDE:decouple implicit boundary conditions $decoupleImplicitBoundaryConditions
 #
   maximum number of iterations for implicit interpolation
      10 

@@ -2100,6 +2100,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       sScanF(answer,"%e %e %e",&amp,&rhoBar,&thetaR);
 
       if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+      if (abs(rhoBar - 0.0010) < 1.0e-12) { caseid = 2;}
 
       if (caseid == 0) {
 	H      =  1.0;
@@ -2132,6 +2133,23 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         br =  1.0461248653121937e-03; bi = -1.0015217308137262e-02; 
         cr = -1.9614721669217117e-01; ci =  5.6816165176278211e-01; 
         dr =  1.1961472166921712e+00; di = -5.6816165176278211e-01; 
+
+      } else if (caseid == 2) {
+        printF("caseid = 2\n");
+        H      =  1.0;
+	Hbar   =  0.5;
+	rho    =  1.0;
+	rhoBar = .001;
+	muBar  = .001;
+	mu     = .1;
+
+        ksr = -2.2805529212348262e-03; ksi =  2.8199257008559516e-02; 
+        kfr =  2.1455425699964142e-02; kfi = -5.3146298589606578e-01; 
+        omegar = -2.2805529212348262e-03; omegai =  2.8199257008559516e-02; 
+        ar =  1.0000000000000000e+00; ai =  1.0550591396725081e-16; 
+        br = -5.6981599547914135e+00; bi = -7.0467697378493099e+01; 
+        cr =  4.1975851787117041e-01; ci = -6.5972020825390609e-01; 
+        dr =  5.8024148212882976e-01; di =  6.5972020825390620e-01; 
 
       }
 

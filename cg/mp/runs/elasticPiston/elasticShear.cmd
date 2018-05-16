@@ -65,6 +65,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 $append=0; 
 # ------------------------- turn on added mass here ----------------
 $addedMass=0; 
+$useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
 $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 # ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
 $Pi=4.*atan2(1.,1.);
@@ -72,6 +73,7 @@ $amp=.001; $k=.5; $t0=1./(4*$k);  $H=1.; $Hbar=.5; $rho=1.;
 $rampOrder=2;  # number of zero derivatives at start and end of the ramp
 $ra=-10.; $rb=-9.; # ramp interval -- actual interval shifted by Hbar/cp 
 $thetad=0;
+$dtMax=.1;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"kappa=f"=>\$kappa, "bg=s"=>\$backGround,\
  "tp=f"=>\$tPlot, "solver=s"=>\$solver, "psolver=s"=>\$psolver,"useTP=i"=> \$useTP,\
@@ -93,7 +95,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"thetad=f"=>\$thetad,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths );
+   "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,"dtMax=f"=>\$dtMax );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -222,7 +224,7 @@ continue
   final time $tFinal
   times to plot $tPlot
   cfl $cfl
-  dtMax .1
+  dtMax $dtMax
   $ts
   number of PC corrections $numberOfCorrections
   OBPDE:interface tolerance $iTol
