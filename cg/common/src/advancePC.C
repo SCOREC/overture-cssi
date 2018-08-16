@@ -1973,7 +1973,7 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
         // *wdh* 2015/12/16 -- explicitly check for useMovingGridSubIterations, otherwise we can do multiple
         //                     corrections always if requested,
                 if( movingGridProblem() && (numberOfCorrections==1  // *wdh* 2015/05/24 -- this case was missing in new version
-                                    			      || !useMovingGridSubIterations)  ) // *wdh* 2015/12/16 
+                                              		      || !useMovingGridSubIterations)  ) // *wdh* 2015/12/16 
                 {
                     if( numberOfCorrections>10 )
                     {
@@ -2002,7 +2002,7 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
                          	       correction+1,delta);
             // break;  // we have converged -- break from correction steps
                     }
-                    if( (correction+1)>=numberOfCorrections )
+                    if( !isConverged && (correction+1)>=numberOfCorrections )
                     {
                         printF("PC:ERROR: moving grid corrections have not converged! numberOfCorrections=%i, rel-err =%8.2e\n",
                        	     correction+1,delta);

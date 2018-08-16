@@ -527,6 +527,7 @@ printStatistics(FILE *file /* = stdout */)
 
   // const int numSteps=max(1,numberOfStepsTaken);
   const int numSteps=max(1,numberOfStepsTaken);
+  const int & totalNumberOfCorrectionSteps = parameters.dbase.get<int>("totalNumberOfCorrectionSteps");
 
   RealArray & timing = parameters.dbase.get<RealArray >("timing");
   const std::vector<aString> & timingName = parameters.dbase.get<std::vector<aString> >("timingName");
@@ -628,6 +629,8 @@ printStatistics(FILE *file /* = stdout */)
               (int)parameters.dbase.get<bool>("useMixedInterfaceConditions"),
               parameters.dbase.get<real>("interfaceTolerance"),parameters.dbase.get<real>("interfaceOmega"));
 
+      fprintf(file," Average number of corrections/time-step =%.2f\n",real(totalNumberOfCorrectionSteps)/numberOfStepsTaken);
+      
       fPrintF(output," Interface info written to file interfaceFile.log (Use debug=3 to see convergence rates)\n");
 
 

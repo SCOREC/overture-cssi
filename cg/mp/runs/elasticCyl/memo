@@ -1,3 +1,73 @@
+*************************
+******* May 22, 2018
+
+
+TEST HALF DISK FOR CORNER BC ON CGSM
+AMP-PC  HEAVY -- 
+$cgmpx insElasticDisk -g=solidHalfDiskInChannele2.order2.hdf -option=halfDisk -rampInflow=0 -p0=.1 -u0=0. -addedMass=1 -tsINS=pc -useImplicitAmpBCs=0 -numberOfCorrections=1 -scf=5000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt 
+
+
+*************************
+******* May 20, 2018
+
+LOnger channel
+
+TEST 2 CORRECTIONS -- ok till t=.6
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 numberOfCorrections=2 -scf=500 -nu=.05 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt
+
+
+LIGHT SCF=.01 -- OK!!
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 numberOfCorrections=1 -scf=.01 -nu=.05 -tp=.01 -tf=5. -smVariation=g -debug=1 -go=halt -diss=1
+
+PRESSURE WIGGLES FORM: 
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 numberOfCorrections=1 -scf=100 -nu=.05 -tp=.01 -tf=5. -smVariation=g -debug=1 -go=halt -dtMax=1.e-3 -diss=4
+
+AMp-IMP INCREASE nu --
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 numberOfCorrections=2 -scf=500 -nu=.1 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt
+
+AMP-PC INCREASE nu -- **better** OK to t=1.5
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=pc -useImplicitAmpBCs=0 numberOfCorrections=2 -scf=500 -nu=.1 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt
+
+
+TP-PC  RAMP WITH SCF=500 -- pressure and solid stress get into an oscillation
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=0 -tsINS=pc -useImplicitAmpBCs=0 -numberOfCorrections=1 -scf=500 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt
+
+AMP-PC  RAMP WITH SCF=500 -- pressure and solid stress get into an oscillation
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=pc -useImplicitAmpBCs=0 -numberOfCorrections=1 -scf=500 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt
+
+
+
+
+AMP-PC  RAMP WITH HEAVY -- OK 
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=pc -useImplicitAmpBCs=0 -numberOfCorrections=1 -scf=5000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt 
+
+IMP-AMP RAMP WITH HEAVY -- OK 
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=1 -p0=.1 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 -numberOfCorrections=1 -scf=5000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt 
+
+NO RAMP -- OK
+$cgmpx insElasticDisk -g=solidDiskInChannele2.order2.hdf -rampInflow=0 -p0=.01 -u0=0. -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 -numberOfCorrections=1 -scf=1000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -startCurve=spline -go=halt 
+
+*************************
+******* May 19, 2018
+
+REVISIT FLOW PAST DEFORMING DISK
+
+*NEW* Script: 
+
+RAMP INFLOW 
+$cgmpx insElasticDisk -g=diskDeformBig2e.hdf -rampInflow=1 -addedMass=1 -tsINS=im -useImplicitAmpBCs=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -tsINS=im -startCurve=spline -go=halt 
+
+
+$cgmpx insElasticDisk -g=diskDeformBig2e.hdf -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1000 -nu=.01 -tp=.01 -tf=5. -smVariation=g -debug=1 -tsINS=im -startCurve=spline -go=halt 
+
+**OLD SCRIPT** 
+TP -- OK 
+$cgmp elasticCyl -method=ins -g=diskDeformBig2e -scf=5000. -u0=.1 -nu=.01 -tp=.01 -tf=5 -nc=1 -pOffset=.5 -smVariation=g -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -go=halt
+
+
+
+
+
 --- 2014/06/12 -- REVISIT befroe AMP
 
 OK:  NOTE -- WTACH OUT for INFLOW AT OUTFLOW at t=6 

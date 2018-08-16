@@ -92,8 +92,11 @@ Maxwell:: Maxwell()
   numberOfIterationsForInterfaceBC=5;
   omegaForInterfaceIteration=.5; // under-relaxation parameter for interface iterations (3D order=4)
 
-  // relative tolerance for interface iterations: *FINISH ME*
-  // if( !dbase.has_key("rtolInterface") ) dbase.put<real>("rtolInterface")=1.e-2; 
+  // absolute tolerance for interface iterations (4th-order)
+  if( !dbase.has_key("atolForInterfaceIterations") ) dbase.put<real>("atolForInterfaceIterations")=1.e-10;
+
+  // relative tolerance for interface iterations: (4th-order)
+  if( !dbase.has_key("rtolForInterfaceIterations") ) dbase.put<real>("rtolForInterfaceIterations")=1.e-3; 
 
   materialInterfaceOption=1;  // 1=extrapolate as initial guess for material interface ghost values
   // *new* default: -- use better interface conditions for 3D-order=4 *wdh* June 30, 2016
@@ -1322,6 +1325,9 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
 //   Build the time stepping options dialog.
 // ==========================================================================================
 {
+  const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+  const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
+
   dialog.setOptionMenuColumns(1);
 
   aString methodCommands[] = {"default", "Yee", "DSI", "new DSI", "DSI-MatVec", "NFDTD", "SOSUP", "" };
@@ -1444,6 +1450,12 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
 
    textCommands[nt] = "omega for interface iterations";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",omegaForInterfaceIteration); nt++; 
+
+   textCommands[nt] = "relative tol for interface iterations";  
+   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",rtolForInterfaceIterations); nt++; 
+
+   textCommands[nt] = "absolute tol for interface iterations";  
+   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",atolForInterfaceIterations); nt++; 
 
    textCommands[nt] = "interface option";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",materialInterfaceOption); nt++; 
@@ -2012,6 +2024,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption");
   int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency");
   
+  real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+  real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
+
   // Thes next variables are used to set the dispersive model parameters
   int numberOfPolarizationVectors=1;
   int modeGDM=-1;  // eigenmode number, choice of root "s"
@@ -2573,6 +2588,10 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       sScanF(answer(len,answer.length()-1),"%e %e %e ",&normalPlaneMaterialInterface[0], 
 	     &normalPlaneMaterialInterface[1],&normalPlaneMaterialInterface[2]);
+      // Normalize the normal
+      printF("INFO: material interface normal is being normalized.\n");
+      real norm = max(REAL_MIN*100,sqrt( SQR(normalPlaneMaterialInterface[0])+SQR(normalPlaneMaterialInterface[1])+SQR(normalPlaneMaterialInterface[2]) ));
+      for( int axis=0; axis<3; axis++ ) { normalPlaneMaterialInterface[axis]=  normalPlaneMaterialInterface[axis]/norm; } //
       forcingOptionsDialog.setTextLabel("material interface normal",
                                         sPrintF("%5.3f %5.3f %5.3f",
 						normalPlaneMaterialInterface[0], normalPlaneMaterialInterface[1],
@@ -2800,12 +2819,21 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     else if( timeSteppingOptionsDialog.getTextValue(answer,"interface BC iterations","%i",
 						    numberOfIterationsForInterfaceBC) ){}// 
+
     else if( timeSteppingOptionsDialog.getTextValue(answer,"omega for interface iterations","%e",
 						    omegaForInterfaceIteration) ){}// 
+
+    else if( timeSteppingOptionsDialog.getTextValue(answer,"relative tol for interface iterations","%e",
+						    rtolForInterfaceIterations) ){}// 
+
+    else if( timeSteppingOptionsDialog.getTextValue(answer,"absolute tol for interface iterations","%e",
+						    atolForInterfaceIterations) ){}// 
+
     else if( timeSteppingOptionsDialog.getTextValue(answer,"interface equations option","%i",
 						    interfaceEquationsOption) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"interface option","%i",
 						    materialInterfaceOption) ){}// 
+
     else if( timeSteppingOptionsDialog.getTextValue(answer,"projection frequency","%i",
 						    frequencyToProjectFields) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"consecutive projection steps","%i",
@@ -3033,7 +3061,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       } // end if !found
       
 
-      if( gridsToCheck.size()>=1 )
+      // if( gridsToCheck.size()>=1 ) // *wdh* June 23, 2018
+      if( cg.numberOfDomains()>1 )
         gridHasMaterialInterfaces=true;
       printF(" **** setting gridHasMaterialInterfaces=true ****\n");
       for( int g=0; g<gridsToCheck.size(); g++ )
@@ -3100,7 +3129,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     else if( dispersionParametersDialog.getTextValue(answer,"GDM alphaP:","%g",alphaP) )
     {
-      setDispersionParameters( "all",alphaP );
+      // setDispersionParameters( "all",alphaP );
+      setDispersionParameters( gdmDomainName,alphaP );
     }
     
 
@@ -3509,7 +3539,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   // **** now build grid functions *****
   setupGridFunctions();
 
-  // Do this for now to initialize Paramters class (used by outputProbes)
+  // Do this for now to initialize Parameters class (used by outputProbes)
   // const int numberOfComponents=cgfields[0][0].getLength(3);  // *wdh* 2017/09/01 
   const int & numberOfComponents = dbase.get<int>("numberOfComponents");
   parameters.dbase.get<int>("numberOfComponents")=numberOfComponents;
@@ -3525,6 +3555,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
   initializeRadiationBoundaryConditions();
   
+  printF("<<<<<<<<<<<<<<<<<<<<<<<<< LEAVING interactiveUpdate\n");
+  
+
   return 0;
 }
 
@@ -3682,19 +3715,22 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
 	      (changeBoundaryConditionNumber==-1 || 
 	       originalBoundaryCondition(side,axis,grid)==changeBoundaryConditionNumber) )
 	  {
-            printF("Setting grid=%i (side,axis)=(%i,%i) to bc=%i\n",grid,side,axis,bc);
+            if( gridHasMaterialInterfaces && cg[grid].boundaryCondition(side,axis)==interfaceBoundaryCondition 
+                && cg[grid].sharedBoundaryFlag(side,axis)>=100 ) // *wdh* Aug 8, 2018 
+            {
+              // -- do not over-write material interface BC's *wdh* June 13, 2018
+              printF("setBC:INFO: NOT changing BC for grid=%i (side,axis)=(%i,%i) to bc=%i since this is an interface.\n",
+                     grid,side,axis,bc);
+            }
+            else
+            {
+              printF("Setting grid=%i (side,axis)=(%i,%i) to bc=%i\n",grid,side,axis,bc);
 	    
-	    cg[grid].setBoundaryCondition(side,axis,bc);
-	    // set underlying mapping too (for moving grids)
-	    cg[grid].mapping().getMapping().setBoundaryCondition(side,axis,bc);
-	    
-//              if( mgp!=NULL )
-//  	    {
-//  	      MappedGrid & mg = *mgp;
-//  	      mg.setBoundaryCondition(side,axis,bc);
-//  	      // set underlying mapping too (for moving grids)
-//  	      mg.mapping().getMapping().setBoundaryCondition(side,axis,bc);
-//  	    }
+              cg[grid].setBoundaryCondition(side,axis,bc);
+              // set underlying mapping too (for moving grids)
+              cg[grid].mapping().getMapping().setBoundaryCondition(side,axis,bc);
+            }
+
 	    
 	  }
 	}
@@ -3749,6 +3785,13 @@ int Maxwell::
 setDispersionParameters( const aString & domainName, int numberOfPolarizationVectors, int eqn, 
                          real a0, real a1, real b0, real b1, int modeGDM )
 {
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+  
+
   printF("--MX-- setDispersionParameters: domainName=[%s] numberOfPolarizationVectors=%i eqn=%i \n",
          (const char*)domainName,numberOfPolarizationVectors,eqn);
   
@@ -3803,6 +3846,18 @@ setDispersionParameters( const aString & domainName, int numberOfPolarizationVec
       dmp.setParameters( eqn,a0,a1,b0,b1 );
       dmp.setMode( modeGDM );
           
+      // set alphaP = 1/eps 
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+        if( cg.domainNumber(grid)==domain )
+        {
+          real alphaP=1./epsGrid(grid);
+          dmp.setParameter( alphaP );
+          break;
+        }
+        
+      }
+      
     }
   }
 
@@ -3815,6 +3870,12 @@ setDispersionParameters( const aString & domainName, int numberOfPolarizationVec
 int Maxwell::
 setDispersionParameters( const aString & domainName, real alphaP )
 {
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
   const int numberOfComponentGrids = cg.numberOfComponentGrids();
@@ -3858,6 +3919,20 @@ setDispersionParameters( const aString & domainName, real alphaP )
     {
       DispersiveMaterialParameters & dmp = dmpVector[domain];
 
+      if( alphaP < 0. )
+      {
+        // By default alphaP=1/eps  *wdh* June 11, 2018
+        int grid=0;
+        // find a grid in this domain
+        for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          if( cg.domainNumber(grid)==domain )
+            break;
+        }
+        alphaP = 1./epsGrid(grid);
+        
+      }
+      
       printF(" Setting GDM parameter alphaP=%g for domain=[%s]\n",alphaP,(const char*)cg.getDomainName(domain));
 
       dmp.setParameter( alphaP );

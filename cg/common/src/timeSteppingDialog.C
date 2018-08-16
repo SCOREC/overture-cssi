@@ -211,7 +211,7 @@ buildTimeSteppingDialog(DialogData & dialog )
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns);
 
   // ----- Text strings ------
-  const int numberOfTextStrings=31;
+  const int numberOfTextStrings=60;
   aString textCommands[numberOfTextStrings];
   aString textLabels[numberOfTextStrings];
   aString textStrings[numberOfTextStrings];
@@ -284,16 +284,35 @@ buildTimeSteppingDialog(DialogData & dialog )
   textCommands[nt] = "added damping coefficient:"; textLabels[nt] =textCommands[nt];
   sPrintF(textStrings[nt],"%e",parameters.dbase.get<real>("addedDampingCoefficient")); nt++;
 
+  textCommands[nt] = "added mass velocity BC:"; textLabels[nt] =textCommands[nt];
+  sPrintF(textStrings[nt],"%i",parameters.dbase.get<int>("addedMassVelocityBC")); nt++;
+
+  textCommands[nt] = "fluid solid corner fix:"; textLabels[nt] =textCommands[nt];
+  sPrintF(textStrings[nt],"%i",parameters.dbase.get<int>("fluidSolidCornerFix")); nt++;
+
   if( parameters.dbase.has_key("upwindOrder") )  // order of upwinding (INS)
   {
     textCommands[nt] = "upwind order:"; textLabels[nt] =textCommands[nt];
     sPrintF(textStrings[nt],"%i (-1=default)",parameters.dbase.get<int>("upwindOrder")); nt++;
   }
  
+  textCommands[nt]="zfMuByH";    textLabels[nt] =textCommands[nt]; 
+  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real>("zfMuByH"));       nt++;
+
+  textCommands[nt]="zfRhoHByDt";  textLabels[nt] =textCommands[nt]; 
+  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real>("zfRhoHByDt"));    nt++;
+
+  textCommands[nt]="zfMono";    textLabels[nt] =textCommands[nt]; 
+  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real>("zfMono"));       nt++;
+
+  textCommands[nt]="zfMuRhoByZpDt";    textLabels[nt] =textCommands[nt]; 
+  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real>("zfMuRhoByZpDt"));       nt++;
 
 
- // null strings terminal list
-  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
+   // null strings terminal list
+  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
+  assert( nt<numberOfTextStrings );
+
   dialog.setTextBoxes(textCommands, textLabels, textStrings);
 
   return 0;
@@ -811,6 +830,27 @@ getTimeSteppingOption(const aString & answer,
     printF("Setting addedDampingCoefficient=%9.3e. This value scales the added damping term in the\n"
            " rigid body equations when coupling to an incompressible flow.\n",
            parameters.dbase.get<real>("addedDampingCoefficient"));
+  }
+  else if ( dialog.getTextValue(answer,"added mass velocity BC:", "%i", 
+                                parameters.dbase.get<int>("addedMassVelocityBC")) ) 
+  {
+    printF("Setting addedMassVelocityBC=%i. This is used to vary the choice of boundary conditions.\n",
+           parameters.dbase.get<int>("addedMassVelocityBC"));
+  }
+
+  else if( dialog.getTextValue(answer,"zfMuByH","%e",parameters.dbase.get<real>("zfMuByH")) ){}//
+
+  else if( dialog.getTextValue(answer,"zfMono","%e",parameters.dbase.get<real>("zfMono")) ){}//
+
+  else if( dialog.getTextValue(answer,"zfRhoHByDt","%e",parameters.dbase.get<real>("zfRhoHByDt")) ){}//
+
+  else if( dialog.getTextValue(answer,"zfMuRhoByZpDt","%e",parameters.dbase.get<real>("zfMuRhoByZpDt")) ){}//
+
+  else if ( dialog.getTextValue(answer,"fluid solid corner fix:", "%i", 
+                                parameters.dbase.get<int>("fluidSolidCornerFix")) ) 
+  {
+    printF("Setting fluidSolidCornerFix=%i. This is used to adjust the stress near fluid/deforming-solid corners.\n",
+           parameters.dbase.get<int>("fluidSolidCornerFix"));
   }
   
   else if( dialog.getTextValue(answer,"upwind order:", "%i",upwindOrder) )

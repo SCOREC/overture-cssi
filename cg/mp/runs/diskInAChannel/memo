@@ -1,0 +1,324 @@
+**************************
+*** Aug 14, 2018
+
+
+++++++++++++ TEST: SET SOLID INTERFACE TO FLUID ON CORRECTOR
+
+++++++++++++++++++++++ TWO DISKS +++++++++++++++++++++++++++++++
+
+BUG FIXED with multiple bodies DBM getBulkSolidParams was wrong -- replaced.
+
+SCF1=100, SCF2=1 : **BROKEN**
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=100 -scf2=1  -zfMuByH=2 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+
+
+SCF1=100, SCF2=100 : OK 
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=100 -scf2=100  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+SCF1=10, SCF2=10 : OK 
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=10 -scf2=10  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+SCF1=1, SCF2=1 : OK 
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=1 -scf2=1  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+++++++++++++++++++++++ ELLIPSE ++++++++++++++++++++++++++
+SCF=1, zfMuByH=1: OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=1. -zfMuByH=1 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+>>> SCF=100  -- 
+   NEW: zfMuByH=5 : OK,  zfMuByH=2: OK!   zfMuByH=1: OK! t=3
+   OLD: zfMuByH=5 BAD, =20 OK
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=100. -zfMuByH=20 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+++++++++++++++++++++++++++ DISK ++++++++++++++++++
+>>> SCF=10 : zfMuByH=1 + SET vI=vF in solid corrector **WORKS***
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+
+SCF=10 : zfMuByH=1 : BAD, =10: OK
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -zfMuByH=10 -p0=1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+
+TEST zfMONO
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -zfMono=1 -scf=50 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+
+REVISIT -- ADD COEFF zfMuByH *(mu*rho)/(zp*dt)
+(zfMuByH,zfMuRhoByZpDt):  (10,10)=OK (5,5)=NO  (5,20)=NO  (10,2)=OK  (100,2)=OK (1000,2)=BAD, (1000,2)+CFL=.1 = BAD
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -zfMuRhoByZpDt=10 -scf=50 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+
+OLD
+SCF=50 INCREASE zfMuByH=10 (=5 not big enough)
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=50 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+
+
+**************************
+*** Aug 12, 2018
+
+Even Longer channel, stiffer
+
+ogen -noplot ellipseInAChannelGrid -radX=.6 -radY=1.2 -corex=0 -corey=.5 -ya=-3 -yb=3 -xa=-3 -xb=12 -prefix=rotatedEllipseGridLonger -interp=e -factor=4
+
+NOTE: scf=10 too small (scf and nu changed)
+nohup $cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGridLongere4.order2  -addedMass=1 -scf=20. -zfMuByH=10 -p0=2 -tp=.1 -tf=30. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=ellipseG4LongerScf10.show -go=go >! ellipseG4LongerScf10.out
+
+
+
+Longer time, long channel: increase p0
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGridLonge4.order2  -addedMass=1 -scf=5. -zfMuByH=10 -p0=2 -tp=.1 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.025 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=ellipseG4LongScf5.show -go=go >! ellipseG4LongScf5.out
+
+
+**************************
+*** Aug 11, 2018
+
+Ellipse in a channel 
+
+ogen -noplot ellipseInAChannelGrid -radX=.6 -radY=1.2 -corex=0 -corey=.5 -ya=-3 -yb=3 -xa=-3 -xb=6 -prefix=rotatedEllipseGridLong -interp=e -factor=4
+
+ogen -noplot ellipseInAChannelGrid -radX=.6 -radY=1.2 -corex=0 -corey=.5 -prefix=rotatedEllipseGrid -interp=e -factor=4
+
+
+LONG: increase p0
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGridLonge4.order2  -addedMass=1 -scf=5. -zfMuByH=10 -p0=2 -tp=.1 -tf=6. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.025 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=ellipseG4LongScf5.show -go=go >! ellipseG4LongScf5.out
+
+
+SHOWFILE
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGride4.order2  -addedMass=1 -scf=2. -zfMuByH=10 -u0=.1 -tp=.1 -tf=4. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.025 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=ellipseG4Scf2.show -go=go >! ellipseG4Scf2.out
+
+SHOWFILE
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGride4.order2  -addedMass=1 -scf=5. -zfMuByH=10 -u0=.1 -tp=.1 -tf=4. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.025 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=ellipseG4Scf5.show -go=go >! ellipseG4Scf5.out
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGride4.order2  -addedMass=1 -scf=5. -zfMuByH=10 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.025 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+**************************
+*** Aug 10, 2018
+
+START ON NEW MONOLITIC IMPEDANCE
+
+
+QUESTION -- HOW DO WE CHOOSE "k" in the formula ? 
+
+
+
+SCF=.01 : OK 
+
+SCF=100 : OK 
+
+SCF=1 zfMuByH=1 -- Ok 
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=1. -zfMuByH=1 -p0=1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+SCF=100 : G2 OK 
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -scf=100 -zfMuByH=5 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+------------------------------------------ ELLIPSE --------------------------------------
++++++++++++  SCALE BY zfMuByH=5
+
+SCF=1000 : OK 
+
+SCF=100 : OK
+
+SCF=1  : OK 
+
+SCF=.01 : OK
+
+
++++++++++++++++++++++ SCALE BY zfMuByH=2
+
+SCF=100 : trouble by t=.5
+
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=100. -zfMuByH=2 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+SCF=.01 : OK
+
+SCF=1 : OK 
+
+SCF=10 : OK 
+
+SCF=100  -- **TROUBLE WITH zfm ? too small maybe
+
+SCF=500 : OK 
+
+SCF=1e3 : OK 
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=100. -zfMuByH=1 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+COMPARE IMPEDANCES VERSUS SCF: 
+GGGGGG getBulkSolidAmpParameters: rhoSolid=1.00e-03, zfNew=2*(rho*mu)/(zp*dt) = 1.73e+04,  zfmu=(1.00e+01)*mu/h=2.21e+01, zfMonolithic=1.27e+01
+
+GGGGGG getBulkSolidAmpParameters: rhoSolid=1.00e+00, zfNew=2*(rho*mu)/(zp*dt) = 1.73e+01,  zfmu=(1.00e+01)*mu/h=2.21e+01, zfMonolithic=1.28e+01
+
+GGGGGG getBulkSolidAmpParameters: rhoSolid=1.00e+02, zfNew=2*(rho*mu)/(zp*dt) = 1.73e-01,  zfmu=(1.00e+01)*mu/h=2.21e+01, zfMonolithic=1.34e+01
+
+GGGGGG getBulkSolidAmpParameters: rhoSolid=1.00e+03, zfNew=2*(rho*mu)/(zp*dt) = 1.73e-02,  zfmu=(1.00e+01)*mu/h=2.21e+01, zfMonolithic=1.34e+01
+
+
+
+
+**************************
+*** Aug 9, 2018
+
+
+START Solid ellipse in a channel
+ogen -noplot ellipseInAChannelGrid -interp=e -factor=2
+ogen -noplot ellipseInAChannelGrid -interp=e -factor=4
+
+SCF=1  --
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=1. -zfMuByH=10 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=10  -- OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=10. -zfMuByH=10 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=100  -- OK ( zfMuByH=5 too small)
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=ellipseInAChannelGride4.order2  -addedMass=1 -scf=100. -zfMuByH=20 -u0=.1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+**************************
+*** Aug 2, 2018
+
+TEST TP + SUB-ITERATIONS -- NOTE: Use improved EULER FOR CGSM
+
+
+TP - SCF=500 : G2, G4 : OK, G8=BAD 
+$cgmp solidDiskInAChannel -method=ins -tsSM=improvedEuler -smVariation=g  -g=diskInAChannelGride2.order2 -useTP=1  -addedMass=0 -scf=500. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -nc=100 -omega=.5 -go=halt
+
+
+**************************
+*** Aug 1, 2018
+
+---- TEST TP SCHEME FOR ONE DISK
+
+TP - SCF=100 : G2 : TP without sub-iterations -fails 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=100. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+TP - SCF=200 : G2=BAD
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=200. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+TP - SCF=300 : G2=OK, G4=BAD
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=300. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+TP - SCF=400 : G2=OK, G4=BAD
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=400. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+TP - SCF=500 : G2, G4 : OK, G8=BAD 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=500. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+TP - SCF=800 : G2, G4 : OK, G8=BAD at t=.53
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=800. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+TP - SCF=1000 : G2 : OK   G8=OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=0 -scf=1000. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+----- START TEST TWO DEFORMING DISKS -----------------------------------
+
+SCF1f=10 SCF2=100  : G2 -- OK 
+$cgmp -noplot twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -zfMuByH=10 -scf1=10 -scf2=100 -p0=.1 -fluidSolidCornerFix=0 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=twoDisksG2Scf10Scf100.show -go=go >! twoDisksG2Scf10Scf100.out 
+
+SCF=10 : G2 -- OK
+$cgmp -noplot twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -zfMuByH=10 -scf=10 -p0=.1 -fluidSolidCornerFix=0 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=twoDisksG2Scf10.show -go=go >! twoDisksG2Scf10.out 
+
+
+SCF=100 : G2 -- OK
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf=100 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt <
+
+
+**************************
+*** July 30, 2015
+
+START ON flow past a rigid disk in a deforming channel
+
+
+SCF=10  zfMuByH=10 : show file 
+$cgmp -noplot diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=10 -p0=1 -fluidSolidCornerFix=0 -tp=.1 -tf=4. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInADeformingChannelScf10G2.show -go=go >! diskInADeformingChannelScf10G2.out 
+
+
+zfMuByH=10 : SCF=5, SCF=2, SCF=1 : OK
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=2 -p0=.1 -fluidSolidCornerFix=0 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+SCF=10  zfMuByH=10 : OK 
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=10 -p0=1 -fluidSolidCornerFix=0 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+SCF=20  zfMuByH=10 : OK 
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=20 -p0=.1 -fluidSolidCornerFix=0 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+SCF=50 INCREASE zfMuByH=10 (=5 not big enough)
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -zfMuByH=10 -scf=50 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+
+
+SCF=100 : G2
+$cgmp diskInAChannel -method=ins -smVariation=g -g=diskInADeformingChannelGride2.order2 -addedMass=1 -scf=100 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+SCF=10 -- OK for some time but then oscillation sets up 
+$cgmp diskInAChannel -method=ins -smVariation=g  -g=diskInADeformingChannelGride2.order2  -addedMass=1 -scf=10 -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=20 -- 
+$cgmp diskInAChannel -method=ins -smVariation=g  -g=diskInADeformingChannelGride2.order2  -addedMass=1 -scf=20 -p0=1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+SCF=50 -- increase p0, show file --> *TROUBLE for later times
+$cgmp -noplot diskInAChannel -method=ins -smVariation=g  -g=diskInADeformingChannelGride2.order2  -addedMass=1 -p0=10 -scf=50 -u0=.1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInADeformingChannelScf50G2.show -go=go >! diskInADeformingChannelScf50G2.out 
+
+
+
+SCF=100 -- OK
+$cgmp diskInAChannel -method=ins -smVariation=g  -g=diskInADeformingChannelGride2.order2  -addedMass=1 -scf=100 -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=1000 -- works
+$cgmp diskInAChannel -method=ins -smVariation=g  -g=diskInADeformingChannelGride2.order2  -addedMass=1 -scf=1000. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+
+**************************
+*** July 29-30, 2015
+
+START ON flow past a solid disk in a channel
+
+**** Added ramped pressure at inflow
+
+SCF=1 -- lower top surfrace to yb=1 : -p0=1 : show file
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=1. -p0=1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInChannelScf1G2.show -go=go >! diskInChannelScf1G2.out
+
+
+SCF=1 -- lower top surfrace to yb=1 : -p0=1 : OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=1. -p0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=5 -- lower top surfrace to yb=1 : -p0=1 : OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=5. -p0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+SCF=10 -- show file
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -u0=.1 -tp=.1 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInChannelScf10G2.show -go=go >! diskInChannelScf10G2.out
+
+
+SCF=5 -- OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=5. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+SCF=10 -- OK
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+
+SCF=100  -- OK
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=100. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt
+
+HEAVY -- OK 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=1000. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt

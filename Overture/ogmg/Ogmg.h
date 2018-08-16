@@ -346,7 +346,7 @@ class Ogmg
   int applyInitialConditions();
   int applyFinalConditions();
 
-  void assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, int level, 
+  void assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, int level, int orderOfAccuracyThisGrid,
 					    int sideToCheck=-1, int axisToCheck=-1 );
   void checkParameters();
 
@@ -377,6 +377,8 @@ class Ogmg
   // build the predefined equations
   int buildPredefinedEquations(CompositeGridOperators & cgop);
   int buildPredefinedCoefficientMatrix( int level, bool buildRectangular, bool buildCurvilinear );
+  int buildPredefinedCoefficientMatrix( realMappedGridFunction & coeff, int grid, int level, int orderOfAccuracyThisGrid, 
+                                        bool buildRectangular, bool buildCurvilinear );
   
   int buildPredefinedVariableCoefficients( RealCompositeGridFunction & coeff, const int level );
 

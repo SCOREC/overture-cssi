@@ -217,7 +217,11 @@ c To include derivatives of rx use OPTION=RX
 
 
 ! **********************************************************************************
-! Macro UPDATE_DISPERSIVE: XYZ Please Finish
+! Macro updateDispersive 
+!
+! Initial version from Michael Jenkinson 2018
+!
+!     XYZ Please Finish
 ! **********************************************************************************
 
 

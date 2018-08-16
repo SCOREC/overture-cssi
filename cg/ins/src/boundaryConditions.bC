@@ -11,9 +11,17 @@
 #define mixedCoeff(component,side,axis,grid)       bcData(component+numberOfComponents*(1),side,axis,grid)
 #define mixedNormalCoeff(component,side,axis,grid) bcData(component+numberOfComponents*(2),side,axis,grid)
 
+#define FOR_3D(i1,i2,i3,I1,I2,I3)					\
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)					\
+  for(i2=I2Base; i2<=I2Bound; i2++)					\
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
+
 // ======================================================================================================
 // Macro:
-//    Set the exact vaalues for the RHS of the AMP pressure BC
+//    Set the exact values for the RHS of the AMP pressure BC
 // ======================================================================================================
 #beginMacro setExactPressureAmpBC()
 {
@@ -405,6 +413,7 @@ gridAccelerationBC(const int & grid,
 
     // ----------------------------------------------
     // ------ Get the grid acceleration term --------
+    //     Returns: -n^T( boundaryAcceleration )
     // ----------------------------------------------
     movingGrids.gridAccelerationBC(grid,side,axis,t0,c,u,f,gridVelocity,normal,I1,I2,I3,I1g,I2g,I3g);
 
@@ -417,7 +426,12 @@ gridAccelerationBC(const int & grid,
       //    (zp*dt/rho)*( v_t - nu*Delta(v) )
       const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
       RealArray & bcData = parameters.dbase.get<RealArray>("bcData");      
-      ampMixedPressureCoeff=mixedNormalCoeff(pc,side,axis,grid); // save for below 
+      const real & fluidDensity = parameters.dbase.get<real>("fluidDensity");
+      assert( fluidDensity>0. );
+      
+      // Coeff of p.n :  zp*dt/rho 
+      // Coeff of -n^T( v_tt ) :  zp*dt 
+      ampMixedPressureCoeff=fluidDensity*mixedNormalCoeff(pc,side,axis,grid); // save for below 
       
       f(I1g,I2g,I3g) *= mixedNormalCoeff(pc,side,axis,grid);
     }
@@ -475,19 +489,39 @@ gridAccelerationBC(const int & grid,
             nDotTau(I1,I2,I3,dir) = fluidDensity*uLocal(I1,I2,I3,pc)*normal(I1,I2,I3,dir) - stressLocal(I1,I2,I3,dir);
           }
 
+          const int & fluidSolidCornerFix = parameters.dbase.get<int>("fluidSolidCornerFix");
+          RealArray cornerFix;
+          if( fluidSolidCornerFix != 0 )
+          {
+            printF("CCCCCCCC GABC: assign AMP pressure BC: fluidSolidCornerFix=%i\n",fluidSolidCornerFix);
+            
+            parameters.getFluidSolidCornerFixFunction( c,grid,side,axis,cornerFix,Parameters::noSlipWall );
+            if( false )
+              ::display(cornerFix,"corner fix function","%9.2e ");
+          }
+          
+          
 	  if( numberOfDimensions==2 )
 	  {
 
 	    // ADD viscous traction term (remove the pressure component) and solid-traction
 	    // AMP:   p + (zp*dt)/rho p.n =  n.tau.n - n.sigmaSolid.n + (zp*dt)*[ nu*n.Delta(v) -accel ] 
 
-
-          
-
             // cleaned-up version  p + (zp*dt/rho) *p.n = nv^T( tau.nv - sigmaBar.nv ) - ....
-	    fLocal(I1g,I2g,I3g) += (normal(I1,I2,I3,0)*(nDotTau(I1,I2,I3,0)-solidTraction(I1,I2,I3,0)) +  
-				    normal(I1,I2,I3,1)*(nDotTau(I1,I2,I3,1)-solidTraction(I1,I2,I3,1)) );
-	    
+            // *wdh* June 28, 2018 **CHECK sign for traction *
+            real signForTraction=+1.; // This seems correct
+            if( fluidSolidCornerFix==0 )
+            {
+              fLocal(I1g,I2g,I3g) += signForTraction*(normal(I1,I2,I3,0)*(nDotTau(I1,I2,I3,0)-solidTraction(I1,I2,I3,0)) +  
+                                                      normal(I1,I2,I3,1)*(nDotTau(I1,I2,I3,1)-solidTraction(I1,I2,I3,1)) );
+            }
+            else
+            {
+              // Ramp the traction to zero near corners with adjacent no-slip walls
+              fLocal(I1g,I2g,I3g) += cornerFix(I1,I2,I3)*(normal(I1,I2,I3,0)*(nDotTau(I1,I2,I3,0)-solidTraction(I1,I2,I3,0)) +  
+                                                          normal(I1,I2,I3,1)*(nDotTau(I1,I2,I3,1)-solidTraction(I1,I2,I3,1)) );
+            }
+            
 	    if( t0 <= 3.*dt && debug() & 4 )
             {
               Range Rx=numberOfDimensions;

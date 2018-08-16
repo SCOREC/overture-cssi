@@ -17,7 +17,7 @@
 # 
 $grid="deformingChannelGrid4.order2"; $domain1="fluidDomain"; $domain2="solidDomain";
 $method="ins"; $probeFile="probeFile"; $multiDomainAlgorithm=1;  $pi=0; $pOffset=0.; 
-$tFinal=20.; $tPlot=.1;  $cfl=.9; $show="";  $pdebug=0; $debug=0; $go="halt"; $cdv=""; 
+$tFinal=20.; $tPlot=.1;  $cfl=.9; $show="";  $pdebug=0; $debug=0; $go="halt"; $cdv=""; $cDt=""; 
 $muFluid=0.; $rhoFluid=1.4; $pFluid=1.; $TFluid=$pFluid/$rhoFluid; 
 $nu=.1; $rhoSolid=1.; $prandtl=.72; $cnsVariation="jameson"; $ktcFluid=-1.; $u0=0.; $xShock=-1.5; $uShock=1.25; 
 $p0=1.; 
@@ -30,6 +30,7 @@ $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
 $diss=.5; 
 $smVariation = "g"; 
+$setGhostByExtrapolation=0; 
 $tsSM="modifiedEquationTimeStepping";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
@@ -41,6 +42,7 @@ $tsINS="pc"; # INS time-stepping method
 $numberOfCorrections=1;  # cgmp and cgins 
 $coupled=0; $iTol=1.e-3; $iOmega=1.; $flushFrequency=10; $useNewInterfaceTransfer=0; 
 $useTP=0; # 1=use traditional partitioned scheme
+$tol=1.e-3; $omega=.5; # for sub-iterations
 $projectMultiDomainInitialConditions=0; 
 $useNewTimeSteppingStartup=1;  # *NEW* July 1, 2017
 $freqFullUpdate=1; # frequency for using full ogen update in moving grids 
@@ -53,6 +55,7 @@ $startCurve="spline"; # "nurbs"; # start curve for the deforming body
 #
 # $option="beamUnderPressure"; # this currently means ramp the inflow
 $option="radialElasticPiston"; # define pressure BC from known solution
+$known="piston"; #  or "shear"
 #
 $sideBC="dirichlet"; 
 #
@@ -66,7 +69,8 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; 
+$addedMass=0; $addedMassVelocityBC=0;  $zfMuByH=5.; $zfRhoHByDt=0.; $zfMono=0.; 
+$addedMassLengthScale=1.; # default is 1 
 $useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
 $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 # ---- piston parameters: 
@@ -81,7 +85,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
  "tz=s"=>\$tz,"degreeSpace=i"=>\$degreeSpace, "degreeTime=i"=>\$degreeTime,\
  "show=s"=>\$show,"method=s"=>\$method,"ts=s"=>\$ts,"tsSM=s"=>\$tsSM,"noplot=s"=>\$noplot,"ktcFluid=f"=>\$ktcFluid,\
   "ktcSolid=f"=>\$ktcSolid,"muSolid=f"=>\$muSolid,"lambdaSolid=f"=>\$lambdaSolid, "t0=f"=>\$t0,"Twall=f"=>\$Twall,\
-  "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
+  "nc=i"=> \$numberOfCorrections,"numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
   "d1=s"=>\$domain1,"d2=s"=>\$domain2,"dg=s"=>\$deformingGrid,"debug=i"=>\$debug,"kThermalFluid=f"=>\$kThermalFluid,\
   "cfl=f"=>\$cfl,"rhoSolid=f"=>\$rhoSolid,"cnsVariation=s"=>\$cnsVariation,"diss=f"=>\$diss,"fic=s"=>\$fic,"go=s"=>\$go,\
    "smVariation=s"=>\$smVariation,"scf=f"=>\$scf,"probeFile=s"=>\$probeFile,"pOffset=f"=>\$boundaryPressureOffset,\
@@ -92,12 +96,15 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
    "p0=f"=>\$p0,"sideBC=s"=>\$sideBC,"iOmega=f"=>\$iOmega,"iTol=f"=>\$iTol,"addedMass=f"=>\$addedMass,\
    "projectInitialConditions=f"=>\$projectInitialConditions,"restart=s"=>\$restart,"append=i"=>\$append,\
-   "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,\
-   "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
+   "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,"omega=f"=>\$omega,"tol=f"=>\$tol,\
+   "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,"cDt=f"=>\$cDt,"known=s"=>\$known,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
-   "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
+   "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,"addedMassLengthScale=f"=>\$addedMassLengthScale,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
-   "useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,"useCurlFormOfTraction=i"=>\$useCurlFormOfTraction, );
+   "useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,\
+   "useCurlFormOfTraction=i"=>\$useCurlFormOfTraction,"addedMassVelocityBC=f"=>\$addedMassVelocityBC,\
+   "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,\
+   "zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,"zfMono=f"=>\$zfMono );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -161,6 +168,9 @@ $moveCmds = \
   "      number of past time levels: $numberOfPastTimeLevels\n" . \
   "      smooth surface $smoothInterface \n" . \
   "      number of surface smooths: $numberOfInterfaceSmooths \n" . \
+  "      relax correction steps $useTP \n" . \
+  "      sub iteration convergence tolerance\n $tol \n" . \
+  "      added mass relaxation factor\n $omega\n" . \
   "     done\n" . \
   "     choose grids by share flag\n" . \
   "        100 \n" . \
@@ -197,24 +207,45 @@ $bc = "all=$sideBC\n bcNumber100=noSlipWall uniform(u=.0,T=$T0)\n bcNumber100=tr
     "   ramp order: 3\n" .\
     " exit \n" .\
     "done";
-    # pressure at top from the known radial elaastic piston solution
-    $cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
-    " known solution\n" . \
-    " exit \n" .\
-    "done";
-# if( $option ne "beamUnderPressure" ){ $cmdRamp = "bcNumber3=outflow, pressure(1.*p+0.*p.n=$p0)"; }
-# $bc = $bc . "\n" . $cmdRamp;
+# RADIAL PISTON BC
+# pressure at top from the known radial elaastic piston solution
+if( $known eq "piston" ){\
+  $cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData\n" . \
+     " known solution\n" . \
+      " exit \n" .\
+      "done"; }
+# RADIAL SHEAR BC (outflow is unstabel!)
+if( $known eq "shear" ){ $cmdKnown="bcNumber4=dirichletBoundaryCondition"; }
 if( $tz eq "turn off twilight zone" ){ $bc = $bc . "\n" . $cmdKnown; }
 #
 $ic="uniform flow\n" . "p=0., u=$u0, T=$T0";
 $rhoBar=$rhoSolid*$scf; $lambdaBar=$lambdaSolid*$scf; $muBar=$muSolid*$scf;
+#
+$knownCmds ="#";
+if( $known eq "piston" ){\
+  $knownCmds=" radial elastic piston\n" .\
+             "  $amp,$k,$t0,$R,$Rbar,$rho,$rhoBar,$lambdaBar,$muBar\n";\
+}
+$ampS=.001;  
+if( $known eq "shear" ){ \
+  $knownCmds="radial shearing fluid and elastic solid\n" .\
+             "  $ampS, $rhoBar\n"; \
+}
 $ic="OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " radial elastic piston\n" .\
-    "  $amp,$k,$t0,$R,$Rbar,$rho,$rhoBar,$lambdaBar,$muBar\n" .\
+    " $knownCmds " .\
     " done\n" .\
     "done"; 
+#- 
+#- $ic="OBTZ:user defined known solution\n" .\
+#-     "choose a common known solution\n" .\
+#-     " radial elastic piston\n" .\
+#-     "  $amp,$k,$t0,$R,$Rbar,$rho,$rhoBar,$lambdaBar,$muBar\n" .\
+#-     " done\n" .\
+#-     "done"; 
 if( $tz ne "turn off twilight zone" ){ $ic="#"; }
+# For sub-time-step iterations: 
+$numberOfTimeStepCorrections=$numberOfCorrections; 
 #
 echo to terminal 0
 include $ENV{CG}/mp/cmd/insDomain.h
@@ -237,8 +268,7 @@ $initialConditionCommands="zeroInitialCondition";
 $initialConditionCommands=\
     "OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\
-    " radial elastic piston\n" .\
-    "  $amp,$k,$t0,$R,$Rbar,$rho,$rhoBar,$lambdaBar,$muBar\n" .\
+    "  $knownCmds " .\
     " done\n" .\
   "done \n" .\
   "knownSolutionInitialCondition";

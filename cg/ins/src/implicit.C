@@ -22,7 +22,7 @@ void insimp(const int&nd,const int&nd1a,const int&nd1b,const int&nd2a,const int&
             const int&bc, const int&boundaryCondition, 
             const int&ndbcd1a,const int&ndbcd1b,const int&ndbcd2a,const int&ndbcd2b,
             const int&ndbcd3a,const int&ndbcd3b,const int&ndbcd4a,const int&ndbcd4b,const real&bcData,
-            const int&nde, int&equationNumber, int&classify,
+            const int&nde, int&equationNumber, int&classify, int&interfaceType,
             const int&nr1a,const int&nr1b,const int&nr2a,const int&nr2b,const int&nr3a,const int&nr3b,
             const int&ipar, const real&rpar, const DataBase *pdb, int&ierr );
 }
@@ -1466,12 +1466,14 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     }
 
 
+    const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+    
     // ----- The AMP BC requires zs and alpha ------
 
     // Retrieve the parameters from the bulk solid
     // -- extract parameters from any deforming solids ---
     // FIX ME -- lookup first time and then save locally 
-    real zs=1., alpha=.5; // defaults for testing cgins alone
+    real zp=1., zs=1., zf=1., alpha=.5; // defaults for testing cgins alone
     const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
 
     std::vector<BoundaryData> & boundaryDataArray =parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
@@ -1497,20 +1499,32 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
             {
               isBulkSolid=true;
               
-              Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
-              real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
-              real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
-              real muSolid=bulkSolidParams.dbase.get<real>("mu");
-              real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
-              real cs=sqrt(muSolid/rhoSolid);
+              // *new* April 1, 2018
+              getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
+
+              // Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+              // real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+              // real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+              // real muSolid=bulkSolidParams.dbase.get<real>("mu");
+              // real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+              // real cs=sqrt(muSolid/rhoSolid);
           
-              real zp=rhoSolid*cp;
-              zs=rhoSolid*cs;
-              // fluid impedance = rho*H/dt 
-              const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
-              assert( dt>0. );
-              const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
-              alpha = zf/(zf+zp);
+              // real zp=rhoSolid*cp;
+              // zs=rhoSolid*cs;
+              // // fluid impedance = rho*H/dt 
+              // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+              // assert( dt>0. );
+
+              // // const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
+              // // *new* June 30, 2018: 
+              // const real nu = parameters.dbase.get<real>("nu");
+              // const real mu = fluidDensity*nu;
+              // const real zf= 2.*fluidDensity*mu/(zp*dt);
+              // printF("CCCCCCCC INS-IMP-MATRIX: zf=%.2e, alpha=%.2e\n",zf,alpha);
+              
+
+              // alpha = zf/(zf+zp);
+
             }
             
           }
@@ -1616,6 +1630,9 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     ipar[54]= parameters.dbase.get<bool>("useImplicitAmpBCs");
     ipar[55]= isBulkSolid; 
 
+    ipar[56]= parameters.dbase.get<int>("addedMassVelocityBC"); // *wdh* June 23, 2018
+
+
     rpar[0] = mg.gridSpacing(0);
     rpar[1] = mg.gridSpacing(1);
     rpar[2] = mg.gridSpacing(2);
@@ -1713,6 +1730,7 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
 	   bcData.getBase(3),bcData.getBound(3),*bcData.getDataPointer(),
 	   equationNumberLocal.getLength(0),*equationNumberLocal.getDataPointer(),
 	   *classifyLocal.getDataPointer(),
+           *interfaceType.getDataPointer(),
 	   n1a,n1b,n2a,n2b,n3a,n3b, 
 	   ipar[0], rpar[0], pdb, ierr );
       
@@ -2014,8 +2032,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
       parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
     const int initialConditionsAreBeingProjected = parameters.dbase.get<int>("initialConditionsAreBeingProjected");
     const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
+
     int applied=0;
-    if( useAddedMassAlgorithm && useImplicitAmpBCs )
+    if( useAddedMassAlgorithm && useImplicitAmpBCs && parameters.isDeformingBulkSolid(grid) )
     {
       // --- Fill in the AMP implicit boundary conditions for BULK SOLIDS ---  **NEW WAY** Jan 16, 2018
       int option=0; // fill in the implicit BCs
@@ -2097,14 +2116,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     {
       if( parameters.gridIsMoving(grid) )
       {
-        // if( true )
-        // { // *** TEMP**  OUTPUT FOR SHEAR-BLOCK
-        // 	int i1=0, i2=0, i3=0;
-        // 	printF("--INS--IMP-BC: t=%9.3e gridVelocity on boundary=[%14.6e,%14.6e]\n",
-        // 	       t,gridVelocity(i1,i2,i3,0),gridVelocity(i1,i2,i3,1));
-        // }
-      
         u.applyBoundaryCondition(V,dirichlet,noSlipWall,gridVelocity,t);
+
+        
         // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,gridVelocity,t);
       }
       else
@@ -3559,9 +3573,9 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
 	    
 	    if( normalAxis<0 )
 	    {
-	      printF("--INS--WARNING: implicitMatrix: BC=inflowWithPressureAndTangentialVelocityGiven"
-		     " grid=%i is not rectangular : this case only works if grid is a stretched rectangle\n",grid);
-	      OV_ABORT("ERROR");
+	      printF("\n --INS--WARNING: implicitMatrix: BC=inflowWithPressureAndTangentialVelocityGiven"
+		     " grid=%i is not rectangular : this case only works if boundary is parallel to an axis\n\n",grid);
+	      // OV_ABORT("ERROR");
 	    }
 	  }
 

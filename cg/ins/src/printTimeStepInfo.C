@@ -202,7 +202,12 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
 	    fprintf(file,"    uMax     dt       cpu    (%i steps)\n",parameters.dbase.get<int >("globalStepNumber")+1);
 	}
 	if( !parameters.isSteadyStateSolver() )
-          fprintf(file," %7.3f",t);
+        {
+          if( t==0. || t>5.e-3 )
+            fprintf(file," %7.3f",t);
+          else
+            fprintf(file,"%8.2e",t);
+        }
         else
           fprintf(file,"%10i",parameters.dbase.get<int >("globalStepNumber")+1);
 	for( n=0; n<numberOfComponentsToOutput; n++)

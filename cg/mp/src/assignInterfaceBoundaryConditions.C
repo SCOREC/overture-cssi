@@ -505,6 +505,15 @@ initializeInterfaces(std::vector<int> & gfIndex)
   for( int inter=0; inter < interfaceList.size(); inter++ ) 
   {
     InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
+    if( interfaceDescriptor.domain1<0 || interfaceDescriptor.domain2<0 )
+    {
+      printF("ERROR in defining interfaces: interfaceDescriptor.domain1=%i, interfaceDescriptor.domain2=%i.\n"
+             " A value of -1 is invalid. See the interface.log file for more info.\n"
+             " Maybe you forgot to set the boundary conditions and share flags to match.\n");
+      OV_ABORT("error");
+    }
+    
+
     fPrintF(interfaceFile," -- Interface %i is an interface between domain1=%i (%s,%s) and domain2=%i (%s,%s)--- \n",
             inter,interfaceDescriptor.domain1,
             (const char*)domainSolver[interfaceDescriptor.domain1]->getName(),

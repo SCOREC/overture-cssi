@@ -1,8 +1,8 @@
 // Class to define parameters of a dispersive material
 //
 // Generalized Dispersion Model:
-//       E_tt - c^2 Delta(E) = -alphaP P_tt
-//       P_tt + b1 P_1 + b0 = a0*E + a1*E_t 
+//       E_tt - c^2 Delta(E) = - (1/eps) P_tt
+//       P_tt + b1 P_1 + b0 = eps*( a0*E + a1*E_t )
 // 
 #include "Overture.h"
 
@@ -23,17 +23,25 @@ public:
 
   // return the and imaginary parts of "s" in the dispersion relation
   int
-  evaluateDispersionRelation( const real c, const real k, real & sr, real & si, real psir[], real psii[]  );
+  evaluateDispersionRelation( const real c, const real k, real & sr, real & si, real chir[], real chii[], 
+                              real & chiSumr, real & chiSumi  );
+
+  // Evaluate the complex index of refraction for scattering off dispersive dielectrics
+  int evaluateComplexIndexOfRefraction( const real mu1, const real eps1, const real chi1r, const real chi1i, 
+                                        const real mu2, const real eps2, const real chi2r, const real chi2i, 
+                                        real & mr, real & mi ) const;
 
   // Return the complex wave number given s=(sr,si)
   int
   evaluateComplexWaveNumber( const real c, const real & sr, const real & si, 
-                             real & kr, real &ki, real psir[], real psii[]  );
+                             real & kr, real &ki, real chir[], real chii[], real & chiSumr, real & chiSumi );
 
-  // *old* return the and imaginary parts of "s" in the dispersion relation
-  int 
-  computeDispersionRelation( const real cc, const real eps, const real mu, const real k, 
-                             real & reS, real & imS );
+  // // *old* return the and imaginary parts of "s" in the dispersion relation
+  // int 
+  // computeDispersionRelation( const real cc, const real eps, const real mu, const real k, 
+  //                            real & reS, real & imS );
+
+  real getAlphaP() const;
 
   int setNumberOfPolarizationVectors( const int numPolarizationVectors );
   int setParameter( const real alphaP );
@@ -41,10 +49,10 @@ public:
   int setMode( const int modeToChoose );
 
 
-  //  *OLD*
-  int 
-  computeDispersivePlaneWaveParameters( const real cc, const real eps, const real mu, const real k, 
-                                        real & omegar, real & omegai );
+  // //  *OLD*
+  // int 
+  // computeDispersivePlaneWaveParameters( const real cc, const real eps, const real mu, const real k, 
+  //                                       real & omegar, real & omegai );
   int setParameters( const real a0, const real a1, const real b0, const real b1 );
 
 // Data members -- make public for now
@@ -68,8 +76,8 @@ public:
   // Save the root after it has been computed to save computations
   int mode;  // which root to choose.
   bool rootComputed;
-  real ck0,sr0,si0;
-  RealArray psir0,psii0;
+  real ck0,sr0,si0, chiSumr0,chiSumi0;
+  RealArray chir0,chii0;
 
   // The database is a place to store parameters
   mutable DataBase dbase;

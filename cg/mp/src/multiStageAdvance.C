@@ -74,9 +74,13 @@ multiStageAdvance( real &t, real & tFinal )
     
     int numberOfSubSteps=parameters.dbase.get<int>("numberOfSubSteps");
 
+  // Keep a count of the total number of correction steps for sub-time-step iterations
+    int & totalNumberOfCorrectionSteps = parameters.dbase.get<int>("totalNumberOfCorrectionSteps");
+
     InterfaceList & interfaceList = parameters.dbase.get<InterfaceList>("interfaceList");
     const bool solveCoupledInterfaceEquations = parameters.dbase.get<bool>("solveCoupledInterfaceEquations");
     const int & interfaceProjectionGhostOption = parameters.dbase.get<int>("interfaceProjectionGhostOption");
+    const bool relaxCorrectionSteps = parameters.dbase.get<bool>("relaxCorrectionSteps");
     
     bool & timeStepHasChanged = parameters.dbase.get<bool>("timeStepHasChanged");
 
@@ -200,6 +204,9 @@ multiStageAdvance( real &t, real & tFinal )
 
         std::vector<int> gfIndex(numberOfDomains,-1);  // keep track of which GridFunction to use for each domain
         int numberOfRequiredCorrectorSteps=0;          // The minimum number of corrector steps that we must take
+
+        int minimumNumberOfCorrections=1;  // **Fix me** numberOfRequiredCorrectorSteps may be too large
+        
         ForDomainOrdered(d)
         { 
       // The next call will return the number of corrector steps needed by this domain solver.
@@ -262,6 +269,9 @@ multiStageAdvance( real &t, real & tFinal )
                               globalStepNumber,t,t+dt,correct);
 
       // ****** FINISH ME *****
+            bool correctionIterationsHaveConverged=true;
+            totalNumberOfCorrectionSteps++;
+            
             for( int stage=0; stage<numberOfStages; stage++ )
             {
                 StageInfo & stageInfo = stageInfoList[stage];
@@ -289,6 +299,17 @@ multiStageAdvance( real &t, real & tFinal )
                     gfIndex[d]=gfIndexNext[d]; // Domain d now has a solution at the next time level we can use
 
                     gridHasChanged = gridHasChanged || advanceOptions[d].gridChanges != AdvanceOptions::noChangeToGrid;
+
+                    if( relaxCorrectionSteps )
+                    {
+                        correctionIterationsHaveConverged =  ( correctionIterationsHaveConverged &&  
+                                                                                                      advanceOptions[d].correctionIterationsHaveConverged );
+
+                        printF(" +++MSA: relaxCorrectionSteps: correction=%i stage=%i domain=%i correctionsHaveConverged=%i\n",
+                                      correct,stage,d,(int)advanceOptions[d].correctionIterationsHaveConverged);
+                    }
+                    
+
                 }
                 
                 assert( !gridHasChanged );  // finish me for AMR -- see multiDomainAdvanceNew
@@ -432,6 +453,12 @@ multiStageAdvance( real &t, real & tFinal )
                           "+++++++++++++++++++++ STEP=%i t+dt=%8.2e END CORRECTION STAGE %i +++++++++++++++++++++++++++++++++++++\n\n",
                           globalStepNumber,t+dt,correct);
         
+            if( relaxCorrectionSteps && correctionIterationsHaveConverged && correct>=minimumNumberOfCorrections )
+            {
+                printF(" +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=%i.\n",correct);
+                break;
+            }
+            
         } // end correct 
         
         ForDomainOrdered(d)

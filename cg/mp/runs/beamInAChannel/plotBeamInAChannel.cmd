@@ -6,6 +6,8 @@
 #    plotStuff plotBeamInAChannel -show=bilcInsG8.show  [ long channel
 #    plotStuff plotBeamInAChannel -show=tbilcInsG16.show  [ thin beam
 #
+#    plotStuff plotBeamInAChannel -show=bicG8Scf100.show  [ ins , scf=100
+#
 # -- Linear-elasticity
 #   plotStuff plotBeamInAChannel -show=sbicLE8.show
 #   plotStuff plotBeamInAChannel -show=sbicLE16.show

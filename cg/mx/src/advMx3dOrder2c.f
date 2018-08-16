@@ -84,8 +84,8 @@
      & rungeKuttaFourthOrder=2,stoermerTimeStepping=3,
      & modifiedEquationTimeStepping=4)
         ! Dispersion models
-        integer noDispersion,drude,gdm
-        parameter( noDispersion=0, drude=1, gdm=2 )
+       integer noDispersion,drude,gdm
+       parameter( noDispersion=0, drude=1, gdm=2 )
         ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
@@ -1439,6 +1439,7 @@
         ! Generalized dispersion model parameters
         real alphaP, a0,a1,b0,b1
         real ev,evm,evn,pv0,pvm0,pvx,pvxE,deti,rhsE,rhsP
+        integer gdmParOption
         integer maxNumberOfParameters,maxNumberOfPolarizationVectors
         parameter( maxNumberOfParameters=4, 
      & maxNumberOfPolarizationVectors=20 )
@@ -5158,13 +5159,18 @@ c===============================================================================
         gammaDt=gamma*dt
         omegapDtSq=(omegap*dt)**2
         ! write(*,*) 'Before calling getGDMparameters...'
+        gdmParOption=1 ! scale a0 and a1 by eps
         if( dispersionModel.ne.noDispersion )then
-         ! get the gdm parameters
-         !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
-         ! This routine returns numberOfPolarizationVectors (no need to pass)
-         call getGDMParameters( grid,alphaP,gdmPar,
+          ! get the gdm parameters
+          !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
+          ! This routine returns numberOfPolarizationVectors (no need to pass)
+          call getGDMParameters( grid,alphaP,gdmPar,
      & numberOfPolarizationVectors, maxNumberOfParameters,
-     & maxNumberOfPolarizationVectors )
+     & maxNumberOfPolarizationVectors,gdmParOption )
+          if( alphaP.ne.0 .and. abs(eps*alphaP-1.) .gt. 1.e-10 )then
+            write(*,'(" advOptNew: ERROR alphaP != 1/eps ")')
+            stop 2288
+          end if
           if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
             ! ---- Dispersive Maxwell ----
             write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",
@@ -5471,8 +5477,9 @@ c===============================================================================
                   ec=ex+m
                   ! This is only needed for the second order code
                   if( addForcing.ne.0 )then ! forcing in E equation already added to f
-                    ! fe = dtsq*f(i1,i2,i3,ec)  ! this term is already included
-                    fe=0.
+                    ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+                    fe = dtsq*f(i1,i2,i3,ec)
+                    ! this next function will adjust fe by affing -alphaP*Ptt
                      if( addForcing.ne.0 )then
                        ! fp = dtsq*f(i1,i2,i3,pc)
                        if( forcingOption.eq.twilightZoneForcing )then
@@ -5505,6 +5512,7 @@ c===============================================================================
      & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
                            end if
                            fe = fe + dtsq*alphaP*p0tt
+                           ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
                            fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
      & iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
                          end do
@@ -5524,8 +5532,8 @@ c===============================================================================
                   ev = u(i1,i2,i3,ec)
                   evm=um(i1,i2,i3,ec)
                   do iv=0,numberOfPolarizationVectors-1
-                        pv(iv) = p(i1,i2,i3,m+iv*nd)
-                        pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                    pv(iv) = p(i1,i2,i3,m+iv*nd)
+                    pvm(iv)=pm(i1,i2,i3,m+iv*nd)
                   end do
                   rhsP = 0.
                   pSum = 0.
@@ -5561,7 +5569,12 @@ c===============================================================================
              ! --- Todo: non-conservative operators could be inlined here ---
              !   -- these might be faster than precomputing
                !$$$     loopsFCD(un(i1,i2,i3,ex)=maxwellc22(i1,i2,i3,ex),!$$$              un(i1,i2,i3,ey)=maxwellc22(i1,i2,i3,ey),!$$$              un(i1,i2,i3,ez)=maxwellc22(i1,i2,i3,ez),!$$$               ,,,!$$$              un(i1,i2,i3,hx)=maxwellc22(i1,i2,i3,hx),!$$$              un(i1,i2,i3,hy)=maxwellc22(i1,i2,i3,hy),!$$$              un(i1,i2,i3,hz)=maxwellc22(i1,i2,i3,hz),!$$$              ,,)
-                    stop 88044
+               write(*,'(" advOptNew:ERROR: Curvilinear-optimized: 
+     & useCurvilinearOpt=",i3," dispersionModel=",i2," 
+     & useConservative=",i2)') useCurvilinearOpt,dispersionModel,
+     & useConservative
+               write(*,'(" advOptNew:ERROR: FINISH ME")')
+               stop 88044
             end if
           else if( useCurvilinearOpt.eq.1 .and. useConservative.eq.1 )
      & then

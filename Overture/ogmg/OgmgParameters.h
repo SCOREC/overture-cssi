@@ -45,7 +45,8 @@ class OgmgParameters
     THEcoarseToFineTransferWidth,
     THEnumberOfInitialSmooths,
     THEuseFullMultigrid,
-    THEorderOfAccuracy
+    THEorderOfAccuracy,
+    THEorderOfCoarseGridSolves
   };
 
   enum CycleTypeEnum

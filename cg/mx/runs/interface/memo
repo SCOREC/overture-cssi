@@ -1,4 +1,330 @@
 ******************************
+******** AUg 9, 2018
+
+START thinking about THREE DIMENSIONAL INTERFACES FOR ADE-GDM 
+
+
+2D order 2
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+
+2d - order 4
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+******************************
+******** June 16, 2018
+
+
+ROTATED GDM Plane-wave-interface
+cgmx -nplot interface -g=twoSquaresInterfaceRotatede4.order4 -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.5 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+ JUMP-residuals: i1,i2=  40  38 f(   re-eval)= -0.78E-15  0.33E-12 -0.67E-14 -0.21E-12  0.44E-11  0.38E-10 -0.24E-08  0.14E-08
+ JUMP-residuals: i1,i2=  40  39 f(   re-eval)=  0.14E-14 -0.19E-12  0.40E-14  0.14E-12 -0.95E-11 -0.16E-11  0.10E-08 -0.31E-08
+ JUMP-residuals: i1,i2=  40  40 f(   re-eval)=  0.29E-14  0.71E-14 -0.83E-14  0.50E-13 -0.44E-11 -0.14E-12 -0.36E-08 -0.30E-08
+interface2d : t= 0.100E-01 (grid1,grid2)   =(  0,  1), it= 50, err=  0.57E-14 rate= 0.81 (        omega=1.00)
+
+**check residuals in the jump conditions
+cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.01 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.1 -b01=.8 -b11=.2 -a02=1.1 -a12=.3 -b02=.7 -b12=.2 -dm=gdm -cons=0 -debug=3 -interfaceOmega=1. -interfaceIts=20 -go=go 
+
+ JUMP-residuals: i1,i2=  20  17 f(   re-eval)=  0.00E+00  0.71E-14 -0.18E-14  0.43E-13 -0.91E-12  0.25E-10 -0.42E-08 -0.30E-08
+ JUMP-residuals: i1,i2=  20  18 f(   re-eval)= -0.22E-14 -0.28E-13  0.36E-14  0.24E-12 -0.11E-11  0.10E-09  0.14E-08  0.58E-08
+ JUMP-residuals: i1,i2=  20  19 f(   re-eval)= -0.13E-14 -0.28E-13  0.27E-14 -0.57E-13 -0.94E-12 -0.83E-10 -0.73E-11 -0.43E-08
+ JUMP-residuals: i1,i2=  20  20 f(   re-eval)= -0.22E-15  0.14E-13  0.00E+00  0.11E-12  0.15E-11  0.29E-10 -0.98E-10  0.20E-08
+interface2d : t= 0.100E-01 (grid1,grid2)   =(  0,  1), it= 20, err=  0.73E-08 rate= 0.35 (        omega=1.00)
+
+******************************
+******** June 15, 2018
+
+CHANGED GDM PARS IN CODE TO MATCH PAPER
+
+CHECK ---
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.1 -b01=.8 -b11=.2 -a02=1.1 -a12=.3 -b02=.7 -b12=.2 -dm=gdm -cons=0 -go=og
+
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=8.916e-03 max-err = 1.148e-09
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=3.376e-02 max-err = 2.242e-08
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.18e-06,6.47e-06,1.14e+00,], max (u):[5.11e-01,1.02e+00,1.14e+00,] (1 steps)
+
+
+******************************
+******** June 12, 2018
+
+**BUG FOUND** NEED TO SET ALPHAP=1/eps !!
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.1 -b01=.8 -b11=.2 -a02=1.1 -a12=.3 -b02=.7 -b12=.2 -dm=gdm -cons=0 -go=og
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=.2 -ky=.1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.1 -b01=.8 -b11=.2 -a02=1.1 -a12=.3 -b02=.7 -b12=.2 -dm=gdm -cons=0 -go=og
+
+
+REVISIT give exact P(-1) on interface
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+
+******************************
+******** June 9, 2018
+
+
+TEST -- EVAL P on ghost to 2nd order in fourth-order interface
+
+TZ: 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=2 -degreet=1 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+PMIC
+cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+
+++++ EVAL P(-1) with ADE22
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=7.119e-02 max-err = 1.802e-03
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=6.294e-02 max-err = 9.583e-03
+>>> t=1.00e-02 dt=1.0e-02 max errors:[3.71e-05,1.07e-04,1.13e+00,], max (u):[5.04e-01,9.94e-01,1.13e+00,] (1 steps)
+
+--getErrors: t=5.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=6.976e-02 max-err = 1.775e-03
+--getErrors: t=5.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=6.280e-02 max-err = 9.612e-03
+>>> t=5.00e-02 dt=1.0e-02 max errors:[2.69e-03,2.64e-03,9.25e-01,], max (u):[4.99e-01,9.76e-01,1.14e+00,] (5 steps)
+
+
++++++ EXTRAP P GHOST
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=7.119e-02 max-err = 1.336e-07
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=5.427e-02 max-err = 5.492e-07
+>>> t=1.00e-02 dt=1.0e-02 max errors:[3.71e-05,1.07e-04,1.13e+00,], max (u):[5.04e-01,9.94e-01,1.13e+00,] (1 steps)
+
+--getErrors: t=5.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=6.976e-02 max-err = 4.229e-05
+--getErrors: t=5.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=5.346e-02 max-err = 3.716e-05
+>>> t=5.00e-02 dt=1.0e-02 max errors:[1.87e-03,2.52e-03,9.25e-01,], max (u):[4.98e-01,9.76e-01,1.14e+00,] (5 steps)
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+******************************
+******** June 8, 2018
+
+TEST evaluating known solution in fortran
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+
+******************************
+******** June 7, 2018
+
+TEST INTERFACE ORDER 2 with VARYING Np on eithe side
+
+NPV=1,0 -- NON-SQUARES  ** TROUBLE ** stop 88044
+cgmx interface -g=twoNonSquaresInterfacee16.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.02 -ic=pmic -diss=0. -bc=d -npv=1 0 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+>>> t=1.00e-02 dt=3.3e-03 max errors:[2.82e-05,6.13e-05,2.91e-01,], max (u):[5.38e-01,1.61e+00,2.41e+00,] (3 steps)
+
+
+NPV=1,0
+cgmx interface -g=twoSquaresInterfacee16.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.02 -ic=pmic -diss=0. -bc=d -npv=1 0 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+
+******************************
+******** June 6, 2018
+
+
+PLOT ROTATED SOLUTION
+cgmx interface -g=twoSquaresInterfaceRotatede8.order4 -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -show=twoSquareInterfaceG8Rotated45.show -go=halt
+
+
+
+
+
+CHECK Interface residual
+cgmx interface -g=twoSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.5 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+
+
+
+MORE TEST OF THE ROTATED MATERIAL INTERFACE
+
+90 degree rotation
+cgmx interface -g=twoSquaresInterfaceRotated90e4.order4 -interfaceNormal=0 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.5 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+******************************
+******** June 5, 2018
+
+ORDER=2 Are there blips? -- No
+cgmx interface -g=twoSquaresInterfacee16.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.02 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+
+ROTATED GDM Plane-wave-interface **FINISH ME*** --> Starts to work
+cgmx interface -g=twoSquaresInterfaceRotatede4.order4 -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.5 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.128e-01 max-err = 1.521e-08
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=8.260e-02 max-err = 6.624e-09
+>>> t=2.00e-02 dt=1.0e-02 max errors:[2.21e-06,5.69e-07,2.84e-01,], max (u):[9.90e-01,1.94e-01,1.08e+00,] (2 steps)
+
+
+
+** BUG FOUND *** Normalized the PMI normal 
+
+ROTATED PLANE WAVE -- non-dispersive **TROUBLE** --> OK now
+cgmx interface -g=twoSquaresInterfaceRotatede4.order4 -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.5 -ic=pmic -degreex=4 -degreet=3 -diss=0. -bc=d -cons=0 -go=halt
+
+>> t=1.00e-01 dt=1.0e-02 max errors:[2.46e-04,3.10e-04,5.05e-04,], max (u):[5.88e-01,9.65e-01,1.16e+00,] (10 steps)
+
+ROTATED TZ:
+cgmx interface -g=twoSquaresInterfaceRotatede4.order4 -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.5 -tz=trig -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+
+cgmx interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=trig -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+
+******************************
+******** June 3, 2018
+
+BIG BLIP AT TOP OF INTERFACE: 
+cgmx -noplot interface -g=twoSquaresInterfacee8.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og -modeGDM=0
+
+*** ADD SMOOTHING TO P On the interface ***
+
+
+Investgate Blips in P at interface 
+
+cgmx -noplot interface -g=twoSquaresInterfacee16.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+******************************
+******** June 2, 2018
+
+All interface terms should be included now
+
+eps2=2:
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+G4 
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=6.947e-02 max-err = 1.955e-05
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=5.211e-02 max-err = 1.246e-05
+>>> t=1.00e-01 dt=1.0e-02 max errors:[1.64e-04,2.69e-04,1.09e+00,], max (u):[4.86e-01,9.72e-01,1.09e+00,] (10 steps)
+
+G8 
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=6.950e-02 max-err = 1.446e-06
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=5.213e-02 max-err = 9.015e-07
+>>> t=1.00e-01 dt=5.0e-03 max errors:[1.12e-05,1.93e-05,1.50e+00,], max (u):[4.86e-01,9.72e-01,1.15e+00,] (20 steps)
+
+
+NOTE: eps1=eps2=1
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.1  -ic=pmic -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+G4
+>>> t=1.00e-01 dt=1.0e-02 max errors:[2.55e-05,4.75e-05,9.50e-01,], max (u):[4.25e-01,8.51e-01,9.50e-01,] (10 steps)
+
+G8 
+>>> t=1.00e-01 dt=5.0e-03 max errors:[1.64e-06,2.88e-06,1.31e+00,], max (u):[4.25e-01,8.51e-01,1.00e+00,] (20 steps)
+
+TZ:
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+
+******************************
+******** June 1, 2018
+
+Test p.tttt eval
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+******************************
+******** May 31, 2018
+
+*bug fixed in extrapolation*
+
+EXACT: 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+interface2d : t= 0.200E-01 (grid1,grid2)=(  0,  1), it=  1, err=  0.40E-13           (omega=0.70)    
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=2.92e-13 (=2.66e-12/9.09e+00) 2 steps mem=23.2(Mb) cpu=4.75e-02(s)
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.010e+00 max-err = 7.390e-13
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.020e+00 max-err = 1.587e-12
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.50e-13,1.71e-13,3.23e-02,], max (u):[5.76e+00,2.95e+00,3.23e+00,] (2 steps)
+
+
+******************************
+******** May 31, 2018
+
+
+Errors are small but not exact
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+Correct jump condition 3:
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.010e+00 max-err = 1.744e-12
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.020e+00 max-err = 2.255e-12
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.01e-08,4.01e-08,3.23e-02,], max (u):[5.76e+00,2.95e+00,3.23e+00,] (2 steps)
+
+
+-getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.010e+00 max-err = 2.451e-09
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.020e+00 max-err = 2.450e-09
+>>> t=2.00e-02 dt=1.0e-02 max errors:[8.50e-08,4.01e-08,3.23e-02,], max (u):[5.76e+00,2.95e+00,3.23e+00,] (2 steps)
+
+
+******************************
+******** May 27-29, 2018
+
+
+NON-zero GDM : Degree=(4,3) -- EXACT (BUT USING OLD INTERFACE CONDITIONS) 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1 -a11=.2 -b01=1. -b11=.1 -a02=.5 -a12=.1 -b02=.8 -b12=.1 -dm=gdm -cons=0 -go=go
+
+
+Degree=(4,3) -- 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.010e+00 max-err = 1.459e-12
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.020e+00 max-err = 1.587e-12
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.01e-08,4.01e-08,3.23e-02,], max (u):[5.76e+00,2.95e+00,3.23e+00,] (2 steps)
+
+
+
+NOTE --- INTERFACE IS *NOT* EXACT FOR DEGREEX=4 polys
+
+a1=1 b0=1 *bad*
+
+a1=1 : bad, OK for degreet=2
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.1 -tf=.2 -cfl=100 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=0 -a11=1 -b01=0. -b11=.0 -a02=.0 -a12=.0 -b02=.0 -b12=.0 -dm=gdm -cons=0 -go=go
+
+
+TROUBLE a0,b0 non-zero + a11
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.1 -tf=.2 -cfl=100 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1 -a11=.3 -b01=1. -b11=.0 -a02=.5 -a12=.0 -b02=.8 -b12=.0 -dm=gdm -cons=0 -go=go
+
+OK a0, b0 non zero
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.1 -tf=.2 -cfl=100 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=1 -a11=.0 -b01=1. -b11=.0 -a02=.5 -a12=.0 -b02=.8 -b12=.0 -dm=gdm -cons=0 -go=go
+
+
+
+FOURTH_ORDER dispersive (but coeff's zero)
+Degree=(4,3) -- exact 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=.0 -a11=.0 -b01=.0 -b11=.0 -a02=.0 -a12=.0 -b02=.0 -b12=.0 -dm=gdm -cons=0 -go=go
+
+******************************
+******** May 26, 2018
+
+START ON FOURTH-ORDER GDM INTERFACES
+
+FOURTH_ORDER dispersive (but coeff's zero)
+cgmx -noplot interface -g=twoSquaresInterfacee1.order4 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=.0 -a11=.0 -b01=.0 -b11=.0 -a02=.0 -a12=.0 -b02=.0 -b12=.0 -dm=gdm -cons=0 -go=go
+
+
+
+*bug* fixed in MJJ's GDM code for TZ
+
+**EXACT**
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=.2 -a11=.5 -b01=.125 -b11=.4 -a02=.3 -a12=.25 -b02=.3 -b12=.6 -dm=gdm -cons=0 -go=go
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[9.99e-16,1.33e-15,1.55e-02,], max (u):[4.04e+00,2.02e+00,1.52e+00,] (2 steps)
+
+
+******************************
+******** May 25, 2018
+
+START ON FOURTH-ORDER GDM INTERFACES
+
+
+2nd-order TZ NOT EXACT?? 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -alphaP=1 -a01=.2 -a11=.5 -b01=.125 -b11=.4 -a02=.3 -a12=.25 -b02=.3 -b12=.6 -dm=gdm -cons=0 -go=go
+
+2nd-order: PMIC
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps1=1. -eps2=2. -kx=1 -ky=1 -tp=.1 -ic=pmic -bc=d -npv=1 1 -a01=1 0 -a11=.2 .0 -b01=.3 .0 -b11=.5 .0 -a02=.5 0 -a12=.25 0 -b02=.125 .0 -b12=.25 .0 -dm=gdm -cons=0 -go=og
+
+>>> t=1.00e-01 dt=1.4e-02 max errors:[1.57e-03,1.96e-03,1.05e+00,], max (u):[7.51e-01,7.50e-01,1.05e+00,] (7 steps)
+
+
+******************************
 ******** Feb 7, 2018
 
 TEST NEW SOSUP dissipation

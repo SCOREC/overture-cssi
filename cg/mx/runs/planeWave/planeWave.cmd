@@ -130,7 +130,7 @@ $grid="innerOuter4.order4.hdf";
 $cons=1; $go="halt";  $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=0;
 $stageOption ="default";
 # GDM parameters
-$npv=1; $alphaP=1.; $modeGDM=-1; 
+$npv=1; $alphaP=-1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
 # ----------------------------- get command line arguments ---------------------------------------
 # GetOptions('a=s{2}' => \@opt_a, 'b=s{2}' => \@opt_b  );
@@ -176,6 +176,9 @@ $method
 # dispersion model:
 $dm
 # 
+coefficients $eps $mu all (eps,mu,grid-name)
+#
+#
 # Drude params 1 1 all (gamma,omegap,domain-name)
 #GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
 GDM mode: $modeGDM
@@ -272,8 +275,6 @@ tFinal $tFinal
 tPlot  $tPlot
 #
 solve for magnetic field $solveForH
-#
-coefficients $eps $mu all (eps,mu,grid-name)
 #
 dissipation $diss
 apply filter $filter

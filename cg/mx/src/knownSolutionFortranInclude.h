@@ -11,7 +11,8 @@
              scatteringFromADielectricSphereKnownSolution,\
              squareEigenfunctionKnownSolution,\
              annulusEigenfunctionKnownSolution,\
-             eigenfunctionsOfASphereKnownSolution   
+             eigenfunctionsOfASphereKnownSolution,\
+             userDefinedKnownSolution
 
       parameter( noKnownSolution=0,\
              twilightZoneKnownSolution=1,\
@@ -25,4 +26,5 @@
              scatteringFromADielectricSphereKnownSolution=9,\
              squareEigenfunctionKnownSolution=10,\
              annulusEigenfunctionKnownSolution=11,\
-		 eigenfunctionsOfASphereKnownSolution=12 )   
+             eigenfunctionsOfASphereKnownSolution=12,\
+             userDefinedKnownSolution=13 )   

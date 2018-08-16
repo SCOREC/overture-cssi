@@ -334,6 +334,8 @@ while( <FILE> )
     # save results to a matlab file for plotting
     $mFile = $caseName;
     $mFile =~ s/\./_/g;   # matlab does not like "." in the name to change to _
+    $mFile =~ s/\+/p/g;   # matlab does not like "+" in the name to change to p
+    $mFile =~ s/\-/m/g;   # matlab does not like "-" in the name to change to m
     $mFile .= ".m";
     open(MFILE,">$convDir/$mFile") || die print "unable to open $convDir/$mFile\n";
     print MFILE "%\n% $caption\n%\n"; 

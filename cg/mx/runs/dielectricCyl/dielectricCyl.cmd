@@ -93,20 +93,28 @@ $interfaceEquationOption=1; $interfaceIterations=5;  $interfaceOmega=.5;
 $grid="innerOuter4.order4.hdf";
 $cons=0; $go="halt";  $errorNorm=0;
 $flushFrequency=10; 
+$dm="none"; @npv=();  $modeGDM=-1; 
+$alphaP = (); 
+@a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
+@a02 = (); @a12=(); @b02=(); @b12=(); 
 #
+$stageOption ="default";
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
 # 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"plotIntensity=i"=>\$plotIntensity,\
- "interit=i"=>\$interfaceIterations,"cyl=i"=>\$cyl,"useNewInterface=i"=>\$useNewInterface,"errorNorm=i"=>\$errorNorm,\
+ "interfaceIts=i"=>\$interfaceIterations,"cyl=i"=>\$cyl,"useNewInterface=i"=>\$useNewInterface,"errorNorm=i"=>\$errorNorm,\
  "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2, "cons=i"=>\$cons,\
  "method=s"=>\$method,"dissOrder=i"=>\$dissOrder,"filter=i"=>\$filter,"flushFrequency=i"=>\$flushFrequency,\
  "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
-  "selectiveDissipation=i"=>\$selectiveDissipation );
+  "selectiveDissipation=i"=>\$selectiveDissipation,"modeGDM=i"=>\$modeGDM,"stageOption=s"=>\$stageOption,\
+  "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,\
+  "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
+  "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12 );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -115,9 +123,77 @@ if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 # 
 #
+if( $dm eq "none" ){ $dm="no dispersion"; }
+if( $dm eq"gdm" ){ $dm="GDM"; }
+# Give defaults here for array arguments: 
+if( $alphaP[0] eq "" ){ @alphaP=(-1,-1); } # default -1 means use 1/eps
+# 
+if( $npv[0] eq "" ){ @npv=(0,0); }
+if( $a01[0] eq "" ){ @a01=(1,0,0,0); }
+if( $a11[0] eq "" ){ @a11=(0,0,0,0); }
+if( $b01[0] eq "" ){ @b01=(0,0,0,0); }
+if( $b11[0] eq "" ){ @b11=(0,0,0,0); }
+#
+if( $a02[0] eq "" ){ @a02=(1,0,0,0); }
+if( $a12[0] eq "" ){ @a12=(0,0,0,0); }
+if( $b02[0] eq "" ){ @b02=(0,0,0,0); }
+if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
+#
+#
 $grid
 #
 $method
+# dispersion model:
+$dm
+# printf(" dm=$dm\n");
+#
+GDM mode: $modeGDM
+#
+# ----- SET eps and mu BEFORE GDM parameters so alphaP=1/eps by default ------
+#      innerAnnulus
+#      innerSquare
+#      outerAnnulus
+#      outerSquare
+# NOTE: material interfaces have share>=100
+$cmd="#";
+if( $cyl eq 1 && $method ne "Yee" ){ $cmd = \
+  "coefficients $eps1 1. innerAnnulus* (eps,mu,grid-name)\n" .\
+  "coefficients $eps1 1. innerSquare (eps,mu,grid-name)\n" .\
+  "coefficients $eps2 1. outerAnnulus* (eps,mu,grid-name)\n" .\
+  "coefficients $eps2 1. outerSquare (eps,mu,grid-name)\n"; }
+if( $cyl eq 0 && $method ne "Yee" ){ $cmd = \
+  "coefficients $eps1 1. inner* (eps,mu,grid-name)\n" .\
+  "coefficients $eps2 1. outer* (eps,mu,grid-name)\n";}
+$cmd
+# 
+$domain="all"; 
+# ------------ Set GDM parameters in the outer domain -----------
+GDM domain name: outerDomain
+  number of polarization vectors: $npv[0]
+  GDM alphaP: $alphaP[0]
+$cmd="#"; 
+if( $npv[0] == 1 ){ \
+   $cmd = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
+ }
+if( $npv[0] == 2 ){ \
+   $cmd  = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)"; \
+      }
+$cmd
+# ------------ Set GDM parameters in the inner domain -----------
+GDM domain name: innerDomain
+  number of polarization vectors: $npv[1]
+  GDM alphaP: $alphaP[1]
+$cmd="#"; 
+if( $npv[1] == 1 ){ \
+   $cmd = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
+ }
+if( $npv[1] == 2 ){ \
+   $cmd  = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)"; \
+      }
+$cmd
+# 
 #* planeWaveInitialCondition
 # ++ zeroInitialCondition
 # ==== in 3d solve for the full field ===
@@ -151,21 +227,6 @@ bc: all=dirichlet
 # ++ bc: all=perfectElectricalConductor
 # ++ bc: outerSquare(0,0)=planeWaveBoundaryCondition
 # 
-#      innerAnnulus
-#      innerSquare
-#      outerAnnulus
-#      outerSquare
-# NOTE: material interfaces have share>=100
-$cmd="#";
-if( $cyl eq 1 && $method ne "Yee" ){ $cmd = \
-  "coefficients $eps1 1. innerAnnulus* (eps,mu,grid-name)\n" .\
-  "coefficients $eps1 1. innerSquare (eps,mu,grid-name)\n" .\
-  "coefficients $eps2 1. outerAnnulus* (eps,mu,grid-name)\n" .\
-  "coefficients $eps2 1. outerSquare (eps,mu,grid-name)\n"; }
-if( $cyl eq 0 && $method ne "Yee" ){ $cmd = \
-  "coefficients $eps1 1. inner* (eps,mu,grid-name)\n" .\
-  "coefficients $eps2 1. outer* (eps,mu,grid-name)\n";}
-$cmd
 #
 interface BC iterations $interfaceIterations
 # interfaceEquationsOption=0 : use extrap for 2nd ghost, 1=use eqns
@@ -189,9 +250,28 @@ use sosup dissipation $useSosupDissipation
 sosup parameter $sosupParameter
 sosup dissipation option $sosupDissipationOption
 sosup dissipation frequency $sosupDissipationFrequency
+# -- set default stage options
+if( $stageOption eq "default" && $useSosupDissipation eq 0 ){ $stageOption="IDB"; }
+if( $stageOption eq "default" && $useSosupDissipation eq 1 ){ $stageOption="D-IB"; }
+#
+# --- Define multi-stage time-step: 
+if( $stageOption eq "IDB" ){ $stages="updateInterior,addDissipation,applyBC"; }
+if( $stageOption eq "D-IB" ){ $stages="addDissipation\n updateInterior,applyBC"; }
+if( $stageOption eq "DB-IB" ){ $stages="addDissipation,applyBC\n updateInterior,applyBC"; }
+if( $stageOption eq "IB-DB" ){ $stages="updateInterior,applyBC\n addDissipation,applyBC"; }
+if( $stageOption eq "IB-D" ){ $stages="updateInterior,applyBC\n addDissipation"; }
+# -- options to precompute V=uDot used in the dissipation
+if( $stageOption eq "IVDB" ){ $stages="updateInterior,computeUt,addDissipation,applyBC"; }
+if( $stageOption eq "VD-IB" ){ $stages="computeUt,addDissipation\n updateInterior,applyBC"; }
+if( $stageOption eq "VDB-IB" ){ $stages="computeUt,addDissipation,applyBC\n updateInterior,applyBC"; }
+if( $stageOption eq "IB-VDB" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation,applyBC"; }
+if( $stageOption eq "IB-VD" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation"; }
+set stages...
+ $stages
+done
 #
 #
-# use conservative difference $cons 
+use conservative difference $cons 
 debug $debug
 #
 cfl $cfl 

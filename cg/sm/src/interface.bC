@@ -4,6 +4,7 @@
 #include "Interface.h"  
 #include "ArrayEvolution.h"    
 
+
 // include some interface bpp macros
 #Include "interfaceMacros.h"
 
@@ -302,7 +303,8 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     else if( currentGF<0 )   // do this for now
     {
       gfIndex=current;
-      printF("Cgsm: interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e, using current...\n",t);
+      printF("Cgsm: interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e, using current with t=%.3e"
+             " (currentGF=%i nextGF=%i)\n",t,gf[current].t,currentGF,nextGF);
     }
     else
     {
@@ -811,6 +813,15 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
               printF("--SM----IRHS-- Save interface velocity time history at t=%9.3e in ArrayEvolution - correctionStage=%i\n",
                      t,correctionStage);
             velocityHistory.add( t, velocity);  
+              
+            if( max(fabs(velocity))>1e5 ) /// **TEMP**
+            {
+              ::display(velocity,"--SM-- velocity","%.2e ");
+              ::display(uLocal,"--SM-- uLocal","%.2e ");
+              
+              OV_ABORT("ERROR");
+            }
+
           }
           
         }
@@ -1357,13 +1368,31 @@ projectInterface( int grid, real dt, int current )
   const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode= 
     parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
 
+  const Parameters::KnownSolutionsEnum & knownSolution = 
+    parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"); 
+
   IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+  const int & correctionStage = parameters.dbase.get<int>("correctionStage");
 
   Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
-  const int v1c = parameters.dbase.get<int >("v1c");
+  const int uc   = parameters.dbase.get<int >("uc");
+  const int v1c  = parameters.dbase.get<int >("v1c");
+  const int s11c = parameters.dbase.get<int >("s11c");
+  const int s12c = parameters.dbase.get<int >("s12c");
+  const int s21c = parameters.dbase.get<int >("s21c");
+  const int s22c = parameters.dbase.get<int >("s22c");
+  Range Dc(uc,uc+numberOfDimensions-1);    // displacement components
   Range Vc(v1c,v1c+numberOfDimensions-1);
   Range Rx = numberOfDimensions;
 	
+  const real rho   =parameters.dbase.get<real>("rho");
+  const real lambda=parameters.dbase.get<real>("lambda");
+  const real mu    =parameters.dbase.get<real>("mu");
+  const real cp    =sqrt((lambda+2.*mu)/rho);
+  const real cs    =sqrt(mu/rho);
+  const real zp    =rho*cp;
+  const real zs    =rho*cs;
+
   InterfaceData interfaceData;
 
   for( int axis=axis1; axis<mg.numberOfDimensions(); axis++ )
@@ -1404,16 +1433,336 @@ projectInterface( int grid, real dt, int current )
                             parameters,saveTimeHistory );
 
           RealArray & interfaceVelocity =interfaceData.u;
+          mg.update(MappedGrid::THEvertexBoundaryNormal);
+          OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);         
+
 
           if( ok )
           {
-            // Set the velocity on the interface for the INS-SM AMP scheme.
 
-            uLocal(Ib1,Ib2,Ib3,Vc)=interfaceVelocity(Ib1,Ib2,Ib3,Rx);
+            // Project the velocity and traction on the interface for the INS-SM AMP scheme.
+
+            bool useImpedanceProjection=true; // ***********************************************
+
+
+            real alphaV=1., alphaS=0.;  // set below for impedance averages
+            
+            RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+
+            if( !useImpedanceProjection || correctionStage <0 )
+            {
+              // old 
+              uLocal(Ib1,Ib2,Ib3,Vc)=interfaceVelocity(Ib1,Ib2,Ib3,Rx);
+            }
+            else
+            {
+              // -------------------------------------------------
+              // -- Project the interface velocity and traction --
+              // -------------------------------------------------
+
+              // Retrieve the parameters from the fluid
+              // FIX ME -- lookup first time and then save locally 
+              Parameters & fluidParams = getInterfaceParameters( grid,side,axis,parameters );
+              const real nuFluid=fluidParams.dbase.get<real>("nu");
+              const real muFluid=fluidParams.dbase.get<real>("mu");
+              const real fluidDensity=fluidParams.dbase.get<real>("fluidDensity");
+              assert( fabs(fluidDensity*nuFluid/muFluid-1.) < REAL_EPSILON*100. );
+            
+
+              Index Ib1,Ib2,Ib3, Ip1,Ip2,Ip3;
+              getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3); // boundary line 
+
+              //  --------------- Compute the normal distance of the first grid line  ---------------------
+              //   *** SAVE THIS VALUE TO AVOID RECOMPUTING ****
+              real dn;
+              parameters.getNormalGridSpacing( mg,side,axis, dn );
+  
+
+              // mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+              // OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+              // Index Ib1,Ib2,Ib3, Ip1,Ip2,Ip3;
+              // getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3); // boundary line 
+              // getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1); // first line in 
+
+              // int includeGhost=0;
+              // bool ok;
+              // ok=ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ib1,Ib2,Ib3,includeGhost); // restrict bounds to this processor
+              // ok=ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ip1,Ip2,Ip3,includeGhost);
+
+              // // Assume grid is nearly orthogonal -- we could check using the mask 
+              // real ndist=1.;
+              // if( ok )
+              // {
+              //   if( numberOfDimensions==2 )
+              //     ndist = sqrt( min(SQR(xLocal(Ip1,Ip2,Ip3,0)-xLocal(Ib1,Ib2,Ib3,0))+
+              //                      SQR(xLocal(Ip1,Ip2,Ip3,1)-xLocal(Ib1,Ib2,Ib3,1))) );
+              //   else
+              //     ndist = sqrt( min(SQR(xLocal(Ip1,Ip2,Ip3,0)-xLocal(Ib1,Ib2,Ib3,0))+
+              //                      SQR(xLocal(Ip1,Ip2,Ip3,1)-xLocal(Ib1,Ib2,Ib3,1))+
+              //                      SQR(xLocal(Ip1,Ip2,Ip3,2)-xLocal(Ib1,Ib2,Ib3,2))) );
+              // }
+              // const real dn =ParallelUtility::getMinValue(ndist);
+
+
+              // traction is saved here: bd(I1,I2,I3,Dc)=ui(I1,I2,I3,Rx);
+              RealArray fluidTraction(Ib1,Ib2,Ib3,Dc);
+              fluidTraction=bd(Ib1,Ib2,Ib3,Dc); // fluid traction has aleady been requested 
+
+
+              // For added-mass (FIBR)
+              //   zf = zfMuByH*(mu/h) + zfRhoHByDt*(rho*h/dt)
+              const real & zfMuByH = parameters.dbase.get<real>("zfMuByH");  
+              const real & zfRhoHByDt = parameters.dbase.get<real>("zfRhoHByDt");
+              const real & zfMono = parameters.dbase.get<real>("zfMono");  
+              const real & cfl = parameters.dbase.get<real>("cfl");  
+
+              // zf = rho*nu/h = mu/h 
+              //   zp*dt/rho = cp*dt approx h (approx)
+              // => zf approx  (mu)/(cp*dt) 
+
+              real zf1 = muFluid/dn;
+              real zf2 = fluidDensity*dn/dt; 
+
+              // real zfNew = 2.*(fluidDensity*muFluid)/(zp*dt);
+
+              // const real fluidAddedMassLengthScale =  fluidParams.dbase.get<real>("fluidAddedMassLengthScale");
+              // const real zfFluid = fluidDensity*fluidAddedMassLengthScale/dt; 
+
+              real zfWeighted= zfMuByH*zf1 + zfRhoHByDt*zf2; 
+              real zf=zfWeighted;
+              
+              bool useMonolithicImpedance=zfMono>0. ; // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+              real zfm=1., k=1.;
+              if( true )
+              {
+                // --- Impedance from the monolithic algorithm ---
+                real rhof = fluidDensity;
+                real muf=muFluid;
+
+                const int axisp1 = (axis + 1) % mg.numberOfDimensions();
+                const real ds = mg.gridSpacing(axisp1);  
+                
+                // k = 1./(2.*ds);
+                k = 1./dn;
+
+                real beta=sqrt( rhof/(muf*dt) + k*k );
+                zfm = (rhof*rhof + ( rhof*beta*zp + 4.*rhof*muf*k*k )*dt - ( 4.*(beta-k)*muf*muf*k*k*k )*dt*dt )/( (rhof+ zp*dt*(beta-k) )*dt*k );
+              }
+              if( useMonolithicImpedance )
+              {
+                zf=zfMono*zfm;
+              }
+              
+              
+              if( correctionStage>0 )
+              {
+                zf=1e8;
+                printF("SMSMSMSMS  CGSM correctionStage=%i: Set zf=%.2e\n",correctionStage,zf);
+              }
+              else
+              {
+                printF("SMSMSMSMS  CGSM correctionStage=%i, Use zf=%.2e\n",correctionStage,zf);
+              }
+              
+              
+
+              // coeff of [traction] in AMP interface condition:
+              const real & ampSigmaJumpCoeff = parameters.dbase.get<real>("ampSigmaJumpCoeff"); 
+              // coeff of [velocity] in AMP interface condition
+              const real & ampVelocityJumpCoeff = parameters.dbase.get<real>("ampVelocityJumpCoeff"); 
+
+              real Cmu   = useMonolithicImpedance? 0. :  zfMuByH;
+              real Cmono = useMonolithicImpedance? zfMono :  0.;
+              printF("SSSSSSSS sm: project zf =(%.2f)*mu/h + (%.2f)*rho*h/dt =%.2e, mu/h=%.2e, rho*h/dt=%.2e zMonolithic=%.2e zf=%.2e "
+                     "zfMono=%.2g, Cmu=%.2g Cmono=%.2g sigmaJumpCoeff=%.1f velocityJumpCoeff=%.1f \n",
+                     zfMuByH,zfRhoHByDt,zfWeighted,zf1,zf2,zfm, zf,zfMono,Cmu,Cmono,ampSigmaJumpCoeff,ampVelocityJumpCoeff);
+
+              real zfHat=muFluid*fluidDensity/(zp*dt);
+              real viscousCFL=(muFluid/fluidDensity)*dt/(dn*dn);
+            
+              
+              // printF("SSSSSSSS sm: project zfOld=muFluid/dn = %.2e  zfNew=2*(rhoF*muF)/(zp*dt) = %.2e, "
+              //     " zfFluid=rho*L/dt= %.2e, use: zf=%.2e\n",
+              //        zfOld,zfNew,zfFluid,zf);
+
+              //       ", rhoF=%.2e muFluid=%.2e nuFluid=%.2e zp=%.2e dt=%.2e\n",zfOld,zfNew,fluidDensity,muFluid,nuFluid,zp,dt);
+              
+
+              alphaV = zf/( zf + zp );
+              alphaS = 1.-alphaV; // (1./zf)/( 1./zf + 1./zp );  // = zp/(zf+zp) = 1-alphaV
+
+              // printF("\\delta=%.2e \\zp=%.2e \\mu=%.2e \\zf=\\f{\\mu}{h}=%.2e \\zfh=\\f{\\rho\\dt}{h}=%.2e "
+              //        "\\zfHat=%.2e \\zfm=%.2e (k=%.2e) \\f{\\nu\\dt}{h^2}=%.2e (h=%.2e) \\zfMuByH=%.2e \\alphaV=%.2e\n",
+              //        rho,zp,muFluid,zf1,zf2,zfHat,zfm,k,viscousCFL,dn,zfMuByH,alphaV);
+              const real & tFinal = parameters.dbase.get<real>("tFinal"); 
+              printF(" %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \n",
+                     rho,muFluid,dn, viscousCFL,cfl,zp,zf1,zf2,zfHat,zfm,Cmu,Cmono,alphaV,tFinal);
+              
+
+              
+              if( true )
+              {
+                printF("--SM-- projectInterface: muFluid=%.2e, dn=%.3e, zf=%.2e, zp=%.2e, alphaV=zf/(zf+zp)=%.2e alphaS=%.2e"
+                       " correctionStage=%i\n",
+                       muFluid,dn,zf,zp,alphaV,alphaS,correctionStage);
+              }
+              if( debug() & 4 )
+              {
+                fPrintF(debugFile,"--SM-- projectInterface: muFluid=%.2e, dn=%.3e, zf=%.2e, zp=%.2e, alphaV=zf/(zf+zp)=%.2e alphaS=%.2e"
+                       " correctionStage=%i\n",
+                       muFluid,dn,zf,zp,alphaV,alphaS,correctionStage);
+                
+              }
+            
+              RealArray solidTraction(Ib1,Ib2,Ib3,Rx);
+              assert( numberOfDimensions==2 );
+              solidTraction(Ib1,Ib2,Ib3,0) = (uLocal(Ib1,Ib2,Ib3,s11c)*normal(Ib1,Ib2,Ib3,0) + 
+                                              uLocal(Ib1,Ib2,Ib3,s12c)*normal(Ib1,Ib2,Ib3,1));
+              solidTraction(Ib1,Ib2,Ib3,1) = (uLocal(Ib1,Ib2,Ib3,s21c)*normal(Ib1,Ib2,Ib3,0) + 
+                                              uLocal(Ib1,Ib2,Ib3,s22c)*normal(Ib1,Ib2,Ib3,1));
+            
+
+
+              if( false )
+              {
+                ::display(interfaceVelocity(Ib1,Ib2,Ib3,Rx)," Fluid velocity","%.3e ");
+                ::display(uLocal(Ib1,Ib2,Ib3,Vc)," Solid velocity","%.3e ");
+                ::display(solidTraction," Solid traction","%.3e ");
+                ::display(fluidTraction," Fluid traction","%.3e ");
+              }
+
+              // // Do this for now: *fix me* for multiple interfaces
+              // if( !parameters.dbase.has_key("solidVelocityPredicted") )
+              // {
+              //   parameters.dbase.put<RealArray>("solidVelocityPredicted");
+              //   parameters.dbase.put<RealArray>("solidTractionPredicted");
+              // }
+              // RealArray & solidVelocityPredicted = parameters.dbase.get<RealArray>("solidVelocityPredicted");
+              // RealArray & solidTractionPredicted = parameters.dbase.get<RealArray>("solidTractionPredicted");
+              // solidVelocityPredicted=uLocal(Ib1,Ib2,Ib3,Vc);
+              // solidTractionPredicted=solidTraction;
+
+
+              // project velocity - impedance average: 
+              // ** check sign of the jump term:
+              // ** fix me for normal and tangential components -- use zs for tangential
+              uLocal(Ib1,Ib2,Ib3,Vc)=( alphaV*interfaceVelocity(Ib1,Ib2,Ib3,Rx) + (1.-alphaV)*uLocal(Ib1,Ib2,Ib3,Vc)
+                                       + ampSigmaJumpCoeff*(1./(zf+zp))*( fluidTraction - solidTraction)
+                );
+              // project traction - inverse impedance average:
+              bd(Ib1,Ib2,Ib3,Dc) = ( alphaS*fluidTraction + (1.-alphaS)*solidTraction
+                       + ampVelocityJumpCoeff*(1./(1./zf+1./zp))*( interfaceVelocity(Ib1,Ib2,Ib3,Rx) -uLocal(Ib1,Ib2,Ib3,Vc) )
+                );
+
+              const int & fluidSolidCornerFix = parameters.dbase.get<int>("fluidSolidCornerFix");
+              if( fluidSolidCornerFix != 0 )
+              {
+                RealArray cornerFix;
+                printF("FFFFFFFF CGSM: projIntr: cornerFixup for sigmasI: fluidSolidCornerFix=%i\n",fluidSolidCornerFix);
+            
+                parameters.getFluidSolidCornerFixFunction( mg,grid,side,axis,cornerFix,SmParameters::displacementBC );
+                if( false )
+                  ::display(cornerFix,"CGSM: corner fix function","%9.2e ");
+
+                if( true )
+                {
+                  for( int d=Dc.getBase(); d<=Dc.getBound(); d++ )
+                  {
+                    // ramp displacement to zero near adjacent displacement corners
+                    uLocal(Ib1,Ib2,Ib3,d) *=cornerFix(Ib1,Ib2,Ib3); 
+                  }
+                  for( int d=Vc.getBase(); d<=Vc.getBound(); d++ )
+                  {
+                    // ramp velocity to zero near adjacent displacement corners
+                    uLocal(Ib1,Ib2,Ib3,d) *=cornerFix(Ib1,Ib2,Ib3); 
+                  }
+                }
+                
+                for( int d=Dc.getBase(); d<=Dc.getBound(); d++ )
+                {
+                  // ramp traction to zero near adjacent displacement corners
+                  bd(Ib1,Ib2,Ib3,d) *=cornerFix(Ib1,Ib2,Ib3); 
+                }
+
+              }
+
+              // else
+              // {
+              //   // Save the solid velocity and traction for the CORRECTOR stage
+
+              //   RealArray & solidVelocityPredicted = parameters.dbase.get<RealArray>("solidVelocityPredicted");
+              //   RealArray & solidTractionPredicted = parameters.dbase.get<RealArray>("solidTractionPredicted");
+
+              //   // project velocity - impedance average: 
+              //   uLocal(Ib1,Ib2,Ib3,Vc)=( alphaV*interfaceVelocity(Ib1,Ib2,Ib3,Rx) + (1.-alphaV)*solidVelocityPredicted
+              //                                       + (1./(zf+zp))*( fluidTraction - solidTractionPredicted )
+              //     );
+              //   // project traction - inverse impedance average:
+              //   // ** DO NOT** use solidVelocityPredicted in jump ??
+              //   bd(Ib1,Ib2,Ib3,Dc) = ( alphaS*fluidTraction + (1.-alphaS)*solidTractionPredicted
+              //                          //       + (1./(1./zf+1./zp))*( interfaceVelocity(Ib1,Ib2,Ib3,Rx) - uLocal(Ib1,Ib2,Ib3,Vc) )
+              //     );
+              // }
+
+              // -----------------------------------------------------
+              // --- save a time history of the interface traction ---
+              // -----------------------------------------------------
+              //    *wdh* July 19, 2018 
+              int orderOfAccuracyForTractionRate=2; // This requires 3 time levels of the traction.
+              // **** FIX ME FOR MULTIPLE INTERFACES ****
+              if( !parameters.dbase.has_key("interfaceTractionHistory") )
+              {
+                parameters.dbase.put<ArrayEvolution>("interfaceTractionHistory");
+                ArrayEvolution & interfaceTractionHistory = parameters.dbase.get<ArrayEvolution>("interfaceTractionHistory");
+                // const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+                interfaceTractionHistory.setOrderOfAccuracy(orderOfAccuracyForTractionRate);
+              }
+              ArrayEvolution & interfaceTractionHistory = parameters.dbase.get<ArrayEvolution>("interfaceTractionHistory");
+
+              RealArray interfaceTraction;
+              interfaceTraction=bd(Ib1,Ib2,Ib3,Dc);
+              interfaceTractionHistory.add( t, interfaceTraction);    // save the interface traction
+
+              // --- evaluate the interface traction-rate ----- 
+              RealArray tractionRate(Ib1,Ib2,Ib3,Rx);
+              if( interfaceTractionHistory.getNumberOfTimeLevels() > orderOfAccuracyForTractionRate ) 
+              {
+                // There are enough time history values save to compute the traction rate
+                const int numberOfTimeDerivatives=1;
+                interfaceTractionHistory.eval( t,tractionRate,numberOfTimeDerivatives);
+
+                if( t<= 4.*dt || debug() & 4 )
+                {
+                  printF(" --SM-- TTTTTTTTTTT projectInterface: eval traction-rate from traction time history order=%i t=%.3e\n",
+                          orderOfAccuracyForTractionRate,t);
+                  fPrintF(debugFile," projectInterface: eval traction-rate from traction time history order=%i t=%.3e\n",
+                          orderOfAccuracyForTractionRate,t);
+                }
+                
+              }
+              else
+              {
+                if( knownSolution==Parameters::userDefinedKnownSolution )
+                {
+                  int body=0;
+                  parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
+                                                                       t, grid, mg, Ib1,Ib2,Ib3,Rx,tractionRate );
+                  printF("--SM-- TTTTTTTTTTTTTTTTTTTT Use EXACT traction-rate at t=%.3e (not enough time-history)\n",t);
+                  fPrintF(debugFile,"--SM-- TTTTTTTTTTTTTTTTTTTT Use EXACT traction-rate at t=%.3e (not enough time-history)\n",t);
+                }
+
+              }
+              
+              bd(Ib1,Ib2,Ib3,Vc) = tractionRate;  // set projected traction-rate
+
+
+            } // end impedance projection 
+            
+            
 
             if( parameters.dbase.get<bool >("twilightZoneFlow") )
             {
-              // ---add forcing for twilight-zone flow--- *wdh* March 20, 2018
+              // ---add forcing for twilight-zone flow--- 
 
               OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
 
@@ -1421,14 +1770,47 @@ projectInterface( int grid, real dt, int current )
               mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex);
               OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
               realSerialArray ve(Ib1,Ib2,Ib3,Vc);
+
     	      e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,Vc,t);  
-              uLocal(Ib1,Ib2,Ib3,Vc) +=ve;
+
+              if( !useImpedanceProjection )
+              {
+                uLocal(Ib1,Ib2,Ib3,Vc) += ve;   // fluid velocity is corrected by TZ to be zero so set solid velocity to exact 
+              }
+              else
+              {
+                // TZ fix for impedance average 
+                RealArray solidTractione(Ib1,Ib2,Ib3,Rx);
+                RealArray s11e(Ib1,Ib2,Ib3),s12e(Ib1,Ib2,Ib3),s21e(Ib1,Ib2,Ib3),s22e(Ib1,Ib2,Ib3);
+                
+                assert( numberOfDimensions==2 );
+
+                e.gd( s11e,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,s11c,t); 
+                e.gd( s12e,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,s21c,t); 
+                e.gd( s21e,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,s12c,t); 
+                e.gd( s22e,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,s22c,t); 
+
+                solidTractione(Ib1,Ib2,Ib3,0) = (s11e*normal(Ib1,Ib2,Ib3,0) + 
+                                                 s12e*normal(Ib1,Ib2,Ib3,1));
+                solidTractione(Ib1,Ib2,Ib3,1) = (s21e*normal(Ib1,Ib2,Ib3,0) + 
+                                                 s22e*normal(Ib1,Ib2,Ib3,1));
+                
+                
+                uLocal(Ib1,Ib2,Ib3,Vc) += alphaV*ve;
+                
+                bd(Ib1,Ib2,Ib3,Dc) += alphaS*solidTractione;
+                
+              }
+              
+
             }
 
-            if( t <= 2.*dt )
+
+
+            if( t <= 2.*dt && debug() & 4 )
             {
-              ::display(interfaceVelocity(Ib1,Ib2,Ib3,Vc),"--SM--PIV-- Here is fluid velocity (after any TZ correction)",
-                        debugFile,"%6.3f ");
+              ::display(uLocal(Ib1,Ib2,Ib3,Vc),sPrintF("--SM--PIV-- Projected interface velocity t=%.3e",t),debugFile,"%6.3f ");
+              ::display(bd(Ib1,Ib2,Ib3,Dc)    ,sPrintF("--SM--PIV-- Projected interface traction t=%.3e",t),debugFile,"%6.3f ");
             }
             
           }
@@ -1458,9 +1840,10 @@ projectInterface( int grid, real dt, int current )
 
           if( ok )
           {
-            // Set the velocity on the interface for the INS-SM AMP scheme.
-
+            // Project the velocity and traction on the interface for the INS-SM AMP scheme.
             uLocal(Ib1,Ib2,Ib3,Vc)=interfaceVelocity(Ib1,Ib2,Ib3,Rx);
+
+
           }
         }
         
@@ -1492,14 +1875,15 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
 {
   const bool & twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
-  const bool evalExactAcceleration=true; // eval exact accel. for testing 
+  const bool evalExactAcceleration=false; // eval exact accel. for testing 
   // const bool useExactAcceleration=false && !twilightZoneFlow;
   bool useTimeHistory=!useExactInterfaceAcceleration;
   const int & correctionStage = parameters.dbase.get<int>("correctionStage");
   
   RealArray accel;
+  ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
   
-  if( evalExactAcceleration )
+  if( evalExactAcceleration || (velocityHistory.getNumberOfTimeLevels()<= 1 && twilightZoneFlow) )
   {
     // --- evaluate the exact acceleration for testing ---    
     if( twilightZoneFlow )
@@ -1553,7 +1937,6 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
     // --- Compute the acceleration from the velocity time history ----
     if( true ) // *** NEW* June 29, 2017
     {
-      ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
       Range Rx=mg.numberOfDimensions();
       
       if( velocityHistory.getNumberOfTimeLevels()<= 1 && twilightZoneFlow )
@@ -1574,9 +1957,18 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
         const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
         int order= timeOrderOfAccuracy;
         // order=2;  // *wdh* May 8, 2018
-        velocityHistory.eval( t, acceleration, numberOfTimeDerivatives,order );  
-        f(I1,I2,I3,C)=acceleration;
-
+        if( velocityHistory.getNumberOfTimeLevels()<= 1 )
+        {
+          printF("--SM-- getInterfaceAcceleration: WARNING: setting acceleration ZERO at t=%.2e since there is "
+                 "only 1 time level in the velocity history\n",t);
+          f(I1,I2,I3,C)=0.;
+        }
+        else
+        {
+          velocityHistory.eval( t, acceleration, numberOfTimeDerivatives,order );  
+          f(I1,I2,I3,C)=acceleration;
+        }
+        
         if( debug() & 2 )
         {
           printF("--SM-- getInterfaceAccel: ACCELERATION computed from VELOCITY TIME HISTORY t=%9.3e order=%i correctionStage=%i "
@@ -1585,6 +1977,11 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
           {
             real diff=max(fabs(acceleration-accel));
             printF("--> Max error in accel = %9.3e, |accel|=%8.2e\n",diff,max(fabs(accel)));
+            if( diff>1e5 )
+            {
+              ::display(acceleration,"acceleration","%.2e ");
+            }
+            
           }
         
         }

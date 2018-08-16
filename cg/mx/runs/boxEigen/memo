@@ -1,3 +1,15 @@
+****************************
+********* June 14, 2018
+
+Looks ok
+cgmx -noplot boxEigen -g=box2.order4 -mx=1 -my=1 -tf=.5 -dm=gdm -a0=1 -a1=1 -b0=1. -b1=1. -go=og
+
+Looks OK: 
+cgmx -noplot boxEigen -g=square32.order4 -mx=4 -my=4 -tf=.5 -tp=.1 -dm=gdm -a0=1 -a1=0 -b0=0. -b1=1. -go=og
+
+
+
+
 ***********************
 ***** March 12, 2018
 

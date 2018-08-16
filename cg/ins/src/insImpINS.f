@@ -1051,13 +1051,68 @@
 ! ===============================================================================================
 
 ! Here are the coefficients of the Added Mass equation for the GHOST -- needs normal an(0:2) and delta function
+!  See comments below for derivation
+
+
+! ===============================================================================================
+!  **NEW VERSION** June 24, 2018
+!
+!     ***** Added-Mass Boundary Condition : FILL into the matrix  *****
+! 
+!  Macro args:
+!   coeff : coefficient matrix to fill in.
+!   cmpu,eqnu : fill in equations eqnu,...,eqnu+nd-1 and components cmpu,...,cmpu+nd-1
+!   i1,i2,i3 : boundary point, will assign ghost point
+!
+! NOTES:
+!  See the file fibr.pdf for a derivation of the equations used here
+! 
+!  Boundary equations
+!     (1a) t.tauv.n + zs*t.v = RHS
+!     (1b) 2*mu*div(v) + zp*n.v = RHS 
+!
+!  Ghost-point equations:
+!     (2a) t.( v-vf ) = 0 
+!     (2b) n.( v-vf ) + gamma*div(v)=0
+!          vf == interior update = v^(n-1) + dt*( theta/rho) Delta (v) + ...
+!          gamma = zp*dt/rho or gamma = dy
+!
+! SUMMARY: (1) and (2) can be combined into two vector equations:
+!   (I)  2*mu*(div(v))*n + zp*(n n^T) v + (I-n n^T)( tauv.n + zs*v  ) = RHS 
+!   (II) v - dt*( theta/rho) Delta (v) + gamma*div(v) n = RHS
+!
+! In terms of operators D_k = partial/partial( x_k) : 
+! (I): 
+!      2*mu*(D_k v_k) n_i + zp*( n_i n_j) v_j + (delta_ij - n_i n_j)*( mu*(D_j v_k + D_k v_j) n_k  + zs v_j ) = RHS(i)
+!  => 
+!      2*mu*(D_k v_j) delta_jk n_i + zp*( n_k n_j) delta_ik v_j
+!                     + mu*(delta_ij - n_i n_j)*( D_j v_k ) n_k 
+!                     + mu*(delta_ij - n_i n_j)*( D_k v_j ) n_k 
+!                     + zs*(delta_ij - n_i n_j)* v_j             = RHS(i)
+!  => 
+!      2*mu delta_jk n_i (D_k v_j) + zp*( n_k n_j) delta_ik v_j
+!                     + mu*(delta_ik - n_i n_k)* n_j ( D_k v_j )   (flip j <-> k in sums)
+!                     + mu*(delta_ij - n_i n_j)* n_k ( D_k v_j )
+!                     + zs*(delta_ij - n_i n_j)* v_j             = RHS(i)
+!
+!   =>  sum_j sum_k  CAMG(i,j,k) * (partial v_j/partial x_k)    + sum_j CAMG0(i,j) v_j  = RHS(i),  i=0,1,2
+!
+!      CAMG(i,j,k) = 2*mu*delta_jk  n_i + mu*(delta_ik - n_i n_k) n_j + mu*(delta_ij - n_i n_j) n_k
+!                 =  
+!      CAMG0(ij) = zp*( n_k n_j) delta_ik + (delta_ij - n_i n_j) *zs
+! 
+!  (II)    (1 + beta*Delta) delta_ij v_j  + gamma* n_i D_j v_j = RHS(i)
+!    where 
+!        beta = -theta*dt*nu , gamma = zp*dt/rho
+! ===============================================================================================
+
+! Here are the coefficients of the Added Mass equation for the GHOST -- needs normal an(0:2) and delta function
 ! AMGDelta(i,j) =  -theta*dt*nu*[ I - P ]
 !     P = (1-alpha)*n n^T
 !     beta = theta*dt*nu 
 
-
 ! ===============================================================================================
-!  
+!  ***OLD VERSION****
 !     ***** Added-Mass Boundary Condition : FILL into the matrix  *****
 ! 
 !  Macro args:
@@ -1110,8 +1165,6 @@
 !        beta = -theta*dt*nu 
 !        
 ! ===============================================================================================
-
-
 
 ! =============================================================
 ! macro to declare temporary variables:
@@ -1232,8 +1285,8 @@
      & mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,
      & dw, ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
 !======================================================================
 ! 
 !             Incompressible Navier Stokes IMPlicit 
@@ -1281,6 +1334,7 @@
      & ndbcd4a:ndbcd4b)
       integer equationNumber(0:nde-1,nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       integer classify(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      integer interfaceType(0:1,0:2,0:*)
       integer ipar(0:*)
       real rpar(0:*)
       double precision pdb  ! pointer to data base
@@ -1297,8 +1351,13 @@
       real matVal(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       ! -- added mass options
       integer useAddedMassAlgorithm, projectAddedMassVelocity, 
-     & useImplicitAmpBCs, isBulkSolid
+     & useImplicitAmpBCs, isBulkSolid,addedMassVelocityBC
       integer extrapolateGhostByDefault
+      ! Put this into an include file:
+      integer noInterface,heatFluxInterface,tractionInterface,
+     & tractionAndHeatFluxInterface
+      parameter( noInterface=0,heatFluxInterface=1,tractionInterface=2,
+     & tractionAndHeatFluxInterface=3)
       !     ---- local variables -----
       integer c,e,i1,i2,i3,m1,m2,m3,j1,j2,j3,ghostLine,n,i1m,i2m,i3m,
      & i1p,i2p,i3p,ndu
@@ -2168,6 +2227,7 @@
       projectAddedMassVelocity = ipar(53)
       useImplicitAmpBCs = ipar(54)
       isBulkSolid       = ipar(55)
+      addedMassVelocityBC= ipar(56)
       dr(0)             =rpar(0)
       dr(1)             =rpar(1)
       dr(2)             =rpar(2)
@@ -3176,7 +3236,7 @@
            an(2)=0.
            an(axis)=2*side-1
          ! the next macro is defined in insImpINS.bf, or insImpVP.bf, etc. 
-         if( bc0.eq.noSlipWall )then
+         if( bc0.eq.noSlipWall .and. debug.gt.3 )then
             write(*,'(" ")')
             write(*,'(">>> insImpINS: fill Matrix Boundary Conditions: 
      & useImplicitAmpBCs=",i4," isBulkSolid=",i2)') useImplicitAmpBCs,
@@ -3203,13 +3263,16 @@
              end if
            end if
          if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. 
-     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 )then
+     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 .and. 
+     & interfaceType(side,axis,grid).eq.tractionInterface )then
            ! ** AMP NO-SLIP WALL BCs FOR A BULK SOLID INTERFACE *** 
            !  The AMP conditions (see fib and fibr papers) have a limit of
            !  a no-slip wall for a heavy solid and a free surface for a light solid
-          write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
+          if( debug.gt.2 )then
+            write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
      & fillCoefficientsScalarSystem=",i4)') 
      & fillCoefficientsScalarSystem
+          end if
           if( mu.eq.0. )then
             write(*,'(" insImpINS:ERROR: mu=0 : nu,fluidDensity=",
      & 2e10.2)') nu,fluidDensity
@@ -3264,239 +3327,267 @@
              end do
              end do
           else
-           write(*,'("  ")')
-           write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
+           if( debug.gt.3 )then
+             write(*,'("  ")')
+             write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+             write(*,'(" --- alpha=",e12.2)') alpha
+           end if
            ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
-            do i3=n3a,n3b
-            do i2=n2a,n2b
-            do i1=n1a,n1b
-             ! if( btest(mask(i1,i2,i3),28) )then
-             !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
-             ! end if
-             if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+           if( addedMassVelocityBC.eq.0 )then
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
      & 28) )then
-             i1m=i1-is1  ! ghost point
-             i2m=i2-is2
-             i3m=i3-is3
-             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
-             ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
-             ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
-             ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
-             ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
-             ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
-             ! evaluate the coeff operators 
-             ! getCoeff(identity, iCoeff,aj)
-               ! Operator x = ux
-                xCoeff(ma2(-1,-1, 0)) = 0
-                xCoeff(ma2( 0,-1, 0)) = 0
-                xCoeff(ma2( 1,-1, 0)) = 0
-                xCoeff(ma2(-1, 0, 0)) = -1./2./dx(0)
-                xCoeff(ma2( 0, 0, 0)) = 0
-                xCoeff(ma2( 1, 0, 0)) = 1./2./dx(0)
-                xCoeff(ma2(-1, 1, 0)) = 0
-                xCoeff(ma2( 0, 1, 0)) = 0
-                xCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator y = uy
-                yCoeff(ma2(-1,-1, 0)) = 0
-                yCoeff(ma2( 0,-1, 0)) = -1./2./dx(1)
-                yCoeff(ma2( 1,-1, 0)) = 0
-                yCoeff(ma2(-1, 0, 0)) = 0
-                yCoeff(ma2( 0, 0, 0)) = 0
-                yCoeff(ma2( 1, 0, 0)) = 0
-                yCoeff(ma2(-1, 1, 0)) = 0
-                yCoeff(ma2( 0, 1, 0)) = 1./2./dx(1)
-                yCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator identity 
-                iCoeff(ma2(-1,-1, 0)) = 0
-                iCoeff(ma2( 0,-1, 0)) = 0
-                iCoeff(ma2( 1,-1, 0)) = 0
-                iCoeff(ma2(-1, 0, 0)) = 0
-                iCoeff(ma2( 0, 0, 0)) = 1.
-                iCoeff(ma2( 1, 0, 0)) = 0
-                iCoeff(ma2(-1, 1, 0)) = 0
-                iCoeff(ma2( 0, 1, 0)) = 0
-                iCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator laplacian = uxx+uyy
-                lapCoeff(ma2(-1,-1, 0)) = 0
-                lapCoeff(ma2( 0,-1, 0)) = 1./dx(1)**2
-                lapCoeff(ma2( 1,-1, 0)) = 0
-                lapCoeff(ma2(-1, 0, 0)) = 1./dx(0)**2
-                lapCoeff(ma2( 0, 0, 0)) = -2./dx(0)**2-2./dx(1)**2
-                lapCoeff(ma2( 1, 0, 0)) = 1./dx(0)**2
-                lapCoeff(ma2(-1, 1, 0)) = 0
-                lapCoeff(ma2( 0, 1, 0)) = 1./dx(1)**2
-                lapCoeff(ma2( 1, 1, 0)) = 0
-             ! Equations on the ghost point:
-             do m=0,ndc-1
-              coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
-             end do
-             ! Equations on the boundary:
-             do m=0,ndc-1
-              coeff(m,i1,i2,i3)=0.  ! init all elements to zero
-             end do
-             beta = implicitFactor*nu*dt
-             !! beta = 0. ! TEST
-              ! ******************************** TWO DIMENSIONS ***********************************
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled BC equations for u and v  
-               ! -------------Coefficients in the the ghost point equation ----------
-               do n=0,nd-1
-                 ! equation n:  (equation numbers and classify  are set in these calls)
-                 ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
-                   classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+               i1m=i1-is1  ! ghost point
+               i2m=i2-is2
+               i3m=i3-is3
+               ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+               ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
+               ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
+               ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
+               ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
+               ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
+               ! evaluate the coeff operators 
+               ! getCoeff(identity, iCoeff,aj)
+                 ! Operator x = ux
+                  xCoeff(ma2(-1,-1, 0)) = 0
+                  xCoeff(ma2( 0,-1, 0)) = 0
+                  xCoeff(ma2( 1,-1, 0)) = 0
+                  xCoeff(ma2(-1, 0, 0)) = -1./2./dx(0)
+                  xCoeff(ma2( 0, 0, 0)) = 0
+                  xCoeff(ma2( 1, 0, 0)) = 1./2./dx(0)
+                  xCoeff(ma2(-1, 1, 0)) = 0
+                  xCoeff(ma2( 0, 1, 0)) = 0
+                  xCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator y = uy
+                  yCoeff(ma2(-1,-1, 0)) = 0
+                  yCoeff(ma2( 0,-1, 0)) = -1./2./dx(1)
+                  yCoeff(ma2( 1,-1, 0)) = 0
+                  yCoeff(ma2(-1, 0, 0)) = 0
+                  yCoeff(ma2( 0, 0, 0)) = 0
+                  yCoeff(ma2( 1, 0, 0)) = 0
+                  yCoeff(ma2(-1, 1, 0)) = 0
+                  yCoeff(ma2( 0, 1, 0)) = 1./2./dx(1)
+                  yCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator identity 
+                  iCoeff(ma2(-1,-1, 0)) = 0
+                  iCoeff(ma2( 0,-1, 0)) = 0
+                  iCoeff(ma2( 1,-1, 0)) = 0
+                  iCoeff(ma2(-1, 0, 0)) = 0
+                  iCoeff(ma2( 0, 0, 0)) = 1.
+                  iCoeff(ma2( 1, 0, 0)) = 0
+                  iCoeff(ma2(-1, 1, 0)) = 0
+                  iCoeff(ma2( 0, 1, 0)) = 0
+                  iCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator laplacian = uxx+uyy
+                  lapCoeff(ma2(-1,-1, 0)) = 0
+                  lapCoeff(ma2( 0,-1, 0)) = 1./dx(1)**2
+                  lapCoeff(ma2( 1,-1, 0)) = 0
+                  lapCoeff(ma2(-1, 0, 0)) = 1./dx(0)**2
+                  lapCoeff(ma2( 0, 0, 0)) = -2./dx(0)**2-2./dx(1)**2
+                  lapCoeff(ma2( 1, 0, 0)) = 1./dx(0)**2
+                  lapCoeff(ma2(-1, 1, 0)) = 0
+                  lapCoeff(ma2( 0, 1, 0)) = 1./dx(1)**2
+                  lapCoeff(ma2( 1, 1, 0)) = 0
+               ! Equations on the ghost point:
+               do m=0,ndc-1
+                coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
+               end do
+               ! Equations on the boundary:
+               do m=0,ndc-1
+                coeff(m,i1,i2,i3)=0.  ! init all elements to zero
+               end do
+               beta = implicitFactor*nu*dt
+               !! beta = 0. ! TEST
+                ! ******************************** TWO DIMENSIONS ***********************************
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled BC equations for u and v  
+                 ! -------------Coefficients in the the ghost point equation ----------
+                 do n=0,nd-1
+                   ! equation n:  (equation numbers and classify  are set in these calls)
+                   ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
+                     classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
      & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
      & ))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                      equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,
+     & i2m,i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
+     & =coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
+     & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
+     & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
+     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                      equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,
+     & i2m,i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                    end do
+                    end do
+                    end do
+                 end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                  ! We decouple the coupled velocity components: Only add coefficients of u 
+                  n=0
+                    classify(i1m,i2m,i3m,eqnu)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((
+     & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
+     & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
+     & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
+     & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & ))
+                    ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,
      & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of v 
+                  n=1
+                    classify(i1m,i2m,i3m,eqnu)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((
+     & delta(1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(
+     & 1)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
+     & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,
+     & m3)))+((+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & ))
+                    ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,
+     & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                   end do
+                   end do
+                   end do
+                end if
+                ! ------------- Coefficients on the boundary ----------------
+                ! evaluate the coeff operators 
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled equations for u and v  
+                 ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
+                 ! u equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+     & lapCoeff(ma2(m1,m2,m3)))
                   end do
                   end do
                   end do
                   do m3=-halfWidth3,halfWidth3
                   do m2=-halfWidth,halfWidth
                   do m1=-halfWidth,halfWidth
-                    coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
-     & =coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
-     & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
-     & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
-     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                    equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
-     & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
+                    coeff(mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(
+     & mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-
+     & alpha)*an(0)*an(1)))*lapCoeff(ma2(m1,m2,m3)))
                   end do
                   end do
                   end do
-               end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-                ! We decouple the coupled velocity components: Only add coefficients of u 
-                n=0
-                  classify(i1m,i2m,i3m,eqnu)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((delta(
-     & 0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(0)*an(
-     & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*an(1)+
-     & delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                  ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
-     & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-                ! We decouple the coupled velocity components: Only add components of v 
-                n=1
-                  classify(i1m,i2m,i3m,eqnu)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((delta(
-     & 1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(
-     & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
-     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                  ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
-     & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              end if
-              ! ------------- Coefficients on the boundary ----------------
-              ! evaluate the coeff operators 
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled equations for u and v  
-               ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
-               ! u equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                 ! v equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(mce2(
-     & m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-alpha)*
-     & an(0)*an(1)))*lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! v equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(
+     & mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-
+     & alpha)*an(1)*an(0)))*lapCoeff(ma2(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                 ! We decouple the coupled velocity components: Only add coefficients of u 
+                 n=0
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(mce2(
-     & m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-alpha)*
-     & an(1)*an(0)))*lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-               ! We decouple the coupled velocity components: Only add coefficients of u 
-               n=0
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of v 
+                 n=1
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-               ! We decouple the coupled velocity components: Only add components of v 
-               n=1
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
-     & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              end if
-             end if
-            end do
-            end do
-            end do
+                  end do
+                  end do
+                  end do
+                end if
+               end if
+              end do
+              end do
+              end do
+           else if( addedMassVelocityBC.eq.1 )then
+             stop 9999
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+     & 28) )then
+              ! fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
+               end if
+              end do
+              end do
+              end do
+           else
+             stop 7782
+           end if
            ! Check for two adjacent AMP NO-SLIP WALLS  -- not supported yet.
            ! Use extrapolation or compatibility at corner since equations are duplicate:
            !     u_x + v_y =0 
@@ -3510,13 +3601,19 @@
            else
              axisp2=axisp1
            end if
-           if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1)
-     & .eq.noSlipWall .or. bc(0,axisp2).eq.noSlipWall .or. bc(1,
-     & axisp2).eq.noSlipWall )then
-             write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
-     & at a corner -- not implemented -- fix me")')
+           if( interfaceType(0,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(0,axisp2,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp2,grid).eq.tractionInterface )then
+             write(*,'("insImpINS: ERROR: two AMP no-slip wall 
+     & traction-interfaces meet at a corner -- not implemented -- fix 
+     & me")')
              stop 9099
            end if
+           ! if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. !     bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
+           !   write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+           !   stop 9099
+           ! end if
            if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
      & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
      & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
@@ -6427,7 +6524,7 @@
            n3b=n3a
          end if
          ! the next macro is defined in insImpINS.bf, or insImpVP.bf, etc. 
-         if( bc0.eq.noSlipWall )then
+         if( bc0.eq.noSlipWall .and. debug.gt.3 )then
             write(*,'(" ")')
             write(*,'(">>> insImpINS: fill Matrix Boundary Conditions: 
      & useImplicitAmpBCs=",i4," isBulkSolid=",i2)') useImplicitAmpBCs,
@@ -6454,13 +6551,16 @@
              end if
            end if
          if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. 
-     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 )then
+     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 .and. 
+     & interfaceType(side,axis,grid).eq.tractionInterface )then
            ! ** AMP NO-SLIP WALL BCs FOR A BULK SOLID INTERFACE *** 
            !  The AMP conditions (see fib and fibr papers) have a limit of
            !  a no-slip wall for a heavy solid and a free surface for a light solid
-          write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
+          if( debug.gt.2 )then
+            write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
      & fillCoefficientsScalarSystem=",i4)') 
      & fillCoefficientsScalarSystem
+          end if
           if( mu.eq.0. )then
             write(*,'(" insImpINS:ERROR: mu=0 : nu,fluidDensity=",
      & 2e10.2)') nu,fluidDensity
@@ -6515,287 +6615,317 @@
              end do
              end do
           else
-           write(*,'("  ")')
-           write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
+           if( debug.gt.3 )then
+             write(*,'("  ")')
+             write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+             write(*,'(" --- alpha=",e12.2)') alpha
+           end if
            ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
-            do i3=n3a,n3b
-            do i2=n2a,n2b
-            do i1=n1a,n1b
-             ! if( btest(mask(i1,i2,i3),28) )then
-             !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
-             ! end if
-             if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+           if( addedMassVelocityBC.eq.0 )then
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
      & 28) )then
-             i1m=i1-is1  ! ghost point
-             i2m=i2-is2
-             i3m=i3-is3
-                 ! get the outward normal for curvilinear grids
-                 an(0)=rsxy(i1,i2,i3,axis,0)
-                 an(1)=rsxy(i1,i2,i3,axis,1)
-                   anNorm = (2*side-1)/max( epsX, sqrt( an(0)**2 + an(
-     & 1)**2 ) )
-                   an(0)=an(0)*anNorm
-                   an(1)=an(1)*anNorm
-             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
-             ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
-             ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
-             ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
-             ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
-             ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
-              ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-              ajrx = rsxy(i1,i2,i3,0,0)
-              ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0))/(2.*
-     & dr(0))
-              ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0))/(2.*
-     & dr(1))
-              ajsx = rsxy(i1,i2,i3,1,0)
-              ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0))/(2.*
-     & dr(0))
-              ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0))/(2.*
-     & dr(1))
-              ajry = rsxy(i1,i2,i3,0,1)
-              ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1))/(2.*
-     & dr(0))
-              ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1))/(2.*
-     & dr(1))
-              ajsy = rsxy(i1,i2,i3,1,1)
-              ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1))/(2.*
-     & dr(0))
-              ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1))/(2.*
-     & dr(1))
-              ajrxx = ajrx*ajrxr+ajsx*ajrxs
-              ajrxy = ajry*ajrxr+ajsy*ajrxs
-              ajsxx = ajrx*ajsxr+ajsx*ajsxs
-              ajsxy = ajry*ajsxr+ajsy*ajsxs
-              ajryx = ajrx*ajryr+ajsx*ajrys
-              ajryy = ajry*ajryr+ajsy*ajrys
-              ajsyx = ajrx*ajsyr+ajsx*ajsys
-              ajsyy = ajry*ajsyr+ajsy*ajsys
-             ! evaluate the coeff operators 
-             ! getCoeff(identity, iCoeff,aj)
-               ! Operator x = rx*ur+sx*us
-                cur = ajrx
-                cus = ajsx
-                xCoeff(ma2(-1,-1, 0)) = 0
-                xCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)
-                xCoeff(ma2( 1,-1, 0)) = 0
-                xCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)
-                xCoeff(ma2( 0, 0, 0)) = 0
-                xCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)
-                xCoeff(ma2(-1, 1, 0)) = 0
-                xCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)
-                xCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator y = ry*ur+sy*us
-                cur = ajry
-                cus = ajsy
-                yCoeff(ma2(-1,-1, 0)) = 0
-                yCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)
-                yCoeff(ma2( 1,-1, 0)) = 0
-                yCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)
-                yCoeff(ma2( 0, 0, 0)) = 0
-                yCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)
-                yCoeff(ma2(-1, 1, 0)) = 0
-                yCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)
-                yCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator identity 
-                iCoeff(ma2(-1,-1, 0)) = 0
-                iCoeff(ma2( 0,-1, 0)) = 0
-                iCoeff(ma2( 1,-1, 0)) = 0
-                iCoeff(ma2(-1, 0, 0)) = 0
-                iCoeff(ma2( 0, 0, 0)) = 1.
-                iCoeff(ma2( 1, 0, 0)) = 0
-                iCoeff(ma2(-1, 1, 0)) = 0
-                iCoeff(ma2( 0, 1, 0)) = 0
-                iCoeff(ma2( 1, 1, 0)) = 0
-               ! Operator laplacian = rx^2*urr+2*rx*sx*urs+sx^2*uss+rxx*ur+sxx*us+ry^2*urr+2*ry*sy*urs+sy^2*uss+ryy*ur+syy*us
-                cur = ajrxx+ajryy
-                curr = ajrx**2+ajry**2
-                cus = ajsxx+ajsyy
-                curs = 2.*ajrx*ajsx+2.*ajry*ajsy
-                cuss = ajsx**2+ajsy**2
-                lapCoeff(ma2(-1,-1, 0)) = 1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)+cuss/dr(1)**
-     & 2
-                lapCoeff(ma2( 1,-1, 0)) = -1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)+curr/dr(0)**
-     & 2
-                lapCoeff(ma2( 0, 0, 0)) = -2.*curr/dr(0)**2-2.*cuss/dr(
-     & 1)**2
-                lapCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)+curr/dr(0)**2
-                lapCoeff(ma2(-1, 1, 0)) = -1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)+cuss/dr(1)**2
-                lapCoeff(ma2( 1, 1, 0)) = 1./4.*curs/(dr(0)*dr(1))
-             ! Equations on the ghost point:
-             do m=0,ndc-1
-              coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
-             end do
-             ! Equations on the boundary:
-             do m=0,ndc-1
-              coeff(m,i1,i2,i3)=0.  ! init all elements to zero
-             end do
-             beta = implicitFactor*nu*dt
-             !! beta = 0. ! TEST
-              ! ******************************** TWO DIMENSIONS ***********************************
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled BC equations for u and v  
-               ! -------------Coefficients in the the ghost point equation ----------
-               do n=0,nd-1
-                 ! equation n:  (equation numbers and classify  are set in these calls)
-                 ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
-                   classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+               i1m=i1-is1  ! ghost point
+               i2m=i2-is2
+               i3m=i3-is3
+                   ! get the outward normal for curvilinear grids
+                   an(0)=rsxy(i1,i2,i3,axis,0)
+                   an(1)=rsxy(i1,i2,i3,axis,1)
+                     anNorm = (2*side-1)/max( epsX, sqrt( an(0)**2 + 
+     & an(1)**2 ) )
+                     an(0)=an(0)*anNorm
+                     an(1)=an(1)*anNorm
+               ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+               ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
+               ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
+               ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
+               ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
+               ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
+                ! this next call will define the jacobian and its derivatives (parameteric and spatial)
+                ajrx = rsxy(i1,i2,i3,0,0)
+                ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0))/(
+     & 2.*dr(0))
+                ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0))/(
+     & 2.*dr(1))
+                ajsx = rsxy(i1,i2,i3,1,0)
+                ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0))/(
+     & 2.*dr(0))
+                ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0))/(
+     & 2.*dr(1))
+                ajry = rsxy(i1,i2,i3,0,1)
+                ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1))/(
+     & 2.*dr(0))
+                ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1))/(
+     & 2.*dr(1))
+                ajsy = rsxy(i1,i2,i3,1,1)
+                ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1))/(
+     & 2.*dr(0))
+                ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1))/(
+     & 2.*dr(1))
+                ajrxx = ajrx*ajrxr+ajsx*ajrxs
+                ajrxy = ajry*ajrxr+ajsy*ajrxs
+                ajsxx = ajrx*ajsxr+ajsx*ajsxs
+                ajsxy = ajry*ajsxr+ajsy*ajsxs
+                ajryx = ajrx*ajryr+ajsx*ajrys
+                ajryy = ajry*ajryr+ajsy*ajrys
+                ajsyx = ajrx*ajsyr+ajsx*ajsys
+                ajsyy = ajry*ajsyr+ajsy*ajsys
+               ! evaluate the coeff operators 
+               ! getCoeff(identity, iCoeff,aj)
+                 ! Operator x = rx*ur+sx*us
+                  cur = ajrx
+                  cus = ajsx
+                  xCoeff(ma2(-1,-1, 0)) = 0
+                  xCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)
+                  xCoeff(ma2( 1,-1, 0)) = 0
+                  xCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)
+                  xCoeff(ma2( 0, 0, 0)) = 0
+                  xCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)
+                  xCoeff(ma2(-1, 1, 0)) = 0
+                  xCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)
+                  xCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator y = ry*ur+sy*us
+                  cur = ajry
+                  cus = ajsy
+                  yCoeff(ma2(-1,-1, 0)) = 0
+                  yCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)
+                  yCoeff(ma2( 1,-1, 0)) = 0
+                  yCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)
+                  yCoeff(ma2( 0, 0, 0)) = 0
+                  yCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)
+                  yCoeff(ma2(-1, 1, 0)) = 0
+                  yCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)
+                  yCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator identity 
+                  iCoeff(ma2(-1,-1, 0)) = 0
+                  iCoeff(ma2( 0,-1, 0)) = 0
+                  iCoeff(ma2( 1,-1, 0)) = 0
+                  iCoeff(ma2(-1, 0, 0)) = 0
+                  iCoeff(ma2( 0, 0, 0)) = 1.
+                  iCoeff(ma2( 1, 0, 0)) = 0
+                  iCoeff(ma2(-1, 1, 0)) = 0
+                  iCoeff(ma2( 0, 1, 0)) = 0
+                  iCoeff(ma2( 1, 1, 0)) = 0
+                 ! Operator laplacian = rx^2*urr+2*rx*sx*urs+sx^2*uss+rxx*ur+sxx*us+ry^2*urr+2*ry*sy*urs+sy^2*uss+ryy*ur+syy*us
+                  cur = ajrxx+ajryy
+                  curr = ajrx**2+ajry**2
+                  cus = ajsxx+ajsyy
+                  curs = 2.*ajrx*ajsx+2.*ajry*ajsy
+                  cuss = ajsx**2+ajsy**2
+                  lapCoeff(ma2(-1,-1, 0)) = 1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma2( 0,-1, 0)) = -1./2.*cus/dr(1)+cuss/dr(1)
+     & **2
+                  lapCoeff(ma2( 1,-1, 0)) = -1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma2(-1, 0, 0)) = -1./2.*cur/dr(0)+curr/dr(0)
+     & **2
+                  lapCoeff(ma2( 0, 0, 0)) = -2.*curr/dr(0)**2-2.*
+     & cuss/dr(1)**2
+                  lapCoeff(ma2( 1, 0, 0)) = 1./2.*cur/dr(0)+curr/dr(0)*
+     & *2
+                  lapCoeff(ma2(-1, 1, 0)) = -1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma2( 0, 1, 0)) = 1./2.*cus/dr(1)+cuss/dr(1)*
+     & *2
+                  lapCoeff(ma2( 1, 1, 0)) = 1./4.*curs/(dr(0)*dr(1))
+               ! Equations on the ghost point:
+               do m=0,ndc-1
+                coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
+               end do
+               ! Equations on the boundary:
+               do m=0,ndc-1
+                coeff(m,i1,i2,i3)=0.  ! init all elements to zero
+               end do
+               beta = implicitFactor*nu*dt
+               !! beta = 0. ! TEST
+                ! ******************************** TWO DIMENSIONS ***********************************
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled BC equations for u and v  
+                 ! -------------Coefficients in the the ghost point equation ----------
+                 do n=0,nd-1
+                   ! equation n:  (equation numbers and classify  are set in these calls)
+                   ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
+                     classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
      & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
      & ))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                    equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                      equationNumber(mce2(m1,m2,m3,cmpu,eqnu+n),i1m,
+     & i2m,i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
+     & =coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
+     & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
+     & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
+     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
+     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                      equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,
+     & i2m,i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                    end do
+                    end do
+                    end do
+                 end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                  ! We decouple the coupled velocity components: Only add coefficients of u 
+                  n=0
+                    classify(i1m,i2m,i3m,eqnu)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((
+     & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
+     & 0)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
+     & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,
+     & m3)))+((+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & ))
+                    ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,
      & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of v 
+                  n=1
+                    classify(i1m,i2m,i3m,eqnu)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((
+     & delta(1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(
+     & 1)*an(0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
+     & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,
+     & m3)))+((+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)
+     & ))
+                    ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,
+     & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+     & equationNumberBase1+equationNumberLength1*(i2+m2-
+     & equationNumberBase2+equationNumberLength2*(i3+m3-
+     & equationNumberBase3)))+equationOffset)
+                   end do
+                   end do
+                   end do
+                end if
+                ! ------------- Coefficients on the boundary ----------------
+                ! evaluate the coeff operators 
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled equations for u and v  
+                 ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
+                 ! u equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+     & lapCoeff(ma2(m1,m2,m3)))
                   end do
                   end do
                   end do
                   do m3=-halfWidth3,halfWidth3
                   do m2=-halfWidth,halfWidth
                   do m1=-halfWidth,halfWidth
-                    coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
-     & =coeff(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
-     & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
-     & xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
-     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                    equationNumber(mce2(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
-     & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
+                    coeff(mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(
+     & mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-
+     & alpha)*an(0)*an(1)))*lapCoeff(ma2(m1,m2,m3)))
                   end do
                   end do
                   end do
-               end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-                ! We decouple the coupled velocity components: Only add coefficients of u 
-                n=0
-                  classify(i1m,i2m,i3m,eqnu)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((delta(
-     & 0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(0)*an(
-     & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*an(1)+
-     & delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,0)-an(n)*an(0))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                  ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
-     & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-                ! We decouple the coupled velocity components: Only add components of v 
-                n=1
-                  classify(i1m,i2m,i3m,eqnu)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)=((delta(
-     & 1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(
-     & 0))*xCoeff(ma2(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
-     & delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma2(m1,m2,m3)))+(
-     & (+(delta(n,1)-an(n)*an(1))*(zs/mu))*iCoeff(ma2(m1,m2,m3)))
-                  ! The equation for pt (eqnu,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce2(m1,m2,m3,cmpu,eqnu),i1m,i2m,i3m)
-     & =(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
-     & equationNumberBase1+equationNumberLength1*(i2+m2-
-     & equationNumberBase2+equationNumberLength2*(i3+m3-
-     & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              end if
-              ! ------------- Coefficients on the boundary ----------------
-              ! evaluate the coeff operators 
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled equations for u and v  
-               ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
-               ! u equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                 ! v equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(mce2(
-     & m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-alpha)*
-     & an(0)*an(1)))*lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! v equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(
+     & mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-
+     & alpha)*an(1)*an(0)))*lapCoeff(ma2(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                 ! We decouple the coupled velocity components: Only add coefficients of u 
+                 n=0
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(mce2(
-     & m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-alpha)*
-     & an(1)*an(0)))*lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-               ! We decouple the coupled velocity components: Only add coefficients of u 
-               n=0
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of v 
+                 n=1
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma2(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-               ! We decouple the coupled velocity components: Only add components of v 
-               n=1
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce2(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma2(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
-     & lapCoeff(ma2(m1,m2,m3)))
-                end do
-                end do
-                end do
-              end if
-             end if
-            end do
-            end do
-            end do
+                  end do
+                  end do
+                  end do
+                end if
+               end if
+              end do
+              end do
+              end do
+           else if( addedMassVelocityBC.eq.1 )then
+             stop 9999
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+     & 28) )then
+              ! fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
+               end if
+              end do
+              end do
+              end do
+           else
+             stop 7782
+           end if
            ! Check for two adjacent AMP NO-SLIP WALLS  -- not supported yet.
            ! Use extrapolation or compatibility at corner since equations are duplicate:
            !     u_x + v_y =0 
@@ -6809,13 +6939,19 @@
            else
              axisp2=axisp1
            end if
-           if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1)
-     & .eq.noSlipWall .or. bc(0,axisp2).eq.noSlipWall .or. bc(1,
-     & axisp2).eq.noSlipWall )then
-             write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
-     & at a corner -- not implemented -- fix me")')
+           if( interfaceType(0,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(0,axisp2,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp2,grid).eq.tractionInterface )then
+             write(*,'("insImpINS: ERROR: two AMP no-slip wall 
+     & traction-interfaces meet at a corner -- not implemented -- fix 
+     & me")')
              stop 9099
            end if
+           ! if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. !     bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
+           !   write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+           !   stop 9099
+           ! end if
            if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
      & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
      & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
@@ -10200,7 +10336,7 @@
            an(2)=0.
            an(axis)=2*side-1
          ! the next macro is defined in insImpINS.bf, or insImpVP.bf, etc. 
-         if( bc0.eq.noSlipWall )then
+         if( bc0.eq.noSlipWall .and. debug.gt.3 )then
             write(*,'(" ")')
             write(*,'(">>> insImpINS: fill Matrix Boundary Conditions: 
      & useImplicitAmpBCs=",i4," isBulkSolid=",i2)') useImplicitAmpBCs,
@@ -10227,13 +10363,16 @@
              end if
            end if
          if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. 
-     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 )then
+     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 .and. 
+     & interfaceType(side,axis,grid).eq.tractionInterface )then
            ! ** AMP NO-SLIP WALL BCs FOR A BULK SOLID INTERFACE *** 
            !  The AMP conditions (see fib and fibr papers) have a limit of
            !  a no-slip wall for a heavy solid and a free surface for a light solid
-          write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
+          if( debug.gt.2 )then
+            write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
      & fillCoefficientsScalarSystem=",i4)') 
      & fillCoefficientsScalarSystem
+          end if
           if( mu.eq.0. )then
             write(*,'(" insImpINS:ERROR: mu=0 : nu,fluidDensity=",
      & 2e10.2)') nu,fluidDensity
@@ -10307,210 +10446,214 @@
              end do
              end do
           else
-           write(*,'("  ")')
-           write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
+           if( debug.gt.3 )then
+             write(*,'("  ")')
+             write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+             write(*,'(" --- alpha=",e12.2)') alpha
+           end if
            ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
-            do i3=n3a,n3b
-            do i2=n2a,n2b
-            do i1=n1a,n1b
-             ! if( btest(mask(i1,i2,i3),28) )then
-             !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
-             ! end if
-             if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+           if( addedMassVelocityBC.eq.0 )then
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
      & 28) )then
-             i1m=i1-is1  ! ghost point
-             i2m=i2-is2
-             i3m=i3-is3
-             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
-             ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
-             ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
-             ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
-             ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
-             ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
-             ! evaluate the coeff operators 
-             ! getCoeff(identity, iCoeff,aj)
-               ! Operator x = ux
-                xCoeff(ma3(-1,-1,-1)) = 0
-                xCoeff(ma3( 0,-1,-1)) = 0
-                xCoeff(ma3( 1,-1,-1)) = 0
-                xCoeff(ma3(-1, 0,-1)) = 0
-                xCoeff(ma3( 0, 0,-1)) = 0
-                xCoeff(ma3( 1, 0,-1)) = 0
-                xCoeff(ma3(-1, 1,-1)) = 0
-                xCoeff(ma3( 0, 1,-1)) = 0
-                xCoeff(ma3( 1, 1,-1)) = 0
-                xCoeff(ma3(-1,-1, 0)) = 0
-                xCoeff(ma3( 0,-1, 0)) = 0
-                xCoeff(ma3( 1,-1, 0)) = 0
-                xCoeff(ma3(-1, 0, 0)) = -1./2./dx(0)
-                xCoeff(ma3( 0, 0, 0)) = 0
-                xCoeff(ma3( 1, 0, 0)) = 1./2./dx(0)
-                xCoeff(ma3(-1, 1, 0)) = 0
-                xCoeff(ma3( 0, 1, 0)) = 0
-                xCoeff(ma3( 1, 1, 0)) = 0
-                xCoeff(ma3(-1,-1, 1)) = 0
-                xCoeff(ma3( 0,-1, 1)) = 0
-                xCoeff(ma3( 1,-1, 1)) = 0
-                xCoeff(ma3(-1, 0, 1)) = 0
-                xCoeff(ma3( 0, 0, 1)) = 0
-                xCoeff(ma3( 1, 0, 1)) = 0
-                xCoeff(ma3(-1, 1, 1)) = 0
-                xCoeff(ma3( 0, 1, 1)) = 0
-                xCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator y = uy
-                yCoeff(ma3(-1,-1,-1)) = 0
-                yCoeff(ma3( 0,-1,-1)) = 0
-                yCoeff(ma3( 1,-1,-1)) = 0
-                yCoeff(ma3(-1, 0,-1)) = 0
-                yCoeff(ma3( 0, 0,-1)) = 0
-                yCoeff(ma3( 1, 0,-1)) = 0
-                yCoeff(ma3(-1, 1,-1)) = 0
-                yCoeff(ma3( 0, 1,-1)) = 0
-                yCoeff(ma3( 1, 1,-1)) = 0
-                yCoeff(ma3(-1,-1, 0)) = 0
-                yCoeff(ma3( 0,-1, 0)) = -1./2./dx(1)
-                yCoeff(ma3( 1,-1, 0)) = 0
-                yCoeff(ma3(-1, 0, 0)) = 0
-                yCoeff(ma3( 0, 0, 0)) = 0
-                yCoeff(ma3( 1, 0, 0)) = 0
-                yCoeff(ma3(-1, 1, 0)) = 0
-                yCoeff(ma3( 0, 1, 0)) = 1./2./dx(1)
-                yCoeff(ma3( 1, 1, 0)) = 0
-                yCoeff(ma3(-1,-1, 1)) = 0
-                yCoeff(ma3( 0,-1, 1)) = 0
-                yCoeff(ma3( 1,-1, 1)) = 0
-                yCoeff(ma3(-1, 0, 1)) = 0
-                yCoeff(ma3( 0, 0, 1)) = 0
-                yCoeff(ma3( 1, 0, 1)) = 0
-                yCoeff(ma3(-1, 1, 1)) = 0
-                yCoeff(ma3( 0, 1, 1)) = 0
-                yCoeff(ma3( 1, 1, 1)) = 0
-                ! Operator z = uz
-                 zCoeff(ma3(-1,-1,-1)) = 0
-                 zCoeff(ma3( 0,-1,-1)) = 0
-                 zCoeff(ma3( 1,-1,-1)) = 0
-                 zCoeff(ma3(-1, 0,-1)) = 0
-                 zCoeff(ma3( 0, 0,-1)) = -1./2./dx(2)
-                 zCoeff(ma3( 1, 0,-1)) = 0
-                 zCoeff(ma3(-1, 1,-1)) = 0
-                 zCoeff(ma3( 0, 1,-1)) = 0
-                 zCoeff(ma3( 1, 1,-1)) = 0
-                 zCoeff(ma3(-1,-1, 0)) = 0
-                 zCoeff(ma3( 0,-1, 0)) = 0
-                 zCoeff(ma3( 1,-1, 0)) = 0
-                 zCoeff(ma3(-1, 0, 0)) = 0
-                 zCoeff(ma3( 0, 0, 0)) = 0
-                 zCoeff(ma3( 1, 0, 0)) = 0
-                 zCoeff(ma3(-1, 1, 0)) = 0
-                 zCoeff(ma3( 0, 1, 0)) = 0
-                 zCoeff(ma3( 1, 1, 0)) = 0
-                 zCoeff(ma3(-1,-1, 1)) = 0
-                 zCoeff(ma3( 0,-1, 1)) = 0
-                 zCoeff(ma3( 1,-1, 1)) = 0
-                 zCoeff(ma3(-1, 0, 1)) = 0
-                 zCoeff(ma3( 0, 0, 1)) = 1./2./dx(2)
-                 zCoeff(ma3( 1, 0, 1)) = 0
-                 zCoeff(ma3(-1, 1, 1)) = 0
-                 zCoeff(ma3( 0, 1, 1)) = 0
-                 zCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator identity 
-                iCoeff(ma3(-1,-1,-1)) = 0
-                iCoeff(ma3( 0,-1,-1)) = 0
-                iCoeff(ma3( 1,-1,-1)) = 0
-                iCoeff(ma3(-1, 0,-1)) = 0
-                iCoeff(ma3( 0, 0,-1)) = 0
-                iCoeff(ma3( 1, 0,-1)) = 0
-                iCoeff(ma3(-1, 1,-1)) = 0
-                iCoeff(ma3( 0, 1,-1)) = 0
-                iCoeff(ma3( 1, 1,-1)) = 0
-                iCoeff(ma3(-1,-1, 0)) = 0
-                iCoeff(ma3( 0,-1, 0)) = 0
-                iCoeff(ma3( 1,-1, 0)) = 0
-                iCoeff(ma3(-1, 0, 0)) = 0
-                iCoeff(ma3( 0, 0, 0)) = 1.
-                iCoeff(ma3( 1, 0, 0)) = 0
-                iCoeff(ma3(-1, 1, 0)) = 0
-                iCoeff(ma3( 0, 1, 0)) = 0
-                iCoeff(ma3( 1, 1, 0)) = 0
-                iCoeff(ma3(-1,-1, 1)) = 0
-                iCoeff(ma3( 0,-1, 1)) = 0
-                iCoeff(ma3( 1,-1, 1)) = 0
-                iCoeff(ma3(-1, 0, 1)) = 0
-                iCoeff(ma3( 0, 0, 1)) = 0
-                iCoeff(ma3( 1, 0, 1)) = 0
-                iCoeff(ma3(-1, 1, 1)) = 0
-                iCoeff(ma3( 0, 1, 1)) = 0
-                iCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator laplacian = uxx+uyy+uzz
-                lapCoeff(ma3(-1,-1,-1)) = 0
-                lapCoeff(ma3( 0,-1,-1)) = 0
-                lapCoeff(ma3( 1,-1,-1)) = 0
-                lapCoeff(ma3(-1, 0,-1)) = 0
-                lapCoeff(ma3( 0, 0,-1)) = 1./dx(2)**2
-                lapCoeff(ma3( 1, 0,-1)) = 0
-                lapCoeff(ma3(-1, 1,-1)) = 0
-                lapCoeff(ma3( 0, 1,-1)) = 0
-                lapCoeff(ma3( 1, 1,-1)) = 0
-                lapCoeff(ma3(-1,-1, 0)) = 0
-                lapCoeff(ma3( 0,-1, 0)) = 1./dx(1)**2
-                lapCoeff(ma3( 1,-1, 0)) = 0
-                lapCoeff(ma3(-1, 0, 0)) = 1./dx(0)**2
-                lapCoeff(ma3( 0, 0, 0)) = -2./dx(0)**2-2./dx(1)**2-
+               i1m=i1-is1  ! ghost point
+               i2m=i2-is2
+               i3m=i3-is3
+               ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+               ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
+               ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
+               ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
+               ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
+               ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
+               ! evaluate the coeff operators 
+               ! getCoeff(identity, iCoeff,aj)
+                 ! Operator x = ux
+                  xCoeff(ma3(-1,-1,-1)) = 0
+                  xCoeff(ma3( 0,-1,-1)) = 0
+                  xCoeff(ma3( 1,-1,-1)) = 0
+                  xCoeff(ma3(-1, 0,-1)) = 0
+                  xCoeff(ma3( 0, 0,-1)) = 0
+                  xCoeff(ma3( 1, 0,-1)) = 0
+                  xCoeff(ma3(-1, 1,-1)) = 0
+                  xCoeff(ma3( 0, 1,-1)) = 0
+                  xCoeff(ma3( 1, 1,-1)) = 0
+                  xCoeff(ma3(-1,-1, 0)) = 0
+                  xCoeff(ma3( 0,-1, 0)) = 0
+                  xCoeff(ma3( 1,-1, 0)) = 0
+                  xCoeff(ma3(-1, 0, 0)) = -1./2./dx(0)
+                  xCoeff(ma3( 0, 0, 0)) = 0
+                  xCoeff(ma3( 1, 0, 0)) = 1./2./dx(0)
+                  xCoeff(ma3(-1, 1, 0)) = 0
+                  xCoeff(ma3( 0, 1, 0)) = 0
+                  xCoeff(ma3( 1, 1, 0)) = 0
+                  xCoeff(ma3(-1,-1, 1)) = 0
+                  xCoeff(ma3( 0,-1, 1)) = 0
+                  xCoeff(ma3( 1,-1, 1)) = 0
+                  xCoeff(ma3(-1, 0, 1)) = 0
+                  xCoeff(ma3( 0, 0, 1)) = 0
+                  xCoeff(ma3( 1, 0, 1)) = 0
+                  xCoeff(ma3(-1, 1, 1)) = 0
+                  xCoeff(ma3( 0, 1, 1)) = 0
+                  xCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator y = uy
+                  yCoeff(ma3(-1,-1,-1)) = 0
+                  yCoeff(ma3( 0,-1,-1)) = 0
+                  yCoeff(ma3( 1,-1,-1)) = 0
+                  yCoeff(ma3(-1, 0,-1)) = 0
+                  yCoeff(ma3( 0, 0,-1)) = 0
+                  yCoeff(ma3( 1, 0,-1)) = 0
+                  yCoeff(ma3(-1, 1,-1)) = 0
+                  yCoeff(ma3( 0, 1,-1)) = 0
+                  yCoeff(ma3( 1, 1,-1)) = 0
+                  yCoeff(ma3(-1,-1, 0)) = 0
+                  yCoeff(ma3( 0,-1, 0)) = -1./2./dx(1)
+                  yCoeff(ma3( 1,-1, 0)) = 0
+                  yCoeff(ma3(-1, 0, 0)) = 0
+                  yCoeff(ma3( 0, 0, 0)) = 0
+                  yCoeff(ma3( 1, 0, 0)) = 0
+                  yCoeff(ma3(-1, 1, 0)) = 0
+                  yCoeff(ma3( 0, 1, 0)) = 1./2./dx(1)
+                  yCoeff(ma3( 1, 1, 0)) = 0
+                  yCoeff(ma3(-1,-1, 1)) = 0
+                  yCoeff(ma3( 0,-1, 1)) = 0
+                  yCoeff(ma3( 1,-1, 1)) = 0
+                  yCoeff(ma3(-1, 0, 1)) = 0
+                  yCoeff(ma3( 0, 0, 1)) = 0
+                  yCoeff(ma3( 1, 0, 1)) = 0
+                  yCoeff(ma3(-1, 1, 1)) = 0
+                  yCoeff(ma3( 0, 1, 1)) = 0
+                  yCoeff(ma3( 1, 1, 1)) = 0
+                  ! Operator z = uz
+                   zCoeff(ma3(-1,-1,-1)) = 0
+                   zCoeff(ma3( 0,-1,-1)) = 0
+                   zCoeff(ma3( 1,-1,-1)) = 0
+                   zCoeff(ma3(-1, 0,-1)) = 0
+                   zCoeff(ma3( 0, 0,-1)) = -1./2./dx(2)
+                   zCoeff(ma3( 1, 0,-1)) = 0
+                   zCoeff(ma3(-1, 1,-1)) = 0
+                   zCoeff(ma3( 0, 1,-1)) = 0
+                   zCoeff(ma3( 1, 1,-1)) = 0
+                   zCoeff(ma3(-1,-1, 0)) = 0
+                   zCoeff(ma3( 0,-1, 0)) = 0
+                   zCoeff(ma3( 1,-1, 0)) = 0
+                   zCoeff(ma3(-1, 0, 0)) = 0
+                   zCoeff(ma3( 0, 0, 0)) = 0
+                   zCoeff(ma3( 1, 0, 0)) = 0
+                   zCoeff(ma3(-1, 1, 0)) = 0
+                   zCoeff(ma3( 0, 1, 0)) = 0
+                   zCoeff(ma3( 1, 1, 0)) = 0
+                   zCoeff(ma3(-1,-1, 1)) = 0
+                   zCoeff(ma3( 0,-1, 1)) = 0
+                   zCoeff(ma3( 1,-1, 1)) = 0
+                   zCoeff(ma3(-1, 0, 1)) = 0
+                   zCoeff(ma3( 0, 0, 1)) = 1./2./dx(2)
+                   zCoeff(ma3( 1, 0, 1)) = 0
+                   zCoeff(ma3(-1, 1, 1)) = 0
+                   zCoeff(ma3( 0, 1, 1)) = 0
+                   zCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator identity 
+                  iCoeff(ma3(-1,-1,-1)) = 0
+                  iCoeff(ma3( 0,-1,-1)) = 0
+                  iCoeff(ma3( 1,-1,-1)) = 0
+                  iCoeff(ma3(-1, 0,-1)) = 0
+                  iCoeff(ma3( 0, 0,-1)) = 0
+                  iCoeff(ma3( 1, 0,-1)) = 0
+                  iCoeff(ma3(-1, 1,-1)) = 0
+                  iCoeff(ma3( 0, 1,-1)) = 0
+                  iCoeff(ma3( 1, 1,-1)) = 0
+                  iCoeff(ma3(-1,-1, 0)) = 0
+                  iCoeff(ma3( 0,-1, 0)) = 0
+                  iCoeff(ma3( 1,-1, 0)) = 0
+                  iCoeff(ma3(-1, 0, 0)) = 0
+                  iCoeff(ma3( 0, 0, 0)) = 1.
+                  iCoeff(ma3( 1, 0, 0)) = 0
+                  iCoeff(ma3(-1, 1, 0)) = 0
+                  iCoeff(ma3( 0, 1, 0)) = 0
+                  iCoeff(ma3( 1, 1, 0)) = 0
+                  iCoeff(ma3(-1,-1, 1)) = 0
+                  iCoeff(ma3( 0,-1, 1)) = 0
+                  iCoeff(ma3( 1,-1, 1)) = 0
+                  iCoeff(ma3(-1, 0, 1)) = 0
+                  iCoeff(ma3( 0, 0, 1)) = 0
+                  iCoeff(ma3( 1, 0, 1)) = 0
+                  iCoeff(ma3(-1, 1, 1)) = 0
+                  iCoeff(ma3( 0, 1, 1)) = 0
+                  iCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator laplacian = uxx+uyy+uzz
+                  lapCoeff(ma3(-1,-1,-1)) = 0
+                  lapCoeff(ma3( 0,-1,-1)) = 0
+                  lapCoeff(ma3( 1,-1,-1)) = 0
+                  lapCoeff(ma3(-1, 0,-1)) = 0
+                  lapCoeff(ma3( 0, 0,-1)) = 1./dx(2)**2
+                  lapCoeff(ma3( 1, 0,-1)) = 0
+                  lapCoeff(ma3(-1, 1,-1)) = 0
+                  lapCoeff(ma3( 0, 1,-1)) = 0
+                  lapCoeff(ma3( 1, 1,-1)) = 0
+                  lapCoeff(ma3(-1,-1, 0)) = 0
+                  lapCoeff(ma3( 0,-1, 0)) = 1./dx(1)**2
+                  lapCoeff(ma3( 1,-1, 0)) = 0
+                  lapCoeff(ma3(-1, 0, 0)) = 1./dx(0)**2
+                  lapCoeff(ma3( 0, 0, 0)) = -2./dx(0)**2-2./dx(1)**2-
      & 2./dx(2)**2
-                lapCoeff(ma3( 1, 0, 0)) = 1./dx(0)**2
-                lapCoeff(ma3(-1, 1, 0)) = 0
-                lapCoeff(ma3( 0, 1, 0)) = 1./dx(1)**2
-                lapCoeff(ma3( 1, 1, 0)) = 0
-                lapCoeff(ma3(-1,-1, 1)) = 0
-                lapCoeff(ma3( 0,-1, 1)) = 0
-                lapCoeff(ma3( 1,-1, 1)) = 0
-                lapCoeff(ma3(-1, 0, 1)) = 0
-                lapCoeff(ma3( 0, 0, 1)) = 1./dx(2)**2
-                lapCoeff(ma3( 1, 0, 1)) = 0
-                lapCoeff(ma3(-1, 1, 1)) = 0
-                lapCoeff(ma3( 0, 1, 1)) = 0
-                lapCoeff(ma3( 1, 1, 1)) = 0
-             ! Equations on the ghost point:
-             do m=0,ndc-1
-              coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
-             end do
-             ! Equations on the boundary:
-             do m=0,ndc-1
-              coeff(m,i1,i2,i3)=0.  ! init all elements to zero
-             end do
-             beta = implicitFactor*nu*dt
-             !! beta = 0. ! TEST
-              ! ************************ THREE DIMENSIONS ****************************
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled BC equations for u and v and w 
-               ! -------------Coefficients in the the ghost point equation ----------
-               do n=0,nd-1
-                 ! equation n:  (equation numbers and classify  are set in these calls)
-                   classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+                  lapCoeff(ma3( 1, 0, 0)) = 1./dx(0)**2
+                  lapCoeff(ma3(-1, 1, 0)) = 0
+                  lapCoeff(ma3( 0, 1, 0)) = 1./dx(1)**2
+                  lapCoeff(ma3( 1, 1, 0)) = 0
+                  lapCoeff(ma3(-1,-1, 1)) = 0
+                  lapCoeff(ma3( 0,-1, 1)) = 0
+                  lapCoeff(ma3( 1,-1, 1)) = 0
+                  lapCoeff(ma3(-1, 0, 1)) = 0
+                  lapCoeff(ma3( 0, 0, 1)) = 1./dx(2)**2
+                  lapCoeff(ma3( 1, 0, 1)) = 0
+                  lapCoeff(ma3(-1, 1, 1)) = 0
+                  lapCoeff(ma3( 0, 1, 1)) = 0
+                  lapCoeff(ma3( 1, 1, 1)) = 0
+               ! Equations on the ghost point:
+               do m=0,ndc-1
+                coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
+               end do
+               ! Equations on the boundary:
+               do m=0,ndc-1
+                coeff(m,i1,i2,i3)=0.  ! init all elements to zero
+               end do
+               beta = implicitFactor*nu*dt
+               !! beta = 0. ! TEST
+                ! ************************ THREE DIMENSIONS ****************************
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled BC equations for u and v and w 
+                 ! -------------Coefficients in the the ghost point equation ----------
+                 do n=0,nd-1
+                   ! equation n:  (equation numbers and classify  are set in these calls)
+                     classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
      & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
-     & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,
+     & i2m,i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
      & =coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
      & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
      & xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
@@ -10518,19 +10661,19 @@
      & (delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*an(n)*
      & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*an(1))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
-     & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,
+     & i2m,i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)
      & =coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)+((delta(2,0)*an(
      & n)+delta(n,2)*an(0)+delta(n,0)*an(2)-2.*an(n)*an(2)*an(0))*
      & xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*an(1)+
@@ -10538,215 +10681,239 @@
      & (delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*an(n)*
      & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*an(2))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
-     & i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,
+     & i2m,i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-               end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-                ! We decouple the coupled velocity components: Only add coefficients of u 
-                n=0
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+                    end do
+                    end do
+                    end do
+                 end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                  ! We decouple the coupled velocity components: Only add coefficients of u 
+                  n=0
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
      & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
      & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-                ! We decouple the coupled velocity components: Only add components of v 
-                n=1
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)=((
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of v 
+                  n=1
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)=((
      & delta(1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(
      & 1)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
      & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*
      & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*
      & an(1))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
      & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
-                ! We decouple the coupled velocity components: Only add components of w
-                n=2
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)=((
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffw )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of w
+                  n=2
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)=((
      & delta(2,0)*an(n)+delta(n,2)*an(0)+delta(n,0)*an(2)-2.*an(n)*an(
      & 2)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*
      & an(1)+delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*
      & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*
      & an(2))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
      & i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              end if
-              ! ------------- Coefficients on the boundary ----------------
-              ! evaluate the coeff operators 
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled equations for u and v  
-               ! u equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                   end do
+                   end do
+                   end do
+                end if
+                ! ------------- Coefficients on the boundary ----------------
+                ! evaluate the coeff operators 
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled equations for u and v  
+                 ! u equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-alpha)*
-     & an(0)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnu),i1,i2,i3)+((-beta*(delta(0,2)-(1.-alpha)*
-     & an(0)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! v equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-
+     & alpha)*an(0)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)+((-beta*(delta(0,2)-(1.-
+     & alpha)*an(0)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                 ! v equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-alpha)*
-     & an(1)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnv),i1,i2,i3)+((-beta*(delta(1,2)-(1.-alpha)*
-     & an(1)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! w equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-
+     & alpha)*an(1)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)+((-beta*(delta(1,2)-(1.-
+     & alpha)*an(1)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                 ! w equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpu,eqnw),i1,i2,i3)+((-beta*(delta(2,0)-(1.-alpha)*
-     & an(2)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnw),i1,i2,i3)+((-beta*(delta(2,1)-(1.-alpha)*
-     & an(2)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-               ! We decouple the coupled velocity components: Only add coefficients of u 
-               n=0
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)+((-beta*(delta(2,0)-(1.-
+     & alpha)*an(2)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)+((-beta*(delta(2,1)-(1.-
+     & alpha)*an(2)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                 ! We decouple the coupled velocity components: Only add coefficients of u 
+                 n=0
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-               ! We decouple the coupled velocity components: Only add components of v 
-               n=1
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of v 
+                 n=1
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
-               ! We decouple the coupled velocity components: Only add components of w
-               n=2
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffw )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of w
+                 n=2
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              end if
-             end if
-            end do
-            end do
-            end do
+                  end do
+                  end do
+                  end do
+                end if
+               end if
+              end do
+              end do
+              end do
+           else if( addedMassVelocityBC.eq.1 )then
+             stop 9999
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+     & 28) )then
+              ! fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
+               end if
+              end do
+              end do
+              end do
+           else
+             stop 7782
+           end if
            ! Check for two adjacent AMP NO-SLIP WALLS  -- not supported yet.
            ! Use extrapolation or compatibility at corner since equations are duplicate:
            !     u_x + v_y =0 
@@ -10760,13 +10927,19 @@
            else
              axisp2=axisp1
            end if
-           if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1)
-     & .eq.noSlipWall .or. bc(0,axisp2).eq.noSlipWall .or. bc(1,
-     & axisp2).eq.noSlipWall )then
-             write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
-     & at a corner -- not implemented -- fix me")')
+           if( interfaceType(0,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(0,axisp2,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp2,grid).eq.tractionInterface )then
+             write(*,'("insImpINS: ERROR: two AMP no-slip wall 
+     & traction-interfaces meet at a corner -- not implemented -- fix 
+     & me")')
              stop 9099
            end if
+           ! if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. !     bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
+           !   write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+           !   stop 9099
+           ! end if
            if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
      & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
      & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)
@@ -15271,7 +15444,7 @@
            n3b=n3a
          end if
          ! the next macro is defined in insImpINS.bf, or insImpVP.bf, etc. 
-         if( bc0.eq.noSlipWall )then
+         if( bc0.eq.noSlipWall .and. debug.gt.3 )then
             write(*,'(" ")')
             write(*,'(">>> insImpINS: fill Matrix Boundary Conditions: 
      & useImplicitAmpBCs=",i4," isBulkSolid=",i2)') useImplicitAmpBCs,
@@ -15298,13 +15471,16 @@
              end if
            end if
          if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. 
-     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 )then
+     & projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 .and. 
+     & interfaceType(side,axis,grid).eq.tractionInterface )then
            ! ** AMP NO-SLIP WALL BCs FOR A BULK SOLID INTERFACE *** 
            !  The AMP conditions (see fib and fibr papers) have a limit of
            !  a no-slip wall for a heavy solid and a free surface for a light solid
-          write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
+          if( debug.gt.2 )then
+            write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: 
      & fillCoefficientsScalarSystem=",i4)') 
      & fillCoefficientsScalarSystem
+          end if
           if( mu.eq.0. )then
             write(*,'(" insImpINS:ERROR: mu=0 : nu,fluidDensity=",
      & 2e10.2)') nu,fluidDensity
@@ -15378,331 +15554,338 @@
              end do
              end do
           else
-           write(*,'("  ")')
-           write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
+           if( debug.gt.3 )then
+             write(*,'("  ")')
+             write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since 
      & useImplicitAmpBCs=1 --- ")')
+             write(*,'(" --- alpha=",e12.2)') alpha
+           end if
            ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
-            do i3=n3a,n3b
-            do i2=n2a,n2b
-            do i1=n1a,n1b
-             ! if( btest(mask(i1,i2,i3),28) )then
-             !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
-             ! end if
-             if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+           if( addedMassVelocityBC.eq.0 )then
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
      & 28) )then
-             i1m=i1-is1  ! ghost point
-             i2m=i2-is2
-             i3m=i3-is3
-                 ! get the outward normal for curvilinear grids
-                 an(0)=rsxy(i1,i2,i3,axis,0)
-                 an(1)=rsxy(i1,i2,i3,axis,1)
-                   an(2)=rsxy(i1,i2,i3,axis,2)
-                   anNorm = (2*side-1)/max( epsX, sqrt( an(0)**2 + an(
-     & 1)**2 + an(2)**2 ) )
-                   an(0)=an(0)*anNorm
-                   an(1)=an(1)*anNorm
-                   an(2)=an(2)*anNorm
-             ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
-             ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
-             ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
-             ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
-             ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
-             ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
-              ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-              ajrx = rsxy(i1,i2,i3,0,0)
-              ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0))/(2.*
-     & dr(0))
-              ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0))/(2.*
-     & dr(1))
-              ajrxt = (-rsxy(i1,i2,i3-1,0,0)+rsxy(i1,i2,i3+1,0,0))/(2.*
-     & dr(2))
-              ajsx = rsxy(i1,i2,i3,1,0)
-              ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0))/(2.*
-     & dr(0))
-              ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0))/(2.*
-     & dr(1))
-              ajsxt = (-rsxy(i1,i2,i3-1,1,0)+rsxy(i1,i2,i3+1,1,0))/(2.*
-     & dr(2))
-              ajtx = rsxy(i1,i2,i3,2,0)
-              ajtxr = (-rsxy(i1-1,i2,i3,2,0)+rsxy(i1+1,i2,i3,2,0))/(2.*
-     & dr(0))
-              ajtxs = (-rsxy(i1,i2-1,i3,2,0)+rsxy(i1,i2+1,i3,2,0))/(2.*
-     & dr(1))
-              ajtxt = (-rsxy(i1,i2,i3-1,2,0)+rsxy(i1,i2,i3+1,2,0))/(2.*
-     & dr(2))
-              ajry = rsxy(i1,i2,i3,0,1)
-              ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1))/(2.*
-     & dr(0))
-              ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1))/(2.*
-     & dr(1))
-              ajryt = (-rsxy(i1,i2,i3-1,0,1)+rsxy(i1,i2,i3+1,0,1))/(2.*
-     & dr(2))
-              ajsy = rsxy(i1,i2,i3,1,1)
-              ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1))/(2.*
-     & dr(0))
-              ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1))/(2.*
-     & dr(1))
-              ajsyt = (-rsxy(i1,i2,i3-1,1,1)+rsxy(i1,i2,i3+1,1,1))/(2.*
-     & dr(2))
-              ajty = rsxy(i1,i2,i3,2,1)
-              ajtyr = (-rsxy(i1-1,i2,i3,2,1)+rsxy(i1+1,i2,i3,2,1))/(2.*
-     & dr(0))
-              ajtys = (-rsxy(i1,i2-1,i3,2,1)+rsxy(i1,i2+1,i3,2,1))/(2.*
-     & dr(1))
-              ajtyt = (-rsxy(i1,i2,i3-1,2,1)+rsxy(i1,i2,i3+1,2,1))/(2.*
-     & dr(2))
-              ajrz = rsxy(i1,i2,i3,0,2)
-              ajrzr = (-rsxy(i1-1,i2,i3,0,2)+rsxy(i1+1,i2,i3,0,2))/(2.*
-     & dr(0))
-              ajrzs = (-rsxy(i1,i2-1,i3,0,2)+rsxy(i1,i2+1,i3,0,2))/(2.*
-     & dr(1))
-              ajrzt = (-rsxy(i1,i2,i3-1,0,2)+rsxy(i1,i2,i3+1,0,2))/(2.*
-     & dr(2))
-              ajsz = rsxy(i1,i2,i3,1,2)
-              ajszr = (-rsxy(i1-1,i2,i3,1,2)+rsxy(i1+1,i2,i3,1,2))/(2.*
-     & dr(0))
-              ajszs = (-rsxy(i1,i2-1,i3,1,2)+rsxy(i1,i2+1,i3,1,2))/(2.*
-     & dr(1))
-              ajszt = (-rsxy(i1,i2,i3-1,1,2)+rsxy(i1,i2,i3+1,1,2))/(2.*
-     & dr(2))
-              ajtz = rsxy(i1,i2,i3,2,2)
-              ajtzr = (-rsxy(i1-1,i2,i3,2,2)+rsxy(i1+1,i2,i3,2,2))/(2.*
-     & dr(0))
-              ajtzs = (-rsxy(i1,i2-1,i3,2,2)+rsxy(i1,i2+1,i3,2,2))/(2.*
-     & dr(1))
-              ajtzt = (-rsxy(i1,i2,i3-1,2,2)+rsxy(i1,i2,i3+1,2,2))/(2.*
-     & dr(2))
-              ajrxx = ajrx*ajrxr+ajsx*ajrxs+ajtx*ajrxt
-              ajrxy = ajry*ajrxr+ajsy*ajrxs+ajty*ajrxt
-              ajrxz = ajrz*ajrxr+ajsz*ajrxs+ajtz*ajrxt
-              ajsxx = ajrx*ajsxr+ajsx*ajsxs+ajtx*ajsxt
-              ajsxy = ajry*ajsxr+ajsy*ajsxs+ajty*ajsxt
-              ajsxz = ajrz*ajsxr+ajsz*ajsxs+ajtz*ajsxt
-              ajtxx = ajrx*ajtxr+ajsx*ajtxs+ajtx*ajtxt
-              ajtxy = ajry*ajtxr+ajsy*ajtxs+ajty*ajtxt
-              ajtxz = ajrz*ajtxr+ajsz*ajtxs+ajtz*ajtxt
-              ajryx = ajrx*ajryr+ajsx*ajrys+ajtx*ajryt
-              ajryy = ajry*ajryr+ajsy*ajrys+ajty*ajryt
-              ajryz = ajrz*ajryr+ajsz*ajrys+ajtz*ajryt
-              ajsyx = ajrx*ajsyr+ajsx*ajsys+ajtx*ajsyt
-              ajsyy = ajry*ajsyr+ajsy*ajsys+ajty*ajsyt
-              ajsyz = ajrz*ajsyr+ajsz*ajsys+ajtz*ajsyt
-              ajtyx = ajrx*ajtyr+ajsx*ajtys+ajtx*ajtyt
-              ajtyy = ajry*ajtyr+ajsy*ajtys+ajty*ajtyt
-              ajtyz = ajrz*ajtyr+ajsz*ajtys+ajtz*ajtyt
-              ajrzx = ajrx*ajrzr+ajsx*ajrzs+ajtx*ajrzt
-              ajrzy = ajry*ajrzr+ajsy*ajrzs+ajty*ajrzt
-              ajrzz = ajrz*ajrzr+ajsz*ajrzs+ajtz*ajrzt
-              ajszx = ajrx*ajszr+ajsx*ajszs+ajtx*ajszt
-              ajszy = ajry*ajszr+ajsy*ajszs+ajty*ajszt
-              ajszz = ajrz*ajszr+ajsz*ajszs+ajtz*ajszt
-              ajtzx = ajrx*ajtzr+ajsx*ajtzs+ajtx*ajtzt
-              ajtzy = ajry*ajtzr+ajsy*ajtzs+ajty*ajtzt
-              ajtzz = ajrz*ajtzr+ajsz*ajtzs+ajtz*ajtzt
-             ! evaluate the coeff operators 
-             ! getCoeff(identity, iCoeff,aj)
-               ! Operator x = rx*ur+sx*us+tx*ut
-                cur = ajrx
-                cus = ajsx
-                cut = ajtx
-                xCoeff(ma3(-1,-1,-1)) = 0
-                xCoeff(ma3( 0,-1,-1)) = 0
-                xCoeff(ma3( 1,-1,-1)) = 0
-                xCoeff(ma3(-1, 0,-1)) = 0
-                xCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
-                xCoeff(ma3( 1, 0,-1)) = 0
-                xCoeff(ma3(-1, 1,-1)) = 0
-                xCoeff(ma3( 0, 1,-1)) = 0
-                xCoeff(ma3( 1, 1,-1)) = 0
-                xCoeff(ma3(-1,-1, 0)) = 0
-                xCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
-                xCoeff(ma3( 1,-1, 0)) = 0
-                xCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
-                xCoeff(ma3( 0, 0, 0)) = 0
-                xCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
-                xCoeff(ma3(-1, 1, 0)) = 0
-                xCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
-                xCoeff(ma3( 1, 1, 0)) = 0
-                xCoeff(ma3(-1,-1, 1)) = 0
-                xCoeff(ma3( 0,-1, 1)) = 0
-                xCoeff(ma3( 1,-1, 1)) = 0
-                xCoeff(ma3(-1, 0, 1)) = 0
-                xCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
-                xCoeff(ma3( 1, 0, 1)) = 0
-                xCoeff(ma3(-1, 1, 1)) = 0
-                xCoeff(ma3( 0, 1, 1)) = 0
-                xCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator y = ry*ur+sy*us+ty*ut
-                cur = ajry
-                cus = ajsy
-                cut = ajty
-                yCoeff(ma3(-1,-1,-1)) = 0
-                yCoeff(ma3( 0,-1,-1)) = 0
-                yCoeff(ma3( 1,-1,-1)) = 0
-                yCoeff(ma3(-1, 0,-1)) = 0
-                yCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
-                yCoeff(ma3( 1, 0,-1)) = 0
-                yCoeff(ma3(-1, 1,-1)) = 0
-                yCoeff(ma3( 0, 1,-1)) = 0
-                yCoeff(ma3( 1, 1,-1)) = 0
-                yCoeff(ma3(-1,-1, 0)) = 0
-                yCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
-                yCoeff(ma3( 1,-1, 0)) = 0
-                yCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
-                yCoeff(ma3( 0, 0, 0)) = 0
-                yCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
-                yCoeff(ma3(-1, 1, 0)) = 0
-                yCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
-                yCoeff(ma3( 1, 1, 0)) = 0
-                yCoeff(ma3(-1,-1, 1)) = 0
-                yCoeff(ma3( 0,-1, 1)) = 0
-                yCoeff(ma3( 1,-1, 1)) = 0
-                yCoeff(ma3(-1, 0, 1)) = 0
-                yCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
-                yCoeff(ma3( 1, 0, 1)) = 0
-                yCoeff(ma3(-1, 1, 1)) = 0
-                yCoeff(ma3( 0, 1, 1)) = 0
-                yCoeff(ma3( 1, 1, 1)) = 0
-                ! Operator z = rz*ur+sz*us+tz*ut
-                 cur = ajrz
-                 cus = ajsz
-                 cut = ajtz
-                 zCoeff(ma3(-1,-1,-1)) = 0
-                 zCoeff(ma3( 0,-1,-1)) = 0
-                 zCoeff(ma3( 1,-1,-1)) = 0
-                 zCoeff(ma3(-1, 0,-1)) = 0
-                 zCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
-                 zCoeff(ma3( 1, 0,-1)) = 0
-                 zCoeff(ma3(-1, 1,-1)) = 0
-                 zCoeff(ma3( 0, 1,-1)) = 0
-                 zCoeff(ma3( 1, 1,-1)) = 0
-                 zCoeff(ma3(-1,-1, 0)) = 0
-                 zCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
-                 zCoeff(ma3( 1,-1, 0)) = 0
-                 zCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
-                 zCoeff(ma3( 0, 0, 0)) = 0
-                 zCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
-                 zCoeff(ma3(-1, 1, 0)) = 0
-                 zCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
-                 zCoeff(ma3( 1, 1, 0)) = 0
-                 zCoeff(ma3(-1,-1, 1)) = 0
-                 zCoeff(ma3( 0,-1, 1)) = 0
-                 zCoeff(ma3( 1,-1, 1)) = 0
-                 zCoeff(ma3(-1, 0, 1)) = 0
-                 zCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
-                 zCoeff(ma3( 1, 0, 1)) = 0
-                 zCoeff(ma3(-1, 1, 1)) = 0
-                 zCoeff(ma3( 0, 1, 1)) = 0
-                 zCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator identity 
-                iCoeff(ma3(-1,-1,-1)) = 0
-                iCoeff(ma3( 0,-1,-1)) = 0
-                iCoeff(ma3( 1,-1,-1)) = 0
-                iCoeff(ma3(-1, 0,-1)) = 0
-                iCoeff(ma3( 0, 0,-1)) = 0
-                iCoeff(ma3( 1, 0,-1)) = 0
-                iCoeff(ma3(-1, 1,-1)) = 0
-                iCoeff(ma3( 0, 1,-1)) = 0
-                iCoeff(ma3( 1, 1,-1)) = 0
-                iCoeff(ma3(-1,-1, 0)) = 0
-                iCoeff(ma3( 0,-1, 0)) = 0
-                iCoeff(ma3( 1,-1, 0)) = 0
-                iCoeff(ma3(-1, 0, 0)) = 0
-                iCoeff(ma3( 0, 0, 0)) = 1.
-                iCoeff(ma3( 1, 0, 0)) = 0
-                iCoeff(ma3(-1, 1, 0)) = 0
-                iCoeff(ma3( 0, 1, 0)) = 0
-                iCoeff(ma3( 1, 1, 0)) = 0
-                iCoeff(ma3(-1,-1, 1)) = 0
-                iCoeff(ma3( 0,-1, 1)) = 0
-                iCoeff(ma3( 1,-1, 1)) = 0
-                iCoeff(ma3(-1, 0, 1)) = 0
-                iCoeff(ma3( 0, 0, 1)) = 0
-                iCoeff(ma3( 1, 0, 1)) = 0
-                iCoeff(ma3(-1, 1, 1)) = 0
-                iCoeff(ma3( 0, 1, 1)) = 0
-                iCoeff(ma3( 1, 1, 1)) = 0
-               ! Operator laplacian = 2*rz*tz*urt+rx^2*urr+rxx*ur+sx^2*uss+sxx*us+ry^2*urr+ryy*ur+sy^2*uss+syy*us+2*rx*sx*urs+2*ry*sy*urs+2*rx*tx*urt+2*sx*tx*ust+2*ry*ty*urt+2*sy*ty*ust+2*rz*sz*urs+2*sz*tz*ust+tx^2*utt+txx*ut+ty^2*utt+tyy*ut+rz^2*urr+tz^2*utt+sz^2*uss+rzz*ur+szz*us+tzz*ut
-                cur = ajrxx+ajryy+ajrzz
-                curr = ajrx**2+ajry**2+ajrz**2
-                cus = ajsxx+ajsyy+ajszz
-                curs = 2.*ajrx*ajsx+2.*ajry*ajsy+2.*ajrz*ajsz
-                cuss = ajsx**2+ajsy**2+ajsz**2
-                cut = ajtxx+ajtyy+ajtzz
-                curt = 2.*ajrz*ajtz+2.*ajrx*ajtx+2.*ajry*ajty
-                cust = 2.*ajsx*ajtx+2.*ajsy*ajty+2.*ajsz*ajtz
-                cutt = ajtx**2+ajty**2+ajtz**2
-                lapCoeff(ma3(-1,-1,-1)) = 0
-                lapCoeff(ma3( 0,-1,-1)) = 1./4.*cust/(dr(1)*dr(2))
-                lapCoeff(ma3( 1,-1,-1)) = 0
-                lapCoeff(ma3(-1, 0,-1)) = 1./4.*curt/(dr(0)*dr(2))
-                lapCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)+cutt/dr(2)**
-     & 2
-                lapCoeff(ma3( 1, 0,-1)) = -1./4.*curt/(dr(0)*dr(2))
-                lapCoeff(ma3(-1, 1,-1)) = 0
-                lapCoeff(ma3( 0, 1,-1)) = -1./4.*cust/(dr(1)*dr(2))
-                lapCoeff(ma3( 1, 1,-1)) = 0
-                lapCoeff(ma3(-1,-1, 0)) = 1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)+cuss/dr(1)**
-     & 2
-                lapCoeff(ma3( 1,-1, 0)) = -1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)+curr/dr(0)**
-     & 2
-                lapCoeff(ma3( 0, 0, 0)) = -2.*curr/dr(0)**2-2.*cuss/dr(
-     & 1)**2-2.*cutt/dr(2)**2
-                lapCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)+curr/dr(0)**2
-                lapCoeff(ma3(-1, 1, 0)) = -1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)+cuss/dr(1)**2
-                lapCoeff(ma3( 1, 1, 0)) = 1./4.*curs/(dr(0)*dr(1))
-                lapCoeff(ma3(-1,-1, 1)) = 0
-                lapCoeff(ma3( 0,-1, 1)) = -1./4.*cust/(dr(1)*dr(2))
-                lapCoeff(ma3( 1,-1, 1)) = 0
-                lapCoeff(ma3(-1, 0, 1)) = -1./4.*curt/(dr(0)*dr(2))
-                lapCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)+cutt/dr(2)**2
-                lapCoeff(ma3( 1, 0, 1)) = 1./4.*curt/(dr(0)*dr(2))
-                lapCoeff(ma3(-1, 1, 1)) = 0
-                lapCoeff(ma3( 0, 1, 1)) = 1./4.*cust/(dr(1)*dr(2))
-                lapCoeff(ma3( 1, 1, 1)) = 0
-             ! Equations on the ghost point:
-             do m=0,ndc-1
-              coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
-             end do
-             ! Equations on the boundary:
-             do m=0,ndc-1
-              coeff(m,i1,i2,i3)=0.  ! init all elements to zero
-             end do
-             beta = implicitFactor*nu*dt
-             !! beta = 0. ! TEST
-              ! ************************ THREE DIMENSIONS ****************************
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled BC equations for u and v and w 
-               ! -------------Coefficients in the the ghost point equation ----------
-               do n=0,nd-1
-                 ! equation n:  (equation numbers and classify  are set in these calls)
-                   classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+               i1m=i1-is1  ! ghost point
+               i2m=i2-is2
+               i3m=i3-is3
+                   ! get the outward normal for curvilinear grids
+                   an(0)=rsxy(i1,i2,i3,axis,0)
+                   an(1)=rsxy(i1,i2,i3,axis,1)
+                     an(2)=rsxy(i1,i2,i3,axis,2)
+                     anNorm = (2*side-1)/max( epsX, sqrt( an(0)**2 + 
+     & an(1)**2 + an(2)**2 ) )
+                     an(0)=an(0)*anNorm
+                     an(1)=an(1)*anNorm
+                     an(2)=an(2)*anNorm
+               ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+               ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
+               ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
+               ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
+               ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
+               ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
+                ! this next call will define the jacobian and its derivatives (parameteric and spatial)
+                ajrx = rsxy(i1,i2,i3,0,0)
+                ajrxr = (-rsxy(i1-1,i2,i3,0,0)+rsxy(i1+1,i2,i3,0,0))/(
+     & 2.*dr(0))
+                ajrxs = (-rsxy(i1,i2-1,i3,0,0)+rsxy(i1,i2+1,i3,0,0))/(
+     & 2.*dr(1))
+                ajrxt = (-rsxy(i1,i2,i3-1,0,0)+rsxy(i1,i2,i3+1,0,0))/(
+     & 2.*dr(2))
+                ajsx = rsxy(i1,i2,i3,1,0)
+                ajsxr = (-rsxy(i1-1,i2,i3,1,0)+rsxy(i1+1,i2,i3,1,0))/(
+     & 2.*dr(0))
+                ajsxs = (-rsxy(i1,i2-1,i3,1,0)+rsxy(i1,i2+1,i3,1,0))/(
+     & 2.*dr(1))
+                ajsxt = (-rsxy(i1,i2,i3-1,1,0)+rsxy(i1,i2,i3+1,1,0))/(
+     & 2.*dr(2))
+                ajtx = rsxy(i1,i2,i3,2,0)
+                ajtxr = (-rsxy(i1-1,i2,i3,2,0)+rsxy(i1+1,i2,i3,2,0))/(
+     & 2.*dr(0))
+                ajtxs = (-rsxy(i1,i2-1,i3,2,0)+rsxy(i1,i2+1,i3,2,0))/(
+     & 2.*dr(1))
+                ajtxt = (-rsxy(i1,i2,i3-1,2,0)+rsxy(i1,i2,i3+1,2,0))/(
+     & 2.*dr(2))
+                ajry = rsxy(i1,i2,i3,0,1)
+                ajryr = (-rsxy(i1-1,i2,i3,0,1)+rsxy(i1+1,i2,i3,0,1))/(
+     & 2.*dr(0))
+                ajrys = (-rsxy(i1,i2-1,i3,0,1)+rsxy(i1,i2+1,i3,0,1))/(
+     & 2.*dr(1))
+                ajryt = (-rsxy(i1,i2,i3-1,0,1)+rsxy(i1,i2,i3+1,0,1))/(
+     & 2.*dr(2))
+                ajsy = rsxy(i1,i2,i3,1,1)
+                ajsyr = (-rsxy(i1-1,i2,i3,1,1)+rsxy(i1+1,i2,i3,1,1))/(
+     & 2.*dr(0))
+                ajsys = (-rsxy(i1,i2-1,i3,1,1)+rsxy(i1,i2+1,i3,1,1))/(
+     & 2.*dr(1))
+                ajsyt = (-rsxy(i1,i2,i3-1,1,1)+rsxy(i1,i2,i3+1,1,1))/(
+     & 2.*dr(2))
+                ajty = rsxy(i1,i2,i3,2,1)
+                ajtyr = (-rsxy(i1-1,i2,i3,2,1)+rsxy(i1+1,i2,i3,2,1))/(
+     & 2.*dr(0))
+                ajtys = (-rsxy(i1,i2-1,i3,2,1)+rsxy(i1,i2+1,i3,2,1))/(
+     & 2.*dr(1))
+                ajtyt = (-rsxy(i1,i2,i3-1,2,1)+rsxy(i1,i2,i3+1,2,1))/(
+     & 2.*dr(2))
+                ajrz = rsxy(i1,i2,i3,0,2)
+                ajrzr = (-rsxy(i1-1,i2,i3,0,2)+rsxy(i1+1,i2,i3,0,2))/(
+     & 2.*dr(0))
+                ajrzs = (-rsxy(i1,i2-1,i3,0,2)+rsxy(i1,i2+1,i3,0,2))/(
+     & 2.*dr(1))
+                ajrzt = (-rsxy(i1,i2,i3-1,0,2)+rsxy(i1,i2,i3+1,0,2))/(
+     & 2.*dr(2))
+                ajsz = rsxy(i1,i2,i3,1,2)
+                ajszr = (-rsxy(i1-1,i2,i3,1,2)+rsxy(i1+1,i2,i3,1,2))/(
+     & 2.*dr(0))
+                ajszs = (-rsxy(i1,i2-1,i3,1,2)+rsxy(i1,i2+1,i3,1,2))/(
+     & 2.*dr(1))
+                ajszt = (-rsxy(i1,i2,i3-1,1,2)+rsxy(i1,i2,i3+1,1,2))/(
+     & 2.*dr(2))
+                ajtz = rsxy(i1,i2,i3,2,2)
+                ajtzr = (-rsxy(i1-1,i2,i3,2,2)+rsxy(i1+1,i2,i3,2,2))/(
+     & 2.*dr(0))
+                ajtzs = (-rsxy(i1,i2-1,i3,2,2)+rsxy(i1,i2+1,i3,2,2))/(
+     & 2.*dr(1))
+                ajtzt = (-rsxy(i1,i2,i3-1,2,2)+rsxy(i1,i2,i3+1,2,2))/(
+     & 2.*dr(2))
+                ajrxx = ajrx*ajrxr+ajsx*ajrxs+ajtx*ajrxt
+                ajrxy = ajry*ajrxr+ajsy*ajrxs+ajty*ajrxt
+                ajrxz = ajrz*ajrxr+ajsz*ajrxs+ajtz*ajrxt
+                ajsxx = ajrx*ajsxr+ajsx*ajsxs+ajtx*ajsxt
+                ajsxy = ajry*ajsxr+ajsy*ajsxs+ajty*ajsxt
+                ajsxz = ajrz*ajsxr+ajsz*ajsxs+ajtz*ajsxt
+                ajtxx = ajrx*ajtxr+ajsx*ajtxs+ajtx*ajtxt
+                ajtxy = ajry*ajtxr+ajsy*ajtxs+ajty*ajtxt
+                ajtxz = ajrz*ajtxr+ajsz*ajtxs+ajtz*ajtxt
+                ajryx = ajrx*ajryr+ajsx*ajrys+ajtx*ajryt
+                ajryy = ajry*ajryr+ajsy*ajrys+ajty*ajryt
+                ajryz = ajrz*ajryr+ajsz*ajrys+ajtz*ajryt
+                ajsyx = ajrx*ajsyr+ajsx*ajsys+ajtx*ajsyt
+                ajsyy = ajry*ajsyr+ajsy*ajsys+ajty*ajsyt
+                ajsyz = ajrz*ajsyr+ajsz*ajsys+ajtz*ajsyt
+                ajtyx = ajrx*ajtyr+ajsx*ajtys+ajtx*ajtyt
+                ajtyy = ajry*ajtyr+ajsy*ajtys+ajty*ajtyt
+                ajtyz = ajrz*ajtyr+ajsz*ajtys+ajtz*ajtyt
+                ajrzx = ajrx*ajrzr+ajsx*ajrzs+ajtx*ajrzt
+                ajrzy = ajry*ajrzr+ajsy*ajrzs+ajty*ajrzt
+                ajrzz = ajrz*ajrzr+ajsz*ajrzs+ajtz*ajrzt
+                ajszx = ajrx*ajszr+ajsx*ajszs+ajtx*ajszt
+                ajszy = ajry*ajszr+ajsy*ajszs+ajty*ajszt
+                ajszz = ajrz*ajszr+ajsz*ajszs+ajtz*ajszt
+                ajtzx = ajrx*ajtzr+ajsx*ajtzs+ajtx*ajtzt
+                ajtzy = ajry*ajtzr+ajsy*ajtzs+ajty*ajtzt
+                ajtzz = ajrz*ajtzr+ajsz*ajtzs+ajtz*ajtzt
+               ! evaluate the coeff operators 
+               ! getCoeff(identity, iCoeff,aj)
+                 ! Operator x = rx*ur+sx*us+tx*ut
+                  cur = ajrx
+                  cus = ajsx
+                  cut = ajtx
+                  xCoeff(ma3(-1,-1,-1)) = 0
+                  xCoeff(ma3( 0,-1,-1)) = 0
+                  xCoeff(ma3( 1,-1,-1)) = 0
+                  xCoeff(ma3(-1, 0,-1)) = 0
+                  xCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
+                  xCoeff(ma3( 1, 0,-1)) = 0
+                  xCoeff(ma3(-1, 1,-1)) = 0
+                  xCoeff(ma3( 0, 1,-1)) = 0
+                  xCoeff(ma3( 1, 1,-1)) = 0
+                  xCoeff(ma3(-1,-1, 0)) = 0
+                  xCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
+                  xCoeff(ma3( 1,-1, 0)) = 0
+                  xCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
+                  xCoeff(ma3( 0, 0, 0)) = 0
+                  xCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
+                  xCoeff(ma3(-1, 1, 0)) = 0
+                  xCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
+                  xCoeff(ma3( 1, 1, 0)) = 0
+                  xCoeff(ma3(-1,-1, 1)) = 0
+                  xCoeff(ma3( 0,-1, 1)) = 0
+                  xCoeff(ma3( 1,-1, 1)) = 0
+                  xCoeff(ma3(-1, 0, 1)) = 0
+                  xCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
+                  xCoeff(ma3( 1, 0, 1)) = 0
+                  xCoeff(ma3(-1, 1, 1)) = 0
+                  xCoeff(ma3( 0, 1, 1)) = 0
+                  xCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator y = ry*ur+sy*us+ty*ut
+                  cur = ajry
+                  cus = ajsy
+                  cut = ajty
+                  yCoeff(ma3(-1,-1,-1)) = 0
+                  yCoeff(ma3( 0,-1,-1)) = 0
+                  yCoeff(ma3( 1,-1,-1)) = 0
+                  yCoeff(ma3(-1, 0,-1)) = 0
+                  yCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
+                  yCoeff(ma3( 1, 0,-1)) = 0
+                  yCoeff(ma3(-1, 1,-1)) = 0
+                  yCoeff(ma3( 0, 1,-1)) = 0
+                  yCoeff(ma3( 1, 1,-1)) = 0
+                  yCoeff(ma3(-1,-1, 0)) = 0
+                  yCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
+                  yCoeff(ma3( 1,-1, 0)) = 0
+                  yCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
+                  yCoeff(ma3( 0, 0, 0)) = 0
+                  yCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
+                  yCoeff(ma3(-1, 1, 0)) = 0
+                  yCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
+                  yCoeff(ma3( 1, 1, 0)) = 0
+                  yCoeff(ma3(-1,-1, 1)) = 0
+                  yCoeff(ma3( 0,-1, 1)) = 0
+                  yCoeff(ma3( 1,-1, 1)) = 0
+                  yCoeff(ma3(-1, 0, 1)) = 0
+                  yCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
+                  yCoeff(ma3( 1, 0, 1)) = 0
+                  yCoeff(ma3(-1, 1, 1)) = 0
+                  yCoeff(ma3( 0, 1, 1)) = 0
+                  yCoeff(ma3( 1, 1, 1)) = 0
+                  ! Operator z = rz*ur+sz*us+tz*ut
+                   cur = ajrz
+                   cus = ajsz
+                   cut = ajtz
+                   zCoeff(ma3(-1,-1,-1)) = 0
+                   zCoeff(ma3( 0,-1,-1)) = 0
+                   zCoeff(ma3( 1,-1,-1)) = 0
+                   zCoeff(ma3(-1, 0,-1)) = 0
+                   zCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)
+                   zCoeff(ma3( 1, 0,-1)) = 0
+                   zCoeff(ma3(-1, 1,-1)) = 0
+                   zCoeff(ma3( 0, 1,-1)) = 0
+                   zCoeff(ma3( 1, 1,-1)) = 0
+                   zCoeff(ma3(-1,-1, 0)) = 0
+                   zCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)
+                   zCoeff(ma3( 1,-1, 0)) = 0
+                   zCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)
+                   zCoeff(ma3( 0, 0, 0)) = 0
+                   zCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)
+                   zCoeff(ma3(-1, 1, 0)) = 0
+                   zCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)
+                   zCoeff(ma3( 1, 1, 0)) = 0
+                   zCoeff(ma3(-1,-1, 1)) = 0
+                   zCoeff(ma3( 0,-1, 1)) = 0
+                   zCoeff(ma3( 1,-1, 1)) = 0
+                   zCoeff(ma3(-1, 0, 1)) = 0
+                   zCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)
+                   zCoeff(ma3( 1, 0, 1)) = 0
+                   zCoeff(ma3(-1, 1, 1)) = 0
+                   zCoeff(ma3( 0, 1, 1)) = 0
+                   zCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator identity 
+                  iCoeff(ma3(-1,-1,-1)) = 0
+                  iCoeff(ma3( 0,-1,-1)) = 0
+                  iCoeff(ma3( 1,-1,-1)) = 0
+                  iCoeff(ma3(-1, 0,-1)) = 0
+                  iCoeff(ma3( 0, 0,-1)) = 0
+                  iCoeff(ma3( 1, 0,-1)) = 0
+                  iCoeff(ma3(-1, 1,-1)) = 0
+                  iCoeff(ma3( 0, 1,-1)) = 0
+                  iCoeff(ma3( 1, 1,-1)) = 0
+                  iCoeff(ma3(-1,-1, 0)) = 0
+                  iCoeff(ma3( 0,-1, 0)) = 0
+                  iCoeff(ma3( 1,-1, 0)) = 0
+                  iCoeff(ma3(-1, 0, 0)) = 0
+                  iCoeff(ma3( 0, 0, 0)) = 1.
+                  iCoeff(ma3( 1, 0, 0)) = 0
+                  iCoeff(ma3(-1, 1, 0)) = 0
+                  iCoeff(ma3( 0, 1, 0)) = 0
+                  iCoeff(ma3( 1, 1, 0)) = 0
+                  iCoeff(ma3(-1,-1, 1)) = 0
+                  iCoeff(ma3( 0,-1, 1)) = 0
+                  iCoeff(ma3( 1,-1, 1)) = 0
+                  iCoeff(ma3(-1, 0, 1)) = 0
+                  iCoeff(ma3( 0, 0, 1)) = 0
+                  iCoeff(ma3( 1, 0, 1)) = 0
+                  iCoeff(ma3(-1, 1, 1)) = 0
+                  iCoeff(ma3( 0, 1, 1)) = 0
+                  iCoeff(ma3( 1, 1, 1)) = 0
+                 ! Operator laplacian = 2*rz*tz*urt+rx^2*urr+rxx*ur+sx^2*uss+sxx*us+ry^2*urr+ryy*ur+sy^2*uss+syy*us+2*rx*sx*urs+2*ry*sy*urs+2*rx*tx*urt+2*sx*tx*ust+2*ry*ty*urt+2*sy*ty*ust+2*rz*sz*urs+2*sz*tz*ust+tx^2*utt+txx*ut+ty^2*utt+tyy*ut+rz^2*urr+tz^2*utt+sz^2*uss+rzz*ur+szz*us+tzz*ut
+                  cur = ajrxx+ajryy+ajrzz
+                  curr = ajrx**2+ajry**2+ajrz**2
+                  cus = ajsxx+ajsyy+ajszz
+                  curs = 2.*ajrx*ajsx+2.*ajry*ajsy+2.*ajrz*ajsz
+                  cuss = ajsx**2+ajsy**2+ajsz**2
+                  cut = ajtxx+ajtyy+ajtzz
+                  curt = 2.*ajrz*ajtz+2.*ajrx*ajtx+2.*ajry*ajty
+                  cust = 2.*ajsx*ajtx+2.*ajsy*ajty+2.*ajsz*ajtz
+                  cutt = ajtx**2+ajty**2+ajtz**2
+                  lapCoeff(ma3(-1,-1,-1)) = 0
+                  lapCoeff(ma3( 0,-1,-1)) = 1./4.*cust/(dr(1)*dr(2))
+                  lapCoeff(ma3( 1,-1,-1)) = 0
+                  lapCoeff(ma3(-1, 0,-1)) = 1./4.*curt/(dr(0)*dr(2))
+                  lapCoeff(ma3( 0, 0,-1)) = -1./2.*cut/dr(2)+cutt/dr(2)
+     & **2
+                  lapCoeff(ma3( 1, 0,-1)) = -1./4.*curt/(dr(0)*dr(2))
+                  lapCoeff(ma3(-1, 1,-1)) = 0
+                  lapCoeff(ma3( 0, 1,-1)) = -1./4.*cust/(dr(1)*dr(2))
+                  lapCoeff(ma3( 1, 1,-1)) = 0
+                  lapCoeff(ma3(-1,-1, 0)) = 1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma3( 0,-1, 0)) = -1./2.*cus/dr(1)+cuss/dr(1)
+     & **2
+                  lapCoeff(ma3( 1,-1, 0)) = -1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma3(-1, 0, 0)) = -1./2.*cur/dr(0)+curr/dr(0)
+     & **2
+                  lapCoeff(ma3( 0, 0, 0)) = -2.*curr/dr(0)**2-2.*
+     & cuss/dr(1)**2-2.*cutt/dr(2)**2
+                  lapCoeff(ma3( 1, 0, 0)) = 1./2.*cur/dr(0)+curr/dr(0)*
+     & *2
+                  lapCoeff(ma3(-1, 1, 0)) = -1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma3( 0, 1, 0)) = 1./2.*cus/dr(1)+cuss/dr(1)*
+     & *2
+                  lapCoeff(ma3( 1, 1, 0)) = 1./4.*curs/(dr(0)*dr(1))
+                  lapCoeff(ma3(-1,-1, 1)) = 0
+                  lapCoeff(ma3( 0,-1, 1)) = -1./4.*cust/(dr(1)*dr(2))
+                  lapCoeff(ma3( 1,-1, 1)) = 0
+                  lapCoeff(ma3(-1, 0, 1)) = -1./4.*curt/(dr(0)*dr(2))
+                  lapCoeff(ma3( 0, 0, 1)) = 1./2.*cut/dr(2)+cutt/dr(2)*
+     & *2
+                  lapCoeff(ma3( 1, 0, 1)) = 1./4.*curt/(dr(0)*dr(2))
+                  lapCoeff(ma3(-1, 1, 1)) = 0
+                  lapCoeff(ma3( 0, 1, 1)) = 1./4.*cust/(dr(1)*dr(2))
+                  lapCoeff(ma3( 1, 1, 1)) = 0
+               ! Equations on the ghost point:
+               do m=0,ndc-1
+                coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
+               end do
+               ! Equations on the boundary:
+               do m=0,ndc-1
+                coeff(m,i1,i2,i3)=0.  ! init all elements to zero
+               end do
+               beta = implicitFactor*nu*dt
+               !! beta = 0. ! TEST
+                ! ************************ THREE DIMENSIONS ****************************
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled BC equations for u and v and w 
+                 ! -------------Coefficients in the the ghost point equation ----------
+                 do n=0,nd-1
+                   ! equation n:  (equation numbers and classify  are set in these calls)
+                     classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
      & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
-     & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,
+     & i2m,i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)
      & =coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)+((delta(1,0)*an(
      & n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(1)*an(0))*
      & xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*an(1)+
@@ -15710,19 +15893,19 @@
      & (delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*an(n)*
      & an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*an(1))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
-     & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,
+     & i2m,i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-                  do m3=-halfWidth3,halfWidth3
-                  do m2=-halfWidth,halfWidth
-                  do m1=-halfWidth,halfWidth
-                    coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)
+                    end do
+                    end do
+                    end do
+                    do m3=-halfWidth3,halfWidth3
+                    do m2=-halfWidth,halfWidth
+                    do m1=-halfWidth,halfWidth
+                      coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)
      & =coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)+((delta(2,0)*an(
      & n)+delta(n,2)*an(0)+delta(n,0)*an(2)-2.*an(n)*an(2)*an(0))*
      & xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*an(1)+
@@ -15730,215 +15913,239 @@
      & (delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*an(n)*
      & an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*an(2))
      & *(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                   ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
-                    equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
-     & i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
+                     ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
+                      equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,
+     & i2m,i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                  end do
-                  end do
-                  end do
-               end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-                ! We decouple the coupled velocity components: Only add coefficients of u 
-                n=0
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
+                    end do
+                    end do
+                    end do
+                 end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                  ! We decouple the coupled velocity components: Only add coefficients of u 
+                  n=0
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,i3m)=((
      & delta(0,0)*an(n)+delta(n,0)*an(0)+delta(n,0)*an(0)-2.*an(n)*an(
      & 0)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(0,1)*an(n)+delta(n,0)*
      & an(1)+delta(n,1)*an(0)-2.*an(n)*an(0)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(0,2)*an(n)+delta(n,0)*an(2)+delta(n,2)*an(0)-2.*
      & an(n)*an(0)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,0)-an(n)*
      & an(0))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpu,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpu,eqnu+n),i1m,i2m,
      & i3m)=(cmpu+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-                ! We decouple the coupled velocity components: Only add components of v 
-                n=1
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)=((
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of v 
+                  n=1
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,i3m)=((
      & delta(1,0)*an(n)+delta(n,1)*an(0)+delta(n,0)*an(1)-2.*an(n)*an(
      & 1)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(1,1)*an(n)+delta(n,1)*
      & an(1)+delta(n,1)*an(1)-2.*an(n)*an(1)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(1,2)*an(n)+delta(n,1)*an(2)+delta(n,2)*an(1)-2.*
      & an(n)*an(1)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,1)-an(n)*
      & an(1))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpv,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpv,eqnu+n),i1m,i2m,
      & i3m)=(cmpv+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
-                ! We decouple the coupled velocity components: Only add components of w
-                n=2
-                  classify(i1m,i2m,i3m,eqnu+n)=ghost1
-                 do m3=-halfWidth3,halfWidth3
-                 do m2=-halfWidth,halfWidth
-                 do m1=-halfWidth,halfWidth
-                   coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)=((
+                   end do
+                   end do
+                   end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffw )
+     & then
+                  ! We decouple the coupled velocity components: Only add components of w
+                  n=2
+                    classify(i1m,i2m,i3m,eqnu+n)=ghost1
+                   do m3=-halfWidth3,halfWidth3
+                   do m2=-halfWidth,halfWidth
+                   do m1=-halfWidth,halfWidth
+                     coeff(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,i3m)=((
      & delta(2,0)*an(n)+delta(n,2)*an(0)+delta(n,0)*an(2)-2.*an(n)*an(
      & 2)*an(0))*xCoeff(ma3(m1,m2,m3)))+((delta(2,1)*an(n)+delta(n,2)*
      & an(1)+delta(n,1)*an(2)-2.*an(n)*an(2)*an(1))*yCoeff(ma3(m1,m2,
      & m3)))+((delta(2,2)*an(n)+delta(n,2)*an(2)+delta(n,2)*an(2)-2.*
      & an(n)*an(2)*an(2))*zCoeff(ma3(m1,m2,m3)))+((+(delta(n,2)-an(n)*
      & an(2))*(zs/mu))*iCoeff(ma3(m1,m2,m3)))
-                  ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
-                   equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
+                    ! The equation for pt (eqnu+n,i1m,i2m,i3m) is centered on (cmpw,i1,i2,i3): 
+                     equationNumber(mce3(m1,m2,m3,cmpw,eqnu+n),i1m,i2m,
      & i3m)=(cmpw+1+numberOfComponentsForCoefficients*(i1+m1-
      & equationNumberBase1+equationNumberLength1*(i2+m2-
      & equationNumberBase2+equationNumberLength2*(i3+m3-
      & equationNumberBase3)))+equationOffset)
-                 end do
-                 end do
-                 end do
-              end if
-              ! ------------- Coefficients on the boundary ----------------
-              ! evaluate the coeff operators 
-              if( fillCoefficientsScalarSystem.eq.0 )then
-               ! Fill in the coupled equations for u and v  
-               ! u equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                   end do
+                   end do
+                   end do
+                end if
+                ! ------------- Coefficients on the boundary ----------------
+                ! evaluate the coeff operators 
+                if( fillCoefficientsScalarSystem.eq.0 )then
+                 ! Fill in the coupled equations for u and v  
+                 ! u equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-alpha)*
-     & an(0)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnu),i1,i2,i3)+((-beta*(delta(0,2)-(1.-alpha)*
-     & an(0)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! v equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpv,eqnu),i1,i2,i3)+((-beta*(delta(0,1)-(1.-
+     & alpha)*an(0)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnu),i1,i2,i3)+((-beta*(delta(0,2)-(1.-
+     & alpha)*an(0)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                 ! v equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-alpha)*
-     & an(1)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnv),i1,i2,i3)+((-beta*(delta(1,2)-(1.-alpha)*
-     & an(1)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-               ! w equation:
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpu,eqnv),i1,i2,i3)+((-beta*(delta(1,0)-(1.-
+     & alpha)*an(1)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnv),i1,i2,i3)+((-beta*(delta(1,2)-(1.-
+     & alpha)*an(1)*an(2)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                 ! w equation:
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpu,eqnw),i1,i2,i3)+((-beta*(delta(2,0)-(1.-alpha)*
-     & an(2)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=coeff(mce3(
-     & m1,m2,m3,cmpw,eqnw),i1,i2,i3)+((-beta*(delta(2,1)-(1.-alpha)*
-     & an(2)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
-               ! We decouple the coupled velocity components: Only add coefficients of u 
-               n=0
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpu,eqnw),i1,i2,i3)+((-beta*(delta(2,0)-(1.-
+     & alpha)*an(2)*an(0)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=coeff(
+     & mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)+((-beta*(delta(2,1)-(1.-
+     & alpha)*an(2)*an(1)))*lapCoeff(ma3(m1,m2,m3)))
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffU )
+     & then
+                 ! We decouple the coupled velocity components: Only add coefficients of u 
+                 n=0
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpu,eqnu),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(0,0)-(1.-alpha)*an(0)*an(0)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
-               ! We decouple the coupled velocity components: Only add components of v 
-               n=1
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffv )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of v 
+                 n=1
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpv,eqnv),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(1,1)-(1.-alpha)*an(1)*an(1)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
-               ! We decouple the coupled velocity components: Only add components of w
-               n=2
-                do m3=-halfWidth3,halfWidth3
-                do m2=-halfWidth,halfWidth
-                do m1=-halfWidth,halfWidth
-                  coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(ma3(
-     & m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
+                  end do
+                  end do
+                  end do
+                else if( fillCoefficientsScalarSystem.eq.fillCoeffw )
+     & then
+                 ! We decouple the coupled velocity components: Only add components of w
+                 n=2
+                  do m3=-halfWidth3,halfWidth3
+                  do m2=-halfWidth,halfWidth
+                  do m1=-halfWidth,halfWidth
+                    coeff(mce3(m1,m2,m3,cmpw,eqnw),i1,i2,i3)=(iCoeff(
+     & ma3(m1,m2,m3)))+((-beta*(delta(2,2)-(1.-alpha)*an(2)*an(2)))*
      & lapCoeff(ma3(m1,m2,m3)))
-                end do
-                end do
-                end do
-              end if
-             end if
-            end do
-            end do
-            end do
+                  end do
+                  end do
+                  end do
+                end if
+               end if
+              end do
+              end do
+              end do
+           else if( addedMassVelocityBC.eq.1 )then
+             stop 9999
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+              do i1=n1a,n1b
+               ! if( btest(mask(i1,i2,i3),28) )then
+               !   write(*,'("+++ Point i=(",3i5,") is an interiorBoundaryPoint")') i1,i2,i3
+               ! end if
+               if( mask(i1,i2,i3).gt.0 .and. .not.btest(mask(i1,i2,i3),
+     & 28) )then
+              ! fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
+               end if
+              end do
+              end do
+              end do
+           else
+             stop 7782
+           end if
            ! Check for two adjacent AMP NO-SLIP WALLS  -- not supported yet.
            ! Use extrapolation or compatibility at corner since equations are duplicate:
            !     u_x + v_y =0 
@@ -15952,13 +16159,19 @@
            else
              axisp2=axisp1
            end if
-           if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1)
-     & .eq.noSlipWall .or. bc(0,axisp2).eq.noSlipWall .or. bc(1,
-     & axisp2).eq.noSlipWall )then
-             write(*,'("insImpINS: ERROR: two AMP no-slip walls meet 
-     & at a corner -- not implemented -- fix me")')
+           if( interfaceType(0,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp1,grid).eq.tractionInterface 
+     & .or.interfaceType(0,axisp2,grid).eq.tractionInterface 
+     & .or.interfaceType(1,axisp2,grid).eq.tractionInterface )then
+             write(*,'("insImpINS: ERROR: two AMP no-slip wall 
+     & traction-interfaces meet at a corner -- not implemented -- fix 
+     & me")')
              stop 9099
            end if
+           ! if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. !     bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
+           !   write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+           !   stop 9099
+           ! end if
            if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,
      & axisp1).eq.dirichletBoundaryCondition .or. bc(0,axisp2)
      & .eq.dirichletBoundaryCondition .or. bc(1,axisp2)

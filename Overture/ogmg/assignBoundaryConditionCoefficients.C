@@ -26,7 +26,7 @@
 static int numberOfUseEquationOnGhostWarnings=0;
 
 void Ogmg::
-assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, int level, 
+assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, int level, int orderOfAccuracyThisGrid, 
                                                                           int sideToCheck /* =-1 */, int axisToCheck /* =-1 */ )
 // =============================================================================================
 // /Description:
@@ -35,6 +35,13 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 //  
 // =============================================================================================
 {
+  // const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  // const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+    assert( orderOfAccuracyThisGrid==2 || orderOfAccuracyThisGrid==4 );
+
+    const int orderOfThisLevel =orderOfAccuracyThisGrid;
+
     if( debug & 4 )
         fPrintF(debugFile,"\n ++++++++ assignBoundaryConditionCoefficients level=%i grid=%i (side,axis)=(%i,%i) ++++++\n",
           	    level,grid,sideToCheck,axisToCheck);
@@ -95,7 +102,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 	// Nor now we can only use the equation on the ghost line for the laplace eqn: 
                 useEquationOnGhost = useEquationOnGhost && equationToSolve==OgesParameters::laplaceEquation;
 
-      	if( orderOfAccuracy==2 || !useEquationOnGhost )
+      	if( orderOfThisLevel==2 || !useEquationOnGhost )
       	{
         	  coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary(side,axis),extrapParams);
       	}
@@ -213,7 +220,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
       	}
 
       	coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary(side,axis));
-      	if( orderOfAccuracy==4 )
+      	if( orderOfThisLevel==4 )
       	{
         	  extrapParams.ghostLineToAssign=2;
         	  coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary(side,axis),extrapParams); 
@@ -228,7 +235,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 
       	coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary(side,axis),extrapParams);
 
-      	if( orderOfAccuracy==4 )
+      	if( orderOfThisLevel==4 )
       	{
                     extrapParams.ghostLineToAssign=2; // extrap 2nd ghost line
                     coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary(side,axis),extrapParams);
@@ -239,7 +246,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
       	
 
             }
-            else if( orderOfAccuracy==4 && level>0 && 
+            else if( orderOfThisLevel==4 && level>0 && 
                               ( bc(side,axis,grid)==OgmgParameters::neumann || bc(side,axis,grid)==OgmgParameters::mixed  ) &&
                               parameters.lowerLevelNeumannFirstGhostLineBC==OgmgParameters::useEquationToSecondOrder )
             {
@@ -452,7 +459,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
                 mg.update(MappedGrid::THEvertexBoundaryNormal);
       	
 
-                if( orderOfAccuracy==4 &&
+                if( orderOfThisLevel==4 &&
           	    level>0 && parameters.lowerLevelNeumannFirstGhostLineBC==OgmgParameters::useEquationToSecondOrder )
       	{
           // -- this case now done above
@@ -476,7 +483,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 	  // if( Ogmg::debug & 4 )
 	  //  displayCoeff(coeff,sPrintF("Ogmg::assignBCCoeff:after fill Neumann order 4: coeff for grid %i",grid));
 
-        	  if( orderOfAccuracy==4 )
+        	  if( orderOfThisLevel==4 )
         	  {
           	    bool useEquationOnGhost = useEquationOnGhostLineForNeumannBC(mg,level);
           	    if( useEquationOnGhost && numberOfUseEquationOnGhostWarnings<5 )
@@ -521,7 +528,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 
 	// printF(" predefined: mixed BC: a0=%e a1=%e \n",a(0),a(1));
         	  
-      	if( orderOfAccuracy==4 &&
+      	if( orderOfThisLevel==4 &&
           	    level>0 && parameters.lowerLevelNeumannFirstGhostLineBC==OgmgParameters::useEquationToSecondOrder )
       	{
           // -- this case now done above
@@ -655,7 +662,7 @@ assignBoundaryConditionCoefficients( realMappedGridFunction & coeff, int grid, i
 
         	  coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::mixed,BCTypes::boundary(side,axis),bcParams);
 
-        	  if( orderOfAccuracy==4 )
+        	  if( orderOfThisLevel==4 )
         	  {
           	    bool useEquationOnGhost = useEquationOnGhostLineForNeumannBC(mg,level);
           	    if( useEquationOnGhost && numberOfUseEquationOnGhostWarnings<5 )

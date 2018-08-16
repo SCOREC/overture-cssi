@@ -199,6 +199,9 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if (!dbase.has_key("useNewExtrapInterpNeighbours")) dbase.put<int>("useNewExtrapInterpNeighbours");
   dbase.get<int>("useNewExtrapInterpNeighbours")=1; // set to zero to use old way
   
+  // Set all ghost points by extrapolation and over-write BC routine 
+  dbase.put<int>("setGhostByExtrapolation")=0;
+  
   // Option to "pin" an edge or corner of a grid
   // pinBoundaryCondition(0:4,numberOfPins) : (grid,side1,side2,side3,pinOption) , side1=0,1 or -1 for edge.
   if( !dbase.has_key("pinBoundaryCondition") ) dbase.put<IntegerArray>("pinBoundaryCondition");
@@ -208,6 +211,8 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if( !dbase.has_key("currentInterfaceTimeLevel") ) dbase.put<int>("currentInterfaceTimeLevel")=-1;
   if( !dbase.has_key("numberOfInterfaceTimeLevels") ) dbase.put<int>("numberOfInterfaceTimeLevels")=4;
 
+  dbase.put<real>("ampSigmaJumpCoeff")=1.;   // coeff of [traction] in AMP interface condition
+  dbase.put<real>("ampVelocityJumpCoeff")=1.;   // coeff of [velocity] in AMP interface condition
 
   bcName[interpolation]="interpolation";
   bcName[displacementBC]="displacementBC";
@@ -1673,6 +1678,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   real displacementDissipation=0.;
   real displacementDissipation1=0.;
 
+  int & setGhostByExtrapolation = dbase.get<int>("setGhostByExtrapolation");
+
   aString answer,line;
   char buff[100];
   //  const int numberOfDimensions = cg.numberOfDimensions();
@@ -1692,7 +1699,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     dialog.setWindowTitle("Cgsm parameters");
 
     // ----- Text strings ------
-    const int numberOfTextStrings=31;
+    const int numberOfTextStrings=40; // upper bound
     aString textCommands[numberOfTextStrings];
     aString textLabels[numberOfTextStrings];
     aString textStrings[numberOfTextStrings];
@@ -1759,12 +1766,36 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       textStrings[nt]+=sPrintF(buff, "%g ",ad4dt(m)); 
     nt++;
 
+    //   zf = zfMuByH*(mu/h) + zfRhoHByDt*(rho*h/dt)
+    textLabels[nt]="zfMuByH";                  sPrintF(textStrings[nt], "%g",dbase.get<real>("zfMuByH"));       nt++;
+    textLabels[nt]="zfRhoHByDt";               sPrintF(textStrings[nt], "%g",dbase.get<real>("zfRhoHByDt"));    nt++;
+    textLabels[nt]="zfMono";                   sPrintF(textStrings[nt], "%g",dbase.get<real>("zfMono"));       nt++;
+
+    textLabels[nt]="ampSigmaJumpCoeff";        sPrintF(textStrings[nt], "%g",dbase.get<real>("ampSigmaJumpCoeff"));       nt++;
+    textLabels[nt]="ampVelocityJumpCoeff";     sPrintF(textStrings[nt], "%g",dbase.get<real>("ampVelocityJumpCoeff"));    nt++;
+
+    textLabels[nt]="fluid solid corner fix:";  sPrintF(textStrings[nt], "%i",dbase.get<int>("fluidSolidCornerFix"));       nt++;
+
     // null strings terminal list
     assert( nt<numberOfTextStrings );
     textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
 
     addPrefix(textLabels,prefix,textCommands,numberOfTextStrings); // add the prefix to the commands 
     dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
+    // ---- Toggle buttons -----
+    const int maxCommands=10;
+    aString cmd[maxCommands];
+
+    aString tbLabels[] = {"set ghost by extrapolation",
+			  ""};
+    int tbState[10];
+    tbState[ 0] =  setGhostByExtrapolation;
+
+    int numColumns=1;
+    addPrefix(tbLabels,prefix,cmd,maxCommands);
+    dialog.setToggleButtons(cmd, tbLabels, tbState, numColumns); 
+
 
     if( executeCommand ) return 0;
   }
@@ -1814,6 +1845,15 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
              "                       4 = fourth order version\n",stressRelaxation);
     }
     
+    else if( dialog.getTextValue(answer,"fluid solid corner fix:","%i",dbase.get<int>("fluidSolidCornerFix")) ){}//
+
+    else if( dialog.getTextValue(answer,"zfMuByH","%e",dbase.get<real>("zfMuByH")) ){}//
+    else if( dialog.getTextValue(answer,"zfRhoHByDt","%e",dbase.get<real>("zfRhoHByDt")) ){}//
+    else if( dialog.getTextValue(answer,"zfMono","%e",dbase.get<real>("zfMono")) ){}//
+
+    else if( dialog.getTextValue(answer,"ampSigmaJumpCoeff","%e",dbase.get<real>("ampSigmaJumpCoeff")) ){}//
+    else if( dialog.getTextValue(answer,"ampVelocityJumpCoeff","%e",dbase.get<real>("ampVelocityJumpCoeff")) ){}//
+
     else if( dialog.getTextValue(answer,"relaxAlpha","%e",relaxAlpha) ){}//
     else if( dialog.getTextValue(answer,"relaxDelta","%e",relaxDelta) ){}//
     else if( dialog.getTextValue(answer,"rho","%e",rho) ){}//
@@ -1876,6 +1916,13 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 	  ad4dt(u3c)=displacementDissipation1;
       }
     }
+
+    else if( dialog.getToggleValue(answer,"set ghost by extrapolation",setGhostByExtrapolation) )
+    {
+      printF("setGhostByExtrapolation=%i\n",setGhostByExtrapolation);
+    }
+    
+
 
     else if( len=answer.matches("TZ interface velocity") )
     {

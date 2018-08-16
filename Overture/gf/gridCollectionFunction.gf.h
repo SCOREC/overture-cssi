@@ -213,11 +213,18 @@ class GridCollectionFunction : public GenericGridCollectionFunction
 
   bool isNull();  // TRUE is this is a null grid function (no grid)
 
-  virtual void setIsACoefficientMatrix(const bool trueOrFalse=TRUE, 
+  virtual void setIsACoefficientMatrix(const bool trueOrFalse=true, 
 				       const int stencilSize=defaultValue, 
 				       const int numberOfGhostLines=1,
 				       const int numberOfComponentsForCoefficients=1,
 				       const int offset=0 );
+
+  virtual void setIsACoefficientMatrix(const bool trueOrFalse, 
+				       const IntegerArray & stencilSize, 
+				       const IntegerArray & numberOfGhostLines,
+				       const int numberOfComponentsForCoefficients=1,
+				       const int offset=0 );
+
   bool getIsACoefficientMatrix() const;
 
   virtual int dataCopy( const GridCollectionFunction & gcf );  // copy the array data only

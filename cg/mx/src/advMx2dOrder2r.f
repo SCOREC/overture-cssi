@@ -84,8 +84,8 @@
      & rungeKuttaFourthOrder=2,stoermerTimeStepping=3,
      & modifiedEquationTimeStepping=4)
         ! Dispersion models
-        integer noDispersion,drude,gdm
-        parameter( noDispersion=0, drude=1, gdm=2 )
+       integer noDispersion,drude,gdm
+       parameter( noDispersion=0, drude=1, gdm=2 )
         ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
@@ -1439,6 +1439,7 @@
         ! Generalized dispersion model parameters
         real alphaP, a0,a1,b0,b1
         real ev,evm,evn,pv0,pvm0,pvx,pvxE,deti,rhsE,rhsP
+        integer gdmParOption
         integer maxNumberOfParameters,maxNumberOfPolarizationVectors
         parameter( maxNumberOfParameters=4, 
      & maxNumberOfPolarizationVectors=20 )
@@ -5099,13 +5100,18 @@ c===============================================================================
         gammaDt=gamma*dt
         omegapDtSq=(omegap*dt)**2
         ! write(*,*) 'Before calling getGDMparameters...'
+        gdmParOption=1 ! scale a0 and a1 by eps
         if( dispersionModel.ne.noDispersion )then
-         ! get the gdm parameters
-         !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
-         ! This routine returns numberOfPolarizationVectors (no need to pass)
-         call getGDMParameters( grid,alphaP,gdmPar,
+          ! get the gdm parameters
+          !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
+          ! This routine returns numberOfPolarizationVectors (no need to pass)
+          call getGDMParameters( grid,alphaP,gdmPar,
      & numberOfPolarizationVectors, maxNumberOfParameters,
-     & maxNumberOfPolarizationVectors )
+     & maxNumberOfPolarizationVectors,gdmParOption )
+          if( alphaP.ne.0 .and. abs(eps*alphaP-1.) .gt. 1.e-10 )then
+            write(*,'(" advOptNew: ERROR alphaP != 1/eps ")')
+            stop 2288
+          end if
           if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
             ! ---- Dispersive Maxwell ----
             write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",
@@ -5382,121 +5388,125 @@ c===============================================================================
            if( dispersionModel.ne.noDispersion )then
              ! --dispersion model --
              ! XYZ
-                if( t.le.3*dt )then
-                  if( t.le.3.*dt )then
-                    write(*,'("advOPT>>>","update-
+             ! newer version from MJJ
+               if( t.le.3*dt )then
+                 if( t.le.3.*dt )then
+                   write(*,'("advOPT>>>","update-
      & dispersive_dim=2_order=2_gridType=rectangular")')
-                  end if
-                end if
-                fe=0.
-                ! -- first compute some coefficients ---
-                beta=0.
-                do iv=0,numberOfPolarizationVectors-1
-                  betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
-                  beta = beta + .5*dt*a1v(iv)*betav(iv)
-                  fpv(iv)=0.  ! initialize if not used
-                  b1tttv(iv)=b1v(iv)*b1v(iv)-b0v(iv)
-                  b0tttv(iv)=b1v(iv)*b0v(iv)
-                  a0tttv(iv)=-a0v(iv)*b1v(iv)
-                  a1tttv(iv)=a0v(iv)-a1v(iv)*b1v(iv)
-                  a2tttv(iv)=a1v(iv)
-                end do
-                  do i3=n3a,n3b
-                  do i2=n2a,n2b
-                  do i1=n1a,n1b
-                    if( mask(i1,i2,i3).gt.0 )then
-                do m=0,nd-1
-                  pc=pxc+m
-                  ec=ex+m
-                  ! This is only needed for the second order code
-                  if( addForcing.ne.0 )then ! forcing in E equation already added to f
-                    ! fe = dtsq*f(i1,i2,i3,ec)  ! this term is already included
-                    fe=0.
-                     if( addForcing.ne.0 )then
-                       ! fp = dtsq*f(i1,i2,i3,pc)
-                       if( forcingOption.eq.twilightZoneForcing )then
-                         if( nd.eq.2 )then
-                             call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+                 end if
+               end if
+               fe=0.
+               ! -- first compute some coefficients ---
+               beta=0.
+               do iv=0,numberOfPolarizationVectors-1
+                 betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+                 beta = beta + .5*dt*a1v(iv)*betav(iv)
+                 fpv(iv)=0.  ! initialize if not used
+                 b1tttv(iv)=b1v(iv)*b1v(iv)-b0v(iv)
+                 b0tttv(iv)=b1v(iv)*b0v(iv)
+                 a0tttv(iv)=-a0v(iv)*b1v(iv)
+                 a1tttv(iv)=a0v(iv)-a1v(iv)*b1v(iv)
+                 a2tttv(iv)=a1v(iv)
+               end do
+                 do i3=n3a,n3b
+                 do i2=n2a,n2b
+                 do i1=n1a,n1b
+                   if( mask(i1,i2,i3).gt.0 )then
+               do m=0,nd-1
+                 pc=pxc+m
+                 ec=ex+m
+                 ! This is only needed for the second order code
+                 if( addForcing.ne.0 )then ! forcing in E equation already added to f
+                   ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+                   fe = dtsq*f(i1,i2,i3,ec)
+                   ! this next function will adjust fe by affing -alphaP*Ptt
+                    if( addForcing.ne.0 )then
+                      ! fp = dtsq*f(i1,i2,i3,pc)
+                      if( forcingOption.eq.twilightZoneForcing )then
+                        if( nd.eq.2 )then
+                            call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),0.,t, ec,e0 )
-                             call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+                            call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),0.,t, ec,e0t )
-                         else
-                             call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+                        else
+                            call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
-                             call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+                            call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
-                         end if
-                         do iv=0,numberOfPolarizationVectors-1
-                           pce = pc+iv*nd
-                           if( nd.eq.2 )then
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, pce,p0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, pce,p0t )
-                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),0.,t, pce,p0tt )
-                           else
-                               call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
-                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
-                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0)
-     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
-                           end if
-                           fe = fe + dtsq*alphaP*p0tt
-                           fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
-     & iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
-                         end do
-                         !if( abs(fp-fp2).gt. 1.e-14 )then
-                         !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
-                         !else
-                         !  fp=fp2
-                         !end if
-                       else
-                         do iv=0,numberOfPolarizationVectors-1
-                           fpv(iv)=0.
-                         end do
-                       end if
-                     end if
-                    fp=fpv(0)
-                  end if
-                  ev = u(i1,i2,i3,ec)
-                  evm=um(i1,i2,i3,ec)
-                  do iv=0,numberOfPolarizationVectors-1
-                        pv(iv) = p(i1,i2,i3,m+iv*nd)
-                        pvm(iv)=pm(i1,i2,i3,m+iv*nd)
-                  end do
-                  rhsP = 0.
-                  pSum = 0.
-                  ! write(*,*) 'Inside updateDispersive'
-                      ! write(*,*) 'Inside updateDispersive order=2'
-                            ! INFO("FD22r-2D-dispersive-Any-PV");
-                            ! write(*,*) 'Inside updateDispersive rectangular order=2'
-                            elap2 = lap2d2(i1,i2,i3,ec)
-                      do iv=0,numberOfPolarizationVectors-1
-                        rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)
-     & *pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
-     &  + fpv(iv)
-                        rhsP = rhsP + betav(iv)*rhspv(iv)
-                        pSum = pSum + 2.*pv(iv) - pvm(iv)
-                        !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
-                      end do
-                      rhsE = (2.*ev-evm) + csq*dtsq*elap2 + alphaP*( 
-     & pSum - rhsP ) + fe
-                      evn = rhsE / (1.+ alphaP*beta)
-                      un(i1,i2,i3,ec) = evn
-                      do iv=0,numberOfPolarizationVectors-1
-                        pn(i1,i2,i3,m+iv*nd)  = betav(iv)*( .5*dt*a1v(
-     & iv)*evn + rhspv(iv) )
-                        ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv)=",4e16.8)') i1,i2,m,pn(i1,i2,i3,m+iv*nd)
-                      end do
-                      ! End of second order code
-                  ! End of fourth order code
-                end do !m=0,nd-1
+                        end if
+                        do iv=0,numberOfPolarizationVectors-1
+                          pce = pc+iv*nd
+                          if( nd.eq.2 )then
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0t )
+                              call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0tt )
+                          else
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
+                              call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
+                          end if
+                          fe = fe + dtsq*alphaP*p0tt
+                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+                          fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(iv)
+     & *p0 - a0v(iv)*e0 - a1v(iv)*e0t )
+                        end do
+                        !if( abs(fp-fp2).gt. 1.e-14 )then
+                        !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
+                        !else
+                        !  fp=fp2
+                        !end if
+                      else
+                        do iv=0,numberOfPolarizationVectors-1
+                          fpv(iv)=0.
+                        end do
+                      end if
                     end if
-                  end do
-                  end do
-                  end do
+                   fp=fpv(0)
+                 end if
+                 ev = u(i1,i2,i3,ec)
+                 evm=um(i1,i2,i3,ec)
+                 do iv=0,numberOfPolarizationVectors-1
+                   pv(iv) = p(i1,i2,i3,m+iv*nd)
+                   pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                 end do
+                 rhsP = 0.
+                 pSum = 0.
+                 ! write(*,*) 'Inside updateDispersive'
+                     ! write(*,*) 'Inside updateDispersive order=2'
+                           ! INFO("FD22r-2D-dispersive-Any-PV");
+                           ! write(*,*) 'Inside updateDispersive rectangular order=2'
+                           elap2 = lap2d2(i1,i2,i3,ec)
+                     do iv=0,numberOfPolarizationVectors-1
+                       rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)*
+     & pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev ) 
+     & + fpv(iv)
+                       rhsP = rhsP + betav(iv)*rhspv(iv)
+                       pSum = pSum + 2.*pv(iv) - pvm(iv)
+                       !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
+                     end do
+                     rhsE = (2.*ev-evm) + csq*dtsq*elap2 + alphaP*( 
+     & pSum - rhsP ) + fe
+                     evn = rhsE / (1.+ alphaP*beta)
+                     un(i1,i2,i3,ec) = evn
+                     do iv=0,numberOfPolarizationVectors-1
+                       pn(i1,i2,i3,m+iv*nd)  = betav(iv)*( .5*dt*a1v(
+     & iv)*evn + rhspv(iv) )
+                       ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv)=",4e16.8)') i1,i2,m,pn(i1,i2,i3,m+iv*nd)
+                     end do
+                     ! End of second order code
+                 ! End of fourth order code
+               end do !m=0,nd-1
+                   end if
+                 end do
+                 end do
+                 end do
+             ! initial version WDH: 
              ! updateRectangular2dOrder2Dispersive()
        !-    else if( useSosupDissipation.ne.0 )then
        !-

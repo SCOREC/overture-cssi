@@ -3,9 +3,9 @@
 # Usage:
 #   
 #  ogmgt tz -g=<name> -maxit=<num> -sm=[rb|rbj|lz1|lz2|lz3|j|alj|alz] -ibs=[0|1] -nibs=<> -ils=<> -iml=<> 
-#           -ins=<> -bls=<> -bli= -bll= -fmg=[0|1] -opav=[0|1|2] -autoSmooth=[0|1]
+#           -ins=<> -bls=<> -bli= -bll= -fmg=[0|1] -opav=[0|1|2] -autoSmooth=[0|1] -orderCoarse=[-1|2|4]
 #           -option=[solve|sm|fc|cf|bc|cg] -lb=[kh|all] -levels=<num> -ssr=[0|1] -mii=<> -cycle=[V|W|F] -nsm="n m"
-#           -eqn=[lap|dsg|heat] -predefined=[0|1] -autoChoose=[0|1|2] -tz=[poly|trig] -ic=[0|1] -scg=[0|1]
+#           -eqn=[lap|dsg|heat] -predefined=[0|1] -autoChoose=[0|1|2] -tz=[poly|trig] -ic=[0|1|2] -scg=[0|1]
 #           -cgSolver=[best|yale] -bcOrder4=[eqn|extrap] -matlab=[0|1] -omegaz=<> -rtol=<> -etol=<> -rtolcg=<> 
 #           -conv=[residual|errEst|old] -rb=[new|old] -ilu=[0|1|2...] -iluFill=<> -save=<name> -read=<name>
 #
@@ -24,7 +24,7 @@
 #   -autoSmooth : 0= turn off auto sub smooth determination, i.e. fix number of sub-smooths
 #   -option : test different parts of the MG solver, sm=smoother, fc=fine-to-coarse, cf=coarse-to-fine, 
 #   -autoChoose : 0=OFF, 1= automatically choose good parameters (smoothers, etc.), 2=choose more robust params
-#   -ic : 1=start with exact initial conditions
+#   -ic : 1=start with exact initial conditions, 2=random initial conditions
 #   -scg : 1 = solve coarse grid equations with the smoother
 #   -cgsi : number of iterations to use when smoothing the coarse grid equations
 #   -matlab=1 : save a matlab file for plotting convergence rates
@@ -50,7 +50,7 @@
 # Set default parameters: 
 #
 $grid="cic.bbmg6.hdf"; $maxit=10; $debug=3; $sm="rb"; $fmg=0; 
-$opav=1;  $opavCoarseGrid=1; 
+$opav=1;  $opavCoarseGrid=1; $orderCoarse=-1; 
 $option="solve"; $cfw=2; $omega=-1.; $omegaz=-1.; $ic=0; 
 $ibs=1;$nibs=2; $ils=0; $iml=1; $ins=2; 
 $bls=0; $bli=5; $bll=1; $save=""; $read=""; 
@@ -75,7 +75,8 @@ GetOptions( "g=s"=>\$grid,"maxit=i"=>\$maxit,"debug=i"=>\$debug,"sm=s"=>\$sm,"bs
             "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
             "bc7=s"=>\$bc7,"bc8=s"=>\$bc8,"rb=s"=>\$rb,"cgsi=i"=>\$cgsi,"projectSingular=i"=>\$projectSingular,\
             "adjustSingularEquations=i"=>\$adjustSingularEquations,"ilucg=i"=>\$ilucg,"iluFill=f"=>\$iluFill,\
-            "save=s"=>\$save, "read=s"=>\$read,"opavCoarseGrid=i"=>\$opavCoarseGrid,"nuDt=f"=>\$nuDt );
+            "save=s"=>\$save, "read=s"=>\$read,"opavCoarseGrid=i"=>\$opavCoarseGrid,"nuDt=f"=>\$nuDt,\
+            "orderCoarse=i"=>\$orderCoarse );
 # -------------------------------------------------------------------------------------------------
 $grid
 if( $eqn eq "lap" && $predefined eq 1 ){ $eqn = "laplace (predefined)"; }
@@ -167,7 +168,7 @@ if( $lb eq "all" ){ $lb="all to all"; }
 #
 #
 $option
-# 
+#
 # divScalarGrad (predefined)
 # laplace (predefined)
 # heat equation (predefined)
@@ -184,6 +185,7 @@ $cmd
 set trigonometric frequencies
   $fx $fy $fz 
 if( $ic eq 1 ){ $cmd="set exact initial conditions"; }else{ $cmd="#"; }
+if( $ic eq 2 ){ $cmd="random initial conditions"; }
 $cmd
 # dirichlet=1 neumann=2 mixed=3
 $bcmd
@@ -214,12 +216,18 @@ $conv
 #
 # operator averaging option: 
 $opav
+#
 #   optionally do NOT average the coarsest level
 average equations on the coarsest grid $opavCoarseGrid
 #
 #* use new auto sub-smooth
 #*
  $fmg
+# Coarse grid equations can be solved by iteration: 
+if( $scg ==1 ){ $cmd="iterate on coarse grid"; }else{ $cmd="#"; }
+$cmd 
+# 
+order of coarse level solves: $orderCoarse
 #
 #* set load balancing options
 #    KernighanLin

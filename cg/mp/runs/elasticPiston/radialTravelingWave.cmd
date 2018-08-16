@@ -30,8 +30,9 @@ $lambdaSolid=1.; $muSolid=1.;
 $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
-$diss=.2;   # 2nd-order linear dissipation for cgsm --> increase from .1 to .2 : July 2, 2017
+$diss=.5;   # 2nd-order linear dissipation for cgsm 
 $smVariation = "g"; 
+$setGhostByExtrapolation=0; 
 $tsSM="modifiedEquationTimeStepping";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
@@ -66,7 +67,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; 
+$addedMass=0;   $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; 
 $useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC 
 $amp=.05; $caseid=0;
@@ -92,7 +93,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
-   "dtMax=f"=>\$dtMax );
+   "dtMax=f"=>\$dtMax,"setGhostByExtrapolation=i"=>\$setGhostByExtrapolation );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }

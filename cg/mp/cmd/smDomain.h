@@ -55,6 +55,7 @@ if( $displacementDissipation1 eq "" ){ $displacementDissipation1=.0; }
 if( $relaxAlpha eq "" ){ $relaxAlpha=.1; }
 if( $relaxDelta eq "" ){ $relaxDelta=.1; }
 if( $addedMass eq "" ){ $addedMass=0; }
+if( $setGhostByExtrapolation eq "" ){ $setGhostByExtrapolation=0; }
 #
 if( $godunovOrder eq "" ){ $godunovOrder=2; }
 if( $godunovType eq "" ){ $godunovType=0; }
@@ -72,6 +73,10 @@ if( $hempCpr eq "" ){ $hempCpr=0.0; }
 if( $hempDpr eq "" ){ $hempDpr=0.0; }
 if( $trigTzScaleFactor eq "" ){ $trigTzScaleFactor=1.; }
 if( $tzCmds eq "" ){ $tzCmds="#"; }
+if( $zfMuByH eq "" ){ $zfMuByH=2.;}
+if( $zfRhoHByDt eq "" ){ $zfRhoHByDt=2.;}
+if( $zfMono eq "" ){ $zfMono=2.;}
+if( $fluidSolidCornerFix eq "" ){ $fluidSolidCornerFix=0; }
 # 
 # ------- start new domain ----------
 setup $domainName
@@ -101,6 +106,12 @@ SMPDE:relaxAlpha $relaxAlpha
 SMPDE:relaxDelta $relaxDelta
 SMPDE:tangential stress dissipation $tangentialStressDissipation  $tangentialStressDissipation1
 SMPDE:displacement dissipation $displacementDissipation $displacementDissipation1
+SMPDE:set ghost by extrapolation $setGhostByExtrapolation
+# Amp:
+SMPDE:zfMuByH $zfMuByH 
+SMPDE:zfRhoHByDt $zfRhoHByDt
+SMPDE:zfMono $zfMono 
+SMPDE:fluid solid corner fix: $fluidSolidCornerFix
 #
 use added mass algorithm $addedMass
 # --- start hemp parameters ---

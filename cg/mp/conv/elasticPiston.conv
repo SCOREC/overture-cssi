@@ -68,7 +68,7 @@ GetOptions( "pv=s"=>\$pv,"cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng
             "bcOption=i"=>\$bcOption,"smVariation=s"=>\$smVariation,"pi=i"=>\$pi,"adCns=f"=>\$adCns,\
             "angle=i"=>\$angle,"piGhostOption=i"=>\$piGhostOption,"godunovType=i"=>\$godunovType,"tz=s"=>\$tz,\
             "problem=i"=>\$problem,"scf=f"=>\$scf,"case=s"=>\$case,"trigTzScaleFactor=f"=>\$trigTzScaleFactor,\
-            "vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2 );
+            "vg0=f"=>\$vg0,"vg1=f"=>\$vg1,"vg2=f"=>\$vg2  );
 #
 $check="mp.check";
 #

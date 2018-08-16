@@ -3,7 +3,8 @@
 // ***********************************************************
 #beginMacro  defineTrigonometricTZMacro()     
 
-const int nc = numberOfComponents + int(useChargeDensity);  // include charge density in TZ
+// const int nc = numberOfComponents + int(useChargeDensity);  // include charge density in TZ
+const int nc = numberOfComponentsForTZ;
 
 RealArray fx(nc),fy(nc),fz(nc),ft(nc);
 RealArray gx(nc),gy(nc),gz(nc),gt(nc);

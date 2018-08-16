@@ -8,6 +8,7 @@
 #include "Interface.h"  
 #include "ParallelUtility.h"
 #include "ArrayEvolution.h"       
+#include "DeformingBodyMotion.h"
 
 // include some interface bpp macros
 //------------------------------------------------------------------------------------
@@ -191,269 +192,6 @@ enum UserDefinedKnownSolutionEnum
 // Macro: compute the traction by extrapolation of nearby values in time (extrapolation or interpolation)
 // =======================================================================================================
 
-// ==================================================================================================
-// Macro: compute the traction-rate by differencing traction values in time
-// **** OLD ****
-// ==================================================================================================
-// #beginMacro getTractionRate()
-//   if( true || t <= 2.*dt || dt==0. )
-//   {
-//     printF("\n--INS-- interfaceRHS: EVAL traction-rate at t=%9.3e t0=%9.2e, dt=%9.3e, cur=%i prev=%i t[prev]=%9.3e\n,",
-//            t,gf[gfIndex].t,dt,idh.current,prev,idh.interfaceDataList[prev].t);
-//   }
-          	    
-
-
-//   const int orderOfAccuracyTractionRate=2; // *****************************************************
-
-          	    
-//   // for 2nd-order accuracy we need two previous levels;
-//   int im2=-1;
-//   if( orderOfAccuracyTractionRate==2 )
-//   {
-//     im2 = ( prev -1 + numberOfInterfaceHistoryValuesToSave ) %  numberOfInterfaceHistoryValuesToSave;
-//     if( idh.interfaceDataList[im2 ].t >= tp )
-//       im2=-1;  // there is no past value before prev
-//   }
-
-//   RealArray tractionRate;
-//   const bool evalExactTractionRate=true;
-//   const bool useExactTractionRate=FALSE && useExactInterfaceValues && !twilightZoneFlow;
-
-//   if( evalExactTractionRate )  // ********* TESTING
-//   {
-//     printF("--INS--interface: USING EXACT TRACTION RATE t=%9.3e ****TEMP****\n",t);
-//     if( debug() & 4 )
-//     {
-//       fPrintF(debugFile,"--INS--interface: USING EXACT TRACTION RATE t=%9.3e ****TEMP****\n",t);
-//     }
-        
-
-//     tractionRate.redim(I1,I2,I3,Rx);
-
-//     if( knownSolution==Parameters::userDefinedKnownSolution )
-//     {
-//       int body=0;
-//       // RealArray state(I1,I2,I3,Rx);
-//       parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
-//                                                            t, grid, mg, I1,I2,I3,Rx,tractionRate );
-//       // parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
-//       //                                                      t, grid, mg, I1,I2,I3,Ctr,f );
-//     }
-//     else if( twilightZoneFlow )
-//     {
-//       if( true )
-//       {
-//         // for TZ flow the "exact" tractionRate = tractionRateTZ - tractionRateTZ = 0 
-//         tractionRate=0.;
-//       }
-//       else
-//       {
-//         int ntd=1;// number of time derivatives
-//         getTractionTZ(tractionRate,I1,I2,I3,t,ntd);
-//       }
-            
-//     }
-//     else
-//     {
-//       printF(" ********** TEST: SET EXACT traction-rate to ZERO : t=%9.3e *ERROR* *************\n",t);
-
-//       tractionRate= 0.;
-//     }
-        
-//   }
-
-//   if( useExactTractionRate )
-//   {
-//     f(I1,I2,I3,Ctr)=tractionRate(I1,I2,I3,Rx);
-            
-//     printF(" ********** TEST: SET traction-rate to EXACT : t=%9.3e *TEMP* *************\n",t);
-//     // ::display(f(I1,I2,I3,Ctr),sPrintF("traction-rate EXACT t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-
-        
-//   }
-//   else if( dt==0. )
-//   {
-//     printF("\n --INS-- interfaceRHS-- WARNING dt=0 for traction-rate t=%9.3e SET TO ZERO !! FIX ME *********\n\n",
-// 	   gf[gfIndex].t);
-
-//     f(I1,I2,I3,Ctr)=0.;
-//   }
-//   else if( orderOfAccuracyTractionRate==1 || im2==-1 )
-//   {
-//     const int prev = idh.current;  // by default use this as the old solution
-//     const real tp = idh.interfaceDataList[prev].t;
-//     RealArray & f1 = idh.interfaceDataList[prev].f;         // here is the RHS a time tp
-
-//     real dtp=t0-tp; // we have just computed the traction at time t0 
-//     if( fabs(dtp) < REAL_EPSILON*100. )
-//     {
-//       // there is no previous traction -- this must be step 1 and the predictor step:
-            
-//       if( debug() & 2 )
-//         printP("--INS-- IRHS: set traction-rate at =%8.2e to rate at previous time t=%9.3e\n",t,tp);
-
-//       f(I1,I2,I3,Ctr)=f1(I1,I2,I3,Ctr);
-//       if( true || debug() & 8 )
-//       {
-//         ::display(tractionRate,sPrintF("traction-rate - EXACT,       t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-//         ::display(f(I1,I2,I3,Ctr),sPrintF("traction-rate - from previous step tp=%9.3e",tp),"%9.3e ");
-//       }    
-//     }
-//     else
-//     {
-//       assert( dtp>0. );
-        
-//       if( debug() & 2 )
-//         printP("--INS-- IRHS: get d(traction)/dt (1st order): t=%9.3e, "
-//                "gfIndex=%i gf[gfIndex].t=%9.3e, prev=%i, tp=%9.3e\n",t,gfIndex,gf[gfIndex].t,prev,tp);
-
-//       f(I1,I2,I3,Ctr)= (traction(I1,I2,I3,D) - f1(I1,I2,I3,Ct))/dtp;
-
-//       if( true || debug() & 8 )
-//       {
-//         ::display(tractionRate,sPrintF("traction-rate - EXACT,       t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-//         ::display(f(I1,I2,I3,Ctr),sPrintF("traction-rate - first-order, t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-//         ::display(traction(I1,I2,I3,D),sPrintF("traction computed t0=%9.3e",t0),"%9.3e ");
-//         ::display(f1(I1,I2,I3,Ct),sPrintF("traction prev=%i t=%9.3e",prev,idh.interfaceDataList[prev].t),"%9.3e ");
-
-//         ::display(f(I1,I2,I3,Ctr),sPrintF("traction-rate - first-order, t=%9.3e",t),pDebugFile,"%9.3e ");
-//       }
-//     }
-        
-//     if( evalExactTractionRate ) // #########################################
-//     {
-//       real err = max(fabs(f(I1,I2,I3,Ctr)-tractionRate(I1,I2,I3,Rx)))/(max(fabs(tractionRate(I1,I2,I3,Rx)))+1.);
-//       if( err > .01 )
-//         printF(" >>>>>> TRACTION-RATE t=%9.3e t0=%9.3e relative err=%9.2e  **TROUBLE** \n",t,t0,err);
-//       else
-//         printF(" >>>>>> TRACTION-RATE t=%9.3e t0=%9.3e relative err=%9.2e\n",t,t0,err);
-
-//       if( FALSE )
-//       {
-//         printF(" ********** TEST: SET traction-rate to EXACT : t=%9.3e *TEMP* *************\n",t);
-//         if( !twilightZoneFlow )
-//           f(I1,I2,I3,Ctr)=tractionRate(I1,I2,I3,Rx);
-//         else
-//           f(I1,I2,I3,Ctr)=0.;  // for TZ flow this is TZ - TZ = 0 
-//       }
-            
-//     }
-    
-//   }
-//   else 
-//   {
-//     // Compute the traction-rate to second order accuracy 
-//     assert( im2>=0 );
-//     const int cur = idh.current;
-//     RealArray & f0 = idh.interfaceDataList[cur].f;    // f(t0)
-//     RealArray & f1 = idh.interfaceDataList[prev].f;   // f(t1)
-//     RealArray & f2 = idh.interfaceDataList[im2 ].f;   // f(t2)
-
-//     const real t1 = idh.interfaceDataList[prev].t;
-//     const real t2 = idh.interfaceDataList[im2 ].t;
-//     real dt0= t0-t1;
-//     real dt1= t1-t2;
-//     if( dt0<=0. || dt1<=0. )
-//     {
-//       printP("Cgins::interfaceRHS:ERROR: computing traction-rate: t0=%9.3e, prev=%i, tp=%9.3e, "
-// 	     "im2=%i, t2=%9.3e\n",t0,prev,tp,im2,t2);
-//       OV_ABORT("error");
-//     }
-//     assert( dt0>0. && dt1>0. );
-
-//     // Compute the time derivative of the Lagrange polynomial: 
-//     //    f(t) = l0(t)*f0 + l1(t)*f1 + l2(t)*f2 
-//     // where 
-//     //   l0 = (t-t1)*(t-t2)/( (t0-t1)*(t0-t2) );
-//     //   l1 = (t-t2)*(t-t0)/( (t1-t2)*(t1-t0) );
-//     //   l2 = (t-t0)*(t-t1)/( (t2-t0)*(t2-t1) );
-            
-//     real l0t = (2.*t-(t1+t2))/( (t0-t1)*(t0-t2) );
-//     real l1t = (2.*t-(t2+t0))/( (t1-t2)*(t1-t0) );
-//     real l2t = (2.*t-(t0+t1))/( (t2-t0)*(t2-t1) );
-            
-//     // f(I1,I2,I3,Ctr)= l0t*f0(I1,I2,I3,Ct) +l1t*f1(I1,I2,I3,Ct) + l2t*f2(I1,I2,I3,Ct);
-//     f(I1,I2,I3,Ctr)= l0t*traction(I1,I2,I3,D) +l1t*f1(I1,I2,I3,Ct) + l2t*f2(I1,I2,I3,Ct);
-
-//     if( TRUE )
-//     {
-//       if( true || t0 < 3.*dt0 )
-// 	printF(" ********** EVAL traction-rate to 2nd-order from traction at times : t0=%8.2e, t1=%8.2e, t2=%8.2e, dt0=%9.3e, dt1=%8.2e *************\n",t0,t1,t2,dt0,dt1);
-
-//         ::display(tractionRate,sPrintF("traction-rate - EXACT,       t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-//         ::display(f(I1,I2,I3,Ctr),"traction-rate (2nd-order) <- use this","%9.3e ");
-//         ::display(traction,sPrintF("traction - computed t0=%8.2e",t0),"%9.3e ");
-//         ::display(f1(I1,I2,I3,Ctr),sPrintF("f1: saved traction-rate (t1=%9.3e) prev=%i",t1,prev),"%9.3e ");
-//         ::display(f2(I1,I2,I3,Ctr),sPrintF("f2: saved traction-rate (t2=%9.3e) im2 =%i",t2,im2 ),"%9.3e ");
-//     }
-//     else if( TRUE )  // ********* TEMP 
-//     {
-//       if( true || t0 < 3.*dt0 )
-// 	printF(" ********** EVAL traction-rate to first-order : t=%8.2e, t0=%8.2e, t1=%8.2e, dt0=%9.3e *TEMP* *************\n",t,t0,t1,dt0);
-
-//       f(I1,I2,I3,Ctr)= (traction(I1,I2,I3,D) -f1(I1,I2,I3,Ct))/dt0;  // ****************** TEMP *************
-//       if( true )
-//       {
-//         ::display(tractionRate,sPrintF("traction-rate - EXACT,       t=%9.3e, dt=%9.3e",t,dt),"%9.3e ");
-//         ::display(f(I1,I2,I3,Ctr),"traction-rate (first-order) <- use this","%9.3e ");
-//         ::display(traction,sPrintF("traction - computed t0=%8.2e",t0),"%9.3e ");
-//         ::display(f1(I1,I2,I3,Ctr),sPrintF("f1: saved traction-rate (t1=%9.3e) prev=%i",t1,prev),"%9.3e ");
-//       }
-            
-//     }
-        
-//     if( evalExactTractionRate ) // #########################################
-//     {
-//       real err = max(fabs(f(I1,I2,I3,Ctr)-tractionRate(I1,I2,I3,Rx)))/(max(fabs(tractionRate(I1,I2,I3,Rx)))+1.);
-//       if( err > .01 )
-//         printF(" >>>>>> TRACTION-RATE t=%9.3e t0=%9.3e relative err=%9.2e  **TROUBLE** \n",t,t0,err);
-//       else
-//         printF(" >>>>>> TRACTION-RATE t=%9.3e t0=%9.3e relative err=%9.2e\n",t,t0,err);
-
-//       // f(I1,I2,I3,Ctr)=tractionRate(I1,I2,I3,Rx);
-//       // printF(" ********** TEST: SET traction-rate to EXACT : t=%9.3e *TEMP* *************\n",t);
-//     }
-
-
-//     if( FALSE )  // ********* TEMP 
-//     {
-//       if( t0 < 3.*dt0 )
-// 	printF(" ********** EXTRAPOLATE traction-rate to first-order : *TEMP* *************\n");
-
-//       // real l1 = (t-t2)/(t1-t2);
-//       // real l2 = (t-t1)/(t2-t1);
-//       // f(I1,I2,I3,Ctr)= l1*f1(I1,I2,I3,Ctr) + l2*f2(I1,I2,I3,Ctr); // ******************** TEMP *************
-
-//       f(I1,I2,I3,Ctr)= f1(I1,I2,I3,Ctr);
-
-//       if( debug() & 4 )
-//       {
-// 	fprintf(pDebugFile,"Cgins::interfaceRHS: get d(traction)/dt (2nd order): t=%9.3e, t0=%9.3e, dt0=%9.3e "
-// 		"gfIndex=%i gf[gfIndex].t=%9.3e, prev=%i, t1=%9.3e, im2=%i t2=%9.3e, "
-// 		" l0t*dt0=%4.2f l1t*dt0=%4.2f l2t*dt0=%4.2f\n",
-// 		t,t0,dt0,gfIndex,gf[gfIndex].t,prev,t1,im2,t2,l0t*dt0,l1t*dt0,l2t*dt0);   
-// 	::display(f(I1,I2,I3,Ctr),"traction-rate",pDebugFile,"%9.3e ");
-// 	::display(f0(I1,I2,I3,Ct),"f0 traction (t0)",pDebugFile,"%9.3e ");
-// 	::display(f1(I1,I2,I3,Ct),"f1 traction (tp)",pDebugFile,"%9.3e ");
-// 	::display(f2(I1,I2,I3,Ct),"f2 traction (t2)",pDebugFile,"%9.3e ");
-
-// 	::display(f1(I1,I2,I3,Ctr),sPrintF("f1 traction-rate (t1=%9.3e)",t1),pDebugFile,"%9.3e ");
-// 	::display(f2(I1,I2,I3,Ctr),sPrintF("f2 traction-rate (t2=%9.3e)",t2),pDebugFile,"%9.3e ");
-//       }
-            		
-//     }
-//   }
-          	    
-          	    
-//   if( debug() & 8 )
-//   {
-//     // ::display(f1(I1,I2,I3,Ct),sPrintF("Cgins::interfaceRHS: old traction at tp=%9.3e",tp),"%8.2e ");
-//     ::display(f(I1,I2,I3,Ct),sPrintF("Cgins::interfaceRHS: new traction at t=%9.3e ",t),"%8.2e ");
-//     ::display(f(I1,I2,I3,Ctr),sPrintF("Cgins::interfaceRHS: time derivative of the traction, t=%9.3e",t),"%8.2e ");
-//   }
-// #endMacro
-
 
 // =============================================================================================
 // Macro: Compute the traction or traction rate for TZ flow
@@ -461,6 +199,16 @@ enum UserDefinedKnownSolutionEnum
 //  traction  (output) 
 //  ntd (input) : number of time derivatives, use 0 for traction, 1 for traction rate
 // =============================================================================================
+
+
+// ========================================================================================================
+// Macro: evaluate the interface traction and traction-rate
+// ========================================================================================================
+
+
+// =============================================================================================================
+//  Macro: evaluate the traction rate
+// =============================================================================================================
 
 
 // =============================================================================================
@@ -654,6 +402,9 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
     const bool & twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
     const Parameters::KnownSolutionsEnum & knownSolution = 
         parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"); 
+
+  // useAddedMassAlgorithm=true : coupling to an elastic solid
+    const bool useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
 
 
     const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
@@ -960,6 +711,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 numSaved+=numberOfDimensions;
             }
 
+
             if( interfaceDataOptions & Parameters::tractionInterfaceData )
             {
         // --- interface traction is given ---
@@ -1084,6 +836,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 
       	numSaved+=numberOfDimensions;
             }
+
             if( interfaceDataOptions & Parameters::accelerationInterfaceData )
             {
 	// -- return the ACCELERATION of the boundary --
@@ -1102,466 +855,452 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
       // -- Now save the traction and traction rate --
 
-            Index Ib1,Ib2,Ib3;
-      // getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-            Ib1=I1, Ib2=I2, Ib3=I3;
-            realSerialArray traction(Ib1,Ib2,Ib3,numberOfDimensions);  // this should be a serial array
-
-      // gf[gfIndex].conservativeToPrimitive();
-
-      // Here is the time we have actually computed the traction at. It may be less than t on the predictor step
-            const real t0 = gf[gfIndex].t;  
-
-            int ipar[] = {grid,side,axis,gf[gfIndex].form}; // 
-            real rpar[] = { gf[gfIndex].t }; // 
-
-      //  getNormalForce: This is the force on the adjacent body 
-      //      This is MINUS the fluid traction (using the outward fluid normal)
-            parameters.getNormalForce( gf[gfIndex].u,traction,ipar,rpar );
-
-            Range D=numberOfDimensions;
-            Ct=Range(numSaved,numSaved+numberOfDimensions-1);  // save interface traction in these components
-            
-            if( debug() & 4 )
+      // Macro:
             {
-                printP("Cgins::interfaceRHS: Get normal force (traction) at t=%9.3e\n",gf[gfIndex].t);
-      	::display(traction(I1,I2,I3,D),sPrintF("--INS--IRHS traction from getNormalForce t=%8.2e",gf[gfIndex].t),"%.2e ");
-      	
-            }
-
-      // ================== ADJUST FOR TZ ===================
-            if( twilightZoneFlow )
-            {
-        // subtract off TZ traction
-                Range Rx=numberOfDimensions;
-                RealArray tractionTZ(I1,I2,I3,Rx);
-                int ntd=0;  // number of time derivatives
-                    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-                    OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
-                    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                    const int pc=parameters.dbase.get<int >("pc");
-                    const int uc=parameters.dbase.get<int >("uc");
-                    const int vc=parameters.dbase.get<int >("vc");
-                    const int wc=parameters.dbase.get<int >("wc");
-                    const real & nu = parameters.dbase.get<real >("nu");
-                    const real & fluidDensity = parameters.dbase.get<real>("fluidDensity");
-                    assert( fluidDensity>0. );
-                    const real mu = nu*fluidDensity; 
-                    Range V(uc,uc+numberOfDimensions-1); // velocity components
-                    realSerialArray pe(I1,I2,I3),uxe(I1,I2,I3,V),uye(I1,I2,I3,V),uze;
-                    bool isRectangular=false;
-                    e.gd( pe ,xLocal,numberOfDimensions,isRectangular,ntd,0,0,0,I1,I2,I3,pc,t0);  // p exact solution 
-                    e.gd( uxe,xLocal,numberOfDimensions,isRectangular,ntd,1,0,0,I1,I2,I3,V,t0);  // v.x
-                    e.gd( uye,xLocal,numberOfDimensions,isRectangular,ntd,0,1,0,I1,I2,I3,V,t0);  // v.y
-                    if( numberOfDimensions==3 )
-                    {
-                        uze.redim(I1,I2,I3,V);
-                        e.gd( uze,xLocal,numberOfDimensions,isRectangular,ntd,0,0,1,I1,I2,I3,V,t0);  // v.z
-                    }
-          // The sign is correct here I think: normalForce = sigma.normal = (-pI + tauv)*normal 
-                    if( numberOfDimensions==2 )
-                    {
-                        int axis=0;
-                        tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,axis)
-                                                                                              -mu*( (uxe(I1,I2,I3,uc)+uxe(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
-                                                                                                          (uye(I1,I2,I3,uc)+uxe(I1,I2,I3,vc))*normal(I1,I2,I3,1)) );
-                        axis=1;
-                        tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,axis)
-                                                                                              -mu*( (uxe(I1,I2,I3,vc)+uye(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
-                                                                                                          (uye(I1,I2,I3,vc)+uye(I1,I2,I3,vc))*normal(I1,I2,I3,1)) );
-                    }
-                    else
-                    {
-                        int axis=0;
-                        tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,0)
-                                                                                              -(mu*((uxe(I1,I2,I3,uc)+uxe(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
-                                                                                                          (uye(I1,I2,I3,uc)+uxe(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
-                                                                                                          (uze(I1,I2,I3,uc)+uxe(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
-                        axis=1;
-                        tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,1)
-                                                                                              -(mu*((uxe(I1,I2,I3,vc)+uye(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
-                                                                                                          (uye(I1,I2,I3,vc)+uye(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
-                                                                                                          (uze(I1,I2,I3,vc)+uye(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
-                        axis=2;
-                        tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,2)
-                                                                                              -(mu*((uxe(I1,I2,I3,wc)+uze(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
-                                                                                                          (uye(I1,I2,I3,wc)+uze(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
-                                                                                                          (uze(I1,I2,I3,wc)+uze(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
-                    }
+                Index Ib1,Ib2,Ib3;
+        // getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+                Ib1=I1, Ib2=I2, Ib3=I3;
+                realSerialArray traction(Ib1,Ib2,Ib3,numberOfDimensions);  // this should be a serial array
+        // gf[gfIndex].conservativeToPrimitive();
+        // Here is the time we have actually computed the traction at. It may be less than t on the predictor step
+                const real t0 = gf[gfIndex].t;  
+                int ipar[] = {grid,side,axis,gf[gfIndex].form}; // 
+                real rpar[] = { gf[gfIndex].t }; // 
+        //  getNormalForce: This is the force on the adjacent body 
+        //      This is MINUS the fluid traction (using the outward fluid normal)
+                parameters.getNormalForce( gf[gfIndex].u,traction,ipar,rpar );
+                Range D=numberOfDimensions;
+                Ct=Range(numSaved,numSaved+numberOfDimensions-1);  // save interface traction in these components
                 if( debug() & 4 )
                 {
-                    printF("--INS--IRHS: subtract off TZ traction from computed traction at t0=%8.2e\n",t0);
-                    ::display(tractionTZ,sPrintF("--INS-- Traction from TZ (minus normal force) at t0=%8.2e",t0),debugFile,"%8.2e ");
+                    printP("Cgins::interfaceRHS: Get normal force (traction) at t=%9.3e\n",gf[gfIndex].t);
+                    ::display(traction(I1,I2,I3,D),sPrintF("--INS--IRHS traction from getNormalForce t=%8.2e",gf[gfIndex].t),"%.2e ");
                 }
-                
-                traction(I1,I2,I3,D) -= tractionTZ(I1,I2,I3,Rx);
-
-
-                if( interfaceDataOptions & Parameters::positionInterfaceData )
+        // =============== UNDER-RELAX TRACTION FOR SUB_ITERATIONS ===============
+                if( true || useAddedMassAlgorithm )
                 {
-                    OV_ABORT("INS:interface: finish me for TZ: positionInterfaceData");
-                }
-                
-                if( interfaceDataOptions & Parameters::velocityInterfaceData )
-                {
-                    if( true )
+                    MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+                    if( movingGrids.getNumberOfDeformingBodies() >0  )
                     {
-                        printF("--INS--interface: subtract off TZ traction from computed velocity at t0=%8.2e\n",t0);
-                    }
-                    
-                    RealArray & ve = uxe; // re-use work-space
-                    e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t); 
-                    assert( baseVelocity>=0 );
-                    f(I1,I2,I3,Rx+baseVelocity) -= ve;
-                }
-
-                if( interfaceDataOptions & Parameters::accelerationInterfaceData )
-                {
-                    OV_ABORT("INS:interface: finish me for TZ: accelerationInterfaceData");
-                }
-
-            }
-            
-            bool useExactTraction=FALSE || useExactInterfaceValues;
-            if( interfaceDataOptions & Parameters::tractionInterfaceData )
-            {
-      	if( debug() & 2 )
-        	  printP("Cgins:interfaceRightHandSide: Eval the interface traction at t=%8.2e in components Ct=[%i,%i].\n",t,Ct.getBase(),Ct.getBound());
-
-
-                if( useExactTraction && knownSolution==Parameters::userDefinedKnownSolution ) // ********* TESTING 
-                {
-                    int body=0;
-                    RealArray tractionExact(I1,I2,I3,Rx);
-                    parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTraction,
-                                                                                                                              t, grid, mg, I1,I2,I3,Rx,tractionExact );
-            
-                    printF(" ********** TEST: SET traction to EXACT : t=%9.3e ***TEMP*** *************\n",t);
-                    real diff = max(fabs(traction-tractionExact));
-                    printF(" --INS-- Max error in fluid traction=%.2e |tractionExact|=%.2e\n",diff,max(fabs(tractionExact)));
-                    
-                    if( debug() & 4 )
-                    {
-                        ::display(tractionExact,sPrintF("traction EXACT t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
-                        ::display(traction(I1,I2,I3,D),sPrintF("traction Computed t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
-                    }
-                    
-                    traction(I1,I2,I3,D)=tractionExact; 
-                    f(I1,I2,I3,Ct)=tractionExact;
-
-                }
-                else
-                {
-                    f(I1,I2,I3,Ct)=traction(I1,I2,I3,D);
-                }
-                    
-      	if( debug() & 4  )
-      	{
-        	  printF("--INS--IRHS: interface data at t=%8.2e, traction from gfIndex=%i, gf[gfIndex].t=%9.3e--\n",
-                                    t,gfIndex, gf[gfIndex].t);
-	  // ::display(gf[gfIndex].u[grid](I1,I2,I3,V),"--INS--IRHS:  velocity on the boundary","%9.3e ");
-        	  ::display(f(I1,I2,I3,Ct),sPrintF("--INS--IRHS:  traction f, Ct=[%i,%i]",Ct.getBase(),Ct.getBound()),"%9.3e ");
-
-        	  fprintf(pDebugFile,"-- interfaceRHS: interface data at t=%8.2e --\n",t);
-        	  ::display(f(I1,I2,I3,Ct),"--INS-- traction f",pDebugFile,"%9.3e ");
-      	}
-      	
-        // *new* way June 26, 2017 
-                if( saveTimeHistory )
-                {
-                    if( interfaceDataOptions & Parameters::tractionInterfaceData )
-                    {
-            // -- save a time history of the traction
-                        if( !gfd.dbase.has_key("tractionHistory") )
+            // *** WE SHOULD SIMPLIFY THE INTERFACE TO RETRIEVE THE DEFORMING BODY **********
+                        BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid); // this will create the BDA if it is not there
+                        std::vector<BoundaryData> & boundaryDataArray =parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
+                        BoundaryData & bda = boundaryDataArray[grid];
+                        if( bda.dbase.has_key("deformingBodyNumber") )
                         {
-                            gfd.dbase.put<ArrayEvolution>("tractionHistory");
-
-              // *wdh* May 1, 2019 -- use 3-pt (3rd order accuracy)
-                            ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
-                            const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
-                            tractionHistory.setOrderOfAccuracy(timeOrderOfAccuracy);
+                            int (&deformingBodyNumber)[2][3] = bda.dbase.get<int[2][3]>("deformingBodyNumber");
+                            if( deformingBodyNumber[side][axis]>=0 )
+                            {
+                                int body=deformingBodyNumber[side][axis];
+                                if( t<=0. )
+                                    printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
+                                DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+                                const bool & relaxCorrectionSteps = deform.deformingBodyDataBase.get<bool>("relaxCorrectionSteps");
+                                const real & omega = deform.deformingBodyDataBase.get<real>("added mass relaxation factor");
+                    	  const real & tol = deform.deformingBodyDataBase.get<real>("sub iteration convergence tolerance");
+                                if( relaxCorrectionSteps )
+                                {
+                                    printF("\n--INS--interface:INFO: deforming body %i: relaxCorrectionSteps=%i, omega=%.2e, tol=%.2e.\n",
+                                                  body,(int)relaxCorrectionSteps,omega,tol);
+                                }
+                                if( relaxCorrectionSteps && t>0. )
+                                {
+                                    ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+                                    RealArray tractionCurrent(Ib1,Ib2,Ib3,numberOfDimensions);  // 
+                                    tractionHistory.eval(t,tractionCurrent); // eval current guess for traction
+                                    real maxDiff = max(fabs(traction-tractionCurrent));
+                  // Here is how we indicate convergence: 
+                  // We specify that this deforming body has converged
+                                    bool hasConverged = maxDiff < tol;
+                                    deform.setBulkSolidModelHasConverged(hasConverged);
+                                    printF("--INS--interface:INFO: relaxCorrectionSteps: t=%.2e, omega=%.2e, maxDiff=%.2e hasConverged=%i\n",
+                                                  t,omega,maxDiff,(int)hasConverged);
+                                    traction = omega*traction + (1.-omega)*tractionCurrent;
+                                }
+                            }
                         }
-                        ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
-
-            // NOTE: array data may hold more than just the traction! **FIX ME**
-                        if( debug() & 4 )
-                            printF("--IRHS-- Save traction time history at t=%9.3e\n",t);
-                        tractionHistory.add( t, traction);  
                     }
-        
                 }
-
-                numSaved+=numberOfDimensions;
-            }
-            
-
-      // -- check if we need the traction at a different time than the current solution --
-      // (this could be a predictor-step for e.g.)
-
-            bool tractionTimeDiffers = fabs(t-t0) > 100.*REAL_EPSILON;
-      // -- this next section was re-worked *wdh* June 11, 2017
-            if( tractionTimeDiffers )
-            {
-        // --------------------------------------------------------------------------------------
-        //  Compute the traction at a different time than the current time
-        //     t = time required
-        //     t0 = time requested
-        // --------------------------------------------------------------------------------------
-        // A time history of interface values is saved here in the master list gfd: 
-                InterfaceDataHistory & idh = gfd.interfaceDataHistory;
-                InterfaceDataHistory & idi = gfd.interfaceDataIterates; // iterates of interface values from the predictor corrector 
-                if( idh.current>=0 && idh.current<idh.interfaceDataList.size() )
-      	{
-                    const int numberOfInterfaceHistoryValuesToSave=idh.interfaceDataList.size();
-        	  
-	  // find a previous time value we can use
-                    int prev = idh.current;  // by default use this as the old solution
-        	  real tp = idh.interfaceDataList[prev].t;
-                    if( fabs(tp-t0)< REAL_EPSILON*100.*(1 + fabs(t)) )
-                    {
-            // New traction computed at t0, but tPrev=t0 -- find an even previouser 
-                        int prev2 = ovmod(prev -1,numberOfInterfaceHistoryValuesToSave);
-                        real tPrev2 = idh.interfaceDataList[prev2].t;
-                        if(  tPrev2 >  tp ) // if tPrev2 > tp then we have no previous values
+        // ================== ADJUST FOR TZ ===================
+                if( twilightZoneFlow )
+                {
+          // subtract off TZ traction
+                    Range Rx=numberOfDimensions;
+                    RealArray tractionTZ(I1,I2,I3,Rx);
+                    int ntd=0;  // number of time derivatives
+                        OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+                        OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
+                        OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                        const int pc=parameters.dbase.get<int >("pc");
+                        const int uc=parameters.dbase.get<int >("uc");
+                        const int vc=parameters.dbase.get<int >("vc");
+                        const int wc=parameters.dbase.get<int >("wc");
+                        const real & nu = parameters.dbase.get<real >("nu");
+                        const real & fluidDensity = parameters.dbase.get<real>("fluidDensity");
+                        assert( fluidDensity>0. );
+                        const real mu = nu*fluidDensity; 
+                        Range V(uc,uc+numberOfDimensions-1); // velocity components
+                        realSerialArray pe(I1,I2,I3),uxe(I1,I2,I3,V),uye(I1,I2,I3,V),uze;
+                        bool isRectangular=false;
+                        e.gd( pe ,xLocal,numberOfDimensions,isRectangular,ntd,0,0,0,I1,I2,I3,pc,t0);  // p exact solution 
+                        e.gd( uxe,xLocal,numberOfDimensions,isRectangular,ntd,1,0,0,I1,I2,I3,V,t0);  // v.x
+                        e.gd( uye,xLocal,numberOfDimensions,isRectangular,ntd,0,1,0,I1,I2,I3,V,t0);  // v.y
+                        if( numberOfDimensions==3 )
                         {
-                            prev=-1;  // this means there is no previous value 
+                            uze.redim(I1,I2,I3,V);
+                            e.gd( uze,xLocal,numberOfDimensions,isRectangular,ntd,0,0,1,I1,I2,I3,V,t0);  // v.z
+                        }
+            // The sign is correct here I think: normalForce = sigma.normal = (-pI + tauv)*normal 
+                        if( numberOfDimensions==2 )
+                        {
+                            int axis=0;
+                            tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,axis)
+                                                                                                  -mu*( (uxe(I1,I2,I3,uc)+uxe(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
+                                                                                                              (uye(I1,I2,I3,uc)+uxe(I1,I2,I3,vc))*normal(I1,I2,I3,1)) );
+                            axis=1;
+                            tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,axis)
+                                                                                                  -mu*( (uxe(I1,I2,I3,vc)+uye(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
+                                                                                                              (uye(I1,I2,I3,vc)+uye(I1,I2,I3,vc))*normal(I1,I2,I3,1)) );
                         }
                         else
                         {
-                            prev=prev2;
-                            tp=tPrev2;
+                            int axis=0;
+                            tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,0)
+                                                                                                  -(mu*((uxe(I1,I2,I3,uc)+uxe(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
+                                                                                                              (uye(I1,I2,I3,uc)+uxe(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
+                                                                                                              (uze(I1,I2,I3,uc)+uxe(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
+                            axis=1;
+                            tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,1)
+                                                                                                  -(mu*((uxe(I1,I2,I3,vc)+uye(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
+                                                                                                              (uye(I1,I2,I3,vc)+uye(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
+                                                                                                              (uze(I1,I2,I3,vc)+uye(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
+                            axis=2;
+                            tractionTZ(I1,I2,I3,axis) = (  fluidDensity*pe(I1,I2,I3)*normal(I1,I2,I3,2)
+                                                                                                  -(mu*((uxe(I1,I2,I3,wc)+uze(I1,I2,I3,uc))*normal(I1,I2,I3,0)+
+                                                                                                              (uye(I1,I2,I3,wc)+uze(I1,I2,I3,vc))*normal(I1,I2,I3,1)+ 
+                                                                                                              (uze(I1,I2,I3,wc)+uze(I1,I2,I3,wc))*normal(I1,I2,I3,2)) ) );
                         }
-                        
+                    if( debug() & 4 )
+                    {
+                        printF("--INS--IRHS: subtract off TZ traction from computed traction at t0=%8.2e\n",t0);
+                        ::display(tractionTZ,sPrintF("--INS-- Traction from TZ (minus normal force) at t0=%8.2e",t0),debugFile,"%8.2e ");
                     }
-
-                    dt = t - tp;
-                    assert( dt> REAL_EPSILON*100.*(1 + fabs(t)) );
-          // Get the traction by extrapolation from  traction(I1,I2,I3,D) and values at prev         
-
-            // --- We need the traction at a time that differs from the current solution time  ---
-            // We can use the time history values and extrap/interp in time
-            // If there are no previous time history values we fill some appropriate values in.
-            //   -- for TZ : evaluate the exact solution
-            //   -- for real : just assume constant ? 
-                        if( !(twilightZoneFlow && dt==0.) ) 
+                    traction(I1,I2,I3,D) -= tractionTZ(I1,I2,I3,Rx);
+                    if( interfaceDataOptions & Parameters::positionInterfaceData )
+                    {
+                        OV_ABORT("INS:interface: finish me for TZ: positionInterfaceData");
+                    }
+                    if( interfaceDataOptions & Parameters::velocityInterfaceData )
+                    {
+                        if( true )
                         {
-                            const real dtp = t0-tp;
-                            printF("\n ---INS-- >>>>>>>>>>> getTractionFromNearbyValues t0=%9.3e tp=%9.3e<<<<<<<<<<< \n",t0,tp);
-                            if( dtp==0. && interfaceDataOptions & Parameters::tractionRateInterfaceData )
+                            printF("--INS--interface: subtract off TZ traction from computed velocity at t0=%8.2e\n",t0);
+                        }
+                        RealArray & ve = uxe; // re-use work-space
+                        e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t); 
+                        assert( baseVelocity>=0 );
+                        f(I1,I2,I3,Rx+baseVelocity) -= ve;
+                    }
+                    if( interfaceDataOptions & Parameters::accelerationInterfaceData )
+                    {
+                        OV_ABORT("INS:interface: finish me for TZ: accelerationInterfaceData");
+                    }
+                }
+                bool useExactTraction=FALSE || useExactInterfaceValues;
+                if( interfaceDataOptions & Parameters::tractionInterfaceData )
+                {
+                    if( debug() & 2 )
+                        printP("Cgins:interfaceRightHandSide: Eval the interface traction at t=%8.2e in components Ct=[%i,%i].\n",t,Ct.getBase(),Ct.getBound());
+                    if( useExactTraction && knownSolution==Parameters::userDefinedKnownSolution ) // ********* TESTING 
+                    {
+                        int body=0;
+                        RealArray tractionExact(I1,I2,I3,Rx);
+                        parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTraction,
+                                                                                                                                  t, grid, mg, I1,I2,I3,Rx,tractionExact );
+                        printF(" ********** TEST: SET traction to EXACT : t=%9.3e ***TEMP*** *************\n",t);
+                        real diff = max(fabs(traction-tractionExact));
+                        printF(" --INS-- Max error in fluid traction=%.2e |tractionExact|=%.2e\n",diff,max(fabs(tractionExact)));
+                        if( debug() & 4 )
+                        {
+                            ::display(tractionExact,sPrintF("traction EXACT t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
+                            ::display(traction(I1,I2,I3,D),sPrintF("traction Computed t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
+                        }
+                        traction(I1,I2,I3,D)=tractionExact; 
+                        f(I1,I2,I3,Ct)=tractionExact;
+                    }
+                    else
+                    {
+                        f(I1,I2,I3,Ct)=traction(I1,I2,I3,D);
+                    }
+                    if( debug() & 4  )
+                    {
+                        printF("--INS--IRHS: interface data at t=%8.2e, traction from gfIndex=%i, gf[gfIndex].t=%9.3e--\n",
+                                        t,gfIndex, gf[gfIndex].t);
+            // ::display(gf[gfIndex].u[grid](I1,I2,I3,V),"--INS--IRHS:  velocity on the boundary","%9.3e ");
+                        ::display(f(I1,I2,I3,Ct),sPrintF("--INS--IRHS:  traction f, Ct=[%i,%i]",Ct.getBase(),Ct.getBound()),"%9.3e ");
+                        fprintf(pDebugFile,"-- interfaceRHS: interface data at t=%8.2e --\n",t);
+                        ::display(f(I1,I2,I3,Ct),"--INS-- traction f",pDebugFile,"%9.3e ");
+                    }
+          // *new* way June 26, 2017 
+                    if( saveTimeHistory )
+                    {
+                        if( interfaceDataOptions & Parameters::tractionInterfaceData )
+                        {
+              // -- save a time history of the traction
+                            if( !gfd.dbase.has_key("tractionHistory") )
                             {
-                // We have traction and traction rate at a previous time 
-                                int prev = idh.current;
-                                real tp = idh.interfaceDataList[prev].t;
-                                real dtp= t-tp;
-                                assert( dtp>0. );
-                                RealArray & f0 = idh.interfaceDataList[prev].f;  // here is the RHS a time tp
-                                Ctr=Ct+numberOfDimensions;
-                                f(I1,I2,I3,Ct)= traction(I1,I2,I3,D) + dtp*f0(I1,I2,I3,Ctr);
-                                if( debug() & 2 )
-                                {
-                                    printF("   >>> PREDICT traction in time at t=%8.2e using traction from tp=%9.3e (prev=%i)\n",
-                                                  t,tp,prev);
-                                    ::display(f(I1,I2,I3,Ct),sPrintF(" predicted traction for t=%8.e2",t),"%8.2e ");
-                                }
+                                gfd.dbase.put<ArrayEvolution>("tractionHistory");
+                // *wdh* May 1, 2019 -- use 3-pt (3rd order accuracy)
+                                ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+                                const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+                                tractionHistory.setOrderOfAccuracy(timeOrderOfAccuracy);
                             }
-                            else if( prev>=0 && dtp!=0. )
+                            ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+              // NOTE: array data may hold more than just the traction! **FIX ME**
+                            if( debug() & 4 )
+                                printF("--IRHS-- Save traction time history at t=%9.3e\n",t);
+                            tractionHistory.add( t, traction);  
+                        }
+                    }
+                    numSaved+=numberOfDimensions;
+                }
+        // -- check if we need the traction at a different time than the current solution --
+        // (this could be a predictor-step for e.g.)
+                bool tractionTimeDiffers = fabs(t-t0) > 100.*REAL_EPSILON;
+        // -- this next section was re-worked *wdh* June 11, 2017
+                if( tractionTimeDiffers )
+                {
+          // --------------------------------------------------------------------------------------
+          //  Compute the traction at a different time than the current time
+          //     t = time required
+          //     t0 = time requested
+          // --------------------------------------------------------------------------------------
+          // A time history of interface values is saved here in the master list gfd: 
+                    InterfaceDataHistory & idh = gfd.interfaceDataHistory;
+                    InterfaceDataHistory & idi = gfd.interfaceDataIterates; // iterates of interface values from the predictor corrector 
+                    if( idh.current>=0 && idh.current<idh.interfaceDataList.size() )
+                    {
+                        const int numberOfInterfaceHistoryValuesToSave=idh.interfaceDataList.size();
+            // find a previous time value we can use
+                        int prev = idh.current;  // by default use this as the old solution
+                        real tp = idh.interfaceDataList[prev].t;
+                        if( fabs(tp-t0)< REAL_EPSILON*100.*(1 + fabs(t)) )
+                        {
+              // New traction computed at t0, but tPrev=t0 -- find an even previouser 
+                            int prev2 = ovmod(prev -1,numberOfInterfaceHistoryValuesToSave);
+                            real tPrev2 = idh.interfaceDataList[prev2].t;
+                            if(  tPrev2 >  tp ) // if tPrev2 > tp then we have no previous values
                             {
-                                RealArray & f0 = idh.interfaceDataList[prev].f;  // here is the RHS a time tp
-                // f(t) = (t-tp)/(t0-tp) *f(t0) + (t0-t)/(t0-tp) *f(tp)
-                                assert( dtp>0. );
-                                const real cex1 = (t-tp)/dtp;
-                                const real cex2 = (t0-t)/dtp;
-                                if( true || debug() & 2 )
+                                prev=-1;  // this means there is no previous value 
+                            }
+                            else
+                            {
+                                prev=prev2;
+                                tp=tPrev2;
+                            }
+                        }
+                        dt = t - tp;
+                        assert( dt> REAL_EPSILON*100.*(1 + fabs(t)) );
+            // Get the traction by extrapolation from  traction(I1,I2,I3,D) and values at prev         
+              // --- We need the traction at a time that differs from the current solution time  ---
+              // We can use the time history values and extrap/interp in time
+              // If there are no previous time history values we fill some appropriate values in.
+              //   -- for TZ : evaluate the exact solution
+              //   -- for real : just assume constant ? 
+                            if( !(twilightZoneFlow && dt==0.) ) 
+                            {
+                                const real dtp = t0-tp;
+                                printF("\n ---INS-- >>>>>>>>>>> getTractionFromNearbyValues t0=%9.3e tp=%9.3e<<<<<<<<<<< \n",t0,tp);
+                                if( dtp==0. && interfaceDataOptions & Parameters::tractionRateInterfaceData )
                                 {
-                                    printF("--INS--IRHS- EXTRAPOLATE traction in time: t=%9.3e t0=%9.3e, tp=%9.3e (prev=%i), "
-                                                  "cex1=%9.3e cex2=%9.3e\n",t,t0,tp,prev,cex1,cex2);
-                                    fprintf(pDebugFile,"Cgins::interfaceRHS: Extrapolate traction in time: t=%9.3e t0=%9.3e, tp=%9.3e, "
-                                                    "cex1=%9.3e cex2=%9.3e\n",t,t0,tp,cex1,cex2);
+                  // We have traction and traction rate at a previous time 
+                                    int prev = idh.current;
+                                    real tp = idh.interfaceDataList[prev].t;
+                                    real dtp= t-tp;
+                                    assert( dtp>0. );
+                                    RealArray & f0 = idh.interfaceDataList[prev].f;  // here is the RHS a time tp
+                                    Ctr=Ct+numberOfDimensions;
+                                    f(I1,I2,I3,Ct)= traction(I1,I2,I3,D) + dtp*f0(I1,I2,I3,Ctr);
+                                    if( debug() & 2 )
+                                    {
+                                        printF("   >>> PREDICT traction in time at t=%8.2e using traction from tp=%9.3e (prev=%i)\n",
+                                                      t,tp,prev);
+                                        ::display(f(I1,I2,I3,Ct),sPrintF(" predicted traction for t=%8.e2",t),"%8.2e ");
+                                    }
                                 }
-                                if( TRUE )
+                                else if( prev>=0 && dtp!=0. )
                                 {
-                                    printF("--INS--IRHS- EXTRAPOLATE TRACTION TO SECOND ORDER \n");
-                                    f(I1,I2,I3,Ct)= cex1*traction(I1,I2,I3,D)+cex2*f0(I1,I2,I3,Ct);
+                                    RealArray & f0 = idh.interfaceDataList[prev].f;  // here is the RHS a time tp
+                  // f(t) = (t-tp)/(t0-tp) *f(t0) + (t0-t)/(t0-tp) *f(tp)
+                                    assert( dtp>0. );
+                                    const real cex1 = (t-tp)/dtp;
+                                    const real cex2 = (t0-t)/dtp;
+                                    if( true || debug() & 2 )
+                                    {
+                                        printF("--INS--IRHS- EXTRAPOLATE traction in time: t=%9.3e t0=%9.3e, tp=%9.3e (prev=%i), "
+                                                      "cex1=%9.3e cex2=%9.3e\n",t,t0,tp,prev,cex1,cex2);
+                                        fprintf(pDebugFile,"Cgins::interfaceRHS: Extrapolate traction in time: t=%9.3e t0=%9.3e, tp=%9.3e, "
+                                                        "cex1=%9.3e cex2=%9.3e\n",t,t0,tp,cex1,cex2);
+                                    }
+                                    if( TRUE )
+                                    {
+                                        printF("--INS--IRHS- EXTRAPOLATE TRACTION TO SECOND ORDER \n");
+                                        f(I1,I2,I3,Ct)= cex1*traction(I1,I2,I3,D)+cex2*f0(I1,I2,I3,Ct);
+                                    }
+                                    else
+                                    {
+                                        printF("--INS--IRHS- EXTRAPOLATE TRACTION TO FIRST ORDER  *** TEMP**** \n");
+                                        f(I1,I2,I3,Ct)= traction(I1,I2,I3,D);
+                                    }
                                 }
                                 else
                                 {
-                                    printF("--INS--IRHS- EXTRAPOLATE TRACTION TO FIRST ORDER  *** TEMP**** \n");
+                                    printF("--INS--IRHS- EXTRAPOLATE TRACTION TO FIRST ORDER t=%9.3e, t0=%9.3e**** CHECK ME**** \n",t,t0);
                                     f(I1,I2,I3,Ct)= traction(I1,I2,I3,D);
                                 }
                             }
-                            else
+                            else  // twilightzone and dt==0 : 
                             {
-                                printF("--INS--IRHS- EXTRAPOLATE TRACTION TO FIRST ORDER t=%9.3e, t0=%9.3e**** CHECK ME**** \n",t,t0);
-                                f(I1,I2,I3,Ct)= traction(I1,I2,I3,D);
-                            }
+                                assert( twilightZoneFlow );
+                                assert( t==0. );
+                // this does not work exactly anyway since the grid is not at the new time!
+                // special case: TZ and no previous values:
+                // do this for now: set to exact 
+                                printP("--INS--IRHS **** Setting traction at t=%9.3e to exact for TZ ****\n",t);
+                                OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                                const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
+                                mg.update(MappedGrid::THEcenter);
+                                realArray & x= mg.center();
+                                #ifdef USE_PPP
+                                    realSerialArray xLocal; 
+                                    if( !isRectangular ) 
+                                        getLocalArrayWithGhostBoundaries(x,xLocal);
+                                #else
+                                    const realSerialArray & xLocal = x;
+                                #endif
+                                const int pc=parameters.dbase.get<int >("pc");
+                                const real & nu = parameters.dbase.get<real >("nu");
+                                realSerialArray pe(I1,I2,I3);
+                                e.gd( pe ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t);  // p exact solution 
+                                if( nu>0. )
+                                {
+                                    printP("--INS-- interface:ERROR: nu>0 but TZ traction forcing does not include viscous terms. Finish me!\n");
+                                    OV_ABORT("error");
+                                }
+                // The sign is correct here: normalForce = p*normal 
+                                for( int axis=0; axis<numberOfDimensions; axis++ )
+                                    f(I1,I2,I3,Ct.getBase()+axis) = pe(I1,I2,I3)*normal(I1,I2,I3,axis);           
                         }
-                        else  // twilightzone and dt==0 : 
-                        {
-                            assert( twilightZoneFlow );
-                            assert( t==0. );
-              // this does not work exactly anyway since the grid is not at the new time!
-              // special case: TZ and no previous values:
-              // do this for now: set to exact 
-                            printP("--INS--IRHS **** Setting traction at t=%9.3e to exact for TZ ****\n",t);
-                            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                            const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
-                            mg.update(MappedGrid::THEcenter);
-                            realArray & x= mg.center();
-                            #ifdef USE_PPP
-                                realSerialArray xLocal; 
-                                if( !isRectangular ) 
-                                    getLocalArrayWithGhostBoundaries(x,xLocal);
-                            #else
-                                const realSerialArray & xLocal = x;
-                            #endif
-                            const int pc=parameters.dbase.get<int >("pc");
-                            const real & nu = parameters.dbase.get<real >("nu");
-                            realSerialArray pe(I1,I2,I3);
-                            e.gd( pe ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t);  // p exact solution 
-                            if( nu>0. )
-                            {
-                                printP("--INS-- interface:ERROR: nu>0 but TZ traction forcing does not include viscous terms. Finish me!\n");
-                                OV_ABORT("error");
-                            }
-              // The sign is correct here: normalForce = p*normal 
-                            for( int axis=0; axis<numberOfDimensions; axis++ )
-                                f(I1,I2,I3,Ct.getBase()+axis) = pe(I1,I2,I3)*normal(I1,I2,I3,axis);           
                     }
-
                 }
-                
-
             }
-            
+
       // --------------------------------------------------------------------------------------
       //  Compute the traction rate from the time history
-      //
       // --------------------------------------------------------------------------------------
-      // -- this next section was re-worked *wdh* June 11, 2017
-            if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
-            {
-	// -- save the interface traction rate --
-      	if( t<= 2.*dt || debug() & 4 )
+      // Macro:
+        // --------------------------------------------------------------------------------------
+        //  Compute the traction rate from the time history
+        // --------------------------------------------------------------------------------------
+        // -- this next section was re-worked *wdh* June 11, 2017
+                if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
                 {
-        	  printP("--INS--interfaceRightHandSide: EVAL the interface traction-rate, t=%9.3e.\n",t);
-        	  fPrintF(debugFile,"--INS--interfaceRightHandSide: EVAL the interface traction-rate, t=%9.3e.\n",t);
-                }
-                
-                C=Range(numSaved,numSaved+numberOfDimensions-1);
-                Ctr=C;
-
-                bool useExactTractionRate=useExactInterfaceValues; // ********************
-
-                if( interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded )
-                {
-          // --- evaluate the traction-rate from the traction time-history ---
-          // *new* way June 26, 2017
-                    Range Rx=numberOfDimensions;
-                    RealArray tractionRate(I1,I2,I3,Rx);
-
-                    if( gfd.dbase.has_key("tractionHistory") )
+          // -- save the interface traction rate --
+                    if( t<= 2.*dt || debug() & 4 )
                     {
-                        ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
-
-            // *wdh* May 14, 2018 -- TEMP fix -- we should add traction to the past times
-                        if( tractionHistory.getNumberOfTimeLevels() >2 ) 
-            // if( tractionHistory.getNumberOfTimeLevels() >1 )
+                        printP("--INS--interfaceRightHandSide: EVAL the interface traction-rate, t=%9.3e.\n",t);
+                        fPrintF(debugFile,"--INS--interfaceRightHandSide: EVAL the interface traction-rate, t=%9.3e.\n",t);
+                    }
+                    C=Range(numSaved,numSaved+numberOfDimensions-1);
+                    Ctr=C;
+                    bool useExactTractionRate=useExactInterfaceValues; // ********************
+                    if( interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded )
+                    {
+            // --- evaluate the traction-rate from the traction time-history ---
+            // *new* way June 26, 2017
+                        Range Rx=numberOfDimensions;
+                        RealArray tractionRate(I1,I2,I3,Rx);
+                        if( gfd.dbase.has_key("tractionHistory") )
                         {
-                            const int numberOfTimeDerivatives=1; // eval 1 time derivative of the traction
-                            const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
-              // const int orderOfAccuracyForTractionRate=timeOrderOfAccuracy; // *wdh* May 13, 2018
-                            const int orderOfAccuracyForTractionRate=2; // 
-                            tractionHistory.eval(t,tractionRate,numberOfTimeDerivatives,orderOfAccuracyForTractionRate);
-
-                            if( t<= 2.*dt || debug() & 4 )
-                                fPrintF(debugFile," --INS-- interface: eval traction-rate from traction time history order=%i t=%.3e\n",
-                                                orderOfAccuracyForTractionRate,t);
-
-                            if( useExactTractionRate && knownSolution==Parameters::userDefinedKnownSolution )
+                            ArrayEvolution & tractionHistory = gfd.dbase.get<ArrayEvolution>("tractionHistory");
+              // *wdh* May 14, 2018 -- TEMP fix -- we should add traction to the past times
+                            if( tractionHistory.getNumberOfTimeLevels() >2 ) 
+              // if( tractionHistory.getNumberOfTimeLevels() >1 )
                             {
-                                RealArray tractionRateExact(I1,I2,I3,Rx);
-                                int body=0;
-                // RealArray state(I1,I2,I3,Rx);
-                                parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
-                                                                                                                                          t, grid, mg, I1,I2,I3,Rx,tractionRateExact );
-                                real maxErr = max(fabs(tractionRate-tractionRateExact));
-                                real maxTractionRate = max(fabs(tractionRateExact));
-                                
-                                fPrintF(debugFile," traction-rate: max=%8.2e, max-err = %9.2e at t=%.2e\n",maxTractionRate,maxErr,t);
-                                if( useExactTractionRate )
+                                const int numberOfTimeDerivatives=1; // eval 1 time derivative of the traction
+                                const int timeOrderOfAccuracy=parameters.dbase.get<int>("interfaceArrayEvolutionTimeAccuracy"); 
+                // const int orderOfAccuracyForTractionRate=timeOrderOfAccuracy; // *wdh* May 13, 2018
+                                const int orderOfAccuracyForTractionRate=2; // 
+                                tractionHistory.eval(t,tractionRate,numberOfTimeDerivatives,orderOfAccuracyForTractionRate);
+                                if( t<= 2.*dt || debug() & 4 )
+                                    fPrintF(debugFile," --INS-- interface: eval traction-rate from traction time history order=%i t=%.3e\n",
+                                                    orderOfAccuracyForTractionRate,t);
+                                if( useExactTractionRate && knownSolution==Parameters::userDefinedKnownSolution )
                                 {
-                                    printF("Use EXACT traction-rate ***TEMP****\n");
-                                    fPrintF(debugFile,"Use EXACT traction-rate ***TEMP****\n");
-                                    tractionRate=tractionRateExact;
+                                    RealArray tractionRateExact(I1,I2,I3,Rx);
+                                    int body=0;
+                  // RealArray state(I1,I2,I3,Rx);
+                                    parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
+                                                                                                                                              t, grid, mg, I1,I2,I3,Rx,tractionRateExact );
+                                    real maxErr = max(fabs(tractionRate-tractionRateExact));
+                                    real maxTractionRate = max(fabs(tractionRateExact));
+                                    fPrintF(debugFile," traction-rate: max=%8.2e, max-err = %9.2e at t=%.2e\n",maxTractionRate,maxErr,t);
+                                    if( useExactTractionRate )
+                                    {
+                                        printF("\n TTTTTTTTTTTTTTTTTTTT Use EXACT traction-rate ***TEMP****\n\n");
+                                        fPrintF(debugFile,"TTTTTTTTTTTTTTTTTTTTTTTT Use EXACT traction-rate ***TEMP****\n");
+                                        tractionRate=tractionRateExact;
+                                    }
                                 }
-                                
                             }
-                            
-
+                            else
+                            {
+                // If there are not enough time levels this could be first step
+                                if( t>0 )
+                                {
+                                    printF(" =====  ***TEMP** TO-DO: ADD PAST TIME TRACTIONS TO HISTORY =====\n");
+                                }
+                                if( twilightZoneFlow )
+                                {
+                                    Range Rx=numberOfDimensions;
+                                    RealArray tractionRate(I1,I2,I3,Rx);
+                  // For TZ "exact traction-rate" = tractionRateTZ - tractionRateTZ = 0 
+                                    tractionRate=0.;
+                                    printF(" ********** SET traction-rate to EXACT: t=%9.3e (For TZ)*************\n",t);              
+                                }
+                                else if(  knownSolution==Parameters::userDefinedKnownSolution && (t<=0. || dt==0.) )
+                                {
+                                    int body=0;
+                  // RealArray state(I1,I2,I3,Rx);
+                                    parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
+                                                                                                                                              t, grid, mg, I1,I2,I3,Rx,tractionRate );
+                                    printF(" ********** SET traction-rate to EXACT: t=%9.3e (No time history)*************\n",t);
+                                    if( debug() & 4 )
+                                        ::display(tractionRate,sPrintF("traction-rate EXACT t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
+                                }
+                                else
+                                {
+                                    printF("\n--INS-IRHS: t=%9.3e **WARNING** Not enough time-history levels"
+                                                  "of the traction to compute the traction rate. Setting traction-rate=0\n\n",
+                                                  t);
+                                    tractionRate=0.;
+                                }
+                            }
                         }
                         else
                         {
-              // If there are not enough time levels this could be first step
-                            if( t>0 )
-                            {
-                                printF(" =====  ***TEMP** TO-DO: ADD PAST TIME TRACTIONS TO HISTORY =====\n");
-                            }
-                            if( twilightZoneFlow )
-                            {
-                                Range Rx=numberOfDimensions;
-                                RealArray tractionRate(I1,I2,I3,Rx);
-                // For TZ "exact traction-rate" = tractionRateTZ - tractionRateTZ = 0 
-                                tractionRate=0.;
-                                printF(" ********** SET traction-rate to EXACT: t=%9.3e (For TZ)*************\n",t);              
-                            }
-                            else if(  knownSolution==Parameters::userDefinedKnownSolution && (t<=0. || dt==0.) )
-                            {
-
-                                int body=0;
-                // RealArray state(I1,I2,I3,Rx);
-                                parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTractionRate,
-                                                                                                                                          t, grid, mg, I1,I2,I3,Rx,tractionRate );
-            
-                                printF(" ********** SET traction-rate to EXACT: t=%9.3e (No time history)*************\n",t);
-                                
-                                if( debug() & 4 )
-                                    ::display(tractionRate,sPrintF("traction-rate EXACT t=%9.3e, dt=%9.3e",t,dt),debugFile,"%9.3e ");
-            		
-                            }
-                            else
-                            {
-                                printF("\n--INS-IRHS: t=%9.3e **WARNING** Not enough time-history levels"
-                                              "of the traction to compute the traction rate. Setting traction-rate=0\n\n",
-                                              t);
-                                tractionRate=0.;
-                            }
-          	    
+                            OV_ABORT("--INS---IRHS--Error: there is no tractionHistory to compute traction-rate");
                         }
+                        f(I1,I2,I3,Ctr)=tractionRate;
                     }
                     else
                     {
-                        OV_ABORT("--INS---IRHS--Error: there is no tractionHistory to compute traction-rate");
+            // old way 
+                        printF("---INS---interface: You should use the new cgmp MULTI-STAGE option to interfaces\n");
+                        OV_ABORT("ERROR: USE NEW MULTI-STAGE APPROACH");
+            // getTractionRateFromInterfaceDataHistory();
                     }
-
-                    f(I1,I2,I3,Ctr)=tractionRate;
-
                 }
-                else
-                {
-          // old way 
-                    OV_ABORT("This should not happen");
-                    
-          // getTractionRateFromInterfaceDataHistory();
-                }
-      	
-            }
-
-
-// #ifndef USE_PPP
-//       f(I1,I2,I3,V)=traction(I1,I2,I3,D);
-// #else
-//       OV_ABORT("ERROR: finish me for parallel");
-// #endif
 
             if( debug() & 8 )
             {
@@ -1569,72 +1308,6 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             }
             
         }
-
-
-    // // *****************************************************************************
-    // // ******************** Traction Twilight Zone Forcing *************************
-    // // *****************************************************************************
-
-    // if( twilightZoneFlow )
-    // {
-    //   // ---add forcing for twlight-zone flow---
-
-    //   if( option==setInterfaceRightHandSide )
-    //   { // set 
-    //     //   add on TZ flow:
-    //     //   bd <- bd + (true boundary position)
-
-    //     // printP("interface:ERROR: we need to include the true boundary position for TZ. Finish me!\n");
-      	
-    //   }
-    //   else if( option==getInterfaceRightHandSide )
-    //   { // get 
-    //     //   subtract off TZ flow:
-    //     //   f <- f - ( pe*normal )  ** should also include viscous terms **
-    //     Range Rx=numberOfDimensions;
-    //     RealArray traction(I1,I2,I3,Rx);
-    //     if( false )
-    //     {
-    //       // This is done above now
-    //       int ntd=0;  // number of time derivatives
-    //       getTractionTZ(traction,I1,I2,I3,t,ntd);
-    //       ::display(traction,"--INS-- Traction from TZ (minus normal force)");
-
-    //       f(I1,I2,I3,Rx+Ct.getBase()) -= traction(I1,I2,I3,Rx);
-    //     }
-                
-                
-    //     // ::display(f(I1,I2,I3,Ct),"Cgins::interface fluid traction after TZ fix");
-
-    //     if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
-    //     {
-    //       // -- get the traction rate for TZ ---
-
-    //       if( false )// This is done above now
-    //       {
-    //         int ntd=1;// number of time derivatives
-    //         getTractionTZ(traction,I1,I2,I3,t,ntd);
-    //         ::display(traction,"--INS-- Traction-rate from TZ");
-
-    //         f(I1,I2,I3,Rx+Ctr.getBase()) -= traction(I1,I2,I3,Rx);
-    //       }
-                    
-
-    //       // // time derivative of the traction (store in pe)
-    //       // e.gd( pe ,xLocal,numberOfDimensions,isRectangular,1,0,0,0,I1,I2,I3,pc,t);  // p.t
-
-    //       // for( int axis=0; axis<numberOfDimensions; axis++ )
-    //       //   f(I1,I2,I3,Ctr.getBase()+axis) -= pe(I1,I2,I3)*normal(I1,I2,I3,axis); 
-
-    //     }
-
-    //   }
-    //   else
-    //   {
-    //     OV_ABORT("error");
-    //   }
-        
-    // } // end if TZ 
 
 
 

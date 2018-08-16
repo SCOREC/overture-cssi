@@ -53,6 +53,9 @@ MpParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if (!dbase.has_key("interfaceOmega")) dbase.put<real>("interfaceOmega");
   dbase.get<real>("interfaceOmega")=1.;
 
+  // Keep a count of the total number of correction steps for sub-time-step iterations
+  if (!dbase.has_key("totalNumberOfCorrectionSteps")) dbase.put<int>("totalNumberOfCorrectionSteps")=0;
+
   if (!dbase.has_key("extrapolateInitialInterfaceValues")) dbase.put<bool>("extrapolateInitialInterfaceValues",true);
 
   if (!dbase.has_key("numberOfInterfaceHistoryValuesToSave")) 

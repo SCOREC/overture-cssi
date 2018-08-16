@@ -206,14 +206,14 @@ generate an overlapping grid
   #
   change parameters
     specify a domain
-      fluidDomain
-      backGroundFluid
-      beamInterfaceFluid
-      done
-    specify a domain
       solidDomain
       backGroundSolid
       beamInterfaceSolid
+      done
+    specify a domain
+      fluidDomain
+      backGroundFluid
+      beamInterfaceFluid
       done
     order of accuracy
      $orderOfAccuracy

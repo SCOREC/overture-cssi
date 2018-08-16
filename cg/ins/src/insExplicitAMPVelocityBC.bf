@@ -743,13 +743,11 @@ endLoops()
 
 
 ! ==========================================================================================================
+!   ** NEW ** June 26, 2018
+!
 ! Apply the AMP VELOCITY boundary condition to determine the velocity on the ghost points
 !  Curvilinear grid case
 ! 
-!   tv.sigma.nv = tv.solidTraction
-!    div( v ) = 0
-!  sigma_{ij} = mu*( (v_i)_j + (v_j)_i )
-!
 ! ORDER: 2 or 4
 ! DIR = r,s,t
 ! GRIDTYPE: rectangular, curvilinear
@@ -757,7 +755,7 @@ endLoops()
 ! ==========================================================================================================
 #beginMacro velocityInterfaceAMPCurvilinear2dOrder2()
 
-write(*,'("START AMP INTERFACE VELOCITY BC LOOPS CURVILINEAR ")') 
+write(*,'("START *NEW* AMP INTERFACE VELOCITY BC LOOPS CURVILINEAR ")') 
 
 ! First project interface values?
 if( .false. )then
@@ -769,6 +767,472 @@ if( .false. )then
   endLoops()
 end if
 
+maxDiv=0.
+maxChar=0.
+beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
+
+ i1m=i1-is1
+ i2m=i2-is2
+ i3m=i3-is3
+
+ i1p=i1+is1
+ i2p=i2+is2
+ i3p=i3+is3
+
+ ! *************** TRACTION BC CURVILINEAR GRIDS ****************
+ ! (rxd,ryd) : direction of the normal to r(axis)=const
+ rxd = rsxy(i1,i2,i3,  axis,0)
+ ryd = rsxy(i1,i2,i3,  axis,1)
+ sxd = rsxy(i1,i2,i3,axisp1,0)
+ syd = rsxy(i1,i2,i3,axisp1,1)
+
+ if( axis.eq.0 )then
+   rxxd  = rxx22(i1,i2,i3)
+   ryyd  = ryy22(i1,i2,i3)
+   sxxd  = sxx22(i1,i2,i3)
+   syyd  = syy22(i1,i2,i3)
+ else
+   rxxd  = sxx22(i1,i2,i3)
+   ryyd  = syy22(i1,i2,i3)
+   sxxd  = rxx22(i1,i2,i3)
+   syyd  = ryy22(i1,i2,i3)
+ end if
+
+
+ getNormal2d(i1,i2,i3,axis)
+
+ ! tangent
+ t1=-an2
+ t2= an1
+
+ ux = ux22(i1,i2,i3,uc)
+ uy = uy22(i1,i2,i3,uc)
+ vx = ux22(i1,i2,i3,vc)
+ vy = uy22(i1,i2,i3,vc)
+
+ uxx = uxx22(i1,i2,i3,uc)
+ uyy = uyy22(i1,i2,i3,uc)
+ vxx = uxx22(i1,i2,i3,vc)
+ vyy = uyy22(i1,i2,i3,vc)
+ px  = ux22(i1,i2,i3,pc)
+ py  = uy22(i1,i2,i3,pc)
+
+ unxx = unxx22(i1,i2,i3,uc)
+ unyy = unyy22(i1,i2,i3,uc)
+ vnxx = unxx22(i1,i2,i3,vc)
+ vnyy = unyy22(i1,i2,i3,vc)
+ pnx  = unx22(i1,i2,i3,pc)
+ pny  = uny22(i1,i2,i3,pc)
+
+ if( .FALSE. .and. twilightZone.eq.1 )then
+   ! Test -- set exact for px,py 
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t-dt,pc,pxe )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t-dt,pc,pye )
+   pnx = pxe
+   pny = pye
+
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,pc,pxe )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,pc,pye )
+   px = pxe
+   py = pye
+
+ end if
+
+ ! Us minus of solid traction since the solid normal is reversed
+ solidT1 = -solidTraction(i1,i2,i3,0)
+ solidT2 = -solidTraction(i1,i2,i3,1)
+
+ ! ========== Equation 1:   ==========
+ !        2*mu*div(v) + zp*n.v = pcSwitch*( n.sigmaS.n - ( -p + n.tauTilde.n ) ) + zp*n.vS 
+ !
+ !   tauTilde = tau - 2*mu*div(v)*I 
+ !   pcSwitch = 0 for predictor stage, 1 for corrector stage 
+ !
+
+ ! First evaluate the equation using current ghost values 
+ !   f1 = ux+vy = a11*u(-1) + a12*v(-1) + a13*u(0) + a14*v(0) = rest
+ !   rest = f1(uCurrent) - a11*uCurrent(-1) + a12*vCurrent(-1)
+
+ nDotU = an1*u(i1,i2,i3,uc)+an2*u(i1,i2,i3,vc)
+ nDotUs= an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1)
+ nTauTilden = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+ pStar = u(i1,i2,i3,pc) ! current value for p
+
+ signForTraction=1.
+
+ ! "equation" 1: (all terms on the LHS)
+ ! f1 = 2.*mu*(ux+vy) 
+ f1 = 2.*mu*(ux+vy) + zp*nDotU - zp*nDotUs + pcSwitch*signForTraction*( -pStar+nTauTilden  -( an1*solidT1+an2*solidT2 ) )
+
+ if( twilightZone.eq.1 )then
+   ! adjust for TZ 
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,ue )
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,ve )
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,pc,pe )
+
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uxe )
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vxe )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uye )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vye ) 
+   nDotUe = an1*ue+an2*ve
+   nTauTildene = mu*( an1*( -2*vye*an1 + (uye+vxe)*an2) + an2*( (uye+vxe)*an1 -2.*uxe*an2 ) )
+   f1tz = 2.*mu*(uxe+vye) + zp*nDotUe + pcSwitch*(-pe + nTauTildene )
+   ! f1tz = 2.*mu*(uxe+vye) 
+   f1 = f1 - f1tz 
+ end if
+
+ ! crxd = coeff of u(-1) in u.x  
+ ! cryd = coeff of u(-1) in u.y  
+ crxd=-is*rxd/(2.*dr(axis))
+ cryd=-is*ryd/(2.*dr(axis))
+
+ a4(1,1) = 2.*mu*crxd             ! coeff of u(-1) in eqn 1
+ a4(1,2) = 2.*mu*cryd             ! coeff of v(-1) in eqn 1
+ a4(1,3) = zp*an1                 ! coeff of u( 0) in eqn 1
+ a4(1,4) = zp*an2                 ! coeff of v( 0) in eqn 1 
+ ! RHS: 
+ bv(1) = a4(1,1)*u(i1m,i2m,i3m,uc) + a4(1,2)*u(i1m,i2m,i3m,vc) \
+       + a4(1,3)*u(i1 ,i2 ,i3 ,uc) + a4(1,4)*u(i1 ,i2 ,i3 ,vc) - f1 
+
+ ! assume the TZ solution is divergence free so we do not need to add a TZ correction to f1
+
+ ! =========== Equation 2:  tangential traction equation =================
+ !    (1/mu)* tv.tau.n + (zs/mu)*tv.v = (1/mu)*tv.(-solidTraction) + (zs/mu)*tv.solidVelocity
+ ! 
+ ! First evaluate the tangential traction equation using current ghost values 
+ !  f2 = (1/mu) * tv.tauv.nv 
+ !     =  2*ux t1*n1 + (uy+vx)*(t1*n2+t2*n1) + 2* t2*n2* vy 
+ !     = csf1*ux + csf2*(uy+vx) + csf3*vy
+ !     = a21*u(-1) + a22*v(-1) + .... = f2
+
+! zsScaled =zs/(1.+10./zs) ! set to zero to turn off "zs" terms
+ zsScaled =zs
+
+ csf1= 2.*t1*an1
+ csf2=(t1*an2+t2*an1)
+ csf3= 2.*t2*an2
+ a4(2,1) = csf1*crxd + csf2*cryd  ! coeff of u(-1)
+ a4(2,2) = csf2*crxd + csf3*cryd  ! coeff of v(-1)
+ a4(2,3) = (zsScaled/mu)*t1       ! coeff of u( 0)
+ a4(2,4) = (zsScaled/mu)*t2       ! coeff of v( 0) 
+
+ ! Eqn 2: (leave off (zs/mu)*tv.v since it will be otherwise just subtracted below) 
+ f2 = csf1*ux + csf2*(uy+vx) + csf3*vy - (1./mu)*( t1*solidT1                   + t2*solidT2                   ) \
+                                 - (signForTraction*zsScaled/mu)*( t1*solidVelocity(i1,i2,i3,0) + t2*solidVelocity(i1,i2,i3,1) )
+ if( twilightZone.eq.1 )then
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,ue )
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,ve )
+
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t-dt,uc,une )
+   call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t-dt,vc,vne )
+
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uxe )
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vxe )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uye )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vye )
+
+   ! Adjust for TZ:  
+   f2 = f2 - ( (csf1*uxe + csf2*(uye+vxe) + csf3*vye) + (zsScaled/mu)*( t1*ue+t2*ve ) )
+
+ end if 
+ bv(2) = a4(2,1)*u(i1m,i2m,i3m,uc) + a4(2,2)*u(i1m,i2m,i3m,vc) - f2
+
+ ! =========== Equation 3: tangential velocity equation ================
+ !          tv.v - (nu*dt)/2*tv.Delta v = tv.rv 
+ !          rv = vn - dt*( .5*grad(p) + .5*grad(pn) ) + (nu*dt/2)*(Delta un )
+ !  pn : solution at the old time 
+ !  (on the predictor stange we assume "u" holds a predicted pressure) 
+
+
+ nuDtby2 = .5*nu*dt
+ ! Delta = (rx^2+ry^2)*urr + (sx^2+sy^2)*uss + (rxx+ryy)*ur + (sxx+syy)*us 
+ rxSq = rxd**2 + ryd**2
+ sxSq = sxd**2 + syd**2 
+ cLapg = rxSq/dr(axis)**2 -is*(rxxd+ryyd)/(2.*dr(axis))   ! coeff of ghost in Delta()
+ cLap0 = -2.*( rxSq/dr(axis)**2 + sxSq/dr(axisp1)**2 )    ! coeff of bndry in Delta()
+ 
+ scale=1.  ! Set to zero to turn on interior equation **TEMP**
+ a4(3,1) =    -scale*nuDtby2*cLapg*t1   ! coeff of u_{-1}
+ a4(3,2) =    -scale*nuDtby2*cLapg*t2   ! coeff of v_{-1}
+ a4(3,3) = t1 -scale*nuDtby2*cLap0*t1   ! coeff of u_{0}
+ a4(3,4) = t2 -scale*nuDtby2*cLap0*t2   ! coeff of v_{0}
+ 
+
+ rv(0) = un(i1,i2,i3,uc) -(.5*dt/rho)*( px + pnx ) + nuDtby2*( unxx + unyy + uxx+uyy )
+ rv(1) = un(i1,i2,i3,vc) -(.5*dt/rho)*( py + pny ) + nuDtby2*( vnxx + vnyy + vxx+vyy )
+   
+ ! adjust RHS for evaluating derivatives with wrong values on the ghost and boundary
+ !rv(0) = rv(0) - nuDtby2*( cLapg*u(i1m,i2m,i3m,uc) + cLap0*u(i1,i2,i3,uc) )
+ !rv(1) = rv(1) - nuDtby2*( cLapg*u(i1m,i2m,i3m,vc) + cLap0*u(i1,i2,i3,vc) )
+ if( twilightZone.eq.1 )then
+   ! Eval TZ forcing at t-dt/2 (centered in [t-dt,t]
+   thalf=t-.5*dt
+   call ogDeriv(ep,1,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,uc,uthe )
+   call ogDeriv(ep,1,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,vc,vthe )
+
+   call ogDeriv(ep,0,2,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,uc,uxxhe )
+   call ogDeriv(ep,0,0,2,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,uc,uyyhe )
+   call ogDeriv(ep,0,2,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,vc,vxxhe )
+   call ogDeriv(ep,0,0,2,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,vc,vyyhe )
+
+   call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,pc,pxhe )
+   call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,pc,pyhe )
+
+   rv(0) = rv(0) + dt*uthe + (dt/rho)*( pxhe ) - (nu*dt)*( uxxhe + uyyhe ) 
+   rv(1) = rv(1) + dt*vthe + (dt/rho)*( pyhe ) - (nu*dt)*( vxxhe + vyyhe ) 
+
+ end if
+
+ bv(3) = t1*(-u(i1,i2,i3,uc)+rv(0)) + t2*(-u(i1,i2,i3,vc)+rv(1))
+ ! adjust RHS for guessed values at boundary and ghost points:
+ bv(3) =   a4(3,1)*u(i1m,i2m,i3m,uc) + a4(3,2)*u(i1m,i2m,i3m,vc) \
+         + a4(3,3)*u(i1 ,i2 ,i3 ,uc) + a4(3,4)*u(i1 ,i2 ,i3 ,vc)  + bv(3)
+
+
+ ! =========== Equation 4:  normal velocity equation + divergence ================
+ !          n.( v- rv) - gamma*div(v) = 0 
+ !          rv = vn - dt*( (1/2)*grad(p) + .5*grad(pn) ) + (nu*dt/2)*(Delta un )
+ !  pn : solution at the old time 
+ !  (on the predictor stage we assume "u" holds a predicted pressure) 
+
+ gamma = zp*dt/rho 
+ beta =  .5*nu*dt
+ a4(4,1) =     -beta*cLapg*an1 -gamma*crxd   ! coeff of u_{-1}
+ a4(4,2) =     -beta*cLapg*an2 -gamma*cryd   ! coeff of v_{-1}
+ a4(4,3) = an1 -beta*cLap0*an1               ! coeff of u_{0}
+ a4(4,4) = an2 -beta*cLap0*an2               ! coeff of v_{0}
+ 
+ ! RHS: 
+ bv(4)= an1*( -u(i1,i2,i3,uc) + rv(0) ) + an2*( -u(i1,i2,i3,vc) +rv(1) ) + gamma*( ux + vy )
+
+ ! adjust RHS for guessed values at boundary and ghost points:
+ bv(4) =   a4(4,1)*u(i1m,i2m,i3m,uc) + a4(4,2)*u(i1m,i2m,i3m,vc) \
+         + a4(4,3)*u(i1 ,i2 ,i3 ,uc) + a4(4,4)*u(i1 ,i2 ,i3 ,vc)  + bv(4) 
+
+ if( twilightZone.eq.1 )then
+   ! write(*,'(" an1*rv(0) + an2*rv(1) - an1*ue + an2*ve=",1pe12.3)') an1*rv(0) + an2*rv(1)- (an1*ue + an2*ve)
+   ! Adjust for TZ:  
+   ! With TZ, the RHS above should equal (-1+alpha)*( n.ve ) so we need to add (1-alpha)*n.ve
+   !   n.v = alpha*n.ve + (1-alpha)n.ve = n.ve 
+   bv(4) = bv(4) -gamma*( uxe + vye )
+ end if 
+
+
+ ! write(*,'(" i1,i2=",2i3," rxd,ryd=",2f8.4," sxd,syd=",2f10.4)') i1,i2,rxd,ryd,sxd,syd
+ ! write(*,'(" i1,i2=",2i3," a11,a12=",2f8.4," a21,a22=",2f10.4)') i1,i2,a11,a12,a21,a22
+ ! write(*,'(" i1,i2=",2i3," solidTraction=",2e10.2)') i1,i2,solidTraction(i1,i2,i3,0),solidTraction(i1,i2,i3,1)
+
+ ! Solve
+ !   [a11 a12 a13 a14 ][ u(-1)] = [ b1 ]
+ !   [a21 a22 a23 a24 ][ v(-1)] = [ b2 ]
+ !   [a31 a32 a33 a34 ][ u( 0)] = [ b3 ]
+ !   [a41 a42 a43 a44 ][ v( 0)] = [ b4 ]
+
+ job=0 
+ numberOfEquations=4
+ call dgeco( a4(1,1), numberOfEquations, numberOfEquations, ipvt(1),rcond,work(1))
+ call dgesl( a4(1,1), numberOfEquations, numberOfEquations, ipvt(1), bv(1), job)
+
+
+ ! *********************** CHECK RESULTS ***************************
+ if( checkResults.eq.1 )then
+   ! check that the equations are all satisfied
+   write(*,'("AMP EXPLICIT VELOCITY BC: i1,i2=",2i3," zs=",e16.8," alpha=",e16.8," beta=",e10.2," rcond=",e10.2)') i1,i2,zs,alpha,beta,rcond
+   write(*,'(" normal=",2e14.4," tangent=",2e14.4)') an1,an2,t1,t2
+   write(*,'(" px,py=",2e14.4," old: px,py=",2e14.4)') px,py,pnx,pny
+   write(*,'(" vSolid=",2e16.6," solidTraction=",2e16.6)') solidVelocity(i1,i2,i3,0),solidVelocity(i1,i2,i3,1),solidTraction(i1,i2,i3,0),solidTraction(i1,i2,i3,1)
+   write(*,'(" old: uxx,uyy,vxx,vyy==",4e16.6)') unxx,unyy,vnxx,vnyy
+
+   ! save current values
+   us(1)=u(i1m,i2m,i3m,uc)
+   us(2)=u(i1m,i2m,i3m,vc)
+   us(3)=u(i1 ,i2 ,i3 ,uc)
+   us(4)=u(i1 ,i2 ,i3 ,vc)
+
+   u(i1m,i2m,i3m,uc)=bv(1)
+   u(i1m,i2m,i3m,vc)=bv(2)
+   u(i1 ,i2 ,i3 ,uc)=bv(3)
+   u(i1 ,i2 ,i3 ,vc)=bv(4)
+
+   write(*,'(" Old: u,v=",2e16.6," ghost=",2e16.6)') un(i1 ,i2 ,i3 ,uc),un(i1 ,i2 ,i3 ,vc),un(i1m,i2m,i3m,uc),un(i1m,i2m,i3m,vc)
+   write(*,'(" New: u,v=",2e16.6," ghost=",2e16.6)') u(i1 ,i2 ,i3 ,uc),u(i1 ,i2 ,i3 ,vc),u(i1m,i2m,i3m,uc),u(i1m,i2m,i3m,vc)
+
+   ux = ux22(i1,i2,i3,uc)
+   uy = uy22(i1,i2,i3,uc)
+   vx = ux22(i1,i2,i3,vc)
+   vy = uy22(i1,i2,i3,vc)
+  
+   uxx = uxx22(i1,i2,i3,uc)
+   uyy = uyy22(i1,i2,i3,uc)
+   vxx = uxx22(i1,i2,i3,vc)
+   vyy = uyy22(i1,i2,i3,vc)
+
+   ! =======================  EQN 1 ==============================================
+   ! 2*mu*div(v) + zp*n.v = n.sigmaS.n + zp*n.vS - pcSwitch*( -p + n.tauTilde.n ) 
+
+   nDotU = an1*u(i1,i2,i3,uc)+an2*u(i1,i2,i3,vc)
+   nDotUs= an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1)
+   nTauTilden = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+   pStar = u(i1,i2,i3,pc) ! current value for p
+
+   ! "equation" 1: (all terms on the LHS)
+   f1 = 2.*mu*(ux+vy) + zp*an1*nDotU  -( an1*solidT1+an2*solidT2 + zp*nDotUs ) + pcSwitch*(-pStar + nTauTilden )
+   ! f1 = 2.*mu*(ux+vy) 
+
+   if( twilightZone.eq.1 )then
+     ! adjust for TZ 
+     f1 = f1 - f1tz 
+   end if
+
+   res=abs(f1)
+   maxRes1=max(maxRes1,res)
+   ! div=ux+vy
+   ! maxDiv=max(maxDiv,abs(div))
+   write(*,'("EQN1: After: 2*mu*div(v) + zp*n.v ...=",e10.2)') res
+   
+   ! =======================   EQN 2 ==============================================
+   ! (1/mu)* tv.sigma.n + (zs/mu)*tv.v = (1/mu)*tv.solidTraction + (zs/mu)*tv.solidVelocity
+   tDotTaun =  mu*( t1*(2.*ux*an1+(uy+vx)*an2) + t2*((uy+vx)*an1+2.*vy*an2) )
+   char = (1./mu)*(  tDotTaun + zs*(t1*u(i1 ,i2 ,i3 ,uc)+t2*u(i1 ,i2 ,i3 ,vc)) )
+   f2 =  (1./mu)*( t1*solidT1 + t2*solidT2 ) \
+                + (zs/mu)*( t1*solidVelocity(i1,i2,i3,0) + t2*solidVelocity(i1,i2,i3,1) )
+   ! Adjust for TZ ? June 25, 2018
+   if( twilightZone.eq.1 )then
+    call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,ue )
+    call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,ve )
+    call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uxe )
+    call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vxe )
+    call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,uye )
+    call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vye )
+
+    ! Adjust for TZ:  
+    f2 = f2 + (csf1*uxe + csf2*(uye+vxe) + csf3*vye) + (zsScaled/mu)*( t1*ue+t2*ve )
+   end if 
+   res = abs(char-f2)
+   maxChar=max(maxChar,res)
+   write(*,'("EQN2: After: ( t.tau.n + zs*t.v ) ...=",e10.2,"  (char,f2=",2e10.2,")")') res,char,f2
+
+   ! =======================   EQN 3 ==============================================
+   !
+   ! Here is the solution on the boundary from the interior equations
+   rv(0) = un(i1,i2,i3,uc) -(.5*dt/rho)*( px + pnx ) + nuDtby2*( unxx + unyy + uxx+uyy )
+   rv(1) = un(i1,i2,i3,vc) -(.5*dt/rho)*( py + pny ) + nuDtby2*( vnxx + vnyy + vxx+vyy )
+   if( twilightZone.eq.1 )then
+     rv(0) = rv(0) + dt*uthe + (dt/rho)*( pxhe ) - (nu*dt)*( uxxhe + uyyhe ) 
+     rv(1) = rv(1) + dt*vthe + (dt/rho)*( pyhe ) - (nu*dt)*( vxxhe + vyyhe ) 
+   end if
+
+   res = abs( t1*rv(0) + t2*rv(1) - (t1*u(i1 ,i2 ,i3 ,uc) + t2*u(i1 ,i2 ,i3 ,vc) ) )
+   maxRes1=max(maxRes1,res)
+   write(*,'("EQN3: After: res in tv.( EQN) ) ...=",e10.2)') res
+
+   ! =========== Equation 4:  normal velocity equation + divergence  ================
+   !     n.( v-rv ) - gamma*div(v) = 0 
+   res = an1*( -u(i1,i2,i3,uc) + rv(0) ) + an2*( -u(i1,i2,i3,vc) +rv(1) ) + gamma*( ux + vy )
+   if( twilightZone.eq.1 )then
+     ! Adjust for TZ:  
+     res = res  -gamma*( uxe + vye )
+   end if 
+   ! res = an1*un(i1,i2,i3,uc) + an2*un(i1,i2,i3,vc) -res 
+   maxRes2=max(maxRes2,res)
+   write(*,'("EQN4: After: res in nv.( EQN) ) ...=",e10.2)') res
+
+   ! reset
+   u(i1m,i2m,i3m,uc)=us(1)
+   u(i1m,i2m,i3m,vc)=us(2)
+   u(i1 ,i2 ,i3 ,uc)=us(3)
+   u(i1 ,i2 ,i3 ,vc)=us(4)
+
+ end if
+
+ if( .false. .and. knownSolution.ne.0 )then
+  body=0
+  stateChoice=boundaryVelocity
+  n=0 
+  call evalUserDefinedDeformingBodyKnownSolution(  body,stateChoice,t,grid,i1m,i2m,i3m,n,val(0) )
+  call evalUserDefinedDeformingBodyKnownSolution(  body,stateChoice,t,grid,i1 ,i2 ,i3 ,n,val(2) )
+
+  write(*,'(" i1,i2=",2i3," alpha=",e10.2," beta=",e10.2," rcond=",e10.2)') i1,i2,alpha,beta,rcond
+  write(*,'("  insExpAmpBC: (knownSolution): v-err=",4(1pe10.2)," |u|,|v|=",2e10.2)') bv(1)-val(0),bv(2)-val(1),bv(3)-val(2),bv(4)-val(3),abs(val(0)),abs(val(1))
+
+  ! set exact 
+  if( .true. )then
+    write(*,'("  insExpAmpBC: **TEMP** set EXACT velocity on the interface")') 
+    bv(1)=val(0)
+    bv(2)=val(1)
+    bv(3)=val(2)
+    bv(4)=val(3)
+  end if
+ end if
+
+ if( useJacobiUpdate.eq.1 )then
+   uNew(i1m,i2m,i3m,uc)=bv(1)
+   uNew(i1m,i2m,i3m,vc)=bv(2)
+   uNew(i1 ,i2 ,i3 ,uc)=bv(3)
+   uNew(i1 ,i2 ,i3 ,vc)=bv(4)
+ else
+   u(i1m,i2m,i3m,uc)=bv(1)
+   u(i1m,i2m,i3m,vc)=bv(2)
+   u(i1 ,i2 ,i3 ,uc)=bv(3)
+   u(i1 ,i2 ,i3 ,vc)=bv(4)
+ end if
+endLoops()
+
+! Now copy the copy into u 
+if( useJacobiUpdate.eq.1 )then
+ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
+  i1m=i1-is1
+  i2m=i2-is2
+  i3m=i3-is3
+  u(i1m,i2m,i3m,uc)=uNew(i1m,i2m,i3m,uc)
+  u(i1m,i2m,i3m,vc)=uNew(i1m,i2m,i3m,vc)
+  u(i1 ,i2 ,i3 ,uc)=uNew(i1 ,i2 ,i3 ,uc)
+  u(i1 ,i2 ,i3 ,vc)=uNew(i1 ,i2 ,i3 ,vc) 
+
+ endLoops()
+end if
+
+if( checkResults.eq.1 )then
+  write(*,'(" maxDiv=",e10.2," maxChar=",e10.2," maxRes1=",e10.2," maxRes2=",e10.2)') maxDiv,maxChar,maxRes1,maxRes2
+
+  stop 1111
+end if
+
+
+#endMacro
+! ====================== END AMP 2D CURVILINEAR =========================
+
+
+
+
+
+
+! ==========================================================================================================
+!   ** OLD**
+! Apply the AMP VELOCITY boundary condition to determine the velocity on the ghost points
+!  Curvilinear grid case
+! 
+! ORDER: 2 or 4
+! DIR = r,s,t
+! GRIDTYPE: rectangular, curvilinear
+!
+! ==========================================================================================================
+#beginMacro velocityInterfaceAMPCurvilinear2dOrder2_Old()
+
+write(*,'("START *OLD* AMP INTERFACE VELOCITY BC LOOPS CURVILINEAR ")') 
+
+! First project interface values?
+if( .false. )then
+  write(*,'(" INS AMP VELOCITY BC -- pre-project velocity")') 
+  beginLoops(nn1a,nn1b,nn2a,nn2b,nn3a,nn3b)
+    ! **FIX ME** There is one alpha(zp) and one alpha(zs)
+    u(i1,i2,i3,uc)=alpha*u(i1,i2,i3,uc)+ (1.-alpha)*solidVelocity(i1,i2,i3,0)
+    u(i1,i2,i3,vc)=alpha*u(i1,i2,i3,vc)+ (1.-alpha)*solidVelocity(i1,i2,i3,1)
+  endLoops()
+end if
+
+maxDiv=0.
+maxChar=0.
 beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
 
  i1m=i1-is1
@@ -838,6 +1302,9 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
 
  end if
 
+ ! Us minus of solid traction since the solid normal is reversed
+ solidT1 = -solidTraction(i1,i2,i3,0)
+ solidT2 = -solidTraction(i1,i2,i3,1)
 
  ! ========== Equation 1: divergence=0  ==========
  ! crxd = coeff of u(-1) in u.x  
@@ -858,7 +1325,7 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
  ! assume the TZ solution is divergence free so we do not need to add a TZ correction to f1
 
  ! =========== Equation 2:  tangential traction equation =================
- !    (1/mu)* tv.sigma.n + (zs/mu)*tv.v = (1/mu)*tv.solidTraction + (zs/mu)*tv.solidVelocity
+ !    (1/mu)* tv.sigma.n + (zs/mu)*tv.v = (1/mu)*tv.(-solidTraction) + (zs/mu)*tv.solidVelocity
  ! 
  ! First evaluate the tangential traction equation using current ghost values 
  !  f2 = (1/mu) * tv.tauv.nv 
@@ -877,9 +1344,9 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
  a4(2,3) = (zsScaled/mu)*t1       ! coeff of u( 0)
  a4(2,4) = (zsScaled/mu)*t2       ! coeff of v( 0) 
 
- ! Eqn 2: (with-out (zs/mu)*tv.v 
- f2 = csf1*ux + csf2*(uy+vx) + csf3*vy + (1./mu)*( t1*solidTraction(i1,i2,i3,0) + t2*solidTraction(i1,i2,i3,1) ) \
-                                 + (zsScaled/mu)*( t1*solidVelocity(i1,i2,i3,0) + t2*solidVelocity(i1,i2,i3,1) )
+ ! Eqn 2: (leave off (zs/mu)*tv.v since it will be otherwise just subtracted below) 
+ f2 = csf1*ux + csf2*(uy+vx) + csf3*vy - (1./mu)*( t1*solidT1                   + t2*solidT2                   ) \
+                                 - (zsScaled/mu)*( t1*solidVelocity(i1,i2,i3,0) + t2*solidVelocity(i1,i2,i3,1) )
  if( twilightZone.eq.1 )then
    call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,uc,ue )
    call ogDeriv(ep,0,0,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,ve )
@@ -893,7 +1360,8 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
    call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,t,vc,vye )
 
    ! Adjust for TZ:  
-   f2 = f2 - (csf1*uxe + csf2*(uye+vxe) + csf3*vye) - (zsScaled/mu)*( t1*ue+t2*ve )
+   f2tz = (csf1*uxe + csf2*(uye+vxe) + csf3*vye) + (zsScaled/mu)*( t1*ue+t2*ve ) 
+   f2 = f2 - f2tz
 
  end if 
  bv(2) = a4(2,1)*u(i1m,i2m,i3m,uc) + a4(2,2)*u(i1m,i2m,i3m,vc) - f2
@@ -904,11 +1372,7 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
  !  pn : solution at the old time 
  !  (on the predictor stange we assume "u" holds a predicted pressure) 
 
-
  nuDtby2 = .5*nu*dt
- rv(0) = un(i1,i2,i3,uc) -(.5*dt)*( px + pnx ) + nuDtby2*( unxx + unyy + uxx+uyy )
- rv(1) = un(i1,i2,i3,vc) -(.5*dt)*( py + pny ) + nuDtby2*( vnxx + vnyy + vxx+vyy )
-   
  ! Delta = (rx^2+ry^2)*urr + (sx^2+sy^2)*uss + (rxx+ryy)*ur + (sxx+syy)*us 
  rxSq = rxd**2 + ryd**2
  sxSq = sxd**2 + syd**2 
@@ -921,10 +1385,13 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
  a4(3,3) = t1 -scale*nuDtby2*cLap0*t1   ! coeff of u_{0}
  a4(3,4) = t2 -scale*nuDtby2*cLap0*t2   ! coeff of v_{0}
  
+
+ rv(0) = un(i1,i2,i3,uc) -(.5*dt/rho)*( px + pnx ) + nuDtby2*( unxx + unyy + uxx+uyy )
+ rv(1) = un(i1,i2,i3,vc) -(.5*dt/rho)*( py + pny ) + nuDtby2*( vnxx + vnyy + vxx+vyy )
+   
  ! adjust RHS for evaluating derivatives with wrong values on the ghost and boundary
- rv(0) = rv(0) - nuDtby2*( cLapg*u(i1m,i2m,i3m,uc) + cLap0*u(i1,i2,i3,uc) )
- rv(1) = rv(1) - nuDtby2*( cLapg*u(i1m,i2m,i3m,vc) + cLap0*u(i1,i2,i3,vc) )
- bv(3) =0. 
+ !rv(0) = rv(0) - nuDtby2*( cLapg*u(i1m,i2m,i3m,uc) + cLap0*u(i1,i2,i3,uc) )
+ !rv(1) = rv(1) - nuDtby2*( cLapg*u(i1m,i2m,i3m,vc) + cLap0*u(i1,i2,i3,vc) )
  if( twilightZone.eq.1 )then
    ! Eval TZ forcing at t-dt/2 (centered in [t-dt,t]
    thalf=t-.5*dt
@@ -939,82 +1406,59 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
    call ogDeriv(ep,0,1,0,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,pc,pxhe )
    call ogDeriv(ep,0,0,1,0,x(i1,i2,i3,0),x(i1,i2,i3,1),0.,tHalf,pc,pyhe )
 
-   rv(0) = rv(0) + dt*uthe + dt*( pxhe ) - (nu*dt)*( uxxhe + uyyhe ) 
-   rv(1) = rv(1) + dt*vthe + dt*( pyhe ) - (nu*dt)*( vxxhe + vyyhe ) 
-
-   ! Do NOT add tv.(ve) -- tv.rv will include this 
-   ! bv(3) = bv(3) + t1*ue + t2*ve ! ue and ve were computed above 
-
-   if( .false. )then ! **TEMP***
-     call ogDeriv(ep,0,0,0,0,x(i1m,i2m,i3m,0),x(i1m,i2m,i3m,1),0.,t,uc,ume )
-     call ogDeriv(ep,0,0,0,0,x(i1m,i2m,i3m,0),x(i1m,i2m,i3m,1),0.,t,vc,vme )
-     rv(0) = - nuDtby2*( cLapg*ume + cLap0*ue )
-     rv(1) = - nuDtby2*( cLapg*vme + cLap0*ve )
-   end if
+   rv(0) = rv(0) + dt*uthe + (dt/rho)*( pxhe ) - (nu*dt)*( uxxhe + uyyhe ) 
+   rv(1) = rv(1) + dt*vthe + (dt/rho)*( pyhe ) - (nu*dt)*( vxxhe + vyyhe ) 
 
  end if
 
- ! RHS: 
- bv(3)= bv(3)+ scale*(t1*rv(0) + t2*rv(1))
+ bv(3) = t1*(-u(i1,i2,i3,uc)+rv(0)) + t2*(-u(i1,i2,i3,vc)+rv(1))
+ ! adjust RHS for guessed values at boundary and ghost points:
+ bv(3) =   a4(3,1)*u(i1m,i2m,i3m,uc) + a4(3,2)*u(i1m,i2m,i3m,vc) \
+         + a4(3,3)*u(i1 ,i2 ,i3 ,uc) + a4(3,4)*u(i1 ,i2 ,i3 ,vc)  + bv(3)
 
- if( .false. )then ! **OLD**
-   ! =========== Equation 3b: tangential weighting equation ================
-   !            beta*tv.v_0 + (1-beta)*t.v_{-1} = beta*tv.v_0^p + (1-beta)*tv.v_{-1}^p 
-   !  This equation weights the predicted value from the fluid:
-   !     For a heavy fluid, beta -> 0  and ghost value of tv.v_{-1} is extrapolated (usual TP scheme)
-   !     For a light fluid, beta -> 1 and tv.v_0 gets the interior value (as for a traction free problem)
-  
-   !   dn =  grid-spacing in the normal direction
-   !  WARNING -- Do we always have the vertices ?? could use Jacobian entries to get dn 
-   dn = sqrt( (x(i1p,i2p,i3p,0)-x(i1,i2,i3,0))**2 + (x(i1p,i2p,i3p,1)-x(i1,i2,i3,1))**2 )
-              
-   beta = (mu/dn)/( zs + (mu/dn) )
-   !! beta = (mu)/( zs + (mu) )
-  
-   a4(3,1) = (1.-beta)*t1 ! coeff of u_{-1}
-   a4(3,2) = (1.-beta)*t2 ! coeff of v_{-1}
-   a4(3,3) =     beta *t1 ! coeff of u_{0}
-   a4(3,4) =     beta *t2 ! coeff of v_{0}
-   bv(3)=   beta *( t1*u(i1 ,i2 ,i3 ,uc) + t2*u(i1 ,i2 ,i3 ,vc) ) + \
-        (1.-beta)*( t1*u(i1m,i2m,i3m,uc) + t2*u(i1m,i2m,i3m,vc) )
- end if
 
  ! =========== Equation 4:  Impedance average of normal velocity equation ================
- !          nv.v - alpha*(nu*dt)/2*nv.Delta v = alpha*nv.rv  + (1-alpha)*nv.vSolid
+ !          n.v = alphaMu*n.( rv ) + (1-alphaMu)*n.vSolid + (pcSwitch/(zf+zp))*[ n.SigmaS.n - (-p+n.tauTilde.n) ]
+ !          alphaMu = zf/(zf+zp), zf=2*mu*rho/(zp*dt) 
+ !          pcSwitch = 0:predictor, 1:corrector
  !          rv = vn - dt*( (1/2)*grad(p) + .5*grad(pn) ) + (nu*dt/2)*(Delta un )
- !  pn : solution at the old time 
+ !   pn : solution at the old time 
  !  (on the predictor stange we assume "u" holds a predicted pressure) 
+ ! 
+ nDotU = an1*u(i1,i2,i3,uc)+an2*u(i1,i2,i3,vc)
+ nDotUs= an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1)
+ nTauTilden = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2 ) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+ pStar = u(i1,i2,i3,pc) ! current value for p
 
  scale=1. ! Set to zero to turn off interior equation 
- beta =  scale*alpha*.5*nu*dt
+ zf = 2.*mu*rho/(zp*dt)
+ alphaMu = zf/(zf+zp)
+ ! alphaMu=alpha
+ beta =  scale*alphaMu*.5*nu*dt
  a4(4,1) =     -beta*cLapg*an1     ! coeff of u_{-1}
  a4(4,2) =     -beta*cLapg*an2     ! coeff of v_{-1}
  a4(4,3) = an1 -beta*cLap0*an1     ! coeff of u_{0}
  a4(4,4) = an2 -beta*cLap0*an2     ! coeff of v_{0}
  
  ! RHS: 
- bv(4)= scale*alpha*( an1*rv(0) + an2*rv(1) ) + (1.-alpha)*( an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1) )
+ bv(4)= -nDotU + scale*alphaMu*( an1*rv(0) + an2*rv(1) ) + (1.-alphaMu)*nDotUs \
+       + (pcSwitch/(zf+zp))*( ( an1*solidT1+an2*solidT2 ) -(-pStar+nTauTilden) )
+
+ ! adjust RHS for guessed values at boundary and ghost points:
+ bv(4) =   a4(4,1)*u(i1m,i2m,i3m,uc) + a4(4,2)*u(i1m,i2m,i3m,vc) \
+         + a4(4,3)*u(i1 ,i2 ,i3 ,uc) + a4(4,4)*u(i1 ,i2 ,i3 ,vc)  + bv(4) 
 
  if( twilightZone.eq.1 )then
+   ! write(*,'(" an1*rv(0) + an2*rv(1) - an1*ue + an2*ve=",1pe12.3)') an1*rv(0) + an2*rv(1)- (an1*ue + an2*ve)
    ! Adjust for TZ:  
-   bv(4) = bv(4) + (1.-alpha)*(an1*ue + an2*ve)  ! ue and ve were computed above
+   ! With TZ, the RHS above should equal (-1+alpha)*( n.ve ) so we need to add (1-alpha)*n.ve
+   !   n.v = alpha*n.ve + (1-alpha)n.ve = n.ve 
+   nDotUe = an1*ue+an2*ve
+   nTauTildene = mu*( an1*( -2*vye*an1 + (uye+vxe)*an2) + an2*( (uye+vxe)*an1 -2.*uxe*an2 ) )
+   f4tz = (1.-scale*alphaMu)*nDotUe + zp*nDotUe + (pcSwitch/(zf+zp))*(-pe + nTauTildene )
+
+   bv(4) = bv(4) + f4tz
  end if 
-
- if( .false. )then ! **OLD**
-   ! ================ Equation 4: Impedance average of normal velocity =========================
-   !            nv.v = alpha*nv.v^p + (1-alpha)*nv.vSolid
-   a4(4,1) = 0.
-   a4(4,2) = 0.
-   a4(4,3) = an1
-   a4(4,4) = an2
-   bv(4)=   alpha *( an1*            u(i1,i2,i3,uc)+ an2*            u(i1,i2,i3,vc) ) + \
-        (1.-alpha)*( an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1) )
-   if( twilightZone.eq.1 )then
-     ! Adjust for TZ:  
-     bv(4) = bv(4) + (1.-alpha)*( an1*ue + an2*ve )  ! ue and ve were computed above
-   end if 
- end if
-
 
 
  ! write(*,'(" i1,i2=",2i3," rxd,ryd=",2f8.4," sxd,syd=",2f10.4)') i1,i2,rxd,ryd,sxd,syd
@@ -1033,15 +1477,118 @@ beginLoops(n1a,n1b,n2a,n2b,n3a,n3b)
  call dgesl( a4(1,1), numberOfEquations, numberOfEquations, ipvt(1), bv(1), job)
 
 
- if( knownSolution.ne.0 )then
+ ! --------------------- CHECK RESULTS -------------------
+ if( checkResults.eq.1 )then
+   ! check that the equations are all satisfied
+   write(*,'("AMP EXPLICIT VELOCITY BC: i1,i2=",2i3," zs=",e16.8," alpha=",e16.8," beta=",e10.2," rcond=",e10.2)') i1,i2,zs,alpha,beta,rcond
+   write(*,'(" normal=",2e14.4," tangent=",2e14.4)') an1,an2,t1,t2
+   write(*,'(" px,py=",2e14.4," old: px,py=",2e14.4)') px,py,pnx,pny
+   write(*,'(" vSolid=",2e16.6," solidTraction=",2e16.6)') solidVelocity(i1,i2,i3,0),solidVelocity(i1,i2,i3,1),solidTraction(i1,i2,i3,0),solidTraction(i1,i2,i3,1)
+   write(*,'(" old: uxx,uyy,vxx,vyy==",4e16.6)') unxx,unyy,vnxx,vnyy
+
+   ! save current values
+   us(1)=u(i1m,i2m,i3m,uc)
+   us(2)=u(i1m,i2m,i3m,vc)
+   us(3)=u(i1 ,i2 ,i3 ,uc)
+   us(4)=u(i1 ,i2 ,i3 ,vc)
+
+   u(i1m,i2m,i3m,uc)=bv(1)
+   u(i1m,i2m,i3m,vc)=bv(2)
+   u(i1 ,i2 ,i3 ,uc)=bv(3)
+   u(i1 ,i2 ,i3 ,vc)=bv(4)
+
+   write(*,'(" Old: u,v=",2e16.6," ghost=",2e16.6)') un(i1 ,i2 ,i3 ,uc),un(i1 ,i2 ,i3 ,vc),un(i1m,i2m,i3m,uc),un(i1m,i2m,i3m,vc)
+   write(*,'(" New: u,v=",2e16.6," ghost=",2e16.6)') u(i1 ,i2 ,i3 ,uc),u(i1 ,i2 ,i3 ,vc),u(i1m,i2m,i3m,uc),u(i1m,i2m,i3m,vc)
+
+   ux = ux22(i1,i2,i3,uc)
+   uy = uy22(i1,i2,i3,uc)
+   vx = ux22(i1,i2,i3,vc)
+   vy = uy22(i1,i2,i3,vc)
+  
+   uxx = uxx22(i1,i2,i3,uc)
+   uyy = uyy22(i1,i2,i3,uc)
+   vxx = uxx22(i1,i2,i3,vc)
+   vyy = uyy22(i1,i2,i3,vc)
+
+   ! =======================   EQN 1 ==============================================
+   div=ux+vy
+   maxDiv=max(maxDiv,abs(div))
+   write(*,'("EQN1: After: divergence=",e10.2)') div
+   
+   ! =======================   EQN 2 ==============================================
+   ! (1/mu)* tv.sigma.n + (zs/mu)*tv.v = (1/mu)*tv.solidTraction + (zs/mu)*tv.solidVelocity
+   tDotTaun =  mu*( t1*(2.*ux*an1+(uy+vx)*an2) + t2*((uy+vx)*an1+2.*vy*an2) )
+   char = (1./mu)*(  tDotTaun + zs*(t1*u(i1 ,i2 ,i3 ,uc)+t2*u(i1 ,i2 ,i3 ,vc)) )
+   f2 =  (1./mu)*( t1*solidT1 + t2*solidT2 ) \
+                + (zs/mu)*( t1*solidVelocity(i1,i2,i3,0) + t2*solidVelocity(i1,i2,i3,1) )
+   ! Adjust for TZ ? June 25, 2018
+   if( twilightZone.eq.1 )then
+    ! Adjust for TZ:  
+    f2 = f2 + f2tz
+   end if 
+   res = abs(char-f2)
+   maxChar=max(maxChar,res)
+   write(*,'("EQN2: After: ( t.tau.n + zs*t.v ) ...=",e10.2,"  (char,f2=",2e10.2,")")') res,char,f2
+
+   ! =======================   EQN 3 ==============================================
+   ! Here is the solution on the boundary from the interior equations
+   rv(0) = un(i1,i2,i3,uc) -(.5*dt)*( px + pnx ) + nuDtby2*( unxx + unyy + uxx+uyy )
+   rv(1) = un(i1,i2,i3,vc) -(.5*dt)*( py + pny ) + nuDtby2*( vnxx + vnyy + vxx+vyy )
+   if( twilightZone.eq.1 )then
+     rv(0) = rv(0) + dt*uthe + (dt/rho)*( pxhe ) - (nu*dt)*( uxxhe + uyyhe ) 
+     rv(1) = rv(1) + dt*vthe + (dt/rho)*( pyhe ) - (nu*dt)*( vxxhe + vyyhe ) 
+   end if
+
+   res = abs( t1*rv(0) + t2*rv(1) - (t1*u(i1 ,i2 ,i3 ,uc) + t2*u(i1 ,i2 ,i3 ,vc) ) )
+   maxRes1=max(maxRes1,res)
+   write(*,'("EQN3: After: res in tv.( EQN) ) ...=",e10.2)') res
+
+   ! =========== Equation 4:  Impedance average of normal velocity equation ================
+   !          n.v = alphaMu*n.( rv ) + (1-alphaMu)*n.vSolid + (pcSwitch/(zf+zp))*[ n.SigmaS.n - (-p+n.tauTilde.n) ]
+   nDotU = an1*u(i1,i2,i3,uc)+an2*u(i1,i2,i3,vc)
+   nDotUs= an1*solidVelocity(i1,i2,i3,0) + an2*solidVelocity(i1,i2,i3,1)
+   nTauTilden = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2 ) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )   
+
+   res =  -nDotU + scale*alphaMu*( an1*rv(0) + an2*rv(1) ) + (1.-alphaMu)*nDotUs \
+       + (pcSwitch/(zf+zp))*( ( an1*solidT1+an2*solidT2 ) -(-pStar+nTauTilden) )
+
+   if( twilightZone.eq.1 )then
+     ! Adjust for TZ:  
+     res = res  + f4tz
+   end if 
+   maxRes2=max(maxRes2,res)
+   write(*,'("EQN4: After: res in nv.( EQN) ) ...=",e10.2)') res
+
+   ! reset
+   u(i1m,i2m,i3m,uc)=us(1)
+   u(i1m,i2m,i3m,vc)=us(2)
+   u(i1 ,i2 ,i3 ,uc)=us(3)
+   u(i1 ,i2 ,i3 ,vc)=us(4)
+
+ end if
+
+
+ if( .false. .and. knownSolution.ne.0 )then
   body=0
   stateChoice=boundaryVelocity
   n=0 
-  call evalUserDefinedDeformingBodyKnownSolution(  body,stateChoice,t,grid,i1,i2,i3,n,val(0) )
-  write(*,'(" i1,i2=",2i3," alpha=",e10.2," beta=",e10.2," rcond=",e10.2)') i1,i2,alpha,beta,rcond
-  write(*,'(" knownSolution: uErr,vErr=",2e10.2)') bv(1)-val(0),bv(2)-val(1)
+  call evalUserDefinedDeformingBodyKnownSolution(  body,stateChoice,t,grid,i1m,i2m,i3m,n,val(0) )
+  call evalUserDefinedDeformingBodyKnownSolution(  body,stateChoice,t,grid,i1 ,i2 ,i3 ,n,val(2) )
 
+  write(*,'(" i1,i2=",2i3," alpha=",e10.2," beta=",e10.2," rcond=",e10.2)') i1,i2,alpha,beta,rcond
+  write(*,'("  insExpAmpBC: (knownSolution): v-err=",4(1pe10.2)," |u|,|v|=",2e10.2)') bv(1)-val(0),bv(2)-val(1),bv(3)-val(2),bv(4)-val(3),abs(val(0)),abs(val(1))
+
+  ! set exact 
+  if( .true. )then
+    write(*,'("  insExpAmpBC: **TEMP** set EXACT velocity on the interface")') 
+    bv(1)=val(0)
+    bv(2)=val(1)
+    bv(3)=val(2)
+    bv(4)=val(3)
+  end if
  end if
+
+
  if( .FALSE. )then
  write(*,'(" i1,i2=",2i3," alpha=",e10.2," beta=",e10.2," rcond=",e10.2)') i1,i2,alpha,beta,rcond
  write(*,'(" bv=",4e10.2)') bv(1),bv(2),bv(3),bv(4)
@@ -1102,10 +1649,15 @@ if( useJacobiUpdate.eq.1 )then
  endLoops()
 end if
 
-! stop 1111
+if( checkResults.eq.1 )then
+  write(*,'(" maxDiv=",e10.2," maxChar=",e10.2," maxRes1=",e10.2," maxRes2=",e10.2)') maxDiv,maxChar,maxRes1,maxRes2
+
+  stop 1111
+end if
+
 
 #endMacro
-! ====================== END TRACTION 2D CURVILINEAR =========================
+! ====================== END *OLD* AMP 2D CURVILINEAR =========================
 
 
 
@@ -1157,11 +1709,11 @@ end if
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
       integer numberOfGhostPoints
 
-      real t,nu,mu,zp,zs,thermalExpansivity,te,zsScaled
+      real t,nu,mu,zp,zs,thermalExpansivity,te,zsScaled,rho,realMin
       ! real cd42,adCoeff4, cd22, adCoeff2
       real dr(0:2),dx(0:2),d14v(0:2),d24v(0:2), gravity(0:2)
       ! real vy,vxy,ux,uxy
-      real f1,f2,f3,f4,det,alpha,beta,rxsqr,ajs
+      real f1,f2,f3,f4,det,alpha,beta,rxsqr,ajs,gamma,alphaMu
       real an1,an2,an3,aNormi, t1,t2,t3, b1,b2,b3, crxd,cryd,crzd, ux,uy, vx,vy,wx,wy,uz,vz,wz, um1,vm1,wm1
       real csf1,csf2,csf3,epsX
       real rxd,ryd,rzd,sxd,syd,szd,txd,tyd,tzd,rxsqd
@@ -1187,14 +1739,17 @@ end if
       real px,py,pz, pnx,pny,pnz
       real rxx,ryy,sxx,syy
       real ume,vme,wme
-      integer useJacobiUpdate
+      integer useJacobiUpdate,checkResults,correctionStage
+      real maxDiv,char,maxChar,tDotTaun,maxRes1,maxRes2,res,solidT1,solidT2
+      real nDotU,nDotUs,nTauTilden,pStar,pcSwitch,signForTraction
+      real nDotUe,nTauTildene,f1tz,f2tz,f3tz,f4tz,zf
 
       real uExtrap2,uExtrap3,epsu, u1a,u2a, uLim, clim
 
       real div,div11,div12,div13,dn,tHalf,nuDtBy2,scale
       real rv(0:3),cLap0,cLapg,rxSq,rySq,rzSq,sxSq,sySq,szSq,txSq,tySq,tzSq
 
-      integer body,stateChoice,n,knownSolution
+      integer body,stateChoice,n,knownSolution,addedMassVelocityBC
       real val(0:10)
 
       ! enum DeformingBodyStateOptionEnum -- this should match the enum Parameters.h
@@ -1208,7 +1763,7 @@ end if
 
 
       integer numberOfEquations,job
-      real a4(1:4,1:4),bv(1:4),ipvt(1:4),rcond,work(1:4)
+      real a4(1:4,1:4),bv(1:4),ipvt(1:4),rcond,work(1:4), us(1:4)
 
 
 !..................
@@ -1274,30 +1829,31 @@ end if
 
       ierr=0
 
-      pc                =ipar(0)
-      uc                =ipar(1)
-      vc                =ipar(2)
-      wc                =ipar(3)
-      sc                =ipar(4)
-      grid              =ipar(5)
-      gridType          =ipar(6)
-      orderOfAccuracy   =ipar(7)
-      gridIsMoving      =ipar(8)
-      useWhereMask      =ipar(9)
-      gridIsImplicit    =ipar(10)
-      implicitMethod    =ipar(11)
-      implicitOption    =ipar(12)
-      isAxisymmetric    =ipar(13)
-      twilightZone      =ipar(14)
-      numberOfProcessors=ipar(15)
-      debug             =ipar(16)
-      myid              =ipar(17)
-      assignTemperature =ipar(18)
-      tc                =ipar(19)
-      side              =ipar(20)
-      axis              =ipar(21)
-      knownSolution     =ipar(22)      
-
+      pc                 =ipar(0)
+      uc                 =ipar(1)
+      vc                 =ipar(2)
+      wc                 =ipar(3)
+      sc                 =ipar(4)
+      grid               =ipar(5)
+      gridType           =ipar(6)
+      orderOfAccuracy    =ipar(7)
+      gridIsMoving       =ipar(8)
+      useWhereMask       =ipar(9)
+      gridIsImplicit     =ipar(10)
+      implicitMethod     =ipar(11)
+      implicitOption     =ipar(12)
+      isAxisymmetric     =ipar(13)
+      twilightZone       =ipar(14)
+      numberOfProcessors =ipar(15)
+      debug              =ipar(16)
+      myid               =ipar(17)
+      assignTemperature  =ipar(18)
+      tc                 =ipar(19)
+      side               =ipar(20)
+      axis               =ipar(21)
+      knownSolution      =ipar(22)      
+      addedMassVelocityBC=ipar(23)
+      correctionStage    =ipar(24)
 
       dx(0)             =rpar(0)
       dx(1)             =rpar(1)
@@ -1318,16 +1874,27 @@ end if
       thermalExpansivity=rpar(16) ! not used
       ep                =rpar(17) ! pointer for exact solution
       dt                =rpar(18)
+      realMin           =rpar(19)
+      rho               =rpar(20) ! fluid density
 
       epsX = 1.e-30 ! fix me -- pass in 
 
       useJacobiUpdate=1 ! =1 : first compute all new values, then replace 
 
+      if( correctionStage.gt.0 )then
+        pcSwitch=1.
+      else
+        pcSwitch=0.
+      end if
+
+      checkResults= 0 ! =1 : for debugging, check results 
+
       if( .true. )then
         write(*,'("Inside insExplicitAMPVelocityBC nd=",i2," tz=",i2,",t=",e9.2," mu=",e8.2)') nd,twilightZone,t,mu
         write(*,'("  +++  gridType=",i2," orderOfAccuracy=",i2," (side,axis)=",2i3)') gridType,orderOfAccuracy,side,axis
         write(*,'("  +++  zp=",e10.2," zs=",e10.2," alpha=",e10.2," dt=",e10.2)') zp,zs,alpha,dt
-        write(*,'("  +++  useJacobiUpdate=",i2)') useJacobiUpdate
+        write(*,'("  +++  addedMassVelocityBC=",i2," rho=",e12.4)') addedMassVelocityBC,rho
+        write(*,'("  +++  useJacobiUpdate=",i2," pcSwitch=",f3.1)') useJacobiUpdate,pcSwitch
       end if 
 
       if( mu.le.0. )then
@@ -1344,11 +1911,14 @@ end if
          ! --- 2D TRACTION  ----
         if( gridType.eq.0 )then
           ! --- RECTANGULAR ----
+          write(*,'("insExplicitAMPVelocityBC: finish me")')
+          stop 20202
+
           if( orderOfAccuracy.eq.2 )then
             if( axis.eq.0 )then
-              tractionRectangular(2,x,2)
+              ! tractionRectangular(2,x,2)
             else if( axis.eq.1 )then
-              tractionRectangular(2,y,2)
+              ! tractionRectangular(2,y,2)
             else
               stop 4444
             end if
@@ -1363,10 +1933,16 @@ end if
 
          if( orderOfAccuracy.eq.2 )then 
 
-          if( .true. )then
+          if( addedMassVelocityBC.eq.1 )then
+            ! *new* version June 25, 2018
             velocityInterfaceAMPCurvilinear2dOrder2()
+          else if( addedMassVelocityBC.eq.0 )then
+            ! *old* version
+            velocityInterfaceAMPCurvilinear2dOrder2_Old()
           else
-            tractionCurvilinear2dOrder2()
+            write(*,'("insExplicitAMPVelocityBC: finish me")')
+            stop 2222
+            ! tractionCurvilinear2dOrder2()
           end if
          else
            stop 4455
@@ -1379,15 +1955,17 @@ end if
 
        else
          ! ---- 3D TRACTION ----
+         write(*,'("insExplicitAMPVelocityBC: finish me")')
+         stop 3333
         if( gridType.eq.0 )then
           ! --- RECTANGULAR ----
           if( orderOfAccuracy.eq.2 )then
             if( axis.eq.0 )then
-              tractionRectangular(2,x,3)
+              ! tractionRectangular(2,x,3)
 
             else if( axis.eq.1 )then
               write(*,'("CALL TRACTION FREE Y")')
-              tractionRectangular(2,y,3)
+              ! tractionRectangular(2,y,3)
 
             else if( axis.eq.2 )then
               tractionRectangular(2,z,3)
@@ -1403,7 +1981,7 @@ end if
         else if( gridType.eq.1 )then
           ! --- CURVILINEAR ----
 
-          tractionCurvilinear3dOrder2()
+          ! tractionCurvilinear3dOrder2()
  
         else
           ! unknown gridType 

@@ -1,4 +1,31 @@
 ***************************
+******* May 26, 2018
+
+
+REVISIT GDM + TZ 
+
+*BUG* FIXED IN NEW GDM code from MJJ -- forcing was wrong
+
+
+ORDER=4: EXCAT degree=(4,3)
+cgmx -noplot tz -g=square8.order4 -npv=1 -degreex=4 -degreet=3 -dm=gdm -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+ORDER=2: EXCAT degree=(2,2)
+cgmx -noplot tz -g=nonSquare8.order2 -npv=1 -degreex=2 -degreet=2 -dm=gdm -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+cgmx -noplot tz -g=square8.order2 -npv=1 -degreex=2 -degreet=2 -dm=gdm -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+
+---NEW:
+NOT EXACT ANYMORE ??
+cgmx -noplot tz -g=square8.order2 -npv=1 -degreex=2 -degreet=2 -dm=gdm -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+------ OLD: 
+EXACT: 
+cgmx -noplot tz -g=square8.order2 -npv=1 -degreex=2 -degreet=2 -dm=gdm -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+***************************
 ******* March 1, 2018
 
 

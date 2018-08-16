@@ -529,6 +529,8 @@ writeParameterSummary( FILE * file )
 	      (int)parameters.dbase.get<bool>("predictedPressureNeeded"),
 	      (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded")
 	);
+      fPrintF(file," fluidSolidCornerFix=%i.\n",parameters.dbase.get<int>("fluidSolidCornerFix"));
+
       int orderOfTimeExtrapolationForBoundaryPressure = parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryPressure");
       int orderOfTimeExtrapolationForBoundaryVelocity = parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryVelocity");
       fPrintF(file," orderOfTimeExtrapolationForBoundaryPressure=%i, orderOfTimeExtrapolationForBoundaryVelocity=%i"

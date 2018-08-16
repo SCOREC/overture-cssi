@@ -37,6 +37,7 @@ $displacementDissipation=.0; $displacementDissipation1=.0;
 $tangentialDissipationSolid=-1.; # if >0 use this value for above 4 values
 #
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; $diss=.1;  $smVariation = "g";
+$setGhostByExtrapolation=0; 
 $tz="none"; $degreeSpace=1; $degreeTime=1;
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
 $fic = "uniform";  # fluid initial condition

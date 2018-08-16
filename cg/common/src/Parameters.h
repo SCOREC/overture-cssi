@@ -461,6 +461,9 @@ getDerivedFunction( const aString & name, const realMappedGridFunction & u,
                     realMappedGridFunction & v, 
                     const int component, const int grid, const real t, Parameters & parameters);
 
+int 
+getFluidSolidCornerFixFunction( MappedGrid & mg, int grid, int side, int axis, RealArray & cornerFix, int cornerBC );
+
 // virtual int 
 // getDerivedFunction( const aString & name, const realCompositeGridFunction & u, realCompositeGridFunction & v, 
 //                     const int component, Parameters & parameters);
@@ -501,6 +504,9 @@ getMaterialParametersOption(const aString & answer,
 virtual 
 int getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, int *ipar, real *rpar,
                     bool includeViscosity = true );
+
+int 
+getNormalGridSpacing( MappedGrid & mg, int side, int axis, real & dn );
 
 const ReferenceFrameEnum
 getReferenceFrame();
@@ -562,6 +568,8 @@ bool isAxisymmetric() const;
 
 virtual 
 bool isMixedBC( int bc );
+
+bool isDeformingBulkSolid(int grid);
 
 virtual
 bool isMovingGridProblem() const;

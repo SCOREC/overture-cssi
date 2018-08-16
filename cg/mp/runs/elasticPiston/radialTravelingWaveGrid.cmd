@@ -57,7 +57,9 @@ include ellipseCurve.h
     backward
     # Fixed radial distance
     $nDistInterface=.2;
-    $nrm = intmg($nDistInterface/$ds+4.5);
+    # Make sure the number of grid cells doubles when ds is halved.
+    $nDistExtraFactor=1.25; # make grid a bit finer in the normal direction
+    $nrm = intmg($nDistExtraFactor*$nDistInterface/$ds+.5);
     # $nDistInterface=($nr-3)*$ds;
     # $nrm=$nr-1; 
     distance to march $nDistInterface
@@ -80,32 +82,50 @@ include ellipseCurve.h
   exit
 #
 # --- inner domain as a hyperbolic mapping
-  hyperbolic
-    forward
-    $nDist = $Rbar-$R;
-    $nrm = intmg($nDist/$ds+4.5);
-    distance to march $nDist
-    lines to march $nrm
-    points on initial curve $nThetaInterface
-    uniform dissipation 0.05
-    volume smooths $numberOfVolumeSmooths
-    equidistribution 0. (in [0,1])
-    #
-    # spacing: geometric
-    # geometric stretch factor 1.05 
-    #
-    generate
-    boundary conditions
-      -1 -1 100 4 0 0
-    share 
-       0 0 100 0 0 0
-    name solidRegion
-  exit
+#-  hyperbolic
+#-    forward
+#-    $nDist = $Rbar-$R;
+#-    $nrm = intmg($nDist/$ds+4.5);
+#-    distance to march $nDist
+#-    lines to march $nrm
+#-    points on initial curve $nThetaInterface
+#-    uniform dissipation 0.05
+#-    volume smooths $numberOfVolumeSmooths
+#-    equidistribution 0. (in [0,1])
+#-    #
+#-    # spacing: geometric
+#-    # geometric stretch factor 1.05 
+#-    #
+#-    generate
+#-    boundary conditions
+#-      -1 -1 100 4 0 0
+#-    share 
+#-       0 0 100 0 0 0
+#-    name solidRegion
+#-  exit
+#
+# -- Outer solid annulus ----
+#
+Annulus
+  inner and outer radii
+    $innerRad=$R; $outerRad=$Rbar; 
+    $innerRad $outerRad
+  lines
+    $nTheta = $nThetaInterface;
+    $nr = intmg( $nDistExtraFactor*($outerRad-$innerRad)/$ds + .5 );
+    $nTheta $nr
+  boundary conditions
+    -1 -1 100 4 
+  share
+     0  0 100 4
+  mappingName
+    solidRegion
+exit
 #
 #  --- Inner fluid background grid ---
 #
  rectangle
-  $dsr=$ds*.8; # make spacing a litle smaller 
+  $dsr=$ds*.9; # make spacing a litle smaller 
   $xb=$R-$nDistInterface+2*$ds; $xa=-$xb; $ya=$xa; $yb=$xb; 
   set corners
     $xa $xb $ya $yb

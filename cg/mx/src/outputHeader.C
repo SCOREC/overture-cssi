@@ -77,6 +77,13 @@ outputHeader()
                      orderOfFilter,filterFrequency,numberOfFilterIterations,filterCoefficient);
     else
       fPrintF(file," do not apply the high order filter\n");
+
+    const int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
+    const int & orderOfExtrapolationForInterpolationNeighbours = dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours");
+    
+    fPrintF(file," extrapolateInterpolationNeighbours=%i, orderOfExtrapolationForInterpolationNeighbours=%i.\n",
+            extrapolateInterpolationNeighbours,orderOfExtrapolationForInterpolationNeighbours);
+
     fPrintF(file," divergence damping coefficient=%8.2e\n",divergenceDamping);
             
     fPrintF(file," divergence cleaning is %s. coefficient=%g\n",(useDivergenceCleaning ? "on" : "off"),divergenceCleaningCoefficient);
@@ -183,6 +190,14 @@ outputHeader()
     else
       fPrintF(file," Do not project initial conditions to satisfy divergence constraint.\n");
 
+    // The dispersive plane wave material interface solution is a user defined known solution: 
+    if( true || initialConditionOption==planeMaterialInterfaceInitialCondition )
+    {
+      fPrintF(file," planeMaterialInterface: normal=[%.4e,%.4e,%.4e], point=[%.4e,%.4e,%.4e]\n",
+              normalPlaneMaterialInterface[0],normalPlaneMaterialInterface[1],normalPlaneMaterialInterface[2],
+              x0PlaneMaterialInterface[0],x0PlaneMaterialInterface[1],x0PlaneMaterialInterface[2]);
+    }
+
     const RealArray & icBox = initialConditionBoundingBox;
     if( (icBox(0,0) <= icBox(1,0)) && ( icBox(0,1) <= icBox(1,1) ) )
     {
@@ -258,6 +273,8 @@ outputHeader()
 
     fPrintF(file," number of interface interations=%i, omega=%5.2f, use new interface routines=%i \n",numberOfIterationsForInterfaceBC,
 	    omegaForInterfaceIteration,(int)useNewInterfaceRoutines);
+    fPrintF(file," Interface iterations (4th-order) relative-tol=%.3e, absolute-tol=%.3e\n",
+            dbase.get<real>("rtolForInterfaceIterations"),dbase.get<real>("atolForInterfaceIterations"));
 
     if( numberOfMaterialRegions>1 )
     {

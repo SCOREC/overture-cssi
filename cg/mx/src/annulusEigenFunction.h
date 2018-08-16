@@ -7,7 +7,7 @@
 
  real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
 
- real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+ real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
  real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
  real ampP[10], ampPm[10];
  if( dispersionModel==noDispersion )
@@ -36,10 +36,13 @@
    assert( dmp.numberOfPolarizationVectors<10 );
    
    const real kk = omega/c; //  *CHECK ME* 
-   dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+   // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
+   
+
+   dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
 
    if( t<3.*dt )
-     printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+     printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
 
    expt =exp(sr*t);
    st=sin(si*t)*expt; ct=cos(si*t)*expt;
@@ -56,37 +59,38 @@
    // ampHp = -si*st + sr*ct;
 
    // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-   //   Pv_j = psi_j * Ev   
-   // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
+   //   Pv_j = chi_j * Ev   
+   // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
 
-   // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+   // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
    //   = Re( (phir+i*phii)*( ct + i sint )
-   const real alphaP = dmp.alphaP;
+   // const real alphaP = dmp.alphaP;
 
-   real psirSum=0., psiiSum=0.;
-   for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-   {
-     psirSum += psir[iv]; 
-     psiiSum += psii[iv];
-   }
+   // real chirSum=0., chiiSum=0.;
+   // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+   // {
+   //   chirSum += chir[iv]; 
+   //   chiiSum += chii[iv];
+   // }
+   // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
    
-   real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
+   real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
 
-   //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
-   //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+   //  phi = (1/(eps*s) * 1/( 1+chi)
+   //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
    //      = phir +i*phii 
 
-   real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-   real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+   real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
+   real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
    
    ampE = phir*ct - phii*st;
 
-   // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
-   //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-   //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+   // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
+   //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+   //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
    {
-     ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+     ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
    }
    
    // tm = t-dt 
@@ -95,7 +99,7 @@
    ampEm = phir*ctm - phii*stm;
    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
    {
-      ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+     ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
    }
    
  }

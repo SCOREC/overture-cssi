@@ -31,13 +31,15 @@ $ra=-10; $rb=-9; # ramp interval -- turn off
 $stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; 
 $known="piston"; #  or "shear"
 #
+$setGhostByExtrapolation=0; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"pv=s"=>\$pv,"diss=f"=>\$diss,"dissOrder=i"=>\$dissOrder,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
   "rho=f"=>\$rho,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax,"amp=f"=>\$amp,\
   "rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"ad=f"=>\$ad,"ad4=f"=>\$ad4,"known=s"=>\$known,\
-  "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta );
+  "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
+  "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation );
 # -------------------------------------------------------------------------------------------------
 if( $pv eq "nc" ){ $pv = "non-conservative"; $cons=0; }
 if( $pv eq "c" ){ $pv = "conservative"; $cons=1; }
@@ -68,6 +70,8 @@ SMPDE:rho $rho
 SMPDE:stressRelaxation $stressRelaxation
 SMPDE:relaxAlpha $relaxAlpha
 SMPDE:relaxDelta $relaxDelta
+#
+SMPDE:set ghost by extrapolation $setGhostByExtrapolation
 #
 boundary conditions
   # all=dirichletBoundaryCondition

@@ -130,6 +130,9 @@ c Here are macros that define the planeWave solution
 ! --------------------------------------------------------------------
 
 
+
+
+
 c ------------ macros for the plane material interface -------------------------
 c Incident + reflected: 
 c Transmitted: 
@@ -399,7 +402,7 @@ c     --- local variables ----
      & scatteringFromADielectricSphereKnownSolution,
      & squareEigenfunctionKnownSolution,
      & annulusEigenfunctionKnownSolution,
-     & eigenfunctionsOfASphereKnownSolution
+     & eigenfunctionsOfASphereKnownSolution,userDefinedKnownSolution
 
       parameter( noKnownSolution=0,twilightZoneKnownSolution=1,
      & planeWaveKnownSolution=2,gaussianPlaneWaveKnownSolution=3,
@@ -410,8 +413,9 @@ c     --- local variables ----
      & scatteringFromASphereKnownSolution=8,
      & scatteringFromADielectricSphereKnownSolution=9,
      & squareEigenfunctionKnownSolution=10,
-     & annulusEigenfunctionKnownSolution=11,   
-     & eigenfunctionsOfASphereKnownSolution=12 )
+     & annulusEigenfunctionKnownSolution=11,
+     & eigenfunctionsOfASphereKnownSolution=12,
+     & userDefinedKnownSolution=13 )
 
 c     --- start statement function ----
       integer kd,m,n
@@ -2936,7 +2940,7 @@ c      real sigmaE,sigmaH,dc,ca,cbx,cby,cbz,cj
      & scatteringFromADielectricSphereKnownSolution,
      & squareEigenfunctionKnownSolution,
      & annulusEigenfunctionKnownSolution,
-     & eigenfunctionsOfASphereKnownSolution
+     & eigenfunctionsOfASphereKnownSolution,userDefinedKnownSolution
 
       parameter( noKnownSolution=0,twilightZoneKnownSolution=1,
      & planeWaveKnownSolution=2,gaussianPlaneWaveKnownSolution=3,
@@ -2947,8 +2951,9 @@ c      real sigmaE,sigmaH,dc,ca,cbx,cby,cbz,cj
      & scatteringFromASphereKnownSolution=8,
      & scatteringFromADielectricSphereKnownSolution=9,
      & squareEigenfunctionKnownSolution=10,
-     & annulusEigenfunctionKnownSolution=11,   
-     & eigenfunctionsOfASphereKnownSolution=12 )
+     & annulusEigenfunctionKnownSolution=11,
+     & eigenfunctionsOfASphereKnownSolution=12,
+     & userDefinedKnownSolution=13 )
 
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)

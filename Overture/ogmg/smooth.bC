@@ -999,14 +999,17 @@ smoothRedBlack(const int & level, const int & grid)
 
   bool useJacobiRedBlack= smootherType == OgmgParameters::redBlackJacobi;
 
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
   // const aString fmt = "%8.4f ";
   const aString fmt = "%16.12f ";
 
   if( Ogmg::debug & 4 ) 
   {
-    fPrintF(debugFile," --- Entering smoothRedBlack: level=%i grid=%i cycle=%i ---\n"
+    fPrintF(debugFile," --- Entering smoothRedBlack: level=%i grid=%i cycle=%i orderOfThisLevel=%i ---\n"
 	    "     useJacobiRedBlack=%i useNewSmoother=%i, alternateSmoothingDirections=%i\n",
-	    level,grid,numberOfCycles,(int)useJacobiRedBlack,
+	    level,grid,numberOfCycles,orderOfThisLevel,(int)useJacobiRedBlack,
             (int)parameters.useNewRedBlackSmoother,(int)parameters.alternateSmoothingDirections );
     if( debugFile!=pDebugFile )
       fprintf(pDebugFile," --- Entering smoothRedBlack: level=%i grid=%i cycle=%i ---\n"
@@ -1054,7 +1057,7 @@ smoothRedBlack(const int & level, const int & grid)
   int numExtraParallelGhost=INT_MAX;
   for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
   {
-    hw[axis]=orderOfAccuracy/2;
+    hw[axis]=orderOfThisLevel/2;
     numExtraParallelGhost = min(numExtraParallelGhost,mask.getGhostBoundaryWidth(axis)-hw[axis]);
   }
 
@@ -1367,6 +1370,9 @@ smoothRedBlack(const int & level, const int & grid)
                     nab[0],nab[1],nab[2],nab[3],nab[4],nab[5],nab[6],nab[7],nab[8]),debugFile,fmt);
 
 
+        // printF("smoothRedBlack: level=%i : order=%i\n",level,orderOfThisLevel);
+        
+
 	if( useJacobiRedBlack )
 	{ 
 	  // defect=u;
@@ -1384,7 +1390,7 @@ smoothRedBlack(const int & level, const int & grid)
 			     *getDataPointer(cLocal),
 			     *u1p, *u2p,
 			     *getDataPointer(maskLocal), 
-			     redBlackOption, orderOfAccuracy, sparseStencil, 
+			     redBlackOption, orderOfThisLevel, sparseStencil, 
 			     *pcc, *vcp, dx[0],
 			     parameters.omegaRedBlack, (int)parameters.useLocallyOptimalOmega,
 			     parameters.variableOmegaScaleFactor, ipar[0], rpar[0] );
@@ -1400,7 +1406,7 @@ smoothRedBlack(const int & level, const int & grid)
 		      *getDataPointer(cLocal),
 		      *u1p, *u2p,
 		      *getDataPointer(maskLocal), 
-		      redBlackOption, orderOfAccuracy, sparseStencil, 
+		      redBlackOption, orderOfThisLevel, sparseStencil, 
 		      *pcc, *vcp, dx[0],
 		      parameters.omegaRedBlack, (int)parameters.useLocallyOptimalOmega,
 		      parameters.variableOmegaScaleFactor, ipar[0], rpar[0] );

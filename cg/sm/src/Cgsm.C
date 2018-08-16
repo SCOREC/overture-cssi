@@ -2178,8 +2178,12 @@ writeParameterSummary( FILE * file )
 	  parameters.dbase.get<int>( "stressRelaxation" ), parameters.dbase.get<real>( "relaxAlpha" ),
 	  parameters.dbase.get<real>( "relaxDelta" ));
 
+  const int & setGhostByExtrapolation = parameters.dbase.get<int>("setGhostByExtrapolation");
+  fPrintF(file," Set ghost values by extrapolation = %i.\n",setGhostByExtrapolation);
+  
   const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
   fPrintF(file," useAddedMassAlgorithm=%i\n",(int)useAddedMassAlgorithm);
+  fPrintF(file," fluidSolidCornerFix=%i.\n",parameters.dbase.get<int>("fluidSolidCornerFix"));
   
   if( parameters.dbase.get<bool >("applyFilter") )
   {

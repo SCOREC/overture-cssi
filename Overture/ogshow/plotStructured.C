@@ -443,8 +443,10 @@ plotStructured(GenericGraphicsInterface &gi, Mapping & map,
 	  if( plotOnThisProcessor )
 	  { 
             // -- here is a quick fix: evaluate the whole grid on one processor ----
+            x.redim(0); 
+	    x.redim(Ig1,Ig2,Ig3,rangeDimension);
 
-	    x.resize(Ig1,Ig2,Ig3,rangeDimension);
+	    // x.resize(Ig1,Ig2,Ig3,rangeDimension);
 	    r.redim(Ig1,Ig2,Ig3,domainDimension);
 
 	    for( int i3=Ig3.getBase(); i3<=Ig3.getBound(); i3++ )

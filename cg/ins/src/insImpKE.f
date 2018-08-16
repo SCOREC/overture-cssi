@@ -1071,8 +1071,8 @@
      & mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,
      & dw, ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
 !======================================================================
 ! 
 !             Incompressible Navier Stokes IMPlicit 
@@ -1120,6 +1120,7 @@
      & ndbcd4a:ndbcd4b)
       integer equationNumber(0:nde-1,nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       integer classify(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      integer interfaceType(0:1,0:2,0:*)
       integer ipar(0:*)
       real rpar(0:*)
       double precision pdb  ! pointer to data base
@@ -1136,8 +1137,13 @@
       real matVal(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       ! -- added mass options
       integer useAddedMassAlgorithm, projectAddedMassVelocity, 
-     & useImplicitAmpBCs, isBulkSolid
+     & useImplicitAmpBCs, isBulkSolid,addedMassVelocityBC
       integer extrapolateGhostByDefault
+      ! Put this into an include file:
+      integer noInterface,heatFluxInterface,tractionInterface,
+     & tractionAndHeatFluxInterface
+      parameter( noInterface=0,heatFluxInterface=1,tractionInterface=2,
+     & tractionAndHeatFluxInterface=3)
       !     ---- local variables -----
       integer c,e,i1,i2,i3,m1,m2,m3,j1,j2,j3,ghostLine,n,i1m,i2m,i3m,
      & i1p,i2p,i3p,ndu
@@ -2106,6 +2112,7 @@
       projectAddedMassVelocity = ipar(53)
       useImplicitAmpBCs = ipar(54)
       isBulkSolid       = ipar(55)
+      addedMassVelocityBC= ipar(56)
       dr(0)             =rpar(0)
       dr(1)             =rpar(1)
       dr(2)             =rpar(2)

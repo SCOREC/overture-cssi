@@ -1,4 +1,59 @@
 **************************
+*** July 31, 2015
+
+TEST HALF DISK IN A CHANNEL
+
+SCF=1 -- + corner fix SOMETHING IS WRONG HERE
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=halfDiskInAChannelGride4.order2  -addedMass=1 -scf=1.  -zfMuByH=20 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -p0=1.  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=1 -go=halt
+
+SCF=1 -- OK
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=halfDiskInAChannelGride4.order2  -addedMass=1 -scf=1.  -zfMuByH=20 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -p0=1.  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -go=halt
+
+SCF=10 -- OK with larger zf
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=halfDiskInAChannelGride4.order2  -addedMass=1 -scf=10.  -zfMuByH=20 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -p0=1.  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -go=halt
+
+
+
+TRY RAMPED PRESSRE INFLOW
+
+SCF=100 -- showFile
+$cgmp -noplot insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2  -addedMass=1 -scf=100. -zfMuByH=20 -tp=.1 -tf=6. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -p0=1.  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=8 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -show=bicG8Scf100.show -go=go >! bicG8Scf100.out
+
+
+SCF=100 **NEED TO INCREASE zfMubyH to 20 (10 not enough)
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2  -addedMass=1 -scf=100. -zfMuByH=20 -u0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -p0=.1  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -go=halt
+
+
+SCF=10 -- ok at early times
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2  -addedMass=1 -scf=10. -u0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -p0=.1  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -go=halt
+
+
+**************************
+*** July 29, 2015
+
+BEAM IN CHANNEL + FIB
+
+cornerfix -- trouble at t=.479
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2  -addedMass=1 -scf=10. -u0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=1 -go=halt
+
+
+TEST -- turn of corner fix to start *starts to work*
+$cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2  -addedMass=1 -scf=10. -u0=1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -fluidSolidCornerFix=0 -go=halt
+
+
+
+**************************
+*** May 19, 2015
+
+REVISIT BEAM IN CHANNEL + FIB
+
+
+TP 
+ $cgmp insSolidBeamInAChannel -method=ins -smVariation=g  -g=solidBeamInAChannelGride8.order2 -scf=1000. -tp=.1 -tf=20. -nc=1 -nu=.01 -pOffset=.0 -rhoSolid=1. -lambdaSolid=1. -muSolid=1. -diss=1. -relaxAlpha=1. -relaxDelta=1. -tangentialDissipationSolid=1. -debug=1 -rampedInflow=1 -flushFrequency=4 -godunovType=0 -pi=1 -piGhostOption=3 -multiDomainAlgorithm=1 -cfl=.9 -go=halt
+
+
+
+**************************
 *** Nov 13, 2015
 
 THIN BEAM

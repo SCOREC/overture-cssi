@@ -17,6 +17,7 @@
 
 #include "EquationDomain.h"
 
+#include "Interface.h"
 
 #define POW2(x) pow((x),2)
 
@@ -170,9 +171,23 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
 	      {
 		deformingBodyModel[side][axis]=isBulkSolidModel;
 
-                deform.getBulkSolidParameters( solidImpedance );
+                // deform.getBulkSolidParameters( solidImpedance );
 
-		printF("INSP: This is a deforming grid for a bulk solid model: solid impedance=%g.\n",solidImpedance);
+                Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+                real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+                real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+                real muSolid=bulkSolidParams.dbase.get<real>("mu");
+                real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+                real cs=sqrt(muSolid/rhoSolid);
+          
+                real zp=rhoSolid*cp;
+                real zs=rhoSolid*cs;
+
+                solidImpedance=zp;
+                
+                
+
+		printF("INSP: This is a deforming grid for a bulk solid model: grid=%i, solid impedance=%g.\n",grid,solidImpedance);
 
 	      }
 	      

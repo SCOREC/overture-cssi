@@ -369,6 +369,7 @@ main(int argc, char *argv[])
     "<debug",
     "adjust singular equations",
     "nuDt",
+    "random initial conditions",
 // too late    "order of accuracy",
     "exit",
     ""
@@ -385,6 +386,8 @@ main(int argc, char *argv[])
   real nuDt=.1;  // for heat equation solve I - nuDt* Delta
 
   bool initialConditionsExact=false;
+  bool randomInitialConditions =false;
+  
   //  equationCoefficients(1,0)=0.;  // Grid 0 has the identity operator
   
 
@@ -546,6 +549,11 @@ main(int argc, char *argv[])
     else if( answer=="set exact initial conditions" )
     {
       initialConditionsExact=true;
+    }
+    else if( answer=="random initial conditions" )
+    {
+      randomInitialConditions=true;
+      printF("Setting random initial conditions\n");
     }
     else if( answer=="debug" )
     {
@@ -913,7 +921,6 @@ main(int argc, char *argv[])
   
 
   realCompositeGridFunction u(cg), f(cg);
-//  u.setOperators(cgop);  
   
   #ifdef USE_PPP
   for( int grid=0; grid<cg.numberOfGrids(); grid++ )
@@ -922,8 +929,42 @@ main(int argc, char *argv[])
     uLocal=0.;
   }
   #else
-  u=0.;   // initial guess
+    u=0.;   // initial guess
   #endif
+
+  if( randomInitialConditions )
+  {
+    printF("Assigning random initial conditions...\n");
+    Index I1,I2,I3;
+    int seed=184273654;
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      getIndex(cg[grid].gridIndexRange(),I1,I2,I3);
+      OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
+      bool ok=ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,1);
+      if( !ok ) continue;
+
+      srand(seed);
+      for( int i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+      {
+        for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+        {
+          for( int i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          {
+            real r1=(-1.+2.*rand()/RAND_MAX); // random number between [-1,1]
+		
+            uLocal(i1,i2,i3)=r1;
+              
+          }
+        }
+      }
+      // set periodic BC's
+      // u[grid].periodicUpdate();
+
+    }
+          
+  }
+  
 
   // --- adjust the trig frequencies for a derivative periodic grid ---
   // --> MG will not converge if the solution is not periodic too

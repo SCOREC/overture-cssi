@@ -383,6 +383,11 @@ updateToMatchGrid( CompositeGrid & mg_ )
     orderOfAccuracy = mg_[0].discretizationWidth(0)==5 ? 4 : 2;
     parameters.set(OgmgParameters::THEorderOfAccuracy,orderOfAccuracy);
     
+    // By default the order of coarse levels solves is the same as the fine level -- this may change 
+    int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+    if( orderOfCoarseLevelSolves<0 )
+      orderOfCoarseLevelSolves=orderOfAccuracy;
+
     if( debug & 4 && orderOfAccuracy==4 )
       printF("Ogmg::updateToMatchGrid::INFO: Setting orderOfAccuracy=%i\n",orderOfAccuracy);
   }
@@ -2000,8 +2005,11 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
     if( parameters.useDirectSolverOnCoarseGrid )
     {
       if( debug & 4 )
+      {
 	printF("%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
-        
+	fPrintF(debugFile,"%*.1s  ***direct solve on level %i, iteration=%i\n",level*4," ",level,iteration);
+      }
+      
 //    if( directSolver.isSolverIterative() ) 
 //    {
 //      real tol=REAL_EPSILON*100.;
@@ -2030,6 +2038,8 @@ cycle(const int & level, const int & iteration, real & maximumDefect, const int 
 	if( debug & 4 )
 	{
 	  printF("%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
+		 level*4," ",level,numberOfCycles,numIt);
+	  fPrintF(debugFile,"%*.1s Level=%i, cycle=%i : number of iterations to solve coarse grid equations=%i.\n",
 		 level*4," ",level,numberOfCycles,numIt);
 	}
       }
@@ -2748,6 +2758,7 @@ printStatistics(FILE *file_ /* =stdout */) const
 
     // if( file==NULL ) continue;
     
+
     fPrintF(file,"\n ========================Ogmg Summary=========================\n\n"
 			"                       Grid = %s \n",(const char*)gridName);
     
@@ -2778,11 +2789,11 @@ printStatistics(FILE *file_ /* =stdout */) const
     if( parameters.convergenceCriteria==OgmgParameters::residualConverged )
     {
       fPrintF(file," Convergence criteria: l2Norm(residual) < residualTolerance*l2Nnorm(f) + absoluteTolerance"
-	      " (residualTolerance=%8.2e, absoluteTolerance=%8.2e)\n",parameters.residualTolerance,parameters.absoluteTolerance);
+	      " (residualTolerance=%8.2e, absoluteTolerance=%8.2e).\n",parameters.residualTolerance,parameters.absoluteTolerance);
     }
     else if( parameters.convergenceCriteria==OgmgParameters::errorEstimateConverged )
     {
-      fPrintF(file,"Convergence criteria: max(error estimate) < errorTolerance (errorTolerance=%8.2e)\n",parameters.errorTolerance);
+      fPrintF(file,"Convergence criteria: max(error estimate) < errorTolerance (errorTolerance=%8.2e).\n",parameters.errorTolerance);
     }
     else if( parameters.convergenceCriteria==OgmgParameters::residualConvergedOldWay )
     {
@@ -2790,8 +2801,10 @@ printStatistics(FILE *file_ /* =stdout */) const
 	      parameters.residualTolerance*numberOfGridPoints,parameters.residualTolerance);
     }
 
-    fPrintF(file," maximum number of iterations = %i\n",parameters.maximumNumberOfIterations);
-    fPrintF(file," order of accuracy = %i\n",orderOfAccuracy);
+    fPrintF(file," maximum number of iterations = %i.\n",parameters.maximumNumberOfIterations);
+    fPrintF(file," order of accuracy = %i.\n",orderOfAccuracy);
+    fPrintF(file," order of coarse level operators = %i.\n",parameters.dbase.get<int>( "orderOfCoarseLevels"));
+    
     fPrintF(file," number of levels = %i (%i extra levels, max-extra-levels=%i).\n",mgcg.numberOfMultigridLevels(),
 	    mgcg.numberOfMultigridLevels()-1,parameters.maximumNumberOfExtraLevels);
     fPrintF(file," interpolate defect = %i\n",(int)parameters.interpolateTheDefect);
@@ -2814,9 +2827,9 @@ printStatistics(FILE *file_ /* =stdout */) const
 						    parameters.gridOrderingForSmooth==1 ? "ng..1" : "alternating"));
     fPrintF(file," auto sub-smooth determination is %s (reference grid for sub-smooths=%i).\n",
             (parameters.autoSubSmoothDetermination ? "on" : "off"),subSmoothReferenceGrid);
-    fPrintF(file," use new red black smoother=%i\n",(int)parameters.useNewRedBlackSmoother);
+    fPrintF(file," use new red black smoother=%i.\n",(int)parameters.useNewRedBlackSmoother);
   
-    fPrintF(file," number of iterations for implicit interpolation is %i\n",
+    fPrintF(file," number of iterations for implicit interpolation is %i.\n",
             parameters.maximumNumberOfInterpolationIterations);
     
     fPrintF(file," coarse to fine interpolation width=%i.\n",parameters.coarseToFineTransferWidth);
@@ -3303,9 +3316,6 @@ buildCoefficientArrays()
   
   real timeForOperators=0.;
 
-  const int width = orderOfAccuracy+1;  // 3 or 5
-  const int stencilSize=int( pow(double(width),double(mgcg.numberOfDimensions()))+1.5 );
-  const int orderOfExtrapolation = orderOfAccuracy==2 ? 3 : 4;  // 5
   
   if( numberOfExtraLevels>0 )
   {
@@ -3326,6 +3336,13 @@ buildCoefficientArrays()
     {
       int level=level0+l;
 
+      const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+      const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+      const int width = orderOfThisLevel+1;  // 3 or 5
+      const int stencilSize=int( pow(double(width),double(mgcg.numberOfDimensions()))+1.5 );
+      const int orderOfExtrapolation = orderOfThisLevel==2 ? 3 : 4;  // 5
+
       // we need operators to apply boundary conditions.
       RealCompositeGridFunction & cl = cMG.multigridLevel[level+1];
       CompositeGrid & cgl = *cl.getCompositeGrid();
@@ -3335,7 +3352,7 @@ buildCoefficientArrays()
 
       CompositeGridOperators & op = operatorsForExtraLevels[l];
       op.setStencilSize(stencilSize);
-      op.setOrderOfAccuracy(orderOfAccuracy);
+      op.setOrderOfAccuracy(orderOfThisLevel);
 
       real time1=getCPU();
       op.updateToMatchGrid(cgl);
@@ -3347,7 +3364,7 @@ buildCoefficientArrays()
       // *************************************
       operatorAveraging(cMG,level);
 
-      if( false && orderOfAccuracy==4 )
+      if( false && orderOfThisLevel==4 )
       { 
         // **** for testing *****
 
@@ -3357,7 +3374,7 @@ buildCoefficientArrays()
         int stencilSize=cl[0].getLength(0);
 	if( stencilSize==0 )  // for rectangular grids
 	{
-	   const int width = orderOfAccuracy+1;  // 3 or 5
+	   const int width = orderOfThisLevel+1;  // 3 or 5
            stencilSize=int(pow(double(width),double(cgl.numberOfDimensions()))+1.5);
 	}
         if( Ogmg::debug & 4 ) cl.display("*************Coefficients from averaging ***********************","%5.1f ");
@@ -3374,11 +3391,11 @@ buildCoefficientArrays()
         // fill in the coefficients for the boundary conditions
 	cl.applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::allBoundaries);
 	cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries);
-        if( orderOfAccuracy==4 )
+        if( orderOfThisLevel==4 )
 	{
 	  BoundaryConditionParameters bcParams;
 	  bcParams.ghostLineToAssign=2;
-          bcParams.orderOfExtrapolation=orderOfExtrapolation; // orderOfAccuracy+1;
+          bcParams.orderOfExtrapolation=orderOfExtrapolation; // orderOfThisLevel+1;
 	  cl.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,bcParams); // extrap 2nd ghost line
 	}
 	
@@ -3403,12 +3420,19 @@ buildCoefficientArrays()
     {
       int level=level0+l;
 
+      const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+      const int orderOfThisLevel = (level+1)==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+      const int width = orderOfThisLevel+1;  // 3 or 5
+      const int stencilSize=int( pow(double(width),double(mgcg.numberOfDimensions()))+1.5 );
+      const int orderOfExtrapolation = orderOfThisLevel==2 ? 3 : 4;  // 5
+
       RealCompositeGridFunction & cl = cMG.multigridLevel[level+1];
       CompositeGrid & cgl = *cl.getCompositeGrid();
 
       CompositeGridOperators & opc = *cl.getOperators();
       opc.setStencilSize(stencilSize);
-      opc.setOrderOfAccuracy(orderOfAccuracy);
+      opc.setOrderOfAccuracy(orderOfThisLevel);
 
       // We only need to apply finish boundary conditions on the coarsest level if 
       //    we are calling a direct solver *wdh* 011107
@@ -3431,7 +3455,7 @@ buildCoefficientArrays()
 	if( false && parameters.useSymmetryCornerBoundaryCondition ) // these need to be implemented
 	{
 	  BoundaryConditionParameters::CornerBoundaryConditionEnum cornerBC=
-	    orderOfAccuracy==2 ? BoundaryConditionParameters::taylor2ndOrderEvenCorner :
+	    orderOfThisLevel==2 ? BoundaryConditionParameters::taylor2ndOrderEvenCorner :
 	    BoundaryConditionParameters::taylor4thOrderEvenCorner;
 
 	  // cornerBC=BoundaryConditionParameters::evenSymmetryCorner; // ********************************

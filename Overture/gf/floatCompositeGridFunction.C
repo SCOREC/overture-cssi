@@ -809,6 +809,118 @@ setIsACoefficientMatrix(const bool trueOrFalse,
 
 }
 
+// ================================================================================================================
+/// \brief Specify that the compositeGridFunction is a coefficient matrix. This version allows one
+///    top specify the stencilSize by grid and level
+/// \param stencilSize(grid,level) (input) : stencil size for a given grid and level. Choose a value of zero
+///     to avoid allocating space.
+/// \param numberOfGhostLines(grid,level) (input) :
+///
+//  This needs to be here as well as in the floatGridCollectionFunction since we use the refinement and multigrid lists
+//  which are overloaded.
+// ================================================================================================================
+void floatCompositeGridFunction::
+setIsACoefficientMatrix(const bool trueOrFalse, 
+			const IntegerArray & stencilSize,
+			const IntegerArray & numberOfGhostLines,
+			const int numberOfComponentsForCoefficients,
+                        const int offset0 )
+{
+  if( numberOfGrids()==0 )
+  {
+    printF("floatCompositeGridFunction::setIsACoefficientMatrix:Warning: there are no grids in this collection\n"
+           "This call will have no effect, you should call setIsACoefficientMatrix after the providing\n"
+           "the floatCompositeGridFunction with a CompositeGrid \n");
+  }
+  
+  GridCollection & gc = *gridCollection;
+  int l,grid;
+  for( l=0; l<gc.numberOfMultigridLevels(); l++ )
+  {
+    GridCollection & m =  gc.numberOfMultigridLevels()==1 ? gc : gc.multigridLevel[l];
+    int offset=offset0;
+
+    if( stencilSize.getBound(0)!=m.numberOfComponentGrids()-1 || 
+        stencilSize.getBound(1)!=gc.numberOfMultigridLevels()-1 )
+    {
+      printF("GF:setIsACoefficientMatrix:ERROR: stencilSize array has dimensions [%i:%i,%i:%i], \n"
+             "  but should have dimensions [0:numberOfComponentGrids-1,0:numberOfMultigridLevels-1]\n"
+             "  where numberOfComponentGrids=%i and numberOfMultigridLevels=%i\n", 
+             stencilSize.getBase(0),stencilSize.getBound(0),stencilSize.getBase(1),stencilSize.getBound(1),
+             m.numberOfComponentGrids(),gc.numberOfMultigridLevels());
+      Overture::abort("error");
+    }
+    if( numberOfGhostLines.getBound(0)!=m.numberOfComponentGrids()-1 || 
+        numberOfGhostLines.getBound(1)!=gc.numberOfMultigridLevels()-1 )
+    {
+      printF("GF:setIsACoefficientMatrix:ERROR: numberOfGhostLines array has dimensions [%i:%i,%i:%i], \n"
+             "  but should have dimensions [0:numberOfComponentGrids-1,0:numberOfMultigridLevels-1]\n"
+             "  where numberOfComponentGrids=%i and numberOfMultigridLevels=%i\n", 
+             numberOfGhostLines.getBase(0),numberOfGhostLines.getBound(0),numberOfGhostLines.getBase(1),numberOfGhostLines.getBound(1),
+             m.numberOfComponentGrids(),gc.numberOfMultigridLevels());
+      Overture::abort("error");
+    }
+    
+    for( int g=0; g< m.numberOfComponentGrids(); g++ )
+    {
+      const int grid = gc.numberOfMultigridLevels()==1 ? g : m.gridNumber(g);
+      if( !( m[g].isRectangular() && ( (dataAllocationOption & 1) || 
+				    ((dataAllocationOption & 2) && l <gc.numberOfMultigridLevels()-1) )) )
+      {
+        if( stencilSize(g,l)>0 )
+        {
+          mappedGridFunctionList[grid].setIsACoefficientMatrix(trueOrFalse,stencilSize(g,l),numberOfGhostLines(g,l),
+                                                               numberOfComponentsForCoefficients,offset); 
+        }
+      }
+      // printf("floatGridCollectionFunction::setIsACoefficientMatrix grid=%i, offset=%i\n",grid,offset);
+      offset+=numberOfComponentsForCoefficients
+	*(gc[grid].dimension()(End,axis1)-gc[grid].dimension()(Start,axis1)+1)
+	*(gc[grid].dimension()(End,axis2)-gc[grid].dimension()(Start,axis2)+1)
+	*(gc[grid].dimension()(End,axis3)-gc[grid].dimension()(Start,axis3)+1);
+    }
+  }
+
+  // *** we now need to update the information in the refinement and multigrid lists.
+  if( gc.computedGeometry() & GridCollection::THErefinementLevel )
+  {
+    if( refinementLevel.getLength() != gc.numberOfRefinementLevels() )
+    {
+      printF("floatCompositeGridFunction::setIsACoefficientMatrix: consistency error. The number of refinement levels\n"
+	     " in the grid =%i, but the number of levels in the grid function =%i. \n"
+	     " Perhaps you need to call updateToMatchGrid for the grid function before calling setIsACoefficientMatrix\n",
+	     gc.numberOfRefinementLevels(),refinementLevel.getLength());
+      Overture::abort("error");
+    }
+    for( l=0; l<gc.numberOfRefinementLevels(); l++ )
+    {
+      GridCollection & rl =gc.refinementLevel[l];
+      for( grid=0; grid< rl.numberOfGrids(); grid++ )
+	refinementLevel[l][grid].setIsACoefficientMatrix(mappedGridFunctionList[rl.gridNumber(grid)].sparse);
+    }
+  }
+  if(  gc.computedGeometry() & GridCollection::THEmultigridLevel )
+  {
+    if( multigridLevel.getLength() != gc.numberOfMultigridLevels() )
+    {
+      printf("floatCompositeGridFunction::setIsACoefficientMatrix: consistency error. The number of multigrid levels\n"
+	     " in the grid =%i, but the number of levels in the grid function =%i. \n"
+	     " Perhaps you need to call updateToMatchGrid for the grid function before calling setIsACoefficientMatrix\n",
+	     gc.numberOfMultigridLevels(),multigridLevel.getLength());
+      Overture::abort("error");
+    }
+    for( l=0; l<gc.numberOfMultigridLevels(); l++ )
+    {
+      GridCollection & rl =gc.multigridLevel[l];
+      for( grid=0; grid< rl.numberOfGrids(); grid++ )
+	multigridLevel[l][grid].setIsACoefficientMatrix(mappedGridFunctionList[rl.gridNumber(grid)].sparse);
+    }
+  }
+
+
+}
+
+
 int floatCompositeGridFunction::
 updateCollections()
 //==================================================================================

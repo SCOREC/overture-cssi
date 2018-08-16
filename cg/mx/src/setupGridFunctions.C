@@ -39,6 +39,8 @@ setupGridFunctions()
 {
   real time0=getCPU();
 
+  printF("\n >>>>>>>>>>>>>>>> Maxwell: ENTERING setupGridFunctions\n");
+  
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
   const int numberOfDimensions = cg.numberOfDimensions();
@@ -533,6 +535,28 @@ setupGridFunctions()
 	numberOfComponents*= 2;
       }
 
+
+      const int & useSosupDissipation = parameters.dbase.get<int>("useSosupDissipation");
+      const int dw = max(cg[0].discretizationWidth()); // discertization width
+
+      int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
+      if( dw > orderOfAccuracyInSpace+1 )
+        extrapolateInterpolationNeighbours=false; // *wdh* added this check, June 15, 2016
+      else if( useSosupDissipation )
+      {
+        extrapolateInterpolationNeighbours=true;
+        // Sosup dissipation requires extra ghost points *wdh* June 18, 2018
+
+        // what order should this be? 
+        dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours")=orderOfAccuracyInSpace+1; 
+        // dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours")=orderOfAccuracyInSpace+2; // try this 
+
+        // We need to increase the maximum allowable width to extrap interp neighbours
+        GenericMappedGridOperators::setDefaultMaximumWidthForExtrapolateInterpolationNeighbours(
+          dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours")+1);
+      }
+
+
       numberOfComponentsForTZ=numberOfComponents;
 	
       // dispersionModelGridFunction[domain][numTimeLevels] : 
@@ -808,36 +832,6 @@ setupGridFunctions()
 	  }
 	}
 
-
-        if( FALSE && dispersionModel!=noDispersion )
-        {
-          // --- assign dispersion component names ---
-          pxc=c; cgfields[n].setName("Px",pxc);   c++;
-          pyc=c; cgfields[n].setName("Py",pyc);   c++;
-          if( numberOfDimensions==3 )
-          {
-            pzc=c; cgfields[n].setName("Pz",pzc);   c++;
-          }
-          // if( orderOfAccuracyInSpace==4 )
-          // {
-          //   qxc=c; cgfields[n].setName("Qx",qxc);   c++;
-          //   qyc=c; cgfields[n].setName("Qy",qyc);   c++;
-          //   if( numberOfDimensions==3 )
-          //   {
-          //     qzc=c; cgfields[n].setName("Qz",qzc);   c++;
-          //   }
-          // }
-          // if( orderOfAccuracyInSpace==6 )
-          // {
-          //   rxc=c; cgfields[n].setName("Rx",rxc);   c++;
-          //   ryc=c; cgfields[n].setName("Ry",ryc);   c++;
-          //   if( numberOfDimensions==3 )
-          //   {
-          //     rzc=c; cgfields[n].setName("Rz",rzc);   c++;
-          //   }
-          // }
-
-        }
 	
       } // end for n
       
@@ -1270,9 +1264,156 @@ setupGridFunctions()
   }
   
    
+  // ---------------------- SETUP ERROR GRID FUNCTION ----------------
+  Range all;
+  if( mgp!=NULL )
+  {
+
+    MappedGrid & mg = *mgp;
+
+    if( errp==NULL && checkErrors ) 
+    {
+      // Create a grid function to hold the errors for plotting
+      if ( method==nfdtd )
+      {
+	int numberOfComponents = fields[0].getLength(3);
+	errp = new realMappedGridFunction[1];
+	errp->updateToMatchGrid(mg,all,all,all,numberOfComponents);
+	errp->setName("Ex error",ex);
+	errp->setName("Ey error",ey);
+	errp->setName("Hz error",hz);
+      }
+      else
+      {
+	errp = new realMappedGridFunction[2];
+	if ( cg.numberOfDimensions()==2 )
+	{
+	  errp[0].updateToMatchGrid(mg,GridFunctionParameters::edgeCentered,2);
+	  errp[1].updateToMatchGrid(mg,GridFunctionParameters::cellCentered);
+	  errp[0].setName("Ex error",ex);
+	  errp[0].setName("Ey error",ey);
+	  errp[1].setName("Hz error",hz);
+	}
+	else
+	{
+	  errp[0].updateToMatchGrid(mg,GridFunctionParameters::edgeCentered,3);
+	  errp[0].setName("Ex error",ex);
+	  errp[0].setName("Ey error",ey);
+	  errp[0].setName("Ez error",ez);
+	  errp[1].updateToMatchGrid(mg,GridFunctionParameters::faceCenteredAll,3);
+	  errp[1].setName("Hx error",hx);
+	  errp[1].setName("Hy error",hy);
+	  errp[1].setName("Hz error",hz);
+	}
+      }
+    }
+  }
+  else
+  {
+    if( checkErrors )//&& cg[0].getGridType()==MappedGrid::structuredGrid )
+    {
+      if( method==nfdtd || method==yee )
+      {
+	cgerrp = new realCompositeGridFunction [1];
+	int numberOfComponents = cgfields[0][0].getLength(3);
+	cgerrp->updateToMatchGrid(*cgp,all,all,all,numberOfComponents);
+	
+	if( cg.numberOfDimensions()==2 )
+	{
+	  cgerrp->setName("Ex error",ex);
+	  cgerrp->setName("Ey error",ey);
+	  cgerrp->setName("Hz error",hz);
+	  
+	}
+	else
+	{
+	  if( solveForElectricField )
+	  {
+	    cgerrp->setName("Ex error",ex);
+	    cgerrp->setName("Ey error",ey);
+	    cgerrp->setName("Ez error",ez);
+	  }
+	  if( solveForMagneticField )
+	  {
+	    cgerrp->setName("Hx error",hx);
+	    cgerrp->setName("Hy error",hy);
+	    cgerrp->setName("Hz error",hz);
+	  }
+	      
+	}
+      }
+      else if( method==sosup )
+      {
+	cgerrp = new realCompositeGridFunction [1];
+	int numberOfComponents = cgfields[0][0].getLength(3);
+	cgerrp->updateToMatchGrid(*cgp,all,all,all,numberOfComponents);
+	
+	if( cg.numberOfDimensions()==2 )
+	{
+	  assert( numberOfComponents==6 );
+	  cgerrp->setName("Ex error",ex);
+	  cgerrp->setName("Ey error",ey);
+	  cgerrp->setName("Hz  error",hz );
+	  cgerrp->setName("Ext error",ext);
+	  cgerrp->setName("Eyt error",eyt);
+	  cgerrp->setName("Hzt error",hzt);
+	}
+	else
+	{
+	  if( solveForElectricField )
+	  {
+	    cgerrp->setName("Ex error",ex);
+	    cgerrp->setName("Ey error",ey);
+	    cgerrp->setName("Ez error",ez);
+	    cgerrp->setName("Ext error",ext);
+	    cgerrp->setName("Eyt error",eyt);
+	    cgerrp->setName("Ezt error",ezt);
+	  }
+	  if( solveForMagneticField )
+	  {
+	    cgerrp->setName("Hx error",hx);
+	    cgerrp->setName("Hy error",hy);
+	    cgerrp->setName("Hz error",hz);
+	    cgerrp->setName("Hxt error",hxt);
+	    cgerrp->setName("Hyt error",hyt);
+	    cgerrp->setName("Hzt error",hzt);
+	  }
+	      
+	}
+      }
+      else
+      {
+	cgerrp = new realCompositeGridFunction [2];
+	if ( cg.numberOfDimensions()==2 )
+	{
+	  cgerrp[0].updateToMatchGrid(*cgp,GridFunctionParameters::edgeCentered,2);
+	  cgerrp[1].updateToMatchGrid(*cgp,GridFunctionParameters::cellCentered);
+	  cgerrp[0].setName("Ex error",ex);
+	  cgerrp[0].setName("Ey error",ey);
+	  cgerrp[1].setName("Hz error",hz);	  
+	}
+	else
+	{
+	  cgerrp[0].updateToMatchGrid(*cgp,GridFunctionParameters::edgeCentered,3);
+	  cgerrp[1].updateToMatchGrid(*cgp,GridFunctionParameters::faceCentered,3);
+
+	  cgerrp[0].setName("Ex error",ex);
+	  cgerrp[0].setName("Ey error",ey);
+	  cgerrp[0].setName("Ez error",ez);
+	      
+	  cgerrp[1].setName("Hx error",hx);
+	  cgerrp[1].setName("Hy error",hy);
+	  cgerrp[1].setName("Hz error",hz);
+
+	}
+      }
+    }
+    
+  }
 
   timing(timeForInitialize)+=getCPU()-time0;
 
+  printF("\n <<<<<<<<<<<<<<<<<<<<<<<<< Maxwell: LEAVING setupGridFunctions\n");
   
   return 0;
 }

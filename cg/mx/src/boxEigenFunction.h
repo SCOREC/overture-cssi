@@ -34,9 +34,9 @@
     // real reS, imS;
     // old dmp.computeDispersionRelation( c,eps,mu,kk, reS, imS );
     // *new way*
-    real sr,si,psir[10],psii[10];
+    real sr,si,chir[10],chii[10],chiSumr,chiSumi;
     assert( dmp.numberOfPolarizationVectors<10 );
-    dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+    dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
 
     if( t<3.*dt )
       printF("--IC:SQ-Eig-- (dispersive) t=%10.3e, sr=%g, si=%g a1=%g a2=%g\n",t,sr,si,a1,a2 );
@@ -81,13 +81,13 @@
       // const real denom = (SQR(a)+SQR(b))*( SQR((a+gamma)) + SQR(b) );
       // real reChi =  omegap*omegap* (a*(a+gamma)-b*b)/denom;   
       // real imChi = -omegap*omegap* b*(2*a+gamma)/denom;
-      // printF("--BOXEIG-- psir=%e psii=%e reCh=%e imChi=%e\n",psir,psii,reChi,imChi);
+      // printF("--BOXEIG-- chir=%e chii=%e reCh=%e imChi=%e\n",chir,chii,reChi,imChi);
       
 
       // phiP = Im(  Chi*( cos(beta*t) + i*sin(beta*t) )*exp(alpha*t )  ... s= alpha+i*beta
       for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
       {
-        real phiP = psir[iv]*ste+ psii[iv]*cte;
+        real phiP = eps*( chir[iv]*ste+ chii[iv]*cte );
         phiPx[iv] = a1s*( phiP );
         phiPy[iv] = a2s*( phiP );
       }
@@ -111,7 +111,7 @@
       // *check me*
       for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
       {
-        real phiP = psir[iv]*ste+ psii[iv]*cte;
+        real phiP = eps*( chir[iv]*ste+ chii[iv]*cte );
         phiPx[iv] = a1s*( phiP );
         phiPy[iv] = a2s*( phiP );
         phiPz[iv] = a3s*( phiP );

@@ -21,6 +21,18 @@ elasticPiston:
 	$(ogen) -noplot elasticPistonGrid -factor=16 -per=1
 
 
+# Narrow grid in x-direction
+elasticPistonN:
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -factor=1 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -factor=2 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -factor=4 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -factor=8 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -per=1 -factor=1 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -per=1 -factor=2 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -per=1 -factor=4 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -per=1 -factor=8 
+	$(ogen) -noplot elasticPistonGrid -xb=.2 -prefix=elasticPistonGridN -per=1 -factor=16
+
 # coarse grid in x: 
 elasticPistonX:
 	$(ogen) -noplot elasticPistonGrid -dsx=.2 -prefix=elasticPistonGridX -factor=1 

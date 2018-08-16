@@ -466,11 +466,11 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     real kxr, kxi, kyr, kyi;        // Incident wave number (complex)
     real kxpr, kxpi, kypr, kypi;    // Transmitted wave number
   
-    real psi1r[10],psi1i[10];
-    real psi2r[10],psi2i[10];
+    real chi1r[10],chi1i[10];
+    real chi2r[10],chi2i[10];
 
-    real psiSum1r=0.,psiSum1i=0;
-    real psiSum2r=0.,psiSum2i=0;
+    real chiSum1r=0.,chiSum1i=0;
+    real chiSum2r=0.,chiSum2i=0;
  
    
     const int gridLeft = 0;
@@ -499,18 +499,18 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     kxr=twoPi*kx; kxi=0.; kyr=twoPi*ky; kyi=0.;  // Incident wave number (complex)
 
     const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz );   
-    dmp1.evaluateDispersionRelation( c1,kk, sr, si, psi1r,psi1i ); 
-    // si = -si; // reverse the direction NO -- changes psi1 !
+    dmp1.evaluateDispersionRelation( c1,kk, sr, si, chi1r,chi1i,chiSum1r,chiSum1i ); 
+    // si = -si; // reverse the direction NO -- changes chi1 !
 
-    // Save the "sum" of the psi's times alphaP
-    psiSum1r=0.; psiSum1i=0;
-    for( int iv=0; iv<dmp1.numberOfPolarizationVectors; iv++ )
-    {
-      psiSum1r += psi1r[iv];
-      psiSum1i += psi1i[iv];
-    }
-    psiSum1r *= dmp1.alphaP;
-    psiSum1i *= dmp1.alphaP;
+    // // Save the "sum" of the chi's times alphaP
+    // chiSum1r=0.; chiSum1i=0;
+    // for( int iv=0; iv<dmp1.numberOfPolarizationVectors; iv++ )
+    // {
+    //   chiSum1r += chi1r[iv];
+    //   chiSum1i += chi1i[iv];
+    // }
+    // chiSum1r *= dmp1.alphaP;
+    // chiSum1i *= dmp1.alphaP;
         
     // -- -right domain --
     domain=1;
@@ -519,7 +519,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     assert( numberOfPolarizationVectors2<10 );
    
     real kr,ki;
-    dmp2.evaluateComplexWaveNumber( c2,sr,si, kr,ki, psi2r,psi2i );
+    dmp2.evaluateComplexWaveNumber( c2,sr,si, kr,ki, chi2r,chi2i,chiSum2r,chiSum2i );
     //  kxp^2 + kyp^2 = (kr+I*ki)^2 = (kr^2-ki^2) + 2*I*kr*ki 
     // kxp = kxpr + I*kpri = sqrt( (kr+I*ki)^2 - kyp^2 )
     getTransmisionWaveNumber( kr,ki, kxr,kxi, kyr,kyi, kxpr,kxpi, kypr,kypi );
@@ -528,24 +528,24 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     // kxpr=kr; kxpi=ki;
     // kypr=0.; kypi=0.;
    
-    if( t<3.*dt )
+    if( false && t<3.*dt )
     {
       printF("\n --UDKS:DPWI-- t=%10.4e, grid=%i, s=(%16.10e,%16.10e) kx=(%16.10e,%16.10e) ky=(%16.10e,%16.10e) -> k2=(kr,ki)=(%16.10e,%16.10e) kxp=(%16.10e,%16.10e) kyp=(%16.10e,%16.10e)\n"
              ,t,grid,sr,si,kxr,kxi,kyr,kyi,kr,ki,kxpr,kxpi,kypr,kypi);
-      printF("    psi1=(%16.10e,%16.10e), psi2=(%16.10e,%16.10e) \n",psi1r[0],psi1i[0],psi2r[0],psi2i[0]);
+      printF("    chi1=(%16.10e,%16.10e), chi2=(%16.10e,%16.10e) \n",chi1r[0],chi1i[0],chi2r[0],chi2i[0]);
       
     }
     
 
-    // // Save the "sum" of the psi's  times alphaP
-    psiSum2r=0.; psiSum2i=0;
-    for( int iv=0; iv<dmp2.numberOfPolarizationVectors; iv++ )
-    {
-      psiSum2r += psi2r[iv];
-      psiSum2i += psi2i[iv];
-    }
-    psiSum2r *= dmp2.alphaP;
-    psiSum2i *= dmp2.alphaP;
+    // // // Save the "sum" of the chi's  times alphaP
+    // chiSum2r=0.; chiSum2i=0;
+    // for( int iv=0; iv<dmp2.numberOfPolarizationVectors; iv++ )
+    // {
+    //   chiSum2r += chi2r[iv];
+    //   chiSum2i += chi2i[iv];
+    // }
+    // chiSum2r *= dmp2.alphaP;
+    // chiSum2i *= dmp2.alphaP;
 
     const real alphaP = dmp1.alphaP;
     const real a= 1.; // amplitude *FIX ME**
@@ -565,6 +565,11 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       pLocal.reference(pLoc);
     }
 
+    
+    // For a rotated interface, nv = normal and x0 is a point on the interface.
+    real *nv = normalPlaneMaterialInterface;
+    real *x0 = x0PlaneMaterialInterface;
+    
     real x,y,z=0.;
     if( numberOfTimeDerivatives==0 )
     {
@@ -584,22 +589,47 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             y=XC(iv,1);
 	  }
 
+          // -- un-rotate the point (x,y) to the reference space and evaluate the solution 
+          real ct= nv[0], st=nv[1];  // cos(theta), sin(theta)
+          real xa=x-x0[0], ya=y-x0[1];
+          x =  ct*xa + st*ya;
+          y = -st*xa + ct*ya;
+          
+
           // Here are the statements to eval the solution: 
           #Include "dispersivePlaneWaveInterface.h"
 
+          // ---- rotate the field from the reference space to the rotated space ---
+          real Exra=Exr, Eyra=Eyr;
+          Exr =  ct*Exra - st*Eyra;
+          Eyr =  st*Exra + ct*Eyra;
+          
+          real Exia=Exi, Eyia=Eyi;
+          Exi =  ct*Exia - st*Eyia;
+          Eyi =  st*Exia + ct*Eyia;
+          
+          real Expra=Expr, Eypra=Eypr;
+          Expr =  ct*Expra - st*Eypra;
+          Eypr =  st*Expra + ct*Eypra;
+          
+          real Expia=Expi, Eypia=Eypi;
+          Expi =  ct*Expia - st*Eypia;
+          Eypi =  st*Expia + ct*Eypia;
+          
+
           if( false )
           {
-            printF("(i1,i2)=(%3i,%3i): psiSum1=(%9.3e,%9.3e) psiSum2=(%9.3e,%9.3e) r=(%8.2e,%8.2e) "
+            printF("(i1,i2)=(%3i,%3i): chiSum1=(%9.3e,%9.3e) chiSum2=(%9.3e,%9.3e) r=(%8.2e,%8.2e) "
                    "tau=(%8.2e,%8.2e) khy=(%8.2e,%8.2e) khpy=(%8.2e,%8.2e): ",
-                   i1,i2,psiSum1r,psiSum1i,psiSum2r,psiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
-            real eps1Hatr = eps1*(1+psiSum1r), eps1Hati=eps1*(psiSum1i);
-            real eps2Hatr = eps2*(1+psiSum2r), eps2Hati=eps2*(psiSum2i);
+                   i1,i2,chiSum1r,chiSum1i,chiSum2r,chiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
+            real eps1Hatr = eps1*(1.+chiSum1r), eps1Hati=eps1*(chiSum1i);
+            real eps2Hatr = eps2*(1.+chiSum2r), eps2Hati=eps2*(chiSum2i);
 
 
             checkPlaneMaterialInterfaceJumps( 
               c1,c2,eps1,eps2,mu1,mu2, sr,si, rr,ri, taur,taui, 
               eps1Hatr,eps1Hati, eps2Hatr,eps2Hati,
-              psiSum1r,psiSum1i,psiSum2r,psiSum2i,
+              chiSum1r,chiSum1i,chiSum2r,chiSum2i,
               kxr,kxi, kyr,kyi, kxpr,kxpi, kypr,kypi );
             
             OV_ABORT("stop here for now");
@@ -611,7 +641,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             printF("(i1,i2)=(%3i,%3i): kNorm=%g, kpNorm=%g, kappa=(%g,%g) beta=(%g,%g)\n",
                    i1,i2,kNorm,kpNorm,kappar,kappai,betar,betai);
             printF("    : eps1=%g, eps2=%g, r=(%g,%g) tau=(%g,%g) \n",eps1,eps2,rr,ri,taur,taui);
-            // printF("    : psiSum1=(%g,%g) psiSum2=(%g,%g) \n",psiSum1r,psiSum1i,psiSum2r,psiSum2i);
+            // printF("    : chiSum1=(%g,%g) chiSum2=(%g,%g) \n",chiSum1r,chiSum1i,chiSum2r,chiSum2i);
             printF("    : Exr=%g, Eyr=%g, Exi=%g, Eyi=%g Hzr=%g Hzi=%g\n",Exr,Eyr,Exi,Eyi,Hzr,Hzi);
             printF("    : Expr=%g, Eypr=%g, Expi=%g, Eypi=%g Hzpr=%g Hzpi=%g\n",Expr,Eypr,Expi,Eypi,Hzpr,Hzpi);
 
@@ -628,8 +658,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
             {
               const int pc= iv*numberOfDimensions;
-              pLocal(i1,i2,i3,pc  ) = psi1r[iv]*Exr - psi1i[iv]*Exi;
-              pLocal(i1,i2,i3,pc+1) = psi1r[iv]*Eyr - psi1i[iv]*Eyi;
+              pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+              pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
             }
 
           }
@@ -641,8 +671,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
             {
               const int pc= iv*numberOfDimensions;
-              pLocal(i1,i2,i3,pc  ) = psi2r[iv]*Expr - psi2i[iv]*Expi;
-              pLocal(i1,i2,i3,pc+1) = psi2r[iv]*Eypr - psi2i[iv]*Eypi;
+              pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Expr - chi2i[iv]*Expi );
+              pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Eypr - chi2i[iv]*Eypi );
             }
           }
           
@@ -800,7 +830,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       
 
       printF("The dispersive plane wave interface defines an exact solution for a plane wave\n"
-             " hitting a planar material interface between two dispersive materials");
+             " hitting a planar material interface between two dispersive materials\n");
       
     }
     

@@ -17,7 +17,6 @@ if ($numberOfParameters eq 0)
   printf("\n");
   printf("================================================================================\n");
   printf("This perl script will process check files and compute convergence tables        \n");
-  printf("  (Currenty this file processes rigid-body results)                             \n");
   printf("  Usage: \n");
   printf("    processCheckFiles.p  -file=<master-check-file> -c=<list of components> ...  \n");
   printf("      -useGridNames=[0|1] -table=[0|1]                                          \n");

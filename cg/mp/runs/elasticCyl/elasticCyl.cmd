@@ -22,9 +22,9 @@ $nu=.1; $rhoSolid=1.; $prandtl=.72; $cnsVariation="jameson"; $ktcFluid=-1.; $u0=
 $cnsEOS="ideal"; 
 $cnsGammaStiff=1.4; $cnsPStiff=0.;   # for stiffened EOS -- by default make it look like an ideal gas
 $lambdaSolid=1.; $muSolid=1.;
-$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; 
+$stressRelaxation=4; $relaxAlpha=0.5; $relaxDelta=0.5; 
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
-$thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; $diss=.1;  $smVariation = "non-conservative";
+$thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; $diss=.5;  $smVariation = "non-conservative";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
 $fic = "uniform";  # fluid initial condition
@@ -149,6 +149,13 @@ continue
   if( $multiDomainAlgorithm eq 1 ){ $cmd="OBPDE:step all then match advance"; }else{ $cmd="#"; }
   $cmd 
   $tz
+  # DEFINE THE MULTI_STAGE ALGORITHM --
+  OBPDE:multi-stage
+    actions=takeStep classNames=Cgsm
+    actions=takeStep,applyBC classNames=Cgins
+    actions=applyBC classNames=Cgsm
+  done
+#  
   debug $debug
   show file options
     compressed

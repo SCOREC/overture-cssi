@@ -984,8 +984,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                         dispersionModel1, // ipar[44]
                         dispersionModel2, // ipar[45]
-                        pxc               // ipar[46]
+                        pxc,              // ipar[46]
+                        knownSolutionOption
                     };
+                const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                 real rpar[]={ //
                     dx1[0],
                     dx1[1],
@@ -1010,7 +1013,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                     cGrid(grid2),
                     omegaForInterfaceIteration,
                     0., // return value averageInterfaceConvergenceRate
-                    0.  // return value maxFinalResidual
+                    0.,  // return value maxFinalResidual
+                    rtolForInterfaceIterations,
+                    atolForInterfaceIterations
                 };
         // work space: 
                 real *rwk=interface.rwk;
@@ -1130,8 +1135,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                             dispersionModel1, // ipar[44]
                             dispersionModel2, // ipar[45]
-                            pxc               // ipar[46]
+                            pxc,              // ipar[46]
+                            knownSolutionOption
                         };
+                    const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                    const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                     real rpar[]={ //
                         dx1[0],
                         dx1[1],
@@ -1156,7 +1164,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         cGrid(grid2),
                         omegaForInterfaceIteration,
                         0., // return value averageInterfaceConvergenceRate
-                        0.  // return value maxFinalResidual
+                        0.,  // return value maxFinalResidual
+                        rtolForInterfaceIterations,
+                        atolForInterfaceIterations
                     };
           // work space: 
                     real *rwk=interface.rwk;
@@ -1281,8 +1291,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                         dispersionModel1, // ipar[44]
                         dispersionModel2, // ipar[45]
-                        pxc               // ipar[46]
+                        pxc,              // ipar[46]
+                        knownSolutionOption
                     };
+                const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                 real rpar[]={ //
                     dx1[0],
                     dx1[1],
@@ -1307,7 +1320,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                     cGrid(grid2),
                     omegaForInterfaceIteration,
                     0., // return value averageInterfaceConvergenceRate
-                    0.  // return value maxFinalResidual
+                    0.,  // return value maxFinalResidual
+                    rtolForInterfaceIterations,
+                    atolForInterfaceIterations
                 };
         // work space: 
                 real *rwk=interface.rwk;
@@ -1427,8 +1442,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                             dispersionModel1, // ipar[44]
                             dispersionModel2, // ipar[45]
-                            pxc               // ipar[46]
+                            pxc,              // ipar[46]
+                            knownSolutionOption
                         };
+                    const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                    const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                     real rpar[]={ //
                         dx1[0],
                         dx1[1],
@@ -1453,7 +1471,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         cGrid(grid2),
                         omegaForInterfaceIteration,
                         0., // return value averageInterfaceConvergenceRate
-                        0.  // return value maxFinalResidual
+                        0.,  // return value maxFinalResidual
+                        rtolForInterfaceIterations,
+                        atolForInterfaceIterations
                     };
           // work space: 
                     real *rwk=interface.rwk;
@@ -1577,8 +1597,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                         dispersionModel1, // ipar[44]
                         dispersionModel2, // ipar[45]
-                        pxc               // ipar[46]
+                        pxc,              // ipar[46]
+                        knownSolutionOption
                     };
+                const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                 real rpar[]={ //
                     dx1[0],
                     dx1[1],
@@ -1603,7 +1626,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                     cGrid(grid2),
                     omegaForInterfaceIteration,
                     0., // return value averageInterfaceConvergenceRate
-                    0.  // return value maxFinalResidual
+                    0.,  // return value maxFinalResidual
+                    rtolForInterfaceIterations,
+                    atolForInterfaceIterations
                 };
         // work space: 
                 real *rwk=interface.rwk;
@@ -1718,8 +1743,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                             dispersionModel1, // ipar[44]
                             dispersionModel2, // ipar[45]
-                            pxc               // ipar[46]
+                            pxc,              // ipar[46]
+                            knownSolutionOption
                         };
+                    const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+                    const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
                     real rpar[]={ //
                         dx1[0],
                         dx1[1],
@@ -1744,7 +1772,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         cGrid(grid2),
                         omegaForInterfaceIteration,
                         0., // return value averageInterfaceConvergenceRate
-                        0.  // return value maxFinalResidual
+                        0.,  // return value maxFinalResidual
+                        rtolForInterfaceIterations,
+                        atolForInterfaceIterations
                     };
           // work space: 
                     real *rwk=interface.rwk;
@@ -1871,8 +1901,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                     0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
                     dispersionModel1, // ipar[44]
                     dispersionModel2, // ipar[45]
-                    pxc               // ipar[46]
+                    pxc,              // ipar[46]
+                    knownSolutionOption
                 };
+            const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+            const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
             real rpar[]={ //
                 dx1[0],
                 dx1[1],
@@ -1897,7 +1930,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                 cGrid(grid2),
                 omegaForInterfaceIteration,
                 0., // return value averageInterfaceConvergenceRate
-                0.  // return value maxFinalResidual
+                0.,  // return value maxFinalResidual
+                rtolForInterfaceIterations,
+                atolForInterfaceIterations
             };
 
             newInterfaceMaxwell( mg1.numberOfDimensions(), 

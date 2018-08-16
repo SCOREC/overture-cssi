@@ -1,6 +1,251 @@
 set ogmgt = $ogmg/ogmgt
 
 ****************************
+****** Tues Aug 8, 2018
+
+3D tests
+
+SIB G4
+ogmgt tz -noplot -g=sphereInABoxe4.order4.ml3.hdf -opav=0 -maxit=7 -orderCoarse=2
+OC2: Iteration=1..7 : Total WU=2.72e+01, total res reduction=4.05e-07, ave CR=0.1221 ave ECR=0.582 np=1
+OC4: Iteration=1..7 : Total WU=2.74e+01, total res reduction=1.23e-06, ave CR=0.1431 ave ECR=0.608 np=1
+OPA-OC2: Iteration=1..7 : Total WU=2.69e+01, total res reduction=4.47e-06, ave CR=0.1721 ave ECR=0.632 np=1
+
+SIB: 
+ogmgt tz -noplot -g=sphereInABoxe2.order4.ml2.hdf -opav=0 -maxit=7 -orderCoarse=2
+OC2: Iteration=1..7 : Total WU=2.86e+01, total res reduction=1.60e-07, ave CR=0.1069 ave ECR=0.579 np=1
+OC4: Iteration=1..7 : Total WU=2.78e+01, total res reduction=3.10e-07, ave CR=0.1175 ave ECR=0.583 np=1
+
+OPA-OC2 Iteration=1..7 : Total WU=2.77e+01, total res reduction=1.22e-05, ave CR=0.1985 ave ECR=0.665 np=1
+OPA-OC4 Iteration=1..7 : Total WU=2.74e+01, total res reduction=6.86e-06, ave CR=0.1830 ave ECR=0.648 np=1
+
+ogmgt tz -noplot -g=nonBox2.order4 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=2.70e+01, total res reduction=4.86e-08, ave CR=0.0902 ave ECR=0.536 np=1
+OPA Iteration=1..7 : Total WU=2.70e+01, total res reduction=3.71e-09, ave CR=0.0625 ave ECR=0.487 np=1
+
+ogmgt tz -noplot -g=box2.order4 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=2.70e+01, total res reduction=3.32e-08, ave CR=0.0854 ave ECR=0.529 np=1
+OPA: Iteration=1..7 : Total WU=2.70e+01, total res reduction=1.21e-09, ave CR=0.0532 ave ECR=0.468 np=1
+
+ogmgt tz -noplot -g=box2.order4 -opav=0 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=2.70e+01, total res reduction=9.52e-07, ave CR=0.1380 ave ECR=0.599 np=1
+
+
+****************************
+****** Tues Aug 7, 2018
+
+
+runOgmg.p -cmd=tz.cmd -g=square512.order4 -levels=3 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=2 -matlabFile=junk.m
+
+-------- OVERSET
+
+ogmgt tz -noplot -g=cice8.order4.s2.ml3 -opav=1 -maxit=7 -orderCoarse=2
+OP-AVE(2)
+Iteration=1..7 : Total WU=3.00e+01, total res reduction=4.10e-06, ave CR=0.1700 ave ECR=0.661 np=1
+
+oP-ave(4)
+Iteration=1..7 : Total WU=3.07e+01, total res reduction=9.87e-07, ave CR=0.1387 ave ECR=0.637 np=1
+
+
+
+ogmgt tz -noplot -g=cice8.order4.s2.ml3 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=3.18e+01, total res reduction=1.15e-07, ave CR=0.1020 ave ECR=0.605 np=1
+
+
+ogmgt tz -noplot -g=cice8.order4.s2.ml3 -opav=0 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=2.99e+01, total res reduction=2.59e-07, ave CR=0.1146 ave ECR=0.602 np=1
+
+
+
+
+
+OP-AVE **SOMETHING WRONG HERE ***
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=1 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=3.35e+01, total res reduction=3.86e-05, ave CR=0.2342 ave ECR=0.738 np=1
+
+
+OP-AVE
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=1 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=3.75e+01, total res reduction=8.52e-07, ave CR=0.1358 ave ECR=0.689 np=1
+
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=3.74e+01, total res reduction=2.94e-06, ave CR=0.1621 ave ECR=0.711 np=1
+
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=0 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=3.47e+01, total res reduction=1.23e-06, ave CR=0.1431 ave ECR=0.676 np=1
+
+
+CHANGES MADE TO BUILD SECOND-ORDER FINE GRID OPERATOR FOR GALERLIN AVERAGING
+
+ogmgt tz -noplot -g=nonSquare256.order4 -opav=1 -maxit=7 -orderCoarse=2
+Galerkin2: 
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=3.88e-10, ave CR=0.0452 ave ECR=0.473 np=1
+
+Galerkin4
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=4.75e-10, ave CR=0.0466 ave ECR=0.476 np=1
+
+ogmgt tz -noplot -g=nonSquare16.order4 -opav=1 -maxit=7 -orderCoarse=2
+Galerkin2
+Iteration=1..7 : Total WU=3.14e+01, total res reduction=4.58e-10, ave CR=0.0463 ave ECR=0.504 np=1
+
+ogmgt tz -noplot -g=nonSquare16.order4 -opav=1 -maxit=7 -orderCoarse=4
+Galerkin4
+Iteration=1..7 : Total WU=3.14e+01, total res reduction=6.62e-10, ave CR=0.0488 ave ECR=0.510 np=1
+
+****************************
+****** Mon Aug 6, 2018
+
+CURVILINEAR GRIDS NOT CORRECT FOR OPERATOR AVERAGING -- NEED 2nd order operator on the FINE GRID
+
+
+ogmgt tz -noplot -g=nonSquare16.order4 -opav=1 -maxit=7 -orderCoarse=2 
+
+ogmgt tz -noplot -g=square16.order4 -opav=1 -maxit=7 -orderCoarse=2 
+Iteration=1..7 : Total WU=3.13e+01, total res reduction=2.16e-09, ave CR=0.0578 ave ECR=0.529 np=1
+
+****************************
+****** Sat Aug 4, 2018
+
+-------- OVERSET
+
+
+OP-AVE
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=1 -maxit=7 -orderCoarse=2
+
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=1 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=3.75e+01, total res reduction=8.52e-07, ave CR=0.1358 ave ECR=0.689 np=1
+
+
+NO_OP-AVE:
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=3.74e+01, total res reduction=2.94e-06, ave CR=0.1621 ave ECR=0.711 np=1
+
+ogmgt tz -noplot -g=cice2.order4.s2.ml2 -opav=0 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=3.47e+01, total res reduction=1.23e-06, ave CR=0.1431 ave ECR=0.676 np=1
+
+
+
+
+--------- TRY OPERATOR AVERAGING
+
+
+ogmgt tz -noplot -g=square256.order4 -opav=1 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=1.33e-09, ave CR=0.0539 ave ECR=0.493 np=1
+
+
+ogmgt tz -noplot -g=square16.order4 -opav=1 -maxit=7 -orderCoarse=2 
+Iteration=1..7 : Total WU=3.13e+01, total res reduction=2.16e-09, ave CR=0.0578 ave ECR=0.529 np=1
+
+
+ogmgt tz -noplot -g=square16.order4 -opav=1 -maxit=7 -orderCoarse=4
+Iteration=1..7 : Total WU=3.13e+01, total res reduction=1.79e-10, ave CR=0.0405 ave ECR=0.489 np=1
+
+---------- START:  2nd-order coarse grid solve for 4th-order with CURVILINEAR
+
+ogmgt tz -noplot -g=nonSquare256.order4 -opav=0 -maxit=7 -orderCoarse=2 
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=1.51e-09, ave CR=0.0549 ave ECR=0.496 np=1
+
+ogmgt tz -noplot -g=nonSquare16.order4 -opav=0 -maxit=7 -orderCoarse=2 
+Iteration=1..7 : Total WU=3.14e+01, total res reduction=2.11e-09, ave CR=0.0576 ave ECR=0.529 np=1
+
+
+ogmgt tz -noplot -g=nonSquare16.order4 -opav=0 -maxit=7 -orderCoarse=2 -scg=1 -debug=7 -ssr=1 -info=3
+
+
+ogmgt tz -noplot -g=square16.order4 -opav=0 -maxit=7 -orderCoarse=2 
+
+--- CARTESIAN
+ogmgt tz -noplot -g=square16.order4 -opav=0 -maxit=7 -orderCoarse=2 
+Iteration=1..7 : Total WU=3.13e+01, total res reduction=1.70e-10, ave CR=0.0402 ave ECR=0.488 np=1
+
+ogmgt tz -noplot -g=square256.order4 -opav=0 -maxit=7 -orderCoarse=2
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=1.14e-10, ave CR=0.0380 ave ECR=0.453 np=1
+
+****************************
+****** Aug 2-3, 2018
+
+START ON USING 2nd-order coarse grid solve for 4th-order
+
+
+Temp fix to solve coarse grid with Oges
+ogmgt tz -noplot -g=square256.order4 -opav=0 -maxit=7 -orderCoarse=2
+
+For now solve coarse grid equations by iteration
+ogmgt tz -noplot -g=square256.order4 -opav=0 -maxit=7 -orderCoarse=2 -scg=1 
+
+orderCoarse=2
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=1.14e-10, ave CR=0.0380 ave ECR=0.453 np=1
+
+orderCoarse=4
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=2.12e-08, ave CR=0.0801 ave ECR=0.543 np=1
+
+
+ogmgt tz -noplot -g=square16.order4 -opav=0 -maxit=7 -orderCoarse=2 -scg=1 -debug=7 -ssr=1 -info=3
+
+This does not work:
+ogmgt tz -noplot -g=square256.order4 -opav=0 -maxit=7 -orderCoarse=2
+
+
+
+
+START: 
+
+Iteration=1..7 : Total WU=2.89e+01, total res reduction=2.12e-08, ave CR=0.0801 ave ECR=0.543 np=1
+  MaxRes=3.70e-03, TR10=8.67e-03 (time to reduce residual by a factor of 10) TR10/(M/np)=1.27e-01
+
+****************************
+****** June 27, 2018
+
+runOgmg.p -cmd=tz.cmd -g=square512.order4 -levels=2 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=2 -matlabFile=ogmgCR_V21_G_Order4.m
+
+
+****************************
+****** June 22, 2018
+
+runOgmg.p -cmd=tz.cmd -g=square512.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=2 -matlabFile=ogmgCR_V21_G_Order4.m
+
+
+****************************
+****** June 20, 2018
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=1 -matlabFile=ogmgCR_V11_G_Order4.m
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=0 -preSmooth=1 -matlabFile=ogmgCR_V11_NG_Order4.m
+
+
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=0 -cycle=W -preSmooth=2 -matlabFile=ogmgCR_W21_NG_Order4.m
+
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=2 -matlabFile=ogmgCR_V21_G_Order4.m
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=0 -preSmooth=2 -matlabFile=ogmgCR_V21_NG_Order4.m
+
+
+****************************
+****** June 19, 2018
+
+START ON SCRIPT TO run ogmgt for various parameters
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=1 -preSmooth=2 -matlabFile=ogmgCR_V21_G_Order4.m
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=21 -omegaStart=1. -omegaEnd=.13 -opav=0 -preSmooth=2 -matlabFile=ogmgCR_V21_NG_Order4.m
+
+runOgmg.p -cmd=tz.cmd -g=square1024.order4 -numOmega=11 -omegaStart=1. -omegaEnd=.13 -matlabFile=ogmgCR_V11_Order4.m
+
+runOgmg.p -cmd=tz.cmd 
+
+
+
+ogmgt tz -noplot -g=square1024.order2  -maxit=7 -omega=1.15
+CR=0.0498 ave ECR=0.483
+  7.0e+00    2  0 1.60e-03 3.98e+00  1 5.67e-02 4.86e-01
+
+ogmgt tz -noplot -g=square1024.order2 -maxit=7 -omega=1.1
+CR=0.0305 ave ECR=0.429
+  7.0e+00    2  0 5.16e-05 3.98e+00  1 3.77e-02 4.39e-01
+
+****************************
 ****** Feb 5, 2018
 
 Tests for Kamala: 

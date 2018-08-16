@@ -1,4 +1,19 @@
 ********************************
+***** July 18, 2018
+
+TEST EXTRAPOLATION FOR GHOST
+
+cgsm elasticPiston -g=rect4pn.order2.hdf -pv=g -tp=.1 -amp=.1 -tf=.5 -bcn=d -setGhostByExtrapolation=1 -go=halt
+
+Extrap-ghost
+-->t=1.0000e-01 dt=6.3e-03 maxNorm errors:[0.0000e+00,3.6046e-03,6.0424e-03,0.0000e+00,0.0000e+00,1.8127e-02,0.0000e+00,2.5795e-04,], maxNorm(u):[0.00e+00,2.38e+00,4.46e-01,0.00e+00,0.00e+00,1.34e+00,0.00e+00,6.16e-02,]
+>>> Cgsm: GDLE: t=1.00e-01, steps=16, dt=6.3e-03 |div(U)|=4.63e-01, |curl(U)|=0.00e+00, |div(U)|/|grad(U)|=1.00e+00 |grad(U)|=4.63e-01, cpu=2.02e+00(s)
+
+Normal BC: 
+-->t=1.0000e-01 dt=6.3e-03 maxNorm errors:[0.0000e+00,1.0497e-03,2.0741e-03,0.0000e+00,0.0000e+00,6.2224e-03,0.0000e+00,9.0578e-05,], maxNorm(u):[0.00e+00,2.38e+00,4.48e-01,0.00e+00,0.00e+00,1.35e+00,0.00e+00,6.16e-02,]
+>>> Cgsm: GDLE: t=1.00e-01, steps=16, dt=6.3e-03 |div(U)|=4.44e-01, |curl(U)|=0.00e+00, |div(U)|/|grad(U)|=1.00e+00 |grad(U)|=4.44e-01, cpu=2.16e+00(s)
+
+********************************
 ***** May 16, 2018
 
 TEST FIB-SHEAR Solution with cgsm

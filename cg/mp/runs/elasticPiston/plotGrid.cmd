@@ -2,6 +2,8 @@
 #  plotStuff plotGrid -show=radialElasticPistonGride2.order2.hdf -name=radialElasticPistonGrid
 #  plotStuff plotGrid -show=elasticPistonGrid2.order2.hdf -name=elasticPistonGrid
 #
+#  plotStuff plotGrid -show=radialTravelingWaveGride2.order2.hdf -name=radialTravelingWaveGrid
+#
 $show="elasticPistonGrid2.order2.hdf";
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "show=s"=>\$show,"name=s"=>\$name  );

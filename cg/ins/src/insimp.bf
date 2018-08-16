@@ -14,7 +14,7 @@
                       mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, \
                       ndMatProp,matIndex,matValpc,matVal, bc, \
                       boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                      nde, equationNumber, classify, \
+                      nde, equationNumber, classify, interfaceType, \
                       nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                       ipar, rpar, pdb, ierr )
 c======================================================================
@@ -70,6 +70,7 @@ c======================================================================
 
       integer equationNumber(0:nde-1,nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       integer classify(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      integer interfaceType(0:1,0:2,0:*)
 
       integer ipar(0:*)
       real rpar(0:*)
@@ -110,7 +111,7 @@ c     ---- local variables -----
         call insImpINS(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
                        mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, ndMatProp,matIndex,matValpc,matVal, bc, \
                        boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                       nde, equationNumber, classify, \
+                       nde, equationNumber, classify, interfaceType, \
                        nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                        ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.viscoPlasticModel .or. (pdeModel.eq.BoussinesqModel .and. turbulenceModel.eq.largeEddySimulation) )then
@@ -123,7 +124,7 @@ c     ---- local variables -----
         call insImpVP(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
                       mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, ndMatProp,matIndex,matValpc,matVal, bc, \
                       boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                      nde, equationNumber, classify, \
+                      nde, equationNumber, classify, interfaceType, \
                       nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                       ipar, rpar, pdb, ierr )
       else if( turbulenceModel.eq.baldwinLomax )then
@@ -134,7 +135,7 @@ c     ---- local variables -----
         call insImpBL(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
                       mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, ndMatProp,matIndex,matValpc,matVal, bc, \
                       boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                      nde, equationNumber, classify, \
+                      nde, equationNumber, classify, interfaceType, \
                       nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                       ipar, rpar, pdb, ierr )
       else if( turbulenceModel.eq.kEpsilon )then
@@ -145,7 +146,7 @@ c     ---- local variables -----
         call insImpKE(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
                       mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, ndMatProp,matIndex,matValpc,matVal, bc, \
                       boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                      nde, equationNumber, classify, \
+                      nde, equationNumber, classify, interfaceType, \
                       nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                       ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.twoPhaseFlowModel )then
@@ -156,7 +157,7 @@ c     ---- local variables -----
         call insImpTP(nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
                       mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, ndMatProp,matIndex,matValpc,matVal, bc, \
                       boundaryCondition, ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,ndbcd4b,bcData,\
-                      nde, equationNumber, classify, \
+                      nde, equationNumber, classify, interfaceType, \
                       nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, \
                       ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.BoussinesqModel )then

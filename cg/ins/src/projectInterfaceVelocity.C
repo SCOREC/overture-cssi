@@ -310,36 +310,45 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                             OV_ABORT("finish me");
                         }
 
-          	    real zpOld;
-            // old way:
-                        deform.getBulkSolidParameters( zpOld );
+            // *new* April 1, 2018
+                        real zs,zp,zf,alpha;
+                        getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
 
-            // new way:
-            // Retrieve the parameters from the bulk solid
-            // FIX ME -- lookup first time and then save locally 
-                        Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
-                        real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
-                        real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
-                        real muSolid=bulkSolidParams.dbase.get<real>("mu");
-                        real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
-                        real cs=sqrt(muSolid/rhoSolid);
+	    // real zpOld;
+            // // old way:
+            // deform.getBulkSolidParameters( zpOld );
+
+            // // new way:
+            // // Retrieve the parameters from the bulk solid
+            // // FIX ME -- lookup first time and then save locally 
+            // Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+            // real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+            // real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+            // real muSolid=bulkSolidParams.dbase.get<real>("mu");
+            // real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+            // real cs=sqrt(muSolid/rhoSolid);
                     
 
-                        real zp=rhoSolid*cp;
-                        real zs=rhoSolid*cs;
-                        if( t<=3.*dt && debug() & 4  )
-                        {
-                            fPrintF(debugFile,"--INS-- PIV: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
-                                          rhoSolid,cp,cs,zp,zpOld,zs);
-              // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
-                        }
+            // real zp=rhoSolid*cp;
+            // real zs=rhoSolid*cs;
+            // if( t<=3.*dt && debug() & 4  )
+            // {
+            //   fPrintF(debugFile,"--INS-- PIV: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
+            //          rhoSolid,cp,cs,zp,zpOld,zs);
+            //   // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
+            // }
                         
-	    // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+	    // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
           	    
-            // fluid impedance = rho*H/dt 
-          	    assert( dt>0. );
-                        const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
-                        const real alpha = zf/(zf+zp);
+            // // fluid impedance = rho*H/dt 
+	    // assert( dt>0. );
+            // const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
+
+            // *NEW* June 29, 2018
+            // const real zf= (fluidDensity*mu)/(zp*dt);
+
+            // const real alpha = zf/(zf+zp);
+
                         const real theta = 0.5;
 
                         if( t<=3.*dt )
@@ -478,6 +487,7 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                         {
                             if( true )
                             {
+                // *wdh* newer version
                                 {
                                     assert( numberOfDimensions==2 );
                                     bool useHeavySolidLimit=false;
@@ -547,6 +557,8 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                       for( int it=0; it<numIts; it++ )
                                       {
                                           {
+                                              if( debug() & 2 )
+                                                  fPrintF(debugFile,"++ assign explicit AMP Velocity BCs at t=%.3e\n",t);
                       // twilight always needs the vertex: 
                                               bool vertexNeeded = !isRectangular || parameters.dbase.get<bool >("twilightZoneFlow");
                                               OV_GET_SERIAL_ARRAY(real,u,uLocal);
@@ -631,7 +643,9 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                                                             parameters.dbase.get<int >("tc"),
                                                                             side,
                                                                             axis,
-                                                                            knownSolution
+                                                                            knownSolution,
+                                                                            parameters.dbase.get<int>("addedMassVelocityBC"), // *wdh* June 24, 2018
+                                                                            correctionStage
                                               };
                                               real gravity[3];
                                               real rparam[]={dx[0],dx[1],dx[2],
@@ -651,7 +665,8 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                                                             thermalExpansivity,
                                                                             (real &)(parameters.dbase.get<OGFunction* >("exactSolution")), // pointer to TZ
                                                                             dt,
-                                                                            REAL_MIN
+                                                                            REAL_MIN,
+                                                                            fluidDensity
                                               };
                                               int ierr=0;
                                               int bcOption=0;
@@ -738,14 +753,14 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                     int i1,i2,i3;
                                     FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) {
                     // print
-                    // printF("*** (%d,%d,%d): \n",i1,i2,i3);
+                                        printF("***projectVelocityBulkSolid (i1,i2,i3)=(%d,%d,%d) zs=%.6e alpha=%.6e, mu=%.3e \n",i1,i2,i3,zs,alpha,mu);
                     // get metric terms
                                         rx  = RSXY (i1,i2,i3,0,0); ry  = RSXY (i1,i2,i3,0,1); sx  = RSXY (i1,i2,i3,1,0); sy  = RSXY (i1,i2,i3,1,1);
                                         rxr = RSXYR(i1,i2,i3,0,0); ryr = RSXYR(i1,i2,i3,0,1); sxr = RSXYR(i1,i2,i3,1,0); syr = RSXYR(i1,i2,i3,1,1);
                                         rxs = RSXYS(i1,i2,i3,0,0); rys = RSXYS(i1,i2,i3,0,1); sxs = RSXYS(i1,i2,i3,1,0); sys = RSXYS(i1,i2,i3,1,1);
                     // get normal
                                         n1 = normal(i1,i2,i3,0); n2 = normal(i1,i2,i3,1);
-                    // printF("  normal: (%f,%f)\n",n1,n2);
+                                        printF("  normal: (%f,%f)\n",n1,n2);
                     // printF("  (rx ,ry ,sx ,sy ) = (%f,%f,%f,%f)\n",rx ,ry ,sx ,sy );
                     // printF("  (rxr,ryr,sxr,syr) = (%f,%f,%f,%f)\n",rxr,ryr,sxr,syr);
                     // printF("  (rxs,rys,sxs,sys) = (%f,%f,%f,%f)\n",rxs,rys,sxs,sys);
@@ -787,6 +802,10 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                         ppy = ry*ppr+sy*pps;
                     // interior points
                                         v1I = uLocal(i1,i2+1,i3,uc); v2I = uLocal(i1,i2+1,i3,vc);
+                                        printF(" px,py=%.5e,%5e, old: ppx,ppy=%.5e,%.5e\n",px,py,ppx,ppy);
+                                        printF(" vSolid=%.5e,%5e, solidTraction=%.5e,%.5e\n",vSolidLocal(i1,i2,i3,0),vSolidLocal(i1,i2,i3,1),
+                                                                solidTraction(i1,i2,i3,0),solidTraction(i1,i2,i3,1));
+                                        printF("Old: uxx,uyy=%.5e,%5e, vxx,vyy=%.5e,%.5e\n",vp1xx,vp1yy,vp2xx,vp2yy);
                     // printF("v1I=%e, v2I=%e, v1r=%e, v2r=%e\n\n",v1I,v2I,v1r,v2r);
                     // form A and b
                     // x = [v1B, v2B, v1G, v2G]
@@ -975,7 +994,9 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                                                         +SQR(ry)*v2rr+ry*ryr*v2r+2*ry*sy*v2rs+ry*syr*v2s+rys*sy*v2r
                                                                         +SQR(sx)*v2ss+sx*sxs*v2s+SQR(sy)*v2ss+sy*sys*v2s)
                                             -g4;
-                    // printF("res1=%e, res2=%e, res3=%e, res4=%e \n",resEq1,resEq2,resEq3,resEq4);
+                                        printF("New: u,v=%e,%e, ghost=%e,%e\n",v1B,v2B,v1G,v2G);
+                                        printF("Old: u,v=%e,%e, ghost=%e,%e\n",uP(i1,i2,i3,uc),uP(i1,i2,i3,vc),uP(i1,i2-1,i3,uc),uP(i1,i2-1,i3,vc));
+                                        printF("res1=%e, res2=%e, res3=%e, res4=%e \n",resEq1,resEq2,resEq3,resEq4);
                     // printF("uFp=%e, uS=%e, uF=%e\n",uLocal(i1,i2,i3,uc),v1s,v1B);
                     // printF("vFp=%e, vS=%e, vF=%e\n",uLocal(i1,i2,i3,vc),v2s,v2B);
                     // assign
@@ -995,7 +1016,7 @@ projectInterfaceVelocity(const real & t, realMappedGridFunction & u,
                                     gridVelocityLocal(Ib1,Ib2,Ib3,1)= uLocal(Ib1,Ib2,Ib3,vc);
                   // check divergence
                   // check traction
-                  // OV_ABORT("stop here");
+                                    OV_ABORT("stop here for now");
                                 }
                             }
                             

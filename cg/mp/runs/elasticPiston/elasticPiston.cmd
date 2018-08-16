@@ -17,7 +17,7 @@
 # 
 $grid="deformingChannelGrid4.order2"; $domain1="fluidDomain"; $domain2="solidDomain";
 $method="ins"; $probeFile="probeFile"; $multiDomainAlgorithm=1;  $pi=0; $pOffset=0.; 
-$tFinal=20.; $tPlot=.1;  $cfl=.9; $show="";  $pdebug=0; $debug=0; $go="halt"; $cdv=""; 
+$tFinal=20.; $tPlot=.1;  $cfl=.9; $show="";  $pdebug=0; $debug=0; $go="halt"; $cdv=""; $cDt=""; 
 $muFluid=0.; $rhoFluid=1.4; $pFluid=1.; $TFluid=$pFluid/$rhoFluid; 
 $nu=.1; $rhoSolid=1.; $prandtl=.72; $cnsVariation="jameson"; $ktcFluid=-1.; $u0=0.; $xShock=-1.5; $uShock=1.25; 
 $p0=1.; 
@@ -26,17 +26,18 @@ $cnsGammaStiff=1.4; $cnsPStiff=0.;   # for stiffened EOS -- by default make it l
 $lambdaSolid=1.; $muSolid=1.;
 $thetad=0.; # rotation of domain (degrees)
 ## $stressRelaxation=1; $relaxAlpha=0.1; $relaxDelta=0.1; 
-# $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
-$stressRelaxation=0;  # *wdh* turn of stress-relaxation for testing TZ, may not be needed
-$displacementDissipation=0.; # for CgSm -- turn off for TZ
+$stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
+# $stressRelaxation=0;  # *wdh* turn off stress-relaxation for testing TZ
+## $displacementDissipation=0.; # for CgSm -- turn off for TZ
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
-## $diss=.2;   # 2nd-order linear dissipation for cgsm --> increase from .1 to .2 : July 2, 2017
-$diss=.0;   # TURN OFF FOR TZ *wdh* April 19, 2018
+$diss=.5;   # 2nd-order linear dissipation for cgsm 
+## $diss=.0;   # TURN OFF FOR TZ *wdh* April 19, 2018
 $smVariation = "g"; 
+$setGhostByExtrapolation=0; 
 $tsSM="modifiedEquationTimeStepping";
 $tz="none"; $degreeSpace=1; $degreeTime=1;
-$degreeSpaceSM=""; $degreeTimeSM=1;  # if set, use this as the degree for cgsm
+$degreeSpaceSM=""; $degreeTimeSM="";  # if set, use this as the degree for cgsm
 $gravity = "0 0. 0."; $boundaryPressureOffset=0.; $cnsGodunovOrder=2; 
 $fic = "uniform";  # fluid initial condition
 $backGround="outerSquare"; $deformingGrid="interface"; 
@@ -45,11 +46,13 @@ $ts="pc";   # MP solver
 $tsINS="pc"; # INS time-stepping method 
 $numberOfCorrections=1;  # cgmp and cgins 
 $coupled=0; $iTol=1.e-3; $iOmega=1.; $flushFrequency=10; $useNewInterfaceTransfer=0; 
-$useTP=0; # 1=use traditional partitioned scheme
+$useTP=0; # 1=use traditional partitioned scheme with sub-iterations
+$tol=1.e-3; $omega=.5; # for sub-iterations
 $projectMultiDomainInitialConditions=0; 
 $useNewTimeSteppingStartup=1;  # *NEW* July 1, 2017
 $freqFullUpdate=1; # frequency for using full ogen update in moving grids 
 $useExactPressureBC=0; # use exact RHS for pressure wall BC (variable used in insDomain.h)
+$useCurlFormOfTraction=0; # use div(v)=0 to alter viscous traction
 #
 $smoothInterface=0;  # smooth the interface (in DeformingBodyMotion.C )
 $numberOfInterfaceSmooths=4; 
@@ -71,7 +74,8 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; 
+$addedMass=0;  $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $zfMono=0.; 
+$addedMassLengthScale=1.; # default is 1 
 $useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 # $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
 $predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018
@@ -96,14 +100,17 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "useNewInterfaceTransfer=i"=>\$useNewInterfaceTransfer,"multiDomainAlgorithm=i"=>\$multiDomainAlgorithm,\
    "pi=i"=>\$pi,"xShock=f"=>\$xShock,"uShock=f"=>\$uShock,"bcOption=i"=>\$bcOption,"option=s"=>\$option,\
    "stressRelaxation=f"=>\$stressRelaxation,"relaxAlpha=f"=>\$relaxAlpha,"relaxDelta=f"=>\$relaxDelta,\
+   "displacementDissipation=f"=>\$displacementDissipation,\
    "p0=f"=>\$p0,"sideBC=s"=>\$sideBC,"iOmega=f"=>\$iOmega,"iTol=f"=>\$iTol,"addedMass=f"=>\$addedMass,\
    "projectInitialConditions=f"=>\$projectInitialConditions,"restart=s"=>\$restart,"append=i"=>\$append,\
    "projectMultiDomainInitialConditions=f"=>\$projectMultiDomainInitialConditions,"known=s"=>\$known,\
-   "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
-   "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
-   "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
+   "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,"cDt=f"=>\$cDt,\
+   "omega=f"=>\$omega,"tol=f"=>\$tol,"zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,"zfMono=f"=>\$zfMono,\
+   "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,"addedMassVelocityBC=i"=>\$addedMassVelocityBC,\
+   "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,"addedMassLengthScale=f"=>\$addedMassLengthScale,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
-   "dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,"useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve );
+   "useCurlFormOfTraction=i"=>\$useCurlFormOfTraction,"dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,\
+   "useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,"setGhostByExtrapolation=i"=>\$setGhostByExtrapolation );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -167,6 +174,9 @@ $moveCmds = \
   "      number of past time levels: $numberOfPastTimeLevels\n" . \
   "      smooth surface $smoothInterface \n" . \
   "      number of surface smooths: $numberOfInterfaceSmooths \n" . \
+  "      relax correction steps $useTP \n" . \
+  "      sub iteration convergence tolerance\n $tol \n" . \
+  "      added mass relaxation factor\n $omega\n" . \
   "     done\n" . \
   "     choose grids by share flag\n" . \
   "        100 \n" . \
@@ -208,8 +218,14 @@ $cmdKnown="bcNumber4=outflow, pressure(1.*p+0.*p.n=$p0), userDefinedBoundaryData
     " known solution\n" . \
     " exit \n" .\
     "done";
+# wdh: July 18, 2018 - use this to match Dan S.
+# $cmdKnown="bcNumber4=inflowWithPressureAndTangentialVelocityGiven";
+$cmdKnown="bcNumber4=inflowWithPressureAndTangentialVelocityGiven, userDefinedBoundaryData\n" . \
+    " known solution\n" . \
+    " exit \n" .\
+    "done";
 # TEST *wdh* May 7, 2018 Trouble with outflow at top for heavy solid, implicit time-stepping
-$cmdKnown="bcNumber4=dirichletBoundaryCondition";
+if( $known eq "shear" ){ $cmdKnown="bcNumber4=dirichletBoundaryCondition"; }
 # 
 # if( $option ne "beamUnderPressure" ){ $cmdRamp = "bcNumber3=outflow, pressure(1.*p+0.*p.n=$p0)"; }
 # $bc = $bc . "\n" . $cmdRamp;
@@ -242,9 +258,11 @@ $ic="OBTZ:user defined known solution\n" .\
 #     " done\n" .\
 #     "done"; 
 if( $tz ne "turn off twilight zone" ){ $ic="#"; }
+# For sub-time-step iterations: 
+$numberOfTimeStepCorrections=$numberOfCorrections; 
 #
 echo to terminal 0
-$extraCmds="check error on ghost\n 1";
+# $extraCmds="check error on ghost\n 1";
 include $ENV{CG}/mp/cmd/insDomain.h
 $extraCmds="#"; 
 echo to terminal 1
@@ -253,10 +271,11 @@ echo to terminal 1
 $domainName=$domain2; $solverName="solid"; 
 # $bcCommands="all=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
 # $bcCommands="all=displacementBC\n bcNumber2=slipWall\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
-$bcCommands="all=tractionBC\n bcNumber1=displacementBC\n bcNumber2=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
+## $bcCommands="all=tractionBC\n bcNumber1=displacementBC\n bcNumber2=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
 # -- slipWall on sides and displacement on bottom:
 if( $sideBC eq "dirichlet" ){ $sideBC = "dirichletBoundaryCondition"; }
 $bcCommands="all=displacementBC\n bcNumber1=$sideBC\n bcNumber2=$sideBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
+if( $known eq "shear" ){ $bcCommands="all=dirichletBoundaryCondition\n bcNumber1=$sideBC\n bcNumber2=$sideBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface";  }
 #  -- for noSlipWall's we use displacement on sides of solid
 if( $sideBC eq "noSlipWall" ){ $bcCommands="all=displacementBC\n  bcNumber100=tractionBC\n bcNumber100=tractionInterface"; }
 $exponent=10.; $x0=.5; $y0=.5; $z0=.5;  $rhoSolid=$rhoSolid*$scf; $lambda=$lambdaSolid*$scf; $mu=$muSolid*$scf; 
@@ -343,7 +362,8 @@ continue
         contour
           vertical scale factor 0.
            # ghost lines 1
-           plot:p
+           if( $known eq "shear" ){ $cmd="plot:u"; }else{ $cmd="plot:p"; }
+           $cmd
            ##  wire frame
           exit
         plot domain: solid
@@ -351,7 +371,8 @@ continue
           vertical scale factor 0.
           adjust grid for displacement 1
         exit
-        plot:solid : v2
+        if( $known eq "shear" ){ $cmd="plot:solid : v1"; }else{ $cmd="plot:solid : v2"; }
+        $cmd
         plot all
 $go
 

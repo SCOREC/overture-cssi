@@ -687,10 +687,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
+    const real & muFluid= rpar[15];
+    const real & muBar  = rpar[16];
 
     printF("--SM-- userDefinedKnownSolution: radialFibShear, t=%9.3e, "
 	   "rhoBar=%9.3e, muBar=%9.3e\n",t,rho,mu);
 
+    assert( mu==muBar );
+    
     assert( numberOfTimeDerivatives==0 );
 
 
@@ -712,7 +716,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
       // compute trig functions
       real cosTheta, sinTheta;
-      if( abs(r)>eps )
+      if( fabs(r)>eps )
         {
           cosTheta=x/r; sinTheta=y/r;
         }
@@ -733,6 +737,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       real ut,vt,at,srt,vtr;
       evalRadialFibShearSolid(ksr,ksi,omegar,omegai,cr,ci,r,t,
                               ut,vt,at,srt,vtr);
+
+      //  printF("--DS-- UDKS:RadialFibShear: ut=%e vt=%e srt=%e at=%e vtr=%e\n",ut,vt,srt,at,srt,vtr);
+
+      if( fabs(ut)>1e10 || fabs(vt)>1e10 || fabs(vtr)>1e10 || fabs(srt)>1e10 || ut!=ut || vt!=vt || srt!=srt )
+      {
+        printF("--SM-- UDKS:RadialFibShear: ERROR ut=%e vt=%e srt=%e\n",ut,vt,srt);
+        OV_ABORT("error");
+      }
 
       real u1 = -sinTheta*ut;
       real u2 =  cosTheta*ut;
@@ -763,7 +775,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
       
     }
-    // ::display(u(I1,I2,I3,v1c),"v1","%8.2e ");
+    // if( grid==1 )
+    //   ::display(u,sPrintF("--SM-- UDKS u t=%.2e",t),"%8.2e ");
 
   }
   else if (userKnownSolution=="fibCartWave") 

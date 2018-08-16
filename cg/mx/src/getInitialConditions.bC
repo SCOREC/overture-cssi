@@ -259,7 +259,7 @@ initializePlaneMaterialInterface()
   const real krNorm=sqrt( SQR(kr[0])+SQR(kr[1])+SQR(kr[2]) );
   assert( krNorm>0. );
 
-  printF("PMI:3d: kv=(%8.2e,%8.2e,%8.2e) nv=(%8.2e,%8.2e,%8.2e)\n",kv[0],kv[1],kv[2],nv[0],nv[1],nv[2]);
+  printF("PMI: kv=(%8.2e,%8.2e,%8.2e) nv=(%8.2e,%8.2e,%8.2e)\n",kv[0],kv[1],kv[2],nv[0],nv[1],nv[2]);
 
   // kappa: transmitted wave number
   //   kappa.t = k.t 
@@ -519,7 +519,7 @@ initializePlaneMaterialInterface()
 	      
 
       // -- dispersion model components --
-      if( dispersionModel != noDispersion )
+      if( localDispersionModel != noDispersion )
       {
         // *new way:
         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -543,7 +543,7 @@ initializePlaneMaterialInterface()
         UMEX(i1,i2,i3)=e(xe0,ye0,0.,ex,tE-dt);
         UMEY(i1,i2,i3)=e(xe0,ye0,0.,ey,tE-dt);
         // -- dispersion model components --
-        if( dispersionModel != noDispersion )
+        if( localDispersionModel != noDispersion )
         {
           for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
           {
@@ -629,7 +629,7 @@ initializePlaneMaterialInterface()
 
         }
       }
-      if( dispersionModel != noDispersion )
+      if( localDispersionModel != noDispersion )
       {
         // -- dispersion model components --
         FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -800,7 +800,7 @@ assignInitialConditions(int current, real t, real dt )
     //   printF("getInitialConditions:ERROR: initialConditionOption==planeWaveScatteredFieldInitialCondition "
     //          "not implemented for staggered grids yet in 3D.\n");
 
-      initializeKnownSolution();
+    initializeKnownSolution();
   }
   
 
@@ -925,6 +925,8 @@ assignInitialConditions(int current, real t, real dt )
       const int domain = cg.domainNumber(grid);
       const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
       const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+      // Each grid may or may not have dispersion model: 
+      const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
 
       // --- Get Arrays for the dispersive model ----
       realMappedGridFunction & pCur = getDispersionModelMappedGridFunction( grid,current );
@@ -1025,7 +1027,7 @@ assignInitialConditions(int current, real t, real dt )
 	    {
 	      if( method==nfdtd  ) 
 	      {
-		if( dispersionModel == noDispersion )
+		if( localDispersionModel == noDispersion )
 		{
 		  FOR_3D(i1,i2,i3,J1,J2,J3)
 		  {
@@ -1058,8 +1060,8 @@ assignInitialConditions(int current, real t, real dt )
 
                   // *new way*
                   assert( numberOfPolarizationVectors<10 );
-                  real psir[10],psii[10];
-		  dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                  real chir[10],chii[10],chiSumr,chiSumi;
+		  dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                   // omegaDpwRe=imS; omegaDpwIm=reS;
 		  // dmp.computeDispersivePlaneWaveParameters( c,eps,mu,kk, omegaDpwRe, omegaDpwIm );
 
@@ -1105,22 +1107,22 @@ assignInitialConditions(int current, real t, real dt )
 		    UMHZ(i1,i2,i3)=amph;
 
                     // -- POLARIZATION Vectors --
-                    if( dispersionModel != noDispersion  )
+                    if( localDispersionModel != noDispersion  )
                     {
                       // *new way:
                       //   E = Im( exp( i*k*x )* exp( i*si*t )* exp(sr*t) 
                       //   Er = cx*ct - sx*st
                       //   Ei = sx*ct + cx*st 
                       //     
-                      //   P = Im( psi(s) * E )  = Im( [psir + i*psii]*[ Er + i*Ei ] )
-                      //     = psir*Ei + psii*Er 
-                      //     = psir*(sx*ct + cx*st ) + psii*(cx*ct - sx*st) 
+                      //   P/eps = Im( chi(s) * E )  = Im( [chir + i*chii]*[ Er + i*Ei ] )
+                      //         = chir*Ei + chii*Er 
+                      //         = chir*(sx*ct + cx*st ) + chii*(cx*ct - sx*st) 
                       for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                       {
                         const int pc= iv*numberOfDimensions;
 
-                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
-                        real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
+                        real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
+                        real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
 
        
                         // Do this for now -- set all vectors to be the same: 
@@ -1293,7 +1295,7 @@ assignInitialConditions(int current, real t, real dt )
 	      {
 		if( method==nfdtd )
 		{
-                  if( dispersionModel == noDispersion )
+                  if( localDispersionModel == noDispersion )
                   {
                     FOR_3D(i1,i2,i3,J1,J2,J3)
                     {
@@ -1323,8 +1325,8 @@ assignInitialConditions(int current, real t, real dt )
                     const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                     real sr, si;
                     assert( numberOfPolarizationVectors<10 );
-                    real psir[10],psii[10];
-                    dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                    real chir[10],chii[10],chiSumr,chiSumi;
+                    dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
 
                     printF("--MX--GIC : Plane-wave initial-condition: dispersion: s=(%12.4e,%12.4e)\n",sr,si);
 
@@ -1367,10 +1369,10 @@ assignInitialConditions(int current, real t, real dt )
                       {
                         const int pc= iv*numberOfDimensions;
 
-                        // real ampm=(psir[iv]*ctm-psii[iv]*stm)*cx - (psir[iv]*stm+psii[iv]*ctm)*sx;
-                        // real amp =(psir[iv]*ct -psii[iv]*st )*cx - (psir[iv]*st +psii[iv]*ct )*sx;
-                        real ampm=(psir[iv]*ctm-psii[iv]*stm)*sx + (psir[iv]*stm+psii[iv]*ctm)*cx;
-                        real amp =(psir[iv]*ct -psii[iv]*st )*sx + (psir[iv]*st +psii[iv]*ct )*cx;
+                        // real ampm=(chir[iv]*ctm-chii[iv]*stm)*cx - (chir[iv]*stm+chii[iv]*ctm)*sx;
+                        // real amp =(chir[iv]*ct -chii[iv]*st )*cx - (chir[iv]*st +chii[iv]*ct )*sx;
+                        real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
+                        real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
        
                         // Do this for now -- set all vectors to be the same: 
                         pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
@@ -1784,7 +1786,7 @@ assignInitialConditions(int current, real t, real dt )
 	      }
 
               // -- dispersion model components --
-	      if( dispersionModel!=noDispersion )
+	      if( localDispersionModel!=noDispersion )
 	      {
 		FOR_3(i1,i2,i3,J1,J2,J3)
 		{
@@ -1839,7 +1841,7 @@ assignInitialConditions(int current, real t, real dt )
 		  // UMEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xde)*cos(fy*yde)*sin(omega*(t-dt));  // Ey.t = - Hz.x
 		}
 
-		if( dispersionModel!=noDispersion )
+		if( localDispersionModel!=noDispersion )
 		{
 		  FOR_3(i1,i2,i3,J1,J2,J3)
 		  {
@@ -1887,7 +1889,7 @@ assignInitialConditions(int current, real t, real dt )
 		// UMEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*cos(omega*(t-dt));  // 
 	      }
               // -- dispersion model components --
-	      if( dispersionModel!=noDispersion )
+	      if( localDispersionModel!=noDispersion )
 	      {
 		FOR_3(i1,i2,i3,J1,J2,J3)
 		{
@@ -1988,7 +1990,7 @@ assignInitialConditions(int current, real t, real dt )
 	      }
 
               // -- dispersion model components --
-	      if( dispersionModel!=noDispersion )
+	      if( localDispersionModel!=noDispersion )
 	      {
 		FOR_3(i1,i2,i3,J1,J2,J3)
 		{
@@ -2062,7 +2064,7 @@ assignInitialConditions(int current, real t, real dt )
 		  uLocal(i1,i2,i3,ezt) =  (-omega*a3/fz)*sin(fx*xde)*sin(fy*yde)*cos(fz*zde)*sin(omega*t);  
 		}
                 // -- dispersion model components --
-                if( dispersionModel!=noDispersion )
+                if( localDispersionModel!=noDispersion )
                 {
                   for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                   {
@@ -2199,7 +2201,7 @@ assignInitialConditions(int current, real t, real dt )
 	      }
 
               // -- dispersion model components --
-	      if( dispersionModel!=noDispersion )
+	      if( localDispersionModel!=noDispersion )
 	      {
                 if( numberOfPolarizationVectors>1 )
                 {
@@ -2248,7 +2250,7 @@ assignInitialConditions(int current, real t, real dt )
 		  }
 
 		  // -- dispersion model components --
-		  if( dispersionModel!=noDispersion )
+		  if( localDispersionModel!=noDispersion )
 		  {
 
                     if( numberOfPolarizationVectors>1 )
@@ -2595,15 +2597,6 @@ initializeKnownSolution()
 //      return;
 //    }
 
-  // const real a=.5;  // radius of the cylinder or sphere
-  const real a = dbase.get<real>("scatteringRadius"); // radius of the cylinder or sphere *wdh* 2015/07/03
-  real cr = 1.;  // c1/c2 (c2=inside)
-  int computeIncident=0;  // set to 1 to compute incident wave too 
-  real rpar[] = {twoPi*kx,a,cr}; //
-  int option=0;  // 0=PEC cylinder, 1=di-electric
-  int inOut=0;   // 0=exterior, 1=interior to the dielectric
-  int staggeredGrid = method==yee ? 1 : 0;
-  int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug}; //
 
   int numberOfComponents=3;
   if( cg.numberOfDimensions()==3 && solveForMagneticField )
@@ -2611,6 +2604,140 @@ initializeKnownSolution()
     numberOfComponents=6;
   }
   
+
+  // ------ Compute the index of refraction for scattering problems ------
+  const int gridLeft = 0;
+  const int gridRight=cg.numberOfComponentGrids()-1;
+
+  real c1,c2,eps1,eps2,mu1,mu2;
+  if( method==yee )
+  {
+    eps1=epsv(gridLeft);  mu1=muv(gridLeft);    // incident 
+    eps2=epsv(gridRight); mu2=muv(gridRight);   // transmitted
+  }
+  else
+  {
+    eps1=epsGrid(gridLeft);  mu1=muGrid(gridLeft); // incident
+    eps2=epsGrid(gridRight); mu2=muGrid(gridRight); // transmitted
+
+  }
+  c1=1./sqrt(eps1*mu1);  // incident 
+  c2=1./sqrt(eps2*mu2);  // transmitted
+
+  // Index of refraction: m = mr + I*mi 
+  real mr,mi;
+  mr = c1/c2;
+  mi = 0.;
+  
+  // epsHat = eps0*( 1+chi(s) )
+  real epsHat1r=eps1, epsHat1i=0.;
+  real epsHat2r=eps2, epsHat2i=0.;
+  real sr=0., si=0;
+
+  if( dispersionModel!=noDispersion &&
+      (knownSolutionOption==scatteringFromADielectricDiskKnownSolution ||
+       knownSolutionOption==scatteringFromADielectricSphereKnownSolution) )
+  {
+    // ---- Scattering from a DISPERSIVE dielectric disk or sphere ----
+    // COMPUTE the COMPLEX INDEX OF REFRACTION
+    //
+    //     m = mr + i*mi = sqrt{ mu_d eps_d (1+ chi_d(s) ) / mu_0 eps_0 (1+chi_0(s) ) }
+    // 
+    // chi = electric susceptibility = psi/eps = alphaP*pshi 
+
+    real kxr, kxi, kyr, kyi;        // Incident wave number (complex)
+    real kxpr, kxpi, kypr, kypi;    // Transmitted wave number
+  
+    real chi1r[10],chi1i[10];
+    real chi2r[10],chi2i[10];
+
+    real chiSum1r=0.,chiSum1i=0;
+    real chiSum2r=0.,chiSum2i=0;
+ 
+
+    int domain=0;
+    DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain);
+    const int & numberOfPolarizationVectors1=dmp1.numberOfPolarizationVectors;
+    assert( numberOfPolarizationVectors1<10 );
+
+    kxr=twoPi*kx; kxi=0.; kyr=twoPi*ky; kyi=0.;  // Incident wave number (complex)
+
+    const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz );   
+    dmp1.evaluateDispersionRelation( c1,kk, sr, si, chi1r,chi1i,chiSum1r,chiSum1i ); 
+
+    // // Save the "sum" of the chi's times alphaP --> susceptibility chi 
+    // chiSum1r=0.; chiSum1i=0;
+    // for( int iv=0; iv<dmp1.numberOfPolarizationVectors; iv++ )
+    // {
+    //   chiSum1r += chi1r[iv];
+    //   chiSum1i += chi1i[iv];
+    // }
+    // chiSum1r *= dmp1.alphaP;
+    // chiSum1i *= dmp1.alphaP;
+        
+    // -- -right domain --
+    domain=1;
+    DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain);
+    const int & numberOfPolarizationVectors2=dmp2.numberOfPolarizationVectors;
+    assert( numberOfPolarizationVectors2<10 );
+   
+    real kr,ki;
+    dmp2.evaluateComplexWaveNumber( c2,sr,si, kr,ki, chi2r,chi2i,chiSum2r,chiSum2i );
+   
+    // if( false && t<3.*dt )
+    // {
+    //   printF("\n --UDKS:DPWI-- t=%10.4e, grid=%i, s=(%16.10e,%16.10e) kx=(%16.10e,%16.10e) ky=(%16.10e,%16.10e) -> k2=(kr,ki)=(%16.10e,%16.10e) kxp=(%16.10e,%16.10e) kyp=(%16.10e,%16.10e)\n"
+    //          ,t,grid,sr,si,kxr,kxi,kyr,kyi,kr,ki,kxpr,kxpi,kypr,kypi);
+    //   printF("    chi1=(%16.10e,%16.10e), chi2=(%16.10e,%16.10e) \n",chi1r[0],chi1i[0],chi2r[0],chi2i[0]);
+      
+    // }
+
+    // // Save the "sum" of the chi's  times alphaP
+    // chiSum2r=0.; chiSum2i=0;
+    // for( int iv=0; iv<dmp2.numberOfPolarizationVectors; iv++ )
+    // {
+    //   chiSum2r += chi2r[iv];
+    //   chiSum2i += chi2i[iv];
+    // }
+    // chiSum2r *= dmp2.alphaP;
+    // chiSum2i *= dmp2.alphaP;
+    
+    //     m = mr + i*mi = sqrt{ mu_d eps_d (1+ Chi_d(s) ) / mu_0 eps_0 (1+Chi_0(s) ) }
+    dmp2.evaluateComplexIndexOfRefraction( mu1,eps1,chiSum1r,chiSum1i, mu2,eps2,chiSum2r,chiSum2i, mr,mi );
+
+
+    // real chi1r=chiSum1r, chi1i=chiSum1i;
+    epsHat1r = eps1*(1.+chiSum1r );
+    epsHat1i = eps1*(   chiSum1i );
+    
+    // real chi2r=chiSum2r, chi2i=chiSum2i;
+    epsHat2r = eps2*(1.+chiSum2r );
+    epsHat2i = eps2*(   chiSum2i );
+    
+
+    if( true )
+    {
+      printF("\n @@@@@@ Dispersive dielectric: Complex refractive index=(%.4e,%.4e) @@@@@@ \n\n",mr,mi);
+      printF("   epsHat1=(%e,%e) epsHat2=(%e,%e)\n",epsHat1r,epsHat1i,epsHat2r,epsHat2i);
+      
+    }
+    
+  
+
+  }
+  
+  // ------ Parameters for scattering from a cylinder (PEC or dielectric) or sphere (PEC or dielectric) --------
+  const real a = dbase.get<real>("scatteringRadius"); // radius of the cylinder or sphere *wdh* 2015/07/03
+  // Index of refraction m=c1/c2 (c2=inside)
+  //  m is complex for dispersive materials
+  real cr = mr;  // c1/c2 (c2=inside)
+  int computeIncident=0;  // set to 1 to compute incident wave too 
+  real rpar[] = {twoPi*kx,a, mr,mi, sr,si, epsHat1r,epsHat1i,epsHat2r,epsHat2i}; //
+  int option=0;  // 0=PEC cylinder, 1=di-electric
+  int inOut=0;   // 0=exterior, 1=interior to the dielectric
+  int staggeredGrid = method==yee ? 1 : 0;
+  int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug,dispersionModel}; //
+
 
   Index I1,I2,I3;
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -2637,6 +2764,13 @@ initializeKnownSolution()
     const realSerialArray & xy = mg.center();
 #endif
 
+    // --- Lookup info for the dispersion model ---
+    const int domain = cg.domainNumber(grid);
+    const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+    const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+    // Each grid may or may not have dispersion model: 
+    const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+
     if( method==yee &&
         (knownSolutionOption==scatteringFromADielectricDiskKnownSolution ||
 	 knownSolutionOption==scatteringFromADielectricSphereKnownSolution) )
@@ -2649,8 +2783,8 @@ initializeKnownSolution()
       assert( numberOfMaterialRegions==2 );
       option=1;  ipar[6]=option; // 1=dielectric 
 
-      // rpar[2] = sqrt(epsGrid(2)/epsGrid(0)); // c1/c2 (c2=inside)
-      rpar[2] = sqrt( epsv(1)/epsv(0) );
+      // Set above now:  *wdh* June 11, 2018
+      // rpar[2] = sqrt( epsv(1)/epsv(0) );
 
       if( cg.numberOfDimensions()==2 )
       { 
@@ -2803,8 +2937,11 @@ initializeKnownSolution()
 	{
           // -- dielectric cylinder --
   	  rpar[1] =.4;  // radius for dielectric cyl
-	  cr = cGrid(0)/cGrid(cg.numberOfComponentGrids()-1); // c1/c2 (c2=inside)
-	  rpar[2] = cr;
+
+          // Set above now:  *wdh* June 11, 2018
+	  // cr = cGrid(0)/cGrid(cg.numberOfComponentGrids()-1); // c1/c2 (c2=inside)
+	  // rpar[2] = cr;
+
 	  if( cg.numberOfDomains()>1 )
             ipar[7]= cg.domainNumber(grid);    // new way 
 	  else
@@ -2814,8 +2951,11 @@ initializeKnownSolution()
 	{
           // -- dielectric sphere --
 	  rpar[1] =1.;  // radius for dielectric sphere 
-	  cr = cGrid(0)/cGrid(cg.numberOfComponentGrids()-1); // c1/c2 (c2=inside)
-	  rpar[2] = cr;
+
+          // Set above now:  *wdh* June 11, 2018
+	  // cr = cGrid(0)/cGrid(cg.numberOfComponentGrids()-1); // c1/c2 (c2=inside)
+	  // rpar[2] = cr;
+
           // ipar[7]= grid<=2 ? 0 : 1;       // assume 3 grids on the outside (fix me!)
           ipar[7]= cg.domainNumber(grid);    // new way domain=0 : outside, 1=inside 
           ipar[8]=1;  // compute incident field

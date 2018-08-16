@@ -21,19 +21,19 @@
 #include "HDF_DataBase.h"
 
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3) \
-int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
 
-#define FOR_3(i1,i2,i3,I1,I2,I3) \
-I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
-I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+#define FOR_3(i1,i2,i3,I1,I2,I3)                                        \
+I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();    \
+I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound();   \
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
 
 // -- limit the number of times certain warnings are printed:
 static const int maxExceedsWarnings=20;
@@ -353,8 +353,49 @@ getMaximumRelativeCorrection() const
 bool MovingGrids::
 getCorrectionHasConverged()
 {
+
+  if( false )
+  {
+    printF("--MovingGrids::getCorrectionHasConverged: correctionHasConverged=%i\n",
+           correctionHasConverged);
+  }
+  
   return correctionHasConverged;
 }
+
+// =================================================================================
+/// \brief Set the flag that indicates that sub-time-step iterations have converged
+///   or not.
+// =================================================================================
+void MovingGrids::
+setCorrectionHasConverged( bool trueOrFalse )
+{
+  correctionHasConverged=trueOrFalse;
+}
+
+
+// ===========================================================================================
+/// \brief return true if component grid number "grid" is a deforming bulk solid
+// ===========================================================================================
+bool MovingGrids::
+isDeformingBulkSolid( int grid ) 
+{
+  bool returnValue=false;
+  for( int body=0; body<getNumberOfDeformingBodies(); body++ )
+  {
+    DeformingBodyMotion & deform = getDeformingBody(body);
+    if( deform.isBulkSolidModel() )
+    {
+      returnValue=true;
+      break;
+    }
+  }
+
+  return returnValue;
+}
+
+
+
 
 //\begin{>>MovingGridsSolverInclude.tex}{\subsection{isMovingGridProblem}} 
 bool MovingGrids::
@@ -1963,6 +2004,9 @@ correctGrids(const real t1,
       maximumRelativeCorrection = max(maximumRelativeCorrection,deformingBodyList[b]->getMaximumRelativeCorrection());
       correctionHasConverged = correctionHasConverged && deformingBodyList[b]->hasCorrectionConverged();
     }  
+    if( false )
+      printF("--MovingGrids::correctGrids: numberOfDeformingBodies=%i, correctionHasConverged=%i\n",
+             numberOfDeformingBodies,correctionHasConverged);
   }
   
   if( recomputeGridVelocityOnCorrection ) 

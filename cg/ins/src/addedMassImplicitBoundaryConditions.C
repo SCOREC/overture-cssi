@@ -11,8 +11,6 @@
 #include "Interface.h"
 #include "DeformingBodyMotion.h"
 
-
-
 #define ForBoundary(side,axis)   for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) for( int side=0; side<=1; side++ )
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
@@ -55,6 +53,115 @@
 //  where     P = (alpha-1) n n^T 
 // ===============================================================================================
 
+
+// ======================================================================================
+/// \brief Return some parameters for the AMP bulk solid interface conditions
+/// \param grid,side,axis,dt (input):
+/// \param zs,zp,zf,alpha (output) :
+// ======================================================================================
+int Cgins::
+getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, const int axis, const real dt,
+                                                      real & zs, real & zp, real & zf, real & alpha ) 
+{
+    Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+    real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+    real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+    real muSolid=bulkSolidParams.dbase.get<real>("mu");
+    real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+    real cs=sqrt(muSolid/rhoSolid);
+                    
+    zp=rhoSolid*cp;
+    zs=rhoSolid*cs;
+  // fluid impedance = rho*H/dt 
+    const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+    assert( dt>0. && fluidDensity>0. );
+
+    const real nu = parameters.dbase.get<real>("nu");
+    const real mu = parameters.dbase.get<real >("mu");
+    assert( fabs(fluidDensity*nu/mu-1.) < REAL_EPSILON*100. );
+
+    const real fluidAddedMassLengthScale =  parameters.dbase.get<real>("fluidAddedMassLengthScale");
+    const real zfOld=fluidDensity*fluidAddedMassLengthScale/dt; 
+
+    const real zfNew = 2.*(fluidDensity*mu)/(zp*dt);
+
+  // Need dn -- grid spacing in the normal direction. 
+
+    bool useFluidImpedanceMuByH=false;  // ++++++++++++++++++++++++++   TEST ++++++++++++++
+
+    const real & zfMuByH = parameters.dbase.get<real>("zfMuByH");  
+    const real & zfMono = parameters.dbase.get<real>("zfMono");  
+    const real & zfMuRhoByZpDt = parameters.dbase.get<real>("zfMuRhoByZpDt");  
+
+    real zfmu=1.,dn=1.;
+
+    bool useMonolithicImpedance=zfMono>0.; // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    real zfm=1.;
+    if( true || useFluidImpedanceMuByH || useMonolithicImpedance )
+    {
+    //  --------------- Compute the normal distance of the first grid line  ---------------------
+    //   *** SAVE THIS VALUE TO AVOID RECOMPUTING ****
+        parameters.getNormalGridSpacing( mg,side,axis, dn );
+        zfmu = zfMuByH*mu/dn; 
+
+
+    // --- Impedance from the monolithic algorithm ---
+        real rho = fluidDensity;
+
+        const int axisp1 = (axis + 1) % mg.numberOfDimensions();
+        const real ds = mg.gridSpacing(axisp1);  
+
+        real k = 1./dn;
+    // real k = 1./(2.*ds);
+
+        real beta=sqrt( rho/(mu*dt) + k*k );
+        zfm = (rho*rho + ( rho*beta*zp + 4.*rho*mu*k*k )*dt - ( 4.*(beta-k)*mu*mu*k*k*k )*dt*dt )/( (rho+ zp*dt*(beta-k) )*dt*k );
+        
+        printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
+                      rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
+    
+    }
+    
+
+    bool useNew=true;  // ************
+    if( useMonolithicImpedance )
+    {
+        zf = zfMono*zfm;
+    }
+    else if( useFluidImpedanceMuByH )
+    {
+        zf=zfmu;
+    }
+    else
+    {
+      
+        if( useNew )
+        {
+      // -- new way ---
+            zf=zfNew;
+        }
+        else
+        {
+            zf=zfOld;
+        }
+    }
+    
+    alpha = zf/(zf+zp);
+
+    if( debug() & 2 )
+    {
+        FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+        fPrintF(debugFile,"GGGGGG getBulkSolidAmpParameters: useFluidImpedanceMuByH=%i, useNew=%i, zfOld=rho*L/dt = %.2e  zfNew=2*(rho*mu)/(zp*dt) = %.2e, zfmu=(%.2e)*mu/h=%.2e, alpha=%.2e "
+                        " rho=%.2e mu=%.2e zp=%.2e dt=%.2e, zf=%.2e\n",(int)useFluidImpedanceMuByH,(int)useNew,zfOld,zfNew,
+                        zfMuByH,zfmu,alpha,fluidDensity,mu,zp,dt,zf);
+
+    }
+    return 0;
+}
+
+
+
 int Cgins::
 addedMassImplicitBoundaryConditions(int option, 
                                                                         realMappedGridFunction & u, 
@@ -66,7 +173,7 @@ addedMassImplicitBoundaryConditions(int option,
                                                                         int grid, 
                                                                         real dt0 )
 // ======================================================================================
-// \brief Assign the right-hand side (or eval the residuals) to the Added-Mass Implicit Boundary conditions
+/// \brief Assign the right-hand side (or eval the residuals) to the Added-Mass Implicit Boundary conditions
 ///       for INS + BULK ELASTIC SOLID
 ///
 /// \param option (input/output) : 
@@ -130,6 +237,9 @@ addedMassImplicitBoundaryConditions(int option,
     
     const real nu = parameters.dbase.get<real>("nu");
     const real rho = parameters.dbase.get<real>("rho");
+    const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+    assert( rho==fluidDensity );
+    
     const real mu = rho*nu;
     const real implicitFactor = parameters.dbase.get<real >("implicitFactor");
     const real theta = implicitFactor;
@@ -137,6 +247,13 @@ addedMassImplicitBoundaryConditions(int option,
     const bool & projectNormalComponentOfAddedMassVelocity =
                               parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
     const bool & projectVelocityOnBeamEnds = parameters.dbase.get<bool>("projectVelocityOnBeamEnds"); 
+
+    const int addedMassVelocityBC = parameters.dbase.get<int>("addedMassVelocityBC");
+    const int correctionStage = parameters.dbase.get<int>("correctionStage");
+    real pcSwitch = correctionStage>0 ? 1. : 0.;
+
+    pcSwitch=0.;
+    
 
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
@@ -170,288 +287,64 @@ addedMassImplicitBoundaryConditions(int option,
     const Parameters::KnownSolutionsEnum & knownSolution = 
         parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution"); 
 
-    if( !parameters.gridIsMoving(grid) )
-    {
-    // ---- this is a test run using non-moving grids ----
-        ForBoundary(side,axis)
-        {
-            if( mg.boundaryCondition(side,axis)==Parameters::noSlipWall )
-            {
-                printF(" XXXX addedMassImplicitBoundaryConditions: TEST RUN using non-moving grids XXXX \n\n");
+  // if( FALSE && !parameters.gridIsMoving(grid) )
+  // {
+  //   // ---- this is a test run using non-moving grids ----
+  //   ForBoundary(side,axis)
+  //   {
+  //     if( mg.boundaryCondition(side,axis)==Parameters::noSlipWall )
+  //     {
+  //       printF(" XXXX addedMassImplicitBoundaryConditions: TEST RUN using non-moving grids XXXX \n\n");
 
-                applied=1;  // we have applied an AMP BC
+  //       applied=1;  // we have applied an AMP BC
 
-                Index Ib1,Ib2,Ib3, Ig1,Ig2,Ig3, Ip1,Ip2,Ip3;
-                getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-                getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,+1);  // first ghost line 
+  //       Index Ib1,Ib2,Ib3, Ig1,Ig2,Ig3, Ip1,Ip2,Ip3;
+  //       getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+  //       getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,+1);  // first ghost line 
 
-                RealArray solidTraction(Ib1,Ib2,Ib3,numberOfDimensions), vSolidLocal(Ib1,Ib2,Ib3,numberOfDimensions);
+  //       RealArray solidTraction(Ib1,Ib2,Ib3,numberOfDimensions), vSolidLocal(Ib1,Ib2,Ib3,numberOfDimensions);
 
-        // Do this for now
-                real zf=1., zp=1., zs=1., alpha=.5; // defaults when tetsing cgins alone
-                solidTraction=0.;
-                vSolidLocal=0.;
+  //       // Do this for now
+  //       real zf=1., zp=1., zs=1., alpha=.5; // defaults when tetsing cgins alone
+  //       solidTraction=0.;
+  //       vSolidLocal=0.;
 
-                OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
-                OV_GET_SERIAL_ARRAY(real,uOld,uOldLocal);
+  //       OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
+  //       OV_GET_SERIAL_ARRAY(real,uOld,uOldLocal);
                 
-                if( projectNormalComponentOfAddedMassVelocity )
-                    mg.update(MappedGrid::THEvertexBoundaryNormal);
+  //       if( projectNormalComponentOfAddedMassVelocity )
+  //         mg.update(MappedGrid::THEvertexBoundaryNormal);
 
-                OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);         
+  //       OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);         
 
-        // evaluate the right-hand-side to the AMP velocity BCs
-                {
-                    if( debug() & 4 || t<=3.*dt ) 
-                        fPrintF(debugFile,"--INS-- AMP-BC-IMP FOR BULK SOLID MODEL, t=%9.3e dt=%9.3e zf=%9.3e zp=%9.3e zs=%9.3e "
-                                      "alpha=%9.2e **new**\n",t,dt,zf,zp,zs,alpha);
-                    if( predictedBoundaryPressureNeeded==0 )
-                    {
-                        printF("--INS-- AMP-BC-IMP FOR BULK SOLID MODEL: ERROR: predicted pressure near boundary needed but "
-                                      "predictedBoundaryPressureNeeded=0 !\n");
-                        OV_ABORT("error");
-                    }
-                    OV_GET_SERIAL_ARRAY(real,gridVelocity,gridVelocityLocal);
-                    real maxDiff = max(fabs(gridVelocityLocal(Ib1,Ib2,Ib3,Rx)-vSolidLocal(Ib1,Ib2,Ib3,Rx)));
-                    printF("--INS--AMP-IMP-BC: t=%.3e, max diff [gridVelocity - vSolidLocal] =%.2e\n",t,maxDiff);
-                    const real beta = (mu*theta*dt/rho);
-          // -- evaluate derivatives that appear in the INS equations ---       
-                    MappedGridOperators & opOld = *(uOld.getOperators()); 
-                    realSerialArray uOldxx(Ib1,Ib2,Ib3,V), uOldyy(Ib1,Ib2,Ib3,V);
-                    realSerialArray pOldx(Ib1,Ib2,Ib3), pOldy(Ib1,Ib2,Ib3), pOldz;
-                    opOld.derivative(MappedGridOperators::xxDerivative ,uOldLocal,uOldxx,Ib1,Ib2,Ib3,V);
-                    opOld.derivative(MappedGridOperators::yyDerivative ,uOldLocal,uOldyy,Ib1,Ib2,Ib3,V);
-                    opOld.derivative(MappedGridOperators::xDerivative ,uOldLocal,pOldx,Ib1,Ib2,Ib3,pc);
-                    opOld.derivative(MappedGridOperators::yDerivative ,uOldLocal,pOldy,Ib1,Ib2,Ib3,pc);
-                    if( numberOfDimensions==3 )
-                    {
-                        pOldz.redim(Ib1,Ib2,Ib3);
-                        opOld.derivative(MappedGridOperators::zDerivative ,uOldLocal,pOldz,Ib1,Ib2,Ib3,pc);
-                    }
-          // -- We assume a predicted value for "p" at the new time
-                    MappedGridOperators & op = *(u.getOperators()); 
-                    realSerialArray px(Ib1,Ib2,Ib3), py(Ib1,Ib2,Ib3),pz;
-                    op.derivative(MappedGridOperators::xDerivative ,uLocal,px,Ib1,Ib2,Ib3,pc);
-                    op.derivative(MappedGridOperators::yDerivative ,uLocal,py,Ib1,Ib2,Ib3,pc);
-                    if( numberOfDimensions==3 )
-                    {
-                        pz.redim(Ib1,Ib2,Ib3);
-                        op.derivative(MappedGridOperators::zDerivative ,uLocal,pz,Ib1,Ib2,Ib3,pc);
-                    }
-                    RealArray delta(3,3); // Dirac delta
-                    delta=0.; delta(0,0)=1.; delta(1,1)=1.; delta(2,2)=1.;
-                    RealArray solidChar(Ib1,Ib2,Ib3,Rx);   // solid characteristic variable 
-                    RealArray fluidRhs(Ib1,Ib2,Ib3,Rx);    // fluid interior update without implicit viscous term
-          // Solid characteristic variable used in the RHS 
-          // Use MINUS of solid traction since the solid normal is in the opposite direction to the fluid
-                    solidChar(Ib1,Ib2,Ib3,Rx) = -solidTraction(Ib1,Ib2,Ib3,Rx) + zs*vSolidLocal(Ib1,Ib2,Ib3,Rx);
-                    if( debug() & 4 )
-                    {
-                        ::display(solidChar,"--INS-- IMP-AMP-V-BC: solid-characteristic: sigmas.nv + zs*vs",debugFile,"%.3e ");
-                    }
-          // fluidRhs(Ib1,Ib2,Ib3,dir) = fluid interior update without implicit viscous term 
-                    for( int dir=0; dir<numberOfDimensions; dir++ )
-                    {
-            // pd = px, py or pz 
-                        RealArray & pd    = dir==0 ? px    : dir==1? py    : pz;
-                        RealArray & pOldd = dir==0 ? pOldx : dir==1? pOldy : pOldz;
-            // fluidRhs = v^{n-1} - (theta*dt/rho)*grad(p)^n + ((1-theta)*dt/rho)*( -grad(p)^{n-1} + mu*Delta(v)^{n-1} )
-                        fluidRhs(Ib1,Ib2,Ib3,dir)= uOldLocal(Ib1,Ib2,Ib3,uc+dir) 
-                            + (-implicitFactor*dt/rho)*( pd(Ib1,Ib2,Ib3) )
-                            + ((1.-implicitFactor)*dt/rho)*( 
-                                        mu*( uOldxx(Ib1,Ib2,Ib3,uc+dir)+uOldyy(Ib1,Ib2,Ib3,uc+dir) ) - pOldd(Ib1,Ib2,Ib3) 
-                                                                                          );
-                    }
-                    if( twilightZoneFlow )
-                    {
-            // ------- ADD TWILIGHT ZONE --------
-                        OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                        const bool rectangular=false;
-                        OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-                        if( debug() & 4 )
-                        {
-                            RealArray pex(Ib1,Ib2,Ib3), pey(Ib1,Ib2,Ib3);
-                            e.gd( pex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,pc,t); // t=new time 
-                            e.gd( pey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,pc,t); // t=new time 
-                            real maxErrPx = max(fabs(px-pex));
-                            real maxErrPy = max(fabs(py-pey));
-                            fprintf(debugFile,">>>INS IMP-AMP-V-BC: error in predicted (px,py)=(%9.3e,%9.3e) at t=%9.3e\n",maxErrPx,maxErrPy,t);
-                            ::display(fabs(px-pex),"error in px",debugFile,"%8.2e ");
-                            ::display(fabs(py-pey),"error in py",debugFile,"%8.2e ");
-                        }
-                        realSerialArray ue(Ib1,Ib2,Ib3,V), uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V);
-                        RealArray tractione(Ib1,Ib2,Ib3,Rx);
-                        e.gd( ue  ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t); // t=new time 
-                        e.gd( uex ,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t); 
-                        e.gd( uey ,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t); 
-            // tau_ij = mu*( partial_j u_i + partial_i u_j )
-                        if( numberOfDimensions==2 )
-                        {
-              // ====== Get traction in two dimensions =====
-                            RealArray taue(Ib1,Ib2,Ib3,3); // hold viscous stress tensor tau
-                            taue(Ib1,Ib2,Ib3,0) = (2.*mu)*( uex(Ib1,Ib2,Ib3,uc) );                        // tau_11
-                            taue(Ib1,Ib2,Ib3,1) = (   mu)*( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) );  // tau_12 = tau_21
-                            taue(Ib1,Ib2,Ib3,2) = (2.*mu)*( uey(Ib1,Ib2,Ib3,vc) );                        // tau_22
-              //  t1 = tau11*n1 + tau12*n2 
-                            tractione(Ib1,Ib2,Ib3,0) = taue(Ib1,Ib2,Ib3,0)*normal(Ib1,Ib2,Ib3,0) + taue(Ib1,Ib2,Ib3,1)*normal(Ib1,Ib2,Ib3,1);
-              //  t2 = tau21*n1 + tau22*n2 
-                            tractione(Ib1,Ib2,Ib3,1) = taue(Ib1,Ib2,Ib3,1)*normal(Ib1,Ib2,Ib3,0) + taue(Ib1,Ib2,Ib3,2)*normal(Ib1,Ib2,Ib3,1);
-                        }
-                        else 
-                        {
-              // ====== Get traction in three dimensions =====
-                            RealArray uez(Ib1,Ib2,Ib3,V);
-                            e.gd( uez ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t); 
-                            RealArray taue(Ib1,Ib2,Ib3,6);
-                            taue(Ib1,Ib2,Ib3,0) = (2.*mu)*( uex(Ib1,Ib2,Ib3,uc) );                        // tau_11
-                            taue(Ib1,Ib2,Ib3,1) = (   mu)*( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) );  // tau_12 = tau_21
-                            taue(Ib1,Ib2,Ib3,2) = (   mu)*( uez(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,wc) );  // tau_13 = tau_31
-                            taue(Ib1,Ib2,Ib3,3) = (2.*mu)*( uey(Ib1,Ib2,Ib3,vc) );                        // tau_22
-                            taue(Ib1,Ib2,Ib3,4) = (   mu)*( uez(Ib1,Ib2,Ib3,vc) + uey(Ib1,Ib2,Ib3,wc) );  // tau_23 = tau_32
-                            taue(Ib1,Ib2,Ib3,5) = (2.*mu)*( uez(Ib1,Ib2,Ib3,wc) );                        // tau_33
-              //  t1 = tau11*n1 + tau12*n2 + tau13*n3 
-                            tractione(Ib1,Ib2,Ib3,0) = ( taue(Ib1,Ib2,Ib3,0)*normal(Ib1,Ib2,Ib3,0) + 
-                                                                                      taue(Ib1,Ib2,Ib3,1)*normal(Ib1,Ib2,Ib3,1) +
-                                                                                      taue(Ib1,Ib2,Ib3,2)*normal(Ib1,Ib2,Ib3,2) );
-              //  t2 = tau21*n1 + tau22*n2 + tau23*n3 
-                            tractione(Ib1,Ib2,Ib3,1) = ( taue(Ib1,Ib2,Ib3,1)*normal(Ib1,Ib2,Ib3,0) + 
-                                                                                      taue(Ib1,Ib2,Ib3,3)*normal(Ib1,Ib2,Ib3,1) +
-                                                                                      taue(Ib1,Ib2,Ib3,4)*normal(Ib1,Ib2,Ib3,2) );
-              //  t3 = tau31*n1 + tau32*n2 + tau33*n3 
-                            tractione(Ib1,Ib2,Ib3,2) = ( taue(Ib1,Ib2,Ib3,2)*normal(Ib1,Ib2,Ib3,0) + 
-                                                                                      taue(Ib1,Ib2,Ib3,4)*normal(Ib1,Ib2,Ib3,1) +
-                                                                                      taue(Ib1,Ib2,Ib3,5)*normal(Ib1,Ib2,Ib3,2) );
-                        }
-                        solidChar(Ib1,Ib2,Ib3,Rx) = tractione(Ib1,Ib2,Ib3,Rx) + zs*ue(Ib1,Ib2,Ib3,V);
-            // fluidRhs = v^{n-1} + (theta*dt/rho)*grad(p)^n + ((1-theta)*dt/rho)*( -grad(p)^{n-1} + mu*Delta(v)^{n-1} )
-            //          = [ I - (mu*theta*dt/rho)*Delta ]* v^n 
-                        RealArray & uexx = uex; RealArray & ueyy =uey;  // Reuse arrays
-                        e.gd( uexx ,xLocal,mg.numberOfDimensions(),rectangular,0,2,0,0,Ib1,Ib2,Ib3,V,t); 
-                        e.gd( ueyy ,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,V,t); 
-                        vSolidLocal(Ib1,Ib2,Ib3,Rx) = ue(Ib1,Ib2,Ib3,V);
-                        if( numberOfDimensions==2 )
-                        {
-              //  [ I - (mu*theta*dt/rho)*Delta ]* v^n
-                            printF("addedMassImpBC: beta=%9.3e, max(uexx=%8.2e)\n",beta,max(fabs(uexx)));
-                            fluidRhs(Ib1,Ib2,Ib3,Rx)=ue(Ib1,Ib2,Ib3,V) - beta*( uexx+ueyy ); 
-                        }
-                        else
-                        {
-                            RealArray & uezz = tractione; // Reuse arrays
-                            e.gd( uezz ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,2,Ib1,Ib2,Ib3,V,t); 
-              //  [ I - (mu*theta*dt/rho)*Delta ]* v^n
-              // *** THIS IS WRONG ***
-                            fluidRhs(Ib1,Ib2,Ib3,Rx)=ue(Ib1,Ib2,Ib3,V) - (mu*theta*dt/rho)*( uexx+ueyy+uezz ); 
-                        }
-                    }
-        //  -- "vector" versions of macros that use full normal vector : 
-                #define AMPV(n,m) (delta(n,m) - normal(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,m) )
-        // Here is the "P" operator, (1-alpha) n n^T 
-                #define AMGPV(n,m) ((1.-alpha)*normal(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,m))
-        // Here is I-P 
-                #define AMGV(n,m) (delta(n,m) - (1.-alpha)*normal(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,m))
-                    for( int n=0; n<numberOfDimensions; n++ )
-                    {
-            // --- RHS FOR GHOST EQUATION: ---
-            //  RHS = (1/mu)*( I - n n^T)( solidTraction + zs*vs )
-                        uLocal(Ig1,Ig2,Ig3,uc+n) = (1./mu)*( AMPV(n,0)*solidChar(Ib1,Ib2,Ib3,0) + AMPV(n,1)*solidChar(Ib1,Ib2,Ib3,1) );
-            // --- RHS FOR BOUNDARY EQUATION: ---
-            // printF("AM-IMP_BC: n=%i,  AMGV=%9.3e %9.3e %9.3e,  AMGPV=%9.3e %9.3e\n",n,
-            // RHS = (I-P)*( v - beta*Delta(v) ) + P*vs 
-                        uLocal(Ib1,Ib2,Ib3,uc+n) = ( AMGV(n,0) *fluidRhs(Ib1,Ib2,Ib3,0)    + AMGV(n,1) *fluidRhs(Ib1,Ib2,Ib3,1) + 
-                                                                                  AMGPV(n,0)*vSolidLocal(Ib1,Ib2,Ib3,0) + AMGPV(n,1)*vSolidLocal(Ib1,Ib2,Ib3,1) );
-                    }
-                    if( debug() & 4 )
-                    {
-            // ::display(solidChar,"--INS-- IMP-AMP-V-BC: solid-characteristic: sigmas.nv + zs*vs (AGAIN)",debugFile,"%.3e ");
-                        ::display(uLocal(Ig1,Ig2,Ig3,V),"--INS-- IMP-AMP-V-BC: RHS for GHOST",debugFile,"%.3e ");
-                    }
-          // ------ corners with dirichlet sides are treated specially -------
-                    int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
-                    i3=gid(0,2); // set default
-                    int axisp1= (axis+1) % numberOfDimensions;
-                    for( int sidep1=0; sidep1<=1; sidep1++ )
-                    {
-                        if( mg.boundaryCondition(sidep1,axisp1)==Parameters::dirichletBoundaryCondition )
-                        {
-                            if( numberOfDimensions==3 )
-                            {
-                                OV_ABORT("AMP IMP BC CORNER -- finish me for 3D");
-                            }
-                            for( int ghost=0; ghost<=1; ghost++ )  // set boundary and ghost values
-                            {
-                                iv[axis  ]=gid(side  ,axis  ) + ghost*(2*side-1);
-                                iv[axisp1]=gid(sidep1,axisp1);
-                                printf("Set AMP -IMP RHS for pt=(%i,%i,%i)\n",i1,i2,i3);
-                                uLocal(i1,i2,i3,V)=0.;
-                                if( twilightZoneFlow )
-                                {
-                  // ------- FIX FOR TWILIGHT ZONE --------
-                                    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-                                    const bool rectangular=false;
-                                    Index J1=i1, J2=i2, J3=i3;
-                                    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
-                                    realSerialArray ue(J1,J2,J3,V);
-                                    e.gd( ue  ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,J1,J2,J3,V,t); // t=new time 
-                                    uLocal(i1,i2,i3,V)=ue;
-                                }
-                            }
-                        }
-                    }
-        // if( FALSE )
-        // {
-        //   // *** OLD WAY 
-        //   real an[3], val[3], eqnVal[3];
-        //   FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,ig1,ig2,ig3,Ig1,Ig2,Ig3)
-        //   {
-        //     if( numberOfDimensions==2 )
-        //     {
-        //       // ------ TWO DIMENSIONS -------
-        //       for( int dir=0; dir<numberOfDimensions; dir++ )
-        //       {
-        //         an[dir]=normal(i1,i2,i3,dir);
-        //         val[dir] = solidTraction(i1,i2,i3,dir) - zs*vSolidLocal(i1,i2,i3,dir);
-        //         eqnVal[dir] = uOldLocal(i1,i2,i3,uc+dir) + 
-        //           (-implicitFactor*dt/rho)*( px(i1,i2,i3) )
-        //           + ((1.-implicitFactor)*dt/rho)*( 
-        //             mu*(uOldxx(i1,i2,i3,uc+dir)+uOldyy(i1,i2,i3,uc+dir)) - pOldx(i1,i2,i3) );
-        //       }
-        //       for( int n=0; n<numberOfDimensions; n++ )
-        //       {
-        //         // --- RHS FOR GHOST EQUATION: ---
-        //         //  RHS = (1/mu)*( I - n n^T)( solidTraction - zs*vs )
-        //         u(ig1,ig2,ig3,uc+n) = (1./mu)*( AMP(n,0)*val[0] + AMP(n,1)*val[1] );
-        //         // --- RHS FOR BOUNDARY EQUATION: ---
-        //         u(i1,i2,i3,uc+n) = ( AMG(n,0)*eqnVal[0] + AMG(n,1)*eqnVal[1] + 
-        //                              AMGP(n,0)*vSolidLocal(i1,i2,i3,0) + AMGP(n,1)*vSolidLocal(i1,i2,i3,1) );
-        //       }
-        //       OV_ABORT("finish me");
-        //     }
-        //     else
-        //     {
-        //       // ------ THREE DIMENSIONS -------
-        //       for( int n=0; n<numberOfDimensions; n++ )
-        //       {
-        //         u(ig1,ig2,ig3,uc+n) = (1./mu)*( AMP(n,0)*val[0] + AMP(n,1)*val[1]+ AMP(n,2)*val[2] );
-        //       }
-        //       OV_ABORT("addedMassImplicitBoundaryConditions: 3D: finish me");
-        //     }
-        //   } // end for ijd
-        // } // end if FALSE
-                }
+  //       // evaluate the right-hand-side to the AMP velocity BCs
+  //       evalAmpRightHandSide();
 
                 
-            }
+  //     }
             
-        }
+  //   }
         
-    // OV_ABORT("addedMassImplicitBoundaryConditions: STOP HERE FOR NOW");
+  //   // OV_ABORT("addedMassImplicitBoundaryConditions: STOP HERE FOR NOW");
         
-        return applied;
-    }
+  //   return applied;
+  // }
     
 
   // ========== REAL DEFORMING GRID CASE ==========
+
+   // --- DEFORMING BULK SOLID ----
+   //   For a deforming bulk solid we only apply moving no-slip wall Bc's to the face that is actually moving.
+   // 
+   //           +------------------------+
+   //           |                        |
+   //           |  deforming grid        |
+   //  noslip   |                        |  noSlip
+   //   u=0     |                        |   u=0
+   //           |                        |
+   //           |    moving interface    |
+   //           +------------------------+
+   //                u=gridVelocity
 
   // -- extract parameters from any deforming solids ---
     
@@ -468,8 +361,13 @@ addedMassImplicitBoundaryConditions(int option,
         {
             for( int axis=0; axis<numberOfDimensions; axis++ )
             {
+
       	if( deformingBodyNumber[side][axis]>=0 )
       	{
+                    if( true )
+                        printF("WWWWW implicit: apply MOVING noSlipWall BC to a DEFORMING BULK SOLID, grid=%i (side,axis)=(%i,%i), t=%.2e\n",
+                                      grid,side,axis,t);
+
         	  int body=deformingBodyNumber[side][axis];
         	  if( t<=0. )
           	    printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
@@ -541,37 +439,48 @@ addedMassImplicitBoundaryConditions(int option,
                             OV_ABORT("finish me");
                         }
 
-          	    real zpOld;
-            // old way:
-                        deform.getBulkSolidParameters( zpOld );
+            // *new* April 1, 2018
+                        real zs,zp,zf,alpha;
+                        getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
 
-            // new way:
-            // Retrieve the parameters from the bulk solid
-            // FIX ME -- lookup first time and then save locally 
-                        Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
-                        real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
-                        real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
-                        real muSolid=bulkSolidParams.dbase.get<real>("mu");
-                        real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
-                        real cs=sqrt(muSolid/rhoSolid);
+	    // real zpOld;
+            // // old way:
+            // deform.getBulkSolidParameters( zpOld );
+
+            // // new way:
+            // // Retrieve the parameters from the bulk solid
+            // // FIX ME -- lookup first time and then save locally 
+            // Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+            // real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+            // real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+            // real muSolid=bulkSolidParams.dbase.get<real>("mu");
+            // real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+            // real cs=sqrt(muSolid/rhoSolid);
                     
 
-                        real zp=rhoSolid*cp;
-                        real zs=rhoSolid*cs;
+            // real zp=rhoSolid*cp;
+            // real zs=rhoSolid*cs;
                         
-                        if( t<=3.*dt && debug() & 4  )
-                        {
-                            fPrintF(debugFile,"--INS-- AMP-IMP-BC: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
-                                          rhoSolid,cp,cs,zp,zpOld,zs);
-              // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
-                        }
+            // if( t<=3.*dt && debug() & 4  )
+            // {
+            //   fPrintF(debugFile,"--INS-- AMP-IMP-BC: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
+            //          rhoSolid,cp,cs,zp,zpOld,zs);
+            //   // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
+            // }
                         
-	    // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+	    // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
           	    
-            // fluid impedance = rho*H/dt 
-          	    assert( dt>0. );
-                        const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
-                        const real alpha = zf/(zf+zp);
+            // // fluid impedance = rho*H/dt 
+	    // assert( dt>0. );
+                        
+            // const real zfOld=fluidDensity*fluidAddedMassLengthScale/dt; 
+            // // *new* June 30, 2018: 
+            // real zf= 2.*(fluidDensity*mu)/(zp*dt);
+            // const real alpha = zf/(zf+zp);
+            // printF("BBBBBB addedMassImpBC: zf=rho*L/dt = %.2e  zf=2*(rho*mu)/(zp*dt) = %.2e, alpha=%.2e "
+            //        " rho=%.2e mu=%.2e zp=%.2e dt=%.2e\n",zfOld,zf,alpha,rho,mu,zp,dt);
+            // // zf=zfOld;
+
 
 
                         bool useExactSolidVelocity=false;
@@ -605,8 +514,11 @@ addedMassImplicitBoundaryConditions(int option,
                                 OV_ABORT("error");
                             }
                             OV_GET_SERIAL_ARRAY(real,gridVelocity,gridVelocityLocal);
-                            real maxDiff = max(fabs(gridVelocityLocal(Ib1,Ib2,Ib3,Rx)-vSolidLocal(Ib1,Ib2,Ib3,Rx)));
-                            printF("--INS--AMP-IMP-BC: t=%.3e, max diff [gridVelocity - vSolidLocal] =%.2e\n",t,maxDiff);
+                            if( debug() & 4 )
+                            {
+                                real maxDiff = max(fabs(gridVelocityLocal(Ib1,Ib2,Ib3,Rx)-vSolidLocal(Ib1,Ib2,Ib3,Rx)));
+                                printF("--INS--AMP-IMP-BC: t=%.3e, max diff [gridVelocity - vSolidLocal] =%.2e\n",t,maxDiff);
+                            }
                             const real beta = (mu*theta*dt/rho);
               // -- evaluate derivatives that appear in the INS equations ---       
                             MappedGridOperators & opOld = *(uOld.getOperators()); 
@@ -630,6 +542,29 @@ addedMassImplicitBoundaryConditions(int option,
                             {
                                 pz.redim(Ib1,Ib2,Ib3);
                                 op.derivative(MappedGridOperators::zDerivative ,uLocal,pz,Ib1,Ib2,Ib3,pc);
+                            }
+                            RealArray nSigmaFluidN, nSigmaSolidN;
+                            if( pcSwitch>0. )
+                            {
+                // --- evaluate the normal component of the fluid traction during correction stages ----
+                                nSigmaSolidN.redim(Ib1,Ib2,Ib3);
+                                nSigmaFluidN.redim(Ib1,Ib2,Ib3);
+                                realSerialArray ux(Ib1,Ib2,Ib3,V), uy(Ib1,Ib2,Ib3,V);
+                                op.derivative(MappedGridOperators::xDerivative ,uLocal,ux,Ib1,Ib2,Ib3,V);
+                                op.derivative(MappedGridOperators::yDerivative ,uLocal,uy,Ib1,Ib2,Ib3,V);
+                // Remove divergence from Tau
+                // n.Sigma.n = - p + n.Tau.n 
+                // nTaun = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+                                nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
+                                            + mu*( normal(Ib1,Ib2,Ib3,0)*( 
+                                                                    -2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,0) + 
+                                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1) ) + 
+                                                          normal(Ib1,Ib2,Ib3,1)*( 
+                                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
+                                                                    -2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,1) ) );
+                // **FLIP SIGN -- should FLIP sign on solidTraction to start with *fix me*
+                                nSigmaSolidN = -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1));
+                                assert( numberOfDimensions==2 );
                             }
                             RealArray delta(3,3); // Dirac delta
                             delta=0.; delta(0,0)=1.; delta(1,1)=1.; delta(2,2)=1.;
@@ -736,6 +671,13 @@ addedMassImplicitBoundaryConditions(int option,
                   // *** THIS IS WRONG ***
                                     fluidRhs(Ib1,Ib2,Ib3,Rx)=ue(Ib1,Ib2,Ib3,V) - (mu*theta*dt/rho)*( uexx+ueyy+uezz ); 
                                 }
+                                if( pcSwitch>0. )
+                                {
+                                    RealArray pe(Ib1,Ib2,Ib3);
+                                    e.gd( pe,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,pc,t); // t=new time 
+                                    nSigmaFluidN -= -pe + normal(Ib1,Ib2,Ib3,0)*tractione(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*tractione(Ib1,Ib2,Ib3,1);
+                                    assert( numberOfDimensions==2 );
+                                }
                             }
             //  -- "vector" versions of macros that use full normal vector : 
                         #define AMPV(n,m) (delta(n,m) - normal(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,m) )
@@ -753,6 +695,11 @@ addedMassImplicitBoundaryConditions(int option,
                 // RHS = (I-P)*( v - beta*Delta(v) ) + P*vs 
                                 uLocal(Ib1,Ib2,Ib3,uc+n) = ( AMGV(n,0) *fluidRhs(Ib1,Ib2,Ib3,0)    + AMGV(n,1) *fluidRhs(Ib1,Ib2,Ib3,1) + 
                                                                                           AMGPV(n,0)*vSolidLocal(Ib1,Ib2,Ib3,0) + AMGPV(n,1)*vSolidLocal(Ib1,Ib2,Ib3,1) );
+                                if( true && pcSwitch>0. )
+                                {
+                  // *** add jump in normal traction ***
+                                    uLocal(Ib1,Ib2,Ib3,uc+n) +=  (1./(zf+zp))*normal(Ib1,Ib2,Ib3,n)*( nSigmaSolidN - nSigmaFluidN );
+                                }
                             }
                             if( debug() & 4 )
                             {
@@ -841,6 +788,33 @@ addedMassImplicitBoundaryConditions(int option,
     }
     
 
+  // --- Now assign the RHS for adjacent no-slip walls ----
+  // Note: do this last so corners are zero 
+  // Note: Other boundary condition right-hand-sides are handled in applyBoundaryConditionsForImplicitTimeStepping
+    if( applied )
+    {
+        const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+        ForBoundary(side,axis)
+        {
+            if( mg.boundaryCondition(side,axis)==Parameters::noSlipWall && interfaceType(side,axis,grid)==Parameters::noInterface )
+            {
+        // This must be an adajent no-slip wall
+                if( false )
+                    printF("WWWWW addedMassImpBC: apply HOMOGENEOUS noSlipWall BC to a DEFORMING BULK SOLID, grid=%i (side,axis)=(%i,%i), t=%.2e\n",
+                                  grid,side,axis,t);
+                u.applyBoundaryCondition(V,BCTypes::dirichlet,BCTypes::boundary(side,axis),0.,t);
+            }
+      // else if( mg.boundaryCondition(side,axis)>0  && interfaceType(side,axis,grid)==Parameters::noInterface )
+      // {
+      //   printF("INS: addedMassImpBC: ERROR: adjacent face to a deforming interface is not an noSlipWall -- fix me\n"
+      //          " grid=%i (side,axis)=(%i,%i) bc=%i\n",grid,side,axis,mg.boundaryCondition(side,axis));
+      //   OV_ABORT("error");
+      // }
+        
+        }
+    }
+    
+
     return applied;
 }
 
@@ -908,6 +882,7 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
     }
     
 
+    const int correctionStage = parameters.dbase.get<int>("correctionStage");
 
     MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
     if( movingGrids.getNumberOfDeformingBodies()==0 && !useImplicitAmpBCs )
@@ -1056,7 +1031,8 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                         if( numberOfDimensions==3 )
                             div += uz(Ib1,Ib2,Ib3,wc);
                         real maxDiv = max(fabs(div));
-                        printF("--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
+            // printF("--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
+                        fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
                         if( debug() & 4 )
                             ::display(div,"Divergence on the boundary","%.2e ");
                         RealArray delta(3,3); // Dirac delta
@@ -1149,7 +1125,7 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                             if( numberOfDimensions==2 )
                             {
                 //  [ I - (mu*theta*dt/rho)*Delta ]* v^n
-                                printF("addedMassImpBC: beta=%9.3e, max(uexx=%8.2e)\n",beta,max(fabs(uexx)));
+                                fPrintF(debugFile,"addedMassImpBC: beta=%9.3e, max(uexx=%8.2e)\n",beta,max(fabs(uexx)));
                                 fluidRhs(Ib1,Ib2,Ib3,Rx)=ue(Ib1,Ib2,Ib3,V) - beta*( uexx+ueyy ); 
                             }
                             else
@@ -1184,9 +1160,9 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                             OV_ABORT("finish me for 3D");
                         }
                         real maxChar = max(fabs(res));
-                        printF("--INS--check-AMP-IMP-BC: max error in tv.( tau.nv + zs*v )= tv.( solidCharacteristic ) =%.2e\n",maxChar);
-                        if( debug() & 4 )
-                            ::display(res,"Residual in  tv.( tau.nv + zs*v )= ... on the boundary","%.2e ");
+                        fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in tv.( tau.nv + zs*v )= tv.solidChar =%.2e\n",maxChar);
+                        if( debug() & 8 )
+                            ::display(res,"Residual in  tv.( tau.nv + zs*v )= ... on the boundary",debugFile,"%.2e ");
             // ============= Check tangential component of interior eqn on the boundary =============
                         realSerialArray uxx(Ib1,Ib2,Ib3,V), uyy(Ib1,Ib2,Ib3,V), uzz;
                         op.derivative(MappedGridOperators::xxDerivative ,uLocal,uxx,Ib1,Ib2,Ib3,V);
@@ -1205,19 +1181,37 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                                             +normal(Ib1,Ib2,Ib3,0)*( unp1(Ib1,Ib2,Ib3,vc)-uLocal(Ib1,Ib2,Ib3,vc) ) );
                         }
                         real maxRes = max(fabs(res));
-                        printF("--INS--check-AMP-IMP-BC: max error in tv.( Eqn on boundary ) =%.2e\n",maxRes);
-                        if( debug() & 4 )
-                            ::display(res,"Residual in  tv.( Eqn on boundary )= ... on the boundary","%.2e ");
+                        fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in tv.( Eqn on boundary ) =%.2e\n",maxRes);
+                        if( debug() & 8 )
+                            ::display(res,"Residual in  tv.( Eqn on boundary )= ... on the boundary",debugFile,"%.2e ");
             // ============= Check normal component AMP condition =============
                         if( numberOfDimensions==2 )  
                         {
                             res = ( normal(Ib1,Ib2,Ib3,0)*( uLocal(Ib1,Ib2,Ib3,uc) - (alpha*unp1(Ib1,Ib2,Ib3,uc)+(1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,0)))
                                           +normal(Ib1,Ib2,Ib3,1)*( uLocal(Ib1,Ib2,Ib3,vc) - (alpha*unp1(Ib1,Ib2,Ib3,vc)+(1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,1))) );
+                            if( correctionStage>0 )
+                            {
+                // jump in normal traction 
+                                RealArray nSigmaSolidN, nSigmaFluidN;
+                // **use minus for solidTraction **
+                                nSigmaSolidN= -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) +normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1) );
+                // n.sigmaFluid.n = - p + n.Tau.n 
+                                nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) +
+                                    normal(Ib1,Ib2,Ib3,0)*traction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*traction(Ib1,Ib2,Ib3,1);
+                // ** fix me for TZ **
+                                real tractionJump = max(fabs( nSigmaSolidN - nSigmaFluidN));
+                                fPrintF(debugFile,"Correction stage: Max jump in traction = %.2e\n",tractionJump);
+                                res -=  (1./(zf+zp))*( nSigmaSolidN - nSigmaFluidN );
+                            }
+                        }
+                        else
+                        {
+                            OV_ABORT("finish me...");
                         }
                         maxRes = max(fabs(res));
-                        printF("--INS--check-AMP-IMP-BC: max error in nv.( vI - [alpha*vf + (1-alpha)*vs ] ) =%.2e\n",maxRes);
-                        if( debug() & 4 )
-                            ::display(res,"Residual in  nv.( vI - [alpha*vf + (1-alpha)*vs ] )","%.2e ");
+                        fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in nv.( vI - [alpha*vf + (1-alpha)*vs ] ) =%.2e\n",maxRes);
+                        if( debug() & 8 )
+                            ::display(res,"Residual in  nv.( vI - [alpha*vf + (1-alpha)*vs ] )",debugFile,"%.2e ");
                         if( false )
                         {
                             ::display(px,"px","%.9e ");
@@ -1393,36 +1387,40 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                             OV_ABORT("finish me");
                         }
 
-          	    real zpOld;
-            // old way:
-                        deform.getBulkSolidParameters( zpOld );
+            // *new* April 1, 2018
+                        real zs,zp,zf,alpha;
+                        getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
 
-            // new way:
-            // Retrieve the parameters from the bulk solid
-            // FIX ME -- lookup first time and then save locally 
-                        Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
-                        real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
-                        real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
-                        real muSolid=bulkSolidParams.dbase.get<real>("mu");
-                        real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
-                        real cs=sqrt(muSolid/rhoSolid);
+	    // real zpOld;
+            // // old way:
+            // deform.getBulkSolidParameters( zpOld );
+
+            // // new way:
+            // // Retrieve the parameters from the bulk solid
+            // // FIX ME -- lookup first time and then save locally 
+            // Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+            // real rhoSolid=bulkSolidParams.dbase.get<real>("rho");
+            // real lambdaSolid=bulkSolidParams.dbase.get<real>("lambda");
+            // real muSolid=bulkSolidParams.dbase.get<real>("mu");
+            // real cp=sqrt((lambdaSolid+2.*muSolid)/rhoSolid);
+            // real cs=sqrt(muSolid/rhoSolid);
                     
 
-                        real zp=rhoSolid*cp;
-                        real zs=rhoSolid*cs;
-                        if( t<=3.*dt && debug() & 4  )
-                        {
-                            fPrintF(debugFile,"--INS-- AMP-IMP-BC: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
-                                          rhoSolid,cp,cs,zp,zpOld,zs);
-              // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
-                        }
+            // real zp=rhoSolid*cp;
+            // real zs=rhoSolid*cs;
+            // if( t<=3.*dt && debug() & 4  )
+            // {
+            //   fPrintF(debugFile,"--INS-- AMP-IMP-BC: rhoSolid=%9.3e cp=%9.3e cs=%9.3e zp=%9.3e (old: zp=%9.3e) zs=%9.3e\n",
+            //          rhoSolid,cp,cs,zp,zpOld,zs);
+            //   // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
+            // }
                         
-	    // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+	    // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
           	    
-            // fluid impedance = rho*H/dt 
-          	    assert( dt>0. );
-                        const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
-                        const real alpha = zf/(zf+zp);
+            // // fluid impedance = rho*H/dt 
+	    // assert( dt>0. );
+            // const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
+            // const real alpha = zf/(zf+zp);
 
 
                         bool useExactSolidVelocity=false;
@@ -1494,7 +1492,8 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                             if( numberOfDimensions==3 )
                                 div += uz(Ib1,Ib2,Ib3,wc);
                             real maxDiv = max(fabs(div));
-                            printF("--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
+              // printF("--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
+                            fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max divergence on boundary =%.2e (dt=%.2e)\n",maxDiv,dt);
                             if( debug() & 4 )
                                 ::display(div,"Divergence on the boundary","%.2e ");
                             RealArray delta(3,3); // Dirac delta
@@ -1587,7 +1586,7 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                                 if( numberOfDimensions==2 )
                                 {
                   //  [ I - (mu*theta*dt/rho)*Delta ]* v^n
-                                    printF("addedMassImpBC: beta=%9.3e, max(uexx=%8.2e)\n",beta,max(fabs(uexx)));
+                                    fPrintF(debugFile,"addedMassImpBC: beta=%9.3e, max(uexx=%8.2e)\n",beta,max(fabs(uexx)));
                                     fluidRhs(Ib1,Ib2,Ib3,Rx)=ue(Ib1,Ib2,Ib3,V) - beta*( uexx+ueyy ); 
                                 }
                                 else
@@ -1622,9 +1621,9 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                                 OV_ABORT("finish me for 3D");
                             }
                             real maxChar = max(fabs(res));
-                            printF("--INS--check-AMP-IMP-BC: max error in tv.( tau.nv + zs*v )= tv.( solidCharacteristic ) =%.2e\n",maxChar);
-                            if( debug() & 4 )
-                                ::display(res,"Residual in  tv.( tau.nv + zs*v )= ... on the boundary","%.2e ");
+                            fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in tv.( tau.nv + zs*v )= tv.solidChar =%.2e\n",maxChar);
+                            if( debug() & 8 )
+                                ::display(res,"Residual in  tv.( tau.nv + zs*v )= ... on the boundary",debugFile,"%.2e ");
               // ============= Check tangential component of interior eqn on the boundary =============
                             realSerialArray uxx(Ib1,Ib2,Ib3,V), uyy(Ib1,Ib2,Ib3,V), uzz;
                             op.derivative(MappedGridOperators::xxDerivative ,uLocal,uxx,Ib1,Ib2,Ib3,V);
@@ -1643,19 +1642,37 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                                                 +normal(Ib1,Ib2,Ib3,0)*( unp1(Ib1,Ib2,Ib3,vc)-uLocal(Ib1,Ib2,Ib3,vc) ) );
                             }
                             real maxRes = max(fabs(res));
-                            printF("--INS--check-AMP-IMP-BC: max error in tv.( Eqn on boundary ) =%.2e\n",maxRes);
-                            if( debug() & 4 )
-                                ::display(res,"Residual in  tv.( Eqn on boundary )= ... on the boundary","%.2e ");
+                            fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in tv.( Eqn on boundary ) =%.2e\n",maxRes);
+                            if( debug() & 8 )
+                                ::display(res,"Residual in  tv.( Eqn on boundary )= ... on the boundary",debugFile,"%.2e ");
               // ============= Check normal component AMP condition =============
                             if( numberOfDimensions==2 )  
                             {
                                 res = ( normal(Ib1,Ib2,Ib3,0)*( uLocal(Ib1,Ib2,Ib3,uc) - (alpha*unp1(Ib1,Ib2,Ib3,uc)+(1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,0)))
                                               +normal(Ib1,Ib2,Ib3,1)*( uLocal(Ib1,Ib2,Ib3,vc) - (alpha*unp1(Ib1,Ib2,Ib3,vc)+(1.-alpha)*vSolidLocal(Ib1,Ib2,Ib3,1))) );
+                                if( correctionStage>0 )
+                                {
+                  // jump in normal traction 
+                                    RealArray nSigmaSolidN, nSigmaFluidN;
+                  // **use minus for solidTraction **
+                                    nSigmaSolidN= -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) +normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1) );
+                  // n.sigmaFluid.n = - p + n.Tau.n 
+                                    nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) +
+                                        normal(Ib1,Ib2,Ib3,0)*traction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*traction(Ib1,Ib2,Ib3,1);
+                  // ** fix me for TZ **
+                                    real tractionJump = max(fabs( nSigmaSolidN - nSigmaFluidN));
+                                    fPrintF(debugFile,"Correction stage: Max jump in traction = %.2e\n",tractionJump);
+                                    res -=  (1./(zf+zp))*( nSigmaSolidN - nSigmaFluidN );
+                                }
+                            }
+                            else
+                            {
+                                OV_ABORT("finish me...");
                             }
                             maxRes = max(fabs(res));
-                            printF("--INS--check-AMP-IMP-BC: max error in nv.( vI - [alpha*vf + (1-alpha)*vs ] ) =%.2e\n",maxRes);
-                            if( debug() & 4 )
-                                ::display(res,"Residual in  nv.( vI - [alpha*vf + (1-alpha)*vs ] )","%.2e ");
+                            fPrintF(debugFile,"--INS--check-AMP-IMP-BC: max error in nv.( vI - [alpha*vf + (1-alpha)*vs ] ) =%.2e\n",maxRes);
+                            if( debug() & 8 )
+                                ::display(res,"Residual in  nv.( vI - [alpha*vf + (1-alpha)*vs ] )",debugFile,"%.2e ");
                             if( false )
                             {
                                 ::display(px,"px","%.9e ");

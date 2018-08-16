@@ -84,8 +84,8 @@
      & rungeKuttaFourthOrder=2,stoermerTimeStepping=3,
      & modifiedEquationTimeStepping=4)
         ! Dispersion models
-        integer noDispersion,drude,gdm
-        parameter( noDispersion=0, drude=1, gdm=2 )
+       integer noDispersion,drude,gdm
+       parameter( noDispersion=0, drude=1, gdm=2 )
         ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
@@ -1439,6 +1439,7 @@
         ! Generalized dispersion model parameters
         real alphaP, a0,a1,b0,b1
         real ev,evm,evn,pv0,pvm0,pvx,pvxE,deti,rhsE,rhsP
+        integer gdmParOption
         integer maxNumberOfParameters,maxNumberOfPolarizationVectors
         parameter( maxNumberOfParameters=4, 
      & maxNumberOfPolarizationVectors=20 )
@@ -5099,13 +5100,18 @@ c===============================================================================
         gammaDt=gamma*dt
         omegapDtSq=(omegap*dt)**2
         ! write(*,*) 'Before calling getGDMparameters...'
+        gdmParOption=1 ! scale a0 and a1 by eps
         if( dispersionModel.ne.noDispersion )then
-         ! get the gdm parameters
-         !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
-         ! This routine returns numberOfPolarizationVectors (no need to pass)
-         call getGDMParameters( grid,alphaP,gdmPar,
+          ! get the gdm parameters
+          !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
+          ! This routine returns numberOfPolarizationVectors (no need to pass)
+          call getGDMParameters( grid,alphaP,gdmPar,
      & numberOfPolarizationVectors, maxNumberOfParameters,
-     & maxNumberOfPolarizationVectors )
+     & maxNumberOfPolarizationVectors,gdmParOption )
+          if( alphaP.ne.0 .and. abs(eps*alphaP-1.) .gt. 1.e-10 )then
+            write(*,'(" advOptNew: ERROR alphaP != 1/eps ")')
+            stop 2288
+          end if
           if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
             ! ---- Dispersive Maxwell ----
             write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",
@@ -5417,8 +5423,9 @@ c===============================================================================
                    ec=ex+m
                    ! This is only needed for the second order code
                    if( addForcing.ne.0 )then ! forcing in E equation already added to f
-                     ! fe = dtsq*f(i1,i2,i3,ec)  ! this term is already included
-                     fe=0.
+                     ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+                     fe = dtsq*f(i1,i2,i3,ec)
+                     ! this next function will adjust fe by affing -alphaP*Ptt
                       if( addForcing.ne.0 )then
                         ! fp = dtsq*f(i1,i2,i3,pc)
                         if( forcingOption.eq.twilightZoneForcing )then
@@ -5451,6 +5458,7 @@ c===============================================================================
      & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
                             end if
                             fe = fe + dtsq*alphaP*p0tt
+                            ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
                             fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(
      & iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
                           end do
@@ -5470,8 +5478,8 @@ c===============================================================================
                    ev = u(i1,i2,i3,ec)
                    evm=um(i1,i2,i3,ec)
                    do iv=0,numberOfPolarizationVectors-1
-                         pv(iv) = p(i1,i2,i3,m+iv*nd)
-                         pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                     pv(iv) = p(i1,i2,i3,m+iv*nd)
+                     pvm(iv)=pm(i1,i2,i3,m+iv*nd)
                    end do
                    rhsP = 0.
                    pSum = 0.
@@ -5487,150 +5495,151 @@ c===============================================================================
                                pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
                                pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
                              end do
-                         f1 = 0.
-                         f4 = 0.
-                         f5 = 0.
-                         ! *wdh* March 4, 2018: initialize this:
-                         fe00=0.
-                         do iv=0,numberOfPolarizationVectors-1
-                           f2v(iv) = 0.
-                           f3v(iv) = 0.
-                           f6v(iv) = 0.
+                        ! Bug fixed, May 28, 2018 -- use 2D or 3D versions of ogderiv *wdh* 
+                           f1 = 0.
+                           f4 = 0.
+                           f5 = 0.
                            ! *wdh* March 4, 2018: initialize this:
-                           fp00v(iv)=0.
-                           ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") f2,f3,f6=",3e16.8)') i1,i2,m,f2v(iv),f3v(iv),f6v(iv)
-                         end do
-                         if( addForcing.ne.0 )then
-                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
-                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
-                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tt )
-                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0ttt )
-                                 call ogDeriv(ep, 4,0,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tttt )
-                                 call ogDeriv(ep, 0,2,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xx )
-                                 call ogDeriv(ep, 0,0,2,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yy )
-                                 call ogDeriv(ep, 0,0,0,2, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zz )
-                                 call ogDeriv(ep, 1,2,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxt )
-                                 call ogDeriv(ep, 1,0,2,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyt )
-                                 call ogDeriv(ep, 1,0,0,2, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzt )
-                                 call ogDeriv(ep, 2,2,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxtt )
-                                 call ogDeriv(ep, 2,0,2,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yytt )
-                                 call ogDeriv(ep, 2,0,0,2, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zztt )
-                                 call ogDeriv(ep, 0,4,0,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxxx )
-                                 call ogDeriv(ep, 0,2,2,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxyy )
-                                 call ogDeriv(ep, 0,2,0,2, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxzz )
-                                 call ogDeriv(ep, 0,0,4,0, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyyy )
-                                 call ogDeriv(ep, 0,0,2,2, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyzz )
-                                 call ogDeriv(ep, 0,0,0,4, xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzzz )
-                               pSum0tt    = 0
-                               pSum0ttt   = 0
-                               pSum0tttt  = 0
-                               pSum0xxtt  = 0
-                               pSum0yytt  = 0
-                               pSum0zztt  = 0
-                               do iv=0,numberOfPolarizationVectors-1
-                                 pce = pc+iv*nd
+                           fe00=0.
+                           do iv=0,numberOfPolarizationVectors-1
+                             f2v(iv) = 0.
+                             f3v(iv) = 0.
+                             f6v(iv) = 0.
+                             ! *wdh* March 4, 2018: initialize this:
+                             fp00v(iv)=0.
+                             ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") f2,f3,f6=",3e16.8)') i1,i2,m,f2v(iv),f3v(iv),f6v(iv)
+                           end do
+                           if( addForcing.ne.0 )then
                                    call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0 )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0 )
                                    call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0t )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0t )
                                    call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0tt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0tt )
                                    call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0ttt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0ttt )
                                    call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0tttt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0tttt )
                                    call ogDeriv(ep, 0,2,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xx )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xx )
                                    call ogDeriv(ep, 0,0,2,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yy )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yy )
                                    call ogDeriv(ep, 0,0,0,2, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zz )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0zz )
                                    call ogDeriv(ep, 1,2,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xxt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxt )
                                    call ogDeriv(ep, 1,0,2,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yyt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yyt )
                                    call ogDeriv(ep, 1,0,0,2, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zzt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0zzt )
                                    call ogDeriv(ep, 2,2,0,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0xxtt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxtt )
                                    call ogDeriv(ep, 2,0,2,0, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0yytt )
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yytt )
                                    call ogDeriv(ep, 2,0,0,2, xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,p0zztt )
-                                 ! Derivatives of OG individual p eqn forcing terms fp
-                                 fp00      = p0tt   + b1v(iv)*p0t   + 
-     & b0v(iv)*p0   - a1v(iv)*e0t   - a0v(iv)*e0
-                                 fp10      = p0ttt  + b1v(iv)*p0tt  + 
-     & b0v(iv)*p0t  - a1v(iv)*e0tt  - a0v(iv)*e0t
-                                 fp20      = p0tttt + b1v(iv)*p0ttt + 
-     & b0v(iv)*p0tt - a1v(iv)*e0ttt - a0v(iv)*e0tt
-                                 fp02x     = p0xxtt + b1v(iv)*p0xxt + 
-     & b0v(iv)*p0xx - a1v(iv)*e0xxt - a0v(iv)*e0xx
-                                 fp02y     = p0yytt + b1v(iv)*p0yyt + 
-     & b0v(iv)*p0yy - a1v(iv)*e0yyt - a0v(iv)*e0yy
-                                 fp02z     = p0zztt + b1v(iv)*p0zzt + 
-     & b0v(iv)*p0zz - a1v(iv)*e0zzt - a0v(iv)*e0zz
-                                 fp02      = fp02x  + fp02y + fp02z
-                                 fp00v(iv) = fp00
-                                 ! Building derivatives of full P summation terms
-                                 pSum0tt   = pSum0tt    + p0tt
-                                 pSum0ttt  = pSum0ttt   + p0ttt
-                                 pSum0tttt = pSum0tttt  + p0tttt
-                                 pSum0xxtt = pSum0xxtt  + p0xxtt
-                                 pSum0yytt = pSum0yytt  + p0yytt
-                                 pSum0zztt = pSum0zztt  + p0zztt
-                                 ! Forcing on EACH individual p_ttt is (fp)_t - b1*fp :
-                                 f2v(iv) = fp10 - b1v(iv)*fp00
-                                 ! Forcing on EACH individual p eqn:
-                                 f3v(iv) = dtsq * (fp00 + (dtsq/12.) * 
-     & fp20)
-                                 ! Forcing for EACH individual pxx equation at second order predictor is (xx derivative of fp)
-                                 f6v(iv) = dtsq * fp02
-                               end do
-                               ! Build derivatives of E eqn forcing term
-                               fe00  = e0tt   + alphaP*pSum0tt   - csq*
-     & (e0xx   + e0yy    + e0zz  )
-                               fe10  = e0ttt  + alphaP*pSum0ttt  - csq*
-     & (e0xxt  + e0yyt   + e0zzt )
-                               fe20  = e0tttt + alphaP*pSum0tttt - csq*
-     & (e0xxtt + e0yytt  + e0zztt)
-                               fe02x = e0xxtt + alphaP*pSum0xxtt - csq*
-     & (e0xxxx + e0xxyy  + e0xxzz)
-                               fe02y = e0yytt + alphaP*pSum0yytt - csq*
-     & (e0xxyy + e0yyyy  + e0yyzz)
-                               fe02z = e0zztt + alphaP*pSum0zztt - csq*
-     & (e0xxzz + e0yyzz  + e0zzzz)
-                               fe02  = fe02x  + fe02y + fe02z
-                               fe    = fe00
-                               ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") e0xxxx,e0xxyy=",2e16.8)') i1,i2,m,e0xxxx,e0xxyy
-                               ! Forcing on Ettt = c^2 Etxx - alphaP Pttt is fet
-                               f1 = fe10
-                               ! Forcing on E equation is
-                               f4 = dtsq * (fe00 + (dtsq/12.) * (fe20 +
-     &  csq * fe02))
-                               ! Forcing for Exx equation at second order predictor is (xx derivative of fe)
-                               f5 = dtsq * fe02
-                         end if
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0zztt )
+                                   call ogDeriv(ep, 0,4,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxxx )
+                                   call ogDeriv(ep, 0,2,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxyy )
+                                   call ogDeriv(ep, 0,2,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxzz )
+                                   call ogDeriv(ep, 0,0,4,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yyyy )
+                                   call ogDeriv(ep, 0,0,2,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yyzz )
+                                   call ogDeriv(ep, 0,0,0,4, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0zzzz )
+                                 pSum0tt    = 0
+                                 pSum0ttt   = 0
+                                 pSum0tttt  = 0
+                                 pSum0xxtt  = 0
+                                 pSum0yytt  = 0
+                                 pSum0zztt  = 0
+                                 do iv=0,numberOfPolarizationVectors-1
+                                   pce = pc+iv*nd
+                                     call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0 )
+                                     call ogDeriv(ep, 1,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0t )
+                                     call ogDeriv(ep, 2,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0tt )
+                                     call ogDeriv(ep, 3,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0ttt )
+                                     call ogDeriv(ep, 4,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0tttt )
+                                     call ogDeriv(ep, 0,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0xx )
+                                     call ogDeriv(ep, 0,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0yy )
+                                     call ogDeriv(ep, 0,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0zz )
+                                     call ogDeriv(ep, 1,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0xxt )
+                                     call ogDeriv(ep, 1,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0yyt )
+                                     call ogDeriv(ep, 1,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0zzt )
+                                     call ogDeriv(ep, 2,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0xxtt )
+                                     call ogDeriv(ep, 2,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0yytt )
+                                     call ogDeriv(ep, 2,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pc,p0zztt )
+                                   ! Derivatives of OG individual p eqn forcing terms fp
+                                   fp00      = p0tt   + b1v(iv)*p0t   +
+     &  b0v(iv)*p0   - a1v(iv)*e0t   - a0v(iv)*e0
+                                   fp10      = p0ttt  + b1v(iv)*p0tt  +
+     &  b0v(iv)*p0t  - a1v(iv)*e0tt  - a0v(iv)*e0t
+                                   fp20      = p0tttt + b1v(iv)*p0ttt +
+     &  b0v(iv)*p0tt - a1v(iv)*e0ttt - a0v(iv)*e0tt
+                                   fp02x     = p0xxtt + b1v(iv)*p0xxt +
+     &  b0v(iv)*p0xx - a1v(iv)*e0xxt - a0v(iv)*e0xx
+                                   fp02y     = p0yytt + b1v(iv)*p0yyt +
+     &  b0v(iv)*p0yy - a1v(iv)*e0yyt - a0v(iv)*e0yy
+                                   fp02z     = p0zztt + b1v(iv)*p0zzt +
+     &  b0v(iv)*p0zz - a1v(iv)*e0zzt - a0v(iv)*e0zz
+                                   fp02      = fp02x  + fp02y + fp02z
+                                   fp00v(iv) = fp00
+                                   ! Building derivatives of full P summation terms
+                                   pSum0tt   = pSum0tt    + p0tt
+                                   pSum0ttt  = pSum0ttt   + p0ttt
+                                   pSum0tttt = pSum0tttt  + p0tttt
+                                   pSum0xxtt = pSum0xxtt  + p0xxtt
+                                   pSum0yytt = pSum0yytt  + p0yytt
+                                   pSum0zztt = pSum0zztt  + p0zztt
+                                   ! Forcing on EACH individual p_ttt is (fp)_t - b1*fp :
+                                   f2v(iv) = fp10 - b1v(iv)*fp00
+                                   ! Forcing on EACH individual p eqn:
+                                   f3v(iv) = dtsq * (fp00 + (dtsq/12.) 
+     & * fp20)
+                                   ! Forcing for EACH individual pxx equation at second order predictor is (xx derivative of fp)
+                                   f6v(iv) = dtsq * fp02
+                                 end do
+                                 ! Build derivatives of E eqn forcing term
+                                 fe00  = e0tt   + alphaP*pSum0tt   - 
+     & csq*(e0xx   + e0yy    + e0zz  )
+                                 fe10  = e0ttt  + alphaP*pSum0ttt  - 
+     & csq*(e0xxt  + e0yyt   + e0zzt )
+                                 fe20  = e0tttt + alphaP*pSum0tttt - 
+     & csq*(e0xxtt + e0yytt  + e0zztt)
+                                 fe02x = e0xxtt + alphaP*pSum0xxtt - 
+     & csq*(e0xxxx + e0xxyy  + e0xxzz)
+                                 fe02y = e0yytt + alphaP*pSum0yytt - 
+     & csq*(e0xxyy + e0yyyy  + e0yyzz)
+                                 fe02z = e0zztt + alphaP*pSum0zztt - 
+     & csq*(e0xxzz + e0yyzz  + e0zzzz)
+                                 fe02  = fe02x  + fe02y + fe02z
+                                 fe    = fe00
+                                 ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") e0xxxx,e0xxyy=",2e16.8)') i1,i2,m,e0xxxx,e0xxyy
+                                 ! Forcing on Ettt = c^2 Etxx - alphaP Pttt is fet
+                                 f1 = fe10
+                                 ! Forcing on E equation is
+                                 f4 = dtsq * (fe00 + (dtsq/12.) * (
+     & fe20 + csq * fe02))
+                                 ! Forcing for Exx equation at second order predictor is (xx derivative of fe)
+                                 f5 = dtsq * fe02
+                           end if
                         rhsPxx = 0.
                         pxxSum = 0.
                         exxv  = elap4
@@ -5728,6 +5737,7 @@ c===============================================================================
      & a0v(iv)*dtsq/(12.))*evn
                           pn(i1,i2,i3,m+iv*nd)  = (1/LHSpv(iv)) * 
      & rhspv(iv)
+                          ! write(*,'("advOpt: i1,i2=",2i3," f,fe,fp,pn=",4e12.4)') i1,i2,f(i1,i2,i3,ec),fe,fp,pn(i1,i2,i3,m+iv*nd)
                         end do
                         ! End of fourth order code
                    ! End of fourth order code

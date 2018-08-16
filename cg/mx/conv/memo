@@ -1,5 +1,1342 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
+*******************************
+********** July 5, 2018 
+
+REDO FOR Darpa QPR slides
+
+
+processCheckFiles.p -file=./dielectricCylNFDTDOrder2GDMNp1Np1maxNorm.innerOuterFixede.master.check -useGridNames=0 -c=3,4
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=2 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=4
+
+
+*******************************
+********** June 19, 2018
+
+
++++++++++++++ ROTATED PLANAR 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2.  -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterfaceRotated -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=0 -ng=4
+
+-tf=.3 modeGDM=0
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 1.15e-04 &      & 9.69e-05 &      & 5.15e+00 &      & 1.15e-04 &      & 2.54e-05 &      & 1.39e-04 &      
+twoSquaresInterfaceRotated4 &     2 & 1.09e-05 & 10.6 & 5.26e-06 & 18.4 & 5.15e+00 &  1.0 & 1.09e-05 & 10.6 & 2.10e-06 & 12.1 & 1.00e-05 & 13.9 
+twoSquaresInterfaceRotated8 &     4 & 8.60e-07 & 12.7 & 3.60e-07 & 14.6 & 5.47e+00 &  0.9 & 8.60e-07 & 12.7 & 1.62e-07 & 13.0 & 9.70e-07 & 10.3 
+twoSquaresInterfaceRotated16 &     8 & 5.77e-08 & 14.9 & 2.46e-08 & 14.6 & 5.49e+00 &  1.0 & 5.77e-08 & 14.9 & 1.15e-08 & 14.1 & 8.03e-08 & 12.1 
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 1.15e-04 &      & 9.69e-05 &      & 5.15e+00 &      & 1.15e-04 &      & 2.54e-05 &      & 1.39e-04 &      
+twoSquaresInterfaceRotated4 &     2 & 1.09e-05 & 10.6 & 5.26e-06 & 18.4 & 5.15e+00 &  1.0 & 1.09e-05 & 10.6 & 2.10e-06 & 12.1 & 1.00e-05 & 13.9 
+twoSquaresInterfaceRotated8 &     4 & 8.60e-07 & 12.7 & 3.60e-07 & 14.6 & 5.47e+00 &  0.9 & 8.60e-07 & 12.7 & 1.62e-07 & 13.0 & 9.70e-07 & 10.3 
+twoSquaresInterfaceRotated16 &     8 & 5.77e-08 & 14.9 & 2.46e-08 & 14.6 & 5.49e+00 &  1.0 & 5.77e-08 & 14.9 & 1.15e-08 & 14.1 & 8.03e-08 & 12.1 
+twoSquaresInterfaceRotated32 &    16 & 3.64e-09 & 15.9 & 1.53e-09 & 16.1 & 5.60e+00 &  1.0 & 3.64e-09 & 15.9 & 7.54e-10 & 15.3 & 6.10e-09 & 13.2 
+Convergence rates: c0=3.75 c1=3.96 c2=-0.03 c3=3.75 c4=3.76 c5=3.59
+
+
+
+-tf=.3 modeGDM=-1
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 9.63e-04 &      & 2.58e-04 &      & 2.02e+00 &      & 9.63e-04 &      & 1.48e-04 &      & 1.77e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 5.63e-05 & 17.1 & 1.17e-05 & 22.1 & 2.05e+00 &  1.0 & 5.63e-05 & 17.1 & 1.26e-05 & 11.7 & 1.04e-04 & 17.0 
+twoSquaresInterfaceRotated8 &     4 & 3.95e-06 & 14.3 & 9.39e-07 & 12.5 & 2.04e+00 &  1.0 & 3.95e-06 & 14.3 & 9.25e-07 & 13.6 & 7.80e-06 & 13.3 
+twoSquaresInterfaceRotated16 &     8 & 2.67e-07 & 14.8 & 9.01e-08 & 10.4 & 2.04e+00 &  1.0 & 2.67e-07 & 14.8 & 6.77e-08 & 13.7 & 6.56e-07 & 11.9 
+Convergence rates: c0=3.93 c1=3.81 c2=-0.00 c3=3.93 c4=3.71 c5=3.79 
+
+
+
+++++++++++++ DIELECTRIC DISK - *GDM*
+
+
+CHANGE default gdm par's 
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=4
+
+
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -modeGDM=0 -ng=4
+
+
+-tf=.5 -modeGMD=0 **resonant mode***
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 4.87e-05 &      & 8.31e-05 &      & 1.74e+01 &      & 8.31e-05 &      & 7.10e-03 &      & 7.80e-04 &      
+   innerOuterFixede4 &     4 & 2.42e-06 & 20.1 & 4.99e-06 & 16.7 & 3.31e+01 &  0.5 & 4.99e-06 & 16.7 & 5.25e-04 & 13.5 & 4.84e-05 & 16.1 
+   innerOuterFixede8 &     8 & 1.79e-07 & 13.5 & 3.43e-07 & 14.5 & 3.30e+01 &  1.0 & 3.43e-07 & 14.5 & 2.17e-05 & 24.2 & 3.53e-06 & 13.7 
+  innerOuterFixede16 &    16 & 1.23e-08 & 14.6 & 2.43e-08 & 14.1 & 1.73e+01 &  1.9 & 2.43e-08 & 14.1 & 6.89e-07 & 31.5 & 2.06e-07 & 17.1 
+Convergence rates: c0=3.96 c1=3.91 c2=0.00 c3=3.91 c4=4.46 c5=3.94 
+
+
+-tf=.5 non-resonant 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.16e-03 &      & 3.84e-03 &      & 3.79e+00 &      & 3.84e-03 &      & 3.42e-05 &      & 1.48e-03 &      
+   innerOuterFixede4 &     4 & 1.21e-04 & 17.9 & 2.10e-04 & 18.3 & 2.08e+00 &  1.8 & 2.10e-04 & 18.3 & 2.22e-06 & 15.4 & 8.72e-05 & 17.0 
+   innerOuterFixede8 &     8 & 7.54e-06 & 16.0 & 1.30e-05 & 16.2 & 2.18e+00 &  1.0 & 1.30e-05 & 16.2 & 1.39e-07 & 16.0 & 4.85e-06 & 18.0 
+  innerOuterFixede16 &    16 & 4.66e-07 & 16.2 & 7.68e-07 & 16.9 & 3.82e+00 &  0.6 & 7.68e-07 & 16.9 & 1.03e-08 & 13.5 & 3.00e-07 & 16.2 
+Convergence rates: c0=4.05 c1=4.09 c2=-0.01 c3=4.09 c4=3.91 c5=4.10 
+
+-tf=.3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.76e-03 &      & 3.07e-03 &      & 1.15e+00 &      & 3.07e-03 &      & 3.12e-05 &      & 1.59e-03 &      
+   innerOuterFixede4 &     4 & 9.58e-05 & 18.4 & 1.96e-04 & 15.7 & 1.17e+00 &  1.0 & 1.96e-04 & 15.7 & 1.86e-06 & 16.8 & 9.08e-05 & 17.5 
+   innerOuterFixede8 &     8 & 6.00e-06 & 16.0 & 1.12e-05 & 17.5 & 1.17e+00 &  1.0 & 1.12e-05 & 17.5 & 1.16e-07 & 16.0 & 5.79e-06 & 15.7 
+  innerOuterFixede16 &    16 & 3.90e-07 & 15.4 & 6.53e-07 & 17.2 & 1.17e+00 &  1.0 & 6.53e-07 & 17.2 & 8.84e-09 & 13.1 & 3.39e-07 & 17.1 
+Convergence rates: c0=4.04 c1=4.07 c2=-0.01 c3=4.07 c4=3.94 c5=4.06 
+
+
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=4
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.64e-03 &      & 2.90e-03 &      & 1.15e+00 &      & 2.90e-03 &      & 1.00e-04 &      & 1.58e-03 &      
+   innerOuterFixede4 &     4 & 8.59e-05 & 19.1 & 1.85e-04 & 15.7 & 1.15e+00 &  1.0 & 1.85e-04 & 15.7 & 5.35e-06 & 18.7 & 9.05e-05 & 17.5 
+   innerOuterFixede8 &     8 & 5.23e-06 & 16.4 & 1.06e-05 & 17.5 & 1.15e+00 &  1.0 & 1.06e-05 & 17.5 & 3.72e-07 & 14.4 & 5.79e-06 & 15.6 
+  innerOuterFixede16 &    16 & 3.79e-07 & 13.8 & 6.15e-07 & 17.2 & 1.15e+00 &  1.0 & 6.15e-07 & 17.2 & 3.39e-08 & 11.0 & 3.57e-07 & 16.2 
+Convergence rates: c0=4.03 c1=4.07 c2=0.00 c3=4.07 c4=3.84 c5=4.03 
+
+
+
+GDM : add a1 damping
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -a01=1 -a11=.1 -b01=.9 -b11=.2 -a02=.8 -a12=.15 -b02=.7 -b12=.3 -diss=0 -useSosupDissipation=1 -ng=4
+
+-tf=.5
+
+-tf=.3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.76e-03 &      & 3.06e-03 &      & 1.15e+00 &      & 3.06e-03 &      & 3.12e-05 &      & 1.59e-03 &      
+   innerOuterFixede4 &     4 & 9.63e-05 & 18.3 & 1.96e-04 & 15.6 & 1.17e+00 &  1.0 & 1.96e-04 & 15.6 & 1.86e-06 & 16.8 & 9.08e-05 & 17.5 
+   innerOuterFixede8 &     8 & 6.05e-06 & 15.9 & 1.12e-05 & 17.5 & 1.17e+00 &  1.0 & 1.12e-05 & 17.5 & 1.16e-07 & 16.0 & 5.80e-06 & 15.7 
+  innerOuterFixede16 &    16 & 3.96e-07 & 15.3 & 6.53e-07 & 17.2 & 1.17e+00 &  1.0 & 6.53e-07 & 17.2 & 8.26e-09 & 14.0 & 3.37e-07 & 17.2 
+Convergence rates: c0=4.03 c1=4.07 c2=-0.01 c3=4.07 c4=3.97 c5=4.06
+
+GDM : add b1 damping
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -a01=1 -a11=0 -b01=.9 -b11=.2 -a02=.8 -a12=0 -b02=.7 -b12=.3 -diss=0 -useSosupDissipation=1 -ng=4
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.80e-03 &      & 3.11e-03 &      & 1.15e+00 &      & 3.11e-03 &      & 2.11e-05 &      & 1.59e-03 &      
+   innerOuterFixede4 &     4 & 9.93e-05 & 18.1 & 1.99e-04 & 15.6 & 1.17e+00 &  1.0 & 1.99e-04 & 15.6 & 1.43e-06 & 14.8 & 9.09e-05 & 17.5 
+   innerOuterFixede8 &     8 & 6.32e-06 & 15.7 & 1.14e-05 & 17.5 & 1.18e+00 &  1.0 & 1.14e-05 & 17.5 & 8.51e-08 & 16.8 & 5.80e-06 & 15.7 
+  innerOuterFixede16 &    16 & 4.25e-07 & 14.9 & 6.63e-07 & 17.2 & 1.18e+00 &  1.0 & 6.63e-07 & 17.2 & 5.38e-09 & 15.8 & 3.32e-07 & 17.5 
+Convergence rates: c0=4.01 c1=4.07 c2=-0.01 c3=4.07 c4=3.99 c5=4.06 
+
+
+
+GDM : nonzero some coeff, no damping 
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -a01=1 -a11=0 -b01=.9 -b11=0 -a02=.8 -a12=0 -b02=.7 -b12=0 -diss=0 -useSosupDissipation=1 -ng=4
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.80e-03 &      & 3.11e-03 &      & 1.15e+00 &      & 3.11e-03 &      & 2.14e-05 &      & 1.59e-03 &      
+   innerOuterFixede4 &     4 & 9.93e-05 & 18.1 & 1.99e-04 & 15.6 & 1.17e+00 &  1.0 & 1.99e-04 & 15.6 & 1.46e-06 & 14.7 & 9.09e-05 & 17.5 
+   innerOuterFixede8 &     8 & 6.32e-06 & 15.7 & 1.14e-05 & 17.5 & 1.18e+00 &  1.0 & 1.14e-05 & 17.5 & 8.67e-08 & 16.8 & 5.80e-06 & 15.7 
+  innerOuterFixede16 &    16 & 4.25e-07 & 14.9 & 6.63e-07 & 17.2 & 1.18e+00 &  1.0 & 6.63e-07 & 17.2 & 5.48e-09 & 15.8 & 3.32e-07 & 17.5 
+Convergence rates: c0=4.01 c1=4.07 c2=-0.01 c3=4.07 c4=3.99 c5=4.06 
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.80e-03 &      & 3.11e-03 &      & 1.15e+00 &      & 3.11e-03 &      & 2.14e-05 &      & 1.59e-03 &      
+   innerOuterFixede4 &     4 & 9.93e-05 & 18.1 & 1.99e-04 & 15.6 & 1.17e+00 &  1.0 & 1.99e-04 & 15.6 & 1.46e-06 & 14.7 & 9.09e-05 & 17.5 
+   innerOuterFixede8 &     8 & 6.32e-06 & 15.7 & 1.14e-05 & 17.5 & 1.18e+00 &  1.0 & 1.14e-05 & 17.5 & 8.67e-08 & 16.8 & 5.80e-06 & 15.7 
+Convergence rates: c0=4.08 c1=4.05 c2=-0.02 c3=4.05 c4=3.97 c5=4.05 
+
+
+
+GDM ZERO-COEFF
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -a01=0 -a11=0 -b01=0 -b11=0 -a02=0 -a12=0 -b02=0 -b12=0 -diss=0 -useSosupDissipation=1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.80e-03 &      & 3.11e-03 &      & 1.17e+00 &      & 3.11e-03 &      & 0.00e+00 &      & 1.60e-03 &      
+   innerOuterFixede4 &     4 & 9.92e-05 & 18.1 & 1.99e-04 & 15.6 & 1.19e+00 &  1.0 & 1.99e-04 & 15.6 & 0.00e+00 &  0.0 & 9.10e-05 & 17.6 
+   innerOuterFixede8 &     8 & 6.28e-06 & 15.8 & 1.14e-05 & 17.5 & 1.19e+00 &  1.0 & 1.14e-05 & 17.5 & 0.00e+00 &  0.0 & 5.80e-06 & 15.7 
+  innerOuterFixede16 &    16 & 4.19e-07 & 15.0 & 6.63e-07 & 17.2 & 1.19e+00 &  1.0 & 6.63e-07 & 17.2 & 0.00e+00 &  0.0 & 3.31e-07 & 17.5 
+Convergence rates: c0=4.02 c1=4.07 c2=-0.01 c3=4.07 c4=-nan c5=4.07 
+
+++++++++++++ DIELECTRIC DISK NON-DISPERSIVE
+
+***kx=3
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1  -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.38e-03 &      & 2.90e-03 &      & 3.14e-03 &      & 2.90e-03 &      & 1.62e-03 &      
+   innerOuterFixede4 &     4 & 7.00e-05 & 19.7 & 1.71e-04 & 17.0 & 1.82e-04 & 17.3 & 1.71e-04 & 17.0 & 9.33e-05 & 17.4 
+   innerOuterFixede8 &     8 & 4.73e-06 & 14.8 & 1.11e-05 & 15.4 & 1.19e-05 & 15.3 & 1.11e-05 & 15.4 & 6.54e-06 & 14.3 
+  innerOuterFixede16 &    16 & 3.13e-07 & 15.1 & 6.57e-07 & 16.9 & 7.12e-07 & 16.7 & 6.57e-07 & 16.9 & 3.48e-07 & 18.8 
+Convergence rates: c0=4.02 c1=4.03 c2=4.03 c3=4.03 c4=4.04 
+
+
+
+
+*** kx=2 SOSUP-DISS RATES LOOK better than kx=1 (too smooth?)
+conv.p dielectric.conv -cyl=1 -kx=2 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1  -ng=4
+
+               grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.11e-04 &      & 3.28e-04 &      & 3.82e-04 &      & 3.28e-04 &      & 2.98e-04 &      
+   innerOuterFixede4 &     4 & 1.08e-05 & 19.5 & 2.13e-05 & 15.4 & 2.32e-05 & 16.5 & 2.13e-05 & 15.4 & 1.76e-05 & 16.9 
+   innerOuterFixede8 &     8 & 8.21e-07 & 13.2 & 1.30e-06 & 16.4 & 1.38e-06 & 16.8 & 1.30e-06 & 16.4 & 1.08e-06 & 16.3 
+  innerOuterFixede16 &    16 & 5.62e-08 & 14.6 & 8.00e-08 & 16.2 & 8.30e-08 & 16.6 & 8.00e-08 & 16.2 & 7.35e-08 & 14.7 
+Convergence rates: c0=3.93 c1=4.00 c2=4.06 c3=4.00 c4=4.00
+
+
+
+++++++++++++ scattering from a cylinder
+
+sosup-dissipation looks OK now 
+conv.p scat.conv -tf=.5 -tp=.5 -order=4 -cg=cicFixed -cons=0 -useSosupDissipation=1  -ng=4
+
+                grid  & N &   $E_x$ & r &   $E_y$    & r & $H_z$   & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+           cicFixed2 &     1 & 1.58e-03 &      & 2.80e-03 &      & 1.15e-04 &      & 2.80e-03 &      & 2.56e-03 &      
+           cicFixed4 &     2 & 1.39e-04 & 11.4 & 2.41e-04 & 11.6 & 5.71e-06 & 20.1 & 2.41e-04 & 11.6 & 2.77e-04 &  9.2 
+           cicFixed8 &     4 & 1.03e-05 & 13.5 & 1.77e-05 & 13.6 & 3.73e-07 & 15.3 & 1.77e-05 & 13.6 & 2.41e-05 & 11.5 
+          cicFixed16 &     8 & 7.06e-07 & 14.6 & 1.22e-06 & 14.5 & 2.42e-08 & 15.4 & 1.22e-06 & 14.5 & 1.80e-06 & 13.4 
+          cicFixed32 &    16 & 4.62e-08 & 15.3 & 7.97e-08 & 15.3 & 1.52e-09 & 15.9 & 7.97e-08 & 15.3 & 1.23e-07 & 14.6 
+Convergence rates: c0=3.77 c1=3.78 c2=4.03 c3=3.78 c4=3.60 
+
+
+*******************************
+********** June 18, 2018
+
+
+++++++++++++ BACK TO GDM DIELECTRIC DISK
+
+conv.p dielectric.conv -cyl=1 -tf=1 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=5
+
+-tf=1  ***TROUBLE**
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.72e-05 &      & 1.38e-05 &      & 3.69e-01 &      & 1.72e-05 &      & 2.44e-06 &      & 4.47e-05 &      
+   innerOuterFixede4 &     4 & 1.76e-06 &  9.8 & 1.17e-06 & 11.8 & 3.92e-01 &  0.9 & 1.76e-06 &  9.8 & 2.27e-07 & 10.7 & 5.86e-06 &  7.6 
+   innerOuterFixede8 &     8 & 1.40e-07 & 12.6 & 1.24e-07 &  9.4 & 3.89e-01 &  1.0 & 1.40e-07 & 12.6 & 3.45e-08 &  6.6 & 6.04e-07 &  9.7 
+  innerOuterFixede16 &    16 & 9.88e-09 & 14.2 & 1.68e-08 &  7.4 & 3.93e-01 &  1.0 & 1.68e-08 &  8.3 & 5.55e-09 &  6.2 & 4.87e-08 & 12.4 
+Convergence rates: c0=3.59 c1=3.23 c2=-0.03 c3=3.37 c4=2.91 c5=3.28 
+
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=5
+-tf=. 3***TROUBLE**
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.36e-05 &      & 1.43e-05 &      & 2.14e+00 &      & 1.43e-05 &      & 1.79e-06 &      & 4.49e-05 &      
+   innerOuterFixede4 &     4 & 1.64e-06 &  8.3 & 1.30e-06 & 11.0 & 2.17e+00 &  1.0 & 1.64e-06 &  8.7 & 2.11e-07 &  8.5 & 7.13e-06 &  6.3 
+   innerOuterFixede8 &     8 & 1.58e-07 & 10.4 & 1.23e-07 & 10.6 & 2.19e+00 &  1.0 & 1.58e-07 & 10.4 & 1.90e-08 & 11.1 & 7.07e-07 & 10.1 
+  innerOuterFixede16 &    16 & 1.35e-08 & 11.7 & 8.37e-09 & 14.7 & 2.21e+00 &  1.0 & 1.35e-08 & 11.7 & 1.72e-09 & 11.0 & 5.65e-08 & 12.5 
+  innerOuterFixede32 &    32 & 1.31e-09 & 10.3 & 9.92e-10 &  8.4 & 2.21e+00 &  1.0 & 1.31e-09 & 10.3 & 1.74e-10 &  9.9 & 4.32e-09 & 13.1 
+Convergence rates: c0=3.36 c1=3.49 c2=-0.01 c3=3.38 c4=3.36 c5=3.37 
+
+
+++++++++++++ DIELECTRIC DISK
+
+Changed order of extrapolation for interpolation neighbours -- advanceStructured
+
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1 -stageOption=IB-DB -cfl=.75 -ng=4
+
+
+STAGE IB-DB -- lower cfl needed
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.27e-05 &      & 1.35e-05 &      & 1.22e-05 &      & 1.35e-05 &      & 4.31e-05 &      
+   innerOuterFixede4 &     4 & 1.45e-06 &  8.8 & 1.53e-06 &  8.8 & 7.65e-07 & 15.9 & 1.53e-06 &  8.8 & 6.43e-06 &  6.7 
+   innerOuterFixede8 &     8 & 1.32e-07 & 11.0 & 1.45e-07 & 10.6 & 5.12e-08 & 14.9 & 1.45e-07 & 10.6 & 6.30e-07 & 10.2 
+  innerOuterFixede16 &    16 & 1.02e-08 & 12.9 & 1.11e-08 & 13.1 & 3.26e-09 & 15.7 & 1.11e-08 & 13.1 & 4.92e-08 & 12.8 
+Convergence rates: c0=3.43 c1=3.41 c2=3.95 c3=3.41 c4=3.27
+
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1  -ng=4
+DEFAULT STAGE
+
+
+-tf=.3 -- better  -- extrap-interp-neighbours order=6
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.28e-05 &      & 1.36e-05 &      & 1.26e-05 &      & 1.36e-05 &      & 4.30e-05 &      
+   innerOuterFixede4 &     4 & 1.44e-06 &  8.9 & 1.55e-06 &  8.8 & 7.35e-07 & 17.1 & 1.55e-06 &  8.8 & 6.47e-06 &  6.6 
+   innerOuterFixede8 &     8 & 1.32e-07 & 10.9 & 1.45e-07 & 10.7 & 4.88e-08 & 15.1 & 1.45e-07 & 10.7 & 6.32e-07 & 10.2 
+  innerOuterFixede16 &    16 & 1.03e-08 & 12.8 & 1.11e-08 & 13.1 & 3.16e-09 & 15.4 & 1.11e-08 & 13.1 & 4.95e-08 & 12.8 
+Convergence rates: c0=3.43 c1=3.42 c2=3.98 c3=3.42 c4=3.26 
+
+
+-tf=.3 -- better  -- extrap-interp-neighbours order=5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.22e-05 &      & 1.46e-05 &      & 1.25e-05 &      & 1.46e-05 &      & 4.36e-05 &      
+   innerOuterFixede4 &     4 & 1.44e-06 &  8.5 & 1.59e-06 &  9.2 & 7.33e-07 & 17.1 & 1.59e-06 &  9.2 & 6.43e-06 &  6.8 
+   innerOuterFixede8 &     8 & 1.32e-07 & 10.9 & 1.46e-07 & 10.9 & 4.85e-08 & 15.1 & 1.46e-07 & 10.9 & 6.34e-07 & 10.1 
+  innerOuterFixede16 &    16 & 1.03e-08 & 12.8 & 1.11e-08 & 13.2 & 3.16e-09 & 15.3 & 1.11e-08 & 13.2 & 4.95e-08 & 12.8 
+  innerOuterFixede32 &    32 & 7.24e-10 & 14.2 & 7.61e-10 & 14.6 & 1.92e-10 & 16.5 & 7.61e-10 & 14.6 & 3.49e-09 & 14.2 
+Convergence rates: c0=3.52 c1=3.56 c2=3.98 c3=3.56 c4=3.42 
+
+
+
+++++++++++++ scattering from a cylinder
+
+
+conv.p scat.conv -tf=.5 -tp=.5 -order=4 -cg=cicFixed -cons=0 -useSosupDissipation=1  -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+           cicFixed2 &     1 & 1.59e-03 &      & 2.76e-03 &      & 2.15e-04 &      & 2.76e-03 &      & 2.60e-03 &      
+           cicFixed4 &     2 & 1.37e-04 & 11.6 & 2.43e-04 & 11.4 & 1.87e-05 & 11.5 & 2.43e-04 & 11.4 & 2.75e-04 &  9.5 
+           cicFixed8 &     4 & 1.05e-05 & 13.0 & 1.80e-05 & 13.5 & 2.73e-06 &  6.8 & 1.80e-05 & 13.5 & 2.69e-05 & 10.2 
+          cicFixed16 &     8 & 7.23e-07 & 14.5 & 1.26e-06 & 14.3 & 2.48e-07 & 11.0 & 1.26e-06 & 14.3 & 2.63e-06 & 10.2 
+Convergence rates: c0=3.70 c1=3.70 c2=3.21 c3=3.70 c4=3.32 
+
+conv.p scat.conv -tf=.5 -tp=.5 -order=4 -cg=cicFixed -cons=0 -ng=4
+NO DISS
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+           cicFixed2 &     1 & 1.52e-03 &      & 2.63e-03 &      & 8.05e-05 &      & 2.63e-03 &      & 2.44e-03 &      
+           cicFixed4 &     2 & 1.38e-04 & 11.0 & 2.39e-04 & 11.0 & 5.20e-06 & 15.5 & 2.39e-04 & 11.0 & 2.77e-04 &  8.8 
+           cicFixed8 &     4 & 1.03e-05 & 13.4 & 1.77e-05 & 13.5 & 3.62e-07 & 14.4 & 1.77e-05 & 13.5 & 2.41e-05 & 11.5 
+          cicFixed16 &     8 & 7.06e-07 & 14.6 & 1.22e-06 & 14.5 & 2.39e-08 & 15.1 & 1.22e-06 & 14.5 & 1.80e-06 & 13.4 
+Convergence rates: c0=3.70 c1=3.70 c2=3.90 c3=3.70 c4=3.47
+
+
++++++++++++++  REVISIT DIELECTRIC DISK
+
+TRY different stage option
+
+need to reduce cfl 
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1 -stageOption=IB-DB -cfl=.75 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.53e-05 &      & 2.60e-05 &      & 1.39e-05 &      & 2.60e-05 &      & 5.61e-05 &      
+   innerOuterFixede4 &     4 & 1.68e-06 &  9.1 & 3.53e-06 &  7.4 & 1.59e-06 &  8.7 & 3.53e-06 &  7.4 & 1.11e-05 &  5.1 
+   innerOuterFixede8 &     8 & 1.69e-07 &  9.9 & 5.25e-07 &  6.7 & 1.58e-07 & 10.1 & 5.25e-07 &  6.7 & 2.52e-06 &  4.4 
+  innerOuterFixede16 &    16 & 2.11e-08 &  8.0 & 6.87e-08 &  7.6 & 2.06e-08 &  7.7 & 6.87e-08 &  7.6 & 5.96e-07 &  4.2 
+Convergence rates: c0=3.18 c1=2.84 c2=3.15 c3=2.84 c4=2.18 
+
+
+
+DEFAULT:
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -useSosupDissipation=1 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.49e-05 &      & 4.88e-05 &      & 1.66e-05 &      & 4.88e-05 &      & 9.12e-05 &      
+   innerOuterFixede4 &     4 & 2.14e-06 &  7.0 & 6.69e-06 &  7.3 & 2.68e-06 &  6.2 & 6.69e-06 &  7.3 & 1.70e-05 &  5.4 
+   innerOuterFixede8 &     8 & 2.21e-07 &  9.7 & 9.76e-07 &  6.9 & 2.27e-07 & 11.8 & 9.76e-07 &  6.9 & 4.04e-06 &  4.2 
+Convergence rates: c0=3.04 c1=2.82 c2=3.10 c3=2.82 c4=2.25 
+
+NORMAL Dissipation
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=.5 -ng=5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 5.59e-05 &      & 6.12e-05 &      & 7.66e-05 &      & 6.12e-05 &      & 7.74e-05 &      
+   innerOuterFixede4 &     4 & 3.56e-06 & 15.7 & 3.91e-06 & 15.7 & 4.81e-06 & 15.9 & 3.91e-06 & 15.7 & 8.31e-06 &  9.3 
+   innerOuterFixede8 &     8 & 2.40e-07 & 14.8 & 2.97e-07 & 13.2 & 3.00e-07 & 16.0 & 2.97e-07 & 13.2 & 7.51e-07 & 11.1 
+  innerOuterFixede16 &    16 & 1.59e-08 & 15.1 & 2.06e-08 & 14.4 & 1.88e-08 & 16.0 & 2.06e-08 & 14.4 & 5.71e-08 & 13.2 
+Convergence rates: c0=3.92 c1=3.83 c2=4.00 c3=3.83 c4=3.47 
+
+*******************************
+********** June 17, 2018
+
+REVISIT DIELECTRIC DISK
+
+conv.p dielectric.conv -cyl=1 -tf=.2 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0 -cfl=.5 -useSosupDissipation=1 -sosupParameter=4 -ng=4
+
+**** TODO *** TEST different stage option 
+
+
+
+decrease sosup coeff
+
+
+increase sosup-coeff by 4 
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 3.72e-05 &      & 9.23e-05 &      & 4.84e-05 &      & 9.23e-05 &      & 1.44e-04 &      
+   innerOuterFixede4 &     4 & 4.76e-06 &  7.8 & 1.45e-05 &  6.4 & 5.11e-06 &  9.5 & 1.45e-05 &  6.4 & 3.15e-05 &  4.6 
+   innerOuterFixede8 &     8 & 6.03e-07 &  7.9 & 1.90e-06 &  7.6 & 4.28e-07 & 11.9 & 1.90e-06 &  7.6 & 5.48e-06 &  5.7 
+Convergence rates: c0=2.97 c1=2.80 c2=3.41 c3=2.80 c4=2.36 
+
+-tf=.2 -cfl=.5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.88e-05 &      & 2.79e-05 &      & 1.90e-05 &      & 2.79e-05 &      & 6.88e-05 &      
+   innerOuterFixede4 &     4 & 1.85e-06 & 10.2 & 4.46e-06 &  6.3 & 2.63e-06 &  7.2 & 4.46e-06 &  6.3 & 1.81e-05 &  3.8 
+   innerOuterFixede8 &     8 & 2.22e-07 &  8.3 & 6.41e-07 &  7.0 & 3.08e-07 &  8.5 & 6.41e-07 &  7.0 & 3.56e-06 &  5.1 
+Convergence rates: c0=3.20 c1=2.72 c2=2.97 c3=2.72 c4=2.14 
+
+*******************************
+********** June 16, 2018
+
+
+TEST DIELECTRIC DISK 
+
+conv.p dielectric.conv -cyl=1 -tf=1 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0 -useSosupDissipation=1 -ng=5
+
+
+-tf=1 NO-GDM *BROKEN*
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.08e-05 &      & 5.15e-05 &      & 2.63e-05 &      & 5.15e-05 &      & 6.87e-05 &      
+   innerOuterFixede4 &     4 & 2.57e-06 &  8.1 & 4.94e-06 & 10.4 & 2.15e-06 & 12.2 & 4.94e-06 & 10.4 & 1.05e-05 &  6.5 
+   innerOuterFixede8 &     8 & 2.16e-07 & 11.9 & 3.78e-07 & 13.1 & 2.26e-07 &  9.5 & 3.78e-07 & 13.1 & 1.68e-06 &  6.2 
+  innerOuterFixede16 &    16 & 1.82e-08 & 11.9 & 3.75e-08 & 10.1 & 2.28e-08 &  9.9 & 3.75e-08 & 10.1 & 3.45e-07 &  4.9 
+Convergence rates: c0=3.40 c1=3.50 c2=3.38 c3=3.50 c4=2.56
+
+
+-tf=1 GDM
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.87e-05 &      & 4.74e-05 &      & 3.69e-01 &      & 4.74e-05 &      & 2.42e-06 &      & 5.19e-05 &      
+   innerOuterFixede4 &     4 & 3.02e-06 &  6.2 & 3.07e-06 & 15.4 & 3.92e-01 &  0.9 & 3.07e-06 & 15.4 & 2.17e-07 & 11.2 & 1.51e-05 &  3.4 
+   innerOuterFixede8 &     8 & 1.68e-07 & 18.0 & 2.54e-07 & 12.1 & 3.89e-01 &  1.0 & 2.54e-07 & 12.1 & 1.93e-08 & 11.2 & 1.66e-06 &  9.1 
+  innerOuterFixede16 &    16 & 1.57e-08 & 10.7 & 2.26e-08 & 11.2 & 3.93e-01 &  1.0 & 2.26e-08 & 11.2 & 2.67e-09 &  7.2 & 3.36e-07 &  4.9 
+Convergence rates: c0=3.48 c1=3.67 c2=-0.03 c3=3.67 c4=3.30 c5=2.50 
+
+
+
+conv.p dielectric.conv -cyl=1 -tf=.3 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0  -useSosupDissipation=0 -ng=3
+
+***NEW***
+
+-diss=.5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 1.00e-04 &      & 2.09e-04 &      & 1.87e-04 &      & 2.09e-04 &      & 1.05e-04 &      
+        innerOutere4 &     4 & 5.62e-06 & 17.8 & 1.41e-05 & 14.8 & 1.11e-05 & 16.8 & 1.41e-05 & 14.8 & 5.76e-06 & 18.2 
+        innerOutere8 &     8 & 3.43e-07 & 16.4 & 9.49e-07 & 14.9 & 6.97e-07 & 15.9 & 9.49e-07 & 14.9 & 4.47e-07 & 12.9 
+       innerOutere16 &    16 & 2.09e-08 & 16.4 & 6.23e-08 & 15.2 & 4.36e-08 & 16.0 & 6.23e-08 & 15.2 & 6.02e-08 &  7.4 
+Convergence rates: c0=4.07 c1=3.90 c2=4.02 c3=3.90 c4=3.60
+
+-diss=.1
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 2.62e-05 &      & 5.44e-05 &      & 4.63e-05 &      & 5.44e-05 &      & 3.50e-05 &      
+        innerOutere4 &     4 & 1.40e-06 & 18.7 & 3.55e-06 & 15.3 & 2.72e-06 & 17.0 & 3.55e-06 & 15.3 & 3.00e-06 & 11.7 
+        innerOutere8 &     8 & 8.17e-08 & 17.1 & 2.54e-07 & 14.0 & 1.72e-07 & 15.8 & 2.54e-07 & 14.0 & 2.94e-07 & 10.2 
+       innerOutere16 &    16 & 3.69e-08 &  2.2 & 3.61e-08 &  7.0 & 3.54e-08 &  4.9 & 3.69e-08 &  6.9 & 2.52e-06 &  0.1 
+Convergence rates: c0=3.25 c1=3.55 c2=3.50 c3=3.54 c4=1.47 
+
+
+*** FD44  **OLD RESULTS******
+conv.p dielectric.conv -cyl=1 -tf=1. -tp=1. -order=4 -diss=.1 -name="innerOutere" -ng=5
+               grid  & N &  $E_x$ & r &  $E_y$ & r & $H_z$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 1.89e-04 &      & 4.07e-04 &      & 3.68e-04 &      & 2.12e-04 &      
+        innerOutere4 &     4 & 1.09e-05 & 17.3 & 2.75e-05 & 14.8 & 2.17e-05 & 17.0 & 1.17e-05 & 18.1 
+        innerOutere8 &     8 & 6.74e-07 & 16.2 & 1.85e-06 & 14.9 & 1.37e-06 & 15.8 & 8.04e-07 & 14.6 
+       innerOutere16 &    16 & 4.18e-08 & 16.1 & 1.22e-07 & 15.2 & 8.54e-08 & 16.0 & 6.34e-08 & 12.7 
+Convergence rates: c0=4.04 c1=3.90 c2=4.02 c3=3.90 
+
+
+
+NO GDM -- trouble here too! *BROKEN*
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=4 -name="innerOuterFixede" -dm=none -diss=0  -useSosupDissipation=1 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.66e-05 &      & 3.75e-05 &      & 1.76e-05 &      & 3.75e-05 &      & 7.56e-05 &      
+   innerOuterFixede4 &     4 & 2.22e-06 &  7.5 & 7.34e-06 &  5.1 & 2.38e-06 &  7.4 & 7.34e-06 &  5.1 & 1.69e-05 &  4.5 
+   innerOuterFixede8 &     8 & 2.48e-07 &  9.0 & 9.39e-07 &  7.8 & 3.00e-07 &  7.9 & 9.39e-07 &  7.8 & 3.48e-06 &  4.9 
+  innerOuterFixede16 &    16 & 2.43e-08 & 10.2 & 1.10e-07 &  8.5 & 3.11e-08 &  9.6 & 1.10e-07 &  8.5 & 6.48e-07 &  5.4 
+Convergence rates: c0=3.14 c1=2.82 c2=3.04 c3=2.82 c4=2.29 
+
+
+TEST ROTATED PLANE MATERIAL INTERFACE
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2.  -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterfaceRotated -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+
+-tf=.7
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 2.33e-03 &      & 6.29e-04 &      & 9.44e-01 &      & 2.33e-03 &      & 5.49e-04 &      & 2.96e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 1.12e-04 & 20.8 & 2.96e-05 & 21.2 & 1.01e+00 &  0.9 & 1.12e-04 & 20.8 & 2.16e-05 & 25.4 & 1.56e-04 & 19.0 
+twoSquaresInterfaceRotated8 &     4 & 6.83e-06 & 16.4 & 1.81e-06 & 16.4 & 1.05e+00 &  1.0 & 6.83e-06 & 16.4 & 1.19e-06 & 18.2 & 8.35e-06 & 18.7 
+twoSquaresInterfaceRotated16 &     8 & 4.39e-07 & 15.6 & 1.17e-07 & 15.5 & 2.89e-01 &  3.6 & 4.39e-07 & 15.6 & 8.50e-08 & 14.0 & 6.12e-07 & 13.6 
+twoSquaresInterfaceRotated32 &    16 & 2.74e-08 & 16.0 & 1.26e-08 &  9.3 & 2.94e-01 &  1.0 & 2.74e-08 & 16.0 & 6.62e-09 & 12.8 & 4.68e-08 & 13.1 
+Convergence rates: c0=4.07 c1=3.92 c2=0.52 c3=4.07 c4=4.07 c5=3.99
+
+
+-tf=.3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 9.63e-04 &      & 2.58e-04 &      & 2.02e+00 &      & 9.63e-04 &      & 1.48e-04 &      & 1.77e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 5.63e-05 & 17.1 & 1.17e-05 & 22.1 & 2.05e+00 &  1.0 & 5.63e-05 & 17.1 & 1.26e-05 & 11.7 & 1.04e-04 & 17.0 
+twoSquaresInterfaceRotated8 &     4 & 3.95e-06 & 14.3 & 9.39e-07 & 12.5 & 2.04e+00 &  1.0 & 3.95e-06 & 14.3 & 9.25e-07 & 13.6 & 7.80e-06 & 13.3 
+twoSquaresInterfaceRotated16 &     8 & 2.67e-07 & 14.8 & 9.01e-08 & 10.4 & 2.04e+00 &  1.0 & 2.67e-07 & 14.8 & 6.77e-08 & 13.7 & 6.56e-07 & 11.9 
+twoSquaresInterfaceRotated32 &    16 & 1.85e-08 & 14.4 & 9.61e-09 &  9.4 & 2.06e+00 &  1.0 & 1.85e-08 & 14.4 & 5.25e-09 & 12.9 & 5.91e-08 & 11.1 
+Convergence rates: c0=3.91 c1=3.64 c2=-0.00 c3=3.91 c4=3.71 c5=3.70 
+
+
+*******************************
+********** June 15, 2018
+
+
+TEST DIELECTRIC DISK + GDM
+
+
+ORDER=4: *trouble* more like 3rd order
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0  -useSosupDissipation=1 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 1.69e-05 &      & 5.28e-05 &      & 2.58e+00 &      & 5.28e-05 &      & 2.62e-06 &      & 6.54e-05 &      
+   innerOuterFixede4 &     4 & 2.23e-06 &  7.6 & 5.87e-06 &  9.0 & 1.66e+00 &  1.6 & 5.87e-06 &  9.0 & 2.95e-07 &  8.9 & 1.54e-05 &  4.2 
+   innerOuterFixede8 &     8 & 2.49e-07 &  9.0 & 7.49e-07 &  7.8 & 1.75e+00 &  0.9 & 7.49e-07 &  7.8 & 2.68e-08 & 11.0 & 3.31e-06 &  4.7 
+  innerOuterFixede16 &    16 & 2.33e-08 & 10.7 & 8.60e-08 &  8.7 & 2.65e+00 &  0.7 & 8.60e-08 &  8.7 & 3.58e-09 &  7.5 & 6.20e-07 &  5.3 
+Convergence rates: c0=3.17 c1=3.08 c2=-0.02 c3=3.08 c4=3.20 c5=2.24 
+
+
+
+ORDER=2 TEST FIXED GRID -- looks good!
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=2 -name="innerOuterFixede" -dm=gdm -npv=1 1 -diss=0  -useSosupDissipation=1 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.29e-03 &      & 6.01e-03 &      & 2.53e+00 &      & 6.01e-03 &      & 5.42e-04 &      & 9.47e-03 &      
+   innerOuterFixede4 &     4 & 5.87e-04 &  3.9 & 1.63e-03 &  3.7 & 1.76e+00 &  1.4 & 1.63e-03 &  3.7 & 1.45e-04 &  3.7 & 2.61e-03 &  3.6 
+   innerOuterFixede8 &     8 & 1.46e-04 &  4.0 & 4.24e-04 &  3.8 & 1.84e+00 &  1.0 & 4.24e-04 &  3.8 & 3.81e-05 &  3.8 & 6.87e-04 &  3.8 
+  innerOuterFixede16 &    16 & 3.75e-05 &  3.9 & 1.09e-04 &  3.9 & 2.63e+00 &  0.7 & 1.09e-04 &  3.9 & 9.53e-06 &  4.0 & 1.75e-04 &  3.9 
+Convergence rates: c0=1.98 c1=1.93 c2=-0.02 c3=1.93 c4=1.94 c5=1.92 
+
+
+
+GDM ORDER=2 mode=0 (large P)
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=2 -name="innerOutere" -dm=gdm -npv=1 1 -diss=0  -useSosupDissipation=1 -modeGDM=0 -ng=4
+
+-tf=1
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 2.96e-04 &      & 4.20e-04 &      & 8.41e+00 &      & 4.20e-04 &      & 4.51e-03 &      & 1.46e-02 &      
+        innerOutere4 &     4 & 7.43e-05 &  4.0 & 1.22e-04 &  3.4 & 8.48e+00 &  1.0 & 1.22e-04 &  3.4 & 6.66e-04 &  6.8 & 3.74e-03 &  3.9 
+        innerOutere8 &     8 & 2.24e-05 &  3.3 & 2.51e-05 &  4.9 & 1.52e+01 &  0.6 & 2.51e-05 &  4.9 & 8.46e-05 &  7.9 & 1.00e-03 &  3.7 
+       innerOutere16 &    16 & 6.53e-06 &  3.4 & 9.64e-06 &  2.6 & 8.43e+00 &  1.8 & 9.64e-06 &  2.6 & 1.06e-05 &  8.0 & 2.95e-04 &  3.4 
+Convergence rates: c0=1.82 c1=1.86 c2=-0.09 c3=1.86 c4=2.92 c5=1.88
+
+-tf=.5
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 3.06e-04 &      & 8.24e-04 &      & 4.49e+00 &      & 8.24e-04 &      & 4.50e-03 &      & 1.40e-02 &      
+        innerOutere4 &     4 & 1.01e-04 &  3.0 & 2.19e-04 &  3.8 & 4.66e+00 &  1.0 & 2.19e-04 &  3.8 & 7.19e-04 &  6.3 & 3.57e-03 &  3.9 
+        innerOutere8 &     8 & 2.69e-05 &  3.8 & 5.00e-05 &  4.4 & 4.66e+00 &  1.0 & 5.00e-05 &  4.4 & 9.65e-05 &  7.5 & 9.95e-04 &  3.6 
+       innerOutere16 &    16 & 6.36e-06 &  4.2 & 1.60e-05 &  3.1 & 4.59e+00 &  1.0 & 1.60e-05 &  3.1 & 1.23e-05 &  7.8 & 2.85e-04 &  3.5 
+Convergence rates: c0=1.87 c1=1.92 c2=-0.01 c3=1.92 c4=2.84 c5=1.87
+
+GDM ORDER=2
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=2 -name="innerOutere" -dm=gdm -npv=1 1 -diss=0  -useSosupDissipation=1 -ng=4
+
+
+-tf=1
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 3.05e-03 &      & 6.75e-03 &      & 3.71e-01 &      & 6.75e-03 &      & 7.71e-04 &      & 9.52e-03 &      
+        innerOutere4 &     4 & 6.25e-04 &  4.9 & 1.77e-03 &  3.8 & 3.66e-01 &  1.0 & 1.77e-03 &  3.8 & 2.02e-04 &  3.8 & 2.53e-03 &  3.8 
+        innerOutere8 &     8 & 1.66e-04 &  3.8 & 4.46e-04 &  4.0 & 1.14e+00 &  0.3 & 4.46e-04 &  4.0 & 5.05e-05 &  4.0 & 7.35e-04 &  3.4 
+       innerOutere16 &    16 & 4.88e-05 &  3.4 & 1.26e-04 &  3.5 & 3.76e-01 &  3.0 & 1.26e-04 &  3.5 & 1.26e-05 &  4.0 & 2.12e-04 &  3.5 
+Convergence rates: c0=1.98 c1=1.92 c2=-0.17 c3=1.92 c4=1.98 c5=1.82 
+
+
+
+-tf=.5
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 2.43e-03 &      & 5.30e-03 &      & 2.53e+00 &      & 5.30e-03 &      & 5.47e-04 &      & 9.01e-03 &      
+        innerOutere4 &     4 & 6.51e-04 &  3.7 & 1.34e-03 &  4.0 & 2.59e+00 &  1.0 & 1.34e-03 &  4.0 & 1.54e-04 &  3.6 & 2.38e-03 &  3.8 
+        innerOutere8 &     8 & 1.72e-04 &  3.8 & 3.19e-04 &  4.2 & 2.64e+00 &  1.0 & 3.19e-04 &  4.2 & 3.77e-05 &  4.1 & 7.20e-04 &  3.3 
+       innerOutere16 &    16 & 4.78e-05 &  3.6 & 9.87e-05 &  3.2 & 2.63e+00 &  1.0 & 9.87e-05 &  3.2 & 9.88e-06 &  3.8 & 2.08e-04 &  3.5 
+Convergence rates: c0=1.89 c1=1.93 c2=-0.02 c3=1.93 c4=1.94 c5=1.80 
+
+
+************************
+****** June 15, 2018
+
+FIXED ... forgot to scale a0,a1 in interface3d
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.5 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4w
+
+-tf=.7 **OK**
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.21e-03 &      & 2.10e-03 &      & 9.44e-01 &      & 2.10e-03 &      & 4.94e-04 &      & 3.69e-03 &      
+twoSquaresInterface4 &     2 & 5.85e-05 & 20.7 & 1.00e-04 & 21.0 & 1.01e+00 &  0.9 & 1.00e-04 & 21.0 & 1.94e-05 & 25.5 & 1.94e-04 & 19.0 
+twoSquaresInterface8 &     4 & 3.55e-06 & 16.5 & 6.11e-06 & 16.4 & 1.05e+00 &  1.0 & 6.11e-06 & 16.4 & 9.77e-07 & 19.9 & 1.04e-05 & 18.7 
+twoSquaresInterface16 &     8 & 2.28e-07 & 15.6 & 3.93e-07 & 15.5 & 2.89e-01 &  3.6 & 3.93e-07 & 15.5 & 5.68e-08 & 17.2 & 7.00e-07 & 14.9 
+twoSquaresInterface32 &    16 & 1.42e-08 & 16.1 & 2.45e-08 & 16.0 & 2.94e-01 &  1.0 & 2.45e-08 & 16.0 & 3.74e-09 & 15.2 & 6.19e-08 & 11.3 
+Convergence rates: c0=4.08 c1=4.08 c2=0.52 c3=4.08 c4=4.24 c5=3.98 
+
+
+-tf=.5 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.08e-03 &      & 1.88e-03 &      & 1.47e+00 &      & 1.88e-03 &      & 3.57e-04 &      & 3.44e-03 &      
+twoSquaresInterface4 &     2 & 4.52e-05 & 23.9 & 7.88e-05 & 23.9 & 1.60e+00 &  0.9 & 7.88e-05 & 23.9 & 1.72e-05 & 20.8 & 1.81e-04 & 19.0 
+twoSquaresInterface8 &     4 & 2.04e-06 & 22.2 & 3.53e-06 & 22.3 & 1.60e+00 &  1.0 & 3.53e-06 & 22.3 & 9.40e-07 & 18.3 & 1.30e-05 & 13.9 
+twoSquaresInterface16 &     8 & 1.22e-07 & 16.7 & 2.11e-07 & 16.7 & 1.08e+00 &  1.5 & 2.11e-07 & 16.7 & 5.76e-08 & 16.3 & 1.18e-06 & 11.0 
+twoSquaresInterface32 &    16 & 7.45e-09 & 16.4 & 1.45e-08 & 14.6 & 1.63e+00 &  0.7 & 1.45e-08 & 14.6 & 5.01e-09 & 11.5 & 1.13e-07 & 10.4 
+Convergence rates: c0=4.28 c1=4.25 c2=0.03 c3=4.25 c4=4.05 c5=3.70
+
+
+
+************************
+****** June 14, 2018
+
+REWORK CODE GDM PARAMETERS TO MATCH THE PAPER -- **BROKEN**
+
+eps1=eps2 OK
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 7.47e-04 &      & 1.33e-03 &      & 2.02e+00 &      & 1.33e-03 &      & 3.67e-04 &      & 3.46e-03 &      
+twoSquaresInterface4 &     2 & 1.35e-04 &  5.5 & 4.23e-04 &  3.1 & 2.05e+00 &  1.0 & 4.23e-04 &  3.1 & 2.08e-04 &  1.8 & 1.03e-03 &  3.4 
+twoSquaresInterface8 &     4 & 3.13e-05 &  4.3 & 1.59e-04 &  2.7 & 2.04e+00 &  1.0 & 1.59e-04 &  2.7 & 1.15e-04 &  1.8 & 4.06e-04 &  2.5 
+twoSquaresInterface16 &     8 & 7.69e-06 &  4.1 & 7.24e-05 &  2.2 & 2.04e+00 &  1.0 & 7.24e-05 &  2.2 & 5.86e-05 &  2.0 & 1.82e-04 &  2.2 
+Convergence rates: c0=2.19 c1=1.40 c2=-0.00 c3=1.40 c4=0.88 c5=1.41
+
+
+**********************
+****** June 12-13, 2018
+
+POSSIBLE BUG FOUND -- alphaP was not consistent!!
+
+
+
+
+REVISIT -- EXTRAPOLATE GHOST  WORKS!
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+
+-tf=.7
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.57e-03 &      & 2.73e-03 &      & 1.08e+00 &      & 2.73e-03 &      & 3.10e-04 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 8.31e-05 & 18.9 & 1.46e-04 & 18.7 & 1.05e+00 &  1.0 & 1.46e-04 & 18.7 & 1.29e-05 & 24.0 & 2.27e-04 & 18.9 
+twoSquaresInterface8 &     4 & 4.94e-06 & 16.8 & 8.62e-06 & 16.9 & 1.10e+00 &  1.0 & 8.62e-06 & 16.9 & 6.51e-07 & 19.8 & 1.27e-05 & 17.9 
+twoSquaresInterface16 &     8 & 3.14e-07 & 15.7 & 5.46e-07 & 15.8 & 2.89e-01 &  3.8 & 5.46e-07 & 15.8 & 3.79e-08 & 17.2 & 8.12e-07 & 15.6 
+twoSquaresInterface32 &    16 & 1.94e-08 & 16.2 & 3.38e-08 & 16.2 & 2.94e-01 &  1.0 & 3.38e-08 & 16.2 & 2.25e-09 & 16.8 & 5.13e-08 & 15.8 
+Convergence rates: c0=4.07 c1=4.07 c2=0.56 c3=4.07 c4=4.26 c5=4.08
+
+
+-tf=.5 : looks good
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.41e-03 &      & 2.45e-03 &      & 1.65e+00 &      & 2.45e-03 &      & 2.35e-04 &      & 4.12e-03 &      
+twoSquaresInterface4 &     2 & 5.80e-05 & 24.3 & 1.00e-04 & 24.5 & 1.76e+00 &  0.9 & 1.00e-04 & 24.5 & 1.14e-05 & 20.6 & 2.12e-04 & 19.4 
+twoSquaresInterface8 &     4 & 2.71e-06 & 21.4 & 4.71e-06 & 21.2 & 1.80e+00 &  1.0 & 4.71e-06 & 21.2 & 6.26e-07 & 18.2 & 1.09e-05 & 19.4 
+twoSquaresInterface16 &     8 & 1.63e-07 & 16.6 & 2.83e-07 & 16.6 & 1.21e+00 &  1.5 & 2.83e-07 & 16.6 & 3.84e-08 & 16.3 & 8.81e-07 & 12.4 
+twoSquaresInterface32 &    16 & 9.94e-09 & 16.4 & 1.73e-08 & 16.4 & 1.84e+00 &  0.7 & 1.73e-08 & 16.4 & 2.35e-09 & 16.3 & 7.77e-08 & 11.3 
+Convergence rates: c0=4.27 c1=4.27 c2=0.02 c3=4.27 c4=4.14 c5=3.93
+
+
+-tf=.3 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.49e-04 &      & 1.13e-03 &      & 2.32e+00 &      & 1.13e-03 &      & 8.32e-05 &      & 2.61e-03 &      
+twoSquaresInterface4 &     2 & 2.91e-05 & 22.3 & 5.05e-05 & 22.4 & 2.31e+00 &  1.0 & 5.05e-05 & 22.4 & 4.21e-06 & 19.8 & 1.53e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.52e-06 & 19.1 & 2.65e-06 & 19.1 & 2.30e+00 &  1.0 & 2.65e-06 & 19.1 & 2.43e-07 & 17.3 & 8.57e-06 & 17.9 
+twoSquaresInterface16 &     8 & 9.27e-08 & 16.4 & 1.61e-07 & 16.5 & 2.32e+00 &  1.0 & 1.61e-07 & 16.5 & 1.75e-08 & 13.9 & 5.22e-07 & 16.4 
+twoSquaresInterface32 &    16 & 5.70e-09 & 16.3 & 9.90e-09 & 16.3 & 2.33e+00 &  1.0 & 9.90e-09 & 16.3 & 1.42e-09 & 12.3 & 3.60e-08 & 14.5 
+Convergence rates: c0=4.19 c1=4.19 c2=-0.00 c3=4.19 c4=3.96 c5=4.05 
+
+
+
+
+
+REVISIT -- GIVE exact P(-1) on interface
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.49e-04 &      & 1.13e-03 &      & 2.32e+00 &      & 1.13e-03 &      & 8.32e-05 &      & 2.61e-03 &      
+twoSquaresInterface4 &     2 & 2.91e-05 & 22.3 & 5.05e-05 & 22.4 & 2.31e+00 &  1.0 & 5.05e-05 & 22.4 & 4.21e-06 & 19.8 & 1.53e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.52e-06 & 19.1 & 2.65e-06 & 19.1 & 2.30e+00 &  1.0 & 2.65e-06 & 19.1 & 2.43e-07 & 17.3 & 8.57e-06 & 17.9 
+twoSquaresInterface16 &     8 & 9.27e-08 & 16.4 & 1.61e-07 & 16.5 & 2.32e+00 &  1.0 & 1.61e-07 & 16.5 & 1.52e-08 & 16.0 & 5.22e-07 & 16.4 
+twoSquaresInterface32 &    16 & 5.70e-09 & 16.3 & 9.90e-09 & 16.3 & 2.33e+00 &  1.0 & 9.90e-09 & 16.3 & 9.50e-10 & 16.0 & 3.22e-08 & 16.2 
+Convergence rates: c0=4.19 c1=4.19 c2=-0.00 c3=4.19 c4=4.10 c5=4.08 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNp1Np1Order4maxNormConvTable.tex *****
+
+**********************
+****** June 11, 2018
+
+TEST DIELECTRIC DISK + GDM
+
+
+GDM ORDER=2
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=2 -name="innerOutere" -dm=gdm -npv=1 1 -diss=0 -ng=3
+
+
+NON-GDM ORDER=2
+conv.p dielectric.conv -cyl=1 -tf=.5 -tp=.1 -order=2 -name="innerOutere" -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$ & r & $H_z$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+        innerOutere2 &     2 & 1.97e-03 &      & 5.81e-03 &      & 6.28e-03 &      & 5.81e-03 &      
+        innerOutere4 &     4 & 4.96e-04 &  4.0 & 1.45e-03 &  4.0 & 1.59e-03 &  3.9 & 1.45e-03 &  4.0 
+        innerOutere8 &     8 & 1.24e-04 &  4.0 & 3.62e-04 &  4.0 & 4.00e-04 &  4.0 & 3.62e-04 &  4.0 
+Convergence rates: c0=1.99 c1=2.00 c2=1.99 c3=2.00
+
+**********************
+****** June 10, 2018
+
++++++++ USE D+D-(P) to second-order, WITH INTERFACE SMOOTHING
+
+-tf=.7 **trouble with P*
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.21e-03 &      & 2.10e-03 &      & 9.44e-01 &      & 2.10e-03 &      & 4.20e-04 &      & 3.69e-03 &      
+twoSquaresInterface4 &     2 & 5.85e-05 & 20.7 & 1.00e-04 & 21.0 & 1.01e+00 &  0.9 & 1.00e-04 & 21.0 & 1.73e-05 & 24.3 & 1.94e-04 & 19.0 
+twoSquaresInterface8 &     4 & 3.55e-06 & 16.5 & 6.11e-06 & 16.4 & 1.05e+00 &  1.0 & 6.11e-06 & 16.4 & 1.00e-06 & 17.3 & 1.04e-05 & 18.7 
+twoSquaresInterface16 &     8 & 2.28e-07 & 15.6 & 3.93e-07 & 15.5 & 2.89e-01 &  3.6 & 3.93e-07 & 15.5 & 9.53e-08 & 10.5 & 7.32e-07 & 14.2 
+twoSquaresInterface32 &    16 & 1.42e-08 & 16.1 & 2.45e-08 & 16.0 & 2.94e-01 &  1.0 & 2.45e-08 & 16.0 & 1.23e-08 &  7.7 & 1.22e-07 &  6.0 
+Convergence rates: c0=4.08 c1=4.08 c2=0.52 c3=4.08 c4=3.76 c5=3.78
+
+-tf=.3 ** trouble with P **
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.13e-04 &      & 8.64e-04 &      & 2.02e+00 &      & 8.64e-04 &      & 6.35e-04 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 3.59e-05 & 17.1 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 1.91e-05 & 33.2 & 1.86e-04 & 11.9 
+twoSquaresInterface8 &     4 & 1.70e-06 & 21.1 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 1.15e-06 & 16.6 & 1.37e-05 & 13.6 
+twoSquaresInterface16 &     8 & 8.78e-08 & 19.4 & 1.30e-07 & 15.2 & 2.04e+00 &  1.0 & 1.30e-07 & 15.2 & 8.23e-08 & 14.0 & 1.23e-06 & 11.1 
+twoSquaresInterface32 &    16 & 4.83e-09 & 18.2 & 1.32e-08 &  9.8 & 2.06e+00 &  1.0 & 1.32e-08 &  9.8 & 7.31e-09 & 11.3 & 1.56e-07 &  7.9 
+Convergence rates: c0=4.26 c1=4.02 c2=-0.00 c3=4.02 c4=4.07 c5=3.48
+
+
++++++++ USE D+D-(P) to second-order, NO INTERFACE SMOOTHING -- E Ok, P has trouble
+
+-tf=.7 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.21e-03 &      & 2.10e-03 &      & 9.44e-01 &      & 2.10e-03 &      & 2.47e-04 &      & 3.69e-03 &      
+twoSquaresInterface4 &     2 & 5.85e-05 & 20.7 & 1.00e-04 & 21.0 & 1.01e+00 &  0.9 & 1.00e-04 & 21.0 & 9.68e-06 & 25.5 & 1.94e-04 & 19.0 
+twoSquaresInterface8 &     4 & 3.55e-06 & 16.5 & 6.11e-06 & 16.4 & 1.05e+00 &  1.0 & 6.11e-06 & 16.4 & 4.88e-07 & 19.8 & 1.04e-05 & 18.7 
+twoSquaresInterface16 &     8 & 2.28e-07 & 15.6 & 3.93e-07 & 15.5 & 2.89e-01 &  3.6 & 3.93e-07 & 15.5 & 3.08e-08 & 15.8 & 7.00e-07 & 14.9 
+twoSquaresInterface32 &    16 & 1.42e-08 & 16.1 & 2.45e-08 & 16.0 & 2.94e-01 &  1.0 & 2.45e-08 & 16.0 & 2.79e-09 & 11.0 & 6.19e-08 & 11.3 
+Convergence rates: c0=4.08 c1=4.08 c2=0.52 c3=4.08 c4=4.12 c5=3.98
+
+
+
+
+
+
+USE  2nd-order P(-1) and NO interface-smoothing
+convRate: numberOfComponents=6 (from header)
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 3.45e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 2.54e-07 & 13.6 & 8.10e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 1.21e-07 & 16.4 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 2.18e-08 & 11.7 & 6.54e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 1.15e-08 & 10.5 & 2.06e+00 &  1.0 & 1.15e-08 & 10.5 & 1.98e-09 & 11.0 & 5.83e-08 & 11.2 
+Convergence rates: c0=4.20 c1=4.07 c2=-0.00 c3=4.07 c4=3.74 c5=3.80
+
+
+USE 2nd-order P(-1) and interface-smoothing --> SECOND-ORDER
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.20e-04 &      & 8.64e-04 &      & 2.02e+00 &      & 8.64e-04 &      & 6.01e-04 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 3.02e-05 & 20.5 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 4.04e-05 & 14.9 & 1.70e-04 & 13.0 
+twoSquaresInterface8 &     4 & 1.22e-06 & 24.8 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 1.36e-05 &  3.0 & 9.21e-06 & 18.5 
+twoSquaresInterface16 &     8 & 2.69e-07 &  4.5 & 1.62e-07 & 12.2 & 2.04e+00 &  1.0 & 2.69e-07 &  7.4 & 3.39e-06 &  4.0 & 2.89e-06 &  3.2 
+twoSquaresInterface32 &    16 & 8.45e-08 &  3.2 & 3.53e-08 &  4.6 & 2.06e+00 &  1.0 & 8.45e-08 &  3.2 & 8.64e-07 &  3.9 & 1.74e-06 &  1.7 
+Convergence rates: c0=3.25 c1=3.70 c2=-0.00 c3=3.38 c4=2.25 c5=2.65
+
+
+
+GDM INTERFACE
+Use 4th-order:
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 3.45e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 2.54e-07 & 13.6 & 8.10e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 1.21e-07 & 16.4 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 2.18e-08 & 11.7 & 6.52e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 1.14e-08 & 10.6 & 2.06e+00 &  1.0 & 1.14e-08 & 10.6 & 1.97e-09 & 11.1 & 5.80e-08 & 11.2 
+Convergence rates: c0=4.20 c1=4.07 c2=-0.00 c3=4.07 c4=3.74 c5=3.81
+
+
+Use selected  2nd-order opertors in 4th-order code  ***BAD**
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 5.46e-06 & 12.1 & 1.34e-04 & 16.5 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 4.01e-06 &  9.5 & 2.04e+00 &  1.0 & 4.01e-06 &  9.5 & 5.54e-07 &  9.9 & 1.28e-05 & 10.5 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 4.78e-07 &  8.4 & 2.04e+00 &  1.0 & 4.78e-07 &  8.4 & 6.62e-08 &  8.4 & 1.35e-06 &  9.5 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 5.72e-08 &  8.4 & 2.06e+00 &  1.0 & 5.72e-08 &  8.4 & 8.21e-09 &  8.1 & 1.55e-07 &  8.7 
+Convergence rates: c0=4.20 c1=3.41 c2=-0.00 c3=3.41 c4=3.23 c5=3.42
+
+**********************
+****** June 8, 2018
+
+GDM INTERFACE ORDER 4 -- TEST EXACT P in FIRST INTERFACE GHOST
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+
+-tf=1 -- SOSUP NEEDED
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.64e-03 &      & 2.85e-03 &      & 1.11e+00 &      & 2.85e-03 &      & 4.76e-04 &      & 5.01e-03 &      
+twoSquaresInterface4 &     2 & 7.11e-05 & 23.1 & 1.23e-04 & 23.2 & 1.18e+00 &  0.9 & 1.23e-04 & 23.2 & 1.92e-05 & 24.8 & 2.39e-04 & 21.0 
+twoSquaresInterface8 &     4 & 4.12e-06 & 17.3 & 7.05e-06 & 17.4 & 1.22e+00 &  1.0 & 7.05e-06 & 17.4 & 9.96e-07 & 19.3 & 1.35e-05 & 17.7 
+twoSquaresInterface16 &     8 & 2.86e-07 & 14.4 & 4.90e-07 & 14.4 & 1.90e+00 &  0.6 & 4.90e-07 & 14.4 & 5.19e-08 & 19.2 & 1.10e-06 & 12.3 
+twoSquaresInterface32 &    16 & 1.85e-08 & 15.5 & 3.18e-08 & 15.4 & 1.91e+00 &  1.0 & 3.18e-08 & 15.4 & 3.60e-09 & 14.4 & 9.63e-08 & 11.4 
+
+-tf=.7
+                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.21e-03 &      & 2.10e-03 &      & 9.44e-01 &      & 2.10e-03 &      & 4.47e-04 &      & 3.69e-03 &      
+twoSquaresInterface4 &     2 & 5.85e-05 & 20.7 & 1.00e-04 & 21.0 & 1.01e+00 &  0.9 & 1.00e-04 & 21.0 & 2.29e-05 & 19.5 & 1.94e-04 & 19.0 
+twoSquaresInterface8 &     4 & 3.55e-06 & 16.5 & 6.11e-06 & 16.4 & 1.05e+00 &  1.0 & 6.11e-06 & 16.4 & 9.13e-07 & 25.1 & 1.04e-05 & 18.7 
+twoSquaresInterface16 &     8 & 2.28e-07 & 15.6 & 3.93e-07 & 15.5 & 2.89e-01 &  3.6 & 3.93e-07 & 15.5 & 4.36e-08 & 20.9 & 7.13e-07 & 14.6 
+twoSquaresInterface32 &    16 & 1.42e-08 & 16.1 & 2.45e-08 & 16.0 & 2.94e-01 &  1.0 & 2.45e-08 & 16.0 & 2.74e-09 & 15.9 & 6.19e-08 & 11.5 
+Convergence rates: c0=4.08 c1=4.08 c2=0.52 c3=4.08 c4=4.37 c5=3.98 
+
+
+
+EXACT P-GHOST, SMOOTH P, SOSUP
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.95e-04 &      & 8.64e-04 &      & 2.02e+00 &      & 8.64e-04 &      & 6.45e-04 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 3.39e-05 & 17.6 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 2.32e-05 & 27.8 & 1.86e-04 & 11.9 
+twoSquaresInterface8 &     4 & 1.42e-06 & 23.9 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 1.18e-06 & 19.7 & 1.20e-05 & 15.5 
+twoSquaresInterface16 &     8 & 7.60e-08 & 18.7 & 1.21e-07 & 16.4 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 5.92e-08 & 19.9 & 8.52e-07 & 14.1 
+twoSquaresInterface32 &    16 & 4.82e-09 & 15.8 & 1.17e-08 & 10.3 & 2.06e+00 &  1.0 & 1.17e-08 & 10.3 & 3.37e-09 & 17.6 & 8.06e-08 & 10.6 
+Convergence rates: c0=4.26 c1=4.06 c2=-0.00 c3=4.06 c4=4.37 c5=3.73 
+
+
+
+ALSO SMOOTH INTERFACE P
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 7.27e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 7.27e-04 &      & 6.60e-04 &      & 1.98e-03 &      
+twoSquaresInterface4 &     2 & 3.69e-05 & 19.7 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.69e-05 & 19.7 & 2.32e-05 & 28.4 & 1.93e-04 & 10.3 
+twoSquaresInterface8 &     4 & 1.52e-06 & 24.3 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 18.7 & 1.18e-06 & 19.7 & 1.23e-05 & 15.7 
+twoSquaresInterface16 &     8 & 7.44e-08 & 20.4 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 5.92e-08 & 19.9 & 8.66e-07 & 14.2 
+twoSquaresInterface32 &    16 & 4.87e-09 & 15.3 & 1.18e-08 & 10.4 & 2.00e+00 &  1.0 & 1.18e-08 & 10.4 & 3.39e-09 & 17.5 & 1.85e-07 &  4.7 
+Convergence rates: c0=4.33 c1=3.92 c2=0.00 c3=4.01 c4=4.38 c5=3.46 
+
+
+
+EXACT P in FIRST INTERFACE GHOST
+
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+
+**********************
+****** June 7, 2018
+
+
+
+TEST SECOND ORDER GDM INTERFACE WITH NPV=2 1  
+conv.p interface.conv -dm=gdm  -npv=2 1 -a01=1. .9. -a11=.5 .2 b01=.25 .15 -b11=.3 .4   -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=2 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.11e-02 &      & 1.63e-02 &      & 1.99e+00 &      & 1.63e-02 &      & 2.11e-03 &      & 3.39e-02 &      
+twoSquaresInterface4 &     2 & 2.37e-03 &  4.7 & 3.80e-03 &  4.3 & 1.99e+00 &  1.0 & 3.80e-03 &  4.3 & 5.13e-04 &  4.1 & 8.06e-03 &  4.2 
+twoSquaresInterface8 &     4 & 5.21e-04 &  4.5 & 8.88e-04 &  4.3 & 1.99e+00 &  1.0 & 8.88e-04 &  4.3 & 1.27e-04 &  4.0 & 2.21e-03 &  3.6 
+twoSquaresInterface16 &     8 & 1.32e-04 &  3.9 & 2.21e-04 &  4.0 & 1.99e+00 &  1.0 & 2.21e-04 &  4.0 & 3.13e-05 &  4.1 & 6.44e-04 &  3.4 
+twoSquaresInterface32 &    16 & 3.22e-05 &  4.1 & 5.40e-05 &  4.1 & 1.99e+00 &  1.0 & 5.40e-05 &  4.1 & 7.80e-06 &  4.0 & 1.80e-04 &  3.6 
+Convergence rates: c0=2.10 c1=2.06 c2=-0.00 c3=2.06 c4=2.02 c5=1.88 
+
+
+TEST SECOND ORDER GDM INTERFACE WITH NPV=1 0  
+****TROUBLE*** First-order in Ey and Pv  ---> BUG FIXED
+conv.p interface.conv -dm=gdm  -npv=1 0  -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=2 -ng=5
+
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.23e-02 &      & 5.27e-02 &      & 2.00e+00 &      & 5.27e-02 &      & 9.46e-03 &      & 4.45e-02 &      
+twoSquaresInterface4 &     2 & 2.71e-03 &  4.5 & 2.75e-02 &  1.9 & 2.05e+00 &  1.0 & 2.75e-02 &  1.9 & 5.78e-03 &  1.6 & 3.99e-02 &  1.1 
+twoSquaresInterface8 &     4 & 6.19e-04 &  4.4 & 1.40e-02 &  2.0 & 2.07e+00 &  1.0 & 1.40e-02 &  2.0 & 3.27e-03 &  1.8 & 2.71e-02 &  1.5 
+twoSquaresInterface16 &     8 & 1.56e-04 &  4.0 & 7.07e-03 &  2.0 & 2.07e+00 &  1.0 & 7.07e-03 &  2.0 & 1.65e-03 &  2.0 & 1.67e-02 &  1.6 
+Convergence rates: c0=2.10 c1=0.97 c2=-0.02 c3=0.97 c4=0.84 c5=0.48 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder2maxNormConvTable.tex *****
+
+
+**********************
+****** June 6, 2018
+
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=0 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=1 0 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=-1 -interfaceIts=100 -ng=5
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.19e-06 &      & 3.13e-04 &      & 1.72e+00 &      & 3.13e-04 &      & 3.21e-05 &      & 3.51e-04 &      
+twoSquaresInterface4 &     2 & 2.63e-07 & 19.7 & 1.87e-05 & 16.7 & 1.75e+00 &  1.0 & 1.87e-05 & 16.7 & 1.84e-06 & 17.4 & 2.52e-05 & 13.9 
+twoSquaresInterface8 &     4 & 1.27e-08 & 20.7 & 1.11e-06 & 16.8 & 1.75e+00 &  1.0 & 1.11e-06 & 16.8 & 1.09e-07 & 16.9 & 2.48e-06 & 10.2 
+twoSquaresInterface16 &     8 & 6.54e-10 & 19.4 & 6.90e-08 & 16.1 & 1.75e+00 &  1.0 & 6.90e-08 & 16.1 & 6.65e-09 & 16.4 & 2.45e-07 & 10.1 
+twoSquaresInterface32 &    16 & 3.60e-11 & 18.2 & 6.25e-09 & 11.0 & 1.75e+00 &  1.0 & 6.25e-09 & 11.0 & 4.93e-10 & 13.5 & 2.55e-08 &  9.6 
+Convergence rates: c0=4.29 c1=3.93 c2=-0.00 c3=3.93 c4=4.01 c5=3.42 
+
+
+TEST JWB'S INTERFACE COEFF'S FOR Ptt
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=1 0 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=-1 -ng=5
+
+++++++JWB
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.57e-07 & 12.5 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
++++ WDH
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74
+
+
+
+Compare 90 degree rotation to zero degree
+
+------ROTATED 90
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=0 1 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterfaceRotated90 -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=-1 -ng=5
+
+-tf=.3 -sosup=1
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated902 &     1 & 8.63e-04 &      & 4.98e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterfaceRotated904 &     2 & 3.80e-05 & 22.7 & 2.19e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 3.45e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterfaceRotated908 &     4 & 1.98e-06 & 19.2 & 1.15e-06 & 19.0 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 2.54e-07 & 13.6 & 8.10e-06 & 15.9 
+twoSquaresInterfaceRotated9016 &     8 & 1.21e-07 & 16.4 & 6.96e-08 & 16.5 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 2.18e-08 & 11.7 & 6.52e-07 & 12.4 
+twoSquaresInterfaceRotated9032 &    16 & 1.14e-08 & 10.6 & 4.27e-09 & 16.3 & 2.06e+00 &  1.0 & 1.14e-08 & 10.6 & 1.97e-09 & 11.1 & 5.80e-08 & 11.2 
+Convergence rates: c0=4.07 c1=4.20 c2=-0.00 c3=4.07 c4=3.74 c5=3.81 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceRotated90GDMNpOrder4maxNormConvT
+
+
+-tf=.3, -sossup=0
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated902 &     1 & 5.66e-04 &      & 4.01e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterfaceRotated904 &     2 & 3.38e-05 & 16.7 & 1.95e-05 & 20.6 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterfaceRotated908 &     4 & 1.97e-06 & 17.2 & 1.14e-06 & 17.1 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterfaceRotated9016 &     8 & 1.23e-07 & 16.0 & 7.08e-08 & 16.1 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterfaceRotated9032 &    16 & 1.16e-08 & 10.6 & 4.33e-09 & 16.4 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=3.93 c1=4.11 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+---------UNROTATED
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=1 0 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=-1 -ng=5
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+----- ROTATED 45 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterfaceRotated -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=-1 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 6.31e-04 &      & 1.69e-04 &      & 2.00e+00 &      & 6.31e-04 &      & 7.50e-05 &      & 1.51e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 3.77e-05 & 16.7 & 1.01e-05 & 16.7 & 2.00e+00 &  1.0 & 3.77e-05 & 16.7 & 5.43e-06 & 13.8 & 9.33e-05 & 16.2 
+twoSquaresInterfaceRotated8 &     4 & 2.20e-06 & 17.1 & 5.90e-07 & 17.1 & 2.00e+00 &  1.0 & 2.20e-06 & 17.1 & 3.77e-07 & 14.4 & 6.59e-06 & 14.2 
+twoSquaresInterfaceRotated16 &     8 & 1.37e-07 & 16.1 & 6.10e-08 &  9.7 & 2.00e+00 &  1.0 & 1.37e-07 & 16.1 & 2.66e-08 & 14.2 & 5.29e-07 & 12.5 
+twoSquaresInterfaceRotated32 &    16 & 8.40e-09 & 16.3 & 8.17e-09 &  7.5 & 2.00e+00 &  1.0 & 8.40e-09 & 16.3 & 1.97e-09 & 13.5 & 4.67e-08 & 11.3 
+Convergence rates: c0=4.05 c1=3.60 c2=0.00 c3=4.05 c4=3.81 c5=3.74 
+
+**********************
+****** June 5, 2018
+
+ROTATED MATERIAL GDM  INTERFACE    
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -interfaceNormal=1 1 0 -interfacePoint=0 .5 0 -bc=d -cg=twoSquaresInterfaceRotated -tf=.3 -tp=.1 -order=4 -useSosupDissipation=0 -modeGDM=2 -ng=4
+
+-sosup=1
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 1.29e-03 &      & 3.02e-04 &      & 2.32e+00 &      & 1.29e-03 &      & 1.15e-04 &      & 1.67e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 6.13e-05 & 21.0 & 1.52e-05 & 19.9 & 2.38e+00 &  1.0 & 6.13e-05 & 21.0 & 7.12e-06 & 16.2 & 1.04e-04 & 16.1 
+twoSquaresInterfaceRotated8 &     4 & 3.06e-06 & 20.0 & 1.27e-06 & 12.0 & 2.38e+00 &  1.0 & 3.06e-06 & 20.0 & 4.27e-07 & 16.7 & 6.23e-06 & 16.7 
+twoSquaresInterfaceRotated16 &     8 & 1.65e-07 & 18.5 & 1.22e-07 & 10.4 & 2.39e+00 &  1.0 & 1.65e-07 & 18.5 & 2.39e-08 & 17.9 & 3.83e-07 & 16.3 
+twoSquaresInterfaceRotated32 &    16 & 9.37e-09 & 17.6 & 1.31e-08 &  9.3 & 2.41e+00 &  1.0 & 1.31e-08 & 12.6 & 1.38e-09 & 17.3 & 2.37e-08 & 16.2 
+Convergence rates: c0=4.27 c1=3.59 c2=-0.01 c3=4.17 c4=4.09 c5=4.03 
+
+--sosup=0
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceRotated2 &     1 & 8.31e-04 &      & 2.05e-04 &      & 2.33e+00 &      & 8.31e-04 &      & 1.01e-04 &      & 1.46e-03 &      
+twoSquaresInterfaceRotated4 &     2 & 4.70e-05 & 17.7 & 1.48e-05 & 13.9 & 2.34e+00 &  1.0 & 4.70e-05 & 17.7 & 6.64e-06 & 15.2 & 9.54e-05 & 15.3 
+twoSquaresInterfaceRotated8 &     4 & 2.68e-06 & 17.5 & 1.28e-06 & 11.6 & 2.35e+00 &  1.0 & 2.68e-06 & 17.5 & 4.11e-07 & 16.2 & 5.98e-06 & 16.0 
+twoSquaresInterfaceRotated16 &     8 & 1.56e-07 & 17.2 & 1.23e-07 & 10.4 & 2.35e+00 &  1.0 & 1.56e-07 & 17.2 & 2.34e-08 & 17.6 & 3.76e-07 & 15.9 
+Convergence rates: c0=4.13 c1=3.56 c2=-0.00 c3=4.13 c4=4.02 c5=3.98 
+
+
+--ky=0 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=0 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=1 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=2 -ng=5
+-tf=.5
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.75e-05 &      & 7.25e-04 &      & 2.41e+00 &      & 7.25e-04 &      & 1.34e-04 &      & 5.26e-04 &      
+twoSquaresInterface4 &     2 & 3.81e-06 & 15.1 & 3.45e-05 & 21.0 & 2.48e+00 &  1.0 & 3.45e-05 & 21.0 & 7.83e-06 & 17.1 & 2.81e-05 & 18.7 
+twoSquaresInterface8 &     4 & 2.46e-07 & 15.5 & 1.70e-06 & 20.3 & 2.49e+00 &  1.0 & 1.70e-06 & 20.3 & 4.41e-07 & 17.8 & 1.66e-06 & 16.9 
+twoSquaresInterface16 &     8 & 1.54e-08 & 16.0 & 1.01e-07 & 16.8 & 1.56e+00 &  1.6 & 1.01e-07 & 16.8 & 2.26e-08 & 19.5 & 1.04e-07 & 16.0 
+twoSquaresInterface32 &    16 & 9.51e-10 & 16.2 & 7.02e-09 & 14.4 & 2.48e+00 &  0.6 & 7.02e-09 & 14.4 & 1.38e-09 & 16.4 & 7.98e-09 & 13.0 
+Convergence rates: c0=3.97 c1=4.17 c2=0.06 c3=4.17 c4=4.16 c5=4.01 
+
+-tf=1.
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.84e-05 &      & 1.42e-03 &      & 1.06e+00 &      & 1.42e-03 &      & 1.70e-04 &      & 7.10e-04 &      
+twoSquaresInterface4 &     2 & 3.40e-06 & 17.2 & 6.78e-05 & 20.9 & 1.08e+00 &  1.0 & 6.78e-05 & 20.9 & 8.75e-06 & 19.4 & 3.41e-05 & 20.8 
+twoSquaresInterface8 &     4 & 2.01e-07 & 16.9 & 3.56e-06 & 19.0 & 1.09e+00 &  1.0 & 3.56e-06 & 19.0 & 4.78e-07 & 18.3 & 2.01e-06 & 17.0 
+twoSquaresInterface16 &     8 & 1.20e-08 & 16.8 & 2.04e-07 & 17.5 & 3.77e-01 &  2.9 & 2.04e-07 & 17.5 & 3.54e-08 & 13.5 & 1.37e-07 & 14.7 
+twoSquaresInterface32 &    16 & 7.20e-10 & 16.7 & 1.18e-08 & 17.3 & 3.96e-01 &  1.0 & 1.18e-08 & 17.3 & 3.93e-09 &  9.0 & 1.03e-08 & 13.3 
+Convergence rates: c0=4.08 c1=4.21 c2=0.44 c3=4.21 c4=3.88 c5=4.01 
+
+
+DIFFERENT MODE
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=2 -ng=5
+
+-tf=1
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.64e-03 &      & 2.84e-03 &      & 1.29e+00 &      & 2.84e-03 &      & 2.71e-04 &      & 3.63e-03 &      
+twoSquaresInterface4 &     2 & 1.19e-04 & 22.2 & 1.34e-04 & 21.2 & 1.29e+00 &  1.0 & 1.34e-04 & 21.2 & 1.22e-05 & 22.2 & 1.80e-04 & 20.2 
+twoSquaresInterface8 &     4 & 5.99e-06 & 19.9 & 7.93e-06 & 16.9 & 1.36e+00 &  0.9 & 7.93e-06 & 16.9 & 7.80e-07 & 15.6 & 1.01e-05 & 17.8 
+twoSquaresInterface16 &     8 & 3.51e-07 & 17.1 & 5.59e-07 & 14.2 & 2.22e+00 &  0.6 & 5.59e-07 & 14.2 & 4.92e-08 & 15.9 & 7.71e-07 & 13.1 
+twoSquaresInterface32 &    16 & 2.29e-08 & 15.3 & 4.25e-08 & 13.2 & 2.22e+00 &  1.0 & 4.25e-08 & 13.2 & 3.18e-09 & 15.5 & 6.30e-08 & 12.2 
+Convergence rates: c0=4.20 c1=4.00 c2=-0.23 c3=4.00 c4=4.07 c5=3.95
+
+-tf=.3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.05e-03 &      & 1.01e-03 &      & 2.32e+00 &      & 1.05e-03 &      & 9.39e-05 &      & 2.08e-03 &      
+twoSquaresInterface4 &     2 & 5.40e-05 & 19.4 & 4.47e-05 & 22.6 & 2.38e+00 &  1.0 & 5.40e-05 & 19.4 & 5.98e-06 & 15.7 & 1.29e-04 & 16.1 
+twoSquaresInterface8 &     4 & 3.03e-06 & 17.8 & 2.30e-06 & 19.4 & 2.38e+00 &  1.0 & 3.03e-06 & 17.8 & 3.82e-07 & 15.7 & 7.75e-06 & 16.6 
+twoSquaresInterface16 &     8 & 1.93e-07 & 15.7 & 1.39e-07 & 16.5 & 2.39e+00 &  1.0 & 1.93e-07 & 15.7 & 2.46e-08 & 15.5 & 4.77e-07 & 16.2 
+twoSquaresInterface32 &    16 & 1.38e-08 & 14.0 & 1.22e-08 & 11.4 & 2.41e+00 &  1.0 & 1.38e-08 & 14.0 & 1.68e-09 & 14.6 & 2.95e-08 & 16.2 
+Convergence rates: c0=4.06 c1=4.10 c2=-0.01 c3=4.06 c4=3.95 c5=4.03 
+
+
+INCREASE INTERFACE ITERATIONS -- not much difference 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5  -useSosupDissipation=1 -interfaceIts=100
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5
+
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.00e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.5 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.89e-07 & 13.9 & 8.31e-06 & 14.0 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.28e-08 & 12.7 & 6.62e-07 & 12.6 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.09e-08 & 11.3 & 2.00e+00 &  1.0 & 1.09e-08 & 11.3 & 1.96e-09 & 11.6 & 5.75e-08 & 11.5 
+Convergence rates: c0=4.11 c1=3.94 c2=0.00 c3=3.94 c4=3.75 c5=3.74 
+
+
+TEST GDM INTERFACE WITH TZ=TRIG
+
+++++++++++++ TZ=TRIG  use computed values of P on interface and ghost 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.38e-05 &      & 1.28e-04 &      & 1.31e+00 &      & 1.28e-04 &      & 2.07e-05 &      & 8.01e-04 &      
+twoSquaresInterface4 &     2 & 1.81e-06 & 18.7 & 7.42e-06 & 17.3 & 1.31e+00 &  1.0 & 7.42e-06 & 17.3 & 1.32e-06 & 15.7 & 4.82e-05 & 16.6 
+twoSquaresInterface8 &     4 & 1.01e-07 & 17.9 & 4.65e-07 & 16.0 & 1.31e+00 &  1.0 & 4.65e-07 & 16.0 & 8.87e-08 & 14.9 & 3.04e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.24e-09 & 16.2 & 2.93e-08 & 15.9 & 1.31e+00 &  1.0 & 2.93e-08 & 15.9 & 5.97e-09 & 14.9 & 1.92e-07 & 15.8 
+Convergence rates: c0=4.14 c1=4.03 c2=-0.00 c3=4.03 c4=3.92 c5=4.01 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTable.tex
+
+
+++++++++++++ TZ=TRIG -- GIVE EXACT P ON GHOST (But not interface)
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.38e-05 &      & 1.28e-04 &      & 1.31e+00 &      & 1.28e-04 &      & 2.07e-05 &      & 8.02e-04 &      
+twoSquaresInterface4 &     2 & 1.81e-06 & 18.7 & 7.42e-06 & 17.3 & 1.31e+00 &  1.0 & 7.42e-06 & 17.3 & 1.32e-06 & 15.7 & 4.82e-05 & 16.6 
+twoSquaresInterface8 &     4 & 1.01e-07 & 17.9 & 4.65e-07 & 16.0 & 1.31e+00 &  1.0 & 4.65e-07 & 16.0 & 8.87e-08 & 14.9 & 3.04e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.24e-09 & 16.2 & 2.93e-08 & 15.9 & 1.31e+00 &  1.0 & 2.93e-08 & 15.9 & 5.97e-09 & 14.9 & 1.92e-07 & 15.8 
+Convergence rates: c0=4.14 c1=4.03 c2=-0.00 c3=4.03 c4=3.92 c5=4.01 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTa
+
+++++++++++++ TZ=TRIG -- GIVE EXACT P ON INTERFACE AND GHOST 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.1 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
+
+-tf=.1 (EXACT P)
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 8.94e-06 &      & 1.02e-04 &      & 8.09e-01 &      & 1.02e-04 &      & 7.10e-07 &      & 3.58e-04 &      
+twoSquaresInterface4 &     2 & 4.30e-07 & 20.8 & 5.77e-06 & 17.7 & 8.09e-01 &  1.0 & 5.77e-06 & 17.7 & 9.07e-08 &  7.8 & 1.77e-05 & 20.2 
+twoSquaresInterface8 &     4 & 2.31e-08 & 18.6 & 3.86e-07 & 14.9 & 8.09e-01 &  1.0 & 3.86e-07 & 14.9 & 9.56e-09 &  9.5 & 1.09e-06 & 16.2 
+twoSquaresInterface16 &     8 & 1.39e-09 & 16.6 & 2.47e-08 & 15.6 & 1.91e-01 &  4.2 & 2.47e-08 & 15.6 & 7.74e-10 & 12.4 & 6.47e-08 & 16.8 
+Convergence rates: c0=4.22 c1=3.99 c2=0.62 c3=3.99 c4=3.28 c5=4.13 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTable
+
+-tf=.3 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.38e-05 &      & 1.28e-04 &      & 1.31e+00 &      & 1.28e-04 &      & 1.31e-05 &      & 8.02e-04 &      
+twoSquaresInterface4 &     2 & 1.81e-06 & 18.7 & 7.40e-06 & 17.3 & 1.31e+00 &  1.0 & 7.40e-06 & 17.3 & 1.18e-06 & 11.1 & 4.84e-05 & 16.6 
+twoSquaresInterface8 &     4 & 1.01e-07 & 17.9 & 4.62e-07 & 16.0 & 1.31e+00 &  1.0 & 4.62e-07 & 16.0 & 8.85e-08 & 13.3 & 3.04e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.24e-09 & 16.2 & 2.92e-08 & 15.8 & 1.31e+00 &  1.0 & 2.92e-08 & 15.8 & 5.95e-09 & 14.9 & 1.92e-07 & 15.8 
+twoSquaresInterface32 &    16 & 3.78e-10 & 16.5 & 1.84e-09 & 15.9 & 1.31e+00 &  1.0 & 1.84e-09 & 15.9 & 3.88e-10 & 15.3 & 1.21e-08 & 15.9 
+Convergence rates: c0=4.11 c1=4.02 c2=0.00 c3=4.02 c4=3.77 c5=4.00 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTab
+
+
+
+
+**********************
+****** June 4, 2018
+
+
+LONGER TIME SOSUP
+
+-tf=2 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.30e-03 &      & 2.29e-03 &      & 7.84e-01 &      & 2.29e-03 &      & 5.68e-04 &      & 4.80e-03 &      
+twoSquaresInterface4 &     2 & 5.42e-05 & 24.0 & 9.23e-05 & 24.8 & 8.63e-01 &  0.9 & 9.23e-05 & 24.8 & 2.72e-05 & 20.9 & 2.27e-04 & 21.1 
+twoSquaresInterface8 &     4 & 3.68e-06 & 14.7 & 6.37e-06 & 14.5 & 9.31e-01 &  0.9 & 6.37e-06 & 14.5 & 1.36e-06 & 20.0 & 1.70e-05 & 13.4 
+twoSquaresInterface16 &     8 & 2.83e-07 & 13.0 & 5.27e-07 & 12.1 & 6.83e-01 &  1.4 & 5.27e-07 & 12.1 & 7.43e-08 & 18.3 & 1.49e-06 & 11.4 
+twoSquaresInterface32 &    16 & 1.87e-08 & 15.1 & 3.94e-08 & 13.4 & 9.44e-01 &  0.7 & 3.94e-08 & 13.4 & 4.75e-09 & 15.6 & 1.34e-07 & 11.1 
+Convergence rates: c0=3.98 c1=3.91 c2=-0.02 c3=3.91 c4=4.23 c5=3.75 
+
+
+--tf=1: 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.64e-03 &      & 2.85e-03 &      & 1.11e+00 &      & 2.85e-03 &      & 3.15e-04 &      & 5.01e-03 &      
+twoSquaresInterface4 &     2 & 7.11e-05 & 23.1 & 1.23e-04 & 23.2 & 1.18e+00 &  0.9 & 1.23e-04 & 23.2 & 1.31e-05 & 24.0 & 2.39e-04 & 21.0 
+twoSquaresInterface8 &     4 & 4.12e-06 & 17.3 & 7.05e-06 & 17.4 & 1.22e+00 &  1.0 & 7.05e-06 & 17.4 & 5.85e-07 & 22.4 & 1.27e-05 & 18.8 
+twoSquaresInterface16 &     8 & 2.86e-07 & 14.4 & 4.90e-07 & 14.4 & 1.90e+00 &  0.6 & 4.90e-07 & 14.4 & 3.92e-08 & 14.9 & 8.35e-07 & 15.2 
+twoSquaresInterface32 &    16 & 1.85e-08 & 15.5 & 3.18e-08 & 15.4 & 1.91e+00 &  1.0 & 3.18e-08 & 15.4 & 3.45e-09 & 11.4 & 6.88e-08 & 12.1 
+Convergence rates: c0=4.08 c1=4.09 c2=-0.23 c3=4.09 c4=4.13 c5=4.05 
+
+
+
+
+EPS1 == EPS2 ***OK***
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.68e-05 &      & 5.52e-05 &      & 1.86e+00 &      & 5.68e-05 &      & 1.25e-05 &      & 2.18e-04 &      
+twoSquaresInterface4 &     2 & 2.45e-06 & 23.2 & 2.28e-06 & 24.2 & 1.86e+00 &  1.0 & 2.45e-06 & 23.2 & 9.19e-07 & 13.6 & 1.38e-05 & 15.8 
+twoSquaresInterface8 &     4 & 1.21e-07 & 20.2 & 1.12e-07 & 20.4 & 1.87e+00 &  1.0 & 1.21e-07 & 20.2 & 6.56e-08 & 14.0 & 8.48e-07 & 16.3 
+twoSquaresInterface16 &     8 & 7.89e-09 & 15.3 & 7.02e-09 & 16.0 & 1.87e+00 &  1.0 & 7.89e-09 & 15.3 & 4.11e-09 & 16.0 & 5.35e-08 & 15.9 
+twoSquaresInterface32 &    16 & 4.70e-10 & 16.8 & 4.09e-10 & 17.2 & 1.87e+00 &  1.0 & 4.70e-10 & 16.8 & 2.67e-10 & 15.4 & 3.31e-09 & 16.2 
+Convergence rates: c0=4.20 c1=4.24 c2=-0.00 c3=4.20 c4=3.88 c5=4.00 
+
+
+
+**** INTERFACE-ITS HAS AN ABSOLUTE TOL of 10^-10 (interface3d.bf)
+
+Decrease tolerance and increase it's  -- still problems....
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.83e-05 & 22.5 & 2.05e+00 &  1.0 & 3.83e-05 & 22.5 & 3.46e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 1.98e-06 & 19.3 & 2.04e+00 &  1.0 & 1.98e-06 & 19.3 & 2.75e-07 & 12.6 & 7.54e-06 & 17.1 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 1.30e-07 & 15.2 & 2.04e+00 &  1.0 & 1.30e-07 & 15.2 & 2.45e-08 & 11.2 & 6.04e-07 & 12.5 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 1.28e-08 & 10.2 & 2.06e+00 &  1.0 & 1.28e-08 & 10.2 & 2.32e-09 & 10.6 & 5.80e-08 & 10.4 
+Convergence rates: c0=4.20 c1=4.03 c2=-0.00 c3=4.03 c4=3.67 c5=3.82 
+
+
+
+
+EXTRAP GHOST TO ORDER 4
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=1 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.99e-04 &      & 8.64e-04 &      & 2.02e+00 &      & 8.64e-04 &      & 7.56e-05 &      & 2.20e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.8 & 3.97e-05 & 21.8 & 2.05e+00 &  1.0 & 3.97e-05 & 21.8 & 9.05e-06 &  8.4 & 1.50e-04 & 14.7 
+twoSquaresInterface8 &     4 & 1.45e-06 & 15.1 & 4.54e-06 &  8.7 & 2.04e+00 &  1.0 & 4.54e-06 &  8.7 & 1.13e-06 &  8.0 & 1.89e-05 &  7.9 
+twoSquaresInterface16 &     8 & 1.06e-07 & 13.7 & 5.43e-07 &  8.4 & 2.04e+00 &  1.0 & 5.43e-07 &  8.4 & 1.41e-07 &  8.0 & 3.07e-06 &  6.2 
+twoSquaresInterface32 &    16 & 8.82e-09 & 12.0 & 6.66e-08 &  8.2 & 2.06e+00 &  1.0 & 6.66e-08 &  8.2 & 1.80e-08 &  7.8 & 4.89e-07 &  6.3 
+Convergence rates: c0=3.93 c1=3.35 c2=-0.00 c3=3.35 c4=3.01 c5=2.99 
+
+
+TAKE ONE SMALL STEP...
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.001 -tp=.001 -order=4 -ng=5 -useSosupDissipation=1
+
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.30e-06 &      & 3.99e-06 &      & 1.07e+00 &      & 3.99e-06 &      & 1.40e-09 &      & 1.47e-03 &      
+twoSquaresInterface4 &     2 & 7.58e-08 & 30.3 & 1.31e-07 & 30.5 & 1.07e+00 &  1.0 & 1.31e-07 & 30.5 & 4.60e-11 & 30.4 & 9.98e-05 & 14.7 
+twoSquaresInterface8 &     4 & 2.38e-09 & 31.8 & 4.12e-09 & 31.8 & 1.07e+00 &  1.0 & 4.12e-09 & 31.8 & 1.45e-12 & 31.7 & 7.32e-06 & 13.6 
+twoSquaresInterface16 &     8 & 7.30e-11 & 32.6 & 1.27e-10 & 32.4 & 1.07e+00 &  1.0 & 1.27e-10 & 32.4 & 4.43e-14 & 32.7 & 5.80e-07 & 12.6 
+twoSquaresInterface32 &    16 & 2.21e-12 & 33.0 & 3.83e-12 & 33.2 & 1.07e+00 &  1.0 & 3.83e-12 & 33.2 & 1.32e-15 & 33.6 & 5.13e-08 & 11.3 
+Convergence rates: c0=5.00 c1=5.00 c2=0.00 c3=5.00 c4=5.01 c5=3.70 
+
+
+
+
+
++++++++++++ SOSUP:
+
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 3.45e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 2.54e-07 & 13.6 & 8.10e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 1.21e-07 & 16.4 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 2.18e-08 & 11.7 & 6.52e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 1.14e-08 & 10.6 & 2.06e+00 &  1.0 & 1.14e-08 & 10.6 & 1.97e-09 & 11.1 & 5.80e-08 & 11.2 
+twoSquaresInterface64 &    32 & 3.30e-10 & 12.9 & 1.29e-09 &  8.8 & 2.05e+00 &  1.0 & 1.29e-09 &  8.8 & 2.08e-10 &  9.5 & 5.80e-09 & 10.0 
+Convergence rates: c0=4.10 c1=3.88 c2=-0.00 c3=3.88 c4=3.64 c5=3.71 
+
+
+
+
+
+USE SOSUP DISSIPATION
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=1 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.98e-04 &      & 8.63e-04 &      & 2.02e+00 &      & 8.63e-04 &      & 6.63e-05 &      & 2.21e-03 &      
+twoSquaresInterface4 &     2 & 2.19e-05 & 22.7 & 3.80e-05 & 22.7 & 2.05e+00 &  1.0 & 3.80e-05 & 22.7 & 3.45e-06 & 19.2 & 1.29e-04 & 17.1 
+twoSquaresInterface8 &     4 & 1.15e-06 & 19.0 & 1.98e-06 & 19.2 & 2.04e+00 &  1.0 & 1.98e-06 & 19.2 & 2.54e-07 & 13.6 & 8.10e-06 & 15.9 
+twoSquaresInterface16 &     8 & 6.96e-08 & 16.5 & 1.21e-07 & 16.4 & 2.04e+00 &  1.0 & 1.21e-07 & 16.4 & 2.18e-08 & 11.7 & 6.52e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.27e-09 & 16.3 & 1.14e-08 & 10.6 & 2.06e+00 &  1.0 & 1.14e-08 & 10.6 & 1.97e-09 & 11.1 & 5.80e-08 & 11.2 
+Convergence rates: c0=4.20 c1=4.07 c2=-0.00 c3=4.07 c4=3.74 c5=3.81 
+
+
+
+
+EVAL L(P) to second-order instead of fourth -- not much change
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+
+
+------Baseline:
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTable.tex *****
+
+
+
+**********************
+****** June 3, 2018
+
+Add smoothing to P on the interface
+
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=1 -tp=.1 -order=4 -ng=5 -useSosupDissipation=1
+
+--tf=1 : Ex, Ey OK, P has trouble
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.64e-03 &      & 2.85e-03 &      & 1.11e+00 &      & 2.85e-03 &      & 3.15e-04 &      & 5.01e-03 &      
+twoSquaresInterface4 &     2 & 7.11e-05 & 23.1 & 1.23e-04 & 23.2 & 1.18e+00 &  0.9 & 1.23e-04 & 23.2 & 1.31e-05 & 24.0 & 2.39e-04 & 21.0 
+twoSquaresInterface8 &     4 & 4.12e-06 & 17.3 & 7.05e-06 & 17.4 & 1.22e+00 &  1.0 & 7.05e-06 & 17.4 & 5.85e-07 & 22.4 & 1.27e-05 & 18.8 
+twoSquaresInterface16 &     8 & 2.86e-07 & 14.4 & 4.90e-07 & 14.4 & 1.90e+00 &  0.6 & 4.90e-07 & 14.4 & 3.92e-08 & 14.9 & 8.35e-07 & 15.2 
+twoSquaresInterface32 &    16 & 1.85e-08 & 15.5 & 3.18e-08 & 15.4 & 1.91e+00 &  1.0 & 3.18e-08 & 15.4 & 3.45e-09 & 11.4 & 6.88e-08 & 12.1 
+Convergence rates: c0=4.08 c1=4.09 c2=-0.23 c3=4.09 c4=4.13 c5=4.05 
+
+
+
+
+--- alphaP=0  **OK**
+nvRate: numberOfComponents=6 (from header)
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.99e-04 &      & 1.04e-03 &      & 2.15e+00 &      & 1.04e-03 &      & 7.59e-05 &      & 2.55e-03 &      
+twoSquaresInterface4 &     2 & 2.71e-05 & 22.1 & 4.69e-05 & 22.2 & 2.13e+00 &  1.0 & 4.69e-05 & 22.2 & 3.82e-06 & 19.9 & 1.50e-04 & 17.0 
+twoSquaresInterface8 &     4 & 1.42e-06 & 19.1 & 2.47e-06 & 19.0 & 2.13e+00 &  1.0 & 2.47e-06 & 19.0 & 2.62e-07 & 14.6 & 8.46e-06 & 17.7 
+twoSquaresInterface16 &     8 & 8.71e-08 & 16.3 & 1.51e-07 & 16.4 & 2.13e+00 &  1.0 & 1.51e-07 & 16.4 & 1.73e-08 & 15.1 & 5.17e-07 & 16.4 
+twoSquaresInterface32 &    16 & 5.46e-09 & 16.0 & 9.30e-09 & 16.2 & 2.15e+00 &  1.0 & 9.30e-09 & 16.2 & 1.11e-09 & 15.6 & 3.20e-08 & 16.2 
+Convergence rates: c0=4.18 c1=4.18 c2=0.00 c3=4.18 c4=3.99 c5=4.07 
+
+ ****Output written to ./interfaceNFDTDtwoSquar
+
+
+Does 2nd-order interface have trouble too?
+
+-- looks ok:
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=2 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.12e-02 &      & 1.58e-02 &      & 2.00e+00 &      & 1.58e-02 &      & 2.07e-03 &      & 3.32e-02 &      
+twoSquaresInterface4 &     2 & 2.40e-03 &  4.7 & 3.71e-03 &  4.3 & 2.00e+00 &  1.0 & 3.71e-03 &  4.3 & 5.03e-04 &  4.1 & 7.91e-03 &  4.2 
+twoSquaresInterface8 &     4 & 5.31e-04 &  4.5 & 8.61e-04 &  4.3 & 2.00e+00 &  1.0 & 8.61e-04 &  4.3 & 1.24e-04 &  4.1 & 2.22e-03 &  3.6 
+twoSquaresInterface16 &     8 & 1.34e-04 &  4.0 & 2.14e-04 &  4.0 & 2.00e+00 &  1.0 & 2.14e-04 &  4.0 & 3.07e-05 &  4.0 & 6.42e-04 &  3.5 
+twoSquaresInterface32 &    16 & 3.28e-05 &  4.1 & 5.24e-05 &  4.1 & 2.00e+00 &  1.0 & 5.24e-05 &  4.1 & 7.65e-06 &  4.0 & 1.77e-04 &  3.6 
+Convergence rates: c0=2.10 c1=2.06 c2=0.00 c3=2.06 c4=2.02 c5=1.87
+
+
+**********************
+****** June 2, 2018
+
+START TESTING GDM INTERFACE ORDER 4
+
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.1 -tp=.1 -order=2 -ng=3
+
+***add sosup-dissipation to scripts***
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -useSosupDissipation=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5
+
+
+
+--- Not bad -- P has a large error spike just on the interface
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4 -ng=5
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.01e-04 &      & 5.66e-04 &      & 2.00e+00 &      & 5.66e-04 &      & 6.55e-05 &      & 1.88e-03 &      
+twoSquaresInterface4 &     2 & 1.95e-05 & 20.6 & 3.38e-05 & 16.7 & 2.00e+00 &  1.0 & 3.38e-05 & 16.7 & 4.01e-06 & 16.3 & 1.16e-04 & 16.2 
+twoSquaresInterface8 &     4 & 1.14e-06 & 17.1 & 1.97e-06 & 17.2 & 2.00e+00 &  1.0 & 1.97e-06 & 17.2 & 2.82e-07 & 14.2 & 8.19e-06 & 14.2 
+twoSquaresInterface16 &     8 & 7.08e-08 & 16.1 & 1.23e-07 & 16.0 & 2.00e+00 &  1.0 & 1.23e-07 & 16.0 & 2.27e-08 & 12.4 & 6.58e-07 & 12.4 
+twoSquaresInterface32 &    16 & 4.33e-09 & 16.4 & 1.16e-08 & 10.6 & 2.00e+00 &  1.0 & 1.16e-08 & 10.6 & 2.00e-09 & 11.3 & 5.81e-08 & 11.3 
+Convergence rates: c0=4.11 c1=3.93 c2=0.00 c3=3.93 c4=3.75 c5=3.74 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder4maxNormConvTab
+
+
+------- TEST CONVERGENCE OF PLANE WAVE WITH GROWING SOLUTION -----
+
+---- growing mode: 
+
+conv.p exact.conv -option=planeWave -cg=square -dm=gdm -modeGDM=0 -kx=1 -ky=0 -tf=.5 -tp=.5 -order=4 -npv=1 -a0=1.1 1.2 -a1=10 1.2 -b0=1.1 1.2 -b1=0.1 1.2 -ng=4
+evalEigGDM: i=  0 s=(  7.802718637819E-02,  1.010804286862E+00)
+ evalEigGDM: i=  1 s=(  7.802718637819E-02, -1.010804286862E+00)
+ evalEigGDM: i=  2 s=( -5.128027186378E+00,  3.994301361198E+00)
+ evalEigGDM: i=  3 s=( -5.128027186378E+00, -3.994301361198E+00)
+
+DMP-- GDM: s=(  7.802718637819e-02,  1.010804286862e+00) 
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+             square8 &     1 & 0.00e+00 &      & 2.25e-03 &      & 6.31e+00 &      & 2.25e-03 &      & 9.10e-03 &      & 1.38e-03 &      
+            square16 &     2 & 0.00e+00 &  0.0 & 1.33e-04 & 16.9 & 6.33e+00 &  1.0 & 1.33e-04 & 16.9 & 4.62e-04 & 19.7 & 1.08e-04 & 12.8 
+            square32 &     4 & 0.00e+00 &  0.0 & 8.45e-06 & 15.7 & 3.28e+00 &  1.9 & 8.45e-06 & 15.7 & 2.55e-05 & 18.1 & 7.92e-06 & 13.6 
+            square64 &     8 & 0.00e+00 &  0.0 & 5.08e-07 & 16.6 & 3.17e+00 &  1.0 & 5.08e-07 & 16.6 & 1.42e-06 & 18.0 & 5.17e-07 & 15.3 
+Convergence rates: c0=-nan c1=4.03 c2=0.39 c3=4.03 c4=4.21 c5=3.79
+
+
+-----stable case
+conv.p exact.conv -option=planeWave -cg=square -dm=gdm -kx=2 -ky=2 -tf=.5 -tp=.5 -order=4 -npv=1 -a0=1.1 1.2 -a1=1.1  1.2 -b0=1.1 1.2 -b1=1.1 1.2 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+             square8 &     1 & 1.26e-01 &      & 1.26e-01 &      & 6.37e-01 &      & 1.26e-01 &      & 1.39e-02 &      & 1.97e-01 &      
+            square16 &     2 & 5.40e-03 & 23.3 & 5.40e-03 & 23.3 & 7.42e-01 &  0.9 & 5.40e-03 & 23.3 & 8.20e-04 & 17.0 & 9.99e-03 & 19.7 
+            square32 &     4 & 3.23e-04 & 16.7 & 3.23e-04 & 16.7 & 1.76e+00 &  0.4 & 3.23e-04 & 16.7 & 4.60e-05 & 17.8 & 6.53e-04 & 15.3 
+            square64 &     8 & 1.72e-05 & 18.8 & 1.72e-05 & 18.8 & 1.69e+00 &  1.0 & 1.72e-05 & 18.8 & 2.84e-06 & 16.2 & 3.56e-05 & 18.3 
+Convergence rates: c0=4.26 c1=4.26 c2=-0.55 c3=4.26 c4=4.09 c5=4.
+
+
+
+**********************
+****** May 30, 2018
+
+REVISIT GDM INTERFACE 
+
+
+conv.p interface.conv -dm=gdm -kx=1 -ky=1 -ic=pmic -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.5 -tp=.5 -order=2 -ng=3
+
+convRate: numberOfComponents=5 (from header)
+                grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $H_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.35e-02 &      & 2.33e-02 &      & 9.39e-01 &      & 2.33e-02 &      & 3.60e-03 &      
+twoSquaresInterface4 &     2 & 3.41e-03 &  4.0 & 5.91e-03 &  3.9 & 1.50e+00 &  0.6 & 5.91e-03 &  3.9 & 8.92e-04 &  4.0 
+twoSquaresInterface8 &     4 & 8.32e-04 &  4.1 & 1.44e-03 &  4.1 & 1.58e+00 &  0.9 & 1.44e-03 &  4.1 & 2.22e-04 &  4.0 
+Convergence rates: c0=2.01 c1=2.01 c2=-0.38 c3=2.01 c4=2.01 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceGDMNpOrder2maxNormConvTable
+
+**********************
+****** May 19, 2018
+
+
+JWB: resonant mode
+conv.p scat.conv -dm=gdm -npv=1 -modeGDM=2 -a0=.9 -a1=0 -b0=1 -b1=0 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3 -cfl=.95
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   sphereInABoxGrid1 &     1 & 3.07e-02 &      & 4.27e-02 &      & 1.21e-02 &      & 4.27e-02 &      & 6.70e-04 &      & 1.87e-02 &      
+   sphereInABoxGrid2 &     2 & 1.91e-03 & 16.1 & 3.06e-03 & 14.0 & 8.47e-04 & 14.3 & 3.06e-03 & 14.0 & 5.68e-05 & 11.8 & 1.47e-03 & 12.7 
+   sphereInABoxGrid4 &     4 & 1.12e-04 & 17.1 & 1.91e-04 & 16.0 & 5.29e-05 & 16.0 & 1.91e-04 & 16.0 & 3.65e-06 & 15.6 & 1.04e-04 & 14.1 
+Convergence rates: c0=4.05 c1=3.90 c2=3.92 c3=3.90 c4=3.76 c5=3.75 
+
+ ****Output written to ./scatnfdtdsphereInABoxGridGDMNp1Mode2Order4maxNormConvTable.tex *****
+
+JWB: default mode
+conv.p scat.conv -dm=gdm -npv=1 -a0=.9 -a1=0 -b0=1 -b1=0 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3 -cfl=.95
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   sphereInABoxGrid1 &     1 & 4.02e-02 &      & 4.34e-02 &      & 1.33e-02 &      & 4.34e-02 &      & 7.46e-04 &      & 1.49e-02 &      
+   sphereInABoxGrid2 &     2 & 2.38e-03 & 16.9 & 3.21e-03 & 13.5 & 9.28e-04 & 14.3 & 3.21e-03 & 13.5 & 5.46e-05 & 13.7 & 1.24e-03 & 12.0 
+   sphereInABoxGrid4 &     4 & 1.37e-04 & 17.4 & 1.96e-04 & 16.4 & 5.71e-05 & 16.3 & 1.96e-04 & 16.4 & 3.56e-06 & 15.3 & 9.36e-05 & 13.2 
+Convergence rates: c0=4.10 c1=3.90 c2=3.93 c3=3.90 c4=3.86 c5=3.66 
+
+ ****Output written to ./scatnfdtdsphereInABoxGridGDMNp1Order4maxNormConvTable.tex *****
+
+
+
+
+JWB has trouble at cfl=.95 
+
+SPHERE SCAT -GDM
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3 -cfl=.95
+
+-cfl=.95
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   sphereInABoxGrid1 &     1 & 3.45e-02 &      & 3.72e-02 &      & 1.14e-02 &      & 3.72e-02 &      & 6.41e-03 &      & 1.51e-02 &      
+   sphereInABoxGrid2 &     2 & 2.03e-03 & 17.0 & 2.74e-03 & 13.6 & 7.95e-04 & 14.3 & 2.74e-03 & 13.6 & 4.78e-04 & 13.4 & 1.25e-03 & 12.1 
+   sphereInABoxGrid4 &     4 & 1.17e-04 & 17.4 & 1.69e-04 & 16.2 & 4.91e-05 & 16.2 & 1.69e-04 & 16.2 & 3.10e-05 & 15.4 & 9.41e-05 & 13.3 
+Convergence rates: c0=4.10 c1=3.89 c2=3.93 c3=3.89 c4=3.85 c5=3.66 
+
+ ****Output written to ./scatnfdtdsphereInABoxGridGDMNp1Order4maxNormConvTable.tex *****
+
+-cfl=.9
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   sphereInABoxGrid1 &     1 & 3.45e-02 &      & 3.72e-02 &      & 1.14e-02 &      & 3.72e-02 &      & 6.41e-03 &      & 1.51e-02 &      
+   sphereInABoxGrid2 &     2 & 2.02e-03 & 17.1 & 2.73e-03 & 13.6 & 7.89e-04 & 14.4 & 2.73e-03 & 13.6 & 4.80e-04 & 13.4 & 1.25e-03 & 12.1 
+   sphereInABoxGrid4 &     4 & 1.17e-04 & 17.3 & 1.68e-04 & 16.2 & 4.88e-05 & 16.2 & 1.68e-04 & 16.2 & 3.11e-05 & 15.4 & 9.39e-05 & 13.3 
+Convergence rates: c0=4.10 c1=3.90 c2=3.93 c3=3.90 c4=3.84 c5=3.66 
+
+ ****Output written to ./scatnfdtdsphereInABoxGridGDMNp1Order4maxNormConvTable.tex *****
+
+
+
 **********************
 ****** April 19, 2018
 
@@ -15,7 +1352,7 @@ Convergence rates: c0=4.10 c1=3.89 c2=3.93 c3=3.89 c4=3.66
 
 
 SPHERE SCAT -GDM
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
    sphereInABoxGrid1 &     1 & 3.45e-02 &      & 3.72e-02 &      & 1.14e-02 &      & 3.72e-02 &      & 6.41e-03 &      & 1.51e-02 &      
    sphereInABoxGrid2 &     2 & 2.02e-03 & 17.1 & 2.73e-03 & 13.6 & 7.89e-04 & 14.4 & 2.73e-03 & 13.6 & 4.80e-04 & 13.4 & 1.25e-03 & 12.1 
@@ -42,7 +1379,7 @@ Convergence rates: c0=4.05 c1=4.06 c2=0.12 c3=4.06 c4=4.11 c5=4.09
 
 SCAT SPHERE tf=.5
 
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.5 -tp=.5 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.5 -tp=.5 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
 
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
    sphereInABoxGrid1 &     1 & 2.46e-02 &      & 3.66e-02 &      & 1.05e-02 &      & 3.66e-02 &      & 9.82e-03 &      & 1.28e-02 &      
@@ -149,7 +1486,7 @@ Convergence rates: c0=4.27 c1=4.27 c2=0.00 c3=4.16 c4=5.52
 
 
 SPHERE SCAT
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
    sphereInABoxGrid1 &     1 & 3.45e-02 &      & 3.72e-02 &      & 1.14e-02 &      & 3.72e-02 &      & 6.41e-03 &      & 1.51e-02 &      
    sphereInABoxGrid2 &     2 & 2.02e-03 & 17.1 & 2.73e-03 & 13.6 & 7.89e-04 & 14.4 & 2.73e-03 & 13.6 & 4.80e-04 & 13.4 & 1.25e-03 & 12.1 
@@ -159,7 +1496,7 @@ Convergence rates: c0=4.10 c1=3.90 c2=3.93 c3=3.90 c4=3.84 c5=3.66
 
 DISK SCAT
 ORDER=4 -- 
-conv.p scat.conv -tf=.5 -tp=.5 -order=4 -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=cicFixed -ng=4
+conv.p scat.conv -tf=.5 -tp=.5 -order=4 -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=cicFixed -ng=4
 
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
            cicFixed2 &     1 & 1.18e-03 &      & 2.03e-03 &      & 2.13e+00 &      & 2.03e-03 &      & 4.32e-04 &      & 2.43e-03 &      
@@ -406,7 +1743,7 @@ Convergence rates: c0=4.10 c1=3.89 c2=3.93 c3=3.66
 
 
 GDM + SOSUP-DISS
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
 
                 grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $E_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
    sphereInABoxGrid1 &     1 & 3.45e-02 &      & 3.72e-02 &      & 1.14e-02 &      & 6.41e-03 &      & 1.51e-02 &      
@@ -463,7 +1800,7 @@ Convergence rates: c0=4.11 c1=3.90 c2=3.94 c3=3.64
 conv.p scat.conv -tf=.1 -tp=.1 -order=4 -cg=sibFixed -useSosupDissipation=1 -ng=2
 
 GDM + SOSUP-DISS
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3 -cfl=.8
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.3 -tp=.3 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3 -cfl=.8
 
                 grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $E_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
    sphereInABoxGrid1 &     1 & 3.56e-02 &      & 3.75e-02 &      & 1.16e-02 &      & 6.70e-03 &      & 1.33e-02 &      
@@ -475,7 +1812,7 @@ Convergence rates: c0=4.16 c1=3.94 c2=4.01 c3=3.91 c4=3.62
 
 
 GDM + SOSUP-DISS
-conv.p scat.conv -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.1 -tp=.1 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
+conv.p scat.conv -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -useSosupDissipation=1 -tf=.1 -tp=.1 -order=4 -radius=1. -bg=backGround -method=nfdtd -cg=sphereInABoxGrid -ng=3
 
 
 
@@ -588,7 +1925,7 @@ conv.p exact.conv -option=planeWave -cg=squarep -dm=gdm -kx=2 -ky=2 -tf=.4 -tp=.
 TEST GDM + SOSUP DISSIPATION
 
 ORDER=4 -- SIB-Fixed
-conv.p scat.conv -tf=.05 -tp=.05 -order=4 -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sibFixed -useSosupDissipation=1 -ng=2
+conv.p scat.conv -tf=.05 -tp=.05 -order=4 -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sibFixed -useSosupDissipation=1 -ng=2
 
                 grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $E_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
            sibFixed2 &     1 & 4.15e-01 &      & 3.33e-01 &      & 2.55e-01 &      & 6.89e-03 &      & 5.76e-01 &      
@@ -614,7 +1951,7 @@ TEST MJJ's new GDM codes
 ===== GDM SPHERE SCATTERING
 
 ORDER=4 -- SIB-FIXED
-conv.p scat.conv -tf=.1 -tp=.1 -order=4 -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sibFixed -ng=3
+conv.p scat.conv -tf=.1 -tp=.1 -order=4 -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sibFixed -ng=3
 
                 grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $E_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
            sibFixed2 &     1 & 6.76e-01 &      & 4.47e-01 &      & 4.85e-01 &      & 3.24e-02 &      & 1.53e+00 &      
@@ -626,7 +1963,7 @@ Convergence rates: c0=6.21 c1=5.90 c2=6.32 c3=6.18 c4=5.86
 
 
 ORDER=4 -- SIB
-conv.p scat.conv -tf=.1 -tp=.1 -order=4 -dm=gdm -np1=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sib -ng=3
+conv.p scat.conv -tf=.1 -tp=.1 -order=4 -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=1 -cg=sib -ng=3
 
 *** -tf=.1 
                 grid  &  N  &    $E_x$   & r &    $E_y$   & r &    $E_z$    & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 

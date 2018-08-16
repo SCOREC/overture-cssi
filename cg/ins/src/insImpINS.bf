@@ -279,6 +279,225 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 #endMacro
 
 ! Here are the coefficients of the Added Mass equation for the GHOST -- needs normal an(0:2) and delta function
+!  See comments below for derivation
+
+
+! ===============================================================================================
+!  **NEW VERSION** June 24, 2018
+!
+!     ***** Added-Mass Boundary Condition : FILL into the matrix  *****
+! 
+!  Macro args:
+!   coeff : coefficient matrix to fill in.
+!   cmpu,eqnu : fill in equations eqnu,...,eqnu+nd-1 and components cmpu,...,cmpu+nd-1
+!   i1,i2,i3 : boundary point, will assign ghost point
+!
+! NOTES:
+!  See the file fibr.pdf for a derivation of the equations used here
+! 
+!  Boundary equations
+!     (1a) t.tauv.n + zs*t.v = RHS
+!     (1b) 2*mu*div(v) + zp*n.v = RHS 
+!
+!  Ghost-point equations:
+!     (2a) t.( v-vf ) = 0 
+!     (2b) n.( v-vf ) + gamma*div(v)=0
+!          vf == interior update = v^(n-1) + dt*( theta/rho) Delta (v) + ...
+!          gamma = zp*dt/rho or gamma = dy
+!
+! SUMMARY: (1) and (2) can be combined into two vector equations:
+!   (I)  2*mu*(div(v))*n + zp*(n n^T) v + (I-n n^T)( tauv.n + zs*v  ) = RHS 
+!   (II) v - dt*( theta/rho) Delta (v) + gamma*div(v) n = RHS
+!
+! In terms of operators D_k = partial/partial( x_k) : 
+! (I): 
+!      2*mu*(D_k v_k) n_i + zp*( n_i n_j) v_j + (delta_ij - n_i n_j)*( mu*(D_j v_k + D_k v_j) n_k  + zs v_j ) = RHS(i)
+!  => 
+!      2*mu*(D_k v_j) delta_jk n_i + zp*( n_k n_j) delta_ik v_j
+!                     + mu*(delta_ij - n_i n_j)*( D_j v_k ) n_k 
+!                     + mu*(delta_ij - n_i n_j)*( D_k v_j ) n_k 
+!                     + zs*(delta_ij - n_i n_j)* v_j             = RHS(i)
+!  => 
+!      2*mu delta_jk n_i (D_k v_j) + zp*( n_k n_j) delta_ik v_j
+!                     + mu*(delta_ik - n_i n_k)* n_j ( D_k v_j )   (flip j <-> k in sums)
+!                     + mu*(delta_ij - n_i n_j)* n_k ( D_k v_j )
+!                     + zs*(delta_ij - n_i n_j)* v_j             = RHS(i)
+!
+!   =>  sum_j sum_k  CAMG(i,j,k) * (partial v_j/partial x_k)    + sum_j CAMG0(i,j) v_j  = RHS(i),  i=0,1,2
+!
+#defineMacro CAMG(i,j,k) (2.*mu*delta(j,k)*an(i) + mu*(delta(i,k)-an(i)*an(j))*an(j) +mu*(delta(i,j)-an(i)*an(j))*an(k))
+!      CAMG(i,j,k) = 2*mu*delta_jk  n_i + mu*(delta_ik - n_i n_k) n_j + mu*(delta_ij - n_i n_j) n_k
+!                 =  
+#defineMacro CAMG0(i,j) (zp*delta(i,k)*an(k)*an(j) + zs*( delta(i,j) - an(i)*an(j) ))
+!      CAMG0(ij) = zp*( n_k n_j) delta_ik + (delta_ij - n_i n_j) *zs
+! 
+!  (II)    (1 + beta*Delta) delta_ij v_j  + gamma* n_i D_j v_j = RHS(i)
+!    where 
+!        beta = -theta*dt*nu , gamma = zp*dt/rho
+! ===============================================================================================
+#beginMacro fillMatrixAddedMassBC(coeff, cmpu,eqnu, i1,i2,i3, an )
+
+ i1m=i1-is1  ! ghost point
+ i2m=i2-is2
+ i3m=i3-is3
+
+ getNormalForCurvilinearGrid(side,axis,i1,i2,i3)
+
+ ! write(*,'(" IMP: AMP BC i1,i2=",2i2," ndu=",i4," normal=",2e10.2)') i1,i2,ndu,an(0),an(1)
+ ! write(*,'("    :              i1m,i2m,i3m=",3i3)') i1m,i2m,i3m
+ ! write(*,'("    : c000,c001,c010,c011=",4e10.2)') AMG(0,0,0),AMG(0,0,1),AMG(0,1,0),AMG(0,1,1)
+ ! write(*,'("    : c100,c101,c110,c111=",4e10.2)') AMG(1,0,0),AMG(1,0,1),AMG(1,1,0),AMG(1,1,1)
+
+ ! Evaluate the jacobian derivatives used by the coefficient and forward derivatives:
+ ! opEvalJacobianDerivatives(MAXDER) : MAXDER = max number of derivatives to precompute.
+ opEvalJacobianDerivatives(aj,1)
+
+ ! evaluate the coeff operators 
+ ! getCoeff(identity, iCoeff,aj)
+ getCoeff(x, xCoeff,aj)
+ getCoeff(y, yCoeff,aj)
+ #If $DIM == 3
+  getCoeff(z, zCoeff,aj)
+ #End
+ getCoeff(identity, iCoeff,aj)
+ getCoeff(laplacian, lapCoeff,aj)
+
+ ! Equations on the ghost point:
+ do m=0,ndc-1
+  coeff(m,i1m,i2m,i3m)=0.  ! init all elements to zero
+ end do
+
+ ! Equations on the boundary:
+ do m=0,ndc-1
+  coeff(m,i1,i2,i3)=0.  ! init all elements to zero
+ end do
+ 
+ beta =-implicitFactor*nu*dt
+ !! beta = 0. ! TEST
+ gamma = zp*dt/rho 
+
+ #If $DIM == 2
+  ! ******************************** TWO DIMENSIONS ***********************************
+  if( fillCoefficientsScalarSystem.eq.0 )then
+   ! Fill in the coupled BC equations for u and v  
+
+   ! -------------Coefficients in the the ghost point equation ----------
+   do n=0,nd-1
+     ! equation n:  (equation numbers and classify  are set in these calls)
+     ! write(*,'(" (i1,i2,n)=(",i3,",",i3,",",i2,") amg-coeff=",6e10.2)') i1,i2,n,AMG(n,0,0),AMG(n,0,1),AMG0(n,0),AMG(n,1,0),AMG(n,1,1),AMG0(n,1)
+     setCoeffGhost3(cmpu,eqnu+n,coeff,CAMG(n,0,0)*xCoeff,CAMG(n,0,1)*yCoeff,CAMG0(n,0)*iCoeff)
+     addCoeffGhost3(cmpv,eqnu+n,coeff,CAMG(n,1,0)*xCoeff,CAMG(n,1,1)*yCoeff,CAMG0(n,1)*iCoeff)
+   end do
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
+    ! We decouple the coupled velocity components: Only add coefficients of u 
+    n=0 
+    setCoeffGhost3(cmpu,eqnu,coeff,CAMP(n,0,0)*xCoeff,CAMP(n,0,1)*yCoeff,CAMP0(n,0)*iCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
+    ! We decouple the coupled velocity components: Only add components of v 
+    n=1 
+    setCoeffGhost3(cmpu,eqnu,coeff,CAMP(n,1,0)*xCoeff,CAMP(n,1,1)*yCoeff,CAMP0(n,1)*iCoeff)
+
+  end if
+
+  ! ------------- Coefficients in the boundary equation ----------------
+  if( fillCoefficientsScalarSystem.eq.0 )then
+   ! Fill in the coupled equations for u and v  
+   ! write(*,'(" insImpINS: beta=",e10.3," amg-delta=",4e10.3)') beta,AMGDelta(0,0),AMGDelta(0,1),AMGDelta(1,0),AMGDelta(1,1)
+   ! u equation:
+   setCoeff3(cmpu,eqnu,coeff,iCoeff, beta*lapCoeff, gamma*an(0)*xCoeff)
+   addCoeff1(cmpv,eqnu,coeff,                       gamma*an(0)*yCoeff)  
+
+   ! v equation:
+   setCoeff3(cmpv,eqnv,coeff,iCoeff,beta*lapCoeff, gamma*an(1)*yCoeff)
+   addCoeff1(cmpu,eqnv,coeff,                      gamma*an(1)*xCoeff)  
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
+   ! We decouple the coupled velocity components: Only add coefficients of u 
+   n=0 
+   setCoeff3(cmpu,eqnu,coeff,iCoeff, beta*lapCoeff, gamma*an(0)*xCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
+   ! We decouple the coupled velocity components: Only add components of v 
+   n=1 
+   setCoeff3(cmpv,eqnv,coeff,iCoeff,beta*lapCoeff, gamma*an(1)*yCoeff)
+
+  end if
+
+ #Else
+  ! ************************ THREE DIMENSIONS ****************************
+
+  if( fillCoefficientsScalarSystem.eq.0 )then
+   ! Fill in the coupled BC equations for u and v and w 
+
+   ! -------------Coefficients in the the ghost point equation ----------
+   do n=0,nd-1
+     ! equation n:  (equation numbers and classify  are set in these calls)
+     setCoeffGhost4(cmpu,eqnu+n,coeff,CAMP(n,0,0)*xCoeff,CAMP(n,0,1)*yCoeff,CAMP(n,0,2)*zCoeff,CAMP0(n,0)*iCoeff)
+     addCoeffGhost4(cmpv,eqnu+n,coeff,CAMP(n,1,0)*xCoeff,CAMP(n,1,1)*yCoeff,CAMP(n,1,2)*zCoeff,CAMP0(n,1)*iCoeff)
+     addCoeffGhost4(cmpw,eqnu+n,coeff,CAMP(n,2,0)*xCoeff,CAMP(n,2,1)*yCoeff,CAMP(n,2,2)*zCoeff,CAMP0(n,2)*iCoeff)
+   end do
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
+    ! We decouple the coupled velocity components: Only add coefficients of u 
+    n=0 
+    setCoeffGhost4(cmpu,eqnu+n,coeff,CAMP(n,0,0)*xCoeff,CAMP(n,0,1)*yCoeff,CAMP(n,0,2)*zCoeff,CAMP0(n,0)*iCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
+    ! We decouple the coupled velocity components: Only add components of v 
+    n=1 
+    setCoeffGhost4(cmpv,eqnu+n,coeff,CAMP(n,1,0)*xCoeff,CAMP(n,1,1)*yCoeff,CAMP(n,1,2)*zCoeff,CAMP0(n,1)*iCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
+    ! We decouple the coupled velocity components: Only add components of w
+    n=2
+    setCoeffGhost4(cmpw,eqnu+n,coeff,CAMP(n,2,0)*xCoeff,CAMP(n,2,1)*yCoeff,CAMP(n,2,2)*zCoeff,CAMP0(n,2)*iCoeff)
+  end if 
+
+  ! ------------- Coefficients of the boundary equation ----------------
+  ! evaluate the coeff operators 
+  if( fillCoefficientsScalarSystem.eq.0 )then
+   ! Fill in the coupled equations for u and v  
+
+   ! u equation:
+   setCoeff3(cmpu,eqnu,coeff,iCoeff,beta*lapCoeff, gamma*an(0)*xCoeff)
+   addCoeff1(cmpv,eqnu,coeff,                      gamma*an(0)*yCoeff)  
+   addCoeff1(cmpw,eqnu,coeff,                      gamma*an(0)*zCoeff)  
+
+   ! v equation:
+   setCoeff3(cmpv,eqnv,coeff,iCoeff,beta*lapCoeff, gamma*an(1)*yCoeff)
+   addCoeff1(cmpu,eqnv,coeff,                      gamma*an(1)*xCoeff)  
+   addCoeff1(cmpw,eqnv,coeff,                      gamma*an(1)*zCoeff)  
+
+   ! w equation:
+   setCoeff3(cmpw,eqnw,coeff,iCoeff,beta*lapCoeff, gamma*an(2)*zCoeff)
+   addCoeff1(cmpu,eqnw,coeff,                      gamma*an(2)*xCoeff)
+   addCoeff1(cmpw,eqnw,coeff,                      gamma*an(2)*yCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffU )then
+   ! We decouple the coupled velocity components: Only add coefficients of u 
+   n=0 
+   setCoeff3(cmpu,eqnu,coeff,iCoeff, beta*lapCoeff, gamma*an(0)*xCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffv )then
+   ! We decouple the coupled velocity components: Only add components of v 
+   n=1 
+   setCoeff3(cmpv,eqnv,coeff,iCoeff,beta*lapCoeff, gamma*an(1)*yCoeff)
+
+  else if( fillCoefficientsScalarSystem.eq.fillCoeffw )then
+   ! We decouple the coupled velocity components: Only add components of w
+   n=2
+   setCoeff3(cmpw,eqnw,coeff,iCoeff,beta*lapCoeff, gamma*an(2)*zCoeff)
+
+  end if
+
+
+ #End
+ 
+#endMacro
+
+! Here are the coefficients of the Added Mass equation for the GHOST -- needs normal an(0:2) and delta function
 #defineMacro AMG(i,j,k) (delta(j,k)*an(i) + delta(i,j)*an(k) + delta(i,k)*an(j) - 2.*an(i)*an(j)*an(k))
 #defineMacro AMG0(i,j) ( +( delta(i,j) - an(i)*an(j) )*(zs/mu) )
 ! AMGDelta(i,j) =  -theta*dt*nu*[ I - P ]
@@ -286,9 +505,8 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 !     beta = theta*dt*nu 
 #defineMacro AMGDelta(i,j) ( -beta*( delta(i,j) - (1.-alpha)*an(i)*an(j) ) )
 
-
 ! ===============================================================================================
-!  
+!  ***OLD VERSION****
 !     ***** Added-Mass Boundary Condition : FILL into the matrix  *****
 ! 
 !  Macro args:
@@ -341,7 +559,7 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
 !        beta = -theta*dt*nu 
 !        
 ! ===============================================================================================
-#beginMacro fillMatrixAddedMassBC(coeff, cmpu,eqnu, i1,i2,i3, an )
+#beginMacro fillMatrixAddedMassBC_OLD(coeff, cmpu,eqnu, i1,i2,i3, an )
 
  i1m=i1-is1  ! ghost point
  i2m=i2-is2
@@ -502,8 +720,6 @@ addCoeffGhost10(c,e,coeff,op1,,,,,,,,,)
  #End
  
 #endMacro
-
-
 
 ! =============================================================
 ! macro to declare temporary variables:
@@ -1706,7 +1922,7 @@ end if
 ! ===============================================================================================
 #beginMacro fillMatrixBoundaryConditionsPDE()
 
-if( bc0.eq.noSlipWall )then
+if( bc0.eq.noSlipWall .and. debug.gt.3 )then
    write(*,'(" ")') 
    write(*,'(">>> insImpINS: fill Matrix Boundary Conditions: useImplicitAmpBCs=",i4," isBulkSolid=",i2)') useImplicitAmpBCs,isBulkSolid
    write(*,'(">>> insImpINS: fill useAddedMassAlgorithm=",i4," projectAddedMassVelocity=",i4)') useAddedMassAlgorithm,projectAddedMassVelocity
@@ -1732,13 +1948,15 @@ if( fillCoefficientsScalarSystem.ne.fillCoeffT )then
     end if
   end if
 
-if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 )then
+if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVelocity.eq.1 .and. isBulkSolid.eq.1 .and. interfaceType(side,axis,grid).eq.tractionInterface )then
 
   ! ** AMP NO-SLIP WALL BCs FOR A BULK SOLID INTERFACE *** 
   !  The AMP conditions (see fib and fibr papers) have a limit of
   !  a no-slip wall for a heavy solid and a free surface for a light solid
 
- write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: fillCoefficientsScalarSystem=",i4)') fillCoefficientsScalarSystem
+ if( debug.gt.2 )then
+   write(*,'(" insImpINS: FILL IMPLICIT AMP velocity BCs: fillCoefficientsScalarSystem=",i4)') fillCoefficientsScalarSystem
+ end if
 
  if( mu.eq.0. )then
    write(*,'(" insImpINS:ERROR: mu=0 : nu,fluidDensity=",2e10.2)') nu,fluidDensity
@@ -1779,13 +1997,25 @@ if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVel
   
  else 
 
-  write(*,'("  ")') 
-  write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since useImplicitAmpBCs=1 --- ")') 
+  if( debug.gt.3 )then
+    write(*,'("  ")') 
+    write(*,'(" --- USE NEW WAY FOR IMPLICIT AMP BCS since useImplicitAmpBCs=1 --- ")') 
+    write(*,'(" --- alpha=",e12.2)') alpha
+  end if
 
   ! ********* NEW ADDED MASS BULK SOLID VELOCITY BCS ********
-  beginLoopsMixedBoundary()
-   fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
-  endLoops()
+  if( addedMassVelocityBC.eq.0 )then
+    beginLoopsMixedBoundary()
+     fillMatrixAddedMassBC_OLD( coeff, cmpu,eqnu, i1,i2,i3, an )
+    endLoops()
+  else if( addedMassVelocityBC.eq.1 )then
+    stop 9999
+    beginLoopsMixedBoundary()
+     ! fillMatrixAddedMassBC( coeff, cmpu,eqnu, i1,i2,i3, an )
+    endLoops()
+  else
+    stop 7782
+  end if
 
   ! Check for two adjacent AMP NO-SLIP WALLS  -- not supported yet.
   ! Use extrapolation or compatibility at corner since equations are duplicate:
@@ -1800,11 +2030,19 @@ if( bc0.eq.noSlipWall .and. useAddedMassAlgorithm.eq.1 .and. projectAddedMassVel
   else
     axisp2=axisp1
   end if
-  if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. \
-      bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
-    write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+  if( interfaceType(0,axisp1,grid).eq.tractionInterface .or.interfaceType(1,axisp1,grid).eq.tractionInterface .or.\
+      interfaceType(0,axisp2,grid).eq.tractionInterface .or.interfaceType(1,axisp2,grid).eq.tractionInterface )then
+    write(*,'("insImpINS: ERROR: two AMP no-slip wall traction-interfaces meet at a corner -- not implemented -- fix me")') 
     stop 9099
+
   end if
+
+  ! if( bc(0,axisp1).eq.noSlipWall .or. bc(1,axisp1).eq.noSlipWall .or. \
+  !     bc(0,axisp2).eq.noSlipWall .or. bc(1,axisp2).eq.noSlipWall )then
+  !   write(*,'("insImpINS: ERROR: two AMP no-slip walls meet at a corner -- not implemented -- fix me")') 
+  !   stop 9099
+  ! end if
+
   if( bc(0,axisp1).eq.dirichletBoundaryCondition .or. bc(1,axisp1).eq.dirichletBoundaryCondition .or. \
       bc(0,axisp2).eq.dirichletBoundaryCondition .or. bc(1,axisp2).eq.dirichletBoundaryCondition )then
 

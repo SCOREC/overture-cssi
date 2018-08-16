@@ -35,10 +35,78 @@ operatorAveraging(RealCompositeGridFunction & coeff, const int & level)
 
   CompositeGrid & mgcg = multigridCompositeGrid();
   CompositeGrid & cg = *coeff.getCompositeGrid();
+
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfAccuracyFine   = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+  const int orderOfAccuracyCoarse = (level+1)==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+  const int orderOfThisLevel      = (level+1)==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
   for( int grid=0; grid<cg.multigridLevel[level].numberOfComponentGrids(); grid++ )
   {
-    operatorAveraging(coeff.multigridLevel[level][grid],coeff.multigridLevel[level+1][grid],
-		      cg.multigridCoarseningRatio(Range(0,2),grid,level+1),grid,level);
+    MappedGrid & mgFine   = *coeff.multigridLevel[level][grid].getMappedGrid();
+    const bool isRectangular = mgFine.isRectangular();
+
+    if( level==0 && !isRectangular && orderOfAccuracyFine!=orderOfAccuracyCoarse )
+    {
+      // To build the Galerkin coarse grid operator corresponding to the 2nd-order accurate operators
+      // we need to create 2nd-order accurate coefficients on the FINE grid.
+
+
+      bool buildRectangular=false;
+      bool buildCurvilinear=true;
+      
+      Range all;
+      const int width = orderOfAccuracyCoarse+1;  // 3 or 5
+      const int numberOfGhostLines=(width-1)/2;
+      assert( numberOfGhostLines==1 || numberOfGhostLines==2 );
+      const int stencilSize=int(pow(width,mgFine.numberOfDimensions())+1);
+      // *** FOR NOW THE COEFF ARRAY IS DIMENSIONED BY THE FINE GRID SIZE I BELIEVE ****
+      int widthFine=5;
+      int stencilSizeFine=int(pow(widthFine,mgFine.numberOfDimensions())+1);
+      realMappedGridFunction coeffFine(mgFine,stencilSizeFine,all,all,all);
+      coeffFine.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines); 
+
+      MappedGridOperators & op = * coeff.multigridLevel[level][grid].getOperators();
+      op.setStencilSize(stencilSize);                     // do we need to RESET these??
+      op.setOrderOfAccuracy(orderOfAccuracyCoarse);
+      coeffFine.setOperators(op);
+
+      coeffFine=0.;
+      
+      buildPredefinedCoefficientMatrix( coeffFine, grid, level, orderOfAccuracyCoarse, buildRectangular, buildCurvilinear );
+      
+      if( false )
+      {
+        displayCoeff(coeffFine,"FINE GRID COEFFICIENTS TO ORDER 2",stdout,"%8.2e ");
+      }
+      
+
+      operatorAveraging(coeffFine,                               // use lower-order accurate coefficients
+                        coeff.multigridLevel[level+1][grid],
+                        cg.multigridCoarseningRatio(Range(0,2),grid,level+1),grid,level);
+
+      if( false )
+      {
+        displayCoeff(coeff.multigridLevel[level+1][grid],"COARSE GRID AVERAGED COEFFICIENTS",stdout,"%8.2e ");
+      }
+
+      // reset 
+      op.setStencilSize(stencilSizeFine);                     // do we need to RESET these??
+      op.setOrderOfAccuracy(orderOfAccuracyFine);
+
+      // printF("Ogmg::operatorAveraging: unable to average fine grid operator with orderOfAccuracyFine=%i to orderOfAccuracyCoarse=%i\n"
+      //        "   Need to form the lower order accuracy fine grid operator. \n",orderOfAccuracyFine,orderOfAccuracyCoarse);
+
+      //OV_ABORT("STOP HERE FOR NOW");
+
+    }
+    else
+    {
+      operatorAveraging(coeff.multigridLevel[level  ][grid],
+                        coeff.multigridLevel[level+1][grid],
+                        cg.multigridCoarseningRatio(Range(0,2),grid,level+1),grid,level);
+    }
+    
   }
   
   if( equationToSolve==OgesParameters::divScalarGradOperator ||
@@ -154,7 +222,18 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
     
   }
 
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfAccuracyFine   = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+  const int orderOfAccuracyCoarse = (level+1)==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+  const int orderOfThisLevel      = (level+1)==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+  if( true )
+  {
+    printF("Operator averaging for grid=%i, level=%i, orderOfAccuracyFine=%i, orderOfAccuracyCoarse=%i\n",
+           grid,level,orderOfAccuracyFine,orderOfAccuracyCoarse );
+  }
   
+
   realArray & cCoarse      = coeffCoarse;
   const int & numberOfDimensions = mgFine.numberOfDimensions();
 
@@ -226,7 +305,7 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
     const IntegerArray & gidf = mgFine.gridIndexRange();
     const IntegerArray & gidc = mgCoarse.gridIndexRange();
     IntegerArray dimLocalCoarse(2,3); dimLocalCoarse=0;
-    const int numGhost=orderOfAccuracy/2; // is this right ? 
+    const int numGhost=orderOfAccuracyCoarse/2; // is this right ? 
     bool thisProcessorHasPoints=true;
     for( int axis=0; axis<numberOfDimensions; axis++ )
     {
@@ -286,7 +365,7 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
     for( side=Start; side<=End; side++ )
     {
       if( mgFine.boundaryCondition(side,axis)==0 && 
-          (level>0 || mgFine.numberOfGhostPoints(side,axis)< orderOfAccuracy/2+1) )
+          (level>0 || mgFine.numberOfGhostPoints(side,axis)< orderOfAccuracyFine/2+1) )
       {
         Range all;
         int extra=1;  // to get corners
@@ -341,12 +420,12 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
   //  **********************************************************************
   // This was moved here for parallel *wdh* 100330
 
-  const int width = orderOfAccuracy+1;  // 3 or 5
+  const int width = orderOfAccuracyCoarse+1;  // 3 or 5
   const int stencilSize=int(pow(width,mgcg.numberOfDimensions())+1);
 
   MappedGridOperators & op = * coeffCoarse.getOperators();
   op.setStencilSize(stencilSize);
-  op.setOrderOfAccuracy(orderOfAccuracy);
+  op.setOrderOfAccuracy(orderOfAccuracyCoarse);
 
   // const int orderOfExtrapolation= orderOfAccuracy==2 ? 3 : 4;  // 5 **** use extrap order 4 for 4th order
   const int orderOfExtrapolation= getOrderOfExtrapolation(level);  // 100118 
@@ -524,7 +603,7 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
               // this is done below ...
 	  }
 	  else if( parameters.ghostLineAveragingOption[1]==OgmgParameters::imposeNeumann ||
-                   orderOfAccuracy==4 )
+                   orderOfAccuracyCoarse==4 )
 	  {
             // this is done below ...
 	  }
@@ -751,7 +830,7 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
                parameters.boundaryAveragingOption[0]==OgmgParameters::imposeDirichlet )
 	  {
             // New way
-	    assignBoundaryConditionCoefficients( coeffCoarse, grid, level+1, side,axis );
+	    assignBoundaryConditionCoefficients( coeffCoarse, grid, level+1, orderOfThisLevel, side,axis );
             continue;
 	  }
 	  
@@ -990,7 +1069,7 @@ operatorAveraging(RealMappedGridFunction & coeffFine,
             // ==============================================================
             // =================== New way ==================================
             // ==============================================================
-	    assignBoundaryConditionCoefficients( coeffCoarse, grid, level+1, side,axis );
+	    assignBoundaryConditionCoefficients( coeffCoarse, grid, level+1, orderOfThisLevel, side,axis );
 
             continue;
 	  }
@@ -1394,7 +1473,10 @@ averageCoefficients(Index & I1, Index & I2, Index & I3,
 
     const int ndc=cFine.getLength(0);
 
-    const int width = orderOfAccuracy+1; 
+    const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+    const int orderOfThisLevel           = orderOfCoarseLevelSolves;
+
+    const int width = orderOfThisLevel+1; 
     const int halfWidth = (width-1)/2;  // stencilHalfWidth
     const intArray & mask = mgcg[0].mask();
     int numGhost[3]={0,0,0};
@@ -1541,7 +1623,7 @@ averageCoefficients(Index & I1, Index & I2, Index & I3,
                 *getDataPointer(cFineLocal), 
                 *getDataPointer(cCoarseLocal), 
 		ndc, *getDataPointer(c0), *getDataPointer(c1),
-		averageOption[0], orderOfAccuracy, ipar[0] );
+		averageOption[0], orderOfThisLevel, ipar[0] );
     
 //     time=getCPU()-time;
 //     printF(">>>Time for averageOpt=%8.2e\n",time);

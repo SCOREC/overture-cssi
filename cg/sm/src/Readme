@@ -64,6 +64,9 @@ setup.C:
   - setupGridFunctions()
   - outputHeader()
 
+SmParameters.C
+  - setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,  DialogData *interface /* =NULL */ )
+
 solve.C:
   - computeNumberOfStepsAndAdjustTheTimeStep
   - outputResultsAfterEachTimeStep

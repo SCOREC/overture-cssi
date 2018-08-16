@@ -57,6 +57,9 @@ advanceMethodOfLines( int current, real t, real dt,
     const int prev = (current-1+numberOfTimeLevels) % numberOfTimeLevels;
     const int next = (current+1) % numberOfTimeLevels;
 
+    parameters.dbase.get<int>("currentGF")=current;
+    parameters.dbase.get<int>("nextGF")=next;
+
     int & debug = parameters.dbase.get<int >("debug");
 
     const bool isSecondOrderSystem = ((SmParameters&)parameters).isSecondOrderSystem();

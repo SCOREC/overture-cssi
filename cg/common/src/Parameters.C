@@ -680,6 +680,20 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
 
   if( !dbase.has_key("useImplicitAmpBCs") ) dbase.put<bool>("useImplicitAmpBCs")=false;
 
+  // There are variations of the added mass velocity BC for INS + bulkd solid
+  //    Use this parameter to try the different schemes out.
+  if( !dbase.has_key("addedMassVelocityBC") ) dbase.put<int>("addedMassVelocityBC")=0;
+
+  // For added-mass (FIBR)
+  //   zf = zfMuByH*(mu/h) + zfRhoHByDt*(rho*h/dt)
+  dbase.put<real>("zfMuByH")=2.;  
+  dbase.put<real>("zfRhoHByDt")=0.;  
+  dbase.put<real>("zfMono")=0.;  
+  dbase.put<real>("zfMuRhoByZpDt")=2.;  
+
+  // -- fixup near fluid-deforming-solid corners where the BC's are incompatible
+  if( !dbase.has_key("fluidSolidCornerFix") ) dbase.put<int>("fluidSolidCornerFix")=0;
+
   // For the traditional FSI scheme we sometimes perform sub-iterations for FSI problems
   if( !dbase.has_key("useMovingGridSubIterations") ) dbase.put<bool>("useMovingGridSubIterations")=false;
 
@@ -1753,6 +1767,17 @@ bool Parameters::
 gridIsMoving(int grid) const
 {
   return  dbase.get<MovingGrids >("movingGrids").gridIsMoving(grid);
+}
+
+
+// ===================================================================================================================
+/// \brief return true if this grid is a deforming bulk solid
+/// \param grid (input) : grid number.
+// ==================================================================================================================
+bool Parameters::
+isDeformingBulkSolid(int grid)
+{
+  return dbase.get<MovingGrids >("movingGrids").isDeformingBulkSolid(grid);
 }
 
 
@@ -4854,5 +4879,133 @@ int Parameters::
 updateUserDefinedEOS(GenericGraphicsInterface & gi)
 {
   printF("Parameters::WARNING: There are no user defined equations of state.\n");
+  return 0;
+}
+
+// ======================================================================================
+/// \brief compute the normal grid spacing, dn,  to face (side,axis)
+// ======================================================================================
+int Parameters::
+getNormalGridSpacing( MappedGrid & mg, int side, int axis, real & dn )
+{
+  const int numberOfDimensions=mg.numberOfDimensions();
+  mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+  OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+  Index Ib1,Ib2,Ib3, Ip1,Ip2,Ip3;
+  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3); // boundary line 
+  getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1); // first line in 
+
+  int includeGhost=0;
+  bool ok;
+  ok=ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ib1,Ib2,Ib3,includeGhost); // restrict bounds to this processor
+  ok=ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ip1,Ip2,Ip3,includeGhost);
+
+  // Assume grid is nearly orthogonal -- we could check using the mask 
+  real ndist=1.;
+  if( ok )
+  {
+    if( numberOfDimensions==2 )
+      ndist = sqrt( min(SQR(xLocal(Ip1,Ip2,Ip3,0)-xLocal(Ib1,Ib2,Ib3,0))+
+                        SQR(xLocal(Ip1,Ip2,Ip3,1)-xLocal(Ib1,Ib2,Ib3,1))) );
+    else
+      ndist = sqrt( min(SQR(xLocal(Ip1,Ip2,Ip3,0)-xLocal(Ib1,Ib2,Ib3,0))+
+                        SQR(xLocal(Ip1,Ip2,Ip3,1)-xLocal(Ib1,Ib2,Ib3,1))+
+                        SQR(xLocal(Ip1,Ip2,Ip3,2)-xLocal(Ib1,Ib2,Ib3,2))) );
+  }
+  dn =ParallelUtility::getMinValue(ndist);
+  return 0;
+}
+
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3)					\
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)					\
+  for(i2=I2Base; i2<=I2Bound; i2++)					\
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
+// ===========================================================================================================
+/// \brief Compute the blending function used to fix the traction near corners between a 
+///     deforming solid and a no-slip wall
+///
+/// \param  mg,grid,side,axis : deforming face
+/// \param cornerFix (output) : 
+// 
+//           +------------------------+
+//           |       fluid            |
+//           |  deforming grid        |
+//  noslip   |                        |  noSlip
+//   u=0     |                        |   u=0
+//           |                        |
+//           |    moving interface    |
+//           +------------------------+
+//           |    deforming solid     |
+//           |                        |
+//           |                        |
+//           |                        |
+//           +------------------------+
+// 
+// ===========================================================================================================
+int Parameters::
+getFluidSolidCornerFixFunction( MappedGrid & mg, int grid, int side, int axis, RealArray & cornerFix, int cornerBC )
+{
+  const int numberOfDimensions = mg.numberOfDimensions();
+
+  mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+  
+  OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+
+  Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
+  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+  int jv[3], &j1=jv[0], &j2=jv[1], &j3=jv[2];
+  
+  const IntegerArray & egir = extendedGridIndexRange(mg);
+  getGhostIndex( egir,side,axis,Ib1,Ib2,Ib3,0);     // boundary line
+
+  cornerFix.redim(Ib1,Ib2,Ib3);
+  cornerFix=1.;
+  
+  assert( numberOfDimensions==2 ); // finish me for 3D
+
+  const int axisp1 = (axis+1) % numberOfDimensions;
+  for( int side2=0; side2<=1; side2++ )
+  {
+    if( mg.boundaryCondition(side2,axisp1)==cornerBC )
+    {
+      // --- adjacent face is a no-slip wall ---
+
+      // Index of the corner is (j1,j2,j3)
+      j1=Ib1.getBase(), j2=Ib2.getBase(), j3=Ib3.getBase();
+      jv[axisp1] = side2==0 ? Ibv[axisp1].getBase() : Ibv[axisp1].getBound();
+
+      // real xv[2] = {xLocal(i1,i2,i3,0), xLocal(i1,i2,i3,1)};  // 
+      // printF("CCCCCC cornerFix: (grid,side,axis)=(%i,%i,%i) : corner at (i1,i2,i3)=(%i,%i%i) x=[%.3e,%.3e]\n",
+      //        grid,side,axis,i1,i2,i3,xv[0],xv[1]);
+      printF("CCCCCC cornerFix: (grid,side,axis)=(%i,%i,%i) : corner at (j1,j2,j3)=(%i,%i,%i)\n",
+              grid,side,axis,j1,j2,j3);
+      
+      real gamma=.5;
+      FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3)
+      {
+        // distance = distance in index space from the corner
+        const real dist = fabs(iv[axisp1]-jv[axisp1]);
+        // real dist = SQR(iv[axisp1]-jv[axisp1]);
+        // cornerFix(i1,i2,i3) -= exp( -gamma*dist );
+        cornerFix(i1,i2,i3) -= 1./( 1+(dist*dist) );
+      }
+      if( true )
+      {
+        ::display(cornerFix,"cornerFix","%.2e ");
+      }
+      
+
+      // real gamma=100.; // fix me 
+      // dist = gamma*( SQR( xLocal(Ib1,Ib2,Ib3,0)-xv[0] ) + SQR( xLocal(Ib1,Ib2,Ib3,1)-xv[1] ) );
+      
+      // cornerFix = cornerFix - exp( -dist );
+    }
+  }
+  
+
   return 0;
 }

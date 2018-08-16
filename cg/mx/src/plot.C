@@ -963,6 +963,8 @@ plotPolarization( int current, real t, real dt )
         return 0;
     GenericGraphicsInterface & gi = *pps;
 
+    PlotStuffParameters pspPolarization;  // separate for P
+      
     aString domainName="all";
     int gdmEquation=0;
     int pvComponent=0;
@@ -1127,7 +1129,7 @@ plotPolarization( int current, real t, real dt )
                 gi.erase();
                 if( answer!="contour" )
                 {
-                    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+                    pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
                 }
                 real pMin=REAL_MAX, pMax=-pMin;
                 
@@ -1140,21 +1142,21 @@ plotPolarization( int current, real t, real dt )
                         const int component = pvComponent + numberOfDimensions*gdmEquation;
                         if( gdmEquation <  dmp.numberOfPolarizationVectors )
                         {
-                            psp.set(GI_COMPONENT_FOR_CONTOURS,component);
+                            pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
 
                             realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
                             if( !plotErrors )
                             {
                                 real uMin,uMax;
-                                PlotIt::getBounds(pv,uMin,uMax,psp,Range(component,component));
+                                PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
                                 
                                 pMin=min(pMin,uMin);
                                 pMax=max(pMax,uMax);
 
                                 printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                                 
-                                psp.setMinAndMaxContourLevels( pMin,pMax,component);
-                                PlotIt::contour(gi,pv,psp);
+                                pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+                                PlotIt::contour(gi,pv,pspPolarization);
                             }
                             else
                             {
@@ -1164,16 +1166,16 @@ plotPolarization( int current, real t, real dt )
                                             *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
 
                                 real uMin,uMax;
-                                PlotIt::getBounds(pvErr,uMin,uMax,psp,Range(component,component));
+                                PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
                                 
                                 pMin=min(pMin,uMin);
                                 pMax=max(pMax,uMax);
 
                                 printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                                 
-                                psp.setMinAndMaxContourLevels( pMin,pMax,component);
+                                pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
 
-                                PlotIt::contour(gi,pvErr,psp);
+                                PlotIt::contour(gi,pvErr,pspPolarization);
 
                                 /* -- we could eval on demand 
                                 CompositeGrid & cgd = cg.domain(domain);
@@ -1196,7 +1198,7 @@ plotPolarization( int current, real t, real dt )
                         
                     }
                 }
-                psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+                pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
           
             }
     

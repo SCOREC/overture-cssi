@@ -513,6 +513,13 @@ tdpm= tdpm.o dpmInverse.o DataPointMapping.o dpmScalar.o dpmMap.o checkMapping.o
 tdpm: $(tdpm)
 	$(CC) $(CCFLAGS) -o $@ $(tdpm) $(CLIBS) $(FLIBS) $(GLIBS) $(ChimeraLib)
 
+tdpm2.o: tdpm2.C
+	 $(CC) $(CCFLAGSG) -c tdpm2.C
+
+tdpm2 = tdpm2.o plotStructured.o
+tdpm2: $(tdpm2)
+	$(CC) $(CCFLAGS) -o $@ $(tdpm2) $(CLIBS) $(FLIBS) $(GLIBS) $(ChimeraLib)
+
 # test and time the inverse 
 tmi= tmi.o Inverse.o
 tmi= tmi.o Mapping.o Inverse.o

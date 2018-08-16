@@ -1,3 +1,34 @@
+***********************
+***** June 23, 2018
+
+Broken:
+
+cgmx -noplot planeWave.cmd -g=box1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+
+
+***********************
+***** June 13, 2018
+
+TEST NEW CODE 
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=2 -checkErrors=1 -debug=1 -go=og
+
+
+CHANGE CODE to Match form of equations in the paper
+
+
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=2 -checkErrors=1 -debug=1 -go=og
+
+-eps=2
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=8.935e-03 max-err = 7.775e-08
+>>> t=1.00e-01 dt=2.0e-02 max errors:[0.00e+00,5.90e-05,1.02e+00,], max (u):[0.00e+00,7.03e-01,9.91e-01,] (5 steps)
+
+-eps=1
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=6.300e-03 max-err = 1.808e-07
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,1.31e-04,1.16e+00,], max (u):[0.00e+00,9.97e-01,9.97e-01,] (6 steps)
+
+***********
+
+cgmx -noplot planeWave.cmd -g=square4.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 -a1=1 -b0=1 -b1=0 -kx=2 -tp=.01 -tf=.01 -checkErrors=1 -debug=1 -go=go 
 
 
 ***********************

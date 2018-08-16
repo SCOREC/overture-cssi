@@ -992,6 +992,7 @@ else if( updateSolution.eq.1 )then
          OGDERIV3D( 2,0,0,0,i1,i2,i3,t, pce, p0tt)
        end if
        fe = fe + dtsq*alphaP*p0tt
+       ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
        fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(iv)*p0 - a0v(iv)*e0 - a1v(iv)*e0t )
      end do
 
@@ -1019,7 +1020,7 @@ else if( updateSolution.eq.1 )then
 !    fpv(iv) : forcing for polarization vector iv=0,1,2,...
 !    More forcing vectors, etc.
 ! ========================================================================
-#beginMacro getGDMForcing44(ec,pc)
+#beginMacro getGDMForcing44(ec,pc,OGDERIV)
 
  f1 = 0.
  f4 = 0.
@@ -1039,26 +1040,26 @@ else if( updateSolution.eq.1 )then
  if( addForcing.ne.0 )then
 
 
-       OGDERIV3D( 0,0,0,0,i1,i2,i3,t, ec, e0    )
-       OGDERIV3D( 1,0,0,0,i1,i2,i3,t, ec, e0t   )
-       OGDERIV3D( 2,0,0,0,i1,i2,i3,t, ec, e0tt  )
-       OGDERIV3D( 3,0,0,0,i1,i2,i3,t, ec, e0ttt )
-       OGDERIV3D( 4,0,0,0,i1,i2,i3,t, ec, e0tttt)
-       OGDERIV3D( 0,2,0,0,i1,i2,i3,t, ec, e0xx  )
-       OGDERIV3D( 0,0,2,0,i1,i2,i3,t, ec, e0yy  )
-       OGDERIV3D( 0,0,0,2,i1,i2,i3,t, ec, e0zz  )
-       OGDERIV3D( 1,2,0,0,i1,i2,i3,t, ec, e0xxt )
-       OGDERIV3D( 1,0,2,0,i1,i2,i3,t, ec, e0yyt )
-       OGDERIV3D( 1,0,0,2,i1,i2,i3,t, ec, e0zzt )
-       OGDERIV3D( 2,2,0,0,i1,i2,i3,t, ec, e0xxtt)
-       OGDERIV3D( 2,0,2,0,i1,i2,i3,t, ec, e0yytt)
-       OGDERIV3D( 2,0,0,2,i1,i2,i3,t, ec, e0zztt)
-       OGDERIV3D( 0,4,0,0,i1,i2,i3,t, ec, e0xxxx)
-       OGDERIV3D( 0,2,2,0,i1,i2,i3,t, ec, e0xxyy)
-       OGDERIV3D( 0,2,0,2,i1,i2,i3,t, ec, e0xxzz)
-       OGDERIV3D( 0,0,4,0,i1,i2,i3,t, ec, e0yyyy)
-       OGDERIV3D( 0,0,2,2,i1,i2,i3,t, ec, e0yyzz)
-       OGDERIV3D( 0,0,0,4,i1,i2,i3,t, ec, e0zzzz)
+       OGDERIV( 0,0,0,0,i1,i2,i3,t, ec, e0    )
+       OGDERIV( 1,0,0,0,i1,i2,i3,t, ec, e0t   )
+       OGDERIV( 2,0,0,0,i1,i2,i3,t, ec, e0tt  )
+       OGDERIV( 3,0,0,0,i1,i2,i3,t, ec, e0ttt )
+       OGDERIV( 4,0,0,0,i1,i2,i3,t, ec, e0tttt)
+       OGDERIV( 0,2,0,0,i1,i2,i3,t, ec, e0xx  )
+       OGDERIV( 0,0,2,0,i1,i2,i3,t, ec, e0yy  )
+       OGDERIV( 0,0,0,2,i1,i2,i3,t, ec, e0zz  )
+       OGDERIV( 1,2,0,0,i1,i2,i3,t, ec, e0xxt )
+       OGDERIV( 1,0,2,0,i1,i2,i3,t, ec, e0yyt )
+       OGDERIV( 1,0,0,2,i1,i2,i3,t, ec, e0zzt )
+       OGDERIV( 2,2,0,0,i1,i2,i3,t, ec, e0xxtt)
+       OGDERIV( 2,0,2,0,i1,i2,i3,t, ec, e0yytt)
+       OGDERIV( 2,0,0,2,i1,i2,i3,t, ec, e0zztt)
+       OGDERIV( 0,4,0,0,i1,i2,i3,t, ec, e0xxxx)
+       OGDERIV( 0,2,2,0,i1,i2,i3,t, ec, e0xxyy)
+       OGDERIV( 0,2,0,2,i1,i2,i3,t, ec, e0xxzz)
+       OGDERIV( 0,0,4,0,i1,i2,i3,t, ec, e0yyyy)
+       OGDERIV( 0,0,2,2,i1,i2,i3,t, ec, e0yyzz)
+       OGDERIV( 0,0,0,4,i1,i2,i3,t, ec, e0zzzz)
 
        pSum0tt    = 0
        pSum0ttt   = 0
@@ -1070,20 +1071,20 @@ else if( updateSolution.eq.1 )then
        do iv=0,numberOfPolarizationVectors-1
          pce = pc+iv*nd
 
-         OGDERIV3D( 0,0,0,0,i1,i2,i3,t, pc, p0    )
-         OGDERIV3D( 1,0,0,0,i1,i2,i3,t, pc, p0t   )
-         OGDERIV3D( 2,0,0,0,i1,i2,i3,t, pc, p0tt  )
-         OGDERIV3D( 3,0,0,0,i1,i2,i3,t, pc, p0ttt )
-         OGDERIV3D( 4,0,0,0,i1,i2,i3,t, pc, p0tttt)
-         OGDERIV3D( 0,2,0,0,i1,i2,i3,t, pc, p0xx  )
-         OGDERIV3D( 0,0,2,0,i1,i2,i3,t, pc, p0yy  )
-         OGDERIV3D( 0,0,0,2,i1,i2,i3,t, pc, p0zz  )
-         OGDERIV3D( 1,2,0,0,i1,i2,i3,t, pc, p0xxt )
-         OGDERIV3D( 1,0,2,0,i1,i2,i3,t, pc, p0yyt )
-         OGDERIV3D( 1,0,0,2,i1,i2,i3,t, pc, p0zzt )
-         OGDERIV3D( 2,2,0,0,i1,i2,i3,t, pc, p0xxtt)
-         OGDERIV3D( 2,0,2,0,i1,i2,i3,t, pc, p0yytt)
-         OGDERIV3D( 2,0,0,2,i1,i2,i3,t, pc, p0zztt)
+         OGDERIV( 0,0,0,0,i1,i2,i3,t, pc, p0    )
+         OGDERIV( 1,0,0,0,i1,i2,i3,t, pc, p0t   )
+         OGDERIV( 2,0,0,0,i1,i2,i3,t, pc, p0tt  )
+         OGDERIV( 3,0,0,0,i1,i2,i3,t, pc, p0ttt )
+         OGDERIV( 4,0,0,0,i1,i2,i3,t, pc, p0tttt)
+         OGDERIV( 0,2,0,0,i1,i2,i3,t, pc, p0xx  )
+         OGDERIV( 0,0,2,0,i1,i2,i3,t, pc, p0yy  )
+         OGDERIV( 0,0,0,2,i1,i2,i3,t, pc, p0zz  )
+         OGDERIV( 1,2,0,0,i1,i2,i3,t, pc, p0xxt )
+         OGDERIV( 1,0,2,0,i1,i2,i3,t, pc, p0yyt )
+         OGDERIV( 1,0,0,2,i1,i2,i3,t, pc, p0zzt )
+         OGDERIV( 2,2,0,0,i1,i2,i3,t, pc, p0xxtt)
+         OGDERIV( 2,0,2,0,i1,i2,i3,t, pc, p0yytt)
+         OGDERIV( 2,0,0,2,i1,i2,i3,t, pc, p0zztt)
 
          ! Derivatives of OG individual p eqn forcing terms fp
          fp00      = p0tt   + b1v(iv)*p0t   + b0v(iv)*p0   - a1v(iv)*e0t   - a0v(iv)*e0
@@ -4354,7 +4355,11 @@ else if( updateSolution.eq.1 )then
 
 
 ! **********************************************************************************
-! Macro UPDATE_DISPERSIVE: XYZ Please Finish
+! Macro updateDispersive 
+!
+! Initial version from Michael Jenkinson 2018
+!
+!     XYZ Please Finish
 ! **********************************************************************************
 #beginMacro updateDispersive(DIM,ORDER,GRIDTYPE)
 
@@ -4384,9 +4389,11 @@ else if( updateSolution.eq.1 )then
 
     ! This is only needed for the second order code
     if( addForcing.ne.0 )then ! forcing in E equation already added to f
-      ! fe = dtsq*f(i1,i2,i3,ec)  ! this term is already included
-      fe=0.
+      ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+      fe = dtsq*f(i1,i2,i3,ec)
+      ! this next function will adjust fe by affing -alphaP*Ptt
       getGDMForcing(ec,pc)
+
       fp=fpv(0)
     end if
 
@@ -4394,8 +4401,8 @@ else if( updateSolution.eq.1 )then
     evm=um(i1,i2,i3,ec)
 
     do iv=0,numberOfPolarizationVectors-1
-          pv(iv) = p(i1,i2,i3,m+iv*nd)
-          pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+      pv(iv) = p(i1,i2,i3,m+iv*nd)
+      pvm(iv)=pm(i1,i2,i3,m+iv*nd)
     end do
 
     rhsP = 0.
@@ -4543,7 +4550,12 @@ else if( updateSolution.eq.1 )then
             #End
          #End
 
-         getGDMForcing44(ec,pc)
+         ! Bug fixed, May 28, 2018 -- use 2D or 3D versions of ogderiv *wdh* 
+         #If #DIM eq "2" 
+           getGDMForcing44(ec,pc,OGDERIV2D)
+         #Else
+           getGDMForcing44(ec,pc,OGDERIV3D)
+         #End
 
          rhsPxx = 0.
          pxxSum = 0.
@@ -4671,6 +4683,8 @@ else if( updateSolution.eq.1 )then
          do iv=0,numberOfPolarizationVectors-1
            rhspv(iv) = rhspv(iv) + (a1v(iv) * dt/(2.) + a0v(iv)*dtsq/(12.))*evn
            pn(i1,i2,i3,m+iv*nd)  = (1/LHSpv(iv)) * rhspv(iv)
+
+           ! write(*,'("advOpt: i1,i2=",2i3," f,fe,fp,pn=",4e12.4)') i1,i2,f(i1,i2,i3,ec),fe,fp,pn(i1,i2,i3,m+iv*nd)
          end do
 
          ! End of fourth order code
@@ -4788,9 +4802,9 @@ else if( updateSolution.eq.1 )then
          stoermerTimeStepping,modifiedEquationTimeStepping
  parameter(defaultTimeStepping=0,adamsSymmetricOrder3=1,\
            rungeKuttaFourthOrder=2,stoermerTimeStepping=3,modifiedEquationTimeStepping=4)
+
  ! Dispersion models
- integer noDispersion,drude,gdm
- parameter( noDispersion=0, drude=1, gdm=2 )
+      #Include "dispersionModelsFortranInclude.h"
 
  ! forcing options
       #Include "forcingDefineFortranInclude.h"
@@ -4877,6 +4891,7 @@ else if( updateSolution.eq.1 )then
  real alphaP, a0,a1,b0,b1
  real ev,evm,evn,pv0,pvm0,pvx,pvxE,deti,rhsE,rhsP
 
+ integer gdmParOption
  integer maxNumberOfParameters,maxNumberOfPolarizationVectors
  parameter( maxNumberOfParameters=4, maxNumberOfPolarizationVectors=20 )
  real gdmPar(0:maxNumberOfParameters-1,0:maxNumberOfPolarizationVectors-1)
@@ -5655,11 +5670,17 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
  ! write(*,*) 'Before calling getGDMparameters...'
 
+ gdmParOption=1 ! scale a0 and a1 by eps 
  if( dispersionModel.ne.noDispersion )then
-  ! get the gdm parameters
-  !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
-  ! This routine returns numberOfPolarizationVectors (no need to pass)
-  call getGDMParameters( grid,alphaP,gdmPar,numberOfPolarizationVectors, maxNumberOfParameters,maxNumberOfPolarizationVectors )
+   ! get the gdm parameters
+   !   gdmPar(0:3,iv) = (a0,a1,b0,b1)
+   ! This routine returns numberOfPolarizationVectors (no need to pass)
+   call getGDMParameters( grid,alphaP,gdmPar,numberOfPolarizationVectors, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
+
+   if( alphaP.ne.0 .and. abs(eps*alphaP-1.) .gt. 1.e-10 )then
+     write(*,'(" advOptNew: ERROR alphaP != 1/eps ")') 
+     stop 2288
+   end if
 
    if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
      ! ---- Dispersive Maxwell ----
@@ -5955,8 +5976,10 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       ! --dispersion model --
       ! XYZ
 
-       updateDispersive(2,2,rectangular)
+      ! newer version from MJJ
+      updateDispersive(2,2,rectangular)
 
+      ! initial version WDH: 
       ! updateRectangular2dOrder2Dispersive()
 
 !-    else if( useSosupDissipation.ne.0 )then
@@ -6337,7 +6360,9 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
         !$$$              un(i1,i2,i3,hz)=maxwellc22(i1,i2,i3,hz),\
         !$$$              ,,)
         
-             stop 88044
+        write(*,'(" advOptNew:ERROR: Curvilinear-optimized: useCurvilinearOpt=",i3," dispersionModel=",i2," useConservative=",i2)') useCurvilinearOpt,dispersionModel,useConservative
+        write(*,'(" advOptNew:ERROR: FINISH ME")') 
+        stop 88044
      end if
 
    #Elif #ORDER eq "4"

@@ -156,6 +156,8 @@ defectNorm(const int & level, const int & grid, int option /* =0 */, int approxi
   getIndex(mg.extendedIndexRange(),I1,I2,I3);  // this may be ok 
   // getIndex(mg.gridIndexRange(),I1,I2,I3);         // *wdh* 100716
 
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
   real fractionOfPointsComputed=1.;
   
   if( approximationStride<1 )
@@ -171,7 +173,7 @@ defectNorm(const int & level, const int & grid, int option /* =0 */, int approxi
   
 
   // do NOT compute the defect on the boundary with dirichlet BC's
-  const int numGhost = orderOfAccuracy/2; // *wdh* 100716
+  const int numGhost = orderOfThisLevel/2; // *wdh* 100716
   for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
   {
     int ia=Iv[axis].getBase();
@@ -287,6 +289,9 @@ getDefect(const int & level,
   MappedGrid & mg = mgcg.multigridLevel[level][grid];  
   const int numberOfDimensions = mg.numberOfDimensions();
   
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
   real defectNorm=0.;
   
   if( true && parameters.useOptimizedVersion )
@@ -379,7 +384,7 @@ getDefect(const int & level,
       // For the line smooth, evaluate the defect on as many parallel ghost as possible
       for( int axis=0; axis<3; axis++ )
       {
-	int hw = axis<numberOfDimensions ? (orderOfAccuracy)/2 : 0;  // stencil half-width
+	int hw = axis<numberOfDimensions ? (orderOfThisLevel)/2 : 0;  // stencil half-width
 	int ia = nab[0][axis], ib=nab[1][axis], stride=nab[2][axis];
 	ia = max(ia,maskLocal.getBase(axis) +hw);
 	// adjust ia so it offset by a factor of stride from ia0
@@ -432,7 +437,7 @@ getDefect(const int & level,
       
     }
 
-    int ipar[10]={defectOption,lineSmoothOption,orderOfAccuracy,sparseStencil,0,0,0,0,0,0};  //
+    int ipar[10]={defectOption,lineSmoothOption,orderOfThisLevel,sparseStencil,0,0,0,0,0,0};  //
     real rpar[10]={dx[0],dx[1],dx[2],0.,0.,0.,0.,0.,0.,0.};  //
     // ::display(constantCoefficients,"constantCoefficients");
     const real *pcc = constantCoefficients.getBound(2)>=level ? &constantCoefficients(0,grid,level) : rpar;

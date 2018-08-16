@@ -439,7 +439,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 			const int & option /* =-1 */,
 			realMappedGridFunction *puOld /* =NULL */,  
 			realMappedGridFunction *pGridVelocityOld /* =NULL */,
-			const real & dt /* =-1. */ )
+			const real & dt0 /* =-1. */ )
 //=========================================================================================
 // /Description:
 //   Apply boundary conditions for the incompressibleNavierStokes (explicit time stepping).
@@ -499,6 +499,8 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
   
   FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
   FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
+
+  real dt = dt0>0. ? dt0 : parameters.dbase.get<real>("dt");
 
   // *** turn off for stretched c-grid at outflow 
   bool applyDivergenceBoundaryCondition=true; // false; // true;
@@ -707,49 +709,68 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
   // For testing with Cgins we may fill in the implicit AMP BCs even when running Cgins alone
   applyAddedMass = applyAddedMass || (useAddedMassAlgorithm && useImplicitAmpBCs);
   
-
-
-  if( applyAddedMass )
+  if( useAddedMassAlgorithm && useImplicitAmpBCs && parameters.gridIsMoving(grid) && !initialConditionsAreBeingProjected && t!=0.  )
   {
-    if( useImplicitAmpBCs )
+    MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+    if( movingGrids.isDeformingBulkSolid(grid) )
     {
-      // Sanity check: 
-      assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
+       // Sanity check: 
+       assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
 
-      if( t<3.*dt )
-        printF("HHHHH insBC:INFO do NOT apply explicit BCs to AMP noSlipWall with implicit-BCs , t=%9.3e HHHHH\n",t);
+       if( t<3.*dt )
+         printF("HHHHH insBC:INFO do NOT apply explicit BCs to AMP noSlipWall with implicit-BCs DEFORMING BULK SOLID, t=%9.3e HHHHH\n",t);
       
-      assignNoSlipWall=false;
+       assignNoSlipWall=false;
+    }
+    
+  }
+  
+
+
+  // // *** FIX ME -- CHECK IF THIS IS A DEFORMING BULK SOLID *****
+  // if( useImplicitAmpBCs && 
+  //     useAddedMassAlgorithm &&  
+  //     parameters.gridIsMoving(grid) && 
+  //     !initialConditionsAreBeingProjected &&
+  //     t!=0. )
+  // {
+  //   // Sanity check: 
+  //   assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
+
+  //   if( t<3.*dt )
+  //     printF("HHHHH insBC:INFO do NOT apply explicit BCs to AMP noSlipWall with implicit-BCs , t=%9.3e HHHHH\n",t);
+      
+  //   assignNoSlipWall=false;
+  // }
+
+  if( applyAddedMass && !useImplicitAmpBCs )
+  {
+    bool interfaceWasProjected=false;
+    if( puOld == NULL )
+    {
+      MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
+      if( movingGrids.getNumberOfDeformingBodies() >0 )
+      {
+        printF("--INSBC--ERROR: projectInterfaceVelocity called for deforming bodies but uOld is not available\n");
+        OV_ABORT("fix me");
+      }
+      
+      interfaceWasProjected = projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
     }
     else
     {
-      bool interfaceWasProjected=false;
-      if( puOld == NULL )
-      {
-        MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
-        if( movingGrids.getNumberOfDeformingBodies() >0 )
-        {
-          printF("--INSBC--ERROR: projectInterfaceVelocity called for deforming bodies but uOld is not available\n");
-          OV_ABORT("fix me");
-        }
-      
-        interfaceWasProjected = projectInterfaceVelocity( t,u,u,gridVelocity,grid,dt );
-      }
-      else
-      {
-        interfaceWasProjected = projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
-      }
-
-      // Do not apply the usual no-slip wall BC's if the interface velocity was projected -- THIS ASSUMES THERE IS NO OTHER NO-SLIP WALL ***
-      if( interfaceWasProjected )
-         assignNoSlipWall=false;
-    
-      if( t<=3.*dt && debug() & 4 )
-      {
-        fPrintF(debugFile,"--insBC: interface velocity was assigned, SKIP usual no-slip wall BC's t=%9.3e\n",t);
-      }
-      
+      interfaceWasProjected = projectInterfaceVelocity( t,u,*puOld,gridVelocity,grid,dt );
     }
+
+    // Do not apply the usual no-slip wall BC's if the interface velocity was projected -- THIS ASSUMES THERE IS NO OTHER NO-SLIP WALL ***
+    if( interfaceWasProjected )
+      assignNoSlipWall=false;
+    
+    if( t<=3.*dt && debug() & 4 )
+    {
+      fPrintF(debugFile,"--insBC: interface velocity was assigned, SKIP usual no-slip wall BC's t=%9.3e\n",t);
+    }
+      
     
   } // end if useAddedMass 
   // =======================================================================================================

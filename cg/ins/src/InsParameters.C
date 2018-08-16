@@ -1358,7 +1358,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
   real & thermalConductivity = dbase.get<real>("thermalConductivity");
   ArraySimpleFixed<real,3,1,1,1> & gravity =dbase.get<ArraySimpleFixed<real,3,1,1,1> >("gravity");
-
+  real & fluidAddedMassLengthScale = dbase.get<real>("fluidAddedMassLengthScale");
+  
   aString answer;
   char buff[100];
 //  const int numberOfDimensions = cg.numberOfDimensions();
@@ -1457,7 +1458,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     dialog.setPushButtons( cmd, pbLabels, numRows );
       
     const int numberOfUserVariables= dbase.get<ListOfShowFileParameters >("pdeParameters").size();
-    const int numberOfTextStrings=12+numberOfUserVariables;
+    const int numberOfTextStrings=13+numberOfUserVariables;
     aString *textLabels  = new aString [numberOfTextStrings];
     aString *textStrings = new aString [numberOfTextStrings];
 
@@ -1469,6 +1470,9 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     textLabels[nt] = "ad21,ad22";  sPrintF(textStrings[nt], "%g,%g", dbase.get<real >("ad21"), dbase.get<real >("ad22"));  nt++; 
     textLabels[nt] = "ad41,ad42";  sPrintF(textStrings[nt], "%g,%g", dbase.get<real >("ad41"), dbase.get<real >("ad42"));  nt++; 
     textLabels[nt] = "ad61,ad62";  sPrintF(textStrings[nt], "%g,%g", dbase.get<real >("ad61"), dbase.get<real >("ad62"));  nt++; 
+
+    textLabels[nt] = "added mass length scale";  sPrintF(textStrings[nt], "%g",fluidAddedMassLengthScale); nt++; 
+
     if(  dbase.get<Parameters::TurbulenceModel >("turbulenceModel")==SpalartAllmaras )
     {
       textLabels[nt] = "ad21n,ad22n";  sPrintF(textStrings[nt], "%g,%g", dbase.get<real >("ad21n"), dbase.get<real >("ad22n"));  nt++; 
@@ -1604,6 +1608,11 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       gi.inputString(answer,sPrintF(buff,"Enter nu (default value=%e)", dbase.get<real >("nu")));
       if( answer!="" )
 	sScanF(answer,"%e",& dbase.get<real >("nu"));
+
+      // make mu consistent with nu 
+      const real & fluidDensity = dbase.get<real >("fluidDensity");
+      dbase.get<real >("mu")=dbase.get<real >("nu")*fluidDensity;  // *wdh* June 30, 2018 
+      
     }
     else if( answer=="mu"  )
     {
@@ -1689,6 +1698,11 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       if( answer!="" )
 	sScanF(answer,"%e",& dbase.get<real >("fluidDensity"));
       printF(" New fluid density = %10.3e.\n", dbase.get<real >("fluidDensity"));
+
+      // make mu consistent with nu 
+      const real & fluidDensity = dbase.get<real >("fluidDensity");
+      dbase.get<real >("mu")=dbase.get<real >("nu")*fluidDensity;  // *wdh* June 30, 2018 
+
     }
     else if( answer=="Mach number" )
     {
@@ -1749,6 +1763,10 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     }
     else if( dialog.getTextValue(answer,"order of time extrapolation for p","%i", dbase.get<int >("orderOfTimeExtrapolationForPressure")) )
     {
+    }
+    else if( dialog.getTextValue(answer,"added mass length scale","%e",fluidAddedMassLengthScale) )
+    {
+      printF("Setting the fluid added mass length scale to %.3e\n",fluidAddedMassLengthScale);
     }
     else if( len=answer.matches("use new fourth order boundary conditions") )
     {

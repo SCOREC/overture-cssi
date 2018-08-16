@@ -118,7 +118,15 @@ buildPredefinedEquations(CompositeGridOperators & cgop)
 {
   real time0=getCPU();
 
-  const int width = orderOfAccuracy+1;  // 3 or 5
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  int order = orderOfAccuracy;
+  if( false )
+  {
+    order=orderOfCoarseLevelSolves;  // this will need to be fixed 
+  }
+  
+
+  const int width = order+1;  // 3 or 5
   const int numberOfGhostLines=(width-1)/2;
   assert( numberOfGhostLines==1 || numberOfGhostLines==2 );
 
@@ -150,7 +158,13 @@ buildPredefinedEquations(CompositeGridOperators & cgop)
 
   cMG.updateToMatchGrid(mgcg,stencilSize,all,all,all);
 
-//  printf(">>>>>buildPredefinedEquations: mgcg.numberOfMultigridLevels()=%i\n",mgcg.numberOfMultigridLevels());
+  
+
+  if( Ogmg::debug & 4 )
+    printF("\n >>>>>buildPredefinedEquations: ALLOCATE COEFF MATRICES mgcg.numberOfMultigridLevels()=%i stencilSize=%i\n"
+           "       dataAllocationOption=%i : 1=do not allocate on rectangular grids\n"
+           "                              : 2=do not allocate on rectangular grids, except the coarsest level \n",
+           mgcg.numberOfMultigridLevels(),stencilSize,dataAllocationOption);
 
 //    if( true ) 
 //    {
@@ -176,10 +190,53 @@ buildPredefinedEquations(CompositeGridOperators & cgop)
   // printf(" ***AFTER: cMG.sizeOf()=%12.0f\n",cMG.sizeOf());
   //  cMG.display("cMG");
 
-  cMG.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines); 
+  if( orderOfCoarseLevelSolves==orderOfAccuracy )
+  {
+    cMG.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines); 
+  }
+  else
+  {
+    // *new* way Aug, 2018 
+    const int numberOfComponentGrids = mgcg.multigridLevel[0].numberOfComponentGrids();
+    const int numberOfLevels=mgcg.numberOfMultigridLevels();
+    IntegerArray stencilSizeArray(numberOfComponentGrids,numberOfLevels);
+    IntegerArray numberOfGhostLinesArray(numberOfComponentGrids,numberOfLevels);
+
+    int widthFine = orderOfAccuracy + 1;
+    int stencilFine = int(pow(widthFine,mgcg.numberOfDimensions())+1);
+    int widthCoarse = orderOfCoarseLevelSolves+1;
+    int stencilCoarse = int(pow(widthCoarse,mgcg.numberOfDimensions())+1);
+    stencilSizeArray=stencilCoarse;      // coarser levels will have this stencil size
+    stencilSizeArray(all,0)=stencilFine; // level 0 will have this stencilSize
+
+    // ::display(stencilSizeArray,"stencilSizeArray");
+
+    int numGhostCoarse=(widthCoarse-1)/2;
+    int numGhostFine  =(widthFine  -1)/2;
+    numberOfGhostLinesArray=numGhostCoarse;
+    numberOfGhostLinesArray(all,0)=numGhostFine; // level 0 
+    
+
+    printF("predefined: numberOfComponentGrids=%i numberOfLevels=%i\n",numberOfComponentGrids,numberOfLevels);
+    
+    cMG.setIsACoefficientMatrix(true,stencilSizeArray,numberOfGhostLinesArray); 
+
+    for( int grid=0; grid<cMG.numberOfGrids(); grid++ )
+    {
+      realMappedGridFunction & coeff = cMG[grid];
+      if( coeff.sparse!=NULL )
+        printF("cMG: grid=%i stencilSize=%i\n",grid,coeff.sparse->stencilSize);
+      else
+        printF("cMG: grid=%i stencilSize=%i\n",grid,0);
+    }
+    
+  }
+
+
   // printf(">>>: 1-> cMG.getIsACoefficientMatrix()=%i\n",cMG.getIsACoefficientMatrix());
+  // -- cgop may be only for the fine level ? Aug 4, 2018
   cgop.setStencilSize(stencilSize);
-  cgop.setOrderOfAccuracy(orderOfAccuracy);
+  cgop.setOrderOfAccuracy(order);
 
   realCompositeGridFunction & coeff = cMG.multigridLevel[0];
 
@@ -228,40 +285,37 @@ buildPredefinedCoefficientMatrix( int level, bool buildRectangular, bool buildCu
   CompositeGrid & mgcg = multigridCompositeGrid();
   assert( level>=0 && level<mgcg.numberOfMultigridLevels() );
   
+  const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
   if( debug & 8 )
     printF(" **** buildPredefinedCoefficientMatrix: level=%i buildRectangular=%i buildCurvilinear=%i\n",
         level,buildRectangular,buildCurvilinear);
 
   realCompositeGridFunction & coefficients = level==0 ? cMG : cMG.multigridLevel[level];
   CompositeGrid & cg = level==0 ? mgcg : mgcg.multigridLevel[level];
-  Range all;
-  Index I1,I2,I3;
-  Index Jv[3], &J1=Jv[0], &J2=Jv[1], J3=Jv[2];
-  Index Ig1,Ig2,Ig3;
 
-  const int width = orderOfAccuracy+1;  // 3 or 5
-  const int stencilSize=int(pow(width,mgcg.numberOfDimensions())+1);
+  // Range all;
+  // Index I1,I2,I3;
+  // Index Jv[3], &J1=Jv[0], &J2=Jv[1], J3=Jv[2];
+  // Index Ig1,Ig2,Ig3;
+
+  // const int width = orderOfThisLevel+1;  // 3 or 5
+  // const int stencilSize=int(pow(width,mgcg.numberOfDimensions())+1);
   
-  int md; // diagonal term
-  if( cg.numberOfDimensions()==2 )
-    md=(width*width)/2; // 4 or 12 ;
-  else if( cg.numberOfDimensions()==3 )
-    md=(width*width*width)/2; // 13 or 62;
-  else
-    md=width/2; // 1
-
-//    int m222; // diagonal term
-//    if( cg.numberOfDimensions()==2 )
-//      m222=4;
-//    else if( cg.numberOfDimensions()==3 )
-//      m222=13;
-//    else
-//      m222=1;
+  // int md; // diagonal term
+  // if( cg.numberOfDimensions()==2 )
+  //   md=(width*width)/2; // 4 or 12 ;
+  // else if( cg.numberOfDimensions()==3 )
+  //   md=(width*width*width)/2; // 13 or 62;
+  // else
+  //   md=width/2; // 1
 
   // printf("***: coefficients.getIsACoefficientMatrix()=%i\n",coefficients.getIsACoefficientMatrix());
 
   for( int grid=0; grid<mgcg.numberOfComponentGrids(); grid++ )
   {
+
     MappedGrid & mg = cg[grid];
     
     // we either build the coeff for all grids, just curvilinear grids, or just rectangular grids.
@@ -273,108 +327,341 @@ buildPredefinedCoefficientMatrix( int level, bool buildRectangular, bool buildCu
 
     realMappedGridFunction & coeff = coefficients[grid];
 
-    intArray & maskd = mg.mask();
-    #ifdef USE_PPP
-      realSerialArray coeffa; getLocalArrayWithGhostBoundaries(coeff,coeffa);
-      intSerialArray mask;  getLocalArrayWithGhostBoundaries(maskd,mask);
-    #else
-      intSerialArray & mask = maskd;
-      realArray & coeffa = coeff;
-    #endif
+    buildPredefinedCoefficientMatrix( coeff,grid,level,orderOfThisLevel,buildRectangular,buildCurvilinear );
 
 
-    MappedGridOperators & op = * coeff.getOperators();
-    op.setStencilSize(stencilSize);
-    op.setOrderOfAccuracy(orderOfAccuracy);
+//     intArray & maskd = mg.mask();
+//     #ifdef USE_PPP
+//       realSerialArray coeffa; getLocalArrayWithGhostBoundaries(coeff,coeffa);
+//       intSerialArray mask;  getLocalArrayWithGhostBoundaries(maskd,mask);
+//     #else
+//       intSerialArray & mask = maskd;
+//       realArray & coeffa = coeff;
+//     #endif
 
-    const bool isRectangular=mg.isRectangular();
+
+//     MappedGridOperators & op = * coeff.getOperators();
+//     op.setStencilSize(stencilSize);
+//     op.setOrderOfAccuracy(orderOfThisLevel);
+
+//     const bool isRectangular=mg.isRectangular();
     
-//      if( true )
-//      {
-//        // *****
-//        coeff.display("coeff in buildPredefinedCoefficientMatrix");
-//      }
+// //      if( true )
+// //      {
+// //        // *****
+// //        coeff.display("coeff in buildPredefinedCoefficientMatrix");
+// //      }
     
 
-    coeffa=0; // **
+//     coeffa=0; // **
 
-    if( isRectangular &&
-	(equationToSolve==OgesParameters::laplaceEquation || 
-	 equationToSolve==OgesParameters::heatEquationOperator) )
-    {
-      // special case for rectangular grids and constant coefficient equations
-      const RealArray & cc = constantCoefficients(all,grid,level);  
+//     if( isRectangular &&
+// 	(equationToSolve==OgesParameters::laplaceEquation || 
+// 	 equationToSolve==OgesParameters::heatEquationOperator) )
+//     {
+//       if( true )
+//         printF("buildPredefinedCoefficientMatrix: build Coefficients for Cartesian grid=%i level=%i\n",grid,level);
+      
 
-      getIndex(mg.gridIndexRange(),I1,I2,I3);
+//       // special case for rectangular grids and constant coefficient equations
+//       const RealArray & cc = constantCoefficients(all,grid,level);  
 
-      const int stencilSize=coeffa.getLength(0)-1;
+//       getIndex(mg.gridIndexRange(),I1,I2,I3);
 
-      #ifdef USE_PPP
-        int includeGhost=1;  // include ghost 
-        bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
-        if( !ok ) continue;
+//       // *wdh* Aug 2, 2018 const int stencilSize=coeffa.getLength(0)-1;
+
+//       if( false && Ogmg::debug & 4 )
+//       {
+//         fPrintF(debugFile,"buildPredefinedCoefficientMatrix for level=%i, stencilSize=%i, orderOfThisLevel=%i\n",level,stencilSize,orderOfThisLevel);
+//       }
+      
+//       #ifdef USE_PPP
+//         int includeGhost=1;  // include ghost 
+//         bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
+//         if( !ok ) continue;
 	
-//         const int n1a = max(I1.getBase() ,mask.getBase(0) +maskd.getGhostBoundaryWidth(0));
-//         const int n1b = min(I1.getBound(),mask.getBound(0)-maskd.getGhostBoundaryWidth(0));
-//         const int n2a = max(I2.getBase() ,mask.getBase(1) +maskd.getGhostBoundaryWidth(1));
-//         const int n2b = min(I2.getBound(),mask.getBound(1)-maskd.getGhostBoundaryWidth(1));
-//         const int n3a = max(I3.getBase() ,mask.getBase(2) +maskd.getGhostBoundaryWidth(2));
-//         const int n3b = min(I3.getBound(),mask.getBound(2)-maskd.getGhostBoundaryWidth(2));
+// //         const int n1a = max(I1.getBase() ,mask.getBase(0) +maskd.getGhostBoundaryWidth(0));
+// //         const int n1b = min(I1.getBound(),mask.getBound(0)-maskd.getGhostBoundaryWidth(0));
+// //         const int n2a = max(I2.getBase() ,mask.getBase(1) +maskd.getGhostBoundaryWidth(1));
+// //         const int n2b = min(I2.getBound(),mask.getBound(1)-maskd.getGhostBoundaryWidth(1));
+// //         const int n3a = max(I3.getBase() ,mask.getBase(2) +maskd.getGhostBoundaryWidth(2));
+// //         const int n3b = min(I3.getBound(),mask.getBound(2)-maskd.getGhostBoundaryWidth(2));
         
-//         if( n1a>n1b || n2a>n2b || n3a>n3b ) continue;
+// //         if( n1a>n1b || n2a>n2b || n3a>n3b ) continue;
 
-// 	I1=Range(n1a,n1b);
-// 	I2=Range(n2a,n2b);
-// 	I3=Range(n3a,n3b);
+// // 	I1=Range(n1a,n1b);
+// // 	I2=Range(n2a,n2b);
+// // 	I3=Range(n3a,n3b);
 	
-      #endif
+//       #endif
 
-      real * coeffap = coeffa.Array_Descriptor.Array_View_Pointer3;
-      const int coeffaDim0=coeffa.getRawDataSize(0);
-      const int coeffaDim1=coeffa.getRawDataSize(1);
-      const int coeffaDim2=coeffa.getRawDataSize(2);
+//       real * coeffap = coeffa.Array_Descriptor.Array_View_Pointer3;
+//       const int coeffaDim0=coeffa.getRawDataSize(0);
+//       const int coeffaDim1=coeffa.getRawDataSize(1);
+//       const int coeffaDim2=coeffa.getRawDataSize(2);
+// #define COEFFA(i0,i1,i2,i3) coeffap[i0+coeffaDim0*(i1+coeffaDim1*(i2+coeffaDim2*(i3)))]	
+//       const real *ccp = cc.Array_Descriptor.Array_View_Pointer0;
+// #define CONC(i0) ccp[i0]
+
+//       int I1Base,I2Base,I3Base;
+//       int I1Bound,I2Bound,I3Bound;
+//       int i1,i2,i3;
+//       FOR_3(i1,i2,i3,I1,I2,I3)
+//       {
+// 	for( int m=0; m<stencilSize; m++ )
+// 	  COEFFA(m,i1,i2,i3)=CONC(m);
+//       }
+
+    
+//     }
+//     else if( equationToSolve==OgesParameters::laplaceEquation )
+//     {
+//       // printf("***before assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
+
+//       op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
+
+//       // printf("***after  assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
+
+//     }
+//     else if( equationToSolve==OgesParameters::heatEquationOperator )
+//     {
+//       op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
+
+//       assert( equationCoefficients.getLength(0)>=2 && 
+//               equationCoefficients.getLength(1)>=mgcg.numberOfComponentGrids() );
+//       real cI=equationCoefficients(0,grid);
+//       real cLap=equationCoefficients(1,grid);
+//       assert( fabs(cI)+fabs(cLap) > 0. );
+
+//       coeffa*=cLap;
+
+//       getIndex(mg.gridIndexRange(),I1,I2,I3);
+//       int includeGhost=1;  // include ghost 
+//       bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
+//       if( !ok ) continue;
+
+//       coeffa(md,I1,I2,I3)+=cI;
+
+// //  	realArray identity;  // ***** fix this : avoid allocating an array ***** write a loop
+// //  	identity.redim(coeff);
+// //  	op.assignCoefficients(MappedGridOperators::identityOperator,identity);
+	
+// //  	identity*=cI;
+// //  	coeff+=identity;
+//     }
+//     else if( equationToSolve==OgesParameters::divScalarGradOperator )
+//     {
+//       assert( varCoeff!=NULL );
+//       realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+//       op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
+//     }
+//     else if( equationToSolve==OgesParameters::variableHeatEquationOperator )
+//     {
+//       // I + s(x)*Delta
+//       assert( varCoeff!=NULL );
+//       realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+//       const realArray & var = variableCoeff;
+
+//       op.coefficients(MappedGridOperators::laplacianOperator,coeff,variableCoeff ); 
+
+//       multiply(coeff,variableCoeff);
+// //          getIndex(mg.gridIndexRange(),I1,I2,I3);
+// //  	const int stencilSize=coeffa.getLength(0)-1;
+// //  	for( int m=0; m<stencilSize; m++ )
+// //  	  coeffa(m,I1,I2,I3)*=var(I1,I2,I3);
+	
+//       coeffa(md,I1,I2,I3)+=1;  // add the Identity.
+
+//     }
+//     else if( equationToSolve==OgesParameters::divScalarGradHeatEquationOperator )
+//     {
+//       // I + div( s(x) grad )
+//       assert( varCoeff!=NULL );
+//       realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+//       op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
+
+//       coeffa(md,all,all,all)+=1; // add the Identity.
+
+//     }
+//     else
+//     {
+//       printf("Ogmg::buildPredefinedCoefficientMatrix:ERROR: unknown equationToSolve=%i\n",
+// 	     (int)equationToSolve);
+//       Overture::abort();
+//     }
+    
+//     if( isRectangular && level<mgcg.numberOfMultigridLevels()-1 )
+//     {
+//       // Rectangular grid but not the coarsest level,
+//       // no need to fill in the BC's in this case
+//       continue;
+//     }
+
+//     // ***** we may not need to fill in BC's for predefined equations in some cases ****
+//     assignBoundaryConditionCoefficients( coeff, grid, level );
+
+//     // updateGhostBoundaries is now performed in finishBoundaryConditions but I guess we do not call that here
+
+//     coeff.updateGhostBoundaries();  // *wdh* 091217 -- need values on parallel ghost for operator averaging
+
+
+  
+//     if( (Ogmg::debug & 32 && ( level==mgcg.numberOfMultigridLevels()-1)) )
+//       displayCoeff(coeff,sPrintF(buff,"buildPredefinedCoefficientMatrix:coeff on coarsest level=%i "
+// 			    "orderOfThisLevel=%i",level,orderOfThisLevel),debugFile,"%8.2e ");
+    
+
+  } // end for grid
+  
+  
+  return 0;
+}
+
+// ========================================================================================================
+//! Build the coefficient matrix for the predefined equations on a given grid and level
+/*!
+    \param coeff (output) : save the coefficients here
+    \param orderOfAccuracyThisGrid (input) : order of accuracy for this grid (For Galerkin opertors we may build lower order accurate
+                                             coefficients on the finest level).
+    \param buildRectangular (input) : if true build coeff matrices for curvilinear grids.
+             If true build matrices for rectangular ONLY. This is normally
+                only done on the coarsest level if we have to call a direct solver.
+    \param buildCurvilinear (input) if true, build coefficients for curvilinear grids.
+ */
+// =======================================================================================================
+int Ogmg::
+buildPredefinedCoefficientMatrix( realMappedGridFunction & coeff, int grid, int level, int orderOfAccuracyThisGrid, bool buildRectangular, bool buildCurvilinear )
+{
+  CompositeGrid & mgcg = multigridCompositeGrid();
+  assert( level>=0 && level<mgcg.numberOfMultigridLevels() );
+  
+  // const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+  // const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+  const int orderOfThisLevel=orderOfAccuracyThisGrid;
+
+  if( debug & 8 )
+    printF(" **** buildPredefinedCoefficientMatrix: grid=%i, level=%i, orderOfAccuracyThisGrid=%i, buildRectangular=%i buildCurvilinear=%i\n",
+           grid,level,orderOfAccuracyThisGrid,buildRectangular,buildCurvilinear);
+
+  //  realCompositeGridFunction & coefficients = level==0 ? cMG : cMG.multigridLevel[level];
+  CompositeGrid & cg = level==0 ? mgcg : mgcg.multigridLevel[level];
+  Range all;
+  Index I1,I2,I3;
+  Index Jv[3], &J1=Jv[0], &J2=Jv[1], J3=Jv[2];
+  Index Ig1,Ig2,Ig3;
+
+  const int width = orderOfThisLevel+1;  // 3 or 5
+  const int stencilSize=int(pow(width,mgcg.numberOfDimensions())+1);
+  
+  int md; // diagonal term
+  if( cg.numberOfDimensions()==2 )
+    md=(width*width)/2; // 4 or 12 ;
+  else if( cg.numberOfDimensions()==3 )
+    md=(width*width*width)/2; // 13 or 62;
+  else
+    md=width/2; // 1
+
+  MappedGrid & mg = cg[grid];
+    
+  // we either build the coeff for all grids, just curvilinear grids, or just rectangular grids.
+  // *** for now operator averaging does not apply to fourth order grids so we build curvilinear grids too
+  bool buildThisGrid = ( mg.isRectangular() && buildRectangular) ||  
+    (!mg.isRectangular() && buildCurvilinear);
+  if( !buildThisGrid )
+    return 0;
+
+  //  realMappedGridFunction & coeff = coefficients[grid];
+
+  intArray & maskd = mg.mask();
+#ifdef USE_PPP
+  realSerialArray coeffa; getLocalArrayWithGhostBoundaries(coeff,coeffa);
+  intSerialArray mask;  getLocalArrayWithGhostBoundaries(maskd,mask);
+#else
+  intSerialArray & mask = maskd;
+  realArray & coeffa = coeff;
+#endif
+
+
+  MappedGridOperators & op = * coeff.getOperators();
+  op.setStencilSize(stencilSize);
+  op.setOrderOfAccuracy(orderOfThisLevel);
+
+  const bool isRectangular=mg.isRectangular();
+    
+  coeffa=0; // **
+
+  if( isRectangular &&
+    (equationToSolve==OgesParameters::laplaceEquation || 
+    equationToSolve==OgesParameters::heatEquationOperator) )
+  {
+    if( true )
+      printF("buildPredefinedCoefficientMatrix: build Coefficients for Cartesian grid=%i level=%i\n",grid,level);
+      
+
+    // special case for rectangular grids and constant coefficient equations
+    const RealArray & cc = constantCoefficients(all,grid,level);  
+
+    getIndex(mg.gridIndexRange(),I1,I2,I3);
+
+    // *wdh* Aug 2, 2018 const int stencilSize=coeffa.getLength(0)-1;
+
+    if( false && Ogmg::debug & 4 )
+    {
+      fPrintF(debugFile,"buildPredefinedCoefficientMatrix for level=%i, stencilSize=%i, orderOfThisLevel=%i\n",level,stencilSize,orderOfThisLevel);
+    }
+      
+#ifdef USE_PPP
+    int includeGhost=1;  // include ghost 
+    bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
+    if( !ok ) return 0;
+#endif
+
+    real * coeffap = coeffa.Array_Descriptor.Array_View_Pointer3;
+    const int coeffaDim0=coeffa.getRawDataSize(0);
+    const int coeffaDim1=coeffa.getRawDataSize(1);
+    const int coeffaDim2=coeffa.getRawDataSize(2);
 #define COEFFA(i0,i1,i2,i3) coeffap[i0+coeffaDim0*(i1+coeffaDim1*(i2+coeffaDim2*(i3)))]	
-      const real *ccp = cc.Array_Descriptor.Array_View_Pointer0;
+    const real *ccp = cc.Array_Descriptor.Array_View_Pointer0;
 #define CONC(i0) ccp[i0]
 
-      int I1Base,I2Base,I3Base;
-      int I1Bound,I2Bound,I3Bound;
-      int i1,i2,i3;
-      FOR_3(i1,i2,i3,I1,I2,I3)
-      {
-	for( int m=0; m<stencilSize; m++ )
-	  COEFFA(m,i1,i2,i3)=CONC(m);
-      }
+    int I1Base,I2Base,I3Base;
+    int I1Bound,I2Bound,I3Bound;
+    int i1,i2,i3;
+    FOR_3(i1,i2,i3,I1,I2,I3)
+    {
+      for( int m=0; m<stencilSize; m++ )
+        COEFFA(m,i1,i2,i3)=CONC(m);
+   }
 
     
-    }
-    else if( equationToSolve==OgesParameters::laplaceEquation )
-    {
-      // printf("***before assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
+  }
+  else if( equationToSolve==OgesParameters::laplaceEquation )
+  {
+    // printf("***before assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
 
-      op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
+    op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
 
-      // printf("***after  assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
+    // printf("***after  assign to laplace: coeff.getIsACoefficientMatrix()=%i\n",coeff.getIsACoefficientMatrix());
 
-    }
-    else if( equationToSolve==OgesParameters::heatEquationOperator )
-    {
-      op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
+  }
+  else if( equationToSolve==OgesParameters::heatEquationOperator )
+  {
+    op.coefficients(MappedGridOperators::laplacianOperator,coeff); // efficient version
 
-      assert( equationCoefficients.getLength(0)>=2 && 
-              equationCoefficients.getLength(1)>=mgcg.numberOfComponentGrids() );
-      real cI=equationCoefficients(0,grid);
-      real cLap=equationCoefficients(1,grid);
-      assert( fabs(cI)+fabs(cLap) > 0. );
+    assert( equationCoefficients.getLength(0)>=2 && 
+      equationCoefficients.getLength(1)>=mgcg.numberOfComponentGrids() );
+    real cI=equationCoefficients(0,grid);
+    real cLap=equationCoefficients(1,grid);
+    assert( fabs(cI)+fabs(cLap) > 0. );
 
-      coeffa*=cLap;
+    coeffa*=cLap;
 
-      getIndex(mg.gridIndexRange(),I1,I2,I3);
-      int includeGhost=1;  // include ghost 
-      bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
-      if( !ok ) continue;
+    getIndex(mg.gridIndexRange(),I1,I2,I3);
+    int includeGhost=1;  // include ghost 
+    bool ok = ParallelUtility::getLocalArrayBounds(maskd,mask,I1,I2,I3,includeGhost);
+    if( !ok ) return 0;
 
-      coeffa(md,I1,I2,I3)+=cI;
+    coeffa(md,I1,I2,I3)+=cI;
 
 //  	realArray identity;  // ***** fix this : avoid allocating an array ***** write a loop
 //  	identity.redim(coeff);
@@ -382,302 +669,69 @@ buildPredefinedCoefficientMatrix( int level, bool buildRectangular, bool buildCu
 	
 //  	identity*=cI;
 //  	coeff+=identity;
-    }
-    else if( equationToSolve==OgesParameters::divScalarGradOperator )
-    {
-      assert( varCoeff!=NULL );
-      realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
-      op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
-    }
-    else if( equationToSolve==OgesParameters::variableHeatEquationOperator )
-    {
-      // I + s(x)*Delta
-      assert( varCoeff!=NULL );
-      realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
-      const realArray & var = variableCoeff;
+  }
+  else if( equationToSolve==OgesParameters::divScalarGradOperator )
+  {
+    assert( varCoeff!=NULL );
+    realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+    op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
+  }
+  else if( equationToSolve==OgesParameters::variableHeatEquationOperator )
+  {
+    // I + s(x)*Delta
+    assert( varCoeff!=NULL );
+    realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+    const realArray & var = variableCoeff;
 
-      op.coefficients(MappedGridOperators::laplacianOperator,coeff,variableCoeff ); 
+    op.coefficients(MappedGridOperators::laplacianOperator,coeff,variableCoeff ); 
 
-      multiply(coeff,variableCoeff);
-//          getIndex(mg.gridIndexRange(),I1,I2,I3);
-//  	const int stencilSize=coeffa.getLength(0)-1;
-//  	for( int m=0; m<stencilSize; m++ )
-//  	  coeffa(m,I1,I2,I3)*=var(I1,I2,I3);
+    multiply(coeff,variableCoeff);
+    //          getIndex(mg.gridIndexRange(),I1,I2,I3);
+    //  	const int stencilSize=coeffa.getLength(0)-1;
+    //  	for( int m=0; m<stencilSize; m++ )
+    //  	  coeffa(m,I1,I2,I3)*=var(I1,I2,I3);
 	
-      coeffa(md,I1,I2,I3)+=1;  // add the Identity.
+    coeffa(md,I1,I2,I3)+=1;  // add the Identity.
 
-    }
-    else if( equationToSolve==OgesParameters::divScalarGradHeatEquationOperator )
-    {
-      // I + div( s(x) grad )
-      assert( varCoeff!=NULL );
-      realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
-      op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
+  }
+  else if( equationToSolve==OgesParameters::divScalarGradHeatEquationOperator )
+  {
+    // I + div( s(x) grad )
+    assert( varCoeff!=NULL );
+    realMappedGridFunction & variableCoeff = (*varCoeff).multigridLevel[level][grid];
+    op.coefficients(MappedGridOperators::divergenceScalarGradient,coeff,variableCoeff);
 
-      coeffa(md,all,all,all)+=1; // add the Identity.
+    coeffa(md,all,all,all)+=1; // add the Identity.
 
-    }
-    else
-    {
-      printf("Ogmg::buildPredefinedCoefficientMatrix:ERROR: unknown equationToSolve=%i\n",
-	     (int)equationToSolve);
-      Overture::abort();
-    }
+  }
+  else
+  {
+    printf("Ogmg::buildPredefinedCoefficientMatrix:ERROR: unknown equationToSolve=%i\n",
+      (int)equationToSolve);
+    Overture::abort();
+  }
     
-    if( isRectangular && level<mgcg.numberOfMultigridLevels()-1 )
-    {
-      // Rectangular grid but not the coarsest level,
-      // no need to fill in the BC's in this case
-      continue;
-    }
+  if( isRectangular && level<mgcg.numberOfMultigridLevels()-1 )
+  {
+    // Rectangular grid but not the coarsest level,
+    // no need to fill in the BC's in this case
+    return 0;
+  }
 
-    // ***** we may not need to fill in BC's for predefined equations in some cases ****
-    assignBoundaryConditionCoefficients( coeff, grid, level );
+  // ***** we may not need to fill in BC's for predefined equations in some cases ****
+  assignBoundaryConditionCoefficients( coeff, grid, level, orderOfAccuracyThisGrid );
 
-    // updateGhostBoundaries is now performed in finishBoundaryConditions but I guess we do not call that here
+  // updateGhostBoundaries is now performed in finishBoundaryConditions but I guess we do not call that here
 
-    coeff.updateGhostBoundaries();  // *wdh* 091217 -- need values on parallel ghost for operator averaging
-
-
-//     else // **** old way ***
-//     {
-      
-
-//       // display(coeffa.boundaryCondition(),"mgCoarse.boundaryConditions");
-//       RealArray & a = bcParams.a;
-//       a.redim(2);
-
-//       const int orderOfExtrapolation= orderOfAccuracy==2 ? 3 : 4;  // 5 **** use extrap order 4 for 4th order
-    
-//       BoundaryConditionParameters extrapParams;
-//       extrapParams.orderOfExtrapolation=orderOfExtrapolation; // orderOfAccuracy+1; 
-
-// //      if( orderOfAccuracy==4 )
-// //      {  
-// //        // **** do this for now **** fix for Neumann.
-// //        // extrap 2nd ghost line 
-// //        extrapParams.ghostLineToAssign=2;
-// //        coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,extrapParams); 
-// //        extrapParams.ghostLineToAssign=1;
-	
-// //      }
-
-//     // const IntegerArray & bc = mg.boundaryCondition();
-//       int isv[3], &is1=isv[0], &is2=isv[1], &is3=isv[2];
-//       for( int axis=0; axis<mgcg.numberOfDimensions(); axis++ )
-//       {
-// 	for( int side=0; side<=1; side++ )
-// 	{
-// 	  if( mg.boundaryCondition(side,axis)<=0 )
-// 	    continue;
-	
-	
-// 	  if( bc(side,axis,grid)==OgmgParameters::dirichlet )
-// 	  {
-// //            if( orderOfAccuracy==2 || 
-// //  	      // *wdh* 030521 level==(mgcg.numberOfMultigridLevels()-1) ||
-// //                 parameters.fourthOrderBoundaryConditionOption==0 ||
-// //                 (orderOfAccuracy==4 && level!=0 && !parameters.useEquationForDirichletOnLowerLevels) )
-
-// 	    bool useEquationOnGhost = useEquationOnGhostLineForDirichletBC(mg,level);
-
-// 	    if( orderOfAccuracy==2 || !useEquationOnGhost )
-// 	    {
-// 	      coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
-// 						       extrapParams);
-// 	    }
-// 	    else
-// 	    {
-// 	      // === Use the equation to 2nd order on the boundary ===
-
-// 	      if( equationToSolve==OgesParameters::laplaceEquation )
-// 	      {
-// 		getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-// 		op.setOrderOfAccuracy(2);
-
-// 		// ***this is wrong*** --> corners
-// 		// ** op.coefficients(MappedGridOperators::laplacianOperator,coeff,I1,I2,I3); // efficient version
-
-           
-// 		// ***** 030606: to fix: what if there are interp points on the edge --> we need to extrap points
-// 		// adjacent to them *****
+  coeff.updateGhostBoundaries();  // *wdh* 091217 -- need values on parallel ghost for operator averaging
 
 
-// 		realArray tempCoeff(coeff.dimension(0),I1,I2,I3);
-// 		op.assignCoefficients(MappedGridOperators::laplacianOperator,tempCoeff,I1,I2,I3); // efficient version
-// 		op.setOrderOfAccuracy(4);
-// 		getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
-
-              
-// 		const int m3b= mg.numberOfDimensions()==2 ? -1 : 1;
-// 		const int ee=0; 
-// 		int I1Base,I2Base,I3Base;
-// 		int I1Bound,I2Bound,I3Bound;
-// 		int i1,i2,i3;
-// 		is1=is2=is3=0;
-// 		isv[axis]=1-2*side;
-	      
-// 		for( int m3=-1; m3<=m3b; m3++ )
-// 		  for( int m2=-1; m2<=1; m2++ )
-// 		    for( int m1=-1; m1<=1; m1++ )
-// 		    {
-// 		      // copy the second order equation into the correct positions of the 4th order stencil
-// 		      const int index2=(m1+1)+3*(m2+1+3*(m3+1));  // stencil width=3
-
-// 		      int index4=mg.numberOfDimensions()==2 ? (m1+2)+5*(m2+2)          :        // stencil width==4
-// 			(m1+2)+5*(m2+2+5*(m3+2));
-// 		      // remember we are shifted to the ghost line :
-// 		      index4 += axis==0 ? 1-2*side : axis==1 ? 5*(1-2*side) : 25*(1-2*side);
-		
-// 		      FOR_3(i1,i2,i3,I1,I2,I3)
-// 		      {
-// 			int ig1=i1-is1, ig2=i2-is2, ig3=i3-is3;
-// 			coeff(index4,ig1,ig2,ig3)=tempCoeff(index2,i1,i2,i3);
-// 			coeff.sparse->setClassify(SparseRepForMGF::ghost1,ig1,ig2,ig3,ee);
-// 		      }
-		
-// 		    }
-
-// 		if( true )
-// 		{
-// 		  printF("\n>>>>>>>>>>>>>buildPredefinedCoefficientMatrix: \n"
-// 			 " fill in 2nd-order equation on the ghost points : level=%i, grid=%i side=%i "
-// 			 "axis=%i\n",level,grid,side,axis);
-// 		  // coeff(all,Ig1,Ig2,Ig3).display("Eqn to 2nd order on the boundary");
-// 		}
-	      
-// 		// **** end points on dirichlet sides: use extrapolation (otherwise the same eqn appears twice!)
-
-// 		for( int dir=0; dir<mg.numberOfDimensions()-1; dir++ )
-// 		{
-// 		  const int axisp = (axis+dir+1) % mg.numberOfDimensions(); // adjacent side
-// 		  for( int side2=0; side2<=1; side2++ )
-// 		  {
-// 		    if( bc(side2,axisp,grid)==OgmgParameters::dirichlet )
-// 		    {
-// 		      if( mg.boundaryCondition(side2,axisp)<=0 )
-// 		      {
-// 			display(bc,"bc");
-// 			display(mg.boundaryCondition(),"mg.boundaryCondition()");
-// 			Overture::abort("Unepected Error");
-// 		      }
-		    
-// 		      J1=Ig1, J2=Ig2, J3=Ig3;
-// 		      Jv[axisp]= side2==0 ? Jv[axisp].getBase() : Jv[axisp].getBound();
-// 		      // extrapolate points  coeff(.,J1,J2,J3) in the direction axis
-// 		      op.setExtrapolationCoefficients(coeff,ee,J1,J2,J3,orderOfExtrapolation); // in GenericMGOP
-// 		    }
-// 		  }
-// 		}
-	      
-
-// 	      }
-// 	      else
-// 	      {
-// 		Overture::abort();
-// 	      }
-	    
-// 	    }
-
-// 	    coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary1+side+2*axis);
-// 	    if( orderOfAccuracy==4 )
-// 	    {
-// 	      extrapParams.ghostLineToAssign=2;
-// 	      coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
-// 						       extrapParams); 
-// 	      extrapParams.ghostLineToAssign=1;
-// 	    }
-// 	  }
-// 	  else if( bc(side,axis,grid)==OgmgParameters::neumann )
-// 	  {
-// 	    coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::neumann,BCTypes::boundary1+side+2*axis);
-
-// 	    if( orderOfAccuracy==4 )
-// 	    {
-// 	      bool useEquationOnGhost = useEquationOnGhostLineForNeumannBC(mg,level);
-// 	      if( useEquationOnGhost )
-// 	      {
-// 		printf(" ******buildPredefinedCoefficientMatrix: WARNING: not using eqn on ghost for neumann BC"
-// 		       " at level =%i ******\n",level);
-
-
-// 	      }
-
-// 	      extrapParams.ghostLineToAssign=2;
-// 	      if( false )
-// 	      {
-// 		coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
-// 							 extrapParams); 
-// 	      }
-// 	      else
-// 	      {
-
-// 		coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis,
-// 							 extrapParams); 
-// 	      }
-// 	    }
-	  
-// 	    extrapParams.ghostLineToAssign=1;
-
-// 	    // getGhostIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-
-// 	    // Range all;
-// 	    // display(coeff(all,I1,I2,I3),"coeff on ghost line after adding a neumann BC",debugFile,"%8.2e ");
-	  
-// 	  }
-// 	  else if( bc(side,axis,grid)==OgmgParameters::mixed )
-// 	  {
-// 	    a(0)=boundaryConditionData(0,side,axis,grid);  // coeff of u
-// 	    a(1)=boundaryConditionData(1,side,axis,grid);  // coeff of du/dn
-// 	    // printf(" predefined: mixed BC: a0=%e a1=%e \n",a(0),a(1));
-	  
-// 	    coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::mixed,BCTypes::boundary1+side+2*axis,bcParams);
-
-// 	    if( orderOfAccuracy==4 )
-// 	    {
-// 	      bool useEquationOnGhost = useEquationOnGhostLineForNeumannBC(mg,level);
-// 	      if( useEquationOnGhost )
-// 	      {
-// 		// *** fix this *** use mixedToSecondOrder instead of the neumann condition above and the symmetry below
-
-// 		printf(" ******buildPredefinedCoefficientMatrix: WARNING: not using eqn on ghost for mixed BC"
-// 		       " at level =%i ******\n",level);
-// 	      }
-
-// 	      extrapParams.ghostLineToAssign=2;
-// 	      if( level==0 || !parameters.useSymmetryForNeumannOnLowerLevels ) 
-// 	      {
-// 		extrapParams.orderOfExtrapolation=4;
-// 		coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
-// 							 extrapParams); 
-// 	      }
-// 	      else
-// 	      {
-// 		coeff.applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis,
-// 							 extrapParams); 
-// 	      }
-// 	    }
-// 	    extrapParams.ghostLineToAssign=1;
-	  
-// 	  }
-// 	  else if( bc(side,axis,grid)>0 )
-// 	  {
-// 	    printf("Ogmg::buildPredefinedCoefficientMatrix:ERROR: unknown bc=%i for grid=%i side=%i axis=%i\n",
-// 		   bc(side,axis,grid),grid,side,axis);
-// 	    throw "error";
-// 	  }
-// 	}
-//       }
-//     } // end if old way 
-    
-    
-    if( (Ogmg::debug & 64 && ( level==mgcg.numberOfMultigridLevels()-1)) )
-      displayCoeff(coeff,sPrintF(buff,"buildPredefinedCoefficientMatrix:coeff on coarsest level=%i "
-			    "orderOfAccuracy=%i",level,orderOfAccuracy),debugFile,"%8.2e ");
-    
-
-  } // end for grid
   
+  if( (Ogmg::debug & 32 && ( level==mgcg.numberOfMultigridLevels()-1)) )
+    displayCoeff(coeff,sPrintF(buff,"buildPredefinedCoefficientMatrix:coeff on coarsest level=%i "
+    "orderOfThisLevel=%i",level,orderOfThisLevel),debugFile,"%8.2e ");
+    
+
   
   return 0;
 }
@@ -781,6 +835,9 @@ initializeConstantCoefficients()
 	  );
       
 
+      const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+      const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
       for( int grid=0; grid<mgcg.multigridLevel[level].numberOfComponentGrids(); grid++ )
       {
 
@@ -807,7 +864,7 @@ initializeConstantCoefficients()
 	  if( mg.numberOfDimensions()==2 )
 	  {
 
-            if( orderOfAccuracy==2 )
+            if( orderOfThisLevel==2 )
 	    {
   	      // printf(">>>>>>>>>>>>>>>>>>>>>Setting constant coefficients for grid %i, 2nd order\n",grid);
 
@@ -896,7 +953,7 @@ initializeConstantCoefficients()
 
 	      }
 	    }
-	    else if( orderOfAccuracy==4 )
+	    else if( orderOfThisLevel==4 )
 	    {
 	      // printF(">>>>>>>>>>>>>>>>>>>>>Setting constant coefficients for grid %i, 4th order\n",grid);
               // ***** 4th order ******
@@ -1101,7 +1158,7 @@ initializeConstantCoefficients()
             // *************************************************************
             // ****************** three dimensions *************************
             // *************************************************************
-            if( orderOfAccuracy==2 )
+            if( orderOfThisLevel==2 )
 	    {
               // ***** 2nd order ******
 	      const int m111=0;
@@ -1260,8 +1317,8 @@ initializeConstantCoefficients()
 
 	      }
 	      
-	    } // end orderOfAccuracy==2
-	    else if( orderOfAccuracy==4 )
+	    } // end orderOfThisLevel==2
+	    else if( orderOfThisLevel==4 )
 	    {
               // ************ 4th order *********************
 	      // printf("Setting constant coefficients for grid %i, 4th order\n",grid);

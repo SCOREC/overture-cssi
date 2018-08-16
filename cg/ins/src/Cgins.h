@@ -170,6 +170,10 @@ formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
                                const int & imp );
 
 
+int 
+getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, const int axis, const real dt,
+                           real & zs, real & zp, real & zf, real & alpha );
+
 // Return the list of interface data needed by a given interface:
 virtual int
 getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions ) const;

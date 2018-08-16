@@ -975,7 +975,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     // const real p0 = pI - rho*H*aI*(1.-yI/H);        // fluid pressure at y=H 
     // const real pAmp = (p0-pI)/(H-yI);
 
-    if( t <= 2.*dt )
+    if( false && t <= 2.*dt )
     {
       printF("--INS-- userDefinedKnownSolution: bulkSolidPiston, t=%9.3e, yI=%9.3e vI=%9.3e,\n",
              t,yI,vI);
@@ -1186,7 +1186,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
 	      // compute trig functions
 	      real theta = atan2(y,x);
-	      if( abs(r)>eps )
+	      if( fabs(r)>eps )
 		{
 		  cosTheta=x/r; sinTheta=y/r;
 		}
@@ -1240,7 +1240,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
 	  // compute trig functions
 	  real theta = atan2(y,x);
-	  if( abs(r)>eps )
+	  if( fabs(r)>eps )
 	    {
 	      cosTheta=x/r; sinTheta=y/r;
 	    }
@@ -1476,7 +1476,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & mu     = rpar[15];
     const real & thetaR = rpar[16];
 
-    if( true ) {
+    if( false ) {
       printF("--INS-- evaluate fibShear at t=%9.3e \n",t,amp);
     }
 
@@ -1544,6 +1544,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
+    const real & mu     = rpar[15];
+    const real & muBar  = rpar[16];
 
     if( true ) {
       printF("--INS-- evaluate radialFibShear at t=%9.3e \n",t,amp);
@@ -1564,7 +1566,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	
         // compute trig functions
         real cosTheta, sinTheta;
-        if( abs(r)>eps )
+        if( fabs(r)>eps )
           {
             cosTheta=x/r; sinTheta=y/r;
           }
@@ -1580,6 +1582,15 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	evalRadialFibShearFluid(kfr,kfi,omegar,omegai,ar,ai,br,bi,
                                 rho,r,r0,t,vt,p);
 
+        // printF("--DS-- UDKS:RadialFibShear: vt=%e p=%e \n",vt,p);
+
+        if( fabs(vt)>1e10 || fabs(p)>1e10 || vt!=vt || p!=p )
+        {
+          printF("--INS-- UDKS:RadialFibShear: ERROR vt=%e p=%e\n",vt,p);
+          OV_ABORT("error");
+        }
+      
+
         // convert to cartesian
         real v1 = -sinTheta*vt;
         real v2 =  cosTheta*vt;
@@ -1590,7 +1601,16 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
     } else {
       // some options may need a time derivative ...
-      OV_ABORT("FINISH ME");
+      printF("\n --INS-- UDKS: ERROR numberOfTimeDerivatives=%d NOT IMPLEMENTED\n \n");
+      FOR_3D(i1,i2,i3,I1,I2,I3) 
+      {
+	ua(i1,i2,i3,uc) = 0.;
+	ua(i1,i2,i3,vc) = 0.;
+	ua(i1,i2,i3,pc) = 0.;
+
+      }
+      
+      // OV_ABORT("FINISH ME");
     }
 
   } 
@@ -1695,7 +1715,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
     GET_VERTEX_ARRAY(xLocal);
 
-    printF("--INS-- evaluate fibRadialWave at t=%9.3e \n",t);
+    // printF("--INS-- evaluate fibRadialWave at t=%9.3e \n",t);
 
     real R = 1.;
     const real eps = 10.*REAL_EPSILON;
@@ -1712,7 +1732,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
         // compute trig functions
         real theta = atan2(y,x);
-        if( abs(r)>eps ) {
+        if( fabs(r)>eps ) {
           cosTheta=x/r; sinTheta=y/r;
         } else {
           cosTheta=1.; sinTheta=0.;

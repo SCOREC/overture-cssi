@@ -152,6 +152,27 @@ chooseUserDefinedBoundaryValues(int side, int axis, int grid, CompositeGrid & cg
       // save the parameters to be used when evaluating the time dependent BC's:
       parameters.setUserBoundaryConditionParameters(side,axis,grid,values);
     }
+    else if( answer=="sinusoidal pressure force" )
+    {
+      printF("  sinusoidal pressure force = sin(Pi*t/timeInterval)^2 * p0 * sin(freq*theta) for t < timeInterval \n");
+
+      // parameters.setUserBcType(side,axis,grid,pressureForce);    // set the bcType to be a unique value.
+      userDefinedBoundaryValue="sinusoidalPressureForce";
+      parameters.setBcIsTimeDependent(side,axis,grid,true);  // this condition is time dependent
+
+      RealArray values(3);
+      values=0.;
+      gi.inputString(answer2,"Enter p0,freq,timeInterval");
+      if( answer2!="" )
+      {
+	sScanF(answer2,"%e %e %e",&values(0),&values(1),&values(2));
+      }
+      printF("***sinusoidal pressure force: p0=%9.3e, freq=%.2e, timeInterval=%.2e for grid=%i (side,axis)=(%i,%i)\n",
+             values(0),values(1),values(2),grid,side,axis);
+
+      // save the parameters to be used when evaluating the time dependent BC's:
+      parameters.setUserBoundaryConditionParameters(side,axis,grid,values);
+    }
     else if( answer=="piston" )
     {
       // parameters.setUserBcType(side,axis,grid,piston);    // set the bcType to be a unique value
@@ -403,7 +424,7 @@ userDefinedBoundaryValues(const real & t,
 // 			  int axis0 /* = -1 */,
 // 			  ForcingTypeEnum forcingType /* =computeForcing */)
 {
-  // printF("***userDefinedBoundaryValues\n");
+  printF("***userDefinedBoundaryValues\n");
 
   realMappedGridFunction & u = gf0.u[grid];
   MappedGrid & mg = *u.getMappedGrid();
@@ -629,6 +650,66 @@ userDefinedBoundaryValues(const real & t,
  	}
 
       }
+
+      else if( userDefinedBoundaryValue=="sinusoidalPressureForce" )
+      {
+        //   Normal force = sin(Pi*t/timeInterval)^2 * p0 * sin(freq*theta) 
+
+        RealArray values(3);
+	parameters.getUserBoundaryConditionParameters(side,axis,grid,values);
+	const real p0=values(0), freq=values(1), timeInterval=values(2);
+
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+	
+	numberOfSidesAssigned++;
+
+	bool ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+	if( !ok ) continue;  // no points on this processor
+
+	RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+      
+        // (n[0],n[1]) = (cos(theta),sin(theta))
+        if( t<=timeInterval )
+        {
+          printF("***userDefinedBoundaryValues: set sinusoidal pressure force=%8.2e, freq=%.2e at t=%9.3e for"
+                 "(side,axis,grid)=(%i,%i,%i)\n",p0,freq,t,side,axis,grid);
+
+
+          real ampT = SQR(sin(Pi*t/timeInterval)); // ramps on and off 
+
+          RealArray theta(Ib1,Ib2,Ib3), amp(Ib1,Ib2,Ib3);
+          theta = atan2(normal(Ib1,Ib2,Ib3,1),normal(Ib1,Ib2,Ib3,0));
+          amp = - ampT*p0*sin(freq*theta);
+       
+          bd(Ib1,Ib2,Ib3,uc)= amp*normal(Ib1,Ib2,Ib3,0);
+          bd(Ib1,Ib2,Ib3,vc)= amp*normal(Ib1,Ib2,Ib3,1);
+          if( numberOfDimensions>2 )
+            bd(Ib1,Ib2,Ib3,wc)= amp*normal(Ib1,Ib2,Ib3,2);
+        }
+        else
+        {
+          bd(Ib1,Ib2,Ib3,uc)= 0.;
+          bd(Ib1,Ib2,Ib3,vc)= 0.;
+          if( numberOfDimensions>2 )
+            bd(Ib1,Ib2,Ib3,wc)= 0.;
+        }
+        
+        // NOTE: For the first order system we need to also specify: 
+        if( ((SmParameters&)parameters).isFirstOrderSystem() )
+ 	{
+          // time derivative of the traction: 
+   	  bd(Ib1,Ib2,Ib3,v1c)=0.;  
+   	  bd(Ib1,Ib2,Ib3,v2c)=0.;
+        
+          // The traction also appears here:  *wdh* this is no longer needed
+   	  // bd(Ib1,Ib2,Ib3,s11c)=bd(Ib1,Ib2,Ib3,uc);  
+   	  // bd(Ib1,Ib2,Ib3,s12c)=bd(Ib1,Ib2,Ib3,vc);
+	  // if( numberOfDimensions>2 )
+	  //   bd(Ib1,Ib2,Ib3,s13c)=bd(Ib1,Ib2,Ib3,wc);
+ 	}
+
+      }
+
       else if( userDefinedBoundaryValue=="piston" )
       {
         RealArray values(2);

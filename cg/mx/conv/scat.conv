@@ -68,7 +68,7 @@ $numberOfComponents=5;
 if( $method eq "sosup" ){ $numberOfComponents=8; }
 # define the table heading and caption
 if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+  { $title= "grid  \& N \&   \$E_x\$ \&   \$E_y\$    \& \$H_z\$   \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #
 if( $numberOfComponents eq 8  && $numberOfDimensions eq 2 )\
   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$   \&  \$\\Ev\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }

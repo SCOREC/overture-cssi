@@ -247,6 +247,9 @@ init()
 
   orderOfAccuracy=-1;  // -1 means that the order has not been assigned yet
   
+  // For high-order schemes we may use lower order on the coarser levels
+  if( !dbase.has_key("orderOfCoarseLevels") ){ dbase.put<int>( "orderOfCoarseLevels")=-1; }// 
+
 }
 
 // =================================================================================
@@ -1042,6 +1045,9 @@ set( OptionEnum option, int value, real rvalue )
   case THEorderOfAccuracy:
     orderOfAccuracy=value;
     break;
+  case THEorderOfCoarseGridSolves:
+    dbase.get<int>( "orderOfCoarseLevels")=value;
+    break;
   default:
     printF("OgmgParameters::set: Unknown option=%i! This should not happen\n",option);
     Overture::abort();
@@ -1361,6 +1367,10 @@ get( OptionEnum option, int & value, real & rvalue ) const
   case THEorderOfAccuracy:
     value=orderOfAccuracy;
     break;
+  case THEorderOfCoarseGridSolves:
+    value=dbase.get<int>( "orderOfCoarseLevels");
+    break;
+    
   default:
     printF("OgmgParameters::get: Unknown option=%i! This should not happen\n",option);
     Overture::abort();
@@ -1544,7 +1554,7 @@ buildOptionsDialog( DialogData & dialog )
   int numColumns=1;
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns);
 
-  const int numberOfTextStrings=8;
+  const int numberOfTextStrings=20;
   aString textLabels[numberOfTextStrings];
   aString textStrings[numberOfTextStrings];
 
@@ -1562,6 +1572,9 @@ buildOptionsDialog( DialogData & dialog )
 
   textLabels[nt] = "order of accuracy:";  
   sPrintF(textStrings[nt],"%i",orderOfAccuracy);  nt++; 
+
+  textLabels[nt] = "order of coarse level solves:";  
+  sPrintF(textStrings[nt],"%i",dbase.get<int>( "orderOfCoarseLevels"));  nt++; 
 
   // null strings terminal list
   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
@@ -1593,6 +1606,8 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
   updateToMatchGrid(cg);
 
   const int numberOfMultigridLevels = numberOfSubSmooths.getLength(1); // use this
+  int & orderOfCoarseLevelSolves = dbase.get<int>( "orderOfCoarseLevels");
+    
 
 
   char buff[180];  // buffer for sprintf
@@ -2615,6 +2630,22 @@ update( GenericGraphicsInterface & gi, CompositeGrid & cg )
       }
     }
     
+    else if( dialog.getTextValue(answer,"order of coarse level solves:","%i",orderOfCoarseLevelSolves) )
+    {
+      if( orderOfCoarseLevelSolves!=2 && orderOfCoarseLevelSolves!=4 )
+      {
+        orderOfCoarseLevelSolves =  cg[0].discretizationWidth(0)-1;
+	printF("OgmgParameters::WARNING: orderOfAccuracy=%i is unexpected! Expecting 2 or 4. Setting to %i.\n",
+                orderOfCoarseLevelSolves);
+      }
+      else
+      {
+        printF("Setting orderOfCoarseLevelSolves=%i\n",orderOfCoarseLevelSolves);
+      }
+      
+    }
+
+
     else if( answer=="help" )
     {
       for( int i=0; help[i]!=""; i++ )

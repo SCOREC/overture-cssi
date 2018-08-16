@@ -1,6 +1,82 @@
 cd /Users/henshaw/runs/mx/optimizer
 
 
+
+
+****************************************
+**** June 20-21, 2018
+
+--------- NON SYMMETRIC GRIDS 
+
+plotStuff plotGrid -show=tgns7e8.order2.hdf -name=tgns7
+plotStuff plotGrid -show=tgns6e8.order2.hdf -name=tgns6
+plotStuff plotGrid -show=tgns5e16.order2.hdf -name=tgns5
+plotStuff plotGrid -show=tgns4e16.order2.hdf -name=tgns4  * hole *
+plotStuff plotGrid -show=tgns3e16.order2.hdf -name=tgns3
+plotStuff plotGrid -show=tgns2e16.order2.hdf -name=tgns2
+plotStuff plotGrid -show=tgns1e16.order2.hdf -name=tgns1
+
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case7.h -prefix=tgns7 -interp=e -factor=8
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case6.h -prefix=tgns6 -interp=e -factor=8
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case5.h -prefix=tgns5 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case4.h -prefix=tgns4 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case3.h -prefix=tgns3 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case2.h -prefix=tgns2 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsNonSymN99Case1.h -prefix=tgns1 -interp=e -factor=16
+
+
+------- SYMMETRIC GRIDS --------------
+
+plotStuff plotGrid -show=tgs7e8.order2.hdf -name=tgs7
+plotStuff plotGrid -show=tgs6e8.order2.hdf -name=tgs6 *
+plotStuff plotGrid -show=tgs5e16.order2.hdf -name=tgs5 *
+plotStuff plotGrid -show=tgs4e32.order2.hdf -name=tgs4
+plotStuff plotGrid -show=tgs3e32.order2.hdf -name=tgs3  *hole*
+plotStuff plotGrid -show=tgs2e16.order2.hdf -name=tgs2  **
+plotStuff plotGrid -show=tgs1e16.order2.hdf -name=tgs1
+
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case7.h -prefix=tgs7 -interp=e -factor=8
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case6.h -prefix=tgs6 -interp=e -factor=8
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case5.h -prefix=tgs5 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case4.h -prefix=tgs4 -interp=e -factor=32
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case3.h -prefix=tgs3 -interp=e -factor=32
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case2.h -prefix=tgs2 -interp=e -factor=16
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsSymN99Case1.h -prefix=tgs1 -interp=e -factor=16
+
+****************************************
+**** May 23-25, 2018
+
+plotStuff plotGrid -show=tg1e32.order2.hdf -name=tg1
+plotStuff plotGrid -show=tg2e8.order2.hdf -name=tg2
+plotStuff plotGrid -show=tg5e64.order2.hdf -name=tg5
+plotStuff plotGrid -show=tgppe8.order2.hdf -name=tgPuzzlePiece
+
+Topology shapes
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs1.h -prefix=tg1 -interp=e -factor=32
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs2.h -prefix=tg2 -interp=e -factor=8
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs3.h -prefix=tg3 -interp=e -factor=8  *trouble with curve orientation
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs4.h -prefix=tg4 -interp=e -factor=8 *trouble with curve orientation
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs5.h -prefix=tg5 -interp=e -factor=64 (sharp corner)
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbsPuzzlePiece.h -prefix=tgpp -interp=e -factor=8
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs6.h -prefix=tg6 -interp=e -factor=8
+
+
+ogen -noplot topologyGrid -curveFile=curvesFromNurbs.h -interp=e -factor=8
+
+
+
+****************************************
+**** May 18, 2018
+
+Start on constructing grids from the level curves of a Nurbs surface 
+
+
+
 ****************************************
 **** Nov 25, 2017
 

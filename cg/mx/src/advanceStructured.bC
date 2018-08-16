@@ -38,11 +38,15 @@ extern "C"
 /// \param alphaP
 /// \param gdm(0:maxNumberOfParameters-1, 0:maxNumberOfPolarizationVectors) : output
 ///           return gdm(0:3,iv) = (a0,a1,b0,b1) iv=0,1,2...,numberOfPolarizationVectors-1
+/// \param maxNumberOfParameters, maxNumberOfPolarizationVectors (input) : specifies the
+//      max number of entries that has been allocated in the gdmPar array.
+/// \param gdmParOption (input) : 1=scale a0 and a1 parameters by eps
 // ================================================================================
 void getGDMParameters( int & grid, real & alphaP, real *gdmPar, 
                        int & numberOfPolarizationVectors,
                        const int & maxNumberOfParameters, 
-                       const int & maxNumberOfPolarizationVectors )
+                       const int & maxNumberOfPolarizationVectors,
+                       const int & gdmParOption )
 {
 #define gdmVar(m,iv) gdmPar[(m)+maxNumberOfParameters*(iv)]
 
@@ -68,12 +72,70 @@ void getGDMParameters( int & grid, real & alphaP, real *gdmPar,
       gdmVar(m,iv) = dmp.modelParameters(m,iv);
     
     }
+    if( gdmParOption==1 && alphaP>0 )
+    {
+      // scale a0 and a1 by eps here (new way, June 14, 2018)
+      const real eps=1./alphaP;  // assumes alphaP=1/eps
+      gdmVar(0,iv) = gdmVar(0,iv)*eps; 
+      gdmVar(1,iv) = gdmVar(1,iv)*eps;
+    }
+
   }
 #undef gdmVar  
 }
 
 }
 
+#define evalUserDefinedKnownSolution EXTERN_C_NAME(evaluserdefinedknownsolution)
+extern "C"
+{
+// Function to allow Fortran routines to eval the user defined known solution.
+// Output:
+//   evals[0:2] : Ex,Ey,Hz (2d) or Ex,Ey,Ez (3d)
+//   pvals[0:numberOfPolarizationVectors-1] : polarization vector
+//
+void evalUserDefinedKnownSolution( real & t, int & grid, int & i1, int & i2, int & i3, real *evals, real *pvals, int & numberOfTimeDerivatives )
+{
+  assert( cgmxPointer != NULL );
+
+  CompositeGrid *&cgp = cgmxPointer->cgp;
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfDimensions = cg.numberOfDimensions();
+  const int domain = cg.domainNumber(grid);
+  const DispersiveMaterialParameters & dmp =  cgmxPointer->getDomainDispersiveMaterialParameters(domain);
+  const int numberOfPolarizationVectors=dmp.numberOfPolarizationVectors;
+  
+  Index I1=i1, I2=i2, I3=i3;
+
+  int numComponents=3;  // Ex,Ey,Hz (2d) or Ex,Ey,Ez (3d)
+  RealArray ua(I1,I2,I3,numComponents), pv;
+  if( numberOfPolarizationVectors>0 )
+  {
+    pv.redim(I1,I2,I3,numberOfDimensions*numberOfPolarizationVectors);
+  }
+  
+  // parameters.getUserDefinedDeformingBodyKnownSolution( body,stateOption,t, grid, mg, Ib1,Ib2,Ib3,n,value );
+  int current=0; // not currently used
+  cgmxPointer->getUserDefinedKnownSolution( current, t, cg, grid,ua,pv,I1,I2,I3, numberOfTimeDerivatives);
+
+  for( int n=0; n<numComponents; n++ )
+  {
+    evals[n]=ua(i1,i2,i3,n);
+  }
+
+  for( int axis=0; axis<numberOfDimensions; axis++ )
+  {
+    for( int jv=0; jv<numberOfPolarizationVectors; jv++ )
+    {
+      int pc = axis + jv*numberOfDimensions;
+      pvals[pc]=pv(i1,i2,i3,pc);
+    }
+  }
+  
+}
+
+}
 
 
 // fourth order dissipation 2D: ***** NOTE: this is minus of the 4th difference:  -(D+D-)^2 *********
@@ -113,7 +175,7 @@ bool useCurvilinearOpt=true && !isRectangular;   // use advOpt to advance curvil
 
 // *wdh* Feb 25, 2018 -- dispersion model implements optimized curvilinear non-conservative
 bool useCurvilinearOptNew = (
-  ( dispersionModel!=noDispersion && !useConservative ) || 
+  ( localDispersionModel!=noDispersion && !useConservative ) || 
   ( (!isRectangular  && 
      !useConservative && 
      (orderOfAccuracyInSpace==4 || orderOfAccuracyInSpace==6) )
@@ -208,7 +270,7 @@ if( updateInterior )
       // * mgop.derivative(MappedGridOperators::laplacianOperator,u,f,I1,I2,I3);
       f(I1,I2,I3,C)*=csq;
 
-      // if( dispersionModel != noDispersion )
+      // if( localDispersionModel != noDispersion )
       // { // set f for dispersive modes to zero 
       //   Range P(pxc,pxc+numberOfDimensions-1);
       //   f(I1,I2,I3,P)=0.;
@@ -257,10 +319,6 @@ if( updateInterior )
   #endif
 
 
-  // --- Lookup info for the dispersion model ---
-  const int domain = cg.domainNumber(grid);
-  const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-  const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
 
   // --- Get pointers to arrays for the dispersive model ----
   real *pnptr=unLocal.getDataPointer();
@@ -301,8 +359,6 @@ if( updateInterior )
  // const bool updateSolution = updateInterior;
  // const bool updateDissipation = addDissipation;
 
-  // Each grid may or may not have dispersion model: 
-  const DispersionModelEnum dispersionModelLocal = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
 
   int gridType = isRectangular? 0 : 1;
   int option=(isRectangular || useCurvilinearOpt) ? 0 : 1;   // 0=Maxwell+AD, 1=AD
@@ -325,7 +381,7 @@ if( updateInterior )
 	      (int)useNewForcingMethod,
 	      numberOfForcingFunctions,
 	      fCurrent,
-	      dispersionModelLocal,
+	      localDispersionModel,
 	      pxc,pyc,pzc, 
               numberOfPolarizationVectors,grid,
               0, 0,0,0,  // for future use
@@ -505,6 +561,13 @@ if( updateInterior )
   }
 
 
+  if( debug & 8 )
+  {
+    fprintf(debugFile,"addForcing=%i, useNewForcingMethod=%i\n",(int)addForcing,(int)useNewForcingMethod);
+    
+    display(fLocal,sPrintF("fLocal BEFORE advMaxwell t=%8.2e",t),debugFile,"%8.2e ");
+    display(un,sPrintF("un BEFORE advMaxwell t=%8.2e",t),debugFile,"%8.2e ");
+  }
 
 
   // int *maskptr = useWhereMask ? maskLocal.getDataPointer() : ipar;
@@ -605,15 +668,19 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
 
   const int dw = max(cg[0].discretizationWidth()); // discertization width
 
-  // -- We normally extrapolate interpolation neighbours for Sosup dissipation which uses a wider stencil
-  //    the stencil is wider. This is not necessary if the grid was generated with more
-  //    layers of interpolation points. 
-  int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
-  if( dw > orderOfAccuracyInSpace+1 )
-    extrapolateInterpolationNeighbours=false; // *wdh* added this check, June 15, 2016
-  else if( useSosupDissipation )
-    extrapolateInterpolationNeighbours=true;
+  const int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
 
+  // -- now done in setupGridFunctions
+  // // -- We normally extrapolate interpolation neighbours for Sosup dissipation which uses a wider stencil
+  // //    the stencil is wider. This is not necessary if the grid was generated with more
+  // //    layers of interpolation points. 
+
+  // if( dw > orderOfAccuracyInSpace+1 )
+  //   extrapolateInterpolationNeighbours=false; // *wdh* added this check, June 15, 2016
+  // else if( useSosupDissipation )
+  //   extrapolateInterpolationNeighbours=true;
+
+  
   if( useSosupDissipation && sosupDissipationOption==1 )
   {
     // 2 stage sosup dissipation assumes 3 levels 
@@ -683,7 +750,8 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
   const int numberOfStages= stageInfoList.size();
 
   // +++++++++++++++++++++++++ START STAGES +++++++++++++++++++++++++++++-
-  for( int stage=0; stage<numberOfStages; stage ++ ){ //
+  for( int stage=0; stage<numberOfStages; stage ++ )
+  { 
  
     StageOptionEnum & stageInfo = stageInfoList[stage];
     const bool computeUt      = stageInfo & computeUtInStage;
@@ -729,6 +797,12 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         
       }
       
+      // --- Lookup info for the dispersion model ---
+      const int domain = cg.domainNumber(grid);
+      const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+      const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+      // Each grid may or may not have dispersion model: 
+      const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
       
 
       MappedGrid & mg = cg[grid];
@@ -771,6 +845,18 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         printF(" advanceNFDTD:INFO eps,mu,c=%8.2e %8.2e %8.2e for grid=%i (%s) \n",eps,mu,c,grid,
                (const char*)cg[grid].getName());
     
+      // --- Sanity check: We should now have alphaP=1/eps (or alphaP=0 for testing) ----
+      if( localDispersionModel!=noDispersion )
+      {
+        if( dmp.alphaP !=0. && fabs(dmp.alphaP*eps -1.) > REAL_EPSILON*100. )
+        {
+          printF("advance: ERROR: grid=%i: alphaP=%.3e is NOT equal to 1/eps=%.3e -- correct this! Set alphaP=-1 to get default.\n",grid,dmp.alphaP,1./eps);
+          OV_ABORT("error");
+        }
+        
+      }
+      
+
       const bool isRectangular=mg.isRectangular();
 
       // -------------------------------------------------------------------
@@ -980,7 +1066,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         {
           extrapParams.orderOfExtrapolation=dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours");
           if( debug & 4 )
-            printf("***advSOSUP: orderOfExtrapolationForInterpolationNeighbours=%i\n",
+            printf("***advanceStructured: orderOfExtrapolationForInterpolationNeighbours=%i\n",
                    dbase.get<int>("orderOfExtrapolationForInterpolationNeighbours"));
     
           // MappedGridOperators & mgop = mgp!=NULL ? *op : (*cgop)[grid];

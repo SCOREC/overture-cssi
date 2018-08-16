@@ -159,13 +159,16 @@ DeformingBodyMotion( Parameters & params,
   // generateInitialGrid =true : regenerate the initial grid to match the initial deformation
   deformingBodyDataBase.put<int>("regenerateInitialGrid",false);
 
+  // These next options are for under-relaxed sub-iterations
+  deformingBodyDataBase.put<bool>("relaxCorrectionSteps")=false;
   deformingBodyDataBase.put<real>("sub iteration convergence tolerance",1.0e-3);
-
   deformingBodyDataBase.put<real>("added mass relaxation factor",1.0);
+
 
   // Specifies whether the deforming body is defined by a bulk solid model (e.g. Cgsm).
   deformingBodyDataBase.put<int>("isBulkSolidModel")=0; 
-
+  deformingBodyDataBase.put<int>("bulkSolidModelHasConverged")=0;
+  
   // Use known solution for setting initial and past time conditions
   deformingBodyDataBase.put<bool>("useKnownSolutionForInitialConditions")=false;
 
@@ -298,6 +301,10 @@ writeParameterSummary( FILE *file /* =stdout */ )
     const bool & smoothSurface = deformingBodyDataBase.get<bool>("smoothSurface");
     const int & numberOfSurfaceSmooths = deformingBodyDataBase.get<int>("numberOfSurfaceSmooths");
 
+    const bool & relaxCorrectionSteps = deformingBodyDataBase.get<bool>("relaxCorrectionSteps");
+    const real & omega = deformingBodyDataBase.get<real>("added mass relaxation factor");
+    const real & tol = deformingBodyDataBase.get<real>("sub iteration convergence tolerance");
+
     // ** FINISH ME**
     fPrintF(file,"----------------Deforming Body Parameters  -------------------------\n");
     aString deformingBodyTypeName= (deformingBodyType==elasticFilament ? "elastic filament" :
@@ -312,6 +319,8 @@ writeParameterSummary( FILE *file /* =stdout */ )
     fPrintF(file," start curve type = %s\n",(startCurveType==nurbsStartCurve ? "nurbs" : 
                                               startCurveType==splineStartCurve ? "spline" : "unknown"));
     fPrintF(file," smoothSurface=%i, numberOfSurfaceSmooths=%i\n",(int)smoothSurface,numberOfSurfaceSmooths);
+    fPrintF(file," relaxCorrectionSteps=%i, added-mass-relaxation-factor omega=%.2e, sub-iteration-convergence tol=%.2e\n",
+                    (int)relaxCorrectionSteps,omega,tol);
     
     fPrintF(file,"--------------------------------------------------------------------\n");
     
@@ -2541,7 +2550,11 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
 	    }
             else if( true )
             {
-              OV_ABORT("--DBM-- DeformingBodyMotion::initializePast: finish me ");
+              numGhost=0;
+              printF("--DBM-- WARNING : setting the past time grid to the grid at t=%.2 since `getPastTimeState' \n"
+                     " is not available for this type of deforming grid. (numGhost=%i) *fix me*\n",pastTime,numGhost);
+              xPast=x0;
+              // OV_ABORT("--DBM-- DeformingBodyMotion::initializePast: finish me ");
               
             }
 	    else // ******** OLD WAY ******
@@ -2609,8 +2622,9 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
 	  }
 	  else  // not elastic beam or interfaceDeform
 	  {
-	    printF("--DBM-- WARNING : setting the past time grid to the grid at t=0 since `getPastTimeState' \n"
-                   " is not available for this type of deforming grid. *fix me*\n");
+            numGhost=0;
+	    printF("--DBM-- WARNING : setting the past time grid to the grid at t=%.2e since `getPastTimeState' \n"
+                   " is not available for this type of deforming grid. (numGhost=%i) *fix me*\n",pastTime,numGhost);
 	    xPast=x0;
 	  }
 
@@ -2915,7 +2929,7 @@ getPastTimeGrid(  real pastTime , CompositeGrid & cg )
           else
           {
             printF("--DBM-- getPastTimeGrid:WARNING : setting the past time grid to the grid at t=0 since `getPastTimeState' \n"
-                   " is not available for this type of deforming grid. *fix me*\n");
+                   " is not available for this type of deforming grid. (numGhost=%i) *fix me*\n",numGhost);
             xPast.redim(0);
             xPast=x0;
           }
@@ -6800,6 +6814,7 @@ update(CompositeGrid & cg, GenericGraphicsInterface & gi )
   int & nurbsDegree = deformingBodyDataBase.get<int>("nurbsDegree");
   bool & useKnownSolutionForInitialConditions = deformingBodyDataBase.get<bool>("useKnownSolutionForInitialConditions");
   int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
+  bool & relaxCorrectionSteps = deformingBodyDataBase.get<bool>("relaxCorrectionSteps");
 
   // -- Boundary conditions ---
   if( !deformingBodyDataBase.has_key("boundaryCondition") )
@@ -6865,6 +6880,7 @@ update(CompositeGrid & cg, GenericGraphicsInterface & gi )
                             "regenerate initial grid",
                             "evaluate grid as Nurbs",
                             "use known solution for initial conditions",
+                            "relax correction steps",
 			    ""};
     int tbState[10];
     tbState[0] = smoothSurface;
@@ -6873,6 +6889,7 @@ update(CompositeGrid & cg, GenericGraphicsInterface & gi )
     tbState[3] = regenerateInitialGrid;
     tbState[3] = evalGridAsNurbs;
     tbState[4] = useKnownSolutionForInitialConditions;
+    tbState[5] = relaxCorrectionSteps;
     
     int numColumns=1;
     dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
@@ -7547,6 +7564,10 @@ update(CompositeGrid & cg, GenericGraphicsInterface & gi )
       else
         printF("INFO: Do NOT use known solution for initial conditions (even if a known solution has been specified).\n");
     }
+    else if( dialog.getToggleValue(answer,"relax correction steps",relaxCorrectionSteps) )
+    {
+      printF("INFO: relaxCorrectionSteps=%i: If true thane under-relax correction steps during sub-iterations\n");
+    }
 
     else if( dialog.getTextValue(answer,"number of surface smooths:","%i",numberOfSurfaceSmooths) ){}// 
 
@@ -7602,18 +7623,38 @@ update(CompositeGrid & cg, GenericGraphicsInterface & gi )
 
 }
 
-bool DeformingBodyMotion::hasCorrectionConverged() const {
+// =====================================================================================================
+// \brief Return true if the sub-time-step iterations have converged.
+// =====================================================================================================
+bool DeformingBodyMotion::
+hasCorrectionConverged() const {
 
-  bool res = true;
+  bool result = true;
   if (pBeamModel)
-    res = res && pBeamModel->hasCorrectionConverged();
+    result = result && pBeamModel->hasCorrectionConverged();
 
   if (pNonlinearBeamModel)
-    res = res && pNonlinearBeamModel->hasCorrectionConverged();
+    result = result && pNonlinearBeamModel->hasCorrectionConverged();
 
-
-  return res;
+  if( isBulkSolidModel() )
+  {
+    result = deformingBodyDataBase.get<int>("bulkSolidModelHasConverged");
+    // printF("---DBM-- hasCorrectionConverged: bulkSolidModelHasConverged=%i\n",(int)result);
+  }
+  
+  return result;
 }
+
+// =====================================================================================================
+// \brief Specify whether the bulk solid sub-time-step iterations have converged
+// =====================================================================================================
+void DeformingBodyMotion::
+setBulkSolidModelHasConverged( bool trueOrFalse )
+{
+  deformingBodyDataBase.get<int>("bulkSolidModelHasConverged")=trueOrFalse;
+}
+
+
 
 namespace {
 

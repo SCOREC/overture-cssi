@@ -1,5 +1,6 @@
 #
 #  plotStuff plotInterface.cmd -show=interfaceG8.show -name=interfaceG8
+#  plotStuff plotInterface.cmd -show=twoSquareInterfaceG8Rotated45.show -name=interfaceG8Angle45
 #  
 GetOptions( "show=s"=>\$show,"name=s"=>\$name );
 #
@@ -9,6 +10,8 @@ solution: 11
 contour
   plot:Ex
 exit
+#
+DISPLAY AXES:0 0
 #
 plot:Hz
 $plotName = $name . "Hzt1p0.ps"; 

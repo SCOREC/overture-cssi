@@ -15,8 +15,8 @@
      & mask,xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,
      & dw, ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
 c======================================================================
 c 
 c             Incompressible Navier Stokes IMPlicit 
@@ -73,6 +73,7 @@ c======================================================================
 
       integer equationNumber(0:nde-1,nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       integer classify(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      integer interfaceType(0:1,0:2,0:*)
 
       integer ipar(0:*)
       real rpar(0:*)
@@ -118,8 +119,8 @@ c     ---- local variables -----
      & xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, 
      & ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.viscoPlasticModel .or. (
      & pdeModel.eq.BoussinesqModel .and. 
      & turbulenceModel.eq.largeEddySimulation) )then
@@ -134,8 +135,8 @@ c     ---- local variables -----
      & xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, 
      & ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
       else if( turbulenceModel.eq.baldwinLomax )then
         if( materialFormat.ne.constantMaterialProperties )then
          write(*,'(" insimp.bf -- finish this option for variable 
@@ -146,8 +147,8 @@ c     ---- local variables -----
      & xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, 
      & ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
       else if( turbulenceModel.eq.kEpsilon )then
         if( materialFormat.ne.constantMaterialProperties )then
          write(*,'(" insimp.bf -- finish this option for variable 
@@ -158,8 +159,8 @@ c     ---- local variables -----
      & xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, 
      & ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.twoPhaseFlowModel )then
         if( materialFormat.ne.constantMaterialProperties )then
          write(*,'(" insimp.bf -- finish this option for variable 
@@ -170,8 +171,8 @@ c     ---- local variables -----
      & xy,rsxy,radiusInverse,  u, ndc, coeff, fe,fi,ul, gv,gvl,dw, 
      & ndMatProp,matIndex,matValpc,matVal, bc, boundaryCondition, 
      & ndbcd1a,ndbcd1b,ndbcd2a,ndbcd2b,ndbcd3a,ndbcd3b,ndbcd4a,
-     & ndbcd4b,bcData,nde, equationNumber, classify, nr1a,nr1b,nr2a,
-     & nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
+     & ndbcd4b,bcData,nde, equationNumber, classify, interfaceType, 
+     & nr1a,nr1b,nr2a,nr2b,nr3a,nr3b, ipar, rpar, pdb, ierr )
       else if( pdeModel.eq.BoussinesqModel )then
 
        write(*,'(" insimp:ERROR: unimplemented pdeModel=",i6)') 

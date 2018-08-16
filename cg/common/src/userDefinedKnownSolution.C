@@ -754,9 +754,10 @@ getUserDefinedDeformingBodyKnownSolution(
   int includeGhost=1;
   bool thisProcessorHasPoints=ParallelUtility::getLocalArrayBounds(mg.mask(),mask,I1,I2,I3,includeGhost);
 
-  if( true || t <= 2.*dt )
+  if( false && t <= dt )
   {
-    printF("getUserDefinedDeformingBodyKnownSolution:userKnownSolution=%s,  t=%9.3e\n",(const char*)userKnownSolution,t);
+    printF("getUserDefinedDeformingBodyKnownSolution:userKnownSolution=%s,  t=%9.3e, stateOption=%i \n",(const char*)userKnownSolution,t,
+           (int)stateOption);
   }
 
   if( userKnownSolution=="bulkSolidPiston" )
@@ -803,7 +804,7 @@ getUserDefinedDeformingBodyKnownSolution(
     const real ct = cos(thetaR);
     const real st = sin(thetaR);
     
-    if( true || t <= 2.*dt )
+    if( false && t <= 2.*dt )
     {
       printF("--INS-- getUserDefinedDeformingBodyKnownSolution: bulkSolidPiston, t=%9.3e fm=%9.3e fp=%9.3e thetaR=%.2e\n",
              t,fm,fp,thetaR);
@@ -990,7 +991,7 @@ getUserDefinedDeformingBodyKnownSolution(
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(xLocal);
 
-    printF("-- getUserDefinedDeformingBodyKnownSolution: fibShear, t=%9.3e\n",t);
+    // printF("-- getUserDefinedDeformingBodyKnownSolution: fibShear, t=%9.3e\n",t);
     
 
     const real ct = cos(thetaR);
@@ -1052,6 +1053,7 @@ getUserDefinedDeformingBodyKnownSolution(
   {
     // ---- return the exact solution for fib shear solution ----
 
+    // *wdh* May 18, 2018 -- Fixed these: 
     const real & omegar = rpar[0];
     const real & omegai = rpar[1];
     const real & ar     = rpar[2];
@@ -1060,16 +1062,15 @@ getUserDefinedDeformingBodyKnownSolution(
     const real & bi     = rpar[5];
     const real & cr     = rpar[6];
     const real & ci     = rpar[7];
-    const real & dr     = rpar[8];
-    const real & di     = rpar[9];
+    const real & R      = rpar[8];
+    const real & Rbar   = rpar[9];
     const real & ksr    = rpar[10];
     const real & ksi    = rpar[11];
     const real & kfr    = rpar[12];
     const real & kfi    = rpar[13];
     const real & amp    = rpar[14];
     const real & mu     = rpar[15];
-    const real & thetaR = rpar[16];
-    const real & muBar  = rpar[17];
+    const real & muBar  = rpar[16];
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(xLocal);
@@ -1092,7 +1093,7 @@ getUserDefinedDeformingBodyKnownSolution(
 
         // compute trig functions
         real cosTheta, sinTheta;
-        if( abs(r)>eps )
+        if( fabs(r)>eps )
           {
             cosTheta=x/r; sinTheta=y/r;
           }
@@ -1104,6 +1105,15 @@ getUserDefinedDeformingBodyKnownSolution(
         real ut,vt,at,srt,sdrt;
         evalRadialFibShearSolid(ksr,ksi,omegar,omegai,cr,ci,r,t,
                                 ut,vt,at,srt,sdrt);
+
+        // printF("--DS-- UDKS:RadialFibShear: ut=%e vt=%e srt=%e at=%e srt=%e sdrt=%e\n",ut,vt,srt,at,srt,sdrt);
+
+        if( fabs(ut)>1e10 || fabs(vt)>1e10 || fabs(at)>1e10 || fabs(srt)>1e10 || fabs(sdrt)>1e10 || 
+            ut!=ut || vt!=vt || srt!=srt || sdrt!=sdrt || at!=at)
+        {
+          printF("--DS-- UDKS:RadialFibShear: ERROR ut=%e vt=%e srt=%e at=%e\n",ut,vt,srt,at);
+          OV_ABORT("error");
+        }    
 
 	if( stateOption==boundaryPosition )
 	  {
@@ -1140,6 +1150,10 @@ getUserDefinedDeformingBodyKnownSolution(
 	    // traction-rate: 
 	    state(i1,i2,i3,c0)= -amp*muBar*sdrt*sinTheta;
 	    state(i1,i2,i3,c1)= +amp*muBar*sdrt*cosTheta;
+
+            // printF("--DS-- UDKS:RadialFibShear: amp=%e muBar=%e sdrt=%e boundaryTractionRate=%e,%e\n",
+            //        amp,muBar,sdrt,state(i1,i2,i3,c0),state(i1,i2,i3,c1));
+
 	  }
 	else
 	  {
@@ -2117,14 +2131,18 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              "--------------------------------------------------------------------------------\n"
 	);
 
-      real H, Hbar, rho, rhoBar, muBar, lambdaBar;
+      real H, Hbar, rho, rhoBar, lambdaBar;
       
       int caseid = 0;
       gi.inputString(answer,"Enter amp, rhoBar\n");
       sScanF(answer,"%e %e %e",&amp,&rhoBar,&thetaR);
 
+      if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+      if (abs(rhoBar - 0.0010) < 1.0e-12) { caseid = 2;}
+
       if( dbase.has_key("lambda") )
       { // **CHECK INPUT PARAMETERS*** *wdh* May 16, 2018
+        // This must be the solid solver since lambda is found
         const real & rho    = dbase.get<real>("rho");
         const real & mu     = dbase.get<real>("mu");
         const real & lambda = dbase.get<real>("lambda");
@@ -2132,9 +2150,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         muBar=rhoBar;
         lambdaBar=rhoBar;
 
-        if( rhoBar!=10. && rhoBar!=1000. )
+        if( rhoBar!=10. && rhoBar!=1000. && rhoBar!=.001 )
         {
-          printF("UDKS:fibShear: ERROR: rhoBar=%e must be 10 or 1000.\n",rhoBar);
+          printF("UDKS:fibShear: ERROR: rhoBar=%e must be .001, 10 or 1000.\n",rhoBar);
           OV_ABORT("error");
         }
         if( rho!=rhoBar || lambda!=lambdaBar || mu!=muBar )
@@ -2143,10 +2161,23 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
           OV_ABORT("error");
         }
       }
+      else if( dbase.has_key("nu") )
+      {
+        // must be fluid solver
+        const real & nu = dbase.get<real>("nu");
+        if( (caseid==0 || caseid==1) && nu!=10. )
+        {
+          printF("UDKS:fibShear:ERROR: nu=%e should be 10 for caseid=%d\n",nu,caseid);
+          OV_ABORT("error");
+        }
+        else if( caseid==2 && nu!=.1 )
+        {
+          printF("UDKS:fibShear:ERROR: nu=%e should be 0.1 for caseid=%d\n",nu,caseid);
+          OV_ABORT("error");
+        }
+        
+      }
       
-
-      if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
-      if (abs(rhoBar - 0.0010) < 1.0e-12) { caseid = 2;}
 
       if (caseid == 0) {
 	H      =  1.0;
@@ -2235,10 +2266,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & kfi    = rpar[13];
       real & amp    = rpar[14];
       real & mu     = rpar[15];
+      real & muBar  = rpar[16];
 
       printF("--------------------------------------------------------------------------------\n"
              "------ Exact solution for a radial flow shearing a bulk elastic solid ----------\n\n"
-             " \bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))\n"
+             " \\bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))\n"
 	     "     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))\n"
 	     "             ks = omega / cs\n"
 	     "             kf = sqrt(- i rho omega / mu)\n"
@@ -2250,13 +2282,53 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              "--------------------------------------------------------------------------------\n"
 	);
 
-      real rho, rhoBar, muBar;
+      real rho, rhoBar;
       
       int caseid = 0;
       gi.inputString(answer,"Enter amp, rhoBar\n");
       sScanF(answer,"%e %e",&amp,&rhoBar);
 
       if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+      if (abs(rhoBar - .001  ) < 1.0e-12) { caseid = 2;}
+
+      if( dbase.has_key("lambda") )
+      { // **CHECK INPUT PARAMETERS*** *wdh* May 16, 2018
+        // This must be the solid solver since lambda is found
+        const real & rho    = dbase.get<real>("rho");
+        const real & mu     = dbase.get<real>("mu");
+        const real & lambda = dbase.get<real>("lambda");
+    
+        muBar=rhoBar;
+        real lambdaBar=rhoBar;
+
+        if( rhoBar!=10. && rhoBar!=1000. && rhoBar!=.001 )
+        {
+          printF("UDKS:radialShear: ERROR: rhoBar=%e must be .001 or 10 or 1000.\n",rhoBar);
+          OV_ABORT("error");
+        }
+        if( rho!=rhoBar || lambda!=lambdaBar || mu!=muBar )
+        { 
+          printF("UDKS:fibShear: ERROR: rho!=rhoBar or or lambda!=lambdaBar or mu!=rho must be 10 or 1000\n");
+          OV_ABORT("error");
+        }
+      }
+      else if( dbase.has_key("nu") )
+      {
+        // must be fluid solver
+        const real & nu = dbase.get<real>("nu");
+        if( (caseid==0 && nu!=10.) )
+        {
+          printF("UDKS:radialShear:ERROR: nu=%e should be 10 for caseid=%d\n",nu,caseid);
+          OV_ABORT("error");
+        }
+        else if( caseid==2 && nu!=.1 )
+        {
+          printF("UDKS:radialShear:ERROR: nu=%e should be .1 for caseid=%d\n",nu,caseid);
+          OV_ABORT("error");
+        }
+        
+      }
+
 
       if (caseid == 0) {
 	R      =  1.0;
@@ -2447,6 +2519,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       cs = 1.;
 
       nu = .1;
+
+
       if (caseid == 0) {
         scf = 1.;
 
@@ -2535,8 +2609,33 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         OV_ABORT("finish me");
       }
 
+      // **CHECK INPUT PARAMETERS*** *wdh* July 27, 2018
+      if( dbase.has_key("lambda") )
+      { 
+        // This must be the solid solver since lambda is found
+        const real & rhoSolid    = dbase.get<real>("rho");
+        const real & muSolid     = dbase.get<real>("mu");
+        const real & lambdaSolid = dbase.get<real>("lambda");
+    
+        if( rhoSolid!=scf || muSolid!=scf  || lambdaSolid!=scf )
+        {
+          printF("UDKS:fibRadialTravelingWave: ERROR: scf=%e but rhoSolid=%e, lambdaSolid=%e, muSolid=%e.\n",scf,rhoSolid,lambdaSolid,muSolid);
+          OV_ABORT("error");
+        }
+      }
+      else if( dbase.has_key("nu") )
+      {
+        // must be fluid solver
+        const real & nuFluid = dbase.get<real>("nu");
+        if( nuFluid!=nu )
+        {
+          printF("UDKS:fibRadialTravelingWave:ERROR: nu=%e should be %e\n",nuFluid,nu);
+          OV_ABORT("error");
+        }
+      }
+
       
-      printF("amp = %e, rhoBar = muBar = lambdaBar = %f, n = %f\n",amp,scf,n);
+      printF("radial traveling wave: nu=%f, amp = %e, rhoBar = muBar = lambdaBar = %f, n = %f\n",nu,amp,scf,n);
       
     }
     else

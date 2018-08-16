@@ -134,6 +134,10 @@ virtual int gridAccelerationBC(const int grid, const int side, const int axis,
 bool gridIsMoving(int grid) const;
 
  
+bool isDeformingBulkSolid( int grid );
+
+bool isMovingGridProblem() const;
+
 virtual int moveDeformingBodies(const real & t1, 
 				const real & t2, 
 				const real & t3,
@@ -154,8 +158,6 @@ MovingGridOption movingGridOption(int grid) const;
 
 aString movingGridOptionName(MovingGridOption option) const;
   
-
-bool isMovingGridProblem() const;
 
 // output probe info
 int outputProbes( GridFunction & gf0, int stepNumber );
@@ -182,6 +184,8 @@ virtual int rigidBodyMotion(const real & t1,
 
 virtual int saveToShowFile() const;
   
+void setCorrectionHasConverged( bool trueOrFalse );
+
 int setIsMovingGridProblem( bool trueOrFalse=TRUE );
 
 // interactive update

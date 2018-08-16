@@ -207,8 +207,8 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
         return;
     }
     
-    if( debug() & 2 && t<3.*dt )
-        printP("***** assignBoundaryConditionsFOS: t=%.3e ******\n",t);
+    if(  (debug() & 2 && t<3.*dt) )
+        printP("***** assignBoundaryConditionsFOS: grid=%i t=%.3e ******\n",grid,t);
 
     FILE *& debugFile  =parameters.dbase.get<FILE* >("debugFile");
     FILE *& logFile    =parameters.dbase.get<FILE* >("logFile");
@@ -1586,44 +1586,69 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
 
 
    // *wdh* 090824 -- moved from above 
-      if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
-              parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
-      {
-     // *new way* 091123 -- MappedGridOperators uses new AssignInterpNeighbours class
+    if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") &&
+            parameters.dbase.get<int>("useNewExtrapInterpNeighbours") )
+    {
+    // *new way* 091123 -- MappedGridOperators uses new AssignInterpNeighbours class
 
-     // -- See op/tests/testExtrapInterpNeighbours for proper way to apply --
-          if( debug & 4 )
-              printF("assignBC-FOS: Use new extrapolateInterpolationNeighbours at t=%g\n",t);
+    // -- See op/tests/testExtrapInterpNeighbours for proper way to apply --
+        if( debug & 4 )
+            printF("assignBC-FOS: Use new extrapolateInterpolationNeighbours at t=%g\n",t);
 
-          extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
-          u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
+        extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours");
+        u.applyBoundaryCondition(C,BCTypes::extrapolateInterpolationNeighbours,BCTypes::allBoundaries,0.,t,extrapParams);
 
-          if( true )
-          {
-       // these are both needed:  (see op/src/fixBoundaryCorners.C)
-              u.periodicUpdate();
-              u.updateGhostBoundaries();
-          }
-          else if( false )  // *wdh* 2012/09/04 TURN THIS OFF: --  bcOptSmFOS will set 2nd ghost and corners --
-          {  
-       // extrap 2nd ghost line extended
-              extrapParams.ghostLineToAssign=2;
-              extrapParams.extraInTangentialDirections=2;
 
-              u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+        const int & setGhostByExtrapolation = parameters.dbase.get<int>("setGhostByExtrapolation");
+        if( setGhostByExtrapolation )
+        {
+      // ---- SET ALL GHOST BY EXTRAPOLATION : OVERWRITE bcOptSmFOS -----
+      // For testing FSI -- added July 18, 2018 *wdh*
 
-       // reset 
-              extrapParams.ghostLineToAssign=1;
-              extrapParams.extraInTangentialDirections=0;
+            if( debug & 8 )
+                printF("---SM-- SET ALL GHOST BY EXTRAPOLATION \n");
 
-       // NOTE: We must also call finishBoundaryConditions to fix corners and update ghosts 
+            for( int ghost=1; ghost<=2; ghost++ )
+            {
+                extrapParams.ghostLineToAssign=ghost;
+                extrapParams.extraInTangentialDirections=ghost;
 
-       // We really only want to set 2nd ghost line corner points! *********** FIX ME ************************
+                u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+            }
+      // reset 
+            extrapParams.ghostLineToAssign=1;
+            extrapParams.extraInTangentialDirections=0;
 
-              u.finishBoundaryConditions();
-          }
+            u.periodicUpdate();
+            u.updateGhostBoundaries();
+
+        }
+        else if( true )
+        {
+      // these are both needed:  (see op/src/fixBoundaryCorners.C)
+            u.periodicUpdate();
+            u.updateGhostBoundaries();
+        }
+        else if( false )  // *wdh* 2012/09/04 TURN THIS OFF: --  bcOptSmFOS will set 2nd ghost and corners --
+        {  
+      // extrap 2nd ghost line extended
+            extrapParams.ghostLineToAssign=2;
+            extrapParams.extraInTangentialDirections=2;
+
+            u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+
+      // reset 
+            extrapParams.ghostLineToAssign=1;
+            extrapParams.extraInTangentialDirections=0;
+
+      // NOTE: We must also call finishBoundaryConditions to fix corners and update ghosts 
+
+      // We really only want to set 2nd ghost line corner points! *********** FIX ME ************************
+
+            u.finishBoundaryConditions();
+        }
           
-      }
+    }
     else if( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") )
     {
     // extrapolate the 2nd ghost line and interpolation neighbours for higher-order dissipation
@@ -1647,6 +1672,14 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
      // old way 091123
           u.periodicUpdate();
       }
+      
+   // if( true )
+   // {
+   //   if( grid==1 )
+   //   {
+   //     ::display(u,sPrintF("--SM-- after assign FOS BC at t=%.2e",t),debugFile,"%.2e ");
+   //   }
+   // }
       
   // u.finishBoundaryConditions();
 }

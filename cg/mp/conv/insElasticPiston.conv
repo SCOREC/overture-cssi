@@ -22,23 +22,26 @@
 $tz="none"; $bcn = "d";  $ng=4; $diss=0.2; $dissOrder=4; $tf=.5;  $tPlot=.1; $order=2; $nd=2; $scf=1.; 
 $cfl=.9; $ad=0.; $numberOfParallelGhost=2; $bcOption=0; $smVariation="g"; $pi=0; $piGhostOption=1; $adCns=0.; $angle=0;
 $problem=1; $en="max"; $trigTzScaleFactor=1.; 
-$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $godunovType=0; 
+$stressRelaxation=0; $relaxAlpha=0.1; $relaxDelta=0.1; $godunovType=0; $zfMuByH=5; $zfRhoHByDt=0; $zfMono=0; $zfOption=""; 
 $CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
 $cgsmCmd = "$CGBUILDPREFIX/mp/bin/cgmp";  # command for cgmp
 $cmdDir="$ENV{CG}/mp/runs/elasticPiston"; 
 $cmdFile="$cmdDir/elasticPiston.cmd"; 
-$cdv=1.; $nu=.1; $scf=200.; $addedMass=0; 
+$cdv=1.; $cDt=""; $nu=.1; $scf=200.; $addedMass=0; $known="piston"; 
 $dtMax=1e20;  # set dtMax on coarsest grid, this is scaled by 2 as grids are refined
 $useImplicitAmpBCs=0; # set to 1 tio use new implicit AMP BC's -- do this for now, make default later
 $useExactPressureBC=0; # use exact RHS for pressure wall BC (variable used in insDomain.h)
+$setGhostByExtrapolation=0; 
 $numberOfCorrections=1;  # cgmp and cgins 
 $cg = "elasticPistonGrid"; $bg="square"; $alwaysCompute=1; $ts="me"; $lambda=1; $filter=0; $filterOrder=6; $filterStages=2; 
+$startCurve="spline"; # "nurbs"; # start curve for the deforming body 
 $tsINS="pc"; 
 $showAllComponents=0;  # set to 1 to include all components in the table.
 # $gridDir="../elasticPiston"; 
 $gridDir="."; 
 $case="default"; 
 $rhoSolid=1.; 
+$caseid=0; $amp=1.e-5; # for radial traveling wave 
 #
 GetOptions( "cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"tf=f"=>\$tf,\
             "diss=f"=>\$diss,"tp=f"=>\$tPlot,"alwaysCompute=i"=>\$alwaysCompute,"lambda=f"=>\$lambda,\
@@ -50,18 +53,25 @@ GetOptions( "cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$b
             "bcOption=i"=>\$bcOption,"smVariation=s"=>\$smVariation,"pi=i"=>\$pi,"adCns=f"=>\$adCns,\
             "angle=i"=>\$angle,"piGhostOption=i"=>\$piGhostOption,"godunovType=i"=>\$godunovType,"tz=s"=>\$tz,\
             "problem=i"=>\$problem,"scf=f"=>\$scf,"case=s"=>\$case,"trigTzScaleFactor=f"=>\$trigTzScaleFactor,\
-            "nu=f"=>\$nu,"scf=f"=>\$scf,"addedMass=i"=>\$addedMass,"cdv=f"=>\$cdv,"tsINS=s"=>\$tsINS,\
+            "nu=f"=>\$nu,"scf=f"=>\$scf,"addedMass=i"=>\$addedMass,"cdv=f"=>\$cdv,"cDt=f"=>\$cDt,"tsINS=s"=>\$tsINS,\
             "useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,"useExactPressureBC=i"=>\$useExactPressureBC,"rhoSolid=f"=>\$rhoSolid,\
-            "numberOfCorrections=i"=> \$numberOfCorrections,"dtMax=f"=>\$dtMax );
+            "numberOfCorrections=i"=> \$numberOfCorrections,"dtMax=f"=>\$dtMax,"known=s"=>\$known,"startCurve=s"=>\$startCurve,\
+            "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
+            "caseid=i"=>\$caseid,"amp=f"=>\$amp,"zfOption=s"=>\$zfOption,"zfMono=f"=>\$zfMono );
 #
 if( $cg eq "rep" ){ $cmdFile="$cmdDir/radialElasticPiston.cmd"; }
+if( $cg eq "rtw" ){ $cmdFile="$cmdDir/radialTravelingWave.cmd"; }
 $check="mp.check";
 #
 $numberOfDomains=2; 
 $domainOrder="forward";
 # --- create a default case name: 
-if( $addedMass == 0 ){ $suffix = "TP"; }else{ $suffix="Amp"; }
+$suffix=""; 
+if( $known ne "piston" ){ $suffix .= $known; }
+if( $addedMass == 0 ){ $suffix .= "TP"; }else{ $suffix .= "Amp"; }
+if( $cg eq "rtw" ){ $suffix .= "Caseid$caseid"; }
 $suffix .= "SCF$scf"; 
+if( $zfOption eq "" ){ $suffix .= "zf$zfMuByH" . "+$zfRhoHByDt"; }else{ $suffix .= "zf$zfOption"; }
 if( $tsINS eq "im" ){ $suffix .= "Im"; }
 $suffix .= "t$tf";
 $suffix =~ s/\./p/g; # change "." to "p" in numbers 
@@ -106,31 +116,50 @@ else{\
 #
 if( $smVariation eq "g" ){ $smSolver = "SM-Godunov"; }
 if( $smVariation eq "c" ){ $smSolver = "SM-SOSC"; }
-$caption= "\\caption\{MP, $name, \$t=$tf\$, AM=$addedMass, cfl=$cfl, nu=$nu CgSm=$smSolver,Cgins=$tsINS, tz=$tz, scf=$scf, rhoSolid=$rhoSolid sm-diss=$diss, useImplicitAmpBCs=$useImplicitAmpBCs numberOfCorrections=$numberOfCorrections useExactPressureBC=$useExactPressureBC -stressRelaxation=$stressRelaxation dtMax=$dtMax (coarsest grid) $date}\\label\{table:$name}"; 
+$caption= "\\caption\{MP, $name, \$t=$tf\$, AM=$addedMass, cfl=$cfl, nu=$nu CgSm=$smSolver,Cgins=$tsINS, tz=$tz, scf=$scf, rhoSolid=$rhoSolid sm-diss=$diss, useImplicitAmpBCs=$useImplicitAmpBCs numberOfCorrections=$numberOfCorrections useExactPressureBC=$useExactPressureBC -stressRelaxation=$stressRelaxation cdv=$cdv cDt=$cDt setGhostByExtrapolation=$setGhostByExtrapolation zfOption=$zfOption zfMuByH=$zfMuByH zfRhoHByDt=$zfRhoHByDt zfMono=$zfMono dtMax=$dtMax (coarsest grid) known=$known startCurve=$startCurve -caseid=$caseid -amp=$amp $date}\\label\{table:$name}"; 
 $outputFile="$name" . ".ConvTable.tex"; 
 # 
 }
 # 
 # -- periodic elastic piston grid
 if( $cg eq "epgp" ){\
-$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=$rhoSolid -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -useExactPressureBC=$useExactPressureBC -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation "; \
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=$rhoSolid -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -useExactPressureBC=$useExactPressureBC -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -setGhostByExtrapolation=$setGhostByExtrapolation "; \
 $grid1="epg1";  $gName1 = "elasticPistonGride1.order2p"; \
 $grid2="epg2";  $gName2 = "elasticPistonGride2.order2p"; \
 $grid3="epg4";  $gName3 = "elasticPistonGride4.order2p"; \
 $grid4="epg8";  $gName4 = "elasticPistonGride8.order2p"; \
 $grid5="epg16"; $gName5 = "elasticPistonGride16.order2p"; }
+#
+# -- periodic elastic piston grid NARROW WIDTH
+if( $cg eq "epgpN" ){\
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=$rhoSolid -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -useExactPressureBC=$useExactPressureBC -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -setGhostByExtrapolation=$setGhostByExtrapolation "; \
+$grid1="epgN1";  $gName1 = "elasticPistonGridNe1.order2p"; \
+$grid2="epgN2";  $gName2 = "elasticPistonGridNe2.order2p"; \
+$grid3="epgN4";  $gName3 = "elasticPistonGridNe4.order2p"; \
+$grid4="epgN8";  $gName4 = "elasticPistonGridNe8.order2p"; \
+$grid5="epgN16"; $gName5 = "elasticPistonGridNe16.order2p"; }
+#
+# -- RADIAL elastic piston and shear 
 if( $cg eq "rep" ){\
-$options = "-method=ins -addedMass=$addedMass -scf=$scf -nu=$nu -tp=$tPlot -tf=$tf -tsINS=$tsINS -smVariation=$smVariation -debug=0 -cdv=$cdv -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -numberOfCorrections=$numberOfCorrections -go=go"; \
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -nu=$nu -tp=$tPlot -tf=$tf -tsINS=$tsINS -smVariation=$smVariation -debug=0 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -startCurve=$startCurve -setGhostByExtrapolation=$setGhostByExtrapolation -go=go"; \
 $grid1="rep1";  $gName1 = "radialElasticPistonGride1.order2"; \
 $grid2="rep2";  $gName2 = "radialElasticPistonGride2.order2"; \
 $grid3="rep4";  $gName3 = "radialElasticPistonGride4.order2"; \
 $grid4="rep8";  $gName4 = "radialElasticPistonGride8.order2"; \
 $grid5="rep16"; $gName5 = "radialElasticPistonGride16.order2"; }
+# -- RADIAL traveling wave
+if( $cg eq "rtw" ){\
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -nu=$nu -tp=$tPlot -tf=$tf -tsINS=$tsINS -smVariation=$smVariation -debug=0 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -startCurve=$startCurve -setGhostByExtrapolation=$setGhostByExtrapolation -caseid=$caseid -amp=$amp -go=go"; \
+$grid1="rtw2";  $gName1 = "radialTravelingWaveGride2.order2"; \
+$grid2="rtw4";  $gName2 = "radialTravelingWaveGride4.order2"; \
+$grid3="rtw8";  $gName3 = "radialTravelingWaveGride8.order2"; \
+$grid4="rtw16"; $gName4 = "radialTravelingWaveGride16.order2"; }
+$grid5="rtw32"; $gName5 = "radialTravelingWaveGride32.order2"; }
 # If dtMax is set, we scale by a factor of 2 on coarser grids
 $dtMax1=$dtMax; $dtMax2=$dtMax1/2.; $dtMax3=$dtMax2/2.; $dtMax4=$dtMax3/2.; $dtMax5=$dtMax4/2.; 
 #
-$grid=$grid1; $res=1; $cmd="$cgsmCmd noplot $cmdFile -g=$gridDir/$gName1 $options -dtMax=$dtMax1";
-$grid=$grid2; $res=2; $cmd="$cgsmCmd noplot $cmdFile -g=$gridDir/$gName2 $options -dtMax=$dtMax2";
+$grid=$grid1; $res=1; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName1 $options -dtMax=$dtMax1";
+$grid=$grid2; $res=2; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName2 $options -dtMax=$dtMax2";
 if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName3 $options -dtMax=$dtMax3";}
 if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName4 $options -dtMax=$dtMax4";}
 if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName5 $options -dtMax=$dtMax5";}

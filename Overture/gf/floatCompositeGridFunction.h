@@ -149,12 +149,17 @@ class floatCompositeGridFunction : public floatGridCollectionFunction
   void reference( const floatCompositeGridFunction & cgf );
   void reference( const floatGridCollectionFunction & cgf ); // *new*
 
-  virtual void setIsACoefficientMatrix(const bool trueOrFalse=TRUE, 
+  virtual void setIsACoefficientMatrix(const bool trueOrFalse=true, 
 				       const int stencilSize=defaultValue, 
 				       const int numberOfGhostLines=1,
 				       const int numberOfComponentsForCoefficients=1,
 				       const int offset=0 );
 
+  virtual void setIsACoefficientMatrix(const bool trueOrFalse, 
+				       const IntegerArray & stencilSize, 
+				       const IntegerArray & numberOfGhostLines,
+				       const int numberOfComponentsForCoefficients=1,
+				       const int offset=0 );
   // return size of this object  
   virtual real sizeOf(FILE *file = NULL ) const;
 

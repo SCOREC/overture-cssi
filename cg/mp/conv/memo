@@ -1,4 +1,820 @@
 ********************************
+***** Aug 14, 2018
+
+
+HHHHH TEST NEW PROJECTION zHat = (mu rho)/( zp dt )
+
+
+make radialShearElasticPiston1
+
+make radialElasticPiston1
+
+make shearElasticPiston1
+
+make blockElasticPiston1
+
+
+********************************
+***** Aug 14, 2018
+
+HHHHHHHHHH TEST NEW FINAL PROJECTION + zHat -> mu/h 
+
+RADIAL SHEAR
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.1 -tf=.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMono=0 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 8.91e-07 &      & 1.05e-08 &      & 1.70e-08 &      & 1.34e-08 &      & 1.46e-04 &      
+                rep2 &     2 & 4.20e-08 & 21.2 & 2.52e-09 &  4.2 & 3.76e-09 &  4.5 & 5.43e-09 &  2.5 & 3.37e-05 &  4.3 
+                rep4 &     4 & 3.03e-08 &  1.4 & 8.05e-10 &  3.1 & 8.47e-10 &  4.4 & 1.68e-09 &  3.2 & 7.46e-06 &  4.5 
+                rep8 &     8 & 5.70e-09 &  5.3 & 2.31e-10 &  3.5 & 2.01e-10 &  4.2 & 4.91e-10 &  3.4 & 1.74e-06 &  4.3 
+Convergence rates: c0=2.23 c1=1.82 c2=2.14 c3=1.60 c4=2.13 
+
+ ****Output written to ./insElasticPiston.rep.shearAmpSCF1e3zf1+0Imtp6.ConvTable.tex *****
+
+
+trouble with shear-block --> old way with zfHat=mu*rho/(zp*dt) seems better
+
+
+zfHat=OLD
+
+CFL=.1 and Cmu=2 OK
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.06e-04 &      & 1.76e-05 &      & 1.06e-04 &      & 6.10e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.14e-05 &  5.0 & 2.30e-06 &  7.7 & 2.14e-05 &  5.0 & 7.70e-03 &  7.9 
+                epg4 &     4 & 0.00e+00 &  0.0 & 4.93e-06 &  4.3 & 4.13e-07 &  5.6 & 5.17e-06 &  4.1 & 1.27e-03 &  6.1 
+                epg8 &     8 & 0.00e+00 &  0.0 & 1.20e-06 &  4.1 & 7.36e-08 &  5.6 & 1.30e-06 &  4.0 & 2.40e-04 &  5.3 
+Convergence rates: c0=-nan c1=2.15 c2=2.62 c3=2.11 c4=2.66 
+
+ ****Output written to ./insElasticPiston.epgp.shearAmpSCF1e3zf2+0Imtp6.ConvTable.tex *****
+
+convRate: numberOfComponents=5 (from header)
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.11e-04 &      & 1.68e-05 &      & 1.11e-04 &      & 5.91e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.16e-05 &  5.1 & 2.38e-06 &  7.1 & 2.16e-05 &  5.1 & 7.90e-03 &  7.5 
+                epg4 &     4 & 0.00e+00 &  0.0 & 4.97e-06 &  4.3 & 4.36e-07 &  5.5 & 5.17e-06 &  4.2 & 1.32e-03 &  6.0 
+                epg8 &     8 & 1.80e-08 &  0.0 & 1.20e-06 &  4.1 & 8.06e-08 &  5.4 & 1.30e-06 &  4.0 & 2.46e-04 &  5.4 
+Convergence rates: c0=-nan c1=2.17 c2=2.56 c3=2.13 c4=2.63 
+
+ ****Output written to ./insElasticPiston.epgp.shearAmpSCF1e3zf1+0Imtp6.ConvTable.tex *****
+
+
+
++---------------------------------------------------------------------------------------------------------------
+radialShearElasticPistonm:
+
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.1 -tf=.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+OLD:
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.1 -tf=.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -zfMono=0 -zfMuByH=5 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+
+Monolithic -- trouble , cfl=.1 better but still trouble at t=.2
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.1 -tf=.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+OLD: 
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.1 -tf=.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3  -zfMono=0 -zfMuByH=5 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+tf=.6
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 9.41e-07 &      & 6.67e-09 &      & 1.75e-08 &      & 1.33e-08 &      & 1.48e-04 &      
+                rep2 &     2 & 4.38e-08 & 21.5 & 2.10e-09 &  3.2 & 3.82e-09 &  4.6 & 5.08e-09 &  2.6 & 3.41e-05 &  4.3 
+                rep4 &     4 & 2.89e-08 &  1.5 & 7.36e-10 &  2.9 & 8.47e-10 &  4.5 & 1.56e-09 &  3.3 & 7.46e-06 &  4.6 
+                rep8 &     8 & 5.66e-09 &  5.1 & 2.26e-10 &  3.3 & 2.01e-10 &  4.2 & 4.86e-10 &  3.2 & 1.74e-06 &  4.3 
+Convergence rates: c0=2.27 c1=1.62 c2=2.15 c3=1.60 c4=2.14 
+
+ ****Output written to ./insElasticPiston.rep.shearAmpSCF1e3zf5+0Imtp6.ConvTable.tex *****
+
+tf=1.1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 4.89e-07 &      & 1.39e-07 &      & 1.45e-08 &      & 2.31e-07 &      & 9.81e-05 &      
+                rep2 &     2 & 4.63e-08 & 10.6 & 3.75e-08 &  3.7 & 2.27e-09 &  6.4 & 6.10e-08 &  3.8 & 1.87e-05 &  5.2 
+                rep4 &     4 & 1.56e-08 &  3.0 & 8.81e-09 &  4.3 & 4.28e-10 &  5.3 & 1.43e-08 &  4.3 & 4.09e-06 &  4.6 
+                rep8 &     8 & 2.91e-09 &  5.4 & 1.99e-09 &  4.4 & 8.62e-11 &  5.0 & 3.47e-09 &  4.1 & 7.44e-07 &  5.5 
+Convergence rates: c0=2.37 c1=2.05 c2=2.46 c3=2.03 c4=2.33 
+
+ ****Output written to ./insElasticPiston.rep.shearAmpSCF1e3zf5+0Imt1p1.ConvTable.tex *****
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+radialElasticPistonm:
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.69e-02 &      & 9.90e-03 &      & 4.67e-03 &      & 8.03e-03 &      & 5.37e-02 &      
+                rep2 &     2 & 1.89e-03 &  8.9 & 1.23e-03 &  8.0 & 4.39e-04 & 10.6 & 1.57e-03 &  5.1 & 4.15e-03 & 12.9 
+                rep4 &     4 & 4.70e-04 &  4.0 & 2.62e-04 &  4.7 & 1.02e-04 &  4.3 & 4.10e-04 &  3.8 & 9.16e-04 &  4.5 
+                rep8 &     8 & 1.28e-04 &  3.7 & 6.25e-05 &  4.2 & 2.57e-05 &  4.0 & 1.08e-04 &  3.8 & 2.42e-04 &  3.8 
+Convergence rates: c0=2.31 c1=2.42 c2=2.46 c3=2.06 c4=2.56 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF1zfmImt1p1.ConvTable.tex *****
+
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.54e-02 &      & 2.11e-02 &      & 9.18e-04 &      & 9.25e-03 &      & 9.26e+00 &      
+                rep2 &     2 & 2.65e-03 &  5.8 & 2.35e-03 &  9.0 & 2.01e-04 &  4.6 & 2.24e-03 &  4.1 & 2.71e+00 &  3.4 
+                rep4 &     4 & 8.08e-04 &  3.3 & 6.19e-04 &  3.8 & 4.78e-05 &  4.2 & 5.99e-04 &  3.7 & 6.60e-01 &  4.1 
+                rep8 &     8 & 5.26e-05 & 15.4 & 1.66e-04 &  3.7 & 1.27e-05 &  3.8 & 1.60e-04 &  3.7 & 1.73e-01 &  3.8 
+Convergence rates: c0=2.63 c1=2.29 c2=2.06 c3=1.95 c4=1.93 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF1e3zfmImt1p1.ConvTable.tex *****
+
+OLD:
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.54e-02 &      & 2.11e-02 &      & 9.18e-04 &      & 9.25e-03 &      & 9.26e+00 &      
+                rep2 &     2 & 2.64e-03 &  5.8 & 2.34e-03 &  9.0 & 2.01e-04 &  4.6 & 2.24e-03 &  4.1 & 2.71e+00 &  3.4 
+                rep4 &     4 & 8.08e-04 &  3.3 & 6.19e-04 &  3.8 & 4.78e-05 &  4.2 & 5.99e-04 &  3.7 & 6.60e-01 &  4.1 
+                rep8 &     8 & 5.21e-05 & 15.5 & 1.66e-04 &  3.7 & 1.27e-05 &  3.8 & 1.60e-04 &  3.7 & 1.73e-01 &  3.8 
+Convergence rates: c0=2.63 c1=2.29 c2=2.06 c3=1.95 c4=1.93 
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+MONO:
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.42e-03 &      & 7.33e-03 &      & 1.61e-03 &      & 4.07e-02 &      & 1.15e-04 &      
+                rep2 &     2 & 1.78e-04 &  8.0 & 6.80e-04 & 10.8 & 1.37e-04 & 11.8 & 4.20e-03 &  9.7 & 1.28e-05 &  9.0 
+                rep4 &     4 & 3.32e-05 &  5.4 & 1.67e-04 &  4.1 & 4.17e-05 &  3.3 & 9.04e-04 &  4.6 & 1.34e-06 &  9.6 
+                rep8 &     8 & 7.06e-06 &  4.7 & 4.51e-05 &  3.7 & 1.32e-05 &  3.2 & 2.08e-04 &  4.3 & 3.52e-07 &  3.8 
+Convergence rates: c0=2.54 c1=2.41 c2=2.25 c3=2.51 c4=2.83 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF1e-3zfmImt1p1.ConvTable.tex *****
+
+OLD: 
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.42e-03 &      & 7.33e-03 &      & 1.61e-03 &      & 4.07e-02 &      & 1.15e-04 &      
+                rep2 &     2 & 1.78e-04 &  8.0 & 6.80e-04 & 10.8 & 1.37e-04 & 11.8 & 4.20e-03 &  9.7 & 1.28e-05 &  9.0 
+                rep4 &     4 & 3.32e-05 &  5.4 & 1.67e-04 &  4.1 & 4.17e-05 &  3.3 & 9.04e-04 &  4.6 & 1.34e-06 &  9.6 
+                rep8 &     8 & 7.06e-06 &  4.7 & 4.51e-05 &  3.7 & 1.32e-05 &  3.2 & 2.08e-04 &  4.3 & 3.52e-07 &  3.8 
+Convergence rates: c0=2.54 c1=2.41 c2=2.25 c3=2.51 c4=2.83 
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Block: monolithoic: 
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 5.54e-04 &      & 9.03e-04 &      & 1.18e-03 &      & 1.03e-03 &      & 1.08e-05 &      
+               epgN2 &     2 & 1.34e-04 &  4.1 & 2.46e-04 &  3.7 & 2.85e-04 &  4.1 & 2.46e-04 &  4.2 & 2.87e-06 &  3.8 
+               epgN4 &     4 & 3.29e-05 &  4.1 & 6.35e-05 &  3.9 & 6.97e-05 &  4.1 & 7.06e-05 &  3.5 & 6.44e-07 &  4.5 
+               epgN8 &     8 & 8.13e-06 &  4.0 & 1.61e-05 &  3.9 & 1.72e-05 &  4.1 & 1.85e-05 &  3.8 & 1.50e-07 &  4.3 
+Convergence rates: c0=2.03 c1=1.94 c2=2.03 c3=1.92 c4=2.07 
+
+ ****Output written to ./insElasticPiston.epgpN.AmpSCF1e-3zfmImt1p1.ConvTable.tex *****
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 5.88e-03 &      & 4.26e-03 &      & 4.53e-04 &      & 4.27e-03 &      & 6.11e-03 &      
+               epgN2 &     2 & 1.16e-03 &  5.1 & 1.09e-03 &  3.9 & 6.06e-05 &  7.5 & 1.09e-03 &  3.9 & 1.19e-03 &  5.1 
+               epgN4 &     4 & 2.32e-04 &  5.0 & 2.69e-04 &  4.1 & 9.45e-06 &  6.4 & 2.69e-04 &  4.1 & 2.37e-04 &  5.0 
+               epgN8 &     8 & 4.84e-05 &  4.8 & 6.67e-05 &  4.0 & 1.72e-06 &  5.5 & 6.67e-05 &  4.0 & 4.92e-05 &  4.8 
+Convergence rates: c0=2.31 c1=2.00 c2=2.68 c3=2.00 c4=2.32 
+
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=1.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 3.64e-02 &      & 3.14e-03 &      & 1.46e-03 &      & 3.13e-03 &      & 1.27e+01 &      
+               epgN2 &     2 & 7.74e-03 &  4.7 & 4.84e-04 &  6.5 & 3.79e-04 &  3.9 & 4.83e-04 &  6.5 & 3.29e+00 &  3.9 
+               epgN4 &     4 & 1.94e-03 &  4.0 & 8.42e-05 &  5.7 & 9.15e-05 &  4.1 & 8.40e-05 &  5.8 & 8.12e-01 &  4.1 
+               epgN8 &     8 & 4.64e-04 &  4.2 & 1.61e-05 &  5.2 & 2.22e-05 &  4.1 & 1.62e-05 &  5.2 & 2.01e-01 &  4.0 
+Convergence rates: c0=2.09 c1=2.53 c2=2.02 c3=2.53 c4=2.00 
+
+********************************
+***** Aug 13, 2018
+
+REVISIT AMP WITH ZF FROM MONOLITHIC SCHEME
+
+
+SHEAR BLOCK
+
+SHEAR BLOCK LARGE nu may need smaller CFL
+
+
+MONO WORKS: CFL=.1, zfMono=.1
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.1 -tf=1 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=.1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.1 -diss=0.5 -stressRelaxation=4 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.59e-05 &      & 5.47e-05 &      & 6.01e-05 &      & 1.78e-01 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.43e-06 &  4.6 & 1.15e-05 &  4.8 & 1.05e-05 &  5.7 & 4.22e-02 &  4.2 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.55e-06 &  2.2 & 2.92e-06 &  3.9 & 2.15e-06 &  4.9 & 1.11e-02 &  3.8 
+                epg8 &     8 & 0.00e+00 &  0.0 & 4.84e-07 &  3.2 & 7.36e-07 &  4.0 & 4.84e-07 &  4.4 & 2.82e-03 &  3.9 
+Convergence rates: c0=-nan c1=1.63 c2=2.06 c3=2.32 c4=1.99 
+
+ ****Output written to ./insElasticPiston.epgp.shearAmpSCF1e3zfmImt1.ConvTable.tex *****
+
+
+zfMono fails:
+	conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.1 -tf=.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+
+OLD WAY OK FOR CFL=.1  -- recheck
+	conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.1 -tf=1. -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=5 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.1 -diss=0.5 -stressRelaxation=4 -dtMax=2.e-2 -setGhostByExtrapolation=1 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.53e-05 &      & 5.47e-05 &      & 6.00e-05 &      & 1.78e-01 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.41e-06 &  4.5 & 1.15e-05 &  4.8 & 1.05e-05 &  5.7 & 4.21e-02 &  4.2 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.54e-06 &  2.2 & 2.92e-06 &  3.9 & 2.15e-06 &  4.9 & 1.11e-02 &  3.8 
+                epg8 &     8 & 0.00e+00 &  0.0 & 4.84e-07 &  3.2 & 7.36e-07 &  4.0 & 4.84e-07 &  4.4 & 2.82e-03 &  3.9 
+Convergence rates: c0=-nan c1=1.61 c2=2.06 c3=2.31 c4=1.99 
+
+
+********************************
+***** Aug 2, 2018
+
+REVISIT AMP CASES USING zf=c*mu/h for fluid velocity impedance average
+
+
+
+
+
+********************************
+***** July 27, 2018
+
+radial traveling wave for fibr
+
+caseid=4 : scf=10 nu=.1
+conv.p insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=.05 -tf=.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=4 -scf=10 -nu=.1 -amp=1e-5 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=5.e-2 -ng=4
+
+caseid=2 : scf=.001 nu=.1
+conv.p insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=.05 -tf=.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=2 -scf=1e-3 -nu=.1 -amp=1e-5 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=5.e-2 -ng=4
+
+
+
+-tf=.4
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rtw1 &     1 & 6.76e-06 &      & 4.75e-06 &      & 1.13e-04 &      & 4.74e-06 &      & 5.72e-06 &      
+                rtw2 &     2 & 4.47e-07 & 15.1 & 2.86e-07 & 16.6 & 2.11e-05 &  5.4 & 1.78e-04 &  0.0 & 3.15e-07 & 18.2 
+                rtw4 &     4 & 8.22e-08 &  5.4 & 8.63e-08 &  3.3 & 3.24e-06 &  6.5 & 5.10e-05 &  3.5 & 5.68e-08 &  5.5 
+                rtw8 &     8 & 1.80e-08 &  4.6 & 2.03e-08 &  4.3 & 6.48e-07 &  5.0 & 1.22e-05 &  4.2 & 1.31e-08 &  4.3 
+Convergence rates: c0=2.81 c1=2.53 c2=2.50 c3=-0.23 c4=2.88 
+
+
+-tf=.3
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rtw1 &     1 & 7.46e-06 &      & 4.40e-06 &      & 1.04e-04 &      & 4.41e-06 &      & 5.86e-06 &      
+                rtw2 &     2 & 4.32e-07 & 17.3 & 2.75e-07 & 16.0 & 2.74e-05 &  3.8 & 1.55e-04 &  0.0 & 2.85e-07 & 20.6 
+                rtw4 &     4 & 7.07e-08 &  6.1 & 7.27e-08 &  3.8 & 3.30e-06 &  8.3 & 4.38e-05 &  3.5 & 5.72e-08 &  5.0 
+                rtw8 &     8 & 1.55e-08 &  4.6 & 1.86e-08 &  3.9 & 6.98e-07 &  4.7 & 1.01e-05 &  4.3 & 1.37e-08 &  4.2 
+Convergence rates: c0=2.93 c1=2.56 c2=2.47 c3=-0.18 c4=2.85 
+
+
+
+NOTE: caseid=0 will overide with scf=1 and nu=.1 **Should check in code **
+conv.p insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=.05 -tf=.2 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=0 -scf=1 -nu=.1 -amp=1e-5 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=5.e-2 -ng=4
+
+
+-tf=.1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rtw1 &     1 & 3.63e-06 &      & 1.20e-06 &      & 2.65e-08 &      & 1.20e-06 &      & 3.87e-06 &      
+                rtw2 &     2 & 1.96e-07 & 18.5 & 7.83e-08 & 15.3 & 7.15e-09 &  3.7 & 1.05e-07 & 11.4 & 1.70e-07 & 22.8 
+                rtw4 &     4 & 3.22e-08 &  6.1 & 1.32e-08 &  5.9 & 1.46e-09 &  4.9 & 1.88e-08 &  5.6 & 3.22e-08 &  5.3 
+                rtw8 &     8 & 4.69e-09 &  6.9 & 3.00e-09 &  4.4 & 3.37e-10 &  4.3 & 4.23e-09 &  4.4 & 8.12e-09 &  4.0 
+Convergence rates: c0=3.14 c1=2.85 c2=2.12 c3=2.69 c4=2.91 
+
+********************************
+***** July 23, 2018
+
+
+------------------- RADIAL SHEAR --------
+
+
+
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.05 -tf=.5 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=5.e-2 -ng=4
+SCF=1000
+
+
+
+
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.05 -tf=.5 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -dtMax=5.e-2 -ng=4
+SCF=10
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 3.75e-08 &      & 6.42e-09 &      & 2.97e-09 &      & 2.66e-08 &      & 2.76e-07 &      
+                rep2 &     2 & 3.94e-09 &  9.5 & 1.25e-09 &  5.1 & 8.78e-10 &  3.4 & 7.10e-09 &  3.7 & 6.05e-08 &  4.6 
+                rep4 &     4 & 5.27e-10 &  7.5 & 2.87e-10 &  4.4 & 2.12e-10 &  4.1 & 1.65e-09 &  4.3 & 1.46e-08 &  4.1 
+                rep8 &     8 & 4.84e-11 & 10.9 & 7.08e-11 &  4.1 & 5.24e-11 &  4.0 & 4.11e-10 &  4.0 & 3.48e-09 &  4.2 
+Convergence rates: c0=3.17 c1=2.16 c2=1.95 c3=2.02 c4=2.10 
+
+
+
+------------------- RADIAL ELASTIC PISTON --------
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.1 -tf=.3 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -dtMax=2.e-2 -ng=4
+
+
+------------------------------------ zf = 5.*mu/h -------------------------------------------------
+SCF=100 zf = 5.*mu/h
+                 grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 2.34e-02 &      & 1.05e-02 &      & 4.64e-04 &      & 1.42e-03 &      & 5.87e-01 &      
+                rep2 &     2 & 2.57e-03 &  9.1 & 5.93e-04 & 17.7 & 9.31e-05 &  5.0 & 3.52e-04 &  4.0 & 1.44e-01 &  4.1 
+                rep4 &     4 & 4.65e-04 &  5.5 & 1.14e-04 &  5.2 & 2.72e-05 &  3.4 & 9.08e-05 &  3.9 & 4.18e-02 &  3.4 
+                rep8 &     8 & 1.52e-04 &  3.1 & 2.46e-05 &  4.6 & 6.77e-06 &  4.0 & 2.38e-05 &  3.8 & 1.15e-02 &  3.6 
+Convergence rates: c0=2.43 c1=2.86 c2=2.01 c3=1.97 c4=1.88 
+
+
+SCF=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 1.26e-02 &      & 5.12e-03 &      & 1.42e-03 &      & 5.33e-03 &      & 1.32e-02 &      
+                rep2 &     2 & 1.15e-03 & 11.0 & 2.75e-04 & 18.6 & 1.86e-04 &  7.6 & 5.17e-04 & 10.3 & 2.62e-03 &  5.0 
+                rep4 &     4 & 2.25e-04 &  5.1 & 2.58e-05 & 10.7 & 4.42e-05 &  4.2 & 1.52e-04 &  3.4 & 9.89e-04 &  2.6 
+                rep8 &     8 & 5.75e-05 &  3.9 & 5.64e-06 &  4.6 & 1.10e-05 &  4.0 & 3.98e-05 &  3.8 & 3.62e-04 &  2.7 
+Convergence rates: c0=2.57 c1=3.29 c2=2.31 c3=2.30 c4=1.70 
+
+SCF=.01
+tf=.6
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 2.81e-03 &      & 2.59e-03 &      & 7.93e-03 &      & 3.93e-02 &      & 1.89e-03 &      
+                rep2 &     2 & 2.64e-04 & 10.6 & 5.62e-04 &  4.6 & 4.29e-04 & 18.5 & 4.12e-03 &  9.5 & 7.85e-05 & 24.1 
+                rep4 &     4 & 5.64e-05 &  4.7 & 1.13e-04 &  5.0 & 8.85e-05 &  4.8 & 4.30e-04 &  9.6 & 1.52e-05 &  5.2 
+                rep8 &     8 & 8.04e-06 &  7.0 & 2.68e-05 &  4.2 & 2.24e-05 &  4.0 & 1.70e-04 &  2.5 & 3.03e-06 &  5.0 
+Convergence rates: c0=2.76 c1=2.21 c2=2.77 c3=2.68 c4=3.02 
+
+
+tf=.3
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 5.12e-03 &      & 7.90e-03 &      & 3.62e-03 &      & 1.39e-01 &      & 1.08e-03 &      
+                rep2 &     2 & 3.58e-04 & 14.3 & 4.00e-04 & 19.8 & 2.82e-04 & 12.8 & 1.47e-02 &  9.5 & 1.00e-04 & 10.8 
+                rep4 &     4 & 9.56e-05 &  3.7 & 6.24e-05 &  6.4 & 5.80e-05 &  4.9 & 3.09e-03 &  4.8 & 2.88e-05 &  3.5 
+                rep8 &     8 & 2.52e-05 &  3.8 & 1.52e-05 &  4.1 & 1.46e-05 &  4.0 & 2.99e-04 & 10.3 & 1.64e-05 &  1.8 
+Convergence rates: c0=2.49 c1=2.97 c2=2.61 c3=2.88 c4=1.99 
+
+
+
+
+
+------------------------------------ zf = 5.*fluidDensity*dn/dt  -------------------------------------------------
+
+SCF=100 zf = 5.*fluidDensity*dn/dt;
+
+ 
+
+SCF=1  zf = 5.*fluidDensity*dn/dt;
+
+
+
+
+********************************
+***** July 20, 2018
+
+
+------------------------ REVISIT SHEAR-BLOCK zf(solid-projection) = 5*rho*h/dt -------------
+
+
+
+LIGHT:
+conv.p insElasticPiston.conv -known=shear -nu=.1 -tp=.01 -tf=.5 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+zf=100*rho*h/dt, tf=.5
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 2.38e-09 &      & 1.92e-09 &      & 2.45e-08 &      & 2.17e-11 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 6.05e-10 &  3.9 & 2.72e-10 &  7.1 & 3.98e-09 &  6.2 & 3.97e-12 &  5.5 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.52e-10 &  4.0 & 6.20e-11 &  4.4 & 7.09e-10 &  5.6 & 6.60e-13 &  6.0 
+                epg8 &     8 & 0.00e+00 &  0.0 & 3.80e-11 &  4.0 & 1.65e-11 &  3.8 & 1.26e-10 &  5.6 & 1.09e-13 &  6.1 
+Convergence rates: c0=-nan c1=1.99 c2=2.27 c3=2.53 c4=2.55 
+
+
+zf=5*rho*h/dt, tf=.3
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.89e-09 &      & 3.02e-09 &      & 3.13e-08 &      & 2.13e-11 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 4.65e-10 &  4.1 & 2.86e-10 & 10.6 & 4.49e-09 &  7.0 & 5.31e-12 &  4.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.17e-10 &  4.0 & 4.50e-11 &  6.4 & 7.37e-10 &  6.1 & 8.78e-13 &  6.0 
+                epg8 &     8 & 0.00e+00 &  0.0 & 2.93e-11 &  4.0 & 1.15e-11 &  3.9 & 1.20e-10 &  6.1 & 1.46e-13 &  6.0 
+Convergence rates: c0=-nan c1=2.00 c2=2.68 c3=2.67 c4=2.42 
+
+
+
+MEDIUM:
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.01 -tf=.5 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+zf=20*rho*h/dt, tf=.5
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.70e-05 &      & 7.70e-06 &      & 1.70e-05 &      & 2.16e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.75e-06 &  4.5 & 2.19e-06 &  3.5 & 3.99e-06 &  4.3 & 6.55e-05 &  3.3 
+                epg4 &     4 & 0.00e+00 &  0.0 & 9.87e-07 &  3.8 & 5.70e-07 &  3.8 & 1.04e-06 &  3.8 & 1.61e-05 &  4.1 
+                epg8 &     8 & 2.37e-13 &  0.0 & 2.49e-07 &  4.0 & 1.45e-07 &  3.9 & 2.58e-07 &  4.0 & 3.89e-06 &  4.1 
+Convergence rates: c0=-nan c1=2.02 c2=1.91 c3=2.01 c4=1.94 
+
+
+zf=5*rho*h/dt, tf=.3
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 8.01e-07 &      & 6.55e-06 &      & 1.30e-05 &      & 1.81e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 6.59e-07 &  1.2 & 1.62e-06 &  4.0 & 3.24e-06 &  4.0 & 3.95e-05 &  4.6 
+                epg4 &     4 & 2.67e-13 &  0.0 & 1.67e-07 &  3.9 & 4.15e-07 &  3.9 & 8.79e-07 &  3.7 & 1.11e-05 &  3.6 
+                epg8 &     8 & 1.33e-06 &  0.0 & 3.88e-08 &  4.3 & 1.06e-07 &  3.9 & 1.92e-07 &  4.6 & 3.03e-06 &  3.7 
+Convergence rates: c0=-nan c1=1.51 c2=1.98 c3=2.01 c4=1.95
+
+HEAVY:
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.01 -tf=.5 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+zf= 5*mu/h tf=1 **NOTE zf***
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 9.65e-06 &      & 5.29e-05 &      & 6.21e-05 &      & 1.65e-01 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.20e-06 &  4.4 & 1.15e-05 &  4.6 & 1.15e-05 &  5.4 & 4.12e-02 &  4.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.25e-06 &  1.8 & 2.90e-06 &  4.0 & 2.32e-06 &  5.0 & 1.09e-02 &  3.8 
+                epg8 &     8 & 4.49e-11 &  0.0 & 4.01e-07 &  3.1 & 7.31e-07 &  4.0 & 4.31e-07 &  5.4 & 2.80e-03 &  3.9 
+Convergence rates: c0=-nan c1=1.46 c2=2.05 c3=2.38 c4=1.96 
+
+zf= 5*mu/h tf=.5 **NOTE zf***
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 4.39e-05 &      & 8.65e-06 &      & 5.06e-05 &      & 2.63e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 9.22e-06 &  4.8 & 2.34e-06 &  3.7 & 9.46e-06 &  5.3 & 6.96e-03 &  3.8 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.91e-06 &  4.8 & 6.09e-07 &  3.8 & 2.11e-06 &  4.5 & 2.02e-03 &  3.4 
+                epg8 &     8 & 0.00e+00 &  0.0 & 4.35e-07 &  4.4 & 1.59e-07 &  3.8 & 4.92e-07 &  4.3 & 5.54e-04 &  3.6 
+Convergence rates: c0=-nan c1=2.22 c2=1.92 c3=2.22 c4=1.85 
+
+
+zf=1000*rho*h/dt, tf=1
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.42e-05 &      & 5.25e-05 &      & 6.12e-05 &      & 1.65e-01 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.20e-06 &  6.5 & 1.14e-05 &  4.6 & 1.15e-05 &  5.3 & 4.11e-02 &  4.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.26e-06 &  1.7 & 2.90e-06 &  3.9 & 2.32e-06 &  5.0 & 1.09e-02 &  3.8 
+                epg8 &     8 & 2.13e-07 &  0.0 & 4.03e-07 &  3.1 & 7.31e-07 &  4.0 & 4.31e-07 &  5.4 & 2.80e-03 &  3.9 
+Convergence rates: c0=-nan c1=1.62 c2=2.05 c3=2.38 c4=1.96
+
+zf=1000*rho*h/dt, tf=.5
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.04e-04 &      & 5.43e-06 &      & 1.04e-04 &      & 2.91e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.19e-05 &  4.7 & 8.74e-07 &  6.2 & 2.19e-05 &  4.7 & 3.49e-03 &  8.3 
+                epg4 &     4 & 0.00e+00 &  0.0 & 5.35e-06 &  4.1 & 1.70e-07 &  5.1 & 5.35e-06 &  4.1 & 8.36e-04 &  4.2 
+                epg8 &     8 & 8.47e-12 &  0.0 & 1.31e-06 &  4.1 & 4.78e-08 &  3.6 & 1.31e-06 &  4.1 & 2.54e-04 &  3.3 
+Convergence rates: c0=-nan c1=2.10 c2=2.28 c3=2.10 c4=2.26 
+
+
+zf=500*rho*h/dt, tf=.5
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.07e-04 &      & 5.46e-06 &      & 1.07e-04 &      & 2.90e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.20e-05 &  4.9 & 8.75e-07 &  6.2 & 2.20e-05 &  4.9 & 3.50e-03 &  8.3 
+                epg4 &     4 & 0.00e+00 &  0.0 & 5.35e-06 &  4.1 & 1.70e-07 &  5.1 & 5.35e-06 &  4.1 & 8.37e-04 &  4.2 
+                epg8 &     8 & 1.17e-13 &  0.0 & 1.31e-06 &  4.1 & 4.76e-08 &  3.6 & 1.31e-06 &  4.1 & 2.54e-04 &  3.3 
+Convergence rates: c0=-nan c1=2.11 c2=2.29 c3=2.11 c4=2.26 
+
+zf=100*rho*h/dt, tf=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.13e-05 &      & 5.29e-05 &      & 6.19e-05 &      & 1.65e-01 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.20e-06 &  5.1 & 1.15e-05 &  4.6 & 1.15e-05 &  5.4 & 4.12e-02 &  4.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.26e-06 &  1.7 & 2.90e-06 &  4.0 & 2.32e-06 &  5.0 & 1.09e-02 &  3.8 
+                epg8 &     8 & 1.00e-08 &  0.0 & 4.01e-07 &  3.1 & 7.31e-07 &  4.0 & 4.31e-07 &  5.4 & 2.80e-03 &  3.9 
+Convergence rates: c0=-nan c1=1.53 c2=2.05 c3=2.38 c4=1.96 
+
+zf=100*rho*h/dt, tf=.5
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.01e-04 &      & 5.15e-06 &      & 1.01e-04 &      & 2.82e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.20e-05 &  4.6 & 8.79e-07 &  5.9 & 2.19e-05 &  4.6 & 3.48e-03 &  8.1 
+                epg4 &     4 & 0.00e+00 &  0.0 & 5.36e-06 &  4.1 & 1.71e-07 &  5.1 & 5.36e-06 &  4.1 & 8.45e-04 &  4.1 
+                epg8 &     8 & 7.52e-13 &  0.0 & 1.31e-06 &  4.1 & 4.74e-08 &  3.6 & 1.31e-06 &  4.1 & 2.55e-04 &  3.3 
+Convergence rates: c0=-nan c1=2.08 c2=2.27 c3=2.08 c4=2.24 
+
+
+
+zf=20*rho*h/dt, tf=.5
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.12e-04 &      & 4.84e-06 &      & 1.12e-04 &      & 2.76e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 2.24e-05 &  5.0 & 8.82e-07 &  5.5 & 2.24e-05 &  5.0 & 3.43e-03 &  8.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 5.37e-06 &  4.2 & 1.71e-07 &  5.2 & 5.37e-06 &  4.2 & 8.53e-04 &  4.0 
+                epg8 &     8 & 6.53e-05 &  0.0 & 2.01e-06 &  2.7 & 4.79e-08 &  3.6 & 1.81e-06 &  3.0 & 1.08e-03 &  0.8 
+Convergence rates: c0=-nan c1=1.95 c2=2.23 c3=1.99 c4=1.60 
+
+
+
+zf=5*rho*h/dt, tf=.3
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 4.81e-05 &      & 8.52e-06 &      & 5.08e-05 &      & 2.62e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 7.92e-06 &  6.1 & 2.35e-06 &  3.6 & 9.31e-06 &  5.5 & 7.04e-03 &  3.7 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.89e-06 &  4.2 & 6.12e-07 &  3.8 & 2.10e-06 &  4.4 & 2.02e-03 &  3.5 
+                epg8 &     8 & 1.93e-07 &  0.0 & 4.40e-07 &  4.3 & 1.59e-07 &  3.8 & 4.91e-07 &  4.3 & 5.54e-04 &  3.6 
+Convergence rates: c0=-nan c1=2.24 c2=1.92 c3=2.22 c4=1.85 
+
+
+
+
+
+--------------- RECHECK PISTON with pcswitch=0 and zf=5*mu/h 
+
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.02 -tf=.2 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=2
+
+SCF=1000
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 7.30e-03 &      & 2.30e-03 &      & 4.21e-04 &      & 2.28e-03 &      & 3.35e+00 &      
+               epgN2 &     2 & 3.55e-03 &  2.1 & 4.94e-04 &  4.7 & 9.52e-05 &  4.4 & 4.88e-04 &  4.7 & 7.08e-01 &  4.7 
+               epgN4 &     4 & 2.06e-03 &  1.7 & 9.94e-05 &  5.0 & 2.13e-05 &  4.5 & 9.70e-05 &  5.0 & 1.47e-01 &  4.8 
+               epgN8 &     8 & 8.44e-04 &  2.4 & 2.11e-05 &  4.7 & 4.88e-06 &  4.4 & 2.01e-05 &  4.8 & 3.60e-02 &  4.1 
+Convergence rates: c0=1.01 c1=2.26 c2=2.15 c3=2.28 c4=2.19 
+
+
+SCF=.01
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 8.12e-06 &      & 4.09e-06 &      & 1.57e-04 &      & 9.41e-04 &      & 5.24e-05 &      
+               epgN2 &     2 & 1.42e-05 &  0.6 & 1.89e-06 &  2.2 & 3.90e-05 &  4.0 & 1.62e-04 &  5.8 & 9.06e-06 &  5.8 
+               epgN4 &     4 & 4.93e-06 &  2.9 & 5.93e-07 &  3.2 & 1.02e-05 &  3.8 & 3.28e-05 &  4.9 & 1.79e-06 &  5.1 
+               epgN8 &     8 & 1.43e-06 &  3.4 & 1.66e-07 &  3.6 & 2.59e-06 &  3.9 & 8.06e-06 &  4.1 & 3.69e-07 &  4.9 
+Convergence rates: c0=0.90 c1=1.55 c2=1.97 c3=2.29 c4=2.38 
+
+
+
+SCF=100 **trouble***
+
+
+
+SCF=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 3.10e-03 &      & 8.49e-04 &      & 1.68e-04 &      & 9.40e-04 &      & 3.31e-03 &      
+               epgN2 &     2 & 6.50e-04 &  4.8 & 1.09e-04 &  7.8 & 4.26e-05 &  3.9 & 1.65e-04 &  5.7 & 6.87e-04 &  4.8 
+               epgN4 &     4 & 1.33e-04 &  4.9 & 2.01e-05 &  5.4 & 1.06e-05 &  4.0 & 3.34e-05 &  4.9 & 1.46e-04 &  4.7 
+               epgN8 &     8 & 2.71e-05 &  4.9 & 4.17e-06 &  4.8 & 2.68e-06 &  4.0 & 8.09e-06 &  4.1 & 3.60e-05 &  4.1 
+Convergence rates: c0=2.28 c1=2.54 c2=1.99 c3=2.29 c4=2.18 
+
+
+
+
+-------------  TEST BLOCK-SHEAR CASE
+
+
+AMP-IMP HEAVY
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.01 -tf=.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 4.39e-05 &      & 8.65e-06 &      & 5.06e-05 &      & 2.63e-02 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 9.22e-06 &  4.8 & 2.34e-06 &  3.7 & 9.46e-06 &  5.3 & 6.96e-03 &  3.8 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.91e-06 &  4.8 & 6.09e-07 &  3.8 & 2.11e-06 &  4.5 & 2.02e-03 &  3.4 
+                epg8 &     8 & 0.00e+00 &  0.0 & 4.35e-07 &  4.4 & 1.59e-07 &  3.8 & 4.92e-07 &  4.3 & 5.54e-04 &  3.6 
+Convergence rates: c0=-nan c1=2.22 c2=1.92 c3=2.22 c4=1.85 
+
+
+AMP-IMP LIGHT
+conv.p insElasticPiston.conv -known=shear -nu=.1 -tp=.01 -tf=.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.89e-09 &      & 3.02e-09 &      & 3.13e-08 &      & 2.13e-11 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 4.65e-10 &  4.1 & 2.86e-10 & 10.6 & 4.49e-09 &  7.0 & 5.31e-12 &  4.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.17e-10 &  4.0 & 4.50e-11 &  6.4 & 7.37e-10 &  6.1 & 8.78e-13 &  6.0 
+                epg8 &     8 & 0.00e+00 &  0.0 & 2.93e-11 &  4.0 & 1.15e-11 &  3.9 & 1.20e-10 &  6.1 & 1.46e-13 &  6.0 
+Convergence rates: c0=-nan c1=2.00 c2=2.68 c3=2.67 c4=2.42 
+
+
+AMP-IMP MEDIUM
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.01 -tf=.3 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=4
+
+------------------ zf(for solid) = 5*mu/h
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.09e-06 &      & 6.55e-06 &      & 1.32e-05 &      & 1.83e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 8.88e-07 &  1.2 & 1.62e-06 &  4.0 & 3.33e-06 &  4.0 & 3.95e-05 &  4.6 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.80e-07 &  4.9 & 4.15e-07 &  3.9 & 9.01e-07 &  3.7 & 1.11e-05 &  3.6 
+                epg8 &     8 & 0.00e+00 &  0.0 & 3.39e-08 &  5.3 & 1.06e-07 &  3.9 & 1.93e-07 &  4.7 & 3.03e-06 &  3.7 
+Convergence rates: c0=-nan c1=1.73 c2=1.98 c3=2.02 c4=1.96 
+
+
+
+------------------ zf(for solid) = rho*h/dt
+-tf=.3:  *TROUBLE* On finest grid
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 8.01e-07 &      & 6.55e-06 &      & 1.30e-05 &      & 1.81e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 6.59e-07 &  1.2 & 1.62e-06 &  4.0 & 3.24e-06 &  4.0 & 3.95e-05 &  4.6 
+                epg4 &     4 & 2.67e-13 &  0.0 & 1.67e-07 &  3.9 & 4.15e-07 &  3.9 & 8.79e-07 &  3.7 & 1.11e-05 &  3.6 
+                epg8 &     8 & 1.33e-06 &  0.0 & 3.88e-08 &  4.3 & 1.06e-07 &  3.9 & 1.92e-07 &  4.6 & 3.03e-06 &  3.7 
+Convergence rates: c0=-nan c1=1.51 c2=1.98 c3=2.01 c4=1.95 
+
+
+********************************
+***** July 19, 2018
+
+TRY zfOld = 5 * rho*h/dt instead of mu/h 
+
+conv.p insElasticPiston.conv -nu=.05 -tp=.02 -tf=.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=2
+
+
+scf=100
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 1.02e-02 &      & 1.36e-03 &      & 8.67e-05 &      & 1.32e-03 &      & 3.99e-01 &      
+               epgN2 &     2 & 2.18e-03 &  4.7 & 2.70e-04 &  5.0 & 2.06e-05 &  4.2 & 2.61e-04 &  5.1 & 5.45e-02 &  7.3 
+               epgN4 &     4 & 5.87e-04 &  3.7 & 5.80e-05 &  4.7 & 4.87e-06 &  4.2 & 5.67e-05 &  4.6 & 5.22e-03 & 10.4 
+               epgN8 &     8 & 1.29e-04 &  4.6 & 1.35e-05 &  4.3 & 1.18e-06 &  4.1 & 1.32e-05 &  4.3 & 1.12e-03 &  4.7 
+Convergence rates: c0=2.08 c1=2.22 c2=2.07 c3=2.21 c4=2.88 
+
+
+-scf=1
+
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 3.51e-03 &      & 5.04e-04 &      & 5.17e-05 &      & 5.55e-04 &      & 3.98e-03 &      
+               epgN2 &     2 & 5.56e-04 &  6.3 & 7.16e-05 &  7.0 & 1.44e-05 &  3.6 & 1.57e-04 &  3.5 & 5.57e-04 &  7.1 
+               epgN4 &     4 & 1.04e-04 &  5.3 & 7.91e-06 &  9.1 & 3.52e-06 &  4.1 & 3.82e-05 &  4.1 & 1.05e-04 &  5.3 
+               epgN8 &     8 & 2.30e-05 &  4.5 & 1.48e-06 &  5.3 & 8.70e-07 &  4.0 & 9.38e-06 &  4.1 & 2.33e-05 &  4.5 
+Convergence rates: c0=2.42 c1=2.84 c2=1.97 c3=1.97 c4=2.47 
+
+scf=.01
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 3.62e-05 &      & 3.94e-07 &      & 4.95e-05 &      & 5.53e-04 &      & 4.13e-05 &      
+               epgN2 &     2 & 5.11e-06 &  7.1 & 1.34e-07 &  2.9 & 1.42e-05 &  3.5 & 1.58e-04 &  3.5 & 7.34e-06 &  5.6 
+               epgN4 &     4 & 3.97e-07 & 12.9 & 6.57e-08 &  2.0 & 3.49e-06 &  4.1 & 3.83e-05 &  4.1 & 1.18e-06 &  6.2 
+               epgN8 &     8 & 4.11e-08 &  9.7 & 2.04e-08 &  3.2 & 8.66e-07 &  4.0 & 9.39e-06 &  4.1 & 2.60e-07 &  4.5 
+Convergence rates: c0=3.30 c1=1.38 c2=1.95 c3=1.97 c4=2.46 
+
+scf=.001
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 9.36e-07 &      & 1.91e-06 &      & 4.95e-05 &      & 5.53e-04 &      & 4.13e-06 &      
+               epgN2 &     2 & 1.48e-06 &  0.6 & 5.01e-07 &  3.8 & 1.42e-05 &  3.5 & 1.58e-04 &  3.5 & 7.35e-07 &  5.6 
+               epgN4 &     4 & 6.63e-07 &  2.2 & 1.34e-07 &  3.7 & 3.49e-06 &  4.1 & 3.83e-05 &  4.1 & 1.18e-07 &  6.2 
+               epgN8 &     8 & 1.93e-07 &  3.4 & 3.46e-08 &  3.9 & 8.66e-07 &  4.0 & 9.39e-06 &  4.1 & 2.61e-08 &  4.5 
+Convergence rates: c0=0.80 c1=1.93 c2=1.95 c3=1.97 c4=2.46 
+
+
+
+
+EXTRAP GHOST POINTS FOR SOLID BC's 
+conv.p insElasticPiston.conv -nu=.05 -tp=.02 -tf=.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=1.e-2 -setGhostByExtrapolation=1 -ng=2
+
+scf=.01
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 2.69e-05 &      & 6.57e-07 &      & 5.14e-05 &      & 5.54e-04 &      & 3.98e-05 &      
+               epgN2 &     2 & 3.99e-06 &  6.7 & 1.87e-07 &  3.5 & 1.42e-05 &  3.6 & 1.58e-04 &  3.5 & 6.41e-06 &  6.2 
+               epgN4 &     4 & 3.72e-07 & 10.7 & 6.92e-08 &  2.7 & 3.50e-06 &  4.1 & 3.83e-05 &  4.1 & 1.16e-06 &  5.5 
+               epgN8 &     8 & 3.86e-08 &  9.6 & 2.07e-08 &  3.3 & 8.68e-07 &  4.0 & 9.39e-06 &  4.1 & 2.58e-07 &  4.5 
+Convergence rates: c0=3.18 c1=1.64 c2=1.97 c3=1.97 c4=2.43 
+
+
+
+scf=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 2.33e-03 &      & 5.67e-04 &      & 5.44e-05 &      & 5.54e-04 &      & 3.98e-03 &      
+               epgN2 &     2 & 4.64e-04 &  5.0 & 6.48e-05 &  8.8 & 1.47e-05 &  3.7 & 1.57e-04 &  3.5 & 5.45e-04 &  7.3 
+               epgN4 &     4 & 1.01e-04 &  4.6 & 7.57e-06 &  8.6 & 3.54e-06 &  4.2 & 3.84e-05 &  4.1 & 1.02e-04 &  5.3 
+               epgN8 &     8 & 2.29e-05 &  4.4 & 1.46e-06 &  5.2 & 8.72e-07 &  4.1 & 9.38e-06 &  4.1 & 2.31e-05 &  4.4 
+Convergence rates: c0=2.22 c1=2.89 c2=1.99 c3=1.97 c4=2.47 
+
+
+
+scf=100 ***TROUBLE when dtMax is set and "too" small
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 1.10e-02 &      & 1.07e-03 &      & 3.87e-05 &      & 1.01e-03 &      & 4.33e-01 &      
+               epgN2 &     2 & 1.72e-03 &  6.4 & 2.24e-04 &  4.8 & 1.14e-05 &  3.4 & 2.14e-04 &  4.7 & 5.59e-02 &  7.7 
+               epgN4 &     4 & 8.81e-04 &  2.0 & 4.66e-05 &  4.8 & 2.88e-06 &  4.0 & 4.71e-05 &  4.5 & 5.13e-03 & 10.9 
+               epgN8 &     8 & 1.88e-04 &  4.7 & 1.08e-05 &  4.3 & 5.26e-07 &  5.5 & 1.05e-05 &  4.5 & 1.21e-03 &  4.2 
+Convergence rates: c0=1.86 c1=2.22 c2=2.06 c3=2.19 c4=2.89 
+
+
+
+********************************
+***** July 18, 2018
+
+REVISIT elastic-piston with new AMP BC's
+
+USE EXACT TRACTION RATE: (turn of stress relaxation for now)
+conv.p insElasticPiston.conv -nu=.05 -tp=.02 -tf=.1 -cg=epgpN -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=0 -dtMax=1.e-2 -ng=2
+
+
+-scf=10
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 1.16e-03 &      & 1.75e-03 &      & 4.34e-05 &      & 1.16e-03 &      & 8.58e-03 &      
+               epgN2 &     2 & 1.39e-03 &  0.8 & 1.70e-04 & 10.3 & 1.29e-05 &  3.4 & 1.60e-04 &  7.2 & 1.33e-03 &  6.5 
+               epgN4 &     4 & 4.02e-04 &  3.5 & 3.32e-05 &  5.1 & 3.49e-06 &  3.7 & 3.55e-05 &  4.5 & 3.98e-04 &  3.3 
+               epgN8 &     8 & 1.01e-04 &  4.0 & 7.73e-06 &  4.3 & 8.84e-07 &  3.9 & 9.11e-06 &  3.9 & 1.01e-04 &  3.9 
+Convergence rates: c0=1.24 c1=2.58 c2=1.87 c3=2.31 c4=2.10 
+
+
+
+-scf=1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 1.42e-03 &      & 7.99e-05 &      & 4.47e-05 &      & 4.98e-04 &      & 1.43e-03 &      
+               epgN2 &     2 & 3.16e-04 &  4.5 & 1.74e-05 &  4.6 & 1.31e-05 &  3.4 & 1.41e-04 &  3.5 & 3.20e-04 &  4.5 
+               epgN4 &     4 & 7.62e-05 &  4.1 & 4.18e-06 &  4.2 & 3.44e-06 &  3.8 & 3.58e-05 &  3.9 & 7.73e-05 &  4.1 
+               epgN8 &     8 & 1.90e-05 &  4.0 & 1.04e-06 &  4.0 & 8.73e-07 &  3.9 & 9.13e-06 &  3.9 & 1.93e-05 &  4.0 
+Convergence rates: c0=2.07 c1=2.08 c2=1.90 c3=1.93 c4=2.07 
+
+
+-scf=.1
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+               epgN1 &     1 & 9.25e-05 &      & 4.42e-06 &      & 4.97e-05 &      & 5.45e-04 &      & 1.04e-04 &      
+               epgN2 &     2 & 2.35e-05 &  3.9 & 1.05e-06 &  4.2 & 1.32e-05 &  3.8 & 1.42e-04 &  3.8 & 2.70e-05 &  3.9 
+               epgN4 &     4 & 5.95e-06 &  3.9 & 2.63e-07 &  4.0 & 3.45e-06 &  3.8 & 3.60e-05 &  3.9 & 7.35e-06 &  3.7 
+               epgN8 &     8 & 1.57e-06 &  3.8 & 6.73e-08 &  3.9 & 8.73e-07 &  4.0 & 9.14e-06 &  3.9 & 2.00e-06 &  3.7 
+Convergence rates: c0=1.96 c1=2.01 c2=1.94 c3=1.97 c4=1.90 
+
+
+
+********************************
+***** May 19, 2018
+
+TEST RADIAL SHEAR 
+
+AMP-IMP
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.05 -tf=.5 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline -dtMax=1.e-2 -ng=4
+
+
+AMP-IMP
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.01 -tf=.05 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline -dtMax=1.e-3 -ng=4
+
+-tf=.2 -nc=2 
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 7.29e-07 &      & 6.11e-09 &      & 7.83e-10 &      & 1.97e-08 &      & 6.37e-07 &      
+                rep2 &     2 & 1.45e-09 &502.8 & 2.63e-10 & 23.2 & 1.00e-10 &  7.8 & 5.03e-09 &  3.9 & 2.03e-08 & 31.4 
+                rep4 &     4 & 3.97e-10 &  3.7 & 6.45e-11 &  4.1 & 1.76e-11 &  5.7 & 1.11e-09 &  4.5 & 3.37e-09 &  6.0 
+                rep8 &     8 & 3.50e-10 &  1.1 & 1.37e-11 &  4.7 & 4.08e-12 &  4.3 & 2.88e-10 &  3.9 & 8.38e-10 &  4.0 
+Convergence rates: c0=3.49 c1=2.84 c2=2.53 c3=2.05 c4=3.13 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF10Imtp2.ConvTable.tex *****
+
+-td=.2 -nc=1  *maybe trouble* with only 1 correction
+convRate: header=[grid  &    N &   $p$   &     $\vv$    &    $\usv$   &     $\vsv$   &   $\sigmavs$  ]
+convRate: numberOfComponents=5 (from header)
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 9.41e-08 &      & 1.24e-09 &      & 7.51e-10 &      & 1.96e-08 &      & 1.55e-07 &      
+                rep2 &     2 & 1.03e-08 &  9.1 & 2.67e-10 &  4.6 & 9.92e-11 &  7.6 & 5.03e-09 &  3.9 & 2.48e-08 &  6.2 
+                rep4 &     4 & 3.91e-09 &  2.6 & 6.43e-11 &  4.2 & 1.75e-11 &  5.7 & 1.11e-09 &  4.5 & 6.20e-09 &  4.0 
+                rep8 &     8 & 3.77e-09 &  1.0 & 1.90e-11 &  3.4 & 4.07e-12 &  4.3 & 2.88e-10 &  3.9 & 1.44e-08 &  0.4 
+Convergence rates: c0=1.53 c1=2.01 c2=2.51 c3=2.04 c4=1.23 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF10Imtp2.ConvTable.tex
+
+
+-tf=.1
+convRate: header=[grid  &    N &   $p$   &     $\vv$    &    $\usv$   &     $\vsv$   &   $\sigmavs$  ]
+convRate: numberOfComponents=5 (from header)
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 5.72e-08 &      & 2.69e-09 &      & 6.49e-10 &      & 1.03e-08 &      & 7.13e-08 &      
+                rep2 &     2 & 2.09e-09 & 27.4 & 2.78e-10 &  9.7 & 1.91e-10 &  3.4 & 1.84e-09 &  5.6 & 2.07e-08 &  3.4 
+                rep4 &     4 & 3.51e-10 &  6.0 & 5.55e-11 &  5.0 & 4.75e-11 &  4.0 & 4.44e-10 &  4.1 & 5.18e-09 &  4.0 
+                rep8 &     8 & 5.61e-10 &  0.6 & 1.57e-11 &  3.5 & 1.15e-11 &  4.1 & 1.34e-10 &  3.3 & 1.16e-09 &  4.5 
+Convergence rates: c0=2.26 c1=2.46 c2=1.95 c3=2.08 c4=1.98 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF10Imtp1.ConvTable.tex
+
+-tf=.05 
+convRate: numberOfComponents=5 (from header)
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 5.10e-08 &      & 2.11e-09 &      & 5.22e-10 &      & 6.49e-09 &      & 1.43e-07 &      
+                rep2 &     2 & 3.32e-09 & 15.4 & 1.68e-10 & 12.6 & 1.30e-10 &  4.0 & 9.51e-10 &  6.8 & 2.30e-08 &  6.2 
+                rep4 &     4 & 2.12e-10 & 15.7 & 2.63e-11 &  6.4 & 3.15e-11 &  4.1 & 1.79e-10 &  5.3 & 5.01e-09 &  4.6 
+                rep8 &     8 & 3.43e-11 &  6.2 & 8.51e-12 &  3.1 & 7.78e-12 &  4.0 & 6.16e-11 &  2.9 & 1.02e-09 &  4.9 
+Convergence rates: c0=3.56 c1=2.65 c2=2.02 c3=2.26 c4=2.36 
+
+ ****Output written to ./insElasticPiston.rep.AmpSCF10Imtp05.ConvTable.tex *****
+
+********************************
+***** May 18, 2018
+
+TEST RADIAL SHEAR 
+
+AMP-IMP
+conv.p insElasticPiston.conv -known=shear -nu=10. -tp=.01 -tf=.05 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4  -dtMax=1.e-3 -ng=4
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                rep1 &     1 & 6.78e-09 &      & 4.22e-09 &      & 3.86e-10 &      & 2.09e-09 &      & 2.84e-07 &      
+                rep2 &     2 & 6.69e-10 & 10.1 & 3.14e-09 &  1.3 & 5.10e-11 &  7.6 & 8.86e-10 &  2.4 & 6.77e-08 &  4.2 
+                rep4 &     4 & 3.54e-10 &  1.9 & 2.71e-09 &  1.2 & 9.77e-12 &  5.2 & 3.75e-10 &  2.4 & 2.04e-08 &  3.3 
+Convergence rates: c0=2.13 c1=0.32 c2=2.65 c3=1.24 c4=1.90 
+
+
+
+********************************
+***** May 17, 2018
+
+
+TEST FIB_SHEAR SOLUTION
+
+AMP-IMP LIGHT 
+conv.p insElasticPiston.conv -known=shear -nu=.1 -tp=.01 -tf=.5 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=.001 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -ng=4
+
+**CHECK SOLID**
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 1.56e-08 &      & 1.08e-06 &      & 5.51e-06 &      & 4.24e-09 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.30e-09 &  4.7 & 2.49e-07 &  4.3 & 2.27e-06 &  2.4 & 1.66e-09 &  2.6 
+                epg4 &     4 & 0.00e+00 &  0.0 & 7.98e-10 &  4.1 & 5.61e-08 &  4.4 & 9.01e-07 &  2.5 & 6.33e-10 &  2.6 
+Convergence rates: c0=-nan c1=2.14 c2=2.13 c3=1.31 c4=1.37 
+
+
+
+AMP-IMP MEDIUM
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.01 -tf=.5 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=10 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -dtMax=1.e-2 -ng=4
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 2.21e-05 &      & 5.81e-06 &      & 2.21e-05 &      & 2.23e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 4.75e-06 &  4.7 & 1.54e-06 &  3.8 & 4.75e-06 &  4.7 & 4.92e-05 &  4.5 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.11e-06 &  4.3 & 4.07e-07 &  3.8 & 1.11e-06 &  4.3 & 1.17e-05 &  4.2 
+                epg8 &     8 & 9.01e-12 &  0.0 & 2.66e-07 &  4.2 & 1.05e-07 &  3.9 & 2.66e-07 &  4.2 & 2.83e-06 &  4.1 
+Convergence rates: c0=-nan c1=2.12 c2=1.93 c3=2.12 c4=2.10
+
+
+
+AMP-PC
+conv.p insElasticPiston.conv -known=shear -nu=10 -tp=.0001 -tf=.0005 -cg=epgp -showAllComponents=0 -tsINS=pc -smVariation=g -scf=10. -addedMass=1 -useImplicitAmpBCs=0 -numberOfCorrections=1 -cfl=.9 -diss=0.5 -stressRelaxation=4 -ng=4
+
+-tf=.005  **CHECK ME**
+               grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 5.67e-06 &      & 7.95e-08 &      & 6.79e-06 &      & 2.98e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.27e-06 &  1.7 & 2.12e-08 &  3.8 & 3.27e-06 &  2.1 & 1.48e-04 &  2.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.10e-06 &  3.0 & 5.30e-09 &  4.0 & 1.10e-06 &  3.0 & 4.52e-05 &  3.3 
+
+                grid  &    N &   $p$   & r &     $\vv$    & r &    $\usv$   & r &     $\vsv$   & r &   $\sigmavs$  & r 
+                epg1 &     1 & 0.00e+00 &      & 5.67e-06 &      & 7.95e-08 &      & 6.79e-06 &      & 2.98e-04 &      
+                epg2 &     2 & 0.00e+00 &  0.0 & 3.27e-06 &  1.7 & 2.12e-08 &  3.8 & 3.27e-06 &  2.1 & 1.48e-04 &  2.0 
+                epg4 &     4 & 0.00e+00 &  0.0 & 1.10e-06 &  3.0 & 5.30e-09 &  4.0 & 1.10e-06 &  3.0 & 4.52e-05 &  3.3 
+                epg8 &     8 & 0.00e+00 &  0.0 & 3.11e-07 &  3.5 & 1.33e-09 &  4.0 & 3.11e-07 &  3.5 & 1.22e-05 &  3.7 
+Convergence rates: c0=-nan c1=1.41 c2=1.97 c3=1.49 c4=1.55 
+
+ ****Output written to ./insElasticPiston.epgp.AmpSCF10ptp005.ConvTable.tex *****
+
+********************************
 ***** May 15, 2018
 
 FIXED REP GRIDS

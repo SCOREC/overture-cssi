@@ -212,6 +212,9 @@ extern "C"
 
 // Macros for the plane material interface:
 
+
+
+
  // -- incident wave ---
  //  --- time derivative of incident ---
  // -- transmitted wave ---
@@ -427,7 +430,7 @@ getErrors( int current, real t, real dt )
 
     numberOfErrorComponents=numberOfComponents;
   // const int epc = numberOfComponents;  // save P norm and errors in this component
-  // if( dispersionModel != noDispersion )
+  // if( localDispersionModel != noDispersion )
   // {
   //    numberOfErrorComponents++;  // save error in all polarization vectors 
   // }
@@ -1063,9 +1066,12 @@ getErrors( int current, real t, real dt )
         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
         int numberOfPolarizationVectors = 0;
         const int domain = cg.domainNumber(grid);
-        if(  dispersionModel != noDispersion )
+        numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+    // Each grid may or may not have dispersion model: 
+        const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+        if( dispersionModel == noDispersion )
         {
-            numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+            assert( numberOfPolarizationVectors==0 );
         }
         
 
@@ -1134,7 +1140,7 @@ getErrors( int current, real t, real dt )
             {
                 if( numberOfDimensions==2 )
                 {
-                    if( dispersionModel == noDispersion )
+                    if( localDispersionModel == noDispersion )
                     {
                         erre(Ie1,Ie2,Ie3,ex)  = ue(Ie1,Ie2,Ie3,ex)-exTrue(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),tE);
                         erre(Ie1,Ie2,Ie3,ey)  = ue(Ie1,Ie2,Ie3,ey)-eyTrue(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),tE);
@@ -1151,8 +1157,8 @@ getErrors( int current, real t, real dt )
                         const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
             // *new way*
                         assert( numberOfPolarizationVectors<10 );
-                        real sr,si,psir[10],psii[10];
-                        dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                        real sr,si,chir[10],chii[10], chiSumr,chiSumi;
+                        dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                         real expt=exp(sr*t);
                         real ct = cos(si*t)*expt, st=sin(si*t)*expt;
             //  Hz = (i/s) * (-1) * (kx*Ey - ky*Ex )/mu
@@ -1175,8 +1181,8 @@ getErrors( int current, real t, real dt )
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
                             const int pc= iv*numberOfDimensions;
-              // eHat =(psir[iv]*ct-psii[iv]*st)*cx - (psir[iv]*st+psii[iv]*ct)*sx; // Phat 
-                            eHat =(psir[iv]*ct-psii[iv]*st)*sx + (psir[iv]*st+psii[iv]*ct)*cx; // Phat 
+              // eHat =(chir[iv]*ct-chii[iv]*st)*cx - (chir[iv]*st+chii[iv]*ct)*sx; // Phat 
+                            eHat = eps*( (chir[iv]*ct-chii[iv]*st)*sx + (chir[iv]*st+chii[iv]*ct)*cx ); // Phat 
                             errPolarization(Ie1,Ie2,Ie3,pc  ) = pLocal(Ie1,Ie2,Ie3,pc  ) - pwc[0]*eHat;
                             errPolarization(Ie1,Ie2,Ie3,pc+1) = pLocal(Ie1,Ie2,Ie3,pc+1) - pwc[1]*eHat;
                         }
@@ -1194,7 +1200,7 @@ getErrors( int current, real t, real dt )
                 {
                     if( solveForElectricField )
                     {
-                        if( dispersionModel == noDispersion )
+                        if( localDispersionModel == noDispersion )
                         {
                             erre(Ie1,Ie2,Ie3,ex)=ue(Ie1,Ie2,Ie3,ex)-exTrue3d(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),ze(Ie1,Ie2,Ie3),tE);
                             erre(Ie1,Ie2,Ie3,ey)=ue(Ie1,Ie2,Ie3,ey)-eyTrue3d(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),ze(Ie1,Ie2,Ie3),tE);
@@ -1206,8 +1212,8 @@ getErrors( int current, real t, real dt )
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
                             const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                             assert( numberOfPolarizationVectors<10 );
-                            real sr,si,psir[10],psii[10];
-                            dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                            real sr,si,chir[10],chii[10],chiSumr,chiSumi;
+                            dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                             real expt=exp(sr*t);
                             real ct = cos(si*t)*expt, st=sin(si*t)*expt;
                             RealArray xi(Ie1,Ie2,Ie3), cx, sx, eHat(Ie1,Ie2,Ie3);
@@ -1223,8 +1229,8 @@ getErrors( int current, real t, real dt )
                             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                             {
                                 const int pc= iv*numberOfDimensions;
-                // eHat =(psir[iv]*ct-psii[iv]*st)*cx - (psir[iv]*st+psii[iv]*ct)*sx; // Phat 
-                                eHat =(psir[iv]*ct-psii[iv]*st)*sx + (psir[iv]*st+psii[iv]*ct)*cx; // Phat 
+                // eHat =(chir[iv]*ct-chii[iv]*st)*cx - (chir[iv]*st+chii[iv]*ct)*sx; // Phat 
+                                eHat =eps*( (chir[iv]*ct-chii[iv]*st)*sx + (chir[iv]*st+chii[iv]*ct)*cx ); // Phat 
                                 errPolarization(Ie1,Ie2,Ie3,pc  ) = pLocal(Ie1,Ie2,Ie3,pc  ) - pwc[0]*eHat;
                                 errPolarization(Ie1,Ie2,Ie3,pc+1) = pLocal(Ie1,Ie2,Ie3,pc+1) - pwc[1]*eHat;
                                 errPolarization(Ie1,Ie2,Ie3,pc+2) = pLocal(Ie1,Ie2,Ie3,pc+2) - pwc[2]*eHat;
@@ -1296,7 +1302,7 @@ getErrors( int current, real t, real dt )
                         real y0 = XHP(i1,i2,i3,1);
                         ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-e(x0,y0,0.,hz,tH);
                     }
-                    if( dispersionModel != noDispersion )
+                    if( localDispersionModel != noDispersion )
                     {         
             // --- error in dispersion variables ---
                         realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1373,7 +1379,7 @@ getErrors( int current, real t, real dt )
                             }
                         }
                     }
-                    if( dispersionModel != noDispersion )
+                    if( localDispersionModel != noDispersion )
                     {         
             // --- error in dispersion variables ---
                         realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1480,9 +1486,9 @@ getErrors( int current, real t, real dt )
             // real reS, imS;
             // old dmp.computeDispersionRelation( c,eps,mu,kk, reS, imS );
             // *new way*
-                        real sr,si,psir[10],psii[10];
+                        real sr,si,chir[10],chii[10],chiSumr,chiSumi;
                         assert( dmp.numberOfPolarizationVectors<10 );
-                        dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+                        dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                         if( t<3.*dt )
                             printF("--IC:SQ-Eig-- (dispersive) t=%10.3e, sr=%g, si=%g a1=%g a2=%g\n",t,sr,si,a1,a2 );
             // s = a + i b 
@@ -1516,11 +1522,11 @@ getErrors( int current, real t, real dt )
               // const real denom = (SQR(a)+SQR(b))*( SQR((a+gamma)) + SQR(b) );
               // real reChi =  omegap*omegap* (a*(a+gamma)-b*b)/denom;   
               // real imChi = -omegap*omegap* b*(2*a+gamma)/denom;
-              // printF("--BOXEIG-- psir=%e psii=%e reCh=%e imChi=%e\n",psir,psii,reChi,imChi);
+              // printF("--BOXEIG-- chir=%e chii=%e reCh=%e imChi=%e\n",chir,chii,reChi,imChi);
               // phiP = Im(  Chi*( cos(beta*t) + i*sin(beta*t) )*exp(alpha*t )  ... s= alpha+i*beta
                             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                             {
-                                real phiP = psir[iv]*ste+ psii[iv]*cte;
+                                real phiP = eps*( chir[iv]*ste+ chii[iv]*cte );
                                 phiPx[iv] = a1s*( phiP );
                                 phiPy[iv] = a2s*( phiP );
                             }
@@ -1539,7 +1545,7 @@ getErrors( int current, real t, real dt )
               // *check me*
                             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                             {
-                                real phiP = psir[iv]*ste+ psii[iv]*cte;
+                                real phiP = eps*( chir[iv]*ste+ chii[iv]*cte );
                                 phiPx[iv] = a1s*( phiP );
                                 phiPy[iv] = a2s*( phiP );
                                 phiPz[iv] = a3s*( phiP );
@@ -1574,7 +1580,7 @@ getErrors( int current, real t, real dt )
               // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
               // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
                         }
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
               // -- dispersion model components --
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1625,7 +1631,7 @@ getErrors( int current, real t, real dt )
               // ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
               // ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
                         }
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
               // -- dispersion model components --
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1690,7 +1696,7 @@ getErrors( int current, real t, real dt )
               // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
               // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
                         }
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
               // -- dispersion model components --
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1738,7 +1744,7 @@ getErrors( int current, real t, real dt )
               // ERREY(i1,i2,i3)=UEY(i1,i2,i3) -  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*tE);  // 
               // ERREZ(i1,i2,i3)=UEZ(i1,i2,i3) -  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*tE);  // 
                         }
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
               // -- dispersion model components --
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1807,7 +1813,7 @@ getErrors( int current, real t, real dt )
                     real sint = sin(omega*t), cost = cos(omega*t);
                     real sintp = omega*cost, costp = -omega*sint;
                     real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                    real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+                    real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
                     real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
                     real ampP[10], ampPm[10];
                     if( dispersionModel==noDispersion )
@@ -1832,9 +1838,10 @@ getErrors( int current, real t, real dt )
             // Evaluate the dispersion relation for "s"
                         assert( dmp.numberOfPolarizationVectors<10 );
                         const real kk = omega/c; //  *CHECK ME* 
-                        dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+            // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
+                        dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                         if( t<3.*dt )
-                            printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+                            printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
                         expt =exp(sr*t);
                         st=sin(si*t)*expt; ct=cos(si*t)*expt;
             // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
@@ -1846,30 +1853,31 @@ getErrors( int current, real t, real dt )
                         ampH = ct;   
             // ampHp = -si*st + sr*ct;
             // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-            //   Pv_j = psi_j * Ev   
-            // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
-            // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+            //   Pv_j = chi_j * Ev   
+            // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
+            // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
             //   = Re( (phir+i*phii)*( ct + i sint )
-                        const real alphaP = dmp.alphaP;
-                        real psirSum=0., psiiSum=0.;
-                        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                        {
-                            psirSum += psir[iv]; 
-                            psiiSum += psii[iv];
-                        }
-                        real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
-            //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
-            //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+            // const real alphaP = dmp.alphaP;
+            // real chirSum=0., chiiSum=0.;
+            // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+            // {
+            //   chirSum += chir[iv]; 
+            //   chiiSum += chii[iv];
+            // }
+            // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
+                        real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
+            //  phi = (1/(eps*s) * 1/( 1+chi)
+            //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
             //      = phir +i*phii 
-                        real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-                        real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                        real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
+                        real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
                         ampE = phir*ct - phii*st;
-            // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
-            //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-            //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+            // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
+            //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+            //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
-                            ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+                            ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
                         }
             // tm = t-dt 
                         ampHm = ctm;  
@@ -1877,7 +1885,7 @@ getErrors( int current, real t, real dt )
                         ampEm = phir*ctm - phii*stm;
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
-                              ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+                            ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
                         }
                     }
                   FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -1974,7 +1982,7 @@ getErrors( int current, real t, real dt )
                     real sint = sin(omega*t), cost = cos(omega*t);
                     real sintp = omega*cost, costp = -omega*sint;
                     real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                    real sr,si,psir[10],psii[10], ct,st,expt, ctm,stm,exptm;
+                    real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
                     real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
                     real ampP[10], ampPm[10];
                     if( dispersionModel==noDispersion )
@@ -1999,9 +2007,10 @@ getErrors( int current, real t, real dt )
             // Evaluate the dispersion relation for "s"
                         assert( dmp.numberOfPolarizationVectors<10 );
                         const real kk = omega/c; //  *CHECK ME* 
-                        dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
+            // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
+                        dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
                         if( t<3.*dt )
-                            printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g psir[0]=%g psii[0]=%g\n",t,sr,si,psir[0],psii[0] );
+                            printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
                         expt =exp(sr*t);
                         st=sin(si*t)*expt; ct=cos(si*t)*expt;
             // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
@@ -2013,30 +2022,31 @@ getErrors( int current, real t, real dt )
                         ampH = ct;   
             // ampHp = -si*st + sr*ct;
             // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-            //   Pv_j = psi_j * Ev   
-            // eps*( 1 + alphaP*Sum psi_j) \Ev_t = curl ( Hv ) 
-            // E = Re( (1/(eps*s) * 1/( 1+alphaP*psi) * ( ct + i sint ) )
+            //   Pv_j = chi_j * Ev   
+            // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
+            // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
             //   = Re( (phir+i*phii)*( ct + i sint )
-                        const real alphaP = dmp.alphaP;
-                        real psirSum=0., psiiSum=0.;
-                        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                        {
-                            psirSum += psir[iv]; 
-                            psiiSum += psii[iv];
-                        }
-                        real chiNormSq = SQR(1.+alphaP*psirSum)+SQR(alphaP*psiiSum); //   | 1+alphaP*psi|^2 
-            //  phi = (1/(eps*s) * 1/( 1+alphaP*psi)
-            //      = (sr-i*si)*( 1+alphaP*psir - i*alphaP*psii)/(eps* sNormSq*chiNormSq )
+            // const real alphaP = dmp.alphaP;
+            // real chirSum=0., chiiSum=0.;
+            // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+            // {
+            //   chirSum += chir[iv]; 
+            //   chiiSum += chii[iv];
+            // }
+            // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
+                        real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
+            //  phi = (1/(eps*s) * 1/( 1+chi)
+            //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
             //      = phir +i*phii 
-                        real phir = ( sr*(1.+alphaP*psirSum)-si*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
-                        real phii = (-si*(1.+alphaP*psirSum)-sr*alphaP*psiiSum)/( eps*sNormSq*chiNormSq );
+                        real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
+                        real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
                         ampE = phir*ct - phii*st;
-            // P = Re( (psir+i*psii)*(phir+i*phii)*( ct + i sint ) )
-            //   = Re( (psir+i*psii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-            //   = psir*( phir*ct-phii*st) -psii*(  phir*st +phii*ct )
+            // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
+            //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+            //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
-                            ampP[iv] = psir[iv]*(phir*ct-phii*st ) - psii[iv]*( phir*st +phii*ct);
+                            ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
                         }
             // tm = t-dt 
                         ampHm = ctm;  
@@ -2044,7 +2054,7 @@ getErrors( int current, real t, real dt )
                         ampEm = phir*ctm - phii*stm;
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
-                              ampPm[iv] = psir[iv]*(phir*ctm-phii*stm ) - psii[iv]*( phir*stm +phii*ctm);
+                            ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
                         }
                     }
                   FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2338,7 +2348,7 @@ getErrors( int current, real t, real dt )
                         real cErm, cEim, cHrm, cHim;  // coefficients for time t-dt
             // coefficients of Polarization vector
                         real cPr,cPi, cPrm, cPim;
-                        if( dispersionModel==noDispersion )
+                        if( localDispersionModel==noDispersion )
                         {
               //     --- NON-DISPERSIVE ---
                             const real tm=t-dt;
@@ -2362,24 +2372,30 @@ getErrors( int current, real t, real dt )
                         {
               // -- DISPERSIVE MODEL -- *CHECK ME*
                             const real tm=t-dt;
-              // Evaluate the dispersion relation for "s"
-                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-                            const real kk = twoPi*cc0;  // Parameter in dispersion relation **check me**
+              // ---Evaluate the dispersion relation for "s" using outside grid  -------------------
+                            int outerGrid=0;  // use this grid *wdh* June 11, 2018
+                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(outerGrid);
+                            const real kk = twoPi*cc0;  // Parameter c*k in dispersion relation **check me**
               // *new way*
-                            real sr,si,psir[10],psii[10];
-                            dmp.evaluateDispersionRelation( c,kk, sr, si, psir,psii ); 
-                            const real alphaP = dmp.alphaP;
+                            real sr,si,chir[10],chii[10],chiSumr,chiSumi;
+                            dmp.evaluateDispersionRelation( cGrid(outerGrid),kk, sr, si, chir,chii,chiSumr,chiSumi ); 
+              //  chi comes from the actual grid 
+                            DispersiveMaterialParameters & dmp2 = getDispersiveMaterialParameters(grid);
+                            real kr,ki;
+                            dmp2.evaluateComplexWaveNumber( cGrid(grid),sr,si, kr,ki,chir,chii,chiSumr,chiSumi ); // eval (kr,ki), chi given (sr,si)
+                            const real alphaP = dmp2.alphaP;
               // real reS, imS;
               // dmp.computeDispersionRelation( c,eps,mu,kk, reS, imS );
               // real expS = exp(reS*t), expSm=exp(reS*(t-dt));
               // si=-si;  // flip sign    **** FIX ME ****
                             if( t<=3.*dt ) 
                             {
-                                printF("--MX--GIC dispersion: s=(%12.4e,%12.4e) psi=(%12.4e,%12.4e)\n",sr,si,psir[0],psii[0]);
-                                printF("--MX--GIC scatCyl si/(twoPi*cc0)=%g\n",si/twoPi*cc0);
+                                printF("--MX--GIC dispersion: s=(%12.4e,%12.4e) chi=(%12.4e,%12.4e)\n",sr,si,chir[0],chii[0]);
+                                printF("--MX--GIC grid=%i: complex k=(kr,ki)=(%e,%e)\n",grid,kr,ki);
+                //printF("--MX--GIC scatCyl si/(twoPi*cc0)=%g\n",si/twoPi*cc0);
                             }
               // Im( (Er+i*Ei)*( ct + i*st ) )
-              //   st*Er + st*Ei 
+              //   st*Er + ct*Ei 
                             real expt=exp(sr*t), exptm=exp(sr*tm);
                             real ct =cos( si*t  )*expt,  st =sin( si*t )*expt;
                             real ctm=cos( si*tm )*exptm, stm=sin( si*tm )*exptm;
@@ -2394,14 +2410,14 @@ getErrors( int current, real t, real dt )
                             }
                             dcost =  -si*st + sr*ct;  //  d/dt of "cost" 
                             dsint =  (si*ct + sr*st);  //  d/dt of "cost" 
-              // P = Im{ psi(s)*E } = Im{ (psir+i*psi)*( Er + i*Ei)( ct+i*st ) }
-              //   =  Im{ (psir+i*psi)*( Er*ct- Ei*st + i( Er*st + Ei*ct ) )
-              //   =  psir*(  Er*st + Ei*ct ) + psii*( Er*ct- Ei*st )
-              //   =  (psir*st + psii*ct)*Er + (psir*ct-psii*st )*Ei 
-                            phiPs = psir[0]*sint+psii[0]*cost;  // Coeff of Er 
-                            phiPc = psir[0]*cost-psii[0]*sint;  // coeff of Ei
-                            phiPsm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
-                            phiPcm = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
+              // P/eps = Im{ chi(s)*E } = Im{ (chir+i*chi)*( Er + i*Ei)( ct+i*st ) }
+              //       =  Im{ (chir+i*chi)*( Er*ct- Ei*st + i( Er*st + Ei*ct ) )
+              //       =  chir*(  Er*st + Ei*ct ) + chii*( Er*ct- Ei*st )
+              //       =  (chir*st + chii*ct)*Er + (chir*ct-chii*st )*Ei 
+                            phiPs = chir[0]*sint+chii[0]*cost;  // Coeff of Er 
+                            phiPc = chir[0]*cost-chii[0]*sint;  // coeff of Ei
+                            phiPsm = chir[0]*sintm+chii[0]*costm;  // Coeff of Er(t-dt)
+                            phiPcm = chir[0]*costm-chii[0]*sintm;  // coeff of Ei(t-dt)
               // *new* 
                             cEr = st;  cErm = stm;
                             cEi = ct;  cEim = ctm;
@@ -2409,21 +2425,21 @@ getErrors( int current, real t, real dt )
                             {
                                 real coeffH=1./kk;  // is this right? -- probably should be +/- (eps*cc*kk)
           // Coefficients generated by cg/mx/codes/gdm.maple
-                    real psirSum=psir[0], psiiSum=psii[0];
-                    cHr=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ct+st*(si*psirSum+sr*psiiSum))*alphaP-1.*ct*sr+si*st);
-                    cHi=-coeffH*(((si*psirSum+sr*psiiSum)*ct+psirSum*sr*st-1.*si*st*psiiSum)*alphaP+ct*si+sr*st);
-                    cHrm=-coeffH*(((-1.*psirSum*sr+si*psiiSum)*ctm+stm*(si*psirSum+sr*psiiSum))*alphaP-1.*ctm*sr+si*stm);
-                    cHim=-coeffH*(((si*psirSum+sr*psiiSum)*ctm+psirSum*sr*stm-1.*si*stm*psiiSum)*alphaP+ctm*si+sr*stm);
+                    real chirSum=chir[0], chiiSum=chii[0];
+                    cHr=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ct+st*(si*chirSum+sr*chiiSum))*alphaP-1.*ct*sr+si*st);
+                    cHi=-coeffH*(((si*chirSum+sr*chiiSum)*ct+chirSum*sr*st-1.*si*st*chiiSum)*alphaP+ct*si+sr*st);
+                    cHrm=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ctm+stm*(si*chirSum+sr*chiiSum))*alphaP-1.*ctm*sr+si*stm);
+                    cHim=-coeffH*(((si*chirSum+sr*chiiSum)*ctm+chirSum*sr*stm-1.*si*stm*chiiSum)*alphaP+ctm*si+sr*stm);
                             }
                             else
                             {
                                 cHr = st;  cHrm = stm;
                                 cHi = ct;  cHim = ctm;
                             }
-                            cPr = psir[0]*sint+psii[0]*cost;  // Coeff of Er for P 
-                            cPi = psir[0]*cost-psii[0]*sint;  // coeff of Eifor P 
-                            cPrm = psir[0]*sintm+psii[0]*costm;  // Coeff of Er(t-dt)
-                            cPim = psir[0]*costm-psii[0]*sintm;  // coeff of Ei(t-dt)
+                            cPr = eps*( chir[0]*sint+chii[0]*cost);  // Coeff of Er for P 
+                            cPi = eps*( chir[0]*cost-chii[0]*sint);  // coeff of Eifor P 
+                            cPrm = eps*(chir[0]*sintm+chii[0]*costm);  // Coeff of Er(t-dt)
+                            cPim = eps*(chir[0]*costm-chii[0]*sintm);  // coeff of Ei(t-dt)
                         }
           // adjust array dimensions for local arrays
                     Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -2445,7 +2461,7 @@ getErrors( int current, real t, real dt )
                             }
                         }
             // -- dispersion model components --
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
                             if( numberOfPolarizationVectors>1 )
                             {
@@ -2490,7 +2506,7 @@ getErrors( int current, real t, real dt )
                             }
                         }
             // -- dispersion model components --
-                        if( dispersionModel!=noDispersion )
+                        if( localDispersionModel!=noDispersion )
                         {
                             FOR_3D(i1,i2,i3,J1,J2,J3)
                             {

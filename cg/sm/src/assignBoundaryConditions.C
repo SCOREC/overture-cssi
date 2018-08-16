@@ -35,6 +35,8 @@ getInterfaceBoundaryData( int current )
     CompositeGrid & cg = cgf.cg;
     const real t= cgf.t; 
     const int numberOfDimensions = cg.numberOfDimensions();
+    FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+    FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
     
     assert( parameters.dbase.has_key("interfaceType") );
     
@@ -67,15 +69,19 @@ getInterfaceBoundaryData( int current )
         MappedGrid & mg = cg[grid];
         ForBoundary(side,axis)
         {
-            if(  interfaceType(side,axis,grid)==Parameters::tractionInterface )
+            if( interfaceType(side,axis,grid)==Parameters::tractionInterface )
             {
         // --- This is an FSI interface ----
 
         // *new* way June 25, 2017 -- explicitly request interface data from other solver (e.g. Cgins)
                 if( debug() & 4 )
+                {
                     printF("--SM-- getInterfaceBoundaryData: REQUEST interface data (grid,side,axis)=(%i,%i,%i) "
                                   "at t=%9.3e\n",grid,side,axis,t);
-                        
+                    fPrintF(debugFile,"--SM-- getInterfaceBoundaryData: REQUEST interface data (grid,side,axis)=(%i,%i,%i) "
+                                  "at t=%9.3e\n",grid,side,axis,t);
+                }
+                
                 getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
                 
                 ui.redim(I1,I2,I3,C);
@@ -95,6 +101,12 @@ getInterfaceBoundaryData( int current )
                 if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
                 {
                     bd(I1,I2,I3,Vc)=ui(I1,I2,I3,Rx+numberOfDimensions);
+                }
+                
+                if( false )
+                {
+                    ::display(ui,sPrintF("--SM-- getInterfaceBoundaryData: traction and traction-rate at t=%.2e",t),"%.2e ");
+                
                 }
                 
         // RealArray & interfaceVelocity =interfaceData.u;
@@ -120,9 +132,17 @@ getInterfaceBoundaryData( int current )
 void Cgsm::
 applyBoundaryConditions( int option, real dt, int current, int prev )
 {
+    FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
+    FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
     GridFunction & cgf = gf[current];
     const real t= cgf.t; 
+
+    if( debug() & 4 )
+    {
+        fPrintF(debugFile,"\n BBBBBBBBBBBBBBBBBBBBB  START applyBoundaryConditions t=%.3e BBBBBBBBBBBBBBBB\n",t);
+    }
+    
 
   // Get traction data for any interfaces 
     getInterfaceBoundaryData( current );
@@ -145,7 +165,7 @@ applyBoundaryConditions( int option, real dt, int current, int prev )
             userDefinedBoundaryValues( cgf.t,cgf,grid); // *new way* 12/02/20
         }
 
-    // Projection of velocity (for INS-SM AMP scheme) **FINISH ME**
+    // Projection of velocity (for INS-SM AMP scheme) 
     //  -- this routine assigns the velocity on the interface using the value from the
     //     the fluid which should be equal to the projected interface velocity, the interface
     //     traction from the fluid will be assigned below in the assignBC routine.

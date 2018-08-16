@@ -645,6 +645,9 @@ foreach $arg ( @ARGV )
   {
 #   
   }
+  elsif( $arg =~ /distribution=(.*)/ )
+  {
+  }
   else
   {
     print "ERROR: unknown argument = [$arg]\n";

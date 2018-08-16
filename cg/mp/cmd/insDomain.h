@@ -25,6 +25,7 @@
 #   $useNeumannAtOutflow = [0|1]
 #   $useNewTimeSteppingStartup = [0|1]
 #   $orderOfExtrapForOutflow
+#   $addedMassVelocityBC=[0|1]
 #
 # ------- start new domain ----------
 if( $tsINS eq "" ){ $tsINS=$ts; }
@@ -68,6 +69,14 @@ if( $ogesDtol eq "" ){ $ogesDtol=1e20; }
 if( $orderOfExtrapForOutflow eq "" ){ $orderOfExtrapForOutflow=2; }
 if( $useExactPressureBC eq "" ){ $useExactPressureBC=0; }
 if( $useCurlFormOfTraction eq "" ){ $useCurlFormOfTraction=0; }
+if( $addedMassLengthScale eq "" ){ $addedMassLengthScale=1.; }
+if( $addedMassVelocityBC eq "" ){ $addedMassVelocityBC=0; }
+if( $useTP eq "" ){ $useTP=0; }
+if( $fluidSolidCornerFix eq "" ){ $fluidSolidCornerFix=0; }
+if( $zfMuByH eq "" ){ $zfMuByH=2.;}
+if( $zfRhoHByDt eq "" ){ $zfRhoHByDt=2.;}
+if( $zfMono eq "" ){ $zfMono=0.;}
+if( $zfMuRhoByZpDt eq "" ){ $zfMuRhoByZpDt=2.;}
 # 
 setup $domainName
  set solver Cgins
@@ -106,13 +115,20 @@ setup $domainName
   predicted pressure needed $predictedPressureNeeded
   use new time-stepping startup $useNewTimeSteppingStartup
   useImplicitAmpBCs $useImplicitAmpBCs
+  # This next option may be temporary, until we figure out the right thing to do: June, 25, 2018
+  added mass velocity BC: $addedMassVelocityBC
+  use moving grid sub-iterations $useTP
+#
+  zfMuByH $zfMuByH 
+  zfRhoHByDt $zfRhoHByDt
+  zfMono $zfMono 
+  zfMuRhoByZpDt $zfMuRhoByZpDt
+  fluid solid corner fix: $fluidSolidCornerFix
 #
   predicted boundary pressure needed $predictedBoundaryPressureNeeded
 # 
   frequency for full grid gen update $freqFullUpdate
-# 
-  $moveCmds
-# 
+#
   pde parameters
     nu  $nu
     kThermal $kThermal
@@ -127,6 +143,8 @@ setup $domainName
     $cmd 
    done
 # 
+  $moveCmds
+# 
     OBPDE:second-order artificial diffusion $ad2
     OBPDE:ad21,ad22  $ad21, $ad22
     OBPDE:divergence damping  $cdv 
@@ -134,6 +152,8 @@ setup $domainName
     # Use exact RHS for pressure BC on a wall for testing known solutions and TZ: 
     OBPDE:use exact pressure BC $useExactPressureBC 
     OBPDE:use curl form of the traction $useCurlFormOfTraction
+    OBPDE:added mass length scale $addedMassLengthScale
+## finish me    OBPDE:added mass velocity BC: $addedMassVelocityBC
 # 
 $setAxi = $axisymmetric ? "turn on axisymmetric flow" : "#";
 $setAxi
