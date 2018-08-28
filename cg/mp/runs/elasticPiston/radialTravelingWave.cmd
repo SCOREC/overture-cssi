@@ -139,6 +139,8 @@ if( $caseid eq 3 ){ $scf=1000.; }
 if( $caseid eq 4 ){ $scf=10.; }
 if( $caseid eq 5 ){ $scf=.1; }
 if( $caseid eq 6 ){ $scf=1.; }
+if( $caseid eq 7 ){ $scf=.1; }
+if( $caseid eq 8 ){ $scf=10.; }
 $grid
 # ----------  define deforming bodies by a share flag of 100 ----
 # ----------  NOTE: we parameterize the boundary by index so grid points match! ---

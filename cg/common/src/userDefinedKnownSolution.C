@@ -2134,11 +2134,18 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real H, Hbar, rho, rhoBar, lambdaBar;
       
       int caseid = 0;
-      gi.inputString(answer,"Enter amp, rhoBar\n");
-      sScanF(answer,"%e %e %e",&amp,&rhoBar,&thetaR);
+      gi.inputString(answer,"Enter amp, rhoBar,nu\n");
+      sScanF(answer,"%e %e %e %e",&amp,&rhoBar,&thetaR,&mu);
 
-      if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+      if (abs(rhoBar - 1000.0) < 1.0e-12) { 
+        if (abs(mu - .1) < 1.0e-12) {
+          caseid = 3;
+        } else {
+          caseid = 1;
+        }
+      }
       if (abs(rhoBar - 0.0010) < 1.0e-12) { caseid = 2;}
+      if (abs(rhoBar - 1.) < 1.0e-12) { caseid = 4;}
 
       if( dbase.has_key("lambda") )
       { // **CHECK INPUT PARAMETERS*** *wdh* May 16, 2018
@@ -2150,7 +2157,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         muBar=rhoBar;
         lambdaBar=rhoBar;
 
-        if( rhoBar!=10. && rhoBar!=1000. && rhoBar!=.001 )
+        if( rhoBar!=10. && rhoBar != 1. && rhoBar!=1000. && rhoBar!=.001 )
         {
           printF("UDKS:fibShear: ERROR: rhoBar=%e must be .001, 10 or 1000.\n",rhoBar);
           OV_ABORT("error");
@@ -2228,6 +2235,38 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         cr =  4.1975851787117041e-01; ci = -6.5972020825390609e-01; 
         dr =  5.8024148212882976e-01; di =  6.5972020825390620e-01; 
 
+      } else if (caseid == 3) {
+        printF("caseid = 3\n");
+        H      =  1.0;
+	Hbar   =  0.5;
+	rho    =  1.0;
+	rhoBar = 1000.;
+	muBar  = 1000.;
+	mu     = .1;
+        
+        ksr =  3.1408006015076433e+00; ksi =  7.9299546151544880e-04; 
+        kfr =  3.9623274133737652e+00; kfi =  3.9633279558205103e+00; 
+        omegar =  3.1408006015076433e+00; omegai =  7.9299546151544880e-04; 
+        ar =  1.0000000000000000e+00; ai =  0.0000000000000000e+00; 
+        br =  3.9602599951933480e-04; bi = -3.9649777216522298e-04; 
+        cr =  2.6393667297730516e-05; ci =  3.6074089922480347e-04; 
+        dr =  9.9997360633270227e-01; di = -3.6074089922480347e-04; 
+      } else if (caseid == 4) {
+        printF("caseid = 4\n");
+        H      =  1.0;
+	Hbar   =  0.5;
+	rho    =  1.0;
+	rhoBar = 1.;
+	muBar  = 1.;
+	mu     = .1;
+
+        ksr =  2.3506891360808524e+00; ksi =  5.4334304641413600e-01; 
+        kfr =  3.0572240284970760e+00; kfi =  3.8444829593277232e+00; 
+        omegar =  2.3506891360808524e+00; omegai =  5.4334304641413600e-01; 
+        ar =  1.0000000000000000e+00; ai =  0.0000000000000000e+00; 
+        br =  3.8338960673366757e-01; bi = -3.0761962961405975e-01; 
+        cr = -3.5855234286374937e-04; ci =  2.1823374098529384e-03; 
+        dr =  1.0003585523428637e+00; di = -2.1823374098529384e-03; 
       }
 
       printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g, thetaR=%f\n",
@@ -2285,12 +2324,18 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real rho, rhoBar;
       
       int caseid = 0;
-      gi.inputString(answer,"Enter amp, rhoBar\n");
-      sScanF(answer,"%e %e",&amp,&rhoBar);
+      gi.inputString(answer,"Enter amp, rhoBar, nu\n");
+      sScanF(answer,"%e %e %e",&amp,&rhoBar,&mu);
 
-      if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
-      if (abs(rhoBar - .001  ) < 1.0e-12) { caseid = 2;}
-
+      if (abs(mu - .1) < 1.0e-12) { 
+        if (abs(rhoBar -    0.001) < 1.0e-12) { caseid = 2;}
+        else if (abs(rhoBar -    0.1  ) < 1.0e-12) { caseid = 3;}
+        else if (abs(rhoBar -    1.0  ) < 1.0e-12) { caseid = 4;}
+        else if (abs(rhoBar -   10.0  ) < 1.0e-12) { caseid = 5;}
+        else if (abs(rhoBar - 1000.0  ) < 1.0e-12) { caseid = 6;}
+      } else {
+        if (abs(rhoBar - 1000.0) < 1.0e-12) { caseid = 1;}
+      }
       if( dbase.has_key("lambda") )
       { // **CHECK INPUT PARAMETERS*** *wdh* May 16, 2018
         // This must be the solid solver since lambda is found
@@ -2301,9 +2346,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         muBar=rhoBar;
         real lambdaBar=rhoBar;
 
-        if( rhoBar!=10. && rhoBar!=1000. && rhoBar!=.001 )
+        if( rhoBar!=.001 && rhoBar!=.1 && rhoBar!=1. && rhoBar!=10. && rhoBar!=1000. )
         {
-          printF("UDKS:radialShear: ERROR: rhoBar=%e must be .001 or 10 or 1000.\n",rhoBar);
+          printF("UDKS:radialShear: ERROR: rhoBar=%e must be .001, .1, 1., 10, or 1000.\n",rhoBar);
           OV_ABORT("error");
         }
         if( rho!=rhoBar || lambda!=lambdaBar || mu!=muBar )
@@ -2321,7 +2366,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
           printF("UDKS:radialShear:ERROR: nu=%e should be 10 for caseid=%d\n",nu,caseid);
           OV_ABORT("error");
         }
-        else if( caseid==2 && nu!=.1 )
+        else if( caseid>1 && nu!=.1 )
         {
           printF("UDKS:radialShear:ERROR: nu=%e should be .1 for caseid=%d\n",nu,caseid);
           OV_ABORT("error");
@@ -2329,11 +2374,10 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         
       }
 
-
+      R      =  1.0;
+      Rbar   =  0.5;
+      rho    =  1.0;
       if (caseid == 0) {
-	R      =  1.0;
-	Rbar   =  0.5;
-	rho    =  1.0;
 	rhoBar = 10.0;
 	muBar  = 10.0;
 	mu     = 10.0;
@@ -2346,9 +2390,6 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
 
       } else if (caseid == 1) {
-	R      =  1.0;
-	Rbar   =  0.5;
-	rho    =  1.0;
 	rhoBar = 1000.0;
 	muBar  = 1000.0;
 	mu     = 1000.0;
@@ -2359,6 +2400,92 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         ar = -3.8862733027920622e-04; ai =  5.7439954719816359e-04; 
         br =  2.3118898646851490e-04; bi =  2.9010782744158417e-04; 
         cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+      } else if (caseid == 2) {
+        // delta = .001
+	rhoBar = .001;
+	muBar  = .001;
+	mu     = .1;
+
+        // ksr = 7.6643963616989641e+00; ksi = 1.4971482952951449e-03;
+        // kfr = 6.1910797346744273e+00; kfi = -6.1898704993031517e+00;
+        // omegar = 7.6643963616989641e+00; omegai = 1.4971482952951449e-03;
+        // ar =  1.4866185742693918e-05; ai = -2.7430081941265875e-06; 
+        // br = -2.7431429110061757e-06; bi = -1.4866177764159063e-05; 
+        // cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+        ksr = 7.6643963616396835e+00; ksi = 1.4971481334707529e-03;
+        kfr = 6.1910797345851316e+00; kfi = -6.1898704993445541e+00;
+        omegar = 7.6643963616396835e+00; omegai = 1.4971481334707529e-03;
+        ar = -1.6288337550727223e+02; ai =  3.8602160699656974e+02; 
+        br =  3.8602347393358895e+02; bi =  1.6288013433202295e+02; 
+        cr = -1.5229300874902260e+03; ci =  2.3156411824235038e+03; 
+
+      } else if (caseid == 3) {
+        // delta = .1
+	rhoBar = .1;
+	muBar  = .1;
+	mu     = .1;
+
+        ksr = 7.7650928271414807e+00; ksi = 1.4265661636307109e-01;
+        kfr = 6.2885052846156997e+00; kfi = -6.1740369735699572e+00;
+        omegar = 7.7650928271414807e+00; omegai = 1.4265661636307109e-01;
+        ar =  1.4641490144578968e-03; ai = -2.3450329102246896e-04; 
+        br = -2.3451658063782890e-04; bi = -1.4641458956921049e-03; 
+        cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+
+      } else if (caseid == 4) {
+        // delta = 1
+	rhoBar = 1.;
+	muBar  = 1.;
+	mu     = .1;
+
+        // ksr = 8.7781435918240884e+00; ksi = 7.8543421854498385e-01;
+        // kfr = 6.9277148335894969e+00; kfi = -6.3355260736647683e+00;
+        // omegar = 8.7781435918240884e+00; omegai = 7.8543421854498385e-01;
+        // ar =  1.3234338542353745e-02; ai = -2.6154302973580186e-03; 
+        // br = -2.6154327503021481e-03; bi = -1.3234249171770279e-02; 
+        // cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00;
+
+        ksr = 8.7781435916887176e+00; ksi = 7.8543421874322350e-01;
+        kfr = 6.9277148336187553e+00; kfi = -6.3355260735403087e+00;
+        omegar = 8.7781435916887176e+00; omegai = 7.8543421874322350e-01;
+        ar = -4.1476723854604484e+02; ai =  3.4496568519929110e+02; 
+        br =  3.4496406209751262e+02; bi =  4.1476405294807591e+02; 
+        cr = -3.5119881543355342e+00; ci =  1.9125404884223574e+00; 
+
+      } else if (caseid == 5) {
+        // delta = 10
+	rhoBar = 10.;
+	muBar  = 10.;
+	mu     = .1;
+
+        ksr = 1.0125285525095206e+01; ksi = 1.9453071796036750e-01;
+        kfr = 7.1839003224493521e+00; kfi = -7.0472063020238203e+00;
+        omegar = 1.0125285525095206e+01; omegai = 1.9453071796036750e-01;
+        ar =  2.4853503630238274e-02; ai = -1.8172311594476062e-02; 
+        br = -1.8172272688116910e-02; bi = -2.4853473720606322e-02; 
+        cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+      } else if (caseid == 6) {
+        // delta = 1000
+	rhoBar = 1000.;
+	muBar  = 1000.;
+	mu     = .1;
+
+        // ksr = 1.0269827226818917e+01; ksi = 2.0553833970137778e-03;
+        // kfr = 7.1665482681330488e+00; kfi = -7.1651141125254005e+00;
+        // omegar = 1.0269827226818917e+01; omegai = 2.0553833970137778e-03;
+        // ar =  2.5918890429896594e-02; ai = -2.1419105783973189e-02; 
+        // br = -2.1419071613069777e-02; bi = -2.5918865427047234e-02; 
+        // cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
+
+        ksr = 1.0269827226818906e+01; ksi = 2.0553833966139197e-03;
+        kfr = 7.1665482681329058e+00; kfi = -7.1651141125255373e+00;
+        omegar = 1.0269827226818906e+01; omegai = 2.0553833966139197e-03;
+        ar = -7.6304213870290562e+02; ai =  6.3082819718617941e+02; 
+        br =  6.3082719089320165e+02; bi =  7.6304140270866310e+02; 
+        cr = -2.9444501962384284e+00; ci =  5.9144119271306117e-04; 
 
       }
 
@@ -2524,13 +2651,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       if (caseid == 0) {
         scf = 1.;
 
-        omegar = -3.4911574096952345e+00; omegai = -1.1542771968948464e+00;
-        d1r = 1.2703339534646554e-01; d1i = -3.1084578687188880e-01;
-        d2r = -6.1489261046392435e-02; d2i = 1.8490164050360778e-02;
-        d3r = 1.0355928624631068e-01; d3i = 2.0962205736269321e-01;
-        d4r = 1.6259881155916456e-01; d4i = -5.8775735169619550e-02;
-        ar  = -2.2391972671976085e-01; ai  = -2.1000480825281026e-02;
-        br  = 8.2260296683123990e-01; bi  = -6.6235370226945389e-01;
+        // omegar = -3.4911574096952345e+00; omegai = -1.1542771968948464e+00;
+        // d1r = 1.2703339534646554e-01; d1i = -3.1084578687188880e-01;
+        // d2r = -6.1489261046392435e-02; d2i = 1.8490164050360778e-02;
+        // d3r = 1.0355928624631068e-01; d3i = 2.0962205736269321e-01;
+        // d4r = 1.6259881155916456e-01; d4i = -5.8775735169619550e-02;
+        // ar  = -2.2391972671976085e-01; ai  = -2.1000480825281026e-02;
+        // br  = 8.2260296683123990e-01; bi  = -6.6235370226945389e-01;
+        omegar = 3.4911574096952362e+00; omegai = -1.1542771968948455e+00;
+        d1r = -5.7782538907030228e+00; d1i = -6.6186214837983810e+00;
+        d2r = 2.1662854142250572e+00; d2i = 6.5141411699040641e-01;
+        d3r = -4.9294888800897108e-01; d3i = 4.0717622239573394e+00;
+        d4r = 5.7284056598934097e+00; d4i = 2.0706870535009445e+00;
+        ar  = -7.8887603597267368e+00; ai  = 7.3985335323758283e-01;
+        br  = 2.8980553266286996e+01; bi  = 2.3334922828792195e+01;
 
         n = 3.;
       } else if (caseid == 1) {
@@ -2605,6 +2739,46 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         br  = 7.8854244467570347e-02; bi  = 3.7836251544803141e-02;
 
         n = 1.;
+      } else if (caseid == 7) {
+        scf = .1;
+
+        // omegar = 8.4461304718803856e+00; omegai = -3.5869825596154581e-01;
+        // d1r = 3.7135655142770091e-02; d1i = -3.1747097252154036e-02;
+        // d2r = -2.9440773301419670e-01; d2i = -2.1027148488316769e-01;
+        // d3r = -4.3978881789501439e-01; d3i = 4.6039994233607223e-01;
+        // d4r = 2.9309690511420593e-02; d4i = 4.4191337111973977e-01;
+        // ar  = 6.1932201024281503e-03; ai  = 7.3815596011124985e-03;
+        // br  = -7.0508753584383355e-01; bi  = -7.7694206762273088e-01;
+
+        omegar = 8.4461304718803873e+00; omegai = -3.5869825596154620e-01;
+        d1r = 4.9727644707911839e-01; d1i = -4.2511930019569000e-01;
+        d2r = -3.9423583243962605e+00; d2i = -2.8157057232304572e+00;
+        d3r = -5.8891291953218294e+00; d3i = 6.1651288791784342e+00;
+        d4r = 3.9248049722385236e-01; d4i = 5.9175779955652601e+00;
+        ar  = 8.2932204153945560e-02; ai  = 9.8845026930842433e-02;
+        br  = -9.4416932317438906e+00; bi  = -1.0403883615042076e+01;
+
+        n = 3.;
+      } else if (caseid == 8) {
+        scf = 10;
+
+        // omegar = 4.4871828777845426e+00; omegai = -1.5289288391210923e-01;
+        // d1r = -4.9412861156899919e-02; d1i = -5.0127366412091971e-03;
+        // d2r = 9.3407221152813046e-03; d2i = 7.6441843096293775e-04;
+        // d3r = -3.1396220519095585e-04; d3i = -2.9651237112533483e-02;
+        // d4r = -2.3999346642834471e-03; d4i = -2.9876108996648829e-03;
+        // ar  = -2.3747924775440882e-02; ai  = 3.5154857849003045e-03;
+        // br  = 3.1202126482160020e-01; bi  = 3.2782417558583843e-01;
+
+        omegar = 4.4871828777845426e+00; omegai = -1.5289288391210804e-01;
+        d1r = -1.9656373556495097e+00; d1i = -1.9940602841648480e-01;
+        d2r = 3.7157273982612982e-01; d2i = 3.0408468131364115e-02;
+        d3r = -1.2489376546890307e-02; d3i = -1.1795224369575410e+00;
+        d4r = -9.5469103988526205e-02; d4i = -1.1884679191569573e-01;
+        ar  = -9.4468965140239836e-01; ai  = 1.3984561059761588e-01;
+        br  = 1.2412169416447604e+01; bi  = 1.3040807358130383e+01;
+
+        n = 3.;
       } else {
         OV_ABORT("finish me");
       }

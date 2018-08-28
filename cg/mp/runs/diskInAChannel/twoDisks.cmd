@@ -68,7 +68,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; 
+$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; $zfMono=0.;
 $useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 # $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
 $predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018
@@ -102,7 +102,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
     "zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
    "dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,"useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,\
-   "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"fluidSolidCornerFix=i"=> \$fluidSolidCornerFix );
+   "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"fluidSolidCornerFix=i"=> \$fluidSolidCornerFix,"tb=f"=>\$tb,"zfMono=f"=>\$zfMono );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -299,12 +299,14 @@ continue
 # --
         erase
         plot domain: fluid
-        contour
-          vertical scale factor 0.
-           # ghost lines 1
-           plot:p
-           ##  wire frame
-          exit
+        streamlines
+        exit
+        # contour
+        #   vertical scale factor 0.
+        #    # ghost lines 1
+        #    plot:p
+        #    ##  wire frame
+        #   exit
         plot domain: solid1
         contour
           vertical scale factor 0.

@@ -243,7 +243,7 @@ if( $known eq "piston" ){\
 $ampS=.001;  $thetaS=$thetad*$Pi/180.; \
 if( $known eq "shear" ){ \
   $knownCmds=" shearing fluid and elastic solid\n" .\
-             "$ampS, $rhoBar, $thetaS \n";\
+             "$ampS, $rhoBar, $thetaS, $nu \n";\
 }
 $ic="OBTZ:user defined known solution\n" .\
     "choose a common known solution\n" .\

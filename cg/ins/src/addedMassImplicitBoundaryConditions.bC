@@ -488,8 +488,9 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
     // real k = 1./(2.*ds);
 
     real beta=sqrt( rho/(mu*dt) + k*k );
+    // real zfm1;
     zfm = (rho*rho + ( rho*beta*zp + 4.*rho*mu*k*k )*dt - ( 4.*(beta-k)*mu*mu*k*k*k )*dt*dt )/( (rho+ zp*dt*(beta-k) )*dt*k );
-    
+
     printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
            rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
   
@@ -500,6 +501,9 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
   if( useMonolithicImpedance )
   {
     zf = zfMono*zfm;
+
+    // 8/28/18: some cases may be fixed by uncommenting the following line
+    // zf = zfNew;
   }
   else if( useFluidImpedanceMuByH )
   {

@@ -1,4 +1,139 @@
 **************************************************
+********** Aug 21, 2018
+
+RTW
+
+Radial Shear
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/radialElasticPiston.cmd -g=./radialElasticPistonGride8.order2 -method=ins -addedMass=1 -scf=1 -nu=.1 -tp=.1 -tf=.3 -tsINS=im -smVariation=g -debug=0 -cdv=1 -cDt= -diss=0.5 -cfl=.9 -useImplicitAmpBCs=1 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1 -known=shear -startCurve=spline -setGhostByExtrapolation=1 -go=halt -dtMax=1e+20 -flushFrequency=2 -show=radialShearPiston/radialShearPistonSolutionScf1Nup1.show
+
+
+Completed runs
+
+radial traveling wave
+
+
+
+radial shear
+* insElasticPiston.rep.shearAmpSCF1e-3NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_shearAmpSCF1em3NUp1zfmImtp6.m
+* insElasticPiston.rep.shearAmpSCF1NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_shearAmpSCF1NUp1zfmImtp6.m
+* insElasticPiston.rep.shearAmpSCF1e3NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_shearAmpSCF1e3NUp1zfmImtp6.m
+
+radial piston 
+* insElasticPiston.rep.AmpSCF1e-3NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_AmpSCF1em3NUp05zfmImtp6.m
+* insElasticPiston.rep.AmpSCF1NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_AmpSCF1NUp05zfmImtp6.m
+* insElasticPiston.rep.AmpSCF1e3NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_rep_AmpSCF1e3NUp05zfmImtp6.m
+
+elastic piston
+* insElasticPiston.epgp.AmpSCF1e-3NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_AmpSCF1em3NUp05zfmImtp6.m
+* insElasticPiston.epgp.AmpSCF1NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_AmpSCF1NUp05zfmImtp6.m
+* insElasticPiston.epgp.AmpSCF1e3NUp05zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_AmpSCF1e3NUp05zfmImtp6.m
+
+elastic shear
+* insElasticPiston.epgp.shearAmpSCF1e-3NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_shearAmpSCF1em3NUp1zfmImtp6.m
+* insElasticPiston.epgp.shearAmpSCF1NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_shearAmpSCF1NUp1zfmImtp6.m
+* insElasticPiston.epgp.shearAmpSCF1e3NUp1zfmImtp6.ConvTable.tex
+  insElasticPiston_epgp_shearAmpSCF1e3NUp1zfmImtp6.m
+
+
+
+
+*OK*
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride32.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=.1 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+ 1e+03 & 0.1 & 0.0031 & 8 & 0.9 & 1.7e+03 & 32 & 4 & 0.074 & 70 & 0 & 1 & 1 & 1 \\ 
+
+
+*OK*
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride16.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=.1 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+ 1e+03 & 0.1 & 0.0062 & 4.1 & 0.9 & 1.7e+03 & 16 & 3.9 & 0.036 & 38 & 0 & 1 & 1 & 1 \\ 
+
+
+*OK*
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride8.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=.1 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+ 1e+03 & 0.1 & 0.012 & 2.1 & 0.9 & 1.7e+03 & 8 & 3.9 & 0.018 & 22 & 0 & 1 & 0.012 & 1 \\ 
+
+*BAD*
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride8.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=10 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+ 1e+03 & 10 & 0.012 & 2.1e+02 & 0.9 & 1.7e+03 & 8e+02 & 3.9 & 1.8 & 1.6e+03 & 0 & 1 & 1 & 1 \\ 
+
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride8.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=10 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.05 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=1. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+
+/home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride8.order2p -method=ins -addedMass=1 -scf=1000. -u0=0. -nu=10 -tp=0.1 -tf=1. -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=.5 -cfl=.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=4 -zfMuByH=1 -zfRhoHByDt=0 -zfMono=0. -known=shear -setGhostByExtrapolation=1  -dtMax=5e+19
+
+
+**************************************************
+********** Aug 20, 2018
+
+test zfmono
+
+scf=1000, nu=10 (should actually be nu=1000) OK
+insElasticPiston.rep.shearAmpSCF1000pNU10zf1+0Imt1p.ConvTable.tex
+insElasticPiston_rep_shearAmpSCF1000pNU10zf1p0Imt1p.m
+
+scf=1000, nu=10 (should actually be nu=1000) bad
+****Output written to ./insElasticPiston.epgp.shearAmpSCF1000pNU10zf1+0Imt1p.ConvTable.tex *****
+Saving the results file as ./results.insElasticPiston.epgp.shearAmpSCF1000pNU10zf1+0Imt1p
+Matlab results written to file [./insElasticPiston_epgp_shearAmpSCF1000pNU10zf1p0Imt1p.m].
+To compute a new table run [processCheckFiles.p -file=./insElasticPiston.epgp.shearAmpSCF1000pNU10zf1+0Imt1p.epg.master.check]
+
+scf=1000, nu=.1 OK
+ ****Output written to ./insElasticPiston.epgp.shearAmpSCF1000pNUp1zf1+0Imt1p.ConvTable.tex *****
+Saving the results file as ./results.insElasticPiston.epgp.shearAmpSCF1000pNUp1zf1+0Imt1p
+Matlab results written to file [./insElasticPiston_epgp_shearAmpSCF1000pNUp1zf1p0Imt1p.m].
+
+
+
+**************************************************
+********** Aug 19, 2018
+
+
+cgmp radialTravelingWave -g=radialTravelingWaveGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -smVariation=g -tsINS=im -tf=.3 -tp=.01 -amp=.00001 -caseid=7 -nu=.1 -dtMax=.01 -setGhostByExtrapolation=1 -go=halt
+
+cgmp radialTravelingWave -g=radialTravelingWaveGride2.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -smVariation=g -tsINS=im -tf=.3 -tp=.01 -amp=.00001 -caseid=8 -nu=.1 -dtMax=.01 -setGhostByExtrapolation=1 -go=halt
+
+conv.p ../../conv/insElasticPiston.conv -cg=rtw -caseid=7 -showAllComponents=0 -ng=2 -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -nu=.1 -tf=.3 -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+**************************************************
+********** Aug 18, 2018
+
+
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=.001 -nu=.1 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=.1 -nu=.1 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1. -nu=.1 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=10. -nu=.1 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1000. -nu=.1 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=10. -nu=10 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+conv.p ../../conv/insElasticPiston.conv -cg=rep  -showAllComponents=0 -ng=4 -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1000. -nu=10 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -zfMuByH=1
+
+
+
+
+
+
+
+**************************************************
 ********** Aug 13, 2018
 
 Gather data on stability
@@ -37,6 +172,7 @@ $cgmpx elasticPiston -method=ins -g=elasticPistonGride2.order2p.hdf -known=shear
 
 shear SCF=10 : WORKS!
 $cgmpx elasticPiston -method=ins -g=elasticPistonGride2.order2p.hdf -known=shear -addedMass=1  -addedMassVelocityBC=0 -scf=10 -u0=0. -nu=10. -tp=.01 -tf=.5 -tsINS=im -smVariation=g -pi=0 -multiDomainAlgorithm=1 -flushFrequency=2 -bcOption=4 -psolver=yale -ra=-10 -rb=-9 -tz=none -debug=3 -diss=.0 -stressRelaxation=0 -useImplicitAmpBCs=1 -setGhostByExtrapolation=1 -dtMax=1.e-2 -cdv=0 -cDt=0 -go=halt
+
 
 
 ts=im: LIGHT, extrap-ghost, WORKS!

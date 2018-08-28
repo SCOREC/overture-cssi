@@ -351,10 +351,6 @@ isBulkSolidModel() const
 int DeformingBodyMotion::
 getBulkSolidParameters( real & impedance )
 {
-  printF("DeformingBodyMotion::getBulkSolidParameters:ERROR This function is no longer supported\n");
-  OV_ABORT("ERROR");
-  
-
     int returnValue=1;
 
   // --- Now look up parameters from the bulk solid: **DO THIS FOR NOW**
