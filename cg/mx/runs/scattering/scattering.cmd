@@ -34,7 +34,7 @@
 #
 #================================================================================================
 # 
-$tFinal=10.; $tPlot=.1; $diss=1.; $cfl=.9; $plotIntensity=0; $boundaryForcing=0; 
+$tFinal=10.; $tPlot=.1; $diss=1.; $cfl=.9; $plotIntensity=0; $boundaryForcing=0; $method="NFDTD";
 $kx=1; $ky=0; $kz=0;
 $grid="sib1.order4.hdf"; $backGround="square"; 
 $cons=0; $go="halt"; 
@@ -43,13 +43,24 @@ $eps=1.; $mu=1.;
 $xa=-100.; $xb=-1.; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
 $rbc="abcEM2"; # radiation BC 
 $pmlLines=11; $pmlPower=6; $pmlStrength=50.; # pml parameters
+$plotTotalField=""; 
+$useSosupDissipation=0; 
+$selectiveDissipation=0;
+$modeGDM=-1; 
+$dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
   "dtMax=f"=>\$dtMax,"kx=i"=>\$kx,"ky=i"=>\$ky,"kz=i"=>\$kz,"plotIntensity=i"=>\$plotIntensity, "cons=i"=>\$cons,\
   "rbc=s"=>\$rbc,"pmlLines=i"=>\$pmlLines,"pmlPower=i"=>\$pmlPower,"pmlStrength=f"=>\$pmlStrength,\
- "xb=f"=>\$xb,"boundaryForcing=i"=>\$boundaryForcing  );
+ "xb=f"=>\$xb,"boundaryForcing=i"=>\$boundaryForcing,"plotTotalField=i"=>\$plotTotalField,\
+  "useSosupDissipation=i"=>\$useSosupDissipation,\
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"modeGDM=i"=>\$modeGDM  );
 # -------------------------------------------------------------------------------------------------
+#
+if( $dm eq "none" ){ $dm="no dispersion"; }
+if( $dm eq"gdm" ){ $dm="GDM"; }
+#
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
@@ -57,7 +68,12 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
 $grid
 #
-NFDTD
+$method
+# dispersion model:
+$dm
+GDM mode: $modeGDM
+GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
+#
 #  boundaryForcing=1 :  Adjust PEC boundaries to account for a plane wave being subtracted out
 if( $boundaryForcing eq 0 ){ $cmd="planeWaveInitialCondition"; }else{ $cmd="planeWaveBoundaryForcing\n zeroInitialCondition"; }
 $cmd
@@ -98,6 +114,8 @@ adjust boundaries for incident field 0 all
 adjust boundaries for incident field $adjustFields $backGround
 # 
 dissipation  $diss
+#
+use sosup dissipation $useSosupDissipation
 #***********************
 #* slow start interval 1.
 slow start interval -1.
@@ -106,9 +124,10 @@ slow start interval -1.
 #***********************
 cfl $cfl
 #
-use conservative divergence $cons 
+use conservative difference $cons
+#
 # plot scattered field 1
-if( $boundaryForcing eq 1 ){ $plotTotalField=1; }else{ $plotTotalField=0; }
+if( $boundaryForcing eq 1 && $plotTotalField eq "" ){ $plotTotalField=1; }elsif( $plotTotalField eq "" ){ $plotTotalField=0; }
 plot total field $plotTotalField
 plot errors 0
 check errors 0

@@ -1,4 +1,17 @@
 **************************
+*** Aug 20, 2018
+
+
+Revisit elastic disk -- SELF CONVERGENCE
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride8.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G8.show -dtMax=1.25e-3 -go=go >! diskInAChannelScf10G8.out
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride4.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G4.show -dtMax=2.5e-3 -go=go >! diskInAChannelScf10G4.out
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2.show -dtMax=5e-3 -go=go >! diskInAChannelScf10G2.out
+
+
+**************************
 *** Aug 14, 2018
 
 

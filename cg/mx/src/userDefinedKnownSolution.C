@@ -4,7 +4,7 @@
 #include "GenericGraphicsInterface.h"
 #include "ParallelUtility.h"
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++)                                       for(i2=I2Base; i2<=I2Bound; i2++)                                     for(i1=I1Base; i1<=I1Bound; i1++)
 
 typedef ::real LocalReal;
 // utility routine (using complex numbers) defined at the bottom of the file.
@@ -17,25 +17,40 @@ getTransmisionWaveNumber( const LocalReal & kr,  const LocalReal & ki,
 
 void
 checkPlaneMaterialInterfaceJumps( 
-                                                    const LocalReal & c1, const LocalReal & c2,
-                                                    const LocalReal & eps1, const LocalReal & eps2,
-                                                    const LocalReal & mu1, const LocalReal & mu2,
+    const LocalReal & c1, const LocalReal & c2,
+    const LocalReal & eps1, const LocalReal & eps2,
+    const LocalReal & mu1, const LocalReal & mu2,
 
-                                                    const LocalReal & sr, const LocalReal & si,
-                                                    const LocalReal & rr, const LocalReal & ri, 
-                                                    const LocalReal & taur, const LocalReal & taui, 
+    const LocalReal & sr, const LocalReal & si,
+    const LocalReal & rr, const LocalReal & ri, 
+    const LocalReal & taur, const LocalReal & taui, 
 
-                                                    const LocalReal & eps1Hatr, const LocalReal & eps1Hati,
-                                                    const LocalReal & eps2Hatr, const LocalReal & eps2Hati,
+    const LocalReal & eps1Hatr, const LocalReal & eps1Hati,
+    const LocalReal & eps2Hatr, const LocalReal & eps2Hati,
 
-                                                    const LocalReal & psiSum1r, const LocalReal & psiSum1i,
-                                                    const LocalReal & psiSum2r, const LocalReal & psiSum12i,
-                                                    const LocalReal & kxr, const LocalReal & kxi,
-                                                    const LocalReal & kyr, const LocalReal & kyi,
-                                                    const LocalReal & kxpr, const LocalReal & kxpi,
-                                                    const LocalReal & kypr, const LocalReal & kypi
+    const LocalReal & psiSum1r, const LocalReal & psiSum1i,
+    const LocalReal & psiSum2r, const LocalReal & psiSum12i,
+    const LocalReal & kxr, const LocalReal & kxi,
+    const LocalReal & kyr, const LocalReal & kyi,
+    const LocalReal & kxpr, const LocalReal & kxpi,
+    const LocalReal & kypr, const LocalReal & kypi
     );
 
+
+#define evalMaterialInterfaceSolution3d EXTERN_C_NAME(evalmaterialinterfacesolution3d)
+extern "C"
+{
+
+void  evalMaterialInterfaceSolution3d( const real&sr,const real&si, 
+                                                                              const real&chiSum1r, const real&chiSum1i, const real&chiSum2r, const real&chiSum2i,
+                                                                              const real&av,const real&nv,const real&kv,
+                                                                              const real&eps1,const real&eps2,
+                                                                              const real&mu1,const real&mu2,
+                                                                              const real&krr,const real&kri,
+                                                                              const real&ktr,const real&kti,
+                                                                              real & arr, real & ari, real & atr, real & ati );
+
+}
 
 // ==========================================================================================
 /// \brief  Evaluate a user defined known solution.
@@ -123,8 +138,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       	{
         	  if( !isRectangular )
         	  {
-         	   x= xLocal(i1,i2,i3,0);
-         	   y= xLocal(i1,i2,i3,1);
+                        x= xLocal(i1,i2,i3,0);
+                        y= xLocal(i1,i2,i3,1);
         	  }
         	  else
         	  {
@@ -231,8 +246,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       	{
         	  if( !isRectangular )
         	  {
-         	   x= xLocal(i1,i2,i3,0);
-         	   y= xLocal(i1,i2,i3,1);
+                        x= xLocal(i1,i2,i3,0);
+                        y= xLocal(i1,i2,i3,1);
         	  }
         	  else
         	  {
@@ -576,8 +591,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       	{
         	  if( !isRectangular )
         	  {
-         	   x= xLocal(i1,i2,i3,0);
-         	   y= xLocal(i1,i2,i3,1);
+                        x= xLocal(i1,i2,i3,0);
+                        y= xLocal(i1,i2,i3,1);
         	  }
         	  else
         	  {
@@ -930,25 +945,556 @@ Hzpi = t397 * t226 * (t539 + t556) * t394;
             }
             else
             {
+        // -----------------------------
         // ----------- 3D --------------
-      	FOR_3D(i1,i2,i3,I1,I2,I3)
-      	{
-        	  if( !isRectangular )
-        	  {
-          	    x= xLocal(i1,i2,i3,0);
-          	    y= xLocal(i1,i2,i3,1);
-          	    z= xLocal(i1,i2,i3,2);
-        	  }
-        	  else
-        	  {
-          	    x=XC(iv,0);
-          	    y=XC(iv,1);
-          	    z=XC(iv,2);
-        	  }
+        // -----------------------------
 
-        	  OV_ABORT("finish me");
-            
-      	}
+                if( true )
+                {
+                    real kzpr=0., kzpi=0.;  // ** FIX ME ***
+                    
+                    real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
+
+
+                    real av[3]={ax,ay,az}; // 
+                    real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                    real arr[3], ari[3], atr[3], ati[3];
+                    real krr[3], kri[3], ktr[3], kti[3];
+                  
+                    evalMaterialInterfaceSolution3d( sr,si, chiSum1r, chiSum1i, chiSum2r, chiSum2i,
+                                                                                      av[0],nv[0],kv[0], eps1,eps2,mu1,mu2, 
+                                                                                      krr[0],kri[0], ktr[0],kti[0], arr[0],ari[0], atr[0],ati[0] );
+
+                      
+                    if( false )
+                    {
+                        printF(" ar=(%.3g + %.3g I,%.3g + %.3g I,%.3g + %.3g I) \n",arr[0],ari[0],arr[1],ari[1],arr[2],ari[2]);
+                        printF(" at=(%.3g + %.3g I,%.3g + %.3g I,%.3g + %.3g I) \n",atr[0],ati[0],atr[1],ati[1],atr[2],ati[2]);
+                    }
+                    
+          // OV_ABORT("Stop here for now");
+
+          // These need to be set for the solution evaluation below:
+                    real axr=ax, axi=0., ayr=ay, ayi=0., azr=az, azi=0.;
+                    real arxr=arr[0], arxi=ari[0], aryr=arr[1], aryi=ari[1], arzr=arr[2], arzi=ari[2];
+                    real atxr=atr[0], atxi=ati[0], atyr=atr[1], atyi=ati[1], atzr=atr[2], atzi=ati[2];
+                    
+                    real kxr=twoPi*kx, kxi=0., kyr=twoPi*ky, kyi=0., kzr=twoPi*kz, kzi=0.;
+                    real krxr=krr[0], krxi=kri[0], kryr=krr[1], kryi=kri[1], krzr=krr[2], krzi=kri[2];
+                    real ktxr=ktr[0], ktxi=kti[0], ktyr=ktr[1], ktyi=kti[1], ktzr=ktr[2], ktzi=kti[2];
+
+
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    { 
+                        if( !isRectangular )
+                        {
+                            x= xLocal(i1,i2,i3,0);
+                            y= xLocal(i1,i2,i3,1);
+                            z= xLocal(i1,i2,i3,2);
+                        }
+                        else
+                        {
+                            x=XC(iv,0);
+                            y=XC(iv,1);
+                            z=XC(iv,2);
+                        }
+
+
+            // Here are the statements to eval the solution: 
+// File generated by Dropbox/DARPA/RPI/adePapers/adegdmi/dispersivePlaneWaveInterface3d.maple
+real t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150;
+// -------------------------------------------------------------------------
+// Need: 
+//    s=sr + I*si : complex frequency
+//    [ax,ay,az] = amplitude vector of incident wave, ax=axr+I*axi etc.
+//    [arx,ary,arz] = amplitude vector of reflected wave, arx=arxr+I*arxi etc.
+//    [atx,aty,atz] = amplitude vector of transmitted wave, atx=atxr+I*atxi etc.
+//    [kx,ky,kz] = incident wave vector, kx=kxr+I*kxi etc. 
+//    [krx,kry,krz] = reflected wave vector, krx=krxr+I*krxi etc. 
+//    [ktx,kty,ktz] = reflected wave vector, ktx=ktxr+I*ktxi etc. 
+// -------------------------------------------------------------------------
+// Evaluated:                                                               
+//    [Exr,Exi] ,[Eyr,Eyi], [Ezr,Ezi]        : left state                   
+//    [Etxr,Etxi] ,[Etyr,Etyi], [Etzr,Etzi]  : right state                  
+// -------------------------------------------------------------------------
+real Exr,Eyr,Ezr, Exi,Eyi,Ezi;
+real Etxr,Etyr,Etzr, Etxi,Etyi,Etzi;
+t2 = exp(t * sr);
+t3 = t * si;
+t4 = cos(t3);
+t5 = t2 * t4;
+t9 = x * krxr + y * kryr + z * krzr;
+t10 = cos(t9);
+t15 = exp(-x * krxi - y * kryi - z * krzi);
+t16 = t10 * t15;
+t17 = t16 * arxr;
+t19 = sin(t9);
+t20 = t15 * t19;
+t21 = t20 * arxi;
+t27 = exp(-x * kxi - y * kyi - z * kzi);
+t31 = x * kxr + y * kyr + z * kzr;
+t32 = sin(t31);
+t33 = t27 * t32;
+t34 = t33 * axi;
+t36 = cos(t31);
+t37 = t27 * t36;
+t38 = t37 * axr;
+t40 = sin(t3);
+t41 = t2 * t40;
+t42 = t16 * arxi;
+t44 = t20 * arxr;
+t46 = t33 * axr;
+t48 = t37 * axi;
+Exr = t5 * t17 - t5 * t21 - t5 * t34 + t5 * t38 - t41 * t42 - t41 * t44 - t41 * t46 - t41 * t48;
+t50 = t16 * aryr;
+t52 = t20 * aryi;
+t54 = t33 * ayi;
+t56 = t37 * ayr;
+t58 = t16 * aryi;
+t60 = t20 * aryr;
+t62 = t33 * ayr;
+t64 = t37 * ayi;
+Eyr = -t41 * t58 - t41 * t60 - t41 * t62 - t41 * t64 + t5 * t50 - t5 * t52 - t5 * t54 + t5 * t56;
+t66 = t16 * arzr;
+t68 = t20 * arzi;
+t70 = t33 * azi;
+t72 = t37 * azr;
+t74 = t16 * arzi;
+t76 = t20 * arzr;
+t78 = t33 * azr;
+t80 = t37 * azi;
+Ezr = -t41 * t74 - t41 * t76 - t41 * t78 - t41 * t80 + t5 * t66 - t5 * t68 - t5 * t70 + t5 * t72;
+Exi = t41 * t17 - t41 * t21 - t41 * t34 + t41 * t38 + t5 * t42 + t5 * t44 + t5 * t46 + t5 * t48;
+Eyi = t41 * t50 - t41 * t52 - t41 * t54 + t41 * t56 + t5 * t58 + t5 * t60 + t5 * t62 + t5 * t64;
+Ezi = t41 * t66 - t41 * t68 - t41 * t70 + t41 * t72 + t5 * t74 + t5 * t76 + t5 * t78 + t5 * t80;
+t110 = exp(-x * ktxi - y * ktyi - z * ktzi);
+t114 = x * ktxr + y * ktyr + z * ktzr;
+t115 = cos(t114);
+t116 = t110 * t115;
+t117 = t5 * atxr;
+t119 = t41 * atxi;
+t121 = sin(t114);
+t122 = t110 * t121;
+t123 = t5 * atxi;
+t125 = t41 * atxr;
+Etxr = t116 * t117 - t116 * t119 - t122 * t123 - t122 * t125;
+t127 = t5 * atyr;
+t129 = t41 * atyi;
+t131 = t5 * atyi;
+t133 = t41 * atyr;
+Etyr = t116 * t127 - t116 * t129 - t122 * t131 - t122 * t133;
+t135 = t5 * atzr;
+t137 = t41 * atzi;
+t139 = t5 * atzi;
+t141 = t41 * atzr;
+Etzr = t116 * t135 - t116 * t137 - t122 * t139 - t122 * t141;
+Etxi = t116 * t123 + t116 * t125 + t122 * t117 - t122 * t119;
+Etyi = t116 * t131 + t116 * t133 + t122 * t127 - t122 * t129;
+Etzi = t116 * t139 + t116 * t141 + t122 * t135 - t122 * t137;
+
+
+
+                        if( myDomain==0 )
+                        {
+                            uLocal(i1,i2,i3,ex) = Exr;
+                            uLocal(i1,i2,i3,ey) = Eyr;
+                            uLocal(i1,i2,i3,ez) = Ezr;
+
+                            for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+                            {
+                                const int pc= iv*numberOfDimensions;
+                                pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+                                pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+                                pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
+                            }
+
+                        }
+                        else
+                        {
+                            uLocal(i1,i2,i3,ex) = Etxr;
+                            uLocal(i1,i2,i3,ey) = Etyr;
+                            uLocal(i1,i2,i3,ez) = Etzr;
+                            for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+                            {
+                                const int pc= iv*numberOfDimensions;
+                                pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Etxr - chi2i[iv]*Etxi );
+                                pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Etyr - chi2i[iv]*Etyi );
+                                pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Etzr - chi2i[iv]*Etzi );
+                            }
+                        }
+                    
+
+                    }
+
+                }
+                else
+                {
+          // *** OLD WAY --- ONLY 2D SOLUTION ****
+                
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        if( !isRectangular )
+                        {
+                            x= xLocal(i1,i2,i3,0);
+                            y= xLocal(i1,i2,i3,1);
+                            z= xLocal(i1,i2,i3,2);
+                        }
+                        else
+                        {
+                            x=XC(iv,0);
+                            y=XC(iv,1);
+                            z=XC(iv,2);
+                        }
+
+            // *** FINISH ME for true 3D  : this is taken from the 2D version *****
+
+
+            // -- un-rotate the point (x,y) to the reference space and evaluate the solution 
+                        real ct= nv[0], st=nv[1];  // cos(theta), sin(theta)
+                        real xa=x-x0[0], ya=y-x0[1];
+                        x =  ct*xa + st*ya;
+                        y = -st*xa + ct*ya;
+                    
+
+            // Here are the statements to eval the solution: 
+// File generated by overtureFramework/cg/mx/codes/dispersivePlaneWaveInterface.maple
+// File generated by DropBox/DMX/codes/dispersivePlaneWaveInterface.maple
+real t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257,t258,t259,t260,t261,t262,t263,t264,t265,t266,t267,t268,t269,t270,t271,t272,t273,t274,t275,t276,t277,t278,t279,t280,t281,t282,t283,t284,t285,t286,t287,t288,t289,t290,t291,t292,t293,t294,t295,t296,t297,t298,t299,t300,t301,t302,t303,t304,t305,t306,t307,t308,t309,t310,t311,t312,t313,t314,t315,t316,t317,t318,t319,t320,t321,t322,t323,t324,t325,t326,t327,t328,t329,t330,t331,t332,t333,t334,t335,t336,t337,t338,t339,t340,t341,t342,t343,t344,t345,t346,t347,t348,t349,t350,t351,t352,t353,t354,t355,t356,t357,t358,t359,t360,t361,t362,t363,t364,t365,t366,t367,t368,t369,t370,t371,t372,t373,t374,t375,t376,t377,t378,t379,t380,t381,t382,t383,t384,t385,t386,t387,t388,t389,t390,t391,t392,t393,t394,t395,t396,t397,t398,t399,t400,t401,t402,t403,t404,t405,t406,t407,t408,t409,t410,t411,t412,t413,t414,t415,t416,t417,t418,t419,t420,t421,t422,t423,t424,t425,t426,t427,t428,t429,t430,t431,t432,t433,t434,t435,t436,t437,t438,t439,t440,t441,t442,t443,t444,t445,t446,t447,t448,t449,t450,t451,t452,t453,t454,t455,t456,t457,t458,t459,t460,t461,t462,t463,t464,t465,t466,t467,t468,t469,t470,t471,t472,t473,t474,t475,t476,t477,t478,t479,t480,t481,t482,t483,t484,t485,t486,t487,t488,t489,t490,t491,t492,t493,t494,t495,t496,t497,t498,t499,t500,t501,t502,t503,t504,t505,t506,t507,t508,t509,t510,t511,t512,t513,t514,t515,t516,t517,t518,t519,t520,t521,t522,t523,t524,t525,t526,t527,t528,t529,t530,t531,t532,t533,t534,t535,t536,t537,t538,t539,t540,t541,t542,t543,t544,t545,t546,t547,t548,t549,t550,t551,t552,t553,t554,t555,t556,t557,t558,t559,t560,t561,t562,t563,t564,t565,t566,t567,t568,t569,t570,t571,t572,t573,t574,t575,t576,t577,t578,t579,t580,t581,t582,t583,t584,t585,t586,t587,t588,t589,t590,t591,t592,t593,t594,t595,t596,t597,t598,t599,t600;
+// -------------------------------------------------------------------------
+// Need: 
+//    a = amplitude of the wave, e.g. a=1
+//    x,y,t
+//    sr,si : s= sr + I*si 
+//    alphaP
+//    kxr,kxi,  kyr,kyi,     : complex wave number on left
+//    kxpr,kxpi,  kypr,kypi, : complex wave number on right (plus)
+// -------------------------------------------------------------------------
+// Evaluated:                                                              
+//    Exr,Eyr   : left state                                                
+//    Expr,Eypr : right state                                               
+// -------------------------------------------------------------------------
+real kNorm = sqrt( kxr*kxr + kxi*kxi + kyr*kyr + kyi*kyi);
+real khxr = kxr/kNorm, khxi = kxi/kNorm, khyr=kyr/kNorm, khyi=kyi/kNorm; 
+real kpNorm = sqrt( kxpr*kxpr + kxpi*kxpi + kypr*kypr + kypi*kypi);
+real khxpr = kxpr/kpNorm, khxpi=kxpi/kpNorm, khypr=kypr/kpNorm, khypi=kypi/kpNorm; 
+real kappar,kappai, betar, betai, rr,ri, taur,taui;
+real Exr,Eyr,Hzr, Expr,Eypr,Hzpr;
+real Exi,Eyi,Hzi, Expi,Eypi,Hzpi;
+t1 = khxi * khxpi;
+t2 = khxr * khxpr;
+t4 = pow(khxpi, 0.2e1);
+t5 = pow(khxpr, 0.2e1);
+t7 = 0.1e1 / (t4 + t5);
+kappar = (t1 + t2) * t7;
+t8 = khxi * khxpr;
+t9 = khxr * khxpi;
+kappai = (t8 - t9) * t7;
+t11 = 0.1e1 / mu1;
+t12 = mu2 * t11;
+t13 = kxi * kxpi;
+t15 = kxpr * kxr;
+t17 = kxi * kxpr;
+t19 = kxpi * kxr;
+t21 = khxi * khypi;
+t22 = kxi * kypi;
+t24 = kxr * kypr;
+t26 = khxi * khypr;
+t27 = kxi * kypr;
+t29 = kxr * kypi;
+t33 = khxpi * khyi;
+t34 = kxpi * kyi;
+t36 = kxpr * kyr;
+t38 = khxpi * khyr;
+t39 = kxpi * kyr;
+t41 = kxpr * kyi;
+t45 = t1 * t13 + t1 * t15 + t2 * t13 + t2 * t15 - t8 * t17 + t9 * t17 + t8 * t19 - t9 * t19 + t21 * t22 + t21 * t24 - t26 * t27 + t26 * t29 + t33 * t34 + t33 * t36 - t38 * t39 + t38 * t41;
+t46 = khxpr * khyi;
+t49 = khxpr * khyr;
+t52 = khxr * khypi;
+t55 = khxr * khypr;
+t58 = khyi * khypi;
+t59 = kyi * kypi;
+t61 = kypr * kyr;
+t63 = khyi * khypr;
+t64 = kyi * kypr;
+t66 = kypi * kyr;
+t68 = khypi * khyr;
+t71 = khypr * khyr;
+t74 = t55 * t22 + t55 * t24 + t52 * t27 - t52 * t29 + t49 * t34 + t49 * t36 + t46 * t39 - t46 * t41 + t58 * t59 + t58 * t61 + t71 * t59 + t71 * t61 - t63 * t64 + t63 * t66 + t68 * t64 - t68 * t66;
+t76 = pow(kxpi, 0.2e1);
+t78 = pow(kxpr, 0.2e1);
+t80 = khxpi * khypi;
+t81 = kxpi * kypi;
+t84 = kxpr * kypr;
+t87 = khxpi * khypr;
+t88 = kxpi * kypr;
+t91 = kxpr * kypi;
+t96 = khxpr * khypi;
+t101 = khxpr * khypr;
+t106 = pow(khypi, 0.2e1);
+t107 = pow(kypi, 0.2e1);
+t109 = pow(kypr, 0.2e1);
+t111 = pow(khypr, 0.2e1);
+t114 = 0.2e1 * t101 * t81 + 0.2e1 * t101 * t84 + t106 * t107 + t106 * t109 + t111 * t107 + t111 * t109 + t4 * t76 + t4 * t78 + t5 * t76 + t5 * t78 + 0.2e1 * t80 * t81 + 0.2e1 * t80 * t84 - 0.2e1 * t87 * t88 + 0.2e1 * t87 * t91 + 0.2e1 * t96 * t88 - 0.2e1 * t96 * t91;
+t115 = 0.1e1 / t114;
+betar = t12 * (t45 + t74) * t115;
+t133 = t1 * t17 - t1 * t19 + t8 * t13 - t9 * t13 + t8 * t15 - t9 * t15 + t2 * t17 - t2 * t19 + t21 * t27 - t21 * t29 + t26 * t22 + t26 * t24 - t33 * t39 + t33 * t41 - t38 * t34 - t38 * t36;
+t150 = -t52 * t22 - t52 * t24 + t55 * t27 - t55 * t29 + t46 * t34 + t46 * t36 - t49 * t39 + t49 * t41 + t58 * t64 - t58 * t66 + t63 * t59 - t68 * t59 + t63 * t61 - t68 * t61 + t71 * t64 - t71 * t66;
+betai = t12 * (t133 + t150) * t115;
+t153 = pow(betai, 0.2e1);
+t154 = pow(betar, 0.2e1);
+t155 = pow(kappai, 0.2e1);
+t156 = pow(kappar, 0.2e1);
+t163 = 0.1e1 / (0.2e1 * kappai * betai + 0.2e1 * kappar * betar + t153 + t154 + t155 + t156);
+rr = (t153 + t154 - t155 - t156) * t163;
+ri = 0.2e1 * (betai * kappar - betar * kappai) * t163;
+taur = 0.2e1 * (betar * t155 + betar * t156 + t153 * kappar + t154 * kappar) * t163;
+taui = 0.2e1 * (betai * t155 + betai * t156 + kappai * t153 + t154 * kappai) * t163;
+t180 = x * kxi;
+t181 = y * kyi;
+t182 = t * sr;
+t184 = exp(t180 - t181 + t182);
+t185 = x * kxr;
+t186 = y * kyr;
+t187 = t * si;
+t188 = t185 - t186 - t187;
+t189 = sin(t188);
+t190 = t184 * t189;
+t191 = khyi * rr;
+t193 = khyr * ri;
+t195 = cos(t188);
+t196 = t184 * t195;
+t197 = khyi * ri;
+t199 = khyr * rr;
+t202 = exp(-t180 - t181 + t182);
+t203 = t185 + t186 + t187;
+t204 = cos(t203);
+t205 = t202 * t204;
+t207 = sin(t203);
+t208 = t202 * t207;
+Exr = -a * (-t208 * khyi + t205 * khyr - t190 * t191 - t190 * t193 + t196 * t197 - t196 * t199);
+t212 = khxi * rr;
+t214 = khxr * ri;
+t216 = khxi * ri;
+t218 = khxr * rr;
+Eyr = a * (-t208 * khxi + t205 * khxr + t190 * t212 + t190 * t214 - t196 * t216 + t196 * t218);
+t226 = exp(-x * kxpi - y * kypi + t182);
+t229 = x * kxpr + y * kypr + t187;
+t230 = cos(t229);
+t231 = t226 * t230;
+t232 = khypi * taui;
+t234 = khypr * taur;
+t236 = sin(t229);
+t237 = t226 * t236;
+t238 = khypi * taur;
+t240 = khypr * taui;
+Expr = -a * (-t231 * t232 + t231 * t234 - t237 * t238 - t237 * t240);
+t244 = khxpi * taui;
+t246 = khxpr * taur;
+t248 = khxpi * taur;
+t250 = khxpr * taui;
+Eypr = a * (-t231 * t244 + t231 * t246 - t237 * t248 - t237 * t250);
+Exi = -a * (t205 * khyi + t208 * khyr - t190 * t197 + t190 * t199 - t196 * t191 - t196 * t193);
+Eyi = a * (t205 * khxi + t208 * khxr + t190 * t216 - t190 * t218 + t196 * t212 + t196 * t214);
+Expi = -a * (t231 * t238 + t231 * t240 - t237 * t232 + t237 * t234);
+Eypi = a * (t231 * t248 + t231 * t250 - t237 * t244 + t237 * t246);
+t279 = t11 * a;
+t280 = t190 * khxi;
+t281 = kxi * ri;
+t282 = t281 * si;
+t284 = kxi * rr;
+t285 = t284 * sr;
+t287 = kxr * ri;
+t288 = t287 * sr;
+t290 = kxr * rr;
+t291 = t290 * si;
+t293 = t190 * khxr;
+t294 = t281 * sr;
+t296 = t284 * si;
+t298 = t287 * si;
+t300 = t290 * sr;
+t302 = t190 * khyi;
+t303 = kyi * ri;
+t304 = t303 * si;
+t306 = kyi * rr;
+t307 = t306 * sr;
+t309 = kyr * ri;
+t310 = t309 * sr;
+t312 = kyr * rr;
+t313 = t312 * si;
+t315 = -t280 * t282 - t280 * t285 - t280 * t288 + t280 * t291 - t293 * t294 + t293 * t296 + t293 * t298 + t293 * t300 - t302 * t304 - t302 * t307 - t302 * t310 + t302 * t313;
+t316 = t190 * khyr;
+t317 = t303 * sr;
+t319 = t306 * si;
+t321 = t309 * si;
+t323 = t312 * sr;
+t325 = t196 * khxi;
+t330 = t196 * khxr;
+t335 = -t330 * t282 - t330 * t285 - t330 * t288 + t330 * t291 + t325 * t294 - t325 * t296 - t325 * t298 - t325 * t300 - t316 * t317 + t316 * t319 + t316 * t321 + t316 * t323;
+t337 = t196 * khyi;
+t342 = t196 * khyr;
+t347 = khxi * kxi;
+t348 = t347 * si;
+t350 = khxi * kxr;
+t351 = t350 * sr;
+t353 = khxr * kxi;
+t354 = t353 * sr;
+t356 = khxr * kxr;
+t357 = t356 * si;
+t359 = t205 * t348 + t205 * t351 + t205 * t354 - t205 * t357 - t342 * t304 - t342 * t307 - t342 * t310 + t342 * t313 + t337 * t317 - t337 * t319 - t337 * t321 - t337 * t323;
+t360 = khyi * kyi;
+t361 = t360 * si;
+t363 = khyi * kyr;
+t364 = t363 * sr;
+t366 = khyr * kyi;
+t367 = t366 * sr;
+t369 = khyr * kyr;
+t370 = t369 * si;
+t372 = t347 * sr;
+t374 = t350 * si;
+t376 = t353 * si;
+t378 = t356 * sr;
+t380 = t360 * sr;
+t382 = t363 * si;
+t384 = t366 * si;
+t386 = t369 * sr;
+t388 = t205 * t361 + t205 * t364 + t205 * t367 - t205 * t370 - t208 * t372 + t208 * t374 + t208 * t376 + t208 * t378 - t208 * t380 + t208 * t382 + t208 * t384 + t208 * t386;
+t391 = pow(si, 0.2e1);
+t392 = pow(sr, 0.2e1);
+t394 = 0.1e1 / (t391 + t392);
+Hzr = t279 * (t315 + t335 + t359 + t388) * t394;
+t397 = 0.1e1 / mu2 * a;
+t398 = t236 * khypr;
+t399 = kypi * si;
+t400 = t399 * taur;
+t402 = kypi * sr;
+t403 = t402 * taui;
+t405 = kypr * si;
+t406 = t405 * taui;
+t408 = kypr * sr;
+t409 = t408 * taur;
+t411 = t230 * khxpi;
+t412 = kxpi * si;
+t413 = t412 * taur;
+t415 = kxpi * sr;
+t416 = t415 * taui;
+t418 = kxpr * si;
+t419 = t418 * taui;
+t421 = kxpr * sr;
+t422 = t421 * taur;
+t424 = t230 * khxpr;
+t425 = t412 * taui;
+t427 = t415 * taur;
+t429 = t418 * taur;
+t431 = t421 * taui;
+t433 = t230 * khypi;
+t438 = t398 * t400 - t398 * t403 + t398 * t406 + t398 * t409 + t433 * t400 - t433 * t403 + t433 * t406 + t433 * t409 + t411 * t413 - t411 * t416 + t411 * t419 + t411 * t422 + t424 * t425 + t424 * t427 - t424 * t429 + t424 * t431;
+t439 = t230 * khypr;
+t440 = t399 * taui;
+t442 = t402 * taur;
+t444 = t405 * taur;
+t446 = t408 * taui;
+t448 = t236 * khxpi;
+t453 = t236 * khxpr;
+t458 = t236 * khypi;
+t463 = t453 * t413 - t453 * t416 + t453 * t419 + t453 * t422 - t448 * t425 - t448 * t427 + t448 * t429 - t448 * t431 + t439 * t440 + t439 * t442 - t439 * t444 + t439 * t446 - t458 * t440 - t458 * t442 + t458 * t444 - t458 * t446;
+Hzpr = t397 * t226 * (t438 + t463) * t394;
+t479 = -t280 * t294 + t280 * t296 + t280 * t298 + t280 * t300 + t293 * t282 + t293 * t285 + t293 * t288 - t293 * t291 - t302 * t317 + t302 * t319 + t302 * t321 + t302 * t323;
+t492 = -t325 * t282 - t325 * t285 - t325 * t288 + t325 * t291 - t330 * t294 + t330 * t296 + t330 * t298 + t330 * t300 + t316 * t304 + t316 * t307 + t316 * t310 - t316 * t313;
+t506 = t205 * t372 - t205 * t374 - t205 * t376 - t205 * t378 - t337 * t304 - t337 * t307 - t337 * t310 + t337 * t313 - t342 * t317 + t342 * t319 + t342 * t321 + t342 * t323;
+t519 = t205 * t380 - t205 * t382 - t205 * t384 - t205 * t386 + t208 * t348 + t208 * t351 + t208 * t354 - t208 * t357 + t208 * t361 + t208 * t364 + t208 * t367 - t208 * t370;
+Hzi = t279 * (t479 + t492 + t506 + t519) * t394;
+t539 = t398 * t440 + t398 * t442 - t398 * t444 + t398 * t446 + t458 * t400 - t458 * t403 + t458 * t406 + t458 * t409 + t411 * t425 + t411 * t427 + t448 * t419 + t448 * t422 + t453 * t425 + t453 * t427 - t453 * t429 + t453 * t431;
+t556 = -t439 * t400 + t439 * t403 - t439 * t406 - t439 * t409 - t411 * t429 + t411 * t431 - t424 * t413 + t448 * t413 + t424 * t416 - t448 * t416 - t424 * t419 - t424 * t422 + t433 * t440 + t433 * t442 - t433 * t444 + t433 * t446;
+Hzpi = t397 * t226 * (t539 + t556) * t394;
+
+
+            // ---- rotate the field from the reference space to the rotated space ---
+                        real Exra=Exr, Eyra=Eyr;
+                        Exr =  ct*Exra - st*Eyra;
+                        Eyr =  st*Exra + ct*Eyra;
+                    
+                        real Exia=Exi, Eyia=Eyi;
+                        Exi =  ct*Exia - st*Eyia;
+                        Eyi =  st*Exia + ct*Eyia;
+                    
+                        real Expra=Expr, Eypra=Eypr;
+                        Expr =  ct*Expra - st*Eypra;
+                        Eypr =  st*Expra + ct*Eypra;
+                    
+                        real Expia=Expi, Eypia=Eypi;
+                        Expi =  ct*Expia - st*Eypia;
+                        Eypi =  st*Expia + ct*Eypia;
+                    
+
+                        real Ezr, Ezi, Ezpr,Ezpi;
+                        Ezr=0.; Ezi=0.; Ezpr=0.; Ezpi=0.; // 
+                      
+                        if( false )
+                        {
+                            printF("(i1,i2)=(%3i,%3i): chiSum1=(%9.3e,%9.3e) chiSum2=(%9.3e,%9.3e) r=(%8.2e,%8.2e) "
+                                          "tau=(%8.2e,%8.2e) khy=(%8.2e,%8.2e) khpy=(%8.2e,%8.2e): ",
+                                          i1,i2,chiSum1r,chiSum1i,chiSum2r,chiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
+                            real eps1Hatr = eps1*(1.+chiSum1r), eps1Hati=eps1*(chiSum1i);
+                            real eps2Hatr = eps2*(1.+chiSum2r), eps2Hati=eps2*(chiSum2i);
+
+
+                            checkPlaneMaterialInterfaceJumps( 
+                                c1,c2,eps1,eps2,mu1,mu2, sr,si, rr,ri, taur,taui, 
+                                eps1Hatr,eps1Hati, eps2Hatr,eps2Hati,
+                                chiSum1r,chiSum1i,chiSum2r,chiSum2i,
+                                kxr,kxi, kyr,kyi, kxpr,kxpi, kypr,kypi );
+                        
+                            OV_ABORT("stop here for now");
+                        
+                        }
+                    
+                        if( false )
+                        {
+                            printF("(i1,i2)=(%3i,%3i): kNorm=%g, kpNorm=%g, kappa=(%g,%g) beta=(%g,%g)\n",
+                                          i1,i2,kNorm,kpNorm,kappar,kappai,betar,betai);
+                            printF("    : eps1=%g, eps2=%g, r=(%g,%g) tau=(%g,%g) \n",eps1,eps2,rr,ri,taur,taui);
+              // printF("    : chiSum1=(%g,%g) chiSum2=(%g,%g) \n",chiSum1r,chiSum1i,chiSum2r,chiSum2i);
+                            printF("    : Exr=%g, Eyr=%g, Exi=%g, Eyi=%g Hzr=%g Hzi=%g\n",Exr,Eyr,Exi,Eyi,Hzr,Hzi);
+                            printF("    : Expr=%g, Eypr=%g, Expi=%g, Eypi=%g Hzpr=%g Hzpi=%g\n",Expr,Eypr,Expi,Eypi,Hzpr,Hzpi);
+
+                            OV_ABORT("finish me");
+                        }
+                    
+
+                        if( myDomain==0 )
+                        {
+                            uLocal(i1,i2,i3,ex) = Exr;
+                            uLocal(i1,i2,i3,ey) = Eyr;
+                            uLocal(i1,i2,i3,ez) = Ezr;
+
+                            for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+                            {
+                                const int pc= iv*numberOfDimensions;
+                                pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+                                pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+                                pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
+                            }
+
+                        }
+                        else
+                        {
+                            uLocal(i1,i2,i3,ex) = Expr;
+                            uLocal(i1,i2,i3,ey) = Eypr;
+                            uLocal(i1,i2,i3,ez) = Ezpr;
+                            for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+                            {
+                                const int pc= iv*numberOfDimensions;
+                                pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Expr - chi2i[iv]*Expi );
+                                pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Eypr - chi2i[iv]*Eypi );
+                                pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Ezpr - chi2i[iv]*Ezpi );
+                            }
+                        }
+                    
+
+                    }
+                } // end old way
+                
             }
         }
         else

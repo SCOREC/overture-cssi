@@ -3,12 +3,12 @@
 #include "GenericGraphicsInterface.h"
 #include "ParallelUtility.h"
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3) \
-int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
 
 typedef ::real LocalReal;
 // utility routine (using complex numbers) defined at the bottom of the file.
@@ -21,25 +21,40 @@ getTransmisionWaveNumber( const LocalReal & kr,  const LocalReal & ki,
 
 void
 checkPlaneMaterialInterfaceJumps( 
-                          const LocalReal & c1, const LocalReal & c2,
-                          const LocalReal & eps1, const LocalReal & eps2,
-                          const LocalReal & mu1, const LocalReal & mu2,
+  const LocalReal & c1, const LocalReal & c2,
+  const LocalReal & eps1, const LocalReal & eps2,
+  const LocalReal & mu1, const LocalReal & mu2,
 
-                          const LocalReal & sr, const LocalReal & si,
-                          const LocalReal & rr, const LocalReal & ri, 
-                          const LocalReal & taur, const LocalReal & taui, 
+  const LocalReal & sr, const LocalReal & si,
+  const LocalReal & rr, const LocalReal & ri, 
+  const LocalReal & taur, const LocalReal & taui, 
 
-                          const LocalReal & eps1Hatr, const LocalReal & eps1Hati,
-                          const LocalReal & eps2Hatr, const LocalReal & eps2Hati,
+  const LocalReal & eps1Hatr, const LocalReal & eps1Hati,
+  const LocalReal & eps2Hatr, const LocalReal & eps2Hati,
 
-                          const LocalReal & psiSum1r, const LocalReal & psiSum1i,
-                          const LocalReal & psiSum2r, const LocalReal & psiSum12i,
-                          const LocalReal & kxr, const LocalReal & kxi,
-                          const LocalReal & kyr, const LocalReal & kyi,
-                          const LocalReal & kxpr, const LocalReal & kxpi,
-                          const LocalReal & kypr, const LocalReal & kypi
+  const LocalReal & psiSum1r, const LocalReal & psiSum1i,
+  const LocalReal & psiSum2r, const LocalReal & psiSum12i,
+  const LocalReal & kxr, const LocalReal & kxi,
+  const LocalReal & kyr, const LocalReal & kyi,
+  const LocalReal & kxpr, const LocalReal & kxpi,
+  const LocalReal & kypr, const LocalReal & kypi
   );
 
+
+#define evalMaterialInterfaceSolution3d EXTERN_C_NAME(evalmaterialinterfacesolution3d)
+extern "C"
+{
+
+void  evalMaterialInterfaceSolution3d( const real&sr,const real&si, 
+                                       const real&chiSum1r, const real&chiSum1i, const real&chiSum2r, const real&chiSum2i,
+                                       const real&av,const real&nv,const real&kv,
+                                       const real&eps1,const real&eps2,
+                                       const real&mu1,const real&mu2,
+                                       const real&krr,const real&kri,
+                                       const real&ktr,const real&kti,
+                                       real & arr, real & ari, real & atr, real & ati );
+
+}
 
 // ==========================================================================================
 /// \brief  Evaluate a user defined known solution.
@@ -127,8 +142,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 	{
 	  if( !isRectangular )
 	  {
-	   x= xLocal(i1,i2,i3,0);
-	   y= xLocal(i1,i2,i3,1);
+            x= xLocal(i1,i2,i3,0);
+            y= xLocal(i1,i2,i3,1);
 	  }
 	  else
 	  {
@@ -235,8 +250,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 	{
 	  if( !isRectangular )
 	  {
-	   x= xLocal(i1,i2,i3,0);
-	   y= xLocal(i1,i2,i3,1);
+            x= xLocal(i1,i2,i3,0);
+            y= xLocal(i1,i2,i3,1);
 	  }
 	  else
 	  {
@@ -580,8 +595,8 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 	{
 	  if( !isRectangular )
 	  {
-	   x= xLocal(i1,i2,i3,0);
-	   y= xLocal(i1,i2,i3,1);
+            x= xLocal(i1,i2,i3,0);
+            y= xLocal(i1,i2,i3,1);
 	  }
 	  else
 	  {
@@ -597,7 +612,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
           
 
           // Here are the statements to eval the solution: 
-          #Include "dispersivePlaneWaveInterface.h"
+#Include "dispersivePlaneWaveInterface.h"
 
           // ---- rotate the field from the reference space to the rotated space ---
           real Exra=Exr, Eyra=Eyr;
@@ -684,25 +699,216 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       }
       else
       {
+        // -----------------------------
         // ----------- 3D --------------
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  if( !isRectangular )
-	  {
-	    x= xLocal(i1,i2,i3,0);
-	    y= xLocal(i1,i2,i3,1);
-	    z= xLocal(i1,i2,i3,2);
-	  }
-	  else
-	  {
-	    x=XC(iv,0);
-	    y=XC(iv,1);
-	    z=XC(iv,2);
-	  }
+        // -----------------------------
 
-	  OV_ABORT("finish me");
-      
-	}
+        if( true )
+        {
+          real kzpr=0., kzpi=0.;  // ** FIX ME ***
+          
+          real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
+
+
+          real av[3]={ax,ay,az}; // 
+          real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+          real arr[3], ari[3], atr[3], ati[3];
+          real krr[3], kri[3], ktr[3], kti[3];
+         
+          evalMaterialInterfaceSolution3d( sr,si, chiSum1r, chiSum1i, chiSum2r, chiSum2i,
+                                           av[0],nv[0],kv[0], eps1,eps2,mu1,mu2, 
+                                           krr[0],kri[0], ktr[0],kti[0], arr[0],ari[0], atr[0],ati[0] );
+
+           
+          if( false )
+          {
+            printF(" ar=(%.3g + %.3g I,%.3g + %.3g I,%.3g + %.3g I) \n",arr[0],ari[0],arr[1],ari[1],arr[2],ari[2]);
+            printF(" at=(%.3g + %.3g I,%.3g + %.3g I,%.3g + %.3g I) \n",atr[0],ati[0],atr[1],ati[1],atr[2],ati[2]);
+          }
+          
+          // OV_ABORT("Stop here for now");
+
+          // These need to be set for the solution evaluation below:
+          real axr=ax, axi=0., ayr=ay, ayi=0., azr=az, azi=0.;
+          real arxr=arr[0], arxi=ari[0], aryr=arr[1], aryi=ari[1], arzr=arr[2], arzi=ari[2];
+          real atxr=atr[0], atxi=ati[0], atyr=atr[1], atyi=ati[1], atzr=atr[2], atzi=ati[2];
+          
+          real kxr=twoPi*kx, kxi=0., kyr=twoPi*ky, kyi=0., kzr=twoPi*kz, kzi=0.;
+          real krxr=krr[0], krxi=kri[0], kryr=krr[1], kryi=kri[1], krzr=krr[2], krzi=kri[2];
+          real ktxr=ktr[0], ktxi=kti[0], ktyr=ktr[1], ktyi=kti[1], ktzr=ktr[2], ktzi=kti[2];
+
+
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          { 
+            if( !isRectangular )
+            {
+              x= xLocal(i1,i2,i3,0);
+              y= xLocal(i1,i2,i3,1);
+              z= xLocal(i1,i2,i3,2);
+            }
+            else
+            {
+              x=XC(iv,0);
+              y=XC(iv,1);
+              z=XC(iv,2);
+            }
+
+
+            // Here are the statements to eval the solution: 
+#Include "dispersivePlaneWaveInterface3d.h"
+
+
+            if( myDomain==0 )
+            {
+              uLocal(i1,i2,i3,ex) = Exr;
+              uLocal(i1,i2,i3,ey) = Eyr;
+              uLocal(i1,i2,i3,ez) = Ezr;
+
+              for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+              {
+                const int pc= iv*numberOfDimensions;
+                pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+                pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+                pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
+              }
+
+            }
+            else
+            {
+              uLocal(i1,i2,i3,ex) = Etxr;
+              uLocal(i1,i2,i3,ey) = Etyr;
+              uLocal(i1,i2,i3,ez) = Etzr;
+              for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+              {
+                const int pc= iv*numberOfDimensions;
+                pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Etxr - chi2i[iv]*Etxi );
+                pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Etyr - chi2i[iv]*Etyi );
+                pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Etzr - chi2i[iv]*Etzi );
+              }
+            }
+          
+
+          }
+
+        }
+        else
+        {
+          // *** OLD WAY --- ONLY 2D SOLUTION ****
+        
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            if( !isRectangular )
+            {
+              x= xLocal(i1,i2,i3,0);
+              y= xLocal(i1,i2,i3,1);
+              z= xLocal(i1,i2,i3,2);
+            }
+            else
+            {
+              x=XC(iv,0);
+              y=XC(iv,1);
+              z=XC(iv,2);
+            }
+
+            // *** FINISH ME for true 3D  : this is taken from the 2D version *****
+
+
+            // -- un-rotate the point (x,y) to the reference space and evaluate the solution 
+            real ct= nv[0], st=nv[1];  // cos(theta), sin(theta)
+            real xa=x-x0[0], ya=y-x0[1];
+            x =  ct*xa + st*ya;
+            y = -st*xa + ct*ya;
+          
+
+            // Here are the statements to eval the solution: 
+#Include "dispersivePlaneWaveInterface.h"
+
+            // ---- rotate the field from the reference space to the rotated space ---
+            real Exra=Exr, Eyra=Eyr;
+            Exr =  ct*Exra - st*Eyra;
+            Eyr =  st*Exra + ct*Eyra;
+          
+            real Exia=Exi, Eyia=Eyi;
+            Exi =  ct*Exia - st*Eyia;
+            Eyi =  st*Exia + ct*Eyia;
+          
+            real Expra=Expr, Eypra=Eypr;
+            Expr =  ct*Expra - st*Eypra;
+            Eypr =  st*Expra + ct*Eypra;
+          
+            real Expia=Expi, Eypia=Eypi;
+            Expi =  ct*Expia - st*Eypia;
+            Eypi =  st*Expia + ct*Eypia;
+          
+
+            real Ezr, Ezi, Ezpr,Ezpi;
+            Ezr=0.; Ezi=0.; Ezpr=0.; Ezpi=0.; // 
+           
+            if( false )
+            {
+              printF("(i1,i2)=(%3i,%3i): chiSum1=(%9.3e,%9.3e) chiSum2=(%9.3e,%9.3e) r=(%8.2e,%8.2e) "
+                     "tau=(%8.2e,%8.2e) khy=(%8.2e,%8.2e) khpy=(%8.2e,%8.2e): ",
+                     i1,i2,chiSum1r,chiSum1i,chiSum2r,chiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
+              real eps1Hatr = eps1*(1.+chiSum1r), eps1Hati=eps1*(chiSum1i);
+              real eps2Hatr = eps2*(1.+chiSum2r), eps2Hati=eps2*(chiSum2i);
+
+
+              checkPlaneMaterialInterfaceJumps( 
+                c1,c2,eps1,eps2,mu1,mu2, sr,si, rr,ri, taur,taui, 
+                eps1Hatr,eps1Hati, eps2Hatr,eps2Hati,
+                chiSum1r,chiSum1i,chiSum2r,chiSum2i,
+                kxr,kxi, kyr,kyi, kxpr,kxpi, kypr,kypi );
+            
+              OV_ABORT("stop here for now");
+            
+            }
+          
+            if( false )
+            {
+              printF("(i1,i2)=(%3i,%3i): kNorm=%g, kpNorm=%g, kappa=(%g,%g) beta=(%g,%g)\n",
+                     i1,i2,kNorm,kpNorm,kappar,kappai,betar,betai);
+              printF("    : eps1=%g, eps2=%g, r=(%g,%g) tau=(%g,%g) \n",eps1,eps2,rr,ri,taur,taui);
+              // printF("    : chiSum1=(%g,%g) chiSum2=(%g,%g) \n",chiSum1r,chiSum1i,chiSum2r,chiSum2i);
+              printF("    : Exr=%g, Eyr=%g, Exi=%g, Eyi=%g Hzr=%g Hzi=%g\n",Exr,Eyr,Exi,Eyi,Hzr,Hzi);
+              printF("    : Expr=%g, Eypr=%g, Expi=%g, Eypi=%g Hzpr=%g Hzpi=%g\n",Expr,Eypr,Expi,Eypi,Hzpr,Hzpi);
+
+              OV_ABORT("finish me");
+            }
+          
+
+            if( myDomain==0 )
+            {
+              uLocal(i1,i2,i3,ex) = Exr;
+              uLocal(i1,i2,i3,ey) = Eyr;
+              uLocal(i1,i2,i3,ez) = Ezr;
+
+              for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+              {
+                const int pc= iv*numberOfDimensions;
+                pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+                pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+                pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
+              }
+
+            }
+            else
+            {
+              uLocal(i1,i2,i3,ex) = Expr;
+              uLocal(i1,i2,i3,ey) = Eypr;
+              uLocal(i1,i2,i3,ez) = Ezpr;
+              for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+              {
+                const int pc= iv*numberOfDimensions;
+                pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Expr - chi2i[iv]*Expi );
+                pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Eypr - chi2i[iv]*Eypi );
+                pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Ezpr - chi2i[iv]*Ezpi );
+              }
+            }
+          
+
+          }
+        } // end old way
+        
       }
     }
     else

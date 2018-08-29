@@ -849,7 +849,7 @@ end do
       real eps,mu,kx,ky,kz,slowStartInterval,twoPi,cc
 
       real ax,ay,az,aSq,div,divCoeff
-      logical adjacentFaceIsABC
+      logical adjacentFaceIsABC, applyABC
       integer projectDivLine
 
       ! boundary conditions parameters
@@ -953,6 +953,19 @@ end do
         hz=ez
       end if
 
+      ! Return if there are no ABC's *wdh* Aug 16, 2018
+      applyABC=.false.
+      do axis=0,nd-1
+      do side=0,1
+        if( boundaryCondition(side,axis).ge.abcEM2 .and. boundaryCondition(side,axis).le.abc5 )then
+          applyABC=.true.
+          exit
+        end if
+      end do
+      end do
+      if( .not.applyABC )then
+        return
+      end if
 
       ! For fourth order, when we set div(E)=0 on the face we can change the first or second ghost point: 
       ! NOTE: for the mx/cmd/abc.cmd test of square128.order4, the errors in div(E) are 5 times smaller with projectDivLine=1

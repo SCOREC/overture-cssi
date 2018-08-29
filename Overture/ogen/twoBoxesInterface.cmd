@@ -59,6 +59,7 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 * 
 $suffix = ".order$order"; 
 if( $bc eq "p" ){ $suffix .= "p"; } # periodic
+if( $factor>0 && $name eq "" ){ $name = "twoBoxesInterface" . "$interp$factor" . $suffix . ".hdf"; }
 if( $name eq "" ){ $name = "twoBoxesInterface" . "$interp$xFactor$yFactor$zFactor" . $suffix . ".hdf"; }
 if( $bc eq "p" ){ $bcLeft=$bclp; $bcRight=$bcrp; }
 * 

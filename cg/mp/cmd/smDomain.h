@@ -155,8 +155,8 @@ order of dissipation $dissOrder
 cfl $cfl
 use conservative difference $cons
 # 
-plot divergence 1
-plot vorticity 1
+# plot divergence 1
+# plot vorticity 1
 if( $smVariation eq "non-conservative" || $smVariation eq "conservative" ){ $plotCommands = "plot velocity 1\n plot stress 1"; }else{ $plotCommands="*"; }
 $plotCommands
 initial conditions options...

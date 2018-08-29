@@ -1,4 +1,27 @@
 **************************************************
+********** Aug 19, 2018
+
+RUNS FOR FIGURES IN PAPER
+
+
+--- RADIAL SHEAR ----
+HEAVY:
+$cgmpx radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1000 -nu=10. -tp=.01 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -go=halt
+
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride8.order2.hdf -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=10 -nu=10. -tp=.05 -tf=.5 -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=radialShearG8Scf10.show -go=go >! radialShearG8Scf10.out
+
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=10 -nu=10. -tp=.05 -tf=.5 -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=radialShearG4Scf10.show -go=go >! radialShearG4Scf10.out
+
+---- RADIAL -----
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride8.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1. -nu=.05 -tp=.05 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=repG8Scf1.show -go=go >! repG8Scf1.out
+
+$cgmpx -noplot radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1. -nu=.05 -tp=.05 -tf=1. -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=repG4Scf1.show -go=go >! repG4Scf1.out
+
+
+
+
+
+**************************************************
 ********** Aug 13, 2018
 
 Gather data on stability

@@ -1,3 +1,24 @@
+*****************************************
+********** Aug 29, 2018
+
+START ON FANCY GDM Scattering example:
+
+cgmx scattering -g=cice4.order4.hdf  -bg=square -rbc=abcPML -kx=4 -boundaryForcing=1 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -tf=1 -go=halt
+
+
+cgmx scattering -g=cice4.order4.hdf  -bg=square -rbc=abcPML -boundaryForcing=0 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -tf=1 -go=halt
+
+
+ADD GDM
+cgmx scattering -g=objectsGride4.order2.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -go=halt
+
+cgmx scattering -g=objectsGride4.order2.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -tf=5 -tp=.05 -go=halt
+
+cgmx scattering -g=cice4.order4.hdf  -bg=square -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -tf=1 -go=halt
+
+
+
+
 *********************************
 ************ Aug 18, 2016
 

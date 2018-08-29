@@ -124,7 +124,7 @@ src/evalDispersionRelation.f : src/evalDispersionRelation.bf; $(BPP) -quiet -cle
 
 src/advanceStructured.C : src/advanceStructured.bC;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
-src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC dispersivePlaneWaveInterface.h;  $(BPP) -quiet -clean -I$(Overture)/include $<
+src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC dispersivePlaneWaveInterface.h dispersivePlaneWaveInterface3d.h;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
 # we need to add these explicitly since the implicit rule for %.bf doesn't work for some reason (?)
 # we need to do it this way so that all the files created with bpp are put in the src directory: 

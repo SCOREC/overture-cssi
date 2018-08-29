@@ -659,3 +659,430 @@
 
       return
       end
+
+
+
+! =========================================================
+!    Normalize a vector to have length 1
+! =========================================================
+
+! =========================================================
+!    Normalize a complex vector to have length 1
+! =========================================================
+
+      ! ============================================================================================
+      ! Evaluate the exact solution for a plane material interface in 3D
+      ! Input:
+      !   sr + I*si : incident complex frequency
+      !   chiSum1 = chiSum1r + chiSum1i :  suseptibility on left
+      !   chiSum2 = chiSum2r + chiSum2i : 
+      !   (ax,ay,az) : incident amplitude vector 
+      !   eps1,eps2    : magnetic permeabilities 
+      !   mu1,mu2    : magnetic permeabilities 
+      !   (nx,ny,nz) : normal to the interface
+      !   (kx,ky,kz) : incident wave number 
+      ! Output:
+      !   krr(3) + I*kri(3) : refelected wave vector (complex: ktx=ktxr+ I*ktxi) etc.
+      !   ktr(3) + I*kti(3) : transmitted wave vector (complex: ktx=ktxr+ I*ktxi) etc.
+      !   arr(3) + I ari(3) : complex amplitide vector for reflected wave 
+      !   atr(3) + I ati(3) : complex amplitide vector for transmitted wave 
+      ! ============================================================================================
+      subroutine evalMaterialInterfaceSolution3d( sr,si, chiSum1r, 
+     & chiSum1i, chiSum2r, chiSum2i, av, nv, kv,eps1,eps2,mu1,mu2, 
+     & krr,kri, ktr,kti, arr,ari,atr,ati )
+
+      implicit none
+
+      real av(3), nv(3), kv(3), krr(3), kri(3), ktr(3), kti(3)
+      real eps1,eps2,mu1,mu2,sr,si,chiSum1r, chiSum1i, chiSum2r, 
+     & chiSum2i
+      real arr(3),ari(3), atr(3),ati(3)
+
+      ! local
+      real ax,ay,az, nx,ny,nz, kx,ky,kz
+      real ktxr,ktxi,ktyr,ktyi,ktzr,ktzi
+      real qx,qy,qz, gx,gy,gz, hx,hy,hz, px,py,pz
+      real kDotN,aDotK,aNorm,qDotA,pDotA
+      real krx,kry,krz
+      complex*16 qDotQ,qDotH,qDotM,qDotG
+      complex*16 pDotQ,pDotH,pDotM,pDotG
+      ! real Eperp,Epar, Tperp,Tpar
+
+      complex*16 qDotKrCrossQ,qDotKrCrossH,qDotKtCrossQ,qDotKtCrossM,
+     & qDotKCrossA
+      complex*16 pDotKrCrossQ,pDotKrCrossH,pDotKtCrossQ,pDotKtCrossM,
+     & pDotKCrossA
+
+      complex*16  ktx,kty,ktz,mx,my,mz,chiSum1,chiSum2,resid1,resid2
+      complex*16 er(3),et(3)
+      real ktSq,c1,c2
+      complex*16 s, ktn
+
+      complex*16 a4(4,4),b(4),x1,x2,x3,x4, a4s(4,4)
+      integer n,nrhs,ipvt(4),info,m
+      real eps
+      integer debug
+
+      eps = 1.e-12 ! fix me -- 100*REAL_EPS
+      debug=1
+
+      aDotk = ax*kx+ay*ky+az*kz
+      if( debug.gt.0 )then
+        write(*,'("ENTERING evalMaterialInterfaceSolution3d")')
+        write(*,'(" s =",2(1pe10.2))') sr,si
+        write(*,'(" av =",3(1pe10.2))') av(1),av(2),av(3)
+        write(*,'(" kv =",3(1pe10.2))') kv(1),kv(2),kv(3)
+        write(*,'(" nv =",3(1pe10.2))') nv(1),nv(2),nv(3)
+
+        write(*,'(" aDotK =",(1pe10.2)," (Should be zero)")') aDotK
+      end if
+      if( abs(aDotk) .gt. eps )then
+        write(*,'("evalMatInterfaceSolution3d: ERROR a.k ~= 0, a.k=",
+     & e10.2)') aDotk
+      end if
+
+
+      ax=av(1)
+      ay=av(2)
+      az=av(3)
+
+      kx=kv(1)
+      ky=kv(2)
+      kz=kv(3)
+
+      nx=nv(1)
+      ny=nv(2)
+      nz=nv(3)
+
+      ! complex transmission wave number kt 
+      ktxr=ktr(1)
+      ktyr=ktr(2)
+      ktzr=ktr(3)
+
+      ktxi=kti(1)
+      ktyi=kti(2)
+      ktzi=kti(3)
+
+      ktx = cmplx(ktxr,ktxi)
+      kty = cmplx(ktyr,ktyi)
+      ktz = cmplx(ktzr,ktzi)
+
+
+      ! q =(n X k)/ | n X k |
+      qx = ny*kz - nz*ky
+      qy = nz*kx - nx*kz
+      qz = nx*ky - ny*kx
+        aNorm = sqrt( qx**2+qy**2+qz**2)
+        if( aNorm > 0. )then
+          qx=qx/aNorm
+          qy=qy/aNorm
+          qz=qz/aNorm
+        else
+          write(*,'(" evalMatInterfaceSolution3d:ERROR: q is zero!")')
+          stop 1111
+        end if
+
+      ! g = (q X k) / |q X k |
+      gx = qy*kz - qz*ky
+      gy = qz*kx - qx*kz
+      gz = qx*ky - qy*kx
+        aNorm = sqrt( gx**2+gy**2+gz**2)
+        if( aNorm > 0. )then
+          gx=gx/aNorm
+          gy=gy/aNorm
+          gz=gz/aNorm
+        else
+          write(*,'(" evalMatInterfaceSolution3d:ERROR: g is zero!")')
+          stop 1111
+        end if
+
+      ! kr : reflected wave number 
+      kDotN = kx*nx+ky*ny+kz*nz
+      krx = kx - 2.*kDotN*nx
+      kry = ky - 2.*kDotN*ny
+      krz = kz - 2.*kDotN*nz
+      krr(1)=krx
+      kri(1)=0.
+      krr(2)=kry
+      kri(2)=0.
+      krr(3)=krz
+      kri(3)=0.
+
+      c1 = sqrt(1./(eps1*mu1))
+      c2 = sqrt(1./(eps2*mu2))
+
+      s = cmplx(sr,si)
+      chiSum1 = cmplx(chiSum1r,chiSum1i)
+      chiSum2 = cmplx(chiSum2r,chiSum2i)
+
+      !  s^2 + c1^2( kx^2 + ky^2 + kz^2 ) + s^2 chiSum1 = 0
+      !  s^2 + c1^2( kn^2 + kt1^2 + kt2^2 ) + s^2 chiSum1 = 0
+      ! Tranmitted:
+      !  s^2 + c2^2( ktn^2 + kt1^2 + kt2^2 ) + s^2 chiSum2 = 0
+      !
+      ktSq = kx**2 + ky**2 + kz**2 - kDotN**2 ! kt1^2 + kt2^2
+      ! ktn = normal component of the transmitted wave vector
+      ktn = csqrt( -ktSq - (s**2)*(1.+chiSum2)/(c2**2) )
+
+      if( .false. .and. aimag(ktn).lt. 0. )then
+        ! If Im(ktn)<0 this mode will grow expoenntially in space
+        ! In this case take the other 
+        ktn=-ktn
+      end if
+
+      ! transmitted wave vector: 
+      ktx = kx + (ktn -kDotN)*nx
+      kty = ky + (ktn -kDotN)*ny
+      ktz = kz + (ktn -kDotN)*nz
+      ktr(1)= real(ktx)
+      kti(1)=aimag(ktx)
+      ktr(2)= real(kty)
+      kti(2)=aimag(kty)
+      ktr(3)= real(ktz)
+      kti(3)=aimag(ktz)
+
+
+      if( debug.gt.0 )then
+
+        write(*,'(" transmitted wave: ktn=(",1pe10.2,",",1pe10.2,") (
+     & could choose negative?)")') real(ktn),aimag(ktn)
+
+        ! Check dispersion relations
+        resid1 = (s**2)*(1.+chiSum1) + (c1**2)*( kx**2  + ky**2  + kz**
+     & 2  )
+        resid2 = (s**2)*(1.+chiSum2) + (c2**2)*( ktx**2 + kty**2 + ktz*
+     & *2 )
+        write(*,'(" residual in dispersion relation 1 =",2e10.2)') 
+     & resid1
+        write(*,'(" residual in dispersion relation 2 =",2e10.2)') 
+     & resid2
+      end if
+
+      ! h = q X kr / | |
+      hx = qy*krz - qz*kry
+      hy = qz*krx - qx*krz
+      hz = qx*kry - qy*krx
+        aNorm = sqrt( hx**2+hy**2+hz**2)
+        if( aNorm > 0. )then
+          hx=hx/aNorm
+          hy=hy/aNorm
+          hz=hz/aNorm
+        else
+          write(*,'(" evalMatInterfaceSolution3d:ERROR: h is zero!")')
+          stop 1111
+        end if
+
+      ! m = q X kt / | |   (may be complex)
+      mx = qy*ktz - qz*kty
+      my = qz*ktx - qx*ktz
+      mz = qx*kty - qy*ktx
+        aNorm = sqrt( cabs(mx)**2+cabs(my)**2+cabs(mz)**2)
+        if( aNorm > 0. )then
+          mx=mx/aNorm
+          my=my/aNorm
+          mz=mz/aNorm
+        else
+          write(*,'(" evalMatInterfaceSolution3d:ERROR: m is zero!")')
+          stop 1111
+        end if
+
+      if( debug.gt.0 )then
+        aNorm= sqrt( conjg(mx)*mx + conjg(my)*my + conjg(mz)*mz )
+        write(*,'(" norm(m) = ",1pe10.2)') aNorm
+      end if
+
+      ! p = n X q : another vector in tangent plane of the interface
+      px = ny*qz - nz*qy
+      py = nz*qx - nx*qz
+      pz = nx*qy - ny*qx
+        aNorm = sqrt( px**2+py**2+pz**2)
+        if( aNorm > 0. )then
+          px=px/aNorm
+          py=py/aNorm
+          pz=pz/aNorm
+        else
+          write(*,'(" evalMatInterfaceSolution3d:ERROR: p is zero!")')
+          stop 1111
+        end if
+
+      if( debug.gt.0 )then
+        write(*,'(" kr =",3(1pe10.2))') krx,kry,krz
+
+        write(*,'(" krr =",3(1pe10.2))') krr(1),krr(2),krr(3)
+        write(*,'(" kri =",3(1pe10.2))') kri(1),kri(2),kri(3)
+
+        write(*,'(" ktr =",3(1pe10.2))') ktr(1),ktr(2),ktr(3)
+        write(*,'(" kti =",3(1pe10.2))') kti(1),kti(2),kti(3)
+
+        write(*,'(" q = n X kh = ",3(1pe10.2))') qx,qy,qz
+        write(*,'(" g = q X kh = ",3(1pe10.2))') gx,gy,gz
+
+        write(*,'(" h = n X kh = ",3(1pe10.2))') hx,hy,hz
+        write(*,'(" p = n X kh = ",3(1pe10.2))') px,py,pz
+        write(*,'(" m = q X kth= ",6(1pe10.2))') mx,my,mz
+      end if
+
+
+      ! Eperp = ax*qx+ay*qy+az*qz
+      ! Epar  = ax*gx+ay*gy+az*gz
+      qDotA = qx*ax+qy*ay+qz*az
+      pDotA = px*ax+py*ay+pz*az
+
+      ! ---- Evaluate the four transmission and reflection coefficients -----
+      !   See notes...
+
+      qDotQ = qx*qx+qy*qy+qz*qz
+      qDotH = qx*hx+qy*hy+qz*hz
+      qDotM = qx*mx+qy*my+qz*mz
+      qDotG = qx*gx+qy*gy+qz*gz
+
+      pDotQ = px*qx+py*qy+pz*qz
+      pDotH = px*hx+py*hy+pz*hz
+      pDotM = px*mx+py*my+pz*mz
+      pDotG = px*gx+py*gy+pz*gz
+
+      a4(1,1) = qDotQ
+      a4(1,2) = qDotH
+      a4(1,3) =-qDotQ
+      a4(1,4) =-qDotM
+      b(1)    =-qDotA
+
+      a4(2,1) = pDotQ
+      a4(2,2) = pDotH
+      a4(2,3) =-pDotQ
+      a4(2,4) =-pDotM
+      b(2)    =-pDotA
+
+      ! t.[  x1*(kr X q)/mu1 + x2*( kr X h )/mu1 - ( x3*(kt X q)/mu2 + x4*( kt X m )/mu2 ] = - t.[ (k X a)/mu1 ]
+
+      qDotKrCrossQ = qx*( kry*qz-krz*qy  ) + qy*( krz*qx-krx*qz ) + qz*
+     & ( krx*qy-kry*qx )
+      qDotKrCrossH = qx*( kry*hz-krz*hy  ) + qy*( krz*hx-krx*hz ) + qz*
+     & ( krx*hy-kry*hx )
+      qDotKtCrossQ = qx*( kty*qz-ktz*qy  ) + qy*( ktz*qx-ktx*qz ) + qz*
+     & ( ktx*qy-kty*qx )
+      qDotKtCrossM = qx*( kty*mz-ktz*my  ) + qy*( ktz*mx-ktx*mz ) + qz*
+     & ( ktx*my-kty*mx )
+      qDotKCrossA  = qx*( ky*az-kz*ay    ) + qy*( kz*ax-kx*az   ) + qz*
+     & ( kx*ay -ky*ax  )
+
+      a4(3,1) = qDotKrCrossQ/mu1
+      a4(3,2) = qDotKrCrossH/mu1
+      a4(3,3) =-qDotKtCrossQ/mu2
+      a4(3,4) =-qDotKtCrossM/mu2
+      b(3)    =-qDotKCrossA/mu1
+
+      pDotKrCrossQ = px*( kry*qz-krz*qy  ) + py*( krz*qx-krx*qz ) + pz*
+     & ( krx*qy-kry*qx )
+      pDotKrCrossH = px*( kry*hz-krz*hy  ) + py*( krz*hx-krx*hz ) + pz*
+     & ( krx*hy-kry*hx )
+      pDotKtCrossQ = px*( kty*qz-ktz*qy  ) + py*( ktz*qx-ktx*qz ) + pz*
+     & ( ktx*qy-kty*qx )
+      pDotKtCrossM = px*( kty*mz-ktz*my  ) + py*( ktz*mx-ktx*mz ) + pz*
+     & ( ktx*my-kty*mx )
+      pDotKCrossA  = px*( ky*az-kz*ay    ) + py*( kz*ax-kx*az   ) + pz*
+     & ( kx*ay -ky*ax  )
+
+      a4(4,1) = pDotKrCrossQ/mu1
+      a4(4,2) = pDotKrCrossH/mu1
+      a4(4,3) =-pDotKtCrossQ/mu2
+      a4(4,4) =-pDotKtCrossM/mu2
+      b(4)    =-pDotKCrossA/mu1
+
+      if( debug.gt.0 )then
+       write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",
+     & 2(1pe10.2),")")') a4(1,1),a4(1,2),a4(1,3),a4(1,4)
+       write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",
+     & 2(1pe10.2),")")') a4(2,1),a4(2,2),a4(2,3),a4(2,4)
+       write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",
+     & 2(1pe10.2),")")') a4(3,1),a4(3,2),a4(3,3),a4(3,4)
+       write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",
+     & 2(1pe10.2),")")') a4(4,1),a4(4,2),a4(4,3),a4(4,4)
+
+       write(*,'(" b1=(",1pe10.2,",",1pe10.2,")")') real(b(1)),aimag(b(
+     & 1))
+       write(*,'(" b2=(",1pe10.2,",",1pe10.2,")")') real(b(2)),aimag(b(
+     & 2))
+       write(*,'(" b3=(",1pe10.2,",",1pe10.2,")")') real(b(3)),aimag(b(
+     & 3))
+       write(*,'(" b4=(",1pe10.2,",",1pe10.2,")")') real(b(4)),aimag(b(
+     & 4))
+      end if
+
+      ! save matrix for checking
+      do n=1,4
+        do m=1,4
+          a4s(m,n)=a4(m,n)
+        end do
+      end do
+      n=4
+      nrhs=1
+
+      call zgesv( n, nrhs, a4, n, ipvt,b, n,info )
+      if( info.ne.0 )then
+        write(*,'("Error return from zgesv: info=",i6)') info
+        stop 3333
+      end if
+
+      if( debug.gt.0 )then
+       write(*,'(" x1=(",1pe10.2,",",1pe10.2,")")') real(b(1)),aimag(b(
+     & 1))
+       write(*,'(" x2=(",1pe10.2,",",1pe10.2,")")') real(b(2)),aimag(b(
+     & 2))
+       write(*,'(" x3=(",1pe10.2,",",1pe10.2,")")') real(b(3)),aimag(b(
+     & 3))
+       write(*,'(" x4=(",1pe10.2,",",1pe10.2,")")') real(b(4)),aimag(b(
+     & 4))
+      end if
+
+      x1 = b(1)
+      x2 = b(2)
+      x3 = b(3)
+      x4 = b(4)
+
+      ! Complex reflected wave coefficient vector
+      er(1) = x1*qx + x2*hx
+      er(2) = x1*qy + x2*hy
+      er(3) = x1*qz + x2*hz
+
+      ! Complex transmitted wave coefficient vector
+      et(1) = x3*qx + x4*mx
+      et(2) = x3*qy + x4*my
+      et(3) = x3*qz + x4*mz
+
+      ! return real and imag. parts or er and et
+      do m=1,3
+        arr(m)= real(er(m))
+        ari(m)=aimag(er(m))
+        atr(m)= real(et(m))
+        ati(m)=aimag(et(m))
+      end do
+
+      if( debug.gt.0 )then
+        ! checks
+        ! tm.( a + er - et )
+        resid1 = a4s(1,1)*x1 + a4s(1,2)*x2 + a4s(1,3)*x3 + a4s(1,4)*x4 
+     & + qDotA
+        write(*,'(" check: 1st eqn: resid=",2(1pe10.2))') resid1
+
+        resid1 = a4s(2,1)*x1 + a4s(2,2)*x2 + a4s(2,3)*x3 + a4s(2,4)*x4 
+     & + pDotA
+        write(*,'(" check: 2nd eqn: resid=",2(1pe10.2))') resid1
+
+        resid1 = qx*( ax+er(1)-et(1) ) + qy*( ay+er(2)-et(2) ) + qz*( 
+     & az+er(3)-et(3) )
+        write(*,'(" check: q.( a + er - et )=",2(1pe10.2))') resid1
+
+        resid1 = px*( ax+er(1)-et(1) ) + py*( ay+er(2)-et(2) ) + pz*( 
+     & az+er(3)-et(3) )
+        write(*,'(" check: p.( a + er - et )=",2(1pe10.2))') resid1
+
+        resid2 = px*er(1) + py*er(2) + pz*er(3) - (pDotQ*x1 +pDotH*x2)
+        write(*,'(" check: resid2=",2(1pe10.2))') resid2
+        resid2 = px*et(1) + py*et(2) + pz*et(3) - (pDotQ*x3 +pDotM*x4)
+        write(*,'(" check: resid2=",2(1pe10.2))') resid2
+      end if
+
+
+      return
+      end

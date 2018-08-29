@@ -11,9 +11,11 @@
 # plotStuff plotDisk.cmd -show=ellipseG4LongScf5 -name=ellipseG4LongScf5 -solution=101
 # plotStuff plotDisk.cmd -show=ellipseG4LongerScf10 -name=ellipseG4LongerScf10 -solution=301
 #
-$show="balloon.show"; $vMax=""; $solution=1; $name="balloon";
+#  plotStuff plotDisk.cmd -show=diskInAChannelScf10G8 -name=diskInAChannelScf10G8 -solution=21 -tp=1p0
+#
+$show="balloon.show"; $vMax=""; $solution=1; $name="balloon";  $tp=""; 
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "show=s"=>\$show,"name=s"=>\$name,"vMax=f"=>\$vMax,"solution=i"=>\$solution  );
+GetOptions( "show=s"=>\$show,"name=s"=>\$name,"vMax=f"=>\$vMax,"solution=i"=>\$solution,"tp=s"=>\$tp );
 #
 $show
 #
@@ -53,7 +55,7 @@ DISPLAY COLOUR BAR:0 0
 DISPLAY AXES:0 0
 #
 solution: $solution
-$plotName = $name ."StreamLinesAndDisplacement.ps"; 
+$plotName = $name ."StreamLinesAndDisplacement$tp.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
 

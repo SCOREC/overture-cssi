@@ -68,7 +68,7 @@
 !  fpv(n,jv) : RHS To Pv_{n,jv} equation 
 !  fev(n)    : RHS to E_{n} equation
 !-------------------------------------------------------------------------------------------
-#beginMacro evalTZforcingGDM(xy,i1,i2,i3,dispersionModel,numberOfPolarizationVectors,c,alphaP,a0v,a1v,b0v,b1v,fpv,fpSum,fev)
+#beginMacro evalTZforcingGDM(xy,i1,i2,i3,dispersionModel,numberOfPolarizationVectors,c,alphaP,a0v,a1v,b0v,b1v,fpv,fpSum,fev,pettSum)
   if( dispersionModel.ne.noDispersion )then
     do n=0,nd-1
       fpSum(n)=0.
@@ -112,8 +112,65 @@
 #beginMacro getDispersiveTZForcing(fpv1,fpv2,fev1,fev2)
 
   if( twilightZone.eq.1 )then
-    evalTZforcingGDM(xy1,i1,i2,i3,dispersionModel1,numberOfPolarizationVectors1,c1,alphaP1,a0v1,a1v1,b0v1,b1v1,fpv1,fpSum1,fev1)
-    evalTZforcingGDM(xy2,j1,j2,j3,dispersionModel2,numberOfPolarizationVectors2,c2,alphaP2,a0v2,a1v2,b0v2,b1v2,fpv2,fpSum2,fev2)
+    evalTZforcingGDM(xy1,i1,i2,i3,dispersionModel1,numberOfPolarizationVectors1,c1,alphaP1,a0v1,a1v1,b0v1,b1v1,fpv1,fpSum1,fev1,pettSum1)
+    evalTZforcingGDM(xy2,j1,j2,j3,dispersionModel2,numberOfPolarizationVectors2,c2,alphaP2,a0v2,a1v2,b0v2,b1v2,fpv2,fpSum2,fev2,pettSum2)
+  end if
+
+#endMacro 
+
+!-------------------------------------------------------------------------------------------
+! Macro: Eval twilight-zone forcing for GDM equations THREE-D
+! Output
+!  fpv(n,jv) : RHS To Pv_{n,jv} equation 
+!  fev(n)    : RHS to E_{n} equation
+!-------------------------------------------------------------------------------------------
+#beginMacro evalTZforcingGDM3d(xy,i1,i2,i3,dispersionModel,numberOfPolarizationVectors,c,alphaP,a0v,a1v,b0v,b1v,fpv,fpSum,fev,pettSum)
+  if( dispersionModel.ne.noDispersion )then
+    do n=0,nd-1
+      fpSum(n)=0.
+      pettSum(n)=0.
+
+      call ogderiv(ep, 0,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, es(n)   ) 
+      call ogderiv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, est(n)  )
+      call ogderiv(ep, 2,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, estt(n) )
+      call ogderiv(ep, 0,2,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, esxx(n) )
+      call ogderiv(ep, 0,0,2,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, esyy(n) )
+      call ogderiv(ep, 0,0,0,2, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,ex+n, eszz(n) )
+
+      do jv=0,numberOfPolarizationVectors-1
+        ! The TZ component is offset by pxc
+        pc = pxc + jv*nd
+        call ogderiv(ep, 0,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,pc+n, pe(n)   )
+        call ogderiv(ep, 1,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,pc+n, pet(n)  )
+        call ogderiv(ep, 2,0,0,0, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,pc+n, pett(n) )
+        ! Normal TZ forcing for P_{n,jv} equation: 
+        fpv(n,jv) = pett(n) + b1v(jv)*pet(n) + b0v(jv)*pe(n) - a0v(jv)*es(n) - a1v(jv)*est(n)
+        ! Keep sum: 
+        fpSum(n)  = fpSum(n)  + fpv(n,jv)
+        pettSum(n) = pettSum(n) + pett(n) 
+      end do 
+
+      ! TZ forcing for E_{n} equation:
+      ! E_tt - c^2 Delta E + alphaP*Ptt  = 
+      fev(n) = estt(n) - c**2*( esxx(n) + esyy(n) + eszz(n) ) + alphaP*pettSum(n)
+    end do
+  end if
+#endMacro
+
+!-------------------------------------------------------------------------------------------
+! Macro: Evaluate TZ forcing for dispersive equations in 3D 
+!
+! Output
+!    fpv1(n,jv) : RHS To Pv_{n,jv} equation on domain 1
+!    fpv2(n,jv) : RHS To Pv_{n,jv} equation on domain 2
+!    fev1(n)    : RHS to E_{n} equation on domain 1
+!    fev2(n)    : RHS to E_{n} equation on domain 2
+!-------------------------------------------------------------------------------------------
+#beginMacro getDispersiveTZForcing3d(fpv1,fpv2,fev1,fev2)
+
+  if( twilightZone.eq.1 )then
+    evalTZforcingGDM3d(xy1,i1,i2,i3,dispersionModel1,numberOfPolarizationVectors1,c1,alphaP1,a0v1,a1v1,b0v1,b1v1,fpv1,fpSum1,fev1,pettSum1)
+    evalTZforcingGDM3d(xy2,j1,j2,j3,dispersionModel2,numberOfPolarizationVectors2,c2,alphaP2,a0v2,a1v2,b0v2,b1v2,fpv2,fpSum2,fev2,pettSum2)
   end if
 
 #endMacro 
@@ -379,6 +436,37 @@ beginLoopsMask2d()
  f(3)=( ( tau1*u1Lap +tau2*v1Lap )*beta1/epsmu1 - alphaP1*(tau1*fp1(0)+tau2*fp1(1)) ) - \
       ( ( tau1*u2Lap +tau2*v2Lap )*beta2/epsmu2 - alphaP2*(tau1*fp2(0)+tau2*fp2(1)) )
 
+ if( twilightZone.eq.1 )then
+
+   ! For now we assume mu1=mu2 and TZ solutions are the same on both sides.
+
+   ! f(3) = [ tv.E.tt] = [ tv.( c^2*Delta(E) - alphaP*P.tt + fev) ] 
+   !      = [ tv.( c^2*Delta(E) - alphaP*P.tt] + [ tv.fev ]
+  
+   ! -- add on the jump in the forcing ---
+   f(3) = f(3) + ( tau1*(fev1(0)-fev2(0)) + tau2*(fev1(1)-fev2(1)) )
+
+  !-    ! f(3) = [ tv.( c^2*Delta(E) - alphaP*P.tt ] - [ tv.( c^2*Delta(E^e) - alphaP*(P^e).tt ] =0 
+  !-    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
+  !-    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
+  !-    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
+  !-    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyy )
+  !- 
+  !-    ueLap = uexx + ueyy
+  !-    veLap = vexx + veyy
+  !-    f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*(1./epsmu1-1./epsmu2)
+  !- 
+  !-    f(3) = f(3) +  alphaP1*( tau1*pettSum1(0) + tau2*pettSum1(1) ) - \
+  !-                   alphaP2*( tau1*pettSum2(0) + tau2*pettSum2(1) )
+  !-    end if 
+
+
+   ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
+
+   ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
+
+ end if
+
 #endMacro
 
 ! --------------------------------------------------------------------
@@ -583,6 +671,348 @@ endLoopsMask2d()
  ! stop 9876
 
 #endMacro
+
+
+! --------------------------------------------------------------------------------------------
+! Macro:  Evaluate the RHS to the jump conditons: 2D, Order=2, Dispersive
+!
+! Here are the jump conditions (See notes in DMX_ADE)
+!   (1) [ div(E) ] = 0
+!   (2) [ (1/mu)* nv.( Delta(E) ) ]=0
+!   (3) [ (1/mu)* tv.( curl(E) ) ]=0               -->   [ (1/mu)* \nv\times( curl(E) ) ]=0
+!   (4) [ tv.(c^2*Delta(E) -alphaP*P_tt) ] = 0    -->   [ \nv X ( c^2*Delta(E) -alphaP*P_tt) ] = 0 
+! 
+! These 6 equations can be written as 
+!   [ div(E) n + (I- n n^T)( curl(E)/mu ) ] =0                                 (3 eqns)
+!   [ (1/mu) n n^T Delta(E) + (I-n n^T) ( c^2*Delta(E) -alphaP*P_tt ) ] = 0    (3 eqns)
+!
+! --------------------------------------------------------------------------------------------
+#beginMacro eval3dJumpDispersiveOrder2()
+
+ ! stop 6767
+
+ ! 2D: 
+ ! f(0)=(u1x+v1y) - \
+ !      (u2x+v2y)
+ ! f(1)=( an1*u1Lap +an2*v1Lap )/mu1 - \
+ !      ( an1*u2Lap +an2*v2Lap )/mu2 
+ ! f(2)=(v1x-u1y)/mu1 - \
+ !      (v2x-u2y)/mu2
+ ! f(3)=( ( tau1*u1Lap +tau2*v1Lap )*beta1/epsmu1 - alphaP1*(tau1*fp1(0)+tau2*fp1(1)) ) - \
+ !      ( ( tau1*u2Lap +tau2*v2Lap )*beta2/epsmu2 - alphaP2*(tau1*fp2(0)+tau2*fp2(1)) )
+
+ divE1 = u1x+v1y+w1z
+ curlE1x = w1y-v1z
+ curlE1y = u1z-w1x
+ curlE1z = v1x-u1y
+ nDotCurlE1=an1*curlE1x+an2*curlE1y+an3*curlE1z
+ nDotLapE1 = an1*u1Lap + an2*v1Lap + an3*w1Lap
+
+ divE2 = u2x+v2y+w2z
+ curlE2x = w2y-v2z
+ curlE2y = u2z-w2x
+ curlE2z = v2x-u2y
+ nDotCurlE2=an1*curlE2x+an2*curlE2y+an3*curlE2z
+ nDotLapE2 = an1*u2Lap + an2*v2Lap + an3*w2Lap
+
+
+ f(0)=( divE1*an1 + (curlE1x- nDotCurlE1*an1)/mu1 ) - ( divE2*an1 + (curlE2x- nDotCurlE2*an1)/mu2 )
+ f(1)=( divE1*an2 + (curlE1y- nDotCurlE1*an2)/mu1 ) - ( divE2*an2 + (curlE2y- nDotCurlE2*an2)/mu2 )
+ f(2)=( divE1*an3 + (curlE1z- nDotCurlE1*an3)/mu1 ) - ( divE2*an3 + (curlE2z- nDotCurlE2*an3)/mu2 )
+
+ ! cem1 = (1-beta1/eps1)/mu1 
+ ! cem2 = (1-beta2/eps2)/mu2 
+ ! beta = 1 - alphaP*Sum( C_k )
+ !
+
+ nDotFp1 = an1*fp1(0)+an2*fp1(1)+an3*fp1(2)
+ nDotFp2 = an1*fp2(0)+an2*fp2(1)+an3*fp2(2)
+ f(3)=( u1Lap*beta1/(epsmu1) + cem1*nDotLapE1*an1 - alphaP1*( fp1(0)-an1*nDotFp1) ) - \
+      ( u2Lap*beta2/(epsmu2) + cem2*nDotLapE2*an1 - alphaP2*( fp2(0)-an1*nDotFp2) )
+
+ f(4)=( v1Lap*beta1/(epsmu1) + cem1*nDotLapE1*an2 - alphaP1*( fp1(1)-an2*nDotFp1) ) - \
+      ( v2Lap*beta2/(epsmu2) + cem2*nDotLapE2*an2 - alphaP2*( fp2(1)-an2*nDotFp2) )
+
+ f(5)=( w1Lap*beta1/(epsmu1) + cem1*nDotLapE1*an3 - alphaP1*( fp1(2)-an3*nDotFp1) ) - \
+      ( w2Lap*beta2/(epsmu2) + cem2*nDotLapE2*an3 - alphaP2*( fp2(2)-an3*nDotFp2) )
+
+ ! f(3)=( u1Lap/(epsmu1) + cem1*nDotLapE1*an1 ) - ( u2Lap/(epsmu2) + cem2*nDotLapE2*an1 )
+ ! f(4)=( v1Lap/(epsmu1) + cem1*nDotLapE1*an2 ) - ( v2Lap/(epsmu2) + cem2*nDotLapE2*an2 )
+ ! f(5)=( w1Lap/(epsmu1) + cem1*nDotLapE1*an3 ) - ( w2Lap/(epsmu2) + cem2*nDotLapE2*an3 )
+ if( twilightZone.eq.1 )then
+
+   ! For now we assume mu1=mu2 and TZ solutions are the same on both sides.
+
+   ! TZ forcing goes into equation (4)
+   !   (4) [ tv.(c^2*Delta(E) -alphaP*P_tt + fev) ] = 0 
+   !
+   !   [ (1/mu) n n^T Delta(E) + (I-n n^T) ( c^2*Delta(E) -alphaP*P_tt + fev ) ] = 0    (3 eqns)
+
+  
+   ! -- add on the jump in the forcing ---
+   f(3) = f(3) + (1.-an1*an1)*(fev1(0)-fev2(0)) + (0.-an1*an2)*(fev1(1)-fev2(1)) + (0.-an1*an3)*(fev1(2)-fev2(2)) 
+   f(4) = f(4) + (0.-an2*an1)*(fev1(0)-fev2(0)) + (1.-an2*an2)*(fev1(1)-fev2(1)) + (0.-an2*an3)*(fev1(2)-fev2(2)) 
+   f(5) = f(5) + (0.-an3*an1)*(fev1(0)-fev2(0)) + (0.-an3*an2)*(fev1(1)-fev2(1)) + (1.-an3*an3)*(fev1(2)-fev2(2)) 
+
+   ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
+
+ end if
+
+
+! write(*,'("FINISH ME JUMP 3D GDM..., beta1,beta2=",2(1pe10.2)," nDotFp1,nDotFp2=",2(1pe10.2))') beta1,beta2,nDotFp1,nDotFp2
+
+#endMacro
+
+
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=3, ORDER=2, GRID=Curvilinear
+! 
+!                  DISPERSIVE CASE
+!
+! Here are the jump conditions (See notes in DMX_ADE)
+!   (1) [ div(E) ] = 0
+!   (2) [ (1/mu)* nv.( Delta(E) ) ]=0
+!   (3) [ (1/mu)* tv.( curl(E) ) ]=0               -->   [ (1/mu)* \nv\times( curl(E) ) ]=0
+!   (4) [ tv.(c^2*Delta(E) -alphaP*P_tt) ] = 0    -->   [ \nv X ( c^2*Delta(E) -alphaP*P_tt) ] = 0 
+! 
+! These 6 equations can be written as 
+!   [ div(E) n + (I- n n^T)( curl(E)/mu ) ] =0                                 (3 eqns)
+!   [ (1/mu) n n^T Delta(E) + (I-n n^T) ( c^2*Delta(E) -alphaP*P_tt ) ] = 0    (3 eqns)
+!
+! An approximation to P_tt takes the form 
+!   P_tt = K Delta(E) + G(E,P)
+! --------------------------------------------------------------------------
+#beginMacro assignDispersiveInterfaceGhost23c()
+
+  INFO("23c-GDM")
+
+  write(*,'(" FINISH ME for non-zero GDM ")')
+  ! stop 9876
+
+  ! --- initialize some forcing functions ---
+  do n=0,nd-1
+    fev1(n)=0.
+    fev2(n)=0.
+    do jv=0,numberOfPolarizationVectors1-1
+      fpv1(n,jv)=0.
+    end do
+    do jv=0,numberOfPolarizationVectors2-1
+      fpv2(n,jv)=0.
+    end do
+  end do
+
+  beginLoopsMask3d()
+
+    ! here is the normal (assumed to be the same on both sides)
+    an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
+    an2=rsxy1(i1,i2,i3,axis1,1)
+    an3=rsxy1(i1,i2,i3,axis1,2)
+    aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
+    an1=an1/aNorm
+    an2=an2/aNorm
+    an3=an3/aNorm
+
+
+    ! --- first evaluate the equations we want to solve with the wrong values at the ghost points:
+
+
+    ! evalInterfaceDerivatives3d
+    evalInterfaceDerivatives3d()
+
+    ! Evaluate TZ forcing for dispersive equations in 3D 
+    getDispersiveTZForcing3d(fpv1,fpv2,fev1,fev2)
+
+    ! eval dispersive forcings for domain 1
+    getDispersiveForcingOrder2(i1,i2,i3, fp1, fpv1,fev1,p1,p1n,p1m, u1,u1n,u1m, dispersionModel1,numberOfPolarizationVectors1,alphaP1,beta1,a0v1,a1v1,b0v1,b1v1)
+
+    ! eval dispersive forcings for domain 2
+    getDispersiveForcingOrder2(j1,j2,j3, fp2, fpv2,fev2,p2,p2n,p2m, u2,u2n,u2m, dispersionModel2,numberOfPolarizationVectors2,alphaP2,beta2,a0v2,a1v2,b0v2,b1v2)
+
+    cem1=(1.-beta1/eps1)/mu1
+    cem2=(1.-beta2/eps2)/mu2
+
+    betac1=beta1/epsmu1
+    betac2=beta2/epsmu2
+
+
+    eval3dJumpDispersiveOrder2()
+
+    if( debug.gt.4 )then
+     write(debugFile,'(" --> 3d-order2-curv: i1,i2,i3=",3i4," f(start)=",6f8.3)') i1,i2,i3,f(0),f(1),f(2),f(3),f(4),f(5)
+     ! '
+     write(debugFile,'(" --> u1x,u1y,u1z,v1x,v1y,v1z=",6f8.4)') u1x,u1y,u1z,v1x,v1y,v1z
+     write(debugFile,'(" --> u2x,u2y,u2z,v2x,v2y,v2z=",6f8.4)') u2x,u2y,u2z,v2x,v2y,v2z
+
+     write(debugFile,'(" --> vv1r,vv1s,vv1t         =",3e9.2)') vv1r,vv1s,vv1t
+     do k3=-1,1
+     do k2=-1,1
+     write(debugFile,'(" --> v1: =",3f8.4)') u1(i1-1,i2+k2,i3+k3,ey),u1(i1,i2+k2,i3+k3,ey),u1(i1+1,i2+k2,i3+k3,ey)
+     end do
+     end do
+     do k3=-1,1
+     do k2=-1,1
+     write(debugFile,'(" --> v2: =",3f8.4)') u2(j1-1,j2+k2,j3+k3,ey),u2(j1,j2+k2,j3+k3,ey),u2(j1+1,j2+k2,j3+k3,ey)
+     end do
+     end do
+     ! '
+    end if
+
+    ! here is the matrix of coefficients for the unknowns u1(-1),v1(-1),w1(-1),  u2(-1),v2(-1),w2(-1)
+    ! Solve:
+    !     
+    !       A [ U ] = A [ U(old) ] - [ f ]
+
+    c1x = -is*rsxy1(i1,i2,i3,axis1,0)/(2.*dr1(axis1))    ! coeff of u1(-1) from D.x
+    c1y = -is*rsxy1(i1,i2,i3,axis1,1)/(2.*dr1(axis1))    ! coeff of u1(-1) from D.y 
+    c1z = -is*rsxy1(i1,i2,i3,axis1,2)/(2.*dr1(axis1))    ! coeff of u1(-1) from D.z
+
+    c2x = -js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2))
+    c2y = -js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2))
+    c2z = -js*rsxy2(j1,j2,j3,axis2,2)/(2.*dr2(axis2))
+
+    rxx1(0,0,0)=aj1rxx
+    rxx1(0,1,1)=aj1ryy
+    rxx1(0,2,2)=aj1rzz
+    rxx1(1,0,0)=aj1sxx
+    rxx1(1,1,1)=aj1syy
+    rxx1(1,2,2)=aj1szz
+    rxx1(2,0,0)=aj1txx
+    rxx1(2,1,1)=aj1tyy
+    rxx1(2,2,2)=aj1tzz
+
+    rxx2(0,0,0)=aj2rxx
+    rxx2(0,1,1)=aj2ryy
+    rxx2(0,2,2)=aj2rzz
+    rxx2(1,0,0)=aj2sxx
+    rxx2(1,1,1)=aj2syy
+    rxx2(1,2,2)=aj2szz
+    rxx2(2,0,0)=aj2txx
+    rxx2(2,1,1)=aj2tyy
+    rxx2(2,2,2)=aj2tzz
+
+    ! clap1 : coeff of u(-1) from lap = u.xx + u.yy + u.zz
+
+    ! clap1=(rsxy1(i1,i2,i3,axis1,0)**2+rsxy1(i1,i2,i3,axis1,1)**2)/(dr1(axis1)**2) \
+    !           -is*(rsxy1x22(i1,i2,i3,axis1,0)+rsxy1y22(i1,i2,i3,axis1,1))/(2.*dr1(axis1))
+    ! clap2=(rsxy2(j1,j2,j3,axis2,0)**2+rsxy2(j1,j2,j3,axis2,1)**2)/(dr2(axis2)**2) \
+    !             -js*(rsxy2x22(j1,j2,j3,axis2,0)+rsxy2y22(j1,j2,j3,axis2,1))/(2.*dr2(axis2)) 
+    clap1=(rsxy1(i1,i2,i3,axis1,0)**2+rsxy1(i1,i2,i3,axis1,1)**2+rsxy1(i1,i2,i3,axis1,2)**2)/(dr1(axis1)**2) \
+              -is*(rxx1(axis1,0,0)+rxx1(axis1,1,1)+rxx1(axis1,2,2))/(2.*dr1(axis1))
+    clap2=(rsxy2(j1,j2,j3,axis2,0)**2+rsxy2(j1,j2,j3,axis2,1)**2+rsxy2(j1,j2,j3,axis2,2)**2)/(dr2(axis2)**2) \
+              -js*(rxx2(axis2,0,0)+rxx2(axis2,1,1)+rxx2(axis2,2,2))/(2.*dr2(axis2)) 
+
+    ! cdivE1 =  u.c1x + v.c1y + w.c1z
+    ! nDotCurlE1 = (w1y-v1z)*an1 + (u1z-w1x)*an2 + (v1x-u1y)*an3
+
+    ! (u.x+v.y+w.z)*an1 + ( w1y-v1z - nDotCurlE1*an1)/mu1
+    a6(0,0) = ( c1x*an1 + (         - (c1z*an2-c1y*an3)*an1 )/mu1 ) ! coeff of u1(-1)
+    a6(0,1) = ( c1y*an1 + (    -c1z - (c1x*an3-c1z*an1)*an1 )/mu1 ) ! coeff of v1(-1)
+    a6(0,2) = ( c1z*an1 + ( c1y     - (c1y*an1-c1x*an2)*an1 )/mu1 ) ! coeff of w1(-1)
+
+    a6(0,3) =-( c2x*an1 + (         - (c2z*an2-c2y*an3)*an1 )/mu2 ) ! coeff of u2(-1)
+    a6(0,4) =-( c2y*an1 + (    -c2z - (c2x*an3-c2z*an1)*an1 )/mu2 ) ! coeff of v2(-1)
+    a6(0,5) =-( c2z*an1 + ( c2y     - (c2y*an1-c2x*an2)*an1 )/mu2 ) ! coeff of w2(-1)
+
+    ! (u.x+v.y+w.z)*an2 + ( u1z-w1x - nDotCurlE1*an2)/mu1
+    a6(1,0) = ( c1x*an2 + ( c1z     - (c1z*an2-c1y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
+    a6(1,1) = ( c1y*an2 + (         - (c1x*an3+c1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+    a6(1,2) = ( c1z*an2 + (    -c1x - (c1y*an1-c1x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
+
+    a6(1,3) =-( c2x*an2 + ( c2z     - (c2z*an2-c2y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
+    a6(1,4) =-( c2y*an2 + (         - (c2x*an3+c2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+    a6(1,5) =-( c2z*an2 + (    -c2x - (c2y*an1-c2x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
+
+    ! (u.x+v.y+w.z)*an3 + ( v1x-u1y - nDotCurlE1*an2)/mu1
+    a6(2,0) = ( c1x*an3 + (    -c1y - (c1z*an2-c1y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
+    a6(2,1) = ( c1y*an3 + ( c1x     - (c1x*an3+c1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+    a6(2,2) = ( c1z*an3 + (         - (c1y*an1-c1x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
+
+    a6(2,3) =-( c2x*an3 + (    -c2y - (c2z*an2-c2y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
+    a6(2,4) =-( c2y*an3 + ( c2x     - (c2x*an3+c2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+    a6(2,5) =-( c2z*an3 + (         - (c2y*an1-c2x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
+
+    ! betac1=beta1/epsmu1
+    ! betac2=beta2/epsmu2
+
+    !  u1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an1
+    a6(3,0) = ( clap1*betac1   + cem1*( an1*clap1                         )*an1 ) ! coeff of u1(-1)
+    a6(3,1) = (                  cem1*(             an2*clap1             )*an1 ) ! coeff of v1(-1)
+    a6(3,2) = (                  cem1*(                         an3*clap1 )*an1 ) ! coeff of w1(-1)
+
+    a6(3,3) =-( clap2*betac2   + cem2*( an1*clap2                         )*an1 ) ! coeff of u2(-1)
+    a6(3,4) =-(                  cem2*(             an2*clap2             )*an1 )
+    a6(3,5) =-(                  cem2*(                         an3*clap2 )*an1 )
+
+    !  v1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an2
+    a6(4,0) = (                  cem1*( an1*clap1                         )*an2 ) ! coeff of u1(-1)
+    a6(4,1) = ( clap1*betac1   + cem1*(             an2*clap1             )*an2 )
+    a6(4,2) = (                  cem1*(                         an3*clap1 )*an2 )
+
+    a6(4,3) =-(                  cem2*( an1*clap2                         )*an2 ) ! coeff of u2(-1)
+    a6(4,4) =-( clap2*betac2   + cem2*(             an2*clap2             )*an2 )
+    a6(4,5) =-(                  cem2*(                         an3*clap2 )*an2 )
+
+    !  w1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an3
+    a6(5,0) = (                  cem1*( an1*clap1                         )*an3 ) ! coeff of u1(-1)
+    a6(5,1) = (                  cem1*(             an2*clap1             )*an3 )
+    a6(5,2) = ( clap1*betac1   + cem1*(                         an3*clap1 )*an3 )
+
+    a6(5,3) =-(                  cem2*( an1*clap2                         )*an3 ) ! coeff of u2(-1)
+    a6(5,4) =-(                  cem2*(             an2*clap2             )*an3 )
+    a6(5,5) =-( clap2*betac2   + cem2*(                         an3*clap2 )*an3 )
+
+
+    q(0) = u1(i1-is1,i2-is2,i3-is3,ex)
+    q(1) = u1(i1-is1,i2-is2,i3-is3,ey)
+    q(2) = u1(i1-is1,i2-is2,i3-is3,ez)
+    q(3) = u2(j1-js1,j2-js2,j3-js3,ex)
+    q(4) = u2(j1-js1,j2-js2,j3-js3,ey)
+    q(5) = u2(j1-js1,j2-js2,j3-js3,ez)
+
+    ! subtract off the contributions from the wrong values at the ghost points:
+    do n=0,5
+      f(n) = (a6(n,0)*q(0)+a6(n,1)*q(1)+a6(n,2)*q(2)+a6(n,3)*q(3)+a6(n,4)*q(4)+a6(n,5)*q(5)) - f(n)
+    end do
+    ! write(debugFile,'(" --> 3d:order2-c: f(subtract)=",6f8.3)') f(0),f(1),f(2),f(3),f(4),f(5)
+    ! solve A Q = F
+    ! factor the matrix
+    numberOfEquations=6
+    call dgeco( a6(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
+    ! solve
+    ! write(debugFile,'(" --> 3d:order2-c: rcond=",e10.2)') rcond
+    job=0
+    call dgesl( a6(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
+    ! write(debugFile,'(" --> 3d:order2-c: f(solve)=",6f8.3)') f(0),f(1),f(2),f(3),f(4),f(5)
+    ! write(debugFile,'(" --> 3d:order2-c:        q=",6f8.3)') q(0),q(1),q(2),q(3),q(4),q(5)
+
+    u1(i1-is1,i2-is2,i3-is3,ex)=f(0)
+    u1(i1-is1,i2-is2,i3-is3,ey)=f(1)
+    u1(i1-is1,i2-is2,i3-is3,ez)=f(2)
+    u2(j1-js1,j2-js2,j3-js3,ex)=f(3)
+    u2(j1-js1,j2-js2,j3-js3,ey)=f(4)
+    u2(j1-js1,j2-js2,j3-js3,ez)=f(5)
+
+    if( .false. )then
+    u1(i1-is1,i2-is2,i3-is3,ex)=q(0)
+    u1(i1-is1,i2-is2,i3-is3,ey)=q(1)
+    u1(i1-is1,i2-is2,i3-is3,ez)=q(2)
+    u2(j1-js1,j2-js2,j3-js3,ex)=q(3)
+    u2(j1-js1,j2-js2,j3-js3,ey)=q(4)
+    u2(j1-js1,j2-js2,j3-js3,ez)=q(5)
+    end if
+
+    if( .true. .or. debug.gt.3 )then ! re-evaluate
+     evalInterfaceDerivatives3d()
+     eval3dJumpOrder2()
+     write(debugFile,'(" --> 3d-order2-c: i1,i2,i3=",3i4," f(re-eval)=",6e10.2)') i1,i2,i3,f(0),f(1),f(2),f(3),f(4),f(5)
+       ! '
+    end if
+
+  endLoopsMask3d()
+
+#endMacro         
+
 
 
 ! -------------------------------------------------------------------------

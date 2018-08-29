@@ -1,4 +1,158 @@
 ******************************
+******** Aug 27, 2018
+
+
++++++++++++++  ADD kz 
+
+CHECK OTHER MODES -- TROUBLE??
+
+Change GDM params -- modeGDM=0 : trasnmitted wave grows exponentially 
+cgmx interface -g=twoBoxesInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.7 -b01=.4 -b11=.3 -a02=1.0 -a12=.1 -b02=.3 -b12=.4 -dm=gdm -cons=0 -go=halt -modeGDM=0
+
+
+OTHER MODES HERE LOOK OK:
+cgmx interface -g=twoBoxesInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -modeGDM=0 -go=halt 
+
+
+Change GDM params 
+cgmx interface -g=twoBoxesInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.7 -b01=.4 -b11=.3 -a02=1.0 -a12=.1 -b02=.3 -b12=.4 -dm=gdm -cons=0 -go=halt
+
+cgmx interface -g=twoBoxesInterfacee4.order2 -eps2=2. -kx=1 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1 0 0 -a11=0.5 0 0 -b01=0.4 0 0 -b11=0.3 0 0 -a02=0.9 0 0 -a12=0.7 0 0 -b02=0.3 0 0 -b12=0.1 0 0 -dm=gdm -cons=0 -go=halt
+
+-a01=1 0 0 -a11=0.5 0 0 -b01=0.4 0 0 -b11=0.3 0 0 -a02=0.9 0 0 -a12=0.7 0 0 -b02=0.3 0 0 -b12=0.1 0 0
+
+
+cgmx interface -g=twoBoxesInterfacee888.order2 -eps2=2. -kx=2 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+cgmx interface -g=twoBoxesInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -kz=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+G8
+
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.938e-02 max-err = 1.213e-04
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=8.420e-02 max-err = 2.425e-04
+>>> t=1.00e-01 dt=5.0e-03 max errors:[1.16e-03,2.48e-03,3.20e-04,], max (u):[4.35e-01,9.09e-01,4.23e-02,] (20 steps)
+
+
+G4
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=6.204e-02 max-err = 3.044e-06
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=8.789e-02 max-err = 5.238e-06
+>>> t=1.00e-02 dt=1.0e-02 max errors:[9.47e-05,2.45e-04,1.60e-05,], max (u):[4.54e-01,9.51e-01,4.40e-02,] (1 steps)
+
+-getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.944e-02 max-err = 4.502e-04
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=8.484e-02 max-err = 9.005e-04
+>>> t=1.00e-01 dt=1.0e-02 max errors:[4.76e-03,1.03e-02,1.25e-03,], max (u):[4.38e-01,9.11e-01,4.30e-02,] (10 steps)
+
+
+******************************
+******** Aug 25-26, 2018
+
+START ON GDM 3D INTERFACE EXACT SOLUTION
+
+STARTS TO WORK!
+
+G4: 
+cgmx interface -g=twoBoxesInterfacee444.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=7.266e-02 max-err = 2.554e-06
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.090e-01 max-err = 4.655e-06
+>>> t=1.00e-02 dt=1.0e-02 max errors:[9.29e-05,2.27e-04,0.00e+00,], max (u):[5.09e-01,1.02e+00,0.00e+00,] (1 steps)
+
+
+cgmx -noplot  interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=go
+
+
+******************************
+******** Aug 23-24, 2018
+
+START GDM -- ALL ZERO PARAMETERS
+
+TWILIGHT ZONE
+
+************** BUG FIXED  add E-forcing into jump conditions RHS
+
+
+PLANE-MATERIAL-INTERFACE SOLUTION
+cgmx interface -g=twoBoxesInterfacee888.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+cgmx interface -g=twoBoxesInterfacee444.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+G2
+>> t=1.00e-01 dt=1.0e-02 max errors:[2.25e-02,4.59e-02,1.14e-03,], max (u):[5.03e-01,9.58e-01,1.14e-03,] (10 steps)
+
+G4
+>>> t=1.00e-01 dt=1.0e-02 max errors:[4.82e-03,1.04e-02,4.47e-04,], max (u):[4.90e-01,9.74e-01,4.47e-04,] (10 steps)
+
+G8 
+>>> t=1.00e-01 dt=5.0e-03 max errors:[1.17e-03,2.50e-03,1.14e-04,], max (u):[4.87e-01,9.72e-01,1.14e-04,] (20 steps
+
+GDM: twoBoxes --POLY EXACT 
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2  -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=halt
+
+GDM=0 twoBoxes -- EXACT 
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2  -diss=0. -bc=d -npv=1 1 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=gdm -cons=0 -go=halt
+
+
+
+
+CHANGED INTERFACE TO INCLUDE P_tt
+cgmx -noplot interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2  -diss=0. -bc=d -npv=1 0 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=gdm -cons=0 -go=og
+
+
+
+
+TWO-DIMENSIONS--- check TZ, does this work?  
+
+CARTESIAN: **BROKEN**
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+--> NON-SQUARES WORKS 
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+GDM=0 eps2=1 : OK, eps2=2 -- NON-SQUARE OK ?
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=gdm -cons=0 -go=og
+
+
+NO GDM -- OK
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order2 -eps2=1. -kx=2 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -npv=1 1 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=none -cons=0 -go=og
+
+
+
+
+
+
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=gdm -cons=0 -go=halt
+
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=4.60e-02 (=6.01e-01/1.31e+01) 1 steps mem=37.1(Mb) cpu=3.67e+00(s)
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=0.000e+00 max-err = 0.000e+00
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.00e-04,9.66e-04,0.00e+00,], max (u):[5.06e-01,9.99e-01,0.00e+00,] (1 steps)
+
+
+******************************
+******** Aug 16, 2018
+
+START GDM -- ALL ZERO PARAMETERS
+
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=0.0 -a11=0.0 -b01=0.0 -b11=0.0 -a02=0.0 -a12=0.0 -b02=0.0 -b12=0.0 -dm=gdm -cons=0 -go=halt
+
+
+3D interfaces -- NO GDM
+
+cgmx interface -g=twoBoxesInterfacee444.order4 -eps2=4 -kx=2 -ky=1 -ic=pmic -bc=d -tp=.01 -tf=1. -left=leftBox -right=rightBox -debug=1
+
+
+cgmx interface -g=twoBoxesInterfacee222.order4 -eps2=.25 -kx=1 -ic=pmic -bc=d -tp=.01 -tf=1. -left=leftBox -right=rightBox -debug=1
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,6.50e-07,0.00e+00,], max (u):[0.00e+00,1.33e+00,0.00e+00,] (1 steps)
+
+
+cgmx interface -g=twoBoxesInterfacee222.order2 -eps2=.25 -kx=1 -ic=pmic -bc=d -tp=.01 -tf=1. -left=leftBox -right=rightBox -debug=1
+>>> t=1.00e-02 dt=1.0e-02 max errors:[0.00e+00,4.12e-05,0.00e+00,], max (u):[0.00e+00,1.33e+00,0.00e+00,] (1 steps)
+
+
+cgmx interface -g=twoBoxesInterfacee111.order2 -eps2=.25 -kx=1 -ic=pmic -bc=d -tp=.01 -tf=1. -left=leftBox -right=rightBox -debug=1
+
+******************************
 ******** AUg 9, 2018
 
 START thinking about THREE DIMENSIONAL INTERFACES FOR ADE-GDM 

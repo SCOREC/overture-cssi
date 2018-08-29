@@ -115,6 +115,7 @@ operator =( const DispersiveMaterialParameters & x )
   alphaP=x.alphaP;
   mode  =x.mode;
   rootComputed=x.rootComputed;
+  ck0=x.ck0;
   
   gamma=x.gamma;
   omegap=x.omegap;
