@@ -1,4 +1,60 @@
 *****************************************
+********** Sept 3, 2018
+
+REBUILD GRIDS -- bug in arclength
+
+REDO RESONANT MODE =1 so wave moves in the same direction
+
+
+REDO : 
+nohup $cgmx -noplot scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=1 -useSosupDissipation=1 -show=objectsG8M0a.show -go=go >! objectsG8M0a.out
+
+REDO: OK
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=1 -useSosupDissipation=1 -show=objectsG4M0a.show -go=go >! objectsG4M0a.out
+
+REDO: OK
+nohup $cgmx -noplot scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG8a.show -go=go >! objectsG8a.out
+
+REDO: -- OK 
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG4a.show -go=go >! objectsG4a.out
+
+
+*****************************************
+********** Aug 31, 2018
+
+BUG Fixed for boundary forcing
+
+LOOK AT A RESONANT MODE
+nohup $cgmx -noplot scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=0 -useSosupDissipation=1 -show=objectsG8M0.show -go=go >! objectsG8M0.out
+
+
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=0 -useSosupDissipation=1 -show=objectsG4M0.show -go=go >! objectsG4M0.out
+
+
+
+
+
+Reduce kx G8 -- todo 
+cgmx -noplot scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG8.show -go=go >! objectsG8.out
+
+Reduce kx G4
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG4.show -go=go >! objectsG4.out
+
+
+cgmx scattering -g=objectsGride2.order2.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=4 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -go=halt
+
+
+cgmx scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=4 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -go=halt
+
+cgmx scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=4 -tf=1 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG4.show -go=go >! objectsG4.out
+
+
+cgmx scattering -g=objectsGride4.order2.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=4 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -go=halt
+
+cgmx -noplot scattering -g=cice4.order4.hdf  -bg=square -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=3 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -tf=1 -go=og
+
+
+*****************************************
 ********** Aug 29, 2018
 
 START ON FANCY GDM Scattering example:

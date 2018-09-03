@@ -2355,11 +2355,11 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
         // Dispersion parameters:
                 real sr=0.,si=0.;  // Re(s), Im(s) in exp(s*t) 
                 real chir[10], chii[10], chiSumr, chiSumi;   // For P = eps*chi(s)*E 
-        // if( localDispersionModel !=noDispersion && 
-        //     ( true || assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
                 if( localDispersionModel !=noDispersion && 
-                        ( assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
+                        ( boundaryForcingOption!=noBoundaryForcing || assignPlaneWaveBoundaryCondition)
+                            ) 
                 {
+          // We need s=(sr,si) for boundary forcing of dispersive models     
                     const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                     DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                     dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
@@ -2909,11 +2909,11 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           // Dispersion parameters:
                     real sr=0.,si=0.;  // Re(s), Im(s) in exp(s*t) 
                     real chir[10], chii[10], chiSumr, chiSumi;   // For P = eps*chi(s)*E 
-          // if( localDispersionModel !=noDispersion && 
-          //     ( true || assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
                     if( localDispersionModel !=noDispersion && 
-                            ( assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
+                            ( boundaryForcingOption!=noBoundaryForcing || assignPlaneWaveBoundaryCondition)
+                                ) 
                     {
+            // We need s=(sr,si) for boundary forcing of dispersive models     
                         const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                         dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
@@ -3467,11 +3467,11 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           // Dispersion parameters:
                     real sr=0.,si=0.;  // Re(s), Im(s) in exp(s*t) 
                     real chir[10], chii[10], chiSumr, chiSumi;   // For P = eps*chi(s)*E 
-          // if( localDispersionModel !=noDispersion && 
-          //     ( true || assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
                     if( localDispersionModel !=noDispersion && 
-                            ( assignPlaneWaveBoundaryCondition)  ) // ** FIX ME ****************************
+                            ( boundaryForcingOption!=noBoundaryForcing || assignPlaneWaveBoundaryCondition)
+                                ) 
                     {
+            // We need s=(sr,si) for boundary forcing of dispersive models     
                         const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                         dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 

@@ -4118,6 +4118,10 @@
  sr                   =rpar(37)  ! Re(s)
  si                   =rpar(38)  ! Im(s) 
 
+ ! if( t.le.3*dt )then
+ !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si
+ ! end if
+
  dxa=dx(0)
  dya=dx(1)
  dza=dx(2)

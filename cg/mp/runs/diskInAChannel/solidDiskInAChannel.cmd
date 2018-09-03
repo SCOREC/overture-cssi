@@ -29,6 +29,7 @@ $thetad=0.; # rotation of domain (degrees)
 $stressRelaxation=4; $relaxAlpha=.5; $relaxDelta=.5; 
 # $displacementDissipation=0.; # for CgSm -- turn off for TZ
 $scf=1.; # solidScaleFactor : scale rho,mu and lambda by this amount 
+$modScf=$scf;
 $thermalExpansivity=1.; $T0=1.; $Twall=1.;  $kappa=.01; $ktcSolid=-1.; 
 $diss=.5;  
 $smVariation = "g"; 
@@ -72,7 +73,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; 
+$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; $zfMono=0.;
 $useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 # $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
 $predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018
@@ -91,7 +92,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
   "nc=i"=> \$numberOfCorrections, "numberOfCorrections=i"=> \$numberOfCorrections,"coupled=i"=>\$coupled,\
   "d1=s"=>\$domain1,"d2=s"=>\$domain2,"dg=s"=>\$deformingGrid,"debug=i"=>\$debug,"kThermalFluid=f"=>\$kThermalFluid,\
   "cfl=f"=>\$cfl,"rhoSolid=f"=>\$rhoSolid,"cnsVariation=s"=>\$cnsVariation,"diss=f"=>\$diss,"fic=s"=>\$fic,"go=s"=>\$go,\
-   "smVariation=s"=>\$smVariation,"scf=f"=>\$scf,"probeFile=s"=>\$probeFile,"pOffset=f"=>\$boundaryPressureOffset,\
+   "smVariation=s"=>\$smVariation,"scf=f"=>\$scf,"modScf=f"=>\$modScf,"probeFile=s"=>\$probeFile,"pOffset=f"=>\$boundaryPressureOffset,\
    "cnsGodunovOrder=f"=>\$cnsGodunovOrder,"flushFrequency=i"=>\$flushFrequency,\
    "cnsEOS=s"=>\$cnsEOS,"cnsGammaStiff=f"=>\$cnsGammaStiff,"cnsPStiff=f"=>\$cnsPStiff,"u0=f"=>\$u0,\
    "useNewInterfaceTransfer=i"=>\$useNewInterfaceTransfer,"multiDomainAlgorithm=i"=>\$multiDomainAlgorithm,\
@@ -106,7 +107,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "omega=f"=>\$omega,"tol=f"=>\$tol, "zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
    "dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,"useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,\
-   "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"fluidSolidCornerFix=i"=> \$fluidSolidCornerFix );
+   "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"fluidSolidCornerFix=i"=> \$fluidSolidCornerFix,"tb=f"=>\$tb,"zfMono=f"=>\$zfMono );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $psolver eq "best" ){ $psolver="choose best iterative solver"; }
@@ -190,7 +191,7 @@ $domainName=$domain1; $solverName="fluid";
 #
 #  ******  Cgins ********
 #
-$ic = "uniform flow\n p=0., u=$u0";
+# $ic = "uniform flow\n p=0., u=$u0";
 $ic = "uniform flow\n p=0., u=0.";
 $halfH=0.2; $cpn=1.;
 # --- inflow with velocity given:
@@ -222,7 +223,7 @@ $domainName=$domain2; $solverName="solid";
 # $bcCommands="all=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
 # $bcCommands="all=displacementBC\n bcNumber3=slipWall\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
 $bcCommands="all=displacementBC\n bcNumber100=tractionBC\n bcNumber100=tractionInterface"; 
-$exponent=10.; $x0=.5; $y0=.5; $z0=.5;  $rhoSolid=$rhoSolid*$scf; $lambda=$lambdaSolid*$scf; $mu=$muSolid*$scf; 
+$exponent=10.; $x0=.5; $y0=.5; $z0=.5;  $rhoSolid=$rhoSolid*$scf; $lambda=$lambdaSolid*$scf*$modScf; $mu=$muSolid*$scf*$modScf; 
 # $initialConditionCommands="gaussianPulseInitialCondition\n Gaussian pulse: 10 2 $exponent $x0 $y0 $z0 (beta,scale,exponent,x0,y0,z0)";
 $initialConditionCommands="zeroInitialCondition";
 if( $smVariation eq "hemp" ){ $initialConditionCommands="hempInitialCondition\n OBIC:Hemp initial condition option: default\n"; }
@@ -295,18 +296,20 @@ continue
 # --
         erase
         plot domain: fluid
-        contour
-          vertical scale factor 0.
-           # ghost lines 1
-           plot:p
-           ##  wire frame
+        streamlines
           exit
+        # contour
+        #   vertical scale factor 0.
+        #    # ghost lines 1
+        #    plot:p
+        #    ##  wire frame
+        #   exit
         plot domain: solid
         contour
           vertical scale factor 0.
           adjust grid for displacement 1
         exit
-        plot:solid : v1
+        plot:solid : v2
         plot all
 $go
 

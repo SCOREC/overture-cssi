@@ -11,7 +11,7 @@
 #   ogen -noplot ellipseInAChannelGrid -interp=e -factor=4
 #
 # -- rotated 
-# ogen -noplot ellipseInAChannelGrid -radX=.6 -radY=1.2 -corex=0 -corey=.5 -prefix=rotatedEllipseGrid -interp=e -factor=4
+# ogen -noplot ellipseInAChannelGrid -radX=.6 -radY=1.2 -corex=0 -corey=.5 -ra=.2 -theta=10. -prefix=rotatedEllipseGrid -interp=e -factor=4
 #
 #
 $prefix="ellipseInAChannelGrid";
@@ -25,6 +25,7 @@ $xa=-3; $xb=3; $ya=-2; $yb=2;
 $radX=1.5; $radY=.6; 
 $ra=.2; $rb=$ra+$nDistInterface; $corex=.5; $corey=0.;   # ellipse has a hollow core
 $numberOfVolumeSmooths=0; 
+$theta=0.;
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,\
@@ -32,7 +33,7 @@ GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,\
             "ra=f"=> \$ra,"rb=f"=> \$rb,"corex=f"=> \$corex,"corey=f"=> \$corey,\
             "interp=s"=> \$interp,"name=s"=> \$name,"per=i"=>\$per,\
             "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
-            "prefix=s"=>\$prefix );
+            "prefix=s"=>\$prefix,"theta=f"=>\$theta );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -45,12 +46,17 @@ if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 # 
 $ds=.1/$factor;
 $pi = 4.*atan2(1.,1.);
+$theta=$theta*$pi/180.;
 # 
 # -- convert a number so that it is a power of 2 plus 1 --
 #    ml = number of multigrid levels 
 $ml2 = 2**$ml; 
 sub intmg{ local($n)=@_; $n = int(int($n+$ml2-2)/$ml2)*$ml2+1; return $n; }
 sub max{ local($n,$m)=@_; if( $n>$m ){ return $n; }else{ return $m; } }
+sub min{ local($n,$m)=@_; if( $n<$m ){ return $n; }else{ return $m; } }
+$minRad=min($radX,$radY);
+# $nDistInterface=.1*$minRad;
+$rb=$ra+$nDistInterface;
 #
 $bcInterface=100;  # bc for interfaces
 $shareInterface=100;        # share value for interfaces
@@ -60,7 +66,8 @@ create mappings
 # --- make a nurbs for a circle ----
 #   **** Later we could make different curves for the interface ****
 $cx=0.; $cy=0.; 
-include ellipseCurve.h
+# include ellipseCurve.h
+include rotatedEllipseCurve.h
 # 
 # -- Make a hyperbolic grid --
 #
@@ -150,11 +157,13 @@ exit
 #
  rectangle
   set corners
-    $xas=-$radX+5.*$ds; $xbs=-$xas; $yas=-$radY+5.*$ds; $ybs=-$yas; 
+    $rmax=max($radX,$radY);
+    $xas=-$rmax; $xbs=-$xas; $yas=-$rmax; $ybs=-$yas; 
     $xas $xbs $yas $ybs
+    $refineFactor=1.;
   lines
-    $nx = int( ($xbs-$xas)/$ds + .5 ); 
-    $ny = int( ($ybs-$yas)/$ds + .5 ); 
+    $nx = int( ($xbs-$xas)/$ds*$refineFactor + .5 ); 
+    $ny = int( ($ybs-$yas)/$ds*$refineFactor + .5 ); 
     $nx $ny
   boundary conditions
     0 0 0 0 

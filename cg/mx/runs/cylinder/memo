@@ -1,4 +1,20 @@
 **********************************
+*****  Aug 30-31, 2018 
+
+************** GDM SCATTERING IS BROKEN ****************8
+
+cgmx -noplot cic.planeWaveBC -g=cice4.order4.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1  -tf=1. -tp=.1 -diss=0. -go=og 
+
+
+GDM but zero coeff's 
+cgmx -noplot cic.planeWaveBC -g=cice4.order4.hdf -dm=gdm -a0=0. -a1=0. -b0=0 -b1=0  -tf=1. -tp=.1 -diss=0. -go=og
+
+
+NO-GDM
+cgmx -noplot cic.planeWaveBC -g=cice4.order4.hdf -dm=none -a0=0. -a1=0. -b0=0 -b1=0  -tf=1. -tp=.1 -diss=0. -go=og
+>> t=1.00e-01 dt=1.0e-02 max errors:[7.54e-05,1.34e-04,4.57e-06,], max (u):[6.11e-01,1.04e+00,1.16e+00,] (10 steps)
+
+**********************************
 *****  Mar 19, 2018
 
 cgmx -noplot cic.planeWaveBC -g=cice4.order4.hdf -dm=gdm -a0=1. -a1=1. -b0=1 -b1=1  -tf=1. -tp=.1 -diss=0. -go=og 

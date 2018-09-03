@@ -1,5 +1,10 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
+*******************************
+********** Aug 31, 2018 
+
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=2 -ky=1 -kz=1 -ic=pmic -eps1=1 -eps2=2. -npv=1 1 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoBoxesInterface -tf=.5 -tp=.1 -order=2 -useSosupDissipation=0 -modeGDM=-1 -ng=3
+
 
 *******************************
 ********** Aug 27, 2018 

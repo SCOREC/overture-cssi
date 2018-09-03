@@ -5,6 +5,13 @@
 #
 $count = $count + 1;
 $curveName="curve$count"; $fluidName="fluidInterface$count"; $share=99+$count; $solidName="solidDisk$count";
+$fluidDomain=$fluidDomain . $fluidName . "\n";
+$solidGrids=$solidName . "\n";
+$specifyDomainCmd=$specifyDomainCmd \
+  . "specify a domain\nsolidDomain$count\n" \
+  . $solidGrids \
+  . "done\n";
+$solidDomain=$solidDomain . $solidGrids;
 #
 # --- make a nurbs for a circle ----
 $radX=$rb; $radY=$rb; 

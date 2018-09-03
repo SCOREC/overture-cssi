@@ -520,11 +520,16 @@ do i1=nn1a,nn1b
     else
       ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
       !   getPlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)
+      !   write(*,'("no-GDM x,y=",2(1pe10.2)," ubv=",2(1pe10.2))') x,y,ubv(ex),ubv(ey)
       ! end if
       ! if( .true. )then
       !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
       ! end if
+      polarizationOption=0 ! *wdh* 2018/0830 -- test
       getDispersivePlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv,pbv)
+
+      !  write(*,'("   GDM x,y=",2(1pe10.2)," ubv=",2(1pe10.2))') x,y,ubv(ex),ubv(ey)
+
     end if
   else if(  boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then
     getChirpedPlaneWave2D(x,y,t,numberOfTimeDerivatives,ubv)

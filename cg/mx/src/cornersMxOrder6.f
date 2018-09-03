@@ -1705,6 +1705,9 @@ c===============================================================================
         ! variables for dispersive plane wave
         sr                   =rpar(37)  ! Re(s)
         si                   =rpar(38)  ! Im(s)
+        ! if( t.le.3*dt )then
+        !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si
+        ! end if
         dxa=dx(0)
         dya=dx(1)
         dza=dx(2)
@@ -1992,10 +1995,12 @@ c===============================================================================
                            else
                              ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
                              !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,ubv)
+                             !   write(*,'("no-GDM x0,y0=",2(1pe10.2)," ubv=",2(1pe10.2))') x0,y0,ubv(ex),ubv(ey)
                              ! end if
                              ! if( .true. )then
                              !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
                              ! end if
+                             polarizationOption=0 ! *wdh* 2018/0830 -- test
                                xi = twoPi*(kx*(x0)+ky*(y0))
                                sinxi = sin(xi)
                                cosxi = cos(xi)
@@ -2004,7 +2009,7 @@ c===============================================================================
                                sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
                                  if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! amp = cosxi*cost-sinxi*sint ! *wdh* 2018/01/28 
                                    ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
                                    ! 
                                    amp = sinxi*cost+cosxi*sint
@@ -2261,6 +2266,7 @@ c===============================================================================
                                else
                                  stop 2738
                                end if
+                             !  write(*,'("   GDM x0,y0=",2(1pe10.2)," ubv=",2(1pe10.2))') x0,y0,ubv(ex),ubv(ey)
                            end if
                          else if(  
      & boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then
@@ -2534,10 +2540,12 @@ c===============================================================================
                            else
                              ! if( .true. )then ! ***** TESTING -- call non-dispersive version to compare ****
                              !   getPlaneWave2D(x0,y0,t,numberOfTimeDerivatives,uv)
+                             !   write(*,'("no-GDM x0,y0=",2(1pe10.2)," uv=",2(1pe10.2))') x0,y0,uv(ex),uv(ey)
                              ! end if
                              ! if( .true. )then
                              !   write(*,'(" bcOptMx: get boundary forcing: hr,hi=",2e12.2)') hr,hi
                              ! end if
+                             polarizationOption=0 ! *wdh* 2018/0830 -- test
                                xi = twoPi*(kx*(x0)+ky*(y0))
                                sinxi = sin(xi)
                                cosxi = cos(xi)
@@ -2546,7 +2554,7 @@ c===============================================================================
                                sint=sin(si*t)*expt
                                if( numberOfTimeDerivatives==0 )then
                                  if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                   ! amp = cosxi*cost-sinxi*sint ! *wdh* 2018/01/28 
                                    ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
                                    ! 
                                    amp = sinxi*cost+cosxi*sint
@@ -2803,6 +2811,7 @@ c===============================================================================
                                else
                                  stop 2738
                                end if
+                             !  write(*,'("   GDM x0,y0=",2(1pe10.2)," uv=",2(1pe10.2))') x0,y0,uv(ex),uv(ey)
                            end if
                          else if(  
      & boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then

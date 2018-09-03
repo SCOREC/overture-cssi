@@ -124,7 +124,7 @@
 
   if( numberOfTimeDerivatives==0 )then
     if( polarizationOption.eq.0 )then
-      ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+      ! amp = cosxi*cost-sinxi*sint ! *wdh* 2018/01/28 
       ! solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28
       ! 
       amp = sinxi*cost+cosxi*sint

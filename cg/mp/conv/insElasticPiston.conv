@@ -71,6 +71,7 @@ if( $known ne "piston" ){ $suffix .= $known; }
 if( $addedMass == 0 ){ $suffix .= "TP"; }else{ $suffix .= "Amp"; }
 if( $cg eq "rtw" ){ $suffix .= "Caseid$caseid"; }
 $suffix .= "SCF$scf"; 
+$suffix .= "NU$nu";
 if( $zfOption eq "" ){ $suffix .= "zf$zfMuByH" . "+$zfRhoHByDt"; }else{ $suffix .= "zf$zfOption"; }
 if( $tsINS eq "im" ){ $suffix .= "Im"; }
 $suffix .= "t$tf";

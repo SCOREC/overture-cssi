@@ -1,4 +1,116 @@
 **************************
+*** Sept 3, 2018
+
+I-beam, beam, split-ring, cross grids
+
+FIVE OBJECTS
+
+GRID: 
+ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=4 
+
+# I-beam, beam (upper), beam (lower), split-ring, cross
+
+
+NOTE -- Use PETSc solvers, seems faster
+nohup $cgmp -noplot fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=5. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG4.show -psolver=best -solver=best -go=go=go >! fiveBodiesG4.out 
+
+
+**************************
+*** Sept 2, 2018
+
+
+--- BUILD I-BEAM GRID 
+
+cgmp fourDisks.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=10 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tp=.01 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -go=halt
+
+
+LOOKS OK: scf=1000, 100, and 10
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=solidObjectsGride4.order2.hdf  -addedMass=1 -scf=10. -zfMono=1 -tp=.01 -tf=5. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -p0=1 -tb=.3  -go=halt
+
+
+**************************
+*** Aug 28, 2018
+
+ * This example is currently in the paper
+cgmp fourDisks.cmd -g=multiObjectsCGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=10 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=10 -tp=.005 
+
+ * I may do this example instead, there are larger deformations
+   This has issues with the back square, may be unstable. This was fixed by using zfNew instead
+   of zfm in the fluid...
+cgmp fourDisks.cmd -g=multiObjectsDGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=5 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMuByH=0 -zfMono=1 -p0=10 -tp=.005 
+
+cgmp fourDisks.cmd -g=multiObjectsDGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=5 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMuByH=20 -zfMono=0 -p0=10 -tp=.005 
+
+
+
+**************************
+*** Aug 27, 2018
+
+cgmp fourDisks.cmd -g=multiObjectsCGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=10 -tp=.005 -show=./fourDisksFinalC/fourDisksP10.show
+
+
+cgmp fourDisks.cmd -g=multiObjectsCGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=10 -tp=.005 -show=./fourDisksFinalB/fourDisksP10.show
+
+cgmp solidDiskInAChannel -g=multiObjectsCGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf=.0010 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=.10 -tp=.005 -show=./lightBeam/lightBeam.show
+
+cgmp fiveDisks.cmd -g=multiObjectsAGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=10 -scf2=10 -scf3=10 -scf4=10 -scf5=10 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=10 -tp=.005 
+-show=./fiveDisks/fiveDisksP10.show
+
+cgmp fourDisks.cmd -g=multiObjectsBGride2.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=10 -scf4=1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -p0=10 -tp=.005 
+
+-show=./fiveDisks/fourDisksP10.show
+
+
+
+
+
+
+cgmp multiObjects multiObjectsGride2.order2.hdf -method=ins -smVariation=g -g=multiObjectsGride2.order2.hdf -addedMass=1 -scf1=100 -scf2=100 -scf3=100 -scf4=100 -scf5=100 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1 -nDomains=5
+
+cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=100 -scf2=1  -zfMuByH=2 -p0=1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -zfMono=1
+
+**************************
+*** Aug 20, 2018
+
+Make it so solid waves are faster
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx25PlateGride2.order2  -addedMass=1 -scf=10. -modScf=10 -zfMuByH=30 -zfMono=1. -tp=.01 -tf=101. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=10 -tb=.3 -show=./thinPlateScf10_08_20/thinPlateScf10P010x25.show
+
+
+This case works, but has large deformations
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx25PlateGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=30 -zfMono=1. -tp=.01 -tf=101. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=100 -tb=.3 
+-show=./thinPlate_08_20/thinPlateScf1000P0100x25.show
+
+**************************
+*** Aug 19, 2018
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx25PlateGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=30 -zfMono=0. -tp=.01 -tf=31. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=10 -tb=.3 
+
+-show=./thinPlate_08_19/thinPlateScf1000x25.show
+
+**************************
+*** Aug 18, 2018
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx25PlateGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=30 -tp=.01 -tf=31. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=1 -tb=.3 -show=./thinPlate_08_18/thinPlateScf1000x25.show
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx50PlateGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=100 -tb=.3
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedx75PlateGride2.order2  -addedMass=1 -scf=1000. -modScf=10 -zfMuByH=1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=100 -tb=.3
+
+**************************
+*** Aug 16, 2018
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.01 -tf=11. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -show=solidDiskScf10.show
+
+
+
+$
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=rotatedEllipseGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=100 -tb=.3
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=thinRotatedPlateGride2.order2  -addedMass=1 -scf=1000. -zfMuByH=1 -tp=.01 -tf=2. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -p0=100 -tb=.3
+
+
+**************************
 *** Aug 20, 2018
 
 
@@ -30,7 +142,8 @@ SCF1=100, SCF2=100 : OK
 $cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=100 -scf2=100  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
 
 SCF1=10, SCF2=10 : OK 
-$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=10 -scf2=10  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
+$cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=10 -scf2=10  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 
+-setGhostByExtrapolation=1 -go=halt 
 
 SCF1=1, SCF2=1 : OK 
 $cgmp twoDisks -method=ins -smVariation=g -g=twoDisksGride2.order2 -addedMass=1 -scf1=1 -scf2=1  -zfMuByH=1 -p0=.1 -fluidSolidCornerFix=0 -tp=.05 -tf=20. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt 
