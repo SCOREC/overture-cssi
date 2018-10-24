@@ -73,7 +73,7 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; $zfMono=0.;
+$addedMass=0; $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $fluidSolidCornerFix=0; $zfMono=1.;
 $useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 # $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
 $predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018

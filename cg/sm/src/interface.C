@@ -1728,24 +1728,23 @@ projectInterface( int grid, real dt, int current )
 
                                 real beta=sqrt( rhof/(muf*dt) + k*k );
                                 zfm = (rhof*rhof + ( rhof*beta*zp + 4.*rhof*muf*k*k )*dt - ( 4.*(beta-k)*muf*muf*k*k*k )*dt*dt )/( (rhof+ zp*dt*(beta-k) )*dt*k );
+                                
+                                printF("SSSSSSSS sm: ");
+                                printF("old zfm=%.2e, ",zfm);
+
+                // this is asymptotically equivalent to old zfm
+                                zfm = 2.*muf*k+1./(k*dt);
+                                printF("new zfm=%.2e\n",zfm);
+
                             }
                             if( useMonolithicImpedance )
                             {
                                 zf=zfMono*zfm;
                             }
-                            
-                            
-                            if( correctionStage>0 )
-                            {
-                                zf=1e8;
-                                printF("SMSMSMSMS  CGSM correctionStage=%i: Set zf=%.2e\n",correctionStage,zf);
-                            }
                             else
                             {
-                                printF("SMSMSMSMS  CGSM correctionStage=%i, Use zf=%.2e\n",correctionStage,zf);
+                                printF("***** WARNING: NOT USING MONOLITHIC ZF, (zfMono=%.2e) *****\n",zfMono);
                             }
-                            
-                            
 
               // coeff of [traction] in AMP interface condition:
                             const real & ampSigmaJumpCoeff = parameters.dbase.get<real>("ampSigmaJumpCoeff"); 
@@ -1767,10 +1766,23 @@ projectInterface( int grid, real dt, int current )
               //        zfOld,zfNew,zfFluid,zf);
 
               //       ", rhoF=%.2e muFluid=%.2e nuFluid=%.2e zp=%.2e dt=%.2e\n",zfOld,zfNew,fluidDensity,muFluid,nuFluid,zp,dt);
-                            
 
                             alphaV = zf/( zf + zp );
                             alphaS = 1.-alphaV; // (1./zf)/( 1./zf + 1./zp );  // = zp/(zf+zp) = 1-alphaV
+                            alphaV = zf/( zf + zp );
+                            alphaS = 1.-alphaV; // (1./zf)/( 1./zf + 1./zp );  // = zp/(zf+zp) = 1-alphaV
+              // this is a multiplier for the jump terms
+              // during the correction, this will be zero
+                            real jumpMult = 1.; 
+                            if( correctionStage>0 )
+                            {
+                                alphaV=1.; alphaS=0.; jumpMult = 0.;
+                                printF("SMSMSMSMS  CGSM correctionStage=%i: Set alphaV=%.2e, alphaS=%.2e, jumpMult=%.2e\n",correctionStage,alphaV,alphaS,jumpMult);
+                            }
+                            else
+                            {
+                                printF("SMSMSMSMS  CGSM correctionStage=%i, Use zf=%.2e\n",correctionStage,zf);
+                            }
 
               // printF("\\delta=%.2e \\zp=%.2e \\mu=%.2e \\zf=\\f{\\mu}{h}=%.2e \\zfh=\\f{\\rho\\dt}{h}=%.2e "
               //        "\\zfHat=%.2e \\zfm=%.2e (k=%.2e) \\f{\\nu\\dt}{h^2}=%.2e (h=%.2e) \\zfMuByH=%.2e \\alphaV=%.2e\n",
@@ -1828,11 +1840,11 @@ projectInterface( int grid, real dt, int current )
               // ** check sign of the jump term:
               // ** fix me for normal and tangential components -- use zs for tangential
                             uLocal(Ib1,Ib2,Ib3,Vc)=( alphaV*interfaceVelocity(Ib1,Ib2,Ib3,Rx) + (1.-alphaV)*uLocal(Ib1,Ib2,Ib3,Vc)
-                                                                              + ampSigmaJumpCoeff*(1./(zf+zp))*( fluidTraction - solidTraction)
+                                                                              + jumpMult*ampSigmaJumpCoeff*(1./(zf+zp))*( fluidTraction - solidTraction)
                                 );
               // project traction - inverse impedance average:
                             bd(Ib1,Ib2,Ib3,Dc) = ( alphaS*fluidTraction + (1.-alphaS)*solidTraction
-                                              + ampVelocityJumpCoeff*(1./(1./zf+1./zp))*( interfaceVelocity(Ib1,Ib2,Ib3,Rx) -uLocal(Ib1,Ib2,Ib3,Vc) )
+                                                                          + jumpMult*ampVelocityJumpCoeff*(1./(1./zf+1./zp))*( interfaceVelocity(Ib1,Ib2,Ib3,Rx) -uLocal(Ib1,Ib2,Ib3,Vc) )
                                 );
 
                             const int & fluidSolidCornerFix = parameters.dbase.get<int>("fluidSolidCornerFix");

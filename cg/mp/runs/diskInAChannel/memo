@@ -1,3 +1,49 @@
+
+ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=4 
+ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=8 
+
+cgmp fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50.05 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -show=fiveBodies/fiveBodiesG4_Pp1.show -psolver=best -solver=best -go=halt 
+
+cgmp fiveBodies.cmd -g=solidObjectsGride8.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50.05 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -show=fiveBodies/fiveBodiesG8_Pp1.show -psolver=best -solver=best -go=halt 
+
+**************************
+*** Oct 20, 2018
+
+ogen -noplot rpiGrid -interp=e -order=2 -factor=4 -xb=10 
+ogen -noplot rpiGrid -interp=e -order=2 -factor=8 -xb=10 
+
+cgmp threeBodies.cmd -g=rpiGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -fluidSolidCornerFix=0 -tp=.05 -tf=50.05 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=rpi_10_20/rpiG4_Pp1.show
+
+cgmp threeBodies.cmd -g=rpiGride8.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -fluidSolidCornerFix=0 -tp=.05 -tf=50.05 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=rpi_10_20/rpiG8_Pp1.show
+
+**************************
+*** Oct 16, 2018
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride8.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.01 -tf=11. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -show=elasticAnnulus/solidDiskScf10.show -solver=best
+
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride4.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.01 -tf=11. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.00005 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -solver=best
+
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride4.order2  -addedMass=1 -scf=10. -zfMuByH=1 -p0=1 -tp=.01 -tf=11. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.01 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -solver=best
+
+**************************
+*** Sept 20, 2018
+
+
+
+ogen aplGrid -interp=e -order=2 -factor=4 
+
+cgmp threeBodies.cmd -g=aplGride8.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.001 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=apl/aplNuP001.show
+
+cgmp threeBodies.cmd -g=aplGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=apl/apl.show
+
+**************************
+*** Sept 15, 2018
+
+ogen -noplot rpiGrid -interp=e -order=2 -factor=4 
+
+cgmp threeBodies.cmd -g=rpiGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=rpi/rpiTry4.show
+
 **************************
 *** Sept 3, 2018
 
