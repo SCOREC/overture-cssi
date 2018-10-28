@@ -1,4 +1,29 @@
 *****************************************
+********** Sept Oct 26, 2018
+
+REDO: -- longer
+
+Resonant mode
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=20 -tp=.1 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=1 -useSosupDissipation=1 -show=objectsG4M1.show -go=go >! objectsG4M1.out
+
+Wave-mode
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=20 -tp=.1 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG4b.show -go=go >! objectsG4b.out
+
+
+*****************************************
+********** Sept 14, 2018
+
+Compute diff's of scattering off multiple objects
+
+
+
+*****************************************
+********** Sept 4, 2018
+
+Redo simulations with new GDM parameters
+
+
+*****************************************
 ********** Sept 3, 2018
 
 REBUILD GRIDS -- bug in arclength
@@ -6,7 +31,7 @@ REBUILD GRIDS -- bug in arclength
 REDO RESONANT MODE =1 so wave moves in the same direction
 
 
-REDO : 
+REDO : OK
 nohup $cgmx -noplot scattering -g=objectsGride8.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=5 -tp=.05 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -modeGDM=1 -useSosupDissipation=1 -show=objectsG8M0a.show -go=go >! objectsG8M0a.out
 
 REDO: OK

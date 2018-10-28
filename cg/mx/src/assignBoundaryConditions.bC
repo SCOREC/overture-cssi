@@ -887,6 +887,9 @@ int polarizationOption=0;
      bc(1,2)==perfectElectricalConductor
       )
     );
+
+
+  // ---- Array v is used for the Jacobit update of the boundary conditions when we need to iterate -----
   RealArray v; 
   real *vptr = uu.getDataPointer();  // default value when not used 
   if( boundaryConditionWorkSpaceNeeded )

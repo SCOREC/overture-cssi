@@ -2,7 +2,7 @@
 # Annulus (taking arguments)
 #
 #
-# usage: ogen [-noplot] annulusArg -factor=<num> -order=[2/4/6/8] -interp=[e/i] -ml=<>
+# usage: ogen [-noplot] annulusArg -factor=<num> -order=[2/4/6/8] -interp=[e/i] -ml=<> -numGhost=<i>
 # 
 #  -ml = number of (extra) multigrid levels to support
 # 
@@ -34,9 +34,10 @@ $orderOfAccuracy = "second order"; $ng=2; $interpType = "explicit for all grids"
 $prefix="annulus"; $name=""; 
 # 
 $innerRad=.5; $outerRad = 1.;
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,\
-            "innerRad=f"=> \$innerRad,"outerRad=f"=> \$outerRad,"prefix=s"=> \$prefix );
+            "innerRad=f"=> \$innerRad,"outerRad=f"=> \$outerRad,"prefix=s"=> \$prefix,"numGhost=i"=>\$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -45,6 +46,8 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
 $suffix = ".order$order"; 
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $name eq "" ){$name = $prefix . "$factor" . $suffix . ".hdf";}
 # -- convert a number so that it is a power of 2 plus 1 --
 #    ml = number of multigrid levels 

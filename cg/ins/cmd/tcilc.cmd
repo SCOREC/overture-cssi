@@ -2,9 +2,9 @@
 # cgins command file: Flow past two cylinders in a channel
 #
 #    cgins [-noplot] tcilc -g=<grid-name> -nu=<> -tp=<> -tf=<> -show=<> -debug=<> -project=[0|1] ...
-#          -ts=[pc|im|afs|ss] -solver=[best|mg|yale] -psolver=[best|mg|yale] -cpn=<> -inflow=[uniform|ramp] ...
+#          -ts=[pc|im|afs|ss|bdf|imex] -solver=[best|mg|yale] -psolver=[best|mg|yale] -cpn=<> -inflow=[uniform|ramp] ...
 #          -implicitVariation=[viscous/adv/full] -implicitFactor=<val> -refactorFrequency=<> ...
-#          -plotResiduals=[0|1]
+#          -plotResiduals=[0|1] -orderInTime=[] -ao=[centered|upwind|bweno] -upwindOrder=[1|2|...]
 #
 #  -implicitVariation : viscous=viscous terms implicit, full=full linearized version
 #  -implicitFactor : .5=CN, 1.=BE, 0.=FE
@@ -67,7 +67,7 @@
 $grid="tcilce2.order2"; $show = " "; $tFinal=5.; $tPlot=.1; $nu=.1; $cfl=.9; $inflow="uniform"; 
 # 
 $implicitVariation="viscous"; $impGrids="all=explicit"; $newts=0;
-$debug = 1;  $debugp=0; $debugi=0; $opav=1; $ssr=0; $plotResiduals=0; 
+$debug = 1;  $debugp=0; $debugi=0; $opav=1; $ssr=0; $plotResiduals=0; $flushFrequency=4; 
 $maxIterations=100; $tol=1.e-16; $atol=1.e-16; 
 $tz = "none"; $degreex=2; $degreet=2; $fx=1.; $fy=1.; $fz=1.; $ft=1.; $dtMax=.05; 
 $fullSystem=0; $go="halt"; $move=0;  $moveOnly=0; $freq=1.; 
@@ -78,6 +78,11 @@ $ts="im";
 $implicitFactor=.5;
 $freqFullUpdate=10; # frequency for using full ogen update in moving grids 
 $cdv=1.; $ad2=0; $ad21=1.; $ad22=1.;  $ad4=0; $ad41=1.; $ad42=1.; 
+#
+$orderInTime=-1;
+#
+$ao="centered"; $upwindOrder=-1;
+#
 $rtolp=1.e-3; $atolp=1.e-4;  # tolerances for the pressure solve
 $rtol=1.e-4; $atol=1.e-5;    # tolerances for the implicit solver
 $refactorFrequency=10000; $recomputeDt=10000; 
@@ -104,7 +109,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "refactorFrequency=i"=>\$refactorFrequency,"ad2=i"=>\$ad2,"ad21=f"=>\$ad21,"ad22=f"=>\$ad22,\
   "ad4=i"=>\$ad4,"ad41=f"=>\$ad41,"ad42=f"=>\$ad42,"outflowOption=s"=>\$outflowOption,"cpn=f"=>\$cpn,\
   "ogmgAutoChoose=i"=>\$ogmgAutoChoose,"inflow=s"=>\$inflow,"iluLevels=i"=>\$iluLevels,\
-  "maxIterations=i"=>\$maxIterations,"plotIterations=i"=>\$plotIterations,"plotResiduals=i"=>\$plotResiduals);
+  "maxIterations=i"=>\$maxIterations,"plotIterations=i"=>\$plotIterations,"plotResiduals=i"=>\$plotResiduals,\
+  "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrdero,"flushFrequency=i"=>\$flushFrequency );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }
@@ -124,6 +130,13 @@ if( $ts eq "pc4" ){ $ts="adams PC order 4"; }
 if( $ts eq "mid"){ $ts="midpoint";       }  
 if( $ts eq "afs"){ $ts="approximate factorization"; $newts = 1;}
 if( $ts eq "ss"){ $ts="steady state RK-line"; }
+if( $ts eq "bdf" ){ $ts="implicit BDF"; }
+if( $ts eq "imex" ){ $ts="implicit explicit multistep"; }
+# 
+if( $ao eq "centered" ){ $ao="centered advection"; }
+if( $ao eq "upwind" ){ $ao="upwind advection"; }
+if( $ao eq "bweno" ){ $ao="bweno advection"; }
+#
 if( $implicitVariation eq "viscous" ){ $implicitVariation = "implicitViscous"; }\
 elsif( $implicitVariation eq "adv" ){ $implicitVariation = "implicitAdvectionAndViscous\n useNewImplicitMethod"; }\
 elsif( $implicitVariation eq "full" ){ $implicitVariation = "implicitFullLinearized\n useNewImplicitMethod"; }\
@@ -162,6 +175,12 @@ $grid
 #  -- choose time-stepping method:
   $ts
   $newts
+  if( $orderInTime eq 4 ){ $cmd="fourth order accurate in time\n BDF order 4"; }else{ $cmd="#"; }
+  $cmd
+  # advection option:
+  $ao
+  upwind order: $upwindOrder
+  #
   # -- for the AFS scheme:
   compact finite difference
   # -- convergence parameters for the af scheme
@@ -191,7 +210,7 @@ $grid
     open
      $show
     frequency to flush
-      1
+      $flushFrequency
     exit
 #
   no plotting

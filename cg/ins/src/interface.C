@@ -913,7 +913,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                   // We specify that this deforming body has converged
                                     bool hasConverged = maxDiff < tol;
                                     deform.setBulkSolidModelHasConverged(hasConverged);
-                                    printF("--INS--interface:INFO: relaxCorrectionSteps: t=%.2e, omega=%.2e, maxDiff=%.2e hasConverged=%i\n",
+                                    printF("--INS--interface:INFO: relaxCorrectionSteps: t=%.2e, omega=%.2e, maxDiff=%.2e hasConverged=%i\n\n",
                                                   t,omega,maxDiff,(int)hasConverged);
                                     traction = omega*traction + (1.-omega)*tractionCurrent;
                                 }

@@ -42,6 +42,16 @@ pause
   coarsening factor 2
   plot
   set view:0 0.178801 0.00147887 0 9.40291 1 0 0 0 1 0 0 0 1
-  $name = $name . "Zoom"; 
-  hardcopy file name:0 $name.ps
+  $plotName = $name . "Zoom"; 
+  hardcopy file name:0 $plotName.ps
   hardcopy save:0
+pause
+# FULL view, no grid lines
+  plot grid lines 0
+  set view:0 -0.00376648 0.00564972 0 1.27952 1 0 0 0 1 0 0 0 1  
+  $plotName = $name . "Full"; 
+  hardcopy file name:0 $plotName.ps
+  hardcopy save:0
+pause
+exit
+exit

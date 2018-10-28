@@ -37,12 +37,13 @@ void newInterfaceMaxwell( const int&nd,
 void interface3dMaxwell( const int&nd, 
                        const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
 		       const int&gridIndexRange1, 
-                       real&u1, const real&u1n, const real&u1m, 
+                       real&u1, const real&u1n, const real&u1m, real& v1, 
                        const int&mask1,const real&rsxy1, const real&xy1, 
                        real&p1, const real&p1n, const real&p1m, 
                        const int&boundaryCondition1, 
 		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
-                       const int&gridIndexRange2, real&u2, const real&u2n, const real&u2m, 
+                       const int&gridIndexRange2, 
+                       real&u2, const real&u2n, const real&u2m, real & v2,
                        const int&mask2,const real&rsxy2, const real&xy2, 
                        real&p2, const real&p2n, const real&p2m,  
                        const int&boundaryCondition2,
@@ -773,7 +774,8 @@ realSerialArray & u2mLocal = u2m;
     dispersionModel1, // ipar[44]
     dispersionModel2, // ipar[45]
     pxc,              // ipar[46]
-    knownSolutionOption
+    knownSolutionOption,
+    useJacobiUpdate
   };
 		  
 const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
@@ -905,7 +907,7 @@ else
                         // mg2.gridIndexRange(0,0), *u1bLocal.getDataPointer(), *mask2p,*prsxy2, *pxy2, bc2Local(0,0),
                         // fixed version: but note bc2Local 
                         mg2.gridIndexRange(0,0), 
-                        *u1bLocal.getDataPointer(), *u1np,*u1mp,  
+                        *u1bLocal.getDataPointer(), *u1np,*u1mp, *v1p, 
                         *pmask1b,*prsxy1b,*pxy1b, 
                         *p1ptr,*p1nptr,*p1mptr,   
                         bc2Local(0,0),
@@ -914,7 +916,7 @@ else
 		        u1Local.getBase(1),u1Local.getBound(1),
 		        u1Local.getBase(2),u1Local.getBound(2),
                         mg1.gridIndexRange(0,0), 
-                        *u1p, *u1np, *u1mp,
+                        *u1p, *u1np, *u1mp, *v1p,
                         *mask1p,*prsxy1, *pxy1, 
                         *p1ptr,*p1nptr,*p1mptr,  
                         bc1Local(0,0), 
@@ -927,7 +929,7 @@ else
 		        // mg1.gridIndexRange(0,0), *u2bLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0),
                         // fixed version: but note bc1Local 
                         mg1.gridIndexRange(0,0), 
-                        *u2bLocal.getDataPointer(), *u2np, *u2mp,  
+                        *u2bLocal.getDataPointer(), *u2np, *u2mp, *v2p,
                         *pmask2b,*prsxy2b,*pxy2b, 
                         *p2ptr,*p2nptr,*p2mptr, 
                         bc1Local(0,0),
@@ -936,7 +938,7 @@ else
 		        u2Local.getBase(1),u2Local.getBound(1),
 		        u2Local.getBase(2),u2Local.getBound(2),
                         mg2.gridIndexRange(0,0), 
-                        *u2p, *u2np, *u2mp, 
+                        *u2p, *u2np, *u2mp, *v2p,
                         *mask2p,*prsxy2, *pxy2, 
                         *p2ptr,*p2nptr,*p2mptr, 
                         bc2Local(0,0), 
@@ -1252,6 +1254,25 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
      real *pxy2b = !centerNeeded ? ptemp : interface.pxy2->getDataPointer();
     #endif
 
+     // We need some temp space for jacobi updates
+    bool useJacobiUpdate=false;
+    if( orderOfAccuracyInSpace==4 )
+    {
+      useJacobiUpdate=true;
+    }
+    RealArray v1,v2;
+    real *v1p=u1p, *v2p=u2p; // default when not used
+    if( useJacobiUpdate )
+    {
+      // Do this for now -- we can optimize ----
+      v1.redim(u1Local);
+      v2.redim(u2Local);
+      v1p=v1.getDataPointer();
+      v2p=v2.getDataPointer();
+    }
+
+
+
     int ierr=0;
 
     if( bcOrderOfAccuracy<6 )
@@ -1457,16 +1478,23 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
       {
 	extrapParams.ghostLineToAssign=ghost;
-	if( debug & 4 )
-	  printF("assignInterface: sosup: extrap ghost-line %i to order %i\n",
-		 extrapParams.ghostLineToAssign,extrapParams.orderOfExtrapolation);
-
+	if( t <= 2.*dt || debug & 4 )
+        {
+	  printF("assignInterface: assignInterfaceValues=%i assignInterfaceGhostValues=%i\n",
+                 (int)assignInterfaceValues, (int)assignInterfaceGhostValues);
+        }
+        
 	for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
 	  for( int side=0; side<=1; side++ )
 	  {
 	    const int bc = mg.boundaryCondition(side,axis);
 	    if( bc==interfaceBoundaryCondition )
 	    {
+              if( t <= 2.*dt || debug & 4 )
+              {
+                printF("assignInterface: sosup: grid=%i extrap ghost-line %i to order %i\n",
+                       grid,extrapParams.ghostLineToAssign,extrapParams.orderOfExtrapolation);
+              }
 	      hasInterface=true;
 	      u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
 	    }

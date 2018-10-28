@@ -79,9 +79,9 @@
 # -- set default values for parameters ---
 $kx=2; $ky=0; $kz=0; $left="leftSquare*"; $right="rightSquare*"; $degreex=2; $degreet=2; $method="NFDTD";
 $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; $dissOrder=-1;
-$useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=1.; $setDivergenceAtInterfaces=0; 
+$useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
 $useImpedanceInterfaceProjection=1; $cons=1; 
-$useSosupDissipation=0;
+$useSosupDissipation=0; $sosupParameter=1.; 
 #
 $eps1=1.; $mu1=1.;
 $eps2=1.; $mu2=1.;
@@ -109,7 +109,7 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
            "bc7=s"=>\$bc7,"bc8=s"=>\$bc8,"setDivergenceAtInterfaces=s"=>\$setDivergenceAtInterfaces,"cons=i"=>\$cons,\
            "useImpedanceInterfaceProjection=s"=>\$useImpedanceInterfaceProjection,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
-           "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"useSosupDissipation=i"=>\$useSosupDissipation,\
+           "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
            "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12);
 # -------------------------------------------------------------------------------------------------
@@ -249,6 +249,7 @@ order of dissipation $dissOrder
 dissipation $diss
 #
 use sosup dissipation $useSosupDissipation
+sosup parameter $sosupParameter
 #
 use conservative difference $cons
 debug $debug
@@ -269,6 +270,8 @@ exit
 continue
 #
 plot:Ey
+if( $grid =~ /^twoBox/ ){ $cmd="contour\n -shift contour planes\n -shift contour planes\n -shift contour planes\n exit"; }else{ $cmd="#"; }
+$cmd
 # 
 $go
 

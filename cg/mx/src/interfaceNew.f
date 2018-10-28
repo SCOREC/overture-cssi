@@ -2,7 +2,7 @@
 c *******************************************************************************
 c   Interface boundary conditions **new version**
 c
-c    This file calls functions from interfaceDeriavtives.bf
+c    This file calls functions from interfaceDerivatives.bf
 c
 c *******************************************************************************
 

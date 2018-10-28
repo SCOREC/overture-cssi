@@ -455,797 +455,10 @@ end do
 #endMacro
 
 
-! ==================================================================================================
-! Macro: compute the normal vector (an1,an2) in 2D
-! GRIDTYPE (input) : curvilinear or rectangular
-! ==================================================================================================
-#beginMacro getNormal2d(an1,an2,GRIDTYPE)
-  #If #GRIDTYPE eq "curvilinear"
-   an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-   an2=rsxy1(i1,i2,i3,axis1,1)
-   aNorm=max(epsx,sqrt(an1**2+an2**2))
-   an1=an1/aNorm
-   an2=an2/aNorm
-  #Elif #GRIDTYPE eq "rectangular"
-   an1=an1Cartesian
-   an2=an2Cartesian
-  #Else
-     stop 1111
-  #End
-#endMacro
-
-! ==================================================================================================
-! Macro: compute the normal vector (an1,an2,an3) in 3D
-! GRIDTYPE (input) : curvilinear or rectangular
-! ==================================================================================================
-#beginMacro getNormal3d(an1,an2,an3,GRIDTYPE)
-  #If #GRIDTYPE eq "curvilinear"
-   an1=rsxy1(i1,i2,i3,axis1,0)  
-   an2=rsxy1(i1,i2,i3,axis1,1)
-   an3=rsxy1(i1,i2,i3,axis1,2)
-   aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
-   an1=an1/aNorm
-   an2=an2/aNorm
-   an3=an3/aNorm
-  #Elif #GRIDTYPE eq "rectangular"
-   an1=an1Cartesian
-   an2=an2Cartesian
-   an3=an3Cartesian
-  #Else
-     stop 3333
-  #End
-#endMacro
-
-! ==================================================================================================
-! This macro will assign the jump conditions on the boundary
-! DIM (input): number of dimensions (2 or 3)
-! GRIDTYPE (input) : curvilinear or rectangular
-! ==================================================================================================
-#beginMacro boundaryJumpConditions(DIM,GRIDTYPE)
-if( dispersive.gt.0 )then
-
- ! ****** DISPERSIVE CASE *******
- #If #DIM eq "2"
-  if( .true. .and. useImpedanceInterfaceProjection.eq.1 )then
-    ! --------------------------------------------------------------
-    ! ------ Use impedance weighting to project the interface ------
-    ! --------------------------------------------------------------
-    !  (see maxwell.pdf)
-    !
-
-    if( t.le.3*dt )then
-      write(*,'("cgmx:interface3d: PROJECT INTERFACE DISPERSIVE in 2D")')
-    end if
-
-
-    ! --- init polarization vectors in case one side is non-dispersive --- 
-    do n=0,nd-1   
-      p1v(n)=0.
-      p2v(n)=0.
-    end do
-    g1=0.
-    g2=0.
-
-    ! --- LOOP over the interface ---
-    beginGhostLoopsMask2d()
-
-      getNormal2d(an1,an2,GRIDTYPE)
-
-      ! left state:
-      ex1=u1(i1,i2,i3,ex)
-      ey1=u1(i1,i2,i3,ey)
-      hz1=u1(i1,i2,i3,hz)
-
-      if( dispersionModel1.ne.noDispersion )then
-        ! eval sum of Pv vectors 
-        do n=0,nd-1
-          p1v(n)=0.
-          do jv=0,numberOfPolarizationVectors1-1
-            pc = jv*nd
-            p1v(n)=p1v(n) + p1(i1,i2,i3,pc+n)
-          end do
-        end do
-      end if
-
-      ! displacement vector 
-      D1v(0) = eps1*(ex1 + alphaP1*p1v(0))
-      D1v(1) = eps1*(ey1 + alphaP1*p1v(1))
-
-      ! right state:
-      ex2=u2(j1,j2,j3,ex)
-      ey2=u2(j1,j2,j3,ey)
-      hz2=u2(j1,j2,j3,hz)
-
-      if( dispersionModel2.ne.noDispersion )then
-        ! eval sum of Pv vectors 
-        do n=0,nd-1
-          p2v(n)=0.
-          do jv=0,numberOfPolarizationVectors2-1
-            pc = jv*nd
-            p2v(n)=p2v(n) + p2(j1,j2,j3,pc+n)
-          end do
-        end do
-      end if
-
-      ! displacement vector 
-      D2v(0) = eps2*(ex2 + alphaP2*p2v(0))
-      D2v(1) = eps2*(ey2 + alphaP2*p2v(1))
-
-      ! normal components 
-      ! nDotE1 = an1*ex1+an2*ey1
-      ! nDotE2 = an1*ex2+an2*ey2
-   
-      nDotD1 = an1*D1v(0)+an2*D1v(1)
-      nDotD2 = an1*D2v(0)+an2*D2v(1)
-   
-      nDotP1 = an1*p1v(0)+an2*p1v(1)
-      nDotP2 = an1*p2v(0)+an2*p2v(1)
-   
-
-      ! Interface displacement-vector is an impedance weighted average
-      nDotDI = ( eta1*nDotD1 + eta2*nDotD2 )/(eta1+eta2)
-
-      ! Normal components of n.E on the left and right:
-      nDotE1I = nDotDI/eps1 -alphaP1*nDotP1
-      nDotE2I = nDotDI/eps2 -alphaP2*nDotP2
-
-      ! nDotE1I = nDotE1 + (1./(1.*eps1))*(nDotDI-nDotD1)
-      ! nDotE2I = nDotE2 + (1./(1.*eps2))*(nDotDI-nDotD2)
-
-
-      if( twilightZone.eq.1)then
-       ! --- adjust for TZ forcing ---
-       ! *NOTE* Here we assume the exact solution for E is the same on both sides
-       ! *NOTE* exact soltuion for P may be different 
-
-       ! See notes...
-       !    gm = Ee - D_e^I /epsm + alphaP*Pe
-       !    D_e^I = (eta1*D1e + eta2*D2e )/( eta1+eta2 )
-
-
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, ve )
-       nDotEe = an1*ue+an2*ve
- 
-       ! Compute sum of exact polarization vectors: 
-       do n=0,nd-1
-        p1ev(n)=0. 
-        do jv=0,numberOfPolarizationVectors1-1
-          ! NOTE: the TZ component number is offset by pxc
-          pc = pxc + jv*nd
-          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pe(n)  )
-          p1ev(n) = p1ev(n) + pe(n)
-        end do
-        p2ev(n)=0. 
-        do jv=0,numberOfPolarizationVectors2-1
-          ! NOTE: the TZ component number is offset by pxc
-          pc = pxc + jv*nd
-          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pe(n)  )
-          p2ev(n) = p2ev(n) + pe(n)
-        end do
-       end do
-
-       ! normal components 
-       nDotP1e = an1*p1ev(0) + an2*p1ev(1)
-       nDotP2e = an1*p2ev(0) + an2*p2ev(1)
-       nDotDe = ( eta1*eps1*(nDotEe+alphaP1*nDotP1e) + eta2*eps2*(nDotEe+alphaP2*nDotP2e) )/(eta1+eta2)
-
-       ! epsNDotEI + g1 = eps1*nDotE 
-       ! epsNDotEI + g2 = eps2*nDotE 
-       g1= nDotEe - nDotDe/eps1 + alphaP1*nDotP1e 
-       g2= nDotEe - nDotDe/eps2 + alphaP2*nDotP2e 
-
-       ! Adjust n.E 
-       nDotE1I = nDotE1I+g1  ! nDotE for interface on left 
-       nDotE2I = nDotE2I+g2  ! nDotE for interface on right 
-
-      end if
-
-
-      ! inverse impedance average of tangential components  (set values for full vector and then correct below)
-
-      exI = ( eta1i*ex1 + eta2i*ex2 )/( eta1i + eta2i )
-      eyI = ( eta1i*ey1 + eta2i*ey2 )/( eta1i + eta2i )
-
-      ! hz : impedance weighted average 
-      hzI = ( eta1*hz1 + eta2*hz2 )/(eta1+eta2) 
-
-      nDotEI= an1*exI+an2*eyI  ! we need to subtract off normal component of (exI,eyI) 
-
-      u1(i1,i2,i3,ex) = exI + (nDotE1I - nDotEI)*an1
-      u1(i1,i2,i3,ey) = eyI + (nDotE1I - nDotEI)*an2
-      u1(i1,i2,i3,hz) = hzI 
-
-      u2(j1,j2,j3,ex) = exI + (nDotE2I - nDotEI)*an1
-      u2(j1,j2,j3,ey) = eyI + (nDotE2I - nDotEI)*an2
-      u2(j1,j2,j3,hz) = hzI 
-
-
-
-      if( .false. .and. twilightZone.eq.1 )then
-          ! check errors on the boundary
-          do n=0,nd-1
-            call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, es(n)   ) 
-          end do
-          f(0) =  u1(i1,i2,i3,ex) -es(0)
-          f(1) =  u1(i1,i2,i3,ey) -es(1)
-          do n=0,nd-1
-            call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, est(n)   ) 
-          end do
-          f(2) =  u2(j1,j2,j3,ex) -est(0)
-          f(3) =  u2(j1,j2,j3,ey) -est(1)
-          write(*,'(" PROJECT-INTERFACE ERRORS =",4e10.2)') f(0),f(1),f(2),f(3) 
-  
-      end if
-
-    endLoopsMask2d()
-
-  else 
-
-    write(*,'("cgmx:interface3d: FINISH ME -- TWO-D dispersive bndry jump conditions")')
-
-  end if
- #Else
-
-
-  ! ******************** 3D PROJECT INTERFACE DISPERSIVE  ******************************
-
-  if( .true. .and. useImpedanceInterfaceProjection.eq.1 )then
-    ! --------------------------------------------------------------
-    ! ------ Use impedance weighting to project the interface ------
-    ! --------------------------------------------------------------
-    !  (see maxwell.pdf)
-    !
-
-    if( t.le.3*dt )then
-      write(*,'("cgmx:interface3d: PROJECT INTERFACE DISPERSIVE in 3D")')
-    end if
-
-    ! --- init polarization vectors in case one side is non-dispersive --- 
-    do n=0,nd-1   
-      p1v(n)=0.
-      p2v(n)=0.
-    end do
-    g1=0.
-    g2=0.
-
-    ! --- LOOP over the interface ---
-    beginGhostLoopsMask3d()
-
-      getNormal3d(an1,an2,an3,GRIDTYPE)
-
-      ! left state:
-      ex1=u1(i1,i2,i3,ex)
-      ey1=u1(i1,i2,i3,ey)
-      ez1=u1(i1,i2,i3,ez)
-
-      if( dispersionModel1.ne.noDispersion )then
-        ! eval sum of Pv vectors 
-        do n=0,nd-1
-          p1v(n)=0.
-          do jv=0,numberOfPolarizationVectors1-1
-            pc = jv*nd
-            p1v(n)=p1v(n) + p1(i1,i2,i3,pc+n)
-          end do
-        end do
-      end if
-
-      ! left displacement vector 
-      D1v(0) = eps1*(ex1 + alphaP1*p1v(0))
-      D1v(1) = eps1*(ey1 + alphaP1*p1v(1))
-      D1v(2) = eps1*(ez1 + alphaP1*p1v(2))
-
-      ! right state:
-      ex2=u2(j1,j2,j3,ex)
-      ey2=u2(j1,j2,j3,ey)
-      ez2=u2(j1,j2,j3,ez)
-
-      if( dispersionModel2.ne.noDispersion )then
-        ! eval sum of Pv vectors 
-        do n=0,nd-1
-          p2v(n)=0.
-          do jv=0,numberOfPolarizationVectors2-1
-            pc = jv*nd
-            p2v(n)=p2v(n) + p2(j1,j2,j3,pc+n)
-          end do
-        end do
-      end if
-
-      ! right displacement vector 
-      D2v(0) = eps2*(ex2 + alphaP2*p2v(0))
-      D2v(1) = eps2*(ey2 + alphaP2*p2v(1))
-      D2v(2) = eps2*(ez2 + alphaP2*p2v(2))
-
-      ! normal components of D1 and D2
-      nDotD1 = an1*D1v(0)+an2*D1v(1)+an3*D1v(2)
-      nDotD2 = an1*D2v(0)+an2*D2v(1)+an3*D2v(2)
-   
-      ! normal components of P1 and P2
-      nDotP1 = an1*p1v(0)+an2*p1v(1)+an3*p1v(2)
-      nDotP2 = an1*p2v(0)+an2*p2v(1)+an3*p2v(2)
-   
-
-      ! Interface displacement-vector is an impedance weighted average
-      nDotDI = ( eta1*nDotD1 + eta2*nDotD2 )/(eta1+eta2)
-
-      ! Normal components of n.E on the left and right:
-      nDotE1I = nDotDI/eps1 -alphaP1*nDotP1
-      nDotE2I = nDotDI/eps2 -alphaP2*nDotP2
-
-
-      if( twilightZone.eq.1)then
-       ! --- adjust for TZ forcing ---
-       ! *NOTE* Here we assume the exact solution for E is the same on both sides
-       ! *NOTE* exact soltuion for P may be different 
-
-       ! See notes...
-       !    gm = Ee - D_e^I /epsm + alphaP*Pe
-       !    D_e^I = (eta1*D1e + eta2*D2e )/( eta1+eta2 )
-
-
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ey, ve )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ez, we )
-       nDotEe = an1*ue+an2*ve+an3*we
- 
-       ! Compute sum of exact polarization vectors: 
-       do n=0,nd-1
-        p1ev(n)=0. 
-        do jv=0,numberOfPolarizationVectors1-1
-          ! NOTE: the TZ component number is offset by pxc
-          pc = pxc + jv*nd
-          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t,pc+n, pe(n)  )
-          p1ev(n) = p1ev(n) + pe(n)
-        end do
-        p2ev(n)=0. 
-        do jv=0,numberOfPolarizationVectors2-1
-          ! NOTE: the TZ component number is offset by pxc
-          pc = pxc + jv*nd
-          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),xy1(i1,i2,i3,2),t,pc+n, pe(n)  )
-          p2ev(n) = p2ev(n) + pe(n)
-        end do
-       end do
-
-       ! normal components 
-       nDotP1e = an1*p1ev(0) + an2*p1ev(1) + an3*p1ev(2)
-       nDotP2e = an1*p2ev(0) + an2*p2ev(1) + an3*p2ev(2)
-       nDotDe = ( eta1*eps1*(nDotEe+alphaP1*nDotP1e) + eta2*eps2*(nDotEe+alphaP2*nDotP2e) )/(eta1+eta2)
-
-       ! epsNDotEI + g1 = eps1*nDotE 
-       ! epsNDotEI + g2 = eps2*nDotE 
-       g1= nDotEe - nDotDe/eps1 + alphaP1*nDotP1e 
-       g2= nDotEe - nDotDe/eps2 + alphaP2*nDotP2e 
-
-       ! Adjust n.E 
-       nDotE1I = nDotE1I+g1  ! nDotE for interface on left 
-       nDotE2I = nDotE2I+g2  ! nDotE for interface on right 
-
-      end if
-
-      ! inverse impedance average of tangential components  (set values for full vector and then correct below)
-
-      exI = ( eta1i*ex1 + eta2i*ex2 )/( eta1i + eta2i )
-      eyI = ( eta1i*ey1 + eta2i*ey2 )/( eta1i + eta2i )
-      ezI = ( eta1i*ez1 + eta2i*ez2 )/( eta1i + eta2i )
-
-      nDotEI= an1*exI+an2*eyI+an3*ezI  ! we need to subtract off normal component of (exI,eyI) 
-
-      u1(i1,i2,i3,ex) = exI + (nDotE1I - nDotEI)*an1
-      u1(i1,i2,i3,ey) = eyI + (nDotE1I - nDotEI)*an2
-      u1(i1,i2,i3,ez) = ezI + (nDotE1I - nDotEI)*an3
-
-      u2(j1,j2,j3,ex) = exI + (nDotE2I - nDotEI)*an1
-      u2(j1,j2,j3,ey) = eyI + (nDotE2I - nDotEI)*an2
-      u2(j1,j2,j3,ez) = ezI + (nDotE2I - nDotEI)*an3
-
-
-      if( .false. .and. twilightZone.eq.1 )then
-          ! check errors on the boundary
-          do n=0,nd-1
-            call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t,ex+n, es(n)   ) 
-          end do
-          f(0) =  u1(i1,i2,i3,ex) -es(0)
-          f(1) =  u1(i1,i2,i3,ey) -es(1)
-          f(2) =  u1(i1,i2,i3,ez) -es(2)
-          do n=0,nd-1
-            call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),xy1(i1,i2,i3,2),t,ex+n, est(n)   ) 
-          end do
-          f(3) =  u2(j1,j2,j3,ex) -est(0)
-          f(4) =  u2(j1,j2,j3,ey) -est(1)
-          f(5) =  u2(j1,j2,j3,ez) -est(2)
-          write(*,'(" PROJECT-INTERFACE ERRORS =",6e10.2)') f(0),f(1),f(2),f(3),f(4),f(5) 
-  
-      end if
-
-    endLoopsMask3d()
-
-  else 
-
-    stop 1234
-
-  end if
-
- #End
-
-else
-
- ! ****** NON-DISPERSIVE CASE *******
-
- #If #DIM eq "2"
-  if( useImpedanceInterfaceProjection.eq.1 )then
-    ! --------------------------------------------------------------
-    ! ------ Use impedance weighting to project the interface ------
-    ! --------------------------------------------------------------
-    !  (see maxwell.pdf)
-    !
-    beginGhostLoopsMask2d()
-      ! eps2 n.u2 = eps1 n.u1
-      !     tau.u2 = tau.u1
-
-      getNormal2d(an1,an2,GRIDTYPE)
-
-      ! left state:
-      ex1=u1(i1,i2,i3,ex)
-      ey1=u1(i1,i2,i3,ey)
-      hz1=u1(i1,i2,i3,hz)
-
-      ! right state:
-      ex2=u2(j1,j2,j3,ex)
-      ey2=u2(j1,j2,j3,ey)
-      hz2=u2(j1,j2,j3,hz)
-
-      ! normal components 
-      nDotE1 = an1*ex1+an2*ey1
-      nDotE2 = an1*ex2+an2*ey2
-   
-      ! The interface value of (eps n.E) is an impedance average of (eps* n.E)
-      !
-      !      (eps n.E)_I = [ eta1*( eps1*n.E1 ) +  eta2*( eps2*n.E2 ) ]/[ eta1 + eta2 ]
-      !
-      ! We then set 
-      !   eps1*nDotE1_I = (eps n.E)_I 
-      !   eps2*nDotE2_I = (eps n.E)_I 
-      epsNDotEI = ( eta1*(eps1*nDotE1) + eta2*(eps2*nDotE2) )/(eta1+eta2) ! (eps * n. E)_I 
-
-      if( twilightZone.eq.1)then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, ve )
-       nDotEe = an1*ue+an2*ve
-
-       ! epsNDotEI + g1 = eps1*nDotE 
-       ! epsNDotEI + g2 = eps2*nDotE 
-       g1= (eps1-eps2) * nDotEe *eta2/(eta1+eta2)
-       g2= (eps2-eps1) * nDotEe *eta1/(eta1+eta2)
-
-      else
-        g1=0.
-        g2=0. 
-      end if
-
-      nDotE1I = (epsNDotEI+g1)/eps1  ! nDotE for interface on left 
-      nDotE2I = (epsNDotEI+g2)/eps2  ! nDotE for interface on right 
-
-      ! inverse impedance average of tangential components  (do full vector and correct below)
-
-      exI = ( eta1i*ex1 + eta2i*ex2 )/( eta1i + eta2i )
-      eyI = ( eta1i*ey1 + eta2i*ey2 )/( eta1i + eta2i )
-
-      ! hz : impedance weighted average 
-      hzI = ( eta1*hz1 + eta2*hz2 )/(eta1+eta2) 
-
-      nDotEI= an1*exI+an2*eyI  ! we need to subtract off normal component of (exI,eyI) 
-
-
-      u1(i1,i2,i3,ex) = exI + (nDotE1I - nDotEI)*an1
-      u1(i1,i2,i3,ey) = eyI + (nDotE1I - nDotEI)*an2
-      u1(i1,i2,i3,hz) = hzI 
-
-      u2(j1,j2,j3,ex) = exI + (nDotE2I - nDotEI)*an1
-      u2(j1,j2,j3,ey) = eyI + (nDotE2I - nDotEI)*an2
-      u2(j1,j2,j3,hz) = hzI 
-
-
-    endLoopsMask2d()
-
-  
-  else if( eps1.lt.eps2 )then
-    epsRatio=eps1/eps2
-    beginGhostLoopsMask2d()
-      ! eps2 n.u2 = eps1 n.u1
-      !     tau.u2 = tau.u1
-
-      #If #GRIDTYPE eq "curvilinear"
-       an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-       an2=rsxy1(i1,i2,i3,axis1,1)
-       aNorm=max(epsx,sqrt(an1**2+an2**2))
-       an1=an1/aNorm
-       an2=an2/aNorm
-      #Elif #GRIDTYPE eq "rectangular"
-       an1=an1Cartesian
-       an2=an2Cartesian
-      #Else
-         stop 1111
-      #End
-      ua=u1(i1,i2,i3,ex)
-      ub=u1(i1,i2,i3,ey)
-      nDotU = an1*ua+an2*ub
-      if( twilightZone.eq.1 )then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, ve )
-       nDotU = nDotU - (an1*ue+an2*ve)
-      end if
-
-      ! u2 equals u1 but with normal component = eps1/eps2*(n.u1)
-      u2(j1,j2,j3,ex) = ua + (nDotU*epsRatio - nDotU)*an1
-      u2(j1,j2,j3,ey) = ub + (nDotU*epsRatio - nDotU)*an2
-      u2(j1,j2,j3,hz) = u1(i1,i2,i3,hz)
-
-
-    endLoopsMask2d()
-  else
-    epsRatio=eps2/eps1
-    beginGhostLoopsMask2d()
-      ! eps2 n.u2 = eps1 n.u1
-      !     tau.u2 = tau.u1
-
-      #If #GRIDTYPE eq "curvilinear"
-       an1=rsxy1(i1,i2,i3,axis1,0)
-       an2=rsxy1(i1,i2,i3,axis1,1)
-       aNorm=max(epsx,sqrt(an1**2+an2**2))
-       an1=an1/aNorm
-       an2=an2/aNorm
-      #Elif #GRIDTYPE eq "rectangular"
-       an1=an1Cartesian
-       an2=an2Cartesian
-      #Else
-        stop 1112
-      #End
-      ua=u2(j1,j2,j3,ex)
-      ub=u2(j1,j2,j3,ey)
-
-      nDotU = an1*ua+an2*ub
-      if( twilightZone.eq.1 )then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, ve )
-! write(*,'(" jump: x,y=",2e10.2," ua,ue=",2e10.2," ub,ve=",2e10.2)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),ua,ue,ub,ve
-       nDotU = nDotU - (an1*ue+an2*ve)
-      end if
-
-      u1(i1,i2,i3,ex) = ua + (nDotU*epsRatio - nDotU)*an1
-      u1(i1,i2,i3,ey) = ub + (nDotU*epsRatio - nDotU)*an2
-      u1(i1,i2,i3,hz) = u2(j1,j2,j3,hz)
-    endLoopsMask2d()
-  end if
- #Else
-  ! ******************** 3D PROJECT INTERFACE ******************************
-  if( useImpedanceInterfaceProjection.eq.1 )then
-    ! --------------------------------------------------------------
-    ! ------ Use impedance weighting to project the interface ------
-    ! --------------------------------------------------------------
-    !  (see maxwell.pdf)
-    !
-    beginGhostLoopsMask3d()
-      #If #GRIDTYPE eq "curvilinear"
-       an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-       an2=rsxy1(i1,i2,i3,axis1,1)
-       an3=rsxy1(i1,i2,i3,axis1,2)
-       aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
-       an1=an1/aNorm
-       an2=an2/aNorm
-       an3=an3/aNorm
-      #Elif #GRIDTYPE eq "rectangular"
-       an1=an1Cartesian
-       an2=an2Cartesian
-       an3=an3Cartesian
-      #Else
-         stop 1111
-      #End
-      ! left state:
-      ex1=u1(i1,i2,i3,ex)
-      ey1=u1(i1,i2,i3,ey)
-      ez1=u1(i1,i2,i3,ez)
-
-      ! right state:
-      ex2=u2(j1,j2,j3,ex)
-      ey2=u2(j1,j2,j3,ey)
-      ez2=u2(j1,j2,j3,ez)
-
-      ! normal components 
-      nDotE1 = an1*ex1+an2*ey1+an3*ez1
-      nDotE2 = an1*ex2+an2*ey2+an3*ez2
-
-      ! The interface value of (eps n.E) is an impedance average of (eps* n.E)
-      !
-      !      (eps n.E)_I = [ eta1*( eps1*n.E1 ) +  eta2*( eps2*n.E2 ) ]/[ eta1 + eta2 ]
-      !
-      ! We then set 
-      !   eps1*nDotE1_I = (eps n.E)_I 
-      !   eps2*nDotE2_I = (eps n.E)_I 
-      epsNDotEI = ( eta1*(eps1*nDotE1) + eta2*(eps2*nDotE2) )/(eta1+eta2) ! (eps * n. E)_I 
-
-      if( twilightZone.eq.1)then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ey, ve )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ez, we )
-       nDotEe = an1*ue+an2*ve+an3*we
-
-       ! epsNDotEI + g1 = eps1*nDotE 
-       ! epsNDotEI + g2 = eps2*nDotE 
-       g1= (eps1-eps2) * nDotEe *eta2/(eta1+eta2)
-       g2= (eps2-eps1) * nDotEe *eta1/(eta1+eta2)
-
-      else
-        g1=0.
-        g2=0. 
-      end if
-
-      nDotE1I = (epsNDotEI+g1)/eps1  ! nDotE for interface on left 
-      nDotE2I = (epsNDotEI+g2)/eps2  ! nDotE for interface on right 
-
-      ! inverse impedance average of tangential components  (do full vector and correct below)
-      exI = ( eta1i*ex1 + eta2i*ex2 )/( eta1i + eta2i )
-      eyI = ( eta1i*ey1 + eta2i*ey2 )/( eta1i + eta2i )
-      ezI = ( eta1i*ez1 + eta2i*ez2 )/( eta1i + eta2i )
-
-      nDotEI= an1*exI+an2*eyI+an3*ezI  ! we need to subtract off normal component of (exI,eyI,ezI) 
-
-      u1(i1,i2,i3,ex) = exI + (nDotE1I - nDotEI)*an1
-      u1(i1,i2,i3,ey) = eyI + (nDotE1I - nDotEI)*an2
-      u1(i1,i2,i3,ez) = ezI + (nDotE1I - nDotEI)*an3
-
-      u2(j1,j2,j3,ex) = exI + (nDotE2I - nDotEI)*an1
-      u2(j1,j2,j3,ey) = eyI + (nDotE2I - nDotEI)*an2
-      u2(j1,j2,j3,ez) = ezI + (nDotE2I - nDotEI)*an3
-
-    endLoopsMask3d()
-
-  else if( eps1.lt.eps2 )then
-    epsRatio=eps1/eps2
-    beginGhostLoopsMask3d()
-      ! eps2 n.u2 = eps1 n.u1
-      !     tau.u2 = tau.u1
-
-      #If #GRIDTYPE eq "curvilinear"
-       an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-       an2=rsxy1(i1,i2,i3,axis1,1)
-       an3=rsxy1(i1,i2,i3,axis1,2)
-       aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
-       an1=an1/aNorm
-       an2=an2/aNorm
-       an3=an3/aNorm
-      #Elif #GRIDTYPE eq "rectangular"
-       an1=an1Cartesian
-       an2=an2Cartesian
-       an3=an3Cartesian
-      #Else
-         stop 1111
-      #End
-      ua=u1(i1,i2,i3,ex)
-      ub=u1(i1,i2,i3,ey)
-      uc=u1(i1,i2,i3,ez)
-      nDotU = an1*ua+an2*ub+an3*uc
-      if( twilightZone.eq.1 )then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ey, ve )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ez, we )
-       nDotU = nDotU - (an1*ue+an2*ve+an3*we)
-      end if
-      ! u2 equals u1 but with normal component = eps1/eps2*(n.u1)
-      u2(j1,j2,j3,ex) = ua + (nDotU*epsRatio - nDotU)*an1
-      u2(j1,j2,j3,ey) = ub + (nDotU*epsRatio - nDotU)*an2
-      u2(j1,j2,j3,ez) = uc + (nDotU*epsRatio - nDotU)*an3
-
-!   write(*,'(" jump(1): (i1,i2,i3)=",3i3," j1,j2,j3=",3i3)') i1,i2,i3,j1,j2,j3
-!   write(*,'(" jump(1): x,y,z=",3e10.2," ua,ue=",2e10.2," ub,ve=",2e10.2," uc,we=",2e10.2)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),ua,ue,ub,ve,uc,we
-
-    endLoopsMask3d()
-  else
-    epsRatio=eps2/eps1
-    beginGhostLoopsMask3d()
-      ! eps2 n.u2 = eps1 n.u1
-      !     tau.u2 = tau.u1
-
-      #If #GRIDTYPE eq "curvilinear"
-       an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-       an2=rsxy1(i1,i2,i3,axis1,1)
-       an3=rsxy1(i1,i2,i3,axis1,2)
-       aNorm=max(epsx,sqrt(an1**2+an2**2+an3**2))
-       an1=an1/aNorm
-       an2=an2/aNorm
-       an3=an3/aNorm
-      #Elif #GRIDTYPE eq "rectangular"
-       an1=an1Cartesian
-       an2=an2Cartesian
-       an3=an3Cartesian
-      #Else
-         stop 1111
-      #End
-      ua=u2(j1,j2,j3,ex)
-      ub=u2(j1,j2,j3,ey)
-      uc=u2(j1,j2,j3,ez)
-
-      nDotU = an1*ua+an2*ub+an3*uc
-      if( twilightZone.eq.1 )then
-       ! adjust for TZ forcing (here we assume the exact solution is the same on both sides)
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ex, ue )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ey, ve )
-       call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),t, ez, we )
-       nDotU = nDotU - (an1*ue+an2*ve+an3*we)
-
-!   write(*,'(" jump(2): (i1,i2,i3)=",3i3," j1,j2,j3=",3i3)') i1,i2,i3,j1,j2,j3
-!   write(*,'(" jump(2): x,y,z=",3e10.2," ua,ue=",2e10.2," ub,ve=",2e10.2," uc,we=",2e10.2)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),xy1(i1,i2,i3,2),ua,ue,ub,ve,uc,we
-
-      end if
-
-      u1(i1,i2,i3,ex) = ua + (nDotU*epsRatio - nDotU)*an1
-      u1(i1,i2,i3,ey) = ub + (nDotU*epsRatio - nDotU)*an2
-      u1(i1,i2,i3,ez) = uc + (nDotU*epsRatio - nDotU)*an3
-    endLoopsMask3d()
-  end if
- #End
-end if
-#endMacro
-
-! ===========================================================================================
-!  Smooth P on the interface 
-! ===========================================================================================
-#beginMacro smoothInterfaceP()
- if( .true. .and. orderOfAccuracy.eq.4  )then
-
-   ! ----- Add some smoothing on the boundary for P ------
-   ! Fourth-order filter: 
-   !    p <- p + cd*[ -1 p(i-2) + 4*p(i-1) -6 p(i) + 4 p(i+1) - p(i+2) ]
-   !           + cd*[ -1 p(j-2) + 4*p(j-1) -6 p(j) + 4 p(j+1) - p(j+2) ]
-   ! cd = 1.(sum-of-coefficients)
-   ! In 2d: cd=16*2
-   ! In 3d: cd=16*3
-   write(*,'(" interface-project: add smoothing to P")') 
-   if( nd.eq.2 )then
-    ! --- LOOP over the interface ---
-    ! Question: should we use a Jacobi iteration?
-    beginGhostLoopsMask2d()
-     if( dispersionModel1.ne.noDispersion )then
-       do n=0,nd-1
-        do jv=0,numberOfPolarizationVectors1-1
-          pc = jv*nd+n
-          ! smooth in the normal drection: 
-          p1(i1,i2,i3,pc) = ( -( p1(i1-2*is1,i2-2*is2,i3,pc)+p1(i1+2*is1,i2+2*is2,i3,pc) ) \
-                           +4.*( p1(i1-  is1,i2-  is2,i3,pc)+p1(i1+  is1,i2+  is2,i3,pc) ) \
-                           +10.* p1(i1,i2,i3,pc) )/16.
-          ! p1(i1,i2,i3,pc) = ( -( p1(i1-2,i2,i3,pc)+p1(i1+2,i2,i3,pc)+p1(i1,i2-2,i3,pc)+p1(i1,i2+2,i3,pc) ) \
-          !                 +4.*( p1(i1-1,i2,i3,pc)+p1(i1+1,i2,i3,pc)+p1(i1,i2-1,i3,pc)+p1(i1,i2+1,i3,pc) ) \
-          !                 +20.* p1(i1,i2,i3,pc) )/32.
-        end do
-       end do
-     end if
-     if( dispersionModel2.ne.noDispersion )then
-       do n=0,nd-1
-         do jv=0,numberOfPolarizationVectors2-1
-          pc = jv*nd+n 
-          p2(j1,j2,j3,pc) = ( -( p2(j1-2*js1,j2-2*js2,j3,pc)+p2(j1+2*js1,j2+2*js2,j3,pc) ) \
-                           +4.*( p2(j1-  js1,j2-  js2,j3,pc)+p2(j1+  js1,j2+  js2,j3,pc) ) \
-                           +10.* p2(j1,j2,j3,pc) )/16.
-
-           ! p2(j1,j2,j3,pc) = ( -( p2(j1-2,j2,j3,pc)+p2(j1+2,j2,j3,pc)+p2(j1,j2-2,j3,pc)+p2(j1,j2+2,j3,pc) ) \
-           !                 +4.*( p2(j1-1,j2,j3,pc)+p2(j1+1,j2,j3,pc)+p2(j1,j2-1,j3,pc)+p2(j1,j2+1,j3,pc) ) \
-           !                 +20.* p2(j1,j2,j3,pc) )/32.
-         end do
-       end do
-     end if
-    endLoopsMask2d()
-   else
-     write(*,'("cgmx:interface3d:smoothInterfaceP: finish me 3D")') 
-     stop 2975
-   end if
-
- end if
-#endMacro
-
+! ********************************************************************************
+!       INTERFACE MACROS (used in interface3d.bf and interface3dOrder4.bf)
+! ********************************************************************************
+#Include "interfaceMacros.h"
 
 
 ! ********************************************************************************
@@ -1772,6 +985,15 @@ beginLoopsMask2d()
  end if
 #endMacro
 
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalInterfaceEquations22c()
+  evalInterfaceDerivatives2d() 
+  eval2dJumpOrder2()
+#endMacro
+
 
 ! --------------------------------------------------------------------
 ! Macro: Assign interface ghost values, DIM=2, ORDER=2, GRID=Curvilinear
@@ -1871,6 +1093,16 @@ beginLoopsMask2d()
     q(2) = u2(j1-js1,j2-js2,j3,ex)
     q(3) = u2(j1-js1,j2-js2,j3,ey)
 
+
+    ! --- check matrix coefficients by delta function approach ----
+    if( checkCoeff.eq.1 )then
+      numberOfEquations=4
+      checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4,evalInterfaceEquations22c )
+    end if
+
+
+
+
     ! write(debugFile,'(" --> xy1=",4f8.3)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1)
     ! write(debugFile,'(" --> rsxy1=",4f8.3)') rsxy1(i1,i2,i3,0,0),rsxy1(i1,i2,i3,1,0),rsxy1(i1,i2,i3,0,1),rsxy1(i1,i2,i3,1,1)
     ! write(debugFile,'(" --> rsxy2=",4f8.3)') rsxy2(j1,j2,j3,0,0),rsxy2(j1,j2,j3,1,0),rsxy2(j1,j2,j3,0,1),rsxy2(j1,j2,j3,1,1)
@@ -1965,6 +1197,10 @@ beginLoopsMask2d()
     end if
 
   endLoopsMask2d()
+  if( checkCoeff.eq.1 )then
+    write(*,'("+++++ i22c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+  end if
+
 #endMacro
 
 ! --------------------------------------------------------------------------
@@ -2458,6 +1694,17 @@ beginLoopsMask2d()
 
 
 
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalInterfaceEquations24c()
+ ! evalDerivs2dOrder4()
+ evalDerivs2dOrder4()
+ ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+ eval2dJumpOrder4() 
+#endMacro
+
 ! --------------------------------------------------------------------------
 ! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Curvilinear
 ! 
@@ -2742,6 +1989,17 @@ beginLoopsMask2d()
        end do
        end do
 
+      ! --- check matrix coefficients by delta function approach ----
+      if( checkCoeff.eq.1 )then
+        numberOfEquations=8
+        do n2=0,7
+        do n1=0,7
+          a8(n1,n2)=aa8(n1,n2,0,nn)
+        end do
+        end do                
+        checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a8,evalInterfaceEquations24c )
+      end if
+
        ! solve A Q = F
        ! factor the matrix
        numberOfEquations=8
@@ -2783,15 +2041,28 @@ beginLoopsMask2d()
      end if
      ! '
 
-     u1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
-     u1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
-     u2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
-     u2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
+     if( useJacobiUpdate.eq.0 )then
+       u1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
+       u1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
+       u2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
+       u2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
 
-     u1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
-     u1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
-     u2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
-     u2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+       u1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
+       u1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
+       u2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
+       u2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+     else
+       ! Jacobi-update
+       wk1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
+       wk1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
+       wk2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
+       wk2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
+
+       wk1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
+       wk1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
+       wk2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
+       wk2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+     end if
 
      ! compute the maximum change in the solution for this iteration
      do n=0,7
@@ -2873,10 +2144,18 @@ beginLoopsMask2d()
      job=0
      call dgesl( aa4(0,0,0,nn), numberOfEquations, numberOfEquations, ipvt4(0,nn), f(0), job)
 
-     u1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
-     u2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
-     u1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
-     u2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     if( useJacobiUpdate.eq.0 )then
+       u1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
+       u2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
+       u1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
+       u2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     else
+       ! Jacobi update -- save answer in work space
+       wk1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
+       wk2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
+       wk1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
+       wk2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     end if
 
     ! compute the maximum change in the solution for this iteration
     do n=0,3
@@ -2904,6 +2183,31 @@ beginLoopsMask2d()
  endLoopsMask2d()
  ! =============== end loops =======================
       
+  if( checkCoeff.eq.1 .and. it.le.1 )then
+    write(*,'("+++++ I24c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+  end if
+
+
+ if( useJacobiUpdate.ne.0 )then
+   ! Jacobi-update: now fill in values 
+   beginLoopsMask2d() 
+     u1(i1-is1,i2-is2,i3,ex)=wk1(i1-is1,i2-is2,i3,ex)
+     u1(i1-is1,i2-is2,i3,ey)=wk1(i1-is1,i2-is2,i3,ey)
+     u2(j1-js1,j2-js2,j3,ex)=wk2(j1-js1,j2-js2,j3,ex)
+     u2(j1-js1,j2-js2,j3,ey)=wk2(j1-js1,j2-js2,j3,ey)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=wk1(i1-2*is1,i2-2*is2,i3,ex)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=wk1(i1-2*is1,i2-2*is2,i3,ey)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=wk2(j1-2*js1,j2-2*js2,j3,ex)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=wk2(j1-2*js1,j2-2*js2,j3,ey)
+
+     u1(i1-  is1,i2-  is2,i3,hz)=wk1(i1-  is1,i2-  is2,i3,hz)
+     u2(j1-  js1,j2-  js2,j3,hz)=wk2(j1-  js1,j2-  js2,j3,hz)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=wk1(i1-2*is1,i2-2*is2,i3,hz)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=wk2(j1-2*js1,j2-2*js2,j3,hz)
+   endLoopsMask2d()
+ end if
+
 #endMacro
 
 
@@ -3080,7 +2384,7 @@ end if
 
 
 ! --------------------------------------------------------------------------
-!   Apply interafce jump conditions, 3D order 2
+!   Apply interface jump conditions, 3D order 2
 ! --------------------------------------------------------------------------
 #beginMacro eval3dJumpOrder2()
  divE1 = u1x+v1y+w1z
@@ -3151,6 +2455,16 @@ end if
  end if
 
 #endMacro
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalInterfaceEquations23c()
+ evalInterfaceDerivatives3d()
+ eval3dJumpOrder2()
+#endMacro
+
 
 ! --------------------------------------------------------------------------
 ! Macro: Assign interface ghost values, DIM=3, ORDER=2, GRID=Curvilinear
@@ -3321,6 +2635,12 @@ end if
     q(4) = u2(j1-js1,j2-js2,j3-js3,ey)
     q(5) = u2(j1-js1,j2-js2,j3-js3,ez)
 
+    ! --- check matrix coefficients by delta function approach ----
+    if( checkCoeff.eq.1 )then
+      numberOfEquations=6
+      checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a6,evalInterfaceEquations23c )
+    end if
+
     ! subtract off the contributions from the wrong values at the ghost points:
     do n=0,5
       f(n) = (a6(n,0)*q(0)+a6(n,1)*q(1)+a6(n,2)*q(2)+a6(n,3)*q(3)+a6(n,4)*q(4)+a6(n,5)*q(5)) - f(n)
@@ -3362,14 +2682,19 @@ end if
 
   endLoopsMask3d()
 
+  if( checkCoeff.eq.1 )then
+    write(*,'("+++++ I23c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+  end if
+
+
 #endMacro         
 
 
 
       subroutine interface3dMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
-                               gridIndexRange1, u1,u1n,u1m, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
+                               gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
                                md1a,md1b,md2a,md2b,md3a,md3b,\
-                               gridIndexRange2, u2,u2n,u2m, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
+                               gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
                                ipar, rpar, \
                                aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
                                ierr )
@@ -3387,6 +2712,8 @@ end if
 !  p1: polarization vectors on domain 1 (for dispersive models)
 !  p2: polarization vectors on domain 2 (for dispersive models)
 ! 
+!  wk1,wk2 : work-space for jacobi update of ghost values 
+!
 !  aa2,aa4,aa8 : real work space arrays that must be saved from call to call
 !  ipvt2,ipvt4,ipvt8: integer work space arrays that must be saved from call to call
 ! ===================================================================================
@@ -3404,6 +2731,7 @@ end if
       real u1(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       real u1n(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       real u1m(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+      real wk1(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
 
       ! polarization vectors
       real p1(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
@@ -3419,6 +2747,7 @@ end if
       real u2(md1a:md1b,md2a:md2b,md3a:md3b,0:*)
       real u2n(md1a:md1b,md2a:md2b,md3a:md3b,0:*)
       real u2m(md1a:md1b,md2a:md2b,md3a:md3b,0:*)
+      real wk2(md1a:md1b,md2a:md2b,md3a:md3b,0:*)
 
       ! polarization vectors
       real p2(md1a:md1b,md2a:md2b,md3a:md3b,0:*)
@@ -3455,7 +2784,7 @@ end if
       integer numGhost,giveDiv
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
       integer mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
-      integer m1,m2
+      integer m1,m2,mm
 
       real rx1,ry1,rz1,rx2,ry2,rz2
 
@@ -3576,6 +2905,7 @@ end if
       #Include "knownSolutionFortranInclude.h"
       integer knownSolutionOption
 
+      integer useJacobiUpdate
       integer dispersionModel1, dispersionModel2, dispersive, jv, pxc
       integer gdmParOption
       integer maxNumberOfParameters,maxNumberOfPolarizationVectors,maxPolarizationComponents
@@ -3635,8 +2965,13 @@ end if
       real c4PttLEsum1, c4PttLLEsum1, c4PttLEsum2, c4PttLLEsum2
       real c2PttttLEsum1, c2PttttLLEsum1, c2PttttLEsum2, c2PttttLLEsum2
 
+      real coeffLap1,coeffLapSq1,coeffLap2,coeffLapSq2
+
       integer ismooth,nsmooth
-      real eqnCoeff
+      real eqnCoeff,eqnCoeffb 
+      real curl1um1,curl1vm1,curl1um2,curl1vm2
+      real curl2um1,curl2vm1,curl2um2,curl2vm2
+
 
       real evn,pvn
       real alpha,d4,LP,LPm
@@ -3679,6 +3014,13 @@ end if
       real fevx2(0:2),fevy2(0:2),fevz2(0:2)
       real fpvx1(0:2,0:maxNumberOfPolarizationVectors-1),fpvy1(0:2,0:maxNumberOfPolarizationVectors-1)
       real fpvx2(0:2,0:maxNumberOfPolarizationVectors-1),fpvy2(0:2,0:maxNumberOfPolarizationVectors-1)
+
+      ! For checking coefficients by delta approach: 
+      real u1s(-5:5,-5:5,-5:5,0:2), u2s(-5:5,-5:5,-5:5,0:2)
+      real coeffDiff
+      integer checkCoeff
+      integer hw1,hw2,hw3
+      real f0(0:11),delta
 
 !     --- start statement function ----
 ! .......statement functions for GDM parameters
@@ -3790,7 +3132,7 @@ end if
       dispersionModel2    = ipar(45)
       pxc                 = ipar(46)
       knownSolutionOption = ipar(47)
-
+      useJacobiUpdate     = ipar(48)
 
       dx1(0)                =rpar(0)
       dx1(1)                =rpar(1)
@@ -3846,6 +3188,8 @@ end if
         addForcing=twilightZoneForcing
       end if
 
+      checkCoeff=0 ! 1  ! if non-zero then check coefficients in interface equations using delta approach
+      coeffDiff=0.
 
       debugFile=10
       if( initialized.eq.0 .and. debug.gt.0 )then
@@ -3869,6 +3213,7 @@ end if
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
         write(*,'("  ... setDivergenceAtInterfaces=",i2)') setDivergenceAtInterfaces
         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
+        write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
 
       end if
@@ -4685,9 +4030,9 @@ end if
          ! this 3d 4th-order version is in interface3dOrder4.bf:
 
          call mxInterface3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
-                               gridIndexRange1, u1, mask1,rsxy1, xy1, boundaryCondition1, \
+                               gridIndexRange1, u1,u1n,u1m,wk1, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
                                md1a,md1b,md2a,md2b,md3a,md3b,\
-                               gridIndexRange2, u2, mask2,rsxy2, xy2, boundaryCondition2, \
+                               gridIndexRange2, u2,u2n,u2m,wk2, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
                                ipar, rpar, \
                                aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
                                ierr )

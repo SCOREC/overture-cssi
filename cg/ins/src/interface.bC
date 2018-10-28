@@ -441,7 +441,7 @@ enum UserDefinedKnownSolutionEnum
             deform.setBulkSolidModelHasConverged(hasConverged);
             
 
-            printF("--INS--interface:INFO: relaxCorrectionSteps: t=%.2e, omega=%.2e, maxDiff=%.2e hasConverged=%i\n",
+            printF("--INS--interface:INFO: relaxCorrectionSteps: t=%.2e, omega=%.2e, maxDiff=%.2e hasConverged=%i\n\n",
                    t,omega,maxDiff,(int)hasConverged);
             
 

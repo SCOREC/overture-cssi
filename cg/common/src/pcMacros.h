@@ -1031,11 +1031,17 @@ if( movingGridProblem() )
   bool movingGridCorrectionsHaveConverged = false;
   real delta =0.; // holds relative correction when we are sub-cycling 
   const bool useMovingGridSubIterations= parameters.dbase.get<bool>("useMovingGridSubIterations");
+  const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem");
 
   // *wdh* 2015/12/16 -- explicitly check for useMovingGridSubIterations, otherwise we can do multiple
   //                     corrections always if requested,
 
-  if( movingGridProblem() && (numberOfCorrections==1  // *wdh* 2015/05/24 -- this case was missing in new version
+  if( false && movingGridProblem() )
+    printF("METHOD: moving grid correction step : numberOfCorrections=%i useMovingGridSubIterations=%i\n",
+       numberOfCorrections,(int)useMovingGridSubIterations);
+
+
+  if( movingGridProblem() && ( (numberOfCorrections==1 && !multiDomainProblem ) // *wdh* Sept 15, 2018 added !multiDomainProblem
         		      || !useMovingGridSubIterations)  ) // *wdh* 2015/12/16 
   {
     if( numberOfCorrections>10 )
@@ -1057,7 +1063,7 @@ if( movingGridProblem() )
     // Check if the correction step has converged
     bool isConverged = getMovingGridCorrectionHasConverged();
     delta = getMovingGridMaximumRelativeCorrection();
-    if( debug() & 2 )
+    if( true || debug() & 2 )
       printF("METHOD: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
 	     delta,correction+1,(int)isConverged);
 

@@ -724,7 +724,7 @@
       integer debug
 
       eps = 1.e-12 ! fix me -- 100*REAL_EPS
-      debug=1
+      debug=0
 
       aDotk = ax*kx+ay*ky+az*kz
       if( debug.gt.0 )then

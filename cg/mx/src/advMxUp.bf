@@ -734,6 +734,7 @@ end if
    ! Assuming a nearly orthogonal grid gives ||dx|| = || grad_x(r_i) || / dr_i 
    adxSosup(dir) = adSosup*uDotFactor*sqrt( rsxy(i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,2)**2 )/dr(dir) 
  end do
+ ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
 #endMacro
 
 ! ===========================================================================================
@@ -1460,7 +1461,7 @@ else if( updateSolution.eq.1 )then
    ! apply sosup dissipation to time n using times n-1 and n-2
    ! assume un holds u(t-2*dt) on input 
    ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
-   INFO("FD44c-UP...update-u-with-dissipation")
+   INFO("FD44c-UP3D...update-u-with-dissipation")
    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
     getSosupDissipationCoeff3d(adxSosup)
     do m=0,2 ! ex, ey, ez
@@ -2402,10 +2403,11 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
   adSosup=sosupParameter*adSosup
   if( t.le.2*dt )then
     write(*,'("advMxUp: useSosup dissipation, t,dt,adSosup=",3e10.2)') t,dt,adSosup
-    write(*,'("advMxUp: sosupDissipationOption=",i2)') sosupDissipationOption
+    write(*,'("advMxUp: sosupDissipationOption=",i2," sosupParameter=",1pe10.2)') sosupDissipationOption,sosupParameter
     write(*,'("advMxUp: updateDissipation=",i2)') updateDissipation
     write(*,'("advMxUp: updateSolution=",i2)') updateSolution
     write(*,'("advMxUp: useNewForcingMethod=",i2)') useNewForcingMethod
+    write(*,'("advMxUp: computeUt=",i2," gridType=",i2," order=",i2)') computeUt,gridType,orderOfAccuracy
   end if
   ! Coefficients of the sosup dissipation with Cartesian grids:
   cdSosupx= adSosup/dx(0)

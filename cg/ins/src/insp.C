@@ -187,7 +187,8 @@ updatePressureEquation(CompositeGrid & cg0, GridFunction & cgf )
                 
                 
 
-		printF("INSP: This is a deforming grid for a bulk solid model: grid=%i, solid impedance=%g.\n",grid,solidImpedance);
+                if( false )
+                  printF("INSP: This is a deforming grid for a bulk solid model: grid=%i, solid impedance=%g.\n",grid,solidImpedance);
 
 	      }
 	      

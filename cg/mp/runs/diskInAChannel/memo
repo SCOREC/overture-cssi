@@ -55,6 +55,76 @@ ogen -noplot rpiGrid -interp=e -order=2 -factor=4
 cgmp threeBodies.cmd -g=rpiGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=1000 -scf2=10 -scf3=100 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.05 -tf=50. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -psolver=best -solver=best -go=go=halt -show=rpi/rpiTry4.show
 
 **************************
+*** Sept 25, 2018
+
+FIVE BODIES FOR MOVIE
+
+G8 Longer doamin:
+
+nohup $cgmp -noplot fiveBodies.cmd -g=fiveSolidsGride8.order2 -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=50 -scf3=1000 -scf4=2000 -scf5=100 -fluidSolidCornerFix=0 -tp=.02 -tf=40. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.001 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=80 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG8a.show -psolver=best -solver=best -go=go >! fiveBodiesG8a.out 
+
+
+G8 -- OK !
+nohup $cgmp -noplot fiveBodies.cmd -g=solidObjectsGride8.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=50 -scf3=1000 -scf4=2000 -scf5=100 -fluidSolidCornerFix=0 -tp=.02 -tf=40. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.001 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=80 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG8m.show -psolver=best -solver=best -go=go >! fiveBodiesG8m.out 
+
+**************************
+*** Sept 25, 2018
+
+FIVE BODIES FOR MOVIE
+
+
+
+
+nohup $cgmp -noplot fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=50 -scf3=1000 -scf4=2000 -scf5=100 -fluidSolidCornerFix=0 -tp=.02 -tf=40. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=80 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG4m.show -psolver=best -solver=best -go=go >! fiveBodiesG4m.out 
+
+
+G4: SRR too light
+nohup $cgmp -noplot fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.02 -tf=10. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=40 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG4m.show -psolver=best -solver=best -go=go >! fiveBodiesG4m.out 
+
+$cgmp -noplot fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=100 -scf2=10 -scf3=1000 -scf4=100 -scf5=50 -fluidSolidCornerFix=0 -tp=.02 -tf=10. -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.02 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=40 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=1 -tb=.5 -show=fiveBodiesG4m.show -psolver=best -solver=best -go=og
+
+**************************
+*** Sept 15, 2018
+
+TP corections fixed I think
+
+
+SCF=10 omega=.1
+
+SCF=100 omega=.5 ??
+
+TROUBLE at t=.8: scf=90: 
+$cgmp solidDiskInAChannel -method=ins -smVariation=g -g=diskInAChannelGride2.order2 -useTP=1 -addedMass=0 -scf=90. -zfMuByH=1 -p0=1 -tp=.01 -tf=1.5 -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2TP.show -dtMax=5e-3 -nc=10000 -omega=.05 -tol=1.e-5 -go=halt
+
+
+OK: scf=100, omega=.1 tol=1.e-5
+
+OK: scf=100, omega=.01 tol=1.e-5
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g -g=diskInAChannelGride2.order2 -useTP=1 -addedMass=0 -scf=100. -zfMuByH=1 -p0=1 -tp=.01 -tf=1.5 -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2TP.show -dtMax=5e-3 -nc=10000 -omega=.01 -tol=1.e-5 -go=halt
+
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2 -useTP=1  -addedMass=0 -scf=10. -zfMuByH=1 -p0=1 -tp=.01 -tf=1.5 -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2TP.show -dtMax=5e-3  -nc=200 -omega=.1 -go=halt
+
+**************************
+*** Sept 13, 2018
+
+CAN WE RUN THE TP SCHEME WITH ITERATIONS AS A COMPARISON 
+
+CHECK TP -- convergence !!
+
+
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2 -useTP=1  -addedMass=0 -scf=1000. -zfMuByH=1 -p0=1 -tp=.01 -tf=1.5 -tsINS=im -useImplicitAmpBCs=0 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2TP.show -dtMax=5e-3  -nc=20 -omega=.1 -go=halt
+
+ >! diskInAChannelScf10G2TP.out
+
+SCF=1000 
+
+
+
+$cgmp solidDiskInAChannel -method=ins -tsSM=improvedEuler -smVariation=g  -g=diskInAChannelGride2.order2 -useTP=1  -addedMass=0 -scf=500. -u0=.1 -tp=.01 -tf=20. -tsINS=im -useImplicitAmpBCs=0 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -nc=100 -omega=.5 -go=halt
+
+**************************
 *** Sept 3, 2018
 
 I-beam, beam, split-ring, cross grids

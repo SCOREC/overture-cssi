@@ -256,6 +256,8 @@ startTimeStepIM( real & t0, real & dt0, int & currentGF, int & nextGF, AdvanceOp
   advanceOptions.numberOfCorrectorSteps=parameters.dbase.get<int>("numberOfPCcorrections"); 
   advanceOptions.gridChanges=AdvanceOptions::noChangeToGrid;  // fix me for AMR
 
+  advanceOptions.correctionIterationsHaveConverged=false; // For sub-time-step iterations *wdh* Sept 15, 2018
+
   return 0;
 
 }
@@ -292,7 +294,8 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
   }
 
   parameters.dbase.get<int>("correctionStage")=correction;
-  advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
+  // *wdh* Move this to startTimeStepIM, Sept 15, 2018
+  // advanceOptions.correctionIterationsHaveConverged=false; // this may be set to true below
 
   assert( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::implicit );
   parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cns)

@@ -29,6 +29,9 @@
 #   plotStuff plotObjects.cmd -show=objectsG4M0a.show -name=objectsG4M0at5p0 -solution=101
 #   plotStuff plotObjects.cmd -show=objectsG8M0a.show -name=objectsG8M0at5p0 -solution=101
 #
+# -- longer time: 
+#   plotStuff plotObjects.cmd -show=objectsG4b.show 
+#   plotStuff plotObjects.cmd -show=objectsG4M1.show
 #
 $show="ellipseG8.hdf"; $solution="-1"; $EyMin=-1.5; $EyMax=1.5; $ExMin=-1.5; $ExMax=1.5; $HzMin=-1.; $HzMax=1.;
 # get command line arguments
@@ -50,6 +53,7 @@ contour
   vertical scale factor 0.
 exit
 solution: $solution
+
 # zoom: 
   set view:0 -0.0307779 -0.0121165 0 2.08435 1 0 0 0 1 0 0 0 1
 pause
@@ -68,6 +72,8 @@ DISPLAY AXES:0 0
   hardcopy file name:0 $plotName
   hardcopy save:0
 # 
+exit
+exit
 
 
 erase

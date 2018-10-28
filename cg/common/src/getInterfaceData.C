@@ -199,9 +199,10 @@ getInterfaceParameters( int grid, int side, int axis, Parameters & parameters)
 
       assert( d1>=0 && d1<numberOfDomains && d2>=0 && d2<numberOfDomains );
 
-      printF(" Interface =%i, face=%i "
-             "(domain1,grid1,side1,dir1)=(%i,%i,%i,%i) (domain2,grid2,side2,dir2)=(%i,%i,%i,%i)\n",
-	     inter,face,d1,grid1,side1,dir1,d2,grid2,side2,dir2);
+      if( false )
+        printF(" Interface =%i, face=%i "
+               "(domain1,grid1,side1,dir1)=(%i,%i,%i,%i) (domain2,grid2,side2,dir2)=(%i,%i,%i,%i)\n",
+               inter,face,d1,grid1,side1,dir1,d2,grid2,side2,dir2);
       
       if( d1==targetDomain && grid1==grid && side1==side && dir1==axis )
       {

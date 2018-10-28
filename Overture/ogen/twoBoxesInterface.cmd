@@ -44,10 +44,11 @@ $bcrp= "100 1 -1 -1  -1 -1 ";  # periodic in the y/z-direction
 * 
 $ya= 0.;   $yb=.5; 
 $za= 0.;   $zb=.5; 
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 *
 * 
 * get command line arguments
-GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,"interp=s"=> \$interp,"angle=f"=> \$angle,"name=s"=>\$name,"bc=s"=>\$bc);
+GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,"interp=s"=> \$interp,"angle=f"=> \$angle,"name=s"=>\$name,"bc=s"=>\$bc,"numGhost=i"=>\$numGhost );
 * 
 if( $factor>0 ){ $xFactor=$factor; $yFactor=$factor; $zFactor=$factor; }
 if( $order eq 2 ){ $orderOfAccuracy="second order"; $ng=2; }\
@@ -59,6 +60,8 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 * 
 $suffix = ".order$order"; 
 if( $bc eq "p" ){ $suffix .= "p"; } # periodic
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $factor>0 && $name eq "" ){ $name = "twoBoxesInterface" . "$interp$factor" . $suffix . ".hdf"; }
 if( $name eq "" ){ $name = "twoBoxesInterface" . "$interp$xFactor$yFactor$zFactor" . $suffix . ".hdf"; }
 if( $bc eq "p" ){ $bcLeft=$bclp; $bcRight=$bcrp; }

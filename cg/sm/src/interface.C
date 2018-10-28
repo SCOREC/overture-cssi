@@ -936,7 +936,8 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         const int s22c = parameters.dbase.get<int >("s22c"); assert( s22c>=0 );
 
             // -- here is the normal to the un-deformed surface -- do this for now
-                        printF("\n --SM-- IRHS WARNING Using REFERENCE NORMAL FOR TRACTION ***FIX ME*** ***TEMP*** \n\n");
+                        if( t <= 2.*dt )
+                            printF("\n --SM-- IRHS WARNING Using REFERENCE NORMAL FOR TRACTION ***FIX ME*** ***TEMP*** \n\n");
                         
                         mg.update(MappedGrid::THEvertexBoundaryNormal);
                         OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
@@ -1741,9 +1742,24 @@ projectInterface( int grid, real dt, int current )
                             {
                                 zf=zfMono*zfm;
                             }
+<<<<<<< HEAD
                             else
                             {
                                 printF("***** WARNING: NOT USING MONOLITHIC ZF, (zfMono=%.2e) *****\n",zfMono);
+=======
+                            
+                            
+                            if( correctionStage>0 )
+                            {
+                                zf=1e8;
+                                if( t<= 2.*dt )
+                                    printF("SMSMSMSMS  CGSM correctionStage=%i: Set zf=%.2e\n",correctionStage,zf);
+                            }
+                            else
+                            {
+                                if( t<= 2.*dt )
+                                    printF("SMSMSMSMS  CGSM correctionStage=%i, Use zf=%.2e\n",correctionStage,zf);
+>>>>>>> wdh: changes to cgmx for 3D GDM interfaces
                             }
 
               // coeff of [traction] in AMP interface condition:
@@ -1753,9 +1769,10 @@ projectInterface( int grid, real dt, int current )
 
                             real Cmu   = useMonolithicImpedance? 0. :  zfMuByH;
                             real Cmono = useMonolithicImpedance? zfMono :  0.;
-                            printF("SSSSSSSS sm: project zf =(%.2f)*mu/h + (%.2f)*rho*h/dt =%.2e, mu/h=%.2e, rho*h/dt=%.2e zMonolithic=%.2e zf=%.2e "
-                                          "zfMono=%.2g, Cmu=%.2g Cmono=%.2g sigmaJumpCoeff=%.1f velocityJumpCoeff=%.1f \n",
-                                          zfMuByH,zfRhoHByDt,zfWeighted,zf1,zf2,zfm, zf,zfMono,Cmu,Cmono,ampSigmaJumpCoeff,ampVelocityJumpCoeff);
+                            if( t<= 2.*dt )
+                                printF("SSSSSSSS sm: project zf =(%.2f)*mu/h + (%.2f)*rho*h/dt =%.2e, mu/h=%.2e, rho*h/dt=%.2e zMonolithic=%.2e zf=%.2e "
+                                              "zfMono=%.2g, Cmu=%.2g Cmono=%.2g sigmaJumpCoeff=%.1f velocityJumpCoeff=%.1f \n",
+                                              zfMuByH,zfRhoHByDt,zfWeighted,zf1,zf2,zfm, zf,zfMono,Cmu,Cmono,ampSigmaJumpCoeff,ampVelocityJumpCoeff);
 
                             real zfHat=muFluid*fluidDensity/(zp*dt);
                             real viscousCFL=(muFluid/fluidDensity)*dt/(dn*dn);
@@ -1788,12 +1805,13 @@ projectInterface( int grid, real dt, int current )
               //        "\\zfHat=%.2e \\zfm=%.2e (k=%.2e) \\f{\\nu\\dt}{h^2}=%.2e (h=%.2e) \\zfMuByH=%.2e \\alphaV=%.2e\n",
               //        rho,zp,muFluid,zf1,zf2,zfHat,zfm,k,viscousCFL,dn,zfMuByH,alphaV);
                             const real & tFinal = parameters.dbase.get<real>("tFinal"); 
-                            printF(" %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \n",
-                                          rho,muFluid,dn, viscousCFL,cfl,zp,zf1,zf2,zfHat,zfm,Cmu,Cmono,alphaV,tFinal);
+                            if( t<=2.*dt )
+                                printF(" %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \n",
+                                              rho,muFluid,dn, viscousCFL,cfl,zp,zf1,zf2,zfHat,zfm,Cmu,Cmono,alphaV,tFinal);
                             
 
                             
-                            if( true )
+                            if( t<=2.*dt )
                             {
                                 printF("--SM-- projectInterface: muFluid=%.2e, dn=%.3e, zf=%.2e, zp=%.2e, alphaV=zf/(zf+zp)=%.2e alphaS=%.2e"
                                               " correctionStage=%i\n",

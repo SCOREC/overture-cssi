@@ -31,6 +31,7 @@ $tFinal=1.; $tPlot=.1; $diss=.0; $cfl=.95; $dissOrder=-1; $filter=0; $divClean=0
 $grid="box32.order4.hdf"; $method="NFDTD"; 
 $cons=0; $go="halt"; 
 $m=1; $n=1;  # defines the eigenfunction 
+$useSosupDissipation=0; 
 $dm="none"; 
 # $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 $npv=1; $alphaP=1.; $modeGDM=-1; 
@@ -39,7 +40,7 @@ $npv=1; $alphaP=1.; $modeGDM=-1;
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"bcn=s"=>\$bcn,\
   "dtMax=f"=>\$dtMax,"m=i"=>\$m,"n=i"=>\$n, "cons=i"=>\$cons,"dissOrder=i"=>\$dissOrder,\
-  "filter=i"=>\$filter,"divClean=i"=>\$divClean,"divCleanCoeff=f"=>\$divCleanCoeff,\
+  "filter=i"=>\$filter,"divClean=i"=>\$divClean,"divCleanCoeff=f"=>\$divCleanCoeff,"useSosupDissipation=i"=>\$useSosupDissipation,\
   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"projectInterp=i"=>\$projectInterp,"method=s"=>\$method,\
    "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,\
    "npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM );
@@ -100,6 +101,9 @@ order of dissipation 4
 cfl  $cfl
 #
 use conservative difference $cons
+#
+use sosup dissipation $useSosupDissipation
+#
 #*********************************
 show file options...
   MXSF:compressed

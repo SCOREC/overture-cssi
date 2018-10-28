@@ -119,6 +119,7 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
     // real zfm1;
         zfm = (rho*rho + ( rho*beta*zp + 4.*rho*mu*k*k )*dt - ( 4.*(beta-k)*mu*mu*k*k*k )*dt*dt )/( (rho+ zp*dt*(beta-k) )*dt*k );
 
+<<<<<<< HEAD
         printF("GGGGGG getBulkSolidAmpParameters: ");
         printF("old zfm=%.2e, ",zfm);
 
@@ -128,6 +129,11 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
 
         printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
                       rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
+=======
+        if( false )
+            printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
+                          rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
+>>>>>>> wdh: changes to cgmx for 3D GDM interfaces
     
     }
     
@@ -375,7 +381,7 @@ addedMassImplicitBoundaryConditions(int option,
 
       	if( deformingBodyNumber[side][axis]>=0 )
       	{
-                    if( true )
+                    if( false )
                         printF("WWWWW implicit: apply MOVING noSlipWall BC to a DEFORMING BULK SOLID, grid=%i (side,axis)=(%i,%i), t=%.2e\n",
                                       grid,side,axis,t);
 

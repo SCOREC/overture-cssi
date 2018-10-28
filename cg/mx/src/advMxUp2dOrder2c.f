@@ -3570,13 +3570,16 @@ c===============================================================================
          if( t.le.2*dt )then
            write(*,'("advMxUp: useSosup dissipation, t,dt,adSosup=",
      & 3e10.2)') t,dt,adSosup
-           write(*,'("advMxUp: sosupDissipationOption=",i2)') 
-     & sosupDissipationOption
+           write(*,'("advMxUp: sosupDissipationOption=",i2," 
+     & sosupParameter=",1pe10.2)') sosupDissipationOption,
+     & sosupParameter
            write(*,'("advMxUp: updateDissipation=",i2)') 
      & updateDissipation
            write(*,'("advMxUp: updateSolution=",i2)') updateSolution
            write(*,'("advMxUp: useNewForcingMethod=",i2)') 
      & useNewForcingMethod
+           write(*,'("advMxUp: computeUt=",i2," gridType=",i2," 
+     & order=",i2)') computeUt,gridType,orderOfAccuracy
          end if
          ! Coefficients of the sosup dissipation with Cartesian grids:
          cdSosupx= adSosup/dx(0)

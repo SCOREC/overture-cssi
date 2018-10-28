@@ -9,6 +9,9 @@
 #     ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=6 
 #     ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=8
 #
+# -- longer domain
+#     ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=8 -xb=8 -prefix=fiveSolidsGrid
+#
 $prefix="solidObjectsGrid"; 
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
@@ -16,7 +19,7 @@ $name=""; $xa=-3.5; $xb=5; $ya=-2.; $yb=2.; $ml=0;
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
-            "interp=s"=> \$interp,"name=s"=> \$name);
+            "interp=s"=> \$interp,"name=s"=> \$name,"prefix=s"=> \$prefix);
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=3; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\

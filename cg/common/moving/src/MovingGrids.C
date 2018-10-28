@@ -2651,7 +2651,7 @@ getGridVelocity( GridFunction & gf0, const real & tGV )
 	assert(numThisBodyGrids!=0); // should have at least the present component='grid'
 	// assert(numThisBodyGrids==1); // debug (only 1 grid):Full case (several grids) not impl. yet
 
-	if( true || debug() & 2 )
+	if( debug() & 2 )
           printF("\n @@@@@@@@ MOVING GRIDS: call deformingBodyMotion for: gridVelocity, grid=%i, body=%i, tGV=%.3e @@@@@@\n\n", 
                  grid, b,tGV);
 

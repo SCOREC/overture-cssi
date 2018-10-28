@@ -747,7 +747,7 @@ addedMassImplicitBoundaryConditions(int option,
 
 	if( deformingBodyNumber[side][axis]>=0 )
 	{
-          if( true )
+          if( false )
             printF("WWWWW implicit: apply MOVING noSlipWall BC to a DEFORMING BULK SOLID, grid=%i (side,axis)=(%i,%i), t=%.2e\n",
                    grid,side,axis,t);
 

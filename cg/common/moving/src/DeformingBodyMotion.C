@@ -2091,7 +2091,8 @@ initializeGrid(CompositeGrid & cg, real t /* =0. */ )
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -2103,7 +2104,8 @@ initializeGrid(CompositeGrid & cg, real t /* =0. */ )
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x0.getLength(0);
                           RealArray x(n0),y(n0);
@@ -2624,7 +2626,8 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -2636,7 +2639,8 @@ initializePast( real time00, real dt00, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = xPast.getLength(0);
                           RealArray x(n0),y(n0);
@@ -2961,7 +2965,8 @@ getPastTimeGrid(  real pastTime , CompositeGrid & cg )
                 const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                 if( startCurveType==nurbsStartCurve )
                 {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                    if( false )
+                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                     #ifdef USE_PPP
                       Overture::abort("fix me");
                     #else	
@@ -2973,7 +2978,8 @@ getPastTimeGrid(  real pastTime , CompositeGrid & cg )
                   }
                   else if( startCurveType==splineStartCurve )
                   {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                      if( false )
+                          printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                       SplineMapping & spline = (SplineMapping&)startCurve;
                       const int n0 = xPast.getLength(0);
                       RealArray x(n0),y(n0);
@@ -3481,7 +3487,8 @@ advanceElasticShell(real t1, real t2, real t3,
                 const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                 if( startCurveType==nurbsStartCurve )
                 {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                    if( false )
+                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                     #ifdef USE_PPP
                       Overture::abort("fix me");
                     #else	
@@ -3493,7 +3500,8 @@ advanceElasticShell(real t1, real t2, real t3,
                   }
                   else if( startCurveType==splineStartCurve )
                   {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                      if( false )
+                          printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                       SplineMapping & spline = (SplineMapping&)startCurve;
                       const int n0 = x3.getLength(0);
                       RealArray x(n0),y(n0);
@@ -3775,7 +3783,8 @@ advanceElasticBeam(real t1, real t2, real t3,
                 const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                 if( startCurveType==nurbsStartCurve )
                 {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                    if( false )
+                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                     #ifdef USE_PPP
                       Overture::abort("fix me");
                     #else	
@@ -3787,7 +3796,8 @@ advanceElasticBeam(real t1, real t2, real t3,
                   }
                   else if( startCurveType==splineStartCurve )
                   {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                      if( false )
+                          printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                       SplineMapping & spline = (SplineMapping&)startCurve;
                       const int n0 = xbb.getLength(0);
                       RealArray x(n0),y(n0);
@@ -3979,7 +3989,8 @@ advanceNonlinearBeam(real t1, real t2, real t3,
                 const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                 if( startCurveType==nurbsStartCurve )
                 {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                    if( false )
+                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                     #ifdef USE_PPP
                       Overture::abort("fix me");
                     #else	
@@ -3991,7 +4002,8 @@ advanceNonlinearBeam(real t1, real t2, real t3,
                   }
                   else if( startCurveType==splineStartCurve )
                   {
-                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                      if( false )
+                          printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                       SplineMapping & spline = (SplineMapping&)startCurve;
                       const int n0 = xbb.getLength(0);
                       RealArray x(n0),y(n0);
@@ -4096,7 +4108,7 @@ advanceInterfaceDeform( real t1, real t2, real t3,
     const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode= 
         parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
 
-    if( true || (debug & 2) )
+    if( (debug & 2) )
         printF("--DeformingBodyMotion::advanceInterfaceDeform called for tNew=%f, tForce=%f, option=%i "
                       "(0=predict, 1=correct) interfaceCommunicationMode=%i\n",tNew, tForce,option,(int)interfaceCommunicationMode);
     const int uc = parameters.dbase.get<int >("uc");
@@ -4312,7 +4324,8 @@ advanceInterfaceDeform( real t1, real t2, real t3,
             const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
             if( startCurveType==nurbsStartCurve )
             {
-                printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                if( false )
+                    printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                 #ifdef USE_PPP
                   Overture::abort("fix me");
                 #else	
@@ -4324,7 +4337,8 @@ advanceInterfaceDeform( real t1, real t2, real t3,
               }
               else if( startCurveType==splineStartCurve )
               {
-                printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                  if( false )
+                      printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                   SplineMapping & spline = (SplineMapping&)startCurve;
                   const int n0 = x0.getLength(0);
                   RealArray x(n0),y(n0);
@@ -4843,7 +4857,8 @@ integrate( real t1, real t2, real t3,
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -4855,7 +4870,8 @@ integrate( real t1, real t2, real t3,
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x0.getLength(0);
                           RealArray x(n0),y(n0);
@@ -5125,7 +5141,8 @@ integrate( real t1, real t2, real t3,
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -5137,7 +5154,8 @@ integrate( real t1, real t2, real t3,
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x0.getLength(0);
                           RealArray x(n0),y(n0);
@@ -5258,7 +5276,8 @@ correct( real t1, real t2,
       // ----------------------------------------------------------------------------------------------------
       // --- The interface is defined by the "boundaryData" array used for the RHS to boundary conditions ---
       // ----------------------------------------------------------------------------------------------------
-            printF("--DBM-- correct : CHECK ME\n");
+            if( debug &2 )
+                printF("--DBM-- correct : CHECK ME\n");
             int option=1;  // corrector 
             advanceInterfaceDeform( t1, t2,t2, cgf1, cgf2, cgf2, option  ) ;
 
@@ -5898,7 +5917,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -5910,7 +5930,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x2.getLength(0);
                           RealArray x(n0),y(n0);
@@ -5958,7 +5979,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -5970,7 +5992,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x0.getLength(0);
                           RealArray x(n0),y(n0);
@@ -6022,7 +6045,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -6034,7 +6058,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x0.getLength(0);
                           RealArray x(n0),y(n0);
@@ -6098,7 +6123,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -6110,7 +6136,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x1.getLength(0);
                           RealArray x(n0),y(n0);
@@ -6173,7 +6200,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                     const int & startCurveType  = deformingBodyDataBase.get<int>("startCurveType");
                     if( startCurveType==nurbsStartCurve )
                     {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
+                        if( false )
+                            printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = NURBS #################\n\n");
                         #ifdef USE_PPP
                           Overture::abort("fix me");
                         #else	
@@ -6185,7 +6213,8 @@ regenerateComponentGrids( const real newT, CompositeGrid & cg)
                       }
                       else if( startCurveType==splineStartCurve )
                       {
-                        printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
+                          if( false )
+                              printF("\n\n################ ---DBM-- interpolateStartCurve START CURVE TYPE = SPLINE #################\n\n");
                           SplineMapping & spline = (SplineMapping&)startCurve;
                           const int n0 = x1.getLength(0);
                           RealArray x(n0),y(n0);

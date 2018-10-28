@@ -2453,6 +2453,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                       bc(1,2)==perfectElectricalConductor
                         )
                     );
+        // ---- Array v is used for the Jacobit update of the boundary conditions when we need to iterate -----
                 RealArray v; 
                 real *vptr = uu.getDataPointer();  // default value when not used 
                 if( boundaryConditionWorkSpaceNeeded )
@@ -3007,6 +3008,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                           bc(1,2)==perfectElectricalConductor
                             )
                         );
+          // ---- Array v is used for the Jacobit update of the boundary conditions when we need to iterate -----
                     RealArray v; 
                     real *vptr = uu.getDataPointer();  // default value when not used 
                     if( boundaryConditionWorkSpaceNeeded )
@@ -3565,6 +3567,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                           bc(1,2)==perfectElectricalConductor
                             )
                         );
+          // ---- Array v is used for the Jacobit update of the boundary conditions when we need to iterate -----
                     RealArray v; 
                     real *vptr = uu.getDataPointer();  // default value when not used 
                     if( boundaryConditionWorkSpaceNeeded )

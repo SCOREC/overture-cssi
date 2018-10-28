@@ -3629,13 +3629,16 @@ c===============================================================================
          if( t.le.2*dt )then
            write(*,'("advMxUp: useSosup dissipation, t,dt,adSosup=",
      & 3e10.2)') t,dt,adSosup
-           write(*,'("advMxUp: sosupDissipationOption=",i2)') 
-     & sosupDissipationOption
+           write(*,'("advMxUp: sosupDissipationOption=",i2," 
+     & sosupParameter=",1pe10.2)') sosupDissipationOption,
+     & sosupParameter
            write(*,'("advMxUp: updateDissipation=",i2)') 
      & updateDissipation
            write(*,'("advMxUp: updateSolution=",i2)') updateSolution
            write(*,'("advMxUp: useNewForcingMethod=",i2)') 
      & useNewForcingMethod
+           write(*,'("advMxUp: computeUt=",i2," gridType=",i2," 
+     & order=",i2)') computeUt,gridType,orderOfAccuracy
          end if
          ! Coefficients of the sosup dissipation with Cartesian grids:
          cdSosupx= adSosup/dx(0)
@@ -3956,6 +3959,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                     end do
+                    ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                    do m=0,2 ! ex, ey, hz
                      ec=ex+m
                      un(i1,i2,i3,ec)=max3dc44me(i1,i2,i3,ec)+(-20.*
@@ -3984,6 +3988,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                     end do
+                    ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                    do m=0,2 ! ex, ey, hz
                      ec=ex+m
                      un(i1,i2,i3,ec)=max3dc44me(i1,i2,i3,ec) + (-20.*
@@ -4014,6 +4019,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                     end do
+                    ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                    do m=0,2 ! ex, ey, hz
                      ec=ex+m
                      un(i1,i2,i3,ec)= max3dc44me(i1,i2,i3,ec) + (-20.*
@@ -4042,6 +4048,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                     end do
+                    ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                    do m=0,2 ! ex, ey, hz
                      ec=ex+m
                      un(i1,i2,i3,ec)=max3dc44me(i1,i2,i3,ec) + (-20.*
@@ -4101,6 +4108,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                   end do
+                  ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                  do m=0,2 ! ex, ey, ez
                    ec=ex+m
                    un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+(-20.*v(i1,i2,i3,ec)
@@ -4134,6 +4142,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                   end do
+                  ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                  do m=0,2 ! ex, ey, ez
                    ec=ex+m
                    un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+(-20.*DztU(i1,i2,i3,
@@ -4155,7 +4164,7 @@ c===============================================================================
                 ! assume un holds u(t-2*dt) on input 
                 ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
                 if( t.le.3.*dt )then
-                  write(*,'("advMxUp>>>","FD44c-UP...update-u-with-
+                  write(*,'("advMxUp>>>","FD44c-UP3D...update-u-with-
      & dissipation")')
                 end if
                   do i3=n3a,n3b
@@ -4169,6 +4178,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                   end do
+                  ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                  do m=0,2 ! ex, ey, ez
                    ec=ex+m
                    u(i1,i2,i3,ec)=u(i1,i2,i3,ec)+(-20.*DzstU(i1,i2,i3,
@@ -4701,6 +4711,7 @@ c===============================================================================
      & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,
      & dir,2)**2 )/dr(dir)
                      end do
+                     ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                     do m=0,2 ! ex, ey, hz
                       ec=ex+m
                       un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec)+(-20.*
@@ -4729,6 +4740,7 @@ c===============================================================================
      & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,
      & dir,2)**2 )/dr(dir)
                      end do
+                     ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                     do m=0,2 ! ex, ey, hz
                       ec=ex+m
                       un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec) + (-
@@ -4759,6 +4771,7 @@ c===============================================================================
      & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,
      & dir,2)**2 )/dr(dir)
                      end do
+                     ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                     do m=0,2 ! ex, ey, hz
                       ec=ex+m
                       un(i1,i2,i3,ec)= maxwellc44me(i1,i2,i3,ec) + (-
@@ -4787,6 +4800,7 @@ c===============================================================================
      & i1,i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,
      & dir,2)**2 )/dr(dir)
                      end do
+                     ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                     do m=0,2 ! ex, ey, hz
                       ec=ex+m
                       un(i1,i2,i3,ec)=maxwellc44me(i1,i2,i3,ec) + (-
@@ -4847,6 +4861,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                    end do
+                   ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                   do m=0,2 ! ex, ey, ez
                     ec=ex+m
                     un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+(-20.*v(i1,i2,i3,
@@ -4880,6 +4895,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                    end do
+                   ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                   do m=0,2 ! ex, ey, ez
                     ec=ex+m
                     un(i1,i2,i3,ec)=un(i1,i2,i3,ec)+(-20.*DztU(i1,i2,
@@ -4915,6 +4931,7 @@ c===============================================================================
      & i2,i3,dir,0)**2 + rsxy(i1,i2,i3,dir,1)**2  + rsxy(i1,i2,i3,dir,
      & 2)**2 )/dr(dir)
                    end do
+                   ! write(*,'(" adxSosup =",3(1pe10.2))') (adxSosup(dir),dir=0,2)
                   do m=0,2 ! ex, ey, ez
                     ec=ex+m
                     u(i1,i2,i3,ec)=u(i1,i2,i3,ec)+(-20.*DzstU(i1,i2,i3,

@@ -1174,11 +1174,11 @@ printStatistics(FILE *file /* = stdout */)
             "              ---------Maxwell Summary------- \n"
             "                       %s" 
             "               Grid:   %s \n" 
-	    "  ==== numberOfStepsTaken =%9i, grids=%i, gridpts =%g, interp pts=%i, processors=%i ==== \n"
+	    "  ==== final time=%9.2e, numberOfStepsTaken =%9i, grids=%i, gridpts =%g, interp pts=%i, processors=%i ==== \n"
 	    "  ==== memory per-proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb)\n"
 	    "   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %%     [max-s/proc] [min-s/proc]\n",
 	    dateString,(const char*)nameOfGridFile,
-            numberOfStepsTaken,cg.numberOfComponentGrids(),numberOfGridPoints,numberOfInterpolationPoints,
+            tFinal,numberOfStepsTaken,cg.numberOfComponentGrids(),numberOfGridPoints,numberOfInterpolationPoints,
             np,minMem,aveMem,maxMem,maxMemRecorded,totalMem);
     
   

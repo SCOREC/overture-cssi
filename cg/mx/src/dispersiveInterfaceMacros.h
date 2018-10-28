@@ -7,7 +7,7 @@
 
 ! -------------------------------------------------------------------------
 ! Macro: Evaluate DISPERSIVE forcing terms, 2nd-order accuracy 
-!   This macro can be usedto eval values in either domain 1 or domain 2
+!   This macro can be used to eval values in either domain 1 or domain 2
 !
 ! Input:
 !   fev(n) : forcing on E equation: E_{tt} = c^2 Delta(E) + ... + fev
@@ -469,6 +469,16 @@ beginLoopsMask2d()
 
 #endMacro
 
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalDispersiveInterfaceEquations22c()
+  evalInterfaceDerivatives2d()
+  eval2dJumpDispersiveOrder2()
+#endMacro
+
+
 ! --------------------------------------------------------------------
 ! Macro: Assign  DISPERSIVE interface ghost values, DIM=2, ORDER=2, GRID=Curvilinear
 ! 
@@ -599,6 +609,12 @@ beginLoopsMask2d()
   q(2) = u2(j1-js1,j2-js2,j3,ex)
   q(3) = u2(j1-js1,j2-js2,j3,ey)
 
+  ! --- check matrix coefficients by delta function approach ----
+  if( checkCoeff.eq.1 )then
+    numberOfEquations=4
+    checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4,evalDispersiveInterfaceEquations22c )
+  end if
+
   ! write(debugFile,'(" --> xy1=",4f8.3)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1)
   ! write(debugFile,'(" --> rsxy1=",4f8.3)') rsxy1(i1,i2,i3,0,0),rsxy1(i1,i2,i3,1,0),rsxy1(i1,i2,i3,0,1),rsxy1(i1,i2,i3,1,1)
   ! write(debugFile,'(" --> rsxy2=",4f8.3)') rsxy2(j1,j2,j3,0,0),rsxy2(j1,j2,j3,1,0),rsxy2(j1,j2,j3,0,1),rsxy2(j1,j2,j3,1,1)
@@ -668,7 +684,10 @@ beginLoopsMask2d()
 
 endLoopsMask2d()
 
- ! stop 9876
+ if( checkCoeff.eq.1 )then
+   write(*,'("+++++ iGDM22c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+ end if
+
 
 #endMacro
 
@@ -765,6 +784,18 @@ endLoopsMask2d()
 
 
 
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalDispersiveInterfaceEquations23c()
+
+  evalInterfaceDerivatives3d()
+  eval3dJumpDispersiveOrder2()
+
+#endMacro
+
+
 ! --------------------------------------------------------------------------
 ! Macro: Assign interface ghost values, DIM=3, ORDER=2, GRID=Curvilinear
 ! 
@@ -817,7 +848,6 @@ endLoopsMask2d()
     ! --- first evaluate the equations we want to solve with the wrong values at the ghost points:
 
 
-    ! evalInterfaceDerivatives3d
     evalInterfaceDerivatives3d()
 
     ! Evaluate TZ forcing for dispersive equations in 3D 
@@ -963,6 +993,12 @@ endLoopsMask2d()
     a6(5,5) =-( clap2*betac2   + cem2*(                         an3*clap2 )*an3 )
 
 
+    ! --- check matrix coefficients by delta function approach ----
+    if( checkCoeff.eq.1 )then
+      numberOfEquations=6
+      checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a6,evalDispersiveInterfaceEquations23c )
+    end if
+
     q(0) = u1(i1-is1,i2-is2,i3-is3,ex)
     q(1) = u1(i1-is1,i2-is2,i3-is3,ey)
     q(2) = u1(i1-is1,i2-is2,i3-is3,ez)
@@ -1010,6 +1046,10 @@ endLoopsMask2d()
     end if
 
   endLoopsMask3d()
+
+ if( checkCoeff.eq.1 )then
+   write(*,'("+++++ iGDM23c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+ end if
 
 #endMacro         
 
@@ -1395,8 +1435,9 @@ end if
 
  if( setDivergenceAtInterfaces.eq.0 )then
   !  [ nv.( c^2*Delta^2(E) - alphaP*Delta(Ptt) )/mu ] = 0 
-  f(6)= ( (an1*u1LapSq+an2*v1LapSq)/epsmu1  -alphaP1*( an1*fLPtt1(0)+an2*fLPtt1(1) )  )/mu1 \
-       -( (an1*u2LapSq+an2*v2LapSq)/epsmu2  -alphaP2*( an1*fLPtt2(0)+an2*fLPtt2(1) )  )/mu2 
+  ! Note: fLptt = c^2*Delta( Ptt ) 
+  f(6)= ( (an1*u1LapSq+an2*v1LapSq)/epsmu1  -alphaP1*( an1*fLPtt1(0)+an2*fLPtt1(1) )*epsmu1  )/mu1 \
+       -( (an1*u2LapSq+an2*v2LapSq)/epsmu2  -alphaP2*( an1*fLPtt2(0)+an2*fLPtt2(1) )*epsmu2  )/mu2 
  else
   f(6)=(u1x+v1y)
  end if
@@ -1404,8 +1445,8 @@ end if
  ! [ tv.( c^4*Delta^2(E) - alphaP*c^2*Delta(P.tt) - alphaP*P.tttt) ]=0 
  f(7)=(tau1*u1LapSq+tau2*v1LapSq)/epsmu1**2 - \
       (tau1*u2LapSq+tau2*v2LapSq)/epsmu2**2 \
-      -alphaP1*( ( tau1*fLPtt1(0) + tau2*fLPtt1(1) )/epsmu1 + tau1*fPtttt1(0) + tau2*fPtttt1(1) ) \
-      +alphaP2*( ( tau1*fLPtt2(0) + tau2*fLPtt2(1) )/epsmu2 + tau1*fPtttt2(0) + tau2*fPtttt2(1) )
+      -alphaP1*( ( tau1*fLPtt1(0) + tau2*fLPtt1(1) ) + tau1*fPtttt1(0) + tau2*fPtttt1(1) ) \
+      +alphaP2*( ( tau1*fLPtt2(0) + tau2*fLPtt2(1) ) + tau1*fPtttt2(0) + tau2*fPtttt2(1) )
      
  if( twilightZone.eq.1 )then
    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
@@ -1444,14 +1485,14 @@ end if
    if( setDivergenceAtInterfaces.eq.0 )then
 
      f(6) = f(6) - (an1*ueLapSq+an2*veLapSq)*(1./(epsmu1*mu1) - 1./(epsmu2*mu2) ) \
-                 + (alphaP1/mu1)*( an1*pevttLSum1(0) + an2*pevttLSum1(1) ) \
-                 -   (alphaP2/mu2)*( an1*pevttLSum2(0) + an2*pevttLSum2(1) ) \
+                 + (alphaP1/mu1)*( an1*pevttLSum1(0) + an2*pevttLSum1(1) )*epsmu1 \
+                 - (alphaP2/mu2)*( an1*pevttLSum2(0) + an2*pevttLSum2(1) )*epsmu2 
 
    end if
 
    f(7) = f(7) - (tau1*ueLapSq+tau2*veLapSq)*(1./epsmu1**2 - 1./epsmu2**2) \
-               + alphaP1*( ( tau1*pevttLSum1(0) + tau2*pevttLSum1(1) )/epsmu1 + tau1*pevttttSum1(0) + tau2*pevttttSum1(1) ) \
-               -   alphaP2*( ( tau1*pevttLSum2(0) + tau2*pevttLSum2(1) )/epsmu2 + tau1*pevttttSum2(0) + tau2*pevttttSum2(1) ) \
+               + alphaP1*( ( tau1*pevttLSum1(0) + tau2*pevttLSum1(1) ) + tau1*pevttttSum1(0) + tau2*pevttttSum1(1) ) \
+               - alphaP2*( ( tau1*pevttLSum2(0) + tau2*pevttLSum2(1) ) + tau1*pevttttSum2(0) + tau2*pevttttSum2(1) ) 
 
 
  end if
@@ -1588,18 +1629,7 @@ end if
 #endMacro
 
 
-! =============================================================================================
-!   Evaluate the jump conditions for the GDM interface equations
-! =============================================================================================
-#beginMacro evaluateDispersiveInterfaceEquations2dOrder4()
-
- ! Evaluate TZ forcing for dispersive equations in 2D 
- getDispersiveTZForcingOrder4(fpv1,fpv2,fev1,fev2)
-
- ! evalDerivs2dOrder4()
- evalDerivs2dOrder4()
-
-
+#beginMacro evalDerivativesForDispersive2dOrder4()
  ! Store c^2*Delta(E) in a vector 
  LE1(0)=(c1**2)*u1Lap
  LE1(1)=(c1**2)*v1Lap
@@ -1663,6 +1693,20 @@ end if
  evnx2(1) = v2nx
  evny2(0) = u2ny
  evny2(1) = v2ny 
+#endMacro
+
+
+! =============================================================================================
+!   Evaluate the jump conditions for the GDM interface equations
+! =============================================================================================
+#beginMacro evaluateDispersiveInterfaceEquations2dOrder4()
+
+ ! Evaluate TZ forcing for dispersive equations in 2D 
+ getDispersiveTZForcingOrder4(fpv1,fpv2,fev1,fev2)
+
+ evalDerivs2dOrder4()
+
+ evalDerivativesForDispersive2dOrder4()
 
  ! eval dispersive forcings for domain 1
  getDispersiveForcingOrder4(LEFT,i1,i2,i3, fp1, fpv1,fev1,p1,p1n,p1m, u1,u1n,u1m, dispersionModel1,\
@@ -1673,7 +1717,7 @@ end if
  ! eval dispersive forcings for domain 2
  getDispersiveForcingOrder4(RIGHT,j1,j2,j3, fp2, fpv2,fev2,p2,p2n,p2m, u2,u2n,u2m, dispersionModel2,\
     numberOfPolarizationVectors2,alphaP2,c2PttEsum2,c2PttLEsum2,c4PttLEsum2,c4PttLLEsum2,c2PttttLEsum2,c2PttttLLEsum2,\
-    a0v2,a1v2,b0v2,b1v2,LE2,LLE2,LE2m,LfE2,LfP2,fEt2,fEtt2,fPt2,fPtt2,pevtt2,pevttx2,pevtty2,pevtttt1,\
+    a0v2,a1v2,b0v2,b1v2,LE2,LLE2,LE2m,LfE2,LfP2,fEt2,fEtt2,fPt2,fPtt2,pevtt2,pevttx2,pevtty2,pevtttt2,\
     evx2,evy2,evnx2,evny2,fevx2,fevy2,fpvx2,fpvy2,LEx2,LEy2,fPttx2,fPtty2,fLPtt2,fPtttt2) 
 
 
@@ -1865,7 +1909,35 @@ end if
 
 #endMacro
 
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+#beginMacro evalDispersiveInterfaceEquations24c()
 
+ ! Evaluate TZ forcing for dispersive equations in 2D 
+ getDispersiveTZForcingOrder4(fpv1,fpv2,fev1,fev2)
+
+ evalDerivs2dOrder4()
+
+ evalDerivativesForDispersive2dOrder4()
+
+ ! eval dispersive forcings for domain 1
+ getDispersiveForcingOrder4(LEFT,i1,i2,i3, fp1, fpv1,fev1,p1,p1n,p1m, u1,u1n,u1m, dispersionModel1,\
+    numberOfPolarizationVectors1,alphaP1,c2PttEsum1,c2PttLEsum1,c4PttLEsum1,c4PttLLEsum1,c2PttttLEsum1,c2PttttLLEsum1,\
+    a0v1,a1v1,b0v1,b1v1,LE1,LLE1,LE1m,LfE1,LfP1,fEt1,fEtt1,fPt1,fPtt1,pevtt1,pevttx1,pevtty1,pevtttt1,\
+    evx1,evy1,evnx1,evny1,fevx1,fevy1,fpvx1,fpvy1,LEx1,LEy1,fPttx1,fPtty1,fLPtt1,fPtttt1) 
+
+ ! eval dispersive forcings for domain 2
+ getDispersiveForcingOrder4(RIGHT,j1,j2,j3, fp2, fpv2,fev2,p2,p2n,p2m, u2,u2n,u2m, dispersionModel2,\
+    numberOfPolarizationVectors2,alphaP2,c2PttEsum2,c2PttLEsum2,c4PttLEsum2,c4PttLLEsum2,c2PttttLEsum2,c2PttttLLEsum2,\
+    a0v2,a1v2,b0v2,b1v2,LE2,LLE2,LE2m,LfE2,LfP2,fEt2,fEtt2,fPt2,fPtt2,pevtt2,pevttx2,pevtty2,pevtttt2,\
+    evx2,evy2,evnx2,evny2,fevx2,fevy2,fpvx2,fpvy2,LEx2,LEy2,fPttx2,fPtty2,fLPtt2,fPtttt2) 
+
+ ! first evaluate the equations we want to solve with the wrong values at the ghost points: (assigns f(0:7))
+ eval2dJumpDispersiveOrder4()
+
+#endMacro
 
 
 ! --------------------------------------------------------------------------
@@ -2040,29 +2112,49 @@ end do
       !          a8(2,6) =  js*   ry2*dx214(axis2)
       !          a8(2,7) = -js*   rx2*dx214(axis2)
 
-       aa8(2,0,0,nn) =  is*8.*rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)    
-       aa8(2,1,0,nn) = -is*8.*rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)    
-       aa8(2,4,0,nn) = -is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)       
-       aa8(2,5,0,nn) =  is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)       
+       curl1um1 =  is*8.*rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)   ! coeff of u(-1) from v.x - u.y 
+       curl1vm1 = -is*8.*rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)   ! coeff of v(-1) from v.x - u.y 
+       curl1um2 = -is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)   ! coeff of u(-2) from v.x - u.y 
+       curl1vm2 =  is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)   ! coeff of v(-2) from v.x - u.y
 
-       aa8(2,2,0,nn) = -js*8.*rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
-       aa8(2,3,0,nn) =  js*8.*rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)    
-       aa8(2,6,0,nn) =  js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
-       aa8(2,7,0,nn) = -js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
+       curl2um1 =  js*8.*rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)   ! coeff of u(-1) from v.x - u.y 
+       curl2vm1 = -js*8.*rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)   ! coeff of v(-1) from v.x - u.y 
+       curl2um2 = -js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)   ! coeff of u(-2) from v.x - u.y 
+       curl2vm2 =  js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)   ! coeff of v(-2) from v.x - u.y
+
+       aa8(2,0,0,nn) =  curl1um1
+       aa8(2,1,0,nn) =  curl1vm1
+       aa8(2,4,0,nn) =  curl1um2
+       aa8(2,5,0,nn) =  curl1vm2
+
+       aa8(2,2,0,nn) = -curl2um1  
+       aa8(2,3,0,nn) = -curl2vm1    
+       aa8(2,6,0,nn) = -curl2um2  
+       aa8(2,7,0,nn) = -curl2vm2 
+
+       ! aa8(2,0,0,nn) =  is*8.*rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)    
+       ! aa8(2,1,0,nn) = -is*8.*rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)    
+       ! aa8(2,4,0,nn) = -is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)       
+       ! aa8(2,5,0,nn) =  is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)       
+
+       ! aa8(2,2,0,nn) = -js*8.*rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
+       ! aa8(2,3,0,nn) =  js*8.*rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)    
+       ! aa8(2,6,0,nn) =  js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
+       ! aa8(2,7,0,nn) = -js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
 
        ! -------------- Equation 3 -----------------------
        !   [ tau.{ (uv.xx+uv.yy)/eps -alphaP*P.tt } ] = 0
        !    P.tt = c4PttLEsum * L(E) + c4PttLLEsum* L^2(E) + ...
 
-       aa8(3,0,0,nn) = tau1*( aLap0*( 1./epsmu1 -alphaP1*c4PttLEsum1 ) - aLapSq0*alphaP1*c4PttLLEsum1 )
-       aa8(3,1,0,nn) = tau2*( aLap0*( 1./epsmu1 -alphaP1*c4PttLEsum1 ) - aLapSq0*alphaP1*c4PttLLEsum1 )
-       aa8(3,4,0,nn) = tau1*( aLap1*( 1./epsmu1 -alphaP1*c4PttLEsum1 ) - aLapSq1*alphaP1*c4PttLLEsum1 )
-       aa8(3,5,0,nn) = tau2*( aLap1*( 1./epsmu1 -alphaP1*c4PttLEsum1 ) - aLapSq1*alphaP1*c4PttLLEsum1 )
+       aa8(3,0,0,nn) = tau1*( aLap0*( 1./epsmu1 -alphaP1*c4PttLEsum1/epsmu1 ) - aLapSq0*alphaP1*c4PttLLEsum1/epsmu1**2 )
+       aa8(3,1,0,nn) = tau2*( aLap0*( 1./epsmu1 -alphaP1*c4PttLEsum1/epsmu1 ) - aLapSq0*alphaP1*c4PttLLEsum1/epsmu1**2 )
+       aa8(3,4,0,nn) = tau1*( aLap1*( 1./epsmu1 -alphaP1*c4PttLEsum1/epsmu1 ) - aLapSq1*alphaP1*c4PttLLEsum1/epsmu1**2 )
+       aa8(3,5,0,nn) = tau2*( aLap1*( 1./epsmu1 -alphaP1*c4PttLEsum1/epsmu1 ) - aLapSq1*alphaP1*c4PttLLEsum1/epsmu1**2 )
 
-       aa8(3,2,0,nn) =-tau1*( bLap0*( 1./epsmu2 -alphaP2*c4PttLEsum2 ) - bLapSq0*alphaP2*c4PttLLEsum2 )
-       aa8(3,3,0,nn) =-tau2*( bLap0*( 1./epsmu2 -alphaP2*c4PttLEsum2 ) - bLapSq0*alphaP2*c4PttLLEsum2 )
-       aa8(3,6,0,nn) =-tau1*( bLap1*( 1./epsmu2 -alphaP2*c4PttLEsum2 ) - bLapSq1*alphaP2*c4PttLLEsum2 )
-       aa8(3,7,0,nn) =-tau2*( bLap1*( 1./epsmu2 -alphaP2*c4PttLEsum2 ) - bLapSq1*alphaP2*c4PttLLEsum2 )
+       aa8(3,2,0,nn) =-tau1*( bLap0*( 1./epsmu2 -alphaP2*c4PttLEsum2/epsmu2 ) - bLapSq0*alphaP2*c4PttLLEsum2/epsmu2**2 )
+       aa8(3,3,0,nn) =-tau2*( bLap0*( 1./epsmu2 -alphaP2*c4PttLEsum2/epsmu2 ) - bLapSq0*alphaP2*c4PttLLEsum2/epsmu2**2 )
+       aa8(3,6,0,nn) =-tau1*( bLap1*( 1./epsmu2 -alphaP2*c4PttLEsum2/epsmu2 ) - bLapSq1*alphaP2*c4PttLLEsum2/epsmu2**2 )
+       aa8(3,7,0,nn) =-tau2*( bLap1*( 1./epsmu2 -alphaP2*c4PttLEsum2/epsmu2 ) - bLapSq1*alphaP2*c4PttLLEsum2/epsmu2**2 )
 
 
       ! -------------- Equation 4 -----------------------
@@ -2117,17 +2209,19 @@ end do
       !   [ ( {(Delta v).x - (Delta u).y}/(epsmu) - alphaP*( Py.ttx - Px.tty) )/mu ] =0 
       !
       !     P.tt = c2PttLEsum * L(E)
-      eqnCoeff = ( 1./epsmu1 - alphaP1*c2PttLEsum1 )/mu1 
-      aa8(5,0,0,nn)=-bLapY0*eqnCoeff    ! -(u.xxy+u.yyy)*( 1/eps - (alphaP/mu)*c2PttLEsum )
-      aa8(5,1,0,nn)= aLapX0*eqnCoeff
-      aa8(5,4,0,nn)=-bLapY1*eqnCoeff
-      aa8(5,5,0,nn)= aLapX1*eqnCoeff
+      eqnCoeff = ( 1./epsmu1 - alphaP1*c2PttLEsum1/epsmu1 )/mu1 
+      eqnCoeffb = -alphaP1*c2PttEsum1/mu1 ! added sept 16, 2018 
+      aa8(5,0,0,nn)=-bLapY0*eqnCoeff + curl1um1*eqnCoeffb  
+      aa8(5,1,0,nn)= aLapX0*eqnCoeff + curl1vm1*eqnCoeffb
+      aa8(5,4,0,nn)=-bLapY1*eqnCoeff + curl1um2*eqnCoeffb 
+      aa8(5,5,0,nn)= aLapX1*eqnCoeff + curl1vm2*eqnCoeffb
 
-      eqnCoeff = ( 1./epsmu2 - alphaP2*c2PttLEsum2 )/mu2 
-      aa8(5,2,0,nn)= dLapY0*eqnCoeff
-      aa8(5,3,0,nn)=-cLapX0*eqnCoeff
-      aa8(5,6,0,nn)= dLapY1*eqnCoeff
-      aa8(5,7,0,nn)=-cLapX1*eqnCoeff
+      eqnCoeff = ( 1./epsmu2 - alphaP2*c2PttLEsum2/epsmu2 )/mu2 
+      eqnCoeffb = -alphaP2*c2PttEsum2/mu2 ! added sept 16, 2018 
+      aa8(5,2,0,nn)=-(-dLapY0*eqnCoeff + curl2um1*eqnCoeffb)
+      aa8(5,3,0,nn)=-( cLapX0*eqnCoeff + curl2vm1*eqnCoeffb)
+      aa8(5,6,0,nn)=-(-dLapY1*eqnCoeff + curl2um2*eqnCoeffb)
+      aa8(5,7,0,nn)=-( cLapX1*eqnCoeff + curl2vm2*eqnCoeffb)
 
 
        ! ------- Equation 6 -----
@@ -2146,17 +2240,18 @@ end do
 
        if( setDivergenceAtInterfaces.eq.0 )then
         ! use Eqn 6 
+        ! NOTE: LE = c^2*Delta(E) and LLE = (c^4*Delta^2) E 
         ! Note: the coeff of L(E) in Delta(Ptt) is the coeff of E in Ptt
         ! Note: the coeff of LL(E) in Delta(Ptt) is the coeff of LE in Ptt
-        aa8(6,0,0,nn) = an1*( aLapSq0/epsmu1 -alphaP1*(c2PttEsum1*aLap0+c2PttLEsum1*aLapSq0) )/mu1
-        aa8(6,1,0,nn) = an2*( aLapSq0/epsmu1 -alphaP1*(c2PttEsum1*aLap0+c2PttLEsum1*aLapSq0) )/mu1
-        aa8(6,4,0,nn) = an1*( aLapSq1/epsmu1 -alphaP1*(c2PttEsum1*aLap1+c2PttLEsum1*aLapSq1) )/mu1
-        aa8(6,5,0,nn) = an2*( aLapSq1/epsmu1 -alphaP1*(c2PttEsum1*aLap1+c2PttLEsum1*aLapSq1) )/mu1
+        aa8(6,0,0,nn) = an1*( aLapSq0/epsmu1 -alphaP1*( c2PttEsum1*aLap0 + c2PttLEsum1*aLapSq0/epsmu1 ) )/mu1
+        aa8(6,1,0,nn) = an2*( aLapSq0/epsmu1 -alphaP1*( c2PttEsum1*aLap0 + c2PttLEsum1*aLapSq0/epsmu1 ) )/mu1
+        aa8(6,4,0,nn) = an1*( aLapSq1/epsmu1 -alphaP1*( c2PttEsum1*aLap1 + c2PttLEsum1*aLapSq1/epsmu1 ) )/mu1
+        aa8(6,5,0,nn) = an2*( aLapSq1/epsmu1 -alphaP1*( c2PttEsum1*aLap1 + c2PttLEsum1*aLapSq1/epsmu1 ) )/mu1
 
-        aa8(6,2,0,nn) =-an1*( bLapSq0/epsmu2 -alphaP2*(c2PttEsum2*bLap0+c2PttLEsum2*bLapSq0) )/mu2
-        aa8(6,3,0,nn) =-an2*( bLapSq0/epsmu2 -alphaP2*(c2PttEsum2*bLap0+c2PttLEsum2*bLapSq0) )/mu2
-        aa8(6,6,0,nn) =-an1*( bLapSq1/epsmu2 -alphaP2*(c2PttEsum2*bLap1+c2PttLEsum2*bLapSq1) )/mu2
-        aa8(6,7,0,nn) =-an2*( bLapSq1/epsmu2 -alphaP2*(c2PttEsum2*bLap1+c2PttLEsum2*bLapSq1) )/mu2
+        aa8(6,2,0,nn) =-an1*( bLapSq0/epsmu2 -alphaP2*( c2PttEsum2*bLap0 + c2PttLEsum2*bLapSq0/epsmu2 ) )/mu2
+        aa8(6,3,0,nn) =-an2*( bLapSq0/epsmu2 -alphaP2*( c2PttEsum2*bLap0 + c2PttLEsum2*bLapSq0/epsmu2 ) )/mu2
+        aa8(6,6,0,nn) =-an1*( bLapSq1/epsmu2 -alphaP2*( c2PttEsum2*bLap1 + c2PttLEsum2*bLapSq1/epsmu2 ) )/mu2
+        aa8(6,7,0,nn) =-an2*( bLapSq1/epsmu2 -alphaP2*( c2PttEsum2*bLap1 + c2PttLEsum2*bLapSq1/epsmu2 ) )/mu2
        end if
 
        if( setDivergenceAtInterfaces.eq.1 )then
@@ -2178,15 +2273,31 @@ end do
        ! 7  [ tau.Delta^2 v/eps^2 ] = 0 
        ! Note: the coeff of L(E) in Delta(Ptt) is the coeff of E in Ptt
        ! Note: the coeff of LL(E) in Delta(Ptt) is the coeff of LE in Ptt
-       aa8(7,0,0,nn) = tau1*( aLapSq0/epsmu1**2 -alphaP1*( c2PttEsum1*aLap0/epsmu1 +c2PttLEsum1*aLapSq0/epsmu1 + c2PttttLEsum1*aLap0  ))
-       aa8(7,1,0,nn) = tau2*( aLapSq0/epsmu1**2 -alphaP1*( c2PttEsum1*aLap0/epsmu1 +c2PttLEsum1*aLapSq0/epsmu1 + c2PttttLEsum1*aLap0  ))
-       aa8(7,4,0,nn) = tau1*( aLapSq1/epsmu1**2 -alphaP1*( c2PttEsum1*aLap1/epsmu1 +c2PttLEsum1*aLapSq1/epsmu1 + c2PttttLEsum1*aLap1  ))
-       aa8(7,5,0,nn) = tau2*( aLapSq1/epsmu1**2 -alphaP1*( c2PttEsum1*aLap1/epsmu1 +c2PttLEsum1*aLapSq1/epsmu1 + c2PttttLEsum1*aLap1  ))
+       coeffLap1   =              -alphaP1*(  c2PttEsum1 + c2PttttLEsum1  )/epsmu1
+       coeffLapSq1 = 1./epsmu1**2 -alphaP1*( c2PttLEsum1 + c2PttttLLEsum1 )/epsmu1**2
 
-       aa8(7,2,0,nn) =-tau1*( bLapSq0/epsmu2**2 -alphaP2*( c2PttEsum2*bLap0/epsmu2 +c2PttLEsum2*bLapSq0/epsmu2 + c2PttttLEsum2*bLap0  ))
-       aa8(7,3,0,nn) =-tau2*( bLapSq0/epsmu2**2 -alphaP2*( c2PttEsum2*bLap0/epsmu2 +c2PttLEsum2*bLapSq0/epsmu2 + c2PttttLEsum2*bLap0  ))
-       aa8(7,6,0,nn) =-tau1*( bLapSq1/epsmu2**2 -alphaP2*( c2PttEsum2*bLap1/epsmu2 +c2PttLEsum2*bLapSq1/epsmu2 + c2PttttLEsum2*bLap1  ))
-       aa8(7,7,0,nn) =-tau2*( bLapSq1/epsmu2**2 -alphaP2*( c2PttEsum2*bLap1/epsmu2 +c2PttLEsum2*bLapSq1/epsmu2 + c2PttttLEsum2*bLap1  ))
+       coeffLap2   =              -alphaP2*(  c2PttEsum2 + c2PttttLEsum2  )/epsmu2
+       coeffLapSq2 = 1./epsmu2**2 -alphaP2*( c2PttLEsum2 + c2PttttLLEsum2 )/epsmu2**2
+
+       aa8(7,0,0,nn) = tau1*( coeffLapSq1*aLapSq0 + coeffLap1*aLap0 )
+       aa8(7,1,0,nn) = tau2*( coeffLapSq1*aLapSq0 + coeffLap1*aLap0 )
+       aa8(7,4,0,nn) = tau1*( coeffLapSq1*aLapSq1 + coeffLap1*aLap1 )
+       aa8(7,5,0,nn) = tau2*( coeffLapSq1*aLapSq1 + coeffLap1*aLap1 )
+
+       aa8(7,2,0,nn) =-tau1*( coeffLapSq2*bLapSq0 + coeffLap2*bLap0 )
+       aa8(7,3,0,nn) =-tau2*( coeffLapSq2*bLapSq0 + coeffLap2*bLap0 )
+       aa8(7,6,0,nn) =-tau1*( coeffLapSq2*bLapSq1 + coeffLap2*bLap1 )
+       aa8(7,7,0,nn) =-tau2*( coeffLapSq2*bLapSq1 + coeffLap2*bLap1 )
+
+!       aa8(7,0,0,nn) = tau1*( aLapSq0/epsmu1**2 -alphaP1*( c2PttEsum1*aLap0/epsmu1 +c2PttLEsum1*aLapSq0/epsmu1 + c2PttttLEsum1*aLap0  ))
+!       aa8(7,1,0,nn) = tau2*( aLapSq0/epsmu1**2 -alphaP1*( c2PttEsum1*aLap0/epsmu1 +c2PttLEsum1*aLapSq0/epsmu1 + c2PttttLEsum1*aLap0  ))
+!       aa8(7,4,0,nn) = tau1*( aLapSq1/epsmu1**2 -alphaP1*( c2PttEsum1*aLap1/epsmu1 +c2PttLEsum1*aLapSq1/epsmu1 + c2PttttLEsum1*aLap1  ))
+!       aa8(7,5,0,nn) = tau2*( aLapSq1/epsmu1**2 -alphaP1*( c2PttEsum1*aLap1/epsmu1 +c2PttLEsum1*aLapSq1/epsmu1 + c2PttttLEsum1*aLap1  ))
+!
+!       aa8(7,2,0,nn) =-tau1*( bLapSq0/epsmu2**2 -alphaP2*( c2PttEsum2*bLap0/epsmu2 +c2PttLEsum2*bLapSq0/epsmu2 + c2PttttLEsum2*bLap0  ))
+!       aa8(7,3,0,nn) =-tau2*( bLapSq0/epsmu2**2 -alphaP2*( c2PttEsum2*bLap0/epsmu2 +c2PttLEsum2*bLapSq0/epsmu2 + c2PttttLEsum2*bLap0  ))
+!       aa8(7,6,0,nn) =-tau1*( bLapSq1/epsmu2**2 -alphaP2*( c2PttEsum2*bLap1/epsmu2 +c2PttLEsum2*bLapSq1/epsmu2 + c2PttttLEsum2*bLap1  ))
+!       aa8(7,7,0,nn) =-tau2*( bLapSq1/epsmu2**2 -alphaP2*( c2PttEsum2*bLap1/epsmu2 +c2PttLEsum2*bLapSq1/epsmu2 + c2PttttLEsum2*bLap1  ))
 
        ! save a copy of the matrix
        do n2=0,7
@@ -2194,6 +2305,18 @@ end do
          aa8(n1,n2,1,nn)=aa8(n1,n2,0,nn)
        end do
        end do
+
+       ! --- check matrix coefficients by delta function approach ----
+       if( checkCoeff.eq.1 )then
+        numberOfEquations=8
+        do n2=0,7
+        do n1=0,7
+          a8(n1,n2)=aa8(n1,n2,0,nn)
+        end do
+        end do                
+        checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a8,evalDispersiveInterfaceEquations24c )
+       end if
+
 
        ! solve A Q = F
        ! factor the matrix
@@ -2379,4 +2502,8 @@ end do
  endLoopsMask2d()
  ! =============== end loops =======================
       
+ if( checkCoeff.eq.1 .and. it.le.1 )then
+   write(*,'("+++++ iGDM24c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+ end if
+
 #endMacro
