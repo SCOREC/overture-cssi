@@ -43,6 +43,14 @@ $case="default";
 $rhoSolid=1.; 
 $caseid=0; $amp=1.e-5; # for radial traveling wave 
 #
+#
+# 3/26/18: add options for TP coupling
+$tsSM="modifiedEquationTimeStepping";
+$useTP=0;
+$nc=0;
+$omega=.5;
+$tol=1.e-5;
+#
 GetOptions( "cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$bcn,"ts=s"=>\$ts,"tf=f"=>\$tf,\
             "diss=f"=>\$diss,"tp=f"=>\$tPlot,"alwaysCompute=i"=>\$alwaysCompute,"lambda=f"=>\$lambda,\
             "filter=i"=>\$filter,"filterOrder=i"=>\$filterOrder,"filterStages=i"=>\$filterStages,\
@@ -57,7 +65,8 @@ GetOptions( "cg=s"=>\$cg,"en=s"=>\$en,"mode=i"=>\$mode,"ng=i"=>\$ng,"bcn=s"=>\$b
             "useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,"useExactPressureBC=i"=>\$useExactPressureBC,"rhoSolid=f"=>\$rhoSolid,\
             "numberOfCorrections=i"=> \$numberOfCorrections,"dtMax=f"=>\$dtMax,"known=s"=>\$known,"startCurve=s"=>\$startCurve,\
             "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
-            "caseid=i"=>\$caseid,"amp=f"=>\$amp,"zfOption=s"=>\$zfOption,"zfMono=f"=>\$zfMono );
+            "caseid=i"=>\$caseid,"amp=f"=>\$amp,"zfOption=s"=>\$zfOption,"zfMono=f"=>\$zfMono,\
+            "tsSM=s"=>\$tsSM,"useTP=i"=>\$useTP,"nc=i"=>\$nc,"omega=f"=>\$omega,"tol=f"=>\$tol );
 #
 if( $cg eq "rep" ){ $cmdFile="$cmdDir/radialElasticPiston.cmd"; }
 if( $cg eq "rtw" ){ $cmdFile="$cmdDir/radialTravelingWave.cmd"; }
@@ -78,6 +87,7 @@ $suffix .= "t$tf";
 $suffix =~ s/\./p/g; # change "." to "p" in numbers 
 if( $case eq "default" ){ $case=$suffix; }
 $caseName="insElasticPiston.$cg.$case"; 
+if( $useTP eq 1 ){ $caseName .= ".TP"; }
 if( $saveVectorErrors eq 1 ){ $caseName.= ".vector"; }
 $name=$caseName;
 #
@@ -124,7 +134,7 @@ $outputFile="$name" . ".ConvTable.tex";
 # 
 # -- periodic elastic piston grid
 if( $cg eq "epgp" ){\
-$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=$rhoSolid -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -useExactPressureBC=$useExactPressureBC -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -setGhostByExtrapolation=$setGhostByExtrapolation "; \
+$options = "-method=ins -addedMass=$addedMass -scf=$scf -u0=0. -nu=$nu -tp=$tPlot -tf=$tf -nc=1 -pOffset=0. -tsINS=$tsINS -smVariation=$smVariation -rhoSolid=$rhoSolid -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=$cdv -cDt=$cDt -diss=$diss -cfl=$cfl -useImplicitAmpBCs=$useImplicitAmpBCs -useExactPressureBC=$useExactPressureBC -numberOfCorrections=$numberOfCorrections -stressRelaxation=$stressRelaxation -zfMuByH=$zfMuByH -zfRhoHByDt=$zfRhoHByDt -zfMono=$zfMono -known=$known -setGhostByExtrapolation=$setGhostByExtrapolation -useTP=$useTP -tsSM=$tsSM"; \
 $grid1="epg1";  $gName1 = "elasticPistonGride1.order2p"; \
 $grid2="epg2";  $gName2 = "elasticPistonGride2.order2p"; \
 $grid3="epg4";  $gName3 = "elasticPistonGride4.order2p"; \
@@ -159,11 +169,55 @@ $grid5="rtw32"; $gName5 = "radialTravelingWaveGride32.order2"; }
 # If dtMax is set, we scale by a factor of 2 on coarser grids
 $dtMax1=$dtMax; $dtMax2=$dtMax1/2.; $dtMax3=$dtMax2/2.; $dtMax4=$dtMax3/2.; $dtMax5=$dtMax4/2.; 
 #
-$grid=$grid1; $res=1; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName1 $options -dtMax=$dtMax1";
-$grid=$grid2; $res=2; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName2 $options -dtMax=$dtMax2";
-if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName3 $options -dtMax=$dtMax3";}
-if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName4 $options -dtMax=$dtMax4";}
-if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName5 $options -dtMax=$dtMax5";}
+#
+#
+$safety=.5;
+sub max{ local($n,$m)=@_; if( $n>$m ){ return $n; }else{ return $m; } }
+$ncMin=60;
+##### GRID 1 #####
+$M0=20./$scf;
+$omega=$safety*4./(3.*$M0+4.);
+$nc=max(int(-(3./4.*$M0*log($tol))),$ncMin);
+if ($addedMass eq 0){ $extraOpts="-omega=$omega -nc=$nc -tol=$tol"; }
+printf("grid %d: M0=%.1e omega=%.1e nc=%d tol=%.1e\n",1,$M0,$omega,$nc,$tol);
+$grid=$grid1; $res=1; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName1 $options -dtMax=$dtMax1 $extraOpts";
+#
+#
+#
+##### GRID 2 #####
+$M0=2.*$M0; $tol=$tol/4.;
+$omega=$safety*4./(3.*$M0+4.);
+$nc=max(int(-(3./4.*$M0*log($tol))),$ncMin);
+if ($addedMass eq 0){ $extraOpts="-omega=$omega -nc=$nc -tol=$tol"; }
+printf("grid %d: M0=%.1e omega=%.1e nc=%d tol=%.1e\n",2,$M0,$omega,$nc,$tol);
+$grid=$grid2; $res=2; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName2 $options -dtMax=$dtMax2 $extraOpts";
+#
+#
+###### GRID 3 #####
+$M0=2.*$M0; $tol=$tol/4.;
+$omega=$safety*4./(3.*$M0+4.);
+$nc=max(int(-(3./4.*$M0*log($tol))),$ncMin);
+if ($addedMass eq 0){ $extraOpts="-omega=$omega -nc=$nc -tol=$tol"; }
+printf("grid %d: M0=%.1e omega=%.1e nc=%d tol=%.1e\n",3,$M0,$omega,$nc,$tol);
+if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName3 $options -dtMax=$dtMax3 $extraOpts";}
+#
+#
+###### GRID 4 #####
+$M0=2.*$M0; $tol=$tol/4.;
+$omega=$safety*4./(3.*$M0+4.);
+$nc=max(int(-(3./4.*$M0*log($tol))),$ncMin);
+if ($addedMass eq 0){ $extraOpts="-omega=$omega -nc=$nc -tol=$tol"; }
+printf("grid %d: M0=%.1e omega=%.1e nc=%d tol=%.1e\n",4,$M0,$omega,$nc,$tol);
+if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName4 $options -dtMax=$dtMax4 $extraOpts";}
+#
+#
+###### GRID 5 #####
+$M0=2.*$M0; $tol=$tol/4.; 
+$omega=$safety*4./(3.*$M0+4.);
+$nc=max(int(-(3./4.*$M0*log($tol))),$ncMin);
+if ($addedMass eq 0){ $extraOpts="-omega=$omega -nc=$nc -tol=$tol"; }
+printf("grid %d: M0=%.1e omega=%.1e nc=%d tol=%.1e\n",5,$M0,$omega,$nc,$tol);
+if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgsmCmd -noplot $cmdFile -g=$gridDir/$gName5 $options -dtMax=$dtMax5 $extraOpts";}
 $closeFile="true";
 # -------------------------------------------------------------------------------
 exit

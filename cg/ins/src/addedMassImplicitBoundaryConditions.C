@@ -113,7 +113,7 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
         const real ds = mg.gridSpacing(axisp1);  
 
         real k = 1./dn;
-    // real k = 1./(ds);
+    // real k = 1./(2.*ds);
 
         real beta=sqrt( rho/(mu*dt) + k*k );
     // real zfm1;
@@ -263,7 +263,7 @@ addedMassImplicitBoundaryConditions(int option,
     const int correctionStage = parameters.dbase.get<int>("correctionStage");
     real pcSwitch = correctionStage>0 ? 1. : 0.;
 
-    pcSwitch=0.;
+  // pcSwitch=0.;
     
 
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
@@ -565,14 +565,14 @@ addedMassImplicitBoundaryConditions(int option,
                                 op.derivative(MappedGridOperators::yDerivative ,uLocal,uy,Ib1,Ib2,Ib3,V);
                 // Remove divergence from Tau
                 // n.Sigma.n = - p + n.Tau.n 
-                // nTaun = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+                // nTaun = mu*( an1*( 2.*ux*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 +2.*vy*an2 ) )
                                 nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
                                             + mu*( normal(Ib1,Ib2,Ib3,0)*( 
-                                                                    -2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,0) + 
+                                                                    +2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0) + 
                                                                           (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1) ) + 
                                                           normal(Ib1,Ib2,Ib3,1)*( 
                                                                           (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
-                                                                    -2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,1) ) );
+                                                                    +2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1) ) );
                 // **FLIP SIGN -- should FLIP sign on solidTraction to start with *fix me*
                                 nSigmaSolidN = -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1));
                                 assert( numberOfDimensions==2 );

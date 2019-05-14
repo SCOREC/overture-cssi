@@ -74,9 +74,9 @@ $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
 # ------------------------- turn on added mass here ----------------
-$addedMass=0;  $addedMassVelocityBC=0; $zfMuByH=5.; $zfRhoHByDt=0.; $zfMono=0.; 
+$addedMass=0;  $addedMassVelocityBC=0; $zfMuByH=0.; $zfRhoHByDt=0.; $zfMono=1.; 
 $addedMassLengthScale=1.; # default is 1 
-$useImplicitAmpBCs=0; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
+$useImplicitAmpBCs=1; # set to 1 to use new implicit AMP BC's -- do this for now, make default later
 # $predictedBoundaryPressureNeeded=1; # predict pressure for velocity BC *wdh* Dec 25, 2017
 $predictedBoundaryPressureNeeded=0; # WDH: WHY IS THIS NEEDED ?? TURN OFF FOR NOW - April 19, 2018
 # ---- piston parameters:  choose t0=1/(4*k) to make yI(0)=0 
@@ -146,6 +146,10 @@ if( $smVariation eq "h" ){ $smVariation = "hemp"; }
 if( $method eq "ins" && $kThermalFluid eq "" ){ $kThermalFluid=$nu/$prandtl; }
 if( $method eq "cns" && $kThermalFluid eq "" ){ $kThermalFluid=$muFluid/$prandtl; }
 if( $ktcFluid < 0. ){ $ktcFluid=$kThermalFluid;} if( $ktcSolid < 0. ){ $ktcSolid=$kappa; }
+#
+#
+if ($addedMass eq 1){ $nc=0; }
+#
 # 
 $grid
 # ----------  define deforming bodies by a share flag of 100 ----
@@ -301,6 +305,13 @@ if( $tz ne "turn off twilight zone" ){ $initialConditionCommands="#"; }
 #
 $smCheckErrors=1;
 # 
+if( $probeFile ne "" ){ $probeFileName = $probeFile . "Solid.dat"; \
+$extraCmds = \
+    "frequency to save probes 1\n" . \
+    "create a probe\n" . \
+    "  file name $probeFileName\n" . \
+    "  nearest grid point to 0. .5 0.\n" . \
+    "  exit"; }else{ $extraCmds ="*"; }
 echo to terminal 0
 if( $degreeSpaceSM ne "" ){ $degreeSpace=$degreeSpaceSM; }
 if( $degreeTimeSM ne "" ){ $degreeTime=$degreeTimeSM; }

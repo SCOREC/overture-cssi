@@ -77,6 +77,8 @@ if( $zfMuByH eq "" ){ $zfMuByH=2.;}
 if( $zfRhoHByDt eq "" ){ $zfRhoHByDt=2.;}
 if( $zfMono eq "" ){ $zfMono=0.;}
 if( $zfMuRhoByZpDt eq "" ){ $zfMuRhoByZpDt=2.;}
+if( $surfaceTension eq "" ){ $surfaceTension=0.;}
+if( $pAtmosphere eq "" ){ $pAtmosphere=0.;}
 # 
 setup $domainName
  set solver Cgins
@@ -89,6 +91,8 @@ setup $domainName
 #   define real parameter kappa $kThermal
   define real parameter thermalExpansivity $thermalExpansivity
   define real parameter adcBoussinesq $adcBoussinesq 
+  define real parameter surfaceTension $surfaceTension
+  define real parameter pAtmosphere $pAtmosphere
   continue
 # 
   $tz
