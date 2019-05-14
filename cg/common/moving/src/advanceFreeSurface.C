@@ -471,6 +471,7 @@ advanceFreeSurface(real t1, real t2, real t3,
 
     // --- Option to restrict the motion -- *fix me* Make this a run time option
     real vScale[3]={1.,1.,1.};  // scale velocity by these factors 
+    real axialVelocity=0.0;
     if( surfaceGridMotion=="restrict to x direction" )
     {
       vScale[1]=vScale[2]=0.;
@@ -482,6 +483,11 @@ advanceFreeSurface(real t1, real t2, real t3,
     else if( surfaceGridMotion=="restrict to z direction" )
     {
       vScale[0]=vScale[1]=0.;
+    }
+    else if( surfaceGridMotion=="subtract axial velocity" )
+    {
+      // das: TEMPORARY FIX!!!
+      axialVelocity=-1.0;
     }
     else if( surfaceGridMotion=="free motion" )
     {
@@ -564,7 +570,7 @@ advanceFreeSurface(real t1, real t2, real t3,
             
             xNext(j1,j2,0) = xPrev(j1,j2,0) + 2.*dt*u(i1,i2,i3,uc)*vScale[0];
             xNext(j1,j2,1) = xPrev(j1,j2,1) + 2.*dt*u(i1,i2,i3,vc)*vScale[1];
-            xNext(j1,j2,2) = xPrev(j1,j2,2) + 2.*dt*u(i1,i2,i3,wc)*vScale[2];
+            xNext(j1,j2,2) = xPrev(j1,j2,2) + 2.*dt*(u(i1,i2,i3,wc)-axialVelocity)*vScale[2];
          }
           else
           {
@@ -572,7 +578,7 @@ advanceFreeSurface(real t1, real t2, real t3,
             // forward-Euler 
             xNext(j1,j2,0) = xCur(j1,j2,0) + dt*u(i1,i2,i3,uc)*vScale[0];
             xNext(j1,j2,1) = xCur(j1,j2,1) + dt*u(i1,i2,i3,vc)*vScale[1];
-            xNext(j1,j2,2) = xCur(j1,j2,2) + dt*u(i1,i2,i3,wc)*vScale[2];
+            xNext(j1,j2,2) = xCur(j1,j2,2) + dt*(u(i1,i2,i3,wc)-axialVelocity)*vScale[2];
 
           }
           
@@ -584,7 +590,7 @@ advanceFreeSurface(real t1, real t2, real t3,
 
           xCur(j1,j2,0) = xPrev(j1,j2,0) + .5*dt*( uOld(i1,i2,i3,uc)+uNew(i1,i2,i3,uc) )*vScale[0];
           xCur(j1,j2,1) = xPrev(j1,j2,1) + .5*dt*( uOld(i1,i2,i3,vc)+uNew(i1,i2,i3,vc) )*vScale[1];
-          xCur(j1,j2,2) = xPrev(j1,j2,2) + .5*dt*( uOld(i1,i2,i3,wc)+uNew(i1,i2,i3,wc) )*vScale[2];
+          xCur(j1,j2,2) = xPrev(j1,j2,2) + .5*dt*( uOld(i1,i2,i3,wc)+uNew(i1,i2,i3,wc) -2.*axialVelocity)*vScale[2];
         }
 
 

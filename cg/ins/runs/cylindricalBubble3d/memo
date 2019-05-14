@@ -1,4 +1,22 @@
 *****************************************
+***********  Feb 4, 2019
+
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere4.order.hdf -tf=.3 -tp=.005 -ts=im -amp=.000001 -casenumber=4 -flushFrequency=2 -show=cs/csCase4.show 
+
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere1.order.hdf -tf=.3 -tp=.005 -ts=im -amp=.000001 -casenumber=4
+
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere1.order.hdf -tf=.3 -tp=.005 -ts=im -amp=.0001 -casenumber=3
+
+cgins cylindricalBubble3d -g=FreeSurfaceCylindere4.order.hdf -tf=.3 -tp=.005 -ts=im -amp=.0001 -casenumber=1 -flushFrequency=2 -show=cs/csCase1.show 
+
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (20 steps)
+   0.200 7.46e-06 3.36e-06 3.35e-06 1.95e-06 8.25e-06  1.00e-01 1.00e-02 1.72e+02
+     t    err(p)   err(u)   err(v)   err(w)    div       uMax     dt       cpu    (40 steps)
+   0.200 1.89e-06 7.56e-07 7.59e-07 5.47e-07 2.36e-06  1.00e-01 5.00e-03 1.40e+03 
+
+
+
+*****************************************
 ***********  Nov 15, 2017
 
 run:

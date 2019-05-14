@@ -1,4 +1,22 @@
 *******************************
+****** Jan 22, 2019
+
+add dtMax to conv...
+
+cgins oscillatingBubble -g=oscillatingBubbleGride2.order2 -ts=im -tf=.21 -tp=.01 -model=ins -go=halt -ad2=0 -dtMax=.002 -surfacePredictor="leap-frog" -amp=1e-4 -caseNumber=1 -flushFrequency=2 -show=ob/obCase1.show 
+
+
+*******************************
+****** Jan 14, 2019
+
+ogen -noplot freeSurfaceDropGrid -interp=e -radx=1. -rady=1. -prefix=oscillatingBubbleGrid -factor=2 
+cgins oscillatingBubble -g=oscillatingBubbleGride2.order2 -ts=im -nu=.1 -tf=.2 -tp=.1 -model=ins -go=halt -ad2=0 -dtMax=.002 -surfaceTension=1. -amp=0 -caseNumber=3 -go=og -surfacePredictor="leap-frog"
+
+ogen freeSurfaceDropGridPatches -interp=e -radx=1. -rady=1. -factor=2 
+cgins oscillatingBubble -g=freeSurfaceDropGridPatchese2.order2 -ts=im -nu=.1 -tf=.2 -tp=.1 -model=ins -go=halt -ad2=0 -dtMax=.002 -surfaceTension=1. -amp=0 -caseNumber=3 -go=og -surfacePredictor="leap-frog"
+
+
+*******************************
 ****** Nov 12, 2017
 
 see Dropbox/CG/surfins for results
@@ -82,7 +100,7 @@ cgins -noplot oscillatingBubble -g=oscillatingBubbleGride2.order2 -ts=pc -nu=.01
 
 *FIXED GRID**
 
-ogen -noplot freeSurfaceDropGrid -interp=e -radx=1. -rady=1.-factor=2
+ogen -noplot freeSurfaceDropGrid -interp=e -radx=1. -rady=1. -factor=2
 
 cgins -noplot oscillatingBubble -g=oscillatingBubbleGride2.order2 -ts="pc" -nu=.01 -tf=30. -tp=1.e-5 -model=ins -go=halt -ad2=0 -dtMax=.015  -surfaceTension=1. -amp=1.e-7 -caseNumber=3 -go=og
 

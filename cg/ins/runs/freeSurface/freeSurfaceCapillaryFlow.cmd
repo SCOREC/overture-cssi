@@ -92,6 +92,15 @@ if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
+#
+if    ( $caseNumber eq "1" ){ $surfaceTension=0.10; $nu=.05; $pGrad=0.0; }\
+elsif ( $caseNumber eq "2" ){ $surfaceTension=0.05; $nu=.05; $pGrad=0.0; }\
+elsif ( $caseNumber eq "3" ){ $surfaceTension=0.20; $nu=.05; $pGrad=0.0; }\
+elsif ( $caseNumber eq "4" ){ $surfaceTension=0.10; $nu=.10; $pGrad=0.0; }\
+elsif ( $caseNumber eq "5" ){ $surfaceTension=0.10; $nu=.05; $pGrad=-1.0; }\
+elsif ( $caseNumber eq "6" ){ $surfaceTension=0.05; $nu=.05; $pGrad=-1.0; }\
+elsif ( $caseNumber eq "7" ){ $surfaceTension=0.20; $nu=.05; $pGrad=-1.0; }\
+#
 # specify the overlapping grid to use:
 $grid
 # Specify the equations we solve:

@@ -19,9 +19,9 @@
 #  -dg : the name of thee grid to deform or -dg="share=<num>" to choose all grids with a given share value 
 #  -df, -da : deformation frequency and amplitude. 
 # 
-# Examples: (Grid from freeSurfaceGrid2d.cmd)
-# 
-#  cgins oscillatingBubble -g=oscillatingBubbleGride2.order2 -dg="share=100" -nu=.05 -tf=2. -tp=.01 -model=ins -go=halt 
+# Examples: 
+#  ogen -noplot freeSurfaceDropGrid -interp=e -radx=1. -rady=1. -prefix=oscillatingBubbleGrid -factor=2 
+#  cgins oscillatingBubble -g=oscillatingBubbleGride2.order2 -ts=im -tf=.2 -tp=.1 -model=ins -go=halt -ad2=0 -dtMax=.002 -surfacePredictor="leap-frog" -amp=1e-4 -caseNumber=1 
 #
 # --- set default values for parameters ---
 # 
@@ -98,6 +98,12 @@ if( $project eq "1" ){ $project = "project initial conditions"; }else{ $project 
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
+#
+#
+if    ( $casenumber eq "1" ){ $surfaceTension=1.0; $nu=.1; }\
+elsif ( $casenumber eq "2" ){ $surfaceTension=0.5; $nu=.1; }\
+elsif ( $casenumber eq "3" ){ $surfaceTension=2.0; $nu=.1; }\
+elsif ( $casenumber eq "4" ){ $surfaceTension=1.0; $nu=.1; }
 #
 # specify the overlapping grid to use:
 $grid
@@ -232,7 +238,7 @@ $cmds
    # ****** DEFINE THE KNOWN SOLUTION ******
    OBTZ:user defined known solution
      oscillating bubble
-      $amp,$casenumber
+      $amp, $casenumber
     done
   done
   debug $debug

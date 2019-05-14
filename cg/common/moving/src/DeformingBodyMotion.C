@@ -4517,6 +4517,7 @@ integrate( real t1, real t2, real t3,
 
 
                 real vScale[3]={1.,1.,1.};  // scale velocity by these factors 
+                real axialVelocity=0.0;
       	if( surfaceGridMotion=="restrict to x direction" )
       	{
         	  vScale[1]=vScale[2]=0.;
@@ -4529,6 +4530,11 @@ integrate( real t1, real t2, real t3,
       	{
         	  vScale[0]=vScale[1]=0.;
       	}
+                else if( surfaceGridMotion=="subtract axial velocity" )
+                {
+          // das: TEMPORARY FIX!!!
+                    axialVelocity=-1.0;
+                }
       	else if( surfaceGridMotion=="free motion" )
       	{
       	}
@@ -6862,6 +6868,7 @@ buildFreeSurfaceOptionsDialog(DialogData & dialog )
                                 					  "restrict to x direction",
                                 					  "restrict to y direction",
                                 					  "restrict to z direction",
+                                                                                    "subtract axial velocity",
                                 					  "" };
     aString surfacePredictorCommands[]  = { "forward euler",
                                 					  "leap-frog",
@@ -7014,7 +7021,8 @@ getFreeSurfaceOption(const aString & answer,
     else if( answer=="free motion" ||
                       answer=="restrict to x direction" ||
          	   answer=="restrict to y direction" ||
-         	   answer=="restrict to z direction" )
+         	   answer=="restrict to z direction" ||
+                      answer=="subtract axial velocity")
     {
         surfaceGridMotion=answer;
         printF("Setting the surface grid motion to %s\n",(const char*)surfaceGridMotion);

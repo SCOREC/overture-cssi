@@ -19,9 +19,9 @@
 #  -dg : the name of thee grid to deform or -dg="share=<num>" to choose all grids with a given share value 
 #  -df, -da : deformation frequency and amplitude. 
 # 
-# Examples: (Grid from freeSurfaceGrid2d.cmd)
+# Examples: 
 # 
-#  cgins oscillatingBubble -g=oscillatingBubbleGride2.order2 -dg="share=100" -nu=.05 -tf=2. -tp=.01 -model=ins -go=halt 
+#  cgins cylindricalBubble3d -g=FreeSurfaceCylindere2.order.hdf -tf=.2 -tp=.01 -ts=im -amp=0 -casenumber=1
 #
 # --- set default values for parameters ---
 # 
@@ -41,7 +41,7 @@ $psolver="petsc"; $solver="petsc";
 $iluLevels=1; $ogesDebug=0; 
 $rtolp=1.e-12; $atolp=1.e-12;  # tolerances for the pressure solve
 $rtol=1.e-12; $atol=1.e-12;    # tolerances for the implicit solver
-$surfaceTension=1.; $pAtmosphere=0.;
+$surfaceTension=1.; $pAtmosphere=0.0;
 $smoothSurface=0; $numberOfSurfaceSmooths=3;
 $freeSurfaceOption="none"; 
 # Decouple implicit BCs (e.g. free surface) so we can solve scalar velociity implicit equations
@@ -99,6 +99,14 @@ if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 #
+#
+if    ( $casenumber eq "1" ){ $surfaceTension=0.10; $nu=.1; $pAtmosphere=0;}\
+elsif ( $casenumber eq "2" ){ $surfaceTension=0.20; $nu=.1; $pAtmosphere=0;}\
+elsif ( $casenumber eq "3" ){ $surfaceTension=0.05; $nu=.1; $pAtmosphere=0;}\
+elsif ( $casenumber eq "4" ){ $surfaceTension=0.10; $nu=.1; $pAtmosphere=0;}\
+elsif ( $casenumber eq "5" ){ $surfaceTension=0.20; $nu=.1; $pAtmosphere=0;}\
+elsif ( $casenumber eq "6" ){ $surfaceTension=0.05; $nu=.1; $pAtmosphere=0;}\
+#
 # specify the overlapping grid to use:
 $grid
 # Specify the equations we solve:
@@ -136,6 +144,8 @@ $numberOfPastTimeLevels=3;
 $gridEvolutionVelocityAccuracy=2; 
 $gridEvolutionAccelerationAccuracy=2; 
 if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
+if   ($casenumber le 3){$gridMotionCmd="free motion";}\
+else {$gridMotionCmd="subtract axial velocity";}
 # 
  turn on moving grids
   specify grids to move
@@ -144,6 +154,7 @@ if( $tz eq "turn off twilight zone" ){ $useKnown=1; }else{ $useKnown=0; }
         $deformationType
          debug
             $debug
+        $gridMotionCmd
         velocity order of accuracy\n $gridEvolutionVelocityAccuracy
         acceleration order of accuracy\n $gridEvolutionAccelerationAccuracy
         generate past history $generatePastHistory
@@ -233,8 +244,8 @@ $cmds
   initial conditions
    # ****** DEFINE THE KNOWN SOLUTION ******
    OBTZ:user defined known solution
-     oscillating bubble
-      $amp,$casenumber
+     cylindrical stream
+     $amp,$casenumber
     done
   done
   debug $debug
@@ -251,10 +262,21 @@ $cmds
 #
   exit
   $go
+  contour
+  turn on grid boundaries
+  remove contour planes
+    0,1,2
+    done
+  $upper=-5.*$amp;
+  $lower=-1+5*$amp;
+  add contour planes
+    0,0,1,0,0,$upper
+    0,0,1,0,0,$lower
+    done
+  exit
 
 
-# 
-      erase
-      grid
+
+
         bigger:0
         exit this menu

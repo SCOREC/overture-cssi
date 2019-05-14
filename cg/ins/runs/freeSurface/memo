@@ -1,3 +1,30 @@
+
+cgins freeSurfaceCapillaryFlow -g=freeSurfaceGrid2dFlate2.order2p -dg=share=100 -ts=im -tf=.2 -tp=.01 -model=ins -go=halt -pGrad=0. -ad2=0 -go=og -amp=.0001 -caseNumber=5 -surfacePredictor=leap-frog 
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (200 steps)
+   0.200 4.12e-06 4.16e-06 2.58e-06 4.08e-06  1.00e+00 1.00e-03 6.69e+00
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (400 steps)
+   0.200 1.14e-06 1.04e-06 6.49e-07 1.52e-06  1.00e+00 5.00e-04 1.72e+01 
+
+
+
+*******************************
+****** Feb 8, 2019
+
+ogen -noplot submergedCylinderGrid -interp=e -factor=1
+
+
+
+
+
+*******************************
+****** Jan 8, 2019
+
+
+cgins freeSurfaceCapillaryFlow -g=freeSurfaceGrid2dFlate8.order2p -dg=share=100 -ts=im -tf=.2 -tp=.01 -model=ins -go=halt -pGrad=0. -ad2=0 -go=og -amp=.0001 -caseNumber=1 -surfacePredictor=leap-frog -flushFrequency=2 -show=cw/cwCase1.show
+
+
+
 *******************************
 ****** Nov 12, 2017
 

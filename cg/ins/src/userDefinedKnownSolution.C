@@ -15,6 +15,7 @@
 #define cBesselJ EXTERN_C_NAME(cbesselj)
 #define cBesselY EXTERN_C_NAME(cbessely)
 #define evalOscillatingBubble EXTERN_C_NAME(evaloscillatingbubble)
+#define evalCylindricalStream EXTERN_C_NAME(evalcylindricalstream)
 #define evalCapillaryFlow EXTERN_C_NAME(evalcapillaryflow)
 #define evalFibShearFluid EXTERN_C_NAME(evalfibshearfluid)
 #define evalRadialFibShearFluid EXTERN_C_NAME(evalradialfibshearfluid)
@@ -36,6 +37,14 @@ extern "C"
 			     real& vrr, real& vri,
 			     real& vtr, real& vti,
 			     real& pr, real& pi);
+  void evalCylindricalStream(const real & r, const real & kz, const real & n, const real & mu,
+                             const real & Ar, const real & Ai, const real & Br, const real & Bi,
+                             const real & Cr, const real & Ci, 
+                             const real & alphar, const real & alphai, 
+                             const real & lambdar, const real & lambdai,
+			     real& vrr, real& vri,real& vtr, real& vti, real& vzr, real& vzi,
+			     real& pr, real& pi);
+
   void evalCapillaryFlow(const real& k, const real& y, const real& mu, 
 			 const real& alphar, const real& alphai, 
 			 const real& ar, const real& ai, const real& br, const real& bi,
@@ -1280,7 +1289,127 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       }
 
     }
+  } else if (userKnownSolution=="cylindricalStream") {
+    // *** cylindrical stream under surface tension ***
 
+    real & amp = rpar[0];
+    real & n  = rpar[1];
+    real & kz = rpar[2];
+    real & mu = rpar[3];
+    real & omegar = rpar[4];
+    real & omegai = rpar[5];
+    real & lr = rpar[6];
+    real & li = rpar[7];
+    real & alphar = rpar[8];
+    real & alphai = rpar[9];
+    real & Ar = rpar[10];
+    real & Ai = rpar[11];
+    real & Br = rpar[12];
+    real & Bi = rpar[13];
+    real & Cr = rpar[14];
+    real & Ci = rpar[15];
+    real & gamma = rpar[16];
+    real & R = rpar[17];
+
+    real & V = rpar[18];
+
+    if( true )
+    {
+      printF("--UDKS-- evaluate cylindricalStream at t=%9.3e, amp=%9.3e \n",t,amp);
+    }
+
+    // -- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(xLocal);
+    const real eps = 10.*REAL_EPSILON;
+
+    int i1,i2,i3;
+    if (numberOfDimensions == 2) { // --- BEGIN 2D --- //
+      OV_ABORT("Solution not valid for 2D");
+    } else { // --- BEGIN 3D --- //
+
+      const int wc = dbase.get<int >("wc");
+      real x,y,r,z,theta;
+      real cosTheta, sinTheta;
+      real vrr, vri, vtr, vti, vzr, vzi, pr, pi;
+      real vr, vt, vz, p;
+      
+      if( numberOfTimeDerivatives==0 ) {
+	FOR_3D(i1,i2,i3,I1,I2,I3) {
+	  x= xLocal(i1,i2,i3,0);
+	  y= xLocal(i1,i2,i3,1);
+	  r = sqrt( SQR(x) + SQR(y) );
+	  z= xLocal(i1,i2,i3,2);
+
+
+	  // compute trig functions
+	  theta = atan2(y,x);
+	  if( fabs(r)>eps )
+	    {
+	      cosTheta=x/r; sinTheta=y/r;
+	    }
+	  else
+	    {
+	      cosTheta=1.; sinTheta=0.;
+	    }
+
+	  // get vrhat and vthetahat
+	  evalCylindricalStream( r, kz, n, mu, 
+				 Ar,Ai,Br,Bi,Cr,Ci,
+                                 alphar,alphai,lr,li,
+				 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
+
+	  // compute phase
+	  real phi = n*theta+kz*z-omegar*t;
+
+	  // compute decay factor
+	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+
+	  // evaluate real part
+	  vr = (vrr*cos(phi)-vri*sin(phi))*A;
+	  vt = (vtr*cos(phi)-vti*sin(phi))*A;
+          vz = (vzr*cos(phi)-vzi*sin(phi))*A;
+	  p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
+
+	  ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
+	  ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
+	  // ua(i1,i2,i3,uc) = vr;
+	  // ua(i1,i2,i3,vc) = vt;
+	  ua(i1,i2,i3,wc) = vz+V;
+	  ua(i1,i2,i3,pc) = p;
+
+        }
+      }
+    } // --- END 3D --- //
+
+
+  } else if (userKnownSolution=="sphericalBubble") {
+    // *** Bubble oscillating under surface tension *******
+    real & amp = rpar[0];
+    real &   R = rpar[1];
+
+    if( true )
+      {
+        printF("--UDKS-- evaluate sphericalBubble at t=%9.3e, amp=%9.3e \n",t,amp);
+      }
+
+    // -- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(xLocal);
+    const real eps = 10.*REAL_EPSILON;
+    const int wc = dbase.get<int >("wc");
+
+    int i1,i2,i3;
+    FOR_3D(i1,i2,i3,I1,I2,I3) {
+      real x= xLocal(i1,i2,i3,0);
+      real y= xLocal(i1,i2,i3,1);
+      real z= xLocal(i1,i2,i3,2);
+      real r = sqrt( SQR(x) + SQR(y) + SQR(z) );
+      
+      ua(i1,i2,i3,uc) = 0.;
+      ua(i1,i2,i3,vc) = 0.;
+      ua(i1,i2,i3,wc) = 0.;
+      ua(i1,i2,i3,pc) = 1.0/R;
+
+    }
 
   } else if ( userKnownSolution=="capillaryFlow") {
 
@@ -1302,6 +1431,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     real & dr = rpar[14];
     real & di = rpar[15];
     real & gamma = rpar[16];
+    real & gravity = rpar[17];
     
     if( true )
     {
@@ -1339,7 +1469,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 	// combine
 	ua(i1,i2,i3,uc) = v1;
 	ua(i1,i2,i3,vc) = v2;
-	ua(i1,i2,i3,pc) =  p;
+	ua(i1,i2,i3,pc) =  p-gravity*y;
       }
     } else {
       // some options may need a time derivative ...
@@ -2156,7 +2286,8 @@ getUserDefinedDeformingBodyKnownSolution(
 	    {
 	      // compute velocity
 	      real vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	      real vt = (vtr*cos(phi)-vri*sin(phi))*A;
+	      // real vt = (vtr*cos(phi)-vri*sin(phi))*A; 
+	      real vt = (vtr*cos(phi)-vti*sin(phi))*A; // *** DS 2/4/19 ***
 
 	      // velocity of the interface:
 	      state(i1,i2,i3,c0)=vr*ct-vt*st; 
@@ -2280,7 +2411,197 @@ getUserDefinedDeformingBodyKnownSolution(
       printF("\n >>> -UD-BD-KS-- boundaryPosition: R=%9.3e, max-displacement=%9.3e at t=%9.3e\n",R,maxDisplacement,t);
       
     }
+
+  } else if (userKnownSolution=="cylindricalStream") {
+
+    // *** cylindrical stream under surface tension ***
+    // deforming body solution
+
+    real & amp = rpar[0];
+    real & n  = rpar[1];
+    real & kz = rpar[2];
+    real & mu = rpar[3];
+    real & omegar = rpar[4];
+    real & omegai = rpar[5];
+    real & lr = rpar[6];
+    real & li = rpar[7];
+    real & alphar = rpar[8];
+    real & alphai = rpar[9];
+    real & Ar = rpar[10];
+    real & Ai = rpar[11];
+    real & Br = rpar[12];
+    real & Bi = rpar[13];
+    real & Cr = rpar[14];
+    real & Ci = rpar[15];
+    real & gamma = rpar[16];
+    real & R = rpar[17];
+
+    // -- we could avoid building the vertex array on Cartesian grids ---
+    GET_VERTEX_ARRAY(xLocal);
+
+    const real eps = 10.*REAL_EPSILON;
+    const int c0=C.getBase(), c1=c0+1, c2=c1+1;
+    int i1,i2,i3;
+    if (numberOfDimensions == 2) { // --- BEGIN 2D --- //
+      OV_ABORT("Solution not valid for 2D");
+    } else { // --- BEGIN 3D --- //
       
+      const int wc = dbase.get<int >("wc");
+      real x,y,r,z,theta;
+      real ct, st;
+      real vrr, vri, vtr, vti, vzr, vzi, pr, pi;
+      real vr, vt, vz, p;
+
+      FOR_3D(i1,i2,i3,I1,I2,I3) {
+        x= xLocal(i1,i2,i3,0);
+        y= xLocal(i1,i2,i3,1);
+        r = sqrt( SQR(x) + SQR(y) );
+        z= xLocal(i1,i2,i3,2);
+
+
+        // compute trig functions
+        theta = atan2(y,x);
+        if( fabs(r)>eps )
+          {
+            ct=x/r; st=y/r;
+          }
+        else
+          {
+            ct=1.; st=0.;
+          }
+
+	  // get vrhat and vthetahat
+	  evalCylindricalStream( r, kz, n, mu, 
+				 Ar,Ai,Br,Bi,Cr,Ci,
+                                 alphar,alphai,lr,li,
+				 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
+
+
+	  // compute phase
+	  real phi = n*theta+kz*z-omegar*t;
+
+	  // compute decay factor
+	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+
+	  if( stateOption==boundaryPosition ) {
+            // compute displacement
+            real ur = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
+                  - omegar*(vrr*sin(phi)+vri*cos(phi)));
+            real ut = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vtr*cos(phi)-vti*sin(phi)) 
+                  - omegar*(vtr*sin(phi)+vti*cos(phi)));
+            real uz = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vzr*cos(phi)-vzi*sin(phi)) 
+                  - omegar*(vzr*sin(phi)+vzi*cos(phi)));
+
+            // position of the interface:
+            state(i1,i2,i3,c0)=(ur+R)*ct-ut*st;
+            state(i1,i2,i3,c1)=(ur+R)*st+ut*ct;
+            state(i1,i2,i3,c2)=z+uz;
+
+          } else if( stateOption==boundaryVelocity ) {
+            // compute velocity
+            real vr = (vrr*cos(phi)-vri*sin(phi))*A;
+            real vt = (vtr*cos(phi)-vti*sin(phi))*A;
+            real vz = (vzr*cos(phi)-vzi*sin(phi))*A;
+
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=vr*ct-vt*st; 
+            state(i1,i2,i3,c1)=vr*st+vt*ct;
+            state(i1,i2,i3,c2)=vz;
+
+          } else if( stateOption==boundaryAcceleration ) { 
+            // compute acceleration
+            real ar = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(-vrr*cos(phi)+vri*sin(phi)) 
+                  - omegar*( vrr*sin(phi)+vri*cos(phi)));
+            real at = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(-vtr*cos(phi)+vti*sin(phi)) 
+                  - omegar*( vtr*sin(phi)+vti*cos(phi)));
+            real az = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(-vzr*cos(phi)+vzi*sin(phi)) 
+                  - omegar*( vzr*sin(phi)+vzi*cos(phi)));
+
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=ar*ct-at*st; 
+            state(i1,i2,i3,c1)=ar*st+at*ct;
+            state(i1,i2,i3,c2)=az;
+          } else {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
+          
+      }
+    } // --- END 3D --- //
+
+  } else if (userKnownSolution=="sphericalBubble") {
+
+    // ---  Bubble oscillating under surface tension ---
+
+    GET_VERTEX_ARRAY(xLocal);
+    
+    real & amp = rpar[0];
+    real & R   = rpar[1];
+    if( t <= 2.*dt )
+    {
+      printF("--INS-- getUserDefinedDeformingBodyKnownSolution: sphericalBubble, t=%9.3e amp=%9.3e R=%9.3e\n",
+             t,amp,R );
+    }
+
+    real x,y,z,r,q,st,ct,sp,cp;
+
+    const int c0=C.getBase(), c1=c0+1;
+    const int c2=c1+1;
+    int i1,i2,i3;
+    /// --- loop over the grid points on the interface ---
+    FOR_3D(i1,i2,i3,I1,I2,I3) {
+      // Reference coordinates for solid or grid positions for the fluid 
+      x= xLocal(i1,i2,i3,0);
+      y= xLocal(i1,i2,i3,1);
+      z= xLocal(i1,i2,i3,2);
+      r= sqrt( SQR(x) + SQR(y) + SQR(z) );
+      q= sqrt( SQR(x) + SQR(y) ); // projection of r onto x-y
+      
+      st= y/q; ct= x/q;
+      sp= q/r; cp= z/r;
+
+      if( stateOption==boundaryPosition )
+        {
+          // compute displacement
+
+          // position of the interface:
+          state(i1,i2,i3,c0)=R*ct*sp;
+          state(i1,i2,i3,c1)=R*st*sp;
+          state(i1,i2,i3,c2)=R*cp;
+        }
+      else if( stateOption==boundaryVelocity )
+        {
+          // compute velocity
+
+          // velocity of the interface:
+          state(i1,i2,i3,c0)=0.;
+          state(i1,i2,i3,c1)=0.;
+          state(i1,i2,i3,c2)=0.;
+        }
+      else if( stateOption==boundaryAcceleration )
+        {
+          // compute acceleration
+
+          // acceleration of the interface:
+          state(i1,i2,i3,c0)=0.;
+          state(i1,i2,i3,c1)=0.;
+          state(i1,i2,i3,c2)=0.;
+        }
+
+      else
+        {
+          OV_ABORT("--INS-- UDKS: Unknown state option");
+        }
+
+
+    }
+
+
   } else if (userKnownSolution=="freeSurfacePiston") {
     
     // --- we could avoid building the vertex array on Cartesian grids ---
@@ -2598,9 +2919,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       "shear block",   // INS-Rigid body FSI solution for a shearing block
       "rotating disk in disk", // INS-Rigid body FSI solution for a rotating disk in a disk
       "oscillating bubble",  // oscillating bubble with a free surface and surface tension
+      "cylindrical stream", // free surface and surface tension - 3D
       "capillary flow", // rectangular geometry under surface tension on top boundary with no slip bottom boundary
       "parallel flow", // parallel flow free surface on top and no slip wall on bottom
       "free surface piston", // deforming piston with free surface on top and pressure forcing on bottom
+      "spherical bubble",
       "done",
       ""
     }; 
@@ -3061,12 +3384,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	     "                      R   = outer radius, \n"
 	     "                      mu  = viscosity, \n"
 	     "                      gamma = surface tension. \n"
-             "                1: (n, rho, R, mu, gamma) = (1, 1.0, 1.0, .01, .1)\n"
-	     "                2: (n, rho, R, mu, gamma) = (2, 1.0, 1.0, .01, .1)\n"
-	     "                3: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .01, .1)\n"
-	     "                4: (n, rho, R, mu, gamma) = (4, 1.0, 1.0, .01, .1)\n"
-	     "                5: (n, rho, R, mu, gamma) = (5, 1.0, 1.0, .01, .1)\n"
-	     "                6: (n, rho, R, mu, gamma) = (6, 1.0, 1.0, .01, .1)\n"); 
+             "                1: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 1.0)\n"
+	     "                2: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
+	     "                3: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
 
       gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
       sScanF(answer,"%e %d",&amp,&casenumber);
@@ -3088,7 +3408,54 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & di = rpar[11];
       real & gamma = rpar[12];
 
-      if (casenumber == 3) {
+      if (casenumber == 1) {
+        // generated by obDispersionRelation.m
+        omegar =  4.6468563337952986e+00;
+        omegai = -9.1284130939633612e-01;
+        lr =  5.3143717795322569e+00;
+        li =  4.3719714451406810e+00;
+        cr = -1.7971114734184838e-02;
+        ci = -1.5202623092002401e-01;
+        dr =  5.0632890486257933e+00;
+        di =  3.2500572245489376e+00;
+        gamma = 1.00;
+        n  = 3.00;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 2) {
+        // generated by obDispersionRelation.m
+        omegar =  3.1867345280299868e+00;
+        omegai = -8.4712341916173206e-01;
+        lr =  4.5522141535668119e+00;
+        li =  3.5002027810280780e+00;
+        cr = -3.0617810023660674e-01;
+        ci = -2.2370302171023734e-01;
+        dr =  2.7075852928205206e+00;
+        di =  1.2188107167684432e+00;
+        gamma = 0.50;
+        n  = 3.00;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 3) {
+        // generated by obDispersionRelation.m
+        omegar =  6.7085446635240826e+00;
+        omegai = -9.6791422696836837e-01;
+        lr =  6.2233130070594189e+00;
+        li =  5.3898499528420318e+00;
+        cr =  2.7440040063286604e-02;
+        ci = -4.6522356132053549e-02;
+        dr =  1.1199105982994979e+01;
+        di =  4.8126021215631205e+00;
+        gamma = 2.00;
+        n  = 3.00;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 4) {
+        // this is an old case
+
 	// parameters
 	n     = 3.0;
 	R     = 1.0;
@@ -3108,24 +3475,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	di = -4.4862330257864754e-03;
 
       } else {
-	printF("***WARNING*** invalid casenumber entered. Using default values instead\n");
-	n     = 3.0;
-	R     = 1.0;
-	rho   = 1.0;
-	mu    = 0.01;
-	gamma = 0.1;
-
-	// solution to dispersion relation
-	omegar = .234;
-	omegai = .345;
-	lr = .123;
-	li = .567;
-
-	// compute constants
-	cr = .153;
-	ci = .634;
-	dr = .637;
-	di = .337;
+	printF("***WARNING*** invalid casenumber entered. \n");
+        OV_ABORT("stop for now");
       }
 
       // check if parameters agree with set parameters
@@ -3147,34 +3498,261 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	     "  gamma      = %9.3e \n"
 	     "  rho        = %9.3e \n",amp,casenumber,R,n,mu,gamma,rho);
 
+      // OV_ABORT("stop for now");
       
-      // *TEST THE BESSEL FUNCTIONS OF COMPLEX ARG ***
-      real fnu=1., zr,zi,jr,ji,yr,yi;
+    }
+    //******************************************************************//
+    else if( answer=="cylindrical stream" ) 
+    {
+
+      userKnownSolution="cylindricalStream";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      // get parameters from database
+      const real nu  = dbase.get<real>("nu");
+
+      real surfaceTension;
+      dbase.get<ListOfShowFileParameters >("pdeParameters")
+	.getParameter("surfaceTension",surfaceTension);
+
+      // define our needed parameters and get amp and casenumber 
+      real & amp = rpar[0];
+      int casenumber;
+
+      printF("---  Cylindrical stream under surface tension ---\n"
+             "   amp        = amplitude of the motion  (solution only valid \n"
+	     "                for small amp, eg. amp=1.e-4)\n"
+             "   casenumber = choose parameter set to use (n, kz, rho, R, mu, gamma)\n"
+	     "                where n   = number of periods in theta, \n"
+             "                      kz  = wavenumber in z, \n"
+	     "                      rho = fluid density, \n"
+	     "                      R   = outer radius, \n"
+	     "                      mu  = viscosity, \n"
+	     "                      gamma = surface tension. \n"
+             "                1: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 1.0)\n"
+	     "                2: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
+	     "                3: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
+
+      gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
+      sScanF(answer,"%e %d",&amp,&casenumber);
       
-      zr=1.; zi=1.;
-      cBesselJ(  fnu, zr, zi, jr, ji );  // eval J_fnu(z)
-      printf(" *** BESSEL: fnu=%3.1f, z=(%.16e,%.16e) J=(%.16e,%.16e)\n",fnu,zr,zi,jr,ji);
+      // now that we have casenumber, set the rest of the needed parameters
+      real & n  = rpar[1];
+      real & kz = rpar[2];
 
-      zr=1.; zi=1.;
-      cBesselY(  fnu, zr, zi, yr, yi );  // eval Y_fnu(z)
-      printf(" *** BESSEL: fnu=%3.1f, z=(%.16e,%.16e) Y=(%.16e,%.16e)\n",fnu,zr,zi,yr,yi);
+      real rho;
 
-      // * test evalOscillatingBubble solution * //
-      // real r = .133;
+      real & mu = rpar[3];
+      real & omegar = rpar[4];
+      real & omegai = rpar[5];
+      real & lr = rpar[6];
+      real & li = rpar[7];
+      real & alphar = rpar[8];
+      real & alphai = rpar[9];
+      real & Ar = rpar[10];
+      real & Ai = rpar[11];
+      real & Br = rpar[12];
+      real & Bi = rpar[13];
+      real & Cr = rpar[14];
+      real & Ci = rpar[15];
+      real & gamma = rpar[16];
+      real & R = rpar[17];
 
-      // real vrr, vri, vtr, vti, pr, pi;
-      // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-      //   		     cr,ci,dr,di,
-      //   		     vrr,vri,vtr,vti,pr,pi);
+      real & V = rpar[18];
 
-      // printf(" *** OSCILLATINGBUBBLE: \n");
-      // printf(" vr = %23.16e + %23.16e i\n",vrr,vri);
-      // printf(" vt = %23.16e + %23.16e i\n",vtr,vti);
-      // printf(" p  = %23.16e + %23.16e i\n",pr ,pi);
-      // printf("--------------------------------\n");
-      // printf("--------------------------------\n");
-      // printf("--------------------------------\n\n");
+      V=0.0;
 
+      if (casenumber == 1) {
+        // generated by csDispersionRelation.m
+        omegar =  2.9377290050473657e+00;
+        omegai = -3.0422564453978342e+00;
+        lr =  6.0296727250209541e+00;
+        li =  2.4360600807211772e+00;
+        alphar =  3.2928366502892383e+00;
+        alphai =  4.4607876385081529e+00;
+        Ar =  4.3968335238381541e-02;
+        Ai =  1.0531939973508271e-01;
+        Br = -6.6886014457908205e-01;
+        Bi =  8.1373548531818751e-01;
+        Cr =  3.1412988595868058e-01;
+        Ci =  2.2733818326391569e-02;
+        gamma = 0.10;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 2) {
+        // generated by csDispersionRelation.m
+        omegar =  5.1540371815735577e+00;
+        omegai = -3.6069534706449984e+00;
+        lr =  7.0348266798943007e+00;
+        li =  3.6632296829031454e+00;
+        alphar =  4.9114202501477742e+00;
+        alphai =  5.2469926406913396e+00;
+        Ar =  1.0867765596780189e-01;
+        Ai =  1.5162093169453006e-01;
+        Br = -5.0749250884056618e-01;
+        Bi = -1.7733160552804625e-01;
+        Cr = -3.5812541708859960e-02;
+        Ci =  1.1217883539312487e-01;
+        gamma = 0.20;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 3) {
+        // generated by csDispersionRelation.m
+        omegar =  1.0915169018567208e+00;
+        omegai = -2.6648538227549414e+00;
+        lr =  5.2652566835255987e+00;
+        li =  1.0365277207395751e+00;
+        alphar =  1.4168457533984626e+00;
+        alphai =  3.8519256568281892e+00;
+        Ar = -6.2998656423385674e-02;
+        Ai = -3.8748263793997671e-02;
+        Br = -2.0128570299833677e+00;
+        Bi = -2.9993244747530962e-01;
+        Cr =  8.8842267209141723e-01;
+        Ci = -8.5916649055664290e-02;
+        gamma = 0.05;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+      } else if (casenumber == 4) {
+        // generated by csDispersionRelation.m
+        omegar =  1.7103815742590707e+00;
+        omegai = -1.4585785385148671e+00;
+        lr =  6.9224737416934126e+00;
+        li =  5.7736346714427746e+00;
+        alphar =  5.4235253448041600e+00;
+        alphai =  7.3693459265352601e+00;
+        Ar = -7.6068431392361635e-02;
+        Ai = -5.6883914699983745e-02;
+        Br =  2.3361701138363087e-02;
+        Bi =  3.8457516587123348e-03;
+        Cr =  8.4270585191269741e-04;
+        Ci = -3.0991214747459754e-03;
+        gamma = 0.10;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+        V  = -1.00;
+      } else if (casenumber == 5) {
+        // generated by csDispersionRelation.m
+        omegar =  3.4022386741379576e+00;
+        omegai = -2.3059301330235122e+00;
+        lr =  7.8300930798985435e+00;
+        li =  6.1847438354098339e+00;
+        alphar =  6.3959746222702059e+00;
+        alphai =  7.5714996957569003e+00;
+        Ar =  1.1121891760013961e-01;
+        Ai =  1.4638187638535780e-01;
+        Br = -1.7582699821925107e-03;
+        Bi = -3.0352542909816073e-02;
+        Cr = -3.9370187310661265e-03;
+        Ci = -8.0751876911743837e-04;
+        gamma = 0.20;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+        V  = -1.00;
+      } else if (casenumber == 6) {
+        // generated by csDispersionRelation.m
+        omegar =  8.2260679609870258e-01;
+        omegai = -8.2828661009935967e-01;
+        lr =  6.3175115544447191e+00;
+        li =  5.6238853241819324e+00;
+        alphar =  4.8170795807299092e+00;
+        alphai =  7.3756224951151648e+00;
+        Ar = -3.8619246917581597e-02;
+        Ai = -2.9942038714786606e-02;
+        Br =  1.1924467307605571e-02;
+        Bi = -6.7442356619478346e-03;
+        Cr = -8.9994203348617980e-04;
+        Ci = -1.5770631431042256e-03;
+        gamma = 0.05;
+        R     = 1.00;
+        n  = 3.00;
+        kz = 6.2831853071795862;
+        mu = 0.10;
+        R  = 1.00;
+        rho= 1.00;
+        V  = -1.00;
+      } else {
+	printF("***WARNING*** invalid casenumber entered. \n");
+        OV_ABORT("stop for now");
+      }
+
+      // check if parameters agree with set parameters
+      real tol = 1.0e-12;
+      if (abs(nu*rho-mu) > tol) {
+	printF("***WARNING*** input viscosity does not agree with parameters in casenumber\n");
+      } 
+      if (abs(surfaceTension-gamma) > tol) {
+	printF("***WARNING*** input surface tension does not agree with parameters in casenumber\n");
+      }
+
+      // print all parameters
+      printF("cylindricalStream parameters: \n"
+	     "  amp        = %9.3e \n"
+	     "  casenumber = %d \n"
+	     "  R          = %9.3e \n"
+	     "  n          = %9.3e \n"
+             "  kz         = %9.3e \n"
+	     "  mu         = %9.3e \n"
+	     "  gamma      = %9.3e \n"
+	     "  rho        = %9.3e \n",amp,casenumber,R,n,kz,mu,gamma,rho);
+
+      // OV_ABORT("stop for now");
+
+
+    }
+    //******************************************************************//
+    else if( answer=="spherical bubble" )
+    {
+      userKnownSolution="sphericalBubble";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent
+
+      // get parameters from database
+      const real nu  = dbase.get<real>("nu");
+
+      real surfaceTension;
+      dbase.get<ListOfShowFileParameters >("pdeParameters")
+	.getParameter("surfaceTension",surfaceTension);
+
+      // define our needed parameters and get amp and casenumber 
+      real & amp = rpar[0];
+      int casenumber;
+
+      printF("---  Bubble oscillating under surface tension ---\n"
+             "   amp        = amplitude of the motion  (solution only valid \n"
+	     "                for small amp, eg. amp=1.e-4)\n"
+             "   casenumber = choose parameter set to use (n, rho, R, mu, gamma)\n"
+	     "                where n   = number of periods, \n"
+	     "                      rho = fluid density, \n"
+	     "                      R   = outer radius, \n"
+	     "                      mu  = viscosity, \n"
+	     "                      gamma = surface tension. \n"); 
+
+      gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
+      sScanF(answer,"%e %d",&amp,&casenumber);
+
+      real & R = rpar[1];
+      
+      R = 1.0;
       // OV_ABORT("stop for now");
       
     }
@@ -3210,6 +3788,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & dr = rpar[14];
       real & di = rpar[15];
       real & gamma = rpar[16];
+      real & gravity = rpar[17];
 
 
       int casenumber;
@@ -3234,7 +3813,58 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       real n;
       real H = 1.;
+      gravity=0.;
+
       if (casenumber == 1) {
+        omegar =  3.7023029201142794e+00;
+        omegai = -1.9233727585440685e+00;
+        alphar =  6.1263334029580143e+00;
+        alphai = -6.0432605876896517e+00;
+        ar = -2.5638046902574749e+00;
+        ai = -1.1855850513930934e-01;
+        br = -1.1050621223793348e-05;
+        bi =  8.7040041358207549e-06;
+        cr =  3.6150935229230550e+00;
+        ci =  9.0206354266618785e-02;
+        dr = -7.7817942712204478e-07;
+        di =  1.4999503090293162e-05;
+        gamma = 0.10;
+        n = 1;
+        mu = 0.05;        
+      } else if (casenumber == 2) {
+        omegar =  2.2694496369441541e+00;
+        omegai = -1.5664636964818264e+00;
+        alphar =  5.2088330378549355e+00;
+        alphai = -4.3569252852818314e+00;
+        ar = -1.0715948754010174e+00;
+        ai = -8.3087337291951646e-01;
+        br =  4.7855313071805237e-05;
+        bi =  1.7724194414057273e-05;
+        cr =  3.3322222006355879e+00;
+        ci =  1.6271360464964870e+00;
+        dr = -1.9251522434205099e-04;
+        di = -2.4621741205788729e-04;
+        gamma = 0.05;
+        n = 1;
+        mu = 0.05;
+      } else if (casenumber == 3) {
+        omegar =  5.8265113905849155e+00;
+        omegai = -2.2798786780828069e+00;
+        alphar =  7.4354429500745880e+00;
+        alphai = -7.8361321977817981e+00;
+        ar = -5.3540479073070202e+00;
+        ai =  6.6382244953833136e-01;
+        br = -3.6979773973292648e-05;
+        bi = -2.8486476786891040e-05;
+        cr =  3.5276882908534324e+00;
+        ci = -1.0301797242434964e-01;
+        dr = -8.2242614415259587e-07;
+        di = -1.1261684947433660e-05;
+        gamma = 0.20;
+        n = 1;
+        mu = 0.05;
+      } else if (casenumber == 4) {
+        // OLD!
 	omegar =  2.6327730371658089e+00;
 	omegai = -2.5705601835278751e+00;
 	alphar =  4.6629087846975636e+00;
@@ -3250,11 +3880,63 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 	gamma = .1;
 	n = 1.;
 	mu = .1;
-	k = 2*Pi*n/H;
+      } else if (casenumber == 5) {
+        omegar =  4.3085986516317618e+00;
+        omegai = -2.0431384082155248e+00;
+        alphar =  6.5114799214012953e+00;
+        alphai = -6.6169268793576119e+00;
+        ar = -3.2467674663194441e+00;
+        ai =  1.0559485662360481e-01;
+        br = -2.5209094522410531e-05;
+        bi = -3.9369916088320919e-06;
+        cr =  3.5870213857820827e+00;
+        ci = -2.1372236026876660e-02;
+        dr = -1.9678956177346556e-05;
+        di =  2.3563432734410047e-06;
+        gamma = 0.10;
+        n = 1;
+        mu = 0.05;
+        gravity = 1.00;
+      } else if (casenumber == 6) {
+
+        omegar =  3.0446036645950381e+00;
+        omegai = -1.7730473680025776e+00;
+        alphar =  5.7027155698714367e+00;
+        alphai = -5.3388664177471439e+00;
+        ar = -1.8790325573543658e+00;
+        ai = -4.8926748140155785e-01;
+        br =  1.2960395917955919e-05;
+        bi =  1.7929191679050213e-05;
+        cr =  3.6058663730185314e+00;
+        ci =  5.8867188071827137e-01;
+        dr =  3.8347871693225310e-05;
+        di = -4.2006212924245405e-05;
+        gamma = 0.05;
+        n = 1;
+        mu = 0.05;
+        gravity = 1.00;
+      } else if (casenumber == 7) {
+        omegar =  6.2766701650768457e+00;
+        omegai = -2.3365751354968074e+00;
+        alphar =  7.6970669236940532e+00;
+        alphai = -8.1546259468723488e+00;
+        ar = -6.0993788194183765e+00;
+        ai =  7.8794417470444356e-01;
+        br = -3.8431585150495968e-05;
+        bi = -3.2532635138260439e-05;
+        cr =  3.5139802450658224e+00;
+        ci = -8.2201472237205503e-02;
+        dr =  2.4232103320562414e-06;
+        di = -8.3689291012877744e-06;
+        gamma = 0.20;
+        n = 1;
+        mu = 0.05;
+        gravity = 1.00;
       } else {
 	printF("***WARNING*** invalid casenumber entered. \n");
 	OV_ABORT("stop for now");
       }
+      k = 2*Pi*n/H;
 
       // print all parameters
       printF("capillaryFlow parameters: \n"

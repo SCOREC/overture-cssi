@@ -174,6 +174,111 @@ c       assign vr, vt, and p
       return
       end
 
+!
+!  Evaluate the real and imaginary parts of the solution to
+!  the cylindrical stream
+!    v_r    (r,theta,z,t) = \tilde{v}_r    (r) exp(i (n theta + kz z - omega t))
+!    v_theta(r,theta,z,t) = \tilde{v}_theta(r) exp(i (n theta + kz z - omega t))
+!    v_z    (r,theta,z,t) = \tilde{v}_z    (r) exp(i (n theta + kz z - omega t))
+!    p      (r,theta,z,t) = \tilde{p}      (r) exp(i (n theta + kz z - omega t))
+!  
+!  Inputs:
+!    r:   radius
+!    kz:
+!    n:   number of periods
+!    mu:  viscosity
+!    A,B,C: integration constants
+!    alpha,lambda: wave numbers
+!  Outputs
+!    vrr: real part of \tilde{v}_r
+!    vri: imag part of \tilde{v}_r
+!    vtr: real part of \tilde{v}_theta
+!    vti: imag part of \tilde{v}_theta
+!    vzr: real part of \tilde{v}_z
+!    vzi: imag part of \tilde{v}_z
+!    pr:  real part of \tilde{p}
+!    pi:  imag part of \tilde{p}
+!
+      subroutine evalCylindricalStream(
+     +     r,kz,n,mu,
+     +     Ar,Ai,Br,Bi,Cr,Ci,
+     +     alphar,alphai,lambdar,lambdai,
+     +     vrr,vri,vtr,vti,vzr,vzi,pr,pi)
+
+      implicit none
+      double precision r,kz,n,mu,
+     +     Ar,Ai,Br,Bi,Cr,Ci,
+     +     alphar,alphai,lambdar,lambdai,
+     +     vrr,vri,vtr,vti,vzr,vzi,pr,pi,
+     +     jnikr,jnpikr,jnar,jnpar,
+     +     jniki,jnpiki,jnai,jnpai
+      complex*16 vr,vt,vz,p,          ! final solution
+     +     A,B,C,                     ! integration constants
+     +     alpha,lambda,              ! wave numbers
+     +     I,jnik,jnpik,jna,jnpa,     ! dummy variables
+     +     alr,ikr
+
+      A=dcmplx(Ar,Ai)
+      B=dcmplx(Br,Bi)
+      C=dcmplx(Cr,Ci)
+      alpha=dcmplx(alphar,alphai)
+      lambda=dcmplx(lambdar,lambdai)
+      I=dcmplx(0.0d0,1.0d0)
+
+      ikr=I*kz*r
+      alr=alpha*r
+
+c     check if r is close to 0 or not
+      if (abs(r) > 1.0d-14) then
+c     standard computations when r != 0
+        
+c     evaluate bessel funcs
+        call cBesselJ(dble(n+0),dreal(ikr),dimag(ikr),jnikr,jniki)
+        call cBesselJ(dble(n+1),dreal(ikr),dimag(ikr),jnpikr,jnpiki)
+        call cBesselJ(dble(n+0),dreal(alr),dimag(alr),jnar,jnai)
+        call cBesselJ(dble(n+1),dreal(alr),dimag(alr),jnpar,jnpai)
+
+        jnik =dcmplx(jnikr ,jniki )
+        jnpik=dcmplx(jnpikr,jnpiki)
+        jna  =dcmplx(jnar  ,jnai  )
+        jnpa =dcmplx(jnpar ,jnpai )
+        
+c     evaluate vr, vt, vz, and p
+        p=   +A*jnik
+        vz=  +B*jna
+     +       +I*A*kz*jnik/(mu*lambda**2)
+        vr=  +C*jna/r
+     +       +I*B*kz*(-jnpa+n*jna/(alpha*r))/alpha
+     +       +I*A*kz*(-jnpik-I*n*jnik/(kz*r))/(mu*lambda**2)
+        vt=  +(I/(r*mu*n*(alpha*lambda)**2))*(
+     +       +I*B*jna*kz*mu*(lambda*n)**2
+     +       -C*jnpa*mu*r*(alpha**3)*(lambda**2)
+     +       +C*jna*mu*n*(alpha*lambda)**2
+     +       +A*jnik*(alpha*n)**2)
+        
+
+      else
+c       r is close to 0, so we will evaluate Jn / r 
+c       using the limit definition
+        p =dcmplx(dble(0),dble(0))
+        vz=dcmplx(dble(0),dble(0))
+        vr=dcmplx(dble(0),dble(0))
+        vt=dcmplx(dble(0),dble(0))
+      end if
+      
+c     assign vr, vt, and p
+      vrr = dreal(vr)
+      vri = dimag(vr)
+      vtr = dreal(vt)
+      vti = dimag(vt)
+      vzr = dreal(vz)
+      vzi = dimag(vz)
+      pr  = dreal( p)
+      pi  = dimag( p)
+
+      return
+      end
+
 
       subroutine evalCapillaryFlow(k,y,mu,alphar,alphai,ar,ai,br,bi,
      +     cr,ci,dr,di,uhr,uhi,vhr,vhi,phr,phi)

@@ -1607,6 +1607,10 @@ defineDerivativeMacros(DIM,ORDER,GRIDTYPE)
  an1 = rsxy(i1,i2,i3,axis,0)
  an2 = rsxy(i1,i2,i3,axis,1)
  an3 = rsxy(i1,i2,i3,axis,2)
+ ! an1 = +yr*zs-zr*ys
+ ! an2 = -xr*zs+zr*xs
+ ! an3 = +xr*ys-yr*xs
+
  aNormi = -is/max(epsx,sqrt(an1**2 + an2**2+ an3**2))
  an1=an1*aNormi
  an2=an2*aNormi
@@ -1871,6 +1875,8 @@ defineDerivativeMacros(DIM,ORDER,GRIDTYPE)
           aGi = xs*xs+ys*ys+zs*zs
 
           ! write(*,'(" i1,i2,i3=",3i3," (xr,yr,zr)=",f20.16,f20.16,f20.16)') i1,i2,i3,xr,yr,zr
+          ! write(*,'(" i1,i2,i3=",3i3," (n1,n2,n3)=",f20.16,f20.16,f20.16)') i1,i2,i3,an1,an2,an3
+
 
           ! calculate second fundamental form
           aLi = xrr*an1+yrr*an2+zrr*an3
@@ -1937,7 +1943,7 @@ defineDerivativeMacros(DIM,ORDER,GRIDTYPE)
         stop 8257
       end if
 
-      if( t.le.10.*dt )then
+      if( t.le.-10.*dt )then
         write(*,'(" i1,i2,i3=",3i3," pAtm=",f12.8," meanCurvature=",f12.8," mu=",e9.3," n.tau.n=",e10.3)') i1,i2,i3,pAtmosphere,meanCurvature,mu,nTauN
       end if
 
