@@ -263,17 +263,13 @@ addedMassImplicitBoundaryConditions(int option,
     const int correctionStage = parameters.dbase.get<int>("correctionStage");
     real pcSwitch = correctionStage>0 ? 1. : 0.;
 
-<<<<<<< HEAD
-  // pcSwitch=0.;
+  // pcSwitch=0.;  // turned off by Dan Serino in May 14 commit **CHECK ME**
     
-=======
   // *wdh* Dec 5, 2018 pcSwitch=0.;
-    pcSwitch=0.;
   // *wdh* Dec 6, 2018 -- try a ramp to fix the radial traveling wave: 
   // pcSwitch=min(dt/.1,1.);  // try turning on slowly
   // const int globalStepNumber = parameters.dbase.get<int >("globalStepNumber");
   // pcSwitch=min( max(globalStepNumber,0)/10.,1.);
->>>>>>> wdh: various changes for cgmx etc.
 
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
@@ -578,19 +574,7 @@ addedMassImplicitBoundaryConditions(int option,
                                 realSerialArray ux(Ib1,Ib2,Ib3,V), uy(Ib1,Ib2,Ib3,V);
                                 op.derivative(MappedGridOperators::xDerivative ,uLocal,ux,Ib1,Ib2,Ib3,V);
                                 op.derivative(MappedGridOperators::yDerivative ,uLocal,uy,Ib1,Ib2,Ib3,V);
-<<<<<<< HEAD
-                // Remove divergence from Tau
-                // n.Sigma.n = - p + n.Tau.n 
-                // nTaun = mu*( an1*( 2.*ux*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 +2.*vy*an2 ) )
-                                nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
-                                            + mu*( normal(Ib1,Ib2,Ib3,0)*( 
-                                                                    +2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0) + 
-                                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1) ) + 
-                                                          normal(Ib1,Ib2,Ib3,1)*( 
-                                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
-                                                                    +2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1) ) );
-=======
-                                if( true )
+                                if( true )  // *** Which version should we use, may not make a difference *wdh* June 4, 2019
                                 {
                   // -- standard definition of tau.n = n1.( 2*ux*n1 + (uy+vx)*n2 ) + n2*( (uy_vx)*n1 + 2*vy*n2 ) ---
                                     nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
@@ -614,7 +598,6 @@ addedMassImplicitBoundaryConditions(int option,
                                                           (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
                                                           -2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,1) ) );
                                 }
->>>>>>> wdh: various changes for cgmx etc.
                 // **FLIP SIGN -- should FLIP sign on solidTraction to start with *fix me*
                                 nSigmaSolidN = -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1));
                                 assert( numberOfDimensions==2 );
