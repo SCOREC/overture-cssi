@@ -92,8 +92,12 @@ setupGridFunctions()
 
     numberOfGridFunctionsToUse=2; 
     // For moving grids we need to keep uOld so that we have the mask for exposed points
+
     if( parameters.isMovingGridProblem() )
-      numberOfGridFunctionsToUse=3;  // use one extra for moving grids *wdh* 040827
+      numberOfGridFunctionsToUse=4;  // need 4 levels : Jan 7, 2019
+
+    //   numberOfGridFunctionsToUse=3;  // use one extra for moving grids *wdh* 040827
+
     numberOfSolutionLevels = numberOfGridFunctionsToUse;
 
     numberOfExtraFunctionsToUse=4;
@@ -110,11 +114,18 @@ setupGridFunctions()
     numberOfGridFunctionsToUse=2; 
     numberOfSolutionLevels=2;
     
-    if( implicitMethod==Parameters::backwardDifferentiationFormula ||
-        implicitMethod==Parameters::implicitExplicitMultistep )
+    if( implicitMethod==Parameters::backwardDifferentiationFormula )
     {
       numberOfGridFunctionsToUse=orderOfBDF+1;  // check me 
       numberOfSolutionLevels =orderOfBDF+1;  // check me 
+    }
+    else if( implicitMethod==Parameters::implicitExplicitMultistep )
+    {
+      // numberOfGridFunctionsToUse=orderOfBDF+1;  // check me 
+      // numberOfSolutionLevels =orderOfBDF+1;  // check me 
+      // *wdh* Jan 9, 2019 -- keep an extra time level for variable dt formulae
+      numberOfGridFunctionsToUse=orderOfBDF+1+1;  
+      numberOfSolutionLevels =orderOfBDF+1+1;  
     }
     else if( parameters.isMovingGridProblem() || 
 	     implicitMethod==Parameters::approximateFactorization )
@@ -124,6 +135,7 @@ setupGridFunctions()
       numberOfSolutionLevels = numberOfGridFunctionsToUse;
     }
 
+    // ---------------- Time-derivatives and extra functions -----------
     if( implicitMethod==Parameters::backwardDifferentiationFormula )
     {  
       numberOfExtraFunctionsToUse=1; 
@@ -506,6 +518,16 @@ initializeSolution()
   }
 
 
+  // -- evaluate any body forcing (this is saved in realCompositeGridFunction bodyForce found in the data-base) ---
+  // -- provide solution at past time levels if available: 
+  // *new* wdh Jan 12, 2019
+  const int mCur=current;
+  const int mOld=current;  
+  const int numberOfBodyForceTimeLevels= 1; // numberOfGridFunctionsToUse>2 ? 2 : 1;  // *fix me*
+  int gfIndexBodyForce[] = {mCur,mOld}; // 
+  real timesBodyForce[] =  {gf[mCur].t,gf[mOld].t};
+  const real tForce = gf[mCur].t; // evaluate the body force at this time
+  computeBodyForcing( gf, gfIndexBodyForce, timesBodyForce, numberOfBodyForceTimeLevels, tForce );
 
   // Compute the distance to the wall for turbulence models 
   parameters.updateTurbulenceModels(gf[current].cg);
@@ -515,7 +537,11 @@ initializeSolution()
 
   // assign bc's 
   // applyBoundaryConditions(gf[current]);
-  interpolateAndApplyBoundaryConditions(gf[current]);  // *wdh* 020523
+
+  bool applyBoundaryConditionsAtStart=true;  // true=OLD way
+  
+  if( applyBoundaryConditionsAtStart )
+    interpolateAndApplyBoundaryConditions(gf[current]);  // *wdh* 020523
 
   if( turnOnDebugPlotting )
   {
@@ -547,7 +573,8 @@ initializeSolution()
   // in some cases (twoBlock) we may have to interpolate and reapply the BC's to get values
   // near the boundaries correct: *wdh* 991106
 
-  interpolateAndApplyBoundaryConditions(gf[current]);  // *wdh* 020523
+  if( applyBoundaryConditionsAtStart )
+    interpolateAndApplyBoundaryConditions(gf[current]);  // *wdh* 020523
 
   if( debug() & 32 )
     gf[current].u.display("Initial conditions after assign BC's (II): u",parameters.dbase.get<FILE* >("debugFile"),"%8.5f ");

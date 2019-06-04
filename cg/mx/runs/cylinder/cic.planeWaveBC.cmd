@@ -68,8 +68,10 @@ $pmlWidth=11; $pmlStrength=50.; $pmlPower=4.;
 #
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
-$modeGDM=-1; 
+$modeGDM=-1; $npv=1; 
 $dm="none"; $alphaP=1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
+$dmFile=""; # "SilverJCDispersionFits.txt"; 
+$lengthScale=1.e-7; # length-scale = 100 nm 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"errorNorm=i"=>\$errorNorm,\
@@ -78,8 +80,9 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "pmlWidth=f"=>\$pmlWidth,"pmlStrength=f"=>\$pmlStrength,"pmlPower=f"=>\$pmlPower,"ic=s"=>\$ic,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
-  "selectiveDissipation=i"=>\$selectiveDissipation,\
-  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"modeGDM=i"=>\$modeGDM  );
+  "selectiveDissipation=i"=>\$selectiveDissipation,"lengthScale=f"=>\$lengthScale,"npv=i"=>\$npv,\
+  "dm=s"=>\$dm,"alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"modeGDM=i"=>\$modeGDM,\
+  "dmFile=s"=>\$dmFile );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
@@ -94,10 +97,16 @@ if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
 $grid
 #
 $method
+# Set length scale (used by dispersion models)
+length scale: $lengthScale
 # dispersion model:
 $dm
 GDM mode: $modeGDM
 GDM params $a0 $a1 $b0 $b1 all (a0,a1,b0,b1,domain-name)
+# 
+# -- read material parameters from a file 
+if( $dmFile ne "" ) { $cmd="number of polarization vectors: $npv \n material file: $dmFile" }else{ $cmd="#"; }
+$cmd 
 #
 planeWaveBoundaryForcing
 # ====

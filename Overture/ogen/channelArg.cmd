@@ -48,6 +48,7 @@
 #     ogen -noplot channelArg -factor=10 -length=12. -name=channelL12f10.hdf
 #     ogen -noplot channelArg -factor=20 -length=12 -ml=3 -name=channelL12f20.hdf
 #
+$prefix="channel"; 
 $pi=4.*atan2(1.,1.); $per=1; 
 $order=2; $factor=1;  $ml=0; # default values
 $orderOfAccuracy = "second order"; $ng=2; 
@@ -61,7 +62,7 @@ $bStretch=7.; $nyFactor=2.5;
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=i"=>\$factor,"ml=i"=>\$ml,"length=f"=>\$length,\
             "name=s"=> \$name,"per=i"=>\$per,"stretchFactor=f"=>\$stretchFactor,\
-            "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb );
+            "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"prefix=s"=> \$prefix );
 $xb=$length; 
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -70,7 +71,7 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 # 
 $suffix = ".order$order"; 
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
-if( $name eq "" ){ $name = "channel" . "$interp$factor" . $suffix . ".hdf"; }
+if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 # -- convert a number so that it is a power of 2 plus 1 --
 #    ml = number of multigrid levels 
 $ml2 = 2**$ml; 

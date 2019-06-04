@@ -31,6 +31,7 @@ c=====================================================================
 
       real rd(*),a(nda),sol(neq),rhs(neq),rsp(nsp),fratio,fratio0
 c.......local
+      real res
       integer path,flag
       logical d
       character em*80
@@ -193,10 +194,14 @@ c        ..return fratio, fill-in ratio
       if( d(3) .and. mod(job/2,2).eq.1 )then
         write(1,*) '====CGESL1: matrix and sol after solve'
         do i=1,neq
-          write(1,9300) i,sol(i),(ja(j),a(j),j=ia(i),ia(i+1)-1)
+          res=-rhs(i)
+          do j=ia(i),ia(i+1)-1
+            res = res + a(j)*sol(ja(j))
+          end  do
+          write(1,9300) i,res,sol(i),(ja(j),a(j),j=ia(i),ia(i+1)-1)
         end do
       end if
- 9300 format(1x,'Row i=',i4,' sol =',e12.4,/,
+ 9300 format(1x,'Row i=',i4,' res,sol =',2e12.4,/,
      & (4(1x,'j=',i4,' a=',e8.2)) )
 
 c**** ???

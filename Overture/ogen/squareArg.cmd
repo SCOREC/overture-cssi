@@ -87,13 +87,14 @@
 # see also the script buildSquares
 #
 $order=2; $n=10; # default values
-$orderOfAccuracy = "second order"; $ng=2; $periodic=""; 
+$orderOfAccuracy = "second order"; $ng=2; $periodic=""; $addGhost=0; 
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 $prefix="square"; $xa=0.; $xb=1.; $ya=0.; $yb=1.; 
+$nxFactor=1; # increase to make dx smaller than dy 
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"nx=i"=> \$n,"periodic=s"=>\$periodic,"numGhost=i"=> \$numGhost,\
-            "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb, "prefix=s"=> \$prefix );
+            "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb, "prefix=s"=> \$prefix,"addGhost=i"=>\$addGhost,"nxFactor=i"=>\$nxFactor );
 $nx=$n+1; 
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -120,7 +121,8 @@ create mappings
     mappingName
       square
     lines
-      $lines $lines
+      if( $nxFactor ne 1 ){ $nx = int( $lines*$nxFactor + .5 ); }else{ $nx=$lines; }
+      $nx $lines
     boundary conditions
      if( $periodic eq "p" ){ $bc ="-1 -1 -1 -1"; }\
      elsif( $periodic eq "np" ){ $bc ="1 2 -1 -1"; }\
@@ -136,7 +138,7 @@ generate an overlapping grid
     ghost points
       all
       $ngp = $ng+1;
-      if( $periodic eq "" ){ $ngp = $ng; } # do not do this for afs scheme for now
+      if( $periodic eq "" && $addGhost eq 0){ $ngp = $ng; } # do not do this for afs scheme for now
       $ng $ng $ng $ngp $ng $ng
     order of accuracy
       $orderOfAccuracy

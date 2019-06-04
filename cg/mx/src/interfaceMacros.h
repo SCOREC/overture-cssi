@@ -957,3 +957,159 @@ end if
 #endMacro
 
 
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    --- save matrix coefficients by delta function approach ----
+! Input:
+!   am : matrix of coefficients is stored here 
+!   evalInterfaceEquations : macro that evaluates the interface equations
+! ----------------------------------------------------------------------------------
+#beginMacro saveCoefficients(i1,i2,i3, j1,j2,j3, numberOfEquations,am,evalInterfaceEquations )
+
+
+  ieqn = ieqn +1 ! counts equations (initialize to -1)
+
+  ! hw1 = half stencil width
+  hw1=orderOfAccuracy/2
+  hw2=hw1
+  if( nd.eq.2 )then
+    hw3=0
+  else
+    hw3=hw1
+  end if
+
+  !  write(*,'("EVAL-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  ! First eval equations with no perturbation --> save in f0 
+  evalInterfaceEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  ja=-1      ! counts nonzeros in each equation 
+  ! ------ LEFT SIDE ---------
+  if( is1.ne.0 )then
+    i1a=i1-hw1*is1
+    i1b=i1-is1
+    i1c=is1
+  else
+    i1a=i1-hw1
+    i1b=i1+hw1
+    i1c=1
+  end if
+  if( is2.ne.0 )then
+    i2a=i2-hw2*is2
+    i2b=i2-is2
+    i2c=is2
+  else
+    i2a=i2-hw2
+    i2b=i2+hw2
+    i2c=1
+  end if
+  if( is3.ne.0 )then
+    i3a=i3-hw3*is3
+    i3b=i3-is3
+    i3c=is3
+  else
+    i3a=i3-hw3
+    i3b=i3+hw3
+    i3c=1
+  end if
+
+
+  do i3p=i3a,i3b,i3c
+  do i2p=i2a,i2b,i2c
+  do i1p=i1a,i1b,i1c
+  do n2=0,nd-1
+    ja = ja+1 ! next non-zero
+
+    ! pertub one component: 
+    u1(i1p,i2p,i3p,ex+n2)=u1(i1p,i2p,i3p,ex+n2)+(delta)
+
+    evalInterfaceEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+     am(n1,ja) = f(n1)
+    end do
+
+    ! reset pertubation
+    u1(i1p,i2p,i3p,ex+n2)=u1(i1p,i2p,i3p,ex+n2)-(delta)
+
+  end do 
+  end do 
+  end do 
+  end do 
+
+  ! -------- RIGHT SIDE --------
+  if( js1.ne.0 )then
+    j1a=j1-hw1*js1
+    j1b=j1-js1
+    j1c=js1
+  else
+    j1a=j1-hw1
+    j1b=j1+hw1
+    j1c=1
+  end if
+  if( js2.ne.0 )then
+    j2a=j2-hw2*js2
+    j2b=j2-js2
+    j2c=js2
+  else
+    j2a=j2-hw2
+    j2b=j2+hw2
+    j2c=1
+  end if
+  if( js3.ne.0 )then
+    j3a=j3-hw3*js3
+    j3b=j3-js3
+    j3c=js3
+  else
+    j3a=j3-hw3
+    j3b=j3+hw3
+    j3c=1
+  end if
+
+  do j3p=j3a,j3b,j3c
+  do j2p=j2a,j2b,j2c
+  do j1p=j1a,j1b,j1c
+  do n2=0,nd-1
+    ja = ja+1 ! next non-zero
+
+    ! pertub one component: 
+    u2(j1p,j2p,j3p,ex+n2)=u2(j1p,j2p,j3p,ex+n2)+(delta)
+
+    evalInterfaceEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+     am(n1,ja) = f(n1)
+    end do
+
+    ! reset pertubation
+    u2(j1p,j2p,j3p,ex+n2)=u2(j1p,j2p,j3p,ex+n2)-(delta)
+
+  end do 
+  end do 
+  end do 
+  end do 
+
+  ! output equations
+  write(coeffFile,'("ieqn, i1,i2,i3, j1,j2,j3")')
+  write(coeffFile,'(i10,2x,6(i10,1x))') ieqn, i1,i2,i3, j1,j2,j3
+  write(coeffFile,'(" nnz=",i6," (num. non-zeros)")') ja+1
+  do n1=0,numberOfEquations-1
+    write(coeffFile,'(500(e24.16,1x))') (am(n1,k),k=0,ja)
+  end do
+
+
+  ! restore 
+  evalInterfaceEquations()
+
+#endMacro
+
+

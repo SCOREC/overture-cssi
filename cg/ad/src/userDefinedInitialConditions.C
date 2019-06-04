@@ -100,11 +100,11 @@ userDefinedInitialConditions(CompositeGrid & cg, realCompositeGridFunction & u )
       printF(">>> Cgad:userDefinedInitialConditions: assign pulse initial conditions...\n");
       if( numberOfDimensions==2 )
       {
-         if( FALSE )
-         { // *** TEST **** 2018/04/06
-           //ug(I1,I2,I3,tc)= -S*u[grid].laplacian()(I1,I2,I3,tc); 
-           ug(I1,I2,I3,tc)= -S*op[grid].laplacian(u[grid],I1,I2,I3,tc); 
-         }
+         // if( FALSE )
+         // { // *** TEST **** 2018/04/06
+         //   //ug(I1,I2,I3,tc)= -S*u[grid].laplacian()(I1,I2,I3,tc); 
+         //   ug(I1,I2,I3,tc)= -S*op[grid].laplacian(u[grid],I1,I2,I3,tc); 
+         // }
         
           ug(I1,I2,I3,tc)=U2D(vertex(I1,I2,I3,0),vertex(I1,I2,I3,1),vertex(I1,I2,I3,2),t);
           //Add by Kara to establish initial pressure, note that tc = 0

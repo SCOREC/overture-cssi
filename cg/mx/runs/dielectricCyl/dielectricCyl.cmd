@@ -14,6 +14,7 @@
 #  -errorNorm:  set to 1 or 2 to show L1 and L2 norm errors
 #  -diss, -dissc : coefficients of art. dissipation. If dissc>=0 then use this for curvilinear grids. 
 #
+echo to terminal 0
 # Examples: (see Makefile to build grids)
 #  -- NEW 8th order filter: smaller errors and more stable for fewer -interit 
 #   cgmx dielectricCyl -g=innerOutere8.order4 -kx=2 -eps1=.25 -eps2=1. -go=halt -filter=1 -tp=.5 -tf=10 -interit=1
@@ -97,6 +98,8 @@ $dm="none"; @npv=();  $modeGDM=-1;
 $alphaP = (); 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); 
+$dmFile=""; # "SilverJCDispersionFits.txt"; 
+$lengthScale=1.e-7; # length-scale = 100 nm 
 #
 $stageOption ="default";
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
@@ -108,13 +111,14 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
  "interfaceIts=i"=>\$interfaceIterations,"cyl=i"=>\$cyl,"useNewInterface=i"=>\$useNewInterface,"errorNorm=i"=>\$errorNorm,\
  "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2, "cons=i"=>\$cons,\
  "method=s"=>\$method,"dissOrder=i"=>\$dissOrder,"filter=i"=>\$filter,"flushFrequency=i"=>\$flushFrequency,\
- "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega,\
+ "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega,"lengthScale=f"=>\$lengthScale,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"modeGDM=i"=>\$modeGDM,"stageOption=s"=>\$stageOption,\
   "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,\
   "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
-  "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12 );
+  "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
+   "dmFile=s"=>\$dmFile );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -139,10 +143,14 @@ if( $a12[0] eq "" ){ @a12=(0,0,0,0); }
 if( $b02[0] eq "" ){ @b02=(0,0,0,0); }
 if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
 #
+# 
+echo to terminal 1
 #
 $grid
 #
 $method
+# Set length scale (used by dispersion models)
+length scale: $lengthScale
 # dispersion model:
 $dm
 # printf(" dm=$dm\n");
@@ -193,6 +201,11 @@ if( $npv[1] == 2 ){ \
    $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)"; \
       }
 $cmd
+#
+# -- read material parameters from a file 
+if( $dmFile ne "" ) { $cmd="GDM domain name: innerDomain\n number of polarization vectors: $npv[1] \n material file: $dmFile" }else{ $cmd="#"; }
+$cmd 
+# 
 # 
 #* planeWaveInitialCondition
 # ++ zeroInitialCondition

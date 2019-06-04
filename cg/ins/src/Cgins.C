@@ -541,7 +541,11 @@ writeParameterSummary( FILE * file )
     }
     else
     {
+      fPrintF(file,"\n");
       fPrintF(file," Added-mass algorithm is off: useAddedMassAlgorithm=%i.\n",useAddedMassAlgorithm);
+      fPrintF(file," predicted pressure needed=%i, predicted boundary pressure needed=%i\n",
+              (int)parameters.dbase.get<bool>("predictedPressureNeeded"),
+	      (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded"));
     }
     
   }

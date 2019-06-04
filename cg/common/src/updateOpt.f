@@ -309,9 +309,7 @@
         do i2=n2a,n2b
         do i1=n1a,n1b
           if( mask(i1,i2,i3).gt.0 )then
-          u2(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
+          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -326,8 +324,6 @@
         do i1=n1a,n1b
           if( mask(i1,i2,i3).gt.0 )then
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -343,8 +339,6 @@
           if( mask(i1,i2,i3).gt.0 )then
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -360,8 +354,6 @@
           if( mask(i1,i2,i3).gt.0 )then
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -377,8 +369,6 @@
           if( mask(i1,i2,i3).gt.0 )then
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -395,8 +385,6 @@
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+c6*u6(i1,
      & i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -413,8 +401,6 @@
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+c6*u6(i1,
      & i2,i3,i4)+c7*u7(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -431,8 +417,6 @@
           uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+c6*u6(i1,
      & i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -450,8 +434,6 @@
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+c6*u6(i1,
      & i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)+c9*u9(i1,i2,i3,
      & i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do
@@ -469,8 +451,6 @@
      & u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+c6*u6(i1,
      & i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)+c9*u9(i1,i2,i3,
      & i4)+c10*u10(i1,i2,i3,i4)
-          else
-            u2(i1,i2,i3,i4)=u1(i1,i2,i3,i4)
           end if
         end do
         end do

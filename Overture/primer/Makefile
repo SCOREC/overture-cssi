@@ -203,6 +203,13 @@ pppWave: $(pppWave)
 	$(CC) $(CCFLAGS) -o pppWave $(pppWave) \
         $(CLIBS) $(FLIBS) $(GLIBS) 
 
+# Example solving the waveEquation with compatibility conditions (BoundarySolver.h)
+waveCompatibility = waveCompatibility.o getDt.o BoundarySolver.o 
+waveCompatibility: $(waveCompatibility) 
+	$(CC) $(CCFLAGS) -o waveCompatibility $(waveCompatibility) \
+        $(CLIBS) $(FLIBS) $(GLIBS) 
+
+
 # *** Bug when an array dimension gets too big ***
 pTest4 = pTest4.o 
 pTest4: $(pTest4) 

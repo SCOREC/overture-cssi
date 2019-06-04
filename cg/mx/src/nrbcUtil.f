@@ -133,6 +133,12 @@
 
 ! These next formulae must match the one in getInitialConditions.bC
 
+
+!===============================================================================================
+! Macro:
+!   Define a Gaussian pulse incident field    
+!===============================================================================================
+
 ! ===================================================================================
 ! --- Subtract/add the incident wave, before/after applying the non-reflecting BC ---
 ! OP : "+" or "-" 
@@ -210,6 +216,14 @@
       ! parameters for tanh() in smooth transition for IC bounding box:
       real amp, beta, nv(0:2), xv0(0:2)
       integer smoothBoundingBox
+
+      ! There are different possible incident fields
+      integer planeWaveIncidentField, gaussianPlaneWaveIncidentField
+      parameter( planeWaveIncidentField=0, 
+     & gaussianPlaneWaveIncidentField=1 )
+      integer incidentFieldType
+
+      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi
 
       ! boundary conditions parameters
 ! define BC parameters for fortran routines
@@ -292,6 +306,8 @@
       halfWidth            =ipar(31) ! *new* June 20, 2016 *wdh*
       smoothBoundingBox    =ipar(35) ! smooth the IC at the bounding box edge
 
+      incidentFieldType    =ipar(37)  ! defines type of incident field -- plane wave, Gaussian pulse, ...
+
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
       dx(2)                =rpar(2)
@@ -331,6 +347,20 @@
       xv0(2) =rpar(35)
 
 
+      ! Gaussian pulse fix me: 
+      if( incidentFieldType.eq.gaussianPlaneWaveIncidentField )then
+       ! incidentFieldType=1
+        x0GP  =rpar(50)
+        y0GP  =rpar(51)
+        z0GP  =rpar(52)
+        betaGP=rpar(53)
+        if( t.le.2*dt )then
+          write(*,'(" adjustForIncident: 
+     & incidentFieldType=gaussianPlaneWaveIncidentField")')
+          write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,
+     & ") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+        end if
+      end if
 
       if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
         ! sanity check
@@ -460,25 +490,60 @@
                    !   if( x.gt.1.5 .and. y.gt.-.05 .and. y.lt.0.5 )then
                    !     write(*,'(" x,amp=",2e10.2)') x,amp
                    !   end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(5)
-                 un(i1,i2,i3,ex)= un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)= un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,hz)= un(i1,i2,i3,hz) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(5)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - amp*sin(twoPi*(
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   ! --- plane wave incident field ---
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(5)
+                   un(i1,i2,i3,ex)= un(i1,i2,i3,ex) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)= un(i1,i2,i3,ey) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,hz)= un(i1,i2,i3,hz) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(5)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - amp*sin(twoPi*(
+                    um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - amp*sin(twoPi*(
+                    um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(5)
+                   end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- plane wave incident field ---
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                   end if
+                 else
+                   stop 8899
                  end if
                   endif
                end do
@@ -507,25 +572,30 @@
                    else
                      amp=1.
                    end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
-                 un(i1,i2,i3,ex)=un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)=un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,ez)=un(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex)=um(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey)=um(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
+                   un(i1,i2,i3,ex)=un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)=un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,ez)=un(i1,i2,i3,ez) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex)=um(i1,i2,i3,ex) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
+                    um(i1,i2,i3,ey)=um(i1,i2,i3,ey) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
+                    um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                   end if
+                 else
+                   stop 8899
                  end if
                  endif
                end do
@@ -623,25 +693,60 @@
                  !  t0=planeWave2Dhz0(x,y,t-dt)
                  !  write(*,'("nrbc: adjust -: i=",2i3," Hz,true=",2e10.3)') i1,i2,u(i1,i2,i3,hz),t0
                  ! end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(5)
-                 un(i1,i2,i3,ex)= un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)= un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,hz)= un(i1,i2,i3,hz) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(5)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - amp*sin(twoPi*(
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   ! --- plane wave incident field ---
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(5)
+                   un(i1,i2,i3,ex)= un(i1,i2,i3,ex) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)= un(i1,i2,i3,ey) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,hz)= un(i1,i2,i3,hz) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(5)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - amp*sin(twoPi*(
+                    um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - amp*sin(twoPi*(
+                    um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(5)
+                   end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- plane wave incident field ---
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                   end if
+                 else
+                   stop 8899
                  end if
                end do
                end do
@@ -659,25 +764,30 @@
                    y=xy(i1,i2,i3,1)
                    z=xy(i1,i2,i3,2)
                  end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
-                 un(i1,i2,i3,ex)=un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)=un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,ez)=un(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex)=um(i1,i2,i3,ex) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey)=um(i1,i2,i3,ey) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
+                   un(i1,i2,i3,ex)=un(i1,i2,i3,ex) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)=un(i1,i2,i3,ey) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,ez)=un(i1,i2,i3,ez) - amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex)=um(i1,i2,i3,ex) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
+                    um(i1,i2,i3,ey)=um(i1,i2,i3,ey) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
+                    um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                   end if
+                 else
+                   stop 8899
                  end if
                end do
                end do
@@ -790,25 +900,60 @@
                    !   if( x.gt.1.5 .and. y.gt.-.05 .and. y.lt.0.5 )then
                    !     write(*,'(" x,amp=",2e10.2)') x,amp
                    !   end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(5)
-                 un(i1,i2,i3,ex)= un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)= un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,hz)= un(i1,i2,i3,hz) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(5)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + amp*sin(twoPi*(
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   ! --- plane wave incident field ---
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(5)
+                   un(i1,i2,i3,ex)= un(i1,i2,i3,ex) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)= un(i1,i2,i3,ey) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,hz)= un(i1,i2,i3,hz) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(5)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + amp*sin(twoPi*(
+                    um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + amp*sin(twoPi*(
+                    um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(5)
+                   end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- plane wave incident field ---
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                   end if
+                 else
+                   stop 8899
                  end if
                   endif
                end do
@@ -837,25 +982,30 @@
                    else
                      amp=1.
                    end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
-                 un(i1,i2,i3,ex)=un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)=un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,ez)=un(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex)=um(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey)=um(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
+                   un(i1,i2,i3,ex)=un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)=un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,ez)=un(i1,i2,i3,ez) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex)=um(i1,i2,i3,ex) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
+                    um(i1,i2,i3,ey)=um(i1,i2,i3,ey) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
+                    um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                   end if
+                 else
+                   stop 8899
                  end if
                  endif
                end do
@@ -953,25 +1103,60 @@
                  !  t0=planeWave2Dhz0(x,y,t-dt)
                  !  write(*,'("nrbc: adjust +: i=",2i3," Hz,true=",2e10.3)') i1,i2,u(i1,i2,i3,hz),t0
                  ! end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t-dt)))*pwc(5)
-                 un(i1,i2,i3,ex)= un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)= un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,hz)= un(i1,i2,i3,hz) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)-cc*(t)))*pwc(5)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + amp*sin(twoPi*(
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   ! --- plane wave incident field ---
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)-cc*(t-dt)))*pwc(5)
+                   un(i1,i2,i3,ex)= un(i1,i2,i3,ex) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)= un(i1,i2,i3,ey) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,hz)= un(i1,i2,i3,hz) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)-cc*(t)))*pwc(5)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + amp*sin(twoPi*(
+                    um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + amp*sin(twoPi*(
+                    um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)-cc*(t-2.*dt)))*pwc(5)
+                   end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- plane wave incident field ---
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                   end if
+                 else
+                   stop 8899
                  end if
                end do
                end do
@@ -989,25 +1174,30 @@
                    y=xy(i1,i2,i3,1)
                    z=xy(i1,i2,i3,2)
                  end if
-                 u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
-                 u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
-                 u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
-                 un(i1,i2,i3,ex)=un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
-                 un(i1,i2,i3,ey)=un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
-                 un(i1,i2,i3,ez)=un(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
-                 if( adjustThreeLevels.eq.1 )then
-                  um(i1,i2,i3,ex)=um(i1,i2,i3,ex) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
-                  um(i1,i2,i3,ey)=um(i1,i2,i3,ey) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
-                  um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(kx*(
-     & x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                 if( incidentFieldType .eq. planeWaveIncidentField )
+     & then
+                   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(0)
+                   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(1)
+                   u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t-dt)))*pwc(2)
+                   un(i1,i2,i3,ex)=un(i1,i2,i3,ex) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(0)
+                   un(i1,i2,i3,ey)=un(i1,i2,i3,ey) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(1)
+                   un(i1,i2,i3,ez)=un(i1,i2,i3,ez) + amp*sin(twoPi*(kx*
+     & (x)+ky*(y)+kz*(z)-cc*(t)))*pwc(2)
+                   if( adjustThreeLevels.eq.1 )then
+                    um(i1,i2,i3,ex)=um(i1,i2,i3,ex) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(0)
+                    um(i1,i2,i3,ey)=um(i1,i2,i3,ey) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(1)
+                    um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(
+     & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
+                   end if
+                 else
+                   stop 8899
                  end if
                end do
                end do

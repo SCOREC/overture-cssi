@@ -1,4 +1,13 @@
 *****************************************
+********** Feb 18, 2019 
+
+MOVIE: 
+
+cgmx -noplot scattering -g=objectsGride4.order4.hdf  -bg=backGround -rbc=abcPML -boundaryForcing=1 -plotTotalField=0 -kx=2 -tf=10 -tp=.025 -dm=gdm -a0=1. -a1=0. -b0=1 -b1=0  -useSosupDissipation=1 -show=objectsG4m.show -go=go >! objectsG4m.out
+
+
+
+*****************************************
 ********** Sept Oct 26, 2018
 
 REDO: -- longer

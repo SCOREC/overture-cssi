@@ -42,6 +42,9 @@ all: $(BINDIR)cgmx
 
 cgmx: $(BINDIR)cgmx
 
+# Test: read dispersion material file
+trdmf: $(BINDIR)trdmf
+
 usage: 
 	-@echo "usage : "
 	-@echo "        % make " $(COPTS) "<all|cgmx>"
@@ -83,6 +86,14 @@ $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(libCommon)
 	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(CGMX) $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
 
+
+TESTS += $(BINDIR)trdmf
+
+tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o
+	$(CXX) $(CXX_FLAGS) -o $(BINDIR)trdmf $(OBJDIR)trdmf.o $(OBJALL) $(LIBS)
+
+tb: $(OBJDIR)tbm.o $(OBJDIR)DispersiveMaterialParameters.o
+	$(CXX) $(CXX_FLAGS) -o $(BINDIR)tbm $(OBJDIR)tbm.o $(OBJALL) $(LIBS)
 
 # build the library in cg/common
 $(libCommon):; @cd ../common; $(MAKE) lib

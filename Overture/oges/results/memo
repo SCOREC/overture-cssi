@@ -1,6 +1,272 @@
 set tcm3x   = $OVHOME/Overture/op/tests/tcm3
 set tosx   = $OVHOME/Overture/oges/results/tos
 
+
+****************************
+******* May 14, 2019
+
+----------REVISIT BOUNDARY SOLVER -------------------
+
+NO INTERFACE
+tbs -g=square5 -interface=0 -nc=2 -numGhost=2 -side=0
+
+
+
+
+
+****************************
+******* Jan 6, 2019
+
+tbs -g=square5 -interface=1 -nc=2 -numGhost=2 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+tbs -g=square5 -interface=0 -nc=2 -numGhost=2 -side=0
+
+****************************
+******* Jan 5, 2019
+
+*bug fixed* -- row-order versus inverse-row-order
+
+OK: 
+tbs -g=square5 -interface=1 -nc=2 -numGhost=2 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+tbs -g=square5 -interface=1 -nc=3 -numGhost=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+OK: 
+tbs -g=square5 -interface=0 -nc=3 -numGhost=2 -side=0
+tbs -g=square5 -interface=0 -nc=2 -numGhost=2 -side=0
+
+
+****************************
+******* Jan 4, 2019
+
+------------CLEAN UP EXAMPLES:
+
+*** ADD EXTRA COMPONENTS
+
+*trouble*
+tbs -g=square5 -interface=1 -nc=2 -numGhost=2 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+*trouble*
+tbs -g=square5 -interface=1 -nc=3 -numGhost=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+OK
+tbs -g=square5 -interface=1 -nc=2 -numGhost=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+tbs -g=square5 -interface=1 -nc=1 -numGhost=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+OK: 
+tbs -g=square5 -nc=3 -numGhost=2 -problem=1 -side=0
+tbs -g=square5 -nc=2 -numGhost=2 -problem=1 -side=0
+
+OK: 
+tbs -g=square5 -interface=0 -nc=2 -numGhost=1 -axis=0 -side=0
+
+
+--- NEW
+
+Interface: 2 ghost *works*
+tbs -g=square5 -interface=1 -nc=1 -numGhost=2 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+
+Interface: 1 ghost
+tbs -g=square5 -interface=1 -nc=1 -numGhost=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+BC: 2-ghost
+tbs -g=square5 -interface=0 -nc=1 -numGhost=2 -axis=0 -side=0
+
+BC- 1-ghost
+tbs -g=square5 -interface=0 -nc=1 -numGhost=1 -axis=0 -side=0
+
+--- CURRENT:
+
+
+Interface: 1 ghost
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+BC: 2-ghost
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -side=0
+
+BC- 1-ghost
+tbs -g=square5 -nc=1 -numGhost=1 -bcOption=1 -problem=1 -side=0
+
+
+
+****************************
+******* Jan 3, 2019
+
+
+------------ *new way* for interfaces: looks OK 
+2nd-order interface
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+****************************
+******* Jan 1, 2019
+
++++++++++++++++ REVISIT INTERFACE TO BUILDING EQUATIONS ++++++++++++++++++++++++
+
+
+
+
+
+tbs -g=square5 -nc=1 -numGhost=1 -bcOption=1 -problem=1 -side=0
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -side=0
+
+
+
+****************************
+******* Dec 19, 2018
+
+AGAIN: TEST 4th-order interface
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=2 -bcOption=0 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+2nd-order interface
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+****************************
+******* Dec 19, 2018
+
+TEST 4th-order interface
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=2 -bcOption=0 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+****************************
+******* Dec 17-18, 2018
+
+INTERFACE -- TEST MORE GHOST 
+
+
+TEST more complicated interface operators   Delta + .5*D_xy  --> looks OK
+
+
+INTERFACE -- TEST MORE COMPONENTS **WORKS**
+tbs -g=square5 -nc=2 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+INTERFACE -- OK
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+****************************
+******* Dec 16, 2018
+
+
+GENERALIZE INTERFACE so axis and axis 2 can be different
+
+TRY THIS
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=1 -side2=0
+
+WORKS: 
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+****************************
+******* Dec 12, 2018
+
+START ON INTERFACE
+
+tbs -g=square5 -nc=1 -numGhost=1 -problem=2 -bcOption=1 -axis=0 -side=0 -grid2=0 -axis2=0 -side2=1
+
+
+****************************
+******* Dec 11, 2018
+
+tbs -g=box5 -nc=1 -numGhost=2 -problem=1 -bcOption=0 -axis=0 -side=0
+
+
+tbs -g=box3 -nc=1 -numGhost=1 -problem=1 -bcOption=1 -axis=0 -side=0
+
+bvcOption=1 : just Laplacian, 1 ghost 
+tbs -g=square5 -nc=1 -numGhost=1 -problem=1 -bcOption=1 -axis=0 -side=0
+
+****************************
+******* Dec 8, 2018
+
+
+++++ START On 3D 
+
+tbs -g=box5 -nc=1 -numGhost=2 -problem=1 -axis=0 -side=0
+
+
+
++++ problems 1 and 2 seem OK now:
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -axis=0 -side=1
+
+tbs -g=square5 -nc=1 -numGhost=1 -problem=0 -axis=0 -side=1
+
+****************************
+******* Dec 7, 2018
+
+generalize coeff computation in the BoundarySolver
+
+
+** trouble: problem=0 
+tbs -g=square5 -nc=1 -numGhost=1 -problem=0 -axis=0 -side=1
+
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -axis=0 -side=1
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -axis=0 -side=0
+
+
+****************************
+******* Dec 4-5, 2018
+
+-- EVAL COEFF outside of BoundarySolver
+
+tbs -g=square5 -nc=1 -numGhost=2 -problem=1 -side=0
+
+
+
+****************************
+******* Dec 1-2, 2018
+
+tbs -g=square5 -nc=2 -numGhost=1
+
+****************************
+******* Nov 30, 2018
+
+MULTIPLE ghost and multiple components
+
+
+tbs -g=square5.hdf
+
+****************************
+******* Nov 27, 2018
+
+
+*** Continue on Boundary solver
+
+tbs -g=square5.hdf 
+
+
+
+****************************
+******* Nov 24, 2018
+
+
+*** START ON BoundarySolver
+
+tbs -grid=square5.hdf 
+
+
+
+****************************
+******* Nov 14, 2018
+
+---> NEW PETSc verison 3.10.2 
+
+Changes made in /data2/henshw/Overture.s and Overture.sp
+
+RUNS:
+mpirun -np 1 tcm3p square256.order2.hdf -solver=petsc -dirichlet 
+
+
+
 *****************************
 ********** Feb 27, 2018
 

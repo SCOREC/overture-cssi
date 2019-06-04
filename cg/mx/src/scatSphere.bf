@@ -486,7 +486,7 @@ c...............end local variables
       call rjbesl(mka, alpha, nb, jnmka, ncalc)
       call rybesl(mka, alpha, nb, ynmka, ncalc)
 
-      ! convert to spherical bessel:
+      ! convert to spherical bessel:  z_n(rho) = sqrt( pi/( 2*rho) )* Z_{n+1/2}(rho) , Z=J or Y
       factor=sqrt(pi/(2.*ka))
       factorm=sqrt(pi/(2.*mka))
       do n=0,nterm

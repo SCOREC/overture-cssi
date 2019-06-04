@@ -88,7 +88,8 @@ SRC = Oges.C ogesFiles.C OgesParameters.C formMatrix.C generateMatrix.C buildEqu
       toges.C subset.C SparseSolver.C tss.C
 
 
-PETScEquationSolver.C: PETScEquationSolver.bC; bpp PETScEquationSolver.bC
+# PETScEquationSolver.C: PETScEquationSolver.bC; bpp PETScEquationSolver.bC
+PETScSolver.C: PETScSolver.bC; bpp PETScSolver.bC
 
 
 PETScEquationSolver.o: PETScEquationSolver.C
@@ -149,6 +150,19 @@ tcmLeak: $(tcmLeak)
 	$(CC) $(CCFLAGS) -o tcmLeak \
         $(tcmLeak) $(CLIBS) $(PETSC_LIBS) $(FLIBS) $(GLIBS)
 
+
+tbs.C: tbs.bC; bpp -quiet -clean tbs.bC
+BoundarySolver.C: BoundarySolver.bC; bpp -quiet -clean BoundarySolver.bC
+
+cgesl1234.o:
+	gfortran -O  -fPIC  -fdefault-real-8 -fdefault-double-8   -I/home/henshw/Overture.g/include -I.   -DOV_USE_DOUBLE -c cgesl1234.F
+
+# test the BoundarySolver
+tbs = tbs.o BoundarySolver.o cgesl1234.o  $(Oges) 
+tbs = tbs.o BoundarySolver.o  $(Oges) 
+tbs: $(tbs) 
+	$(CC) $(CCFLAGS) -o tbs \
+        $(tbs) $(CLIBS) $(PETSC_LIBS) $(FLIBS) $(GLIBS)	
 
 lins= $(Oges) lins.o 
 lins: $(lins) 

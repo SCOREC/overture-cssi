@@ -11,6 +11,7 @@
 #include "ShowFileReader.h"
 #include "ParallelUtility.h"
 #include "gridFunctionNorms.h"
+#include "ReferenceSolution.h"
 
 #define exmax EXTERN_C_NAME(exmax)
 extern "C"
@@ -469,29 +470,53 @@ getErrors( int current, real t, real dt )
   // solutionNorm=1.;
     
     realCompositeGridFunction *uReference=NULL;
+
     if( compareToReferenceShowFile )
     {
-    // This case is used for comparing absorbing BC's -- we compare the solution to a reference
-    // solution that was computed on a bigger grid
-        if( referenceShowFileReader==NULL )
+    // *** NEW ****
+        if( knownSolutionOption!=noKnownSolution )
         {
-            referenceShowFileReader = new ShowFileReader(nameOfReferenceShowFile);
+            printF("CgmX:ERROR: compareToReferenceShowFile=true but knownSolutionOption has been set -- FIX ME\n");
+            OV_ABORT("error");
         }
-          	    
-        CompositeGrid cgRef;
-        realCompositeGridFunction uRef;
-          	    
-        int solutionNumber = 1 + int( t/tPlot + .5); // fix this ******************************
-        printF(" **** compareToReferenceShowFile: t=%f solutionNumber=%i\n",t,solutionNumber);
         
-        referenceShowFileReader->getASolution(solutionNumber,cgRef,uRef);        // read in a grid and solution
+        
+        if( !dbase.has_key("referenceSolution")  )
+        {
+            ReferenceSolution *& referenceSolution = dbase.put<ReferenceSolution*>("referenceSolution");
+            referenceSolution = new ReferenceSolution();
+            referenceSolution->setShowFileName( nameOfReferenceShowFile );
+        }
+        ReferenceSolution & referenceSolution = *dbase.get<ReferenceSolution*>("referenceSolution");
+        uReference = & (referenceSolution.getSolution( t,cg,C ) );
 
-    // This solution uReference will live on the smaller domain 
-        Range all;
-        uReference = new realCompositeGridFunction(cg,all,all,all,C);
-        cg.update(MappedGrid::THEmask );
-        cgRef.update(MappedGrid::THEmask );
-        interpolateAllPoints( uRef,*uReference );  // interpolate uReference from uRef
+        if( false )
+        {
+      // ** OLD ****
+
+      // This case is used for comparing absorbing BC's -- we compare the solution to a reference
+      // solution that was computed on a bigger grid
+            if( referenceShowFileReader==NULL )
+            {
+                referenceShowFileReader = new ShowFileReader(nameOfReferenceShowFile);
+            }
+          	    
+            CompositeGrid cgRef;
+            realCompositeGridFunction uRef;
+          	    
+            int solutionNumber = 1 + int( t/tPlot + .5); // fix this ******************************
+            printF(" **** compareToReferenceShowFile: t=%f solutionNumber=%i\n",t,solutionNumber);
+        
+            referenceShowFileReader->getASolution(solutionNumber,cgRef,uRef);        // read in a grid and solution
+
+      // This solution uReference will live on the smaller domain 
+            Range all;
+            uReference = new realCompositeGridFunction(cg,all,all,all,C);
+            cg.update(MappedGrid::THEmask );
+            cgRef.update(MappedGrid::THEmask );
+            interpolateAllPoints( uRef,*uReference );  // interpolate uReference from uRef
+        }
+        
     }
 
     maximumError=0.;  // max error over all grids
@@ -1133,6 +1158,8 @@ getErrors( int current, real t, real dt )
         errh = 0.;
         erre = 0.;
     // if( initialConditionOption==planeWaveInitialCondition )
+    // printF("getErrors: grid=%i knownSolution=%i\n",grid,(int)knownSolutionOption);
+        
         if( knownSolutionOption==planeWaveKnownSolution )
         {
       // ********** Plane wave **********
@@ -2284,19 +2311,15 @@ getErrors( int current, real t, real dt )
         {
       //kkc XXX not implemented for dsi schemes
 
-            assert( uReference!=NULL );
-          	    
-            realMappedGridFunction & ur = (*uReference)[grid];
-          	    
-#ifdef USE_PPP
-            realSerialArray urLocal;  getLocalArrayWithGhostBoundaries(ur,urLocal);
-#else
-            const realSerialArray & urLocal  =  ur;
-#endif
+      // printF("XXXX getError : compare to reference: grid=%i, t=%9.3e\n",t);
+            
 
+            assert( uReference!=NULL );
+            OV_GET_SERIAL_ARRAY(real,(*uReference)[grid],urLocal);
+          	    
       //            err(I1,I2,I3,C)=fabs(u(I1,I2,I3,C)-ur(I1,I2,I3,C));
             Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
-            errh(Ih1,Ih2,Ih3,Ch)=uh(I1,I2,I3,Ch)-urLocal(I1,I2,I3,Ch);
+            errh(Ih1,Ih2,Ih3,Ch)=uh(Ih1,Ih2,Ih3,Ch)-urLocal(Ih1,Ih2,Ih3,Ch);
             Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
             erre(Ie1,Ie2,Ie3,Ce)=ue(Ie1,Ie2,Ie3,Ce) - urLocal(Ie1,Ie2,Ie3,Ce);
         }
@@ -2347,7 +2370,7 @@ getErrors( int current, real t, real dt )
                         real cEr, cEi, cHr, cHi;  // coefficients for time t
                         real cErm, cEim, cHrm, cHim;  // coefficients for time t-dt
             // coefficients of Polarization vector
-                        real cPr,cPi, cPrm, cPim;
+                        real cPr[10],cPi[10], cPrm[10], cPim[10];
                         if( localDispersionModel==noDispersion )
                         {
               //     --- NON-DISPERSIVE ---
@@ -2421,25 +2444,43 @@ getErrors( int current, real t, real dt )
               // *new* 
                             cEr = st;  cErm = stm;
                             cEi = ct;  cEim = ctm;
-                            if( true )
+              // *wdh* May 26, 2019  -- do not do this for dieletric disk/sphere solutions 
+                            if( !(knownSolutionOption==scatteringFromADielectricDiskKnownSolution ||
+                                        knownSolutionOption==scatteringFromADielectricSphereKnownSolution ) ) 
                             {
+                // -- This computes the coefficient of H given E from
+                //        H = Hat*e^{s t}
+                //        Ehat = eta(s)/(s*mu0) * curl( Hhat)
+                // 
+                //     --> assumes E amplitude of incident wave is =1 I think
+                // 
+                // ----- Compute the coefficients of H for the scattering of a GDM wave from a cylinder ----
+                // Coefficients generated by cg/mx/codes/gdm.maple
                                 real coeffH=1./kk;  // is this right? -- probably should be +/- (eps*cc*kk)
-          // Coefficients generated by cg/mx/codes/gdm.maple
-                    real chirSum=chir[0], chiiSum=chii[0];
-                    cHr=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ct+st*(si*chirSum+sr*chiiSum))*alphaP-1.*ct*sr+si*st);
-                    cHi=-coeffH*(((si*chirSum+sr*chiiSum)*ct+chirSum*sr*st-1.*si*st*chiiSum)*alphaP+ct*si+sr*st);
-                    cHrm=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ctm+stm*(si*chirSum+sr*chiiSum))*alphaP-1.*ctm*sr+si*stm);
-                    cHim=-coeffH*(((si*chirSum+sr*chiiSum)*ctm+chirSum*sr*stm-1.*si*stm*chiiSum)*alphaP+ctm*si+sr*stm);
+                // Coefficients generated by cg/mx/codes/gdm.maple
+                // real chirSum=chir[0], chiiSum=chii[0];
+                                real chirSum=chiSumr, chiiSum=chiSumi;  // *wdh* May 7, 2019
+                                cHr=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ct+st*(si*chirSum+sr*chiiSum))*alphaP-1.*ct*sr+si*st);
+                                cHi=-coeffH*(((si*chirSum+sr*chiiSum)*ct+chirSum*sr*st-1.*si*st*chiiSum)*alphaP+ct*si+sr*st);
+                                cHrm=-coeffH*(((-1.*chirSum*sr+si*chiiSum)*ctm+stm*(si*chirSum+sr*chiiSum))*alphaP-1.*ctm*sr+si*stm);
+                                cHim=-coeffH*(((si*chirSum+sr*chiiSum)*ctm+chirSum*sr*stm-1.*si*stm*chiiSum)*alphaP+ctm*si+sr*stm);
                             }
                             else
                             {
                                 cHr = st;  cHrm = stm;
                                 cHi = ct;  cHim = ctm;
                             }
-                            cPr = eps*( chir[0]*sint+chii[0]*cost);  // Coeff of Er for P 
-                            cPi = eps*( chir[0]*cost-chii[0]*sint);  // coeff of Eifor P 
-                            cPrm = eps*(chir[0]*sintm+chii[0]*costm);  // Coeff of Er(t-dt)
-                            cPim = eps*(chir[0]*costm-chii[0]*sintm);  // coeff of Ei(t-dt)
+                            if( numberOfPolarizationVectors>10 )
+                            {
+                                OV_ABORT("ERROR: FIX ME numberOfPolarizationVectors>10");
+                            }
+                            for( int jv=0; jv<numberOfPolarizationVectors; jv++ )
+                            {
+                                cPr[jv] = eps*( chir[jv]*sint+chii[jv]*cost);  // Coeff of Er for P 
+                                cPi[jv] = eps*( chir[jv]*cost-chii[jv]*sint);  // coeff of Eifor P 
+                                cPrm[jv] = eps*(chir[jv]*sintm+chii[jv]*costm);  // Coeff of Er(t-dt)
+                                cPim[jv] = eps*(chir[jv]*costm-chii[jv]*sintm);  // coeff of Ei(t-dt)
+                            }
                         }
           // adjust array dimensions for local arrays
                     Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -2463,18 +2504,14 @@ getErrors( int current, real t, real dt )
             // -- dispersion model components --
                         if( localDispersionModel!=noDispersion )
                         {
-                            if( numberOfPolarizationVectors>1 )
-                            {
-                                OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
-                            }
                             FOR_3D(i1,i2,i3,J1,J2,J3)
                             {
                                 for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                                 {
                                     const int pc= iv*numberOfDimensions;
                   // *fix* me for numberOfPolarizationVectors>1 
-                                    errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - (UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi);
-                                    errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - (UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi);
+                                    errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - (UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv]);
+                                    errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - (UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv]);
                                 }
                             }
                         }
@@ -2514,9 +2551,9 @@ getErrors( int current, real t, real dt )
                                 {
                                     const int pc= iv*numberOfDimensions;
                   // *fix* me for numberOfPolarizationVectors>1 
-                                    errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - (UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi);
-                                    errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - (UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi);
-                                    errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - (UG(i1,i2,i3,ez)*cPr + UG(i1,i2,i3,ez+3)*cPi);
+                                    errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - (UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv]);
+                                    errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - (UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv]);
+                                    errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - (UG(i1,i2,i3,ez)*cPr[iv] + UG(i1,i2,i3,ez+3)*cPi[iv]);
                                 }
                 // errLocal(i1,i2,i3,pxc) = uLocal(i1,i2,i3,pxc) - (UG(i1,i2,i3,ex)*phiPs + UG(i1,i2,i3,ex+3)*phiPc);
                 // errLocal(i1,i2,i3,pyc) = uLocal(i1,i2,i3,pyc) - (UG(i1,i2,i3,ey)*phiPs + UG(i1,i2,i3,ey+3)*phiPc);
@@ -2908,6 +2945,7 @@ getErrors( int current, real t, real dt )
     }
 
   // -------- PRINT ERRORS IN POLARIZATION VECTORS FOR DISPERSIVE MODELS --------
+    
     if( dispersionModel != noDispersion )
     {
         for( int domain=0; domain<cg.numberOfDomains(); domain++ )
@@ -3030,6 +3068,8 @@ getErrors( int current, real t, real dt )
         } // end for norm 
     }
     
+  // delete uReference;
+
     timing(timeForGetError)+=getCPU()-time0;
 }
 

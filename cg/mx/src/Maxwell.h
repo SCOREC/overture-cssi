@@ -363,6 +363,11 @@ class Maxwell
 
   int setDispersionParameters( const aString & domainName, real alphaP );
 
+  int setDispersionParameters( const aString & domainName, int modeGDM );
+
+  int setDispersionParameters( const aString & domainName, const aString & materialFile,
+		    	       int numberOfPolarizationVectors, int modeGDM );
+
   int setupGrids();
 
   int setupGridFunctions();
@@ -400,6 +405,9 @@ class Maxwell
 protected:
 
   int buildDispersionParametersDialog(DialogData & dialog );
+  int buildDissipationParametersDialog(DialogData & dialog );
+  int buildInterfaceOptionsDialog(DialogData & dialog );
+
   int buildForcingOptionsDialog(DialogData & dialog );
   int buildInitialConditionsOptionsDialog(DialogData & dialog );
   int buildInputOutputOptionsDialog(DialogData & dialog );

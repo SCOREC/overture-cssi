@@ -98,9 +98,10 @@ $model="ins"; $dtMax=.1; $move=0; $kp=1.;
 $tz="trig";
 $bcn="#"; $bc1="#"; $bc2="#"; $bc3="#"; $bc4="#"; $bc5="#"; $bc6="#"; 
 $en="max"; $ngStart=1; $ng=4; $tf=.5;  $tp=.1; $degreeX=2; $degreeT=2; $fx=1.; $order=2; $nd=2; $cfl=.9; 
-$numberOfParallelGhost=2; $amr=0; $nu=.05; $debug=0; $insDebug=3; $aftol=1.e-10; $axialAxis=2; 
-$cdv=1.; $solver="yale";  $rtol=1.e-4; $atol=1.e-6; $psolver="yale"; $rtolp=1.e-10; $atolp=1.e-10; 
-$useNewImp=0; $iv="viscous"; $nis=4; $cfls=1.; 
+$numberOfParallelGhost=2; $amr=0; $nu=.05; $debug=0; $insDebug=1; $aftol=1.e-10; $axialAxis=2; 
+$cdv=1.; $solver="yale";  $rtol=1.e-4; $atol=1.e-6; $psolver="yale"; $rtolp=1.e-10; $atolp=1.e-10;
+$useNewImp=0; $iv="viscous"; $nis=4; $cfls=1.; $pGrad=0.; $pInflow=1.; $amp1=0.; $nFreq1=3; $orderInTime=-1; $length=2.; $rInner=.5; $omegaInner=0.; $omegaOuter=1.; $gridToMove="";
+$omega=0.; $amp2=0.; $nFreq2=1;  # for pipe flow, angular component
 $bodyDensity=1.; $dropName="innerDisk";
 $CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
 $cginsCmd = "$CGBUILDPREFIX/ins/bin/cgins";  # command for cgins 
@@ -121,17 +122,20 @@ GetOptions( "option=s"=>\$option,"model=s"=>\$model,"cg=s"=>\$cg,"en=s"=>\$en,"m
             "rtol=f"=>\$rtol,"atol=f"=>\$atol,"rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,"dtMax=f"=>\$dtMax,\
             "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
             "cginsCmd=s"=>\$cginsCmd,"numberOfParallelGhost=i"=>\$numberOfParallelGhost,"ngStart=i"=>\$ngStart,\
-            "aftol=f"=>\$aftol,"move=s"=>\$move,"saveVectorErrors=i"=>\$saveVectorErrors,\
+            "aftol=f"=>\$aftol,"move=s"=>\$move,"saveVectorErrors=i"=>\$saveVectorErrors,"length=f"=>\$length,\
             "axialAxis=i"=>\$axialAxis,"kp=f"=>\$kp,"rhoBeam=f"=>\$rhoBeam,"E=f"=>\$E,"tension=f"=>\$tension,\
-            "Kt=f"=>\$Kt,"cmdFile=s"=>\$cmdFile,"nis=i"=>\$nis,"bodyDensity=f"=>\$bodyDensity,\
-            "addedDampingCoeff=f"=>\$addedDampingCoeff,"dropName=s"=>\$dropName );
+            "Kt=f"=>\$Kt,"cmdFile=s"=>\$cmdFile,"nis=i"=>\$nis,"bodyDensity=f"=>\$bodyDensity,"orderInTime=i"=>\$orderInTime,\
+            "addedDampingCoeff=f"=>\$addedDampingCoeff,"dropName=s"=>\$dropName,"pGrad=f"=>\$pGrad,"pInflow=f"=>\$pInflow,\
+            "amp1=f"=>\$amp1,"nFreq1=f"=>\$nFreq1,"rInner=f"=>\$rInner,\
+            "omega=f"=>\$omega,"amp2=f"=>\$amp2,"nFreq2r=f"=>\$nFreq2,\
+            "omegaInner=f"=>\$omegaInner,"omegaOuter=f"=>\$omegaOuter,"gridToMove=s"=>\$gridToMove );
 #
 printf("option=[$option]\n");
 # 
 # Name of the check file created by cgins:
 $check="ins.check";
 #
-if( $cg eq "cylinder" || $cg eq "cylinderp"  || $cg eq "pipe" || $cg eq "boxp" ){ $nd=3; } # 3D 
+if( $cg eq "cylinder" || $cg eq "cylinderp"  || $cg =~ "pipe" || $cg eq "pipep" || $cg eq "shortPipep" || $cg eq "boxp" ){ $nd=3; } # 3D 
 #
 if( $option eq "beamPiston" ){ \
   $cmdFile = "../runs/flexibleChannel/flexiblePartition.cmd";\
@@ -163,7 +167,7 @@ if( $option eq "rotatingDisk" ){ \
   $rigidBodyCheckFile = "rigidDisk.check";\
   $extraName = "Bd$bodyDensity"; $extraName =~ s/\./p/g; \
   $solver="best"; $rtol=1.e-9; $atol=1.e-15; $psolver="best"; $rtolp=1.e-9; $atolp=1.e-15; \
-  $extraOptions ="-density=$bodyDensity -nu=$nu -ts=im  -dropName=$dropName -radius=1. -gravity=0. -amp=.1 -bodyForce=none -option=rotatingDisk -project=0 -numberOfCorrections=2 -addedDampingProjectVelocity=1 -omega=.2 -addedMass=1 -addedDamping=1 -addedDampingCoeff=$addedDampingCoeff -scaleAddedDampingWithDt=1 -useProvidedAcceleration=1 -useTP=0 -debug=3 -ad2=0";\
+  $extraOptions ="-density=$bodyDensity -nu=$nu -ts=im  -dropName=$dropName -radius=1. -gravity=0. -amp=.1 -bodyForce=none -option=rotatingDisk -project=0 -numberOfCorrections=2 -addedDampingProjectVelocity=1 -omega=.2 -addedMass=1 -addedDamping=1 -addedDampingCoeff=$addedDampingCoeff -scaleAddedDampingWithDt=1 -useProvidedAcceleration=1 -useTP=0 -debug=1 -ad2=0";\
  }
 # translating rigid body disk in a disk -- note solution is very small
 if( $option eq "translatingDisk" ){ \
@@ -171,13 +175,20 @@ if( $option eq "translatingDisk" ){ \
   $rigidBodyCheckFile = "rigidDisk.check";\
   $extraName = "Bd$bodyDensity"; $extraName =~ s/\./p/g; \
   $solver="best"; $rtol=1.e-9; $atol=1.e-15; $psolver="best"; $rtolp=1.e-9; $atolp=1.e-15; \
-  $extraOptions ="-density=$bodyDensity -nu=$nu -ts=im  -radius=1. -gravity=0. -amp=1.e-7 -bodyForce=none -option=translatingDisk -project=0 -numberOfCorrections=2 -addedDampingProjectVelocity=1 -omega=.2 -addedMass=1 -addedDamping=1 -addedDampingCoeff=$addedDampingCoeff -scaleAddedDampingWithDt=1 -useProvidedAcceleration=1 -useTP=0 -debug=3 -ad2=0";\
+  $extraOptions ="-density=$bodyDensity -nu=$nu -ts=im  -radius=1. -gravity=0. -amp=1.e-7 -bodyForce=none -option=translatingDisk -project=0 -numberOfCorrections=2 -addedDampingProjectVelocity=1 -omega=.2 -addedMass=1 -addedDamping=1 -addedDampingCoeff=$addedDampingCoeff -scaleAddedDampingWithDt=1 -useProvidedAcceleration=1 -useTP=0 -debug=1 -ad2=0";\
  }
 #
+if( $option eq "pipe" || $option eq "rotating" ){ \
+  $extraOptions ="-pGrad=$pGrad -pInflow=$pInflow -amp1=$amp1 -nFreq1=$nFreq1 -orderInTime=$orderInTime -length=$length -rInner=$rInner -omega=$omega -omegaInner=$omegaInner -omegaOuter=$omegaOuter -amp2=$amp2 -nFreq2=$nFreq2 -gridToMove=$gridToMove"; \
+  if( $amp1 ne 0 ){ $extraName .= ".timeEig"; } \
+}
+if( $option eq "tg" ){ $extraOptions ="-orderInTime=$orderInTime"; }
 printf("exact.conv: cmdFile=[$cmdFile]\n");
 printf("exact.conv: rigidBodyCheckFile=[$rigidBodyCheckFile]\n");
 #
-$caseName="exact.$option$extraName.$ts.$cg.$model.order$order"; 
+if( $orderInTime eq "4" ){ $tsOrder="4"; }else{ $tsOrder=2; }
+$caseName="exact.$option$extraName.$ts.$cg.$model.order$tsOrder$order"; 
+if( $move ne 0 ){ $caseName .= ".$move"; }
 if( $saveVectorErrors eq 1 ){ $caseName.= ".vector"; }
 if( $axialAxis ne 2 ){ $caseName.= ".axial$axialAxis"; }
 $name="$caseName"; 
@@ -242,7 +253,8 @@ $grid1="sq10p";  $gName1 = "square10p.order$order";\
 $grid2="sq20p";  $gName2 = "square20p.order$order";\
 $grid3="sq40p";  $gName3 = "square40p.order$order";\
 $grid4="sq80p";  $gName4 = "square80p.order$order";\
-$grid5="sq160p"; $gName5 = "square160p.order$order";}
+$grid5="sq160p"; $gName5 = "square160p.order$order";\
+$grid6="sq320p"; $gName6 = "square320p.order$order";}
 #
 if( $cg eq "square" ){\
 $grid1="sq20";  $gName1 = "square20.order$order";\
@@ -261,13 +273,15 @@ if( $cg eq "annulus" ){\
 $grid1="annulus2";  $gName1 = "annulus2.order$order";\
 $grid2="annulus4";  $gName2 = "annulus4.order$order";\
 $grid3="annulus8";  $gName3 = "annulus8.order$order";\
-$grid4="annulus16"; $gName4 = "annulus16.order$order";}
+$grid4="annulus16"; $gName4 = "annulus16.order$order";\
+$grid5="annulus32"; $gName5 = "annulus32.order$order";}
 #
 if( $cg eq "splitAnnulus" ){\
 $grid1="splitAnnulus2";  $gName1 = "splitAnnulusGride2.order$order";\
 $grid2="splitAnnulus4";  $gName2 = "splitAnnulusGride4.order$order";\
 $grid3="splitAnnulus8";  $gName3 = "splitAnnulusGride8.order$order";\
-$grid4="splitAnnulus16"; $gName4 = "splitAnnulusGride16.order$order";}
+$grid4="splitAnnulus16"; $gName4 = "splitAnnulusGride16.order$order";\
+$grid5="splitAnnulus32"; $gName5 = "splitAnnulusGride32.order$order";}
 # -- TIME CONVERGENCE --
 if( $cg eq "annulus4" ){\
 $grid1="annulus4"; $gName1 = "annulus4.order$order -dtMax=4.e-2";\
@@ -309,16 +323,40 @@ $grid3="cylinder4"; $gName3 = "cylinder4.order$order" ."p";\
 $grid4="cylinder8"; $gName4 = "cylinder8.order$order" ."p";}
 #
 if( $cg eq "channel" ){\
-$grid1="channel1"; $gName1 = "channel1.order$order";\
-$grid2="channel2"; $gName2 = "channel2.order$order";\
-$grid3="channel4"; $gName3 = "channel4.order$order";\
-$grid4="channel8"; $gName4 = "channel8.order$order";}
+$grid1="channel1";  $gName1 = "channel1.order$order";\
+$grid2="channel2";  $gName2 = "channel2.order$order";\
+$grid3="channel4";  $gName3 = "channel4.order$order";\
+$grid4="channel8";  $gName4 = "channel8.order$order";\
+$grid5="channel16"; $gName5 = "channel8.order$order";}
+#
+# -- periodic channel
+if( $cg eq "channelGridp" ){\
+$grid1="channelGridp1";  $gName1 = "channelGridp1.order$order";\
+$grid2="channelGridp2";  $gName2 = "channelGridp2.order$order";\
+$grid3="channelGridp4";  $gName3 = "channelGridp4.order$order";\
+$grid4="channelGridp8";  $gName4 = "channelGridp8.order$order";\
+$grid5="channelGridp16"; $gName5 = "channelGridp16.order$order";}
 #
 if( $cg eq "pipe" ){\
 $grid1="pipe2";  $gName1 = "pipeFixede2.order$order";\
 $grid2="pipe4";  $gName2 = "pipeFixede4.order$order";\
 $grid3="pipe8";  $gName3 = "pipeFixede8.order$order";\
 $grid4="pipe16"; $gName4 = "pipeFixede16.order$order";}
+#
+# -- periodic pipe --
+if( $cg eq "pipep" ){\
+$grid1="pipep2";  $gName1 = "pipepFixede2.order$order";\
+$grid2="pipep4";  $gName2 = "pipepFixede4.order$order";\
+$grid3="pipep8";  $gName3 = "pipepFixede8.order$order";\
+$grid4="pipep16"; $gName4 = "pipepFixede16.order$order";}
+#
+# -- short periodic pipe --
+if( $cg eq "shortPipep" ){\
+$grid1="shortPipep1";  $gName1 = "shortPipepFixede1.order$order";\
+$grid2="shortPipep2";  $gName2 = "shortPipepFixede2.order$order";\
+$grid3="shortPipep4";  $gName3 = "shortPipepFixede4.order$order";\
+$grid4="shortPipep8";  $gName4 = "shortPipepFixede8.order$order";\
+$grid5="shortPipep16"; $gName5 = "shortPipepFixede16.order$order";}
 #
 # -- grid for FSI problem - beam between two fluid domains: 
 if( $cg eq "flexiblePartition" ){\
@@ -369,13 +407,27 @@ $grid3="annulusGrid4"; $dtm=$dtMax/4.; $gName3 = "annulusGrid4.order$order -dtMa
 $grid4="annulusGrid8"; $dtm=$dtMax/8.; $gName4 = "annulusGrid8.order$order -dtMax=$dtm";\
 $grid5="annulusGrid16"; $dtm=$dtMax/16.; $gName5 = "annulusGrid16.order$order -dtMax=$dtm";}
 #
+if( $cg eq "sic" ){\
+$grid1="sic2";  $gName1 = "sice2.order$order";\
+$grid2="sic4";  $gName2 = "sice4.order$order";\
+$grid3="sic8";  $gName3 = "sice8.order$order";\
+$grid4="sic16"; $gName4 = "sice16.order$order";}
+#
+# -- for iterative solvers  we scale the tolerances for finer grids
+$special[1]="-tolFactor=1."; 
+$special[2]="-tolFactor=1e-2"; 
+$special[3]="-tolFactor=1e-4"; 
+$special[4]="-tolFactor=1e-6"; 
+$special[5]="-tolFactor=1e-8"; 
+$special[6]="-tolFactor=1e-10"; 
 # 
-if( $ngStart eq "1" ){ $grid=$grid1; $res=1; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem1 -g=$gName1"; }
-$grid=$grid2; $res=2; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem2 -g=$gName2";
-if( $ng > 2 ){ $grid=$grid3; $res=4; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem3 -g=$gName3";}
-if( $ng > 3 ){ $grid=$grid4; $res=8; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem4 -g=$gName4";}
-if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem5 -g=$gName5";}
-if( $ng > 5 ){ $grid=$grid6; $res=32; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile $options -numElem=$numElem6 -g=$gName6";}
+if( $ngStart eq "1" ){ \
+               $grid=$grid1; $res=1;  $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem1 -g=$gName1 $special[1] $options"; }
+               $grid=$grid2; $res=2;  $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem2 -g=$gName2 $special[2] $options";
+if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem3 -g=$gName3 $special[3] $options";}
+if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem4 -g=$gName4 $special[4] $options";}
+if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem5 -g=$gName5 $special[5] $options";}
+if( $ng > 5 ){ $grid=$grid6; $res=32; $cmd="$cginsCmd -noplot $cmdDir/$cmdFile -numElem=$numElem6 -g=$gName6 $special[6] $options";}
 $closeFile="true";
 # -------------------------------------------------------------------------------
 exit

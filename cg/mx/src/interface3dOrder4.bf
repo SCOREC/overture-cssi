@@ -1373,6 +1373,9 @@ end if
 !     **OLD VERSION THAT EXTRAPOLATES SECOND GHOST LINE ****
 ! --------------------------------------------------------------------------
 #beginMacro assignInterfaceGhost3dOrder4Old()
+  err=0.
+  err2=0.
+  count=0
   beginLoopsMask3d()
 
     ! here is the normal (assumed to be the same on both sides)
@@ -1649,23 +1652,59 @@ end if
     ! write(debugFile,'(" --> 3d:order2-c:        q=",6f8.3)') q(0),q(1),q(2),q(3),q(4),q(5)
 
     ! fill in the answer:
-    u1(i1-is1,i2-is2,i3-is3,ex)      =f(0)
-    u1(i1-is1,i2-is2,i3-is3,ey)      =f(1)
-    u1(i1-is1,i2-is2,i3-is3,ez)      =f(2)
-    u1(i1-2*is1,i2-2*is2,i3-2*is3,ex)=f(3)
-    u1(i1-2*is1,i2-2*is2,i3-2*is3,ey)=f(4)
-    u1(i1-2*is1,i2-2*is2,i3-2*is3,ez)=f(5)
+    ! fill in the answer:
+    if( useJacobiUpdate.eq.0 )then
+      u1(i1-is1,i2-is2,i3-is3,ex)      =f(0 )*omega+(1.-omega)*q(0)
+      u1(i1-is1,i2-is2,i3-is3,ey)      =f(1 )*omega+(1.-omega)*q(1)
+      u1(i1-is1,i2-is2,i3-is3,ez)      =f(2 )*omega+(1.-omega)*q(2)
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ex)=f(3 )*omega+(1.-omega)*q(3)
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ey)=f(4 )*omega+(1.-omega)*q(4)
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ez)=f(5 )*omega+(1.-omega)*q(5)
+  
+      u2(j1-js1,j2-js2,j3-js3,ex)      =f(6 )*omega+(1.-omega)*q(6)
+      u2(j1-js1,j2-js2,j3-js3,ey)      =f(7 )*omega+(1.-omega)*q(7)
+      u2(j1-js1,j2-js2,j3-js3,ez)      =f(8 )*omega+(1.-omega)*q(8)
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ex)=f(9 )*omega+(1.-omega)*q(9)
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ey)=f(10)*omega+(1.-omega)*q(10)
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ez)=f(11)*omega+(1.-omega)*q(11)
+    else
+      ! Jacobi-update -- save results in the work space
 
-    u2(j1-js1,j2-js2,j3-js3,ex)      =f(6)
-    u2(j1-js1,j2-js2,j3-js3,ey)      =f(7)
-    u2(j1-js1,j2-js2,j3-js3,ez)      =f(8)
-    u2(j1-2*js1,j2-2*js2,j3-2*js3,ex)=f(9)
-    u2(j1-2*js1,j2-2*js2,j3-2*js3,ey)=f(10)
-    u2(j1-2*js1,j2-2*js2,j3-2*js3,ez)=f(11)
+      wk1(i1-is1,i2-is2,i3-is3,ex)      =f(0 )*omega+(1.-omega)*q(0)
+      wk1(i1-is1,i2-is2,i3-is3,ey)      =f(1 )*omega+(1.-omega)*q(1)
+      wk1(i1-is1,i2-is2,i3-is3,ez)      =f(2 )*omega+(1.-omega)*q(2)
+      wk1(i1-2*is1,i2-2*is2,i3-2*is3,ex)=f(3 )*omega+(1.-omega)*q(3)
+      wk1(i1-2*is1,i2-2*is2,i3-2*is3,ey)=f(4 )*omega+(1.-omega)*q(4)
+      wk1(i1-2*is1,i2-2*is2,i3-2*is3,ez)=f(5 )*omega+(1.-omega)*q(5)
+  
+      wk2(j1-js1,j2-js2,j3-js3,ex)      =f(6 )*omega+(1.-omega)*q(6)
+      wk2(j1-js1,j2-js2,j3-js3,ey)      =f(7 )*omega+(1.-omega)*q(7)
+      wk2(j1-js1,j2-js2,j3-js3,ez)      =f(8 )*omega+(1.-omega)*q(8)
+      wk2(j1-2*js1,j2-2*js2,j3-2*js3,ex)=f(9 )*omega+(1.-omega)*q(9)
+      wk2(j1-2*js1,j2-2*js2,j3-2*js3,ey)=f(10)*omega+(1.-omega)*q(10)
+      wk2(j1-2*js1,j2-2*js2,j3-2*js3,ez)=f(11)*omega+(1.-omega)*q(11)
+
+    end if
+    ! old : Nov 13, 2018
+    ! u1(i1-is1,i2-is2,i3-is3,ex)      =f(0)
+    ! u1(i1-is1,i2-is2,i3-is3,ey)      =f(1)
+    ! u1(i1-is1,i2-is2,i3-is3,ez)      =f(2)
+    ! u1(i1-2*is1,i2-2*is2,i3-2*is3,ex)=f(3)
+    ! u1(i1-2*is1,i2-2*is2,i3-2*is3,ey)=f(4)
+    ! u1(i1-2*is1,i2-2*is2,i3-2*is3,ez)=f(5)
+
+    ! u2(j1-js1,j2-js2,j3-js3,ex)      =f(6)
+    ! u2(j1-js1,j2-js2,j3-js3,ey)      =f(7)
+    ! u2(j1-js1,j2-js2,j3-js3,ez)      =f(8)
+    ! u2(j1-2*js1,j2-2*js2,j3-2*js3,ex)=f(9)
+    ! u2(j1-2*js1,j2-2*js2,j3-2*js3,ey)=f(10)
+    ! u2(j1-2*js1,j2-2*js2,j3-2*js3,ez)=f(11)
 
      ! compute the maximum change in the solution for this iteration
     do n=0,11
       err=max(err,abs(q(n)-f(n)))
+      err2 = err2 + (q(n)-f(n))**2
+      count = count + 1
     end do
 
     if( debug.gt.3 )then ! re-evaluate
@@ -1676,6 +1715,27 @@ end if
     end if
 
   endLoopsMask3d()
+  err2 = sqrt( err2/count )
+
+  if( useJacobiUpdate.ne.0 )then
+   ! Jacobi update -- copy work-space to solution arrays
+    beginLoopsMask3d()
+      u1(i1-is1,i2-is2,i3-is3,ex)      = wk1(i1-is1,i2-is2,i3-is3,ex)      
+      u1(i1-is1,i2-is2,i3-is3,ey)      = wk1(i1-is1,i2-is2,i3-is3,ey)      
+      u1(i1-is1,i2-is2,i3-is3,ez)      = wk1(i1-is1,i2-is2,i3-is3,ez)      
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ex)= wk1(i1-2*is1,i2-2*is2,i3-2*is3,ex)
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ey)= wk1(i1-2*is1,i2-2*is2,i3-2*is3,ey)
+      u1(i1-2*is1,i2-2*is2,i3-2*is3,ez)= wk1(i1-2*is1,i2-2*is2,i3-2*is3,ez)
+                                                                           
+      u2(j1-js1,j2-js2,j3-js3,ex)      = wk2(j1-js1,j2-js2,j3-js3,ex)      
+      u2(j1-js1,j2-js2,j3-js3,ey)      = wk2(j1-js1,j2-js2,j3-js3,ey)      
+      u2(j1-js1,j2-js2,j3-js3,ez)      = wk2(j1-js1,j2-js2,j3-js3,ez)      
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ex)= wk2(j1-2*js1,j2-2*js2,j3-2*js3,ex)
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ey)= wk2(j1-2*js1,j2-2*js2,j3-2*js3,ey)
+      u2(j1-2*js1,j2-2*js2,j3-2*js3,ez)= wk2(j1-2*js1,j2-2*js2,j3-2*js3,ez)
+    endLoopsMask3d()
+  end if
+
 #endMacro
 
 
@@ -1729,6 +1789,8 @@ end if
 #beginMacro assignInterfaceGhost3dOrder4()
 
   err=0.
+  err2=0.
+  count=0
   beginLoopsMask3d()
 
     ! here is the normal (assumed to be the same on both sides)
@@ -2094,9 +2156,11 @@ end if
     ! compute the maximum change in the solution for this iteration
     do n=0,11
       err=max(err,abs(q(n)-f(n)))
+      err2 = err2 + (q(n)-f(n))**2 
+      count=count+1
     end do
 
-    if( .true. .or. debug.gt.3 )then ! re-evaluate
+    if( debug.gt.3 )then ! re-evaluate
 
       ! To check residual we need to set answer
      u1(i1-is1,i2-is2,i3-is3,ex)      =f(0 )
@@ -2152,6 +2216,8 @@ end if
     end if
 
   endLoopsMask3d()
+
+  err2 = sqrt(err2/count) 
 
   if( checkCoeff.eq.1 .and. it.le.1 )then
     write(*,'("+++++ I34c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
@@ -3954,6 +4020,8 @@ end do
       integer ipvt(0:11)
 
       real err,res,errOld,errRatio,ratioAve
+      real err2,err2Old,err2Ratio
+      real count
       integer debugFile,myid,parallel
       character*20 debugFileName
 
@@ -4340,6 +4408,7 @@ end do
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
         write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
+        write(*,'("  ... eps1,mu1=",2(1pe10.2)," eps2,mu2=",2(1pe10.2))') eps1,mu1,eps2,mu2
 
       end if
 
@@ -4822,22 +4891,24 @@ end do
  
           errOld=err
           ratioAve=0.
+          err2Old=1. 
           do it=1,nit ! *** begin iteration ****
-            err=0.
  
             assignInterfaceGhost3dOrder4Old()
-
  
             if( it.eq.1 )then
               errRatio=1.
+              err2Ratio=1.
             else
               errRatio=err/errOld
               ratioAve=ratioAve+errRatio
+              err2Ratio=err2/err2Old
             end if 
             errOld=err
+            err2Old=err2
  
             if( t.le.5*dt )then
-             write(*,'("interface3d[old] : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
+             write(*,'("interface3d[old] : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err[max,l2]=",2(e10.2,1x)," rate[max,l2]=",2(f5.2,1x)," (omega=",f4.2,")")') t,grid1,grid2,it,err,err2,errRatio,err2Ratio,omega
             end if
 
             numberOfIterations=it
@@ -4924,10 +4995,12 @@ end do
          !   [ div(Lap(E)) n/(eps*mu) + (curl(Lap(E))- n.curl(Lap(E)) n )/(mu*eps*mu) ] =0   (3 eqns)
          !   [ Lap^2(E)/(eps*mu)^2 + (1/(eps*mu)^2)*(eps-1)*( n.Lap^2(E) ) n ] = 0           (3 eqns)
           
-          errOld=err
+          errOld=1.
+          err2Old=1.
           ratioAve=0.
           do it=1,nit ! *** begin iteration ****
             err=0.
+            err2=0.
 
             if( dispersive.eq.0 )then
               assignInterfaceGhost3dOrder4()
@@ -4937,18 +5010,22 @@ end do
  
             if( it.eq.1 )then
               errRatio=1.
+              err2Ratio=1.
             else
               errRatio=err/errOld
               ratioAve=ratioAve+errRatio
+              err2Ratio=err2/err2Old
             end if 
             errOld=err
- 
+            err2Old=err2
+
             if( t.le.5*dt )then
-             write(*,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
+             write(*,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err[max,l2]=",2(e10.2,1x)," rate[max,l2]=",2(f5.2,1x)," (omega=",f4.2,")")') t,grid1,grid2,it,err,err2,errRatio,err2Ratio,omega
             end if
 
             if( debug.gt.0 )then 
-             write(debugFile,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
+             write(*,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err[max,l2]=",2(e10.2,1x)," rate[max,l2]=",2(f5.2,1x)," (omega=",f4.2,")")') t,grid1,grid2,it,err,err2,errRatio,err2Ratio,omega
+
             end if
  
             numberOfIterations=it

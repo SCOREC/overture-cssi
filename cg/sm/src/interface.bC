@@ -784,7 +784,33 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
           }
         }
         
-        f(I1,I2,I3,C)=velocity;
+        // **** Comment: If we want to under-relax the solid velocity it would probably be done here *wdh* March 27, 2019
+        const bool & relaxCorrectionSteps = parameters.dbase.get<int>("relaxCorrectionSteps");
+        if( relaxCorrectionSteps && t>0. )
+        {
+          const real & omega = parameters.dbase.get<real>("addedMassRelaxationFactor");
+	  const real & tol = parameters.dbase.get<real>("subIterationConvergenceTolerance");
+          const int correctionStage = parameters.dbase.get<int>("correctionStage");
+
+          ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
+          RealArray velocityCurrent(I1,I2,I3,Rx);
+          velocityHistory.eval(t,velocityCurrent); // eval current guess for the velocity
+          real maxDiff = max(fabs(velocity-velocityCurrent));
+          bool isConverged = maxDiff < tol;
+          parameters.dbase.get<int>("correctionIterationsHaveConverged")=isConverged;  // Will be used by advanceSteps
+          
+          printF("--SM----IRHS-- relaxCorrectionSteps: t=%9.3e, omega=%g, tol=%g, correction=%i, maxDiff=%8.2e, isConverged=%i\n",
+                 t,omega,tol,correctionStage,maxDiff,(int)isConverged);
+
+          
+          
+          f(I1,I2,I3,C)=  omega*velocity + (1.-omega)*velocityCurrent;
+        }
+        else
+        {
+           f(I1,I2,I3,C)=velocity;
+        }
+        
 	numSaved+=numberOfDimensions;
 
 

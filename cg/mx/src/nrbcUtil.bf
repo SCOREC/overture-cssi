@@ -105,6 +105,23 @@ end do
 #defineMacro AMP2D(x,y,t) (.5*(1.-tanh(beta*twoPi*(nv(0)*((x)-xv0(0))+nv(1)*((y)-xv0(1))-cc*(t)))))
 #defineMacro AMP3D(x,y,z,t) (.5*(1.-tanh(beta*twoPi*(nv(0)*((x)-xv0(0))+nv(1)*((y)-xv0(1))+nv(2)*((z)-xv0(2))-cc*(t)))))
 
+
+!===============================================================================================
+! Macro:
+!   Define a Gaussian pulse incident field    
+!===============================================================================================
+#beginMacro getGaussianPulse(OP, u,t,x,y)
+  xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
+  expxi = exp(-betaGP*xi*xi )
+  uhz = amp*expxi
+  uex = uhz*(-ky/(eps*cc))
+  uey = uhz*( kx/(eps*cc))
+  u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
+  u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
+  u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP uhz
+
+#endMacro 
+
 ! ===================================================================================
 ! --- Subtract/add the incident wave, before/after applying the non-reflecting BC ---
 ! OP : "+" or "-" 
@@ -147,19 +164,36 @@ end do
           stop 666 
        #End
 
-       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t-dt)
-       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t-dt)
-       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t-dt)
+       if( incidentFieldType .eq. planeWaveIncidentField )then
+         ! --- plane wave incident field ---
+         u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t-dt)
+         u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t-dt)
+         u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t-dt)
+  
+         un(i1,i2,i3,ex)= un(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t)
+         un(i1,i2,i3,ey)= un(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t)
+         un(i1,i2,i3,hz)= un(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t)
+  
+         if( adjustThreeLevels.eq.1 )then
+          um(i1,i2,i3,ex) = um(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t-2.*dt)
+          um(i1,i2,i3,ey) = um(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t-2.*dt)
+          um(i1,i2,i3,hz) = um(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t-2.*dt)
+         end if
 
-       un(i1,i2,i3,ex)= un(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t)
-       un(i1,i2,i3,ey)= un(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t)
-       un(i1,i2,i3,hz)= un(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t)
 
-       if( adjustThreeLevels.eq.1 )then
-        um(i1,i2,i3,ex) = um(i1,i2,i3,ex) OP amp*planeWave2Dex0(x,y,t-2.*dt)
-        um(i1,i2,i3,ey) = um(i1,i2,i3,ey) OP amp*planeWave2Dey0(x,y,t-2.*dt)
-        um(i1,i2,i3,hz) = um(i1,i2,i3,hz) OP amp*planeWave2Dhz0(x,y,t-2.*dt)
-       end if
+       else if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+         ! --- plane wave incident field ---
+         getGaussianPulse(OP, u,t-dt,x,y)
+         getGaussianPulse(OP, un,t,x,y)
+
+         if( adjustThreeLevels.eq.1 )then
+           getGaussianPulse(OP, um,t-2.*dt,x,y)
+         end if
+
+       else
+         stop 8899
+
+       end if 
 
        #If #ADJUST eq "YES"
         endif
@@ -188,19 +222,24 @@ end do
          end if
        #End
 
-       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t-dt)
-       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t-dt)
-       u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t-dt)
-
-       un(i1,i2,i3,ex)=un(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t)
-       un(i1,i2,i3,ey)=un(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t)
-       un(i1,i2,i3,ez)=un(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t)
-
-       if( adjustThreeLevels.eq.1 )then
-        um(i1,i2,i3,ex)=um(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t-2.*dt)
-        um(i1,i2,i3,ey)=um(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t-2.*dt)
-        um(i1,i2,i3,ez)=um(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t-2.*dt)
+       if( incidentFieldType .eq. planeWaveIncidentField )then
+         u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t-dt)
+         u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t-dt)
+         u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t-dt)
+  
+         un(i1,i2,i3,ex)=un(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t)
+         un(i1,i2,i3,ey)=un(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t)
+         un(i1,i2,i3,ez)=un(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t)
+  
+         if( adjustThreeLevels.eq.1 )then
+          um(i1,i2,i3,ex)=um(i1,i2,i3,ex) OP amp*planeWave3Dex0(x,y,z,t-2.*dt)
+          um(i1,i2,i3,ey)=um(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t-2.*dt)
+          um(i1,i2,i3,ez)=um(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t-2.*dt)
+         end if
+       else
+         stop 8899
        end if
+
        #If #ADJUST eq "YES"
        endif
        #End
@@ -277,6 +316,13 @@ end do
       real amp, beta, nv(0:2), xv0(0:2)
       integer smoothBoundingBox
 
+      ! There are different possible incident fields
+      integer planeWaveIncidentField, gaussianPlaneWaveIncidentField
+      parameter( planeWaveIncidentField=0, gaussianPlaneWaveIncidentField=1 )
+      integer incidentFieldType
+
+      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi
+
       ! boundary conditions parameters
       #Include "bcDefineFortranInclude.h"
 
@@ -351,6 +397,8 @@ end do
       halfWidth            =ipar(31) ! *new* June 20, 2016 *wdh*
       smoothBoundingBox    =ipar(35) ! smooth the IC at the bounding box edge
 
+      incidentFieldType    =ipar(37)  ! defines type of incident field -- plane wave, Gaussian pulse, ...
+
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
       dx(2)                =rpar(2)
@@ -390,6 +438,18 @@ end do
       xv0(2) =rpar(35)
 
       
+      ! Gaussian pulse fix me: 
+      if( incidentFieldType.eq.gaussianPlaneWaveIncidentField )then
+       ! incidentFieldType=1
+        x0GP  =rpar(50)
+        y0GP  =rpar(51)
+        z0GP  =rpar(52)
+        betaGP=rpar(53)
+        if( t.le.2*dt )then
+          write(*,'(" adjustForIncident: incidentFieldType=gaussianPlaneWaveIncidentField")') 
+          write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+        end if
+      end if
 
       if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
         ! sanity check

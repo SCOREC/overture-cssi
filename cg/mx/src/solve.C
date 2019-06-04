@@ -140,6 +140,8 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber, re
   
   // **NEW WAY**
   // output to any probe files
+  // printF("\n PPPPPPPPPPPPPPPP call outputProbes t=%9.3e gf[current].t=%9.3e PPPPPPPPPPPPPPPPPPP \n\n",t,gf[current].t);
+   
   DomainSolver::outputProbes( parameters, gf[current], stepNumber );
 
   // Output any CgMx user defined probes: 
@@ -338,7 +340,8 @@ outputResults( int current, real t, real dt )
     }
   }
 
-  if( maximumError.getLength(0)>= (numberToOutput-1) )
+  // if( maximumError.getLength(0)>= (numberToOutput-1) )
+  if( maximumError.getLength(0)>= numberOfErrorComponents )
   {
     saveSequenceInfo( t, maximumError );
   }
@@ -662,11 +665,14 @@ solve(GL_GraphicsInterface &gi )
 	OV_ABORT("CGMX: ERROR: unknown method");
       }
 
-      gf[current].t=t;
+      gf[current].t=t;  // *wdh* April 18, 2019 this is probably not needed anymore
+      assert( gf[current].t==t );
 
       t+=dt;
       current = next;
       next= (next+1) % numberOfTimeLevels;
+
+      gf[current].t=t;  // *wdh* April 18, 2019 -- for probes 
 
       outputResultsAfterEachTimeStep( current,t,dt,numberOfStepsTaken,nextTimeToPlot );
 

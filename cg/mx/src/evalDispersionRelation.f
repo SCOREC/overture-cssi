@@ -391,7 +391,7 @@
       write(*,'("evalEigGDM: return from dgeev: info=",i8)') info
 
       if( .true. )then
-          write(*,'(" evalEigGDM: input: mode=",i6)') mode
+          write(*,'(" evalEigGDM: input: Np=",i3," mode=",i6)') Np,mode
         do i=0,nd-1
           write(*,'(" evalEigGDM: i=",i3," s=(",1P,e20.12,",", 1P,
      & e20.12,")")') i,sr(i),si(i)

@@ -46,6 +46,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
         FILE *& pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
         const int numberOfDimensions = parameters.dbase.get<int >("numberOfDimensions");;
+        const int numberOfComponents = parameters.dbase.get<int >("numberOfComponents");;
         const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");
 
         if( debug () & 1 ) 
@@ -293,16 +294,43 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             }
             else
             {
-      	if( orderOfExtrapForP==-1 )
+      	if( false || orderOfExtrapForP==-1 )
       	{
-        	  assert( twilightZoneFlow() );
-	  // un(I1,I2,I3,pc)=e(mg0,I1,I2,I3,pc,t0+dt0); // **** do this for now ****
+          // --- For testing : use exact solution ---
 
-        	  realSerialArray pe(I1,I2,I3);
-        	  const int isRectangular=false;
-        	  e.gd( pe,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0+dt0);
-        	  unLocal(I1,I2,I3,pc)=pe;
-          	    
+        	  if( twilightZoneFlow() )
+                    {
+            // un(I1,I2,I3,pc)=e(mg0,I1,I2,I3,pc,t0+dt0); // **** do this for now ****
+
+                        realSerialArray pe(I1,I2,I3);
+                        const int isRectangular=false;
+                        e.gd( pe,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0+dt0);
+                        unLocal(I1,I2,I3,pc)=pe;
+                    }
+                    else 
+                    {
+            // *wdh* Jan 6, 2019 
+                        printF("BCPredictor: set p to known solution at t=%9.3e\n",t0+dt0);
+                        
+                        const Parameters::KnownSolutionsEnum & knownSolution = 
+                              parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
+          	    if( knownSolution==Parameters::userDefinedKnownSolution )
+          	    {
+              // --- known solution ---
+                            RealArray ue(I1,I2,I3,numberOfComponents);
+                            #ifndef USE_PPP
+              	        parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
+                                unLocal(I1,I2,I3,pc)=ue(I1,I2,I3,pc);
+                            #else
+              	        OV_ABORT("FIX ME FOR PARALLEL");
+                            #endif
+          	    }
+                        else
+                        {
+            	      OV_ABORT("error");
+                        }
+                    }
+                            
       	}
       	else
       	{
@@ -397,16 +425,41 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 
 	      // }
 	      // else // fourth order in time
-                            if( orderOfExtrapForU==-1 )
+                            if( false || orderOfExtrapForU==-1 )
                             {
-                                assert( twilightZoneFlow() );
                 // u1Local(I1,I2,I3,V)=e(mg0,I1,I2,I3,V,t0+dt0); // **** do this for now ****
 
-                                realSerialArray ue(I1,I2,I3,V);
-                                const int isRectangular=false;
-                                e.gd( ue,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t0+dt0);
-                                unLocal(I1,I2,I3,V)=ue;
-          	    
+                                if( twilightZoneFlow() )
+                                {
+                                    realSerialArray ue(I1,I2,I3,V);
+                                    const int isRectangular=false;
+                                    e.gd( ue,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,V,t0+dt0);
+                                    unLocal(I1,I2,I3,V)=ue;
+                                }
+                                else 
+                                {
+                  // *wdh* Jan 6, 2019 
+                                    printF("BCPredictor: set V to known solution at t=%9.3e\n",t0+dt0);
+                        
+                                    const Parameters::KnownSolutionsEnum & knownSolution = 
+                                          parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
+                            	          if( knownSolution==Parameters::userDefinedKnownSolution )
+                            	          {
+                    // --- known solution ---
+                                        RealArray ue(I1,I2,I3,numberOfComponents);
+                                        #ifndef USE_PPP
+                              	              parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
+                                            unLocal(I1,I2,I3,V)=ue(I1,I2,I3,V);
+                                        #else
+                   	             OV_ABORT("FIX ME FOR PARALLEL");
+                                        #endif
+                	          }
+                                    else
+                                    {
+                  	            OV_ABORT("error");
+                                    }
+                                }
+                                    
                             }
                             else if( orderOfExtrapForU==2 )
                             {

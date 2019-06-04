@@ -1038,7 +1038,7 @@ endLoopsMask2d()
     u2(j1-js1,j2-js2,j3-js3,ez)=q(5)
     end if
 
-    if( .true. .or. debug.gt.3 )then ! re-evaluate
+    if( debug.gt.3 )then ! re-evaluate
      evalInterfaceDerivatives3d()
      eval3dJumpOrder2()
      write(debugFile,'(" --> 3d-order2-c: i1,i2,i3=",3i4," f(re-eval)=",6e10.2)') i1,i2,i3,f(0),f(1),f(2),f(3),f(4),f(5)
@@ -1105,7 +1105,9 @@ endLoopsMask2d()
    ! Ptt = c4PttLE*LE + c4PttE*E + c4PttEm*Em + c4PttP*P + c4PttPm*Pm + c4PttfE*fE + c4PttfP*fP
    !    + c4PttLLE*LLE + c4PttLP*LP + c4PttLEm*LEm + c4PttLPm*LPm+ c4PttLfE*LfE + c4PttLfP*LfP
    !    + c4PttfEt*fEt + c4PttfEtt*fEtt + c4PttfPt*fPt+ c4PttfPtt*fPtt
-   #Include interfaceAdeGdmOrder4.h 
+   ! #Include interfaceAdeGdmOrder4.h 
+   ! Nov 4, 2018 *new way* 
+   #Include interfaceAdeGdmOrder4New.h 
  
    if( .false. .and. twilightZone.eq.1 )then
      write(*,'(" FACE: alpha,dt,d4,d1=",4e12.4)') alpha,dt,d4,d1

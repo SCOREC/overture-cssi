@@ -62,7 +62,6 @@ setup.C:
   - updateForNewTimeStep(GridFunction & cgf, real & dt )
   - setupGrids()
   - setupGridFunctions()
-  - outputHeader()
 
 SmParameters.C
   - setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,  DialogData *interface /* =NULL */ )

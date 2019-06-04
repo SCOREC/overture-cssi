@@ -1,3 +1,108 @@
+******************************************
+***** May 29, 2019
+
+HANDLE MULTIPLE GRIDS -- TO DO
+
+
+START TEST 3D
+3D - Dirichlet
+waveCompatibility -grid=box1.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0 -debug=3 -useCompatibilityBC=1
+
+
+TEST square with FINER grid in X  ** TROUBLE ***
+waveCompatibility -grid=squareFineX32.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=n -ad4=0 -debug=3 -useCompatibilityBC=1
+
+
+
+START TEST CURVILINEAR GRID -- looks ok
+
+NEUMANN : 
+waveCompatibility -grid=annulus2.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=n -ad4=0 -debug=1 -useCompatibilityBC=1
+
+ADD MORE GRID LINES 
+waveCompatibility -grid=annulus4.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=n -ad4=0 -debug=1 -useCompatibilityBC=1
+
+Annulus2: Maximum error at t=1.000e+00 is 4.428e-06
+Annulus4: Maximum error at t=1.000e+00 is 2.792e-07
+Annulus8: Maximum error at t=1.000e+00 is 1.728e-08
+
+
+TROUBLE -- unstable at inner boundary -- wrong-aspect ration grid cells
+waveCompatibility -grid=annulus4.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=n -ad4=0 -debug=3 -useCompatibilityBC=1
+
+Annulus4: Maximum error at t=1.000e+00 is 6.332e-05
+
+
+DIRICHLET : OK
+waveCompatibility -grid=annulus2.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0 -debug=1 -useCompatibilityBC=1
+waveCompatibility -grid=annulus4.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0 -debug=1 -useCompatibilityBC=1
+
+annulus2: Maximum error at t=1.000e+00 is 1.723e-06
+annulus4: Maximum error at t=1.000e+00 is 1.085e-07
+
+
+ADD NEUMANN CBC's
+
+Gaussian initial condition
+waveCompatibility -grid=square64.order4.hdf -ic=gaussian -bc=n -ad4=0 -debug=1 -useCompatibilityBC=1 -x0=.5 -y0=.5 
+
+
+
+NEUMANN : EXACT -- four sides 
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=n -ad4=0 -debug=3 -useCompatibilityBC=1
+
+Gaussian initial condition
+waveCompatibility -grid=square64.order4.hdf -ic=gaussian -bc=d -ad4=0 -debug=1 -useCompatibilityBC=1 -x0=.5 -y0=.5 
+
+
+CBC's on multiple sides : 
+
+waveCompatibility -grid=square16.order4.hdf -ic=sp -bc=d -ad4=0 -debug=3 -useCompatibilityBC=1
+
+
+DIRICHLET : EXACT -- four sides 
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0 -debug=3 -useCompatibilityBC=1
+
+
+******************************************
+***** May 28, 2019
+
+EXACT -- CBC on onde side
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0 -debug=3 -useCompatibilityBC=1
+
+
+waveCompatibility -grid=cice4.order4.hdf -bc=s
+
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=0 -degreeT=4 -bc=d -ad4=0 -debug=3 -useCompatibilityBC=1
+
+******************************************
+***** May 27, 2019
+
+ADDING TZ to waveCompatibility
+
+EXACT: 
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=4 -degreeT=4 -bc=d -ad4=0
+
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=4 -degreeT=2 -bc=d -ad4=0
+
+EXACT: 
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=3 -degreeT=3 -bc=d -ad4=0
+
+EXACT: 
+waveCompatibility -grid=square16.order4.hdf -ic=poly -degreeX=2 -degreeT=2 -bc=d -ad4=0
+
+******************************************
+***** May 26, 2019
+
+Create new program : waveCompatibility.C -- compatibility BC's with the BoundarySolver class
+
+waveCompatibility -grid=square8.order4.hdf
+
+waveCompatibility -grid=cice8.order4.hdf
+
+
+
+*********************************************
 2014/08/13 -
 
 mpiexec -n 2 ./deform

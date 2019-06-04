@@ -495,7 +495,7 @@
        ain=1.
      else
        aimn=-aimn*ai
-       ain=ain*ai
+       ain =  ain*ai
      end if
 
      cnt=cos(n*theta)
@@ -645,9 +645,9 @@
 
  ! precompute some coefficients
  do n=0,nterm-1
-   ! H = H^(2) = J - i Y
-   hnc = cmplx( jnka(n), -ynka(n))
-   hnpc= cmplx(jnpka(n),-ynpka(n))
+   ! H = H^(1) = J + i Y
+   hnc = cmplx( jnka(n),  ynka(n))
+   hnpc= cmplx(jnpka(n), ynpka(n))
    ! Since H becomes large as n gets large, form the ratio Hn/Hn'  (to avoid cancellation)
    hr = hnc/hnpc
    detc =      mc*jcnmka(n)-hr*jcnpmka(n)
@@ -655,7 +655,7 @@
    #If #CASE eq "exterior"
      an(n)= (jnka(n)*jcnpmka(n)-jnpka(n)*jcnmka(n)*mc)*detic/hnpc
    #Else
-     an(n)= ( -2.*ai*mc/(pi*ka) )*detic/hnpc
+     an(n)= ( 2.*ai*mc/(pi*ka) )*detic/hnpc
    #End
    !   write(*,'(" n=",i2," h=(",2e10.2,") hp=(",2e10.2,")  hr=(",2e10.2,") detc=",2e10.2," detic=",2e10.2," an=",2e10.2)') n,real(hnc),aimag(hnc),real(hnpc),aimag(hnpc),real(hr),aimag(hr),real(detc),aimag(detc),real(detic),aimag(detic),real(an(n)),aimag(an(n))
 
@@ -759,8 +759,8 @@
 
    ! ---- exterior
    #If #CASE eq "exterior"
-     hnc =cmplx( jn(n), -yn(n))
-     hnpc=cmplx(jnp(n),-ynp(n))
+     hnc =cmplx( jn(n),  yn(n))
+     hnpc=cmplx(jnp(n), ynp(n))
      sc = an(n)*hnc *expc
      scr= an(n)*hnpc*expc
 
@@ -787,6 +787,10 @@
        ! aimn=1.
      else
        ain=ain*ai
+       ! *wdh* May 15, 2019 try this
+       ! ain=-ain*ai
+
+
        ! aimn=-aimn*ai
      end if
 
@@ -800,8 +804,8 @@
      ! expmtc=n*cmplx(-snt,-cnt)
 
      #If #CASE eq "exterior"
-       hnc =cmplx(jn(n) , -yn(n))
-       hnpc=cmplx(jnp(n),-ynp(n))
+       hnc =cmplx(jn(n) ,  yn(n))
+       hnpc=cmplx(jnp(n), ynp(n))
        ! H: inc=0 
        sc = sc  + an(n)*hnc*ain*2.*cnt
        ! sc = sc  + (inc*jn(n) + an(n)*hnc )*aimn*expc + (inc*jn(n) + an(n)*hnc )*aimn*expmc
@@ -894,8 +898,10 @@
    if( staggeredGrid.eq.0 )then
      ! node centered values 
 
+     ! *wdh* May 15, 2019: CHECK THIS 
      u(i1,i2,i3,hzr)=real(sc)
      u(i1,i2,i3,hzi)=aimag(sc)
+
 
      ! eEx = 1/(ss*epsHat) * (Hz)_y = 1/(ss*epsHat) * ( k*r_y*(Hz)_r  + theta_y*(Hz)_theta )
      ! Ey = - 1/(ss*epsHat) * (Hz)_x = - 1/(ss*epsHat) * ( k*r_x*(Hz)_r  + theta_x*(Hz)_theta )
@@ -912,6 +918,13 @@
 
      u(i1,i2,i3,eyr)=  real(eyField)
      u(i1,i2,i3,eyi)= aimag(eyField)
+ 
+     ! *wdh* May 15, 2019:  try this 
+     !u(i1,i2,i3,exr)=-  real(exField)
+     !u(i1,i2,i3,exi)= aimag(exField)
+
+     !u(i1,i2,i3,eyr)=-  real(eyField)
+     !u(i1,i2,i3,eyi)= aimag(eyField)
  
     ! write(*,'(" exr,exi=",2(1pe14.4)," eyr,eyi=",2(1pe14.4))')  u(i1,i2,i3,exr),u(i1,i2,i3,exi),u(i1,i2,i3,eyr),u(i1,i2,i3,eyi)
 

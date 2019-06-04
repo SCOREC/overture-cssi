@@ -57,6 +57,10 @@ if( $relaxDelta eq "" ){ $relaxDelta=.1; }
 if( $addedMass eq "" ){ $addedMass=0; }
 if( $setGhostByExtrapolation eq "" ){ $setGhostByExtrapolation=0; }
 #
+if( $relaxCorrectionSteps eq "" ){ $relaxCorrectionSteps=0; }
+if( $addedMassRelaxationFactor eq "" ){ $addedMassRelaxationFactor=0.5; }
+if( $subIterationConvergenceTolerance eq "" ){ $subIterationConvergenceTolerance=1.e-3; }
+#
 if( $godunovOrder eq "" ){ $godunovOrder=2; }
 if( $godunovType eq "" ){ $godunovType=0; }
 # -hemp:
@@ -112,6 +116,9 @@ SMPDE:zfMuByH $zfMuByH
 SMPDE:zfRhoHByDt $zfRhoHByDt
 SMPDE:zfMono $zfMono 
 SMPDE:fluid solid corner fix: $fluidSolidCornerFix
+SMPDE:relaxCorrectionSteps: $relaxCorrectionSteps
+SMPDE:addedMassRelaxationFactor: $addedMassRelaxationFactor
+SMPDE:subIterationConvergenceTolerance: $subIterationConvergenceTolerance
 #
 use added mass algorithm $addedMass
 # --- start hemp parameters ---

@@ -1,3 +1,193 @@
+*********************************
+******* Jan 14, 2019
+
+
+IMEX44 - TRIG shift : 
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=trig -ts=imex -orderInTime=4 -bcn=d -move=shift -tp=.1 -tf=1. -debug=3 -go=halt
+
+G2
+    t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (8 steps)
+   0.100 1.66e-05 3.22e-06 3.46e-06 4.21e-05  9.51e-01 1.25e-02 2.93e+00 
+
+G4
+    t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (15 steps)
+   0.100 1.56e-06 2.15e-07 1.77e-07 3.83e-06  9.51e-01 6.67e-03 6.87e+00
+
+G8 
+    t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (30 steps)
+   0.100 1.52e-07 1.39e-08 1.09e-08 3.66e-07  9.51e-01 3.33e-03 6.86e+01 
+
+
+IMEX44 - shift : 
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.001 -tf=1. -debug=3 -go=halt
+
+*********************************
+******* Jan 9-10, 2019
+
+*** NEW VARIABLE DT IMEX_BDF 
+
+IMEX44: EXACT for variable dt width fixed dt
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=1 -degreet=2 -bcn=d -move=shift -tp=.001 -tf=1. -debug=3 -go=halt
+
+
+IMEX22: exact for variable dt width fixed dt
+cgins tz -g=sise2.order2 -gridToMove="inner-square" -tz=poly -ts=imex -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=1. -debug=3 -go=halt
+
+
+*********************************
+******* Jan 8, 2019
+
+***FIX TIME-STEP ***
+
+
+
+
+IMEX44 -- ADD third order predictor (now default) *exact* 
+cgins -noplot tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=2 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=.03 -debug=3 -go=go
+
+IMEX44 : predictor=4 *exact*
+cgins -noplot tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -predictorOrder=4 -degreex=2 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=.03 -debug=3 -go=go
+
+
+
+*********************************
+******* Jan 7, 2019
+
+TESTS of moving:
+
+IMEX44 - shift : NOW EXACT 
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.001 -tf=1. -debug=3 -go=halt
+
+PC44 - exact 
+cgins -noplot tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=pc4 -orderInTime=2 -degreex=2 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=.05 -debug=3 -go=go 
+
+PC22 - exact 
+cgins -noplot tz -g=sise2.order2 -gridToMove="inner-square" -tz=poly -ts=pc -orderInTime=2 -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=.05 -debug=3 -go=go 
+
+
+
++++ square: 
+
+IMEX44
+cgins -noplot tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=2 -degreet=1 -bcn=d -move=shift -tp=.01 -tf=.03 -debug=3 -go=go
+
+
+PC44 - exact  (2,1)
+cgins -noplot tz -g=square10.order4 -tz=poly -ts=pc4 -degreex=2 -degreet=1 -bcn=d -bc1=noSlip -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+PC22 - exact (1,1)
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=pc -degreex=1 -degreet=1 -bcn=d -bc1=noSlip -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+
+test exposed points
+
+**BUG FIXED** updateOptNew was accidently setting u2 at unused points !
+
+
+IMEX44 -- errors seem large
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=1 -degreet=1 -bcn=d -move=rotate -tp=.01 -tf=1. -debug=3 -go=halt
+
+IMEX44 - shift : NOW EXACT 
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=imex -orderInTime=4 -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.001 -tf=1. -debug=3 -go=halt
+
+
+
+IMEX22
+cgins tz -g=sise2.order2 -gridToMove="inner-square" -tz=poly -ts=imex -degreex=1 -degreet=1 -bcn=d -move=rotate -tp=.01 -tf=1. -debug=3 -go=halt
+
+
+
+PC44
+cgins tz -g=sise2.order4 -gridToMove="inner-square" -tz=poly -ts=pc4 -degreex=1 -degreet=1 -bcn=d -move=rotate -tp=.01 -tf=1. -debug=3 -go=halt
+
+PC22  -- looks ok
+cgins tz -g=sise2.order2 -gridToMove="inner-square" -tz=poly -ts=pc -degreex=1 -degreet=1 -bcn=d -move=rotate -tp=.01 -tf=1. -debug=3 -go=halt
+
+IMEX22 - exact 
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=imex -degreex=1 -degreet=1 -bcn=d -bc1=noSlip -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+
+*********************************
+******* Jan 6, 2019
+
+cgins -noplot tz -g=square10.order2 -tz=poly -ts=pc -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+
+**** TEST NO-SLIP WALLS
+
+IMEX44 exact degree(2,2)
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=imex -orderInTime=4 -degreex=2 -degreet=2 -bcn=d -bc1=noSlip -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+IMEX22 - exact 
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=imex -degreex=1 -degreet=1 -bcn=d -bc1=noSlip -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+*********************** BC=d ******************
+
+IMEX44 exact degree(2,2)  **RUNS**
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=imex -orderInTime=4 -degreex=2 -degreet=2 -bcn=d -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+IMEX22 FIXED
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=imex -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+BDF2: THIS OPTION WAS LOST ?? FIX ME
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=bdf -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+PC44 
+cgins -noplot tz -g=square10.order4 -tz=poly -ts=pc -orderInTime=4 -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -useNewImp=0  -debug=3 -go=go
+
+PC24 exact: 
+cgins -noplot tz -g=square10.order4 -tz=poly -ts=pc -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -useNewImp=0  -debug=3 -go=go
+
+
+PC22 exact: 
+cgins -noplot tz -g=square4.order2 -tz=poly -ts=pc -degreex=1 -degreet=1 -bcn=d -move=shift -tp=.005 -tf=.01 -debug=3 -go=go
+
+
+IMEX44, non-moving: exact
+cgins -noplot tz -g=square4.order4.ng3 -tz=poly -ts=imex -orderInTime=4 -nc=1 -bcn=noSlip -tp=.01 -tf=.02 -cfl=1 -useNewImp=0 -checkErrOnGhost=2  -debug=7 -go=go -degreex=4 -degreet=3
+
+
+*********************************
+******* Jan 5, 2019
+
+
+---- TZ --- 
+
+cgins tz.cmd -g=square5.order4 -model=ins -nu=.05 -tf=.2 -tp=.001 -cfl=0.9 -ts=pc4 -iv=viscous -solver=yale -psolver=yale -useNewImp=0 -nd=2 -debug=1 -degreex=4 -degreet=3 -bc2=noSlip -go=halt
+
+
+cgins tz.cmd -g=square20.order4 -model=ins -nu=.05 -tf=.2 -tp=.1 -cfl=0.9 -ts=pc4 -iv=viscous -solver=yale -psolver=yale -useNewImp=0 -nd=2 -debug=1 -degreex=4 -degreet=3 -bc1=noSlip -bc2=noSlip -go=halt
+
+Degree=(4,3)
+-bc{1,3,4}=noSlip = exact
+-bc2=noSlip ; **TROUBLE**  -> changing dt problem ? 
+
+
+PC44: 
+cgins tz.cmd -g=square20.order4 -option=tg -model=ins -nu=.05 -tf=.2 -tp=.1 -cfl=0.9 -ts=pc4 -iv=viscous -solver=yale -psolver=yale -useNewImp=0 -nd=2 -debug=1 -degreex=3 -degreet=3 -go=halt
+
+
+
+TRIG: 
+
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (16 steps)
+   0.100 8.66e-06 3.71e-06 1.93e-06 4.01e-05  9.51e-01 6.25e-03 5.47e+00 
+
+
+degree=(4,3) : exact 
+
+degree=(2,2) : Exact
+    t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (23 steps)
+   0.100 1.78e-15 1.33e-15 8.88e-16 1.20e-14  4.21e+00 4.35e-03 1.63e+01 
+
+
 *************************************
 *********  Jan 23, 2018
 

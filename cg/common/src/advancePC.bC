@@ -181,6 +181,18 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
   {
     // predictorOrder=2; // default
     predictorOrder=orderOfPredictorCorrector; // *wdh* fixed for PC44  Dec 22, 2016
+    if( timeSteppingMethod==Parameters::adamsPredictorCorrector4 )
+    {
+      if( orderOfPredictorCorrector==2 )
+        predictorOrder=orderOfPredictorCorrector-1; 
+      else
+      {
+        // predictorOrder=orderOfPredictorCorrector;
+        predictorOrder=orderOfPredictorCorrector-1; // *wdh* Switched to 3rd-order predictor  Jan 19, 2019
+      }
+      
+    }
+    
   }
   
   if( predictorOrder<0 || predictorOrder>orderOfPredictorCorrector )
@@ -219,7 +231,9 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
   // For moving grids we keep gf[mab0], gf[mab1] and gf[mab2]
   // For non-moving grids we keep gf[mab0], gf[mab1] and we set mab2==mab1
 
-  const int numberOfGridFunctions =  movingGridProblem() ? 3 : 2; 
+  int numberOfGridFunctions =  movingGridProblem() ? 3 : 2; 
+  if( timeSteppingMethod==Parameters::adamsPredictorCorrector4 )
+    numberOfGridFunctions =  numberOfGridFunctionsToUse;  // *wdh* Jan 7, 2019
 
   mab2 = (mab0 -1 + numberOfGridFunctions) % numberOfGridFunctions;
 
@@ -257,8 +271,17 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     // **** To initialize the method we need to compute du/dt at times t and t-dt *****
 
     // this is a macro (pcMacros.h):
-    const int numberOfPastTimes=1;                            // PC needs u(t-dt)
+    int numberOfPastTimes=1;                            // PC needs u(t-dt)
     const int numberOfPastTimeDerivatives=orderOfAccuracy-1;  // PC needs u_t(t-dt), u_t(t-2*dt), ...
+
+    // *new* way Jan 7, 2019: make separate lists of old time grid indexes
+    if( orderOfPredictorCorrector==4 && parameters.isMovingGridProblem() )
+    {
+      // For PC44 and moving grids we need to compute exposed on more past time values so
+      // we can recompute the time-derivatives at past times
+      assert( predictorOrder==3 );
+      numberOfPastTimes=numberOfPastTimeDerivatives;
+    }
     initializePredictorCorrector(adamsPC,gf[mab0].u);
     
   }
@@ -461,8 +484,6 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
 
     }
 
-    // moveTheGridsMacro(adamsPC,gf[mCur].u); // *wdh* 090804 
-
     real ab1,ab2;
     if( predictorOrder==1 )
     { // first order predictor
@@ -486,8 +507,26 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     // ----------------- Moving Grids -----------------------
     // ------------------------------------------------------
     real tb=gf[mCur].t-dt1, tc=tb-dt2, td=tc-dt3; // check me 
-    const int numberOfPastTimes=0;
+    int numberOfPastTimes=0;
     const int numberOfPastTimeDerivatives=predictorOrder-1; 
+
+    // *new* way Jan 7, 2019: make separate lists of old time grid indexes
+    if( orderOfPredictorCorrector==4 && parameters.isMovingGridProblem() )
+    {
+      // For PC44 and moving grids we need to compute exposed on more past time values so
+      // we can recompute the time-derivatives at past times
+      assert( predictorOrder==3 );
+      numberOfPastTimes=numberOfPastTimeDerivatives;
+    }
+    
+    #define USE_NEW_OLD_TIME_INDEX
+    int mOld2 = (mab0-2 + numberOfGridFunctions) % numberOfGridFunctions;
+    int mOld3 = (mab0-3 + numberOfGridFunctions) % numberOfGridFunctions;
+    int gfList[] = { mab0,mab1,mOld2,mOld3 }; // list of current and past solutions
+    int fnList[] = { nab0,nab1,nab2,nab3 }; // lits of current and past time-derivatives
+    real tList[] = { t0, t0-dt1,t0-(dt1+dt2),t0-(dt1+dt2+dt3),t0-(dt1+dt2+dt3+dt4) }; // 
+
+
     moveTheGridsMacro(adamsPC,gf[mCur].u, predictorOrder,tb,ub,tc,uc,td,ud);
     
 

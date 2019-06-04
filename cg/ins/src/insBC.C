@@ -3686,7 +3686,18 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
         }
         
           
-
+    // // **** Dec 15, 2018 -- TRY THIS to set extended boundary ****
+    // if( assignInflowWithPressureAndTangentialVelocityGiven )
+    // {
+    //   //  inflowWithPressureAndTangentialVelocityGiven
+    //   //     give tangential velocity = 0 
+    //   //     extrapolate (u,v,w)
+    //   //     set div(u)=0
+    //   bcParams.extraInTangentialDirections=orderOfAccuracy/2;
+    //   u.applyBoundaryCondition(V,tangentialComponent,inflowWithPressureAndTangentialVelocityGiven,0.,t,bcParams);
+    //   bcParams.extraInTangentialDirections=0;  // reset
+    // }
+    
     }  // end of fourth order 
     
     

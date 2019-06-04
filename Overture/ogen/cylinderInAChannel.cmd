@@ -46,6 +46,7 @@
 # $gridName = "cylinderInAChannel2.order4.hdf"; $factor=2.; $order="fourth order"; $za=-.075; $zb=.075; $deltaRadius=.5;
 # 
 #
+$prefix="cylinderInAChannel"; 
 $order=2; $factor=1; $interp="e";  $ml=0; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
 $name=""; $xa=-1.; $xb=1.; $ya=-1.; $yb=1.;
@@ -55,7 +56,8 @@ $blf=2.;  # 1 = no stretching, 2=boundary layer spacing is a factor of 2 times s
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xa=f"=>\$xa,"xb=f"=> \$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
-            "za=f"=>\$za,"zb=f"=>\$zb,"interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"zper=i"=>\$zper,"blf=f"=> \$blf,);
+            "za=f"=>\$za,"zb=f"=>\$zb,"interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"zper=i"=>\$zper,\
+             "blf=f"=> \$blf,"prefix=s"=> \$prefix );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -65,7 +67,7 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 $suffix = ".order$order"; 
 if( $zper ne 0 ){ $suffix .= "p"; }
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
-if( $name eq "" ){$name = "cylinderInAChannel" . "$interp$factor" . $suffix . ".hdf";}
+if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 # 
 $ds=.1/$factor;
 # 

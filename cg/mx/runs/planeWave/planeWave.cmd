@@ -118,6 +118,7 @@ echo to terminal 0
 # 
 $tFinal=2.; $tPlot=.1;  $show=" "; $method="NFDTD"; $bcn="default"; $matRegion=0; $bg="square";  $dm="none"; 
 $cfl = .9; $diss=.5; $dissOrder=-1; $filter=0; $divClean=0; $divCleanCoeff=1; $solveForH=0; $projectInterp=0;
+$dtMax=1e10; 
 $debug=0; $divDamping=.0; $plotIntensity=0; $intensityOption=0; $abcDir=0; $abcSide=1; $plotHarmonicComponents=0; 
 $cyl=1;   # set to 0 for a sphere 
 $kx=2; $ky=0; $kz=0; 
@@ -132,6 +133,7 @@ $stageOption ="default";
 # GDM parameters
 $npv=1; $alphaP=-1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
+$dmFile=""; # "SilverJCDispersionFits.txt"; 
 # ----------------------------- get command line arguments ---------------------------------------
 # GetOptions('a=s{2}' => \@opt_a, 'b=s{2}' => \@opt_b  );
 # printf(" opt_a[0]=[%s] opt_a[1]=[%s]\n",$opt_a[0],$opt_a[1]);
@@ -148,7 +150,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
     "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
     "sosupDissipationOption=i"=>\$sosupDissipationOption,"modeGDM=i"=>\$modeGDM,\
     "checkErrors=i"=>\$checkErrors,"dm=s"=>\$dm,"stageOption=s"=>\$stageOption,\
-    "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv);
+    "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv,\
+   "dmFile=s"=>\$dmFile );
 # -------------------------------------------------------------------------------------------------
 # printf(" opt_a[0]=[%s] opt_a[1]=[%s]\n",$opt_a[0],$opt_a[1]);
 # printf(" opt_b[0]=[%s] opt_b[1]=[%s]\n",$opt_b[0],$opt_b[1]);
@@ -192,6 +195,11 @@ if( $npv == 2 ){ \
    $cmd .= " GDM coeff: 1 $a0[1] $a1[1] $b0[1] $b1[1] (eqn, a0,a1,b0,b1)"; \
       }
 $cmd
+#
+# -- read material parameters from a file 
+if( $dmFile ne "" ) { $cmd="GDM domain name: $domain\n number of polarization vectors: $npv\n material file: $dmFile" }else{ $cmd="#"; }
+$cmd 
+# 
 # -- set default stage options
 if( $stageOption eq "default" && $useSosupDissipation eq 0 ){ $stageOption="IDB"; }
 if( $stageOption eq "default" && $useSosupDissipation eq 1 ){ $stageOption="D-IB"; }
@@ -294,6 +302,7 @@ use conservative difference $cons
 debug $debug
 #
 cfl $cfl 
+dtMax $dtMax 
 plot errors $checkErrors
 check errors $checkErrors
 plot intensity $plotIntensity

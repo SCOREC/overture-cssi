@@ -89,6 +89,55 @@ ellipse:
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=8
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
 
+ellipseAngle30:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=16
+ 
+# Long domain L=20 : [-10,10]
+ellipseL20Angle30:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL20 -angle=30 -xa=-10. -xb=10. -interp=e -numGhost=3 -order=4 -factor=16
+
+# Mediumdomain L=10 : [-5,5]
+ellipseL10Angle30:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=16
+
+# Short domain L=4 : [-2,2]
+ellipseL4Angle30:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL4 -angle=30 -xa=-2. -xb=2. -interp=e -numGhost=3 -order=4 -factor=16
+
+# Short domain L=4 : [-1,1]
+ellipseL2Angle30:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2p -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=16
+ 
 rod:
 	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=4
 	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=8

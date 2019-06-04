@@ -118,7 +118,11 @@ void evalUserDefinedKnownSolution( real & t, int & grid, int & i1, int & i2, int
     
   // parameters.getUserDefinedDeformingBodyKnownSolution( body,stateOption,t, grid, mg, Ib1,Ib2,Ib3,n,value );
     int current=0; // not currently used
+#ifndef USE_PPP
     cgmxPointer->getUserDefinedKnownSolution( current, t, cg, grid,ua,pv,I1,I2,I3, numberOfTimeDerivatives);
+#else
+    OV_ABORT("finish me for parallel");
+#endif
 
     for( int n=0; n<numComponents; n++ )
     {

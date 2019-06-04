@@ -103,7 +103,7 @@ solveForTimeIndependentVariables( GridFunction & cgf, bool updateSolutionDepende
         updatePressureEquation(cgf.cg, cgf );
     }
 
-    if( debug() & 2 || debug() & 8 )
+    if( debug() & 8 )
         printf("--INS-- solveForTimeIndependentVariables, PRESSURE SOLVE t=%9.3e...\n",cgf.t);
 
   // real time=getCPU();  // keep track of the cpu time spent in this routine
@@ -318,6 +318,7 @@ solveForTimeIndependentVariables( GridFunction & cgf, bool updateSolutionDepende
 
   // --------------------------------------------------------------------------------------------
   // --- check the solution to the constraint equations in the pressure equation ----
+  //     AND assign constraint variables such as rigid body accelerations 
   // --------------------------------------------------------------------------------------------
   //   (1) mean pressure (if the pressure equation is singular)
   //   (2) Rigid body added mass equations. 
@@ -557,7 +558,7 @@ assignPressureRHS( const int grid, GridFunction & gf0, realCompositeGridFunction
     FILE *&debugFile = parameters.dbase.get<FILE* >("debugFile");
     FILE *&pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");
 
-    if( debug()& 2 || debug() & 32 )
+    if( debug() & 32 )
         printF("***Entering assignPressureRHS *** t=%9.3e\n",gf0.t);
 
     if( debug() & 64 )

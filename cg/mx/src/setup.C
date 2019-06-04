@@ -98,6 +98,8 @@ computeTimeStep()
   const int numberOfComponentGrids = cg.numberOfComponentGrids();
   const int numberOfDimensions = cg.numberOfDimensions();
 
+  const real & dtMax = dbase.get<real>("dtMax");
+
   deltaT=REAL_MAX*.01;
   
 //    RealArray dtGrid(numberOfComponentGrids);  // time step for each grid by itself
@@ -641,6 +643,8 @@ computeTimeStep()
   } // end for grid
 
   deltaT=getMinValue(deltaT);  // min value over all processors
+  deltaT = min(dtMax,deltaT);
+  
   printF("==== computeTimeStep: deltaT=%8.2e\n",deltaT);
   if( debug & 4 )
     fprintf(pDebugFile,"==== computeTimeStep: deltaT=%8.2e, myid=%i\n",deltaT,myid);

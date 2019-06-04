@@ -1,4 +1,6 @@
+echo to terminal 0
 # *******************************************************
+#
 # cgins command file: 
 #    Test various exact solutions: 
 #       - Hagen-Poiseuille pipe flow, 
@@ -35,28 +37,35 @@
 #   cgins exact -g=square32p.order4 -option=tg -ts=pc -nu=.01 -tf=1.5 -tp=.1 -cfl=1. -psolver=yale -go=halt
 #
 # -- assign default values for all parameters: 
+$echo=0; 
+echo to terminal $echo
+#
 $option="pipe"; $nd=2; # set nd=3 for 3D
 $tFinal=30.; $tPlot=.1; $nu=.1; $show=" "; $debug=0; $ogesDebug=0; $debugmg=0; $dtMax=.02; $order=2; $newts=0;
 $restart=""; $restartSolution=-1; $outflowOption="neumann";
-$bc=""; 
+$bc=""; $pGrad=0.; $pInflow=1.;
 # 
 $slowStartSteps=-1; $slowStartCFL=.5; $slowStartRecomputeDt=100; $slowStartTime=-1.; $recomputeDt=10000;
 #
 $apn=0.; # coeff in outflow BC : p + apn*p.n = 0 
 $rtol=1.e-4; $atol=1.e-4; $solver="best"; 
 $rtolp=1.e-5; $atolp=1.e-6; $psolver="best"; $iluLevels=3; 
+$tolFactor=1;  # scale all tolerances by this factor
 $project=0; $ts="pc"; $go="halt";
 $ad2=0; $ad21=1.; $ad22=1.;   # for 2nd-order artificial dissipation, ad2=0 means no dissipation
 $ad4=0; $ad41=1.; $ad42=1.;   # for 4th-order artificial dissipation, ad4=0 means no dissipation
 $model="#";  $gravity = "0. 0. 0."; $thermalExpansivity=.1;
 $tm = "#"; 
+$useNewStartup=1;  # added Dec 13, 2018
 $lesOption=0; $lesPar1=.01;
-$move=0; 
-$pipeAxis=0; # for pipe flow 
+$move=0; $gridToMove="outerAnnulus"; $gridToMove=upperChannel; 
+$pipeAxis=0; $amp1=0.; $nFreq1=2; $length=2.; $omega=0.; $amp2=0.; $nFreq2=1; $radius=1.; $ua=0.; $ub=1.;   # for pipe flow 
 # -- rotating Couette: 
 $rInner=.5; $rOuter=1.; $omegaInner=0.; $omegaOuter=1.; $axialAxis=2; 
 # 
 $kp=1.; # Taylor Green wave number 
+#
+$orderInTime=-1;
 # 
 # -- for Kyle's AF scheme:
 $afit = 20;
@@ -79,10 +88,14 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"tp=f"=>\$tPlot,"u0=f"=>\$u0,"u1=f"=>
   "restart=s"=>\$restart,"move=s"=>\$move,"debugmg=i"=>\$debugmg,"nullVector=s"=>\$nullVector,\
   "impFactor=f"=>\$impFactor,"freqFullUpdate=i"=>\$freqFullUpdate,"outflowOption=s"=>\$outflowOption,\
   "bg=s"=>\$bg,"gridToMove=s"=>\$gridToMove,"bc=s"=>\$bc,"bcTop=s"=>\$bcTop,"ogesDebug=i"=>\$ogesDebug,"rate=f"=>\$rate,\
-  "slowStartCFL=f"=>\$slowStartCFL,"axialAxis=i"=>\$axialAxis,"pipeAxis=i"=>\$pipeAxis,\
+  "slowStartCFL=f"=>\$slowStartCFL,"axialAxis=i"=>\$axialAxis,"pipeAxis=i"=>\$pipeAxis,"orderInTime=i"=>\$orderInTime,\
   "slowStartTime=f"=>\$slowStartTime,"ogmgCoarseGridSolver=s"=>\$ogmgCoarseGridSolver,"aftol=f"=>\$aftol,\
   "recomputeDt=i"=>\$recomputeDt,"slowStartSteps=i"=>\$slowStartSteps,"slowStartRecomputeDt=i"=>\$slowStartRecomputeDt,\
-  "ogmgSaveGrid=s"=>\$ogmgSaveGrid,"ogmgReadGrid=s"=>\$ogmgReadGrid,"nd=i"=>\$nd,"cdv=f"=>\$cdv,"kp=f"=>\$kp );
+  "ogmgSaveGrid=s"=>\$ogmgSaveGrid,"ogmgReadGrid=s"=>\$ogmgReadGrid,"nd=i"=>\$nd,"cdv=f"=>\$cdv,"kp=f"=>\$kp,\
+  "pGrad=f"=>\$pGrad,"pInflow=f"=>\$pInflow,"amp1=f"=>\$amp1,"nFreq1=f"=>\$nFreq1,"length=f"=>\$length,"tolFactor=f"=>\$tolFactor,\
+  "rInner=f"=>\$rInner,"rOuter=f"=>\$rOuter,"omega=f"=>\$omega,"amp2=f"=>\$amp2,"nFreq2r=f"=>\$nFreq2,\
+  "omegaInner=f"=>\$omegaInner,"omegaOuter=f"=>\$omegaOuter,"useNewStartup=f"=>\$useNewStartup,\
+  "radius=f"=>\$radius,"ua=f"=>\$ua,"ub=f"=>\$ub );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }
@@ -97,10 +110,12 @@ if( $tm eq "les" ){ $tm ="LargeEddySimulation"; }
 if( $ts eq "fe" ){ $ts="forward Euler";  }
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit";       }
+if( $ts eq "pc4" || ( $ts eq "pc" && $orderInTime == 4) ){ $ts="adams PC order 4";}
 if( $ts eq "pc" ){ $ts="adams PC";       }
-if( $ts eq "pc4" ){ $ts="adams PC order 4";}
 if( $ts eq "mid"){ $ts="midpoint";       }  
 if( $ts eq "afs"){ $ts="approximate factorization"; $newts=1;}
+if( $ts eq "imex" ){ $ts="implicit explicit multistep"; }
+#
 if( $newts eq "1" ){ $newts = "use new advanceSteps versions"; }else{ $newts = "#"; }
 if( $implicitVariation eq "viscous" ){ $implicitVariation = "implicitViscous"; }\
 elsif( $implicitVariation eq "adv" ){ $implicitVariation = "implicitAdvectionAndViscous"; }\
@@ -113,6 +128,10 @@ else { $order = "eighth order accurate";}
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
+#
+$rtolp=$rtolp*$tolFactor; $atolp=$atolp*$tolFactor;  # tolerances for the pressure solve
+$rtol=$rtol*$tolFactor; $atol=$atol*$tolFactor;      # tolerances for the implicit solver
+#
 #
 # -- here is the grid we use: 
 $grid
@@ -137,7 +156,11 @@ $grid
   exit
   turn off twilight zone 
 # -- order of accuracy: 
+#
+use new time-stepping startup $useNewStartup
+#
 ##$order 
+#
 #
 # ** Warning: with multigrid one must take all grids to be implicit
 #* implicit
@@ -155,7 +178,9 @@ $grid
       $show
     frequency to flush
       10
-    exit
+    # Save errors to show file too:
+    save augmented variables 1
+  exit
 #
   no plotting
   plot and always wait
@@ -164,6 +189,9 @@ $grid
   $ts
   $newts
   dtMax $dtMax
+  if( $orderInTime eq 4 ){ $cmd="fourth order accurate in time\n BDF order 4"; }else{ $cmd="#"; }
+  $cmd
+  #
   compact finite difference
   # -- convergence parameters for the af scheme
   max number of AF corrections $afit
@@ -174,8 +202,6 @@ $grid
   ## if( $filter eq 1 ){ $cmds = "filter order $filterOrder\n filter frequency $filterFrequency\n filter iterations 1\n filter coefficient 1. \n  filter stages $filterStages\n explicit filter\n  exit"; }else{ $cmds = "#"; }
   ## $cmds
 # --------------------
-  $ts
-# 
   cfl $cfl
 # 
   slow start cfl $slowStartCFL
@@ -221,7 +247,7 @@ $grid
    " rotate\n" . \
    "   0. 0. 0 \n" . \
    " $rate 0.\n" . \
-   " outerAnnulus\n" . \
+   " $gridToMove\n" . \
    " done\n" . \
    "done"; }
 # -- define the vector in the axial direction: 
@@ -237,7 +263,7 @@ if( $move eq "shift" ){ $cmd="turn on moving grids\n" . \
   " translate\n" . \
   "   1. 0. 0 \n" . \
   "   $shiftVelocity\n" . \
-  " upperChannel\n" . \
+  "   $gridToMove\n" . \
   " done\n" . \
   "done"; }
 $cmd
@@ -248,19 +274,24 @@ $cmd
   OBTZ:user defined known solution
     # -- pipe: 
     # Enter radius,pInflow,pOutflow,x0,length for
-    $radius=1.;  $pInflow=1.; $pOutflow=0.; $x0=0.; $length=2.; $ua=0.; $ub=1.; 
-    if( $option eq "pipe" ){ $cmd = "pipe flow\n $radius $pInflow $pOutflow $x0 $length $ua $ub $pipeAxis"; }
+     $pOutflow=0.; $x0=0.;  
+    if( $option eq "pipe" ){ $cmd = "pipe flow\n $radius $pInflow $pOutflow $x0 $length $ua $ub $pipeAxis $pGrad $amp1 $nFreq1 $omega $amp2 $nFreq2"; }
     # 
     # -- rotating Couette: 
     # Enter rInner, rOuter, omegaInner, omegaOuter, axialAxis
-    if( $option eq "rotating" ){ $cmd = "rotating Couette flow\n $rInner $rOuter $omegaInner $omegaOuter $axialAxis"; }
+    if( $option eq "rotating" ){ $cmd = "rotating Couette flow\n $rInner $rOuter $omegaInner $omegaOuter $axialAxis $amp1 $nFreq1"; }
     # Taylor Green vortex
     if( $option eq "tg" ){ $cmd = "Taylor Green vortex\n $kp $axialAxis"; }
     $cmd    
     done
   done
-#
 #************************************
+# Here is were we specify a pressure gradient for flow in a periodic channel:
+# This is done by adding a const forcing to the "u" equation 
+#  **NOTE** pGrad is changed here to match pInflow and pOutflow
+if( $pGrad != 0 ){ $pGrad=($pInflow-$pOutflow)/$length; $cmds ="user defined forcing\n constant forcing\n 1 $pGrad\n  done\n exit";}else{ $cmds="*"; }
+$cmds
+#
 #
 # turn off echo of command file to the terminal:
 echo to terminal 0
@@ -274,41 +305,59 @@ echo to terminal 0
    $ogesSolver=$solver; $ogesRtol=$rtol; $ogesAtol=$atol; $ogmgOpav=0; $ogmgRtolcg=1.e-6;
    include $ENV{CG}/ins/cmd/ogesOptions.h
   exit
-echo to terminal 1
+echo to terminal $echo
 #
   boundary conditions
 #
   #all=dirichletBoundaryCondition
   #all=noSlipWall
   if( $bc eq "d" ){ $cmd=" all=dirichletBoundaryCondition"; }else{ $cmd="all=noSlipWall"; }
+  if( ($bc ne "d") && ($option eq "tg") ){ $cmd="all=noSlipWall, userDefinedBoundaryData\n known solution\n done\n known solution\n done\n known solution\n done\n known solution\n done"; }
+  if( $grid =~ /square.*p/ || $grid =~ /sis.*p/ ){ $cmd="#"; }
   $cmd
+# TEMP 
+#  $cmd = "bcNumber1=noSlipWall, userDefinedBoundaryData\n known solution\n done"; 
+#  $cmd
+#
 #  $cmd="#"; 
 #  if( $option eq "rotating" ){ $cmd="all=dirichletBoundaryCondition\n bcNumber1=dirichletBoundaryCondition\n bcNumber2=dirichletBoundaryCondition"; }
 #
 #  $cmd
   #
   # center of the cylinder is (x0,x1,x2)+ s*(d0,d1,d2)
-  $vr=0.; $vTheta=0.; $vPhi=0.; $tb=0.; $x0=0.; $x1=0.; $x2=0.; 
+  $vr=0.; $vTheta=$omegaInner*$rInner; $vPhi=0.; $tb=0.; $x0=0.; $x1=0.; $x2=0.; 
   $bcInner=1; $bcOuter=2; 
+  if( $rInner eq 0 ){ $bcOuter=1; }
   if( $nd eq "3" ){ $bcInner=3; $bcOuter=4; }
   $bcCmd1 = "bcNumber$bcInner=noSlipWall, userDefinedBoundaryData\n" .\
      "cylindrical velocity\n" .\
      " $vr $vTheta $vPhi $tb\n" .\
      " $x0 $x1 $x2 $d0 $d1 $d2\n" .\
      "done\n";
-  $vTheta=1.; 
+  $vTheta=$omegaOuter*$rOuter; 
   $bcCmd2 = "bcNumber$bcOuter=noSlipWall, userDefinedBoundaryData\n" .\
     "cylindrical velocity\n" .\
     " $vr $vTheta $vPhi $tb\n" .\
     " $x0 $x1 $x2 $d0 $d1 $d2\n" .\
     "done";
   if( $move ne "0" ){ $bcCmd2 = "bcNumber$bcOuter=noSlipWall"; } # for moving annulus use normal no-slip wall
-  if( $option ne "tg" ){ $cmd=$bcCmd1 . $bcCmd2; }else{ $cmd="#"; }
+  if( $rInner eq "0"  ){ $bcCmd1=""; }
+  printf(" bcCmd2=$bcCmd2\n");
+  if( $option ne "tg" && $bc ne "d" ){ $cmd=$bcCmd1 . $bcCmd2; }else{ $cmd="#"; }
   # Flow in a pipe BC: 
-  if( $option eq "pipe" ){ $cmd="all=noSlipWall\n bcNumber1=inflowWithPressureAndTangentialVelocityGiven, uniform(p=1.)\n bcNumber2=outflow,  pressure(1.*p+$apn*p.n=0.)"; }
+#
+  if( $option eq "pipe" && $bc ne "d" ){ $cmd="all=noSlipWall\n bcNumber1=inflowWithPressureAndTangentialVelocityGiven, uniform(p=1.)\n bcNumber2=outflow,  pressure(1.*p+$apn*p.n=0.)"; }
+  $cmd
+  # For rotational component of pipe flow: 
+  $bcCmd3 = "bcNumber3=noSlipWall, userDefinedBoundaryData\n" .\
+     "cylindrical velocity\n" .\
+     " $vr $omega $vPhi $tb\n" .\
+     " $x0 $x1 $x2 $d0 $d1 $d2\n" .\
+     "done\n";
+  if( $option eq "pipe" && $omega ne 0 && $bc ne "d" ){ $cmd=$bcCmd3; }else{ $cmd="#"; }
   $cmd
   # 2D pipe in a channel: add shear 
-  if( $option eq "pipe" && $nd eq "2" ){ $cmd="bcNumber4=noSlipWall, uniform(u=$ub)"; }else{ $cmd="#"; }
+  if( $option eq "pipe" && $nd eq "2" && $move eq 0 && $bc ne "d" ){ $cmd="bcNumber4=noSlipWall, uniform(u=$ub)\n bcNumber3=noSlipWall, uniform(u=$ua)"; }else{ $cmd="#"; }
   $cmd
 #
     done
@@ -317,6 +366,7 @@ echo to terminal 1
 if( $restart eq "" ){ $cmds = "uniform flow\n u=1., v=0., p=1."; }\
   else{ $cmds = "OBIC:show file name $restart\n OBIC:solution number $restartSolution \n OBIC:assign solution from show file"; }
 # 
+#
   initial conditions
 #    $cmds
   exit
@@ -324,6 +374,7 @@ if( $restart eq "" ){ $cmds = "uniform flow\n u=1., v=0., p=1."; }\
   $project
   debug $debug
   continue
+echo to terminal 1
 # 
 # 
   $go

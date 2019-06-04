@@ -1,3 +1,257 @@
+****************************
+******** Dec 9, 2018
+
+CHECK INFLOW BC FOR p0=p0(t) -- is this 2nd-order ???
+
+
+Even longer domain: [-5,7]
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{6.7}{-5} &      & \num{5.9}{-5} &      & \num{2.9}{-5} &      \\ \hline
+ cyl2d2im.show & \num{1.9}{-5} &  3.6 & \num{1.7}{-5} &  3.5 & \num{8.1}{-6} &  3.6 \\ \hline
+ cyl2d4im.show & \num{5.3}{-6} &  3.6 & \num{4.7}{-6} &  3.5 & \num{2.2}{-6} &  3.6 \\ \hline
+ cyl2d8im.show & \num{1.5}{-6} &  3.6 & \num{1.3}{-6} &  3.5 & \num{6.2}{-7} &  3.6 \\ \hline
+ cyl2d16im & \num{4.2}{-7} &  3.6 & \num{3.8}{-7} &  3.5 & \num{1.7}{-7} &  3.6 \\ \hline
+                      &     1.83      &      &     1.82      &      &     1.85      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=3.000000e+00, Sun Dec  9 11:19:46 2018. }
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{1.5}{-6} &      & \num{3.3}{-5} &      & \num{1.2}{-6} &      \\ \hline
+ cyl2d2im.show & \num{1.4}{-6} &  1.1 & \num{8.3}{-6} &  4.0 & \num{3.2}{-7} &  3.7 \\ \hline
+ cyl2d4im.show & \num{1.3}{-6} &  1.1 & \num{2.1}{-6} &  4.0 & \num{8.6}{-8} &  3.7 \\ \hline
+ cyl2d8im.show & \num{1.2}{-6} &  1.1 & \num{5.2}{-7} &  4.0 & \num{2.3}{-8} &  3.7 \\ \hline
+ cyl2d16im & \num{1.1}{-6} &  1.1 & \num{1.3}{-7} &  4.0 & \num{6.2}{-9} &  3.7 \\ \hline
+                      &     0.10      &      &     2.00      &      &     1.90      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=5.000000e-01, Sun Dec  9 13:28:06 2018. }
+
+
+
+
+
+
+Longer domain: -xa=-3 -xb=5
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{8.9}{-5} &      & \num{1.1}{-4} &      & \num{5.9}{-5} &      \\ \hline
+ cyl2d2im.show & \num{2.6}{-5} &  3.5 & \num{3.0}{-5} &  3.5 & \num{1.7}{-5} &  3.6 \\ \hline
+ cyl2d4im.show & \num{7.3}{-6} &  3.5 & \num{8.6}{-6} &  3.5 & \num{4.6}{-6} &  3.6 \\ \hline
+ cyl2d8im.show & \num{2.1}{-6} &  3.5 & \num{2.5}{-6} &  3.5 & \num{1.3}{-6} &  3.6 \\ \hline
+ cyl2d16im & \num{6.1}{-7} &  3.5 & \num{7.0}{-7} &  3.5 & \num{3.6}{-7} &  3.6 \\ \hline
+                      &     1.80      &      &     1.81      &      &     1.84      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=3.000000e+00, Sun Dec  9 11:00:24 2018. }
+
+
+
+
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{1.1}{-4} &      & \num{1.6}{-4} &      & \num{8.6}{-5} &      \\ \hline
+ cyl2d2im.show & \num{3.1}{-5} &  3.4 & \num{4.5}{-5} &  3.5 & \num{2.5}{-5} &  3.5 \\ \hline
+ cyl2d4im.show & \num{9.3}{-6} &  3.4 & \num{1.3}{-5} &  3.5 & \num{7.2}{-6} &  3.5 \\ \hline
+ cyl2d8im.show & \num{2.8}{-6} &  3.4 & \num{3.7}{-6} &  3.5 & \num{2.1}{-6} &  3.5 \\ \hline
+ cyl2d16im & \num{8.2}{-7} &  3.4 & \num{1.1}{-6} &  3.5 & \num{6.0}{-7} &  3.5 \\ \hline
+                      &     1.75      &      &     1.80      &      &     1.79      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=3.000000e+00, Sun Dec  9 09:42:46 2018. }
+
+
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{9.3}{-5} &      & \num{8.6}{-5} &      & \num{4.9}{-5} &      \\ \hline
+ cyl2d2im.show & \num{2.7}{-5} &  3.4 & \num{2.5}{-5} &  3.4 & \num{1.4}{-5} &  3.4 \\ \hline
+ cyl2d4im.show & \num{7.9}{-6} &  3.4 & \num{7.4}{-6} &  3.4 & \num{4.2}{-6} &  3.4 \\ \hline
+ cyl2d8im.show & \num{2.3}{-6} &  3.4 & \num{2.2}{-6} &  3.4 & \num{1.2}{-6} &  3.4 \\ \hline
+ cyl2d16im & \num{6.7}{-7} &  3.4 & \num{6.3}{-7} &  3.4 & \num{3.6}{-7} &  3.4 \\ \hline
+                      &     1.78      &      &     1.77      &      &     1.77      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=2.000000e+00, Sun Dec  9 09:04:50 2018. }
+
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{6.2}{-5} &      & \num{2.1}{-5} &      & \num{8.5}{-6} &      \\ \hline
+ cyl2d2im.show & \num{1.9}{-5} &  3.2 & \num{6.7}{-6} &  3.1 & \num{3.0}{-6} &  2.9 \\ \hline
+ cyl2d4im.show & \num{6.0}{-6} &  3.2 & \num{2.2}{-6} &  3.1 & \num{1.0}{-6} &  2.9 \\ \hline
+ cyl2d8im.show & \num{1.9}{-6} &  3.2 & \num{7.0}{-7} &  3.1 & \num{3.6}{-7} &  2.9 \\ \hline
+ cyl2d16im & \num{5.8}{-7} &  3.2 & \num{2.3}{-7} &  3.1 & \num{1.2}{-7} &  2.9 \\ \hline
+                      &     1.68      &      &     1.63      &      &     1.53      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=1.000000e+00, Sun Dec  9 08:41:14 2018. }
+
+
+
+TS=PC -- 2D
+
+Start ramp later
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1pc.show & \num{1.7}{-5} &      & \num{2.3}{-6} &      & \num{1.2}{-6} &      \\ \hline
+ cyl2d2pc.show & \num{6.2}{-6} &  2.8 & \num{8.0}{-7} &  2.9 & \num{3.9}{-7} &  3.0 \\ \hline
+ cyl2d4pc.show & \num{2.3}{-6} &  2.8 & \num{2.8}{-7} &  2.9 & \num{1.3}{-7} &  3.0 \\ \hline
+ cyl2d8pc.show & \num{8.2}{-7} &  2.8 & \num{9.5}{-8} &  2.9 & \num{4.5}{-8} &  3.0 \\ \hline
+                      &     1.47      &      &     1.53      &      &     1.56      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=5.000000e-01, Sun Dec  9 08:26:43 2018. }
+
+
+
+
+decrease dtMax 
+
+/home/henshw/cg.g/ins/bin/cgins -noplot column -g=cyl2dFixede1.order2 -ts=pc -nu=.1 -tp=.1  -tf=.5 -dtMax=.01 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -show=cyl2d1pc.show -go=go > cyl2d1pc.out
+/home/henshw/cg.g/ins/bin/cgins -noplot column -g=cyl2dFixede2.order2 -ts=pc -nu=.1 -tp=.1  -tf=.5 -dtMax=.005 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -show=cyl2d2pc.show -go=go > cyl2d2pc.out
+/home/henshw/cg.g/ins/bin/cgins -noplot column -g=cyl2dFixede4.order2 -ts=pc -nu=.1 -tp=.1  -tf=.5 -dtMax=.0025 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -show=cyl2d4pc.show -go=go > cyl2d4pc.out
+/home/henshw/cg.g/ins/bin/cgins -noplot column -g=cyl2dFixede8.order2 -ts=pc -nu=.1 -tp=.1  -tf=.5 -dtMax=.00125 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -show=cyl2d8pc.show -go=go > cyl2d8pc.out
+
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1pc.show & \num{2.8}{-5} &      & \num{5.1}{-6} &      & \num{2.6}{-6} &      \\ \hline
+ cyl2d2pc.show & \num{1.0}{-5} &  2.8 & \num{1.7}{-6} &  2.9 & \num{9.1}{-7} &  2.9 \\ \hline
+ cyl2d4pc.show & \num{3.7}{-6} &  2.8 & \num{5.9}{-7} &  2.9 & \num{3.1}{-7} &  2.9 \\ \hline
+ cyl2d8pc.show & \num{1.3}{-6} &  2.8 & \num{2.0}{-7} &  2.9 & \num{1.1}{-7} &  2.9 \\ \hline
+                      &     1.47      &      &     1.55      &      &     1.54      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=5.000000e-01, Sun Dec  9 07:18:00 2018. }
+
+
+
+****************************
+******** Dec 8, 2018
+
+Column in a channel
+
+GRIDS: 
+ogen -noplot columnInChannelGrid -prefix=column -order=4 -factor=1
+ogen -noplot columnInChannelGrid -prefix=column -order=4 -factor=2
+
+ogen -noplot columnInChannelGrid -prefix=column -factor=1
+
+
+************* START WITH IMEX22 in 2D *******
+ogen -noplot cicArg -prefix=cyl2d -xb=4 -interp=e -order=2 -factor=1
+ogen -noplot cicArg -prefix=cyl2d -xb=4 -interp=e -order=2 -factor=2
+
+
+TS=PC
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1pc.show & \num{8.9}{-5} &      & \num{3.9}{-5} &      & \num{2.4}{-5} &      \\ \hline
+ cyl2d2pc.show & \num{2.6}{-5} &  3.4 & \num{1.2}{-5} &  3.4 & \num{7.0}{-6} &  3.4 \\ \hline
+ cyl2d4pc.show & \num{7.6}{-6} &  3.4 & \num{3.5}{-6} &  3.4 & \num{2.1}{-6} &  3.4 \\ \hline
+ cyl2d8pc.show & \num{2.2}{-6} &  3.4 & \num{1.0}{-6} &  3.4 & \num{6.1}{-7} &  3.4 \\ \hline
+                      &     1.78      &      &     1.74      &      &     1.76      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=1.000000e+00, Sat Dec  8 13:55:06 2018. }
+
+
+
+
+
+TS=IM rampOrder=3 : 
+% -------------- l1 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ cyl2d1im.show & \num{5.8}{-5} &      & \num{2.2}{-5} &      & \num{1.0}{-5} &      \\ \hline
+ cyl2d2im.show & \num{1.8}{-5} &  3.2 & \num{7.5}{-6} &  3.0 & \num{3.6}{-6} &  2.8 \\ \hline
+ cyl2d4im.show & \num{5.9}{-6} &  3.2 & \num{2.5}{-6} &  3.0 & \num{1.3}{-6} &  2.8 \\ \hline
+ cyl2d8im.show & \num{1.9}{-6} &  3.2 & \num{8.5}{-7} &  3.0 & \num{4.7}{-7} &  2.8 \\ \hline
+ cyl2d16im & \num{5.9}{-7} &  3.2 & \num{2.9}{-7} &  3.0 & \num{1.7}{-7} &  2.8 \\ \hline
+                      &     1.66      &      &     1.57      &      &     1.47      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=1.000000e+00, Sat Dec  8 13:28:42 2018. }
+
+
+
+
+
+cgins -noplot column -g=cyl2dFixede2.order2 -ts=imex -nu=.1 -tp=.5 -tf=5. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -go=og
+
+
+cgins -noplot column -g=cyl2de2.order2 -ts=imex -nu=.1 -tp=.5 -tf=5. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -psolver=yale -solver=yale -show=cyl2d2.show -go=go >! cyl2d2.out
+
+
+
+
+2D square
+cgins -noplot column -g=square16.order4 -ts=imex -orderInTime=4 -nu=.1 -tp=.05 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+
+TROUBLE at inflow and no-slip wall (v-component)
+Check 2d: *trouble* t=7
+cgins -noplot column -g=cice2.order4 -ts=imex -orderInTime=4 -nu=.05 -tp=.05 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+cgins -noplot column -g=cice2.order2 -ts=imex -nu=.05 -tp=.05 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+
+G2:
+cgins -noplot column -g=columne2.order4 -ts=imex -orderInTime=4 -nu=.05 -tp=.05 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+IMEX44 scheme
+cgins -noplot column -g=columne1.order4 -ts=imex -orderInTime=4 -nu=.05 -tp=.1 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+ 
+IMEX24 scheme 
+cgins -noplot column -g=columne1.order4 -ts=imex -nu=.05 -tp=.1 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+
+ORDER 4
+cgins -noplot column -g=columne1.order4 -nu=.05 -tp=.01 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+RAMP Pressure at inflow
+cgins -noplot column -g=columne1.order2 -nu=.05 -tp=.01 -tf=10. -dtMax=.05 -pInflow=.5 -cfl=.9 -debug=1 -go=og
+
+
+****************************
+******** Dec 7, 2018
+
+START ON CYL IN CHANNEL EXAMPLE FOR FINS
+
+
+AGAIN
+
+ogen -noplot cylInChannelGrid  -prefix=cyl -factor=1
+
+cgins -noplot cylInChannel -g=cyle1.order2 -nu=.05 -tp=.01 -tf=20. -pInflow=.5 -cfl=.9 -ad2=0 -ad4=0 -debug=1 -project=0 -go=og
+
+
+>>> t =  3.950e+01, dt = 2.94e-02, cpu = 7.85e+02 seconds (1377 steps)
+           p : (min,max)=(-3.524788e-01, 9.610314e-01) 
+           u : (min,max)=(-5.132152e-04, 1.220500e+00) 
+           v : (min,max)=(-1.055994e-01, 7.758026e-02) 
+           w : (min,max)=(-3.665948e-01, 3.656108e-01) 
+ Divergence: divMax/vorMax = 1.02e-02 divl2Norm/vorMax=5.68e-04 vorMax=1.09e+01
+ ---- adjust time step to reach tprint: timeInterval=5.000000e-01, numberOfSubSteps=16, dtNew=3.1250e-02
+recompute dt: dt(old)=2.941e-02, dtNew = 3.125e-02, (explicit dt=2.147e-03, ratio=1.455e+01) 
+ >>> t =  4.000e+01, dt = 2.94e-02, cpu = 7.92e+02 seconds (1394 steps)
+           p : (min,max)=(-3.222118e-01, 9.835126e-01) 
+           u : (min,max)=(-6.389322e-04, 1.221951e+00) 
+           v : (min,max)=(-1.058403e-01, 7.747891e-02) 
+           w : (min,max)=(-3.679998e-01, 3.670651e-01) 
+ Divergence: divMax/vorMax = 1.03e-02 divl2Norm/vorMax=5.82e-04 vorMax=1.09e+01
+
+ >>> t =  5.000e+01, dt = 2.94e-02, cpu = 1.00e+03 seconds (1734 steps)
+           p : (min,max)=(-3.335329e-01, 9.744657e-01) 
+           u : (min,max)=(-5.223883e-04, 1.220522e+00) 
+           v : (min,max)=(-1.057161e-01, 7.765360e-02) 
+           w : (min,max)=(-3.664324e-01, 3.657109e-01) 
+ Divergence: divMax/vorMax = 1.03e-02 divl2Norm/vorMax=5.75e-04 vorMax=1.09e+01
+
+
+GRID
+ogen -noplot cylinderInAChannel -prefix=cyl -xa=-2. -xb=3. -factor=1
+
+cgins -noplot cyl3d -g=cyle1.order2 -nu=1.e-2 -tp=.01 -tf=1. -move=0 -cfl=.9 -ad2=0 -ad4=0 -debug=1 -project=0 -go=og
+
+
+
+
+
+
 ==== 2012/05/03 -- CHECK FOR INVALID READ in bcoptedge3.f
 
 mpirun -np 1 -dbg=valgrind /home/henshaw.0/cgp/ins/bin/cgins -noplot /home/henshaw.0/runs/cgins/cyl3d/cyl3d -g=cylinderInAChannele2.order4.ml2 -nu=1.e-4 -tp=.01 -tf=.01 -move=0 -amp=.25 -rotationFreq=.0 -cfl=3. -psolver=mg -ts=afs -ad2=0 -ad4=1 -debug=1 -project=0 -freqFullUpdate=1 -numberOfParallelGhost=6 -go=go

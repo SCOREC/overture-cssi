@@ -93,6 +93,9 @@ implicitTimeStep(  real & t0, real & dt0, int correction, AdvanceOptions & advan
   int &ndt0=adamsData.ndt0;
   real *dtp = adamsData.dtp;
 
+  const Parameters::ImplicitMethod & implicitMethod = 
+                parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");
+
   const int & predictorOrder = parameters.dbase.get<int>("predictorOrder");
   
   int numberOfCorrections=parameters.dbase.get<int>("numberOfPCcorrections"); 
@@ -511,6 +514,9 @@ takeTimeStepBDF( real & t0, real & dt0, int correction, AdvanceOptions & advance
   int &nab0 =adamsData.nab0, &nab1=adamsData.nab1, &nab2=adamsData.nab2, &nab3=adamsData.nab3;
   int &ndt0=adamsData.ndt0;
   real *dtp = adamsData.dtp;
+
+  const Parameters::ImplicitMethod & implicitMethod = 
+                parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");
 
   const int & predictorOrder = parameters.dbase.get<int>("predictorOrder");
   int numberOfCorrections=parameters.dbase.get<int>("numberOfPCcorrections"); 

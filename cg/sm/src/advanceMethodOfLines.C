@@ -204,6 +204,8 @@ advanceMethodOfLines( int current, real t, real dt,
       // ............. Boundary Conditions ..............
             if( applyBC )
             {
+                gf[next].u.interpolate();  // *wdh* March 29,2019 -- this was missing!
+
       	int option=0; // not used.
       	applyBoundaryConditions( option, dt, next,current ); // apply BC to "next" (current=previous time step)
             }
@@ -235,6 +237,8 @@ advanceMethodOfLines( int current, real t, real dt,
       	}
       	if( applyBC )
       	{
+                    gf[next].u.interpolate();  // *wdh* March 29,2019 -- this was missing!
+
         	  int option=0; // not used.
         	  applyBoundaryConditions( option, dt, next,current );
       	}

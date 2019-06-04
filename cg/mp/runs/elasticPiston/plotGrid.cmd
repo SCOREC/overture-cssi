@@ -1,6 +1,6 @@
 #
 #  plotStuff plotGrid -show=radialElasticPistonGride2.order2.hdf -name=radialElasticPistonGrid
-#  plotStuff plotGrid -show=elasticPistonGrid2.order2.hdf -name=elasticPistonGrid
+#  plotStuff plotGrid -show=elasticPistonGride2.order2.hdf -name=elasticPistonGrid
 #
 #  plotStuff plotGrid -show=radialTravelingWaveGride2.order2.hdf -name=radialTravelingWaveGrid
 #
@@ -16,7 +16,7 @@ $show
 #
  colour boundaries by grid number
 if( $name eq "elasticPistonGrid" ){ \
-  $cmd="colour grid lines from chosen name\n grid colour 0 RED\n grid colour 1 BLUE\n grid colour 2 GREEN"; }else{ $cmd="#"; }
+  $cmd="colour grid lines from chosen name\n grid colour 0 RED\n grid colour 1 BLUE\n grid colour 2 GREEN\n bigger"; }else{ $cmd="#"; }
   $cmd
 #
   line width scale factor:0 3

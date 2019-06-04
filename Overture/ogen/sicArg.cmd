@@ -100,7 +100,8 @@ generate an overlapping grid
       $orderOfAccuracy
     ghost points
       all
-      $ng $ng $ng $ng $ng $ng 
+      $ngp = $ng+1; 
+      $ng $ng $ng $ngp $ng $ng 
   exit
 *  display intermediate results
   compute overlap

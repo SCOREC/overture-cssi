@@ -1989,20 +1989,25 @@ beginLoopsMask2d()
        end do
        end do
 
-      ! --- check matrix coefficients by delta function approach ----
-      if( checkCoeff.eq.1 )then
-        numberOfEquations=8
+       numberOfEquations=8
+
+       ! --- check matrix coefficients by delta function approach ----
+       if( checkCoeff.eq.1 )then
         do n2=0,7
         do n1=0,7
           a8(n1,n2)=aa8(n1,n2,0,nn)
         end do
         end do                
         checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a8,evalInterfaceEquations24c )
-      end if
+       end if
+
+       if( saveCoeff.eq.1 )then
+        ! Macro from interfaceMacros.h : 
+        saveCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,am,evalInterfaceEquations24c )
+       end if
 
        ! solve A Q = F
        ! factor the matrix
-       numberOfEquations=8
        call dgeco( aa8(0,0,0,nn), numberOfEquations, numberOfEquations, ipvt8(0,nn),rcond,work(0))
 
        if( debug.gt.3 ) write(debugFile,'(" --> 4cth: i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
@@ -3018,9 +3023,16 @@ end if
       ! For checking coefficients by delta approach: 
       real u1s(-5:5,-5:5,-5:5,0:2), u2s(-5:5,-5:5,-5:5,0:2)
       real coeffDiff
-      integer checkCoeff
+      integer checkCoeff, saveCoeff, coeffFile, k
       integer hw1,hw2,hw3
       real f0(0:11),delta
+
+      ! for saving coefficients
+      real am(12,500)
+      integer ieqn,ja
+      integer i1a,i1b,i1c,i2a,i2b,i2c,i3a,i3b,i3c
+      integer j1a,j1b,j1c,j2a,j2b,j2c,j3a,j3b,j3c
+
 
 !     --- start statement function ----
 ! .......statement functions for GDM parameters
@@ -3190,6 +3202,17 @@ end if
 
       checkCoeff=0 ! 1  ! if non-zero then check coefficients in interface equations using delta approach
       coeffDiff=0.
+      saveCoeff=0  ! 1 : save coefficients in the interface equations to a file
+      coeffFile=20  ! file for saving coefficients
+      ieqn=-1      ! counts equations
+      if( saveCoeff.eq.1 .and. initialized.eq.0 .and. assignInterfaceGhostValues.eq.1 )then
+        open (coeffFile,file='interfaceCoeff.dat',status='unknown',form='formatted')
+        write(coeffFile,'("! Coefficients in the interface equations")') 
+        write(coeffFile,'("! nd,orderOfAccuracy")') 
+        write(coeffFile,'(2(i6,1x))') nd,orderOfAccuracy
+        write(coeffFile,'(9(i6,1x))') side1,axis1,grid1, n1a,n1b,n2a,n2b,n3a,n3b
+        write(coeffFile,'(9(i6,1x))') side2,axis2,grid2, m1a,m1b,m2a,m2b,m3a,m3b
+      end if
 
       debugFile=10
       if( initialized.eq.0 .and. debug.gt.0 )then

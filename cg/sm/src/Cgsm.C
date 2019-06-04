@@ -2183,6 +2183,14 @@ writeParameterSummary( FILE * file )
   
   const bool & useAddedMassAlgorithm = parameters.dbase.get<bool>("useAddedMassAlgorithm");
   fPrintF(file," useAddedMassAlgorithm=%i\n",(int)useAddedMassAlgorithm);
+
+  const bool & relaxCorrectionSteps = parameters.dbase.get<int>("relaxCorrectionSteps");
+  const real & omega = parameters.dbase.get<real>("addedMassRelaxationFactor");
+  const real & tol = parameters.dbase.get<real>("subIterationConvergenceTolerance");
+  fPrintF(file," relaxCorrectionSteps=%i, addedMassRelaxationFactor=%.2g, subIterationConvergenceTolerance=%.2g (for sub-iterations)\n",
+          relaxCorrectionSteps,omega,tol);
+
+
   fPrintF(file," fluidSolidCornerFix=%i.\n",parameters.dbase.get<int>("fluidSolidCornerFix"));
   
   if( parameters.dbase.get<bool >("applyFilter") )

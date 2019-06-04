@@ -33,6 +33,13 @@ outputHeader()
   const int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption"); 
   const int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency"); 
 
+  const real c0 = 299792458;    // the speed of light, [m/c]
+  const real nm = 1e-9;         // nanometers  (meter-per-nm)
+  const real um = 1e-6;         // micrometers
+  const real & velocityScale = dbase.get<real>("velocityScale");
+  const real & lengthScale = dbase.get<real>("lengthScale"); 
+  const real & dtMax = dbase.get<real>("dtMax");
+
   for( int fileio=0; fileio<2; fileio++ )
   {
     FILE *file = fileio==0 ? logFile : stdout; 
@@ -44,10 +51,12 @@ outputHeader()
     fPrintF(file," tFinal=%f, dt=%9.3e, tPlot=%9.3e cfl=%3.2f adr=%3.2f, adc=%3.2f  \n",
 	    tFinal,deltaT,tPlot,cfl,artificialDissipation,artificialDissipationCurvilinear );
 
+    fPrintF(file," dtMax=%g\n",dtMax);
     
     fPrintF(file," Using method %s\n",(const char *)methodName);
 
     fPrintF(file," Dispersion model: %s\n",(const char*)dbase.get<aString>("dispersionModelName"));
+
 
     if( timeSteppingMethod==modifiedEquationTimeStepping )
       fPrintF(file," Time stepping method is modifiedEquation\n");
@@ -276,6 +285,13 @@ outputHeader()
     fPrintF(file," Interface iterations (4th-order) relative-tol=%.3e, absolute-tol=%.3e\n",
             dbase.get<real>("rtolForInterfaceIterations"),dbase.get<real>("atolForInterfaceIterations"));
 
+    fPrintF(file,"\n");
+    const real velocityScale = dbase.get<real>("velocityScale");
+    const real lengthScale = dbase.get<real>("lengthScale"); 
+    fPrintF(file," lengthScale=%10.4e (=%.3g nm), velocityScale=%10.4e (velocityScale/c0=%.3g)\n",
+            lengthScale,lengthScale/nm,velocityScale,velocityScale/c0);
+
+
     if( numberOfMaterialRegions>1 )
     {
       fPrintF(file," number of material regions = %i\n",numberOfMaterialRegions);
@@ -318,8 +334,8 @@ outputHeader()
         const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
         
 	// fPrintF(file," Drude parameters: gamma=%9.3e, omegap=%9.3e\n",dmp.gamma,dmp.omegap);
-	fPrintF(file," GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
-              dmp.alphaP,numberOfPolarizationVectors);
+	fPrintF(file," Material %s, GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
+		(const char*)dmp.getMaterialName(),dmp.alphaP,numberOfPolarizationVectors);
         for( int npv=0; npv<numberOfPolarizationVectors; npv++ )
           fPrintF(file,"   Polarization vector P(%i) : a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e\n",
                   npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));
@@ -336,8 +352,9 @@ outputHeader()
 	  //	  dmp.gamma,dmp.omegap,(const char*)cg.getDomainName(domain) );
           if( numberOfPolarizationVectors>0 )
           {
-            fPrintF(file," Domain %i (%s) GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
-                    domain,(const char*)cg.getDomainName(domain),dmp.alphaP,numberOfPolarizationVectors);
+            fPrintF(file," Domain %i (%s) Material %s, GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
+                    domain,(const char*)cg.getDomainName(domain),(const char*)dmp.getMaterialName(),
+		    dmp.alphaP,numberOfPolarizationVectors);
             for( int npv=0; npv<numberOfPolarizationVectors; npv++ )
               fPrintF(file,"   Polarization vector P(%i) : a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e\n",
                       npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));

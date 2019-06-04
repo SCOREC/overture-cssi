@@ -31,6 +31,7 @@
 #  ogen -noplot cylinder -order=4 -periodic=p -axial=y -factor=4
 #
 # -- save current values of parameters so this script can be called by CG scripts
+$prefix="cylinder"; 
 $axial="z"; # axial axis
 $orderCylinder=$order; $orderOfAccuracyCylinder=$orderOfAccuracy; 
 $order=2; $factor=1; $interp="i"; # default values
@@ -40,7 +41,8 @@ $za=-.5; $zb=.5;
 # 
 # get command line arguments
 Getopt::Long::Configure("prefix_pattern=(--grid_|--|-)");
-GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"periodic=s"=> \$periodic,"axial=s"=>\$axial);
+GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"periodic=s"=> \$periodic,"axial=s"=>\$axial,"prefix=s"=>\$prefix,\
+            "innerRad=f"=>\$innerRad,"outerRad=f"=>\$outerRad,"za=f"=>\$za,"zb=f"=>\$zb );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -48,8 +50,7 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 # 
 $suffix = ".order$order"; 
 if( $periodic eq "p" ){ $suffix .= "p"; }
-$prefix = "cylinder"; 
-if( $axial ne "z" ){ $prefix .= $axial; }
+if( $prefix eq "cylinder" && $axial ne "z" ){ $prefix .= $axial; }
 $name = $prefix . "$factor" . $suffix . ".hdf";
 #
 $bc="-1 -1 1 2 3 4"; 

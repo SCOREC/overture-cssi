@@ -1286,7 +1286,7 @@ Parameters::
   if( dbase.has_key("probeList") )
   {
     // delete probes (this will close the files)
-    // printF("Parameters:: deleting the probes...\n");
+    printF("Parameters:: deleting the probes...\n");
     std::vector<ProbeInfo*> & probeList = dbase.get<std::vector<ProbeInfo*> >("probeList");
     for( int i=0; i<probeList.size(); i++ )
       delete probeList[i];

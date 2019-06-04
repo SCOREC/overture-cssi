@@ -79,8 +79,12 @@ for(i3=I3Base; i3<=I3Bound; i3++)					\
 
     printF("\n--GABC-- SET MIXED-PRESSURE BC TO EXACT SOLUTION t=%9.3e ampCoeff=%e **********TEMP*************\n",t0,ampCoeff);
 
+#ifndef USE_PPP
     f(I1g,I2g,I3g) = pe + ampCoeff*(normal(I1,I2,I3,0)*pex(I1,I2,I3)+
       normal(I1,I2,I3,1)*pey(I1,I2,I3));
+#else
+    OV_ABORT("finish me for parallel");
+#endif
 
     if( t0 <= 3.*dt && debug() & 4 )
     {
@@ -222,6 +226,7 @@ for(i3=I3Base; i3<=I3Bound; i3++)					\
      ::display(traction(I1,I2,I3,1),  sPrintF("--GABC-- TZ FLUID TRACTION t=%9.3e",t0),debugFile,"%6.3f ");
    }
 
+#ifndef USE_PPP
    f(I1g,I2g,I3g) -= (normal(I1,I2,I3,0)*(traction(I1,I2,I3,0)) + 
                       normal(I1,I2,I3,1)*(traction(I1,I2,I3,1)) );
                 
@@ -260,6 +265,9 @@ for(i3=I3Base; i3<=I3Bound; i3++)					\
 
   f(I1g,I2g,I3g) += pe + ampCoeff*(normal(I1,I2,I3,0)*pex(I1,I2,I3)+
                                    normal(I1,I2,I3,1)*pey(I1,I2,I3));
+#else
+  OV_ABORT("finish me for parallel");
+#endif
 
   if( t0 <= 3.*dt && debug() & 4 )
   {

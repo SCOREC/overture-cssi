@@ -33,6 +33,9 @@
 #   plotStuff plotObjects.cmd -show=objectsG4b.show 
 #   plotStuff plotObjects.cmd -show=objectsG4M1.show
 #
+# Movie:
+#   plotStuff plotObjects.cmd -show=objectsG4m.show -EyMin=-1.7 -EyMax=1.1 -name=cgmxScat12ObjectsGDM
+#
 $show="ellipseG8.hdf"; $solution="-1"; $EyMin=-1.5; $EyMax=1.5; $ExMin=-1.5; $ExMax=1.5; $HzMin=-1.; $HzMax=1.;
 # get command line arguments
 GetOptions( "show=s"=>\$show, "name=s"=>\$name, "solution=i"=>\$solution,\
@@ -53,9 +56,18 @@ contour
   vertical scale factor 0.
 exit
 solution: $solution
+# movie: 
+DISPLAY AXES:0 0
+DISPLAY LABELS:0 0
+DISPLAY COLOUR BAR:0 0
+set view:0 0.0155536 -0.021148 0 1.83688 1 0 0 0 1 0 0 0 1
+movie file name: $name
+save movie files 1
+
 
 # zoom: 
   set view:0 -0.0307779 -0.0121165 0 2.08435 1 0 0 0 1 0 0 0 1
+
 pause
 # hardcopy vertical resolution:0 2048
 # hardcopy horizontal resolution:0 2048

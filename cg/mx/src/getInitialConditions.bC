@@ -1604,7 +1604,8 @@ assignInitialConditions(int current, real t, real dt )
 	else if( initialConditionOption==gaussianPlaneWave )
 	{
 	  // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
-	  printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%i %i %i\n",kx,ky,kz);
+	  printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
+                 kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave);
 	    
 	  realSerialArray xei,xhi;
 
@@ -1660,7 +1661,7 @@ assignInitialConditions(int current, real t, real dt )
 	    const real z0      = gpp[5];
 	    
 
-	    printF("Gaussian pulse IC's: beta=%8.2e, scale=%8.2e, exponent=%8.2e, (x0,y0,z0)=(%8.2e,%8.2e,%8.2e) \n",
+	    printF("\n GGGGG Gaussian pulse IC's: beta=%8.2e, scale=%8.2e, exponent=%8.2e, (x0,y0,z0)=(%8.2e,%8.2e,%8.2e) \n\n",
 		   beta,scale,exponent,x0,y0,z0);
 
 	    const real c0= pulse==0 ? 0. : 1.;
@@ -2203,12 +2204,6 @@ assignInitialConditions(int current, real t, real dt )
               // -- dispersion model components --
 	      if( localDispersionModel!=noDispersion )
 	      {
-                if( numberOfPolarizationVectors>1 )
-                {
-                  OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
-                }
-                
-
 		if( method==nfdtd )
 		{
 		  FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2218,11 +2213,11 @@ assignInitialConditions(int current, real t, real dt )
                       const int pc= iv*numberOfDimensions;
        
                       // Do this for now -- set all vectors to be the same: 
-                      pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
-                      pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
+                      pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv];  
+                      pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv];  
                                                                                                 
-                      pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
-                      pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
+                      pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm[iv] + UG(i1,i2,i3,ex+3)*cPim[iv];
+                      pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm[iv] + UG(i1,i2,i3,ey+3)*cPim[iv];
                     }
 
 		  }
@@ -2252,12 +2247,6 @@ assignInitialConditions(int current, real t, real dt )
 		  // -- dispersion model components --
 		  if( localDispersionModel!=noDispersion )
 		  {
-
-                    if( numberOfPolarizationVectors>1 )
-                    {
-                      OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
-                    }
-
 		    if( method==nfdtd )
 		    {
 		      FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2268,13 +2257,13 @@ assignInitialConditions(int current, real t, real dt )
                           const int pc= iv*numberOfDimensions;
        
                           // Do this for now -- set all vectors to be the same: 
-                          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;  
-                          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;  
-                          pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr + UG(i1,i2,i3,ez+3)*cPi;  
+                          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv];  
+                          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv];  
+                          pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr[iv] + UG(i1,i2,i3,ez+3)*cPi[iv];  
                                                                                                     
-                          pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm + UG(i1,i2,i3,ex+3)*cPim;
-                          pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm + UG(i1,i2,i3,ey+3)*cPim;
-                          pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*cPrm + UG(i1,i2,i3,ez+3)*cPim;
+                          pmLocal(i1,i2,i3,pc  ) =UG(i1,i2,i3,ex)*cPrm[iv] + UG(i1,i2,i3,ex+3)*cPim[iv];
+                          pmLocal(i1,i2,i3,pc+1) =UG(i1,i2,i3,ey)*cPrm[iv] + UG(i1,i2,i3,ey+3)*cPim[iv];
+                          pmLocal(i1,i2,i3,pc+2) =UG(i1,i2,i3,ez)*cPrm[iv] + UG(i1,i2,i3,ez+3)*cPim[iv];
                         }
 
 		      }

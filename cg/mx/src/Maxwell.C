@@ -277,6 +277,8 @@ Maxwell:: Maxwell()
   cfl=.9;
   tFinal=1.;
   tPlot=-1.;
+  dbase.put<real>("dtMax")  = REAL_MAX;  // maximum time step
+
 
   gridType=unknown; // square;
   elementType=structuredElements;
@@ -444,6 +446,17 @@ Maxwell:: Maxwell()
   dbase.put<int>("numberOfForcingFunctions")=0;  // number of elements in forcingArray
   dbase.put<int>("fCurrent")=0;                  // forcingArray[fCurrent] : current forcing
 
+
+
+  const real nm = 1e-9;         // nanometers  (meter-per-nm)
+  const real um = 1e-6;         // micrometers
+  const real c0 = 299792458;    // the speed of light, [m/c]
+  const real L0 = 100*nm;       // length scale -- appropriate for visible light 
+
+  dbase.put<real>("velocityScale")= c0;  // velocity scale 
+  dbase.put<real>("lengthScale")  = L0;  // length scale 
+
+
   timing.redim(maximumNumberOfTimings);
   timing=0.;
   for( int i=0; i<maximumNumberOfTimings; i++ )
@@ -495,6 +508,7 @@ Maxwell::
   delete show;
   delete referenceShowFileReader;
 
+  
   // assert( cgp!=NULL );
   // CompositeGrid & cg= *cgp;
   // const int numberOfComponentGrids=cg.numberOfComponentGrids();
@@ -1317,6 +1331,155 @@ printStatistics(FILE *file /* = stdout */)
   return 0;
 }
 
+int Maxwell::
+buildDissipationParametersDialog(DialogData & dialog )
+// ==========================================================================================
+// /Description:
+//   Build the dialog for dissipation parameters.
+//
+// This dialog was created to shorten the time-stepping dialog
+// ==========================================================================================
+{
+
+  aString tbCommands[] = {
+                          "use variable dissipation",
+                          "apply filter",
+                          "use sosup dissipation",
+ 			  ""};
+  int tbState[20];
+  tbState[0] = useVariableDissipation;
+  tbState[1] = applyFilter;
+  tbState[2]= parameters.dbase.get<int>("useSosupDissipation");
+
+  int numColumns=1;
+  dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
+
+  // ----- Text strings ------
+  const int numberOfTextStrings=30;
+  aString textCommands[numberOfTextStrings];
+  aString textLabels[numberOfTextStrings];
+  aString textStrings[numberOfTextStrings];
+
+  int nt=0;
+
+  textCommands[nt] = "dissipation";  textLabels[nt]=textCommands[nt];
+  sPrintF(textStrings[nt], "%g",artificialDissipation);  nt++; 
+
+  textCommands[nt] = "dissipation (curvilinear)";  textLabels[nt]=textCommands[nt];
+  sPrintF(textStrings[nt], "%g",artificialDissipationCurvilinear);  nt++; 
+
+  textCommands[nt] = "order of dissipation";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfArtificialDissipation); nt++; 
+
+  textCommands[nt] = "filter order";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfFilter); nt++; 
+
+  textCommands[nt] = "filter frequency";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",filterFrequency); nt++; 
+
+  textCommands[nt] = "filter iterations";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfFilterIterations); nt++; 
+
+  textCommands[nt] = "filter coefficient";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",filterCoefficient); nt++; 
+
+  // for unstructured grids: 
+  textCommands[nt] = "dissipation interval";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",artificialDissipationInterval); nt++; 
+
+  textCommands[nt] = "number of variable dissipation smooths";
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfVariableDissipationSmooths); nt++; 
+
+  textCommands[nt] = "divergence damping";  textLabels[nt]=textCommands[nt];
+  sPrintF(textStrings[nt], "%g",divergenceDamping);  nt++; 
+
+  textCommands[nt] = "number of divergence smooths";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfDivergenceSmooths); nt++; 
+
+  textCommands[nt] = "div cleaning coefficient";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",divergenceCleaningCoefficient); nt++; 
+
+  const real & sosupParameter = parameters.dbase.get<real>("sosupParameter");    // scaling of sosup dissipation
+  textCommands[nt] = "sosup parameter";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",sosupParameter); nt++; 
+
+  const int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption");
+  textCommands[nt] = "sosup dissipation option";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",sosupDissipationOption); nt++; 
+
+  const int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency");
+  textCommands[nt] = "sosup dissipation frequency";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",sosupDissipationFrequency); nt++; 
+
+
+  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
+  dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
+  return 0;
+}
+
+
+int Maxwell::
+buildInterfaceOptionsDialog(DialogData & dialog )
+// ==========================================================================================
+// /Description:
+//   Build the dialog for setting interface options.
+//
+// This dialog was created to shorten the time-stepping dialog
+// ==========================================================================================
+{
+
+  const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
+  const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
+
+  aString tbCommands[] = {
+                          "use new interface routines",
+                          "use impedance interface projection",
+ 			  ""};
+  int tbState[20];
+  tbState[0] = useNewInterfaceRoutines; 
+  tbState[1]= dbase.get<int>("useImpedanceInterfaceProjection");
+  
+
+  int numColumns=1;
+  dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
+
+  // ----- Text strings ------
+  const int numberOfTextStrings=50;
+  aString textCommands[numberOfTextStrings];
+  aString textLabels[numberOfTextStrings];
+  aString textStrings[numberOfTextStrings];
+
+  int nt=0;
+
+  textCommands[nt] = "interface BC iterations";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfIterationsForInterfaceBC); nt++; 
+
+  textCommands[nt] = "omega for interface iterations";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",omegaForInterfaceIteration); nt++; 
+
+  textCommands[nt] = "relative tol for interface iterations";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",rtolForInterfaceIterations); nt++; 
+
+  textCommands[nt] = "absolute tol for interface iterations";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",atolForInterfaceIterations); nt++; 
+
+  textCommands[nt] = "interface option";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",materialInterfaceOption); nt++; 
+  
+  textCommands[nt] = "interface equations option";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",interfaceEquationsOption); nt++; 
+  
+
+  // null strings terminal list
+  assert( nt<numberOfTextStrings );
+  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
+  dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
+  return 0;
+}
+
+
 
 int Maxwell::
 buildTimeSteppingOptionsDialog(DialogData & dialog )
@@ -1327,6 +1490,8 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
 {
   const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
   const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
+
+  real & dtMax = dbase.get<real>("dtMax");
 
   dialog.setOptionMenuColumns(1);
 
@@ -1349,43 +1514,37 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   aString pushButtonCommands[] = {"projection solver parameters...",
                                   "set stages...",
                                   "selective dissipation...",
+                                  "dissipation parameters...",
+                                  "interface options...",
 				  ""};
-  int numRows=2;
+
+  int numRows=3;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
   aString tbCommands[] = {"use conservative difference",
                           "solve for electric field",
                           "solve for magnetic field",
-                          "use variable dissipation",
                           "project fields",
                           "use charge density",
                           "use conservative divergence",
                           "project initial conditions",
-                          "use new interface routines",
-                          "apply filter",
                           "use divergence cleaning",
                           "project interpolation points",
                           "use new forcing method",
-                          "use impedance interface projection",
-                          "use sosup dissipation",
+                          "set divergence at interfaces",
  			  ""};
   int tbState[20];
   tbState[0] = useConservative;
   tbState[1] = solveForElectricField;
   tbState[2] = solveForMagneticField;
-  tbState[3] = useVariableDissipation;
-  tbState[4] = projectFields;
-  tbState[5] = useChargeDensity;
-  tbState[6] = useConservativeDivergence;
-  tbState[7] = projectInitialConditions;
-  tbState[8] = useNewInterfaceRoutines; 
-  tbState[9] = applyFilter;
-  tbState[10]= useDivergenceCleaning;
-  tbState[11]= projectInterpolation;
-  tbState[12]= dbase.get<bool>("useNewForcingMethod");
-  tbState[13]= dbase.get<int>("setDivergenceAtInterfaces");
-  tbState[14]= dbase.get<int>("useImpedanceInterfaceProjection");
-  tbState[15]= parameters.dbase.get<int>("useSosupDissipation");
+  tbState[3] = projectFields;
+  tbState[4] = useChargeDensity;
+  tbState[5] = useConservativeDivergence;
+  tbState[6] = projectInitialConditions;
+  tbState[7]= useDivergenceCleaning;
+  tbState[8]= projectInterpolation;
+  tbState[9]= dbase.get<bool>("useNewForcingMethod");
+  tbState[10]= dbase.get<int>("setDivergenceAtInterfaces");
   
 
   int numColumns=2;
@@ -1404,37 +1563,9 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   textCommands[nt] = "cfl";  textLabels[nt]=textCommands[nt];
   sPrintF(textStrings[nt], "%g",cfl);  nt++; 
 
-   textCommands[nt] = "dissipation";  textLabels[nt]=textCommands[nt];
-   sPrintF(textStrings[nt], "%g",artificialDissipation);  nt++; 
-
-   textCommands[nt] = "dissipation (curvilinear)";  textLabels[nt]=textCommands[nt];
-   sPrintF(textStrings[nt], "%g",artificialDissipationCurvilinear);  nt++; 
-
-   textCommands[nt] = "order of dissipation";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfArtificialDissipation); nt++; 
-
-   textCommands[nt] = "filter order";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfFilter); nt++; 
-
-   textCommands[nt] = "filter frequency";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",filterFrequency); nt++; 
-
-   textCommands[nt] = "filter iterations";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfFilterIterations); nt++; 
-
-   textCommands[nt] = "filter coefficient";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",filterCoefficient); nt++; 
-
-   // for unstructured grids: 
-   textCommands[nt] = "dissipation interval";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",artificialDissipationInterval); nt++; 
-
-   textCommands[nt] = "number of variable dissipation smooths";
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfVariableDissipationSmooths); nt++; 
-
-   textCommands[nt] = "divergence damping";  textLabels[nt]=textCommands[nt];
-   sPrintF(textStrings[nt], "%g",divergenceDamping);  nt++; 
-
+  textCommands[nt] = "dtMax";  textLabels[nt]=textCommands[nt];
+  sPrintF(textStrings[nt], "%g",dtMax);  nt++; 
+  
    textCommands[nt] = "accuracy in space";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfAccuracyInSpace); nt++; 
 
@@ -1445,24 +1576,6 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",
                     maximumNumberOfIterationsForImplicitInterpolation); nt++; 
 
-   textCommands[nt] = "interface BC iterations";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfIterationsForInterfaceBC); nt++; 
-
-   textCommands[nt] = "omega for interface iterations";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",omegaForInterfaceIteration); nt++; 
-
-   textCommands[nt] = "relative tol for interface iterations";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",rtolForInterfaceIterations); nt++; 
-
-   textCommands[nt] = "absolute tol for interface iterations";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%5.3f",atolForInterfaceIterations); nt++; 
-
-   textCommands[nt] = "interface option";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",materialInterfaceOption); nt++; 
-  
-   textCommands[nt] = "interface equations option";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",interfaceEquationsOption); nt++; 
-  
    textCommands[nt] = "projection frequency";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",frequencyToProjectFields); nt++; 
 
@@ -1472,29 +1585,12 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
    textCommands[nt] = "initial projection steps";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfInitialProjectionSteps); nt++; 
 
-   textCommands[nt] = "number of divergence smooths";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfDivergenceSmooths); nt++; 
 
-   textCommands[nt] = "div cleaning coefficient";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",divergenceCleaningCoefficient); nt++; 
-
-   const real & sosupParameter = parameters.dbase.get<real>("sosupParameter");    // scaling of sosup dissipation
-   textCommands[nt] = "sosup parameter";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",sosupParameter); nt++; 
-
-   const int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption");
-   textCommands[nt] = "sosup dissipation option";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",sosupDissipationOption); nt++; 
-
-   const int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency");
-   textCommands[nt] = "sosup dissipation frequency";  
-   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",sosupDissipationFrequency); nt++; 
-
-  
   // null strings terminal list
   assert( nt<numberOfTextStrings );
   textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
   dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
 
   return 0;
 }
@@ -1507,13 +1603,6 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
 //   Build the initial conditions options dialog.
 // ==========================================================================================
 {
-
-  // ************** PUSH BUTTONS *****************
-  // aString pushButtonCommands[] = {"set pml error checking offset",
-  //                                 "define embedded bodies",
-  // 				  ""};
-  // int numRows=2;
-  // dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
   dialog.setOptionMenuColumns(1);
 
@@ -1934,6 +2023,15 @@ buildPdeParametersDialog(DialogData & dialog )
   textCommands[nt] = "GDM params";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g %g %g %g %s (a0,a1,b0,b1,domain-name)",a0,a1,b0,b1,"all"); nt++; 
 
+  const real & velocityScale = dbase.get<real>("velocityScale");
+  const real & lengthScale = dbase.get<real>("lengthScale"); 
+
+  textCommands[nt] = "length scale:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",lengthScale); nt++; 
+
+  textCommands[nt] = "velocity scale:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",velocityScale); nt++; 
+
   // null strings terminal list
   assert( nt<numberOfTextStrings );
   textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
@@ -1950,15 +2048,6 @@ buildDispersionParametersDialog(DialogData & dialog )
 // ==========================================================================================
 {
 
-  // ************** PUSH BUTTONS *****************
-
-/* ---
-  aString pushButtonCommands[] = {"dispersion parameters...",
- 	    		          ""};
-  int numRows=1;
-  dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
-  -- */
-
   // ----- Text strings ------
   const int numberOfTextStrings=30;
   aString textCommands[numberOfTextStrings];
@@ -1969,6 +2058,9 @@ buildDispersionParametersDialog(DialogData & dialog )
 
   textCommands[nt] = "GDM domain name:";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s","all"); nt++; 
+
+  textCommands[nt] = "material file:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s","none"); nt++; 
 
   int numberOfPolarizationVectors=1;
   textCommands[nt] = "number of polarization vectors:";  
@@ -2031,6 +2123,12 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int numberOfPolarizationVectors=1;
   int modeGDM=-1;  // eigenmode number, choice of root "s"
   aString gdmDomainName="all";
+  aString materialFile="none";
+
+  real & velocityScale = dbase.get<real>("velocityScale");
+  real & lengthScale = dbase.get<real>("lengthScale"); 
+
+  real & dtMax = dbase.get<real>("dtMax");
 
   GUIState gui;
 
@@ -2124,6 +2222,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   buildDispersionParametersDialog(dispersionParametersDialog);
 
 
+  // --- Build the sibling dialog for dissipation parameters...
+  DialogData & dissipationParametersDialog = gui.getDialogSibling();
+  dissipationParametersDialog.setWindowTitle("MX dissipation parameters");
+  dissipationParametersDialog.setExitCommand("close dissipation parameters", "close");
+  buildDissipationParametersDialog(dissipationParametersDialog);
+
+  // --- Build the sibling dialog for interface options -----
+  DialogData & interfaceOptionsDialog = gui.getDialogSibling();
+  interfaceOptionsDialog.setWindowTitle("MX interface options");
+  interfaceOptionsDialog.setExitCommand("close interface options", "close");
+  buildInterfaceOptionsDialog(interfaceOptionsDialog);
+
+
   IntegerArray originalBoundaryCondition(2,3,cg.numberOfComponentGrids());
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
@@ -2159,6 +2270,24 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( answer=="close time stepping options" )
     {
       timeSteppingOptionsDialog.hideSibling();
+    }
+
+    else if( answer=="dissipation parameters..." )
+    {
+      dissipationParametersDialog.showSibling();
+    }
+    else if( answer=="close dissipation parameters" )
+    {
+      dissipationParametersDialog.hideSibling();
+    }
+
+    else if( answer=="interface options..." )
+    {
+      interfaceOptionsDialog.showSibling();
+    }
+    else if( answer=="close interface options" )
+    {
+      interfaceOptionsDialog.hideSibling();
     }
 
     else if( answer=="initial conditions options..." )
@@ -2697,6 +2826,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     
     else if( timeSteppingOptionsDialog.getTextValue(answer,"cfl","%g",cfl) ){}//
+    else if( timeSteppingOptionsDialog.getTextValue(answer,"dtMax","%g",dtMax) ){}//
     else if( dialog.getTextValue(answer,"tFinal","%g",tFinal) ){}//
     else if( dialog.getTextValue(answer,"tPlot","%g",tPlot) ){}//
 
@@ -2732,27 +2862,26 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use conservative difference",useConservative) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"solve for electric field",solveForElectricField) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"solve for magnetic field",solveForMagneticField) ){}//
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use variable dissipation",useVariableDissipation) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project fields",projectFields) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project initial conditions",
 						      projectInitialConditions) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project interpolation points",
 						      projectInterpolation) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use charge density",useChargeDensity) ){}//
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use new interface routines",useNewInterfaceRoutines) ){}//
+    else if( interfaceOptionsDialog.getToggleValue(answer,"use new interface routines",useNewInterfaceRoutines) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"set divergence at interfaces",
 						      setDivergenceAtInterfaces) )
     {
       printF("setDivergenceAtInterfaces=%i : 0= set [div(E)]=0,  1=set div(E)=0 at interfaces\n",
               setDivergenceAtInterfaces);
     }
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use impedance interface projection",
+    else if( interfaceOptionsDialog.getToggleValue(answer,"use impedance interface projection",
 						      useImpedanceInterfaceProjection) )
     {
       printF("useImpedanceInterfaceProjection=%i : 0=ad-hoc (old),  1=use impedance (new)\n",
               useImpedanceInterfaceProjection);
     }
-    
+    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use divergence cleaning",useDivergenceCleaning) ){}//
 
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use conservative divergence",
 						      useConservativeDivergence) ){}//
@@ -2761,29 +2890,29 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 						      dbase.get<bool>("useNewForcingMethod")) ){}//
 
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"order of dissipation","%i",orderOfArtificialDissipation) )
+    else if( dissipationParametersDialog.getToggleValue(answer,"use variable dissipation",useVariableDissipation) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"order of dissipation","%i",orderOfArtificialDissipation) )
     {
       if( orderOfArtificialDissipation<0 ) orderOfArtificialDissipation=orderOfAccuracyInSpace;
     }//
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use divergence cleaning",useDivergenceCleaning) ){}//
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"apply filter",applyFilter) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"filter order","%i",orderOfFilter) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"filter frequency","%i",filterFrequency) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"filter iterations","%i",numberOfFilterIterations) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"filter coefficient","%e",filterCoefficient) ){}//
+    else if( dissipationParametersDialog.getToggleValue(answer,"apply filter",applyFilter) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"filter order","%i",orderOfFilter) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"filter frequency","%i",filterFrequency) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"filter iterations","%i",numberOfFilterIterations) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"filter coefficient","%e",filterCoefficient) ){}//
     // 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"dissipation interval","%i",artificialDissipationInterval) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"number of variable dissipation smooths","%i",
+    else if( dissipationParametersDialog.getTextValue(answer,"dissipation interval","%i",artificialDissipationInterval) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"number of variable dissipation smooths","%i",
                                                     numberOfVariableDissipationSmooths) ){}//
 
-    else if( timeSteppingOptionsDialog.getToggleValue(answer,"use sosup dissipation",useSosupDissipation) )
+    else if( dissipationParametersDialog.getToggleValue(answer,"use sosup dissipation",useSosupDissipation) )
     {
       if( useSosupDissipation )
       {
 	printF("Use SOSUP style (wide-stencil) dissipation with the FD scheme. Setting normal dissipation=0.\n");
 	artificialDissipation=0.;  
 	if( artificialDissipationCurvilinear >0. ) artificialDissipationCurvilinear=0.;
-	timeSteppingOptionsDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
+	dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
       }
       else
       {
@@ -2792,21 +2921,22 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       
     }
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"divergence damping","%g",divergenceDamping) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"divergence damping","%g",divergenceDamping) ){}//
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in space","%i",orderOfAccuracyInSpace) ){}//
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in time","%i",orderOfAccuracyInTime) ){}//
+
     //kkc moved plot dissipation here since matches will think the answer is "dissipation" otherwise
     else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){}//
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"dissipation (curvilinear)","%g",artificialDissipationCurvilinear) ){}//
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"dissipation","%g",artificialDissipation) )
+    else if( dissipationParametersDialog.getTextValue(answer,"dissipation (curvilinear)","%g",artificialDissipationCurvilinear) ){}//
+    else if( dissipationParametersDialog.getTextValue(answer,"dissipation","%g",artificialDissipation) )
     {
       if( useSosupDissipation )
       {
 	printF("INFO: using SOSUP style (wide-stencil) dissipation with the FD scheme."
                " Setting normal dissipation=0.\n");
 	artificialDissipation=0.;  
-	timeSteppingOptionsDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
+	dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
       }
       
     }
@@ -2817,21 +2947,21 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       cg.getInterpolant()->setMaximumNumberOfIterations(maximumNumberOfIterationsForImplicitInterpolation);
     }
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"interface BC iterations","%i",
+    else if( interfaceOptionsDialog.getTextValue(answer,"interface BC iterations","%i",
 						    numberOfIterationsForInterfaceBC) ){}// 
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"omega for interface iterations","%e",
+    else if( interfaceOptionsDialog.getTextValue(answer,"omega for interface iterations","%e",
 						    omegaForInterfaceIteration) ){}// 
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"relative tol for interface iterations","%e",
+    else if( interfaceOptionsDialog.getTextValue(answer,"relative tol for interface iterations","%e",
 						    rtolForInterfaceIterations) ){}// 
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"absolute tol for interface iterations","%e",
+    else if( interfaceOptionsDialog.getTextValue(answer,"absolute tol for interface iterations","%e",
 						    atolForInterfaceIterations) ){}// 
 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"interface equations option","%i",
+    else if( interfaceOptionsDialog.getTextValue(answer,"interface equations option","%i",
 						    interfaceEquationsOption) ){}// 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"interface option","%i",
+    else if( interfaceOptionsDialog.getTextValue(answer,"interface option","%i",
 						    materialInterfaceOption) ){}// 
 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"projection frequency","%i",
@@ -2840,19 +2970,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 						    numberOfConsecutiveStepsToProject) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"initial projection steps","%i",
 						    numberOfInitialProjectionSteps) ){}// 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"number of divergence smooths","%i",
+    else if( dissipationParametersDialog.getTextValue(answer,"number of divergence smooths","%i",
 						    numberOfDivergenceSmooths) ){}// 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"div cleaning coefficient","%e",
+    else if( dissipationParametersDialog.getTextValue(answer,"div cleaning coefficient","%e",
 						    divergenceCleaningCoefficient) ){}// 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"sosup parameter","%e",
+    else if( dissipationParametersDialog.getTextValue(answer,"sosup parameter","%e",
 						    sosupParameter) ){}// 
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"sosup dissipation option","%i",
+    else if( dissipationParametersDialog.getTextValue(answer,"sosup dissipation option","%i",
 						    sosupDissipationOption) )
     {
       printF(" sosupDissipationOption=%i: 0=apply sosup dissipation with update, 1=apply in separate stage\n",
 	     sosupDissipationOption);
     }
-    else if( timeSteppingOptionsDialog.getTextValue(answer,"sosup dissipation frequency","%i",
+    else if( dissipationParametersDialog.getTextValue(answer,"sosup dissipation frequency","%i",
 						    sosupDissipationFrequency) )
     {
       printF(" sosupDissipationFrequency=%i: apply sosup dissipation every this many steps.\n",
@@ -2893,7 +3023,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( plotOptionsDialog.getToggleValue(answer,"check errors",checkErrors) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"compute energy",computeEnergy) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"plot rho",plotRho) ){}//
-    else if( plotOptionsDialog.getToggleValue(answer,"compare to show file",compareToReferenceShowFile) ){}//
+    else if( plotOptionsDialog.getToggleValue(answer,"compare to show file",compareToReferenceShowFile) )
+    {  knownSolutionOption = noKnownSolution;  }  // *wdh* Jan 19, 2019 so errors are computed 
     //    else if( plotOptionsDialog.getToggleValue(answer,"plot dsi points",plotDSIPoints) ){}//
     else if( len=answer.matches("bc: ") )
     {
@@ -3096,6 +3227,18 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 							      eps,mu,"all"));
 
     }
+    else if( pdeParametersDialog.getTextValue(answer,"length scale:","e",lengthScale) )
+    {
+      printF("Setting lengthScale=%10.4e\n",lengthScale);
+      printF("This is used in scaling the dispersive material models\n");
+    }
+    else if( pdeParametersDialog.getTextValue(answer,"velocity scale:","e",velocityScale) )
+    {
+      printF("Setting velocityScale=%10.4e\n",lengthScale);
+      printF("This is used in scaling the dispersive material models\n");
+    }
+    
+
 
     // ------------ SET GDM PARAMETERS -----------
     else if( dispersionParametersDialog.getTextValue(answer,"GDM domain name:","%s",gdmDomainName) )
@@ -3112,7 +3255,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       printF("Setting GDM mode = %i (-1 = use default)\n",modeGDM);
       printf("The GDM mode determines which eigenvalue `s' to choose for exact solutions\n");
-      
+      setDispersionParameters( gdmDomainName,modeGDM );
     }
     else if( len=answer.matches("GDM coeff:") )
     {
@@ -3132,6 +3275,12 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       // setDispersionParameters( "all",alphaP );
       setDispersionParameters( gdmDomainName,alphaP );
     }
+
+    else if( dispersionParametersDialog.getTextValue(answer,"material file:","%s",materialFile) )
+    {
+      setDispersionParameters( gdmDomainName, materialFile, numberOfPolarizationVectors,modeGDM );
+    }
+
     
 
     // ** old way ***
@@ -3222,6 +3371,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
           for( int domain=domainStart; domain<=domainEnd; domain++ )
           {
             DispersiveMaterialParameters & dmp = dmpVector[domain];
+            dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
+            
             if( setDrude )
             {
               printF(" Setting Drude parameters gamma=%9.3e, omegap=%9.3e for domain=[%s]\n",
@@ -3724,11 +3875,21 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
             }
             else
             {
-              printF("Setting grid=%i (side,axis)=(%i,%i) to bc=%i\n",grid,side,axis,bc);
+              if( bc>0 ) // *wdh* Jan 19, 2019
+              {
+                printF("Setting grid=%i (side,axis)=(%i,%i) to bc=%i\n",grid,side,axis,bc);
 	    
-              cg[grid].setBoundaryCondition(side,axis,bc);
-              // set underlying mapping too (for moving grids)
-              cg[grid].mapping().getMapping().setBoundaryCondition(side,axis,bc);
+                cg[grid].setBoundaryCondition(side,axis,bc);
+                // set underlying mapping too (for moving grids)
+                cg[grid].mapping().getMapping().setBoundaryCondition(side,axis,bc);
+              }
+              else
+              {
+                printF("CgMX:setBoundaryConditions: ERROR: Unknown BC: answer=[%s]\n",(const char*)answer);
+                OV_ABORT("ERROR");
+                
+              }
+              
             }
 
 	    
@@ -3837,6 +3998,7 @@ setDispersionParameters( const aString & domainName, int numberOfPolarizationVec
     for( int domain=domainStart; domain<=domainEnd; domain++ )
     {
       DispersiveMaterialParameters & dmp = dmpVector[domain];
+      dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
 
       printF(" Setting GDM parameters eqn=%i: a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e, mode=%d for domain=[%s]\n",
              eqn,a0,a1,b0,b1,modeGDM,(const char*)cg.getDomainName(domain));
@@ -3918,6 +4080,7 @@ setDispersionParameters( const aString & domainName, real alphaP )
     for( int domain=domainStart; domain<=domainEnd; domain++ )
     {
       DispersiveMaterialParameters & dmp = dmpVector[domain];
+      dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
 
       if( alphaP < 0. )
       {
@@ -3942,6 +4105,161 @@ setDispersionParameters( const aString & domainName, real alphaP )
 
   return 0;
 }
+
+//====================================================================================
+/// \brief Assign parameters in the dispersion models.
+//====================================================================================
+int Maxwell::
+setDispersionParameters( const aString & domainName, int modeGDM )
+{
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  int domainStart=-1, domainEnd=-1;
+  if( domainName == "all" )
+  {
+    domainStart=0; domainEnd=cg.numberOfDomains()-1;
+  }
+  else
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      if( cg.getDomainName(domain)==domainName )
+      {
+        // printF("--MX:SDP-- setting GDM parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+        domainStart=domainEnd=domain;
+        break;
+      }
+    }
+  }
+      
+  if( domainStart<0  )
+  {
+    printF("--MX:SDP-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+    return 1;
+  }
+  else
+  {
+    // --- Set parameters for the dispersion model ---
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // --- allocate the dispersion material parameters vector ---
+    if( dmpVector.size()<cg.numberOfDomains() )
+    {
+      dmpVector.resize(cg.numberOfDomains());
+    }
+
+    for( int domain=domainStart; domain<=domainEnd; domain++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[domain];
+      dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
+      dmp.setMode( modeGDM );          
+    }
+  }
+
+  return 0;
+}
+
+
+
+//====================================================================================
+/// \brief Assign parameters in the dispersion models.
+//====================================================================================
+int Maxwell::
+setDispersionParameters( const aString & domainName, const aString & materialFile,
+			 int numberOfPolarizationVectors, int modeGDM )
+{
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  int domainStart=-1, domainEnd=-1;
+  if( domainName == "all" )
+  {
+    domainStart=0; domainEnd=cg.numberOfDomains()-1;
+  }
+  else
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      if( cg.getDomainName(domain)==domainName )
+      {
+        // printF("--MX:SDP-- setting GDM parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+        domainStart=domainEnd=domain;
+        break;
+      }
+    }
+  }
+      
+  if( domainStart<0  )
+  {
+    printF("--MX:setDispersionParameters-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+    return 1;
+  }
+  else
+  {
+    // --- Set parameters for the dispersion model ---
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // --- allocate the dispersion material parameters vector ---
+    if( dmpVector.size()<cg.numberOfDomains() )
+    {
+      dmpVector.resize(cg.numberOfDomains());
+    }
+
+    for( int domain=domainStart; domain<=domainEnd; domain++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[domain];
+      dmp.setMode( modeGDM );
+      dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
+      
+      printF(" Read dispersive material parameters for domain=[%s] from file=[%s]\n",
+	     (const char*)cg.getDomainName(domain),(const char*)materialFile);
+
+      // we could read once and copy parameters -- do this for now
+      dmp.readFromFile( materialFile,numberOfPolarizationVectors );
+
+      // Set background eps for all grids in this domain
+      real epsInf= dmp.getEpsInf();
+      
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+	if( cg.domainNumber(grid)==domain )
+	{
+	  printF(" Maxwell: grid=%i: setting epsInf=%g \n",grid, epsInf);
+
+	  epsGrid(grid)=epsInf;
+          cGrid(grid)=1./sqrt(epsInf*mu);
+	}
+	  
+      }
+      if( fabs(max(epsGrid)-min(epsGrid))==0. && fabs(max(muGrid)-min(muGrid))==0. )
+      {
+	eps=epsGrid(0);
+	mu=muGrid(0);
+      }
+      
+    }
+  }
+
+  return 0;
+}
+
 
 
 

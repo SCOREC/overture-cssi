@@ -183,10 +183,11 @@ echo to terminal 0
 # 
 # --- set default values for parameters ---
 # 
-echo to terminal 1
+echo to terminal $echo
+#
 $model="ins"; $noplot=""; $backGround="square"; $show=" "; $newts=0; $project=0;  $varMat=0;
 $ts="adams PC"; $implicitVariation="viscous"; $implicitFactor=.5; $cdv=1.; $refactorFrequency=100;
-$numberOfCorrections=1; $orderInTime=-1;
+$numberOfCorrections=1; $orderInTime=-1; $predictorOrder=-1; 
 $cp0=.1;  # coeff of p in the mxied BC for outflow
 $debug = 0;  $tPlot=.1; $maxIterations=100; 
 $rtol=1.e-16; $atol=1.e-16; $rtolp=1.e-16; $atolp=1.e-16; 
@@ -206,6 +207,7 @@ $freqFullUpdate=10; # frequency for using full ogen update in moving grids
 $tm = "#"; # turbulence model
 $checkErrOnGhost=0; # check errors on this many ghost lines
 $useNewImp=1; # use the new implicit method 
+$useNewStartup=1;  # *wdh* added Jan 6, 2019, this may not matter for TZ ?? 
 # Decouple implicit BCs (e.g. free surface) so we can solve scalar velociity implicit equations
 $decoupleImplicitBoundaryConditions=0;
 $xshift=1.; $yshift=0.; $zshift=0.; # for moving grids, shift option
@@ -240,7 +242,8 @@ GetOptions( "g=s"=>\$grid,"gf=s"=>\$gridCmdFileName,"tf=f"=>\$tFinal,"degreex=i"
   "aftol=f"=>\$aftol, "afit=i"=>\$afit,"project=i"=>\$project,"cp0=f"=>\$cp0,"varMat=i"=>\$varMat,\
   "thermalConductivity=i"=>\$thermalConductivity,"xshift=f"=>\$xshift,"yshift=f"=>\$yshift,"zshift=f"=>\$zshift,\
   "uplot=s"=>\$uplot, "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrder,\
-  "decoupleImplicitBoundaryConditions=i"=>\$decoupleImplicitBoundaryConditions,"addedMass=f"=>\$addedMass );
+  "decoupleImplicitBoundaryConditions=i"=>\$decoupleImplicitBoundaryConditions,"addedMass=f"=>\$addedMass,\
+  "useNewStartup=f"=>\$useNewStartup,"echo=s"=>\$echo,"predictorOrder=i"=>\$predictorOrder );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }
@@ -261,9 +264,10 @@ if( $ts eq "fe" ){ $ts="forward Euler";}
 if( $ts eq "be" ){ $ts="backward Euler"; }
 if( $ts eq "im" ){ $ts="implicit"; }
 if( $ts eq "bdf" ){ $ts="implicit BDF"; }
+if( ($ts eq "imex" && $orderInTime == 4) || $ts eq "pc4" ){ $useNewImp=0; } # NOTE: turn off new implicit for fourth order
 if( $ts eq "imex" ){ $ts="implicit explicit multistep"; }
+if( $ts eq "pc4" || ( $ts eq "pc" && $orderInTime==4) ){ $ts="adams PC order 4"; $orderInTime=4; $useNewImp=0; } # NOTE: turn off new implicit for fourth order
 if( $ts eq "pc" ){ $ts="adams PC"; }
-if( $ts eq "pc4" ){ $ts="adams PC order 4"; $useNewImp=0; } # NOTE: turn off new implicit for fourth order
 if( $ts eq "mid"){ $ts="midpoint"; }  
 if( $ts eq "afs"){ $ts="approximate factorization"; $newts=1;  $implicitVariation="full"; }
 #
@@ -344,6 +348,8 @@ $grid = ($grid eq "ogen") ? "ogen\n read command file\n $gridCmdFileName" : $gri
 # test mixed boundaries: 
 # $grid="matchingSquares"; $tPlot=.01; $degreex=1; $degreet=0; $debug=1;
 # 
+echo to terminal $echo
+#
 $grid
 #
   $model
@@ -433,14 +439,17 @@ $order
   OBPDE:use boundary dissipation in AF scheme 0
   OBPDE:stabilize high order boundary conditions 0
 # **************************************
-#  first order predictor
+  if( $predictorOrder == 1 ){ $cmd="first order predictor"; }elsif( $predictorOrder==2 ){ $cmd="second order predictor"; }\
+      elsif( $predictorOrder==3 ){ $cmd="third order predictor"; }elsif( $predictorOrder==4 ){ $cmd="fourth order predictor"; }\
+      else{ $cmd="#"; }
+ $cmd 
  number of PC corrections $numberOfCorrections
 # 
 max number of AF corrections $afit
 AF correction relative tol $aftol
 #
 $cmd="#";
-if( $move eq "rotate" ){ $cmd="turn on moving grids\n specify grids to move\n pause\nrotate\n 0. 0. 0 \n $rate 0.\n$gridToMove\n$gridToMove2\n done\n done"; }
+if( $move eq "rotate" ){ $cmd="turn on moving grids\n specify grids to move\n rotate\n 0. 0. 0 \n $rate 0.\n$gridToMove\n$gridToMove2\n done\n done"; }
 if( $move eq "shift" ){ $cmd="turn on moving grids\n specify grids to move\n translate\n $xshift $yshift $zshift \n 1.\n$gridToMove\n$gridToMove2\n done\n done"; }
 # deforming body linear motion is x(t) = a*t^p
 $ap=-1.; $pp=1; $vg0=$ap; $vg1=0.; $vg2=0.; $ag0=0.; $ag1=0.; $ag2=0.; $gvOrder=2; $gaOrder=2;
@@ -461,6 +470,8 @@ $cmd
 # for testing, force use of the full implicit system:
   use full implicit system $fullSystem
 #
+  use new time-stepping startup $useNewStartup
+#
   choose grids for implicit
     all=implicit
   done
@@ -477,7 +488,7 @@ echo to terminal 0
    include $ENV{CG}/ins/cmd/ogesOptions.h
   exit
 #
-echo to terminal 1
+echo to terminal $echo
   implicit time step solver options
    $ogesSolver=$solver; $ogesRtol=$rtol; $ogesAtol=$atol; $ogmgOpav=0; $ogmgRtolcg=1.e-6;
    include $ENV{CG}/ins/cmd/ogesOptions.h
@@ -528,6 +539,7 @@ echo to terminal 1
   $cmd
  continue
 # 
+echo to terminal 1
 plot:$uplot
  $go
 

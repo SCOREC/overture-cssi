@@ -1348,7 +1348,7 @@ buildRhsAndSolVector(realCompositeGridFunction & u,
       {
 	v = extraEquationInitialValues(j);
         int i = oges.extraEquationNumber(j)-1;  // **check me**
-	printF("--PES-- extra equation %i: set initial value: eqn=%i value=%12.4e [ovSol=%12.4e]\n",j,i,v,ovSol[i]);
+	// printF("--PES-- extra equation %i: set initial value: eqn=%i value=%12.4e [ovSol=%12.4e]\n",j,i,v,ovSol[i]);
         ierr=VecSetValues(xsol,1,&i,&v,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
@@ -1357,7 +1357,7 @@ buildRhsAndSolVector(realCompositeGridFunction & u,
       for( int j=0; j<oges.numberOfExtraEquations; j++ )
       {
         int i = oges.extraEquationNumber(j)-1;  // **check me**
-	printF("--PES-- extra equation %i: eqn=%i guess in ovSol=%12.4e\n",j,i,ovSol[i]);
+	// printF("--PES-- extra equation %i: eqn=%i guess in ovSol=%12.4e\n",j,i,ovSol[i]);
       }
     }
     

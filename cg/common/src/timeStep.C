@@ -179,6 +179,8 @@ getTimeStep(MappedGrid & mg,
     return parameters.dbase.get<real >("dtMax");
   }
 
+  const int orderOfTimeAccuracy = parameters.dbase.get<int >("orderOfTimeAccuracy");
+
   real dtNew,reLambda,imLambda;
   getTimeSteppingEigenvalue( mg,u0,gridVelocity,reLambda,imLambda,grid );
 
@@ -257,8 +259,47 @@ getTimeStep(MappedGrid & mg,
       
 
     }
-    else
+    else if( implicitMethod==Parameters::implicitExplicitMultistep )
     {
+      // IMEX predictor corrector BDF Scheme
+      const int & predictorOrder = parameters.dbase.get<int>("predictorOrder");
+      int & orderOfPredictorCorrector= parameters.dbase.get<int >("orderOfPredictorCorrector");
+
+      if( orderOfPredictorCorrector!=orderOfTimeAccuracy )
+        orderOfPredictorCorrector=orderOfTimeAccuracy; 
+
+      if( true )
+        printF("@@@@@@ timeStep:CHOOSE dt for IMEX scheme: orderOfPredictorCorrector=%i, predictorOrder=%i @@@@@@\n",
+               orderOfPredictorCorrector,predictorOrder);
+      
+
+      if( orderOfPredictorCorrector==2 )
+      {
+        dtNew= 1.2/imLambda;  // ** WHAT SHOULD THIS BE ??? 
+      }
+      else if( orderOfPredictorCorrector==4 )
+      {
+        if( predictorOrder==3 || predictorOrder<=0 ) // default predictor is 3rd order
+          dtNew= 1.05/imLambda;          // here is a guess 
+        else if( predictorOrder==4 )
+          dtNew= 1.2/imLambda;         // do this -- scheme is unstable on part of the imaginary axis, OK if enough dissipation.
+        else
+        {
+          OV_ABORT("getTimeStep:ERROR: unexpected predictorOrder for IMEX");
+        }
+        
+      }
+      else
+      {
+        printF("getTimeStep:ERROR: unknown orderOfPredictorCorrector=%i for the IMEX scheme\n",(int)orderOfPredictorCorrector);
+        OV_ABORT("error");
+      }
+      
+
+    }
+    else 
+    {
+      // --- default for implicit methods Crank-Nicolson, AFS, Trap
 
       // the stability region for the implicit method:
       // the stability region for 2nd order PECE: -2 on the Real axis, about 1.27 on the Im. axis
@@ -277,7 +318,6 @@ getTimeStep(MappedGrid & mg,
       
 
     }
-  
     // * // the stability region for 2nd order AB: -1 on th Real axis, about .8 on the Im. axis
     // * dtNew= 1./SQRT( SQR(reLambda/1.)+SQR(imLambda/.8) ); 
   }

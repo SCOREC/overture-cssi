@@ -598,6 +598,8 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       // --- write data for this probe ---
       // ---------------------------------
 
+      // printF("Output probe %d at t=%9.3e \n",i,t);
+      
       fprintf(file,"%16.9e ",t);  // time
 
       if( probe.probeType==ProbeInfo::probeAtGridPoint )

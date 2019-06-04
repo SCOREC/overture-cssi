@@ -645,6 +645,15 @@ interpolateAndApplyBoundaryConditions( GridFunction & cgf,
 {
   if( parameters.dbase.get<int>("simulateGridMotion")>0 ) return 0;
 
+  bool applyBoundaryConditionsAtStart=true;  // true=OLD way **TEMP**
+
+  if( !applyBoundaryConditionsAtStart && cgf.t<=0 )
+  {
+    printF("\n interpolateAndApplyBoundaryConditions: **** TEMP: SKIP BC's at t=%9.3e ****\n\n",cgf.t);
+    return 0;
+  }
+  
+
   const int & myid = parameters.dbase.get<int >("myid");
   FILE * debugFile = parameters.dbase.get<FILE* >("debugFile");
   FILE * pDebugFile = parameters.dbase.get<FILE* >("pDebugFile");

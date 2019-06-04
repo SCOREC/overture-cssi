@@ -263,7 +263,7 @@ setExtraEquationRightHandSideValues( realCompositeGridFunction & f, real *value 
     oges.equationToIndex( oges.extraEquationNumber(i),ne,i1e,i2e,i3e,gride);
     f[gride](i1e,i2e,i3e,ne)=value[i];
 
-    if( true || Oges::debug & 4 )
+    if( Oges::debug & 4 )
       printF("EquationSolver::setExtraEquationValues: f[%i](%i,%i,%i,%i)= %14.10e (eqn-number=%i)\n",
 	     gride,i1e,i2e,i3e,ne,f[gride](i1e,i2e,i3e,ne),oges.extraEquationNumber(i));
 

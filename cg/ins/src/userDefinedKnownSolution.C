@@ -190,6 +190,201 @@ if( !thisProcessorHasPoints )                                   \
   return 0; // no points on this processor
 
 
+// =========================================================================================
+/// \brief Class to evaluate the exact solution pressure for the time-dependent eigenfunction for
+///    circular Couette flow. 
+//
+//     p(r)  = int_a^r v(s)^2/s  ds
+//     v(r) = BesselJ(1,lambda*r)*Y1a - J1a*BesselY(1,lambda*r)
+// 
+// See file Dropbox/CG/fins/codes/besselZeros.maple
+// =========================================================================================
+class CircularCouettePressure
+{
+  public:
+
+  CircularCouettePressure(){ pData=NULL;  a=.5; b=1.; ra=a-.125; rb=b+.125; numData=0; };
+  ~CircularCouettePressure(){ delete [] pData; };
+
+  int initialize( real amp1, int nFreq1, real rInner, real rOuter, real omegaInner, real omegaOuter, real rho_, real nu, real t );
+  real evalPressure( real r );
+  real evalF(  real r );
+  real getLambda();
+  real getIntegral( real x0, real x1 );
+  
+  int numData;
+  real a,b;    // inner and outer radii
+  real ra,rb;  // extended region overwhich data is computed (to allow for ghost)
+  real *pData;
+
+  real rho,lambda,A,B,amp,j1a,y1a;
+};
+
+real CircularCouettePressure::
+getLambda()
+{
+  return lambda;
+}
+
+
+// =========================================================================================
+/// \brief Evaluate the integrand for the pressure 
+// =========================================================================================
+real CircularCouettePressure::
+evalF( real r )
+{
+  
+  real lamr = lambda*r;
+  real uTheta;
+  if( a!=0. )
+   uTheta=A/r + B*r + amp* ( jn(1,lamr)*y1a - yn(1,lamr)*j1a );
+  else
+    uTheta= B*r + amp* ( jn(1,lamr) );
+
+  real f;
+  if( fabs(r) > REAL_MIN*10. )
+  {
+   f = rho*uTheta*uTheta/r;
+  }
+  else
+  {
+    // Note that J1(r) = r/2  as r -> 0 
+    f = rho*uTheta*( B + amp*lamr/2. );
+  }
+  
+
+  return f;
+  
+}
+
+// =========================================================================================
+/// \brief Evaluate the integral from x0 to x1 
+// =========================================================================================
+real CircularCouettePressure::
+getIntegral( real x0, real x1 )
+{
+
+  real xm=.5*(x0+x1);
+  real f0 = evalF(x0);
+  real fm = evalF(xm);
+  real f1 = evalF(x1);
+  real h = .5*(x1-x0);
+  real fint = (f0 +4.*fm + f1)*h/3.; // Simpson's rule 
+//  real fint = (f0 + f1)*h; // Trap
+  return fint;
+}
+
+
+// =========================================================================================
+/// \brief Initialize the data for the pressure integral: uTheta^2/r 
+// =========================================================================================
+int CircularCouettePressure::
+initialize( real amp1, int nFreq1, real rInner, real rOuter, real omegaInner, real omegaOuter, real rho_, real nu, real t )
+{
+  rho=rho_;
+  a=rInner;
+  b=rOuter;
+  ra=a-.125; rb=b+.125; // pressure will be evaluated over a larger interval
+
+  // Time-dependent eigenmode: (from fins/codes/besselZeros.maple)
+  if( rInner==0. && rOuter==1. )
+  {
+    //  Zeros of J1(z) 
+    if( nFreq1==1 )
+      lambda = 3.83170597020751231561443588631;
+    else if( nFreq1==2 )
+      lambda = 7.01558666981561875353704998148;
+    else
+    {
+      OV_ABORT("rotatingCouetteflow:ERROR: expecting nFreq1 = 1 or 2");
+    }        
+  }
+  else if( rInner==.5 && rOuter==1. )
+  {
+    // Roots of
+    //     f := BesselJ(1,x*b)*BesselY(1,x*a) - BesselJ(1,x*a)*BesselY(1,x*b);
+    // a=1/2, b=1
+    //     xp := 6.39315676162127001079050794967
+    //     xp := 12.6246990207465262531029136272
+
+    if( nFreq1==1 )
+      lambda =  6.39315676162127001079050794967;
+    else if( nFreq1==2 )
+      lambda = 12.6246990207465262531029136272; // zero 2 
+    else
+    {
+      OV_ABORT("rotatingCouetteflow:ERROR: expecting nFreq1 = 1 or 2");
+
+    }
+  }
+  else
+  {
+    OV_ABORT("rotatingCouetteflow:ERROR: expecting rInner=.5 and rOuter=1");
+  }
+
+  const real r1=a, r2=b;
+  real w1=omegaInner, w2=omegaOuter;
+  A =-(w2-w1)*r1*r1*r2*r2/(r2*r2-r1*r1);
+  B = (w2*r2*r2-w1*r1*r1)/(r2*r2-r1*r1);  
+
+  const real s = nu*SQR(lambda), expt=exp(-s*t);
+  amp = amp1*expt;
+
+  j1a = jn(1,lambda*r1); 
+  if( r1>0 )
+    y1a = yn(1,lambda*r1);
+  else
+    y1a=0.;
+
+  // numData : split [ra,rb] into numData-1 cells where the integral is precomputed
+  numData=5001;
+  if( pData==NULL ) pData = new real [numData];
+
+  real h = (rb-ra)/(numData-1.);
+  
+  // Evaluate the integral from a to xi 
+  pData[0]=0.;
+  for( int i=1; i<numData; i++ )
+  {
+    real xi   = ra + (i-1)*h;
+    real deltaIntegral = getIntegral( xi, xi+h );
+    pData[i]=pData[i-1]+deltaIntegral;
+      
+  }
+    
+  return 0;
+}
+
+// =========================================================================================
+/// \brief Evaluate the pressure at a value of r by interpolating precomputed values 
+// =========================================================================================
+real CircularCouettePressure::
+evalPressure( real r )
+{
+  real rr = (numData-1)*(r-ra)/(rb-ra);  // rr in [0,numData-1]
+  int i = floor( rr ); // closest data point less than r 
+  
+  i = max(2,min(numData-2,i));  // adjust near ends for cubic interpolant
+
+  real alpha = rr-i;  // alpha in [0,1] (unless i was adjusted)
+  // assert( alpha>= 0. && alpha <= 1. );
+  
+  // cubic interpolant 
+  assert( i>=1 && i<=numData-2 );
+  real p  = (           (alpha)*(alpha-1.)*(alpha-2.)/(-6.) *pData[i-1] + 
+             (alpha+1.)        *(alpha-1.)*(alpha-2.)/( 2.) *pData[i  ] + 
+             (alpha+1.)*(alpha)*           (alpha-2.)/(-2.) *pData[i+1] + 
+             (alpha+1.)*(alpha)*(alpha-1.)           /( 6.) *pData[i+2] ); 
+
+  // assert( i>=0 && i<=numData-1 );
+  // real p = (1.-alpha)*pData[i] + alpha*pData[i+1];  // linear interpolant **fix me**
+
+
+  return p;
+}
+
+
+
 int InsParameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
 			    const Index & I1_, const Index &I2_, const Index &I3_, 
@@ -204,6 +399,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     
   // Adjust index bounds for parallel *wdh* 2017/05/31 
   Index I1=I1_, I2=I2_, I3=I3_;
+  
+  mg.update(MappedGrid::THEmask); // *wdh* Dec 17, 2018 -- needed in paralle 
   
   OV_GET_SERIAL_ARRAY_CONST(int,mg.mask(),mask);
   int includeGhost=1;
@@ -232,7 +429,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   
   if( userKnownSolution=="pipeFlow" )
   {
-    // --- Circular pipe flow (Hagen-Poiseuille flow) ---
+    // --- pipe flow (Hagen-Poiseuille flow) ---
     // 	  u(r) = -(1/(4*nu)* dp/dx *( R^2 - r^2 )
     // 	  dp/dx = (pInflow-pOutflow)/length = const
 
@@ -243,10 +440,22 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & length   = rpar[4];
     const real & Ua       = rpar[5];
     const real & Ub       = rpar[6];
+
+    const real & pGrad    = rpar[7];  // imposed pressure gradient for periodic problems
+    const real & amp1     = rpar[8];  // amplitude of a time dependent eigenfunction
+    const real & nFreq1   = rpar[9];  // frequency of a time dependent eigenfunction ( = 1,2,3,...)
+
+    const real & omega    = rpar[10];  // angular velocity of outer wall
+    const real & amp2     = rpar[11];  // amplitude of a time dependent angular eigenfunction
+    const real & nFreq2   = rpar[12];  // frequency of a time dependent angular eigenfunction (=1,2,3,...)
+
+
     const int  & axialAxis= ipar[0];
-    if( t<=dt )
-      printF("circular pipe flow: pInflow=%g, pOutflow=%g, radius=%g, s0=%g, length=%g, ua=%g, ub=%g, axialAxis=%i, t=%9.3e\n",
-	     pInflow,pOutflow,radius,s0,length,axialAxis,t);
+
+    if( t<=3.*dt )
+      printF("pipe flow: pInflow=%g, pOutflow=%g, radius=%g, s0=%g, length=%g, ua=%g, ub=%g, axialAxis=%i, "
+             "amp1=%g, nFreq1=%g, omega=%g, amp2=%g, nFreq2=%g, t=%9.3e\n",
+	     pInflow,pOutflow,radius,s0,length,Ua,Ub,axialAxis,amp1,nFreq1,omega,amp2,nFreq2,t);
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(x);
@@ -254,20 +463,127 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const int axisp1 = (axialAxis+1)%3, axisp2=(axialAxis+2)%3;
     const int uca=uc+axialAxis, ucb=uc + (axialAxis+1)%3, ucc=uc + (axialAxis+2)%3;
 
-    ua(I1,I2,I3,pc)=pInflow + ((pOutflow-pInflow)/length)*(x(I1,I2,I3,axialAxis)-s0);
+    if( pGrad != 0. )
+    { // When there is an imposed pressure gradient for periodic problems, the computed p is zero (pertubation)
+      ua(I1,I2,I3,pc)=0.;
+    }
+    else
+    {
+      ua(I1,I2,I3,pc)=pInflow + ((pOutflow-pInflow)/length)*(x(I1,I2,I3,axialAxis)-s0);
+    }
+    
     if( mg.numberOfDimensions()==2 )
     {
       // Poiseulle-Couette flow: 
       ua(I1,I2,I3,uca)=( (-(pOutflow-pInflow)/length/(2.*nu))*( radius*radius - SQR(x(I1,I2,I3,axisp1)) ) 
 			 + Ua + ((Ub-Ua)/(2.*radius))*(x(I1,I2,I3,axisp1)+radius) );
       ua(I1,I2,I3,ucb)=0.;
+      if( amp1 != 0. )
+      { // add on a time-dependent eigenfunction 
+        //      exp(-s*t) sin( n*Pi/(2R) ( y + R ) )
+        real lambda= nFreq1*Pi/(2.*radius);
+        real s = nu*SQR( lambda );
+        ua(I1,I2,I3,uca) += amp1*exp(-s*t) * sin(lambda*(x(I1,I2,I3,axisp1)+radius));
+      }
+      
     }
     else
     {
-      // Hagen-Poiseuille flow: 
-      ua(I1,I2,I3,uca)= (-(pOutflow-pInflow)/length/(4.*nu))*( radius*radius - SQR(x(I1,I2,I3,axisp1)) - SQR(x(I1,I2,I3,axisp2)) );
+      // ------ 3D Hagen-Poiseuille flow -----
+      RealArray radSq(I1,I2,I3);
+      radSq = SQR(x(I1,I2,I3,axisp1)) + SQR(x(I1,I2,I3,axisp2));
+      ua(I1,I2,I3,uca)= (-(pOutflow-pInflow)/length/(4.*nu))*( radius*radius - radSq );
       ua(I1,I2,I3,ucb)=0.;
       ua(I1,I2,I3,ucc)=0.;
+
+      if( amp1 !=0. )
+      {
+        // Time-dependent eigenmode: (from fins/codes/besselZeros.maple)
+        //    amp1 * exp( - nu*lambda^2 t ) J_0( lambda*r )
+        // lambda is a zero of J0(x) 
+        //     J0( x ) = 0 
+        //       xp := 2.40482555769577276862163187933
+        //       xp := 5.52007811028631064959660411281
+
+        if( t <= 3.*dt ) printF("Hagen-Poiseulle: add time-dependent eigenfunction amp1=%g\n",amp1);
+        
+        real lambda;
+        if( nFreq1==1. )
+          lambda = 2.40482555769577276862163187933; // zero 1
+        else if( nFreq1==2. )
+          lambda = 5.52007811028631064959660411281; // zero 2 
+        else
+        {
+          OV_ABORT("Hagen-Poiseuille flow:ERROR: expecting nFreq1 = 1 or 2");
+        }
+      
+        const real s = nu*SQR(lambda), expt=exp(-s*t);
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          real rr = sqrt(radSq(i1,i2,i3));
+          real lamr = lambda*rr;
+          ua(i1,i2,i3,uca) += amp1*expt* jn(0,lamr);
+        }
+      } // end if amp1
+
+      RealArray uTheta(I1,I2,I3);
+      RealArray r(I1,I2,I3);
+      r=sqrt(radSq);
+      const real eps = REAL_EPSILON*10.;
+      where( fabs(r) < eps ) { r=eps; }
+
+      if( omega != 0. )
+      {
+        // -- add a rotational component ---
+        const int axisp1 = numberOfDimensions==2 ? 0 : (axialAxis+1) % numberOfDimensions;
+        const int axisp2 = numberOfDimensions==2 ? 1 : (axialAxis+2) % numberOfDimensions;
+
+        assert( radius==1. );
+        
+        uTheta= omega*r; // may be adjusted below 
+
+      }
+      // Time-dependent eigenmode: (from fins/codes/besselZeros.maple)
+      if( amp2 !=0. )
+      {
+        if( t <= 3.*dt ) printF("Hagen-Poiseulle: add time-dependent angular eigenfunction amp2=%g\n",amp2);
+        const real rho=1.;
+
+        // Class used to evaluate exact p: 
+        CircularCouettePressure ccp;  
+        real rInner=0., rOuter=radius, omegaInner=0., omegaOuter=omega;
+        ccp.initialize( amp2, int(nFreq2+.5), rInner, rOuter, omegaInner, omegaOuter, rho, nu, t );
+
+        real lambda = ccp.getLambda();
+
+        const real s = nu*SQR(lambda), expt=exp(-s*t);
+
+        // const real pAmp = rho*SQR(amp1*expt);
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          real lamr = lambda*r(i1,i2,i3);
+          uTheta(i1,i2,i3) += amp2*expt* ( jn(1,lamr) );
+
+          // p = int_a^r rho*Utheta^2(s) ds 
+          ua(i1,i2,i3,pc) = ccp.evalPressure( r(i1,i2,i3) );
+
+        }
+      }
+      else
+      {
+        ua(I1,I2,I3,pc) =  (.5*omega*omega)*radSq; // pressure from rigid body rotation
+      }
+      
+      if( omega!=0. || amp2!=0. )
+      {
+        
+        ua(I1,I2,I3,uc+axisp1)=-uTheta*x(I1,I2,I3,axisp2)/r;
+        ua(I1,I2,I3,uc+axisp2)= uTheta*x(I1,I2,I3,axisp1)/r;
+      }
+      
+      
     }
 
   }
@@ -277,6 +593,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const real & rOuter     = rpar[1];
     const real & omegaInner = rpar[2];
     const real & omegaOuter = rpar[3];
+    const real & amp1       = rpar[4];
+    const real & nFreq1     = rpar[5];
 
     const int & axialAxis = ipar[3];
     
@@ -289,28 +607,76 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     const int axisp1 = numberOfDimensions==2 ? 0 : (axialAxis+1) % numberOfDimensions;
     const int axisp2 = numberOfDimensions==2 ? 1 : (axialAxis+2) % numberOfDimensions;
 
-    if( t<=dt )
-      printF("++++rotatingCouetteflow : axialAxis=%i axisp1=%i axisp2=%i \n",axialAxis,axisp1,axisp2);
+    if( t<=5.*dt )
+      printF("++++rotatingCouetteflow : rInner=%g, rOuter=%g, axialAxis=%i axisp1=%i axisp2=%i amp1=%g nFreq1=%g\n",rInner,rOuter,
+             axialAxis,axisp1,axisp2,amp1,nFreq1);
 
     r = sqrt( SQR(x(I1,I2,I3,axisp1)) + SQR(x(I1,I2,I3,axisp2)) );
+
+    const real eps = REAL_EPSILON*10.;
+    
+    where( fabs(r) < eps ) { r=eps; }
 
     const real r1=rInner, r2=rOuter, w1=omegaInner, w2=omegaOuter;
     const real A =-(w2-w1)*r1*r1*r2*r2/(r2*r2-r1*r1);
     const real B = (w2*r2*r2-w1*r1*r1)/(r2*r2-r1*r1);
   
-    uTheta=A/r + B*r;
+    if( A != 0. )
+      uTheta=A/r + B*r; // may be adjusted below 
+    else
+      uTheta=B*r; // may be adjusted below 
+    
 
+    // Time-dependent eigenmode: (from fins/codes/besselZeros.maple)
+    if( amp1 !=0. )
+    {
+      const real rho=1.;
+
+      // Class used to evaluate exact p: 
+      CircularCouettePressure ccp;  
+      ccp.initialize( amp1, int(nFreq1+.5), rInner, rOuter, omegaInner, omegaOuter, rho, nu, t );
+
+      real lambda = ccp.getLambda();
+
+      const real s = nu*SQR(lambda), expt=exp(-s*t);
+      real j1a = jn(1,lambda*r1);
+      real y1a= r1!=0. ? yn(1,lambda*r1) : 0.;
+
+      // const real pAmp = rho*SQR(amp1*expt);
+      int i1,i2,i3;
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        real lamr = lambda*r(i1,i2,i3);
+        if( rInner!=0. )
+          uTheta(i1,i2,i3) += amp1*expt* ( jn(1,lamr)*y1a - yn(1,lamr)*j1a );
+        else
+          uTheta(i1,i2,i3) += amp1*expt* ( jn(1,lamr) );
+
+        // p = int_a^r rho*Utheta^2(s) ds 
+        ua(i1,i2,i3,pc) = ccp.evalPressure( r(i1,i2,i3) );
+
+      }
+    }
+    else
+    {
+      // steady state pressure 
+      if( A != 0. )
+        ua(I1,I2,I3,pc) = ( (-A*A/2.)*( 1./(SQR(r)) - 1./(SQR(r1)) ) + 
+                            (2.*A*B)*( log(r)-log(r1) ) + (.5*B*B)*( SQR(r)-SQR(r1) ) );
+      else
+        ua(I1,I2,I3,pc) =  (.5*B*B)*( SQR(r)-SQR(r1) );
+    }
+    
     // dp/dr = rho*uTheta^2/r 
     //       =  A^2/r^3 + 2*A*B/r + B^2*r 
     // thetaHat = (-sin(theta),cos(theta))
     ua(I1,I2,I3,uc+axisp1)=-uTheta*x(I1,I2,I3,axisp2)/r;
     ua(I1,I2,I3,uc+axisp2)= uTheta*x(I1,I2,I3,axisp1)/r;
-    ua(I1,I2,I3,pc)= ( (-A*A/2.)*( 1./(SQR(r)) - 1./(SQR(r1)) ) + 
-		       (2.*A*B)*( log(r)-log(r1) ) + (.5*B*B)*( SQR(r)-SQR(r1) ) );
 
     if( numberOfDimensions==3 )
       ua(I1,I2,I3,uc+axialAxis)=0.;
-    
+
+
   }
   else if( userKnownSolution=="TaylorGreenVortex" )
   {
@@ -322,16 +688,47 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 //              " p = (rho/4)*( cos(2 k x) + cos(2 k y) ) F(t)*F(t)\n"
 //              "   where F(t) = exp( -2 nu k^2 t )\n");
     // -- we could avoid building the vertex array on Cartesian grids ---
+    if( t <= 2*dt )
+      printF("+++ UDKS: eval TaylorGreen: kp=%g, numberOfTimeDerivatives=%i I1=[%i,%i] I2=[%i,%i]\n",
+             kp,numberOfTimeDerivatives,I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound());
+    
     GET_VERTEX_ARRAY(x);
 
     const real k= kp*twoPi;
-    const real f = exp(-2.*nu*k*k*t);
+    const real s=-2.*nu*k*k;
+    real f = exp(s*t);        // time-dependence
+
+    real uf, pf;
+    if( numberOfTimeDerivatives==0 )
+    {
+      uf=f;
+      pf=f*f/4.;
+    }
+    else if( numberOfTimeDerivatives==1 )
+    {
+      real ft = s*f;
+      uf = ft;
+      pf = f*ft/2.;
+    }
+    else if( numberOfTimeDerivatives==2 )
+    {
+      real ft  = s*f;
+      real ftt = s*ft;
+      uf = ftt;
+      pf = (f*ftt + ft*ft)/2.;
+    }
+    else
+    {
+      OV_ABORT("error");
+    }
+      
+
 
     if( numberOfDimensions==2 )
     {
-      ua(I1,I2,I3,uc) = sin(k*x(I1,I2,I3,0))*cos(k*x(I1,I2,I3,1))*f; 
-      ua(I1,I2,I3,vc) =-cos(k*x(I1,I2,I3,0))*sin(k*x(I1,I2,I3,1))*f; 
-      ua(I1,I2,I3,pc) = (f*f/4.)*( cos((2.*k)*x(I1,I2,I3,0)) + cos( (2.*k)*x(I1,I2,I3,1)) ); 
+      ua(I1,I2,I3,uc) = sin(k*x(I1,I2,I3,0))*cos(k*x(I1,I2,I3,1))*uf; 
+      ua(I1,I2,I3,vc) =-cos(k*x(I1,I2,I3,0))*sin(k*x(I1,I2,I3,1))*uf; 
+      ua(I1,I2,I3,pc) = ( cos((2.*k)*x(I1,I2,I3,0)) + cos( (2.*k)*x(I1,I2,I3,1)) )*pf; 
     }
     else  if( numberOfDimensions==3 )
     {
@@ -339,11 +736,11 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       int axisp1 = (axialAxis+1) % 3;
       int axisp2 = (axialAxis+2) % 3;
     
-      ua(I1,I2,I3,uc+axisp1) = sin(k*x(I1,I2,I3,axisp1))*cos(k*x(I1,I2,I3,axisp2))*f; 
-      ua(I1,I2,I3,uc+axisp2) =-cos(k*x(I1,I2,I3,axisp1))*sin(k*x(I1,I2,I3,axisp2))*f; 
+      ua(I1,I2,I3,uc+axisp1) = sin(k*x(I1,I2,I3,axisp1))*cos(k*x(I1,I2,I3,axisp2))*uf; 
+      ua(I1,I2,I3,uc+axisp2) =-cos(k*x(I1,I2,I3,axisp1))*sin(k*x(I1,I2,I3,axisp2))*uf; 
       ua(I1,I2,I3,uc+axialAxis)=0.;
 
-      ua(I1,I2,I3,pc) = (f*f/4.)*( cos((2.*k)*x(I1,I2,I3,axisp1)) + cos( (2.*k)*x(I1,I2,I3,axisp2)) ); 
+      ua(I1,I2,I3,pc) = ( cos((2.*k)*x(I1,I2,I3,axisp1)) + cos( (2.*k)*x(I1,I2,I3,axisp2)) )*pf; 
 
       
     }
@@ -2953,7 +3350,6 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
     else if( answer=="pipe flow" )
     {
       userKnownSolution="pipeFlow";
-      dbase.get<bool>("knownSolutionIsTimeDependent")=false;  // known solution is NOT time dependent
 
       real & pInflow  = rpar[0];
       real & pOutflow = rpar[1];
@@ -2962,11 +3358,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real & length   = rpar[4];
       real & ua       = rpar[5];
       real & ub       = rpar[6];
+      real & pGrad    = rpar[7];  // imposed pressure gradient (for periodic channels)
+      real & amp1     = rpar[8];  // amplitude of a time dependent eigenfunction
+      real & nFreq1   = rpar[9];  // frequency of a time dependent eigenfunction (=1,2,3,...)
+
+      real & omega    = rpar[10];  // angular velocity of outer wall
+      real & amp2     = rpar[11];  // amplitude of a time dependent angular eigenfunction
+      real & nFreq2   = rpar[12];  // frequency of a time dependent angular eigenfunction (=1,2,3,...)
 
       int  & axialAxis= ipar[0];
       axialAxis=0;
        
-      ua=0.; ub=0.;
+      pGrad=0.; ua=0.; ub=0.; amp1=0.; nFreq1=1.;
+      omega=0.; amp2=0.; nFreq2=1.;
+      
       printF("--- Pipe flow ---\n"
              " p  = pInflow + (s-s0)*(pOutflow-pInflow)/length\n"
              " 2D: Poiseuille-Couette flow:\n"
@@ -2976,38 +3381,57 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " s = axial coordinate (x,y, or z)\n"
              " u = axial velocity (x,y, or z)\n"
              " axialAxis=0,1,2 denotes the axial axis x, y, or z\n"
+             " pGrad : imposed pressure gradient (for periodic problems), default=1\n"
+             " amp1,nFreq1 : amplitude and mode-frequency of a time-dependent eigenmode, default: amp1=0\n"
+             " omega,amp2,nFre2 : for rotating component of the flow.\n"
 	);
       
-      gi.inputString(answer,"Enter radius, pInflow, pOutflow, s0, length, ua,ub, axialAxis for the exact solution");
-      sScanF(answer,"%e %e %e %e %e %e %e %i",&radius,&pInflow,&pOutflow,&s0,&length,&ua,&ub,&axialAxis);
+      gi.inputString(answer,"Enter radius, pInflow, pOutflow, s0, length, ua,ub, axialAxis, pGrad, amp1, nFreq1 for the exact solution");
+      sScanF(answer,"%e %e %e %e %e %e %e %i %e %e %e %e %e %e",&radius,&pInflow,&pOutflow,&s0,&length,&ua,&ub,&axialAxis,
+             &pGrad, &amp1,&nFreq1, &omega, &amp2,&nFreq2);
 
-      printF("Pipe flow: radius=%g, s0=%g, pInflow=%g, pOutflow=%g, length=%g, ua=%g, ub=%g, axialAxis=%i\n",
-	     radius,s0,pInflow,pOutflow,length,ua,ub,axialAxis);
+      printF("Pipe flow: radius=%g, s0=%g, pInflow=%g, pOutflow=%g, length=%g, ua=%g, ub=%g, axialAxis=%i, "
+             "pGrad=%g, amp1=%g, nFreq1=%g, omega=%g, amp2=%g, nFreq2=%g\n",
+	     radius,s0,pInflow,pOutflow,length,ua,ub,axialAxis,pGrad,amp1,nFreq1, omega,amp2,nFreq2);
+
+
+      dbase.get<bool>("knownSolutionIsTimeDependent")= (amp1!= 0. || amp2!=0.) ? true :false;  // known solution is MAY BE time dependent
 
     }
     else if( answer=="rotating Couette flow" )
     {
       userKnownSolution="rotatingCouetteflow";
-      dbase.get<bool>("knownSolutionIsTimeDependent")=false;  // known solution is NOT time dependent
 
       real & rInner     = rpar[0];
       real & rOuter     = rpar[1];
       real & omegaInner = rpar[2];
       real & omegaOuter = rpar[3];
+      real & amp1       = rpar[4];
+      real & nFreq1     = rpar[5];
 
       int & axialAxis = ipar[3];
-
+      amp1=0.; nFreq1=1.;
+       
       printF("--- Rotating Couette flow (flow between rotating cylinders, Taylor-Couette) ---\n"
              " Parameters:\n"
              "    rInner, rOuter : inner and outer radii.\n"
              "    omegaInner, omegaOuter : inner and outer angular velocities.\n"
              "    axialAxis : 0=x, 1=y, 2=z - orientation of the cylindrical axis.\n"
+             " amp1,nFreq1 : amplitude and mode-frequency of a time-dependent eigenmode, default: amp1=0\n"
              );
-      gi.inputString(answer,"Enter rInner, rOuter, omegaInner, omegaOuter, axialAxis");
-      sScanF(answer,"%e %e %e %e %i",&rInner,&rOuter,&omegaInner,&omegaOuter,&axialAxis);
+      gi.inputString(answer,"Enter rInner, rOuter, omegaInner, omegaOuter, axialAxis, amp1, nFreq1");
+      sScanF(answer,"%e %e %e %e %i %e %e",&rInner,&rOuter,&omegaInner,&omegaOuter,&axialAxis, &amp1, &nFreq1);
 
-      printF("Rotating Couette flow: rInner=%g, rOuter=%g, omegaInner=%g, omegaOuter=%g, axialAxis=%i\n",
-	     rInner,rOuter,omegaInner,omegaOuter,axialAxis);
+      if( rInner==0. )
+      {
+        omegaInner=0.;
+      }
+      
+
+      printF("Rotating Couette flow: rInner=%g, rOuter=%g, omegaInner=%g, omegaOuter=%g, axialAxis=%i, amp1=%g, nFreq1=%g\n",
+	     rInner,rOuter,omegaInner,omegaOuter,axialAxis,amp1,nFreq1);
+
+      dbase.get<bool>("knownSolutionIsTimeDependent")= amp1!= 0. ? true :false;  // known solution is MAY BE time dependent
 
     }
 

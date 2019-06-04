@@ -42,7 +42,7 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"diss=
            "interfacePoint=f{1,}"=>\@interfacePoint,"interfaceNormal=f{1,}"=>\@interfaceNormal );
 # ------------------------ plane material interface ------------------------------------------
 $name=$option; 
-if( $cg =~ /^twoBox.*/ ){ $numberOfDimensions=3; }
+if( $cg =~ /^twoBox.*/ || $cg =~ /^doubleBox.*/ ){ $numberOfDimensions=3; }
 # Give defaults here for array arguments: 
 if( $alphaP[0] eq "" ){ @alphaP=(-1,-1); }
 if( $interfaceNormal[0] eq "" ){ @interfaceNormal=(1,0,0); }
@@ -61,7 +61,11 @@ if( $b02[0] eq "" ){ @b02=(.3,0,0,0); }
 if( $b12[0] eq "" ){ @b12=(.1,0,0,0); }
 #
 $caseName="$name$method$cg\Order$order";
-if( $dm ne "none" ){ $caseName.="GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }# See below too for extraLabel
+## if( $dm ne "none" ){ $caseName.="GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }# See below too for extraLabel
+$extraLabel ="";
+if( $dm ne "none" ){ $extraLabel .= "GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }
+if( $modeGDM > -1 ){ $extraLabel .= "Mode$modeGDM"; }
+$caseName.= $extraLabel;
 # 
 if( $errorNorm eq 0 ){ $normName = "max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\
    elsif( $errorNorm eq 2 ){ $normName = "L2"; }else{ $normName="UnknownNorm"; }
@@ -108,9 +112,6 @@ if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, interfaceIts=$interfaceIts, tz=$tz, kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, eps1=$eps1, eps2=$eps2, alphaP=$alphaP[0],$alphaP[1], npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
-$extraLabel ="";
-if( $dm ne "none" ){ $extraLabel .= "GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }
-if( $modeGDM > -1 ){ $extraLabel .= "Mode$modeGDM"; }
 $outputFile="$name$method$cg$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 # 
 $options = "-diss=$diss -dissOrder=$dissOrder -dm=$dm  -eps1=$eps1 -eps2=$eps2 -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ic=$ic -tz=$tz -bc=$bc -alphaP=$alphaP[0] $alphaP[1] -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -kx=$kx -ky=$ky -kz=$kz -useSosupDissipation=$useSosupDissipation -cons=$cons -checkErrors=1 -interfaceIts=$interfaceIts -interfaceNormal=$interfaceNormal[0] $interfaceNormal[1] $interfaceNormal[2] -interfacePoint=$interfacePoint[0] $interfacePoint[1] $interfacePoint[2]  -go=go";

@@ -26,6 +26,7 @@ buildTimeSteppingDialog(DialogData & dialog )
   cmd[nt]="steady state RK-line";  nt++;
   cmd[nt]="approximate factorization";  nt++;
   cmd[nt]="implicit explicit multistep";  nt++;
+  cmd[nt]="implicit BDF";  nt++;
 
 
   assert( nt<maxNumberOfTimeSteppingMethods );
@@ -195,15 +196,18 @@ getTimeSteppingOption(const aString & answer,
   }
   // *** ecLC
   else if( answer=="implicit" ||
-           answer=="implicit explicit multistep" )
+           answer=="implicit explicit multistep" ||
+           answer=="implicit BDF" )
   {
     parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")=Parameters::implicit;
     parameters.dbase.get<int >("orderOfPredictorCorrector")=2;
 
     if( answer=="implicit" )
       parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::crankNicolson;
-    else
+    else if( answer=="implicit explicit multistep" )
       parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::implicitExplicitMultistep;
+    else
+      parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")=Parameters::backwardDifferentiationFormula;
 
     parameters.setGridIsImplicit();  // by default all grids are implicit for the implicit time stepping method
 

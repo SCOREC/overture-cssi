@@ -397,7 +397,12 @@ getVelocity( real t, realSerialArray & gridVelocity,
  
       const real t0=time(im2), t1=time(im1), t2=time(i), t3=time(ip1);
       real dt0= t1-t0, dt1= t2-t1, dt2= t3-t2;
-      assert( dt0>0. && dt1>0. && dt2>0. );
+      if( t0 >=0 && ( dt0 <=0. || dt1<=0 || dt2<=0 ) )
+      {
+        OV_ABORT("GridEvolution::ERROR: dt0 <=0. || dt1<=0 || dt2<=0");
+      }
+        
+     // assert( dt0>0. && dt1>0. && dt2>0. );  // turned off, March 28, 2019 -- may fail for t0<0 when initial past times have too small dt
 
       // Compute the time derivative of the Lagrange polynomial: 
       real l0t = ( (t-t2)*(t-t3) + (t-t1)*(t-t3) + (t-t1)*(t-t2) )/( (t0-t1)*(t0-t2)*(t0-t3) );

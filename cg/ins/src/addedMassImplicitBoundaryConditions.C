@@ -119,7 +119,6 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
     // real zfm1;
         zfm = (rho*rho + ( rho*beta*zp + 4.*rho*mu*k*k )*dt - ( 4.*(beta-k)*mu*mu*k*k*k )*dt*dt )/( (rho+ zp*dt*(beta-k) )*dt*k );
 
-<<<<<<< HEAD
         printF("GGGGGG getBulkSolidAmpParameters: ");
         printF("old zfm=%.2e, ",zfm);
 
@@ -129,11 +128,6 @@ getBulkSolidAmpParameters( MappedGrid & mg, const int grid, const int side, cons
 
         printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
                       rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
-=======
-        if( false )
-            printF("GGGGGG getBulkSolidAmpParameters: rhoSolid=%.2e, zfNew=(%.2g)*(rho*mu)/(zp*dt) = %.2e,  zfmu=(%.2e)*mu/h=%.2e, zfMonolithic=%.2e (zfMono=%.2e)\n",
-                          rhoSolid,zfMuRhoByZpDt,zfNew, zfMuByH, zfmu,  zfm,zfMono);
->>>>>>> wdh: changes to cgmx for 3D GDM interfaces
     
     }
     
@@ -269,8 +263,17 @@ addedMassImplicitBoundaryConditions(int option,
     const int correctionStage = parameters.dbase.get<int>("correctionStage");
     real pcSwitch = correctionStage>0 ? 1. : 0.;
 
+<<<<<<< HEAD
   // pcSwitch=0.;
     
+=======
+  // *wdh* Dec 5, 2018 pcSwitch=0.;
+    pcSwitch=0.;
+  // *wdh* Dec 6, 2018 -- try a ramp to fix the radial traveling wave: 
+  // pcSwitch=min(dt/.1,1.);  // try turning on slowly
+  // const int globalStepNumber = parameters.dbase.get<int >("globalStepNumber");
+  // pcSwitch=min( max(globalStepNumber,0)/10.,1.);
+>>>>>>> wdh: various changes for cgmx etc.
 
     const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
 
@@ -503,6 +506,7 @@ addedMassImplicitBoundaryConditions(int option,
                         bool useExactSolidVelocity=false;
                         bool useExactSolidTraction=false;
                         
+#ifndef USE_PPP
                         if( useExactSolidVelocity && knownSolution==Parameters::userDefinedKnownSolution )
                         {
                             printF("\n--INS-- AMP-IMP-BC: **TEST** set exact KNOWN-SOLUTION values for solid velocity ***TEMP***, t=%9.3e\n\n",t);
@@ -517,6 +521,9 @@ addedMassImplicitBoundaryConditions(int option,
                             parameters.getUserDefinedDeformingBodyKnownSolution( body,Parameters::boundaryTraction,
                                                                                                                                       t, grid, mg, Ib1,Ib2,Ib3,Rx,solidTraction );
                         }
+#else
+        OV_ABORT("finish me for parallel");
+#endif
 
 
             // evaluate the right-hand-side to the AMP velocity BCs
@@ -550,6 +557,8 @@ addedMassImplicitBoundaryConditions(int option,
                                 pOldz.redim(Ib1,Ib2,Ib3);
                                 opOld.derivative(MappedGridOperators::zDerivative ,uOldLocal,pOldz,Ib1,Ib2,Ib3,pc);
                             }
+              // *wdh* Dec 5, 2018 -- try this 
+              // u.periodicUpdate();
               // -- We assume a predicted value for "p" at the new time
                             MappedGridOperators & op = *(u.getOperators()); 
                             realSerialArray px(Ib1,Ib2,Ib3), py(Ib1,Ib2,Ib3),pz;
@@ -569,6 +578,7 @@ addedMassImplicitBoundaryConditions(int option,
                                 realSerialArray ux(Ib1,Ib2,Ib3,V), uy(Ib1,Ib2,Ib3,V);
                                 op.derivative(MappedGridOperators::xDerivative ,uLocal,ux,Ib1,Ib2,Ib3,V);
                                 op.derivative(MappedGridOperators::yDerivative ,uLocal,uy,Ib1,Ib2,Ib3,V);
+<<<<<<< HEAD
                 // Remove divergence from Tau
                 // n.Sigma.n = - p + n.Tau.n 
                 // nTaun = mu*( an1*( 2.*ux*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 +2.*vy*an2 ) )
@@ -579,6 +589,32 @@ addedMassImplicitBoundaryConditions(int option,
                                                           normal(Ib1,Ib2,Ib3,1)*( 
                                                                           (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
                                                                     +2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1) ) );
+=======
+                                if( true )
+                                {
+                  // -- standard definition of tau.n = n1.( 2*ux*n1 + (uy+vx)*n2 ) + n2*( (uy_vx)*n1 + 2*vy*n2 ) ---
+                                    nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
+                                        + mu*( normal(Ib1,Ib2,Ib3,0)*( 
+                                                                          2.*ux(Ib1,Ib2,Ib3,uc)          *normal(Ib1,Ib2,Ib3,0) + 
+                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1) ) + 
+                                                      normal(Ib1,Ib2,Ib3,1)*( 
+                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
+                                                          +      2.*uy(Ib1,Ib2,Ib3,vc)           *normal(Ib1,Ib2,Ib3,1) ) );
+                                }
+                                else
+                                {
+                  // Remove divergence from Tau
+                  // n.Sigma.n = - p + n.Tau.n 
+                  // nTaun = mu*( an1*( -2.*vy*an1 + (uy+vx)*an2) + an2*( (uy+vx)*an1 -2.*ux*an2 ) )
+                                    nSigmaFluidN = -uLocal(Ib1,Ib2,Ib3,pc) 
+                                        + mu*( normal(Ib1,Ib2,Ib3,0)*( 
+                                                          -2.*uy(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,0) + 
+                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1) ) + 
+                                                      normal(Ib1,Ib2,Ib3,1)*( 
+                                                          (uy(Ib1,Ib2,Ib3,uc)+ux(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,0) 
+                                                          -2.*ux(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,1) ) );
+                                }
+>>>>>>> wdh: various changes for cgmx etc.
                 // **FLIP SIGN -- should FLIP sign on solidTraction to start with *fix me*
                                 nSigmaSolidN = -(normal(Ib1,Ib2,Ib3,0)*solidTraction(Ib1,Ib2,Ib3,0) + normal(Ib1,Ib2,Ib3,1)*solidTraction(Ib1,Ib2,Ib3,1));
                                 assert( numberOfDimensions==2 );
@@ -715,7 +751,7 @@ addedMassImplicitBoundaryConditions(int option,
                                 if( true && pcSwitch>0. )
                                 {
                   // *** add jump in normal traction ***
-                                    uLocal(Ib1,Ib2,Ib3,uc+n) +=  (1./(zf+zp))*normal(Ib1,Ib2,Ib3,n)*( nSigmaSolidN - nSigmaFluidN );
+                                    uLocal(Ib1,Ib2,Ib3,uc+n) +=  pcSwitch*(1./(zf+zp))*normal(Ib1,Ib2,Ib3,n)*( nSigmaSolidN - nSigmaFluidN );
                                 }
                             }
                             if( debug() & 4 )
@@ -1443,6 +1479,7 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                         bool useExactSolidVelocity=false;
                         bool useExactSolidTraction=false;
                         
+#ifndef USE_PPP
                         if( useExactSolidVelocity && knownSolution==Parameters::userDefinedKnownSolution )
                         {
                             printF("\n--INS-- AMP-IMP-BC: **TEST** set exact KNOWN-SOLUTION values for solid velocity ***TEMP***, t=%9.3e\n\n",t);
@@ -1458,6 +1495,9 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                                                                                                                                       t, grid, mg, Ib1,Ib2,Ib3,Rx,solidTraction );
                         }
 
+#else
+        OV_ABORT("finish me for parallel");
+#endif
 
             // evaluate the right-hand-side to the AMP velocity BCs
                         {

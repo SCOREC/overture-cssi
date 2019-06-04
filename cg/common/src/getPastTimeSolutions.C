@@ -48,7 +48,7 @@ getPastTimeSolutions( int current, int numberOfPast, int *previous  )
       
       movingGrids.getPastTimeGrid( gf[prev] );
 
-      printF(" --DS-- getPastTimeSolutions: REGENERATE THE PAST-TIME OVERLAPPING GRID  ---\n\n");
+      printF("\n --DS-- getPastTimeSolutions: REGENERATE THE PAST-TIME OVERLAPPING GRID t=%8.2e ---\n",tPast);
       if( debug() & 4 )
       {
         FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
@@ -64,6 +64,15 @@ getPastTimeSolutions( int current, int numberOfPast, int *previous  )
         ::displayMask(cg[0].mask(),"Past time grid - mask on grid 0",debugFile);
       }
 
+      if( true )
+      {
+        // -- *new* Jan 15, 2019 **  who computes the grid velocity ???
+        printF("Compute grid-velocity at past time t=%9.3e\n",gf[prev].t);
+        getGridVelocity( gf[prev], gf[prev].t );
+
+        // ::display(gf[prev].getGridVelocity(1),"gridVelocity","%8.1e ");
+      }
+    
     } // end if movingGrid
     
 
@@ -75,6 +84,7 @@ getPastTimeSolutions( int current, int numberOfPast, int *previous  )
       gf[prev].u.display(sPrintF("Past time solution prev=%i t=%9.3e BEFORE PROJECT \n",prev,gf[prev].t),"%6.2f ");
     }
     
+
 
     // -- compute the pressure on moving grids when the pressure and body accelerations are coupled --
     if( true ) // parameters.dbase.get<bool>("projectInitialConditions") )

@@ -31,13 +31,14 @@
 # 
 $order=2; $factor=1; $interp="e";  $ml=0; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "explicit for all grids";
-$prefix="annulus"; $name=""; 
+$prefix="annulus"; $name="";
+$nrFactor=1.5; # make grid finer in r to avoid "tall" cells at the boundary  *wdh* May 29, 2019
 # 
 $innerRad=.5; $outerRad = 1.;
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,\
-            "innerRad=f"=> \$innerRad,"outerRad=f"=> \$outerRad,"prefix=s"=> \$prefix,"numGhost=i"=>\$numGhost );
+            "innerRad=f"=> \$innerRad,"outerRad=f"=> \$outerRad,"prefix=s"=> \$prefix,"numGhost=i"=>\$numGhost,"nrFactor=i"=>\$nrFactor );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -66,7 +67,7 @@ Annulus
   lines
     $nTheta = intmg( 2.*$pi*($innerRad+$outerRad)*.5/$ds + 1.5 );
     # $nr = intmg( ($outerRad-$innerRad)/$ds + 2.5 ); # *wdh* July 7, 2016
-    $nr = intmg( ($outerRad-$innerRad)/$ds + 1.5 );
+    $nr = intmg( $nrFactor*($outerRad-$innerRad)/$ds + 1.5 );
     $nTheta $nr
   boundary conditions
     -1 -1 1 2

@@ -1467,6 +1467,8 @@ applyFourthOrderBoundaryConditions( realMappedGridFunction & u0, real t, int gri
     {
         fPrintF(debugFile,"********************** insBC4 t=%8.2e (useNew=%i)************************************\n",t,
                       parameters.dbase.get<int >("useNewFourthOrderBoundaryConditions"));
+        printF("********************** insBC4 t=%8.2e (useNew=%i)************************************\n",t,
+                      parameters.dbase.get<int >("useNewFourthOrderBoundaryConditions"));
 
         if( debug & 8 )
         {
@@ -1547,11 +1549,41 @@ applyFourthOrderBoundaryConditions( realMappedGridFunction & u0, real t, int gri
         }
         
     }
+
+  // --- Add on any body forcing (which includes user defined forcings) ---
+  // *wdh* Jan 12, 2019 
+    int addBodyForcing=0;
+    if( parameters.dbase.get<bool >("turnOnBodyForcing") )
+    {
+    // The body forcing has already been computed ( computeForcing should be called in the advance routine)
+        printF("\n BFBFBFBFBFBF insBC4: add body forcing at t=%9.3e BFBFBF\n",t);
+        addBodyForcing=1;
+
+        assert( parameters.dbase.get<realCompositeGridFunction* >("bodyForce")!=NULL );
+        realCompositeGridFunction & bodyForce = *(parameters.dbase.get<realCompositeGridFunction* >("bodyForce"));
+
+    // Add the user defined force onto dvdt:
+        OV_GET_SERIAL_ARRAY(real,bodyForce[grid],bodyForceLocal);
+
+        Range Rx=numberOfDimensions, V(uc,uc+numberOfDimensions-1);
+        if( !parameters.gridIsMoving(grid) )
+        {
+      // note: insbc4 assumes gtt has the same first 3 dimensions as uLocal
+            gtt.redim(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),numberOfDimensions);
+            gtt(I1,I2,I3,Rx) = -bodyForceLocal(I1,I2,I3,V);  // *fix me* only need to add at boundary points
+        }    
+        else
+        {
+            gtt(I1,I2,I3,Rx) -= bodyForceLocal(I1,I2,I3,V);  // *fix me* only need to add at boundary points
+        }
+        if( false )
+            ::display(gtt,"insBC4: gtt after subtracting bodyForce","%9.3e ");
+
+    }
+
     real *pgt  = gridVelocityLocal.getDataPointer(); // pointer to the grid velocity, g'
     real *pgtt = gtt.getDataPointer();               // pointer to the grid acceleration, g''
     
-
-
   // check -- is it ok to use gid instead of ir?
     IntegerArray indexRangeLocal(2,3), dimLocal(2,3), bcLocal(2,3);
     ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( u0,indexRangeLocal,dimLocal,bcLocal ); 
@@ -1597,9 +1629,9 @@ applyFourthOrderBoundaryConditions( realMappedGridFunction & u0, real t, int gri
       	ad21 = max( ad21,ad41 );
       	ad22 = max( ad22,ad42 );
 
-      	if( (debug & 4) && t<3.*dt )
+      	if( true || ((debug & 4) && t<3.*dt) )
       	{
-        	  printF("BBB insBC4:INFO: second-order boundary dissipation is used: (ad21,ad22)=(%8.2e,%8.2e)\n",ad21,ad22);
+        	  printF("\n B4B4B4B4B insBC4:INFO: second-order boundary dissipation is used: (ad21,ad22)=(%8.2e,%8.2e)\n\n",ad21,ad22);
       	}
       	
 
@@ -1645,7 +1677,8 @@ applyFourthOrderBoundaryConditions( realMappedGridFunction & u0, real t, int gri
              		 parameters.dbase.get<int >("myid"),
                                   (int)assignTemperature,
                                   parameters.dbase.get<int >("tc"),
-                                  parameters.dbase.get<int >("numberOfComponents")
+                                  parameters.dbase.get<int >("numberOfComponents"),
+                                  addBodyForcing
     };
 
 

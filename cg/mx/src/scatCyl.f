@@ -693,7 +693,7 @@
                  ain=1.
                else
                  aimn=-aimn*ai
-                 ain=ain*ai
+                 ain =  ain*ai
                end if
                cnt=cos(n*theta)
                snt=sin(n*theta)
@@ -896,7 +896,7 @@
                  ain=1.
                else
                  aimn=-aimn*ai
-                 ain=ain*ai
+                 ain =  ain*ai
                end if
                cnt=cos(n*theta)
                snt=sin(n*theta)
@@ -1064,9 +1064,9 @@
           rMin=.75*a
            ! precompute some coefficients
            do n=0,nterm-1
-             ! H = H^(2) = J - i Y
-             hnc = cmplx( jnka(n), -ynka(n))
-             hnpc= cmplx(jnpka(n),-ynpka(n))
+             ! H = H^(1) = J + i Y
+             hnc = cmplx( jnka(n),  ynka(n))
+             hnpc= cmplx(jnpka(n), ynpka(n))
              ! Since H becomes large as n gets large, form the ratio Hn/Hn'  (to avoid cancellation)
              hr = hnc/hnpc
              detc =      mc*jcnmka(n)-hr*jcnpmka(n)
@@ -1141,8 +1141,8 @@
              ain=1.   ! ai**0
              expc=cmplx(cos(n*theta),sin(n*theta))
              ! ---- exterior
-               hnc =cmplx( jn(n), -yn(n))
-               hnpc=cmplx(jnp(n),-ynp(n))
+               hnc =cmplx( jn(n),  yn(n))
+               hnpc=cmplx(jnp(n), ynp(n))
                sc = an(n)*hnc *expc
                scr= an(n)*hnpc*expc
                ! write(*,'("i1,i2=",2i3," jn=",f6.3)') i1,i2,jn(n)
@@ -1157,6 +1157,8 @@
                  ! aimn=1.
                else
                  ain=ain*ai
+                 ! *wdh* May 15, 2019 try this
+                 ! ain=-ain*ai
                  ! aimn=-aimn*ai
                end if
                cnt=cos(n*theta)
@@ -1165,8 +1167,8 @@
                ! exptc=n*cmplx(-snt,cnt)
                ! expmc =  cmplx( cnt,-snt)
                ! expmtc=n*cmplx(-snt,-cnt)
-                 hnc =cmplx(jn(n) , -yn(n))
-                 hnpc=cmplx(jnp(n),-ynp(n))
+                 hnc =cmplx(jn(n) ,  yn(n))
+                 hnpc=cmplx(jnp(n), ynp(n))
                  ! H: inc=0 
                  sc = sc  + an(n)*hnc*ain*2.*cnt
                  ! sc = sc  + (inc*jn(n) + an(n)*hnc )*aimn*expc + (inc*jn(n) + an(n)*hnc )*aimn*expmc
@@ -1240,6 +1242,7 @@
              ty= cos(theta)/r  ! d(theta)/dy
              if( staggeredGrid.eq.0 )then
                ! node centered values 
+               ! *wdh* May 15, 2019: CHECK THIS 
                u(i1,i2,i3,hzr)=real(sc)
                u(i1,i2,i3,hzi)=aimag(sc)
                ! eEx = 1/(ss*epsHat) * (Hz)_y = 1/(ss*epsHat) * ( k*r_y*(Hz)_r  + theta_y*(Hz)_theta )
@@ -1250,6 +1253,11 @@
                u(i1,i2,i3,exi)= aimag(exField)
                u(i1,i2,i3,eyr)=  real(eyField)
                u(i1,i2,i3,eyi)= aimag(eyField)
+               ! *wdh* May 15, 2019:  try this 
+               !u(i1,i2,i3,exr)=-  real(exField)
+               !u(i1,i2,i3,exi)= aimag(exField)
+               !u(i1,i2,i3,eyr)=-  real(eyField)
+               !u(i1,i2,i3,eyi)= aimag(eyField)
               ! write(*,'(" exr,exi=",2(1pe14.4)," eyr,eyi=",2(1pe14.4))')  u(i1,i2,i3,exr),u(i1,i2,i3,exi),u(i1,i2,i3,eyr),u(i1,i2,i3,eyi)
                ! Add on the incident field
                ! Hz-incident = e^{i k x}
@@ -1297,14 +1305,14 @@
           rMin=eps*sqrt(2.)  ! need sqrt(2.) for correct evaluation at origin *wdh* 061008
            ! precompute some coefficients
            do n=0,nterm-1
-             ! H = H^(2) = J - i Y
-             hnc = cmplx( jnka(n), -ynka(n))
-             hnpc= cmplx(jnpka(n),-ynpka(n))
+             ! H = H^(1) = J + i Y
+             hnc = cmplx( jnka(n),  ynka(n))
+             hnpc= cmplx(jnpka(n), ynpka(n))
              ! Since H becomes large as n gets large, form the ratio Hn/Hn'  (to avoid cancellation)
              hr = hnc/hnpc
              detc =      mc*jcnmka(n)-hr*jcnpmka(n)
              detic = 1./(mc*jcnmka(n)-hr*jcnpmka(n))
-               an(n)= ( -2.*ai*mc/(pi*ka) )*detic/hnpc
+               an(n)= ( 2.*ai*mc/(pi*ka) )*detic/hnpc
              !   write(*,'(" n=",i2," h=(",2e10.2,") hp=(",2e10.2,")  hr=(",2e10.2,") detc=",2e10.2," detic=",2e10.2," an=",2e10.2)') n,real(hnc),aimag(hnc),real(hnpc),aimag(hnpc),real(hr),aimag(hr),real(detc),aimag(detc),real(detic),aimag(detic),real(an(n)),aimag(an(n))
              ! aa = 2.*am/( am**n*(am+1./am))  ! asymptotic formula
              ! write(*,'(" n=",i2," h=(",2e10.2,") an=",2e10.2," an/asymp=",2e10.2)') n,real(hnc),aimag(hnc)! ,real(an(n)),aimag(an(n)),real(an(n)/aa),aimag(an(n)/aa)
@@ -1390,6 +1398,8 @@
                  ! aimn=1.
                else
                  ain=ain*ai
+                 ! *wdh* May 15, 2019 try this
+                 ! ain=-ain*ai
                  ! aimn=-aimn*ai
                end if
                cnt=cos(n*theta)
@@ -1468,6 +1478,7 @@
              ty= cos(theta)/r  ! d(theta)/dy
              if( staggeredGrid.eq.0 )then
                ! node centered values 
+               ! *wdh* May 15, 2019: CHECK THIS 
                u(i1,i2,i3,hzr)=real(sc)
                u(i1,i2,i3,hzi)=aimag(sc)
                ! eEx = 1/(ss*epsHat) * (Hz)_y = 1/(ss*epsHat) * ( k*r_y*(Hz)_r  + theta_y*(Hz)_theta )
@@ -1478,6 +1489,11 @@
                u(i1,i2,i3,exi)= aimag(exField)
                u(i1,i2,i3,eyr)=  real(eyField)
                u(i1,i2,i3,eyi)= aimag(eyField)
+               ! *wdh* May 15, 2019:  try this 
+               !u(i1,i2,i3,exr)=-  real(exField)
+               !u(i1,i2,i3,exi)= aimag(exField)
+               !u(i1,i2,i3,eyr)=-  real(eyField)
+               !u(i1,i2,i3,eyi)= aimag(eyField)
               ! write(*,'(" exr,exi=",2(1pe14.4)," eyr,eyi=",2(1pe14.4))')  u(i1,i2,i3,exr),u(i1,i2,i3,exi),u(i1,i2,i3,eyr),u(i1,i2,i3,eyi)
              else
                if( edge.eq.1 )then

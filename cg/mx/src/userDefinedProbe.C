@@ -114,7 +114,6 @@ userDefinedProbe( GenericGraphicsInterface & gi )
 
   gi.pushGUI(gui);
   gi.appendToTheDefaultPrompt("userProbe>");
-
   aString answer;
   
   int len=0;
@@ -251,8 +250,8 @@ userDefinedProbe( GenericGraphicsInterface & gi )
              " The probe will evaluate certain sums over a rectangular grid of points\n");
 
       printF("The reflected and transmitted fields are assumed to be of the form:\n"
-             "        Refelected field = Im( A*exp(2*pi*i(kx*x- omega*t -phi )) \n"
-             "                             + R*exp(2*pi*i( -kx*(x-L) - omega*t ) ) )\n"
+             "        Reflected field   = Im( A*exp(2*pi*i( kx*x     - omega*t -phi )) \n"
+             "                              + R*exp(2*pi*i(-kx*(x-L) - omega*t ) ) )\n"
              "        Transmitted field = Im( T*exp(2*pi*i( kx*(x-L) - omega*t ) \n");
 
       printF(" Parameters defining the probe are\n"
@@ -587,7 +586,7 @@ outputUserDefinedProbes( int current, real t, real dt, int stepNumber )
 
     }
     else if( userProbeType=="reflection" ||
-        userProbeType=="transmission"  )
+             userProbeType=="transmission"  )
     {
       // ------ Reflection or Transmission probe  ------
 

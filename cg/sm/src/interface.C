@@ -789,7 +789,33 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                     }
                 }
                 
-                f(I1,I2,I3,C)=velocity;
+        // **** Comment: If we want to under-relax the solid velocity it would probably be done here *wdh* March 27, 2019
+                const bool & relaxCorrectionSteps = parameters.dbase.get<int>("relaxCorrectionSteps");
+                if( relaxCorrectionSteps && t>0. )
+                {
+                    const real & omega = parameters.dbase.get<real>("addedMassRelaxationFactor");
+        	  const real & tol = parameters.dbase.get<real>("subIterationConvergenceTolerance");
+                    const int correctionStage = parameters.dbase.get<int>("correctionStage");
+
+                    ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
+                    RealArray velocityCurrent(I1,I2,I3,Rx);
+                    velocityHistory.eval(t,velocityCurrent); // eval current guess for the velocity
+                    real maxDiff = max(fabs(velocity-velocityCurrent));
+                    bool isConverged = maxDiff < tol;
+                    parameters.dbase.get<int>("correctionIterationsHaveConverged")=isConverged;  // Will be used by advanceSteps
+                    
+                    printF("--SM----IRHS-- relaxCorrectionSteps: t=%9.3e, omega=%g, tol=%g, correction=%i, maxDiff=%8.2e, isConverged=%i\n",
+                                  t,omega,tol,correctionStage,maxDiff,(int)isConverged);
+
+                    
+                    
+                    f(I1,I2,I3,C)=  omega*velocity + (1.-omega)*velocityCurrent;
+                }
+                else
+                {
+                      f(I1,I2,I3,C)=velocity;
+                }
+                
       	numSaved+=numberOfDimensions;
 
 
@@ -1742,13 +1768,12 @@ projectInterface( int grid, real dt, int current )
                             {
                                 zf=zfMono*zfm;
                             }
-<<<<<<< HEAD
                             else
                             {
                                 printF("***** WARNING: NOT USING MONOLITHIC ZF, (zfMono=%.2e) *****\n",zfMono);
-=======
+                            }
                             
-                            
+                            /* ---- OLD
                             if( correctionStage>0 )
                             {
                                 zf=1e8;
@@ -1759,8 +1784,9 @@ projectInterface( int grid, real dt, int current )
                             {
                                 if( t<= 2.*dt )
                                     printF("SMSMSMSMS  CGSM correctionStage=%i, Use zf=%.2e\n",correctionStage,zf);
->>>>>>> wdh: changes to cgmx for 3D GDM interfaces
+
                             }
+                              ---- */
 
               // coeff of [traction] in AMP interface condition:
                             const real & ampSigmaJumpCoeff = parameters.dbase.get<real>("ampSigmaJumpCoeff"); 
@@ -1784,8 +1810,6 @@ projectInterface( int grid, real dt, int current )
 
               //       ", rhoF=%.2e muFluid=%.2e nuFluid=%.2e zp=%.2e dt=%.2e\n",zfOld,zfNew,fluidDensity,muFluid,nuFluid,zp,dt);
 
-                            alphaV = zf/( zf + zp );
-                            alphaS = 1.-alphaV; // (1./zf)/( 1./zf + 1./zp );  // = zp/(zf+zp) = 1-alphaV
                             alphaV = zf/( zf + zp );
                             alphaS = 1.-alphaV; // (1./zf)/( 1./zf + 1./zp );  // = zp/(zf+zp) = 1-alphaV
               // this is a multiplier for the jump terms

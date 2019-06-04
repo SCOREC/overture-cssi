@@ -2,7 +2,7 @@
 #   Grid for a cylindrical pipe
 #
 # usage: ogen [noplot] pipe -factor=<num> -order=[2/4/6/8] -interp=[e/i]  -rgd=[fixed|var] -name= ...
-#                           -sa=<f> -sb=<f> -radius=<f> -axial=[x|y|z]
+#                           -sa=<f> -sb=<f> -radius=<f> -axial=[x|y|z] -per=[0|1]
 # 
 #   [sa,sb] : bounds on the axial length of the pipe
 #   radius  : radius of the pipe
@@ -47,8 +47,9 @@
 #    ogen -noplot pipe -order=4 -interp=e -rgd=fixed -axial=z -factor=4  
 # 
 # -- set default parameter values:
+$prefix="pipe"; 
 $axial="x"; # axial axis
-$sa=0.; $sb=2.; $radius=1.; $rgd="var"; 
+$sa=0.; $sb=2.; $radius=1.; $rgd="var"; $per=0; 
 $stretchFactor=2; # make BL grid spacing this many times finer
 # 
 $order=2; $factor=1; $interp="i"; $name="";
@@ -56,7 +57,9 @@ $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids"
 # 
 # get command line arguments
 GetOptions("order=i"=>\$order,"factor=i"=>\$factor,"interp=s"=>\$interp,"sa=f"=>\$sa,"sb=f"=> \$sb,"radius=f"=>\$radius,\
-           "name=s"=>\$name,"stretchFactor=f"=> \$stretchFactor,"rgd=s"=>\$rgd,"axial=s"=>\$axial );
+           "name=s"=>\$name,"stretchFactor=f"=> \$stretchFactor,"rgd=s"=>\$rgd,"axial=s"=>\$axial,"prefix=s"=>\$prefix,\
+           "perr=i"=>\$per );
+# 
 sub min{ local($n,$m)=@_; if( $n<$m ){ return $n; }else{ return $m; } }
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -65,7 +68,6 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
 $suffix = ".order$order"; 
-$prefix="pipe"; 
 if( $axial ne "x" ){ $prefix .= $axial; }
 if( $rgd eq "fixed" ){ $prefix = $prefix . "Fixed"; }
 if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
@@ -79,11 +81,13 @@ create mappings
 $width=$radius*min(.5,.75/$factor) + $ds*($order-2);  # width of cylindrial grid in the radial direction
 if( $rgd eq "fixed" ){ $width=.5*$radius; }
 #
+if( $per == 0 ){ $bc12 = "1 2"; }else{ $bc12="-1 -1"; }
+#
  box
   $delta = $width - $ds*($order-2); 
-  if( $axial eq "x" ){ $xa=$sa; $xb=$sb; $ya=-$radius+$delta; $yb=$radius-$delta; $za=$ya; $zb=$yb; $bc="1 2 0 0 0 0"; }
-  if( $axial eq "y" ){ $ya=$sa; $yb=$sb; $za=-$radius+$delta; $zb=$radius-$delta; $xa=$za; $xb=$zb; $bc="0 0 1 2 0 0"; }
-  if( $axial eq "z" ){ $za=$sa; $zb=$sb; $xa=-$radius+$delta; $xb=$radius-$delta; $ya=$xa; $yb=$xb; $bc="0 0 0 0 1 2";}
+  if( $axial eq "x" ){ $xa=$sa; $xb=$sb; $ya=-$radius+$delta; $yb=$radius-$delta; $za=$ya; $zb=$yb; $bc="$bc12 0 0 0 0"; $share="1 2 0 0 0 0"; }
+  if( $axial eq "y" ){ $ya=$sa; $yb=$sb; $za=-$radius+$delta; $zb=$radius-$delta; $xa=$za; $xb=$zb; $bc="0 0 $bc12 0 0"; $share="0 0 1 2 0 0"; }
+  if( $axial eq "z" ){ $za=$sa; $zb=$sb; $xa=-$radius+$delta; $xb=$radius-$delta; $ya=$xa; $yb=$xb; $bc="0 0 0 0 $bc12"; $share="0 0 0 0 1 2";}
   set corners
     $xa $xb  $ya $yb  $za $zb
   lines
@@ -92,7 +96,7 @@ if( $rgd eq "fixed" ){ $width=.5*$radius; }
   boundary conditions
     $bc
   share 
-    $bc
+    $share
   mappingName
      box
 # pause
@@ -113,7 +117,9 @@ if( $rgd eq "fixed" ){ $width=.5*$radius; }
       $rb=$radius;  $ra=$rb-$width;
       $ra $rb 
     boundary conditions
-      -1 -1 1 2 0 3
+      $bcNumbers = "-1 -1 $bc12 0 3"; 
+      $bcNumbers
+      # -1 -1 1 2 0 3
     share 
        0  0 1 2 0 0
     lines
@@ -150,7 +156,8 @@ generate an overlapping grid
   change parameters
     ghost points
       all
-      $ng $ng $ng $ng $ng $ng 
+      if( $per eq 1 ){ $ngp=$ng+1; }else{ $ngp=$ng; } 
+      $ng $ng $ng $ng $ng $ngp 
     order of accuracy
       $orderOfAccuracy
     interpolation type

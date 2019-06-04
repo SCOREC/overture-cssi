@@ -211,6 +211,12 @@ SmParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if( !dbase.has_key("currentInterfaceTimeLevel") ) dbase.put<int>("currentInterfaceTimeLevel")=-1;
   if( !dbase.has_key("numberOfInterfaceTimeLevels") ) dbase.put<int>("numberOfInterfaceTimeLevels")=4;
 
+  // For under-relaxed FSI problems: 
+  dbase.put<int>( "relaxCorrectionSteps")=false;
+  dbase.put<real>("addedMassRelaxationFactor")=.5;
+  dbase.put<real>("subIterationConvergenceTolerance")=1.e-3;
+  dbase.put<int>("correctionIterationsHaveConverged")=true;
+
   dbase.put<real>("ampSigmaJumpCoeff")=1.;   // coeff of [traction] in AMP interface condition
   dbase.put<real>("ampVelocityJumpCoeff")=1.;   // coeff of [velocity] in AMP interface condition
 
@@ -1776,6 +1782,12 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
     textLabels[nt]="fluid solid corner fix:";  sPrintF(textStrings[nt], "%i",dbase.get<int>("fluidSolidCornerFix"));       nt++;
 
+
+    textLabels[nt]="relaxCorrectionSteps:";  sPrintF(textStrings[nt], "%i",dbase.get<int>("relaxCorrectionSteps"));       nt++;
+    textLabels[nt]="addedMassRelaxationFactor:";  sPrintF(textStrings[nt], "%g",dbase.get<real>("addedMassRelaxationFactor"));       nt++;
+    textLabels[nt]="subIterationConvergenceTolerance:";  sPrintF(textStrings[nt], "%g",dbase.get<real>("subIterationConvergenceTolerance"));  nt++;
+
+
     // null strings terminal list
     assert( nt<numberOfTextStrings );
     textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
@@ -1857,6 +1869,11 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     else if( dialog.getTextValue(answer,"relaxAlpha","%e",relaxAlpha) ){}//
     else if( dialog.getTextValue(answer,"relaxDelta","%e",relaxDelta) ){}//
     else if( dialog.getTextValue(answer,"rho","%e",rho) ){}//
+
+    else if( dialog.getTextValue(answer,"relaxCorrectionSteps:","%i",dbase.get<int>("relaxCorrectionSteps")) ){}//
+    else if( dialog.getTextValue(answer,"addedMassRelaxationFactor:","%e",dbase.get<real>("addedMassRelaxationFactor")) ){}//
+    else if( dialog.getTextValue(answer,"subIterationConvergenceTolerance:","%e",dbase.get<real>("subIterationConvergenceTolerance")) ){}//
+
     else if( len=answer.matches("Godunov order of accuracy") ) 
     {
       sScanF(answer(len,answer.length()),"%i",&dbase.get<int >("orderOfAccuracyForGodunovMethod"));

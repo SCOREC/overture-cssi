@@ -591,6 +591,7 @@ setup(const real & time /* = 0. */ )
   // Initialize the solution (project the solution if required) and updateToMatchGrid
   printF("DomainSolver::setup: initialize the solution: initializeSolution() ...\n");
   initializeSolution();
+  printF("DomainSolver::setup: ... done\n");
 
   cleanupInitialConditions();
   userDefinedInitialConditionsCleanup();  // *wdh* 050514 -- cleanup user defined initial conditions

@@ -2,7 +2,7 @@
 # Rectangle (taking arguments)
 #
 #
-# usage: ogen [noplot] rectangleArg -factor=<num> -order=[2/4/6/8] -xa= -xb= -ya= -yb= -prefix=<> -name=<>
+# usage: ogen [noplot] rectangleArg -factor=<num> -order=[2/4/6/8] -xa= -xb= -ya= -yb= -prefix=<> -name=<> -periodic=[p|np|pn]
 # 
 # examples:
 #    ogen -noplot rectangleArg -prefix=rect6x2y -order=2 -xa=-3. -xb=3. -ya=-1. -yb=1. -factor=1
@@ -67,7 +67,8 @@ generate an overlapping grid
       $orderOfAccuracy
     ghost points
       all
-      $ng $ng $ng $ng $ng $ng 
+      $ngp=$ng+1; 
+      $ng $ng $ng $ngp $ng $ng 
   exit
 #  display intermediate results
   compute overlap

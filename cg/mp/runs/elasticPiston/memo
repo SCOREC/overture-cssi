@@ -1,3 +1,4 @@
+
  * AMP scf1000
 /home/dan/Documents/overtureframework-code/cg/mp/bin/cgmp -noplot /home/dan/Documents/overtureframework-code/cg/mp/runs/elasticPiston/elasticPiston.cmd -g=./elasticPistonGride8.order2p -method=ins -addedMass=1 -scf=1000 -u0=0. -nu=0.05 -tp=0.6 -tf=0.6 -nc=1 -pOffset=0. -tsINS=im -smVariation=g -rhoSolid=1 -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -solver=yale -psolver=yale -ra=-10 -rb=-9 -cdv=1 -cDt= -diss=0.5 -cfl=0.9 -useImplicitAmpBCs=1 -useExactPressureBC=0 -numberOfCorrections=1 -stressRelaxation=0 -zfMuByH=0 -zfRhoHByDt=0 -zfMono=1 -known=piston -setGhostByExtrapolation=1 -useTP=0 -tsSM=modifiedEquationTimeStepping -dtMax=1.25e+19 >> AMP1000.txt
 
@@ -48,6 +49,127 @@ cgmp elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -
 
 SCF=5 - OK
 cgmp elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.1 -debug=3 -go=halt -useNewTimeSteppingStartup=0
+=======
+***********************************************
+************* April 1, 2019
+
+CHECK VELOCITY SUB_ITERATIONS -- is velocity recomputed ?? --> YES 
+
+RADIAL FIXED -- TURN ON SOLID SUB-ITERATIONS, ALSO CHECK CONVERGENCE
+
+SCF=2 : .1=NO, .05=OK .04=better?
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=2 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.04 -go=halt
+
+
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.05 -debug=3 -go=halt 
+
+***********************************************
+************* March 29, 2019
+
+REVISIT SUB-ITERATIONS
+
+**** BUG FIXED IN CGSM -- advanceMethodOfLines -- ** INTERPOLATE !! 
+
+
+
+
+---------------- RADIAL
+
+SCF=1 : omega=.05 : NO, =.025 : CLOSE but NO,  .01 = OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=1 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.01 -go=halt
+
+SCF=2 : .1=NO, .05=OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=2 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.05 -go=halt
+
+SCF=10 : OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=10 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.2 -go=halt
+
+SCF=50 : OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=50 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.2 -go=halt
+
+
+SCF=100 omega = .2 Ok, .3=OK 
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=100 -nu=.05 -tp=.01 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.2 -go=halt
+
+
+
+
+
+
+***********************************************
+************* March 28, 2019
+
+REVISIT SUB-ITERATIONS
+
+
+---------------- RADIAL
+
+$cgmpx radialElasticPiston -g=radialElasticPistonGride2.order2.hdf -addedMass=0 -useTP=1 -scf=100 -nu=.05 -tp=.001 -tf=3 -smVariation=g -debug=1 -tsINS=im  -tsSM=improvedEuler -startCurve=spline -debug=3 -nc=100 -omega=.2 -go=halt
+
+
+RELAX VELOCITY TOO (But not checking for velocity convergence yet)
+
+============ Cgsm time-step info for domain 0 (solidDomain)(solid) steps=10==================
+-->t=1.0000e-01 dt=1.0e-02 maxNorm errors:[2.0630e-16,1.3812e-04,4.2219e-04,1.1673e-15,1.1673e-15,1.0860e-03,2.7317e-18,1.9526e-05,], maxNorm(u):[2.06e-16,4.71e-01,5.60e-01,1.17e-15,1.17e-15,1.68e+00,2.73e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=10==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 5.189e-06 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[2.08e-03,3.35e-16,1.23e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (11 steps)
+   0.100 2.08e-03 3.35e-16 1.23e-04 6.95e-05  1.04e+00 1.00e-02 2.78e+00 
+
+
+
+RELAX STRESS ONLY:
+
+
+============ Cgsm time-step info for domain 0 (solidDomain)(solid) steps=10==================
+-->t=1.0000e-01 dt=1.0e-02 maxNorm errors:[1.3193e-16,1.6367e-04,1.4259e-03,1.0013e-15,1.0013e-15,2.8326e-03,3.2962e-18,1.8352e-05,], maxNorm(u):[1.32e-16,4.71e-01,5.60e-01,1.00e-15,1.00e-15,1.68e+00,3.30e-18,4.87e-02,]
+============= Cgins time-step info for domain 1 (fluidDomain)(fluid) steps=10==================
+ --UDKS--  ERROR IN INTERFACE POSITION = 2.102e-05 at t=1.000e-01
+--INS-- determineErrors: t=1.000e-01, maxNorm errors: [p,u,v,T]=[2.47e-03,2.51e-16,1.64e-04,0.00e+00]
+     t    err(p)   err(u)   err(v)    div       uMax     dt       cpu    (11 steps)
+   0.100 2.47e-03 2.51e-16 1.64e-04 1.13e-03  1.04e+00 1.00e-02 3.35e+00 
+
+
+***********************************************
+************* March 25, 2019
+
+REVISIT SUB-ITERATIONS
+
+SUB-ITERATIONS -- check for convergence of sub-iterations
+
+
+ **** NOTE useNewTimeSteppingStartup=1 IS BROKEN
+
+
+
+
+
+G2 : SCF=2 -omega=.02  -omega=.05(?)  **OK** -omega=.07 (Too big)
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride2.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=100 -omega=.02 -debug=3 -go=halt -useNewTimeSteppingStartup=0
+
+SCF=2 -omega=.02  **OK**
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=100 -omega=.02 -debug=3 -go=halt -useNewTimeSteppingStartup=0
+
+SCF=5  -omega=.05 **OK**
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.05 -debug=3 -go=halt -useNewTimeSteppingStartup=0
+
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.05 -debug=3 -go=halt 
+
+===============================OLD =====================
+SCF=1 - OK
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=1. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.02 -debug=3 -go=halt
+
+
+SCF=2 - OK
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=2. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.03 -debug=3 -go=halt
+
+SCF=5 - OK
+$cgmpx elasticPiston -method=ins -g=elasticPistonGride1.order2p.hdf -addedMass=0 -scf=5. -nu=.01 -tp=.01 -tf=5. -pOffset=0. -tsINS=im -tsSM=improvedEuler -smVariation=g -pi=0 -bcOption=4 -sideBC=dirichlet -psolver=yale -tz=none -useTP=1 -nc=50 -omega=.1 -debug=3 -go=halt
+
+
+
+>>>>>>> wdh: various changes for cgmx etc.
 
 
 

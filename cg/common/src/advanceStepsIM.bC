@@ -303,6 +303,9 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
   const int & numberOfSolutionLevels = parameters.dbase.get<int>("numberOfSolutionLevels");
   const int & numberOfTimeDerivativeLevels = parameters.dbase.get<int>("numberOfTimeDerivativeLevels");
 
+  const Parameters::ImplicitMethod & implicitMethod = 
+                parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");
+
   assert( parameters.dbase.get<int >("orderOfPredictorCorrector")==2 );  // for now we just have 2nd-order in time
 
   assert( parameters.dbase.get<DataBase >("modelData").has_key("AdamsPCData") );

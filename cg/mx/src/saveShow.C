@@ -180,6 +180,12 @@ saveShow( int current, real t, real dt )
   if( mgp==NULL )
   {
     // save a CompositeGridFunction...
+    if( t<=0. )
+    {
+      // ** CHECK ME **
+      getErrors( current, t, dt ); // *wdh* Jan 21, 2019 -- make sure errors are computed at t=0
+    }
+    
     
     realCompositeGridFunction v;
     realCompositeGridFunction & u = getAugmentedSolution(current,v,t);

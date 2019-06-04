@@ -1,3 +1,299 @@
+
+
+**************************************
+******* April 28, 2019
+
+START on reading GDM fits from gdmOpt.m
+
+alias trdmf /home/henshw/cg.g/mx/bin/trdmf
+
+trdmf -file=GoldJCDispersionFits.txt
+
+trdmf -file=SilverJCDispersionFits.txt
+
+
+cgmx dielectricBodies -g=dielectricBlockGrid2de4.order4 -dm=gdm -dmFile=GoldJCDispersionFits.txt -backGround=leftBackGround -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=0 -tf=.05 -tp=.05 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1 -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-1. -beta=50. -go=og
+
+
+
+
+**************************************
+******* April 18, 2019
+
+** CHECK PROBE FILE -- multiple t=0 enty
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de4.order4 -backGround=leftBackGround -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=0 -tf=.05 -tp=.05 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1 -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-1. -beta=50. -go=go >! junk
+
+
+
+
+**********************
+
+
+cgmx dielectricBodies -g=IBeamGride8.order2.hdf -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1 -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-1. -beta=50. -go=halt
+
+
+
+**************************************
+******* Jan 29, 2019
+
+
+REVIST REFLECTION/TRANSMISSION from a BLOCK
+
+
+DIELECTRIC BLOCK EPS=8 
+cgmx dielectricBodies -g=dielectricBlockGrid2de8.order4 -backGround=leftBackGround -rbc=abcEM2 -kx=1 -eps1=8 -eps2=1. -diss=2 -tf=15 -tp=.1 -show="dieBlockG8Eps8b.show" -probeFileName=probeDieBlockG8Eps8b -go=halt
+
+
+GDM BLOCK
+cgmx dielectricBodies -g=dielectricBlockGrid2de4.order4.ng3 -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=leftBackGround -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=15 -tp=.1 -go=halt
+
+
+SOSUP: *NOTE* Ex is not-zero here(?)
+cgmx dielectricBodies -g=dielectricBlockGrid2de4.order4.ng3 -backGround=leftBackGround -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=15 -tp=.1 -go=halt
+
+Single BLOCK -- 
+cgmx dielectricBodies -g=dielectricBlockGrid2de4.order4 -backGround=leftBackGround -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -diss=2 -tf=15 -tp=.1 -go=halt
+
+
+**************************************
+******* Jan 22, 2019
+
+RE-RUN STANDARD PLANE WAVE  -- longer wavelength
+
+
+L=20 
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.25 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL20A30G8kx0p25.show -go=go >! ellipseL20A30G8kx0p25.out 
+
+L=10 
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.25 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL10A30G8kx0p25.show -go=go >! ellipseL10A30G8kx0p25.out 
+
+
+L=4 
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.25 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL4A30G8kx0p25.show -go=go >! ellipseL4A30G8kx0p25.out
+
+
+
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.25 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL20A30G8.show -go=go >! ellipseL20A30G8.out 
+
+**************************************
+******* Jan 21, 2019
+
+Run for a movie L10 
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.02 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL10A30G8movie.show -go=go >! ellipseL10A30G8movie.out
+
+++++++++++++++++++++++ SECOND ORDER ++++++++++++++++++++++++++
+
+PML41: COMPARE L10 TO LONG G8 increase pmlLines 
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -pmlLines=41 -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL10G4PML41Order2vL20G8.show -go=go >! ellL10G4PML41Order2vL20G8.out
+
+
+PML: COMPARE L4 SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL4G4PMLOrder2vL20G8.show -go=go >! ellL4G4PMLOrder2vL20G8.out 
+
+
+NLBC: COMPARE VERY SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL2Angle30e4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL2G4NLOrder2vL20G8.show -go=go >! ellL2G4NLOrder2vL20G8.out
+
+NLBC: COMPARE L4 SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL4G4NLOrder2vL20G8.show -go=go >! ellL4G4NLOrder2vL20G8.out
+
+
+++++++++++++++++++++++ FOURTH ORDER ++++++++++++++++++++++++++
+
+PML81: COMPARE L10 TO LONG G8 increase pmlLines 
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -pmlLines=81 -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL10G4PM81LvL20G8.show -go=go >! ellL10G4PM81LvL20G8.out 
+
+
+PML41: COMPARE L10 TO LONG G8 increase pmlLines 
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -pmlLines=41 -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL10G4PML41vL20G8.show -go=go >! ellL10G4PML41vL20G8.out 
+
+PML41: COMPARE L4 SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -pmlLines=41 -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL4G4PML41vL20G8.show -go=go >! ellL4G4PML41vL20G8.out 
+
+
+
+PML: COMPARE L10 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL10Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL10G4PMLvL20G8.show -go=go >! ellL10G4PMLvL20G8.out 
+
+PML: COMPARE L4 SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL4G4PMLvL20G8.show -go=go >! ellL4G4PMLvL20G8.out 
+
+
+PML: COMPARE VERY SHORT G4 TO LONG G8 -- *trouble* at late times
+cgmx -noplot dielectricBodies -g=ellipticalGridL2Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL2G4PMLvL20G8.show -go=go >! ellL2G4PMLvL20G8.out 
+
+NLBC: COMPARE L4 SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL4G4NLvL20G8.show -go=go >! ellL4G4NLvL20G8.out 
+
+NLBC: COMPARE VERY SHORT G4 TO LONG G8
+cgmx -noplot dielectricBodies -g=ellipticalGridL2Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show -show=ellL2G4NLvL20G8.show -go=go >! ellL2G4NLvL20G8.out 
+
+
+LONG domain G8  -- run to t=50 
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=50 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL20A30G8.show -go=go >! ellipseL20A30G8.out
+
+
+**************************************
+******* Jan 18-19, 2019
+
+>>>>>>>>>> TEST PML AND GAUSSIAN PULSE staring outside the domain 
+
+TEST "compare to show file"
+"reference show file:
+
+short domain - compare
+
+
+PML 
+COMPARE PML TO LONG G8
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show
+
+
+
+COMPARE VERY SHORT TO LONG G8
+cgmx dielectricBodies -g=ellipticalGridL2Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show
+
+
+COMPARE TO LONG
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show
+
+LONG domain G4 
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=5. -tp=.1 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL20A30G4.show -go=go >! ellipseL20A30G4.out
+
+
+COMPARE TO LONG G8
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL20A30G8.show
+
+COMPARE TO SHORT G8
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -compareToShowFile=ellipseL4A30G8.show
+
+Short domain G8 
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL4A30G8.show -go=go >! ellipseL4A30G8.out
+
+Short domain G4 
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL4A30G4.show -go=go >! ellipseL4A30G4.out
+
+LONG domain G8 
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL20A30G8.show -go=go >! ellipseL20A30G8.out
+
+
+LONG domain
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=5. -tp=.1 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellipseL20A30G8.show -go=go >! ellipseL20A30G8.out
+
+
++++++++++++++++++++BODY +++++++++++++++++++
+
+PML
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=abcPML -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. 
+
+RBC
+cgmx dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. 
+
+++++++++++++++++++++++++++++++ SQUARE DOMAIN ++++++++++++++++++++++++++++++++++++++++
+RBC:
+cgmx gaussianPlaneWave -g=square128np.order4 -dm=none -backGround=square -rbc=rbcNonLocal -kx=1 -eps1=1 -useSosupDissipation=0 -tf=2.5 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+PML 
+cgmx gaussianPlaneWave -g=square128np.order4 -dm=none -backGround=square -rbc=abcPML -kx=1 -eps1=1 -useSosupDissipation=0 -tf=2.5 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+PML: 
+cgmx gaussianPlaneWave -g=square80np.order2 -dm=none -backGround=square -rbc=abcPML -kx=1 -eps1=1 -useSosupDissipation=0 -tf=20 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+
+cgmx gaussianPlaneWave -g=square80np.order2 -dm=none -backGround=square -rbc=rbcNonLocal -kx=1 -eps1=1 -useSosupDissipation=0 -tf=20 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+**************************************
+******* Jan 16-17, 2019
+
+HIT BODY WITH GAUSSIAN -- starting outside 
+
+
+
+L=[-2,2]
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50. -show=ellGL4gp.show -go=go >! ellGL4gp.out 
+
+L=[-5,5]
+cgmx -noplot dielectricBodies -g=ellipticalGridAngle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -ic=gp -x0=-3. -beta=50.  -show=ellGL10gp.show -go=go >! ellGL10gp.out 
+
+
+>>>>>>>>>> TEST gaussian pulse staring outside the domain 
+
+cgmx gaussianPlaneWave -g=square128np.order4 -dm=none -backGround=square -rbc=rbcNonLocal -kx=1 -eps1=1 -useSosupDissipation=0 -tf=20 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+cgmx gaussianPlaneWave -g=square80np.order2 -dm=none -backGround=square -rbc=rbcNonLocal -kx=1 -eps1=1 -useSosupDissipation=1 -tf=20 -tp=.1 -ic=gp -x0=-1 -beta=50 -go=halt
+
+**************************************
+******* Jan 9, 2019
+
+REVISIT Scattering from bodies -- ADD GDM AND SOSUP AND FAR-FIELD
+
+FD44-GDM -- ellipse rotated by 30 degrees
+
+Long domain 
+cgmx -noplot dielectricBodies -g=ellipticalGridL20Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=20 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL20A30G8.show -go=go >! ellipseL20A30G8.out 
+
+Short-domain  L4 : [-2,2]
+G8 -OK 
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-1.9 -yLeftProbe=.0 -xRightProbe=1.9  -yRightProbe=.0 -show=ellipseL4A30G8.show -go=go >! ellipseL4A30G8.out 
+
+G8 -OK 
+cgmx -noplot dielectricBodies -g=ellipticalGridAngle30e8.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=10 -tp=.5 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -show=ellipseL10A30G8.show -go=go >! ellipseL10A30G8.out 
+
+G4  - OK 
+cgmx dielectricBodies -g=ellipticalGridAngle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5.
+
+FD22-GDM -- 
+cgmx dielectricBodies -g=ellipticalGride4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5.
+
+
+
+**************************************
+******* Jan 9, 2019
+
+REVISIT Scattering from bodies -- ADD GDM AND SOSUP AND FAR-FIELD
+
+
+**** 2D DISK in a long channel
+
+ADD GDM DISK 
+
+FD44-GDM -- OK 
+cgmx dielectricBodies -g=diskInBoxYpe4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5.
+
+FD22-GDM -- OK 
+cgmx dielectricBodies -g=diskInBoxYpe4.order2.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -diss=2 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. 
+
+
+FD44s : SOSUP -OK 
+cgmx dielectricBodies -g=diskInBoxYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -useSosupDissipation=1 -diss=0 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5.
+
+
+FD22s : SOSUP OK
+cgmx dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -useSosupDissipation=1 -diss=0 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5.
+
+FD22 OK
+cgmx dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -diss=2 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. 
+
+
+**************************************
+******* Nov 6, 2018
+
+
+==== START TESTS OF GDM BODIES ******
+
+--- NOTE: using Tom's RBC here 
+
++++++++++++++++++++++++= GDM  +++++++++++++++++++++
+
+
++++++++++++++++++++++++= Dielectric bodies  +++++++++++++++++++++
+
+cgmx dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=1 -eps1=8 -eps2=1. -diss=2 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. 
+
+--- sosup-diss: 
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -diss=0. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-5.2 -yLeftProbe=.0 -xRightProbe=5.1  -yRightProbe=.0 -xar=-5. -xbr=-4 -xat=4 -xbt=5. -xb=-2 -go=og
+
 **************************************
 ******* March 3, 2017
 

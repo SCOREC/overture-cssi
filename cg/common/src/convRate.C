@@ -111,6 +111,7 @@ main(int argc, char *argv[])
     int grid=0;
     int gridLines=1,numberOfComponents=1;
     int numberOfComponentsFromHeader=-1;
+    int gridNameCharacterCount=-1;
     while( !done )
     {
       int numberOfCharsRead=getLineFromFile(file,buff,sizeof(buff));
@@ -188,8 +189,36 @@ main(int argc, char *argv[])
 	    printf(" grid=%i, numberOfComponents=%i, gridLines=%i, e1=%e, e2=%e\n",grid,numberOfComponents,gridLines,
 		   e(grid,0),e(grid,1));
 
-	  fprintf(outputFile,"%20s & %5i ",buff2,gridLines);  // grid-name and 'N'
-	  fprintf(stdout    ,"%20s & %5i ",buff2,gridLines);  // grid-name and 'N'
+
+
+          if( gridNameCharacterCount<= 0 )
+          {
+            aString gridName=buff2;
+            gridNameCharacterCount=gridName.length()+1; // add 1 for later longer names 
+            // fprintf(stdout,"len(gridName)=%i\n",gridName.length());
+          }
+          
+          if( gridNameCharacterCount<=10 )
+          {
+            fprintf(outputFile,"%10s & %5i ",buff2,gridLines);  // grid-name and 'N'
+            fprintf(stdout    ,"%10s & %5i ",buff2,gridLines);  // grid-name and 'N'
+          }
+          else if( gridNameCharacterCount<=12 )
+          {
+            fprintf(outputFile,"%12s & %5i ",buff2,gridLines);  // grid-name and 'N'
+            fprintf(stdout    ,"%12s & %5i ",buff2,gridLines);  // grid-name and 'N'
+          }
+          else if( gridNameCharacterCount<=14 )
+          {
+            fprintf(outputFile,"%14s & %5i ",buff2,gridLines);  // grid-name and 'N'
+            fprintf(stdout    ,"%14s & %5i ",buff2,gridLines);  // grid-name and 'N'
+          }
+          else
+          {
+            fprintf(outputFile,"%20s & %5i ",buff2,gridLines);  // grid-name and 'N'
+            fprintf(stdout    ,"%20s & %5i ",buff2,gridLines);  // grid-name and 'N'
+          }
+          
 	  for( int j=0; j<numberOfComponents; j++ )
 	  {
             // convert the number into a fraction and exponent

@@ -49,6 +49,8 @@ $show
 $cmd
 #
   line width scale factor:0 3
+  hardcopy vertical resolution:0 2048
+  hardcopy horizontal resolution:0 2048
   plot interpolation points 1
   if($name =~ "solid.*" ) { $cmd="line width scale factor:0 2\n  plot interpolation points 0"; }else{ $cmd="#"; }
   $cmd

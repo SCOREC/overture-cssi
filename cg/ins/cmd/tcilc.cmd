@@ -110,7 +110,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "ad4=i"=>\$ad4,"ad41=f"=>\$ad41,"ad42=f"=>\$ad42,"outflowOption=s"=>\$outflowOption,"cpn=f"=>\$cpn,\
   "ogmgAutoChoose=i"=>\$ogmgAutoChoose,"inflow=s"=>\$inflow,"iluLevels=i"=>\$iluLevels,\
   "maxIterations=i"=>\$maxIterations,"plotIterations=i"=>\$plotIterations,"plotResiduals=i"=>\$plotResiduals,\
-  "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrdero,"flushFrequency=i"=>\$flushFrequency );
+  "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrder,"flushFrequency=i"=>\$flushFrequency );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }

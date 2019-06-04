@@ -61,9 +61,9 @@ $sideBC="slipWall";
 $bcOption=4;   # does this do anything ? I think this is for cgcns
 $orderOfExtrapForOutflow=3; $orderOfExtrapForGhost2=2; $orderOfExtrapForInterpNeighbours=2; 
 $projectInitialConditions=0; # for INS
-# 
-$psolver="yale"; 
-$solver="yale"; 
+#  presure and implicit solver parameters
+$psolver="yale"; $solver="yale"; 
+$rtolp=1.e-4; $atolp=1.e-6; $rtoli=1.e-5; $atoli=1.e-7;
 $ksp="bcgs"; $pc="bjacobi"; $subksp="preonly"; $subpc="ilu"; $iluLevels=3;
 # -- p-wave strength: don't make too big or else solid may become inverted in the deformed space
 $append=0; 
@@ -100,7 +100,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"nu=f"=>\$nu,"muFluid=f"=>\$muFluid,"
    "amp=f"=>\$amp,"rampOrder=i"=>\$rampOrder,"ra=f"=>\$ra,"rb=f"=>\$rb,"cdv=f"=>\$cdv,\
    "useNewTimeSteppingStartup=i"=> \$useNewTimeSteppingStartup,"tsINS=s"=>\$tsINS,\
    "freqFullUpdate=i"=>\$freqFullUpdate,"smoothInterface=i"=>\$smoothInterface,\
-    "zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
+   "zfMuByH=f"=>\$zfMuByH,"zfRhoHByDt=f"=>\$zfRhoHByDt,\
+   "rtolp=f"=>\$rtolp,"atolp=f"=>\$atolp,"rtoli=f"=>\$rtoli,"atoli=f"=>\$atoli,\
    "numberOfInterfaceSmooths=i"=>\$numberOfInterfaceSmooths,"useImplicitAmpBCs=i"=>\$useImplicitAmpBCs,\
    "dtMax=f"=>\$dtMax,"thetad=f"=>\$thetad,"useExactPressureBC=i"=>\$useExactPressureBC,"startCurve=s"=>\$startCurve,\
    "setGhostByExtrapolation=i"=>\$setGhostByExtrapolation,"fluidSolidCornerFix=i"=> \$fluidSolidCornerFix,"tb=f"=>\$tb,"zfMono=f"=>\$zfMono );
@@ -258,7 +259,7 @@ $bc = "all=noSlipWall\n" . \
       "bcNumber103=noSlipWall\n bcNumber103=tractionInterface\n" . \
       "bcNumber104=noSlipWall\n bcNumber104=tractionInterface\n";
 #
-$ktc=$ktcFluid; $rtolp=1.e-4; $atolp=1.e-6; 
+$ktc=$ktcFluid; 
 $checkForInflowAtOutflow=1; $useNeumannAtOutflow=1; 
 $ad2=1; 
 echo to terminal 0

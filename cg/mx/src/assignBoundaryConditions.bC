@@ -586,7 +586,7 @@ if( ok && useOpt )
 {
   // use optimised boundary conditions
   int ipar[40];
-  real rpar[50];
+  real rpar[60];
 
   int gridType = isRectangular ? 0 : 1;
   int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
@@ -713,6 +713,12 @@ int polarizationOption=0;
 
   ipar[36] = numberOfPolarizationVectors;
 
+  int incidentFieldType=0; // plane wave incident field   
+  if( initialConditionOption==gaussianPlaneWave )  
+    incidentFieldType=1;
+  
+  ipar[37]= incidentFieldType;  
+
   rpar[0]=dx[0];       // for Cartesian grids          
   rpar[1]=dx[1];                
   rpar[2]=dx[2];                
@@ -779,6 +785,17 @@ int polarizationOption=0;
   rpar[41]=dmp.alphaP;
   
   
+  // Guassian plane wave parameters
+  if( initialConditionOption==gaussianPlaneWave )
+  {
+    rpar[50]=x0GaussianPlaneWave;
+    rpar[51]=y0GaussianPlaneWave;
+    rpar[52]=z0GaussianPlaneWave;
+    rpar[53]=betaGaussianPlaneWave;
+  }
+  
+  
+
   // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
 
 
@@ -1154,19 +1171,14 @@ int polarizationOption=0;
     // -- dispersion model components --
     if( localDispersionModel!=noDispersion )
     {
-      if( numberOfPolarizationVectors>1 )
-      {
-        OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
-      }
-
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
         {
           const int pc= iv*numberOfDimensions;
           // *fix* me for numberOfPolarizationVectors>1 
-          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;
-          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;
+          pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv];
+          pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv];
         }
 
       }
@@ -1196,19 +1208,15 @@ int polarizationOption=0;
       // -- dispersion model components --
       if( localDispersionModel!=noDispersion )
       {
-        if( numberOfPolarizationVectors>1 )
-        {
-          OV_ABORT("FINISH ME: DISPERSIVE KNOWN SOLUTION WITH MULTIPLE P");
-        }
         FOR_3D(i1,i2,i3,I1,I2,I3)
         {
           for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
           {
             const int pc= iv*numberOfDimensions;
             // *fix* me for numberOfPolarizationVectors>1 
-            pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr + UG(i1,i2,i3,ex+3)*cPi;
-            pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr + UG(i1,i2,i3,ey+3)*cPi;
-            pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr + UG(i1,i2,i3,ez+3)*cPi;
+            pLocal(i1,i2,i3,pc  ) = UG(i1,i2,i3,ex)*cPr[iv] + UG(i1,i2,i3,ex+3)*cPi[iv];
+            pLocal(i1,i2,i3,pc+1) = UG(i1,i2,i3,ey)*cPr[iv] + UG(i1,i2,i3,ey+3)*cPi[iv];
+            pLocal(i1,i2,i3,pc+2) = UG(i1,i2,i3,ez)*cPr[iv] + UG(i1,i2,i3,ez+3)*cPi[iv];
           }
 
         }

@@ -96,6 +96,7 @@ c To include derivatives of rx use OPTION=RX
 
 ! -- OLD --
 
+
       subroutine insbc4(bcOption, nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & nd4a,nd4b,
      & ipar,rpar, u, mask, x,rsxy, gv, gtt, bc, indexRange, ierr )
@@ -133,7 +134,8 @@ c To include derivatives of rx use OPTION=RX
      & useWhereMask,tc,assignTemperature
       integer gridType,gridIsImplicit,implicitMethod,implicitOption,
      & isAxisymmetric
-      integer use2ndOrderAD,use4thOrderAD,advectPassiveScalar
+      integer use2ndOrderAD,use4thOrderAD,advectPassiveScalar,
+     & addBodyForcing
       integer nr(0:1,0:2)
       integer bcOptionWallNormal
       integer bc1,bc2,extrapOrder,ks1,kd1,ks2,kd2,is1,is2,is3
@@ -786,8 +788,10 @@ c===============================================================================
       assignTemperature =ipar(22)
       tc                =ipar(23)
 
+      addBodyForcing    =ipar(25)   ! *new* wdh Jan 12, 2019
+      ! write(*,'("SSSSSSSSSS insbc4:  addBodyForcing=",i3)') addBodyForcing      
 
-!     advectPassiveScalar=ipar(16)
+      !     advectPassiveScalar=ipar(16)
 
       dx(0)             =rpar(0)
       dx(1)             =rpar(1)
@@ -2033,16 +2037,20 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42r(i1,i2,i3,uc)
                       uy0 = uy42r(i1,i2,i3,uc)
@@ -2166,16 +2174,20 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42r(i1,i2,i3,uc)
                       uy0 = uy42r(i1,i2,i3,uc)
@@ -2334,9 +2346,6 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
@@ -2344,9 +2353,17 @@ c===============================================================================
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43r(i1,i2,i3,uc)
                       uy0 = uy43r(i1,i2,i3,uc)
@@ -2493,9 +2510,6 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
@@ -2503,9 +2517,17 @@ c===============================================================================
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43r(i1,i2,i3,uc)
                       uy0 = uy43r(i1,i2,i3,uc)
@@ -2716,16 +2738,20 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42r(i1,i2,i3,uc)
                       uy0 = uy42r(i1,i2,i3,uc)
@@ -2840,16 +2866,20 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42r(i1,i2,i3,uc)
                       uy0 = uy42r(i1,i2,i3,uc)
@@ -2999,9 +3029,6 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
@@ -3009,9 +3036,17 @@ c===============================================================================
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43r(i1,i2,i3,uc)
                       uy0 = uy43r(i1,i2,i3,uc)
@@ -3149,9 +3184,6 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
@@ -3159,9 +3191,17 @@ c===============================================================================
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43r(i1,i2,i3,uc)
                       uy0 = uy43r(i1,i2,i3,uc)
@@ -3363,9 +3403,6 @@ c===============================================================================
                      ug0 = u0
                      vg0 = v0
                      wg0 = w0
-                     gtt0 = 0.
-                     gtt1 = 0.
-                     gtt2 = 0.
                     else
                      ! grid is moving
                      !  ug0 = u - gridVelocity
@@ -3373,9 +3410,17 @@ c===============================================================================
                      ug0 = u0-gv(i1,i2,i3,0)
                      vg0 = v0-gv(i1,i2,i3,1)
                      wg0 = w0-gv(i1,i2,i3,2)
-                     gtt0 = gtt(i1,i2,i3,0)
-                     gtt1 = gtt(i1,i2,i3,1)
-                     gtt2 = gtt(i1,i2,i3,2)
+                    end if
+                    if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                      ! gtt = gridAccleration - bodyForcing 
+                      gtt0 = gtt(i1,i2,i3,0)
+                      gtt1 = gtt(i1,i2,i3,1)
+                      gtt2 = gtt(i1,i2,i3,2)
+                    else
+                      gtt0 = 0.
+                      gtt1 = 0.
+                      gtt2 = 0.
                     end if
                     ux0 = ux43r(i1,i2,i3,uc)
                     uy0 = uy43r(i1,i2,i3,uc)
@@ -3509,9 +3554,6 @@ c===============================================================================
                      ug0 = u0
                      vg0 = v0
                      wg0 = w0
-                     gtt0 = 0.
-                     gtt1 = 0.
-                     gtt2 = 0.
                     else
                      ! grid is moving
                      !  ug0 = u - gridVelocity
@@ -3519,9 +3561,17 @@ c===============================================================================
                      ug0 = u0-gv(i1,i2,i3,0)
                      vg0 = v0-gv(i1,i2,i3,1)
                      wg0 = w0-gv(i1,i2,i3,2)
-                     gtt0 = gtt(i1,i2,i3,0)
-                     gtt1 = gtt(i1,i2,i3,1)
-                     gtt2 = gtt(i1,i2,i3,2)
+                    end if
+                    if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                      ! gtt = gridAccleration - bodyForcing 
+                      gtt0 = gtt(i1,i2,i3,0)
+                      gtt1 = gtt(i1,i2,i3,1)
+                      gtt2 = gtt(i1,i2,i3,2)
+                    else
+                      gtt0 = 0.
+                      gtt1 = 0.
+                      gtt2 = 0.
                     end if
                     ux0 = ux43r(i1,i2,i3,uc)
                     uy0 = uy43r(i1,i2,i3,uc)
@@ -3737,16 +3787,21 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
                        !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42(i1,i2,i3,uc)
                       uy0 = uy42(i1,i2,i3,uc)
@@ -3943,16 +3998,21 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
                        !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42(i1,i2,i3,uc)
                       uy0 = uy42(i1,i2,i3,uc)
@@ -4201,19 +4261,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)
@@ -4401,19 +4465,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)
@@ -4683,16 +4751,21 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
                        !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42(i1,i2,i3,uc)
                       uy0 = uy42(i1,i2,i3,uc)
@@ -4888,16 +4961,21 @@ c===============================================================================
                        ! grid is NOT moving
                        ug0 = u0
                        vg0 = v0
-                       gtt0 = 0.
-                       gtt1 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
                        !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
                       end if
                       ux0 = ux42(i1,i2,i3,uc)
                       uy0 = uy42(i1,i2,i3,uc)
@@ -5145,19 +5223,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)
@@ -5345,19 +5427,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)
@@ -5630,19 +5716,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)
@@ -5830,19 +5920,23 @@ c===============================================================================
                        ug0 = u0
                        vg0 = v0
                        wg0 = w0
-                       gtt0 = 0.
-                       gtt1 = 0.
-                       gtt2 = 0.
                       else
                        ! grid is moving
                        !  ug0 = u - gridVelocity
-                       !  gtt0 = grid acceleration = u.t 
                        ug0 = u0-gv(i1,i2,i3,0)
                        vg0 = v0-gv(i1,i2,i3,1)
                        wg0 = w0-gv(i1,i2,i3,2)
-                       gtt0 = gtt(i1,i2,i3,0)
-                       gtt1 = gtt(i1,i2,i3,1)
-                       gtt2 = gtt(i1,i2,i3,2)
+                      end if
+                      if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )
+     & then
+                        ! gtt = gridAccleration - bodyForcing 
+                        gtt0 = gtt(i1,i2,i3,0)
+                        gtt1 = gtt(i1,i2,i3,1)
+                        gtt2 = gtt(i1,i2,i3,2)
+                      else
+                        gtt0 = 0.
+                        gtt1 = 0.
+                        gtt2 = 0.
                       end if
                       ux0 = ux43(i1,i2,i3,uc)
                       uy0 = uy43(i1,i2,i3,uc)

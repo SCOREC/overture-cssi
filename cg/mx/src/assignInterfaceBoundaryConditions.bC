@@ -418,7 +418,7 @@ realSerialArray u2nLocal; getLocalArrayWithGhostBoundaries(u2n,u2nLocal);
 realSerialArray u1mLocal; getLocalArrayWithGhostBoundaries(u1m,u1mLocal);
 realSerialArray u2mLocal; getLocalArrayWithGhostBoundaries(u2m,u2mLocal);
 
-if( numberOfPolarizationVectors1>0 || numberOfPolarizationVectors2>0 )
+if( numberOfPolarizationVectors1 >0 || numberOfPolarizationVectors2>0 )
 {
   OV_ABORT("--MX-- INTERFACE - finish me for dispersive and parallel");
 }
@@ -1146,6 +1146,15 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
 
     const bool centerNeeded = forcingOption==twilightZoneForcing;  // we need the grid points 
 
+    // For dispersion materials, look up arrays of polarization vectors
+    // The number of Pv vectors may be different on either side
+    // --- Lookup info for the dispersion model ---
+    const DispersiveMaterialParameters & dmp1 = getDispersiveMaterialParameters(grid1);
+    const int numberOfPolarizationVectors1 = dmp1.numberOfPolarizationVectors; 
+
+    const DispersiveMaterialParameters & dmp2 = getDispersiveMaterialParameters(grid2);
+    const int numberOfPolarizationVectors2 = dmp2.numberOfPolarizationVectors; 
+
     //  Determine the local arrays that hold in the interface values.
     //  In parallel we build new local arrays with a copy of the values from the
     //  other side. 
@@ -1158,14 +1167,6 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       ::display(u2Local,sPrintF("u2Local before assignOptInterface grid2=%i, t=%8.2e",grid2,t),pDebugFile,"%8.2e ");
     }
 
-    // For dispersion materials, look up arrays of polarization vectors
-    // The number of Pv vectors may be different on either side
-    // --- Lookup info for the dispersion model ---
-    const DispersiveMaterialParameters & dmp1 = getDispersiveMaterialParameters(grid1);
-    const int numberOfPolarizationVectors1 = dmp1.numberOfPolarizationVectors; 
-
-    const DispersiveMaterialParameters & dmp2 = getDispersiveMaterialParameters(grid2);
-    const int numberOfPolarizationVectors2 = dmp2.numberOfPolarizationVectors; 
 
     // --- Get pointers to arrays for the dispersive model ----
     real *p1ptr = u1Local.getDataPointer();  // set default when not used
@@ -1259,6 +1260,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
     if( orderOfAccuracyInSpace==4 )
     {
       useJacobiUpdate=true;
+      // useJacobiUpdate=false;
     }
     RealArray v1,v2;
     real *v1p=u1p, *v2p=u2p; // default when not used

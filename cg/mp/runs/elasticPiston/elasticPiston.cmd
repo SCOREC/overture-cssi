@@ -315,6 +315,8 @@ $extraCmds = \
 echo to terminal 0
 if( $degreeSpaceSM ne "" ){ $degreeSpace=$degreeSpaceSM; }
 if( $degreeTimeSM ne "" ){ $degreeTime=$degreeTimeSM; }
+# TP iterations for the solid: 
+$relaxCorrectionSteps=$useTP; $addedMassRelaxationFactor=$omega; $subIterationConvergenceTolerance=$tol; 
 include $ENV{CG}/mp/cmd/smDomain.h
 echo to terminal 1
 # 

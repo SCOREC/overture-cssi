@@ -1,4 +1,104 @@
 ***********************
+***** June 3, 2019
+
+
+cgmx planeWave.cmd -g=square128.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=2 -dmFile=../gdm/GoldJCDispersionFits.txt -kx=2 -tp=.1 -tf=1 -eps=1 -checkErrors=1 -debug=1 -go=og
+
+
+***********************
+***** May 6, 2018
+
+cgmx -noplot planeWave.cmd -g=square128.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=2 -dmFile=../gdm/GoldJCDispersionFits.txt -kx=2 -tp=.1 -tf=1 -eps=1 -checkErrors=1 -debug=1 -go=og
+
+***********************
+***** May 5, 2018
+
+FIXUP SCALING OF GDM PARAMETERS  -- **CHECK ME**
+
+
+non-dimensionalize: L0=100(nm) = 1e-07(m), T0=3.33564e-16(s) ,omegaScale=9.41826e+15,  omegaScale*T0/(2*pi)=0.5
+
+***********************
+***** May 4, 2018
+
+TEST GDM Fit materials
+
+$dmFile=""; # "SilverJCDispersionFits.txt"; 
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -dmFile=../gdm/GoldJCDispersionFits.txt -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=1 -checkErrors=1 -debug=1 -go=og
+
+RECOMPILE -- FIXED !!
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=1 -checkErrors=1 -debug=1 -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=3.918e-02 max-err = 3.071e-06
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,1.27e-04,1.15e+00,], max (u):[0.00e+00,9.72e-01,9.97e-01,] (6 steps)
+
+
+
+** BROKEN **   (SOURCE FORGE VERSION IS OK -- "module s"
+
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=1 -checkErrors=1 -debug=1 -go=og
+
+
+NEW VERSION
+-dm=gdm ** BROKEN **
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,2.90e-02,1.16e+00,], max (u):[0.00e+00,9.78e-01,1.00e+00,] (6 steps)
+
+evalEigGDM: return from dgeev: info=       0
+ evalEigGDM: input: mode=    -1
+ evalEigGDM: i=  0 s=( -9.785033313515E-02,  9.923277423611E-01)
+ evalEigGDM: i=  1 s=( -9.785033313515E-02, -9.923277423611E-01)
+ evalEigGDM: i=  2 s=( -2.521496668648E-01,  1.259988532533E+01)
+ evalEigGDM: i=  3 s=( -2.521496668648E-01, -1.259988532533E+01)
+--DMP-- GDM: s=( -2.521496668648e-01, -1.259988532533e+01) :
+  j=0 a0=1.000e+00 a1=5.000e-01 b0=1.000e+00 b1=2.000e-01 chir= -6.507036077304e-03 chii=  3.977961355421e-02
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+
+
+
+SOURCEFORGE VERSION
+-dm=gdm : source-forge
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,1.27e-04,1.15e+00,], max (u):[0.00e+00,9.72e-01,9.97e-01,] (6 steps)
+
+ *** planeWaveInitialCondition: t=0.000e+00 dt=1.667e-02 eps=1.000e+00 mu=1.000e+00 c=1.000e+00 ***
+--DMP-- GDM: RECOMPUTE root: rootComputed=0 c*k=1.256637e+01 ck0=0.000000e+00
+evalEigGDM: return from dgeev: info=       0
+ evalEigGDM: input: mode=    -1
+ evalEigGDM: i=  0 s=( -9.785033313515E-02,  9.923277423611E-01)
+ evalEigGDM: i=  1 s=( -9.785033313515E-02, -9.923277423611E-01)
+ evalEigGDM: i=  2 s=( -2.521496668648E-01,  1.259988532533E+01)
+ evalEigGDM: i=  3 s=( -2.521496668648E-01, -1.259988532533E+01)
+--DMP-- GDM: s=( -2.521496668648e-01, -1.259988532533e+01) :
+  j=0 a0=1.000e+00 a1=5.000e-01 b0=1.000e+00 b1=2.000e-01 chir= -6.507036077304e-03 chii=  3.977961355421e-02
+--MX--GIC dispersion: s=( -2.5215e-01, -1.2600e+01)
+
+
+--advOpt-- dispersionModel=   2 px,py,pz=  3  4 -1
+--advOpt-- GDM: numberOfPolarizationVectors=   1 alphaP=0.10E+01
+--advOpt-- GDM: alphaP,a0,a1,b0,b1=  1.00E+00  1.00E+00  5.00E-01  1.00E+00  2.00E-01
+--advOpt-- GDM: eqn=  0 a0,a1,b0,b1=  1.00E+00  5.00E-01  1.00E+00  2.00E-01
+
+
+advOPT>>>update-                      dispersive_dim=2_order=4_gridType=rectangular
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+--MX--Dirichlet BC dispersion: s=( -2.5215e-01, -1.2600e+01)
+
+ +++++ FD t=8.333e-02 STAGE 0: computeUt=0 updateInterior=1 addDissipation=1 applyBCs=1
+>>> Cgmx:FD: t=1.00e-01 dt=1.7e-02 TS=ME GDM ad4=0.50 |div(E)|/|grad(E)|=1.51e-04 (=1.85e-03/1.22e+01) 6 steps mem=21.1(Mb) cpu=2.69e+02(s)
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=1 P-norm=3.918e-02 max-err = 3.071e-06
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,1.27e-04,1.15e+00,], max (u):[0.00e+00,9.72e-01,9.97e-01,] (6 steps)
+
+
+
+-dm=none:
+>>> t=1.00e-01 dt=1.7e-02 max errors:[0.00e+00,6.93e-04,6.93e-04,], max (u):[0.00e+00,9.97e-01,9.97e-01,] (6 steps)
+
+
+***********************
 ***** June 23, 2018
 
 Broken:

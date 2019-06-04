@@ -8423,19 +8423,22 @@ update( MappingInformation & mapInfo )
       if( answer=="lines" && domainDimension==1 )
       {
         real ratio=real(getGridDimensions(axis1))/max(1,nxOld);
-        printf("Increase resolution on sub-curves, ratio=%8.2e\n",ratio);
+        if( numberOfSubCurves()>1 ) // *wdh* Oct 28, 2018 -- only increase if there are sub-curves
+        {
+          printf("Increase resolution on sub-curves, ratio=%8.2e\n",ratio);
 	
-        if( ratio>1. )
-	{
-	  for( int sc=0; sc<numberOfSubCurves(); sc++ )
-	  {
-	    int nx=subCurve(sc).getGridDimensions(0);
+          if( ratio>1. )
+          {
+            for( int sc=0; sc<numberOfSubCurves(); sc++ )
+            {
+              int nx=subCurve(sc).getGridDimensions(0);
 	    
-	    subCurve(sc).setGridDimensions(axis1,int(nx*ratio+.5));
-            // printf(" sc=%i nx=%i new=%i, newGrid=%i\n",sc,nx,int(nx*ratio+.5),subCurve(sc).getGrid().getLength(0));
+              subCurve(sc).setGridDimensions(axis1,int(nx*ratio+.5));
+              // printf(" sc=%i nx=%i new=%i, newGrid=%i\n",sc,nx,int(nx*ratio+.5),subCurve(sc).getGrid().getLength(0));
 	    
-	  }
-	}
+            }
+          }
+        }
       }
     }
     else if( answer=="exit" )

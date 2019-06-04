@@ -63,6 +63,7 @@ int DomainSolver::
 userDefinedForcing( realCompositeGridFunction & f, GridFunction *gfa, int *gfIndex, real *times, 
                     int numberOfTimeLevels, const real & tForce )
 {
+
   // Look for the userDefinedForcing sub-directory in the data-base
   if( !parameters.dbase.get<DataBase >("modelData").has_key("userDefinedForcingData") )
   {
@@ -82,6 +83,9 @@ userDefinedForcing( realCompositeGridFunction & f, GridFunction *gfa, int *gfInd
   realCompositeGridFunction & u = gf.u;
 
   const real t0 = gf.t;     // ** here is the current time ***  
+
+  if( false )
+    printF("\n IIIIIIIIIIIIIIIIIIIII INFO: userDefinedForcing, t=%9.2e\n",t0);
 
   // There is no forcing to compute if none was specified or if the forcing is not time dependent and t>0
   // For moving or AMR we always evaluate the forcing (for time independet forcing and AMR, we really 
@@ -147,6 +151,10 @@ userDefinedForcing( realCompositeGridFunction & f, GridFunction *gfa, int *gfInd
 
     if( option=="constantForcing" )
     {
+      // if( true )
+      //   printF("\n >>>>>>>>>>>>>>>>>>> INFO: userDefinedForcing, CONSTANT FORCING t=%9.2e\n",t0);
+
+
       const RealArray & constantForcingParameters = db.get<RealArray>("constantForcingParameters");
       for( int n=0; n<numberOfComponents; n++ )
       {

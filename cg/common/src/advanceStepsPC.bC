@@ -307,6 +307,9 @@ takeTimeStepPC( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
           parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::adamsPredictorCorrector2 ||
           parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==Parameters::adamsPredictorCorrector4 );
 
+  const Parameters::ImplicitMethod & implicitMethod = 
+                parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");
+
   parameters.dbase.get<real >("dt")=dt0; // *wdh* 101106 this is the dt used in getUt (cns)
 
   const int orderOfPredictorCorrector = parameters.dbase.get<int >("orderOfPredictorCorrector");

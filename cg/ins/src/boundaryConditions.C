@@ -396,6 +396,7 @@ gridAccelerationBC(const int & grid,
                                   {
                                       ::display(traction(I1,I2,I3,1),  sPrintF("--GABC-- TZ FLUID TRACTION t=%9.3e",t0),debugFile,"%6.3f ");
                                   }
+                            #ifndef USE_PPP
                                   f(I1g,I2g,I3g) -= (normal(I1,I2,I3,0)*(traction(I1,I2,I3,0)) + 
                                                                         normal(I1,I2,I3,1)*(traction(I1,I2,I3,1)) );
                  // -- adjust the (zp*dt/rho)*mu*Delta( v ) term 
@@ -426,6 +427,9 @@ gridAccelerationBC(const int & grid,
                                   }
                                 f(I1g,I2g,I3g) += pe + ampCoeff*(normal(I1,I2,I3,0)*pex(I1,I2,I3)+
                                                                                                   normal(I1,I2,I3,1)*pey(I1,I2,I3));
+                            #else
+                                OV_ABORT("finish me for parallel");
+                            #endif
                                 if( t0 <= 3.*dt && debug() & 4 )
                                 {
                                     ::display( fLocal(I1g,I2g,I3g),"--INS--GABC:RHS AMP BC for pressure after TZ fix:",debugFile,"%10.2e");
@@ -480,8 +484,12 @@ gridAccelerationBC(const int & grid,
                                     RealArray & bcData = parameters.dbase.get<RealArray>("bcData");      
                                     const real ampCoeff = mixedNormalCoeff(pc,side,axis,grid);
                                     printF("\n--GABC-- SET MIXED-PRESSURE BC TO EXACT SOLUTION t=%9.3e ampCoeff=%e **********TEMP*************\n",t0,ampCoeff);
+                            #ifndef USE_PPP
                                     f(I1g,I2g,I3g) = pe + ampCoeff*(normal(I1,I2,I3,0)*pex(I1,I2,I3)+
                                         normal(I1,I2,I3,1)*pey(I1,I2,I3));
+                            #else
+                                    OV_ABORT("finish me for parallel");
+                            #endif
                                     if( t0 <= 3.*dt && debug() & 4 )
                                     {
                                         ::display( fLocal(I1g,I2g,I3g),"--INS--GABC:USE EXACT BC for pressure:",debugFile,"%10.2e");

@@ -227,5 +227,8 @@ if( $restart eq "" ){ $cmds = "uniform flow\n u=1., v=0., p=1."; }\
 #
   continue
 #
+contour
+exit
+#
 $go 
 

@@ -55,6 +55,8 @@ ProbeInfo::
 {
   if( file!=NULL )
   {
+    // printF("++++ ProbeInfo: close the probe file.\n");
+    
     fclose(file);
   }
   // close the data base file for the bounding box info

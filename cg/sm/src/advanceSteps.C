@@ -178,8 +178,8 @@ takeTimeStep( real & t0, real & dt0, int correction, AdvanceOptions & advanceOpt
         advanceMethodOfLines(  current,t0,dt0,correction,&advanceOptions );
     }
 
-  // For now there are no sub-time-step iteration convergence crtiera in the solid
-    advanceOptions.correctionIterationsHaveConverged=true;
+  // Specify if sub-time-step iterations have converged:
+    advanceOptions.correctionIterationsHaveConverged=parameters.dbase.get<int>("correctionIterationsHaveConverged");
     
     timing(parameters.dbase.get<int>("totalTime"))+=getCPU()-time0;
 
