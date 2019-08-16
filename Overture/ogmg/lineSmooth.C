@@ -263,7 +263,12 @@ smoothLine(const int & level, const int & grid,
   // -- finish me for ok=false ...
 
 
-    const int width = orderOfAccuracy+1;  // 3 or 5
+  // *wdh* June 26, 2019 -- use correct order of accuracy 
+    const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+    const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+
+    const int width = orderOfThisLevel+1;  // 3 or 5
 
    // The tridiagonal (pentadiagonal) system will have a BC of normal, extended or periodic along axis==direction
     bool extendedSystem=false; // true if we have neumann or mixed BC's on an end
@@ -278,21 +283,21 @@ smoothLine(const int & level, const int & grid,
         if( axis==direction )
         {
       // include ghost line for neumann or mixed BC'S                     
-            if( bcLocal(Start,direction)>0 &&  ( !dirichletStart || orderOfAccuracy==4) )
+            if( bcLocal(Start,direction)>0 &&  ( !dirichletStart || orderOfThisLevel==4) )
             {
-//	extendedSystem=extendedSystem || orderOfAccuracy==2 || parameters.fourthOrderBoundaryConditionOption==0;
-      	extendedSystem=extendedSystem || orderOfAccuracy==2 || orderOfAccuracy==4;
+//	extendedSystem=extendedSystem || orderOfThisLevel==2 || parameters.fourthOrderBoundaryConditionOption==0;
+      	extendedSystem=extendedSystem || orderOfThisLevel==2 || orderOfThisLevel==4;
         // we need 1 ghost line for dirichlet (4th-order) or 2 ghost lines for Neumann fourth-order
-                int numGhost= !dirichletStart ? orderOfAccuracy/2 : 1;
+                int numGhost= !dirichletStart ? orderOfThisLevel/2 : 1;
       	Iv[direction]=Range(Iv[direction].getBase()-numGhost,Iv[direction].getBound());
 
             }
-            if( bcLocal(End,direction)>0 && ( !dirichletEnd || orderOfAccuracy==4) )
+            if( bcLocal(End,direction)>0 && ( !dirichletEnd || orderOfThisLevel==4) )
             {
-//	extendedSystem=extendedSystem || orderOfAccuracy==2 || parameters.fourthOrderBoundaryConditionOption==0;
-      	extendedSystem=extendedSystem || orderOfAccuracy==2 || orderOfAccuracy==4;
+//	extendedSystem=extendedSystem || orderOfThisLevel==2 || parameters.fourthOrderBoundaryConditionOption==0;
+      	extendedSystem=extendedSystem || orderOfThisLevel==2 || orderOfThisLevel==4;
         // we need 1 ghost line for dirichlet (4th-order) or 2 ghost lines for Neumann fourth-order
-                int numGhost= !dirichletEnd ? orderOfAccuracy/2 : 1;
+                int numGhost= !dirichletEnd ? orderOfThisLevel/2 : 1;
       	Iv[direction]=Range(Iv[direction].getBase(),Iv[direction].getBound()+numGhost);
             }
         }
@@ -302,12 +307,12 @@ smoothLine(const int & level, const int & grid,
       // we only need to solve the equations on the adjacent boundary if there is a neumann/mixed BC
             if( !mg.isPeriodic(axis) && bcLocal(0,axis)>=0 && bcLocal(0,axis)!=OgmgParameters::equation )
             {
-                int numGhost= bcLocal(0,axis)==0 ? orderOfAccuracy/2 : 1;  // *wdh* 100716 -- do not apply line smooth on interp boundary ghost (order 4)
+                int numGhost= bcLocal(0,axis)==0 ? orderOfThisLevel/2 : 1;  // *wdh* 100716 -- do not apply line smooth on interp boundary ghost (order 4)
                 Iv[axis]=Range(Iv[axis].getBase()+numGhost,Iv[axis].getBound());
             }
             if( !mg.isPeriodic(axis) && bcLocal(1,axis)>=0 && bcLocal(1,axis)!=OgmgParameters::equation )
             {
-                int numGhost= bcLocal(1,axis)==0 ? orderOfAccuracy/2 : 1;   // *wdh* 100716  
+                int numGhost= bcLocal(1,axis)==0 ? orderOfThisLevel/2 : 1;   // *wdh* 100716  
                 Iv[axis]=Range(Iv[axis].getBase(),Iv[axis].getBound()-numGhost);
             }
         }
@@ -394,12 +399,12 @@ smoothLine(const int & level, const int & grid,
     real jacobiWork;  // = number of mults+divides for a jacobi iteration
     if(level==0 && (sparseStencil==constantCoeff || sparseStencil==sparseConstantCoefficients) ) 
     {
-        jacobiWork=orderOfAccuracy==2 ? ( mg.numberOfDimensions()==2 ? 6. : 8.) :  // sparse 5-point or 7-point stencil
+        jacobiWork=orderOfThisLevel==2 ? ( mg.numberOfDimensions()==2 ? 6. : 8.) :  // sparse 5-point or 7-point stencil
             ( mg.numberOfDimensions()==2 ? 10. : 14.); // 4th-order 9-pt or 13
     }
     else
     {
-        jacobiWork=orderOfAccuracy==2 ? ( mg.numberOfDimensions()==2 ? 10. : 28.) : // 9-pt or 27-pt
+        jacobiWork=orderOfThisLevel==2 ? ( mg.numberOfDimensions()==2 ? 10. : 28.) : // 9-pt or 27-pt
             ( mg.numberOfDimensions()==2 ? 25. : 125.); // 4th-order: 25 or 125 pt stencil
     }
     
@@ -408,8 +413,8 @@ smoothLine(const int & level, const int & grid,
     if( sparseStencil==constantCoeff || sparseStencil==sparseConstantCoefficients || isRectangular )
         mg.getDeltaX( dx );
 
-    bool useEquationOnGhostForDirichlet= orderOfAccuracy==2 ? 0 : useEquationOnGhostLineForDirichletBC(mg,level);
-    bool useEquationOnGhostForNeumann  = orderOfAccuracy==2 ? 0 : useEquationOnGhostLineForNeumannBC(mg,level);
+    bool useEquationOnGhostForDirichlet= orderOfThisLevel==2 ? 0 : useEquationOnGhostLineForDirichletBC(mg,level);
+    bool useEquationOnGhostForNeumann  = orderOfThisLevel==2 ? 0 : useEquationOnGhostLineForNeumannBC(mg,level);
 
 
   // we may apply the eqn as a BC on dirichlet boundaries.  
@@ -421,7 +426,7 @@ smoothLine(const int & level, const int & grid,
   //   -- this needs to match what is done in applyBoundaryConditions!
     int bcOptionN;
     if( level==0 && 
-            (orderOfAccuracy==2 || (parameters.neumannSecondGhostLineBC==OgmgParameters::useEquationToSecondOrder 
+            (orderOfThisLevel==2 || (parameters.neumannSecondGhostLineBC==OgmgParameters::useEquationToSecondOrder 
                         			      && useEquationOnGhostForNeumann) ) )
         bcOptionN=1; // use "eqn" BC for first (order=2) or second (order=4) ghost line
     else if( level>0 && parameters.lowerLevelNeumannSecondGhostLineBC==OgmgParameters::useEquationToSecondOrder )
@@ -450,7 +455,7 @@ smoothLine(const int & level, const int & grid,
     int ipar[] ={ mg.numberOfDimensions(),
             		direction,
             		(int)sparseStencil,
-            		orderOfAccuracy,
+            		orderOfThisLevel,
             		I1.getBase(),I1.getBound(),1,
             		I2.getBase(),I2.getBound(),1,
             		I3.getBase(),I3.getBound(),1,
@@ -500,7 +505,7 @@ smoothLine(const int & level, const int & grid,
         {
             a.redim(I1,I2,I3); b.redim(I1,I2,I3); c.redim(I1,I2,I3); 
 
-            if( orderOfAccuracy==4 )
+            if( orderOfThisLevel==4 )
             {
       	d.redim(I1,I2,I3);
       	e.redim(I1,I2,I3);
@@ -534,7 +539,7 @@ smoothLine(const int & level, const int & grid,
       	display(a,sPrintF(buff,"lineSmooth: tridiagonal matrix, a, grid=%i direction=%i",grid,direction),pDebugFile,"%6.1f ");
       	display(b,sPrintF(buff,"lineSmooth: tridiagonal matrix, b, grid=%i direction=%i",grid,direction),pDebugFile,"%6.1f ");
       	display(c,sPrintF(buff,"lineSmooth: tridiagonal matrix, c, grid=%i direction=%i",grid,direction),pDebugFile,"%6.1f ");
-      	if( orderOfAccuracy==4 )
+      	if( orderOfThisLevel==4 )
       	{
         	  display(d,sPrintF(buff,"lineSmooth: tridiagonal matrix, d, grid=%i direction=%i",grid,direction),pDebugFile,"%6.1f ");
         	  display(e,sPrintF(buff,"lineSmooth: tridiagonal matrix, e, grid=%i direction=%i",grid,direction),pDebugFile,"%6.1f ");
@@ -565,7 +570,7 @@ smoothLine(const int & level, const int & grid,
         if( ok )
         {
             tridiagonalSolver[level][grid][direction] = new TridiagonalSolver;
-            if( orderOfAccuracy==2 )
+            if( orderOfThisLevel==2 )
             {
 	// second order tridiagonal system
       	tridiagonalSolver[level][grid][direction]->factor(a,b,c,systemType,direction); 
@@ -585,7 +590,7 @@ smoothLine(const int & level, const int & grid,
             display(a,"AFTER FACTOR: Here is the tridiagonal matrix, a",pDebugFile,"%6.0f ");
             display(b,"AFTER FACTOR: Here is the tridiagonal matrix, b",pDebugFile,"%6.0f ");
             display(c,"AFTER FACTOR: Here is the tridiagonal matrix, c",pDebugFile,"%6.0f ");
-            if( orderOfAccuracy==4 )
+            if( orderOfThisLevel==4 )
             {
       	display(d,"AFTER FACTOR: Here is the tridiagonal matrix, d",pDebugFile,"%6.0f ");
       	display(e,"AFTER FACTOR: Here is the tridiagonal matrix, e",pDebugFile,"%6.0f ");
@@ -594,7 +599,7 @@ smoothLine(const int & level, const int & grid,
     // LU factor, n-1 multiplies, n-1 divisions 
     //    ***** fourth-order : 8 mults+divides
 
-        real wu = (orderOfAccuracy==2 ? 2. : 8. )/jacobiWork;
+        real wu = (orderOfThisLevel==2 ? 2. : 8. )/jacobiWork;
         workUnits(level)+=wu*mask.elementCount()/real(numberOfGridPoints); // use mask.elementCount and not mask.elementCount
     }
 
@@ -699,7 +704,7 @@ smoothLine(const int & level, const int & grid,
             real & omega=parameters.omegaLineZebra;
             real variableOmegaFactor=1.;
       // scale factor for the locally optimal omega
-            if( orderOfAccuracy==2 )
+            if( orderOfThisLevel==2 )
       	variableOmegaFactor=2.*parameters.variableOmegaScaleFactor; // 1.01231; // 1.085/1.071796 ! NOTE
             else
       	variableOmegaFactor=parameters.variableOmegaScaleFactor;
@@ -709,7 +714,7 @@ smoothLine(const int & level, const int & grid,
       	omega=1.; // numberOfDimensions==2 ? 1.1 : 1.15;
       	if( numberOfDimensions==3 )
       	{
-        	  if( orderOfAccuracy==2 )
+        	  if( orderOfThisLevel==2 )
         	  {
 	    // ** line zebra acts like RB in the two other directions
 	    // real cmax=1.-1./3.;
@@ -897,7 +902,7 @@ smoothLine(const int & level, const int & grid,
           // For the constant coeff case we must fill in the BC's into the defect array
           // for fourth order we need to assign the rhs for extrapolation conditions
                     if( (true || usingConstantCoefficients ) // **** we must always assign Neumann BC's -- could avoid dirichlet below
-                            || orderOfAccuracy==4 )
+                            || orderOfThisLevel==4 )
                     {
             // Boundary Conditions
                         Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
@@ -913,7 +918,7 @@ smoothLine(const int & level, const int & grid,
                    // "Dirichlet" BC at parallel ghost: set to current solution value
                            	 J1=I1z; J2=I2z; J3=I3z;
                            	 Jv[axis]=side==0 ? Izv[axis].getBase() : Izv[axis].getBound();
-                           	 if( orderOfAccuracy==2 )
+                           	 if( orderOfThisLevel==2 )
                            	 {
                              	   if( false && debug & 4 )
                                	     fprintf(pDebugFile," lineSmoothRHS: parallelGhostBoundary grid=%i side=%i J1=[%i,%i,%i] J2=[%i,%i,%i] J3=[%i,%i,%i]\n",grid,side,
@@ -994,7 +999,7 @@ smoothLine(const int & level, const int & grid,
            	    // ** getBoundaryIndex(mg.gridIndexRange(),side,axis,J1,J2,J3);  // this fills in values even if not needed		
                            	 J1=I1z; J2=I2z; J3=I3z;
                            	 Jv[axis]=side==0 ? Izv[axis].getBase() : Izv[axis].getBound();
-                           	 if( orderOfAccuracy==2 )
+                           	 if( orderOfThisLevel==2 )
                            	 {
                              	   FOR_3S(i1,i2,i3,J1,J2,J3)
                              	   {
@@ -1010,7 +1015,7 @@ smoothLine(const int & level, const int & grid,
                            	 }
                            	 else
                            	 {
-                                          assert( orderOfAccuracy==4 );
+                                          assert( orderOfThisLevel==4 );
           	   // if( parameters.fourthOrderBoundaryConditionOption==0 || level>0 )
                              	   if( !useEquationOnGhostForDirichlet )
                              	   {
@@ -1301,7 +1306,7 @@ smoothLine(const int & level, const int & grid,
                            	 J1=I1z; J2=I2z; J3=I3z;
                            	 Jv[axis]=side==0 ? Izv[axis].getBase() : Izv[axis].getBound();
                    // *********** FIX ME for non-orthogonal curvilinear *********************8
-                           	 if( orderOfAccuracy==2 )
+                           	 if( orderOfThisLevel==2 )
                            	 {
           	   // *** this case is now handled below in lineSmoothRHS
                              	   if( true )
@@ -1332,7 +1337,7 @@ smoothLine(const int & level, const int & grid,
                            	 }
                            	 else // fourth-order
                            	 {
-                                          assert( orderOfAccuracy==4 );
+                                          assert( orderOfThisLevel==4 );
                      // **** fix this ****
                                           if( useEquationOnGhostForNeumann )
                              	   {
@@ -1650,7 +1655,7 @@ smoothLine(const int & level, const int & grid,
                             }
                         }
                     }
-                    if( true || (useEquationOnGhostForNeumann &&  orderOfAccuracy==4) )
+                    if( true || (useEquationOnGhostForNeumann &&  orderOfThisLevel==4) )
                     {
             // new optimised BC's 
                         ipar[ 4]=I1z.getBase();
@@ -1784,8 +1789,8 @@ smoothLine(const int & level, const int & grid,
                 		    coeffLocal.getBase(2),coeffLocal.getBound(2),
                 		    coeffLocal.getBase(3),coeffLocal.getBound(3));
 
-                        fprintf(pDebugFile," orderOfAccuracy=%i variableCoefficients=%i useOmega=%i\n",
-                		    orderOfAccuracy,(int)variableCoefficients,(int)useOmega);
+                        fprintf(pDebugFile," orderOfThisLevel=%i variableCoefficients=%i useOmega=%i\n",
+                		    orderOfThisLevel,(int)variableCoefficients,(int)useOmega);
 
           	    display(uLocal,sPrintF("lineSmooth:Here is the solution BEFORE u=defect, level=%i grid=%i ",
                         			      level,grid),pDebugFile,"%9.2e ");
@@ -1799,7 +1804,7 @@ smoothLine(const int & level, const int & grid,
           	    int ipar2[]={ I1z.getBase(),I1z.getBound(),I1z.getStride(),
                     			  I2z.getBase(),I2z.getBound(),I2z.getStride(), //
                     			  I3z.getBase(),I3z.getBound(),I3z.getStride(), //
-                    			  direction,orderOfAccuracy,variableCoefficients,useOmega};
+                    			  direction,orderOfThisLevel,variableCoefficients,useOmega};
 
                         real rpar2[]={omega,variableOmegaFactor}; //
 
@@ -1913,7 +1918,7 @@ smoothLine(const int & level, const int & grid,
       // For the constant coeff case we must fill in the BC's into the defect array
       // for fourth order we need to assign the rhs for extrapolation conditions
             if( (true || usingConstantCoefficients ) // **** we must always assign Neumann BC's -- could avoid dirichlet below
-                    || orderOfAccuracy==4 )
+                    || orderOfThisLevel==4 )
             {
         // Boundary Conditions
                 Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
@@ -1929,7 +1934,7 @@ smoothLine(const int & level, const int & grid,
                // "Dirichlet" BC at parallel ghost: set to current solution value
                    	 J1=I1; J2=I2; J3=I3;
                    	 Jv[axis]=side==0 ? Iv[axis].getBase() : Iv[axis].getBound();
-                   	 if( orderOfAccuracy==2 )
+                   	 if( orderOfThisLevel==2 )
                    	 {
                      	   if( false && debug & 4 )
                        	     fprintf(pDebugFile," lineSmoothRHS: parallelGhostBoundary grid=%i side=%i J1=[%i,%i,%i] J2=[%i,%i,%i] J3=[%i,%i,%i]\n",grid,side,
@@ -2010,7 +2015,7 @@ smoothLine(const int & level, const int & grid,
        	    // ** getBoundaryIndex(mg.gridIndexRange(),side,axis,J1,J2,J3);  // this fills in values even if not needed		
                    	 J1=I1; J2=I2; J3=I3;
                    	 Jv[axis]=side==0 ? Iv[axis].getBase() : Iv[axis].getBound();
-                   	 if( orderOfAccuracy==2 )
+                   	 if( orderOfThisLevel==2 )
                    	 {
                      	   FOR_3(i1,i2,i3,J1,J2,J3)
                      	   {
@@ -2026,7 +2031,7 @@ smoothLine(const int & level, const int & grid,
                    	 }
                    	 else
                    	 {
-                                  assert( orderOfAccuracy==4 );
+                                  assert( orderOfThisLevel==4 );
       	   // if( parameters.fourthOrderBoundaryConditionOption==0 || level>0 )
                      	   if( !useEquationOnGhostForDirichlet )
                      	   {
@@ -2317,7 +2322,7 @@ smoothLine(const int & level, const int & grid,
                    	 J1=I1; J2=I2; J3=I3;
                    	 Jv[axis]=side==0 ? Iv[axis].getBase() : Iv[axis].getBound();
                // *********** FIX ME for non-orthogonal curvilinear *********************8
-                   	 if( orderOfAccuracy==2 )
+                   	 if( orderOfThisLevel==2 )
                    	 {
       	   // *** this case is now handled below in lineSmoothRHS
                      	   if( true )
@@ -2348,7 +2353,7 @@ smoothLine(const int & level, const int & grid,
                    	 }
                    	 else // fourth-order
                    	 {
-                                  assert( orderOfAccuracy==4 );
+                                  assert( orderOfThisLevel==4 );
                  // **** fix this ****
                                   if( useEquationOnGhostForNeumann )
                      	   {
@@ -2666,7 +2671,7 @@ smoothLine(const int & level, const int & grid,
                     }
                 }
             }
-            if( true || (useEquationOnGhostForNeumann &&  orderOfAccuracy==4) )
+            if( true || (useEquationOnGhostForNeumann &&  orderOfThisLevel==4) )
             {
         // new optimised BC's 
                 ipar[ 4]=I1.getBase();
@@ -2785,7 +2790,7 @@ smoothLine(const int & level, const int & grid,
     //    ***** fourth-order : 5 mults+divides
 
     // real wu = mg.numberOfDimensions()==2 ? 3./6. : 3./8.;
-        real wu = (orderOfAccuracy==2 ? 3. : 5. )/jacobiWork;
+        real wu = (orderOfThisLevel==2 ? 3. : 5. )/jacobiWork;
     // workUnits(level)+=(1.+wu)/mgcg.multigridLevel[level].numberOfComponentGrids();  
         workUnits(level)+=(1.+wu)*mask.elementCount()/real(numberOfGridPoints);
 

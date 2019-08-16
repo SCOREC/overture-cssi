@@ -1,5 +1,798 @@
 ******************************
+******** July 16, 2019
+
+
+START ON NEW VERSION OF 2D 2ND-ORDER INTERFACE 
+
+
+OLD ORDER=2
+
+++++++++++++ 2D order 2 +++++++++++++++
+
+
+*** TEST **NEW** VERSION: interface-GDM Order=2 2D
+
+**CHECK TZ**
+cgmx -noplot  interface -g=twoSquaresInterfacee1.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0. -bc=d -cons=0 -interfaceIts=2 -go=og
+
+
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+G2
+>>> t=1.00e-01 dt=2.5e-02 max errors:[1.92e-02,4.44e-02,1.28e+00,], max (u):[5.22e-01,1.00e+00,1.26e+00,] (4 steps)
+G4 
+>>> t=1.00e-01 dt=1.4e-02 max errors:[4.39e-03,9.81e-03,1.37e+00,], max (u):[5.13e-01,1.02e+00,1.23e+00,] (7 steps)
+
+G8 
+>>> t=1.00e-01 dt=7.7e-03 max errors:[1.07e-03,2.38e-03,1.29e+00,], max (u):[5.10e-01,1.02e+00,1.22e+00,] (13 steps)
+
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.22e-04,1.05e-03,1.13e+00,], max (u):[5.07e-01,1.00e+00,1.23e+00,] (1 steps)
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+** BUG FIXED --> init dispersive parameters ***
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+-npv=1,10
+>>> t=4.00e-02 dt=1.0e-02 max errors:[5.60e-03,1.09e-02,1.14e+00,], max (u):[5.15e-01,1.00e+00,1.23e+00,] (4 steps)
+
+
+-npv=0,0
+>> t=1.00e-02 dt=1.0e-02 max errors:[4.20e-04,9.66e-04,1.44e-03,], max (u):[5.06e-01,9.99e-01,1.13e+00,] (1 steps)
+
+
+
+
+-npv=0,0 *BROKEN**  -eps2=1 OK 
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=0 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+
+>> t=1.00e-02 dt=1.0e-02 max errors:[1.87e-01,1.53e-02,1.01e+00,], max (u):[7.79e-01,1.56e+00,1.74e+00,] (1 steps)
+>>> t=2.00e-02 dt=5.0e-03 max errors:[1.61e-01,7.67e-02,1.00e+00,], max (u):[7.88e-01,1.58e+00,1.76e+00,] (4 steps)
+
+2D order 2 : -npv=1,1 OK 
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[9.41e-05,2.26e-04,1.14e+00,], max (u):[5.11e-01,1.02e+00,1.14e+00,] (1 steps)
+
+-npv=1 0 BROKEN: 
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.88e-01,9.39e-03,9.98e-01,], max (u):[6.35e-01,9.51e-01,1.06e+00,] (1 steps)
+
+
+
+******************************
+******** July 8, 2019
+
+
+**** CHECK 3D ORDER=2 GDM -- may not be complete
+
+
+GDM *** TROUBLE *** -npv= 1,1 OK
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -kx=1  -eps1=2. -eps2=1. -dm=gdm -npv=0 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+NPV=1,0 
+--getErrors: t=5.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=4.624e-02 max-err = 2.125e-02
+>>> t=5.00e-01 dt=1.3e-02 max errors:[1.22e-01,8.11e-01,8.58e-02,], max (u):[1.27e-01,1.32e+00,8.98e-02,] (40 steps)
+
+NPV=1,1
+--getErrors: t=5.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.031e-01 max-err = 1.508e-04
+--getErrors: t=5.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=6.425e-02 max-err = 9.206e-05
+>>> t=5.00e-01 dt=1.3e-02 max errors:[4.86e-05,4.63e-04,8.84e-05,], max (u):[2.10e-01,1.00e+00,1.27e-01,] (40 steps)
+
+
+GDM
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+G1
+>>> t=5.00e-01 dt=5.0e-02 max errors:[1.09e-01,1.40e-01,7.01e-03,], max (u):[7.67e-01,8.26e-01,1.10e-01,] (10 steps)
+
+G2
+>>> t=5.00e-01 dt=2.5e-02 max errors:[3.64e-02,4.71e-02,1.16e-03,], max (u):[7.68e-01,8.29e-01,1.03e-01,] (20 steps)
+
+G4
+--getErrors: t=5.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.544e-02 max-err = 4.650e-04
+>>> t=5.00e-01 dt=1.3e-02 max errors:[9.35e-03,1.21e-02,2.98e-04,], max (u):[7.68e-01,8.29e-01,1.03e-01,] (40 steps)
+
+
+GDM
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+>>> t=1.00e-01 dt=1.3e-02 max errors:[1.41e-03,1.81e-03,1.44e-04,], max (u):[7.51e-01,7.67e-01,1.44e-04,] (8 steps)
+>>> t=5.00e-01 dt=1.3e-02 max errors:[8.00e-03,1.39e-02,4.13e-04,], max (u):[7.20e-01,7.38e-01,4.13e-04,] (40 steps)
+
+NO GDM -- OK
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+G4 
+>>> t=1.00e-01 dt=1.3e-02 max errors:[1.41e-03,1.79e-03,1.44e-04,], max (u):[7.58e-01,7.57e-01,1.44e-04,] (8 steps)
+>>> t=5.00e-01 dt=1.3e-02 max errors:[7.10e-03,1.23e-02,4.63e-04,], max (u):[7.59e-01,7.58e-01,4.63e-04,] (40 steps)
+
+G8 
+>>> t=1.00e-01 dt=6.3e-03 max errors:[3.83e-04,4.85e-04,3.64e-05,], max (u):[7.58e-01,7.58e-01,3.64e-05,] (16 steps)
+>>> t=5.00e-01 dt=6.3e-03 max errors:[1.78e-03,3.09e-03,1.14e-04,], max (u):[7.58e-01,7.58e-01,1.14e-04,] (80 steps)
+
+******************************
+******** July 7, 2019
+
+++++++++++++++++++ TEST 3D AVOID INTERFACE ITERATIONS
+
+GDM 
+cgmx -noplot  interface -g=twoBoxesInterfacee1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee2.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+G2
+>>> t=1.00e+00 dt=2.5e-02 max errors:[1.03e-03,1.83e-03,9.03e-05,], max (u):[6.78e-01,6.99e-01,9.03e-05,] (40 steps)
+
+G4
+>>> t=1.00e+00 dt=1.3e-02 max errors:[6.30e-05,1.12e-04,5.65e-06,], max (u):[6.85e-01,6.99e-01,5.65e-06,] (80 steps)
+
+G8
+--getErrors: t=1.000e+00 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.763e-02 max-err = 3.262e-07
+--getErrors: t=1.000e+00 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.601e-02 max-err = 3.077e-07
+>>> t=1.00e+00 dt=6.3e-03 max errors:[3.86e-06,6.84e-06,3.54e-07,], max (u):[6.85e-01,7.00e-01,3.54e-07,] (160 steps)
+
+
+++++++++++++ CHECK 2nd-order pre-solve: why do coefficients not match delta-method?
+
+ORDER=4
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+** BUG FIXED --
+#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2;
+
+
+>>> t=1.00e+00 dt=1.4e-02 max errors:[1.35e-04,2.34e-04,3.83e-04,], max (u):[7.56e-01,7.56e-01,1.07e+00,] (70 steps)
+>>> t=1.00e+00 dt=7.7e-03 max errors:[9.67e-06,1.37e-05,2.24e-05,], max (u):[7.58e-01,7.58e-01,1.07e+00,] (130 steps)
+
+
+ORDER=4: **NEW**
+ **** ASSIGN GHOST TO 2nd ORDER ****
+CHECK-COEFF: i1,i2,i3= 40  0  0 hw1,hw2,   hw3= 1 1 0
+ a4(*,0)=  2.00E+01  1.60E+03  0.00E+00  0.00E+00 diff(*  )= 3.6E-15 2.3E-13 0.0E+00 0.0E+00
+ a4(*,1)= -0.00E+00 -0.00E+00  2.00E+01  1.60E+03 diff(*  )=-0.0E+00-0.0E+00 0.0E+00 2.3E-13
+ a4(*,2)=  2.00E+01 -1.60E+03  0.00E+00 -0.00E+00 diff(*  )= 3.6E-15-2.3E-13 0.0E+00-0.0E+00
+ a4(*,3)= -0.00E+00  0.00E+00  2.00E+01 -8.00E+02 diff(*  )=-0.0E+00 0.0E+00 0.0E+00-1.1E-13
+
+ORDER=4: **OLD*
+CHECK-COEFF: i1,i2,i3= 40 36  0 hw1,hw2,   hw3= 1 1 0
+ a4(*,0)=  2.00E+01  1.60E+03  0.00E+00  0.00E+00 diff(*  )=-6.7E+00-5.3E+02 0.0E+00 0.0E+00
+ a4(*,1)= -0.00E+00 -0.00E+00  2.00E+01  1.60E+03 diff(*  )=-0.0E+00-0.0E+00-6.7E+00-5.3E+02
+ a4(*,2)=  2.00E+01 -1.60E+03  0.00E+00 -0.00E+00 diff(*  )=-6.7E+00 5.3E+02 3.6E-15 2.4E-13
+ a4(*,3)= -0.00E+00  0.00E+00  2.00E+01 -8.00E+02 diff(*  )=-0.0E+00 0.0E+00-6.7E+00 2.7E+02
+
+
+ORDER =2 
+cgmx -noplot interface -g=twoNonSquaresInterfacee4.order2 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+CHECK-COEFF: i1,i2,i3= 40  0  0 hw1,hw2,     hw3= 1 1 0
+ a4(*,0)=  2.00E+01  1.60E+03  0.00E+00  0.00E+00 diff(*)   = 3.6E-15 0.0E+00 0.0E+00 0.0E+00
+ a4(*,1)= -0.00E+00 -0.00E+00  2.00E+01  1.60E+03 diff(*)   =-0.0E+00-0.0E+00 3.6E-15 4.5E-13
+ a4(*,2)=  2.00E+01 -1.60E+03  0.00E+00 -0.00E+00 diff(*)   = 0.0E+00-4.5E-13 2.2E-15 1.8E-13
+ a4(*,3)= -0.00E+00  0.00E+00  2.00E+01 -8.00E+02 diff(*)   = 1.1E-15-8.5E-14 3.6E-15 2.3E-13
+
+++++++++++++++++++ TEST 3D AVOID INTERFACE ITERATIONS
+
+NO GDM -- LOOKS OK!
+cgmx -noplot  interface -g=twoBoxesInterfacee1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee2.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee8.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+G2 
+>>> Cgmx:FD: t=1.00e+00 dt=2.5e-02 TS=ME |div(E)|/|grad(E)|=2.93e-03 (=2.09e-02/7.13e+00) 40 steps mem=39.8(Mb) cpu=1.58e+01(s)
+>>> t=1.00e+00 dt=2.5e-02 max errors:[8.59e-04,1.49e-03,4.41e-05,], max (u):[7.55e-01,7.55e-01,4.41e-05,] (40 steps)
+
+G4 
+>>> Cgmx:FD: t=1.00e+00 dt=1.3e-02 TS=ME |div(E)|/|grad(E)|=2.04e-04 (=1.46e-03/7.14e+00) 80 steps mem=53.9(Mb) cpu=4.64e+01(s)
+>>> t=1.00e+00 dt=1.3e-02 max errors:[5.33e-05,9.23e-05,4.78e-06,], max (u):[7.56e-01,7.56e-01,4.78e-06,] (80 steps)
+
+G8 
+>>> t=1.00e+00 dt=6.3e-03 max errors:[3.29e-06,5.71e-06,3.75e-07,], max (u):[7.58e-01,7.58e-01,3.75e-07,] (160 steps)
+
+
+++++++++++++++++++  TEST -- AVOID INTERFACE ITERATIONS -- 2D ORDER 4
+
+GDM - looks OK
+cgmx -noplot  interface -g=twoNonSquaresInterfacee1.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee4.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee8.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee16.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+G4 
+>>> t=1.00e+00 dt=1.4e-02 max errors:[1.50e-04,2.62e-04,1.13e+00,], max (u):[6.85e-01,6.99e-01,1.13e+00,] (70 steps)
+
+G8 
+>>> t=1.00e+00 dt=7.7e-03 max errors:[8.79e-06,1.53e-05,1.13e+00,], max (u):[6.85e-01,7.00e-01,1.14e+00,] (130 steps)
+
+G16 
+--getErrors: t=1.000e+00 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.764e-02 max-err = 3.099e-08
+--getErrors: t=1.000e+00 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.601e-02 max-err = 4.620e-08
+>>> t=1.00e+00 dt=3.8e-03 max errors:[5.48e-07,9.56e-07,2.33e+00,], max (u):[6.85e-01,7.00e-01,1.26e+00,] (260 steps)
+
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee4.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee8.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -int
+erfaceIts=1 -interfaceOmega=1 -go=og
+
+
+
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee1.order2 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+
+******************************
+******** July 6, 2019
+
+
+++++++++++++ REVISIT 2D INTERFACE ORDER 4
+
+AVOID INTERFACE ITERATIONS:
+FIRST TRY --
+       extrapolate ghost
+       eval higher mixed derivative terms using extrap values 
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee4.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee8.order4 -eps2=2. -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+++++ Assign ghost to 2nd-order 
+
+G2: same 
+
+G4:
+>>> t=1.00e+00 dt=1.4e-02 max errors:[1.35e-04,2.34e-04,3.83e-04,], max (u):[7.56e-01,7.56e-01,1.07e+00,] (70 steps)
+
+G8 -- no wiggles
+>>> t=1.00e+00 dt=7.7e-03 max errors:[7.91e-06,1.37e-05,2.24e-05,], max (u):[7.58e-01,7.58e-01,1.07e+00,] (130 steps)
+
+
+G2:
+>>> t=1.00e+00 dt=2.5e-02 max errors:[2.33e-03,4.04e-03,6.60e-03,], max (u):[7.56e-01,7.55e-01,1.08e+00,] (40 steps)
+
+G4  -- some wiggles at the interface ?
+>>> t=1.00e+00 dt=1.4e-02 max errors:[1.83e-04,2.34e-04,3.83e-04,], max (u):[7.56e-01,7.56e-01,1.07e+00,] (70 steps)
+
+G8 -- wiggles at interface 
+     -diss=.5 : better
+>>> t=1.00e+00 dt=7.1e-03 max errors:[5.74e-05,7.60e-05,1.24e-04,], max (u):[7.58e-01,7.58e-01,1.07e+00,] (140 steps)
+
+NO GDM 
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -cons=0 -interfaceIts=40 -interfaceOmega=.6 -go=og
+
+
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 35, err=  0.62E-07 rate= 0.72 (omega=0.60)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 36, err=  0.45E-07 rate= 0.72 (omega=0.60)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 37, err=  0.32E-07 rate= 0.72 (omega=0.60)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 38, err=  0.23E-07 rate= 0.72 (omega=0.60)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 39, err=  0.16E-07 rate= 0.72 (omega=0.60)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 40, err=  0.12E-07 rate= 0.72 (omega=0.60)
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.45e-03 (=1.03e-02/7.12e+00) 1 steps mem=31.3(Mb) cpu=5.53e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.69e-06,6.03e-06,], max (u):[7.55e-01,7.55e-01,1.07e+00,] (1 steps)
+
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 35, err=  0.44E-09 rate= 0.55 (omega=1.00)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 36, err=  0.24E-09 rate= 0.55 (omega=1.00)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 37, err=  0.13E-09 rate= 0.56 (omega=1.00)
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 38, err=  0.74E-10 rate= 0.55 (omega=1.00)
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.45e-03 (=1.03e-02/7.12e+00) 1 steps mem=29.4(Mb) cpu=5.49e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.69e-06,6.03e-06,], max (u):[7.55e-01,7.55e-01,1.07e+00,] (1 steps)
+
+
+
+TALL CELLS: *TROUBLE**
+cgmx -noplot  interface -g=twoSquaresInterfaceTalle2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=40 -interfaceOmega=.6 -go=og
+
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 38, err=  0.16E+13 rate= 2.09 (omega=0.20)
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 39, err=  0.32E+13 rate= 2.09 (omega=0.20)
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 40, err=  0.68E+13 rate= 2.09 (omega=0.20)
+
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee1.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=10 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=40 -interfaceOmega=.6 -go=og
+
+
+
+++++++++++++   DO ITERATIONS CONVERGE? 
+
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=10 -interfaceOmega=.5 -go=og
+
+
+interface3d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 16, err[max,l2]=  0.32E-02   0.61E-03  rate[max,       l2]= 0.86  0.77  (omega=0.25)
+Interface>>>34c-GDM
+interface3d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 17, err[max,l2]=  0.29E-02   0.48E-03  rate[max,       l2]= 0.91  0.79  (omega=0.25)
+Interface>>>34c-GDM
+interface3d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 18, err[max,l2]=  0.28E-02   0.39E-03  rate[max,       l2]= 0.93  0.81  (omega=0.25)
+Interface>>>34c-GDM
+interface3d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 19, err[max,l2]=  0.26E-02   0.33E-03  rate[max,       l2]= 0.95  0.83  (omega=0.25)
+Interface>>>34c-GDM
+interface3d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 20, err[max,l2]=  0.25E-02   0.28E-03  rate[max,       l2]= 0.94  0.86  (omega=0.25)
+
+
+
+
+++++++ CHECK ACCURACY : need to check P errors 
+
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze2.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+G1
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.90e-05,6.33e-05,3.21e-06,], max (u):[8.05e-01,8.68e-01,1.08e-01,] (1 steps)
+
+G2
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=2.242e-02 max-err = 6.018e-10
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.601e-02 max-err = 9.708e-11
+>>> t=1.00e-02 dt=1.0e-02 max errors:[3.27e-06,4.22e-06,2.07e-07,], max (u):[8.07e-01,8.70e-01,1.08e-01,] (1 steps)
+
+G4 
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=2.243e-02 max-err = 1.010e-10
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.601e-02 max-err = 3.761e-11
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.88e-07,2.43e-07,1.12e-08,], max (u):[8.07e-01,8.70e-01,1.08e-01,] (1 steps)
+
+
+GENERAL ROTATION ROTATE Y35 and Z20
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate35y20ze1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+ av=[-0.707107,0.707107,0] x0=[-0.00984827,0.193207,0.209042] nv=[0.769751,0.280166,-0.573576]
+
++++++ IGDM34c: check coeff in interface:    max(diff) = 4.37E-11
+
++++++ I34c: check coeff in interface: max(  diff) = 5.82E-11
+
+
+
+GDM ROT Y 45 -- *OK* 
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
++++++ IGDM34c: check coeff in interface:    max(diff) = 5.82E-11
+
++++++++++++ ANOTHER BUG FIXED 
+
++++++++++++ BUGS FIXED IN 3D INTERFACE -- curl condition : "+" to -" 
+
+**BUG FOUND*** --> I - n n^t : missing "-" before many n n^T 
+
+ROTATE Y 45 ORDER 4
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=0 -a11=0 -b01=.8 -b11=0.1 -a02=0 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+*** BUG FOUND
+
++++++ IGDM34c: check coeff in interface:    max(diff) = 4.37E-11
+
+
+
+
+
+
+CHECK-COEFF: i1,i2,i3= 10  5  5 hw1,hw2,  hw3= 2 2 2
+ a12(*,0)=  3.33E+00 -4.71E+00 -3.33E+00  1.33E+02  0.00E+00 -0.00E+00 -1.50E+03  2.12E+03  1.50E+03 -1.20E+05  0.00E+00  0.00E+00      diff(*)=-1.8E-15 0.0E+00 1.8E-15-2.8E-14 0.0E+00-0.0E+00-4.5E-13-4.5E-13 2.3E-13 0.0E+00 0.0E+00 3.0E-12
+ a12(*,1)=  4.71E+00  0.00E+00  4.71E+00  0.00E+00  1.33E+02 -0.00E+00 -2.12E+03  0.00E+00 -4.83E-13  0.00E+00 -1.20E+05  0.00E+00      diff(*)= 8.9E-16 2.8E-16-8.9E-16-2.1E-14-2.8E-14-0.0E+00 4.5E-13-1.2E-13 2.1E+03 6.4E-12-1.5E-11 0.0E+00
+ a12(*,2)= -3.33E+00 -4.71E+00  3.33E+00 -0.00E+00 -0.00E+00  1.33E+02  1.50E+03  2.12E+03 -1.50E+03  0.00E+00  0.00E+00 -1.20E+05      diff(*)=-8.9E-16 0.0E+00 0.0E+00-2.1E-14-7.1E-15-2.8E-14 2.3E-13-4.5E-13 0.0E+00 6.4E-12 6.8E-12 0.0E+00
+ a12(*,3)= -4.17E-01  5.89E-01  4.17E-01 -8.33E+00  0.00E+00  0.00E+00  2.50E+02 -3.54E+02 -2.50E+02  1.00E+04  0.00E+00  0.00E+00      diff(*)=-5.0E-16 2.2E-16-5.6E-17-8.9E-15-7.1E-15 3.6E-15 2.3E-13-5.7E-14 0.0E+00 7.3E-12 6.8E-12-3.4E-12
+ a12(*,4)= -5.89E-01  0.00E+00 -5.89E-01  0.00E+00 -8.33E+00  0.00E+00  3.54E+02  0.00E+00  5.68E-14  0.00E+00  1.00E+04  0.00E+00      diff(*)=-5.6E-16 1.1E-16 2.2E-16-2.1E-14 5.3E-15 3.6E-15 3.4E-13-3.6E-14-3.5E+02 5.5E-12 9.1E-12-3.4E-12
+ a12(*,5)=  4.17E-01  5.89E-01 -4.17E-01  0.00E+00  0.00E+00 -8.33E+00 -2.50E+02 -3.54E+02  2.50E+02  0.00E+00  0.00E+00  1.00E+04      diff(*)=-6.1E-16 2.2E-16 5.6E-17-2.1E-14-7.1E-15 3.6E-15 2.3E-13-1.1E-13 5.7E-14 5.0E-12 6.8E-12-1.8E-12
+ a12(*,6)=  3.33E+00 -4.71E+00 -3.33E+00 -1.00E+02 -0.00E+00  3.33E+01 -7.50E+02  1.06E+03  7.50E+02  4.50E+04 -0.00E+00 -1.50E+04      diff(*)=-8.9E-16 0.0E+00 4.4E-16-2.8E-14-7.1E-15 7.1E-15 1.1E-13 0.0E+00 0.0E+00 7.3E-12 6.8E-12-1.8E-12
+ a12(*,7)=  4.71E+00 -0.00E+00  4.71E+00 -0.00E+00 -6.67E+01  0.00E+00 -1.06E+03 -0.00E+00 -2.13E-13 -0.00E+00  3.00E+04 -0.00E+00      diff(*)= 0.0E+00 1.1E-16-8.9E-16-2.1E-14 1.4E-14 3.6E-15 0.0E+00-4.6E-14 1.1E+03 5.5E-12 7.3E-12-3.2E-12
+ a12(*,8)= -3.33E+00 -4.71E+00  3.33E+00  3.33E+01  0.00E+00 -1.00E+02  7.50E+02  1.06E+03 -7.50E+02 -1.50E+04 -0.00E+00  4.50E+04      diff(*)=-8.9E-16 1.8E-15-8.9E-16-2.1E-14-7.1E-15 1.4E-14 2.3E-13-2.3E-13 1.1E-13 1.8E-12 5.9E-12 0.0E+00
+ a12(*,9)= -4.17E-01  5.89E-01  4.17E-01  6.25E+00 -0.00E+00 -2.08E+00  1.25E+02 -1.77E+02 -1.25E+02 -3.75E+03 -0.00E+00  1.25E+03      diff(*)=-6.1E-16 2.2E-16-2.8E-16-3.0E-14-7.1E-15 6.7E-15 2.4E-13-1.1E-13 9.9E-14 4.5E-12 5.9E-12-3.4E-12
+ a12(*,*)= -5.89E-01 -0.00E+00 -5.89E-01 -0.00E+00  4.17E+00 -0.00E+00  1.77E+02  0.00E+00  2.84E-14 -0.00E+00 -2.50E+03 -0.00E+00      diff(*)=-8.9E-16 2.2E-16-2.2E-16-2.1E-14-1.3E-14 3.6E-15 2.3E-13-6.0E-14-1.8E+02 5.5E-12 6.4E-12-3.9E-12
+ a12(*,*)=  4.17E-01  5.89E-01 -4.17E-01 -2.08E+00 -0.00E+00  6.25E+00 -1.25E+02 -1.77E+02  1.25E+02  1.25E+03 -0.00E+00 -3.75E+03      diff(*)=-7.2E-16 1.1E-16-2.8E-16-1.8E-14-7.1E-15 4.4E-15 2.6E-13-2.8E-14 9.9E-14 5.9E-12 5.9E-12-3.6E-12
++++++ IGDM34c: check coeff in interface:    max(diff) = 2.12E+03                                                                                                                                                   XX
+
+
+ROTATE Y 45 ORDER 4
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=0 -a11=0 -b01=.8 -b11=0.1 -a02=0 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+GDM WITH SET a0=a1=0 
+
+CHECK-COEFF: i1,i2,i3= 10  5  5 hw1,hw2,  hw3= 2 2 2
+ a12(*,0)=  3.33E+00 -4.71E+00 -3.33E+00  1.33E+02  0.00E+00  0.00E+00 -1.50E+03  2.12E+03  1.50E+03 -1.20E+05 -0.00E+00  1.20E+05      diff(*)=-1.8E-15 0.0E+00 1.8E-15-2.8E-14 0.0E+00 0.0E+00-4.5E-13-4.5E-13 2.3E-13 0.0E+00-0.0E+00 1.2E+05
+ a12(*,1)=  4.71E+00  0.00E+00  4.71E+00  0.00E+00  1.33E+02  0.00E+00 -2.12E+03  0.00E+00 -4.83E-13 -0.00E+00 -1.20E+05  0.00E+00      diff(*)= 8.9E-16 2.8E-16-8.9E-16-2.1E-14-2.8E-14 0.0E+00 4.5E-13-1.2E-13 2.1E+03 6.4E-12-1.5E-11 0.0E+00
+ a12(*,2)= -3.33E+00 -4.71E+00  3.33E+00  0.00E+00  0.00E+00  1.33E+02  1.50E+03  2.12E+03 -1.50E+03  1.20E+05  0.00E+00 -1.20E+05      diff(*)=-8.9E-16 0.0E+00 0.0E+00-2.1E-14-7.1E-15-2.8E-14 2.3E-13-4.5E-13 0.0E+00 1.2E+05 6.8E-12 0.0E+00
+ a12(*,3)= -4.17E-01  5.89E-01  4.17E-01 -8.33E+00 -0.00E+00  0.00E+00  2.50E+02 -3.54E+02 -2.50E+02  1.00E+04  0.00E+00 -1.00E+04      diff(*)=-5.0E-16 2.2E-16-5.6E-17-8.9E-15-7.1E-15 3.6E-15 2.3E-13-5.7E-14 0.0E+00 7.3E-12 6.8E-12-1.0E+04
+ a12(*,4)= -5.89E-01  0.00E+00 -5.89E-01 -0.00E+00 -8.33E+00  0.00E+00  3.54E+02  0.00E+00  5.68E-14  0.00E+00  1.00E+04 -0.00E+00      diff(*)=-5.6E-16 1.1E-16 2.2E-16-2.1E-14 5.3E-15 3.6E-15 3.4E-13-3.6E-14-3.5E+02 5.5E-12 9.1E-12-3.4E-12
+ a12(*,5)=  4.17E-01  5.89E-01 -4.17E-01  0.00E+00  0.00E+00 -8.33E+00 -2.50E+02 -3.54E+02  2.50E+02 -1.00E+04 -0.00E+00  1.00E+04      diff(*)=-6.1E-16 2.2E-16 5.6E-17-2.1E-14-7.1E-15 3.6E-15 2.3E-13-1.1E-13 5.7E-14-1.0E+04 6.8E-12-1.8E-12
+ a12(*,6)=  3.33E+00 -4.71E+00 -3.33E+00 -1.00E+02 -0.00E+00  3.33E+01 -7.50E+02  1.06E+03  7.50E+02  4.50E+04  0.00E+00 -4.50E+04      diff(*)=-8.9E-16 0.0E+00 4.4E-16-2.8E-14-7.1E-15 7.1E-15 1.1E-13 0.0E+00 0.0E+00 7.3E-12 6.8E-12-3.0E+04
+ a12(*,7)=  4.71E+00 -0.00E+00  4.71E+00 -0.00E+00 -6.67E+01 -0.00E+00 -1.06E+03 -0.00E+00 -2.13E-13  0.00E+00  3.00E+04 -0.00E+00      diff(*)= 0.0E+00 1.1E-16-8.9E-16-2.1E-14 1.4E-14 3.6E-15 0.0E+00-4.6E-14 1.1E+03 5.5E-12 7.3E-12-3.2E-12
+ a12(*,8)= -3.33E+00 -4.71E+00  3.33E+00  3.33E+01 -0.00E+00 -1.00E+02  7.50E+02  1.06E+03 -7.50E+02 -4.50E+04 -0.00E+00  4.50E+04      diff(*)=-8.9E-16 1.8E-15-8.9E-16-2.1E-14-7.1E-15 1.4E-14 2.3E-13-2.3E-13 1.1E-13-3.0E+04 5.9E-12 0.0E+00
+ a12(*,9)= -4.17E-01  5.89E-01  4.17E-01  6.25E+00  0.00E+00 -2.08E+00  1.25E+02 -1.77E+02 -1.25E+02 -3.75E+03 -0.00E+00  3.75E+03      diff(*)=-6.1E-16 2.2E-16-2.8E-16-3.0E-14-7.1E-15 6.7E-15 2.4E-13-1.1E-13 9.9E-14 4.5E-12 5.9E-12 2.5E+03
+ a12(*,*)= -5.89E-01 -0.00E+00 -5.89E-01  0.00E+00  4.17E+00 -0.00E+00  1.77E+02  0.00E+00  2.84E-14 -0.00E+00 -2.50E+03  0.00E+00      diff(*)=-8.9E-16 2.2E-16-2.2E-16-2.1E-14-1.3E-14 3.6E-15 2.3E-13-6.0E-14-1.8E+02 5.5E-12 6.4E-12-3.9E-12
+ a12(*,*)=  4.17E-01  5.89E-01 -4.17E-01 -2.08E+00 -0.00E+00  6.25E+00 -1.25E+02 -1.77E+02  1.25E+02  3.75E+03  0.00E+00 -3.75E+03      diff(*)=-7.2E-16 1.1E-16-2.8E-16-1.8E-14-7.1E-15 4.4E-15 2.6E-13-2.8E-14 9.9E-14 2.5E+03 5.9E-12-3.6E-12
+
+
+NO GDM: 
+CHECK-COEFF: i1,i2,i3= 10  5  5 hw1,hw2,  hw3= 2 2 2
+ a12(*,0)=  3.33E+00 -4.71E+00 -3.33E+00  1.33E+02  0.00E+00  0.00E+00 -1.50E+03  2.12E+03  1.50E+03 -1.20E+05  0.00E+00  0.00E+00      diff(*)= 8.9E-16 0.0E+00-8.9E-16 2.8E-14 0.0E+00 0.0E+00 0.0E+00 4.5E-13 2.3E-13-1.5E-11 0.0E+00 0.0E+00
+ a12(*,1)=  4.71E+00 -4.44E-16  4.71E+00  1.42E-14  1.33E+02  0.00E+00 -2.12E+03  2.56E-13 -2.12E+03 -1.36E-11 -1.20E+05  0.00E+00      diff(*)= 8.9E-16-4.4E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-4.5E-13 2.6E-13 4.5E-13-1.4E-11 0.0E+00 0.0E+00
+ a12(*,2)= -3.33E+00 -4.71E+00  3.33E+00  1.42E-14  0.00E+00  1.33E+02  1.50E+03  2.12E+03 -1.50E+03 -1.36E-11  0.00E+00 -1.20E+05      diff(*)= 0.0E+00 0.0E+00-4.4E-16 1.4E-14 0.0E+00 0.0E+00 0.0E+00 4.5E-13 2.3E-13-1.4E-11 0.0E+00 0.0E+00
+ a12(*,3)= -4.17E-01  5.89E-01  4.17E-01 -8.33E+00  0.00E+00  0.00E+00  2.50E+02 -3.54E+02 -2.50E+02  1.00E+04  0.00E+00  0.00E+00      diff(*)= 8.9E-16-4.4E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.7E-13 2.8E-13 1.4E-13-1.3E-11 0.0E+00 0.0E+00
+ a12(*,4)= -5.89E-01 -4.44E-16 -5.89E-01  1.42E-14 -8.33E+00  0.00E+00  3.54E+02  1.99E-13  3.54E+02 -1.27E-11  1.00E+04  0.00E+00      diff(*)= 0.0E+00-4.4E-16-4.4E-16 1.4E-14 0.0E+00 0.0E+00-1.7E-13 2.0E-13 1.7E-13-1.3E-11 0.0E+00 0.0E+00
+ a12(*,5)=  4.17E-01  5.89E-01 -4.17E-01  1.42E-14  0.00E+00 -8.33E+00 -2.50E+02 -3.54E+02  2.50E+02 -1.27E-11  0.00E+00  1.00E+04      diff(*)= 4.4E-16-4.4E-16-4.4E-16 1.4E-14 0.0E+00 0.0E+00-1.4E-13 1.7E-13 1.7E-13-1.3E-11 0.0E+00 0.0E+00
+ a12(*,6)=  3.33E+00 -4.71E+00 -3.33E+00 -1.00E+02  0.00E+00  3.33E+01 -7.50E+02  1.06E+03  7.50E+02  4.50E+04  0.00E+00 -1.50E+04      diff(*)= 8.9E-16 0.0E+00-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.1E-13 2.3E-13 2.3E-13-1.5E-11 0.0E+00 0.0E+00
+ a12(*,7)=  4.71E+00 -7.22E-16  4.71E+00  1.42E-14 -6.67E+01  0.00E+00 -1.06E+03  2.42E-13 -1.06E+03 -1.00E-11  3.00E+04 -9.09E-13      diff(*)= 8.9E-16-7.2E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-2.3E-13 2.4E-13 0.0E+00-1.0E-11 0.0E+00-9.1E-13
+ a12(*,8)= -3.33E+00 -4.71E+00  3.33E+00  3.33E+01  0.00E+00 -1.00E+02  7.50E+02  1.06E+03 -7.50E+02 -1.50E+04  0.00E+00  4.50E+04      diff(*)= 8.9E-16 0.0E+00-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.1E-13 2.3E-13 2.3E-13-1.1E-11 0.0E+00 0.0E+00
+ a12(*,9)= -4.17E-01  5.89E-01  4.17E-01  6.25E+00  0.00E+00 -2.08E+00  1.25E+02 -1.77E+02 -1.25E+02 -3.75E+03  0.00E+00  1.25E+03      diff(*)= 8.9E-16-7.8E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.7E-13 2.6E-13 1.7E-13-1.0E-11 0.0E+00-9.1E-13
+ a12(*,*)= -5.89E-01 -7.22E-16 -5.89E-01  1.42E-14  4.17E+00  0.00E+00  1.77E+02  2.42E-13  1.77E+02 -1.00E-11 -2.50E+03 -9.09E-13      diff(*)= 8.9E-16-7.2E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.7E-13 2.4E-13 1.7E-13-1.0E-11 0.0E+00-9.1E-13
+ a12(*,*)=  4.17E-01  5.89E-01 -4.17E-01 -2.08E+00  0.00E+00  6.25E+00 -1.25E+02 -1.77E+02  1.25E+02  1.25E+03  0.00E+00 -3.75E+03      diff(*)= 8.9E-16-6.7E-16-8.9E-16 1.4E-14 0.0E+00 0.0E+00-1.7E-13 2.6E-13 1.7E-13-1.0E-11 0.0E+00-9.1E-13
+
+
+
+
+
+
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+**WRONG***
++++++ IGDM34c: check coeff in interface:    max(diff) = 1.25E+05
+
+CHECK-COEFF: i1,i2,i3= 10  5  5 hw1,hw2,  hw3= 2 2 2
+ a12(*,0)=  3.33E+00 -4.71E+00 -3.33E+00  1.33E+02  0.00E+00  4.49E-02 -1.50E+03  2.22E+03  1.50E+03 -1.24E+05 -0.00E+00  1.24E+05      diff(*)=-1.3E-15 0.0E+00 4.4E-16-5.7E-14 0.0E+00 9.0E-02 2.3E-13-4.5E-13-2.3E-13 0.0E+00-0.0E+00 1.3E+05
+ a12(*,1)=  4.71E+00  0.00E+00  4.71E+00  0.00E+00  1.33E+02  0.00E+00 -2.22E+03  0.00E+00 -4.82E-13 -0.00E+00 -1.25E+05  0.00E+00      diff(*)= 0.0E+00 0.0E+00 8.9E-16 0.0E+00 0.0E+00 0.0E+00 0.0E+00 0.0E+00 2.2E+03-0.0E+00 0.0E+00 0.0E+00
+ a12(*,2)= -3.33E+00 -4.71E+00  3.33E+00  4.49E-02  0.00E+00  1.33E+02  1.50E+03  2.22E+03 -1.50E+03  1.24E+05  0.00E+00 -1.24E+05      diff(*)=-4.4E-16 1.8E-15 4.4E-16 9.0E-02 0.0E+00-2.8E-14 0.0E+00 0.0E+00 0.0E+00 1.3E+05 0.0E+00-1.5E-11
+ a12(*,3)= -4.17E-01  5.89E-01  4.17E-01 -8.33E+00  0.00E+00 -2.82E-03  2.50E+02 -3.66E+02 -2.50E+02  1.02E+04  0.00E+00 -1.02E+04      diff(*)= 1.1E-16 1.1E-16-1.7E-16 7.1E-15 0.0E+00-5.6E-03 0.0E+00-1.1E-13 0.0E+00 0.0E+00 0.0E+00-1.0E+04
+ a12(*,4)= -5.89E-01  0.00E+00 -5.89E-01  0.00E+00 -8.33E+00  0.00E+00  3.66E+02  0.00E+00  5.68E-14  0.00E+00  1.03E+04 -0.00E+00      diff(*)=-1.1E-16 1.1E-16-2.2E-16 0.0E+00 0.0E+00-3.6E-15 5.7E-14-6.4E-14-3.7E+02 0.0E+00 0.0E+00 3.4E-12
+ a12(*,5)=  4.17E-01  5.89E-01 -4.17E-01 -2.82E-03  0.00E+00 -8.33E+00 -2.50E+02 -3.66E+02  2.50E+02 -1.02E+04 -0.00E+00  1.02E+04      diff(*)= 0.0E+00 1.1E-16-1.7E-16-5.6E-03 0.0E+00 0.0E+00-5.7E-14-1.7E-13 8.5E-14-1.0E+04-0.0E+00 3.6E-12
+ a12(*,6)=  3.33E+00 -4.71E+00 -3.33E+00 -1.00E+02 -0.00E+00  3.33E+01 -7.50E+02  1.06E+03  7.50E+02  4.51E+04  0.00E+00 -4.51E+04      diff(*)=-4.4E-16-1.8E-15-4.4E-16 0.0E+00-0.0E+00-7.1E-15 0.0E+00-2.3E-13 1.1E-13 1.5E-11 0.0E+00-3.0E+04
+ a12(*,7)=  4.71E+00 -0.00E+00  4.71E+00 -0.00E+00 -6.67E+01 -0.00E+00 -1.06E+03 -0.00E+00 -2.13E-13  0.00E+00  3.01E+04 -0.00E+00      diff(*)= 0.0E+00-5.6E-17 0.0E+00-0.0E+00 0.0E+00-3.6E-15 0.0E+00-4.6E-14 1.1E+03 0.0E+00-3.6E-12 2.5E-12
+ a12(*,8)= -3.33E+00 -4.71E+00  3.33E+00  3.33E+01 -0.00E+00 -1.00E+02  7.50E+02  1.06E+03 -7.50E+02 -4.51E+04 -0.00E+00  4.51E+04      diff(*)=-4.4E-16 0.0E+00-4.4E-16 0.0E+00 1.4E-14 0.0E+00 1.1E-13 2.3E-13 2.3E-13-3.0E+04-3.6E-12 1.5E-11
+ a12(*,9)= -4.17E-01  5.89E-01  4.17E-01  6.25E+00  0.00E+00 -2.08E+00  1.25E+02 -1.77E+02 -1.25E+02 -3.76E+03 -0.00E+00  3.76E+03      diff(*)=-2.2E-16-1.1E-16-1.1E-15-1.8E-15 1.4E-14-4.4E-16 1.1E-13-2.8E-14 1.8E-13 1.4E-12-3.6E-12 2.5E+03
+ a12(*,*)= -5.89E-01 -0.00E+00 -5.89E-01  0.00E+00  4.17E+00 -0.00E+00  1.77E+02  0.00E+00  2.84E-14 -0.00E+00 -2.51E+03  0.00E+00      diff(*)=-5.6E-16-1.1E-16-7.8E-16 0.0E+00 8.0E-15-3.6E-15 2.6E-13-4.6E-14-1.8E+02-0.0E+00-4.5E-12 3.0E-12
+ a12(*,*)=  4.17E-01  5.89E-01 -4.17E-01 -2.08E+00 -0.00E+00  6.25E+00 -1.25E+02 -1.77E+02  1.25E+02  3.76E+03  0.00E+00 -3.76E+03      diff(*)=-4.4E-16-3.3E-16-8.3E-16 3.1E-15 1.4E-14-8.0E-15 7.1E-14-2.8E-14 2.1E-13 2.5E+03-3.6E-12 3.6E-12
+                                                                                                                                                                           3               5                      8        9              11
+
+NO GDM *OK*
++++++ I34c: check coeff in interface: max(  diff) = 2.91E-11
+
+ROTATE Z 45 ORDER 4
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ze1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+GDM : **WRONG**
++++++ IGDM34c: check coeff in interface:    max(diff) = 1.25E+05
+
+NO GDM OK: 
++++++ I34c: check coeff in interface: max(  diff) = 2.18E-11
+
+no rotation: OK
+cgmx -noplot  interface -g=twoBoxesInterfacee1.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+GDM: 
++++++ IGDM34c: check coeff in interface:    max(diff) = 5.82E-11
+
+NO gdm: 
++++++ I34c: check coeff in interface: max(  diff) = 1.46E-11
+
+++++++ TEST *NEW* PlaneInterfaceExactSolution CLASS
+
+ROTATE 45 about y-axis  : OK NOW
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye4.order2 -interfaceNormal=1 0 1 -interfacePoint=0 .25 .25  -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=0 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=1.5 -a12=.05 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[2.70e-04,6.24e-04,5.57e-05,], max (u):[5.47e-01,1.12e+00,1.15e-01,] (2 steps)
+
+
+ROTATE 45 about z-axis  : OK NOW
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ze4.order2 -interfaceNormal=1 0 1 -interfacePoint=0 .25 .25  -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=0 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=1.5 -a12=.05 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+
+
+no rotation: OK
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+******************************
+******** July 3, 2019
+
+
+NOTE: THERE IS A SEPARATE PLANE MATERIAL INTERFACE SOLUTION FOR THE DISPERSIVE CASE 
+
+
+ROTATE 45 about y-axis 
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye4.order2 -interfaceNormal=1 0 1 -interfacePoint=0 .25 .25  -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=0 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.0 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+******************************
+******** July 2, 2019
+
+TEST GDM INTERFACE 2nd-order --3D --
+
+*** TEST 
+
+
+------------------------------ BUG FOUND IN 3D CASE ----------------------------------
+Shows up if interface has non-zero component along z-axis : an3 
+
+
+*** BROKEN***
+ROTATE 45 about y-axis 
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ye4.order2 -interfaceNormal=1 0 1 -interfacePoint=0 .25 .25  -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+ <<<<<<<<<<<<<<<<<<<<<<<<< Maxwell: LEAVING setupGridFunctions
+PMI: kv=(2.00e+00,1.00e+00,0.00e+00) nv=(7.07e-01,0.00e+00,-7.07e-01)
+PMI:3d: cr=7.07e-01 kNorm=2.24e+00 kDotN=1.41e+00 kappatSq=3.00e+00 arg=7.00e+00
+ (kx,ky,kz)=(2.00e+00,1.00e+00,0.00e+00) kr=(4.44e-16,1.00e+00,2.00e+00), kappa=(2.87e+00,1.00e+00,-8.71e-01), nv=(7.07e-01,0.00e+00,-7.07e-01)
+kappatSq=3.000000e+00, kappan=2.645751e+00, kDotN=1.414214e+00, arg=7.000000e+00
+PMI:3d: kv=(2.00e+00,1.00e+00,0.00e+00) av=(-4.47e-01,8.94e-01,0.00e+00) nv=(7.07e-01,0.00e+00,-7.07e-01)
+PMI:3d: qv=(4.08e-01,-8.16e-01,4.08e-01) aDotQ=-9.13e-01
+PMI:3d: gv=(-1.83e-01,3.65e-01,9.13e-01) aDotG=4.08e-01
+PMI:3d:  reflection-coeff=(3.34e-02,-3.03e-01), transmission-coeff=(7.31e-01,6.97e-01) [(parallel,perp)]
+PMI: bv=(1.01e-01,-2.31e-01,1.16e-01)
+PMI: dv=(-2.31e-01,6.63e-01,5.55e-17)
+<<<<<<<<<<<<<<<<<<<<<<<<< LEAVING interactiveUpdate
+
+
+
+
+NEW:  --errors are still bad but coeff's are correct now
++++++ I23c: check coeff in interface: max(    diff) = 1.59E-12
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=4.01e-01 (=1.77e+01/4.40e+01) 1 steps mem=47.7(Mb) cpu=3.47e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.03e-01,9.88e-01,8.17e-02,], max (u):[5.48e-01,1.13e+00,1.22e-01,] (1 steps)
+
+
+
+
+OLD:
+
+
++++++ I23c: check coeff in interface: max(    diff) = 1.41E+01
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=4.01e-01 (=1.77e+01/4.40e+01) 1 steps mem=48.3(Mb) cpu=1.45e+01(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.03e-01,9.88e-01,8.17e-02,], max (u):[5.48e-01,1.13e+00,1.22e-01,] (1 steps)
+
+
+ROTATE 90 about y-axis  kx=2 ky=1 kz=0 *** SOLUTION IS ZERO !! n.k = 0 
+                        kx=1 ky=1 kz=1  --> errors large, wave moves in wrong direction
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate90ye4.order2 -interfaceNormal=0 0 1 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -kz=-2 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+PMI: kv=(2.00e+00,1.00e+00,0.00e+00) nv=(0.00e+00,0.00e+00,1.00e+00)
+PMI:3d: cr=7.07e-01 kNorm=2.24e+00 kDotN=0.00e+00 kappatSq=5.00e+00 arg=5.00e+00
+ (kx,ky,kz)=(2.00e+00,1.00e+00,0.00e+00) kr=(2.00e+00,1.00e+00,0.00e+00), kappa=(2.00e+00,1.00e+00,2.24e+00), nv=(0.00e+00,0.00e+00,1.00e+00)
+kappatSq=5.000000e+00, kappan=2.236068e+00, kDotN=0.000000e+00, arg=5.000000e+00
+PMI:3d: kv=(2.00e+00,1.00e+00,0.00e+00) av=(-4.47e-01,8.94e-01,0.00e+00) nv=(0.00e+00,0.00e+00,1.00e+00)
+PMI:3d: qv=(-4.47e-01,8.94e-01,0.00e+00) aDotQ=1.00e+00
+PMI:3d: gv=(0.00e+00,0.00e+00,-1.00e+00) aDotG=0.00e+00
+PMI:3d:  reflection-coeff=(-1.00e+00,-1.00e+00), transmission-coeff=(0.00e+00,0.00e+00) [(parallel,perp)]
+PMI: bv=(4.47e-01,-8.94e-01,0.00e+00)
+PMI: dv=(0.00e+00,0.00e+00,0.00e+00)
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.12e+00 (=6.26e-15/5.60e-15) 1 steps mem=44.7(Mb) cpu=2.86e+01(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.11e-16,2.22e-16,1.17e-33,], max (u):[1.11e-16,2.22e-16,1.17e-33,] (1 steps)
+
+
+
+*OK* ROTATE 45 about z-axis 
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45ze4.order2 -interfaceNormal=1 1 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+
+ <<<<<<<<<<<<<<<<<<<<<<<<< Maxwell: LEAVING setupGridFunctions
+PMI: kv=(1.00e+00,1.00e+00,0.00e+00) nv=(7.07e-01,7.07e-01,0.00e+00)
+PMI:3d: cr=7.07e-01 kNorm=1.41e+00 kDotN=1.41e+00 kappatSq=8.88e-16 arg=4.00e+00
+ (kx,ky,kz)=(1.00e+00,1.00e+00,0.00e+00) kr=(-1.00e+00,-1.00e+00,0.00e+00), kappa=(1.41e+00,1.41e+00,0.00e+00), nv=(7.07e-01,7.07e-01,0.00e+00)
+kappatSq=8.881784e-16, kappan=2.000000e+00, kDotN=1.414214e+00, arg=4.000000e+00
+PMI:3d: kv=(1.00e+00,1.00e+00,0.00e+00) av=(-7.07e-01,7.07e-01,0.00e+00) nv=(7.07e-01,7.07e-01,0.00e+00)
+PMI:3d: qv=(0.00e+00,-0.00e+00,1.00e+00) aDotQ=0.00e+00
+PMI:3d: gv=(-7.07e-01,7.07e-01,0.00e+00) aDotG=1.00e+00
+PMI:3d:  reflection-coeff=(1.72e-01,-1.72e-01), transmission-coeff=(8.28e-01,8.28e-01) [(parallel,perp)]
+PMI: bv=(1.21e-01,-1.21e-01,-0.00e+00)
+PMI: dv=(-5.86e-01,5.86e-01,0.00e+00)
+<<<<<<<<<<<<<<<<<<<<<<<<< LEAVING interactiveUpdate
+
++++++ I23c: check coeff in interface: max(    diff) = 6.82E-13
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=1.93e-04 (=9.86e-04/5.10e+00) 1 steps mem=50.5(Mb) cpu=1.85e+01(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[3.49e-05,3.49e-05,0.00e+00,], max (u):[5.87e-01,5.87e-01,0.00e+00,] (1 steps)
+
+
+
+
+*OK* ROTATE 90 about z-axis 
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate90ze4.order2 -interfaceNormal=0 1 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
++++++ I23c: check coeff in interface: max(    diff) = 6.82E-13
+>>> Cgmx:FD: t=3.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=4.90e-03 (=3.48e-02/7.09e+00) 3 steps mem=48.7(Mb) cpu=2.88e+00(s)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[4.28e-04,3.71e-04,3.97e-06,], max (u):[7.57e-01,7.57e-01,3.97e-06,] (3 steps)
+
+
+
+
+TURN OFF GDM: 
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
++++++ I23c: check coeff in interface: max(    diff) = 6.82E-13
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME |div(E)|/|grad(E)|=4.78e-03 (=3.39e-02/7.08e+00) 1 steps mem=45.7(Mb) cpu=2.09e+00(s)
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.60e-05,2.32e-05,0.00e+00,], max (u):[7.56e-01,7.56e-01,0.00e+00,] (1 steps)
+
+
+ROTATED BOXES
+
+*** IS ROTATED EXact SOLUTION CORRECT  ???
+
+GDM
+cgmx -noplot  interface -g=twoBoxesInterfaceRotate45e1.order2 -interfaceNormal=1 0 -1 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+COEFFICIENTS DO NOT CHECK 
+ a6(*,0)=  2.50E+00 -3.54E+00 -2.50E+00  1.00E+02  0.00E+00 -4.99E-02 diff(*)  = 4.4E-16-8.9E-16-4.4E-16 0.0E+00 0.0E+00 2.4E-16
+ a6(*,1)=  3.54E+00  0.00E+00  4.44E-16  0.00E+00  9.99E+01 -0.00E+00 diff(*)  =-4.4E-16 0.0E+00-3.5E+00 0.0E+00 1.4E-14-0.0E+00
+ a6(*,2)= -2.50E+00 -3.54E+00  2.50E+00 -4.99E-02 -0.00E+00  1.00E+02 diff(*)  = 0.0E+00 0.0E+00-8.9E-16 2.3E-16-0.0E+00-1.4E-14
+ a6(*,3)=  2.50E+00 -3.54E+00 -2.50E+00 -7.50E+01 -0.00E+00  2.50E+01 diff(*)  = 4.4E-16 4.4E-16 0.0E+00 1.4E-14-0.0E+00-7.1E-15
+ a6(*,4)=  3.54E+00  0.00E+00  4.44E-16 -0.00E+00 -5.00E+01  0.00E+00 diff(*)  = 4.4E-16 0.0E+00-3.5E+00-0.0E+00-2.1E-14-3.6E-15
+ a6(*,5)= -2.50E+00 -3.54E+00  2.50E+00  2.50E+01  0.00E+00 -7.50E+01 diff(*)  = 0.0E+00-8.9E-16 8.9E-16 1.1E-14 0.0E+00-1.4E-14
++++++ iGDM23c: check coeff in interface: max(  diff) = 3.54E+00
+
+
+
+
+NON ROTATED :    COEFF'S CHECK 
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=4.79e-03 (=3.98e-02/8.32e+00) 1 steps mem=51.4(Mb) cpu=2.17e+00(s)
+--getErrors: t=1.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.948e-02 max-err = 1.089e-07
+--getErrors: t=1.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.771e-02 max-err = 9.373e-08
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.58e-05,2.72e-05,0.00e+00,], max (u):[7.56e-01,7.74e-01,0.00e+00,] (1 steps)
+
+++++ iGDM23c: check coeff in interface: max(  diff) = 6.82E-13
+
++++++++++++++++ 3D -- Order=2  
+
+
+GDM
+cgmx -noplot  interface -g=twoBoxesInterfacee111.order2 -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+NO-GDM, eps2=2
+cgmx -noplot  interface -g=twoBoxesInterfacee111.order2 -eps2=2 -kx=1 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -dm=none -cons=0 -interfaceIts=5 -interfaceOmega=1 -go=og
+
+
+
+******************************
+******** July 1, 2019
+
+
+--------> REVISIT GDM INTERFACES 
+
+-- REDO TESTS
+
+
+
+---------  ORDER=4 GDM 
+
+TALL CELLS: *TROUBLE**
+cgmx -noplot  interface -g=twoSquaresInterfaceTalle2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=40 -interfaceOmega=.6 -go=og
+
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 38, err=  0.16E+13 rate= 2.09 (omega=0.20)
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 39, err=  0.32E+13 rate= 2.09 (omega=0.20)
+Interface>>>24c-GDM
+interface2d : t= 0.100E-01 (grid1,grid2)=(  0,  1), it= 40, err=  0.68E+13 rate= 2.09 (omega=0.20)
+
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee1.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=10 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order4 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=40 -interfaceOmega=.6 -go=og
+
+Interface>>>24c-GDM
+interface2d : t= 0.200E-01 (grid1,grid2)=(  0,  1), it= 38, err=  0.78E-07 rate= 0.72 (omega=0.50)
+Interface>>>24c-GDM
+interface2d : t= 0.200E-01 (grid1,grid2)=(  0,  1), it= 39, err=  0.56E-07 rate= 0.72 (omega=0.50)
+Interface>>>24c-GDM
+interface2d : t= 0.200E-01 (grid1,grid2)=(  0,  1), it= 40, err=  0.41E-07 rate= 0.72 (omega=0.50)
+
+
+Interface>>>24c-GDM
+interface2d : t= 0.300E-01 (grid1,grid2)=(  0,  1), it= 20, err=  0.39E-09 rate= 0.36 (omega=1.00)
+Interface>>>24c-GDM
+interface2d : t= 0.300E-01 (grid1,grid2)=(  0,  1), it= 21, err=  0.14E-09 rate= 0.36 (omega=1.00)
+Interface>>>24c-GDM
+interface2d : t= 0.300E-01 (grid1,grid2)=(  0,  1), it= 22, err=  0.49E-10 rate= 0.35 (omega=1.00)
+
+
+--------- ORDER=2 GDM 
+cgmx -noplot  interface -g=twoNonSquaresInterfacee1.order2 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=10 -go=og
+
+cgmx -noplot  interface -g=twoNonSquaresInterfacee2.order2 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=10 -go=og
+
+
+******************************
+******** June 18, 2019
+
+RUNS FOR PAPER 
+
+cgmx -noplot interface -g=doubleBoxInterfacee8.order4.ng3 -kx=2 -ky=1 -kz=.5 -eps1=1 -eps2=2. -dm=gdm -npv=2 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1-a02=2 -a12=.05 -b02=2 -b12=.1 -tp=.1 -tf=.5 -ic=pmic -diss=0. -bc=d -cons=0 -diss=.0 -interfaceIts=5 -interfaceOmega=.6 -show=dbiG8.show -go=go > ! dbiG8.out
+
+
+cgmx -noplot interface -g=doubleBoxInterfacee4.order4.ng3 -kx=2 -ky=1 -kz=.5 -eps1=1 -eps2=2. -dm=gdm -npv=2 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1-a02=2 -a12=.05 -b02=2 -b12=.1 -tp=.1 -tf=.5 -ic=pmic -diss=0. -bc=d -cons=0 -diss=.0 -interfaceIts=5 -interfaceOmega=.6 -show=dbiG4.show -go=go > ! dbiG4.out
+
+
+******************************
+******** June 18, 2019
+
+REVISIT 3D PLANAR INTERFACE -- USE DOUBLE-BOX -- finer in x
+
+
+
+doubleBoxInterface  : finer spacing in x 
+
+cgmx interface -g=doubleBoxInterfacee8.order4.ng3 -kx=2 -ky=1 -kz=.5 -eps1=1 -eps2=3. -dm=gdm -npv=2 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1-a02=2 -a12=.05 -b02=2 -b12=.1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -diss=.0 -interfaceIts=10 -interfaceOmega=.6 -go=halt
+
+
+
+
+
+GDM: 
+cgmx interface -g=doubleBoxInterfacee4.order4.ng3 -kx=2 -ky=1 -kz=.5 -eps1=1 -eps2=2. -dm=gdm -npv=1 1 -a01=1 -a11=.1 -b01=1 -b11=.2 -a02=2 -a12=.05 -b02=2 -b12=.1 -tp=.01 -tf=1 -ic=pmic -diss=0. -bc=d -cons=0 -diss=.0 -interfaceIts=10 -interfaceOmega=.6 -go=halt
+
+
+******************************
+******** June 17, 2019
+
+
+USE AITKEN FOR INTERFACE ??
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps1=1 -eps2=.25 -kx=1 -ky=0 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=1 -diss=.0 -interfaceIts=10 -interfaceOmega=.5 -go=og
+
+omega=.8 
+
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  1, err=  0.23E-01           (omega=0.80)    
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  2, err=  0.36E-02 rate= 0.16 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  3, err=  0.32E-02 rate= 0.89 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  4, err=  0.40E-03 rate= 0.13 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  5, err=  0.26E-03 rate= 0.64 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  6, err=  0.85E-04 rate= 0.33 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  7, err=  0.48E-04 rate= 0.57 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  8, err=  0.29E-04 rate= 0.60 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  9, err=  0.17E-04 rate= 0.57 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it= 10, err=  0.96E-05 rate= 0.58 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it= 11, err=  0.57E-05 rate= 0.59 (omega=0.80)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it= 12, err=  0.34E-05 rate= 0.59 (omega=0.80)
+
+
+
+ +++++ FD t=7.143e-02 STAGE 0: computeUt=0 updateInterior=1 addDissipation=1 applyBCs=1
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  1, err=  0.23E-01           (omega=0.50)    
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  2, err=  0.68E-02 rate= 0.30 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  3, err=  0.21E-02 rate= 0.31 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  4, err=  0.10E-02 rate= 0.47 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  5, err=  0.10E-02 rate= 1.03 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  6, err=  0.73E-03 rate= 0.70 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  7, err=  0.43E-03 rate= 0.60 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  8, err=  0.23E-03 rate= 0.54 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it=  9, err=  0.12E-03 rate= 0.50 (omega=0.50)
+interface2d : t= 0.714E-01 (grid1,grid2)=(  0,  1), it= 10, err=  0.76E-04 rate= 0.66 (omega=0.50)
+>>> Cgmx:FD: t=1.00e-01 dt=1.4e-02 TS=ME |div(E)|/|grad(E)|=4.21e-05 (=3.03e-04/7.20e+00) 7 steps mem=27.6(Mb) cpu=7.92e+00(s)
+>>> t=1.00e-01 dt=1.4e-02 max errors:[8.54e-07,3.18e-05,2.10e-05,], max (u):[8.54e-07,1.33e+00,9.51e-01,] (7 steps)
+
+
+
+******************************
 ******** Nov  13, 2018
+
 
 
 doubleBoxInterface  : finer spacing in x 
@@ -34,6 +827,7 @@ cgmx -noplot interface -g=twoBoxesInterfacee4.order4.ng3 -eps1=1 -eps2=.25 -kx=2
 
 THERE IS NO EXTRAP option in 2D:
 cgmx -noplot interface -g=twoSquaresInterfacee2.order4 -eps1=1 -eps2=.25 -kx=1 -ky=0 -tp=.1 -tf=1 -ic=pmic -diss=0. -bc=d -cons=1 -diss=.0 -useNewInterface=0 -interfaceEquationOption=0 -interfaceIts=10 -interfaceOmega=.5 -go=og
+
 
 
 ******************************
@@ -1042,7 +1836,7 @@ START thinking about THREE DIMENSIONAL INTERFACES FOR ADE-GDM
 
 
 2D order 2
-cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=1.0 -b01=1.0 -b11=1.0 -a02=1.0 -a12=1.0 -b02=1.0 -b12=1.0 -dm=gdm -cons=0 -go=og<
 
 
 2d - order 4

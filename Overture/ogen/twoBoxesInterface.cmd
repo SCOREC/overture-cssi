@@ -37,7 +37,8 @@ $order=2; $bc="d";
 $factor=-1; $xFactor=1; $yFactor=1; $zFactor=1; 
 $xFactorScale=1.; # scale number of grid lines in x by this factor
 $interp="i"; $interpType = "implicit for all grids";
-$angle=0.;
+$angle=0;  $rotAxis=1;   # rotation axis 0, 1, or 2 
+$angle2=0; $rotaAxis2=2; # optional second rotation
 #
 $bcLeft = "1 100  1  1  1 1"; 
 $bcRight= "100 1  1  1  1 1"; 
@@ -51,7 +52,9 @@ $numGhost=-1;  # if this value is set, then use this number of ghost points
 #
 # 
 # get command line arguments
-GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,"interp=s"=> \$interp,"angle=f"=> \$angle,"name=s"=>\$name,"bc=s"=>\$bc,"numGhost=i"=>\$numGhost,"prefix=s"=>\$prefix,"xFactorScale=f"=>\$xFactorScale );
+GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,"interp=s"=> \$interp,\
+           "name=s"=>\$name,"bc=s"=>\$bc,"numGhost=i"=>\$numGhost,"prefix=s"=>\$prefix,"xFactorScale=f"=>\$xFactorScale,\
+	   "angle=f"=> \$angle,"rotAxis=i"=> \$rotAxis,"angle2=f"=> \$angle2,"rotAxis2=i"=> \$rotAxis2 );
 # 
 if( $factor>0 ){ $xFactor=$factor; $yFactor=$factor; $zFactor=$factor; }
 if( $order eq 2 ){ $orderOfAccuracy="second order"; $ng=2; }\
@@ -127,10 +130,15 @@ create mappings
     transform which mapping?
       leftBox0
     rotate
- # rotate about the z-axis
-     $angle 2 
+     # rotate about the x, y, or z-axis
+     $angle $rotAxis 
      $yr = ($ya+$yb)*.5; 
-     0. $yr 0.
+     $zr = ($za+$zb)*.5; 
+     0. $yr $zr
+    # optionally rotate a second time
+    if( $angle2 ne 0 ){ $rotateCommand ="rotate\n $angle2 $rotAxis2\n  0. $yr $zr"; }else{ $rotateCommand="#"; }
+    $rotateCommand
+    # pause
     mappingName
       leftBox
     exit
@@ -139,8 +147,10 @@ create mappings
     transform which mapping?
       rightBox0
     rotate
-     $angle 2
-     0. $yr 0.
+     $angle $rotAxis 
+     0. $yr $zr
+    # rotate a second time
+   $rotateCommand
     mappingName
       rightBox
     exit

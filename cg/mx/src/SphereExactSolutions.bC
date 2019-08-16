@@ -1,0 +1,955 @@
+#include "SphereExactSolutions.h"
+
+#include "ParallelUtility.h"
+
+// ===============================================================================
+// Class to define exact solutions to Maxwell's equations for a sphere
+//     Scattering from a PEC sphere
+//     Scattering from a dieletric sphere
+// ===============================================================================
+
+
+#define scatSphere EXTERN_C_NAME(scatsphere)
+
+extern "C"
+{
+
+void scatSphere(const int&nd ,
+	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
+	     const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
+	     const real& xy, real&u, const int&ipar, const real&rpar );
+
+}
+
+
+// ===============================================================================
+/// \brief  Constructor for th class that defines exact solutions to Maxwell's equations for a sphere
+// ===============================================================================
+SphereExactSolutions::
+SphereExactSolutions()
+{
+  dbase.put<int>("numDomains")=1; //  number of domains: 1=PEC sphere, 2=Dielectric sphere
+
+  dbase.put<real>("radius")=1.; 
+
+  // Save real and imaginary parts in a vector 
+  dbase.put<real[2]>("s"); 
+  dbase.put<real[2]>("k"); 
+
+  dbase.put<real[2]>("eps0"); 
+  dbase.put<real[2]>("mu0"); 
+
+  dbase.put<real[2]>("eps1"); 
+  dbase.put<real[2]>("mu1"); 
+
+  dbase.put<real[2]>("beta0"); // phase constant for PEC case 
+
+
+  dbase.put<int[20]>("ipar"); 
+  dbase.put<real[20]>("rpar"); 
+}
+
+
+// ===============================================================================
+/// \brief destructor for the class that defines exact solutions to Maxwell's equations for a sphere
+// ===============================================================================
+SphereExactSolutions::
+~SphereExactSolutions()
+{
+}
+
+
+// ===============================================================================
+/// \brief Initialize.
+///
+/// \param numberOfDomains (input) : number of domains: 1=PEC sphere, 2=Dielectric sphere
+/// \param a (input) : radius of the sphere 
+/// \param sc[2], kc[2] (input) : complex s and k
+/// \param epsOut[2], muOut[2] (input) : complex valued eps and mu (outside) 
+/// \param epsIn[2], muIn[2] (input) : complex valued eps and mu (inside) 
+// ===============================================================================
+int SphereExactSolutions::
+initialize( int numberOfDomains, real a, real *sc, real *kc, real *epsOut, real *muOut, real *epsIn, real *muIn )
+{
+
+  int & numDomains = dbase.get<int>("numDomains");
+  numDomains=numberOfDomains;
+  assert( numDomains>=1 && numDomains <=2 );
+  
+
+  dbase.get<real>("radius")=a; 
+
+  real (&s)[2] = dbase.get<real[2]>("s");
+  real (&k)[2] = dbase.get<real[2]>("k");
+
+  real (&eps0)[2] = dbase.get<real[2]>("eps0");
+  real (&eps1)[2] = dbase.get<real[2]>("eps1");
+  real (&mu0)[2] = dbase.get<real[2]>("mu0");
+  real (&mu1)[2] = dbase.get<real[2]>("mu1");
+
+  real (&beta0)[2] = dbase.get<real[2]>("beta0");
+
+  s[0]=sc[0];
+  s[1]=sc[1];
+  
+  k[0]=kc[0];
+  k[1]=kc[1];
+  
+
+  eps0[0]=epsOut[0];
+  eps0[1]=epsOut[1];
+  mu0[0]=muOut[0];
+  mu0[1]=muOut[1];
+  
+  if( numDomains==1 )
+  {
+    // ---- 1 domain problem : PEC sphere 
+    // Set default values for domain 2 -- these values should not be used
+    eps1[0]=1.;
+    eps1[1]=0;
+    mu1[0]=1.;
+    mu1[1]=0.;
+
+    printF("SphereExactSolutions::initialize: a=%g, eps0=[%g,%g], mu0=[%g,%g]\n",
+           a,eps0[0],eps0[1],mu0[0],mu0[1]);
+  }
+  else
+  {
+    // ---- 2 domain problem : dielectric sphere 
+    eps1[0]=epsIn[0];
+    eps1[1]=epsIn[1];
+    mu1[0]=muIn[0];
+    mu1[1]=muIn[1];
+
+    printF("SphereExactSolutions::initialize: a=%g, s=[%g,%g], k=[%g,%g], eps0=[%g,%g], mu0=[%g,%g], eps1=[%g,%g], mu1=[%g,%g]\n",
+           a,s[0],s[1], k[0],k[1], eps0[0],eps0[1],mu0[0],mu0[1],  eps1[0],eps1[1],mu1[0],mu1[1]);
+  
+  }
+  
+
+  return 0;
+}
+
+
+// ===================================================================================
+/// \brief Evaluate the frequency space solution (complex valued) at a single point.
+/// \param x[3] (input): point to evaluate the solution
+/// 
+/// \param E[6] (output):  real and imaginary parts of E : [Exr,Eyr,Ezr,Exi,Eyi,Ezi]
+/// \param H[6] (output):  optionally compute real and imaginary parts of H : [Hxr,Hyr,Hzr,Hxi,Hyi,Hzi]
+///
+/// \note: This may not be so efficient.
+// ===================================================================================
+int SphereExactSolutions::
+eval( real x[3], real *Ev, real *Hv /*= NULL */  )
+{
+
+  bool computeMagneticField = Hv != NULL;
+  const int numVars = computeMagneticField ? 12 : 6;
+
+  Range I1(0,0), I2(0,0), I3(0,0);
+  RealArray xLocal(I1,I2,I3,3);
+  RealArray uLocal(I1,I2,I3,numVars);
+  for( int axis=0; axis<3; axis++ )
+  {
+    xLocal(0,0,0,axis)=x[axis];
+  }
+  
+  // assign parameter arrays ipar and rpar: 
+  setPars();
+
+  int  (&ipar)[20] = dbase.get<int[20]>("ipar"); 
+  real (&rpar)[20] = dbase.get<real[20]>("rpar"); 
+
+  // Determine if we are inside or outside 
+  const real &a =dbase.get<real>("radius");
+  real rad = sqrt( SQR(x[0]) + SQR(x[1]) + SQR(x[2]) );
+  int domain =   rad >= a ? 0 : 1;
+
+  ipar[7]= domain; // cg.domainNumber(grid);    // new way domain=0 : outside, 1=inside 
+  ipar[12] = computeMagneticField;
+
+  // printF("SphereExactSolutions::eval: call scatSphere x=(%g,%g,%g), rad=%g, domain=%d ...\n",x[0],x[1],x[2],rad,domain);
+  const int numberOfDimensions=3;
+  scatSphere(numberOfDimensions, 
+	     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+	     uLocal.getBase(0),uLocal.getBound(0),
+	     uLocal.getBase(1),uLocal.getBound(1),
+	     uLocal.getBase(2),uLocal.getBound(2),
+	     uLocal.getBase(3),uLocal.getBound(3),
+	     *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
+
+  for( int i=0; i<6; i++ )
+  {
+    Ev[i]=uLocal(0,0,0,i);
+    if( computeMagneticField )
+      Hv[i]=uLocal(0,0,0,i+6);
+
+  }
+
+  // printF("SphereExactSolutions::eval:END x=(%g,%g,%g), rad=%g, domain=%d ...\n",x[0],x[1],x[2],rad,domain);
+
+  return 0;
+}
+
+
+// ===============================================================================
+/// \brief Evaluate the frequency space solution (complex valued).
+// ===============================================================================
+int SphereExactSolutions::
+eval( realMappedGridFunction & u, int domain, int grid, bool computeMagneticField /* =false */ )
+{
+
+  MappedGrid & mg = *u.getMappedGrid();
+  mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+
+  OV_GET_SERIAL_ARRAY(real,u,uLocal);
+  OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+  
+  Index I1,I2,I3;
+  getIndex(mg.dimension(),I1,I2,I3);
+
+  const int includeGhost=1;
+  bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost); 
+  if( !ok ) return 0;
+
+  // assign parameter arrays ipar and rpar: 
+  setPars();
+
+  int  (&ipar)[20] = dbase.get<int[20]>("ipar"); 
+  real (&rpar)[20] = dbase.get<real[20]>("rpar"); 
+
+  ipar[7]= domain; // cg.domainNumber(grid);    // new way domain=0 : outside, 1=inside 
+  ipar[12] = computeMagneticField;
+  
+  if( computeMagneticField && u.getLength(3)<12 )
+  {
+    printF("SphereExactSolutions::eval:ERROR: grid function u must have room for 12 components\n"
+           "  when computing both the E and H fields\n");
+    OV_ABORT("error");
+ 
+  }
+  
+  printF("SphereExactSolutions::eval: call scatSphere domain=%d grid=%d...\n",domain,grid);
+  scatSphere(mg.numberOfDimensions(), 
+	     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+	     uLocal.getBase(0),uLocal.getBound(0),
+	     uLocal.getBase(1),uLocal.getBound(1),
+	     uLocal.getBase(2),uLocal.getBound(2),
+	     uLocal.getBase(3),uLocal.getBound(3),
+	     *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
+
+  return 0;
+}
+
+
+
+
+// ===============================================================================
+/// \brief Private routine to set internal ipar and rpar arrays
+// ===============================================================================
+int SphereExactSolutions::
+setPars()
+{
+  const int & numDomains = dbase.get<int>("numDomains");
+
+  int  (&ipar)[20] = dbase.get<int[20]>("ipar"); 
+  real (&rpar)[20] = dbase.get<real[20]>("rpar"); 
+
+  real (&s)[2] = dbase.get<real[2]>("s");
+  real (&k)[2] = dbase.get<real[2]>("k");
+
+  real (&eps0)[2] = dbase.get<real[2]>("eps0");
+  real (&eps1)[2] = dbase.get<real[2]>("eps1");
+  real (&mu0)[2] = dbase.get<real[2]>("mu0");
+  real (&mu1)[2] = dbase.get<real[2]>("mu1");
+  
+  const real c1 = 1./sqrt(eps0[0]*mu0[0]);
+  const real c2 = 1./sqrt(eps1[0]*mu1[0]);
+  
+  real sr = s[0], si = s[1]; // -twoPi*kx*c1;       
+  real kx = k[0];
+
+  int dispersionModel=0; // ** FIX ME **
+  int debug=0;
+ 
+  const real &a =dbase.get<real>("radius");
+
+  real mr = sqrt(eps1[0]*mu1[0]), mi=0.; // ** FIX ME **
+  
+  real epsHat1r=eps0[0], epsHat1i=eps0[1], epsHat2r=eps1[0], epsHat2i=eps1[1];
+
+  real cr = mr;  // c1/c2 (c2=inside)
+  int computeIncident=1;  // set to 1 to compute incident wave too  ** FIX ME **
+
+
+  // real rpar[] = {twoPi*kx,a, mr,mi, sr,si, epsHat1r,epsHat1i,epsHat2r,epsHat2i}; //
+  // real rpar[] = {  kx,a, mr,mi, sr,si, epsHat1r,epsHat1i,epsHat2r,epsHat2i}; //
+
+  if( numDomains==1 )
+  {
+    // For a PEC sphere we must currently choose beta=m*k to be real 
+
+    real beta0v[2], beta1v[2];
+    getDispersiveParameters( beta0v,  beta1v );
+    kx = beta0v[0];
+
+    if( fabs(beta0v[1]) > REAL_EPSILON*10. )
+    {
+      printF("SES:ERROR: PEC sphere but beta0 is not real! beta0=(%g,%g)\n",beta0v[0],beta0v[1]);
+      printF("           You should choose beta=real and s to satisfy s^2 * eps(s)*mu(s) = -beta^s \n");
+      
+      OV_ABORT("error");
+    }
+    
+  }
+  
+
+  rpar[0] = kx;
+  rpar[1] = a;
+  rpar[2] = mr;
+  rpar[3] = mi;
+  rpar[4] = sr;
+  rpar[5] = si;
+  rpar[6] = epsHat1r;
+  rpar[7] = epsHat1i;
+  rpar[8] = epsHat2r;
+  rpar[9] = epsHat2i;
+  
+  int option= numDomains==1 ? 0 : 1;  // 0=PEC cylinder, 1=di-electric
+
+  // int inOut=domain;   // 0=exterior, 1=interior to the dielectric  **CHECK ME**
+
+  int staggeredGrid = 0; // method==yee ? 1 : 0;
+  // int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug,dispersionModel}; //
+  
+  ipar[ 0] = 0;
+  ipar[ 1] = 1;
+  ipar[ 2] = 2;
+  ipar[ 3] = 3;
+  ipar[ 4] = 4;
+  ipar[ 5] = 5;
+  ipar[ 6] = option;
+  ipar[ 7] = 0;                      // inOut = domain  : will be set later 
+  ipar[ 8] = computeIncident;        // compute incident field
+  ipar[ 9] = staggeredGrid;
+  ipar[10] = debug;
+  ipar[11] = dispersionModel;
+
+  ipar[12] = 0; // compute magnetic field 
+   
+
+  return 0;
+}
+
+// Include complex down here to minimize name conflicts
+#include <complex>
+
+typedef ::real LocalReal;
+typedef ::real OV_real;
+
+
+
+// ===============================================================================
+/// \brief Check the solution.
+// ===============================================================================
+int SphereExactSolutions::
+SphereExactSolutions::check()
+{
+
+  // ------------- CHECK THAT THE EQUATIONS ARE SATISFIED AT POINTS INSIDE AND OUTSIDE ------
+
+  printF("------------ SphereExactSolutions::check: CHECK THE EQUATIONS ------------\n\n");
+
+  LocalReal maxErr=0.;
+
+  setPars();
+
+
+  const int & numDomains = dbase.get<int>("numDomains");
+
+  const LocalReal &a =dbase.get<LocalReal>("radius");
+
+  LocalReal (&s)[2] = dbase.get<LocalReal[2]>("s");
+  LocalReal (&k)[2] = dbase.get<LocalReal[2]>("k");
+
+  LocalReal (&eps0)[2] = dbase.get<LocalReal[2]>("eps0");
+  LocalReal (&eps1)[2] = dbase.get<LocalReal[2]>("eps1");
+  LocalReal (&mu0)[2] = dbase.get<LocalReal[2]>("mu0");
+  LocalReal (&mu1)[2] = dbase.get<LocalReal[2]>("mu1");
+  
+  const LocalReal c1 = 1./sqrt(eps0[0]*mu0[0]);
+  const LocalReal c2 = 1./sqrt(eps1[0]*mu1[0]);
+  
+  LocalReal sr = s[0], si = s[1]; // -twoPi*kx*c1;
+  
+  std::complex<LocalReal> ss(sr,si); // s = -i omega
+  std::complex<LocalReal> epsHat, epsHat0, epsHat1, muHat, muHat0, muHat1, cHat0, cHat1, eta0, eta1, m0,m1, kx;
+  std::complex<LocalReal>  beta, beta0, beta1;
+  
+
+  kx = k[0] + 1i*k[1];  // complex k, wave-number
+
+  epsHat0 = eps0[0] + 1i*eps0[1];  // complex epsHat
+  muHat0  = mu0[0]  + 1i*mu0[1];  // complex muHat
+  
+  epsHat1 = eps1[0] + 1i*eps1[1];  // complex epsHat
+  muHat1  = mu1[0]  + 1i*mu1[1];  // complex muHat
+  
+
+  cHat0= 1./sqrt(epsHat0*muHat0); 
+  m0   = 1./cHat0;              // index of refraction in the outer domain 
+  eta0 = sqrt(muHat0/epsHat0);     // impedance
+  
+  cHat1= 1./sqrt(epsHat1*muHat1); 
+  m1   = 1./cHat1;              // index of refraction in the inner domain 
+  eta1 = sqrt(muHat1/epsHat1);    // impedance
+
+				   
+  // beta0 = m0*kx;   // complex wave number (outer domain) 
+  // beta1 = m1*kx;   // complex wave number (inner domain)
+
+  // *new* July 9, 2019 -- fix for Re(s) > 0 
+  //    beta^2 = - s^2 * epsHat(s) * muHat(s) 
+  beta0 = sqrt( -ss*ss*epsHat0*muHat0 );   // complex wave number (outer domain) 
+  beta1 = sqrt( -ss*ss*epsHat1*muHat1 );   // complex wave number (outer domain) 
+
+  LocalReal deps1  = 10.*pow(REAL_EPSILON,1./2.);   // delta to compute 1st derivatives by differences 
+  LocalReal deps2  = 10.*pow(REAL_EPSILON,1./3.);   // delta compute 2nd derivatives by differences 
+
+  LocalReal xx0,yy0,zz0, x[3], xm[3], xp[3], Ev[6], Hv[6];
+  std::complex<LocalReal> E[3],Em[3],Ep[3], Ex[3],Ey[3], Ez[3], Exx[3],Eyy[3], Ezz[3], DeltaE[3];
+  std::complex<LocalReal> H[3],Hm[3],Hp[3], Hx[3],Hy[3], Hz[3], Hxx[3],Hyy[3], Hzz[3], DeltaH[3];
+
+  for( int ip=0; ip<numDomains; ip++ )
+  {
+    if( ip==0 )
+    {  // outside 
+       x[0]=1.; x[1]=1.; x[2]=1.;  beta=beta0; epsHat=epsHat0; muHat=muHat0; 
+    }
+    else
+    { // inside 
+       x[0]=.5; x[1]=.5; x[2]=.5;  beta=beta1; epsHat=epsHat1; muHat=muHat1; 
+    }
+    
+    // To do: Make a macro to eval and return complex values 
+
+// ----------------------------------------------------------------
+// Macro: Compute 2nd derivatives of E and H by differences 
+// ----------------------------------------------------------------
+#beginMacro computeSecondDeriv( dx0,dx1,dx2, Exx,Hxx )
+    eval( x, Ev,Hv );
+    for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+
+    xm[0]=x[0]-dx0; xm[1]=x[1]-dx1; xm[2]=x[2]-dx2;
+    eval( xm, Ev,Hv );
+    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+
+    xp[0]=x[0]+dx0; xp[1]=x[1]+dx1; xp[2]=x[2]+dx2;
+    eval( xp, Ev,Hv );
+    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    
+    for( int i=0; i<3; i++ ) { Exx[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hxx[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
+#endMacro     
+
+// ----------------------------------------------------------------
+// Macro: Compute 1st derivatives of E and H by differences 
+// ----------------------------------------------------------------
+#beginMacro computeFirstDeriv( dx0,dx1,dx2, Ex,Hx )
+    xm[0]=x[0]-dx0; xm[1]=x[1]-dx1; xm[2]=x[2]-dx2;
+    eval( xm, Ev,Hv );
+    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+
+    xp[0]=x[0]+dx0; xp[1]=x[1]+dx1; xp[2]=x[2]+dx2;
+    eval( xp, Ev,Hv );
+    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    
+    for( int i=0; i<3; i++ ) { Ex[i]=  (Ep[i]-Em[i])/(2.*deps1); Hx[i]=  (Hp[i]-Hm[i])/(2.*deps1);} // 
+#endMacro     
+
+    
+    // eval( x, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+
+    // xm[0]=x[0]-deps2; xm[1]=x[1]; xm[2]=x[2];
+    // eval( xm, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+
+    // xp[0]=x[0]+deps2; xp[1]=x[1]; xp[2]=x[2];
+    // eval( xp, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    
+    // for( int i=0; i<3; i++ ) { Exx[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hxx[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
+
+    // macro calls 
+    computeSecondDeriv( deps2,0,0, Exx,Hxx );
+    computeSecondDeriv( 0,deps2,0, Eyy,Hyy );
+    computeSecondDeriv( 0,0,deps2, Ezz,Hzz );
+     
+    // macro calls
+    computeFirstDeriv( deps1,0,0, Ex,Hx );
+    computeFirstDeriv( 0,deps1,0, Ey,Hy );
+    computeFirstDeriv( 0,0,deps1, Ez,Hz );
+     
+
+    // xm[0]=x[0]; xm[1]=x[1]-deps2; xm[2]=x[2];
+    // eval( xm, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; } //
+
+    // xp[0]=x[0]; xp[1]=x[1]+deps2; xp[2]=x[2];
+    // eval( xp, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; } //
+    
+    // for( int i=0; i<3; i++ ) { Eyy[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); } // 
+    
+
+    // xm[0]=x[0]; xm[1]=x[1]; xm[2]=x[2]-deps2;
+    // eval( xm, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; } //
+
+    // xp[0]=x[0]; xp[1]=x[1]; xp[2]=x[2]+deps2;
+    // eval( xp, Ev,Hv );
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; } //
+    
+    // for( int i=0; i<3; i++ ) { Ezz[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); } // 
+    
+    
+    // Check E wave equation:   
+    //     Delta Ev = s^2 epsHat muHat Ev = - m^2 k^2 Ev = - beta^2 Ev 
+    for( int i=0; i<3; i++ ) { DeltaE[i]= Exx[i]+Eyy[i]+Ezz[i]; DeltaH[i]= Hxx[i]+Hyy[i]+Hzz[i]; } //
+
+    LocalReal normDeltaE =  max(abs(DeltaE[0]),abs(DeltaE[1]),abs(DeltaE[2]));
+    LocalReal errE = max( abs( DeltaE[0] + beta*beta*E[0] ),
+                          abs( DeltaE[1] + beta*beta*E[1] ),
+                          abs( DeltaE[2] + beta*beta*E[2] ) )/normDeltaE;
+    
+    maxErr = max(maxErr,errE);
+
+    LocalReal normDeltaH =  max(abs(DeltaH[0]),abs(DeltaH[1]),abs(DeltaH[2]));
+    LocalReal errH = max( abs( DeltaH[0] + beta*beta*H[0] ),
+                          abs( DeltaH[1] + beta*beta*H[1] ),
+                          abs( DeltaH[2] + beta*beta*H[2] ) )/normDeltaH;
+    
+    maxErr = max(maxErr,errH);
+
+
+    //  Check E FOS equation:    eps*E_t = curl(H) 
+    //  s epsHat E = curl( H )
+    std::complex<LocalReal> curlE[3], curlH[3], EtHat[3], HtHat[3];
+    LocalReal normCurlH, normCurlE, errEt, errHt;
+    curlH[0] = Hy[2] - Hz[1];
+    curlH[1] = Hz[0] - Hx[2];
+    curlH[2] = Hx[1] - Hy[0];
+
+    normCurlH = max(abs(curlH[0]),abs(curlH[1]),abs(curlH[2])); 
+    for( int i=0; i<3; i++ ){ EtHat[i] = ss*epsHat*E[i] - curlH[i]; } // 
+    errEt = max( abs(EtHat[0]),abs(EtHat[1]),abs(EtHat[2]) )/normCurlH;
+
+    maxErr = max(maxErr,errEt);
+
+
+    // Check H FOS equation:
+    //     mu*H_t = -curl(E) 
+    //  s muHat H = -curl( E )
+    curlE[0] = Ey[2] - Ez[1];
+    curlE[1] = Ez[0] - Ex[2];
+    curlE[2] = Ex[1] - Ey[0];
+
+    normCurlE = max(abs(curlE[0]),abs(curlE[1]),abs(curlE[2])); 
+    for( int i=0; i<3; i++ ){ HtHat[i] = ss*muHat*H[i] + curlE[i]; } 
+    errHt = max( abs(HtHat[0]),abs(HtHat[1]),abs(HtHat[2]) )/normCurlE;
+
+    maxErr = max(maxErr,errHt);
+
+    // printF("(1) maxErr=%g\n",maxErr);
+
+    printF(" Point: (x,y,z)=(%g,%g,%g) beta%d=(%g,%g) s=(%g,%g) epsHat%d=(%g,%g)\n",
+           x[0],x[1],x[2],ip,std::real(beta),std::imag(beta),std::real(ss),std::imag(ss),ip,std::real(epsHat),std::imag(epsHat));
+    printF(" SOS(E):  |Delta(E)|=%9.2e, | Delta(E) + beta^2*E|/|Delta(E)| =%9.2e\n",normDeltaE,errE);
+    printF(" SOS(H):  |Delta(H)|=%9.2e, | Delta(H) + beta^2*H|/|Delta(H)| =%9.2e\n",normDeltaH,errH);
+    printF(" FOS(E):  |curl(H) |=%9.2e, | s*eps*E - curl(H)  |/|curl(H) | =%9.2e\n",normCurlH,errEt);
+    printF(" FOS(H):  |curl(E) |=%9.2e, | s*mu*H + curl(E)   |/|curl(E) | =%9.2e\n",normCurlE,errHt);
+    if( false )
+    {
+      for( int i=0; i<3; i++ )
+      {
+        printF(" i=%d: DeltaE = (%g,%g) beta^2*E=(%g,%g) \n",i,
+               std::real(DeltaE[i]),std::imag(DeltaE[i]),
+               std::real(beta*beta*E[i]),std::imag(beta*beta*E[i]));
+     
+      }
+    }
+    // eval( xp, Evp,Hvp );
+
+  } // end for ip
+
+
+  if( numDomains== 1 )
+  {
+     //  --------------- PEC SPHERE CHECK BC's -------------
+    LocalReal theta,phi;
+    std::complex<LocalReal> Er,Etheta,Ephi,Hr,Htheta,Hphi;
+   
+    for( int ip=0; ip<=1; ip++ ) //  % check a few points 
+    {
+      if( ip==0 ) 
+      {
+        theta=Pi/4;
+        phi = Pi/4; 
+      }
+      else
+      {
+        theta=Pi/3.;
+        phi = 2.*Pi/5;
+      }
+
+      LocalReal epsr=1.e-8; 
+      // Evaluate just outside 
+      LocalReal r0 = a+epsr;   
+      x[0] = r0*sin(theta)*cos(phi);
+      x[1] = r0*sin(theta)*sin(phi);
+      x[2] = r0*cos(theta); 
+      eval( x, Ev,Hv );
+      for( int i=0; i<3; i++ ) { E[i]=  Ev[i]+1i*Ev[i+3]; H[i]=  Hv[i]+1i*Hv[i+3]; } //
+
+      // thetaHat: 
+      LocalReal atx = cos(theta)*cos(phi);
+      LocalReal aty = cos(theta)*sin(phi);
+      LocalReal atz = -sin(theta);
+
+      Etheta = atx*E[0]+aty*E[1]+atz*E[2]; 
+      Htheta = atx*H[0]+aty*H[1]+atz*H[2]; 
+
+      // phiHat: 
+      LocalReal apx = -sin(theta)*sin(phi);
+      LocalReal apy =  sin(theta)*cos(phi);
+      LocalReal apz = 0;;
+      Ephi = apx*E[0]+apy*E[1]+apz*E[2]; 
+      Hphi = apx*H[0]+apy*H[1]+apz*H[2]; 
+
+      // rHat:
+      LocalReal arx = sin(theta)*cos(phi);
+      LocalReal ary = sin(theta)*sin(phi);
+      LocalReal arz = cos(theta);
+      Er = arx*E[0]+ary*E[1]+arz*E[2]; 
+      Hr = arx*H[0]+ary*H[1]+arz*H[2]; 
+
+      printF("PEC BC:: theta=%6.3g pi, phi=%6.3g pi: \n"
+             "   Er=%9.2e, Etheta=%9.2e, Ephi=%9.2e\n",
+             theta/Pi,phi/Pi,abs(Er),abs(Etheta),abs(Ephi));
+      maxErr = max(maxErr,abs(Etheta),abs(Ephi));
+
+      printF("   Hr=%9.2e, Htheta=%9.2e, Hphi=%9.2e\n",
+             abs(Hr),abs(Htheta),abs(Hphi));
+      // NOTE: PEC BC for H is n.Hv = 0 
+      maxErr = max(maxErr,abs(Hr));
+
+      // printF("(2) maxErr=%g\n",maxErr);
+      
+    } // end ip   
+
+  }
+  else
+  {
+    // --- DIELECTRIC SPHERE : CHECK INTERFACE JUMP CONDITIONS -------------
+    LocalReal theta,phi;
+    std::complex<LocalReal> Er,Etheta,Ephi,Hr,Htheta,Hphi;
+   
+    for( int ip=0; ip<=1; ip++ ) //  % check a few points 
+    {
+      if( ip==0 ) 
+      {
+        theta=Pi/4;
+        phi = Pi/4; 
+      }
+      else
+      {
+        theta=Pi/3.;
+        phi = 2.*Pi/5;
+      }
+
+      LocalReal epsr=1.e-8; 
+      // Evaluate just outside 
+      LocalReal r0 = a+epsr;   
+      x[0] = r0*sin(theta)*cos(phi);
+      x[1] = r0*sin(theta)*sin(phi);
+      x[2] = r0*cos(theta); 
+      eval( x, Ev,Hv );
+      for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]=  Hv[i]+1i*Hv[i+3]; } //
+
+      // Evaluate just inside
+      r0 = a-epsr;   
+      x[0] = r0*sin(theta)*cos(phi);
+      x[1] = r0*sin(theta)*sin(phi);
+      x[2] = r0*cos(theta); 
+      eval( x, Ev,Hv );
+      for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+
+      // E = jump in E : [E] 
+      for( int i=0; i<3; i++ ) { E[i]= Ep[i]-Em[i];  H[i]= Hp[i]-Hm[i]; } //
+
+      // thetaHat: 
+      LocalReal atx = cos(theta)*cos(phi);
+      LocalReal aty = cos(theta)*sin(phi);
+      LocalReal atz = -sin(theta);
+
+      Etheta = atx*E[0]+aty*E[1]+atz*E[2]; 
+      Htheta = atx*H[0]+aty*H[1]+atz*H[2]; 
+
+      // phiHat: 
+      LocalReal apx = -sin(theta)*sin(phi);
+      LocalReal apy =  sin(theta)*cos(phi);
+      LocalReal apz = 0;;
+      Ephi = apx*E[0]+apy*E[1]+apz*E[2]; 
+      Hphi = apx*H[0]+apy*H[1]+apz*H[2]; 
+
+      // rHat:
+      LocalReal arx = sin(theta)*cos(phi);
+      LocalReal ary = sin(theta)*sin(phi);
+      LocalReal arz = cos(theta);
+      Er = arx*E[0]+ary*E[1]+arz*E[2]; 
+      Hr = arx*H[0]+ary*H[1]+arz*H[2]; 
+
+      printF("JUMPS: theta=%6.3g pi, phi=%6.3g pi: \n"
+             "   [Er]=%9.2e, [Etheta]=%9.2e, [Ephi]=%9.2e\n",
+             theta/Pi,phi/Pi,abs(Er),abs(Etheta),abs(Ephi));
+      maxErr = max(maxErr,abs(Etheta),abs(Ephi));
+
+      printF("   [Hr]=%9.2e, [Htheta]=%9.2e, [Hphi]=%9.2e\n",
+                abs(Hr),abs(Htheta),abs(Hphi));
+      maxErr = max(maxErr,abs(Htheta),abs(Hphi));
+
+
+    } // end ip   
+  }
+  
+  
+  
+  printF("\n Max-error in tests = %9.2e. TESTS %s.\n",maxErr,(maxErr<1.e-5 ? "PASSED" : "***FAILED***"));
+  
+  printF("\n------------ FINSHED CHECK EQUATIONS ------------\n\n");
+
+
+/* ----- MATLAB VERSION --------
+  for ip=1:2
+    if ip==1 
+      % OUTSIDE 
+      xx0=1.5; yy0=1.5; zz0=0.;  beta=beta0; epsHat=epsHat0; muHat=muHat0; 
+    else
+      % INSIDE
+      xx0=.5; yy0=.5; zz0=0.;    beta=beta1; epsHat=epsHat1; muHat=muHat1; 
+    end
+    
+    deps1  = eps^(1./2.);   % delta to compute 1st derivatives by differences 
+    deps2  = eps^(1./3.);   % delta compute 2nd derivatives by differences 
+    
+    [Ev , Hv ] = evalDieSphere( xx0      ,yy0,zz0 );
+    [Evm, Hvm] = evalDieSphere( xx0-deps1,yy0,zz0 );
+    [Evp, Hvp] = evalDieSphere( xx0+deps1,yy0,zz0 );
+    Evx = (Evp-Ev)./deps1; 
+    Hvx = (Hvp-Hv)./deps1; 
+    [Evm, Hvm] = evalDieSphere( xx0-deps2,yy0,zz0 );
+    [Evp, Hvp] = evalDieSphere( xx0+deps2,yy0,zz0 );
+    Evxx = (Evp-2*Ev+Evm)./(deps2^2); 
+    Hvxx = (Hvp-2*Hv+Hvm)./(deps2^2); 
+  
+    [Evm, Hvm] = evalDieSphere( xx0,yy0-deps1,zz0 );
+    [Evp, Hvp] = evalDieSphere( xx0,yy0+deps1,zz0 );
+    Evy = (Evp-Ev)./deps1; 
+    Hvy = (Hvp-Hv)./deps1; 
+    [Evm, Hvm] = evalDieSphere( xx0,yy0-deps2,zz0 );
+    [Evp, Hvp] = evalDieSphere( xx0,yy0+deps2,zz0 );
+    Evyy = (Evp-2*Ev+Evm)./(deps2^2); 
+    Hvyy = (Hvp-2*Hv+Hvm)./(deps2^2); 
+  
+    [Evm, Hvm] = evalDieSphere( xx0,yy0,zz0-deps1 );
+    [Evp, Hvp] = evalDieSphere( xx0,yy0,zz0+deps1 );
+    Evz = (Evp-Ev)./deps1; 
+    Hvz = (Hvp-Hv)./deps1; 
+    [Evm, Hvm] = evalDieSphere( xx0,yy0,zz0-deps2 );
+    [Evp, Hvp] = evalDieSphere( xx0,yy0,zz0+deps2 );
+    Evzz = (Evp-2*Ev+Evm)./(deps2^2); 
+    Hvzz = (Hvp-2*Hv+Hvm)./(deps2^2); 
+  
+    % Check E wave equation:   
+    %    Delta Ev = s^2 epsHat muHat Ev = - m^2 k^2 Ev = - beta^2 Ev 
+    DeltaE(1:3) = Evxx(1:3) + Evyy(1:3) + Evzz(1:3)  + 1i*(  Evxx(4:6) + Evyy(4:6) + Evzz(4:6) ); % Complex Delta(E) 
+    E(1:3) = Ev(1:3) + 1i*Ev(4:6);    % complex E 
+    normDeltaE =  max(abs(DeltaE));
+    errE = max(abs( DeltaE + beta^2*E ))/normDeltaE;
+
+    % Check H wave equation
+    DeltaH(1:3) = Hvxx(1:3) + Hvyy(1:3) + Hvzz(1:3)  + 1i*(  Hvxx(4:6) + Hvyy(4:6) + Hvzz(4:6) ); % Complex Delta(H) 
+    H(1:3) = Hv(1:3) + 1i*Hv(4:6);    % complex H  
+    normDeltaH =  max(abs(DeltaH));
+    errH = max(abs( DeltaH + beta^2*H ))/normDeltaH;
+ 
+    % Check E FOS equation:    eps*E_t = curl(H) 
+    %  s epsHat E = curl( H )
+    Hx = Hvx(1:3) + 1i*Hvx(4:6);    % complex H.x
+    Hy = Hvy(1:3) + 1i*Hvy(4:6);    % complex H.y
+    Hz = Hvz(1:3) + 1i*Hvz(4:6);    % complex H.z
+    curlH(1) = Hy(3) - Hz(2);
+    curlH(2) = Hz(1) - Hx(3);
+    curlH(3) = Hx(2) - Hy(1);
+
+    normCurlH = max(abs(curlH)); 
+    EtHat = s*epsHat*E - curlH; 
+    errEt = max( abs(EtHat) )/normCurlH;
+
+    % Check H FOS equation:
+    %     mu*H_t = -curl(E) 
+    %  s muHat H = -curl( E )
+    Ex = Evx(1:3) + 1i*Evx(4:6);    % complex E.x
+    Ey = Evy(1:3) + 1i*Evy(4:6);    % complex E.y
+    Ez = Evz(1:3) + 1i*Evz(4:6);    % complex E.z
+    curlE(1) = Ey(3) - Ez(2);
+    curlE(2) = Ez(1) - Ex(3);
+    curlE(3) = Ex(2) - Ey(1);
+
+    normCurlE = max(abs(curlE)); 
+    HtHat = s*muHat*H + curlE; 
+    errHt = max( abs(HtHat) )/normCurlE;
+
+    fprintf(' Point: (x,y,z)=(%g,%g,%g) beta%d=(%g,%g) s=(%g,%g) epsHat%d=(%g,%g)\n',...
+          xx0,yy0,zz0,ip-1,real(beta),imag(beta),real(s),imag(s),ip-1,real(epsHat),imag(epsHat));
+    fprintf(' SOS(E):  |Delta(E)|=%9.2e, | Delta(E) + beta^2*E|/|Delta(E)| =%9.2e\n',normDeltaE,errE);
+    fprintf(' SOS(H):  |Delta(H)|=%9.2e, | Delta(H) + beta^2*H|/|Delta(H)| =%9.2e\n',normDeltaH,errH);
+    fprintf(' FOS(E):  |curl(H) |=%9.2e, | s*eps*E - curl(H)  |/|curl(H) | =%9.2e (%9.3e,%9.3e,%9.3e)\n',...
+            normCurlH,errEt,EtHat(1),EtHat(2),EtHat(3));
+    fprintf(' FOS(H):  |curl(E) |=%9.2e, | s*mu*H + curl(E)   |/|curl(E) | =%9.2e (%9.3e,%9.3e,%9.3e)\n',...
+            normCurlE,errHt,HtHat(1),HtHat(2),HtHat(3));
+  end
+  
+  % --------------- CHECK JUMP CONDITIONS -------------
+  for ip=1:2  % check a few points 
+    if ip==1 
+     theta=pi/4;
+     phi = pi/4; 
+    else
+     theta=pi/3;
+     phi = 2*pi/5;
+    end
+
+    epsr=1.e-8; 
+    % Evaluate just outside 
+    r0 = a+epsr;   
+    xx0 = r0*sin(theta)*cos(phi);
+    yy0 = r0*sin(theta)*sin(phi);
+    zz0 = r0*cos(theta); 
+    [Evm, Hvm] = evalDieSphere( xx0,yy0,zz0 );
+
+    % Evaluate just inside
+    r1 = a-epsr;   % inside 
+    xx1 = r1*sin(theta)*cos(phi);
+    yy1 = r1*sin(theta)*sin(phi);
+    zz1 = r1*cos(theta); 
+    [Evp, Hvp] = evalDieSphere( xx1,yy1,zz1 );
+
+    for side=1:2
+      if side==1 
+        E(1:3) = Evm(1:3) + 1i*Evm(4:6);    % complex E
+        H(1:3) = Hvm(1:3) + 1i*Hvm(4:6);    % complex H
+      else
+        E(1:3) = Evp(1:3) + 1i*Evp(4:6);    % complex E
+        H(1:3) = Hvp(1:3) + 1i*Hvp(4:6);    % complex H
+      end 
+
+      % thetaHat: 
+      atx = cos(theta)*cos(phi);
+      aty = cos(theta)*sin(phi);
+      atz = -sin(theta);
+      Etheta(side) = atx*E(1)+aty*E(2)+atz*E(3); 
+      Htheta(side) = atx*H(1)+aty*H(2)+atz*H(3); 
+      % phiHat: 
+      apx = -sin(theta)*sin(phi);
+      apy =  sin(theta)*cos(phi);
+      apz = 0;;
+      Ephi(side) = apx*E(1)+apy*E(2)+apz*E(3); 
+      Hphi(side) = apx*H(1)+apy*H(2)+apz*H(3); 
+      % rHat:
+      arx = sin(theta)*cos(phi);
+      ary = sin(theta)*sin(phi);
+      arz = cos(theta);
+      Er(side) = arx*E(1)+ary*E(2)+arz*E(3); 
+      Hr(side) = arx*H(1)+ary*H(2)+arz*H(3); 
+    end
+    fprintf('JUMPS: theta=%6.3g pi, phi=%6.3g pi, [Er]=%9.2e, [Etheta]=%9.2e, [Ephi]=%9.2e\n',...
+              theta/pi,phi/pi,Er(2)-Er(1),Etheta(2)-Etheta(1),Ephi(2)-Ephi(1));
+    fprintf('JUMPS: theta=%6.3g pi, phi=%6.3g pi, [Hr]=%9.2e, [Htheta]=%9.2e, [Hphi]=%9.2e\n',...
+              theta/pi,phi/pi,Hr(2)-Hr(1),Htheta(2)-Htheta(1),Hphi(2)-Hphi(1));
+  end% end ip 
+
+
+  ----- */
+
+// std::complex<LocalReal> I(0.0,1.0); 
+  // kHatr = std::real(kHat);
+  // kHati = std::imag(kHat);
+  
+  return 0;
+}
+
+
+
+// =======================================================================================
+///  \brief Compute some derived quanities 
+/// \param beta0v[2], beta1v[2] (output) : phase parameters beta= m*k
+// =======================================================================================
+int SphereExactSolutions::
+getDispersiveParameters( LocalReal beta0v[2], LocalReal beta1v[2] )
+{
+
+
+  // const int & numDomains = dbase.get<int>("numDomains");
+
+  // const LocalReal &a =dbase.get<LocalReal>("radius");
+
+  LocalReal (&s)[2] = dbase.get<LocalReal[2]>("s");
+  LocalReal (&k)[2] = dbase.get<LocalReal[2]>("k");
+
+  LocalReal (&eps0)[2] = dbase.get<LocalReal[2]>("eps0");
+  LocalReal (&eps1)[2] = dbase.get<LocalReal[2]>("eps1");
+  LocalReal (&mu0)[2] = dbase.get<LocalReal[2]>("mu0");
+  LocalReal (&mu1)[2] = dbase.get<LocalReal[2]>("mu1");
+  
+  // const LocalReal c1 = 1./sqrt(eps0[0]*mu0[0]);
+  // const LocalReal c2 = 1./sqrt(eps1[0]*mu1[0]);
+  
+  LocalReal sr = s[0], si = s[1]; // -twoPi*kx*c1;
+  
+  std::complex<LocalReal> ss(sr,si); // s = -i omega
+  std::complex<LocalReal> epsHat, epsHat0, epsHat1, muHat, muHat0, muHat1, cHat0, cHat1, eta0, eta1, m0,m1, kx;
+  std::complex<LocalReal>  beta, beta0, beta1;
+  
+  // *** WE COULD RETURN OTHER QUANTITIES TOO 
+
+  kx = k[0] + 1i*k[1];  // complex k, wave-number
+
+  epsHat0 = eps0[0] + 1i*eps0[1];  // complex epsHat
+  muHat0  = mu0[0]  + 1i*mu0[1];  // complex muHat
+  
+  epsHat1 = eps1[0] + 1i*eps1[1];  // complex epsHat
+  muHat1  = mu1[0]  + 1i*mu1[1];  // complex muHat
+  
+
+  cHat0= 1./sqrt(epsHat0*muHat0); 
+  m0   = 1./cHat0;              // index of refraction in the outer domain 
+  eta0 = sqrt(muHat0/epsHat0);     // impedance
+  
+  cHat1= 1./sqrt(epsHat1*muHat1); 
+  m1   = 1./cHat1;              // index of refraction in the inner domain 
+  eta1 = sqrt(muHat1/epsHat1);    // impedance
+
+				   
+  beta0 = m0*kx;   // complex wave number (outer domain) 
+
+  beta0v[0]=std::real(beta0);
+  beta0v[1]=std::imag(beta0);
+
+  beta1v[0]=std::real(beta0);
+  beta1v[1]=std::imag(beta0);
+
+
+  return 0;
+}

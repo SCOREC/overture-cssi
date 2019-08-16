@@ -666,6 +666,12 @@ smoothJacobi(const int & level, const int & grid, int smootherChoice /* = 0 */ )
     
     realArray & uu = u;
     
+
+  // *wdh* June 26, 2019 -- use correct order of accuracy 
+    const int & orderOfCoarseLevelSolves = parameters.dbase.get<int>( "orderOfCoarseLevels");
+    const int orderOfThisLevel = level==0 ? orderOfAccuracy : orderOfCoarseLevelSolves;
+
+
     Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
   // ---- Determine Index's for interior points        ----
   // ---- include periodic edges in smooth computation ---
@@ -737,7 +743,7 @@ smoothJacobi(const int & level, const int & grid, int smootherChoice /* = 0 */ )
         int numExtraParallelGhost=INT_MAX;
         for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
         {
-            hw[axis]=orderOfAccuracy/2;
+            hw[axis]=orderOfThisLevel/2;
             numExtraParallelGhost = min(numExtraParallelGhost,mask.getGhostBoundaryWidth(axis)-hw[axis]);
         }
 
@@ -833,7 +839,7 @@ smoothJacobi(const int & level, const int & grid, int smootherChoice /* = 0 */ )
                    		       *getDataPointer(cLocal),
                    		       *up, *vp,
                    		       *getDataPointer(maskLocal), 
-                   		       option, orderOfAccuracy, sparseStencil, *pcc, *vcp, dx[0], omega,
+                   		       option, orderOfThisLevel, sparseStencil, *pcc, *vcp, dx[0], omega,
                                               bc(0,0),np,ndip,ip, ipar[0] );
 
             tm[timeForRelaxInSmooth]+=getCPU()-time0;

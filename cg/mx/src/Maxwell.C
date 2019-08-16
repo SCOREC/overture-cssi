@@ -2079,6 +2079,9 @@ buildDispersionParametersDialog(DialogData & dialog )
   textCommands[nt] = "GDM mode:";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i (-1=use default)",modeGDM); nt++; 
 
+  textCommands[nt] = "save material file:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s","myMaterial.txt"); nt++; 
+
   // null strings terminal list
   assert( nt<numberOfTextStrings );
   textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
@@ -2124,7 +2127,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int modeGDM=-1;  // eigenmode number, choice of root "s"
   aString gdmDomainName="all";
   aString materialFile="none";
-
+  aString materialFileToSave="myMaterial.txt";
+  
   real & velocityScale = dbase.get<real>("velocityScale");
   real & lengthScale = dbase.get<real>("lengthScale"); 
 
@@ -3244,6 +3248,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( dispersionParametersDialog.getTextValue(answer,"GDM domain name:","%s",gdmDomainName) )
     {
       printF("Setting GDM domain name = [%s]\n",(const char*)gdmDomainName);
+      // Initialize dispersionn parameters
+      initializeDispersionParameters( gdmDomainName );
     }
     else if( dispersionParametersDialog.getTextValue(answer,"number of polarization vectors:","%i",numberOfPolarizationVectors) )
     {
@@ -3278,9 +3284,15 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
     else if( dispersionParametersDialog.getTextValue(answer,"material file:","%s",materialFile) )
     {
-      setDispersionParameters( gdmDomainName, materialFile, numberOfPolarizationVectors,modeGDM );
+      // Read dispersive material parameters from a file 
+      readDispersionParameters( gdmDomainName, materialFile, numberOfPolarizationVectors,modeGDM );
     }
-
+    else if( dispersionParametersDialog.getTextValue(answer,"save material file:","%s",materialFileToSave) ) 
+    {
+      // Write dispersive material parameters to a file:
+      writeDispersionParameters( gdmDomainName, materialFileToSave );
+    }
+    
     
 
     // ** old way ***
@@ -3387,6 +3399,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
             // real a0=omegap, a1=0., b0=0., b1=gamma;
             dmp.numberOfPolarizationVectors=1; // Do this for now 
             dmp.setParameters( a0,a1,b0,b1 );
+
+	    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+	    {
+	      if( cg.domainNumber(grid)==domain )
+	      {
+		real alphaP=1./epsGrid(grid);
+		dmp.setEpsInf(epsGrid(grid));
+                dmp.setMuInf(muGrid(grid));
+		dmp.setParameter( alphaP );
+		break;
+	      }
+        
+	    }
           
             // old way: 
             dmp.gamma=gamma;
@@ -3683,8 +3708,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   
 
   if( true )
-    printF("\n >>>> plane wave solution: (kx,ky,kz)=(%8.2e,%8.2e,%8.2e), omega=%8.2e eps=%g mu=%g \n"
-            "     E: a=(%8.2e,%8.2e,%8.2e), H: b=(%8.2e,%8.2e,%8.2e)\n",
+    printF("\n >>>> plane wave solution: (kx,ky,kz)=(%12.6e,%12.6e,%12.6e), omega=%12.6e eps=%g mu=%g \n"
+            "     E: a=(%12.6e,%12.6e,%12.6e), H: b=(%12.6e,%12.6e,%12.6e)\n",
            kx,ky,kz,omegaTimeHarmonic,eps,mu,pwc[0],pwc[1],pwc[2],pwc[3],pwc[4],pwc[5]);
 
   // **** now build grid functions *****
@@ -3940,6 +3965,84 @@ Maxwell::getCGField(Maxwell::FieldEnum f, int tn)
 
 
 //====================================================================================
+/// \brief Initialize dispersion parameters
+//====================================================================================
+int Maxwell::
+initializeDispersionParameters( const aString & domainName )
+{
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+  
+
+  printF("--MX-- initializeDispersionParameters: domainName=[%s] \n",(const char*)domainName);
+  
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  int domainStart=-1, domainEnd=-1;
+  if( domainName == "all" )
+  {
+    domainStart=0; domainEnd=cg.numberOfDomains()-1;
+  }
+  else
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      if( cg.getDomainName(domain)==domainName )
+      {
+        printF("--MX:SDP-- setting GDM parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+        domainStart=domainEnd=domain;
+        break;
+      }
+    }
+  }
+      
+  if( domainStart<0  )
+  {
+    printF("--MX:IDP-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+    return 1;
+  }
+  else
+  {
+    // --- Initialize parameters for the dispersion model ---
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // --- allocate the dispersion material parameters vector ---
+    if( dmpVector.size()<cg.numberOfDomains() )
+    {
+      dmpVector.resize(cg.numberOfDomains());
+    }
+
+    for( int domain=domainStart; domain<=domainEnd; domain++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[domain];
+      dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
+
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+        if( cg.domainNumber(grid)==domain )
+        {
+          dmp.setEpsInf(epsGrid(grid));
+          dmp.setMuInf(muGrid(grid));
+
+          const real alphaP=1./epsGrid(grid); // alphaP is an historical parameter
+          dmp.setParameter( alphaP );
+          break;
+        }
+        
+      }
+      
+    }
+  }
+
+  return 0;
+}
+//====================================================================================
 /// \brief Assign parameters in the dispersion models.
 //====================================================================================
 int Maxwell::
@@ -4014,6 +4117,8 @@ setDispersionParameters( const aString & domainName, int numberOfPolarizationVec
         if( cg.domainNumber(grid)==domain )
         {
           real alphaP=1./epsGrid(grid);
+          dmp.setEpsInf(epsGrid(grid));
+          dmp.setMuInf(muGrid(grid));
           dmp.setParameter( alphaP );
           break;
         }
@@ -4171,10 +4276,10 @@ setDispersionParameters( const aString & domainName, int modeGDM )
 
 
 //====================================================================================
-/// \brief Assign parameters in the dispersion models.
+/// \brief Read dispersion material parameters from a file.
 //====================================================================================
 int Maxwell::
-setDispersionParameters( const aString & domainName, const aString & materialFile,
+readDispersionParameters( const aString & domainName, const aString & materialFile,
 			 int numberOfPolarizationVectors, int modeGDM )
 {
   if( dispersionModel==noDispersion )
@@ -4254,6 +4359,83 @@ setDispersionParameters( const aString & domainName, const aString & materialFil
 	mu=muGrid(0);
       }
       
+    }
+  }
+
+  return 0;
+}
+
+
+//====================================================================================
+/// \brief Save current dispersion material parameters to a file.
+/// \notes: If domainName="all" then multiple files are written named
+///             "domain%d" + "materialFile"
+//====================================================================================
+int Maxwell::
+writeDispersionParameters( const aString & domainName, const aString & materialFile )
+{
+  if( dispersionModel==noDispersion )
+  {
+    printF("Cgmx:saveDispersionParameters:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
+    return 0;
+  }
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  int domainStart=-1, domainEnd=-1;
+  if( domainName == "all" )
+  {
+    domainStart=0; domainEnd=cg.numberOfDomains()-1;
+  }
+  else
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      if( cg.getDomainName(domain)==domainName )
+      {
+        // printF("--MX:SDP-- setting GDM parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+        domainStart=domainEnd=domain;
+        break;
+      }
+    }
+  }
+      
+  if( domainStart<0  )
+  {
+    printF("--MX:saveDispersionParameters-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+    return 1;
+  }
+  else
+  {
+    // --- Set parameters for the dispersion model ---
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // --- allocate the dispersion material parameters vector ---
+    if( dmpVector.size()<cg.numberOfDomains() )
+    {
+      dmpVector.resize(cg.numberOfDomains());
+    }
+
+    for( int domain=domainStart; domain<=domainEnd; domain++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[domain];
+      
+      aString matFile = materialFile;
+      if( domainEnd>domainStart )
+      {
+        // Choose distinct names when saving multiple domains
+        sPrintF(matFile,"domain%d%s",(const char*)materialFile);
+      }
+      
+
+      printF(" Save dispersive material parameters for domain=[%s] to file=[%s]\n",
+	     (const char*)cg.getDomainName(domain),(const char*)matFile);
+
+      dmp.writeToFile( matFile );
+
     }
   }
 

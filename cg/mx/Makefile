@@ -87,13 +87,21 @@ $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(libCommon)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(CGMX) $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
 
 
+# test program to read a Dispersive Material File
 TESTS += $(BINDIR)trdmf
 
 tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)trdmf $(OBJDIR)trdmf.o $(OBJALL) $(LIBS)
 
-tb: $(OBJDIR)tbm.o $(OBJDIR)DispersiveMaterialParameters.o
-	$(CXX) $(CXX_FLAGS) -o $(BINDIR)tbm $(OBJDIR)tbm.o $(OBJALL) $(LIBS)
+# Test program for exact solutions
+TESTS += $(BINDIR)texact
+
+texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o
+	$(CXX) $(CXX_FLAGS) -o $(BINDIR)texact $(OBJDIR)texact.o $(OBJALL) $(LIBS)
+
+
+# tb: $(OBJDIR)tbm.o $(OBJDIR)DispersiveMaterialParameters.o
+#	$(CXX) $(CXX_FLAGS) -o $(BINDIR)tbm $(OBJDIR)tbm.o $(OBJALL) $(LIBS)
 
 # build the library in cg/common
 $(libCommon):; @cd ../common; $(MAKE) lib

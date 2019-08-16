@@ -1231,40 +1231,47 @@ end if
  a12(e0,10)=-( c2m2y*an1 + (    -c2m2z - (c2m2x*an3-c2m2z*an1)*an1 )/mu2 ) ! coeff of v2(-1)
  a12(e0,11)=-( c2m2z*an1 + ( c2m2y     - (c2m2y*an1-c2m2x*an2)*an1 )/mu2 ) ! coeff of w2(-1)
 
+ ! Bug fixed - July 6, 2019 wdh : Changed "+" to minus "-" in 8 lines below 
+
  ! Equation 1:
  ! (u.x+v.y+w.z)*an2 + ( u1z-w1x - nDotCurlE1*an2)/mu1
  a12(e1,0) = ( c1m1x*an2 + ( c1m1z     - (c1m1z*an2-c1m1y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
- a12(e1,1) = ( c1m1y*an2 + (           - (c1m1x*an3+c1m1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+!a12(e1,1) = ( c1m1y*an2 + (           - (c1m1x*an3+c1m1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+ a12(e1,1) = ( c1m1y*an2 + (           - (c1m1x*an3-c1m1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
  a12(e1,2) = ( c1m1z*an2 + (    -c1m1x - (c1m1y*an1-c1m1x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
 
  a12(e1,3) = ( c1m2x*an2 + ( c1m2z     - (c1m2z*an2-c1m2y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
- a12(e1,4) = ( c1m2y*an2 + (           - (c1m2x*an3+c1m2z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+!a12(e1,4) = ( c1m2y*an2 + (           - (c1m2x*an3+c1m2z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+ a12(e1,4) = ( c1m2y*an2 + (           - (c1m2x*an3-c1m2z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
  a12(e1,5) = ( c1m2z*an2 + (    -c1m2x - (c1m2y*an1-c1m2x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
 
  a12(e1,6) =-( c2m1x*an2 + ( c2m1z     - (c2m1z*an2-c2m1y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
- a12(e1,7) =-( c2m1y*an2 + (           - (c2m1x*an3+c2m1z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+!a12(e1,7) =-( c2m1y*an2 + (           - (c2m1x*an3+c2m1z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+ a12(e1,7) =-( c2m1y*an2 + (           - (c2m1x*an3-c2m1z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
  a12(e1,8) =-( c2m1z*an2 + (    -c2m1x - (c2m1y*an1-c2m1x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
 
  a12(e1,9) =-( c2m2x*an2 + ( c2m2z     - (c2m2z*an2-c2m2y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
- a12(e1,10)=-( c2m2y*an2 + (           - (c2m2x*an3+c2m2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+!a12(e1,10)=-( c2m2y*an2 + (           - (c2m2x*an3+c2m2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+ a12(e1,10)=-( c2m2y*an2 + (           - (c2m2x*an3-c2m2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
  a12(e1,11)=-( c2m2z*an2 + (    -c2m2x - (c2m2y*an1-c2m2x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
 
  ! Equation 2:
  ! (u.x+v.y+w.z)*an3 + ( v1x-u1y - nDotCurlE1*an3)/mu1
  a12(e2,0) = ( c1m1x*an3 + (    -c1m1y - (c1m1z*an2-c1m1y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
- a12(e2,1) = ( c1m1y*an3 + ( c1m1x     - (c1m1x*an3+c1m1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+!a12(e2,1) = ( c1m1y*an3 + ( c1m1x     - (c1m1x*an3+c1m1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+ a12(e2,1) = ( c1m1y*an3 + ( c1m1x     - (c1m1x*an3-c1m1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
  a12(e2,2) = ( c1m1z*an3 + (           - (c1m1y*an1-c1m1x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
 
  a12(e2,3) = ( c1m2x*an3 + (    -c1m2y - (c1m2z*an2-c1m2y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
- a12(e2,4) = ( c1m2y*an3 + ( c1m2x     - (c1m2x*an3+c1m2z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+ a12(e2,4) = ( c1m2y*an3 + ( c1m2x     - (c1m2x*an3-c1m2z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
  a12(e2,5) = ( c1m2z*an3 + (           - (c1m2y*an1-c1m2x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
 
  a12(e2,6) =-( c2m1x*an3 + (    -c2m1y - (c2m1z*an2-c2m1y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
- a12(e2,7) =-( c2m1y*an3 + ( c2m1x     - (c2m1x*an3+c2m1z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+ a12(e2,7) =-( c2m1y*an3 + ( c2m1x     - (c2m1x*an3-c2m1z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
  a12(e2,8) =-( c2m1z*an3 + (           - (c2m1y*an1-c2m1x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
 
  a12(e2,9) =-( c2m2x*an3 + (    -c2m2y - (c2m2z*an2-c2m2y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
- a12(e2,10)=-( c2m2y*an3 + ( c2m2x     - (c2m2x*an3+c2m2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+ a12(e2,10)=-( c2m2y*an3 + ( c2m2x     - (c2m2x*an3-c2m2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
  a12(e2,11)=-( c2m2z*an3 + (           - (c2m2y*an1-c2m2x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
 
  ! Equation 3:
@@ -2007,35 +2014,36 @@ end if
     rxxxx2(axis2,1,1,2,2) = aj2ryyzz
 
     ! coeff of u1(-1) from D.x(Lap), D.y(Lap) and D.z(Lap): (divideb by eps*mu)
-    c1m1x = xLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1 
-    c1m1y = yLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
-    c1m1z = zLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
+    ! dr1a, dr2a : used for avoidInterfaceIterations - tangential spacings are dsBig to eliminate mixed derivatives
+    c1m1x = xLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1 
+    c1m1y = yLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
+    c1m1z = zLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
 
     ! coeff of u1(-2) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    c1m2x = xLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
-    c1m2y = yLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
-    c1m2z = zLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
+    c1m2x = xLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
+    c1m2y = yLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
+    c1m2z = zLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)/epsmu1  
 
 
     ! coeff of u2(-1) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    c2m1x = xLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
-    c2m1y = yLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2 
-    c2m1z = zLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
+    c2m1x = xLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
+    c2m1y = yLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2 
+    c2m1z = zLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
 
     ! coeff of u2(-2) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    c2m2x = xLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
-    c2m2y = yLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
-    c2m2z = zLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
+    c2m2x = xLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
+    c2m2y = yLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
+    c2m2z = zLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)/epsmu2  
 
 
     ! coeff of u1(-1) and u1(-2) from Lap^2
-    clap1m1=lapSqCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)/epsmu1
-    clap1m2=lapSqCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)/epsmu1
+    clap1m1=lapSqCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)/epsmu1
+    clap1m2=lapSqCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)/epsmu1
 
 
     ! coeff of u2(-1) and u2(-2) from Lap^2
-    clap2m1=lapSqCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)/epsmu2
-    clap2m2=lapSqCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)/epsmu2
+    clap2m1=lapSqCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)/epsmu2
+    clap2m2=lapSqCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)/epsmu2
 
     ! write(debugFile,'(" --> 3d-order4-c: i1,i2,i3=",3i4," c1m1x,c1m1y,c1m1z,clap1m1,clap1m2=",12e10.2)') i1,i2,i3,c1m1x,c1m1y,c1m1z,clap1m1,clap1m2
 
@@ -2070,7 +2078,7 @@ end if
 
 
     ! --- EVALUATE matrix coefficients by delta function approach ----
-    if( .true. .and. checkCoeff.eq.1 )then
+    if( .false. .and. checkCoeff.eq.1 )then
       numberOfEquations=12
       evalCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a12,evalInterfaceEquations34c )
     end if
@@ -2184,7 +2192,7 @@ end if
      do n=0,11
        res=max(res,abs(f(n)))
      end do
-     if( res.gt.1.e-9 )then
+     if( .false. .and. res.gt.1.e-9 )then
        write(debugFile,'(" --> ERR: 3d-order4-c: it=",i3," i1,i2,i3=",3i4," f(re-eval)=",12e10.2," max-res=",1pe9.2)') it,i1,i2,i3,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8),f(9),f(10),f(11),res
      end if
 
@@ -2193,7 +2201,7 @@ end if
      do n=0,11
        res=max(res,abs(q(n)-f(n)))
      end do
-     if( res.gt.1.e-5 )then
+     if( .false. .and. res.gt.1.e-5 )then
        write(debugFile,'(" --> DIFF: 3d-order4-c: it=",i3," i1,i2,i3=",3i4," q-f=",12e10.2," max(q-f)=",1pe9.2)') it,i1,i2,i3,(q(n)-f(n),n=0,11),res
      end if
 
@@ -3126,40 +3134,41 @@ end if
  a12(e0,10)=-( c2m2y*an1 + (    -c2m2z - (c2m2x*an3-c2m2z*an1)*an1 )/mu2 ) ! coeff of v2(-1)
  a12(e0,11)=-( c2m2z*an1 + ( c2m2y     - (c2m2y*an1-c2m2x*an2)*an1 )/mu2 ) ! coeff of w2(-1)
 
+ ! *bug* fixed wdh July 6, 2019 "+" to minus "-" 8 places 
  ! Equation 1:
  ! (u.x+v.y+w.z)*an2 + ( u1z-w1x - nDotCurlE1*an2)/mu1
  a12(e1,0) = ( c1m1x*an2 + ( c1m1z     - (c1m1z*an2-c1m1y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
- a12(e1,1) = ( c1m1y*an2 + (           - (c1m1x*an3+c1m1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+ a12(e1,1) = ( c1m1y*an2 + (           - (c1m1x*an3-c1m1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
  a12(e1,2) = ( c1m1z*an2 + (    -c1m1x - (c1m1y*an1-c1m1x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
 
  a12(e1,3) = ( c1m2x*an2 + ( c1m2z     - (c1m2z*an2-c1m2y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
- a12(e1,4) = ( c1m2y*an2 + (           - (c1m2x*an3+c1m2z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+ a12(e1,4) = ( c1m2y*an2 + (           - (c1m2x*an3-c1m2z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
  a12(e1,5) = ( c1m2z*an2 + (    -c1m2x - (c1m2y*an1-c1m2x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
 
  a12(e1,6) =-( c2m1x*an2 + ( c2m1z     - (c2m1z*an2-c2m1y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
- a12(e1,7) =-( c2m1y*an2 + (           - (c2m1x*an3+c2m1z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+ a12(e1,7) =-( c2m1y*an2 + (           - (c2m1x*an3-c2m1z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
  a12(e1,8) =-( c2m1z*an2 + (    -c2m1x - (c2m1y*an1-c2m1x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
 
  a12(e1,9) =-( c2m2x*an2 + ( c2m2z     - (c2m2z*an2-c2m2y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
- a12(e1,10)=-( c2m2y*an2 + (           - (c2m2x*an3+c2m2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+ a12(e1,10)=-( c2m2y*an2 + (           - (c2m2x*an3-c2m2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
  a12(e1,11)=-( c2m2z*an2 + (    -c2m2x - (c2m2y*an1-c2m2x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
 
  ! Equation 2:
  ! (u.x+v.y+w.z)*an3 + ( v1x-u1y - nDotCurlE1*an3)/mu1
  a12(e2,0) = ( c1m1x*an3 + (    -c1m1y - (c1m1z*an2-c1m1y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
- a12(e2,1) = ( c1m1y*an3 + ( c1m1x     - (c1m1x*an3+c1m1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+ a12(e2,1) = ( c1m1y*an3 + ( c1m1x     - (c1m1x*an3-c1m1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
  a12(e2,2) = ( c1m1z*an3 + (           - (c1m1y*an1-c1m1x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
 
  a12(e2,3) = ( c1m2x*an3 + (    -c1m2y - (c1m2z*an2-c1m2y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
- a12(e2,4) = ( c1m2y*an3 + ( c1m2x     - (c1m2x*an3+c1m2z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+ a12(e2,4) = ( c1m2y*an3 + ( c1m2x     - (c1m2x*an3-c1m2z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
  a12(e2,5) = ( c1m2z*an3 + (           - (c1m2y*an1-c1m2x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
 
  a12(e2,6) =-( c2m1x*an3 + (    -c2m1y - (c2m1z*an2-c2m1y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
- a12(e2,7) =-( c2m1y*an3 + ( c2m1x     - (c2m1x*an3+c2m1z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+ a12(e2,7) =-( c2m1y*an3 + ( c2m1x     - (c2m1x*an3-c2m1z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
  a12(e2,8) =-( c2m1z*an3 + (           - (c2m1y*an1-c2m1x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
 
  a12(e2,9) =-( c2m2x*an3 + (    -c2m2y - (c2m2z*an2-c2m2y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
- a12(e2,10)=-( c2m2y*an3 + ( c2m2x     - (c2m2x*an3+c2m2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+ a12(e2,10)=-( c2m2y*an3 + ( c2m2x     - (c2m2x*an3-c2m2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
  a12(e2,11)=-( c2m2z*an3 + (           - (c2m2y*an1-c2m2x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
 
  !  (1/mu1)* u1Lap*ani*anj + (delta_ij -ani*anj)*( u1Lap/epsmu1 - alphaP1*( c4PttLEsum1*u1Lap + c4PttLLEsum1*u1LapSq )= ...
@@ -3175,23 +3184,23 @@ end if
 
  ! coeffs of u1(-1), v1(-1), w1(-1)
  a12(e3,0) = ( clap1m1/(epsmu1) + cem1*( an1*clap1m1                         )*an1 + (1.-an1*an1)*( eqn1Coeffm1 ) )
- a12(e3,1) = (                    cem1*(             an2*clap1m1             )*an1 + (   an1*an2)*( eqn1Coeffm1 ) )
- a12(e3,2) = (                    cem1*(                         an3*clap1m1 )*an1 + (   an1*an3)*( eqn1Coeffm1 ) )
+ a12(e3,1) = (                    cem1*(             an2*clap1m1             )*an1 + (  -an1*an2)*( eqn1Coeffm1 ) )
+ a12(e3,2) = (                    cem1*(                         an3*clap1m1 )*an1 + (  -an1*an3)*( eqn1Coeffm1 ) )
                                                                                                                    
  ! coeffs of u1(-2), v1(-2), w1(-2)                                                                                
  a12(e3,3) = ( clap1m2/(epsmu1) + cem1*( an1*clap1m2                         )*an1 + (1.-an1*an1)*( eqn1Coeffm2 ) )
- a12(e3,4) = (                    cem1*(             an2*clap1m2             )*an1 + (   an1*an2)*( eqn1Coeffm2 ) )
- a12(e3,5) = (                    cem1*(                         an3*clap1m2 )*an1 + (   an1*an3)*( eqn1Coeffm2 ) )
+ a12(e3,4) = (                    cem1*(             an2*clap1m2             )*an1 + (  -an1*an2)*( eqn1Coeffm2 ) )
+ a12(e3,5) = (                    cem1*(                         an3*clap1m2 )*an1 + (  -an1*an3)*( eqn1Coeffm2 ) )
                                                                                                                    
  ! coeffs of u2(-1), v2(-1), w2(-1)                                                                                
  a12(e3,6) =-( clap2m1/(epsmu2) + cem2*( an1*clap2m1                         )*an1 + (1.-an1*an1)*( eqn2Coeffm1 ) )
- a12(e3,7) =-(                    cem2*(             an2*clap2m1             )*an1 + (   an1*an2)*( eqn2Coeffm1 ) )
- a12(e3,8) =-(                    cem2*(                         an3*clap2m1 )*an1 + (   an1*an3)*( eqn2Coeffm1 ) )
+ a12(e3,7) =-(                    cem2*(             an2*clap2m1             )*an1 + (  -an1*an2)*( eqn2Coeffm1 ) )
+ a12(e3,8) =-(                    cem2*(                         an3*clap2m1 )*an1 + (  -an1*an3)*( eqn2Coeffm1 ) )
                                                                                                                    
  ! coeffs of u2(-2), v2(-2), w2(-2)                                                                                
  a12(e3,9) =-( clap2m2/(epsmu2) + cem2*( an1*clap2m2                         )*an1 + (1.-an1*an1)*( eqn2Coeffm2 ) ) 
- a12(e3,10)=-(                    cem2*(             an2*clap2m2             )*an1 + (   an1*an2)*( eqn2Coeffm2 ) )
- a12(e3,11)=-(                    cem2*(                         an3*clap2m2 )*an1 + (   an1*an3)*( eqn2Coeffm2 ) )
+ a12(e3,10)=-(                    cem2*(             an2*clap2m2             )*an1 + (  -an1*an2)*( eqn2Coeffm2 ) )
+ a12(e3,11)=-(                    cem2*(                         an3*clap2m2 )*an1 + (  -an1*an3)*( eqn2Coeffm2 ) )
 
  ! Equations 4,5,6
  !  [ (1/mu)* Lap(E) n n^T + (I-n n^T)* c^2 Lap(E) - alphaP*Ptt ) ] = 0 
@@ -3200,45 +3209,45 @@ end if
  !  v1Lap/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an2+ (delta_ij -an2*anj)*( - alphaP1*( c4PttLEsum1*u1Lap + c4PttLLEsum1*u1LapSq ) )
 
  ! coeffs of u1(-1), v1(-1), w1(-1)
- a12(e4,0) = (                    cem1*( an1*clap1m1                         )*an2 + (   an2*an1)*( eqn1Coeffm1 ) )  
+ a12(e4,0) = (                    cem1*( an1*clap1m1                         )*an2 + (  -an2*an1)*( eqn1Coeffm1 ) )  
  a12(e4,1) = ( clap1m1/(epsmu1) + cem1*(             an2*clap1m1             )*an2 + (1.-an2*an2)*( eqn1Coeffm1 ) )
- a12(e4,2) = (                    cem1*(                         an3*clap1m1 )*an2 + (   an2*an3)*( eqn1Coeffm1 ) )
+ a12(e4,2) = (                    cem1*(                         an3*clap1m1 )*an2 + (  -an2*an3)*( eqn1Coeffm1 ) )
                                                                                                                    
  ! coeffs of u1(-2), v1(-2), w1(-2)                                                                                
- a12(e4,3) = (                    cem1*( an1*clap1m2                         )*an2 + (   an2*an1)*( eqn1Coeffm2 ) ) 
+ a12(e4,3) = (                    cem1*( an1*clap1m2                         )*an2 + (  -an2*an1)*( eqn1Coeffm2 ) ) 
  a12(e4,4) = ( clap1m2/(epsmu1) + cem1*(             an2*clap1m2             )*an2 + (1.-an2*an2)*( eqn1Coeffm2 ) )
- a12(e4,5) = (                    cem1*(                         an3*clap1m2 )*an2 + (   an2*an3)*( eqn1Coeffm2 ) )
+ a12(e4,5) = (                    cem1*(                         an3*clap1m2 )*an2 + (  -an2*an3)*( eqn1Coeffm2 ) )
                                                                                                                    
  ! coeffs of u2(-1), v2(-1), w2(-1)                                                                                
- a12(e4,6) =-(                    cem2*( an1*clap2m1                         )*an2 + (   an2*an1)*( eqn2Coeffm1 ) ) 
+ a12(e4,6) =-(                    cem2*( an1*clap2m1                         )*an2 + (  -an2*an1)*( eqn2Coeffm1 ) ) 
  a12(e4,7) =-( clap2m1/(epsmu2) + cem2*(             an2*clap2m1             )*an2 + (1.-an2*an2)*( eqn2Coeffm1 ) )
- a12(e4,8) =-(                    cem2*(                         an3*clap2m1 )*an2 + (   an2*an3)*( eqn2Coeffm1 ) )
+ a12(e4,8) =-(                    cem2*(                         an3*clap2m1 )*an2 + (  -an2*an3)*( eqn2Coeffm1 ) )
                                                                                                                    
  ! coeffs of u2(-2), v2(-2), w2(-2)                                                                                
- a12(e4,9) =-(                    cem2*( an1*clap2m2                         )*an2 + (   an2*an1)*( eqn2Coeffm2 ) ) 
+ a12(e4,9) =-(                    cem2*( an1*clap2m2                         )*an2 + (  -an2*an1)*( eqn2Coeffm2 ) ) 
  a12(e4,10)=-( clap2m2/(epsmu2) + cem2*(             an2*clap2m2             )*an2 + (1.-an2*an2)*( eqn2Coeffm2 ) )
- a12(e4,11)=-(                    cem2*(                         an3*clap2m2 )*an2 + (   an2*an3)*( eqn2Coeffm2 ) )
+ a12(e4,11)=-(                    cem2*(                         an3*clap2m2 )*an2 + (  -an2*an3)*( eqn2Coeffm2 ) )
 
  ! ----- Equation 5 -----------
 
  ! coeffs of u1(-1), v1(-1), w1(-1)
- a12(e5,0) = (                    cem1*( an1*clap1m1                         )*an3 + (   an3*an1)*( eqn1Coeffm1 ) )
- a12(e5,1) = (                    cem1*(             an2*clap1m1             )*an3 + (   an3*an2)*( eqn1Coeffm1 ) )
+ a12(e5,0) = (                    cem1*( an1*clap1m1                         )*an3 + (  -an3*an1)*( eqn1Coeffm1 ) )
+ a12(e5,1) = (                    cem1*(             an2*clap1m1             )*an3 + (  -an3*an2)*( eqn1Coeffm1 ) )
  a12(e5,2) = ( clap1m1/(epsmu1) + cem1*(                         an3*clap1m1 )*an3 + (1.-an3*an3)*( eqn1Coeffm1 ) )
                                                                                                                    
  ! coeffs of u1(-2), v1(-2), w1(-2)                                                                                
- a12(e5,3) = (                    cem1*( an1*clap1m2                         )*an3 + (   an3*an1)*( eqn1Coeffm2 ) )
- a12(e5,4) = (                    cem1*(             an2*clap1m2             )*an3 + (   an3*an2)*( eqn1Coeffm2 ) )
+ a12(e5,3) = (                    cem1*( an1*clap1m2                         )*an3 + (  -an3*an1)*( eqn1Coeffm2 ) )
+ a12(e5,4) = (                    cem1*(             an2*clap1m2             )*an3 + (  -an3*an2)*( eqn1Coeffm2 ) )
  a12(e5,5) = ( clap1m2/(epsmu1) + cem1*(                         an3*clap1m2 )*an3 + (1.-an3*an3)*( eqn1Coeffm2 ) )
                                                                                                                    
  ! coeffs of u2(-1), v2(-1), w2(-1)                                                                                
- a12(e5,6) =-(                    cem2*( an1*clap2m1                         )*an3 + (   an3*an1)*( eqn2Coeffm1 ) )
- a12(e5,7) =-(                    cem2*(             an2*clap2m1             )*an3 + (   an3*an2)*( eqn2Coeffm1 ) )
+ a12(e5,6) =-(                    cem2*( an1*clap2m1                         )*an3 + (  -an3*an1)*( eqn2Coeffm1 ) )
+ a12(e5,7) =-(                    cem2*(             an2*clap2m1             )*an3 + (  -an3*an2)*( eqn2Coeffm1 ) )
  a12(e5,8) =-( clap2m1/(epsmu2) + cem2*(                         an3*clap2m1 )*an3 + (1.-an3*an3)*( eqn2Coeffm1 ) )
                                                                                                                    
  ! coeffs of u2(-2), v2(-2), w2(-2)                                                                                
- a12(e5,9) =-(                    cem2*( an1*clap2m2                         )*an3 + (   an3*an1)*( eqn2Coeffm2 ) )
- a12(e5,10)=-(                    cem2*(             an2*clap2m2             )*an3 + (   an3*an2)*( eqn2Coeffm2 ) )
+ a12(e5,9) =-(                    cem2*( an1*clap2m2                         )*an3 + (  -an3*an1)*( eqn2Coeffm2 ) )
+ a12(e5,10)=-(                    cem2*(             an2*clap2m2             )*an3 + (  -an3*an2)*( eqn2Coeffm2 ) )
  a12(e5,11)=-( clap2m2/(epsmu2) + cem2*(                         an3*clap2m2 )*an3 + (1.-an3*an3)*( eqn2Coeffm2 ) )
 #endMacro
 
@@ -3294,44 +3303,44 @@ end if
  ! ----- Equation 7 -----
  ! coeffs of u1(-1), v1(-1), w1(-1)
  a12(e1,0) = ( clap1m1x*an2/epsmu1 + ( clap1m1z     - (clap1m1z*an2-clap1m1y*an3)*an2 )*eqn1Coeff + ( c1m1z     - (c1m1z*an2-c1m1y*an3)*an2 )*eqn1Coeffb ) 
- a12(e1,1) = ( clap1m1y*an2/epsmu1 + (              - (clap1m1x*an3+clap1m1z*an1)*an2 )*eqn1Coeff + (           - (c1m1x*an3+c1m1z*an1)*an2 )*eqn1Coeffb ) 
+ a12(e1,1) = ( clap1m1y*an2/epsmu1 + (              - (clap1m1x*an3-clap1m1z*an1)*an2 )*eqn1Coeff + (           - (c1m1x*an3-c1m1z*an1)*an2 )*eqn1Coeffb ) 
  a12(e1,2) = ( clap1m1z*an2/epsmu1 + (    -clap1m1x - (clap1m1y*an1-clap1m1x*an2)*an2 )*eqn1Coeff + (    -c1m1x - (c1m1y*an1-c1m1x*an2)*an2 )*eqn1Coeffb ) 
 
  ! coeffs of u1(-2), v1(-2), w1(-2)
  a12(e1,3) = ( clap1m2x*an2/epsmu1 + ( clap1m2z     - (clap1m2z*an2-clap1m2y*an3)*an2 )*eqn1Coeff + ( c1m2z     - (c1m2z*an2-c1m2y*an3)*an2 )*eqn1Coeffb ) 
- a12(e1,4) = ( clap1m2y*an2/epsmu1 + (              - (clap1m2x*an3+clap1m2z*an1)*an2 )*eqn1Coeff + (           - (c1m2x*an3+c1m2z*an1)*an2 )*eqn1Coeffb ) 
+ a12(e1,4) = ( clap1m2y*an2/epsmu1 + (              - (clap1m2x*an3-clap1m2z*an1)*an2 )*eqn1Coeff + (           - (c1m2x*an3-c1m2z*an1)*an2 )*eqn1Coeffb ) 
  a12(e1,5) = ( clap1m2z*an2/epsmu1 + (    -clap1m2x - (clap1m2y*an1-clap1m2x*an2)*an2 )*eqn1Coeff + (    -c1m2x - (c1m2y*an1-c1m2x*an2)*an2 )*eqn1Coeffb ) 
 
  ! coeffs of u2(-1), v2(-1), w2(-1) 
  a12(e1,6) =-( clap2m1x*an2/epsmu2 + ( clap2m1z     - (clap2m1z*an2-clap2m1y*an3)*an2 )*eqn2Coeff + ( c2m1z     - (c2m1z*an2-c2m1y*an3)*an2 )*eqn2Coeffb ) 
- a12(e1,7) =-( clap2m1y*an2/epsmu2 + (              - (clap2m1x*an3+clap2m1z*an1)*an2 )*eqn2Coeff + (           - (c2m1x*an3+c2m1z*an1)*an2 )*eqn2Coeffb ) 
+ a12(e1,7) =-( clap2m1y*an2/epsmu2 + (              - (clap2m1x*an3-clap2m1z*an1)*an2 )*eqn2Coeff + (           - (c2m1x*an3-c2m1z*an1)*an2 )*eqn2Coeffb ) 
  a12(e1,8) =-( clap2m1z*an2/epsmu2 + (    -clap2m1x - (clap2m1y*an1-clap2m1x*an2)*an2 )*eqn2Coeff + (    -c2m1x - (c2m1y*an1-c2m1x*an2)*an2 )*eqn2Coeffb ) 
 
  ! coeffs of u2(-2), v2(-2), w2(-2)
  a12(e1,9) =-( clap2m2x*an2/epsmu2 + ( clap2m2z     - (clap2m2z*an2-clap2m2y*an3)*an2 )*eqn2Coeff + ( c2m2z     - (c2m2z*an2-c2m2y*an3)*an2 )*eqn2Coeffb ) 
- a12(e1,10)=-( clap2m2y*an2/epsmu2 + (              - (clap2m2x*an3+clap2m2z*an1)*an2 )*eqn2Coeff + (           - (c2m2x*an3+c2m2z*an1)*an2 )*eqn2Coeffb ) 
+ a12(e1,10)=-( clap2m2y*an2/epsmu2 + (              - (clap2m2x*an3-clap2m2z*an1)*an2 )*eqn2Coeff + (           - (c2m2x*an3-c2m2z*an1)*an2 )*eqn2Coeffb ) 
  a12(e1,11)=-( clap2m2z*an2/epsmu2 + (    -clap2m2x - (clap2m2y*an1-clap2m2x*an2)*an2 )*eqn2Coeff + (    -c2m2x - (c2m2y*an1-c2m2x*an2)*an2 )*eqn2Coeffb ) 
 
  ! ----- Equation 8 -----
 
  ! coeffs of u1(-1), v1(-1), w1(-1)
  a12(e2,0) = ( clap1m1x*an3/epsmu1 + (    -clap1m1y - (clap1m1z*an2-clap1m1y*an3)*an3 )*eqn1Coeff + (    -c1m1y - (c1m1z*an2-c1m1y*an3)*an3 )*eqn1Coeffb ) 
- a12(e2,1) = ( clap1m1y*an3/epsmu1 + ( clap1m1x     - (clap1m1x*an3+clap1m1z*an1)*an3 )*eqn1Coeff + ( c1m1x     - (c1m1x*an3+c1m1z*an1)*an3 )*eqn1Coeffb ) 
+ a12(e2,1) = ( clap1m1y*an3/epsmu1 + ( clap1m1x     - (clap1m1x*an3-clap1m1z*an1)*an3 )*eqn1Coeff + ( c1m1x     - (c1m1x*an3-c1m1z*an1)*an3 )*eqn1Coeffb ) 
  a12(e2,2) = ( clap1m1z*an3/epsmu1 + (              - (clap1m1y*an1-clap1m1x*an2)*an3 )*eqn1Coeff + (           - (c1m1y*an1-c1m1x*an2)*an3 )*eqn1Coeffb ) 
 
  ! coeffs of u1(-2), v1(-2), w1(-2)
  a12(e2,3) = ( clap1m2x*an3/epsmu1 + (    -clap1m2y - (clap1m2z*an2-clap1m2y*an3)*an3 )*eqn1Coeff + (    -c1m2y - (c1m2z*an2-c1m2y*an3)*an3 )*eqn1Coeffb ) 
- a12(e2,4) = ( clap1m2y*an3/epsmu1 + ( clap1m2x     - (clap1m2x*an3+clap1m2z*an1)*an3 )*eqn1Coeff + ( c1m2x     - (c1m2x*an3+c1m2z*an1)*an3 )*eqn1Coeffb ) 
+ a12(e2,4) = ( clap1m2y*an3/epsmu1 + ( clap1m2x     - (clap1m2x*an3-clap1m2z*an1)*an3 )*eqn1Coeff + ( c1m2x     - (c1m2x*an3-c1m2z*an1)*an3 )*eqn1Coeffb ) 
  a12(e2,5) = ( clap1m2z*an3/epsmu1 + (              - (clap1m2y*an1-clap1m2x*an2)*an3 )*eqn1Coeff + (           - (c1m2y*an1-c1m2x*an2)*an3 )*eqn1Coeffb ) 
 
  ! coeffs of u2(-1), v2(-1), w2(-1) 
  a12(e2,6) =-( clap2m1x*an3/epsmu2 + (    -clap2m1y - (clap2m1z*an2-clap2m1y*an3)*an3 )*eqn2Coeff + (    -c2m1y - (c2m1z*an2-c2m1y*an3)*an3 )*eqn2Coeffb ) 
- a12(e2,7) =-( clap2m1y*an3/epsmu2 + ( clap2m1x     - (clap2m1x*an3+clap2m1z*an1)*an3 )*eqn2Coeff + ( c2m1x     - (c2m1x*an3+c2m1z*an1)*an3 )*eqn2Coeffb ) 
+ a12(e2,7) =-( clap2m1y*an3/epsmu2 + ( clap2m1x     - (clap2m1x*an3-clap2m1z*an1)*an3 )*eqn2Coeff + ( c2m1x     - (c2m1x*an3-c2m1z*an1)*an3 )*eqn2Coeffb ) 
  a12(e2,8) =-( clap2m1z*an3/epsmu2 + (              - (clap2m1y*an1-clap2m1x*an2)*an3 )*eqn2Coeff + (           - (c2m1y*an1-c2m1x*an2)*an3 )*eqn2Coeffb ) 
 
  ! coeffs of u2(-2), v2(-2), w2(-2)
  a12(e2,9) =-( clap2m2x*an3/epsmu2 + (    -clap2m2y - (clap2m2z*an2-clap2m2y*an3)*an3 )*eqn2Coeff + (    -c2m2y - (c2m2z*an2-c2m2y*an3)*an3 )*eqn2Coeffb ) 
- a12(e2,10)=-( clap2m2y*an3/epsmu2 + ( clap2m2x     - (clap2m2x*an3+clap2m2z*an1)*an3 )*eqn2Coeff + ( c2m2x     - (c2m2x*an3+c2m2z*an1)*an3 )*eqn2Coeffb ) 
+ a12(e2,10)=-( clap2m2y*an3/epsmu2 + ( clap2m2x     - (clap2m2x*an3-clap2m2z*an1)*an3 )*eqn2Coeff + ( c2m2x     - (c2m2x*an3-c2m2z*an1)*an3 )*eqn2Coeffb ) 
  a12(e2,11)=-( clap2m2z*an3/epsmu2 + (              - (clap2m2y*an1-clap2m2x*an2)*an3 )*eqn2Coeff + (           - (c2m2y*an1-c2m2x*an2)*an3 )*eqn2Coeffb ) 
 
  ! Equations 9,10,11
@@ -3367,64 +3376,64 @@ end if
  ! -----Equation 9-----
  ! coeffs of u1(-1), v1(-1), w1(-1)
  a12(e3,0) = ( an1*an1*eqn1Coeff1a + (1.-an1*an1)*eqn1Coeff1b )
- a12(e3,1) = ( an1*an2*eqn1Coeff1a + (   an1*an2)*eqn1Coeff1b )
- a12(e3,2) = ( an1*an3*eqn1Coeff1a + (   an1*an3)*eqn1Coeff1b )
+ a12(e3,1) = ( an1*an2*eqn1Coeff1a + (  -an1*an2)*eqn1Coeff1b )
+ a12(e3,2) = ( an1*an3*eqn1Coeff1a + (  -an1*an3)*eqn1Coeff1b )
 
  ! coeffs of u1(-2), v1(-2), w1(-2)
  a12(e3,3) = ( an1*an1*eqn1Coeff2a + (1.-an1*an1)*eqn1Coeff2b )
- a12(e3,4) = ( an1*an2*eqn1Coeff2a + (   an1*an2)*eqn1Coeff2b )
- a12(e3,5) = ( an1*an3*eqn1Coeff2a + (   an1*an3)*eqn1Coeff2b )
+ a12(e3,4) = ( an1*an2*eqn1Coeff2a + (  -an1*an2)*eqn1Coeff2b )
+ a12(e3,5) = ( an1*an3*eqn1Coeff2a + (  -an1*an3)*eqn1Coeff2b )
 
  ! coeffs of u2(-1), v2(-1), w2(-1) 
  a12(e3,6) =-( an1*an1*eqn2Coeff1a + (1.-an1*an1)*eqn2Coeff1b )
- a12(e3,7) =-( an1*an2*eqn2Coeff1a + (   an1*an2)*eqn2Coeff1b )
- a12(e3,8) =-( an1*an3*eqn2Coeff1a + (   an1*an3)*eqn2Coeff1b )
+ a12(e3,7) =-( an1*an2*eqn2Coeff1a + (  -an1*an2)*eqn2Coeff1b )
+ a12(e3,8) =-( an1*an3*eqn2Coeff1a + (  -an1*an3)*eqn2Coeff1b )
 
  ! coeffs of u2(-2), v2(-2), w2(-2)
  a12(e3,9) =-( an1*an1*eqn2Coeff2a + (1.-an1*an1)*eqn2Coeff2b )
- a12(e3,10)=-( an1*an2*eqn2Coeff2a + (   an1*an2)*eqn2Coeff2b )
- a12(e3,11)=-( an1*an3*eqn2Coeff2a + (   an1*an3)*eqn2Coeff2b )
+ a12(e3,10)=-( an1*an2*eqn2Coeff2a + (  -an1*an2)*eqn2Coeff2b )
+ a12(e3,11)=-( an1*an3*eqn2Coeff2a + (  -an1*an3)*eqn2Coeff2b )
 
  ! -----Equation 10 -----
  ! coeffs of u1(-1), v1(-1), w1(-1)
- a12(e4,0) = ( an2*an1*eqn1Coeff1a + (   an2*an1)*eqn1Coeff1b )
+ a12(e4,0) = ( an2*an1*eqn1Coeff1a + (  -an2*an1)*eqn1Coeff1b )
  a12(e4,1) = ( an2*an2*eqn1Coeff1a + (1.-an2*an2)*eqn1Coeff1b )
- a12(e4,2) = ( an2*an3*eqn1Coeff1a + (   an2*an3)*eqn1Coeff1b )
+ a12(e4,2) = ( an2*an3*eqn1Coeff1a + (  -an2*an3)*eqn1Coeff1b )
 
  ! coeffs of u1(-2), v1(-2), w1(-2)
- a12(e4,3) = ( an2*an1*eqn1Coeff2a + (   an2*an1)*eqn1Coeff2b )
+ a12(e4,3) = ( an2*an1*eqn1Coeff2a + (  -an2*an1)*eqn1Coeff2b )
  a12(e4,4) = ( an2*an2*eqn1Coeff2a + (1.-an2*an2)*eqn1Coeff2b )
- a12(e4,5) = ( an2*an3*eqn1Coeff2a + (   an2*an3)*eqn1Coeff2b )
+ a12(e4,5) = ( an2*an3*eqn1Coeff2a + (  -an2*an3)*eqn1Coeff2b )
 
  ! coeffs of u2(-1), v2(-1), w2(-1) 
- a12(e4,6) =-( an2*an1*eqn2Coeff1a + (   an2*an1)*eqn2Coeff1b )
+ a12(e4,6) =-( an2*an1*eqn2Coeff1a + (  -an2*an1)*eqn2Coeff1b )
  a12(e4,7) =-( an2*an2*eqn2Coeff1a + (1.-an2*an2)*eqn2Coeff1b )
- a12(e4,8) =-( an2*an3*eqn2Coeff1a + (   an2*an3)*eqn2Coeff1b )
+ a12(e4,8) =-( an2*an3*eqn2Coeff1a + (  -an2*an3)*eqn2Coeff1b )
 
  ! coeffs of u2(-2), v2(-2), w2(-2)
- a12(e4,9) =-( an2*an1*eqn2Coeff2a + (   an2*an1)*eqn2Coeff2b )
+ a12(e4,9) =-( an2*an1*eqn2Coeff2a + (  -an2*an1)*eqn2Coeff2b )
  a12(e4,10)=-( an2*an2*eqn2Coeff2a + (1.-an2*an2)*eqn2Coeff2b )
- a12(e4,11)=-( an2*an3*eqn2Coeff2a + (   an2*an3)*eqn2Coeff2b )
+ a12(e4,11)=-( an2*an3*eqn2Coeff2a + (  -an2*an3)*eqn2Coeff2b )
 
  ! -----Equation 11 -----
  ! coeffs of u1(-1), v1(-1), w1(-1)
- a12(e5,0) = ( an3*an1*eqn1Coeff1a + (   an3*an1)*eqn1Coeff1b )
- a12(e5,1) = ( an3*an2*eqn1Coeff1a + (   an3*an2)*eqn1Coeff1b )
+ a12(e5,0) = ( an3*an1*eqn1Coeff1a + (  -an3*an1)*eqn1Coeff1b )
+ a12(e5,1) = ( an3*an2*eqn1Coeff1a + (  -an3*an2)*eqn1Coeff1b )
  a12(e5,2) = ( an3*an3*eqn1Coeff1a + (1.-an3*an3)*eqn1Coeff1b )
 
  ! coeffs of u1(-2), v1(-2), w1(-2)
- a12(e5,3) = ( an3*an1*eqn1Coeff2a + (   an3*an1)*eqn1Coeff2b )
- a12(e5,4) = ( an3*an2*eqn1Coeff2a + (   an3*an2)*eqn1Coeff2b )
+ a12(e5,3) = ( an3*an1*eqn1Coeff2a + (  -an3*an1)*eqn1Coeff2b )
+ a12(e5,4) = ( an3*an2*eqn1Coeff2a + (  -an3*an2)*eqn1Coeff2b )
  a12(e5,5) = ( an3*an3*eqn1Coeff2a + (1.-an3*an3)*eqn1Coeff2b )
 
  ! coeffs of u2(-1), v2(-1), w2(-1) 
- a12(e5,6) =-( an3*an1*eqn2Coeff1a + (   an3*an1)*eqn2Coeff1b )
- a12(e5,7) =-( an3*an2*eqn2Coeff1a + (   an3*an2)*eqn2Coeff1b )
+ a12(e5,6) =-( an3*an1*eqn2Coeff1a + (  -an3*an1)*eqn2Coeff1b )
+ a12(e5,7) =-( an3*an2*eqn2Coeff1a + (  -an3*an2)*eqn2Coeff1b )
  a12(e5,8) =-( an3*an3*eqn2Coeff1a + (1.-an3*an3)*eqn2Coeff1b )
 
  ! coeffs of u2(-2), v2(-2), w2(-2)
- a12(e5,9) =-( an3*an1*eqn2Coeff2a + (   an3*an1)*eqn2Coeff2b )
- a12(e5,10)=-( an3*an2*eqn2Coeff2a + (   an3*an2)*eqn2Coeff2b )
+ a12(e5,9) =-( an3*an1*eqn2Coeff2a + (  -an3*an1)*eqn2Coeff2b )
+ a12(e5,10)=-( an3*an2*eqn2Coeff2a + (  -an3*an2)*eqn2Coeff2b )
  a12(e5,11)=-( an3*an3*eqn2Coeff2a + (1.-an3*an3)*eqn2Coeff2b )
 
 #endMacro
@@ -3480,7 +3489,8 @@ do n=0,nd-1
   end do
 end do
 
-
+  err2=0.
+  count=0
   beginLoopsMask3d()
 
     ! here is the normal (assumed to be the same on both sides)
@@ -3676,35 +3686,36 @@ end do
 
  
     ! coeff of u1(-1) and u1(-2) from Lap^2
-    clapSq1m1=lapSqCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)
-    clapSq1m2=lapSqCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)
+    ! dr1a, dr2a : used for avoidInterfaceIterations - tangential spacings are dsBig to eliminate mixed derivatives
+    clapSq1m1=lapSqCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)
+    clapSq1m2=lapSqCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1,rxxxx1)
 
 
     ! coeff of u2(-1) and u2(-2) from Lap^2
-    clapSq2m1=lapSqCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)
-    clapSq2m2=lapSqCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)
+    clapSq2m1=lapSqCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)
+    clapSq2m2=lapSqCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2,rxxxx2)
 
 
     ! coeff of u1(-1) from D.x(Lap), D.y(Lap) and D.z(Lap): (divideb by eps*mu)
-    clap1m1x = xLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1) 
-    clap1m1y = yLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
-    clap1m1z = zLapCoeff3DOrder2a(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
+    clap1m1x = xLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1) 
+    clap1m1y = yLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
+    clap1m1z = zLapCoeff3DOrder2a(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
 
     ! coeff of u1(-2) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    clap1m2x = xLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
-    clap1m2y = yLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
-    clap1m2z = zLapCoeff3DOrder2b(is,dr1(axis1),dr1(axis1p1),dr1(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
+    clap1m2x = xLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
+    clap1m2y = yLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
+    clap1m2z = zLapCoeff3DOrder2b(is,dr1a(axis1),dr1a(axis1p1),dr1a(axis1p2),axis1,axis1p1,axis1p2,rx1,rxx1,rxxx1)  
 
 
     ! coeff of u2(-1) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    clap2m1x = xLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
-    clap2m1y = yLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2) 
-    clap2m1z = zLapCoeff3DOrder2a(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
+    clap2m1x = xLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
+    clap2m1y = yLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2) 
+    clap2m1z = zLapCoeff3DOrder2a(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
 
     ! coeff of u2(-2) from D.x(Lap), D.y(Lap) and D.z(Lap): 
-    clap2m2x = xLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
-    clap2m2y = yLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
-    clap2m2z = zLapCoeff3DOrder2b(js,dr2(axis2),dr2(axis2p1),dr2(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
+    clap2m2x = xLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
+    clap2m2y = yLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
+    clap2m2z = zLapCoeff3DOrder2b(js,dr2a(axis2),dr2a(axis2p1),dr2a(axis2p2),axis2,axis2p1,axis2p2,rx2,rxx2,rxxx2)  
 
 
     ! cdivE1 =  u.c1x + v.c1y + w.c1z
@@ -3855,6 +3866,8 @@ end do
     ! compute the maximum change in the solution for this iteration
     do n=0,11
       err=max(err,abs(q(n)-f(n)))
+      err2 = err2 + (q(n)-f(n))**2
+      count = count + 1
     end do
 
     if( .true. .or. debug.gt.3 )then ! re-evaluate
@@ -3871,13 +3884,15 @@ end do
      do n=0,11
        res=max(res,abs(f(n)))
      end do
-     if( res.gt.1.e-9 )then
+     if( .false. .and. res.gt.1.e-9 )then
        write(debugFile,'(" --> ERR: 3d-GDM-order4-c: it=",i3," i1,i2,i3=",3i4," f(re-eval)=",12e10.2)') it,i1,i2,i3,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8),f(9),f(10),f(11)
        write(debugFile,'("     it=",i3," err in ghost=",12e10.2)') it,(errv(n),n=0,11)
      end if
     end if
 
   endLoopsMask3d()
+
+  err2 = sqrt( err2/count )
 
   if( checkCoeff.eq.1 .and. it.le.1 )then
     write(*,'("+++++ IGDM34c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
@@ -3903,6 +3918,14 @@ end do
   end if
 
 #endMacro
+
+
+
+!  -- this next include file holds macros for assigning interface in 3D order 2 
+! eval3dJumpOrder2()
+! evalInterfaceEquations23c()
+! assignInterfaceGhost23c()
+#Include "interfaceMacros3d.h"
 
 
 
@@ -3981,7 +4004,8 @@ end do
         ex,ey,ez,hx,hy,hz,useWhereMask,debug,solveForE,solveForH,axis1p1,axis1p2,axis2p1,axis2p2,nn,n1,n2,\
         twilightZone
       real dx1(0:2),dr1(0:2),dx2(0:2),dr2(0:2)
-!      real dx(0:2),dr(0:2)
+      real dr1a(0:2),dr2a(0:2)
+      
       real t,ep,dt,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,omega
       integer axisp1,axisp2,i1,i2,i3,is1,is2,is3,j1,j2,j3,js1,js2,js3,ks1,ks2,ks3,is,js,it,nit,k1,k2,k3
       integer interfaceOption,interfaceEquationsOption,initialized,forcingOption,numberOfIterations
@@ -4088,6 +4112,9 @@ end do
       real clap1m1x,clap1m1y,clap1m1z, clap1m2x,clap1m2y,clap1m2z
       real clap2m1x,clap2m1y,clap2m1z, clap2m2x,clap2m2y,clap2m2z
       real clapSq1m1,clapSq1m2,clapSq2m1,clapSq2m2
+
+      real c1x,c1y,c1z
+      real c2x,c2y,c2z
 
       ! these are for the exact solution from TZ flow: 
       real ue,ve,we
@@ -4263,6 +4290,9 @@ end do
       real coeffLap2a,coeffLapSq2a,coeffLap2b,coeffLapSq2b
       real nDotEP1,nDotEP2
 
+      integer avoidInterfaceIterations
+      real dsBig 
+
       ! For checking coefficients by delta approach: 
       real coeffDiff
       integer checkCoeff
@@ -4392,7 +4422,37 @@ end do
 
       twilightZone=useForcing
 
+      avoidInterfaceIterations=1  ! option to avoid interface iterations. *new* July 6 2019 
+      dsBig = 1.e20               ! Large value for tangential grid spacing to zero out mixed derivatives
+      if( avoidInterfaceIterations.eq.1 )then     
+        nit=1
+        omega=1.    ! do not under-relax iterations
+
+        axis1p1=mod(axis1+1,3)
+        axis1p2=mod(axis1+2,3)
+        axis2p1=mod(axis2+1,3)
+        axis2p2=mod(axis2+2,3)
+
+        ! dr1a(0:2) = sets grid spacing in tangential directions to dsBig 
+        dr1a(axis1  )=dr1(axis1)
+        dr1a(axis1p1)=dsBig
+        dr1a(axis1p2)=dsBig
+
+        dr2a(axis2  )=dr2(axis2)
+        dr2a(axis2p1)=dsBig
+        dr2a(axis2p2)=dsBig
+
+      else
+        do kd=0,2
+          dr1a(kd)=dr1(kd)
+          dr2a(kd)=dr2(kd)
+        end do 
+      end if
+
       checkCoeff=0 ! 1 ! if non-zero then check coefficients in interface equations using delta approach
+      if( t.gt.1.5*dt )then
+         checkCoeff=0   ! turn off check coeff for t>0
+      end if
       coeffDiff=0.
 
       ! *wdh* Sept 5, 2016 absoluteErrorTolerance=1.e-10  ! fix me -- need a relative tol
@@ -4407,6 +4467,7 @@ end do
         write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
         write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
+        write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
         write(*,'("  ... eps1,mu1=",2(1pe10.2)," eps2,mu2=",2(1pe10.2))') eps1,mu1,eps2,mu2
 
@@ -4981,6 +5042,26 @@ end do
          end if
  
  
+         if( avoidInterfaceIterations.eq.1 )then
+           ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
+           ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
+           !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2;
+
+           ! **TEST** assign ghost to 2nd-order first
+           if( t .lt. 3.*dt )then
+             write(*,'(" **** ASSIGN GHOST TO 2ND ORDER ****")')
+           end if
+
+           orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+           if( dispersive.eq.0 )then
+             assignInterfaceGhost23c()
+           else
+             assignDispersiveInterfaceGhost23c()
+           end if
+           orderOfAccuracy=4 ! reset 
+           !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
+         end if
+
          ! here are the jump conditions for the ghost points
          !   [ div(E) n + (curl(E)- n.curl(E) n )/mu ] =0                 (3 eqns)
          !   [ Lap(E)/(eps*mu) + (1/mu)*(1-1/eps)*( n.Lap(E) ) n ] = 0    (3 eqns)
@@ -5027,7 +5108,9 @@ end do
              write(*,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err[max,l2]=",2(e10.2,1x)," rate[max,l2]=",2(f5.2,1x)," (omega=",f4.2,")")') t,grid1,grid2,it,err,err2,errRatio,err2Ratio,omega
 
             end if
- 
+            if( it.eq.1 )then
+               checkCoeff=0 ! turn off after 1 iteration
+            end if
             numberOfIterations=it
             if( err.lt.absoluteErrorTolerance )then
               exit

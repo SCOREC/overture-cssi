@@ -320,6 +320,8 @@ class Maxwell
 
   int getValuesFDTD(int option, int *iparam, int current, real t, real dt, realCompositeGridFunction *v= NULL );
 
+  int initializeDispersionParameters( const aString & domainName );
+
   void initializeKnownSolution();
 
   void initializeInterfaces();
@@ -352,6 +354,13 @@ class Maxwell
   // project the interpolation points to satisfy div( eps E ) = rho
   int projectInterpolationPoints( int numberOfStepsTaken, int current, real t, real dt );
 
+  // Read dispersive material parameters from a file 
+  int readDispersionParameters( const aString & domainName, const aString & materialFile,
+		    	       int numberOfPolarizationVectors, int modeGDM );
+
+  // Write dispersive material parameters to a file:
+  int writeDispersionParameters( const aString & domainName, const aString & materialFile );
+  
   void saveShow( int current, real t, real dt );
 
   int saveParametersToShowFile();
@@ -365,8 +374,6 @@ class Maxwell
 
   int setDispersionParameters( const aString & domainName, int modeGDM );
 
-  int setDispersionParameters( const aString & domainName, const aString & materialFile,
-		    	       int numberOfPolarizationVectors, int modeGDM );
 
   int setupGrids();
 

@@ -135,12 +135,17 @@ else
     PETSC_INCLUDE = -DOVERTURE_USE_PETSC -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) -I$(PETSC_DIR)/include/mpiuni  -I$(PETSC_DIR)/$(PETSC_ARCH)/include 
     PETSC_LIBS = -Wl,-rpath,$(PETSC_LIB) -L$(PETSC_LIB)  -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetsc -lmpiuni
 
- else ifneq ($(OV_USE_PETSC_3),3.1)
+ else ifeq ($(OV_USE_PETSC_3),3.1)
     # for PETSc v3 
     PETSC_INCLUDE = -I$(PETSC_DIR)/include  -I$(PETSC_DIR)/$(PETSC_ARCH)/include -I$(PETSC_DIR)/include/petsc/mpiuni -DOVERTURE_USE_PETSC -I$(PETSC_LIB)/include -I$(PETSC_DIR)/include/mpiuni
     PETSC_LIBS = -Wl,-rpath,$(PETSC_LIB) -L$(PETSC_LIB) -lpetsc
 
- else ifneq ($(OV_USE_PETSC_3),)
+ else ifeq ($(OV_USE_PETSC_3),3.4.5)
+    # for PETSc v3.4.5
+    PETSC_INCLUDE = -I$(PETSC_DIR)/include  -I$(PETSC_DIR)/$(PETSC_ARCH)/include -DOVERTURE_USE_PETSC -I$(PETSC_LIB)/include 
+    PETSC_LIBS = -Wl,-rpath,$(PETSC_LIB) -L$(PETSC_LIB) -lpetsc
+
+ else ifeq ($(OV_USE_PETSC_3),)
     # for PETSc v3 
     PETSC_INCLUDE = -I$(PETSC_DIR)/include  -I$(PETSC_DIR)/$(PETSC_ARCH)/include -I$(PETSC_DIR)/include/petsc/mpiuni -DOVERTURE_USE_PETSC -I$(PETSC_LIB)/include -I$(PETSC_DIR)/include/mpiuni
     PETSC_LIBS = -Wl,-rpath,$(PETSC_LIB) -L$(PETSC_LIB) -lpetsc

@@ -216,6 +216,11 @@ if( $npv[0] == 2 ){ \
    $cmd  = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)"; \
       }
+if( $npv[0] == 3 ){ \
+   $cmd  = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 2 $a01[2] $a11[2] $b01[2] $b11[2] (eqn, a0,a1,b0,b1)"; \
+      }
 $cmd
 # ------------ Set GDM parameters on the right domain -----------
 GDM domain name: rightDomain
@@ -228,6 +233,11 @@ if( $npv[1] == 1 ){ \
 if( $npv[1] == 2 ){ \
    $cmd  = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)"; \
+      }
+if( $npv[1] == 3 ){ \
+   $cmd  = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)\n"; \
+   $cmd .= " GDM coeff: 2 $a02[2] $a12[2] $b02[2] $b12[2] (eqn, a0,a1,b0,b1)"; \
       }
 $cmd
 # 
@@ -260,11 +270,11 @@ check errors 1
 error norm $errorNorm
 #*********************************
 show file options...
-MXSF:compressed
+# MXSF:compressed
 MXSF:open
   $show
 # MXSF:frequency to save 1
-MXSF:frequency to flush 1
+# MXSF:frequency to flush 10
 exit
 #**********************************
 continue

@@ -4,7 +4,7 @@
 # Usage:
 #   
 #  cgmx [-noplot] dielectricCyl  -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> -show=<name> ...
-#                                -eps1=<> -eps2=<> -interit=<> -diss=<> -filter=[0|1] -dissc=<> -debug=<num> ...
+#                                -eps1=<> -eps2=<> -interfaceIts=<> -diss=<> -filter=[0|1] -dissc=<> -debug=<num> ...
 #                                -cons=[0/1] -plotIntensity=[0|1] ...
 #        -useSosupDissipation=[0|1] -sosupDissipationOption=[0|1] -sosupDissipationFrequency=<i> 
 #                                -method=[nfdtd|Yee|sosup] -errorNorm=[0|1|2] -go=[run/halt/og]
@@ -93,7 +93,7 @@ $show=" "; $backGround="backGround"; $useNewInterface=1;
 $interfaceEquationOption=1; $interfaceIterations=5;  $interfaceOmega=.5;
 $grid="innerOuter4.order4.hdf";
 $cons=0; $go="halt";  $errorNorm=0;
-$flushFrequency=10; 
+$flushFrequency=8; 
 $dm="none"; @npv=();  $modeGDM=-1; 
 $alphaP = (); 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
@@ -118,7 +118,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
   "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,\
   "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
-   "dmFile=s"=>\$dmFile );
+   "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations, );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -223,6 +223,7 @@ $cmds="#";
 if( $cyl eq 1 && $method eq "Yee" ){ $cmds = "define embedded bodies\n dielectric cylinder\n $rad $x0 $y0 $z0\n $eps1 $mu1 0. 0. \nexit"; }
 if( $cyl eq 0 && $method eq "Yee" ){ $cmds = "define embedded bodies\n dielectric sphere\n $rad $x0 $y0 $z0\n $eps1 $mu1 0. 0. \nexit"; }
 $cmds 
+scattering radius $rad
 # ****************
 # ====
 # twilightZone

@@ -70,13 +70,15 @@ $alwaysCompute=1;
 $modeGDM=-1; 
 @alphaP=();  @npv=(); @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
 $dm="none"; # dispersive model
+$dmFile=""; # "SilverJCDispersionFits.txt"; 
+$mat1Name=""; $mat2Name=""; # optional material names (outside, disk) to go on output files
 #
 GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tFinal,"interp=s"=>\$interp,"diss=f"=>\$diss,\
             "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"interit=i"=>\$interit,\
             "errorNorm=i"=>\$errorNorm,"tp=f"=>\$tp,"cyl=i"=>\$cyl,"dissOrder=i"=>\$dissOrder,"kx=f"=>\$kx,\
             "eps1=f"=>\$eps1,"eps2=f"=>\$eps2,\
             "cons=i"=>\$cons,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
-            "stageOption=s"=>\$stageOption,"dm=s"=>\$dm,\
+            "stageOption=s"=>\$stageOption,"dm=s"=>\$dm,"dmFile=s"=>\$dmFile,"mat1Name=s"=>\$mat1Name,"mat2Name=s"=>\$mat2Name,\
             "npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
             "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
             "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12 );
@@ -149,9 +151,9 @@ if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
 # 
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
-$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tFinal\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, stageOption=$stageOption sosupParameter=$sosupParameter interfaceIts=$interfaceIts, tz=$tz, kx=$kx, ky=$ky, ic=$ic, bc=$bc, dm=$dm, eps1=$eps1, eps2=$eps2, alphaP=$alphaP, npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
+$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tFinal\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, stageOption=$stageOption sosupParameter=$sosupParameter interfaceIts=$interfaceIts, tz=$tz, kx=$kx, ky=$ky, ic=$ic, bc=$bc, dm=$dm, dmFile=$dmFile, eps1=$eps1, eps2=$eps2, alphaP=$alphaP, npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
 $extraLabel ="";
-if( $dm ne "none" ){ $extraLabel .= "GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }
+if( $dm ne "none" ){ $extraLabel .= "GDM" . "$mat1Name" . "Np" . "$npv[0]" . "$mat2Name" . "Np" . "$npv[1]"; }
 if( $modeGDM > -1 ){ $extraLabel .= "Mode$modeGDM"; }
 $outputFile="$caseLabel" . "$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 #
@@ -160,7 +162,7 @@ $outputFile="$caseLabel" . "$extraLabel" . "Order$order" . $normName . "NormConv
 # $caption= "\\caption\{Cgmx, $caseLabel, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tFinal\$, \$k_x=$kx\$, \$\\eps_1=$eps1\$, \$\\eps_2=$eps2\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, interit=\$$interit\$, $date}\\label\{table:$caseLabel" . $method . "Order$order$normName}"; 
 # $outputFile=$caseLabel . $labelMethod . "Order$order" . $normName . "NormConvTable.tex"; 
 # 
-$options = "-cyl=$cyl -kx=$kx -eps1=$eps1 -eps2=$eps2 -diss=$diss -dissOrder=$dissOrder -interit=$interit -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -alphaP=$alphaP[0] $alphaP[1] -dm=$dm -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -useSosupDissipation=$useSosupDissipation -sosupParameter=$sosupParameter -stageOption=$stageOption -cons=$cons -go=go ";
+$options = "-cyl=$cyl -kx=$kx -eps1=$eps1 -eps2=$eps2 -diss=$diss -dissOrder=$dissOrder -interit=$interit -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -alphaP=$alphaP[0] $alphaP[1] -dm=$dm -dmFile=$dmFile -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -useSosupDissipation=$useSosupDissipation -sosupParameter=$sosupParameter -stageOption=$stageOption -cons=$cons -go=go ";
 $suffix="";
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 4) ){ $suffix=".ng3"; }
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 6) ){ $suffix=".ng4"; }

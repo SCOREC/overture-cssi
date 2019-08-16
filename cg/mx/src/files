@@ -13,7 +13,8 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      DSICoeff.C checkGridFunction.C getEnergy.C InterfaceInfo.C project.C   \
      advanceFDTD.C defineRegionsAndBodies.C outputHeader.C advanceSOSUP.C \
      userDefinedKnownSolution.C assignUserDefinedKnownSolutionInitialConditions.C \
-     printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C
+     printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
+     PlaneInterfaceExactSolution.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
@@ -119,6 +120,10 @@ src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.
 src/getErrors.C : src/getErrors.bC forcing.h annulusEigenFunction.h boxEigenFunction.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
 
 src/divergence.C : src/divergence.bC; $(BPP) -quiet -clean $<
+
+src/SphereExactSolutions.C : src/SphereExactSolutions.bC; $(BPP) -quiet -clean $<
+
+src/PlaneInterfaceExactSolution.C : src/PlaneInterfaceExactSolution.bC; $(BPP) -quiet -clean $<
 
 src/evalDispersionRelation.f : src/evalDispersionRelation.bf; $(BPP) -quiet -clean $<
 
@@ -245,10 +250,10 @@ src/bcAdjacent.f: src/bcAdjacent.bf src/bcDefineFortranInclude.h
 src/interface.f: src/interface.bf src/bcDefineFortranInclude.h 
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface.bf
 
-src/interface3d.f: src/interface3d.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h 
+src/interface3d.f: src/interface3d.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h  
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3d.bf
 
-src/interface3dOrder4.f: src/interface3dOrder4.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h
+src/interface3dOrder4.f: src/interface3dOrder4.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/interfaceMacros3d.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3dOrder4.bf
 
 # this next file creates the files evaluateJacobianDerivativesOrder6.h, evaluateCoefficientsOrder6.h and

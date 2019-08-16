@@ -1,4 +1,18 @@
 ***********************
+***** July 15, 2019
+
+TEST Outputing and then reading a material file
+
+READ FILE 
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=2 -checkErrors=1 -debug=1 -dmFile=testMaterial2.txt -go=og
+
+SVAE FILE
+cgmx -noplot planeWave.cmd -g=square32.order4.ng3 -useSosupDissipation=0 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=.5 0 -b0=1 0 -b1=.2 0 -kx=2 -tp=.1 -tf=1 -eps=2 -checkErrors=1 -debug=1 -dmSaveFile=testMaterial1.txt -go=og
+
+
+
+
+***********************
 ***** June 3, 2019
 
 

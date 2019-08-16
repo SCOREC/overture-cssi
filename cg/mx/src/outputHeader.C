@@ -107,7 +107,7 @@ outputHeader()
     
 
     fPrintF(file," plane wave solution: (kx,ky,kz)=(%8.2e,%8.2e,%8.2e), omega=%8.2e \n"
-                 "     E: a=(%8.2e,%8.2e,%8.2e), H: b=(%8.2e,%8.2e,%8.2e)\n",
+                 "     E: a=(%12.6e,%12.6e,%12.6e), H: b=(%12.6e,%12.6e,%12.6e)\n",
                    kx,ky,kz,omegaTimeHarmonic,pwc[0],pwc[1],pwc[2],pwc[3],pwc[4],pwc[5]);
     if( forcingOption==twilightZoneForcing )
       fPrintF(file," Twilightzone flow is on.");
@@ -316,8 +316,8 @@ outputHeader()
       fPrintF(file," Material parameters:\n");
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-        fPrintF(file,"  Grid %i : eps=%9.3e mu=%9.3e (name=%s)\n",grid,epsGrid(grid),muGrid(grid),
-                      (const char*)cg[grid].getName());
+        fPrintF(file,"  Grid %i : eps=%9.3e mu=%9.3e [name=%s] [domain=%s]\n",grid,epsGrid(grid),muGrid(grid),
+		(const char*)cg[grid].getName(),(const char*)cg.getDomainName(cg.domainNumber(grid)) );
       }
     }
 
@@ -334,8 +334,8 @@ outputHeader()
         const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
         
 	// fPrintF(file," Drude parameters: gamma=%9.3e, omegap=%9.3e\n",dmp.gamma,dmp.omegap);
-	fPrintF(file," Material %s, GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
-		(const char*)dmp.getMaterialName(),dmp.alphaP,numberOfPolarizationVectors);
+	fPrintF(file," Material %s, GDM parameters: epsInf=%9.3e, number of polarization vectors=%i\n",
+		(const char*)dmp.getMaterialName(),dmp.getEpsInf(),numberOfPolarizationVectors);
         for( int npv=0; npv<numberOfPolarizationVectors; npv++ )
           fPrintF(file,"   Polarization vector P(%i) : a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e\n",
                   npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));
@@ -352,9 +352,9 @@ outputHeader()
 	  //	  dmp.gamma,dmp.omegap,(const char*)cg.getDomainName(domain) );
           if( numberOfPolarizationVectors>0 )
           {
-            fPrintF(file," Domain %i (%s) Material %s, GDM parameters: alphaP=%9.3e, number of polarization vectors=%i\n",
+            fPrintF(file," Domain %i (%s) Material %s, GDM parameters: epsInf=%9.3e, muInf=%9.3e, alphaP=%9.3e  number of polarization vectors=%i\n",
                     domain,(const char*)cg.getDomainName(domain),(const char*)dmp.getMaterialName(),
-		    dmp.alphaP,numberOfPolarizationVectors);
+		    dmp.getEpsInf(),dmp.getMuInf(),dmp.alphaP,numberOfPolarizationVectors);
             for( int npv=0; npv<numberOfPolarizationVectors; npv++ )
               fPrintF(file,"   Polarization vector P(%i) : a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e\n",
                       npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));

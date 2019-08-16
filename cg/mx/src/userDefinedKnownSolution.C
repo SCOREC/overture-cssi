@@ -4,6 +4,8 @@
 #include "GenericGraphicsInterface.h"
 #include "ParallelUtility.h"
 
+#include "PlaneInterfaceExactSolution.h"
+
 #define FOR_3D(i1,i2,i3,I1,I2,I3)                                       int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++)                                       for(i2=I2Base; i2<=I2Bound; i2++)                                     for(i1=I1Base; i1<=I1Bound; i1++)
 
 typedef ::real LocalReal;
@@ -459,9 +461,67 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
   //   }
         
   // }
+    else if( userKnownSolution=="dispersivePlaneWaveInterface" )
+    {
+    // *new* way : July 6, 2019 - use version from the class
+        if( !dbase.has_key("planeInterfaceExactSolution") )
+        {
+      // -- first time through: create class and initialize
+            PlaneInterfaceExactSolution & pes = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+            
+            const int domain1 = 0, domain2=1;
+            DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain1);
+            DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain2);
+
+      
+            real kvr[3]={kx,ky,kz};  // no factor of twoPi 
+            real kvi[3]={0.,0.,0.};  // 
+
+            real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
+            real av[3]={ax,ay,az}; // 
+    
+      // // chosee av: *FIX ME** add update to pies to set    
+      // if( cg.numberOfDimensions()==2 )
+      // {
+      // 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+      // 	av[0]=-kvr[1]/kNorm;  // do this for now
+      // 	av[1]= kvr[0]/kNorm;
+      // }
+      // else
+      // {
+      // 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+      // 	av[0]=-kvr[1]/kNorm;  // do this for now
+      // 	av[1]= kvr[0]/kNorm;
+
+      // 	if( false )
+      // 	{
+      // 	  real bv[3]= {1.,-1.,1.};
+      // 	  real kDotB= kvr[0]*bv[0]+kvr[1]*bv[1]+kvr[2]*bv[2];
+      // 	  assert( fabs(kDotB)>1.e-10 );
+              
+      // 	  av[0]= (kvr[1]*bv[2]-kvr[2]*bv[1])/kDotB;
+      // 	  av[1]= (kvr[2]*bv[0]-kvr[0]*bv[2])/kDotB;
+      // 	  av[2]= (kvr[0]*bv[1]-kvr[1]*bv[0])/kDotB;
+      // 	}
+      	
+      // }
+
+          
+            pes.initialize( cg, dmp1,dmp2,av,kvr,kvi );
+
+        }
+        
+
+        PlaneInterfaceExactSolution & pes = dbase.get<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+        bool computeMagneticField=false;
+        pes.eval( t, cg, grid, ua, pv ,I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+
+    }
     
     else if( userKnownSolution=="dispersivePlaneWaveInterface" )
     {
+    // **OLD WAY**
+
     // ----------------------------------------------------
     // ---- DISPERSIVE PLANE WAVE MATERIAL INTERFACE ------
     // ----------------------------------------------------
@@ -539,7 +599,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     // kxpr=kr; kxpi=ki;
     // kypr=0.; kypi=0.;
       
-        if( false && t<3.*dt )
+        if( true && t<3.*dt )
         {
             printF("\n --UDKS:DPWI-- t=%10.4e, grid=%i, s=(%16.10e,%16.10e) kx=(%16.10e,%16.10e) ky=(%16.10e,%16.10e) -> k2=(kr,ki)=(%16.10e,%16.10e) kxp=(%16.10e,%16.10e) kyp=(%16.10e,%16.10e)\n"
                           ,t,grid,sr,si,kxr,kxi,kyr,kyi,kr,ki,kxpr,kxpi,kypr,kypi);
@@ -972,6 +1032,7 @@ Hzpi = t397 * t226 * (t539 + t556) * t394;
                         printF(" at=(%.3g + %.3g I,%.3g + %.3g I,%.3g + %.3g I) \n",atr[0],ati[0],atr[1],ati[1],atr[2],ati[2]);
                     }
                     
+
           // OV_ABORT("Stop here for now");
 
           // These need to be set for the solution evaluation below:
@@ -1023,14 +1084,14 @@ t2 = exp(t * sr);
 t3 = t * si;
 t4 = cos(t3);
 t5 = t2 * t4;
-t9 = x * krxr + y * kryr + z * krzr;
-t10 = cos(t9);
-t15 = exp(-x * krxi - y * kryi - z * krzi);
+t10 = exp(-x * krxi - y * kryi - z * krzi);
+t14 = x * krxr + y * kryr + z * krzr;
+t15 = sin(t14);
 t16 = t10 * t15;
-t17 = t16 * arxr;
-t19 = sin(t9);
-t20 = t15 * t19;
-t21 = t20 * arxi;
+t17 = t16 * arxi;
+t19 = cos(t14);
+t20 = t10 * t19;
+t21 = t20 * arxr;
 t27 = exp(-x * kxi - y * kyi - z * kzi);
 t31 = x * kxr + y * kyr + z * kzr;
 t32 = sin(t31);
@@ -1041,32 +1102,32 @@ t37 = t27 * t36;
 t38 = t37 * axr;
 t40 = sin(t3);
 t41 = t2 * t40;
-t42 = t16 * arxi;
-t44 = t20 * arxr;
+t42 = t16 * arxr;
+t44 = t20 * arxi;
 t46 = t33 * axr;
 t48 = t37 * axi;
-Exr = t5 * t17 - t5 * t21 - t5 * t34 + t5 * t38 - t41 * t42 - t41 * t44 - t41 * t46 - t41 * t48;
-t50 = t16 * aryr;
-t52 = t20 * aryi;
+Exr = -t5 * t17 + t5 * t21 - t5 * t34 + t5 * t38 - t41 * t42 - t41 * t44 - t41 * t46 - t41 * t48;
+t50 = t16 * aryi;
+t52 = t20 * aryr;
 t54 = t33 * ayi;
 t56 = t37 * ayr;
-t58 = t16 * aryi;
-t60 = t20 * aryr;
+t58 = t16 * aryr;
+t60 = t20 * aryi;
 t62 = t33 * ayr;
 t64 = t37 * ayi;
-Eyr = -t41 * t58 - t41 * t60 - t41 * t62 - t41 * t64 + t5 * t50 - t5 * t52 - t5 * t54 + t5 * t56;
-t66 = t16 * arzr;
-t68 = t20 * arzi;
+Eyr = -t41 * t58 - t41 * t60 - t41 * t62 - t41 * t64 - t5 * t50 + t5 * t52 - t5 * t54 + t5 * t56;
+t66 = t16 * arzi;
+t68 = t20 * arzr;
 t70 = t33 * azi;
 t72 = t37 * azr;
-t74 = t16 * arzi;
-t76 = t20 * arzr;
+t74 = t16 * arzr;
+t76 = t20 * arzi;
 t78 = t33 * azr;
 t80 = t37 * azi;
-Ezr = -t41 * t74 - t41 * t76 - t41 * t78 - t41 * t80 + t5 * t66 - t5 * t68 - t5 * t70 + t5 * t72;
-Exi = t41 * t17 - t41 * t21 - t41 * t34 + t41 * t38 + t5 * t42 + t5 * t44 + t5 * t46 + t5 * t48;
-Eyi = t41 * t50 - t41 * t52 - t41 * t54 + t41 * t56 + t5 * t58 + t5 * t60 + t5 * t62 + t5 * t64;
-Ezi = t41 * t66 - t41 * t68 - t41 * t70 + t41 * t72 + t5 * t74 + t5 * t76 + t5 * t78 + t5 * t80;
+Ezr = -t41 * t74 - t41 * t76 - t41 * t78 - t41 * t80 - t5 * t66 + t5 * t68 - t5 * t70 + t5 * t72;
+Exi = -t41 * t17 + t41 * t21 - t41 * t34 + t41 * t38 + t5 * t42 + t5 * t44 + t5 * t46 + t5 * t48;
+Eyi = -t41 * t50 + t41 * t52 - t41 * t54 + t41 * t56 + t5 * t58 + t5 * t60 + t5 * t62 + t5 * t64;
+Ezi = -t41 * t66 + t41 * t68 - t41 * t70 + t41 * t72 + t5 * t74 + t5 * t76 + t5 * t78 + t5 * t80;
 t110 = exp(-x * ktxi - y * ktyi - z * ktzi);
 t114 = x * ktxr + y * ktyr + z * ktzr;
 t115 = cos(t114);

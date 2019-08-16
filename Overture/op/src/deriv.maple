@@ -1,0 +1,444 @@
+# =====================================================
+# Compute higher derivatives in curvilinear coordinates
+# =====================================================
+#
+# restart; read "deriv.maple";
+clear;
+
+with(StringTools):
+
+# rx := (x,y) -> rx(x,y);
+# sx := (x,y) -> sx(x,y);
+# ur := (r,s) -> ur(r,s);
+# us := (r,s) -> us(r,s);
+
+
+# Think of Dx as a function of (x,y) and (r,s):
+# Dx := rx(x,y)*ur(r,s) + sx(x,y)*us(r,s):
+# Dy := ry(x,y)*ur(r,s) + sy(x,y)*us(r,s): 
+Dx := rx(x,y)*diff(u(r,s),r) + sx(x,y)*diff(u(r,s),s):
+Dy := ry(x,y)*diff(u(r,s),r) + sy(x,y)*diff(u(r,s),s):
+
+Dxx := diff(Dx,x) + rx(x,y)*diff(Dx,r) + sx(x,y)*diff(Dx,s):
+Dxy := diff(Dx,y) + ry(x,y)*diff(Dx,r) + sy(x,y)*diff(Dx,s):
+Dyy := diff(Dy,y) + ry(x,y)*diff(Dy,r) + sy(x,y)*diff(Dy,s):
+
+Dxxx:= diff(Dxx,x) + rx(x,y)*diff(Dxx,r) + sx(x,y)*diff(Dxx,s):
+Dxxy:= diff(Dxx,y) + ry(x,y)*diff(Dxx,r) + sy(x,y)*diff(Dxx,s):
+Dxyy:= diff(Dxy,y) + ry(x,y)*diff(Dxy,r) + sy(x,y)*diff(Dxy,s):
+Dyyy:= diff(Dyy,y) + ry(x,y)*diff(Dyy,r) + sy(x,y)*diff(Dyy,s):
+
+Dxxxx:= diff(Dxxx,x) + rx(x,y)*diff(Dxxx,r) + sx(x,y)*diff(Dxxx,s):
+Dxxxy:= diff(Dxxx,y) + ry(x,y)*diff(Dxxx,r) + sy(x,y)*diff(Dxxx,s):
+Dxxyy:= diff(Dxxy,y) + ry(x,y)*diff(Dxxy,r) + sy(x,y)*diff(Dxxy,s):
+Dxyyy:= diff(Dxyy,y) + ry(x,y)*diff(Dxyy,r) + sy(x,y)*diff(Dxyy,s):
+Dyyyy:= diff(Dyyy,y) + ry(x,y)*diff(Dyyy,r) + sy(x,y)*diff(Dyyy,s):
+
+# simplify:
+
+rxvName:= [ rx(x,y), ry(x,y), rz(x,y), sx(x,y), sy(x,y), sz(x,y) ]:
+rxName:= [ rx, ry, rz, sx, sy, sz ]:
+xName := [ x, y, z ]:
+
+urvName:= [ u(r,s) ]:
+urName:= [ u ]:
+rName := [ r, s, t ]:
+
+# -----------
+substitutePartials :=proc( uu )
+ local vv,rxn,x1n,x2n,x3n,rxxn,m,i1,i2,i3,i4,urn,r1n,r2n,r3n,r4n,rxvn,urvn:
+ vv := uu;
+
+ # substitute for rx.r, rx.s, ry.rr, ...
+
+ for m from 1 to 6 do
+  rxn := rxName[m]:
+  rxvn := cat(rxName[m],"(x,y)"):  # form the name rx(x,y) from rx
+  for i1 from 1 to 3 do
+   x1n := xName[i1]:
+   for i2 from i1 to 3 do
+    x2n := xName[i2]:
+    for i3 from i2 to 3 do
+      x3n := xName[i3]:
+      vv := subs(diff(rxvName[m],x1n,x2n,x3n)=cat(rxn,x1n,x2n,x3n),vv):
+    od:
+    vv := subs(diff(rxvName[m],x1n,x2n)=cat(rxn,x1n,x2n),vv):
+#   printf(" vv=%s\n",convert(vv,string));
+   od:
+   vv := subs(diff(rxvName[m],x1n)=cat(rxn,x1n),vv):
+  od:
+ od:
+
+ # restart; read "deriv.maple";
+
+ # substitute for u.r, u.s, u.rr, ...
+ for m from 1 to 1 do
+  urn := urName[m]:
+  # urvn := cat(urName[m],"(r,s)"):
+  for i1 from 1 to 3 do
+   r1n := rName[i1]:
+   for i2 from i1 to 3 do
+    r2n := rName[i2]:
+    for i3 from i2 to 3 do
+      r3n := rName[i3]:
+      for i4 from i3 to 3 do
+       r4n := rName[i4]:
+       vv := subs(diff(urvName[m],r1n,r2n,r3n,r4n)=cat(urn,r1n,r2n,r3n,r4n),vv):
+      od:
+      vv := subs(diff(urvName[m],r1n,r2n,r3n)=cat(urn,r1n,r2n,r3n),vv):
+    od:
+    vv := subs(diff(urvName[m],r1n,r2n)=cat(urn,r1n,r2n),vv):
+#    vv := subs(diff(urvn,r1n,r2n)=cat(urn,r1n,r2n),vv):
+   od:
+   vv := subs(diff(urvName[m],r1n)=cat(urn,r1n),vv):
+  od:
+ od:
+
+# vv := subs(diff(rx(x,y),x,x)=rxxx,diff(sx(x,y),x,x)=sxxx,diff(ry(x,y),x,x)=rxxy,diff(sy(x,y),x,x)=sxxy,vv);
+# vv := subs(diff(rx(x,y),x,y)=rxxy,diff(sx(x,y),x,y)=sxxy,diff(ry(x,y),x,y)=rxyy,diff(sy(x,y),x,y)=sxyy,vv);
+# vv := subs(diff(rx(x,y),y,y)=rxyy,diff(sx(x,y),y,y)=sxyy,diff(ry(x,y),y,y)=ryyy,diff(sy(x,y),y,y)=syyy,vv);
+
+
+#  vv := subs(diff(ur(r,s),r,r)=urrr,diff(us(r,s),r,r)=urrs,vv);
+#  vv := subs(diff(ur(r,s),r,s)=urrs,diff(us(r,s),r,s)=urss,vv);
+#  vv := subs(diff(ur(r,s),s,s)=urss,diff(us(r,s),s,s)=usss,vv);
+
+#  vv := subs(diff(rx(x,y),x)=rxx,diff(sx(x,y),x)=sxx,diff(ry(x,y),x)=rxy,diff(sy(x,y),x)=sxy,vv);
+#  vv := subs(diff(rx(x,y),y)=rxy,diff(sx(x,y),y)=sxy,diff(ry(x,y),y)=ryy,diff(sy(x,y),y)=syy,vv);
+
+#  vv := subs(diff(ur(r,s),r)=urr,diff(ur(r,s),s)=urs,diff(us(r,s),r)=urs,diff(us(r,s),s)=uss,vv);
+
+# do last
+ vv := subs(rx(x,y)=rx,sx(x,y)=sx,ry(x,y)=ry,sy(x,y)=sy,vv);
+ RETURN(vv):
+end:
+# -------------
+
+names := [urrrr,urrrs,urrss,ursss,ussss, urrr,urrs,urss,usss, urr,urs,uss, ur,us]:
+
+
+#Dxx := substitutePartials(Dxx);
+#Dxy := substitutePartials(Dxy);
+#Dyy := substitutePartials(Dyy);
+
+#Dxxx := substitutePartials(Dxxx):
+#Dxxy := substitutePartials(Dxxy):
+#Dxyy := substitutePartials(Dxyy):
+#Dyyy := substitutePartials(Dyyy):
+
+# names := [ur,us,urr,urs,uss,urrr,urrs,urss,usss,urrrr,urrrs,urrss,ursss,ussss]:
+#Dxxx := collect(Dxxx,names);
+#Dxxy := collect(Dxxy,[ur,us,urr,urs,uss,urrr,urrs,urss,usss]);
+#Dxyy := collect(Dxyy,[ur,us,urr,urs,uss,urrr,urrs,urss,usss]);
+#Dyyy := collect(Dyyy,[ur,us,urr,urs,uss,urrr,urrs,urss,usss]);
+
+#Dxxxx := substitutePartials(Dxxxx):
+#Dxxxy := substitutePartials(Dxxxy):
+
+#Dxxxx := collect(Dxxxx,names);
+#Dxxxy := collect(Dxxxy,names);
+
+# printf("Dxxxx=%s\n",convert(Dxxxx,string));
+
+  # -----------
+  substituteStrings :=proc( uu )
+   local vv:
+   vv := convert(uu,string):
+   vv := SubstituteAll(vv,"rx^","[rx]**"):
+   vv := SubstituteAll(vv,"ry^","[ry]**"):
+   vv := SubstituteAll(vv,"sx^","[sx]**"):
+   vv := SubstituteAll(vv,"sy^","[sy]**"):
+  
+   vv := SubstituteAll(vv,"rx","$rx"):
+   vv := SubstituteAll(vv,"ry","$ry"):
+   vv := SubstituteAll(vv,"sx","$sx"):
+   vv := SubstituteAll(vv,"sy","$sy"):
+
+   vv := SubstituteAll(vv,"u","$u"):
+
+  RETURN(vv):
+  end:
+  # -------------
+
+# Dxxxx := convert(Dxxxx,string):
+# Dxxxx := substituteStrings(Dxxxx):
+# printf("Dxxxx=%s\n",convert(Dxxxx,string));
+
+# printf(" printout \"u ## xxxx$order\".\"2(i1,i2,i3$kd)=%s\\n\"\n",Dxxxx);
+
+# Dxxx := substituteStrings(Dxxx):
+# printf(" printout \"u ## xxx$order2(i1,i2,i3$kd)=%s\\n\"\n",Dxxx);
+
+dxv := [ Dxxx, Dxxy, Dxyy, Dyyy, Dxxxx, Dxxxy, Dxxyy, Dxyyy, Dyyyy ]:
+dxvn:= [  xxx,  xxy,  xyy,  yyy,  xxxx,  xxxy,  xxyy,  xyyy,  yyyy ]:
+
+ mfileName:="derivMacros.h":
+ mfile := fopen( mfileName,WRITE ):
+
+ # *** note: deriv.h is used in makeIncludeNew.p ****
+ fileName:="deriv.h":
+ file := fopen( fileName,WRITE ):
+
+ for m from 1 to 9 do
+  dd := dxv[m]:
+  # printf(" m=%d, dd=%s\n",m,convert(dd,string));
+
+  dd := collect(dd,names):
+  dd := substitutePartials(dd):
+
+  fprintf(file,"c D%s=%s\n",convert(dxvn[m],string),convert(expand(dd),string));
+
+  dd := substituteStrings(dd):
+
+
+  fprintf(file," printout \"u ## %s$order2(i1,i2,i3$kd)=%s\\n\";\n\n",convert(dxvn[m],string),dd);
+
+end do:
+
+fprintf(file,"\n\n");
+
+# Output derivative expressions for the jacobian rx
+for m from 1 to 9 do
+  dd := dxv[m]:
+  # printf(" m=%d, dd=%s\n",m,convert(dd,string));
+  dd := collect(dd,names):
+  dd := substitutePartials(dd):
+
+
+  dd := substituteStrings(dd):
+  
+  dd := SubstituteAll(dd,"\$u","$rx"):
+  fprintf(file," printout \"rx ## %s$order2(i1,i2,i3$kd)=%s\\n\";\n\n",convert(dxvn[m],string),dd);
+
+end do:
+
+fclose(file):
+
+# restart; read "deriv.maple";
+
+#  lprint(Dxxxx);
+# rx^4*urrrr+4*rx^3*sx*urrrs+6*rx^2*sx^2*urrss+4*rx*sx^3*ursss+sx^4*ussss+6*rxx*rx^2*urrr+(7*rxx*sx*rx+rx*(2*sx*
+# rxx+2*sxx*rx)+sxx*rx^2+rx*(3*sx*rxx+3*sxx*rx))*urrs+(rxx*sx^2+sx*(2*sx*rxx+2*sxx*rx)+7*rx*sx*sxx+sx*(3*sx*rxx+
+# 3*sxx*rx))*urss+6*sx^2*sxx*usss+(4*rxxx*rx+3*rxx^2)*urr+(4*sx*rxxx+4*sxxx*rx+6*sxx*rxx)*urs+(4*sxxx*sx+3*sxx^2
+# )*uss+rxxxx*ur+sxxxx*us
+
+# Here is the form of the output we need for makeIncludeNew.p:
+#  printout "u ## yyy$order"."2(i1,i2,i3$kd)=".
+#     "([$ry]**3)*$urrr+3.*($ry*$sy)*($ry*$urrs+$sy*$urss)+([$sy]**3)*$usss".
+#     "+3.*($ry*$ryy2*$urr+$ryy2*$sy*$urs+$ry*$syy2*$urs+$sy*$syy2*$uss)".
+#     "+$ryyy2*$ur +$syyy*$us\n";
+
+
+
+# ***************** now find the coefficients of the ghost points ******************
+Dzr := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( (f(x+1,y,z)-f(x-1,y,z))/2 ), x,y,z);
+end:
+Dpr := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x+1,y,z)-f(x,y,z) ), x,y,z );
+end:
+Dmr := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x,y,z)-f(x-1,y,z)), x,y,z);
+end:
+Dzs := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( (f(x,y+1,z)-f(x,y-1,z))/2 ), x,y,z);
+end:
+Dps := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x,y+1,z)-f(x,y,z) ), x,y,z);
+end:
+Dms := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x,y,z)-f(x,y-1,z)), x,y,z);
+end:
+
+Dzt := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( (f(x,y,z+1)-f(x,y,z-1))/2 ), x,y,z);
+end:
+Dpt := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x,y,z+1)-f(x,y,z) ), x,y,z);
+end:
+Dmt := proc(f)
+  local x,y,z;
+  option operator;
+  unapply( simplify( f(x,y,z)-f(x,y,z-1)), x,y,z);
+end:
+
+
+  # -----------
+  substituteStrings2 :=proc( uu )
+   local vv:
+   vv := collect(uu,[dr, ds]):
+
+   vv := convert(vv,string):
+   vv := SubstituteAll(vv,"rx^","rx**"):
+   vv := SubstituteAll(vv,"ry^","ry**"):
+   vv := SubstituteAll(vv,"sx^","sx**"):
+   vv := SubstituteAll(vv,"sy^","sy**"):
+   vv := SubstituteAll(vv,"^","**"):
+#   vv := SubstituteAll(vv,"1/2",".5"):
+#   vv := SubstituteAll(vv,"1/4",".25"):
+
+   vv := SubstituteAll(vv,"/2","/2."):
+   vv := SubstituteAll(vv,"/3","/3."):
+   vv := SubstituteAll(vv,"/4","/4."):
+   vv := SubstituteAll(vv,"/5","/5."):
+   vv := SubstituteAll(vv,"/6","/6."):
+   vv := SubstituteAll(vv,"/7","/7."):
+   vv := SubstituteAll(vv,"/8","/8."):
+   vv := SubstituteAll(vv,"/9","/9."):
+  
+   vv := SubstituteAll(vv,"/12","/12."):
+   vv := SubstituteAll(vv,"/24","/24."):
+
+  RETURN(vv):
+  end:
+  # -------------
+
+Dxx := substitutePartials(Dxx):
+Dyy := substitutePartials(Dyy):
+
+# **************** fourth order ****************
+#vr := ( Dzr(u) -(1/6)*Dzr(Dpr(Dmr(u))) )/(dr):
+
+if true then
+  ur := is*( Dzr(u)(i1,i2,i3) -(1/6)*Dzr(Dpr(Dmr(u)))(i1,i2,i3) )/(dr):
+  urr:= ( Dpr(Dmr(u))(i1,i2,i3) -(1/12)*Dpr(Dpr(Dmr(Dmr(u))))(i1,i2,i3) )/(dr*dr):
+  
+  #urs := is*js*( Dzs(vr)(i1,i2,i3) -(1/6)*Dzs(Dps(Dms(vr)))(i1,i2,i3) )/(ds):
+  
+  # ------------
+  dd := Dxx + Dyy:
+  c1 := coeff(dd,u(i1-1,i2,i3)):
+  c1:=substituteStrings2(c1):
+  printf(" Dxx+Dyy: coeff u(-1) : %s \n\n",convert(c1,string));
+  fprintf(mfile,"#defineMacro lapCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string)); 
+
+  c2 := coeff(dd,u(i1-2,i2,i3)):
+  c2:=substituteStrings2(c2):
+  printf(" Dxx+Dyy: coeff u(-2) : %s \n\n",convert(c2,string));
+  fprintf(mfile,"#defineMacro lapCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string)); 
+end if:
+
+# *******************second order****************************
+
+# now redefine ur,urr, before substitutePartials on Dxxx etc.
+ur := is*Dzr(u)(i1,i2,i3)/(dr):
+urr:=Dpr(Dmr(u))(i1,i2,i3)/(dr*dr):
+urrr:=is*Dzr(Dpr(Dmr(u)))(i1,i2,i3)/(dr^3):
+urrrr:=Dpr(Dpr(Dmr(Dmr(u))))(i1,i2,i3)/(dr^4):
+urss:=is*Dps(Dms(Dzr(u)))(i1,i2,i3)/(dr*ds^2):
+urrss:=Dps(Dms(Dpr(Dmr(u))))(i1,i2,i3)/(dr^2*ds^2):
+
+Dxxx := substitutePartials(Dxxx):
+Dxxy := substitutePartials(Dxxy):
+Dxyy := substitutePartials(Dxyy):
+Dyyy := substitutePartials(Dyyy):
+
+Dxxxx := substitutePartials(Dxxxx):
+Dxxyy := substitutePartials(Dxxyy):
+Dyyyy := substitutePartials(Dyyyy):
+
+
+c1 := coeff(Dxxx,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+printf(" Dxxx: coeff u(-1) : %s \n\n",convert(c1,string));
+
+c2 := coeff(Dxxx,u(i1-2,i2,i3)):
+printf(" Dxxx: coeff u(-2) : %s \n\n",convert(c2,string));
+
+c1 := coeff(Dxxxx,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+printf(" Dxxxx: coeff u(-1) : %s \n\n",convert(c1,string));
+
+# ------------
+dd := Dxxx + Dxyy:
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+printf(" Dxxx+Dxyy: coeff u(-1) : %s \n\n",convert(c1,string));
+fprintf(mfile,"#defineMacro xLapCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+printf(" Dxxx+Dxyy: coeff u(-2) : %s \n\n",convert(c2,string));
+fprintf(mfile,"#defineMacro xLapCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+# -----------
+dd := Dxxy + Dyyy:
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+printf(" Dxxy+Dyyy: coeff u(-1) : %s \n\n",convert(c1,string));
+fprintf(mfile,"#defineMacro yLapCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+printf(" Dxxy+Dyyy: coeff u(-2) : %s \n\n",convert(c2,string));
+fprintf(mfile,"#defineMacro yLapCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+
+
+lapSq := Dxxxx +2*Dxxyy + Dyyyy:
+dd := lapSq:
+
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+printf(" lapSq: coeff u(-1) : %s \n\n",convert(c1,string));
+fprintf(mfile,"#defineMacro lapSqCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+printf(" lapSq: coeff u(-2) : %s \n\n",convert(c2,string));
+fprintf(mfile,"#defineMacro lapSqCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+
+# --- 090630 : 
+
+dd:= Dxxxx;
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+fprintf(mfile,"#defineMacro xxxxCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+fprintf(mfile,"#defineMacro xxxxCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+dd:= Dyyyy;
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+fprintf(mfile,"#defineMacro yyyyCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+fprintf(mfile,"#defineMacro yyyyCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+dd:= Dxxyy;
+c1 := coeff(dd,u(i1-1,i2,i3)):
+c1:=substituteStrings2(c1):
+fprintf(mfile,"#defineMacro xxyyCoeff4a(is,dr,ds) ( %s )\n\n",convert(c1,string));
+
+c2 := coeff(dd,u(i1-2,i2,i3)):
+c2:=substituteStrings2(c2):
+fprintf(mfile,"#defineMacro xxyyCoeff4b(is,dr,ds) ( %s )\n\n",convert(c2,string));
+
+
+
+fclose(mfile):
+
+printf(" **** output written to file [%s] ******\n",fileName);
+printf(" **** macro output written to file [%s] ******\n",mfileName);
+
+# restart; read "deriv.maple";

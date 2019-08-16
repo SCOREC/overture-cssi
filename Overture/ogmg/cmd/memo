@@ -1,6 +1,35 @@
 set ogmgt = $ogmg/ogmgt
 
 ****************************
+****** July 19, 2019
+
+
+ogmgt tz -noplot -g=square32.order2
+
+****************************
+****** June 26, 2019
+
+**BUG FIXED: lineSmooth.bC : use orderOfThisLevel
+
+
+
+CHECK ORDER=2 COARSE GRID SOLVE WITH LINE SMOOTH
+
+** CHECK LINE SMOOTHS with ORDER=2 COARSE SOLVE 
+
+** TROUBLE with ORDER-COARSE=2 *** (-levels=2 OK)
+ogmgt tz -noplot -g=sphereInABoxe2.order4.ml2.hdf -opav=0 -maxit=7 -orderCoarse=2 -autoChoose=1
+
+
+ogmgt tz -noplot -g=sphereInABoxe2.order4.ml2.hdf -opav=0 -maxit=7 -orderCoarse=2
+
+OK red-black on all grids:
+
+Iteration=1..7 : Total WU=2.86e+01, total res reduction=1.60e-07, ave CR=0.1069 ave ECR=0.579 np=1
+  MaxRes=1.34e-03, TR10=4.69e-01 (time to reduce residual by a factor of 10) TR10/(M/np)=2.25e-01
+
+
+****************************
 ****** Tues Aug 8, 2018
 
 3D tests

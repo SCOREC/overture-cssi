@@ -757,7 +757,7 @@ end if
        do n=0,nd-1
         do jv=0,numberOfPolarizationVectors1-1
           pc = jv*nd+n
-          ! smooth in the normal drection: 
+          ! smooth in the normal direction: 
           p1(i1,i2,i3,pc) = ( -( p1(i1-2*is1,i2-2*is2,i3,pc)+p1(i1+2*is1,i2+2*is2,i3,pc) ) \
                            +4.*( p1(i1-  is1,i2-  is2,i3,pc)+p1(i1+  is1,i2+  is2,i3,pc) ) \
                            +10.* p1(i1,i2,i3,pc) )/16.
@@ -846,7 +846,7 @@ end if
 
   write(*,'("CHECK-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
 
-  ! First eval equartions with no pertutbation --> save in f0 
+  ! First eval equations with no pertutbation --> save in f0 
   evalInterfaceEquations()
   do n1=0,numberOfEquations-1
    f0(n1)=f(n1)

@@ -36,7 +36,7 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"diss=
             "errorNorm=i"=>\$errorNorm,"m=f"=>\$m,"n=f"=>\$n,"dissOrder=i"=>\$dissOrder,"cg=s"=>\$cg,\
             "bg=s"=>\$bg,"option=s"=>\$option,"ic=s"=>\$ic,"bc=s"=>\$bc,"dm=s"=>\$dm,"tz=s"=>\$tz,\
             "eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"cons=i"=>\$cons,"useSosupDissipation=i"=>\$useSosupDissipation,\
-            "kx=i"=>\$kx,"ky=i"=>\$ky,"kz=i"=>\$kz,"npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,"interfaceIts=i"=>\$interfaceIts,\
+            "kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz,"npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,"interfaceIts=i"=>\$interfaceIts,\
            "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
            "interfacePoint=f{1,}"=>\@interfacePoint,"interfaceNormal=f{1,}"=>\@interfaceNormal );

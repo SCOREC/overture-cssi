@@ -7,7 +7,8 @@
 #        -plotIntensity=[0|1] -eps1=<> -eps2=<> -interit=<> -diss=<> -filter=[0|1] -debug=<num> -cons=[0/1] ...
 #        -method=[nfdtd|Yee|sosup] -bcn=[default|d|abc] -plotHarmonicComponents=[0|1] ] -dm=[none|gdm]
 #        -useSosupDissipation=[0|1] -sosupParameter=[0-1] -sosupDissipationOption=[0|1] ...
-#        -stageOption=[IDB|IBDB|D-IB|...] -a0= f f .. -a1=f f .. -b0= f f.. -b1=f f ..    -go=[run/halt/og]
+#        -stageOption=[IDB|IBDB|D-IB|...] -a0= f f .. -a1=f f .. -b0= f f.. -b1=f f ..  -dmFile=<s> -dmSaveFile=<s> ...
+#        -go=[run/halt/og]
 #
 # Arguments:
 #  -kx= -ky= -kz= : integer wave numbers of the incident wave
@@ -133,7 +134,8 @@ $stageOption ="default";
 # GDM parameters
 $npv=1; $alphaP=-1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
-$dmFile=""; # "SilverJCDispersionFits.txt"; 
+$dmFile=""; # "SilverJCDispersionFits.txt";
+$dmSaveFile=""; # for saving GDM parameters to a file
 # ----------------------------- get command line arguments ---------------------------------------
 # GetOptions('a=s{2}' => \@opt_a, 'b=s{2}' => \@opt_b  );
 # printf(" opt_a[0]=[%s] opt_a[1]=[%s]\n",$opt_a[0],$opt_a[1]);
@@ -151,7 +153,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
     "sosupDissipationOption=i"=>\$sosupDissipationOption,"modeGDM=i"=>\$modeGDM,\
     "checkErrors=i"=>\$checkErrors,"dm=s"=>\$dm,"stageOption=s"=>\$stageOption,\
     "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv,\
-   "dmFile=s"=>\$dmFile );
+    "dmFile=s"=>\$dmFile, "dmSaveFile=s"=>\$dmSaveFile );
 # -------------------------------------------------------------------------------------------------
 # printf(" opt_a[0]=[%s] opt_a[1]=[%s]\n",$opt_a[0],$opt_a[1]);
 # printf(" opt_b[0]=[%s] opt_b[1]=[%s]\n",$opt_b[0],$opt_b[1]);
@@ -198,6 +200,9 @@ $cmd
 #
 # -- read material parameters from a file 
 if( $dmFile ne "" ) { $cmd="GDM domain name: $domain\n number of polarization vectors: $npv\n material file: $dmFile" }else{ $cmd="#"; }
+$cmd 
+# -- test: save material parameters to a file
+if( $dmSaveFile ne "" ) { $cmd="GDM domain name: $domain\nsave material file: $dmSaveFile" }else{ $cmd="#"; }
 $cmd 
 # 
 # -- set default stage options

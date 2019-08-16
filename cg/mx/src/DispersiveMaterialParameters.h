@@ -63,6 +63,7 @@ public:
   int getBianisotropicParameters( RealArray & K0, RealArray & bianisotropicParameters, IntegerArray & Np );
 
   real getEpsInf() const;
+  real getMuInf() const;
 
   real getAlphaP() const;
 
@@ -76,7 +77,8 @@ public:
   // read dispersive material parameters from a file 
   int readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested = -1 );
 
-  int setEpsInf( const real epsInf_ );
+  int setEpsInf( const real epsInf );
+  int setMuInf( const real muInf );
 
   int setMaterialType( MaterialTypeEnum matType );
 
@@ -97,11 +99,14 @@ public:
   //                                       real & omegar, real & omegai );
   int setParameters( const real a0, const real a1, const real b0, const real b1 );
 
+  // write parameters to a material database file
+  int writeToFile( const aString & fileName );
+
 
   // Data members -- make public for now
   public:
 
-  real epsInf;
+  real epsInf, muInf;
   real alphaP;
   real gamma, omegap;  // Drude-Lorentz model
 

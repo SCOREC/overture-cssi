@@ -10,6 +10,8 @@
 #include "ShowFileReader.h"
 #include "ParallelUtility.h"
 
+#include "SphereExactSolutions.h"
+
 #define scatCyl EXTERN_C_NAME(scatcyl)
 #define scatSphere EXTERN_C_NAME(scatsphere)
 #define exmax EXTERN_C_NAME(exmax)
@@ -245,6 +247,7 @@ initializePlaneMaterialInterface()
   for( int axis=0; axis<3; axis++ )
     nv[axis]=normalPlaneMaterialInterface[axis];
 
+
   const real kv[3]={kx,ky,kz};
   const real kNorm = sqrt(kx*kx+ky*ky+kz*kz);
   assert( kNorm>0. );
@@ -288,9 +291,9 @@ initializePlaneMaterialInterface()
 
 
   // E: (amplitude of incident=1)
-  real av[3]={-ky/kNorm, kx/kNorm,0.};         // incident : we have different choices here in 3d 
-  real bv[3]={-kr[1]/krNorm, kr[0]/krNorm,0.}; // reflected : this depends on av
-  real dv[3]={-kappa[1]/kappaNorm, kappa[0]/kappaNorm,0.}; // transmitted : this depends on av
+  real av[3]={-ky/kNorm, kx/kNorm,0.};                      // incident : we have different choices here in 3d 
+  real bv[3]={-kr[1]/krNorm, kr[0]/krNorm,0.};              // reflected : this depends on av
+  real dv[3]={-kappa[1]/kappaNorm, kappa[0]/kappaNorm,0.};  // transmitted : this depends on av
 
   // new way: use plane wave solution as the incident:
   for( int axis=0; axis<3; axis++ )
@@ -2623,6 +2626,9 @@ initializeKnownSolution()
   real epsHat2r=eps2, epsHat2i=0.;
   real sr=0., si=0;
 
+  // *new way* June 29, 2019
+  SphereExactSolutions ses;  // scattering from a sphere exact solution 
+
   if( dispersionModel!=noDispersion &&
       (knownSolutionOption==scatteringFromADielectricDiskKnownSolution ||
        knownSolutionOption==scatteringFromADielectricSphereKnownSolution) )
@@ -2704,6 +2710,7 @@ initializeKnownSolution()
     epsHat2i = eps2*(   chiSum2i );
     
 
+
     if( true )
     {
       printF("\n @@@@@@ Dispersive dielectric: Complex refractive index=(%.4e,%.4e) @@@@@@ \n\n",mr,mi);
@@ -2714,6 +2721,15 @@ initializeKnownSolution()
   
 
   }
+  else
+  {
+    // Non dispersive case:  *wdh* Do this for the new way July 16, 2019 
+
+    const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz );   
+    sr=0.;
+    si = -c1*kk;
+  }
+  
   
   // ------ Parameters for scattering from a cylinder (PEC or dielectric) or sphere (PEC or dielectric) --------
   const real a = dbase.get<real>("scatteringRadius"); // radius of the cylinder or sphere *wdh* 2015/07/03
@@ -2725,8 +2741,28 @@ initializeKnownSolution()
   int option=0;  // 0=PEC cylinder, 1=di-electric
   int inOut=0;   // 0=exterior, 1=interior to the dielectric
   int staggeredGrid = method==yee ? 1 : 0;
-  int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug,dispersionModel}; //
+  int computeMagneticField=0;
+  int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug,dispersionModel,computeMagneticField}; //
 
+
+  if( knownSolutionOption==scatteringFromADielectricSphereKnownSolution )
+  {
+    // ---- initialize scattering from a sphere exact solution ----
+    printF("INITIALIZE scattering from a sphere exact solution: RADIUS a=%g\n", a);
+    
+    // real aSphere=1.; // ** default is wrong -- fix me 
+
+    real sc[2]={sr,si},  kc[2]={twoPi*kx,0.};
+    real eps0[2]={epsHat1r,epsHat1i}, mu0[2]={1.,0.}, eps1[2]={epsHat2r,epsHat2i}, mu1[2]={1.,0.};  // 
+    ses.initialize( cg.numberOfDomains(), a, sc,kc, eps0, mu0, eps1, mu1 );
+
+    // Check the solution:
+    ses.check();
+
+
+  }
+  
+    
 
   Index I1,I2,I3;
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -2794,7 +2830,7 @@ initializeKnownSolution()
       inOut=0; ipar[7]=inOut; // eval outside
       if( cg.numberOfDimensions()==2 )
       {
-        // --- evaluate scattering by a cylinder ---
+        // --- YEE evaluate scattering by a cylinder ---
 
 	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f, inOut=%i...\n",grid,option,rpar[2],inOut);
 	scatCyl(mg.numberOfDimensions(), 
@@ -2807,7 +2843,7 @@ initializeKnownSolution()
       }
       else
       {
-        // --- evaluate scattering by a sphere ---
+        // --- YEE evaluate scattering by a sphere ---
         assert( ug.getLength(3)==12 );
       
 	printF(" Call scatSphere for grid=%i...\n",grid);
@@ -2829,7 +2865,7 @@ initializeKnownSolution()
       ui=0.;
       if( cg.numberOfDimensions()==2 )
       {
-        // --- evaluate scattering by a cylinder ---
+        // --- YEE evaluate scattering by a cylinder ---
 
 	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f...\n",grid,option,rpar[2]);
 	scatCyl(mg.numberOfDimensions(), 
@@ -2842,7 +2878,7 @@ initializeKnownSolution()
       }
       else
       {
-        // --- evaluate scattering by a sphere ---
+        // --- YEE evaluate scattering by a sphere ---
 	printF(" Call scatSphere for grid=%i...\n",grid);
 	scatSphere(mg.numberOfDimensions(), 
 		   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
@@ -2967,14 +3003,28 @@ initializeKnownSolution()
       else
       {
         // --- evaluate scattering by a sphere ---
-	printF(" Call scatSphere for grid=%i...\n",grid);
-	scatSphere(mg.numberOfDimensions(), 
-		   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-		   ug.getBase(0),ug.getBound(0),
-		   ug.getBase(1),ug.getBound(1),
-		   ug.getBase(2),ug.getBound(2),
-		   ug.getBase(3),ug.getBound(3),
-		   *(xy.getDataPointer()),*(ug.getDataPointer()),ipar[0],rpar[0] );
+	if( true )
+	{
+          // *new* June 2019 
+	  printF(" CALL: scattering from a sphere exact solution for domain=%i, grid=%i\n",
+	            cg.domainNumber(grid),grid );
+
+          realMappedGridFunction & uKnown = (*knownSolution)[grid];
+          ses.eval( uKnown , cg.domainNumber(grid),grid  );
+	  
+	}
+	else
+	{
+	  printF(" Call scatSphere for grid=%i...\n",grid);
+	  scatSphere(mg.numberOfDimensions(), 
+		     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+		     ug.getBase(0),ug.getBound(0),
+		     ug.getBase(1),ug.getBound(1),
+		     ug.getBase(2),ug.getBound(2),
+		     ug.getBase(3),ug.getBound(3),
+		     *(xy.getDataPointer()),*(ug.getDataPointer()),ipar[0],rpar[0] );
+	}
+	
       }
 
 

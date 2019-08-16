@@ -1,4 +1,182 @@
 ****************************************
+*********** Aug 6, 2019
+
+
+GOLD: 
+/home/henshw/cg.g/mx/bin/cgmx -noplot /home/henshw/overtureFramework/cg/mx/runs/dielectricCyl/dielectricCyl -g=innerOuterFixede16.order4.ng3 -cyl=1 -kx=3 -eps1=0.25 -eps2=1 -diss=0.5 -dissOrder=-1 -interit=5 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.3 -tp=.1 -alphaP=-1 -1 -dm=gdm -dmFile=../gdm/GoldJCDispersionFits.txt -npv=0 4 -modeGDM=-1 -a01=1 0 0 -a11=0.1 0 0 -b01=0.9 0 0 -b11=0.2 0 0 -a02=0.9 0 0 -a12=0.2 0 0 -b02=0.8 0 0 -b12=0.1 0 0 -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+
++++++++++++++++++++ AFTER TURN ON  INTERFACE SMOOTH P
+
+
+>>> Cgmx:FD: t=1.00e-01 dt=1.5e-03 TS=ME GDM |div(E)|/|grad(E)|=2.67e-06 (=5.52e-05/2.07e+01) 65 steps mem=176(Mb) cpu=2.67e+01(s)
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.112e-01 max-err = 8.834e-07
+>>> t=1.00e-01 dt=1.5e-03 max errors:[6.09e-07,4.96e-07,1.60e+00,], max (u):[1.98e-01,1.10e+00,1.34e+00,] (65 steps)
+
+>>> Cgmx:FD: t=2.00e-01 dt=1.5e-03 TS=ME GDM |div(E)|/|grad(E)|=2.31e-06 (=4.75e-05/2.06e+01) 130 steps mem=228(Mb) cpu=4.42e+01(s)
+--getErrors: t=2.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.115e-01 max-err = 9.892e-07
+>>> t=2.00e-01 dt=1.5e-03 max errors:[6.25e-07,7.42e-07,1.57e+00,], max (u):[1.94e-01,1.11e+00,1.89e+00,] (130 steps)
+
+>> Cgmx:FD: t=3.00e-01 dt=1.5e-03 TS=ME GDM |div(E)|/|grad(E)|=2.53e-06 (=5.24e-05/2.07e+01) 195 steps mem=237(Mb) cpu=6.57e+01(s)
+--getErrors: t=3.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.126e-01 max-err = 1.344e-06
+>>> t=3.00e-01 dt=1.5e-03 max errors:[5.31e-07,8.31e-07,1.18e+00,], max (u):[1.97e-01,1.11e+00,2.06e+00,] (195 steps)
+
+
+
++++++++++++++++++++++ NO INTERFACE SMOOTH P
+
+>>> Cgmx:FD: t=1.00e-01 dt=1.5e-03 TS=ME GDM |div(E)|/|grad(E)|=4.34e-07 (=8.97e-06/2.07e+01) 65 steps mem=178(Mb) cpu=1.22e+01(s)
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.112e-01 max-err = 4.034e-07
+>>> t=1.00e-01 dt=1.5e-03 max errors:[1.51e-07,2.90e-07,1.60e+00,], max (u):[1.98e-01,1.10e+00,1.34e+00,] (65 steps)
+
+--getErrors: t=2.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.115e-01 max-err = 9.394e-07
+>>> t=2.00e-01 dt=1.5e-03 max errors:[1.97e-07,4.05e-07,1.57e+00,], max (u):[1.94e-01,1.11e+00,1.89e+00,] (130 steps)
+
+--getErrors: t=3.000e-01 domain=1 (innerDomain) numPolarizationVectors=4 P-norm=1.126e-01 max-err = 1.482e-06
+>>> t=3.00e-01 dt=1.5e-03 max errors:[1.90e-07,5.71e-07,1.18e+00,], max (u):[1.97e-01,1.11e+00,2.06e+00,] (195 steps)
+
+
+****************************************
+*********** Aug 6, 2019
+
+
+REVISIT -- GOLD 
+
+kx=2
+cgmx -noplot dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=2 -eps1=0.25 -eps2=1 -method=NFDTD -tf=2 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0  -show=dieCylGoldNp4kx2.show -go=go >! dieCylGoldNp4kx2.out
+
+kx=.5 
+cgmx -noplot dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=.5 -eps1=0.25 -eps2=1 -method=NFDTD -tf=2 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0  -show=dieCylGoldNp4kx0p5.show -go=go >! dieCylGoldNp4kx0p5.out
+
+
+****************************************
+*********** July 16, 2019
+
+TEST NEW 2d ORDER=2 interface 
+
+DISK IS BROKEN ?? exact solution OFF ? 
+
+
+
+ORDER=2
+cgmx -noplot dielectricCyl -g=innerOuterFixede2.order2 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1 -dm=gdm -dmFile= -npv=1 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+
+G4:
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.482e-02 max-err = 1.903e-04
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.371e-03 max-err = 6.492e-05
+>>> t=5.00e-01 dt=2.9e-03 max errors:[6.35e-03,7.92e-03,1.64e+00,], max (u):[8.81e-01,1.54e+00,1.57e+00,] (175 steps)
+
+
+G2
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.475e-02 max-err = 8.002e-04
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.275e-03 max-err = 2.679e-04
+>>> t=5.00e-01 dt=5.6e-03 max errors:[2.56e-02,3.35e-02,3.21e-01,], max (u):[8.75e-01,1.54e+00,1.66e+00,] (90 steps)
+
+
+
+BROKEN?
+
+ORDER=4 OK
+cgmx -noplot dielectricCyl -g=innerOuterFixede2.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1 -dm=gdm -dmFile= -npv=1 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+NEW: 
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.475e-02 max-err = 9.273e-06
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.389e-03 max-err = 4.091e-06
+>>> t=5.00e-01 dt=5.6e-03 max errors:[3.95e-04,5.44e-04,2.49e-01,], max (u):[8.85e-01,1.54e+00,1.68e+00,] (90 steps)
+
+PREVIOUS
+G2
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.475e-02 max-err = 9.273e-06
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.389e-03 max-err = 4.091e-06
+>>> t=5.00e-01 dt=5.6e-03 max errors:[3.95e-04,5.44e-04,2.49e-01,], max (u):[8.85e-01,1.54e+00,1.68e+00,] (90 steps)
+
+****************************************
+*********** July 7, 2019
+
+
+NOTE: CAN NOT CHANGE #perl to 2nd order !
+
+TEST NEW NO-ITERATION INTERFACE CONDITIONS
+
+cgmx -noplot dielectricCyl -g=innerOuterFixede2.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1 -dm=gdm -dmFile= -npv=1 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+cgmx -noplot dielectricCyl -g=innerOuterFixede4.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1 -dm=gdm -dmFile= -npv=1 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+cgmx -noplot dielectricCyl -g=innerOuterFixede8.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1 -dm=gdm -dmFile= -npv=1 1 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+G2
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.475e-02 max-err = 9.273e-06
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.389e-03 max-err = 4.091e-06
+>>> t=5.00e-01 dt=5.6e-03 max errors:[3.95e-04,5.44e-04,2.49e-01,], max (u):[8.85e-01,1.54e+00,1.68e+00,] (90 steps)
+OLD: 
+>>> t=5.00e-01 dt=5.6e-03 max errors:[1.68e-03,1.84e-03,2.49e-01,], max (u):[8.85e-01,1.54e+00,1.68e+00,] (90 steps)
+
+G4 
+NEW: 
+>>> t=5.00e-01 dt=2.9e-03 max errors:[3.08e-05,3.67e-05,1.68e+00,], max (u):[8.83e-01,1.54e+00,1.57e+00,] (175 steps)
+OLD: 
+>>> t=5.00e-01 dt=2.9e-03 max errors:[4.55e-04,4.96e-04,1.68e+00,], max (u):[8.83e-01,1.54e+00,1.57e+00,] (175 steps)
+
+G8 
+>>> t=5.00e-01 dt=1.5e-03 max errors:[2.25e-06,2.57e-06,1.68e+00,], max (u):[8.85e-01,1.54e+00,1.57e+00,] (340 steps)
+
+OLD
+--getErrors: t=5.000e-01 domain=0 (outerDomain) numPolarizationVectors=1 P-norm=1.483e-02 max-err = 3.091e-06
+--getErrors: t=5.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=4.396e-03 max-err = 1.241e-06
+>>> t=5.00e-01 dt=1.5e-03 max errors:[1.22e-04,1.29e-04,1.68e+00,], max (u):[8.85e-01,1.54e+00,1.57e+00,] (340 steps)
+
+
+NO GDM 
+cgmx -noplot dielectricCyl -g=innerOuterFixede4.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+cgmx -noplot dielectricCyl -g=innerOuterFixede8.order4.ng3 -cyl=1 -kx=2 -eps1=0.25 -eps2=1 -interit=1 -cfl=0.9 -method=NFDTD -tf=.5 -tp=.1  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -go=og
+
+
+G4
+>>> t=5.00e-01 dt=2.9e-03 max errors:[1.99e-05,3.04e-05,3.11e-05,], max (u):[9.11e-01,1.58e+00,1.67e+00,] (175 steps)
+
+G8
+>>> t=5.00e-01 dt=1.5e-03 max errors:[1.24e-06,1.77e-06,1.91e-06,], max (u):[9.12e-01,1.58e+00,1.67e+00,] (340 steps)
+
+****************************************
+*********** June 20, 2019
+
+npv=1,2 mode=1
+
+R-mode
+cgmx -noplot dielectricCyl -g=innerOuterFixede8.order4.ng3 -cyl=1 -kx=3 -eps1=0.25 -eps2=1 -diss=0 -dissOrder=-1 -interit=5 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.5 -tp=.1 -alphaP=-1 -1 -dm=gdm -dmFile= -npv=1 2 -modeGDM=1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -show=dieCylG8ModeR.show -go=go >! dieCylG8ModeR.out 
+
+NR-mode=-1 
+cgmx -noplot dielectricCyl -g=innerOuterFixede8.order4.ng3 -cyl=1 -kx=3 -eps1=0.25 -eps2=1 -diss=0 -dissOrder=-1 -interit=5 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.3 -tp=.1 -alphaP=-1 -1 -dm=gdm -dmFile= -npv=1 2 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -show=dieCylG8ModeNR.show -go=go >! dieCylG8ModeNR.out 
+
+
+NR-mode=-1  G16 
+cgmx -noplot dielectricCyl -g=innerOuterFixede16.order4.ng3 -cyl=1 -kx=3 -eps1=0.25 -eps2=1 -diss=0 -dissOrder=-1 -interit=5 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.3 -tp=.1 -alphaP=-1 -1 -dm=gdm -dmFile= -npv=1 2 -modeGDM=-1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0 -show=dieCylG16ModeNR.show -go=go >! dieCylG16ModeNR.out 
+
+
+
+
+****************************************
+*********** June 6, 2019
+
+
+GOLD 
+
+kx=2
+cgmx -noplot dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=2 -eps1=0.25 -eps2=1 -method=NFDTD -tf=2 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0  -show=dieCylGoldNp4kx2.show -go=go >! dieCylGoldNp4kx2.out
+
+kx=.5 
+cgmx -noplot dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=.5 -eps1=0.25 -eps2=1 -method=NFDTD -tf=2 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0  -show=dieCylGoldNp4kx0p5.show -go=go >! dieCylGoldNp4kx0p5.out
+
+
+cgmx -nolot dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=.0796 -eps1=0.25 -eps2=1 -method=NFDTD -tf=10 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0  -show=dieCylBigG4.show -go=go >! dieCylGoldNp4G4.out
+
+
+cgmx dielectricCyl -g=innerOuterBige4.order4.ng3 -cyl=1 -lengthScale=1e-7  -kx=.5 -eps1=0.25 -eps2=1 -method=NFDTD -tf=10 -tp=.1 -dm=gdm -npv=0 4 -dmFile=../gdm/GoldJCDispersionFits.txt -useSosupDissipation=1 -cons=0 -go=halt
+
+
+****************************************
 *********** May 26, 2019
 
 CHECK HZ continuity with matlab code dieCyl.m

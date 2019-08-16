@@ -398,7 +398,7 @@
       real krx,kry,krz
       complex*16 qDotQ,qDotH,qDotM,qDotG
       complex*16 pDotQ,pDotH,pDotM,pDotG
-      ! real Eperp,Epar, Tperp,Tpar
+      complex*16 Eperp,Epar, Tperp,Tpar
  
       complex*16 qDotKrCrossQ,qDotKrCrossH,qDotKtCrossQ,qDotKtCrossM,qDotKCrossA
       complex*16 pDotKrCrossQ,pDotKrCrossH,pDotKtCrossQ,pDotKtCrossM,pDotKCrossA
@@ -414,21 +414,7 @@
       integer debug
 
       eps = 1.e-12 ! fix me -- 100*REAL_EPS 
-      debug=0
-
-      aDotk = ax*kx+ay*ky+az*kz
-      if( debug.gt.0 )then
-        write(*,'("ENTERING evalMaterialInterfaceSolution3d")') 
-        write(*,'(" s =",2(1pe10.2))') sr,si
-        write(*,'(" av =",3(1pe10.2))') av(1),av(2),av(3)
-        write(*,'(" kv =",3(1pe10.2))') kv(1),kv(2),kv(3)
-        write(*,'(" nv =",3(1pe10.2))') nv(1),nv(2),nv(3)
-
-        write(*,'(" aDotK =",(1pe10.2)," (Should be zero)")') aDotK
-      end if 
-      if( abs(aDotk) .gt. eps )then
-        write(*,'("evalMatInterfaceSolution3d: ERROR a.k ~= 0, a.k=",e10.2)') aDotk
-      end if
+      debug=3 ! 0   ! 3
 
  
       ax=av(1)
@@ -442,6 +428,25 @@
       nx=nv(1)
       ny=nv(2)
       nz=nv(3)
+
+      aDotk = ax*kx+ay*ky+az*kz
+      if( debug.gt.0 )then
+        write(*,'("ENTERING evalMaterialInterfaceSolution3d")') 
+        write(*,'(" s =",2(1pe10.2))') sr,si
+        write(*,'(" av =",3(1pe10.2))') av(1),av(2),av(3)
+        write(*,'(" kv =",3(1pe10.2))') kv(1),kv(2),kv(3)
+        write(*,'(" nv =",3(1pe10.2))') nv(1),nv(2),nv(3)
+
+        write(*,'(" aDotK =",(1pe10.2)," (Should be zero)")') aDotK
+      end if 
+      if( abs(aDotk) .gt. eps )then
+        write(*,'("evalMatInterfaceSolution3d: ERROR a.k != 0")') 
+        write(*,'(" av =",3(1pe10.2))') av(1),av(2),av(3)
+        write(*,'(" kv =",3(1pe10.2))') kv(1),kv(2),kv(3)
+        write(*,'("  a.k=",e10.2)') aDotk
+        stop 9999
+      end if
+
 
       ! complex transmission wave number kt 
       ktxr=ktr(1)
@@ -461,6 +466,22 @@
       qx = ny*kz - nz*ky
       qy = nz*kx - nx*kz 
       qz = nx*ky - ny*kx 
+    
+      aNorm = sqrt( qx**2+qy**2+qz**2)
+      if( abs(aNorm) < 1.e-10 )then
+        ! n and k are parallel -- this is ok
+        ! choose some q orthogonal to n 
+        if( abs(nx) .gt. .1 .or. abs(ny) .gt. .1 ) then
+          qx = -ny 
+          qy =  nx
+          qz = 0.
+        else 
+          qx = nz
+          qy = 0.
+          qz = -nx 
+        end if
+      end if
+
       normalizeVector(q,qx,qy,qz)
  
       ! g = (q X k) / |q X k |
@@ -522,6 +543,8 @@
         ! Check dispersion relations
         resid1 = (s**2)*(1.+chiSum1) + (c1**2)*( kx**2  + ky**2  + kz**2  )
         resid2 = (s**2)*(1.+chiSum2) + (c2**2)*( ktx**2 + kty**2 + ktz**2 )
+        write(*,'(" chiSum1=",2e10.2)') real(chiSum1),imag(chiSum1)
+        write(*,'(" chiSum2=",2e10.2)') real(chiSum2),imag(chiSum2)
         write(*,'(" residual in dispersion relation 1 =",2e10.2)') resid1
         write(*,'(" residual in dispersion relation 2 =",2e10.2)') resid2
       end if
@@ -536,7 +559,14 @@
       mx = qy*ktz - qz*kty
       my = qz*ktx - qx*ktz 
       mz = qx*kty - qy*ktx 
+      ! write(*,'(" mx=",2(1pe10.2))') real(mx),imag(mx)
+      ! write(*,'(" my=",2(1pe10.2))') real(my),imag(my)
+      ! write(*,'(" mz=",2(1pe10.2))') real(mz),imag(mz)
       normalizeComplexVector(m,mx,my,mz)
+
+      ! write(*,'(" mx=",2(1pe10.2))') real(mx),imag(mx)
+      ! write(*,'(" my=",2(1pe10.2))') real(my),imag(my)
+      ! write(*,'(" mz=",2(1pe10.2))') real(mz),imag(mz)
 
       if( debug.gt.0 )then
         aNorm= sqrt( conjg(mx)*mx + conjg(my)*my + conjg(mz)*mz )
@@ -558,12 +588,14 @@
         write(*,'(" ktr =",3(1pe10.2))') ktr(1),ktr(2),ktr(3)
         write(*,'(" kti =",3(1pe10.2))') kti(1),kti(2),kti(3)
 
+        write(*,'(" h = q X kr =",3(1pe10.2))') hx,hy,hz
+
         write(*,'(" q = n X kh = ",3(1pe10.2))') qx,qy,qz
         write(*,'(" g = q X kh = ",3(1pe10.2))') gx,gy,gz
 
         write(*,'(" h = n X kh = ",3(1pe10.2))') hx,hy,hz
         write(*,'(" p = n X kh = ",3(1pe10.2))') px,py,pz
-        write(*,'(" m = q X kth= ",6(1pe10.2))') mx,my,mz
+        write(*,'(" m = q X kth= [",3(2(1pe10.2),","),"]")') real(mx),imag(mx),real(my),imag(my),real(mz),imag(mz)
       end if 
 
 
@@ -624,6 +656,7 @@
       b(4)    =-pDotKCrossA/mu1
  
       if( debug.gt.0 )then
+       write(*,'(" Matrix before solve")') 
        write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),")")') a4(1,1),a4(1,2),a4(1,3),a4(1,4)
        write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),")")') a4(2,1),a4(2,2),a4(2,3),a4(2,4)
        write(*,'(" a= (",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),",",2(1pe10.2),")")') a4(3,1),a4(3,2),a4(3,3),a4(3,4)
@@ -651,10 +684,18 @@
       end if
      
       if( debug.gt.0 )then
-       write(*,'(" x1=(",1pe10.2,",",1pe10.2,")")') real(b(1)),aimag(b(1))
-       write(*,'(" x2=(",1pe10.2,",",1pe10.2,")")') real(b(2)),aimag(b(2))
-       write(*,'(" x3=(",1pe10.2,",",1pe10.2,")")') real(b(3)),aimag(b(3))
-       write(*,'(" x4=(",1pe10.2,",",1pe10.2,")")') real(b(4)),aimag(b(4))
+        Eperp = ax*qx+ay*qy+az*qz
+        Epar  = ax*gx+ay*gy+az*gz
+        write(*,'(" Eperp =(",1pe10.2,",",1pe10.2,")")') real(Eperp),aimag(Eperp)
+        write(*,'(" Epar  =(",1pe10.2,",",1pe10.2,")")') real(Epar) ,aimag(Epar)
+
+       write(*,'(" Solution: ")') 
+        
+       write(*,'(" rPerp:      x1=(",1pe10.2,",",1pe10.2,")")') real(b(1)),aimag(b(1))
+       write(*,'(" rParallel:  x2=(",1pe10.2,",",1pe10.2,")")') real(b(2)),aimag(b(2))
+       write(*,'(" tauPerp     x3=(",1pe10.2,",",1pe10.2,")")') real(b(3)),aimag(b(3))
+       write(*,'(" tauParallel x4=(",1pe10.2,",",1pe10.2,")")') real(b(4)),aimag(b(4))
+
       end if
 
       x1 = b(1)
@@ -684,21 +725,21 @@
         ! checks
         ! tm.( a + er - et )
         resid1 = a4s(1,1)*x1 + a4s(1,2)*x2 + a4s(1,3)*x3 + a4s(1,4)*x4 + qDotA
-        write(*,'(" check: 1st eqn: resid=",2(1pe10.2))') resid1
+        write(*,'(" check: 1st eqn: resid=",2(1pe10.2))') real(resid1),imag(resid1)
 
         resid1 = a4s(2,1)*x1 + a4s(2,2)*x2 + a4s(2,3)*x3 + a4s(2,4)*x4 + pDotA
-        write(*,'(" check: 2nd eqn: resid=",2(1pe10.2))') resid1
+        write(*,'(" check: 2nd eqn: resid=",2(1pe10.2))') real(resid1),imag(resid1)
 
         resid1 = qx*( ax+er(1)-et(1) ) + qy*( ay+er(2)-et(2) ) + qz*( az+er(3)-et(3) ) 
-        write(*,'(" check: q.( a + er - et )=",2(1pe10.2))') resid1
+        write(*,'(" check: q.( a + er - et )=",2(1pe10.2))') real(resid1),imag(resid1)
 
         resid1 = px*( ax+er(1)-et(1) ) + py*( ay+er(2)-et(2) ) + pz*( az+er(3)-et(3) ) 
-        write(*,'(" check: p.( a + er - et )=",2(1pe10.2))') resid1
+        write(*,'(" check: p.( a + er - et )=",2(1pe10.2))') real(resid1),imag(resid1)
 
         resid2 = px*er(1) + py*er(2) + pz*er(3) - (pDotQ*x1 +pDotH*x2)
-        write(*,'(" check: resid2=",2(1pe10.2))') resid2
+        write(*,'(" check: resid2=",2(1pe10.2))') real(resid2),imag(resid2)
         resid2 = px*et(1) + py*et(2) + pz*et(3) - (pDotQ*x3 +pDotM*x4)
-        write(*,'(" check: resid2=",2(1pe10.2))') resid2
+        write(*,'(" check: resid2=",2(1pe10.2))') real(resid2),imag(resid2)
       end if
  
 

@@ -1653,12 +1653,16 @@ getErrors( int current, real t, real dt )
 
   // -------- PRINT ERRORS IN POLARIZATION VECTORS FOR DISPERSIVE MODELS --------
   
+  // printF("getErrors: dispersionModel=%d\n",(int)dispersionModel);
+  
   if( dispersionModel != noDispersion )
   {
     for( int domain=0; domain<cg.numberOfDomains(); domain++ )
     {
       DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
       const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
+
+      // printF("getErrors: domain=%d, numPolarizationVectors=%i\n",domain,numberOfPolarizationVectors);
 
       maxErrPolarization(domain) = getMaxValue(maxErrPolarization(domain)); // fix me -- could do all at once
       polarizationNorm(domain) = getMaxValue(polarizationNorm(domain)); // fix me -- could do all at once

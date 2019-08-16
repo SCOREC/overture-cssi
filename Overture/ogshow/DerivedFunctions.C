@@ -1251,7 +1251,7 @@ computeDerivedFunctions( realCompositeGridFunction & u )
         getComponent(ex,"exFieldComponent");
         getComponent(ey,"eyFieldComponent");
 
-	printF(" DerivedFunctions: eFieldNorm: ex=%i, ey=%i\n",ex,ey);
+	// printF(" DerivedFunctions: eFieldNorm: ex=%i, ey=%i\n",ex,ey);
 	
 	if( numberOfDimensions==2 )
 	{

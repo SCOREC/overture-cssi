@@ -6,6 +6,78 @@
 
 
 ! -------------------------------------------------------------------------
+! *NEW* VERSION July 16, 2019 -- use precomputed coefficients - see paper adegdmi.pdf 
+!
+! Macro: Evaluate DISPERSIVE forcing terms, 2nd-order accuracy 
+!   This macro can be used to eval values in either domain 1 or domain 2
+!
+! Input:
+!   fev(n) : forcing on E equation: E_{tt} = c^2 Delta(E) + ... + fev
+!   fpv(n,jv) : forcing on equation for P_{n,jv} 
+! Output
+!   fp(n) : This is the value of P.tt without the term involving L(E) = c^2*Delta(E)
+!   beta = 1 - alphaP*Sum_k{ C_k }
+! ------------------------------------------------------------------------
+#beginMacro getDispersiveForcingOrder2(k1,k2,k3, fp, fpv,fev, p,pn,pm, u,un,um, dispersionModel,numberOfPolarizationVectors,alphaP,beta,a0v,a1v,b0v,b1v)
+  do n=0,nd-1
+    fp(n)=0.
+  end do
+  if( dispersionModel.ne.noDispersion )then
+
+   Csum=0.
+
+   do jv=0,numberOfPolarizationVectors-1
+
+     a0=a0v(jv)
+     a1=a1v(jv)
+     b0=b0v(jv)
+     b1=b1v(jv)
+     alpha=alphaP
+   
+     ! Second-order coefficients: 
+     ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+     #Include interfaceAdeGdmOrder2.h 
+
+     Csum = Csum + c2PttLE
+
+     ! Bk = 1 + .5*dt*( b1v(jv) + alphaP*a1v(jv) )
+     ! Ck = (1./Bk)*a1v(jv)*dt*.5
+     ! Csum = Csum + Ck 
+
+     do n=0,nd-1
+       pc = n + jv*nd 
+       ec = ex +n
+       ! P at new time t+dt
+       ! Pt, Ptt at time t
+
+       pv   =  p(k1,k2,k3,pc)
+       pvn  =  pn(k1,k2,k3,pc)
+ 
+       ev    =  u(k1,k2,k3,ec)
+       evn   =  un(k1,k2,k3,ec)
+
+       ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+       ! Levae off term: c2PttLE*LE(n)
+       fp(n) = fp(n) + c2PttE*ev + c2PttEm*evn + c2PttP*pv + c2PttPm*pvn + c2PttfE*fev(n) + c2PttfP*fpv(n,jv)
+
+       ! write(*,'(" k1,k2,k3=",3i3)') k1,k2,k3
+       ! write(*,'(" pc=",i3," p,pn,pm=",3e12.2)') pc, p(k1,k2,k3,pc),pn(k1,k2,k3,pc),pm(k1,k2,k3,pc)
+       ! write(*,'(" dt=",e12.2," pv,pvt,pvtt, ev,evt,evtt=",6e12.2)') dt,pv,pvt,pvtt, ev,evt,evtt
+       ! write(*,'(" jv=",i2," a0,a1,b0,b1=",4e12.2," Bk,Ck=",2e12.2)') jv,a0v(jv),a1v(jv),b0v(jv),b1v(jv),Bk,Ck
+       ! write(*,'(" n=",i2," fev(n)=",e12.2," fp(n)=",e12.2," fpv(n,jv)=",e12.2)') n,fev(n),fp(n),fpv(n,jv)
+     end do
+   end do
+   ! we could precompute D
+   beta = 1. -alphaP*Csum
+  else
+   beta = 1.
+  end if
+#endMacro
+
+
+
+! -------------------------------------------------------------------------
+! OLD VERSION
 ! Macro: Evaluate DISPERSIVE forcing terms, 2nd-order accuracy 
 !   This macro can be used to eval values in either domain 1 or domain 2
 !
@@ -16,7 +88,7 @@
 !   fp(n) : 
 !   beta = 1 - alphaP*Sum_k{ C_k }
 ! ------------------------------------------------------------------------
-#beginMacro getDispersiveForcingOrder2(k1,k2,k3, fp, fpv,fev, p,pn,pm, u,un,um, dispersionModel,numberOfPolarizationVectors,alphaP,beta,a0v,a1v,b0v,b1v)
+#beginMacro getDispersiveForcingOrder2OLD(k1,k2,k3, fp, fpv,fev, p,pn,pm, u,un,um, dispersionModel,numberOfPolarizationVectors,alphaP,beta,a0v,a1v,b0v,b1v)
   do n=0,nd-1
     fp(n)=0.
   end do
@@ -61,6 +133,7 @@
    beta = 1.
   end if
 #endMacro
+
 
 !-------------------------------------------------------------------------------------------
 ! Macro: Eval twilight-zone forcing for GDM equations
@@ -818,7 +891,7 @@ endLoopsMask2d()
 
   INFO("23c-GDM")
 
-  write(*,'(" FINISH ME for non-zero GDM ")')
+  ! write(*,'(" FINISH ME for non-zero GDM ")')
   ! stop 9876
 
   ! --- initialize some forcing functions ---
@@ -935,6 +1008,11 @@ endLoopsMask2d()
     ! cdivE1 =  u.c1x + v.c1y + w.c1z
     ! nDotCurlE1 = (w1y-v1z)*an1 + (u1z-w1x)*an2 + (v1x-u1y)*an3
 
+    !  f(0)=( divE1*an1 + (curlE1x- nDotCurlE1*an1)/mu1 ) - ( divE2*an1 + (curlE2x- nDotCurlE2*an1)/mu2 )
+    !  f(1)=( divE1*an2 + (curlE1y- nDotCurlE1*an2)/mu1 ) - ( divE2*an2 + (curlE2y- nDotCurlE2*an2)/mu2 )
+    !  f(2)=( divE1*an3 + (curlE1z- nDotCurlE1*an3)/mu1 ) - ( divE2*an3 + (curlE2z- nDotCurlE2*an3)/mu2 )
+
+    ! ---- EQUATION 0 ----- 
     ! (u.x+v.y+w.z)*an1 + ( w1y-v1z - nDotCurlE1*an1)/mu1
     a6(0,0) = ( c1x*an1 + (         - (c1z*an2-c1y*an3)*an1 )/mu1 ) ! coeff of u1(-1)
     a6(0,1) = ( c1y*an1 + (    -c1z - (c1x*an3-c1z*an1)*an1 )/mu1 ) ! coeff of v1(-1)
@@ -944,27 +1022,31 @@ endLoopsMask2d()
     a6(0,4) =-( c2y*an1 + (    -c2z - (c2x*an3-c2z*an1)*an1 )/mu2 ) ! coeff of v2(-1)
     a6(0,5) =-( c2z*an1 + ( c2y     - (c2y*an1-c2x*an2)*an1 )/mu2 ) ! coeff of w2(-1)
 
+    ! ---- EQUATION 1 ----- 
     ! (u.x+v.y+w.z)*an2 + ( u1z-w1x - nDotCurlE1*an2)/mu1
     a6(1,0) = ( c1x*an2 + ( c1z     - (c1z*an2-c1y*an3)*an2 )/mu1 ) ! coeff of u1(-1)
-    a6(1,1) = ( c1y*an2 + (         - (c1x*an3+c1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
+    a6(1,1) = ( c1y*an2 + (         - (c1x*an3-c1z*an1)*an2 )/mu1 ) ! coeff of v1(-1)
     a6(1,2) = ( c1z*an2 + (    -c1x - (c1y*an1-c1x*an2)*an2 )/mu1 ) ! coeff of w1(-1)
 
     a6(1,3) =-( c2x*an2 + ( c2z     - (c2z*an2-c2y*an3)*an2 )/mu2 ) ! coeff of u2(-1)
-    a6(1,4) =-( c2y*an2 + (         - (c2x*an3+c2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
+    a6(1,4) =-( c2y*an2 + (         - (c2x*an3-c2z*an1)*an2 )/mu2 ) ! coeff of v2(-1)
     a6(1,5) =-( c2z*an2 + (    -c2x - (c2y*an1-c2x*an2)*an2 )/mu2 ) ! coeff of w2(-1)
 
+    ! ---- EQUATION 2 ----- 
     ! (u.x+v.y+w.z)*an3 + ( v1x-u1y - nDotCurlE1*an2)/mu1
     a6(2,0) = ( c1x*an3 + (    -c1y - (c1z*an2-c1y*an3)*an3 )/mu1 ) ! coeff of u1(-1)
-    a6(2,1) = ( c1y*an3 + ( c1x     - (c1x*an3+c1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
+    a6(2,1) = ( c1y*an3 + ( c1x     - (c1x*an3-c1z*an1)*an3 )/mu1 ) ! coeff of v1(-1)
     a6(2,2) = ( c1z*an3 + (         - (c1y*an1-c1x*an2)*an3 )/mu1 ) ! coeff of w1(-1)
 
     a6(2,3) =-( c2x*an3 + (    -c2y - (c2z*an2-c2y*an3)*an3 )/mu2 ) ! coeff of u2(-1)
-    a6(2,4) =-( c2y*an3 + ( c2x     - (c2x*an3+c2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
+    a6(2,4) =-( c2y*an3 + ( c2x     - (c2x*an3-c2z*an1)*an3 )/mu2 ) ! coeff of v2(-1)
     a6(2,5) =-( c2z*an3 + (         - (c2y*an1-c2x*an2)*an3 )/mu2 ) ! coeff of w2(-1)
 
     ! betac1=beta1/epsmu1
     ! betac2=beta2/epsmu2
 
+    ! ---- EQUATION 3 ----- 
+    !    [ (uv.xx+uv.yy)*beta/(eps*mu) + ... ] = 0
     !  u1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an1
     a6(3,0) = ( clap1*betac1   + cem1*( an1*clap1                         )*an1 ) ! coeff of u1(-1)
     a6(3,1) = (                  cem1*(             an2*clap1             )*an1 ) ! coeff of v1(-1)
@@ -974,6 +1056,7 @@ endLoopsMask2d()
     a6(3,4) =-(                  cem2*(             an2*clap2             )*an1 )
     a6(3,5) =-(                  cem2*(                         an3*clap2 )*an1 )
 
+    ! ---- EQUATION 4 ----- 
     !  v1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an2
     a6(4,0) = (                  cem1*( an1*clap1                         )*an2 ) ! coeff of u1(-1)
     a6(4,1) = ( clap1*betac1   + cem1*(             an2*clap1             )*an2 )
@@ -983,11 +1066,13 @@ endLoopsMask2d()
     a6(4,4) =-( clap2*betac2   + cem2*(             an2*clap2             )*an2 )
     a6(4,5) =-(                  cem2*(                         an3*clap2 )*an2 )
 
+    ! ---- EQUATION 5 ----- 
     !  w1Lap*beta1/(epsmu1) + cem1*( an1*u1Lap + an2*v1Lap + an3*w1Lap )*an3
     a6(5,0) = (                  cem1*( an1*clap1                         )*an3 ) ! coeff of u1(-1)
     a6(5,1) = (                  cem1*(             an2*clap1             )*an3 )
     a6(5,2) = ( clap1*betac1   + cem1*(                         an3*clap1 )*an3 )
 
+    ! ---- EQUATION 6 ----- 
     a6(5,3) =-(                  cem2*( an1*clap2                         )*an3 ) ! coeff of u2(-1)
     a6(5,4) =-(                  cem2*(             an2*clap2             )*an3 )
     a6(5,5) =-( clap2*betac2   + cem2*(                         an3*clap2 )*an3 )
@@ -2071,6 +2156,13 @@ end do
        aLap0 = lapCoeff4a(is,dr0,ds0)
        aLap1 = lapCoeff4b(is,dr0,ds0)
 
+       ! if( avoidInterfaceIterations.eq.1 )then
+         ! lag cross terms (do not put into the matrix)
+       !   ds0=dsBig
+       ! end if
+
+       ! dr1a(0:2) = dsBig in tangential directions if avoidInterfaceIterations=1
+       ds0 =dr1a(axis1p1)
        aLapSq0 = lapSqCoeff4a(is,dr0,ds0)
        aLapSq1 = lapSqCoeff4b(is,dr0,ds0)
 
@@ -2080,6 +2172,12 @@ end do
        bLap0 = lapCoeff4a(js,dr0,ds0)
        bLap1 = lapCoeff4b(js,dr0,ds0)
 
+       ! if( avoidInterfaceIterations.eq.1 )then
+         ! lag cross terms (do not put into the matrix)
+       !   ds0=dsBig
+       ! end if
+       ! dr2a(0:2) = dsBig in tangential directions if avoidInterfaceIterations=1
+       ds0 = dr2a(axis2p1)
        bLapSq0 = lapSqCoeff4a(js,dr0,ds0)
        bLapSq1 = lapSqCoeff4b(js,dr0,ds0)
 
@@ -2164,8 +2262,13 @@ end do
 
       setJacobian( aj1, axis1)
 
-      dr0=dr1(axis1)
-      ds0=dr1(axis1p1)
+      ! dr1a(0:2) = dsBig in tangential directions if avoidInterfaceIterations=1
+      dr0=dr1a(axis1)
+      ds0=dr1a(axis1p1)
+      ! if( avoidInterfaceIterations.eq.1 )then
+        ! lag cross terms (do not put into the matrix)
+      !   ds0=dsBig
+      ! end if
       aLapX0 = xLapCoeff4a(is,dr0,ds0)
       aLapX1 = xLapCoeff4b(is,dr0,ds0)
 
@@ -2174,8 +2277,13 @@ end do
 
       setJacobian( aj2, axis2)
 
-      dr0=dr2(axis2)
-      ds0=dr2(axis2p1)
+      ! dr2a(0:2) = dsBig in tangential directions if avoidInterfaceIterations=1
+      dr0=dr2a(axis2)
+      ds0=dr2a(axis2p1)
+      ! if( avoidInterfaceIterations.eq.1 )then
+        ! lag cross terms (do not put into the matrix)
+      !   ds0=dsBig
+      ! end if
       cLapX0 = xLapCoeff4a(js,dr0,ds0)
       cLapX1 = xLapCoeff4b(js,dr0,ds0)
 
@@ -2504,7 +2612,7 @@ end do
  endLoopsMask2d()
  ! =============== end loops =======================
       
- if( checkCoeff.eq.1 .and. it.le.1 )then
+ if( checkCoeff.eq.1 )then
    write(*,'("+++++ iGDM24c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
  end if
 
