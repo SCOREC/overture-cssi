@@ -136,7 +136,12 @@
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field    
+!   Define a Gaussian pulse incident field in 2D   
+!===============================================================================================
+
+!===============================================================================================
+! Macro:
+!   Define a Gaussian pulse incident field in 3D   
 !===============================================================================================
 
 ! ===================================================================================
@@ -543,7 +548,9 @@
                        um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
                    end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88991
                  end if
                   endif
                end do
@@ -594,8 +601,45 @@
                     um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
                    end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - uez
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - uez
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
+     & cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       uez = 0.
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - uez
+                   end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88992
                  end if
                  endif
                end do
@@ -746,7 +790,9 @@
                        um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
                    end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88991
                  end if
                end do
                end do
@@ -786,8 +832,45 @@
                     um(i1,i2,i3,ez)=um(i1,i2,i3,ez) - amp*sin(twoPi*(
      & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
                    end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - uez
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - uez
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
+     & cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       uez = 0.
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - uez
+                   end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88992
                  end if
                end do
                end do
@@ -953,7 +1036,9 @@
                        um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
                    end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88991
                  end if
                   endif
                end do
@@ -1004,8 +1089,45 @@
                     um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
                    end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + uez
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + uez
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
+     & cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       uez = 0.
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + uez
+                   end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88992
                  end if
                  endif
                end do
@@ -1156,7 +1278,9 @@
                        um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
                    end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88991
                  end if
                end do
                end do
@@ -1196,8 +1320,45 @@
                     um(i1,i2,i3,ez)=um(i1,i2,i3,ez) + amp*sin(twoPi*(
      & kx*(x)+ky*(y)+kz*(z)-cc*(t-2.*dt)))*pwc(2)
                    end if
+                 else if( incidentFieldType .eq. 
+     & gaussianPlaneWaveIncidentField )then
+                   ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t-dt)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + uez
+                     xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
+     & (t)
+                     expxi = exp(-betaGP*xi*xi )
+                     uhz = amp*expxi
+                     uex = uhz*(-ky/(eps*cc))
+                     uey = uhz*( kx/(eps*cc))
+                     uez = 0.
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + uez
+                   if( adjustThreeLevels.eq.1 )then
+                       xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
+     & cc*(t-2.*dt)
+                       expxi = exp(-betaGP*xi*xi )
+                       uhz = amp*expxi
+                       uex = uhz*(-ky/(eps*cc))
+                       uey = uhz*( kx/(eps*cc))
+                       uez = 0.
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + uez
+                   end if
                  else
-                   stop 8899
+                   write(*,'("adjust Inc. : ERROR: unknown incident 
+     & field type")')
+                   stop 88992
                  end if
                end do
                end do

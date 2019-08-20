@@ -89,6 +89,7 @@ $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $ic = "zeroInitialCondition"; $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; $bc7=""; $bc8=""; 
 $pmic = "planeMaterialInterfaceInitialCondition";
 $bc = "perfectElectricalConductor";
+$x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
 @interfaceNormal = (); @interfacePoint = ();
 $tz = "#"; $go="halt";
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
@@ -111,7 +112,8 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "useImpedanceInterfaceProjection=s"=>\$useImpedanceInterfaceProjection,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
            "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
            "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
-           "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12);
+           "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
+	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta);
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -242,10 +244,11 @@ if( $npv[1] == 3 ){ \
 $cmd
 # 
 #  The dispersive case is handled by a user defined known solution
-if( $dm ne "no dispersion" && $tz eq "#" ){\
+if( $ic ne "gp" && $dm ne "no dispersion" && $tz eq "#" ){\
  $ic = "user defined known solution\n  dispersive plane wave interface\n done\n userDefinedKnownSolutionInitialCondition"; }
 # 
 bc: all=$bc
+if( $ic eq "gp" ){ $ic="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 $ic
 $tz 
 ** trigonometric

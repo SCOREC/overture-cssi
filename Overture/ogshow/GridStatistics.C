@@ -400,7 +400,13 @@ printGridStatistics(GridCollection & gc, FILE *file /* =stdout */ )
     for( int grid=0; grid<gc.numberOfComponentGrids(); grid++ )
     {
         MappedGrid & mg = gc[grid];
-        printGridStatistics( mg,file,grid,ipar,rpar );
+        if( gc.numberOfDomains()>1 )
+        {
+            int domainNumber = gc.domainNumber(grid);
+            printGridStatistics( mg,file,grid,ipar,rpar,domainNumber,gc.getDomainName(domainNumber) );
+        }
+        else
+              printGridStatistics( mg,file,grid,ipar,rpar );
 
         const IntegerArray & gid = mg.gridIndexRange();
         const IntegerArray & dim = mg.dimension();
@@ -417,12 +423,12 @@ printGridStatistics(GridCollection & gc, FILE *file /* =stdout */ )
     volAve/=max(1,totalNumberOfVolumes);
     fPrintF(file,"\n"
                     " ******************Grid Statistics Summary****************************\n"
-                    "   number of grids =%i \n"
+                    "   number of grids =%i, numberOfDomains=%i, \n"
         	  "   Total number of grid points %i (gridIndexRange), %i (dimension) <<<\n"
                     "   Total number of interpolation points %i \n"
                     "   cell volumes: [%8.2e,%8.2e,%8.2e]  [min,ave,max] \n"
                     " *********************************************************************\n"
-                    ,gc.numberOfComponentGrids(),
+                    ,gc.numberOfComponentGrids(),gc.numberOfDomains(),
         	  totalNumberOfGridIndexRangePoints,totalNumberOfGridPoints,totalNumberOfInterpolationPoints,
                       volMin,volAve,volMax);
 }
@@ -430,10 +436,14 @@ printGridStatistics(GridCollection & gc, FILE *file /* =stdout */ )
 
 void GridStatistics::
 printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */, 
-                                        int grid /* =0 */, int *ipar /* =NULL */, real *rpar /* =NULL */ )
+                                        int grid /* =0 */, int *ipar /* =NULL */, real *rpar /* =NULL */,
+                                        int domainNumber /*= -1*/, const aString & domainName /* = nulllString */ )
 // =================================================================================================
 /// \brief Print statistics about a component grid
 ///
+/// Optionally input:
+///   domainNumber, domainName
+///  
 /// Optionally return:
 /// 
 ///      if( ipar!=NULL )
@@ -579,7 +589,7 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             {
       	fPrintF(file,
             		" -----------------------------------------------------------------------\n"
-            		"         Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
+            		"      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
             		" grid lines  : [%i:%i,%i:%i,%i:%i], total points = %i\n"
                                 " ghost points: [%i:%i,%i:%i,%i:%i]\n"
             		" cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
@@ -603,7 +613,7 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             {
       	fPrintF(file,
             		" -----------------------------------------------------------------------\n"
-            		"         Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
+            		"      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
             		" grid lines  : [%i:%i,%i:%i], total points = %i\n"
                                 " ghost points: [%i:%i,%i:%i]\n"
             		" cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
@@ -623,16 +633,14 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             if( rangeDimension==2 )
             {
       	fPrintF(file,
-            		" bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n"
-            		" -----------------------------------------------------------------------\n",
+            		" bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n",
             		bc(0,0),bc(1,0),bc(0,1),bc(1,1),share(0,0),share(1,0),share(0,1),share(1,1),
                                 isPeriodic(0),isPeriodic(1),dw(0) );
             }
             else if( rangeDimension==3 )
             {
       	fPrintF(file,
-                                " bc = [%i,%i, %i,%i, %i,%i] share=[%i,%i, %i,%i, %i,%i] isPeriodic=[%i,%i,%i] dw=%i\n"
-            		" -----------------------------------------------------------------------\n",
+                                " bc = [%i,%i, %i,%i, %i,%i] share=[%i,%i, %i,%i, %i,%i] isPeriodic=[%i,%i,%i] dw=%i\n",
                                 bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
                                 share(0,0),share(1,0),share(0,1),share(1,1),share(0,2),share(1,2),
                                 isPeriodic(0),isPeriodic(1),isPeriodic(2),dw(0) );
@@ -666,7 +674,6 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             		" cell volume : %8.2e \n"
             		" grid spacing: [%8.2e,%8.2e,%8.2e] [dx,dy,dz]\n"
                                 " bc = [%i,%i, %i,%i, %i,%i] share=[%i,%i, %i,%i, %i,%i] isPeriodic=[%i,%i,%i] dw=%i\n"
-            		" -----------------------------------------------------------------------\n"
             		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
             		gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
             		numberOfGridPoints,
@@ -689,7 +696,6 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             		" cell volume : %8.2e \n"
             		" grid spacing: [%8.2e,%8.2e] [dx,dy]\n"
                                 " bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n"
-            		" -----------------------------------------------------------------------\n"
             		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
             		gid(0,0),gid(1,0),gid(0,1),gid(1,1),
             		numberOfGridPoints,
@@ -702,6 +708,14 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
             }
             
         }
+
+        if( domainNumber>=0 )
+        {
+            fPrintF(file," domainNumber=%i, domainName=%s\n",domainNumber,(const char*)domainName);
+        }
+        
+        fPrintF(file," -----------------------------------------------------------------------\n");
+        
     
         if( ipar!=NULL )
         {

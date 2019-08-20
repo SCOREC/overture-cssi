@@ -79,6 +79,7 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 $suffix = ".order$order"; 
 if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
+if( $bc eq p ){ $suffix .= ".p"; } 
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
 if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 #

@@ -100,6 +100,7 @@ $alphaP = ();
 @a02 = (); @a12=(); @b02=(); @b12=(); 
 $dmFile=""; # "SilverJCDispersionFits.txt"; 
 $lengthScale=1.e-7; # length-scale = 100 nm 
+$sphereRadius=1.; 
 #
 $stageOption ="default";
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
@@ -118,7 +119,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
   "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,\
   "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
-   "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations, );
+   "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations,"sphereRadius=f"=>\$sphereRadius );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -217,7 +218,7 @@ $known = $cyl ? "scatteringFromADielectricDiskKnownSolution" : "scatteringFromAD
 $known
 # *****************
 # for Yee we define the cylinder as a masked stair step region
-if( $cyl eq 1 ){ $rad=.4; }else{ $rad=1.; }
+if( $cyl eq 1 ){ $rad=.4; }else{ $rad=$sphereRadius; }
 $x0=0.; $y0=0; $z0=0;  
 $cmds="#";
 if( $cyl eq 1 && $method eq "Yee" ){ $cmds = "define embedded bodies\n dielectric cylinder\n $rad $x0 $y0 $z0\n $eps1 $mu1 0. 0. \nexit"; }

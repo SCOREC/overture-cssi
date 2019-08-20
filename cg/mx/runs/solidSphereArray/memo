@@ -1,0 +1,88 @@
+*********************************************
+*************** Aug 20, 2019
+
+compile debug -- no nan's
+cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-1.5 -beta=120. -go=og
+
+
+*********************************************
+*************** Aug 19, 2019
+
+
+------------ ONE SPHERE -----
+TRY THIS GRID: solidSphereInABoxe2.order4.ng3 
+
+GDM:    ***NAN's *** on the interface after 1 step 
+cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-1.5 -beta=120. -go=og
+
+NO GDM - OK 
+cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3 -dm=none -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-1.5 -beta=120. -go=og
+
+
+
+*********************************************
+*************** Aug 18, 2019
+
+
+FINISH -rbc=rbcNonLocal
+
+---------- EIGHT spheres 
+G2: Order=4, **TROUBLE*** NAN's 
+cgmx -noplot solidSphereArray -g=eightSolidSphereGride2.order4.ng3.hdf -numSpheres=8 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og 
+
+
+G2: Ok 
+cgmx -noplot solidSphereArray -g=eightSolidSphereGride2.order2.hdf -numSpheres=8 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og 
+
+
+G1: mask mismatch 
+
+
+------------ ONE SPHERE -----
+TRY THIS GRID: solidSphereInABoxe2.order4.ng3 ***NAN's ***
+cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3
+-dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-3 -beta=120. -go=og
+
+NO SOSUP-DISS**TROUBLE*** NAN's 
+cgmx -noplot solidSphereArray -g=solidSphereGride2.order4.ng3.hdf -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-3 -beta=120. -go=og
+
+
+G2 order=4  **TROUBLE*** NAN's 
+cgmx -noplot solidSphereArray -g=solidSphereGride2.order4.ng3.hdf -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=1 -tf=10. -tp=.01 -ic=gp -x0=-3 -beta=120. -interfaceEquationOption=0 -go=og
+
+G2
+cgmx -noplot solidSphereArray -g=solidSphereGride2.order2.hdf -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og
+
+G1
+cgmx -noplot solidSphereArray -g=solidSphereGride1.order2.hdf -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og 
+
+
+-show=solidsO2G4.show -go=go > solidsO2G4.out 
+
+
+START on solid sphere array
+
+
+# One sphere: 
+ogen -noplot solidSphereArrayGrid -prefix=solidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=1 -nsy=1 -nsz=1 -interp=e -order=2 -factor=1 
+ogen -noplot solidSphereArrayGrid -prefix=solidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=1 -nsy=1 -nsz=1 -interp=e -order=2 -factor=2 
+
+ogen -noplot solidSphereArrayGrid -prefix=solidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=1 -nsy=1 -nsz=1 -interp=e -order=4 -numGhost=3 -factor=2 
+
+
+------------ GRID; 8 spheres 
+#   2 x 2 x 2 = 8 spheres: 
+ogen -noplot solidSphereArrayGrid -prefix=eightSolidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=2 -nsy=2 -nsz=2 -interp=e -order=2 -factor=1 
+
+ogen -noplot solidSphereArrayGrid -prefix=eightSolidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=2 -nsy=2 -nsz=2 -interp=e -order=2 -factor=2
+
+ogen -noplot solidSphereArrayGrid -prefix=eightSolidSphereGrid -xa=-4 -xb=4 -ya=-3 -yb=3 -za=-3 -zb=3 - -nsx=2 -nsy=2 -nsz=2 -interp=e -order=4 -numGhost=3 -factor=2
+
+# 
+#  3 x 3 x 3 = 27 spheres:
+
+ogen -noplot solidSphereArrayGrid -xa=-5 -nsx=3 -nsy=3 -nsz=3 -order=2 -factor=1
+
+ 4 x 4 x 4 
+ogen -noplot solidSphereArrayGrid -xa=-5.6 -xb=5 -ya=-5 -yb=5 -za=-5 -zb=5 -nsx=4 -nsy=4 -nsz=4 -order=2 -factor=1 
+

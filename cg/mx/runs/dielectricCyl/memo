@@ -1,4 +1,27 @@
 ****************************************
+*********** Aug 19, 2019
+
+npv=1,2 mode=1
+
+R-mode
+cgmx dielectricCyl -g=innerOuterFixede8.order4.ng3 -cyl=1 -kx=3 -eps1=0.25 -eps2=1 -diss=0 -dissOrder=-1 -interit=5 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.5 -tp=.1 -alphaP=-1 -1 -dm=gdm -dmFile= -npv=1 2 -modeGDM=1 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2. -b11=.2 .1 .05 -a02=1.2 1.4  -a12=.1 .15  -b02=.8 1.2  -b12=.05 .09  -useSosupDissipation=1 -sosupParameter=1 -stageOption=default -cons=0  -go=halt 
+
+
+****************************************
+*********** Aug 18, 2019
+
+REVISIT SPHERE, check for Nan's with order=4
+
+GRID from sphereArray:  OK (BUT grid is periodic so errors don't match) 
+cgmx -noplot dielectricCyl -cyl=0 -g=../solidSphereArray/solidSphereGride2.order4.ng3 -kx=1 -eps1=.25 -eps2=1. -method=nfdtd  -useSosupDissipation=1 -tp=.01 -tf=5. -cfl=.8 -diss=0. -flushFrequency=2 -interfaceIts=10 -useNewInterface=0 -interfaceEquationOption=0 -interfaceOmega=.25 -go=og
+
+
+OK 
+cgmx -noplot dielectricCyl -cyl=0 -g=solidSphereInABoxe2.order4.ng3 -kx=1 -eps1=.25 -eps2=1. -method=nfdtd  -useSosupDissipation=1 -tp=.01 -tf=5. -cfl=.8 -diss=0. -flushFrequency=2 -interfaceIts=10 -useNewInterface=0 -interfaceEquationOption=0 -interfaceOmega=.25 -go=og
+
+
+
+****************************************
 *********** Aug 6, 2019
 
 

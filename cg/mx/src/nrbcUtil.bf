@@ -108,7 +108,7 @@ end do
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field    
+!   Define a Gaussian pulse incident field in 2D   
 !===============================================================================================
 #beginMacro getGaussianPulse(OP, u,t,x,y)
   xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
@@ -119,6 +119,23 @@ end do
   u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
   u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
   u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP uhz
+
+#endMacro 
+
+!===============================================================================================
+! Macro:
+!   Define a Gaussian pulse incident field in 3D   
+!===============================================================================================
+#beginMacro getGaussianPulse3d(OP, u,t,x,y,z)
+  xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*(t)
+  expxi = exp(-betaGP*xi*xi )
+  uhz = amp*expxi
+  uex = uhz*(-ky/(eps*cc))
+  uey = uhz*( kx/(eps*cc))
+  uez = 0.
+  u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
+  u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
+  u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP uez
 
 #endMacro 
 
@@ -191,7 +208,8 @@ end do
          end if
 
        else
-         stop 8899
+         write(*,'("adjust Inc. : ERROR: unknown incident field type")') 
+         stop 88991
 
        end if 
 
@@ -236,8 +254,20 @@ end do
           um(i1,i2,i3,ey)=um(i1,i2,i3,ey) OP amp*planeWave3Dey0(x,y,z,t-2.*dt)
           um(i1,i2,i3,ez)=um(i1,i2,i3,ez) OP amp*planeWave3Dez0(x,y,z,t-2.*dt)
          end if
+
+       else if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+
+         ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+         getGaussianPulse3d(OP, u,t-dt,x,y,z)
+         getGaussianPulse3d(OP, un,t,x,y,z)
+
+         if( adjustThreeLevels.eq.1 )then
+           getGaussianPulse3d(OP, um,t-2.*dt,x,y,z)
+         end if
+
        else
-         stop 8899
+         write(*,'("adjust Inc. : ERROR: unknown incident field type")') 
+         stop 88992
        end if
 
        #If #ADJUST eq "YES"

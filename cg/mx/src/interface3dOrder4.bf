@@ -4467,7 +4467,7 @@ end do
         write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
         write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
-        write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
+        write(*,'("  ... interfaceOption=",i2)') interfaceOption
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
         write(*,'("  ... eps1,mu1=",2(1pe10.2)," eps2,mu2=",2(1pe10.2))') eps1,mu1,eps2,mu2
 
@@ -4533,14 +4533,6 @@ end do
 !*       write(debugFile,'("start u2=",(3i4,1x,3e11.2))') (((i1,i2,i3,(u2(i1,i2,i3,m),m=0,2),i1=md1a,md1b),i2=md2a,md2b),i3=md3a,md3b)
 !*      end if
 !*     
-!*      ! *** do this for now --- assume grids have equal spacing
-!*c      dx(0)=dx1(0)
-!*c      dx(1)=dx1(1)
-!*c      dx(2)=dx1(2)
-!*
-!*c      dr(0)=dr1(0)
-!*c      dr(1)=dr1(1)
-!*c      dr(2)=dr1(2)
 
       epsx=1.e-20  ! fix this 
 

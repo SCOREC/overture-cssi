@@ -51,7 +51,8 @@ static void
 printGridStatistics(GridCollection & gc, FILE *file=stdout );
 
 static void 
-printGridStatistics(MappedGrid & mg, FILE *file=stdout, int grid=0, int *ipar=NULL, real *rpar=NULL );
+printGridStatistics(MappedGrid & mg, FILE *file=stdout, int grid=0, int *ipar=NULL, real *rpar=NULL,
+                    int domainNumber = -1, const aString & domainName  = nullString  );
 
 private:
 

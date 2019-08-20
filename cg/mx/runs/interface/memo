@@ -1,4 +1,32 @@
 ******************************
+******** Aug 19, 2019
+
+Test Gaussian plane wave IC  -- check for nan's 
+
+TWO BOXES
+
+periodic=OK 
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4p -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0 -tp=.01 -tf=1 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0 -tp=.01 -tf=1 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order2 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0 -tp=.1 -tf=1 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+TWO SQUARES
+
+PERIODIC:
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4.ng3.p -eps2=2. -kx=1 -ky=0 -tp=.1 -tf=10 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4.ng3 -eps2=2. -kx=1 -ky=0 -tp=.1 -tf=10 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order2 -eps2=2. -kx=1 -ky=0 -tp=.1 -tf=10 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+******************************
 ******** July 16, 2019
 
 
