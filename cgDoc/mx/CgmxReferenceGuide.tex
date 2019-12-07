@@ -62,6 +62,8 @@
 \makeindex
 \newcommand{\Index}[1]{#1\index{#1}}
 
+\input tex/defs
+
 
 % ---- we have lemmas and theorems in this paper ----
 \newtheorem{assumption}{Assumption}
@@ -102,6 +104,9 @@
 
 % -----definitions-----
 \input ../common/wdhDefinitions.tex
+
+\newlength{\ycbTop}% For colour bar
+\newlength{\ycbMid}%
 
 \def\ud     {{    U}}
 \def\pd     {{    P}}
@@ -519,6 +524,14 @@ staggered arrangement of the components of $\Ev$ and $\Hv$ such as the
 popular Yee scheme~\cite{Yee66} for Cartesian grids. 
 
 
+
+\clearpage
+\section{Dispersive Maxwell's Equations}
+
+{\red FINISH ME...}
+
+
+\input tex/interfaceProjection
 
 % ===============================================================================================
 \input acknowledgments

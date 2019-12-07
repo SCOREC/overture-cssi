@@ -1,9 +1,25 @@
 %-----------------------------------------------------------------------
 % A comparison of the mx FD solvers
 % --------------------------------------------
-\documentclass[11pt]{article} 
+\documentclass[11pt]{article}
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
 
-\input documentationPageSize.tex
+% \newcommand{\url}[1]{}% ******** Remove URL's from bibtex entries ********
+\newcommand{\citeCount}[1]{}% for citation counts papers for WDH citations
+
+% \input documentationPageSize.tex
+\hbadness=10000 
+\sloppy \hfuzz=30pt
+
+% \voffset=-.25truein
+% \hoffset=-1.25truein
+% \setlength{\textwidth}{7in}      % page width
+% \setlength{\textheight}{9.5in}    % page height
+
+\usepackage{calc}
+\usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
+
+%% \input documentationPageSize.tex
 %% \pagestyle{empty}
 
 % \addtolength{\oddsidemargin}{-.975in}
@@ -17,18 +33,28 @@
 % \setlength{\textwidth}{6.75in}      % page width
 % \setlength{\textheight}{9.5in}    % page height
 
-\input homeHenshaw
+%% \input homeHenshaw
+\newcommand{\grad}{\nabla}
 
-\newcommand{\url}[1]{}% ******** Remove URL's from bibtex entries ********
-% \newcommand{\citeCount}[1]{}% for citation counts papers for WDH citations
 
-\input{pstricks}\input{pst-node}
-\input{colours}
+\input ../common/trimFig.tex
+
+% --------------------------------------------
+\usepackage[usenames]{color} % e.g. \color{red}
+\newcommand{\red}{\color{red}}
+\newcommand{\blue}{\color{blue}}
+\newcommand{\green}{\color{green}}
+
+\usepackage{tikz}
+
+
+%% \input{pstricks}\input{pst-node}
+%% \input{colours}
 
 % or use the epsfig package if you prefer to use the old commands
-\usepackage{epsfig}
-\usepackage{calc}
-\input clipFig.tex
+%% \usepackage{epsfig}
+%% \usepackage{calc}
+%% \input clipFig.tex
 
 % The amssymb package provides various useful mathematical symbols
 \usepackage{amsmath}
@@ -93,11 +119,10 @@
 \title{A Comparison of Different Methods for Solving Maxwell's Equations}
 
 \author{
-Bill Henshaw \\
-% \  \\
-% Centre for Applied Scientific Computing, \\
-% Lawrence Livermore National Laboratory, \\
-% henshaw@llnl.gov 
+William D. Henshaw  \\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
 }
  
 \maketitle
@@ -199,7 +224,7 @@ solves for six unknowns in $\Ev$ and $\Hv$ compared to the three unknowns $\Ev$ 
 
 \begin{figure}[hbt]
 \begin{center}\small
-\includegraphics[width=8cm]{planeWave/planeWaveConvergenceRatesMaxNorm.eps}
+\includegraphics[width=8cm]{planeWave/planeWaveConvergenceRatesMaxNorm}
 %
 \caption{Convergence rates for a plane wave in free space. The maximum errors are given as the grid is refined.}
 \label{fig:planeWaveConvergenceRatesMaxNorm}
@@ -308,8 +333,8 @@ at 2nd and 4th order respectively.
 
 \begin{figure}[hbt]
 \begin{center}\small
-\includegraphics[width=8cm]{dielectricCyl/dielectricCylConvergenceRatesMaxNorm.eps}
-\includegraphics[width=8cm]{dielectricCyl/dielectricCylConvergenceRatesL1Norm.eps}
+\includegraphics[width=8cm]{dielectricCyl/dielectricCylConvergenceRatesMaxNorm}
+\includegraphics[width=8cm]{dielectricCyl/dielectricCylConvergenceRatesL1Norm}
 %
 \caption{Convergence rates for the dielectric cylinder.  
   The maximum (left) and $L_1$-norm (right) errors are given as the grid is refined.}
@@ -347,6 +372,7 @@ CGFD4   &  1.3e5    &   21.7       &  7.82e-02    &  5.95e-07     &     .24  \\ 
 \input dielectricCyl/dielectricCylYeeOrder2L1NormConvTable
 \input dielectricCyl/dielectricCylCGFD2Order2L1NormConvTable.tex
 \input dielectricCyl/dielectricCylCGFD4Order4L1NormConvTable.tex
+
 
 
 \input dielectricCylFig
@@ -493,8 +519,8 @@ at $t=1$ for $k_x=1$.
 
 \begin{figure}[hbt]
 \begin{center}\small
-\includegraphics[width=8cm]{dielectricSphere/dielectricSphereConvergenceRatesMaxNorm.eps}
-\includegraphics[width=8cm]{dielectricSphere/dielectricSphereConvergenceRatesL1Norm.eps}
+\includegraphics[width=8cm]{dielectricSphere/dielectricSphereConvergenceRatesMaxNorm}
+\includegraphics[width=8cm]{dielectricSphere/dielectricSphereConvergenceRatesL1Norm}
 %
 \caption{Convergence rates for the dielectric sphere.
   The maximum (left) and $L_1$-norm (right) errors are given as the grid is refined. }
@@ -518,11 +544,12 @@ CGFD4   &  3.81586e+07    &              &              &               &       
 
 Figure~\ref{fig:scatDielectricSphereCGFD4Fig} shows the computed solution at $t=1.$.
 
+
 \input dielectricSphereFig
 
 
 \clearpage
-\bibliography{\homeHenshaw/papers/common/henshawPapers}
+\bibliography{../common/henshaw,../common/henshawPapers}
 \bibliographystyle{siam}
 
 \end{document}

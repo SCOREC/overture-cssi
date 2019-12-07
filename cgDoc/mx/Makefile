@@ -64,10 +64,8 @@ mx3d: mx3d.tex
 	ps2pdf mx3d.ps
 
 mxCompare: mxCompare.tex 
-	latex mxCompare
+	pdflatex mxCompare
 	bibtex mxCompare
-	dvips -P pdf -G0 -o mxCompare.ps mxCompare
-	ps2pdf mxCompare.ps
 
 pic: pic.tex 
 	latex pic

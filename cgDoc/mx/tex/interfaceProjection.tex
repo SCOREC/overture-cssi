@@ -1,0 +1,240 @@
+%
+%  A modified version of this appeas in adegdmi
+%
+\newcommand{\Kc}{\mathcal{K}}
+\newcommand{\dc}{\Kc}% artificial diffusion coeff
+\newcommand{\lr}{m}% left right sub-script
+\newcommand{\charv}{\psi}%characteristic variable 
+\subsection{Interface projection}
+
+
+The primary interface jump conditions~\eqref{eq:interfaceA} and~\eqref{eq:interfaceB}
+are not explicitly imposed when solving for the ghost point values at the interface, only
+the second time-derivative of these conditions are imposed. To strictly enforce~\eqref{eq:interfaceA} and~\eqref{eq:interfaceB}
+we apply an interface projection at each time-step before assigning the ghost values.
+
+
+
+% We first consider a material interface between two non-dispersive materials.
+To define the projection 
+we consider the solution to a Riemann problem at the interface.
+The initial condition for the Riemann problem, taken at a pseudo-time $t=0$, 
+consists of a constant left state for $x<0$ and a constant right state for $x>0$. 
+The values for these left and right states 
+are given by the predicted interface values coming from the left and right interior updates on the interface.
+The central state in
+the solution to the Riemann problem at $t=0^+$ will define the projected interface state. 
+To derive the form of the projected state, it is sufficient to consider the Maxwell's equations in two dimensions
+for a TE-z polarized wave, (taking $u=E_x$, $v=E_y$, $w=H_z$), 
+\bse
+\label{eq:maxwell2d} 
+\ba
+    \eps_0 \p_t u &= \p_y w -\epsz^{-1} p_t , \\
+    \eps_0 \p_tv  & = - \p_x w -\epsz^{-1} q_t , \\
+    \mu_0 \p_tw   &= \p_y u - \p_x v , 
+\ea
+\ese
+where $p$ and $q$ are the components of the polarization vector. 
+Equations~\eqref{eq:maxwell2d} define a hyperbolic system with lower order terms coming from $p_t$ and $q_t$ which can
+be thought of as being proprotional to $u$ and $v$.
+Hence we can drop the polarization terms from the characteristic analysis. 
+For an interface at $x=0$ we consider waves in the x-direction and the equations then reduce to
+\bas
+    \eps \p_tu &= 0 , \\
+    \eps \p_tv &= - \p_x w, \\
+    \mu  \p_tw &= - \p_x v 
+\eas
+The variable $u$ (normal component of E) is thus a characteristic variable with characteristic speed $\lambda=0$.
+The variables $v$ and $w$ form a coupled wave equation with characteristics variables $\charv_\pm$, and
+characteristic speeds $\lambda_\pm$, given by 
+\bats
+ & \charv_+ = v - \eta w, \qquad && \lambda_+ = c, \\
+ & \charv_- = v + \eta w, \qquad && \lambda_- = -c, 
+\eats
+where $\eta$ is the electric impedance, 
+\bas
+    \eta \eqdef = \sqrt{\f{\mu}{\eps}} .
+\eas
+Solving the Riemman problem with the interface jump conditions
+\bas
+&   [\eps u + p]=0, \\
+&   [v]=0, \\
+&   [w]=0, 
+\eas
+%- The solution to a Riemann problem with left state $\qv_L$, right state $\qv_R$ and center state $\qv_I$ satisfies
+%- \bas
+%-  \charv_+ =  v_I - \eta_L w_I = v_L - \eta_L w_L, \\     
+%-  \charv_- =  v_I + \eta_R w_I = v_R + \eta_R w_R, 
+%- \eas
+leads to the central state, denoted by $(v^I,w^I)$, given
+\bse
+\label{eq:impedanceAverage}
+\ba
+% v_I &= \f{\eta_R v_L + \eta_L v_R}{\eta_R + \eta_L} + \f{\eta_L\eta_R}{\eta_R + \eta_L}\Big[  w_R - w_L\Big] , \\
+v_I &= \f{\eta_L^{-1} \, v_L + \eta_R^{-1} \, v_R}{\eta_R^{-1} + \eta_L^{-1}} + \f{1}{\eta_R^{-1} + \eta_L^{-1}}\Big[  w_R - w_L\Big] , \\
+w_I &=\f{\eta_R \, w_R + \eta_L \, w_L}{\eta_R + \eta_L} + \f{1}{\eta_R + \eta_L}\Big[  v_R - v_L \Big] .
+\ea
+\ese
+It is seen that to leading order $v^I$ is an inverse impedance average, while $w^I$ is a impedance average. 
+The second terms in~\eqref{eq:impedanceAverage} can usually be neglected as they are should proportional to the truncation error. 
+
+The treatment of $u$ and $(p,q)$ at the interface is not as straightforward and we propose two possible approaches.
+In each case we do not alter the polarization vectors and so these remain fixed. 
+
+\bigskip 
+\noindent Option 1: Given $D_L \eqdef \eps_L u_L + p_L $ and $D_R \eqdef \eps_R u_R + p_R$ choose the interface value $D^I$
+to be the left or
+right state based which side has a smaller $\eps_m$, 
+\ba
+D^I = \begin{cases}
+          D_L, & \text{if $\eps_L \le \eps_R$}, \\
+          D_R, & \text{if $\eps_R < \eps_L$} .
+      \end{cases} 
+\label{eq:dAveI}
+\ea
+Thus if  $\eps_R < \eps_L$ we take $D^I = D_R$ and
+\bse
+\bat
+   &   u_L^I = \f{\eps_R}{\eps_L} u_R + \f{p_R-p_L}{\eps_L} , \quad&& u_R^I = u_R, \label{eq:option1a}
+\eat
+otherwise we take $D^I = D_L$ and
+\bat
+   &   u_L^I = u_L , \quad&&   u_R^I =\f{D^I-p_R}{\eps_R}  =
+              \f{\eps_L}{\eps_R} u_L + \f{p_L-p_R}{\eps_R} , \label{eq:option1b} 
+\eat
+\ese
+%--
+%--\ba
+%--D^I = D_R, \qquad\text{if $\eps_R < \eps_L$} \quad \implies u_L^I =\f{D^I-p_L}{\eps_L}  =
+%--              \f{\eps_R}{\eps_L} u_R + \f{p_R-p_L}{\eps_L} , \label{eq:option1a}  , \\
+%--D^I = D_L, \quad\text{if $\eps_L < \eps_R$} \quad \implies u_R^I =\f{D^I-p_R}{\eps_R}  =
+%--              \f{\eps_L}{\eps_R} u_L + \f{p_L-p_R}{\eps_R} , \label{eq:option1b} 
+%--\ea
+%--\ba
+%--   u^I = u_R \qquad\text{if $\eps_R < \eps_L$} \quad \implies u_L^I = \f{\eps_R}{\eps_L} u_R, \label{eq:option1a} \\
+%--   u^I = u_L \qquad\text{if $\eps_L < \eps_RL$} \quad \implies u_R^I = \f{\eps_L}{\eps_R} u_L.\label{eq:option1b}
+%--\ea
+The intuition for this choice is based on a numerical stability argument. In assigning $u_L^I$ in~\eqref{eq:option1a}
+any perturbations to $u_R \rightarrow u_R+\delta$ (e.g. round-off errors) will not be amplified when
+multiplying by $\eps_R/\eps_L < 1$. 
+% The intuition here is purely based on defining a stable assignment by using a ratio of $\eps$'s that is less than one.
+
+\bigskip
+\noindent Option 2: The variable $u$ (or $d\eqdef \eps u + p$) has a characteristic speed $\lambda=0$ and so the characteristics
+do not immediately indicate how to project two values of $u$ on either side of the interface. In option 2 we consider what
+happens if we add an upwind type dissipation to the $d$ equation, which then turns the equation into the heat equation, 
+\ba
+ %   \eps_m u_t = \p_x( \alpha_m  h_m \, \p_x u) ,  \\ 
+&   \p_t d  = \p_x( \dc \, \p_x d_m) , \label{eq:heat}
+\intertext{where the diffusion coefficient is taken to be of the form}
+&    \dc = \begin{cases}
+         \alpha_L c_L  h_L & \text{for $x<0$}, \\
+         \alpha_R c_R  h_R & \text{for $x>0$}, \\
+         \end{cases}  
+\ea
+where $\alpha_m$ is some non-dimensional parameter, $c_m = 1/\sqrt{\eps_m \mu_m}$ is chosen as
+a velocity scale, and $h_m$ is a representative grid spacing.
+% By dimensional arguments we take $\alpha_m \,\propto\, c_m$ where $c_m^2 = 1/(\eps_m \mu_m)$, so that
+% \bas
+%     \alpha_m = \beta_m \eps_m c_m = \beta_m \f{1}{\eta_m} 
+% \eas
+% for some non-dimensional $\beta_m$. 
+First note that there is a similarity solution to the heat-equation given by {\red **CHECK ME***}
+\bas
+&     d(x,t) = A + B \, \erf\Big(  \f{x}{2\sqrt{\dc\, t}} \Big) , 
+% &  \dc \eqdef \f{K}{\rho C_p} = \f{\beta_m \eps_m c_m}{\eps_m} = \beta_m c_m 
+% &  \dc_m \eqdef \alpha_m c_m  h_m .
+\eas
+Now consider a Riemann problem for the heat equation for some left and right states,
+\bas
+d(x,0) = \begin{cases}
+          D_L, & \text{if $x<0$}, \\
+          D_R, & \text{if $x>0$} .
+      \end{cases} 
+\eas
+The boundary conditions at infinity are
+\bats
+ &   d = D_R, \qquad&& x\rightarrow \infty, \\
+ &   d = D_L, \qquad&& x\rightarrow -\infty,
+\eats
+which implies the solution takes the form (since $\erf(x)$ asymptotes to $\pm 1$ as $x\rightarrow \pm\infty$), 
+\bats
+&     d(x,t) = A_L + (A_L-D_L) \, \erf\Big(  \f{x}{2\sqrt{\dc_L\,  t}} \Big) , \qquad&& \text{for $x<0$},  \\
+&     d(x,t) = A_R + (D_R-A_R) \, \erf\Big(  \f{x}{2\sqrt{\dc_R\,  t}} \Big) , \qquad&& \text{for $x>0$} .
+\eats
+The jump conditions at $x=0$ are 
+\bas
+  &   \jumpI{d} = 0  , \\
+  &   [\dc \, \p_x d] = 0 ,
+\eas
+which gives (for $t>0$)
+\bas
+&     A_L =  A_R, \\
+& \dc_L  (A_L-u_L) \f{1}{\sqrt{\dc_L}} = \dc_R  (u_R-A_R) \f{1}{\sqrt{\dc_R}}, 
+% \implies ~~&   \sqrt{\dc_L}  (A_L-D_L)  =   \sqrt{\dc_R}  (D_R - A_R) , 
+\eas
+% This implies the interface value for $(\eps u)^I = \eps_L A_L = \eps_R A_R$ is
+% a $\sqrt{\dc}=\sqrt{\beta c}$ weighted average of $\eps_R\,u_R$ and $\eps_L \,u_L$, 
+which implies that the value at the interface, $x=0$, for $t>0$ is 
+\bas
+& D^I =  A_L = A_R
+= \f{ \sqrt{\dc_R} \, D_R +  \sqrt{\dc_L}\, D_L }{ \sqrt{\dc_L}+\sqrt{\dc_R}},
+% \qquad   \sqrt{\dc_m} = \sqrt{\alpha_m c_m  h_m}. 
+\eas
+Taking $ \alpha_L h_L = \alpha_R h_R$ as a typical case implies $D^I$ is an weighted average
+$D_L$ and $D_R$, 
+\ba
+& D^I =  A_L = A_R
+= \f{ \sqrt{c_R} \, D_R +  \sqrt{c_L}\, D_L }{ \sqrt{c_L}+\sqrt{c_R}},    \label{eq:dAveII}
+\ea
+with weights given by $\sqrt{c_m}$ . 
+Equation~\eqref{eq:dAveII} shows that
+the solution from the side with a larger value for
+$c_m = 1/\sqrt{\eps_m \mu_m}$ (i.e. a smaller value for $\eps_m\mu_m$) is weighted more in the average.
+This roughly corresponds to option 1 where the side with smaller $\eps_m$ was taken to define $D^I$.
+
+%- 
+%- Taking $\beta_L=\beta_R$ implies
+%- that the solution from the side with a bigger $c_m$ (smaller $\eps_m\mu_m$) is weighted more in the average (and
+%- thus roughly corresponds to option 1).
+%- Solving for $u(0-,t)=A_L$ and $u(0+,t)=A_R$ gives **check me**
+%- \bas
+%-    u(0-,t)= \f{1}{\eps_L}  (\eps u)^I, \\
+%-    u(0+,t)= \f{1}{\eps_R}  (\eps u)^I,
+%- \eas
+%- 
+%- \bigskip
+%- \textbf{Question:} Dispersive case (the question is what to do with the polarization $\Pv_m$?) 
+%- %--\bas
+%- %--&    \eps u_t = -\eps \p_t( \charv*u) = -  P_t  , \\
+%- %--&    \eps v_t = - w_x-  \eps \p_t( \charv*v) = - w_x-  Q_t , \\
+%- %--&    \mu w_t = - v_x 
+%- %--\eas
+%- %--One argument is that since the polarizaton is a time-convolution of the electric field, $\Pv=\eps \charv*\Ev$,
+%- %--it will remain essentially constant over the infinitesimal time that the Riemann problem is solved. This implies
+%- %--we do not project the polarization. 
+%- 
+%- Thus we project the tangential components of $\Ev$ using the inverse-impedance average given above.
+%- Given $\Dv_m = \eps_m \Ev_m + \Pv_m$, we project the normal component of $D_m \eqdef \nv\cdot\Dv_m$ as
+%- \bas
+%-      D^I = \f{ \sqrt{\dc_R} (D_R) +  \sqrt{\dc_L}  (D_L)}{ \sqrt{\dc_L}+\sqrt{\dc_R}},
+%- \eas
+%- then set the projected values of $E$ on either side $\Ev_m^I$ by 
+%- \bas
+%-   & \eps_m \Ev_m^I + \Pv_m = D^I, \qquad m=L,R , \\
+%- \implies \quad & \Ev_m^I = \f{D^I - \Pv_m}{\eps_m} 
+%- \eas
+
+\bigskip\noindent
+\textbf{Summary.}
+The tangential components of the electric field are projected using an
+inverse impedance weighted average,
+\bas
+    \nv\times\Ev_m^{I} = \f{ \eta_L^{-1} \nv\times\Ev^L + \eta_R^{-1} \nv\times\Ev^R }{\eta_L^{-1} + \eta_R^{-1}} , \qquad \lr=L,R.
+\eas
+The normal component of the field is projected using
+\bas
+% &      D^I = \f{ \sqrt{c_R} \, D_R +  \sqrt{c_L}  \, D_L }{ \sqrt{c_L}+\sqrt{c_R}}, \\
+&     \nv\cdot\Ev_\lr^I = \f{D^I - \nv\cdot\Pv_\lr}{\eps_\lr} , \qquad m=L,R .
+\eas
+where $D^I$ is defined by~\eqref{eq:dAveI} or~\eqref{eq:dAveII}.

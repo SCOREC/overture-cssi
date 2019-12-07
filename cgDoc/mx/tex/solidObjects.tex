@@ -1,0 +1,139 @@
+\clearpage
+\subsection{Scattering from some solid objects} \label{sec:solidObject}
+
+Figure~\ref{fig:solidObjects} shows results from the scattering of a Gaussian plane wave
+from a collection of solid dispersive spheres.
+
+See \texttt{cg/mx/runs/solidObjects}. 
+
+
+% =================== START FIGURE =========
+{% ------ GRIDS ------
+% --------- START drawContour -----------
+\newcommand{\drawContour}[7]{%
+\begin{scope}[#1]
+\draw(0.0,0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfiga{figures/#2}{\figWidtha}};
+  \draw(.75,.5) node[draw,fill=white,anchor=west,xshift=2pt,yshift=1pt] {\scriptsize #3};
+ % colour bar:
+\begin{scope}[xshift=0pt,yshift=-7pt]
+  \draw (\xcb,\ycb) node[anchor=south west,xshift=0.25cm,yshift=.5cm,rotate=-90] {\trimfigcb{figures/colourBarLines}{\cbWidth}{\cbHeight}};
+  \draw (.8,0) node[anchor=north,xshift=+3pt,yshift=+2pt] {\scriptsize $#6$};
+  \draw (4.8,0) node[anchor=north,xshift=+0pt,yshift=+2pt] {\scriptsize $#7$};
+\end{scope}
+\end{scope}
+}
+% --------- END drawContour -----------
+% -- for colour bar ----
+\newcommand{\cbWidth}{.2cm}% colour bar width
+\newcommand{\cbHeight}{4cm}% colour bar height
+\newcommand{\xcb}{.5cm}% colour bar lower left corner
+\newcommand{\ycb}{-.2cm}% colour bar lower left corner
+\setlength{\ycbTop}{\ycb+\cbHeight}% colour bar top label position
+\setlength{\ycbMid}{\ycb+\cbHeight*\real{.5}}% colour bar top label position
+\newcommand{\trimfigcb}[3]{\includegraphics[width=#2, height=#3, clip, trim=17cm 2.35cm 1.65cm 2.35cm]{#1}}
+%
+% ========================= DRAW ================
+%
+\newcommand{\figWidth}{5.cm}
+\newcommand{\trimfig}[2]{\trimwb{#1}{#2}{.0}{.0}{.0}{.0}}
+\newcommand{\figWidtha}{6cm}
+\newcommand{\trimfiga}[2]{\trimwb{#1}{#2}{.03}{.03}{.1}{.1}}
+\begin{figure}[htb]
+\begin{center}
+\resizebox{16cm}{!}{% START resize box
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0.,0.2) rectangle (16,5.5);  % set the bounding box (so we have less surrounding white space)
+  \draw(-1,0) node[anchor=south west,xshift=-4pt,yshift=-1pt] {\trimfig{figures/solidObjectsGride4}{\figWidth}};
+  \draw(4.5,0) node[anchor=south west,xshift=-4pt,yshift=-1pt] {\trimfig{figures/solidObjectsGride4Zoom}{\figWidth}};
+  %
+  \drawContour{xshift=10cm,yshift=0cm}{sixSolidObjects4G6Enorm}{$|\Ev|$}{$\Ev$}{$t=0.3$}{$0$}{$1.5$};
+%%%  \drawContour{xshift= 11.cm,yshift=0cm}{dieSphereG8O4REyErrt0p5}{$E_y$-err}{$p$}{$t=0.3$}{$-1.3e-5$}{$1.4e-5$};
+% \drawContour{xshift=5.6cm,yshift=0cm}{diskEigExt1p0}{$E_x$}{$\Ev$}{$t=1.0$}{$-.18$}{$.18$};
+% \drawContour{xshift=11.2cm,yshift=0}{diskEigExErrt1p0}{$E_x$-err}{$p$}{$t=1.0$}{$-7.8e-8$}{$7.8e-8$};
+% 
+% grid:
+% \draw[step=1cm,gray] (0,0) grid (16,5.5);
+\end{tikzpicture}
+}% end resize box
+\end{center}
+\caption{
+  Left and middle: composite grid for some solid objects. 
+  Right: Scattering of a Gaussian plane wave from a collection of solid dispersive bodies.
+%   a portion of the composite grid for scattering from a dispersive dielectric sphere.
+%   The region adjacent to the sphere is covered by three overlapping patches exterior to the sphere
+%  and another three on the interior (not shown).
+%%  Middle and right: Contours of $E_y$ and the error in $E_y$ from the computed solution on grid $\Gcs^{(8)}$ at $t=0.5$. 
+%%  Coarsened versions of the grids on the surface of the sphere are also shown for reference.
+}
+  \label{fig:solidObjects}
+\end{figure}
+}
+
+
+
+
+
+
+% =================== START RPI FIGURE =========
+{% ------ GRIDS ------
+% --------- START drawContour -----------
+\newcommand{\drawContour}[7]{%
+\begin{scope}[#1]
+\draw(0.0,0) node[anchor=south west,xshift=-4pt,yshift=+0pt] {\trimfiga{figures/#2}{\figWidtha}};
+  \draw(.75,.5) node[draw,fill=white,anchor=west,xshift=2pt,yshift=1pt] {\scriptsize #3};
+ % colour bar:
+\begin{scope}[xshift=0pt,yshift=-7pt]
+  \draw (\xcb,\ycb) node[anchor=south west,xshift=0.25cm,yshift=.5cm,rotate=-90] {\trimfigcb{figures/colourBarLines}{\cbWidth}{\cbHeight}};
+  \draw (.8,0) node[anchor=north,xshift=+3pt,yshift=+2pt] {\scriptsize $#6$};
+  \draw (4.8,0) node[anchor=north,xshift=+0pt,yshift=+2pt] {\scriptsize $#7$};
+\end{scope}
+\end{scope}
+}
+% --------- END drawContour -----------
+% -- for colour bar ----
+\newcommand{\cbWidth}{.2cm}% colour bar width
+\newcommand{\cbHeight}{4cm}% colour bar height
+\newcommand{\xcb}{.5cm}% colour bar lower left corner
+\newcommand{\ycb}{-.2cm}% colour bar lower left corner
+\setlength{\ycbTop}{\ycb+\cbHeight}% colour bar top label position
+\setlength{\ycbMid}{\ycb+\cbHeight*\real{.5}}% colour bar top label position
+\newcommand{\trimfigcb}[3]{\includegraphics[width=#2, height=#3, clip, trim=17cm 2.35cm 1.65cm 2.35cm]{#1}}
+%
+% ========================= DRAW ================
+%
+\newcommand{\figWidth}{5.5cm}
+\newcommand{\trimfig}[2]{\trimwb{#1}{#2}{.0}{.0}{.0}{.0}}
+\newcommand{\figWidtha}{7cm}
+\newcommand{\trimfiga}[2]{\trimhb{#1}{#2}{.175}{.175}{.025}{.025}}
+\begin{figure}[htb]
+\begin{center}
+\resizebox{16cm}{!}{% START resize box
+\begin{tikzpicture}[scale=1]
+  \useasboundingbox (0.,0.2) rectangle (16,7.5);  % set the bounding box (so we have less surrounding white space)
+ \draw(-1,0) node[anchor=south west,xshift=-4pt,yshift=-1pt] {\trimfiga{figures/rpiGrid}{\figWidtha}};
+ \draw(4.5,1) node[anchor=south west,xshift=-4pt,yshift=-1pt] {\trimfig{figures/rpiGridZoom}{\figWidth}};
+  %
+  \drawContour{xshift=11cm,yshift=0cm}{rpiG8O4Enormt2p5}{$|\Ev|$}{$\Ev$}{$t=0.3$}{$0$}{$1.5$};
+%%%  \drawContour{xshift= 11.cm,yshift=0cm}{dieSphereG8O4REyErrt0p5}{$E_y$-err}{$p$}{$t=0.3$}{$-1.3e-5$}{$1.4e-5$};
+% \drawContour{xshift=5.6cm,yshift=0cm}{diskEigExt1p0}{$E_x$}{$\Ev$}{$t=1.0$}{$-.18$}{$.18$};
+% \drawContour{xshift=11.2cm,yshift=0}{diskEigExErrt1p0}{$E_x$-err}{$p$}{$t=1.0$}{$-7.8e-8$}{$7.8e-8$};
+% 
+% grid:
+%% \draw[step=1cm,gray] (0,0) grid (16,7.5);
+\end{tikzpicture}
+}% end resize box
+\end{center}
+\caption{
+  Left and middle: composite grid for some solid objects. 
+  Right: Scattering of a Gaussian plane wave from a collection of solid dispersive bodies.
+%   a portion of the composite grid for scattering from a dispersive dielectric sphere.
+%   The region adjacent to the sphere is covered by three overlapping patches exterior to the sphere
+%  and another three on the interior (not shown).
+%%  Middle and right: Contours of $E_y$ and the error in $E_y$ from the computed solution on grid $\Gcs^{(8)}$ at $t=0.5$. 
+%%  Coarsened versions of the grids on the surface of the sphere are also shown for reference.
+}
+  \label{fig:solidObjects}
+\end{figure}
+}
+
+
