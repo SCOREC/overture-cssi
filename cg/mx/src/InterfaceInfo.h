@@ -19,7 +19,7 @@ InterfaceInfo(const InterfaceInfo& x);
 
 ~InterfaceInfo();
 
-InterfaceInfo& operator=( const InterfaceInfo& x);
+virtual InterfaceInfo& operator=( const InterfaceInfo& x);
 
 int grid1,side1,dir1;
 int grid2,side2,dir2;

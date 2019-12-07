@@ -198,7 +198,7 @@ namespace KK {
     /// a "special" constructor used by sptr_cast that takes a raw pointer and reference count
     sptr( T* rp, int * start_count, long int gid_) : data(rp), count(start_count), gid(gid_)
     {
-      KK::Assert(start_count>0, "ERROR : protected sptr constructor : invalid initial count");
+      KK::Assert(start_count != NULL, "ERROR : protected sptr constructor : invalid initial count");
 
       if ( data ) increment();
     }

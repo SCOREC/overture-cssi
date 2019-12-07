@@ -383,18 +383,19 @@ SphereExactSolutions::check()
   
   LocalReal sr = s[0], si = s[1]; // -twoPi*kx*c1;
   
+  std::complex<LocalReal> I(0.0,1.0); 
   std::complex<LocalReal> ss(sr,si); // s = -i omega
   std::complex<LocalReal> epsHat, epsHat0, epsHat1, muHat, muHat0, muHat1, cHat0, cHat1, eta0, eta1, m0,m1, kx;
   std::complex<LocalReal>  beta, beta0, beta1;
   
 
-  kx = k[0] + 1i*k[1];  // complex k, wave-number
+  kx = k[0] + I*k[1];  // complex k, wave-number
 
-  epsHat0 = eps0[0] + 1i*eps0[1];  // complex epsHat
-  muHat0  = mu0[0]  + 1i*mu0[1];  // complex muHat
+  epsHat0 = eps0[0] + I*eps0[1];  // complex epsHat
+  muHat0  = mu0[0]  + I*mu0[1];  // complex muHat
   
-  epsHat1 = eps1[0] + 1i*eps1[1];  // complex epsHat
-  muHat1  = mu1[0]  + 1i*mu1[1];  // complex muHat
+  epsHat1 = eps1[0] + I*eps1[1];  // complex epsHat
+  muHat1  = mu1[0]  + I*mu1[1];  // complex muHat
   
 
   cHat0= 1./sqrt(epsHat0*muHat0); 
@@ -439,15 +440,15 @@ SphereExactSolutions::check()
 // ----------------------------------------------------------------
 #beginMacro computeSecondDeriv( dx0,dx1,dx2, Exx,Hxx )
     eval( x, Ev,Hv );
-    for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+    for( int i=0; i<3; i++ ) { E[i]= Ev[i]+I*Ev[i+3]; H[i]= Hv[i]+I*Hv[i+3]; } //
 
     xm[0]=x[0]-dx0; xm[1]=x[1]-dx1; xm[2]=x[2]-dx2;
     eval( xm, Ev,Hv );
-    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
 
     xp[0]=x[0]+dx0; xp[1]=x[1]+dx1; xp[2]=x[2]+dx2;
     eval( xp, Ev,Hv );
-    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
     
     for( int i=0; i<3; i++ ) { Exx[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hxx[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
 #endMacro     
@@ -458,26 +459,26 @@ SphereExactSolutions::check()
 #beginMacro computeFirstDeriv( dx0,dx1,dx2, Ex,Hx )
     xm[0]=x[0]-dx0; xm[1]=x[1]-dx1; xm[2]=x[2]-dx2;
     eval( xm, Ev,Hv );
-    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+    for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
 
     xp[0]=x[0]+dx0; xp[1]=x[1]+dx1; xp[2]=x[2]+dx2;
     eval( xp, Ev,Hv );
-    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
     
     for( int i=0; i<3; i++ ) { Ex[i]=  (Ep[i]-Em[i])/(2.*deps1); Hx[i]=  (Hp[i]-Hm[i])/(2.*deps1);} // 
 #endMacro     
 
     
     // eval( x, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+    // for( int i=0; i<3; i++ ) { E[i]= Ev[i]+I*Ev[i+3]; H[i]= Hv[i]+I*Hv[i+3]; } //
 
     // xm[0]=x[0]-deps2; xm[1]=x[1]; xm[2]=x[2];
     // eval( xm, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
 
     // xp[0]=x[0]+deps2; xp[1]=x[1]; xp[2]=x[2];
     // eval( xp, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
     
     // for( int i=0; i<3; i++ ) { Exx[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hxx[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
 
@@ -494,22 +495,22 @@ SphereExactSolutions::check()
 
     // xm[0]=x[0]; xm[1]=x[1]-deps2; xm[2]=x[2];
     // eval( xm, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; } //
 
     // xp[0]=x[0]; xp[1]=x[1]+deps2; xp[2]=x[2];
     // eval( xp, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; } //
     
     // for( int i=0; i<3; i++ ) { Eyy[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); } // 
     
 
     // xm[0]=x[0]; xm[1]=x[1]; xm[2]=x[2]-deps2;
     // eval( xm, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; } //
 
     // xp[0]=x[0]; xp[1]=x[1]; xp[2]=x[2]+deps2;
     // eval( xp, Ev,Hv );
-    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; } //
+    // for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; } //
     
     // for( int i=0; i<3; i++ ) { Ezz[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); } // 
     
@@ -610,7 +611,7 @@ SphereExactSolutions::check()
       x[1] = r0*sin(theta)*sin(phi);
       x[2] = r0*cos(theta); 
       eval( x, Ev,Hv );
-      for( int i=0; i<3; i++ ) { E[i]=  Ev[i]+1i*Ev[i+3]; H[i]=  Hv[i]+1i*Hv[i+3]; } //
+      for( int i=0; i<3; i++ ) { E[i]=  Ev[i]+I*Ev[i+3]; H[i]=  Hv[i]+I*Hv[i+3]; } //
 
       // thetaHat: 
       LocalReal atx = cos(theta)*cos(phi);
@@ -675,7 +676,7 @@ SphereExactSolutions::check()
       x[1] = r0*sin(theta)*sin(phi);
       x[2] = r0*cos(theta); 
       eval( x, Ev,Hv );
-      for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]=  Hv[i]+1i*Hv[i+3]; } //
+      for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]=  Hv[i]+I*Hv[i+3]; } //
 
       // Evaluate just inside
       r0 = a-epsr;   
@@ -683,7 +684,7 @@ SphereExactSolutions::check()
       x[1] = r0*sin(theta)*sin(phi);
       x[2] = r0*cos(theta); 
       eval( x, Ev,Hv );
-      for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+      for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
 
       // E = jump in E : [E] 
       for( int i=0; i<3; i++ ) { E[i]= Ep[i]-Em[i];  H[i]= Hp[i]-Hm[i]; } //
@@ -773,22 +774,22 @@ SphereExactSolutions::check()
   
     % Check E wave equation:   
     %    Delta Ev = s^2 epsHat muHat Ev = - m^2 k^2 Ev = - beta^2 Ev 
-    DeltaE(1:3) = Evxx(1:3) + Evyy(1:3) + Evzz(1:3)  + 1i*(  Evxx(4:6) + Evyy(4:6) + Evzz(4:6) ); % Complex Delta(E) 
-    E(1:3) = Ev(1:3) + 1i*Ev(4:6);    % complex E 
+    DeltaE(1:3) = Evxx(1:3) + Evyy(1:3) + Evzz(1:3)  + I*(  Evxx(4:6) + Evyy(4:6) + Evzz(4:6) ); % Complex Delta(E) 
+    E(1:3) = Ev(1:3) + I*Ev(4:6);    % complex E 
     normDeltaE =  max(abs(DeltaE));
     errE = max(abs( DeltaE + beta^2*E ))/normDeltaE;
 
     % Check H wave equation
-    DeltaH(1:3) = Hvxx(1:3) + Hvyy(1:3) + Hvzz(1:3)  + 1i*(  Hvxx(4:6) + Hvyy(4:6) + Hvzz(4:6) ); % Complex Delta(H) 
-    H(1:3) = Hv(1:3) + 1i*Hv(4:6);    % complex H  
+    DeltaH(1:3) = Hvxx(1:3) + Hvyy(1:3) + Hvzz(1:3)  + I*(  Hvxx(4:6) + Hvyy(4:6) + Hvzz(4:6) ); % Complex Delta(H) 
+    H(1:3) = Hv(1:3) + I*Hv(4:6);    % complex H  
     normDeltaH =  max(abs(DeltaH));
     errH = max(abs( DeltaH + beta^2*H ))/normDeltaH;
  
     % Check E FOS equation:    eps*E_t = curl(H) 
     %  s epsHat E = curl( H )
-    Hx = Hvx(1:3) + 1i*Hvx(4:6);    % complex H.x
-    Hy = Hvy(1:3) + 1i*Hvy(4:6);    % complex H.y
-    Hz = Hvz(1:3) + 1i*Hvz(4:6);    % complex H.z
+    Hx = Hvx(1:3) + I*Hvx(4:6);    % complex H.x
+    Hy = Hvy(1:3) + I*Hvy(4:6);    % complex H.y
+    Hz = Hvz(1:3) + I*Hvz(4:6);    % complex H.z
     curlH(1) = Hy(3) - Hz(2);
     curlH(2) = Hz(1) - Hx(3);
     curlH(3) = Hx(2) - Hy(1);
@@ -800,9 +801,9 @@ SphereExactSolutions::check()
     % Check H FOS equation:
     %     mu*H_t = -curl(E) 
     %  s muHat H = -curl( E )
-    Ex = Evx(1:3) + 1i*Evx(4:6);    % complex E.x
-    Ey = Evy(1:3) + 1i*Evy(4:6);    % complex E.y
-    Ez = Evz(1:3) + 1i*Evz(4:6);    % complex E.z
+    Ex = Evx(1:3) + I*Evx(4:6);    % complex E.x
+    Ey = Evy(1:3) + I*Evy(4:6);    % complex E.y
+    Ez = Evz(1:3) + I*Evz(4:6);    % complex E.z
     curlE(1) = Ey(3) - Ez(2);
     curlE(2) = Ez(1) - Ex(3);
     curlE(3) = Ex(2) - Ey(1);
@@ -848,11 +849,11 @@ SphereExactSolutions::check()
 
     for side=1:2
       if side==1 
-        E(1:3) = Evm(1:3) + 1i*Evm(4:6);    % complex E
-        H(1:3) = Hvm(1:3) + 1i*Hvm(4:6);    % complex H
+        E(1:3) = Evm(1:3) + I*Evm(4:6);    % complex E
+        H(1:3) = Hvm(1:3) + I*Hvm(4:6);    % complex H
       else
-        E(1:3) = Evp(1:3) + 1i*Evp(4:6);    % complex E
-        H(1:3) = Hvp(1:3) + 1i*Hvp(4:6);    % complex H
+        E(1:3) = Evp(1:3) + I*Evp(4:6);    % complex E
+        H(1:3) = Hvp(1:3) + I*Hvp(4:6);    % complex H
       end 
 
       % thetaHat: 
@@ -918,19 +919,20 @@ getDispersiveParameters( LocalReal beta0v[2], LocalReal beta1v[2] )
   
   LocalReal sr = s[0], si = s[1]; // -twoPi*kx*c1;
   
+  std::complex<LocalReal> I(0.0,1.0); 
   std::complex<LocalReal> ss(sr,si); // s = -i omega
   std::complex<LocalReal> epsHat, epsHat0, epsHat1, muHat, muHat0, muHat1, cHat0, cHat1, eta0, eta1, m0,m1, kx;
   std::complex<LocalReal>  beta, beta0, beta1;
   
   // *** WE COULD RETURN OTHER QUANTITIES TOO 
 
-  kx = k[0] + 1i*k[1];  // complex k, wave-number
+  kx = k[0] + I*k[1];  // complex k, wave-number
 
-  epsHat0 = eps0[0] + 1i*eps0[1];  // complex epsHat
-  muHat0  = mu0[0]  + 1i*mu0[1];  // complex muHat
+  epsHat0 = eps0[0] + I*eps0[1];  // complex epsHat
+  muHat0  = mu0[0]  + I*mu0[1];  // complex muHat
   
-  epsHat1 = eps1[0] + 1i*eps1[1];  // complex epsHat
-  muHat1  = mu1[0]  + 1i*mu1[1];  // complex muHat
+  epsHat1 = eps1[0] + I*eps1[1];  // complex epsHat
+  muHat1  = mu1[0]  + I*mu1[1];  // complex muHat
   
 
   cHat0= 1./sqrt(epsHat0*muHat0); 

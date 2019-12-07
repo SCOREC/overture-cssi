@@ -1255,8 +1255,8 @@ checkPlaneMaterialInterfaceJumps(
   khy= (kyr + I*kyi)/kNorm;
   
   LocalReal kpNorm = sqrt(kxpr*kxpr + kxpi*kxpi + kypr*kypr + kypi*kypi);
-  khpx=(kxpr + 1i*kxpi)/kpNorm;
-  khpy=(kypr + 1i*kypi)/kpNorm;
+  khpx=(kxpr + I*kxpi)/kpNorm;
+  khpy=(kypr + I*kypi)/kpNorm;
   
   printF("\n\n ** s=(%g,%g) kx=(%g,%g) ky=(%g,%g) c1=%g eps1=%g mu1=%g \n",sr,si,kxr,kxi,kyr,kyi,c1,eps1,mu1);
   

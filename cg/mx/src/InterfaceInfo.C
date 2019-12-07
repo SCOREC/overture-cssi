@@ -24,7 +24,6 @@ InterfaceInfo::InterfaceInfo()
   // local copies of geometry data near interfaces needed in parallel:
   pmask1=NULL; prsxy1=NULL; pxy1=NULL;
   pmask2=NULL; prsxy2=NULL; pxy2=NULL;
-
 }
 
 InterfaceInfo::InterfaceInfo(int grid1_, int side1_, int dir1_, 
@@ -52,6 +51,26 @@ InterfaceInfo::
 InterfaceInfo(const InterfaceInfo& x)
 // copy constructor
 {
+  printF("+++ Inside InterfaceInfo copy constructor +++\n");
+
+  // grid1=-1; side1=-1; dir1=-1;
+  // grid2=-1; side2=-1; dir2=-1;
+  // ndf1=0; ndf2=0;
+  // initialized=false;
+  
+  // totalInterfaceIterations=0; // counts total number of interface iterations
+  // averageInterfaceConvergenceRate=0.;  // accumulate average convergence rate here 
+  // maxFinalResidual=0.;      // save maximum of the final residual in interface equations
+  // averageFinalResidual=0.;  // accumulate average final residual in interface equations
+
+  // rwk=NULL;
+  // iwk=NULL;
+
+  // // local copies of geometry data near interfaces needed in parallel:
+  // pmask1=NULL; prsxy1=NULL; pxy1=NULL;
+  // pmask2=NULL; prsxy2=NULL; pxy2=NULL;
+
+  
   *this = x;
 }
 
@@ -63,6 +82,8 @@ InterfaceInfo(const InterfaceInfo& x)
 InterfaceInfo& InterfaceInfo::
 operator=( const InterfaceInfo& x)
 {
+  printF("+++ Inside InterfaceInfo operator= +++\n");
+
   grid1=x.grid1;
   side1=x.side1;
   dir1 =x.dir1;
@@ -90,12 +111,18 @@ operator=( const InterfaceInfo& x)
   
   assert( pmask1==NULL && prsxy1==NULL && pxy1==NULL ); // enforce this since we don't reference count
   assert( pmask2==NULL && prsxy2==NULL && pxy2==NULL ); // enforce this since we don't reference count
+
+  return *this;  // bug fix *wdh* Dec 7, 2019
+
 }
 
 
 InterfaceInfo::
 ~InterfaceInfo()
 {
+
+  printF("+++ Inside InterfaceInfo destructor+++\n");
+  
   delete [] rwk;
   delete [] iwk;
 

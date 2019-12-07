@@ -16,7 +16,10 @@ OPENGL_LIB = $(OpenGL)/$(LIB64)
 
 XLIBS_LIB = $(XLIBS)/$(LIB64)
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11
-OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11 
+# OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11 
+# New Max does not need libXpm - Dec 7, 2019 
+OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXp -lXt -lXmu -lXi -lXext -lX11 
+# 
 # Daniel make this change for his Mac: 
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11 -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
 

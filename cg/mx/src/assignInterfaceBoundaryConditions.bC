@@ -1,3 +1,6 @@
+// #define BOUNDS_CHECK
+
+
 #include "Maxwell.h"
 #include "CompositeGridOperators.h"
 #include "display.h"
@@ -231,7 +234,16 @@ initializeInterfaces()
                            "%s=(grid2,side2,dir2)=(%i,%i,%i) share=%i\n",
 			   (const char*)mg1.getName(),grid1,side1,dir1,
                            (const char*)mg2.getName(),grid2,side2,dir2,share1(side1,dir1));
+
+                    // printF("interfaceInfo.size() = %d\n",interfaceInfo.size());
+                    // int interfaceInfoSize=interfaceInfo.size();
+		    // interfaceInfo.resize(interfaceInfoSize+1);
+		    // interfaceInfo[interfaceInfoSize]=InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2);
+		    
 		    interfaceInfo.push_back(InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2));   
+
+                    // InterfaceInfo & info12 = *(new InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2));
+		    // interfaceInfo.push_back(info12);
 		  
 		    // ***** Check that the valid points match on the interface ******
 		    //   *wdh* 2015/08/11

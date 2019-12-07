@@ -2462,13 +2462,14 @@ PlaneInterfaceExactSolution::check()
     LocalReal & eps2Hati = dbase.get<LocalReal>("eps2Hati");
 
 
+    std::complex<LocalReal> I(0.0,1.0); 
     std::complex<LocalReal> ss(sr,si); // s = -i omega
     std::complex<LocalReal>  eps1Hat, mu1Hat, eps2Hat, mu2Hat, beta1, beta2;
 
-    eps1Hat = eps1Hatr + 1i*eps1Hati;  // complex epsHat
+    eps1Hat = eps1Hatr + I*eps1Hati;  // complex epsHat
     mu1Hat  = mu1;                     // complex muHat
 
-    eps2Hat = eps2Hatr + 1i*eps2Hati;  // complex epsHat
+    eps2Hat = eps2Hatr + I*eps2Hati;  // complex epsHat
     mu2Hat  = mu2;                     // complex muHat
 
     beta1 = sqrt( -ss*ss*eps1Hat*mu1Hat );
@@ -2511,54 +2512,54 @@ PlaneInterfaceExactSolution::check()
         
     // macro calls 
                 eval( x, Ev,Hv );
-                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+I*Ev[i+3]; H[i]= Hv[i]+I*Hv[i+3]; } //
                 xm[0]=x[0]-deps2; xm[1]=x[1]-0; xm[2]=x[2]-0;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+deps2; xp[1]=x[1]+0; xp[2]=x[2]+0;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Exx[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hxx[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
                 eval( x, Ev,Hv );
-                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+I*Ev[i+3]; H[i]= Hv[i]+I*Hv[i+3]; } //
                 xm[0]=x[0]-0; xm[1]=x[1]-deps2; xm[2]=x[2]-0;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+0; xp[1]=x[1]+deps2; xp[2]=x[2]+0;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Eyy[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hyy[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
                 eval( x, Ev,Hv );
-                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+1i*Ev[i+3]; H[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { E[i]= Ev[i]+I*Ev[i+3]; H[i]= Hv[i]+I*Hv[i+3]; } //
                 xm[0]=x[0]-0; xm[1]=x[1]-0; xm[2]=x[2]-deps2;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+0; xp[1]=x[1]+0; xp[2]=x[2]+deps2;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Ezz[i]=  (Ep[i]-2.*E[i]+Em[i])/(deps2*deps2); Hzz[i]=  (Hp[i]-2.*H[i]+Hm[i])/(deps2*deps2);} // 
           
     // macro calls
                 xm[0]=x[0]-deps1; xm[1]=x[1]-0; xm[2]=x[2]-0;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+deps1; xp[1]=x[1]+0; xp[2]=x[2]+0;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Ex[i]=  (Ep[i]-Em[i])/(2.*deps1); Hx[i]=  (Hp[i]-Hm[i])/(2.*deps1);} // 
                 xm[0]=x[0]-0; xm[1]=x[1]-deps1; xm[2]=x[2]-0;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+0; xp[1]=x[1]+deps1; xp[2]=x[2]+0;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Ey[i]=  (Ep[i]-Em[i])/(2.*deps1); Hy[i]=  (Hp[i]-Hm[i])/(2.*deps1);} // 
                 xm[0]=x[0]-0; xm[1]=x[1]-0; xm[2]=x[2]-deps1;
                 eval( xm, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]= Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]= Hv[i]+I*Hv[i+3]; } //
                 xp[0]=x[0]+0; xp[1]=x[1]+0; xp[2]=x[2]+deps1;
                 eval( xp, Ev,Hv );
-                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+                for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
                 for( int i=0; i<3; i++ ) { Ez[i]=  (Ep[i]-Em[i])/(2.*deps1); Hz[i]=  (Hp[i]-Hm[i])/(2.*deps1);} // 
           
         
@@ -2653,12 +2654,12 @@ PlaneInterfaceExactSolution::check()
     // Evaluate left side of the interface 
         for( int i=0; i<3; i++ ){ x[i]=x0[i] -nv[i]*dist; }; 
         eval( x, Ev,Hv );
-        for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+1i*Ev[i+3]; Hm[i]=  Hv[i]+1i*Hv[i+3]; } //
+        for( int i=0; i<3; i++ ) { Em[i]=  Ev[i]+I*Ev[i+3]; Hm[i]=  Hv[i]+I*Hv[i+3]; } //
 
     // Evaluate right side
         for( int i=0; i<3; i++ ){ x[i]=x0[i] + nv[i]*dist; }; 
         eval( x, Ev,Hv );
-        for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+1i*Ev[i+3]; Hp[i]=  Hv[i]+1i*Hv[i+3]; } //
+        for( int i=0; i<3; i++ ) { Ep[i]=  Ev[i]+I*Ev[i+3]; Hp[i]=  Hv[i]+I*Hv[i+3]; } //
 
     // E = jump in E : [E] 
         for( int i=0; i<3; i++ ) { E[i]= Ep[i]-Em[i];  H[i]= Hp[i]-Hm[i]; } //
@@ -2736,13 +2737,13 @@ getDispersiveParameters( LocalReal beta0v[2], LocalReal beta1v[2] )
     
   // *** WE COULD RETURN OTHER QUANTITIES TOO 
 
-    kx = k[0] + 1i*k[1];  // complex k, wave-number
+    kx = k[0] + I*k[1];  // complex k, wave-number
 
-    epsHat0 = eps0[0] + 1i*eps0[1];  // complex epsHat
-    muHat0  = mu0[0]  + 1i*mu0[1];  // complex muHat
+    epsHat0 = eps0[0] + I*eps0[1];  // complex epsHat
+    muHat0  = mu0[0]  + I*mu0[1];  // complex muHat
     
-    epsHat1 = eps1[0] + 1i*eps1[1];  // complex epsHat
-    muHat1  = mu1[0]  + 1i*mu1[1];  // complex muHat
+    epsHat1 = eps1[0] + I*eps1[1];  // complex epsHat
+    muHat1  = mu1[0]  + I*mu1[1];  // complex muHat
     
 
     cHat0= 1./sqrt(epsHat0*muHat0); 
@@ -2833,7 +2834,7 @@ checkPlaneMaterialInterfaceJumps(
                                                         )
 {
 
-  // std::complex<LocalReal> I(0.0,1.0); 
+    std::complex<LocalReal> I(0.0,1.0); 
     std::complex<LocalReal> psiSum1(psiSum1r,psiSum1i);
     std::complex<LocalReal> psiSum2(psiSum2r,psiSum2i);
 
@@ -2849,12 +2850,12 @@ checkPlaneMaterialInterfaceJumps(
     std::complex<LocalReal> dr1,dr2,jump;
     
     LocalReal kNorm = sqrt(kxr*kxr + kxi*kxi + kyr*kyr + kyi*kyi);
-    khx= (kxr + 1i*kxi)/kNorm;
-    khy= (kyr + 1i*kyi)/kNorm;
+    khx= (kxr + I*kxi)/kNorm;
+    khy= (kyr + I*kyi)/kNorm;
     
     LocalReal kpNorm = sqrt(kxpr*kxpr + kxpi*kxpi + kypr*kypr + kypi*kypi);
-    khpx=(kxpr + 1i*kxpi)/kpNorm;
-    khpy=(kypr + 1i*kypi)/kpNorm;
+    khpx=(kxpr + I*kxpi)/kpNorm;
+    khpy=(kypr + I*kypi)/kpNorm;
     
     printF("\n\n ** s=(%g,%g) kx=(%g,%g) ky=(%g,%g) c1=%g eps1=%g mu1=%g \n",sr,si,kxr,kxi,kyr,kyi,c1,eps1,mu1);
     

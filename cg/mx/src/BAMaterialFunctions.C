@@ -1071,7 +1071,7 @@ getBianisotropicDispersivePlaneWaveSolution( const LocalReal kv[3],
       LocalReal bir=std::real(b(i)), bii=std::imag(b(i));
       br += SQR(bir);
       bi += SQR(bii);
-      if( fabs(b(i)) > bMax )
+      if( abs(b(i)) > bMax )
       {
         bMax=abs(b(i));
         iMax=i;

@@ -453,13 +453,13 @@ initializeBAPlaneInterfaceSolution( DispersiveMaterialParameters & dmp1,
 
         dbase.put<ComplexVector>("chia");
 
-        dbase.put<std::complex<Real>>("sa");
+        dbase.put<std::complex<Real> >("sa");
 
-        dbase.put<std::complex<Real>>("r1");
-        dbase.put<std::complex<Real>>("r2");
+        dbase.put<std::complex<Real> >("r1");
+        dbase.put<std::complex<Real> >("r2");
 
-        dbase.put<std::complex<Real>>("tau1");
-        dbase.put<std::complex<Real>>("tau2");
+        dbase.put<std::complex<Real> >("tau1");
+        dbase.put<std::complex<Real> >("tau2");
     }
     bool & baPlaneInterfaceSolutionComputed = dbase.get<bool>("baPlaneInterfaceSolutionComputed");
 
@@ -474,12 +474,12 @@ initializeBAPlaneInterfaceSolution( DispersiveMaterialParameters & dmp1,
 
     ComplexVector & chia = dbase.get<ComplexVector>("chia");
 
-    std::complex<Real> & s = dbase.get<std::complex<Real>>("sa");
+    std::complex<Real> & s = dbase.get<std::complex<Real> >("sa");
 
-    std::complex<Real> & r1   = dbase.get<std::complex<Real>>("r1");
-    std::complex<Real> & r2   = dbase.get<std::complex<Real>>("r2");
-    std::complex<Real> & tau1 = dbase.get<std::complex<Real>>("tau1");
-    std::complex<Real> & tau2 = dbase.get<std::complex<Real>>("tau2");
+    std::complex<Real> & r1   = dbase.get<std::complex<Real> >("r1");
+    std::complex<Real> & r2   = dbase.get<std::complex<Real> >("r2");
+    std::complex<Real> & tau1 = dbase.get<std::complex<Real> >("tau1");
+    std::complex<Real> & tau2 = dbase.get<std::complex<Real> >("tau2");
     
 
     const int ex=0, ey=1, ez=2, hx=3, hy=4, hz=5;
@@ -570,7 +570,7 @@ initializeBAPlaneInterfaceSolution( DispersiveMaterialParameters & dmp1,
   // vv[0]=1. + I*2.;
   // vv[2]=2;
         
-  // std::vector<std::complex<LocalReal>> wv;
+  // std::vector<std::complex<LocalReal> > wv;
   // std::complex<LocalReal> zz;
   // zz=1. + I*2.;
   // wv.push_back(zz);
@@ -804,12 +804,12 @@ evalBA( DispersiveMaterialParameters & dmp1,
     ComplexVector & qvta = dbase.get<ComplexVector>("qvta");
     ComplexVector & chia = dbase.get<ComplexVector>("chia");
 
-    std::complex<Real> & s = dbase.get<std::complex<Real>>("sa");
+    std::complex<Real> & s = dbase.get<std::complex<Real> >("sa");
 
-    std::complex<Real> & r1   = dbase.get<std::complex<Real>>("r1");
-    std::complex<Real> & r2   = dbase.get<std::complex<Real>>("r2");
-    std::complex<Real> & tau1 = dbase.get<std::complex<Real>>("tau1");
-    std::complex<Real> & tau2 = dbase.get<std::complex<Real>>("tau2");
+    std::complex<Real> & r1   = dbase.get<std::complex<Real> >("r1");
+    std::complex<Real> & r2   = dbase.get<std::complex<Real> >("r2");
+    std::complex<Real> & tau1 = dbase.get<std::complex<Real> >("tau1");
+    std::complex<Real> & tau2 = dbase.get<std::complex<Real> >("tau2");
 
 #define kvi(i) kvia[(i)]
 #define qvi(i) qvia[(i)] 
