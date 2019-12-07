@@ -379,6 +379,12 @@ void getGDMPolarizationParameters( int & grid, real *chir, real *chii, const int
 //        getErrors.bC and assignBoundaryConditions.bC 
 // ====================================================================================
 
+
+//------------------------------------------------------------------------------------
+// Macro: evaluate the parameters defining the BA plane wave solution	
+//------------------------------------------------------------------------------------
+
+
 // =============================================================================================================
 // /Description:
 //    Compute a new gridIndexRange, dimension
@@ -594,8 +600,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
     const BoundaryForcingEnum & boundaryForcingOption =dbase.get<BoundaryForcingEnum>("boundaryForcingOption");
 
+    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+  // total number of polarization components per grid 
+    const IntegerArray & totalNumberOfPolarizationComponents =
+        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+
     const int & useSosupDissipation = parameters.dbase.get<int>("useSosupDissipation");
-    bool addedExtraGhostLine = method==sosup || (method==nfdtd && useSosupDissipation);
+    bool addBAMXDissipation = method==bamx && artificialDissipation>0.;
+    bool addedExtraGhostLine = method==sosup || addBAMXDissipation || (method==nfdtd && useSosupDissipation);
     
   // Do we need the grid points: 
   // const bool centerNeeded=(useForcing || forcingOption==planeWaveBoundaryForcing ||  // **************** fix this 
@@ -776,7 +789,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 const int ng=0, ng3=0;  // *wdh* 041018 assign BC's on ghost points too
 
                                 
-      	if( method==nfdtd || method==sosup )
+      	if( method==nfdtd || method==sosup  || method==bamx )
       	{
           // *****************************************************************
           // **************** NFDTD Method ***********************************
@@ -847,8 +860,42 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
               // NOTE: dispersion version is a user defined known solution
                             assert( dispersionModel == noDispersion );
+                            if( method==bamx )
+                            {
+                // =================== BA MAXWELL ======================
+                                if( numberOfDimensions==2 )
+                                {
+                                    assert( !solveForAllFields );  // finish me 
+                                    z=0.;
+                                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                                    {
+                              	x = X(i1,i2,i3,0);
+                              	y = X(i1,i2,i3,1);
+                                        real u1,u2,u3;
+                                        if( x < 0. ) // **fix me**
+                              	{
+                                	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                              	}
+                              	else
+                              	{
+                                            u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                              	}
+                                    	  uLocal(i1,i2,i3,ex)=u1;
+                                	  uLocal(i1,i2,i3,ey)=u2;
+                                	  uLocal(i1,i2,i3,hz)=u3;
+                                    }
+                                }
+                                else
+                                {
+                                    OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+                                }
+                            }
               // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-                            if( numberOfDimensions==2 )
+                            else if( numberOfDimensions==2 )
                             {
                               z=0.;
                               if( grid < numberOfComponentGrids/2 )
@@ -1324,10 +1371,95 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             	      { //planeWaveInitialCondition or planeWaveBoundaryCondition
               		  
                                 {
+                  // printF("+++++ assignBC:  assignDirichletPlaneWaveBC\n");
                                     int i1,i2,i3;
                                     if( numberOfDimensions==2 )
                                     {
-                                        if( localDispersionModel==noDispersion )
+                                        if( method==bamx )
+                                        {
+                                                DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                                                real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                                                real sr,si,evr[6],evi[6];
+                                                RealArray chi;
+                                                DispersiveMaterialParameters::PolarizationEnum polarization =
+                          !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                                    DispersiveMaterialParameters::noPolarization;
+                                                DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                                    dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                                                dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                                                real kr=1., ki=0.;
+                                                if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                                                {
+                                                    dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                                                }
+                                                else
+                                                {
+                          // compute the complex wave number given s 
+                                                    sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                                    bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                                        cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                                        ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                                    if( isPeriodic )
+                                                    {
+                            // -- for periodic problems we need to find a special s so that kr is an integer
+                                                        if( !dmp.dbase.has_key("sPeriodic") )
+                                                        {
+                                                            real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                                            dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                              // Save the special s 
+                                                            sPeriodic[0]=sr; sPeriodic[1]=si;
+                                                        }
+                                                        else
+                                                        {
+                                                            real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                                            sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                                        }
+                                                    }
+                                                    kr = sr; ki= si;
+                                                    dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                          // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                                                }
+                                                if( t<=2.*dt ) 
+                                                {
+                                                    printF("BA plane wave BC: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                                                  sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                                    ::display(chi,"chi","%9.2e ");
+                                                }
+                      // DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                      // real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                      // real sr,si,evr[6],evi[6];
+                      // RealArray chi;
+                      // DispersiveMaterialParameters::PolarizationEnum polarization =
+                      //   !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                      //   DispersiveMaterialParameters::noPolarization;
+                      // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                      // printF("BA plane wave BC: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g]\n",
+                      // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                            if( !solveForAllFields )
+                                            {
+                	// TEz mode: 
+                                      	evr[2]=evr[5];  evi[2]=evi[5];
+                                            }
+                      // const real expt  =exp(sr*t);
+                                            RealArray kDotx(I1,I2,I3);
+                                            kDotx = kv[0]*xLocal(I1,I2,I3,0) + kv[1]*xLocal(I1,I2,I3,1);
+                                            for( int m=ex; m<=hz; m++ )
+                                            {
+                                      	uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
+                                                            	                      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);  
+                	// sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) - omega*t )*ev[m];
+                                            }
+                                            if( dmp.isDispersiveMaterial() )
+                                            {
+                                      	const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                                      	for( int m=0; m<numPolarizationTerms; m++ )
+                                      	{
+                                        	  pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
+                                                        				cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
+                                      	}
+                                            }
+                                        }
+                                        else if( localDispersionModel==noDispersion )
                                         {
                       // ---- NON DISPERSIVE ---
                                             FOR_3D(i1,i2,i3,I1,I2,I3)
@@ -1425,7 +1557,83 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                     else
                                     {
                     // ------------ THREE DIMENSIONS ------------
-                                        if( localDispersionModel==noDispersion )
+                                        if( method==bamx )
+                                        {
+                                                DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                                                real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                                                real sr,si,evr[6],evi[6];
+                                                RealArray chi;
+                                                DispersiveMaterialParameters::PolarizationEnum polarization =
+                          !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                                    DispersiveMaterialParameters::noPolarization;
+                                                DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                                    dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                                                dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                                                real kr=1., ki=0.;
+                                                if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                                                {
+                                                    dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                                                }
+                                                else
+                                                {
+                          // compute the complex wave number given s 
+                                                    sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                                    bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                                        cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                                        ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                                    if( isPeriodic )
+                                                    {
+                            // -- for periodic problems we need to find a special s so that kr is an integer
+                                                        if( !dmp.dbase.has_key("sPeriodic") )
+                                                        {
+                                                            real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                                            dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                              // Save the special s 
+                                                            sPeriodic[0]=sr; sPeriodic[1]=si;
+                                                        }
+                                                        else
+                                                        {
+                                                            real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                                            sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                                        }
+                                                    }
+                                                    kr = sr; ki= si;
+                                                    dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                          // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                                                }
+                                                if( t<=2.*dt ) 
+                                                {
+                                                    printF("BA plane wave BC: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                                                  sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                                    ::display(chi,"chi","%9.2e ");
+                                                }
+                      // DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                      // real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                      // real sr,si,evr[6],evi[6];
+                      // RealArray chi;
+                      // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi );
+                      // printF("BA plane wave BC 3D: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g] evi=[%g,%g,%g,%g,%g,%g]\n",
+                      // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5],evi[1],evi[2],evi[3],evi[4],evi[5]);
+                      // const real expt  =exp(sr*t);
+                                            RealArray kDotx(I1,I2,I3);
+                                            kDotx = kv[0]*xLocal(I1,I2,I3,0) + kv[1]*xLocal(I1,I2,I3,1) + kv[2]*xLocal(I1,I2,I3,2);
+                                            for( int m=ex; m<=hz; m++ )
+                                            {
+                                      	uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
+                                                            	                      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);
+                 	// uLocal(I1,I2,I3,m) = sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) +kv[2]*xLocal(I1,I2,I3,2) + si*t )*evr[m];
+                                            }
+                                            if( dmp.isDispersiveMaterial() )
+                                            {
+                                      	const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                                      	for( int m=0; m<numPolarizationTerms; m++ )
+                                      	{
+                                        	  pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
+                                                        				cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
+                                      	}
+                                            }
+                                        }
+                                        else if( localDispersionModel==noDispersion )
                                         {
                                             if( solveForElectricField )
                                             {
@@ -1518,7 +1726,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                                 }
                                             }
                                         }
-                                        if( solveForMagneticField )
+                                        if( solveForMagneticField && method!=bamx )
                                         {
                                             FOR_3D(i1,i2,i3,I1,I2,I3)
                                             {
@@ -1559,7 +1767,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 assert( tz!=NULL );
                                 OGFunction & e = *tz;
                                 Range C(ex,hz);
-                                if( true )
+                                if( solveForAllFields )
+                                {
+                                    RealArray ue(I1,I2,I3,C);  // could avoid maybe 
+                                    e.gd( ue, xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,C,t);
+                                    uLocal(I1,I2,I3,C) = ue(I1,I2,I3,C);
+                                }
+                                else if( true )
                                 {
                                     int i1,i2,i3;
                                     if( mg.numberOfDimensions()==2 )
@@ -2328,6 +2542,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 if( initialConditionOption==gaussianPlaneWave )  
                     incidentFieldType=1;
                 ipar[37]= incidentFieldType;  
+                ipar[38] = solveForAllFields;
                 rpar[0]=dx[0];       // for Cartesian grids          
                 rpar[1]=dx[1];                
                 rpar[2]=dx[2];                
@@ -2511,7 +2726,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     realSerialArray & uum =um;
                 #endif
                 const int adjustThreeLevels = usePML;
-                if( true && adjustFarFieldBoundariesForIncidentField(grid) )
+                if( adjustFarFieldBoundariesForIncidentField(grid) )
                 {
           // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
                     if( debug & 4 )
@@ -2523,6 +2738,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[25]=-1;  // subtract the incident field
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
+                    ipar[28]=method;
           // parameters for tanh smoothing near bounding box front:
           // -- this must match the formula in getInitialConditions.bC
                     const int & side = dbase.get<int>("boundingBoxDecaySide");
@@ -2591,7 +2807,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             // current way: 
             // PML(n,m,side,axis,grid)      n=time-level, m=v,w 
                         const int numberOfPMLFunctions=2;  //  v and w
-                        const int numberOfComponentsPML= method!=sosup ? 3 : 6; // store Ex, Ey, Hz or Ex,Ey,Ez
+                    int numberOfComponentsPML;
+                        if( method==nfdtd )
+                            numberOfComponentsPML=3;
+                        else if( method==sosup )
+                            numberOfComponentsPML=6;
+                        else if( method==bamx )
+                        {
+                            numberOfComponentsPML = (numberOfDimensions==3 || solveForAllFields) ? 6 : 3;
+                            printF("BAMX: apply PML condition: t=%9.3e, current=%d\n",t,current);
+                        }
+                        else
+                        {
+                            OV_ABORT("apply PML condition: unknown method");
+                        }
                         #define PML(n,m,side,axis,grid) vpml[(n)+numberOfTimeLevels*(m+numberOfPMLFunctions*(side+2*(axis+3*(grid))))]
                         #define VPML(n,side,axis,grid) PML(n,0,side,axis,grid)
                         #define WPML(n,side,axis,grid) PML(n,1,side,axis,grid)
@@ -2721,7 +2950,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             int bc0=-1;  // not used
               // ** for( int m=0; m<3; m++ )
                             const int firstComponent=ipar[12];  // normally ex (or ext)
-                            for( int m=0; m<3; m++ )
+                            for( int m=0; m<numberOfComponentsPML; m++ )
                             {
                           	ipar[12]=firstComponent+m; // assign this component
                           	pmlMaxwell( mg.numberOfDimensions(), 
@@ -2895,6 +3124,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     if( initialConditionOption==gaussianPlaneWave )  
                         incidentFieldType=1;
                     ipar[37]= incidentFieldType;  
+                    ipar[38] = solveForAllFields;
                     rpar[0]=dx[0];       // for Cartesian grids          
                     rpar[1]=dx[1];                
                     rpar[2]=dx[2];                
@@ -3078,7 +3308,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         realSerialArray & uum =um;
                     #endif
                     const int adjustThreeLevels = usePML;
-                    if( true && adjustFarFieldBoundariesForIncidentField(grid) )
+                    if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
                         if( debug & 4 )
@@ -3090,6 +3320,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         ipar[25]=-1;  // subtract the incident field
                         ipar[26]=numberLinesForPML;
                         ipar[27]=adjustThreeLevels;
+                        ipar[28]=method;
             // parameters for tanh smoothing near bounding box front:
             // -- this must match the formula in getInitialConditions.bC
                         const int & side = dbase.get<int>("boundingBoxDecaySide");
@@ -3158,7 +3389,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
               // current way: 
               // PML(n,m,side,axis,grid)      n=time-level, m=v,w 
                             const int numberOfPMLFunctions=2;  //  v and w
-                            const int numberOfComponentsPML= method!=sosup ? 3 : 6; // store Ex, Ey, Hz or Ex,Ey,Ez
+                        int numberOfComponentsPML;
+                            if( method==nfdtd )
+                                numberOfComponentsPML=3;
+                            else if( method==sosup )
+                                numberOfComponentsPML=6;
+                            else if( method==bamx )
+                            {
+                                numberOfComponentsPML = (numberOfDimensions==3 || solveForAllFields) ? 6 : 3;
+                                printF("BAMX: apply PML condition: t=%9.3e, current=%d\n",t,current);
+                            }
+                            else
+                            {
+                                OV_ABORT("apply PML condition: unknown method");
+                            }
                             #define PML(n,m,side,axis,grid) vpml[(n)+numberOfTimeLevels*(m+numberOfPMLFunctions*(side+2*(axis+3*(grid))))]
                             #define VPML(n,side,axis,grid) PML(n,0,side,axis,grid)
                             #define WPML(n,side,axis,grid) PML(n,1,side,axis,grid)
@@ -3288,7 +3532,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 int bc0=-1;  // not used
                 // ** for( int m=0; m<3; m++ )
                                 const int firstComponent=ipar[12];  // normally ex (or ext)
-                                for( int m=0; m<3; m++ )
+                                for( int m=0; m<numberOfComponentsPML; m++ )
                                 {
                               	ipar[12]=firstComponent+m; // assign this component
                               	pmlMaxwell( mg.numberOfDimensions(), 
@@ -3466,6 +3710,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     if( initialConditionOption==gaussianPlaneWave )  
                         incidentFieldType=1;
                     ipar[37]= incidentFieldType;  
+                    ipar[38] = solveForAllFields;
                     rpar[0]=dx[0];       // for Cartesian grids          
                     rpar[1]=dx[1];                
                     rpar[2]=dx[2];                
@@ -3649,7 +3894,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         realSerialArray & uum =um;
                     #endif
                     const int adjustThreeLevels = usePML;
-                    if( true && adjustFarFieldBoundariesForIncidentField(grid) )
+                    if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
                         if( debug & 4 )
@@ -3661,6 +3906,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         ipar[25]=-1;  // subtract the incident field
                         ipar[26]=numberLinesForPML;
                         ipar[27]=adjustThreeLevels;
+                        ipar[28]=method;
             // parameters for tanh smoothing near bounding box front:
             // -- this must match the formula in getInitialConditions.bC
                         const int & side = dbase.get<int>("boundingBoxDecaySide");
@@ -3729,7 +3975,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
               // current way: 
               // PML(n,m,side,axis,grid)      n=time-level, m=v,w 
                             const int numberOfPMLFunctions=2;  //  v and w
-                            const int numberOfComponentsPML= method!=sosup ? 3 : 6; // store Ex, Ey, Hz or Ex,Ey,Ez
+                        int numberOfComponentsPML;
+                            if( method==nfdtd )
+                                numberOfComponentsPML=3;
+                            else if( method==sosup )
+                                numberOfComponentsPML=6;
+                            else if( method==bamx )
+                            {
+                                numberOfComponentsPML = (numberOfDimensions==3 || solveForAllFields) ? 6 : 3;
+                                printF("BAMX: apply PML condition: t=%9.3e, current=%d\n",t,current);
+                            }
+                            else
+                            {
+                                OV_ABORT("apply PML condition: unknown method");
+                            }
                             #define PML(n,m,side,axis,grid) vpml[(n)+numberOfTimeLevels*(m+numberOfPMLFunctions*(side+2*(axis+3*(grid))))]
                             #define VPML(n,side,axis,grid) PML(n,0,side,axis,grid)
                             #define WPML(n,side,axis,grid) PML(n,1,side,axis,grid)
@@ -3859,7 +4118,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 int bc0=-1;  // not used
                 // ** for( int m=0; m<3; m++ )
                                 const int firstComponent=ipar[12];  // normally ex (or ext)
-                                for( int m=0; m<3; m++ )
+                                for( int m=0; m<numberOfComponentsPML; m++ )
                                 {
                               	ipar[12]=firstComponent+m; // assign this component
                               	pmlMaxwell( mg.numberOfDimensions(), 
@@ -3970,7 +4229,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
         if( numberOfPolarizationVectors>0 )
         {
             realMappedGridFunction & p =  getDispersionModelMappedGridFunction( grid, next );
-            Range Pc = numberOfPolarizationVectors*numberOfDimensions;
+      // Range Pc = numberOfPolarizationVectors*numberOfDimensions;
+            int numPolarizationTerms = numberOfPolarizationVectors*numberOfDimensions;
+            if( method==bamx )
+      	numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+
+            Range Pc = numPolarizationTerms;
+
             MappedGridOperators & mgop = mgp!=NULL ? *op : (*cgop)[grid];
             p.setOperators(mgop);
 
@@ -4057,7 +4322,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             for( int axis=0; axis<mg.numberOfDimensions(); axis++ )for( int side=0; side<=1; side++ )
             {
       	const int bc = mg.boundaryCondition(side,axis);
-      	if( bc!=dirichlet && bc!=symmetry )
+      	if( bc!=dirichlet && bc!=symmetry && bc>=0 ) // **wdh* added bc>0 Nov. 26, 2019 -- may make no difference
       	{
         	  u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
       	}

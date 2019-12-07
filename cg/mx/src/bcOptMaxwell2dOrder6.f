@@ -41,6 +41,7 @@
      & js3a,ks1a,ks2a,ks3a,forcingOption,useChargeDensity,fieldOption,
      & boundaryForcingOption
         integer polarizationOption,dispersionModel
+        integer solveForAllFields
         real dr(0:2), dx(0:2), t, uv(0:5), uvm(0:5), uv0(0:5), uvp(0:5)
      & , uvm2(0:5), uvp2(0:5), ubv(0:5)
         real uvmm(0:2),uvzm(0:2),uvpm(0:2)
@@ -1670,6 +1671,7 @@ c===============================================================================
         polarizationOption   =ipar(33)
         dispersionModel      =ipar(34)
         numberOfPolarizationVectors=ipar(36)
+        solveForAllFields    = ipar(38)
         dx(0)                =rpar(0)
         dx(1)                =rpar(1)
         dx(2)                =rpar(2)
@@ -1970,37 +1972,89 @@ c===============================================================================
      & implemented for rectangular grids")')
                stop 7734
               end if
-              do i3=n3a,n3b
-              do i2=n2a,n2b
-              do i1=n1a,n1b
-               if( mask(i1,i2,i3).ne.0 )then
-                ! ** u(i1,i2,i3,et1)=0.
-                u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
-     & en1)
-                u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
-     & is1,i2+is2,i3+is3,et1)
-                  u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,hz)
-                if( useChargeDensity.eq.1 )then
-                 ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
-                 u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,
-     & en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+              if( solveForAllFields.ne.0 )then
+                if( useForcing.ne.0 )then
+                   ! finish me
+                   stop 1239
                 end if
-                  u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
+                do i3=n3a,n3b
+                do i2=n2a,n2b
+                do i1=n1a,n1b
+                 if( mask(i1,i2,i3).ne.0 )then
+                   u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
+     & en1)
+                   u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
+     & is1,i2+is2,i3+is3,et1)
+                   u(i1-is1,i2-is2,i3-is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+
+     & is1,i2+is2,i3+is3,et2)
+                   u(i1-is1,i2-is2,i3-is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+
+     & is1,i2+is2,i3+is3,hn1)
+                   u(i1-is1,i2-is2,i3-is3,ht1)= u(i1+is1,i2+is2,i3+is3,
+     & ht1)
+                   u(i1-is1,i2-is2,i3-is3,ht2)= u(i1+is1,i2+is2,i3+is3,
+     & ht2)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
      & is2,i3+2*is3,en1)
-                  u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)-
-     & u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
-                    u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*
-     & is2,i3+2*is3,hz)
-                  u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=2.*u(i1,i2,i3,et2)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,et2)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,hn1)=2.*u(i1,i2,i3,hn1)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,hn1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,ht1)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,ht1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,ht2)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,ht2)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
      & is2,i3+3*is3,en1)
-                  u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)-
-     & u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
-                    u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=2.*u(i1,i2,i3,et2)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,et2)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,hn1)=2.*u(i1,i2,i3,hn1)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,hn1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,ht1)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,ht1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,ht2)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,ht2)
+                 end if ! mask
+                end do
+                end do
+                end do
+              else ! NOT solveForAllFields
+                do i3=n3a,n3b
+                do i2=n2a,n2b
+                do i1=n1a,n1b
+                 if( mask(i1,i2,i3).ne.0 )then
+                  ! ** u(i1,i2,i3,et1)=0.
+                  u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
+     & en1)
+                  u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
+     & is1,i2+is2,i3+is3,et1)
+                    u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,
+     & hz)
+                  if( useChargeDensity.eq.1 )then
+                   ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
+                   u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,
+     & en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+                  end if
+                    u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,en1)
+                    u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,
+     & et1)-u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+                      u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,hz)
+                    u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,en1)
+                    u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,
+     & et1)-u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+                      u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*
      & is2,i3+3*is3,hz)
-               end if ! mask
-              end do
-              end do
-              end do
+                 end if ! mask
+                end do
+                end do
+                end do
+              end if ! end not solveForAllFields
            else
               if( debug.gt.1 )then
                 write(*,'(" bc4r: **START** grid=",i4," side,axis=",
@@ -2017,78 +2071,130 @@ c===============================================================================
      & implemented for rectangular grids")')
                stop 7734
               end if
-              do i3=n3a,n3b
-              do i2=n2a,n2b
-              do i1=n1a,n1b
-               if( mask(i1,i2,i3).ne.0 )then
-                ! ** u(i1,i2,i3,et1)=0.
-                u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
-     & en1)
-                u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
-     & is1,i2+is2,i3+is3,et1)
-                  u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,hz)
-                if( useChargeDensity.eq.1 )then
-                 ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
-                 u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,
-     & en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+              if( solveForAllFields.ne.0 )then
+                if( useForcing.ne.0 )then
+                   ! finish me
+                   stop 1239
                 end if
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-is1,i2-
-     & is2,i3,0),xy(i1-is1,i2-is2,i3,1),t,uvm(ex),uvm(ey),uvm(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+is1,i2+
-     & is2,i3,0),xy(i1+is1,i2+is2,i3,1),t,uvp(ex),uvp(ey),uvp(hz))
-             ! write(*,'("..bcRectangular: side,axis=",2i3," i1,i2,i3=",3i3," en1,uvm(en1),uvp(en1)=",3e12.4)')!            side,axis,i1,i2,i3,u(i1-is1,i2-is2,i3,en1),uvm(en1),uvp(en1)
-                    u(i1-is1,i2-is2,i3,en1)=u(i1-is1,i2-is2,i3,en1) + 
-     & uvm(en1) - uvp(en1)
-                    u(i1-is1,i2-is2,i3,et1)=u(i1-is1,i2-is2,i3,et1) + 
-     & uvm(et1) -2.*uv0(et1) + uvp(et1)
-                    u(i1-is1,i2-is2,i3,hz )=u(i1-is1,i2-is2,i3,hz ) + 
-     & uvm(hz)-uvp(hz)
-                  u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
+                do i3=n3a,n3b
+                do i2=n2a,n2b
+                do i1=n1a,n1b
+                 if( mask(i1,i2,i3).ne.0 )then
+                   u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
+     & en1)
+                   u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
+     & is1,i2+is2,i3+is3,et1)
+                   u(i1-is1,i2-is2,i3-is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+
+     & is1,i2+is2,i3+is3,et2)
+                   u(i1-is1,i2-is2,i3-is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+
+     & is1,i2+is2,i3+is3,hn1)
+                   u(i1-is1,i2-is2,i3-is3,ht1)= u(i1+is1,i2+is2,i3+is3,
+     & ht1)
+                   u(i1-is1,i2-is2,i3-is3,ht2)= u(i1+is1,i2+is2,i3+is3,
+     & ht2)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
      & is2,i3+2*is3,en1)
-                  u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)-
-     & u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
-                    u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*
-     & is2,i3+2*is3,hz)
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-2*is1,
-     & i2-2*is2,i3,0),xy(i1-2*is1,i2-2*is2,i3,1),t,uvm(ex),uvm(ey),
-     & uvm(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+2*is1,
-     & i2+2*is2,i3,0),xy(i1+2*is1,i2+2*is2,i3,1),t,uvp(ex),uvp(ey),
-     & uvp(hz))
-                    u(i1-2*is1,i2-2*is2,i3,en1)=u(i1-2*is1,i2-2*is2,i3,
-     & en1) + uvm(en1) - uvp(en1)
-                    u(i1-2*is1,i2-2*is2,i3,et1)=u(i1-2*is1,i2-2*is2,i3,
-     & et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-                    u(i1-2*is1,i2-2*is2,i3,hz )=u(i1-2*is1,i2-2*is2,i3,
-     & hz ) + uvm(hz)-uvp(hz)
-                  u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=2.*u(i1,i2,i3,et2)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,et2)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,hn1)=2.*u(i1,i2,i3,hn1)
+     & -u(i1+2*is1,i2+2*is2,i3+2*is3,hn1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,ht1)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,ht1)
+                   u(i1-2*is1,i2-2*is2,i3-2*is3,ht2)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,ht2)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
      & is2,i3+3*is3,en1)
-                  u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)-
-     & u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
-                    u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=2.*u(i1,i2,i3,et2)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,et2)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,hn1)=2.*u(i1,i2,i3,hn1)
+     & -u(i1+3*is1,i2+3*is2,i3+3*is3,hn1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,ht1)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,ht1)
+                   u(i1-3*is1,i2-3*is2,i3-3*is3,ht2)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,ht2)
+                 end if ! mask
+                end do
+                end do
+                end do
+              else ! NOT solveForAllFields
+                do i3=n3a,n3b
+                do i2=n2a,n2b
+                do i1=n1a,n1b
+                 if( mask(i1,i2,i3).ne.0 )then
+                  ! ** u(i1,i2,i3,et1)=0.
+                  u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,
+     & en1)
+                  u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+
+     & is1,i2+is2,i3+is3,et1)
+                    u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,
+     & hz)
+                  if( useChargeDensity.eq.1 )then
+                   ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
+                   u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,
+     & en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+                  end if
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-is1,
+     & i2-is2,i3,0),xy(i1-is1,i2-is2,i3,1),t,uvm(ex),uvm(ey),uvm(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+is1,
+     & i2+is2,i3,0),xy(i1+is1,i2+is2,i3,1),t,uvp(ex),uvp(ey),uvp(hz))
+               ! write(*,'("..bcRectangular: side,axis=",2i3," i1,i2,i3=",3i3," en1,uvm(en1),uvp(en1)=",3e12.4)')!            side,axis,i1,i2,i3,u(i1-is1,i2-is2,i3,en1),uvm(en1),uvp(en1)
+                      u(i1-is1,i2-is2,i3,en1)=u(i1-is1,i2-is2,i3,en1) +
+     &  uvm(en1) - uvp(en1)
+                      u(i1-is1,i2-is2,i3,et1)=u(i1-is1,i2-is2,i3,et1) +
+     &  uvm(et1) -2.*uv0(et1) + uvp(et1)
+                      u(i1-is1,i2-is2,i3,hz )=u(i1-is1,i2-is2,i3,hz ) +
+     &  uvm(hz)-uvp(hz)
+                    u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,en1)
+                    u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,
+     & et1)-u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+                      u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*
+     & is2,i3+2*is3,hz)
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-2*
+     & is1,i2-2*is2,i3,0),xy(i1-2*is1,i2-2*is2,i3,1),t,uvm(ex),uvm(ey)
+     & ,uvm(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+2*
+     & is1,i2+2*is2,i3,0),xy(i1+2*is1,i2+2*is2,i3,1),t,uvp(ex),uvp(ey)
+     & ,uvp(hz))
+                      u(i1-2*is1,i2-2*is2,i3,en1)=u(i1-2*is1,i2-2*is2,
+     & i3,en1) + uvm(en1) - uvp(en1)
+                      u(i1-2*is1,i2-2*is2,i3,et1)=u(i1-2*is1,i2-2*is2,
+     & i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+                      u(i1-2*is1,i2-2*is2,i3,hz )=u(i1-2*is1,i2-2*is2,
+     & i3,hz ) + uvm(hz)-uvp(hz)
+                    u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*
+     & is2,i3+3*is3,en1)
+                    u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,
+     & et1)-u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+                      u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*
      & is2,i3+3*is3,hz)
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-3*is1,
-     & i2-3*is2,i3,0),xy(i1-3*is1,i2-3*is2,i3,1),t,uvm(ex),uvm(ey),
-     & uvm(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
-                     call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+3*is1,
-     & i2+3*is2,i3,0),xy(i1+3*is1,i2+3*is2,i3,1),t,uvp(ex),uvp(ey),
-     & uvp(hz))
-                    u(i1-3*is1,i2-3*is2,i3,en1)=u(i1-3*is1,i2-3*is2,i3,
-     & en1) + uvm(en1) - uvp(en1)
-                    u(i1-3*is1,i2-3*is2,i3,et1)=u(i1-3*is1,i2-3*is2,i3,
-     & et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-                    u(i1-3*is1,i2-3*is2,i3,hz )=u(i1-3*is1,i2-3*is2,i3,
-     & hz ) + uvm(hz)-uvp(hz)
-               end if ! mask
-              end do
-              end do
-              end do
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-3*
+     & is1,i2-3*is2,i3,0),xy(i1-3*is1,i2-3*is2,i3,1),t,uvm(ex),uvm(ey)
+     & ,uvm(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),t,uv0(ex),uv0(ey),uv0(hz))
+                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+3*
+     & is1,i2+3*is2,i3,0),xy(i1+3*is1,i2+3*is2,i3,1),t,uvp(ex),uvp(ey)
+     & ,uvp(hz))
+                      u(i1-3*is1,i2-3*is2,i3,en1)=u(i1-3*is1,i2-3*is2,
+     & i3,en1) + uvm(en1) - uvp(en1)
+                      u(i1-3*is1,i2-3*is2,i3,et1)=u(i1-3*is1,i2-3*is2,
+     & i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+                      u(i1-3*is1,i2-3*is2,i3,hz )=u(i1-3*is1,i2-3*is2,
+     & i3,hz ) + uvm(hz)-uvp(hz)
+                 end if ! mask
+                end do
+                end do
+                end do
+              end if ! end not solveForAllFields
            end if
          else
            ! ***********************************************

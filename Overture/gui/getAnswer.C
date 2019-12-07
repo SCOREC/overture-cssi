@@ -2104,7 +2104,8 @@ processSpecialMenuItems(aString & answer)
   {
     const char *cColon = strrchr(SC answer.c_str(),':');
     aString longAnswer;
-    if (cColon && cColon != '\0')
+    // if (cColon && cColon != '\0') // *wdh* Sept 12, 2019 -- for new gcc on Ubuntu
+    if (cColon && cColon != NULL )
       longAnswer = menuBarItems[item] + cColon; /*answer*/
     else
       longAnswer = menuBarItems[item];

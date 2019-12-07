@@ -1,0 +1,16 @@
+# Dispersive material parameters file
+# File created by WDH for the multiDisk problem, July 16, 2019
+
+units="MKS";
+name="testMaterial2";
+gdmDataFile="none";
+velocityScale=2.99792458000000e+08;
+lengthScale=1.00000000000000e-07;
+timeScale=3.33564095198152e-16;
+omegaScale=2.99792458000000e+15;
+omegaDataMin=2.00000000000000e-01;
+omegaDataMax=1.00000000000000e+00;
+# epsGDMPars1=[epsInf,a0,a1,b0,b1, a0,a1,b0,b1, ...] (1 polarization vectors)
+epsGDMPars1=[4. , 1., .1, 2, .2 ];
+epsGDMPars2=[4. , .9, .1, 4, .05,  .8, .08, 3., .07 ];
+epsGDMPars3=[4. , .9, .1, 4, .05,  .8, .08, 3., .07, .7, .06, 2., .09 ];

@@ -21,10 +21,11 @@
 $prefix="rectangle"; $xa=-1.; $xb=1.; $ya=-1.; $yb=1.;
 $order=2; $factor=1; # default values
 $orderOfAccuracy = "second order"; $ng=2;  $periodic=""; $name=""; 
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
-            "periodic=s"=>\$periodic,"name=s"=>\$name,"prefix=s"=>\$prefix );
+            "periodic=s"=>\$periodic,"name=s"=>\$name,"prefix=s"=>\$prefix,"numGhost=i"=> \$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -36,6 +37,8 @@ if( $periodic eq "p" ){ $suffix = "p"; }
 if( $periodic eq "np" ){ $suffix = "np"; }
 if( $periodic eq "pn" ){ $suffix = "pn"; }
 $suffix .= ".order$order"; 
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; }
 if( $name eq "" ){$name = $prefix . $factor . $suffix . ".hdf";}
 # 
 $ds=.1/$factor;

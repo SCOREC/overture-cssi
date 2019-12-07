@@ -473,7 +473,9 @@ c rarefaction solution
             if (rm(i).le.0.d0) then
               write(6,*)'Error (virial) : rm(i).le.0'
               write(6,*)'iguess=',iguess
-              pause
+              write(6,*)'Enter kstop : (0=cont, 1=stop)'
+              read(5,*)kstop
+              if (kstop.ne.0) stop
               ier=4
               return
             end if
@@ -554,7 +556,9 @@ c
       do i=1,itmax
         write(6,*)'it,err=',i,esave(i)
       end do
-      pause
+      write(6,*)'Enter kstop : (0=cont, 1=stop)'
+      read(5,*)kstop
+      if (kstop.ne.0) stop
 c      write(56,300)
 c  300 format(' * iteration failed')
 c
@@ -621,7 +625,9 @@ c
         write(6,101)n,err(n)
   101   format('    it=',i2,',  error=',1pe9.2)
       end do
-      pause
+      write(6,*)'Enter kstop : (0=cont, 1=stop)'
+      read(5,*)kstop
+      if (kstop.ne.0) stop
 c
       getdv1d=aint(2,n)+aint0(i)
 c
@@ -1554,7 +1560,7 @@ c
         rmp(k)=rm(k)*(1.d0+delta)
         call getg31d (rm0p,rmp,vmp,pmp,gp,resid,iconf,ier)
         if (ier.ne.0) return
-        do i=1,5
+        do i=1,4
           dg(i,k)=(gp(i)-g(i))/(rm(k)*delta)
         end do
         rmp(k)=rm(k)
@@ -1564,7 +1570,7 @@ c
         pmp(k,1)=pm(k,1)*(1.d0+delta)
         call getg31d (rm0p,rmp,vmp,pmp,gp,resid,iconf,ier)
         if (ier.ne.0) return
-        do i=1,5
+        do i=1,4
           dg(i,k+2)=(gp(i)-g(i))/(pm(k,1)*delta)
         end do
         pmp(k,1)=pm(k,1)

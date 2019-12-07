@@ -93,8 +93,55 @@ const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
   // NOTE: dispersion version is a user defined known solution
   assert( dispersionModel == noDispersion );
 
+  if( method==bamx )
+  {
+    // =================== BA MAXWELL ======================
+    if( numberOfDimensions==2 )
+    {
+      assert( !solveForAllFields );  // finish me 
+
+      z=0.;
+      FOR_3D(i1,i2,i3,J1,J2,J3)
+      {
+	x = XEP(i1,i2,i3,0);
+	y = XEP(i1,i2,i3,1);
+        real u1,u2,u3;
+        if( x < 0. ) // **fix me**
+	{
+	  u1 = PMIex(x,y,z,t);
+	  u2 = PMIey(x,y,z,t);
+	  u3 = PMIhz(x,y,z,t);
+	}
+	else
+	{
+          u1=PMITex(x,y,z,t);
+          u2=PMITey(x,y,z,t);
+          u3=PMIThz(x,y,z,t);
+	}
+        #If #OPTION eq "initialCondition" 
+  	  uLocal(i1,i2,i3,ex)=u1;
+	  uLocal(i1,i2,i3,ey)=u2;
+	  uLocal(i1,i2,i3,hz)=u3;
+        #Elif #OPTION eq "error"
+          ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+          ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+          ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+        #Elif #OPTION eq "boundaryCondition"
+  	  uLocal(i1,i2,i3,ex)=u1;
+	  uLocal(i1,i2,i3,ey)=u2;
+	  uLocal(i1,i2,i3,hz)=u3;
+        #End
+      }
+      
+    }
+    else
+    {
+      OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+    }
+    
+  }
   // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-  if( numberOfDimensions==2 )
+  else if( numberOfDimensions==2 )
   {
    z=0.;
    if( grid < numberOfComponentGrids/2 )

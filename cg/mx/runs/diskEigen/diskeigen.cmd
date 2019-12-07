@@ -88,10 +88,10 @@ annulusEigenfunctionInitialCondition
 # 
 annulusEigenfunctionKnownSolution
 #**
-specify probes
-  .2 .3 0.
-  .4 .6 0.
-done
+#-- specify probes
+#--   .2 .3 0.
+#--   .4 .6 0.
+#-- done
 #****
 #
 tFinal $tFinal

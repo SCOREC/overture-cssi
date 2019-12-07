@@ -133,7 +133,9 @@ c      pause
 
         write(6,*)'Error (geteosm) : istiff value not supported'
         write(6,*)'istiff =',istiff
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
 
       end if
 

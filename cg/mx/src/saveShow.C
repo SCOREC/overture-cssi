@@ -2,6 +2,7 @@
 #include "Ogshow.h"
 #include "HDF_DataBase.h"
 #include "display.h"
+#include "BodyForce.h"
 
 // static int restartNumber=-1;
 
@@ -37,9 +38,37 @@ saveShow( int current, real t, real dt )
   if( debug & 1 )
     printF("saving a solution in the show file...\n");
   
+  int & numberSavedToShowFile = parameters.dbase.get<int>("numberSavedToShowFile");
+
   Ogshow & showFile = *show;
+  if( numberSavedToShowFile==-1 )
+  {
+    saveParametersToShowFile();
+  }
+  
+
   showFile.startFrame();
 
+
+  const int appendToOldShowFile = parameters.dbase.get<int >("appendToOldShowFile");
+  if( numberSavedToShowFile==-1 && appendToOldShowFile )
+  {
+    // -- do not save first solution if we are appending to an existing show file.
+    // This solution is already there.
+    numberSavedToShowFile=0;
+    // There is no need to save the grid if we are appending:
+    parameters.dbase.get<int >("saveGridInShowFile")=false;
+    return;
+  }
+  if( numberSavedToShowFile==-1 )
+  {
+    // first call -- save general parameters
+    numberSavedToShowFile=0;
+    // parameters.saveParametersToShowFile();
+  }
+  numberSavedToShowFile++;
+
+  
   HDF_DataBase *dbp=NULL;
   #ifdef OV_USE_HDF5
     bool putToDataBase=true;    // hdf5  -- put on all processors
@@ -55,13 +84,36 @@ saveShow( int current, real t, real dt )
     dbp = showFile.getFrame();
     assert( dbp!=NULL );
     // save parameters that go in this frame
-    assert( dbp!=NULL );
     HDF_DataBase & db = *dbp;
     db.put(t,"time");
     db.put(dt,"dt");
+
+    // --- Save body/boundary force regions in the first frame ---
+    if( numberSavedToShowFile==1 )
+    {
+      if( parameters.dbase.get<bool >("turnOnBoundaryForcing") )
+      {
+	printF("\n @@@ saveShow: Save material region boundaries to the show file @@@@ \n\n");
+
+	// Here is the array of boundary forcings:
+	std::vector<BodyForce*> & boundaryForcings =  parameters.dbase.get<std::vector<BodyForce*> >("boundaryForcings");
+	// -- save the number of regions:
+	db.put((int)boundaryForcings.size(),"numberOfBoundaryForceRegions");
+
+	for( int bf=0; bf<boundaryForcings.size(); bf++ )
+	{
+	  const BodyForce & boundaryForce = *boundaryForcings[bf];
+	  boundaryForce.put(db,sPrintF("BoundaryForce%i",bf));
+	}
+      }
+      else
+      {
+	db.put(0,"numberOfBoundaryForceRegions"); // there are no boundary force regions
+      }
+
+    }
   }
-
-
+  
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
   
@@ -262,6 +314,9 @@ saveParametersToShowFile()
   // save parameters
   showFileParams.push_back(ShowFileParameter("Maxwell's Equations","pde"));
     
+  // printF("\n ****** saveParametersToShowFile: ez=%d\n\n",ez);
+  // OV_ABORT("stop here");
+  
   showFileParams.push_back(ShowFileParameter("exFieldComponent",ex));
   showFileParams.push_back(ShowFileParameter("eyFieldComponent",ey));
   showFileParams.push_back(ShowFileParameter("ezFieldComponent",ez));
@@ -345,6 +400,11 @@ saveSequencesToShowFile()
     // 2D: ex,ey,hz, ext,eyt,hzt  
     // 3D: ex,ey,ez, ext,eyt,ezt  
     numberOfComponents = 6; 
+  }
+  else if( method==bamx )
+  {
+    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+    numberOfComponents = (numberOfDimensions ==3 || solveForAllFields==1) ? 6 : 3; 
   }
   else if( method==yee )
   {

@@ -383,7 +383,7 @@ evalDerivative( const real t, real & fp, int derivative, bool computeComposed /*
     }
     else if( t<rampEndTime && rampInterval>0. )
     {
-      // *** see gf/ramp.maple
+      // *** see cg/mx/code/ramp.maple
 
       const real ts=(t-rampStartTime)/rampInterval;
 
@@ -437,7 +437,7 @@ evalDerivative( const real t, real & fp, int derivative, bool computeComposed /*
  	  fp = scale*ramp2ttt(ts);
 	else
 	{
-	  printF("TimeFunction::ERROR: ramp derivative=%i is not implemented\n",derivative);
+	  printF("TimeFunction::ERROR: ramp2 derivative=%i is not implemented\n",derivative);
 	}
       }
       else if( rampOrder==3 )
@@ -459,12 +459,12 @@ evalDerivative( const real t, real & fp, int derivative, bool computeComposed /*
  	  fp = scale*ramp3ttt(ts);
 	else
 	{
-	  printF("TimeFunction::ERROR: ramp derivative=%i is not implemented\n",derivative);
+	  printF("TimeFunction::ERROR: ramp3 derivative=%i is not implemented\n",derivative);
 	}
       }
-      else  if( rampOrder==4 )
+      else if( rampOrder==4 )
       {
-        // This ramp has 4 derivatives zero at the ends 
+        // This ramp has 4 derivatives zero at the ends *** see cg/mx/code/ramp.maple
 #define ramp4(t)    ((126+(-420+(540+(-315+70.*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t))
 #define ramp4t(t)   ((630+(-2520+(3780+(-2520+630.*t)*t)*t)*t)*(t)*(t)*(t)*(t))
 #define ramp4tt(t)  ((2520+(-12600+(22680+(-17640+5040.*t)*t)*t)*t)*(t)*(t)*(t))
@@ -479,12 +479,79 @@ evalDerivative( const real t, real & fp, int derivative, bool computeComposed /*
  	  fp = scale*ramp4ttt(ts);
 	else
 	{
-	  printF("TimeFunction::ERROR: ramp derivative=%i is not implemented\n",derivative);
+	  printF("TimeFunction::ERROR: ramp4 derivative=%i is not implemented\n",derivative);
 	}	
       }
+
+      else if( rampOrder==5 )
+      {
+        // This ramp has 5 derivatives zero at the ends *** see cg/mx/code/ramp.maple  *new* Sept 22, 2019
+       // Ramp5: r(1)=1.000000e+00, rt(1)=0.000000e+00, rt2(1)=0.000000e+00, rt3(1)=0.000000e+00, rt4(1)=0.000000e+00, rt5(1)=0.000000e+00
+       // r=(462+(-1980+(3465+(-3080+(1386-252*t)*t)*t)*t)*t)*t^6
+       // rt=(2772+(-13860+(27720+(-27720+(13860-2772*t)*t)*t)*t)*t)*t^5
+       // rtt=(13860+(-83160+(194040+(-221760+(124740-27720*t)*t)*t)*t)*t)*t^4
+       // rttt=(55440+(-415800+(1164240+(-1552320+(997920-249480*t)*t)*t)*t)*t)*t^3
+       // rtttt=(166320+(-1663200+(5821200+(-9313920+(6985440-1995840*t)*t)*t)*t)*t)*t^2
+       // rttttt=(332640+(-4989600+(23284800+(-46569600+(41912640-13970880*t)*t)*t)*t)*t)*t
+
+#define ramp5(t)    ((462+(-1980+(3465+(-3080+(1386-252.*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t)*(t))
+#define ramp5t(t)   ((2772+(-13860+(27720+(-27720+(13860-2772.*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t))
+#define ramp5tt(t)  ((13860+(-83160+(194040+(-221760+(124740-27720.*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t))
+#define ramp5ttt(t) ((55440+(-415800+(1164240+(-1552320+(997920-249480.*t)*t)*t)*t)*t)*(t)*(t)*(t))
+// rtttt=(166320+(-1663200+(5821200+(-9313920+(6985440-1995840*t)*t)*t)*t)*t)*t^2
+// rttttt=(332640+(-4989600+(23284800+(-46569600+(41912640-13970880*t)*t)*t)*t)*t)*t
+
+	if( derivative==0 )
+	  fp = rampStart + scale*ramp5(ts);
+	else if( derivative==1 )
+	  fp  = scale*ramp5t(ts);
+	else if( derivative==2 )
+	  fp = scale*ramp5tt(ts);
+ 	else if( derivative==3 )
+ 	  fp = scale*ramp5ttt(ts);
+	else
+	{
+	  printF("TimeFunction::ERROR: ramp5 derivative=%i is not implemented\n",derivative);
+	}	
+      }
+
+      else if( rampOrder==6 )
+      {
+       // This ramp has 6 derivatives zero at the ends    *** see cg/mx/code/ramp.maple **** *new* Sept 22, 2019
+
+       // Ramp6: r(1)=1.000000e+00, rt(1)=0.000000e+00, rt2(1)=0.000000e+00, rt3(1)=0.000000e+00, rt4(1)=0.000000e+00, rt5(1)=0.000000e+00, rt6(1)=0.000000e+00
+       // r=(1716+(-9009+(20020+(-24024+(16380+(-6006+924*t)*t)*t)*t)*t)*t)*t^7
+       // rt=(12012+(-72072+(180180+(-240240+(180180+(-72072+12012*t)*t)*t)*t)*t)*t)*t^6
+       // rtt=(72072+(-504504+(1441440+(-2162160+(1801800+(-792792+144144*t)*t)*t)*t)*t)*t)*t^5
+       // rttt=(360360+(-3027024+(10090080+(-17297280+(16216200+(-7927920+1585584*t)*t)*t)*t)*t)*t)*t^4
+       // rtttt=(1441440+(-15135120+(60540480+(-121080960+(129729600+(-71351280+15855840*t)*t)*t)*t)*t)*t)*t^3
+       // rttttt=(4324320+(-60540480+(302702400+(-726485760+(908107200+(-570810240+142702560*t)*t)*t)*t)*t)*t)*t^2
+       // rtttttt=(8648640+(-181621440+(1210809600+(-3632428800+(5448643200+(-3995671680+1141620480*t)*t)*t)*t)*t)*t)*t
+
+
+#define ramp6(t)    ((1716+(-9009+(20020+(-24024+(16380+(-6006+924.*t)*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t)*(t)*(t))
+#define ramp6t(t)   ((12012+(-72072+(180180+(-240240+(180180+(-72072+12012.*t)*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t)*(t))
+#define ramp6tt(t)  ((72072+(-504504+(1441440+(-2162160+(1801800+(-792792+144144.*t)*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t)*(t))
+#define ramp6ttt(t) ((360360+(-3027024+(10090080+(-17297280+(16216200+(-7927920+1585584.*t)*t)*t)*t)*t)*t)*(t)*(t)*(t)*(t))
+
+	if( derivative==0 )
+	  fp = rampStart + scale*ramp6(ts);
+	else if( derivative==1 )
+	  fp  = scale*ramp6t(ts);
+	else if( derivative==2 )
+	  fp = scale*ramp6tt(ts);
+ 	else if( derivative==3 )
+ 	  fp = scale*ramp6ttt(ts);
+	else
+	{
+	  printF("TimeFunction::ERROR: ramp6 derivative=%i is not implemented\n",derivative);
+	}	
+      }
+
       else
       {
-	printF("TimeFunction::ERROR: rampOrder=%i is not implemented. Only orders 1,2,3 and 4 are available\n");
+	printF("TimeFunction::ERROR: rampOrder=%i is not implemented. Only orders 1,2,3 and 4 are available\n",
+               rampOrder);
 	OV_ABORT("error");
       }
 

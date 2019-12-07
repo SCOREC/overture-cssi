@@ -33,6 +33,10 @@ outputHeader()
   const int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption"); 
   const int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency"); 
 
+  const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+  const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
+  
+
   const real c0 = 299792458;    // the speed of light, [m/c]
   const real nm = 1e-9;         // nanometers  (meter-per-nm)
   const real um = 1e-6;         // micrometers
@@ -55,12 +59,18 @@ outputHeader()
     
     fPrintF(file," Using method %s\n",(const char *)methodName);
 
+    if( solveForAllFields )
+      fPrintF(file," Solving for all fields: Ex,Ey,Ez,Hx,Hy,Hz (even in 2D).\n");
+
     fPrintF(file," Dispersion model: %s\n",(const char*)dbase.get<aString>("dispersionModelName"));
 
 
     if( timeSteppingMethod==modifiedEquationTimeStepping )
       fPrintF(file," Time stepping method is modifiedEquation\n");
-    
+    else if( timeSteppingMethod==rungeKutta )
+      fPrintF(file," Time stepping method is Runge-Kutta (order=%d)\n",orderOfRungeKutta);
+    else 
+      fPrintF(file," Time stepping method is %d\n",(int)timeSteppingMethod);
 
     fPrintF(file," order of accuracy: space=%i, time=%i\n",orderOfAccuracyInSpace,orderOfAccuracyInTime);
     if( !useSosupDissipation )
@@ -292,13 +302,28 @@ outputHeader()
             lengthScale,lengthScale/nm,velocityScale,velocityScale/c0);
 
 
-    if( numberOfMaterialRegions>1 )
+    if( method==bamx ) // && numberOfMaterialRegions>1 )
     {
-      fPrintF(file," number of material regions = %i\n",numberOfMaterialRegions);
+      fPrintF(file," number of material regions = %i.\n",numberOfMaterialRegions);
+
+      std::vector<DispersiveMaterialParameters> & dmpVector = 
+        dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+      for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+      {
+	DispersiveMaterialParameters & dmp = dmpVector[mr]; 
+	dmp.display(file,sPrintF("Material Region %d:",mr));
+      }
+
+
+    }
+    else if( method==yee && numberOfMaterialRegions>1 )
+    {
+      fPrintF(file," number of material regions = %i.\n",numberOfMaterialRegions);
       const int maxNumberOfRegionsToPrint=10;
       for( int r=0; r<min(maxNumberOfRegionsToPrint,numberOfMaterialRegions); r++ )
       {
-	fPrintF(file,"  region %i : eps=%9.3e, mu=%9.3e, sigmaE=%9.3e, sigmaH=%9.3e\n",
+	fPrintF(file,"  region %i : eps=%9.3e, mu=%9.3e, sigmaE=%9.3e, sigmaH=%9.3e.\n",
 		r,epsv(r),muv(r),sigmaEv(r),sigmaHv(r));
       }
       if( numberOfMaterialRegions>maxNumberOfRegionsToPrint )
@@ -325,7 +350,7 @@ outputHeader()
     // std::vector<DispersiveMaterialParameters> & dmpVector = 
     //   dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
     // if( dmpVector.size()!=0 ) // dispersionModel!=noDispersion )
-    if( dispersionModel!=noDispersion )
+    if( dispersionModel!=noDispersion && method==nfdtd )
     { 
       if( cg.numberOfDomains()==1 )
       {
@@ -452,5 +477,19 @@ outputHeader()
     fPrintF(file,"******************************************************************\n\n");
     
   }
+
+  // -- Title line for check file ----
+
+  assert( checkFile != NULL );
+
+  // Get the current date
+  time_t *tp= new time_t;
+  time(tp);
+  // tm *ptm=localtime(tp);
+  const char *dateString = ctime(tp);
+
+  fPrintF(checkFile,"# Check file for CgMx. Method=%s, date=%s\n",(const char *)methodName,dateString);
+
+  delete tp;
 
 }

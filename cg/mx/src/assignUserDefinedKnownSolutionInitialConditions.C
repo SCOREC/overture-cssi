@@ -81,6 +81,13 @@ assignUserDefinedKnownSolutionInitialConditions(int current, real t, real dt )
       getUserDefinedKnownSolution( prev,t-dt, cg,grid,um[grid],pvm,I1,I2,I3,numberOfTimeDerivatives);
 
     }
+    else if( method==bamx ) 
+    {
+      // -- assign solution at time t:
+      realMappedGridFunction & pv = getDispersionModelMappedGridFunction( grid,current );
+      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv, I1,I2,I3,numberOfTimeDerivatives);
+
+    }
     else if( method==sosup )
     {
       // -- assign solution at time t:
@@ -90,7 +97,8 @@ assignUserDefinedKnownSolutionInitialConditions(int current, real t, real dt )
     }
     else
     {
-      OV_ABORT("assignUserDefinedKnownSolutionInitialConditions:ERROR: finish me");
+      printF("assignUserDefinedKnownSolutionInitialConditions:ERROR: method=%d, finish me",(int)method);
+      OV_ABORT("ERROR");
     }
     
       

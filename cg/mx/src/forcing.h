@@ -278,7 +278,7 @@ if( !ok ) return 0;  // no communication allowed after this point : check this *
 
 
 
-if( method==nfdtd || method==sosup ) 
+if( method==nfdtd || method==sosup || method==bamx ) 
 {
   Ie1 = Ih1 = I1;
   Ie2 = Ih2 = I2;
@@ -812,7 +812,7 @@ if( method==dsiMatVec  )
   #endif
 }
 
-if( method==nfdtd || method==sosup )
+if( method==nfdtd || method==sosup || method==bamx )
 {
   (mgp==NULL ? getCGField(HField,current)[grid] : fields[current]).periodicUpdate();
   (mgp==NULL ? getCGField(HField,prev)[grid] : fields[prev]).periodicUpdate();

@@ -8,10 +8,26 @@
     // --- non-dispersive ----
     if( numberOfDimensions==2 )
     {
+      // TEz mode: 
+      //    Hz =    amp1*cos(fx*x)*cos(fy*y)*cos(omega*t) 
+      //    Ex = -(fy/(mu*omega) * amp1*cos(fx*x)*sin(fy*y)*sin(omega*t)
+      //    Ey =  (fx/(mu*omega) * amp1*sin(fx*x)*cos(fy*y)*sin(omega*t)
+
       phiEx=(-fy/(omega))*sin((omega)*(tE)); phiExt= (-fy/(omega))*(omega)*cos((omega)*(tE));
       phiEy=( fx/(omega))*sin((omega)*(tE)); phiEyt= ( fx/(omega))*(omega)*cos((omega)*(tE));
 
       phiHz=cos((omega)*(tH)); phiHzt=-(omega)*sin((omega)*(tH));
+
+      // TMz mode: (independent of TEz mode)
+      //    Ez =    amp2*sin(fx*x)*sin(fy*y)*sin(omega*t) 
+      //    Hx =  (fy/(mu*omega) * amp2*sin(fx*x)*cos(fy*y)*cos(omega*t)
+      //    Hy = -(fx/(mu*omega) * amp2*cos(fx*x)*sin(fy*y)*cos(omega*t)
+
+      phiEz=sin((omega)*(tE)); 
+      phiHx= ( fy/(omega))*cos((omega)*(tE));
+      phiHy= (-fx/(omega))*cos((omega)*(tE));
+
+
     }
     else
     {

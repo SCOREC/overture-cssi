@@ -99,7 +99,9 @@ namespace KK {
 	}
 	else if ( (*count)<0 )
 	{
-	  throw sptr_Err();
+	  // *wdh* Sept 18, 2019 -- destructors should not throw 
+          // throw sptr_Err();
+          abort();
 	}
 	else
 	{

@@ -1,5 +1,70 @@
 *********************************************
+*************** Aug 21, 2019
+
+--------- 64 SPHERES
+
+RUN FOR MOVIE -- finish me 
+cgmx -noplot solidSphereArray -g=64SolidSphereGride2.order2.hdf -numSpheres=64 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.05 -ic=gp -x0=-5.5 -beta=120. -flushFrequency=4 -show=ssa64G2O2.show -go=go >! ssa64G2O2.out 
+
+
+
+cgmx -noplot solidSphereArray -g=64SolidSphereGride2.order2.hdf -numSpheres=64 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-5.5 -beta=120. -go=og
+
+
+
+cgmx -noplot solidSphereArray -g=27SolidSphereGride2.order2.hdf -numSpheres=27 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.025 -ic=gp -x0=-4.5 -beta=120. -show=ssa27G2O2m.show -flushFrequency=4 -go=go > ssa27G2O2m.out 
+
+
+*********************************************
+*************** Aug 21, 2019
+
+
+--------- 64 SPHERES
+
+cgmx -noplot solidSphereArray -g=64SolidSphereGride2.order2.hdf -numSpheres=64 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-5.5 -beta=120. -go=og
+
+--------- 27 SPHERES
+G2 Order2
+cgmx -noplot solidSphereArray -g=27SolidSphereGride2.order2.hdf -numSpheres=27 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=5. -tp=.5 -ic=gp -x0=-4.5 -beta=120. -show=ssa27G2O2.show -go=go > ssa27G2O2.out 
+
+
+*********************************************
 *************** Aug 20, 2019
+
+++++++++++++++++++++  COMPILE with -O instead of -O3 --> nan's go away
+
+--------- 64 SPHERES
+ 4 x 4 x 4 
+ogen -noplot solidSphereArrayGrid -prefix=64SolidSphereGrid -xa=-6.5 -xb=5.5 -ya=-5.5 -yb=5.5 -za=-5.5 -zb=5.5 -nsx=4 -nsy=4 -nsz=4 -order=2 -factor=1
+ogen -noplot solidSphereArrayGrid -prefix=64SolidSphereGrid -xa=-6.5 -xb=5.5 -ya=-5.5 -yb=5.5 -za=-5.5 -zb=5.5 -nsx=4 -nsy=4 -nsz=4 -interp=e -order=2 -factor=2
+
+
+--------- 27 SPHERES
+ 3 x 3 x 3 
+ogen -noplot solidSphereArrayGrid -prefix=27SolidSphereGrid -xa=-5.5 -xb=5.5 -ya=-5.5 -yb=5.5 -za=-5.5 -zb=5.5 -nsx=3 -nsy=3 -nsz=3 -order=2 -factor=1
+ogen -noplot solidSphereArrayGrid -prefix=27SolidSphereGrid -xa=-5.5 -xb=5.5 -ya=-5.5 -yb=5.5 -za=-5.5 -zb=5.5 -nsx=3 -nsy=3 -nsz=
+3 -interp=e -order=2 -factor=2
+
+ogen -noplot solidSphereArrayGrid -prefix=27SolidSphereGrid -xa=-5.5 -xb=5.5 -ya=-5.5 -yb=5.5 -za=-5.5 -zb=5.5 -nsx=3 -nsy=3 -nsz=3 -interp=e -order=4 -factor=2
+
+
+
+G2Order2
+cgmx -noplot solidSphereArray -g=27SolidSphereGride2.order2.hdf -numSpheres=27 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og
+
+
+---------- EIGHT spheres 
+G2: Order=4, OK 
+cgmx -noplot solidSphereArray -g=eightSolidSphereGride2.order4.ng3.hdf -numSpheres=8 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=10. -tp=.1 -ic=gp -x0=-3 -beta=120. -go=og
+
+
+ONE SPHERE -- 
+cgmx -noplot solidSphereArray -g=solidSphereGride2.order4.ng3.hdf -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -useSosupDissipation=1 -tf=10. -tp=.01 -ic=gp -x0=-2 -beta=120. -go=og
+
+
+
+valgrindebug $cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-1.5 -beta=120. -go=halt
+
 
 compile debug -- no nan's
 cgmx -noplot solidSphereArray -g=../sphere/solidSphereInABoxe2.order4.ng3 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial3.txt -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=0 -tf=10. -tp=.01 -ic=gp -x0=-1.5 -beta=120. -go=og

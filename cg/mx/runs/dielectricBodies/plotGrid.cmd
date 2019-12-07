@@ -16,6 +16,10 @@
 #   plotStuff plotGrid.cmd -show=dielectricMultiBlockGrid2d2Blockse2.order4 -name=dieTwoBlockG2
 # 
 #   plotStuff plotGrid.cmd -show=diskInAChannelGride2.order2 -name=diskInAChannelG2
+# 
+#   plotStuff plotGrid.cmd -show=starFishGride64.order2 -name=starFishGrid
+# 
+#   plotStuff plotGrid.cmd -show=waveyDiskGride128.order2 -name=waveyDiskGridNew
 #
 $show="ellipticalDiskGride8.order2.hdf";
 # get command line arguments
@@ -23,6 +27,50 @@ GetOptions( "show=s"=>\$show, "name=s"=>\$name );
 #
 $show
 #
+  # waveyDisk 
+  hardcopy vertical resolution:0 2048
+  hardcopy horizontal resolution:0 2048  
+  line width scale factor:0 3
+  DISPLAY SQUARES:0 0
+  DISPLAY AXES:0 0
+  bigger:0
+  coarsening factor 1
+  plot
+  $plotName = $name . ".ps"; 
+  hardcopy file name:0 $plotName
+  hardcopy save:0
+pause
+#
+  set view:0 0.187103 -0.191008 0 12.3143 1 0 0 0 1 0 0 0 1
+  $plotName = $name . "Zoom.ps"; 
+  hardcopy file name:0 $plotName
+  hardcopy save:0
+pause
+#
+  set view:0 0.212382 -0.192535 0 45.2724 1 0 0 0 1 0 0 0 1
+  $plotName = $name . "ZoomZoom.ps"; 
+  hardcopy file name:0 $plotName
+  hardcopy save:0
+
+# starFish:
+#
+  hardcopy vertical resolution:0 2048
+  hardcopy horizontal resolution:0 2048  
+  line width scale factor:0 3
+  DISPLAY SQUARES:0 0
+  DISPLAY AXES:0 0
+  coarsening factor 1
+  plot
+  $plotName = $name . ".ps"; 
+  hardcopy file name:0 $plotName
+  hardcopy save:0
+#
+  set view:0 0.351675 -0.102596 0 48.1092 1 0 0 0 1 0 0 0 1
+  $plotName = $name . "Zoom.ps"; 
+  hardcopy file name:0 $plotName
+  hardcopy save:0
+
+
   hardcopy vertical resolution:0 2048
   hardcopy horizontal resolution:0 2048  
   line width scale factor:0 3

@@ -159,6 +159,7 @@ Maxwell:: Maxwell()
   
   solveForElectricField=true;
   solveForMagneticField=true;
+  dbase.put<int>("solveForAllFields")=false;  // If true, solve for all six components of [E,H]
 
   // defaults for 2D
   ex=0;
@@ -190,6 +191,12 @@ Maxwell:: Maxwell()
   pxc=pyc=pzc=qxc=qyc=qzc=rxc=ryc=rzc=-1; 
   // The generalized dispersion model has multiple polarization vectors: Here is the max number over all domains:
   parameters.dbase.put<int>("maxNumberOfPolarizationVectors")=0; 
+
+  // For BA Maxwell 
+  // total number of polarization components per grid 
+  parameters.dbase.put<IntegerArray>("totalNumberOfPolarizationComponents");
+  // max number of extries on ant grid (for TZ) 
+  parameters.dbase.put<int>("maxNumberOfPolarizationComponents");
 
   artificialDissipation=0.;
   artificialDissipationCurvilinear=-1.; // set to non-negative to use this instead of the above
@@ -327,6 +334,7 @@ Maxwell:: Maxwell()
     initialConditionParameters[i]=0.;
   
   timeSteppingMethod=defaultTimeStepping;
+  dbase.put<int>("orderOfRungeKutta")=4;
 
   divEMax=0.;
   gradEMax=0.; // kkc this will be used to store divHMax in the dsi algorithm
@@ -434,6 +442,10 @@ Maxwell:: Maxwell()
   // Dispersive material parameters (may vary from grid to grid)
   dbase.put<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
 
+  // When solving the dispersion relation we can solve for s or k
+  dbase.put<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption")
+       =DispersiveMaterialParameters::computeComplexFrequency;
+
   // For dispersive models keep track of the maximum errors in the polarization vector per domain  
   dbase.put<RealArray>("polarizationNorm");
   dbase.put<RealArray>("maxErrPolarization");
@@ -446,7 +458,7 @@ Maxwell:: Maxwell()
   dbase.put<int>("numberOfForcingFunctions")=0;  // number of elements in forcingArray
   dbase.put<int>("fCurrent")=0;                  // forcingArray[fCurrent] : current forcing
 
-
+  parameters.dbase.put<int>("numberSavedToShowFile")=-1;
 
   const real nm = 1e-9;         // nanometers  (meter-per-nm)
   const real um = 1e-6;         // micrometers
@@ -716,7 +728,7 @@ vertexArrayIsNeeded( int grid ) const
                            vertexNeededForBoundaryForcing ||  // **************** fix this 
                            initialConditionOption==gaussianPlaneWave || 
                            (initialConditionOption==planeWaveInitialCondition 
-			      && method!=nfdtd  && method!=sosup  ) ||  // for ABC + incident field fix 
+			      && method!=nfdtd  && method!=sosup  && method!=bamx  ) ||  // for ABC + incident field fix 
                            (initialConditionOption==planeWaveInitialCondition && checkErrors ) || // *wdh* 2017/01/07
                            initialConditionOption==planeMaterialInterfaceInitialCondition ||
                            initialConditionOption==annulusEigenfunctionInitialCondition  ||
@@ -828,6 +840,17 @@ initializeRadiationBoundaryConditions()
       {
 	nc1=ex; nc2=ez;
       }
+      if( method==bamx )
+      {
+        const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+	if( cg.numberOfDimensions()==3 || solveForAllFields )
+	{
+	  nc1=ex; nc2=hz;
+	}
+      }
+
+      
       MappedGrid & mg = cg[radbcGrid[i]];
       radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,c);
     }
@@ -1010,7 +1033,7 @@ printMemoryUsage(FILE *file /* = stdout */)
   
   if( cgerrp!=NULL )
   {
-    if ( method==nfdtd || method==yee || method==sosup )
+    if ( method==nfdtd || method==yee || method==sosup  || method==bamx )
     {
       errSize=-memory[memoryForGridFunctions];
       memory[memoryForGridFunctions]+=cgerrp->sizeOf();  
@@ -1114,7 +1137,7 @@ printStatistics(FILE *file /* = stdout */)
   numberOfGridPoints=0.;
   int numberOfInterpolationPoints=0;
   int grid;
-  if( method==nfdtd || method==yee || method==sosup )
+  if( method==nfdtd || method==yee || method==sosup  || method==bamx )
   {
     for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
     {
@@ -1492,10 +1515,11 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
 
   real & dtMax = dbase.get<real>("dtMax");
+  const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
 
   dialog.setOptionMenuColumns(1);
 
-  aString methodCommands[] = {"default", "Yee", "DSI", "new DSI", "DSI-MatVec", "NFDTD", "SOSUP", "" };
+  aString methodCommands[] = {"default", "Yee", "DSI", "new DSI", "DSI-MatVec", "NFDTD", "SOSUP", "BAMX", "" };
   dialog.addOptionMenu("method:", methodCommands, methodCommands, (int)method );
 
   aString dispersionModelCommands[] = {"no dispersion", "Drude", "GDM", "" };
@@ -1503,7 +1527,7 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
 
   aString timeSteppingMethodCommands[] = {"defaultTimeStepping", 
 					  "adamsBashforthSymmetricThirdOrder",
-					  "rungeKuttaFourthOrder",
+					  "rungeKutta",
 					  "stoermerTimeStepping",
 					  "modifiedEquationTimeStepping",
 					  "" };
@@ -1532,6 +1556,7 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
                           "project interpolation points",
                           "use new forcing method",
                           "set divergence at interfaces",
+                          "solve for all fields",
  			  ""};
   int tbState[20];
   tbState[0] = useConservative;
@@ -1545,6 +1570,7 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   tbState[8]= projectInterpolation;
   tbState[9]= dbase.get<bool>("useNewForcingMethod");
   tbState[10]= dbase.get<int>("setDivergenceAtInterfaces");
+  tbState[11]= dbase.get<int>("solveForAllFields");
   
 
   int numColumns=2;
@@ -1585,6 +1611,9 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
    textCommands[nt] = "initial projection steps";  
    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",numberOfInitialProjectionSteps); nt++; 
 
+   textCommands[nt] = "order of Runge Kutta";  
+   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",orderOfRungeKutta); nt++; 
+
 
   // null strings terminal list
   assert( nt<numberOfTextStrings );
@@ -1623,6 +1652,16 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
 
   dialog.addOptionMenu("initial conditions:", initialConditionOptionCommands, initialConditionOptionCommands, 
                             (int)initialConditionOption );
+
+  DispersiveMaterialParameters::DispersionRelationOptionEnum &dispersionRelationComputeOption=
+    dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+
+  aString dispersionRelationCommands[] = {"computeFrequency",
+                                          "computeWaveNumber",
+			                  "" };
+
+  dialog.addOptionMenu("dispersion relation:", dispersionRelationCommands, dispersionRelationCommands, 
+                            (int)dispersionRelationComputeOption );
 
   aString tbCommands[] = {"smooth bounding box",
  			  ""};
@@ -1690,6 +1729,7 @@ buildForcingOptionsDialog(DialogData & dialog )
   // ************** PUSH BUTTONS *****************
   aString pushButtonCommands[] = {"set pml error checking offset",
                                   "define embedded bodies",
+                                  "define material region...",
 				  ""};
   int numRows=2;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
@@ -2048,6 +2088,15 @@ buildDispersionParametersDialog(DialogData & dialog )
 // ==========================================================================================
 {
 
+  aString cmds[] = {"edit material",
+		    ""};
+
+  int numberOfPushButtons=0;  // number of entries in cmds
+  while( cmds[numberOfPushButtons]!="" ){numberOfPushButtons++;}; // 
+  int numRows=numberOfPushButtons;
+  dialog.setPushButtons( cmds, cmds, numRows );
+  
+
   // ----- Text strings ------
   const int numberOfTextStrings=30;
   aString textCommands[numberOfTextStrings];
@@ -2119,6 +2168,10 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption");
   int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency");
   
+  int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
+
+  int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
   real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
   real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
 
@@ -2378,18 +2431,21 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="Yee" || answer=="yee" || 
              answer=="DSI" || answer=="DSI-MatVec" || answer=="new DSI" || 
              answer=="NFDTD" || answer=="nfdtd" ||
-             answer=="SOSUP" || answer=="sosup" )
+             answer=="SOSUP" || answer=="sosup" ||
+             answer=="BAMX"  || answer=="bamx" )
     {
       method= (answer=="default" ? defaultMethod :  
-               (answer=="Yee" || answer=="yee" ) ? yee : 
-               answer=="DSI" ? dsi :
-	       answer=="new DSI" ? dsiNew : 
-               answer=="DSI-MatVec" ? dsiMatVec : 
+               (answer=="Yee" || answer=="yee" )    ? yee : 
+               answer=="DSI"                        ? dsi :
+	       answer=="new DSI"                    ? dsiNew : 
+               answer=="DSI-MatVec"                 ? dsiMatVec : 
                (answer=="NFDTD" || answer=="nfdtd") ? nfdtd : 
-               (answer=="SOSUP" || answer=="sosup") ? sosup : defaultMethod);
+               (answer=="SOSUP" || answer=="sosup") ? sosup :
+               (answer=="BAMX" || answer=="bamx")   ? bamx :
+	       defaultMethod);
 
       timeSteppingOptionsDialog.getOptionMenu("method:").setCurrentChoice((int)method);
-      if( timeSteppingMethod==defaultTimeStepping && (method==nfdtd || method==sosup) )
+      if( timeSteppingMethod==defaultTimeStepping && (method==nfdtd || method==sosup  || method==bamx ) )
       {
         timeSteppingMethod=modifiedEquationTimeStepping;
 	timeSteppingOptionsDialog.getOptionMenu("time stepping:").setCurrentChoice((int)timeSteppingMethod);
@@ -2423,6 +2479,25 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF("Setting dispersion model=[%s]\n",(const char*)dispersionModelName);
       timeSteppingOptionsDialog.getOptionMenu("dispersion model:").setCurrentChoice((int)dispersionModel);
 
+      
+    }
+
+    else if( answer=="computeFrequency" ||
+	     answer=="computeWaveNumber" )
+    {
+      DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+	dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+
+      if( answer=="computeFrequency" )
+      {
+	dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexFrequency;
+        printF("Compute the (complex) frequency from the dispersion relation.\n");
+      }
+      else
+      {
+	dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexWaveNumber;
+        printF("Compute the (complex) wave number from the dispersion relation.\n");
+      }
       
     }
 
@@ -2639,13 +2714,15 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     else if( answer=="defaultTimeStepping" ||
 	     answer=="adamsBashforthSymmetricThirdOrder" ||
-	     answer=="rungeKuttaFourthOrder" ||
+	     answer=="rungeKutta" ||
+	     answer=="rungeKuttaFourthOrder" ||  // backward compat 
 	     answer=="stoermerTimeStepping" ||
 	     answer=="modifiedEquationTimeStepping" )
     {
       timeSteppingMethod = answer=="defaultTimeStepping"  ? defaultTimeStepping :
 	answer=="adamsBashforthSymmetricThirdOrder" ? adamsBashforthSymmetricThirdOrder : 
-	answer=="rungeKuttaFourthOrder" ? rungeKuttaFourthOrder :
+	answer=="rungeKutta" ? rungeKutta :
+	answer=="rungeKuttaFourthOrder" ? rungeKutta :
 	answer=="stoermerTimeStepping" ? stoermerTimeStepping : 
 	answer=="modifiedEquationTimeStepping" ? modifiedEquationTimeStepping : defaultTimeStepping;
 
@@ -2681,6 +2758,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 	defineRegionsAndBodies();
       }
     }
+    else if( answer=="define material region..." )
+    {
+      if( method!=bamx )
+      {
+	printF("ERROR: 'define material region' is currently only valid for the BAMX method.\n");
+      }
+      else
+      {
+        defineMaterialRegion();
+      }
+      
+    }
+
     else if( len=answer.matches("pml width,strength,power") )
     {
       sScanF(answer(len,answer.length()-1),"%i %e %i ",&numberLinesForPML,&pmlLayerStrength,&pmlPower);
@@ -2879,6 +2969,13 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF("setDivergenceAtInterfaces=%i : 0= set [div(E)]=0,  1=set div(E)=0 at interfaces\n",
               setDivergenceAtInterfaces);
     }
+    else if( timeSteppingOptionsDialog.getToggleValue(answer,"solve for all fields",solveForAllFields) )
+    {
+      printF("solveForAllFields=%i : 1 = solve for all 6 field components Ex,Ey,Ez,Hx,Hy,Hz even in 2D\n", solveForAllFields);
+    }
+    
+
+
     else if( interfaceOptionsDialog.getToggleValue(answer,"use impedance interface projection",
 						      useImpedanceInterfaceProjection) )
     {
@@ -2929,6 +3026,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in space","%i",orderOfAccuracyInSpace) ){}//
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in time","%i",orderOfAccuracyInTime) ){}//
 
+    else if( timeSteppingOptionsDialog.getTextValue(answer,"order of Runge Kutta","%i",orderOfRungeKutta) )
+    {
+      printF("Setting orderOfRungeKutta=%d\n",orderOfRungeKutta);
+      orderOfAccuracyInTime=orderOfRungeKutta;
+      
+      if( orderOfRungeKutta<1 || orderOfRungeKutta>4 )
+      {
+        OV_ABORT("ERROR: This RK order not available");
+      }
+      
+    }
+
+    
     //kkc moved plot dissipation here since matches will think the answer is "dissipation" otherwise
     else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){}//
 
@@ -3286,6 +3396,11 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       // Read dispersive material parameters from a file 
       readDispersionParameters( gdmDomainName, materialFile, numberOfPolarizationVectors,modeGDM );
+    }
+    else if( answer=="edit material" )
+    {
+      // edit the materials 
+      editDispersionParameters( gdmDomainName );
     }
     else if( dispersionParametersDialog.getTextValue(answer,"save material file:","%s",materialFileToSave) ) 
     {
@@ -4042,6 +4157,8 @@ initializeDispersionParameters( const aString & domainName )
 
   return 0;
 }
+
+
 //====================================================================================
 /// \brief Assign parameters in the dispersion models.
 //====================================================================================
@@ -4273,6 +4390,68 @@ setDispersionParameters( const aString & domainName, int modeGDM )
   return 0;
 }
 
+//====================================================================================
+/// \brief Assign parameters in the dispersion models.
+//====================================================================================
+int Maxwell::
+editDispersionParameters( const aString & domainName )
+{
+  std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+  if( dmpVector.size()==0 )
+  {
+    printF("Cgmx:INFO: There are no DispersiveMaterialParameters to edit!\n");
+    return 0;
+  }
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  int domainStart=-1, domainEnd=-1;
+  if( domainName == "all" )
+  {
+    domainStart=0; domainEnd=cg.numberOfDomains()-1;
+  }
+  else
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      if( cg.getDomainName(domain)==domainName )
+      {
+        // printF("--MX:SDP-- setting GDM parameters for domain number=%i name=[%s].\n",domain,(const char*)domainName);
+        domainStart=domainEnd=domain;
+        break;
+      }
+    }
+  }
+      
+  if( domainStart<0  )
+  {
+    printF("--MX:EDP-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+    return 1;
+  }
+  else
+  {
+    // --- Edit parameters for the dispersion model ---
+
+    for( int domain=domainStart; domain<=domainEnd; domain++ )
+    {
+      printF("Edit Dispersion parameters for domain=%d, %s\n",domain,(const char*)cg.getDomainName(domain));
+      
+      DispersiveMaterialParameters & dmp = dmpVector[domain];
+      assert( gip != NULL );
+      dmp.update( *gip );
+    }
+  }
+
+  return 0;
+}
+
+
+
+
 
 
 //====================================================================================
@@ -4282,7 +4461,7 @@ int Maxwell::
 readDispersionParameters( const aString & domainName, const aString & materialFile,
 			 int numberOfPolarizationVectors, int modeGDM )
 {
-  if( dispersionModel==noDispersion )
+  if( dispersionModel==noDispersion && method!=bamx )
   {
     printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
     return 0;
@@ -4317,7 +4496,7 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
   }
   else
   {
-    // --- Set parameters for the dispersion model ---
+    // --- Set parameters for the dispersion model OR BA Material ---
     std::vector<DispersiveMaterialParameters> & dmpVector = 
       dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
 
@@ -4333,12 +4512,30 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
       dmp.setMode( modeGDM );
       dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
       
+      if( method == bamx )
+      {
+        printF("Settig material to bianisotropic\n");
+        dmp.setMaterialType( DispersiveMaterialParameters::bianisotropic );
+      }
+      
       printF(" Read dispersive material parameters for domain=[%s] from file=[%s]\n",
 	     (const char*)cg.getDomainName(domain),(const char*)materialFile);
 
       // we could read once and copy parameters -- do this for now
       dmp.readFromFile( materialFile,numberOfPolarizationVectors );
 
+      if( method == bamx )
+      {
+        dmp.display();
+        // -- test getting inverse: 
+        if( false )
+        {
+          RealArray K0i;
+          dmp.getBianisotropicMaterialMatrixInverse( K0i );
+        }
+        
+      }
+      
       // Set background eps for all grids in this domain
       real epsInf= dmp.getEpsInf();
       
@@ -4645,7 +4842,12 @@ Maxwell::getDispersionModelMappedGridFunction( const int grid, const int timeLev
   const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
   const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;   
 
-  if( numberOfPolarizationVectors>0 )
+  const IntegerArray & totalNumberOfPolarizationComponents =
+	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+
+  const bool isDispersive = dmp.isDispersiveMaterial() ||  (method==bamx && totalNumberOfPolarizationComponents(grid)>0);
+  if( isDispersive )
+  //   if( numberOfPolarizationVectors>0 )
   {
     assert( timeLevel>=0 && timeLevel<numberOfTimeLevels );
     
@@ -4726,7 +4928,13 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
   const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
   const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;   
 
-  if( numberOfPolarizationVectors>0 )
+  const IntegerArray & totalNumberOfPolarizationComponents =
+	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+
+  const int grid=0;  // for BMAX -- fix me 
+  const bool isDispersive = dmp.isDispersiveMaterial() ||  (method==bamx && totalNumberOfPolarizationComponents(grid)>0);
+  if( isDispersive )
+  // if( numberOfPolarizationVectors>0 )
   {
     assert( domain>=0 && domain<cg.numberOfDomains() );
     assert( timeLevel>=0 && timeLevel<numberOfTimeLevels );
@@ -4741,7 +4949,7 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
     }
     else
     {
-      // -- return the grid function for tehe Polarization error ---
+      // -- return the grid function for the Polarization error ---
       realCompositeGridFunction *& cgfErrArray = 
         parameters.dbase.get<realCompositeGridFunction*>("dispersionModelErrorGridFunction");
       if( cgfErrArray==NULL )
@@ -4755,19 +4963,39 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
         
         CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
         Range all;
-        cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfPolarizationVectors*numberOfDimensions);
-        cgfErr=0.;
-        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-        {
-          int pc = iv*numberOfDimensions;
-          cgfErr.setName(sPrintF("Px%ierr",iv),pc);   pc++;
-          cgfErr.setName(sPrintF("Py%ierr",iv),pc);   pc++;
-          if( numberOfDimensions==3 )
-          {
-            cgfErr.setName(sPrintF("Pz%ierr",iv),pc);  pc++;
-          }
-        }
-
+	if( method==nfdtd )
+	{
+	  cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfPolarizationVectors*numberOfDimensions);
+	  cgfErr=0.;
+	  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+	  {
+	    int pc = iv*numberOfDimensions;
+	    cgfErr.setName(sPrintF("Px%ierr",iv),pc);   pc++;
+	    cgfErr.setName(sPrintF("Py%ierr",iv),pc);   pc++;
+	    if( numberOfDimensions==3 )
+	    {
+	      cgfErr.setName(sPrintF("Pz%ierr",iv),pc);  pc++;
+	    }
+	  }
+	}
+	else if( method==bamx )
+	{
+	  const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+	  cgfErr.updateToMatchGrid( cgd,all,all,all,maxNumberOfPolarizationComponents*2);
+	  cgfErr=0.;
+          for( int m=0; m<maxNumberOfPolarizationComponents; m++ )
+	  {
+             cgfErr.setName(sPrintF("P%ierr",m),2*m  );
+             cgfErr.setName(sPrintF("Q%ierr",m),2*m+1);
+	  }
+	  
+	  
+	}
+	else
+	{
+	  OV_ABORT("error");
+	}
+	
       }
       
       

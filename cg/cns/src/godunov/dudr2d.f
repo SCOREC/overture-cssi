@@ -1507,7 +1507,7 @@ c
      *          utemp(nd1a:nd1b,3,md),wrkp(nd1a:nd1b,3,mr+3),
      *          dufix(nd1a:nd1b,2,md),fxfixl(md),fxfixr(md),unew(md),
      *          viswk(3,nd1a:nd1b,3),xy2(nd1a:nd1b,nd2a:nd2b,2),
-     *          rparam(2),
+     *          vismax(4),rparam(2),
      *          uvis(nd1a:nd1b,nd2a:nd2b,md),rwk(nrwk),
      *          iacoustic(2,nd1a:nd1b)
       include 'tempSizes.h'
@@ -2463,7 +2463,7 @@ c
      *          xy(nd1a:nd1b,nd2a:nd2b,2),
      *          utemp(nd1a:nd1b,3,md),wrkp(nd1a:nd1b,3,mr+3),
      *          wa1(2,2,nd1a:nd1b,3),waj(nd1a:nd1b,3),
-     *          viswk(3,nd1a:nd1b,3),rparam(2),
+     *          vismax(4),viswk(3,nd1a:nd1b,3),rparam(2),
      *          uvis(nd1a:nd1b,nd2a:nd2b,md),iacoustic(2,nd1a:nd1b),
      *          acmvec(m)
       common / axidat / iaxi,j1axi(2),j2axi(2)

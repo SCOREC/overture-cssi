@@ -57,7 +57,7 @@ $grid="afm2.order4.hdf";
 $cons=1; $go="halt"; 
 $xa=-100.; $xb=-1.5; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
 $leftBC="rbc"; $bcBody=""; 
-$probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; 
+$probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
 $xat= 1.; $xbt= 2.; # transmission probe x-bounds 
 $rbc="abcEM2"; $pmlLines=11; $pmlPower=6; $pmlStrength=50.; 
@@ -89,7 +89,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s"=>\$dmFile );
+  "dmFile=s"=>\$dmFile,"probeFrequency=i"=>\$probeFrequency );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -274,7 +274,7 @@ if( $compareToShowFile ne "" ){ $cmd ="compare to show file 1\n reference show f
 $cmd 
 #
 # output probes every time step: 
-probe frequency 1
+probe frequency $probeFrequency
 #
 # --- *NEW* USER DEFINED PROBE
 #- create user defined probe...

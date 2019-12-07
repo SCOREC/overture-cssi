@@ -1,0 +1,980 @@
+// 
+// Functions to compute the exact solution for a BA plane wave htting a material interface
+// 
+#include "PlaneInterfaceExactSolution.h"
+#include "DispersiveMaterialParameters.h"
+#include "PlotStuff.h"
+#include "display.h"
+#include "ParallelUtility.h"
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
+
+
+// lapack routines
+#ifdef OV_USE_DOUBLE
+  #define GETRF EXTERN_C_NAME(dgetrf)
+  #define GETRI EXTERN_C_NAME(dgetri)
+  #define GECON EXTERN_C_NAME(dgecon)
+  #define LANGE EXTERN_C_NAME(dlange)
+  #define GEEV  EXTERN_C_NAME(dgeev)
+#else
+  #define GETRF EXTERN_C_NAME(sgetrf)
+  #define GETRI EXTERN_C_NAME(sgetri)
+  #define GECON EXTERN_C_NAME(sgecon)
+  #define LANGE EXTERN_C_NAME(slange)
+  #define GEEV  EXTERN_C_NAME(sgeev)
+#endif
+
+extern "C"
+{
+  void GETRF( int & m, int & n, real & a, const int & lda, int & ipvt, int & info );
+  void GETRI( int & n, real & a, const int & lda, const int & ipvt, real & work, const int & iwork, int & info );
+
+  void GECON( char *norm, int & n, real & a, const int & lda, real & anorm, real & rcond, real & work, int & iwork, int & info );
+  real LANGE( char *norm, int & m, int & n, real & a, const int & lda, real & work );
+
+   void GEEV( char *jobvl, char* jobvr, int & n, real & a, const int & lda,
+              real & wr, real & wi, real &vl, int & ldvl, real & vr, int & ldvr, real & work, int & lwork, int & info );
+
+}
+
+
+
+
+
+
+#include <complex>
+
+typedef ::real LocalReal;
+typedef ::real Real;
+typedef ::real OV_real;
+
+
+// lapack routines
+#ifdef OV_USE_DOUBLE
+  #define ZGESV  EXTERN_C_NAME(zgesv)
+  #define ZGEEV  EXTERN_C_NAME(zgeev)
+  #define ZGECON  EXTERN_C_NAME(zgecon)
+  #define ZGETRF  EXTERN_C_NAME(zgetrf)
+  #define ZGETRI  EXTERN_C_NAME(zgetri)
+  #define ZLANGE  EXTERN_C_NAME(zlange)
+#else
+  #define ZGESV  EXTERN_C_NAME(cgesv)
+  #define ZGEEV  EXTERN_C_NAME(cgeev)
+  #define ZGECON  EXTERN_C_NAME(cgecon)
+  #define ZGETRF  EXTERN_C_NAME(cgetrf)
+  #define ZGETRI  EXTERN_C_NAME(cgetri)
+  #define ZLANGE  EXTERN_C_NAME(clange)
+#endif
+
+extern "C"
+{
+  void ZGESV( int & n, int & nrhs, std::complex<LocalReal> & a, const int & lda, int & ipvt, std::complex<LocalReal> & b, const int & ldb, int & info );
+
+  // complex eigenvalues
+  void ZGEEV( char *jobvl, char* jobvr, int & n, std::complex<LocalReal>  & a, const int & lda,
+              std::complex<LocalReal> & wc, std::complex<LocalReal> &vl, int & ldvl, std::complex<LocalReal> & vr, int & ldvr,
+	      std::complex<LocalReal> & cwork, int & lwork, LocalReal & rwork,  int & info );
+
+  void ZGETRF( int & m, int & n, std::complex<LocalReal> & a, const int & lda, int & ipvt, int & info );
+
+  void ZGETRI( int & n, std::complex<LocalReal> & a, const int & lda, const int & ipvt, std::complex<LocalReal> & work,
+	       const int & iwork, int & info );
+
+  void ZGECON( char *norm, int & n, std::complex<LocalReal> & a, const int & lda, Real & anorm, Real & rcond,
+	       std::complex<LocalReal> & work, Real & rwork, int & info );
+
+  Real ZLANGE( char *norm, int & m, int & n, std::complex<LocalReal> & a, const int & lda, Real & work );
+
+
+}
+
+
+// ==========================================================================================
+/// \brief : compute the inverse of a complex matrix 
+// ==========================================================================================
+static int 
+getInverse( std::complex<LocalReal> pA[36], std::complex<LocalReal> pAi[36] )
+{
+
+#define A(i,j)   pA[(i)+6*(j)]
+#define Ai(i,j) pAi[(i)+6*(j)]
+  
+ for( int i=0; i<6; i++ )
+    for( int j=0; j<6; j++ )
+      Ai(i,j)=A(i,j);
+ 
+  int n=6, info=0;
+  int ipvt[6];
+
+  const int lwork=36;
+  Real anorm,rcond;
+  std::complex<LocalReal> work[lwork];
+  Real rwork[6];
+
+  char norm = '1'; // 'I'; // '1'
+  anorm = ZLANGE( "1", n, n, A(0,0), n, rwork[0] ); // '1' = 1-norm 
+
+  ZGETRF( n, n, Ai(0,0), n, ipvt[0],  info );
+  if( info!=0 )
+  {
+    printF("ERROR return from laplack routine ZGETRF, LU factorization: info=%d\n",info);
+    OV_ABORT("GETRF: info !=0 ");
+  }
+      
+  ZGECON( "1", n, Ai(0,0), n, anorm, rcond, work[0], rwork[0], info ); // '1' = 1-norm 
+  if( info!=0 )
+    OV_ABORT("ZGECON: info !=0 ");
+
+  printF(" 1-norm inverse condition number of A = %9.2e, anorm=%9.2e\n",rcond,anorm);
+
+
+  ZGETRI( n, Ai(0,0), n, ipvt[0], work[0], lwork, info );
+  if( info!=0 )
+    OV_ABORT("ZGETRI: info !=0 ");
+
+  if( false )
+  {
+    printF("getInverse: A:\n");
+    for( int i=0; i<6; i++ )
+    {
+      for( int j=0; j<6; j++ )
+      {
+	printF(" [%5.2f,%5.2f] ",std::real(A(i,j)),std::imag(A(i,j)));
+      }
+      printF("\n");
+    }
+
+    printF("getInverse: Ai:\n");
+    for( int i=0; i<6; i++ )
+    {
+      for( int j=0; j<6; j++ )
+      {
+	printF(" [%5.2f,%5.2f] ",std::real(Ai(i,j)),std::imag(Ai(i,j)));
+      }
+      printF("\n");
+    }
+ 
+    // Check: 
+
+    std::complex<LocalReal> pB[36];
+    #define B(i,j)   pB[(i)+6*(j)]
+    for( int i=0; i<6; i++ )
+    {
+      for( int j=0; j<6; j++ )
+      {
+	B(i,j)=0.;
+	for( int k=0; k<6; k++ )
+	  B(i,j) += A(i,k)*Ai(k,j);
+      }
+    }
+    printF("getInverse: A*Ai:\n");
+    for( int i=0; i<6; i++ )
+    {
+      for( int j=0; j<6; j++ )
+      {
+	printF(" [%8.2e,%8.2e] ",std::real(B(i,j)),std::imag(B(i,j)));
+      }
+      printF("\n");
+    }
+  }
+  
+  return 0;
+}
+
+typedef std::vector<std::complex<LocalReal> > ComplexVector;
+
+// ==========================================================================================
+/// \brief : Compute the reflected or transmitted wave.
+///        This involves solving an eigenvalue problem for kx given s, ky, and kz.
+///
+/// \param direction : +1 : transmitted waves
+///                    -1 : reflected waves 
+/// \param kv[3][2] (output)   : k-vectors of the two reflected/transmitted waves
+/// \param qv[6][2] (output)   : corresponding eigenvctors 
+// ==========================================================================================
+static
+int getReflectedOrTransmittedWave( DispersiveMaterialParameters & dmp,
+				   std::complex<LocalReal> & s,
+				   ComplexVector & kvia,
+				   int direction,
+				   ComplexVector & kva, ComplexVector & qva   )
+{
+
+  #define kvi(i) kvia[(i)]
+
+  aString dirLabel;
+  if( std::real(kvi(0)) > 0. && direction==-1 )
+    dirLabel = "reflected";
+  else
+    dirLabel =  "transmitted";
+
+  printF("\n getReflectedOrTransmittedWave: direction=%d, compute %s wave.\n",direction,(const char*)dirLabel);
+
+
+  assert( direction==1 || direction==-1 );
+  
+  
+
+  const int ex=0, ey=1, ez=2, hx=3, hy=4, hz=5;
+  std::complex<LocalReal> I(0,1.);
+  
+
+  // 
+  // Declare some complex matrices
+  std::complex<LocalReal> pKs[36], pL0[36], pLx[36], pB[36], pBi[36], pA[36];
+#define Ks(i,j) pKs[(i)+6*(j)]
+#define A(i,j)   pA[(i)+6*(j)]
+#define B(i,j)   pB[(i)+6*(j)]
+#define Bi(i,j) pBi[(i)+6*(j)]
+#define L0(i,j) pL0[(i)+6*(j)]
+#define Lx(i,j) pLx[(i)+6*(j)]
+
+
+  const IntegerArray & NpBA                  = dmp.dbase.get<IntegerArray>("NpBA");
+  const RealArray & K0                       = dmp.dbase.get<RealArray>("K0");
+  const RealArray & bianisotropicParameters  = dmp.dbase.get<RealArray>("bianisotropicParameters");
+
+  // --- evaluate the complex K matrix ---
+  int numberOfPolarizationTerms=0;
+  for( int k1=0; k1<6; k1++ )
+  {
+    for( int k2=0; k2<6; k2++ )
+    {
+      Ks(k1,k2)=K0(k1,k2);
+      for( int n=0; n<NpBA(k1,k2); n++ )
+      {
+	numberOfPolarizationTerms++;
+	LocalReal a0 = bianisotropicParameters(0,n,k1,k2);
+	LocalReal a1 = bianisotropicParameters(1,n,k1,k2);
+	LocalReal b0 = bianisotropicParameters(2,n,k1,k2);
+	LocalReal b1 = bianisotropicParameters(3,n,k1,k2);
+
+	Ks(k1,k2) += (a0+a1*s)/(b0+b1*s+s*s);
+
+      }
+    }
+  }
+
+
+  // L0(6,6) : curl matrix without kx 
+  // Lx(6,6) : curl matrix 1's in the positions for kx
+  std::complex<LocalReal> kx,ky,kz;
+  
+  kx = 0; ky=kvi(1); kz=kvi(2); 
+  L0(ex,hy)=-kz; L0(ex,hz)= ky;
+  L0(ey,hz)=-kx; L0(ey,hx)= kz;
+  L0(ez,hx)=-ky; L0(ez,hy)= kx;
+  L0(hx,ey)= kz; L0(hx,ez)=-ky;
+  L0(hy,ez)= kx; L0(hy,ex)=-kz;
+  L0(hz,ex)= ky; L0(hz,ey)=-kx;
+  
+  kx = 1; ky=0; kz=0;
+  Lx(ex,hy)=-kz; Lx(ex,hz)= ky;
+  Lx(ey,hz)=-kx; Lx(ey,hx)= kz;
+  Lx(ez,hx)=-ky; Lx(ez,hy)= kx;
+  Lx(hx,ey)= kz; Lx(hx,ez)=-ky;
+  Lx(hy,ez)= kx; Lx(hy,ex)=-kz;
+  Lx(hz,ex)= ky; Lx(hz,ey)=-kx;
+  
+  kx = kvi(0); ky=kvi(1); kz=kvi(2); // reset
+  
+  //  is*K(s) + kx*Lx + L0   : generalized eigenvalue problem for kx
+  //   (- is*K(s) - L0 ) v = kx Lx v
+  //   =>  B v = kx Lx v 
+  //   =>  B^{-1} Lx v = (1/kx) v   if B is invertible
+  //       A v = (1/kx) v    : regular eigenvalue problem for 1/kx 
+  for( int i=0; i<6; i++ )
+    for( int j=0; j<6; j++ )
+      B(i,j) = - ( I*s*Ks(i,j) + L0(i,j) );
+
+  getInverse( pB, pBi );
+  
+  // A = inv(B)*Lx;
+
+  for( int i=0; i<6; i++ )
+  {
+    for( int j=0; j<6; j++ )
+    {
+      A(i,j)=0.;
+      for( int k=0; k<6; k++ )
+	A(i,j) += Bi(i,k)*Lx(k,j);
+    }
+  }
+
+    
+
+  int n=6;
+  std::complex<LocalReal> *pwc, *pvlc, *pvrc, *pworkc;
+
+  pvrc = new std::complex<LocalReal> [n*n];  // right eigenvectors 
+  pvlc = pvrc; // not used 
+  pwc = new std::complex<LocalReal> [n];
+
+  int info, lworkc = 2*n;
+  RealArray rwork(2*n);
+  pworkc = new std::complex<LocalReal> [lworkc];
+#define wc(i) pwc[(i)]
+#define vlc(i,j) pvlc[(i)+n*(j)]
+#define vrc(i,j) pvrc[(i)+n*(j)]
+#define V(i,j) pvrc[(i)+n*(j)]
+#define workc(i) pworkc[(i)]
+
+  // Compute eigenvalues and eigenvectors of A 
+  ZGEEV( "N", "V", n, A(0,0), n, wc(0), vlc(0,0), n, vrc(0,0), n, workc(0), lworkc, rwork(0), info); 
+  if( info !=0 )
+  {
+    printF("getBianisotropicPlaneInterfaceSolution:ERROR return info=%d from eigenvalue routine ZGEEV\n",info);
+  }
+  
+
+  printF("\n +++++ %s waves : solve for kxr given ky and kz\n",(const char*)dirLabel);
+  std::complex<LocalReal> pkvr[3*2], pqvr[6*2];
+  #define kvr(i,j) pvlc[(i)+3*(j)]
+  #define qvr(i,j) pqvr[(i)+6*(j)]
+  // kvr =zeros(3,2);   % relected wave vectors 
+  // qvr =zeros(6,2);   % reflected wave vectors 
+
+  std::complex<LocalReal> kcInverse, kxr;
+  
+  const Real tol  =  100.*sqrt(REAL_EPSILON);  // use sqrt in acse of double roots 
+
+  kva.resize(3*2);  // kv(i,j)
+  qva.resize(6*2);  // qv(i,j) 
+#define kv(i,j) kva[(i)+3*(j)]
+#define qv(i,j) qva[(i)+6*(j)]
+
+  int numReflected=0; 
+  for( int i=0; i<6; i++ )
+  {
+    kcInverse = wc(i);
+    if( abs(kcInverse) > tol )  //  skip zero eigenvalues 
+    {
+    
+      kxr = 1./kcInverse; 
+      printF(" kxr(%d)=(%12.4e,%12.4e), qr=[%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f]+I [%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f]\n",
+	     i,std::real(kxr),std::imag(kxr),
+	     std::real(V(0,i)),std::real(V(1,i)),std::real(V(2,i)),std::real(V(3,i)),std::real(V(4,i)),std::real(V(5,i)), 
+	     std::imag(V(0,i)),std::imag(V(1,i)),std::imag(V(2,i)),std::imag(V(3,i)),std::imag(V(4,i)),std::imag(V(5,i)));
+ 
+      if( std::real(kxr)*direction > 0 )
+      {
+	assert( numReflected<2 );
+	
+        kvr(0,numReflected) = kxr;  for( int j=1; j<=2; j++ ){ kvr(j,numReflected)=kvi(j); }  // 
+	for( int j=0; j<6; j++ ){ qvr(j,numReflected) = V(j,i); } // 
+
+        //for( int j=0; j<3; j++ ){  kva[j+3*numReflected]=kvr(j,numReflected);  } // 
+        //for( int j=0; j<6; j++ ){  qva[j+6*numReflected]=qvr(j,numReflected);  } // 
+	   
+        for( int j=0; j<3; j++ ){  kv(j,numReflected)=kvr(j,numReflected);  } // 
+        for( int j=0; j<6; j++ ){  qv(j,numReflected)=qvr(j,numReflected);  } // 
+	   
+        // Normalize eigenvector to have a max-norm of 1
+        Real maxNorm=0;
+	for( int j=0; j<6; j++ ){  maxNorm=max(maxNorm,abs(qv(j,numReflected)));  } //
+	for( int j=0; j<6; j++ ){  qv(j,numReflected) /= maxNorm;  } //
+
+	numReflected=numReflected+1;
+      }
+    }
+    else
+    {
+      printF(" lambda(%d)=1/kxr = (%12.4e,%12.4e) (skipped).\n",i,std::real(kcInverse),std::imag(kcInverse));
+    }
+  }
+
+  printF("\n +++++ There were %d %s waves.\n",numReflected,(const char*)dirLabel);
+  if( numReflected != 2 )
+  {
+    printF("ERROR: expected 2 %s waves (?!)\n",(const char*)dirLabel);
+    OV_ABORT("FIX ME");
+  }
+  
+  return 0;
+}
+#undef kv
+#undef qv 
+
+// ==========================================================================================
+/// \brief Initialize the exact solution for a BA plane wave htting a material interface
+///
+///    The incident wave is 
+///         [ E ]  = e^{ s*t} e^{i kv.xv } [ ev ]
+///         [ H ]                          [ ev ]
+///
+/// 
+/// \param dmp1, dmp2 (input) : dispersive materials 
+/// \param kv[3] (input or output) : wave vector 
+/// \param skr,ski  (output) : either real and imaginary parts of s (if computeOption==computeComplexFrequency)
+///                 or real and imag parts of k (if  computeOption==computeComplexWaveNumber)
+/// 
+/// The Eigenvalues are found from the matrix (for all unit vectors (kx,ky,kz) )
+///      A (s) = i*s K(s) + L(k)
+///
+///       L(k) = [  0   0   0   0 -kz  ky]
+///              [  0   0   0  kz   0 -kx] 
+///              [  0   0   0 -ky  kx  0 ] 
+///              [  0  kz -ky   0   0  0 ] 
+///              [-kz   0  kx   0   0  0 ] 
+///              [ ky -kx   0   0   0  0 ] 
+///        
+///
+/// Notes: The polarization terms will be defined from
+///          P_{i,j,n} = Chi_{i,j,m} U_i
+// ========================================================================================
+int PlaneInterfaceExactSolution::
+initializeBAPlaneInterfaceSolution( DispersiveMaterialParameters & dmp1,
+				    DispersiveMaterialParameters & dmp2, 
+				    const LocalReal kv[3],
+				    LocalReal & skr, LocalReal & ski )
+// ComplexVector & qvInc,
+					// RealArray & qv,
+					// RealArray & chi
+{
+  // if( !dbase.has_key("bianisotropicParameters" ) )
+  // {
+  //   printF("DispMatParam:getBianisotropicDispersivePlaneWaveSolution: this is not a dispersive BA material\n");
+  //   OV_ABORT("Error");
+  // }
+
+  // --- Save values for use by evalBA ---
+  if( !dbase.has_key("baPlaneInterfaceSolutionComputed") )
+  {
+    dbase.put<bool>("baPlaneInterfaceSolutionComputed")=false;
+    dbase.put<ComplexVector>("kvia");
+    dbase.put<ComplexVector>("qvia");
+    dbase.put<ComplexVector>("kvra");
+    dbase.put<ComplexVector>("qvra");
+    dbase.put<ComplexVector>("kvta");
+    dbase.put<ComplexVector>("qvta");
+
+    dbase.put<ComplexVector>("chia");
+
+    dbase.put<std::complex<Real>>("sa");
+
+    dbase.put<std::complex<Real>>("r1");
+    dbase.put<std::complex<Real>>("r2");
+
+    dbase.put<std::complex<Real>>("tau1");
+    dbase.put<std::complex<Real>>("tau2");
+  }
+  bool & baPlaneInterfaceSolutionComputed = dbase.get<bool>("baPlaneInterfaceSolutionComputed");
+
+  baPlaneInterfaceSolutionComputed=true;  // check to see if k or s have changed and recompute
+  
+  ComplexVector & kvia = dbase.get<ComplexVector>("kvia");  kvia.resize(3);
+  ComplexVector & qvia = dbase.get<ComplexVector>("qvia");  qvia.resize(6);
+  ComplexVector & kvra = dbase.get<ComplexVector>("kvra");
+  ComplexVector & qvra = dbase.get<ComplexVector>("qvra");
+  ComplexVector & kvta = dbase.get<ComplexVector>("kvta");
+  ComplexVector & qvta = dbase.get<ComplexVector>("qvta");
+
+  ComplexVector & chia = dbase.get<ComplexVector>("chia");
+
+  std::complex<Real> & s = dbase.get<std::complex<Real>>("sa");
+
+  std::complex<Real> & r1   = dbase.get<std::complex<Real>>("r1");
+  std::complex<Real> & r2   = dbase.get<std::complex<Real>>("r2");
+  std::complex<Real> & tau1 = dbase.get<std::complex<Real>>("tau1");
+  std::complex<Real> & tau2 = dbase.get<std::complex<Real>>("tau2");
+  
+
+  const int ex=0, ey=1, ez=2, hx=3, hy=4, hz=5;
+
+  
+
+  const DispersiveMaterialParameters::DispersionRelationOptionEnum & computeOption=
+         dmp1.dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+
+  // int debug = dmp1.dbase.get<int>("debug");
+  // if( debug < 0 ) debug=3;   // current default debug flag 
+
+  int debug=3;  // ****** TEMP 
+  
+
+  if( debug & 1 )
+  {
+    printF("\n *******************************************************************************************\n");
+    printF(" ********PlaneWaveExact: entering initializeBAPlaneInterfaceSolution");
+    if( computeOption==DispersiveMaterialParameters::computeComplexFrequency )
+      printF(", computeComplexFrequency ****\n");
+    else 
+      printF(", computeComplexWaveNumber ****\n");
+    printF(" ********************************************************************************************\n");
+  }
+  
+  // ---- Determine the incident wave -----
+
+  LocalReal sr=skr, si=ski;
+  LocalReal kr=skr, ki=ski;
+  
+  printF("\n >>>> call getBianisotropicPlaneWaveSolution...\n");
+  LocalReal evr[6], evi[6]; // ** DO THIS FOR NOW ***
+  RealArray chi;
+  dmp1.getBianisotropicPlaneWaveSolution( kv, skr, ski, evr, evi, chi );  
+  printF("... done\n");
+
+  if( computeOption==DispersiveMaterialParameters::computeComplexFrequency )
+  {
+    sr=skr; si=ski;
+    kr=1.; ki=0.;
+  }
+  else
+  {
+    kr=skr; ki=ski;
+  }
+
+  
+
+
+  // ... follow baMatInterface.m 
+
+  std::complex<LocalReal> I(0,1.); 
+
+  // ComplexVector qvia; qvia.resize(6);
+
+ std::complex<LocalReal> k;
+#define kvi(i) kvia[(i)]
+#define qvi(i) qvia[(i)] 
+
+  s = s + si*I;
+  k = kr + ki*I;
+  
+  for( int i=0; i<3; i++ ){ kvi(i) = k*kv[i]; }            //  kvi = complex k vector : incidence 
+  for( int i=0; i<6; i++ ){ qvi(i) = evr[i] + evi[i]*I; }  
+
+  printF("BA plane interface, Incident wave:\n  s=%e + %e I, k=%e + %e I, qvI=[",sr,si,kr,ki);
+  for( int j=0; j<6; j++ )
+    printF("%6.3f+%6.3f I,",evr[j],evi[j]);
+  printF("]\n");
+  printF("  kvi=[ (%e,%e), (%e,%e), (%e,%e) ]\n",
+	 std::real(kvi(0)),imag(kvi(0)),
+	 std::real(kvi(1)),imag(kvi(1)),
+	 std::real(kvi(2)),imag(kvi(2)) );
+
+    
+  //  ---- Find the reflected waves ----
+  // 
+  
+  // ComplexVector kvra, qvra;
+
+  // kvr.resize(2);
+    
+  // typedef std::complex<LocalReal> Complex3[3];
+  // typedef std::vector<Complex3> ComplexVector3;
+  // //vv.resize(2);
+  // Complex3 vv;
+  // vv[0]=1. + I*2.;
+  // vv[2]=2;
+    
+  // std::vector<std::complex<LocalReal>> wv;
+  // std::complex<LocalReal> zz;
+  // zz=1. + I*2.;
+  // wv.push_back(zz);
+
+  // reflected wave should have opposite sign to kx of the incident wave: 
+  int direction= std::real(kvi(0)) > 0. ? -1 : +1;
+  getReflectedOrTransmittedWave( dmp1, s,kvia,direction,kvra,qvra );
+
+#define kvr(i,j) kvra[(i)+3*(j)]
+#define qvr(i,j) qvra[(i)+6*(j)]
+
+  printF("\n @@@@ after getReflectedOrTransmittedWave\n");
+  int numReflected = kvra.size()/3;
+  for( int i=0; i<numReflected; i++ )
+  {
+    printF("reflected  %d:  kv=[ (%e,%e), (%e,%e), (%e,%e) ]\n",i,
+	   std::real(kvr(0,i)),imag(kvr(0,i)),
+	   std::real(kvr(1,i)),imag(kvr(1,i)),
+	   std::real(kvr(2,i)),imag(kvr(2,i)) );
+  }
+  
+  printF("\n ============== Right Medium  =====================\n");
+  
+  // ComplexVector kvta, qvta;
+
+  direction *= -1;
+  getReflectedOrTransmittedWave( dmp2, s,kvia,direction,kvta,qvta );
+
+#define kvt(i,j) kvta[(i)+3*(j)]
+#define qvt(i,j) qvta[(i)+6*(j)]
+
+  printF("\n @@@@ after getReflectedOrTransmittedWave\n");
+  int numTransmitted = kvta.size()/3;
+  for( int i=0; i<numTransmitted; i++ )
+  {
+    printF("transmitted  %d:  kv=[ (%e,%e), (%e,%e), (%e,%e) ]\n",i,
+	   std::real(kvt(0,i)),imag(kvt(0,i)),
+	   std::real(kvt(1,i)),imag(kvt(1,i)),
+	   std::real(kvt(2,i)),imag(kvt(2,i)) );
+  }
+  
+
+  printF("\n ---------------------------------- Summary ------------------------------------\n"); 
+  printF("Incident: s=(%6.2f,%6.2f), direction kv=[ %6.2f,%6.2f,%6.2f ] \n",std::real(s),std::imag(s), kv[0],kv[1],kv[2]);
+  printF("Incident: complex wave vector kvi=[ (%6.2f,%6.2f),(%6.2f,%6.2f), (%6.2f,%6.2f)] \n",
+	 std::real(kvi(0)),imag(kvi(0)),std::real(kvi(1)),imag(kvi(1)),std::real(kvi(2)),imag(kvi(2)));
+  
+  printF("Incident     : kxi =%6.2f+%6.2fI qvi=[%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f]+ [%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f] I\n",
+          std::real(kvi(0)),imag(kvi(0)),
+          std::real(qvi(0)),std::real(qvi(1)),std::real(qvi(2)),std::real(qvi(3)),std::real(qvi(4)),std::real(qvi(5)),
+          std::imag(qvi(0)),std::imag(qvi(1)),std::imag(qvi(2)),std::imag(qvi(3)),std::imag(qvi(4)),std::imag(qvi(5)));
+
+  for( int i=0; i<numReflected; i++ )
+    printF("reflected   %d: kvrx=%6.2f+%6.2fI qvr=[%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f]+ [%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f] I\n",
+	    i,std::real(kvr(0,i)),std::imag(kvr(0,i)),
+	      std::real(qvr(0,i)),std::real(qvr(1,i)),std::real(qvr(2,i)),std::real(qvr(3,i)),std::real(qvr(4,i)),std::real(qvr(5,i)),
+	      std::imag(qvr(0,i)),std::imag(qvr(1,i)),std::imag(qvr(2,i)),std::imag(qvr(3,i)),std::imag(qvr(4,i)),std::imag(qvr(5,i)));
+
+  for( int i=0; i<numTransmitted; i++ )
+    printF("transmitted %d: kvtx=%6.2f+%6.2fI qvt=[%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f]+ [%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f] I\n",
+	    i,std::real(kvt(0,i)),std::imag(kvt(0,i)), 
+	      std::real(qvt(0,i)),std::real(qvt(1,i)),std::real(qvt(2,i)),std::real(qvt(3,i)),std::real(qvt(4,i)),std::real(qvt(5,i)), 
+	      std::imag(qvt(0,i)),std::imag(qvt(1,i)),std::imag(qvt(2,i)),std::imag(qvt(3,i)),std::imag(qvt(4,i)),std::imag(qvt(5,i)));
+
+  //
+  // ----------- Find the relection and transmission coefficients --------
+  //
+  // Unknowns : x= [r1, r2, tau1, tau2]
+  // 
+  // [ tv.Ev ] =0 and [tv.Hv ] =0 : 
+  //      SUM r_j tv.qvr(:,j) - SUM_j tau_j tv.qvt(:,j) = - tv . qvi 
+  // 
+
+  // RealArray nv(3); // normal 
+  // nv(0)=1; nv(1)=0; nv(2)=0; 
+
+  RealArray tv(3,2); //  tangent vectors
+  tv(0,0)=0.; tv(1,0)=1.; tv(2,0)=0.; 
+  tv(0,1)=0.; tv(1,1)=0.; tv(2,1)=1.; 
+  
+  std::complex<LocalReal> pA[4*4], pb[4];
+  
+#define A(i,j) pA[(i)+4*(j)]
+#define b(i)   pb[(i)]
+  
+// #define dot(u,qv,i,j,m) (tv(0,i)*qv(j,m) + tv(1,i)*qv(j+1,m) + tv(2,i)*qv(j+2,m) )
+
+  for( int i=0; i<2; i++ )
+  {
+    A(i  ,0) =  ( tv(0,i)*qvr(ex,0) + tv(1,i)*qvr(ey,0) + tv(2,i)*qvr(ez,0) );  // dot(tv(:,i),qvr(E,0));
+    A(i  ,1) =  ( tv(0,i)*qvr(ex,1) + tv(1,i)*qvr(ey,1) + tv(2,i)*qvr(ez,1) );  // dot(tv(:,i),qvr(E,1));
+    A(i  ,2) = -( tv(0,i)*qvt(ex,0) + tv(1,i)*qvt(ey,0) + tv(2,i)*qvt(ez,0) );  //-dot(tv(:,i),qvt(E,0));
+    A(i  ,3) = -( tv(0,i)*qvt(ex,1) + tv(1,i)*qvt(ey,1) + tv(2,i)*qvt(ez,1) );  //-dot(tv(:,i),qvt(E,1));
+    b(i  )   = -( tv(0,i)*qvi(ex)   + tv(1,i)*qvi(ey)   + tv(2,i)*qvi(ez)   );  //-dot(tv(:,i),qvi(E)); 
+
+    A(i+2,0) =  ( tv(0,i)*qvr(hx,0) + tv(1,i)*qvr(hy,0) + tv(2,i)*qvr(hz,0) );  // dot(tv(:,i),qvr(H,1));
+    A(i+2,1) =  ( tv(0,i)*qvr(hx,1) + tv(1,i)*qvr(hy,1) + tv(2,i)*qvr(hz,1) );  // dot(tv(:,i),qvr(H,2));
+    A(i+2,2) = -( tv(0,i)*qvt(hx,0) + tv(1,i)*qvt(hy,0) + tv(2,i)*qvt(hz,0) );  //-dot(tv(:,i),qvt(H,1));
+    A(i+2,3) = -( tv(0,i)*qvt(hx,1) + tv(1,i)*qvt(hy,1) + tv(2,i)*qvt(hz,1) );  //-dot(tv(:,i),qvt(H,2));
+    b(i+2)   = -( tv(0,i)*qvi(hx)   + tv(1,i)*qvi(hy)   + tv(2,i)*qvi(hz)   );  //-dot(tv(:,i),qvi(H)); 
+  }
+  
+  int n=4;
+  int ipvt[4], info;
+  int nrhs=1;
+ 
+  ZGESV( n, nrhs, A(0,0), n, ipvt[0], b(0), n, info );
+  if( info!=0 )
+  {
+    printF("ERROR return from laplack routine ZGESV, LU factorization: info=%d\n",info);
+    OV_ABORT("ZGESV: info !=0 ");
+  }
+
+  // std::complex<LocalReal> r1,r2,tau1,tau2;
+  r1 = b(0); r2=b(1); tau1=b(2); tau2=b(3);
+  
+
+  printF("\n +++++ reflection and transmission coefficients +++++\n");
+  printF(" r1  =[%6.3f + %6.3f I], r2  =[%6.3f + %6.3f I], \n tau1=[%6.3f + %6.3f I], tau2=[%6.3f + %6.3f I]\n",
+        std::real(r1),imag(r1),std::real(r2),imag(r2),std::real(tau1),imag(tau1),std::real(tau2),imag(tau2) );
+
+
+
+  // Here is the solution
+/* -----  
+          if( x(i,j)<=0 )
+            q(i,j,m) = real( ampI*exp(1i*(kx*x(i,j)      +ky*y(i,j)      )+ s*t )*qvi(m)   + ...
+	                       r1*exp(1i*(kvr(1,1)*x(i,j)+kvr(2,1)*y(i,j))+ s*t )*qvr(m,1) + ...
+	                       r2*exp(1i*(kvr(1,2)*x(i,j)+kvr(2,2)*y(i,j))+ s*t )*qvr(m,2) ); 
+          else
+            q(i,j,m) = real( tau1*exp(1i*(kvt(1,1)*x(i,j)+kvt(2,1)*y(i,j))+ s*t )*qvt(m,1) + ...
+	                     tau2*exp(1i*(kvt(1,2)*x(i,j)+kvt(2,2)*y(i,j))+ s*t )*qvt(m,2)  ); 
+          end 
+ ---- */
+
+
+/* ----
+  int numberOfPolarizationTerms=0;
+  for( int k1=0; k1<6; k1++ )
+  {
+    for( int k2=0; k2<6; k2++ )
+    {
+      for( int n=0; n<NpBA(k1,k2); n++ )
+      {
+	numberOfPolarizationTerms++;
+      }
+    }
+  }
+
+  
+  // ----- compute susceptibilities ----
+  if( numberOfPolarizationTerms>0 )
+  {
+    chia.resize(numberOfPolarizationTerms*2);  // holds P and Q
+#define chi(m) chia[(m)] 
+
+    int m=0;
+    for( int k1=0; k1<6; k1++ )
+    {
+      for( int k2=0; k2<6; k2++ )
+      {
+	for( int n=0; n<NpBA(k1,k2); n++ )
+	{
+	  LocalReal a0 = bianisotropicParameters(0,n,k1,k2);
+	  LocalReal a1 = bianisotropicParameters(1,n,k1,k2);
+	  LocalReal b0 = bianisotropicParameters(2,n,k1,k2);
+	  LocalReal b1 = bianisotropicParameters(3,n,k1,k2);
+
+	  // P_{ijn}
+	  int ec = k2; // This GDM term multiplies this E or H component
+
+	  chi(m) = (a0+a1*s)/(b0+b1*s+s*s) * b(ec);
+	  m++;
+	  if( debug & 2 )
+	    printF("P: Chi(n=%d,k1=%d,k2=%d) = %10.3e + %10.3e I  (ec=%d)\n",n,k1,k2,std::real(chi(m)),imag(chi(m)),ec);
+
+	  // Q_{ijn} = time-derivative of P
+	  chi(m) = s*chi(m-1);
+	  m++;
+	  if( debug & 2 )
+	    printF("Q: Chi(n=%d,k1=%d,k2=%d) = %10.3e + %10.3e I  (ec=%d)\n",n,k1,k2,std::real(chi(m)),imag(chi(m)),ec);
+         
+	}
+      }
+    }
+  }
+
+  --- */
+  
+  return 0;
+}
+
+
+
+//========================================================================================================
+/// \brief Evaluate the BA plane material interface solution
+//========================================================================================================
+int PlaneInterfaceExactSolution::
+evalBA( DispersiveMaterialParameters & dmp1,
+	DispersiveMaterialParameters & dmp2,
+	Real t, CompositeGrid & cg, int grid, 
+        IntegerArray & matMask,
+	realArray & ua, realArray & pv,
+	const Index & I1a, const Index &I2a, const Index &I3a, 
+	int numberOfTimeDerivatives /* = 0 */ ,
+	int solveForAllFields /* = 1 */ )
+{
+
+  // domain number for this grid: 
+  const int myDomain = cg.domainNumber(grid);
+
+  std::complex<LocalReal> I(0,1.); 
+
+  if( t <= 0. )
+    printF("--PlaneInterfaceExactSolution--  evalBA solution  on grid=%i, domain=%i, at t=%9.3e\n",grid,myDomain,t);
+
+  if( !dbase.has_key("baPlaneInterfaceSolutionComputed") )
+  {
+    printf("PlaneInterfaceExactSolution::evalBA: ERROR: you must first call getBianisotropicPlaneInterfaceSolution.\n");
+    OV_ABORT("ERROR");
+  }
+
+  assert( solveForAllFields==1 );  // Fix me **
+  
+
+  ComplexVector & kvia = dbase.get<ComplexVector>("kvia"); 
+  ComplexVector & qvia = dbase.get<ComplexVector>("qvia"); 
+  ComplexVector & kvra = dbase.get<ComplexVector>("kvra");
+  ComplexVector & qvra = dbase.get<ComplexVector>("qvra");
+  ComplexVector & kvta = dbase.get<ComplexVector>("kvta");
+  ComplexVector & qvta = dbase.get<ComplexVector>("qvta");
+  ComplexVector & chia = dbase.get<ComplexVector>("chia");
+
+  std::complex<Real> & s = dbase.get<std::complex<Real>>("sa");
+
+  std::complex<Real> & r1   = dbase.get<std::complex<Real>>("r1");
+  std::complex<Real> & r2   = dbase.get<std::complex<Real>>("r2");
+  std::complex<Real> & tau1 = dbase.get<std::complex<Real>>("tau1");
+  std::complex<Real> & tau2 = dbase.get<std::complex<Real>>("tau2");
+
+#define kvi(i) kvia[(i)]
+#define qvi(i) qvia[(i)] 
+
+#define kvr(i,j) kvra[(i)+3*(j)]
+#define qvr(i,j) qvra[(i)+6*(j)]
+
+#define kvt(i,j) kvta[(i)+3*(j)]
+#define qvt(i,j) qvta[(i)+6*(j)]
+
+  MappedGrid & mg = cg[grid];
+  const int numberOfDimensions = cg.numberOfDimensions();
+  
+  OV_GET_SERIAL_ARRAY(Real,ua,uLocal);
+
+  Index I1=I1a, I2=I2a, I3=I3a;
+  bool ok = ParallelUtility::getLocalArrayBounds(ua,uLocal,I1,I2,I3,1);   
+  if( !ok ) return 0;  // no points on this processor (NOTE: no communication should be done after this point)
+
+  // -- we optimize for Cartesian grids (we can avoid creating the vertex array)
+  const bool isRectangular=mg.isRectangular();
+  if( !isRectangular )
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+  OV_GET_SERIAL_ARRAY(Real,mg.center(),xLocal);
+
+  Real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+  int iv0[3]={0,0,0}; //
+  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];  // NOTE: iv[0]==i1, iv[1]==i2, iv[2]==i3
+  Real xv[3]={0.,0.,0.};
+  if( isRectangular )
+  {
+    mg.getRectangularGridParameters( dvx, xab );
+    for( int dir=0; dir<mg.numberOfDimensions(); dir++ )
+    {
+      iv0[dir]=mg.gridIndexRange(0,dir);
+      if( mg.isAllCellCentered() )
+	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+    }
+  }
+  // This macro defines the grid points for rectangular grids:
+#undef XC
+#define XC(iv,axis) (xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]))
+
+  
+  // -- Store components here: 
+  const int ex=0, ey=1, ez=2;
+  const int hx=3, hy=4, hz= (solveForAllFields==1 || numberOfDimensions==3) ? 5 : 2;
+
+  if( solveForAllFields && ua.getLength(3)<6 )
+  {
+    printF(" PlaneInterfaceExactSolution::ERROR: Not enough space in ua to hold all 6 fields.\n");
+    OV_ABORT("error");
+  }
+  
+
+  // --- Get Arrays for the dispersive model ----
+
+  // RealMappedGridFunction & pCur = getDispersionModelMappedGridFunction( grid,current );
+      
+
+  RealArray pLocal;
+  const bool isDispersive = dmp1.isDispersiveMaterial() || dmp2.isDispersiveMaterial();
+  if( isDispersive )
+  {
+    OV_GET_SERIAL_ARRAY(Real, pv,pLoc);
+    pLocal.reference(pLoc);
+  }
+  const IntegerArray & NpBA1                  = dmp1.dbase.get<IntegerArray>("NpBA");
+  const RealArray & bianisotropicParameters1  = dmp1.dbase.get<RealArray>("bianisotropicParameters");
+
+  const IntegerArray & NpBA2                  = dmp2.dbase.get<IntegerArray>("NpBA");
+  const RealArray & bianisotropicParameters2  = dmp2.dbase.get<RealArray>("bianisotropicParameters");
+    
+  Real x0[3]={0.,0.,0.};  // 
+
+  std::complex<Real> pq[6], pijm;
+#define q(i) pq[(i)]
+
+  Real x,y,z=0.;
+  if( numberOfTimeDerivatives==0 )
+  {
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      if( !isRectangular )
+      {
+	x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+	y= xLocal(i1,i2,i3,1)-x0[1];
+	if( numberOfDimensions==3 )
+	  z= xLocal(i1,i2,i3,2)-x0[2];
+      }
+      else
+      {
+	x=XC(iv,0)-x0[0];
+	y=XC(iv,1)-x0[1];
+	if( numberOfDimensions==3 )
+	  z=XC(iv,2)-x0[2];
+      }
+
+      // Here are the statements to eval the solution: 
+      Real ampI=1.; // 1 = include the incident wave 
+      int mt = matMask(i1,i2,i3);  // material type: 0=left, 1=right
+      if( mt==0 )  
+      {
+	for( int m=ex; m<=hz; m++ )
+	{
+          q(m) = ampI*exp( I*(kvi(0)  *x + kvi(1)  *y + kvi(2)  *z)+ s*t )*qvi(m)   +
+		   r1*exp( I*(kvr(0,0)*x + kvr(1,0)*y + kvr(2,0)*z)+ s*t )*qvr(m,0) +
+		   r2*exp( I*(kvr(0,1)*x + kvr(1,1)*y + kvr(2,1)*z)+ s*t )*qvr(m,1) ; 
+	  uLocal(i1,i2,i3,m) = std::real( q(m) );
+	}
+      }
+      else
+      {
+	for( int m=ex; m<=hz; m++ )
+	{
+	  q(m) = tau1*exp( I*(kvt(0,0)*x + kvt(1,0)*y + kvt(2,0)*z) + s*t )*qvt(m,0) + 
+		 tau2*exp( I*(kvt(0,1)*x + kvt(1,1)*y + kvt(2,1)*z) + s*t )*qvt(m,1) ; 
+	  uLocal(i1,i2,i3,m) = std::real( q(m) );
+	}
+      }
+   
+      if( isDispersive )
+      {
+	const IntegerArray & NpBA = mt==0 ? NpBA1 : NpBA2;
+	const RealArray & bianisotropicParameters = mt==0 ? bianisotropicParameters1 : bianisotropicParameters2;
+	int m=0;
+	for( int k1=0; k1<6; k1++ )
+	{
+	  for( int k2=0; k2<6; k2++ )
+	  {
+	    int ec=k2;  // *check me**
+	    for( int n=0; n<NpBA(k1,k2); n++ )
+	    {
+	      LocalReal a0 = bianisotropicParameters(0,n,k1,k2);
+	      LocalReal a1 = bianisotropicParameters(1,n,k1,k2);
+	      LocalReal b0 = bianisotropicParameters(2,n,k1,k2);
+	      LocalReal b1 = bianisotropicParameters(3,n,k1,k2);
+
+	      pijm = (a0+a1*s)/(b0+b1*s+s*s) * q(ec);
+	      pLocal(i1,i2,i3,m) = std::real(pijm);   // Pijm 
+	      m++;   
+	      pLocal(i1,i2,i3,m) = std::real(s*pijm); // Q = dP/dt
+	      m++;
+
+	    }
+	  }
+	}
+      }
+
+    } // end FOR
+      
+  }
+  else
+  {
+    OV_ABORT("ERROR: numberOfTimeDerivatives != 0 ");
+    
+  } // end if number of time derivatives 
+    
+
+  return 0;
+}
+
+
+

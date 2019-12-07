@@ -36,6 +36,16 @@ int eval(real t, CompositeGrid & cg, int grid,
 	 int numberOfTimeDerivatives = 0,
          bool computeMagneticField = false );
 
+// evaluate the BA solution
+int evalBA(DispersiveMaterialParameters & dmp1,
+	   DispersiveMaterialParameters & dmp2,
+	   real t, CompositeGrid & cg, int grid,
+	   IntegerArray & matMask,
+	   realArray & ua, realArray & pv,
+	   const Index & I1a, const Index &I2a, const Index &I3a, 
+	   int numberOfTimeDerivatives = 0,
+	   int solveForAllFields = 1 );
+
 
 // evaluate the solution in frequency space at a point x
 int eval( real x[3], real *Ev, real *Hv = NULL );
@@ -47,6 +57,12 @@ int eval( real x[3], real *Ev, real *Hv = NULL );
 int initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveMaterialParameters & dmp2,
 		real *av, real *kvr, real *kvi );
 
+
+  // could make this private:
+int initializeBAPlaneInterfaceSolution( DispersiveMaterialParameters & dmp1,
+					DispersiveMaterialParameters & dmp2, 
+					const real kv[3],
+					real & skr, real & ski );
 
 private:
 

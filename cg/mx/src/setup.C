@@ -154,7 +154,7 @@ computeTimeStep()
   
 
   real cMax=max(cGrid);
-  if( numberOfMaterialRegions>1 )
+  if( numberOfMaterialRegions>1 && method==yee )
   { // Compute maximum c for variable eps and mu
     assert( numberOfComponentGrids==1 );
     cMax = sqrt(1./min(epsv*muv));
@@ -162,6 +162,47 @@ computeTimeStep()
     printF("computeTimeStep: numberOfMaterialRegions=%i cMax=%9.3e\n",numberOfMaterialRegions,cMax);
   }
   
+  if( method==bamx )
+  {
+    // If there is only one material, the materialRegionParameters vector may not have been created.
+    // Do this here for now. Is this the right place?
+    if( !dbase.has_key("materialRegionParameters") )
+    {
+      std::vector<DispersiveMaterialParameters> & dmpVector =
+	dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+      // Material "0" is the background material: 
+      const int grid=0;
+      const int domain = cg.domainNumber(grid);
+      const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+      dmpVector.push_back(dmp0);
+      // aString label="dmpVector[0]";
+      // dmpVector[0].display(stdout,label);
+    }
+
+
+    // --- Fill in the material matrix for the embedded material regions ----
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+    cMax=0.;
+    for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[mr];  
+      real reLambda, imLambda;
+      dmp.evalBianisotropicEigenValues( numberOfDimensions, reLambda, imLambda ); 
+      // imLambda better be zero or the problem is ill-posed !
+      c = reLambda;  // maximum wave speed
+      cMax=max(cMax,c);
+
+      printF("CgMx:computeTimeStep: BA material region %d : c=%9.3e (imLambda=%9.3e) cMax=%9.3e\n",mr,c,
+	     imLambda,cMax );
+
+    }
+    
+  }
+  
+
   for( int grid=0; grid<numberOfComponentGrids; grid++ )
   {
     MappedGrid & mg = cg[grid];
@@ -171,7 +212,25 @@ computeTimeStep()
     // eps = epsGrid(grid);
     // mu = muGrid(grid);
 
-    if( numberOfMaterialRegions>1 )
+    if( method==bamx )
+    {
+      c = cMax;
+
+      // const int domain = cg.domainNumber(grid);
+      // DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+      // real reLambda, imLambda;
+      // dmp.evalBianisotropicEigenValues( numberOfDimensions, reLambda, imLambda ); 
+      // // imLambda better be zero or the problem is ill-posed !
+      // c = reLambda;  // maximum wave speed
+      // printF("CgMx:computeTimeStep: grid=%d - BA max wave speed c=%9.3e (reLambda=%9.3e, imLambda=%9.3e)\n",grid,c,
+      // 	     reLambda,imLambda);
+
+      // // OV_ABORT("stop here for now");
+      
+    }
+    
+
+    if( method==yee && numberOfMaterialRegions>1 )
       c=cMax;
 	
 
@@ -183,12 +242,20 @@ computeTimeStep()
       {
 	mg.getDeltaX(dx);
 
-	if( method==nfdtd || method==yee )
+	if( method==nfdtd || method==yee  )
 	{
 	  if( numberOfDimensions==2 )
 	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
 	  else
 	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
+	}
+	else if( method==bamx )
+	{
+          // **Check me** New Oct 2019
+	  if( numberOfDimensions==2 )
+	    dtg=cfl*1./( c*( 1./dx[0] + 1./dx[1] ) );  
+	  else
+	    dtg=cfl*1./( c*( 1./dx[0] +1./dx[1] +1./dx[2] ) ); 
 	}
 	else if( method==sosup )
 	{
@@ -451,7 +518,61 @@ computeTimeStep()
 	}
 	
       }
+      else if( timeSteppingMethod==rungeKutta )
+      {
+        // MOL RK stability bounds -- Oct 20, 2019 
+
+        const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
+	if( orderOfRungeKutta == 1 || orderOfRungeKutta==2 )
+	{
+          // formally unstable with no-dissipation 
+	}
+	else if( orderOfRungeKutta == 3 )
+	{
+          if( !useSosupDissipation && artDiss==0. )
+	  {
+            dtg *= 1.7;   //  approximate RK3-SPP, maybe 1.7 on axis 
+	  }
+          else
+	  {
+    	     dtg *= 2.3; //  approximate RK3-SPP with dissipation -- **FIX ME** 
+	  }
+	  
+	  
+	  if( orderOfAccuracyInSpace==4 )
+            dtg = dtg/1.4;   // approximate for four-order first derivative *check me*
+
+	}
+	else if( orderOfRungeKutta == 4 )
+	{
+          const real rk4ImBound = 2.8;  // RK stability bound on the imaginary axis 
+
+
+	  if( orderOfAccuracyInSpace==2 )
+	  {	
+	    dtg *= rk4ImBound; 
+	  }
+	  else if( orderOfAccuracyInSpace==4 )
+	  {
+            const real firstDerivSymbolBound = 1.4; // approximate bound on the symbol of D0( I - h^2/6 D+D-) operator 
+            dtg = rk4ImBound*dtg/firstDerivSymbolBound;  
+	  }
+	  else
+	  {
+	    OV_ABORT("finish me");
+	  }
+	  
+	  
+	}
+	else
+	{
+          OV_ABORT("ERROR: getTimeStep: unexpected orderOfRungeKutta");
+	}
+	
+
+      }
       else
+
       {
 
 	if( orderOfAccuracyInSpace==2 )

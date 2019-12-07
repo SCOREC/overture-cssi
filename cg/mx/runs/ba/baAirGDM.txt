@@ -1,0 +1,14 @@
+# BA material file for fake dispersive "air" (vacuum) with eps=1 and mu=1
+name="airGDM";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="MKS";
+omegaScale=1.00000000000000e+00;
+bianistropicK0=[1.,0.,0.,0.,0.,0., \
+                0.,1.,0.,0.,0.,0., \
+                0.,0.,1.,0.,0.,0., \
+                0.,0.,0.,1.,0.,0., \
+                0.,0.,0.,0.,1.,0., \
+                0.,0.,0.,0.,0.,1., ];
+# a0,a1,b0,b1 
+bianistropicPars11GDM1=[0.,0.,0.,0.0];	

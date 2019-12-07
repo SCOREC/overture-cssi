@@ -1706,7 +1706,10 @@ c===============================================================================
       end if
 
 !      write(*,'("insdt: turbulenceModel=",2i6)') turbulenceModel
-!      write(*,'("insdt: nd,uc,vc,wc,kc=",2i6)') nd,uc,vc,wc,kc
+!     write(*,'("insdt: nd,uc,vc,wc,kc=",2i6)') nd,uc,vc,wc,kc
+
+      ! write(*,'(" insdt: advectionOption=",i2," (0=Centered,1=Upwind,2=Bweno)")') advectionOption
+      ! write(*,'(" insdt: upwindOrder=",i2, " (-1=default)")') upwindOrder
 
       if( turbulenceModel.eq.kEpsilon .and. (kc.lt.uc+nd .or. 
      & kc.gt.1000) )then

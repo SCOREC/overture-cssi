@@ -1,0 +1,1324 @@
+********************************
+********  Sat Dec 7, 2019
+
+example for check file:
+
+
+
+$cgmx -noplot baScat -g=square64p.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=og
+
+********************************
+********  Fri Dec 6, 2019
+
+CPU for 3D 
+
+$cgmx -noplot baScat -g=box8p.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAirGDM.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=.5 -diss=1 -go=go
+
+ONE GDM TERM -- OPT VERSION : about 2X faster
+              ---------Maxwell Summary------- 
+                       Fri Dec  6 09:45:36 2019
+               Grid:   /home/henshw/grids/box8p.order4.ng3.hdf 
+  ==== final time= 5.00e-01, numberOfStepsTaken =       73, grids=1, gridpts =666072, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=358.727,ave=358.727,max=358.727](Mb), max-recorded=0 (Mb), total=358.727 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  2.52e+01    3.45e-01    5.18e-07   100.000   2.520e+01   2.520e+01
+setup and initialize................  8.78e-02    1.20e-03    1.80e-09     0.348   8.775e-02   8.775e-02
+initial conditions..................  1.89e-01    2.59e-03    3.89e-09     0.751   1.893e-01   1.893e-01
+advance.............................  2.43e+01    3.33e-01    5.00e-07    96.502   2.432e+01   2.432e+01
+  advance rectangular grids.........  2.20e+01    3.01e-01    4.52e-07    87.255   2.199e+01   2.199e+01
+   (advOpt).........................  2.20e+01    3.01e-01    4.52e-07    87.191   2.198e+01   2.198e+01
+  boundary conditions...............  9.17e-01    1.26e-02    1.89e-08     3.639   9.172e-01   9.172e-01
+  update ghost (parallel)...........  2.62e-04    3.59e-06    5.39e-12     0.001   2.620e-04   2.620e-04
+compute dt..........................  2.44e-03    3.34e-05    5.02e-11     0.010   2.439e-03   2.439e-03
+plotting............................  4.65e-01    6.38e-03    9.57e-09     1.847   4.654e-01   4.654e-01
+waiting (not counted)...............  4.56e-04    6.25e-06    9.38e-12     0.002   4.560e-04   4.560e-04
+--------------------------------------------------------------------------------------------------------
+
+ONE GDM TERM -- NO-OPT
+              ---------Maxwell Summary------- 
+                       Fri Dec  6 09:47:57 2019
+               Grid:   /home/henshw/grids/box8p.order4.ng3.hdf 
+  ==== final time= 5.00e-01, numberOfStepsTaken =       73, grids=1, gridpts =666072, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=361.586,ave=361.586,max=361.586](Mb), max-recorded=0 (Mb), total=361.586 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  5.03e+01    6.89e-01    1.03e-06   100.000   5.028e+01   5.028e+01
+setup and initialize................  8.81e-02    1.21e-03    1.81e-09     0.175   8.813e-02   8.813e-02
+initial conditions..................  1.90e-01    2.60e-03    3.91e-09     0.378   1.899e-01   1.899e-01
+advance.............................  4.94e+01    6.77e-01    1.02e-06    98.270   4.941e+01   4.941e+01
+  advance rectangular grids.........  4.71e+01    6.45e-01    9.68e-07    93.618   4.707e+01   4.707e+01
+   (advOpt).........................  4.71e+01    6.45e-01    9.68e-07    93.586   4.705e+01   4.705e+01
+  boundary conditions...............  9.11e-01    1.25e-02    1.87e-08     1.813   9.114e-01   9.114e-01
+  update ghost (parallel)...........  1.74e-04    2.38e-06    3.58e-12     0.000   1.740e-04   1.740e-04
+compute dt..........................  2.38e-03    3.26e-05    4.89e-11     0.005   2.380e-03   2.380e-03
+plotting............................  4.51e-01    6.18e-03    9.28e-09     0.897   4.511e-01   4.511e-01
+waiting (not counted)...............  4.68e-04    6.41e-06    9.63e-12     0.001   4.680e-04   4.680e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+NO GDM
+$cgmx -noplot baScat -g=box8p.order4.ng3 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=.5 -diss=1 -go=go
+
+
+
+NO GDM 
+              ---------Maxwell Summary------- 
+                       Fri Dec  6 09:41:59 2019
+               Grid:   /home/henshw/grids/box8p.order4.ng3.hdf 
+  ==== final time= 5.00e-01, numberOfStepsTaken =       73, grids=1, gridpts =666072, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=320.531,ave=320.531,max=320.531](Mb), max-recorded=0 (Mb), total=320.531 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.79e+01    2.45e-01    3.69e-07   100.000   1.792e+01   1.792e+01
+setup and initialize................  6.69e-02    9.17e-04    1.38e-09     0.374   6.695e-02   6.695e-02
+initial conditions..................  1.90e-01    2.61e-03    3.91e-09     1.062   1.903e-01   1.903e-01
+advance.............................  1.72e+01    2.35e-01    3.53e-07    95.784   1.716e+01   1.716e+01
+  advance rectangular grids.........  1.48e+01    2.03e-01    3.05e-07    82.761   1.483e+01   1.483e+01
+   (advOpt).........................  1.48e+01    2.03e-01    3.05e-07    82.690   1.482e+01   1.482e+01
+  boundary conditions...............  9.50e-01    1.30e-02    1.95e-08     5.300   9.496e-01   9.496e-01
+  update ghost (parallel)...........  2.45e-04    3.36e-06    5.04e-12     0.001   2.450e-04   2.450e-04
+compute dt..........................  2.62e-03    3.59e-05    5.39e-11     0.015   2.621e-03   2.621e-03
+plotting............................  3.67e-01    5.02e-03    7.54e-09     2.046   3.666e-01   3.666e-01
+waiting (not counted)...............  4.55e-04    6.23e-06    9.36e-12     0.003   4.550e-04   4.550e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+TEST new opt version
+*bugs fixed*
+*extended to multi-material*
+
+cgmx -noplot baInterface -g=rect16.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM16.txt -matFile2=baMatGDM.txt -kx=1 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baGI.show -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=12 P-norm=1.368e+00 max-err = 4.699e-02
+>>> t=1.00e-01 dt=5.3e-03 max errors:[3.77e-02,1.49e-02,2.45e-15,4.41e-15,2.56e-15,1.12e-02,], max (u):[1.31e+00,5.63e-01,5.52e-15,9.85e-15,4.05e-15,1.26e+00,] (19 steps)
+
+
+
+Dirichlet BC
+cgmx -noplot planeWave -g=square64.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+NEW
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=2 (total, P and Q), maxErrPolarization(domain)=1.256e-06
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.138e-02 max-err = 1.256e-06
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.67e-05,2.66e-05,3.58e-14,3.67e-14,3.52e-14,4.41e-05,], max (u):[7.14e-01,7.05e-01,4.91e-12,3.49e-12,3.45e-12,1.00e+00,] (8 steps)
+
+
+OLD: 
+
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=2 (total, P and Q), maxErrPolarization(domain)=1.256e-06
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.138e-02 max-err = 1.256e-06
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.67e-05,2.66e-05,3.58e-14,3.67e-14,3.52e-14,4.41e-05,], max (u):[7.14e-01,7.05e-01,4.91e-12,3.49e-12,3.45e-12,1.00e+00,] (8 steps)
+
+
+
+********************************
+********  Thurs Dec 5, 2019
+
+
+
+BA GDM: 
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -dm=gdm -npv=2 -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAirGDM2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.05 -tf=.05 -diss=1 -go=go
+
+2 GDM TERMS:
+
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 20:15:08 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=656.332,ave=656.332,max=656.332](Mb), max-recorded=0 (Mb), total=656.332 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.17e+01    5.47e-01    5.14e-07   100.000   3.173e+01   3.173e+01
+setup and initialize................  1.68e-01    2.89e-03    2.72e-09     0.529   1.678e-01   1.678e-01
+initial conditions..................  2.18e-01    3.75e-03    3.53e-09     0.686   2.176e-01   2.176e-01
+advance.............................  3.09e+01    5.32e-01    5.00e-07    97.267   3.086e+01   3.086e+01
+  advance rectangular grids.........  3.05e+01    5.26e-01    4.94e-07    96.094   3.049e+01   3.049e+01
+   (advOpt).........................  3.05e+01    5.25e-01    4.94e-07    96.025   3.047e+01   3.047e+01
+  boundary conditions...............  1.84e-01    3.18e-03    2.99e-09     0.581   1.844e-01   1.844e-01
+  update ghost (parallel)...........  8.90e-05    1.53e-06    1.44e-12     0.000   8.900e-05   8.900e-05
+compute dt..........................  8.38e-04    1.44e-05    1.36e-11     0.003   8.380e-04   8.380e-04
+plotting............................  3.91e-01    6.73e-03    6.33e-09     1.231   3.905e-01   3.905e-01
+waiting (not counted)...............  5.10e-04    8.79e-06    8.26e-12     0.002   5.100e-04   5.100e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+BA GDM: 
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -dm=gdm -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAirGDM.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.05 -tf=.05 -diss=1 -go=go
+
+
+OPT VERSION 1:
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:51:28 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=542.957,ave=542.957,max=542.957](Mb), max-recorded=0 (Mb), total=542.957 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  2.59e+01    4.46e-01    4.20e-07   100.000   2.589e+01   2.589e+01
+setup and initialize................  1.36e-01    2.34e-03    2.20e-09     0.523   1.355e-01   1.355e-01
+initial conditions..................  2.44e-01    4.21e-03    3.95e-09     0.942   2.440e-01   2.440e-01
+advance.............................  2.50e+01    4.32e-01    4.06e-07    96.694   2.504e+01   2.504e+01
+  advance rectangular grids.........  2.47e+01    4.25e-01    4.00e-07    95.286   2.467e+01   2.467e+01
+   (advOpt).........................  2.47e+01    4.25e-01    3.99e-07    95.206   2.465e+01   2.465e+01
+  boundary conditions...............  1.77e-01    3.05e-03    2.87e-09     0.684   1.771e-01   1.771e-01
+  update ghost (parallel)...........  1.17e-04    2.02e-06    1.90e-12     0.000   1.170e-04   1.170e-04
+compute dt..........................  8.52e-04    1.47e-05    1.38e-11     0.003   8.520e-04   8.520e-04
+plotting............................  3.85e-01    6.63e-03    6.23e-09     1.485   3.845e-01   3.845e-01
+waiting (not counted)...............  4.36e-04    7.52e-06    7.07e-12     0.002   4.360e-04   4.360e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+GDM code, turn off 2nd GDM loop:
+
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:20:39 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=478.012,ave=478.012,max=478.012](Mb), max-recorded=0 (Mb), total=478.012 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.53e+01    6.09e-01    5.72e-07   100.000   3.533e+01   3.533e+01
+setup and initialize................  1.35e-01    2.33e-03    2.19e-09     0.382   1.350e-01   1.350e-01
+initial conditions..................  2.46e-01    4.25e-03    3.99e-09     0.697   2.463e-01   2.463e-01
+advance.............................  3.45e+01    5.94e-01    5.59e-07    97.579   3.447e+01   3.447e+01
+  advance rectangular grids.........  3.41e+01    5.88e-01    5.53e-07    96.542   3.411e+01   3.411e+01
+   (advOpt).........................  3.41e+01    5.88e-01    5.52e-07    96.482   3.409e+01   3.409e+01
+  boundary conditions...............  1.77e-01    3.05e-03    2.86e-09     0.500   1.766e-01   1.766e-01
+  update ghost (parallel)...........  1.23e-04    2.12e-06    1.99e-12     0.000   1.230e-04   1.230e-04
+compute dt..........................  8.55e-04    1.47e-05    1.39e-11     0.002   8.550e-04   8.550e-04
+plotting............................  3.83e-01    6.60e-03    6.20e-09     1.084   3.829e-01   3.829e-01
+waiting (not counted)...............  4.46e-04    7.69e-06    7.23e-12     0.001   4.460e-04   4.460e-04
+--------------------------------------------------------------------------------------------------------
+ Memory usage: reals/grid-point =  58.89.
+
+
+
+GDM code, turn off 2 GDM loops:
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:19:11 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=478.828,ave=478.828,max=478.828](Mb), max-recorded=0 (Mb), total=478.828 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  2.02e+01    3.49e-01    3.28e-07   100.000   2.023e+01   2.023e+01
+setup and initialize................  1.35e-01    2.33e-03    2.19e-09     0.669   1.353e-01   1.353e-01
+initial conditions..................  2.42e-01    4.18e-03    3.93e-09     1.198   2.425e-01   2.425e-01
+advance.............................  1.94e+01    3.34e-01    3.14e-07    95.777   1.938e+01   1.938e+01
+  advance rectangular grids.........  1.90e+01    3.28e-01    3.08e-07    93.971   1.901e+01   1.901e+01
+   (advOpt).........................  1.90e+01    3.27e-01    3.08e-07    93.870   1.899e+01   1.899e+01
+  boundary conditions...............  1.76e-01    3.03e-03    2.85e-09     0.870   1.760e-01   1.760e-01
+  update ghost (parallel)...........  9.50e-05    1.64e-06    1.54e-12     0.000   9.500e-05   9.500e-05
+compute dt..........................  1.09e-03    1.87e-05    1.76e-11     0.005   1.085e-03   1.085e-03
+plotting............................  3.84e-01    6.62e-03    6.22e-09     1.898   3.839e-01   3.839e-01
+waiting (not counted)...............  4.61e-04    7.95e-06    7.47e-12     0.002   4.610e-04   4.610e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+GDM --- 
+
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:15:50 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=542.461,ave=542.461,max=542.461](Mb), max-recorded=0 (Mb), total=542.461 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  6.05e+01    1.04e+00    9.80e-07   100.000   6.048e+01   6.048e+01
+setup and initialize................  1.35e-01    2.33e-03    2.19e-09     0.224   1.353e-01   1.353e-01
+initial conditions..................  2.26e-01    3.90e-03    3.66e-09     0.374   2.261e-01   2.261e-01
+advance.............................  5.96e+01    1.03e+00    9.66e-07    98.604   5.964e+01   5.964e+01
+  advance rectangular grids.........  5.93e+01    1.02e+00    9.60e-07    97.968   5.925e+01   5.925e+01
+   (advOpt).........................  5.92e+01    1.02e+00    9.60e-07    97.931   5.923e+01   5.923e+01
+  boundary conditions...............  1.87e-01    3.23e-03    3.03e-09     0.309   1.871e-01   1.871e-01
+  update ghost (parallel)...........  1.50e-04    2.59e-06    2.43e-12     0.000   1.500e-04   1.500e-04
+compute dt..........................  9.32e-04    1.61e-05    1.51e-11     0.002   9.320e-04   9.320e-04
+plotting............................  3.90e-01    6.73e-03    6.32e-09     0.645   3.902e-01   3.902e-01
+waiting (not counted)...............  4.36e-04    7.52e-06    7.07e-12     0.001   4.360e-04   4.360e-04
+--------------------------------------------------------------------------------------------------------
+ Memory usage: reals/grid-point =  66.83.
+
+
+
+
++++  BAMX44 shorter time:
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.05 -tf=.05 -diss=1 -go=go
+
+
+
+tf=.05 
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:11:38 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.441,ave=429.441,max=429.441](Mb), max-recorded=0 (Mb), total=429.441 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.84e+01    3.17e-01    2.98e-07   100.000   1.838e+01   1.838e+01
+setup and initialize................  1.02e-01    1.76e-03    1.65e-09     0.555   1.021e-01   1.021e-01
+initial conditions..................  2.40e-01    4.14e-03    3.90e-09     1.308   2.404e-01   2.404e-01
+advance.............................  1.77e+01    3.05e-01    2.87e-07    96.357   1.771e+01   1.771e+01
+  advance rectangular grids.........  1.73e+01    2.99e-01    2.81e-07    94.358   1.734e+01   1.734e+01
+   (advOpt).........................  1.73e+01    2.99e-01    2.81e-07    94.245   1.732e+01   1.732e+01
+  boundary conditions...............  1.82e-01    3.14e-03    2.95e-09     0.990   1.820e-01   1.820e-01
+  update ghost (parallel)...........  1.61e-04    2.78e-06    2.61e-12     0.001   1.610e-04   1.610e-04
+compute dt..........................  1.03e-03    1.78e-05    1.67e-11     0.006   1.031e-03   1.031e-03
+plotting............................  2.42e-01    4.17e-03    3.92e-09     1.316   2.420e-01   2.420e-01
+waiting (not counted)...............  4.82e-04    8.31e-06    7.81e-12     0.003   4.820e-04   4.820e-04
+--------------------------------------------------------------------------------------------------------
+
+
+tf=.1
+              ---------Maxwell Summary------- 
+                       Thu Dec  5 19:10:18 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      115, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.207,ave=429.207,max=429.207](Mb), max-recorded=0 (Mb), total=429.207 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.67e+01    3.19e-01    3.00e-07   100.000   3.673e+01   3.673e+01
+setup and initialize................  1.01e-01    8.81e-04    8.28e-10     0.276   1.014e-01   1.014e-01
+initial conditions..................  2.39e-01    2.08e-03    1.96e-09     0.652   2.395e-01   2.395e-01
+advance.............................  3.60e+01    3.13e-01    2.94e-07    98.099   3.603e+01   3.603e+01
+  advance rectangular grids.........  3.52e+01    3.06e-01    2.88e-07    95.941   3.524e+01   3.524e+01
+   (advOpt).........................  3.52e+01    3.06e-01    2.88e-07    95.837   3.520e+01   3.520e+01
+  boundary conditions...............  3.65e-01    3.17e-03    2.98e-09     0.992   3.645e-01   3.645e-01
+  update ghost (parallel)...........  3.45e-04    3.00e-06    2.82e-12     0.001   3.450e-04   3.450e-04
+compute dt..........................  1.11e-03    9.64e-06    9.06e-12     0.003   1.109e-03   1.109e-03
+plotting............................  2.44e-01    2.12e-03    1.99e-09     0.664   2.440e-01   2.440e-01
+waiting (not counted)...............  5.17e-04    4.50e-06    4.23e-12     0.001   5.170e-04   5.170e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
+********************************
+********  Wed Dec 4, 2019
+
+++++++++++++++++++++==  Optimize RK update:
+
+
+
+
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go 
+
+>>> t=1.00e-01 dt=6.3e-03 max errors:[1.71e-07,1.71e-07,0.00e+00,0.00e+00,0.00e+00,2.42e-07,], max (u):[7.07e-01,7.07e-01,0.00e+00,0.00e+00,0.00e+00,1.00e+00,] (16 steps)
+
+
+dispersive code:
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -dm=gdm -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAirGDM.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go
+
++++++++ BAMX44-GDM 1 term  **** TOO SLOW !!! *****
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 20:04:24 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      115, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=543.051,ave=543.051,max=543.051](Mb), max-recorded=0 (Mb), total=543.051 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.12e+02    9.70e-01    9.12e-07   100.000   1.116e+02   1.116e+02
+setup and initialize................  1.34e-01    1.16e-03    1.09e-09     0.120   1.339e-01   1.339e-01
+initial conditions..................  2.30e-01    2.00e-03    1.88e-09     0.206   2.303e-01   2.303e-01
+advance.............................  1.11e+02    9.63e-01    9.05e-07    99.230   1.107e+02   1.107e+02
+  advance rectangular grids.........  1.10e+02    9.56e-01    8.98e-07    98.551   1.099e+02   1.099e+02
+   (advOpt).........................  1.10e+02    9.56e-01    8.98e-07    98.513   1.099e+02   1.099e+02
+  boundary conditions...............  3.71e-01    3.22e-03    3.03e-09     0.332   3.705e-01   3.705e-01
+  update ghost (parallel)...........  2.76e-04    2.40e-06    2.26e-12     0.000   2.760e-04   2.760e-04
+compute dt..........................  1.09e-03    9.46e-06    8.89e-12     0.001   1.088e-03   1.088e-03
+plotting............................  3.83e-01    3.33e-03    3.13e-09     0.343   3.831e-01   3.831e-01
+waiting (not counted)...............  4.95e-04    4.30e-06    4.05e-12     0.000   4.950e-04   4.950e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+BAMX44 -- no dissipation:
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 19:46:57 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      114, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.938,ave=429.938,max=429.938](Mb), max-recorded=0 (Mb), total=429.938 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  2.45e+01    2.15e-01    2.02e-07   100.000   2.446e+01   2.446e+01
+setup and initialize................  1.00e-01    8.81e-04    8.28e-10     0.411   1.005e-01   1.005e-01
+initial conditions..................  2.39e-01    2.10e-03    1.97e-09     0.979   2.394e-01   2.394e-01
+advance.............................  2.38e+01    2.09e-01    1.96e-07    97.298   2.380e+01   2.380e+01
+  advance rectangular grids.........  2.32e+01    2.04e-01    1.91e-07    94.858   2.320e+01   2.320e+01
+   (advOpt).........................  2.32e+01    2.03e-01    1.91e-07    94.780   2.319e+01   2.319e+01
+  boundary conditions...............  2.82e-01    2.47e-03    2.32e-09     1.151   2.816e-01   2.816e-01
+  update ghost (parallel)...........  2.65e-04    2.32e-06    2.18e-12     0.001   2.650e-04   2.650e-04
+compute dt..........................  1.02e-03    8.96e-06    8.43e-12     0.004   1.022e-03   1.022e-03
+plotting............................  2.39e-01    2.10e-03    1.97e-09     0.977   2.389e-01   2.389e-01
+waiting (not counted)...............  4.42e-04    3.88e-06    3.64e-12     0.002   4.420e-04   4.420e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
++++++++++  AFTER : about 2X faster !
+BAMX44
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 19:40:41 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      115, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.918,ave=429.918,max=429.918](Mb), max-recorded=0 (Mb), total=429.918 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.57e+01    3.10e-01    2.92e-07   100.000   3.567e+01   3.567e+01
+setup and initialize................  1.00e-01    8.71e-04    8.19e-10     0.281   1.002e-01   1.002e-01
+initial conditions..................  2.43e-01    2.12e-03    1.99e-09     0.683   2.435e-01   2.435e-01
+advance.............................  3.50e+01    3.04e-01    2.86e-07    98.121   3.500e+01   3.500e+01
+  advance rectangular grids.........  3.43e+01    2.98e-01    2.80e-07    96.073   3.427e+01   3.427e+01
+   (advOpt).........................  3.42e+01    2.98e-01    2.80e-07    95.957   3.423e+01   3.423e+01
+  boundary conditions...............  3.60e-01    3.13e-03    2.94e-09     1.009   3.600e-01   3.600e-01
+  update ghost (parallel)...........  3.22e-04    2.80e-06    2.63e-12     0.001   3.220e-04   3.220e-04
+compute dt..........................  1.01e-03    8.80e-06    8.27e-12     0.003   1.012e-03   1.012e-03
+plotting............................  2.45e-01    2.13e-03    2.00e-09     0.686   2.446e-01   2.446e-01
+waiting (not counted)...............  4.53e-04    3.94e-06    3.70e-12     0.001   4.530e-04   4.530e-04
+--------------------------------------------------------------------------------------------------------
+
+
+BAMX22
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 19:45:03 2019
+               Grid:   /home/henshw/grids/square1024p.order2.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      228, grids=1, gridpts =1.05987e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=331.57,ave=331.57,max=331.57](Mb), max-recorded=0 (Mb), total=331.57 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.53e+01    1.55e-01    1.46e-07   100.000   3.530e+01   3.530e+01
+setup and initialize................  9.98e-02    4.38e-04    4.13e-10     0.283   9.983e-02   9.983e-02
+initial conditions..................  2.30e-01    1.01e-03    9.50e-10     0.651   2.297e-01   2.297e-01
+advance.............................  3.47e+01    1.52e-01    1.43e-07    98.204   3.467e+01   3.467e+01
+  advance rectangular grids.........  3.39e+01    1.49e-01    1.40e-07    96.099   3.392e+01   3.392e+01
+   (advOpt).........................  3.39e+01    1.49e-01    1.40e-07    95.968   3.388e+01   3.388e+01
+  boundary conditions...............  3.53e-01    1.55e-03    1.46e-09     1.001   3.533e-01   3.533e-01
+  update ghost (parallel)...........  4.64e-04    2.04e-06    1.92e-12     0.001   4.640e-04   4.640e-04
+compute dt..........................  1.03e-03    4.51e-06    4.25e-12     0.003   1.028e-03   1.028e-03
+plotting............................  2.28e-01    1.00e-03    9.43e-10     0.646   2.280e-01   2.280e-01
+waiting (not counted)...............  4.20e-04    1.84e-06    1.74e-12     0.001   4.200e-04   4.200e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
++++++++++  BEFORE
+BAMX44
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go
+
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 09:03:44 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      115, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=430.031,ave=430.031,max=430.031](Mb), max-recorded=0 (Mb), total=430.031 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  7.76e+01    6.75e-01    6.34e-07   100.000   7.758e+01   7.758e+01
+setup and initialize................  1.03e-01    8.92e-04    8.39e-10     0.132   1.026e-01   1.026e-01
+initial conditions..................  2.65e-01    2.30e-03    2.16e-09     0.341   2.647e-01   2.647e-01
+advance.............................  7.68e+01    6.68e-01    6.28e-07    99.019   7.682e+01   7.682e+01
+  advance rectangular grids.........  7.60e+01    6.61e-01    6.21e-07    98.010   7.603e+01   7.603e+01
+   (advOpt).........................  7.60e+01    6.61e-01    6.21e-07    97.972   7.600e+01   7.600e+01
+  boundary conditions...............  3.87e-01    3.37e-03    3.17e-09     0.499   3.874e-01   3.874e-01
+  update ghost (parallel)...........  4.31e-04    3.75e-06    3.52e-12     0.001   4.310e-04   4.310e-04
+compute dt..........................  1.08e-03    9.42e-06    8.85e-12     0.001   1.083e-03   1.083e-03
+plotting............................  2.77e-01    2.41e-03    2.27e-09     0.357   2.772e-01   2.772e-01
+waiting (not counted)...............  5.08e-04    4.42e-06    4.15e-12     0.001   5.080e-04   5.080e-04
+--------------------------------------------------------------------------------------------------------
+ Memory usage: reals/grid-point =  52.98.
+--------------------------------------------------------------------------------------------------------
+
+
+BAMX22
+$cgmx -noplot baScat -g=square1024p.order2 -method=bamx -dm=gdm -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAirGDM.txt -matFile2=baMatGDM.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=og
+
+
+              ---------Maxwell Summary------- 
+                       Wed Dec  4 09:01:46 2019
+               Grid:   /home/henshw/grids/square1024p.order2.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      228, grids=1, gridpts =1.05987e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=332.234,ave=332.234,max=332.234](Mb), max-recorded=0 (Mb), total=332.234 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  6.08e+01    2.67e-01    2.52e-07   100.000   6.082e+01   6.082e+01
+setup and initialize................  1.02e-01    4.49e-04    4.23e-10     0.168   1.023e-01   1.023e-01
+initial conditions..................  2.64e-01    1.16e-03    1.09e-09     0.434   2.642e-01   2.642e-01
+advance.............................  6.01e+01    2.64e-01    2.49e-07    98.789   6.008e+01   6.008e+01
+  advance rectangular grids.........  5.93e+01    2.60e-01    2.45e-07    97.431   5.926e+01   5.926e+01
+   (advOpt).........................  5.92e+01    2.60e-01    2.45e-07    97.383   5.923e+01   5.923e+01
+  boundary conditions...............  3.74e-01    1.64e-03    1.55e-09     0.615   3.742e-01   3.742e-01
+  update ghost (parallel)...........  4.64e-04    2.04e-06    1.92e-12     0.001   4.640e-04   4.640e-04
+compute dt..........................  1.09e-03    4.76e-06    4.49e-12     0.002   1.085e-03   1.085e-03
+plotting............................  2.61e-01    1.14e-03    1.08e-09     0.429   2.606e-01   2.606e-01
+waiting (not counted)...............  4.74e-04    2.08e-06    1.96e-12     0.001   4.740e-04   4.740e-04
+--------------------------------------------------------------------------------------------------------
+ Memory usage: reals/grid-point =  41.09.
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+
++++ 3D BA interface 
+
+
+cgmx -noplot baInterface -g=box3de8.order4.ng3 -method=bamx -ts=rk4 -dm=gdm -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt -kx=2 -ky=1 -kz=1 -tp=.1 -tf=.3 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baMI3dG8.show -go=go >! baMI3dG8.out
+
+
+cgmx -noplot baInterface -g=box3de4.order4.ng3 -method=bamx -ts=rk4 -dm=gdm -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt -kx=2 -ky=1 -kz=1 -tp=.1 -tf=.2 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baMI3dG4.show -go=go >! baMI3dG4.out
+
+
+
+cgmx -noplot baInterface -g=box3de4.order4.ng3 -method=bamx -ts=rk4 -dm=gdm -matFile=baMatGDM2.txt -matFile2=baMatGDM.txt -kx=2 -ky=1 -kz=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=8 P-norm=6.426e-02 max-err = 2.559e-05
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.96e-04,5.48e-04,1.54e-04,2.87e-04,1.32e-04,5.47e-04,], max (u):[4.92e-01,9.85e-01,1.30e-02,4.01e-01,2.01e-01,1.00e+00,] (8 steps)
+>>> t=1.00e-01 dt=1.3e-02 l1 errors:[5.90e-05,2.19e-04,3.78e-05,4.99e-05,2.06e-05,2.20e-04,], l1 (u):[3.13e-01,6.26e-01,8.18e-03,2.55e-01,1.28e-01,6.37e-01,] (8 steps)
+
+
+Exponentially growing solutions for kx=1, kz=1  ? 
+cgmx -noplot baInterface -g=box3de4.order4.ng3 -method=bamx -ts=rk4 -dm=gdm -matFile=baMatGDM16.txt -matFile2=baMatGDM.txt -kx=1 -ky=0 -kz=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+
+
+********************************
+********  Tues Dec 3, 2019
+
+
+START 3D interface
+NEED 3D grid 
+
+ogen -noplot boxArg -prefix=boxInterface -xa=-1. -xb=1. -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=1 
+
+*BUG Fixed** exact solution missing z terms
+
+
+
+BAMX44
+cgmx -noplot baInterface -g=box3de4.order4.ng3 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -kx=2 -ky=1 -kz=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=s -errorNorm=1 -go=og
+
+cgmx -noplot baInterface -g=box3de4.order2 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -kx=2 -ky=1 -kz=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=s -errorNorm=1 -go=og
+
+
+kx=2 kz=1 
+>>> t=1.00e-01 dt=2.0e-02 max errors:[5.19e-02,1.88e-02,1.01e-01,7.05e-02,1.26e-01,1.57e-02,], max (u):[5.21e-01,1.88e-02,1.02e+00,7.05e-02,1.21e+00,1.57e-02,] (5 steps)
+>>> t=1.00e-01 dt=2.0e-02 l1 errors:[4.43e-03,1.06e-04,1.70e-02,8.35e-04,2.10e-02,1.41e-04,], l1 (u):[2.27e-01,1.06e-04,5.29e-01,8.35e-04,6.80e-01,1.41e-04,] (5 steps)
+
+kx=2 ky=1
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=0 (total, P and Q), maxErrPolarization(domain)=0.000e+00
+>>> t=1.00e-01 dt=2.0e-02 max errors:[5.19e-02,1.01e-01,1.88e-02,7.05e-02,1.57e-02,1.26e-01,], max (u):[5.21e-01,1.02e+00,1.88e-02,7.05e-02,1.57e-02,1.21e+00,] (5 steps)
+>>> t=1.00e-01 dt=2.0e-02 l1 errors:[4.43e-03,1.70e-02,1.06e-04,8.35e-04,1.41e-04,2.10e-02,], l1 (u):[2.27e-01,5.29e-01,1.06e-04,8.35e-04,1.41e-04,6.80e-01,] (5 steps)
+
+
++++++++ 3D material regions:
+
+
+$cgmx -noplot baScat -g=box8p.order2 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt  -matFile2=baIsoEps2.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=400 -solveForAllFields=1 -tp=.1 -tf=.5 -diss=1 -go=og
+
+$cgmx -noplot baScat -g=box4p.order2 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt  -matFile2=baIsoEps2.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.01 -tf=.5 -diss=1 -go=og
+
+
+
++++++++++++++++++++ START TEST PML 
+BAMX44 + PML -- looks ok (cfl=.75 too big) 
+$cgmx -noplot baScat -g=square128.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1  -ic=gs -x0=.5 -y0=.5 -beta=200  -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=abcPML -pmlLines=21 -cfl=.5 -go=og
+
+
+BAMX22 + PML -- looks OK
+$cgmx -noplot baScat -g=square128.order2 -method=bamx -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1  -ic=gs -x0=.5 -y0=.5 -beta=200  -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=abcPML -pmlLines=21  -go=og
+
+
+BAMX44 
+$cgmx -noplot baScat -g=square64.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1  -ic=gs -x0=.5 -y0=.5 -beta=200  -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=abcPML -cfl=.5 -go=og
+
+RK4 -- what is being done? RK4 -- REDUCE CFL FOR PML EQUATIONS 
+$cgmx -noplot baScat -g=square64.order2 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1  -ic=gs -x0=.5 -y0=.5 -beta=200  -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=abcPML -cfl=.5 -go=og
+
+BAMX22 + PML 
+$cgmx -noplot baScat -g=square64.order2 -method=bamx -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1  -ic=gs -x0=.5 -y0=.5 -beta=200  -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=abcPML  -go=og
+
+
+
+
+
++++++++++++  ***FIXED**  FIX ME:  -drOption=computeWaveNumber for non-dispersive case:
+
+cgmx -noplot planeWave -g=square128.order4.ng3 -kx=1 -ky=1 -method=bamx -drOption=computeWaveNumber -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -go=og 
+
+Periodic 
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -drOption=computeWaveNumber -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -go=og 
+
+cgmx -noplot planeWave -g=square16.order2 -kx=1 -ky=1 -method=bamx -drOption=computeWaveNumber -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -go=og 
+
+
+
++++++++++  3D plane wave solutions
+
+
+3D BA GDM 
+cgmx -noplot planeWave -g=box4.order4.ng3 -kx=1 -ky=1 -kz=1 -dm=gdm -method=bamx -ts=rk4 -matFile=baMatGDM16.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -drOption=computeWaveNumber -go=og
+
+cgmx -noplot planeWave -g=box4.order4.ng3 -kx=1 -ky=1 -kz=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1  -go=og
+
+cgmx -noplot planeWave -g=box4.order2 -kx=1 -ky=1 -kz=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1  -go=og
+
+
+
+  
+BA interface GDM materials   --> conv OK
+
+cgmx -noplot baInterface -g=rect16.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM16.txt -matFile2=baMatGDM.txt -kx=1 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baGI.show -go=og
+
+
+********************************
+********  Mon Dec 2, 2019
+
+
+More material domains 
+
+$cgmx -noplot baScat -g=square128p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=3 -regionFile=boxCylRegion.h -xc=.6 -radius=.2 -matFile=baAir.txt -matFile2=baMatGDM3.txt  -matFile3=baMatGen.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.1 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -show=cylBox.show - -diss=1 -go=og
+
+
+3 regions , 6 boxes 
+$cgmx -noplot baScat -g=rect32p.order4.ng3 -method=bamx -numMatRegions=3 -regionFile=boxRegion6.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1 -show=baSixBox.show -go=go
+
+$cgmx -noplot baScat -g=rect16p.order2 -method=bamx -numMatRegions=3 -regionFile=boxRegion6.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=600 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1 -go=og
+
+$cgmx -noplot baScat -g=rect8p.order2 -method=bamx -numMatRegions=4 -regionFile=boxRegion4.h -matFile=baAir.txt -matFile2=baIsoEps2.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.7 -beta=600 -solveForAllFields=1 -tp=.1 -tf=.5 -diss=1 -go=og
+
+
+
+show file works now
+cgmx -noplot baInterface -g=rect16.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM.txt -matFile2=baMatGDM16.txt -kx=1 -ky=1 -tf=.5 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -show=baMatIntGDM.show -go=go
+
+check simpler save show:
+$cgmx -noplot baScat -g=square4p.order2 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.01 -tf=.05 -diss=1 -show=ba.show -go=go
+
+
+cgmx -noplot planeWave -g=square16.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -show=ba.show -go=go
+
+Plot P errors:
+cgmx -noplot planeWave -g=square16.order2 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDM.txt -tf=.5 -tp=.1 -solveForAllFields=1 -diss=1 -show=ba.show -go=go
+
+
+
++++ TEST TWO GDM MATERIALs
+Looks OK: -- looks first order in L1
+cgmx -noplot baInterface -g=rect16.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM.txt -matFile2=baMatGDM16.txt -kx=1 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -go=og
+
+G8:
+--getErrors: t=3.000e-01 domain=0 (domain0) numPolarizationVectors=12 P-norm=1.205e+00 max-err = 2.434e-01
+>>> t=3.00e-01 dt=1.0e-02 max errors:[6.13e-02,6.17e-02,1.18e-13,1.79e-13,2.38e-13,3.66e-02,], max (u):[1.19e+00,9.64e-01,2.91e-12,2.04e-12,2.07e-12,1.46e+00,] (30 steps)
+>>> t=3.00e-01 dt=1.0e-02 l1 errors:[1.91e-03,2.14e-03,1.53e-14,2.15e-14,2.26e-14,2.21e-03,], l1 (u):[5.46e-01,4.88e-01,1.26e-12,8.82e-13,1.17e-12,7.13e-01,] (30 steps)
+
+
+G16:
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=12 (total, P and Q), maxErrPolarization(domain)=2.373e-01
+--getErrors: t=3.000e-01 domain=0 (domain0) numPolarizationVectors=12 P-norm=1.205e+00 max-err = 2.373e-01
+>>> t=3.00e-01 dt=5.3e-03 max errors:[4.58e-02,3.70e-02,7.61e-14,9.54e-14,1.61e-13,1.84e-02,], max (u):[1.19e+00,9.64e-01,2.91e-12,2.03e-12,2.07e-12,1.46e+00,] (57 steps)
+>>> t=3.00e-01 dt=5.3e-03 l1 errors:[9.97e-04,1.07e-03,1.23e-14,2.00e-14,1.94e-14,1.11e-03,], l1 (u):[5.46e-01,4.87e-01,1.26e-12,8.84e-13,1.17e-12,7.13e-01,] (57 steps)
+
+
+********************************
+********  Sun Dec 1, 2019
+
+START TEST ACTUAL INTERFACE 
+
+FIX -errorNorm=1 for GDM material 
+
++++ TEST TWO GDM MATERIALs (SAME) (use NON-PERIODIC GRID) -- looks ok 
+cgmx -noplot baInterface -g=rect16.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM.txt -matFile2=baMatGDM.txt -kx=1 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=0 -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=8 P-norm=8.112e-02 max-err = 3.269e-07
+>>> t=1.00e-01 dt=5.3e-03 max errors:[5.46e-06,5.46e-06,3.40e-14,3.42e-14,3.27e-14,7.55e-06,], max (u):[7.12e-01,7.12e-01,2.30e-12,1.65e-12,1.61e-12,1.00e+00,] (19 steps)
+
+
+
+++++++ Looks 1st order in L1 
+cgmx -noplot baInterface -g=rect16np.order4.ng3 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -eps2=2  -kx=2 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1 -solveForAllFields=1 -go=og
+
+G16: 
+>>> t=3.00e-01 dt=5.3e-03 max errors:[6.39e-02,1.81e-02,0.00e+00,0.00e+00,0.00e+00,2.96e-02,], max (u):[5.27e-01,1.02e+00,0.00e+00,0.00e+00,0.00e+00,1.15e+00,] (57 steps)
+>>> t=3.00e-01 dt=5.3e-03 l1 errors:[1.42e-03,1.96e-03,0.00e+00,0.00e+00,0.00e+00,2.56e-03,], l1 (u):[2.24e-01,5.30e-01,0.00e+00,0.00e+00,0.00e+00,6.84e-01,] (57 steps)
+
+G32: 
+>>> t=3.00e-01 dt=2.7e-03 max errors:[7.10e-02,9.28e-03,0.00e+00,0.00e+00,0.00e+00,1.48e-02,], max (u):[5.28e-01,1.02e+00,0.00e+00,0.00e+00,0.00e+00,1.15e+00,] (111 steps)
+>>> t=3.00e-01 dt=2.7e-03 l1 errors:[7.73e-04,9.74e-04,0.00e+00,0.00e+00,0.00e+00,1.27e-03,], l1 (u):[2.24e-01,5.30e-01,0.00e+00,0.00e+00,0.00e+00,6.84e-01,] (111 steps)
+
+
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=0 (total, P and Q), maxErrPolarization(domain)=0.000e+00
+>>> t=4.00e-01 dt=5.3e-03 max errors:[6.36e-02,1.75e-02,0.00e+00,0.00e+00,0.00e+00,2.95e-02,], max (u):[5.27e-01,1.02e+00,0.00e+00,0.00e+00,0.00e+00,1.15e+00,] (76 steps)
+
+
+
+TEST GDM BA interface
+
+texact -option=4 -matFile1=baMatGDM16.txt -matFile2=baMatGDM.txt -computeOption=1
+
+texact -option=4 -matFile1=baMatGDM.txt -matFile2=baIsoEps2.txt -computeOption=1
+
+texact -option=4 -matFile1=baAir.txt -matFile2=baIsoEps2.txt -computeOption=0 
+
+********************************
+********  Fri-Sat Nov 29-30, 2019
+
+CONTINUE ON BA PLANE MATERIAL INTERFACE SOLUTION
+
+TEST BA Plane material interface 
+texact -option=4 -matFile1=baMatBiaxial.txt -matFile2=baIsoEps2.txt
+
+texact -option=4 -matFile1=baAir.txt -matFile2=baIsoEps2.txt
+
+
+
+trdmf -file=baAir.txt -matType=bianisotropic
+
+trdmf -file=baMatGDMeps11.txt -matType=bianisotropic
+
+
+
+
+********************************
+********  Wed Nov 27, 2019
+
+START ON BA PLANE MATERIAL INTERFACE SOLUTION
+
+
+trdmf -file=baMatGDMeps11.txt -matType=bianisotropic
+
+
+
+trdmf -file=baMatGDMeps11.txt -matType=baMatGDMeps11
+
+********************************
+********  Tues Nov 26, 2019
+
+REVISIT ABC's
+
+TEST exact BC's -- **FIX ME**
+FUDGE ADDED -- RK4 call radbc more than once for the same time -- need to retake step??
+$cgmx -noplot baScat -g=square64np.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -rbc=rbcNonLocal  -go=og
+
+
+
+Gaussian source: set c2abcem2=0. --> OK 
+$cgmx -noplot baScat -g=square64.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -bc=abcEM2  -go=og
+
+Gaussian source: wiggles develop 
+$cgmx -noplot baScat -g=square64np.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -bc=abcEM2  -go=og
+
+
+RK44 OK: 
+$cgmx -noplot baScat -g=square64np.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -bc=abcEM2  -go=og
+
+
+RK22 OK: 
+$cgmx -noplot baScat -g=square64np.order2 -method=bamx -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -bc=abcEM2  -go=og
+
+
+
+FIX PERIODIC UPDATE WITH dissipation
+
+BUG fixed -- dissipation was applied as Gauss-Seidel --> chgange to Jacobi 
+
+$cgmx -noplot baScat -g=square4p.order2 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.01 -tf=50 -diss=1 -debug=15 -go=og
+
+
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.01 -tf=50 -diss=1 -go=og
+
+
+
+START -- find periodic solution
+
+General K with no damping 
+cgmx -noplot planeWave -g=square64p.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -npv=5 -modeGDM=-1 -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMgenND.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+ALL TERMS ON:
+
+G128
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=80 P-norm=1.379e-01 max-err = 3.429e-07
+>>> t=1.00e-01 dt=8.3e-03 max errors:[4.52e-06,2.00e-06,1.47e-06,1.31e-06,1.99e-06,3.05e-06,], max (u):[1.00e+00,4.28e-01,3.20e-01,2.83e-01,4.36e-01,6.73e-01,] (12 steps)
+
+G256
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=80 P-norm=1.379e-01 max-err = 2.247e-08
+>>> t=1.00e-01 dt=4.3e-03 max errors:[2.93e-07,1.29e-07,9.50e-08,8.47e-08,1.29e-07,1.98e-07,], max (u):[1.00e+00,4.28e-01,3.20e-01,2.83e-01,4.36e-01,6.73e-01,] (23 steps)
+
+
+
+TEST :  Need a mode with ki=0 !!
+TURN OFF damping  -- works
+cgmx -noplot planeWave -g=square64p.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -modeGDM=-1 -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+G64
+--getErrors: t=5.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.105e-02 max-err = 1.804e-06
+>>> t=5.00e-01 dt=1.3e-02 max errors:[1.39e-05,1.37e-05,1.47e-12,6.52e-13,1.78e-12,1.94e-05,], max (u):[7.13e-01,7.04e-01,9.49e-11,6.71e-11,6.75e-11,9.99e-01,] (40 steps)
+>>> Cgmx:BAMX: t=6.00e-01 dt=1.3e-02 TS=RK4 GDM ad4=1.00 |div(E)|/|grad(E)|=1.27e-02 (=5.71e-02/4.48e+00) 48 steps mem=61.6(Mb) cpu=1.07e+01(s)
+
+G128 
+--getErrors: t=5.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.110e-02 max-err = 1.128e-07
+>>> t=5.00e-01 dt=6.3e-03 max errors:[8.68e-07,8.56e-07,1.47e-12,6.52e-13,1.78e-12,1.21e-06,], max (u):[7.14e-01,7.05e-01,9.49e-11,6.71e-11,6.75e-11,1.00e+00,] (80 steps)
+
+
+
+trdmf -file=baMatGDMeps11.txt -matType=baMatGDMeps11
+
+********************************
+********  Sun Nov 24, 2019
+
+
+trdmf -file=baMatGDMeps11.txt -matType=baMatGDMeps11
+
+
+TEST more general GDM material
+
+Set max number of polarization vectors 
+cgmx -noplot planeWave -g=square128.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -npv=3 -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMgen.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+G128
+--getErrors: t=2.000e-01 domain=0 (domain0) numPolarizationVectors=80 P-norm=2.196e-01 max-err = 7.316e-06
+>>> t=2.00e-01 dt=8.3e-03 max errors:[7.71e-06,1.02e-06,9.38e-06,7.44e-06,1.34e-05,3.50e-06,], max (u):[5.55e-01,3.42e-02,6.73e-01,5.39e-01,1.01e+00,2.86e-01,] (24 steps)
+
+G256  -- errors large near boundaries 
+--getErrors: t=2.000e-01 domain=0 (domain0) numPolarizationVectors=80 P-norm=2.197e-01 max-err = 4.303e-06
+>>> t=2.00e-01 dt=4.3e-03 max errors:[2.14e-06,2.68e-07,2.59e-06,2.02e-06,3.61e-06,9.48e-07,], max (u):[5.55e-01,3.42e-02,6.73e-01,5.39e-01,1.01e+00,2.86e-01,] (46 steps)
+
+
+cgmx -noplot planeWave -g=square128.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+
+
+TEST 3D GDM 
+
+Dirichlet BC
+cgmx -noplot planeWave -g=box4.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.128e-02 max-err = 1.466e-06
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.83e-05,2.82e-05,7.72e-06,1.63e-05,1.64e-05,3.08e-05,], max (u):[7.13e-01,7.04e-01,7.72e-06,1.63e-05,1.64e-05,9.98e-01,] (8 steps)
+
+
+box 3D: GDM  -- ok 
+cgmx -noplot planeWave -g=box2.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.01 -solveForAllFields=1 -diss=1 -go=og
+
+
+periodic box: 3D: GDM looks ok
+cgmx -noplot planeWave -g=box2p.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.01 -solveForAllFields=1 -diss=1 -go=og
+
+cgmx -noplot planeWave -g=box2p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+
+********************************
+********  Fri -Sat Nov 23, 2019
+
+WARNING when computing the wave-number -- may not be two-pi periodic !
+
+
+
+Dirichlet BC
+cgmx -noplot planeWave -g=square64.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og
+
+G128
+--getErrors: t=2.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.140e-02 max-err = 5.419e-07
+>>> t=2.00e-01 dt=6.3e-03 max errors:[8.10e-06,8.02e-06,1.51e-12,1.41e-12,1.71e-12,1.32e-05,], max (u):[7.14e-01,7.05e-01,1.21e-10,8.54e-11,8.59e-11,1.00e+00,] (32 steps)
+
+
+G64
+--getErrors: t=2.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.140e-02 max-err = 2.133e-06
+>>> t=2.00e-01 dt=1.3e-02 max errors:[3.25e-05,3.23e-05,1.48e-12,1.35e-12,1.68e-12,5.72e-05,], max (u):[7.14e-01,7.05e-01,1.21e-10,8.54e-11,8.59e-11,1.00e+00,] (16 steps)
+
+
+
+TEST computeWaveNumber
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeFrequency -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+
+TEST NEW BA plane wave solution
+
+trdmf -file=baMatGDMeps11.txt -matType=baMatGDMeps11
+
+trdmf -file=baMatGDMeps11.txt -matType=bianisotropic
+
+
+
+
+simple GDM 
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMeps11.txt -tf=50 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=0 -method=bamx -ts=rk4 -matFile=baMatGen.txt -tf=50 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+3 materials
+$cgmx -noplot baScat -g=square256p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=3 -regionFile=boxRegion2.h -matFile=baAir.txt -matFile2=baMatGDM3.txt  -matFile3=baMatGen.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -diss=1 -go=og
+
+3 materials
+$cgmx -noplot baScat -g=square256p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=3 -regionFile=boxCylRegion.h -matFile=baAir.txt -matFile2=baMatGDM3.txt  -matFile3=baMatGen.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.1 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -diss=1 -go=og
+
+
+
+********************************
+********  Thurs Nov 22, 2019
+
+New material from Derek
+
+
+TEST plane wave -- new dispersion relation
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk4 -matFile=DerekTestThreeBlockUnstableDispersionFits.txt -tf=50 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+Normalized kv: kx= 6.283, ky= 0.000, kz= 0.000
+ s(  0)=(-3.72e-01, 6.20e+00)
+ s(  1)=(-3.81e-01, 6.17e+00)
+ s(  2)=(-1.89e-01, 1.53e+00)
+ s(  3)=( 7.65e-01,-8.65e-04)
+ s(  4)=( 7.65e-01,-8.54e-04)
+ s(  5)=( 7.65e-01, 8.65e-04)
+ s(  6)=(-1.37e-01,-4.35e-05)
+ s(  7)=(-1.37e-01, 4.71e-05)
+ s(  8)=(-1.37e-01, 3.99e-05)
+ s(  9)=(-1.89e-01, 5.25e-07)
+ s( 10)=(-1.89e-01,-1.77e-08)
+ s( 11)=(-7.52e-01, 3.63e-06)
+ s( 12)=(-7.52e-01,-3.07e-11)
+ s( 13)=(-1.91e-01,-1.53e+00)
+ s( 14)=(-3.72e-01,-6.20e+00)
+ s( 15)=(-3.64e-01,-6.23e+00)
+Here is A(s) for eigenvalue s=[-0.36372,-6.23257]
+A00=[ 6.23,-0.36], A01=[ 0.00, 0.00], A02=[ 0.00, 0.00], A03=[ 0.00, 0.00], A04=[-0.00, 0.00], A05=[ 0.00, 0.00], 
+A10=[ 0.00, 0.00], A11=[ 6.37, 0.39], A12=[ 0.00, 0.00], A13=[ 0.00, 0.00], A14=[ 0.00, 0.00], A15=[-6.24,-0.01], 
+A20=[ 0.00, 0.00], A21=[ 0.00, 0.00], A22=[ 6.37, 0.39], A23=[-0.00, 0.00], A24=[ 6.24, 0.01], A25=[ 0.00, 0.00], 
+A30=[ 0.00, 0.00], A31=[ 0.00, 0.00], A32=[-0.00, 0.00], A33=[ 6.23,-0.36], A34=[ 0.00, 0.00], A35=[ 0.00, 0.00], 
+A40=[-0.00, 0.00], A41=[ 0.00, 0.00], A42=[ 6.39, 0.01], A43=[ 0.00, 0.00], A44=[ 6.23,-0.36], A45=[ 0.00, 0.00], 
+A50=[ 0.00, 0.00], A51=[-6.33, 0.01], A52=[ 0.00, 0.00], A53=[ 0.00, 0.00], A54=[ 0.00, 0.00], A55=[ 6.23,-0.36], 
+Eigenvector:
+ ev(0) =[ 1.54e-12,-1.00e-12],  ev(1) =[ 2.19e-10,-3.10e-10],  ev(2) =[-9.76e-01, 5.78e-02],  ev(3) =[ 1.54e-12,-1.00e-12],  ev(4) =[ 1.00e+00, 0.00e+00],  ev(5) =[ 2.41e-10,-3.02e-10], 
+check... norm(A*b)=1.15e-11 (should be zero)
+
+
+Solution grows: 
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=1 -regionFile=boxRegion.h -matFile=DerekTestThreeBlockUnstableDispersionFits.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -go=og
+
+3 materials
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=3 -regionFile=boxCylRegion.h -xc=.6 -radius=.2 -matFile=baAir.txt -matFile2=baMatGDM3.txt  -matFile3=baAir.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+
+
+********************************
+********  Tues Nov 20, 2019
+
+TEST Derek's materials
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=DerekTestThreeBlockMod1DispersionFits.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+Three block isotropic -- 
+cgmx -noplot planeWave -g=square64p.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=DerekTestThreeBlockMod1DispersionFitsNoGDM.txt -tf=5 -tp=.1 -diss=1 -solveForAllFields=1 -go=og 
+
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=DerekTestTwoBlockMod1DispersionFits.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+--- Compute wave number k given s=-0.000000e+00 + -8.830079e+00 I, and direction kHat.
+Normalized kv: kx= 0.707, ky= 0.707, kz= 0.000
+ k(  0)=(-8.92e+00,-4.58e-01)
+ k(  1)=(-8.89e+00,-2.25e-01)
+ k(  2)=( 8.89e+00, 2.25e-01)
+ k(  3)=( 8.92e+00, 4.58e-01)
+
+
+Three-block grows by time t=7
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt -matFile2=DerekTestThreeBlockMod1DispersionFits.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -go=og
+
+Three block isotropic -- also grows !!
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt -matFile2=DerekTestThreeBlockMod1DispersionFitsNoGDM.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -go=og
+
+LOOKS OK:
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt -matFile2=DerekTestTwoBlockMod1DispersionFits.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50. -diss=1 -go=og
+
+
+START -- plot material boundaries ---
+
+cylinder: 
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=cylRegion.h -matFile=baAir.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -xc=.5 -yc=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+
+3 materials
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=3 -regionFile=boxRegion2.h -matFile=baAir.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+********************************
+********  Tues Nov 19, 2019
+
+START ON solving for k instrad of s in the dispersion relation
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+Make a lossy or gain material:
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM2.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+---- GAIN MATERIAL
+
+Here is A(s) for eigenvalue s=[ 0.02471,-6.35834]
+ --- Compute wave number k given s=-0.000000e+00 + -6.358337e+00 I, and direction kHat.
+Normalized kv: kx= 1.000, ky= 0.000, kz= 0.000
+ k(  0)=( 6.36e+00,-1.31e-13)
+ k(  1)=( 6.28e+00,-2.50e-02)  *** Unstable 
+ k(  2)=(-6.28e+00, 2.50e-02)  *** Unstable 
+ k(  3)=(-6.36e+00,-2.59e-14)
+
+
+--- LOSSY MATERIAL
+Here is A(s) for eigenvalue s=[-0.02471,-6.35834]
+ --- Compute wave number k given s=-0.000000e+00 + -6.358337e+00 I, and direction kHat.
+Normalized kv: kx= 1.000, ky= 0.000, kz= 0.000
+ k(  0)=( 6.36e+00, 1.31e-13)
+ k(  1)=( 6.28e+00, 2.50e-02)  *** stable 
+ k(  2)=(-6.28e+00,-2.50e-02) *** stable 
+ k(  3)=(-6.36e+00, 2.59e-14)
+
+
+
+REVISIT multiple material --
+**fixed plotting of P**
+
+2 GDM materials: starts to work 
+$cgmx -noplot baScat -g=square128p.order4 -method=bamx -dm=gdm -numMatRegions=2 -regionFile=boxRegion.h -matFile=baMatGDM2.txt -matFile2=baMatGDM3.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+
+
+
+SIMPLE TEST:
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=boxRegion.h -matFile=baAir.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=boxRegion.h -matFile=baMatGDM2.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+$cgmx -noplot baScat -g=square32p.order2 -method=bamx -dm=gdm  -numMatRegions=1 -regionFile=boxRegion.h -matFile=baMatGDM2.txt -matFile2=baMatGDM3.txt -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5. -diss=0 -go=og
+
+
+GDM? 
+$cgmx -noplot baScat -g=rect16p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=cylRegion.h -matFile=baAir.txt -matFile2=baMatGDM2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -xc=0 -yc=0 -radius=.25 -go=og
+FIX ME -- two dispersive materials
+$cgmx -noplot baScat -g=rect16p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=cylRegion.h -matFile=baMatGDM2.txt -matFile2=baMatGDM2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -xc=0 -yc=0 -radius=.25 -go=og
+
+$cgmx -noplot baScat -g=rect16p.order4.ng3 -method=bamx -dm=gdm  -numMatRegions=2 -regionFile=cylRegion.h -matFile=baMatGDM2.txt -matFile2=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -xc=0 -yc=0 -radius=.25 -go=og
+
+$cgmx -noplot baScat -g=rect16p.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=cylRegion.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -xc=0 -yc=0 -radius=.25 -go=og
+
+
+********************************
+********  Sun Nov 17, 2019
+
+RE-ORGANIZED baDispersionRelation
+
+
+*BUG* fixed in off-diagonal GDM terms  -- ec = k2 -1 not k1-1 for Pnij terms 
+
+
+OFF diagonal GDM terms turned on: 
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+chi
+    (      0) (      1) (      2) (      3) (      4) (      5) (      6) (      7) 
+(0)  1.69e-02 -1.42e-15 -1.09e-02  1.96e-16 -7.28e-03 -1.43e-16  8.33e-03 -6.95e-16 
+(1) -1.79e-16 -1.62e-01  4.07e-17  1.05e-01 -1.46e-18  6.98e-02 -8.78e-17 -7.99e-02 
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=8, maxErrPolarization(domain)=3.802e-07
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=8 P-norm=1.621e-01 max-err = 3.802e-07
+>>> t=1.00e-01 dt=1.3e-02 max errors:[3.49e-06,3.03e-06,8.00e-15,9.93e-15,9.14e-15,4.63e-06,], max (u):[7.61e-01,6.62e-01,6.67e-14,5.45e-14,4.27e-14,1.00e+00,] (8 steps)
+
+
+
+trdmf -file=baMatGDM1.txt -matType=bianisotropic
+
+
+********************************
+********  Sat Nov 16, 2019
+
+ADD K16, K61 term 
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+>>> t=2.00e-01 dt=1.3e-02 max errors:[4.32e-07,4.29e-06,7.86e-15,9.76e-15,7.86e-15,4.33e-06,], max (u):[1.05e-01,1.00e+00,4.12e-15,8.17e-15,4.12e-15,9.93e-01,] (16 steps)
+>>> Cgmx:BAMX: t=3.00e-01 dt=1.3e-02 TS=RK4 GDM |div(E)|/|grad(E)|=1.05e-01 (=6.57e-01/6.28e+00) 24 steps mem=61.8(Mb) cpu=1.14e+01(s)
+
+
+
+COMPANION MATRIX needs to be complex --
+
+trdmf -file=baMatGDM1.txt -matType=bianisotropic
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM11.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=4 P-norm=1.643e-01 max-err = 2.977e-07
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.79e-06,2.78e-06,5.30e-14,6.55e-14,6.06e-14,3.95e-06,], max (u):[7.19e-01,7.09e-01,3.64e-12,2.62e-12,2.53e-12,1.00e+00,] (8 steps)
+
+
+TEST TWO GMD TERMS --
+cgmx -noplot planeWave -g=square5 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM11.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM11.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=4 P-norm=1.643e-01 max-err = 2.977e-07
+>>> t=1.00e-01 dt=1.3e-02 max errors:[2.79e-06,2.78e-06,5.31e-15,6.57e-15,6.08e-15,3.95e-06,], max (u):[7.19e-01,7.09e-01,3.65e-13,2.63e-13,2.54e-13,1.00e+00,] (8 steps)
+
+
+OK:
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM0.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+
+RK44
+cgmx -noplot planeWave -g=square64p.order4 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM0.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+G64:
+--getErrors: t=2.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.611e-01 max-err = 3.946e-07
+>>> t=2.00e-01 dt=1.3e-02 max errors:[1.65e-15,4.26e-06,1.34e-15,1.65e-15,1.34e-15,4.28e-06,], max (u):[1.39e-15,1.00e+00,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (16 steps)
+
+G128
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.611e-01 max-err = 6.968e-09
+>>> t=1.00e-01 dt=6.7e-03 max errors:[8.71e-16,1.37e-07,8.28e-16,8.71e-16,8.28e-16,1.38e-07,], max (u):[1.39e-15,1.00e+00,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (15 steps)
+
+RK22
+cgmx -noplot planeWave -g=square256p.order2 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og -diss=0
+
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.611e-01 max-err = 3.370e-06
+>>> t=1.00e-01 dt=1.8e-03 max errors:[8.71e-16,4.91e-05,8.28e-16,8.71e-16,8.28e-16,4.99e-05,], max (u):[1.39e-15,1.00e+00,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (57 steps)
+
+
+
++++++++ eps22 = 1 GDM term 
+cgmx -noplot planeWave -g=square16p.order2 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.1 -solveForAllFields=1 -diss=0 -go=og
+
+
+
+cgmx -noplot planeWave -g=square128p.order2 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.1 -solveForAllFields=1 -diss-0 -go=og
+
+G128
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.611e-01 max-err = 1.341e-05
+>>> t=1.00e-01 dt=3.4e-03 max errors:[8.71e-16,1.98e-04,8.28e-16,8.71e-16,8.28e-16,2.02e-04,], max (u):[1.39e-15,1.00e+00,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (29 steps)
+
+G256
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.611e-01 max-err = 3.370e-06
+>>> t=1.00e-01 dt=1.8e-03 max errors:[8.71e-16,4.91e-05,8.28e-16,8.71e-16,8.28e-16,4.99e-05,], max (u):[1.39e-15,1.00e+00,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (57 steps)
+
+********************************
+********  Thurs-Fri  Nov 14-15, 2019
+
+RETURN TO DISPERSIVE BA PLANE WAVE SOLUTION
+
++++++++ eps22 = 1 GDM term 
+cgmx -noplot planeWave -g=square16p.order2 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.01 -solveForAllFields=1 -go=og
+
+
+G16 
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.608e-01 max-err = 1.041e-05
+>>> t=1.00e-02 dt=1.0e-02 max errors:[8.86e-17,1.81e-03,8.74e-17,8.86e-17,8.74e-17,1.82e-03,], max (u):[1.39e-15,9.97e-01,6.98e-16,1.39e-15,6.98e-16,9.85e-01,] (1 steps)
+
+G32 
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.608e-01 max-err = 7.154e-06
+>>> t=1.00e-02 dt=1.0e-02 max errors:[8.86e-17,3.59e-04,8.83e-17,8.86e-17,8.83e-17,3.65e-04,], max (u):[1.39e-15,9.98e-01,6.98e-16,1.39e-15,6.98e-16,9.85e-01,] (1 steps)
+
+
+G64 
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=2, maxErrPolarization(domain)=1.779e-06
+--getErrors: t=1.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=1.610e-01 max-err = 1.779e-06
+>>> t=1.00e-02 dt=5.0e-03 max errors:[5.10e-08,8.92e-05,8.85e-17,8.86e-17,8.85e-17,9.06e-05,], max (u):[5.10e-08,9.99e-01,7.00e-16,1.39e-15,7.00e-16,9.87e-01,] (2 steps)
+
+trdmf -file=baMatGDM1.txt -matType=bianisotropic
+
+
+cgmx -noplot planeWave -g=square32p.order2 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.01 -solveForAllFields=1 -go=og
+
+
+TEST BA-GDM 
+cgmx -noplot planeWave -g=square5 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk2 -matFile=baMatGDM0.txt -tf=5 -tp=.01 -solveForAllFields=1 -go=og
+
+
+cgmx -noplot planeWave -g=square64p.order4.ng3 -kx=1 -ky=0 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM.txt -tf=5 -tp=.01 -solveForAllFields=1 -go=og
+
+
+START ON grid refinement convergence for BA
+
+periodic: 
+cgmx -noplot planeWave -g=box2p.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -diss=0 -solveForAllFields=1 -go=og
+
+>>> t=3.00e-01 dt=2.5e-02 max errors:[6.36e-04,6.36e-04,0.00e+00,0.00e+00,0.00e+00,9.00e-04,], max (u):[6.99e-01,6.99e-01,0.00e+00,0.00e+00,0.00e+00,9.89e-01,] (12 steps)
+>>> t=3.00e-01 dt=1.4e-02 max errors:[4.22e-05,4.22e-05,0.00e+00,0.00e+00,0.00e+00,5.97e-05,], max (u):[7.07e-01,7.07e-01,0.00e+00,0.00e+00,0.00e+00,1.00e+00,] (21 steps)
+
+CHECK BOX -- kx=1 ky=1
+cgmx -noplot planeWave -g=box2.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -diss=0 -solveForAllFields=1 -go=og
+
+BOX: ky=1 : **bad**
+cgmx -noplot planeWave -g=box2.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -diss=0 -solveForAllFields=1 -go=og
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[1.60e-02,1.94e-01,1.42e-04,9.07e-03,6.86e-04,2.00e+00,], max (u):[9.98e-01,1.94e-01,1.42e-04,9.07e-03,6.86e-04,1.00e+00,] (1 steps)
+
+
+BOX: kx=1 : Ok?
+cgmx -noplot planeWave -g=box2.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -diss=0 -solveForAllFields=1 -go=og
+
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.73e-06,4.13e-05,3.86e-07,4.73e-06,3.86e-07,4.13e-05,], max (u):[4.73e-06,9.92e-01,3.86e-07,4.73e-06,3.86e-07,9.92e-01,] (2 steps)
+
+
+
+cgmx -noplot planeWave -g=box1.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baMat16.txt -tf=5 -tp=.1 -diss=0 -solveForAllFields=1 -go=og
+
+
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baMat16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og
+
+
+
+********************************
+********  Wed Nov 13, 2019
+
+RE-WORK plane wave solution calls to support dispersive materials
+
+TEST *new* Dispersive plane wave computation:
+test FAKE air that pretends to be dispsersive
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAirGDM.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og 
+
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og 
+
+getDispersiveBianisotropicPlaneWaveSolution: s=-6.645e-08 + -8.886e+00 I (using saved values).
+BA plane wave: getErrors: s=-6.645e-08 + -8.886e+00 I evr=[-0.707107,0.707107,1,0.707107,-0.707107,1]
+
+getERR: BAMX: getErrTZ, numberOfPolarizationVectors=0, maxErrPolarization(domain)=0.000e+00
+>>> t=2.00e-01 dt=6.7e-03 max errors:[3.49e-07,3.85e-07,5.33e-07,3.85e-07,3.49e-07,5.33e-07,], max (u):[7.07e-01,7.07e-01,1.00e+00,7.07e-01,7.07e-01,1.00e+00,] (30 steps)
+
+
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baMat16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og 
+
+
+
+
+********************************
+*******  Nov 11-13, 2019
+
+alias trdmf /home/henshw/cg.g/mx/bin/trdmf
+
+START ON DISPERSIVE BA PLANE WAVE SOLUTION
+
+trdmf -file=baMatGDM1.txt -matType=bianisotropic
+trdmf -file=baMatGDM1.txt -matType=bianisotropic
+
+
+START TZ evaluation for GDM BA
+
+EXACT: 
+cgmx -noplot tz -g=square5 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.01 -tf=.5 -go=og -solveForAllFields=1 -bc=d
+
+ORDER 2 
+cgmx -noplot tz -g=square5 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.1 -tf=.5  -solveForAllFields=1 -bc=d -go=og
+
+********************************
+*******  Sun. Nov 10, 2019
+
+CONTINUE ON GDM BA
+
+ORDER 2 
+cgmx -noplot tz -g=square5 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.1 -tf=.5 -go=og -solveForAllFields=1
+
+
+
+
+********************************
+*******  Sat. Nov 9, 2019
+
+START ON GDM BA
+
+ORDER 2 
+cgmx -noplot tz -g=square5 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.1 -tf=.5 -go=og -solveForAllFields=1
+
+cgmx -noplot tz -g=square16.order2 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.1 -tf=.5 -go=og
+
+
+cgmx -noplot tz -g=square16.order4 -degreex=4 -degreet=1 -method=bamx -ts=rk4 -matFile=baMatGDM.txt -dm=gdm -diss=0 -tp=.1 -tf=.5 -go=og
+
+
+********************************
+*******  Fri. Nov 8, 2019
+
+RECONSTRUCT memo and baScat.cmd from hard disk crash -- files in runs/mx/ba were lost :(
+
+Rectangle: 
+$cgmx -noplot baScat -g=rect16p.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=cylRegion.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5. -xc=0 -yc=0 -radius=.25 -go=og
+
+
+++++++++++ INTERFACE
+
+cgmx baInterface -g=rect16np.order4.ng3 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -eps2=2  -kx=2 -ky=1 -tp=.1 -ic=pmic -bc=d -diss=1
+
+cgmx baInterface -g=rect8np.order4.ng3 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -eps2=2  -kx=2 -tp=.1 -ic=pmic -bc=d -diss=1
+
+cgmx baInterface -g=rect8np.order2 -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps2.txt -eps2=2  -kx=2 -tp=.1 -ic=pmic -bc=d
+
+
+
+++++++++++ MATERIAL REGIONS
+
+
+scat from a cylinder: 
+$cgmx -noplot baScat -g=square128p.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=cylRegion.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.25 -beta=500 -tp=.1 -tf=5. -go=og
+
+
+$cgmx -noplot baScat -g=square64p.order4.ng3 -method=bamx -numMatRegions=2 -matFile=baAir.txt -matFile2=baIsoEps2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.25 -beta=500 -tp=.1 -tf=5. -go=og
+
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -numMatRegions=2 -matFile=baAir.txt -matFile2=baIsoEps2.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.25 -beta=500 -tp=.1 -tf=5. -go=og
+
+$cgmx -noplot baScat -g=square64p.order2 -method=bamx -matFile=baAir.txt  -ts=rk4 -eps1=4 -eps2=1 -ic=gp -x0=.25 -beta=500 -tp=.1 -tf=5. -go=og
+
+++++++ TZ
+
+
+
+TWO material regions: EXACT 
+cgmx -noplot tz -g=square16.order4 -degreex=4 -degreet=1 -method=bamx -ts=rk4 -numMatRegions=2 -matFile=baAir.txt -matFile2=baIsoEps2.txt -diss=0 -tp=.1 -tf=.5 -go=og
+
+EXACT:
+cgmx -noplot tz -g=square16.order4 -degreex=4 -degreet=1 -method=bamx -ts=rk4 -matFile=baAir.txt -diss=0 -tp=.1 -tf=.5 -go=og
+
+
+EXACT:
+cgmx -noplot tz -g=square16.order2 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baAir.txt -diss=0 -tp=.1 -tf=.5 -go=og
+
+
+
+
++++++ PLANE WAVE: 
+
+BA terms: FOUR DISTINCT wave speeds
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baMat16.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og 
+Normalized kv: kx= 0.707, ky= 0.707, kz= 0.000
+lambda(0)=( 1.08e+00, 0.00e+00) ev=[-0.534, 0.463, 0.000, 0.000, 0.000, 0.707], Polarization= Ex Ey Hz 
+lambda(1)=( 1.08e-17, 0.00e+00) ev=[-0.707,-0.707, 0.000, 0.000, 0.000,-0.000], Polarization= Ex Ey 
+lambda(2)=(-9.36e-01, 0.00e+00) ev=[ 0.463,-0.534, 0.000, 0.000, 0.000, 0.707], Polarization= Ex Ey Hz 
+lambda(3)=(-1.00e+00, 0.00e+00) ev=[-0.000,-0.000,-0.707, 0.500,-0.500, 0.000], Polarization= Ez Hx Hy 
+lambda(4)=( 6.99e-17, 0.00e+00) ev=[ 0.000, 0.000,-0.000,-0.707,-0.707,-0.000], Polarization= Hx Hy 
+lambda(5)=( 1.00e+00, 0.00e+00) ev=[ 0.000, 0.000,-0.707,-0.500, 0.500, 0.000], Polarization= Ez Hx Hy 
+
+
+BA terms: -- NOT A SIMPLE POLARIZATION
+cgmx planeWave -g=square128p.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baMat2.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=halt
+lambda(0)=( 1.21e+00, 0.00e+00) ev=[ 0.041,-0.057, 0.837, 0.484,-0.241,-0.047], Polarization= Ex Ey Ez Hx Hy Hz 
+lambda(1)=( 5.25e-01, 0.00e+00) ev=[-0.399, 0.750,-0.070,-0.055, 0.010, 0.519], Polarization= Ex Ey Ez Hx Hy Hz 
+lambda(2)=(-1.21e+00, 0.00e+00) ev=[ 0.041,-0.057,-0.837, 0.484,-0.241, 0.047], Polarization= Ex Ey Ez Hx Hy Hz 
+lambda(3)=(-5.25e-01, 0.00e+00) ev=[ 0.399,-0.750,-0.070, 0.055,-0.010, 0.519], Polarization= Ex Ey Ez Hx Hy Hz 
+lambda(4)=(-1.46e-17, 0.00e+00) ev=[ 0.685, 0.685,-0.000, 0.175, 0.175,-0.000], Polarization= Ex Ey Hx Hy 
+lambda(5)=(-7.62e-17, 0.00e+00) ev=[ 0.226, 0.226,-0.000,-0.670,-0.670, 0.000], Polarization= Ex Ey Hx Hy 
+Requested polarization=[ExEyHz] NOT found.
+Choosing mode i=0: omega=lam*kNorm=10.770 (lam= 1.212,kNorm= 8.886) ev=[ 0.050,-0.068, 1.000, 0.578,-0.288,-0.056]
+BA plane wave initial condition: omega=1.077e+01 ev=[0.0495333,-0.0677744,1,0.578417,-0.288296,-0.0561446]
+
+
+
+BI-axial 
+cgmx planeWave -g=square128p.order4.ng3 -kx=2 -ky=1 -method=bamx -ts=rk4 -matFile=baMatBiaxial.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=halt
+
+BA material plane wave:
+cgmx -noplot planeWave -g=square128p.order4.ng3 -kx=2 -ky=1 -method=bamx -ts=rk4 -matFile=baMat1.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=og
+
+cgmx planeWave -g=square32p.order4.ng3 -kx=2 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=halt
+
+G64: 
+cgm>>> t=5.00e-01 dt=1.3e-02 max errors:[1.39e-04,3.07e-04,0.00e+00,0.00e+00,0.00e+00,3.37e-04,], max (u):[4.47e-01,8.94e-01,0.00e+00,0.00e+00,0.00e+00,9.99e-01,] (40 steps)
+
+
+x planeWave -g=square32p.order2 -kx=2 -ky=1 -method=bamx -ts=rk4 -matFile=baAir.txt -tf=5 -tp=.1 -solveForAllFields=1 -go=halt
+

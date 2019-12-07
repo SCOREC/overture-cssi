@@ -1,3 +1,48 @@
+*********************
+****** Oct 4, 2019
+
+** CHECK PARALLEL
+
+*** TROUBLE: -np 4 !!
+
+WORKS: Oct 4, 2019
+mpiexec -n 4 xterm -e gdb --args  $cgmxp -noplot diskeigen -g=sice4.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go 
+
+mpiexec -n 1 gnome-terminal -- gdb --args $cgmxp -noplot diskeigen -g=sice4.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go 
+
+ mpirun -np 4 $cgmxp diskeigen -g=sice4.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go -noplot
+ mpirun -np 4 $cgmxp diskeigen -g=sice32.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go -noplot
+
+
+ mpirun -np 2 $cgmxp diskeigen -g=sice32.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go -noplot
+ mpirun -np 1 $cgmxp diskeigen -g=sice32.order4.hdf -m=1 -n=1 -tp=.5 -tf=2 -go=go -noplot
+
+               ---------Maxwell Summary------- 
+                       Fri Oct  4 13:37:34 2019
+               Grid:   /home/henshw/grids/sice32.order4.hdf 
+  ==== final time= 2.00e+00, numberOfStepsTaken =      960, grids=2, gridpts =427824, interp pts=9048, processors=2 ==== 
+  ==== memory per-proc: [min=106.246,ave=111.104,max=115.961](Mb), max-recorded=115.93 (Mb), total=222.207 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.09e+01    1.14e-02    2.66e-08   100.000   1.091e+01   1.091e+01
+
+
+              ---------Maxwell Summary------- 
+                       Fri Oct  4 14:08:52 2019
+               Grid:   /home/henshw/grids/sice32.order4.hdf 
+  ==== final time= 2.00e+00, numberOfStepsTaken =      960, grids=2, gridpts =427824, interp pts=9048, processors=8 ==== 
+  ==== memory per-proc: [min=69.0156,ave=72.1689,max=75.2812](Mb), max-recorded=75.2812 (Mb), total=577.352 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  4.21e+00    4.38e-03    1.02e-08   100.000   4.206e+00   4.206e+00
+
+
+
+ 
+OK: 
+mpirun -np 2 $cgmxp diskeigen -g=sice16.order4.hdf -m=1 -n=1 -tp=.5 -tf=10 -go=halt
+
+mpirun -np 2 $cgmxp diskeigen -g=sice4.order4.hdf -m=1 -n=1 -go=halt
+
+
 ***********************
 ***** March 7, 2017
 

@@ -5,9 +5,10 @@
 #   
 #  cgmx [-noplot] planeWave  -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> -show=<name> ...
 #        -plotIntensity=[0|1] -eps1=<> -eps2=<> -interit=<> -diss=<> -filter=[0|1] -debug=<num> -cons=[0/1] ...
-#        -method=[nfdtd|Yee|sosup] -bcn=[default|d|abc] -plotHarmonicComponents=[0|1] ] -dm=[none|gdm]
+#        -method=[nfdtd|Yee|sosup|bamx] -bcn=[default|d|abc] -plotHarmonicComponents=[0|1] ] -dm=[none|gdm]
 #        -useSosupDissipation=[0|1] -sosupParameter=[0-1] -sosupDissipationOption=[0|1] ...
 #        -stageOption=[IDB|IBDB|D-IB|...] -a0= f f .. -a1=f f .. -b0= f f.. -b1=f f ..  -dmFile=<s> -dmSaveFile=<s> ...
+#        -ts=[me|rk4] -solveForAllFields=[0|1] -drOption=[computeFrequency|computeWaveNumber]
 #        -go=[run/halt/og]
 #
 # Arguments:
@@ -119,10 +120,12 @@ echo to terminal 0
 # 
 $tFinal=2.; $tPlot=.1;  $show=" "; $method="NFDTD"; $bcn="default"; $matRegion=0; $bg="square";  $dm="none"; 
 $cfl = .9; $diss=.5; $dissOrder=-1; $filter=0; $divClean=0; $divCleanCoeff=1; $solveForH=0; $projectInterp=0;
+$ts="me"; $matFile=""; $solveForAllFields=0;
 $dtMax=1e10; 
 $debug=0; $divDamping=.0; $plotIntensity=0; $intensityOption=0; $abcDir=0; $abcSide=1; $plotHarmonicComponents=0; 
 $cyl=1;   # set to 0 for a sphere 
-$kx=2; $ky=0; $kz=0; 
+$kx=2; $ky=0; $kz=0;
+$drOption="computeFrequency"; # dispersion relation option 
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $omega=-1.; # time harmonic omega for intensity computations 
 $eps=1.; $mu=1.;
@@ -153,10 +156,19 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
     "sosupDissipationOption=i"=>\$sosupDissipationOption,"modeGDM=i"=>\$modeGDM,\
     "checkErrors=i"=>\$checkErrors,"dm=s"=>\$dm,"stageOption=s"=>\$stageOption,\
     "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv,\
-    "dmFile=s"=>\$dmFile, "dmSaveFile=s"=>\$dmSaveFile );
+    "dmFile=s"=>\$dmFile, "dmSaveFile=s"=>\$dmSaveFile,"matFile=s"=>\$matFile,"ts=s"=>\$ts,\
+    "solveForAllFields=i"=>\$solveForAllFields, "drOption=s"=>\$drOption );
 # -------------------------------------------------------------------------------------------------
 # printf(" opt_a[0]=[%s] opt_a[1]=[%s]\n",$opt_a[0],$opt_a[1]);
 # printf(" opt_b[0]=[%s] opt_b[1]=[%s]\n",$opt_b[0],$opt_b[1]);
+if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+$orderOfRungeKutta=4;
+if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
+if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
+if( $ts eq "rk3" ){ $ts="rungeKutta"; $orderOfRungeKutta=3; }
+if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
+# printf(" TS = [$ts], order=[$orderOfRungeKutta] \n");
+#
 # Give defaults here for array arguments: 
 if( $a0[0] eq "" ){ @a0=(1,0,0,0); }
 if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
@@ -178,8 +190,15 @@ echo to terminal 1
 $grid
 #
 $method
+# time-stepping method
+$ts
+order of Runge Kutta $orderOfRungeKutta
+#
+solve for all fields $solveForAllFields
+#
 # dispersion model:
 $dm
+$drOption
 # 
 coefficients $eps $mu all (eps,mu,grid-name)
 #
@@ -196,6 +215,10 @@ if( $npv == 2 ){ \
    $cmd .= " GDM coeff: 0 $a0[0] $a1[0] $b0[0] $b1[0] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 1 $a0[1] $a1[1] $b0[1] $b1[1] (eqn, a0,a1,b0,b1)"; \
       }
+if( $npv > 2 ){ \
+   $cmd  = "GDM domain name: $domain\n"; \
+   $cmd .= " number of polarization vectors: $npv\n"; \
+      }
 $cmd
 #
 # -- read material parameters from a file 
@@ -204,6 +227,10 @@ $cmd
 # -- test: save material parameters to a file
 if( $dmSaveFile ne "" ) { $cmd="GDM domain name: $domain\nsave material file: $dmSaveFile" }else{ $cmd="#"; }
 $cmd 
+# -- specify material regions or material file
+$cmd="#"; 
+if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
+$cmd
 # 
 # -- set default stage options
 if( $stageOption eq "default" && $useSosupDissipation eq 0 ){ $stageOption="IDB"; }
@@ -221,9 +248,8 @@ if( $stageOption eq "VD-IB" ){ $stages="computeUt,addDissipation\n updateInterio
 if( $stageOption eq "VDB-IB" ){ $stages="computeUt,addDissipation,applyBC\n updateInterior,applyBC"; }
 if( $stageOption eq "IB-VDB" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation,applyBC"; }
 if( $stageOption eq "IB-VD" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation"; }
-set stages...
- $stages
-done
+if( $method ne "bamx" ){ $cmd="set stages...\n  $stages\n done"; }else{ $cmd="#"; }
+$cmd 
 # 
 planeWaveInitialCondition
 planeWaveKnownSolution

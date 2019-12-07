@@ -463,61 +463,111 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
   // }
     else if( userKnownSolution=="dispersivePlaneWaveInterface" )
     {
-    // *new* way : July 6, 2019 - use version from the class
-        if( !dbase.has_key("planeInterfaceExactSolution") )
+        if( method==nfdtd )
         {
-      // -- first time through: create class and initialize
-            PlaneInterfaceExactSolution & pes = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+      // *new* way : July 6, 2019 - use version from the class
+            if( !dbase.has_key("planeInterfaceExactSolution") )
+            {
+	// -- first time through: create class and initialize
+      	PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
             
-            const int domain1 = 0, domain2=1;
-            DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain1);
-            DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain2);
+      	const int domain1 = 0, domain2=1;
+      	DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain1);
+      	DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain2);
 
       
-            real kvr[3]={kx,ky,kz};  // no factor of twoPi 
-            real kvi[3]={0.,0.,0.};  // 
+      	real kvr[3]={kx,ky,kz};  // no factor of twoPi 
+      	real kvi[3]={0.,0.,0.};  // 
 
-            real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
-            real av[3]={ax,ay,az}; // 
+      	real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
+      	real av[3]={ax,ay,az}; // 
     
-      // // chosee av: *FIX ME** add update to pies to set    
-      // if( cg.numberOfDimensions()==2 )
-      // {
-      // 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
-      // 	av[0]=-kvr[1]/kNorm;  // do this for now
-      // 	av[1]= kvr[0]/kNorm;
-      // }
-      // else
-      // {
-      // 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
-      // 	av[0]=-kvr[1]/kNorm;  // do this for now
-      // 	av[1]= kvr[0]/kNorm;
+	// // chosee av: *FIX ME** add update to pies to set    
+	// if( cg.numberOfDimensions()==2 )
+	// {
+	// 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+	// 	av[0]=-kvr[1]/kNorm;  // do this for now
+	// 	av[1]= kvr[0]/kNorm;
+	// }
+	// else
+	// {
+	// 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+	// 	av[0]=-kvr[1]/kNorm;  // do this for now
+	// 	av[1]= kvr[0]/kNorm;
 
-      // 	if( false )
-      // 	{
-      // 	  real bv[3]= {1.,-1.,1.};
-      // 	  real kDotB= kvr[0]*bv[0]+kvr[1]*bv[1]+kvr[2]*bv[2];
-      // 	  assert( fabs(kDotB)>1.e-10 );
+	// 	if( false )
+	// 	{
+	// 	  real bv[3]= {1.,-1.,1.};
+	// 	  real kDotB= kvr[0]*bv[0]+kvr[1]*bv[1]+kvr[2]*bv[2];
+	// 	  assert( fabs(kDotB)>1.e-10 );
               
-      // 	  av[0]= (kvr[1]*bv[2]-kvr[2]*bv[1])/kDotB;
-      // 	  av[1]= (kvr[2]*bv[0]-kvr[0]*bv[2])/kDotB;
-      // 	  av[2]= (kvr[0]*bv[1]-kvr[1]*bv[0])/kDotB;
-      // 	}
+	// 	  av[0]= (kvr[1]*bv[2]-kvr[2]*bv[1])/kDotB;
+	// 	  av[1]= (kvr[2]*bv[0]-kvr[0]*bv[2])/kDotB;
+	// 	  av[2]= (kvr[0]*bv[1]-kvr[1]*bv[0])/kDotB;
+	// 	}
       	
-      // }
+	// }
 
           
-            pes.initialize( cg, dmp1,dmp2,av,kvr,kvi );
+      	pies.initialize( cg, dmp1,dmp2,av,kvr,kvi );
+
+            }
+
+            PlaneInterfaceExactSolution & pies = dbase.get<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+            bool computeMagneticField=false;
+            pies.eval( t, cg, grid, ua, pv ,I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+
+        }
+        else if( method==bamx )
+        {
+      // printF("\n @@@@@@@ eval BA plane material interface exact solution @@@@@\n\n");
+
+      // ----- BA Plane material interface ----
+            assert( numberOfMaterialRegions==2 );
+            std::vector<DispersiveMaterialParameters> & dmpVector = 
+      	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+            DispersiveMaterialParameters & dmp1 = dmpVector[0];
+            DispersiveMaterialParameters & dmp2 = dmpVector[1];
+
+
+            if( !dbase.has_key("planeInterfaceExactSolution") )
+            {
+	// -- first time through: create class and initialize
+      	PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+
+      	Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
+
+        // -- when computing k given s, choose this s: 
+      	Real sr=0.;
+      	Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
+
+      	Real skr=sr, ski=si;
+      	pies.initializeBAPlaneInterfaceSolution( dmp1, dmp2, kvp, skr, ski );
+
+            }
+        
+
+            PlaneInterfaceExactSolution & pies = dbase.get<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+      // pes.eval( t, cg, grid, ua, pv ,I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+
+            int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+            OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
+            if( numberOfMaterialRegions>1 )
+            {
+      	assert( cg.numberOfComponentGrids()==1 );
+      	assert( pBodyMask!=NULL );
+            }
+            IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
+
+            pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
 
         }
         
-
-        PlaneInterfaceExactSolution & pes = dbase.get<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
-        bool computeMagneticField=false;
-        pes.eval( t, cg, grid, ua, pv ,I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
-
     }
     
+/* -----
     else if( userKnownSolution=="dispersivePlaneWaveInterface" )
     {
     // **OLD WAY**
@@ -1560,11 +1610,12 @@ Hzpi = t397 * t226 * (t539 + t556) * t394;
         }
         else
         {
-            OV_ABORT("finish me: numberOfTimeDerivatives1=0");
+            OV_ABORT("finish me: numberOfTimeDerivatives!=0");
 
         }
         
     }
+    -- */
     
     else
     {
@@ -1580,7 +1631,7 @@ Hzpi = t397 * t226 * (t539 + t556) * t394;
 int Maxwell::
 updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg)
 // ==========================================================================================
-/// \brief This function is called to set the user defined know solution.
+/// \brief This function is called to set the user defined known solution.
 /// 
 // ==========================================================================================
 {
@@ -1770,7 +1821,7 @@ checkPlaneMaterialInterfaceJumps(
                                                         )
 {
 
-  // std::complex<LocalReal> I(0.0,1.0); 
+    std::complex<LocalReal> I(0.0,1.0); 
     std::complex<LocalReal> psiSum1(psiSum1r,psiSum1i);
     std::complex<LocalReal> psiSum2(psiSum2r,psiSum2i);
 
@@ -1786,8 +1837,8 @@ checkPlaneMaterialInterfaceJumps(
     std::complex<LocalReal> dr1,dr2,jump;
     
     LocalReal kNorm = sqrt(kxr*kxr + kxi*kxi + kyr*kyr + kyi*kyi);
-    khx= (kxr + 1i*kxi)/kNorm;
-    khy= (kyr + 1i*kyi)/kNorm;
+    khx= (kxr + I*kxi)/kNorm;
+    khy= (kyr + I*kyi)/kNorm;
     
     LocalReal kpNorm = sqrt(kxpr*kxpr + kxpi*kxpi + kypr*kypr + kypi*kypi);
     khpx=(kxpr + 1i*kxpi)/kpNorm;

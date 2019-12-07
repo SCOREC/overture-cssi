@@ -22,8 +22,9 @@ BodyForce::
 {
     aString & regionType = dbase.get<aString>("regionType");
 
-    printF("BodyForce: destructor called for bodyForcingName=[%s]\n",
-                    (const char*)dbase.get<aString >("bodyForcingName"));
+    if( false )
+        printF("BodyForce: destructor called for bodyForcingName=[%s]\n",
+         	   (const char*)dbase.get<aString >("bodyForcingName"));
 
     if( regionType=="mapping" )
     {
@@ -346,6 +347,7 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
         pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // 2d grid lines: OFF
         pspBoundary.set(GI_PLOT_LINES_ON_MAPPING_BOUNDARIES,false); // 3d lines : OFF
         pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // shaded surfaces : OFF
+        pspBoundary.set(GI_PLOT_NON_PHYSICAL_BOUNDARIES,false);
         pspBoundary.set(GI_MAPPING_COLOUR,"DARKORCHID");
 
     // Unstructured mappings: 
@@ -866,7 +868,7 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         {
                             SquareMapping square(xa,xb,ya,yb);
                             globalID=square.getGlobalID();  // save ID for picking 
-              // Just plot the square outline -- we could make this an option
+              // To do : Just plot the square outline -- we could make this an option
                             square.setGridDimensions(axis1,linesToPlot[0]);
                             square.setGridDimensions(axis2,linesToPlot[1]);
                             PlotIt::plot(gi, square,psp);      
@@ -875,7 +877,7 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         {
                             BoxMapping box(xa,xb,ya,yb,za,zb);
                             globalID=box.getGlobalID();  // save ID for picking 
-              // Just plot the box outline -- we could make this an option
+              // To do :  Just plot the box outline -- we could make this an option
                             box.setGridDimensions(axis1,linesToPlot[0]);
                             box.setGridDimensions(axis2,linesToPlot[1]);
                             box.setGridDimensions(axis3,linesToPlot[2]);
@@ -938,7 +940,8 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         MappingRC *& bodyForceMapping = bodyForce.dbase.get<MappingRC*>("bodyForceMapping");
                         if( bodyForceMapping!=NULL )
                         {
-                            printF("plotBodyForcingRegions: plotMapping [%s]\n",
+                            if( false )
+                      	printF("plotBodyForcingRegions: plotMapping [%s]\n",
                                               (const char*)bodyForceMapping->getName(Mapping::mappingName));
                             Mapping & map = bodyForceMapping->getMapping();
                             globalID=map.getGlobalID();  // save ID for picking 
@@ -992,6 +995,18 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
         	  const aString & forcingType = bodyForce.dbase.get<aString >("forcingType");
         	  const aString & regionType = bodyForce.dbase.get<aString>("regionType");
             
+        	  if( bodyForce.dbase.has_key("colour") )
+        	  {
+                        int pickColourIndex=bodyForce.dbase.get<int>("colour");
+                        const aString pickColour=getXColour(pickColourIndex);
+                        pspBoundary.set(GI_MAPPING_COLOUR,pickColour);
+	    // printF("Plot boundary forcing: colour=%s\n",(const char*)pickColour);
+        	  }
+        	  else
+        	  {
+          	    pspBoundary.set(GI_MAPPING_COLOUR,"DARKTURQUOISE"); // default colour
+        	  }
+
           //  save ID for picking:
                     if( !bodyForce.dbase.has_key("globalID") ) bodyForce.dbase.put<int>("globalID",-1); 
                     int & globalID = bodyForce.dbase.get<int>("globalID");
@@ -1011,7 +1026,7 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         {
                             SquareMapping square(xa,xb,ya,yb);
                             globalID=square.getGlobalID();  // save ID for picking 
-              // Just plot the square outline -- we could make this an option
+              // To do : Just plot the square outline -- we could make this an option
                             square.setGridDimensions(axis1,linesToPlot[0]);
                             square.setGridDimensions(axis2,linesToPlot[1]);
                             PlotIt::plot(gi, square,psp);      
@@ -1020,7 +1035,7 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         {
                             BoxMapping box(xa,xb,ya,yb,za,zb);
                             globalID=box.getGlobalID();  // save ID for picking 
-              // Just plot the box outline -- we could make this an option
+              // To do :  Just plot the box outline -- we could make this an option
                             box.setGridDimensions(axis1,linesToPlot[0]);
                             box.setGridDimensions(axis2,linesToPlot[1]);
                             box.setGridDimensions(axis3,linesToPlot[2]);
@@ -1083,7 +1098,8 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
                         MappingRC *& bodyForceMapping = bodyForce.dbase.get<MappingRC*>("bodyForceMapping");
                         if( bodyForceMapping!=NULL )
                         {
-                            printF("plotBodyForcingRegions: plotMapping [%s]\n",
+                            if( false )
+                      	printF("plotBodyForcingRegions: plotMapping [%s]\n",
                                               (const char*)bodyForceMapping->getName(Mapping::mappingName));
                             Mapping & map = bodyForceMapping->getMapping();
                             globalID=map.getGlobalID();  // save ID for picking 

@@ -5,6 +5,7 @@
 #include "DispersiveMaterialParameters.h"
 #include "PlotStuff.h"
 #include "display.h"
+#include "PlaneInterfaceExactSolution.h"
 
 int 
 getLineFromFile( FILE *file, char s[], int lim);
@@ -44,6 +45,33 @@ extern "C"
 
 }
 
+// lapack routines
+#ifdef OV_USE_DOUBLE
+  #define GETRF EXTERN_C_NAME(dgetrf)
+  #define GETRI EXTERN_C_NAME(dgetri)
+  #define GECON EXTERN_C_NAME(dgecon)
+  #define LANGE EXTERN_C_NAME(dlange)
+  #define GEEV  EXTERN_C_NAME(dgeev)
+#else
+  #define GETRF EXTERN_C_NAME(sgetrf)
+  #define GETRI EXTERN_C_NAME(sgetri)
+  #define GECON EXTERN_C_NAME(sgecon)
+  #define LANGE EXTERN_C_NAME(slange)
+  #define GEEV  EXTERN_C_NAME(sgeev)
+#endif
+
+extern "C"
+{
+  void GETRF( int & m, int & n, real & a, const int & lda, int & ipvt, int & info );
+  void GETRI( int & n, real & a, const int & lda, const int & ipvt, real & work, const int & iwork, int & info );
+
+  void GECON( char *norm, int & n, real & a, const int & lda, real & anorm, real & rcond, real & work, int & iwork, int & info );
+  real LANGE( char *norm, int & m, int & n, real & a, const int & lda, real & work );
+
+   void GEEV( char *jobvl, char* jobvr, int & n, real & a, const int & lda,
+              real & wr, real & wi, real &vl, int & ldvl, real & vr, int & ldvr, real & work, int & lwork, int & info );
+
+}
 
 
 // ============================================================================
@@ -77,7 +105,9 @@ DispersiveMaterialParameters()
   alphaP=-1.;  // this means set to default, alphaP=1/eps
   epsInf=1.;    // eps(s=infinity)
   muInf =1.;
-  
+
+  dbase.put<bool>("isDispersive")= false;  // by default a domain is non-dispersive
+
   numberOfPolarizationVectors=0; // by default a domain is non-dispersive
   numberOfModelParameters=4;     // [a0,a1,b0,b1] 
   modelParameters.redim(numberOfModelParameters,1); // fill in defaults of zero
@@ -95,6 +125,8 @@ DispersiveMaterialParameters()
   ck0=0; sr0=0; si0=0; 
   chiSumr0=0.; chiSumi0=0.;
   
+  dbase.put<int>("debug")=-1;  // -1 : use default 
+
   // new way to save parameters
   dbase.put<aString>("name")="generic";
 
@@ -115,6 +147,7 @@ DispersiveMaterialParameters()
   dbase.put<real>("omegaMin")=.2;
   dbase.put<real>("omegaMax")=1.;
 
+  dbase.put<DispersionRelationOptionEnum>("dispersionRelationComputeOption")=computeComplexFrequency;
 }
 
 // ============================================================================
@@ -124,8 +157,13 @@ DispersiveMaterialParameters::
 DispersiveMaterialParameters(const DispersiveMaterialParameters& x)
 {
   *this=x;  
+
+  // why do we have all these following that should be handled by operator= ??? ********
   if( !dbase.has_key("name" ) ) dbase.put<aString>("name");
   dbase.get<aString>("name") = x.dbase.get<aString>("name");
+
+  if( !dbase.has_key("debug") ) dbase.put<int>("debug");
+  dbase.get<int>("debug")= x.dbase.get<int>("debug");
 
   if( !dbase.has_key("materialType") ) dbase.put<MaterialTypeEnum>("materialType");
   dbase.get<MaterialTypeEnum>("materialType")= x.dbase.get<MaterialTypeEnum>("materialType");
@@ -144,6 +182,15 @@ DispersiveMaterialParameters(const DispersiveMaterialParameters& x)
 
   if( !dbase.has_key("omegaMax") ) dbase.put<real>("omegaMax");
   dbase.get<real>("omegaMax")  = x.dbase.get<real>("omegaMax");
+
+  if( x.dbase.has_key("NpBA") )
+  {
+    dbase.put<IntegerArray>("NpBA") = x.dbase.get<IntegerArray>("NpBA");
+    dbase.put<RealArray>("K0")      = x.dbase.get<RealArray>("K0");
+    dbase.put<RealArray>("bianisotropicParameters") = x.dbase.get<RealArray>("bianisotropicParameters");
+  }
+  
+
 
 }
 
@@ -179,6 +226,13 @@ operator =( const DispersiveMaterialParameters & x )
   gamma=x.gamma;
   omegap=x.omegap;
 
+  if( !dbase.has_key("isDispersive" ) ) dbase.put<bool>("isDispersive");
+  dbase.get<bool>("isDispersive")= x.dbase.get<bool>("isDispersive");
+  
+
+  if( !dbase.has_key("debug" ) ) dbase.put<int>("debug");
+  dbase.get<int>("debug")= x.dbase.get<int>("debug");
+
   if( !dbase.has_key("name" ) ) dbase.put<aString>("name");
   dbase.get<aString>("name")= x.dbase.get<aString>("name");
   
@@ -200,7 +254,31 @@ operator =( const DispersiveMaterialParameters & x )
   if( !dbase.has_key("omegaMax") ) dbase.put<real>("omegaMax");
   dbase.get<real>("omegaMax")    = x.dbase.get<real>("omegaMax");
 
+  if( !dbase.has_key("dispersionRelationComputeOption") )
+    dbase.put<DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+  dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption") =
+             x.dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+
   return *this;
+}
+
+// ==========================================================================================
+/// \brief Set the dispersionRelationComputeOption
+// ==========================================================================================
+int DispersiveMaterialParameters::setDispersionRelationComputeOption( DispersionRelationOptionEnum  computeOption )
+{
+  dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption")=computeOption;
+  return 0;
+}
+
+
+  
+// ==========================================================================================
+/// \brief Return true if the material is dispersive.
+// ==========================================================================================
+bool DispersiveMaterialParameters::isDispersiveMaterial() const
+{
+  return dbase.get<bool>("isDispersive");
 }
 
 
@@ -212,15 +290,26 @@ aString DispersiveMaterialParameters::getMaterialName() const
   return dbase.get<aString>("name");
 }
 
+// ==========================================================================================
+/// \brief Set the debug (bit) flag
+// ==========================================================================================
+int DispersiveMaterialParameters::setDebug( int debugFlag )
+{
+  dbase.get<int>("debug")= debugFlag;
+}
+
 
 // ==========================================================================================
 /// \brief Display parameters
 // ==========================================================================================
 int DispersiveMaterialParameters::
-display( FILE *file /* = stdout */ ) const
+display( FILE *file /* = stdout */, const aString & label /* = nullString */   ) const
 {
   const aString & name = dbase.get<aString>("name");
-
+  const bool & isDispersive = dbase.get<bool>("isDispersive");
+  const DispersionRelationOptionEnum & dispersionRelationComputeOption =
+                dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+  
   MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
   const real & omegaMin = dbase.get<real>("omegaMin");   
   const real & omegaMax = dbase.get<real>("omegaMax");   
@@ -229,12 +318,16 @@ display( FILE *file /* = stdout */ ) const
   const real L0 = dbase.get<real>("lengthScale"); 
   const real & omegaScale = dbase.get<real>("omegaScale");
 
+  fPrintF(file,"Label=%s\n",(const char*)label);
   fPrintF(file,"----------------------------------------------------------------------------\n");
   fPrintF(file,"-------------------- Dispersive Material Parameters ------------------------\n");
   
   fPrintF(file," name=[%s]\n",(const char*)name);
   fPrintF(file," materialType=%s\n",(materialType==isotropic ? "isotropic" :
                                materialType==bianisotropic ? "bianisotropic" : "unknown"));
+  fPrintF(file," isDispersive=%s.\n",(isDispersive ? "yes" : "no"));
+  fPrintF(file," dispersionRelationComputeOption=%s.\n",
+	     (dispersionRelationComputeOption==computeComplexFrequency ? "computeComplexFrequency" : "computeComplexWaveNumber"));
   fPrintF(file," Length-scale L0=%9.3e, velocity-scale V0=%9.3e, omegaScale=%9.3e \n",L0,V0,omegaScale);
   
   if( materialType==isotropic )
@@ -251,6 +344,38 @@ display( FILE *file /* = stdout */ ) const
              j,modelParameters(0,j),modelParameters(1,j),modelParameters(2,j),modelParameters(3,j));
     }
   }
+  else if( materialType==bianisotropic )
+  {
+    RealArray & K0 = dbase.get<RealArray>("K0");
+    ::display(K0,"K0",file);
+          
+    // bianisotropicParameters(4,Np,6,6) 
+    RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+    IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+
+    for( int k1=0; k1<6; k1++ )
+    {
+      for( int k2=0; k2<6; k2++ )
+      {
+	if( NpBA(k1,k2)>0 )
+	{
+	  fPrintF(file,"K(%d,%d): Np=%d:\n",k1,k2,NpBA(k1,k2));
+	  for( int n=0; n<NpBA(k1,k2); n++ )
+	  {
+	    fPrintF(file,"   n=%d: [a0,a1,b0,b1]=[%9.3e,%9.3e,%9.3e,%9.3e]\n",n,
+		    bianisotropicParameters(0,n,k1,k2),
+		    bianisotropicParameters(1,n,k1,k2),
+		    bianisotropicParameters(2,n,k1,k2),
+		    bianisotropicParameters(3,n,k1,k2));
+	  }
+	}
+      }
+    }
+    
+
+
+  }
+  
   fPrintF(file,"----------------------------------------------------------------------------\n");
   
 
@@ -492,86 +617,7 @@ getAlphaP() const
   return alphaP;
 }
 
-/* -----
-// ==========================================================================================
-/// \brief interactive update: define a dispersive material or read from a data file.
-// ==========================================================================================
-int DispersiveMaterialParameters::
-update()
-{
-  GenericGraphicsInterface & gi = *gip;
 
-  aString fileName="myMaterial.txt";
-
-  GUIState gui;
-
-  DialogData & dialog=gui;
-
-  dialog.setWindowTitle("Dispersive Material Parameters");
-  dialog.setExitCommand("exit", "exit");
-
-  dialog.setOptionMenuColumns(1);
-
-  // ************** PUSH BUTTONS *****************
-  aString pushButtonCommands[] = {"read file",
-				  ""};
-  int numRows=1;
-  dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
-
-
-  // ----- Text strings ------
-  const int numberOfTextStrings=30;
-  aString textCommands[numberOfTextStrings];
-  aString textLabels[numberOfTextStrings];
-  aString textStrings[numberOfTextStrings];
-
-  int nt=0;
-
-  textCommands[nt] = "file name:";  textLabels[nt]=textCommands[nt];
-  sPrintF(textStrings[nt], "%s",fileName);  nt++; 
-
-
-  textCommands[nt] = "numberOfPolarizationVectors:";  textLabels[nt]=textCommands[nt];
-  sPrintF(textStrings[nt], "%i",numberOfPolarizationVectors);  nt++; 
-
-
-  // null strings terminal list
-  assert( nt<numberOfTextStrings );
-  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
-  dialog.setTextBoxes(textCommands, textLabels, textStrings);
-
-  gi.pushGUI(gui);
-  aString answer,line;
-  int len=0;
-  for(;;) 
-  {
-    gi.getAnswer(answer,"");      
-    // printF("Start: answer=[%s]\n",(const char*) answer);
-    
-    if( answer=="continue" || answer=="exit" )
-    {
-      break;
-    }
-    else if( answer=="time stepping options..." )
-    {
-      timeSteppingOptionsDialog.showSibling();
-    }
-
-
-    else
-    {
-      printF("Unknown command = [%s]\n",(const char*)answer);
-      gi.stopReadingCommandFile();
-       
-    }
-  }
-
-  gi.popGUI();  // pop dialog
-  
-  return 0;
-}
-
----- */
 
 // ==========================================================================================
 /// \brief Return the isotropic parameters 
@@ -588,6 +634,62 @@ getIsotropicParameters( int & Np,  real & epsInf_, RealArray & modelParams ) con
   modelParams=modelParameters;
 
   return 0;
+}
+
+
+
+// ===================================================================================================
+/// \brief Return the bi-anisotropic Np array : number of polarization vectors for each entry of K
+/// \param Np(0:5,0:5) (output) : number of polarization vectors for each element of K
+// ===================================================================================================
+IntegerArray& 
+DispersiveMaterialParameters::getBianisotropicNp() const
+{
+  MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
+  if( materialType == bianisotropic )
+  {
+    if( ! dbase.has_key("bianisotropicParameters" ) )
+    {
+      printF("DispersiveMaterialParameters::getBianisotropicNp: bianisotropicParameters have not been assigned\n");
+      return Overture::nullIntArray();
+    }
+   IntegerArray & NpBA                  = dbase.get<IntegerArray>("NpBA");
+   return NpBA;
+  }
+  else
+  {
+    printF("DispersiveMaterialParameters::getBianisotropicNp:ERROR: materialType is not equal to bianisotropic\n");
+    return Overture::nullIntArray();
+  }
+  
+}
+
+// ==========================================================================================
+/// \brief Return the bi-anisotropic GDM parameters 
+/// 
+/// \param bianisotropicParameters(0:3,NpMax,0:5,0;5) : GDM parameters a0(j),a1(j),b0(j),b1(j), j=0,..,Np(k1,k2)-1
+// ==========================================================================================
+RealArray & DispersiveMaterialParameters::
+getBianisotropicGDMParameters() const
+{
+  MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
+  if( materialType == bianisotropic )
+  {
+    if( ! dbase.has_key("bianisotropicParameters" ) )
+    {
+      printF("DispersiveMaterialParameters::getBianisotropicGDMParameters: bianisotropicParameters have not been assigned\n");
+      return Overture::nullRealArray();
+    }
+    
+   return dbase.get<RealArray>("bianisotropicParameters");
+
+  }
+  else
+  {
+    printF("DispersiveMaterialParameters::getBianisotropicGDMParameters:ERROR: materialType is not equal to bianisotropic\n");
+    return Overture::nullRealArray();
+  }
+
 }
 
 
@@ -630,6 +732,115 @@ getBianisotropicParameters( RealArray & K0, RealArray & bianisotropicParameters,
     return 1;
   }
 
+  return 0;
+}
+
+
+// ==========================================================================================
+/// \brief Return the bi-anisotropic material matrix 
+/// \param K0(0:5,0:5) (output) : constant part of the inverse BA material matrix
+// ==========================================================================================
+int DispersiveMaterialParameters::
+getBianisotropicMaterialMatrix( RealArray & K0 ) const 
+{
+  MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
+  if( materialType == bianisotropic )
+  {
+    if( ! dbase.has_key("bianisotropicParameters" ) )
+    {
+      printF("DispersiveMaterialParameters::getBianisotropicParametersERROR: bianisotropicParameters have not been assigned\n");
+      return 1;
+    }
+    K0.redim(6,6);
+    K0=dbase.get<RealArray>("K0");
+  }
+  else
+  {
+    printF("DispersiveMaterialParameters::getBianisotropicMaterialMatrix:ERROR: materialType is not equal to bianisotropic\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+
+  
+// ==========================================================================================
+/// \brief Return the inverse of the bi-anisotropic material matrix 
+/// \param K0i(0:5,0:5) (output) : constant part of the inverse BA material matrix
+// ==========================================================================================
+int DispersiveMaterialParameters::
+getBianisotropicMaterialMatrixInverse( RealArray & K0i )
+{
+  MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
+  if( materialType == bianisotropic )
+  {
+    if( ! dbase.has_key("bianisotropicParameters" ) )
+    {
+      printF("DispersiveMaterialParameters::getBianisotropicMaterialMatrixInverse: bianisotropicParameters have not been assigned\n");
+      return 1;
+    }
+
+    if( !dbase.has_key("K0Inverse") )
+    {
+      // First time: compute the inverse of K0
+      RealArray & K0Inverse = dbase.put<RealArray>("K0Inverse");
+      
+      K0Inverse.redim(6,6);
+
+      RealArray & K0 = dbase.get<RealArray>("K0");
+
+      // K0(3,0)=1.;
+      // K0(0,1)=1.;
+      
+      K0Inverse=K0;
+
+      int n=6, info=0;
+      int ipvt[6];
+      
+
+
+      const int lwork=36;
+      real work[lwork], anorm,rcond;
+      int iwork[6];
+
+      char norm = '1'; // 'I'; // '1'
+      anorm = LANGE( "1", n, n, K0Inverse(0,0), n, work[0] ); // '1' = 1-norm 
+
+      GETRF( n, n, K0Inverse(0,0), n, ipvt[0],  info );
+      if( info!=0 )
+      {
+        printF("ERROR return from laplack routine GETRF, LU factorization: info=%d\n",info);
+        OV_ABORT("GETRF: info !=0 ");
+      }
+      
+      GECON( "1", n, K0Inverse(0,0), n, anorm, rcond, work[0], iwork[0], info ); // '1' = 1-norm 
+      if( info!=0 )
+        OV_ABORT("GECON: info !=0 ");
+
+      printF(" 1-norm inverse condition number of K0 = %9.2e, anorm=%9.2e\n",rcond,anorm);
+
+
+      GETRI( n, K0Inverse(0,0), n, ipvt[0], work[0], lwork, info );
+      if( info!=0 )
+        OV_ABORT("GETRI: info !=0 ");
+
+      ::display(K0,"K0");
+      ::display(K0Inverse,"K0Inverse");
+      
+
+    }
+    
+    K0i.redim(6,6);
+    K0i = dbase.get<RealArray>("K0Inverse");
+
+  }
+  else
+  {
+    printF("DispersiveMaterialParameters::getBianisotropicMaterialMatrixInverse: ERROR: this is not a BA material!\n");
+    OV_ABORT("Error");
+  }
+  
   return 0;
 }
 
@@ -786,6 +997,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
      //     bianisotropicParameters(4,Np,6,6)        : GDM 
      //     Np(6,6) : number of polarization vectors 
 
+    printF("DispersiveMaterialParameters::readFromFile: This is an bianisotropic material\n");
+
     if( ! dbase.has_key("bianisotropicParameters" ) )
     {
       dbase.put<IntegerArray>("NpBA");
@@ -807,6 +1020,9 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   
 
   aString & name = dbase.get<aString>("name");
+  bool & isDispersive = dbase.get<bool>("isDispersive");
+  isDispersive=false;
+  
   real & omegaMin = dbase.get<real>("omegaMin");   
   real & omegaMax = dbase.get<real>("omegaMax");   
   
@@ -838,7 +1054,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   int currentBestNp=0;
   
   int len;
-  const int buffLength=2000;
+  const int buffLength=2000;  // allow for continuation lines
   char line[buffLength];
   int numRead=getLineFromFile(file,line,buffLength);  // read a line from the file.
 
@@ -850,7 +1066,10 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
     if( numRead>0 )
     {
       aString aline=line;
-      // printF("line=[%s]\n",(const char*)line);
+      printF("DispersiveMP: readFromFile: line=[%s]\n",(const char*)line);
+
+      // Parse for perl variables in the file ? 
+      // int returnValue=parser->parse(answer);
 
       if( line[0]=='#' )
 	printF("Comment: %s\n",(const char*)line);
@@ -899,7 +1118,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 
 	  // GDM parameters
           parametersSet=true;  // parameters have been read
-
+	  isDispersive=true;
+	  
 	  int Np=1;
 	  sScanF(aline(len,len+1),"%i",&Np);
 	  if( Np==1 )
@@ -984,6 +1204,16 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	
 
 	}
+	else if( len=aline.matches("dispersiveModel=") )
+	{
+	  aString dm = aline(len,aline.length()-1);
+	  if( dm == "\"GDM\";" )
+	  {
+	    printF("dispersiveModel = GDM. Setting isDispersive=true\n");
+	    // isDispersive=true;
+	  }
+	  
+	}
 
 
 	else if( materialType == bianisotropic && (len=aline.matches("bianistropicK0"))   )	
@@ -991,6 +1221,9 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  // ---- BI-ANISTROPIC MATERIAL MATRIX K0 ---
 	  //   bianistropicK0=[...]; 
 	  // K0 matrix
+
+          parametersSet=true;
+          
 	  RealArray & K0 = dbase.get<RealArray>("K0");
 	  K0.redim(6,6);
 	
@@ -1035,6 +1268,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  // Entry form: 
 	  // "bianistropicPars[1-6][1-6]GDM[1-]=["
 
+	  isDispersive=true;
+	  
 	  // bianisotropicParameters(4,Np,6,6) 
 	  RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
 	  IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
@@ -1163,6 +1398,15 @@ setMaterialType( MaterialTypeEnum matType )
   return 0;
 }
 
+// ==========================================================================================
+/// \brief return the material type.
+// ==========================================================================================
+DispersiveMaterialParameters::MaterialTypeEnum DispersiveMaterialParameters::
+getMaterialType() const 
+{
+  return dbase.get<MaterialTypeEnum>("materialType");
+}
+
 
 
 // ==========================================================================================
@@ -1181,6 +1425,8 @@ setNumberOfPolarizationVectors(  const int numPolarizationVectors )
     chir0.redim(numberOfPolarizationVectors); chir0=0.;
     chii0.redim(numberOfPolarizationVectors); chii0=0.;
     
+    dbase.get<bool>("isDispersive")=true;
+
   }
   return 0;
 }
@@ -1292,9 +1538,325 @@ setParameters( const real a0, const real a1, const real b0, const real b1 )
   modelParameters(2,0)=b0;
   modelParameters(3,0)=b1;
   
+  dbase.get<bool>("isDispersive")=true;
+
   return 0;
 }
 
+//=======================================================================================
+// Multiply two matrices (2D A++ arrays) together
+//   c <- a*b
+//   
+//======================================================================================
+//=======================================================================================
+// Multiply two matrices (2D A++ arrays) together
+//   c <- a*b
+//   
+//======================================================================================
+void DispersiveMaterialParameters::
+myMatrixMultiply( RealArray & a, RealArray & b, RealArray & c ) 
+{
+  // ::display(a,"a");
+  // ::display(b,"b");
+
+  for( int i=a.getBase(0); i<=a.getBound(0); i++ )
+    for( int j=a.getBase(1); j<=a.getBound(1); j++ )
+    {
+      real t=0;
+      for( int k=a.getBase(1); k<=a.getBound(1); k++ )
+        t=t+a(i,k)*b(k,j);
+      c(i,j)=t;
+    }
+  
+  // ::display(c,"c= a* b");
+
+}
+
+// ================================================================================
+/// \brief Evaluate the eigenvalues of the BA Maxwell equation matrix
+///
+/// numberOfDimensions (input) number of space dimensions
+/// reLambda (output) : maximum absolute value of the real part of all eigenvalues (max. wave speed)
+/// imLambda (output) :  maximum absolute value of the imgainary part of all eigenvalues (non-zero implies
+///                the problem is not hyperbolic (i.e. ill-posed)  
+///
+/// The Eigenvalues are found from the matrix (for all unit vectors (kx,ky,kz) )
+///       A = K0^{-1} [ kx*Cx + ky*Cy + kz*Cz ]
+///
+///         = K0^{-1} [  0   0   0   0 -kz  ky]
+///                   [  0   0   0  kz   0 -kx] 
+///                   [  0   0   0 -ky  kx  0 ] 
+///                   [  0  kz -ky   0   0  0 ] 
+///                   [-kz   0  kx   0   0  0 ] 
+///                   [ ky -kx   0   0   0  0 ] 
+///        
+// ================================================================================
+int DispersiveMaterialParameters::
+evalBianisotropicEigenValues( int numberOfDimensions, real & reLambda, real & imLambda ) 
+{
+  int debug=0;
+
+  if( !dbase.has_key("eigenvaluesComputed") )
+  {
+    dbase.put<bool>("eigenvaluesComputed")=false;
+    dbase.put<real>("reLambdaBA")=0.;
+    dbase.put<real>("imLambdaBA")=0.;
+  }
+
+
+  bool & eigenvaluesComputed = dbase.get<bool>("eigenvaluesComputed");
+  real & reLambdaBA = dbase.get<real>("reLambdaBA");
+  real & imLambdaBA = dbase.get<real>("imLambdaBA");
+  if( eigenvaluesComputed )
+  {
+    reLambda = reLambdaBA;
+    imLambda = imLambdaBA;
+    if( debug & 1 )
+      printF("evalBianisotropicEigenValues: reLambda=%9.3e, imLambda=%9.3e (using saved values).\n",reLambda,imLambda);
+
+    return 0;
+  }
+  
+  eigenvaluesComputed=true;
+
+
+  const int ex=0, ey=1, ez=2, hx=3, hy=4, hz=5;
+
+  RealArray K0i;
+  getBianisotropicMaterialMatrixInverse( K0i);
+  
+  RealArray A(6,6);
+  RealArray C(6,6); C=0.;
+
+  int n=6, lwork=4*n, info;
+  RealArray wr(n), wi(n), work(lwork), vl(6,6), vr(6,6);
+  real dummy;
+
+  real lambdaMin=REAL_MAX, lambdaMax=-lambdaMin;
+  real imPart=0.;
+  // --- Loop over different directions to compute the eigenvalues ---
+  int numx=5;
+  int numy= numberOfDimensions<2 ? 1 : numx;
+  int numz= numberOfDimensions<3 ? 1 : numx;
+
+  for( int iz=0; iz<numz; iz++ )
+  {
+    for( int iy=0; iy<numy; iy++ )
+    {
+      for( int ix=0; ix<numx; ix++ )
+      {
+        if( ix==0 && iy==0 ) continue;
+      
+        real kx = real(ix)/max(1.,numx-1.);
+        real ky = real(iy)/max(1.,numy-1.);
+        real kz = real(iz)/max(1.,numz-1.);
+        real kNorm= sqrt(kx*kx + ky*ky + kz*kz);
+        kx/=kNorm; ky/=kNorm; kz/=kNorm;
+
+        C(0,hz) = ky; C(0,hy)=-kz;    // (Hz)_y - (Hy)_z
+        C(1,hx) = kz; C(1,hz)=-kx;    // (Hx)_z - (Hz)_x
+        C(2,hy) = kx; C(2,hx)=-ky;    // (Hy)_x - (Hx)_y
+  
+        C(3,ez) =-ky; C(3,ey)= kz;    // -[ (Ez)_y - (Ey)_z ]
+        C(4,ex) =-kz; C(4,ez)= kx;    // -[ (Ex)_z - (Ez)_x ]
+        C(5,ey) =-kx; C(5,ex)= ky;    // -[ (Ey)_x - (Ex)_y ]
+  
+
+        myMatrixMultiply(K0i,C,A);
+
+        // ::display(C,"C");
+        // ::display(A,"A");
+
+        // "N", "N"  = do not compute left and right eigenvectors 
+        GEEV("N", "N", n, A(0,0), n, wr(0), wi(0), vl(0,0), n, vr(0,0), n, work(0), lwork, info);
+        if( info !=0 )
+        {
+          printF("ERROR return info=%d from eigenvalue routine DGEEV\n",info);
+        }
+  
+        real lamMin=min(wr), lamMax=max(wr);
+        lambdaMin=min(lambdaMin,lamMin);
+        lambdaMax=max(lambdaMax,lamMax);
+
+        imPart = max(imPart,max(fabs(wi)));
+      
+        if( debug & 2 )
+          for (int i=0; i<n; i++ )
+            printF("kx=%5.3f ky=%5.3f kz=%5.3f lambda(%d)=(%9.2e,%9.2e)\n",kx,ky,kz, i,wr(i),wi(i));
+
+        if( debug & 1 )
+          printF("kx=%5.3f ky=%5.3f kz=%5.3f lambda: min=%9.3e max=%9.3e, imPart=%9.3e\n",kx,ky,kz,lamMin,lamMax,imPart);
+        
+      } // end for ix 
+    } // end for iy 
+  } // end for iz
+  
+  reLambda=max(fabs(lambdaMin),fabs(lambdaMax));
+  imLambda=imPart;
+
+  // Save the values so we do not need to recompute
+  reLambdaBA = reLambda;
+  imLambdaBA = imLambda;
+
+  printF("\nlambda: min=%9.3e max=%9.3e (max-Im part=%8.2e -- zero=Hyperbolic)\n",lambdaMin,lambdaMax,imPart);
+  if( fabs(imPart) > 100.*REAL_EPSILON*reLambda )
+  {
+    printF("DispersiveMaterialParameters: WARNING: Problem is ill-posed!\n");
+    OV_ABORT("error");
+  }
+  
+  
+  
+  return 0;
+}
+
+
+// ==========================================================================================
+/// \brief Solve the dispersion relation for k given s, but adjust s so that the resulting
+///   solution gives a value for k that is two-pi periodic in space. This only works if
+///   we have a root with Im(k)=0 
+///
+/// \param kv[3] (input) : wave vector direction, entries assumed to be multiples of 2*pi
+/// \param sr,si (input/output) : On input, a guess for s, on output the value for s that gives
+///             a two-pi periodic solution in space
+/// \param kr,ki (output) : complex wave vector coefficient
+/// \param evr[6], evi[6], chi (output) : eigenvector and susceptibilities.
+// ==========================================================================================
+int DispersiveMaterialParameters::
+findPeriodicSolution( real kv[3], real & sr, real & si, real & kr, real & ki, real evr[6], real evi[6], RealArray & chi )
+{
+  DispersionRelationOptionEnum computeOption =computeComplexWaveNumber;
+  setDispersionRelationComputeOption( computeOption );
+
+  // Guess:
+  // sr=0.;
+  // si = -sqrt( SQR(kv[0]) + SQR(kv[1]) + SQR(kv[2]) );
+  
+  int & debug = dbase.get<int>("debug");
+  debug=1;
+  
+  printF("+++ findPeriodicSolution: kv=[%e,%e,%e]\n",kv[0],kv[1],kv[2]);
+
+  // --- find the target wave number ---
+
+  real signS = si >=0. ? 1. : -1.;
+
+  // (1) get an initial guess for kr 
+  real skr=sr, ski=si;
+  getBianisotropicDispersivePlaneWaveSolution( kv, skr,ski,evr,evi,chi,noPolarization );
+  kr=skr; ki=ski;
+  printF("START: s= %e + %e I --> k = %e + %e I\n",sr,si,kr,ki );
+  
+  debug=0;
+
+  // Target kr has an integer value 
+  real krTarget = floor( kr + .5 );
+  if( krTarget>0. ){ krTarget=max(1.,krTarget); } else{  krTarget=min(krTarget,-1.);}  // 
+  assert( fabs(krTarget) > REAL_EPSILON*10. );
+
+  printF("+++ findPeriodicSolution: target kr=%e\n",krTarget);
+
+  // Find a interval [sia,sib] or [kra,krb] which holds the target
+  real sia, sib, kra, krb, ds;
+  if( kr >= krTarget )
+  { // we have an upper bound, search backward 
+    sib = si; krb = kr;  ds =-.2;
+  }
+  else
+  { // we have a lower bound, search forward 
+    sia = si; kra = kr; ds =+.2;
+  }
+
+  int maxCheck=101;
+  bool found=false;
+  for( int it=0; it<maxCheck; it++ )
+  {
+    si += ds*signS;
+
+    skr=sr, ski=si;
+    getBianisotropicDispersivePlaneWaveSolution( kv, skr,ski,evr,evi,chi,noPolarization );
+    kr=skr; ki=ski;
+
+    printF("it=%i: s= %e + %e I --> k = %e + %e I\n",it,sr,si,kr,ki );
+
+    if( ds>0. )
+    {
+      if( kr >= krTarget )
+      {
+	sib=si;  krb=kr; found=true; // upper bound found 
+	break;
+      }
+      else
+      {
+        sia=si;  kra = kr; // new lower bound 
+      }
+    }
+
+    if( ds<0. )
+    {
+      if( kr <= krTarget )
+      {
+	sia=si; kra=kr; found=true;  // lower bound found 
+        break;
+      }
+      else
+      {
+	sib = si; krb = kr;  // new upper bound 
+      }
+    }
+  }
+  assert( found );
+
+  printF("+++ findPeriodicSolution: Range [sia,sib]=[%e,%e] [kra,krb]=[%e,%e]\n",sia,sib,kra,krb);
+
+  // -- Now search for the root ---
+  const real tol = REAL_EPSILON*100;
+  int maxIt=100; found=false;
+  for( int it=0; it<maxIt; it++ )
+  {
+    real sim = .5*( sia+sib );
+    skr=sr, ski=sim;
+    getBianisotropicDispersivePlaneWaveSolution( kv, skr,ski,evr,evi,chi,noPolarization );
+    kr=skr; ki=ski;
+
+    if( kr >= krTarget )
+    {
+      sib = sim; krb = kr;  // new upper bound 
+    }
+    else 
+    {
+      sia = sim;  kra = kr; // new lower bound 
+    }
+    printF("bisect: it=%d: Range [sia,sib]=[%20.16e,%20.16e] [kra,krb]=[%20.16e,%20.16e]\n",it,sia,sib,kra,krb);
+    
+    if( fabs( sib-sia ) <= tol )
+    {
+      si=sim; found=true;
+      break;
+    }
+  }
+  if( !found )
+  {
+    printF("+++ findPeriodicSolution: WARNING: solution not found to required tolerance\n");
+  }
+  
+  printF("+++ Solution: s= %e + %e I --> k = %20.16e + %e I, |kr-krTarget|/|krTarget| =%9.2e\n",sr,si,kr,ki,
+	 fabs(kr-krTarget)/fabs(krTarget) );
+  
+  const real tolki = tol*1000.;
+  if( fabs(ki)>tolki )
+  {
+    printF("+++ findPeriodicSolution: WARNING: This solution is NOT periodic since Im(k) =%e != 0 (tol=%8.2e)\n",ki,tolki);
+    printF("You could try using a different solution mode.\n");
+    OV_ABORT("error");
+  }
+  
+
+  return 0;
+  
+}
+
+#include <complex>
 
 // ==========================================================================================
 /// \brief Plot dispersive properties versus frequency or wavelength
@@ -1304,25 +1866,27 @@ update( GenericGraphicsInterface & gi )
 {
 
   DispersiveMaterialParameters & dmp = *this;
+  DispersionRelationOptionEnum & computeOption = dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption");
 
   // ------- Plot some quantities --------
-  const real PHz = 1e15;
-  const real nm = 1.e-9;
+  const Real PHz = 1e15;
+  const Real nm = 1.e-9;
 
-  const real & V0 = dbase.get<real>("velocityScale");  // velocity scale 
-  const real & L0 = dbase.get<real>("lengthScale");    // length scale 
+  const Real & V0 = dbase.get<Real>("velocityScale");  // velocity scale 
+  const Real & L0 = dbase.get<Real>("lengthScale");    // length scale 
 
-  real omegaMin = dbase.get<real>("omegaMin");   
-  real omegaMax = dbase.get<real>("omegaMax");   
+  Real omegaMin = dbase.get<Real>("omegaMin");   
+  Real omegaMax = dbase.get<Real>("omegaMax");   
 
   const MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
 
   int iBA=1, jBA=1; // Entry in BA tensor K to plot 
 
-   
+  Real kv[3] = { 1./sqrt(2.),1./sqrt(2.),0.}; //  wave vector for plane wave solution
+  Real sr =0 ,si=-1.;
 
   int Np;
-  real epsInf;
+  Real epsInf;
   RealArray modelParams;
   
   dmp.getIsotropicParameters( Np,  epsInf, modelParams );
@@ -1334,16 +1898,16 @@ update( GenericGraphicsInterface & gi )
 
   int nw=101;
 
-  const real & omegaScale = dbase.get<real>("omegaScale");
-  // real OmegaScale = 9.4182578365442600e+15; // From Gold approx 10 PHz  *** FIX ME ***
+  const Real & omegaScale = dbase.get<Real>("omegaScale");
+  // Real OmegaScale = 9.4182578365442600e+15; // From Gold approx 10 PHz  *** FIX ME ***
 
-  // real omega0 = 2.*Pi*V0/L0;
-  real omega0 = V0/L0;
+  // Real omega0 = 2.*Pi*V0/L0;
+  Real omega0 = V0/L0;
   // printF(" L0=%9.2e (nm), Omega0 = 2.*Pi*V0/L = %9.3e, OmegaScale=%9.3e (from file)\n",L0/nm, omega0,omegaScale);
   printF(" L0=%9.2e (nm), Omega0 = V0/L = %9.3e, OmegaScale=%9.3e (from file)\n",L0/nm, omega0,omegaScale);
 
   // By default plot over the range of omega for which the fit was made:
-  // real wMin=.15, wMax=1.1;
+  // Real wMin=.15, wMax=1.1;
   RealArray w(nw), epsHatr(nw), epsHati(nw), nHatr(nw), nHati(nw), om(nw), lam(nw);
 
   // -- Array to hold results to plot --
@@ -1360,6 +1924,11 @@ update( GenericGraphicsInterface & gi )
   aString cmds[] = {"plot versus omega",
                     "plot versus lambda",
                     "display parameters",
+                    "bianisotropic eigenvalues",
+                    "bianisotropic plane wave s",
+                    "bianisotropic plane wave k",
+                    "find periodic solution",
+                    // "find BA plane wave solution",
 		    ""};
 
   int numberOfPushButtons=0;  // number of entries in cmds
@@ -1368,12 +1937,12 @@ update( GenericGraphicsInterface & gi )
   int numRows=numberOfPushButtons;
   dialog.setPushButtons( cmds, cmds, numRows ); 
 
-  // aString opCommand1[] = {"omega",
-  //       		  "lambda",
-  //       		  ""};
+  aString opCommand1[] = {"compute s given k",
+         		  "compute k given s",
+        		  ""};
 
-  // dialog.setOptionMenuColumns(1);
-  // dialog.addOptionMenu( "x-axis:", opCommand1, opCommand1, xAxisType );
+  dialog.setOptionMenuColumns(1);
+  dialog.addOptionMenu( "Dispersion relation:", opCommand1, opCommand1, (int) computeOption );
 
   const int numberOfTextStrings=15;  // max number allowed
   aString textLabels[numberOfTextStrings];
@@ -1389,6 +1958,12 @@ update( GenericGraphicsInterface & gi )
 
   textLabels[nt] = "BA tensor entry:"; 
   sPrintF(textStrings[nt],"%i, %i",iBA,jBA);  nt++; 
+
+  textLabels[nt] = "kv:"; 
+  sPrintF(textStrings[nt],"%g, %g, %g (for plane wave solution)",kv[0],kv[1],kv[2]);  nt++; 
+
+  textLabels[nt] = "s:"; 
+  sPrintF(textStrings[nt],"%g, %g (for plane wave solution)",sr,si);  nt++; 
 
   //  textLabels[nt] = "output file:"; 
   // sPrintF(textStrings[nt],"%s",(const char*)outputFileName);  nt++; 
@@ -1432,6 +2007,21 @@ update( GenericGraphicsInterface & gi )
     }
     
 
+    else if( answer=="compute s given k" ||
+             answer=="compute k given s" )
+    {
+      if( answer=="compute s given k" )
+      {
+	computeOption=computeComplexFrequency;
+	printF("Compute s given k when solving the dispersion relation.\n");
+      }
+      else
+      {
+	computeOption=computeComplexWaveNumber;
+	printF("Compute k given s when solving the dispersion relation.\n");
+      }
+    }
+
     else if( answer=="display parameters" )
     {
       display();
@@ -1442,13 +2032,13 @@ update( GenericGraphicsInterface & gi )
 
       if( recompute )
       {
-        real wMin=omegaMin, wMax=omegaMax;  
+        Real wMin=omegaMin, wMax=omegaMax;  
         for( int i=0; i<nw; i++ )
         {
-          w(i) = wMin + (wMax-wMin)*(i)/real(nw-1);
+          w(i) = wMin + (wMax-wMin)*(i)/Real(nw-1);
 
-          real omega = w(i)*omegaScale;          // omega in MKS units (Hz)
-          real lambda = (2.*Pi*V0/(omega)) / nm; // lambda in nm 
+          Real omega = w(i)*omegaScale;          // omega in MKS units (Hz)
+          Real lambda = (2.*Pi*V0/(omega)) / nm; // lambda in nm 
 
           w(i) *= omegaScale/omega0;  // non-dimensional omega
 
@@ -1500,12 +2090,90 @@ update( GenericGraphicsInterface & gi )
       
       const aString names[]={"epsr","epsi","nr","ni"};
 
+      #ifndef USE_PPP
       if( answer=="plot versus omega"  )
         PlotIt::plot(gi, om, fields, title,"omega (PHz)", names,psp );
       else
         PlotIt::plot(gi, lam, fields, title,"lambda (nm)", names,psp );
+      #else
+      printF("DMP: FINISH PLOTTING IN PARALLEL\n");
+      #endif
 
     }
+    else if( answer=="bianisotropic eigenvalues" )
+    {
+      Real reLambda, imLambda;
+      int nd=2;  // 2D 
+      evalBianisotropicEigenValues( nd, reLambda, imLambda);
+    }
+    else if( len=answer.matches("kv:") )
+    {
+      sScanF(answer(len,answer.length()-1),"%e %e %e",&kv[0],&kv[1],&kv[2]);
+      printF("Setting kv=[%e,%e,%e]\n",kv[0],kv[1],kv[2]);
+    }
+    else if( len=answer.matches("s:") )
+    {
+      sScanF(answer(len,answer.length()-1),"%e %e",&sr,&si);
+      printF("Setting s=%e + %e I]\n",sr,si);
+    }
+    else if( answer=="bianisotropic plane wave s" ||
+             answer=="bianisotropic plane wave k" )
+    {
+      Real evr[6], evi[6];  // eigenvector 
+      RealArray chi;
+      DispersionRelationOptionEnum computeOption =
+          answer=="bianisotropic plane wave s" ? computeComplexFrequency : computeComplexWaveNumber;
+
+      setDispersionRelationComputeOption( computeOption );
+      getBianisotropicDispersivePlaneWaveSolution( kv, sr,si,evr,evi,chi,noPolarization );
+
+    }
+    else if( answer=="find periodic solution" )
+    {
+      //  *** Put this here for now for testing *****
+
+      Real evr[6], evi[6];  // eigenvector 
+      RealArray chi;
+
+      Real kx =1, ky=1, kz=0;
+      Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
+
+      Real sr=0.;
+      Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
+
+      Real kr,ki;
+      findPeriodicSolution( kvp, sr,si,kr,ki,evr,evi,chi );
+
+    }
+    
+/* -- Moved to texact.C 
+    else if( answer=="find BA plane wave solution" )
+    {
+      Real evr[6], evi[6];  // eigenvector 
+      RealArray chi, qv;
+
+      Real kx =1, ky=1, kz=0;
+      Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
+
+      Real sr=0.;
+      Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
+
+      // DispersionRelationOptionEnum computeOption =computeComplexWaveNumber;
+      DispersionRelationOptionEnum computeOption =computeComplexFrequency;
+      setDispersionRelationComputeOption( computeOption );
+
+      DispersiveMaterialParameters & dmp2 = *this;  // do this for now 
+
+      Real skr=sr, ski=si;
+      
+      // typedef std::vector<std::complex<Real> > ComplexVector;
+      // ComplexVector qvi;
+      // getBianisotropicPlaneInterfaceSolution(  dmp2, kv, skr, ski, qvi,qv,  chi, noPolarization );
+      PlaneInterfaceExactSolution pies;
+      
+      pies. getBianisotropicPlaneInterfaceSolution( *this, dmp2, kv, skr, ski, qv,  chi );
+    }
+    --- */
     
   }
   
@@ -1521,112 +2189,3 @@ update( GenericGraphicsInterface & gi )
 
 
 
-
-
-
-
-// Include complex down here to minimize name conflicts
-#include <complex>
-
-typedef ::real LocalReal;
-typedef ::real OV_real;
-
-// ==========================================================================================
-/// \brief Evaluate the real and imaginary parts of epsHat(omega) and 
-///       the index of refraction n(omega) = sqrt(epsHat) 
-///
-/// epsHat(s) = epsInf + SUM_j ( a0(j) + a1(j)*s )/( b0(j) + b1(j)*s + s*s )
-/// where s = -i omega
-// ==========================================================================================
-int DispersiveMaterialParameters::
-evalEpsAndN( const LocalReal omega, LocalReal & epsHatr, LocalReal & epsHati, LocalReal & nHatr, LocalReal & nHati  ) const
-{
-
-  // std::complex<LocalReal> I(0.0,1.0); 
-  std::complex<LocalReal> s(0,-omega); // s = -i omega
-  std::complex<LocalReal> epsHat, nHat, a0, a1, b0, b1;
-
-
-  // LocalReal a0,a1,b0,b1;
-
-
-  epsHat = epsInf;
-  for( int j=0; j<numberOfPolarizationVectors; j++ )
-  {
-    a0=modelParameters(0,j);
-    a1=modelParameters(1,j);
-    b0=modelParameters(2,j);
-    b1=modelParameters(3,j);
-
-    epsHat += (a0 + a1*s)/( b0 +b1*s +s*s );
-  }
-  
-  epsHatr = std::real(epsHat);
-  epsHati = std::imag(epsHat);
-  
-  nHat = std::sqrt(epsHat);
-  nHatr = std::real(nHat);
-  nHati = std::imag(nHat);
-  
-
-  return 0;
-}
-
-
-
-// ==========================================================================================
-/// \brief Evaluate the real and imaginary parts of the BA material tensor, K(i,j)
-///
-/// \param i,j (input) : index into the material matrix (i=1,2, or 3 and j=1,2,or 3)
-/// K_ij(s) = K0_ij + SUM_m ( a0(m) + a1(m)*s )/( b0(m) + b1(m)*s + s*s )
-/// where s = -i omega
-// ==========================================================================================
-int DispersiveMaterialParameters::
-evalMaterialTensor( const LocalReal omega, LocalReal & kHatr, LocalReal & kHati, const int iBA, const int jBA ) const
-{
-
-  const MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
-
-  if( materialType != bianisotropic )
-  {
-    printF("DispersiveMaterialParameters::evalMaterialTensor:ERROR: materialType != bianisotropic\n");
-    kHatr=0;
-    kHati=0;
-    return 0;
-  }
-  if( iBA<1 || iBA>3 | jBA<1 || jBA>3 )
-  {
-    printF("DispersiveMaterialParameters::evalMaterialTensor:ERROR: iBA=%i or jBA=%i is not between 1 and 3\n",
-	   iBA,jBA);
-    kHatr=0;
-    kHati=0;
-    return 0;
-  }
-  
-  
-  const RealArray & K0 = dbase.get<RealArray>("K0");
-  const RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
-  const IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
-	
-  // std::complex<LocalReal> I(0.0,1.0); 
-  std::complex<LocalReal> s(0,-omega); // s = -i omega
-  std::complex<LocalReal> kHat, a0, a1, b0, b1;
-
-  const int ik=iBA-1, jk=jBA-1;  // switch to base 0 
-  kHat = K0(ik,jk);
-  for( int j=0; j<NpBA(ik,jk); j++ )
-  {
-    a0=bianisotropicParameters(0,j,ik,jk);
-    a1=bianisotropicParameters(1,j,ik,jk);
-    b0=bianisotropicParameters(2,j,ik,jk);
-    b1=bianisotropicParameters(3,j,ik,jk);
-
-    kHat += (a0 + a1*s)/( b0 +b1*s +s*s );
-  }
-  
-  kHatr = std::real(kHat);
-  kHati = std::imag(kHat);
-  
-
-  return 0;
-}

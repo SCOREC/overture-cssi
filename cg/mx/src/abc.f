@@ -354,6 +354,9 @@ c To include derivatives of rx use OPTION=RX
      & planeWaveBoundaryForcing       =1,
      & chirpedPlaneWaveBoundaryForcing=2 )
 
+      integer method,nfdtd,bamx
+      parameter( nfdtd=5,bamx=7 )
+
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)
 
@@ -2304,6 +2307,7 @@ c===============================================================================
       grid                 =ipar(19)
       debug                =ipar(20)
       forcingOption        =ipar(21)
+      method               =ipar(28)
 
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
@@ -2366,6 +2370,12 @@ c===============================================================================
      & dt=",e9.2)') orderOfAccuracy,gridType,t,dt
         write(*,'("abcMaxwell: useForcing=",i2," forcingOption=",i2)') 
      & useForcing,forcingOption
+        write(*,'("abcMaxwell: method=",i2," (5=nfdtd,7=bamx)")') 
+     & method
+      end if
+      if( method .ne. nfdtd .and. method.ne.bamx )then
+         write(*,'("abcMaxwell:ERROR: unknown method")')
+         stop 12234
       end if
 
       if( debug.gt.1 )then
@@ -2396,6 +2406,12 @@ c===============================================================================
       ! p2=-.515555  !   Cheby on a subinterval
       c1abcem2=c*p0
       c2abcem2=c*(p0+p2)
+
+      if( method.eq.bamx )then
+        ! bamx: turn off tangential derivatives for now 
+        p2=-p0
+        c2abcem2=c*(p0+p2)
+      end if
 
 
       extra=-1  ! no need to do corners -- these are already done in another way

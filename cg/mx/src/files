@@ -14,7 +14,7 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      advanceFDTD.C defineRegionsAndBodies.C outputHeader.C advanceSOSUP.C \
      userDefinedKnownSolution.C assignUserDefinedKnownSolutionInitialConditions.C \
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
-     PlaneInterfaceExactSolution.C
+     PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
@@ -32,6 +32,10 @@ FSRCO +=advOpt.f advOptNew.f \
 FSRCO +=advMxUp.f  \
         advMxUp2dOrder2r.f advMxUp3dOrder2r.f advMxUp2dOrder4r.f advMxUp3dOrder4r.f \
         advMxUp2dOrder2c.f advMxUp3dOrder2c.f advMxUp2dOrder4c.f advMxUp3dOrder4c.f 
+
+# BA Maxwell 
+FSRCO +=advBA.f  \
+        advBA2dOrder2r.f advBA2dOrder4r.f advBA3dOrder2r.f advBA3dOrder4r.f 
 
 # SOSUP files:
 FSRCO += advSOSUP.f \
@@ -121,13 +125,18 @@ src/getErrors.C : src/getErrors.bC forcing.h annulusEigenFunction.h boxEigenFunc
 
 src/divergence.C : src/divergence.bC; $(BPP) -quiet -clean $<
 
+src/defineMaterialRegion.C : src/defineMaterialRegion.bC; $(BPP) -quiet -clean $<
+
 src/SphereExactSolutions.C : src/SphereExactSolutions.bC; $(BPP) -quiet -clean $<
 
 src/PlaneInterfaceExactSolution.C : src/PlaneInterfaceExactSolution.bC; $(BPP) -quiet -clean $<
+src/BAPlaneInterface.C : src/BAPlaneInterface.bC; $(BPP) -quiet -clean $<
 
 src/evalDispersionRelation.f : src/evalDispersionRelation.bf; $(BPP) -quiet -clean $<
 
 src/advanceStructured.C : src/advanceStructured.bC;  $(BPP) -quiet -clean -I$(Overture)/include $<
+
+src/advanceBAMX.C : src/advanceBAMX.bC;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
 src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC dispersivePlaneWaveInterface.h dispersivePlaneWaveInterface3d.h;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
@@ -175,7 +184,14 @@ src/advMxUp3dOrder2c.f : src/advMxUp.f
 src/advMxUp2dOrder4c.f : src/advMxUp.f
 src/advMxUp3dOrder4c.f : src/advMxUp.f
 
+# -------------- BA Maxwell ------------
+src/advBA.f: src/advBA.bf 
+	      @cd src; $(BPP) -clean -quiet -I$(Overture)/include advBA.bf
 
+src/advBA2dOrder2r.f : src/advBA.f             
+src/advBA2dOrder4r.f : src/advBA.f             
+src/advBA3dOrder2r.f : src/advBA.f             
+src/advBA3dOrder4r.f : src/advBA.f             
 
 # ----------- SOSUP -----
 src/advSOSUP.f: src/advSOSUP.bf 

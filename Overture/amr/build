@@ -45,7 +45,8 @@ cp {ChildInfo,ParentChildSiblingBase,ParentInfo}.C                          $ovD
 cp {ListOfParentChildSiblingInfo,ParentChildSiblingInfo,SiblingInfo}.C      $ovDir/Grid
 
 # These are P++ files that have been changed: (eventually these changes will get into the P++ source)
-cp {partitioning.C,conform_enforce.C,p_array.C,array.C,p_abstract_op.C,p_descriptor.C} $ovDir/GridFunction
+# arraylist.C -- no changes but we need to compile debug for Ubuntu and gcc 4.7.0
+cp {partitioning.C,conform_enforce.C,p_array.C,array.C,p_abstract_op.C,p_descriptor.C,arraylist.C} $ovDir/GridFunction
 
 echo "done"
 

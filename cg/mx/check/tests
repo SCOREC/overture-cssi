@@ -56,3 +56,15 @@ boxOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=box1.order2 -useSosupDissi
 boxOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=box1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
 nonBoxOrder2GDM.check ../runs/planeWave/planeWave.cmd -g=nonBox1.order2 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
 nonBoxOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=nonBox1.order4.ng3 -useSosupDissipation=1 -cons=0 -dm=gdm -npv=1 -a0=1 1 -a1=0 0 -b0=1 0 -b1=0 0  -kx=2 -tp=.1 -tf=.1 -go=go
+#
+# BAMX tests
+#
+baPlaneWaveAir.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go 
+# 
+baPlaneWaveAirBox.check ../runs/planeWave/planeWave.cmd -g=box1.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go 
+#
+baPlaneWaveGDM.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=../runs/ba/baMatGDMgenND.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go
+#
+baScatTwoMat.check ../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go
+# 
+baScatTwoMatBox.check ../runs/ba/baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go

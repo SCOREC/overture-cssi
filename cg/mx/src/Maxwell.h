@@ -179,17 +179,18 @@ class Maxwell
     dsiNew,
     dsiMatVec, // Matrix-Vector DSI implementation
     nfdtd,     // non-orthogonal FDTD
-    sosup      // second-order system upwind scheme
+    sosup,     // second-order system upwind scheme
+    bamx       // Bianisotopic Maxwell equations
   };
 
 
   enum TimeSteppingMethodEnum
   {
     defaultTimeStepping=0,
-    adamsBashforthSymmetricThirdOrder,
-    rungeKuttaFourthOrder,
-    stoermerTimeStepping, 
-    modifiedEquationTimeStepping
+    adamsBashforthSymmetricThirdOrder=1,
+    rungeKutta=2,
+    stoermerTimeStepping=3,  
+    modifiedEquationTimeStepping=4
   } timeSteppingMethod;
 
 
@@ -224,6 +225,8 @@ class Maxwell
   static int addPrefix(const aString label[], const aString & prefix, aString cmd[], const int maxCommands);
 
   bool adjustBoundsForPML( MappedGrid & mg, Index Iv[3], int extra=0 );
+
+  void advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt );
 
   void advanceC( int current, real t, real dt, realMappedGridFunction *fields );
 
@@ -273,10 +276,15 @@ class Maxwell
 
   int computeTimeStep();
 
-  // Define material regions and bodies that are defined by a mask 
+  // Define material sub-regions for bamx 
+  int defineMaterialRegion( );
+
+  // Define material regions and bodies that are defined by a mask for the Yee scheme 
   int defineRegionsAndBodies();
 
   void displayBoundaryConditions(FILE *file = stdout);
+
+  int editDispersionParameters( const aString & domainName  );
 
   // return true if the equations are forced (external forcing)
   bool forcingIsOn() const;

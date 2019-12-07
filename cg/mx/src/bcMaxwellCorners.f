@@ -523,6 +523,17 @@ c To include derivatives of rx use OPTION=RX
 
 ! This formula is also Taylor series (for even functions)
 
+! PEC corner: Assign point C
+!   
+!   Dx(Ex)=0, Ey=Ez=0
+!   Hx=0 Dx(Hy,Hz)=0 
+!            |
+!            |
+!            |
+!        +---+-------------------
+!            |   Ex=Ez=0, D_y(Ey)=0 ,  Hy=0 D_y(Hx,Hz) = 0 
+!        C   +
+!
 
 ! ===================================================================================
 ! Determine the values at ghost points outside corners

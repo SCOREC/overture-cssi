@@ -866,7 +866,7 @@ gridAccelerationBC(const int & grid,
             const int vc=parameters.dbase.get<int >("vc");
             const int wc=parameters.dbase.get<int >("wc");
 
-            if( true )
+            if( false )
       	printF("+++++gridAccelerationBC: add acceleration BC to grid=%i, side=%i, axis=%i\n\n",grid,side,axis);
 
             if( parameters.dbase.get<IntegerArray>("variableBoundaryData")(grid) )

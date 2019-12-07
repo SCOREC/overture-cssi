@@ -10,6 +10,7 @@
 #include "ParallelUtility.h"
 #include "display.h"
 #include "DispersiveMaterialParameters.h"
+#include "BodyForce.h"
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3) \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
@@ -231,46 +232,11 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
   // const int numberOfComponents=mgp==NULL ? cgfields[current][0].getLength(3) : fields[current].getLength(3);
 
   int numberOfComponents;
-  if( true )
-  {
     numberOfComponents= dbase.get<int>("numberOfComponents"); // *new way* Sept 01, 2017 *wdh*
-  }
-  else
-  {
-    if( mgp==NULL )
-    {
-      if( method!=dsiMatVec )
-      {
-        numberOfComponents=getCGField(HField,0)[0].getLength(3);
-        if ( method!=nfdtd  && method!=yee && method!=sosup )
-          numberOfComponents+=getCGField(EField,0)[0].getLength(3);
-      }
-      else
-        numberOfComponents=cg.numberOfDimensions()==2 ? 3 : 6;
-    
-    }
-    else
-    {
-      MappedGrid & mg = *mgp;
-      if( mg.getGridType()==MappedGrid::structuredGrid )
-      {
-        numberOfComponents=fields[current].getLength(3);
-
-        if( method!=nfdtd && method!=yee && method!=sosup )
-          numberOfComponents += fields[current+numberOfTimeLevels].getLength(3);
-      }
-      else
-      {
-        // unstructured grid
-        numberOfComponents=mg.numberOfDimensions()==2 ? 3 : 6;
-      }
-    }
-  }
-  
 
   const bool saveErrors = plotErrors && !(errp==NULL && cgerrp==NULL);
   const bool saveDissipation =  plotDissipation && (( (artificialDissipation>0. || artificialDissipationCurvilinear>0.) 
-                                && (method==nfdtd)) || dissipation || cgdissipation);
+                                && (method==nfdtd || method==bamx)) || dissipation || cgdissipation);
 
   Range all;
 //    if( !saveErrors && !saveDissipation && !plotDivergence && !plotScatteredField )
@@ -307,7 +273,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
   { // plot div(H) too
     nDivH=numberToPlot;  numberToPlot +=1;
   }
-  if( method!=nfdtd && method!=yee && method!=sosup )
+  if( method!=nfdtd && method!=yee && method!=sosup && method!=bamx )
   {
     numberToPlot += 2;  // something for Kyle
   }
@@ -324,6 +290,26 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
     plotCurlE=true;
   int nCurlE = numberToPlot; numberToPlot += 2*(1 + 2*(numberOfDimensions-2))*int(plotCurlE);
   
+  const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+  const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+  // total number of polarization components per grid 
+  const IntegerArray & totalNumberOfPolarizationComponents =
+    parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+
+  const int numPolarizationVectors=6;  // [Px,Py,Pz, Mx,My,Mz]
+  bool plotPolarization = method==bamx && solveForAllFields && dispersionModel!=noDispersion;
+  bool plotPolarizationErrors = plotPolarization && saveErrors;
+  
+  const int nPolarization=numberToPlot;
+  const int nPolarizationErr=nPolarization+numPolarizationVectors;
+  if(  plotPolarization )
+    numberToPlot += numPolarizationVectors; // Plot polarization and magnetization vectors
+
+  if( plotPolarizationErrors )
+    numberToPlot += numPolarizationVectors;
+
+  
+  
 
 //   int numberToPlot=numberOfComponents*(1+int(saveErrors)+int(saveDissipation))
 //     + cg.numberOfDimensions()*int(saveDissipation&&method==dsiMatVec&&cg.numberOfDimensions()==3)
@@ -334,7 +320,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
   v.updateToMatchGrid(cg,all,all,all,numberToPlot);
 
   v=0;
-  if( method==nfdtd || method==yee || method==sosup ) 
+  if( method==nfdtd || method==yee || method==sosup || method==bamx ) 
   {
     for( int n=0; n<numberOfComponents; n++ )
     {
@@ -343,7 +329,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
 	MappedGrid & mg = *mgp;
 	if( mg.getGridType()==MappedGrid::structuredGrid )
 	{
-	  if ( method==nfdtd || method==sosup || ( n<fields[current].getLength(3) ) )
+	  if ( method==nfdtd || method==sosup || method==bamx || ( n<fields[current].getLength(3) ) )
 	    v.setName(fields[current].getName(n),n);
 	  else if ( n<fields[current].getLength(3) ) 
 	    v.setName(fields[current+numberOfTimeLevels].getName(n-fields[current].getLength(3)),n);
@@ -431,13 +417,13 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
       
   }
 
-  if( plotDivergence && (method==nfdtd || method==yee || method==sosup) )
+  if( plotDivergence && (method==nfdtd || method==yee || method==sosup || method==bamx) )
   {
     v.setName("div(E)",nDivE);
     if( nDivH>=0 )
       v.setName("div(H)",nDivH);
   }
-  if( plotCurlE && (method==nfdtd || method==yee || method==sosup) )
+  if( plotCurlE && (method==nfdtd || method==yee || method==sosup || method==bamx) )
   {
     if( numberOfDimensions==3 )
     {
@@ -451,6 +437,24 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
     
   }
   
+  if( plotPolarization )
+  {
+    v.setName("Px",nPolarization+0);
+    v.setName("Py",nPolarization+1);
+    v.setName("Pz",nPolarization+2);
+    v.setName("Mx",nPolarization+3);
+    v.setName("My",nPolarization+4);
+    v.setName("Mz",nPolarization+5);
+  }
+  if( plotPolarizationErrors )
+  {
+    v.setName("Px error",nPolarizationErr+0);
+    v.setName("Py error",nPolarizationErr+1);
+    v.setName("Pz error",nPolarizationErr+2);
+    v.setName("Mx error",nPolarizationErr+3);
+    v.setName("My error",nPolarizationErr+4);
+    v.setName("Mz error",nPolarizationErr+5);
+  }
   
   if( useVariableDissipation )
     v.setName("varDis",nVarDis);
@@ -544,7 +548,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
     {
       // this is done above
     }
-    else if( method==nfdtd  || method==sosup )
+    else if( method==nfdtd  || method==sosup || method==bamx )
       vLocal(all,all,all,N)=uLocal(all,all,all,N); // for now make a copy *** fix this **
     else
     {
@@ -662,6 +666,113 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
 	
     } // end if( plotEnergyDensity )
       
+    if( plotPolarization )
+    {
+      // --- plot P and M (sums) ----
+      Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+      getIndex(mg.dimension(),I1,I2,I3);
+      const int includeGhost=1;
+
+      // const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid);
+
+      realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
+      OV_GET_SERIAL_ARRAY(real,p,pLocal);
+      bool ok = ParallelUtility::getLocalArrayBounds(p,pLocal,I1,I2,I3,includeGhost); 
+
+      // --- Errors in P ----
+      bool getErrorGridFunction=plotPolarizationErrors;
+      realMappedGridFunction & pErr = getDispersionModelMappedGridFunction( grid,current,getErrorGridFunction );
+      OV_GET_SERIAL_ARRAY(real,pErr,pErrLocal);
+
+      // printF("pLocal: [%d,%d][%d,%d][%d,%d][%d,%d]\n",
+      //        pLocal.getBase(0),pLocal.getBound(0),
+      //        pLocal.getBase(1),pLocal.getBound(1),
+      //        pLocal.getBase(2),pLocal.getBound(2),
+      //        pLocal.getBase(3),pLocal.getBound(3));
+
+      // printF("vLocal: [%d,%d][%d,%d][%d,%d][%d,%d]\n",
+      //        vLocal.getBase(0),vLocal.getBound(0),
+      //        vLocal.getBase(1),vLocal.getBound(1),
+      //        vLocal.getBase(2),vLocal.getBound(2),
+      //        vLocal.getBase(3),vLocal.getBound(3));
+      
+
+      std::vector<DispersiveMaterialParameters> & dmpVector = 
+	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+      if( ok )
+      {
+        if( numberOfMaterialRegions>1 )
+        {
+          assert( pBodyMask!=NULL );
+        
+          const IntegerArray & matMask = *pBodyMask;  // material index 
+
+          int i1,i2,i3;
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            const int mr = matMask(i1,i2,i3);
+            assert( mr>=0 && mr<numberOfMaterialRegions );
+            
+            DispersiveMaterialParameters & dmp = dmpVector[mr]; 
+            const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
+            int pc=0;
+            for( int k1=0; k1<6; k1++ )
+            {
+              int ec=k1;
+              vLocal(i1,i2,i3,nPolarization+ec)=0.;
+	      if( plotPolarizationErrors )
+		vLocal(i1,i2,i3,nPolarizationErr+ec)=0.;
+              for( int k2=0; k2<6; k2++ )
+              {
+                for( int n=0; n<Np(k1,k2); n++ )
+                {
+                  vLocal(i1,i2,i3,nPolarization+ec) += pLocal(i1,i2,i3,pc);
+		  if( plotPolarizationErrors )
+		    vLocal(i1,i2,i3,nPolarizationErr+ec) += pErrLocal(i1,i2,i3,pc);
+
+                  pc+=2;   // we store p and pt so increment by 2
+                }
+              }
+            }
+            
+          }
+          
+        }
+        else
+        {
+          // single material region
+          for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+          {
+            DispersiveMaterialParameters & dmp = dmpVector[mr]; 
+            const IntegerArray & Np = dmp.getBianisotropicNp();
+            int pc=0;
+            for( int k1=0; k1<6; k1++ )
+            {
+              int ec=k1;
+              vLocal(I1,I2,I3,nPolarization+ec)=0.;
+	      if( plotPolarizationErrors )
+		vLocal(I1,I2,I3,nPolarizationErr+ec)=0.;
+              for( int k2=0; k2<6; k2++ )
+              {
+                for( int n=0; n<Np(k1,k2); n++ )
+                {
+                  vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
+		  if( plotPolarizationErrors )
+		    vLocal(I1,I2,I3,nPolarizationErr+ec) += pErrLocal(I1,I2,I3,pc);
+
+                  pc+=2;   // we store p and pt so increment by 2
+                }
+              }
+            }
+          }
+        }
+      }
+      
+    } // end if plotPolarization
+
+
+
     if( plotIntensity )
     {
       Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
@@ -755,7 +866,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
     }
 
     // **New way **
-    if( method==nfdtd  || method==sosup )
+    if( method==nfdtd  || method==sosup || method==bamx )
     {
       // printF(" $$$$ plot: call getMaxDivergence $$$$\n");
 
@@ -807,6 +918,8 @@ plotPolarization( int current, real t, real dt )
 
   PlotStuffParameters pspPolarization;  // separate for P
    
+  const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+	   
   aString domainName="all";
   int gdmEquation=0;
   int pvComponent=0;
@@ -818,16 +931,33 @@ plotPolarization( int current, real t, real dt )
   dialog.setWindowTitle("Plot Polarization");
   dialog.setExitCommand("exit", "exit");
 
-  aString optionMenuCommands[] = {"Px",
-                                  "Py",
-                                  "Pz",
-                                  ""};
+  if( method==nfdtd )
+  {
+    aString optionMenuCommands[] = {"Px",
+				    "Py",
+				    "Pz",
+				    ""};
 
-  if( numberOfDimensions==2 )
-    optionMenuCommands[2]="";  // No Pz
+    if( numberOfDimensions==2 )
+      optionMenuCommands[2]="";  // No Pz
    
-  dialog.addOptionMenu("plot component:",optionMenuCommands,optionMenuCommands,pvComponent);
-
+    dialog.addOptionMenu("plot component:",optionMenuCommands,optionMenuCommands,pvComponent);
+  }
+  else
+  {
+    // BAMX: polarization entries: P0,Q0, P1,Q1, ... 
+    aString *optionMenuCommands = new aString [2*maxNumberOfPolarizationComponents+1];
+    for( int m=0; m<maxNumberOfPolarizationComponents; m++ )
+    {
+      optionMenuCommands[2*m  ] = sPrintF("P%d",m);
+      optionMenuCommands[2*m+1] = sPrintF("Q%d",m);
+    }
+    optionMenuCommands[2*maxNumberOfPolarizationComponents]="";
+   
+    dialog.addOptionMenu("plot component:",optionMenuCommands,optionMenuCommands,pvComponent);
+    delete []  optionMenuCommands;
+  }
+  
   aString pushButtonCommands[] = {"plot",
                                   "erase",
                                   "contour",
@@ -893,6 +1023,21 @@ plotPolarization( int current, real t, real dt )
     {
       pvComponent = answer=="Px" ? 0 : answer=="Py" ? 1 : 2;
       printF("Setting polarization vector component=%i\n",pvComponent);
+    }
+    
+    else if( len=answer.matches("P") )
+    {
+      int m=0;
+      sScanF(answer(len,answer.length()-1),"%i",&m);
+      pvComponent = 2*m;
+      printF("Setting polarization component= P%i\n",m);
+    }
+    else if( len=answer.matches("Q") )
+    {
+      int m=0;
+      sScanF(answer(len,answer.length()-1),"%i",&m);
+      pvComponent = 2*m+1;
+      printF("Setting polarization component= Q%i\n",m);
     }
     
     else if( dialog.getTextValue(answer,"domain name:","%s",domainName) )
@@ -975,73 +1120,123 @@ plotPolarization( int current, real t, real dt )
         }
         real pMin=REAL_MAX, pMax=-pMin;
         
-        for( int domain=domainStart; domain<=domainEnd; domain++ )
-        {
+	if( method==nfdtd )
+	{
+	  for( int domain=domainStart; domain<=domainEnd; domain++ )
+	  {
 
-          DispersiveMaterialParameters & dmp = dmpVector[domain];
-          if( dmp.numberOfPolarizationVectors>0 )
-          {
-            const int component = pvComponent + numberOfDimensions*gdmEquation;
-            if( gdmEquation <  dmp.numberOfPolarizationVectors )
-            {
-              pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
+	    DispersiveMaterialParameters & dmp = dmpVector[domain];
+	    if( dmp.numberOfPolarizationVectors>0 )
+	    {
+	      const int component = pvComponent + numberOfDimensions*gdmEquation;
+	      if( gdmEquation <  dmp.numberOfPolarizationVectors )
+	      {
+		pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
 
-              realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
-              if( !plotErrors )
-              {
-                real uMin,uMax;
-                PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
+		realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
+		if( !plotErrors )
+		{
+		  real uMin,uMax;
+		  PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
                 
-                pMin=min(pMin,uMin);
-                pMax=max(pMax,uMax);
+		  pMin=min(pMin,uMin);
+		  pMax=max(pMax,uMax);
 
-                printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+		  printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-                pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
-                PlotIt::contour(gi,pv,pspPolarization);
-              }
-              else
-              {
-                // --- Plot the errors in P ----
-                bool getErrorGridFunction=true;
-                realCompositeGridFunction & pvErr = 
-                      *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
+		  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+		  PlotIt::contour(gi,pv,pspPolarization);
+		}
+		else
+		{
+		  // --- Plot the errors in P ----
+		  bool getErrorGridFunction=true;
+		  realCompositeGridFunction & pvErr = 
+		    *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
 
-                real uMin,uMax;
-                PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
+		  real uMin,uMax;
+		  PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
                 
-                pMin=min(pMin,uMin);
-                pMax=max(pMax,uMax);
+		  pMin=min(pMin,uMin);
+		  pMax=max(pMax,uMax);
 
-                printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+		  printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-                pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+		  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
 
-                PlotIt::contour(gi,pvErr,pspPolarization);
+		  PlotIt::contour(gi,pvErr,pspPolarization);
 
-                /* -- we could eval on demand 
-                CompositeGrid & cgd = cg.domain(domain);
-                Range Npv=dmp.numberOfPolarizationVectors;
-                realCompositeGridFunction pvErr(cgd,all,all,all,Npv);
+		  /* -- we could eval on demand 
+		     CompositeGrid & cgd = cg.domain(domain);
+		     Range Npv=dmp.numberOfPolarizationVectors;
+		     realCompositeGridFunction pvErr(cgd,all,all,all,Npv);
                 
-                getPolarizationError( domain, current, pvErr );
-                */ 
-                // printF("plotPolarization: FINISH ME -- plot errors\n");
+		     getPolarizationError( domain, current, pvErr );
+		  */ 
+		  // printF("plotPolarization: FINISH ME -- plot errors\n");
 
-              }
+		}
               
-            }
-            else
-            {
-              printF("plotPolarization:INFO: Not plotting P vector in domain=%i since gdmEquation=%i but "
-                     "numberOfPolarizationVectors=%i.\n",
-                     domain,gdmEquation,dmp.numberOfPolarizationVectors);
-            }
+	      }
+	      else
+	      {
+		printF("plotPolarization:INFO: Not plotting P vector in domain=%i since gdmEquation=%i but "
+		       "numberOfPolarizationVectors=%i.\n",
+		       domain,gdmEquation,dmp.numberOfPolarizationVectors);
+	      }
             
-          }
-        }
-        pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-     
+	    }
+	  }
+	}
+	else if( method==bamx )
+	{
+          // BAMX ---- polarization components ---
+          int grid=0, domain=0;
+	  
+          realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
+
+	  const int component = pvComponent;
+          pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
+
+	  if( !plotErrors )
+	  {
+	    real uMin,uMax;
+	    PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
+                
+	    pMin=min(pMin,uMin);
+	    pMax=max(pMax,uMax);
+
+	    printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                
+	    pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+	    PlotIt::contour(gi,pv,pspPolarization);
+	  }
+	  else
+	  {
+	    // --- Plot the errors in P ----
+	    bool getErrorGridFunction=true;
+	    realCompositeGridFunction & pvErr = 
+	      *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
+
+	    real uMin,uMax;
+	    PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
+                
+	    pMin=min(pMin,uMin);
+	    pMax=max(pMax,uMax);
+
+	    printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                
+	    pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+
+	    PlotIt::contour(gi,pvErr,pspPolarization);
+
+	  }
+
+
+	}
+	
+	pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+	
       }
   
     } // end if plotObject 
@@ -1243,6 +1438,7 @@ buildParametersDialog(DialogData & dialog )
 void Maxwell::
 getTimeSteppingLabel( real dt, aString & label ) const
 {
+
   aString buff;
   label=sPrintF(buff,"dt=%4.1e",dt);
 
@@ -1250,8 +1446,8 @@ getTimeSteppingLabel( real dt, aString & label ) const
     label+=" TS=ME";
   else if( timeSteppingMethod==stoermerTimeStepping )
     label+=" TS=ST";
-  else if( timeSteppingMethod==rungeKuttaFourthOrder )
-    label+=" TS=RK";
+  else if( timeSteppingMethod==rungeKutta )
+    label+= sPrintF(" TS=RK%d",dbase.get<int>("orderOfRungeKutta"));
   else if( timeSteppingMethod==defaultTimeStepping )
     label+=" TS=default ";
   else
@@ -1261,14 +1457,27 @@ getTimeSteppingLabel( real dt, aString & label ) const
   if( dispersionModel!=noDispersion )
   {
     aString & dispersionModelName=dbase.get<aString>("dispersionModelName");
-    label+=" " + dispersionModelName;
+    // int numPolar = numberOfPolarizationVectors;
+    // if( method==bamx )
+    // {
+    //   // total number of polarization components per grid 
+    //   const IntegerArray & totalNumberOfPolarizationComponents =
+    //     parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+    //   int grid=0;  // ** FIX ME ** 
+    //   numPolar=totalNumberOfPolarizationComponents(grid); // Counts P only, not Q
+    // }
+    
+    // label+=sPrinF(" %s%d",(const char*)dispersionModelName,numPolar);
+
+    label+= " " + dispersionModelName;
+
   }
   
   // if( twilightZoneOption==polynomialTwilightZone )
   //   label+=sPrintF(buff," order(X,T)=(%i,%i)",
   // 		   orderOfAccuracyInSpace,orderOfAccuracyInTime);
 
-  if( method==nfdtd )
+  if( method==nfdtd  )
   {
     if( artificialDissipation!=0. && artificialDissipation==artificialDissipationCurvilinear )
       label+=sPrintF(buff," ad%i=%4.2f",orderOfArtificialDissipation,artificialDissipation);
@@ -1278,6 +1487,17 @@ getTimeSteppingLabel( real dt, aString & label ) const
       
     if( applyFilter )
       label+=sPrintF(buff,", filter%i",orderOfFilter);
+
+    if( divergenceDamping>0. )
+      label+=sPrintF(buff," dd=%5.3f",divergenceDamping);
+  }
+  if( method==bamx )
+  {
+    // BAMX currently just uses a filter stage
+    const int filterOrder=orderOfAccuracyInSpace + 2;
+    
+    if( artificialDissipation!=0. )
+      label+=sPrintF(buff," F%i=%3.1f",filterOrder,artificialDissipation);
 
     if( divergenceDamping>0. )
       label+=sPrintF(buff," dd=%5.3f",divergenceDamping);
@@ -1318,7 +1538,7 @@ plot( int current, real t, real dt )
   if( useSosupDissipation )
     suffix="s";  // name = FD22s, FD44s etc. for sosup dissipation
   psp.set(GI_TOP_LABEL,sPrintF(buff,"Maxwell %s%i%i%s: t=%6.2e ",(const char *)methodName,
-          orderOfAccuracyInSpace,orderOfAccuracyInTime,(const char *)suffix,t));
+                               orderOfAccuracyInTime,orderOfAccuracyInSpace,(const char *)suffix,t));
   aString label;
   getTimeSteppingLabel( dt,label );
   
@@ -1328,7 +1548,7 @@ plot( int current, real t, real dt )
   //   label+=" TS=ME";
   // else if( timeSteppingMethod==stoermerTimeStepping )
   //   label+=" TS=ST";
-  // else if( timeSteppingMethod==rungeKuttaFourthOrder )
+  // else if( timeSteppingMethod==rungeKutta )
   //   label+=" TS=RK";
   // else if( timeSteppingMethod==defaultTimeStepping )
   //   label+=" TS=default ";
@@ -1462,6 +1682,14 @@ plot( int current, real t, real dt )
 
     // Plot all the the things that the user has previously plotted
     psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+
+    if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
+    {
+      printF("PLOT BODY FORCE REGIONS (1)\n");
+      // Plot body/boundary forcing regions and immersed boundaries. 
+      BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
+    }
+
     if( plotChoices & 1 )
     {
       if( mgp!=NULL )
@@ -1554,7 +1782,10 @@ plot( int current, real t, real dt )
 	    plotChoices |= 2;
           else
             plotChoices &= ~2;
+
+          replot=true;
 	}
+
 // 	else if( menuItem > chooseAComponentMenuItem && 
 //                  menuItem <= chooseAComponentMenuItem+numberOfComponents )
 // 	{
@@ -1798,10 +2029,20 @@ plot( int current, real t, real dt )
             printF("ERROR: unknown component name =[%s]\n",(const char*)name);
 	    component=0;
 	  }
+
+          ps.erase();
+
+          if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
+          {
+            printF("PLOT BODY FORCE REGIONS (2)\n");
+            // Plot body/boundary forcing regions and immersed boundaries. 
+            psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+            BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
+          }
+
           dialog.getOptionMenu(0).setCurrentChoice(component);
           if( plotChoices & 2 )
 	  {
-            ps.erase();
 	    psp.set(GI_COMPONENT_FOR_CONTOURS,component);
 	    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
 
@@ -1853,6 +2094,17 @@ plot( int current, real t, real dt )
           getAugmentedSolution(current,v,t);
 	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
           ps.erase();
+
+
+          //  itemsToPlot & 8 ) // plot this first since title is wrong in body force graphics parameters
+
+          if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
+          {
+            printF("PLOT BODY FORCE REGIONS (3) \n");
+            // Plot body/boundary forcing regions and immersed boundaries. 
+            BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
+          }
+
 	  if( plotChoices & 1 )
 	  {
 	    if( mgp!=NULL )

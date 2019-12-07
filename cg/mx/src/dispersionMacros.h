@@ -166,3 +166,70 @@
     
   }
 #endMacro
+
+
+//------------------------------------------------------------------------------------
+// Macro: evaluate the parameters defining the BA plane wave solution	
+//------------------------------------------------------------------------------------
+#beginMacro getBAPlaneWaveParametersMacro(LABEL)
+  DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+  real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+  real sr,si,evr[6],evi[6];
+  RealArray chi;
+  DispersiveMaterialParameters::PolarizationEnum polarization =
+    !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+    DispersiveMaterialParameters::noPolarization;
+  
+  DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+    dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+  dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+
+
+
+  real kr=1., ki=0.;
+  if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+  {
+    dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+  }
+  else
+  {
+    // compute the complex wave number given s 
+         
+    sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+  	  
+    bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+      cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+      ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+
+    if( isPeriodic )
+    {
+      // -- for periodic problems we need to find a special s so that kr is an integer
+      if( !dmp.dbase.has_key("sPeriodic") )
+      {
+        real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+        dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+        // Save the special s 
+        sPeriodic[0]=sr; sPeriodic[1]=si;
+      }
+      else
+      {
+        real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+        sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+      }
+    }
+    
+    kr = sr; ki= si;
+    dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+    // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+  }
+  	
+  
+  if( t<=2.*dt ) 
+  {
+    printF("BA plane wave LABEL: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+           sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+    ::display(chi,"chi","%9.2e ");
+  }
+
+#endMacro
+

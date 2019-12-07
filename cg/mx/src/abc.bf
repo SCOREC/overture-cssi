@@ -858,6 +858,9 @@ end do
       ! forcing options
       #Include "forcingDefineFortranInclude.h"
 
+      integer method,nfdtd,bamx
+      parameter( nfdtd=5,bamx=7 ) 
+
       integer rectangular,curvilinear
       parameter(\
         rectangular=0,\
@@ -924,6 +927,7 @@ end do
       grid                 =ipar(19)
       debug                =ipar(20)
       forcingOption        =ipar(21)
+      method               =ipar(28)
 
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
@@ -983,7 +987,12 @@ end do
       if( t.le.1.5*dt )then
         write(*,'("abcMaxwell: order=",i2,"gridType=",i2," t=",e9.2", dt=",e9.2)') orderOfAccuracy,gridType,t,dt
         write(*,'("abcMaxwell: useForcing=",i2," forcingOption=",i2)') useForcing,forcingOption
+        write(*,'("abcMaxwell: method=",i2," (5=nfdtd,7=bamx)")') method
       end if
+      if( method .ne. nfdtd .and. method.ne.bamx )then
+         write(*,'("abcMaxwell:ERROR: unknown method")')
+         stop 12234
+      end if 
 
       if( debug.gt.1 )then
         write(*,'(" abcMaxwell: **START** grid=",i4," side,axis=",2i2," projectDivLine=",i2)') grid,side,axis,projectDivLine
@@ -1013,6 +1022,12 @@ end do
       c1abcem2=c*p0
       c2abcem2=c*(p0+p2)
 
+      if( method.eq.bamx )then
+        ! bamx: turn off tangential derivatives for now 
+        p2=-p0             
+        c2abcem2=c*(p0+p2) 
+      end if
+     
 
       extra=-1  ! no need to do corners -- these are already done in another way
       extra=0   ! re-compute corners

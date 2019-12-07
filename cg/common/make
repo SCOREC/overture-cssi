@@ -108,9 +108,9 @@ FLIBS= $(CHEMKIN_LIBS) $(LAPACK_LIBRARIES) $(OV_FORTRAN_LIBRARIES)
 # 081231: put OpenGl libs after A++ libs to avoid conflict between PARTI function perm and one in OpenGL.
 # 2014/04/03 - move FIBS after OpenGL in case LAPACK is in /usr/lib64 which holds system OpenGL
 # 2017/02/19 -- put libOgmg after Overture on Mac OS to avoid missing gfortran symbol _etime_ at run time
+# 2019/09/19 -- remove OV_COMPILER_LIBS since this may conflict with OpenGL directory (ubuntu)
 LIBS += $(OVERTURE_LIBRARIES) \
         $(OGMG_LIBS) \
-        $(OV_COMPILER_LIBS) \
         $(OV_HDF_LIBRARIES) \
         $(PETSC_LIBS) \
         $(APP_LIBRARIES) \
@@ -119,6 +119,18 @@ LIBS += $(OVERTURE_LIBRARIES) \
         $(OV_MOTIF_LIBRARIES) \
         $(OV_X_LIBRARIES) \
         $(OV_PERL_LIBRARIES) 
+
+#- LIBS += $(OVERTURE_LIBRARIES) \
+#-         $(OGMG_LIBS) \
+#-         $(OV_COMPILER_LIBS) \
+#-         $(OV_HDF_LIBRARIES) \
+#-         $(PETSC_LIBS) \
+#-         $(APP_LIBRARIES) \
+#-         $(OV_OPENGL_LIBRARIES) \
+#-         $(FLIBS) \
+#-         $(OV_MOTIF_LIBRARIES) \
+#-         $(OV_X_LIBRARIES) \
+#-         $(OV_PERL_LIBRARIES) 
 
 #LIBS += $(OV_RPATH)$(Overture)/lib -L$(Overture)/lib -lOverture -lOverture_static \
 #        $(OV_RPATH)$(OpenGL)/$(LIB64) -L$(OpenGL)/$(LIB64) $(GL_LIBS) \

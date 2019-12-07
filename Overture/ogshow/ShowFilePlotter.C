@@ -231,6 +231,7 @@ buildPlotStuffDialog(DialogData & dialog, realCompositeGridFunction & u0, const 
 
   int nt=0;
   tbCommands[nt]="save movie files"; tbState[nt] = saveMovieFiles;  nt++;
+  tbCommands[nt]="show forcing regions"; tbState[nt] = saveMovieFiles;  nt++;
   if( numberOfFrameSeries>1 )
   {
     tbCommands[nt]="apply commands to all frame series"; tbState[nt] = applyCommandsToAllSeries; nt++;
@@ -809,6 +810,7 @@ plot()
   bool movieMode=false;
   int movieFileNameOffset=0;  // offset the numbering of the movie file names
   int movieFileNameNumberingLength=3;  // keep this many digits in the number that appears in movie file names.
+  bool showForcingRegions=false;
     
   delete [] component;
   delete [] solutionNumber;
@@ -1123,6 +1125,26 @@ plot()
 	plotOptions[cfs] |= 8;
 	numberOfItemsPlotted++;
       }
+      replot=true;
+    }
+    else if( dialog.getToggleValue(answer,"show forcing regions",showForcingRegions) )
+    {
+      if( showForcingRegions )
+      {
+	if( !( plotOptions[cfs] & 16) )
+	{
+	  // turn on forcing regions
+	  plotOptions[cfs] |= 16; 
+	  numberOfItemsPlotted++;
+	}
+	
+      }
+      else if( plotOptions[cfs] & 16 )
+      {
+        // turn off forcing regions
+        plotOptions[cfs] ^= 16; 
+      }
+      
       replot=true;
     }
     else if( answer=="forcing regions" )

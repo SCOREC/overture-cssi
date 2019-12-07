@@ -83,7 +83,9 @@ c
         write(6,*)'cmpdu(in)'
         write(6,'(9(1x,i1,1x,f15.8,/))')(i,u(0,0,i),i=1,9)
         write(6,*)gam,gm1
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
       if( idebug.gt.0 ) write(6,990)r,dr
@@ -657,7 +659,9 @@ c
      *                  j1,j2,(i,w(i,j1),i=1,m)
   100       format('** negative pressure found **',/,
      *             6(1x,i5),9(/,1x,i2,1x,1pe22.15))
-            pause
+            write(6,*)'Enter kstop : (0=cont, 1=stop)'
+            read(5,*)kstop
+            if (kstop.ne.0) stop
           end if
         end do
       end do
@@ -1421,7 +1425,9 @@ c..ratios
 c
       if (m.lt.0) then
         write(6,*)((rx(n1a,n2a,i,j),j=1,2),i=1,2),det(n1a,n2a)
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
 c dat(nd1a:nd1b,nd2a:nd2b,.) is used to save extra grid data,
@@ -1448,7 +1454,9 @@ c
       if (m.lt.0) then
         write(6,*)'cmpdu(after cmppvs)'
         write(6,'(9(1x,i1,1x,f15.8,/))')(i,w(i,0,2),i=1,9)
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
 c..set grid metrics and velocity (if necessary)
@@ -2741,7 +2749,9 @@ c
       if (dabs(wr1d(1)).lt.1.d-6) then
         write(6,*)'wl =',wl
         write(6,*)'wr =',wr
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
       speed1d=0.d0
@@ -2815,7 +2825,9 @@ c
         write(6,123)(i,wl(i),i=1,9),(i,wr(i),i=1,9)
   123   format('wl=',/,9(1x,i1,1x,f15.8,/),
      *         'wr=',/,9(1x,i1,1x,f15.8,/))
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
 c icnt(1) counts the total number of flux calculations
@@ -2915,7 +2927,9 @@ c
         write(6,124)(i,fl(i),i=1,9),(i,fr(i),i=1,9)
   124   format('fl=',/,9(1x,i1,1x,f15.8,/),
      *         'fr=',/,9(1x,i1,1x,f15.8,/))
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
       return
@@ -3224,7 +3238,9 @@ c rarefaction solution
             if (rm(i).le.0.d0) then
               write(6,*)'Error (cmpvirial) : rm(i).le.0'
               write(6,*)'iguess=',iguess
-              pause
+              write(6,*)'Enter kstop : (0=cont, 1=stop)'
+              read(5,*)kstop
+              if (kstop.ne.0) stop
               ier=4
               return
             end if
@@ -3307,7 +3323,9 @@ c
       do i=1,itmax
         write(6,*)'it,err=',i,esave(i)
       end do
-      pause
+      write(6,*)'Enter kstop : (0=cont, 1=stop)'
+      read(5,*)kstop
+      if (kstop.ne.0) stop
 c      write(56,300)
 c  300 format(' * iteration failed')
 c
@@ -3477,7 +3495,9 @@ c check whether to accept the linearized jump solution
         if (lcont.eq.0) then
 c
           write(6,*)'lcont =',lcont
-          pause
+          write(6,*)'Enter kstop : (0=cont, 1=stop)'
+          read(5,*)kstop
+          if (kstop.ne.0) stop
 c
 c compute residual of the jump conditions
 c          iconf=0
@@ -4241,7 +4261,7 @@ c compute tangential component of the gas velocity from right state
 c gas contact to the right, solid contact to the left
 c compute tangential component of the gas velocity from left state
           vt=an(1)*wl(7)-an(2)*wl(6)
-          call getfx2 (2,alpha(2,2),pm(2,2),vm(2,2),vt,
+          call getfx2 (2,alpha(2,2),pm(1,2),vm(2,2),vt,
      *                 an,aj,wr(5),fr(5))
         end if
 c
@@ -4474,7 +4494,9 @@ c
         write(6,101)n,err(n)
   101   format('    it=',i2,',  error=',1pe9.2)
       end do
-      pause
+      write(6,*)'Enter kstop : (0=cont, 1=stop)'
+      read(5,*)kstop
+      if (kstop.ne.0) stop
 c
       getdv=aint(2,n)+aint0(i)
 c
@@ -4833,7 +4855,7 @@ c
         rmp(k)=rm(k)*(1.d0+delta)
         call getgv (rm0p,rmp,vmp,pmp,gp,resid,iconf,ier)
         if (ier.ne.0) return
-        do i=1,5
+        do i=1,4
           dg(i,k)=(gp(i)-g(i))/(rm(k)*delta)
         end do
         rmp(k)=rm(k)
@@ -4843,7 +4865,7 @@ c
         pmp(k,1)=pm(k,1)*(1.d0+delta)
         call getgv (rm0p,rmp,vmp,pmp,gp,resid,iconf,ier)
         if (ier.ne.0) return
-        do i=1,5
+        do i=1,4
           dg(i,k+2)=(gp(i)-g(i))/(pm(k,1)*delta)
         end do
         pmp(k,1)=pm(k,1)

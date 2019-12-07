@@ -590,145 +590,204 @@ do i1=nn1a,nn1b
   stop 7734
  end if
 
- beginLoops()
-  if( mask(i1,i2,i3).ne.0 )then
-   ! ** u(i1,i2,i3,et1)=0.
-   u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,en1)
-   u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+is1,i2+is2,i3+is3,et1)
-   #If #DIM == "3" 
-     u(i1-is1,i2-is2,i3-is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+is1,i2+is2,i3+is3,et2)
-   #End
-   #If #DIM == "2" 
-     u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,hz)
-   #End
+ if( solveForAllFields.ne.0 )then
 
-   if( useChargeDensity.eq.1 )then
-    ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
-    u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+   if( useForcing.ne.0 )then
+      ! finish me
+      stop 1239
    end if
+   beginLoops()
+    if( mask(i1,i2,i3).ne.0 )then
 
-   #If #FORCING == "twilightZone" 
-     #If #DIM == "2"
-       OGF2DFO(i1-is1,i2-is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
-       OGF2DFO(i1    ,i2    ,i3,t, uv0(ex),uv0(ey),uv0(hz))
-       OGF2DFO(i1+is1,i2+is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
+      u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,en1)
+      u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+is1,i2+is2,i3+is3,et1)
+      u(i1-is1,i2-is2,i3-is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+is1,i2+is2,i3+is3,et2)
 
-! write(*,'("..bcRectangular: side,axis=",2i3," i1,i2,i3=",3i3," en1,uvm(en1),uvp(en1)=",3e12.4)')\
-!            side,axis,i1,i2,i3,u(i1-is1,i2-is2,i3,en1),uvm(en1),uvp(en1)
-       
+      u(i1-is1,i2-is2,i3-is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+is1,i2+is2,i3+is3,hn1)
+      u(i1-is1,i2-is2,i3-is3,ht1)= u(i1+is1,i2+is2,i3+is3,ht1)
+      u(i1-is1,i2-is2,i3-is3,ht2)= u(i1+is1,i2+is2,i3+is3,ht2)
 
-       u(i1-is1,i2-is2,i3,en1)=u(i1-is1,i2-is2,i3,en1) + uvm(en1) - uvp(en1)
-       u(i1-is1,i2-is2,i3,et1)=u(i1-is1,i2-is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-is1,i2-is2,i3,hz )=u(i1-is1,i2-is2,i3,hz ) + uvm(hz)-uvp(hz)
-     #Else
-       OGF3DFO(i1-is1,i2-is2,i3-is3,t,uvm(ex),uvm(ey),uvm(ez)) 
-       OGF3DFO(i1    ,i2    ,i3    ,t,uv0(ex),uv0(ey),uv0(ez))
-       OGF3DFO(i1+is1,i2+is2,i3+is3,t,uvp(ex),uvp(ey),uvp(ez))
+     #If #ORDER == "4" || #ORDER == "6" || #ORDER == "8"
 
-       u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,en1) + uvm(en1) - uvp(en1)
-       u(i1-is1,i2-is2,i3-is3,et1)=u(i1-is1,i2-is2,i3-is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-is1,i2-is2,i3-is3,et2)=u(i1-is1,i2-is2,i3-is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
+      u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*is2,i3+2*is3,en1)
+      u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+      u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+2*is1,i2+2*is2,i3+2*is3,et2)
+
+      u(i1-2*is1,i2-2*is2,i3-2*is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+2*is1,i2+2*is2,i3+2*is3,hn1)
+      u(i1-2*is1,i2-2*is2,i3-2*is3,ht1)= u(i1+2*is1,i2+2*is2,i3+2*is3,ht1)
+      u(i1-2*is1,i2-2*is2,i3-2*is3,ht2)= u(i1+2*is1,i2+2*is2,i3+2*is3,ht2)
+
      #End
 
-   #Elif #FORCING == "none"
-   #Else
-      stop 112233
-   #End
+     #If #ORDER == "6" || #ORDER == "8"
 
-   #If #ORDER == "4" || #ORDER == "6" || #ORDER == "8"
-     u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*is2,i3+2*is3,en1)
-     u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
-     #If #DIM == "2"
-       u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*is2,i3+2*is3,hz)
-     #Else
-       u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+2*is1,i2+2*is2,i3+2*is3,et2)
+      u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*is2,i3+3*is3,en1)
+      u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+      u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+3*is1,i2+3*is2,i3+3*is3,et2)
+
+      u(i1-3*is1,i2-3*is2,i3-3*is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+3*is1,i2+3*is2,i3+3*is3,hn1)
+      u(i1-3*is1,i2-3*is2,i3-3*is3,ht1)= u(i1+3*is1,i2+3*is2,i3+3*is3,ht1)
+      u(i1-3*is1,i2-3*is2,i3-3*is3,ht2)= u(i1+3*is1,i2+3*is2,i3+3*is3,ht2)
+
      #End
+
+     #If #ORDER == "8"
+
+      u(i1-4*is1,i2-4*is2,i3-4*is3,en1)= u(i1+4*is1,i2+4*is2,i3+4*is3,en1)
+      u(i1-4*is1,i2-4*is2,i3-4*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+4*is1,i2+4*is2,i3+4*is3,et1)
+      u(i1-4*is1,i2-4*is2,i3-4*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+4*is1,i2+4*is2,i3+4*is3,et2)
+
+      u(i1-4*is1,i2-4*is2,i3-4*is3,hn1)=2.*u(i1,i2,i3,hn1)-u(i1+4*is1,i2+4*is2,i3+4*is3,hn1)
+      u(i1-4*is1,i2-4*is2,i3-4*is3,ht1)= u(i1+4*is1,i2+4*is2,i3+4*is3,ht1)
+      u(i1-4*is1,i2-4*is2,i3-4*is3,ht2)= u(i1+4*is1,i2+4*is2,i3+4*is3,ht2)
+
+     #End
+
+    end if ! mask
+   endLoops()
+
+ else ! NOT solveForAllFields
+
+   beginLoops()
+    if( mask(i1,i2,i3).ne.0 )then
+     ! ** u(i1,i2,i3,et1)=0.
+     u(i1-is1,i2-is2,i3-is3,en1)= u(i1+is1,i2+is2,i3+is3,en1)
+     u(i1-is1,i2-is2,i3-is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+is1,i2+is2,i3+is3,et1)
+     #If #DIM == "3" 
+       u(i1-is1,i2-is2,i3-is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+is1,i2+is2,i3+is3,et2)
+     #End
+     #If #DIM == "2" 
+       u(i1-is1,i2-is2,i3-is3,hz)=u(i1+is1,i2+is2,i3+is3,hz)
+     #End
+  
+     if( useChargeDensity.eq.1 )then
+      ! div(eps*E) = rho , rho is saved in f(i1,i2,i3,0)
+      u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,en1) - 2.*dx(axis)*(1-2*side)*f(i1,i2,i3,0)/eps
+     end if
+  
      #If #FORCING == "twilightZone" 
-      #If #DIM == "2"
-       OGF2DFO(i1-2*is1,i2-2*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
-       OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
-       OGF2DFO(i1+2*is1,i2+2*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
-
-       u(i1-2*is1,i2-2*is2,i3,en1)=u(i1-2*is1,i2-2*is2,i3,en1) + uvm(en1) - uvp(en1)
-       u(i1-2*is1,i2-2*is2,i3,et1)=u(i1-2*is1,i2-2*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-2*is1,i2-2*is2,i3,hz )=u(i1-2*is1,i2-2*is2,i3,hz ) + uvm(hz)-uvp(hz)
-      #Else
-       OGF3DFO(i1-2*is1,i2-2*is2,i3-2*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
-       OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
-       OGF3DFO(i1+2*is1,i2+2*is2,i3+2*is3,t,uvp(ex),uvp(ey),uvp(ez))
-
-       u(i1-2*is1,i2-2*is2,i3-2*is3,en1)=u(i1-2*is1,i2-2*is2,i3-2*is3,en1) + uvm(en1) - uvp(en1)
-       u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=u(i1-2*is1,i2-2*is2,i3-2*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=u(i1-2*is1,i2-2*is2,i3-2*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
-       ! if( debug.gt.1 )then
-       !  write(*,'(" bc4r: i=",3i4," err(-2)=",3e10.2)') i1,i2,i3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm(ex),\
-       !       u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm(ey), u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm(ez)
-       ! end if
-      #End
-     #End
-
-   #End
-
-   #If #ORDER == "6" || #ORDER == "8"
-     u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*is2,i3+3*is3,en1)
-     u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
-     #If #DIM == "2"
-       u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*is2,i3+3*is3,hz)
+       #If #DIM == "2"
+         OGF2DFO(i1-is1,i2-is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
+         OGF2DFO(i1    ,i2    ,i3,t, uv0(ex),uv0(ey),uv0(hz))
+         OGF2DFO(i1+is1,i2+is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
+  
+  ! write(*,'("..bcRectangular: side,axis=",2i3," i1,i2,i3=",3i3," en1,uvm(en1),uvp(en1)=",3e12.4)')\
+  !            side,axis,i1,i2,i3,u(i1-is1,i2-is2,i3,en1),uvm(en1),uvp(en1)
+         
+  
+         u(i1-is1,i2-is2,i3,en1)=u(i1-is1,i2-is2,i3,en1) + uvm(en1) - uvp(en1)
+         u(i1-is1,i2-is2,i3,et1)=u(i1-is1,i2-is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-is1,i2-is2,i3,hz )=u(i1-is1,i2-is2,i3,hz ) + uvm(hz)-uvp(hz)
+       #Else
+         OGF3DFO(i1-is1,i2-is2,i3-is3,t,uvm(ex),uvm(ey),uvm(ez)) 
+         OGF3DFO(i1    ,i2    ,i3    ,t,uv0(ex),uv0(ey),uv0(ez))
+         OGF3DFO(i1+is1,i2+is2,i3+is3,t,uvp(ex),uvp(ey),uvp(ez))
+  
+         u(i1-is1,i2-is2,i3-is3,en1)=u(i1-is1,i2-is2,i3-is3,en1) + uvm(en1) - uvp(en1)
+         u(i1-is1,i2-is2,i3-is3,et1)=u(i1-is1,i2-is2,i3-is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-is1,i2-is2,i3-is3,et2)=u(i1-is1,i2-is2,i3-is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
+       #End
+  
+     #Elif #FORCING == "none"
      #Else
-       u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+3*is1,i2+3*is2,i3+3*is3,et2)
+        stop 112233
      #End
-     #If #FORCING == "twilightZone" 
-      #If #DIM == "2"
-       OGF2DFO(i1-3*is1,i2-3*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
-       OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
-       OGF2DFO(i1+3*is1,i2+3*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
-
-       u(i1-3*is1,i2-3*is2,i3,en1)=u(i1-3*is1,i2-3*is2,i3,en1) + uvm(en1) - uvp(en1)
-       u(i1-3*is1,i2-3*is2,i3,et1)=u(i1-3*is1,i2-3*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-3*is1,i2-3*is2,i3,hz )=u(i1-3*is1,i2-3*is2,i3,hz ) + uvm(hz)-uvp(hz)
-      #Else
-       OGF3DFO(i1-3*is1,i2-3*is2,i3-3*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
-       OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
-       OGF3DFO(i1+3*is1,i2+3*is2,i3+3*is3,t,uvp(ex),uvp(ey),uvp(ez))
-
-       u(i1-3*is1,i2-3*is2,i3-3*is3,en1)=u(i1-3*is1,i2-3*is2,i3-3*is3,en1) + uvm(en1) - uvp(en1)
-       u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=u(i1-3*is1,i2-3*is2,i3-3*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=u(i1-3*is1,i2-3*is2,i3-3*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
-      #End
+  
+     #If #ORDER == "4" || #ORDER == "6" || #ORDER == "8"
+       u(i1-2*is1,i2-2*is2,i3-2*is3,en1)= u(i1+2*is1,i2+2*is2,i3+2*is3,en1)
+       u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+2*is1,i2+2*is2,i3+2*is3,et1)
+       #If #DIM == "2"
+         u(i1-2*is1,i2-2*is2,i3-2*is3,hz)=u(i1+2*is1,i2+2*is2,i3+2*is3,hz)
+       #Else
+         u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+2*is1,i2+2*is2,i3+2*is3,et2)
+       #End
+       #If #FORCING == "twilightZone" 
+        #If #DIM == "2"
+         OGF2DFO(i1-2*is1,i2-2*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
+         OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
+         OGF2DFO(i1+2*is1,i2+2*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
+  
+         u(i1-2*is1,i2-2*is2,i3,en1)=u(i1-2*is1,i2-2*is2,i3,en1) + uvm(en1) - uvp(en1)
+         u(i1-2*is1,i2-2*is2,i3,et1)=u(i1-2*is1,i2-2*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-2*is1,i2-2*is2,i3,hz )=u(i1-2*is1,i2-2*is2,i3,hz ) + uvm(hz)-uvp(hz)
+        #Else
+         OGF3DFO(i1-2*is1,i2-2*is2,i3-2*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
+         OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
+         OGF3DFO(i1+2*is1,i2+2*is2,i3+2*is3,t,uvp(ex),uvp(ey),uvp(ez))
+  
+         u(i1-2*is1,i2-2*is2,i3-2*is3,en1)=u(i1-2*is1,i2-2*is2,i3-2*is3,en1) + uvm(en1) - uvp(en1)
+         u(i1-2*is1,i2-2*is2,i3-2*is3,et1)=u(i1-2*is1,i2-2*is2,i3-2*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-2*is1,i2-2*is2,i3-2*is3,et2)=u(i1-2*is1,i2-2*is2,i3-2*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
+         ! if( debug.gt.1 )then
+         !  write(*,'(" bc4r: i=",3i4," err(-2)=",3e10.2)') i1,i2,i3,u(i1-2*is1,i2-2*is2,i3-2*is3,ex)-uvm(ex),\
+         !       u(i1-2*is1,i2-2*is2,i3-2*is3,ey)-uvm(ey), u(i1-2*is1,i2-2*is2,i3-2*is3,ez)-uvm(ez)
+         ! end if
+        #End
+       #End
+  
      #End
-
-   #End
-
-   #If #ORDER == "8"
-     u(i1-4*is1,i2-4*is2,i3-4*is3,en1)= u(i1+4*is1,i2+4*is2,i3+4*is3,en1)
-     u(i1-4*is1,i2-4*is2,i3-4*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+4*is1,i2+4*is2,i3+4*is3,et1)
-     #If #DIM == "2"
-       u(i1-4*is1,i2-4*is2,i3-4*is3,hz)=2.*u(i1,i2,i3,hz)-u(i1+4*is1,i2+4*is2,i3+4*is3,hz)
-     #Else
-       u(i1-4*is1,i2-4*is2,i3-4*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+4*is1,i2+4*is2,i3+4*is3,et2)
+  
+     #If #ORDER == "6" || #ORDER == "8"
+       u(i1-3*is1,i2-3*is2,i3-3*is3,en1)= u(i1+3*is1,i2+3*is2,i3+3*is3,en1)
+       u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+3*is1,i2+3*is2,i3+3*is3,et1)
+       #If #DIM == "2"
+         u(i1-3*is1,i2-3*is2,i3-3*is3,hz)=u(i1+3*is1,i2+3*is2,i3+3*is3,hz)
+       #Else
+         u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+3*is1,i2+3*is2,i3+3*is3,et2)
+       #End
+       #If #FORCING == "twilightZone" 
+        #If #DIM == "2"
+         OGF2DFO(i1-3*is1,i2-3*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
+         OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
+         OGF2DFO(i1+3*is1,i2+3*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
+  
+         u(i1-3*is1,i2-3*is2,i3,en1)=u(i1-3*is1,i2-3*is2,i3,en1) + uvm(en1) - uvp(en1)
+         u(i1-3*is1,i2-3*is2,i3,et1)=u(i1-3*is1,i2-3*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-3*is1,i2-3*is2,i3,hz )=u(i1-3*is1,i2-3*is2,i3,hz ) + uvm(hz)-uvp(hz)
+        #Else
+         OGF3DFO(i1-3*is1,i2-3*is2,i3-3*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
+         OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
+         OGF3DFO(i1+3*is1,i2+3*is2,i3+3*is3,t,uvp(ex),uvp(ey),uvp(ez))
+  
+         u(i1-3*is1,i2-3*is2,i3-3*is3,en1)=u(i1-3*is1,i2-3*is2,i3-3*is3,en1) + uvm(en1) - uvp(en1)
+         u(i1-3*is1,i2-3*is2,i3-3*is3,et1)=u(i1-3*is1,i2-3*is2,i3-3*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-3*is1,i2-3*is2,i3-3*is3,et2)=u(i1-3*is1,i2-3*is2,i3-3*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
+        #End
+       #End
+  
      #End
-     #If #FORCING == "twilightZone" 
-      #If #DIM == "2"
-       OGF2DFO(i1-4*is1,i2-4*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
-       OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
-       OGF2DFO(i1+4*is1,i2+4*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
-
-       u(i1-4*is1,i2-4*is2,i3,en1)=u(i1-4*is1,i2-4*is2,i3,en1) + uvm(en1) - uvp(en1)
-       u(i1-4*is1,i2-4*is2,i3,et1)=u(i1-4*is1,i2-4*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-4*is1,i2-4*is2,i3,hz )=u(i1-4*is1,i2-4*is2,i3,hz ) + uvm(hz)-uvp(hz)
-      #Else
-       OGF3DFO(i1-4*is1,i2-4*is2,i3-4*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
-       OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
-       OGF3DFO(i1+4*is1,i2+4*is2,i3+4*is3,t,uvp(ex),uvp(ey),uvp(ez))
-
-       u(i1-4*is1,i2-4*is2,i3-4*is3,en1)=u(i1-4*is1,i2-4*is2,i3-4*is3,en1) + uvm(en1) - uvp(en1)
-       u(i1-4*is1,i2-4*is2,i3-4*is3,et1)=u(i1-4*is1,i2-4*is2,i3-4*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
-       u(i1-4*is1,i2-4*is2,i3-4*is3,et2)=u(i1-4*is1,i2-4*is2,i3-4*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
-      #End
+  
+     #If #ORDER == "8"
+       u(i1-4*is1,i2-4*is2,i3-4*is3,en1)= u(i1+4*is1,i2+4*is2,i3+4*is3,en1)
+       u(i1-4*is1,i2-4*is2,i3-4*is3,et1)=2.*u(i1,i2,i3,et1)-u(i1+4*is1,i2+4*is2,i3+4*is3,et1)
+       #If #DIM == "2"
+         u(i1-4*is1,i2-4*is2,i3-4*is3,hz)=2.*u(i1,i2,i3,hz)-u(i1+4*is1,i2+4*is2,i3+4*is3,hz)
+       #Else
+         u(i1-4*is1,i2-4*is2,i3-4*is3,et2)=2.*u(i1,i2,i3,et2)-u(i1+4*is1,i2+4*is2,i3+4*is3,et2)
+       #End
+       #If #FORCING == "twilightZone" 
+        #If #DIM == "2"
+         OGF2DFO(i1-4*is1,i2-4*is2,i3,t, uvm(ex),uvm(ey),uvm(hz))
+         OGF2DFO(i1      ,i2      ,i3,t, uv0(ex),uv0(ey),uv0(hz))
+         OGF2DFO(i1+4*is1,i2+4*is2,i3,t, uvp(ex),uvp(ey),uvp(hz))
+  
+         u(i1-4*is1,i2-4*is2,i3,en1)=u(i1-4*is1,i2-4*is2,i3,en1) + uvm(en1) - uvp(en1)
+         u(i1-4*is1,i2-4*is2,i3,et1)=u(i1-4*is1,i2-4*is2,i3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-4*is1,i2-4*is2,i3,hz )=u(i1-4*is1,i2-4*is2,i3,hz ) + uvm(hz)-uvp(hz)
+        #Else
+         OGF3DFO(i1-4*is1,i2-4*is2,i3-4*is3,t,uvm(ex),uvm(ey),uvm(ez)) 
+         OGF3DFO(i1      ,i2      ,i3      ,t,uv0(ex),uv0(ey),uv0(ez))
+         OGF3DFO(i1+4*is1,i2+4*is2,i3+4*is3,t,uvp(ex),uvp(ey),uvp(ez))
+  
+         u(i1-4*is1,i2-4*is2,i3-4*is3,en1)=u(i1-4*is1,i2-4*is2,i3-4*is3,en1) + uvm(en1) - uvp(en1)
+         u(i1-4*is1,i2-4*is2,i3-4*is3,et1)=u(i1-4*is1,i2-4*is2,i3-4*is3,et1) + uvm(et1) -2.*uv0(et1) + uvp(et1)
+         u(i1-4*is1,i2-4*is2,i3-4*is3,et2)=u(i1-4*is1,i2-4*is2,i3-4*is3,et2) + uvm(et2) -2.*uv0(et2) + uvp(et2)
+        #End
+       #End
      #End
-   #End
-  end if ! mask
- endLoops()
+    end if ! mask
+   endLoops()
+ end if ! end not solveForAllFields
 #endMacro
 
 
@@ -931,6 +990,7 @@ do i1=nn1a,nn1b
    side,axis,useForcing,ex,ey,ez,hx,hy,hz,useWhereMask,side1,side2,side3,m1,m2,m3,bc1,bc2, \
   js1a,js2a,js3a,ks1a,ks2a,ks3a,forcingOption,useChargeDensity,fieldOption,boundaryForcingOption
  integer polarizationOption,dispersionModel
+ integer solveForAllFields
 
  real dr(0:2), dx(0:2), t, uv(0:5), uvm(0:5), uv0(0:5), uvp(0:5), uvm2(0:5), uvp2(0:5), ubv(0:5)
  real uvmm(0:2),uvzm(0:2),uvpm(0:2)
@@ -1204,6 +1264,7 @@ do i1=nn1a,nn1b
  dispersionModel      =ipar(34)
 
  numberOfPolarizationVectors=ipar(36)
+ solveForAllFields    = ipar(38)
 
  dx(0)                =rpar(0)
  dx(1)                =rpar(1)

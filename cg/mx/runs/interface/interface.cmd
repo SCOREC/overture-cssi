@@ -4,7 +4,7 @@
 # Usage:
 #    cgmx [-noplot] interface -g=<name> -tf=<tFinal> -tp=<tPlot> -cfl=<> -diss=<> -eps1=<> -eps2=<> -ic=<> ...
 #                   -bc=[abcEM2|rbcNonLocal|abcPML|perfectElectricalConductor|symmetry] ...
-#                   -useNewInterface=[0|1] -method=[nfdtd|Yee] -errorNorm=[0|1|2] -interfaceIts=<i> ...
+#                   -useNewInterface=[0|1] -method=[nfdtd|Yee|bmax] -errorNorm=[0|1|2] -interfaceIts=<i> ...
 #                   -dm=[none|gdm] -npv=i i 
 # 
 # Examples:
@@ -82,6 +82,7 @@ $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; 
 $useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
 $useImpedanceInterfaceProjection=1; $cons=1; 
 $useSosupDissipation=0; $sosupParameter=1.; 
+$ts="me"; $matFile=""; $solveForAllFields=0;  $matFile2="baAir.txt";  $numMatRegions=1; $regionFile="";
 #
 $eps1=1.; $mu1=1.;
 $eps2=1.; $mu2=1.;
@@ -113,7 +114,9 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
            "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
-	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta);
+	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
+	   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
+	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields);
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -126,6 +129,13 @@ if( $tz eq "poly" ){ $tz="polynomial"; }
 if( $tz eq "trig" ){ $tz="trigonometric"; }
 if( $method eq "sosup" ){ $diss=0.; }
 # 
+if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+$orderOfRungeKutta=4;
+if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
+if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
+if( $ts eq "rk3" ){ $ts="rungeKutta"; $orderOfRungeKutta=3; }
+if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
+# printf(" TS = [$ts], order=[$orderOfRungeKutta] \n");
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"gdm" ){ $dm="GDM"; }
@@ -147,6 +157,12 @@ if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
 $grid
 #
 $method
+# time-stepping method
+$ts
+order of Runge Kutta $orderOfRungeKutta
+#
+solve for all fields $solveForAllFields
+#
 # dispersion model:
 $dm
 # printf(" dm=$dm\n");
@@ -242,6 +258,7 @@ if( $npv[1] == 3 ){ \
    $cmd .= " GDM coeff: 2 $a02[2] $a12[2] $b02[2] $b12[2] (eqn, a0,a1,b0,b1)"; \
       }
 $cmd
+#
 # 
 #  The dispersive case is handled by a user defined known solution
 if( $ic ne "gp" && $dm ne "no dispersion" && $tz eq "#" ){\

@@ -1821,7 +1821,7 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
           // const intArray & mask1 = gf[mNew].cg[grid].mask();
                     int ierr=0;
                     const int maskOption=0; // assign pts where mask>0
-                    int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
+                int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound(),0}; //
                     real rpar[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
                     real *ut1p, *ut2p, *ut3p, *ut4p;
                     if( implicitMethod==Parameters::crankNicolson )
@@ -2346,7 +2346,7 @@ advanceImplicitMultiStep( real & t0, real & dt0, int & numberOfSubSteps, int & i
           // const intArray & mask1 = gf[mNew].cg[grid].mask();
                     int ierr=0;
                     const int maskOption=0; // assign pts where mask>0
-                    int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
+                int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound(),0}; //
                     real rpar[15]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
                     real *ut1p, *ut2p, *ut3p, *ut4p;
                     if( implicitMethod==Parameters::crankNicolson )

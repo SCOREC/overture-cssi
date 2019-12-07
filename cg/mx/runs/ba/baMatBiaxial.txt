@@ -1,0 +1,14 @@
+# BA bi-axial material :
+#     D = epsm * E
+#     B = mum * H 
+name="baMat1";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="MKS";
+omegaScale=1.00000000000000e+00;
+bianistropicK0=[  2.,.125,  0.,  0.,  0.,  0., \
+                .125,  1.,  0.,  0.,  0.,  0., \
+                  0.,  0.,  .5,  0.,  0.,  0., \
+                  0.,  0.,  0.,  1.,  0.,  0., \
+                  0.,  0.,  0.,  0.,  2.,  0., \
+                  0.,  0.,  0.,  0.,  0.,  3., ];

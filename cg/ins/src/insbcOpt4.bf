@@ -238,7 +238,7 @@
  #If #DIM == "3"
    u(i1-  is1,i2-  is2,i3-  is3,wc)=w1 + uDotN1*rzi 
  #End
-
+      
  ! now compute 2nd ghost line value given the first
  u2=  6.*u(i1-is1,i2-is2,i3-is3,uc)-15.*u(i1,i2,i3,uc)+20.*u(i1+is1,i2+is2,i3+is3,uc)\
     -15.*u(i1+2*is1,i2+2*is2,i3+2*is3,uc)+6.*u(i1+3*is1,i2+3*is2,i3+3*is3,uc)-u(i1+4*is1,i2+4*is2,i3+4*is3,uc)
@@ -447,16 +447,55 @@
  ! Include artificial dissipation terms *wdh* 100817 
  u0 = u(i1,i2,i3,uc)
  v0 = u(i1,i2,i3,vc)
+
+
  if( gridIsMoving.eq.0 )then
   ! grid is NOT moving
   ug0 = u0
   vg0 = v0
+
+  u0r = rx(i1,i2,i3)*u(i1  ,i2,i3,uc) + ry(i1,i2,i3) * u(i1  ,i2,i3,vc)
+  v0r = sx(i1,i2,i3)*u(i1  ,i2,i3,uc) + sy(i1,i2,i3) * u(i1  ,i2,i3,vc)
+
+  u0m1 = rx(i1-1,i2,i3)*u(i1-1  ,i2,i3,uc) + ry(i1-1,i2,i3) * u(i1-1  ,i2,i3,vc)
+  v0m1 = sx(i1,i2-1,i3)*u(i1,i2-1  ,i3,uc) + sy(i1,i2-1,i3) * u(i1,i2-1  ,i3,vc)
+
+  u0p1 = rx(i1+1,i2,i3)*u(i1+1  ,i2,i3,uc) + ry(i1+1,i2,i3) * u(i1+1  ,i2,i3,vc)
+  v0p1 = sx(i1,i2+1,i3)*u(i1,i2+1  ,i3,uc) + sy(i1,i2+1,i3) * u(i1,i2+1  ,i3,vc)
+
+  ug0r = u0r
+  vg0r = v0r
+  ug0m1 = u0m1
+  vg0m1 = v0m1
+  ug0p1 = u0p1
+  vg0p1 = v0p1
+  ! gtt0 = 0.
+  ! gtt1 = 0.
  else
   ! grid is moving
   !  ug0 = u - gridVelocity
   !  gtt0 = grid acceleration = u.t 
   ug0 = u0-gv(i1,i2,i3,0)
   vg0 = v0-gv(i1,i2,i3,1)
+
+  u0r = rx(i1,i2,i3)*(u(i1  ,i2,i3,uc)-gv(i1,i2,i3,0)) + ry(i1,i2,i3) * (u(i1  ,i2,i3,vc)-gv(i1,i2,i3,1))
+  v0r = sx(i1,i2,i3)*(u(i1  ,i2,i3,uc)-gv(i1,i2,i3,0)) + sy(i1,i2,i3) * (u(i1  ,i2,i3,vc)-gv(i1,i2,i3,1))
+
+  u0m1 = rx(i1-1,i2,i3)*(u(i1-1  ,i2,i3,uc)-gv(i1,i2,i3,0)) + ry(i1-1,i2,i3) * (u(i1-1  ,i2,i3,vc)-gv(i1,i2,i3,1))
+  v0m1 = sx(i1,i2-1,i3)*(u(i1  ,i2-1,i3,uc)-gv(i1,i2,i3,0)) + sy(i1,i2-1,i3) * (u(i1  ,i2-1,i3,vc)-gv(i1,i2,i3,1))
+
+  u0p1 = rx(i1+1,i2,i3)*(u(i1+1  ,i2,i3,uc)-gv(i1,i2,i3,0)) + ry(i1+1,i2,i3) * (u(i1+1  ,i2,i3,vc)-gv(i1,i2,i3,1))
+  v0p1 = sx(i1,i2+1,i3)*(u(i1 ,i2+1,i3,uc)-gv(i1,i2,i3,0)) + sy(i1,i2+1,i3) * (u(i1  ,i2+1,i3,vc)-gv(i1,i2,i3,1))
+
+  ug0r = u0r
+  vg0r = v0r
+  ug0m1 = u0m1
+  vg0m1 = v0m1
+  ug0p1 = u0p1
+  vg0p1 = v0p1
+
+  ! gtt0 = gtt(i1,i2,i3,0)
+  ! gtt1 = gtt(i1,i2,i3,1)
  end if
 
  if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )then
@@ -478,8 +517,18 @@
 !!kkc vx0 = ux22(i1,i2,i3,vc)
 !!kkc vy0 = uy22(i1,i2,i3,vc)
 
- if( use4thOrderAD.ne.0 )then
-   adCoeff4 = ad41+cd42*( abs(ux0)+abs(uy0)+abs(vx0)+abs(vy0) )
+if( use4thOrderAD.ne.0 )then
+      adCoeff4 = ad41+cd42*( abs(ux0)+abs(uy0)+abs(vx0)+abs(vy0) )
+      
+      ugmax = max(abs(ug0r),abs(ug0m1),abs(ug0p1))
+      vgmax = max(abs(vg0r),abs(vg0m1),abs(vg0p1))
+
+      ugmax = abs(ug0r)
+      vgmax = abs(vg0r)
+
+      cd43 = max(ugmax/dr(0),vgmax/dr(1))/12.
+
+      adCoeff4 =  adCoeff4 + cd43
 
    ! try this 
    ! uxa = ux22(i1,i2,i3,uc)  
@@ -487,10 +536,11 @@
    ! vxa = ux22(i1,i2,i3,vc)
    ! vya = uy22(i1,i2,i3,vc)
    ! adCoeff4 = ad41+cd42*( abs(uxa)+abs(uya)+abs(vxa)+abs(vya) )
-   ! write(*,'("insbc4:tan: (i1,i2)=",2i3," adCoeff4=",e9.3)') i1,i2,adCoeff4
+!    write(*,'("insbc4:tan: (i1,i2)=",2i3," adCoeff4=",e9.3)') i1,i2,adCoeff4
    ! write(*,'("          : ux0,uy0,vx0,vy0=",4e9.2)') ux0,uy0,vx0,vy0 
    ! write(*,'("          : uxa,uya,vxa,vya=",4e9.2)') uxa,uya,vxa,vya 
- end if
+end if
+
  if( use2ndOrderAD.ne.0 )then
    adCoeff2 = ad21+cd22*( abs(ux0)+abs(uy0)+abs(vx0)+abs(vy0) )
    ! try this 
@@ -682,12 +732,59 @@
   ug0 = u0
   vg0 = v0
   wg0 = w0
+
+  u0r = rx(i1,i2,i3)*u(i1,i2,i3,uc)+ry(i1,i2,i3)*u(i1,i2,i3,vc) + rz(i1,i2,i3)*u(i1,i2,i3,wc)
+  v0r = sx(i1,i2,i3)*u(i1,i2,i3,uc)+sy(i1,i2,i3)*u(i1,i2,i3,vc) + sz(i1,i2,i3)*u(i1,i2,i3,wc)
+  w0r = tx(i1,i2,i3)*u(i1,i2,i3,uc)+ty(i1,i2,i3)*u(i1,i2,i3,vc) + tz(i1,i2,i3)*u(i1,i2,i3,wc)
+
+  u0m1 = rx(i1-1,i2,i3)*u(i1-1,i2,i3,uc)+ry(i1-1,i2,i3)*u(i1-1,i2,i3,vc) + rz(i1-1,i2,i3)*u(i1-1,i2,i3,wc)
+  v0m1 = sx(i1,i2-1,i3)*u(i1,i2-1,i3,uc)+sy(i1,i2-1,i3)*u(i1,i2-1,i3,vc) + sz(i1,i2-1,i3)*u(i1,i2-1,i3,wc)
+  w0m1 = tx(i1,i2,i3-1)*u(i1,i2,i3-1,uc)+ty(i1,i2,i3-1)*u(i1,i2,i3-1,vc) + tz(i1,i2,i3-1)*u(i1,i2,i3-1,wc)
+
+  u0p1 = rx(i1+1,i2,i3)*u(i1+1,i2,i3,uc)+ry(i1+1,i2,i3)*u(i1+1,i2,i3,vc) + rz(i1+1,i2,i3)*u(i1+1,i2,i3,wc)
+  v0p1 = sx(i1,i2+1,i3)*u(i1,i2+1,i3,uc)+sy(i1,i2+1,i3)*u(i1,i2+1,i3,vc) + sz(i1,i2+1,i3)*u(i1,i2+1,i3,wc)
+  w0p1 = tx(i1,i2,i3+1)*u(i1,i2,i3+1,uc)+ty(i1,i2,i3+1)*u(i1,i2,i3+1,vc) + tz(i1,i2,i3+1)*u(i1,i2,i3+1,wc)
+
+
+  ! gtt0 = 0.
+  ! gtt1 = 0.
+  ! gtt2 = 0.
  else
   ! grid is moving
   !  ug0 = u - gridVelocity
+  !  gtt0 = grid acceleration = u.t 
   ug0 = u0-gv(i1,i2,i3,0)
   vg0 = v0-gv(i1,i2,i3,1)
   wg0 = w0-gv(i1,i2,i3,2)
+
+
+  u0r = rx(i1,i2,i3)*(u(i1,i2,i3,uc)-gv(i1,i2,i3,0))+ry(i1,i2,i3)*(u(i1,i2,i3,vc)-gv(i1,i2,i3,1)) + rz(i1,i2,i3)*(u(i1,i2,i3,wc)-gv(i1,i2,i3,2))
+  v0r = sx(i1,i2,i3)*(u(i1,i2,i3,uc)-gv(i1,i2,i3,0))+sy(i1,i2,i3)*(u(i1,i2,i3,vc)-gv(i1,i2,i3,1)) + sz(i1,i2,i3)*(u(i1,i2,i3,wc)-gv(i1,i2,i3,2))
+  w0r = tx(i1,i2,i3)*(u(i1,i2,i3,uc)-gv(i1,i2,i3,0))+ty(i1,i2,i3)*(u(i1,i2,i3,vc)-gv(i1,i2,i3,1)) + tz(i1,i2,i3)*(u(i1,i2,i3,wc)-gv(i1,i2,i3,2))
+
+  u0m1 = rx(i1-1,i2,i3)*(u(i1-1,i2,i3,uc)-gv(i1,i2,i3,0))+ry(i1-1,i2,i3)*(u(i1-1,i2,i3,vc)-gv(i1,i2,i3,1)) + rz(i1-1,i2,i3)*(u(i1-1,i2,i3,wc)-gv(i1,i2,i3,2))
+  v0m1 = sx(i1,i2-1,i3)*(u(i1,i2-1,i3,uc)-gv(i1,i2,i3,0))+sy(i1,i2-1,i3)*(u(i1,i2-1,i3,vc)-gv(i1,i2,i3,1)) + sz(i1,i2-1,i3)*(u(i1,i2-1,i3,wc)-gv(i1,i2,i3,2))
+  w0m1 = tx(i1,i2,i3-1)*(u(i1,i2,i3-1,uc)-gv(i1,i2,i3,0))+ty(i1,i2,i3-1)*(u(i1,i2,i3-1,vc)-gv(i1,i2,i3,1)) + tz(i1,i2,i3-1)*(u(i1,i2,i3-1,wc)-gv(i1,i2,i3,2))
+
+  u0p1 = rx(i1+1,i2,i3)*(u(i1+1,i2,i3,uc)-gv(i1,i2,i3,0))+ry(i1+1,i2,i3)*(u(i1+1,i2,i3,vc)-gv(i1,i2,i3,1)) + rz(i1+1,i2,i3)*(u(i1+1,i2,i3,wc)-gv(i1,i2,i3,2))
+  v0p1 = sx(i1,i2+1,i3)*(u(i1,i2+1,i3,uc)-gv(i1,i2,i3,0))+sy(i1,i2+1,i3)*(u(i1,i2+1,i3,vc)-gv(i1,i2,i3,1)) + sz(i1,i2+1,i3)*(u(i1,i2+1,i3,wc)-gv(i1,i2,i3,2))
+  w0p1 = tx(i1,i2,i3+1)*(u(i1,i2,i3+1,uc)-gv(i1,i2,i3,0))+ty(i1,i2,i3+1)*(u(i1,i2,i3+1,vc)-gv(i1,i2,i3,1)) + tz(i1,i2,i3+1)*(u(i1,i2,i3+1,wc)-gv(i1,i2,i3,2))
+
+  ug0r = u0r
+  vg0r = v0r
+  wg0r = w0r
+
+  ug0m1 = u0m1
+  vg0m1 = v0m1
+  wg0m1 = w0m1
+
+  ug0p1 = u0p1
+  vg0p1 = v0p1
+  wg0p1 = w0p1
+
+  ! gtt0 = gtt(i1,i2,i3,0)
+  ! gtt1 = gtt(i1,i2,i3,1)
+  ! gtt2 = gtt(i1,i2,i3,2)
  end if
 
  if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )then
@@ -699,7 +796,7 @@
    gtt0 = 0.
    gtt1 = 0.
    gtt2 = 0.
- end if
+end if
 
 
  ux0 = ux43(i1,i2,i3,uc)  
@@ -713,9 +810,24 @@
  wx0 = ux43(i1,i2,i3,wc)
  wy0 = uy43(i1,i2,i3,wc)
  wz0 = uz43(i1,i2,i3,wc)
+
  if( use4thOrderAD.ne.0 )then
    adCoeff4 = ad41+cd42*( abs(ux0)+abs(uy0)+abs(uz0) +abs(vx0)+abs(vy0)+abs(vz0) +abs(wx0)+abs(wy0)+abs(wz0) )
+      
+      ugmax = max(abs(ug0r),abs(ug0m1),abs(ug0p1))
+      vgmax = max(abs(vg0r),abs(vg0m1),abs(vg0p1))
+      wgmax = max(abs(wg0r),abs(wg0m1),abs(wg0p1))
+
+      ugmax = abs(ug0r)
+      vgmax = abs(vg0r)
+      wgmax = abs(wg0r)
+
+      cd43 = max(ugmax/dr(0),vgmax/dr(1),wgmax/dr(2))/12.
+
+      adCoeff4 =  adCoeff4 + cd43
+
  end if
+
  if( use2ndOrderAD.ne.0 )then
    adCoeff2 = ad21+cd22*( abs(ux0)+abs(uy0)+abs(uz0) +abs(vx0)+abs(vy0)+abs(vz0) +abs(wx0)+abs(wy0)+abs(wz0) )
  end if
@@ -896,16 +1008,34 @@
  ! Include artificial dissipation terms *wdh* 100817 
  u0 = u(i1,i2,i3,uc)
  v0 = u(i1,i2,i3,vc)
+ u0m1 = u(i1-1,i2,i3,uc)
+ v0m1 = u(i1,i2-1,i3,vc)
+ u0p1 = u(i1+1,i2,i3,uc)
+ v0p1 = u(i1,i2+1,i3,vc)
+
 #If #DIM == "2"
  if( gridIsMoving.eq.0 )then
   ! grid is NOT moving
   ug0 = u0
   vg0 = v0
+  ug0m1 = u0m1
+  vg0m1 = v0m1
+  ug0p1 = u0p1
+  vg0p1 = v0p1
+  ! gtt0 = 0.
+  ! gtt1 = 0.
  else
   ! grid is moving
   !  ug0 = u - gridVelocity
+  !  gtt0 = grid acceleration = u.t 
   ug0 = u0-gv(i1,i2,i3,0)
   vg0 = v0-gv(i1,i2,i3,1)
+  ug0m1 = u0m1-gv(i1,i2,i3,0)
+  vg0m1 = v0m1-gv(i1,i2,i3,1)
+  ug0p1 = u0p1-gv(i1,i2,i3,0)
+  vg0p1 = v0p1-gv(i1,i2,i3,1)
+  ! gtt0 = gtt(i1,i2,i3,0)
+  ! gtt1 = gtt(i1,i2,i3,1)
  end if
 
  if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )then
@@ -927,19 +1057,41 @@
 !!kkc vx0 = ux22r(i1,i2,i3,vc)
 !!kkc vy0 = uy22r(i1,i2,i3,vc)
 
- if( use4thOrderAD.ne.0 )then
+if( use4thOrderAD.ne.0 )then
    adCoeff4 = ad41+cd42*( abs(ux0)+abs(uy0)+abs(vx0)+abs(vy0) )
- end if
+
+      ugmax = max(abs(ug0),abs(ug0m1),abs(ug0p1))
+      vgmax = max(abs(vg0),abs(vg0m1),abs(vg0p1))
+
+      cd43 = max(ugmax/dx(0),vgmax/dx(1))/12.
+
+      adCoeff4 = adCoeff4 + cd43
+      
+      !!Print *, 'use new ad4 with ad41=ad42=0 for the boundary'
+
+end if
  if( use2ndOrderAD.ne.0 )then
    adCoeff2 = ad21+cd22*( abs(ux0)+abs(uy0)+abs(vx0)+abs(vy0) )
  end if
 #Else
  w0 = u(i1,i2,i3,wc)
+ w0m1 = u(i1-1,i2,i3,wc)
+ w0p1 = u(i1+1,i2,i3,wc)
+
  if( gridIsMoving.eq.0 )then
   ! grid is NOT moving
   ug0 = u0
   vg0 = v0
   wg0 = w0
+  ug0m1 = u0m1
+  vg0m1 = v0m1
+  wg0m1 = w0m1
+  ug0p1 = u0p1
+  vg0p1 = v0p1
+  wg0p1 = w0p1
+  ! gtt0 = 0.
+  ! gtt1 = 0.
+  ! gtt2 = 0.
  else
   ! grid is moving
   !  ug0 = u - gridVelocity
@@ -947,6 +1099,15 @@
   ug0 = u0-gv(i1,i2,i3,0)
   vg0 = v0-gv(i1,i2,i3,1)
   wg0 = w0-gv(i1,i2,i3,2)
+  ug0m1 = u0m1-gv(i1,i2,i3,0)
+  vg0m1 = v0m1-gv(i1,i2,i3,1)
+  wg0m1 = w0m1-gv(i1,i2,i3,2)
+  ug0p1 = u0p1-gv(i1,i2,i3,0)
+  vg0p1 = v0p1-gv(i1,i2,i3,1)
+  wg0p1 = w0p1-gv(i1,i2,i3,2)
+  ! gtt0 = gtt(i1,i2,i3,0)
+  ! gtt1 = gtt(i1,i2,i3,1)
+  ! gtt2 = gtt(i1,i2,i3,2)
  end if
 
  if( addBodyForcing.eq.1 .or. gridIsMoving.ne.0 )then
@@ -973,6 +1134,15 @@
  wz0 = uz43r(i1,i2,i3,wc)
  if( use4thOrderAD.ne.0 )then
    adCoeff4 = ad41+cd42*( abs(ux0)+abs(uy0)+abs(uz0) +abs(vx0)+abs(vy0)+abs(vz0) +abs(wx0)+abs(wy0)+abs(wz0) )
+
+      ugmax = max(abs(ug0),abs(ug0m1),abs(ug0p1))
+      vgmax = max(abs(vg0),abs(vg0m1),abs(vg0p1))
+      wgmax = max(abs(wg0),abs(wg0m1),abs(wg0p1))
+      
+      cd43 = max(ugmax/dx(0),vgmax/dx(1),wgmax/dx(2))/12.
+      
+      adCoeff4 = adCoeff4 + cd43
+
  end if
  if( use2ndOrderAD.ne.0 )then
    adCoeff2 = ad21+cd22*( abs(ux0)+abs(uy0)+abs(uz0) +abs(vx0)+abs(vy0)+abs(vz0) +abs(wx0)+abs(wy0)+abs(wz0) )
@@ -1573,7 +1743,6 @@
 #End
 #endMacro
 
-
       subroutine insbc4(bcOption, nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,
      & ipar,rpar, u, mask, x,rsxy, gv, gtt, bc, indexRange, ierr )         
 !=============================================================================================================
@@ -1607,7 +1776,7 @@
       integer i1m,i2m,i3m,i1p,i2p,i3p
       integer pc,uc,vc,wc,sc,grid,orderOfAccuracy,gridIsMoving,useWhereMask,tc,assignTemperature
       integer gridType,gridIsImplicit,implicitMethod,implicitOption,isAxisymmetric
-      integer use2ndOrderAD,use4thOrderAD,advectPassiveScalar,addBodyForcing 
+      integer use2ndOrderAD,use4thOrderAD,advectPassiveScalar,addBodyForcing
       integer nr(0:1,0:2)
       integer bcOptionWallNormal
       integer bc1,bc2,extrapOrder,ks1,kd1,ks2,kd2,is1,is2,is3
@@ -1623,7 +1792,11 @@
 
       real u0,v0,w0, ux0,uy0,uz0, vx0,vy0,vz0, wx0,wy0,wz0
       real ug0,vg0,wg0, gtt0, gtt1, gtt2
-
+      ! blame fm 090631
+      real ugmax,vgmax,u0m1,u0p1,v0m1,v0p1,ug0m1,ug0p1,vg0m1,vg0p1,cd43
+      real wgmax,w0m1,w0p1,wg0m1,wg0p1
+      real u0r,v0r,w0r, ug0r,vg0r,wg0r
+      
       ! variables to hold the exact solution:
       real ue,uxe,uye,uze,uxxe,uyye,uzze,ute
       real ve,vxe,vye,vze,vxxe,vyye,vzze,vte
@@ -1796,11 +1969,11 @@
       myid              =ipar(21)
       assignTemperature =ipar(22)
       tc                =ipar(23)
-
+      
       addBodyForcing    =ipar(25)   ! *new* wdh Jan 12, 2019
       ! write(*,'("SSSSSSSSSS insbc4:  addBodyForcing=",i3)') addBodyForcing      
 
-      !     advectPassiveScalar=ipar(16)
+!     advectPassiveScalar=ipar(16)
 
       dx(0)             =rpar(0)
       dx(1)             =rpar(1)
@@ -1978,7 +2151,20 @@
                else
                   is3=is
                end if
-               loopse4($boundaryConditionNeumannOutflow(none,2),,,)
+!               loopse4($boundaryConditionNeumannOutflow(none,2),,,)
+               if( nd.eq.2 )then
+                  if( twilightZone.eq.0 )then
+                     loopse4($boundaryConditionNeumannOutflow(none,2),,,) 
+                  else
+                     loopse4($boundaryConditionNeumannOutflow(tz,2),,,) 
+                  end if
+               else
+                  if( twilightZone.eq.0 )then
+                     loopse4($boundaryConditionNeumannOutflow(none,3),,,) 
+                  else
+                     loopse4($boundaryConditionNeumannOutflow(tz,3),,,) 
+                  end if
+               end if
 
             else 
              if( gridType.eq.rectangular )then
@@ -2217,7 +2403,7 @@
                   stop 5105
                  end if
                 end if
-              else
+             else
                 if( useWallBC )then
                   loopse4($boundaryConditionNavierStokesAndExtrapRectangular(r,tz,2),,,)
                 else if( useOutflowBC )then

@@ -1929,7 +1929,9 @@ c    *              dp(1),dabs((p1-p)/delta-dp(1))
         if (dabs((p1-p)/delta-dp(1)).gt.tol) then
           write(6,*)'Info (getc2) : (p1-p)/delta, dp(1) =',
      *              (p1-p)/delta,dp(1)
-          pause
+          write(6,*)'Enter kstop : (0=cont, 1=stop)'
+          read(5,*)kstop
+          if (kstop.ne.0) stop
         end if
         r=r-delta
         e=e+delta
@@ -1939,7 +1941,9 @@ c    *              dp(2),dabs((p1-p)/delta-dp(2))
         if (dabs((p1-p)/delta-dp(2)).gt.tol) then
           write(6,*)'Info (getc2) : (p1-p)/delta, dp(2) =',
      *              (p1-p)/delta,dp(2)
-          pause
+          write(6,*)'Enter kstop : (0=cont, 1=stop)'
+          read(5,*)kstop
+          if (kstop.ne.0) stop
         end if
         e=e-delta
         y=y+delta
@@ -1949,7 +1953,9 @@ c    *              dp(3),dabs((p1-p)/delta-dp(3))
         if (dabs((p1-p)/delta-dp(3)).gt.tol) then
           write(6,*)'Info (getc2) : (p1-p)/delta, dp(3) =',
      *              (p1-p)/delta,dp(3)
-          pause
+          write(6,*)'Enter kstop : (0=cont, 1=stop)'
+          read(5,*)kstop
+          if (kstop.ne.0) stop
         end if
         y=y-delta
         e0=e/r
@@ -1970,7 +1976,9 @@ c       write(55,*)c2,dabs(c2prim-c2)
         if (dabs(c2prim-c2).gt.tol) then
           write(6,*)'Info (getc2) : c2_prim, c2 =',
      *              c2prim,c2
-          pause
+          write(6,*)'Enter kstop : (0=cont, 1=stop)'
+          read(5,*)kstop
+          if (kstop.ne.0) stop
         end if
       end if
 c

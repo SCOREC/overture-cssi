@@ -180,7 +180,9 @@ LDFLAGS = -Wl,-rpath,$(Overture)/lib
 RANLIB = ranlib
 SOFLAGS = -shared
 OpenGLibs =$(GL_LIBS)
-GLIBS=  $(OV_PERL_LIBRARIES) -Wl,-rpath,$(OpenGL)/$(LIB64) -L$(OpenGL)/$(LIB64) $(OpenGLibs)  -Wl,-rpath,$(MOTIF)/$(LIB64) -L$(MOTIF)/$(LIB64) -lXm  -lXp -Wl,-rpath,$(XLIBS)/$(LIB64) -L$(XLIBS)/$(LIB64) -lXt -lXmu -lXi -lXext -lX11  $(LAPACK_LIBRARY) -lm 
+## GLIBS=  $(OV_PERL_LIBRARIES) -Wl,-rpath,$(OpenGL)/$(LIB64) -L$(OpenGL)/$(LIB64) $(OpenGLibs)  -Wl,-rpath,$(MOTIF)/$(LIB64) -L$(MOTIF)/$(LIB64) -lXm  -lXp -Wl,-rpath,$(XLIBS)/$(LIB64) -L$(XLIBS)/$(LIB64) -lXt -lXmu -lXi -lXext -lX11  $(LAPACK_LIBRARY) -lm 
+# No -Xp for Ubuntu: 
+GLIBS=  $(OV_PERL_LIBRARIES) -Wl,-rpath,$(OpenGL)/$(LIB64) -L$(OpenGL)/$(LIB64) $(OpenGLibs)  -Wl,-rpath,$(MOTIF)/$(LIB64) -L$(MOTIF)/$(LIB64) -lXm   -Wl,-rpath,$(XLIBS)/$(LIB64) -L$(XLIBS)/$(LIB64) -lXt -lXmu -lXi -lXext -lX11  $(LAPACK_LIBRARY) -lm 
 
 ## GLIBS=  $(OV_PERL_LIBRARIES) -Wl,-rpath,$(OpenGL)/$(LIB64) -L$(OpenGL)/$(LIB64) $(OpenGLibs)  -Wl,-rpath,$(MOTIF)/$(LIB64) -L$(MOTIF)/$(LIB64) -lXm  -lXpm -lXp -Wl,-rpath,$(XLIBS)/$(LIB64) -L$(XLIBS)/$(LIB64) -lXt -lXmu -lXi -lXext -lX11  $(LAPACK_LIBRARIES) -lm
 #

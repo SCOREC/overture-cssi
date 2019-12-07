@@ -108,6 +108,7 @@ $numberOfVolumeSmooths=50;
 #
 #  -- The curve for the shape is defined in an include file ---
 #
+$cmd ="include $shape";  # default 
 if( $shape eq "ellipse" ){ $cmd="include ellipseCurve.h"; }
 if( $shape eq "cross" ){ $cmd="include crossCurve.h"; }
 if( $shape eq "IBeam" ){ $cmd="include IBeamCurve.h"; }

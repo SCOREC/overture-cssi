@@ -6,6 +6,10 @@
 #
 #   plotStuff plotField.cmd -show=starFishG128.show -name=starFish
 #   plotStuff plotField.cmd -show=starFishMovie.show -name=starFish
+# 
+#   plotStuff plotField.cmd -show=starFisha.show -name=starFish -solution=21
+# 
+#   plotStuff plotField.cmd -show=waveyDiskb.show -name=waveyDiskb -solution=21
 #
 #    plotStuff plotField.cmd -show=dieBlockG8.show -solution=101 -name=dieBlock
 #    plotStuff plotField.cmd -show=dieBlockG8.show -solution=1  -name=dieBlockt0p0
@@ -55,7 +59,8 @@
 # L4 PML41  compared to long G8
 #  plotStuff plotField.cmd -show=ellL4G4PML41vL20G8.show -name=ellL4pml41 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error" 
 # L10 PML41  compared to long G8
-#  plotStuff plotField.cmd -show=ellL10G4PML41vL20G8.show -name=ellL10pml41 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error# L10 PML81  compared to long G8
+#  plotStuff plotField.cmd -show=ellL10G4PML41vL20G8.show -name=ellL10pml41 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error"
+# L10 PML81  compared to long G8
 #  plotStuff plotField.cmd -show=ellL10G4PM81LvL20G8.show -name=ellL10pml81 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error" 
 #   +++ Order 2:
 # L2 NL-RBC short-domain  compared to long G8

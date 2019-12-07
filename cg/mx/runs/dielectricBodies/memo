@@ -1,3 +1,82 @@
+**************************************
+******* Thurs Nov 28, 2019
+
+
+
+
+**************************************
+******* Nov 27, 2019
+
+RECREATE waveCurve.h  (lost in disk crash)
+
+
+Order=2 -eps=.25
+
+nohup $cgmx -noplot dielectricBodies -g=waveyDiskGride128.order4.ng3.hdf -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=waveyDiskc.show -go=go >!  waveyDiskc.out &
+
+OK
+cgmx -noplot dielectricBodies -g=waveyDiskGride64.order2.hdf -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=waveyDiskb.show -go=go >! waveyDiskb.out &
+
+
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -numGhost=3 -order=4 -factor=128
+
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=128
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=64
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=32
+
+
+**************************************
+******* Sun Oct 27, 2019
+
+
+ogen -noplot shapedDiskGrid -shape=starFish -prefix=starFishGrid -interp=e -numGhost=3 -order=4 -factor=128
+
+
+nohup $cgmx -noplot dielectricBodies -g=starFishGride128.order4.ng3.hdf -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=starFishb.show -go=go >! starFishb.out &
+
+
+==== Oct 26, 2019 
+
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -numGhost=3 -order=4 -factor=128
+
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=128
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=64
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyDiskGrid -interp=e -order=2 -factor=32
+
+TO-DO: order=4, change eps1
+nohup $cgmx -noplot dielectricBodies -g=waveyDiskGride128.order4.ng3 -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=waveyDiska.show -go=go >! waveyDiska.out &
+
+
+Order=2 -eps=.25 OK -- killed
+nohup $cgmx -noplot dielectricBodies -g=waveyDiskGride128.order2.hdf -eps1=.25 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=waveyDisk.show -go=go >! waveyDisk.out &
+
+
+
+nohup $cgmx -noplot dielectricBodies -g=starFishGride128.order2.hdf -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=1000 -flushFrequency=2 -show=starFisha.show -go=go >! starFisha.out &
+
+
+
+
+
+
+==== Oct 25, 2019 
+
+POSSIBLE FANCY SHAPES 
+
+ogen -noplot shapedDiskGrid -shape=waveyCurve.h -prefix=waveyGrid -interp=e -order=2 -factor=32
+
+
+ogen -noplot shapedDiskGrid -shape=starFish -prefix=starFishGrid -interp=e -order=2 -factor=64
+ogen -noplot shapedDiskGrid -shape=starFish -prefix=starFishGrid -interp=e -order=2 -factor=128
+
+ogen -noplot shapedDiskGrid -shape=starFish -prefix=starFishGrid -interp=e -order=4 -factor=128
+
+
+RED-DO STAR-FISH  with SOSUP 
+
+G64 -- ok for a while : bad ghost points? 
+nohup $cgmx -noplot dielectricBodies -g=starFishGride64.order2.hdf -eps1=4 -eps2=1 -ic=gp -x0=-1.5 -beta=500 -rbc=rbcNonLocal -useSosupDissipation=1 -tp=.1 -tf=5. -probeFrequency=100 -flushFrequency=2 -show=starFish.show -go=go >! starFish.out &
+
 
 
 **************************************

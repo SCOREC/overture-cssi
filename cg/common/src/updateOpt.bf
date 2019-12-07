@@ -202,6 +202,7 @@ end do
 !  n3b    = ipar(7)
 !  n4a    = ipar(8)
 !  n4b    = ipar(9)
+!  is4    = ipar(10)   *wdh* shift added, Dec 4, 2019 
 !
 !  c1 = rpar(0)
 !  c2 = rpar(1)
@@ -209,13 +210,19 @@ end do
 !  c4 = rpar(3)
 !  etc.
 !
-!  option=3:
-!     uNew(n1a:n1b,n2a:n2b,n3a:n3b,n4a:n4b) = c1*u1 + c2*u2 + c3*u3
+!  I1=n1a:n1b, I2=n2a:n2b, I3=n3a:n3b, I4=n4a:n4b 
+!  option=1:
+!     uNew(I1,I2,I3,I4) = c1*u1(I1,I2,I3,I4)
 !
-!  option=4:
-!     uNew(n1a:n1b,n2a:n2b,n3a:n3b,n4a:n4b) = c1*u1 + c2*u2 + c3*u3 + c4*u4
+!  option=2:
+!     uNew(I1,I2,I3,I4) = c1*u1(I1,I2,I3,I4) + c2*u2(I1,I2,I3,I4+i4s)
+!
+!  option=3:
+!     uNew(I1,I2,I3,I4) = c1*u1(I1,I2,I3,I4) + c2*u2(I1,I2,I3,I4+i4s) + c3*u3(I1,I2,I3,I4+i4s)
 !
 !  option=M: 
+!     uNew(I1,I2,I3,I4) = c1*u1(I1,I2,I3,I4) + SUM_k=2^M ck*uk(I1,I2,I3,I4+i4s)
+!
 !     u2(n1a:n1b,n2a:n2b,n3a:n3b,n4a:n4b) = SUM_k=1^M c_k * u_k 
 !
 !
@@ -238,7 +245,7 @@ end do
       real u10(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
 
       integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
-      integer ierr
+      integer ierr, is4
 
       integer ipar(0:*)
       real rpar(0:*)
@@ -264,7 +271,14 @@ end do
       n3b       = ipar(7)
       n4a       = ipar(8)
       n4b       = ipar(9)
+      is4       = ipar(10)
 
+      ! write(*,'(" updateOptNew: is4=",i6)') is4
+
+      if( is4 .lt. 0 .or. is4 .gt. 1000 )then
+        write(*,'(" updateOptNew: is4=",i6," looks funny")') is4
+        stop 7532
+      end if
       c1    = rpar(0)
       c2    = rpar(1)
       c3    = rpar(2)
@@ -285,60 +299,64 @@ end do
       else if( option.eq.2 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)
+          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
        else if( option.eq.3 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)
+          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.4 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)
+          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.5 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)\
+                                            +c4*u4(i1,i2,i3,i4+is4)+c5*u5(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.6 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+\
-                            c6*u6(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)\
+                                            +c5*u5(i1,i2,i3,i4+is4)+c6*u6(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.7 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+\
-                            c6*u6(i1,i2,i3,i4)+c7*u7(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)\
+                                            +c5*u5(i1,i2,i3,i4+is4)+c6*u6(i1,i2,i3,i4+is4)+c7*u7(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.8 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+\
-                            c6*u6(i1,i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)\
+                                            +c5*u5(i1,i2,i3,i4+is4)+c6*u6(i1,i2,i3,i4+is4)+c7*u7(i1,i2,i3,i4+is4)\
+                                            +c8*u8(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.9 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+\
-                            c6*u6(i1,i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)+c9*u9(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)\
+                                            +c5*u5(i1,i2,i3,i4+is4)+c6*u6(i1,i2,i3,i4+is4)+c7*u7(i1,i2,i3,i4+is4)\
+                                            +c8*u8(i1,i2,i3,i4+is4)+c9*u9(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
       else if( option.eq.10 )then
 
         beginLoopsMaskNew()
-          uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4)+c3*u3(i1,i2,i3,i4)+c4*u4(i1,i2,i3,i4)+c5*u5(i1,i2,i3,i4)+\
-                            c6*u6(i1,i2,i3,i4)+c7*u7(i1,i2,i3,i4)+c8*u8(i1,i2,i3,i4)+c9*u9(i1,i2,i3,i4)+c10*u10(i1,i2,i3,i4)
+        uNew(i1,i2,i3,i4)=c1*u1(i1,i2,i3,i4)+c2*u2(i1,i2,i3,i4+is4)+c3*u3(i1,i2,i3,i4+is4)+c4*u4(i1,i2,i3,i4+is4)\
+                                            +c5*u5(i1,i2,i3,i4+is4)+c6*u6(i1,i2,i3,i4+is4)+c7*u7(i1,i2,i3,i4+is4)\
+                                            +c8*u8(i1,i2,i3,i4+is4)+c9*u9(i1,i2,i3,i4+is4)+c10*u10(i1,i2,i3,i4+is4)
         endLoopsMaskNew()
 
 

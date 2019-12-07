@@ -5,7 +5,7 @@
 #   
 #  cgmx [-noplot] tz -g=<name> -tz=<poly/trig> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
 #                    -bcn=[pec|d|s] -diss=<> -order=<2/4> -debug=<num> -bg=<backGround> -cons=[0/1] ...
-#                    -method=[nfdtd|Yee|sosup] -dm=[none|gdm] -go=[run/halt/og]
+#                    -method=[nfdtd|Yee|sosup] -dm=[none|gdm] -ts=[me|rk1|rk2|rk3|rk4] -go=[run/halt/og]
 # 
 #  -dm : dispersion model
 #  -diss : coeff of artificial diffusion 
@@ -82,9 +82,10 @@
 # 
 $noplot=""; $backGround="square"; $grid="square10"; $mu=1.; $lambda=1.;$method="NFDTD"; 
 $debug = 0;  $tPlot=.1; $diss=.1; $dissOrder=2; $bcn="pec"; $cons=0; $dm="none"; $domain="all"; 
-$tz = "poly"; $degreex=2; $degreet=2; $fx=.5; $fy=$fx; $fz=$fx; $ft=$fx; $useTZmaterials=0;
+$tz = "poly"; $degreex=2; $degreet=2; $fx=.5; $fy=$fx; $fz=$fx; $ft=$fx; $useTZmaterials=0; $solveForAllFields=0; 
 $order = 2; $go="run"; $useSosupDissipation=0; $sosupParameter=1.; $sosupDissipationOption=0; 
-$tFinal=1.; $cfl=.9; 
+$tFinal=1.; $cfl=.9; $ts="me"; $matFile="";  $numMatRegions=1; $matFile2=""; 
+$eps=1.; $mu=1.;
 # GDM parameters
 $npv=1; $alphaP=1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below
@@ -92,13 +93,23 @@ $npv=1; $alphaP=1.; $modeGDM=-1;
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"dissOrder=i"=>\$dissOrder, \
- "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
+ "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"ts=s"=>\$ts,\
+  "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
-  "sosupDissipationOption=i"=>\$sosupDissipationOption,"domain=s"=>\$domain,\
-  "mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,\
+  "sosupDissipationOption=i"=>\$sosupDissipationOption,"domain=s"=>\$domain,"solveForAllFields=i"=>\$solveForAllFields,\
+  "eps=f"=>\$eps,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,\
   "useTZmaterials=i"=>\$useTZmaterials,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,"dm=s"=>\$dm,\
   "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv );
 # -------------------------------------------------------------------------------------------------
+#
+if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+$orderOfRungeKutta=4;
+if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
+if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
+if( $ts eq "rk3" ){ $ts="rungeKutta"; $orderOfRungeKutta=3; }
+if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
+# printf(" TS = [$ts], order=[$orderOfRungeKutta] \n");
+#
 # Give defaults here for array arguments: 
 if( $a0[0] eq "" ){ @a0=(1,0,0,0); }
 if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
@@ -125,8 +136,35 @@ if( $dm eq"gdm" ){ $dm="GDM"; }
 $grid
 # 
 $method
+# time-stepping method
+$ts
+order of Runge Kutta $orderOfRungeKutta
+#
+solve for all fields $solveForAllFields
+# open graphics
 # dispersion model:
 $dm
+#
+# 
+coefficients $eps $mu  all (eps,mu,grid/domain name)
+#
+# -- specify material regions or material file
+$cmd="#"; 
+if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
+$cmd
+$cmd="#"; 
+if( $numMatRegions>1 ){\
+$cmd="forcing options...\n define material region...\n"; \
+$cmd .= "material file: $matFile2\n"; \
+$cmd .= "box: .5 .75 .25 .75 0 1 (xa,xb,ya,yb,za,zb)\n continue"; }
+# 
+# box: .75 1. .25 .75 0 1 (xa,xb,ya,yb,za,zb)
+# material file: baAir.txt
+# box: .25 .5 .5 .75 0 1 (xa,xb,ya,yb,za,zb)
+# material file: baAir.txt
+# cylinder: 0 .5 0 .25 0 1 (x0,y0,z0, radius, za,zb)
+$cmd 
+# 
 # 
 # Drude params 1 1 all (gamma,omegap,domain-name)
 $cmd="#"; 

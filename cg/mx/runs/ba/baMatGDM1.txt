@@ -1,0 +1,21 @@
+# BA material file for a simple dispersive material
+name="baMatGDM";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="MKS";
+# Could change velocity and length scale 
+#  const real nm = 1e-9;         // nanometers  (meter-per-nm)
+#  const real c0 = 299792458;    // the speed of light, [m/c]
+#  const real L0 = 100*nm;       // length scale -- appropriate for visible light 
+#  T0=L0/c0; omegaScale=c0/L0
+# omegaScale=1;
+omegaScale=299792458e+7;
+bianistropicK0=[1.,0.,0.,0.,0.,0., \
+                0.,1.,0.,0.,0.,0., \
+                0.,0.,1.,0.,0.,0., \
+                0.,0.,0.,1.,0.,0., \
+                0.,0.,0.,0.,1.,0., \
+                0.,0.,0.,0.,0.,1., ];
+# a0,a1,b0,b1 
+bianistropicPars11GDM1=[1.,0.,1.,0.1];		
+bianistropicPars22GDM1=[1.,0.,2.,0.2];		

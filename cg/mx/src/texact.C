@@ -25,14 +25,19 @@ main(int argc, char *argv[])
 {
   Overture::start(argc,argv);  // initialize Overture and A++/P++
 
-  printF("Usage: texact -option=[0|1|2|3] -g=<grid>  -dm=[none|gdm]...\n"
+  printF("Usage: texact -option=[0|1|2|3|4|5] -g=<grid>  -dm=[none|gdm] -matFile1=<s> -matFile2=<> ...\n"
+         "              -computeOption=[0|1}  -kx=<f> -ky=<f> -kz=<f> \n"
          "  option =  0 : pec sphere\n"
          "            1 : dispersive sphere\n"
          "            2 : plane interface 2d\n"
          "            3 : plane interface 3d\n"
+         "            4 : BA plane interface 2d\n"
+         "            5 : BA plane interface 2d\n"
+         " computeOption : for BA plane interface, 0=computeComplexFrequency, 1=computeComplexWaveNumber\n"
+         " [kx,ky,kz] : wave-number for BA plane interface\n"
           );
 
-  const int pecSphere=0, dispersiveSphere=1, planeInterface2D=2, planeInterface3D=3;
+  const int pecSphere=0, dispersiveSphere=1, planeInterface2D=2, planeInterface3D=3, BAplaneInterface2D=4, BAplaneInterface3D=5;
   int option = pecSphere;  
   option = dispersiveSphere;
 
@@ -44,6 +49,12 @@ main(int argc, char *argv[])
   const int none=0, gdm=1;
   int dispersionModel =none;
   
+  aString matFile1="baAir.txt";
+  aString matFile2="baAir.txt";
+  int computeOption=0; // for BA, 0=computeComplexFrequency, 1=computeComplexWaveNumber
+  real kx=1., ky=1., kz=0.;
+  
+     
   // char buff[180];
   int len=0;
   if( argc > 1 )
@@ -53,11 +64,43 @@ main(int argc, char *argv[])
     {
       line=argv[i];
       if( line=="-noplot" || line=="noplot" )
+      {
         plotOption=false;
+      }
       else if( len=line.matches("-option=") )
       {
         sScanF(line(len,line.length()-1),"%i",&option);
 	printF("option = %i\n",option);
+      }
+      else if( len=line.matches("-computeOption=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&computeOption);
+	printF("computeOption = %i\n",computeOption);
+      }
+      else if( len=line.matches("-matFile1=") )
+      {
+        matFile1=line(len,line.length()-1);
+	printF("matFile1 = %s\n",(const char*)matFile1);
+      }
+      else if( len=line.matches("-matFile2=") )
+      {
+        matFile2=line(len,line.length()-1);
+	printF("matFile2 = %s\n",(const char*)matFile2);
+      }
+      else if( len=line.matches("-kx=") )
+      {
+        sScanF(line(len,line.length()-1),"%e",&kx);
+	printF("kx = %g\n",kx);
+      }
+      else if( len=line.matches("-ky=") )
+      {
+        sScanF(line(len,line.length()-1),"%e",&ky);
+	printF("ky = %g\n",ky);
+      }
+      else if( len=line.matches("-kz=") )
+      {
+        sScanF(line(len,line.length()-1),"%e",&kz);
+	printF("kz = %g\n",kz);
       }
       else if( len=line.matches("-g=") )
       {
@@ -84,9 +127,9 @@ main(int argc, char *argv[])
       nameOfGridFile="sphereInABoxGride2.order2.hdf";
     else if( option==dispersiveSphere )
       nameOfGridFile="solidSphereInABoxe2.order2.hdf";
-    else if( option==planeInterface2D )
+    else if( option==planeInterface2D || option== BAplaneInterface2D )
       nameOfGridFile="twoSquaresInterfacee8.order2.hdf";
-    else if( option==planeInterface3D )
+    else if( option==planeInterface3D || option==BAplaneInterface3D )
       nameOfGridFile= "twoBoxesInterfacee4.order2.hdf";
     else
     {
@@ -210,7 +253,7 @@ main(int argc, char *argv[])
 
 
   }
-  else
+  else if( option==planeInterface2D || option==planeInterface3D )
   {
     // --------------- PLANE MATERIAL INTERFACE ---------------
     
@@ -349,6 +392,151 @@ main(int argc, char *argv[])
      
 
   }
+
+  else if( option==BAplaneInterface2D || option==BAplaneInterface3D )
+  {
+    // --------------- PLANE MATERIAL INTERFACE ---------------
+    
+    const real nm = 1e-9;         // nanometers  (meter-per-nm)
+    const real um = 1e-6;         // micrometers
+    const real c0 = 299792458;    // the speed of light, [m/c]
+    const real L0 = 100*nm;       // length scale -- appropriate for visible light 
+
+    const real velocityScale = c0;  // velocity scale 
+    const real lengthScale   = L0;  // length scale 
+    real V0=velocityScale;
+
+
+     PlaneInterfaceExactSolution pies;
+   
+     DispersiveMaterialParameters dmp1, dmp2;
+
+     aString materialType = "bianisotropic";
+     dmp1.setMaterialType( DispersiveMaterialParameters::bianisotropic );
+     dmp2.setMaterialType( DispersiveMaterialParameters::bianisotropic );
+
+     dmp1.setScales( velocityScale,lengthScale );
+     dmp2.setScales( velocityScale,lengthScale );
+
+     dmp1.setDispersionRelationComputeOption( DispersiveMaterialParameters::DispersionRelationOptionEnum(computeOption) );
+     dmp2.setDispersionRelationComputeOption( DispersiveMaterialParameters::DispersionRelationOptionEnum(computeOption) );
+      
+     dmp1.readFromFile( matFile1 );
+     dmp2.readFromFile( matFile2 );
+     
+     // Real kx =1, ky=1, kz=0;
+     Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
+
+     Real sr=0.;
+     Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
+
+     // DispersionRelationOptionEnum computeOption =computeComplexWaveNumber;
+     // DispersionRelationOptionEnum computeOption =computeComplexFrequency;
+     // setDispersionRelationComputeOption( computeOption );
+
+
+     Real skr=sr, ski=si;
+      
+     // typedef std::vector<std::complex<Real> > ComplexVector;
+     // ComplexVector qvi;
+     // getBianisotropicPlaneInterfaceSolution(  dmp2, kv, skr, ski, qvi,qv,  chi, noPolarization );
+     // PlaneInterfaceExactSolution pies;
+      
+     pies.initializeBAPlaneInterfaceSolution( dmp1, dmp2, kvp, skr, ski );
+
+
+
+     // pies.initialize( cg, dmp1,dmp2,av,kvr,kvi );
+
+
+     int solveForAllFields=1;
+
+     Range all;
+     int nc= cg.numberOfDimensions()==3 || solveForAllFields==1 ? 6 : 3;  //  [Ex,Ey,Hz] or [Ex,Ey,Ez, Hx,Hy,Hz ] 
+     realCompositeGridFunction u(cg,all,all,all,nc);
+     u=0.;
+  
+     u.setName("E");
+     u.setName("Ex",0);
+     u.setName("Ey",1);
+     if( solveForAllFields==0 && cg.numberOfDimensions()==2 )
+       u.setName("Hz",2);
+     else
+     {
+       u.setName("Ez",2);
+       u.setName("Hx",3);
+       u.setName("Hy",4);
+       u.setName("Hz",5);
+     }
+     
+
+     const IntegerArray & Np1 = dmp1.getBianisotropicNp();
+     const IntegerArray & Np2 = dmp2.getBianisotropicNp();
+     
+     int npvMax= max(sum(Np1),sum(Np2))*2;  // total number of Pijm, Qijm terms 
+     npvMax = max( npvMax,1);
+     realCompositeGridFunction pv(cg,all,all,all,npvMax);
+
+     
+
+
+
+    int plotOption=1;
+    // GenericGraphicsInterface & gi = *Overture::getGraphicsInterface("texact",plotOption,argc,argv);
+
+    bool openGraphicsWindow=TRUE;
+    PlotStuff gi(openGraphicsWindow,"texact");  // create a PlotStuff object
+    PlotStuffParameters psp;                      // This object is used to change plotting parameters
+  
+    int numberOfTimeDerivatives=0;
+    
+    int numberOfMaterialRegions=1; 
+
+    cg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+
+    real dt=.1;
+    const int numSteps=11;
+    for( int step=0; step<numSteps; step++ )
+    {
+      real t = dt*step;
+     
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+	Index I1,I2,I3;
+	getIndex(cg[grid].dimension(),I1,I2,I3);
+
+	IntegerArray matMask(I1,I2,I3);
+	OV_GET_SERIAL_ARRAY(Real,cg[grid].vertex(),xLocal);
+	matMask=0;
+	where( xLocal(I1,I2,I3,0) > .0 )
+	{
+	  matMask(I1,I2,I3)=1;
+	}
+
+	pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, u[grid], pv[grid],I1,I2,I3, numberOfTimeDerivatives, solveForAllFields);
+
+      }
+     
+      gi.erase();
+      psp.set(GI_TOP_LABEL,sPrintF("BA Plane Material Interface t=%g",t));
+      // PlotIt::plot(gi,cg,psp);
+      if( step==0 || step==(numSteps-1) )
+        psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);      
+      else
+        psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);      
+
+      PlotIt::contour(gi,u,psp);
+
+      gi.redraw(TRUE);
+      
+    }
+     
+  }
+  else
+  {
+    OV_ABORT("error: unknown option");
+  }
+  
   
 
 

@@ -435,6 +435,7 @@ plotStuff= plotStuffDriver.o plotStuffFunction.o ShowFilePlotter.o  ../otherStuf
 plotStuff= plotStuffDriver.o plotStuffFunction.o ShowFilePlotter.o ShowFileReader.o DerivedFunctions.o
 plotStuff= plotStuffDriver.o plotStuffFunction.o ShowFilePlotter.o ShowFileReader.o DerivedFunctions.o streamLines.o
 plotStuff= plotStuffDriver.o plotStuffFunction.o grid.o plotGridQuality.o GridStatistics.o
+plotStuff= plotStuffDriver.o plotStuffFunction.o ShowFilePlotter.o DerivedFunctions.o
 plotStuff: $(plotStuff) 
 	$(CC) $(CCFLAGS) -DADD_USER_MAPPINGS -o $@ $(plotStuff) \
         $(CLIBS) $(FLIBS) $(GLIBS)

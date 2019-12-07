@@ -29,6 +29,7 @@
      & ez,hx,hy,hz,useWhereMask,side1,side2,side3,m1,m2,m3,bc1,bc2,
      & forcingOption,fieldOption,boundaryForcingOption
         integer polarizationOption,dispersionModel
+        integer solveForAllFields
         real dt,kx,ky,kz,eps,mu,c,cc,twoPi,slowStartInterval,ssf,ssft,
      & ssftt,ssfttt,ssftttt,tt
         real dr(0:2), dx(0:2), t, uv(0:5), uvm(0:5), uv0(0:5), uvp(0:5)
@@ -1671,6 +1672,7 @@ c===============================================================================
         polarizationOption   =ipar(33)
         dispersionModel      =ipar(34)
         numberOfPolarizationVectors=ipar(36)
+        solveForAllFields    = ipar(38)
         dx(0)                =rpar(0)
         dx(1)                =rpar(1)
         dx(2)                =rpar(2)
@@ -1705,6 +1707,11 @@ c===============================================================================
         ! variables for dispersive plane wave
         sr                   =rpar(37)  ! Re(s)
         si                   =rpar(38)  ! Im(s)
+        if( t.le.2*dt) then
+          write(*,'("++++++ bcMxCorners: solveForAllFields",i2)') 
+     & solveForAllFields
+        end if
+        ! solveForAllFields=0
         ! if( t.le.3*dt )then
         !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si
         ! end if
@@ -2441,20 +2448,29 @@ c===============================================================================
                  end do
                  end do
                  end do
-               else
+              else
+                 ! **********  rectangular grid **********
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                     ! finish me 
+                     stop 8265
+                 else ! not solveForAllFields
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
                      ! -- Boundary Forcing : if we solve for scattered field directly ----
                      x0=xy(i1,i2,i3,0)
                      y0=xy(i1,i2,i3,1)
@@ -2974,9 +2990,10 @@ c===============================================================================
                      end if
                      u(i1,i2,i3,et1)=uv(et1)
                    ! Set tau.Pv = 0 for dispersive models
-                 end do
-                 end do
-                 end do
+                  end do
+                  end do
+                  end do
+                end if ! not solveForAllFields (rectangular)
                end if
             else if( useForcing.eq.0 )then
                ! Set the tangential component to zero
@@ -3010,20 +3027,36 @@ c===============================================================================
                  end do
                  end do
                  end do
-               else
+              else
+                 ! **********  rectangular grid **********
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                    do i3=n3a,n3b
+                    do i2=n2a,n2b
+                    do i1=n1a,n1b
+                      u(i1,i2,i3,et1)=0.
+                      u(i1,i2,i3,et2)=0.
+                      u(i1,i2,i3,hn1)=0.
+                    end do
+                    end do
+                    end do
+                 else ! not solveForAllFields
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
                      u(i1,i2,i3,et1)=0.
                    ! Set tau.Pv = 0 for dispersive models
                     ! For now only do case with no forcing ***finish me***
@@ -3033,9 +3066,10 @@ c===============================================================================
                         p(i1,i2,i3,m  )=0.
                       end do
                     end if
-                 end do
-                 end do
-                 end do
+                  end do
+                  end do
+                  end do
+                end if ! not solveForAllFields (rectangular)
                end if
             else
                ! Set the tangential component to zero
@@ -3062,29 +3096,39 @@ c===============================================================================
                  end do
                  end do
                  end do
-               else
+              else
+                 ! **********  rectangular grid **********
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                     ! finish me 
+                     stop 8265
+                 else ! not solveForAllFields
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
                      call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1    ,i2 
      &    ,i3,0),xy(i1    ,i2    ,i3,1),t, u0,v0,w0)
                      uv(ex)=u0
                      uv(ey)=v0
                      u(i1,i2,i3,et1)=uv(et1)
                    ! Set tau.Pv = 0 for dispersive models
-                 end do
-                 end do
-                 end do
+                  end do
+                  end do
+                  end do
+                end if ! not solveForAllFields (rectangular)
                end if
             end if
           else
@@ -4071,317 +4115,335 @@ c===============================================================================
                  end do
                 end if ! **** END OLD WAY
                else
+                 ! ************** Rectangular grids ******************
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
-                     ! -- Boundary Forcing : if we solve for scattered field directly ----
-                     x0=xy(i1,i2,i3,0)
-                     y0=xy(i1,i2,i3,1)
-                     z0=xy(i1,i2,i3,2)
-                     if( .true. )then ! *new way*
-                       numberOfTimeDerivatives=0+fieldOption
-                         if( 
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                     ! finish me 
+                     stop 8266
+                 else ! not solveForAllFields
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                       ! -- Boundary Forcing : if we solve for scattered field directly ----
+                       x0=xy(i1,i2,i3,0)
+                       y0=xy(i1,i2,i3,1)
+                       z0=xy(i1,i2,i3,2)
+                       if( .true. )then ! *new way*
+                         numberOfTimeDerivatives=0+fieldOption
+                           if( 
      & boundaryForcingOption.eq.noBoundaryForcing )then
-                         else if( 
+                           else if( 
      & boundaryForcingOption.eq.planeWaveBoundaryForcing )then
-                           if( dispersionModel.eq.noDispersion )then
-                               if( numberOfTimeDerivatives==0 )then
-                                 uv(ex) = (ssf*sin(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(0))
-                                 uv(ey) = (ssf*sin(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(1))
-                                 uv(ez) = (ssf*sin(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(2))
-                               else if( numberOfTimeDerivatives==1 )
+                             if( dispersionModel.eq.noDispersion )then
+                                 if( numberOfTimeDerivatives==0 )then
+                                   uv(ex) = (ssf*sin(twoPi*(kx*(x0)+ky*
+     & (y0)+kz*(z0)-cc*(t)))*pwc(0))
+                                   uv(ey) = (ssf*sin(twoPi*(kx*(x0)+ky*
+     & (y0)+kz*(z0)-cc*(t)))*pwc(1))
+                                   uv(ez) = (ssf*sin(twoPi*(kx*(x0)+ky*
+     & (y0)+kz*(z0)-cc*(t)))*pwc(2))
+                                 else if( numberOfTimeDerivatives==1 )
      & then
-                                 uv(ex) = (ssf*(-twoPi*cc)*cos(twoPi*(
-     & kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)+ssft*sin(twoPi*(kx*(x0)
-     & +ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))
-                                 uv(ey) = (ssf*(-twoPi*cc)*cos(twoPi*(
-     & kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)+ssft*sin(twoPi*(kx*(x0)
-     & +ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))
-                                 uv(ez) = (ssf*(-twoPi*cc)*cos(twoPi*(
-     & kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)+ssft*sin(twoPi*(kx*(x0)
-     & +ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))
-                               else if( numberOfTimeDerivatives==2 )
+                                   uv(ex) = (ssf*(-twoPi*cc)*cos(twoPi*
+     & (kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)+ssft*sin(twoPi*(kx*(
+     & x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))
+                                   uv(ey) = (ssf*(-twoPi*cc)*cos(twoPi*
+     & (kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)+ssft*sin(twoPi*(kx*(
+     & x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))
+                                   uv(ez) = (ssf*(-twoPi*cc)*cos(twoPi*
+     & (kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)+ssft*sin(twoPi*(kx*(
+     & x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))
+                                 else if( numberOfTimeDerivatives==2 )
      & then
-                                 uv(ex) = (ssf*(-(twoPi*cc)**2*sin(
+                                   uv(ex) = (ssf*(-(twoPi*cc)**2*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))+2.*ssft*(-
      & twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)+
      & ssftt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))
-                                 uv(ey) = (ssf*(-(twoPi*cc)**2*sin(
+                                   uv(ey) = (ssf*(-(twoPi*cc)**2*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))+2.*ssft*(-
      & twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)+
      & ssftt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))
-                                 uv(ez) = (ssf*(-(twoPi*cc)**2*sin(
+                                   uv(ez) = (ssf*(-(twoPi*cc)**2*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))+2.*ssft*(-
      & twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)+
      & ssftt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))
-                               else if( numberOfTimeDerivatives==3 )
+                                 else if( numberOfTimeDerivatives==3 )
      & then
-                                 uv(ex) = (ssf*((twoPi*cc)**3*cos(
+                                   uv(ex) = (ssf*((twoPi*cc)**3*cos(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))+3.*ssft*(-(
      & twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)
      & )+3.*ssftt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(
      & t)))*pwc(0)+ssfttt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*
      & pwc(0))
-                                 uv(ey) = (ssf*((twoPi*cc)**3*cos(
+                                   uv(ey) = (ssf*((twoPi*cc)**3*cos(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))+3.*ssft*(-(
      & twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)
      & )+3.*ssftt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(
      & t)))*pwc(1)+ssfttt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*
      & pwc(1))
-                                 uv(ez) = (ssf*((twoPi*cc)**3*cos(
+                                   uv(ez) = (ssf*((twoPi*cc)**3*cos(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))+3.*ssft*(-(
      & twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)
      & )+3.*ssftt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(
      & t)))*pwc(2)+ssfttt*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*
      & pwc(2))
-                               else if( numberOfTimeDerivatives==4 )
+                                 else if( numberOfTimeDerivatives==4 )
      & then
-                                 uv(ex) = (ssf*((twoPi*cc)**4*sin(
+                                   uv(ex) = (ssf*((twoPi*cc)**4*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0))+4.*ssft*((
      & twoPi*cc)**3*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)
      & )+6.*ssftt*(-(twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
      & cc*(t)))*pwc(0))+4.*ssfttt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
      & y0)+kz*(z0)-cc*(t)))*pwc(0)+ssftttt*sin(twoPi*(kx*(x0)+ky*(y0)+
      & kz*(z0)-cc*(t)))*pwc(0))
-                                 uv(ey) = (ssf*((twoPi*cc)**4*sin(
+                                   uv(ey) = (ssf*((twoPi*cc)**4*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1))+4.*ssft*((
      & twoPi*cc)**3*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)
      & )+6.*ssftt*(-(twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
      & cc*(t)))*pwc(1))+4.*ssfttt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
      & y0)+kz*(z0)-cc*(t)))*pwc(1)+ssftttt*sin(twoPi*(kx*(x0)+ky*(y0)+
      & kz*(z0)-cc*(t)))*pwc(1))
-                                 uv(ez) = (ssf*((twoPi*cc)**4*sin(
+                                   uv(ez) = (ssf*((twoPi*cc)**4*sin(
      & twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2))+4.*ssft*((
      & twoPi*cc)**3*cos(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)
      & )+6.*ssftt*(-(twoPi*cc)**2*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
      & cc*(t)))*pwc(2))+4.*ssfttt*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
      & y0)+kz*(z0)-cc*(t)))*pwc(2)+ssftttt*sin(twoPi*(kx*(x0)+ky*(y0)+
      & kz*(z0)-cc*(t)))*pwc(2))
-                               else
-                                 stop 1739
-                               end if
-                           else
-                               xi = twoPi*(kx*(x0)+ky*(y0)+kz*(z0))
-                               sinxi = sin(xi)
-                               cosxi = cos(xi)
-                               expt = exp(sr*t)
-                               cost=cos(si*t)*expt
-                               sint=sin(si*t)*expt
-                               if( numberOfTimeDerivatives==0 )then
-                                 if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
-                                   ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
-                                   amp = sinxi*cost+cosxi*sint
-                                   uv(ex) = pwc(0)*amp
-                                   uv(ey) = pwc(1)*amp
-                                   uv(ez) = pwc(2)*amp
-                                   do iv=0,numberOfPolarizationVectors-
-     & 1
-                                     amp=(psir(iv)*cost-psii(iv)*sint)*
-     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
-                                     pbv(0,iv) = pwc(0)*amp
-                                     pbv(1,iv) = pwc(1)*amp
-                                     pbv(2,iv) = pwc(2)*amp
-                                   end do
                                  else
-                                   ! polarization vector: (ex=pxc, ey=pyc) 
-                                   do iv=0,numberOfPolarizationVectors-
-     & 1
-                                     pxc = ex + iv*nd
-                                     ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
-                                     amp=(psir(iv)*cost-psii(iv)*sint)*
-     & sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
-                                     uv(pxc  ) = pwc(0)*amp
-                                     uv(pxc+1) = pwc(1)*amp
-                                     uv(pxc+2) = pwc(2)*amp
-                                   end do
+                                   stop 1739
                                  end if
-                               else if( numberOfTimeDerivatives==1 )
-     & then
-                                 costp=-si*sint+sr*cost  ! d/dt( cost)
-                                 sintp= si*cost+sr*sint ! d/dt
-                                 if( polarizationOption.eq.0 )then
-                                   amp = sinxi*costp+cosxi*sintp
-                                   uv(ex) = pwc(0)*amp
-                                   uv(ey) = pwc(1)*amp
-                                   uv(ez) = pwc(2)*amp
-                                   ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
-                                     if( 
-     & getDispersiveBoundaryForcing.eq.1 )then
-                                       ! if( t.le.5*dt )then
-                                       !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
-                                       ! end if
-                                       psum(0)=0.
-                                       psum(1)=0.
-                                       psum(2)=0.
-                                       do iv=0,
+                             else
+                                 xi = twoPi*(kx*(x0)+ky*(y0)+kz*(z0))
+                                 sinxi = sin(xi)
+                                 cosxi = cos(xi)
+                                 expt = exp(sr*t)
+                                 cost=cos(si*t)*expt
+                                 sint=sin(si*t)*expt
+                                 if( numberOfTimeDerivatives==0 )then
+                                   if( polarizationOption.eq.0 )then
+                                     ! amp = cosxi*cost-sinxi*sint *wdh* 2018/01/28 
+                                     ! solution is sin( k*x0 + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                     amp = sinxi*cost+cosxi*sint
+                                     uv(ex) = pwc(0)*amp
+                                     uv(ey) = pwc(1)*amp
+                                     uv(ez) = pwc(2)*amp
+                                     do iv=0,
      & numberOfPolarizationVectors-1
-                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                         psum(0) = psum(0) + pwc(0)*amp
-                                         psum(1) = psum(1) + pwc(1)*amp
-                                         psum(2) = psum(2) + pwc(2)*amp
-                                       end do
-                                       ubv(ex) = ubv(ex) + alphaP*psum(
-     & 0)
-                                       ubv(ey) = ubv(ey) + alphaP*psum(
-     & 1)
-                                       ubv(ez) = ubv(ez) + alphaP*psum(
-     & 2)
-                                     end if
-                                 else
-                                   ! polarization vector: (ex=pxc, ey=pyc) 
-                                   do iv=0,numberOfPolarizationVectors-
-     & 1
-                                     pxc = ex + iv*nd
-                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
-                                     amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                     uv(pxc  ) = pwc(0)*amp
-                                     uv(pxc+1) = pwc(1)*amp
-                                     uv(pxc+2) = pwc(2)*amp
-                                   end do
-                                 end if
-                               else if( numberOfTimeDerivatives==2 )
-     & then
-                                 ! write(*,'(" GDPW ntd=2 : fix me")')
-                                 ! stop 3738
-                                 ! costp=-si*sint+sr*cost  ! d/dt( cost)
-                                 ! sintp= si*cost+sr*sint ! d/dt
-                                 costp=-si*( si*cost+sr*sint)+sr*(-si*
-     & sint+sr*cost)  ! d2/dt2( cost)
-                                 sintp= si*(-si*sint+sr*cost)+sr*( si*
-     & cost+sr*sint) ! d2/dt2
-                                 if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
-                                   amp = sinxi*costp+cosxi*sintp
-                                   uv(ex) = pwc(0)*amp
-                                   uv(ey) = pwc(1)*amp
-                                   uv(ez) = pwc(2)*amp
-                                   ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
-                                     if( 
-     & getDispersiveBoundaryForcing.eq.1 )then
-                                       ! if( t.le.5*dt )then
-                                       !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
-                                       ! end if
-                                       psum(0)=0.
-                                       psum(1)=0.
-                                       psum(2)=0.
-                                       do iv=0,
+                                       amp=(psir(iv)*cost-psii(iv)*
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                       pbv(0,iv) = pwc(0)*amp
+                                       pbv(1,iv) = pwc(1)*amp
+                                       pbv(2,iv) = pwc(2)*amp
+                                     end do
+                                   else
+                                     ! polarization vector: (ex=pxc, ey=pyc) 
+                                     do iv=0,
      & numberOfPolarizationVectors-1
-                                         amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                         psum(0) = psum(0) + pwc(0)*amp
-                                         psum(1) = psum(1) + pwc(1)*amp
-                                         psum(2) = psum(2) + pwc(2)*amp
-                                       end do
-                                       ubv(ex) = ubv(ex) + alphaP*psum(
-     & 0)
-                                       ubv(ey) = ubv(ey) + alphaP*psum(
-     & 1)
-                                       ubv(ez) = ubv(ez) + alphaP*psum(
-     & 2)
-                                     end if
-                                 else
-                                   ! polarization vector: (ex=pxc, ey=pyc)
-                                   do iv=0,numberOfPolarizationVectors-
-     & 1
-                                     pxc = ex + iv*nd
-                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
-                                     amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                     uv(pxc  ) = pwc(0)*amp
-                                     uv(pxc+1) = pwc(1)*amp
-                                     uv(pxc+2) = pwc(2)*amp
-                                   end do
-                                 end if
-                               else if( numberOfTimeDerivatives==3 )
+                                       pxc = ex + iv*nd
+                                       ! amp=(psir(iv)*cost-psii(iv)*sint)*cosxi - (psir(iv)*sint+psii(iv)*cost)*sinxi
+                                       amp=(psir(iv)*cost-psii(iv)*
+     & sint)*sinxi + (psir(iv)*sint+psii(iv)*cost)*cosxi
+                                       uv(pxc  ) = pwc(0)*amp
+                                       uv(pxc+1) = pwc(1)*amp
+                                       uv(pxc+2) = pwc(2)*amp
+                                     end do
+                                   end if
+                                 else if( numberOfTimeDerivatives==1 )
      & then
-                                 ! write(*,'(" GDPW ntd=3 : fix me")')
-                                 ! stop 3738
-                                 ! costp=-si*sint+sr*cost  ! d/dt( cost)
-                                 ! sintp= si*cost+sr*sint ! d/dt
-                                 ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
-                                 ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
-                                 costp=-si*( si*(-si*sint+sr*cost)+sr*(
-     &  si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+sr*
-     & cost))  ! d3/dt3( cost)
-                                 sintp= si*(-si*( si*cost+sr*sint)+sr*(
-     & -si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+sr*
-     & sint)) ! d3/dt3
-                                 if( polarizationOption.eq.0 )then
-                                   ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
-                                   amp = sinxi*costp+cosxi*sintp
-                                   uv(ex) = pwc(0)*amp
-                                   uv(ey) = pwc(1)*amp
-                                   uv(ez) = pwc(2)*amp
-                                   ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
-                                     if( 
+                                   costp=-si*sint+sr*cost  ! d/dt( cost)
+                                   sintp= si*cost+sr*sint ! d/dt
+                                   if( polarizationOption.eq.0 )then
+                                     amp = sinxi*costp+cosxi*sintp
+                                     uv(ex) = pwc(0)*amp
+                                     uv(ey) = pwc(1)*amp
+                                     uv(ez) = pwc(2)*amp
+                                     ! *wdh* Feb 25, 2018 -- return E_t + alphaP*P_t 
+                                       if( 
      & getDispersiveBoundaryForcing.eq.1 )then
-                                       ! if( t.le.5*dt )then
-                                       !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
-                                       ! end if
-                                       psum(0)=0.
-                                       psum(1)=0.
-                                       psum(2)=0.
-                                       do iv=0,
+                                         ! if( t.le.5*dt )then
+                                         !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                         ! end if
+                                         psum(0)=0.
+                                         psum(1)=0.
+                                         psum(2)=0.
+                                         do iv=0,
      & numberOfPolarizationVectors-1
-                                         amp=(psir(iv)*costp-psii(iv)*
+                                           amp=(psir(iv)*costp-psii(iv)
+     & *sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                           psum(0) = psum(0) + pwc(0)*
+     & amp
+                                           psum(1) = psum(1) + pwc(1)*
+     & amp
+                                           psum(2) = psum(2) + pwc(2)*
+     & amp
+                                         end do
+                                         ubv(ex) = ubv(ex) + alphaP*
+     & psum(0)
+                                         ubv(ey) = ubv(ey) + alphaP*
+     & psum(1)
+                                         ubv(ez) = ubv(ez) + alphaP*
+     & psum(2)
+                                       end if
+                                   else
+                                     ! polarization vector: (ex=pxc, ey=pyc) 
+                                     do iv=0,
+     & numberOfPolarizationVectors-1
+                                       pxc = ex + iv*nd
+                                       ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                       amp=(psir(iv)*costp-psii(iv)*
      & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                         psum(0) = psum(0) + pwc(0)*amp
-                                         psum(1) = psum(1) + pwc(1)*amp
-                                         psum(2) = psum(2) + pwc(2)*amp
-                                       end do
-                                       ubv(ex) = ubv(ex) + alphaP*psum(
-     & 0)
-                                       ubv(ey) = ubv(ey) + alphaP*psum(
-     & 1)
-                                       ubv(ez) = ubv(ez) + alphaP*psum(
-     & 2)
-                                     end if
-                                 else
-                                   ! polarization vector: (ex=pxc, ey=pyc)
-                                   do iv=0,numberOfPolarizationVectors-
-     & 1
-                                     pxc = ex + iv*nd
-                                     ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
-                                     amp=(psir(iv)*costp-psii(iv)*
-     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
-                                     uv(pxc  ) = pwc(0)*amp
-                                     uv(pxc+1) = pwc(1)*amp
-                                     uv(pxc+2) = pwc(2)*amp
-                                   end do
-                                 end if
-                               else if( numberOfTimeDerivatives==4 )
+                                       uv(pxc  ) = pwc(0)*amp
+                                       uv(pxc+1) = pwc(1)*amp
+                                       uv(pxc+2) = pwc(2)*amp
+                                     end do
+                                   end if
+                                 else if( numberOfTimeDerivatives==2 )
      & then
-                                 write(*,'(" GDPW ntd=4 : fix me")')
-                                 stop 3738
-                               else
-                                 stop 3738
-                               end if
-                           end if
-                         else if(  
+                                   ! write(*,'(" GDPW ntd=2 : fix me")')
+                                   ! stop 3738
+                                   ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                   ! sintp= si*cost+sr*sint ! d/dt
+                                   costp=-si*( si*cost+sr*sint)+sr*(-
+     & si*sint+sr*cost)  ! d2/dt2( cost)
+                                   sintp= si*(-si*sint+sr*cost)+sr*( 
+     & si*cost+sr*sint) ! d2/dt2
+                                   if( polarizationOption.eq.0 )then
+                                     ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                     amp = sinxi*costp+cosxi*sintp
+                                     uv(ex) = pwc(0)*amp
+                                     uv(ey) = pwc(1)*amp
+                                     uv(ez) = pwc(2)*amp
+                                     ! *wdh* Feb 25, 2018 -- return E_tt + alphaP*P_tt 
+                                       if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                         ! if( t.le.5*dt )then
+                                         !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                         ! end if
+                                         psum(0)=0.
+                                         psum(1)=0.
+                                         psum(2)=0.
+                                         do iv=0,
+     & numberOfPolarizationVectors-1
+                                           amp=(psir(iv)*costp-psii(iv)
+     & *sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                           psum(0) = psum(0) + pwc(0)*
+     & amp
+                                           psum(1) = psum(1) + pwc(1)*
+     & amp
+                                           psum(2) = psum(2) + pwc(2)*
+     & amp
+                                         end do
+                                         ubv(ex) = ubv(ex) + alphaP*
+     & psum(0)
+                                         ubv(ey) = ubv(ey) + alphaP*
+     & psum(1)
+                                         ubv(ez) = ubv(ez) + alphaP*
+     & psum(2)
+                                       end if
+                                   else
+                                     ! polarization vector: (ex=pxc, ey=pyc)
+                                     do iv=0,
+     & numberOfPolarizationVectors-1
+                                       pxc = ex + iv*nd
+                                       ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                       amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                       uv(pxc  ) = pwc(0)*amp
+                                       uv(pxc+1) = pwc(1)*amp
+                                       uv(pxc+2) = pwc(2)*amp
+                                     end do
+                                   end if
+                                 else if( numberOfTimeDerivatives==3 )
+     & then
+                                   ! write(*,'(" GDPW ntd=3 : fix me")')
+                                   ! stop 3738
+                                   ! costp=-si*sint+sr*cost  ! d/dt( cost)
+                                   ! sintp= si*cost+sr*sint ! d/dt
+                                   ! costp=-si*( si*cost+sr*sint)+sr*(-si*sint+sr*cost)  ! d2/dt2( cost)
+                                   ! sintp= si*(-si*sint+sr*cost)+sr*( si*cost+sr*sint) ! d2/dt2
+                                   costp=-si*( si*(-si*sint+sr*cost)+
+     & sr*( si*cost+sr*sint))+sr*(-si*( si*cost+sr*sint)+sr*(-si*sint+
+     & sr*cost))  ! d3/dt3( cost)
+                                   sintp= si*(-si*( si*cost+sr*sint)+
+     & sr*(-si*sint+sr*cost))+sr*( si*(-si*sint+sr*cost)+sr*( si*cost+
+     & sr*sint)) ! d3/dt3
+                                   if( polarizationOption.eq.0 )then
+                                     ! amp = cosxi*costp-sinxi*sintp   *wdh* 2018/01/28
+                                     amp = sinxi*costp+cosxi*sintp
+                                     uv(ex) = pwc(0)*amp
+                                     uv(ey) = pwc(1)*amp
+                                     uv(ez) = pwc(2)*amp
+                                     ! *wdh* Feb 25, 2018 -- return E_ttt + alphaP*P_ttt 
+                                       if( 
+     & getDispersiveBoundaryForcing.eq.1 )then
+                                         ! if( t.le.5*dt )then
+                                         !   write(*,'(" addDispersiveBoundaryForcing3d -- add P to boundary forcing")')
+                                         ! end if
+                                         psum(0)=0.
+                                         psum(1)=0.
+                                         psum(2)=0.
+                                         do iv=0,
+     & numberOfPolarizationVectors-1
+                                           amp=(psir(iv)*costp-psii(iv)
+     & *sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                           psum(0) = psum(0) + pwc(0)*
+     & amp
+                                           psum(1) = psum(1) + pwc(1)*
+     & amp
+                                           psum(2) = psum(2) + pwc(2)*
+     & amp
+                                         end do
+                                         ubv(ex) = ubv(ex) + alphaP*
+     & psum(0)
+                                         ubv(ey) = ubv(ey) + alphaP*
+     & psum(1)
+                                         ubv(ez) = ubv(ez) + alphaP*
+     & psum(2)
+                                       end if
+                                   else
+                                     ! polarization vector: (ex=pxc, ey=pyc)
+                                     do iv=0,
+     & numberOfPolarizationVectors-1
+                                       pxc = ex + iv*nd
+                                       ! amp=(psir(iv)*costp-psii(iv)*sintp)*cosxi - (psir(iv)*sintp+psii(iv)*costp)*sinxi
+                                       amp=(psir(iv)*costp-psii(iv)*
+     & sintp)*sinxi + (psir(iv)*sintp+psii(iv)*costp)*cosxi
+                                       uv(pxc  ) = pwc(0)*amp
+                                       uv(pxc+1) = pwc(1)*amp
+                                       uv(pxc+2) = pwc(2)*amp
+                                     end do
+                                   end if
+                                 else if( numberOfTimeDerivatives==4 )
+     & then
+                                   write(*,'(" GDPW ntd=4 : fix me")')
+                                   stop 3738
+                                 else
+                                   stop 3738
+                                 end if
+                             end if
+                           else if(  
      & boundaryForcingOption.eq.chirpedPlaneWaveBoundaryForcing )then
-                            ! xi = kx*(x0)+ky*(y0)-cc*(t) - xi0 
-                            xi0 = .5*(cpwTa+cpwTb)
-                            xi = t - (kx*(x0-cpwX0)+ky*(y0-cpwY0)+kz*(
-     & z0-cpwZ0))/cc -xi0
-                            cpwTau=cpwTb-cpwTa  ! tau = tb -ta
-                            ! include files generated by the maple code mx/codes/chirpedPlaneWave.maple 
-                            if( numberOfTimeDerivatives.eq.0 )then
+                              ! xi = kx*(x0)+ky*(y0)-cc*(t) - xi0 
+                              xi0 = .5*(cpwTa+cpwTb)
+                              xi = t - (kx*(x0-cpwX0)+ky*(y0-cpwY0)+kz*
+     & (z0-cpwZ0))/cc -xi0
+                              cpwTau=cpwTb-cpwTa  ! tau = tb -ta
+                              ! include files generated by the maple code mx/codes/chirpedPlaneWave.maple 
+                              if( numberOfTimeDerivatives.eq.0 )then
 ! File generated by overtureFramework/cg/mx/codes/chirpedPlaneWave.maple
 ! Here is the 0-th time-derivative of the chirp function in 3D
 ! chirp = cpwAmp*(1/2*tanh(cpwBeta*(xi+.5*cpwTau))-1/2*tanh(cpwBeta*(xi-.5*cpwTau)))*sin(twoPi*(xi^2*cpwAlpha+cc*xi))
@@ -4393,7 +4455,7 @@ c===============================================================================
       t16 = sin(twoPi*(cc*xi+t11*cpwAlpha))
       chirp = cpwAmp*(t4/2.-t7/2.)*t16
 
-                            else if(  numberOfTimeDerivatives.eq.1 )
+                              else if(  numberOfTimeDerivatives.eq.1 )
      & then
 ! File generated by overtureFramework/cg/mx/codes/chirpedPlaneWave.maple
 ! Here is the 1-th time-derivative of the chirp function in 3D
@@ -4411,7 +4473,7 @@ c===============================================================================
       chirp = cpwAmp*(cpwBeta*(1.-t5)/2.-cpwBeta*(1.-t11)/2.)*t22+
      & cpwAmp*(t4/2.-t10/2.)*twoPi*(2.*xi*cpwAlpha+cc)*t31
 
-                            else if(  numberOfTimeDerivatives.eq.2 )
+                              else if(  numberOfTimeDerivatives.eq.2 )
      & then
 ! File generated by overtureFramework/cg/mx/codes/chirpedPlaneWave.maple
 ! Here is the 2-th time-derivative of the chirp function in 3D
@@ -4437,7 +4499,7 @@ c===============================================================================
      & t15/2.+cpwBeta*t8/2.)*twoPi*t33*t35+2.*t41*twoPi*cpwAlpha*t35-
      & t41*t46*t47*t24
 
-                            else if(  numberOfTimeDerivatives.eq.3 )
+                              else if(  numberOfTimeDerivatives.eq.3 )
      & then
 ! File generated by overtureFramework/cg/mx/codes/chirpedPlaneWave.maple
 ! Here is the 3-th time-derivative of the chirp function in 3D
@@ -4468,7 +4530,7 @@ c===============================================================================
      & cpwAlpha*t43-0.3E1*t51*t56*t57*t31-6.*t64*t56*cpwAlpha*t41*t31-
      & t64*t56*twoPi*t57*t41*t43
 
-                            else if(  numberOfTimeDerivatives.eq.4 )
+                              else if(  numberOfTimeDerivatives.eq.4 )
      & then
 ! File generated by overtureFramework/cg/mx/codes/chirpedPlaneWave.maple
 ! Here is the 4-th time-derivative of the chirp function in 3D
@@ -4507,43 +4569,44 @@ c===============================================================================
      & t54-12.*t92*t68*t93*t37-12.*t92*t84*cpwAlpha*t69*t54+t92*t103*
      & t104*t37
 
-                            else
-                              write(*,'(" getChirp3D:ERROR: too many 
+                              else
+                                write(*,'(" getChirp3D:ERROR: too many 
      & derivatives requested")')
-                              stop 4927
-                            end if
-                            uv(ex) = chirp*pwc(0)
-                            uv(ey) = chirp*pwc(1)
-                            uv(ez) = chirp*pwc(2)
-                         else
-                           write(*,'("getBndryForcing3D:Unknown 
+                                stop 4927
+                              end if
+                              uv(ex) = chirp*pwc(0)
+                              uv(ey) = chirp*pwc(1)
+                              uv(ez) = chirp*pwc(2)
+                           else
+                             write(*,'("getBndryForcing3D:Unknown 
      & boundary forcing")')
-                         end if
-                     else if( fieldOption.eq.0 )then
-                       uv(ex)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
-     & cc*(t)))*pwc(0))
-                       uv(ey)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
-     & cc*(t)))*pwc(1))
-                       uv(ez)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(z0)-
-     & cc*(t)))*pwc(2))
-                     else
-                      ! we are assigning time derivatives (sosup)
-                       uv(ex)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(0)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)+kz*
-     & (z0)-cc*(t)))*pwc(0))
-                       uv(ey)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(1)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)+kz*
-     & (z0)-cc*(t)))*pwc(1))
-                       uv(ez)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+ky*(
-     & y0)+kz*(z0)-cc*(t)))*pwc(2)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)+kz*
-     & (z0)-cc*(t)))*pwc(2))
-                     end if
-                     u(i1,i2,i3,et1)=uv(et1)
-                     u(i1,i2,i3,et2)=uv(et2)
-                   ! Set tau.Pv = 0 for dispersive models
-                 end do
-                 end do
-                 end do
+                           end if
+                       else if( fieldOption.eq.0 )then
+                         uv(ex)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(
+     & z0)-cc*(t)))*pwc(0))
+                         uv(ey)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(
+     & z0)-cc*(t)))*pwc(1))
+                         uv(ez)=-(ssf*sin(twoPi*(kx*(x0)+ky*(y0)+kz*(
+     & z0)-cc*(t)))*pwc(2))
+                       else
+                        ! we are assigning time derivatives (sosup)
+                         uv(ex)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+
+     & ky*(y0)+kz*(z0)-cc*(t)))*pwc(0)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)
+     & +kz*(z0)-cc*(t)))*pwc(0))
+                         uv(ey)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+
+     & ky*(y0)+kz*(z0)-cc*(t)))*pwc(1)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)
+     & +kz*(z0)-cc*(t)))*pwc(1))
+                         uv(ez)=-(ssf*(-twoPi*cc)*cos(twoPi*(kx*(x0)+
+     & ky*(y0)+kz*(z0)-cc*(t)))*pwc(2)+ssft*sin(twoPi*(kx*(x0)+ky*(y0)
+     & +kz*(z0)-cc*(t)))*pwc(2))
+                       end if
+                       u(i1,i2,i3,et1)=uv(et1)
+                       u(i1,i2,i3,et2)=uv(et2)
+                     ! Set tau.Pv = 0 for dispersive models
+                   end do
+                   end do
+                   end do
+                 end if ! not solveForAllFields
                end if
             else if( useForcing.eq.0 )then
                ! Set the tangential components to zero
@@ -4614,34 +4677,51 @@ c===============================================================================
                  end do
                 end if ! **** END OLD WAY
                else
+                 ! ************** Rectangular grids ******************
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
-                     u(i1,i2,i3,et1)=0.
-                     u(i1,i2,i3,et2)=0.
-                   ! Set tau.Pv = 0 for dispersive models
-                    ! For now only do case with no forcing ***finish me***
-                    if( dispersionModel.ne.noDispersion )then
-                      do iv=0,numberOfPolarizationVectors-1
-                        m1 = iv*nd + mod(axis+1,nd) ! tangential component
-                        m2 = iv*nd + mod(axis+2,nd) ! tangential component
-                        p(i1,i2,i3,m1)=0.
-                        p(i1,i2,i3,m2)=0.
-                      end do
-                    end if
-                 end do
-                 end do
-                 end do
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                    do i3=n3a,n3b
+                    do i2=n2a,n2b
+                    do i1=n1a,n1b
+                      u(i1,i2,i3,et1)=0.
+                      u(i1,i2,i3,et2)=0.
+                      u(i1,i2,i3,hn1)=0.
+                    end do
+                    end do
+                    end do
+                 else ! not solveForAllFields
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                       u(i1,i2,i3,et1)=0.
+                       u(i1,i2,i3,et2)=0.
+                     ! Set tau.Pv = 0 for dispersive models
+                      ! For now only do case with no forcing ***finish me***
+                      if( dispersionModel.ne.noDispersion )then
+                        do iv=0,numberOfPolarizationVectors-1
+                          m1 = iv*nd + mod(axis+1,nd) ! tangential component
+                          m2 = iv*nd + mod(axis+2,nd) ! tangential component
+                          p(i1,i2,i3,m1)=0.
+                          p(i1,i2,i3,m2)=0.
+                        end do
+                      end if
+                   end do
+                   end do
+                   end do
+                 end if ! not solveForAllFields
                end if
             else
                ! Set the tangential components to zero
@@ -4720,30 +4800,40 @@ c===============================================================================
                  end do
                 end if ! **** END OLD WAY
                else
+                 ! ************** Rectangular grids ******************
                  if( axis.eq.0 )then
                    et1=ey
                    et2=ez
+                   hn1=hx
                  else if( axis.eq.1 )then
                    et1=ex
                    et2=ez
+                   hn1=hy
                  else
                    et1=ex
                    et2=ey
+                   hn1=hz
                  end if
-                 do i3=n3a,n3b
-                 do i2=n2a,n2b
-                 do i1=n1a,n1b
-                     call ogf3dfo(ep,ex,ey,ez,fieldOption,xy(i1,i2,i3,
-     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, u0,v0,w0)
-                     uv(ex)=u0
-                     uv(ey)=v0
-                     uv(ez)=w0
-                     u(i1,i2,i3,et1)=uv(et1)
-                     u(i1,i2,i3,et2)=uv(et2)
-                   ! Set tau.Pv = 0 for dispersive models
-                 end do
-                 end do
-                 end do
+                 if( solveForAllFields.ne.0 )then
+                   ! PEC boundary : t.E=0, n.H=0 
+                     ! finish me 
+                     stop 8266
+                 else ! not solveForAllFields
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                       call ogf3dfo(ep,ex,ey,ez,fieldOption,xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, u0,v0,w0)
+                       uv(ex)=u0
+                       uv(ey)=v0
+                       uv(ez)=w0
+                       u(i1,i2,i3,et1)=uv(et1)
+                       u(i1,i2,i3,et2)=uv(et2)
+                     ! Set tau.Pv = 0 for dispersive models
+                   end do
+                   end do
+                   end do
+                 end if ! not solveForAllFields
                end if
             end if
           end if
@@ -4785,15 +4875,44 @@ c===============================================================================
                   do m=1,numberOfGhostPoints
                     js1=is1*m  ! shift to ghost point "m"
                     js2=is2*m
+                     if( solveForAllFields.ne.0 ) then
+                       ! top  and bottom 
                        u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+
      & js2,i3,ex)
-                       u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)
-                       u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex)
+                       u(i1,i2-js2,i3,ey)=                  u(i1,i2+
+     & js2,i3,ey)
+                       u(i1,i2-js2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1,i2+
+     & js2,i3,ez)
+                       u(i1,i2-js2,i3,hx)=                  u(i1,i2+
+     & js2,i3,hx)  ! Hx is even symmetry
+                       u(i1,i2-js2,i3,hy)=2.*u(i1,i2,i3,hy)-u(i1,i2+
+     & js2,i3,hy)
+                       u(i1,i2-js2,i3,hz)=                  u(i1,i2+
+     & js2,i3,hz)  ! Hz is even symmetry
+                       ! left and right 
+                       u(i1-js1,i2,i3,ex)=                  u(i1+js1,
+     & i2,i3,ex)
                        u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,
      & i2,i3,ey)
-                       u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)  ! Hz is even symmetry
-                       u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)  ! Hz is even symmetry
-                  end do
+                       u(i1-js1,i2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1+js1,
+     & i2,i3,ez)
+                       u(i1-js1,i2,i3,hx)=2.*u(i1,i2,i3,hx)-u(i1+js1,
+     & i2,i3,hx)
+                       u(i1-js1,i2,i3,hy)=                  u(i1+js1,
+     & i2,i3,hy)  ! Hy is even symmetry
+                       u(i1-js1,i2,i3,hz)=                  u(i1+js1,
+     & i2,i3,hz)  ! Hz is even symmetry
+                     else
+                         u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+
+     & js2,i3,ex)
+                         u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)
+                         u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex)
+                         u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,
+     & i2,i3,ey)
+                         u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)  ! Hz is even symmetry
+                         u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)  ! Hz is even symmetry
+                     end if  ! not solveForAllFields
+                  end do  ! end do m=1,numberOfGhostPoints
                   ! assign u(i1-is1,i2,i3,ev) and u(i1,i2-is2,i3,ev)
                     ! Now do corner (C) points
                         ! assign 3 ghost in both directions
@@ -4801,12 +4920,27 @@ c===============================================================================
                     ! *new way for general order* *wdh* 2016/01/23
                     do m2=1,numberOfGhostPoints
                     do m1=1,numberOfGhostPoints
-                       u(i1-m1*is1,i2-m2*is2,i3,ex)=2.*u(i1,i2,i3,ex) -
-     &  u(i1+m1*is1,i2+m2*is2,i3,ex)
-                       u(i1-m1*is1,i2-m2*is2,i3,ey)=2.*u(i1,i2,i3,ey) -
-     &  u(i1+m1*is1,i2+m2*is2,i3,ey)
-                       u(i1-m1*is1,i2-m2*is2,i3,hz)=                   
-     &  u(i1+m1*is1,i2+m2*is2,i3,hz)
+                       if( solveForAllFields.eq.0 )then
+                         u(i1-m1*is1,i2-m2*is2,i3,ex)=2.*u(i1,i2,i3,ex)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,ex)
+                         u(i1-m1*is1,i2-m2*is2,i3,ey)=2.*u(i1,i2,i3,ey)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,ey)
+                         u(i1-m1*is1,i2-m2*is2,i3,hz)=                 
+     &    u(i1+m1*is1,i2+m2*is2,i3,hz)
+                       else
+                         u(i1-m1*is1,i2-m2*is2,i3,ex)=2.*u(i1,i2,i3,ex)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,ex)
+                         u(i1-m1*is1,i2-m2*is2,i3,ey)=2.*u(i1,i2,i3,ey)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,ey)
+                         u(i1-m1*is1,i2-m2*is2,i3,ez)=                 
+     &    u(i1+m1*is1,i2+m2*is2,i3,ez)
+                         u(i1-m1*is1,i2-m2*is2,i3,hx)=2.*u(i1,i2,i3,hx)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,hx)
+                         u(i1-m1*is1,i2-m2*is2,i3,hy)=2.*u(i1,i2,i3,hy)
+     &  - u(i1+m1*is1,i2+m2*is2,i3,hy)
+                         u(i1-m1*is1,i2-m2*is2,i3,hz)=                 
+     &    u(i1+m1*is1,i2+m2*is2,i3,hz)
+                       end if
                     end do
                     end do
                   else
@@ -4848,31 +4982,60 @@ c===============================================================================
                   do m=1,numberOfGhostPoints
                     js1=is1*m  ! shift to ghost point "m"
                     js2=is2*m
-                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,
-     & i3,0),xy(i1,i2,i3,1),t, u0,v0,w0)
-                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2-
-     & js2,i3,0),xy(i1,i2-js2,i3,1),t, um,vm,wm)
-                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2+
-     & js2,i3,0),xy(i1,i2+js2,i3,1),t, up,vp,wp)
-                       g1=um-2.*u0+up
-                       g2=vm-vp
-                       g3=wm-wp
+                     if( solveForAllFields.ne.0 ) then
+                       ! top  and bottom 
                        u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+
-     & js2,i3,ex) +g1
-                       u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)+g2
-                       u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)+g3
-                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-js1,
-     & i2,i3,0),xy(i1-js1,i2,i3,1),t, um,vm,wm)
-                       call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+js1,
-     & i2,i3,0),xy(i1+js1,i2,i3,1),t, up,vp,wp)
-                       g1=um-up
-                       g2=vm-2.*v0+vp
-                       g3=wm-wp
-                       u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex) +g1
+     & js2,i3,ex)
+                       u(i1,i2-js2,i3,ey)=                  u(i1,i2+
+     & js2,i3,ey)
+                       u(i1,i2-js2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1,i2+
+     & js2,i3,ez)
+                       u(i1,i2-js2,i3,hx)=                  u(i1,i2+
+     & js2,i3,hx)  ! Hx is even symmetry
+                       u(i1,i2-js2,i3,hy)=2.*u(i1,i2,i3,hy)-u(i1,i2+
+     & js2,i3,hy)
+                       u(i1,i2-js2,i3,hz)=                  u(i1,i2+
+     & js2,i3,hz)  ! Hz is even symmetry
+                       ! left and right 
+                       u(i1-js1,i2,i3,ex)=                  u(i1+js1,
+     & i2,i3,ex)
                        u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,
+     & i2,i3,ey)
+                       u(i1-js1,i2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1+js1,
+     & i2,i3,ez)
+                       u(i1-js1,i2,i3,hx)=2.*u(i1,i2,i3,hx)-u(i1+js1,
+     & i2,i3,hx)
+                       u(i1-js1,i2,i3,hy)=                  u(i1+js1,
+     & i2,i3,hy)  ! Hy is even symmetry
+                       u(i1-js1,i2,i3,hz)=                  u(i1+js1,
+     & i2,i3,hz)  ! Hz is even symmetry
+                     else
+                         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),t, u0,v0,w0)
+                         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2-
+     & js2,i3,0),xy(i1,i2-js2,i3,1),t, um,vm,wm)
+                         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2+
+     & js2,i3,0),xy(i1,i2+js2,i3,1),t, up,vp,wp)
+                         g1=um-2.*u0+up
+                         g2=vm-vp
+                         g3=wm-wp
+                         u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+
+     & js2,i3,ex) +g1
+                         u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)+g2
+                         u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)+g3
+                         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-
+     & js1,i2,i3,0),xy(i1-js1,i2,i3,1),t, um,vm,wm)
+                         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+
+     & js1,i2,i3,0),xy(i1+js1,i2,i3,1),t, up,vp,wp)
+                         g1=um-up
+                         g2=vm-2.*v0+vp
+                         g3=wm-wp
+                         u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex) +g1
+                         u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,
      & i2,i3,ey) +g2
-                       u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)+g3
-                  end do
+                         u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)+g3
+                     end if  ! not solveForAllFields
+                  end do  ! end do m=1,numberOfGhostPoints
                   ! assign u(i1-is1,i2,i3,ev) and u(i1,i2-is2,i3,ev)
                     ! dra=dr(0)  ! ** reset *** is this correct?
                     ! dsa=dr(1)
@@ -4914,7 +5077,7 @@ c===============================================================================
                     js1=is1*m  ! shift to ghost point "m"
                     js2=is2*m
                      ! *** there is no need to do this for orderOfAccuracy.eq.4 -- these are done below
-                  end do
+                  end do  ! end do m=1,numberOfGhostPoints
                   ! assign u(i1-is1,i2,i3,ev) and u(i1,i2-is2,i3,ev)
                     ! dra=dr(0)  ! ** reset *** is this correct?
                     ! dsa=dr(1)
@@ -4953,7 +5116,7 @@ c===============================================================================
                     js1=is1*m  ! shift to ghost point "m"
                     js2=is2*m
                      ! *** there is no need to do this for orderOfAccuracy.eq.4 -- these are done below
-                  end do
+                  end do  ! end do m=1,numberOfGhostPoints
                   ! assign u(i1-is1,i2,i3,ev) and u(i1,i2-is2,i3,ev)
                     ! dra=dr(0)  ! ** reset *** is this correct?
                     ! dsa=dr(1)

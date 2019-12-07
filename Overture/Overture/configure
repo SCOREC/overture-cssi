@@ -151,6 +151,24 @@ if( $machine ne "aix"       &&
 }
 printf(" *** configure for machine = $machine **** \n");
 
+# Automatically check for Ubuntu if no distribution has been set 
+if( $distribution eq "" )
+{
+  system("uname -v > config/uname-v");
+  open(FILE,"config/uname-v") || die print "unable to open config/uname-v\n";
+  while( <FILE> )
+  {
+    $linux = $_;
+    printf("uname-v: line=%s",$linux);
+    if( $linux =~ /Ubuntu/ )
+    {
+      $distribution="ubuntu";
+      printf("***** Setting distribution=ubuntu ******\n");
+    }
+  }
+}
+
+
 if( $machine eq "bg" ){ $useX11=0; } # we do not use X11 on Blue Gene
 
 
@@ -168,6 +186,7 @@ if( $distribution eq "ubuntu" )
 {
   $LIB64 = "lib/x86_64-linux-gnu"; # Ubuntu libraries are here (for Ubuntu v 13 and later)
 }
+$LIBMESA=$LIB64; # default location for Mesa libraries -- may be changed below
 
 printf("First checking for proper definition of Overture environmental variables:\n");
 
@@ -219,8 +238,27 @@ if( $useGL )
   # @libGLNames = <$OpenGLibPath/libGL.*>;  # this is not used if no X
   @libGLNames = <$OpenGLibPath/libGLU.*>;  # this should alwsy be there
   $length = @libGLNames;
+
+  printf("***** Search for OpenGL in $OpenGLibPath : length=$length\n");
+  if( $length eq 0 )
+  {
+    # On ubuntu a user version of Mesa will be in a lib64 subdirectory
+    $OpenGLibPath = "$OpenGL/lib64";
+    @libGLNames = <$OpenGLibPath/libGLU.*>;  # this should alwsy be there
+    $length = @libGLNames;
+    printf("***** Search for OpenGL in $OpenGLibPath : length=$length\n");
+
+   if( $length ne 0 )    
+   {
+     # Mesa libs will be in $OpenGL/lib64 not $OpenGL/$LIB64 (likely Ubuntu)
+     $LIBMESA = "lib64";
+   }
+   printf("**** distribution=$distribution, useMesa=$useMesa: Looking for Mesa libs in $OpenGL/$LIBMESA\n");
+  }
+
   $useMesa = "";
   $buildOSMesa = "";
+
   if( $length ne 0 )
   {
      if( $useX11 )
@@ -394,6 +432,7 @@ if( $useGL )
   # }
 } # end if useGL 
 # ----------------- END OPENGL ---------------------------------------
+
 
 
 # ----------------------------------------------------------------------
@@ -1542,6 +1581,7 @@ foreach $dir ( @directories )
         $line =~ s/^IFORT_LIB.*/IFORT_LIB = $ifortLibDirectory/;  # set the location of the ifc fortran libraries
 
         $line =~ s/^LIB64 =.*/LIB64 = $LIB64/g;  # set the name of the "lib" directory for 64 bit machines
+        $line =~ s/^LIBMESA =.*/LIBMESA = $LIBMESA/g;  # set the name of the Mesa "lib" directory for 64 bit machines
 
 
         $line =~ s/^OpenGLibs=.*/OpenGLibs =$OpenGLibs /;
@@ -1632,6 +1672,7 @@ foreach $dir ( @directories )
           $line =~ s/APlusPlus/PPlusPlus/g; 
           $line =~ s/(CC_INCLUDES.?= .*)/\1 $mpiInclude -DUSE_PPP/;
           $line =~ s/(CFLAGS.?= .*)/\1 -DUSE_PPP/;
+          $line =~ s/MPI_INCLUDE.?=.*/MPI_INCLUDE = $mpiInclude/;
 	}
         if ( $headers ne "headers" ){
 	   print OUTFILE $line;
@@ -1873,7 +1914,7 @@ else
     print OUTFILE "OV_PERL_LIBRARIES =-L\$(OV_PERL_LIB) $perllibs\n";
 }
 $ev=$ENV{"OpenGL"};    print OUTFILE "OV_OPENGL = $ev\n";
-print OUTFILE "OV_OPENGL_LIB_DIR = \$(OV_OPENGL)/$LIB64\n";
+print OUTFILE "OV_OPENGL_LIB_DIR = \$(OV_OPENGL)/$LIBMESA\n";
 if ( $rpath ne "" )
 {
     print OUTFILE "OV_OPENGL_LIBRARIES = \$(OV_RPATH)\$(OV_OPENGL_LIB_DIR) -L\$(OV_OPENGL_LIB_DIR) $OpenGLibs\n";

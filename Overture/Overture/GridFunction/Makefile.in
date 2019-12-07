@@ -12,8 +12,8 @@ default:  depend_date  GridFunction_date
 
 # Here are files from P++ that include some fixes -- these fixes will eventually move to the P++ source
 #  These files are only compiled with the 'parallel' option
-#parallel pppFiles = partitioning.C conform_enforce.C p_array.C array.C p_abstract_op.C p_descriptor.C
-#parallel pppObject= partitioning.o conform_enforce.o p_array.o array.o p_abstract_op.o p_descriptor.o
+#parallel pppFiles = partitioning.C conform_enforce.C p_array.C array.C p_abstract_op.C p_descriptor.C arraylist.C
+#parallel pppObject= partitioning.o conform_enforce.o p_array.o array.o p_abstract_op.o p_descriptor.o arraylist.o
 
 Source1= \
           BoundaryOperators.C    applyBCC.C                    \
@@ -107,26 +107,30 @@ GridFunction_Opt_date: ${filesOpt:.C=.o}
 # Here are files from P++ that include some fixes -- these fixes will eventually move to the P++ source
 
 # Here is how we would compile datamove.c -- but for now it is not needed since it is the same as in P++
-PFLAGSC = -DHAVE_CONFIG_H -I. -I$(P)/../.. -I$(P)/../../include -I$(P)/../../PARTI -I$(P)/../PARTI -I$(MPI_ROOT)/include    -I$(P)/../../PADRE/src -I$(P)/../../PADRE -I$(P)/../../PARTI -I$(P)/../../PARTI -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PGSLIB -I$(P)/../PGSLIB $(STD_OPT_FLAG) -fPIC -Wstrict-prototypes
+PFLAGSC = -DHAVE_CONFIG_H -I. -I$(P)/../.. -I$(P)/../../include -I$(P)/../../PARTI -I$(P)/../PARTI $(MPI_INCLUDE) -I$(P)/../../PADRE/src -I$(P)/../../PADRE -I$(P)/../../PARTI -I$(P)/../../PARTI -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PGSLIB -I$(P)/../PGSLIB $(STD_OPT_FLAG) -fPIC -Wstrict-prototypes
 datamove.o: datamove.c
 	 $(cc) $(PFLAGSC) -c datamove.c
 
 # ----------- here is how we compile P++ files  --------------------------
 P = $(PPlusPlus)/../src/array_src
-PFLAGS = -DHAVE_CONFIG_H -I. -I$(P)/../.. -I$(P)/../../include -I$(P)/../../PARTI -I$(P)/../PARTI -I$(MPI_ROOT)/include    -I$(P)/../../PADRE/src -I$(P)/../../PADRE -I$(P)/../../PARTI -I$(P)/../../PARTI -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PGSLIB -I$(P)/../PGSLIB $(STD_OPT_FLAG) -fPIC -Wno-deprecated
+PFLAGS = -DHAVE_CONFIG_H -I. -I$(P)/../.. -I$(P)/../../include -I$(P)/../../PARTI -I$(P)/../PARTI $(MPI_INCLUDE) -I$(P)/../../PADRE/src -I$(P)/../../PADRE -I$(P)/../../PARTI -I$(P)/../../PARTI -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PADRE/PGSLIB -I$(P)/../../PGSLIB -I$(P)/../PGSLIB  -fPIC -Wno-deprecated
 
 partitioning.o: partitioning.C
-	$(CC) $(PFLAGS) -c partitioning.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c partitioning.C
 conform_enforce.o: conform_enforce.C
-	$(CC) $(PFLAGS) -c conform_enforce.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c conform_enforce.C
 p_array.o: p_array.C
-	$(CC) $(PFLAGS) -c p_array.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c p_array.C
 array.o: array.C
-	$(CC) $(PFLAGS) -c array.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c array.C
 p_abstract_op.o: p_abstract_op.C
-	$(CC) $(PFLAGS) -c p_abstract_op.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c p_abstract_op.C
 p_descriptor.o: p_descriptor.C
-	$(CC) $(PFLAGS) -c p_descriptor.C
+	$(CC) $(PFLAGS) $(STD_OPT_FLAG) -c p_descriptor.C
+
+# Compile this debug to avoid bug with Unbuntu gcc 7.4.0 (memory error at destructor)
+arraylist.o: arraylist.C
+	$(CC) $(PFLAGS) -g -c arraylist.C
 
 
 FFLAGSGO = $(FFLAGSO)

@@ -1247,35 +1247,39 @@ computeDerivedFunctions( realCompositeGridFunction & u )
       }
       else if( derived(i,0)==eFieldNorm )
       {
-        int ex=0, ey=1, ez=2;
-        getComponent(ex,"exFieldComponent");
-        getComponent(ey,"eyFieldComponent");
+        int ex=0, ey=1, ez=-1; // *wdh* Dec 2, 2019 set ez=-1 by default, bamx may set in 2D
+        ex=-2; if( getComponent(ex,"exFieldComponent")!=0 ){ printF(" DerivedFunctions: ex NOT found.\n"); ex=0; }  // 
+        ey=-2; if( getComponent(ey,"eyFieldComponent")!=0 ){ printF(" DerivedFunctions: ey NOT found.\n"); ey=1; }  // 
+        ez=-2; if( getComponent(ez,"ezFieldComponent")!=0 ){ printF(" DerivedFunctions: ez NOT found.\n"); ez=2; }  // 
+        // getComponent(ey,"eyFieldComponent");
+        // getComponent(ez,"ezFieldComponent");
 
-	// printF(" DerivedFunctions: eFieldNorm: ex=%i, ey=%i\n",ex,ey);
+	// printF("++++ DerivedFunctions: eFieldNorm: ex=%i, ey=%i, ez=%i\n",ex,ey,ez);
 	
-	if( numberOfDimensions==2 )
+	if( numberOfDimensions==2 && ez<0 )  // for  bamx 
 	{
 	  v(I1,I2,I3,j)=sqrt( SQR(v(I1,I2,I3,ex))+SQR(v(I1,I2,I3,ey)) );
 	}
 	else
-	{
-          getComponent(ez,"ezFieldComponent");
+     	{
+          printF("++++ DerivedFunctions: eFieldNorm includes ex,ey, and ez.\n");
 	  v(I1,I2,I3,j)=sqrt( SQR(v(I1,I2,I3,ex))+SQR(v(I1,I2,I3,ey))+SQR(v(I1,I2,I3,ez)) );
 	}
       }
       else if( derived(i,0)==hFieldNorm )
       {
-        int hx=0, hy=1, hz=2;
+        int hx=0, hy=1, hz=-1;     // *wdh* Dec 2, 2019 set hz=-1 by default, bamx may set in 2D
         getComponent(hx,"hxFieldComponent");
         getComponent(hy,"hyFieldComponent");
+        getComponent(hz,"hzFieldComponent");
+	printF(" DerivedFunctions: hFieldNorm: hx=%i, hy=%i, hz=%i\n",hx,hy,hz);
 
-	if( numberOfDimensions==2 )
+	if( numberOfDimensions==2 && hz<0  )
 	{
 	  v(I1,I2,I3,j)=sqrt( SQR(v(I1,I2,I3,hx))+SQR(v(I1,I2,I3,hy)) );
 	}
 	else
 	{
-          getComponent(hz,"hzFieldComponent");
 	  v(I1,I2,I3,j)=sqrt( SQR(v(I1,I2,I3,hx))+SQR(v(I1,I2,I3,hy))+SQR(v(I1,I2,I3,hz)) );
 	}
       }

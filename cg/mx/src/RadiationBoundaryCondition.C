@@ -318,6 +318,11 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   if( t==0 && t==currentTime ) return 0;
 
   real time0=getCPU();
+  if( t<= currentTime )
+  {
+    printF("RBC:assignBC: Error: t=%9.3e <= currentTime=%9.3e. dt=%8.3e\n",t,currentTime,dt);
+    return 0;
+  }
   assert( t>currentTime );  // 
 
   currentTime=t;

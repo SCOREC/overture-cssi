@@ -7,7 +7,7 @@ This is the main directory for the cg solvers.
   ad     : advection-diffusion (and heat equation) solver
   mp     : multiphysics solver (which uses the other solvers)
   mx     : solver for Maxwell's equations
-  local  : make a locally altered version of one of the above solvers
+  sm     : solid mechanics solver 
 
 To build the incompressible flow solver, for example, goto the ins directory and type make.
 

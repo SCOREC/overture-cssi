@@ -26,7 +26,35 @@ if( numberOfDimensions==2  )
 {   
   const int uc=ex, vc=ey, wc=hz;
 
-  if( !useChargeDensity )
+  if( solveForAllFields )
+  {
+    // u=cos(pi x) cos( pi y )* .5
+    // v=sin(pi x) sin( pi y )* .5 
+    // w=cos(    ) sin(      )* .5
+    assert( omega[0]==omega[1] );
+
+    gx(ey)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
+    gy(ey)=.5/omega[1];
+
+    amplitude(ex)=.5;  cc(ex)=.0;
+    amplitude(ey)=.5;  cc(ey)=.0;
+
+    gy(hz)=.5/omega[1]; // turn off for testing symmetry
+    cc(hz)=.0;
+
+
+
+    gx(hy)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
+    gy(hy)=.5/omega[1];
+
+    amplitude(hx)=.5;  cc(hx)=.0;
+    amplitude(hy)=.5;  cc(hy)=.0;
+
+    gy(ez)=.5/omega[1]; // turn off for testing symmetry
+    cc(ez)=.0;
+
+  }
+  else if( !useChargeDensity )
   {
     // rho=0 : create div(E)=0 TZ function
     

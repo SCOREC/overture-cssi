@@ -1,0 +1,20 @@
+
+ +++++ FDBA t=0.000e+00 STAGE 0: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=1.250e-02 tForce=0.000e+00
+
+ +++++ FDBA t=0.000e+00 STAGE 1: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=1.250e-02 tForce=1.250e-02
+
+ +++++ FDBA t=0.000e+00 STAGE 2: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=2.500e-02 tForce=1.250e-02
+
+ +++++ FDBA t=0.000e+00 STAGE 3: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=2.500e-02 tForce=2.500e-02
+
+ +++++ FDBA t=0.000e+00 STAGE 4: computeUt=0 updateInterior=0 addDissipation=1 applyBCs=1 tBC=2.500e-02 tForce=0.000e+00
+
+ +++++ FDBA t=2.500e-02 STAGE 0: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=3.750e-02 tForce=2.500e-02
+
+ +++++ FDBA t=2.500e-02 STAGE 1: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=3.750e-02 tForce=3.750e-02
+
+ +++++ FDBA t=2.500e-02 STAGE 2: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=5.000e-02 tForce=3.750e-02
+
+ +++++ FDBA t=2.500e-02 STAGE 3: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1 tBC=5.000e-02 tForce=5.000e-02
+
+ +++++ FDBA t=2.500e-02 STAGE 4: computeUt=0 updateInterior=0 addDissipation=1 applyBCs=1 tBC=5.000e-02 tForce=2.500e-02

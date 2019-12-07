@@ -1,0 +1,1077 @@
+NOTE: See ../tcilc2 for more runs 
+
+***************************
+***** Thurs Oct 3, 2019
+
+Staill waiting for PC22 and PC44
+
+
+
+***************************
+***** Tues Oct 1, 2019
+
+RESTART: 
+
+tcilc2
+nohup $cginsx -noplot oneCylMove -g=oneCylGridFixede16.order2.hdf -ts=pc -orderInTime=2 -nu=.05 -dtMax=.00625 -tolFactor=1e-10 -tp=.1 -tf=2 -rampOrder=5 -show=oneCyl16PC22.show -go=go > oneCyl16PC22.out
+
+tcilc: 
+nohup $cginsx -noplot oneCylMove -g=oneCylGridFixede16.order4.hdf -ts=pc4 -orderInTime=4 -nu=.05 -dtMax=.00625 -tolFactor=1e-10 -tp=.1 -tf=1 -rampOrder=5 -show=oneCyl16PC44.show -go=go > oneCyl16PC44.out 
+
+Still running:
+
+tcilc:  PC44 - make oneCylMovePC44
+tcilc2: PC22 - make oneCylMovePC22
+
+
+***************************
+***** Mon Sept 30, 2019
+
+RE-RUN MOVING DISK WITH FIXED RADIUS GRIDS
+
+tcilc:  PC44 - make oneCylMovePC44
+tcilc2: PC22 - make oneCylMovePC22
+
+tcilc:  IMEX44
+tcilc2: IMEX24
+tcilc3: IMEX22 make oneCylMoveIMEX22
+
+
+
+***************************
+***** Sun Sept 29, 2019
+
+CHECK CFL limit
+
+RESTART  from twoCyl4IMEX44nu0001
+
+tcilcr: RESTART (tcilc3)
+
++++++++++++  tcilc3: IMEX44: 
+
+BLOWS UP: CFL=5 
+
+OK: CFL=.9, CFL=2, CFL=3, CFL=4 !!
+
+
+cgins -noplot tcilcr -g=twoCylindersGridFixede4.order4 -nu=.0001 -inflow=ramp -dtMax=.01 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -restart=twoCyl4IMEX44nu0001.show -go=og -cfl=.9 
+
++++++++++++  tcilc3: IMEX22: 
+
+Blows UP: CFL=5, CFL=3, CFL=2, CFL=1.8 
+
+OK: CFL=1.6
+
+ :  CFL=DEFAULT = 5
+cgins -noplot tcilcr -g=twoCylindersGridFixede4.order2 -nu=.0001 -inflow=ramp -dtMax=.1 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -restart=twoCyl4IMEX22nu0001.show -go=og -cfl=5 
+
+ :  CFL=DEFAULT = 1.5 -> dt=1.22e-2, decreases
+cgins -noplot tcilcr -g=twoCylindersGridFixede4.order2 -nu=.0001 -inflow=ramp -cfl=1.5 -dtMax=.1 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -restart=twoCyl4IMEX22nu0001.show -go=og 
+
+
+
+OK: CFL=DEFAULT =.9 -> dt=7.25e-3 
+cgins -noplot tcilcr -g=twoCylindersGridFixede4.order2 -nu=.0001 -inflow=ramp -cfl=.9 -dtMax=.01 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -restart=twoCyl4IMEX22nu0001.show -go=og 
+
+
+CFL=DEFAULT =.9 OK 
+cgins -noplot tcilcr -g=twoCylindersGridFixede4.order2 -nu=.0001 -inflow=ramp -dtMax=.005 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -restart=twoCyl4IMEX22nu0001.show -go=og 
+
+***************************
+***** Fri. Sept 27, 2019
+
+
+Yale failed -- not enough memory : but other jobs were running
+
+USE ITERATIVE SOLVERS 
+
+REAL RUN 
+cgins -noplot tcilc -g=twoCylindersGridFixede32.order4 -nu=.0001 -inflow=ramp -dtMax=.000625 -tp=0.5 -tf=8 -tolFactor=1e-8  -iluLevels=10 -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl32IMEX44nu0001.show -debug=3 -go=go >! twoCyl32IMEX44nu0001.out
+
+TEST: 
+cgins -noplot tcilc -g=twoCylindersGridFixede32.order4 -nu=.0001 -inflow=ramp -project=0 -dtMax=.000625 -tp=.01 -tf=.05 -tolFactor=1e-8  -iluLevels=10 -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl32IMEX44nu0001.show -debug=3 -go=go >! twoCyl32IMEX44nu0001.out
+
+
+$(cgins) -noplot tcilc -g=twoCylindersGridFixede32.order4 -nu=.0001 -inflow=ramp -dtMax=.000625 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl32IMEX44nu0001.show -go=go >! twoCyl32IMEX44nu0001.out
+
+
+***********************
+***** Mon. Sept 30, 2019
+
+RUN ONE CYL MOVING ON G16
+
+
+PC44  : TO-DO 
+IMEX44: TO-DO 
+IMEX24: TO-DO 
+
+IMEX22: WORKING 
+
+***********************
+***** Wed. Sept 25, 2019
+
+
+
+FINER GRIDS: 
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl4IMEX44.show & \num{4.0}{-2} &      & \num{1.3}{-4} &      & \num{1.7}{-4} &      \\ \hline
+ oneCyl8IMEX44.show & \num{2.7}{-2} &  1.5 & \num{9.0}{-6} & 14.0 & \num{7.8}{-6} & 22.3 \\ \hline
+ oneCyl16IMEX44.show & \num{1.8}{-2} &  1.5 & \num{6.5}{-7} & 14.0 & \num{3.5}{-7} & 22.3 \\ \hline
+                      &     0.56      &      &     3.80      &      &     4.48      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Thu Sep 26 11:50:37 2019. }
+\end{center}
+\end{table}
+
+
+***********************
+***** Wed. Sept 25, 2019
+
+
+RUN ONE CYL on a finer mesh
+
+
+
+***********************
+***** Wed. Sept 25, 2019
+
+(int tcilc) RERUN ALL ONE-CYL CASES
+
+make oneCylMoveIMEX44
+make oneCylMoveIMEX24
+make oneCylMoveIMEX22
+make oneCylMovePC22
+
+
+
+(in tcilc2) RERUN TWO CYLINDERS TO A LONGER TIME: t=10
+
+ make caseIMEX44nu0001  (tcilc2)
+ make caseIMEX22nu0001  (tcilc3)
+
+
+nu=.0001 -- was OK before
+cgins -noplot tcilc -g=twoCylindersGridFixede4.order4 -nu=.0001 -inflow=ramp -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl4IMEX44nu0001.show -go=go >! twoCyl4IMEX44nu0001.out &
+
+G2 blows up .. add ad4 
+cgins -noplot tcilc -g=twoCylindersGridFixede2.order4 -nu=.0001 -inflow=ramp -tp=.05 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -ad4=1 -ad41=.2 -ad42=.2 -ad21=.5 -ad22=.5 -show=twoCyl4IMEX44nu0001.show -go=og
+
+
+
+
+
+BIGGER configuration for the paper ?? .. NO
+
+ogen -noplot oneCylGrid -prefix=oneCylInBoxGrid -xa=-2 -xb=2 -ya=-2 -yb=2 -x1=.5 -order=2 -interp=e -factor=2
+
+
+MORE CHECKS OF ROTATING CYL
+
+
+Stretched grid:
+ogen -noplot oneCylGrid -prefix=oneCylGridStretched -blf=3 -order=2 -interp=e -factor=2
+
+
+========= IMEX44ab nu=.05 rampOrder=5  *Bigger dt***
+
+
+dt=[.05,.025,.0125]
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44ab.show & \num{1.1}{-1} &      & \num{8.5}{-4} &      & \num{5.8}{-4} &      \\ \hline
+ oneCyl4IMEX44ab.show & \num{9.7}{-2} &  1.2 & \num{3.4}{-5} & 25.2 & \num{2.4}{-5} & 24.2 \\ \hline
+ oneCyl8IMEX44ab.show & \num{8.4}{-2} &  1.2 & \num{1.3}{-6} & 25.2 & \num{9.9}{-7} & 24.2 \\ \hline
+                      &     0.21      &      &     4.66      &      &     4.60      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Wed Sep 25 10:15:05 2019. }
+\end{center}
+\end{table}
+
+
+
+
+******* dt=[.04,.02,.01]a
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44ab.show & \num{1.1}{-1} &      & \num{8.6}{-4} &      & \num{5.9}{-4} &      \\ \hline
+ oneCyl4IMEX44ab.show & \num{9.6}{-2} &  1.2 & \num{3.7}{-5} & 23.1 & \num{2.9}{-5} & 20.6 \\ \hline
+ oneCyl8IMEX44ab.show & \num{8.3}{-2} &  1.2 & \num{1.6}{-6} & 23.1 & \num{1.4}{-6} & 20.6 \\ \hline
+                      &     0.21      &      &     4.53      &      &     4.37      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Wed Sep 25 09:51:17 2019. }
+\end{center}
+\end{table}
+
+
+========= IMEX44aa nu=.05 rampOrder=5 dt=[.02,.01,.005]  *Bigger dt***
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44aa.show & \num{1.1}{-1} &      & \num{8.9}{-4} &      & \num{6.1}{-4} &      \\ \hline
+ oneCyl4IMEX44aa.show & \num{9.6}{-2} &  1.2 & \num{4.4}{-5} & 20.3 & \num{3.2}{-5} & 18.6 \\ \hline
+ oneCyl8IMEX44aa.show & \num{8.2}{-2} &  1.2 & \num{2.2}{-6} & 20.3 & \num{1.7}{-6} & 18.6 \\ \hline
+                      &     0.21      &      &     4.34      &      &     4.22      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Wed Sep 25 07:37:27 2019. }
+\end{center}
+\end{table}
+
+
+
+========== IMEX44 -- stretched grids (tcilc2)  **STRETCHED GRIDS ARE BAD**
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCylStretched2IMEX44s.show & \num{2.3}{-1} &      & \num{7.9}{-4} &      & \num{1.5}{-3} &      \\ \hline
+ oneCylStretched4IMEX44s.show & \num{1.1}{-1} &  2.1 & \num{4.9}{-4} &  1.6 & \num{2.0}{-4} &  7.2 \\ \hline
+ oneCylStretched8IMEX44s.show & \num{5.2}{-2} &  2.1 & \num{3.1}{-4} &  1.6 & \num{2.8}{-5} &  7.2 \\ \hline
+                      &     1.08      &      &     0.68      &      &     2.85      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Wed Sep 25 07:02:21 2019. }
+\end{center}
+\end{table}
+
+
+
+
+========== IMEX24a  BIGGER dt=[.02,.01,.005]
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX24a.show & \num{1.1}{-1} &      & \num{1.6}{-3} &      & \num{9.6}{-4} &      \\ \hline
+ oneCyl4IMEX24a.show & \num{9.3}{-2} &  1.2 & \num{1.5}{-4} & 10.3 & \num{1.1}{-4} &  8.5 \\ \hline
+ oneCyl8IMEX24a.show & \num{7.9}{-2} &  1.2 & \num{1.5}{-5} & 10.3 & \num{1.3}{-5} &  8.5 \\ \hline
+                      &     0.23      &      &     3.36      &      &     3.10      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Wed Sep 25 08:53:14 2019. }
+\end{center}
+\end{table}
+
+
+=========== IMEX24b  dt=[.05,.025,.0125]
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX24b.show & \num{2.0}{-1} &      & \num{8.9}{-3} &      & \num{8.0}{-3} &      \\ \hline
+ oneCyl4IMEX24b.show & \num{7.1}{-2} &  2.8 & \num{1.3}{-3} &  6.7 & \num{1.3}{-3} &  6.3 \\ \hline
+ oneCyl8IMEX24b.show & \num{2.6}{-2} &  2.8 & \num{2.0}{-4} &  6.7 & \num{2.0}{-4} &  6.3 \\ \hline
+                      &     1.47      &      &     2.74      &      &     2.67      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Wed Sep 25 13:26:13 2019. }
+\end{center}
+\end{table}
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX24b.show & \num{8.5}{-2} &      & \num{3.5}{-3} &      & \num{2.0}{-3} &      \\ \hline
+ oneCyl4IMEX24b.show & \num{6.8}{-2} &  1.3 & \num{6.7}{-4} &  5.3 & \num{4.3}{-4} &  4.8 \\ \hline
+ oneCyl8IMEX24b.show & \num{5.4}{-2} &  1.3 & \num{1.3}{-4} &  5.3 & \num{8.9}{-5} &  4.8 \\ \hline
+                      &     0.33      &      &     2.40      &      &     2.26      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Wed Sep 25 13:27:15 2019. }
+\end{center}
+\end{table}
+
+
+========== IMEX24
+
+
+comp compOneCyl.cmd -icase=oneCylIMEX24 -sol=6
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX24.show & \num{1.9}{-1} &      & \num{4.8}{-3} &      & \num{5.1}{-3} &      \\ \hline
+ oneCyl4IMEX24.show & \num{6.8}{-2} &  2.8 & \num{2.0}{-4} & 23.6 & \num{2.1}{-4} & 23.9 \\ \hline
+ oneCyl8IMEX24.show & \num{2.4}{-2} &  2.8 & \num{8.6}{-6} & 23.6 & \num{9.0}{-6} & 23.9 \\ \hline
+                      &     1.50      &      &     4.56      &      &     4.58      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Wed Sep 25 06:40:42 2019. }
+\end{center}
+\end{table}
+
+***********************
+***** Tues. Sept 24, 2019
+
+TEST ONE CYLINDER MOVING
+
+cgins -noplot oneCylMove -g=oneCylGride2.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.05   -tolFactor=1e-10 -tp=.1 -tf=.5 -rampOrder=4 -show=oneCyl2IMEX44.show -go=go >! oneCyl2IMEX44.out 
+cgins -noplot oneCylMove -g=oneCylGride4.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.025  -tolFactor=1e-10 -tp=.1 -tf=.5 -rampOrder=4 -show=oneCyl4IMEX44.show -go=go >! oneCyl4IMEX44.out 
+cgins -noplot oneCylMove -g=oneCylGride8.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.0125 -tolFactor=1e-10 -tp=.1 -tf=.5 -rampOrder=4 -show=oneCyl8IMEX44.show -go=go >! oneCyl8IMEX44.out 
+
+cgins -noplot oneCylMove -g=oneCylGride8.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.0125 -tolFactor=1e-10 -tp=.1 -tf=.5 -rampOrder=4 -show=oneCyl8IMEX44.show -go=go >! oneCyl8IMEX44.out 
+
+COMPARE YALE TO ITER
+cgins -noplot oneCylMove -g=oneCylGride4.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.025  -tolFactor=1e-10 -tp=.01 -tf=.5 -rampOrder=4 -go=og
+cgins -noplot oneCylMove -g=oneCylGride4.order4.hdf -ts=imex -orderInTime=4 -nu=.1 -dtMax=.025 -solver=yale -psolver=yale -tolFactor=.1  -tp=.01 -tf=.5 -rampOrder=4 -go=og
+
+
+cgins -noplot oneCylMove -g=oneCylGride2.order4.hdf -ts=pc4 -nu=.1 -dtMax=.05    -tp=.1 -tf=.1 -show=oneCyl2PC44.show -go=go >! oneCyl2PC44.out 
+cgins -noplot oneCylMove -g=oneCylGride4.order4.hdf -ts=pc4 -nu=.1 -dtMax=.025   -tp=.1 -tf=.1 -show=oneCyl4PC44.show -go=go >! oneCyl4PC44.out 
+cgins -noplot oneCylMove -g=oneCylGride8.order4.hdf -ts=pc4 -nu=.1 -dtMax=.0125  -tp=.1 -tf=.1 -show=oneCyl8PC44.show -go=go >! oneCyl8PC44.out 
+
+cgins -noplot oneCylMove -g=oneCylGride2.order2.hdf -ts=imex -nu=.1 -dtMax=.05    -tp=.1 -tf=.5 -show=oneCyl2IMEX22.show -go=go >! oneCyl2IMEX22.out 
+cgins -noplot oneCylMove -g=oneCylGride4.order2.hdf -ts=imex -nu=.1 -dtMax=.025   -tp=.1 -tf=.5 -show=oneCyl4IMEX22.show -go=go >! oneCyl4IMEX22.out 
+cgins -noplot oneCylMove -g=oneCylGride8.order2.hdf -ts=imex -nu=.1 -dtMax=.0125  -tp=.1 -tf=.5 -show=oneCyl8IMEX22.show -go=go >! oneCyl8IMEX22.out 
+
+
+
++++++++++++++++++IMEX44
+comp compOneCyl.cmd -icase=oneCylIMEX44 -sol=6
+
+
+PRESSURE IS OFF BUT MAY BE A CONSTANT OFFSET PROBLEM
+
+++++++++++++++++++ nu=.05  dtMax=[.01,.005,.0025]  OK: 
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44c.show & \num{2.4}{-1} &      & \num{1.5}{-2} &      & \num{1.9}{-2} &      \\ \hline
+ oneCyl4IMEX44c.show & \num{5.7}{-2} &  4.2 & \num{6.6}{-4} & 22.0 & \num{7.8}{-4} & 23.8 \\ \hline
+ oneCyl8IMEX44c.show & \num{1.4}{-2} &  4.2 & \num{3.0}{-5} & 22.0 & \num{3.3}{-5} & 23.8 \\ \hline
+                      &     2.07      &      &     4.46      &      &     4.57      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 19:54:47 2019. }
+\end{center}
+\end{table}
+
+
+
+
+RAMP=3 t-.5 OK TOO !!
+
+
+RAMP=4: t=.5 OK 
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44b.show & \num{1.5}{-1} &      & \num{3.8}{-3} &      & \num{4.2}{-3} &      \\ \hline
+ oneCyl4IMEX44b.show & \num{5.6}{-2} &  2.7 & \num{2.2}{-4} & 17.5 & \num{2.2}{-4} & 19.3 \\ \hline
+ oneCyl8IMEX44b.show & \num{2.1}{-2} &  2.7 & \num{1.2}{-5} & 17.5 & \num{1.1}{-5} & 19.3 \\ \hline
+                      &     1.45      &      &     4.13      &      &     4.27      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 19:42:33 2019. }
+\end{center}
+\end{table}
+
+
+
+
+
+RAMP=5, t=.5, 1., 2. OK 
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44a.show & \num{1.8}{-1} &      & \num{4.5}{-3} &      & \num{5.1}{-3} &      \\ \hline
+ oneCyl4IMEX44a.show & \num{6.5}{-2} &  2.8 & \num{2.5}{-4} & 17.8 & \num{2.6}{-4} & 19.8 \\ \hline
+ oneCyl8IMEX44a.show & \num{2.4}{-2} &  2.8 & \num{1.4}{-5} & 17.8 & \num{1.3}{-5} & 19.8 \\ \hline
+                      &     1.46      &      &     4.15      &      &     4.31      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 16:14:57 2019. }
+\end{center}
+\end{table}
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44a.show & \num{1.1}{-1} &      & \num{9.0}{-4} &      & \num{6.1}{-4} &      \\ \hline
+ oneCyl4IMEX44a.show & \num{9.6}{-2} &  1.2 & \num{4.4}{-5} & 20.5 & \num{3.2}{-5} & 18.8 \\ \hline
+ oneCyl8IMEX44a.show & \num{8.2}{-2} &  1.2 & \num{2.1}{-6} & 20.5 & \num{1.7}{-6} & 18.8 \\ \hline
+                      &     0.21      &      &     4.36      &      &     4.23      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Tue Sep 24 19:30:23 2019. }
+\end{center}
+\end{table}
+
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44a.show & \num{9.7}{-2} &      & \num{3.3}{-4} &      & \num{3.9}{-4} &      \\ \hline
+ oneCyl4IMEX44a.show & \num{8.1}{-2} &  1.2 & \num{2.0}{-5} & 16.9 & \num{2.9}{-5} & 13.4 \\ \hline
+ oneCyl8IMEX44a.show & \num{6.8}{-2} &  1.2 & \num{1.2}{-6} & 16.9 & \num{2.2}{-6} & 13.4 \\ \hline
+                      &     0.25      &      &     4.08      &      &     3.75      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e+00, Tue Sep 24 19:29:41 2019. }
+\end{center}
+\end{table}
+
+
+
+
+RAMP=6 dtMax=[.01,.005,.0025]
+
+************* t=1: 
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{1.2}{-1} &      & \num{9.6}{-4} &      & \num{6.6}{-4} &      \\ \hline
+ oneCyl4IMEX44.show & \num{1.0}{-1} &  1.1 & \num{4.8}{-5} & 20.0 & \num{3.5}{-5} & 18.7 \\ \hline
+ oneCyl8IMEX44.show & \num{8.9}{-2} &  1.1 & \num{2.4}{-6} & 20.0 & \num{1.9}{-6} & 18.7 \\ \hline
+                      &     0.20      &      &     4.32      &      &     4.23      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Tue Sep 24 16:01:50 2019. }
+\end{center}
+\end{table}
+
+
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{2.0}{-1} &      & \num{5.4}{-3} &      & \num{6.1}{-3} &      \\ \hline
+ oneCyl4IMEX44.show & \num{7.3}{-2} &  2.8 & \num{3.0}{-4} & 18.1 & \num{3.0}{-4} & 20.3 \\ \hline
+ oneCyl8IMEX44.show & \num{2.6}{-2} &  2.8 & \num{1.6}{-5} & 18.1 & \num{1.5}{-5} & 20.3 \\ \hline
+                      &     1.49      &      &     4.17      &      &     4.35      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 15:06:10 2019. }
+\end{center}
+\end{table}
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{1.1}{-3} &      & \num{1.7}{-4} &      & \num{2.9}{-4} &      \\ \hline
+ oneCyl4IMEX44.show & \num{1.3}{-4} &  8.1 & \num{1.0}{-5} & 15.9 & \num{1.8}{-5} & 16.0 \\ \hline
+ oneCyl8IMEX44.show & \num{1.7}{-5} &  8.1 & \num{6.6}{-7} & 15.9 & \num{1.1}{-6} & 16.0 \\ \hline
+                      &     3.01      &      &     3.99      &      &     4.00      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e-01, Tue Sep 24 14:00:02 2019. }
+\end{center}
+\end{table}
+
+
+
+RAMP=6  dtMax=[.05,.025,.0125]
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{8.2}{-3} &      & \num{9.9}{-4} &      & \num{1.7}{-3} &      \\ \hline
+ oneCyl4IMEX44.show & \num{8.1}{-4} & 10.1 & \num{9.8}{-5} & 10.1 & \num{2.4}{-4} &  7.2 \\ \hline
+ oneCyl8IMEX44.show & \num{8.0}{-5} & 10.1 & \num{9.8}{-6} & 10.1 & \num{3.4}{-5} &  7.2 \\ \hline
+                      &     3.34      &      &     3.33      &      &     2.84      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e-01, Tue Sep 24 13:54:39 2019. }
+\end{center}
+\end{table}
+
+
+
+
+
+RAMP=5
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{7.8}{-3} &      & \num{1.0}{-3} &      & \num{2.3}{-3} &      \\ \hline
+ oneCyl4IMEX44.show & \num{5.0}{-4} & 15.6 & \num{1.3}{-4} &  8.1 & \num{2.9}{-4} &  7.9 \\ \hline
+ oneCyl8IMEX44.show & \num{3.2}{-5} & 15.6 & \num{1.6}{-5} &  8.1 & \num{3.7}{-5} &  7.9 \\ \hline
+                      &     3.96      &      &     3.01      &      &     2.98      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e-01, Tue Sep 24 13:52:34 2019. }
+\end{center}
+\end{table}
+
+
+
+
+RAMP=4
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44.show & \num{7.4}{-3} &      & \num{1.4}{-3} &      & \num{3.0}{-3} &      \\ \hline
+ oneCyl4IMEX44.show & \num{7.6}{-4} &  9.6 & \num{1.4}{-4} & 10.1 & \num{3.2}{-4} &  9.4 \\ \hline
+ oneCyl8IMEX44.show & \num{7.9}{-5} &  9.6 & \num{1.3}{-5} & 10.1 & \num{3.4}{-5} &  9.4 \\ \hline
+                      &     3.27      &      &     3.34      &      &     3.23      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e-01, Tue Sep 24 13:46:28 2019. }
+\end{center}
+\end{table}
+
+
+
+RAMP=3
+
+
+
++++++++++++++++++IMEX22
+comp compOneCyl.cmd -icase=oneCylIMEX22 -sol=6
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX22.show & \num{4.2}{-1} &      & \num{2.5}{-2} &      & \num{4.1}{-2} &      \\ \hline
+ oneCyl4IMEX22.show & \num{6.8}{-2} &  6.1 & \num{5.2}{-3} &  4.9 & \num{9.5}{-3} &  4.3 \\ \hline
+ oneCyl8IMEX22.show & \num{1.1}{-2} &  6.1 & \num{1.1}{-3} &  4.9 & \num{2.2}{-3} &  4.3 \\ \hline
+                      &     2.60      &      &     2.28      &      &     2.09      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 10:43:35 2019. }
+\end{center}
+\end{table}
+
+
+
+comp compOneCyl.cmd -icase=oneCyl -sol=6
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2.show & \num{8.5}{-1} &      & \num{3.0}{-2} &      & \num{3.2}{-2} &      \\ \hline
+ oneCyl4.show & \num{2.2}{-1} &  3.9 & \num{7.2}{-3} &  4.2 & \num{6.8}{-3} &  4.7 \\ \hline
+ oneCyl8.show & \num{5.7}{-2} &  3.9 & \num{1.7}{-3} &  4.2 & \num{1.4}{-3} &  4.7 \\ \hline
+                      &     1.96      &      &     2.07      &      &     2.25      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Tue Sep 24 10:16:38 2019. }
+\end{center}
+\end{table}
+
+
+cgins -noplot oneCylMove -g=oneCylGride1.order2.hdf -nu=1 -dtMax=.1     -tp=.1 -tf=.5 -show=oneCyl1.show -go=go >! oneCyl1.out 
+cgins -noplot oneCylMove -g=oneCylGride2.order2.hdf -nu=1 -dtMax=.05    -tp=.1 -tf=.5 -show=oneCyl2.show -go=go >! oneCyl2.out 
+cgins -noplot oneCylMove -g=oneCylGride4.order2.hdf -nu=1 -dtMax=.025   -tp=.1 -tf=.5 -show=oneCyl4.show -go=go >! oneCyl4.out 
+cgins -noplot oneCylMove -g=oneCylGride8.order2.hdf -nu=1 -dtMax=.0125  -tp=.1 -tf=.5 -show=oneCyl8.show -go=go >! oneCyl4.out 
+
+cgins oneCylMove -g=oneCylGride2.order2.hdf -nu=.01 -tp=.1 -tf=20 -go=halt
+
+***********************
+***** Mon. Sept 24, 2019
+
+ONE CYLINDER -- INCREASE RAMP INTERVAL to t=[0,4] 
+
+RAMP derivatives can be large, ramp=4, max(rttt) = 45
+
+comp compTwoCyls.cmd -icase=oneCylIMEX44nu0p1 -sol=5
+
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44nu0p1.show & \num{9.6}{-6} &      & \num{2.5}{-6} &      & \num{2.1}{-6} &      \\ \hline
+ oneCyl4IMEX44nu0p1.show & \num{7.6}{-7} & 12.7 & \num{3.0}{-7} &  8.3 & \num{2.5}{-7} &  8.5 \\ \hline
+ oneCyl8IMEX44nu0p1.show & \num{6.0}{-8} & 12.7 & \num{3.6}{-8} &  8.3 & \num{2.9}{-8} &  8.5 \\ \hline
+ oneCyl16IMEX44nu0p1.show & \num{4.7}{-9} & 12.7 & \num{4.3}{-9} &  8.3 & \num{3.4}{-9} &  8.5 \\ \hline
+                      &     3.66      &      &     3.06      &      &     3.09      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e+00, Tue Sep 24 09:05:43 2019. }
+\end{center}
+\end{table}
+
+
+% -------------- l1 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44nu0p1.show & \num{9.7}{-7} &      & \num{3.7}{-7} &      & \num{1.7}{-7} &      \\ \hline
+ oneCyl4IMEX44nu0p1.show & \num{8.3}{-8} & 11.7 & \num{3.1}{-8} & 11.8 & \num{1.6}{-8} & 10.7 \\ \hline
+ oneCyl8IMEX44nu0p1.show & \num{7.1}{-9} & 11.7 & \num{2.6}{-9} & 11.8 & \num{1.5}{-9} & 10.7 \\ \hline
+ oneCyl16IMEX44nu0p1.show & \num{6.1}{-10} & 11.7 & \num{2.2}{-10} & 11.8 & \num{1.4}{-10} & 10.7 \\ \hline
+                      &     3.54      &      &     3.56      &      &     3.42      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=2.000000e+00, Tue Sep 24 09:05:43 2019. }
+\end{center}
+\end{table}
+
+
+
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ oneCyl2IMEX44nu0p1.show & \num{6.9}{-6} &      & \num{3.9}{-6} &      & \num{4.2}{-6} &      \\ \hline
+ oneCyl4IMEX44nu0p1.show & \num{7.9}{-7} &  8.7 & \num{3.1}{-7} & 12.6 & \num{2.7}{-7} & 16.0 \\ \hline
+ oneCyl8IMEX44nu0p1.show & \num{9.1}{-8} &  8.7 & \num{2.5}{-8} & 12.6 & \num{1.7}{-8} & 16.0 \\ \hline
+                      &     3.12      &      &     3.65      &      &     4.00      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e+00, Tue Sep 24 06:59:32 2019. }
+\end{center}
+\end{table}
+
+
+
+***********************
+***** Mon. Sept 23, 2019
+
+o SIMPLIFY GRID -- shorter domain, no stretching
+++++++++++++ ONE CYLINDER +++++++
+
+
+ogen twoCylindersGrid -prefix=oneCyl -numCyl=1 -x1=0 -y1=0 -xa=-3 -xb=4 -ya=-2 -yb=2 -bl=1 -rgd=fixed -order=2 -interp=e -factor=2
+
+cgins -noplot tcilc -g=oneCylFixede4.order2 -nu=.1 -inflow=rampedPressure -inflowPressure=2 -dtMax=.01 -tp=.5 -tf=1.0 -project=0 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=0.2 -ad22=0.2 -show=oneCyl2IMEX2nu0p1.show -go=og
+
+
+RUNNING:
+make casePC44nu0p1
+
+
+RUNNING: 
+nohup $cginsx -noplot tcilc -g=twoCylindersGridFixede16.order4 -nu=.1 -inflow=rampedPressure -inflowPressure=2 -rampOrder=4 -dtMax=.00125 -tp=.5 -tf=1.0 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl16IMEX44nu0p1.show -go=go > ! twoCyl16IMEX44nu0p1.out
+
+
+
+comp compTwoCyls.cmd -icase=IMEX44nu0p1 -sol=3
+comp compTwoCyls.cmd -icase=IMEX24nu0p1 -sol=3
+comp compTwoCyls.cmd -icase=IMEX22nu0p1 -sol=3
+
+IMEX22nu0p1.m IMEX24nu0p1.m IMEX44nu0p1.m
+
+
+++++++ TEST PC44 
+
+cgins -noplot tcilc -g=twoCylindersGridFixede2.order4 -nu=.1 -inflow=rampedPressure -inflowPressure=2 -rampOrder=4 -dtMax=.005 -tp=.5 -tf=1.0 -solver=yale -psolver=yale -ts=pc4 -orderInTime=4 -ao=bweno -go=og
+
+
+***********************
+***** Sept 22, 2019
+
+
+SET UP UNDER-RESOLVED RUNS with new grid -- run longer 
+
+
+nu=.0001
+cgins -noplot tcilc -g=twoCylindersGridFixede4.order4 -nu=.0001 -inflow=ramp -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl4IMEX44nu0001.show -go=go >! twoCyl4IMEX44nu0001.out &
+
+
+nu=.001 : OK 
+cgins -noplot tcilc -g=twoCylindersGridFixede4.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=twoCyl4IMEX44nu001.show -go=go >! twoCyl4IMEX44nu001.out & 
+
+
+
+Convergence with FIXED grids
+
+IMEX44 -- rerun with rampOrder=5 for ramped pressure 
+
+***NOTE*** rampOrder=5 for pressure gives almost the same results as rampOrder=4
+
+#  IMEX44, nu=0.1, : ramped p 
+  comp compTwoCyls.cmd -icase=IMEX44nu0p1 -sol=2
+
+
+
+
+*** IMEX22 RAMPED VELOCITY
+comp compTwoCyls.cmd -icase=IMEX22nu0p1v -sol=3
+% -------------- l2 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ twoCyl1IMEX2nu0p1v.show & \num{5.1}{-2} &      & \num{4.8}{-3} &      & \num{2.1}{-3} &      \\ \hline
+ twoCyl2IMEX2nu0p1v.show & \num{1.4}{-2} &  3.6 & \num{1.3}{-3} &  3.8 & \num{6.1}{-4} &  3.5 \\ \hline
+ twoCyl4IMEX2nu0p1v.show & \num{4.0}{-3} &  3.6 & \num{3.3}{-4} &  3.8 & \num{1.8}{-4} &  3.4 \\ \hline
+ twoCyl8IMEX2nu0p1v.show & \num{1.1}{-3} &  3.6 & \num{8.6}{-5} &  3.8 & \num{5.1}{-5} &  3.4 \\ \hline
+                      &     1.83      &      &     1.92      &      &     1.78      &     \\ \hline
+\end{tabular}
+\caption{L2-norm self convergence results, t=1.000000e+00, Sun Sep 22 11:30:48 2019. }
+\end{center}
+\end{table}
+
+
+*** IMEX22 RAMPED PRESSURE 
+comp compTwoCyls.cmd -icase=IMEX22nu0p1 -sol=3
+% -------------- l2 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ twoCyl1IMEX2nu0p1.show & \num{1.6}{-3} &      & \num{2.9}{-4} &      & \num{1.3}{-4} &      \\ \hline
+ twoCyl2IMEX2nu0p1.show & \num{4.4}{-4} &  3.6 & \num{8.1}{-5} &  3.6 & \num{3.5}{-5} &  3.6 \\ \hline
+ twoCyl4IMEX2nu0p1.show & \num{1.2}{-4} &  3.5 & \num{2.3}{-5} &  3.6 & \num{9.9}{-6} &  3.6 \\ \hline
+ twoCyl8IMEX2nu0p1.show & \num{3.5}{-5} &  3.5 & \num{6.3}{-6} &  3.6 & \num{2.8}{-6} &  3.6 \\ \hline
+                      &     1.82      &      &     1.84      &      &     1.83      &     \\ \hline
+\end{tabular}
+\caption{L2-norm self convergence results, t=1.000000e+00, Sun Sep 22 11:20:47 2019. }
+\end{center}
+\end{table}
+
+
+
+
+
+
+NEW GRIDS twoCylindersGrid.cmd -- new stretching 
+
+cgins -noplot tcilc -g=twoCylindersGride2.order2 -nu=.1 -inflow=rampedPressure -inflowPressure=2 -tp=.01 -tf=5 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.2 -ad22=.2 -go=og
+
+***********************
+***** Sept 21, 2019
+
+TEST PRESSURE BC AT INFLOW AND OUTFLOW 
+
+Check convergence at nu=.001
+SEE MAKEFILE 
+
+make case001
+% -------------- l1 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ tcilc2IMEX4nu01.show & \num{9.2}{-5} &      & \num{1.4}{-5} &      & \num{3.0}{-6} &      \\ \hline
+ tcilc4IMEX4nu01.show & \num{1.9}{-5} &  4.9 & \num{2.5}{-6} &  5.4 & \num{7.8}{-7} &  3.9 \\ \hline
+ tcilc8IMEX4nu01.show & \num{3.8}{-6} &  4.9 & \num{4.7}{-7} &  5.4 & \num{2.0}{-7} &  3.9 \\ \hline
+                      &     2.30      &      &     2.42      &      &     1.95      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=1.000000e+00, Sun Sep 22 05:33:55 2019. }
+\end{center}
+\end{table}
+
+
+
+
+
+cgins -noplot tcilc -g=tcilce4.order2 -nu=.005 -inflow=rampedPressure -inflowPressure=2 -tp=.01 -tf=5 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -go=og
+
+
+***********************
+***** Sept 21, 2019
+
+++++++++++++++++++++ADD BWENO from Fanlong's version /data1/mengf5/overtureframework-code-new
+
+ogen -noplot $ov/ogen/tcilc -order=4 -interp=e -factor=16
+
+BEWNO G16 
+cgins -noplot tcilc -g=tcilce16.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc16IMEX4nu001b.show -go=go >! tcilc4IMEX16nu001b.out &
+
+
+comp compTwoCyls
+% -------------- l1 norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{p} &  r   & \errFormat{u} &  r   & \errFormat{v} &  r  \\ \hline
+ tcilc2IMEX4nu001b.show & \num{1.5}{-1} &      & \num{3.6}{-3} &      & \num{4.7}{-4} &      \\ \hline
+ tcilc4IMEX4nu001b.show & \num{2.1}{-2} &  7.0 & \num{3.0}{-4} & 12.0 & \num{5.7}{-5} &  8.1 \\ \hline
+ tcilc8IMEX4nu001b.show & \num{3.1}{-3} &  7.0 & \num{2.5}{-5} & 12.0 & \num{7.1}{-6} &  8.1 \\ \hline
+                      &     2.80      &      &     3.59      &      &     3.02      &     \\ \hline
+\end{tabular}
+\caption{L1-norm self convergence results, t=5.000000e-01, Sat Sep 21 11:47:04 2019. }
+\end{center}
+\end{table}
+
+
+
+
+
+
+cgins -noplot tcilc -g=tcilce8.order2 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -show=tcilc8IMEX2nu001.show -go=go >! tcilc8IMEX2nu001.out &
+
+Order=2 G4 
+cgins -noplot tcilc -g=tcilce4.order2 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -show=tcilc4IMEX2nu001.show -go=go >! tcilc4IMEX2nu001.out &
+
+
+Order=2 G2 + ad2 : OK 
+cgins -noplot tcilc -g=tcilce2.order2 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -ad2=1 -ad21=.25 -ad22=.25 -show=tcilc2IMEX2nu001.show -go=go >! tcilc2IMEX2nu001.out &
+
+Order=2 G2 + upwind -- blows up 
+cgins -noplot tcilc -g=tcilce2.order2 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -ao=upwind -show=tcilc2IMEX2nu001.show -go=go >! tcilc2IMEX2nu001.out &
+
+
+BEWNO 
+cgins -noplot tcilc -g=tcilce8.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc8IMEX4nu001b.show -go=go >! tcilc4IMEX8nu001b.out &
+
+BEWNO 
+cgins -noplot tcilc -g=tcilce4.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc4IMEX4nu001b.show -go=go >! tcilc4IMEX4nu001b.out &
+
+
+TEST BEWNO  --looks ok
+cgins -noplot tcilc -g=tcilce2.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc2IMEX4nu001b.show -go=go >! tcilc2IMEX4nu001b.out &
+
+
+
+***********************
+***** Sept 20, 2019
+
+TEST IMEX-BDF scheme with under-resolved and bweno 
+
+
+RAMP ORDER=3:
+
+ORDER=2
+
+cgins -noplot tcilc -g=tcilce4.order2 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -ao=bweno -show=tcilc4IMEX2nu001ss.show -go=go >! tcilc4IMEX2nu001ss.out &
+
+
+ORDER=4
+cgins -noplot tcilc -g=tcilce8.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc8IMEX4nu001.show -go=go >! tcilc8IMEX4nu001ss.out &
+
+
+cgins -noplot tcilc -g=tcilce4.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc4IMEX4nu001ss.show -go=go >! tcilc4IMEX4nu001ss.out &
+
+cgins -noplot tcilc -g=tcilce2.order4 -nu=.001 -inflow=ramp -tp=.5 -tf=5 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc2IMEX4nu001ss.show -go=go >! tcilc2IMEX4nu001ss.out &
+
+
+TEST NEW RAMP: -- Trouble **fix me***
+cgins -noplot tcilc -g=tcilce2.order2 -nu=.001 -inflow=ramp -tp=.01 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=2 -ao=bweno -go=og 
+
+
+****** TO DO -- SLOW START -- need better ramp than default 
+
+From cylDrop.cmd: 
+    if( $bcOption eq "rampedPressure" ){ \
+       $cmd="all=noSlipWall\n" . \
+           "bcNumber3=outflow , pressure($cp0*p+$cpn*p.n=0.)\n" . \
+           "bcNumber4=inflowWithPressureAndTangentialVelocityGiven, uniform(u=0.,v=0.,p=1)\n" . \
+           "bcNumber4=inflowWithPressureAndTangentialVelocityGiven, userDefinedBoundaryData\n" . \
+           "time function option\n" . \
+           " ramp function\n" . \
+           "   ramp end values: 0,$inflowPressure (start,end)\n". \
+           "   ramp times: $taGravity,$tbGravity (start,end)\n" .\
+           "   ramp order: 3\n" . \
+           "  exit\n" . \
+           "done\n" };
+
+
+
+***** NEED A SLOW START
+
+***** TO DO -- SECOND-ORDER -- CHECK BEWNO ORDER 
+cgins -noplot tcilc -g=tcilce2.order2 -nu=.001 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=2 -ao=bweno -show=tcilc2IMEX2nu001.show -go=go >! tcilc2IMEX2nu001.out &
+
+
+
+cgins -noplot tcilc -g=tcilce8.order4 -nu=.001 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc8IMEX4nu001.show -go=go >! tcilc8IMEX4nu001.out &
+
+cgins -noplot tcilc -g=tcilce4.order4 -nu=.001 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc4IMEX4nu001.show -go=go >! tcilc4IMEX4nu001.out &
+
+cgins -noplot tcilc -g=tcilce2.order4 -nu=.001 -tp=.5 -tf=10 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc2IMEX4nu001.show -go=go >! tcilc2IMEX4nu001.out &
+
+
+
+
+
+***********************
+***** Feb 18, 2019
+
+
+
+
+ogen -noplot twoCylGrid -order=4 -interp=e -ml=3 -factor=8 *trouble*
+nohup $cgins -noplot movingCylinders -g=twoCylGride8.order4.ml3 -nu=.0025 -tp=.005 -tf=6. -rate=.5 -tolFactor=.01 -solver=mg -psolver=mg -ts=imex -orderInTime=4 -ad4=1 -cpn=10. -show=twoCylG8O4.show -flushFrequency=10 -go=go >! twoCylG8O4.out
+
+
+cpn=10  -- NO ADD SLOW START (trouble at start otherwise, pressure solve?)
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4.ml3 -nu=.0025 -tp=.01 -tf=6. -rate=.5 -rampTime=1. -tolFactor=.01 -solver=mg -psolver=mg -ts=imex -orderInTime=4 -ad4=1 -cpn=10. -show=twoCylG4O4d.show -flushFrequency=10 -go=go >! twoCylG4O4d.out
+
+
+cpn=10  -- Ok till about t=5
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4.ml3 -nu=.005 -tp=.01 -tf=6. -rate=.5  -tolFactor=.01 -solver=mg -psolver=mg -ts=imex -orderInTime=4 -ad4=1 -cpn=10. -show=twoCylG4O4a.show -flushFrequency=10 -go=go >! twoCylG4O4a.out
+
+
+***********************
+***** Feb 15-16, 2019
+
+#  ogen -noplot twoCylGrid -order=2 -interp=e -factor=2
+#  ogen -noplot twoCylGrid -order=2 -interp=e -factor=4
+
+ogen -noplot twoCylGrid -order=4 -interp=e -factor=2
+ogen -noplot twoCylGrid -order=4 -interp=e -factor=4
+ogen -noplot twoCylGrid -order=4 -interp=e -factor=8
+
+
+G8 -- TO-DO 
+cgins -noplot movingCylinders -g=twoCylGride8.order4 -nu=.001 -tp=.01 -tf=4. -rate=.5 -tolFactor=.1 -solver=best -psolver=best -ts=imex -orderInTime=4 -ao=bweno -show=twoCylG8O4.show -go=go >! twoCylG8O4.out
+
+G4 -- PETSC better?
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4.ml3 -nu=.005 -tp=.01 -tf=8. -rate=.5  -tolFactor=.01 -solver=best -psolver=best  -ogesMaxIterations=5000 -ts=imex -orderInTime=4 -ao=bweno -show=twoCylG4O4b.show -flushFrequency=10 -go=go >! twoCylG4O4b.out &
+
+MG + AD4:   -- ok till about t=5 -- TROUBLE AT OUTFLOW I thinl 
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4.ml3 -nu=.005 -tp=.01 -tf=8. -rate=.5  -tolFactor=.001 -solver=mg -psolver=mg -ts=imex -orderInTime=4 -ad4=1 -show=twoCylG4O4a.show -flushFrequency=10 -go=go >! twoCylG4O4a.out
+
+
+G4 -- PETSC better?
+
+
+G4 - Order4: -- longer time, longer domain
+Try MG ** TROUBLE ** NEED AD4 ?? 
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4.ml3 -nu=.005 -tp=.01 -tf=8. -rate=.5  -tolFactor=.001 -solver=mg -psolver=mg -ts=imex -orderInTime=4 -ao=bweno -show=twoCylG4O4a.show -flushFrequency=10 -go=go >! twoCylG4O4a.out
+
+NOTE: increase maxIt's for PETSC
+nohup $cgins -noplot movingCylinders -g=twoCylGride4.order4 -nu=.0025 -tp=.01 -tf=20. -rate=.5  -tolFactor=.01 -solver=best -psolver=best -ogesMaxIterations=5000 -ts=imex -orderInTime=4 -ao=bweno -show=twoCylG4O4a.show -flushFrequency=10 -go=go >! twoCylG4O4a.out
+
+G4 - Order4: -- Ok 
+cgins -noplot movingCylinders -g=twoCylGride4.order4 -nu=.0025 -tp=.01 -tf=4. -rate=.5 -solver=best -psolver=best -ts=imex -orderInTime=4 -ao=bweno -show=twoCylG4O4.show -go=go >! twoCylG4O4.out
+
+
+
+rate=.5 : full rotation by time t=2 
+G4: OK 
+cgins movingCylinders -g=twoCylGride4.order2 -nu=.005 -tp=.01 -tf=2. -rate=.5 -solver=best -psolver=best -ts=imex -ao=bweno -show=twoCylG4O2.show -go=halt
+
+cgins movingCylinders -g=twoCylGride2.order2 -nu=.01 -tp=.01 -tf=2. -rate=.5 -solver=yale -psolver=yale -ts=imex -ao=bweno -go=halt
+
+
+
+cgins movingCylinders -g=twoCylGride2.order2 -nu=.01 -tp=.01 -tf=50 -solver=yale -psolver=yale -ts=imex -ao=bweno -go=halt
+
+
+
+TEST IMEX-BDF scheme with rotating cylinder
+
+
+cgins movingCylinders -g=tcilce2.order4 -nu=.01 -tp=.05 -tf=50 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -go=halt
+
+cgins movingCylinders -g=tcilce2.order2 -nu=.01 -tp=.01 -tf=50 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -go=halt
+
+
+
+***********************
+***** Sept 25, 2018
+
+TEST IMEX-BDF scheme
+
+cgins -noplot tcilc -g=tcilce8.order4 -nu=.001 -tp=.05 -tf=50 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc8IMEX4.show -flushFrequency=8 -go=go >! tcilc8IMEX4.out &
+
+cgins -noplot tcilc -g=tcilce4.order4 -nu=.005 -tp=.05 -tf=50 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc4IMEX4.show -go=go >! tcilc4IMEX4.out &
+
+cgins -noplot tcilc -g=tcilce4.order4 -nu=.005 -tp=.05 -tf=50 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno -show=tcilc4IMEX4.show -go=go >! tcilc4IMEX4.out &
+
+BWENO 
+cgins tcilc -g=tcilce2.order4 -nu=.01 -tp=.1 -tf=20 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ao=bweno
+
+IMEX-BDF4
+cgins tcilc -g=tcilce2.order4 -nu=.01 -tp=.1 -tf=20 -solver=yale -psolver=yale -ts=imex -orderInTime=4 -ad4=1 
+
+
+
+
+*** 2014/09/01 -- test pc4
+
+cgins -noplot tcilc -g=tcilce2.order4 -nu=.01 -tp=.1 -tf=20 -ts=pc4 -go=og
+
+
+
+
+
+
+#  Test parallel on cg6
+
+ogen -noplot $ov/ogen/tcilc -order=2 -interp=e -factor=2
+ogen -noplot $ov/ogen/tcilc -order=2 -interp=e -factor=4
+
+ogen -noplot $ov/ogen/tcilc -order=4 -interp=e -factor=2
+ogen -noplot $ov/ogen/tcilc -order=4 -interp=e -ml=3 -factor=4
+
+
+MG: 
+mpiexec -n 4 $cginsp tcilc -g=tcilce4.order4.ml3 -nu=.005 -solver=mg -psolver=mg -numParallelGhost=4 -tp=.1 -tf=20 
+
+PETSC:
+mpiexec -n 4 $cginsp tcilc -g=tcilce2.order2 -nu=.01 -tp=.2 -tf=20 
+
+mpiexec -n 8 $cginsp tcilc -g=tcilce4.order4 -nu=.005 -tp=.2 -tf=20 

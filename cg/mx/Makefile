@@ -27,6 +27,10 @@ include $(CONFIGDIR)/make.rules
 include $(CONFIGDIR)/make.options
 include make
 
+# gfortran has trouble with interface3dOrder4.bf and -O3 ?
+FC_FLAGS_OPT = -O
+
+
 # List of packages to build
 PKGS := src
 
@@ -42,7 +46,7 @@ all: $(BINDIR)cgmx
 
 cgmx: $(BINDIR)cgmx
 
-# Test: read dispersion material file
+# Test: read dispersion material file NOTE TYPE "make tr" to build this 
 trdmf: $(BINDIR)trdmf
 
 usage: 
@@ -84,19 +88,23 @@ CGMX_EXTRA_FILES = $(PETSC_FILES_OBJ)
 # $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) src/dbAccess.C
 $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(libCommon)
 	-@mkdir -p $(BINDIR)
-	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(CGMX) $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
+	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
+
+#	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(CGMX) $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
 
 
 # test program to read a Dispersive Material File
 TESTS += $(BINDIR)trdmf
 
-tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o
+
+tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o \
+        $(OBJDIR)PlaneWaveExactSolution.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)trdmf $(OBJDIR)trdmf.o $(OBJALL) $(LIBS)
 
 # Test program for exact solutions
 TESTS += $(BINDIR)texact
 
-texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o
+texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)texact $(OBJDIR)texact.o $(OBJALL) $(LIBS)
 
 

@@ -257,6 +257,13 @@ outputResults( int current, real t, real dt )
   const int & numberOfErrorComponents= dbase.get<int>("numberOfErrorComponents");
   int numberToOutput= numberOfErrorComponents+2; // include |Ev| and div(E)
 
+  const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+  if( method==bamx && solveForAllFields )
+  {
+    numberToOutput+=1;  // Save vector |Hv| 
+  }
+  
+
   // For dispersive models keep track of the maximum errors in the polarization vector per domain  
   const RealArray & polarizationNorm  =  dbase.get<RealArray>("polarizationNorm");
   const RealArray & maxErrPolarization =  dbase.get<RealArray>("maxErrPolarization");
@@ -291,6 +298,14 @@ outputResults( int current, real t, real dt )
     uc  = max(solutionNorm(Ec));
     fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
 
+    if( method==bamx && solveForAllFields )
+    { // output |Hv| too for bamx 
+      Range Hc(hx,hz);
+      err = max(maximumError(Hc));
+      uc  = max(solutionNorm(Hc));
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    }
+  
     if( dispersionModel != noDispersion )
     {
       // output errors in P too: (max value over all domains and all components)
@@ -659,6 +674,10 @@ solve(GL_GraphicsInterface &gi )
       else if( method==sosup )
       { // advance using the second-order-system upwind scheme:
 	advanceSOSUP( numberOfStepsTaken,current,t,dt );
+      }
+      else if( method==bamx )
+      { // bianistropic maxwell equations
+	advanceBAMX( numberOfStepsTaken,current,t,dt );
       }
       else
       {

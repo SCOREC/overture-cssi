@@ -9,12 +9,12 @@
 # -npp, -pnp, -ppn : periodic or not in each direction
 #
 # examples:
-#  ogen -noplot boxArg -order=2 -xa=-1. -xb=1. -ya=-1. -yb=1. -za=-1. -zb=1. -factor=1 -name="boxLx2Ly2Lz2Factor1.order2.hdf"
-#  ogen -noplot boxArg -order=2 -xa=-1. -xb=1. -ya=-1. -yb=1. -za=-1. -zb=1. -factor=1 -name="boxLx2Ly2Lz2Factor2.order2.hdf"
+#  ogen -noplot boxArg -order=2 -xa=-1 -xb=1 -ya=-1 -yb=1 -za=-1 -zb=1 -factor=1 -name="boxLx2Ly2Lz2Factor1.order2.hdf"
+#  ogen -noplot boxArg -order=2 -xa=-1 -xb=1 -ya=-1 -yb=1 -za=-1 -zb=1 -factor=1 -name="boxLx2Ly2Lz2Factor2.order2.hdf"
 # 
 # -- fourth-order: 
-#  ogen -noplot boxArg -order=4 -xa=-1. -xb=1. -ya=-1. -yb=1. -za=-1. -zb=1. -factor=2 -name="boxLx2Ly2Lz2Factor2.order4.hdf"
-#  ogen -noplot boxArg -order=4 -xa=-1. -xb=1. -ya=-1. -yb=1. -za=-1. -zb=1. -factor=4 -name="boxLx2Ly2Lz2Factor4.order4.hdf"
+#  ogen -noplot boxArg -order=4 -xa=-1 -xb=1 -ya=-1 -yb=1 -za=-1 -zb=1 -factor=2 -name="boxLx2Ly2Lz2Factor2.order4.hdf"
+#  ogen -noplot boxArg -order=4 -xa=-1 -xb=1 -ya=-1 -yb=1 -za=-1 -zb=1 -factor=4 -name="boxLx2Ly2Lz2Factor4.order4.hdf"
 # 
 # -- periodic in one or more directions
 #   ogen -noplot boxArg -order=2 -periodic=npp -factor=2  
@@ -99,7 +99,7 @@ Box
     if( $periodic eq "nnp" ){ $bc ="1 2 3 4 -1 -1"; }
     $bc
   mappingName
-    $gridName = $prefix;
+    if( $prefix eq "nonBox" ){ $gridName = $prefix; } else{ $gridName="box"; }
     $gridName
   exit
 #

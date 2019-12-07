@@ -51954,6 +51954,24 @@
                   f(n) = (a6(n,0)*q(0)+a6(n,1)*q(1)+a6(n,2)*q(2)+a6(n,
      & 3)*q(3)+a6(n,4)*q(4)+a6(n,5)*q(5)) - f(n)
                 end do
+            !-    if( .true. )then 
+            !-      do n=0,5
+            !-        if( isnan(f(n)) )then
+            !-         write(*,'(" NAN found!")') 
+            !-         write(*,'(" i1,i2,i3=",3i6)') i1,i2,i3
+            !-         write(*,'(" j1,j2,j3=",3i6)') j1,j2,j3
+            !-         write(*,'(" f=",6(e10.2,1x))') (f(m),m=0,5)
+            !-         write(*,'(" q=",6(e10.2,1x))') (q(m),m=0,5)
+            !-         write(*,'(" a6=",6(e10.2,1x))') ((a6(n1,n2),n1=0,5),n2=0,5)
+            !-         write(*,'(" clap1,clap2=",2(e10.2,1x))') clap1,clap2
+            !-         write(*,'(" betac1,betac2=",2(e10.2,1x))') betac1,betac2
+            !-         write(*,'(" cem1,cem2=",2(e10.2,1x))') cem1,cem2
+            !-         write(*,'(" c1x,c1y,c1z=",3(e10.2,1x))') c1x,c1y,c1z
+            !-         write(*,'(" c2x,c2y,c2z=",3(e10.2,1x))') c2x,c2y,c2z
+            !-         stop 6666
+            !-        end if
+            !-      end do
+            !-    end if
                 ! write(debugFile,'(" --> 3d:order2-c: f(subtract)=",6f8.3)') f(0),f(1),f(2),f(3),f(4),f(5)
                 ! solve A Q = F
                 ! factor the matrix

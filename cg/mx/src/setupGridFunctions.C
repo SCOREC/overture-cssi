@@ -40,6 +40,10 @@ setupGridFunctions()
   real time0=getCPU();
 
   printF("\n >>>>>>>>>>>>>>>> Maxwell: ENTERING setupGridFunctions\n");
+
+  const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+  printF(" solveForAllFields=%i, solveForMagneticField=%i\n",(int)solveForAllFields,(int)solveForMagneticField);
+  
   
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
@@ -222,7 +226,7 @@ setupGridFunctions()
   }
 
   numberOfTimeLevels=2;  // keep this many levels of u
-  if( method==nfdtd || method==yee || method==sosup )
+  if( method==nfdtd || method==yee || method==sosup || method==bamx )
   {
     if( usingPMLBoundaryConditions() ||
         true )  // for combined dissipation with advance
@@ -250,7 +254,7 @@ setupGridFunctions()
   
     bool unstructured=map.getClassName()=="UnstructuredMapping";
 
-    if( (method==nfdtd || method==sosup) && !mg.isRectangular() )
+    if( (method==nfdtd || method==sosup|| method==bamx ) && !mg.isRectangular() )
     {
       // The energy estimate may not be correct unless we ensure that the
       // jacobian derivatives are periodic
@@ -271,7 +275,7 @@ setupGridFunctions()
     Range all;
     if( numberOfDimensions==2 )
     {
-      numberOfComponents= method==yee || method==nfdtd || method==sosup ? 
+      numberOfComponents= method==yee || method==nfdtd || method==sosup || method==bamx ? 
 	(int)numberOfComponentsRectangularGrid : 
 	(int)numberOfComponentsCurvilinearGrid; // number of components
     }
@@ -292,8 +296,11 @@ setupGridFunctions()
     MappedGridOperators *ops = new MappedGridOperators(mg);
     this->op = ops; //kkc 040304 I guess we need this too?
 
-    if( method==nfdtd )
+    if( method==nfdtd || method==bamx )
     {      
+      assert( method!=bamx );  // finish me 
+      
+
       fields = new realMappedGridFunction [numberOfTimeLevels];
       for( int n=0; n<numberOfTimeLevels; n++ )
       {
@@ -487,7 +494,7 @@ setupGridFunctions()
     if( artificialDissipation>0. || artificialDissipationCurvilinear>0. )
     {
       dissipation=new realMappedGridFunction;
-      if ( method==nfdtd || numberOfDimensions==2 )
+      if ( method==nfdtd || method==bamx || numberOfDimensions==2 )
 	dissipation->updateToMatchGrid(mg,GridFunctionParameters::cellCentered);
       else
       {
@@ -500,7 +507,7 @@ setupGridFunctions()
       *dissipation = 0;
     }
   
-    if( method==nfdtd || method==sosup )
+    if( method==nfdtd || method==sosup || method==bamx )
     {
       op = new MappedGridOperators(mg);
       op->useConservativeApproximations(useConservative);
@@ -514,12 +521,12 @@ setupGridFunctions()
     // *********** CompositeGrid *******************
     // *********************************************
 
-    if ( method==nfdtd || method==sosup || method==yee ) 
+    if ( method==nfdtd || method==sosup || method==yee || method==bamx  ) 
     {
       Range all;
       if( numberOfDimensions==2 )
       {
-	numberOfComponents= method==yee || method==nfdtd || method==sosup ? 
+	numberOfComponents= method==yee || method==nfdtd || method==sosup || method==bamx  ? 
 	  (int)numberOfComponentsRectangularGrid : 
 	  (int)numberOfComponentsCurvilinearGrid; 
 	    
@@ -528,6 +535,14 @@ setupGridFunctions()
       {
 	numberOfComponents=(int(solveForElectricField)+int(solveForMagneticField))*3;
       }
+
+      if( method==bamx && solveForAllFields )
+      {
+        // Solve for all components of E and H 
+        numberOfComponents=6;
+      }
+      
+
 
       if( method==sosup )
       {
@@ -567,7 +582,14 @@ setupGridFunctions()
       const int numberOfComponentGrids = cg.numberOfComponentGrids();
       
       int & maxNumberOfPolarizationVectors = parameters.dbase.get<int>("maxNumberOfPolarizationVectors");
+      maxNumberOfPolarizationVectors=0;
       
+      // total number of polarization components per grid 
+      IntegerArray & totalNumberOfPolarizationComponents =
+	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+      totalNumberOfPolarizationComponents.redim(cg.numberOfComponentGrids());
+      totalNumberOfPolarizationComponents=0;
+
       if( dispersionModel!=noDispersion )
       {
 	// -- add Grid functions to hold the data for the dispersion models ---
@@ -581,49 +603,131 @@ setupGridFunctions()
         cg.update(GridCollection::THEdomain); // create CG's for each domain
         
         maxNumberOfPolarizationVectors=0; // keep track of the max number of polarization vectors for TZ
+
+
         for( int domain=0; domain<cg.numberOfDomains(); domain++ ) 
         {
           dmgf[domain]=NULL;  // default 
           
-  	  const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-          const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
-          maxNumberOfPolarizationVectors=max(maxNumberOfPolarizationVectors,numberOfPolarizationVectors);
+	  if( method==nfdtd )
+	  {
+	    const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+	    const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+	    maxNumberOfPolarizationVectors=max(maxNumberOfPolarizationVectors,numberOfPolarizationVectors);
 
-          if( numberOfPolarizationVectors>0 )
-          {
-            dmgf[domain] = new realCompositeGridFunction [numberOfTimeLevels];
+	    if( numberOfPolarizationVectors>0 )
+	    {
+	      dmgf[domain] = new realCompositeGridFunction [numberOfTimeLevels];
 
-            CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
-            for( int n=0; n<numberOfTimeLevels; n++ )
-            {
+	      CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
+	      for( int n=0; n<numberOfTimeLevels; n++ )
+	      {
               
-              realCompositeGridFunction & u = dmgf[domain][n];
-              const int numComp = numberOfPolarizationVectors*numberOfDimensions;
-              u.updateToMatchGrid(cgd,all,all,all,numComp);
-              u=0.;
-              for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-              {
-                int pc = iv*numberOfDimensions;
-                u.setName(sPrintF("Px%i",iv),pc);   pc++;
-                u.setName(sPrintF("Py%i",iv),pc);   pc++;
-                if( numberOfDimensions==3 )
-                {
-                  u.setName(sPrintF("Pz%i",iv),pc);  pc++;
-                }
-              }
+		realCompositeGridFunction & u = dmgf[domain][n];
+		const int numComp = numberOfPolarizationVectors*numberOfDimensions;
+		u.updateToMatchGrid(cgd,all,all,all,numComp);
+		u=0.;
+		for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+		{
+		  int pc = iv*numberOfDimensions;
+		  u.setName(sPrintF("Px%i",iv),pc);   pc++;
+		  u.setName(sPrintF("Py%i",iv),pc);   pc++;
+		  if( numberOfDimensions==3 )
+		  {
+		    u.setName(sPrintF("Pz%i",iv),pc);  pc++;
+		  }
+		}
               
 
-            }
+	      }
             
-          }
-          
-        }
+	    }
 
-        pxc=numberOfComponents;
-        pyc=pxc+1;
-        if( numberOfDimensions==3 ) pzc=pyc+1;
+	    pxc=numberOfComponents;
+	    pyc=pxc+1;
+	    if( numberOfDimensions==3 ) pzc=pyc+1;
         
-        numberOfComponentsForTZ += numberOfDimensions*maxNumberOfPolarizationVectors;
+	    numberOfComponentsForTZ += numberOfDimensions*maxNumberOfPolarizationVectors;
+
+	  }
+	  else if( method==bamx )
+	  {
+            // BA GDM equations
+            assert( domain==0 );
+	    int grid=0;
+	    
+
+
+	    // max number of extries on a grid (for TZ) 
+            int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+            maxNumberOfPolarizationComponents=0;
+
+	    if( !dbase.has_key("materialRegionParameters") )
+	    {
+	      std::vector<DispersiveMaterialParameters> & dmpVector =
+		dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+	      // Material "0" is the background material: 
+	      const int domain = cg.domainNumber(grid);
+	      const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+	      dmpVector.push_back(dmp0);
+	      // aString label="dmpVector[0]";
+	      // dmpVector[0].display(stdout,label);
+
+     
+	    }
+
+	    std::vector<DispersiveMaterialParameters> & dmpVector =
+              dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+	    // const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+	    int numberOfGDMTerms=0;
+	    for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+	    {
+	      const DispersiveMaterialParameters & dmp = dmpVector[mr];
+	      const IntegerArray & Np = dmp.getBianisotropicNp();
+	      numberOfGDMTerms += sum(Np);
+	    }
+	    
+            // fix me for more that one grid 
+	    totalNumberOfPolarizationComponents(grid)=numberOfGDMTerms;
+	    maxNumberOfPolarizationComponents=numberOfGDMTerms;
+
+	    printF("setupGF: BA-GDM: numberOfMaterialRegions=%d: numberOfGDMTerms=%d (total)\n",
+		   numberOfMaterialRegions,numberOfGDMTerms);
+	    
+
+	    if( numberOfGDMTerms>0 )
+	    {
+	      dmgf[domain] = new realCompositeGridFunction [numberOfTimeLevels];
+
+	      CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
+	      for( int n=0; n<numberOfTimeLevels; n++ )
+	      {
+              
+		realCompositeGridFunction & u = dmgf[domain][n];
+		const int numComp = numberOfGDMTerms*2;  // we store P and Q=Pt 
+		u.updateToMatchGrid(cgd,all,all,all,numComp);
+		u=0.;
+		for( int iv=0; iv<numberOfGDMTerms; iv++ )
+		{
+		  int pc = iv*2;
+		  u.setName(sPrintF("P%i",iv),pc);   pc++;
+		  u.setName(sPrintF("Q%i",iv),pc);   pc++;
+		}
+              
+
+	      }
+            
+	    }
+
+            numberOfComponentsForTZ += maxNumberOfPolarizationComponents*2;
+
+	  }
+	  
+        }
+	
+
         
         // We need the mapping from global "grid" number to the domain grid number
         //       cg[grid] <-> cg.domain[domainGridNumber(grid)]
@@ -636,28 +740,6 @@ setupGridFunctions()
           domainGridNumber(grid) = nG(d);     //  gc[grid] <-> gc.domain[domainGridNumber(grid)]
           nG(d)++;
         }
-
-
-        // **** OLD WAY -- Keep this as we transition to the new way ---
-
-        // second-order : we store P (vector)
-        // fourth-order : store P and Q (vectors)
-        // sixth-order  : store P,Q,R (vectors)
-        if( FALSE )
-        {
-          
-          const int numberOfDispersiveFields = orderOfAccuracyInSpace/2;
-          if( dispersionModel==drude || dispersionModel==GDM )
-          {
-            numberOfComponents+= numberOfDimensions*numberOfDispersiveFields;
-          }
-          else
-          {
-            OV_ABORT("Unexpected dispersion model -- finish me");
-          }
-        }
-        
-
       }
 
 
@@ -747,9 +829,18 @@ setupGridFunctions()
 	if( method!=sosup )
 	{
           //  --- set field component names for nfdtd or Yee ---
-          assert( method==nfdtd || method==yee );
+          assert( method==nfdtd || method==yee || method==bamx );
 	  
-	  if( numberOfDimensions==2 )
+          if( numberOfComponents==6 )
+          {
+            ex=c; cgfields[n].setName("Ex",ex); c++;
+            ey=c; cgfields[n].setName("Ey",ey); c++;
+            ez=c; cgfields[n].setName("Ez",ez); c++;
+            hx=c; cgfields[n].setName("Hx",hx); c++;
+            hy=c; cgfields[n].setName("Hy",hy); c++;
+            hz=c; cgfields[n].setName("Hz",hz); c++;
+          }
+          else if( numberOfDimensions==2 )
 	  {
 	    if(  method!=dsiMatVec )
 	    {
@@ -849,7 +940,7 @@ setupGridFunctions()
 //  	  }
 //  	}
 	
-      if( method==nfdtd || method==sosup )
+      if( method==nfdtd || method==sosup || method==bamx )
       {
 	cgop = new CompositeGridOperators(cg);
 	cgop->useConservativeApproximations(useConservative);
@@ -999,6 +1090,10 @@ setupGridFunctions()
   {
     methodName="SOSUP";
   }
+  else if( method==bamx )
+  {
+    methodName="BAMX";
+  }
   else
   {
     printF("Maxwell:setup:ERROR: unknown method=%i\n",(int)method);
@@ -1100,7 +1195,7 @@ setupGridFunctions()
     realArray *& forcingArray = dbase.get<realArray*>("forcingArray");
   
     numberOfForcingFunctions=0;
-    if( method==nfdtd && timeSteppingMethod==modifiedEquationTimeStepping )
+    if( (method==nfdtd || method==bamx ) && timeSteppingMethod==modifiedEquationTimeStepping )
     {
       // -- standard finite difference scheme + modified equation time-stepping
 
@@ -1153,7 +1248,7 @@ setupGridFunctions()
 
   bool allocateWorkSpaceForRectangularGrids=false;
   
-  if( method==nfdtd )
+  if( method==nfdtd || method==bamx )
   {
     // WORK-SPACE REQUIREMENTS
 
@@ -1168,6 +1263,12 @@ setupGridFunctions()
 	// fn[0] : for ut1ptr -> advOpt 
          numberOfFunctions=1;
       }
+      
+    }
+    else if( timeSteppingMethod==rungeKutta )
+    {
+      numberOfFunctions=4;  // IS THIS RIGHT ?  Forcing + k1,k2,k3,k4
+      allocateWorkSpaceForRectangularGrids=true;
       
     }
     else
@@ -1197,8 +1298,19 @@ setupGridFunctions()
       getIndex(mg.dimension(),I1,I2,I3);
 
       // *wdh* Jan 6, 2017 Range C(ex,hz);
-      const int numberOfComponents=cgfields[0][0].getLength(3);
+      int numberOfComponents=cgfields[0][0].getLength(3);
+      if( dispersionModel != noDispersion && method==bamx && timeSteppingMethod==rungeKutta )
+      {
+        // FOR BAMX + RK we store time derivatives of p,q in fn 
+        const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+        assert( cg.numberOfComponentGrids()==1 );
+	
+        numberOfComponents += maxNumberOfPolarizationComponents*2; // ** FIX ME FOR more than one grid 
+      }
+      
+
       Range C = numberOfComponents;
+
       #define FN(m) fn[m+numberOfFunctions*(grid)]
       for( int m=0; m<numberOfFunctions; m++ )
       {
@@ -1215,7 +1327,7 @@ setupGridFunctions()
   }
   
 
-  if( method==nfdtd )
+  if( method==nfdtd || method==bamx )
   {
     // -- generate geometry arrays ---
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -1240,7 +1352,8 @@ setupGridFunctions()
   }
 
   const int & useSosupDissipation = parameters.dbase.get<int>("useSosupDissipation");
-  if( method==sosup || (method==nfdtd && useSosupDissipation) )
+  bool addBAMXDissipation = method==bamx && artificialDissipation>0.;
+  if( method==sosup || addBAMXDissipation  || ( (method==nfdtd ) && useSosupDissipation) )
   {
     // Sosup requires an extra ghost line  -- check there are enough
 
@@ -1274,7 +1387,7 @@ setupGridFunctions()
     if( errp==NULL && checkErrors ) 
     {
       // Create a grid function to hold the errors for plotting
-      if ( method==nfdtd )
+      if ( method==nfdtd || method==bamx )
       {
 	int numberOfComponents = fields[0].getLength(3);
 	errp = new realMappedGridFunction[1];
@@ -1312,13 +1425,22 @@ setupGridFunctions()
   {
     if( checkErrors )//&& cg[0].getGridType()==MappedGrid::structuredGrid )
     {
-      if( method==nfdtd || method==yee )
+      if( method==nfdtd || method==yee || method==bamx )
       {
 	cgerrp = new realCompositeGridFunction [1];
 	int numberOfComponents = cgfields[0][0].getLength(3);
 	cgerrp->updateToMatchGrid(*cgp,all,all,all,numberOfComponents);
 	
-	if( cg.numberOfDimensions()==2 )
+        if( solveForAllFields )
+        {
+          cgerrp->setName("Ex error",ex);
+          cgerrp->setName("Ey error",ey);
+          cgerrp->setName("Ez error",ez);
+          cgerrp->setName("Hx error",hx);
+          cgerrp->setName("Hy error",hy);
+          cgerrp->setName("Hz error",hz);
+        }
+	else if( cg.numberOfDimensions()==2 )
 	{
 	  cgerrp->setName("Ex error",ex);
 	  cgerrp->setName("Ey error",ey);

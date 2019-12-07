@@ -274,6 +274,12 @@ void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,con
 //        getErrors.bC and assignBoundaryConditions.bC 
 // ====================================================================================
 
+
+//------------------------------------------------------------------------------------
+// Macro: evaluate the parameters defining the BA plane wave solution	
+//------------------------------------------------------------------------------------
+
+
 //==================================================================================================
 //==================================================================================================
 int 
@@ -429,7 +435,33 @@ initializePlaneMaterialInterface()
     const int gridRight=cg.numberOfComponentGrids()-1;
 
     real c1,c2,eps1,eps2,mu1,mu2;
-    if( method==yee )
+    if( method==bamx )
+    {
+    // **fix me**
+    // eps1=1.;  mu1=1.;    // incident 
+    // eps2=2.;  mu2=1.;   // transmitted
+        assert( numberOfMaterialRegions==2 );
+        
+        std::vector<DispersiveMaterialParameters> & dmpVector = 
+            dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+    // Do this for now : 
+
+        RealArray K0(6,6);
+        DispersiveMaterialParameters & dmp1 = dmpVector[0];
+        dmp1.getBianisotropicMaterialMatrix( K0 );
+        eps1=K0(0,0); mu1=K0(3,3);
+        
+
+        DispersiveMaterialParameters & dmp2 = dmpVector[1];
+        dmp2.getBianisotropicMaterialMatrix( K0 );
+        eps2=K0(0,0); mu2=K0(3,3);
+
+        printF("----- initPlaneMatInterface: Setting eps1=%g, mu1=%g, eps2=%g, mu2=%g\n",eps1,mu1,eps2,mu2);
+
+
+    }
+    else if( method==yee )
     {
         eps1=epsv(gridLeft);  mu1=muv(gridLeft);    // incident 
         eps2=epsv(gridRight); mu2=muv(gridRight);   // transmitted
@@ -666,11 +698,16 @@ initializePlaneMaterialInterface()
 // ============================================================================
 
 
+
 // =============================================================
 //   MACRO : TZ INITIAL CONDITIONS
 // =============================================================
 
 
+
+// ================================================================================================================
+// Macro: assign a plane wave initial condition
+// ================================================================================================================
 
 
 
@@ -694,6 +731,18 @@ assignInitialConditions(int current, real t, real dt )
     CompositeGrid & cg = *cgp;
     const int numberOfDimensions=cg.numberOfDimensions();
     const int & maxNumberOfPolarizationVectors = parameters.dbase.get<int>("maxNumberOfPolarizationVectors");
+
+    const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+
+  // total number of polarization components per grid 
+    const IntegerArray & totalNumberOfPolarizationComponents =
+        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+
+  // ::display(totalNumberOfPolarizationComponents,"totalNumberOfPolarizationComponents");
+
+    
+    const int & numberOfComponents      = dbase.get<int>("numberOfComponents");
+    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
 
     gf[current].t=t;
 
@@ -744,33 +793,69 @@ assignInitialConditions(int current, real t, real dt )
             }
             if( numberOfDimensions==2 )
             {
+        // ************************************************************************
+        // ********************** TWO SPACE DIMENSIONS ****************************
+        // ************************************************************************
+                printF("TZ: solveForAllFields=%d, numberOfComponents=%d\n",solveForAllFields,numberOfComponents);
                 if( degreeSpace==0 )
                 {
-                    spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1
-                    spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2
-                    spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1
+                    if( !solveForAllFields )
+                    {
+                        spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1
+                        spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2
+                        spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1
+                    }
+                    else
+                    {
+                        for( int c=0; c<numberOfComponents; c++ )
+                        {
+                            spatialCoefficientsForTZ(0,0,0,c)= 1. + c*.5;
+                        }
+                    }
           // -- dispersion components: 
                     if( dispersionModel != noDispersion )
                     {
-                        for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                        if( method==nfdtd )
                         {
-                            const int pc= iv*numberOfDimensions;
-                            spatialCoefficientsForTZ(0,0,0,pxc+pc)=1.; 
-                            spatialCoefficientsForTZ(0,0,0,pyc+pc)=2.; 
+                  	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                  	{
+                    	  const int pc= iv*numberOfDimensions;
+                    	  spatialCoefficientsForTZ(0,0,0,pxc+pc)=1.; 
+                    	  spatialCoefficientsForTZ(0,0,0,pyc+pc)=2.; 
+                  	}
+                        }
+                        else if( method==bamx )
+                        {
+                  	OV_ABORT("finish me BAMX: TZ");
                         }
                     }
                 }
                 else if( degreeSpace==1 )
                 {
-                    spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1+x+y
-                    spatialCoefficientsForTZ(1,0,0,ex)=1.;
-                    spatialCoefficientsForTZ(0,1,0,ex)=1.;
-                    spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2+x-y
-                    spatialCoefficientsForTZ(1,0,0,ey)= 1.;
-                    spatialCoefficientsForTZ(0,1,0,ey)=-1.;
-                    spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1+x + y
-                    spatialCoefficientsForTZ(1,0,0,hz)= 1.;
-                    spatialCoefficientsForTZ(0,1,0,hz)= 1.;
+                    if( !solveForAllFields )
+                    {
+                        spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1+x+y
+                        spatialCoefficientsForTZ(1,0,0,ex)=1.;
+                        spatialCoefficientsForTZ(0,1,0,ex)=1.;
+                        spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2+x-y
+                        spatialCoefficientsForTZ(1,0,0,ey)= 1.;
+                        spatialCoefficientsForTZ(0,1,0,ey)=-1.;
+                        spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1+x + y
+                        spatialCoefficientsForTZ(1,0,0,hz)= 1.;
+                        spatialCoefficientsForTZ(0,1,0,hz)= 1.;
+                    }
+                    else
+                    {
+                        for( int c=0; c<numberOfComponents; c++ )
+                        {
+                            spatialCoefficientsForTZ(0,0,0,c)= 1. + c;
+                            spatialCoefficientsForTZ(1,0,0,c)= .5 + c*.5;
+                            spatialCoefficientsForTZ(0,1,0,c)= .4 + c*.25;
+                        }
+            // We need div(Ex,Ey,Ez)=0 , div(Hx,Hy,Hz)=0 
+                        spatialCoefficientsForTZ(0,1,0,ey)=- spatialCoefficientsForTZ(1,0,0,ex);
+                        spatialCoefficientsForTZ(0,1,0,hy)=- spatialCoefficientsForTZ(1,0,0,hx);
+                    }
           // eps and mu should remain positive but do this for now:
                     if( epsc>=0 )
                     {
@@ -796,16 +881,43 @@ assignInitialConditions(int current, real t, real dt )
                 }
                 else if( degreeSpace==2 )
                 {
-                    spatialCoefficientsForTZ(2,0,0,ex)=1.;      // u=x^2 + 2xy + y^2 
-                    spatialCoefficientsForTZ(1,1,0,ex)=2.;
-                    spatialCoefficientsForTZ(0,2,0,ex)=1.;
-                    spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // v=x^2 -2xy - y^2 
-                    spatialCoefficientsForTZ(1,1,0,ey)=-2.;
-                    spatialCoefficientsForTZ(0,2,0,ey)=-1.;
-                    spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // w=x^2 + y^2 -1 +.5 xy
-                    spatialCoefficientsForTZ(0,2,0,hz)= 1.;
-                    spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
-                    spatialCoefficientsForTZ(1,1,0,hz)= .5;
+                    if( !solveForAllFields )
+                    {
+                        spatialCoefficientsForTZ(2,0,0,ex)=1.;      // u=x^2 + 2xy + y^2 
+                        spatialCoefficientsForTZ(1,1,0,ex)=2.;
+                        spatialCoefficientsForTZ(0,2,0,ex)=1.;
+                        spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // v=x^2 -2xy - y^2 
+                        spatialCoefficientsForTZ(1,1,0,ey)=-2.;
+                        spatialCoefficientsForTZ(0,2,0,ey)=-1.;
+                        spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // w=x^2 + y^2 -1 +.5 xy
+                        spatialCoefficientsForTZ(0,2,0,hz)= 1.;
+                        spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
+                        spatialCoefficientsForTZ(1,1,0,hz)= .5;
+                    }
+                    else
+                    {
+            // We need div(Ex,Ey,Ez)=0 , div(Hx,Hy,Hz)=0 
+                        spatialCoefficientsForTZ(2,0,0,ex)=1.;      // Ex =x^2 + 2xy + y^2 
+                        spatialCoefficientsForTZ(1,1,0,ex)=2.;
+                        spatialCoefficientsForTZ(0,2,0,ex)=1.;
+                        spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // Ey =x^2 -2xy - y^2 
+                        spatialCoefficientsForTZ(1,1,0,ey)=-2.;
+                        spatialCoefficientsForTZ(0,2,0,ey)=-1.;
+                        spatialCoefficientsForTZ(2,0,0,ez)= .5;    
+                        spatialCoefficientsForTZ(0,2,0,ez)=.25;
+                        spatialCoefficientsForTZ(0,0,0,ez)=-.5; 
+                        spatialCoefficientsForTZ(1,1,0,ez)= .3;
+                        spatialCoefficientsForTZ(2,0,0,hx)=.5;     
+                        spatialCoefficientsForTZ(1,1,0,hx)=1.;
+                        spatialCoefficientsForTZ(0,2,0,hx)=.5;
+                        spatialCoefficientsForTZ(2,0,0,hy)= .5;    
+                        spatialCoefficientsForTZ(1,1,0,hy)=-1.;
+                        spatialCoefficientsForTZ(0,2,0,hy)=-.5;
+                        spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // Hz=x^2 + y^2 -1 +.5 xy
+                        spatialCoefficientsForTZ(0,2,0,hz)= 1.;
+                        spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
+                        spatialCoefficientsForTZ(1,1,0,hz)= .5;
+                    }
           // eps and mu should remain positive 
                     if( epsc>=0 )
                     {
@@ -822,16 +934,23 @@ assignInitialConditions(int current, real t, real dt )
                     if( dispersionModel != noDispersion )
                     {
                         printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i <<<<\n\n",maxNumberOfPolarizationVectors);
-                        for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                        if( method==nfdtd )
                         {
-                            const int pc= iv*numberOfDimensions;
-              // Corner extrapolation may assume that div(E)=0 
-                            spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
-                            spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                  	{
+                    	  const int pc= iv*numberOfDimensions;
+      	  // Corner extrapolation may assume that div(E)=0 
+                    	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+                    	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	}
+                        }
+                        else if( method==bamx )
+                        {
+      	// done below
                         }
                     }
                 }
@@ -857,22 +976,52 @@ assignInitialConditions(int current, real t, real dt )
                     spatialCoefficientsForTZ(1,1,0,hz)= .5;
                     spatialCoefficientsForTZ(3,0,0,hz)= .25;
                     spatialCoefficientsForTZ(0,3,0,hz)=-.25;
+                    if( solveForAllFields )
+                    {
+                        spatialCoefficientsForTZ(2,0,0,hx)  = 1.*.5;   // ** fix me -- change more from Ex,Ey   
+                        spatialCoefficientsForTZ(1,1,0,hx)  = 2.*.5; 
+                        spatialCoefficientsForTZ(0,2,0,hx)  = 1.*.5;
+                        spatialCoefficientsForTZ(0,3,0,hx)  = .5*.5;
+                        spatialCoefficientsForTZ(2,1,0,hx)  =.25*.5;
+                        spatialCoefficientsForTZ(3,0,0,0,hx)= .2*.5;
+                        spatialCoefficientsForTZ(1,2,0,0,hx)=-.3*.5;
+                        spatialCoefficientsForTZ(2,0,0,hy) =  1.*.5;    
+                        spatialCoefficientsForTZ(1,1,0,hy) = -2.*.5;
+                        spatialCoefficientsForTZ(0,2,0,hy) = -1.*.5;
+                        spatialCoefficientsForTZ(3,0,0,hy) = -.5*.5;
+                        spatialCoefficientsForTZ(1,2,0,hy) =-.25*.5;
+                        spatialCoefficientsForTZ(2,1,0,hy) = -.6*.5;
+                        spatialCoefficientsForTZ(0,3,0,hy) =  .1*.5;
+                        spatialCoefficientsForTZ(2,0,0,ez)= .8;    
+                        spatialCoefficientsForTZ(0,2,0,ez)= .4;
+                        spatialCoefficientsForTZ(0,0,0,ez)=-.1; 
+                        spatialCoefficientsForTZ(1,1,0,ez)= .1;
+                        spatialCoefficientsForTZ(3,0,0,ez)= .15;
+                        spatialCoefficientsForTZ(0,3,0,ez)=-.15;
+                    }
           // -- dispersion components: 
           // ** FINISH ME **
                     if( dispersionModel != noDispersion )
                     {
                         printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
                               maxNumberOfPolarizationVectors);
-                        for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                        if( method==nfdtd )
                         {
-                            const int pc= iv*numberOfDimensions;
-              // Corner extrapolation may assume that div(E)=0 
-                            spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
-                            spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                  	{
+                    	  const int pc= iv*numberOfDimensions;
+      	  // Corner extrapolation may assume that div(E)=0 
+                    	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+                    	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	}
+                        }
+                        else if( method==bamx )
+                        {
+      	// done below
                         }
                     }
                 }
@@ -898,27 +1047,57 @@ assignInitialConditions(int current, real t, real dt )
                     spatialCoefficientsForTZ(4,0,0,ey)=.125;
                     spatialCoefficientsForTZ(0,4,0,ey)=-.25;
                     spatialCoefficientsForTZ(3,1,0,ey)=-.8;
+                    if( solveForAllFields )
+                    {
+                        spatialCoefficientsForTZ(2,0,0,hx)=1.*.3;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+                        spatialCoefficientsForTZ(1,1,0,hx)=2.*.3;
+                        spatialCoefficientsForTZ(0,2,0,hx)=1.*.3;
+                        spatialCoefficientsForTZ(4,0,0,hx)=.2*.3;   
+                        spatialCoefficientsForTZ(0,4,0,hx)=.5*.3;   
+                        spatialCoefficientsForTZ(1,3,0,hx)=1.*.3;   
+                        spatialCoefficientsForTZ(2,0,0,hy)= 1.*.3;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+                        spatialCoefficientsForTZ(1,1,0,hy)=-2.*.3;
+                        spatialCoefficientsForTZ(0,2,0,hy)=-1.*.3;
+                        spatialCoefficientsForTZ(4,0,0,hy)=.125*.3;
+                        spatialCoefficientsForTZ(0,4,0,hy)=-.25*.3;
+                        spatialCoefficientsForTZ(3,1,0,hy)=-.8*.3;
+                        spatialCoefficientsForTZ(2,0,0,ez)= .6;      // p=x^2 + y^2 -1 +.5 xy + x^4 + y^4 
+                        spatialCoefficientsForTZ(0,2,0,ez)= .4;
+                        spatialCoefficientsForTZ(0,0,0,ez)=-.3; 
+                        spatialCoefficientsForTZ(1,1,0,ez)= .2;
+                        spatialCoefficientsForTZ(4,0,0,ez)= .3;     
+                        spatialCoefficientsForTZ(0,4,0,ez)=.25;     
+                        spatialCoefficientsForTZ(2,2,0,ez)= -.2;
+                    }
           // -- dispersion components: 
           // ** FINISH ME **
                     if( dispersionModel != noDispersion )
                     {
                         printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-                              maxNumberOfPolarizationVectors);
-                        for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                       	     maxNumberOfPolarizationVectors);
+                        if( method==nfdtd )
                         {
-                            const int pc= iv*numberOfDimensions;
-              // Corner extrapolation may assume that div(E)=0 
-                            spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
-                            spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                  	{
+                    	  const int pc= iv*numberOfDimensions;
+      	  // Corner extrapolation may assume that div(E)=0 
+                    	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+                    	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	}
+                        }
+                        else if( method==bamx )
+                        {
+      	// done below
                         }
                     }
                 }
                 else if( degreeSpace>=6 )
                 {
+                    assert( !solveForAllFields ); // finish me 
                     if( degreeSpace!=6 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
                     spatialCoefficientsForTZ(1,0,0,hz)= 1.;
                     spatialCoefficientsForTZ(0,0,0,hz)= 1.;
@@ -967,18 +1146,25 @@ assignInitialConditions(int current, real t, real dt )
           // ** FINISH ME **
                     if( dispersionModel != noDispersion )
                     {
-                        printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-                              maxNumberOfPolarizationVectors);
-                        for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                        if( method==nfdtd )
                         {
-                            const int pc= iv*numberOfDimensions;
-              // Corner extrapolation may assume that div(E)=0 
-                            spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
-                            spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-                            spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-                            spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
+                         	       maxNumberOfPolarizationVectors);
+                  	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+                  	{
+                    	  const int pc= iv*numberOfDimensions;
+      	  // Corner extrapolation may assume that div(E)=0 
+                    	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+                    	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+                    	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+                    	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+                  	}
+                        }
+                        else if( method==bamx )
+                        {
+      	// done below
                         }
                     }
                 }
@@ -1376,7 +1562,6 @@ assignInitialConditions(int current, real t, real dt )
                     }
           // *** end the initialize3DPolyTW bpp macro 
                 }
-        // -- dispersion components: 
                 if( pxc>=0 ) 
                 {
           // -----------------------------------------------------------------------------
@@ -1572,6 +1757,27 @@ assignInitialConditions(int current, real t, real dt )
             {
                 OV_ABORT("ERROR:unimplemented number of dimensions");
             }
+            if( dispersionModel != noDispersion &&  method==bamx )
+            {
+        // BA Maxwell -- assign polarization components
+                const int degreeSpaceZ = numberOfDimensions==2 ? degreeSpace : 0;
+                const int numPolarizationTerms = 2*maxNumberOfPolarizationComponents;  // note "2*" we save p and p.t 
+                for( int m=0; m<numPolarizationTerms; m++ )
+                {
+                    int pc = hz+m+1; // polarization component index in TZ functions
+                    for( int iz=0; iz<=degreeSpaceZ; iz++ )
+                    {
+                        for( int iy=0; iy<=degreeSpace; iy++ )
+                        {
+                  	for( int ix=0; ix<=degreeSpace; ix++ )
+                  	{
+      	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
+                    	  spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+                  	}
+                        }
+                    }
+                }
+            }
             for( int n=0; n<numberOfComponentsForTZ; n++ )
             {
                 for( int i=0; i<ndp; i++ )
@@ -1636,7 +1842,26 @@ assignInitialConditions(int current, real t, real dt )
             if( numberOfDimensions==2  )
             {   
                 const int uc=ex, vc=ey, wc=hz;
-                if( !useChargeDensity )
+                if( solveForAllFields )
+                {
+          // u=cos(pi x) cos( pi y )* .5
+          // v=sin(pi x) sin( pi y )* .5 
+          // w=cos(    ) sin(      )* .5
+                    assert( omega[0]==omega[1] );
+                    gx(ey)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
+                    gy(ey)=.5/omega[1];
+                    amplitude(ex)=.5;  cc(ex)=.0;
+                    amplitude(ey)=.5;  cc(ey)=.0;
+                    gy(hz)=.5/omega[1]; // turn off for testing symmetry
+                    cc(hz)=.0;
+                    gx(hy)=.5/omega[0];   // shift by pi/2 to turn cos() into sin()
+                    gy(hy)=.5/omega[1];
+                    amplitude(hx)=.5;  cc(hx)=.0;
+                    amplitude(hy)=.5;  cc(hy)=.0;
+                    gy(ez)=.5/omega[1]; // turn off for testing symmetry
+                    cc(ez)=.0;
+                }
+                else if( !useChargeDensity )
                 {
           // rho=0 : create div(E)=0 TZ function
           // u=cos(pi x) cos( pi y )* .5
@@ -1976,7 +2201,7 @@ assignInitialConditions(int current, real t, real dt )
             int includeGhost=1;
             bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
             if( !ok ) continue;  // no communication allowed after this point : check this ******************************************************
-            if( method==nfdtd || method==sosup ) 
+            if( method==nfdtd || method==sosup || method==bamx ) 
             {
                 Ie1 = Ih1 = I1;
                 Ie2 = Ih2 = I2;
@@ -2450,7 +2675,16 @@ assignInitialConditions(int current, real t, real dt )
 
             const int domain = cg.domainNumber(grid);
             const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-            const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+            int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+            if( method==nfdtd )
+      	numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+            else if( method==bamx )
+            {
+                assert( totalNumberOfPolarizationComponents.getLength(0)>0 );
+      	
+      	numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid);  // Note "2*" : we store [p.p.t]
+            }
+            
       // Each grid may or may not have dispersion model: 
             const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
 
@@ -2500,7 +2734,8 @@ assignInitialConditions(int current, real t, real dt )
             Index J1,J2,J3;
             int i1,i2,i3;
 
-            const bool saveExtraForcingLevels = orderOfAccuracyInTime>=4 && timeSteppingMethod!=modifiedEquationTimeStepping;
+            const bool saveExtraForcingLevels = orderOfAccuracyInTime>=4 &&
+      	( timeSteppingMethod!=modifiedEquationTimeStepping && timeSteppingMethod!=rungeKutta );
 
             uh = umh = 0;
             ue = ume = 0;
@@ -2536,7 +2771,43 @@ assignInitialConditions(int current, real t, real dt )
                     {
                         assert( tz!=NULL );
                         OGFunction & e = *tz;
-                        if( mg.numberOfDimensions()==2 )
+                        if( solveForAllFields )
+                        {
+                            assert( method==bamx );
+                            Index I1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                            Index I2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                            Index I3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                            Range C=6;
+                            bool isRectangular=false;
+                            OV_GET_SERIAL_ARRAY(real,cg[grid].vertex(),xLocal);
+                            e.gd( uLocal ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,C,tE);
+              // -- dispersion model components --
+                            if( localDispersionModel != noDispersion && method==bamx )
+                            {
+                // initialize polarization components
+                                const int numPolarizationTerms = 2*totalNumberOfPolarizationComponents(grid);  // note "2*" we save p and p.t 
+                                int pcStart=hz+1, pcEnd=pcStart+numPolarizationTerms-1;
+                                Range P(pcStart,pcEnd);
+                                Range Pc=numPolarizationTerms;
+                                if( false )
+                                {
+                          	RealArray temp(I1,I2,I3,P);
+                          	e.gd( temp ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,P,tE);
+                          	::display(temp,"temp","%9.2e");
+                          	pLocal(I1,I2,I3,Pc)=temp(I1,I2,I3,P);
+                                }
+                                else
+                                {
+          	// We need to do this: 
+                          	pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),P);
+                          	e.gd( pLocal ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,P,tE);
+                          	pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),Pc);
+                                }
+                // printF("Assign polarization components: [%d,%d]\n",pcStart,pcEnd);
+                // ::display(pLocal,"pLocal","%9.2e");
+                            }
+                        }
+                        else if( mg.numberOfDimensions()==2 )
                         {
               // these ranges should work since we get the u*Dim* from the local raw data sizes (??!!)
                             J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -2554,7 +2825,7 @@ assignInitialConditions(int current, real t, real dt )
                                     uLocal(i1,i2,i3,eyt) =e(xe0,ye0,0.,eyt,tE);
                                 }
                 // -- dispersion model components --
-                                if( localDispersionModel != noDispersion )
+                                if( localDispersionModel != noDispersion && method==nfdtd )
                                 {
                   // *new way:
                                     for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -2649,7 +2920,7 @@ assignInitialConditions(int current, real t, real dt )
                                         uLocal(i1,i2,i3,ezt) =e(x0,y0,z0,ezt,tE);
                                     }
                                 }
-                                if( localDispersionModel != noDispersion )
+                                if( localDispersionModel != noDispersion && method==nfdtd )
                                 {
                   // -- dispersion model components --
                                     FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -2715,392 +2986,508 @@ assignInitialConditions(int current, real t, real dt )
       	} // end if forcing option == twilightzone
       	else if( initialConditionOption==planeWaveInitialCondition )
       	{
-	  // ::display(initialConditionBoundingBox,"initialConditionBoundingBox");
 
-        	  printF(" *** planeWaveInitialCondition: t=%9.3e dt=%9.3e eps=%9.3e mu=%9.3e c=%9.3e ***\n",t,dt,eps,mu,c);
-      	
-        	  J1 = Range(max(Ie1.getBase(),ue.getBase(0)),min(Ie1.getBound(),ue.getBound(0)));
-        	  J2 = Range(max(Ie2.getBase(),ue.getBase(1)),min(Ie2.getBound(),ue.getBound(1)));
-        	  J3 = Range(max(Ie3.getBase(),ue.getBase(2)),min(Ie3.getBound(),ue.getBound(2)));
-
-        	  if( numberOfDimensions==2 )
-        	  {
-          	    if( initialConditionBoundingBox(1,0) < initialConditionBoundingBox(0,0) )
-          	    {
-            	      if( method==nfdtd  ) 
-            	      {
-            		if( localDispersionModel == noDispersion )
-            		{
-              		  FOR_3D(i1,i2,i3,J1,J2,J3)
-              		  {
-		    //real x = XEP(i1,i2,i3,0);
-		    //real y = XEP(i1,i2,i3,1);
-                		    real x,y;
-                                  if( isRectangular )
-                                  {
-                                      x = X0(i1,i2,i3);
-                                      y = X1(i1,i2,i3);
-                                  }
-                                  else
-                                  {
-                                      x = xe(i1,i2,i3);
-                                      y = ye(i1,i2,i3);
-                                  }
-              		  
-                		    UMEX(i1,i2,i3)=exTrue(x,y,tE-dt);
-                		    UMEY(i1,i2,i3)=eyTrue(x,y,tE-dt);
-                		    UMHZ(i1,i2,i3)=hzTrue(x,y,tH-dt);
-            		
-                		    UEX(i1,i2,i3)=exTrue(x,y,tE);
-                		    UEY(i1,i2,i3)=eyTrue(x,y,tE);
-                		    UHZ(i1,i2,i3)=hzTrue(x,y,tH);
-
-              		  }
-            		}
-            		else
-            		{
-		  // --- dispersive plane wave ---
-		  // Dispersive material parameters
-              		  DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-
-                  // evaluate the dispersion relation,  exp(i(k*x-omega*t))
-                  //    omega is complex 
-                                    const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
-              		  real sr, si;
-		  // dmp.computeDispersionRelation( c,eps,mu,kk, sr, si ); // s = sr + i*si
-
-                  // *new way*
-                                    assert( numberOfPolarizationVectors<10 );
-                                    real chir[10],chii[10],chiSumr,chiSumi;
-              		  dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                  // omegaDpwRe=imS; omegaDpwIm=reS;
-		  // dmp.computeDispersivePlaneWaveParameters( c,eps,mu,kk, omegaDpwRe, omegaDpwIm );
-
-              		  printF("--MX--GIC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
-
-                                    real expt=exp(sr*tE);
-                                    real ct = cos(si*tE)*expt, st=sin(si*tE)*expt;
-
-                                    real exptm=exp(sr*(tE-dt));
-                                    real ctm = cos(si*(tE-dt))*exptm, stm=sin(si*(tE-dt))*exptm;
-
-                  // Hz = (i/s) * (-1) * (kx*Ey - ky*Ex )/mu
-                                    real hFactor = -twoPi*( kx*pwc[1] - ky*pwc[0] )/mu;
-                                    real sNormSq = sr*sr+si*si;
-                  //  hr + i*hi = (i/s)*hfactor
-                                    real hr = hFactor*si/sNormSq;
-                                    real hi = hFactor*sr/sNormSq;
-
-              		  FOR_3D(i1,i2,i3,J1,J2,J3)
-              		  {
-                		    real x,y;
-                                  if( isRectangular )
-                                  {
-                                      x = X0(i1,i2,i3);
-                                      y = X1(i1,i2,i3);
-                                  }
-                                  else
-                                  {
-                                      x = xe(i1,i2,i3);
-                                      y = ye(i1,i2,i3);
-                                  }
-              		  
-                                        real xi = twoPi*(kx*x+ky*y);
-                                        real cx=cos(xi), sx=sin(xi);
-                                        
-                    // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
-                    // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28 
-                                        real amp=sx*ct+cx*st;
-                		    UEX(i1,i2,i3)=pwc[0]*amp;
-                		    UEY(i1,i2,i3)=pwc[1]*amp;
-
-                                        real amph = (hr*ct-hi*st)*sx + (hr*st+hi*ct)*cx;
-                		    UHZ(i1,i2,i3)=amph;
-
-                    // amp=cx*ctm-sx*stm;      *wdh* 2018/01/28
-                                        amp=sx*ctm+cx*stm;
-                		    UMEX(i1,i2,i3)=pwc[0]*amp;
-                		    UMEY(i1,i2,i3)=pwc[1]*amp;
-
-                    // amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;  *wdh* 2018/01/28 
-                                        amph = (hr*ctm-hi*stm)*sx + (hr*stm+hi*ctm)*cx;
-                		    UMHZ(i1,i2,i3)=amph;
-
-                    // -- POLARIZATION Vectors --
-                                        if( localDispersionModel != noDispersion  )
-                                        {
-                      // *new way:
-                      //   E = Im( exp( i*k*x )* exp( i*si*t )* exp(sr*t) 
-                      //   Er = cx*ct - sx*st
-                      //   Ei = sx*ct + cx*st 
-                      //     
-                      //   P/eps = Im( chi(s) * E )  = Im( [chir + i*chii]*[ Er + i*Ei ] )
-                      //         = chir*Ei + chii*Er 
-                      //         = chir*(sx*ct + cx*st ) + chii*(cx*ct - sx*st) 
-                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                            {
-                                                const int pc= iv*numberOfDimensions;
-
-                                                real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
-                                                real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
-
-              
-                        // Do this for now -- set all vectors to be the same: 
-                                                pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
-                                                pLocal(i1,i2,i3,pc+1) =pwc[1]*amp;
-
-                                                pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
-                                                pmLocal(i1,i2,i3,pc+1) =pwc[1]*ampm;
-                                            }
-
-                      // // amp=(psir*cx-psii*sx)*ctm - (psir*sx+psii*cx)*stm;
-                      // umLocal(i1,i2,i3,pxc) =pwc[0]*ampm;
-                      // umLocal(i1,i2,i3,pyc) =pwc[1]*ampm;
-
-                      // // amp=(psir*cx-psii*sx)*ct - (psir*sx+psii*cx)*st;
-                      // amp=(psir*ct-psii*st)*cx - (psir*st+psii*ct)*sx;
-                      // uLocal(i1,i2,i3,pxc) =pwc[0]*amp;
-                      // uLocal(i1,i2,i3,pyc) =pwc[1]*amp;
-                                        }
-
-              		  }
-            		} // end if noDispersion
-            		
-            	      }
-            	      else if( method==sosup )
-            	      {
-                // assign both the field and it's time derivative
-            		FOR_3D(i1,i2,i3,J1,J2,J3)
-            		{
-              		  real x,y;
-                              if( isRectangular )
-                              {
-                                  x = X0(i1,i2,i3);
-                                  y = X1(i1,i2,i3);
-                              }
-                              else
-                              {
-                                  x = xe(i1,i2,i3);
-                                  y = ye(i1,i2,i3);
-                              }
-
-                  // FOR NOW set old time: 
-              		  UMEX(i1,i2,i3)=exTrue(x,y,tE-dt);
-              		  UMEY(i1,i2,i3)=eyTrue(x,y,tE-dt);
-              		  UMHZ(i1,i2,i3)=hzTrue(x,y,tH-dt);
-
-              		  uLocal(i1,i2,i3,ex )=exTrue(x,y,tE);
-              		  uLocal(i1,i2,i3,ey )=eyTrue(x,y,tE);
-              		  uLocal(i1,i2,i3,hz )=hzTrue(x,y,tH);
-
-              		  uLocal(i1,i2,i3,ext)=extTrue(x,y,tE);
-              		  uLocal(i1,i2,i3,eyt)=eytTrue(x,y,tE);
-              		  uLocal(i1,i2,i3,hzt)=hztTrue(x,y,tH);
-            		}
-            	      }
-            	      else
-            	      {
-            		if( method==nfdtd || method==sosup ) // should be (numberOfTimeLevels>2) ??!!
-            		{
-              		  ume(Ie1,Ie2,Ie3,ex)=exTrue(xe,ye,t-dt);
-              		  ume(Ie1,Ie2,Ie3,ey)=eyTrue(xe,ye,t-dt);
-              		  umh(Ih1,Ih2,Ih3,hz)=hzTrue(xh,yh,t-dt);
-            		}
-
-            		ue(Ie1,Ie2,Ie3,ex)=exTrue(xe,ye,tE);
-            		ue(Ie1,Ie2,Ie3,ey)=eyTrue(xe,ye,tE);
-            		uh(Ih1,Ih2,Ih3,hz)=hzTrue(xh,yh,tH);
-            	      }
-          	    
-          	    }
-          	    else
-          	    { 
-              // ------------------------------------------------------------------
-              // ----------- initial conditions with a BOUNDING BOX ---------------
-              // ------------------------------------------------------------------
-
-              // limit the plane wave initial condition to lie inside a bounding box: 
-            	      assert( method==nfdtd  || method==sosup );
-            	      int i1,i2,i3;
-            	      const int & smoothBoundingBox = dbase.get<int>("smoothBoundingBox");
-            	      
-            	      if( smoothBoundingBox != 0 )  // *new* way 
-            	      {
-		// In this version we smoothly damp the plane wave along the direction of the front
-		// Damp the initial conditions along one face of the bounding box: (*wdh* July 2, 2016)
-            		const int & side = dbase.get<int>("boundingBoxDecaySide");
-            		const int & axis = dbase.get<int>("boundingBoxDecayAxis");
-
-
-            		printF("--MX-- assignIC: initialConditionBoundingBox=[%9.2e,%9.2e][%9.2e,%9.2e][%9.2e,%9.2e]\n"
-                                              "       boundBoxDecay face: (side,axis)=(%i,%i) decayExponent=%8.2e\n",
-                   		       initialConditionBoundingBox(0,0),initialConditionBoundingBox(1,0),
-                   		       initialConditionBoundingBox(0,1),initialConditionBoundingBox(1,1),
-                   		       initialConditionBoundingBox(0,2),initialConditionBoundingBox(1,2),
-                                              side,axis,boundingBoxDecayExponent  );
-
-
-                                
-                                real nv[2]={0.,0.};  // normal to decay direction
-            		nv[axis]=2*side-1;
-
-		// Damp near the point xv0[] on the front
-                                real xv0[2]={0.,0.};  // normal to decay direction
-            		xv0[0] = .5*(initialConditionBoundingBox(1,0)+initialConditionBoundingBox(0,0));
-            		xv0[1] = .5*(initialConditionBoundingBox(1,1)+initialConditionBoundingBox(0,1));
-                                xv0[axis]=initialConditionBoundingBox(side,axis);
-
-            		real beta=boundingBoxDecayExponent/twoPi;
-
-		// // do this for now : 
-		// real kNorm = sqrt( kx*kx+ky*ky );
-		// // real beta=10./(twoPi*kNorm); // ** fix me ***
-		// // *wdh* 111129 real beta=2./twoPi; // ** fix me ***
-
-		// real beta=boundingBoxDecayExponent/twoPi;
-		// real x0 = kx>=0 ? initialConditionBoundingBox(1,0) : initialConditionBoundingBox(0,0);
-		// real y0 = ky>=0 ? initialConditionBoundingBox(1,1) : initialConditionBoundingBox(0,1);  
-
-
-            		FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
-            		{
-              		  real x,y;
-                              if( isRectangular )
-                              {
-                                  x = X0(i1,i2,i3);
-                                  y = X1(i1,i2,i3);
-                              }
-                              else
-                              {
-                                  x = xe(i1,i2,i3);
-                                  y = ye(i1,i2,i3);
-                              }
-
-// NOTE: these next formulae must match the one used by adjustForIncident (nrbcUtil.bf)
-#define AMP2D(x,y,t) (.5*(1.-tanh(beta*twoPi*(nv[0]*((x)-xv0[0])+nv[1]*((y)-xv0[1])-cc*(t)))))
-#define AMP3D(x,y,z,t) (.5*(1.-tanh(beta*twoPi*(nv[0]*((x)-xv0[0])+nv[1]*((y)-xv0[1])+nv[2]*((z)-xv0[2])-cc*(t)))))
-
-              		  real amp = AMP2D(x,y,t-dt);
-              		  ume(i1,i2,i3,ex)=exTrue(x,y,t-dt)*amp;
-              		  ume(i1,i2,i3,ey)=eyTrue(x,y,t-dt)*amp;
-              		  umh(i1,i2,i3,hz)=hzTrue(x,y,t-dt)*amp;
-
-              		  amp = AMP2D(x,y,t);
-              		  ue(i1,i2,i3,ex)=exTrue(x,y,tE)*amp;
-              		  ue(i1,i2,i3,ey)=eyTrue(x,y,tE)*amp;
-              		  uh(i1,i2,i3,hz)=hzTrue(x,y,tH)*amp;
-
-              		  if( method == sosup )
-              		  {
-                		    ue(i1,i2,i3,ext)=extTrue(x,y,tE)*amp;
-                		    ue(i1,i2,i3,eyt)=eytTrue(x,y,tE)*amp;
-                		    uh(i1,i2,i3,hzt)=hztTrue(x,y,tH)*amp;
-              		  }
-            		}
-            	      }
-            	      else
-            	      {
-		// old way: clip to a box 
-            		FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
-            		{
-              		  real x,y;
-                              if( isRectangular )
-                              {
-                                  x = X0(i1,i2,i3);
-                                  y = X1(i1,i2,i3);
-                              }
-                              else
-                              {
-                                  x = xe(i1,i2,i3);
-                                  y = ye(i1,i2,i3);
-                              }
-
-              		  if( x>=initialConditionBoundingBox(0,0) && x<=initialConditionBoundingBox(1,0) &&
-                  		      y>=initialConditionBoundingBox(0,1) && y<=initialConditionBoundingBox(1,1) )
-              		  {
-
-                		    ume(i1,i2,i3,ex)=exTrue(x,y,t-dt);
-                		    ume(i1,i2,i3,ey)=eyTrue(x,y,t-dt);
-                		    umh(i1,i2,i3,hz)=hzTrue(x,y,t-dt);
-
-                		    ue(i1,i2,i3,ex)=exTrue(x,y,tE);
-                		    ue(i1,i2,i3,ey)=eyTrue(x,y,tE);
-                		    uh(i1,i2,i3,hz)=hzTrue(x,y,tH);
-
-              		  }
-            		}
-            	      }
-          	    
-          	    }
-        	  
-        	  }
-        	  else
-        	  {  // ***** 3D ********
-          	    if( solveForElectricField )
-          	    {
-            	      if( initialConditionBoundingBox(1,0) < initialConditionBoundingBox(0,0) )
-            	      {
-            		if( method==nfdtd )
-            		{
-                                    if( localDispersionModel == noDispersion )
-                                    {
-                                        FOR_3D(i1,i2,i3,J1,J2,J3)
-                                        {
-                      // real x = XEP(i1,i2,i3,0);
-                      // real y = XEP(i1,i2,i3,1);
-                      // real z = XEP(i1,i2,i3,2);
-                                            real x,y,z;
-                                              if( isRectangular )
-                                              {
-                                                  x = X0(i1,i2,i3);
-                                                  y = X1(i1,i2,i3);
-                                                  z = X2(i1,i2,i3);
-                                              }
-                                              else
-                                              {
-                                                  x = XEP(i1,i2,i3,0);
-                                                  y = XEP(i1,i2,i3,1);
-                                                  z = XEP(i1,i2,i3,2);
-                                              }
-
-                                            UMEX(i1,i2,i3)=exTrue3d(x,y,z,tE-dt);
-                                            UMEY(i1,i2,i3)=eyTrue3d(x,y,z,tE-dt);
-                                            UMEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE-dt);
-            		
-                                            UEX(i1,i2,i3)=exTrue3d(x,y,z,tE);
-                                            UEY(i1,i2,i3)=eyTrue3d(x,y,z,tE);
-                                            UEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE);
-                                        }
-                                    }
-                                    else
-                                    {
-                    // --- dispersive plane wave ---
-                    // Dispersive material parameters
+                    {
+            // ::display(initialConditionBoundingBox,"initialConditionBoundingBox");
+                        printF(" *** planeWaveInitialCondition: t=%9.3e dt=%9.3e eps=%9.3e mu=%9.3e c=%9.3e ***\n",t,dt,eps,mu,c);
+                        J1 = Range(max(Ie1.getBase(),ue.getBase(0)),min(Ie1.getBound(),ue.getBound(0)));
+                        J2 = Range(max(Ie2.getBase(),ue.getBase(1)),min(Ie2.getBound(),ue.getBound(1)));
+                        J3 = Range(max(Ie3.getBase(),ue.getBase(2)),min(Ie3.getBound(),ue.getBound(2)));
+                        if( numberOfDimensions==2 )
+                        {
+                            if( initialConditionBoundingBox(1,0) < initialConditionBoundingBox(0,0) )
+                            {
+                                if( method==bamx ) 
+                                {
                                         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-
-                    // evaluate the dispersion relation,  exp(i(k*x-omega*t))
-                    //    omega is complex 
-                                        const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
-                                        real sr, si;
-                                        assert( numberOfPolarizationVectors<10 );
-                                        real chir[10],chii[10],chiSumr,chiSumi;
-                                        dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-
-                                        printF("--MX--GIC : Plane-wave initial-condition: dispersion: s=(%12.4e,%12.4e)\n",sr,si);
-
-                                        real expt=exp(sr*tE);
-                                        real ct = cos(si*tE)*expt, st=sin(si*tE)*expt;
-
-                                        real exptm=exp(sr*(tE-dt));
-                                        real ctm = cos(si*(tE-dt))*exptm, stm=sin(si*(tE-dt))*exptm;
-
-
+                                        real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                                        real sr,si,evr[6],evi[6];
+                                        RealArray chi;
+                                        DispersiveMaterialParameters::PolarizationEnum polarization =
+                      !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                            DispersiveMaterialParameters::noPolarization;
+                                        DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                            dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                                        dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                                        real kr=1., ki=0.;
+                                        if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                                        {
+                                            dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                                        }
+                                        else
+                                        {
+                      // compute the complex wave number given s 
+                                            sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                            bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                                cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                                ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                            if( isPeriodic )
+                                            {
+                        // -- for periodic problems we need to find a special s so that kr is an integer
+                                                if( !dmp.dbase.has_key("sPeriodic") )
+                                                {
+                                                    real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                                    dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                          // Save the special s 
+                                                    sPeriodic[0]=sr; sPeriodic[1]=si;
+                                                }
+                                                else
+                                                {
+                                                    real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                                    sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                                }
+                                            }
+                                            kr = sr; ki= si;
+                                            dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                      // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                                        }
+                                        if( t<=2.*dt ) 
+                                        {
+                                            printF("BA plane wave InitialCondition: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                                          sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                            ::display(chi,"chi","%9.2e ");
+                                        }
+                                    if( !solveForAllFields )
+                          	{
+                    // TEz mode: 
+                            	  evr[2]=evr[5]; evi[2]=evi[5];
+                          	}
+                  // const real expt  =exp(sr*tE);
+                  // const real exptm =exp(sr*(tE-dt));
+                          	FOR_3D(i1,i2,i3,J1,J2,J3)
+                          	{
+                            	  real x,y;
+                                      if( isRectangular )
+                                      {
+                                          x = X0(i1,i2,i3);
+                                          y = X1(i1,i2,i3);
+                                      }
+                                      else
+                                      {
+                                          x = xe(i1,i2,i3);
+                                          y = ye(i1,i2,i3);
+                                      }
+                                        for( int m=ex; m<=hz; m++ )
+                            	  {
+                                            const real kDotx = kv[0]*x+kv[1]*y;
+                              	    uLocal(i1,i2,i3,m)  = (sin( kr*kDotx + si*tE      )*evr[m] +
+                                                     	                           cos( kr*kDotx + si*tE      )*evi[m]) *exp( sr*tE - ki*kDotx );
+                      // is this needed ? 
+          	    // umLocal(i1,i2,i3,m) = (sin( kDotx + si*(tE-dt) )*evr[m] +
+          	    //                        cos( kDotx + si*(tE-dt) )*evi[m]) *exp( sr*(tE-dt) - ki*kDotx);
+                            	  }
+                          	}
+                                    if( dmp.isDispersiveMaterial() )
+                                    {
+                                        const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
                                         FOR_3D(i1,i2,i3,J1,J2,J3)
                                         {
-                      // real x = XEP(i1,i2,i3,0);
-                      // real y = XEP(i1,i2,i3,1);
-                      // real z = XEP(i1,i2,i3,2);
-                                            real x,y,z;
+                                            real x,y;
+                                              if( isRectangular )
+                                              {
+                                                  x = X0(i1,i2,i3);
+                                                  y = X1(i1,i2,i3);
+                                              }
+                                              else
+                                              {
+                                                  x = xe(i1,i2,i3);
+                                                  y = ye(i1,i2,i3);
+                                              }
+                                            const real kDotx = kv[0]*x+kv[1]*y;
+                                            for( int m=0; m<numPolarizationTerms; m++ )
+                                            {
+                                                pLocal(i1,i2,i3,m) = (sin( kr*kDotx + si*tE      )*chi(m,0) +
+                                                                                            cos( kr*kDotx + si*tE      )*chi(m,1) )*exp( sr*tE - ki*kDotx);
+                        // pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
+                                            }
+                                        }
+                                    }
+                                }
+                                else if( method==nfdtd  ) 
+                                {
+                          	if( localDispersionModel == noDispersion )
+                          	{
+                            	  FOR_3D(i1,i2,i3,J1,J2,J3)
+                            	  {
+          	    //real x = XEP(i1,i2,i3,0);
+          	    //real y = XEP(i1,i2,i3,1);
+                              	    real x,y;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = xe(i1,i2,i3);
+                                              y = ye(i1,i2,i3);
+                                          }
+                              	    UMEX(i1,i2,i3)=exTrue(x,y,tE-dt);
+                              	    UMEY(i1,i2,i3)=eyTrue(x,y,tE-dt);
+                              	    UMHZ(i1,i2,i3)=hzTrue(x,y,tH-dt);
+                              	    UEX(i1,i2,i3)=exTrue(x,y,tE);
+                              	    UEY(i1,i2,i3)=eyTrue(x,y,tE);
+                              	    UHZ(i1,i2,i3)=hzTrue(x,y,tH);
+                            	  }
+                          	}
+                          	else
+                          	{
+          	  // --- dispersive plane wave ---
+          	  // Dispersive material parameters
+                            	  DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+          	  // evaluate the dispersion relation,  exp(i(k*x-omega*t))
+          	  //    omega is complex 
+                            	  const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
+                            	  real sr, si;
+          	  // dmp.computeDispersionRelation( c,eps,mu,kk, sr, si ); // s = sr + i*si
+          	  // *new way*
+                            	  assert( numberOfPolarizationVectors<10 );
+                            	  real chir[10],chii[10],chiSumr,chiSumi;
+                            	  dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
+          	  // omegaDpwRe=imS; omegaDpwIm=reS;
+          	  // dmp.computeDispersivePlaneWaveParameters( c,eps,mu,kk, omegaDpwRe, omegaDpwIm );
+                            	  printF("--MX--GIC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+                            	  real expt=exp(sr*tE);
+                            	  real ct = cos(si*tE)*expt, st=sin(si*tE)*expt;
+                            	  real exptm=exp(sr*(tE-dt));
+                            	  real ctm = cos(si*(tE-dt))*exptm, stm=sin(si*(tE-dt))*exptm;
+          	  // Hz = (i/s) * (-1) * (kx*Ey - ky*Ex )/mu
+                            	  real hFactor = -twoPi*( kx*pwc[1] - ky*pwc[0] )/mu;
+                            	  real sNormSq = sr*sr+si*si;
+          	  //  hr + i*hi = (i/s)*hfactor
+                            	  real hr = hFactor*si/sNormSq;
+                            	  real hi = hFactor*sr/sNormSq;
+                            	  FOR_3D(i1,i2,i3,J1,J2,J3)
+                            	  {
+                              	    real x,y;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = xe(i1,i2,i3);
+                                              y = ye(i1,i2,i3);
+                                          }
+                              	    real xi = twoPi*(kx*x+ky*y);
+                              	    real cx=cos(xi), sx=sin(xi);
+          	    // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+          	    // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28 
+                              	    real amp=sx*ct+cx*st;
+                              	    UEX(i1,i2,i3)=pwc[0]*amp;
+                              	    UEY(i1,i2,i3)=pwc[1]*amp;
+                              	    real amph = (hr*ct-hi*st)*sx + (hr*st+hi*ct)*cx;
+                              	    UHZ(i1,i2,i3)=amph;
+          	    // amp=cx*ctm-sx*stm;      *wdh* 2018/01/28
+                              	    amp=sx*ctm+cx*stm;
+                              	    UMEX(i1,i2,i3)=pwc[0]*amp;
+                              	    UMEY(i1,i2,i3)=pwc[1]*amp;
+          	    // amph = (hr*ctm-hi*stm)*cx - (hr*stm+hi*ctm)*sx;  *wdh* 2018/01/28 
+                              	    amph = (hr*ctm-hi*stm)*sx + (hr*stm+hi*ctm)*cx;
+                              	    UMHZ(i1,i2,i3)=amph;
+          	    // -- POLARIZATION Vectors --
+                              	    if( localDispersionModel != noDispersion  )
+                              	    {
+          	      // *new way:
+          	      //   E = Im( exp( i*k*x )* exp( i*si*t )* exp(sr*t) 
+          	      //   Er = cx*ct - sx*st
+          	      //   Ei = sx*ct + cx*st 
+          	      //     
+          	      //   P/eps = Im( chi(s) * E )  = Im( [chir + i*chii]*[ Er + i*Ei ] )
+          	      //         = chir*Ei + chii*Er 
+          	      //         = chir*(sx*ct + cx*st ) + chii*(cx*ct - sx*st) 
+                                	      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                	      {
+                                		const int pc= iv*numberOfDimensions;
+                                		real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
+                                		real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
+          		// Do this for now -- set all vectors to be the same: 
+                                		pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
+                                		pLocal(i1,i2,i3,pc+1) =pwc[1]*amp;
+                                		pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
+                                		pmLocal(i1,i2,i3,pc+1) =pwc[1]*ampm;
+                                	      }
+          	      // // amp=(psir*cx-psii*sx)*ctm - (psir*sx+psii*cx)*stm;
+          	      // umLocal(i1,i2,i3,pxc) =pwc[0]*ampm;
+          	      // umLocal(i1,i2,i3,pyc) =pwc[1]*ampm;
+          	      // // amp=(psir*cx-psii*sx)*ct - (psir*sx+psii*cx)*st;
+          	      // amp=(psir*ct-psii*st)*cx - (psir*st+psii*ct)*sx;
+          	      // uLocal(i1,i2,i3,pxc) =pwc[0]*amp;
+          	      // uLocal(i1,i2,i3,pyc) =pwc[1]*amp;
+                              	    }
+                            	  }
+                          	} // end if noDispersion
+                                }
+                                else if( method==sosup )
+                                {
+          	// assign both the field and it's time derivative
+                          	FOR_3D(i1,i2,i3,J1,J2,J3)
+                          	{
+                            	  real x,y;
+                                      if( isRectangular )
+                                      {
+                                          x = X0(i1,i2,i3);
+                                          y = X1(i1,i2,i3);
+                                      }
+                                      else
+                                      {
+                                          x = xe(i1,i2,i3);
+                                          y = ye(i1,i2,i3);
+                                      }
+          	  // FOR NOW set old time: 
+                            	  UMEX(i1,i2,i3)=exTrue(x,y,tE-dt);
+                            	  UMEY(i1,i2,i3)=eyTrue(x,y,tE-dt);
+                            	  UMHZ(i1,i2,i3)=hzTrue(x,y,tH-dt);
+                            	  uLocal(i1,i2,i3,ex )=exTrue(x,y,tE);
+                            	  uLocal(i1,i2,i3,ey )=eyTrue(x,y,tE);
+                            	  uLocal(i1,i2,i3,hz )=hzTrue(x,y,tH);
+                            	  uLocal(i1,i2,i3,ext)=extTrue(x,y,tE);
+                            	  uLocal(i1,i2,i3,eyt)=eytTrue(x,y,tE);
+                            	  uLocal(i1,i2,i3,hzt)=hztTrue(x,y,tH);
+                          	}
+                                }
+                                else
+                                {
+                          	if( method==nfdtd || method==sosup  || method==bamx ) // should be (numberOfTimeLevels>2) ??!!
+                          	{
+                            	  ume(Ie1,Ie2,Ie3,ex)=exTrue(xe,ye,t-dt);
+                            	  ume(Ie1,Ie2,Ie3,ey)=eyTrue(xe,ye,t-dt);
+                            	  umh(Ih1,Ih2,Ih3,hz)=hzTrue(xh,yh,t-dt);
+                          	}
+                          	ue(Ie1,Ie2,Ie3,ex)=exTrue(xe,ye,tE);
+                          	ue(Ie1,Ie2,Ie3,ey)=eyTrue(xe,ye,tE);
+                          	uh(Ih1,Ih2,Ih3,hz)=hzTrue(xh,yh,tH);
+                                }
+                            }
+                            else
+                            { 
+                // ------------------------------------------------------------------
+                // ----------- initial conditions with a BOUNDING BOX ---------------
+                // ------------------------------------------------------------------
+                // limit the plane wave initial condition to lie inside a bounding box: 
+                                assert( method==nfdtd  || method==sosup );
+                                int i1,i2,i3;
+                                const int & smoothBoundingBox = dbase.get<int>("smoothBoundingBox");
+                                if( smoothBoundingBox != 0 )  // *new* way 
+                                {
+          	// In this version we smoothly damp the plane wave along the direction of the front
+          	// Damp the initial conditions along one face of the bounding box: (*wdh* July 2, 2016)
+                          	const int & side = dbase.get<int>("boundingBoxDecaySide");
+                          	const int & axis = dbase.get<int>("boundingBoxDecayAxis");
+                          	printF("--MX-- assignIC: initialConditionBoundingBox=[%9.2e,%9.2e][%9.2e,%9.2e][%9.2e,%9.2e]\n"
+                                 	       "       boundBoxDecay face: (side,axis)=(%i,%i) decayExponent=%8.2e\n",
+                                 	       initialConditionBoundingBox(0,0),initialConditionBoundingBox(1,0),
+                                 	       initialConditionBoundingBox(0,1),initialConditionBoundingBox(1,1),
+                                 	       initialConditionBoundingBox(0,2),initialConditionBoundingBox(1,2),
+                                 	       side,axis,boundingBoxDecayExponent  );
+                          	real nv[2]={0.,0.};  // normal to decay direction
+                          	nv[axis]=2*side-1;
+          	// Damp near the point xv0[] on the front
+                          	real xv0[2]={0.,0.};  // normal to decay direction
+                          	xv0[0] = .5*(initialConditionBoundingBox(1,0)+initialConditionBoundingBox(0,0));
+                          	xv0[1] = .5*(initialConditionBoundingBox(1,1)+initialConditionBoundingBox(0,1));
+                          	xv0[axis]=initialConditionBoundingBox(side,axis);
+                          	real beta=boundingBoxDecayExponent/twoPi;
+          	// // do this for now : 
+          	// real kNorm = sqrt( kx*kx+ky*ky );
+          	// // real beta=10./(twoPi*kNorm); // ** fix me ***
+          	// // *wdh* 111129 real beta=2./twoPi; // ** fix me ***
+          	// real beta=boundingBoxDecayExponent/twoPi;
+          	// real x0 = kx>=0 ? initialConditionBoundingBox(1,0) : initialConditionBoundingBox(0,0);
+          	// real y0 = ky>=0 ? initialConditionBoundingBox(1,1) : initialConditionBoundingBox(0,1);  
+                          	FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
+                          	{
+                            	  real x,y;
+                                      if( isRectangular )
+                                      {
+                                          x = X0(i1,i2,i3);
+                                          y = X1(i1,i2,i3);
+                                      }
+                                      else
+                                      {
+                                          x = xe(i1,i2,i3);
+                                          y = ye(i1,i2,i3);
+                                      }
+          // NOTE: these next formulae must match the one used by adjustForIncident (nrbcUtil.bf)
+                    #define AMP2D(x,y,t) (.5*(1.-tanh(beta*twoPi*(nv[0]*((x)-xv0[0])+nv[1]*((y)-xv0[1])-cc*(t)))))
+                    #define AMP3D(x,y,z,t) (.5*(1.-tanh(beta*twoPi*(nv[0]*((x)-xv0[0])+nv[1]*((y)-xv0[1])+nv[2]*((z)-xv0[2])-cc*(t)))))
+                            	  real amp = AMP2D(x,y,t-dt);
+                            	  ume(i1,i2,i3,ex)=exTrue(x,y,t-dt)*amp;
+                            	  ume(i1,i2,i3,ey)=eyTrue(x,y,t-dt)*amp;
+                            	  umh(i1,i2,i3,hz)=hzTrue(x,y,t-dt)*amp;
+                            	  amp = AMP2D(x,y,t);
+                            	  ue(i1,i2,i3,ex)=exTrue(x,y,tE)*amp;
+                            	  ue(i1,i2,i3,ey)=eyTrue(x,y,tE)*amp;
+                            	  uh(i1,i2,i3,hz)=hzTrue(x,y,tH)*amp;
+                            	  if( method == sosup )
+                            	  {
+                              	    ue(i1,i2,i3,ext)=extTrue(x,y,tE)*amp;
+                              	    ue(i1,i2,i3,eyt)=eytTrue(x,y,tE)*amp;
+                              	    uh(i1,i2,i3,hzt)=hztTrue(x,y,tH)*amp;
+                            	  }
+                          	}
+                                }
+                                else
+                                {
+          	// old way: clip to a box 
+                          	FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
+                          	{
+                            	  real x,y;
+                                      if( isRectangular )
+                                      {
+                                          x = X0(i1,i2,i3);
+                                          y = X1(i1,i2,i3);
+                                      }
+                                      else
+                                      {
+                                          x = xe(i1,i2,i3);
+                                          y = ye(i1,i2,i3);
+                                      }
+                            	  if( x>=initialConditionBoundingBox(0,0) && x<=initialConditionBoundingBox(1,0) &&
+                                	      y>=initialConditionBoundingBox(0,1) && y<=initialConditionBoundingBox(1,1) )
+                            	  {
+                              	    ume(i1,i2,i3,ex)=exTrue(x,y,t-dt);
+                              	    ume(i1,i2,i3,ey)=eyTrue(x,y,t-dt);
+                              	    umh(i1,i2,i3,hz)=hzTrue(x,y,t-dt);
+                              	    ue(i1,i2,i3,ex)=exTrue(x,y,tE);
+                              	    ue(i1,i2,i3,ey)=eyTrue(x,y,tE);
+                              	    uh(i1,i2,i3,hz)=hzTrue(x,y,tH);
+                            	  }
+                          	}
+                                }
+                            }
+                        }
+                        else
+                        {  // ***** 3D ********
+                            if( solveForElectricField )
+                            {
+                                if( initialConditionBoundingBox(1,0) < initialConditionBoundingBox(0,0) )
+                                {
+                          	if( method==bamx ) 
+                          	{
+                                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                                            real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                                            real sr,si,evr[6],evi[6];
+                                            RealArray chi;
+                                            DispersiveMaterialParameters::PolarizationEnum polarization =
+                        !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                                DispersiveMaterialParameters::noPolarization;
+                                            DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                                dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                                            dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                                            real kr=1., ki=0.;
+                                            if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                                            {
+                                                dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                                            }
+                                            else
+                                            {
+                        // compute the complex wave number given s 
+                                                sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                                bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                                    cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                                    ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                                if( isPeriodic )
+                                                {
+                          // -- for periodic problems we need to find a special s so that kr is an integer
+                                                    if( !dmp.dbase.has_key("sPeriodic") )
+                                                    {
+                                                        real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                                        dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                            // Save the special s 
+                                                        sPeriodic[0]=sr; sPeriodic[1]=si;
+                                                    }
+                                                    else
+                                                    {
+                                                        real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                                        sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                                    }
+                                                }
+                                                kr = sr; ki= si;
+                                                dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                        // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                                            }
+                                            if( t<=2.*dt ) 
+                                            {
+                                                printF("BA plane wave InitialCondition: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                                              sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                                ::display(chi,"chi","%9.2e ");
+                                            }
+          	  // DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+          	  // real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+          	  // real sr,si,evr[6],evi[6];
+                    // RealArray chi;
+                    // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi );
+          	  // printF("BA plane wave initial condition: s=%9.3e + %9.3e I, evr=[%g,%g,%g,%g,%g,%g]\n",
+          	  // 	 sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                    // const real expt  =exp(sr*tE);
+                    // const real exptm =exp(sr*(tE-dt));
+                            	  FOR_3D(i1,i2,i3,J1,J2,J3)
+                            	  {
+                              	    real x,y,z;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                              z = X2(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = XEP(i1,i2,i3,0);
+                                              y = XEP(i1,i2,i3,1);
+                                              z = XEP(i1,i2,i3,2);
+                                          }
+                                            const real kDotx = kv[0]*x+kv[1]*y+kv[2]*z;		  
+                              	    for( int m=ex; m<=hz; m++ )
+                              	    {
+                                	      uLocal(i1,i2,i3,m)  = (sin( kr*kDotx + si*tE      )*evr[m] +
+                                                 				     cos( kr*kDotx + si*tE      )*evi[m])*exp( sr*tE - ki*kDotx );
+          	      // is this needed ? 
+                                	      umLocal(i1,i2,i3,m) = (sin( kr*kDotx + si*(tE-dt) )*evr[m] +
+                                                 				     cos( kr*kDotx + si*(tE-dt) )*evi[m])*exp( sr*tE - ki*kDotx );
+          	      // uLocal(i1,i2,i3,m)  = sin( kv[0]*x+kv[1]*y+kv[2]*z - omega*tE      )*ev[m];
+          	      // umLocal(i1,i2,i3,m) = sin( kv[0]*x+kv[1]*y+kv[2]*z - omega*(tE-dt) )*ev[m];  // is this needed ? 
+                              	    }
+                            	  }
+                                        if( dmp.isDispersiveMaterial() )
+                                        {
+                                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                                            FOR_3D(i1,i2,i3,J1,J2,J3)
+                                            {
+                                                real x,y,z;
+                                                  if( isRectangular )
+                                                  {
+                                                      x = X0(i1,i2,i3);
+                                                      y = X1(i1,i2,i3);
+                                                      z = X2(i1,i2,i3);
+                                                  }
+                                                  else
+                                                  {
+                                                      x = XEP(i1,i2,i3,0);
+                                                      y = XEP(i1,i2,i3,1);
+                                                      z = XEP(i1,i2,i3,2);
+                                                  }
+                                                const real kDotx = kv[0]*x+kv[1]*y+kv[2]*z;		  
+                                                for( int m=0; m<numPolarizationTerms; m++ )
+                                                {
+                                                    pLocal(i1,i2,i3,m) = (sin( kr*kDotx + si*tE )*chi(m,0) +
+                                                                                                cos( kr*kDotx + si*tE )*chi(m,1) )*exp( sr*tE - ki*kDotx );
+                          // pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
+                                                }
+                                            }
+                                        }
+                          	}
+                          	else if( method==nfdtd  )
+                          	{
+                            	  if( localDispersionModel == noDispersion )
+                            	  {
+                              	    FOR_3D(i1,i2,i3,J1,J2,J3)
+                              	    {
+          	      // real x = XEP(i1,i2,i3,0);
+          	      // real y = XEP(i1,i2,i3,1);
+          	      // real z = XEP(i1,i2,i3,2);
+                                	      real x,y,z;
                                               if( isRectangular )
                                               {
                                                   x = X0(i1,i2,i3);
@@ -3113,256 +3500,265 @@ assignInitialConditions(int current, real t, real dt )
                                                   y = XEP(i1,i2,i3,1);
                                                   z = XEP(i1,i2,i3,2);
                                               }
+                                	      UMEX(i1,i2,i3)=exTrue3d(x,y,z,tE-dt);
+                                	      UMEY(i1,i2,i3)=eyTrue3d(x,y,z,tE-dt);
+                                	      UMEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE-dt);
+                                	      UEX(i1,i2,i3)=exTrue3d(x,y,z,tE);
+                                	      UEY(i1,i2,i3)=eyTrue3d(x,y,z,tE);
+                                	      UEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE);
+                              	    }
+                            	  }
+                            	  else
+                            	  {
+          	    // --- dispersive plane wave ---
+          	    // Dispersive material parameters
+                              	    DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+          	    // evaluate the dispersion relation,  exp(i(k*x-omega*t))
+          	    //    omega is complex 
+                              	    const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
+                              	    real sr, si;
+                              	    assert( numberOfPolarizationVectors<10 );
+                              	    real chir[10],chii[10],chiSumr,chiSumi;
+                              	    dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
+                              	    printF("--MX--GIC : Plane-wave initial-condition: dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+                              	    real expt=exp(sr*tE);
+                              	    real ct = cos(si*tE)*expt, st=sin(si*tE)*expt;
+                              	    real exptm=exp(sr*(tE-dt));
+                              	    real ctm = cos(si*(tE-dt))*exptm, stm=sin(si*(tE-dt))*exptm;
+                              	    FOR_3D(i1,i2,i3,J1,J2,J3)
+                              	    {
+          	      // real x = XEP(i1,i2,i3,0);
+          	      // real y = XEP(i1,i2,i3,1);
+          	      // real z = XEP(i1,i2,i3,2);
+                                	      real x,y,z;
+                                              if( isRectangular )
+                                              {
+                                                  x = X0(i1,i2,i3);
+                                                  y = X1(i1,i2,i3);
+                                                  z = X2(i1,i2,i3);
+                                              }
+                                              else
+                                              {
+                                                  x = XEP(i1,i2,i3,0);
+                                                  y = XEP(i1,i2,i3,1);
+                                                  z = XEP(i1,i2,i3,2);
+                                              }
+                                	      real xi = twoPi*(kx*x+ky*y+kz*z);
+                                	      real cx=cos(xi), sx=sin(xi);
+          	      // --- assign (Ex,Ey,Ez) at time t ---
+          	      // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
+          	      // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28
+                                	      real amp=sx*ct+cx*st;  
+                                	      UEX(i1,i2,i3)=pwc[0]*amp;
+                                	      UEY(i1,i2,i3)=pwc[1]*amp;
+                                	      UEZ(i1,i2,i3)=pwc[2]*amp;
+          	      // --- assign (Ex,Ey,Ez) at time t-dt ---
+          	      // real ampm=cx*ctm-sx*stm; *wdh* 2018/01/28
+                                	      real ampm=sx*ctm+cx*stm;
+                                	      UMEX(i1,i2,i3)=pwc[0]*ampm;
+                                	      UMEY(i1,i2,i3)=pwc[1]*ampm;
+                                	      UMEZ(i1,i2,i3)=pwc[2]*ampm;
+          	      // -- POLARIZATION Vectors --
+                                	      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                	      {
+                                		const int pc= iv*numberOfDimensions;
+          		// real ampm=(chir[iv]*ctm-chii[iv]*stm)*cx - (chir[iv]*stm+chii[iv]*ctm)*sx;
+          		// real amp =(chir[iv]*ct -chii[iv]*st )*cx - (chir[iv]*st +chii[iv]*ct )*sx;
+                                		real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
+                                		real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
+          		// Do this for now -- set all vectors to be the same: 
+                                		pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
+                                		pLocal(i1,i2,i3,pc+1) =pwc[1]*amp;
+                                		pLocal(i1,i2,i3,pc+2) =pwc[2]*amp;
+                                		pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
+                                		pmLocal(i1,i2,i3,pc+1) =pwc[1]*ampm;
+                                		pmLocal(i1,i2,i3,pc+2) =pwc[2]*ampm;
+                                	      }
+                              	    }
+                            	  }
+                          	}
+                          	else if( method==sosup )
+                          	{
+                            	  FOR_3D(i1,i2,i3,J1,J2,J3)
+                            	  {
+          	    // real x = XEP(i1,i2,i3,0);
+          	    // real y = XEP(i1,i2,i3,1);
+          	    // real z = XEP(i1,i2,i3,2);
+                              	    real x,y,z;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                              z = X2(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = XEP(i1,i2,i3,0);
+                                              y = XEP(i1,i2,i3,1);
+                                              z = XEP(i1,i2,i3,2);
+                                          }
+          	    // FOR NOW set old time: 
+                              	    UMEX(i1,i2,i3)=exTrue3d(x,y,z,tE-dt);
+                              	    UMEY(i1,i2,i3)=eyTrue3d(x,y,z,tE-dt);
+                              	    UMEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE-dt);
+                              	    uLocal(i1,i2,i3,ex )=exTrue3d(x,y,z,tE);
+                              	    uLocal(i1,i2,i3,ey )=eyTrue3d(x,y,z,tE);
+                              	    uLocal(i1,i2,i3,ez )=ezTrue3d(x,y,z,tE);
+                              	    uLocal(i1,i2,i3,ext)=extTrue3d(x,y,z,tE);
+                              	    uLocal(i1,i2,i3,eyt)=eytTrue3d(x,y,z,tE);
+                              	    uLocal(i1,i2,i3,ezt)=eztTrue3d(x,y,z,tE);
+                            	  }
+                          	}
+                          	else
+                          	{
+                            	  if( method==nfdtd  || method==sosup  )
+                            	  {
+                              	    ume(I1,I2,I3,ex)=exTrue3d(xe,ye,ze,tE-dt);
+                              	    ume(I1,I2,I3,ey)=eyTrue3d(xe,ye,ze,tE-dt);
+                              	    ume(I1,I2,I3,ez)=ezTrue3d(xe,ye,ze,tE-dt);
+                            	  }
+                            	  ue(Ie1,Ie2,Ie3,ex)=exTrue3d(xe,ye,ze,tE);
+                            	  ue(Ie1,Ie2,Ie3,ey)=eyTrue3d(xe,ye,ze,tE);
+                            	  ue(Ie1,Ie2,Ie3,ez)=ezTrue3d(xe,ye,ze,tE);
+                          	}
+                                }
+                                else
+                                { 
+          	// limit the plane wave initial condition to lie inside a bounding box: 
+                          	assert( method==nfdtd  || method==sosup  || method==bamx );
+                          	assert( !solveForMagneticField );  // fix me for this case
+                          	int i1,i2,i3;
+                          	const int & smoothBoundingBox = dbase.get<int>("smoothBoundingBox");
+                          	if( smoothBoundingBox != 0 ) 
+                          	{
+          	  // In this version we smoothly damp the plane wave along the direction of the front
+          	  // Damp the initial conditions along one face of the bounding box: (*wdh* July 2, 2016)
+                            	  const int & side = dbase.get<int>("boundingBoxDecaySide");
+                            	  const int & axis = dbase.get<int>("boundingBoxDecayAxis");
+                            	  real nv[3]={0.,0.,0.};  // normal to decay direction
+                            	  nv[axis]=2*side-1;
+          	  // Damp near the point xv0[] on the front
+                            	  real xv0[3]={0.,0.,0.};  // normal to decay direction
+                            	  for( int dir=0; dir<numberOfDimensions; dir++ )
+                              	    xv0[dir] = .5*(initialConditionBoundingBox(1,dir)+initialConditionBoundingBox(0,dir));
+                            	  xv0[axis]=initialConditionBoundingBox(side,axis);
+                            	  const real beta=boundingBoxDecayExponent/twoPi;
+          	  // -- smooth the solution at the edge of the bounding box --
+                            	  FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
+                            	  {
+          	    // real x=xe(i1,i2,i3), y=ye(i1,i2,i3), z=ze(i1,i2,i3);
+                              	    real x,y,z;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                              z = X2(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = XEP(i1,i2,i3,0);
+                                              y = XEP(i1,i2,i3,1);
+                                              z = XEP(i1,i2,i3,2);
+                                          }
+                              	    real amp = AMP3D(x,y,z,tE-dt);
+                              	    ume(i1,i2,i3,ex)=exTrue3d(x,y,z,tE-dt)*amp;
+                              	    ume(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE-dt)*amp;
+                              	    ume(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE-dt)*amp;
+                              	    amp = AMP3D(x,y,z,tE);
+                              	    ue(i1,i2,i3,ex)=exTrue3d(x,y,z,tE)*amp;
+                              	    ue(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE)*amp;
+                              	    ue(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE)*amp;
+                            	  }
+                          	}
+                          	else
+                          	{
+          	  // -- clip the solution at the bounding box ---
+                            	  FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
+                            	  {
+          	    // real x=xe(i1,i2,i3), y=ye(i1,i2,i3), z=ze(i1,i2,i3);
+                              	    real x,y,z;
+                                          if( isRectangular )
+                                          {
+                                              x = X0(i1,i2,i3);
+                                              y = X1(i1,i2,i3);
+                                              z = X2(i1,i2,i3);
+                                          }
+                                          else
+                                          {
+                                              x = XEP(i1,i2,i3,0);
+                                              y = XEP(i1,i2,i3,1);
+                                              z = XEP(i1,i2,i3,2);
+                                          }
+                              	    if( x>=initialConditionBoundingBox(0,0) && x<=initialConditionBoundingBox(1,0) &&
+                                		y>=initialConditionBoundingBox(0,1) && y<=initialConditionBoundingBox(1,1) &&
+                                		z>=initialConditionBoundingBox(0,2) && z<=initialConditionBoundingBox(1,2) )
+                              	    {
+                                	      ume(i1,i2,i3,ex)=exTrue3d(x,y,z,tE-dt);
+                                	      ume(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE-dt);
+                                	      ume(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE-dt);
+                                	      ue(i1,i2,i3,ex)=exTrue3d(x,y,z,tE);
+                                	      ue(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE);
+                                	      ue(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE);
+                              	    }
+                            	  }
+                          	}
+                                }
+                            }
+                            if( solveForMagneticField && method!=bamx )
+                            {
+                                if ( method==nfdtd || method==sosup )
+                                {
+                          	umh(I1,I2,I3,hx)=hxTrue3d(xh,yh,zh,tH-dt);
+                          	umh(I1,I2,I3,hy)=hyTrue3d(xh,yh,zh,tH-dt);
+                          	umh(I1,I2,I3,hz)=hzTrue3d(xh,yh,zh,tH-dt);
+                                }
+                                uh(Ih1,Ih2,Ih3,hx)=hxTrue3d(xh,yh,zh,tH);
+                                uh(Ih1,Ih2,Ih3,hy)=hyTrue3d(xh,yh,zh,tH);
+                                uh(Ih1,Ih2,Ih3,hz)=hzTrue3d(xh,yh,zh,tH);
+                            }
+                        }
+                        if( saveExtraForcingLevels && timeSteppingMethod!=modifiedEquationTimeStepping && timeSteppingMethod!=rungeKutta )
+                        {
+              // we need to save the "RHS" at some previous times.
+                            for( int m=0; m<numberOfFunctions; m++ )
+                            {
+                    #ifdef USE_PPP
+                                realSerialArray fnLocal; getLocalArrayWithGhostBoundaries(FN(m),fnLocal);
+                    #else
+                                realSerialArray & fnLocal = FN(m);
+                    #endif
+                                if( numberOfDimensions==2 )
+                                {
+                          	fnLocal(I1,I2,I3,ex)=csq*exLaplacianTrue(xe,ye,t-dt*(m+1));
+                          	fnLocal(I1,I2,I3,ey)=csq*eyLaplacianTrue(xe,ye,t-dt*(m+1));
+                          	fnLocal(I1,I2,I3,hz)=csq*hzLaplacianTrue(xh,yh,t-dt*(m+1));
+                                }
+                                else
+                                {
+                          	if( solveForElectricField )
+                          	{
+                            	  fnLocal(I1,I2,I3,ex)=csq*exLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
+                            	  fnLocal(I1,I2,I3,ey)=csq*eyLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
+                            	  fnLocal(I1,I2,I3,ez)=csq*ezLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
+                          	}
+                          	if( solveForMagneticField )
+                          	{
+                            	  fnLocal(I1,I2,I3,hx)=csq*hxLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
+                            	  fnLocal(I1,I2,I3,hy)=csq*hyLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
+                            	  fnLocal(I1,I2,I3,hz)=csq*hzLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
+                          	}
+                                }
+                                getForcing( current, grid,FN(m),t-dt*(m+1),dt );
+                            }
+                        }
+                        else if( ( timeSteppingMethod!=modifiedEquationTimeStepping && timeSteppingMethod!=rungeKutta )
+                                	      && orderOfAccuracyInTime!=2 )
+                        {
+                            printF("getICs: ERROR timeSteppingMethod!=modifiedEquationTimeStepping && orderOfAccuracyInTime!=2\n");
+                            OV_ABORT("ERROR");
+                        }
+                    }
 
-                                            real xi = twoPi*(kx*x+ky*y+kz*z);
-                                            real cx=cos(xi), sx=sin(xi);
-                                        
-                      // --- assign (Ex,Ey,Ez) at time t ---
-                      // real amp=cx*ct-sx*st;  *wdh* 2018/01/28 
-                      // solution is sin( k*x + si*t)*exp(sr*t) *wdh* 2018/01/28
-                                            real amp=sx*ct+cx*st;  
-
-                                            UEX(i1,i2,i3)=pwc[0]*amp;
-                                            UEY(i1,i2,i3)=pwc[1]*amp;
-                                            UEZ(i1,i2,i3)=pwc[2]*amp;
-
-                      // --- assign (Ex,Ey,Ez) at time t-dt ---
-                      // real ampm=cx*ctm-sx*stm; *wdh* 2018/01/28
-                                            real ampm=sx*ctm+cx*stm;
-                                            UMEX(i1,i2,i3)=pwc[0]*ampm;
-                                            UMEY(i1,i2,i3)=pwc[1]*ampm;
-                                            UMEZ(i1,i2,i3)=pwc[2]*ampm;
-
-                      // -- POLARIZATION Vectors --
-                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                            {
-                                                const int pc= iv*numberOfDimensions;
-
-                        // real ampm=(chir[iv]*ctm-chii[iv]*stm)*cx - (chir[iv]*stm+chii[iv]*ctm)*sx;
-                        // real amp =(chir[iv]*ct -chii[iv]*st )*cx - (chir[iv]*st +chii[iv]*ct )*sx;
-                                                real ampm=eps*( (chir[iv]*ctm-chii[iv]*stm)*sx + (chir[iv]*stm+chii[iv]*ctm)*cx );
-                                                real amp =eps*( (chir[iv]*ct -chii[iv]*st )*sx + (chir[iv]*st +chii[iv]*ct )*cx );
-              
-                        // Do this for now -- set all vectors to be the same: 
-                                                pLocal(i1,i2,i3,pc  ) =pwc[0]*amp;
-                                                pLocal(i1,i2,i3,pc+1) =pwc[1]*amp;
-                                                pLocal(i1,i2,i3,pc+2) =pwc[2]*amp;
-
-                                                pmLocal(i1,i2,i3,pc  ) =pwc[0]*ampm;
-                                                pmLocal(i1,i2,i3,pc+1) =pwc[1]*ampm;
-                                                pmLocal(i1,i2,i3,pc+2) =pwc[2]*ampm;
-                                            }
-                                            
-                                        }
-                                        
-                                    }
-                                    
-            		}
-            		else if( method==sosup )
-            		{
-              		  FOR_3D(i1,i2,i3,J1,J2,J3)
-              		  {
-		    // real x = XEP(i1,i2,i3,0);
-		    // real y = XEP(i1,i2,i3,1);
-		    // real z = XEP(i1,i2,i3,2);
-                		    real x,y,z;
-                                  if( isRectangular )
-                                  {
-                                      x = X0(i1,i2,i3);
-                                      y = X1(i1,i2,i3);
-                                      z = X2(i1,i2,i3);
-                                  }
-                                  else
-                                  {
-                                      x = XEP(i1,i2,i3,0);
-                                      y = XEP(i1,i2,i3,1);
-                                      z = XEP(i1,i2,i3,2);
-                                  }
-
-		    // FOR NOW set old time: 
-                		    UMEX(i1,i2,i3)=exTrue3d(x,y,z,tE-dt);
-                		    UMEY(i1,i2,i3)=eyTrue3d(x,y,z,tE-dt);
-                		    UMEZ(i1,i2,i3)=ezTrue3d(x,y,z,tE-dt);
-                		    
-                		    uLocal(i1,i2,i3,ex )=exTrue3d(x,y,z,tE);
-                		    uLocal(i1,i2,i3,ey )=eyTrue3d(x,y,z,tE);
-                		    uLocal(i1,i2,i3,ez )=ezTrue3d(x,y,z,tE);
-                		    
-                		    uLocal(i1,i2,i3,ext)=extTrue3d(x,y,z,tE);
-                		    uLocal(i1,i2,i3,eyt)=eytTrue3d(x,y,z,tE);
-                		    uLocal(i1,i2,i3,ezt)=eztTrue3d(x,y,z,tE);
-              		  }
-            		}
-
-            		else
-            		{
-              		  if( method==nfdtd  || method==sosup )
-              		  {
-                		    ume(I1,I2,I3,ex)=exTrue3d(xe,ye,ze,tE-dt);
-                		    ume(I1,I2,I3,ey)=eyTrue3d(xe,ye,ze,tE-dt);
-                		    ume(I1,I2,I3,ez)=ezTrue3d(xe,ye,ze,tE-dt);
-              		  }
-
-              		  ue(Ie1,Ie2,Ie3,ex)=exTrue3d(xe,ye,ze,tE);
-              		  ue(Ie1,Ie2,Ie3,ey)=eyTrue3d(xe,ye,ze,tE);
-              		  ue(Ie1,Ie2,Ie3,ez)=ezTrue3d(xe,ye,ze,tE);
-            		}
-          	    
-            	      }
-            	      else
-            	      { 
-                // limit the plane wave initial condition to lie inside a bounding box: 
-            		assert( method==nfdtd  || method==sosup );
-            		assert( !solveForMagneticField );  // fix me for this case
-            		int i1,i2,i3;
-
-            		const int & smoothBoundingBox = dbase.get<int>("smoothBoundingBox");
-            		if( smoothBoundingBox != 0 ) 
-            		{
-		  // In this version we smoothly damp the plane wave along the direction of the front
-		  // Damp the initial conditions along one face of the bounding box: (*wdh* July 2, 2016)
-              		  const int & side = dbase.get<int>("boundingBoxDecaySide");
-              		  const int & axis = dbase.get<int>("boundingBoxDecayAxis");
-                                
-              		  real nv[3]={0.,0.,0.};  // normal to decay direction
-              		  nv[axis]=2*side-1;
-
-		  // Damp near the point xv0[] on the front
-              		  real xv0[3]={0.,0.,0.};  // normal to decay direction
-              		  for( int dir=0; dir<numberOfDimensions; dir++ )
-                		    xv0[dir] = .5*(initialConditionBoundingBox(1,dir)+initialConditionBoundingBox(0,dir));
-              		  xv0[axis]=initialConditionBoundingBox(side,axis);
-
-              		  const real beta=boundingBoxDecayExponent/twoPi;
-
-		  // -- smooth the solution at the edge of the bounding box --
-              		  FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
-              		  {
-		    // real x=xe(i1,i2,i3), y=ye(i1,i2,i3), z=ze(i1,i2,i3);
-                		    real x,y,z;
-                                  if( isRectangular )
-                                  {
-                                      x = X0(i1,i2,i3);
-                                      y = X1(i1,i2,i3);
-                                      z = X2(i1,i2,i3);
-                                  }
-                                  else
-                                  {
-                                      x = XEP(i1,i2,i3,0);
-                                      y = XEP(i1,i2,i3,1);
-                                      z = XEP(i1,i2,i3,2);
-                                  }
-
-                		    real amp = AMP3D(x,y,z,tE-dt);
-                		    ume(i1,i2,i3,ex)=exTrue3d(x,y,z,tE-dt)*amp;
-                		    ume(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE-dt)*amp;
-                		    ume(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE-dt)*amp;
-
-                		    amp = AMP3D(x,y,z,tE);
-                		    ue(i1,i2,i3,ex)=exTrue3d(x,y,z,tE)*amp;
-                		    ue(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE)*amp;
-                		    ue(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE)*amp;
-
-              		  }
-            		}
-            		else
-            		{
-		  // -- clip the solution at the bounding box ---
-              		  FOR_3D(i1,i2,i3,Ie1,Ie2,Ie3)
-              		  {
-		    // real x=xe(i1,i2,i3), y=ye(i1,i2,i3), z=ze(i1,i2,i3);
-                		    real x,y,z;
-                                  if( isRectangular )
-                                  {
-                                      x = X0(i1,i2,i3);
-                                      y = X1(i1,i2,i3);
-                                      z = X2(i1,i2,i3);
-                                  }
-                                  else
-                                  {
-                                      x = XEP(i1,i2,i3,0);
-                                      y = XEP(i1,i2,i3,1);
-                                      z = XEP(i1,i2,i3,2);
-                                  }
-
-                		    if( x>=initialConditionBoundingBox(0,0) && x<=initialConditionBoundingBox(1,0) &&
-                  			y>=initialConditionBoundingBox(0,1) && y<=initialConditionBoundingBox(1,1) &&
-                  			z>=initialConditionBoundingBox(0,2) && z<=initialConditionBoundingBox(1,2) )
-                		    {
-
-                  		      ume(i1,i2,i3,ex)=exTrue3d(x,y,z,tE-dt);
-                  		      ume(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE-dt);
-                  		      ume(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE-dt);
-
-                  		      ue(i1,i2,i3,ex)=exTrue3d(x,y,z,tE);
-                  		      ue(i1,i2,i3,ey)=eyTrue3d(x,y,z,tE);
-                  		      ue(i1,i2,i3,ez)=ezTrue3d(x,y,z,tE);
-
-                		    }
-              		  }
-            		}
-            		
-            	      }
-          	    }
-          	    if( solveForMagneticField )
-          	    {
-            	      if ( method==nfdtd || method==sosup )
-            	      {
-            		umh(I1,I2,I3,hx)=hxTrue3d(xh,yh,zh,tH-dt);
-            		umh(I1,I2,I3,hy)=hyTrue3d(xh,yh,zh,tH-dt);
-            		umh(I1,I2,I3,hz)=hzTrue3d(xh,yh,zh,tH-dt);
-            	      }
-
-            	      uh(Ih1,Ih2,Ih3,hx)=hxTrue3d(xh,yh,zh,tH);
-            	      uh(Ih1,Ih2,Ih3,hy)=hyTrue3d(xh,yh,zh,tH);
-            	      uh(Ih1,Ih2,Ih3,hz)=hzTrue3d(xh,yh,zh,tH);
-          	    }
-            	      
-        	  }
-          	    
-
-        	  if( saveExtraForcingLevels && timeSteppingMethod!=modifiedEquationTimeStepping )
-        	  {
-	    // we need to save the "RHS" at some previous times.
-          	    for( int m=0; m<numberOfFunctions; m++ )
-          	    {
-#ifdef USE_PPP
-            	      realSerialArray fnLocal; getLocalArrayWithGhostBoundaries(FN(m),fnLocal);
-#else
-            	      realSerialArray & fnLocal = FN(m);
-#endif
-            	      if( numberOfDimensions==2 )
-            	      {
-            		fnLocal(I1,I2,I3,ex)=csq*exLaplacianTrue(xe,ye,t-dt*(m+1));
-            		fnLocal(I1,I2,I3,ey)=csq*eyLaplacianTrue(xe,ye,t-dt*(m+1));
-            		fnLocal(I1,I2,I3,hz)=csq*hzLaplacianTrue(xh,yh,t-dt*(m+1));
-
-            	      }
-            	      else
-            	      {
-            		if( solveForElectricField )
-            		{
-              		  fnLocal(I1,I2,I3,ex)=csq*exLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
-              		  fnLocal(I1,I2,I3,ey)=csq*eyLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
-              		  fnLocal(I1,I2,I3,ez)=csq*ezLaplacianTrue3d(xe,ye,ze,t-dt*(m+1));
-            		}
-            		if( solveForMagneticField )
-            		{
-              		  fnLocal(I1,I2,I3,hx)=csq*hxLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
-              		  fnLocal(I1,I2,I3,hy)=csq*hyLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
-              		  fnLocal(I1,I2,I3,hz)=csq*hzLaplacianTrue3d(xh,yh,zh,t-dt*(m+1));
-            		}
-              		  
-            	      }
-            	      getForcing( current, grid,FN(m),t-dt*(m+1),dt );
-            		
-          	    }
-        	  }
-        	  else if( timeSteppingMethod!=modifiedEquationTimeStepping && orderOfAccuracyInTime!=2 )
-        	  {
-          	    OV_ABORT();
-        	  }
-        	  
       	}
       	else if( forcingOption==magneticSinusoidalPointSource )
       	{
@@ -3684,7 +4080,9 @@ assignInitialConditions(int current, real t, real dt )
                     real phiEy, phiEyt, phiEym, phiPy[10], phiPym[10];
                     real phiEz, phiEzt, phiEzm, phiPz[10], phiPzm[10];
                     real phiHz, phiHzt, phiHzm;
-        	  if( method==nfdtd )
+                    real phiHx, phiHy, phiHxm, phiHym;
+        	  
+        	  if( method==nfdtd  || method==bamx )
         	  {
 	    // --- FDTD: previous time values needed ---
           	    real tEm=tE-dt, tHm=tH-dt;
@@ -3693,9 +4091,20 @@ assignInitialConditions(int current, real t, real dt )
               // --- non-dispersive ----
                             if( numberOfDimensions==2 )
                             {
+                // TEz mode: 
+                //    Hz =    amp1*cos(fx*x)*cos(fy*y)*cos(omega*t) 
+                //    Ex = -(fy/(mu*omega) * amp1*cos(fx*x)*sin(fy*y)*sin(omega*t)
+                //    Ey =  (fx/(mu*omega) * amp1*sin(fx*x)*cos(fy*y)*sin(omega*t)
                                 phiEx=(-fy/(omega))*sin((omega)*(tEm)); phiExt= (-fy/(omega))*(omega)*cos((omega)*(tEm));
                                 phiEy=( fx/(omega))*sin((omega)*(tEm)); phiEyt= ( fx/(omega))*(omega)*cos((omega)*(tEm));
                                 phiHz=cos((omega)*(tHm)); phiHzt=-(omega)*sin((omega)*(tHm));
+                // TMz mode: (independent of TEz mode)
+                //    Ez =    amp2*sin(fx*x)*sin(fy*y)*sin(omega*t) 
+                //    Hx =  (fy/(mu*omega) * amp2*sin(fx*x)*cos(fy*y)*cos(omega*t)
+                //    Hy = -(fx/(mu*omega) * amp2*cos(fx*x)*sin(fy*y)*cos(omega*t)
+                                phiEz=sin((omega)*(tEm)); 
+                                phiHx= ( fy/(omega))*cos((omega)*(tEm));
+                                phiHy= (-fx/(omega))*cos((omega)*(tEm));
                             }
                             else
                             {
@@ -3780,7 +4189,8 @@ assignInitialConditions(int current, real t, real dt )
                                 }
                             }
                         }
-                        phiExm=phiEx; phiEym=phiEy; phiEzm=phiEz; phiHzm=phiHz; // save values at "minus" time
+                        phiExm=phiEx; phiEym=phiEy; phiEzm=phiEz; // save values at "minus" time
+                        phiHxm=phiHx; phiHym=phiHy; phiHzm=phiHz; 
                         for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                         {
                             phiPxm[iv]=phiPx[iv]; phiPym[iv]=phiPy[iv]; phiPzm[iv]=phiPz[iv] ;
@@ -3793,9 +4203,20 @@ assignInitialConditions(int current, real t, real dt )
               // --- non-dispersive ----
                             if( numberOfDimensions==2 )
                             {
+                // TEz mode: 
+                //    Hz =    amp1*cos(fx*x)*cos(fy*y)*cos(omega*t) 
+                //    Ex = -(fy/(mu*omega) * amp1*cos(fx*x)*sin(fy*y)*sin(omega*t)
+                //    Ey =  (fx/(mu*omega) * amp1*sin(fx*x)*cos(fy*y)*sin(omega*t)
                                 phiEx=(-fy/(omega))*sin((omega)*(tE)); phiExt= (-fy/(omega))*(omega)*cos((omega)*(tE));
                                 phiEy=( fx/(omega))*sin((omega)*(tE)); phiEyt= ( fx/(omega))*(omega)*cos((omega)*(tE));
                                 phiHz=cos((omega)*(tH)); phiHzt=-(omega)*sin((omega)*(tH));
+                // TMz mode: (independent of TEz mode)
+                //    Ez =    amp2*sin(fx*x)*sin(fy*y)*sin(omega*t) 
+                //    Hx =  (fy/(mu*omega) * amp2*sin(fx*x)*cos(fy*y)*cos(omega*t)
+                //    Hy = -(fx/(mu*omega) * amp2*cos(fx*x)*sin(fy*y)*cos(omega*t)
+                                phiEz=sin((omega)*(tE)); 
+                                phiHx= ( fy/(omega))*cos((omega)*(tE));
+                                phiHy= (-fx/(omega))*cos((omega)*(tE));
                             }
                             else
                             {
@@ -3898,31 +4319,53 @@ assignInitialConditions(int current, real t, real dt )
             	      Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
             	      Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
             	      Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
-            	      FOR_3D(i1,i2,i3,J1,J2,J3)
+            	      if( solveForAllFields )
             	      {
-            		real xdh=X0(i1,i2,i3)-x0;
-            		real ydh=X1(i1,i2,i3)-y0;
-            		UHZ(i1,i2,i3) = cos(fx*xdh)*cos(fy*ydh)*phiHz;  // Hz 
-		// UHZ(i1,i2,i3) =cos(fx*xdh)*cos(fy*ydh)*cos(omega*tH);  // Hz 
-            	      }
+            		FOR_3D(i1,i2,i3,J1,J2,J3)
+            		{
+              		  real xde=X0(i1,i2,i3)-x0;
+              		  real yde=X1(i1,i2,i3)-y0;
+                  // TEZ mode 
+              		  uLocal(i1,i2,i3,ex) = cos(fx*xde)*sin(fy*yde)*phiEx;  
+              		  uLocal(i1,i2,i3,ey) = sin(fx*xde)*cos(fy*yde)*phiEy;  
+                                    uLocal(i1,i2,i3,hz) = cos(fx*xde)*cos(fy*yde)*phiHz;
 
-            	      J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-            	      J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-            	      J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-            	      FOR_3(i1,i2,i3,J1,J2,J3)
+                  // TMZ mode:  (independent from TEz -- could have a different amplitude)
+              		  uLocal(i1,i2,i3,hx) = sin(fx*xde)*cos(fy*yde)*phiHx;  
+              		  uLocal(i1,i2,i3,hy) = cos(fx*xde)*sin(fy*yde)*phiHy;  
+                                    uLocal(i1,i2,i3,ez) = sin(fx*xde)*sin(fy*yde)*phiEz;
+            		}
+
+            	      }
+            	      else
             	      {
-            		real xde=X0(i1,i2,i3)-x0;
-            		real yde=X1(i1,i2,i3)-y0;
-            		UEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*phiEx;  
-            		UEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*phiEy;  
-		// UEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xde)*sin(fy*yde)*sin(omega*tE);  // Ex.t = Hz.y
-		// UEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xde)*cos(fy*yde)*sin(omega*tE);  // Ey.t = - Hz.x
-            	      }
+                // TEZ mode
+            		FOR_3D(i1,i2,i3,J1,J2,J3)
+            		{
+              		  real xdh=X0(i1,i2,i3)-x0;
+              		  real ydh=X1(i1,i2,i3)-y0;
+              		  UHZ(i1,i2,i3) = cos(fx*xdh)*cos(fy*ydh)*phiHz;  // Hz 
+		  // UHZ(i1,i2,i3) =cos(fx*xdh)*cos(fy*ydh)*cos(omega*tH);  // Hz 
+            		}
 
+            		J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+            		J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+            		J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+            		FOR_3(i1,i2,i3,J1,J2,J3)
+            		{
+              		  real xde=X0(i1,i2,i3)-x0;
+              		  real yde=X1(i1,i2,i3)-y0;
+              		  UEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*phiEx;  
+              		  UEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*phiEy;  
+		  // UEX(i1,i2,i3) =  (-fy/omega)*cos(fx*xde)*sin(fy*yde)*sin(omega*tE);  // Ex.t = Hz.y
+		  // UEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xde)*cos(fy*yde)*sin(omega*tE);  // Ey.t = - Hz.x
+            		}
+            	      }
+            	      
               // -- dispersion model components --
             	      if( localDispersionModel!=noDispersion )
             	      {
-            		FOR_3(i1,i2,i3,J1,J2,J3)
+            		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
               		  real xde=X0(i1,i2,i3)-x0;
               		  real yde=X1(i1,i2,i3)-y0;
@@ -3940,7 +4383,7 @@ assignInitialConditions(int current, real t, real dt )
                             if( method==sosup )
             	      {
                 // ---- SOSUP -----
-            		FOR_3(i1,i2,i3,J1,J2,J3)
+            		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
               		  real xde=X0(i1,i2,i3)-x0;
               		  real yde=X1(i1,i2,i3)-y0;
@@ -3955,7 +4398,7 @@ assignInitialConditions(int current, real t, real dt )
             		
             	      }
 
-            	      if( method==nfdtd )
+            	      if( method==nfdtd  || method==bamx )
             	      {
                 // -- previous time values needed ---
             		FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -4102,7 +4545,7 @@ assignInitialConditions(int current, real t, real dt )
 		// UEY(i1,i2,i3) =  ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
             	      }            
 
-            	      if ( method==nfdtd )
+            	      if ( method==nfdtd  || method==bamx )
             	      {
             		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
@@ -4180,7 +4623,7 @@ assignInitialConditions(int current, real t, real dt )
 		// UEY(i1,i2,i3) =  (a2/fy)*sin(fx*xd)*cos(fy*yd)*sin(fz*zd)*cos(omega*t);  // 
 		// UEZ(i1,i2,i3) =  (a3/fz)*sin(fx*xd)*sin(fy*yd)*cos(fz*zd)*cos(omega*t);  // 
 
-            		if( method==nfdtd )
+            		if( method==nfdtd  || method==bamx )
             		{
                                     UMEX(i1,i2,i3) = cos(fx*xde)*sin(fy*yde)*sin(fz*zde)*phiExm;  // 
                                     UMEY(i1,i2,i3) = sin(fx*xde)*cos(fy*yde)*sin(fz*zde)*phiEym;  // 
@@ -4606,7 +5049,7 @@ assignInitialConditions(int current, real t, real dt )
         	  if( debug & 2 ) fPrintF(debugFile,
                           				  "Setting initial conditions to be planeWaveScatterFieldInitialCondition. dt=%14.6e\n",dt);
 
-        	  if ( method!=nfdtd && method!=sosup )
+        	  if ( method!=nfdtd && method!=sosup && method!=bamx )
           	    OV_ABORT("planeWaveScatteredFieldInitialCondition: unexpected method");
 
         	  const realArray & ug = (*knownSolution)[grid];
@@ -4760,7 +5203,7 @@ assignInitialConditions(int current, real t, real dt )
 #else
         	  const realSerialArray & ugLocal = ug; 
 #endif
-        	  if( method==nfdtd || method==sosup )
+        	  if( method==nfdtd || method==sosup  || method==bamx )
         	  { // do this with scalar indexing to avoid a possible bug in P++
           	    real *ugp = ugLocal.Array_Descriptor.Array_View_Pointer3;
           	    const int ugDim0=ugLocal.getRawDataSize(0);
@@ -4777,7 +5220,7 @@ assignInitialConditions(int current, real t, real dt )
           	    if( numberOfDimensions==2 )
           	    {
               // ====== TWO DIMENSIONS ========
-            	      if( method==nfdtd )
+            	      if( method==nfdtd  || method==bamx )
             	      {
             		FOR_3D(i1,i2,i3,J1,J2,J3)
             		{
@@ -4812,7 +5255,7 @@ assignInitialConditions(int current, real t, real dt )
               // -- dispersion model components --
             	      if( localDispersionModel!=noDispersion )
             	      {
-            		if( method==nfdtd )
+            		if( method==nfdtd  || method==bamx )
             		{
               		  FOR_3D(i1,i2,i3,J1,J2,J3)
               		  {
@@ -4839,7 +5282,7 @@ assignInitialConditions(int current, real t, real dt )
               // ====== THREE DIMENSIONS ========
             	      if( solveForElectricField )
             	      {
-            		if( method==nfdtd )
+            		if( method==nfdtd  || method==bamx )
             		{
               		  FOR_3D(i1,i2,i3,J1,J2,J3)
               		  {
@@ -4855,7 +5298,7 @@ assignInitialConditions(int current, real t, real dt )
 		  // -- dispersion model components --
               		  if( localDispersionModel!=noDispersion )
               		  {
-                		    if( method==nfdtd )
+                		    if( method==nfdtd  || method==bamx )
                 		    {
                   		      FOR_3D(i1,i2,i3,J1,J2,J3)
                   		      {
@@ -4931,7 +5374,7 @@ assignInitialConditions(int current, real t, real dt )
       	}
       	else if( initialConditionOption==planeMaterialInterfaceInitialCondition )
       	{
-        	  if( method==nfdtd || method==sosup )
+        	  if( method==nfdtd || method==sosup  || method==bamx )
         	  { 
 	    // adjust array dimensions for local arrays
           	    Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
@@ -4946,8 +5389,42 @@ assignInitialConditions(int current, real t, real dt )
                     const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
             // NOTE: dispersion version is a user defined known solution
                         assert( dispersionModel == noDispersion );
+                        if( method==bamx )
+                        {
+              // =================== BA MAXWELL ======================
+                            if( numberOfDimensions==2 )
+                            {
+                                assert( !solveForAllFields );  // finish me 
+                                z=0.;
+                                FOR_3D(i1,i2,i3,J1,J2,J3)
+                                {
+                          	x = XEP(i1,i2,i3,0);
+                          	y = XEP(i1,i2,i3,1);
+                                    real u1,u2,u3;
+                                    if( x < 0. ) // **fix me**
+                          	{
+                            	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                          	}
+                          	else
+                          	{
+                                        u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                        u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                        u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                          	}
+                                	  uLocal(i1,i2,i3,ex)=u1;
+                            	  uLocal(i1,i2,i3,ey)=u2;
+                            	  uLocal(i1,i2,i3,hz)=u3;
+                                }
+                            }
+                            else
+                            {
+                                OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+                            }
+                        }
             // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-                        if( numberOfDimensions==2 )
+                        else if( numberOfDimensions==2 )
                         {
                           z=0.;
                           if( grid < numberOfComponentGrids/2 )
@@ -5260,7 +5737,7 @@ assignInitialConditions(int current, real t, real dt )
                 }
                 #endif
             }
-            if( method==nfdtd || method==sosup )
+            if( method==nfdtd || method==sosup || method==bamx )
             {
                 (mgp==NULL ? getCGField(HField,current)[grid] : fields[current]).periodicUpdate();
                 (mgp==NULL ? getCGField(HField,prev)[grid] : fields[prev]).periodicUpdate();
@@ -5336,7 +5813,7 @@ assignInitialConditions(int current, real t, real dt )
         const int & fCurrent = dbase.get<int>("fCurrent");         // forcingArray[fCurrent] : current forcing
         realArray *& forcingArray = dbase.get<realArray*>("forcingArray");  
 
-        if( numberOfForcingFunctions>0 && method==nfdtd && timeSteppingMethod==modifiedEquationTimeStepping )
+        if( numberOfForcingFunctions>0 && (method==nfdtd  || method==bamx ) && timeSteppingMethod==modifiedEquationTimeStepping )
         {
             assert( forcingIsOn() );
         

@@ -8,6 +8,7 @@ NODEP := $(strip $(filter usage doc clean cleano cleanc cleandep,$(MAKECMDGOALS)
 
 # ==== optional capabilities: use on/off ===
 
+# Not currently needed: 
 usePETSc := off
 
 # to use Chemkin:

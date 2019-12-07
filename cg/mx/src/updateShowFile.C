@@ -217,7 +217,7 @@ updateShowFile(const aString & command /* = nullString */,
 	printF("Opening the show file %s\n",(const char*)answer2);
 	show = new Ogshow( answer2,".",useStreamMode );      
 
-        saveParametersToShowFile();
+        // saveParametersToShowFile();  ** moved since ez note defined yet Dec 2, 2019 *wdh* 
       }
     }
     else if( answer=="close" )

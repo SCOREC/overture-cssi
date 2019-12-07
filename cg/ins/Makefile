@@ -9,9 +9,22 @@ NODEP := $(strip $(filter usage doc clean cleano cleanc cleandep,$(MAKECMDGOALS)
 
 # ==== optional capabilities: use on/off =================
 
-# sparse solver packages:
-usePETSc   := on
-useSuperLU := off
+# ---- sparse solver packages ----
+# To compile with PETSc you should set: 
+# setenv usePETSc  
+ifeq ($(usePETSc),)
+  usePETSc   := off
+else
+  usePETSc   := on
+endif
+# To compile with SuperLU you should set: 
+# setenv useSuperLU 
+ifeq ($(useSuperLU),)
+  useSuperLU := off
+else
+  useSuperLU := on
+endif
+
 
 # turbulence models: (these don't work yet)
 BaldwinLomax   := on

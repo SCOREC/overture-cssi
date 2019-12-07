@@ -25,6 +25,11 @@ setenv CGBUILDPREFIX /home/henshaw.0/cg.v24j.d
 #  In the following example LAPACK is found with the PGI compilers
 setenv LAPACK /nfs/apps/pgi/6.1-3/linux86-64/6.1/lib
 
+# To compile with PETSc you should set: 
+# setenv usePETSc yes
+
+# To compile with SuperLU you should set: 
+# setenv useSuperLU yes
 
 # Here are some handy alias's and variables 
 alias ogen $Overture/bin/ogen

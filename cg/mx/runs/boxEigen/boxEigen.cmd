@@ -43,8 +43,8 @@
 #================================================================================================
 # 
 $tFinal=1.; $tPlot=.1; $diss=.0; $cfl=.95; $dissOrder=-1; $filter=0; $divClean=0; $divCleanCoeff=1; $projectInterp=0;
-$grid="box32.order4.hdf"; $method="NFDTD";  $errorNorm=0; 
-$cons=0; $go="halt"; $show=" ";
+$grid="box32.order4.hdf"; $method="NFDTD";  $errorNorm=0;  $solveForAllFields=0;
+$cons=0; $go="halt"; $show=" ";  $ts="me"; 
 $mx=1; $my=1; $mz=1; $x0=0.; $y0=0.; $z0=0.;  # defines the eigenfunction 
 $useSosupDissipation=0; 
 $dm="none"; $gamma=0.; $omegap=0.;  # (gamma,omegap) for Drude model
@@ -55,11 +55,20 @@ $npv=1; $alphaP=1.; $modeGDM=-1;
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"show=s"=>\$show,\
   "dtMax=f"=>\$dtMax,"mx=f"=>\$mx,"my=f"=>\$my,"mz=f"=>\$mz, "cons=i"=>\$cons,"dissOrder=i"=>\$dissOrder,\
-  "filter=i"=>\$filter,"divClean=i"=>\$divClean,"divCleanCoeff=f"=>\$divCleanCoeff,"useSosupDissipation=i"=>\$useSosupDissipation,\
+  "filter=i"=>\$filter,"divClean=i"=>\$divClean,"divCleanCoeff=f"=>\$divCleanCoeff,"ts=s"=>\$ts,\
+  "useSosupDissipation=i"=>\$useSosupDissipation,"solveForAllFields=i"=>\$solveForAllFields,\
   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"projectInterp=i"=>\$projectInterp,"method=s"=>\$method,\
   "dm=s"=>\$dm,"gamma=f"=>\$gamma,"omegap=f"=>\$omegapn,"modeGDM=i"=>\$modeGDM,"errorNorm=i"=>\$errorNorm, \
   "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv);
 # -------------------------------------------------------------------------------------------------
+#
+if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+$orderOfRungeKutta=4;
+if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
+if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
+if( $ts eq "rk3" ){ $ts="rungeKutta"; $orderOfRungeKutta=3; }
+if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
+# printf(" TS = [$ts], order=[$orderOfRungeKutta] \n");
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -82,6 +91,11 @@ $grid
 # modifiedEquationTimeStepping
 #
 $method
+# time-stepping method
+$ts
+order of Runge Kutta $orderOfRungeKutta
+#
+solve for all fields $solveForAllFields
 # dispersion model:
 $dm
 #

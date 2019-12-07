@@ -5034,6 +5034,8 @@ end do
          end if
  
  
+         ! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2; 
+
          if( avoidInterfaceIterations.eq.1 )then
            ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
            ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
@@ -5053,6 +5055,7 @@ end do
            orderOfAccuracy=4 ! reset 
            !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
          end if
+         ! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
 
          ! here are the jump conditions for the ghost points
          !   [ div(E) n + (curl(E)- n.curl(E) n )/mu ] =0                 (3 eqns)

@@ -1318,7 +1318,7 @@ transferInterpDataForAMR(CompositeGrid & cg,
 
     if( i<ip.getBase(0) || i>ip.getBound(0) )
     {
-      printf("ERROR: myid=%i n=%i p=%i i=%i bg = %i but ip bounds=[%i,%i]\n",
+      printf("ERROR: myid=%i n=%i p=%i bg = %i but ip bounds=[%i,%i]\n",
 	     myid,n,p,bg,ip.getBase(0),ip.getBound(0));
       Overture::abort("error");
     }

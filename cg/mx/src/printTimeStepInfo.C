@@ -12,7 +12,7 @@ printTimeStepInfo( const int current, const int & step, const real & t, const re
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
 
-  if ( method==nfdtd || method==sosup )
+  if ( method==nfdtd || method==sosup  || method==bamx )
     getMaxDivergence( current,t );
 
   aString label;

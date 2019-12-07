@@ -267,39 +267,86 @@ if( epsc>=0 )
   spatialCoefficientsForTZ(0,0,0,sigmaHc)=0.;
 }
 
+
+    
 if( numberOfDimensions==2 )
 {
+  // ************************************************************************
+  // ********************** TWO SPACE DIMENSIONS ****************************
+  // ************************************************************************
+
+  printF("TZ: solveForAllFields=%d, numberOfComponents=%d\n",solveForAllFields,numberOfComponents);
+
+    
+    
+
   if( degreeSpace==0 )
   {
-    spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1
-    spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2
-    spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1
+    if( !solveForAllFields )
+    {
+      spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1
+      spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2
+      spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1
+    }
+    else
+    {
+      for( int c=0; c<numberOfComponents; c++ )
+      {
+        spatialCoefficientsForTZ(0,0,0,c)= 1. + c*.5;
+      }
+      
+    }
+    
     // -- dispersion components: 
     if( dispersionModel != noDispersion )
     {
-      for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+      if( method==nfdtd )
       {
-        const int pc= iv*numberOfDimensions;
-        spatialCoefficientsForTZ(0,0,0,pxc+pc)=1.; 
-        spatialCoefficientsForTZ(0,0,0,pyc+pc)=2.; 
+	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+	{
+	  const int pc= iv*numberOfDimensions;
+	  spatialCoefficientsForTZ(0,0,0,pxc+pc)=1.; 
+	  spatialCoefficientsForTZ(0,0,0,pyc+pc)=2.; 
+	}
       }
+      else if( method==bamx )
+      {
+	OV_ABORT("finish me BAMX: TZ");
+      }
+      
     }
     
   }
   else if( degreeSpace==1 )
   {
-    spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1+x+y
-    spatialCoefficientsForTZ(1,0,0,ex)=1.;
-    spatialCoefficientsForTZ(0,1,0,ex)=1.;
+    if( !solveForAllFields )
+    {
+      spatialCoefficientsForTZ(0,0,0,ex)=1.;      // u=1+x+y
+      spatialCoefficientsForTZ(1,0,0,ex)=1.;
+      spatialCoefficientsForTZ(0,1,0,ex)=1.;
 
-    spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2+x-y
-    spatialCoefficientsForTZ(1,0,0,ey)= 1.;
-    spatialCoefficientsForTZ(0,1,0,ey)=-1.;
+      spatialCoefficientsForTZ(0,0,0,ey)= 2.;      // v=2+x-y
+      spatialCoefficientsForTZ(1,0,0,ey)= 1.;
+      spatialCoefficientsForTZ(0,1,0,ey)=-1.;
 
-    spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1+x + y
-    spatialCoefficientsForTZ(1,0,0,hz)= 1.;
-    spatialCoefficientsForTZ(0,1,0,hz)= 1.;
+      spatialCoefficientsForTZ(0,0,0,hz)=-1.;      // w=-1+x + y
+      spatialCoefficientsForTZ(1,0,0,hz)= 1.;
+      spatialCoefficientsForTZ(0,1,0,hz)= 1.;
+    }
+    else
+    {
+      for( int c=0; c<numberOfComponents; c++ )
+      {
+        spatialCoefficientsForTZ(0,0,0,c)= 1. + c;
+        spatialCoefficientsForTZ(1,0,0,c)= .5 + c*.5;
+        spatialCoefficientsForTZ(0,1,0,c)= .4 + c*.25;
+      }
+      // We need div(Ex,Ey,Ez)=0 , div(Hx,Hy,Hz)=0 
+      spatialCoefficientsForTZ(0,1,0,ey)=- spatialCoefficientsForTZ(1,0,0,ex);
+      spatialCoefficientsForTZ(0,1,0,hy)=- spatialCoefficientsForTZ(1,0,0,hx);
 
+    }
+    
     // eps and mu should remain positive but do this for now:
     if( epsc>=0 )
     {
@@ -330,19 +377,54 @@ if( numberOfDimensions==2 )
   }
   else if( degreeSpace==2 )
   {
-    spatialCoefficientsForTZ(2,0,0,ex)=1.;      // u=x^2 + 2xy + y^2 
-    spatialCoefficientsForTZ(1,1,0,ex)=2.;
-    spatialCoefficientsForTZ(0,2,0,ex)=1.;
+    if( !solveForAllFields )
+    {
 
-    spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // v=x^2 -2xy - y^2 
-    spatialCoefficientsForTZ(1,1,0,ey)=-2.;
-    spatialCoefficientsForTZ(0,2,0,ey)=-1.;
+      spatialCoefficientsForTZ(2,0,0,ex)=1.;      // u=x^2 + 2xy + y^2 
+      spatialCoefficientsForTZ(1,1,0,ex)=2.;
+      spatialCoefficientsForTZ(0,2,0,ex)=1.;
 
-    spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // w=x^2 + y^2 -1 +.5 xy
-    spatialCoefficientsForTZ(0,2,0,hz)= 1.;
-    spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
-    spatialCoefficientsForTZ(1,1,0,hz)= .5;
+      spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // v=x^2 -2xy - y^2 
+      spatialCoefficientsForTZ(1,1,0,ey)=-2.;
+      spatialCoefficientsForTZ(0,2,0,ey)=-1.;
 
+      spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // w=x^2 + y^2 -1 +.5 xy
+      spatialCoefficientsForTZ(0,2,0,hz)= 1.;
+      spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
+      spatialCoefficientsForTZ(1,1,0,hz)= .5;
+    }
+    else
+    {
+      // We need div(Ex,Ey,Ez)=0 , div(Hx,Hy,Hz)=0 
+      spatialCoefficientsForTZ(2,0,0,ex)=1.;      // Ex =x^2 + 2xy + y^2 
+      spatialCoefficientsForTZ(1,1,0,ex)=2.;
+      spatialCoefficientsForTZ(0,2,0,ex)=1.;
+
+      spatialCoefficientsForTZ(2,0,0,ey)= 1.;      // Ey =x^2 -2xy - y^2 
+      spatialCoefficientsForTZ(1,1,0,ey)=-2.;
+      spatialCoefficientsForTZ(0,2,0,ey)=-1.;
+
+      spatialCoefficientsForTZ(2,0,0,ez)= .5;    
+      spatialCoefficientsForTZ(0,2,0,ez)=.25;
+      spatialCoefficientsForTZ(0,0,0,ez)=-.5; 
+      spatialCoefficientsForTZ(1,1,0,ez)= .3;
+
+      spatialCoefficientsForTZ(2,0,0,hx)=.5;     
+      spatialCoefficientsForTZ(1,1,0,hx)=1.;
+      spatialCoefficientsForTZ(0,2,0,hx)=.5;
+
+      spatialCoefficientsForTZ(2,0,0,hy)= .5;    
+      spatialCoefficientsForTZ(1,1,0,hy)=-1.;
+      spatialCoefficientsForTZ(0,2,0,hy)=-.5;
+
+      spatialCoefficientsForTZ(2,0,0,hz)= 1.;      // Hz=x^2 + y^2 -1 +.5 xy
+      spatialCoefficientsForTZ(0,2,0,hz)= 1.;
+      spatialCoefficientsForTZ(0,0,0,hz)=-1.; 
+      spatialCoefficientsForTZ(1,1,0,hz)= .5;
+
+    }
+    
+    
     // eps and mu should remain positive 
     if( epsc>=0 )
     {
@@ -362,23 +444,31 @@ if( numberOfDimensions==2 )
     {
       printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i <<<<\n\n",maxNumberOfPolarizationVectors);
 
-      for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+      if( method==nfdtd )
       {
-        const int pc= iv*numberOfDimensions;
-        // Corner extrapolation may assume that div(E)=0 
-        spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+	{
+	  const int pc= iv*numberOfDimensions;
+	  // Corner extrapolation may assume that div(E)=0 
+	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
 
-        spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	}
+      }
+      else if( method==bamx )
+      {
+	// done below
       }
     }
 
   }
   else if( degreeSpace==3 )
   {
+
     spatialCoefficientsForTZ(2,0,0,ex)=1.;      // u=x^2 + 2xy + y^2 + .5*y^3 + .25*x^2*y + .2*x^3  - .3*x*y^2
     spatialCoefficientsForTZ(1,1,0,ex)=2.;
     spatialCoefficientsForTZ(0,2,0,ex)=1.;
@@ -402,6 +492,34 @@ if( numberOfDimensions==2 )
     spatialCoefficientsForTZ(3,0,0,hz)= .25;
     spatialCoefficientsForTZ(0,3,0,hz)=-.25;
 
+    if( solveForAllFields )
+    {
+      spatialCoefficientsForTZ(2,0,0,hx)  = 1.*.5;   // ** fix me -- change more from Ex,Ey   
+      spatialCoefficientsForTZ(1,1,0,hx)  = 2.*.5; 
+      spatialCoefficientsForTZ(0,2,0,hx)  = 1.*.5;
+      spatialCoefficientsForTZ(0,3,0,hx)  = .5*.5;
+      spatialCoefficientsForTZ(2,1,0,hx)  =.25*.5;
+      spatialCoefficientsForTZ(3,0,0,0,hx)= .2*.5;
+      spatialCoefficientsForTZ(1,2,0,0,hx)=-.3*.5;
+
+      spatialCoefficientsForTZ(2,0,0,hy) =  1.*.5;    
+      spatialCoefficientsForTZ(1,1,0,hy) = -2.*.5;
+      spatialCoefficientsForTZ(0,2,0,hy) = -1.*.5;
+      spatialCoefficientsForTZ(3,0,0,hy) = -.5*.5;
+      spatialCoefficientsForTZ(1,2,0,hy) =-.25*.5;
+      spatialCoefficientsForTZ(2,1,0,hy) = -.6*.5;
+      spatialCoefficientsForTZ(0,3,0,hy) =  .1*.5;
+
+      spatialCoefficientsForTZ(2,0,0,ez)= .8;    
+      spatialCoefficientsForTZ(0,2,0,ez)= .4;
+      spatialCoefficientsForTZ(0,0,0,ez)=-.1; 
+      spatialCoefficientsForTZ(1,1,0,ez)= .1;
+      spatialCoefficientsForTZ(3,0,0,ez)= .15;
+      spatialCoefficientsForTZ(0,3,0,ez)=-.15;
+
+    }
+    
+
     // -- dispersion components: 
     // ** FINISH ME **
     if( dispersionModel != noDispersion )
@@ -409,18 +527,26 @@ if( numberOfDimensions==2 )
       printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
          maxNumberOfPolarizationVectors);
 
-      for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+      if( method==nfdtd )
       {
-        const int pc= iv*numberOfDimensions;
-        // Corner extrapolation may assume that div(E)=0 
-        spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+	{
+	  const int pc= iv*numberOfDimensions;
+	  // Corner extrapolation may assume that div(E)=0 
+	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
 
-        spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	}
       }
+      else if( method==bamx )
+      {
+	// done below
+      }
+
     }
 
 
@@ -456,30 +582,70 @@ if( numberOfDimensions==2 )
     spatialCoefficientsForTZ(0,4,0,ey)=-.25;
     spatialCoefficientsForTZ(3,1,0,ey)=-.8;
 
+    if( solveForAllFields )
+    {
+
+      spatialCoefficientsForTZ(2,0,0,hx)=1.*.3;      // u=x^2 + 2xy + y^2 + .2*x^4 + .5*y^4 + xy^3
+      spatialCoefficientsForTZ(1,1,0,hx)=2.*.3;
+      spatialCoefficientsForTZ(0,2,0,hx)=1.*.3;
+      spatialCoefficientsForTZ(4,0,0,hx)=.2*.3;   
+      spatialCoefficientsForTZ(0,4,0,hx)=.5*.3;   
+      spatialCoefficientsForTZ(1,3,0,hx)=1.*.3;   
+
+      spatialCoefficientsForTZ(2,0,0,hy)= 1.*.3;      // v=x^2 -2xy - y^2 +.125*x^4 -.25*y^4 -.8*x^3 y
+      spatialCoefficientsForTZ(1,1,0,hy)=-2.*.3;
+      spatialCoefficientsForTZ(0,2,0,hy)=-1.*.3;
+      spatialCoefficientsForTZ(4,0,0,hy)=.125*.3;
+      spatialCoefficientsForTZ(0,4,0,hy)=-.25*.3;
+      spatialCoefficientsForTZ(3,1,0,hy)=-.8*.3;
+
+      spatialCoefficientsForTZ(2,0,0,ez)= .6;      // p=x^2 + y^2 -1 +.5 xy + x^4 + y^4 
+      spatialCoefficientsForTZ(0,2,0,ez)= .4;
+      spatialCoefficientsForTZ(0,0,0,ez)=-.3; 
+      spatialCoefficientsForTZ(1,1,0,ez)= .2;
+      spatialCoefficientsForTZ(4,0,0,ez)= .3;     
+      spatialCoefficientsForTZ(0,4,0,ez)=.25;     
+      spatialCoefficientsForTZ(2,2,0,ez)= -.2;
+
+
+
+    }
+    
+
     // -- dispersion components: 
     // ** FINISH ME **
     if( dispersionModel != noDispersion )
     {
       printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-         maxNumberOfPolarizationVectors);
+	     maxNumberOfPolarizationVectors);
 
-      for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+      if( method==nfdtd )
       {
-        const int pc= iv*numberOfDimensions;
-        // Corner extrapolation may assume that div(E)=0 
-        spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+	{
+	  const int pc= iv*numberOfDimensions;
+	  // Corner extrapolation may assume that div(E)=0 
+	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
 
-        spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	}
       }
+      else if( method==bamx )
+      {
+	// done below
+      }
+
     }
 
   }
   else if( degreeSpace>=6 )
   {
+    assert( !solveForAllFields ); // finish me 
+
     if( degreeSpace!=6 ) printF(" ****WARNING***** using a TZ function with degree=4 in space *****\n");
 	  
     spatialCoefficientsForTZ(1,0,0,hz)= 1.;
@@ -548,23 +714,30 @@ if( numberOfDimensions==2 )
     // ** FINISH ME **
     if( dispersionModel != noDispersion )
     {
-      printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-         maxNumberOfPolarizationVectors);
-
-      for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+      if( method==nfdtd )
       {
-        const int pc= iv*numberOfDimensions;
-        // Corner extrapolation may assume that div(E)=0 
-        spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+	printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
+	       maxNumberOfPolarizationVectors);
 
-        spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
-        spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
-        spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+	{
+	  const int pc= iv*numberOfDimensions;
+	  // Corner extrapolation may assume that div(E)=0 
+	  spatialCoefficientsForTZ(2,0,0,pxc+pc)=1.*.5;      // px=(x^2 + 2xy + y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pxc+pc)=2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pxc+pc)=1.*.5;
+
+	  spatialCoefficientsForTZ(2,0,0,pyc+pc)= 1.*.5;      // py=(x^2 -2xy - y^2)*.5
+	  spatialCoefficientsForTZ(1,1,0,pyc+pc)=-2.*.5;
+	  spatialCoefficientsForTZ(0,2,0,pyc+pc)=-1.*.5;
+	}
+      }
+      else if( method==bamx )
+      {
+	// done below
       }
     }
-
+    
   }
   else
   {
@@ -591,7 +764,6 @@ else if( numberOfDimensions==3 )
     initialize3DPolyTW(hx,hy,hz);
   }
 
-  // -- dispersion components: 
   if( pxc>=0 ) 
   {
     initialize3DPolyTW(pxc,pyc,pzc);
@@ -602,6 +774,29 @@ else if( numberOfDimensions==3 )
 else
 {
   OV_ABORT("ERROR:unimplemented number of dimensions");
+}
+
+if( dispersionModel != noDispersion &&  method==bamx )
+{
+  // BA Maxwell -- assign polarization components
+  const int degreeSpaceZ = numberOfDimensions==2 ? degreeSpace : 0;
+  const int numPolarizationTerms = 2*maxNumberOfPolarizationComponents;  // note "2*" we save p and p.t 
+  for( int m=0; m<numPolarizationTerms; m++ )
+  {
+    int pc = hz+m+1; // polarization component index in TZ functions
+    for( int iz=0; iz<=degreeSpaceZ; iz++ )
+    {
+      for( int iy=0; iy<=degreeSpace; iy++ )
+      {
+	for( int ix=0; ix<=degreeSpace; ix++ )
+	{
+	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
+	  spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+	}
+      }
+      
+    }
+  }
 }
 
 

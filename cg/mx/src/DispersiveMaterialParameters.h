@@ -10,15 +10,33 @@
 #include "DBase.hh"
 using namespace DBase;
 
-
 class DispersiveMaterialParameters
 {
 public:
+
 
   enum MaterialTypeEnum
   {
     isotropic,
     bianisotropic
+  };
+  
+  enum PolarizationEnum
+  {
+    noPolarization,
+    ExEyHzPolarization,        // TEz 
+    EyEzHxPolarization,
+    ExEzHyPolarization,
+    HyHzExPolarization,
+    HxHzEyPolarization,
+    HxHyEzPolarization
+  };
+  
+  // We have choices when solving the dispersion relation
+  enum DispersionRelationOptionEnum
+  {
+    computeComplexFrequency=0,
+    computeComplexWaveNumber
   };
   
 
@@ -29,10 +47,13 @@ public:
   DispersiveMaterialParameters& operator=( const DispersiveMaterialParameters& x);
 
   // diplay parameters
-  int display( FILE *file = stdout ) const;
+  int display( FILE *file = stdout, const aString & label = nullString ) const;
 
   // Evaluate the real and imaginary parts of epsHat(omega) and nHat(omega) 
   int evalEpsAndN( const real omega, real & epsHatr, real & epsHati, real & nHatr, real & nHati ) const;
+
+  // Evaluate the eigenvalues for a BA material 
+  int evalBianisotropicEigenValues( int numberOfDimensions, real & reLambda, real & imLambda );
 
   // Evaluate the real and imaginary parts of the BA material tensor, K(iBA,jBA) iBA=1,2,3,  jBA=1,2,3
   int evalMaterialTensor( const real omega, real & kHatr, real & kHati, const int iBA, const int jBA ) const;
@@ -55,12 +76,33 @@ public:
   // computeDispersionRelation( const real cc, const real eps, const real mu, const real k, 
   //                            real & reS, real & imS );
 
-  
-  // Return the isotropic parameters
-  int getIsotropicParameters( int & Np,  real & epsInf, RealArray & modelParams ) const;
+  int findPeriodicSolution( real kv[3], real & sr, real & si, real & kr, real & ki, real evr[6], real evi[6], RealArray & chi );
+
+  int getBianisotropicMaterialMatrix( RealArray & K0 ) const;
+  int getBianisotropicMaterialMatrixInverse( RealArray & K0i );
+
+  IntegerArray& getBianisotropicNp() const;
+
+  RealArray & getBianisotropicGDMParameters() const;
+
 
   // Return the bi-anisotropic parameters 
   int getBianisotropicParameters( RealArray & K0, RealArray & bianisotropicParameters, IntegerArray & Np );
+
+  int getBianisotropicPlaneWaveSolution( const real kv[3],
+					 real & skr, real & ski,
+					 real evr[6], real evi[6],
+                                         RealArray & chi,
+					 PolarizationEnum polarization = noPolarization );
+  
+  int getBianisotropicDispersivePlaneWaveSolution( const real kv[3],
+                                                   real & skr, real & ski,
+                                                   real evr[6], real evi[6],
+                                                   RealArray & chi,
+                                                   PolarizationEnum polarization = noPolarization );
+
+  // Return the isotropic parameters
+  int getIsotropicParameters( int & Np,  real & epsInf, RealArray & modelParams ) const;
 
   real getEpsInf() const;
   real getMuInf() const;
@@ -70,12 +112,21 @@ public:
   // Return the material name 
   aString getMaterialName() const;
 
+  // Return the material type
+  MaterialTypeEnum getMaterialType() const;
+
+  bool isDispersiveMaterial() const;
+
   // Plot dispersive properties versus frequency or wavelength
   int update( GenericGraphicsInterface & gi );
 
   
   // read dispersive material parameters from a file 
   int readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested = -1 );
+
+  int setDebug( int debugFlag );
+
+  int setDispersionRelationComputeOption( DispersionRelationOptionEnum computeOption );
 
   int setEpsInf( const real epsInf );
   int setMuInf( const real muInf );
@@ -102,6 +153,8 @@ public:
   // write parameters to a material database file
   int writeToFile( const aString & fileName );
 
+
+  static void myMatrixMultiply( RealArray & a, RealArray & b, RealArray & c );
 
   // Data members -- make public for now
   public:

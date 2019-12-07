@@ -146,19 +146,39 @@
     #End
 
    endLoops()
- else
+else
+   ! **********  rectangular grid **********
    if( axis.eq.0 )then
      et1=ey
      et2=ez
+     hn1=hx
    else if( axis.eq.1 )then
      et1=ex
      et2=ez
+     hn1=hy
    else
      et1=ex
      et2=ey
+     hn1=hz
    end if
 
-   beginLoops()
+   if( solveForAllFields.ne.0 )then
+
+     ! PEC boundary : t.E=0, n.H=0 
+     #If #FORCING == "none" 
+      beginLoops()
+        u(i1,i2,i3,et1)=0.
+        u(i1,i2,i3,et2)=0.
+        u(i1,i2,i3,hn1)=0.
+      endLoops()
+     #Else
+       ! finish me 
+       stop 8265
+     #End
+
+   else ! not solveForAllFields
+
+    beginLoops()
      #If #FORCING == "twilightZone"
        call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1    ,i2    ,i3,0),xy(i1    ,i2    ,i3,1),t, u0,v0,w0)
        uv(ex)=u0
@@ -199,7 +219,8 @@
       end if
      #End
 
-   endLoops()
+    endLoops()
+  end if ! not solveForAllFields (rectangular)
  end if
 
 #endMacro
@@ -351,68 +372,89 @@
   end if ! **** END OLD WAY
 
  else
+   ! ************** Rectangular grids ******************
+
    if( axis.eq.0 )then
      et1=ey
      et2=ez
+     hn1=hx
    else if( axis.eq.1 )then
      et1=ex
      et2=ez
+     hn1=hy
    else
      et1=ex
      et2=ey
+     hn1=hz 
    end if
 
-   beginLoops()
-     #If #FORCING == "twilightZone"
-       call ogf3dfo(ep,ex,ey,ez,fieldOption,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, u0,v0,w0)
-       uv(ex)=u0
-       uv(ey)=v0
-       uv(ez)=w0
-       u(i1,i2,i3,et1)=uv(et1)
-       u(i1,i2,i3,et2)=uv(et2)
-     #Elif #FORCING == "none"
-       u(i1,i2,i3,et1)=0.
-       u(i1,i2,i3,et2)=0.
-     #Elif #FORCING == "planeWaveBoundaryForcing"
-       ! -- Boundary Forcing : if we solve for scattered field directly ----
-       x0=xy(i1,i2,i3,0)
-       y0=xy(i1,i2,i3,1)
-       z0=xy(i1,i2,i3,2)
-       if( .true. )then ! *new way*
-       
-         numberOfTimeDerivatives=0+fieldOption
-         getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,uv,pbv) 
+   if( solveForAllFields.ne.0 )then
 
-       else if( fieldOption.eq.0 )then
-         uv(ex)=-planeWave3Dex(x0,y0,z0,t)
-         uv(ey)=-planeWave3Dey(x0,y0,z0,t)
-         uv(ez)=-planeWave3Dez(x0,y0,z0,t)
-       else
-        ! we are assigning time derivatives (sosup)
-         uv(ex)=-planeWave3Dext(x0,y0,z0,t)
-         uv(ey)=-planeWave3Deyt(x0,y0,z0,t)
-         uv(ez)=-planeWave3Dezt(x0,y0,z0,t)
-       end if
-       u(i1,i2,i3,et1)=uv(et1)
-       u(i1,i2,i3,et2)=uv(et2)
-     #Else
-       stop 52785
-     #End
-
-     ! Set tau.Pv = 0 for dispersive models
+     ! PEC boundary : t.E=0, n.H=0 
      #If #FORCING == "none" 
-      ! For now only do case with no forcing ***finish me***
-      if( dispersionModel.ne.noDispersion )then
-        do iv=0,numberOfPolarizationVectors-1
-          m1 = iv*nd + mod(axis+1,nd) ! tangential component
-          m2 = iv*nd + mod(axis+2,nd) ! tangential component
-          p(i1,i2,i3,m1)=0.
-          p(i1,i2,i3,m2)=0.
-        end do      
-      end if
+      beginLoops()
+        u(i1,i2,i3,et1)=0.
+        u(i1,i2,i3,et2)=0.
+        u(i1,i2,i3,hn1)=0.
+      endLoops()
+     #Else
+       ! finish me 
+       stop 8266
      #End
 
-   endLoops()
+   else ! not solveForAllFields
+     beginLoops()
+       #If #FORCING == "twilightZone"
+         call ogf3dfo(ep,ex,ey,ez,fieldOption,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, u0,v0,w0)
+         uv(ex)=u0
+         uv(ey)=v0
+         uv(ez)=w0
+         u(i1,i2,i3,et1)=uv(et1)
+         u(i1,i2,i3,et2)=uv(et2)
+       #Elif #FORCING == "none"
+         u(i1,i2,i3,et1)=0.
+         u(i1,i2,i3,et2)=0.
+       #Elif #FORCING == "planeWaveBoundaryForcing"
+         ! -- Boundary Forcing : if we solve for scattered field directly ----
+         x0=xy(i1,i2,i3,0)
+         y0=xy(i1,i2,i3,1)
+         z0=xy(i1,i2,i3,2)
+         if( .true. )then ! *new way*
+         
+           numberOfTimeDerivatives=0+fieldOption
+           getBoundaryForcing3D(x0,y0,z0,t,numberOfTimeDerivatives,uv,pbv) 
+  
+         else if( fieldOption.eq.0 )then
+           uv(ex)=-planeWave3Dex(x0,y0,z0,t)
+           uv(ey)=-planeWave3Dey(x0,y0,z0,t)
+           uv(ez)=-planeWave3Dez(x0,y0,z0,t)
+         else
+          ! we are assigning time derivatives (sosup)
+           uv(ex)=-planeWave3Dext(x0,y0,z0,t)
+           uv(ey)=-planeWave3Deyt(x0,y0,z0,t)
+           uv(ez)=-planeWave3Dezt(x0,y0,z0,t)
+         end if
+         u(i1,i2,i3,et1)=uv(et1)
+         u(i1,i2,i3,et2)=uv(et2)
+       #Else
+         stop 52785
+       #End
+  
+       ! Set tau.Pv = 0 for dispersive models
+       #If #FORCING == "none" 
+        ! For now only do case with no forcing ***finish me***
+        if( dispersionModel.ne.noDispersion )then
+          do iv=0,numberOfPolarizationVectors-1
+            m1 = iv*nd + mod(axis+1,nd) ! tangential component
+            m2 = iv*nd + mod(axis+2,nd) ! tangential component
+            p(i1,i2,i3,m1)=0.
+            p(i1,i2,i3,m2)=0.
+          end do      
+        end if
+       #End
+  
+     endLoops()
+   end if ! not solveForAllFields
  end if
 
 #endMacro
@@ -441,10 +483,33 @@
     - (1./3.)*((dr1)**3*urrr+3.*(dr1)**2*(dr2)*urrs+3.*(dr1)*(dr2)**2*urss+(dr2)**3*usss)
 #endMacro
 
+! PEC corner: Assign point C
+!   
+!   Dx(Ex)=0, Ey=Ez=0
+!   Hx=0 Dx(Hy,Hz)=0 
+!            |
+!            |
+!            |
+!        +---+-------------------
+!            |   Ex=Ez=0, D_y(Ey)=0 ,  Hy=0 D_y(Hx,Hz) = 0 
+!        C   +
+!
 #beginMacro extrapCornerSymmetry2d(u,i1,i2,i3,ks1,ks2)
-  u(i1-ks1,i2-ks2,i3,ex)=2.*u(i1,i2,i3,ex) - u(i1+ks1,i2+ks2,i3,ex)
-  u(i1-ks1,i2-ks2,i3,ey)=2.*u(i1,i2,i3,ey) - u(i1+ks1,i2+ks2,i3,ey)
-  u(i1-ks1,i2-ks2,i3,hz)=                    u(i1+ks1,i2+ks2,i3,hz)
+  if( solveForAllFields.eq.0 )then
+    u(i1-ks1,i2-ks2,i3,ex)=2.*u(i1,i2,i3,ex) - u(i1+ks1,i2+ks2,i3,ex)
+    u(i1-ks1,i2-ks2,i3,ey)=2.*u(i1,i2,i3,ey) - u(i1+ks1,i2+ks2,i3,ey)
+    u(i1-ks1,i2-ks2,i3,hz)=                    u(i1+ks1,i2+ks2,i3,hz)
+  else
+
+    u(i1-ks1,i2-ks2,i3,ex)=2.*u(i1,i2,i3,ex) - u(i1+ks1,i2+ks2,i3,ex)
+    u(i1-ks1,i2-ks2,i3,ey)=2.*u(i1,i2,i3,ey) - u(i1+ks1,i2+ks2,i3,ey)
+    u(i1-ks1,i2-ks2,i3,ez)=                    u(i1+ks1,i2+ks2,i3,ez)
+
+    u(i1-ks1,i2-ks2,i3,hx)=2.*u(i1,i2,i3,hx) - u(i1+ks1,i2+ks2,i3,hx)
+    u(i1-ks1,i2-ks2,i3,hy)=2.*u(i1,i2,i3,hy) - u(i1+ks1,i2+ks2,i3,hy)
+    u(i1-ks1,i2-ks2,i3,hz)=                    u(i1+ks1,i2+ks2,i3,hz)
+
+  end if
 #endMacro
 
 ! ===================================================================================
@@ -3652,49 +3717,72 @@
 
       #Elif #GRIDTYPE == "rectangular"
 
-       #If #FORCING == "twilightZone"
-         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,i3,0),xy(i1,i2,i3,1),t, u0,v0,w0)
 
-         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2-js2,i3,0),xy(i1,i2-js2,i3,1),t, um,vm,wm)
-         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2+js2,i3,0),xy(i1,i2+js2,i3,1),t, up,vp,wp)
-         g1=um-2.*u0+up
-         g2=vm-vp
-         g3=wm-wp
-
-         u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+js2,i3,ex) +g1
-         u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)+g2
-         u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)+g3
-
-
-         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-js1,i2,i3,0),xy(i1-js1,i2,i3,1),t, um,vm,wm)
-         call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+js1,i2,i3,0),xy(i1+js1,i2,i3,1),t, up,vp,wp)
-         g1=um-up
-         g2=vm-2.*v0+vp
-         g3=wm-wp
-
-         u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex) +g1
-         u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,i2,i3,ey) +g2
-         u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)+g3
-
-       #Elif #FORCING == "none"
+       if( solveForAllFields.ne.0 ) then
+         ! top  and bottom 
          u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+js2,i3,ex)
-         u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)
+         u(i1,i2-js2,i3,ey)=                  u(i1,i2+js2,i3,ey)
+         u(i1,i2-js2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1,i2+js2,i3,ez)
 
-         u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex)
+         u(i1,i2-js2,i3,hx)=                  u(i1,i2+js2,i3,hx)  ! Hx is even symmetry
+         u(i1,i2-js2,i3,hy)=2.*u(i1,i2,i3,hy)-u(i1,i2+js2,i3,hy)
+         u(i1,i2-js2,i3,hz)=                  u(i1,i2+js2,i3,hz)  ! Hz is even symmetry
+        
+         ! left and right 
+         u(i1-js1,i2,i3,ex)=                  u(i1+js1,i2,i3,ex)
          u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,i2,i3,ey)
+         u(i1-js1,i2,i3,ez)=2.*u(i1,i2,i3,ez)-u(i1+js1,i2,i3,ez)
 
-         u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)  ! Hz is even symmetry
-         u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)  ! Hz is even symmetry
-       #Else
-         stop 6767
-       #End
+         u(i1-js1,i2,i3,hx)=2.*u(i1,i2,i3,hx)-u(i1+js1,i2,i3,hx)
+         u(i1-js1,i2,i3,hy)=                  u(i1+js1,i2,i3,hy)  ! Hy is even symmetry
+         u(i1-js1,i2,i3,hz)=                  u(i1+js1,i2,i3,hz)  ! Hz is even symmetry
+
+       else
+
+         #If #FORCING == "twilightZone"
+           call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2,i3,0),xy(i1,i2,i3,1),t, u0,v0,w0)
+  
+           call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2-js2,i3,0),xy(i1,i2-js2,i3,1),t, um,vm,wm)
+           call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1,i2+js2,i3,0),xy(i1,i2+js2,i3,1),t, up,vp,wp)
+           g1=um-2.*u0+up
+           g2=vm-vp
+           g3=wm-wp
+  
+           u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+js2,i3,ex) +g1
+           u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)+g2
+           u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)+g3
+  
+  
+           call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1-js1,i2,i3,0),xy(i1-js1,i2,i3,1),t, um,vm,wm)
+           call ogf2dfo(ep,ex,ey,hz,fieldOption,xy(i1+js1,i2,i3,0),xy(i1+js1,i2,i3,1),t, up,vp,wp)
+           g1=um-up
+           g2=vm-2.*v0+vp
+           g3=wm-wp
+  
+           u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex) +g1
+           u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,i2,i3,ey) +g2
+           u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)+g3
+  
+         #Elif #FORCING == "none"
+           u(i1,i2-js2,i3,ex)=2.*u(i1,i2,i3,ex)-u(i1,i2+js2,i3,ex)
+           u(i1,i2-js2,i3,ey)=u(i1,i2+js2,i3,ey)
+  
+           u(i1-js1,i2,i3,ex)=u(i1+js1,i2,i3,ex)
+           u(i1-js1,i2,i3,ey)=2.*u(i1,i2,i3,ey)-u(i1+js1,i2,i3,ey)
+  
+           u(i1,i2-js2,i3,hz)=u(i1,i2+js2,i3,hz)  ! Hz is even symmetry
+           u(i1-js1,i2,i3,hz)=u(i1+js1,i2,i3,hz)  ! Hz is even symmetry
+         #Else
+           stop 6767
+         #End
+  
+       end if  ! not solveForAllFields
 
       #Else
         stop 4578
       #End
 
-
-    end do
+    end do  ! end do m=1,numberOfGhostPoints
     
     ! assign u(i1-is1,i2,i3,ev) and u(i1,i2-is2,i3,ev)
     #If #GRIDTYPE == "curvilinear"
@@ -3717,12 +3805,14 @@
       ! Now do corner (C) points
           ! assign 3 ghost in both directions
      if( .true. )then
+
       ! *new way for general order* *wdh* 2016/01/23
       do m2=1,numberOfGhostPoints
       do m1=1,numberOfGhostPoints
        extrapCornerSymmetry2d(u,i1,i2,i3,m1*is1,m2*is2)
       end do
       end do
+
     else
       ! old way
       u(i1-  is1,i2-  is2,i3,ex)=-u(i1+  is1,i2+  is2,i3,ex)
@@ -3804,6 +3894,7 @@
         side,axis,useForcing,ex,ey,ez,hx,hy,hz,useWhereMask,side1,side2,side3,m1,m2,m3,bc1,bc2,\
         forcingOption,fieldOption,boundaryForcingOption
  integer polarizationOption,dispersionModel
+ integer solveForAllFields
 
  real dt,kx,ky,kz,eps,mu,c,cc,twoPi,slowStartInterval,ssf,ssft,ssftt,ssfttt,ssftttt,tt
 
@@ -4079,6 +4170,7 @@
  dispersionModel      =ipar(34)
 
  numberOfPolarizationVectors=ipar(36)
+ solveForAllFields    = ipar(38)
 
  dx(0)                =rpar(0)
  dx(1)                =rpar(1)
@@ -4118,6 +4210,11 @@
  sr                   =rpar(37)  ! Re(s)
  si                   =rpar(38)  ! Im(s) 
 
+ if( t.le.2*dt) then
+   write(*,'("++++++ bcMxCorners: solveForAllFields",i2)') solveForAllFields
+ end if
+ ! solveForAllFields=0
+ 
  ! if( t.le.3*dt )then
  !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si
  ! end if

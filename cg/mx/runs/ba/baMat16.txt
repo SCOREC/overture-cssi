@@ -1,0 +1,16 @@
+# BA test material 
+#  This material should have 4 distinct eigenvalues 
+#    K0(1,6) = K0(6,10) = .1 
+name="baMat16";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="MKS";
+# omegaScale=1.00000000000000e+00;
+omegaScale=299792458e+7;
+bianistropicK0=[  1.,  0.,  0.,  0.,  0.,  .1, \
+                  0.,  1.,  0.,  0.,  0.,  0., \
+                  0.,  0.,  1.,  0.,  0.,  0., \
+                  0.,  0.,  0.,  1.,  0.,  0., \
+                  0.,  0.,  0.,  0.,  1.,  0., \
+                  .1,  0.,  0.,  0.,  0.,  1. ];
+

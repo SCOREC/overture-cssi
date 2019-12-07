@@ -237,6 +237,12 @@ extern "C"
 //        getErrors.bC and assignBoundaryConditions.bC 
 // ====================================================================================
 
+
+//------------------------------------------------------------------------------------
+// Macro: evaluate the parameters defining the BA plane wave solution	
+//------------------------------------------------------------------------------------
+
+
 //! local function to compute errors for the staggered grid DSI schemes
 void
 computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, realArray &ue, realArray &uep,
@@ -426,6 +432,11 @@ getErrors( int current, real t, real dt )
   // Range C(ex,hz);
   // const int numberOfComponents= cgfields[0][0].getLength(3);
     const int & numberOfComponents= dbase.get<int>("numberOfComponents");
+    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+  // total number of polarization components per grid 
+    const IntegerArray & totalNumberOfPolarizationComponents =
+        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
 
     int & numberOfErrorComponents= dbase.get<int>("numberOfErrorComponents");
 
@@ -448,7 +459,7 @@ getErrors( int current, real t, real dt )
   // maximumError.redim(numberOfSequences); 
     maximumError.redim(numErr);
 
-    if( method==nfdtd || method==yee )
+    if( method==nfdtd || method==yee || method==bamx )
     {
     }
     else if( method==sosup )
@@ -611,7 +622,7 @@ getErrors( int current, real t, real dt )
         int includeGhost=1;
         bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
         if( !ok ) continue;  // no communication allowed after this point : check this ******************************************************
-        if( method==nfdtd || method==sosup ) 
+        if( method==nfdtd || method==sosup || method==bamx ) 
         {
             Ie1 = Ih1 = I1;
             Ie2 = Ih2 = I2;
@@ -1091,7 +1102,15 @@ getErrors( int current, real t, real dt )
         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
         int numberOfPolarizationVectors = 0;
         const int domain = cg.domainNumber(grid);
-        numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+        if( method==nfdtd )
+            numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+        else if( method==bamx )
+        {
+            numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+            printF("getERR: BAMX: numberOfPolarizationVectors=%d\n",  numberOfPolarizationVectors);
+
+        }
+        
     // Each grid may or may not have dispersion model: 
         const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
         if( dispersionModel == noDispersion )
@@ -1141,7 +1160,7 @@ getErrors( int current, real t, real dt )
 #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
 #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
 
-        const int numberOfGhost=method==nfdtd ? orderOfAccuracyInSpace/2 : 0;
+        const int numberOfGhost= (method==nfdtd  || method==bamx ) ? orderOfAccuracyInSpace/2 : 0;
             
     // Range C(ex,hz);
 
@@ -1167,7 +1186,111 @@ getErrors( int current, real t, real dt )
             {
                 if( numberOfDimensions==2 )
                 {
-                    if( localDispersionModel == noDispersion )
+                    if( method==bamx )
+                    {
+                        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                            real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                            real sr,si,evr[6],evi[6];
+                            RealArray chi;
+                            DispersiveMaterialParameters::PolarizationEnum polarization =
+                !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                DispersiveMaterialParameters::noPolarization;
+                            DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                            dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                            real kr=1., ki=0.;
+                            if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                            {
+                                dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                            }
+                            else
+                            {
+                // compute the complex wave number given s 
+                                sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                    cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                    ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                if( isPeriodic )
+                                {
+                  // -- for periodic problems we need to find a special s so that kr is an integer
+                                    if( !dmp.dbase.has_key("sPeriodic") )
+                                    {
+                                        real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                        dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                    // Save the special s 
+                                        sPeriodic[0]=sr; sPeriodic[1]=si;
+                                    }
+                                    else
+                                    {
+                                        real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                        sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                    }
+                                }
+                                kr = sr; ki= si;
+                                dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                            }
+                            if( t<=2.*dt ) 
+                            {
+                                printF("BA plane wave Errors: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                              sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                ::display(chi,"chi","%9.2e ");
+                            }
+            // DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+            // real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+            // real sr,si,evr[6],evi[6];
+            // RealArray chi;
+            // DispersiveMaterialParameters::PolarizationEnum polarization =
+            //   !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+            //   DispersiveMaterialParameters::noPolarization;
+            // DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+            // 	dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+            // dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+            // real kr=1., ki=0.;
+            // if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+            // {
+            // 	dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+            // }
+            // else
+            // {
+            // 	// compute the complex wave number given s 
+            // 	sr = 0.; si= twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now *MUST MATCH OTHERS
+            // 	kr = sr; ki= si;
+            // 	dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+            // 	printF(" Using k = %e + %e I\n",kr,ki);
+            // }
+            // // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+            // printF("BA plane wave: getErrors: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I, evr=[%g,%g,%g,%g,%g,%g]\n",
+            // 	     sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                        if( !solveForAllFields )
+                        {
+      	// TEz mode: 
+                  	evr[2]=evr[5]; evi[2]=evi[5];
+                        }
+            // const real expt  =exp(sr*tE);  
+                        RealArray kDotx(I1,I2,I3);
+                        kDotx =  kv[0]*xe +kv[1]*ye;
+                        for( int m=ex; m<=hz; m++ )
+                        {
+                  	errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
+                                       	                     (sin( kr*kDotx + si*t )*evr[m] +
+                                    			      cos( kr*kDotx + si*t )*evi[m]) *exp( sr*t - ki*kDotx);  // ** could optimize **
+      	// errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye - omega*t )*ev[m];
+                        }
+                        if( dmp.isDispersiveMaterial() )
+                        {
+                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                            for( int m=0; m<numPolarizationTerms; m++ )
+                            {
+                                errPolarization(Ie1,Ie2,Ie3,m) = pLocal(Ie1,Ie2,Ie3,m) -
+                                                                                    ( sin( kr*kDotx + si*t )*chi(m,0) +
+                                                                                        cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx); // ** could optimize **
+                            }
+      	// printF("\n @@@@ getErr: BAMX plane wave: saved polarization errors at t=%8.2e, numPolarizationTerms=%d\n",t,numPolarizationTerms);
+                        }
+                    }
+                    else if( localDispersionModel == noDispersion )
                     {
                         erre(Ie1,Ie2,Ie3,ex)  = ue(Ie1,Ie2,Ie3,ex)-exTrue(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),tE);
                         erre(Ie1,Ie2,Ie3,ey)  = ue(Ie1,Ie2,Ie3,ey)-eyTrue(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),tE);
@@ -1225,7 +1348,86 @@ getErrors( int current, real t, real dt )
                 }
                 else // 3D
                 {
-                    if( solveForElectricField )
+                    if( method==bamx )
+                    {
+                        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                            real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+                            real sr,si,evr[6],evi[6];
+                            RealArray chi;
+                            DispersiveMaterialParameters::PolarizationEnum polarization =
+                !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
+                                DispersiveMaterialParameters::noPolarization;
+                            DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
+                                dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+                            dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
+                            real kr=1., ki=0.;
+                            if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
+                            {
+                                dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+                            }
+                            else
+                            {
+                // compute the complex wave number given s 
+                                sr = 0.; si= -twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now 
+                                bool isPeriodic = cg[grid].isPeriodic(axis1)==Mapping::derivativePeriodic &&
+                                    cg[grid].isPeriodic(axis2)==Mapping::derivativePeriodic  &&
+                                    ( cg.numberOfDimensions()==3 ||  cg[grid].isPeriodic(axis3)==Mapping::derivativePeriodic );
+                                if( isPeriodic )
+                                {
+                  // -- for periodic problems we need to find a special s so that kr is an integer
+                                    if( !dmp.dbase.has_key("sPeriodic") )
+                                    {
+                                        real *sPeriodic = dmp.dbase.put<real[2]>("sPeriodic");
+                                        dmp.findPeriodicSolution( kv, sr,si,kr,ki,evr,evi,chi );
+                    // Save the special s 
+                                        sPeriodic[0]=sr; sPeriodic[1]=si;
+                                    }
+                                    else
+                                    {
+                                        real *sPeriodic = dmp.dbase.get<real[2]>("sPeriodic");
+                                        sr=sPeriodic[0]; si=sPeriodic[1]; // use previously found s 
+                                    }
+                                }
+                                kr = sr; ki= si;
+                                dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+                // printF(" Using k = %e + %e I (s=%e + %e I)\n",kr,ki,sr,si);
+                            }
+                            if( t<=2.*dt ) 
+                            {
+                                printF("BA plane wave Errors: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I,  evr=[%g,%g,%g,%g,%g,%g]\n",
+                                              sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                                ::display(chi,"chi","%9.2e ");
+                            }
+            // DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+            // real kv[3]={twoPi*kx,twoPi*ky,twoPi*kz}; // 
+            // real sr,si,evr[6],evi[6];
+            // RealArray chi;
+            // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi );
+            // printF("BA plane wave: getErrors: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g]\n",
+            // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+            // const real expt  =exp(sr*tE);  
+                        RealArray kDotx(I1,I2,I3);
+                        kDotx =  kv[0]*xe + kv[1]*ye + kv[2]*ze;
+                        for( int m=ex; m<=hz; m++ )
+                        {
+                  	errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
+                                       	                     (sin( kr*kDotx + si*t )*evr[m] +
+                                    			      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx); 
+      	// errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye +kv[2]*ze - omega*tE )*ev[m];
+                        }
+                        if( dmp.isDispersiveMaterial() )
+                        {
+                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                            for( int m=0; m<numPolarizationTerms; m++ )
+                            {
+                                errPolarization(Ie1,Ie2,Ie3,m) = pLocal(Ie1,Ie2,Ie3,m) -
+                                                                                    ( sin( kr*kDotx + si*t )*chi(m,0) +
+                                                                                        cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx); 
+                            }
+                        }
+                    }
+                    else if( solveForElectricField )
                     {
                         if( localDispersionModel == noDispersion )
                         {
@@ -1272,7 +1474,7 @@ getErrors( int current, real t, real dt )
                             errLocal(Ie1,Ie2,Ie3,ezt)  = uLocal(Ie1,Ie2,Ie3,ezt)-eztTrue3d(xe(Ie1,Ie2,Ie3),ye(Ie1,Ie2,Ie3),ze(Ie1,Ie2,Ie3),tE);
                         }
                     }
-                    if( solveForMagneticField )
+                    if( solveForMagneticField && method!=bamx )
                     {
                         errh(Ih1,Ih2,Ih3,hx)=uh(Ih1,Ih2,Ih3,hx)-hxTrue3d(xh(Ih1,Ih2,Ih3),yh(Ih1,Ih2,Ih3),zh(Ih1,Ih2,Ih3),tH);
                         errh(Ih1,Ih2,Ih3,hy)=uh(Ih1,Ih2,Ih3,hy)-hyTrue3d(xh(Ih1,Ih2,Ih3),yh(Ih1,Ih2,Ih3),zh(Ih1,Ih2,Ih3),tH);
@@ -1295,6 +1497,21 @@ getErrors( int current, real t, real dt )
         // display(ee,"exact solution for error computation");
                 Index J1,J2,J3;
                 int i1,i2,i3;
+                if( solveForAllFields )
+                {
+                    printF("Get errors for all fields, t=%e\n",tE);
+                    assert( method==bamx );
+                    Index I1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                    Index I2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                    Index I3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                    Range C=numberOfComponents;
+                    bool isRectangular=false;
+                    OV_GET_SERIAL_ARRAY(real,cg[grid].vertex(),xLocal);
+                    OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                    RealArray ue(I1,I2,I3,C);
+                    e.gd( ue, xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,C,tE);
+                    errLocal(I1,I2,I3,C) = uLocal(I1,I2,I3,C)- ue(I1,I2,I3,C);
+                }
                 if( mg.numberOfDimensions()==2 )
                 {
                     J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
@@ -1329,7 +1546,7 @@ getErrors( int current, real t, real dt )
                         real y0 = XHP(i1,i2,i3,1);
                         ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-e(x0,y0,0.,hz,tH);
                     }
-                    if( localDispersionModel != noDispersion )
+                    if( localDispersionModel != noDispersion && method==nfdtd )
                     {         
             // --- error in dispersion variables ---
                         realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1342,6 +1559,23 @@ getErrors( int current, real t, real dt )
                                 const int pc= iv*numberOfDimensions;
                                 errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  )- e(x0,y0,0.,pxc+pc,tE);
                                 errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1)- e(x0,y0,0.,pyc+pc,tE);
+                            }
+                        }
+                    }
+                    else if( localDispersionModel != noDispersion && method==bamx )
+                    {         
+            // BAXM -- errors in polarization components
+                        printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d\n",numberOfPolarizationVectors);
+                        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            real x0 = XEP(i1,i2,i3,0);
+                            real y0 = XEP(i1,i2,i3,1);
+                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                            for( int m=0; m<numPolarizationTerms; m++ )
+                            {
+                                const int pc= hz + m + 1;  // TZ solution sits here 
+                                errPolarization(i1,i2,i3,m) = pLocal(i1,i2,i3,m)- e(x0,y0,0.,pc,tE);
                             }
                         }
                     }
@@ -1487,14 +1721,26 @@ getErrors( int current, real t, real dt )
                 real phiEy, phiEyt, phiPy[10];
                 real phiEz, phiEzt, phiPz[10];
                 real phiHz, phiHzt;
+                real phiHx, phiHy;
                     if( dispersionModel==noDispersion )
                     {
             // --- non-dispersive ----
                         if( numberOfDimensions==2 )
                         {
+              // TEz mode: 
+              //    Hz =    amp1*cos(fx*x)*cos(fy*y)*cos(omega*t) 
+              //    Ex = -(fy/(mu*omega) * amp1*cos(fx*x)*sin(fy*y)*sin(omega*t)
+              //    Ey =  (fx/(mu*omega) * amp1*sin(fx*x)*cos(fy*y)*sin(omega*t)
                             phiEx=(-fy/(omega))*sin((omega)*(tE)); phiExt= (-fy/(omega))*(omega)*cos((omega)*(tE));
                             phiEy=( fx/(omega))*sin((omega)*(tE)); phiEyt= ( fx/(omega))*(omega)*cos((omega)*(tE));
                             phiHz=cos((omega)*(tH)); phiHzt=-(omega)*sin((omega)*(tH));
+              // TMz mode: (independent of TEz mode)
+              //    Ez =    amp2*sin(fx*x)*sin(fy*y)*sin(omega*t) 
+              //    Hx =  (fy/(mu*omega) * amp2*sin(fx*x)*cos(fy*y)*cos(omega*t)
+              //    Hy = -(fx/(mu*omega) * amp2*cos(fx*x)*sin(fy*y)*cos(omega*t)
+                            phiEz=sin((omega)*(tE)); 
+                            phiHx= ( fy/(omega))*cos((omega)*(tE));
+                            phiHy= (-fx/(omega))*cos((omega)*(tE));
                         }
                         else
                         {
@@ -1585,33 +1831,56 @@ getErrors( int current, real t, real dt )
                 {
                     if( numberOfDimensions==2 )
                     {
-                        Index J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
-                        Index J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
-                        Index J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
-                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        Index J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                        Index J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                        Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                        if( solveForAllFields )
                         {
-                            xd=X0(i1,i2,i3)-x0;
-                            yd=X1(i1,i2,i3)-y0;
-                            ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*phiHz;
-              // ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+                  	OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                  	FOR_3D(i1,i2,i3,J1,J2,J3)
+                  	{
+                    	  real xde=X0(i1,i2,i3)-x0;
+                    	  real yde=X1(i1,i2,i3)-y0;
+      	  // TEZ mode 
+                    	  errLocal(i1,i2,i3,ex) = uLocal(i1,i2,i3,ex) - cos(fx*xde)*sin(fy*yde)*phiEx;  
+                    	  errLocal(i1,i2,i3,ey) = uLocal(i1,i2,i3,ey) - sin(fx*xde)*cos(fy*yde)*phiEy;  
+                    	  errLocal(i1,i2,i3,hz) = uLocal(i1,i2,i3,hz) - cos(fx*xde)*cos(fy*yde)*phiHz;
+      	  // TMZ mode:  (independent from TEz -- could have a different amplitude)
+                    	  errLocal(i1,i2,i3,hx) = uLocal(i1,i2,i3,hx) - sin(fx*xde)*cos(fy*yde)*phiHx;  
+                    	  errLocal(i1,i2,i3,hy) = uLocal(i1,i2,i3,hy) - cos(fx*xde)*sin(fy*yde)*phiHy;  
+                    	  errLocal(i1,i2,i3,ez) = uLocal(i1,i2,i3,ez) - sin(fx*xde)*sin(fy*yde)*phiEz;
+                  	}
                         }
-                        J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-                        J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-                        J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-                        FOR_3(i1,i2,i3,J1,J2,J3)
+                        else
                         {
-                            xd=X0(i1,i2,i3)-x0;
-                            yd=X1(i1,i2,i3)-y0;
-                            ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*phiEx;  // Ex.t = Hz.y
-                            ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*phiEy;  // Ey.t = - Hz.x
-              // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-              // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+                  	J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
+                  	J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
+                  	J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
+                  	FOR_3D(i1,i2,i3,J1,J2,J3)
+                  	{
+                    	  xd=X0(i1,i2,i3)-x0;
+                    	  yd=X1(i1,i2,i3)-y0;
+                    	  ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*phiHz;
+      	  // ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+                  	}
+                  	J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                  	J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                  	J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                  	FOR_3(i1,i2,i3,J1,J2,J3)
+                  	{
+                    	  xd=X0(i1,i2,i3)-x0;
+                    	  yd=X1(i1,i2,i3)-y0;
+                    	  ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*phiEx;  // Ex.t = Hz.y
+                    	  ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*phiEy;  // Ey.t = - Hz.x
+      	  // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+      	  // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+                  	}
                         }
                         if( localDispersionModel!=noDispersion )
                         {
               // -- dispersion model components --
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
-                            FOR_3(i1,i2,i3,J1,J2,J3)
+                            FOR_3D(i1,i2,i3,J1,J2,J3)
                             {
                                 xd=X0(i1,i2,i3)-x0;
                                 yd=X1(i1,i2,i3)-y0;
@@ -1627,7 +1896,7 @@ getErrors( int current, real t, real dt )
                         {
               // Compute errors in the time derivative
                             realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
-                            FOR_3(i1,i2,i3,J1,J2,J3)
+                            FOR_3D(i1,i2,i3,J1,J2,J3)
                             {
                                 real xde=X0(i1,i2,i3)-x0;
                                 real yde=X1(i1,i2,i3)-y0;
@@ -2156,7 +2425,7 @@ getErrors( int current, real t, real dt )
         }
         else if( knownSolutionOption==planeMaterialInterfaceKnownSolution )
         {
-            if( method==nfdtd || method==sosup )
+            if( method==nfdtd || method==sosup  || method==bamx )
             { 
                 realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
 
@@ -2173,8 +2442,42 @@ getErrors( int current, real t, real dt )
             const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
         // NOTE: dispersion version is a user defined known solution
                 assert( dispersionModel == noDispersion );
+                if( method==bamx )
+                {
+          // =================== BA MAXWELL ======================
+                    if( numberOfDimensions==2 )
+                    {
+                        assert( !solveForAllFields );  // finish me 
+                        z=0.;
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                  	x = XEP(i1,i2,i3,0);
+                  	y = XEP(i1,i2,i3,1);
+                            real u1,u2,u3;
+                            if( x < 0. ) // **fix me**
+                  	{
+                    	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                    	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                    	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                  	}
+                  	else
+                  	{
+                                u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                  	}
+                                ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                                ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                                ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+                        }
+                    }
+                    else
+                    {
+                        OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+                    }
+                }
         // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-                if( numberOfDimensions==2 )
+                else if( numberOfDimensions==2 )
                 {
                   z=0.;
                   if( grid < numberOfComponentGrids/2 )
@@ -2352,7 +2655,7 @@ getErrors( int current, real t, real dt )
             #else
                 const realSerialArray & ugLocal = ug; 
             #endif
-                if( method==nfdtd || method==sosup )
+                if( method==nfdtd || method==sosup  || method==bamx )
                 { // do this with scalar indexing to avoid a possible bug in P++
                     real *ugp = ugLocal.Array_Descriptor.Array_View_Pointer3;
                     const int ugDim0=ugLocal.getRawDataSize(0);
@@ -2593,10 +2896,22 @@ getErrors( int current, real t, real dt )
 
             errLocal(I1,I2,I3,C) = errLocal(I1,I2,I3,C) -  uLocal(I1,I2,I3,C);
 
-            if( numberOfPolarizationVectors>0 )
+            if( method==nfdtd && numberOfPolarizationVectors>0 )
             {
-                Range Pc = numberOfPolarizationVectors*numberOfDimensions;
-                errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+        	  Range Pc = numberOfPolarizationVectors*numberOfDimensions;
+        	  errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+            }
+            if( method==bamx )
+            {
+                const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+      	if(  numPolarizationTerms>0 )     
+      	{
+        	  Range Pc = numPolarizationTerms;
+        	  errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+
+	  // printF("\n @@@@@@@ getErr: save BAMX polarization errors, numberOfPolarizationVectors=%d, t=%8.2e @@@@@@@@ \n\n",
+	  // 	 numberOfPolarizationVectors,t);
+      	}
             }
             
         }
@@ -2627,7 +2942,7 @@ getErrors( int current, real t, real dt )
             computeDSIErrors( *this,mg, uh, uhpp, ue, uepp, errh, erre, solutionNorm, maximumError );
 #endif
         }
-        else if( radiusForCheckingErrors<= 0. && (method==nfdtd || method==sosup) && !energyOnly) 
+        else if( radiusForCheckingErrors<= 0. && (method==nfdtd || method==sosup || method==bamx) && !energyOnly) 
         {
             Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
             Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
@@ -2658,18 +2973,33 @@ getErrors( int current, real t, real dt )
 #undef U	    
           	    }
 
-
-                        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                        {
-                            const int pc= iv*numberOfDimensions;
-                            for( int dir=0; dir<numberOfDimensions; dir++ )
-                            {
-                                maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
-                                polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
-                            }
+          	    if( method==nfdtd )
+          	    {
+            	      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+            	      {
+            		const int pc= iv*numberOfDimensions;
+            		for( int dir=0; dir<numberOfDimensions; dir++ )
+            		{
+              		  maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
+              		  polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
+            		}
                             
-                        }
-                        
+            	      }
+          	    }
+          	    else if( method==bamx )
+          	    {
+                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+            	      for( int m=0; m<numPolarizationTerms; m++ )
+            	      {
+            		const int pc= hz + m + 1;  // TZ solution sits here 
+                                real maxErrP = fabs(errPolarization(i1,i2,i3,m));
+		// printF("t=%8.2e: (i1,i2)=(%d,%d) max-err P[%d] =%9.2e\n",t,i1,i2,m,maxErrP);
+            		
+            		maxErrPolarization(domain) = max(maxErrPolarization(domain),maxErrP);
+            		polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,m))); 
+            	      }
+          	    }
+          	    
                     }
           // ::display(pLocal,"pLocal","%8.1e ");
                 
@@ -2678,6 +3008,10 @@ getErrors( int current, real t, real dt )
                 
           	    
                 } // end for_3d
+
+      	if( method==bamx )
+        	  printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d (total, P and Q), maxErrPolarization(domain)=%9.3e\n",
+             		 numberOfPolarizationVectors,maxErrPolarization(domain));
 
                 if( debug & 2 )
                 {
@@ -2710,7 +3044,7 @@ getErrors( int current, real t, real dt )
                 Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
                 Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
           	    
-                if ( method==nfdtd )
+                if ( method==nfdtd  || method==bamx )
                 {
                     const real radiusForCheckingErrorsSquared=SQR(radiusForCheckingErrors);
             		
@@ -2736,16 +3070,24 @@ getErrors( int current, real t, real dt )
                                     solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
                         				
                                 }
-                                for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                {
-                                    const int pc= iv*numberOfDimensions;
-                                    for( int dir=0; dir<numberOfDimensions; dir++ )
-                                    {
-                                        maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
-                                        polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
-                                    }
+                                if( method==nfdtd )
+            		{
+              		  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+              		  {
+                		    const int pc= iv*numberOfDimensions;
+                		    for( int dir=0; dir<numberOfDimensions; dir++ )
+                		    {
+                  		      maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
+                  		      polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
+                		    }
                                 
-                                }
+              		  }
+            		}
+            		else
+            		{
+                                    OV_ABORT("finish me");
+            		}
+            		
                             }
                             else
                             {
@@ -2831,7 +3173,7 @@ getErrors( int current, real t, real dt )
 #ifdef USE_PPP
         computeErrorsAtGhost=false;
 #endif
-        if( computeErrorsAtGhost && !usePML && (method==nfdtd || method==sosup) )
+        if( computeErrorsAtGhost && !usePML && (method==nfdtd || method==sosup || method==bamx ) )
         {
             	      
       // compute error including ghost points
@@ -2953,8 +3295,15 @@ getErrors( int current, real t, real dt )
         for( int domain=0; domain<cg.numberOfDomains(); domain++ )
         {
             DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-            const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
-
+            int numberOfPolarizationVectors = 0;
+            if( method==nfdtd )
+      	numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+            else if( method==bamx )
+            {
+      	int grid=domain; // do this for now 
+      	numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+            }
+            
       // printF("getErrors: domain=%d, numPolarizationVectors=%i\n",domain,numberOfPolarizationVectors);
 
             maxErrPolarization(domain) = getMaxValue(maxErrPolarization(domain)); // fix me -- could do all at once
@@ -2971,7 +3320,7 @@ getErrors( int current, real t, real dt )
     }
     
 
-    if( method==nfdtd || method==yee || method==sosup )
+    if( method==nfdtd || method==yee || method==sosup || method==bamx )
     {
         realCompositeGridFunction & cgerr = *cgerrp;
         realCompositeGridFunction & cgu = cgfields[current];
@@ -3008,37 +3357,67 @@ getErrors( int current, real t, real dt )
         // ---- Compute Lp norm errors of polarization vectors ----
                 if( dispersionModel != noDispersion )
                 {
-                    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-                    {
-                        DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-                        const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
-                        if( numberOfPolarizationVectors>0 )
-                        {
-                
-                            realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-                            assert( ppv!=NULL );
-              // get Pv error grid function
-                            realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-                            assert( pepv!=NULL );
-                    
-                            maxErrPolarization(domain)=0.;
-                            polarizationNorm(domain)=0.;
-                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                            {
-                                for( int dir=0; dir<numberOfDimensions; dir++ )
-                                {
-                                    const int pc = dir+ iv*numberOfDimensions; // component 
-                                    const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-                                    const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+                    if( method==bamx )
+        	  {
+            // ---- fix me for multiple material domains ---
+          	    int domain=0, grid=0;
+          	    assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
 
-                                    maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-                                    polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
-                                }
-                            }
-                        }
-                    }
-                }
+          	    const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+
+          	    realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+          	    assert( ppv!=NULL );
+	    // get Pv error grid function
+          	    realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+          	    assert( pepv!=NULL );
+                    
+          	    maxErrPolarization(domain)=0.;
+          	    polarizationNorm(domain)=0.;
+          	    for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
+          	    {
+            	      const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+            	      const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+            	      maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+            	      polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+          	    }
+          	    
+        	  }
+        	  else 
+        	  {
+
+          	    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+          	    {
+            	      DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+            	      const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
+            	      if( numberOfPolarizationVectors>0 )
+            	      {
                 
+            		realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+            		assert( ppv!=NULL );
+		// get Pv error grid function
+            		realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+            		assert( pepv!=NULL );
+                    
+            		maxErrPolarization(domain)=0.;
+            		polarizationNorm(domain)=0.;
+            		for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+            		{
+              		  for( int dir=0; dir<numberOfDimensions; dir++ )
+              		  {
+                		    const int pc = dir+ iv*numberOfDimensions; // component 
+                		    const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+                		    const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+                		    maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+                		    polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+              		  }
+            		}
+            	      }
+          	    }
+        	  }
+      	}
+      	
 
             }
             

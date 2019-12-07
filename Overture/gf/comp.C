@@ -335,6 +335,82 @@ outputLatexTable( const std::vector<aString> gridName,
   return 0;
 }
 
+//==============================================================================
+/// \brief Output results in the form of a latex table 
+//==============================================================================
+int
+outputMatlabFile( const std::vector<aString> gridName,
+		  const std::vector<aString> cName, 
+                  const RealArray & h, 
+		  const RealArray & cErr, 
+		  const RealArray & cSigma,  
+                  const RealArray & timeArray,
+                  const int norm=-1,
+		  FILE *file=stdout,
+                  const bool assumeFineGridHoldsExactSolution=false )
+{
+  if( norm==0 )
+  {
+    // --- Output a header -----
+    // Get the current date
+    time_t *tp= new time_t;
+    time(tp);
+    // const char *dateString = ctime(tp);
+    aString dateString = ctime(tp);
+    delete tp;
+
+    fprintf(file,"%% Matlab readable file written by Overture program comp.C, date=%s\n",(const char*)dateString(0,dateString.length()-2));
+    fprintf(file,"%% Errors at time t=%14.8e\n",timeArray(0));
+    for( int grid=0; grid<gridName.size(); grid++ )
+    {
+      fprintf(file,"%% grid=%i: name=%s\n",grid,(const char*)gridName[grid]);
+    }
+  
+
+    if( assumeFineGridHoldsExactSolution )
+      fprintf(file,"%% NOTE: the errors were computed assuming the fine grid holds the exact solution.\n");
+
+    fprintf(file,"h=[");
+    for( int grid=0; grid<gridName.size(); grid++ )
+    {
+      fprintf(file,"%10.3e",h(grid));
+      if( grid<gridName.size()-1 ) fprintf(file,",");
+    }
+    fprintf(file,"];\n");
+  }
+  
+  if( norm==0 )
+    fprintf(file,"\n%% -------------- max norm results -------------\n");
+  else if( norm==1 )
+    fprintf(file,"\n%% -------------- l2 norm results -------------\n");
+  else 
+    fprintf(file,"\n%% -------------- l1 norm results -------------\n");
+
+  const int numberOfComponents=cName.size();
+  for( int c=0; c<numberOfComponents; c++ )
+  {
+    fprintf(file,"%s%s=[",(const char*)cName[c],(norm==0 ? "Max" : norm==1 ? "L2" : "L1"));
+    for( int grid=0; grid<gridName.size(); grid++ )
+    {
+      fprintf(file,"%10.3e",cErr(grid,c));
+      if( grid<gridName.size()-1 ) fprintf(file,",");
+    }
+    fprintf(file,"];\n");
+  }
+
+  // -- output convergence rates: 
+  fprintf(file,"rate%s=[",(norm==0 ? "Max" : norm==1 ? "L2" : "L1"));
+  for( int c=0; c<numberOfComponents; c++ )
+  {
+    fprintf(file,"%10.3e",cSigma(c));
+    if( c<numberOfComponents-1 ) fprintf(file,",");
+  }
+  fprintf(file,"];\n");
+
+  
+  return 0;
+}
+
 
 struct ComponentVector
 {
@@ -728,6 +804,12 @@ main(int argc, char *argv[])
   bool useOldWay=false;
   bool useNewWay=false;
 
+  aString matlabFileName="comp.m";
+  aString logFileName="comp.log";
+  printF("comp: Compare solutions in show files and compute self-convergence errors and rates\n");
+  printF("Usage: comp <commandFile> -logFile=<s> -matlabFile=<s>\n");
+  
+  int len=0;
   aString commandFileName="";
   if( argc > 1 )
   { // look at arguments for "-noplot" or some other name
@@ -739,6 +821,17 @@ main(int argc, char *argv[])
         plotOption=false;
       else if( line=="-useOld" )
         useOldWay=true;
+      else if( len=line.matches("-logFile" ) )
+      {
+	logFileName=line(len,line.length()-1);
+	printF("Setting logFileName=[%s]\n",(const char*)logFileName);
+      }
+      else if( len=line.matches("-matlabFile" ) )
+      {
+	matlabFileName=line(len,line.length()-1);
+	printF("Setting matlabFileName=[%s]\n",(const char*)matlabFileName);
+      }
+	
       else if( line=="-useNew" )
         useNewWay=true;
       else if( commandFileName=="" )
@@ -749,6 +842,7 @@ main(int argc, char *argv[])
       
     }
   }
+
 
   const int maxNumberOfFiles=15;
 
@@ -793,7 +887,8 @@ main(int argc, char *argv[])
   ps.saveCommandFile(logFile);
   printF("User commands are being saved in the file `%s'\n",(const char *)logFile);
 
-  aString outputFileName="comp.log";
+  // aString outputFileName="comp.log";
+  aString outputFileName=logFile;
   FILE *outFile = NULL;
   
   aString outputShowFile = "comp.show";
@@ -860,6 +955,7 @@ main(int argc, char *argv[])
 
   int nt=0;
   textLabels[nt] = "output file name:";  sPrintF(textStrings[nt],"%s",(const char*)outputFileName);  nt++; 
+  textLabels[nt] = "matlab file name:";  sPrintF(textStrings[nt],"%s",(const char*)matlabFileName);  nt++; 
   textLabels[nt] = "interpolation width:";  sPrintF(textStrings[nt],"%i",interpolationWidth);  nt++; 
   textLabels[nt] = "output show file:";  sPrintF(textStrings[nt],"%s",(const char*)outputShowFile);  nt++; 
 
@@ -929,6 +1025,7 @@ main(int argc, char *argv[])
       }
     }
     else if( dialog.getTextValue(answer,"output file name:","%s",outputFileName) ){}  //
+    else if( dialog.getTextValue(answer,"matlab file name:","%s",matlabFileName) ){}  //
     else if( dialog.getTextValue(answer,"output show file:","%s",outputShowFile) ){}  //
     else if( dialog.getTextValue(answer,"interpolation width:","%i",interpolationWidth) )
     {
@@ -1166,15 +1263,43 @@ main(int argc, char *argv[])
       errorsComputed=true;
       
 
+      FILE *matlabFile=NULL;
+      if( myid==0 )
+	matlabFile=fopen((const char*)matlabFileName,"w" );
+      // printF("Matlab output being saved in file %s\n",(const char*)matlabFileName);
+
+
       Index I1,I2,I3, J1,J2,J3;
       const int n =numberOfFiles-1;  // finest grid
 
+      int numberOfRectangular=0;
       // **** determine relative mesh spacings here ***
       // Assume the base grids are basically the same but with different numbers of grid points.
       // There may also be different numbers of refinement levels.
       for( int i=0; i<numberOfFiles; i++ )
       {
-        h(i)=cg[i][0].gridSpacing(axis1);    // grid spacing on grid 0
+        MappedGrid & mg = cg[i][0];
+	if( mg.isRectangular() )
+	{
+          // Get dx   *wdh* Sept 23, 2019
+          if( numberOfRectangular!=i )
+	  {
+	    printF("ERROR: not all composite grids have the first grid rectangular -- this is currently a fatal error\n");
+	    OV_ABORT("fix me Bill!");
+	  }
+	  numberOfRectangular++;
+
+          real dx[3]={1.,1.,1.}; // 
+          mg.getDeltaX(dx);	  
+	  h(i)=dx[0];
+	  
+	}
+	else
+	{
+          // use dr 
+	  h(i)=cg[i][0].gridSpacing(axis1);    // grid spacing on grid 0
+	}
+	
 	if( cg[i].numberOfRefinementLevels()>1 )
 	{
 	  int nl=cg[i].numberOfRefinementLevels();
@@ -1388,12 +1513,19 @@ main(int argc, char *argv[])
 	  {
 	    FILE *file = io==0 ? stdout : outFile;
 	    outputLatexTable( gridName, cName, cErr, cSigma, time, norm, file, assumeFineGridHoldsExactSolution );
+
+            // *new* Sept 20, 2019 *wdh*
+            if( io==1 )
+	      outputMatlabFile( gridName, cName, h, cErr, cSigma, time, norm, matlabFile, assumeFineGridHoldsExactSolution );
 	  }
 
 
 	}  // end for norm 
 	fflush(outFile);
 	printF("Output written to file %s\n",(const char*)outputFileName);
+        fflush(matlabFile);
+	printF("Matlab output written to file %s\n",(const char*)matlabFileName);
+ 
 	
       }
       if( !timesMatch )
@@ -1412,7 +1544,11 @@ main(int argc, char *argv[])
 	}
       }
       
-    }
+      if( myid==0 )
+	fclose(matlabFile);
+
+    }  // end compute errors 
+    
     else if( answer=="plot solutions" )
     {
       for( int i=0; i<numberOfFiles; i++ )
@@ -1609,6 +1745,7 @@ main(int argc, char *argv[])
   if( myid==0 )
     fclose(outFile);
 
+  
   Overture::finish();          
   return 0;
 }

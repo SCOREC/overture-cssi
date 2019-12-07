@@ -333,7 +333,7 @@ c truncation error estimate returned by cmfsource)
           tau(k)=0.d0
         end do
         call cmfsource (m,nd1a,nd1b,md1a,md1b,nd2a,nd2b,md2a,md2b,dr2,
-     *                  r,xy,up,mask,tau,maxstep1,niwk,iwk,nrwk,rwk)
+     *                  r,xy,up,mask,tau)
       end if
 c
 c zero out almax
@@ -358,7 +358,7 @@ c compute second source contribution
       if (irxn.ne.0.and.r+dr.gt.tfilter) then
         r1=r+dr2
         call cmfsource (m,nd1a,nd1b,n1a,n1b,nd2a,nd2b,n2a,n2b,dr2,
-     *                  r1,xy,up,mask,tau,maxstep2,niwk,iwk,nrwk,rwk)
+     *                  r1,xy,up,mask,tau)
       end if
 c
 c limit pressure (if necessary)
@@ -373,7 +373,9 @@ c..apply filter for P and C- blips
           if (m.lt.0) then
             write(6,123)(u(n1a,n2a,i),i=1,4)
   123       format(4(1x,1pe22.15))
-            pause
+            write(6,*)'Enter kstop : (0=cont, 1=stop)'
+            read(5,*)kstop
+            if (kstop.ne.0) stop
           end if
           call cmffilter (m,nd1a,nd1b,n1a,n1b,nd2a,nd2b,n2a,n2b,
      *                    xy,up,mask)
@@ -731,12 +733,16 @@ c
       if (m.lt.0) then
         write(6,*)det(nd1a,nd2a),rx(nd1a,nd2a,1,1),rx(nd1a,nd2a,1,2),
      *                           rx(nd1a,nd2a,2,1),rx(nd1a,nd2a,2,2)
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
       if (m.lt.0) then
         write(6,*)'dt,ds1,ds2=',dr,ds(1),ds(2)
-        pause
+        write(6,*)'Enter kstop : (0=cont, 1=stop)'
+        read(5,*)kstop
+        if (kstop.ne.0) stop
       end if
 c
 c

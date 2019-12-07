@@ -5,22 +5,29 @@ cc = gcc
 CC = g++
 FC = g77
 
+# MPI include directory (set by configure script
+MPI_INCLUDE = 
+
 # On some 64-bit machines some libraries are in lib64 instead of lib
 # this next line will be changed by the configure script
 LIB64 = lib 
+
+# Mesa lib directory: 
+LIBMESA = lib 
 
 # Here is the rpath command
 OV_RPATH = -Wl,-rpath,
 #xlc OV_RPATH = -R
 
 MOTIF_LIB = $(MOTIF)/$(LIB64)
-OPENGL_LIB = $(OpenGL)/$(LIB64)
+OPENGL_LIB = $(OpenGL)/$(LIBMESA)
 
 XLIBS_LIB = $(XLIBS)/$(LIB64)
 
 # *wdh* libXpm does not seem to be needed anymore 2014/04/02
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11
 OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXp -lXt -lXmu -lXi -lXext -lX11
+#ubuntu OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXt -lXi -lX11
 
 OV_MOTIF_LIBRARIES = $(OV_RPATH)$(MOTIF_LIB) -L$(MOTIF_LIB) -lXm
 
@@ -168,6 +175,12 @@ GLIBS=  $(OV_PERL_LIBRARIES) $(OV_RPATH)$(OPENGL_LIB) -L$(OPENGL_LIB) $(OpenGLib
 # On Don's machine the pgi libraries need to follow the mpi libraries : 
 # FLIBS= $(OV_RPATH)$(Overture)/lib $(LDFLAGS)$(Overture)/lib $(LibOverture) $(HDF_LIBS) $(FORTRAN_LIBS) $(AppLibraries) 
 FLIBS= $(OV_RPATH)$(Overture)/lib $(LDFLAGS)$(Overture)/lib $(LibOverture) $(OV_COMPILER_LIBS) $(HDF_LIBS) $(FORTRAN_LIBS)
+
+# Ubuntu: To get OpenGL lib's properly loaded need to have any /usr/lib/x86... after Mesa libs *wdh* Sept 18, 2019
+#ubuntu GLIBS=  $(OV_PERL_LIBRARIES) $(OV_RPATH)$(OPENGL_LIB) -L$(OPENGL_LIB) $(OpenGLibs) $(OV_MOTIF_LIBRARIES) $(OV_X_LIBRARIES) $(AppLibraries) $(HDF_LIBS) $(FORTRAN_LIBS) $(OV_COMPILER_LIBS)  $(LAPACK_LIBRARIES) -lm
+#ubuntu FLIBS= $(OV_RPATH)$(Overture)/lib $(LDFLAGS)$(Overture)/lib $(LibOverture) 
+
+
 
 # Ubuntu 13 needs this: when loading the dynamic library
 #ubuntu LIBLIBS = $(HDF_LIBS) $(FORTRAN_LIBS) $(AppLibraries)

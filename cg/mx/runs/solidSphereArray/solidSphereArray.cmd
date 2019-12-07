@@ -154,7 +154,7 @@ for( $i=1; $i<=$numSpheres; $i++ ){ $epsv[$i]=$eps1; $muv[$i]=$mu1; }  # DO THIS
 $numDomains=$numSpheres+1; 
 @domainName = ( "outerDomain" );
 for( $i=1; $i<=$numSpheres; $i++ ){ $domainName[$i]="sphereDomain$i"; }
-$domainName[1]="innerDomain"; # *** TEMP***
+## $domainName[1]="innerDomain"; # *** TEMP***
 $cmd="#";
 for( $i=0; $i<$numDomains; $i++ ){ $cmd .= "\n coefficients $epsv[$i] $muv[$i] $domainName[$i]   (eps,mu,grid/domain-name)"; }
 printf("cmd=\n$cmd\n");
@@ -162,7 +162,7 @@ printf("cmd=\n$cmd\n");
 $cmd 
 # coefficients $eps0 $mu0 outerDomain   (eps,mu,grid/domain-name)
 # New: Aug 19, 2019 
-# ------------ Set GDM parameters for domain 1 -----------
+# ------------ Set GDM parameters for sphere domains -----------
 $cmd=""; 
 for( $i=1; $i<=$numSpheres; $i++ ){ \
   $cmd .= "GDM domain name: $domainName[$i]\n";  \

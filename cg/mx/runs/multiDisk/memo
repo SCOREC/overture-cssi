@@ -1,4 +1,12 @@
 ********************************
+***** Aug 27, 2019
+
+RUN FOR MOVIE
+
+cgmx -noplot multiDomain -g=multiDiskGride4.order4.ng3 -dm=gdm -dmFile=gdmMaterial1.txt gdmMaterial2.txt gdmMaterial3.txt gdmMaterial4.txt -backGround=backGround -rbc=rbcNonLocal -kx=.5 -eps0=1 -useSosupDissipation=1 -tf=8. -tp=.02 -ic=gp -x0=-3. -beta=120. -show=MD4m.show -go=go > MD4m.out
+
+
+********************************
 ***** Aug 1, 2019
 
 RUN for plots in paper

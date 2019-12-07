@@ -85,8 +85,10 @@ $ao="centered"; $upwindOrder=-1;
 #
 $rtolp=1.e-3; $atolp=1.e-4;  # tolerances for the pressure solve
 $rtol=1.e-4; $atol=1.e-5;    # tolerances for the implicit solver
+$tolFactor=1.; # scale solver and psolver tolerances by this factor 
 $refactorFrequency=10000; $recomputeDt=10000; 
-$cpn=1.; 
+$cp0=1.; $cpn=.1;  # For mixed pressure BC
+$inflowPressure=1.;  $rampOrder=4;   $ta=0.; $tb=1.;
 # -- for Kyle's AF scheme:
 $afit = 10;  # max iterations for AFS
 $aftol=1e-2;
@@ -110,7 +112,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "ad4=i"=>\$ad4,"ad41=f"=>\$ad41,"ad42=f"=>\$ad42,"outflowOption=s"=>\$outflowOption,"cpn=f"=>\$cpn,\
   "ogmgAutoChoose=i"=>\$ogmgAutoChoose,"inflow=s"=>\$inflow,"iluLevels=i"=>\$iluLevels,\
   "maxIterations=i"=>\$maxIterations,"plotIterations=i"=>\$plotIterations,"plotResiduals=i"=>\$plotResiduals,\
-  "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrder,"flushFrequency=i"=>\$flushFrequency );
+  "orderInTime=i"=>\$orderInTime,"ao=s"=>\$ao,"upwindOrder=i"=>\$upwindOrder,"flushFrequency=i"=>\$flushFrequency,\
+  "inflowPressure=f"=>\$inflowPressure,"rampOrder=i"=>\$rampOrder,"tb=f"=>\$tb,"tolFactor=f"=>\$tolFactor );
 # -------------------------------------------------------------------------------------------------
 if( $solver eq "best" ){ $solver="choose best iterative solver"; }
 if( $solver eq "mg" ){ $solver="multigrid"; }
@@ -160,6 +163,9 @@ if( $ssr eq 1 ){ $ssr="show smoothing rates"; }else{ $ssr="#"; }
 #* *
 #* * $gridName="square20"; 
 #* * $gridName="cic2"; 
+#
+$rtol = $rtol*$tolFactor; $atol=$atol*$tolFactor; $rtolp = $rtolp*$tolFactor; $atolp=$atolp*$tolFactor;
+#
 #
 $grid
 #
@@ -248,18 +254,34 @@ $grid
 #
     all=noSlipWall
 #    all=slipWall
+    #    -- can be trouble for 1.*p+0.01*p.n=0.
+    square(1,0)=outflow , pressure($cp0*p+$cpn*p.n=0.)
     $cmd ="square(0,0)=inflowWithVelocityGiven, uniform(p=1.,u=1.)"; 
     if( $inflow eq "ramp" ){ $cmd="square(0,0)=inflowWithVelocityGiven, ramp(ta=0.,tb=1.,ua=0.,ub=1.)"; }
+    # Ramped pressure   
+    #    Inflow pressure : $inflowPressure
+    #    Outflow pressure = 0
+    if( $inflow eq "rampedPressure" ){ \
+      $cmd= \
+           "square(1,0)=outflow , pressure($cp0*p+$cpn*p.n=0.)\n" . \
+           "square(0,0)=inflowWithPressureAndTangentialVelocityGiven, uniform(u=0.,v=0.,p=1)\n" . \
+           "square(0,0)=inflowWithPressureAndTangentialVelocityGiven, userDefinedBoundaryData\n" . \
+           "time function option\n" . \
+           " ramp function\n" . \
+           "   ramp end values: 0,$inflowPressure (start,end)\n". \
+           "   ramp times: $ta,$tb (start,end)\n" .\
+           "   ramp order: $rampOrder\n" . \
+           "  exit\n" . \
+           "done\n" };
     $cmd 
-#    -- can be trouble for 1.*p+0.01*p.n=0.
-    square(1,0)=outflow , pressure(1.*p+$cpn*p.n=0.)
     square(0,1)=slipWall
     square(1,1)=slipWall
 #
     done
   initial conditions
   uniform flow
-    p=1., u=1.
+    if( $inflow eq "ramp" ){ $p0=0; $u0=0; }else{ $p0=1; $u0=$inflowVelocity; }
+    p=$p0, u=$u0
   done
   $project
   debug

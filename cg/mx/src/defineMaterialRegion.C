@@ -1,0 +1,651 @@
+// This file automatically generated from defineMaterialRegion.bC with bpp.
+#include "Maxwell.h"
+#include "PlotStuff.h"
+#include "ParallelUtility.h"
+#include "DispersiveMaterialParameters.h"
+
+#include "BodyForce.h"
+#include "xColours.h"
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
+
+#define FOR_3(i1,i2,i3,I1,I2,I3) I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
+
+
+
+// =====================================================================================
+/// \brief Define a material region for the BAMX scheme.
+// =====================================================================================
+int Maxwell::
+defineMaterialRegion( )
+{
+    assert( cgp!=NULL );
+    CompositeGrid & cg= *cgp;
+    const int numberOfDimensions = cg.numberOfDimensions();
+    const int & numberOfComponentGrids=cg.numberOfComponentGrids();
+
+    assert( gip !=NULL );
+    GenericGraphicsInterface & gi = *gip;
+
+  // We use BoundaryForcing's to plot the boundaries of material regions
+    if( ! parameters.dbase.has_key("boundaryForcings") )
+    {
+    // Note: We save pointers here instead of objects since adding elements to an std::vector calls the
+    // copy constructor, equals operator and destructor. Defining an equals operator is difficult 
+    // since entries are added to the BodyForce dbase.
+        parameters.dbase.put<std::vector<BodyForce*> >("boundaryForcings");
+
+
+    }
+  // Here is the array of body forcings:
+  //   std::vector<BodyForce*> & bodyForcings =  parameters.dbase.get<std::vector<BodyForce*> >("bodyForcings");
+  //   parameters.dbase.get<bool>("turnOnBodyForcing") = true;   // set to true to plot region boundaries
+  // Here is the array of boundary forcings:
+    std::vector<BodyForce*> & boundaryForcings =  parameters.dbase.get<std::vector<BodyForce*> >("boundaryForcings");
+    parameters.dbase.get<bool>("turnOnBoundaryForcing") = true;   // set to true to plot region boundaries
+
+  // Here is where we save the current parameters that define any body force region type:
+  // BodyForceRegionParameters regionPar;
+
+    RealArray box(2,3);  // box region
+    box(0,0)=0.; box(1,0)=1.; box(0,1)=0.; box(1,1)=1.; box(0,2)=0.; box(1,2)=1.;
+    
+    RealArray cyl(10);
+    cyl(0)=0.; cyl(1)=0.; cyl(2)=0.;  // (x0,y0,z0) center
+    cyl(3)=1.; cyl(4)=-1.; cyl(5)=1.;  // radius, za,zb
+    
+    RealArray ellipsoid(10);
+    ellipsoid(0)=0.;  ellipsoid(1)=0.;  ellipsoid(2)=0.;  // (x0,y0,z0) center
+    ellipsoid(3)=.25; ellipsoid(4)=.25; ellipsoid(5)=.25;  // (a,b,c) semi-major axes
+    
+  // Here are the colours of the first few material boundaries. After these we go through the list of xColours
+  // see colours in xColour.C
+    const int numberOfSpecifiedColours=10;
+    aString bodyColourNames[numberOfSpecifiedColours] = 
+        {
+            "RED", "DARKORCHID", "DARKTURQUOISE", "SEAGREEN", "VIOLET", "GOLDENROD", "NAVYBLUE", "DARKGREEN", "BLUE", "SPRINGGREEN" 
+        };  //
+      
+    const int grid=0;
+    
+    MappedGrid & mg = cg[grid];
+
+    const bool isRectangular = mg.isRectangular();
+    assert( isRectangular );
+
+    mg.update(MappedGrid::THEmask );
+    
+    intArray & mask = mg.mask();
+    #ifdef USE_PPP
+        intSerialArray maskLocal;  getLocalArrayWithGhostBoundaries(mask,maskLocal);
+    #else
+        intSerialArray & maskLocal = mask; 
+    #endif
+
+    if( pBodyMask==NULL )
+        pBodyMask = new intSerialArray(maskLocal.dimension(0),maskLocal.dimension(1),maskLocal.dimension(2));
+        
+    intSerialArray & matMask = *pBodyMask;
+    matMask=0;
+
+    Range all;
+    realMappedGridFunction rmask(mg,all,all,all);  // real version of the mask for contour plots
+    rmask=0;
+    
+    Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+
+  // getIndex(mg.gridIndexRange(),I1,I2,I3);
+    getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+    int includeGhost=1;
+    bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
+
+    int i1,i2,i3;
+
+    real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+    mg.getRectangularGridParameters( dx, xab );
+
+    const int i0a=mg.gridIndexRange(0,0);
+    const int i1a=mg.gridIndexRange(0,1);
+    const int i2a=mg.gridIndexRange(0,2);
+
+    const real xa=xab[0][0], dx0=dx[0];
+    const real ya=xab[0][1], dy0=dx[1];
+    const real za=xab[0][2], dz0=dx[2];
+
+    #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
+    #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
+    #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
+
+
+  // Do this for now: **FIX ME**
+    int numberOfPolarizationVectors=0;
+    int modeGDM=-1;  // eigenmode number, choice of root "s"
+
+    if( !dbase.has_key("materialRegionParameters") )
+    {
+          std::vector<DispersiveMaterialParameters> & dmpVector =
+                            dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+     // Material "0" is the background material: 
+          const int domain = cg.domainNumber(grid);
+          const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+          dmpVector.push_back(dmp0);
+     // aString label="dmpVector[0]";
+     // dmpVector[0].display(stdout,label);
+
+          
+    }
+
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+        dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+
+
+    GUIState gui;
+
+    DialogData & dialog=gui;
+
+    dialog.setWindowTitle("Define Material Region");
+    dialog.setExitCommand("continue", "continue");
+
+    aString pushButtonCommands[] = {"plot",
+                                                                    "reset",
+                          				  ""};
+    int numRows=3;
+    dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
+
+  // ----- Text strings ------
+    const int numberOfTextStrings=30;
+    aString textCommands[numberOfTextStrings];
+    aString textLabels[numberOfTextStrings];
+    aString textStrings[numberOfTextStrings];
+
+    int nt=0;
+
+    textCommands[nt] = "box:";  textLabels[nt]=textCommands[nt];
+    sPrintF(textStrings[nt], "%g %g %g %g %g %g (xa,xb,ya,yb,za,zb)",
+                            box(0,0),box(1,0), box(0,1),box(1,1), box(0,2),box(1,2));  nt++; 
+
+    textCommands[nt] = "cylinder:";  textLabels[nt]=textCommands[nt];
+    sPrintF(textStrings[nt], "%g %g %g %g %g %g (x0,y0,z0, radius, za,zb)", cyl(0),cyl(1),cyl(2),cyl(3),cyl(4),cyl(5));  nt++; 
+
+    textCommands[nt] = "ellipsoid:";  textLabels[nt]=textCommands[nt];
+    sPrintF(textStrings[nt], "%g %g %g %g %g %g (x0,y0,z0, a,b,c)",
+                    ellipsoid(0),ellipsoid(1),ellipsoid(2),ellipsoid(3),ellipsoid(4),ellipsoid(5));  nt++; 
+
+    textCommands[nt] = "material file:";  
+    textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s","none"); nt++; 
+
+    textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
+    dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
+    aString materialFile;
+    
+    printF("INFO: Define a material and then define one or more sub-regions where that material resides\n");
+
+    gi.pushGUI(gui);
+    aString answer,line;
+    int len=0;
+    for(;;) 
+    {
+        gi.getAnswer(answer,"");      
+        
+        if( answer=="continue" || answer=="exit" )
+        {
+            break;
+        }
+        else if( len=answer.matches("reset") )
+        {
+            OV_ABORT("finish me");
+        }
+        else if( len=answer.matches("box:") )
+        {
+            if( numberOfMaterialRegions==0 )
+            {
+                printF("You should first define a material before setting regions.\n");
+                continue;
+            }
+            
+            sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e  ",&box(0,0),&box(1,0), &box(0,1),&box(1,1), &box(0,2),&box(1,2));
+            printF("Defining region %d to be the box [%e,%e]x[%e,%e]x[%e,%e]\n",numberOfMaterialRegions,
+                          box(0,0),box(1,0), box(0,1),box(1,1), box(0,2),box(1,2));
+            
+
+            int mat = numberOfMaterialRegions-1;
+
+            if( ok )
+            {
+                if( numberOfDimensions==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+
+                        if( xc>=box(0,0) && xc<=box(1,0)  &&
+                                yc>=box(0,1) && yc<=box(1,1) )
+                        {
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+                }
+                else
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+                        real zc=X2(i1,i2,i3);
+
+                        if( xc>=box(0,0) && xc<=box(1,0)  &&
+                                yc>=box(0,1) && yc<=box(1,1)  &&
+                                zc>=box(0,2) && zc<=box(1,2) )
+                        {
+              // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+
+                }
+                
+            }
+
+      // ---- start add BodyForce for a BOX ----
+            BodyForce *pbf = new BodyForce;  // this should be deleted in ~Parameters
+            boundaryForcings.push_back(pbf);
+        	  
+            BodyForce & bodyForce = *boundaryForcings[boundaryForcings.size()-1];
+        	  
+            aString bodyForcingName = sPrintF("boxRegion%d\n",mat);
+            printF("Creating a body forcing with name=[%s]. (Note: you should choose the name before creation).\n",
+                          (const char*)bodyForcingName);
+            bodyForce.dbase.get<aString >("bodyForcingName")=bodyForcingName;
+
+      // Save the region type:
+            if( !bodyForce.dbase.has_key("regionType") )
+                bodyForce.dbase.put<aString>("regionType");  // region type
+            bodyForce.dbase.get<aString>("regionType")="box";
+
+            if( !bodyForce.dbase.has_key("linesToPlot") )
+                bodyForce.dbase.put<int[3]>("linesToPlot"); 
+            int *linesToPlot = bodyForce.dbase.get<int[3]>("linesToPlot"); 
+            int lines[3] = {2,2,2};  //  what should this be? 
+            for( int i=0; i<3; i++ )
+                linesToPlot[i]=lines[i];
+
+            bodyForce.dbase.put<real[6] >("boxBounds");
+            real *boxBounds =  bodyForce.dbase.get<real[6]>("boxBounds");
+            for(int side=0; side<=1; side++ )
+                for( int axis=0; axis<3; axis++ )
+                    boxBounds[side+2*axis]=box(side,axis);
+
+      // set the colour
+            if( !bodyForce.dbase.has_key("colour") ) bodyForce.dbase.put<int>("colour");
+
+      	
+                int colourIndex;
+                assert( mat>0 );
+                if( (mat-1) <numberOfSpecifiedColours )
+                    colourIndex = getXColour( bodyColourNames[mat-1] );
+                else 
+                  colourIndex = mat % 75;  // use first 75 x-colours 
+                aString regionColour = getXColour( colourIndex );
+                printF("Set material colour=%s\n",(const char*) regionColour);
+                bodyForce.dbase.get<int>("colour")= colourIndex;
+      	
+      // if( false )
+      // {
+      //   aString regionColour="BLACK";  // test 
+      //   bodyForce.dbase.get<int>("colour")= getXColour(regionColour);  // convert string colour to an integer
+      // }
+      // else
+      // {
+      //   int colourIndex = mat % 75;  // use first 75 x-colours 
+      //   aString regionColour = getXColour( colourIndex );
+      //   printF("Set material colour=%s\n",(const char*) regionColour);
+      //   bodyForce.dbase.get<int>("colour")= colourIndex;
+      // }
+            
+    
+
+      // ---- end BodyForce ----
+
+
+      // forcingOptionsDialog.setTextLabel("pml width,strength,power",sPrintF(line, "%i %4.1f %i",numberLinesForPML,
+      //								   pmlLayerStrength,pmlPower));
+        }
+        else if( len=answer.matches("cylinder:") )
+        {
+            if( numberOfMaterialRegions==0 )
+            {
+                printF("You should first define a material before setting regions.\n");
+                continue;
+            }
+            
+            sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e ",&cyl(0),&cyl(1),&cyl(2),&cyl(3),&cyl(4),&cyl(5));
+            printF("Defining region %d to a cylinder, center=(%e,%e,%e), radius=%e, [za,zb]=[%e,%e]\n",numberOfMaterialRegions,
+                          cyl(0),cyl(1),cyl(2),cyl(3),cyl(4),cyl(5));
+            
+            real x0=cyl(0), y0=cyl(1), z0=cyl(2);
+            real radius=cyl(3), za=cyl(4), zb=cyl(5);
+              
+            int mat =	numberOfMaterialRegions-1;  // current region 
+
+            const real radiusSquared = SQR(radius);
+            if( ok )
+            {
+                if( numberOfDimensions==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+            
+                        real rad = SQR(xc-x0)+SQR(yc-y0);
+                        if( rad <= radiusSquared )
+                        {
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+                }
+                else
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+                        real zc=X2(i1,i2,i3);
+            
+                        real rad = SQR(xc-x0)+SQR(yc-y0);
+                        if( rad <= radiusSquared && zc>za && zc<zb )
+                        {
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+                }
+                
+            }
+
+      // ---- start add BodyForce for a CYLINDER ----
+
+
+            BodyForce *pbf = new BodyForce;  // this should be deleted in ~Parameters
+            boundaryForcings.push_back(pbf);
+        	  
+            BodyForce & bodyForce = *boundaryForcings[boundaryForcings.size()-1];
+        	  
+            aString bodyForcingName = sPrintF("boxRegion%d\n",mat);
+            printF("Creating a body forcing with name=[%s]. (Note: you should choose the name before creation).\n",
+                          (const char*)bodyForcingName);
+            bodyForce.dbase.get<aString >("bodyForcingName")=bodyForcingName;
+
+      // Save the region type:
+            if( !bodyForce.dbase.has_key("regionType") )
+                bodyForce.dbase.put<aString>("regionType");  // region type
+            bodyForce.dbase.get<aString>("regionType")="ellipse";        // ** Do this for now -- use an ellipse *** FIX ME ***
+
+            if( !bodyForce.dbase.has_key("linesToPlot") )
+                bodyForce.dbase.put<int[3]>("linesToPlot"); 
+            int *linesToPlot = bodyForce.dbase.get<int[3]>("linesToPlot"); 
+      // int lines[3] = {31,11,2};  //  this will plot the outline ?? 
+            int lines[3] = {31,1,2};  //  this will plot the outline ?? 
+            for( int i=0; i<3; i++ )
+                linesToPlot[i]=lines[i];
+
+            real *ellipse =  bodyForce.dbase.put<real[6] >("ellipse");
+
+            ellipse[0]=radius;   //  ae  
+            ellipse[1]=radius;   //  be  
+            ellipse[2]=radius;   //  ce  
+            ellipse[3]=x0;       //  xe  
+            ellipse[4]=y0;       //  ye  
+            ellipse[5]=z0;       //  ze  
+
+      // set the colour
+                int colourIndex;
+                assert( mat>0 );
+                if( (mat-1) <numberOfSpecifiedColours )
+                    colourIndex = getXColour( bodyColourNames[mat-1] );
+                else 
+                  colourIndex = mat % 75;  // use first 75 x-colours 
+                aString regionColour = getXColour( colourIndex );
+                printF("Set material colour=%s\n",(const char*) regionColour);
+                bodyForce.dbase.get<int>("colour")= colourIndex;
+
+      // ---- end BodyForce ----
+
+
+            
+
+        }
+        else if( len=answer.matches("ellipsoid:") )
+        {
+            if( numberOfMaterialRegions==0 )
+            {
+                printF("You should first define a material before setting regions.\n");
+                continue;
+            }
+            
+            sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e ",&ellipsoid(0),&ellipsoid(1),&ellipsoid(2),
+                                                                                                                                &ellipsoid(3),&ellipsoid(4),&ellipsoid(5));
+            printF("Defining region %d to an ellipsoid, center=(%e,%e,%e), (a=%e,b=%e,c=%e) semi-major axes\n",
+                          numberOfMaterialRegions,
+                          ellipsoid(0),ellipsoid(1),ellipsoid(2),ellipsoid(3),ellipsoid(4),ellipsoid(5));
+            
+            real x0=ellipsoid(0), y0=ellipsoid(1), z0=ellipsoid(2);
+            real ae=ellipsoid(3), be=ellipsoid(4), ce=ellipsoid(5);
+              
+            int mat =	numberOfMaterialRegions-1;  // current region 
+
+            if( ok )
+            {
+                if( numberOfDimensions==2 )
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+            
+                        real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be);
+                        if( rad <= 1. )
+                        {
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+                }
+                else
+                {
+                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    {
+                        real xc=X0(i1,i2,i3);
+                        real yc=X1(i1,i2,i3);
+                        real zc=X2(i1,i2,i3);
+            
+                        real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be)+SQR((zc-z0)/ce);
+                        if( rad <= 1. )
+                        {
+                            matMask(i1,i2,i3)=mat;
+                        }
+                    }
+                }
+                
+            }
+
+      // ---- start add BodyForce for an ELLIPSOID ----
+
+
+            BodyForce *pbf = new BodyForce;  // this should be deleted in ~Parameters
+            boundaryForcings.push_back(pbf);
+        	  
+            BodyForce & bodyForce = *boundaryForcings[boundaryForcings.size()-1];
+        	  
+            aString bodyForcingName = sPrintF("boxRegion%d\n",mat);
+            printF("Creating a body forcing with name=[%s]. (Note: you should choose the name before creation).\n",
+                          (const char*)bodyForcingName);
+            bodyForce.dbase.get<aString >("bodyForcingName")=bodyForcingName;
+
+      // Save the region type:
+            if( !bodyForce.dbase.has_key("regionType") )
+                bodyForce.dbase.put<aString>("regionType");  // region type
+            bodyForce.dbase.get<aString>("regionType")="ellipse";        // ** Do this for now -- use an ellipse *** FIX ME ***
+
+            if( !bodyForce.dbase.has_key("linesToPlot") )
+                bodyForce.dbase.put<int[3]>("linesToPlot"); 
+            int *linesToPlot = bodyForce.dbase.get<int[3]>("linesToPlot"); 
+            int lines[3] = {31,11,2};  //  this will plot the outline ?? 
+            for( int i=0; i<3; i++ )
+                linesToPlot[i]=lines[i];
+
+            real *ellipse =  bodyForce.dbase.put<real[6] >("ellipse");
+
+            ellipse[0]=ae;       //  ae  
+            ellipse[1]=be;       //  be  
+            ellipse[2]=ce;       //  ce  
+            ellipse[3]=x0;       //  xe  
+            ellipse[4]=y0;       //  ye  
+            ellipse[5]=z0;       //  ze  
+
+      // set the colour
+                int colourIndex;
+                assert( mat>0 );
+                if( (mat-1) <numberOfSpecifiedColours )
+                    colourIndex = getXColour( bodyColourNames[mat-1] );
+                else 
+                  colourIndex = mat % 75;  // use first 75 x-colours 
+                aString regionColour = getXColour( colourIndex );
+                printF("Set material colour=%s\n",(const char*) regionColour);
+                bodyForce.dbase.get<int>("colour")= colourIndex;
+
+      // ---- end BodyForce ----
+
+        }
+        
+
+        else if( gui.getTextValue(answer,"material file:","%s",materialFile) )
+        {
+
+      // if( dmpVector.size()<=numberOfMaterialRegions )
+      // {
+      //   dmpVector.resize(numberOfMaterialRegions+1);
+      // }
+            
+            dmpVector.push_back(DispersiveMaterialParameters());
+            
+            DispersiveMaterialParameters & dmp = dmpVector[numberOfMaterialRegions];
+            dmp.setMode( modeGDM );
+            dmp.setScales(  dbase.get<real>("velocityScale"), dbase.get<real>("lengthScale") );
+            
+            if( method == bamx )
+            {
+                printF("Setting material to bianisotropic\n");
+                dmp.setMaterialType( DispersiveMaterialParameters::bianisotropic );
+            }
+            
+            printF(" Read dispersive material parameters for region=%i from file=[%s]\n",
+           	     numberOfMaterialRegions,(const char*)materialFile);
+
+      // we could read once and copy parameters -- do this for now
+            dmp.readFromFile( materialFile,numberOfPolarizationVectors );
+
+            numberOfMaterialRegions++;
+
+        }
+        else if( answer=="plot" )
+        {
+            FOR_3D(i1,i2,i3,I1,I2,I3)
+            {
+                rmask(i1,i2,i3)=matMask(i1,i2,i3);
+            }
+            
+            PlotStuffParameters psp;
+            gi.erase();
+      // psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+            psp.set(GI_TOP_LABEL,"Material Region ID");
+            PlotIt::contour(gi,rmask,psp);
+        }
+        
+
+/* ----
+        else if( answer=="choose automatically" )
+        {
+      // We should check the size of the grid too
+            printF("For now turn off dissipation on rectangular grids.\n");
+            
+            for( int grid=0; grid<numberOfComponentGrids; grid++ )
+            {
+                if( cg[grid].isRectangular() )
+                {
+          // useDissipation(grid)=false;
+          // printF(" Turn off dissipation on rectangular grid %i (%s)\n",grid,(const char*)cg[grid].getName());
+                }
+            }
+        }
+        else if( answer=="turn off rectangular" )
+        {
+            for( int grid=0; grid<numberOfComponentGrids; grid++ )
+            {
+                if( cg[grid].isRectangular() )
+                {
+          // useDissipation(grid)=false;
+          // printF(" Turn off dissipation on rectangular grid %i (%s)\n",grid,(const char*)cg[grid].getName());
+                }
+            }
+        }
+        else if( answer=="turn off by name" )
+        {
+            printF(" FINISH ME\n");
+        }
+        -- */
+
+        else
+        {
+            printF("Unknown command = [%s]\n",(const char*)answer);
+            gi.stopReadingCommandFile();
+              
+        }
+
+    }
+    
+    gi.popGUI();  // pop dialog
+
+  // --- Save the inverse of the BA material matrix in K0Inverse ---
+
+    if( !dbase.has_key("K0Inverse") )
+    {
+        dbase.put<RealArray>("K0Inverse");
+    }
+    RealArray & K0Inverse = dbase.get<RealArray>("K0Inverse");
+
+    K0Inverse.redim(6,6,numberOfMaterialRegions);
+    RealArray K0i(6,6); K0i=0.;
+//  dmp.getBianisotropicMaterialMatrixInverse( K0i );
+//  K0Inverse(all,all,0)=K0i;
+    if( numberOfMaterialRegions>1 )
+    {
+    // --- Fill in the material matrix for the embedded material regions ----
+        std::vector<DispersiveMaterialParameters> & dmpVector = 
+                dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+        printF("materialRegionParameters: numberOfMaterialRegions=%d, dmpVector.size()=%i\n",numberOfMaterialRegions,dmpVector.size());
+
+        for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+        {
+      // DispersiveMaterialParameters & dmp = dmpVector[mr-1];
+            DispersiveMaterialParameters & dmp = dmpVector[mr];  // ** FIX ME ***
+            dmp.display(stdout,sPrintF("Material for region %d",mr));
+            
+            
+            dmp.getBianisotropicMaterialMatrixInverse( K0i );
+            ::display(K0i,sPrintF("Material matrix: region %d",mr));
+            
+            K0Inverse(all,all,mr)=K0i;
+        }
+        
+    }
+
+
+    
+    return 0;
+}
+
+

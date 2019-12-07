@@ -85,13 +85,13 @@ main(int argc, char *argv[])
         else 
           return 1;
       }
-      // printf(" file %i : t=%e numberOfComponents=%i\n",m,t[m],numberOfComponents[m]);
+      // printf("checkCheckFiles: file %i : t=%e numberOfComponents=%i\n",m,t[m],numberOfComponents[m]);
       if( numberOfComponents[m]<=0 || numberOfComponents[m]>maxNumberOfComponents )
       {
         aString fileName = m==0 ? fileName1 : fileName2;
-        printf("ERROR: file %s invalid number of components. t[%i]=%e  numberOfComponents=%i\n",
-             (const char*)fileName,m,t[m],numberOfComponents[m]);
-        printf("fileName1=%s fileName2=%s\n",(const char*)fileName1,(const char*)fileName2);
+        printF("checkCheckFiles: ERROR: file%d %s invalid number of components. t[%i]=%e  numberOfComponents=%i\n",
+	       m+1,(const char*)fileName,m,t[m],numberOfComponents[m]);
+        printF("fileName1=%s fileName2=%s\n",(const char*)fileName1,(const char*)fileName2);
 	
 	return 1;
       }

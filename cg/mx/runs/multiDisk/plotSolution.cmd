@@ -4,6 +4,8 @@
 #   plotStuff plotSolution.cmd -show=MD8a.show -name=multiDisk8a -solution=1
 #
 # Movie:
+#   plotStuff plotSolution.cmd -show=MD4m.show -name=multiDisk4 -solution=1 
+# 
 #   plotStuff plotObjects.cmd -show=objectsG4m.show -EyMin=-1.7 -EyMax=1.1 -name=cgmxScat12ObjectsGDM
 #
 $show="ellipseG8.hdf"; $solution="-1"; $EyMin=-1.5; $EyMax=1.5; $ExMin=-1.5; $ExMax=1.5; $HzMin=-1.; $HzMax=1.;
@@ -23,7 +25,26 @@ plot:eFieldNorm
 contour
   plot contour lines (toggle)
   coarsening factor 1 (<0 : adaptive)
+  min max 0 1
+  vertical scale factor 0.
 exit
+# ---------- MOVIE ----------
+Foreground colour:0 white
+DISPLAY AXES:0 0
+DISPLAY LABELS:0 0
+DISPLAY COLOUR BAR:0 0
+Foreground colour:0 wheat
+bigger
+solution: 1
+# --------------- movie  - -lower resolution 
+# hardcopy vertical resolution:0 512
+# hardcopy horizontal resolution:0 512
+line width scale factor:0 2
+movie file name: $name
+save movie files 1
+
+
+
 DISPLAY AXES:0 0
 pause
 #

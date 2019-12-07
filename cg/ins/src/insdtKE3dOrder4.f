@@ -53,12 +53,23 @@
      & viscoPlasticModel,twoPhaseFlowModel
         parameter( standardModel=0,BoussinesqModel=1,
      & viscoPlasticModel=2,twoPhaseFlowModel=3 )
-        integer upwindOrder,debug
+        integer upwindOrder,debug,orderOneFix, augmentPlot
         integer advectionOption, centeredAdvection,upwindAdvection,
      & bwenoAdvection
         parameter( centeredAdvection=0, upwindAdvection=1, 
      & bwenoAdvection=2 )
-        real au,agu(0:5,0:5) ! for holdings upwind approximations to (a.grad)u
+        real au,agu(0:25,0:25) ! for holdings upwind approximations to (a.grad)u
+        real drl,wb(0:10) ! for holding the bweno weights
+        integer s1,s2,s3,var,vard
+        real aur,aus,aguP1,aguP2,aum,aup,gvU,gvV,gvW
+        real wpl,wpr,wml,wmr,Fpl,Fpr,Fml,Fmr,Fp,Fm ! for holdings bweno flux and weights
+        real Apl,Apr,Bpl,Bpr,Aml,Amr,Bml,Bmr
+        real betapl,betapr,betaml,betamr
+        real maxLocal
+        real ep,ap1,ap2,am1,am2,wp1,wp2,wm1,wm2
+        real bp1,bp2,bm1,bm2,wplw,wprw,wmlw,wmrw,up,um
+        real aumax,expAd
+        !***************! for holdings bweno flux and weights
         integer computeAllTerms,doNotComputeImplicitTerms,
      & computeImplicitTermsSeparately,computeAllWithWeightedImplicit
         parameter( computeAllTerms=0,doNotComputeImplicitTerms=1,

@@ -680,7 +680,8 @@ mount(const aString & dataBaseFileName, const aString & flags )
 
       // Save the Overture version number 
             OvertureVersion = OVERTURE_VERSION;
-            printF("File created with %s\n",(const char*)OvertureVersion);
+            if( false )
+                printF("File created with %s\n",(const char*)OvertureVersion);
             put( OvertureVersion,"OvertureVersion" );
 
       // Save the parallelWriteMode : if we write with multipleFileIO then we must read with multipleFileIO
@@ -5148,7 +5149,7 @@ put( const aString x[], const aString & name, const int numberOfStrings )
 //
 //		Dump all strings to output
 //
-    hsize_t dims[1]={totalStringLength}, rank=1;
+    hsize_t dims[1]={(hsize_t)totalStringLength}, rank=1;
     hid_t dataspaceID = H5Screate_simple(rank,dims,NULL);
     hid_t groupID = H5Gopen(fileID,fullGroupPath);
     hid_t sdsID = H5Dcreate(groupID,(char*)((const char *)name),H5T_NATIVE_UCHAR,dataspaceID,H5P_DEFAULT);

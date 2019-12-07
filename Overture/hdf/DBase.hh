@@ -296,7 +296,9 @@ namespace DBase
     }
 
     /// merge the contents of a database into this one; if there is a name conflict throw an error
-    void merge( DataBase &db_in ) throw(DBErr)
+    // *wdh* Sept 18, 2019 -- this next line caused a warning -- deprecated construct
+    // void merge( DataBase &db_in ) throw(DBErr)
+    void merge( DataBase &db_in ) /* throw(DBErr) */
     {
       for ( iterator n=db_in.begin(); n!=db_in.end(); n++ )
 	{
