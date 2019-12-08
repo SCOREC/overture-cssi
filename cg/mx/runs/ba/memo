@@ -1,6 +1,56 @@
 ********************************
 ********  Sat Dec 7, 2019
 
+REVISTIT TIMING: 
+
+$cgmx -noplot baScat -g=square1024p.order4.ng3 -method=bamx -numMatRegions=1 -regionFile=boxRegion.h -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.05 -tf=.05 -diss=0 -go=go
+
+
+
++++++ No GDM, Dissipation:
+              ---------Maxwell Summary------- 
+                       Sat Dec  7 19:23:22 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       58, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.578,ave=429.578,max=429.578](Mb), max-recorded=0 (Mb), total=429.578 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.87e+01    3.23e-01    3.03e-07   100.000   1.873e+01   1.873e+01
+setup and initialize................  1.00e-01    1.73e-03    1.63e-09     0.536   1.003e-01   1.003e-01
+initial conditions..................  2.40e-01    4.13e-03    3.88e-09     1.280   2.397e-01   2.397e-01
+advance.............................  1.81e+01    3.11e-01    2.93e-07    96.448   1.806e+01   1.806e+01
+  advance rectangular grids.........  1.77e+01    3.05e-01    2.87e-07    94.553   1.771e+01   1.771e+01
+   (advOpt).........................  1.77e+01    3.05e-01    2.87e-07    94.438   1.768e+01   1.768e+01
+  boundary conditions...............  1.74e-01    2.99e-03    2.81e-09     0.927   1.737e-01   1.737e-01
+  update ghost (parallel)...........  1.35e-04    2.33e-06    2.19e-12     0.001   1.350e-04   1.350e-04
+compute dt..........................  1.16e-03    1.99e-05    1.87e-11     0.006   1.157e-03   1.157e-03
+plotting............................  2.43e-01    4.19e-03    3.94e-09     1.297   2.429e-01   2.429e-01
+waiting (not counted)...............  4.58e-04    7.90e-06    7.42e-12     0.002   4.580e-04   4.580e-04
+--------------------------------------------------------------------------------------------------------
+
+
++++++ No GDM, No dissipation 
+
+              ---------Maxwell Summary------- 
+                       Sat Dec  7 19:20:49 2019
+               Grid:   /home/henshw/grids/square1024p.order4.ng3.hdf 
+  ==== final time= 5.00e-02, numberOfStepsTaken =       57, grids=1, gridpts =1.06399e+06, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=429.785,ave=429.785,max=429.785](Mb), max-recorded=0 (Mb), total=429.785 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.28e+01    2.25e-01    2.12e-07   100.000   1.285e+01   1.285e+01
+setup and initialize................  1.01e-01    1.77e-03    1.66e-09     0.784   1.008e-01   1.008e-01
+initial conditions..................  2.51e-01    4.40e-03    4.14e-09     1.953   2.509e-01   2.509e-01
+advance.............................  1.22e+01    2.13e-01    2.01e-07    94.691   1.217e+01   1.217e+01
+  advance rectangular grids.........  1.19e+01    2.08e-01    1.96e-07    92.439   1.188e+01   1.188e+01
+   (advOpt).........................  1.19e+01    2.08e-01    1.96e-07    92.365   1.187e+01   1.187e+01
+  boundary conditions...............  1.36e-01    2.38e-03    2.24e-09     1.057   1.358e-01   1.358e-01
+  update ghost (parallel)...........  1.05e-04    1.84e-06    1.73e-12     0.001   1.050e-04   1.050e-04
+compute dt..........................  1.22e-03    2.15e-05    2.02e-11     0.010   1.223e-03   1.223e-03
+plotting............................  2.48e-01    4.35e-03    4.09e-09     1.929   2.478e-01   2.478e-01
+waiting (not counted)...............  4.52e-04    7.93e-06    7.45e-12     0.004   4.520e-04   4.520e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
 example for check file:
 
 

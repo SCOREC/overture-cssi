@@ -30,8 +30,8 @@ include make
 # gfortran has trouble with interface3dOrder4.bf and -O3 ?
 FC_FLAGS_OPT = -O
 
-# memory checking for Mac clang: 
-CXX_FLAGS += -fsanitize=address
+# memory checking for gcc or clang: 
+# CXX_FLAGS += -fsanitize=address
 
 # List of packages to build
 PKGS := src

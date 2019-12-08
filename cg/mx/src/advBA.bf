@@ -1840,7 +1840,7 @@ end if
 #beginMacro updateBAGDMNew(DIM,ORDER,GRIDTYPE)
 
   if( t.lt.2*dt )then
-    write(*,'("advBA: advance BA GDM, dim=DIM, order=ORDER grid=GRIDTYPE... t=",e10.2)') t
+    write(*,'("advBA: advance BA GDM (*new*), dim=DIM, order=ORDER grid=GRIDTYPE... t=",e10.2)') t
   end if
   
   ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
@@ -1975,6 +1975,7 @@ end if
          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
 
+          ! FIX ME -- use opt version here too
           pc=0  ! P
           qc=1  ! Q = P.t 
           do k1=1,6
@@ -2045,7 +2046,7 @@ end if
         end if
 
         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
-      if( .true. )then
+
         ! opt version 
         do m=0,5
           ptSum(m)=0
@@ -2062,27 +2063,6 @@ end if
           curl(m) = curl(m) - ptSum(m)
         end do 
 
-      else
-        pc=0  ! P
-        qc=1  ! Q = P.t 
-        do k1=1,6
-          ec=k1-1 ! E or H component 
-          ptSum(ec)=0.   ! local total Pt or Mt 
-          do k2=1,6
-            do n=1,Np(k1,k2,mr)
-              ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
-
-        ! if( debug.gt.3 )then
-        !   write(*,'("  q,qv,ptSum=",3(e10.2,1x))') p(i1,i2,i3,qc),pv(qc),ptSum(ec)
-        ! end if
-
-              qc=qc+2
-            end do
-          end do
-          ! subtract off P.t = sum Q_m
-          curl(ec) = curl(ec) - ptSum(ec)
-        end do 
-      end if
 
         ! if( debug.gt.3 )then
         !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
@@ -2104,7 +2084,7 @@ end if
         ! q.t = a0*E + a1*Et - b0*p - b1*q   
         ! or 
         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
-      if( .true. )then
+
         ! optimized version
         do m=1,numTerms2(mr)
 
@@ -2126,47 +2106,6 @@ end if
           ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
 
         end do 
-
-      else
-        pc=0  ! P
-        qc=1  ! Q = P.t 
-        do k1=1,6
-          do k2=1,6
-            ec=k2-1 ! This GDM term involves this E or H component 
-
-            do n=1,Np(k1,k2,mr)
-              a0 = gdmPar(1,n,k1,k2,mr)
-              a1 = gdmPar(2,n,k1,k2,mr)
-              b0 = gdmPar(3,n,k1,k2,mr)
-              b1 = gdmPar(4,n,k1,k2,mr)
-
-              pct=pc+6  ! p.t is stored in un here 
-              qct=qc+6  ! q.t is stored in un here
-
-              un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
-              un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-              ! test: 
-              ! un(i1,i2,i3,qct) = a0*ev(ec)         + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-
-              ! if( debug.gt.3 )then
-              !   write(*,'(" i1,i2=",2i4," k1,k2=",2i2," Np=",i3," ec=",i1," t=",e9.2)') i1,i2,k1,k2,Np(k1,k2,mr),ec,t
-              !   write(*,'("   ... pc,qc,ec=",3i3," a0,a1,b0,b1=",4e10.2)') pc,qc,ec,a0,a1,b0,b1
-              !   write(*,'("   ... p ,q =",2f7.3)') p(i1,i2,i3,pc),p(i1,i2,i3,qc)
-              ! end if 
-              ! write(*,'("   ... p ,pe =",2f7.3," q ,qe =",2f7.3)') p(i1,i2,i3,pc),pv(pc),p(i1,i2,i3,qc),pv(qc)
-              ! write(*,'("   ... E ,Ee =",2f7.3," Et,Ete =",2f7.3)') u(i1,i2,i3,ec),ev(ec),un(i1,i2,i3,ec),evt(ec)
-              ! write(*,'("   ... pt,pte=",2f7.3," qt,qte=",2f7.3)') un(i1,i2,i3,pct),pvt(pc),un(i1,i2,i3,qct),pvt(qc)
-
-              ! test: -- set to exact time-derivative 
-              ! un(i1,i2,i3,pct) = pvt(pc)
-              ! un(i1,i2,i3,qct) = pvt(qc)
-             
-              pc=pc+2
-              qc=qc+2
-            end do
-          end do
-        end do 
-      end if
 
       endLoopsMask()
 
