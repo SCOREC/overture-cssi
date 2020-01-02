@@ -3434,7 +3434,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       int eqn=0;
       real a0=1., a1=0., b0=0., b1=1.;
-      sScanF(answer(len,answer.length()),"%i %e %e %e %e %s",&eqn,&a0,&a1,&b0,&b1);
+      sScanF(answer(len,answer.length()),"%i %e %e %e %e",&eqn,&a0,&a1,&b0,&b1);
       printF("GDM equation = %i, a0=%e, a1=%e, b0=%e, b1=%e, domain=[%s]\n",eqn,a0,a1,b0,b1,(const char*)gdmDomainName);
 
       dispersionParametersDialog.setTextLabel("GDM coeff:",

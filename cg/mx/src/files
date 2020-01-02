@@ -1,6 +1,7 @@
 #  
 #  Cgmx files
 #   Use:  setenv COMPILE [dbg/opt/optdbg]
+#
 
 buildHigherOrder = off
 # buildHigherOrder = on
