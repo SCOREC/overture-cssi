@@ -57,12 +57,25 @@ if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
 if( $b0[0] eq "" ){ @b0=(0,0,0,0); }
 if( $b1[0] eq "" ){ @b1=(1,0,0,0); }
 #
+$extraLabel ="";
+if( $dm ne "none" && ($method ne "bamx")  ){ $extraLabel .= "GDMNp$npv"; }
+$matFileName=$matFile;
+$matFileName =~ s/\.txt//; 
+if( $dm ne "none" && ($method eq "bamx")  ){ $extraLabel .= "GDM"; }
+if( $method eq "bamx" ){ $extraLabel .= $matFileName; }
+if( $modeGDM > 0 ){ $extraLabel .= "Mode$modeGDM"; }
+$outputFile="$name$method$cg$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
+#
 $caseName="$name$method$cg\Order$order";
 if( $dm ne "none" ){ $caseName.="GDM"; }
 if( $npv > 1 && ($method ne "bamx") ){ $caseName.="Np$npv"; }
+if( $method eq "bamx" ){ $caseName .= $matFileName; }
 if( $errorNorm eq 0 ){ $normName = "max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\
    elsif( $errorNorm eq 2 ){ $normName = "L2"; }else{ $normName="UnknownNorm"; }
 $caseName .= $normName . "Norm";
+#
+#
+#
 $numberOfComponents=5;
 if( $method eq "sosup" ){ $numberOfComponents=8; }
 # define the table heading and caption
@@ -100,7 +113,7 @@ if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" )\
 # BA-GDM : Save vector errors only 
 if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorErrors eq 1 )\
   { $title= "grid  \& N \&  \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9;  \
-  foreach $i (1,2,3,4,5,6) { $ignoreComponent[$i]=1; } \
+  foreach $i (0,1,2,3,4,5) { $ignoreComponent[$i]=1; } \
   }
 # 
 $labelMethod=$method;
@@ -111,14 +124,6 @@ if( $method eq "bamx" ){\
 $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, method=$method, ts=$ts, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, kx=$kx, ky=$ky, kz=$kz, dm=$dm, -matFile=$matFile -drOption=$drOption -solveForAllFields=$solveForAllFields $date}\\label\{table:$name" . $method . "Order$order$normName}"; \
 }
 #
-$extraLabel ="";
-if( $dm ne "none" && ($method ne "bamx")  ){ $extraLabel .= "GDMNp$npv"; }
-$matFileName=$matFile;
-$matFileName =~ s/\.txt//; 
-if( $dm ne "none" && ($method eq "bamx")  ){ $extraLabel .= "GDM"; }
-if( $method eq "bamx" ){ $extraLabel .= $matFileName; }
-if( $modeGDM > 0 ){ $extraLabel .= "Mode$modeGDM"; }
-$outputFile="$name$method$cg$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 # 
 $options = "-diss=$diss -dissOrder=$dissOrder -ts=$ts -dm=$dm -radius=$radius -bg=$bg -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ta=$ta -tb=$tb -alphaP=$alphaP -npv=$npv -modeGDM=$modeGDM -a0=$a0[0] $a0[1] $a0[2] -a1=$a1[0] $a1[1] $a1[2] -b0=$b0[0] $b0[1] $b0[2] -b1=$b1[0] $b1[1] $b1[2] -kx=$kx -ky=$ky -kz=$kz -checkErrors=1 -matFile=$matFile -solveForAllFields=$solveForAllFields -drOption=$drOption -cons=0 -go=go";
 #

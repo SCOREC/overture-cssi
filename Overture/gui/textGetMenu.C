@@ -20,6 +20,17 @@ using std::endl;
 int 
 getLineFromFile( FILE *file, char s[], int lim);
 
+// =============================================================================================
+/// \brief parse the string line with the Overture (perl) parser.
+// =============================================================================================
+int GenericGraphicsInterface::
+parseLine(aString & line ) const
+{
+  return parser->parse(line);
+}
+
+
+
 int GenericGraphicsInterface::
 parseAnswer(aString & answer )
 // =============================================================================================

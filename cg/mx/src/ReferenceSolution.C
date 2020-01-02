@@ -202,7 +202,7 @@ ReferenceSolution::getSolution( real t, CompositeGrid & cgTarget, Range & C )
       {
         // printF("domain=%i: Set uRefd[%i]=uRef[%i]\n",domain,grid,masterGrid(grid));
       
-        uRefd[grid]=uRef[masterGrid(grid)];  // copy master to domain grid-function
+        uRefd[grid](all,all,all,C)=uRef[masterGrid(grid)](all,all,all,C);  // copy master to domain grid-function
       }
 
 
@@ -226,7 +226,7 @@ ReferenceSolution::getSolution( real t, CompositeGrid & cgTarget, Range & C )
       {
         // printF("domain=%i: Set uTarget[%i]=uTargetd[%i]\n",domain,masterGrid(grid),grid);
 
-        (*uTarget)[masterGrid(grid)]=uTargetd[grid];  // copy interpolated values into master 
+        (*uTarget)[masterGrid(grid)](all,all,all,C)=uTargetd[grid](all,all,all,C);  // copy interpolated values into master 
       }
     }
     

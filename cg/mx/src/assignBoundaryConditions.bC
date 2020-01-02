@@ -1243,11 +1243,13 @@ int polarizationOption=0;
     }
     if( solveForMagneticField )
     {
+      const int hxr=hx+3, hyr=hy+3, hzr=hz+3; // offset into ug
+      const int hxi=hx+6, hyi=hy+6, hzi=hz+6; // offset into ug
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-        U(i1,i2,i3,hx)=UG(i1,i2,i3,hx)*cHr + UG(i1,i2,i3,hx+3)*cHi;
-        U(i1,i2,i3,hy)=UG(i1,i2,i3,hy)*cHr + UG(i1,i2,i3,hy+3)*cHi;
-        U(i1,i2,i3,hz)=UG(i1,i2,i3,hz)*cHr + UG(i1,i2,i3,hz+3)*cHi;
+        U(i1,i2,i3,hx)=UG(i1,i2,i3,hxr)*cHr + UG(i1,i2,i3,hxi)*cHi;
+        U(i1,i2,i3,hy)=UG(i1,i2,i3,hyr)*cHr + UG(i1,i2,i3,hyi)*cHi;
+        U(i1,i2,i3,hz)=UG(i1,i2,i3,hzr)*cHr + UG(i1,i2,i3,hzi)*cHi;
       }
     }
 		
@@ -2339,6 +2341,29 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 	  {
             // do nothing here
 	  }
+          else if( mg.boundaryCondition(side,axis)==characteristic )
+	  {
+            // characteristic BC -- *new* 2Dec 2019 
+            OV_ABORT("characteristic BC: finish me");
+            
+	    int numberOfGhostLines = orderOfAccuracyInSpace/2;
+            if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
+	    int extra=numberOfGhostLines;
+	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+            uLocal(I1,I2,I3,C)=0.;
+
+	  }
+          else if( mg.boundaryCondition(side,axis)==absorbing )
+	  {
+            // absorbing BC: e.g. supergrid
+            //  -- *new* Dec 2019 do this for now
+	    int numberOfGhostLines = orderOfAccuracyInSpace/2;
+            if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
+	    int extra=numberOfGhostLines;
+	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+            uLocal(I1,I2,I3,C)=0.;
+
+	  }
 	  else // bc== ?
 	  {
 	    printF("assignBoundaryConditions:ERROR: unknown boundaryCondition(%i,%i)=%i\n",
@@ -2346,6 +2371,9 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 	    OV_ABORT("assignBoundaryConditions:ERROR");
 	  }
 	}
+
+
+
 	else if( method==yee )
 	{
           // *****************************************************************

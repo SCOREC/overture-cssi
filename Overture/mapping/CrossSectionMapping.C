@@ -266,11 +266,156 @@ setCrossSectionType(CrossSectionTypes type)
 /// 
 //===========================================================================
 {
-
   crossSectionType=type;
-  // *** finish this ***
+
+  if( crossSectionType==ellipse )
+  {
+    if( startS==0. )
+      setTypeOfCoordinateSingularity( Start,sAxis,polarSingularity ); // s has a "polar" singularity
+    else
+      setTypeOfCoordinateSingularity( Start,sAxis,noCoordinateSingularity ); // s has a "polar" singularity
+    if( fabs(endS-1.)<REAL_EPSILON*5. )
+      setTypeOfCoordinateSingularity( End  ,sAxis,polarSingularity ); 
+    else
+      setTypeOfCoordinateSingularity( End  ,sAxis,noCoordinateSingularity ); // s has a "polar" singularity
+    setCoordinateEvaluationType( cylindrical,TRUE );  // Mapping can be evaluated in cylindrical coordinates
+
+    setBoundaryCondition( Start,sAxis,0 ); 
+    setBoundaryCondition( End  ,sAxis,0 );
+
+    setBoundaryCondition( Start,axis3,1 );
+    setBoundaryCondition( End  ,axis3,0 );
+    if( fabs(endAngle-startAngle)-1. < REAL_EPSILON*10. )
+    {
+      setIsPeriodic(tAxis, functionPeriodic );  
+      setBoundaryCondition( Start,tAxis,-1);
+      setBoundaryCondition( End  ,tAxis,-1);
+    }
+    else
+    {
+      setBoundaryCondition( Start,tAxis,0 );
+      setBoundaryCondition( End  ,tAxis,0 );
+    }
+  }
+  else if( crossSectionType==joukowsky )
+  {
+    domainDimension=2;
+    // startS=.5;                      // just make a half wing by default
+    // setGridDimensions( sAxis,21 );  // length
+    // setGridDimensions( tAxis,41 );  // angle
+    setGridDimensions( sAxis,41 );  // length
+    setGridDimensions( tAxis,41 );  // angle
+
+    if( startS==0. )
+      setTypeOfCoordinateSingularity( Start,sAxis,polarSingularity ); // s has a "polar" singularity
+    else
+      setTypeOfCoordinateSingularity( Start,sAxis,noCoordinateSingularity ); // s has a "polar" singularity
+    if(  fabs(endS-1.)<REAL_EPSILON*5. )
+      setTypeOfCoordinateSingularity( End  ,sAxis,polarSingularity );
+    else
+      setTypeOfCoordinateSingularity( End  ,sAxis,noCoordinateSingularity ); // s has a "polar" singularity
+    setCoordinateEvaluationType( cylindrical,TRUE );  // Mapping can be evaluated in cylindrical coordinates
+
+    setBoundaryCondition( Start,sAxis,0 );  
+    setBoundaryCondition( End  ,sAxis,0 );
+
+    // setBoundaryCondition( Start,axis3,1 );
+    // setBoundaryCondition( End  ,axis3,0 );
+    if( fabs(endAngle-startAngle)-1. < REAL_EPSILON*10. )
+    {
+      setIsPeriodic(tAxis, functionPeriodic );  
+      setBoundaryCondition( Start,tAxis,-1);
+      setBoundaryCondition( End  ,tAxis,-1);
+    }
+    else
+    {
+      setBoundaryCondition( Start,tAxis,0 );
+      setBoundaryCondition( End  ,tAxis,0 );
+    }
+	  
+  }
+  else
+  {
+    setTypeOfCoordinateSingularity( Start,sAxis,noCoordinateSingularity ); 
+    setTypeOfCoordinateSingularity( End  ,sAxis,noCoordinateSingularity ); 
+    setIsPeriodic(tAxis, notPeriodic );  
+    for( int axis=axis1; axis<domainDimension; axis++ )
+    {
+      setBoundaryCondition( Start,axis,1 );
+      setBoundaryCondition( End  ,axis,1 );
+    }
+  }
+
+
+  if( crossSectionType==general )
+  {
+    printF("CrossSectionMapping::setCrossSectionType: ERROR:  Not implemented for crossSectionType==general \n");
+    printF("Use the interactive update\n");
+    OV_ABORT("ERROR");
+  }
+
+  initialize();
+  mappingHasChanged();
+
   return 0;
 }
+
+
+// ======================================================================================
+/// \brief Set the lengths of the three semi-axis for the ellipsoid
+// ======================================================================================
+int CrossSectionMapping::
+setEllipsoidParameters( real a_, real b_, real c_ )
+{
+  a=a_;
+  b=b_;
+  c=c_;
+  initialize();  
+  mappingHasChanged();
+
+  return 0;
+}
+
+// ======================================================================================
+/// \brief Set the lengths of the Joukowsky airfoil
+// ======================================================================================
+int CrossSectionMapping::
+setJoukowskyParameters( real delta, real d, real a, real length, real beta )
+{
+  joukowskyDelta  = delta;
+  joukowskyD      = d;
+  joukowskyA      = a;
+  joukowskyLength = length;
+  joukowskyBeta   = beta;
+
+  initialize();  
+  mappingHasChanged();
+  return 0;
+}
+
+// ======================================================================================
+/// \brief Set the mapping to be a surface or volume mapping
+// ======================================================================================
+int CrossSectionMapping::
+setIsSurface( bool isSurface )
+{
+
+  if( isSurface && domainDimension==3 )
+  {
+    setDomainDimension(2);
+    initialize();  
+    mappingHasChanged();
+  }
+  else if( !isSurface && domainDimension==3 )
+  {
+    setDomainDimension(3);
+    initialize();  
+    mappingHasChanged();
+  }
+
+  return 0;
+}
+
 
 
 

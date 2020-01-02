@@ -63,6 +63,16 @@ class CrossSectionMapping : public Mapping{
 
   int setCrossSectionType(CrossSectionTypes type);
 
+  // Set the mapping to be a surface or volume
+  int setIsSurface( bool isSurface );
+
+
+  // Parameters for an ellipsoid: 
+  int setEllipsoidParameters( real a, real b, real c );
+
+  int setJoukowskyParameters( real delta, real d, real a, real length, real beta );
+
+
   void map( const realArray & r, realArray & x, realArray & xr = Overture::nullRealDistributedArray(),
 	 MappingParameters & params=Overture::nullMappingParameters() );
 

@@ -231,6 +231,15 @@ $cmd
 $cmd="#"; 
 if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
 $cmd
+$cmd="#"; 
+# *********************** TEST ********************
+# $numMatRegions=2; 
+# if( $numMatRegions>1 ){\
+# $matFile2="baAir.txt"; \
+# $regionFile="sphereRegion.h"; $radius=1.; $xc=0; $yc=0; $zc=0; $ae=$radius; $be=$radius; $ce=$radius;\
+# $cmd = "include $regionFile";\
+# }
+# $cmd
 # 
 # -- set default stage options
 if( $stageOption eq "default" && $useSosupDissipation eq 0 ){ $stageOption="IDB"; }

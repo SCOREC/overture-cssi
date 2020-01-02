@@ -4210,10 +4210,9 @@ else
  sr                   =rpar(37)  ! Re(s)
  si                   =rpar(38)  ! Im(s) 
 
- if( t.le.2*dt) then
+ if( .false. .and. t.le.2*dt) then
    write(*,'("++++++ bcMxCorners: solveForAllFields",i2)') solveForAllFields
  end if
- ! solveForAllFields=0
  
  ! if( t.le.3*dt )then
  !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si

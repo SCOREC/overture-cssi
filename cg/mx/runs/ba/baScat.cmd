@@ -7,7 +7,7 @@ echo to terminal 1
 #   
 #  cgmx [-noplot] baScat -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> ...
 #                 -plotIntensity=[0|1] -diss=<>  -filter=[0|1] -debug=<num> -cons=[0/1] -varDiss=<0|1> ...
-#                 -rbc=[abcEM2|rbcNonLocal|abcPML] -leftBC=[rbc|planeWave] -method=[fd|Yee|sosup] 
+#                 -rbc=[abcEM2|rbcNonLocal|abcPML|absorbing] -leftBC=[rbc|planeWave] -method=[fd|Yee|sosup] 
 #                 -probeFileName=<s> -xLeftProbe=<f> -xRightProbe=<f> ...
 #                 -useSosupDissipation=[0|1] -dm=[none|gdm] -ic=[pw|gp] -go=[run/halt/og]
 #
@@ -38,6 +38,7 @@ $numBlocks=0; # 0 = default case of scattering from a "innerDomain"
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
 $omega=5.; # Gaussian souce
 $xc=.5; $yc=.5; $zc=0.; $radius=.25; # for cylinder material region
+$ae=.25; $be=.25; $ce=.25;  # for sphere or ellipsoid material region
 $eps0=1.; $mu0=1.; # outer domain 
 $eps1=1.; $mu1=1.; # block 1 
 $eps2=1.; $mu2=1.; # block 2 
@@ -45,19 +46,21 @@ $eps3=1.; $mu3=1.; # block 3
 $eps4=1.; $mu4=1.; # block 4 
 $ts="bamx"; $matFile="";  $numMatRegions=1; $matFile2="";  $matFile3=""; $matFile4="";
 $solveForAllFields=0; $regionFile="boxRegion.h"; 
-$show=" "; $backGround="backGround"; $compareToShowFile=""; $flushFrequency=1; 
+$show=" "; $backGround="backGround"; $compareToShowFile=""; $flushFrequency=10; 
 $interfaceEquationOption=1; $interfaceIterations=10;  $interfaceOmega=.5; $useNewInterface=1; 
 $grid="afm2.order4.hdf";
 $cons=1; $go="halt"; 
 $xa=-100.; $xb=-1.5; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
 $leftBC="rbc"; $bcBody=""; 
 $probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
+$intProbeName="";  # integral probe
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
 $xat= 1.; $xbt= 2.; # transmission probe x-bounds 
 $rbc="abcEM2"; $pmlLines=11; $pmlPower=6; $pmlStrength=50.; 
 # -- sosup dissipation --
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
+$useSuperGrid=0; $superGridWidth=.2; 
 # 
 # $alphaP=-1.; $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
@@ -87,10 +90,13 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"matFile3=s"=>\$matFile3,"matFile4=s"=>\$matFile4,\
   "numMatRegions=i"=>\$numMatRegions,\
   "solveForAllFields=i"=>\$solveForAllFields,"regionFile=s"=>\$regionFile,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
-  "radius=f"=>\$radius,"omega=f"=>\$omega );
+  "radius=f"=>\$radius,"omega=f"=>\$omega,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
+  "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName  );
 # -------------------------------------------------------------------------------------------------
 #
 if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+if( $rbc eq "c" || $rbc eq "char" ){ $rbc="characteristic"; }
+if( $rbc eq "a" ){ $rbc="absorbing"; }
 $orderOfRungeKutta=4;
 if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
 if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
@@ -134,6 +140,9 @@ order of Runge Kutta $orderOfRungeKutta
 solve for all fields $solveForAllFields
 # dispersion model:
 $dm
+#
+use super-grid absorbing layers $useSuperGrid 
+super-grid width $superGridWidth
 # 
 #-# Drude params 1 1 all (gamma,omegap,domain-name)
 #-if( $numBlocks eq 0 ){ $cmd="GDM params $a0 $a1 $b0 $b1 innerDomain (a0,a1,b0,b1,domain-name)\n"; }\
@@ -272,7 +281,7 @@ use conservative difference $cons
 debug $debug
 #
 cfl $cfl 
-plot divergence 0
+plot divergence 1
 plot errors $checkErrors
 check errors $checkErrors
 plot intensity $plotIntensity
@@ -328,6 +337,10 @@ probe frequency $probeFrequency
 #- sum
 #- exit
 # 
+# -- surface integral probe --
+if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n grid coordinate plane 0 .2512 0 0 (axis, x,y,z)\n   integral\n  all components\n exit"; }else{ $cmd="#"; }
+$cmd 
+#
 # Point probe: 
 create a probe...
   $leftProbeFileName="left$probeFileName.dat"; 

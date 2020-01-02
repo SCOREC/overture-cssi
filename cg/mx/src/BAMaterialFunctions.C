@@ -311,21 +311,31 @@ getBianisotropicPlaneWaveSolution( const real kv[3],
   }
 
 
-  // Choose solution with maximum omega and given polarization (if it exists)
-  int iMax=-1;
-  real lamMax=-REAL_MAX;
-  for( int i=0; i<n; i++ )
+  int iMode=-1;
+  if( mode>=0 && mode<n )
   {
-    if( wr(i) > lamMax && ( polar[i]==polarization || !polarizationFound ) )
-    {
-      lamMax=wr(i); iMax=i;
-    }
+    iMode=mode;
   }
-  real omega = wr(iMax)*kNorm;
+  else
+  {
+    // Choose solution with maximum omega and given polarization (if it exists)
+    int iMax=-1;
+    real lamMax=-REAL_MAX;
+    for( int i=0; i<n; i++ )
+    {
+      if( wr(i) > lamMax && ( polar[i]==polarization || !polarizationFound ) )
+      {
+        lamMax=wr(i); iMax=i;
+      }
+    }
+    iMode=iMax;
+  }
+  
+  real omega = wr(iMode)*kNorm;
   sr=0.;
   si=-omega; // note minus 
   
-  for( int i=0; i<n; i++ ){ evr[i]=vr(i,iMax); evi[i]=0.; }  // 
+  for( int i=0; i<n; i++ ){ evr[i]=vr(i,iMode); evi[i]=0.; }  // 
   // scale so max-norm is 1 
   real evMax=0.;
   for( int i=0; i<n; i++ ){ if( fabs(evr[i])>evMax ){ evMax=fabs(evr[i]); } }; //
@@ -333,12 +343,12 @@ getBianisotropicPlaneWaveSolution( const real kv[3],
 
   if( polarizationFound )
     printF("Requested polarization=[%s] found.\n",(const char*)polarizationName[polarization]);
-  else
+  else if( polarization!=noPolarization )
     printF("Requested polarization=[%s] NOT found.\n",(const char*)polarizationName[polarization]);
   
 
   printF("Choosing mode i=%d: omega=lam*kNorm=%6.3f (lam=%6.3f,kNorm=%6.3f) evr=[%6.3f,%6.3f,%6.3f,%6.3f,%6.3f,%6.3f]\n",
-	 iMax,omega,wr(iMax),kNorm,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+	 iMode,omega,wr(iMode),kNorm,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
 
   // save values 
   // omegaBA = omega;
@@ -807,21 +817,30 @@ getBianisotropicDispersivePlaneWaveSolution( const LocalReal kv[3],
       wi(i) = imag(wc(i));
     }
   
-
-    // choose the eigenvalue with largest negative imaginary part
   
-    LocalReal wiMin=REAL_MAX;
-    int iMax=-1;
-    for (int i=0; i<n; i++ )
+    int eigIndex=-1;
+    if( mode>=0 && mode<n )
     {
-      if( wi(i) < wiMin )
-      {
-        wiMin= wi(i);
-        iMax=i;
-      }
-    
+      // user specified mode to choose
+      eigIndex=mode;
     }
-    int eigIndex = iMax;
+    else
+    {
+      // choose the eigenvalue with largest negative imaginary part
+
+      LocalReal wiMin=REAL_MAX;
+      int iMax=-1;
+      for (int i=0; i<n; i++ )
+      {
+        if( wi(i) < wiMin )
+        {
+          wiMin= wi(i);
+          iMax=i;
+        }
+      }
+      eigIndex = iMax;
+    }
+  
 
     // eigIndex=0;   // ** TEMP 
   

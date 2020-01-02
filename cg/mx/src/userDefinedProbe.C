@@ -70,6 +70,7 @@ userDefinedProbe( GenericGraphicsInterface & gi )
                         "transmission probe",
                         "grid point probe",
                         "max norm probe",
+                        "near field probe",
                         ""};
   addPrefix(pbLabels,prefix,cmd,maxCommands);
   int numRows=2;
@@ -229,6 +230,79 @@ userDefinedProbe( GenericGraphicsInterface & gi )
       }
         
     }
+/* ---
+    else if( answer=="near field probe" )
+    {
+      probe.probeType=ProbeInfo::probeUserDefined;
+      aString & userProbeType = probe.dbase.put<aString>("userProbeType");
+
+      userProbeType="nearFieldProbe";
+      
+      printF("The near field probe will integrate along a line in 2D or plane in 3D\n");
+      gi.inputString(answer,"Enter (x,y,z) for a point on the line or plane (approximate)");
+      RealArray points(1,3); points=0.;
+      sScanF(answer,"%e %e %e",&points(0,0),&points(0,1),&points(0,2));
+      
+      int planeAxis=0;
+      gi.inputString(answer,"Enter the plane type: x, y or z ");
+      if( answer=="x" )
+        planeAxis=0;
+      else if( answer=="y" )
+        planeAxis=1;
+      else if( answer=="z" )
+        planeAxis=2;
+      else
+      {
+        printF("ERROR: Unkown plane axis=[%s]\n",(const char*)answer;
+      }
+
+
+      IntegerArray gridLocation(1,4); gridLocation=0;
+      /// \param points(0:numPoints,0:d-1) (input) : coordinates of points to check.
+      /// \param gridLocation(0:numPoints,0:3) (output) : (i1,i2,i3,grid) closest grid and point. 
+      getClosestGridPoint( cg,points,gridLocation);
+
+      int grid=gridLocation(0,3);
+      int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+      i1=gridLocation(0,0), i2=gridLocation(0,1), i3=gridLocation(0,2);
+      printF("UserDefineProbe: Point (x,y,x)=(%10.3e,%10.3e,%10.3e) is closest to grid=%i (i1,i2,i3)=(%i,%i,%i)\n",
+             points(0,0),points(0,1),points(0,2), grid,i1,i2,i3);
+
+      // Output actual position of the probe
+      real xv[3]={0.,0.,0.}; // 
+      MappedGrid & mg = cg[grid];
+      if( mg.isRectangular() )
+      {
+        real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+        int iv0[3]={0,0,0}; //
+        mg.getRectangularGridParameters( dvx, xab );
+        for( int dir=0; dir<numberOfDimensions; dir++ )
+          iv0[dir]=mg.gridIndexRange(0,dir);
+
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+          xv[axis]= xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]);
+
+      }
+      else
+      {
+        cg[grid].update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+        realArray & vertex = cg[grid].vertex();
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ ){ xv[axis]=vertex(i1,i2,i3,axis); }  // 
+      }
+        
+      printF(" Actual near-field probe position is (%e,%e,%e)\n",xv[0],xv[1],xv[2]);
+
+      // Save position in the probe object
+      probe.grid=grid;
+      for( int dir=0; dir<3; dir++ )
+      {
+        probe.iv[dir]=iv[dir];
+        probe.xv[dir]=xv[dir];
+      }
+        
+    }
+  ---- */
+    
     else if( answer=="max norm probe" )
     {
       probe.probeType=ProbeInfo::probeUserDefined;

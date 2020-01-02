@@ -7,7 +7,7 @@
 #                                -eps1=<> -eps2=<> -interfaceIts=<> -diss=<> -filter=[0|1] -dissc=<> -debug=<num> ...
 #                                -cons=[0/1] -plotIntensity=[0|1] ...
 #        -useSosupDissipation=[0|1] -sosupDissipationOption=[0|1] -sosupDissipationFrequency=<i> 
-#                                -method=[nfdtd|Yee|sosup] -errorNorm=[0|1|2] -go=[run/halt/og]
+#                                -method=[nfdtd|Yee|sosup|bamx] -errorNorm=[0|1|2] -go=[run/halt/og]
 # Arguments:
 #  -kx= -ky= -kz= : integer wave numbers of the incident wave
 #  -interit : number of iterations to solve the interface equations 
@@ -83,7 +83,7 @@ echo to terminal 0
 #  srun -N1 -n1 -ppdebug $cgmxp noplot dielectricCyl -cyl=0 -g=solidSphereInABoxe8.order4 -kx=1 -eps1=.25 -eps2=1. -tp=.1 -tf=.5 -diss=2. -go=go
 #================================================================================================
 # 
-$tFinal=2.; $tPlot=.1;  $show=" "; $method="NFDTD";
+$tFinal=2.; $tPlot=.1;  $show=" "; $method="NFDTD"; $ts="me"; 
 $cfl = .8; $diss=.5; $dissOrder=-1; $filter=0; $dissc=-1.; $debug=0;  $plotIntensity=0;
 $cyl=1;   # set to 0 for a sphere 
 $kx=2; $ky=0; $kz=0;
@@ -105,6 +105,10 @@ $sphereRadius=1.;
 $stageOption ="default";
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
 $selectiveDissipation=0;
+#
+$drOption="computeFrequency"; # dispersion relation option 
+$matFile=""; $solveForAllFields=0; $numMatRegions=1; $matFile2="";
+$regionFile="cylRegion.h"; $xc=0.; $yc=0.; $zc=0; $radius=.4; # case of sphere is handled below
 # 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
@@ -119,13 +123,24 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
   "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,\
   "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
-   "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations,"sphereRadius=f"=>\$sphereRadius );
+   "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations,"sphereRadius=f"=>\$sphereRadius,"ts=s"=>\$ts,\
+   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"solveForAllFields=i"=>\$solveForAllFields, "drOption=s"=>\$drOption,\
+   "numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile );
 # -------------------------------------------------------------------------------------------------
+if( $method eq "bamx" ){ $numMatRegions=2; }
+if( $method eq "bamx" && $cyl eq 0  ){ $solveForAllFields=1; $regionFile="sphereRegion.h"; $radius=1.; $ae=$radius; $be=$radius; $ce=$radius; }
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
 if( $go eq "run" || $go eq "go" ){ $go = "movie mode\n finish"; }
+# 
+if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
+$orderOfRungeKutta=4;
+if( $ts eq "rk1" ){ $ts="rungeKutta"; $orderOfRungeKutta=1; }
+if( $ts eq "rk2" ){ $ts="rungeKutta"; $orderOfRungeKutta=2; }
+if( $ts eq "rk3" ){ $ts="rungeKutta"; $orderOfRungeKutta=3; }
+if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
 # 
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
@@ -150,10 +165,16 @@ echo to terminal 1
 $grid
 #
 $method
+# time-stepping method
+$ts
+order of Runge Kutta $orderOfRungeKutta
+#
+solve for all fields $solveForAllFields
 # Set length scale (used by dispersion models)
 length scale: $lengthScale
 # dispersion model:
 $dm
+$drOption
 # printf(" dm=$dm\n");
 #
 GDM mode: $modeGDM
@@ -203,9 +224,16 @@ if( $npv[1] == 2 ){ \
       }
 $cmd
 #
-# -- read material parameters from a file 
-if( $dmFile ne "" ) { $cmd="GDM domain name: innerDomain\n number of polarization vectors: $npv[1] \n material file: $dmFile" }else{ $cmd="#"; }
-$cmd 
+# -- specify material regions or material file
+$cmd="#"; 
+if( $matFile ne "" ){ $cmd="GDM domain name: all\nmaterial file: $matFile"; }else{ $cmd="#"; }
+$cmd
+#
+$cmd="#"; 
+if( $numMatRegions>1 ){\
+$cmd = "include $regionFile";\
+}
+$cmd
 # 
 # 
 #* planeWaveInitialCondition
@@ -281,9 +309,8 @@ if( $stageOption eq "VD-IB" ){ $stages="computeUt,addDissipation\n updateInterio
 if( $stageOption eq "VDB-IB" ){ $stages="computeUt,addDissipation,applyBC\n updateInterior,applyBC"; }
 if( $stageOption eq "IB-VDB" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation,applyBC"; }
 if( $stageOption eq "IB-VD" ){ $stages="updateInterior,applyBC\n computeUt,addDissipation"; }
-set stages...
- $stages
-done
+if( $method ne "bamx" ){ $cmd="set stages...\n  $stages\n done"; }else{ $cmd="#"; }
+$cmd
 #
 #
 use conservative difference $cons 
@@ -306,5 +333,8 @@ exit
 continue
 #
 plot:Ey
+# Move contour planes in 3D 
+if( $cyl eq 0 ){ $cmd="contour\n delete contour plane 0\n contour shift 0.5\n -shift contour planes\n exit"; }else{ $cmd="#"; }
+$cmd
 # 
 $go

@@ -14,13 +14,14 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      advanceFDTD.C defineRegionsAndBodies.C outputHeader.C advanceSOSUP.C \
      userDefinedKnownSolution.C assignUserDefinedKnownSolutionInitialConditions.C \
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
-     PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C
+     PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C \
+     buildSuperGrid.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
 
 # C++ source files to be compiled optimized by default
-CSRCO += forcing.C divergence.C getInitialConditions.C getErrors.C computeIntensity.C
+CSRCO += forcing.C divergence.C getInitialConditions.C getErrors.C computeIntensity.C getNorms.C
 
 # advMxFiles: (always compile opt)
 # NOTE: gcc 4.4.7 has trouble with -O3 and advMx3dOrder4r.f
@@ -122,6 +123,8 @@ src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC forcing.h plane
 src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 src/getErrors.C : src/getErrors.bC forcing.h annulusEigenFunction.h boxEigenFunction.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
+
+src/getNorms.C : src/getNorms.bC; $(BPP) -quiet -clean $<
 
 src/divergence.C : src/divergence.bC; $(BPP) -quiet -clean $<
 

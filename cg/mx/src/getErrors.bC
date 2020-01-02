@@ -542,7 +542,7 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
     else if( localDispersionModel != noDispersion && method==bamx )
     {         
       // BAXM -- errors in polarization components
-      printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d\n",numberOfPolarizationVectors);
+      // printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d\n",numberOfPolarizationVectors);
 
       realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
       FOR_3D(i1,i2,i3,J1,J2,J3)
@@ -1070,6 +1070,8 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
       // -- dispersion model components --
       if( localDispersionModel!=noDispersion )
       {
+	if( method==bamx ) OV_ABORT("finish me");
+
         FOR_3D(i1,i2,i3,J1,J2,J3)
         {
           for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -1099,18 +1101,22 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
           }
         }
       }
-      if( solveForMagneticField )
+      if( solveForMagneticField || method==bamx )
       {
+        const int hxr=hx+3, hyr=hy+3, hzr=hz+3; // offset into ug
+        const int hxi=hx+6, hyi=hy+6, hzi=hz+6; // offset into ug
         FOR_3D(i1,i2,i3,J1,J2,J3)
         {
-          ERRHX(i1,i2,i3) = UHX(i1,i2,i3)-(UG(i1,i2,i3,hx)*cHr+UG(i1,i2,i3,hx+3)*cHi);
-          ERRHY(i1,i2,i3) = UHY(i1,i2,i3)-(UG(i1,i2,i3,hy)*cHr+UG(i1,i2,i3,hy+3)*cHi);
-          ERRHZ(i1,i2,i3) = UHZ(i1,i2,i3)-(UG(i1,i2,i3,hz)*cHr+UG(i1,i2,i3,hz+3)*cHi);
+          ERRHX(i1,i2,i3) = UHX(i1,i2,i3)-(UG(i1,i2,i3,hxr)*cHr+UG(i1,i2,i3,hxi)*cHi);
+          ERRHY(i1,i2,i3) = UHY(i1,i2,i3)-(UG(i1,i2,i3,hyr)*cHr+UG(i1,i2,i3,hyi)*cHi);
+          ERRHZ(i1,i2,i3) = UHZ(i1,i2,i3)-(UG(i1,i2,i3,hzr)*cHr+UG(i1,i2,i3,hzi)*cHi);
         }
       }
       // -- dispersion model components --
       if( localDispersionModel!=noDispersion )
       {
+	if( method==bamx ) OV_ABORT("finish me");
+	
         FOR_3D(i1,i2,i3,J1,J2,J3)
         {
           for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -1166,9 +1172,16 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
 void Maxwell::
 getErrors( int current, real t, real dt )
 {
+  // printF("\n +++++ getErrors checkErrors=%d\n",(int)checkErrors);
   if( !checkErrors )
+  {
+    // Compute solution norms (used by the check file)  *wdh* Dec 21, 2019
+    const bool getErrorNorms=false;
+    getNorms( current, t, dt, getErrorNorms );
+    
     return;
-
+  }
+  
   real time0=getCPU();
   
   const real cc= c*sqrt( kx*kx+ky*ky+kz*kz);
@@ -1299,13 +1312,15 @@ getErrors( int current, real t, real dt )
   RealArray & polarizationNorm   =  dbase.get<RealArray>("polarizationNorm");
   RealArray & maxErrPolarization =  dbase.get<RealArray>("maxErrPolarization");
   
-  if( polarizationNorm.getLength(0)!=cg.numberOfDomains() )
+  if( polarizationNorm.getLength(0)!=cg.numberOfDomains() || maxErrPolarization.getLength(0)!=cg.numberOfDomains())
   {
     polarizationNorm.redim(cg.numberOfDomains());
     maxErrPolarization.redim(cg.numberOfDomains());
   }
   polarizationNorm=0.;
   maxErrPolarization=0.;
+
+  printF("cg.numberOfDomains()=%d, maxErrPolarization.getLength(0)=%d\n",cg.numberOfDomains(),maxErrPolarization.getLength(0));
   
 
   // *************************************************************
@@ -1340,7 +1355,7 @@ getErrors( int current, real t, real dt )
     else if( method==bamx )
     {
       numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
-      printF("getERR: BAMX: numberOfPolarizationVectors=%d\n",  numberOfPolarizationVectors);
+      // printF("getERR: BAMX: numberOfPolarizationVectors=%d\n",  numberOfPolarizationVectors);
 
     }
     
@@ -1405,6 +1420,15 @@ getErrors( int current, real t, real dt )
     { // do NOT include PML region in the bounds: 
       adjustBoundsForPML(mg,Iev,pmlErrorOffset ); 
       adjustBoundsForPML(mg,Ihv,pmlErrorOffset ); 
+    }
+
+    const int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+    const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+    if( useSuperGrid==1 )
+    { // do NOT include absorbing layer region in the bounds when computing errors 
+      const int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+      adjustBoundsForAbsorbingLayer(mg,Iev,absorbingLayerErrorOffset ); 
+      adjustBoundsForAbsorbingLayer(mg,Ihv,absorbingLayerErrorOffset ); 
     }
 
     errh = 0.;
@@ -1638,7 +1662,7 @@ getErrors( int current, real t, real dt )
 	    
         } // end for_3d
 
-	if( method==bamx )
+	if( false && method==bamx )
 	  printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d (total, P and Q), maxErrPolarization(domain)=%9.3e\n",
 		 numberOfPolarizationVectors,maxErrPolarization(domain));
 
@@ -1919,139 +1943,149 @@ getErrors( int current, real t, real dt )
     
   }
   
-
-  if( method==nfdtd || method==yee || method==sosup || method==bamx )
+  if( true )
   {
-    realCompositeGridFunction & cgerr = *cgerrp;
-    realCompositeGridFunction & cgu = cgfields[current];
+    // *new way* Dec 21, 2019
+    const bool getErrorNorms=true;
+    getNorms( current, t, dt, getErrorNorms );
+  }
+  else
+  {
+    // ** OLD WAY *** 
 
-    // We print the max norm and optionally some lp norms
-    // const int errorNorm = parameters.dbase.get<int >("errorNorm");
-    int numberOfNormsToPrint=1;
-    if( errorNorm<10000 ) numberOfNormsToPrint+=errorNorm;
+    if( method==nfdtd || method==yee || method==sosup || method==bamx )
+    {
+      realCompositeGridFunction & cgerr = *cgerrp;
+      realCompositeGridFunction & cgu = cgfields[current];
 
-    for( int norm=0; norm<numberOfNormsToPrint; norm++ )
-    { // norm==0 : max-norm, otherwise Lp-norm with p=norm
-      int pNorm = norm==0 ? INT_MAX : norm;
+      // We print the max norm and optionally some lp norms
+      // const int errorNorm = parameters.dbase.get<int >("errorNorm");
+      int numberOfNormsToPrint=1;
+      if( errorNorm<10000 ) numberOfNormsToPrint+=errorNorm;
 
-      if( norm!=0 ) // max-norm values are already computed -- we could avoid doing this above --
-      {
-	// compute the Lp norm
-	maximumError=0.;
-        const int maskOption=0;  // check points where mask != 0
-        const int checkErrorsAtGhostPoints=0;
-	for( int c=C.getBase(); c<=C.getBound(); c++ )
+      for( int norm=0; norm<numberOfNormsToPrint; norm++ )
+      { // norm==0 : max-norm, otherwise Lp-norm with p=norm
+	int pNorm = norm==0 ? INT_MAX : norm;
+
+	if( norm!=0 ) // max-norm values are already computed -- we could avoid doing this above --
 	{
-	  if( pNorm<10000 )
+	  // compute the Lp norm
+	  maximumError=0.;
+	  const int maskOption=0;  // check points where mask != 0
+	  const int checkErrorsAtGhostPoints=0;
+	  for( int c=C.getBase(); c<=C.getBound(); c++ )
 	  {
-	    maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,checkErrorsAtGhostPoints);
-	    solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,checkErrorsAtGhostPoints);
-	  }
-	  else
-	  { // assume this is the max-norm
-	    maximumError(c)=maxNorm(cgerr,c,maskOption,checkErrorsAtGhostPoints);
-	    solutionNorm(c)=maxNorm(cgu  ,c,maskOption,checkErrorsAtGhostPoints);
-	  }
-	}
-
-        // ---- Compute Lp norm errors of polarization vectors ----
-        if( dispersionModel != noDispersion )
-        {
-          if( method==bamx )
-	  {
-            // ---- fix me for multiple material domains ---
-	    int domain=0, grid=0;
-	    assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
-
-	    const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
-
-	    realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-	    assert( ppv!=NULL );
-	    // get Pv error grid function
-	    realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-	    assert( pepv!=NULL );
-          
-	    maxErrPolarization(domain)=0.;
-	    polarizationNorm(domain)=0.;
-	    for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
+	    if( pNorm<10000 )
 	    {
-	      const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-	      const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
-
-	      maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-	      polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+	      maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,checkErrorsAtGhostPoints);
+	      solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,checkErrorsAtGhostPoints);
 	    }
-	    
+	    else
+	    { // assume this is the max-norm
+	      maximumError(c)=maxNorm(cgerr,c,maskOption,checkErrorsAtGhostPoints);
+	      solutionNorm(c)=maxNorm(cgu  ,c,maskOption,checkErrorsAtGhostPoints);
+	    }
 	  }
-	  else 
+
+	  // ---- Compute Lp norm errors of polarization vectors ----
+	  if( dispersionModel != noDispersion )
 	  {
-
-	    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+	    if( method==bamx )
 	    {
-	      DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-	      const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
-	      if( numberOfPolarizationVectors>0 )
-	      {
-        
-		realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-		assert( ppv!=NULL );
-		// get Pv error grid function
-		realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-		assert( pepv!=NULL );
-          
-		maxErrPolarization(domain)=0.;
-		polarizationNorm(domain)=0.;
-		for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-		{
-		  for( int dir=0; dir<numberOfDimensions; dir++ )
-		  {
-		    const int pc = dir+ iv*numberOfDimensions; // component 
-		    const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-		    const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+	      // ---- fix me for multiple material domains ---
+	      int domain=0, grid=0;
+	      assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
 
-		    maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-		    polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+	      const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+
+	      realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+	      assert( ppv!=NULL );
+	      // get Pv error grid function
+	      realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+	      assert( pepv!=NULL );
+          
+	      maxErrPolarization(domain)=0.;
+	      polarizationNorm(domain)=0.;
+	      for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
+	      {
+		const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+		const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+		maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+		polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+	      }
+	    
+	    }
+	    else 
+	    {
+
+	      for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+	      {
+		DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+		const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
+		if( numberOfPolarizationVectors>0 )
+		{
+        
+		  realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+		  assert( ppv!=NULL );
+		  // get Pv error grid function
+		  realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+		  assert( pepv!=NULL );
+          
+		  maxErrPolarization(domain)=0.;
+		  polarizationNorm(domain)=0.;
+		  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+		  {
+		    for( int dir=0; dir<numberOfDimensions; dir++ )
+		    {
+		      const int pc = dir+ iv*numberOfDimensions; // component 
+		      const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+		      const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+		      maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+		      polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+		    }
 		  }
 		}
 	      }
 	    }
 	  }
-	}
 	
 
-      }
+	}
       
-      aString normName;
-      if( pNorm<1000 )
-	sPrintF(normName,"l%i",pNorm);
-      else
-	normName="max";
-
-      for( int fileio=0; fileio<2; fileio++ )
-      {
-	FILE *output = fileio==0 ? logFile : stdout;
-
-	if( radiusForCheckingErrors>0 && radiusForCheckingErrors<10. )
-	  fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
-                   t,dt,radiusForCheckingErrors,(const char*)normName);
+	aString normName;
+	if( pNorm<1000 )
+	  sPrintF(normName,"l%i",pNorm);
 	else
-	  fPrintF(output,">>> t=%8.2e dt=%7.1e %s errors:[",t,dt,(const char*)normName);
+	  normName="max";
 
-	for( int c=C.getBase(); c<=C.getBound(); c++ )
-	  fPrintF(output,"%8.2e,",maximumError(c));
-	// fPrintF(output,"%10.4e,",maximumError(c));
+	for( int fileio=0; fileio<2; fileio++ )
+	{
+	  FILE *output = fileio==0 ? logFile : stdout;
 
-	fPrintF(output,"], %s (u):[",(const char*)normName);
+	  if( radiusForCheckingErrors>0 && radiusForCheckingErrors<10. )
+	    fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
+		    t,dt,radiusForCheckingErrors,(const char*)normName);
+	  else
+	    fPrintF(output,">>> t=%8.2e dt=%7.1e %s errors:[",t,dt,(const char*)normName);
 
-	for( int c=C.getBase(); c<=C.getBound(); c++ )
-	  fPrintF(output,"%8.2e,",solutionNorm(c));
+	  for( int c=C.getBase(); c<=C.getBound(); c++ )
+	    fPrintF(output,"%8.2e,",maximumError(c));
+	  // fPrintF(output,"%10.4e,",maximumError(c));
 
-	fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
-      }
-    } // end for norm 
-  }
+	  fPrintF(output,"], %s (u):[",(const char*)normName);
+
+	  for( int c=C.getBase(); c<=C.getBound(); c++ )
+	    fPrintF(output,"%8.2e,",solutionNorm(c));
+
+	  fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
+	}
+      } // end for norm 
+    }
+
+  } // end OLD WAY 
   
-  // delete uReference;
 
   timing(timeForGetError)+=getCPU()-time0;
 }

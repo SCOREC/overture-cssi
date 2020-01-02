@@ -24,94 +24,124 @@ c To include derivatives of rx use OPTION=RX
 c To include derivatives of rx use OPTION=RX
 
 c Here are macros that define the planeWave solution
-c **************************************************
-c Here are macros that define the:
-c      planeWave solution 
-c **************************************************
+! -*- mode: f90; -*-
 
-c ======================================================================
-c  Slow start function 
-c    tba = length of slow start interval (<0 mean no slow start)
-c ======================================================================
+! **************************************************
+! Here are macros that define the:
+!      planeWave solution 
+! **************************************************
 
-c cubic ramp
-c tba=max(REAL_EPSILON,tb-ta);
-c dta=t-ta;
+! ======================================================================
+!  Slow start function 
+!    tba = length of slow start interval (<0 mean no slow start)
+! ======================================================================
+
+! cubic ramp
+! tba=max(REAL_EPSILON,tb-ta);
+! dta=t-ta;
       
-c This (cubic) ramp has 1-derivative zero at t=0 and t=tba
+! This (cubic) ramp has 1-derivative zero at t=0 and t=tba
 
-c This ramp has 3-derivatives zero at t=0 and t=1
-c This is from ramp.maple
-c r=-84*t**5+35*t**4-20*t**7+70*t**6
-c rt=-420*t**4+140*t**3-140*t**6+420*t**5
-c rtt=-1680*t**3+420*t**2-840*t**5+2100*t**4
-c rttt=-5040*t**2+840*t-4200*t**4+8400*t**3
-
-
-c This ramp has 4-derivatives zero at t=0 and t=1
-c This is from ramp.maple
-c r=126*(t)**5-315*(t)**8+70*(t)**9-420*(t)**6+540*(t)**7
-c rt=630*(t)**4-2520*(t)**7+630*(t)**8-2520*(t)**5+3780*(t)**6
-c rtt=2520*(t)**3-17640*(t)**6+5040*(t)**7-12600*(t)**4+22680*(t)**5
-c rttt=7560*(t)**2-105840*(t)**5+35280*(t)**6-50400*(t)**3+113400*(t)**4
+! This ramp has 3-derivatives zero at t=0 and t=1
+! This is from ramp.maple
+! r=-84*t**5+35*t**4-20*t**7+70*t**6
+! rt=-420*t**4+140*t**3-140*t**6+420*t**5
+! rtt=-1680*t**3+420*t**2-840*t**5+2100*t**4
+! rttt=-5040*t**2+840*t-4200*t**4+8400*t**3
 
 
-c ============================================================
-c  Initialize parameters for the boundary forcing
-c   tba: slow start time interval -- no slow start if this is negative
-c ===========================================================
+! This ramp has 4-derivatives zero at t=0 and t=1
+! This is from ramp.maple
+! r=126*(t)**5-315*(t)**8+70*(t)**9-420*(t)**6+540*(t)**7
+! rt=630*(t)**4-2520*(t)**7+630*(t)**8-2520*(t)**5+3780*(t)**6
+! rtt=2520*(t)**3-17640*(t)**6+5040*(t)**7-12600*(t)**4+22680*(t)**5
+! rttt=7560*(t)**2-105840*(t)**5+35280*(t)**6-50400*(t)**3+113400*(t)**4
 
-c **************** Here is the new generic plane wave solution *******************
+
+! ============================================================
+!  Initialize parameters for the boundary forcing
+!   tba: slow start time interval -- no slow start if this is negative
+! ===========================================================
+
+! **************** Here is the new generic plane wave solution *******************
 
 ! component n=ex,ey,ez, hx,hy,hz (assumes ex=0)
 ! one time derivative:
 ! two time derivatives:
 ! three time derivatives:
 
-c *************** Here is the 2D planeWave solution ******************************
+! *************** Here is the 2D planeWave solution ******************************
 
 
-c one time derivative:
+! one time derivative:
 
-c two time derivatives:
+! two time derivatives:
 
-c three time derivatives:
+! three time derivatives:
 
-c Here are the slow start versions
+! four time derivatives:
 
-c one time derivative:
+! Here are the slow start versions
 
-c two time derivatives:
+! one time derivative:
 
-c three time derivatives:
+! two time derivatives:
 
+! three time derivatives:
 
-c **************** Here is the 3D planeWave solution ***************************************
-
-
-
-c one time derivative:
+! four time derivatives:
 
 
-c two time derivatives:
+! **************** Here is the 3D planeWave solution ***************************************
 
 
-c three time derivatives:
+
+! one time derivative:
 
 
-c Here are the slow start versions
+! two time derivatives:
 
 
-c one time derivative:
+! three time derivatives:
 
 
-c two time derivatives:
-
-c three time derivatives:
-
-c Helper function: Return minus the second time derivative
+! four time derivatives:
 
 
+! Here are the slow start versions
+
+
+! one time derivative:
+
+
+! two time derivatives:
+
+! three time derivatives:
+
+! four time derivatives:
+
+
+! -------------------------------------------------------------------
+! Helper function: Return minus the second time derivative
+! -------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------
+! Evaluate the plane wave in 2D
+! 
+!  x,y,t (input) : point to evaluate at 
+!  numberOfTimeDerivatives : evaluate this time derivative
+!  ubc(.)  (output) : ubc(ex), etc. 
+! --------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------
+! Evaluate the plane wave in 3D
+! 
+!  x,y,z,t (input) : point to evaluate at 
+!  numberOfTimeDerivatives : evaluate this time derivative
+!  ubc(.)  (output) : ubc(ex), etc. 
+! --------------------------------------------------------------------
 
 
 
@@ -252,11 +282,12 @@ c Helper function: Return minus the second time derivative
       integer dirichlet,perfectElectricalConductor,
      & perfectMagneticConductor,planeWaveBoundaryCondition,
      & interfaceBC,symmetryBoundaryCondition,abcEM2,abcPML,abc3,abc4,
-     & abc5,rbcNonLocal,rbcLocal,lastBC
+     & abc5,rbcNonLocal,rbcLocal,characteristic,absorbing,lastBC
       parameter( dirichlet=1,perfectElectricalConductor=2,
      & perfectMagneticConductor=3,planeWaveBoundaryCondition=4,
      & symmetryBoundaryCondition=5,interfaceBC=6,abcEM2=7,abcPML=8,
-     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,lastBC=13 )
+     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,
+     & characteristic=14,absorbing=15,lastBC=15 )
 
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)

@@ -23,7 +23,8 @@ extern "C"
             const int&nd4a,const int&nd4b,
             const int&mask,const real&rx,  
             const real&um, const real&u, real&un, const real&f, const real&fa, real & K0i, int & matMask, 
-            const real& pm,const real&p,const real& pt, const real&xy,const real&ut5,const real&ut6,const real&ut7,
+            const real& pm,const real&p,const real& pt, const real&xy,
+            const real& etax,const real & etay, const real & etaz,
             const int&bc, const real &dis, const real &varDis, const int&ipar, const real&rpar, int&ierr );
 
   void mxFilter(const int&nd,
@@ -176,13 +177,24 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
     const IntegerArray & totalNumberOfPolarizationComponents =
         parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
 
+  // currently there is no reason to update the parallel ghost for P
+    const bool updatePolarizationParallelGhost=false;
+    
+  // We may be able to avoid some parallel ghost updates if there is only one grid 
+  // Maybe not if there are far field BC's 
+    const bool updateFieldParallelGhost = true; // numberOfComponentGrids>1;
+    
 
-
-    const int dw = max(cg[0].discretizationWidth()); // discertization width
+    const int dw = max(cg[0].discretizationWidth()); // discretization width
 
     const int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
 
     const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
+
+    const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+    RealArray *etaxSuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etaxSuperGrid" ) : NULL;
+    RealArray *etaySuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etaySuperGrid" ) : NULL;
+    RealArray *etazSuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etazSuperGrid" ) : NULL;
 
   // -- now done in setupGridFunctions
   // // -- We normally extrapolate interpolation neighbours for Sosup dissipation which uses a wider stencil
@@ -693,12 +705,13 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                                         (int)forcingOption,
                                         (int)solveForAllFields,     // ipar(40)
                                         (int)dmp.getMaterialType(), // ipar(41)
-                        	      numberOfMaterialRegions,     // ipar(42) 
+                        	      numberOfMaterialRegions,    // ipar(42) 
+                                        useSuperGrid                // ipar(43)
                                       };  //
                 real dx[3]={1.,1.,1.};
                 if( isRectangular )
                     mg.getDeltaX(dx);
-                real rpar[30];
+                real rpar[35];
                 rpar[ 0]=c;
                 rpar[ 1]=dt;
                 rpar[ 2]=dx[0];
@@ -901,6 +914,13 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                     assert( pdis!=NULL );
                     sizeOfLocalArraysForAdvance=max(sizeOfLocalArraysForAdvance,(double)(dis->elementCount()*sizeof(real)));
                 }
+                real *pEtaxSuperGrid=uptr, *pEtaySuperGrid=uptr, *pEtazSuperGrid=uptr;
+                if( useSuperGrid )
+                {
+                    pEtaxSuperGrid = etaxSuperGrid[grid].getDataPointer();
+                    pEtaySuperGrid = etaySuperGrid[grid].getDataPointer();
+                    pEtazSuperGrid = etazSuperGrid[grid].getDataPointer();
+                }
                 if( timeSteppingMethod==rungeKutta )
                 {
                     if( stage<numberOfRungeKuttaStages )
@@ -937,7 +957,8 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                          	       *faptr,  // forcing at multiple time levels 
                                  	       K0i(0,0),*pmask,
       //	       *ut1ptr,*ut2ptr,*ut3ptr,*ut4ptr,*ut5ptr,*ut6ptr,*ut7ptr,   
-                         	       *pmptr,*pptr,*pnptr,*xyptr,*ut5ptr,*ut6ptr,*ut7ptr,   
+                         	       *pmptr,*pptr,*pnptr,*xyptr,
+                         	       *pEtaxSuperGrid,*pEtaySuperGrid,*pEtazSuperGrid,   
                          	       mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
                     const bool useOptUpdate=true;
                     if( timeSteppingMethod==rungeKutta && stage<numberOfRungeKuttaStages )
@@ -994,6 +1015,7 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                                                               ipar[0], rpar[0], ierr );
                                 }
                   	}
+      	// **** OLD *****
                             else if( numberOfRungeKuttaStages==1 )
                   	{ // RK1
                     	  unLocal(I1,I2,I3,C) = uLocal(I1,I2,I3,C) + (dt*bRK(0))*k1Local(I1,I2,I3,C);
@@ -1071,6 +1093,8 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                                                           *k1Local.getDataPointer(),                                                                   // not used 
                                                           ipar[0], rpar[0], ierr );
                             }
+      	// ::display(k1Local,"k1","%6.2f ");
+      	// ::display(unLocal,"un","%6.2f ");
                         }
                         else if( stage==0 )
                         { // form the temporary solution use to compute the next slope function k[stage+1] 
@@ -1114,10 +1138,38 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                     }
                     else if( timeSteppingMethod==rungeKutta && stage==numberOfRungeKuttaStages  )
                     {
-            // dissipation stage -- copy un = k1 
+            // dissipation stage
+            //   Filtered solution was returned in k1 
+            // -- copy un = k1 
                         assert( addDissipation );
                         OV_GET_SERIAL_ARRAY(real,FN(0),k1Local);
-                        unLocal(I1,I2,I3,C) = k1Local(I1,I2,I3,C);
+                        if( useOptUpdate )
+                        {
+      	// **new** optimized update 
+                  	int numTerms=1;  
+                  	real ct1 = 0, ct2=0, ct3=0, ct4=0; // Not used 
+                        {
+                            int ierr=0;
+                            const int maskOption=0; // assign pts where mask>0
+                            int is4 = C.getBase()-C.getBase();  // index offset component values in k1Local, k1Local, etc. 
+                            int ipar[]={numTerms,maskOption,I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+                                                    C.getBase(),C.getBound(), is4}; //
+                            real cOld=1.;
+                            real rpar[10]={cOld,ct1,ct2,ct3,ct4,0.,0.,0.,0.,0.};
+                            updateOptNew(unLocal.getBase(0),unLocal.getBound(0),unLocal.getBase(1),unLocal.getBound(1),
+                                                      unLocal.getBase(2),unLocal.getBound(2),unLocal.getBase(3),unLocal.getBound(3),
+                                                      *mask.getDataPointer(),  
+                                                      *unLocal.getDataPointer(),  *k1Local.getDataPointer(), 
+                                                      *k1Local.getDataPointer(),*k1Local.getDataPointer(),*k1Local.getDataPointer(),*k1Local.getDataPointer(),
+                                                      *k1Local.getDataPointer(),*k1Local.getDataPointer(),*k1Local.getDataPointer(),*k1Local.getDataPointer(), // not used 
+                                                      *k1Local.getDataPointer(),                                                                   // not used 
+                                                      ipar[0], rpar[0], ierr );
+                        }
+                        }
+                        else
+                        {
+                            unLocal(I1,I2,I3,C) = k1Local(I1,I2,I3,C);
+                        }
                     }
                 }
                 timeAdv=getCPU()-timeAdv;
@@ -1157,7 +1209,11 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
             
         // **** at this point we really only need to update interior-ghost points needed for
         //      interpolation or boundary conditions
-                un.updateGhostBoundaries();
+      	if( updateFieldParallelGhost )
+        	  un.updateGhostBoundaries();
+
+                if( updatePolarizationParallelGhost )
+                    pNext.updateGhostBoundaries();
 
                 if( debug & 8 )
                 {
@@ -1356,7 +1412,15 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                 if( orderOfAccuracyInSpace>2 )  // this doesn't seem to be needed for 2nd order ?
                 {
                     real timea=getCPU();
-                    fieldNext.updateGhostBoundaries();
+
+            	  fieldNext.updateGhostBoundaries(); // this update is needed *wdh* Dec 7, 2019
+
+        	  if( updatePolarizationParallelGhost )
+        	  {
+          	    realMappedGridFunction & pNext= getDispersionModelMappedGridFunction( grid,next    );
+          	    pNext.updateGhostBoundaries();
+        	  }
+        	  
                     timing(timeForUpdateGhostBoundaries)+=getCPU()-timea;
                 }
 #endif

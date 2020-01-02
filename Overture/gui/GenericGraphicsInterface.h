@@ -639,6 +639,9 @@ setInteractiveDL(int list, bool interactive)=0;
 virtual void
 setLighting(int list, bool lit)=0;
 
+// Parse a line using the perl parser
+int parseLine(aString & line ) const;
+
 // toggle whether a display list should be plotted or not
 virtual void
 setPlotDL(int list, bool lit)=0;

@@ -181,9 +181,9 @@ eval( real x[3], real *Ev, real *Hv /*= NULL */  )
 
   for( int i=0; i<6; i++ )
   {
-    Ev[i]=uLocal(0,0,0,i);
+    Ev[i]=uLocal(0,0,0,i);        // Re(Ex), Re(Ey), Re(Ez), Im(Ex), Im(Ey), Im(Ez) 
     if( computeMagneticField )
-      Hv[i]=uLocal(0,0,0,i+6);
+      Hv[i]=uLocal(0,0,0,i+6);    // Re(Hx), Re(Hy), Re(Hz), Im(Hx), Im(Hy), Im(Hz) 
 
   }
 

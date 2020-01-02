@@ -78,6 +78,8 @@ class Maxwell
     abc5,           // future absorbing BC
     rbcNonLocal,    // radiation BC, non-local
     rbcLocal,       // radiation BC, local
+    characteristic,  // characteristic BC
+    absorbing,       // absorbing BC, e.g. super-grid
     numberOfBCNames
   };
   static aString bcName[numberOfBCNames];
@@ -224,6 +226,8 @@ class Maxwell
 
   static int addPrefix(const aString label[], const aString & prefix, aString cmd[], const int maxCommands);
 
+  bool adjustBoundsForAbsorbingLayer( MappedGrid & mg, Index Iv[3], int extra =0 );
+
   bool adjustBoundsForPML( MappedGrid & mg, Index Iv[3], int extra=0 );
 
   void advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt );
@@ -319,6 +323,8 @@ class Maxwell
 
   static real getMinValue(real value, int processor=-1);  // get min over all processors
   static int getMinValue(int value, int processor=-1);
+
+  void getNorms( int current, real t, real dt, bool getErrorNorms = true );
 
   void getTimeSteppingLabel( real dt, aString & label ) const;
 
@@ -429,6 +435,8 @@ protected:
   int buildParametersDialog(DialogData & dialog ); // parameters that can be changed at run time.
   int buildPdeParametersDialog(DialogData & dialog);
   int buildPlotOptionsDialog(DialogData & dialog );
+  int buildSuperGrid();
+
   int buildTimeSteppingOptionsDialog(DialogData & dialog );
 
   realCompositeGridFunction* getDispersionModelCompositeGridFunction( const int domain, const int timeLevel,
@@ -751,6 +759,7 @@ public: //  should be protected:
     timeForUpdateGhostBoundaries,
     timeForForcing,
     timeForGetError,
+    timeForGetNorms,
     timeForProject,
     timeForIntensity,
     timeForComputingDeltaT,
@@ -760,7 +769,7 @@ public: //  should be protected:
     maximumNumberOfTimings      // number of entries in this list
   };
   RealArray timing;                                     // for timings, cpu time for some function
-  aString timingName[maximumNumberOfTimings];    // name of the function being timed
+  aString timingName[maximumNumberOfTimings];           // name of the function being timed
 
   real sizeOfLocalArraysForAdvance;
 };

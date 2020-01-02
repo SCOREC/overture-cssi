@@ -110,7 +110,7 @@ $count=$count+1; $gridName="splitRing$count"; $gridNames .= "\n" . $gridName;
 include transform.h
 #
 #
-#  -- build the baseTriangle"
+#  -- build the baseTriangle
 include triangle.h
 #
 # build shifted/rotated/scaled versions

@@ -47,11 +47,12 @@
       integer dirichlet,perfectElectricalConductor,
      & perfectMagneticConductor,planeWaveBoundaryCondition,
      & interfaceBC,symmetryBoundaryCondition,abcEM2,abcPML,abc3,abc4,
-     & abc5,rbcNonLocal,rbcLocal,lastBC
+     & abc5,rbcNonLocal,rbcLocal,characteristic,absorbing,lastBC
       parameter( dirichlet=1,perfectElectricalConductor=2,
      & perfectMagneticConductor=3,planeWaveBoundaryCondition=4,
      & symmetryBoundaryCondition=5,interfaceBC=6,abcEM2=7,abcPML=8,
-     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,lastBC=13 )
+     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,
+     & characteristic=14,absorbing=15,lastBC=15 )
         integer rectangular,curvilinear
         parameter(rectangular=0,curvilinear=1)
         ! forcing options
@@ -1707,11 +1708,10 @@ c===============================================================================
         ! variables for dispersive plane wave
         sr                   =rpar(37)  ! Re(s)
         si                   =rpar(38)  ! Im(s)
-        if( t.le.2*dt) then
+        if( .false. .and. t.le.2*dt) then
           write(*,'("++++++ bcMxCorners: solveForAllFields",i2)') 
      & solveForAllFields
         end if
-        ! solveForAllFields=0
         ! if( t.le.3*dt )then
         !  write(*,'("++++++ bcMxCorners: sr,si=",2(1pe10.2))') sr,si
         ! end if

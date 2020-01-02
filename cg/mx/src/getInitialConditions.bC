@@ -524,15 +524,14 @@ initializePlaneMaterialInterface()
   assert( tz!=NULL );
   OGFunction & e = *tz;
 
-  if( solveForAllFields )
+  if( method==bamx )
   {
-    assert( method==bamx );
 
     Index I1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
     Index I2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
     Index I3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
 
-    Range C=6;
+    Range C= (numberOfDimensions==3 || solveForAllFields==1) ?  6 : 3;
     bool isRectangular=false;
     OV_GET_SERIAL_ARRAY(real,cg[grid].vertex(),xLocal);
     
@@ -2538,17 +2537,30 @@ assignInitialConditions(int current, real t, real dt )
 		}
 
 	      }
-	      if( solveForMagneticField )
+	      if( solveForMagneticField || method==bamx )
 	      {
+                // printF("\n **** AssignIC: EVAL H: cEr=%e, cEi=%e, cHr=%e, ChI=%e  **** \n",cEr,cEi, cHr,cHi);
+                
+                const int hxr=hx+3, hyr=hy+3, hzr=hz+3; // offset into ug
+                const int hxi=hx+6, hyi=hy+6, hzi=hz+6; // offset into ug
 		FOR_3D(i1,i2,i3,J1,J2,J3)
 		{
-		  UHX(i1,i2,i3)= UG(i1,i2,i3,hx)*sint+UG(i1,i2,i3,hx+3)*cost;
-		  UHY(i1,i2,i3)= UG(i1,i2,i3,hy)*sint+UG(i1,i2,i3,hy+3)*cost;
-		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+		  UHX(i1,i2,i3)= UG(i1,i2,i3,hxr)*cHr+UG(i1,i2,i3,hxi)*cHi;
+		  UHY(i1,i2,i3)= UG(i1,i2,i3,hyr)*cHr+UG(i1,i2,i3,hyi)*cHi;
+		  UHZ(i1,i2,i3)= UG(i1,i2,i3,hzr)*cHr+UG(i1,i2,i3,hzi)*cHi;
 
-		  UMHX(i1,i2,i3)= UG(i1,i2,i3,hx)*sintm+UG(i1,i2,i3,hx+3)*costm;
-		  UMHY(i1,i2,i3)= UG(i1,i2,i3,hy)*sintm+UG(i1,i2,i3,hy+3)*costm;
-		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sintm+UG(i1,i2,i3,hz+3)*costm;
+                  // -- not needed for MOL schemes: 
+		  UMHX(i1,i2,i3)= UG(i1,i2,i3,hxr)*cHrm+UG(i1,i2,i3,hxi)*cHim;
+		  UMHY(i1,i2,i3)= UG(i1,i2,i3,hyr)*cHrm+UG(i1,i2,i3,hyi)*cHim;
+		  UMHZ(i1,i2,i3)= UG(i1,i2,i3,hzr)*cHrm+UG(i1,i2,i3,hzi)*cHim;
+
+		  // UHX(i1,i2,i3)= UG(i1,i2,i3,hx)*sint+UG(i1,i2,i3,hx+3)*cost;
+		  // UHY(i1,i2,i3)= UG(i1,i2,i3,hy)*sint+UG(i1,i2,i3,hy+3)*cost;
+		  // UHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sint+UG(i1,i2,i3,hz+3)*cost;
+
+		  // UMHX(i1,i2,i3)= UG(i1,i2,i3,hx)*sintm+UG(i1,i2,i3,hx+3)*costm;
+		  // UMHY(i1,i2,i3)= UG(i1,i2,i3,hy)*sintm+UG(i1,i2,i3,hy+3)*costm;
+		  // UMHZ(i1,i2,i3)= UG(i1,i2,i3,hz)*sintm+UG(i1,i2,i3,hz+3)*costm;
 		}
 	      }
 	    }
@@ -2821,6 +2833,11 @@ initializeKnownSolution()
     {
       numberOfComponentsInKnown=(cg.numberOfDimensions()-1)*6;  // yee = 6 in 2d, 12 in 3d
     }
+    else if( method==bamx )
+    {
+      const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+      numberOfComponentsInKnown = (cg.numberOfDimensions()==3 || solveForAllFields==1) ? 12 : 6;
+    }
     
     knownSolution=new realCompositeGridFunction(cg,all,all,all,numberOfComponentsInKnown);
   }
@@ -2849,7 +2866,26 @@ initializeKnownSolution()
     eps1=epsv(gridLeft);  mu1=muv(gridLeft);    // incident 
     eps2=epsv(gridRight); mu2=muv(gridRight);   // transmitted
   }
-  else
+  else if( method==bamx )
+  {
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+    // Do this for now : 
+
+    RealArray K0(6,6);
+    DispersiveMaterialParameters & dmp1 = dmpVector[0];
+    dmp1.getBianisotropicMaterialMatrix( K0 );
+    eps1=K0(0,0); mu1=K0(3,3);
+    
+
+    DispersiveMaterialParameters & dmp2 = dmpVector[1];
+    dmp2.getBianisotropicMaterialMatrix( K0 );
+    eps2=K0(0,0); mu2=K0(3,3);
+
+    printF("----- Scattering from a disk or sphere: Setting BAMX: eps1=%g, mu1=%g, eps2=%g, mu2=%g\n",eps1,mu1,eps2,mu2);
+  }
+  else 
   {
     eps1=epsGrid(gridLeft);  mu1=muGrid(gridLeft); // incident
     eps2=epsGrid(gridRight); mu2=muGrid(gridRight); // transmitted
@@ -2983,20 +3019,25 @@ initializeKnownSolution()
   int option=0;  // 0=PEC cylinder, 1=di-electric
   int inOut=0;   // 0=exterior, 1=interior to the dielectric
   int staggeredGrid = method==yee ? 1 : 0;
-  int computeMagneticField=0;
+  int computeMagneticField= method==bamx && cg.numberOfDimensions()==3;
   int ipar[] = {0,1,2,3,4,5,option,inOut,computeIncident,staggeredGrid,debug,dispersionModel,computeMagneticField}; //
 
 
-  if( knownSolutionOption==scatteringFromADielectricSphereKnownSolution )
+  if( knownSolutionOption==scatteringFromADielectricSphereKnownSolution &&
+      ( method==nfdtd || method==bamx ) )
   {
     // ---- initialize scattering from a sphere exact solution ----
     printF("INITIALIZE scattering from a sphere exact solution: RADIUS a=%g\n", a);
     
     // real aSphere=1.; // ** default is wrong -- fix me 
 
+    // ** FIX ME FOR BAMX ***
+
     real sc[2]={sr,si},  kc[2]={twoPi*kx,0.};
     real eps0[2]={epsHat1r,epsHat1i}, mu0[2]={1.,0.}, eps1[2]={epsHat2r,epsHat2i}, mu1[2]={1.,0.};  // 
-    ses.initialize( cg.numberOfDomains(), a, sc,kc, eps0, mu0, eps1, mu1 );
+    int numDomains = cg.numberOfDomains();
+    if( method==bamx ) numDomains=2;  // dielectric sphere
+    ses.initialize( numDomains, a, sc,kc, eps0, mu0, eps1, mu1 );
 
     // Check the solution:
     ses.check();
@@ -3038,7 +3079,7 @@ initializeKnownSolution()
     // Each grid may or may not have dispersion model: 
     const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
 
-    if( method==yee &&
+    if( ( method==yee || method==bamx ) &&
         (knownSolutionOption==scatteringFromADielectricDiskKnownSolution ||
 	 knownSolutionOption==scatteringFromADielectricSphereKnownSolution) )
     {
@@ -3074,7 +3115,7 @@ initializeKnownSolution()
       {
         // --- YEE evaluate scattering by a cylinder ---
 
-	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f, inOut=%i...\n",grid,option,rpar[2],inOut);
+	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f, inOut=%i (painting)...\n",grid,option,rpar[2],inOut);
 	scatCyl(mg.numberOfDimensions(), 
 		I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
 		ug.getBase(0),ug.getBound(0),
@@ -3085,17 +3126,32 @@ initializeKnownSolution()
       }
       else
       {
-        // --- YEE evaluate scattering by a sphere ---
         assert( ug.getLength(3)==12 );
       
-	printF(" Call scatSphere for grid=%i...\n",grid);
-	scatSphere(mg.numberOfDimensions(), 
-		   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-		   ug.getBase(0),ug.getBound(0),
-		   ug.getBase(1),ug.getBound(1),
-		   ug.getBase(2),ug.getBound(2),
-		   ug.getBase(3),ug.getBound(3),
-		   *(xy.getDataPointer()),*(ug.getDataPointer()),ipar[0],rpar[0] );
+	printF(" Call scatSphere for grid=%i...(painting)\n",grid);
+	if( method==bamx )
+	{
+          // --- BAMX evaluate scattering by a sphere ---
+	  printF(" CALL: scattering from a sphere exact solution for domain=%i, grid=%i\n",
+	            cg.domainNumber(grid),grid );
+
+          bool computeMagneticField=true;
+          int domain=0; // outside
+          ses.eval( (*knownSolution)[grid] , domain,grid,computeMagneticField  );
+
+	}
+	else
+	{
+          // --- YEE evaluate scattering by a sphere ---
+	  scatSphere(mg.numberOfDimensions(), 
+		     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+		     ug.getBase(0),ug.getBound(0),
+		     ug.getBase(1),ug.getBound(1),
+		     ug.getBase(2),ug.getBound(2),
+		     ug.getBase(3),ug.getBound(3),
+		     *(xy.getDataPointer()),*(ug.getDataPointer()),ipar[0],rpar[0] );
+	}
+	
       }
 
       // -----------------------------------------------
@@ -3103,13 +3159,16 @@ initializeKnownSolution()
       // -----------------------------------------------
 
       inOut=1; ipar[7]=inOut; // eval inside
-      RealSerialArray ui(ug.dimension(0),ug.dimension(1),ug.dimension(2),ug.dimension(3));
+      // RealSerialArray ui(ug.dimension(0),ug.dimension(1),ug.dimension(2),ug.dimension(3));
+      Range all;
+      realMappedGridFunction uigf(cg[grid],all,all,all,ug.dimension(3)); // Dec 10, 2019 for ses
+      OV_GET_SERIAL_ARRAY(real,uigf,ui);
       ui=0.;
       if( cg.numberOfDimensions()==2 )
       {
         // --- YEE evaluate scattering by a cylinder ---
 
-	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f...\n",grid,option,rpar[2]);
+	printF(" Call scatCyl for grid=%i, option=%i cr=%7.3f...(painting)\n",grid,option,rpar[2]);
 	scatCyl(mg.numberOfDimensions(), 
 		I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
 		ug.getBase(0),ug.getBound(0),
@@ -3120,17 +3179,31 @@ initializeKnownSolution()
       }
       else
       {
-        // --- YEE evaluate scattering by a sphere ---
-	printF(" Call scatSphere for grid=%i...\n",grid);
-	scatSphere(mg.numberOfDimensions(), 
-		   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-		   ug.getBase(0),ug.getBound(0),
-		   ug.getBase(1),ug.getBound(1),
-		   ug.getBase(2),ug.getBound(2),
-		   ug.getBase(3),ug.getBound(3),
-		   *(xy.getDataPointer()),*(ui.getDataPointer()),ipar[0],rpar[0] );
-      }
+	if( method==bamx )
+	{
+          // --- BAMX evaluate scattering by a sphere ---
+	  printF(" CALL: scattering from a sphere exact solution for domain=%i, grid=%i\n",
+	            cg.domainNumber(grid),grid );
 
+          bool computeMagneticField=true;
+          int domain=1; // inside 
+          ses.eval( uigf , domain,grid,computeMagneticField  );
+
+	}
+	else
+	{
+	  // --- YEE evaluate scattering by a sphere ---
+	  printF(" Call scatSphere for grid=%i...(painting)\n",grid);
+	  scatSphere(mg.numberOfDimensions(), 
+		     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+		     ug.getBase(0),ug.getBound(0),
+		     ug.getBase(1),ug.getBound(1),
+		     ug.getBase(2),ug.getBound(2),
+		     ug.getBase(3),ug.getBound(3),
+		     *(xy.getDataPointer()),*(ui.getDataPointer()),ipar[0],rpar[0] );
+	}
+      }
+      
       // Now fill in interior values in ug from ui 
 
       I1=Range(I1.getBase(),min(I1.getBound(),ug.getBound(0)-1));

@@ -311,7 +311,7 @@ if( numberOfDimensions==2 )
       }
       else if( method==bamx )
       {
-	OV_ABORT("finish me BAMX: TZ");
+	 // done below
       }
       
     }

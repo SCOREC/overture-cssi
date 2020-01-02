@@ -5,6 +5,7 @@
 #include "BodyForce.h"
 #include "Integrate.h"
 #include "InterpolatePointsOnAGrid.h"
+#include "ParallelUtility.h"
 
 // ==========================================================================================
 /// \brief : define a probe. A probe is a point or location in a grid where the
@@ -140,6 +141,7 @@ getClosestGridPoint( CompositeGrid & cg,
     {
       MappedGrid & mg = cg[grid];
       Mapping & map = mg.mapping().getMapping();
+      mg.update(MappedGrid::THEmask );
       const intArray & mask = mg.mask();
       i3=mg.gridIndexRange(0,2);
 
@@ -613,6 +615,10 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
 {
   int returnValue=0;
   
+  // Values for defining a grid coordinate plane: 
+  int gridPlane=0, gridPlaneAxis=0;
+  real xgp=0., ygp=0., zgp=0.;
+
   GUIState gui;
   gui.setWindowTitle("Define a Probe");
   gui.setExitCommand("exit", "continue");
@@ -646,6 +652,7 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
                                "bounding box probe",
 			       "region probe",
 			       "surface probe",
+			       "coordinate plane probe",
 			       "" };
     dialog.addOptionMenu("Type:",typeCommands,typeCommands,probeType );
 
@@ -690,6 +697,9 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
     textLabels[nt] = "grid point";  sPrintF(textStrings[nt], "%i %i %i %i (grid,i1,i2,i3)",grid,iv[0],iv[1],iv[2]); nt++;
     textLabels[nt] = "nearest grid point to"; sPrintF(textStrings[nt], "%g %g %g",0.,0.,0.); nt++;
     textLabels[nt] = "location"; sPrintF(textStrings[nt], "%g %g %g",0.,0.,0.); nt++;
+
+    textLabels[nt] = "grid coordinate plane"; sPrintF(textStrings[nt], "%i %g %g %g (axis, x,y,z)",
+							gridPlaneAxis,xgp,ygp,zgp);  nt++; 
 														      
 
     textLabels[nt] = "file name"; sPrintF(textStrings[nt], "%s",(const char*)fileName);  nt++; 
@@ -727,6 +737,7 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
   }
   
   aString answer,answer2;
+
   
   gi.pushGUI(gui);
   gi.appendToTheDefaultPrompt("probe>");  
@@ -754,7 +765,8 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
 	     " probeBoundingBox     : save probe data on the boundary of a box\n"
              "                        (e.g. as boundary conditions for a subsequent sub-domain computation.)\n"
 	     " probeRegion          : probe is some average or integral over a region.\n"
-	     " probeBoundarySurface : probe is some average or integral over a boundary surface.\n");
+	     " probeBoundarySurface : probe is some average or integral over a boundary surface.\n"
+	     " probeCoordinatePlane : probe is some average or integral over a grid coordinate plane.\n");
       
     }
 
@@ -762,13 +774,16 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
              answer=="location probe"      ||
              answer=="bounding box probe" ||
 	     answer=="region probe"       ||
-	     answer=="surface probe" )
+	     answer=="surface probe"       ||
+	     answer=="coordinate plane probe" )
     {
-      probeType = ProbeTypesEnum(answer=="grid point probe"   ? 0 : 
-				 answer=="location probe"     ? 1 :
-				 answer=="bounding box probe" ? 2 :
-				 answer=="region probe"       ? 3 :
-				 answer=="surface probe"      ? 4 : 0 );
+      probeType = ProbeTypesEnum(answer=="grid point probe"   ? probeAtGridPoint : 
+				 answer=="location probe"     ? probeAtLocation :
+				 answer=="bounding box probe" ? probeBoundingBox :
+				 answer=="region probe"       ? probeRegion :
+				 answer=="surface probe"      ? probeBoundarySurface :
+				 answer=="coordinate plane probe" ? probeCoordinatePlane :
+				 answer=="user defined probe" ? probeUserDefined : 0 );
 
       
     }
@@ -793,6 +808,9 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
              answer=="average" ||
 	     answer=="total" )
     {
+      if (!dbase.has_key("quantityMeasure")) 
+	dbase.put<aString>("quantityMeasure");
+
       dbase.get<aString>("quantityMeasure")=answer;
       printF("Setting quantityMeasure=[%s]\n",(const char*)dbase.get<aString>("quantityMeasure"));
 
@@ -803,6 +821,9 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
              answer=="volume weighted sum" ||
 	     answer=="integral" )
     {
+      if (!dbase.has_key("measureType")) 
+	dbase.put<aString>("measureType");
+
       dbase.get<aString>("measureType")=answer;
       printF("Setting measureType=[%s]\n",(const char*)dbase.get<aString>("measureType"));
       dialog.getOptionMenu("Measure type:").setCurrentChoice(answer);
@@ -861,7 +882,7 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
       
       for( int axis=0; axis<3; axis++ )
       {
-	xv[axis]=x(0,axis);       // probe physical location
+	xv[axis]=x(0,axis);       // probe physical location -- changed below for 	probeType=probeAtGridPoint; 
 	iv[axis]=il(0,axis+1);    // closest point 
 	alpha[axis] = ci(0,axis)/mg.gridSpacing(axis)+gid(0,axis) - iv[axis];
 
@@ -873,10 +894,32 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
 	
       }
 
+      // Double check: find position nearest point from the mapping
+      RealArray xgv(1,3); xgv=0.;
+
+      Mapping & map = mg.mapping().getMapping();
+      map.mapS( ci,xgv );
+
+      real dist=0.;
+      for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+        dist+=SQR(x(0,axis)-xgv(0,axis));
+      dist=sqrt(dist);
+      printF("ProbeInfo:INFO: pt=(%e,%e,%e), mapping-location=(%e,%e,%e), dist=%8.2e\n",x(0,0),x(0,1),x(0,2),
+             xgv(0,0),xgv(0,1),xgv(0,2),dist);
+
       if( probeType==probeAtGridPoint )
       {
-	printF("ProbeInfo:INFO: nearest grid pt to x=(%e,%e,%e) : grid=%i (i1,i2,i3)=(%i,%i,%i)\n",
-	       x(0,0),x(0,1),x(0,2),grid,iv[0],iv[1],iv[2]);
+        // -- evaluate the coordinates of the grid point (will be saved in the probe file) ---
+        RealArray rgp(1,30), xgp(1,3); rgp=-1.; xgp=0.;
+        for( int axis=0; axis<3; axis++ )
+          rgp(0,axis) = real(iv[axis]-gid(0,axis))/real(gid(1,axis)-gid(0,axis));
+
+        map.mapS( rgp,xgp );
+        for( int axis=0; axis<3; axis++ )
+     	  xv[axis]=xgp(0,axis);
+        
+	printF("ProbeInfo:INFO: nearest grid pt to x=(%e,%e,%e) : grid=%i (i1,i2,i3)=(%i,%i,%i) xgp=(%e,%e,%e)\n",
+	       x(0,0),x(0,1),x(0,2),grid,iv[0],iv[1],iv[2],xgp(0,0),xgp(0,1),xgp(0,2));
       }
       else
       {
@@ -886,22 +929,12 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
 	       x(0,0),x(0,1),x(0,2),grid,ci(0,0),ci(0,1),ci(0,2),iv[0],iv[1],iv[2],alpha[0],alpha[1],alpha[2]);
       }
 
-      // Double check: find position nearest" point from the mapping
-      if( true )
+     
+      for( int axis=0; axis<3; axis++ )
       {
-	RealArray xgv(1,3); xgv=0.;
 
-	Mapping & map = mg.mapping().getMapping();
-	map.mapS( ci,xgv );
-
-	real dist=0.;
-	for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	  dist+=SQR(x(0,axis)-xgv(0,axis));
-	dist=sqrt(dist);
-	printF("ProbeInfo:INFO: pt=(%e,%e,%e), mapping-location=(%e,%e,%e), dist=%8.2e\n",x(0,0),x(0,1),x(0,2),
-	       xgv(0,0),xgv(0,1),xgv(0,2),dist);
       }
-
+      
     }
     
     else if( len=answer.matches("nearest grid point to") )
@@ -1154,6 +1187,94 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
       
     }
     
+    else if( (len= answer.matches("grid coordinate plane")) )
+    {
+      // --- Define a grid coordinate plane: 
+      //  axis, (x,y,z): choose a grid coordinate plane with i_axis=const closest to point (x,y,z)
+
+      printF("Define a grid coordinate plane:\n"
+	     "  axis, (x,y,z): choose a grid coordinate plane with i_axis=const closest to point (x,y,z)\n");
+
+
+      sScanF(answer(len,answer.length()-1),"%i %e %e %e",&gridPlaneAxis,&xgp,&ygp,&zgp);
+      printF("Choosing a coordinate plane for fixed axis=%d, closest to point (%g,%g,%g)\n",
+	     gridPlaneAxis,xgp,ygp,zgp);
+
+      RealArray x(1,3); x(0,0)=xgp; x(0,1)=ygp; x(0,2)=zgp;
+      IntegerArray gridLocation(1,4);
+      int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+  
+
+      printF("ProbeInfo: finding closest grid point to x=(%e,%e,%e)\n",x(0,0),x(0,1),x(0,2));
+      getClosestGridPoint( cg,x,gridLocation );
+      if( gridLocation(0,3)>=0 )
+      {
+	iv[0]=gridLocation(0,0);
+	iv[1]=gridLocation(0,1);
+	iv[2]=gridLocation(0,2);
+	gridPlane=gridLocation(0,3);
+	printF("ProbeInfo:Using grid=%i, (i1,i2,i3)=(%i,%i,%i)\n",gridPlane,iv[0],iv[1],iv[2]);	  
+      }
+
+      probeType=probeCoordinatePlane;
+
+      if( !dbase.has_key("regionParameters") )
+      {
+        BodyForceRegionParameters & regionPar = dbase.put<BodyForceRegionParameters>("regionParameters");
+        aString & regionType = regionPar.dbase.get<aString>("regionType");
+        regionType="coordinatePlane"; 
+      }
+      BodyForceRegionParameters & regionPar = dbase.get<BodyForceRegionParameters>("regionParameters");
+
+      if( !regionPar.dbase.has_key("gridPlaneInfo") )
+      {
+	regionPar.dbase.put<int>("gridPlane");
+	regionPar.dbase.put<int>("gridPlaneAxis");
+	regionPar.dbase.put<int>("gridPlaneIndex");
+	regionPar.dbase.put<real [3]>("gridPlanePoint");
+      }
+      regionPar.dbase.get<int>("gridPlane")=gridPlane;
+      regionPar.dbase.get<int>("gridPlaneAxis")=gridPlaneAxis;
+      regionPar.dbase.get<int>("gridPlaneIndex")=iv[gridPlaneAxis];
+
+      // save the closest ACTUAL grid point on the coordinate plane.
+      // This probably only makes sense for a Cartesian grid 
+      real *gridPlanePoint = regionPar.dbase.get<real [3]>("gridPlanePoint");
+
+      MappedGrid & mg = cg[gridPlane];
+      const bool isRectangular = mg.isRectangular();
+      real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}}, dr[3]={1.,1.,1.};
+      int iv0[3]={0,0,0}; //
+      if( isRectangular )
+      {
+	mg.getRectangularGridParameters( dvx, xab );
+	for( int dir=0; dir<mg.numberOfDimensions(); dir++ )
+	{
+	  iv0[dir]=mg.gridIndexRange(0,dir);
+	  if( mg.isAllCellCentered() )
+	    xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+	}
+        // This macro defines the grid points for rectangular grids:
+        #undef XC
+        #define XC(iv,axis) (xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]))
+
+        for( int dir=0; dir<3; dir++ ){ gridPlanePoint[dir]=XC(iv,dir); }
+      }
+      else
+      { 
+	mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+        OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+
+        for( int dir=0; dir<3; dir++ ){ gridPlanePoint[dir]=xLocal(i1,i2,i3,dir); } 
+      }
+
+      printF("ProbeInfo: closest grid point position: x=[%e,%e,%e]\n",gridPlanePoint[0],gridPlanePoint[1],gridPlanePoint[2]);
+      
+	  
+
+    }
+		  
+
     else if( answer=="define surface..." )
     {
       // --------------------------------------------------------
@@ -1186,6 +1307,9 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
     
       int shareFlagForSurface=1;
       textLabels[nt] = "share flag"; sPrintF(textStrings[nt], "%i",shareFlagForSurface);  nt++; 
+
+      
+
       // null strings terminal list
       textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
       dialog.setTextBoxes(textLabels, textLabels, textStrings);
@@ -1202,6 +1326,13 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
       IntegerArray & boundaryFaces = dbase.get<IntegerArray>("boundaryFaces");
 
       boundaryFaces.redim(3,20);  // initially space for 20 faces on the surface
+      
+      if( !dbase.has_key("regionParameters") )
+      {
+        BodyForceRegionParameters & regionPar = dbase.put<BodyForceRegionParameters>("regionParameters");
+        aString & regionType = regionPar.dbase.get<aString>("regionType");
+        regionType="boundarySurface";  // *new* Dec 17, 2019
+      }
       
       for( ;; )
       {

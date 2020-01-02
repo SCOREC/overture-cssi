@@ -114,297 +114,42 @@ c To include derivatives of rx use OPTION=RX
 
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update isotropic equations 2D, Order 2
 ! ========================================================================================
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update BI-ANISTROPIC equations 2D, Order 2
 ! ========================================================================================
 
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update isotropic equations 2D, Order 4
 ! ========================================================================================
 
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update BI-ANISTROPIC equations 2D, Order 4
 ! ========================================================================================
 
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update BI-ANISTROPIC equations 3D, Order 2
 ! ========================================================================================
 
 ! =========================================================================================
+! **OLD***
 ! Macro: Update BI-ANISTROPIC equations 3D, Order 4
 ! ========================================================================================
 
 
 
-!- ! =========================================================================================
-!- ! Macro: Update BI-ANISTROPIC GDM equations 2D, Order 2
-!- ! ========================================================================================
-!- #beginMacro updateBAGDM2dOrder2Old()
-!-   ! eps* u_t = w_y
-!-   ! eps* v_t = - w_x
-!-   ! mu* w_t = u_y - v_x 
-!- 
-!-   if( t.lt.2*dt )then
-!-     write(*,'("advBA: *** advance BA GDM, 2nd-order, rectangular... t=",e10.2)') t
-!-     write(*,'("  ++++ solveForAllFields,methodOfLines=",2i2)') solveForAllFields,methodOfLines
-!-   end if
-!-   mr=0
-!-   
-!-   if( solveForAllFields.ne.0 )then
-!- 
-!-     ! --- SOLVE FOR ALL FIELDS ---
-!- 
-!-     if( .not.methodOfLines )then
-!- 
-!-       ! --- TAYLOR TIME-STEPPING --- 
-!-       stop 111
-!-        
-!-     else
-!- 
-!-   if( t.lt.2*dt )then
-!-     write(*,'("    +++++++ (2) ")') 
-!-   end if
-!- 
-!-       ! --- METHOD OF LINES (RK) ---
-!-       if( forcingOption.eq.twilightZoneForcing )then
-!-          ! zero out some forcing terms 
-!-          do m=0,numPolarizationTerms-1
-!-            pv(m)=0.
-!-          end do
-!-       end if    
-!-       beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-!-   
-!-         if( addForcing.ne.0 )then  ! do this for now *fix me*
-!-           do m=0,5
-!-             fv(m)=f(i1,i2,i3,m)
-!-           end do
-!-         end if 
-!-   
-!-         if( numberOfMaterialRegions.gt.1 )then
-!-           mr = matMask(i1,i2,i3)
-!-           if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions )then  ! do this for now 
-!-              stop 9999
-!-           end if            
-!-         end if       
-!- 
-!-         if( forcingOption.eq.twilightZoneForcing )then
-!- 
-!-           if( nd.eq.2 )then
-!-             do m=0,5
-!-               ec = m 
-!-               OGDERIV2D( 0,0,0,0,i1,i2,i3,t, ec, ev(m)  )
-!-               OGDERIV2D( 1,0,0,0,i1,i2,i3,t, ec, evt(m) )
-!-             end do 
-!-             ! eval the polarization terms and time derivatives 
-!-             do m=0,numPolarizationTerms-1
-!-               pc = m+6  ! TZ index 
-!-               OGDERIV2D( 0,0,0,0,i1,i2,i3,t, pc, pv(m)  )
-!-               OGDERIV2D( 1,0,0,0,i1,i2,i3,t, pc, pvt(m) )
-!-             end do    
-!-           else
-!-             stop 3333
-!-             ! OGDERIV3D( 0,0,0,0,i1,i2,i3,t, ec, e0  )
-!-             ! OGDERIV3D( 1,0,0,0,i1,i2,i3,t, ec, e0t )
-!-          end if
-!- 
-!-          !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
-!-          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
-!-          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
-!- 
-!-           pc=0  ! P
-!-           qc=1  ! Q = P.t 
-!-           do k1=1,6
-!-             ec=k1-1 ! E or H component 
-!-             do k2=1,6
-!-               do n=1,Np(k1,k2,mr)
-!-                 a0 = gdmPar(1,n,k1,k2,mr)
-!-                 a1 = gdmPar(2,n,k1,k2,mr)
-!-                 b0 = gdmPar(3,n,k1,k2,mr)
-!-                 b1 = gdmPar(4,n,k1,k2,mr)
-!- 
-!-                 ! TZ forcing for polarization equations: 
-!-                 fp(pc) = pvt(pc) - pv(qc)
-!-                 fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*evt(ec) - b0*pv(pc)- b1*pv(qc) )
-!- 
-!-                 pc=pc+2
-!-                 qc=qc+2
-!-               end do
-!-             end do
-!-           end do 
-!-        else
-!-           ! no TZ : set polarization forcing to zero 
-!-           do m=0,numPolarizationTerms-1
-!-             fp(m)=0.
-!-           end do 
-!-        end if
-!- 
-!- 
-!-         ! compute components of the curl(H) and -curl(E)
-!-         curl(0) =  uy22r(i1,i2,i3,hz)
-!-         curl(1) = -ux22r(i1,i2,i3,hz)
-!-         curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-!- 
-!-         curl(3) = -uy22r(i1,i2,i3,ez)
-!-         curl(4) =  ux22r(i1,i2,i3,ez)
-!-         curl(5) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-!- 
-!-         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
-!-         pc=0  ! P
-!-         qc=1  ! Q = P.t 
-!-         do m=0,5
-!-           ptSum(m)=0.   ! local total Pt or Mt 
-!-         end do 
-!-         do k1=1,6
-!-           ec=k1-1 ! E or H component 
-!-           do k2=1,6
-!-             do n=1,Np(k1,k2,mr)
-!-               ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
-!-               qc=qc+2
-!-             end do
-!-           end do
-!-           ! subtract off P.t = sum Q_m
-!-           curl(ec) = curl(ec) - ptSum(ec)
-!-         end do 
-!- 
-!-         if( debug.gt.3 )then
-!-           write(*,'(" i1,i2=",2i3," ptSum=",6(f6.3,1x))') i1,i2,(ptSum(m),m=0,5)
-!-         end if
-!- 
-!-         do m=0,5 
-!-           un(i1,i2,i3,m)= K0i(m,0,mr)*curl(0) + K0i(m,1,mr)*curl(1) + K0i(m,2,mr)*curl(2) + !-                           K0i(m,3,mr)*curl(3) + K0i(m,4,mr)*curl(4) + K0i(m,5,mr)*curl(5) + fv(m)
-!-         end do
-!- 
-!-         if( .true. )then
-!-           write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
-!-         end if
-!- 
-!-         ! --- compute time derivatives of P and Q
-!-         ! p.t = q
-!-         ! q.t = a0*E + a1*Et - b0*p - b1*q   
-!-         ! or 
-!-         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
-!-         pc=0  ! P
-!-         qc=1  ! Q = P.t 
-!-         do k1=1,6
-!-           ec=k1-1 ! E or H component 
-!-           do k2=1,6
-!-             do n=1,Np(k1,k2,mr)
-!-               a0 = gdmPar(1,n,k1,k2,mr)
-!-               a1 = gdmPar(2,n,k1,k2,mr)
-!-               b0 = gdmPar(3,n,k1,k2,mr)
-!-               b1 = gdmPar(4,n,k1,k2,mr)
-!- 
-!-               pct=pc+6  ! p.t is stored in un here 
-!-               qct=qc+6  ! q.t is stored in un here
-!- 
-!-               un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
-!-               un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-!-               ! test: 
-!-               ! un(i1,i2,i3,qct) = a0*ev(ec)         + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-!- 
-!-               if( debug.gt.3 )then
-!-                 write(*,'(" i1,i2=",2i4," k1,k2=",2i2," Np=",i3," ec=",i1," t=",e9.2)') i1,i2,k1,k2,Np(k1,k2,mr),ec,t
-!-                 write(*,'("   ... pc,qc,ec=",3i3," a0,a1,b0,b1=",4e10.2)') pc,qc,ec,a0,a1,b0,b1
-!-                 write(*,'("   ... p ,q =",2f7.3)') p(i1,i2,i3,pc),p(i1,i2,i3,qc)
-!-               end if 
-!-               ! write(*,'("   ... p ,pe =",2f7.3," q ,qe =",2f7.3)') p(i1,i2,i3,pc),pv(pc),p(i1,i2,i3,qc),pv(qc)
-!-               ! write(*,'("   ... E ,Ee =",2f7.3," Et,Ete =",2f7.3)') u(i1,i2,i3,ec),ev(ec),un(i1,i2,i3,ec),evt(ec)
-!-               ! write(*,'("   ... pt,pte=",2f7.3," qt,qte=",2f7.3)') un(i1,i2,i3,pct),pvt(pc),un(i1,i2,i3,qct),pvt(qc)
-!- 
-!-               ! test: -- set to exact time-derivative 
-!-               ! un(i1,i2,i3,pct) = pvt(pc)
-!-               ! un(i1,i2,i3,qct) = pvt(qc)
-!-              
-!-               pc=pc+2
-!-               qc=qc+2
-!-             end do
-!-           end do
-!-         end do 
-!- 
-!-       endLoopsMask()
-!- 
-!-       stop  4444
-!- 
-!-     end if 
-!- 
-!-   else
-!- 
-!- 
-!-      stop 5555
-!- 
-!-      ! TEz polarization
-!-     if( .not.methodOfLines )then
-!-       stop 111
-!- 
-!-       beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-!-   
-!-        if( addForcing.ne.0 )then  ! do this for now *fix me*
-!-          fv(ex)=f(i1,i2,i3,ex)
-!-          fv(ey)=f(i1,i2,i3,ey)
-!-          fv(hz)=f(i1,i2,i3,hz)
-!-        else
-!-          do c=ex,hz
-!-            fv(c)= 0.
-!-          end do
-!-        end if 
-!-   
-!-        un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-!-        un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-!-        un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) !-                                                                    +.5*cdtsq*lap2d2(i1,i2,i3,hz) + dt*fv(hz)
-!-       endLoopsMask()
-!-     else
-!-       ! METHOD OF LINES -- TEz 
-!- 
-!-       beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-!-   
-!-        if( addForcing.ne.0 )then  ! do this for now *fix me*
-!-          fv(ex)=f(i1,i2,i3,ex)
-!-          fv(ey)=f(i1,i2,i3,ey)
-!-          fv(hz)=f(i1,i2,i3,hz)
-!-        else
-!-          do c=ex,hz
-!-            fv(c)= 0.
-!-          end do
-!-        end if 
-!-   
-!-         ! compute components of the curl(H) and -curl(E)
-!-         curl(0) =  uy22r(i1,i2,i3,hz)
-!-         curl(1) = -ux22r(i1,i2,i3,hz)
-!-         ! curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-!- 
-!-         ! curl(3) = -uy22r(i1,i2,i3,ez)
-!-         ! curl(4) =  ux22r(i1,i2,i3,ez)
-!-         curl(2) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-!- 
-!-         if( numberOfMaterialRegions.gt.1 )then
-!-           mr = matMask(i1,i2,i3)
-!-           if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions )then  ! do this for now 
-!-              stop 9999
-!-           end if            
-!-         end if 
-!-         do m=0,2
-!-           un(i1,i2,i3,m)= Ki(m,0,mr)*curl(0) + Ki(m,1,mr)*curl(1) + Ki(m,2,mr)*curl(2) + fv(m)
-!-         end do 
-!- 
-!-         ! un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + fv(ex)
-!-         ! un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + fv(ey)
-!-         ! un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) + fv(hz)
-!-       endLoopsMask()
-!- 
-!-     end if
-!- 
-!-   end if
-!- 
-!- #endMacro
-
-
 ! =========================================================================================
+! **OLD***
 ! Macro: Update BI-ANISTROPIC GDM equations
 !
 !   DIM : dimension : 2 or 3
@@ -414,15 +159,33 @@ c To include derivatives of rx use OPTION=RX
 
 
 ! =========================================================================================
-! **NEW VERSION** Try to optimized
+! ** OPTIMIZED VERSION**
 ! Macro: Update BI-ANISTROPIC GDM equations
 !
 !   DIM : dimension : 2 or 3
 !   ORDER : 2 or 4   
 !   GRIDTYPE : rectangular or curvilinear
+!   ETAXOP: for supergrid layer in x-direction set to etxa(i1)*, otherwise leave null
 ! ========================================================================================
 
 
+
+
+! =========================================================================================
+! Optimized version -- non-dispersive
+! Macro: Update BI-ANISTROPIC equations
+!
+!   DIM : dimension : 2 or 3
+!   ORDER : 2 or 4   
+!   GRIDTYPE : rectangular or curvilinear
+!   POLAR : polarization, NONE or TEZ
+!   ETAXOP: for supergrid layer in x-direction set to etxa(i1)*, otherwise leave null
+! ========================================================================================
+
+
+! =========================================================================
+!  Macro to call super-grid or non-supergrid version of BA update 
+! =========================================================================
 
 
 ! **********************************************************************************
@@ -483,7 +246,7 @@ c To include derivatives of rx use OPTION=RX
 
       subroutine advBA(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,
      & nd3a,nd3b,nd4a,nd4b,mask,rx,  um,u,un,f,fa, K0i, matMask, pm,p,
-     & pn,xy,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & pn,xy,etax,etay,etaz, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -509,9 +272,12 @@ c To include derivatives of rx use OPTION=RX
 
       real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
 
-      real ut5(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-      real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-      real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      ! Super-grid layer functions 
+      real etax(nd1a:nd1b), etay(nd2a:nd2b), etaz(nd3a:nd3b)
+
+      ! real ut5(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      ! real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      ! real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real rx(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
@@ -554,7 +320,7 @@ c To include derivatives of rx use OPTION=RX
           ! BA version 
           call advBA2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa,K0i,
-     & matMask, pm,p,pn,xy,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, 
+     & matMask, pm,p,pn,xy,etax,etay,etaz,bc, dis,varDis, ipar, rpar, 
      & ierr )
         else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
           write(*,*) 'advBA -- unimplemented option'
@@ -563,7 +329,7 @@ c To include derivatives of rx use OPTION=RX
           ! BA version 
           call advBA3dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa,K0i,
-     & matMask, pm,p,pn,xy,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, 
+     & matMask, pm,p,pn,xy,etax,etay,etaz,bc, dis,varDis, ipar, rpar, 
      & ierr )
         else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
           write(*,*) 'advBA -- unimplemented option'
@@ -579,7 +345,7 @@ c To include derivatives of rx use OPTION=RX
           ! write(*,'(" call advBA2dOrder4r...")')
           call advBA2dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa,K0i,
-     & matMask, pm,p,pn,xy,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, 
+     & matMask, pm,p,pn,xy,etax,etay,etaz,bc, dis,varDis, ipar, rpar, 
      & ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           write(*,*) 'advBA -- unimplemented option'
@@ -588,7 +354,7 @@ c To include derivatives of rx use OPTION=RX
           ! BA version 
           call advBA3dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa,K0i,
-     & matMask, pm,p,pn,xy,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, 
+     & matMask, pm,p,pn,xy,etax,etay,etaz,bc, dis,varDis, ipar, rpar, 
      & ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           write(*,*) 'advBA -- unimplemented option'

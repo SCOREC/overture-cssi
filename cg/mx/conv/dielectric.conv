@@ -60,9 +60,9 @@ $cmdFile="dielectricCyl";
 $CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
 $cgmx = "$CGBUILDPREFIX/mx/bin/cgmx";  # command for cgmx
 $cmdDir="$ENV{CG}/mx/runs/dielectricCyl"; 
-$tFinal=.5; $tp=.1; $order = "2"; $ng=3;  $kx=1.; $eps1=.25; $eps2=1.; $interp="i"; $fixed=""; $cfl=.9; 
+$tFinal=.5; $tp=.1; $order = "2"; $ng=3;  $kx=1.; $eps1=.25; $eps2=1.; $interp="i"; $fixed=""; $cfl=.9; $ts="me"; 
 $diss=.5; $dissOrder=-1; $interit=5;  $cons=0;  $stageOption ="default"; $useSosupDissipation=0; $sosupParameter=1.; 
-$errorNorm=0; $method="NFDTD"; 
+$errorNorm=0; $method="NFDTD"; $saveVectorErrors=0; 
 $cyl=0;  # 0=sphere, 1=cylinder
 $numberOfDimensions=2; 
 $alwaysCompute=1;
@@ -72,16 +72,18 @@ $modeGDM=-1;
 $dm="none"; # dispersive model
 $dmFile=""; # "SilverJCDispersionFits.txt"; 
 $mat1Name=""; $mat2Name=""; # optional material names (outside, disk) to go on output files
+$matFile=""; $matFile2=""; $solveForAllFields=0; 
 #
 GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tFinal,"interp=s"=>\$interp,"diss=f"=>\$diss,\
             "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"interit=i"=>\$interit,\
             "errorNorm=i"=>\$errorNorm,"tp=f"=>\$tp,"cyl=i"=>\$cyl,"dissOrder=i"=>\$dissOrder,"kx=f"=>\$kx,\
-            "eps1=f"=>\$eps1,"eps2=f"=>\$eps2,\
+            "eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"ts=s"=>\$ts,"saveVectorErrors=i"=>\$saveVectorErrors,\
             "cons=i"=>\$cons,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
             "stageOption=s"=>\$stageOption,"dm=s"=>\$dm,"dmFile=s"=>\$dmFile,"mat1Name=s"=>\$mat1Name,"mat2Name=s"=>\$mat2Name,\
             "npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
             "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
-            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12 );
+            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
+            "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"solveForAllFields=i"=>\$solveForAllFields );
 # ------------------------ dielectric sphere ------------------------------------------
 # Give defaults here for array arguments: 
 if( $alphaP[0] eq "" ){ @alphaP=(-1,-1); }
@@ -104,6 +106,13 @@ if( $cyl eq 0 ){ $numberOfDimensions=3; }
 if( $cyl eq 0 ){ $baseGridSpacing=.1; }else{ $baseGridSpacing=.05; }
 if( $cyl eq 0 ){ $caseLabel = "dielectricSphere"; }else{ $caseLabel = "dielectricCyl"; }
 $caseName="$caseLabel$method\Order$order"; 
+#
+$extraLabel ="";
+if( $dm ne "none" ){ $extraLabel .= "GDM" . "$mat1Name" . "Np" . "$npv[0]" . "$mat2Name" . "Np" . "$npv[1]"; }
+if( $modeGDM > -1 ){ $extraLabel .= "Mode$modeGDM"; }
+if( $method eq "bamx" ){ $matFileName="$matFile" . "$matFile2"; $matFileName =~ s/\.txt//g; $extraLabel .= "$matFileName"; }
+$outputFile="$caseLabel" . "$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
+#
 #
 if( $dm ne "none" ){ $caseName.="GDMNp" . "$npv[0]" . "Np" . "$npv[1]"; }# See below too for extraLabel
 if( $dm ne "none" && $modeGDM ne -1 ){ $caseName.="GdmMode$modeGDM"; }# See below too for extraLabel
@@ -132,40 +141,41 @@ if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 && $dm ne "none" )\
 if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
   { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #
-# $numberOfComponents=4;
-# if( $dissOrder < 0 ){ $dissOrder=$order; }
-# if( $method eq "sosup" ){ $numberOfComponents=7; } # 2D only 
-# if( $method eq "Yee" && $cyl eq 0 ){ $numberOfComponents=7; }
-# # define the table heading and caption
-# if( $numberOfComponents eq 4 && $cyl eq 1 )\
-#   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$";\
-#     @componentName = ( "Ex", "Ey" , "Hz", "divE" ); }
-# if( $numberOfComponents eq 4 && $cyl eq 0  )\
-#   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$";\
-#     @componentName = ( "Ex", "Ey" , "Ez", "divE" );  }
-# if( $numberOfComponents eq 7 )\
-#   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$H_x\$ \&  \$H_y\$ \& \$H_z\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$";\
-#     @componentName = ( "Ex", "Ey" , "Ez", "Hx", "Hy" , "Hz", "divE" ); }
-# if( $method eq "sosup" && $numberOfComponents eq 7 )\
-#   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$H_z\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+# BA-MAXWELL
+if( $method eq "bamx" && $solveForAllFields eq 1 )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$H_x\$ \&  \$H_y\$ \& \$H_z\$  \&   \$\\Ev\$ \&   \$\\Hv\$  \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=9; }
+# BA-MAXWELL -- only display vector errors 
+if( $method eq "bamx" && $solveForAllFields eq 1 &&  $dm eq "none" && $saveVectorErrors eq 1 )\
+  { $title= "grid  \& N \&    \$\\Ev\$ \&   \$\\Hv\$ "; $numberOfComponents=9;  \
+foreach $i (0,1,2,3,4,5,8) { $ignoreComponent[$i]=1; }\
+}
+# BA-GDM save all errors 
+if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" )\
+  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$     \& \$E_z\$     \&  \$H_x\$       \&  \$H_y\$      \& \$H_z\$      \&   \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9; \
+ } \
+  }
+# BA-GDM : Save vector errors only 
+if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorErrors eq 1  )\
+  { $title= "grid  \& N \&  \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9;  \
+  foreach $i (0,1,2,3,4,5) { $ignoreComponent[$i]=1; } \
+  }
+#
 # 
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tFinal\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, stageOption=$stageOption sosupParameter=$sosupParameter interfaceIts=$interfaceIts, tz=$tz, kx=$kx, ky=$ky, ic=$ic, bc=$bc, dm=$dm, dmFile=$dmFile, eps1=$eps1, eps2=$eps2, alphaP=$alphaP, npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
-$extraLabel ="";
-if( $dm ne "none" ){ $extraLabel .= "GDM" . "$mat1Name" . "Np" . "$npv[0]" . "$mat2Name" . "Np" . "$npv[1]"; }
-if( $modeGDM > -1 ){ $extraLabel .= "Mode$modeGDM"; }
-$outputFile="$caseLabel" . "$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 #
-# $labelMethod=$method;
-# if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
-# $caption= "\\caption\{Cgmx, $caseLabel, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tFinal\$, \$k_x=$kx\$, \$\\eps_1=$eps1\$, \$\\eps_2=$eps2\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, interit=\$$interit\$, $date}\\label\{table:$caseLabel" . $method . "Order$order$normName}"; 
-# $outputFile=$caseLabel . $labelMethod . "Order$order" . $normName . "NormConvTable.tex"; 
+if( $method eq "bamx" ){\
+$caption= "\\caption\{Cgmx, $name, method=$labelMethod, ts=$ts, $normName norm, order=\$$order\$, \$t=$tFinal\$, cfl=\$$cfl\$, diss=\$$diss\$,kx=$kx, ky=$ky, ic=$ic, bc=$bc, dm=$dm, matFile=$matFile, matFile2=$mathFile2 $date}\\label\{table:$name" . $method . "Order$order$normName}"; }
 # 
 $options = "-cyl=$cyl -kx=$kx -eps1=$eps1 -eps2=$eps2 -diss=$diss -dissOrder=$dissOrder -interit=$interit -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -alphaP=$alphaP[0] $alphaP[1] -dm=$dm -dmFile=$dmFile -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -useSosupDissipation=$useSosupDissipation -sosupParameter=$sosupParameter -stageOption=$stageOption -cons=$cons -go=go ";
+#
+if( $method eq "bamx" ){ $options = "-cyl=$cyl -kx=$kx -diss=$diss -cfl=$cfl -method=$method -ts=$ts -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -matFile=$matFile -matFile2=$matFile2 -solveForAllFields=$solveForAllFields -go=go "; }
+#
 $suffix="";
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 4) ){ $suffix=".ng3"; }
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 6) ){ $suffix=".ng4"; }
+if( $method eq "bamx" && $order eq 4 ){ $suffix=".ng3"; }
 $gName1 = $name . "1.order$order$suffix";  $grid1=$name ."1"; 
 $gName2 = $name . "2.order$order$suffix";  $grid2=$name ."2"; 
 $gName3 = $name . "4.order$order$suffix";  $grid3=$name ."4"; 

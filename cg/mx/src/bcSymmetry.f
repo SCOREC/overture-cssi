@@ -128,21 +128,27 @@
       integer dirichlet,perfectElectricalConductor,
      & perfectMagneticConductor,planeWaveBoundaryCondition,
      & interfaceBC,symmetryBoundaryCondition,abcEM2,abcPML,abc3,abc4,
-     & abc5,rbcNonLocal,rbcLocal,lastBC
+     & abc5,rbcNonLocal,rbcLocal,characteristic,absorbing,lastBC
       parameter( dirichlet=1,perfectElectricalConductor=2,
      & perfectMagneticConductor=3,planeWaveBoundaryCondition=4,
      & symmetryBoundaryCondition=5,interfaceBC=6,abcEM2=7,abcPML=8,
-     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,lastBC=13 )
+     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,
+     & characteristic=14,absorbing=15,lastBC=15 )
       ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
-     & twilightZoneForcing,planeWaveBoundaryForcing, 
-     & gaussianChargeSource, userDefinedForcingOption
+     & twilightZoneForcing, gaussianChargeSource, 
+     & userDefinedForcingOption
+      integer noBoundaryForcing,planeWaveBoundaryForcing,
+     & chirpedPlaneWaveBoundaryForcing
       parameter(noForcing                =0,
      & magneticSinusoidalPointSource =1,gaussianSource                
-     & =2,twilightZoneForcing           =3,planeWaveBoundaryForcing   
-     &    =4,    gaussianChargeSource          =5,
-     & userDefinedForcingOption      =6 )
+     & =2,twilightZoneForcing           =3,    gaussianChargeSource   
+     &        =4,userDefinedForcingOption      =5 )
+      ! boundary forcing options when solved directly for the scattered field:
+      parameter( noBoundaryForcing              =0,   
+     & planeWaveBoundaryForcing       =1,
+     & chirpedPlaneWaveBoundaryForcing=2 )
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)
       ierr=0
@@ -865,21 +871,27 @@
       integer dirichlet,perfectElectricalConductor,
      & perfectMagneticConductor,planeWaveBoundaryCondition,
      & interfaceBC,symmetryBoundaryCondition,abcEM2,abcPML,abc3,abc4,
-     & abc5,rbcNonLocal,rbcLocal,lastBC
+     & abc5,rbcNonLocal,rbcLocal,characteristic,absorbing,lastBC
       parameter( dirichlet=1,perfectElectricalConductor=2,
      & perfectMagneticConductor=3,planeWaveBoundaryCondition=4,
      & symmetryBoundaryCondition=5,interfaceBC=6,abcEM2=7,abcPML=8,
-     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,lastBC=13 )
+     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,
+     & characteristic=14,absorbing=15,lastBC=15 )
       ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
-     & twilightZoneForcing,planeWaveBoundaryForcing, 
-     & gaussianChargeSource, userDefinedForcingOption
+     & twilightZoneForcing, gaussianChargeSource, 
+     & userDefinedForcingOption
+      integer noBoundaryForcing,planeWaveBoundaryForcing,
+     & chirpedPlaneWaveBoundaryForcing
       parameter(noForcing                =0,
      & magneticSinusoidalPointSource =1,gaussianSource                
-     & =2,twilightZoneForcing           =3,planeWaveBoundaryForcing   
-     &    =4,    gaussianChargeSource          =5,
-     & userDefinedForcingOption      =6 )
+     & =2,twilightZoneForcing           =3,    gaussianChargeSource   
+     &        =4,userDefinedForcingOption      =5 )
+      ! boundary forcing options when solved directly for the scattered field:
+      parameter( noBoundaryForcing              =0,   
+     & planeWaveBoundaryForcing       =1,
+     & chirpedPlaneWaveBoundaryForcing=2 )
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)
       ierr=0

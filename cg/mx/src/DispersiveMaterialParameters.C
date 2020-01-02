@@ -1059,8 +1059,14 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   int numRead=getLineFromFile(file,line,buffLength);  // read a line from the file.
 
   bool parametersSet=false;
+  GenericGraphicsInterface & gi = *Overture::getGraphicsInterface(); // needed for parser
+
   // Allow for empty lines in the file: 
   // while( numRead>0 )  
+  bool parseForPerl=false;      // this is changed by the line "parser="perl" in the file. 
+  bool semiColonEndsLine=true;  // Format V1, may be changed by file wit a line "format="V2.0".
+  int shiftForSemiColon=1;
+  
   while( !feof(file) )
   { 
     if( numRead>0 )
@@ -1068,14 +1074,60 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
       aString aline=line;
       printF("DispersiveMP: readFromFile: line=[%s]\n",(const char*)line);
 
-      // Parse for perl variables in the file ? 
-      // int returnValue=parser->parse(answer);
-
+      // Parse for perl variables in the file:
+      if( parseForPerl )
+      {
+        int returnValue=gi.parseLine(aline);
+        printF("DispersiveMP: after parsing: aline=[%s]\n",(const char*)aline);
+      }
+      
       if( line[0]=='#' )
 	printF("Comment: %s\n",(const char*)line);
       else
       {
-	if( len=aline.matches("omegaScale=") )
+	if( len=aline.matches("format=") )
+        {
+          // The format= command defines the file format 
+	  aString format=aline(len,aline.length()-1); 
+	  int nl=format.length()-1;
+	  if( format[0]=='"' && format[nl]=='"' )
+	    format = format(1,nl-1);  // remove double quotes 
+	  printF("format=[%s]\n",(const char*)format);
+          if( format == "V2.0" )
+          { // In the new format we do no end lines with semi-colon so we can parse lines with perl.
+            printF("File format V2.0: do no end lines with semi-colon so we can parse lines with perl.\n");
+            semiColonEndsLine=false;
+            shiftForSemiColon=0;
+          }
+        }
+        
+	else if( len=aline.matches("parser=") )
+        {
+          // The parser="perl" will turn on parsing by perl.
+          //     parser="none" will turn off parsing 
+	  aString parser=aline(len,aline.length()-1); 
+	  int nl=parser.length()-1;
+	  if( parser[0]=='"' && parser[nl]=='"' )
+	    parser = parser(1,nl-1);  // remove double quotes 
+	  printF("parser=[%s]\n",(const char*)parser);
+          if( parser == "perl" )
+          { 
+            printF("parser=perl: parse lines with a `;' for perl commands and substitute perl dollar variables.\n");
+            parseForPerl=true;
+          }
+          else if( parser == "none" )
+          {
+            printF("Parser=none: lines will NOT be parsed for perl.\n");
+            parseForPerl=false;
+          }
+          else
+          {
+            printF("Unknown parser=[%s]\n",(const char*)parser);
+          }
+          
+        }
+        
+	else if( len=aline.matches("omegaScale=") )
 	{
 	  sScanF(aline(len,aline.length()-1),"%e",&omegaScale);
 	  printF("omegaScale=%22.16e\n",omegaScale);
@@ -1099,7 +1151,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 
 	else if( len=aline.matches("name=") )
 	{
-	  name=aline(len,aline.length()-2); // skip final ";"
+	  name=aline(len,aline.length()-1-shiftForSemiColon); // skip final ";"
 	  printF("name=%s\n",(const char*)name);
 	  int nl=name.length()-1;
 	  if( name[0]=='"' && name[nl]=='"' )
@@ -1107,7 +1159,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	}
 	else if( len=aline.matches("units=") )
 	{
-	  units=aline(len,aline.length()-2); // skip final ";"
+	  units=aline(len,aline.length()-1-shiftForSemiColon); // skip final ";"
 	  printF("units=%s\n",(const char*)units);
 	}
 	else if( len=aline.matches("epsGDMPars") )	
@@ -1207,7 +1259,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	else if( len=aline.matches("dispersiveModel=") )
 	{
 	  aString dm = aline(len,aline.length()-1);
-	  if( dm == "\"GDM\";" )
+	  if( dm == "\"GDM\";" || dm == "\"GDM\"" || dm == "GDM" )
 	  {
 	    printF("dispersiveModel = GDM. Setting isDispersive=true\n");
 	    // isDispersive=true;

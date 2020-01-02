@@ -33,6 +33,9 @@ outputHeader()
   const int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption"); 
   const int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency"); 
 
+  const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+  const real & superGridWidth = parameters.dbase.get<real>("superGridWidth");
+
   const int & solveForAllFields = dbase.get<int>("solveForAllFields");
   const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
   
@@ -182,6 +185,7 @@ outputHeader()
     {
       fPrintF(file," PML parameters: width=%i, strength=%g, power=%i\n",numberLinesForPML,pmlLayerStrength,pmlPower);
     }
+    printF(" useSuperGrid=%d, superGridWidth=%9.3e\n",useSuperGrid,superGridWidth);
     
     aString initialConditionName[numberOfInitialConditionNames]={
       "defaultInitialCondition",

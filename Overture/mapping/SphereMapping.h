@@ -35,6 +35,9 @@ SphereMapping(const real & innerRadius=.5,
 
   SphereMapping & operator =( const SphereMapping & X );
 
+  // Set the mapping to be a surface or volume
+  int setIsSurface( bool isSurface );
+
   int setOrigin(const real & x0_ =.0, 
 		const real & y0_ =.0, 
 		const real & z0_ =.0);

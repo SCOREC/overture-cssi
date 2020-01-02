@@ -4,6 +4,8 @@
 #   plotStuff plotSolution.cmd -show=baSixBox.show -name=baSixBox -solution=11
 #   plotStuff plotSolution.cmd -show=cylBox.show -name=baCylBox -solution=7
 #   plotStuff plotSolution.cmd -show=baGI.show -name=baGI -solution=6
+# 
+#   plotStuff plotSolution.cmd -show=baDieCyl.show -name=baDieCyl -solution=6
 #
 #
 $show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; 

@@ -203,6 +203,17 @@ $bcn
 debug $debug
 check errors 1
 plot errors 1
+#
+# TEST coordinate plane probe 
+#-create a probe...
+#-  probe name leftFaceProbe
+#-  file name  leftFaceProbe.dat
+#-  # Define a grid plane probe: 
+#-  coordinate plane probe 
+#-  grid coordinate plane 0 .51 0 0 (axis, x,y,z)
+#-  integral
+#-  all components
+#-exit
 continue
 $go
 

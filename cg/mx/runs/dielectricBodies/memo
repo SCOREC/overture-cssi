@@ -1,3 +1,16 @@
+************************************
+*** Mon Dec 9, 2019
+
+TEST for Derek: from Brett
+ogen -noplot dielectricBlockGrid2d -order=4 -numGhost=3 -interp=e -factor=6
+ogen -noplot dielectricBlockGrid2d -order=4 -numGhost=3 -interp=e -factor=2
+
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-4.5 -xRightProbe=4.5 -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de6.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-4.5 -xRightProbe=4.5 -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
 **************************************
 ******* Thurs Nov 28, 2019
 

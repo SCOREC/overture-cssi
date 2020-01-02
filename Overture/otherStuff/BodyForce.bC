@@ -2,9 +2,13 @@
 #include "AnnulusMapping.h"
 #include "BoxMapping.h"
 #include "SquareMapping.h"
+#include "SphereMapping.h"
+#include "CrossSectionMapping.h"
 #include "GenericGraphicsInterface.h"
 #include "xColours.h"
 #include "UnstructuredMapping.h"
+// Temp: 
+#include "MappingInformation.h"
 
 // ====================================================================================
 // This class holds information about different body forces.
@@ -275,6 +279,8 @@ BodyForceRegionParameters::
 // ==========================================================================================
 #beginMacro plotRegionMacro()
 
+// printF("***plotBodyForcing*** plotRegions: regionType=[%s]\n",(const char*)regionType);
+
   //  save ID for picking:
   if( !bodyForce.dbase.has_key("globalID") ) bodyForce.dbase.put<int>("globalID",-1); 
   int & globalID = bodyForce.dbase.get<int>("globalID");
@@ -343,7 +349,72 @@ BodyForceRegionParameters::
     }
     else
     {
-      // **finish me**
+      // CrossSectionMapping(const real startS=0.,                // staring value for "s"
+      // 		      const real endS=1.,                  // ending value for "s"
+      // 		      const real startAngle=0.,
+      // 		      const real endAngle=1.,
+      // 		      const real innerRadius=1., 
+      // 		      const real outerRadius=1.5,
+      // 		      const real x0=0., 
+      // 		      const real y0=0., 
+      // 		      const real z0=0., 
+      // 		      const real length=1.,
+      // 		      const int domainDimension=3 );
+
+
+      //printF("BodyForce: plot ellipsoid surface: xe=%e, ye=%e, ze=%e, ae=%e, be=%e, ce=%e lines=%d,%d\n",
+      //	     xe,ye,ze,ae,be,ce,linesToPlot[0],linesToPlot[1]);
+      
+      if( ae==be && be==ce )
+      {
+	// Sphere:
+        // SphereMapping(const real & innerRadius=.5, 
+        // 	      const real & outerRadius=1.,
+        // 	      const real & x0=0., 
+        //               const real & y0=0., 
+        // 	      const real & z0=0.,
+        //               const real & startTheta=0.,       // initial value for "theta", in [0,1]
+        //               const real & endTheta=1.,         // final value for "theta", in [0,1]
+        //               const real & startPhi=0.,         // initial value for "phi", in [0,1]
+        //               const real & endPhi=1.            // final value for "phi", in [0,1] 
+        //                );
+
+        real outerRadius=ae+1;
+        SphereMapping map( ae,outerRadius,xe,ye,ze );
+	globalID=map.getGlobalID();  // save ID for picking 
+
+	map.setIsSurface( true );
+	map.setGridDimensions(axis1,linesToPlot[0]);
+	map.setGridDimensions(axis2,linesToPlot[1]);
+
+	PlotIt::plot(gi, map,psp);      
+      }
+      else
+      {
+	// Ellipse 
+	CrossSectionMapping map(0.,1., 0.,1., 1., 1.5, xe,ye,ze,1.,3 );
+	globalID=map.getGlobalID();  // save ID for picking 
+
+	map.setCrossSectionType( CrossSectionMapping::ellipse );
+	map.setEllipsoidParameters( ae,be,ce );
+	map.setIsSurface( true );
+
+	map.setGridDimensions(axis1,linesToPlot[0]);
+	map.setGridDimensions(axis2,linesToPlot[1]);
+	// map.setGridDimensions(axis3,linesToPlot[2]);
+
+
+	if( false )
+	{
+	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+	  MappingInformation mapInfo;
+	  mapInfo.graphXInterface = &gi;
+	  map.update(mapInfo);
+	}
+      
+	PlotIt::plot(gi, map,psp);      
+      }
+      
     }
 
   }
@@ -494,10 +565,22 @@ plotForcingRegions( GenericGraphicsInterface &gi, DataBase & dbase, CompositeGri
     pspBoundary.set(GI_BLOCK_BOUNDARY_COLOUR_OPTION,GraphicsParameters::defaultColour); // means use mapping colour
     pspBoundary.set(GI_BOUNDARY_COLOUR_OPTION,GraphicsParameters::colourByGrid);  // for 2D
 
-    pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // 2d grid lines: OFF
-    pspBoundary.set(GI_PLOT_LINES_ON_MAPPING_BOUNDARIES,false); // 3d lines : OFF
-    pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // shaded surfaces : OFF
-    pspBoundary.set(GI_PLOT_NON_PHYSICAL_BOUNDARIES,false);
+    if( numberOfDimensions==2 )
+    {
+      pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // 2d grid lines: OFF
+      pspBoundary.set(GI_PLOT_LINES_ON_MAPPING_BOUNDARIES,false); // 3d lines : OFF
+      pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // shaded surfaces : OFF
+      pspBoundary.set(GI_PLOT_NON_PHYSICAL_BOUNDARIES,false);
+    }
+    else
+    {
+      // 3D -- what should we plot ?
+      pspBoundary.getBoundaryColourOption()=GraphicsParameters::colourByGrid;
+      pspBoundary.set(GI_GRID_LINE_COLOUR_OPTION,GraphicsParameters::colourByGrid);
+      pspBoundary.set(GI_PLOT_SHADED_MAPPING_BOUNDARIES,false);   // 2d grid lines: OFF
+      pspBoundary.set(GI_PLOT_LINES_ON_MAPPING_BOUNDARIES,true); // 3d lines : OFF
+    }
+    
     pspBoundary.set(GI_MAPPING_COLOUR,"DARKORCHID");
 
     // Unstructured mappings: 

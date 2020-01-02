@@ -233,6 +233,33 @@ defineMaterialRegion( )
 
       int mat = numberOfMaterialRegions-1;
 
+      // PAINTING RULE:
+      // 
+      // We mark grid points as a given material if the the grid point
+      // is inside or on the boundary of the painting region. This rule is
+      // based on identifying a grid point "A" with the dual-grid cell that
+      // surrounds "A". If point A is inside the region then more than half
+      // the cell will be in the region:
+      // 
+      //                 X----------X----------X
+      //                 |          |          |
+      //                 |    +..........+     |
+      //                 |    .     |    .     |
+      //                 X----.-----A----.-----X
+      //                 |    .     |    .     |
+      //                 |    +..........+     |
+      //                 |          |          |
+      //                 X----------X----------X
+      //
+
+      // RealArray boxa(2,3);  // adjusted box -- expand by dx/2 
+      // for( int axis=0; axis<3; axis++ )
+      // {
+      //   real dxa = dx[axis]*.5; 
+      // 	boxa(0,axis)= box(0,axis)-dxa;
+      // 	boxa(1,axis)= box(1,axis)+dxa;
+      // }
+  
       if( ok )
       {
         if( numberOfDimensions==2 )
@@ -245,8 +272,16 @@ defineMaterialRegion( )
             if( xc>=box(0,0) && xc<=box(1,0)  &&
                 yc>=box(0,1) && yc<=box(1,1) )
             {
+              // Inside or on the bounday of the original box 
               matMask(i1,i2,i3)=mat;
             }
+            // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
+            //          yc>boxa(0,1) && yc<boxa(1,1) )
+            // {
+            //   // Inside expanded region -- only mark if back-ground material 
+	    //   if( matMask(i1,i2,i3)==0 )
+	    // 	matMask(i1,i2,i3)=mat;
+            // }
           }
         }
         else
@@ -261,9 +296,18 @@ defineMaterialRegion( )
                 yc>=box(0,1) && yc<=box(1,1)  &&
                 zc>=box(0,2) && zc<=box(1,2) )
             {
+              // Inside or on the boudary of the original box 
               // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
               matMask(i1,i2,i3)=mat;
             }
+	    // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
+	    // 	     yc>boxa(0,1) && yc<boxa(1,1)  &&
+	    // 	     zc>boxa(0,2) && zc<boxa(1,2) )
+            // {
+            //   // Inside expanded region -- only mark if back-ground material 
+	    //   if( matMask(i1,i2,i3)==0 )
+	    // 	matMask(i1,i2,i3)=mat;
+            // }
           }
 
         }
@@ -369,7 +413,7 @@ defineMaterialRegion( )
             real zc=X2(i1,i2,i3);
       
             real rad = SQR(xc-x0)+SQR(yc-y0);
-            if( rad <= radiusSquared && zc>za && zc<zb )
+            if( rad <= radiusSquared && zc>=za && zc<=zb )
             {
               matMask(i1,i2,i3)=mat;
             }
@@ -401,6 +445,7 @@ defineMaterialRegion( )
       int *linesToPlot = bodyForce.dbase.get<int[3]>("linesToPlot"); 
       // int lines[3] = {31,11,2};  //  this will plot the outline ?? 
       int lines[3] = {31,1,2};  //  this will plot the outline ?? 
+      
       for( int i=0; i<3; i++ )
         linesToPlot[i]=lines[i];
 
@@ -497,6 +542,18 @@ defineMaterialRegion( )
         bodyForce.dbase.put<int[3]>("linesToPlot"); 
       int *linesToPlot = bodyForce.dbase.get<int[3]>("linesToPlot"); 
       int lines[3] = {31,11,2};  //  this will plot the outline ?? 
+      if( numberOfDimensions==3 )
+      {
+	if( ae==be && be==ce )
+	{ // sphere 
+	  lines[0]=15; lines[1]=17; lines[2]=2; // what should this be ?
+	}
+	else
+	{ // ellipsoid 
+	  lines[0]=15; lines[1]=7; lines[2]=2; // what should this be ?
+	}
+
+      }
       for( int i=0; i<3; i++ )
         linesToPlot[i]=lines[i];
 
@@ -555,7 +612,13 @@ defineMaterialRegion( )
       
       PlotStuffParameters psp;
       gi.erase();
-      // psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+
+      printF("PLOT BODY FORCE REGIONS...\n");
+      // Plot body/boundary forcing regions and immersed boundaries. 
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+      BodyForce::plotForcingRegions(gi, parameters.dbase, cg, psp); 
+
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
       psp.set(GI_TOP_LABEL,"Material Region ID");
       PlotIt::contour(gi,rmask,psp);
     }

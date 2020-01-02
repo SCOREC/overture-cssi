@@ -157,6 +157,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
     
     const real t = gf0.t;
     const int numberOfDimensions = gf0.cg.numberOfDimensions();
+
     const int numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
     aString* componentName = parameters.dbase.get<aString* >("componentName");
     Index I1,I2,I3;
@@ -287,8 +288,10 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	{
           // --- header for grid-point probe ---
           // Note: this is the title on the matlab plot
-            	  fprintf(file,"%s, %s, probe %i, name=%s, on grid=%i, point (%i,%i,%i)\n",(const char*)domainClassName,
-              		  (const char*)domainName,i,(const char*)probe.dbase.get<aString>("probeName"),grid,i1,i2,i3);
+            	  fprintf(file,"%s, %s, probe %i, name=%s, on grid=%i, index=(%i,%i,%i) grid-point=(%e,%e,%e)\n",
+                                    (const char*)domainClassName,
+              		  (const char*)domainName,i,(const char*)probe.dbase.get<aString>("probeName"),grid,i1,i2,i3,
+                                    probe.xv[0],probe.xv[1],probe.xv[2]);
       	}
                 else
       	{
@@ -572,7 +575,8 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         }
 
         else if( probe.probeType==ProbeInfo::probeRegion ||
-                          probe.probeType==ProbeInfo::probeBoundarySurface )
+                          probe.probeType==ProbeInfo::probeBoundarySurface ||
+                          probe.probeType==ProbeInfo::probeCoordinatePlane  )
         {
       // -------------------
       // -- probe region ---
@@ -630,9 +634,22 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 
     // ---- Output headers to probe region files ----
 
-        printF("--- outputProbes:INFO: ---\n"
-                      " numberOfPointProbes=%i, numberOfProbeRegions=%i, numberOfProbeRegionFiles=%i.\n",
-                      numberOfPointProbes,numberOfProbeRegions,numberOfProbeRegionFiles);
+        if( debug & 2 )
+        {
+            printF("--- outputProbes:INFO: ---\n"
+                          " numberOfPointProbes=%i, numberOfProbeRegions=%i, numberOfProbeRegionFiles=%i.\n",
+                          numberOfPointProbes,numberOfProbeRegions,numberOfProbeRegionFiles);
+        }
+        
+
+    // -- these next values should probably be stored with the probe: 
+        if( !parameters.dbase.has_key("numberOfProbeRegionValues") )
+        {
+            IntegerArray & numberOfProbeRegionValues = parameters.dbase.put<IntegerArray>("numberOfProbeRegionValues");
+            numberOfProbeRegionValues.redim(numberOfProbeRegions);
+        }
+        
+        IntegerArray & numberOfProbeRegionValues = parameters.dbase.get<IntegerArray>("numberOfProbeRegionValues");
 
         for( int pr=0; pr<numberOfProbeRegions; pr++ )
         {
@@ -661,11 +678,37 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         // -- output the header ---
                 FILE *& file = probe.file;
 
-      	const int numberOfEntries = numberOfProbeRegionsPerFile[pf];
+                int savePosition=false;
+      	for( int j=0; j<numberOfProbeRegions; j++ )
+      	{
+        	  if( probeRegionFileNumber[j]==pf )
+        	  {
+          	    ProbeInfo & probe = *(probeList[probeRegionIndex[j]]);
+          	    const aString & quantity = probe.dbase.get<aString>("quantity");
+
+                        numberOfProbeRegionValues(pr)=1;
+
+          	    if( probe.probeType==ProbeInfo::probeBoundarySurface ||
+              	        probe.probeType==ProbeInfo::probeCoordinatePlane  )
+                        {
+            	      if( quantity=="all components" )
+            		numberOfProbeRegionValues(pr)=numberOfComponents;	
+          	    }
+                        if( probe.probeType==ProbeInfo::probeCoordinatePlane )
+                        {
+                            savePosition=true;  // save (x,y,z) with probe output
+                        }
+                
+        	  }
+      	}
       	
+	// const int numberOfEntries = numberOfProbeRegionsPerFile[pf];
+      	const int numberOfEntries = sum(numberOfProbeRegionValues);
 
       	int numHeader=4+numberOfEntries;  // number of header comments 
       	int numColumns=1 + numberOfEntries;         // time + numberOfEntries
+                if( savePosition )
+                    numColumns+=3;
 
 	// --- write header comments to the probe file  ---
 	//  
@@ -681,20 +724,55 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
           	    const aString & quantity = probe.dbase.get<aString>("quantity");
           	    const aString & quantityMeasure = probe.dbase.get<aString>("quantityMeasure");
           	    const aString & measureType = probe.dbase.get<aString>("measureType");
-          	    BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
-          	    const aString & regionType = regionPar.dbase.get<aString>("regionType");
 
-                    	    fprintf(file,"probe region: name=[%s], regionType=[%s], quantity=[%s] : %s %s.",
-                		    (const char*)probe.dbase.get<aString>("probeName"),(const char*)regionType,
-                                        (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
-          	    if( regionType == "box" )
+                        if( probe.probeType==ProbeInfo::probeBoundarySurface )
+                        {
+              // IntegerArray & boundaryFaces = probe.dbase.get<IntegerArray>("boundaryFaces");
+     	      // const int numberOfFaces = boundaryFaces.getLength(1);
+
+                            fprintf(file,"probe boundary surface: name=[%s], quantity=[%s] : %s %s.",
+                                            (const char*)probe.dbase.get<aString>("probeName"),
+                                            (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+
+              // printF(" *** pr=%d, numberOfProbeRegionValues(pr)=%d ****\n",pr,numberOfProbeRegionValues(pr));
+
+
+              //for( int i=0; i<numberOfFaces; i++ )
+              //  fprintf(file," (side,axis,grid)=(%d,%d,%d) ",boundaryFaces(0,i),boundaryFaces(1,i),boundaryFaces(2,i));
+                            fprintf(file,"\n");
+                        }
+          	    else if( probe.probeType==ProbeInfo::probeCoordinatePlane )
           	    {
-                            const real *boxBounds =  regionPar.dbase.get<real[6] >("boxBounds");
-                            #define xab(side,axis) boxBounds[(side)+2*(axis)]
-                            fprintf(file," box=[%10.3e,%10.3e]x[%10.3e,%10.3e]x[%10.3e,%10.3e]",
-                                xab(0,0),xab(1,0),xab(0,1),xab(1,1),xab(0,2),xab(1,2));
+                            BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
+                            const int & gridPlane = regionPar.dbase.get<int>("gridPlane");
+                            const int & gridPlaneAxis= regionPar.dbase.get<int>("gridPlaneAxis");
+                            const int & gridPlaneIndex= regionPar.dbase.get<int>("gridPlaneIndex");
+            
+                            fprintf(file,"probe coordinate plane: grid=%d, i_%d = %d, name=[%s], quantity=[%s] : %s %s.",
+                                            gridPlane,gridPlaneAxis,gridPlaneIndex,
+                                            (const char*)probe.dbase.get<aString>("probeName"),
+                                            (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+                            fprintf(file,"\n");
+                  
           	    }
-          	    fprintf(file,"\n");
+                        else
+                        {
+                            BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
+                            const aString & regionType = regionPar.dbase.get<aString>("regionType");
+
+                            fprintf(file,"probe region: name=[%s], regionType=[%s], quantity=[%s] : %s %s.",
+                                            (const char*)probe.dbase.get<aString>("probeName"),(const char*)regionType,
+                                            (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+                            if( regionType == "box" )
+                            {
+                                const real *boxBounds =  regionPar.dbase.get<real[6] >("boxBounds");
+#define xab(side,axis) boxBounds[(side)+2*(axis)]
+                                fprintf(file," box=[%10.3e,%10.3e]x[%10.3e,%10.3e]x[%10.3e,%10.3e]",
+                                                xab(0,0),xab(1,0),xab(0,1),xab(1,1),xab(0,2),xab(1,2));
+                            }
+                            fprintf(file,"\n");
+                        }
+                        
           	    fflush(file); // flush file so it can be read by matlab before the run finishes
         	  }
       	}
@@ -709,7 +787,13 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 
         // -- header line with column labels (use probe names) --
       	aString blanks="                                    ";
+
       	fprintf(file,"        t         ");
+                if( probe.probeType==ProbeInfo::probeCoordinatePlane )
+                {
+                    fprintf(file,"        x                 y                 z         ");  
+                }
+                
       	for( int j=0; j<numberOfProbeRegions; j++ )
       	{
         	  if( probeRegionFileNumber[j]==pf )
@@ -719,7 +803,25 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
           	    int len = name.length();
           	    int nblanks = max(0,16-len);
              		 
-              	    fprintf(file,"%s%s",(const char*)name,(const char*)blanks(0,nblanks));
+          	    assert( numberOfProbeRegionValues(j)==1 || numberOfProbeRegionValues(j)==numberOfComponents );
+          	    
+          	    if( numberOfProbeRegionValues(pr)==1 )
+          	    {
+            	      fprintf(file,"%s%s",(const char*)name,(const char*)blanks(0,nblanks));
+          	    }
+          	    else
+          	    {
+            	      assert( numberOfProbeRegionValues(pr)==numberOfComponents );
+            	      
+              // Output values for all components
+            	      for( int c=0; c<numberOfComponents; c++ )
+            	      {
+            		fprintf(file,"      %s         ",(const char*)componentName[c]);
+            	      }
+          	    }
+          	    
+
+
         	  }
       	}
       	fprintf(file,"\n");
@@ -739,7 +841,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         realCompositeGridFunction & u = gf0.u;
 
         const int & numberOfComponents=parameters.dbase.get<int >("numberOfComponents");
-        const int & numberOfDimensions=parameters.dbase.get<int >("numberOfDimensions");
+    //    const int & numberOfDimensions=parameters.dbase.get<int >("numberOfDimensions");
         const int & rc = parameters.dbase.get<int >("rc");   //  density = u(all,all,all,rc)  (if appropriate for this PDE)
         const int & uc = parameters.dbase.get<int >("uc");   //  u velocity component =u(all,all,all,uc)
         const int & vc = parameters.dbase.get<int >("vc");  
@@ -755,7 +857,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         const real epsX = REAL_MIN*100.;  // to avoid division by zero when computing the det(jacobian)
 
     // Store values and "count" for each probe 
-        std::vector<real> value(numberOfProbeRegions,0.);
+        RealArray value(numberOfProbeRegions,numberOfComponents); value=0.;
         std::vector<real> count(numberOfProbeRegions,0.);
 
     // --- loop over component grids ---
@@ -815,20 +917,25 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	ProbeInfo & probe = *(probeList[i]);
 
                 assert( probe.probeType==ProbeInfo::probeRegion || 
-                                probe.probeType==ProbeInfo::probeBoundarySurface);
+                                probe.probeType==ProbeInfo::probeBoundarySurface ||
+              	        probe.probeType==ProbeInfo::probeCoordinatePlane );
 
 
       	const aString & quantity = probe.dbase.get<aString>("quantity");
       	const aString & quantityMeasure = probe.dbase.get<aString>("quantityMeasure");
       	const aString & measureType = probe.dbase.get<aString>("measureType");
-      	BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
-      	const aString & regionType = regionPar.dbase.get<aString>("regionType");
-            
-      	if( true && grid==0 )
-        	  printF("outputProbes: Save probe REGION: t=%9.3e, regionType=%s, quantity=%s, "
-                                  "quantityMeasure=%s, measureType=%s \n",t,
-             		 (const char*)regionType,(const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+                BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
+                const aString & regionType = regionPar.dbase.get<aString>("regionType");
 
+                if( probe.probeType==ProbeInfo::probeRegion )
+                {
+            
+                    if( true && grid==0 )
+                        printF("outputProbes: Save probe REGION: t=%9.3e, regionType=%s, quantity=%s, "
+                                      "quantityMeasure=%s, measureType=%s \n",t,
+                                      (const char*)regionType,(const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+                }
+                
                 
 	// Here is the option for the weighting of the probe region sums
       	WeightOptionEnum weightOption=unitWeight;
@@ -901,6 +1008,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         	  
         	  
       	}
+      	
                 else if( probe.dbase.has_key("sideAxisGrid") )
       	{
 	  // --- This is a boundary-region probe defined from one face of a grid ---
@@ -946,6 +1054,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                               if( regionType=="box" )
                               {
                  // --- Evaluate probe at points inside a bounding box ---
+                                  BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
                                   const real *boxBounds =  regionPar.dbase.get<real[6] >("boxBounds");
                                   #define xab(side,axis) boxBounds[(side)+2*(axis)]
                                   const real & xa = xab(0,0), &xb = xab(1,0);
@@ -1060,7 +1169,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                                               OV_ABORT("ERROR");
                                           }
                      	      // printF("sum T: i=(%i,%i,%i) weight=%8.2e, u=%9.2e\n",i1,i2,i3,weight,uLocal(i1,i2,i3,tc));
-                                                            	      value[pr] += uLocal(i1,i2,i3,tc)*weight;
+                                                          	      value(pr,0) += uLocal(i1,i2,i3,tc)*weight;
                                                                       count[pr] += weight;
                                       }
                                   } // end FOR_3D
@@ -1163,7 +1272,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                                           OV_ABORT("ERROR");
                                       }
                    	      // printF("sum T: i=(%i,%i,%i) weight=%8.2e, u=%9.2e\n",i1,i2,i3,weight,uLocal(i1,i2,i3,tc));
-                                                        	      value[pr] += uLocal(i1,i2,i3,tc)*weight;
+                                                      	      value(pr,0) += uLocal(i1,i2,i3,tc)*weight;
                                                                   count[pr] += weight;
                                   } // end FOR_3D
                                   probeWasEvaluated[i]=true;  // indicates that this probe was assigned
@@ -1240,6 +1349,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                               if( regionType=="box" )
                               {
                  // --- Evaluate probe at points inside a bounding box ---
+                                  BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
                                   const real *boxBounds =  regionPar.dbase.get<real[6] >("boxBounds");
                                   #define xab(side,axis) boxBounds[(side)+2*(axis)]
                                   const real & xa = xab(0,0), &xb = xab(1,0);
@@ -1386,7 +1496,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                                                                                 heatFlux = kEffective*(normal(i1,i2,i3,0)*ux0 + normal(i1,i2,i3,1)*uy0 + normal(i1,i2,i3,2)*uz0);
                                                                             }
                                                                         }
-                                                      	      value[pr] += heatFlux*weight;
+                                                      	      value(pr,0) += heatFlux*weight;
                                                       	      count[pr] += weight;
                                       }
                                   } // end FOR_3D
@@ -1521,7 +1631,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                                                                             heatFlux = kEffective*(normal(i1,i2,i3,0)*ux0 + normal(i1,i2,i3,1)*uy0 + normal(i1,i2,i3,2)*uz0);
                                                                         }
                                                                     }
-                                                  	      value[pr] += heatFlux*weight;
+                                                  	      value(pr,0) += heatFlux*weight;
                                                   	      count[pr] += weight;
                                   } // end FOR_3D
                                   probeWasEvaluated[i]=true;  // indicates that this probe was assigned
@@ -1596,19 +1706,22 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             const int i = probeRegionIndex[pr];
             assert( probeList[i]!=NULL );
             ProbeInfo & probe = *(probeList[i]);
+
             assert( probe.probeType==ProbeInfo::probeRegion ||
-                            probe.probeType==ProbeInfo::probeBoundarySurface );
+                            probe.probeType==ProbeInfo::probeBoundarySurface ||
+            	      probe.probeType==ProbeInfo::probeCoordinatePlane );
+
             const aString & quantityMeasure = probe.dbase.get<aString>("quantityMeasure");
             const aString & measureType = probe.dbase.get<aString>("measureType");
               
 
             if( measureType=="sum" )
             {
-      	value[pr] = ParallelUtility::getSum(value[pr]);  // FIX ME -- use getSums
+      	value(pr,0) = ParallelUtility::getSum(value(pr,0));  // FIX ME -- use getSums
       	if( quantityMeasure=="average" )
       	{
         	  count[pr] = ParallelUtility::getSum(count[pr]);  
-        	  value[pr] = value[pr]/count[pr];
+        	  value(pr,0) = value(pr,0)/count[pr];
       	}
       	
             }
@@ -1633,7 +1746,8 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	assert( probeList[i]!=NULL );
       	ProbeInfo & probe = *(probeList[i]);
                 assert( probe.probeType==ProbeInfo::probeRegion ||
-                                probe.probeType==ProbeInfo::probeBoundarySurface );
+                                probe.probeType==ProbeInfo::probeBoundarySurface ||
+              	        probe.probeType==ProbeInfo::probeCoordinatePlane );
 
       	const aString & quantity = probe.dbase.get<aString>("quantity");
       	const aString & quantityMeasure = probe.dbase.get<aString>("quantityMeasure");
@@ -1645,7 +1759,101 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	if( measureType=="integral" )
       	{
 
-        	  if( probe.probeType==ProbeInfo::probeBoundarySurface )
+        	  if( probe.probeType==ProbeInfo::probeCoordinatePlane )
+        	  {
+
+                        const int & gridPlane = regionPar.dbase.get<int>("gridPlane");
+                        const int & gridPlaneAxis= regionPar.dbase.get<int>("gridPlaneAxis");
+                        const int & gridPlaneIndex= regionPar.dbase.get<int>("gridPlaneIndex");
+            
+                        if( false )
+                            printF("outputProbes: coordinate plane probe: [grid,axis,index]=[%d,%d,%d] \n",
+                                          gridPlane,gridPlaneAxis,gridPlaneIndex );
+
+          	    assert( gridPlane>=0 && gridPlane <cg.numberOfComponentGrids() );
+          	    
+          	    MappedGrid & mg = cg[gridPlane];
+                        const IntegerArray & gid = mg.gridIndexRange();
+                        OV_GET_SERIAL_ARRAY_CONST(real,u[gridPlane],uLocal);
+        	  
+                        Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+
+          	    if( quantity=="all components" )
+          	    {
+
+                            int side=0;
+            	      getBoundaryIndex( mg.gridIndexRange(),side,gridPlaneAxis,I1,I2,I3 ); // integrate over gridIndexRange
+                            Iv[gridPlaneAxis]=gridPlaneIndex;
+            	      
+                            const bool isRectangular = mg.isRectangular();
+                            real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+                            if( isRectangular )
+                                mg.getRectangularGridParameters( dvx, xab );
+                            else
+                            {
+                                printF("outputProbes: coordinate plane probe: FINISH ME FOR non-rectangular grid\n");
+                                OV_ABORT("finish me");
+                            }
+                            
+              // store integrals in val[c] : 
+                            real *val = new real[numberOfComponents];
+            	      for( int c=0; c<numberOfComponents; c++ )
+            		val[c]=0.;
+
+              // tangential index directions: 
+                            const int axisp1 = (gridPlaneAxis+1) % 3;
+                            const int axisp2 = (gridPlaneAxis+2) % 3;
+                            const real deltaArea  = numberOfDimensions==2 ? dvx[axisp1] : dvx[axisp1]*dvx[axisp2];
+
+            	      bool ok = ParallelUtility::getLocalArrayBounds(u[gridPlane],uLocal,I1,I2,I3,0); 
+            	      if( ok )
+            	      {
+            		FOR_3D(i1,i2,i3,I1,I2,I3)
+            		{
+                  // Trapezoidal rule integration
+                  // Weight edges by .5 and corners by .25 
+                                    real weight=1.;
+                                    if( iv[axisp1]==gid(0,axisp1) || iv[axisp1]==gid(1,axisp1) )
+                                        weight*=.5;
+                                    if( numberOfDimensions==3 && (iv[axisp2]==gid(0,axisp2) || iv[axisp2]==gid(1,axisp2)) )
+                                        weight*=.5;
+                                    
+                  // printF(" integrate: (i1,i2)=(%i,%i) weight=%g numberOfDimensions=%d\n",i1,i2,weight,numberOfDimensions);
+                                        
+              		  for( int c=0; c<numberOfComponents; c++ )
+                		    val[c] += weight*uLocal(i1,i2,i3,c);
+            		}
+            	      }
+                            for( int c=0; c<numberOfComponents; c++ )
+                                val[c] *= deltaArea;
+
+              // sum across processors 
+            	      real *sum = new real[numberOfComponents];
+            	      ParallelUtility::getSums( val,sum,numberOfComponents );
+            	      
+            	      for( int c=0; c<numberOfComponents; c++ )
+            		value(pr,c)=sum[c];
+
+                            if( false )
+                            {
+                                printF("outputProbes: integrals=");
+                                for( int c=0; c<numberOfComponents; c++ )
+                                    printF("%12.4e ",value(pr,c));
+                                printF("\n");
+                            }
+                            
+            	      delete [] val;
+            	      delete [] sum;
+            	      
+          	    }
+          	    else
+          	    {
+            	      OV_ABORT("outputProbes: coordinate plane probe: finish me");
+            	      
+          	    }
+          	    probeWasEvaluated[i]=true;  // indicates that this probe was assigned
+        	  }
+        	  else if( probe.probeType==ProbeInfo::probeBoundarySurface )
         	  {
 	    // --- probe is an integral over a boundary surface ---
 
@@ -1686,7 +1894,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             	      real integral=0.;
             	      integral = integrate.surfaceIntegral( u, surfaceID );
 
-                            value[pr]=integral/surfaceArea;
+                            value(pr,0)=integral/surfaceArea;
 
             	      printF("outputProbes: probe=%i: t=%9.3e, surface integral = %8.2e (surfaceID=%i)\n",
                  		     pr,t,integral,surfaceID);
@@ -1830,17 +2038,45 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             	      int componentToIntegrate=0; 
             	      real integral=0.;
             	      integral = integrate.surfaceIntegral( ui, surfaceID );
-                            value[pr]=integral;
+                            value(pr,0)=integral;
 
 	      // printF("outputProbes: probe=%i: t=%9.3e, HEAT FLUX surface-integral=%8.2e",pr,t,integral);
             	      if( quantityMeasure=="average" )
             	      {
-            		value[pr]=integral/surfaceArea;
-		// printF(", integral/area=%8.2e (area=%8.2e),",value[pr],surfaceArea);
+            		value(pr,0)=integral/surfaceArea;
+		// printF(", integral/area=%8.2e (area=%8.2e),",value(pr,0),surfaceArea);
             	      }
 	      // printF(" (surfaceID=%i)\n",surfaceID);
             	      
           	    }
+          	    else if( quantity=="all components" )
+          	    {
+              // ** New Dec 17, 2019 
+
+                            Range C=numberOfComponents;
+            	      RealArray integral(C);
+                            printF("boundarySurfaceProbe:\n");
+              // ::display(u[0],"u[0]","%5.2f ");
+                            
+              // CompositeGrid & cgu = *u.getCompositeGrid();
+
+                            real probeSurfaceArea = integrate.surfaceArea(surfaceID);
+
+                            real vali = integrate.surfaceIntegral( u,surfaceID);
+                            printF("vali=%e\n",vali);
+
+            	      integrate.surfaceIntegral( u, C, integral, surfaceID );
+            	      for( int c=0; c<numberOfComponents; c++ )
+            		value(pr,c)=integral(c);
+
+
+            	      printF("outputProbes: probe=%i: (surfaceID=%i) t=%9.3e, surface integrals = ",pr,surfaceID,t);
+                            for( int c=0; c<numberOfComponents; c++ )
+                                printF("%9.3e ",integral(c));
+                            printF("\n");
+                            
+          	    }
+
           	    else
           	    {
             	      printF("outputProbes:probeBoundarySurface:integral:ERROR: quantity=%s not implemented yet.\n",
@@ -1887,11 +2123,11 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             // printF("outputProbes: t=%9.3e, integral = %8.2e, average=%8.2e\n",t,integral,average);
           	    if( quantityMeasure=="total" )
           	    {
-            	      value[pr]=integral;
+            	      value(pr,0)=integral;
           	    }
           	    else if( quantityMeasure=="average" )
           	    {
-            	      value[pr] = average;
+            	      value(pr,0) = average;
           	    }
           	    else
           	    {
@@ -1903,12 +2139,12 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         	  else if( regionType=="boundaryRegion" )
         	  {
                         printF("outputProbes:ERROR: finish me for integral of boundaryRegion\n");
-          	    value[pr] = 0.;
+          	    value(pr,0) = 0.;
         	  }
         	  else
         	  {
                         printF("outputProbes:ERROR: finish me for integral of %s.\n",(const char*)regionType);
-          	    value[pr] = 0.;
+          	    value(pr,0) = 0.;
         	  }
                		   
 
@@ -1929,6 +2165,8 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	if( file !=NULL )
       	{
         	  fPrintF(file,"%16.9e ",t);  // time
+
+                
       	}
             }
 
@@ -1945,16 +2183,36 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
       	BodyForceRegionParameters & regionPar = probe.dbase.get<BodyForceRegionParameters>("regionParameters");
       	const aString & regionType = regionPar.dbase.get<aString>("regionType");
 
-      	printF("probe region %i: t=%9.3e, value=%10.3e, name=[%s], regionType=[%s], quantity=[%s] : %s %s.\n",
-             	       pr,t,value[pr],
-            		(const char*)probe.dbase.get<aString>("probeName"),(const char*)regionType,
-             	       (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
+      	if( debug & 2 )
+        	  printF("probe region %i: t=%9.3e, value=%10.3e, name=[%s], regionType=[%s], quantity=[%s] : %s %s.\n",
+             		 pr,t,value(pr,0),
+             		 (const char*)probe.dbase.get<aString>("probeName"),(const char*)regionType,
+             		 (const char*)quantity,(const char*)quantityMeasure,(const char*)measureType);
 
 
-	// printF("probeRegion pr=%i: t=%9.3e, average = %9.3e\n",pr,t, value[pr]);
-
+	// printF("probeRegion pr=%i: t=%9.3e, average = %9.3e\n",pr,t, value(pr,0));
       	FILE *& file = probeList[pf]->file;
-      	fPrintF(file,"%16.9e ",value[pr]);
+
+                if( probe.probeType==ProbeInfo::probeCoordinatePlane )
+                {
+                    real *gridPlanePoint = regionPar.dbase.get<real [3]>("gridPlanePoint");
+                    fPrintF(file,"%16.9e %16.9e %16.9e ",gridPlanePoint[0],gridPlanePoint[1],gridPlanePoint[2]);  // position
+                }
+
+      	if( numberOfProbeRegionValues(pr)==1 )
+        	  fPrintF(file,"%16.9e ",value(pr,0));
+      	else
+      	{
+        	  if( numberOfProbeRegionValues(pr) != numberOfComponents )
+        	  {
+          	    printF("ERROR: probeRegion pr=%d, numberOfProbeRegionValues(pr)=%d\n",pr,numberOfProbeRegionValues(pr));
+          	    OV_ABORT("error");
+        	  }
+        	  
+        	  
+        	  for( int c=0; c<numberOfProbeRegionValues(pr); c++ )
+          	    fPrintF(file,"%16.9e ",value(pr,c));
+      	}
             }
         
             for( int pr=0; pr<numberOfProbeRegions; pr++ )
@@ -2014,7 +2272,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             regionValues.resize(probeList.size());
             for( int pr=0; pr<probeList.size(); pr++ )
             {
-      	regionValues[pr]=value[pr];
+      	regionValues[pr]=value(pr,0);
             }
         }
         

@@ -1,10 +1,11 @@
+#ifndef PROBE_INFO_H
+#define PROBE_INFO_H "ProbeInfo.h"
+
 #include "Overture.h"
 #define KK_DEBUG
 #include "DBase.hh"
 using namespace DBase;
 
-#ifndef PROBE_INFO_H
-#define PROBE_INFO_H "ProbeInfo.h"
 
 class Parameters;
 class DialogData;
@@ -19,11 +20,12 @@ class ProbeInfo
 public:
 enum ProbeTypesEnum
 {
-  probeAtGridPoint,  // probe is located at a grid point
+  probeAtGridPoint=0,  // probe is located at a grid point
   probeAtLocation,   // probe is located at a fixed position
   probeBoundingBox,  // save probe data on the boundary of a box (for subsequent sub-domain computations)
   probeRegion,       // probe is some average or integral over a region
   probeBoundarySurface, // probe is some average or integral over a boundary surface.
+  probeCoordinatePlane, // probe is some average or integral over a grid coordinate plane 
   probeUserDefined    // user defined probe
 };
 

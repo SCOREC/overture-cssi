@@ -396,25 +396,9 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
     const bool saveDissipation =  plotDissipation && (( (artificialDissipation>0. || artificialDissipationCurvilinear>0.) 
                                                                 && (method==nfdtd || method==bamx)) || dissipation || cgdissipation);
 
+    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
     Range all;
-//    if( !saveErrors && !saveDissipation && !plotDivergence && !plotScatteredField )
-//    {
-//      if( mgp!=NULL )
-//      {
-//        realMappedGridFunction & u = fields[current];
-//        v.updateToMatchGrid(cg,all,all,all,numberOfComponents);
-//        for( int n=0; n<numberOfComponents; n++ )
-//  	v.setName(fields[current].getName(n),n);
-
-//        v[0]=fields[current];
-//        return v;
-//      }
-//      else
-//      {
-//        return cgfields[current];
-//      }
-//    }
-
     const bool saveDsiDiss= saveDissipation && method==dsiMatVec && cg.numberOfDimensions()==3;
     
   // Determine the number of components to plot and the component numbers for the errors, etc.
@@ -426,9 +410,12 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
                                                         numberToPlot += cg.numberOfDimensions()*int( saveDsiDiss ); 
     int nVarDis=numberToPlot; numberToPlot += int(useVariableDissipation);
     int nDivE=numberToPlot;   numberToPlot += int(plotDivergence); 
+
     int nDivH=-1;
-    if( plotDivergence && (method==yee || solveForMagneticField ) && numberOfDimensions==3 )
-    { // plot div(H) too
+    int plotDivH = plotDivergence && (method==yee || solveForMagneticField ) && numberOfDimensions==3;
+    plotDivH = plotDivH || ( method==bamx && (solveForAllFields==1 || numberOfDimensions==3) );
+    if( plotDivH ) 
+    { // plot div(H) or div(B) too
         nDivH=numberToPlot;  numberToPlot +=1;
     }
     if( method!=nfdtd && method!=yee && method!=sosup && method!=bamx )
@@ -448,7 +435,6 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
         plotCurlE=true;
     int nCurlE = numberToPlot; numberToPlot += 2*(1 + 2*(numberOfDimensions-2))*int(plotCurlE);
     
-    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
     const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
   // total number of polarization components per grid 
     const IntegerArray & totalNumberOfPolarizationComponents =
@@ -577,9 +563,19 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
 
     if( plotDivergence && (method==nfdtd || method==yee || method==sosup || method==bamx) )
     {
-        v.setName("div(E)",nDivE);
-        if( nDivH>=0 )
-            v.setName("div(H)",nDivH);
+        if( method==bamx )
+        {
+            v.setName("div(D)",nDivE);
+            if( nDivH>=0 )
+                v.setName("div(B)",nDivH);
+        }
+        else
+        {
+            v.setName("div(E)",nDivE);
+            if( nDivH>=0 )
+                v.setName("div(H)",nDivH);
+        }
+        
     }
     if( plotCurlE && (method==nfdtd || method==yee || method==sosup || method==bamx) )
     {
@@ -1670,8 +1666,8 @@ plot( int current, real t, real dt )
 // ========================================================================================
 // /Description:
 //  plotOptions :  0 = no plotting
-//            1 - plot and wait
-//            2 - do not wait for response after plotting
+//                 1 - plot and wait
+//                 2 - do not wait for response after plotting
 // /Return values: 0=normal exit. 1=user has requested "finish".
 // ========================================================================================
 {
@@ -1810,6 +1806,10 @@ plot( int current, real t, real dt )
     realCompositeGridFunction & u = getAugmentedSolution(current,v,t);  // u is either solution or v
 
     const int numberOfComponents = u.getComponentBound(0)-u.getComponentBase(0)+1;
+
+    const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+    int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+
 
     if( movieFrame>=0   )
     { // save a ppm file as part of a movie.
@@ -2160,6 +2160,16 @@ plot( int current, real t, real dt )
                     getErrors( current,t,dt );
                     replot=true;
       	}
+      	else if( plotOptionsDialog.getTextValue(answer,"absorbing layer error offset","%i",absorbingLayerErrorOffset) )
+      	{
+        	  printF("Setting absorbingLayerErrorOffset=%d\n",absorbingLayerErrorOffset);
+        	  if( useSuperGrid )
+        	  {
+          	    getErrors( current,t,dt );
+          	    replot=true;
+        	  }
+      	}
+
                 else if( parametersDialog.getToggleValue(answer,"project fields",projectFields) ){}//
                 else if( parametersDialog.getTextValue(answer,"projection frequency","%i",frequencyToProjectFields) ){}// 
                 else if( parametersDialog.getTextValue(answer,"consecutive projection steps","%i",

@@ -1,8 +1,8 @@
 ! This file automatically generated from advBA.bf with bpp.
        subroutine advBA2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
      & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f,fa, K0i, 
-     & matMask, pm,p,pt,xy, ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, 
-     & ierr )
+     & matMask, pm,p,pt,xy, etax,etay,etaz, bc, dis, varDis, ipar, 
+     & rpar, ierr )
       !======================================================================
       !   Advance a time step for Maxwells equations
       !     OPTIMIZED version for rectangular grids.
@@ -27,12 +27,14 @@
        real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
        real pt(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
        real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+       ! Super-grid layer functions 
+       real etax(nd1a:nd1b), etay(nd2a:nd2b), etaz(nd3a:nd3b)
       ! real vvt2(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       ! real ut3(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       ! real vvt4(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-       real ut5(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-       real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-       real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      !  real ut5(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      !  real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+      !  real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
        real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
        real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
        real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
@@ -44,7 +46,7 @@
        real rpar(0:*)
       !     ---- local variables -----
        integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,k1,k2,
-     & debug
+     & debug,numComp
        integer addForcing,orderOfDissipation,option
        integer useWhereMask,useWhereMaskSave,solveForE,solveForH,grid,
      & useVariableDissipation
@@ -52,7 +54,7 @@
      & combineDissipationWithAdvance,useDivergenceCleaning
        integer useNewForcingMethod,numberOfForcingFunctions,fcur,fnext,
      & fprev
-       integer ex,ey,ez, hx,hy,hz, solveForAllFields
+       integer ex,ey,ez, hx,hy,hz, solveForAllFields, useSuperGrid
        real t,cc,dt,dy,dz,cdt,cdtdx,cdtdy,cdtdz,adc,adcdt,add,adddt
        real dt4by12
        real eps,mu,sigmaE,sigmaH,kx,ky,kz,divergenceCleaningCoefficient
@@ -1036,7 +1038,9 @@
       parameter( noBoundaryForcing              =0,   
      & planeWaveBoundaryForcing       =1,
      & chirpedPlaneWaveBoundaryForcing=2 )
-      !.......statement functions for jacobian
+       ! boundary conditions parameters
+       ! #Include "bcDefineFortranInclude.h"
+       !.......statement functions for jacobian
        rx(i1,i2,i3)=rsxy(i1,i2,i3,0,0)
        ry(i1,i2,i3)=rsxy(i1,i2,i3,0,1)
        rz(i1,i2,i3)=rsxy(i1,i2,i3,0,2)
@@ -2364,10 +2368,16 @@ c===============================================================================
        solveForAllFields       = ipar(40)
        materialType            = ipar(41)
        numberOfMaterialRegions = ipar(42)
+       useSuperGrid            = ipar(43)
+       if( nd.eq.2 .and. solveForAllFields.eq.0 )then
+         numComp=3  ! TEZ has 3 components
+       else
+         numComp=6
+       end if
        if( t.le.2*dt )then
          write(*,*) 'Inside advBA2dOrder2r...'
-         write(*,'("addForcing=",i2, " solveForAllFields=",i2)') 
-     & addForcing,solveForAllFields
+         write(*,'("addForcing=",i2, " solveForAllFields=",i2," 
+     & useSuperGrid=",i2)') addForcing,solveForAllFields,useSuperGrid
          write(*,'("addDissipation=",l2, " updateInterior=",l2)') 
      & addDissipation,updateInterior
          write(*,'("dispersionModel=",i2)') dispersionModel
@@ -2377,6 +2387,9 @@ c===============================================================================
          else if( timeSteppingMethod.eq.rungeKutta ) then
             write(*,*) 'timeSteppingMethod = rungeKutta'
          end if
+         if( .false. .and. useSuperGrid.ne.0 )then
+           write(*,'(" etax=",100(f6.3,1x))') (etax(i1),i1=nd1a,nd1b)
+        end if
        end if
        if( numberOfMaterialRegions.gt.maxRegions )then
           stop 1002
@@ -2444,22 +2457,24 @@ c===============================================================================
            !do iv=0,numberOfPolarizationVectors-1
            !  write(*,'("--advOpt-- GDM: eqn=",i3," a0,a1,b0,b1=",4(1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
            !end do
-           do mr=0,numberOfMaterialRegions-1
-             write(*,'("BA-GDM: material region mr=",i2)') mr
-             ! write(*,'((5x,6i3))') ((Np(k1,k2,mr),k1=1,6),k2=1,6)
-             do k1=1,6
-             do k2=1,6
-                if( Np(k1,k2,mr) > 0 )then
-                  write(*,'("  K(",i1,",",i1,") : Np=",i3," :")') k1,
+           if( .false. )then
+            do mr=0,numberOfMaterialRegions-1
+              write(*,'("BA-GDM: material region mr=",i2)') mr
+              ! write(*,'((5x,6i3))') ((Np(k1,k2,mr),k1=1,6),k2=1,6)
+              do k1=1,6
+              do k2=1,6
+                 if( Np(k1,k2,mr) > 0 )then
+                   write(*,'("  K(",i1,",",i1,") : Np=",i3," :")') k1,
      & k2,Np(k1,k2,mr)
-                  do n=1,Np(k1,k2,mr)
-                    write(*,'("    n=",i3," [a0,a1,b0,b1]=",4(e9.3,1x))
-     & ') n,(gdmPar(m,n,k1,k2,mr),m=1,4)
-                  end do
-                end if
-             end do
-             end do
-          end do
+                   do n=1,Np(k1,k2,mr)
+                     write(*,'("    n=",i3," [a0,a1,b0,b1]=",4(e9.3,1x)
+     & )') n,(gdmPar(m,n,k1,k2,mr),m=1,4)
+                   end do
+                 end if
+              end do
+              end do
+            end do
+           end if
           ! stop 3333
         end if
        end if
@@ -2511,6 +2526,1120 @@ c===============================================================================
           ! '
         stop 83322
        end if
+       if( .not. addDissipation )then
+         ! **new way ** Dec 17, 2019 
+         ! All methods are done here 
+           if( solveForAllFields.eq.0 )then
+             ! TEZ polarization
+               if( dispersionModel.eq.noDispersion )then
+                 if( useSuperGrid.eq.0  ) then
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA dim=2, order=2 
+     & grid=rectangular polar=TEZ... t=",e10.2)') t
+                     end if
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,2
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                          ! --- 2D -----
+                            curl(0) =                             
+     & uy22r(i1,i2,i3,hz)
+                            curl(1) = - ux22r(i1,i2,i3,hz)
+                            curl(2) =-( ux22r(i1,i2,i3,ey)- uy22r(i1,
+     & i2,i3,ex))
+                           do m=0,2
+                             un(i1,i2,i3,m)= Ki(m,0,mr)*(curl(0)+fv(0))
+     &  + Ki(m,1,mr)*(curl(1)+fv(1)) + Ki(m,2,mr)*(curl(2)+fv(2))
+                           end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4747
+                      end if
+                     end if ! end MOL
+                 else
+                   ! --- SUPERGRID ---
+                   if( t.le.3*dt )then
+                     write(*,'(" USE SUPERGRID...")' )
+                   end if
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA dim=2, order=2 
+     & grid=rectangular polar=TEZ... t=",e10.2)') t
+                     end if
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,2
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                          ! --- 2D -----
+                            curl(0) =                            etay(
+     & i2)* uy22r(i1,i2,i3,hz)
+                            curl(1) = -etax(i1)* ux22r(i1,i2,i3,hz)
+                            curl(2) =-(etax(i1)* ux22r(i1,i2,i3,ey)-
+     & etay(i2)* uy22r(i1,i2,i3,ex))
+                           do m=0,2
+                             un(i1,i2,i3,m)= Ki(m,0,mr)*(curl(0)+fv(0))
+     &  + Ki(m,1,mr)*(curl(1)+fv(1)) + Ki(m,2,mr)*(curl(2)+fv(2))
+                           end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4747
+                      end if
+                     end if ! end MOL
+                 end if
+               else
+                 if( useSuperGrid.eq.0  ) then
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA GDM dim=2 order=2 
+     & grid=rectangular polar=TEZ... t=",e10.2)') t
+                     end if
+                     ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
+                     do mr=0,numberOfMaterialRegions-1
+                       m=0
+                       pc=0
+                       qc=1
+                       do k1=1,6
+                         ec=k1-1 ! E or H component
+                         do k2=1,6
+                           do n=1,Np(k1,k2,mr)
+                             m=m+1
+                             ecIndex1(m,mr)=ec
+                             qcIndex1(m,mr)=qc
+                             ! ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
+                             qc=qc+2
+                           end do
+                         end do
+                         ! subtract off P.t = sum Q_m
+                         ! curl(ec) = curl(ec) - ptSum(ec)
+                       end do
+                       numTerms1(mr)=m
+                       if( numTerms1(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms1=",i6," too big")')
+     &  numTerms1(mr)
+                         stop 1616
+                       end if
+                       pc=0  ! P
+                       qc=1  ! Q = P.t
+                       m=0
+                       do k1=1,6
+                         do k2=1,6
+                           ec=k2-1 ! This GDM term involves this E or H component
+                           do n=1,Np(k1,k2,mr)
+                             a0 = gdmPar(1,n,k1,k2,mr)
+                             a1 = gdmPar(2,n,k1,k2,mr)
+                             b0 = gdmPar(3,n,k1,k2,mr)
+                             b1 = gdmPar(4,n,k1,k2,mr)
+                             pct=pc+numComp  ! p.t is stored in un here
+                             qct=qc+numComp  ! q.t is stored in un here
+                             m=m+1
+                             ecIndex2(m,mr)=ec
+                             pcIndex2(m,mr)=pc
+                             a0v(m,mr)=a0
+                             a1v(m,mr)=a1
+                             b0v(m,mr)=b0
+                             b1v(m,mr)=b1
+                             ! un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
+                             ! un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
+                             pc=pc+2
+                             qc=qc+2
+                           end do
+                         end do
+                       end do
+                       numTerms2(mr)=m
+                       if( numTerms2(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms2=",i6," too big")')
+     &  numTerms2(mr)
+                         stop 1616
+                       end if
+                     end do ! end do mr
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                       ! zero out some forcing terms 
+                       do m=0,numPolarizationTerms-1
+                          pv(m)=0.
+                         fp(m)=0.
+                       end do
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,2
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                         if( forcingOption.eq.twilightZoneForcing )then
+                           if( nd.eq.2 )then
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
+                             end do
+                           else
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
+                             end do
+                          end if
+                          !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
+                          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
+                          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
+                           ! FIX ME -- use opt version here too
+                           pc=0  ! P
+                           qc=1  ! Q = P.t
+                           do k1=1,6
+                             do k2=1,6
+                               ec=k2-1 ! E or H component
+                               do n=1,Np(k1,k2,mr)
+                                 a0 = gdmPar(1,n,k1,k2,mr)
+                                 a1 = gdmPar(2,n,k1,k2,mr)
+                                 b0 = gdmPar(3,n,k1,k2,mr)
+                                 b1 = gdmPar(4,n,k1,k2,mr)
+                                 ! TZ forcing for polarization equations: 
+                                 fp(pc) = pvt(pc) - pv(qc)
+                                 fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*
+     & evt(ec) - b0*pv(pc)- b1*pv(qc) )
+                                 pc=pc+2
+                                 qc=qc+2
+                               end do
+                             end do
+                           end do
+                        end if
+                         ! compute components of the curl(H) and -curl(E)
+                          ! --- 2D -----
+                            curl(0) =                             
+     & uy22r(i1,i2,i3,hz)
+                            curl(1) = - ux22r(i1,i2,i3,hz)
+                            curl(2) =-( ux22r(i1,i2,i3,ey)- uy22r(i1,
+     & i2,i3,ex))
+                         if( debug.gt.3 )then
+                           write(*,'("----- i1,i2=",2i3)') i1,i2
+                         end if
+                         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
+                         ! opt version 
+                           do m=0,2
+                             ptSum(m)=0
+                           end do
+                         do m=1,numTerms1(mr)
+                            ec = ecIndex1(m,mr)
+                            qc = qcIndex1(m,mr)
+                            ! upiv(m) = p(i1,i2,i3,qc-1)  ! didn't seem to help
+                            ! uqiv(m) = p(i1,i2,i3,qc )
+                            ! uptSum(ec) = ptSum(ec) + qiv(m) - pv(qc)
+                            ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - 
+     & pv(qc)
+                         end do
+                           do m=0,2
+                             curl(m) = curl(m) - ptSum(m)
+                           end do
+                         ! if( debug.gt.3 )then
+                         !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
+                         ! end if
+                           do m=0,2
+                             un(i1,i2,i3,m)= Ki(m,0,mr)*(curl(0)+fv(0))
+     &  + Ki(m,1,mr)*(curl(1)+fv(1)) + Ki(m,2,mr)*(curl(2)+fv(2))
+                           end do
+                         ! if( .false. )then
+                         !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
+                         ! end if
+                         ! --- compute time derivatives of P and Q
+                         ! p.t = q
+                         ! q.t = a0*E + a1*Et - b0*p - b1*q   
+                         ! or 
+                         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
+                         ! optimized version
+                         do m=1,numTerms2(mr)
+                           ec = ecIndex2(m,mr)
+                           pc = pcIndex2(m,mr)
+                           qc = pc+1
+                           pct=pc+numComp  ! p.t is stored in un here
+                           qct=qc+numComp  ! q.t is stored in un here
+                           a0 = a0v(m,mr)
+                           a1 = a1v(m,mr)
+                           b0 = b0v(m,mr)
+                           b1 = b1v(m,mr)
+                           un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
+                           un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*
+     & un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
+                           ! uun(i1,i2,i3,pct) = qiv(m) + fp(pc) 
+                           ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
+                         end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4444
+                      end if
+                     end if
+                 else
+                   ! --- SUPERGRID ---
+                   if( t.le.3*dt )then
+                     write(*,'(" USE SUPERGRID...")' )
+                   end if
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA GDM dim=2 order=2 
+     & grid=rectangular polar=TEZ... t=",e10.2)') t
+                     end if
+                     ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
+                     do mr=0,numberOfMaterialRegions-1
+                       m=0
+                       pc=0
+                       qc=1
+                       do k1=1,6
+                         ec=k1-1 ! E or H component
+                         do k2=1,6
+                           do n=1,Np(k1,k2,mr)
+                             m=m+1
+                             ecIndex1(m,mr)=ec
+                             qcIndex1(m,mr)=qc
+                             ! ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
+                             qc=qc+2
+                           end do
+                         end do
+                         ! subtract off P.t = sum Q_m
+                         ! curl(ec) = curl(ec) - ptSum(ec)
+                       end do
+                       numTerms1(mr)=m
+                       if( numTerms1(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms1=",i6," too big")')
+     &  numTerms1(mr)
+                         stop 1616
+                       end if
+                       pc=0  ! P
+                       qc=1  ! Q = P.t
+                       m=0
+                       do k1=1,6
+                         do k2=1,6
+                           ec=k2-1 ! This GDM term involves this E or H component
+                           do n=1,Np(k1,k2,mr)
+                             a0 = gdmPar(1,n,k1,k2,mr)
+                             a1 = gdmPar(2,n,k1,k2,mr)
+                             b0 = gdmPar(3,n,k1,k2,mr)
+                             b1 = gdmPar(4,n,k1,k2,mr)
+                             pct=pc+numComp  ! p.t is stored in un here
+                             qct=qc+numComp  ! q.t is stored in un here
+                             m=m+1
+                             ecIndex2(m,mr)=ec
+                             pcIndex2(m,mr)=pc
+                             a0v(m,mr)=a0
+                             a1v(m,mr)=a1
+                             b0v(m,mr)=b0
+                             b1v(m,mr)=b1
+                             ! un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
+                             ! un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
+                             pc=pc+2
+                             qc=qc+2
+                           end do
+                         end do
+                       end do
+                       numTerms2(mr)=m
+                       if( numTerms2(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms2=",i6," too big")')
+     &  numTerms2(mr)
+                         stop 1616
+                       end if
+                     end do ! end do mr
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                       ! zero out some forcing terms 
+                       do m=0,numPolarizationTerms-1
+                          pv(m)=0.
+                         fp(m)=0.
+                       end do
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,2
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                         if( forcingOption.eq.twilightZoneForcing )then
+                           if( nd.eq.2 )then
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
+                             end do
+                           else
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
+                             end do
+                          end if
+                          !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
+                          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
+                          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
+                           ! FIX ME -- use opt version here too
+                           pc=0  ! P
+                           qc=1  ! Q = P.t
+                           do k1=1,6
+                             do k2=1,6
+                               ec=k2-1 ! E or H component
+                               do n=1,Np(k1,k2,mr)
+                                 a0 = gdmPar(1,n,k1,k2,mr)
+                                 a1 = gdmPar(2,n,k1,k2,mr)
+                                 b0 = gdmPar(3,n,k1,k2,mr)
+                                 b1 = gdmPar(4,n,k1,k2,mr)
+                                 ! TZ forcing for polarization equations: 
+                                 fp(pc) = pvt(pc) - pv(qc)
+                                 fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*
+     & evt(ec) - b0*pv(pc)- b1*pv(qc) )
+                                 pc=pc+2
+                                 qc=qc+2
+                               end do
+                             end do
+                           end do
+                        end if
+                         ! compute components of the curl(H) and -curl(E)
+                          ! --- 2D -----
+                            curl(0) =                            etay(
+     & i2)* uy22r(i1,i2,i3,hz)
+                            curl(1) = -etax(i1)* ux22r(i1,i2,i3,hz)
+                            curl(2) =-(etax(i1)* ux22r(i1,i2,i3,ey)-
+     & etay(i2)* uy22r(i1,i2,i3,ex))
+                         if( debug.gt.3 )then
+                           write(*,'("----- i1,i2=",2i3)') i1,i2
+                         end if
+                         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
+                         ! opt version 
+                           do m=0,2
+                             ptSum(m)=0
+                           end do
+                         do m=1,numTerms1(mr)
+                            ec = ecIndex1(m,mr)
+                            qc = qcIndex1(m,mr)
+                            ! upiv(m) = p(i1,i2,i3,qc-1)  ! didn't seem to help
+                            ! uqiv(m) = p(i1,i2,i3,qc )
+                            ! uptSum(ec) = ptSum(ec) + qiv(m) - pv(qc)
+                            ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - 
+     & pv(qc)
+                         end do
+                           do m=0,2
+                             curl(m) = curl(m) - ptSum(m)
+                           end do
+                         ! if( debug.gt.3 )then
+                         !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
+                         ! end if
+                           do m=0,2
+                             un(i1,i2,i3,m)= Ki(m,0,mr)*(curl(0)+fv(0))
+     &  + Ki(m,1,mr)*(curl(1)+fv(1)) + Ki(m,2,mr)*(curl(2)+fv(2))
+                           end do
+                         ! if( .false. )then
+                         !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
+                         ! end if
+                         ! --- compute time derivatives of P and Q
+                         ! p.t = q
+                         ! q.t = a0*E + a1*Et - b0*p - b1*q   
+                         ! or 
+                         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
+                         ! optimized version
+                         do m=1,numTerms2(mr)
+                           ec = ecIndex2(m,mr)
+                           pc = pcIndex2(m,mr)
+                           qc = pc+1
+                           pct=pc+numComp  ! p.t is stored in un here
+                           qct=qc+numComp  ! q.t is stored in un here
+                           a0 = a0v(m,mr)
+                           a1 = a1v(m,mr)
+                           b0 = b0v(m,mr)
+                           b1 = b1v(m,mr)
+                           un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
+                           un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*
+     & un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
+                           ! uun(i1,i2,i3,pct) = qiv(m) + fp(pc) 
+                           ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
+                         end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4444
+                      end if
+                     end if
+                 end if
+               end if
+           else
+               if( dispersionModel.eq.noDispersion )then
+                 if( useSuperGrid.eq.0  ) then
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA dim=2, order=2 
+     & grid=rectangular polar=NONE... t=",e10.2)') t
+                     end if
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,5
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                          ! --- 2D -----
+                            curl(0) =                             
+     & uy22r(i1,i2,i3,hz)
+                            curl(1) = - ux22r(i1,i2,i3,hz)
+                            curl(2) = ( ux22r(i1,i2,i3,hy)- uy22r(i1,
+     & i2,i3,hx))
+                            curl(3) =                           - 
+     & uy22r(i1,i2,i3,ez)
+                            curl(4) =   ux22r(i1,i2,i3,ez)
+                            curl(5) =-( ux22r(i1,i2,i3,ey)- uy22r(i1,
+     & i2,i3,ex))
+                           do m=0,5
+                             un(i1,i2,i3,m)= K0i(m,0,mr)*(curl(0)+fv(0)
+     & ) + K0i(m,1,mr)*(curl(1)+fv(1)) + K0i(m,2,mr)*(curl(2)+fv(2)) +
+     &  K0i(m,3,mr)*(curl(3)+fv(3)) + K0i(m,4,mr)*(curl(4)+fv(4)) + 
+     & K0i(m,5,mr)*(curl(5)+fv(5))
+                           end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4747
+                      end if
+                     end if ! end MOL
+                 else
+                   ! --- SUPERGRID ---
+                   if( t.le.3*dt )then
+                     write(*,'(" USE SUPERGRID...")' )
+                   end if
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA dim=2, order=2 
+     & grid=rectangular polar=NONE... t=",e10.2)') t
+                     end if
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,5
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                          ! --- 2D -----
+                            curl(0) =                            etay(
+     & i2)* uy22r(i1,i2,i3,hz)
+                            curl(1) = -etax(i1)* ux22r(i1,i2,i3,hz)
+                            curl(2) = (etax(i1)* ux22r(i1,i2,i3,hy)-
+     & etay(i2)* uy22r(i1,i2,i3,hx))
+                            curl(3) =                           -etay(
+     & i2)* uy22r(i1,i2,i3,ez)
+                            curl(4) =  etax(i1)* ux22r(i1,i2,i3,ez)
+                            curl(5) =-(etax(i1)* ux22r(i1,i2,i3,ey)-
+     & etay(i2)* uy22r(i1,i2,i3,ex))
+                           do m=0,5
+                             un(i1,i2,i3,m)= K0i(m,0,mr)*(curl(0)+fv(0)
+     & ) + K0i(m,1,mr)*(curl(1)+fv(1)) + K0i(m,2,mr)*(curl(2)+fv(2)) +
+     &  K0i(m,3,mr)*(curl(3)+fv(3)) + K0i(m,4,mr)*(curl(4)+fv(4)) + 
+     & K0i(m,5,mr)*(curl(5)+fv(5))
+                           end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4747
+                      end if
+                     end if ! end MOL
+                 end if
+               else
+                 if( useSuperGrid.eq.0  ) then
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA GDM dim=2 order=2 
+     & grid=rectangular polar=NONE... t=",e10.2)') t
+                     end if
+                     ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
+                     do mr=0,numberOfMaterialRegions-1
+                       m=0
+                       pc=0
+                       qc=1
+                       do k1=1,6
+                         ec=k1-1 ! E or H component
+                         do k2=1,6
+                           do n=1,Np(k1,k2,mr)
+                             m=m+1
+                             ecIndex1(m,mr)=ec
+                             qcIndex1(m,mr)=qc
+                             ! ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
+                             qc=qc+2
+                           end do
+                         end do
+                         ! subtract off P.t = sum Q_m
+                         ! curl(ec) = curl(ec) - ptSum(ec)
+                       end do
+                       numTerms1(mr)=m
+                       if( numTerms1(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms1=",i6," too big")')
+     &  numTerms1(mr)
+                         stop 1616
+                       end if
+                       pc=0  ! P
+                       qc=1  ! Q = P.t
+                       m=0
+                       do k1=1,6
+                         do k2=1,6
+                           ec=k2-1 ! This GDM term involves this E or H component
+                           do n=1,Np(k1,k2,mr)
+                             a0 = gdmPar(1,n,k1,k2,mr)
+                             a1 = gdmPar(2,n,k1,k2,mr)
+                             b0 = gdmPar(3,n,k1,k2,mr)
+                             b1 = gdmPar(4,n,k1,k2,mr)
+                             pct=pc+numComp  ! p.t is stored in un here
+                             qct=qc+numComp  ! q.t is stored in un here
+                             m=m+1
+                             ecIndex2(m,mr)=ec
+                             pcIndex2(m,mr)=pc
+                             a0v(m,mr)=a0
+                             a1v(m,mr)=a1
+                             b0v(m,mr)=b0
+                             b1v(m,mr)=b1
+                             ! un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
+                             ! un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
+                             pc=pc+2
+                             qc=qc+2
+                           end do
+                         end do
+                       end do
+                       numTerms2(mr)=m
+                       if( numTerms2(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms2=",i6," too big")')
+     &  numTerms2(mr)
+                         stop 1616
+                       end if
+                     end do ! end do mr
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                       ! zero out some forcing terms 
+                       do m=0,numPolarizationTerms-1
+                          pv(m)=0.
+                         fp(m)=0.
+                       end do
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,5
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                         if( forcingOption.eq.twilightZoneForcing )then
+                           if( nd.eq.2 )then
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
+                             end do
+                           else
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
+                             end do
+                          end if
+                          !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
+                          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
+                          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
+                           ! FIX ME -- use opt version here too
+                           pc=0  ! P
+                           qc=1  ! Q = P.t
+                           do k1=1,6
+                             do k2=1,6
+                               ec=k2-1 ! E or H component
+                               do n=1,Np(k1,k2,mr)
+                                 a0 = gdmPar(1,n,k1,k2,mr)
+                                 a1 = gdmPar(2,n,k1,k2,mr)
+                                 b0 = gdmPar(3,n,k1,k2,mr)
+                                 b1 = gdmPar(4,n,k1,k2,mr)
+                                 ! TZ forcing for polarization equations: 
+                                 fp(pc) = pvt(pc) - pv(qc)
+                                 fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*
+     & evt(ec) - b0*pv(pc)- b1*pv(qc) )
+                                 pc=pc+2
+                                 qc=qc+2
+                               end do
+                             end do
+                           end do
+                        end if
+                         ! compute components of the curl(H) and -curl(E)
+                          ! --- 2D -----
+                            curl(0) =                             
+     & uy22r(i1,i2,i3,hz)
+                            curl(1) = - ux22r(i1,i2,i3,hz)
+                            curl(2) = ( ux22r(i1,i2,i3,hy)- uy22r(i1,
+     & i2,i3,hx))
+                            curl(3) =                           - 
+     & uy22r(i1,i2,i3,ez)
+                            curl(4) =   ux22r(i1,i2,i3,ez)
+                            curl(5) =-( ux22r(i1,i2,i3,ey)- uy22r(i1,
+     & i2,i3,ex))
+                         if( debug.gt.3 )then
+                           write(*,'("----- i1,i2=",2i3)') i1,i2
+                         end if
+                         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
+                         ! opt version 
+                           do m=0,5
+                             ptSum(m)=0
+                           end do
+                         do m=1,numTerms1(mr)
+                            ec = ecIndex1(m,mr)
+                            qc = qcIndex1(m,mr)
+                            ! upiv(m) = p(i1,i2,i3,qc-1)  ! didn't seem to help
+                            ! uqiv(m) = p(i1,i2,i3,qc )
+                            ! uptSum(ec) = ptSum(ec) + qiv(m) - pv(qc)
+                            ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - 
+     & pv(qc)
+                         end do
+                           do m=0,5
+                             curl(m) = curl(m) - ptSum(m)
+                           end do
+                         ! if( debug.gt.3 )then
+                         !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
+                         ! end if
+                           do m=0,5
+                             un(i1,i2,i3,m)= K0i(m,0,mr)*(curl(0)+fv(0)
+     & ) + K0i(m,1,mr)*(curl(1)+fv(1)) + K0i(m,2,mr)*(curl(2)+fv(2)) +
+     &  K0i(m,3,mr)*(curl(3)+fv(3)) + K0i(m,4,mr)*(curl(4)+fv(4)) + 
+     & K0i(m,5,mr)*(curl(5)+fv(5))
+                           end do
+                         ! if( .false. )then
+                         !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
+                         ! end if
+                         ! --- compute time derivatives of P and Q
+                         ! p.t = q
+                         ! q.t = a0*E + a1*Et - b0*p - b1*q   
+                         ! or 
+                         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
+                         ! optimized version
+                         do m=1,numTerms2(mr)
+                           ec = ecIndex2(m,mr)
+                           pc = pcIndex2(m,mr)
+                           qc = pc+1
+                           pct=pc+numComp  ! p.t is stored in un here
+                           qct=qc+numComp  ! q.t is stored in un here
+                           a0 = a0v(m,mr)
+                           a1 = a1v(m,mr)
+                           b0 = b0v(m,mr)
+                           b1 = b1v(m,mr)
+                           un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
+                           un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*
+     & un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
+                           ! uun(i1,i2,i3,pct) = qiv(m) + fp(pc) 
+                           ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
+                         end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4444
+                      end if
+                     end if
+                 else
+                   ! --- SUPERGRID ---
+                   if( t.le.3*dt )then
+                     write(*,'(" USE SUPERGRID...")' )
+                   end if
+                     if( t.lt.2*dt )then
+                       write(*,'("advBA: advance BA GDM dim=2 order=2 
+     & grid=rectangular polar=NONE... t=",e10.2)') t
+                     end if
+                     ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
+                     do mr=0,numberOfMaterialRegions-1
+                       m=0
+                       pc=0
+                       qc=1
+                       do k1=1,6
+                         ec=k1-1 ! E or H component
+                         do k2=1,6
+                           do n=1,Np(k1,k2,mr)
+                             m=m+1
+                             ecIndex1(m,mr)=ec
+                             qcIndex1(m,mr)=qc
+                             ! ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
+                             qc=qc+2
+                           end do
+                         end do
+                         ! subtract off P.t = sum Q_m
+                         ! curl(ec) = curl(ec) - ptSum(ec)
+                       end do
+                       numTerms1(mr)=m
+                       if( numTerms1(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms1=",i6," too big")')
+     &  numTerms1(mr)
+                         stop 1616
+                       end if
+                       pc=0  ! P
+                       qc=1  ! Q = P.t
+                       m=0
+                       do k1=1,6
+                         do k2=1,6
+                           ec=k2-1 ! This GDM term involves this E or H component
+                           do n=1,Np(k1,k2,mr)
+                             a0 = gdmPar(1,n,k1,k2,mr)
+                             a1 = gdmPar(2,n,k1,k2,mr)
+                             b0 = gdmPar(3,n,k1,k2,mr)
+                             b1 = gdmPar(4,n,k1,k2,mr)
+                             pct=pc+numComp  ! p.t is stored in un here
+                             qct=qc+numComp  ! q.t is stored in un here
+                             m=m+1
+                             ecIndex2(m,mr)=ec
+                             pcIndex2(m,mr)=pc
+                             a0v(m,mr)=a0
+                             a1v(m,mr)=a1
+                             b0v(m,mr)=b0
+                             b1v(m,mr)=b1
+                             ! un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
+                             ! un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
+                             pc=pc+2
+                             qc=qc+2
+                           end do
+                         end do
+                       end do
+                       numTerms2(mr)=m
+                       if( numTerms2(mr).gt.maxNumPolarizationTerms )
+     & then
+                         write(*,'(" ERROR numTerms2=",i6," too big")')
+     &  numTerms2(mr)
+                         stop 1616
+                       end if
+                     end do ! end do mr
+                     mr=0
+                     if( .not.methodOfLines )then
+                       ! --- TAYLOR TIME-STEPPING --- 
+                       stop 111
+                     else
+                       ! --- METHOD OF LINES (RK) ---
+                       ! zero out some forcing terms 
+                       do m=0,numPolarizationTerms-1
+                          pv(m)=0.
+                         fp(m)=0.
+                       end do
+                         do i3=n3a,n3b
+                         do i2=n2a,n2b
+                         do i1=n1a,n1b
+                           if( mask(i1,i2,i3).gt.0 )then
+                         if( addForcing.ne.0 )then  ! do this for now *fix me*
+                             do m=0,5
+                              fv(m)=f(i1,i2,i3,m)
+                             end do
+                         end if
+                         if( numberOfMaterialRegions.gt.1 )then
+                           mr = matMask(i1,i2,i3)
+                           if( mr.lt.0 .or. 
+     & mr.ge.numberOfMaterialRegions )then  ! do this for now
+                              stop 9999
+                           end if
+                         end if
+                         if( forcingOption.eq.twilightZoneForcing )then
+                           if( nd.eq.2 )then
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
+                             end do
+                           else
+                             do m=0,numComp-1
+                               ec = m
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
+                             end do
+                             ! eval the polarization terms and time derivatives 
+                             do m=0,numPolarizationTerms-1
+                               pc = m+numComp  ! TZ index
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
+                             end do
+                          end if
+                          !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
+                          !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
+                          !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
+                           ! FIX ME -- use opt version here too
+                           pc=0  ! P
+                           qc=1  ! Q = P.t
+                           do k1=1,6
+                             do k2=1,6
+                               ec=k2-1 ! E or H component
+                               do n=1,Np(k1,k2,mr)
+                                 a0 = gdmPar(1,n,k1,k2,mr)
+                                 a1 = gdmPar(2,n,k1,k2,mr)
+                                 b0 = gdmPar(3,n,k1,k2,mr)
+                                 b1 = gdmPar(4,n,k1,k2,mr)
+                                 ! TZ forcing for polarization equations: 
+                                 fp(pc) = pvt(pc) - pv(qc)
+                                 fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*
+     & evt(ec) - b0*pv(pc)- b1*pv(qc) )
+                                 pc=pc+2
+                                 qc=qc+2
+                               end do
+                             end do
+                           end do
+                        end if
+                         ! compute components of the curl(H) and -curl(E)
+                          ! --- 2D -----
+                            curl(0) =                            etay(
+     & i2)* uy22r(i1,i2,i3,hz)
+                            curl(1) = -etax(i1)* ux22r(i1,i2,i3,hz)
+                            curl(2) = (etax(i1)* ux22r(i1,i2,i3,hy)-
+     & etay(i2)* uy22r(i1,i2,i3,hx))
+                            curl(3) =                           -etay(
+     & i2)* uy22r(i1,i2,i3,ez)
+                            curl(4) =  etax(i1)* ux22r(i1,i2,i3,ez)
+                            curl(5) =-(etax(i1)* ux22r(i1,i2,i3,ey)-
+     & etay(i2)* uy22r(i1,i2,i3,ex))
+                         if( debug.gt.3 )then
+                           write(*,'("----- i1,i2=",2i3)') i1,i2
+                         end if
+                         ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
+                         ! opt version 
+                           do m=0,5
+                             ptSum(m)=0
+                           end do
+                         do m=1,numTerms1(mr)
+                            ec = ecIndex1(m,mr)
+                            qc = qcIndex1(m,mr)
+                            ! upiv(m) = p(i1,i2,i3,qc-1)  ! didn't seem to help
+                            ! uqiv(m) = p(i1,i2,i3,qc )
+                            ! uptSum(ec) = ptSum(ec) + qiv(m) - pv(qc)
+                            ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - 
+     & pv(qc)
+                         end do
+                           do m=0,5
+                             curl(m) = curl(m) - ptSum(m)
+                           end do
+                         ! if( debug.gt.3 )then
+                         !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
+                         ! end if
+                           do m=0,5
+                             un(i1,i2,i3,m)= K0i(m,0,mr)*(curl(0)+fv(0)
+     & ) + K0i(m,1,mr)*(curl(1)+fv(1)) + K0i(m,2,mr)*(curl(2)+fv(2)) +
+     &  K0i(m,3,mr)*(curl(3)+fv(3)) + K0i(m,4,mr)*(curl(4)+fv(4)) + 
+     & K0i(m,5,mr)*(curl(5)+fv(5))
+                           end do
+                         ! if( .false. )then
+                         !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
+                         ! end if
+                         ! --- compute time derivatives of P and Q
+                         ! p.t = q
+                         ! q.t = a0*E + a1*Et - b0*p - b1*q   
+                         ! or 
+                         ! q.t = a0*H + a1*Ht - b0*p - b1*q   
+                         ! optimized version
+                         do m=1,numTerms2(mr)
+                           ec = ecIndex2(m,mr)
+                           pc = pcIndex2(m,mr)
+                           qc = pc+1
+                           pct=pc+numComp  ! p.t is stored in un here
+                           qct=qc+numComp  ! q.t is stored in un here
+                           a0 = a0v(m,mr)
+                           a1 = a1v(m,mr)
+                           b0 = b0v(m,mr)
+                           b1 = b1v(m,mr)
+                           un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
+                           un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*
+     & un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
+                           ! uun(i1,i2,i3,pct) = qiv(m) + fp(pc) 
+                           ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
+                         end do
+                           end if
+                         end do
+                         end do
+                         end do
+                       if( .false. .or. debug > 15 )then
+                         stop  4444
+                      end if
+                     end if
+                 end if
+               end if
+           end if
+       end if
        if( gridType.eq.rectangular )then
       !       **********************************************
       !       *************** rectangular ******************
@@ -2520,8 +3649,8 @@ c===============================================================================
           ! ------------------------------------------------------------------------------
           if( addDissipation )then
             if( t.le.3*dt )then
-              write(*,'("advBA: 2=2: addDissipation=",l2," adc=",e10.2)
-     & ') addDissipation,adc
+              write(*,'("advBA: order=2: addDissipation=",l2," adc=",
+     & e10.2)') addDissipation,adc
             end if
             sigma1=1.
             adxSosup(0)=sigma1/(2*16.)
@@ -2540,839 +3669,27 @@ c===============================================================================
               end do
               end do
               end do
-           else if( materialType.eq.isotropic )then
-               ! eps* u_t = w_y
-               ! eps* v_t = - w_x
-               ! mu* w_t = u_y - v_x 
-               write(*,'("advBA: advance ISOTROPIC 2D, 2nd-order, 
-     & rectangular... t=",e10.2)') t
-               !  Taylor2 time-stepping: 
-               !    u(n+1) = u(n) + dt*ut + (dt^2/2)*utt 
-               if( solveForAllFields.ne.0 )then
-                 if( .not.methodOfLines )then
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       do m=0,5
-                         fv(m)=f(i1,i2,i3,m)
-                       end do
-                     end if
-                     un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                     un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                     un(i1,i2,i3,ez)=u(i1,i2,i3,ez) + (dt/eps)*(ux22r(
-     & i1,i2,i3,hy)-uy22r(i1,i2,i3,hx)) +.5*cdtsq*lap2d2(i1,i2,i3,ez) 
-     & + dt*fv(ez)
-                     un(i1,i2,i3,hx)=u(i1,i2,i3,hx) + (dt/mu)*( -uy22r(
-     & i1,i2,i3,ez) ) +.5*cdtsq*lap2d2(i1,i2,i3,hx) + dt*fv(hx)
-                     un(i1,i2,i3,hy)=u(i1,i2,i3,hy) + (dt/mu)*(  ux22r(
-     & i1,i2,i3,ez) ) +.5*cdtsq*lap2d2(i1,i2,i3,hy) + dt*fv(hy)
-                     un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(
-     & i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) 
-     & + dt*fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 else
-                   ! METHOD OF LINES
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       do m=0,5
-                         fv(m)=f(i1,i2,i3,m)
-                       end do
-                     end if
-                     un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + 
-     & fv(ex)
-                     un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + 
-     & fv(ey)
-                     un(i1,i2,i3,ez)= + (1./eps)*(ux22r(i1,i2,i3,hy)-
-     & uy22r(i1,i2,i3,hx)) + fv(ez)
-                     un(i1,i2,i3,hx)= + (1./mu)*( -uy22r(i1,i2,i3,ez) )
-     &  + fv(hx)
-                     un(i1,i2,i3,hy)= + (1./mu)*(  ux22r(i1,i2,i3,ez) )
-     &  + fv(hy)
-                     un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-
-     & ux22r(i1,i2,i3,ey))  + fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 end if
-               else
-                  ! TEz polarization
-                 if( .not.methodOfLines )then
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                    if( addForcing.ne.0 )then  ! do this for now *fix me*
-                      fv(ex)=f(i1,i2,i3,ex)
-                      fv(ey)=f(i1,i2,i3,ey)
-                      fv(hz)=f(i1,i2,i3,hz)
-                    else
-                      do c=ex,hz
-                        fv(c)= 0.
-                      end do
-                    end if
-                    un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(i1,
-     & i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                    un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(i1,
-     & i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                    un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(i1,
-     & i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) + 
-     & dt*fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 else
-                   ! METHOD OF LINES
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                    if( addForcing.ne.0 )then  ! do this for now *fix me*
-                      fv(ex)=f(i1,i2,i3,ex)
-                      fv(ey)=f(i1,i2,i3,ey)
-                      fv(hz)=f(i1,i2,i3,hz)
-                    else
-                      do c=ex,hz
-                        fv(c)= 0.
-                      end do
-                    end if
-                    un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + 
-     & fv(ex)
-                    un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + 
-     & fv(ey)
-                    un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-
-     & ux22r(i1,i2,i3,ey)) + fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 end if
-               end if
-           else if( dispersionModel.eq.noDispersion )then
-               ! eps* u_t = w_y
-               ! eps* v_t = - w_x
-               ! mu* w_t = u_y - v_x 
-               if( t.lt.2*dt )then
-                 write(*,'("advBA: advance BI-ANISTROPIC 2D, 2nd-order,
-     &  rectangular... t=",e10.2)') t
-               end if
-               mr=0
-               !  Taylor2 time-stepping: 
-               !    u(n+1) = u(n) + dt*ut + (dt^2/2)*utt 
-               if( solveForAllFields.ne.0 )then
-                 if( .not.methodOfLines )then
-                   ! Finish method of lines for general K0
-                   !     dt*K0i*curl + (dt^2/2) * K0i^2*( curl(curl ))
-                   stop 111
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       do m=0,5
-                         fv(m)=f(i1,i2,i3,m)
-                       end do
-                     end if
-                     un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                     un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                     un(i1,i2,i3,ez)=u(i1,i2,i3,ez) + (dt/eps)*(ux22r(
-     & i1,i2,i3,hy)-uy22r(i1,i2,i3,hx)) +.5*cdtsq*lap2d2(i1,i2,i3,ez) 
-     & + dt*fv(ez)
-                     un(i1,i2,i3,hx)=u(i1,i2,i3,hx) + (dt/mu)*( -uy22r(
-     & i1,i2,i3,ez) ) +.5*cdtsq*lap2d2(i1,i2,i3,hx) + dt*fv(hx)
-                     un(i1,i2,i3,hy)=u(i1,i2,i3,hy) + (dt/mu)*(  ux22r(
-     & i1,i2,i3,ez) ) +.5*cdtsq*lap2d2(i1,i2,i3,hy) + dt*fv(hy)
-                     un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(
-     & i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) 
-     & + dt*fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 else
-                   ! METHOD OF LINES
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       do m=0,5
-                         fv(m)=f(i1,i2,i3,m)
-                       end do
-                     end if
-                     ! compute components of the curl(H) and -curl(E)
-                     curl(0) =  uy22r(i1,i2,i3,hz)
-                     curl(1) = -ux22r(i1,i2,i3,hz)
-                     curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-                     curl(3) = -uy22r(i1,i2,i3,ez)
-                     curl(4) =  ux22r(i1,i2,i3,ez)
-                     curl(5) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-                     if( numberOfMaterialRegions.gt.1 )then
-                       mr = matMask(i1,i2,i3)
-                       if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions )
-     & then  ! do this for now
-                          stop 9999
-                       end if
-                     end if
-                     do m=0,5
-                       un(i1,i2,i3,m)= K0i(m,0,mr)*curl(0) + K0i(m,1,
-     & mr)*curl(1) + K0i(m,2,mr)*curl(2) + K0i(m,3,mr)*curl(3) + K0i(
-     & m,4,mr)*curl(4) + K0i(m,5,mr)*curl(5) + fv(m)
-                     end do
-                     !  write(*,'(" i1,i2=",2i3," curl=",6(1pe10.3,1x)," hz=",e14.6)') i1,i2,(curl(m),m=0,5),u(i1,i2,i3,hz)
-                     !  write(*,'("  un=",6(1pe10.3,1x))') (un(i1,i2,i3,m),m=0,5)
-             !        un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + fv(ex)
-             !        un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + fv(ey)
-             !        un(i1,i2,i3,ez)= + (1./eps)*(ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx)) + fv(ez)
-             !  
-             !        un(i1,i2,i3,hx)= + (1./mu)*( -uy22r(i1,i2,i3,ez) ) + fv(hx)
-             !        un(i1,i2,i3,hy)= + (1./mu)*(  ux22r(i1,i2,i3,ez) ) + fv(hy)
-             !        un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey))  + fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 end if
-               else
-                  ! TEz polarization
-                 if( .not.methodOfLines )then
-                   stop 111
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                    if( addForcing.ne.0 )then  ! do this for now *fix me*
-                      fv(ex)=f(i1,i2,i3,ex)
-                      fv(ey)=f(i1,i2,i3,ey)
-                      fv(hz)=f(i1,i2,i3,hz)
-                    else
-                      do c=ex,hz
-                        fv(c)= 0.
-                      end do
-                    end if
-                    un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(i1,
-     & i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                    un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(i1,
-     & i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                    un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(i1,
-     & i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) + 
-     & dt*fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 else
-                   ! METHOD OF LINES -- TEz 
-                     do i3=n3a,n3b
-                     do i2=n2a,n2b
-                     do i1=n1a,n1b
-                       if( mask(i1,i2,i3).gt.0 )then
-                    if( addForcing.ne.0 )then  ! do this for now *fix me*
-                      fv(ex)=f(i1,i2,i3,ex)
-                      fv(ey)=f(i1,i2,i3,ey)
-                      fv(hz)=f(i1,i2,i3,hz)
-                    else
-                      do c=ex,hz
-                        fv(c)= 0.
-                      end do
-                    end if
-                     ! compute components of the curl(H) and -curl(E)
-                     curl(0) =  uy22r(i1,i2,i3,hz)
-                     curl(1) = -ux22r(i1,i2,i3,hz)
-                     ! curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-                     ! curl(3) = -uy22r(i1,i2,i3,ez)
-                     ! curl(4) =  ux22r(i1,i2,i3,ez)
-                     curl(2) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-                     if( numberOfMaterialRegions.gt.1 )then
-                       mr = matMask(i1,i2,i3)
-                       if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions )
-     & then  ! do this for now
-                          stop 9999
-                       end if
-                     end if
-                     do m=0,2
-                       un(i1,i2,i3,m)= Ki(m,0,mr)*curl(0) + Ki(m,1,mr)*
-     & curl(1) + Ki(m,2,mr)*curl(2) + fv(m)
-                     end do
-                     ! un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + fv(ex)
-                     ! un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + fv(ey)
-                     ! un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) + fv(hz)
-                       end if
-                     end do
-                     end do
-                     end do
-                 end if
-               end if
-           else
-             ! updateBAGDM2dOrder2()
-             ! updateBAGDM(2,2,rectangular)
-            if( useOpt )then
-                if( t.lt.2*dt )then
-                  write(*,'("advBA: advance BA GDM (*new*), dim=2, 
-     & order=2 grid=rectangular... t=",e10.2)') t
-                end if
-                ! ---- Precompute some indirection arrays to make the dispersion loops go faster ----
-                do mr=0,numberOfMaterialRegions-1
-                  m=0
-                  pc=0
-                  qc=1
-                  do k1=1,6
-                    ec=k1-1 ! E or H component
-                    do k2=1,6
-                      do n=1,Np(k1,k2,mr)
-                        m=m+1
-                        ecIndex1(m,mr)=ec
-                        qcIndex1(m,mr)=qc
-                        ! ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(qc)
-                        qc=qc+2
-                      end do
-                    end do
-                    ! subtract off P.t = sum Q_m
-                    ! curl(ec) = curl(ec) - ptSum(ec)
-                  end do
-                  numTerms1(mr)=m
-                  if( numTerms1(mr).gt.maxNumPolarizationTerms )then
-                    write(*,'(" ERROR numTerms1=",i6," too big")') 
-     & numTerms1(mr)
-                    stop 1616
-                  end if
-                  pc=0  ! P
-                  qc=1  ! Q = P.t
-                  m=0
-                  do k1=1,6
-                    do k2=1,6
-                      ec=k2-1 ! This GDM term involves this E or H component
-                      do n=1,Np(k1,k2,mr)
-                        a0 = gdmPar(1,n,k1,k2,mr)
-                        a1 = gdmPar(2,n,k1,k2,mr)
-                        b0 = gdmPar(3,n,k1,k2,mr)
-                        b1 = gdmPar(4,n,k1,k2,mr)
-                        pct=pc+6  ! p.t is stored in un here
-                        qct=qc+6  ! q.t is stored in un here
-                        m=m+1
-                        ecIndex2(m,mr)=ec
-                        pcIndex2(m,mr)=pc
-                        a0v(m,mr)=a0
-                        a1v(m,mr)=a1
-                        b0v(m,mr)=b0
-                        b1v(m,mr)=b1
-                        ! un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc) 
-                        ! un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-                        pc=pc+2
-                        qc=qc+2
-                      end do
-                    end do
-                  end do
-                  numTerms2(mr)=m
-                  if( numTerms2(mr).gt.maxNumPolarizationTerms )then
-                    write(*,'(" ERROR numTerms2=",i6," too big")') 
-     & numTerms2(mr)
-                    stop 1616
-                  end if
-                end do ! end do mr
-                mr=0
-                if( solveForAllFields.ne.0 )then
-                  ! --- SOLVE FOR ALL FIELDS ---
-                  if( .not.methodOfLines )then
-                    ! --- TAYLOR TIME-STEPPING --- 
-                    stop 111
-                  else
-                    ! --- METHOD OF LINES (RK) ---
-                    ! zero out some forcing terms 
-                    do m=0,numPolarizationTerms-1
-                       pv(m)=0.
-                      fp(m)=0.
-                    end do
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                      if( addForcing.ne.0 )then  ! do this for now *fix me*
-                        do m=0,5
-                          fv(m)=f(i1,i2,i3,m)
-                        end do
-                      end if
-                      if( numberOfMaterialRegions.gt.1 )then
-                        mr = matMask(i1,i2,i3)
-                        if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions 
-     & )then  ! do this for now
-                           stop 9999
-                        end if
-                      end if
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          do m=0,5
-                            ec = m
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, ec,ev(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, ec,evt(m) )
-                          end do
-                          ! eval the polarization terms and time derivatives 
-                          do m=0,numPolarizationTerms-1
-                            pc = m+6  ! TZ index
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, pc,pv(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
-                          end do
-                        else
-                          do m=0,5
-                            ec = m
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
-                          end do
-                          ! eval the polarization terms and time derivatives 
-                          do m=0,numPolarizationTerms-1
-                            pc = m+6  ! TZ index
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
-                          end do
-                       end if
-                       !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
-                       !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
-                       !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
-                        ! FIX ME -- use opt version here too
-                        pc=0  ! P
-                        qc=1  ! Q = P.t
-                        do k1=1,6
-                          do k2=1,6
-                            ec=k2-1 ! E or H component
-                            do n=1,Np(k1,k2,mr)
-                              a0 = gdmPar(1,n,k1,k2,mr)
-                              a1 = gdmPar(2,n,k1,k2,mr)
-                              b0 = gdmPar(3,n,k1,k2,mr)
-                              b1 = gdmPar(4,n,k1,k2,mr)
-                              ! TZ forcing for polarization equations: 
-                              fp(pc) = pvt(pc) - pv(qc)
-                              fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*evt(
-     & ec) - b0*pv(pc)- b1*pv(qc) )
-                              pc=pc+2
-                              qc=qc+2
-                            end do
-                          end do
-                        end do
-                     end if
-                      ! compute components of the curl(H) and -curl(E)
-                       ! --- 2D -----
-                       curl(0) =  uy22r(i1,i2,i3,hz)
-                       curl(1) = -ux22r(i1,i2,i3,hz)
-                       curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx)
-     & )
-                       curl(3) = -uy22r(i1,i2,i3,ez)
-                       curl(4) =  ux22r(i1,i2,i3,ez)
-                       curl(5) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex)
-     & )
-                      if( debug.gt.3 )then
-                        write(*,'("----- i1,i2=",2i3)') i1,i2
-                      end if
-                      ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
-                      ! opt version 
-                      do m=0,5
-                        ptSum(m)=0
-                      end do
-                      do m=1,numTerms1(mr)
-                         ec = ecIndex1(m,mr)
-                         qc = qcIndex1(m,mr)
-                         ! upiv(m) = p(i1,i2,i3,qc-1)  ! didn't seem to help
-                         ! uqiv(m) = p(i1,i2,i3,qc )
-                         ! uptSum(ec) = ptSum(ec) + qiv(m) - pv(qc)
-                         ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - pv(
-     & qc)
-                      end do
-                      do m=0,5
-                        curl(m) = curl(m) - ptSum(m)
-                      end do
-                      ! if( debug.gt.3 )then
-                      !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
-                      ! end if
-                      do m=0,5
-                        un(i1,i2,i3,m)= K0i(m,0,mr)*curl(0) + K0i(m,1,
-     & mr)*curl(1) + K0i(m,2,mr)*curl(2) + K0i(m,3,mr)*curl(3) + K0i(
-     & m,4,mr)*curl(4) + K0i(m,5,mr)*curl(5) + fv(m)
-                        ! unv(m) = un(i1,i2,i3,m) ! didn't seem to help
-                        ! uv(m)  = u(i1,i2,i3,ec)
-                      end do
-                      ! if( .false. )then
-                      !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
-                      ! end if
-                      ! --- compute time derivatives of P and Q
-                      ! p.t = q
-                      ! q.t = a0*E + a1*Et - b0*p - b1*q   
-                      ! or 
-                      ! q.t = a0*H + a1*Ht - b0*p - b1*q   
-                      ! optimized version
-                      do m=1,numTerms2(mr)
-                        ec = ecIndex2(m,mr)
-                        pc = pcIndex2(m,mr)
-                        qc = pc+1
-                        pct=pc+6  ! p.t is stored in un here
-                        qct=qc+6  ! q.t is stored in un here
-                        a0 = a0v(m,mr)
-                        a1 = a1v(m,mr)
-                        b0 = b0v(m,mr)
-                        b1 = b1v(m,mr)
-                        un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
-                        un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*un(
-     & i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
-                        ! uun(i1,i2,i3,pct) = qiv(m) + fp(pc) 
-                        ! uun(i1,i2,i3,qct) = a0*uv(ec) + a1*unv(ec) - b0*piv(m)- b1*qiv(m) + fp(qc) 
-                      end do
-                        end if
-                      end do
-                      end do
-                      end do
-                    if( .false. .or. debug > 15 )then
-                      stop  4444
-                   end if
-                  end if
-                else
-                  ! TEz polarization
-                  stop 5555
-                  if( .not.methodOfLines )then
-                    stop 111
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       fv(ex)=f(i1,i2,i3,ex)
-                       fv(ey)=f(i1,i2,i3,ey)
-                       fv(hz)=f(i1,i2,i3,hz)
-                     else
-                       do c=ex,hz
-                         fv(c)= 0.
-                       end do
-                     end if
-                     un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                     un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                     un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(
-     & i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) 
-     & + dt*fv(hz)
-                        end if
-                      end do
-                      end do
-                      end do
-                  else
-                    ! METHOD OF LINES -- TEz 
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       fv(ex)=f(i1,i2,i3,ex)
-                       fv(ey)=f(i1,i2,i3,ey)
-                       fv(hz)=f(i1,i2,i3,hz)
-                     else
-                       do c=ex,hz
-                         fv(c)= 0.
-                       end do
-                     end if
-                      ! compute components of the curl(H) and -curl(E)
-                      curl(0) =  uy22r(i1,i2,i3,hz)
-                      curl(1) = -ux22r(i1,i2,i3,hz)
-                      ! curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-                      ! curl(3) = -uy22r(i1,i2,i3,ez)
-                      ! curl(4) =  ux22r(i1,i2,i3,ez)
-                      curl(2) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-                      if( numberOfMaterialRegions.gt.1 )then
-                        mr = matMask(i1,i2,i3)
-                        if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions 
-     & )then  ! do this for now
-                           stop 9999
-                        end if
-                      end if
-                      do m=0,2
-                        un(i1,i2,i3,m)= Ki(m,0,mr)*curl(0) + Ki(m,1,mr)
-     & *curl(1) + Ki(m,2,mr)*curl(2) + fv(m)
-                      end do
-                      ! un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + fv(ex)
-                      ! un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + fv(ey)
-                      ! un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) + fv(hz)
-                        end if
-                      end do
-                      end do
-                      end do
-                  end if
-                end if
-            else
-                if( t.lt.2*dt )then
-                  write(*,'("advBA: advance BA GDM, dim=2, order=2 
-     & grid=rectangular... t=",e10.2)') t
-                end if
-                mr=0
-                if( solveForAllFields.ne.0 )then
-                  ! --- SOLVE FOR ALL FIELDS ---
-                  if( .not.methodOfLines )then
-                    ! --- TAYLOR TIME-STEPPING --- 
-                    stop 111
-                  else
-                    ! --- METHOD OF LINES (RK) ---
-                    ! zero out some forcing terms 
-                    do m=0,numPolarizationTerms-1
-                       pv(m)=0.
-                    end do
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                      if( addForcing.ne.0 )then  ! do this for now *fix me*
-                        do m=0,5
-                          fv(m)=f(i1,i2,i3,m)
-                        end do
-                      end if
-                      if( numberOfMaterialRegions.gt.1 )then
-                        mr = matMask(i1,i2,i3)
-                        if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions 
-     & )then  ! do this for now
-                           stop 9999
-                        end if
-                      end if
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          do m=0,5
-                            ec = m
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, ec,ev(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, ec,evt(m) )
-                          end do
-                          ! eval the polarization terms and time derivatives 
-                          do m=0,numPolarizationTerms-1
-                            pc = m+6  ! TZ index
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, pc,pv(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),0.,t, pc,pvt(m) )
-                          end do
-                        else
-                          do m=0,5
-                            ec = m
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,ev(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,evt(m) )
-                          end do
-                          ! eval the polarization terms and time derivatives 
-                          do m=0,numPolarizationTerms-1
-                            pc = m+6  ! TZ index
-                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pv(m) )
-                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
-     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pc,pvt(m) )
-                          end do
-                       end if
-                       !write(*,'(" i1,i2=",2i3," xy=",2(f5.2,1x))') i1,i2,xy(i1,i2,i3,0),xy(i1,i2,i3,1)
-                       !write(*,'(" i1,i2=",2i3," ev=",6(f6.3,1x))') i1,i2,(ev(m),m=0,5)
-                       !write(*,'(" i1,i2=",2i3," pv=",10(f6.3,1x))') i1,i2,(pv(m),m=0,numPolarizationTerms-1)
-                        pc=0  ! P
-                        qc=1  ! Q = P.t
-                        do k1=1,6
-                          do k2=1,6
-                            ec=k2-1 ! E or H component
-                            do n=1,Np(k1,k2,mr)
-                              a0 = gdmPar(1,n,k1,k2,mr)
-                              a1 = gdmPar(2,n,k1,k2,mr)
-                              b0 = gdmPar(3,n,k1,k2,mr)
-                              b1 = gdmPar(4,n,k1,k2,mr)
-                              ! TZ forcing for polarization equations: 
-                              fp(pc) = pvt(pc) - pv(qc)
-                              fp(qc) = pvt(qc) - (  a0*ev(ec) + a1*evt(
-     & ec) - b0*pv(pc)- b1*pv(qc) )
-                              pc=pc+2
-                              qc=qc+2
-                            end do
-                          end do
-                        end do
-                     else
-                        ! no TZ : set polarization forcing to zero 
-                        do m=0,numPolarizationTerms-1
-                          fp(m)=0.
-                        end do
-                     end if
-                      ! compute components of the curl(H) and -curl(E)
-                       ! --- 2D -----
-                       curl(0) =  uy22r(i1,i2,i3,hz)
-                       curl(1) = -ux22r(i1,i2,i3,hz)
-                       curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx)
-     & )
-                       curl(3) = -uy22r(i1,i2,i3,ez)
-                       curl(4) =  ux22r(i1,i2,i3,ez)
-                       curl(5) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex)
-     & )
-                      if( debug.gt.3 )then
-                        write(*,'("----- i1,i2=",2i3)') i1,i2
-                      end if
-                      ! ---- Compute q = p.t = SUM_k2 SUM_n  p(i1,i2,i3, n,k1,k2, qc )
-                      pc=0  ! P
-                      qc=1  ! Q = P.t
-                      do m=0,5
-                        ptSum(m)=0.   ! local total Pt or Mt
-                      end do
-                      do k1=1,6
-                        ec=k1-1 ! E or H component
-                        do k2=1,6
-                          do n=1,Np(k1,k2,mr)
-                            ptSum(ec) = ptSum(ec) + p(i1,i2,i3,qc) - 
-     & pv(qc)
-                      ! if( debug.gt.3 )then
-                      !   write(*,'("  q,qv,ptSum=",3(e10.2,1x))') p(i1,i2,i3,qc),pv(qc),ptSum(ec)
-                      ! end if
-                            qc=qc+2
-                          end do
-                        end do
-                        ! subtract off P.t = sum Q_m
-                        curl(ec) = curl(ec) - ptSum(ec)
-                      end do
-                      ! if( debug.gt.3 )then
-                      !   write(*,'("   ptSum=",6(f6.3,1x))') (ptSum(m),m=0,5)
-                      ! end if
-                      do m=0,5
-                        un(i1,i2,i3,m)= K0i(m,0,mr)*curl(0) + K0i(m,1,
-     & mr)*curl(1) + K0i(m,2,mr)*curl(2) + K0i(m,3,mr)*curl(3) + K0i(
-     & m,4,mr)*curl(4) + K0i(m,5,mr)*curl(5) + fv(m)
-                      end do
-                      ! if( .false. )then
-                      !   write(*,'(" i1,i2=",2i3," ut=",6(f6.3,1x))') i1,i2,(un(i1,i2,i3,m),m=0,5)
-                      ! end if
-                      ! --- compute time derivatives of P and Q
-                      ! p.t = q
-                      ! q.t = a0*E + a1*Et - b0*p - b1*q   
-                      ! or 
-                      ! q.t = a0*H + a1*Ht - b0*p - b1*q   
-                      pc=0  ! P
-                      qc=1  ! Q = P.t
-                      do k1=1,6
-                        do k2=1,6
-                          ec=k2-1 ! This GDM term involves this E or H component
-                          do n=1,Np(k1,k2,mr)
-                            a0 = gdmPar(1,n,k1,k2,mr)
-                            a1 = gdmPar(2,n,k1,k2,mr)
-                            b0 = gdmPar(3,n,k1,k2,mr)
-                            b1 = gdmPar(4,n,k1,k2,mr)
-                            pct=pc+6  ! p.t is stored in un here
-                            qct=qc+6  ! q.t is stored in un here
-                            un(i1,i2,i3,pct) = p(i1,i2,i3,qc) + fp(pc)
-                            un(i1,i2,i3,qct) = a0*u(i1,i2,i3,ec) + a1*
-     & un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc)
-                            ! test: 
-                            ! un(i1,i2,i3,qct) = a0*ev(ec)         + a1*un(i1,i2,i3,ec) - b0*p(i1,i2,i3,pc)- b1*p(i1,i2,i3,qc) + fp(qc) 
-                            ! if( debug.gt.3 )then
-                            !   write(*,'(" i1,i2=",2i4," k1,k2=",2i2," Np=",i3," ec=",i1," t=",e9.2)') i1,i2,k1,k2,Np(k1,k2,mr),ec,t
-                            !   write(*,'("   ... pc,qc,ec=",3i3," a0,a1,b0,b1=",4e10.2)') pc,qc,ec,a0,a1,b0,b1
-                            !   write(*,'("   ... p ,q =",2f7.3)') p(i1,i2,i3,pc),p(i1,i2,i3,qc)
-                            ! end if 
-                            ! write(*,'("   ... p ,pe =",2f7.3," q ,qe =",2f7.3)') p(i1,i2,i3,pc),pv(pc),p(i1,i2,i3,qc),pv(qc)
-                            ! write(*,'("   ... E ,Ee =",2f7.3," Et,Ete =",2f7.3)') u(i1,i2,i3,ec),ev(ec),un(i1,i2,i3,ec),evt(ec)
-                            ! write(*,'("   ... pt,pte=",2f7.3," qt,qte=",2f7.3)') un(i1,i2,i3,pct),pvt(pc),un(i1,i2,i3,qct),pvt(qc)
-                            ! test: -- set to exact time-derivative 
-                            ! un(i1,i2,i3,pct) = pvt(pc)
-                            ! un(i1,i2,i3,qct) = pvt(qc)
-                            pc=pc+2
-                            qc=qc+2
-                          end do
-                        end do
-                      end do
-                        end if
-                      end do
-                      end do
-                      end do
-                    if( .false. .or. debug > 15 )then
-                      stop  4444
-                   end if
-                  end if
-                else
-                  ! TEz polarization
-                  stop 5555
-                  if( .not.methodOfLines )then
-                    stop 111
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       fv(ex)=f(i1,i2,i3,ex)
-                       fv(ey)=f(i1,i2,i3,ey)
-                       fv(hz)=f(i1,i2,i3,hz)
-                     else
-                       do c=ex,hz
-                         fv(c)= 0.
-                       end do
-                     end if
-                     un(i1,i2,i3,ex)=u(i1,i2,i3,ex) + (dt/eps)*uy22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ex) + dt*fv(ex)
-                     un(i1,i2,i3,ey)=u(i1,i2,i3,ey) - (dt/eps)*ux22r(
-     & i1,i2,i3,hz) +.5*cdtsq*lap2d2(i1,i2,i3,ey) + dt*fv(ey)
-                     un(i1,i2,i3,hz)=u(i1,i2,i3,hz) + (dt/mu)*(uy22r(
-     & i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) +.5*cdtsq*lap2d2(i1,i2,i3,hz) 
-     & + dt*fv(hz)
-                        end if
-                      end do
-                      end do
-                      end do
-                  else
-                    ! METHOD OF LINES -- TEz 
-                      do i3=n3a,n3b
-                      do i2=n2a,n2b
-                      do i1=n1a,n1b
-                        if( mask(i1,i2,i3).gt.0 )then
-                     if( addForcing.ne.0 )then  ! do this for now *fix me*
-                       fv(ex)=f(i1,i2,i3,ex)
-                       fv(ey)=f(i1,i2,i3,ey)
-                       fv(hz)=f(i1,i2,i3,hz)
-                     else
-                       do c=ex,hz
-                         fv(c)= 0.
-                       end do
-                     end if
-                      ! compute components of the curl(H) and -curl(E)
-                      curl(0) =  uy22r(i1,i2,i3,hz)
-                      curl(1) = -ux22r(i1,i2,i3,hz)
-                      ! curl(2) = (ux22r(i1,i2,i3,hy)-uy22r(i1,i2,i3,hx))
-                      ! curl(3) = -uy22r(i1,i2,i3,ez)
-                      ! curl(4) =  ux22r(i1,i2,i3,ez)
-                      curl(2) =-(ux22r(i1,i2,i3,ey)-uy22r(i1,i2,i3,ex))
-                      if( numberOfMaterialRegions.gt.1 )then
-                        mr = matMask(i1,i2,i3)
-                        if( mr.lt.0 .or. mr.ge.numberOfMaterialRegions 
-     & )then  ! do this for now
-                           stop 9999
-                        end if
-                      end if
-                      do m=0,2
-                        un(i1,i2,i3,m)= Ki(m,0,mr)*curl(0) + Ki(m,1,mr)
-     & *curl(1) + Ki(m,2,mr)*curl(2) + fv(m)
-                      end do
-                      ! un(i1,i2,i3,ex)= + (1./eps)*uy22r(i1,i2,i3,hz) + fv(ex)
-                      ! un(i1,i2,i3,ey)= - (1./eps)*ux22r(i1,i2,i3,hz) + fv(ey)
-                      ! un(i1,i2,i3,hz)= + (1./mu)*(uy22r(i1,i2,i3,ex)-ux22r(i1,i2,i3,ey)) + fv(hz)
-                        end if
-                      end do
-                      end do
-                      end do
-                  end if
-                end if
-            end if
-           end if
+      !     else if( materialType.eq.isotropic )then
+      !
+      !       updateMx2dOrder2()
+      !
+      !     else if( dispersionModel.eq.noDispersion )then
+      !       updateBA2dOrder2()
+      !     else
+      !       ! updateBAGDM2dOrder2()
+      !       ! updateBAGDM(2,2,rectangular)
+      !      if( useOpt )then
+      !        if( useSuperGrid.eq.0  ) then
+      !          updateBAGDMOpt(2,2,rectangular,,,)
+      !         else
+      !          ! --- SUPERGRID ---
+      !          write(*,'(" USE SUPERGRID...")' )
+      !          updateBAGDMOpt(2,2,rectangular,etax(i1)*,etay(i2)*,etaz(i3)*)
+      !         end if
+      !      else 
+      !        updateBAGDM(2,2,rectangular)
+      !      end if 
+          end if
         ! End if rectnagular 
        else
        end if

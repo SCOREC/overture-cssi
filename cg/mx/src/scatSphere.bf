@@ -1301,6 +1301,8 @@
         write(*,'("         computeMagneticField=",l5)') computeMagneticField 
         write(*,'("         computeIncidentField=",i2)') computeIncidentField
         write(*,'(" scatDispSphere: ex,ey,ez, hx,hy,hz =",6i3)') ex,ey,ez, hx,hy,hz
+        write(*,'(" scatDispSphere: e1,e2,e3, h1,h2,h3 =",6i3)') e1,e2,e3, h1,h2,h3
+        write(*,'("   Outside    eta0 =",2e12.3)') real(eta0),imag(eta0)
         write(*,'("   Outside epsHat0 =",2e12.3)') epsHat0r, epsHat0i 
         write(*,'("   Outside  muHat0 =",2e12.3)') muHat0r, muHat0i 
         write(*,'("   Inside: epsHat1 =",2e12.3)') epsHat1r, epsHat1i 
@@ -1523,8 +1525,8 @@
           ! kr    =k*r       
           betar = beta0*r       
           if( computeIncidentField.eq.1 )then 
-            Einc = exp(-sc*beta0*ai*z)  !  incident E 
-            Hinc = (1./eta0)*Einc   ! incident H 
+            Einc = exp(-sc*beta0*ai*z)  ! incident E 
+            Hinc = (1./eta0)*Einc       ! incident H 
           end if
         else
           ! kr    = am*k*r

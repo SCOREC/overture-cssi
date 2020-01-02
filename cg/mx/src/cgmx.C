@@ -77,6 +77,7 @@ main(int argc, char *argv[])
   aString commandFileName="";
   aString line;
   int len=0;
+  int & numberOfParallelGhost= solver.dbase.get<int>("numberOfParallelGhost");
   
   if( argc > 1 )
   { // look at arguments for "noplot" or some other name
@@ -86,7 +87,20 @@ main(int argc, char *argv[])
       // printF(" parse input: argv[%i]=%s\n",i,argv[i]);
       
       if( line=="noplot" )
+      {
         plotOption=FALSE;
+      }
+      else if( (len=line.matches("-numberOfParallelGhost=")) )
+      {
+        sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
+	printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
+      }
+      else if( (len=line.matches("-numParallelGhost=")) )
+      {
+        sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
+	printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
+      }
+
       else if( len=line.matches("-nx=") )
       {
 	sScanF(line(len,line.length()-1),"%i",&solver.nx[0]);
@@ -136,7 +150,7 @@ main(int argc, char *argv[])
 	}
         else
 	{
-	  printF("**ERROR** unknown bc option\n");
+	  // printF("**ERROR** unknown bc option\n");
 	}
       }
       else if( len=line.matches("-noplot") )
@@ -317,8 +331,8 @@ main(int argc, char *argv[])
   
   #ifdef USE_PPP
     // On Parallel machines always add at least this many ghost lines on local arrays
-    const int numGhost=2;
-    MappedGrid::setMinimumNumberOfDistributedGhostLines(numGhost);
+    printF("cgmx: Seting numberOfParallelGhost=%d\n",numberOfParallelGhost);
+    MappedGrid::setMinimumNumberOfDistributedGhostLines(numberOfParallelGhost);
   #endif
  
   if( solver.gridType==Maxwell::unknown )

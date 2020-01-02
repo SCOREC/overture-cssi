@@ -124,6 +124,28 @@ operator =( const SphereMapping & X )
 }
 
 
+// ======================================================================================
+/// \brief Set the mapping to be a surface or volume mapping
+// ======================================================================================
+int SphereMapping::
+setIsSurface( bool isSurface )
+{
+
+  if( isSurface && domainDimension==3 )
+  {
+    setDomainDimension(2);
+    mappingHasChanged();
+  }
+  else if( !isSurface && domainDimension==3 )
+  {
+    setDomainDimension(3);
+    mappingHasChanged();
+  }
+
+  return 0;
+}
+
+
 int SphereMapping::
 setOrigin(const real & x0_ /* =.0 */, 
 	  const real & y0_ /* =.0 */, 

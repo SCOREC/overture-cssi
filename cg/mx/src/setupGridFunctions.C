@@ -44,11 +44,42 @@ setupGridFunctions()
   const int & solveForAllFields = dbase.get<int>("solveForAllFields");
   printF(" solveForAllFields=%i, solveForMagneticField=%i\n",(int)solveForAllFields,(int)solveForMagneticField);
   
+  const int & np = dbase.get<int>("np"); // number of processors 
+
+  if( np > 1  )
+  {
+    // --- make sure there are enough parallel ghost points ---
+    
+    const int & numberOfParallelGhost = dbase.get<int>("numberOfParallelGhost");  // number of parallel ghost points 
+    int numParGhostNeeded = orderOfAccuracyInSpace/2;
+
+    if( method==bamx && artificialDissipation>0. ) numParGhostNeeded++;
+
+    const int useSosupDissipation = parameters.dbase.get<int>("useSosupDissipation");
+    if( method==nfdtd && useSosupDissipation ) numParGhostNeeded++;
+
+    if( numParGhostNeeded > numberOfParallelGhost )
+    {
+      printF("CgMx:ERROR: Not enough parallel ghost points. Current=%d\n",numberOfParallelGhost);
+      printF("     orderOfAccuracyInSpace=%d requires %d ghost.\n",orderOfAccuracyInSpace,orderOfAccuracyInSpace/2);
+      if( method==bamx && artificialDissipation>0. )
+	printF(" Method BAMX + dissipation requires 1 additional parallel ghost.\n");
+      if( method==nfdtd && useSosupDissipation )
+	printF(" Method NFDTD + sosup dissipation requires 1 additional parallel ghost.\n");
+
+      printF("Add the cgmx command line option \"-numberOfParallelGhost=%d\" \n",numParGhostNeeded);
+      OV_ABORT("ERROR");
+    }
+  }
   
+
+
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
   const int numberOfDimensions = cg.numberOfDimensions();
 
+  parameters.dbase.get<int>("numberOfDimensions")=numberOfDimensions;
+  
   int grid,side,axis;
   for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
@@ -771,57 +802,55 @@ setupGridFunctions()
 	
       for( int n=0; n<numberOfTimeLevels; n++ )
       {
+        cgfields[n].updateToMatchGrid(cg,all,all,all,numberOfComponents);
+
         // do this for now: (keep cgfields array for now)
         gf[n].cg.reference(cg);
         gf[n].u.reference(cgfields[n]);
         gf[n].setParameters(parameters);
 
-        if( TRUE || numberOfDomains==1 || dispersionModel==noDispersion )
-        {
-          cgfields[n].updateToMatchGrid(cg,all,all,all,numberOfComponents);
-        }
-        else
-        {
-          // ---- Allocate grid functions for the dispersive model ----
-          // Different domains will have possibly different numbers of components since 
-          //    each domain can have a different number of polarization vectors 
+        // else
+        // {
+        //   // ---- Allocate grid functions for the dispersive model ----
+        //   // Different domains will have possibly different numbers of components since 
+        //   //    each domain can have a different number of polarization vectors 
 
-          // first allocate with minimal number of components
-          cgfields[n].updateToMatchGrid(cg,all,all,all,numberOfComponents);
+        //   // first allocate with minimal number of components
+        //   cgfields[n].updateToMatchGrid(cg,all,all,all,numberOfComponents);
 
- 	  for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-          {
-            const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-            const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+ 	//   for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+        //   {
+        //     const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+        //     const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
 
-            if( numberOfPolarizationVectors==0 )
-            {
-              printF(" Domain %i (%s) number of polarization vectors=%i, numberOfComponents=%i\n",
-                     domain,(const char*)cg.getDomainName(domain),numberOfPolarizationVectors,numberOfComponents);
+        //     if( numberOfPolarizationVectors==0 )
+        //     {
+        //       printF(" Domain %i (%s) number of polarization vectors=%i, numberOfComponents=%i\n",
+        //              domain,(const char*)cg.getDomainName(domain),numberOfPolarizationVectors,numberOfComponents);
 
-            }
-            else if( numberOfPolarizationVectors>0 )
-            {
-              const int numComp = numberOfComponents + numberOfDimensions*numberOfPolarizationVectors;
-              printF(" Domain %i (%s) number of polarization vectors=%i, --> numComp=%i\n",
-                     domain,(const char*)cg.getDomainName(domain),numberOfPolarizationVectors,numComp);
+        //     }
+        //     else if( numberOfPolarizationVectors>0 )
+        //     {
+        //       const int numComp = numberOfComponents + numberOfDimensions*numberOfPolarizationVectors;
+        //       printF(" Domain %i (%s) number of polarization vectors=%i, --> numComp=%i\n",
+        //              domain,(const char*)cg.getDomainName(domain),numberOfPolarizationVectors,numComp);
 
-              for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-              {
-                if( cg.domainNumber(grid)==domain )
-                {
-                  realMappedGridFunction & ud = cgfields[n][grid];
-                  ud.updateToMatchGrid(cg[grid],all,all,all,numComp);
-                }
-              }
-            }
+        //       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        //       {
+        //         if( cg.domainNumber(grid)==domain )
+        //         {
+        //           realMappedGridFunction & ud = cgfields[n][grid];
+        //           ud.updateToMatchGrid(cg[grid],all,all,all,numComp);
+        //         }
+        //       }
+        //     }
             
-            // CompositeGrid & cgd = cg.domain[domain];
-            // realCompositeGridFunction & ud = cgfields[n].domain[domain];
-            // ud.updateToMatchGrid(cgd,all,all,all,numberOfComponents);
-          }
+        //     // CompositeGrid & cgd = cg.domain[domain];
+        //     // realCompositeGridFunction & ud = cgfields[n].domain[domain];
+        //     // ud.updateToMatchGrid(cgd,all,all,all,numberOfComponents);
+        //   }
           
-        }
+        // }
         
 	cgfields[n]=0.;
 	    
@@ -1532,6 +1561,9 @@ setupGridFunctions()
     }
     
   }
+
+  // Initialize super-grid absorbing layer functions if needed.
+  buildSuperGrid();
 
   timing(timeForInitialize)+=getCPU()-time0;
 

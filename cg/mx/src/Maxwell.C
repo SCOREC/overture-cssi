@@ -30,7 +30,9 @@ bcName[numberOfBCNames]={
   "abc4",           // future absorbing BC
   "abc5",           // future absorbing BC
   "rbcNonLocal",    // radiation BC, non-local
-  "rbcLocal"        // radiation BC, local
+  "rbcLocal",       // radiation BC, local
+  "characteristic", // characteristic BC
+  "absorbing"       //  absorbing BC, e.g. super-grid
 };
   
 
@@ -59,7 +61,9 @@ Maxwell:: Maxwell()
   debugFile   = fopen("mx.debug","w" );        // Here is the log file
 
   // *** open multiple debug files for each processor ****
-  const int np= max(1,Communication_Manager::numberOfProcessors());
+  int & np = dbase.put<int>("np"); // number of processors 
+   
+  np= max(1,Communication_Manager::numberOfProcessors());
   aString buff;
 #ifndef USE_PPP
   debugFile   = fopen("mx.debug","w" );        // Here is the log file
@@ -450,6 +454,12 @@ Maxwell:: Maxwell()
   dbase.put<RealArray>("polarizationNorm");
   dbase.put<RealArray>("maxErrPolarization");
   
+  //  Super-grid absorbing layer 
+  parameters.dbase.put<int>("useSuperGrid")=false;
+  parameters.dbase.put<real>("superGridWidth")=.2;
+  parameters.dbase.put<int>("absorbingLayerErrorOffset")=5;  // offset from layer width when computing errors
+
+
   // Time history of the forcing is stored here (when needed)
   //    forcingArray[numberOfForcingFunctions] 
   //    forcingArray[fCurrent]  : current forcing
@@ -467,6 +477,8 @@ Maxwell:: Maxwell()
 
   dbase.put<real>("velocityScale")= c0;  // velocity scale 
   dbase.put<real>("lengthScale")  = L0;  // length scale 
+
+  dbase.put<int>("numberOfParallelGhost") = 2;  // number of parallel ghost points 
 
 
   timing.redim(maximumNumberOfTimings);
@@ -496,6 +508,7 @@ Maxwell:: Maxwell()
   timingName[timeForIntensity]                   ="compute intensity";
   timingName[timeForComputingDeltaT]             ="compute dt";
   timingName[timeForGetError]                    ="get errors";
+  timingName[timeForGetNorms]                    ="  get norms";
   timingName[timeForPlotting]                    ="plotting";
   timingName[timeForShowFile]                    ="showFile";
   timingName[timeForWaiting]                     ="waiting (not counted)";
@@ -630,6 +643,16 @@ Maxwell::
   userDefinedForcingCleanup();
   userDefinedInitialConditionsCleanup();
   
+  if( parameters.dbase.has_key("etaxSuperGrid") )
+  {
+    // -- delete super-grid arrays
+    delete [] parameters.dbase.get<RealArray*>("etaxSuperGrid" );
+    delete [] parameters.dbase.get<RealArray*>("etaySuperGrid" );
+    delete [] parameters.dbase.get<RealArray*>("etazSuperGrid" );
+  }
+  
+
+
   fclose(debugFile);
   if( Communication_Manager::numberOfProcessors()>1 )
     fclose(pDebugFile);
@@ -1368,17 +1391,19 @@ buildDissipationParametersDialog(DialogData & dialog )
                           "use variable dissipation",
                           "apply filter",
                           "use sosup dissipation",
+                          "use super-grid absorbing layers",
  			  ""};
   int tbState[20];
   tbState[0] = useVariableDissipation;
   tbState[1] = applyFilter;
   tbState[2]= parameters.dbase.get<int>("useSosupDissipation");
+  tbState[3]= parameters.dbase.get<int>("useSuperGrid");
 
   int numColumns=1;
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
 
   // ----- Text strings ------
-  const int numberOfTextStrings=30;
+  const int numberOfTextStrings=35;
   aString textCommands[numberOfTextStrings];
   aString textLabels[numberOfTextStrings];
   aString textStrings[numberOfTextStrings];
@@ -1434,6 +1459,9 @@ buildDissipationParametersDialog(DialogData & dialog )
   textCommands[nt] = "sosup dissipation frequency";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",sosupDissipationFrequency); nt++; 
 
+  const real & superGridWidth = parameters.dbase.get<real>("superGridWidth");
+  textCommands[nt] = "super-grid width";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",superGridWidth); nt++; 
 
   textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
   dialog.setTextBoxes(textCommands, textLabels, textStrings);
@@ -1876,6 +1904,8 @@ buildPlotOptionsDialog(DialogData & dialog )
 // ==========================================================================================
 {
 
+  const int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+
   // ************** PUSH BUTTONS *****************
   dialog.setOptionMenuColumns(1);
 
@@ -1926,6 +1956,9 @@ buildPlotOptionsDialog(DialogData & dialog )
 
   textCommands[nt] = "pml error offset";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",pmlErrorOffset); nt++; 
+
+  textCommands[nt] = "absorbing layer error offset";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",absorbingLayerErrorOffset); nt++; 
 
   textCommands[nt] = "reference show file:";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s",(const char*)nameOfReferenceShowFile); nt++; 
@@ -2168,6 +2201,10 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & sosupDissipationOption = parameters.dbase.get<int>("sosupDissipationOption");
   int & sosupDissipationFrequency = parameters.dbase.get<int>("sosupDissipationFrequency");
   
+  int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+  real & superGridWidth = parameters.dbase.get<real>("superGridWidth");
+  int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+
   int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
 
   int & solveForAllFields = dbase.get<int>("solveForAllFields");
@@ -2938,6 +2975,11 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( plotOptionsDialog.getTextValue(answer,"intensity option","%i",intensityOption) ){}//
     else if( plotOptionsDialog.getTextValue(answer,"intensity averaging interval","%e (periods)",intensityAveragingInterval) ){}//
     else if( plotOptionsDialog.getTextValue(answer,"pml error offset","%i",pmlErrorOffset) ){}//
+    else if( plotOptionsDialog.getTextValue(answer,"absorbing layer error offset","%i",absorbingLayerErrorOffset) )
+    {
+      printF("Setting absorbingLayerErrorOffset=%d. (This applies to the supergrid absorbing layer)\n",absorbingLayerErrorOffset);
+    }
+    
     else if( plotOptionsDialog.getTextValue(answer,"reference show file:","%s",nameOfReferenceShowFile) ){}//
 
     else if( inputOutputOptionsDialog.getTextValue(answer,"probe frequency","%i",probeFileFrequency) ){}//
@@ -3022,6 +3064,16 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       
     }
 
+    else if(  dissipationParametersDialog.getToggleValue(answer,"use super-grid absorbing layers",useSuperGrid) )
+    {
+      if( useSuperGrid )
+      {
+        printF("Super-grid absorbing layers will be used on all faces with `absorbing' BC's\n");
+      }
+      
+    }
+    
+
     else if( dissipationParametersDialog.getTextValue(answer,"divergence damping","%g",divergenceDamping) ){}//
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in space","%i",orderOfAccuracyInSpace) ){}//
     else if( timeSteppingOptionsDialog.getTextValue(answer,"accuracy in time","%i",orderOfAccuracyInTime) ){}//
@@ -3101,6 +3153,11 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       printF(" sosupDissipationFrequency=%i: apply sosup dissipation every this many steps.\n",
 	     sosupDissipationFrequency);
+    }
+
+    else if( dissipationParametersDialog.getTextValue(answer,"super-grid width","%e",superGridWidth) )
+    {
+      printF(" Setting the superGridWidth=%9.3e.\n",superGridWidth);
     }
 
     else if( answer=="projection solver parameters..." )

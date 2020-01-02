@@ -379,6 +379,9 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
   //                        forcingOption==gaussianChargeSource||
   //                        forcingOption==userDefinedForcingOption );
     
+  // printF("getForcing: t=%9.3e, forcingOption=%d\n",t,(int)forcingOption);
+    
+
     if( !computeForcing )
         return 0;
     
@@ -973,6 +976,7 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                     const int domain = cg.domainNumber(grid);
                     DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
                     const DispersiveMaterialParameters::MaterialTypeEnum materialType =  dmp.getMaterialType();
+                /* ----
           // --- Get the inverse of the BA material matrix ---
                     if( !dbase.has_key("K0Inverse") )
                     {
@@ -984,9 +988,27 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                         Range all;
                         K0i(all,all,0)=K0iTemp;
                     }
+          //  K0i(0:5,0:5,0:numMat-1) holds the inverse of the material matrix: 
                     RealArray & K0i = dbase.get<RealArray>("K0Inverse");
-          // RealArray K0i;
-          // dmp.getBianisotropicMaterialMatrixInverse( K0i );
+                    --- */
+                    if( !dbase.has_key("K0") )
+                    {
+            // -- build the K0(6,6,numberOfMaterialRegions) for TZ forcing 
+                        RealArray & K0 = dbase.put<RealArray>("K0");
+                        K0.redim(6,6,numberOfMaterialRegions);
+                        std::vector<DispersiveMaterialParameters> & dmpVector = 
+                                dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                        printF("get TZ forcing BAMX: numberOfMaterialRegions=%d, dmpVector.size()=%i\n",numberOfMaterialRegions,dmpVector.size());
+                        RealArray K0Temp;
+                        for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+                        {
+                            DispersiveMaterialParameters & dmp = dmpVector[mr];  
+                            dmp.getBianisotropicMaterialMatrix( K0Temp );
+                            K0(all,all,mr)=K0Temp;
+                        }
+                        ::display(K0,"get TZ forcing BAMX: combined Material matrix K0(*,*,*):","%5.2f ");
+                    }
+                    RealArray & K0 = dbase.get<RealArray>("K0");
                     if( option==1 )
                     {
                         uLocal(I1,I2,I3,C)=0.;
@@ -1034,9 +1056,12 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                       	{
                         	  for( int m=0; m<6; m++ )
                         	  {
-                          	    uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
-                            	      K0i(m,0,0)*curl[0] + K0i(m,1,0)*curl[1] + K0i(m,2,0)*curl[2] +
-                            	      K0i(m,3,0)*curl[3] + K0i(m,4,0)*curl[4] + K0i(m,5,0)*curl[5] );
+        	    // uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
+        	    //   K0i(m,0,0)*curl[0] + K0i(m,1,0)*curl[1] + K0i(m,2,0)*curl[2] +
+        	    //   K0i(m,3,0)*curl[3] + K0i(m,4,0)*curl[4] + K0i(m,5,0)*curl[5] );
+                          	    uLocal(I1,I2,I3,m) += (
+                            	      K0(m,0,0)*ut(I1,I2,I3,0) + K0(m,1,0)*ut(I1,I2,I3,1) + K0(m,2,0)*ut(I1,I2,I3,2) +
+                            	      K0(m,3,0)*ut(I1,I2,I3,3) + K0(m,4,0)*ut(I1,I2,I3,4) + K0(m,5,0)*ut(I1,I2,I3,5) ) - curl[m];
                         	  }
                       	}
                       	else
@@ -1047,13 +1072,16 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                         	  int i1,i2,i3;
                         	  FOR_3D(i1,i2,i3,I1,I2,I3)
                         	  {
+                          	    const int mr = matMask(i1,i2,i3);
+                          	    assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
                           	    for( int m=0; m<6; m++ )
                           	    {
-                                            const int mr = matMask(i1,i2,i3);
-                            	      assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
-                            	      uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
-                            		K0i(m,0,mr)*curl[0](i1,i2,i3) + K0i(m,1,mr)*curl[1](i1,i2,i3) + K0i(m,2,mr)*curl[2](i1,i2,i3) +
-                            		K0i(m,3,mr)*curl[3](i1,i2,i3) + K0i(m,4,mr)*curl[4](i1,i2,i3) + K0i(m,5,mr)*curl[5](i1,i2,i3) );
+        	      // uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
+        	      // 	K0i(m,0,mr)*curl[0](i1,i2,i3) + K0i(m,1,mr)*curl[1](i1,i2,i3) + K0i(m,2,mr)*curl[2](i1,i2,i3) +
+        	      // 	K0i(m,3,mr)*curl[3](i1,i2,i3) + K0i(m,4,mr)*curl[4](i1,i2,i3) + K0i(m,5,mr)*curl[5](i1,i2,i3) );
+                            	      uLocal(i1,i2,i3,m) += (
+                            		K0(m,0,mr)*ut(i1,i2,i3,0) + K0(m,1,mr)*ut(i1,i2,i3,1) + K0(m,2,mr)*ut(i1,i2,i3,2) +
+                            		K0(m,3,mr)*ut(i1,i2,i3,3) + K0(m,4,mr)*ut(i1,i2,i3,4) + K0(m,5,mr)*ut(i1,i2,i3,5) ) - curl[m](i1,i2,i3);
                           	    }
                         	  }
                       	}
@@ -1061,12 +1089,12 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                             else
                             {
         	// 3x3 Material matrix for TEz polarization
-        	// We use ex=0,ey=1 and hz=5 entries in K0i(0:5,0:5) 
+        	// We use ex=0,ey=1 and hz=5 entries in K0(0:5,0:5) 
                                 Range M=numberOfMaterialRegions;
-                      	RealArray Ki(3,3,numberOfMaterialRegions);
-                      	Ki(0,0,M) = K0i(0,0,M); Ki(0,1,M) = K0i(0,1,M); Ki(0,2,M) = K0i(0,5,M);
-                      	Ki(1,0,M) = K0i(1,0,M); Ki(1,1,M) = K0i(1,1,M); Ki(1,2,M) = K0i(1,5,M);
-                      	Ki(2,0,M) = K0i(5,0,M); Ki(2,1,M) = K0i(5,1,M);	Ki(2,2,M) = K0i(5,5,M);
+                      	RealArray K0p(3,3,numberOfMaterialRegions);
+                      	K0p(0,0,M) = K0(0,0,M); K0p(0,1,M) = K0(0,1,M); K0p(0,2,M) = K0(0,5,M);
+                      	K0p(1,0,M) = K0(1,0,M); K0p(1,1,M) = K0(1,1,M); K0p(1,2,M) = K0(1,5,M);
+                      	K0p(2,0,M) = K0(5,0,M); K0p(2,1,M) = K0(5,1,M); K0p(2,2,M) = K0(5,5,M);
                       	RealArray curl[3];
                                 curl[0] =  uy(I1,I2,I3,hz);
                                 curl[1] = -ux(I1,I2,I3,hz);
@@ -1078,8 +1106,10 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                       	{
                         	  for( int m=0; m<3; m++ )
                         	  {
-                          	    uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
-                            	      Ki(m,0,0)*curl[0] + Ki(m,1,0)*curl[1] + Ki(m,2,0)*curl[2] );
+        	    // uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
+        	    //   Ki(m,0,0)*curl[0] + Ki(m,1,0)*curl[1] + Ki(m,2,0)*curl[2] );
+                          	    uLocal(I1,I2,I3,m) += ( K0p(m,0,0)*ut(I1,I2,I3,0) + K0p(m,1,0)*ut(I1,I2,I3,1) + K0p(m,2,0)*ut(I1,I2,I3,2) )
+                                                	                          - curl[m];
                         	  }
                       	}
                       	else
@@ -1090,12 +1120,14 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                         	  int i1,i2,i3;
                         	  FOR_3D(i1,i2,i3,I1,I2,I3)
                         	  {
+                                        const int mr = matMask(i1,i2,i3);
+                                        assert( mr>=0 && mr<numberOfMaterialRegions ); // ** eventually remove this **
                           	    for( int m=0; m<3; m++ )
                           	    {
-                                            const int mr = matMask(i1,i2,i3);
-                            	      assert( mr>=0 && mr<numberOfMaterialRegions ); // ** eventually remove this **
-                            	      uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
-                            		Ki(m,0,mr)*curl[0](i1,i2,i3) + Ki(m,1,mr)*curl[1](i1,i2,i3) + Ki(m,2,mr)*curl[2](i1,i2,i3) );
+        	      // uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
+        	      //	Ki(m,0,mr)*curl[0](i1,i2,i3) + Ki(m,1,mr)*curl[1](i1,i2,i3) + Ki(m,2,mr)*curl[2](i1,i2,i3) );
+                            	      uLocal(i1,i2,i3,m) += ( K0p(m,0,mr)*ut(i1,i2,i3,0) + K0p(m,1,mr)*ut(i1,i2,i3,1) + K0p(m,2,mr)*ut(i1,i2,i3,2) )
+                                               		                   - curl[m](i1,i2,i3);
                           	    }
                         	  }
                       	}
@@ -1173,9 +1205,12 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                             {
                                 for( int m=0; m<6; m++ )
                                 {
-                                    uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
-                                        K0i(m,0,0)*curl[0] + K0i(m,1,0)*curl[1] + K0i(m,2,0)*curl[2] +
-                                        K0i(m,3,0)*curl[3] + K0i(m,4,0)*curl[4] + K0i(m,5,0)*curl[5] );
+                  // uLocal(I1,I2,I3,m) += ut(I1,I2,I3,m) -(
+                  //   K0i(m,0,0)*curl[0] + K0i(m,1,0)*curl[1] + K0i(m,2,0)*curl[2] +
+                  //   K0i(m,3,0)*curl[3] + K0i(m,4,0)*curl[4] + K0i(m,5,0)*curl[5] );
+                        	  uLocal(I1,I2,I3,m) += (
+                          	    K0(m,0,0)*ut(I1,I2,I3,0) + K0(m,1,0)*ut(I1,I2,I3,1) + K0(m,2,0)*ut(I1,I2,I3,2) +
+                          	    K0(m,3,0)*ut(I1,I2,I3,3) + K0(m,4,0)*ut(I1,I2,I3,4) + K0(m,5,0)*ut(I1,I2,I3,5) ) - curl[m];
                                 }
                             }
                             else
@@ -1186,13 +1221,16 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                                 int i1,i2,i3;
                                 FOR_3D(i1,i2,i3,I1,I2,I3)
                                 {
+                        	  const int mr = matMask(i1,i2,i3);
+                        	  assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
                                     for( int m=0; m<6; m++ )
                                     {
-                                        const int mr = matMask(i1,i2,i3);
-                                        assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
-                                        uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
-                                            K0i(m,0,mr)*curl[0](i1,i2,i3) + K0i(m,1,mr)*curl[1](i1,i2,i3) + K0i(m,2,mr)*curl[2](i1,i2,i3) +
-                                            K0i(m,3,mr)*curl[3](i1,i2,i3) + K0i(m,4,mr)*curl[4](i1,i2,i3) + K0i(m,5,mr)*curl[5](i1,i2,i3) );
+                    // uLocal(i1,i2,i3,m) += ut(i1,i2,i3,m) -(
+                    //   K0i(m,0,mr)*curl[0](i1,i2,i3) + K0i(m,1,mr)*curl[1](i1,i2,i3) + K0i(m,2,mr)*curl[2](i1,i2,i3) +
+                    //   K0i(m,3,mr)*curl[3](i1,i2,i3) + K0i(m,4,mr)*curl[4](i1,i2,i3) + K0i(m,5,mr)*curl[5](i1,i2,i3) );
+                          	    uLocal(i1,i2,i3,m) += (
+                            	      K0(m,0,mr)*ut(i1,i2,i3,0) + K0(m,1,mr)*ut(i1,i2,i3,1) + K0(m,2,mr)*ut(i1,i2,i3,2) +
+                            	      K0(m,3,mr)*ut(i1,i2,i3,3) + K0(m,4,mr)*ut(i1,i2,i3,4) + K0(m,5,mr)*ut(i1,i2,i3,5) ) - curl[m](i1,i2,i3);
                                     }
                                 }
                             }
@@ -1922,7 +1960,14 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
           	    uLocal(Ih1,Ih2,Ih3,hz)=( 2.*Pi*omega*ctH)*f3H;
           	    uLocal(Ie1,Ie2,Ie3,ex)=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
           	    uLocal(Ie1,Ie2,Ie3,ey)=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
-        	  }
+                        if( solveForAllFields )
+                        {
+                            uLocal(Ie1,Ie2,Ie3,ez)=0.;
+                            uLocal(Ih1,Ih2,Ih3,hx)=0.;
+                            uLocal(Ih1,Ih2,Ih3,hy)=0.;
+                        }
+                    }
+                    
 // 	    if( option==0 )
 // 	    {
 // 	      u(I1,I2,I3,hz)+=( 2.*Pi*omega*ct)*f3;
@@ -1951,7 +1996,16 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
           	    uLocal(I1,I2,I3,ex)=( (ze(I1,I2,I3)-z0)-(ye(I1,I2,I3)-y0) )*f3E(I1,I2,I3);
           	    uLocal(I1,I2,I3,ey)=( (xe(I1,I2,I3)-x0)-(ze(I1,I2,I3)-z0) )*f3E(I1,I2,I3);
           	    uLocal(I1,I2,I3,ez)=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
-        	  }
+                        if( method==bamx )
+                        {
+                            OV_ABORT("**GaussianSource: fix me**");
+                        
+                            uLocal(I1,I2,I3,hx)= 0.;
+                            uLocal(I1,I2,I3,hy)= 0.;
+                            uLocal(I1,I2,I3,hz)= 0.; 
+                        }
+                    }
+                    
       	}
         	  
             }
@@ -2008,6 +2062,13 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
             	      U(i1,i2,i3,hz)=( 2.*Pi*omega*ctH)*f3;
             	      U(i1,i2,i3,ex)=(-2.*beta*stE)*yd*f3;
             	      U(i1,i2,i3,ey)=( 2.*beta*stE)*xd*f3;
+                            if( solveForAllFields )
+                            {
+                                U(i1,i2,i3,ez)=0.;
+                                U(i1,i2,i3,hx)=0.;
+                                U(i1,i2,i3,hy)=0.;
+                            }
+
           	    }
         	  
         	  }
@@ -2045,6 +2106,11 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
             	      U(i1,i2,i3,ex)=( zd-yd )*f3;
             	      U(i1,i2,i3,ey)=( xd-zd )*f3;
             	      U(i1,i2,i3,ez)=( yd-xd )*f3;
+                            if( method==bamx )
+                            {
+                                OV_ABORT("**GaussianSource: fix me**");
+                            }
+                            
           	    }
         	  }
       	}

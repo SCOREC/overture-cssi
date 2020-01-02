@@ -290,7 +290,9 @@ saveShow( int current, real t, real dt )
     saveSequencesToShowFile();
 //    #endif
   }
-  showFile.endFrame();  
+
+  // *wdh* 2019/12/07 Comment this out to avoid error at end when saving sequences: (not found in common/src/saveShow.bC)
+  // showFile.endFrame();  
 
   timing(timeForShowFile)+=getCPU()-cpu0;
 }

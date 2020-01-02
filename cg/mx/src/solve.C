@@ -21,6 +21,8 @@ displayBoundaryConditions(FILE *file /* = stdout */)
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
 
+  const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+
   int maxNameLength=3;
   int grid;
   for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -43,7 +45,11 @@ displayBoundaryConditions(FILE *file /* = stdout */)
       int bc=cg[grid].boundaryCondition()(side,axis);
       fPrintF(file,buff,grid,(const char *)cg[grid].getName(),side,axis,bc);
 
-      if( bc > 0 && bc<numberOfBCNames)
+      if( bc==absorbing && useSuperGrid )
+      {
+        fPrintF(file," super-grid absorbing layer.\n");
+      }
+      else if( bc > 0 && bc<numberOfBCNames)
         fPrintF(file," %s \n",(const char*)bcName[bc]);
       else if( bc==0 )
         fPrintF(file," %s \n","none");
@@ -143,6 +149,8 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber, re
   // printF("\n PPPPPPPPPPPPPPPP call outputProbes t=%9.3e gf[current].t=%9.3e PPPPPPPPPPPPPPPPPPP \n\n",t,gf[current].t);
    
   DomainSolver::outputProbes( parameters, gf[current], stepNumber );
+  // DomainSolver::outputProbes( parameters, cgfields[current], stepNumber );
+
 
   // Output any CgMx user defined probes: 
   outputUserDefinedProbes( current, t, dt, stepNumber );
@@ -255,7 +263,12 @@ outputResults( int current, real t, real dt )
   Range C = numberOfComponents;
 
   const int & numberOfErrorComponents= dbase.get<int>("numberOfErrorComponents");
-  int numberToOutput= numberOfErrorComponents+2; // include |Ev| and div(E)
+
+  int numberToOutput;
+  if( numberOfErrorComponents>0 )
+    numberToOutput= numberOfErrorComponents+2; // include |Ev| and div(E)
+  else
+    numberToOutput=numberOfComponents+2;  // include |Ev| and div(E)
 
   const int & solveForAllFields = dbase.get<int>("solveForAllFields");
   if( method==bamx && solveForAllFields )
@@ -276,10 +289,10 @@ outputResults( int current, real t, real dt )
   
 
   if( false )
-    printF("\n ***** outputResults: maximumError.getLength(0)=%i numberOfComponents=%i numberToOutput=%i\n",
-           maximumError.getLength(0),numberOfComponents,numberToOutput);
+    printF("\n ***** outputResults: numberOfErrorComponents=%d, maximumError.getLength(0)=%i numberOfComponents=%i numberToOutput=%i\n",
+           numberOfErrorComponents,maximumError.getLength(0),numberOfComponents,numberToOutput);
   
-  if( maximumError.getLength(0)>= numberOfErrorComponents && myid==0 )
+  if( numberOfErrorComponents> 0 && maximumError.getLength(0)>= numberOfErrorComponents && myid==0 )
   {
     fPrintF(checkFile,"%9.2e %i  ",t,numberToOutput);
     int c;
@@ -324,37 +337,91 @@ outputResults( int current, real t, real dt )
       fPrintF(checkFile,"%i %9.2e %10.3e  ",c,divEMax,gradEMax); // kkc this is actually divEMax and divHMax (divH stored in gradE)
     fPrintF(checkFile,"\n");
 
-
-    // *************************************************************
-    if( computeEnergy )
-    {
-      maximumError(numberOfErrorComponents )=totalEnergy;
-      maximumError(numberOfErrorComponents+1)=totalEnergy-initialTotalEnergy;
-    }
-    
-    // saveSequenceInfo( t, maximumError );
-
   }
-  else if( solutionNorm.getLength(0)>= (numberToOutput-1) && myid<=0 )
+  else
   {
-    for( int fileio=0; fileio<2; fileio++ )
+    // -------------- Write CHECK FILE for case without errors --------
+    fPrintF(checkFile,"%9.2e %i  ",t,numberToOutput);
+    int c=-1;
+    real err,uc;
+    for( int c1=0; c1<numberOfComponents; c1++ )
     {
-      FILE *output = fileio==0 ? logFile : stdout;
-
-      if ( method==nfdtd || method==yee || method==sosup )
-	fPrintF(output,"-->t=%10.4e dt=%8.2e |div(E)|=%8.2e |div(E)|/|grad(E)|=%8.2e, |grad(E)|=%8.2e, max(u):[",
-                t,dt,divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax);
-      else
-	fPrintF(output,"-->t=%10.4e dt=%8.2e |div(E)|=%8.2e |div(H)|=%8.2e, max(u):[",
-                t,dt,divEMax,gradEMax);
-      for( int c=C.getBase(); c<=C.getBound(); c++ )
-	fPrintF(output,"%8.2e,",solutionNorm(c));
-
-      fPrintF(output,"]\n");
-	  
+      c++;
+      err = 0.;
+      uc = solutionNorm(c); 
+      // if( uc<checkFileCutoff(c) ) uc=0.;
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
     }
+
+    // Output vector error in E too (*wdh* March 4, 2018)
+    c++;
+    Range Ec=cg.numberOfDimensions();
+    err = 0.;
+    uc  = max(solutionNorm(Ec));
+    fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+
+    if( method==bamx && solveForAllFields )
+    { // output |Hv| too for bamx 
+      Range Hc(hx,hz);
+      c++;
+      err = 0.;
+      uc  = max(solutionNorm(Hc));
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    }
+  
+    if( dispersionModel != noDispersion )
+    {
+      // output errors in P too: (max value over all domains and all components)
+      c++;
+      err = 0.;
+      uc  = max(polarizationNorm);
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    }
+
+    c++;
+    err=divEMax/max(REAL_MIN*100.,gradEMax);
+    uc=gradEMax;
+    if ( method==nfdtd || method==yee )
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    else
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,divEMax,gradEMax); // kkc this is actually divEMax and divHMax (divH stored in gradE)
+    fPrintF(checkFile,"\n");
+
+
+  }
+  
+
+  // *************************************************************
+  if( computeEnergy )
+  {
+    maximumError(numberOfErrorComponents )=totalEnergy;
+    maximumError(numberOfErrorComponents+1)=totalEnergy-initialTotalEnergy;
   }
 
+
+  if( numberOfErrorComponents==0 )
+  {
+    if( solutionNorm.getLength(0)>= (numberToOutput-1) && myid<=0 )
+    {
+      for( int fileio=0; fileio<2; fileio++ )
+      {
+        FILE *output = fileio==0 ? logFile : stdout;
+
+        if ( method==nfdtd || method==yee || method==sosup )
+          fPrintF(output,"-->t=%10.4e dt=%8.2e |div(E)|=%8.2e |div(E)|/|grad(E)|=%8.2e, |grad(E)|=%8.2e, max(u):[",
+                  t,dt,divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax);
+        else
+          fPrintF(output,"-->t=%10.4e dt=%8.2e |div(E)|=%8.2e |div(H)|=%8.2e, max(u):[",
+                  t,dt,divEMax,gradEMax);
+        for( int c=C.getBase(); c<=C.getBound(); c++ )
+          fPrintF(output,"%8.2e,",solutionNorm(c));
+
+        fPrintF(output,"]\n");
+	  
+      }
+    }
+  }
+  
   // if( maximumError.getLength(0)>= (numberToOutput-1) )
   if( maximumError.getLength(0)>= numberOfErrorComponents )
   {
@@ -382,152 +449,6 @@ solve(GL_GraphicsInterface &gi )
   assert( cgp!=NULL );
   CompositeGrid & cg= *cgp;
 
-  // if( mgp!=NULL )
-  // {
-
-  //   MappedGrid & mg = *mgp;
-
-  //   if( errp==NULL && checkErrors ) 
-  //   {
-  //     // Create a grid function to hold the errors for plotting
-  //     if ( method==nfdtd )
-  //     {
-  //       int numberOfComponents = fields[0].getLength(3);
-  //       errp = new realMappedGridFunction[1];
-  //       errp->updateToMatchGrid(mg,all,all,all,numberOfComponents);
-  //       errp->setName("Ex error",ex);
-  //       errp->setName("Ey error",ey);
-  //       errp->setName("Hz error",hz);
-  //     }
-  //     else
-  //     {
-  //       errp = new realMappedGridFunction[2];
-  //       if ( cg.numberOfDimensions()==2 )
-  //       {
-  //         errp[0].updateToMatchGrid(mg,GridFunctionParameters::edgeCentered,2);
-  //         errp[1].updateToMatchGrid(mg,GridFunctionParameters::cellCentered);
-  //         errp[0].setName("Ex error",ex);
-  //         errp[0].setName("Ey error",ey);
-  //         errp[1].setName("Hz error",hz);
-  //       }
-  //       else
-  //       {
-  //         errp[0].updateToMatchGrid(mg,GridFunctionParameters::edgeCentered,3);
-  //         errp[0].setName("Ex error",ex);
-  //         errp[0].setName("Ey error",ey);
-  //         errp[0].setName("Ez error",ez);
-  //         errp[1].updateToMatchGrid(mg,GridFunctionParameters::faceCenteredAll,3);
-  //         errp[1].setName("Hx error",hx);
-  //         errp[1].setName("Hy error",hy);
-  //         errp[1].setName("Hz error",hz);
-  //       }
-  //     }
-  //   }
-  // }
-  // else
-  // {
-  //   if( checkErrors )//&& cg[0].getGridType()==MappedGrid::structuredGrid )
-  //   {
-  //     if( method==nfdtd || method==yee )
-  //     {
-  //       cgerrp = new realCompositeGridFunction [1];
-  //       int numberOfComponents = cgfields[0][0].getLength(3);
-  //       cgerrp->updateToMatchGrid(*cgp,all,all,all,numberOfComponents);
-	
-  //       if( cg.numberOfDimensions()==2 )
-  //       {
-  //         cgerrp->setName("Ex error",ex);
-  //         cgerrp->setName("Ey error",ey);
-  //         cgerrp->setName("Hz error",hz);
-	  
-  //       }
-  //       else
-  //       {
-  //         if( solveForElectricField )
-  //         {
-  //           cgerrp->setName("Ex error",ex);
-  //           cgerrp->setName("Ey error",ey);
-  //           cgerrp->setName("Ez error",ez);
-  //         }
-  //         if( solveForMagneticField )
-  //         {
-  //           cgerrp->setName("Hx error",hx);
-  //           cgerrp->setName("Hy error",hy);
-  //           cgerrp->setName("Hz error",hz);
-  //         }
-	      
-  //       }
-  //     }
-  //     else if( method==sosup )
-  //     {
-  //       cgerrp = new realCompositeGridFunction [1];
-  //       int numberOfComponents = cgfields[0][0].getLength(3);
-  //       cgerrp->updateToMatchGrid(*cgp,all,all,all,numberOfComponents);
-	
-  //       if( cg.numberOfDimensions()==2 )
-  //       {
-  //         assert( numberOfComponents==6 );
-  //         cgerrp->setName("Ex error",ex);
-  //         cgerrp->setName("Ey error",ey);
-  //         cgerrp->setName("Hz  error",hz );
-  //         cgerrp->setName("Ext error",ext);
-  //         cgerrp->setName("Eyt error",eyt);
-  //         cgerrp->setName("Hzt error",hzt);
-  //       }
-  //       else
-  //       {
-  //         if( solveForElectricField )
-  //         {
-  //           cgerrp->setName("Ex error",ex);
-  //           cgerrp->setName("Ey error",ey);
-  //           cgerrp->setName("Ez error",ez);
-  //           cgerrp->setName("Ext error",ext);
-  //           cgerrp->setName("Eyt error",eyt);
-  //           cgerrp->setName("Ezt error",ezt);
-  //         }
-  //         if( solveForMagneticField )
-  //         {
-  //           cgerrp->setName("Hx error",hx);
-  //           cgerrp->setName("Hy error",hy);
-  //           cgerrp->setName("Hz error",hz);
-  //           cgerrp->setName("Hxt error",hxt);
-  //           cgerrp->setName("Hyt error",hyt);
-  //           cgerrp->setName("Hzt error",hzt);
-  //         }
-	      
-  //       }
-  //     }
-  //     else
-  //     {
-  //       cgerrp = new realCompositeGridFunction [2];
-  //       if ( cg.numberOfDimensions()==2 )
-  //       {
-  //         cgerrp[0].updateToMatchGrid(*cgp,GridFunctionParameters::edgeCentered,2);
-  //         cgerrp[1].updateToMatchGrid(*cgp,GridFunctionParameters::cellCentered);
-  //         cgerrp[0].setName("Ex error",ex);
-  //         cgerrp[0].setName("Ey error",ey);
-  //         cgerrp[1].setName("Hz error",hz);	  
-  //       }
-  //       else
-  //       {
-  //         cgerrp[0].updateToMatchGrid(*cgp,GridFunctionParameters::edgeCentered,3);
-  //         cgerrp[1].updateToMatchGrid(*cgp,GridFunctionParameters::faceCentered,3);
-
-  //         cgerrp[0].setName("Ex error",ex);
-  //         cgerrp[0].setName("Ey error",ey);
-  //         cgerrp[0].setName("Ez error",ez);
-	      
-  //         cgerrp[1].setName("Hx error",hx);
-  //         cgerrp[1].setName("Hy error",hy);
-  //         cgerrp[1].setName("Hz error",hz);
-
-  //       }
-  //     }
-  //   }
-    
-  // }
-    
-  
   // realMappedGridFunction & err = *errp;
 
   real t = 0.;

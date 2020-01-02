@@ -15,13 +15,14 @@ twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee111.o
 # dielectric sphere tests:
 #
 dielectricSphereFD22.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order2 -kx=1 -eps1=.25 -eps2=1.0 -method=fd -tp=.01 -tf=.01 -go=go 
-dielectricSphereSosup22.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order2 -kx=1 -eps1=.25 -eps2=1.0 -method=sosup -tp=.01 -tf=.01 -go=go 
+# -- Dec 7, 2019 -- remove sosup tests -- I don't think we will use it anymore 
+# no-sosup dielectricSphereSosup22.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order2 -kx=1 -eps1=.25 -eps2=1.0 -method=sosup -tp=.01 -tf=.01 -go=go 
 dielectricSphereFD44.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order4.ng3 -kx=1 -eps1=.25 -eps2=1.0 -method=fd -tp=.01 -tf=.01 -go=go
-dielectricSphereSosup44.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order4.ng3 -kx=1 -eps1=.25 -eps2=1.0 -method=sosup -tp=.01 -tf=.01 -go=go
+# no-sosup dielectricSphereSosup44.check ../runs/dielectricCyl/dielectricCyl.cmd -cyl=0 -g=solidSphereInABoxe2.order4.ng3 -kx=1 -eps1=.25 -eps2=1.0 -method=sosup -tp=.01 -tf=.01 -go=go
 #
 # More sosup tests: 
 #
-sq4sosup.check ../runs/tz/tz.cmd -g=square20.order4.ng3 -degreex=3 -degreet=3 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
+# no-sosup sq4sosup.check ../runs/tz/tz.cmd -g=square20.order4.ng3 -degreex=3 -degreet=3 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
 # turn off order 6 test for now since we no-longer compile this
 # sq6sosup.check ../runs/tz/tz.cmd -g=square20.order6.ng4 -degreex=5 -degreet=5 -method=sosup -tf=.1 -tp=.1 -bc=d -go=go
 #
