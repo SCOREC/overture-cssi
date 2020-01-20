@@ -32,7 +32,7 @@
 #    ogen noplot twoBoxesInterface -factor=1 -order=4 -angle=45 -name="twoBoxesInterfaceRotated1.order4.hdf" 
 # 
 #**************************************************************************
-$prefix="twoBoxesInterface"; 
+$prefix="twoBoxesInterface"; $name=""; 
 $order=2; $bc="d"; 
 $factor=-1; $xFactor=1; $yFactor=1; $zFactor=1; 
 $xFactorScale=1.; # scale number of grid lines in x by this factor
@@ -70,6 +70,7 @@ if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $factor>0 && $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 if( $name eq "" ){ $name = $prefix . "$interp$xFactor$yFactor$zFactor" . $suffix . ".hdf"; }
+# printf("name=[$name]\n"); 
 if( $bc eq "p" ){ $bcLeft=$bclp; $bcRight=$bcrp; }
 # 
 # 

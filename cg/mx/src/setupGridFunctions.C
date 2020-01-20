@@ -588,7 +588,8 @@ setupGridFunctions()
       int & extrapolateInterpolationNeighbours = dbase.get<int>("extrapolateInterpolationNeighbours");
       if( dw > orderOfAccuracyInSpace+1 )
         extrapolateInterpolationNeighbours=false; // *wdh* added this check, June 15, 2016
-      else if( useSosupDissipation )
+      else if( useSosupDissipation ||
+	      ( method==bamx && artificialDissipation>0. ) )
       {
         extrapolateInterpolationNeighbours=true;
         // Sosup dissipation requires extra ghost points *wdh* June 18, 2018
@@ -685,8 +686,6 @@ setupGridFunctions()
 	  {
             // BA GDM equations
             assert( domain==0 );
-	    int grid=0;
-	    
 
 
 	    // max number of extries on a grid (for TZ) 
@@ -720,8 +719,10 @@ setupGridFunctions()
 	      numberOfGDMTerms += sum(Np);
 	    }
 	    
-            // fix me for more that one grid 
-	    totalNumberOfPolarizationComponents(grid)=numberOfGDMTerms;
+            // *****************fix me for more that one grid 
+	    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+	      totalNumberOfPolarizationComponents(grid)=numberOfGDMTerms;
+
 	    maxNumberOfPolarizationComponents=numberOfGDMTerms;
 
 	    printF("setupGF: BA-GDM: numberOfMaterialRegions=%d: numberOfGDMTerms=%d (total)\n",
@@ -1316,6 +1317,17 @@ setupGridFunctions()
   {
     fn = new realArray [numberOfFunctions*numberOfComponentGrids];
 
+    // *wdh* Jan 6, 2017 Range C(ex,hz);
+    int numberOfComponents=cgfields[0][0].getLength(3);
+    if( dispersionModel != noDispersion && method==bamx && timeSteppingMethod==rungeKutta )
+    {
+      // FOR BAMX + RK we store time derivatives of p,q in fn 
+      const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+	
+     // ** FIX ME FOR more than one grid --- NOT ALL GRIDS HAVE ALL POLARIZATION VECTORS 
+      numberOfComponents += maxNumberOfPolarizationComponents*2; 
+    }
+
     for( int grid=0; grid<numberOfComponentGrids; grid++ )
     {
       MappedGrid & mg = cg[grid];
@@ -1326,19 +1338,7 @@ setupGridFunctions()
       Index I1,I2,I3;
       getIndex(mg.dimension(),I1,I2,I3);
 
-      // *wdh* Jan 6, 2017 Range C(ex,hz);
-      int numberOfComponents=cgfields[0][0].getLength(3);
-      if( dispersionModel != noDispersion && method==bamx && timeSteppingMethod==rungeKutta )
-      {
-        // FOR BAMX + RK we store time derivatives of p,q in fn 
-        const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-        assert( cg.numberOfComponentGrids()==1 );
-	
-        numberOfComponents += maxNumberOfPolarizationComponents*2; // ** FIX ME FOR more than one grid 
-      }
-      
-
-      Range C = numberOfComponents;
+      Range C = numberOfComponents;   
 
       #define FN(m) fn[m+numberOfFunctions*(grid)]
       for( int m=0; m<numberOfFunctions; m++ )

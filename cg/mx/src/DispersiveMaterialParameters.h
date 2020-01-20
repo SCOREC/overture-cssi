@@ -55,6 +55,9 @@ public:
   // Evaluate the eigenvalues for a BA material 
   int evalBianisotropicEigenValues( int numberOfDimensions, real & reLambda, real & imLambda );
 
+  // compute the time-stepping eigenvalue for the BA equations 
+  int evalBianisotropicTimeSteppingEigenvalue( MappedGrid & mg, const int orderOfAccuracy, real & reLambda, real & imLambda );
+
   // Evaluate the real and imaginary parts of the BA material tensor, K(iBA,jBA) iBA=1,2,3,  jBA=1,2,3
   int evalMaterialTensor( const real omega, real & kHatr, real & kHati, const int iBA, const int jBA ) const;
 

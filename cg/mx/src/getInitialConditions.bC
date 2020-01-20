@@ -526,7 +526,9 @@ initializePlaneMaterialInterface()
 
   if( method==bamx )
   {
+    // printF("\n @@@@@@@@ BA MAXWELL SET IC's TZ for grid=%d, localDispersionModel=%d\n",grid,(int)localDispersionModel);
 
+    // =================== BA MAXWELL ===============================
     Index I1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
     Index I2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
     Index I3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
@@ -548,25 +550,14 @@ initializePlaneMaterialInterface()
       
       Range P(pcStart,pcEnd);
       Range Pc=numPolarizationTerms;
-      if( false )
-      {
-	RealArray temp(I1,I2,I3,P);
-      
-	e.gd( temp ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,P,tE);
-	::display(temp,"temp","%9.2e");
-      
-	pLocal(I1,I2,I3,Pc)=temp(I1,I2,I3,P);
-      }
-      else
-      {
-	// We need to do this: 
-	pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),P);
-	e.gd( pLocal ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,P,tE);
-	pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),Pc);
-      }
+      pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),P);
+
+      e.gd( pLocal ,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,P,tE);
+
+      pLocal.reshape(pLocal.dimension(0),pLocal.dimension(1),pLocal.dimension(2),Pc);
       
       // printF("Assign polarization components: [%d,%d]\n",pcStart,pcEnd);
-      // ::display(pLocal,"pLocal","%9.2e");
+      // ::display(pLocal,sPrintF("TZ:IC: pLocal on grid=%d",grid),"%5.2f ");
       
 
     }

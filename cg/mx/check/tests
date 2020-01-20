@@ -10,7 +10,7 @@ cic.planeWaveBC
 boxtz
 cyleigen
 curvedInterface     # two materials - dielectric cylinder
-twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee111.order4 -eps2=.25 -tf=.2 -tp=.1 -ic=tz -bc=d -diss=0. -left=leftBox -right=rightBox -debug=1 -degreex=4 -degreet=4 -go=go
+twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4 -eps2=.25 -tf=.2 -tp=.1 -ic=tz -bc=d -diss=0. -left=leftBox -right=rightBox -debug=1 -degreex=4 -degreet=4 -go=go
 #
 # dielectric sphere tests:
 #
@@ -60,12 +60,12 @@ nonBoxOrder4GDM.check ../runs/planeWave/planeWave.cmd -g=nonBox1.order4.ng3 -use
 #
 # BAMX tests
 #
-baPlaneWaveAir.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go 
+baPlaneWaveAir.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.2 -tp=.2 -solveForAllFields=1 -diss=1 -go=go 
 # 
-baPlaneWaveAirBox.check ../runs/planeWave/planeWave.cmd -g=box1.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go 
+baPlaneWaveAirBox.check ../runs/planeWave/planeWave.cmd -g=box1.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=../runs/ba/baAir.txt -tf=.2 -tp=.2 -solveForAllFields=1 -diss=1 -go=go 
 #
-baPlaneWaveGDM.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=../runs/ba/baMatGDMgenND.txt -tf=.1 -tp=.1 -solveForAllFields=1 -diss=1 -go=go
+baPlaneWaveGDM.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=1 -ky=1 -method=bamx -dm=gdm -drOption=computeWaveNumber -ts=rk4 -matFile=../runs/ba/baMatGDMgenND.txt -tf=.2 -tp=.2 -solveForAllFields=1 -diss=1 -go=go
 #
-baScatTwoMat.check ../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go
+baScatTwoMat.check ../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go
 # 
-baScatTwoMatBox.check ../runs/ba/baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=go
+baScatTwoMatBox.check ../runs/ba/baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/ba/baIsoEps2.txt -matFile2=../runs/ba/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go

@@ -36,7 +36,7 @@ nonBox1.order4.ng3.hdf:
 innerOuter4.order4.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/innerOuter -factor=4 -order=4 -deltaRad=.5 -interp=e -name="innerOuter4.order4.hdf"
 
-twoBoxesInterfacee111.order4.hdf:
+twoBoxesInterfacee1.order4.hdf:
 	$(Overture)/bin/ogen noplot $(Overture)/sampleGrids/twoBoxesInterface -order=4 -interp=e -factor=1
 
 square20.order2.hdf:
@@ -65,7 +65,7 @@ solidSphereInABoxe2.order4.ng3.hdf:
 # build grids that are used by the regression tests (and not already in Overture/sampleGrids)
 buildGrids: tube1.order4.hdf square16.order4.hdf cici1.order4.hdf box16.order4.hdf nonBox1.order4.ng3.hdf box1.order4.ng3.hdf \
             innerOuter4.order4.hdf \
-            twoBoxesInterfacee111.order4.hdf square20.order4.ng3.hdf square20.order6.ng4.hdf \
+            twoBoxesInterfacee1.order4.hdf square20.order4.ng3.hdf square20.order6.ng4.hdf \
             solidSphereInABoxe2.order2.hdf solidSphereInABoxe2.order4.ng3.hdf square20.order2.hdf \
             nonSquare20.order2.hdf nonSquare20.order4.ng3.hdf box1.order2.hdf nonBox1.order2.hdf
 	touch buildGrids

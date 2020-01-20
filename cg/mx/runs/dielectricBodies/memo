@@ -1,3 +1,23 @@
+********************************
+********  Tue Jan 14, 2020
+
+FIX BUG with integral probe, add option to average integral by area.
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2. -xRightProbe=2. -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+********************************
+********  Tue Jan 14, 2020
+
+check integral probe -- Derek's bug with number of components ?
+
+
+Gaussian pulse -- start outside domain ? 
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-3.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2. -xRightProbe=2. -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2. -xRightProbe=2. -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
 ************************************
 *** Mon Dec 9, 2019
 

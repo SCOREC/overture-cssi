@@ -42,7 +42,20 @@ rectanglenp:
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=16
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=32
 
-# square for the domain [-1,1]x[-1,1]
+bigRect:
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=2
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=4
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=8
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=16
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=32
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -numGhost=3 -order=4 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=2
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -numGhost=3 -order=4 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=4
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -numGhost=3 -order=4 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=8
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -numGhost=3 -order=4 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=16
+	 $(ogen) -noplot rectangleArg -prefix=bigRect -numGhost=3 -order=4 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=32
+
+
+# (centered) square for the domain [-1,1]x[-1,1]
 cSquare:
 	 $(ogen) -noplot rectangleArg -prefix=cSquaree -order=2 -xa=-1 -xb=1 -ya=-1 -yb=1 -factor=2
 	 $(ogen) -noplot rectangleArg -prefix=cSquaree -order=2 -xa=-1 -xb=1 -ya=-1 -yb=1 -factor=4
@@ -107,3 +120,28 @@ cbox:
 	$(ogen) -noplot boxArg -prefix=cboxe -xa=-2 -xb=2 -ya=-2 -yb=2 -za=-2 -zb=2 -numGhost=3 -order=4 -factor=4 
 	$(ogen) -noplot boxArg -prefix=cboxe -xa=-2 -xb=2 -ya=-2 -yb=2 -za=-2 -zb=2 -numGhost=3 -order=4 -factor=8 
 	$(ogen) -noplot boxArg -prefix=cboxe -xa=-2 -xb=2 -ya=-2 -yb=2 -za=-2 -zb=2 -numGhost=3 -order=4 -factor=16
+
+
+# for BA scattering from a sphere 
+cboxSmall:
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=1 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=2 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=4 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=8 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -order=2 -factor=16
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -numGhost=3 -order=4 -factor=1 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -numGhost=3 -order=4 -factor=2 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -numGhost=3 -order=4 -factor=4 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -numGhost=3 -order=4 -factor=8 
+	$(ogen) -noplot boxArg -prefix=cboxSmalle -xa=-.5 -xb=.5 -ya=-.5 -yb=.5 -za=-.5 -zb=.5 -numGhost=3 -order=4 -factor=16
+
+# rectangle with refinements
+rectRefine:
+	$(ogen) -noplot rectRefine -order=2 -factor=1
+	$(ogen) -noplot rectRefine -order=2 -factor=2
+	$(ogen) -noplot rectRefine -order=2 -factor=4
+	$(ogen) -noplot rectRefine -order=2 -factor=8
+	$(ogen) -noplot rectRefine -order=4 -factor=1
+	$(ogen) -noplot rectRefine -order=4 -factor=2
+	$(ogen) -noplot rectRefine -order=4 -factor=4
+	$(ogen) -noplot rectRefine -order=4 -factor=8

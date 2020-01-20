@@ -1,3 +1,245 @@
+
+WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=sice4.order4.hdf
+-m=1 -n=1 -tp=.5 -tf=2 -go=go
+
+
+********************************
+********  Tue Jan 14, 2020
+
+check integral probe
+
+intProbeName
+
+$cgmx -noplot baScat -g=square32.order4.ng3 -method=bamx -dm=gdm -matFile=baAirGDM.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=50 -diss=1 -intProbeName=integralProbe -go=og
+
+
+
+********************************
+********  Sun Jan 12, 2020
+
+++++ START ON MULTIPLE GRIDS
+
+**BUGS fixed ... EXACT
+cgmx -noplot tz -g=rectRefine1.order2 -degreex=2 -degreet=1 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDM1.txt -diss=0 -tp=.01 -tf=.5 -solveForAllFields=1 -bc=d -go=og
+
+EXACT: 
+cgmx -noplot tz -g=rectRefine1.order2 -degreex=2 -degreet=1 -method=bamx -ts=rk4 -matFile=baIsoEps2.txt -diss=0 -tp=.01 -tf=.5 -solveForAllFields=1 -bc=d -go=og
+
+
+
+GDM- **TROUBLE** inner need not updated ??? --. *FIXED* 
+cgmx -noplot planeWave -g=rectRefine4.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -dm=gdm -matFile=baMatGDM.txt -tf=50 -tp=.01 -solveForAllFields=1 -diss=1 -drOption=computeWaveNumber -go=og 
+
+ORDER=4 -- add extra ghost by default 
+cgmx -noplot planeWave -g=rectRefine4.order4 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps2.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og 
+
+
+-diss=1 : extrapolate interp neighbours
+cgmx -noplot planeWave -g=rectRefine4.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps2.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=1 -go=og 
+
+-diss=0 OK: 
+cgmx -noplot planeWave -g=rectRefine4.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps2.txt -tf=50 -tp=.1 -solveForAllFields=1 -diss=0 -go=og 
+
+
+
++++++ check NEW TIME-STEP 
+
+unstable at cfl=1.1
+cgmx -noplot planeWave -g=square128.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps1Eps9Eps9.txt -modeGDM=-1 -tf=50 -tp=1 -solveForAllFields=1 -drOption=computeWaveNumber -diss=1 -go=og -cfl=1.1
+
+cgmx noplot baScat.cmd -g=box4.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=og
+
+
+
+********************************
+********  Sat Jan 11, 2020
+
+FIX TIME-STEP FOR BA
+
+3D case for check: -- much bigger dt found: 
+
+cgmx noplot baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -go=og
+
+OLD: 
+>>> Cgmx:BAMX: t=1.00e-01 dt=2.5e-02 TS=RK4 GDM F6=1.0 |div(D)|/|grad(D)|=5.40e-01 (=4.05e+00/7.51e+00) |div(B)|/|grad(B)|=8.10e-01 (=4.71e+00/5.81e+00) 4 steps mem=46.8(Mb) cpu=1.59e+01(s)
+                t=1.00e-01 dt=2.5e-02 max ], max (u):[1.19e-01,6.34e-01,7.07e-03,5.35e-02,2.04e-03,7.91e-01,] (4 steps)
+
+
+
+
+This case should under-estimate time step using max-eig - wave speeds cx=1, cy=1/3: 
+
+cgmx -noplot planeWave -g=square128.order2 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps1Eps9Eps9.txt -modeGDM=-1 -tf=50 -tp=.1 -solveForAllFields=1 -drOption=computeWaveNumber -diss=1 -go=og 
+
+cgmx -noplot planeWave -g=square128.order4.ng3 -kx=1 -ky=1 -method=bamx -ts=rk4 -matFile=baIsoEps1Eps9Eps9.txt -modeGDM=-1 -tf=50 -tp=.1 -solveForAllFields=1 -drOption=computeWaveNumber -diss=1 -go=og 
+
+
+--- numx = 21
+
+lambda: min=-1.000e+00 max=1.000e+00 (max-Im part=0.00e+00 -- zero=Hyperbolic)
+CgMx:computeTimeStep: BA material region 0 : c=1.000e+00 (imLambda=0.000e+00) cMax=1.000e+00
+
+evalBianisotropicTimeSteppingEigenvalue lambda: min=-1.846e+02 max=1.846e+02 (max-Im part=0.00e+00 -- zero=Hyperbolic)
+ reLambda=1.846e+02 occured at xi=[1.72788,1.72788,0] DHat=[175.158,175.158,0]
+
+NEW: estimated dt= cfl*rk4ImBound/reLambdaTSE = 1.365e-02
+***** getTimeStep: Correct for art. dissipation: new dt=3.323e-03 (old = 3.516e-03, new/old=0.95)
+ computeTimeStep: grid=0 c=1.00e+00, dtg=6.65e-03 min-dx=7.81e-03 max-dx=7.81e-03
+==== computeTimeStep: deltaT=6.65e-03
+
+
+----- numx=11 
+
+lambda: min=-1.000e+00 max=1.000e+00 (max-Im part=0.00e+00 -- zero=Hyperbolic)
+CgMx:computeTimeStep: BA material region 0 : c=1.000e+00 (imLambda=0.000e+00) cMax=1.000e+00
+
+evalBianisotropicTimeSteppingEigenvalue lambda: min=-1.843e+02 max=1.843e+02 (max-Im part=0.00e+00 -- zero=Hyperbolic)
+ reLambda=1.843e+02 occured at xi=[1.88496,1.88496,0] DHat=[174.853,174.853,0]
+
+NEW: estimated dt= cfl*rk4ImBound/reLambdaTSE = 1.367e-02
+***** getTimeStep: Correct for art. dissipation: new dt=3.323e-03 (old = 3.516e-03, new/old=0.95)
+ computeTimeStep: grid=0 c=1.00e+00, dtg=6.65e-03 min-dx=7.81e-03 max-dx=7.81e-03
+==== computeTimeStep: deltaT=6.65e-03
+
+
+
+
+********************************
+********  Wed Jan 8, 2020
+
+START ON BA INTERFACE SURFACE WAVE 
+
+surface wave -- add cases
+TIME-PERIODIC -- do NOT use periodic grid 
+cgmx -noplot baInterface -g=bigRect8.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.1 -ic=isw -caseName=surfaceWaveCase1TimePeriodic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveTimePeriodicG8.show -go=og
+
+SPACE PERIODIC 
+cgmx -noplot baInterface -g=rect8np.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.1 -ic=isw -caseName=surfaceWaveCase1SpacePeriodic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+
+TEST dirichlet BC --> Make material box big enough to include ghost 
+cgmx -noplot baInterface -g=rect8np.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.1 -ic=isw -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+
+cgmx -noplot baInterface -g=recte8.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -ic=isw -bc=d -diss=1 -tp=.1 -tf=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveG32.show -go=og
+
+cgmx -noplot baInterface -g=rect32p.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -ic=isw -bc=d -diss=1 -tp=.1 -tf=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveG32.show -go=og
+
+cgmx -noplot baInterface -g=rect16p.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -ic=isw -bc=d -diss=1 -tp=.1 -tf=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveG16.show -go=og
+
+G32: 
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=24 P-norm=1.237e+00 max-err = 6.216e-02
+>>> t=1.00e-01 dt=2.7e-03 max errors:[8.20e-03,3.84e-01,5.55e-03,6.38e-03,2.89e-01,7.34e-03,], max (u):[6.26e-01,6.97e-01,9.85e-02,4.70e-01,5.24e-01,2.43e-02,] (37 steps)
+>>> t=1.00e-01 dt=2.7e-03 l1 errors:[9.78e-04,2.61e-03,7.25e-04,7.51e-04,1.97e-03,9.46e-04,], l1 (u):[1.21e-01,1.18e-01,1.90e-02,9.12e-02,8.90e-02,5.03e-03,] (37 steps)
+
+G16:
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=24 P-norm=1.212e+00 max-err = 5.205e-02
+>>> t=1.00e-01 dt=5.3e-03 max errors:[3.03e-02,3.54e-01,2.29e-02,2.30e-02,2.66e-01,3.03e-02,], max (u):[6.20e-01,6.62e-01,9.79e-02,4.66e-01,4.97e-01,2.95e-02,] (19 steps)
+>>> t=1.00e-01 dt=5.3e-03 l1 errors:[2.84e-03,4.66e-03,2.18e-03,2.18e-03,3.53e-03,2.83e-03,], l1 (u):[1.21e-01,1.17e-01,1.95e-02,9.10e-02,8.80e-02,5.98e-03,] (19 steps)
+
+
+
+cgmx -noplot baInterface -g=rect16p.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.1 -ic=isw -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+cgmx -noplot baInterface -g=rect8p.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.1 -ic=isw -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -go=og
+
+
+********************************
+********  Tues Jan 7, 2020
+
+**BUG FIXED** ABsorbing BC -- getLocalArray bounds in assignBC
+
+
+mpirun -np 4 $cgmx -noplot -numParallelGhost=3 baScat -g=square256.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=400 -solveForAllFields=1 -tp=.1 -tf=.5 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=go >! junk.out 
+
+
+symmetry BC + one absorbing: 
+mpiexec -n 2 xterm -e gdb --args $cgmx -noplot -numParallelGhost=3 baScat -g=square64.order4.ng3 -bc1=symmetry -bc2=symmetry -bc3=symmetry -bc4=symmetry  -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=400 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=go
+
+
+mpirun -np 2 $cgmx -noplot -numParallelGhost=3 baScat -g=square64.order4.ng3 -bc1=symmetry -bc2=symmetry -bc3=symmetry -bc4=symmetry  -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=400 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+PARALLEL PERIODIC -OK
+cgmx -noplot -numParallelGhost=3 baScat -g=square64p.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+
++++++++++ FIX SUPERGRID -- use absorbing layers only on some sides
+
+cgmx -noplot -numParallelGhost=3 baScat -g=square128.order4.ng3 -bc1=symmetry -bc2=symmetry -bc3=absorbing -bc4=symmetry -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -go=og
+
+
+PERIODIC-y 
+cgmx -noplot -numParallelGhost=3 baScat -g=square128np.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+PERIODIC
+cgmx -noplot -numParallelGhost=3 baScat -g=square128p.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+cgmx -noplot -numParallelGhost=3 baScat -g=square128.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+TEST PARALLEL supergrid : *trouble**
+
+WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=sice4.order4.hdf
+-m=1 -n=1 -tp=.5 -tf=2 -go=go
+
+
+
+mpirun -np 1 $cgmx -noplot -numParallelGhost=3 baScat -g=square512p.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=mgs -x0=.5 -y0=.5 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+--------- BA CASE Lots of GDM terms -- 68 terms (total for P and Q)
+OK
+mpirun -np 2 $cgmx -noplot baScat -numParallelGhost=3 -g=square512p.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tf=.05 -tp=.05 -diss=0 -go=go
+
+mpirun -np 2 $cgmx -noplot baScat -numParallelGhost=3 -g=square1024p.order4.ng3 -method=bamx -dm=gdm -numMatRegions=1 -regionFile=boxRegion.h -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tf=.05 -tp=.05 -diss=0 -go=go
+
+
+********************************
+********  Mon Jan 6, 2020
+
+TEST 3D super grid
+
+TEST PARALLEL supergrid : 
+mpirun -np 1 $cgmxp -noplot baScat -g=cboxe4.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=.5 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1 -show=cBox4Airp.show -go=go
+
+TROUBLE : np=2 
+mpirun -np 2 $cgmxp -noplot -numParallelGhost=3 baScat -g=square64.order4.ng3 -method=bamx -matFile=baMat1.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=200 -solveForAllFields=1 -tp=.1 -tf=.1 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=go
+
+
+TEST SUPERGRID finite pulse for Jeff
+cSquareBige16
+ cgmx -noplot -numParallelGhost=3 baScat -g=cSquareBige16.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=mgs -x0=.0 -y0=.0 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+ 
+MY-SOURCE -- changed to be zero for t>1 
+cgmx -noplot -numParallelGhost=3 baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=mgs -x0=.0 -y0=.0 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+cgmx -noplot -numParallelGhost=3 baScat -g=cSquareSmalle8.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+cgmx -noplot -numParallelGhost=3 baScat -g=cSquareSmalle8.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=600 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=og
+
+
+********************************
+********  Fri Jan 3, 2020
+
+Test super-grid in 3D
+
+Small domain 
+$cgmx -noplot baScat -g=cboxSmalle8.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1  -compareToShowFile=cBox8Air.show -show=cboxSmall8Air.show -go=og
+
+Small domain 
+$cgmx -noplot baScat -g=cboxSmalle4.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1  -compareToShowFile=cBox4Air.show -show=cboxSmall4Air.show -go=og
+
+
+Big domain for reference 
+$cgmx -noplot baScat -g=cboxe8.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1 -show=cBox8Air.show -go=go >! cBox8Air.out 
+
+$cgmx -noplot baScat -g=cboxe4.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1 -show=cBox4Air.show -go=og
+
+
 ********************************
 ********  Wed Jan 1, 2020
 

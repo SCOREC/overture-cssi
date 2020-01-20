@@ -1206,6 +1206,18 @@ update( CompositeGrid & cg, GenericGraphicsInterface & gi )
   
 
       printF("ProbeInfo: finding closest grid point to x=(%e,%e,%e)\n",x(0,0),x(0,1),x(0,2));
+
+      if( dbase.has_key("measureType") )
+      {
+	const aString & measureType = dbase.get<aString>("measureType");
+	printF("ProbeInfo: measureType=%s.\n",(const char*)measureType);
+      }
+      if( dbase.has_key("quantityMeasure") )
+      {
+	const aString & quantityMeasure = dbase.get<aString>("quantityMeasure");
+        printF("ProbeInfo: quantityMeasure=%s. (average=scale `sum' by number of values, or scale `integral' by surfaceArea).\n",(const char*)quantityMeasure);
+      }
+      
       getClosestGridPoint( cg,x,gridLocation );
       if( gridLocation(0,3)>=0 )
       {

@@ -184,6 +184,12 @@ c To include derivatives of rx use OPTION=RX
 
 
 ! =========================================================================
+!  Macro to call super-grid for difference cases, depending on which axis
+!  has an absorning layer   
+! =========================================================================
+
+
+! =========================================================================
 !  Macro to call super-grid or non-supergrid version of BA update 
 ! =========================================================================
 

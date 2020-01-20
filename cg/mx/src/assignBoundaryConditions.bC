@@ -2361,6 +2361,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
 	    int extra=numberOfGhostLines;
 	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+	    bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+	    if( !ok ) continue;
             uLocal(I1,I2,I3,C)=0.;
 
 	  }

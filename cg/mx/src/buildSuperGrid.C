@@ -111,7 +111,11 @@ buildSuperGrid( )
     // superGridWidth=.2;
     const real & superGridWidth = parameters.dbase.get<real>("superGridWidth");
    
-
+    // useAbsorbingLayer(axis,grid) = true or false if we use an absorbing layer for this axis and grid 
+    IntegerArray & useAbsorbingLayer = parameters.dbase.get<IntegerArray>("useAbsorbingLayer");
+    useAbsorbingLayer.redim(3,numberOfComponentGrids);
+    useAbsorbingLayer=false;
+    
     for( int grid=0; grid<numberOfComponentGrids; grid++ )
     {
       MappedGrid & mg = cg[grid];
@@ -121,7 +125,7 @@ buildSuperGrid( )
       const IntegerArray & bc = mg.boundaryCondition();
 
       bool buildLayersThisGrid=false;
-      bool buildLayersThisAxis[3] ={false,false,false }; // 
+      // bool buildLayersThisAxis[3] ={false,false,false }; // 
       for( int axis=0; axis<numberOfDimensions; axis++)
       {
         for( int side=0; side<=1; side++ )
@@ -129,18 +133,19 @@ buildSuperGrid( )
           if( bc(side,axis)==absorbing )   
           {
             buildLayersThisGrid=true;
-            buildLayersThisAxis[axis]=true;
+            // buildLayersThisAxis[axis]=true;
+	    useAbsorbingLayer(axis,grid)=true;
           }
         }
       }
       if( !buildLayersThisGrid ) continue;
 
-      // *** TEMP: For now build layers in all directions if any direction is needed -- need to optimize implementation
-      //  to allow only some directions 
-      for( int axis=0; axis<numberOfDimensions; axis++)
-      {
-	buildLayersThisAxis[axis]=buildLayersThisGrid;
-      }
+      // // *** TEMP: For now build layers in all directions if any direction is needed -- need to optimize implementation
+      // //  to allow only some directions 
+      // 	for( int axis=0; axis<numberOfDimensions; axis++)
+      // 	{
+      // 	  buildLayersThisAxis[axis]=buildLayersThisGrid;
+      // 	}
       
 
       assert( isRectangular );  // assume this for now 
@@ -149,34 +154,40 @@ buildSuperGrid( )
       RealArray & etay = etaySuperGrid[grid];
       RealArray & etaz = etazSuperGrid[grid];
       
-      Index I1,I2,I3;
+      Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
       getIndex( mg.dimension(),I1,I2,I3 );          // all points including ghost points.
       OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
       bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,I1,I2,I3,1);   
       if( !ok ) return 0;  // no points on this processor (NOTE: no communication should be done after this point)
 
-      if( buildLayersThisAxis[0] )
+      if( useAbsorbingLayer(0,grid) )
       {
-        etax.redim(I1); etax=1.;
+	Range D1=maskLocal.dimension(0);
+        etax.redim(D1); etax=1.;         // local dimensions of etax should match dimensions of uLocal (for call to advBA)
       }
-      if( buildLayersThisAxis[1] )
+      if( useAbsorbingLayer(1,grid) )
       {
-        etay.redim(I2);
+	Range D2=maskLocal.dimension(1);
+        etay.redim(D2);
         etay=1.;
       }
-      
-      if( buildLayersThisAxis[0] )
+      if( useAbsorbingLayer(2,grid) )
       {
-        etaz.redim(I3);
+	Range D3=maskLocal.dimension(2);
+        etaz.redim(D3);
         etaz=1.;
       }
       
 
       // -- we optimize for Cartesian grids (we can avoid creating the vertex array)
       if( !isRectangular )
+      {
         mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
-      OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+        OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
 
+        OV_ABORT("buildSuperGrid: FINISH ME FOR CURVILINEAR GRIDS");
+      }
+      
       real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
       int iv0[3]={0,0,0}; //
       int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];  // NOTE: iv[0]==i1, iv[1]==i2, iv[2]==i3
@@ -198,14 +209,16 @@ buildSuperGrid( )
 
       for( int axis=0; axis<numberOfDimensions; axis++)
       {
-        if( buildLayersThisAxis[axis] )
+        if( useAbsorbingLayer(axis,grid) )
         {
           // ---- Build layer function for this axis ----
           RealArray & eta = axis==0 ? etax : axis==1 ? etay : etaz;
           for( int dir=0; dir<3; dir++ ){ iv[dir]=gid(0,dir); } // maybe not needed 
 
-          for( int i=dimension(0,axis); i<=dimension(1,axis); i++ )
+          for( int i=Iv[axis].getBase(); i<=Iv[axis].getBound(); i++ )
           {
+            assert( i>=eta.getBase(0) && i<=eta.getBound(0) );
+
             iv[axis]=i;
             real x = XC(iv,axis);
             if( bc(0,axis) == absorbing ) 
@@ -220,6 +233,7 @@ buildSuperGrid( )
             }
             if( bc(1,axis) ==absorbing )
             {
+
               real z = x - ( xab[1][axis] -superGridWidth); 
               if( z>superGridWidth )
                 eta(i)=epsL;
@@ -234,7 +248,7 @@ buildSuperGrid( )
       bool plotLayers=false;
       if( plotLayers )
       {
-        assert(  buildLayersThisAxis[0] );
+        assert( useAbsorbingLayer(0,grid) );
         
         assert( gip !=NULL );
         GenericGraphicsInterface & gi = *gip;

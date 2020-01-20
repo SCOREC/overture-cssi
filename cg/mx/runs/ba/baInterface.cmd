@@ -5,7 +5,8 @@
 #    cgmx [-noplot] baInterface -g=<name> -tf=<tFinal> -tp=<tPlot> -cfl=<> -diss=<> -eps1=<> -eps2=<> -ic=<> ...
 #                   -bc=[abcEM2|rbcNonLocal|abcPML|perfectElectricalConductor|symmetry] ...
 #                   -useNewInterface=[0|1] -method=[nfdtd|Yee|bmax] -errorNorm=[0|1|2] -interfaceIts=<i> ...
-#                   -dm=[none|gdm] -npv=i i  -dispersionOption=[s|k] 
+#                   -dm=[none|gdm] -npv=i i  -dispersionOption=[s|k] ...
+#                   -caseName=[surfaceWaveCase1SpacePeriodic|surfaceWaveCase1TimePeriodic]
 # 
 # Examples:
 # 
@@ -18,6 +19,7 @@ $useImpedanceInterfaceProjection=1; $cons=1; $frequencyToFlush=10;
 $useSosupDissipation=0; $sosupParameter=1.; 
 $dispersionOption="s"; 
 $ts="me"; $matFile=""; $solveForAllFields=0;  $matFile2="baAir.txt";  $numMatRegions=1; $regionFile="";
+$caseName="surfaceWaveCase1SpacePeriodic"; # case name for surface wave 
 #
 $eps1=1.; $mu1=1.;
 $eps2=1.; $mu2=1.;
@@ -51,7 +53,8 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,"frequencyToFlush=i"=>\$frequencyToFlush,\
 	   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
-	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption );
+	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption,\
+	   "caseName=s"=>\$caseName );
 # -------------------------------------------------------------------------------------------------
 #
 if( $go eq "halt" ){ $go = "break"; }
@@ -169,7 +172,9 @@ exit
 forcing options...
 define material region...
 material file: $matFile2
-box: .00000001 1.1 -.55 .55 -.55 .55 (xa,xb,ya,yb,za,zb)
+# NOTE: material box must be big enough to include ghost points
+if( $ic ne "isw" ){ $cmd="box: .00000001 1.1 -.55 .55 -.55 .55 (xa,xb,ya,yb,za,zb)"; }else{ $cmd="box: -2.1 2.1 -1.05 -.0000001 -.55 .55 (xa,xb,ya,yb,za,zb)"; }
+$cmd 
 continue
 # 
 #- $domain="all"; 
@@ -215,6 +220,9 @@ continue
 # if( $ic ne "gp" && $dm ne "no dispersion" && $tz eq "#" ){
 if( $ic ne "gp" && $tz eq "#" ){\
  $ic = "user defined known solution\n  dispersive plane wave interface\n done\n userDefinedKnownSolutionInitialCondition"; }
+# Surface wave: 
+if( $ic ne "isw" && $tz eq "#" ){\
+ $ic = "user defined known solution\n interface surface wave\n $caseName\n done\n userDefinedKnownSolutionInitialCondition"; }
 # 
 bc: all=$bc
 if( $ic eq "gp" ){ $ic="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }

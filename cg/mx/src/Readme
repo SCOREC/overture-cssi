@@ -17,6 +17,9 @@ advanceStructured.C:
 assignInterfaceBoundaryConditions.bC
  - assignInterfaceBoundaryConditions( int current, real t, real dt )
 
+computeTimeStep.C 
+  - computeTimeStep()
+  
 defineRegionsAndBodies.C
   - defineRegionsAndBodies() 
 
@@ -50,7 +53,6 @@ saveShow.C
  - saveSequenceInfo( real t0, RealArray & sequenceData )
 
 setup.C
- - computeTimeStep()
  - setupGrids()
 
 

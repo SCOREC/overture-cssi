@@ -1762,6 +1762,192 @@ evalBianisotropicEigenValues( int numberOfDimensions, real & reLambda, real & im
   return 0;
 }
 
+// ================================================================================
+/// \brief Compute the time-stepping eigenvalue (reLambda,imLambda) for the BA Maxwell equations
+///
+/// \returnValue : dtMax 
+///
+/// The Eigenvalues are found from the matrix 
+///       A = K0^{-1} [ Dx*Cx + Dy*Cy + Dz*Cz ]
+///
+///         = K0^{-1} [  0   0   0   0 -Dz  Dy]
+///                   [  0   0   0  Dz   0 -Dx] 
+///                   [  0   0   0 -Dy  Dx  0 ] 
+///                   [  0  Dz -Dy   0   0  0 ] 
+///                   [-Dz   0  Dx   0   0  0 ] 
+///                   [ Dy -Dx   0   0   0  0 ] 
+///        
+/// where  Dx is the symbol of the first derivative operator
+/// 
+// ================================================================================
+int DispersiveMaterialParameters::
+evalBianisotropicTimeSteppingEigenvalue( MappedGrid & mg, const int orderOfAccuracy, real & reLambda, real & imLambda )
+{
+  int debug=0; // 3;
+
+  if( !dbase.has_key("timeSteppingEigenvalueComputed") )
+  {
+    dbase.put<bool>("timeSteppingEigenvalueComputed")=false;
+    dbase.put<real>("reLambdaTSE")=0.;
+    dbase.put<real>("imLambdaTSE")=0.;
+  }
+
+
+  bool & timeSteppingEigenvalueComputed = dbase.get<bool>("timeSteppingEigenvalueComputed");
+  real & reLambdaTSE = dbase.get<real>("reLambdaTSE");
+  real & imLambdaTSE = dbase.get<real>("imLambdaTSE");
+
+  if( timeSteppingEigenvalueComputed )
+  {
+    reLambda = reLambdaTSE;
+    imLambda = imLambdaTSE;
+    if( debug & 1 )
+      printF("evalBianisotropicTimeSteppingEigenvalue: reLambda=%9.3e, imLambda=%9.3e (using saved values).\n",reLambda,imLambda);
+
+    return 0;
+  }
+  
+  timeSteppingEigenvalueComputed=true;
+
+  const int numberOfDimensions = mg.numberOfDimensions();
+
+  const bool isRectangular=mg.isRectangular();
+  if( !isRectangular )
+  {
+    printF("evalBianisotropicTimeSteppingEigenvalue:ERROR: not implemented for curvilinear grids\n");
+    OV_ABORT("fix me");
+  }
+ 
+ 
+  if( !( orderOfAccuracy==2 || orderOfAccuracy==4 ) )
+  {
+    printF("evalBianisotropicTimeSteppingEigenvalue:ERROR: not implemented for orderOfAccuracy=%d\n",orderOfAccuracy);
+    OV_ABORT("fix me");
+  }
+ 
+  // Cartesian grid spacing: 
+  real dx[3]={1.,1.,1.};
+  mg. getDeltaX( dx );
+
+  const int ex=0, ey=1, ez=2, hx=3, hy=4, hz=5;
+
+  RealArray K0i;
+  getBianisotropicMaterialMatrixInverse( K0i);
+  
+  RealArray A(6,6);
+  RealArray C(6,6); C=0.;
+
+  int n=6, lwork=4*n, info;
+  RealArray wr(n), wi(n), work(lwork), vl(6,6), vr(6,6);
+  real dummy;
+
+  real reLambdaMin=REAL_MAX, reLambdaMax=-reLambdaMin;
+  reLambda=0.; imLambda=0.;
+  
+  // --- Loop over different values of Dx, Dy and Dz to compute the time-stepping eigenvalues ---
+  int numx=21;  //  5; // 21;  // number of wave numbers to check
+  int numy= numberOfDimensions<2 ? 1 : numx;
+  int numz= numberOfDimensions<3 ? 1 : numx;
+
+  real xiMax[3]={0.,0.,0.}; // 
+  real kMax[3]={0.,0.,0.}; // 
+  
+  for( int iz=0; iz<numz; iz++ )
+  {
+    for( int iy=0; iy<numy; iy++ )
+    {
+      for( int ix=0; ix<numx; ix++ )
+      {
+        real xix = Pi*ix/max(1.,numx-1.);  // 0 <= xix <= pi
+        real xiy = Pi*iy/max(1.,numy-1.);
+        real xiz = Pi*iz/max(1.,numz-1.);
+
+	real kx,ky,kz;
+        if( orderOfAccuracy==2 )
+	{
+	  // Symbols of D0
+	  kx = sin(xix)/dx[0];
+	  ky = sin(xiy)/dx[1];
+	  kz = sin(xiz)/dx[2];
+	}
+	else if( orderOfAccuracy==4 )
+	{
+          real s2x= sin(xix/2.);
+          real s2y= sin(xiy/2.);
+          real s2z= sin(xiz/2.);
+	  
+          // Symbols of D0*( 1 - (1/6) D+D- )
+	  kx = sin(xix)*( 1. + (2./3.)*SQR(s2x) )/dx[0];
+	  ky = sin(xiy)*( 1. + (2./3.)*SQR(s2y) )/dx[1];
+	  kz = sin(xiz)*( 1. + (2./3.)*SQR(s2z) )/dx[2];
+	}
+	
+        C(0,hz) = ky; C(0,hy)=-kz;    // (Hz)_y - (Hy)_z
+        C(1,hx) = kz; C(1,hz)=-kx;    // (Hx)_z - (Hz)_x
+        C(2,hy) = kx; C(2,hx)=-ky;    // (Hy)_x - (Hx)_y
+  
+        C(3,ez) =-ky; C(3,ey)= kz;    // -[ (Ez)_y - (Ey)_z ]
+        C(4,ex) =-kz; C(4,ez)= kx;    // -[ (Ex)_z - (Ez)_x ]
+        C(5,ey) =-kx; C(5,ex)= ky;    // -[ (Ey)_x - (Ex)_y ]
+  
+
+        myMatrixMultiply(K0i,C,A);
+
+        // ::display(C,"C");
+        // ::display(A,"A");
+
+        // "N", "N"  = do not compute left and right eigenvectors 
+        GEEV("N", "N", n, A(0,0), n, wr(0), wi(0), vl(0,0), n, vr(0,0), n, work(0), lwork, info);
+        if( info !=0 )
+        {
+          printF("ERROR return info=%d from eigenvalue routine DGEEV\n",info);
+        }
+  
+	
+	// we have left off an factor of "i" in the matrix so real-part of eigs is really imaginary part 
+        real wrMax = max(fabs(wr));
+	if( wrMax>imLambda)
+	{ 
+	  imLambda = wrMax;
+	  xiMax[0]=xix; xiMax[1]=xiy; xiMax[2]=xiz;
+	  kMax[0]=kx; kMax[1]=ky; kMax[2]=kz;
+	}
+	
+        real wiMin = min(wi), wiMax=max(wi);
+        reLambdaMin=min(reLambdaMin,wiMin);
+        reLambdaMax=max(reLambdaMax,wiMax);
+
+        reLambda = max(fabs(wiMin),fabs(wiMax));
+
+        if( debug & 2 )
+          for (int i=0; i<n; i++ )
+            printF("BA-TSE: xix=%5.3f, xiy=%5.3f, xiz=%5.3f, kx=%7.2f ky=%7.2f kz=%7.2f lambda(%d)=(%9.2e,%9.2e)\n",
+		   xix,xiy,xiz,kx,ky,kz, i,wi(i),wr(i));
+
+        
+      } // end for ix 
+    } // end for iy 
+  } // end for iz
+  
+  // Save the values so we do not need to recompute
+  reLambdaTSE = reLambda;
+  imLambdaTSE = imLambda;
+
+  printF("\n evalBianisotropicTimeSteppingEigenvalue real-lambda: min=%9.3e max=%9.3e (max-Re part=%8.2e => zero=Hyperbolic)\n",
+	 reLambdaMin,reLambdaMax,reLambda);
+
+  if( fabs(reLambda) > 100.*REAL_EPSILON*imLambda )
+  {
+    printF("DispersiveMaterialParameters:evalBianisotropicTimeSteppingEigenvalue: WARNING: Problem is ill-posed!\n");
+    OV_ABORT("error");
+  }
+  
+  printF(" imLambda=%9.3e occured at xi=[%g,%g,%g] DHat=[%g,%g,%g]\n\n",imLambda,xiMax[0],xiMax[1],xiMax[2],kMax[0],kMax[1],kMax[2]);
+  
+  
+  return 0;
+}
+
 
 // ==========================================================================================
 /// \brief Solve the dispersion relation for k given s, but adjust s so that the resulting

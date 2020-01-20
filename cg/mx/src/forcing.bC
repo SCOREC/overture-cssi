@@ -1347,8 +1347,6 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 	    uLocal(I1,I2,I3,ez)=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
             if( method==bamx )
             {
-              OV_ABORT("**GaussianSource: fix me**");
-            
               uLocal(I1,I2,I3,hx)= 0.;
               uLocal(I1,I2,I3,hy)= 0.;
               uLocal(I1,I2,I3,hz)= 0.; 
@@ -1457,7 +1455,9 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 	      U(i1,i2,i3,ez)=( yd-xd )*f3;
               if( method==bamx )
               {
-                OV_ABORT("**GaussianSource: fix me**");
+		U(i1,i2,i3,hx)=0.;
+		U(i1,i2,i3,hy)=0.;
+		U(i1,i2,i3,hz)=0.;
               }
               
 	    }

@@ -5,6 +5,8 @@
 
 #include "PlaneInterfaceExactSolution.h"
 
+#include "SurfaceWaveExactSolution.h"
+
 #define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
@@ -571,6 +573,53 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     
   }
   
+
+  else if( userKnownSolution=="interfaceSurfaceWave" )
+  {
+    if( method==nfdtd )
+    {
+      OV_ABORT("interfaceSurfaceWave: finish me");
+      
+    }
+    else if( method==bamx )
+    {
+      // ----- BA interface surface wave  ----
+
+      // printF("\n @@@@@@@ eval BA interface surface wave exact solution @@@@@\n\n");
+
+      assert( numberOfMaterialRegions==2 );
+      std::vector<DispersiveMaterialParameters> & dmpVector = 
+	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+      DispersiveMaterialParameters & dmp1 = dmpVector[0];
+      DispersiveMaterialParameters & dmp2 = dmpVector[1];
+
+      if( !dbase.has_key("surfaceWaveExactSolution") )
+      {
+	// -- first time through: create class and initialize
+        const aString & caseName = dbase.get<aString>("caseName");
+	SurfaceWaveExactSolution & swes = dbase.put<SurfaceWaveExactSolution>("surfaceWaveExactSolution");
+	swes.initialize( cg,dmp1, dmp2,caseName );
+      }
+
+      SurfaceWaveExactSolution & swes = dbase.get<SurfaceWaveExactSolution>("surfaceWaveExactSolution");
+
+      int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+      OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
+      if( numberOfMaterialRegions>1 )
+      {
+	assert( cg.numberOfComponentGrids()==1 );
+	assert( pBodyMask!=NULL );
+      }
+      IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
+
+      swes.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
+
+    }
+    
+  }
+  
 /* -----
   else if( userKnownSolution=="dispersivePlaneWaveInterface" )
   {
@@ -1074,6 +1123,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       "chirped plane wave",
       "dispersive plane wave",
       "dispersive plane wave interface",
+      "interface surface wave",
       "done",
       ""
     }; 
@@ -1145,10 +1195,28 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
     {
       userKnownSolution="dispersivePlaneWaveInterface";
       dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
-      
 
       printF("The dispersive plane wave interface defines an exact solution for a plane wave\n"
              " hitting a planar material interface between two dispersive materials\n");
+      
+    }
+    
+    else if( answer=="interface surface wave" ) 
+    {
+      userKnownSolution="interfaceSurfaceWave";
+      dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
+      
+      if( !dbase.has_key("caseName") )
+	dbase.put<aString>("caseName");
+
+      aString & caseName = dbase.get<aString>("caseName");
+      
+      printF("The interface surface wave is an exact solution for a traveling surface wave between two interfaces.\n"
+	     " Available caseNames:\n"
+	     "  (1) surfaceWaveCase1SpacePeriodic \n"
+	     "  (2) surfaceWaveCase1TimePeriodic \n"
+	);
+      gi.inputString(caseName,"Enter the caseName");
       
     }
     

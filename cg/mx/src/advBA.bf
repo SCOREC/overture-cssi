@@ -2021,10 +2021,60 @@ end if
 
 
 ! =========================================================================
+!  Macro to call super-grid for difference cases, depending on which axis
+!  has an absorning layer   
+! =========================================================================
+#beginMacro updateSuperGrid(updateRoutine,DIM,ORDER,GRIDTYPE,POLAR)
+  #If #DIM eq "2" 
+    !  --- TWO-DIMENSIONS ---
+    if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,etay(i2)*,)
+
+    else if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.0 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,,)
+
+    else if( useAbsorbingLayer(0).eq.0 .and. useAbsorbingLayer(1).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,etay(i2)*,)
+
+    else
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,,)
+    end if 
+  #Else
+    !  --- THREE-DIMENSIONS ---
+    if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.1 .and. useAbsorbingLayer(2).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,etay(i2)*,etaz(i3)*)
+
+    else if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.1 .and. useAbsorbingLayer(2).eq.0 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,etay(i2)*,)
+
+    else if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.0 .and. useAbsorbingLayer(2).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,,etaz(i3)*)
+
+    else if( useAbsorbingLayer(0).eq.0 .and. useAbsorbingLayer(1).eq.1 .and. useAbsorbingLayer(2).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,etay(i2)*,etaz(i3)*)
+
+    else if( useAbsorbingLayer(0).eq.1 .and. useAbsorbingLayer(1).eq.0 .and. useAbsorbingLayer(2).eq.0 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,,)
+
+    else if( useAbsorbingLayer(0).eq.0 .and. useAbsorbingLayer(1).eq.1 .and. useAbsorbingLayer(2).eq.0 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,etay(i2)*,)
+
+    else if( useAbsorbingLayer(0).eq.0 .and. useAbsorbingLayer(1).eq.0 .and. useAbsorbingLayer(2).eq.1 )then
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,,etaz(i3)*)
+
+    else
+      updateRoutine(DIM,ORDER,GRIDTYPE,POLAR,,,)
+    end if 
+  #End
+#endMacro   
+
+
+! =========================================================================
 !  Macro to call super-grid or non-supergrid version of BA update 
 ! =========================================================================
 #beginMacro updateBA(DIM,ORDER,GRIDTYPE,POLAR)
   if( dispersionModel.eq.noDispersion )then
+
     if( useSuperGrid.eq.0  ) then
       updateBAOpt(DIM,ORDER,GRIDTYPE,POLAR,,,)
     else
@@ -2032,9 +2082,13 @@ end if
       if( t.le.3*dt )then
         write(*,'(" USE SUPERGRID...")' )
       end if
-      updateBAOpt(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,etay(i2)*,etaz(i3)*)
+
+      updateSuperGrid(updateBAOpt,DIM,ORDER,GRIDTYPE,POLAR)
+
     end if
+
   else
+
     if( useSuperGrid.eq.0  ) then
       updateBAGDMOpt(DIM,ORDER,GRIDTYPE,POLAR,,,)
     else
@@ -2042,7 +2096,9 @@ end if
       if( t.le.3*dt )then
         write(*,'(" USE SUPERGRID...")' )
       end if
-      updateBAGDMOpt(DIM,ORDER,GRIDTYPE,POLAR,etax(i1)*,etay(i2)*,etaz(i3)*)
+
+      updateSuperGrid(updateBAGDMOpt,DIM,ORDER,GRIDTYPE,POLAR)
+
     end if
   end if   
 #endMacro
@@ -2115,7 +2171,7 @@ end if
  integer useWhereMask,useWhereMaskSave,solveForE,solveForH,grid,useVariableDissipation
  integer useCurvilinearOpt,useConservative,combineDissipationWithAdvance,useDivergenceCleaning
  integer useNewForcingMethod,numberOfForcingFunctions,fcur,fnext,fprev
- integer ex,ey,ez, hx,hy,hz, solveForAllFields, useSuperGrid
+ integer ex,ey,ez, hx,hy,hz, solveForAllFields, useSuperGrid, useAbsorbingLayer(0:2)
  real t,cc,dt,dy,dz,cdt,cdtdx,cdtdy,cdtdz,adc,adcdt,add,adddt
  real dt4by12
  real eps,mu,sigmaE,sigmaH,kx,ky,kz,divergenceCleaningCoefficient
@@ -2548,6 +2604,9 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
  materialType            = ipar(41) 
  numberOfMaterialRegions = ipar(42)
  useSuperGrid            = ipar(43) 
+ useAbsorbingLayer(0)    = ipar(44)
+ useAbsorbingLayer(1)    = ipar(45)
+ useAbsorbingLayer(2)    = ipar(46)
  
  if( nd.eq.2 .and. solveForAllFields.eq.0 )then
    numComp=3  ! TEZ has 3 components 
@@ -2558,7 +2617,8 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
 
  if( t.le.2*dt )then
    write(*,*) 'Inside NAME...'
-   write(*,'("addForcing=",i2, " solveForAllFields=",i2," useSuperGrid=",i2)') addForcing,solveForAllFields,useSuperGrid
+   write(*,'("addForcing=",i2, " solveForAllFields=",i2," useSuperGrid=",i2)') addForcing,solveForAllFields
+   write(*,'(" useSuperGrid=",i2," useAbsorbingLayer(0:2)=",3i2)') useSuperGrid,(useAbsorbingLayer(n),n=0,2)
    write(*,'("addDissipation=",l2, " updateInterior=",l2)') addDissipation,updateInterior
    write(*,'("dispersionModel=",i2)') dispersionModel
 

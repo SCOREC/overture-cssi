@@ -67,6 +67,8 @@ userDefinedForcing( realArray & f, int iparam[], real rparam[] )
   const int numberOfComponentGrids = cg.numberOfComponentGrids();
   const int numberOfDimensions = cg.numberOfDimensions();
 
+  const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
   assert( grid>=0 && grid<numberOfComponentGrids );
   MappedGrid & mg = cg[grid];
 
@@ -146,6 +148,7 @@ userDefinedForcing( realArray & f, int iparam[], real rparam[] )
           real rSq = SQR(x-x0)+SQR(y-y0);
 	  // real g = a*cost*exp( -beta*pow( rSq, p ) );
 	  real aExp = a*exp( -beta*pow( rSq, p ) );
+	  // real g = aExp*cost;
 	  real g = aExp*cost;
           real rPow = p==1. ? 1 :  pow(rSq,p-1.);
 
@@ -153,9 +156,11 @@ userDefinedForcing( realArray & f, int iparam[], real rparam[] )
           //  Fx = - const * g_y
           //  Fy =   const * g_x
           // => (Fx)_x + (Fy)_y = 0 
-	  fLocal(i1,i2,i3,ex)+= -(y-y0)*rPow*g;
-	  fLocal(i1,i2,i3,ey)+=  (x-x0)*rPow*g;
-	  fLocal(i1,i2,i3,hz)+=              g;
+ 
+          fLocal(i1,i2,i3,ex)+= -(y-y0)*rPow*g;
+          fLocal(i1,i2,i3,ey)+=  (x-x0)*rPow*g;
+          fLocal(i1,i2,i3,hz)+=              g;
+           
 
           // ---- this next section is currently not needed -- maybe in future ---
 	  // if( method==sosup )
@@ -226,6 +231,7 @@ userDefinedForcing( realArray & f, int iparam[], real rparam[] )
                "z0=%8.2e, t0=%8.2e\n", m,a,beta,omega,p,x0,y0,z0,t0);
 
       const real cost=cos(2.*Pi*omega*(t-t0));
+      // const real sint=sin(2.*Pi*omega*(t-t0))*exp(-800*SQR(t-.5));
       const real sint=sin(2.*Pi*omega*(t-t0));
 
       if( mg.numberOfDimensions()==2 )
@@ -235,11 +241,24 @@ userDefinedForcing( realArray & f, int iparam[], real rparam[] )
           real x= xLocal(i1,i2,i3,0), y=xLocal(i1,i2,i3,1);
 	  // real g = a*cost*exp( -beta*pow( SQR(x-x0)+SQR(y-y0), p ) );
 	  real aExp = a*exp( -beta*pow( SQR(x-x0)+SQR(y-y0), p ) );
-	  real g = aExp*cost;
+	  // real g = aExp*cost;
+	  real g = aExp*sint;
 
-	  fLocal(i1,i2,i3,ex)+= -(y-y0)*g;
-	  fLocal(i1,i2,i3,ey)+=  (x-x0)*g;
-	  fLocal(i1,i2,i3,hz)+=         g;
+	  if( t<=.5 ) // *wdh* TEST finite pulse 
+	  {
+            // if( solveForAllFields )
+            // {
+            //   fLocal(i1,i2,i3,ez) +=  g;
+            // }
+            // else
+
+            fLocal(i1,i2,i3,ex)+= -(y-y0)*g;
+            fLocal(i1,i2,i3,ey)+=  (x-x0)*g;
+            fLocal(i1,i2,i3,hz)+=         g;
+            
+	  }
+	  
+	  
 	  // fLocal(i1,i2,i3,ey)=0.; // *****************
 
           // ---- this next section is currently not needed -- maybe in future ---
@@ -479,6 +498,38 @@ setupUserDefinedForcing()
 
       option="my source";
 
+      if( !db.has_key("numberOfGaussianSources") ) db.put<int>("numberOfGaussianSources");
+      int & numberOfGaussianSources = db.get<int>("numberOfGaussianSources");
+
+      numberOfGaussianSources=1;
+
+      if( !db.has_key("gaussianParameters") )
+	db.put<RealArray>("gaussianParameters");
+
+      RealArray & gaussianParameters = db.get<RealArray>("gaussianParameters");
+      gaussianParameters.redim(8,numberOfGaussianSources);
+      gaussianParameters=0.;
+      
+      for( int m=0; m<numberOfGaussianSources; m++ )
+      {
+        real a=1., beta=10., omega=1., p=1., x0=0., y0=0., z0=0., t0=0.;
+	gi.inputString(answer2,sPrintF("Source %i: Enter a,beta,omega,p,x0,y0,z0,t0",m));
+        sScanF(answer2,"%e %e %e %e %e %e %e %e",&a,&beta,&omega,&p,&x0,&y0,&z0,&t0);
+
+        printF("Gaussian source %i: setting a=%8.2e, beta=%8.2e, omega=%8.2e, p=%8.2e, x0=%8.2e, y0=%8.2e, "
+               "z0=%8.2e, t0=%8.2e\n", m,a,beta,omega,p,x0,y0,z0,t0);
+
+        gaussianParameters(0,m)=a; 
+        gaussianParameters(1,m)=beta; 
+        gaussianParameters(2,m)=omega; 
+        gaussianParameters(3,m)=p;
+        gaussianParameters(4,m)=x0; 
+        gaussianParameters(5,m)=y0; 
+        gaussianParameters(6,m)=z0;
+        gaussianParameters(7,m)=t0;
+      }
+
+      
       // Query user for parameters
 
     }

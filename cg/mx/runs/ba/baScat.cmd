@@ -51,7 +51,7 @@ $interfaceEquationOption=1; $interfaceIterations=10;  $interfaceOmega=.5; $useNe
 $grid="afm2.order4.hdf";
 $cons=1; $go="halt"; 
 $xa=-100.; $xb=-1.5; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
-$leftBC="rbc"; $bcBody=""; 
+$leftBC="rbc"; $bcBody=""; $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
 $probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
 $intProbeName="";  # integral probe
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
@@ -88,7 +88,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
   "dmFile=s"=>\$dmFile,"probeFrequency=i"=>\$probeFrequency,"ts=s"=>\$ts,\
   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"matFile3=s"=>\$matFile3,"matFile4=s"=>\$matFile4,\
-  "numMatRegions=i"=>\$numMatRegions,\
+  "numMatRegions=i"=>\$numMatRegions,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
   "solveForAllFields=i"=>\$solveForAllFields,"regionFile=s"=>\$regionFile,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
   "radius=f"=>\$radius,"omega=f"=>\$omega,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
   "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName  );
@@ -157,6 +157,7 @@ if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroIni
 if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
 if( $ic eq "gs"  ){ $cmd="gaussianSource\n Gaussian source: $beta $omega $x0 $y0 $z0"; }
+if( $ic eq "mgs"  ){ $a=1.; $t0=0; $p=1; $cmd="userDefinedForcing\n my source\n $a $beta $omega $p $x0 $&y0 $z0 $t0\n exit"; }
 $cmd 
 if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
 $known
@@ -187,6 +188,19 @@ kx,ky,kz $kx $ky $kz
 # bc: all=dirichlet
 # bc: all=perfectElectricalConductor
 bc: all=$rbc
+# TEST: 
+$cmd="#"; 
+if( $bc1 ne "" ){  $cmd .= "\nbc: square(0,0)=$bc1"; }
+if( $bc2 ne "" ){  $cmd .= "\nbc: square(1,0)=$bc2"; }
+if( $bc3 ne "" ){  $cmd .= "\nbc: square(0,1)=$bc3"; }
+if( $bc4 ne "" ){  $cmd .= "\nbc: square(0,1)=$bc4"; }
+if( $bc5 ne "" ){  $cmd .= "\nbc: square(0,2)=$bc5"; }
+if( $bc6 ne "" ){  $cmd .= "\nbc: square(0,2)=$bc6"; }
+$cmd 
+# bc: square(0,0)=symmetry
+# bc: square(1,0)=absorbing
+# bc: square(0,1)=symmetry
+# bc: square(1,1)=symmetry
 #
 if( $leftBC eq "planeWave" ){ $cmd="bc: $backGround(0,0)=planeWaveBoundaryCondition"; }else{ $cmd="#"; }
 $cmd 
@@ -369,6 +383,8 @@ contour
   plot contour lines (toggle)
   # vertical scale factor 0.2
   # min max -1.1 1.1
+  if( $grid =~ /box/ ){ $cmd="contour shift 0.5\n -shift contour planes"; }else{ $cmd="#"; }
+  $cmd 
 exit
 $go
 

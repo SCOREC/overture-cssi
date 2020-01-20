@@ -456,6 +456,8 @@ Maxwell:: Maxwell()
   
   //  Super-grid absorbing layer 
   parameters.dbase.put<int>("useSuperGrid")=false;
+  // useAbsorbingLayer(axis,grid) = true or false if we use an absorbing layer for this axis and grid 
+  parameters.dbase.put<IntegerArray>("useAbsorbingLayer");
   parameters.dbase.put<real>("superGridWidth")=.2;
   parameters.dbase.put<int>("absorbingLayerErrorOffset")=5;  // offset from layer width when computing errors
 
@@ -4911,7 +4913,7 @@ Maxwell::getDispersionModelMappedGridFunction( const int grid, const int timeLev
 
     IntegerArray & domainGridNumber = parameters.dbase.get<IntegerArray>("domainGridNumber");
     const int gridDomain=domainGridNumber(grid); // cg[grid] -> cg.domain[d][gridDomain] 
-    // printF("IC: domain=%i grid=%i --> gridDomain=%i\n",domain,grid,gridDomain);
+    // printF("\n @@@@@@@@ getDispersionModelMappedGridFunction: domain=%i grid=%i --> gridDomain=%i\n",domain,grid,gridDomain);
 
     if( !getErrorGridFunction )
     {

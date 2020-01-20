@@ -55,7 +55,7 @@ void getBAGDMParameters( int & grid, real *gdmPar, int *Npt,
 #define gdmVar(m,n,k1,k2,mr) gdmPar[(m) + 4*( (n) + NpMax*( (k1) + 6*( (k2) + 6*( (mr) ) ) ) ) ]
 
     assert( cgmxPointer != NULL );
-    assert( grid==0 );
+  // assert( grid==0 );
     
 //   CompositeGrid *&cgp = cgmxPointer->cgp;
 //   assert( cgp!=NULL );
@@ -192,6 +192,7 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
     const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
 
     const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
+    IntegerArray & useAbsorbingLayer = parameters.dbase.get<IntegerArray>("useAbsorbingLayer");
     RealArray *etaxSuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etaxSuperGrid" ) : NULL;
     RealArray *etaySuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etaySuperGrid" ) : NULL;
     RealArray *etazSuperGrid = useSuperGrid ? parameters.dbase.get<RealArray*>("etazSuperGrid" ) : NULL;
@@ -667,8 +668,11 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                     orderOfAccuracyInSpace==4 && orderOfAccuracyInTime==4;
         // combineDissipationWithAdvance=0;
                 const int useWhereMask = numberOfComponentGrids>1;
-       // const bool updateSolution = updateInterior;
-       // const bool updateDissipation = addDissipation;
+                int useAbsorbingLayerThisAxis[3]={0,0,0};  // For super-grid 
+                if( useSuperGrid )
+                {
+                    for( int axis=0; axis<3; axis++ ){ useAbsorbingLayerThisAxis[axis]=useAbsorbingLayer(axis,grid); } // 
+                }
                 int gridType = isRectangular? 0 : 1;
                 int option=(isRectangular || useCurvilinearOpt) ? 0 : 1;   // 0=Maxwell+AD, 1=AD
                 int ipar[]={option,
@@ -701,12 +705,15 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                         	      sosupDissipationOption,
                         	      updateInterior,
                         	      addDissipation,
-                                        computeUt,                  // ipar(38)
+                                        computeUt,                    // ipar(38)
                                         (int)forcingOption,
-                                        (int)solveForAllFields,     // ipar(40)
-                                        (int)dmp.getMaterialType(), // ipar(41)
-                        	      numberOfMaterialRegions,    // ipar(42) 
-                                        useSuperGrid                // ipar(43)
+                                        (int)solveForAllFields,       // ipar(40)
+                                        (int)dmp.getMaterialType(),   // ipar(41)
+                        	      numberOfMaterialRegions,      // ipar(42) 
+                                        useSuperGrid,                 // ipar(43)
+                                        useAbsorbingLayerThisAxis[0], // ipar(44)
+                                        useAbsorbingLayerThisAxis[1], // ipar(45)
+                                        useAbsorbingLayerThisAxis[2]  // ipar(46)
                                       };  //
                 real dx[3]={1.,1.,1.};
                 if( isRectangular )

@@ -950,7 +950,9 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
         // -- output the header ---
         FILE *& file = probe.file;
 
+        // Look for which probes are in this probe.file
         int savePosition=false;
+        int numberOfEntries=0;   // counts field components that we output 
 	for( int j=0; j<numberOfProbeRegions; j++ )
 	{
 	  if( probeRegionFileNumber[j]==pf )
@@ -970,15 +972,18 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
             {
               savePosition=true;  // save (x,y,z) with probe output
             }
+
+            numberOfEntries+=numberOfProbeRegionValues(pr);
         
 	  }
 	}
 	
 	// const int numberOfEntries = numberOfProbeRegionsPerFile[pf];
-	const int numberOfEntries = sum(numberOfProbeRegionValues);
+	// const int numberOfEntries = sum(numberOfProbeRegionValues);
 
-	int numHeader=4+numberOfEntries;  // number of header comments 
-	int numColumns=1 + numberOfEntries;         // time + numberOfEntries
+	// *wdh* Jan 14, 2020 int numHeader=4+numberOfEntries;        // number of header comments 
+	int numHeader=5;                        // number of header comments 
+	int numColumns=1 + numberOfEntries;     // time + numberOfEntries
         if( savePosition )
           numColumns+=3;
 
@@ -1422,6 +1427,8 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
     
 
     } // end for grid 
+
+    int numberOfIntegrationRegions=0; // counts number of integral probes
     for( int pr=0; pr<numberOfProbeRegions; pr++ )
     {
       const int i = probeRegionIndex[pr];
@@ -1446,6 +1453,11 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 	}
 	
       }
+      else if( measureType=="integral" )
+      {
+	numberOfIntegrationRegions++;
+      }
+      
       
     }
     
@@ -1453,7 +1465,6 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
     // -------------------------------------------
     // --- Probe regions requiring integration ---
     // -------------------------------------------
-    int numberOfIntegrationRegions=1; // fix me -- count these above
     if( numberOfIntegrationRegions>0 )
     {
       // --- loop over different probe regions ---
@@ -1482,7 +1493,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 
 	  if( probe.probeType==ProbeInfo::probeCoordinatePlane )
 	  {
-
+            // ------ coordinate plane probe -----
             const int & gridPlane = regionPar.dbase.get<int>("gridPlane");
             const int & gridPlaneAxis= regionPar.dbase.get<int>("gridPlaneAxis");
             const int & gridPlaneIndex= regionPar.dbase.get<int>("gridPlaneIndex");
@@ -1517,14 +1528,16 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
               }
               
               // store integrals in val[c] : 
-              real *val = new real[numberOfComponents];
+              real *val = new real[numberOfComponents+1];  // add one for surface area, used in parallel sum below
 	      for( int c=0; c<numberOfComponents; c++ )
 		val[c]=0.;
 
               // tangential index directions: 
               const int axisp1 = (gridPlaneAxis+1) % 3;
               const int axisp2 = (gridPlaneAxis+2) % 3;
-              const real deltaArea  = numberOfDimensions==2 ? dvx[axisp1] : dvx[axisp1]*dvx[axisp2];
+              const real deltaArea  = numberOfDimensions==2 ? dvx[axisp1] : dvx[axisp1]*dvx[axisp2];  // line or area element
+
+	      real surfaceArea=0.;   // compute the surface area here  
 
 	      bool ok = ParallelUtility::getLocalArrayBounds(u[gridPlane],uLocal,I1,I2,I3,0); 
 	      if( ok )
@@ -1533,7 +1546,7 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 		{
                   // Trapezoidal rule integration
                   // Weight edges by .5 and corners by .25 
-                  real weight=1.;
+                  real weight=deltaArea;
                   if( iv[axisp1]==gid(0,axisp1) || iv[axisp1]==gid(1,axisp1) )
                     weight*=.5;
                   if( numberOfDimensions==3 && (iv[axisp2]==gid(0,axisp2) || iv[axisp2]==gid(1,axisp2)) )
@@ -1541,23 +1554,43 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
                   
                   // printF(" integrate: (i1,i2)=(%i,%i) weight=%g numberOfDimensions=%d\n",i1,i2,weight,numberOfDimensions);
                     
+		  surfaceArea += weight;
+
 		  for( int c=0; c<numberOfComponents; c++ )
 		    val[c] += weight*uLocal(i1,i2,i3,c);
+		  
 		}
 	      }
-              for( int c=0; c<numberOfComponents; c++ )
-                val[c] *= deltaArea;
+              // for( int c=0; c<numberOfComponents; c++ )
+              //   val[c] *= deltaArea;
 
-              // sum across processors 
-	      real *sum = new real[numberOfComponents];
-	      ParallelUtility::getSums( val,sum,numberOfComponents );
+	      // surfaceArea *= deltaArea;
+
+              val[numberOfComponents]=surfaceArea;      // do this so we sum in parallel below
 	      
+              // sum across processors 
+	      real *sum = new real[numberOfComponents+1];
+	      ParallelUtility::getSums( val,sum,numberOfComponents+1 );
+	      
+              surfaceArea = sum[numberOfComponents];
 	      for( int c=0; c<numberOfComponents; c++ )
 		value(pr,c)=sum[c];
 
+	      if( quantityMeasure=="average" )
+	      {
+                // normalize integrals by the surface area.
+		for( int c=0; c<numberOfComponents; c++ )
+		  value(pr,c) /= surfaceArea;
+	      }
+	      
+
+
               if( false )
               {
-                printF("outputProbes: integrals=");
+                if( quantityMeasure=="average" )
+                  printF("outputProbes: surfaceArea=%12.4e, integrals/surfaceArea=",surfaceArea);
+                else
+                  printF("outputProbes: integrals=");
                 for( int c=0; c<numberOfComponents; c++ )
                   printF("%12.4e ",value(pr,c));
                 printF("\n");

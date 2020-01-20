@@ -1,6 +1,25 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
 ********************************
+********  Wed Jan 8, 2020
+
+START INTERFACE SURFACE WAVE: 
+
+conv.p interface.conv -cg=rect -method=bamx -dm=gdm  -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.3 -tp=.3 -order=4 -saveVectorErrors=1 -errorNorm=1 -ng=5
+
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 3.13e-02 &      & 2.58e-02 &      & 5.97e-03 &      
+     rect4 &     2 & 1.76e-02 &  1.8 & 1.45e-02 &  1.8 & 3.17e-03 &  1.9 
+     rect8 &     4 & 8.92e-03 &  2.0 & 7.35e-03 &  2.0 & 1.62e-03 &  2.0 
+    rect16 &     8 & 4.58e-03 &  1.9 & 3.77e-03 &  1.9 & 8.20e-04 &  2.0 
+    rect32 &    16 & 2.32e-03 &  2.0 & 1.91e-03 &  2.0 & 4.12e-04 &  2.0 
+Convergence rates: c0=0.95 c1=0.95 c2=0.97 
+
+
+
+
+********************************
 ********  Wed Jan 1, 2020
 
 

@@ -102,6 +102,15 @@ defineMaterialRegion( )
     intSerialArray & maskLocal = mask; 
   #endif
 
+  // // *new* way -- store material mask this way  ** FINISH ME ***
+  // if( !parameters.dbase.has_key("materialMask") )
+  // {
+  //   intCompositeGridFunction & materialMask = parameters.dbase.put<intCompositeGridFunction>("materialMask");
+  //   Range all;
+  //   materialMask.updateToMatchGrid(cg,all,all,all);
+  // }
+  
+
   if( pBodyMask==NULL )
     pBodyMask = new intSerialArray(maskLocal.dimension(0),maskLocal.dimension(1),maskLocal.dimension(2));
     

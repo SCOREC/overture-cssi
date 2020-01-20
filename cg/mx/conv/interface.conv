@@ -46,6 +46,7 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"diss=
 	    "solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption,"ts=s"=>\$ts );
 # ------------------------ plane material interface ------------------------------------------
 $name=$option; 
+if( $ic eq "isw" ){ $name = "interfaceSurfaceWave"; }
 # -- BAMX uses a different command file ----
 if( $method eq "bamx" ){\
 $cmdFile="baInterface.cmd"; $cmdDir="$ENV{CG}/mx/runs/ba"; \

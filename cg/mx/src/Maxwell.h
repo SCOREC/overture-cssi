@@ -280,6 +280,8 @@ class Maxwell
 
   int computeTimeStep();
 
+  int computeTimeStepBA();
+
   // Define material sub-regions for bamx 
   int defineMaterialRegion( );
 
