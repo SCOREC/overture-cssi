@@ -202,6 +202,11 @@ Maxwell:: Maxwell()
   // max number of extries on ant grid (for TZ) 
   parameters.dbase.put<int>("maxNumberOfPolarizationComponents");
 
+  // numberOfMaterials(grid) = number of BA materials per grid 
+  parameters.dbase.put<IntegerArray>("numberOfMaterials");  
+  // materialList[grid](i) = material ID, i=0,1,...,numberOfMaterials(grid)-1
+  parameters.dbase.put<std::vector<IntegerArray> >("materialList");  
+
   artificialDissipation=0.;
   artificialDissipationCurvilinear=-1.; // set to non-negative to use this instead of the above
 
@@ -511,8 +516,10 @@ Maxwell:: Maxwell()
   timingName[timeForComputingDeltaT]             ="compute dt";
   timingName[timeForGetError]                    ="get errors";
   timingName[timeForGetNorms]                    ="  get norms";
+  timingName[timeForGetDivergence]               ="get divergence";
   timingName[timeForPlotting]                    ="plotting";
   timingName[timeForShowFile]                    ="showFile";
+  timingName[timeForOutputResults]               ="output results";
   timingName[timeForWaiting]                     ="waiting (not counted)";
   logFile   = fopen("mx.log","w" );        // Here is the log file
 

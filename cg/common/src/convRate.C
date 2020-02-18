@@ -145,6 +145,7 @@ main(int argc, char *argv[])
 	  for( int j=0; j<numberOfComponents; j++ )
 	  {
 	    fprintf(outputFile,"&  $%4.2f$       &      ",sigma(j));
+	    // fprintf(outputFile,"& $%5.3f$       &      ",sigma(j));
 	    printf("c%i=%4.2f ",j,sigma(j));
 	  }
           printf("\n");
@@ -246,9 +247,10 @@ main(int argc, char *argv[])
               real factor = e(grid-1,j)/max( REAL_MIN*1000., e(grid,j));
 	      if( fabs(factor)<1.e4 )
 	      {
-		// fprintf(outputFile,"&~$%5.1f$~ ",factor);
-		fprintf(outputFile,"&%5.1f ",factor);
-		fprintf(stdout    ,"&%5.1f ",factor);
+		// wdh Feb 4, 2020 fprintf(outputFile,"&%5.1f ",factor);
+		// wdh Feb 4, 2020 fprintf(stdout    ,"&%5.1f ",factor);
+		fprintf(outputFile,"&%6.2f ",factor);
+		fprintf(stdout    ,"&%6.2f ",factor);
 	      }
 	      else
 	      {

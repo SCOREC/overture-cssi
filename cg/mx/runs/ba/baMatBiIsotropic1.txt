@@ -3,7 +3,7 @@
 #      eps = 1 + .25/(1+s+s^2) 
 #      xi = 2/(3+s^2)
 #      eta = conj(xi) 
-name="baMatIsotropic1";
+name="baMatBiIsotropic1";
 materialType="bianisotropic";
 dispersiveModel="GDM";
 units="MKS";

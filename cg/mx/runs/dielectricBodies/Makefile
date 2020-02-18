@@ -138,6 +138,15 @@ ellipseL2Angle30:
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2 -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=8
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2p -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=16
  
+# Non periodic grid for oblique incidence test 
+ellipse:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0 -xa=-2. -xb=2. -interp=e -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0  -xa=-2. -xb=2. -interp=e -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0  -xa=-2. -xb=2. -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0  -xa=-2. -xb=2. -interp=e -order=4 -factor=16
+
+
+
 rod:
 	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=4
 	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=8

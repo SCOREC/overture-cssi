@@ -560,14 +560,22 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       int & solveForAllFields = dbase.get<int>("solveForAllFields");
 
       OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
+
       if( numberOfMaterialRegions>1 )
       {
-	assert( cg.numberOfComponentGrids()==1 );
-	assert( pBodyMask!=NULL );
+	// assert( cg.numberOfComponentGrids()==1 );
+	// assert( pBodyMask!=NULL );
+        intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+        OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+	pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
       }
-      IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
+      else
+      {
+	pies.evalBA( dmp1, dmp2, t, cg, grid, maskLocal, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
+      }
 
-      pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
+      // IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
+
 
     }
     
@@ -610,9 +618,10 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       if( numberOfMaterialRegions>1 )
       {
 	assert( cg.numberOfComponentGrids()==1 );
-	assert( pBodyMask!=NULL );
       }
-      IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
+      intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+      OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+
 
       swes.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
 

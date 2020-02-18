@@ -1067,8 +1067,10 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                       	else
                       	{
                   // --- multiple material regions ---
-                        	  assert( pBodyMask!=NULL );
-                        	  IntegerArray & matMask = *pBodyMask;
+                                    intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+                                    OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+        	  // assert( pBodyMask!=NULL );
+        	  // IntegerArray & matMask = *pBodyMask;
                         	  int i1,i2,i3;
                         	  FOR_3D(i1,i2,i3,I1,I2,I3)
                         	  {
@@ -1115,8 +1117,10 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                       	else
                       	{
                   // --- multiple material regions ---
-                        	  assert( pBodyMask!=NULL );
-                        	  IntegerArray & matMask = *pBodyMask;
+                                    intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+                                    OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+        	  // assert( pBodyMask!=NULL );
+        	  // IntegerArray & matMask = *pBodyMask;
                         	  int i1,i2,i3;
                         	  FOR_3D(i1,i2,i3,I1,I2,I3)
                         	  {
@@ -1216,8 +1220,10 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
                             else
                             {
                 // --- multiple material regions ---
-                                assert( pBodyMask!=NULL );
-                                IntegerArray & matMask = *pBodyMask;
+                                intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+                                OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                // assert( pBodyMask!=NULL );
+                // IntegerArray & matMask = *pBodyMask;
                                 int i1,i2,i3;
                                 FOR_3D(i1,i2,i3,I1,I2,I3)
                                 {

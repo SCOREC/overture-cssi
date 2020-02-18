@@ -5391,7 +5391,11 @@ assignInitialConditions(int current, real t, real dt )
                     real tm=t-dt,x,y,z;
                     const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
             // NOTE: dispersion version is a user defined known solution
-                        assert( dispersionModel == noDispersion );
+                        if( dispersionModel != noDispersion )
+                        {
+                            printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
+                            OV_ABORT("error");
+                        }
                         if( method==bamx )
                         {
               // =================== BA MAXWELL ======================

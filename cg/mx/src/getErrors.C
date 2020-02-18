@@ -1658,7 +1658,7 @@ getErrors( int current, real t, real dt )
                             }
                         }
                     }
-                    if( localDispersionModel != noDispersion )
+                    if( localDispersionModel != noDispersion  && method==nfdtd )
                     {         
             // --- error in dispersion variables ---
                         realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
@@ -1676,7 +1676,25 @@ getErrors( int current, real t, real dt )
                                 errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - e(x0,y0,z0,pzc+pc,tE);
                             }
                         }
-                    } // end if dispersion 
+                    } 
+                    else if( localDispersionModel != noDispersion && method==bamx )
+                    {         
+            // BAXM -- errors in polarization components
+            // printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d\n",numberOfPolarizationVectors);
+                        realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            real x0 = XEP(i1,i2,i3,0);
+                            real y0 = XEP(i1,i2,i3,1);
+                            real z0 = XEP(i1,i2,i3,2);
+                            const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                            for( int m=0; m<numPolarizationTerms; m++ )
+                            {
+                                const int pc= hz + m + 1;  // TZ solution sits here 
+                                errPolarization(i1,i2,i3,m) = pLocal(i1,i2,i3,m)- e(x0,y0,z0,pc,tE);
+                            }
+                        }
+                    }// end localDispersion Model 
                 }
                 if( debug & 4 ) 
                 {
@@ -2459,7 +2477,11 @@ getErrors( int current, real t, real dt )
             real tm=t-dt,x,y,z;
             const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
         // NOTE: dispersion version is a user defined known solution
-                assert( dispersionModel == noDispersion );
+                if( dispersionModel != noDispersion )
+                {
+                    printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
+                    OV_ABORT("error");
+                }
                 if( method==bamx )
                 {
           // =================== BA MAXWELL ======================

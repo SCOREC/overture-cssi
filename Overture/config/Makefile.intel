@@ -142,7 +142,8 @@ else
 
  else ifeq ($(OV_USE_PETSC_3),3.4.5)
     # for PETSc v3.4.5
-    PETSC_INCLUDE = -I$(PETSC_DIR)/include  -I$(PETSC_DIR)/$(PETSC_ARCH)/include -DOVERTURE_USE_PETSC -I$(PETSC_LIB)/include 
+    # /home/henshw/software/petsc-3.4.5-serial/include/mpiuni/mpi.h
+    PETSC_INCLUDE = -I$(PETSC_DIR)/include  -I$(PETSC_DIR)/$(PETSC_ARCH)/include -DOVERTURE_USE_PETSC -I$(PETSC_LIB)/include -I$(PETSC_DIR)/include/mpiuni
     PETSC_LIBS = -Wl,-rpath,$(PETSC_LIB) -L$(PETSC_LIB) -lpetsc
 
  else ifeq ($(OV_USE_PETSC_3),)

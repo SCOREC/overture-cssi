@@ -14,6 +14,7 @@
 # -- set default values for parameters ---
 $kx=2; $ky=0; $kz=0; $left="leftSquare*"; $right="rightSquare*"; $degreex=2; $degreet=2; $method="NFDTD";
 $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; $dissOrder=-1;
+$xa=1e-10; $xb=1.1; $ya=-.55;  $yb=.55; $za=-.55; $zb=.55; # material box 
 $useNewInterface=1; $errorNorm=1; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
 $useImpedanceInterfaceProjection=1; $cons=1; $frequencyToFlush=10; 
 $useSosupDissipation=0; $sosupParameter=1.; 
@@ -47,10 +48,9 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "interfaceEquationOption=i"=>\$interfaceEquationOption,"interfaceOmega=f"=>\$interfaceOmega,"tz=s"=>\$tz,\
            "bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
            "bc7=s"=>\$bc7,"bc8=s"=>\$bc8,"setDivergenceAtInterfaces=s"=>\$setDivergenceAtInterfaces,"cons=i"=>\$cons,\
-           "useImpedanceInterfaceProjection=s"=>\$useImpedanceInterfaceProjection,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
+           "modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
            "dm=s"=>\$dm,"npv=i{1,}"=>\@npv,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
-           "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
-           "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
+           "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb,\
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,"frequencyToFlush=i"=>\$frequencyToFlush,\
 	   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
 	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption,\
@@ -79,19 +79,9 @@ if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"gdm" ){ $dm="GDM"; }
 # Give defaults here for array arguments: 
-if( $alphaP[0] eq "" ){ @alphaP=(-1,-1); } # default -1 means use 1/eps
 if( $interfaceNormal[0] eq "" ){ @interfaceNormal=(1,0,0); }
 if( $interfacePoint[0] eq "" ){ @interfacePoint=(0,0,0); }
 if( $npv[0] eq "" ){ @npv=(0,0); }
-if( $a01[0] eq "" ){ @a01=(1,0,0,0); }
-if( $a11[0] eq "" ){ @a11=(0,0,0,0); }
-if( $b01[0] eq "" ){ @b01=(0,0,0,0); }
-if( $b11[0] eq "" ){ @b11=(0,0,0,0); }
-#
-if( $a02[0] eq "" ){ @a02=(1,0,0,0); }
-if( $a12[0] eq "" ){ @a12=(0,0,0,0); }
-if( $b02[0] eq "" ){ @b02=(0,0,0,0); }
-if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
 #
 $grid
 #
@@ -173,58 +163,20 @@ forcing options...
 define material region...
 material file: $matFile2
 # NOTE: material box must be big enough to include ghost points
-if( $ic ne "isw" ){ $cmd="box: .00000001 1.1 -.55 .55 -.55 .55 (xa,xb,ya,yb,za,zb)"; }else{ $cmd="box: -2.1 2.1 -1.05 -.0000001 -.55 .55 (xa,xb,ya,yb,za,zb)"; }
-$cmd 
+box: $xa $xb $ya $yb $za $zb (xa,xb,ya,yb,za,zb)
+# $cmd="box: .00000001 1.1 -.55 .55 -.55 .55 (xa,xb,ya,yb,za,zb)"; }else{ $cmd="box: -2.1 2.1 -1.05 -.0000001 -.55 .55 (xa,xb,ya,yb,za,zb)"; }
+# $cmd 
 continue
 # 
-#- $domain="all"; 
-#- # ------------ Set GDM parameters on the left domain -----------
-#- GDM domain name: leftDomain
-#-   number of polarization vectors: $npv[0]
-#-   GDM alphaP: $alphaP[0]
-#- $cmd="#"; 
-#- if( $npv[0] == 1 ){ \
-#-    $cmd = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
-#-  }
-#- if( $npv[0] == 2 ){ \
-#-    $cmd  = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)"; \
-#-       }
-#- if( $npv[0] == 3 ){ \
-#-    $cmd  = " GDM coeff: 0 $a01[0] $a11[0] $b01[0] $b11[0] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 2 $a01[2] $a11[2] $b01[2] $b11[2] (eqn, a0,a1,b0,b1)"; \
-#-       }
-#- $cmd
-#- # ------------ Set GDM parameters on the right domain -----------
-#- GDM domain name: rightDomain
-#-   number of polarization vectors: $npv[1]
-#-   GDM alphaP: $alphaP[1]
-#- $cmd="#"; 
-#- if( $npv[1] == 1 ){ \
-#-    $cmd = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
-#-  }
-#- if( $npv[1] == 2 ){ \
-#-    $cmd  = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)"; \
-#-       }
-#- if( $npv[1] == 3 ){ \
-#-    $cmd  = " GDM coeff: 0 $a02[0] $a12[0] $b02[0] $b12[0] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)\n"; \
-#-    $cmd .= " GDM coeff: 2 $a02[2] $a12[2] $b02[2] $b12[2] (eqn, a0,a1,b0,b1)"; \
-#-       }
-#- $cmd
+bc: all=$bc
 #
-# 
 #  The dispersive case is handled by a user defined known solution
-# if( $ic ne "gp" && $dm ne "no dispersion" && $tz eq "#" ){
-if( $ic ne "gp" && $tz eq "#" ){\
+if( $ic eq "planeMaterialInterfaceInitialCondition" && $dm ne "no dispersion" && $tz eq "#" ){\
  $ic = "user defined known solution\n  dispersive plane wave interface\n done\n userDefinedKnownSolutionInitialCondition"; }
 # Surface wave: 
-if( $ic ne "isw" && $tz eq "#" ){\
+if( $ic eq "isw" && $tz eq "#" ){\
  $ic = "user defined known solution\n interface surface wave\n $caseName\n done\n userDefinedKnownSolutionInitialCondition"; }
 # 
-bc: all=$bc
 if( $ic eq "gp" ){ $ic="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 $ic
 # printf(" ic=$ic\n");

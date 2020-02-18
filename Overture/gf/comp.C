@@ -27,6 +27,11 @@ for(i3=I3Base; i3<=I3Bound; i3++) \
 for(i2=I2Base; i2<=I2Bound; i2++) \
 for(i1=I1Base; i1<=I1Bound; i1++)
 
+      
+#define ForBoundary(side,axis)   for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) \
+                                 for( int side=0; side<=1; side++ )
+      
+
 // ====================================================================================================
 //
 // Estimate the convergence rate and actual error for a sequence
@@ -569,7 +574,8 @@ int computeDifferences( int numberOfFiles,
                         realCompositeGridFunction *ud,
                         int interpolationWidth,
                         bool useOldWay, bool useNewWay,
-                        bool interpolateFromSameDomain )
+                        bool interpolateFromSameDomain,
+                        int boundaryErrorOffset=0 )
 {
   const int n =numberOfFiles-1;  // finest grid
   
@@ -696,6 +702,7 @@ int computeDifferences( int numberOfFiles,
           ud[i][masterGrid(grid)]=uCoarse[grid];  // copy interpolated values into ud[i] on master
 	}
 
+
       } // end fo domain
       
 
@@ -762,7 +769,47 @@ int computeDifferences( int numberOfFiles,
       uLocal=vLocal-uLocal;
     }
 	
+    if( boundaryErrorOffset>0 )
+    {
+      // --- set the differences to zero near physical boundaries (Could be a PML layer)
+      // **wdhw** Feb 15, 2020
+      printF(">>>>>> SET DIFFERENCES TO ZERO WITHIN %d gridlines of physical boundaries <<<<<<<\n",boundaryErrorOffset);
 
+
+      Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
+      for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
+      {
+	MappedGrid & mg = cg[i][grid];
+	    
+	ForBoundary(side,axis)
+	{
+	  if( mg.boundaryCondition(side,axis)>0 )
+	  {
+	    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+	    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+	    OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
+	    int is = 1-2*side;
+
+	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+            int ia = Ibv[axis].getBase(), ib=Ibv[axis].getBase()+boundaryErrorOffset*is-1;
+	    
+	    Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
+
+	    bool ok = ParallelUtility::getLocalArrayBounds(mg.vertex(),xLocal,Ib1,Ib2,Ib3);
+	    Range all;
+	    if( ok ) 
+	    {
+	      uLocal(Ib1,Ib2,Ib3,all)=0.;
+	    }
+	  }
+	      
+	}
+      } // end for grid
+    }// end if boundaryErrorOffset>0
+    
+      
+
+	  
   } // end for( int i=0; i<n; i++ )
   
   return 0;
@@ -887,8 +934,8 @@ main(int argc, char *argv[])
   ps.saveCommandFile(logFile);
   printF("User commands are being saved in the file `%s'\n",(const char *)logFile);
 
-  // aString outputFileName="comp.log";
-  aString outputFileName=logFile;
+  aString outputFileName="comp.log";
+  // aString outputFileName=logFile;
   FILE *outFile = NULL;
   
   aString outputShowFile = "comp.show";
@@ -918,6 +965,7 @@ main(int argc, char *argv[])
   // we can define vectors of components for computing errors such as the norm of the velocity components.
   std::vector<ComponentVector> componentVector;
 
+  int boundaryErrorOffset=0;  // --- set the differences to zero near physical boundaries (Could be a PML layer)
 
   // ---------------- Build the GUI -------------------
   GUIState dialog;
@@ -958,6 +1006,7 @@ main(int argc, char *argv[])
   textLabels[nt] = "matlab file name:";  sPrintF(textStrings[nt],"%s",(const char*)matlabFileName);  nt++; 
   textLabels[nt] = "interpolation width:";  sPrintF(textStrings[nt],"%i",interpolationWidth);  nt++; 
   textLabels[nt] = "output show file:";  sPrintF(textStrings[nt],"%s",(const char*)outputShowFile);  nt++; 
+  textLabels[nt] = "boundary error offset:";  sPrintF(textStrings[nt],"%i",boundaryErrorOffset);  nt++; 
 
   // null strings terminal list
   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
@@ -1031,6 +1080,13 @@ main(int argc, char *argv[])
     {
       printF("Setting the interpolation width to %i\n",interpolationWidth);
     }
+
+    else if( dialog.getTextValue(answer,"boundary error offset:","%i",boundaryErrorOffset) )
+    {
+      printF("Setting boundaryErrorOffset=%i: zero out errors %d lines from any physical boundary (e.g. for PML)\n",
+	     boundaryErrorOffset,boundaryErrorOffset);
+    }
+    
 
     else if( dialog.getToggleValue(answer,"assume fine grid holds exact solution",assumeFineGridHoldsExactSolution) )
     {
@@ -1321,7 +1377,8 @@ main(int argc, char *argv[])
 
       // ----------------- Compute differences -------------
       //    du[i] = Interp(uFine) - uCoarse[i] 
-      computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay,interpolateFromSameDomain );
+      computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay,interpolateFromSameDomain,
+			  boundaryErrorOffset );
       
       for( int i=0; i<n; i++ )
       {
@@ -1684,7 +1741,8 @@ main(int argc, char *argv[])
 
 	// ----------------- Compute differences -------------
 	//    du[i] = Interp(uFine) - uCoarse[i] 
-	computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay, interpolateFromSameDomain );
+	computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay, interpolateFromSameDomain,
+   	                    boundaryErrorOffset );
 
 
         printF("Saving solution %i to show file: t=%16.10e\n",solution,time(0));

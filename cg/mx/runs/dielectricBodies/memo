@@ -1,4 +1,52 @@
 ********************************
+********  Sun Feb 16, 2020
+
+START ON OBLIQUE INCIDENCE
+
+ARRAY OF BODIES
+ogen -noplot embeddedBodyArrayGrid -numBodies=3 -shape=ellipse -prefix=ellipseEmbeddedBodyArrayGrid -xa=-5. -xb=5. -per=0 -interp=e -factor=4
+
+ogen -noplot embeddedBodyArrayGrid -numBodies=2 -shape=ellipse -prefix=ellipseEmbeddedBodyArrayGrid -xa=-5. -xb=5. -per=0 -interp=e -factor=4
+
+
+
+THREE ELLIPSES
+cgmx -noplot embeddedBodies -g=ellipseEmbeddedBodyArrayGrid3Bodiese4.order2.hdf -numBodies=3 -tf=8 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=2 -ky=1 -beta=40 -x0=-2.5 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1. -xRightProbe=1. -probeFileName=ThreeEllipsee -eps1=2 -show=ellipseThreeAngle45.show -go=go
+
+TWO ELLIPSES
+cgmx -noplot embeddedBodies -g=ellipseEmbeddedBodyArrayGrid2Bodiese4.order2.hdf -numBodies=2 -tf=8 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=2 -ky=1 -beta=40 -x0=-2.5 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1. -xRightProbe=1. -probeFileName=TwoEllipsee -eps1=2 -show=ellipseTwoAngle45.show -go=go
+
+
+ONE ELLIPSE
+cgmx -noplot embeddedBodies -g=ellipseEmbeddedBodyGride4.order2.hdf -numBodies=1 -tf=8 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=2 -ky=1 -beta=40 -x0=-2.5 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1. -xRightProbe=1. -probeFileName=OneEllipse -eps1=2  -show=ellipseOneAngle45.show -go=go
+
+
+
+
+-- ADD REFINEMENT WHERE WE PUT AN INTEGRAL PROBE
+ogen -noplot embeddedBodyGrid -shape=ellipse -prefix=ellipseEmbeddedBodyGrid -xa=-5. -xb=5. -per=0 -interp=e -factor=4
+
+
+cgmx -noplot embeddedBodies -g=ellipseEmbeddedBodyGride4.order2.hdf -tf=20 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=2 -ky=1 -beta=40 -x0=-1.5 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1. -xRightProbe=1. -probeFileName=myProbe -eps1=2 -go=og
+
+
+********************************
+********  Fri Jan 31, 2020
+
+START ON OBLIQUE INCIDENCE
+
+ELLIPSE WITYH PML on all sides
+
+cgmx -noplot dielectricBodies -g=ellipticalGridne4.order2.hdf -tf=20 -useSosupDissipation=1 -ic=gp -kx=2 -ky=1 -beta=40 -x0=-1.5 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1.5 -xRightProbe=1.5 -dm=gdm -probeFileName=myProbe -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+cgmx -noplot dielectricBodies -g=ellipticalGridne4.order2.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1.5 -xRightProbe=1.5 -dm=gdm -probeFileName=myProbe -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
+
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2. -xRightProbe=2. -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
+********************************
 ********  Tue Jan 14, 2020
 
 FIX BUG with integral probe, add option to average integral by area.

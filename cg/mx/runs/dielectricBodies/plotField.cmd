@@ -1,4 +1,9 @@
 #
+echo to terminal 0
+#   plotStuff plotField.cmd -show=ellipseOneAngle45.show -solution=7 -name=ellipseOneAngle45
+#   plotStuff plotField.cmd -show=ellipseTwoAngle45.show -solution=7 -name=ellipseTwoAngle45
+#   plotStuff plotField.cmd -show=ellipseThreeAngle45.show -solution=7 -name=ellipseThreeAngle45
+#
 #   plotStuff plotField.cmd -show=ellipseG8.show -name=ellipseG8
 #   plotStuff plotField.cmd -show=rodG8.show -name=rodG8
 #   plotStuff plotField.cmd -show=diskInBoxG8.show -name=diskInBoxG8
@@ -80,6 +85,7 @@ GetOptions( "show=s"=>\$show, "name=s"=>\$name, "solution=i"=>\$solution,"tSave=
 #
 $show
 #
+echo to terminal 1
 plot:$field
 contour
   plot contour lines (toggle)

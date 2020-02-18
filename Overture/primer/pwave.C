@@ -54,7 +54,9 @@ real
 getMaxTime(real time)
 {
   real maxTime=0;
+#ifdef USE_PPP
   MPI_Reduce(&time, &maxTime, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+#endif
   return maxTime;
 }
 
@@ -206,7 +208,7 @@ getInitialConditions( InitialConditionOptionEnum option, realCompositeGridFuncti
       else
       {
 	cg[grid].update(MappedGrid::THEvertex);  // build the array of vertices
-	const realArray & vertex = cg[grid].vertex();
+	realArray & vertex = cg[grid].vertex();
 
         if( !ok ) continue;  // nothing to do on this processor
 
@@ -285,8 +287,9 @@ main(int argc, char *argv[])
   printF("Usage: `mpirun -np N pwave [-noplot][-grid=<gridName>][-cmd=<file.cmd>]'\n");
   
   // Use this to avoid un-necessary communication: 
-  Optimization_Manager::setForceVSG_Update(Off);
-
+  #ifdef USE_PPP
+    Optimization_Manager::setForceVSG_Update(Off);
+  #endif 
 
   // "cic.4.hdf"; // "sis2.p.order4.hdf"; // "sis2.p.hdf"; // "square10.hdf" ; // "cic.4.hdf"; //
   // "cic2.4.hdf"  // 1.1M points
@@ -340,7 +343,11 @@ main(int argc, char *argv[])
     MappedGrid::setMinimumNumberOfDistributedGhostLines(numGhost);
   #endif
   CompositeGrid cg;
-  bool loadBalance=true; // turn on or off the load balancer
+  #ifdef USE_PPP
+    bool loadBalance=true; // turn on or off the load balancer
+  #else
+    bool loadBalance=false; // turn on or off the load balancer
+  #endif 
   getFromADataBase(cg,nameOfOGFile,loadBalance);
 
   cg.update(MappedGrid::THEmask);

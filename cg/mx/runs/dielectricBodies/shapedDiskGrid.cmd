@@ -36,7 +36,7 @@
 #   ogen -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -interp=i -order=4 -factor=8
 #
 $shape="ellipse"; 
-$prefix="shapedDiskGrid";  $rgd="var"; $angle=0.; $branch=0; 
+$prefix="shapedDiskGrid";  $rgd="var"; $angle=0.; $branch=0; $per=1; 
 $order=2; $factor=1; $interp="i"; $ml=0; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
 $name=""; $xa=-2.; $xb=2.; $ya=-1.25; $yb=1.25; 
@@ -53,7 +53,7 @@ $numGhost=-1;  # if this value is set, then use this number of ghost points
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"blf=f"=> \$blf, "prefix=s"=> \$prefix,\
             "cx=f"=>\$cx,"cy=f"=>\$cy,"rgd=s"=> \$rgd,"radX=f"=>\$radX,"radY=f"=>\$radY,"angle=f"=>\$angle,\
-            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,\
+            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,"per=i"=>\$per,\
             "edgeHeight=f"=>\$edgeHeight,"edgeWidth=f"=>\$edgeWidth,"numGhost=i"=>\$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -99,7 +99,8 @@ rectangle
     $ny = intmg( ($yb-$ya)/$ds +1.5 ); 
     $nx $ny
   boundary conditions
-    1 2 -1 -1 
+    if( $per eq 1 ){ $cmd=" 1 2 -1 -1"; }else{ $cmd="1 2 3 4"; }
+    $cmd 
   mappingName
     backGround
 exit

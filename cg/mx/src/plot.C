@@ -383,6 +383,8 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 realCompositeGridFunction& Maxwell::
 getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
 {
+  // if( true ) return gf[current].u; // test 
+    
     assert( cgp!=NULL );
     CompositeGrid & cg = *cgp;
     const int numberOfDimensions = cg.numberOfDimensions();
@@ -441,7 +443,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
         parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
 
     const int numPolarizationVectors=6;  // [Px,Py,Pz, Mx,My,Mz]
-    bool plotPolarization = method==bamx && solveForAllFields && dispersionModel!=noDispersion;
+    bool plotPolarization = false && method==bamx && solveForAllFields && dispersionModel!=noDispersion; // *** FIX ME ***
     bool plotPolarizationErrors = plotPolarization && saveErrors;
     
     const int nPolarization=numberToPlot;
@@ -703,7 +705,9 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
       // this is done above
         }
         else if( method==nfdtd  || method==sosup || method==bamx )
+        {
             vLocal(all,all,all,N)=uLocal(all,all,all,N); // for now make a copy *** fix this **
+        }
         else
         {
             Range N1 = fields[current].getLength(3);
@@ -858,9 +862,11 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
             {
                 if( numberOfMaterialRegions>1 )
                 {
-                    assert( pBodyMask!=NULL );
-                
-                    const IntegerArray & matMask = *pBodyMask;  // material index 
+          // assert( pBodyMask!=NULL );
+          // const IntegerArray & matMask = *pBodyMask;  // material index 
+
+        	  intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+        	  OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
 
                     int i1,i2,i3;
                     FOR_3D(i1,i2,i3,I1,I2,I3)
@@ -1696,43 +1702,12 @@ plot( int current, real t, real dt )
     aString label;
     getTimeSteppingLabel( dt,label );
     
-  // label=sPrintF(buff,"dt=%4.1e",dt);
-
-  // if( timeSteppingMethod==modifiedEquationTimeStepping )
-  //   label+=" TS=ME";
-  // else if( timeSteppingMethod==stoermerTimeStepping )
-  //   label+=" TS=ST";
-  // else if( timeSteppingMethod==rungeKutta )
-  //   label+=" TS=RK";
-  // else if( timeSteppingMethod==defaultTimeStepping )
-  //   label+=" TS=default ";
-  // else
-  //   label+="TS=??, ";
-
-  // if( twilightZoneOption==polynomialTwilightZone )
-  //   label+=sPrintF(buff," order(X,T)=(%i,%i)",
-  // 		   orderOfAccuracyInSpace,orderOfAccuracyInTime);
-  // if( method==nfdtd )
-  // {
-  //   if( artificialDissipation!=0. && artificialDissipation==artificialDissipationCurvilinear )
-  //     label+=sPrintF(buff," ad%i=%4.2f",orderOfArtificialDissipation,artificialDissipation);
-  //   else if( artificialDissipationCurvilinear!=0. )
-  //     label+=sPrintF(buff," adr%i=%4.2f,adc%i=%4.2f",orderOfArtificialDissipation,artificialDissipation,
-  //                    orderOfArtificialDissipation,artificialDissipationCurvilinear);
-            
-  //   if( applyFilter )
-  //     label+=sPrintF(buff,", filter%i",orderOfFilter);
-
-  //   if( divergenceDamping>0. )
-  //     label+=sPrintF(buff," dd=%5.3f",divergenceDamping);
-  // }
-    
     if( plotScatteredField )
         label+="(scattered field)";
         
     psp.set(GI_TOP_LABEL_SUB_1,label);
 
-  // we need to know if the graphics is oen on any processor -- fix this in the GraphicsInterface.
+  // we need to know if the graphics is open on any processor -- fix this in the GraphicsInterface.
     int graphicsIsOn = ps.isGraphicsWindowOpen();
     graphicsIsOn=getMaxValue(graphicsIsOn);
     int readingCommandFile = ps.readingFromCommandFile();
@@ -1843,9 +1818,10 @@ plot( int current, real t, real dt )
 
         if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
         {
-            printF("PLOT BODY FORCE REGIONS (1)\n");
+      // printF("PLOT BODY FORCE REGIONS\n");
       // Plot body/boundary forcing regions and immersed boundaries. 
             BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
+            
         }
 
         if( plotChoices & 1 )
@@ -2095,6 +2071,11 @@ plot( int current, real t, real dt )
       	else if( answer=="movie mode" )
       	{
                     plotOptions=3;  // don't wait
+                    if( ! ps.isGraphicsWindowOpen() )
+                    {
+                        plotOptions=0;  // *wdh* No need to plot if graphics is off - Jan 28, 2020
+                    }
+                    
 
             	  setSensitivity( dialog,false );
                     break;
@@ -2202,7 +2183,7 @@ plot( int current, real t, real dt )
 
                     if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
                     {
-                        printF("PLOT BODY FORCE REGIONS (2)\n");
+            // printF("PLOT BODY FORCE REGIONS (2)\n");
             // Plot body/boundary forcing regions and immersed boundaries. 
                         psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
                         BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
@@ -2268,7 +2249,7 @@ plot( int current, real t, real dt )
 
                     if( numberOfMaterialRegions>1 ) // plot this first since title is wrong in body force graphics parameters
                     {
-                        printF("PLOT BODY FORCE REGIONS (3) \n");
+            // printF("PLOT BODY FORCE REGIONS (3) \n");
             // Plot body/boundary forcing regions and immersed boundaries. 
                         BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
                     }

@@ -33,20 +33,20 @@ extern "C"
             const int&mask, const int&boundaryCondition, const int&ipar, const real&rpar, int&ierr );
 }
 
-static Maxwell *cgmxPointer=NULL; // for getBAGDMParameters
+Maxwell *cgmxPointer=NULL; // for getBAGDMParameters
 
 #define getBAGDMParameters EXTERN_C_NAME(getbagdmparameters)
 extern "C"
 {
 
-// ================================================================================
-///  \brief Return the BA gdm parameters  
+// ==================================================================================================
+///  \brief Return the BA gdm parameters  (called by the fortran routines in advBA.bf) 
 /// \param grid (input) : return parameters for this grid 
 /// 
 /// \param gdmPar(0:3,0:NpMax-1,0:5,0:5,0:maxRegions-1) (input/output) : must be allocated on input. Values are returned here.
 ///
 /// \param Npt(1:6,1:6,1:maxRegions) (input/output) : number of polarization terms for K(i,j) i=1,..,6, j=1,...,6
-// ================================================================================
+// =================================================================================================
 void getBAGDMParameters( int & grid, real *gdmPar, int *Npt, 
                    			 const int & NpMax,
                    			 const int & maxRegions )
@@ -896,11 +896,16 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
         //   }
         // }
         // ***NOTE*** pmask points to the bodyMask
+                int *pmask = maskLocal.getDataPointer();
                 if( numberOfMaterialRegions>1 )
                 {
-                    assert( pBodyMask!=NULL );
+          // ---- there is a material mask ----
+          // assert( pBodyMask!=NULL );
+                    intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+                    OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                    pmask = matMask.getDataPointer();
                 }
-                int *pmask = numberOfMaterialRegions>1 ? pBodyMask->getDataPointer() : maskLocal.getDataPointer();
+        // int *pmask = numberOfMaterialRegions>1 ? pBodyMask->getDataPointer() : maskLocal.getDataPointer();
                 if( debug & 8 )
                 {
                     fprintf(debugFile,"addForcing=%i, useNewForcingMethod=%i\n",(int)addForcing,(int)useNewForcingMethod);

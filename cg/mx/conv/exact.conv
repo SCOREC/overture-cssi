@@ -98,8 +98,12 @@ if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
   { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #
 # BA-MAXWELL
-if( $method eq "bamx" && $solveForAllFields eq 1 )\
+if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "none" )\
   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$H_x\$ \&  \$H_y\$ \& \$H_z\$  \&   \$\\Ev\$ \&   \$\\Hv\$  \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=9; }
+#
+if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "gdm" )\
+  { $title= "grid  \& N \&  \$E_x\$   \&  \$E_y\$     \& \$E_z\$    \&  \$H_x\$    \&  \$H_y\$    \& \$H_z\$   \&   \$\\Ev\$   \&   \$\\Hv\$   \&  \$\\Pv\$   \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=10; }
+#
 # BA-MAXWELL -- only display vector errors 
 if( $method eq "bamx" && $solveForAllFields eq 1 &&  $dm eq "none" && $saveVectorErrors eq 1 )\
   { $title= "grid  \& N \&    \$\\Ev\$ \&   \$\\Hv\$ "; $numberOfComponents=9;  \

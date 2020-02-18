@@ -13,12 +13,26 @@
 
 
 
+
+// ----------------------------------------------------------------------------
+// Macro: Fill the material mask for different bodies
+//   REGION: BOX, CYL, ELLIPSOID
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// Macro: Make a list of these materials that exist on each grid  -- we only need to store polarization vectors
+//  for the materials that exist on the grid. 
+// ----------------------------------------------------------------------------
+
+
 // =====================================================================================
 /// \brief Define a material region for the BAMX scheme.
 // =====================================================================================
 int Maxwell::
 defineMaterialRegion( )
 {
+    real time0=getCPU();
+
     assert( cgp!=NULL );
     CompositeGrid & cg= *cgp;
     const int numberOfDimensions = cg.numberOfDimensions();
@@ -44,6 +58,25 @@ defineMaterialRegion( )
     std::vector<BodyForce*> & boundaryForcings =  parameters.dbase.get<std::vector<BodyForce*> >("boundaryForcings");
     parameters.dbase.get<bool>("turnOnBoundaryForcing") = true;   // set to true to plot region boundaries
 
+  // numberOfMaterials(grid) = number of BA materials per grid 
+  // materialList[grid](i) = material ID, i=0,1,...,numberOfMaterials(grid)-1
+    IntegerArray & numberOfMaterials = parameters.dbase.get<IntegerArray>("numberOfMaterials");
+    std::vector<IntegerArray> & materialList = parameters.dbase.get<std::vector<IntegerArray> >("materialList");  
+
+    if( numberOfMaterials.getLength(0) != cg.numberOfComponentGrids() )
+    {
+        numberOfMaterials.redim(cg.numberOfComponentGrids());
+        materialList.resize(cg.numberOfComponentGrids());
+    }
+    numberOfMaterials=0;
+
+  // total number of polarization components per grid 
+  // IntegerArray & totalNumberOfPolarizationComponents =
+  //   parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+  // totalNumberOfPolarizationComponents.redim(cg.numberOfComponentGrids());
+  // totalNumberOfPolarizationComponents=0;
+
+
   // Here is where we save the current parameters that define any body force region type:
   // BodyForceRegionParameters regionPar;
 
@@ -66,65 +99,80 @@ defineMaterialRegion( )
             "RED", "DARKORCHID", "DARKTURQUOISE", "SEAGREEN", "VIOLET", "GOLDENROD", "NAVYBLUE", "DARKGREEN", "BLUE", "SPRINGGREEN" 
         };  //
       
-    const int grid=0;
-    
-    MappedGrid & mg = cg[grid];
 
-    const bool isRectangular = mg.isRectangular();
-    assert( isRectangular );
-
-    mg.update(MappedGrid::THEmask );
-    
-    intArray & mask = mg.mask();
-    #ifdef USE_PPP
-        intSerialArray maskLocal;  getLocalArrayWithGhostBoundaries(mask,maskLocal);
-    #else
-        intSerialArray & maskLocal = mask; 
-    #endif
-
-  // // *new* way -- store material mask this way  ** FINISH ME ***
-  // if( !parameters.dbase.has_key("materialMask") )
-  // {
-  //   intCompositeGridFunction & materialMask = parameters.dbase.put<intCompositeGridFunction>("materialMask");
-  //   Range all;
-  //   materialMask.updateToMatchGrid(cg,all,all,all);
-  // }
+  // *new* way -- store material mask this way  ** FINISH ME ***
+    if( !parameters.dbase.has_key("materialMask") )
+    {
+        intCompositeGridFunction & materialMask = parameters.dbase.put<intCompositeGridFunction>("materialMask");
+        Range all;
+        materialMask.updateToMatchGrid(cg,all,all,all);
+    }
+    intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
     
 
-    if( pBodyMask==NULL )
-        pBodyMask = new intSerialArray(maskLocal.dimension(0),maskLocal.dimension(1),maskLocal.dimension(2));
+  // if( pBodyMask==NULL )
+  //   pBodyMask = new intSerialArray(maskLocal.dimension(0),maskLocal.dimension(1),maskLocal.dimension(2));
+  // intSerialArray & matMask = *pBodyMask;
+
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
         
-    intSerialArray & matMask = *pBodyMask;
-    matMask=0;
+        OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
 
-    Range all;
-    realMappedGridFunction rmask(mg,all,all,all);  // real version of the mask for contour plots
-    rmask=0;
+        matMask=0;
+    }
     
+
+    const int grid=0;
+
+//  OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+
+    
+  // MappedGrid & mg = cg[grid];
+
+  // const bool isRectangular = mg.isRectangular();
+  // assert( isRectangular );
+
+  // mg.update(MappedGrid::THEmask );
+    
+  // intArray & mask = mg.mask();
+  // #ifdef USE_PPP
+  //   intSerialArray maskLocal;  getLocalArrayWithGhostBoundaries(mask,maskLocal);
+  // #else
+  //   intSerialArray & maskLocal = mask; 
+  // #endif
+
+
+  // Range all;
+  // // realMappedGridFunction rmask(mg,all,all,all);  // real version of the mask for contour plots
+  // // rmask=0;
+    
+  // Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+
+  // // getIndex(mg.gridIndexRange(),I1,I2,I3);
+  // getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+  // int includeGhost=1;
+  // bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
+
+
+  // real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+  // mg.getRectangularGridParameters( dx, xab );
+
+  // const int i0a=mg.gridIndexRange(0,0);
+  // const int i1a=mg.gridIndexRange(0,1);
+  // const int i2a=mg.gridIndexRange(0,2);
+
+  // const real xa=xab[0][0], dx0=dx[0];
+  // const real ya=xab[0][1], dy0=dx[1];
+  // const real za=xab[0][2], dz0=dx[2];
+
+  // #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
+  // #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
+  // #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
+
     Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-
-  // getIndex(mg.gridIndexRange(),I1,I2,I3);
-    getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
-    int includeGhost=1;
-    bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
-
+    Range all;
     int i1,i2,i3;
-
-    real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
-    mg.getRectangularGridParameters( dx, xab );
-
-    const int i0a=mg.gridIndexRange(0,0);
-    const int i1a=mg.gridIndexRange(0,1);
-    const int i2a=mg.gridIndexRange(0,2);
-
-    const real xa=xab[0][0], dx0=dx[0];
-    const real ya=xab[0][1], dy0=dx[1];
-    const real za=xab[0][2], dz0=dx[2];
-
-    #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
-    #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
-    #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
-
 
   // Do this for now: **FIX ME**
     int numberOfPolarizationVectors=0;
@@ -249,59 +297,130 @@ defineMaterialRegion( )
       // 	boxa(1,axis)= box(1,axis)+dxa;
       // }
     
-            if( ok )
+      // -- fill the materialMask array ---
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
             {
-                if( numberOfDimensions==2 )
+                MappedGrid & mg = cg[grid];
+                const bool isRectangular = mg.isRectangular();
+                assert( isRectangular );
+                mg.update(MappedGrid::THEmask );
+                OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+                OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+                int includeGhost=1;
+                bool ok = ParallelUtility::getLocalArrayBounds(materialMask[grid],matMask,I1,I2,I3,includeGhost);
+                if( ok )
                 {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    int i1,i2,i3;
+                    real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+                    mg.getRectangularGridParameters( dx, xab );
+                    const int i0a=mg.gridIndexRange(0,0);
+                    const int i1a=mg.gridIndexRange(0,1);
+                    const int i2a=mg.gridIndexRange(0,2);
+                    const real xa=xab[0][0], dx0=dx[0];
+                    const real ya=xab[0][1], dy0=dx[1];
+                    const real za=xab[0][2], dz0=dx[2];
+                    #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
+                    #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
+                    #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
+                    if( numberOfDimensions==2 )
                     {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-
-                        if( xc>=box(0,0) && xc<=box(1,0)  &&
-                                yc>=box(0,1) && yc<=box(1,1) )
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
                         {
-              // Inside or on the bounday of the original box 
-                            matMask(i1,i2,i3)=mat;
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                      	    if( xc>=box(0,0) && xc<=box(1,0)  &&
+                          	        yc>=box(0,1) && yc<=box(1,1) )
+                    	  {
+      	    // Inside or on the bounday of the original box 
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
                         }
-            // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
-            //          yc>boxa(0,1) && yc<boxa(1,1) )
-            // {
-            //   // Inside expanded region -- only mark if back-ground material 
-	    //   if( matMask(i1,i2,i3)==0 )
-	    // 	matMask(i1,i2,i3)=mat;
-            // }
+                    }
+                    else
+                    {
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                        {
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                    	  real zc=X2(i1,i2,i3);
+                        	    if( xc>=box(0,0) && xc<=box(1,0)  &&
+                          	        yc>=box(0,1) && yc<=box(1,1)  &&
+                          	        zc>=box(0,2) && zc<=box(1,2) )
+                    	  {
+      	    // Inside or on the boudary of the original box 
+      	    // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
+                        }
                     }
                 }
-                else
-                {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
-                    {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-                        real zc=X2(i1,i2,i3);
+        // end if ok 
+            } // end for grid 
 
-                        if( xc>=box(0,0) && xc<=box(1,0)  &&
-                                yc>=box(0,1) && yc<=box(1,1)  &&
-                                zc>=box(0,2) && zc<=box(1,2) )
-                        {
-              // Inside or on the boudary of the original box 
-              // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
-                            matMask(i1,i2,i3)=mat;
-                        }
-	    // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
-	    // 	     yc>boxa(0,1) && yc<boxa(1,1)  &&
-	    // 	     zc>boxa(0,2) && zc<boxa(1,2) )
-            // {
-            //   // Inside expanded region -- only mark if back-ground material 
-	    //   if( matMask(i1,i2,i3)==0 )
-	    // 	matMask(i1,i2,i3)=mat;
-            // }
-                    }
+      // else
+      // {
 
-                }
-                
-            }
+      // 	if( ok )
+      // 	{
+      // 	  if( numberOfDimensions==2 )
+      // 	  {
+      // 	    FOR_3D(i1,i2,i3,I1,I2,I3)
+      // 	    {
+      // 	      real xc=X0(i1,i2,i3);
+      // 	      real yc=X1(i1,i2,i3);
+
+      // 	      if( xc>=box(0,0) && xc<=box(1,0)  &&
+      // 		  yc>=box(0,1) && yc<=box(1,1) )
+      // 	      {
+      // 		// Inside or on the bounday of the original box 
+      // 		matMask(i1,i2,i3)=mat;
+      // 	      }
+      // 	      // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
+      // 	      //          yc>boxa(0,1) && yc<boxa(1,1) )
+      // 	      // {
+      // 	      //   // Inside expanded region -- only mark if back-ground material 
+      // 	      //   if( matMask(i1,i2,i3)==0 )
+      // 	      // 	matMask(i1,i2,i3)=mat;
+      // 	      // }
+      // 	    }
+      // 	  }
+      // 	  else
+      // 	  {
+      // 	    FOR_3D(i1,i2,i3,I1,I2,I3)
+      // 	    {
+      // 	      real xc=X0(i1,i2,i3);
+      // 	      real yc=X1(i1,i2,i3);
+      // 	      real zc=X2(i1,i2,i3);
+
+      // 	      if( xc>=box(0,0) && xc<=box(1,0)  &&
+      // 		  yc>=box(0,1) && yc<=box(1,1)  &&
+      // 		  zc>=box(0,2) && zc<=box(1,2) )
+      // 	      {
+      // 		// Inside or on the boudary of the original box 
+      // 		// printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
+      // 		matMask(i1,i2,i3)=mat;
+      // 	      }
+      // 	      // else if( xc>boxa(0,0) && xc<boxa(1,0)  &&
+      // 	      // 	     yc>boxa(0,1) && yc<boxa(1,1)  &&
+      // 	      // 	     zc>boxa(0,2) && zc<boxa(1,2) )
+      // 	      // {
+      // 	      //   // Inside expanded region -- only mark if back-ground material 
+      // 	      //   if( matMask(i1,i2,i3)==0 )
+      // 	      // 	matMask(i1,i2,i3)=mat;
+      // 	      // }
+      // 	    }
+
+      // 	  }
+      // 	}
+      // }
+            
 
       // ---- start add BodyForce for a BOX ----
             BodyForce *pbf = new BodyForce;  // this should be deleted in ~Parameters
@@ -385,39 +504,106 @@ defineMaterialRegion( )
             int mat =	numberOfMaterialRegions-1;  // current region 
 
             const real radiusSquared = SQR(radius);
-            if( ok )
+
+      // -- fill the materialMask array ---
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
             {
-                if( numberOfDimensions==2 )
+                MappedGrid & mg = cg[grid];
+                const bool isRectangular = mg.isRectangular();
+                assert( isRectangular );
+                mg.update(MappedGrid::THEmask );
+                OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+                OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+                int includeGhost=1;
+                bool ok = ParallelUtility::getLocalArrayBounds(materialMask[grid],matMask,I1,I2,I3,includeGhost);
+                if( ok )
                 {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    int i1,i2,i3;
+                    real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+                    mg.getRectangularGridParameters( dx, xab );
+                    const int i0a=mg.gridIndexRange(0,0);
+                    const int i1a=mg.gridIndexRange(0,1);
+                    const int i2a=mg.gridIndexRange(0,2);
+                    const real xa=xab[0][0], dx0=dx[0];
+                    const real ya=xab[0][1], dy0=dx[1];
+                    const real za=xab[0][2], dz0=dx[2];
+                    #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
+                    #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
+                    #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
+                    if( numberOfDimensions==2 )
                     {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-            
-                        real rad = SQR(xc-x0)+SQR(yc-y0);
-                        if( rad <= radiusSquared )
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
                         {
-                            matMask(i1,i2,i3)=mat;
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                                    real rad = SQR(xc-x0)+SQR(yc-y0);
+                                    if( rad <= radiusSquared )
+                    	  {
+      	    // Inside or on the bounday of the original box 
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
+                        }
+                    }
+                    else
+                    {
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                        {
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                    	  real zc=X2(i1,i2,i3);
+                                    real rad = SQR(xc-x0)+SQR(yc-y0);
+                                    if( rad <= radiusSquared && zc>=za && zc<=zb )
+                    	  {
+      	    // Inside or on the boudary of the original box 
+      	    // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
                         }
                     }
                 }
-                else
-                {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
-                    {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-                        real zc=X2(i1,i2,i3);
+        // end if ok 
+            } // end for grid 
+
+      // if( ok )
+      // {
+      //   if( numberOfDimensions==2 )
+      //   {
+      //     FOR_3D(i1,i2,i3,I1,I2,I3)
+      //     {
+      //       real xc=X0(i1,i2,i3);
+      //       real yc=X1(i1,i2,i3);
             
-                        real rad = SQR(xc-x0)+SQR(yc-y0);
-                        if( rad <= radiusSquared && zc>=za && zc<=zb )
-                        {
-                            matMask(i1,i2,i3)=mat;
-                        }
-                    }
-                }
+      //       real rad = SQR(xc-x0)+SQR(yc-y0);
+      //       if( rad <= radiusSquared )
+      //       {
+      //         matMask(i1,i2,i3)=mat;
+      //       }
+      //     }
+      //   }
+      //   else
+      //   {
+      //     FOR_3D(i1,i2,i3,I1,I2,I3)
+      //     {
+      //       real xc=X0(i1,i2,i3);
+      //       real yc=X1(i1,i2,i3);
+      //       real zc=X2(i1,i2,i3);
+            
+      //       real rad = SQR(xc-x0)+SQR(yc-y0);
+      //       if( rad <= radiusSquared && zc>=za && zc<=zb )
+      //       {
+      //         matMask(i1,i2,i3)=mat;
+      //       }
+      //     }
+      //   }
                 
-            }
+      // }
 
       // ---- start add BodyForce for a CYLINDER ----
 
@@ -491,39 +677,105 @@ defineMaterialRegion( )
               
             int mat =	numberOfMaterialRegions-1;  // current region 
 
-            if( ok )
+      // -- fill the materialMask array ---
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
             {
-                if( numberOfDimensions==2 )
+                MappedGrid & mg = cg[grid];
+                const bool isRectangular = mg.isRectangular();
+                assert( isRectangular );
+                mg.update(MappedGrid::THEmask );
+                OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+                OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+                int includeGhost=1;
+                bool ok = ParallelUtility::getLocalArrayBounds(materialMask[grid],matMask,I1,I2,I3,includeGhost);
+                if( ok )
                 {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
+                    int i1,i2,i3;
+                    real dx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+                    mg.getRectangularGridParameters( dx, xab );
+                    const int i0a=mg.gridIndexRange(0,0);
+                    const int i1a=mg.gridIndexRange(0,1);
+                    const int i2a=mg.gridIndexRange(0,2);
+                    const real xa=xab[0][0], dx0=dx[0];
+                    const real ya=xab[0][1], dy0=dx[1];
+                    const real za=xab[0][2], dz0=dx[2];
+                    #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
+                    #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
+                    #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
+                    if( numberOfDimensions==2 )
                     {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-            
-                        real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be);
-                        if( rad <= 1. )
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
                         {
-                            matMask(i1,i2,i3)=mat;
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                                    real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be);
+                                    if( rad <= 1. )
+                    	  {
+      	    // Inside or on the bounday of the original box 
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
+                        }
+                    }
+                    else
+                    {
+                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                        {
+                  	if( maskLocal(i1,i2,i3)>0 )
+                  	{
+                    	  real xc=X0(i1,i2,i3);
+                    	  real yc=X1(i1,i2,i3);
+                    	  real zc=X2(i1,i2,i3);
+                                    real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be)+SQR((zc-z0)/ce);
+                                    if( rad <= 1. )
+                    	  {
+      	    // Inside or on the boudary of the original box 
+      	    // printF("Set matMask(%i,%i,%i)=%i\n",i1,i2,i3,mat);
+                      	    matMask(i1,i2,i3)=mat;
+                    	  }
+                  	}
                         }
                     }
                 }
-                else
-                {
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
-                    {
-                        real xc=X0(i1,i2,i3);
-                        real yc=X1(i1,i2,i3);
-                        real zc=X2(i1,i2,i3);
+        // end if ok 
+            } // end for grid 
+
+      // if( ok )
+      // {
+      //   if( numberOfDimensions==2 )
+      //   {
+      //     FOR_3D(i1,i2,i3,I1,I2,I3)
+      //     {
+      //       real xc=X0(i1,i2,i3);
+      //       real yc=X1(i1,i2,i3);
             
-                        real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be)+SQR((zc-z0)/ce);
-                        if( rad <= 1. )
-                        {
-                            matMask(i1,i2,i3)=mat;
-                        }
-                    }
-                }
+      //       real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be);
+      //       if( rad <= 1. )
+      //       {
+      //         matMask(i1,i2,i3)=mat;
+      //       }
+      //     }
+      //   }
+      //   else
+      //   {
+      //     FOR_3D(i1,i2,i3,I1,I2,I3)
+      //     {
+      //       real xc=X0(i1,i2,i3);
+      //       real yc=X1(i1,i2,i3);
+      //       real zc=X2(i1,i2,i3);
+            
+      //       real rad = SQR((xc-x0)/ae)+SQR((yc-y0)/be)+SQR((zc-z0)/ce);
+      //       if( rad <= 1. )
+      //       {
+      //         matMask(i1,i2,i3)=mat;
+      //       }
+      //     }
+      //   }
                 
-            }
+      // }
 
       // ---- start add BodyForce for an ELLIPSOID ----
 
@@ -589,11 +841,7 @@ defineMaterialRegion( )
 
         else if( gui.getTextValue(answer,"material file:","%s",materialFile) )
         {
-
-      // if( dmpVector.size()<=numberOfMaterialRegions )
-      // {
-      //   dmpVector.resize(numberOfMaterialRegions+1);
-      // }
+      // ---- read a new material file ----
             
             dmpVector.push_back(DispersiveMaterialParameters());
             
@@ -618,9 +866,26 @@ defineMaterialRegion( )
         }
         else if( answer=="plot" )
         {
-            FOR_3D(i1,i2,i3,I1,I2,I3)
+      // --- plot the material mask as a contour, also plot boundaries of material regions ----
+            
+            Range all;
+            realCompositeGridFunction rMask(cg,all,all,all);  // real version of the material mask, so we can plot
+
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
             {
-                rmask(i1,i2,i3)=matMask(i1,i2,i3);
+                OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+      	OV_GET_SERIAL_ARRAY(real,rMask[grid],rMaskLocal);
+
+                getIndex(cg[grid].dimension(),I1,I2,I3);  
+      	int includeGhost=1;
+      	bool ok = ParallelUtility::getLocalArrayBounds(materialMask[grid],matMask,I1,I2,I3,includeGhost);
+      	if( ok )
+      	{
+        	  FOR_3D(i1,i2,i3,I1,I2,I3)
+        	  {
+          	    rMaskLocal(i1,i2,i3)=matMask(i1,i2,i3);
+        	  }
+      	}
             }
             
             PlotStuffParameters psp;
@@ -633,41 +898,11 @@ defineMaterialRegion( )
 
             psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
             psp.set(GI_TOP_LABEL,"Material Region ID");
-            PlotIt::contour(gi,rmask,psp);
+
+      // --- plot contours of the mask ----
+            PlotIt::contour(gi,rMask,psp);
         }
         
-
-/* ----
-        else if( answer=="choose automatically" )
-        {
-      // We should check the size of the grid too
-            printF("For now turn off dissipation on rectangular grids.\n");
-            
-            for( int grid=0; grid<numberOfComponentGrids; grid++ )
-            {
-                if( cg[grid].isRectangular() )
-                {
-          // useDissipation(grid)=false;
-          // printF(" Turn off dissipation on rectangular grid %i (%s)\n",grid,(const char*)cg[grid].getName());
-                }
-            }
-        }
-        else if( answer=="turn off rectangular" )
-        {
-            for( int grid=0; grid<numberOfComponentGrids; grid++ )
-            {
-                if( cg[grid].isRectangular() )
-                {
-          // useDissipation(grid)=false;
-          // printF(" Turn off dissipation on rectangular grid %i (%s)\n",grid,(const char*)cg[grid].getName());
-                }
-            }
-        }
-        else if( answer=="turn off by name" )
-        {
-            printF(" FINISH ME\n");
-        }
-        -- */
 
         else
         {
@@ -679,6 +914,66 @@ defineMaterialRegion( )
     }
     
     gi.popGUI();  // pop dialog
+
+  // --- make the list of materials on each grid ---
+    IntegerArray materialIsPresent(numberOfMaterialRegions+1);
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+        materialIsPresent=0;
+        MappedGrid & mg = cg[grid];
+        const bool isRectangular = mg.isRectangular();
+        assert( isRectangular );
+        mg.update(MappedGrid::THEmask );
+        OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+        OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+        int materialAssigned=false;  // set to true if the material was assigned on this grid 
+    // getIndex(mg.dimension(),I1,I2,I3);  // assign ghost too *wdh* Dec 1, 2019
+        getIndex(mg.gridIndexRange(),I1,I2,I3);  // IS this correct ? Jan 28, 2019
+        int includeGhost=1;
+        bool ok = ParallelUtility::getLocalArrayBounds(materialMask[grid],matMask,I1,I2,I3,includeGhost);
+        if( ok )
+        {
+            int i1,i2,i3;
+            FOR_3D(i1,i2,i3,I1,I2,I3)
+            {
+                if( maskLocal(i1,i2,i3)>0 )
+                {
+                    int mat = matMask(i1,i2,i3);
+                    assert( mat>=0 && mat<=numberOfMaterialRegions );
+                    materialIsPresent(mat)=1;
+                }
+            }
+        }
+    // ::display(materialIsPresent,"materialIsPresent");
+        numberOfMaterials(grid)=sum(materialIsPresent);
+        materialList[grid].resize(numberOfMaterials(grid));
+        int n=0;
+        for( int i=0; i<=numberOfMaterialRegions; i++ )
+        {
+            if( materialIsPresent(i)==1 )
+            {
+                materialList[grid](n)=i; 
+                n++;
+            }
+        }
+        printF("n=%i, numberOfMaterials(grid)=%i\n",n,numberOfMaterials(grid));
+        assert( n==numberOfMaterials(grid) );
+    } // end for grid 
+    
+    printF("\n ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n ");
+    printF("+++++++++++++ defineMaterialRegions: SUMMARY of materials on each grid +++++++++++++\n");
+    printF(" numberOfMaterialRegions=%d (total on all grids)\n",numberOfMaterialRegions);
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+        printF(" grid=%i : numberOfMaterials=%i, materialList=[",grid,numberOfMaterials(grid));
+        for( int i=0; i<numberOfMaterials(grid); i++ )
+            printF("%d,",materialList[grid](i));
+        printF("]\n");
+        
+
+    }
+    printF("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n ");
+
 
   // --- Save the inverse of the BA material matrix in K0Inverse ---
 
@@ -716,7 +1011,8 @@ defineMaterialRegion( )
     }
 
 
-    
+    timing(timeForInitialize)+=getCPU()-time0;
+
     return 0;
 }
 

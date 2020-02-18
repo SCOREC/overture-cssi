@@ -39,6 +39,10 @@ FSRCO +=advMxUp.f  \
 FSRCO +=advBA.f  \
         advBA2dOrder2r.f advBA2dOrder4r.f advBA3dOrder2r.f advBA3dOrder4r.f 
 
+FSRCO +=getDiv.f  \
+        getDiv2dOrder2r.f getDiv2dOrder4r.f getDiv3dOrder2r.f getDiv3dOrder4r.f \
+        getDiv2dOrder2c.f getDiv2dOrder4c.f getDiv3dOrder2c.f getDiv3dOrder4c.f 
+
 # SOSUP files:
 FSRCO += advSOSUP.f \
          advMxSOSUP2dOrder2r.f advMxSOSUP2dOrder2c.f \
@@ -198,6 +202,20 @@ src/advBA2dOrder2r.f : src/advBA.f
 src/advBA2dOrder4r.f : src/advBA.f             
 src/advBA3dOrder2r.f : src/advBA.f             
 src/advBA3dOrder4r.f : src/advBA.f             
+
+# ------ optimized get divergence (BA version to start) --------------
+src/getDiv.f: src/getDiv.bf 
+	      @cd src; $(BPP) -clean -quiet -I$(Overture)/include getDiv.bf
+
+src/getDiv2dOrder2r.f : src/getDiv.f             
+src/getDiv2dOrder4r.f : src/getDiv.f             
+src/getDiv3dOrder2r.f : src/getDiv.f             
+src/getDiv3dOrder4r.f : src/getDiv.f             
+
+src/getDiv2dOrder2c.f : src/getDiv.f             
+src/getDiv2dOrder4c.f : src/getDiv.f             
+src/getDiv3dOrder2c.f : src/getDiv.f             
+src/getDiv3dOrder4c.f : src/getDiv.f             
 
 # ----------- SOSUP -----
 src/advSOSUP.f: src/advSOSUP.bf 

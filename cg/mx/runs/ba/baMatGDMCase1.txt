@@ -1,6 +1,6 @@
 # BA material file 
 # 
-name="baMatGDM";
+name="baMatGDMCase1";
 materialType="bianisotropic";
 dispersiveModel="GDM";
 units="MKS";

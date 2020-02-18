@@ -762,11 +762,13 @@ public: //  should be protected:
     timeForForcing,
     timeForGetError,
     timeForGetNorms,
+    timeForGetDivergence,
     timeForProject,
     timeForIntensity,
     timeForComputingDeltaT,
     timeForPlotting,
     timeForShowFile,
+    timeForOutputResults,
     timeForWaiting,
     maximumNumberOfTimings      // number of entries in this list
   };

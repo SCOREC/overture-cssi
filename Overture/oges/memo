@@ -1,0 +1,35 @@
+NOTE: FOR UBUNTU -- MOVE laplack libs to end to avoid problems with openGL
+
+
+
+**************************************
+******* Tues Feb 18, 2020
+
+
+--- PETSc matrix free:
+Thanks for your help! Using -pc_type none makes it working so far.
+
+
+  MyContext mycontext; // an empty struct, not sure it it's needed?
+  Mat s;
+  ierr = MatCreateShell(PETSC_COMM_WORLD, size, size, PETSC_DECIDE,  PETSC_DECIDE, &mycontext, &s);
+  ierr = MatShellSetOperation(s, MATOP_MULT, (void(*)(void))usermult);
+   CHKERRQ(ierr);
+
+extern PetscErrorCode usermult(Mat m ,Vec x, Vec y)
+{
+  PetscErrorCode ierr = 0;
+  ierr = MatMult(matrix, x, y);
+  printf("Call\n");
+  return ierr;
+}
+>
+> Btw, what is the significance of the Mat m argument here?
+
+
+m is your shell matrix. You should be calling
+
+MatShellGetContext(m,(void**)&myctx);
+
+
+

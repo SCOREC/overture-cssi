@@ -7,12 +7,27 @@
 # 
 #   plotStuff plotSolution.cmd -show=baDieCyl.show -name=baDieCyl -solution=6
 #
+# 2D BA interface
+#   plotStuff plotSolution.cmd -show=baMatIntG8.show -name=baMatInt2d -solution=11
+#   plotStuff plotSolution.cmd -show=baMatIntG32.show -name=baMatInt2d -solution=11
+#   plotStuff plotSolution.cmd -show=baMatIntG32NoDiss.show -name=baMatInt2dNoDiss -solution=11
 #
-$show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; 
+# BA co-centric squares and cyls
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG32.show -name=baBoxCylArrayG32t1p5 -eMax=.9 -solution=16
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG32.show -name=baBoxCylArrayG32t1p0 -eMax=.9 -solution=11
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG64.show -name=baBoxCylArrayG64t1p0 -eMax=.9 -solution=11
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG64.show -name=baBoxCylArrayG64t1p5 -eMax=.9 -solution=16
+#
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t0p8 -eMax=.9 -solution=9
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p0 -eMax=.9 -solution=11
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p2 -eMax=.9 -solution=13
+#   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p5 -eMax=.9 -solution=16
+# 
+$show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $eMin=0; $eMax=0; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 # get command line arguments
 GetOptions( "show=s"=>\$show, "name=s"=>\$name, "solution=i"=>\$solution,"tSave=f"=>\$tSave,\
-      "numPerTime=i"=>\$numPerTime, "numToSave=i"=>\$numToSave,"field=s"=>\$field );
+      "numPerTime=i"=>\$numPerTime, "numToSave=i"=>\$numToSave,"field=s"=>\$field,"eMin=f"=>\$eMin,"eMax=f"=>\$eMax );
 #
 $show
 show forcing regions 1
@@ -26,6 +41,8 @@ contour
   # set view:0 0.0694864 -0.0362538 0 2.34381 1 0 0 0 1 0 0 0 1
   coarsening factor 1 (<0 : adaptive)
   vertical scale factor 0.
+  if( $eMax>$eMin ){ $cmd="min max $eMin $eMax"; }else{ $cmd="#"; }
+  $cmd
   # min max 0 0.8
 exit
 solution: $solution
@@ -38,6 +55,37 @@ plot
 $plotName = $name . "EfieldNorm.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
+
+#
+@comp = ( "Ex", "Ey", "Ez", "Hx", "Hy", "Hz", "Ex error", "Ey error", "Ez error", "Hx error", "Hy error", "Hz error");
+@compName = ( "Ex", "Ey", "Ez", "Hx", "Hy", "Hz", "ExErr", "EyErr", "EzErr", "HxErr", "HyErr", "HzErr");
+$cmd="#"; 
+for( $i=0; $i<@comp; $i++ ){\
+   $plotName = $name . $compName[$i] . ".ps"; \
+   $cmd .= "\n plot:$comp[$i]\n hardcopy file name:0 $plotName\n hardcopy save:0";\
+ }
+# printf("cmd=$cmd\n");
+$cmd
+# -------- plot rotated surfaces
+plot:Ey error
+contour
+  vertical scale factor 0.3
+  plot contour lines (toggle)
+#
+exit
+set view:0 -0.0969789 -0.00906344 0 1.02795 0.984808 0.0593912 -0.163176 -0.173648 0.336824 -0.925417 2.40985e-17 0.939693 0.34202
+DISPLAY COLOUR BAR:0 0
+x+:0
+# x+:0
+smaller 1.075
+@comp = ( "Ex", "Ey", "Ez", "Hx", "Hy", "Hz", "Ex error", "Ey error", "Ez error", "Hx error", "Hy error", "Hz error");
+@compName = ( "Ex", "Ey", "Ez", "Hx", "Hy", "Hz", "ExErr", "EyErr", "EzErr", "HxErr", "HyErr", "HzErr");
+$cmd="#"; 
+for( $i=0; $i<@comp; $i++ ){\
+   $plotName = $name . $compName[$i] . "Rotated.ps"; \
+   $cmd .= "\n plot:$comp[$i]\n hardcopy file name:0 $plotName\n hardcopy save:0";\
+ }
+$cmd
 
 
 pause

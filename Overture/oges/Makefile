@@ -267,7 +267,7 @@ ex1: $(ex1)
 ex2 = ex2.o 
 ex2: $(ex2) 
 	$(CC) $(CCFLAGS) -o ex2 $(ex2) -Wl,-rpath,$(PETSC_LIB) $(PETSC_LIBS) \
-	         -L$(LAPACK) -llapack  $(CLIBS) $(FLIBS) $(GLIBS) 
+	           $(CLIBS) $(GLIBS)  $(FLIBS) -L$(LAPACK) -llapack
 
 # solve 3D Poisson with MG
 # /home/henshaw.0/petsc/petsc-2.3.2-mpi/src/ksp/ksp/examples/tutorials/ex22.c

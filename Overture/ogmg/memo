@@ -1,3 +1,6 @@
+/home/henshw/software/petsc-3.4.5-serial/include/mpiuni/mpi.h
+
+
 040715: Turned off variable smoothing factor in 3D  -- the values seem
     too large for the case of ellipsoidFixed.cmd on the curvilinear grids.
     (turned off in smooth.bC)

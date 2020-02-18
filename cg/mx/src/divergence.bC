@@ -19,6 +19,22 @@ for(i3=I3Base; i3<=I3Bound; i3++) \
 for(i2=I2Base; i2<=I2Bound; i2++) \
 for(i1=I1Base; i1<=I1Bound; i1++)
 
+extern Maxwell *cgmxPointer;
+  
+#define getDiv EXTERN_C_NAME(getdiv)
+
+extern "C"
+{
+  void getDiv(const int&nd,
+      const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,
+      const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+      const int&nd4a,const int&nd4b,
+      const int&mask,const real&rx, 
+      const real&u,const real&p, real&v,
+      real& divD, real& divB, const real& K0, const int & matMask,
+      const int&ipar, const real&rpar, int&ierr );
+}
+
 // ===================================================================================================
 //  This macro will compute the divergence (or E or H) as well as the max |grad(E)| or |grad(H)|
 // Input:
@@ -220,8 +236,12 @@ for(i1=I1Base; i1<=I1Bound; i1++)
      else
      {
 
-       assert( pBodyMask!=NULL );
-       IntegerArray & matMask = *pBodyMask;
+       // assert( pBodyMask!=NULL );
+       // IntegerArray & matMask = *pBodyMask;
+
+       intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+       OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+
        // include ghost since we compute derivatives: 
        if( numberOfDimensions==3 || solveForAllFields )
        {
@@ -419,15 +439,177 @@ for(i1=I1Base; i1<=I1Bound; i1++)
   if( pdiv!=NULL )
   {
     // save the divergence (for plotting probably)
-    #ifdef USE_PPP
-      realSerialArray div; getLocalArrayWithGhostBoundaries((*pdiv)[grid],div);
-    #else
-      realSerialArray & div =(*pdiv)[grid];
-    #endif
+    OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
     
     div(I1,I2,I3,component)=divLocal(I1,I2,I3);  // we could avoid storage for div in this case
   }
 
+
+#endMacro
+
+
+
+// ========================================================================================
+//  Evaluate the divergence of D and/or B for the BA Maxwell equations
+// ========================================================================================
+#beginMacro getDivergenceBA()
+
+  cgmxPointer = this; // for getGMDParameters 
+
+  real dx[3];
+
+  const bool isRectangular=mg.isRectangular();
+  real *rxptr = uLocal.getDataPointer();  // give a default value if not needed
+  if( isRectangular )
+    mg.getDeltaX( dx );
+  else
+  {
+    mg.update(MappedGrid::THEinverseVertexDerivative );
+    OV_GET_SERIAL_ARRAY(real,mg.inverseVertexDerivative(),rxLocal);
+    rxptr = rxLocal.getDataPointer();
+  }
+  
+
+  int saveDivergence = pdiv !=NULL;  // save the divergence in *pdiv
+  int gridType = isRectangular? 0 : 1;
+  int ipar[] ={
+    saveDivergence,     // =ipar(0)
+    method,             // =ipar(1)
+    gridType,           // =ipar(2)
+    orderOfAccuracyInSpace,    // =ipar(3)
+    ex,                 // =ipar(4)
+    ey,                 // =ipar(5)
+    ez,                 // =ipar(6)
+    hx,                 // =ipar(7)
+    hy,                 // =ipar(8)
+    hz,                 // =ipar(9)
+    dispersionModel,    // =ipar(10)
+    grid,               // =ipar(11)
+    solveForAllFields,  // =ipar(12)
+    numberOfMaterialRegions // = ipar(13)
+  };
+  real rpar[11]= {
+    dx[0], // =rpar(0)
+    dx[1], // =rpar(1)
+    dx[2], // =rpar(2)
+    mg.gridSpacing(0), // =rpar(3)
+    mg.gridSpacing(1), // =rpar(4)
+    mg.gridSpacing(2), // =rpar(5)
+    t,                 // =rpar(6)
+    divDmax,           // =rpar(7) : max(div(D)) returned here 
+    gradDmax,          // =rpar(8) : max(grad(D)) returned here 
+    divBmax,           // =rpar(9) : max(div(B)) returned here 
+    gradBmax           // =rpar(10): max(grad(B)) returned here 
+  };
+  
+  bool outputDiv=false;
+  if( outputDiv )
+  {
+    if( pdiv!=NULL )
+    {
+      OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
+      Range all;
+      ::display(div(all,all,all,component  ),"div(D) (old way)");
+      ::display(div(all,all,all,component+1),"div(B) (old way)");
+    }
+  }
+
+
+  realSerialArray vLocal(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),uLocal.dimension(3));
+  // realSerialArray divD(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2));
+  // realSerialArray divB(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2));
+
+  real *pDivD = vLocal.getDataPointer();  // give default values if not used 
+  real *pDivB = vLocal.getDataPointer();
+  if( pdiv!=NULL )
+  {
+    OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],divLocal);
+
+    pDivD = & (divLocal(divLocal.getBase(0),divLocal.getBase(1),divLocal.getBase(2),component));
+    divLocal(all,all,all,component)=0.;
+    
+    if( solveForAllFields || cg.numberOfDimensions()==3 )
+    {
+      pDivB = & (divLocal(divLocal.getBase(0),divLocal.getBase(1),divLocal.getBase(2),component+1));
+      divLocal(all,all,all,component+1)=0.;
+    }
+    
+  }
+
+
+
+  int *pMatMask = maskLocal.getDataPointer();
+  if( numberOfMaterialRegions>1 )
+  {
+    intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+    OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+    pMatMask=matMask.getDataPointer();
+  }
+  
+  realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
+  OV_GET_SERIAL_ARRAY(real,p,pLocal);
+
+  // -- This next code is also found in getForcing **FIX ME** put somewhere -- 
+  if( !dbase.has_key("K0") )
+  {
+    // -- build the K0(6,6,numberOfMaterialRegions) for TZ forcing 
+
+    RealArray & K0 = dbase.put<RealArray>("K0");
+    K0.redim(6,6,numberOfMaterialRegions);
+
+    std::vector<DispersiveMaterialParameters> & dmpVector = 
+      dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+    RealArray K0Temp;
+    for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+    {
+      DispersiveMaterialParameters & dmp = dmpVector[mr];  
+      dmp.getBianisotropicMaterialMatrix( K0Temp );
+      K0(all,all,mr)=K0Temp;
+    }
+  }
+
+  RealArray & K0 = dbase.get<RealArray>("K0");  // may have been created with old way call *** FIX ME **
+
+  // divD=0; divB=0;
+  int ierr=0;
+  getDiv(numberOfDimensions,
+         I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+         uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+         uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
+         *maskLocal.getDataPointer(),*rxptr,
+         *uLocal.getDataPointer(), *pLocal.getDataPointer(), *vLocal.getDataPointer(),
+         *pDivD, *pDivB, *K0.getDataPointer(), *pMatMask,
+         ipar[0],rpar[0],ierr );
+  
+  // return values 
+  divDmax=rpar[7]; gradDmax=rpar[8]; divBmax=rpar[9]; gradBmax=rpar[10];
+  
+  if( false )
+  {
+    printF("After getDiv t=%9.3e: divDmax=%9.3e, gradDmax=%8.2e, divBmax=%9.3e, gradBmax=%8.2e (saveDivergence=%i)\n",
+  	 t,divDmax,gradDmax,divBmax,gradBmax,(int)saveDivergence);
+  }
+
+  if( outputDiv )
+  {
+    // ::display(divD,"divD (new way)");
+    // ::display(divB,"divB (new way)");
+
+    if( pdiv!=NULL )
+    {
+      OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
+      Range all;
+      ::display(div(all,all,all,component  ),"div(D) (new way)");
+      ::display(div(all,all,all,component+1),"div(B) (new way)");
+    }
+  }
+      
+
+  divEMax=divDmax;
+  gradEMax=gradDmax;
+  divHMax=divBmax;
+  gradHMax=gradBmax;
 
 #endMacro
 
@@ -448,7 +630,8 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
 //   in component "rhoComponent" of the grid function *pDensity
 // ======================================================================================
 {
-
+  real time0 = getCPU();
+  
   Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
 
   assert( cgp!=NULL );
@@ -488,7 +671,10 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
     gradHMax=0.;
   }
   
+  real divDmax=0., gradDmax=0., divBmax=0., gradBmax=0.; // for BA
+
   int i1Max=0, i2Max=0, i3Max=0, gridMax=0;  // keeps point where max occurs
+
 
   for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
@@ -547,23 +733,35 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
 #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
 
 
-    if( debug & 8 )
+    if( method!=bamx )
     {
-      display(uLocal,sPrintF("getMaxDivergence: grid=%i u p=%i, t=%9.3e",grid,myid,t), pDebugFile," %10.2e ");
-    }
+      if( debug & 8 )
+      {
+        display(uLocal,sPrintF("getMaxDivergence: grid=%i u p=%i, t=%9.3e",grid,myid,t), pDebugFile," %10.2e ");
+      }
       
 
-    if( (solveForMagneticField && cg.numberOfDimensions()==3) ||
-	method==bamx && ( solveForAllFields==1 || cg.numberOfDimensions()==3 ) )
-    {
-      Range H(hx,hx+mg.numberOfDimensions()-1);
-      computeDiv(hx,hy,hz,H,gradHMax,divHMax,component+1);
-      if( computeMaxNorms && debug & 4 )
-        fprintf(pDebugFile,"+++ divHMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",divHMax,i1Max,i2Max,i3Max,gridMax);
-    }
+      if( (solveForMagneticField && cg.numberOfDimensions()==3) ||
+          method==bamx && ( solveForAllFields==1 || cg.numberOfDimensions()==3 ) )
+      {
+        Range H(hx,hx+mg.numberOfDimensions()-1);
+        computeDiv(hx,hy,hz,H,gradHMax,divHMax,component+1);
+        if( computeMaxNorms && debug & 4 )
+          fprintf(pDebugFile,"+++ divHMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",divHMax,i1Max,i2Max,i3Max,gridMax);
+      }
 
-    Range E(ex,ex+mg.numberOfDimensions()-1);
-    computeDiv(ex,ey,ez,E,gradEMax,divEMax,component);
+      Range E(ex,ex+mg.numberOfDimensions()-1);
+      computeDiv(ex,ey,ez,E,gradEMax,divEMax,component);
+    }
+    else
+    {
+      assert( method==bamx );
+      // *new* optimized way *wdh* Jan 29, 2020
+      getDivergenceBA();
+      
+    }
+    
+
 
     if( computeMaxNorms && debug & 4 )
       fprintf(pDebugFile,"+++ divEMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",divEMax,i1Max,i2Max,i3Max,gridMax);
@@ -575,6 +773,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
     // Communication_Manager::Sync();
     
   } // end for grid
+
   if( computeMaxNorms )
   {
     divEMax=getMaxValue(divEMax);  // get max over all processors
@@ -589,6 +788,9 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
     for( int c=C.getBase(); c<=C.getBound(); c++ )
       solutionNorm(c)=getMaxValue(solutionNorm(c)); // get max over all processors
   }
+  
+
+  timing(timeForGetDivergence)+=getCPU()-time0;
   
 
 #undef DIV

@@ -142,6 +142,8 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber, re
 //          (1) values at probes.
 // ===================================================================================
 {
+  real time0 = getCPU();
+  
   const bool okToOutput = myid<=0;
   
   // **NEW WAY**
@@ -229,6 +231,7 @@ outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber, re
     computeIntensity(current,t,dt,stepNumber,nextTimeToPlot);
   }
 
+  timing(timeForOutputResults)+=getCPU()-time0;
 
   return 0;
 }

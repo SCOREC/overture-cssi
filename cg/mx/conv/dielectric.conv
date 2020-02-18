@@ -55,7 +55,7 @@ $check="mx.check";
 #   -errorNorm:  set to 1 or 2 to show L1 and L2 norm errors
 # 
 # Set default parameters: 
-$name="solidSphereInABox";
+$name="solidSphereInABox"; $prefix=""; 
 $cmdFile="dielectricCyl"; 
 $CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
 $cgmx = "$CGBUILDPREFIX/mx/bin/cgmx";  # command for cgmx
@@ -80,7 +80,7 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tFinal,"i
             "eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"ts=s"=>\$ts,"saveVectorErrors=i"=>\$saveVectorErrors,\
             "cons=i"=>\$cons,"useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
             "stageOption=s"=>\$stageOption,"dm=s"=>\$dm,"dmFile=s"=>\$dmFile,"mat1Name=s"=>\$mat1Name,"mat2Name=s"=>\$mat2Name,\
-            "npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,\
+            "npv=i{1,}"=>\@npv,"modeGDM=i"=>\$modeGDM,"alphaP=f{1,}"=>\@alphaP,"prefix=s"=>\$prefix,\
             "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
             "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
             "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"solveForAllFields=i"=>\$solveForAllFields );
@@ -104,7 +104,7 @@ $baseGridSpacing=.05; # grid spacing corresponding to factor=1
 if( $method eq "sosup" ){ $diss=0.; }
 if( $cyl eq 0 ){ $numberOfDimensions=3; }
 if( $cyl eq 0 ){ $baseGridSpacing=.1; }else{ $baseGridSpacing=.05; }
-if( $cyl eq 0 ){ $caseLabel = "dielectricSphere"; }else{ $caseLabel = "dielectricCyl"; }
+if( $cyl eq 0 ){ $caseLabel = "dielectricSphere". $prefix; }else{ $caseLabel = "dielectricCyl" . $prefix; }
 $caseName="$caseLabel$method\Order$order"; 
 #
 $extraLabel ="";
@@ -170,18 +170,21 @@ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, ts=$ts, $normName norm, 
 # 
 $options = "-cyl=$cyl -kx=$kx -eps1=$eps1 -eps2=$eps2 -diss=$diss -dissOrder=$dissOrder -interit=$interit -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -alphaP=$alphaP[0] $alphaP[1] -dm=$dm -dmFile=$dmFile -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -useSosupDissipation=$useSosupDissipation -sosupParameter=$sosupParameter -stageOption=$stageOption -cons=$cons -go=go ";
 #
-if( $method eq "bamx" ){ $options = "-cyl=$cyl -kx=$kx -diss=$diss -cfl=$cfl -method=$method -ts=$ts -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -matFile=$matFile -matFile2=$matFile2 -solveForAllFields=$solveForAllFields -go=go "; }
+if( $method eq "bamx" ){ $options = "-cyl=$cyl -kx=$kx -diss=$diss -cfl=$cfl -method=$method -ts=$ts -errorNorm=$errorNorm -tf=$tFinal -tp=$tp -matFile=$cmdDir/../ba/$matFile -matFile2=$cmdDir/../ba/$matFile2 -solveForAllFields=$solveForAllFields -go=go "; }
 #
 $suffix="";
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 4) ){ $suffix=".ng3"; }
 if( ($method eq "sosup" || $useSosupDissipation eq 1 ) && ($order eq 6) ){ $suffix=".ng4"; }
 if( $method eq "bamx" && $order eq 4 ){ $suffix=".ng3"; }
-$gName1 = $name . "1.order$order$suffix";  $grid1=$name ."1"; 
-$gName2 = $name . "2.order$order$suffix";  $grid2=$name ."2"; 
-$gName3 = $name . "4.order$order$suffix";  $grid3=$name ."4"; 
-$gName4 = $name . "8.order$order$suffix";  $grid4=$name ."8"; 
-$gName5 = $name . "16.order$order$suffix"; $grid5=$name ."16"; 
-$gName6 = $name . "32.order$order$suffix"; $grid6=$name ."32"; 
+$gName1 = $name . "1.order$order$suffix";   $grid1=$name ."1"; 
+$gName2 = $name . "2.order$order$suffix";   $grid2=$name ."2"; 
+$gName3 = $name . "4.order$order$suffix";   $grid3=$name ."4"; 
+$gName4 = $name . "8.order$order$suffix";   $grid4=$name ."8"; 
+$gName5 = $name . "16.order$order$suffix";  $grid5=$name ."16"; 
+$gName6 = $name . "32.order$order$suffix";  $grid6=$name ."32"; 
+$gName7 = $name . "64.order$order$suffix";  $grid7=$name ."64"; 
+$gName8 = $name . "128.order$order$suffix"; $grid8=$name ."128"; 
+$gName9 = $name . "256.order$order$suffix"; $grid9=$name ."256"; 
 # Note that the following grid starts at f2 since $ds0=.1 for bigSquare while ds0=.05 for io.cmd 
 if( $method eq "Yee" && $cyl eq 1 ){\
  $grid1="square1"; $gName1 ="bigSquareSize1f2"; \
@@ -192,11 +195,14 @@ if( $method eq "Yee" && $cyl eq 1 ){\
 # 
 # Do not use G1 -- fails with sosup
 # if( $order==2 && $cyl eq 0 ){ $grid=$grid1; $res=1; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName1 $options";  }
-if( $ng > 0 ){ $grid=$grid2; $res=2; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName2 $options";}
-if( $ng > 1 ){ $grid=$grid3; $res=4; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName3 $options";}
-if( $ng > 2 ){ $grid=$grid4; $res=8; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName4 $options";}
-if( $ng > 3 ){ $grid=$grid5; $res=16;$cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName5 $options";}
-if( $ng > 4 ){ $grid=$grid6; $res=32;$cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName6 $options";}
+if( $ng > 0 ){ $grid=$grid2; $res=2;   $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName2 $options";}
+if( $ng > 1 ){ $grid=$grid3; $res=4;   $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName3 $options";}
+if( $ng > 2 ){ $grid=$grid4; $res=8;   $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName4 $options";}
+if( $ng > 3 ){ $grid=$grid5; $res=16;  $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName5 $options";}
+if( $ng > 4 ){ $grid=$grid6; $res=32;  $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName6 $options";}
+if( $ng > 5 ){ $grid=$grid7; $res=64;  $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName7 $options";}
+if( $ng > 6 ){ $grid=$grid8; $res=128; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName8 $options";}
+if( $ng > 7 ){ $grid=$grid9; $res=256; $cmd="$cgmx -noplot $cmdDir/dielectricCyl -g=$gName9 $options";}
 $closeFile="true";
 # -------------------------------------------------------------------------------
 exit

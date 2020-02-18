@@ -1,5 +1,504 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
+
+-matFile=baMatGDMCase1.txt -matFile2=baMatGDM4.txt
+
+********************************
+********  Wed Feb 6, 2020
+
+***NEW BA INTERFACE MATERIALS FOR PAPER
+
+TEST
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM4.txt -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=1 -ng=5
+
+
+********************************
+********  Wed Feb 5, 2020
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=5
+
+********************************
+********  Tues Feb 4, 2020
+
++++++++++++ REDO SCATTERING FROM A SPHERE
+
+conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=2 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -diss=1 -saveVectorErrors=1 -solveForAllFields=1 -ng=2
+
+
+
+
+
++++++++++ REDO SCATTERING FROM A CYL 
+
+
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.6 -tp=.6 -order=4 -name="cSquaree" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt  -errorNorm=1 -diss=1 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+ cSquaree2 &     2 & 5.77e-02 &      & 1.36e-01 &      & 1.31e-01 &      & 1.36e-01 &      & 1.75e+01 &      
+ cSquaree4 &     4 & 2.06e-02 &  2.80 & 2.56e-02 &  5.31 & 2.40e-02 &  5.46 & 2.56e-02 &  5.31 & 3.53e+01 &  0.50 
+ cSquaree8 &     8 & 1.01e-02 &  2.04 & 9.95e-03 &  2.57 & 8.87e-03 &  2.71 & 1.01e-02 &  2.53 & 9.41e+01 &  0.38 
+cSquaree16 &    16 & 5.05e-03 &  2.00 & 5.05e-03 &  1.97 & 3.99e-03 &  2.22 & 5.05e-03 &  2.00 & 2.18e+02 &  0.43 
+Convergence rates: c0=1.16 c1=1.56 c2=1.65 c3=1.56 c4=-1.23 
+
+ ****Output written to ./dielectricCylbaAirbaIsoEps0p25Order4NormConvTable.tex *****
+
+
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+ cSquaree2 &     2 & 3.92e-02 &      & 1.15e-01 &      & 1.12e-01 &      & 1.15e-01 &      & 4.96e+00 &      
+ cSquaree4 &     4 & 1.14e-02 &  3.44 & 1.50e-02 &  7.67 & 1.29e-02 &  8.68 & 1.50e-02 &  7.67 & 1.76e+01 &  0.28 
+ cSquaree8 &     8 & 6.04e-03 &  1.89 & 5.97e-03 &  2.51 & 4.71e-03 &  2.74 & 6.04e-03 &  2.48 & 3.83e+01 &  0.46 
+cSquaree16 &    16 & 2.97e-03 &  2.03 & 3.11e-03 &  1.92 & 1.99e-03 &  2.37 & 3.11e-03 &  1.94 & 7.97e+01 &  0.48 
+Convergence rates: c0=1.21 c1=1.70 c2=1.89 c3=1.69 c4=-1.31 
+
+ ****Output written to ./dielectricCylWithDissbaAirbaIsoEps0p25Order4NormConvTable.tex *****
+
+
++++++++++++++++++++++++++++REDO SURFACE WAVE with periodic BC
+
+ORDER=4 DISS=0
+conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.3 -tp=.3 -order=4 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -ng=5
+
+
+ORDER=4 DISS=1
+conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.3 -tp=.3 -order=4 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+
+
+ORDER=2 DISS=0
+conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.3 -tp=.3 -order=2 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -ng=5
+
+
+ORDER=2 DISS=1
+conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.3 -tp=.3 -order=2 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+
+
+
+
++++++++++++++   BA PMIC 
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=5
+
+ORDER=2 DISS=1
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 7.28e-02 &      & 7.48e-02 &      & 1.23e-02 &      
+     rect4 &     2 & 1.89e-02 &  3.85 & 1.94e-02 &  3.86 & 3.13e-03 &  3.93 
+     rect8 &     4 & 5.76e-03 &  3.28 & 5.81e-03 &  3.34 & 9.80e-04 &  3.19 
+    rect16 &     8 & 2.07e-03 &  2.78 & 2.04e-03 &  2.85 & 3.82e-04 &  2.57 
+    rect32 &    16 & 8.81e-04 &  2.35 & 8.23e-04 &  2.48 & 1.77e-04 &  2.16 
+    rect64 &    32 & 4.28e-04 &  2.06 & 3.70e-04 &  2.22 & 8.91e-05 &  1.99 
+Convergence rates: c0=1.48 c1=1.53 c2=1.41 
+
+********************************
+********  Mon Feb 3, 2020
+
+BA PMIC FINER GRIDS ....
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -diss=0 -alwaysCompute=0 -ng=8
+
+ORDER=4 DISS=0
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.68e-02 &      & 1.96e-02 &      & 3.31e-03 &      
+     rect4 &     2 & 7.96e-03 &  2.11 & 9.52e-03 &  2.06 & 1.66e-03 &  1.99 
+     rect8 &     4 & 4.05e-03 &  1.97 & 4.88e-03 &  1.95 & 8.53e-04 &  1.95 
+    rect16 &     8 & 2.05e-03 &  1.98 & 2.47e-03 &  1.98 & 4.32e-04 &  1.97 
+    rect32 &    16 & 1.03e-03 &  1.99 & 1.24e-03 &  1.99 & 2.18e-04 &  1.98 
+    rect64 &    32 & 5.17e-04 &  1.99 & 6.24e-04 &  1.99 & 1.09e-04 &  2.00 
+   rect128 &    64 & 2.59e-04 &  2.00 & 3.13e-04 &  1.99 & 5.47e-05 &  1.99 
+   rect256 &   128 & 1.30e-04 &  1.99 & 1.56e-04 &  2.01 & 2.74e-05 &  2.00 
+Convergence rates: c0=1.00 c1=0.99 c2=0.99 
+
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=8
+
+ORDER=4 DISS=1
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.22e-02 &      & 1.35e-02 &      & 2.18e-03 &      
+     rect4 &     2 & 4.36e-03 &  2.80 & 5.23e-03 &  2.58 & 9.56e-04 &  2.28 
+     rect8 &     4 & 2.34e-03 &  1.86 & 2.64e-03 &  1.98 & 5.19e-04 &  1.84 
+    rect16 &     8 & 1.28e-03 &  1.83 & 1.33e-03 &  1.98 & 2.78e-04 &  1.87 
+    rect32 &    16 & 6.92e-04 &  1.85 & 6.72e-04 &  1.98 & 1.50e-04 &  1.85 
+    rect64 &    32 & 3.70e-04 &  1.87 & 3.37e-04 &  1.99 & 8.09e-05 &  1.85 
+   rect128 &    64 & 1.98e-04 &  1.87 & 1.69e-04 &  1.99 & 4.33e-05 &  1.87 
+Convergence rates: c0=0.95 c1=1.03 c2=0.92 
+
+
+
+
+
+
+********************************
+********  Sun Feb 2, 2020
+
+
+Get results for PMIC with dissipation
+
+
+++++++= THREE DIMENSIONS
+
+
+ORDER=2 DISS
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1  ng=4
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 1.62e-01 &      & 1.87e-01 &      & 1.94e-02 &      
+    box3d4 &     2 & 4.70e-02 &  3.4 & 5.43e-02 &  3.4 & 4.95e-03 &  3.9 
+    box3d8 &     4 & 1.37e-02 &  3.4 & 1.55e-02 &  3.5 & 1.39e-03 &  3.6 
+Convergence rates: c0=1.78 c1=1.80 c2=1.90
+
+ORDER=2
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1 -errorNorm=1 -ng=4
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 1.82e-01 &      & 2.09e-01 &      & 2.16e-02 &      
+    box3d4 &     2 & 5.35e-02 &  3.4 & 6.15e-02 &  3.4 & 5.56e-03 &  3.9 
+    box3d8 &     4 & 1.63e-02 &  3.3 & 1.85e-02 &  3.3 & 1.69e-03 &  3.3 
+Convergence rates: c0=1.74 c1=1.75 c2=1.84
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 1.82e-01 &      & 2.09e-01 &      & 2.16e-02 &      
+    box3d4 &     2 & 5.35e-02 &  3.4 & 6.15e-02 &  3.4 & 5.56e-03 &  3.9 
+    box3d8 &     4 & 1.63e-02 &  3.3 & 1.85e-02 &  3.3 & 1.69e-03 &  3.3 
+   box3d16 &     8 & 5.78e-03 &  2.8 & 6.41e-03 &  2.9 & 6.14e-04 &  2.8 
+Convergence rates: c0=1.66 c1=1.68 c2=1.71 
+interfacebamxbox3dbaMatGDMCase1baMatGDMrk4Order2L1NormConvTable.tex
+
+
+----  ORDER=4 with diss
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=3
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 3.40e-02 &      & 3.74e-02 &      & 3.81e-03 &      
+    box3d4 &     2 & 9.87e-03 &  3.4 & 9.93e-03 &  3.8 & 9.58e-04 &  4.0 
+    box3d8 &     4 & 4.70e-03 &  2.1 & 4.68e-03 &  2.1 & 4.60e-04 &  2.1 
+Convergence rates: c0=1.43 c1=1.50 c2=1.53 
+
+
+---- ORDER=4
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1 -errorNorm=1 -ng=3
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 4.00e-02 &      & 4.40e-02 &      & 4.51e-03 &      
+    box3d4 &     2 & 1.48e-02 &  2.7 & 1.57e-02 &  2.8 & 1.57e-03 &  2.9 
+    box3d8 &     4 & 7.56e-03 &  2.0 & 8.01e-03 &  2.0 & 7.93e-04 &  2.0 
+Convergence rates: c0=1.20 c1=1.23 c2=1.25 
+
+
+++++++= TWO DIMENSIONS
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+ORDER=4 DISS=1
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.22e-02 &      & 1.35e-02 &      & 2.18e-03 &      
+     rect4 &     2 & 4.36e-03 &  2.8 & 5.23e-03 &  2.6 & 9.56e-04 &  2.3 
+     rect8 &     4 & 2.34e-03 &  1.9 & 2.64e-03 &  2.0 & 5.19e-04 &  1.8 
+    rect16 &     8 & 1.28e-03 &  1.8 & 1.33e-03 &  2.0 & 2.78e-04 &  1.9 
+    rect32 &    16 & 6.92e-04 &  1.8 & 6.72e-04 &  2.0 & 1.50e-04 &  1.9 
+Convergence rates: c0=1.00 c1=1.06 c2=0.95
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+ORDER=2 DISS=1
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 7.28e-02 &      & 7.48e-02 &      & 1.23e-02 &      
+     rect4 &     2 & 1.89e-02 &  3.9 & 1.94e-02 &  3.9 & 3.13e-03 &  3.9 
+     rect8 &     4 & 5.76e-03 &  3.3 & 5.81e-03 &  3.3 & 9.80e-04 &  3.2 
+    rect16 &     8 & 2.07e-03 &  2.8 & 2.04e-03 &  2.8 & 3.82e-04 &  2.6 
+    rect32 &    16 & 8.81e-04 &  2.3 & 8.23e-04 &  2.5 & 1.77e-04 &  2.2 
+Convergence rates: c0=1.59 c1=1.63 c2=1.53 
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -ng=5
+ORDER=4 DISS=0
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.68e-02 &      & 1.96e-02 &      & 3.31e-03 &      
+     rect4 &     2 & 7.96e-03 &  2.1 & 9.52e-03 &  2.1 & 1.66e-03 &  2.0 
+     rect8 &     4 & 4.05e-03 &  2.0 & 4.88e-03 &  2.0 & 8.53e-04 &  1.9 
+    rect16 &     8 & 2.05e-03 &  2.0 & 2.47e-03 &  2.0 & 4.32e-04 &  2.0 
+    rect32 &    16 & 1.03e-03 &  2.0 & 1.24e-03 &  2.0 & 2.18e-04 &  2.0 
+Convergence rates: c0=1.00 c1=0.99 c2=0.98
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -ng=5
+ORDER=2 DISS=0 
+
+
+
+********************************
+********  Sat Feb 1, 2020
+
+
+++++++ PMIC With EVEN number of points so interface is centred between grid points 
+conv.p interface.conv -cg=rectEven -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -ng=4
+
+ORDER=4
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+ rectEven2 &     1 & 9.92e-03 &      & 1.03e-02 &      & 2.30e-03 &      
+ rectEven4 &     2 & 4.38e-03 &  2.3 & 4.54e-03 &  2.3 & 1.16e-03 &  2.0 
+ rectEven8 &     4 & 2.26e-03 &  1.9 & 2.33e-03 &  1.9 & 6.00e-04 &  1.9 
+rectEven16 &     8 & 1.15e-03 &  2.0 & 1.18e-03 &  2.0 & 3.06e-04 &  2.0 
+Convergence rates: c0=1.03 c1=1.03 c2=0.97 
+
+
+ORDER=2 - DISS=0
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+ rectEven2 &     1 & 7.19e-02 &      & 7.40e-02 &      & 1.29e-02 &      
+ rectEven4 &     2 & 1.84e-02 &  3.9 & 1.92e-02 &  3.9 & 3.55e-03 &  3.6 
+ rectEven8 &     4 & 5.26e-03 &  3.5 & 5.50e-03 &  3.5 & 1.11e-03 &  3.2 
+rectEven16 &     8 & 1.73e-03 &  3.0 & 1.84e-03 &  3.0 & 4.10e-04 &  2.7 
+rectEven32 &    16 & 6.81e-04 &  2.5 & 7.25e-04 &  2.5 & 1.75e-04 &  2.3 
+Convergence rates: c0=1.69 c1=1.67 c2=1.55 
+
+ORDER=2 DISS=1
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+ rectEven2 &     1 & 6.27e-02 &      & 6.38e-02 &      & 1.09e-02 &      
+ rectEven4 &     2 & 1.54e-02 &  4.1 & 1.53e-02 &  4.2 & 2.74e-03 &  4.0 
+ rectEven8 &     4 & 4.18e-03 &  3.7 & 3.82e-03 &  4.0 & 7.59e-04 &  3.6 
+rectEven16 &     8 & 1.29e-03 &  3.2 & 9.53e-04 &  4.0 & 2.41e-04 &  3.1 
+rectEven32 &    16 & 4.70e-04 &  2.7 & 2.35e-04 &  4.1 & 9.29e-05 &  2.6 
+rectEven64 &    32 & 2.08e-04 &  2.3 & 9.08e-05 &  2.6 & 4.23e-05 &  2.2 
+Convergence rates: c0=1.66 c1=1.92 c2=1.61
+
+
++++++++ CHECK PMIC WITH DISS -- see below 
+
+
++++++++++++++ SURFACE WAVE
+
+
+REDO 
+
+
+
+
+>>>>>>   TRY periodic in x grid SUFFIX=pn 
+
+conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm  -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw  -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -tf=1 -tp=1 -order=4 -diss=0 -saveVectorErrors=1 -errorNorm=1 -ng=2
+
+PERIODIC IN X 
+
+
+DISS=1
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.21e-01 &      & 1.06e-01 &      & 7.72e-02 &      
+     rect4 &     2 & 2.64e-02 &  4.6 & 2.30e-02 &  4.6 & 1.32e-02 &  5.8 
+     rect8 &     4 & 1.56e-02 &  1.7 & 1.35e-02 &  1.7 & 8.08e-03 &  1.6 
+    rect16 &     8 & 9.07e-03 &  1.7 & 7.74e-03 &  1.7 & 4.70e-03 &  1.7 
+Convergence rates: c0=1.20 c1=1.21 c2=1.28 
+
+
+DISS=0 
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 2.71e-02 &      & 3.20e-02 &      & 2.28e-02 &      
+     rect4 &     2 & 1.49e-02 &  1.8 & 1.67e-02 &  1.9 & 1.17e-02 &  1.9 
+     rect8 &     4 & 7.90e-03 &  1.9 & 8.60e-03 &  1.9 & 5.95e-03 &  2.0 
+    rect16 &     8 & 4.02e-03 &  2.0 & 4.38e-03 &  2.0 & 3.00e-03 &  2.0 
+Convergence rates: c0=0.92 c1=0.96 c2=0.98 
+
+
+TRY ADDING DISS  -- DECREASES CONVERGENCE ORDER !!
+
+conv.p interface.conv -cg=rect -method=bamx -dm=gdm  -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw  -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -tf=1 -tp=1 -order=4 -diss=0 -saveVectorErrors=1 -errorNorm=1 -ng=5
+
+conv.p interface.conv -cg=rect -method=bamx -dm=gdm  -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw  -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -tf=1 -tp=1 -order=2 -diss=0 -saveVectorErrors=1 -errorNorm=1 -ng=5
+
+
+
+
+
+ORDER=4 DISS=1
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.27e-01 &      & 1.09e-01 &      & 8.09e-02 &      
+     rect4 &     2 & 2.65e-02 &  4.8 & 2.39e-02 &  4.6 & 1.48e-02 &  5.5 
+     rect8 &     4 & 1.49e-02 &  1.8 & 1.31e-02 &  1.8 & 8.17e-03 &  1.8 
+    rect16 &     8 & 8.68e-03 &  1.7 & 7.57e-03 &  1.7 & 4.77e-03 &  1.7 
+Convergence rates: c0=1.24 c1=1.24 c2=1.31 
+
+
+ORDER=4 DISS=0
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 4.81e-02 &      & 4.36e-02 &      & 2.43e-02 &      
+     rect4 &     2 & 1.70e-02 &  2.8 & 1.78e-02 &  2.4 & 1.15e-02 &  2.1 
+     rect8 &     4 & 9.04e-03 &  1.9 & 9.25e-03 &  1.9 & 5.90e-03 &  1.9 
+    rect16 &     8 & 4.62e-03 &  2.0 & 4.73e-03 &  2.0 & 2.99e-03 &  2.0 
+    rect32 &    16 & 2.33e-03 &  2.0 & 2.39e-03 &  2.0 & 1.50e-03 &  2.0 
+Convergence rates: c0=1.06 c1=1.03 c2=1.00
+
+
+
+
+conv.p interface.conv -cg=rect -method=bamx -dm=gdm  -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw  -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -tf=1 -tp=1 -order=2 -diss=1 -saveVectorErrors=1 -errorNorm=1 -ng=4
+
+
+++++++ ORDER=2
+
+
+DISS=1 
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 5.02e-02 &      & 4.31e-02 &      & 2.80e-02 &      
+     rect4 &     2 & 2.64e-02 &  1.9 & 2.34e-02 &  1.8 & 1.41e-02 &  2.0 
+     rect8 &     4 & 1.64e-02 &  1.6 & 1.44e-02 &  1.6 & 8.71e-03 &  1.6 
+    rect16 &     8 & 1.01e-02 &  1.6 & 8.67e-03 &  1.7 & 5.30e-03 &  1.6 
+    rect32 &    16 & 6.01e-03 &  1.7 & 5.12e-03 &  1.7 & 3.17e-03 &  1.7 
+    rect64 &    32 & 3.57e-03 &  1.7 & 3.01e-03 &  1.7 & 1.86e-03 &  1.7 
+Convergence rates: c0=0.75 c1=0.76 c2=0.76 
+
+
+DISS=0 : 
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 3.39e-02 &      & 3.64e-02 &      & 2.39e-02 &      
+     rect4 &     2 & 1.80e-02 &  1.9 & 1.93e-02 &  1.9 & 1.26e-02 &  1.9 
+     rect8 &     4 & 9.23e-03 &  2.0 & 9.92e-03 &  1.9 & 6.49e-03 &  1.9 
+    rect16 &     8 & 4.67e-03 &  2.0 & 5.03e-03 &  2.0 & 3.28e-03 &  2.0 
+Convergence rates: c0=0.95 c1=0.95 c2=0.96 
+
+
+
+
+
+
+
+ORDER=2
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.1 -tp=.1 -order=2 -saveVectorErrors=1 -errorNorm=1 -ng=2
+
+
+********************************
+********  Fri Jan 31, 2020
+
+
+>>>> revisit interface solution
+
+
+++++++ THREE DIMENSIONS
+
+
+ORDER=2
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1 -errorNorm=1 -ng=3
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 1.82e-01 &      & 2.09e-01 &      & 2.16e-02 &      
+    box3d4 &     2 & 5.35e-02 &  3.4 & 6.15e-02 &  3.4 & 5.56e-03 &  3.9 
+    box3d8 &     4 & 1.63e-02 &  3.3 & 1.85e-02 &  3.3 & 1.69e-03 &  3.3 
+Convergence rates: c0=1.74 c1=1.75 c2=1.84
+
+ORDER=4
+conv.p interface.conv -cg=box3d -method=bamx -kx=2 -ky=1 -kz=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1 -errorNorm=1 -ng=3
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+    box3d2 &     1 & 4.00e-02 &      & 4.40e-02 &      & 4.51e-03 &      
+    box3d4 &     2 & 1.48e-02 &  2.7 & 1.57e-02 &  2.8 & 1.57e-03 &  2.9 
+    box3d8 &     4 & 7.56e-03 &  2.0 & 8.01e-03 &  2.0 & 7.93e-04 &  2.0 
+Convergence rates: c0=1.20 c1=1.23 c2=1.25 
+
+
+
+++++++= TWO DIMENSIONS
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -ng=4
+
+
+ORDER=4
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.68e-02 &      & 1.96e-02 &      & 3.31e-03 &      
+     rect4 &     2 & 7.96e-03 &  2.1 & 9.52e-03 &  2.1 & 1.66e-03 &  2.0 
+     rect8 &     4 & 4.05e-03 &  2.0 & 4.88e-03 &  2.0 & 8.53e-04 &  1.9 
+    rect16 &     8 & 2.05e-03 &  2.0 & 2.47e-03 &  2.0 & 4.32e-04 &  2.0 
+    rect32 &    16 & 1.03e-03 &  2.0 & 1.24e-03 &  2.0 & 2.18e-04 &  2.0 
+Convergence rates: c0=1.00 c1=0.99 c2=0.98
+
+TURN ON DISS -- smaller errors but slower convergence
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -diss=1 -ng=5
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 1.22e-02 &      & 1.35e-02 &      & 2.18e-03 &      
+     rect4 &     2 & 4.36e-03 &  2.8 & 5.23e-03 &  2.6 & 9.56e-04 &  2.3 
+     rect8 &     4 & 2.34e-03 &  1.9 & 2.64e-03 &  2.0 & 5.19e-04 &  1.8 
+    rect16 &     8 & 1.28e-03 &  1.8 & 1.33e-03 &  2.0 & 2.78e-04 &  1.9 
+    rect32 &    16 & 6.92e-04 &  1.8 & 6.72e-04 &  2.0 & 1.50e-04 &  1.9 
+    rect64 &    32 & 3.70e-04 &  1.9 & 3.37e-04 &  2.0 & 8.09e-05 &  1.9 
+Convergence rates: c0=0.97 c1=1.04 c2=0.93 
+
+
+
+
+conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=baMatGDMCase1.txt -matFile2=baMatGDM.txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -ng=4
+
+
+ORDER=2
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     rect2 &     1 & 8.39e-02 &      & 8.70e-02 &      & 1.45e-02 &      
+     rect4 &     2 & 2.27e-02 &  3.7 & 2.41e-02 &  3.6 & 4.01e-03 &  3.6 
+     rect8 &     4 & 7.12e-03 &  3.2 & 7.81e-03 &  3.1 & 1.31e-03 &  3.1 
+    rect16 &     8 & 2.64e-03 &  2.7 & 3.04e-03 &  2.6 & 5.10e-04 &  2.6 
+Convergence rates: c0=1.66 c1=1.61 c2=1.61 
+
+
+
+
+
+
+>>>>>   REVISIT PLANE WAVE SOLUTION -- time-step is likely bigger from before 
+
+ORDER=4
+conv.p exact.conv -option=planeWave -cg=boxp -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMgenND.txt -solveForAllFields=1 -drOption=computeWaveNumber -kx=1 -ky=1 -kz=1 -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1 -ng=4
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     boxp1 &     1 & 3.98e-02 &      & 3.56e-02 &      & 8.28e-03 &      
+     boxp2 &     2 & 2.84e-03 & 14.0 & 2.55e-03 & 14.0 & 5.89e-04 & 14.1 
+     boxp4 &     4 & 2.03e-04 & 14.0 & 1.82e-04 & 14.0 & 4.19e-05 & 14.1 
+     boxp8 &     8 & 1.36e-05 & 14.9 & 1.22e-05 & 14.9 & 2.81e-06 & 14.9 
+Convergence rates: c0=3.84 c1=3.83 c2=3.84 
+
+
+ORDER=2
+
+conv.p exact.conv -option=planeWave -cg=boxp -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMgenND.txt -solveForAllFields=1 -drOption=computeWaveNumber -kx=1 -ky=1 -kz=1 -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1 -ng=4
+
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+     boxp1 &     1 & 3.01e-01 &      & 2.70e-01 &      & 6.98e-02 &      
+     boxp2 &     2 & 7.69e-02 &  3.9 & 6.88e-02 &  3.9 & 1.78e-02 &  3.9 
+     boxp4 &     4 & 1.84e-02 &  4.2 & 1.64e-02 &  4.2 & 4.30e-03 &  4.1 
+     boxp8 &     8 & 4.55e-03 &  4.0 & 4.07e-03 &  4.0 & 1.06e-03 &  4.1 
+Convergence rates: c0=2.02 c1=2.02 c2=2.02 
+
+conv.p exact.conv -option=planeWave -cg=boxp -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMgenND.txt -solveForAllFields=1 -drOption=computeWaveNumber -kx=1 -ky=1 -kz=1 -tf=.1 -tp=.1 -order=2 -saveVectorErrors=0 -ng=2
+
+
+++++++++++  TWO DIMENSIONS
+ORDER=4 
+conv.p exact.conv -option=planeWave -cg=squarep -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMgenND.txt -solveForAllFields=1 -drOption=computeWaveNumber -kx=1 -ky=1 -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1 -ng=6
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+  squarep8 &     1 & 7.67e-01 &      & 5.21e-01 &      & 1.23e-01 &      
+ squarep16 &     2 & 1.31e-01 &  5.9 & 8.87e-02 &  5.9 & 1.87e-02 &  6.6 
+ squarep32 &     4 & 1.29e-02 & 10.2 & 8.76e-03 & 10.1 & 1.81e-03 & 10.3 
+ squarep64 &     8 & 9.78e-04 & 13.2 & 6.63e-04 & 13.2 & 1.37e-04 & 13.2 
+squarep128 &    16 & 6.71e-05 & 14.6 & 4.55e-05 & 14.6 & 9.38e-06 & 14.6 
+squarep256 &    32 & 4.20e-06 & 16.0 & 2.85e-06 & 16.0 & 5.88e-07 & 16.0 
+Convergence rates: c0=3.54 c1=3.54 c2=3.57 
+
+
+ORDER=2
+conv.p exact.conv -option=planeWave -cg=squarep -method=bamx -dm=gdm -ts=rk4 -matFile=baMatGDMgenND.txt -solveForAllFields=1 -drOption=computeWaveNumber -kx=1 -ky=1 -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1 -ng=6
+
+                grid  & N &  $\Ev$    & r &   $\Hv$    & r &  $\Pv$& r 
+  squarep8 &     1 & 1.48e+00 &      & 1.01e+00 &      & 3.18e-01 &      
+ squarep16 &     2 & 5.93e-01 &  2.5 & 4.03e-01 &  2.5 & 8.97e-02 &  3.5 
+ squarep32 &     4 & 1.76e-01 &  3.4 & 1.19e-01 &  3.4 & 2.58e-02 &  3.5 
+ squarep64 &     8 & 4.02e-02 &  4.4 & 2.73e-02 &  4.4 & 5.93e-03 &  4.4 
+squarep128 &    16 & 9.64e-03 &  4.2 & 6.53e-03 &  4.2 & 1.42e-03 &  4.2 
+squarep256 &    32 & 2.38e-03 &  4.1 & 1.61e-03 &  4.1 & 3.50e-04 &  4.1 
+Convergence rates: c0=1.90 c1=1.90 c2=1.98 
+
+
 ********************************
 ********  Wed Jan 8, 2020
 

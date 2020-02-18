@@ -622,6 +622,17 @@ setupGridFunctions()
       totalNumberOfPolarizationComponents.redim(cg.numberOfComponentGrids());
       totalNumberOfPolarizationComponents=0;
 
+      IntegerArray & numberOfMaterials = parameters.dbase.get<IntegerArray>("numberOfMaterials");
+      std::vector<IntegerArray> & materialList = parameters.dbase.get<std::vector<IntegerArray> >("materialList");  
+
+      if( method==bamx && numberOfMaterials.getLength(0) != cg.numberOfComponentGrids() )
+      {
+        // There must be a single material for BAMX (these arrays are normally set in defineMaterialRegions) 
+        assert( numberOfMaterialRegions==1 );
+        numberOfMaterials.redim(cg.numberOfComponentGrids());
+        numberOfMaterials=0;
+      }
+
       if( dispersionModel!=noDispersion )
       {
 	// -- add Grid functions to hold the data for the dispersion models ---
@@ -698,6 +709,7 @@ setupGridFunctions()
 		dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
 	      // Material "0" is the background material: 
+              int grid=0;
 	      const int domain = cg.domainNumber(grid);
 	      const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
 	      dmpVector.push_back(dmp0);

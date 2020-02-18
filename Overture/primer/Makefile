@@ -197,6 +197,12 @@ pwave: $(pwave)
 	$(CC) $(CCFLAGS) -o pwave $(pwave) \
         $(CLIBS) $(FLIBS) $(GLIBS) 
 
+cgWaveHoltz.o : cgWaveHoltz.C; $(CC) $(CCFLAGSF) -c $*.C
+cgWaveHoltz = cgWaveHoltz.o getDt.o 
+cgWaveHoltz: $(cgWaveHoltz) 
+	$(CC) $(CCFLAGS) -o cgWaveHoltz $(cgWaveHoltz) \
+        $(CLIBS) $(FLIBS) $(GLIBS) 
+
 # P++ wave equation solver:
 pppWave = pppWave.o 
 pppWave: $(pppWave) 

@@ -118,3 +118,105 @@ dielectricSphere4:
 	conv.p dielectric.conv -tp=.1 -tf=.5 -order=4 -name="solidSphereInABoxe" -kx=1 -ky=0 -eps1=2 -eps2=1 -dm=gdm -modeGDM=1 -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -cfl=.9  -useSosupDissipation=1 -ng=3
 	mv dielectricSphereGDMNp1Np2Mode1Order4maxNormConvTable.tex $(interfaceTables)
 	mv dielectricSphereNFDTDOrder4GDMNp1Np2GdmMode1maxNorm.m $(interfaceTables) 
+
+
+
+# -------- BA MAXWELL INTERFACE *WARNING* COPIES FILES TO bamx paper directory
+bamxp = ~/Dropbox/DARPA/BAMX/papers/bamx
+matFile = baMatGDMCase1
+matFile2 = baMatGDM4
+baInterface: baInterface2d baInterface3d
+
+baInterface2d:
+	conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=7
+	cp interfaceWithDissbamxrect$(matFile)$(matFile2)rk4Order2L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceWithDissbamxrectrk4Order2$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+	conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=7
+	cp interfaceWithDissbamxrect$(matFile)$(matFile2)rk4Order4L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceWithDissbamxrectrk4Order4$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+
+baInterface2dNoDiss:
+	conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt  -ic=pmic -tf=1 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1  -alwaysCompute=0 -ng=7
+	cp interfacebamxrect$(matFile)$(matFile2)rk4Order2L1NormConvTable.tex $(bamxp)/tables
+	cp interfacebamxrectrk4Order2$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+	conv.p interface.conv -cg=rect -method=bamx -kx=1 -ky=1 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt  -ic=pmic -tf=1 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -alwaysCompute=0 -ng=7
+	cp interfacebamxrect$(matFile)$(matFile2)rk4Order4L1NormConvTable.tex $(bamxp)/tables
+	cp interfacebamxrectrk4Order4$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+
+baInterface3d:
+	conv.p interface.conv -cg=box3d -method=bamx -kx=1 -ky=.5 -kz=.5 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -alwaysCompute=0 -ng=4
+	cp interfacebamxbox3d$(matFile)$(matFile2)rk4Order2L1NormConvTable.tex $(bamxp)/tables
+	cp interfacebamxbox3drk4Order2$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+	conv.p interface.conv -cg=box3d -method=bamx -kx=1 -ky=.5 -kz=.5 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt -ic=pmic -tf=.5 -tp=.5 -order=2 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=4
+	cp interfaceWithDissbamxbox3d$(matFile)$(matFile2)rk4Order2L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceWithDissbamxbox3drk4Order2$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+	conv.p interface.conv -cg=box3d -method=bamx -kx=1 -ky=.5 -kz=.5 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt -ic=pmic -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -alwaysCompute=0 -ng=4
+	cp interfacebamxbox3d$(matFile)$(matFile2)rk4Order4L1NormConvTable.tex $(bamxp)/tables
+	cp interfacebamxbox3drk4Order4$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+	conv.p interface.conv -cg=box3d -method=bamx -kx=1 -ky=.5 -kz=.5 -dm=gdm -dispersionOption=k -matFile=$(matFile).txt -matFile2=$(matFile2).txt -ic=pmic -tf=.5 -tp=.5 -order=4 -saveVectorErrors=1  -errorNorm=1 -option=interfaceWithDiss -diss=1 -alwaysCompute=0 -ng=4
+	cp interfaceWithDissbamxbox3d$(matFile)$(matFile2)rk4Order4L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceWithDissbamxbox3drk4Order4$(matFile)$(matFile2)L1Norm.m $(bamxp)/matlab 
+
+
+# ---------------------------- BA SURFACE WAVE -----------------------
+#    **************WARNING THIS WILL OVERWITE FILES IN THE BAMX PAPER DIRECTORY*****************
+baSurfaceWave: baSurfaceWaveOrder2 baSurfaceWaveOrder4
+
+baSurfaceWaveOrder2:
+	conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.5 -tp=.5 -order=2 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -ng=5
+	cp interfaceSurfaceWavebamxrectbaMatIsotropic1baMatBiIsotropic1rk4Order2L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceSurfaceWavebamxrectrk4Order2baMatIsotropic1baMatBiIsotropic1L1Norm.m  $(bamxp)/matlab 
+	conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.5 -tp=.5 -order=2 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+	cp interfaceWithDissSurfaceWavebamxrectbaMatIsotropic1baMatBiIsotropic1rk4Order2L1NormConvTable.tex  $(bamxp)/tables
+	cp interfaceWithDissSurfaceWavebamxrectrk4Order2baMatIsotropic1baMatBiIsotropic1L1Norm.m $(bamxp)/matlab
+
+
+baSurfaceWaveOrder4:
+	conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.5 -tp=.5 -order=4 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -ng=5
+	cp interfaceSurfaceWavebamxrectbaMatIsotropic1baMatBiIsotropic1rk4Order4L1NormConvTable.tex $(bamxp)/tables
+	cp interfaceSurfaceWavebamxrectrk4Order4baMatIsotropic1baMatBiIsotropic1L1Norm.m  $(bamxp)/matlab 
+	conv.p interface.conv -cg=rect -gridSuffix=pn -method=bamx -dm=gdm -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt  -ic=isw -tf=.5 -tp=.5 -order=4 -dispersionOption=k  -saveVectorErrors=1 -errorNorm=1 -option=interfaceWithDiss -diss=1 -ng=5
+	cp interfaceWithDissSurfaceWavebamxrectbaMatIsotropic1baMatBiIsotropic1rk4Order4L1NormConvTable.tex  $(bamxp)/tables
+	cp interfaceWithDissSurfaceWavebamxrectrk4Order4baMatIsotropic1baMatBiIsotropic1L1Norm.m $(bamxp)/matlab
+
+
+# --------------------------- SCATTERING FROM A CYLINDER WITH BAMX --------------------
+baCyl: baCylOrder2 baCylOrder4
+
+baCylOrder2:
+	conv.p dielectric.conv -cyl=1 -kx=3 -tf=.6 -tp=.6 -order=2 -name="cSquaree" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt  -errorNorm=1 -diss=0 -alwaysCompute=0 -ng=7
+	cp dielectricCylbaAirbaIsoEps0p25Order2NormConvTable.tex $(bamxp)/tables
+	cp dielectricCylbamxOrder2L1Norm.m $(bamxp)/matlab 
+	conv.p dielectric.conv -prefix="WithDiss" -cyl=1 -kx=3 -tf=.6 -tp=.6 -order=2 -name="cSquaree" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt  -errorNorm=1 -diss=1 -alwaysCompute=0 -ng=7
+	cp dielectricCylWithDissbaAirbaIsoEps0p25Order2NormConvTable.tex $(bamxp)/tables
+	cp dielectricCylWithDissbamxOrder2L1Norm.m $(bamxp)/matlab 
+
+baCylOrder4:
+	conv.p dielectric.conv -cyl=1 -kx=3 -tf=.6 -tp=.6 -order=4 -name="cSquaree" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt  -errorNorm=1 -diss=0 -alwaysCompute=0 -ng=7
+	cp dielectricCylbaAirbaIsoEps0p25Order4NormConvTable.tex $(bamxp)/tables
+	cp dielectricCylbamxOrder4L1Norm.m $(bamxp)/matlab 
+	conv.p dielectric.conv -prefix="WithDiss" -cyl=1 -kx=3 -tf=.6 -tp=.6 -order=4 -name="cSquaree" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt  -errorNorm=1 -diss=1 -alwaysCompute=0 -ng=7
+	cp dielectricCylWithDissbaAirbaIsoEps0p25Order4NormConvTable.tex $(bamxp)/tables
+	cp dielectricCylWithDissbamxOrder4L1Norm.m $(bamxp)/matlab 
+
+
+
+# --------------------------- SCATTERING FROM A SPHERE WITH BAMX --------------------
+baSphere: baSphereOrder2 baSphereOrder4
+
+baSphereOrder2:
+	conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=2 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -diss=0 -saveVectorErrors=1 -solveForAllFields=1 -alwaysCompute=0 -ng=4
+	cp dielectricSpherebaAirbaIsoEps0p25Order2NormConvTable.tex $(bamxp)/tables
+	cp dielectricSpherebamxOrder2L1Norm.m $(bamxp)/matlab
+	conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=2 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -prefix="WithDiss" -diss=1 -saveVectorErrors=1 -solveForAllFields=1 -alwaysCompute=0 -ng=4
+	cp dielectricSphereWithDissbaAirbaIsoEps0p25Order2NormConvTable.tex $(bamxp)/tables
+	cp dielectricSphereWithDissbamxOrder2L1Norm.m $(bamxp)/matlab
+
+
+baSphereOrder4:
+	conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=4 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -diss=0 -saveVectorErrors=1 -solveForAllFields=1 -alwaysCompute=0 -ng=4
+	cp dielectricSpherebaAirbaIsoEps0p25Order4NormConvTable.tex $(bamxp)/tables
+	cp dielectricSpherebamxOrder4L1Norm.m $(bamxp)/matlab
+	conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=4 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -prefix="WithDiss" -diss=1 -saveVectorErrors=1 -solveForAllFields=1 -alwaysCompute=0 -ng=4
+	cp dielectricSphereWithDissbaAirbaIsoEps0p25Order4NormConvTable.tex $(bamxp)/tables
+	cp dielectricSphereWithDissbamxOrder4L1Norm.m $(bamxp)/matlab
