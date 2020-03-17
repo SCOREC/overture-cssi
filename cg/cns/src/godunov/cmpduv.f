@@ -2756,7 +2756,11 @@ c
 c
       speed1d=0.d0
       method1d=method
-      call cmpflux1d (m1d,wl1d,wr1d,fl1d,fr1d,speed1d,method1d)
+      write(6,*)'Error (chkflux) : currently dissabled'
+      if (m.gt.0) then
+        stop
+      end if
+c      call cmpflux1d (m1d,wl1d,wr1d,fl1d,fr1d,speed1d,method1d)
 c
       rad=dsqrt(a1**2+a2**2)
       aj1=rad*aj
