@@ -163,10 +163,10 @@ extern "C"
               const real & dr, const real & ds1, const real & ds2, const real & r,
               const real & rx, const real & gv, const real & det,
               const real & rx2, const real & gv2, const real & det2,
-              const real & xy, const real & u,
-              real & up, const int & mask, const int & ntau, real & tau, const real & ad, const int & nvar, real & var,
+              const real & xy, const real & u, real & up,
+              const int & mask, const int & ntau, real & tau, const real & ad, const int & nvar, real & var,
               const int & nparam, real & param, const int & niparam, const int & iparam,
-              const int & nrwk, real & rwk, const int & niwk, int & iwk, const int & idebug, int & ier);
+              const int & nrwk, real & rwk, const int & niwk, int & iwk, const int & idebug, const DataBase *pdb, int & ier);
 
   void CMFDU(const int & m, const int & nd1a, const int & nd1b, const int & n1a, const int & n1b,
               const int & nd2a, const int & nd2b, const int & n2a, const int & n2b,
@@ -620,6 +620,18 @@ getUt(const realMappedGridFunction & v,
 
     rpu(2)=parameters.dbase.get<real >("godunovArtificialViscosity");
 
+    //  twilightZoneFlow ???
+    if( parameters.dbase.get<bool >("twilightZoneFlow") )
+    {
+//      mg.update(MappedGrid::THEinverseCenterDerivative | MappedGrid::THEcenterJacobian );
+      ipu(14)=parameters.dbase.get<bool >("twilightZoneFlow");
+      rpu(14)=(real &)parameters.dbase.get<OGFunction* >("exactSolution");
+    }
+
+    // DataBase *pdb = &parameters.dbase;
+    //rpu(15)=(real &)pdb;
+    //rpu(15)=pdb;
+
     int ierr=0;
     if( numberOfDimensions==2 )
     {
@@ -655,15 +667,29 @@ getUt(const realMappedGridFunction & v,
       #endif
 
       real *xyPtr = rpu.getDataPointer(); // give a default value
-      if( parameters.isAxisymmetric() )
+      if( parameters.isAxisymmetric() || parameters.dbase.get<bool >("twilightZoneFlow") )
       {
-        printF("Cgcns:getUt:Error : axisymmetric flow not supported by multiphase pde option\n");
-        Overture::abort("error");
+
+       // get the grid vertices (in order to compute the radius which is assumed to be the y direction)
+        mg.update(MappedGrid::THEvertex);
+        #ifdef USE_PPP
+          xyPtr=mg.vertex().getLocalArray().getDataPointer();
+        #else
+          xyPtr=mg.vertex().getDataPointer();
+        #endif
+
+        if( parameters.isAxisymmetric() )
+        {
+          printF("Cgcns:getUt:Error : axisymmetric flow not supported by multiphase pde option\n");
+          Overture::abort("error");
+        }
+        else
+        {
+          ipu(10)=0;
+        }
+
       }
-      else
-      {
-        ipu(10)=0;
-      }
+
 
       int idebug=debug() >3;
       if( isRectangular )
@@ -720,7 +746,7 @@ getUt(const realMappedGridFunction & v,
 		 parameters.dbase.get<int >("numberOfExtraVariables"),
 		 uLocal(uLocal.getBase(0),uLocal.getBase(1),uLocal.getBase(2),numberOfComponents),
 		 nrpu,*rpu.getDataPointer(), nipu,*ipu.getDataPointer(),
-		 nrwk,*rwk.getDataPointer(),niwk,*iwk.getDataPointer(),idebug,ierr);
+		 nrwk,*rwk.getDataPointer(),niwk,*iwk.getDataPointer(),idebug,pdb,ierr);
 	  
 	}
         // ::display(utLocal,sPrintF("Cgcns:getUt: utLocal at CMPDU t=%e",t),pDebugFile,"%20.14e ");  
@@ -783,7 +809,7 @@ getUt(const realMappedGridFunction & v,
 		 parameters.dbase.get<int >("numberOfExtraVariables"),
 		 uLocal(uLocal.getBase(0),uLocal.getBase(1),uLocal.getBase(2),numberOfComponents),
 		 nrpu,*rpu.getDataPointer(), nipu,*ipu.getDataPointer(),
-		 nrwk,*rwk.getDataPointer(),niwk,*iwk.getDataPointer(),idebug,ierr);
+		 nrwk,*rwk.getDataPointer(),niwk,*iwk.getDataPointer(),idebug,pdb,ierr);
 	  
 	}
       }

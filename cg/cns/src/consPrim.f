@@ -137,8 +137,11 @@ c     these are values are set through the cmd file
 c multiphase parameters
       real asmin,compac,alps,alpg,ralps,ralpg,rsi,rgi
       real gamc,gm1,gp1,em,ep,ps0,bgas
-      real astiny,pgtiny
+      real astiny,pgtiny,Vol,Ak,Bk,AmgV,BmgV
+      integer imgeos,methodMG,linsc,kmat,iermg
       common / gasdat / gamc(2),gm1(2),gp1(2),em(2),ep(2),ps0,bgas
+      common / rundatmg / imgeos,methodMG,linsc
+      common / matdatmg / kmat(2)
 
 c four component parameters
       integer fourComp
@@ -318,7 +321,10 @@ c       pause
             ! ****** Primitive to Conservative ******
             ! ***************************************
             if( pde.eq.compressibleMultiphase ) then
-c    write(6,*)'here i am (1)',mfsolid
+c    write(6,*)'here i am (consPrim1)',imgeos
+c    read(5,*)imgeos
+c    write(6,*)'here i am (consPrim1)',mfsolid
+c    read(5,*)mfsolid
 c    do i=0,11
 c      write(6,*)i,q(n1a,n2a,n3a,i)
 c    end do
@@ -328,23 +334,52 @@ c first step: thermodynamics => convert Tk=pk/rk to ek, k=s or g
               astiny=1.e-3
               pgtiny=1.e-3
               if (mfsolid.eq.0) then
-                do i3=n3a,n3b
-                do i2=n2a,n2b
-                do i1=n1a,n1b
-                    q(i1,i2,i3,tsc)=(q(i1,i2,i3,tsc)+ps0*gamc(1)/q(i1,
-     & i2,i3,rsc))/gm1(1)+compac(q(i1,i2,i3,asc),0)
-                    q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)/(gm1(2)*(1.0+bgas*
-     & q(i1,i2,i3,rgc)))
-                    if (q(i1,i2,i3,asc).lt.astiny) then
-                      if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
+                if (imgeos.eq.0) then
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                      q(i1,i2,i3,tsc)=(q(i1,i2,i3,tsc)+ps0*gamc(1)/q(
+     & i1,i2,i3,rsc))/gm1(1)+compac(q(i1,i2,i3,asc),0)
+                      q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)/(gm1(2)*(1.0+
+     & bgas*q(i1,i2,i3,rgc)))
+                      if (q(i1,i2,i3,asc).lt.astiny) then
+                        if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
      & then
-                        q(i1,i2,i3,tgc)=(pgtiny/q(i1,i2,i3,rgc))/(gm1(
-     & 2)*(1.0+bgas*q(i1,i2,i3,rgc)))
+                          q(i1,i2,i3,tgc)=(pgtiny/q(i1,i2,i3,rgc))/(
+     & gm1(2)*(1.0+bgas*q(i1,i2,i3,rgc)))
+                        end if
                       end if
-                    end if
-                end do
-                end do
-                end do
+                  end do
+                  end do
+                  end do
+                else
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                      Vol=1.0/q(i1,i2,i3,rsc)
+                      Ak=AmgV(kmat(1),Vol)
+                      Bk=BmgV(1,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & solid)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tsc)=(Ak*q(i1,i2,i3,tsc)*q(i1,i2,i3,
+     & rsc)+Bk)+compac(q(i1,i2,i3,asc),0)
+                      Vol=1.0/q(i1,i2,i3,rgc)
+                      Ak=AmgV(kmat(2),Vol)
+                      Bk=BmgV(2,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & gas)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tgc)=Ak*q(i1,i2,i3,tgc)*q(i1,i2,i3,
+     & rgc)+Bk
+                  end do
+                  end do
+                  end do
+                end if
               else
                 do i3=n3a,n3b
                 do i2=n2a,n2b
@@ -860,7 +895,8 @@ c                    E=total energy (per unit volume)
             if( pde.eq.compressibleMultiphase ) then
 c here is the new multiphase option
 c first step : divide by volume fraction
-c    write(6,*)'here i am (2)',mfsolid
+c    write(6,*)'here i am (consPrim2)',mfsolid
+c    read(5,*)mfsolid
               do i3=n3a,n3b
               do i2=n2a,n2b
               do i1=n1a,n1b
@@ -898,23 +934,51 @@ c third step: thermodynamics => convert ek to Tk=pk/rk, k=s or g
               astiny=1.e-3
               pgtiny=1.e-3
               if (mfsolid.eq.0) then
-                do i3=n3a,n3b
-                do i2=n2a,n2b
-                do i1=n1a,n1b
-                    rsi=1.0/q(i1,i2,i3,rsc)
-                    q(i1,i2,i3,tsc)=gm1(1)*(q(i1,i2,i3,tsc)-compac(q(
+                if (imgeos.eq.0) then
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                      rsi=1.0/q(i1,i2,i3,rsc)
+                      q(i1,i2,i3,tsc)=gm1(1)*(q(i1,i2,i3,tsc)-compac(q(
      & i1,i2,i3,asc),0))-ps0*gamc(1)*rsi
-                    q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)*gm1(2)*(1.0+bgas*q(
-     & i1,i2,i3,rgc))
-                    if (q(i1,i2,i3,asc).lt.astiny) then
-                      if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
+                      q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)*gm1(2)*(1.0+bgas*
+     & q(i1,i2,i3,rgc))
+                      if (q(i1,i2,i3,asc).lt.astiny) then
+                        if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
      & then
-                        q(i1,i2,i3,tgc)=pgtiny/q(i1,i2,i3,rgc)
+                          q(i1,i2,i3,tgc)=pgtiny/q(i1,i2,i3,rgc)
+                        end if
                       end if
-                    end if
-                end do
-                end do
-                end do
+                  end do
+                  end do
+                  end do
+                else
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                      Vol=1.0/q(i1,i2,i3,rsc)
+                      Ak=AmgV(kmat(1),Vol)
+                      Bk=BmgV(1,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & solid)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tsc)=Vol*(q(i1,i2,i3,tsc)-compac(q(i1,
+     & i2,i3,asc),0)-Bk)/Ak
+                      Vol=1.0/q(i1,i2,i3,rgc)
+                      Ak=AmgV(kmat(2),Vol)
+                      Bk=BmgV(2,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & gas)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tgc)=Vol*(q(i1,i2,i3,tgc)-Bk)/Ak
+                  end do
+                  end do
+                  end do
+                end if
               else
                 do i3=n3a,n3b
                 do i2=n2a,n2b
@@ -1834,7 +1898,10 @@ c        stop 1234
             ! ****** Primitive to Conservative ******
             ! ***************************************
             if( pde.eq.compressibleMultiphase ) then
-c    write(6,*)'here i am (1)',mfsolid
+c    write(6,*)'here i am (consPrim1)',imgeos
+c    read(5,*)imgeos
+c    write(6,*)'here i am (consPrim1)',mfsolid
+c    read(5,*)mfsolid
 c    do i=0,11
 c      write(6,*)i,q(n1a,n2a,n3a,i)
 c    end do
@@ -1844,28 +1911,62 @@ c first step: thermodynamics => convert Tk=pk/rk to ek, k=s or g
               astiny=1.e-3
               pgtiny=1.e-3
               if (mfsolid.eq.0) then
-                do i3=n3a,n3b
-                do i2=n2a,n2b
-                do i1=n1a,n1b
-                  if( mask(i1,i2,i3).ne.0 )then
-                    q(i1,i2,i3,tsc)=(q(i1,i2,i3,tsc)+ps0*gamc(1)/q(i1,
-     & i2,i3,rsc))/gm1(1)+compac(q(i1,i2,i3,asc),0)
-                    q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)/(gm1(2)*(1.0+bgas*
-     & q(i1,i2,i3,rgc)))
-                    if (q(i1,i2,i3,asc).lt.astiny) then
-                      if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
+                if (imgeos.eq.0) then
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                    if( mask(i1,i2,i3).ne.0 )then
+                      q(i1,i2,i3,tsc)=(q(i1,i2,i3,tsc)+ps0*gamc(1)/q(
+     & i1,i2,i3,rsc))/gm1(1)+compac(q(i1,i2,i3,asc),0)
+                      q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)/(gm1(2)*(1.0+
+     & bgas*q(i1,i2,i3,rgc)))
+                      if (q(i1,i2,i3,asc).lt.astiny) then
+                        if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
      & then
-                        q(i1,i2,i3,tgc)=(pgtiny/q(i1,i2,i3,rgc))/(gm1(
-     & 2)*(1.0+bgas*q(i1,i2,i3,rgc)))
+                          q(i1,i2,i3,tgc)=(pgtiny/q(i1,i2,i3,rgc))/(
+     & gm1(2)*(1.0+bgas*q(i1,i2,i3,rgc)))
+                        end if
                       end if
+                    else
+                      q(i1,i2,i3,tsc)=val(tsc)
+                      q(i1,i2,i3,tgc)=val(tgc)
                     end if
-                  else
-                    q(i1,i2,i3,tsc)=val(tsc)
-                    q(i1,i2,i3,tgc)=val(tgc)
-                  end if
-                end do
-                end do
-                end do
+                  end do
+                  end do
+                  end do
+                else
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                    if( mask(i1,i2,i3).ne.0 )then
+                      Vol=1.0/q(i1,i2,i3,rsc)
+                      Ak=AmgV(kmat(1),Vol)
+                      Bk=BmgV(1,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & solid)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tsc)=(Ak*q(i1,i2,i3,tsc)*q(i1,i2,i3,
+     & rsc)+Bk)+compac(q(i1,i2,i3,asc),0)
+                      Vol=1.0/q(i1,i2,i3,rgc)
+                      Ak=AmgV(kmat(2),Vol)
+                      Bk=BmgV(2,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & gas)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tgc)=Ak*q(i1,i2,i3,tgc)*q(i1,i2,i3,
+     & rgc)+Bk
+                    else
+                      q(i1,i2,i3,tsc)=val(tsc)
+                      q(i1,i2,i3,tgc)=val(tgc)
+                    end if
+                  end do
+                  end do
+                  end do
+                end if
               else
                 do i3=n3a,n3b
                 do i2=n2a,n2b
@@ -2528,7 +2629,8 @@ c                    E=total energy (per unit volume)
             if( pde.eq.compressibleMultiphase ) then
 c here is the new multiphase option
 c first step : divide by volume fraction
-c    write(6,*)'here i am (2)',mfsolid
+c    write(6,*)'here i am (consPrim2)',mfsolid
+c    read(5,*)mfsolid
               do i3=n3a,n3b
               do i2=n2a,n2b
               do i1=n1a,n1b
@@ -2587,28 +2689,61 @@ c third step: thermodynamics => convert ek to Tk=pk/rk, k=s or g
               astiny=1.e-3
               pgtiny=1.e-3
               if (mfsolid.eq.0) then
-                do i3=n3a,n3b
-                do i2=n2a,n2b
-                do i1=n1a,n1b
-                  if( mask(i1,i2,i3).ne.0 )then
-                    rsi=1.0/q(i1,i2,i3,rsc)
-                    q(i1,i2,i3,tsc)=gm1(1)*(q(i1,i2,i3,tsc)-compac(q(
+                if (imgeos.eq.0) then
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                    if( mask(i1,i2,i3).ne.0 )then
+                      rsi=1.0/q(i1,i2,i3,rsc)
+                      q(i1,i2,i3,tsc)=gm1(1)*(q(i1,i2,i3,tsc)-compac(q(
      & i1,i2,i3,asc),0))-ps0*gamc(1)*rsi
-                    q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)*gm1(2)*(1.0+bgas*q(
-     & i1,i2,i3,rgc))
-                    if (q(i1,i2,i3,asc).lt.astiny) then
-                      if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
+                      q(i1,i2,i3,tgc)=q(i1,i2,i3,tgc)*gm1(2)*(1.0+bgas*
+     & q(i1,i2,i3,rgc))
+                      if (q(i1,i2,i3,asc).lt.astiny) then
+                        if (q(i1,i2,i3,tgc).lt.pgtiny/q(i1,i2,i3,rgc)) 
      & then
-                        q(i1,i2,i3,tgc)=pgtiny/q(i1,i2,i3,rgc)
+                          q(i1,i2,i3,tgc)=pgtiny/q(i1,i2,i3,rgc)
+                        end if
                       end if
+                    else
+                      q(i1,i2,i3,tsc)=val(tsc)
+                      q(i1,i2,i3,tgc)=val(tgc)
                     end if
-                  else
-                    q(i1,i2,i3,tsc)=val(tsc)
-                    q(i1,i2,i3,tgc)=val(tgc)
-                  end if
-                end do
-                end do
-                end do
+                  end do
+                  end do
+                  end do
+                else
+                  do i3=n3a,n3b
+                  do i2=n2a,n2b
+                  do i1=n1a,n1b
+                    if( mask(i1,i2,i3).ne.0 )then
+                      Vol=1.0/q(i1,i2,i3,rsc)
+                      Ak=AmgV(kmat(1),Vol)
+                      Bk=BmgV(1,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & solid)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tsc)=Vol*(q(i1,i2,i3,tsc)-compac(q(i1,
+     & i2,i3,asc),0)-Bk)/Ak
+                      Vol=1.0/q(i1,i2,i3,rgc)
+                      Ak=AmgV(kmat(2),Vol)
+                      Bk=BmgV(2,Vol,iermg)
+                      if (iermg.ne.0) then
+                        write(6,*)'Error (consPrim) : cannot compute B(
+     & gas)'
+                        stop
+                      end if
+                      q(i1,i2,i3,tgc)=Vol*(q(i1,i2,i3,tgc)-Bk)/Ak
+                    else
+                      q(i1,i2,i3,tsc)=val(tsc)
+                      q(i1,i2,i3,tgc)=val(tgc)
+                    end if
+                  end do
+                  end do
+                  end do
+                end if
               else
                 do i3=n3a,n3b
                 do i2=n2a,n2b

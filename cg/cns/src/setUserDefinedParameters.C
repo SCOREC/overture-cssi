@@ -9,6 +9,8 @@
 
 #define EOSDAT EXTERN_C_NAME(eosdat)
 #define EOSBURNTDAT EXTERN_C_NAME(eosburntdat)
+#define RUNDATMG EXTERN_C_NAME(rundatmg)
+#define MGEOSI EXTERN_C_NAME(mgeosi)
 #define GASDAT EXTERN_C_NAME(gasdat)
 #define SRCPRM EXTERN_C_NAME(srcprm)
 #define COMDAT EXTERN_C_NAME(comdat)
@@ -37,6 +39,11 @@ extern "C"
 		      
   //  common /NavierStokes/ amu,akappa,cmu1,cmu2,cmu3,ckap1,ckap2,ckap3
   extern struct{ real amu,akappa,cmu1,cmu2,cmu3,ckap1,ckap2,ckap3;} viscosityCoefficients;  //
+
+  //    common / rundatmg / imgeos,methodMG,linsc
+  extern struct{ int imgeos,methodMG,linsc;} RUNDATMG;
+
+  void MGEOSI(int & jphase, int & kmat);
 
 //      common / gasdat / gam(2),gm1(2),gp1(2),em(2),ep(2),ps0,bgas
   extern struct{ real gam[2],gm1[2],gp1[2],em[2],ep[2],ps0,bgas;} GASDAT;
@@ -696,6 +703,42 @@ setUserDefinedParameters()  // allow user defined  dbase.get<ListOfShowFileParam
     if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("nrmax",CMPROM.nrmax) )
     {
       printf(" setUserDefinedParameters: setting nrmax=%3d\n",CMPROM.nrmax);
+    }
+
+    int jphase,kmat1,kmat2;
+    
+    RUNDATMG.imgeos=0;  // default value => original code
+    if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("iMGEOS",RUNDATMG.imgeos) )
+    {
+      printf(" setUserDefinedParameters: setting imgeos=%i\n",RUNDATMG.imgeos);
+    }
+    
+    RUNDATMG.methodMG=0;   // default values
+    RUNDATMG.linsc=0;
+    if( RUNDATMG.imgeos!=0 )
+    {
+      if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("methodMG",RUNDATMG.methodMG) )
+      {
+        printf(" setUserDefinedParameters: setting methodMG=%i\n",RUNDATMG.methodMG);
+      }
+      if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("linsc",RUNDATMG.linsc) )
+      {
+        printf(" setUserDefinedParameters: setting linsc=%i\n",RUNDATMG.linsc);
+      }
+      kmat1=4;  // default value
+      if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("kmatSolid",kmat1) )
+      {
+        printf(" setUserDefinedParameters: setting kmatSolid=%i\n",kmat1);
+      }
+      kmat2=5;  // default value
+      if(  dbase.get<ListOfShowFileParameters >("pdeParameters").getParameter("kmatGas",kmat2) )
+      {
+        printf(" setUserDefinedParameters: setting kmatGas=%i\n",kmat2);
+      }
+      jphase=1;
+      MGEOSI (jphase,kmat1);
+      jphase=2;
+      MGEOSI (jphase,kmat2);
     }
 
 //     CMPMID.toli=1.e-4;    // default values
