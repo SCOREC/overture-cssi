@@ -5341,7 +5341,11 @@ c
 c
       method1d=0
       linsc=0
-      call cmpfluxMG1d (m1d,wl1d,wr1d,fl1d,fr1d,speed,method1d,linsc)
+      if (m.gt.0) then
+        write(6,*)'Error (chkfluxMG) : 1d flux checking disabled'
+        stop
+      end if
+c      call cmpfluxMG1d (m1d,wl1d,wr1d,fl1d,fr1d,speed,method1d,linsc)
 c
       rad=dsqrt(a1**2+a2**2)
       aj1=rad*aj
