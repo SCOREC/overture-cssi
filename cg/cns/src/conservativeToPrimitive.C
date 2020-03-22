@@ -225,9 +225,26 @@ primitiveToConservative(GridFunction & gf,
       int nd = cg.numberOfDimensions();
       if (  dbase.get<bool >("axisymmetricWithSwirl") ) nd++;
 
+      // *wdh* Fix  March 22, 2020 -- ignore fake parallel ghost outside true boundaries 
+      const IntegerArray & dim = cg[grid].dimension();
+      int n1a=q.getBase(0), n1b=q.getBound(0), n2a=q.getBase(1), n2b=q.getBound(1), n3a=q.getBase(2), n3b=q.getBound(2);
+      n1a = max(n1a,dim(0,0)); n1b=min(n1b,dim(1,0));
+      n2a = max(n2a,dim(0,1)); n2b=min(n2b,dim(1,1));
+      n3a = max(n3a,dim(0,2)); n3b=min(n3b,dim(1,2));
+       
+      if( false )
+      {
+	const int & myid=dbase.get<int >("myid");
+	printf("primitiveToConservative: myid=%2d, [n1a,n1b][n2a,n2b][n3a,n3b]=[%4d,%4d][%4d,%4d][%4d,%4d]\n",
+	       myid,n1a,n1b,n2a,n2b,n3a,n3b);
+	printf("                                                          dim=[%4d,%4d][%4d,%4d][%4d,%4d]\n",
+	       dim(0,0),dim(1,0),dim(0,1),dim(1,1),dim(0,2),dim(1,2) );
+      }
+      
       CONSPRIM(q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
-	       q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
-	       nd /*kkc cg.numberOfDimensions()*/, dbase.get<int >("numberOfSpecies"),  dbase.get<int >("rc"), dbase.get<int >("uc"), dbase.get<int >("vc"), dbase.get<int >("wc"), dbase.get<int >("tc"), dbase.get<int >("sc"), 
+	       //q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
+	       n1a,n1b,n2a,n2b,n3a,n3b, // perform operations at these points 
+	       nd , dbase.get<int >("numberOfSpecies"),  dbase.get<int >("rc"), dbase.get<int >("uc"), dbase.get<int >("vc"), dbase.get<int >("wc"), dbase.get<int >("tc"), dbase.get<int >("sc"), 
 	       *q.getDataPointer(), *mask.getDataPointer(), values(0),ipar[0],rpar[0],option,
                fixupUnsedPoints,epsRho );
       
@@ -501,9 +518,25 @@ conservativeToPrimitive(GridFunction & gf,
       int nd = cg.numberOfDimensions();
       if (  dbase.get<bool >("axisymmetricWithSwirl") ) nd++;
 
+      // *wdh* Fix  March 22, 2020 -- ignore fake parallel ghost outside true boundaries 
+      const IntegerArray & dim = cg[grid].dimension();
+      int n1a=q.getBase(0), n1b=q.getBound(0), n2a=q.getBase(1), n2b=q.getBound(1), n3a=q.getBase(2), n3b=q.getBound(2);
+      n1a = max(n1a,dim(0,0)); n1b=min(n1b,dim(1,0));
+      n2a = max(n2a,dim(0,1)); n2b=min(n2b,dim(1,1));
+      n3a = max(n3a,dim(0,2)); n3b=min(n3b,dim(1,2));
+
+      if( false )
+      {
+	const int & myid=dbase.get<int >("myid");
+	printf("conservativeToPrimitive: myid=%2d, [n1a,n1b][n2a,n2b][n3a,n3b]=[%4d,%4d][%4d,%4d][%4d,%4d]\n",
+	       myid,n1a,n1b,n2a,n2b,n3a,n3b);
+      }
+
+
       CONSPRIM(q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
-	       q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
-	       nd /*cg.numberOfDimensions()*/, dbase.get<int >("numberOfSpecies"),  dbase.get<int >("rc"), dbase.get<int >("uc"), dbase.get<int >("vc"), dbase.get<int >("wc"), dbase.get<int >("tc"), dbase.get<int >("sc"), 
+	       // q.getBase(0),q.getBound(0),q.getBase(1),q.getBound(1),q.getBase(2),q.getBound(2),
+	       n1a,n1b,n2a,n2b,n3a,n3b, // perform operations at these points 
+	       nd, dbase.get<int >("numberOfSpecies"),  dbase.get<int >("rc"), dbase.get<int >("uc"), dbase.get<int >("vc"), dbase.get<int >("wc"), dbase.get<int >("tc"), dbase.get<int >("sc"), 
 	       *q.getDataPointer(), *mask.getDataPointer(), values(0),ipar[0],rpar[0],option,
                fixupUnsedPoints,epsRho );
       
