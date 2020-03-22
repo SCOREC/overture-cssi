@@ -5969,7 +5969,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  #If #ORDER eq "2"
 
    if( t.le.3*dt )then
-     write(*,*) 'Inside advMaxwell rectangular order=2...'
+     write(*,*) 'Inside advOptNew rectangular order=2...'
    end if
    #If #DIM eq "2"
     if( dispersionModel.ne.noDispersion )then

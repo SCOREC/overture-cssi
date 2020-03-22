@@ -1,4 +1,19 @@
 ***************************
+******* Feb 25, 2020
+
+REVISIT SOSUP DISSIPATION for CgWave
+
+EXACT 
+cgmx -noplot tz -g=sise2.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=0 -bc=d -tp=.01 -tf=.2 -cfl=.9 -go=og 
+
+
+EXACT
+cgmx -noplot tz -g=square16.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=0 -bc=d -tp=.01 -tf=.2 -cfl=.9 -go=og 
+
+cgmx -noplot tz -g=nonSquare16.order2 -degreex=2 -degreet=2 -useSosupDiss=1 -sosupDissipationOption=1 -sosupParameter=1 -diss=0 -method=nfdtd -cons=0 -bc=d -tp=.01 -tf=.2 -cfl=.9 -go=go
+
+
+***************************
 ******* May 26, 2018
 
 

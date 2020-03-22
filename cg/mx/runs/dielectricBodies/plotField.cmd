@@ -1,5 +1,9 @@
 #
 echo to terminal 0
+#   plotStuff plotField.cmd -show=ellGL4gp.show -solution=5 -name=ellipseAngle30t2p0
+#   plotStuff plotField.cmd -show=ellGL4gp.show -solution=8 -name=ellipseAngle30t3p5
+#   plotStuff plotField.cmd -show=ellGL4gp.show -solution=10 -name=ellipseAngle30t4p5
+#
 #   plotStuff plotField.cmd -show=ellipseOneAngle45.show -solution=7 -name=ellipseOneAngle45
 #   plotStuff plotField.cmd -show=ellipseTwoAngle45.show -solution=7 -name=ellipseTwoAngle45
 #   plotStuff plotField.cmd -show=ellipseThreeAngle45.show -solution=7 -name=ellipseThreeAngle45

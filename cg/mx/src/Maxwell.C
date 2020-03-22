@@ -3090,7 +3090,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( timeSteppingOptionsDialog.getTextValue(answer,"order of Runge Kutta","%i",orderOfRungeKutta) )
     {
       printF("Setting orderOfRungeKutta=%d\n",orderOfRungeKutta);
-      orderOfAccuracyInTime=orderOfRungeKutta;
+
+      if( timeSteppingMethod==rungeKutta )
+	orderOfAccuracyInTime=orderOfRungeKutta;
       
       if( orderOfRungeKutta<1 || orderOfRungeKutta>4 )
       {

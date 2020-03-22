@@ -455,6 +455,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                   	Index J1,J2,J3;
                   	const int extra=1; // orderOfAccuracyInSpace/2-1;
                   	getIndex(mg.gridIndexRange(),J1,J2,J3,extra);
+                            assert( orderOfAccuracyInSpace>=4 ); // *wdh* Feb 25, 2020
                   	mgop.setOrderOfAccuracy(orderOfAccuracyInSpace-2);
                   	mgop.derivative(MappedGridOperators::laplacianOperator,u,f,J1,J2,J3,C);  // *** use f as a temporary
                             #ifdef USE_PPP
@@ -750,6 +751,10 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 }
                 timeAdv=getCPU()-timeAdv;
                 timing(timeForAdvOpt)+=timeAdv;
+                if( false && stage==0 && addDissipation )
+                {
+                    display(un,sPrintF("un after addDissipation, before BC's grid=%i, t=%8.2e",grid,t),stdout,"%8.2e ");
+                }
                 if( debug & 8 )
                 {
                     display(unLocal,sPrintF("unLocal after advMaxwell, processor=%i before BC's t=%8.2e",

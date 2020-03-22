@@ -5383,7 +5383,7 @@ c===============================================================================
        !       **********************************************
           ! write(*,*) 'Inside advMaxwell rectangular marker 2...'
           if( t.le.3*dt )then
-            write(*,*) 'Inside advMaxwell rectangular order=2...'
+            write(*,*) 'Inside advOptNew rectangular order=2...'
           end if
            if( dispersionModel.ne.noDispersion )then
              ! --dispersion model --

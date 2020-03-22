@@ -21,6 +21,8 @@
 # 
 #   plotStuff plotGrid.cmd -show=waveyDiskGride128.order2 -name=waveyDiskGridNew
 #
+#   plotStuff plotGrid.cmd -show=ellipticalGridL4Angle30e4.order2 -name=ellipticalGridL4Angle30
+#
 $show="ellipticalDiskGride8.order2.hdf";
 # get command line arguments
 GetOptions( "show=s"=>\$show, "name=s"=>\$name );

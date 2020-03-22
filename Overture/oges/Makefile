@@ -254,6 +254,15 @@ tp2: $(tp2)
 	-Wl,-rpath,/usr/apps/MathWorks/matlab6.5R13/extern/lib/glnx86:/usr/apps/MathWorks/matlab6.5R13/sys/os/glnx86 -L/usr/apps/MathWorks/matlab6.5R13/extern/lib/glnx86 -L/usr/apps/MathWorks/matlab6.5R13/bin/glnx86 -leng -lmx -lmat -lut \
         $(CLIBS) $(FLIBS) -L/usr/local/lib -llapack $(GLIBS) 
 
+# TEST matrix free PETSc
+matrixFree = matrixFree.o 
+matrixFree: $(matrixFree) 
+	$(CC) $(CCFLAGS) -o matrixFree $(matrixFree) -Wl,-rpath,$(PETSC_LIB) $(PETSC_LIBS) \
+	           $(CLIBS) $(GLIBS)  $(FLIBS) -L$(LAPACK) -llapack
+
+
+
+
 
 # PETSc ex1.C 
 ex1 = ex1.o 

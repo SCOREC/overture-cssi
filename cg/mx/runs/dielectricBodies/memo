@@ -1,4 +1,16 @@
 ********************************
+********  Sat Feb 22, 2020
+
+START FIGURES FOR BAGDM PAPER 
+
+HIT BODY WITH GAUSSIAN -- starting outside 
+
+L=[-2,2]
+cgmx -noplot dielectricBodies -g=ellipticalGridL4Angle30e4.order4.ng3.hdf -dm=gdm -npv=1 -a01=1 -a11=.1 -b01=1 -b11=.2 -backGround=outerSquare -rbc=rbcNonLocal -kx=.5 -eps1=8 -eps2=1. -useSosupDissipation=1 -tf=5 -tp=.5 -probeFileName="" -xar=-5 -xbr=-4 -xat=4 -xbt=5 -ic=gp -x0=-3 -beta=50  -show=ellGL4gp.show -go=go > ellGL4gp.out
+
+
+
+********************************
 ********  Sun Feb 16, 2020
 
 START ON OBLIQUE INCIDENCE

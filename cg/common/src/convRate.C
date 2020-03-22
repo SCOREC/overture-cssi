@@ -118,12 +118,15 @@ main(int argc, char *argv[])
       done=numberOfCharsRead==0;
     
       line=buff;
+
       // skip leading blanks:
       int i=0;
       while( i<line.length() && line[i]==' ' ) i++;
       if( i==line.length() ) continue;
       line=line(i,line.length()-1);
       
+      // printF("convRate: line=[%s]\n",(const char*)line);
+
       if( line[0]=='%' )
       { // echo a comment
 	fprintf(outputFile,"%s\n",(const char*)line);

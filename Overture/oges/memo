@@ -1,9 +1,39 @@
 NOTE: FOR UBUNTU -- MOVE laplack libs to end to avoid problems with openGL
 
+**************************************
+******* Wed Feb 19, 2020
+
+
+matrixFree -n 10 -m 10 -ksp_type gmres -ksp_monitor -ksp_view -ksp_rtol 1.e-8
+matrixFree -n 10 -m 10 -ksp_type bcgs -ksp_monitor -ksp_view -ksp_rtol 1.e-8
+
+
+
+... done
+ 15 KSP Residual norm 3.416794280688e-14 
+KSP Object: 1 MPI processes
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-08, absolute=1e-50, divergence=10000
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: none
+  linear system matrix = precond matrix:
+  Matrix Object:   1 MPI processes
+    type: shell
+    rows=100, cols=100
+Norm of error 2.00431e-14 iterations 15
 
 
 **************************************
 ******* Tues Feb 18, 2020
+
+
+matrixFree -n 100 -m 100
+
 
 
 --- PETSc matrix free:

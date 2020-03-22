@@ -329,11 +329,11 @@ create a probe...
   nearest grid point to $xRightProbe $yRightProbe 0
 exit
 # -- surface integral probe, "average" option means scale by surface area  --
-$intProbeName = "integralLeft$probeFileName"; 
+if( $probeFileName ne "" ){ $intProbeName = "integralLeft$probeFileName"; }
 if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n  grid coordinate plane 0 $xLeftProbe $yLeftProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
 $cmd 
 # 
-$intProbeName = "integralRight$probeFileName"; 
+if( $probeFileName ne "" ){ $intProbeName = "integralRight$probeFileName"; }
 if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n grid coordinate plane 0 $xRightProbe $yRightProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
 $cmd 
 # OLD: 
