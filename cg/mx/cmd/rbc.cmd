@@ -27,7 +27,7 @@
 #   cgmx rbc -g=boxLx2Ly2Lz2Factor4.order4.hdf -rbc=abcPML -x0=0. -y0=0. -z0=0. -pmlWidth=11 -go=halt 
 #   cgmx rbc -g=boxLx2Ly2Lz2Factor4.order4.hdf -rbc=perfectElectricalConductor -x0=0. -y0=0. -z0=0. -go=halt
 #
-$tFinal=10.; $tPlot=.1; $diss=.1; $cfl=.9; $x0=0.0; $y0=0.; $z0=0.; $kx=1; $ky=0; $kz=0.; 
+$tFinal=10.; $tPlot=.1; $diss=.1; $cfl=.9; $x0=0.0; $y0=0.; $z0=0.; $kx=1; $ky=0; $kz=0.; $eps=1; 
 $grid="sib1.order4.hdf"; $ic="gs"; $ks="none";
 $cons=0; $go="halt"; $rbc="abcEM2"; $bcn="debug $debug"; 
 $pmlWidth=11; 
@@ -37,7 +37,7 @@ $pmlPower=4.;
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"ic=s"=>\$ic,"bc=s"=>\$bc,\
   "dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"kx=i"=>\$kx,"ky=i"=>\$ky,"kz=i"=>\$kz,\
-   "ks=s"=>\$ks,"rbc=s"=>\$rbc,"pmlWidth=f"=>\$pmlWidth,"pmlStrength=f"=>\$pmlStrength,"pmlPower=f"=>\$pmlPower );
+   "ks=s"=>\$ks,"rbc=s"=>\$rbc,"pmlWidth=f"=>\$pmlWidth,"pmlStrength=f"=>\$pmlStrength,"pmlPower=f"=>\$pmlPower,"eps=f"=>\$eps );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -47,6 +47,8 @@ $grid
 #
 gaussianSource
 NFDTD
+#
+coefficients $eps 1 all (eps,mu,grid/domain name)
 #
 # All boundaries get the far field BC: 
 bc: all=$rbc

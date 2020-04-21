@@ -364,9 +364,9 @@ are those suggested in Hagstrom~\cite{Hagstrom1999} and given by (defined here o
 \end{align}
 Here $u$ is any field which satisfies the second-order wave equation and $v$ and $w$ are auxillary variables
 that only live in the layer domain. 
-The PML damping function $\sigma_1(\xi)$ is given by 
+The PML damping function $\sigma_1(\xi)$ is given by (Note: scale by $c$ to make dimensionally correct, 2020/03/31) 
 \begin{align}
-  \sigma(\xi) = a \xi^p
+  \sigma(\xi) = c\, a \, \xi^p
 \end{align}
 where $a$ is the strength, $p$ is the power and where $\xi$ varies from $0$ to $1$ through the layer.
 

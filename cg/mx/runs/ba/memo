@@ -4,6 +4,15 @@ WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=
 
 
 ********************************
+********  Tues April 21, 2020
+
+User-defined forcing Source term ? 
+
+$cgmx -noplot baScat -g=cSquaree8.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=mgs -x0=.0 -y0=.0 -beta=100 -solveForAllFields=1 -tp=.1 -tf=10 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1  -go=og
+
+
+
+********************************
 ********  Sat Feb 15, 2020
 
 BA fancy example 

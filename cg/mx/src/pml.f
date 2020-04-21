@@ -256,6 +256,7 @@ c$$$#endMacro
 
 
 
+! get the scxaling factor --
 
 
 
@@ -16895,6 +16896,9 @@ c===============================================================================
       c                    =rpar(9)
 
       layerStrength        =rpar(16)
+
+      ! *wdh* March 31, 2020 -- scale by c to make correct dimensions   
+      layerStrength = layerStrength*c
 
       ! power=4
       ! layerStrength=30.

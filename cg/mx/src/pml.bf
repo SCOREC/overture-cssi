@@ -300,6 +300,7 @@ c$$$#endMacro
 #endMacro
 
 
+! get the scxaling factor --
 #beginMacro getSigma1(sigma)
  ! xScale=xy(i1b,i2,i3,0)-xy(i1a,i2,i3,0)
  ! xx=(xy(i1,i2,i3,0)-xy(i1a,i2,i3,0))/xScale
@@ -1043,6 +1044,9 @@ c$$$#endMacro
       c                    =rpar(9)
 
       layerStrength        =rpar(16)
+
+      ! *wdh* March 31, 2020 -- scale by c to make correct dimensions   
+      layerStrength = layerStrength*c 
 
       ! power=4
       ! layerStrength=30.

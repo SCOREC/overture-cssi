@@ -1,4 +1,29 @@
 ***************************
+******* March 31, 2020
+
+check poly TZ for ade-gdm 
+
+NOTE  **IGNORE Hz errors**
+
+
+Exact for degree (4,3) with b1=0 and a1=0 
+
+
+
+NOT EXACT -- degree (4,4)
+cgmx -noplot tz -g=square8.order4 -npv=1 -degreex=4 -degreet=4 -dm=gdm -a0=1 -a1=.1 -b0=1 -b1=.1  -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+NOT EXACT degree (4,3)  with a1 or b1 non zero
+cgmx -noplot tz -g=square8.order4 -npv=1 -degreex=4 -degreet=3 -dm=gdm -a0=1 -a1=.1 -b0=1 -b1=.1 -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+EXACT degree (4,3)  with a1=0 and b1=0  **IGNORE Hz errors**
+cgmx -noplot tz -g=square8.order4 -npv=1 -degreex=4 -degreet=3 -dm=gdm -a0=1 -a1=.0 -b0=1 -b1=.0 -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+
+***************************
 ******* Feb 25, 2020
 
 REVISIT SOSUP DISSIPATION for CgWave

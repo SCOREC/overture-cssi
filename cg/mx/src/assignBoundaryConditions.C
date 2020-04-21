@@ -2760,6 +2760,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     realSerialArray & uum =um;
                 #endif
                 const int adjustThreeLevels = usePML;
+        // for PML 
+                ipar[26]=numberLinesForPML;
+                ipar[27]=adjustThreeLevels;
+                ipar[28]=method;
                 if( adjustFarFieldBoundariesForIncidentField(grid) )
                 {
           // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -2770,9 +2774,6 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         ::display(u (all,all,all,hz),sPrintF("un (Hz) before adjustForIncident grid=%i t=%e",grid,t),debugFile,"%9.2e ");
                     }
                     ipar[25]=-1;  // subtract the incident field
-                    ipar[26]=numberLinesForPML;
-                    ipar[27]=adjustThreeLevels;
-                    ipar[28]=method;
           // parameters for tanh smoothing near bounding box front:
           // -- this must match the formula in getInitialConditions.bC
                     const int & side = dbase.get<int>("boundingBoxDecaySide");
@@ -3342,6 +3343,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         realSerialArray & uum =um;
                     #endif
                     const int adjustThreeLevels = usePML;
+          // for PML 
+                    ipar[26]=numberLinesForPML;
+                    ipar[27]=adjustThreeLevels;
+                    ipar[28]=method;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -3352,9 +3357,6 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             ::display(u (all,all,all,hz),sPrintF("un (Hz) before adjustForIncident grid=%i t=%e",grid,t),debugFile,"%9.2e ");
                         }
                         ipar[25]=-1;  // subtract the incident field
-                        ipar[26]=numberLinesForPML;
-                        ipar[27]=adjustThreeLevels;
-                        ipar[28]=method;
             // parameters for tanh smoothing near bounding box front:
             // -- this must match the formula in getInitialConditions.bC
                         const int & side = dbase.get<int>("boundingBoxDecaySide");
@@ -3928,6 +3930,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         realSerialArray & uum =um;
                     #endif
                     const int adjustThreeLevels = usePML;
+          // for PML 
+                    ipar[26]=numberLinesForPML;
+                    ipar[27]=adjustThreeLevels;
+                    ipar[28]=method;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -3938,9 +3944,6 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             ::display(u (all,all,all,hz),sPrintF("un (Hz) before adjustForIncident grid=%i t=%e",grid,t),debugFile,"%9.2e ");
                         }
                         ipar[25]=-1;  // subtract the incident field
-                        ipar[26]=numberLinesForPML;
-                        ipar[27]=adjustThreeLevels;
-                        ipar[28]=method;
             // parameters for tanh smoothing near bounding box front:
             // -- this must match the formula in getInitialConditions.bC
                         const int & side = dbase.get<int>("boundingBoxDecaySide");

@@ -969,6 +969,12 @@ int polarizationOption=0;
     realSerialArray & uum =um;
   #endif
   const int adjustThreeLevels = usePML;
+
+  // for PML 
+  ipar[26]=numberLinesForPML;
+  ipar[27]=adjustThreeLevels;
+  ipar[28]=method;
+
   if( adjustFarFieldBoundariesForIncidentField(grid) )
   {
     // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -981,9 +987,6 @@ int polarizationOption=0;
     }
 
     ipar[25]=-1;  // subtract the incident field
-    ipar[26]=numberLinesForPML;
-    ipar[27]=adjustThreeLevels;
-    ipar[28]=method;
 
     // parameters for tanh smoothing near bounding box front:
     // -- this must match the formula in getInitialConditions.bC
