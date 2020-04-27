@@ -555,7 +555,7 @@ getErrors( int current, real t, real dt )
     polarizationNorm=0.;
     maxErrPolarization=0.;
 
-    printF("cg.numberOfDomains()=%d, maxErrPolarization.getLength(0)=%d\n",cg.numberOfDomains(),maxErrPolarization.getLength(0));
+  // printF("cg.numberOfDomains()=%d, maxErrPolarization.getLength(0)=%d\n",cg.numberOfDomains(),maxErrPolarization.getLength(0));
     
 
   // *************************************************************

@@ -884,7 +884,10 @@ initializeRadiationBoundaryConditions()
 
       
       MappedGrid & mg = cg[radbcGrid[i]];
-      radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,c);
+      real cRadBC = cGrid(radbcGrid[i]);  // *wdh* May 26, 2020
+      // printF("**** initializeRadiationBoundaryConditions: c=%9.2e\n",cRadBC); 
+
+      radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC);
     }
     
   }

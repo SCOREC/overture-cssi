@@ -74,7 +74,7 @@ end do
 !     --- local variables ----
       
       real dx(0:2),dr(0:2)
-      real t,dt,eps,mu,c
+      real t,dt,eps,mu,c,csq,cdt
       integer side,axis,gridType,orderOfAccuracy,grid,kernelType
       integer debug,i1,i2,i3,is1,is2,is3,im,i,ii
 !      integer ex,ey,ez,hx,hy,hz
@@ -185,6 +185,9 @@ end do
      
       z0=0.
 
+      csq = c**2
+      cdt = c*dt
+      
 !     numGhost=orderOfAccuracy/2
 
       ! bounds for loops 
@@ -252,18 +255,28 @@ end do
           end if
 
          if( orderOfAccuracy.eq.2 )then
+
+          ! write(*,'("radEval: c=",e9.2)') c
+
           beginLoops(nn1a,nn1b,nn2a,nn2b,nn3a,nn3b,na,nb)
 !     
            ux = ux2(i1,i2,i3,n)
            uxx =uxx2(i1,i2,i3,n)
            uyy =uyy2(i1,i2,i3,n)
            uLap = uxx+uyy
-           utt  = uLap
+           utt  = uLap  
           
-#beginMacro taylorbc2(um1)
+#beginMacro taylorbc2Old(um1)
  um1 = u(i1,i2,i3,n) + dt*( ux*is1 - hu(i2,n) )  - h*ux \
-  +.5*dt*dt*utt -dt*h*( uxx*is1 - hux(i2,n) ) + .5*h*h*uxx\
+  +.5*dt*dt*utt - cdt*h*( uxx*is1 - hux(i2,n) ) + .5*h*h*uxx\
   +dt*alpha*( u(im,i2-1,i3,n)-2.*u(im,i2,i3,n)+u(im,i2+1,i3,n) )
+#endMacro
+
+           ! May 26, 2020 Fixes for c not equal to 1, change dt to c*dt  
+#beginMacro taylorbc2(um1)
+ um1 = u(i1,i2,i3,n) + cdt*( ux*is1 - hu(i2,n) )  - h*ux \
+  +.5*cdt*cdt*utt - cdt*h*( uxx*is1 - hux(i2,n) ) + .5*h*h*uxx\
+  +cdt*alpha*( u(im,i2-1,i3,n)-2.*u(im,i2,i3,n)+u(im,i2+1,i3,n) )
 #endMacro
 
 
@@ -324,7 +337,7 @@ end do
            utttx = utxxx + utxyy   ! (uxx+uyy).tx
            uttxx = uLapxx
 
-#beginMacro taylorbc4(um1)
+#beginMacro taylorbc4Old(um1)
  um1 = u(i1,i2,i3,n) + dt*ut - h*ux \
   +.5*dt*dt*utt -dt*h*utx + .5*h*h*uxx\
   + dt*dt*dt/6.*uttt -dt*dt*h*.5*uttx + dt*h*h*.5*utxx - h*h*h/6.*uxxx \
@@ -333,6 +346,20 @@ end do
   +dt*alpha*( -u(im,i2-2,i3,n)+4.*u(im,i2-1,i3,n)-6.*u(im,i2,i3,n)\
                               +4.*u(im,i2+1,i3,n)-u(im,i2+2,i3,n) )
 #endMacro
+
+           ! May 26, 2020 Fixes for c not equal to 1, change dt to c*dt  
+#beginMacro taylorbc4(um1)
+ um1 = u(i1,i2,i3,n) + cdt*ut - h*ux \
+  +.5*cdt*cdt*utt -cdt*h*utx + .5*h*h*uxx\
+  + cdt*cdt*cdt/6.*uttt -cdt*cdt*h*.5*uttx + cdt*h*h*.5*utxx - h*h*h/6.*uxxx \
+  + cdt*cdt*cdt*cdt/24.*utttt -cdt*cdt*cdt*h/6.*utttx + cdt*cdt*h*h/4.*uttxx \
+  -cdt*h*h*h/6.*utxxx + h*h*h*h/24.*uxxxx \
+  +cdt*alpha*( -u(im,i2-2,i3,n)+4.*u(im,i2-1,i3,n)-6.*u(im,i2,i3,n)\
+                               +4.*u(im,i2+1,i3,n)-u(im,i2+2,i3,n) )
+#endMacro
+
+
+! Not used ?
 #beginMacro taylorbc4a(um1)
  um1 = u(i1,i2,i3,n) + dt*ut - h*ux \
   +.5*dt*dt*utt -dt*h*utx + .5*h*h*uxx\
@@ -441,10 +468,11 @@ end do
             utx =-c*( uxri +            ux/(2.*r) + hux(ii,n) )
             uty =-c*( uyri +            uy/(2.*r) + huy(ii,n) )
 
+            ! May 26, 2020 Fixes for c not equal to 1, change dt to c*dt  
 #beginMacro cylTaylorbc2(um1)
- um1 = u(i1,i2,i3,n) + dt*ut  + hx*ux + hy*uy \
-  +.5*dt*dt*utt + dt*hx*utx + dt*hy*uty + .5*( hx**2*uxx +2.*hx*hy*uxy+hy**2*uyy )\
-  +dt*alpha*( u(i1m-is2,i2m-is1,i3,n)-2.*u(i1m,i2m,i3,n)+u(i1m+is2,i2m+is1,i3,n) )
+ um1 = u(i1,i2,i3,n) + cdt*ut  + hx*ux + hy*uy \
+  +.5*cdt*cdt*utt + cdt*hx*utx + cdt*hy*uty + .5*( hx**2*uxx +2.*hx*hy*uxy+hy**2*uyy )\
+  +cdt*alpha*( u(i1m-is2,i2m-is1,i3,n)-2.*u(i1m,i2m,i3,n)+u(i1m+is2,i2m+is1,i3,n) )
 #endMacro
 
             if( debug.gt.0 )then
@@ -580,15 +608,17 @@ end do
 
   ! **** check the 4th-order terms ***
 ! t^4+(4*y+4*x)*t^3+(6*y^2+6*x^2+12*x*y)*t^2+(4*y^3+12*x^2*y+4*x^3+12*x*y^2)*t+x^4+y^4+6*x^2*y^2+4*x*y^3+4*x^3*y
+
+            ! May 26, 2020 Fixes for c not equal to 1, change dt to c*dt  
 #beginMacro cylTaylorbc4(um1)
- um1 = u(i1,i2,i3,n) + dt*ut  + hx*ux + hy*uy \
-  +.5*dt*dt*utt + dt*hx*utx + dt*hy*uty + .5*( hx**2*uxx +2.*hx*hy*uxy+hy**2*uyy )\
-  +(1./6.)*( dt**3*uttt + 3.*dt**2*(hx*uttx+hy*utty) + 3.*dt*(hx**2*utxx+2.*hx*hy*utxy+hy**2*utyy) \
+ um1 = u(i1,i2,i3,n) + cdt*ut  + hx*ux + hy*uy \
+  +.5*cdt*cdt*utt + cdt*hx*utx + cdt*hy*uty + .5*( hx**2*uxx +2.*hx*hy*uxy+hy**2*uyy )\
+  +(1./6.)*( cdt**3*uttt + 3.*cdt**2*(hx*uttx+hy*utty) + 3.*cdt*(hx**2*utxx+2.*hx*hy*utxy+hy**2*utyy) \
              +hx**3*uxxx + 3.*hx**2*hy*uxxy + 3.*hx*hy**2*uxyy + hy**3*uyyy ) \
-  +(1./24.)*( dt**4*utttt + 4.*dt**3*( hx*utttx +hy*uttty) +6.*dt**2*( hx**2*uttxx+hy**2*uttyy+2.*hx*hy*uttxy )\
-              +4.*dt*( hx**3*utxxx + hy**3*utyyy + 3.*hx**2*hy*utxxy + 3.*hx*hy**2*utxyy )\
+  +(1./24.)*( cdt**4*utttt + 4.*cdt**3*( hx*utttx +hy*uttty) +6.*cdt**2*( hx**2*uttxx+hy**2*uttyy+2.*hx*hy*uttxy )\
+              +4.*cdt*( hx**3*utxxx + hy**3*utyyy + 3.*hx**2*hy*utxxy + 3.*hx*hy**2*utxyy )\
               + hx**4*uxxxx + 4.*hx**3*hy*uxxxy + 6.*hx**2*hy**2*uxxyy + 4.*hx*hy**3*uxyyy + hy**4*uyyyy )  \
-  +dt*alpha*( -u(i1m-2*is2,i2m-2*is1,i3,n)+4.*u(i1m-is2,i2m-is1,i3,n)-6.*u(i1m,i2m,i3,n)\
+  +cdt*alpha*( -u(i1m-2*is2,i2m-2*is1,i3,n)+4.*u(i1m-is2,i2m-is1,i3,n)-6.*u(i1m,i2m,i3,n)\
                               +4.*u(i1m+is2,i2m+is1,i3,n)-u(i1m+2*is2,i2m+2*is1,i3,n) )
 #endMacro
 
