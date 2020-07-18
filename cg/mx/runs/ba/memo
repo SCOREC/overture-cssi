@@ -3,6 +3,349 @@ WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=
 -m=1 -n=1 -tp=.5 -tf=2 -go=go
 
 
+*****************************************
+******* Mon July 6, 2020
+
+RE-RUN SUPERGRID BIG-SMALL TEST CASES
+
+BA GDM  Material WIDTH=.2 
+$cgmx -noplot baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -dm=gdm -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=20 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.2 -compareToShowFile=cSquareBaMatGDMGenNdDRef16.show -show=baMatGDMGenNDSGWidth0p2.show -go=go > baMatGDMGenNDSGWidth0p2.out
+
+
+BA Material WIDTH=.1
+$cgmx -noplot baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -dm=gdm -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=20 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.1 -compareToShowFile=cSquareBaMatGDMGenNdDRef16.show -show=baMatGDMGenNDSGWidth0p1.show -go=go > baMatGDMGenNDSGWidth0p1.out
+
+BA Material WIDTH=.05
+$cgmx -noplot baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -dm=gdm -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=20 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.05 -compareToShowFile=cSquareBaMatGDMGenNdDRef16.show -show=baMatGDMGenNDSGWidth0p05.show -go=go > baMatGDMGenNDSGWidth0p05.out
+
+
+
+
+
+
+TEST 3D Case -- SELF CONNVERGENCE
+
+>>> make gsgdm3d
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatGDMgenNDBoxG4.show & \num{1.1}{-1} &      \\ \hline
+ baMatGDMgenNDBoxG8.show & \num{9.9}{-3} & 11.5 \\ \hline
+ baMatGDMgenNDBoxG16.show & \num{8.6}{-4} & 11.5 \\ \hline
+                      &     3.52      &     \\ \hline
+\end{tabular}
+\caption{BAMX: Gaussian source 3D box, baMatGDMgenND, super-grid. Max-norm self convergence results, t=2.000000e+00, Tue Jul  7 06:00:24 2020. }
+\end{center}
+\end{table}
+
+
+*****************************************
+******* Mon July 6, 2020
+
+TEST 3D Case -- SELF CONNVERGENCE
+
+cgmx -noplot baScat -g=cSquareSmalle8.order4.ng3 -method=bamx -dm=none -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=2 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.2 -go=og
+
+
+
+
+
+*****************************************
+******* Sun July 5, 2020
+
+
+TEST 3D case
+
+
+TEST BA-GDM MATERIAL -- SELF CONNVERGENCE
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatGDMgenNDG8.show & \num{2.1}{-2} &      \\ \hline
+ baMatGDMgenNDG16.show & \num{1.6}{-3} & 12.8 \\ \hline
+ baMatGDMgenNDG32.show & \num{1.3}{-4} & 12.8 \\ \hline
+                      &     3.68      &     \\ \hline
+\end{tabular}
+\caption{BAMX: Gaussian source 2D square, baMatGDMgenND, super-grid. Max-norm self convergence results, t=2.000000e+00, Sun Jul  5 11:05:58 2020. }
+\end{center}
+\end{table}
+
+
+
+cgmx -noplot baScat -g=cSquareSmalle8.order4.ng3 -method=bamx -dm=none -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=2 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.2 -go=og
+
+
+
+TEST TWO DIMENSIONS -- NO RAMP
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatIsoEps1G8.show & \num{5.8}{-3} &      \\ \hline
+ baMatIsoEps1G16.show & \num{3.3}{-4} & 17.7 \\ \hline
+ baMatIsoEps1G32.show & \num{1.8}{-5} & 17.7 \\ \hline
+                      &     4.14      &     \\ \hline
+\end{tabular}
+\caption{BAMX: Gaussian source square, super-grid. Max-norm self convergence results, t=2.000000e+00, Sun Jul  5 10:41:52 2020. }
+\end{center}
+\end{table}
+
+
+TEST comp.C with absorbingLayerWidth
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatIsoEps1G16.show & \num{3.3}{-4} &      \\ \hline
+ baMatIsoEps1G32.show & \num{2.2}{-5} & 15.2 \\ \hline
+ baMatIsoEps1G64.show & \num{1.4}{-6} & 15.2 \\ \hline
+                      &     3.93      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=1.000000e+00, Sun Jul  5 05:59:34 2020. }
+\end{center}
+\end{table}
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatIsoEps1G16.show & \num{3.3}{-4} &      \\ \hline
+ baMatIsoEps1G32.show & \num{2.2}{-5} & 15.2 \\ \hline
+ baMatIsoEps1G64.show & \num{1.4}{-6} & 15.2 \\ \hline
+                      &     3.93      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=2.000000e+00, Sun Jul  5 06:01:10 2020. }
+\end{center}
+\end{table}
+
+*****************************************
+******* Sat July 4, 2020
+
+RUN CONVERGENCE TEST FOR SOURCE TERM PLUS *NEW* GAUSSIAN SOURCE 
+
+comp compGaussianSource.cmd
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r  \\ \hline
+ baMatIsoEps1G16.show & \num{2.0}{-4} &      \\ \hline
+ baMatIsoEps1G32.show & \num{1.3}{-5} & 14.9 \\ \hline
+ baMatIsoEps1G64.show & \num{8.8}{-7} & 14.9 \\ \hline
+                      &     3.90      &     \\ \hline
+\end{tabular}
+\caption{Max-norm self convergence results, t=5.000000e-01, Sat Jul  4 19:30:31 2020. }
+\end{center}
+\end{table}
+
+
+
+
+
+
+TEST simple case 
+$cgmx -noplot baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -dm=none -matFile=baIsoEps1.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.01 -tf=2 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.2 -go=og
+
+
+**OLD CASE**
+$cgmx -noplot baScat -g=cSquareSmalle16.order4.ng3 -method=bamx -dm=gdm -matFile=baMatGDMgenND.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.0 -y0=.0 -beta=200 -solveForAllFields=1 -tp=.1 -tf=20 -diss=1 -rbc=absorbing  -useSuperGrid=1 -superGridWidth=.2 -show=baMatGDMGenNDSGWidth0p2.show -go=go > baMatGDMGenNDSGWidth0p2.out
+
+
+
+*****************************************
+******* Thurs June 18, 2020
+
+2-SLAB CASE
+
+runScat.p -cmdFile=baScat -numSlabs=2 -case=TwoSlab2dBAEps2Eps4 -grid=blockGrid -dm=none -matFile=baIsoEps1 -matFile2=baIsoEps2 -matFile3=baIsoEps4 -ic=gp -tf=100 -direction=-1 -polarization=-1 -numResolutions=4
+
+
+
+*****************************************
+******* Wed June 17, 2020
+
+2-SLAB CASE
+
+runScat.p -cmdFile=baScat -numSlabs=2 -case=TwoSlab2dBAEps2Eps4 -grid=blockGrid -dm=none -matFile=baIsoEps1 -matFile2=baIsoEps2 -matFile3=baIsoEps4 -ic=gp -tf=100 -direction=-1 -polarization=-1 -numResolutions=3
+
+
+
+*****************************************
+******* Tues June 16, 2020
+
+
+runScat.p -cmdFile=baScat -numSlabs=2 case=TwoSlab2ddBA -grid=blockGrid -dm=none -matFile=baIsoEps1 -matFile2=baIsoEps2 -matFile3=baIsoEps4 -ic=gp -tf=100 -direction=1 -polarization=1 -numResolutions=1
+
+
+
+2-slab case
+
+cgmx -noplot baScat.cmd -g=blockGrid4np.order4.ng3.hdf -method=bamx -numMatRegions=3 -regionFile=matTwoBoxRegion.h -matFile=baIsoEps1.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -tp=.5 -tf=10 -diss=1 -go=og
+
+
+1-slab
+cgmx -noplot baScat.cmd -g=blockGrid4np.order4.ng3.hdf -method=bamx -numMatRegions=2 -regionFile=matBoxRegion.h -matFile=baIsoEps1.txt -matFile2=baIsoEps2.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -tp=.5 -tf=10 -diss=1 -go=og
+
+
+********************************
+********  Thurs June 12, 2020
+
+REDO surface wave --- movie
+
+
+cgmx -noplot baInterface -g=recte32pn.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.05 -tf=5 -ic=isw -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -caseName=surfaceWaveCase1SpacePeriodic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveG32.show -go=go >! baSurfaceWaveG32.out
+
+
+
+cgmx -noplot baInterface -g=recte16pn.order4.ng3 -method=bamx -dm=gdm -ts=rk4 -matFile=baMatIsotropic1.txt -matFile2=baMatBiIsotropic1.txt -kx=1 -ky=1 -tp=.02 -tf=2 -ic=isw -xa=-1.05 -xb=1.05 -ya=-.55 -yb=1e-10 -caseName=surfaceWaveCase1SpacePeriodic -bc=d -diss=1 -solveForAllFields=1 -dispersionOption=k -errorNorm=1 -show=baSurfaceWaveG16.show -go=go >! baSurfaceWaveG16.out
+
+
+
+
+
+********************************
+********  Thurs May 21, 2020
+
++++++++++ MORE COMPLEX GDM BA MATRIX 
+
+ALL cases
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -dm=gdm -matFile=baMatGenGDM -ic=gp -tf=100 -direction=-1 -polarization=-1 -numResolutions=3
+
+DIR=1 P=1 
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -dm=gdm -matFile=baMatGenGDM -ic=gp -tf=40 -direction=1 -polarization=1 -numResolutions=3
+
+
+********************************
+********  Wed May 20, 2020
+
++++++++++ MORE COMPLEX BA MATRIX 
+
+all cases
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatGenND -ic=gp -tf=20 -direction=-1 -polarization=-1 -numResolutions=4
+
+
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatGenND -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=3
+
+
+
+
+RUN ALL CASES: baMatEyEz
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatEyEz -ic=gp -tf=20 -direction=-1 -polarization=-1 -numResolutions=3
+
+
+RUN ALL CASES: EPS=2
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=-1 -polarization=-1 -numResolutions=3
+
+
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=2 -polarization=1 -numResolutions=1
+
+EPS=2 DIR=2 POL=2
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=2 -polarization=2 -numResolutions=3
+
+
+EPS=2 DIR=2
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=2 -polarization=1 -numResolutions=3
+
+
+
+********************************
+********  Sat May 16, 2020
+
+-- make grid so interface points x=-.5 and x=.5 are at a cell centers
+
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatEyEz -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=4
+
+
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=5
+
+
+
+ogen -noplot rectangleArg -prefix=blockGridCC -order=2 -xa=-3 -xb=3 -ya=-.1  -yb=.1 -periodic=np -factor=2 -adjustCC=1
+
+
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=4
+
+
+********************************
+********  Fri May 15, 2020
+
+-- make grid so interface points x=-.5 and x=.5 are at a cell centers
+
+Nx = 6*( odd ) + 1
+Nx = 6*( 3 ) +1 = 19 --> dx=1/3
+Nx = 6*( 5 ) +1 = 31 --> dx =1/5  
+Nx = 6*( 9 ) +1 = 55 --> dx =1/9  
+
+Nx = 6*( 
+
+ogen -noplot rectangleArg -prefix=blockGridCC -order=2 -xa=-3 -xb=3 -ya=-.1  -yb=.1 -periodic=np -factor=2 -Nx=55  
+
+
+
+**** MATERIAL THAT GENERATES r1 and r2, t1, t2
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatEyEz -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=4
+
+
+
+baMat7: -- try to couple modes 
+cgmx -noplot baScat.cmd -g=blockGrid4np.order4.ng3.hdf -method=bamx -numMatRegions=2 -regionFile=matBoxRegion.h -matFile=baIsoEps1.txt -matFile2=baMatEyEz.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -tp=.5 -tf=10 -diss=1 -go=og
+
+
+
+EPS=4 
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps4 -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=5
+
+EPS=2 
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps2 -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=5
+
+EPS=1
+runScat.p -cmdFile=baScat case=Block2dBA -grid=blockGrid -rbc=abcEM2 -matFile=baMatIsoEps1 -ic=gp -tf=20 -direction=1 -polarization=1 -numResolutions=5
+
+
+
+cgmx -noplot baScat.cmd -g=blockGrid8np.order4.ng3.hdf -method=bamx -numMatRegions=2 -regionFile=matBoxRegion.h -matFile=baIsoEps1.txt -matFile2=baIsoEps2.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -tp=.5 -tf=10 -diss=1 -xLeftProbe=-2 -xRightProbe=2 -probeFileName=block2dBAEps2G8 -go=og
+
+
+********************************
+********  Thurs May 14, 2020
+
+
+START ON PROBES FOR probes.m 
+
+
+plane-wave -- fix me 
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=pw -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og 
+
+
+Gaussian plane-wave
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og 
+
+
+
 ********************************
 ********  Tues April 21, 2020
 

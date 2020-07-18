@@ -1120,7 +1120,7 @@ plotPolarization( int current, real t, real dt )
         {
           pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
         }
-        real pMin=REAL_MAX, pMax=-pMin;
+        real pMin=REAL_MAX, pMax=-pMin; // keep track of min and max over all domains 
         
 	if( method==nfdtd )
 	{
@@ -1254,6 +1254,298 @@ plotPolarization( int current, real t, real dt )
 }
 
 
+
+
+
+
+// =============================================================================================
+/// \brief Plot any variables associated with nonlinear models.
+// =============================================================================================
+int Maxwell::
+plotNonlinearVariables( int current, real t, real dt )
+{
+
+  if( nonlinearModel == noNonlinearModel )
+  {
+    printF("There are no nonlinear variables to plot. These option only exist for nonlinear models.\n");
+    return 0;
+  }
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg = *cgp;
+  const int & numberOfDimensions = cg.numberOfDimensions();
+
+  GenericGraphicsInterface *& pps = gip; 
+  if( pps==NULL )
+    return 0;
+  GenericGraphicsInterface & gi = *pps;
+
+  PlotStuffParameters pspNonlinear;  // separate for P
+   
+  // const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+	   
+  aString domainName="all";
+  int nlComponent=0;
+  bool plotErrors=false;
+  
+
+
+  GUIState dialog;
+
+  dialog.setWindowTitle("Plot N");
+  dialog.setExitCommand("exit", "exit");
+
+  // if( method==nfdtd )
+  // {
+  //   aString optionMenuCommands[] = {"Px",
+  // 				    "Py",
+  // 				    "Pz",
+  // 				    ""};
+
+  //   if( numberOfDimensions==2 )
+  //     optionMenuCommands[2]="";  // No Pz
+   
+  //   dialog.addOptionMenu("plot component:",optionMenuCommands,optionMenuCommands,nlComponent);
+  // }
+  // else
+  // {
+  //   // BAMX: polarization entries: P0,Q0, P1,Q1, ... 
+  //   aString *optionMenuCommands = new aString [2*maxNumberOfPolarizationComponents+1];
+  //   for( int m=0; m<maxNumberOfPolarizationComponents; m++ )
+  //   {
+  //     optionMenuCommands[2*m  ] = sPrintF("P%d",m);
+  //     optionMenuCommands[2*m+1] = sPrintF("Q%d",m);
+  //   }
+  //   optionMenuCommands[2*maxNumberOfPolarizationComponents]="";
+   
+  //   dialog.addOptionMenu("plot component:",optionMenuCommands,optionMenuCommands,nlComponent);
+  //   delete []  optionMenuCommands;
+  // }
+  
+  aString pushButtonCommands[] = {"plot",
+                                  "erase",
+                                  "contour",
+                                  ""};
+  int numberOfPushButtons=3;  // number of entries in pushButtonCommands
+  int numRows=numberOfPushButtons; // (numberOfPushButtons+1)/2;
+  dialog.setPushButtons( pushButtonCommands, pushButtonCommands, numRows ); 
+
+  aString tbCommands[] = {"plot errors",
+ 			  ""};
+  int tbState[10];
+
+  tbState[0] = plotErrors;
+  int numColumns=1;
+  dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns);
+
+
+  // ----- Text strings ------
+  const int numberOfTextStrings=10;
+  aString textCommands[numberOfTextStrings];
+  aString textLabels[numberOfTextStrings];
+  aString textStrings[numberOfTextStrings];
+
+  int nt=0;
+
+  
+  textCommands[nt] = "domain name:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%s","all"); nt++; 
+
+  // textCommands[nt] = "GDM equation:";  
+  // textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",gdmEquation); nt++; 
+
+  textCommands[nt] = "component:";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",nlComponent); nt++; 
+
+  // null strings terminal list
+  assert( nt<numberOfTextStrings );
+  textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
+  dialog.setTextBoxes(textCommands, textLabels, textStrings);
+
+  gi.pushGUI(dialog);
+  gi.appendToTheDefaultPrompt("polarization>"); // set the default prompt
+
+  std::vector<DispersiveMaterialParameters> & dmpVector = 
+    dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+  int maxAtomicLevels=0;
+  for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+  {
+    DispersiveMaterialParameters & dmp = dmpVector[domain];
+    maxAtomicLevels = max(maxAtomicLevels, dmp.getNumberOfAtomicLevels());
+  }
+  if(  maxAtomicLevels==0 )
+  {
+    printF("plotN: WARNING maxAtomicLevels=0 : there are no nonlinear variables to plot! nonLinearModel=%d\n",
+	   nonlinearModel);
+  }
+  
+
+
+  bool plotObject=false;
+  aString answer,buff;
+  int len=0;
+  for( int it=0;; it++ )
+  {
+    if( it==0 && plotObject )
+      answer="plotObject";
+    else
+      gi.getAnswer(answer,"");  // gi.getMenuItem(menu,answer);
+ 
+
+    if( answer == "exit" )
+    {
+      break;
+    }
+    else if( dialog.getTextValue(answer,"domain name:","%s",domainName) )
+    {
+      printF("Setting domain name = [%s]\n",(const char*)domainName);
+    }
+    else if( dialog.getTextValue(answer,"component:","%i",nlComponent) )
+    {
+      if( nlComponent>=maxAtomicLevels )
+	printF("plotNonlinearVariables:ERROR: nlComponent=%d is too big, >= maxAtomicLevels=%d\n",nlComponent,maxAtomicLevels);
+
+       nlComponent=max(0,min(maxAtomicLevels-1,nlComponent));
+      
+       printF("Setting nonlinear component=%i\n",nlComponent);
+    }
+    else if( dialog.getToggleValue(answer,"plot errors",plotErrors) )
+    {
+      printF("Setting plotErrors=%i\n",(int)plotErrors);
+    }
+
+    else if( answer=="erase" )
+    {
+      gi.erase();
+      plotObject=false;
+    }
+    
+    else if( answer=="plot" || answer=="plotObject" )
+    {
+      plotObject=true;
+    }
+    else if( answer=="contour" )
+    {
+      plotObject=true;
+    }
+    else 
+    {
+      gi.outputString( sPrintF(buff,"Unknown response=%s",(const char*)answer) );
+      gi.stopReadingCommandFile();
+    }
+
+    if( plotObject )
+    {
+      int domainStart=-1, domainEnd=-1;
+      if( domainName == "all" )
+      {
+        domainStart=0; domainEnd=cg.numberOfDomains()-1;
+      }
+      else
+      {
+        for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+        {
+          if( cg.getDomainName(domain)==domainName )
+          {
+            printF("--MX:PNV-- will plot nonlinear variables in domain number=%i name=[%s].\n",domain,(const char*)domainName);
+            domainStart=domainEnd=domain;
+            break;
+          }
+        }
+      }
+      
+      if( domainStart<0  )
+      {
+        printF("--MX:PNV-- WARNING: There is no domain with name =[%s].\n",(const char*)domainName);
+        printF("Valid domains are:\n");
+        for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+        {
+          DispersiveMaterialParameters & dmp = dmpVector[domain];
+          printF("  domain=%i: name=[%s] numberOfAtomicLevels=%i.\n",domain,(const char*)cg.getDomainName(domain),dmp.getNumberOfAtomicLevels());
+        }
+        continue;
+      }
+      else
+      {
+        gi.erase();
+        if( answer!="contour" )
+        {
+          pspNonlinear.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+        }
+
+        real pMin=REAL_MAX, pMax=-pMin; // keep track of min and max over all domains 
+        
+	for( int domain=domainStart; domain<=domainEnd; domain++ )
+	{
+
+	  DispersiveMaterialParameters & dmp = dmpVector[domain];
+	  if( dmp.getNumberOfAtomicLevels()>0 )
+	  {
+	    const int component = nlComponent;
+	    if( component < dmp.getNumberOfAtomicLevels() )
+	    {
+	      pspNonlinear.set(GI_COMPONENT_FOR_CONTOURS,component);
+
+	      realCompositeGridFunction & nlgf = *getNonlinearModelCompositeGridFunction( domain,current );
+	      if( !plotErrors )
+	      {
+		real uMin,uMax;
+		PlotIt::getBounds(nlgf,uMin,uMax,pspNonlinear,Range(component,component));
+                
+		pMin=min(pMin,uMin);
+		pMax=max(pMax,uMax);
+
+		printF("--MX--plot: domain=%i: this domain : (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                
+		pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
+		PlotIt::contour(gi,nlgf,pspNonlinear);
+	      }
+	      else
+	      {
+		// --- Plot the errors in the nonlinear variables if available  ----
+		bool getErrorGridFunction=true;
+		realCompositeGridFunction & nlgfErr = *getNonlinearModelCompositeGridFunction( domain,current,getErrorGridFunction );
+
+		real uMin,uMax;
+		PlotIt::getBounds(nlgfErr,uMin,uMax,pspNonlinear,Range(component,component));
+                
+		pMin=min(pMin,uMin);
+		pMax=max(pMax,uMax);
+
+		printF("--MX--plot: domain=%i: Error: this domain (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                
+		pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
+
+		PlotIt::contour(gi,nlgfErr,pspNonlinear);
+
+	      }
+              
+	    }
+	    else
+	    {
+	      printF("plotNonlinearVariables:INFO: Not plotting N in domain=%i since component=%i but "
+		     "numberOfAtomicLevels=%i.\n",   domain,nlComponent,dmp.getNumberOfAtomicLevels());
+	    }
+	  } // end if numberOfAtomicLevels > 0
+	}  // end for domain 
+      }
+      
+  
+    } // end if plotObject 
+    
+
+  }
+
+  gi.unAppendTheDefaultPrompt();  // reset
+  gi.popGUI(); // restore the previous GUI
+
+
+  return 0;
+}
+
+
+
 int Maxwell::
 buildRunTimeDialog()
 // =============================================================================================
@@ -1276,6 +1568,7 @@ buildRunTimeDialog()
                       "plot options...",
                       "parameters...",
                       "plot P...",
+                      "plot N...",
                       // "change the grid...",
                       // "show file options...","file output...",
                       // "pde parameters...",
@@ -1799,6 +2092,10 @@ plot( int current, real t, real dt )
         else if( answer=="plot P..." )
         {
           plotPolarization( current,t,dt );
+        }
+        else if( answer=="plot N..." )
+        {
+          plotNonlinearVariables( current,t,dt );
         }
 
 	else if( answer=="E field lines" )

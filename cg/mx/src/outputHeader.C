@@ -350,6 +350,10 @@ outputHeader()
       }
     }
 
+    // --- output info about nonlinear models ----
+    // aString & nonlinearModelName=dbase.get<aString>("nonlinearModelName");
+    // fPrintF(file,"  nonlinear model=[%s]\n",(const char*)nonlinearModelName);
+
     // --- output dispersive material parameters ---
     // std::vector<DispersiveMaterialParameters> & dmpVector = 
     //   dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
@@ -368,6 +372,13 @@ outputHeader()
         for( int npv=0; npv<numberOfPolarizationVectors; npv++ )
           fPrintF(file,"   Polarization vector P(%i) : a0=%9.3e, a1=%9.3e, b0=%9.3e, b1=%9.3e\n",
                   npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));
+
+	if( dmp.isNonlinearMaterial() )
+	{
+	  fPrintF(file,"   nonlinearModel: numberOfAtomicLevels=%d\n",dmp.getNumberOfAtomicLevels());
+	}
+	
+
       }
       else
       {
@@ -389,10 +400,16 @@ outputHeader()
                       npv,mp(0,npv),mp(1,npv),mp(2,npv),mp(3,npv));
           }
           
+	  if( dmp.isNonlinearMaterial() )
+	  {
+	    fPrintF(file,"   nonlinearModel: numberOfAtomicLevels=%d\n",dmp.getNumberOfAtomicLevels());
+	  }
+
+
 	}
       }
     }
-    
+
     
     if( method==sosup )
       fPrintF(file,"\n sosup: orderOfExtrapolationForInterpolationNeighbours=%i (-1 means used orderOfAccuracy+1)\n",

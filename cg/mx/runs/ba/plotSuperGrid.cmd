@@ -10,10 +10,13 @@
 # 
 # Reference solution:
 #   plotStuff plotSuperGrid.cmd -show=cSquareBaMatGDMGenNdDRef16.show -name=baMatGDMGenNDSuperGridReft3 -solution=31 -contourLines=0
+#   plotStuff plotSuperGrid.cmd -show=cSquareBaMatGDMGenNdDRef16.show -name=baMatGDMGenNDSuperGridReft10 -solution=101 -contourLines=0
 # Small Domain: 
 #   plotStuff plotSuperGrid.cmd -show=baMatGDMGenNDSuperGrid.show -name=baMatGDMGenNDSuperGridt5 -solution=11
 #   plotStuff plotSuperGrid.cmd -show=baMatGDMGenNDSuperGrid.show -name=baMatGDMGenNDSuperGridt10 -solution=21
 #
+#   plotStuff plotSuperGrid.cmd -show=baMatGDMGenNDSGWidth0p1.show -name=baMatGDMGenNDSuperGridt10 -solution=101
+#   plotStuff plotSuperGrid.cmd -show=baMatGDMGenNDSGWidth0p2.show -name=baMatGDMGenNDSuperGridt10 -solution=101
 #
 $show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $contourLines=1; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals

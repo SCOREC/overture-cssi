@@ -1,4 +1,396 @@
 ********************************
+********  Sat Jun 27, 2020
+
+START -- Homogenize an array of gdm disks
+
+ogen -noplot latticeGrid -prefix=fourDisksGrid -xa=-2.5 -xb=2.5 -rad=.25 -deltaX=.65 -deltaY=.65 -order=2 -interp=e -nCylx=2 -nCyl=2 -factor=2
+
+
+********************************
+********  Sat Jun 27, 2020
+
+CONTUNUE HOMOGENIZING A DISK (CYLINDER)
+
+GDM disk -- order=4
+runScat.p -tf=400 -case=SolidDiskMatIsoEps4GDMfp25 -grid=solidDiskYp -order=4 -matFile=matIsoEps4GDMfp25 -dm=gdm -direction=1  -polarization=1 -resStart=2 -numResolutions=2
+
+GDM disk -- order=2
+runScat.p -tf=400 -case=SolidDiskMatIsoEps4GDMfp25 -grid=solidDiskYp -order=2 -matFile=matIsoEps4GDMfp25 -dm=gdm -direction=1  -polarization=1 -resStart=2 -numResolutions=2
+
+
+********************************
+********  Fri Jun 26, 2020
+
+
+START ON HOMOGENIZING A DISK (CYLINDER)
+
+eps=4
+runScat.p -tf=100 -case=SolidDiskMatIsoEps4 -grid=solidDiskYp -order=2 -matFile=matIsoEps4 -dm=none -direction=1  -polarization=1 -resStart=2 -numResolutions=2
+
+
+
+>>>> FIX-UP runScat.p
+runScat.p -tf=100 -case=SolidDiskMatIsoEps2 -grid=solidDiskYp -order=2 -matFile=matIsoEps2 -dm=none -direction=1  -polarization=1 -resStart=2 -numResolutions=2
+
+
+*new grid*
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=100 -tp=1.0  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=go > ! solidDiskkMatIsoEps2.out
+
+*new grid*
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og 
+
+
+
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=DiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og 
+
+
+
+
+********************************
+********  St Jun 6, 2020
+
+MAKE PLOTS FOR DOCS
+
+runScat.p -tf=100 -case=Block -matFile=matIsoGDM2 -dm=gdm -direction=1  -polarization=1 -numResolutions=3
+
+
+/home/henshw/cg.g/mx/bin/cgmx -noplot -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=10 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=gdm -probeFrequency=1 -probeFileName=BlockMatIsoGDM2Polar1Dir1G2 -matFile=matIsoGDM2.txt -show=blockMatIsoGDM2G8.show -go=go
+
+
+********************************
+********  Thurs May 28, 2020
+
+
+matIsoGDM2.txt : eps=2
+
+runScat.p -tf=100 -case=Block -matFile=matIsoGDM2 -dm=gdm -direction=1  -polarization=1 -numResolutions=3
+
+
+
+********************************
+********  Tues May 27, 2020
+
+CHANGE matIsoGDM1 to use BA format
+
+RERUN: 
+
+runScat.p -tf=100 -case=Block -matFile=matIsoGDM1 -dm=gdm -direction=1  -polarization=1 -numResolutions=3
+
+
+runScat.p -tf=20 -case=Block -matFile=matIsoGDM1 -dm=gdm -direction=1  -polarization=1 -numResolutions=1
+
+
+
+********************************
+********  Tues May 26, 2020
+
+
++++++++++++ SWITCH TO BA FORMAT FOR TXT MATERIAL FILES
+
+GDM: 
+cgmx -noplot -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=gdm -probeFrequency=1 -probeFileName=probe -matFile=baMatGDM1.txt -go=og
+
+
+cgmx -noplot -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=probe -matFile=baMatIsoEps2.txt -go=og
+
+********************************
+********  Mon May 25, 2020
+
+SIMPLE GDM: **FIXED** omegaScale to GDM pars are unchanged when read into cgx
+
+runScat.p -tf=100 -case=Block -matFile=matIsoGDM1 -dm=gdm -direction=1  -polarization=1 -numResolutions=3
+
+
+
+
+********************************
+********  Sun May 24, 2020
+
+SIMPLE GDM:
+
+runScat.p -tf=20 -case=Block -matFile=matIsoGDM1 -dm=gdm -direction=1  -polarization=1 -numResolutions=1
+
+
+EPS=2: run all cases 
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -direction=-1  -polarization=-1 -numResolutions=3
+
+
+
+
+
+
+********************************
+********  Tues May 19, 2020
+
+TEST DIRECTION=2 
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -direction=2 -numResolutions=3
+
+
+********************************
+********  Sun May 17, 2020
+
+
+Return to plane-wave initial condition
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -ic=pw -direction=1 -numResolutions=3
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps1 -ic=pw -direction=1 -numResolutions=3
+
+
+
+********************************
+********  Sat May 16, 2020
+
+
+START: FIX GAUSSIAN PLANE WAVE TO SUPPORT TMZ POLARIZATION
+
+
+TMz Polarization  -az=1   a = (0,0,1) 
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -az=1 -x0=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dp2Eps1G2 -eps1=1 -go=og
+
+
+********************************
+********   Thurs May 14, 2020
+
+
+3D GAUSSIAN POLARIZATION=2 
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps2 -ic=gp -direction=1 -polarization=2 -numResolutions=2
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps1 -ic=gp -direction=1 -polarization=2 -numResolutions=2
+
+
+3D GAUSSIAN POLARIZATION=1 
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps2 -ic=gp -direction=1 -polarization=1 -numResolutions=2
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps1 -ic=gp -direction=1 -polarization=1 -numResolutions=2
+
+
+
+3D PLANE-WAVE POLARIZATION=2 
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps2 -ic=pw -direction=1 -polarization=2 -numResolutions=2
+runScat.p -tf=20 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps1 -ic=pw -direction=1 -polarization=2 -numResolutions=2
+
+3D PLANE WAVE
+runScat.p -tf=10 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps2 -ic=pw  -direction=1 -numResolutions=2
+runScat.p -tf=10 -case=Block3d -grid=blockGrid3d -rbc=abcEM2 -matFile=matIsoEps1 -ic=pw  -direction=1 -numResolutions=2
+
+
+
+Return to plane-wave initial condition
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -ic=pw -direction=1 -numResolutions=2
+runScat.p -tf=20 -case=Block -matFile=matIsoEps1 -ic=pw -direction=1 -numResolutions=2
+
+
+********************************
+********   Wed May 13, 2020
+
+
+Reverse direction:
+
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=-1 -x0=2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps2G4 -matFile=matIsoEps2.txt -go=og
+
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -direction=2 -numResolutions=2
+runScat.p -tf=20 -case=Block -matFile=matIsoEps1 -direction=2 -numResolutions=2
+
+
+
+START ON PERL SCRIPT runScat.p
+
+runScat.p -tf=20 -case=Block -matFile=matIsoEps4 -numResolutions=3
+runScat.p -tf=20 -case=Block -matFile=matIsoEps3 -numResolutions=3
+runScat.p -tf=20 -case=Block -matFile=matIsoEps2 -numResolutions=3
+runScat.p -tf=20 -case=Block -matFile=matIsoEps1 -numResolutions=3
+
+runScat.p -tf=1 -case=Block -matFile=matIsoEps2 -numResolutions=2
+runScat.p -tf=1 -case=Block -matFile=matIsoEps1 -numResolutions=2
+
+
+START USING -matFile2=baIsoEps2.txt 
+
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps2G4 -matFile=matIsoEps2.txt -go=og
+
+
+********************************
+********   Tues May 12, 2020
+
++++++  Gaussian plane wave 2D
+
+G4 EPS=2
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps2G4 -eps1=2 -go=go >! blockGPWEps2G4.out
+
+G4 EPS=1
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps1G4 -eps1=1 -go=go >! blockGPWEps1G4.out
+
+
+G2 EPS=2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps2G2 -eps1=2 -go=go >! blockGPWEps2G2.out
+
+G2 EPS=1
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=gp -kx=1 -x0=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=blockGPWEps1G2 -eps1=1 -go=go >! blockGPWEps1G2.out
+
+
+********************************
+********   Mon May 11, 2020
+
+START ON 3D
+
+
+TMz Polarization  -az=1   a = (0,0,1) 
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-2 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dp2Eps1G2 -eps1=1 -go=og
+
+
+
+TRY PML ** TROUBLE *****
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=2 -rbc=abcPML -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dEps2G2 -eps1=2 -go=og
+
+
+
+TRY PML 
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=abcPML -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dEps1G2 -eps1=1 -go=og
+
+
+
+EPS=2: G4
+cgmx -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dEps2G4 -eps1=2 -go=og
+
+
+EPS=1: G2
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=block3dEps1G2 -eps1=1 -go=og
+
+go >! block3dEps1G2.out
+
+
+
+********************************
+********   Sat/Sun May 9/10, 2020
+
+START ON 3D
+
+EPS=1: G2
+cgmx -noplot dielectricBodies -g=blockGrid3de2.order2.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-1.5 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dEps1G2 -eps1=1 -go=og
+
+go >! block3dEps1G2.out
+
+
+
+
+
+Integrate eps=4 longer
+
+EPS=4 G8
+cgmx -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps4G8 -eps1=4 -go=go >! blockEps4G8.out
+
+EPS=4 G4
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps4G4 -eps1=4 -go=go >! blockEps4G4.out
+
+
+EPS=4 G2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G2 -eps1=3 -go=go >! blockEps3G2.out
+
+
+EPS=3 G8
+cgmx -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G8 -eps1=3 -go=go >! blockEps3G8.out
+
+EPS=3 G4
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G4 -eps1=3 -go=go >! blockEps4G3.out
+
+
+EPS=3 G2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G2 -eps1=3 -go=go >! blockEps4G3.out
+
+
+
+EPS=2 G8
+cgmx -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G8 -eps1=2 -go=go >! blockEps2G8.out
+
+EPS=2 G4
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G4 -eps1=2 -go=go >! blockEps2G4.out
+
+
+EPS=2 G2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G2 -eps1=2 -go=go >! blockEps2G2.out
+
+
+EPS=1 G8 
+cgmx -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G8 -eps1=1 -go=go >! blockEps1G8.out
+
+EPS=1 G4
+cgmx -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G4 -eps1=1 -go=go >! blockEps1G4.out
+
+EPS=1: G2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G2 -eps1=1 -go=go >! blockEps1G2.out
+
+
+
+********************************
+********   Sat May 9, 2020
+
+
+EPS=2 G2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G2 -eps1=2 -go=go >! blockEps2.out
+
+
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G2 -eps1=1 -go=go >! blockEps1.out
+
+
+
+
+********************************
+********   Fri May 8, 2020
+
+
+EPS=1:  kx=.5
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=pw -kx=.5 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1.7 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+
+
+EPS=1:  move probe 
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1.7 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+
+EPS=1: 
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=20 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+
+
+********************************
+********   May 4-5, 2020
+
+
+GET SOME PROBE DATA FOR TESTING SPECTRAL ANALYSIS
+
+PLANE WAVE eps=2
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFileName=blockEps2 -eps1=2 -go=go >! blockEps2.out
+
+Incident field only 
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+Incident field -- start everywhere 
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-1 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+
+Incident field only 
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=1 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFileName=blockEps1 -eps1=1 -go=go >! blockEps1.out
+
+
+
+
+PLANE WAVE eps=4
+cgmx -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=100 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFileName=blockEps4 -eps1=4 -go=go >! blockEps4.out
+
+
+PLANE WAVE 
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=pw -kx=1 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
+Gaussian plane wave:
+cgmx -noplot dielectricBodies -g=dielectricBlockGrid2de2.order4.ng3.hdf -tf=120 -useSosupDissipation=1 -ic=gp -beta=40 -x0=-2.5 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=gdm -probeFileName=GDMBlockNpv2Eps2a03o1a1p1op2b02o2b11op5 -eps1=2 -npv=2 -a01=3.0 1.0 -a11=0.1 0.2  -b01=2.0 2.0 -b11=1.0 0.5 -go=og
+
+
+
+
+********************************
 ********  Sat Feb 22, 2020
 
 START FIGURES FOR BAGDM PAPER 

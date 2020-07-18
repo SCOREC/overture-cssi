@@ -284,6 +284,16 @@
 ! *************** 1 components *************
 ! *************** 2 components *************
 
+! 3d, order=4, components=1, derivatives=2:
+! *************** 0 components *************
+! *************** 1 components *************
+! *************** 2 components *************
+! 3d, order=2, components=1, derivatives=4:
+! *************** 0 components *************
+! *************** 1 components *************
+! *************** 2 components *************
+
+
 ! *************** 0 components *************
 ! *************** 1 components *************
 ! *************** 2 components *************
@@ -305,10 +315,35 @@
 
 
 
+! ----------------------------------------------------------------------------------------
+! Macro: Taylor time-stepping order 2, 3d
+!  Note: alpha = coeff of artificial dissipation
+! ----------------------------------------------------------------------------------------
+
+
+! ----------------------------------------------------------------------------------------
+! Macro: Taylor time-stepping order 4, 3d
+!  Note: alpha = coeff of artificial dissipation
+! ----------------------------------------------------------------------------------------
+
+! For 2D
+
+! For 3D
+
+
+
+
+! ==================================================================================
+!  Macro: update ghost points in 3D using the radiation conditions
+! ==================================================================================
+
+
+
       subroutine radEval( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
      & gridIndexRange, u1, u, xy, rsxy, boundaryCondition, md1a,md1b,
-     & md2a,md2b,huv, sd1a,sd1b,sd2a,sd2b,sd3a,sd3b,sd4a,sd4b,uSave,
-     & ipar, rpar, ierr )
+     & md2a,md2b,huv, ld1a,ld1b,ld2a,ld2b,ld3a,ld3b,huv3d, sd1a,sd1b,
+     & sd2a,sd2b,sd3a,sd3b,sd4a,sd4b,sd5a,sd5b,uSave,ipar, rpar, ierr 
+     & )
 ! ===================================================================================
 !  Radition boundary conditions for Maxwell's Equations.
 !      
@@ -322,16 +357,18 @@
       implicit none
 
       integer nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b, n1a,n1b,n2a,n2b,n3a,
-     & n3b,na,nb, md1a,md1b,md2a,md2b,currentTimeLevel,
-     & numberOfTimeLevels,sd1a,sd1b,sd2a,sd2b,sd3a,sd3b,sd4a,sd4b,ierr
+     & n3b,na,nb, md1a,md1b,md2a,md2b,md3a,md3b,currentTimeLevel,
+     & numberOfTimeLevels,ld1a,ld1b,ld2a,ld2b,ld3a,ld3b,ld4a,ld4b,
+     & sd1a,sd1b,sd2a,sd2b,sd3a,sd3b,sd4a,sd4b,sd5a,sd5b,ierr
 
       real u1(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       real u(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
       real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
-      real uSave(sd1a:sd1b,sd2a:sd2b,sd3a:sd3b,sd4a:sd4b)
+      real uSave(sd1a:sd1b,sd2a:sd2b,sd3a:sd3b,sd4a:sd4b,sd5a:sd5b)
 
       real huv(md1a:md1b,md2a:md2b,0:*)
+      real huv3d(ld1a:ld1b,ld2a:ld2b,ld3a:ld3b,0:*)
 
       integer gridIndexRange,boundaryCondition
       integer ipar(0:*)
@@ -341,7 +378,7 @@
       real dx(0:2),dr(0:2)
       real t,dt,eps,mu,c,csq,cdt
       integer side,axis,gridType,orderOfAccuracy,grid,kernelType
-      integer debug,i1,i2,i3,is1,is2,is3,im,i,ii
+      integer debug,i1,i2,i3,is1,is2,is3,im,i,ii,j
 !      integer ex,ey,ez,hx,hy,hz
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b, m1a,m1b,m2a,m2b,m3a,m3b,
      & numGhost
@@ -349,6 +386,7 @@
       integer kx,ky,kxx,kxy,kyy,kxxx,kxxy,kxyy,kyyy
       real ux,uxx,uyy,uLap,uxxx,uxxy,uxyy,uyyy,uLapx, uxxxx,uxxxy,
      & uxxyy,uxyyy,uyyyy, uLapSq,uLapxx,uLapyy
+      real uzz, uxzz, uzzzz, uxxzz, uyyzz
       real uy,uty,uxy
       real utxyy,ut,utt,utx,uttt,uttx,utxx,utttt, utttx,uttxx,utxxx
       real uxxri,uxyri,uyyri
@@ -361,7 +399,13 @@
       real v,vt,tm,vtt,vttt,vtttt, vtx, vx
       real hu,hux,huxx,huxxx,huyy,huxy,huLap,huxyy,huxxy,huyyy
       real huyyi,huxyyi
+      real huzzi,huxzzi,utxzz
+
       real hx,hy, huy, z0
+
+      real hu3d,hu3dx,hu3dxx,hu3dxxx
+      ! real hu3dy,hu3dxy,hu3dyy,hu3dxyy,hu3dxxy,hu3dyyy
+
       real ogf
       real ep ! holds the pointer to the TZ function
 
@@ -947,6 +991,18 @@
       huxxy(i,n) = huv(i,kxxy,n)
       huyyy(i,n) = huv(i,kyyy,n)
 
+      hu3d(i,j,n)    = huv3d(i,j,0,n)
+      hu3dx(i,j,n)   = huv3d(i,j,kx,n)
+      hu3dxx(i,j,n)  = huv3d(i,j,kxx,n)
+      hu3dxxx(i,j,n) = huv3d(i,j,kxxx,n)
+
+      ! hu3dy(i,j,n)   = huv3d(i,j,ky,n)
+      ! hu3dxy(i,j,n)  = huv3d(i,j,kxy,n)
+      ! hu3dyy(i,j,n)  = huv3d(i,j,kyy,n)
+      ! hu3dxyy(i,j,n) = huv3d(i,j,kxyy,n)
+      ! hu3dxxy(i,j,n) = huv3d(i,j,kxxy,n)
+      ! hu3dyyy(i,j,n) = huv3d(i,j,kyyy,n)
+
 !      defineDifferenceOrder2Components1(u,RX)
 !      defineDifferenceOrder4Components1(u,RX)
 
@@ -994,7 +1050,7 @@
       csq = c**2
       cdt = c*dt
 
-!     numGhost=orderOfAccuracy/2
+      !     numGhost=orderOfAccuracy/2
 
       ! bounds for loops 
       nn1a=n1a
@@ -1012,10 +1068,13 @@
 
 
       if( kernelType.eq.planar )then
+
         kx=1
         kxx=2
         kxxx=3
+
       else
+
         kx=1
         ky=2
         kxx=3
@@ -1028,6 +1087,7 @@
       end if
 
       if( nd.eq.2 )then
+        ! ------------------ TWO DIMENSIONS -------------------
 
         i3=n3a
 
@@ -1140,7 +1200,6 @@
 
            uLapSq=uxxxx+2.*uxxyy+uyyyy
            uLapxx=uxxxx+uxxyy
-
 
            huyyi = (hu(i2-1,n)-2.*hu(i2,n)+hu(i2+1,n))/(dx(1)**2)
            huxyyi= (hux(i2-1,n)-2.*hux(i2,n)+hux(i2+1,n))/(dx(1)**2)
@@ -2058,8 +2117,200 @@
 
 
       else
-                                ! 3D
-        stop 6676
+        ! ---------------  THREE DIMENSIONS  --------------------
+
+          ! alpha=.25
+          if( t.le.5*dt )then
+            write(*,'("radEval:updateGhost for 3D, order=",i2,", 
+     & alpha=",f5.2)') orderOfAccuracy,alpha
+          end if
+          is1=0
+          is2=0
+          is3=0
+          if( axis.eq.0 ) then
+            is1=1-2*side
+            if( side.eq.0 )then
+              nn1b=nn1a
+            else
+              nn1a=nn1b
+            end if
+          else if( axis.eq.1 )then
+            is2=1-2*side
+            if( side.eq.0 )then
+              nn2b=nn2a
+            else
+              nn2a=nn2b
+            end if
+          else if( axis.eq.2 )then
+            is3=1-2*side
+            if( side.eq.0 )then
+              nn3b=nn3a
+            else
+              nn3a=nn3b
+            end if
+          else
+            stop 6060
+          end if
+          if( kernelType.eq.planar )then
+            ! ************* planar interface *******************
+            if( axis.ne.0 )then
+              write(*,'("radEval:ERROR: not implemented for axis=",i3)
+     & ') axis
+              stop 1163
+            end if
+            if( orderOfAccuracy.eq.2 )then
+              ! write(*,'("radEval: c=",e9.2)') c
+              do i3=nn3a,nn3b
+              do i2=nn2a,nn2b
+              do i1=nn1a,nn1b
+              do n=na,nb
+                ! write(*,'(" periodic i1,i2,i3,n=",4i4)') i1,i2,i3,n
+                !     
+                ux = (-u(i1-1,i2,i3,n)+u(i1+1,i2,i3,n))/(2.*dx(0))
+                uxx =(u(i1-1,i2,i3,n)-2.*u(i1,i2,i3,n)+u(i1+1,i2,i3,n))
+     & /(dx(0)**2)
+                uyy =(u(i1,i2-1,i3,n)-2.*u(i1,i2,i3,n)+u(i1,i2+1,i3,n))
+     & /(dx(1)**2)
+                uzz =(u(i1,i2,i3-1,n)-2.*u(i1,i2,i3,n)+u(i1,i2,i3+1,n))
+     & /(dx(2)**2)
+                uLap = uxx+uyy+uzz
+                utt  = uLap
+                h=dx(0)*is1
+                im=i1-is1
+                 um1 = u(i1,i2,i3,n) + cdt*( ux*is1 - hu3d(i2,i3,n) )  
+     & - h*ux +.5*cdt*cdt*utt - cdt*h*( uxx*is1 - hu3dx(i2,i3,n) ) + 
+     & .5*h*h*uxx+cdt*alpha*( u(im,i2,i3-1,n) + u(im,i2-1,i3,n) -4.*u(
+     & im,i2,i3,n) +u(im,i2+1,i3,n) +u(im,i2,i3+1,n) )
+                h=2.*dx(0)*is1
+                im=i1-2*is1
+                 um2 = u(i1,i2,i3,n) + cdt*( ux*is1 - hu3d(i2,i3,n) )  
+     & - h*ux +.5*cdt*cdt*utt - cdt*h*( uxx*is1 - hu3dx(i2,i3,n) ) + 
+     & .5*h*h*uxx+cdt*alpha*( u(im,i2,i3-1,n) + u(im,i2-1,i3,n) -4.*u(
+     & im,i2,i3,n) +u(im,i2+1,i3,n) +u(im,i2,i3+1,n) )
+                u1(i1-  is1,i2,i3,n)=um1
+                u1(i1-2*is1,i2,i3,n)=um2
+              end do
+              end do
+              end do
+              end do
+            else if( orderOfAccuracy.eq.4 )then
+              do i3=nn3a,nn3b
+              do i2=nn2a,nn2b
+              do i1=nn1a,nn1b
+              do n=na,nb
+                ! write(*,'(" periodic i1,i2,i3,n=",4i4)') i1,i2,i3,n
+                !     
+                ux = (u(i1-2,i2,i3,n)-8.*u(i1-1,i2,i3,n)+8.*u(i1+1,i2,
+     & i3,n)-u(i1+2,i2,i3,n))/(12.*dx(0))
+                uxx =(-u(i1-2,i2,i3,n)+16.*u(i1-1,i2,i3,n)-30.*u(i1,i2,
+     & i3,n)+16.*u(i1+1,i2,i3,n)-u(i1+2,i2,i3,n))/(12.*dx(0)**2)
+                uyy =(-u(i1,i2-2,i3,n)+16.*u(i1,i2-1,i3,n)-30.*u(i1,i2,
+     & i3,n)+16.*u(i1,i2+1,i3,n)-u(i1,i2+2,i3,n))/(12.*dx(1)**2)
+                uzz =(-u(i1,i2,i3-2,n)+16.*u(i1,i2,i3-1,n)-30.*u(i1,i2,
+     & i3,n)+16.*u(i1,i2,i3+1,n)-u(i1,i2,i3+2,n))/(12.*dx(2)**2)
+                ! **TEMP***
+                ! uzz=0
+                uLap = uxx+uyy+uzz
+                uxxx = (-u(i1-2,i2,i3,n)+2.*u(i1-1,i2,i3,n)-2.*u(i1+1,
+     & i2,i3,n)+u(i1+2,i2,i3,n))/(2.*dx(0)**3)
+                uxyy = (-(u(i1-1,i2-1,i3,n)-2.*u(i1-1,i2,i3,n)+u(i1-1,
+     & i2+1,i3,n))/(dx(1)**2)+(u(i1+1,i2-1,i3,n)-2.*u(i1+1,i2,i3,n)+u(
+     & i1+1,i2+1,i3,n))/(dx(1)**2))/(2.*dx(0))
+                uxzz = (-(u(i1-1,i2,i3-1,n)-2.*u(i1-1,i2,i3,n)+u(i1-1,
+     & i2,i3+1,n))/(dx(2)**2)+(u(i1+1,i2,i3-1,n)-2.*u(i1+1,i2,i3,n)+u(
+     & i1+1,i2,i3+1,n))/(dx(2)**2))/(2.*dx(0))
+                ! **TEMP***
+                ! uxzz=0.
+                uLapx= uxxx+uxyy+uxzz
+                uxxxx =(u(i1-2,i2,i3,n)-4.*u(i1-1,i2,i3,n)+6.*u(i1,i2,
+     & i3,n)-4.*u(i1+1,i2,i3,n)+u(i1+2,i2,i3,n))/(dx(0)**4)
+                uxxyy =((u(i1-1,i2-1,i3,n)-2.*u(i1-1,i2,i3,n)+u(i1-1,
+     & i2+1,i3,n))/(dx(1)**2)-2.*(u(i1,i2-1,i3,n)-2.*u(i1,i2,i3,n)+u(
+     & i1,i2+1,i3,n))/(dx(1)**2)+(u(i1+1,i2-1,i3,n)-2.*u(i1+1,i2,i3,n)
+     & +u(i1+1,i2+1,i3,n))/(dx(1)**2))/(dx(0)**2)
+                uyyyy =(u(i1,i2-2,i3,n)-4.*u(i1,i2-1,i3,n)+6.*u(i1,i2,
+     & i3,n)-4.*u(i1,i2+1,i3,n)+u(i1,i2+2,i3,n))/(dx(1)**4)
+                uxxzz =((u(i1-1,i2,i3-1,n)-2.*u(i1-1,i2,i3,n)+u(i1-1,
+     & i2,i3+1,n))/(dx(2)**2)-2.*(u(i1,i2,i3-1,n)-2.*u(i1,i2,i3,n)+u(
+     & i1,i2,i3+1,n))/(dx(2)**2)+(u(i1+1,i2,i3-1,n)-2.*u(i1+1,i2,i3,n)
+     & +u(i1+1,i2,i3+1,n))/(dx(2)**2))/(dx(0)**2)
+                uyyzz =((u(i1,i2-1,i3-1,n)-2.*u(i1,i2-1,i3,n)+u(i1,i2-
+     & 1,i3+1,n))/(dx(2)**2)-2.*(u(i1,i2,i3-1,n)-2.*u(i1,i2,i3,n)+u(
+     & i1,i2,i3+1,n))/(dx(2)**2)+(u(i1,i2+1,i3-1,n)-2.*u(i1,i2+1,i3,n)
+     & +u(i1,i2+1,i3+1,n))/(dx(2)**2))/(dx(1)**2)
+                uzzzz =(u(i1,i2,i3-2,n)-4.*u(i1,i2,i3-1,n)+6.*u(i1,i2,
+     & i3,n)-4.*u(i1,i2,i3+1,n)+u(i1,i2,i3+2,n))/(dx(2)**4)
+                ! **TEMP***
+                ! uxxzz=0
+                ! uyyzz=0
+                ! uzzzz=0
+                uLapSq=uxxxx + 2.*(uxxyy+uxxzz+uyyzz) + uyyyy + uzzzz
+                uLapxx=uxxxx+uxxyy+uxxzz
+                huyyi = (hu3d(i2-1,i3,n)-2.*hu3d(i2,i3,n)+hu3d(i2+1,i3,
+     & n))/(dx(1)**2)
+                huzzi = (hu3d(i2,i3-1,n)-2.*hu3d(i2,i3,n)+hu3d(i2,i3+1,
+     & n))/(dx(2)**2)
+                huxyyi= (hu3dx(i2-1,i3,n)-2.*hu3dx(i2,i3,n)+hu3dx(i2+1,
+     & i3,n))/(dx(1)**2)
+                huxzzi= (hu3dx(i2,i3-1,n)-2.*hu3dx(i2,i3,n)+hu3dx(i2,
+     & i3+1,n))/(dx(2)**2)
+                ! **TEMP***
+                ! huyyi = 0
+                ! huzzi = 0
+                ! huxyyi= 0
+                ! huxzzi= 0
+                huLap = hu3dxx(i2,i3,n)+huyyi+huzzi
+                utx = uxx*is1 - hu3dx(i2,i3,n)
+                utxyy = uxxyy*is1 - huxyyi ! utx = uxx - hux  -> (utx)yy = uxxyy - (hux)yy
+                utxzz = uxxzz*is1 - huxzzi ! utx = uxx - hux  -> (utx)zz = uxxzz - (hux)zz
+                ut   = ux*is1 - hu3d(i2,i3,n)
+                utt  = uLap
+                uttt = uLapx*is1 -huLap
+                uttx = uLapx
+                utxx = uxxx*is1 -hu3dxx(i2,i3,n)
+                utxxx = uxxxx*is1 - hu3dxxx(i2,i3,n)
+                utttt = uLapSq
+                utttx = utxxx + utxyy + utxzz    ! (uxx+uyy+uzz).tx
+                uttxx = uLapxx
+                ! ghost line 1
+                h=dx(0)*is1
+                im=i1-is1
+                 um1 = u(i1,i2,i3,n) + cdt*ut - h*ux +.5*cdt*cdt*utt -
+     & cdt*h*utx + .5*h*h*uxx+ cdt*cdt*cdt/6.*uttt -cdt*cdt*h*.5*uttx 
+     & + cdt*h*h*.5*utxx - h*h*h/6.*uxxx + cdt*cdt*cdt*cdt/24.*utttt -
+     & cdt*cdt*cdt*h/6.*utttx + cdt*cdt*h*h/4.*uttxx -cdt*h*h*h/6.*
+     & utxxx + h*h*h*h/24.*uxxxx +cdt*(alpha)*( -u(im,i2-2,i3,n)+4.*u(
+     & im,i2-1,i3,n)-6.*u(im,i2,i3,n)+4.*u(im,i2+1,i3,n)-u(im,i2+2,i3,
+     & n) -u(im,i2,i3-2,n)+4.*u(im,i2,i3-1,n)-6.*u(im,i2,i3,n)+4.*u(
+     & im,i2,i3+1,n)-u(im,i2,i3+2,n)  )
+                ! ghost line 2 
+                h=2.*dx(0)*is1
+                im=i1-2*is1
+                 um2 = u(i1,i2,i3,n) + cdt*ut - h*ux +.5*cdt*cdt*utt -
+     & cdt*h*utx + .5*h*h*uxx+ cdt*cdt*cdt/6.*uttt -cdt*cdt*h*.5*uttx 
+     & + cdt*h*h*.5*utxx - h*h*h/6.*uxxx + cdt*cdt*cdt*cdt/24.*utttt -
+     & cdt*cdt*cdt*h/6.*utttx + cdt*cdt*h*h/4.*uttxx -cdt*h*h*h/6.*
+     & utxxx + h*h*h*h/24.*uxxxx +cdt*(alpha)*( -u(im,i2-2,i3,n)+4.*u(
+     & im,i2-1,i3,n)-6.*u(im,i2,i3,n)+4.*u(im,i2+1,i3,n)-u(im,i2+2,i3,
+     & n) -u(im,i2,i3-2,n)+4.*u(im,i2,i3-1,n)-6.*u(im,i2,i3,n)+4.*u(
+     & im,i2,i3+1,n)-u(im,i2,i3+2,n)  )
+                u1(i1-is1,i2,i3,n)=um1
+                u1(i1-2*is1,i2,i3,n)=um2
+              end do
+              end do
+              end do
+              end do
+            else
+              write(*,'("radEval: 3D unknown orderOfAccuracy=",i2)') 
+     & orderOfACcuracy
+              stop 666
+            end if
+          else
+            write(*,'("radEval:ERROR: kernelType")')
+            stop 2222
+          end if
+
+
       end if
 
 
@@ -2103,76 +2354,167 @@
 
       i3=n3a
       if( kernelType.eq.planar .and. orderOfAccuracy.eq.2 ) then
-        ! evaluate first two x-derivatives to second-order
-        if( axis.eq.0 )then
-          if( side.eq.0 )then
-            i1=n1a
-          else
-            i1=n1b
-          end if
-          do n=na,nb
-            do i2=n2a,n2b
-              uSave(i2,m,1,n)=(-u1(i1-1,i2,i3,n)+u1(i1+1,i2,i3,n))/(2.*
-     & dx(0))
-              ! uSave(i2,m,2,n)=u1xx2(i1,i2,i3,n)
+
+        ! evaluate one x-derivative to second-order
+        if( nd.eq.2 )then
+          ! ---- ORDER=2 - TWO DIMENSIONS ---
+
+          if( axis.eq.0 )then
+            if( side.eq.0 )then
+              i1=n1a
+            else
+              i1=n1b
+            end if
+            do n=na,nb
+              do i2=n2a,n2b
+                uSave(i2,m,1,n,sd5a)=(-u1(i1-1,i2,i3,n)+u1(i1+1,i2,i3,
+     & n))/(2.*dx(0))
+                ! uSave(i2,m,2,n)=u1xx2(i1,i2,i3,n)
+              end do
             end do
-          end do
-        else if( axis.eq.1 )then
-          if( side.eq.0 )then
-            i2=n2a
-          else
-            i2=n2b
-          end if
-          do n=na,nb
-            do i1=n1a,n1b
-              uSave(i1,m,1,n)=(-u1(i1,i2-1,i3,n)+u1(i1,i2+1,i3,n))/(2.*
-     & dx(1))
-              ! uSave(i1,m,2,n)=u1yy2(i1,i2,i3,n)
+          else if( axis.eq.1 )then
+            if( side.eq.0 )then
+              i2=n2a
+            else
+              i2=n2b
+            end if
+            do n=na,nb
+              do i1=n1a,n1b
+                uSave(i1,m,1,n,sd5a)=(-u1(i1,i2-1,i3,n)+u1(i1,i2+1,i3,
+     & n))/(2.*dx(1))
+                ! uSave(i1,m,2,n)=u1yy2(i1,i2,i3,n)
+              end do
             end do
-          end do
+          else
+            stop 6639
+          end if
+
         else
-          stop 6639
+
+          ! ---- ORDER=2 - THREE DIMENSIONS ---
+          if( axis.eq.0 )then
+            if( side.eq.0 )then
+              i1=n1a
+            else
+              i1=n1b
+            end if
+            do n=na,nb
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+                uSave(i2,i3,m,1,n)=(-u1(i1-1,i2,i3,n)+u1(i1+1,i2,i3,n))
+     & /(2.*dx(0))
+              end do
+              end do
+            end do
+          else if( axis.eq.1 )then
+            if( side.eq.0 )then
+              i2=n2a
+            else
+              i2=n2b
+            end if
+            do n=na,nb
+              do i3=n3a,n3b
+              do i1=n1a,n1b
+                uSave(i1,i3,m,1,n)=(-u1(i1,i2-1,i3,n)+u1(i1,i2+1,i3,n))
+     & /(2.*dx(1))
+              end do
+              end do
+            end do
+          else
+            stop 6639
+          end if
+
         end if
       else if( kernelType.eq.planar .and. orderOfAccuracy.eq.4 ) then
         ! evaluate first 3 derivatives 
 
-        if( axis.eq.0 )then
-          if( side.eq.0 )then
-            i1=n1a
-          else
-            i1=n1b
-          end if
-          do n=na,nb
-            do i2=n2a,n2b
-              uSave(i2,m,1,n)=(u1(i1-2,i2,i3,n)-8.*u1(i1-1,i2,i3,n)+8.*
-     & u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))/(12.*dx(0))
-              uSave(i2,m,2,n)=(-u1(i1-2,i2,i3,n)+16.*u1(i1-1,i2,i3,n)-
-     & 30.*u1(i1,i2,i3,n)+16.*u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))/(12.*
-     & dx(0)**2)
-              uSave(i2,m,3,n)=(-u1(i1-2,i2,i3,n)+2.*u1(i1-1,i2,i3,n)-
-     & 2.*u1(i1+1,i2,i3,n)+u1(i1+2,i2,i3,n))/(2.*dx(0)**3)
+        if( nd.eq.2 )then
+
+          ! ---- ORDER=4 - TWO DIMENSIONS ---
+          if( axis.eq.0 )then
+            if( side.eq.0 )then
+              i1=n1a
+            else
+              i1=n1b
+            end if
+            do n=na,nb
+              do i2=n2a,n2b
+                uSave(i2,m,1,n,sd5a)=(u1(i1-2,i2,i3,n)-8.*u1(i1-1,i2,
+     & i3,n)+8.*u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))/(12.*dx(0))
+                uSave(i2,m,2,n,sd5a)=(-u1(i1-2,i2,i3,n)+16.*u1(i1-1,i2,
+     & i3,n)-30.*u1(i1,i2,i3,n)+16.*u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))
+     & /(12.*dx(0)**2)
+                uSave(i2,m,3,n,sd5a)=(-u1(i1-2,i2,i3,n)+2.*u1(i1-1,i2,
+     & i3,n)-2.*u1(i1+1,i2,i3,n)+u1(i1+2,i2,i3,n))/(2.*dx(0)**3)
+              end do
             end do
-          end do
-        else if( axis.eq.1 )then
-          if( side.eq.0 )then
-            i2=n2a
-          else
-            i2=n2b
-          end if
-          do n=na,nb
-            do i1=n1a,n1b
-              uSave(i1,m,1,n)=(u1(i1,i2-2,i3,n)-8.*u1(i1,i2-1,i3,n)+8.*
-     & u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))/(12.*dx(1))
-              uSave(i1,m,2,n)=(-u1(i1,i2-2,i3,n)+16.*u1(i1,i2-1,i3,n)-
-     & 30.*u1(i1,i2,i3,n)+16.*u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))/(12.*
-     & dx(1)**2)
-              uSave(i1,m,3,n)=(-u1(i1,i2-2,i3,n)+2.*u1(i1,i2-1,i3,n)-
-     & 2.*u1(i1,i2+1,i3,n)+u1(i1,i2+2,i3,n))/(2.*dx(1)**3)
+          else if( axis.eq.1 )then
+            if( side.eq.0 )then
+              i2=n2a
+            else
+              i2=n2b
+            end if
+            do n=na,nb
+              do i1=n1a,n1b
+                uSave(i1,m,1,n,sd5a)=(u1(i1,i2-2,i3,n)-8.*u1(i1,i2-1,
+     & i3,n)+8.*u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))/(12.*dx(1))
+                uSave(i1,m,2,n,sd5a)=(-u1(i1,i2-2,i3,n)+16.*u1(i1,i2-1,
+     & i3,n)-30.*u1(i1,i2,i3,n)+16.*u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))
+     & /(12.*dx(1)**2)
+                uSave(i1,m,3,n,sd5a)=(-u1(i1,i2-2,i3,n)+2.*u1(i1,i2-1,
+     & i3,n)-2.*u1(i1,i2+1,i3,n)+u1(i1,i2+2,i3,n))/(2.*dx(1)**3)
+              end do
             end do
-          end do
+          else
+            stop 6639
+          end if
+
         else
-          stop 6639
-        end if
+
+          ! ---- ORDER=4 THREE DIMENSIONS ---
+          if( axis.eq.0 )then
+            if( side.eq.0 )then
+              i1=n1a
+            else
+              i1=n1b
+            end if
+            do n=na,nb
+              do i3=n3a,n3b
+              do i2=n2a,n2b
+                uSave(i2,i3,m,1,n)=(u1(i1-2,i2,i3,n)-8.*u1(i1-1,i2,i3,
+     & n)+8.*u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))/(12.*dx(0))
+                uSave(i2,i3,m,2,n)=(-u1(i1-2,i2,i3,n)+16.*u1(i1-1,i2,
+     & i3,n)-30.*u1(i1,i2,i3,n)+16.*u1(i1+1,i2,i3,n)-u1(i1+2,i2,i3,n))
+     & /(12.*dx(0)**2)
+                uSave(i2,i3,m,3,n)=(-u1(i1-2,i2,i3,n)+2.*u1(i1-1,i2,i3,
+     & n)-2.*u1(i1+1,i2,i3,n)+u1(i1+2,i2,i3,n))/(2.*dx(0)**3)
+              end do
+              end do
+            end do
+          else if( axis.eq.1 )then
+            if( side.eq.0 )then
+              i2=n2a
+            else
+              i2=n2b
+            end if
+            do n=na,nb
+              do i3=n3a,n3b
+              do i1=n1a,n1b
+                uSave(i1,i3,m,1,n)=(u1(i1,i2-2,i3,n)-8.*u1(i1,i2-1,i3,
+     & n)+8.*u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))/(12.*dx(1))
+                uSave(i1,i3,m,2,n)=(-u1(i1,i2-2,i3,n)+16.*u1(i1,i2-1,
+     & i3,n)-30.*u1(i1,i2,i3,n)+16.*u1(i1,i2+1,i3,n)-u1(i1,i2+2,i3,n))
+     & /(12.*dx(1)**2)
+                uSave(i1,i3,m,3,n)=(-u1(i1,i2-2,i3,n)+2.*u1(i1,i2-1,i3,
+     & n)-2.*u1(i1,i2+1,i3,n)+u1(i1,i2+2,i3,n))/(2.*dx(1)**3)
+              end do
+              end do
+            end do
+          else
+            stop 6639
+          end if
+
+       end if
 
       else if( kernelType.eq.cylindrical .and. orderOfAccuracy.eq.2 ) 
      & then
@@ -2219,8 +2561,8 @@
               uus = (-u1(i1,i2-1,i3,n)+u1(i1,i2+1,i3,n))/(2.*dr(1))
               ux = aj2rx*uur+aj2sx*uus
               uy = aj2ry*uur+aj2sy*uus
-              uSave(ii,m,1,n)=ux
-              uSave(ii,m,2,n)=uy
+              uSave(ii,m,1,n,sd5a)=ux
+              uSave(ii,m,2,n,sd5a)=uy
             end do
             ii=ii+1
           end do
@@ -2229,7 +2571,7 @@
 
       else if( kernelType.eq.cylindrical .and. orderOfAccuracy.eq.4 ) 
      & then
-        ! evaluate first 3 derivatives 
+          ! evaluate first 3 derivatives 
 
           if( axis.eq.0 )then
             ii=nn2a
@@ -2609,15 +2951,15 @@
               uur = (-u1(i1-1,i2,i3,n)+u1(i1+1,i2,i3,n))/(2.*dr(0))
               uus = (-u1(i1,i2-1,i3,n)+u1(i1,i2+1,i3,n))/(2.*dr(1))
 
-              uSave(ii,m,1,n)=ux
-              uSave(ii,m,2,n)=uy
-              uSave(ii,m,3,n)=uxx
-              uSave(ii,m,4,n)=uxy
-              uSave(ii,m,5,n)=uyy
-              uSave(ii,m,6,n)=uxxx
-              uSave(ii,m,7,n)=uxxy
-              uSave(ii,m,8,n)=uxyy
-              uSave(ii,m,9,n)=uyyy
+              uSave(ii,m,1,n,sd5a)=ux
+              uSave(ii,m,2,n,sd5a)=uy
+              uSave(ii,m,3,n,sd5a)=uxx
+              uSave(ii,m,4,n,sd5a)=uxy
+              uSave(ii,m,5,n,sd5a)=uyy
+              uSave(ii,m,6,n,sd5a)=uxxx
+              uSave(ii,m,7,n,sd5a)=uxxy
+              uSave(ii,m,8,n,sd5a)=uxyy
+              uSave(ii,m,9,n,sd5a)=uyyy
 
 
             end do

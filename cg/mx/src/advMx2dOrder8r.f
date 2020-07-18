@@ -1,7 +1,7 @@
 ! This file automatically generated from advOpt.bf with bpp.
         subroutine advMx2dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f,fa, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f,fa, v,
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
        !======================================================================
        !   Advance a time step for Maxwells equations
        !     OPTIMIZED version for rectangular grids.
@@ -30,6 +30,7 @@
         real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+        real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         integer bc(0:1,0:2),ierr

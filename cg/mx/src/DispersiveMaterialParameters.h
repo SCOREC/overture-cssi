@@ -10,6 +10,11 @@
 #include "DBase.hh"
 using namespace DBase;
 
+// forward declarations
+class Complex;
+class ComplexArray;
+
+
 class DispersiveMaterialParameters
 {
 public:
@@ -32,6 +37,14 @@ public:
     HxHyEzPolarization
   };
   
+  // nonlinear models 
+  enum NonlinearModelEnum
+  {
+    noNonlinearModel=0,
+    multilevelAtomic,  // Mawell Bloch equations
+  } nonlinearModel;
+
+
   // We have choices when solving the dispersion relation
   enum DispersionRelationOptionEnum
   {
@@ -84,6 +97,8 @@ public:
   int getBianisotropicMaterialMatrix( RealArray & K0 ) const;
   int getBianisotropicMaterialMatrixInverse( RealArray & K0i );
 
+  int getK( ComplexArray & K, Complex & s ) const;
+
   IntegerArray& getBianisotropicNp() const;
 
   RealArray & getBianisotropicGDMParameters() const;
@@ -107,6 +122,9 @@ public:
   // Return the isotropic parameters
   int getIsotropicParameters( int & Np,  real & epsInf, RealArray & modelParams ) const;
 
+  int getNonlinearParameters( int & numberOfNonlinearVariables, RealArray & nlPar ) const;
+
+
   real getEpsInf() const;
   real getMuInf() const;
 
@@ -119,6 +137,14 @@ public:
   MaterialTypeEnum getMaterialType() const;
 
   bool isDispersiveMaterial() const;
+
+  bool isNonlinearMaterial() const;
+
+  NonlinearModelEnum getNonlinearModel() const{ return nonlinearModel; } // 
+
+  int getNumberOfAtomicLevels() const;
+
+  int getNumberOfPolarizationVectors() const;
 
   // Plot dispersive properties versus frequency or wavelength
   int update( GenericGraphicsInterface & gi );

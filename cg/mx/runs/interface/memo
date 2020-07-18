@@ -1,4 +1,77 @@
 ******************************
+******** June 18, 2020
+
+valgrind $cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=2 2 -matFile1=mlaMat1.txt -matFile2=mlaMat1.txt -dm=gdm -nm=mla -kx=1 -ky=1 -tp=.01 -tf=.02 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -cons=0 -go=go
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=2 2 -matFile1=mlaMat1.txt -matFile2=mlaMat1.txt -dm=gdm -nm=mla -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -cons=0 -go=og
+
+ +++++ getErrors checkErrors=1, knownSolutionOption=1 
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=2 P-norm=1.010e+00 max-err = 2.220e-16
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=2 P-norm=2.020e+00 max-err = 4.441e-16
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numberOfAtomicLevels=4   Q-norm=6.445e-01 max-err = 9.781e-03
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numberOfAtomicLevels=4   Q-norm=1.934e+00 max-err = 2.934e-02
+>>> t=2.00e-02 dt=1.0e-02 max errors:[8.88e-16,8.88e-16,1.55e-02,], max (u):[4.04e+00,2.02e+00,1.52e+00,] (2 steps)
+
+
+******************************
+******** June 17, 2020
+
+
++++++++ START ON Interface for multilevel atomic nonlinear model 
+
+**CHECK TZ**
+
+MAT FILES MLA
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=2 2 -matFile1=mlaMat1.txt -matFile2=mlaMat1.txt -dm=gdm -nm=mla -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -cons=0 -go=og
+
+
+
+
+
+MAT FILES GDM: exact 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -matFile1=baMatGDM1.txt -matFile2=baMatGDM1.txt -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -cons=0 -go=og
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[6.66e-16,8.88e-16,1.55e-02,], max (u):[4.04e+00,2.02e+00,1.52e+00,] (2 steps)
+
+
+
+MAT FILES -- NO GDM : OK
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -cons=0 -go=og
+
+
+TZ GDM: EXACT -- ( *but* no-GDM is not exact ?)
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -cons=0 -go=og
+
+ +++++ getErrors checkErrors=1, knownSolutionOption=1 
+--getErrors: t=2.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.010e+00 max-err = 4.441e-16
+--getErrors: t=2.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.020e+00 max-err = 4.441e-16
+>>> t=2.00e-02 dt=1.0e-02 max errors:[5.55e-16,6.66e-16,1.55e-02,], max (u):[4.04e+00,2.02e+00,1.52e+00,] (2 steps)
+
+
+
+TZ no-gdm: 
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2. -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0. -bc=d -cons=0 -go=og
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[5.99e-07,4.44e-16,5.99e-07,], max (u):[4.04e+00,2.02e+00,1.52e+00,] (2 steps)
+
+****************
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2.0 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0. -bc=d -cons=0 -go=og
+
+
+
+******************************
+******** June 18, 2020
+
+
+TEst interface convergence with non matching dx for Qing 
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee4.order4.ng3 -eps2=2 -kx=1 -ky=0 -tp=.1 -tf=10 -ic=pmic -x0=-.5 -diss=0. -bc=d -dm=none -cons=0 -go=og
+
+
+******************************
 ******** Aug 19, 2019
 
 Test Gaussian plane wave IC  -- check for nan's 

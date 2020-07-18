@@ -776,6 +776,7 @@ else
   OV_ABORT("ERROR:unimplemented number of dimensions");
 }
 
+
 if( dispersionModel != noDispersion &&  method==bamx )
 {
   // BA Maxwell -- assign polarization components
@@ -792,6 +793,47 @@ if( dispersionModel != noDispersion &&  method==bamx )
 	{
 	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
 	  spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+	}
+      }
+      
+    }
+  }
+}
+
+int lastTZComponent = hz+1;  // keep track of the last TZ component assigned above so we can fill in MLA components
+if( dispersionModel != noDispersion )
+{
+   
+  int numberOfPolarizationComponents=maxNumberOfPolarizationVectors;  // ** CHECK ME ***
+  
+  lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+  if( method==bamx )
+    lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+}
+
+if( dispersionModel != noDispersion &&  nonlinearModel==multilevelAtomic )
+{
+  // Nonlinear model : multilevelAtomic 
+  // printF("\n >>> INIT TZ: Fill in nonlinear TZ variables starting at lastTZComponent=%d <<<\n\n",lastTZComponent);
+
+
+  const int degreeSpaceZ = numberOfDimensions==2 ? degreeSpace : 0;
+
+  const int & maxNumberOfNonlinearVectors = parameters.dbase.get<int>("maxNumberOfNonlinearVectors");
+  for( int m=0; m<maxNumberOfNonlinearVectors; m++ )
+  {
+    int na = lastTZComponent+m; 
+
+    // printF("POLY-TZ: multilevelAtomic: set TZ for N_%d (TZ component=%d)\n",m,na);
+    
+    for( int iz=0; iz<=degreeSpaceZ; iz++ )
+    {
+      for( int iy=0; iy<=degreeSpace; iy++ )
+      {
+	for( int ix=0; ix<=degreeSpace; ix++ )
+	{
+	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
+	  spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
 	}
       }
       

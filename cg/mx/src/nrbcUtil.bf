@@ -108,34 +108,56 @@ end do
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field in 2D   
+!   Define a Gaussian Plane Wave incident field in 2D   
 !===============================================================================================
-#beginMacro getGaussianPulse(OP, u,t,x,y)
+#beginMacro getGaussianPlaneWave(OP, u,t,x,y)
   xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-  expxi = exp(-betaGP*xi*xi )
-  uhz = amp*expxi
-  uex = uhz*(-ky/(eps*cc))
-  uey = uhz*( kx/(eps*cc))
-  u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
-  u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
-  u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP uhz
+  expxi = amp*exp(-betaGP*xi*xi )
+  if( solveForAllFields.eq.0 )then
+    ! *new* way June 16, 2020 *wdh*
+    u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP expxi*pwc(0)
+    u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP expxi*pwc(1)
+    u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP expxi*pwc(5)
+
+    ! *old way*
+    ! uhz = expxi
+    ! uex = uhz*(-ky/(eps*cc))
+    ! uey = uhz*( kx/(eps*cc))
+    ! u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
+    ! u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
+    ! u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP uhz
+  else
+
+    u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP expxi*pwc(0)
+    u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP expxi*pwc(1)
+    u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP expxi*pwc(2)
+
+    u(i1,i2,i3,hx) = u(i1,i2,i3,hx) OP expxi*pwc(3)
+    u(i1,i2,i3,hy) = u(i1,i2,i3,hy) OP expxi*pwc(4)
+    u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP expxi*pwc(5)
+
+  end if    
 
 #endMacro 
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field in 3D   
+!   Define a Gaussian Plane Wave incident field in 3D   
+!   Changed: May 16, 2020 -- use pwc() coefficients 
 !===============================================================================================
-#beginMacro getGaussianPulse3d(OP, u,t,x,y,z)
+#beginMacro getGaussianPlaneWave3d(OP, u,t,x,y,z)
   xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*(t)
-  expxi = exp(-betaGP*xi*xi )
-  uhz = amp*expxi
-  uex = uhz*(-ky/(eps*cc))
-  uey = uhz*( kx/(eps*cc))
-  uez = 0.
-  u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP uex
-  u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP uey
-  u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP uez
+  expxi = amp*exp(-betaGP*xi*xi )
+
+  u(i1,i2,i3,ex) = u(i1,i2,i3,ex) OP expxi*pwc(0)
+  u(i1,i2,i3,ey) = u(i1,i2,i3,ey) OP expxi*pwc(1)
+  u(i1,i2,i3,ez) = u(i1,i2,i3,ez) OP expxi*pwc(2)
+
+  if( solveForAllFields.eq.1 )then
+    u(i1,i2,i3,hx) = u(i1,i2,i3,hx) OP expxi*pwc(3)
+    u(i1,i2,i3,hy) = u(i1,i2,i3,hy) OP expxi*pwc(4)
+    u(i1,i2,i3,hz) = u(i1,i2,i3,hz) OP expxi*pwc(5)
+  end if
 
 #endMacro 
 
@@ -200,11 +222,11 @@ end do
 
        else if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
          ! --- plane wave incident field ---
-         getGaussianPulse(OP, u,t-dt,x,y)
-         getGaussianPulse(OP, un,t,x,y)
+         getGaussianPlaneWave(OP, u,t-dt,x,y)
+         getGaussianPlaneWave(OP, un,t,x,y)
 
          if( adjustThreeLevels.eq.1 )then
-           getGaussianPulse(OP, um,t-2.*dt,x,y)
+           getGaussianPlaneWave(OP, um,t-2.*dt,x,y)
          end if
 
        else
@@ -217,7 +239,13 @@ end do
         endif
        #End
      endLoops()
+
    else
+     ! --- THREE DIMENSIONS ---
+
+     !if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+     !  write(*,'(" OP ADJUST : alter fields for gaussianPlaneWaveIncidentField ")')
+     !end if 
      beginLoops()
        if( gridType.eq.rectangular )then
          x = xa(0)+i1*dx(0)
@@ -258,11 +286,11 @@ end do
        else if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
 
          ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
-         getGaussianPulse3d(OP, u,t-dt,x,y,z)
-         getGaussianPulse3d(OP, un,t,x,y,z)
+         getGaussianPlaneWave3d(OP, u,t-dt,x,y,z)
+         getGaussianPlaneWave3d(OP, un,t,x,y,z)
 
          if( adjustThreeLevels.eq.1 )then
-           getGaussianPulse3d(OP, um,t-2.*dt,x,y,z)
+           getGaussianPlaneWave3d(OP, um,t-2.*dt,x,y,z)
          end if
 
        else
@@ -317,7 +345,7 @@ end do
 !     --- local variables ----
       
       integer side,axis,gridType,orderOfAccuracy,orderOfExtrapolation,useForcing,\
-        ex,ey,ez,hx,hy,hz,useWhereMask,grid,debug,side1,side2,side3
+        ex,ey,ez,hx,hy,hz,useWhereMask,grid,debug,side1,side2,side3,solveForAllFields
       real dx(0:2),dr(0:2),xa(0:2)
       real t,ep,dt,c      
       real dxa,dya,dza
@@ -429,6 +457,8 @@ end do
 
       incidentFieldType    =ipar(37)  ! defines type of incident field -- plane wave, Gaussian pulse, ...
 
+      solveForAllFields    =ipar(38)
+
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
       dx(2)                =rpar(2)
@@ -468,6 +498,16 @@ end do
       xv0(2) =rpar(35)
 
       
+      ! If we are given an initial condition bounding box then only adjust points in this box
+      if( icBoundingBox(0,0) .lt. icBoundingBox(1,0) )then
+        adjustForBoundingBox=.true.
+        ! write(*,'(" adjustForIncident: adjustForBoundingBox, grid=",i4," t=",e9.3)') grid,t
+      else
+        adjustForBoundingBox=.false.
+      end if
+
+      ! adjustForBoundingBox=.false.
+
       ! Gaussian pulse fix me: 
       if( incidentFieldType.eq.gaussianPlaneWaveIncidentField )then
        ! incidentFieldType=1
@@ -478,6 +518,9 @@ end do
         if( t.le.2*dt )then
           write(*,'(" adjustForIncident: incidentFieldType=gaussianPlaneWaveIncidentField")') 
           write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+          write(*,'(" n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') n1a,n1b,n2a,n2b,n3a,n3b
+          write(*,'(" solveForAllFields=",i2," adjustForBoundingBox=",l2)') solveForAllFields,adjustForBoundingBox
+          write(*,'(" adjustForIncident: icbb=[",e8.2,",",e8.2,"][",e8.2,",",e8.2,"][",e8.2,",",e8.2,"]")') icBoundingBox(0,0),icBoundingBox(1,0),icBoundingBox(0,1),icBoundingBox(1,1),icBoundingBox(0,2),icBoundingBox(1,2)
         end if
       end if
 
@@ -490,17 +533,6 @@ end do
         ! ' 
       end if
      
-      ! If we are given an initial condition bounding box then only adjust points in this box
-      if( icBoundingBox(0,0) .lt. icBoundingBox(1,0) )then
-        adjustForBoundingBox=.true.
-        ! write(*,'(" adjustForIncident: adjustForBoundingBox, grid=",i4," t=",e9.3)') grid,t
-      else
-        adjustForBoundingBox=.false.
-      end if
-      ! write(*,'(" adjustForIncident: icbb=[",e8.2,",",e8.2,"][",e8.2,",",e8.2,"][",e8.2,",",e8.2,"]")') icBoundingBox(0,0),icBoundingBox(1,0),\
-      !    icBoundingBox(0,1),icBoundingBox(1,1),icBoundingBox(0,2),icBoundingBox(1,2)
-
-      ! adjustForBoundingBox=.false.
 
       ! for plane wave forcing 
       twoPi=8.*atan2(1.,1.)

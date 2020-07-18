@@ -1,6 +1,36 @@
 set ogmgt = $ogmg/ogmgt
 
 ****************************
+****** Thurs May 20, 2030 
+
+ogmgt tz -plot -g=pump2dGride8.order2.s8.ml2.hdf -autoChoose=1
+
+ogen -noplot pump2dGrid -interp=e -ml=2 -factor=8
+
+
+
+****************************
+****** Tues May 19, 2030 
+
+
+ogmgt tz -noplot -g=cice8.order2.ml3.hdf -autoChoose=1
+
+Iteration=1..9 : Total WU=6.61e+01, total res reduction=6.33e-15, ave CR=0.0264 ave ECR=0.610 np=1
+
+*** PUMP GRID has trouble -- coarse grid may be invalid 
+ogmgt tz -noplot -maxit=20 -g=pump2dGride8.order2.s8.ml1.hdf -autoChoose=1 -save=pumpMG.hdf
+
+direct solve on finest level: OK
+ogmgt tz -noplot -maxit=20 -g=pump2dGride8.order2.s8.ml1.hdf -autoChoose=0 -levels=1 -cgSolver=yale
+Iteration=1..1 : Total WU=3.02e+00, total res reduction=5.94e-15, ave CR=0.0000 ave ECR=0.000 np=1
+  MaxRes=2.88e-09, TR10=4.78e-02 (time to reduce residual by a factor of 10) TR10/(M/np)=4.34e-01
+
+
+ogmgt tz -noplot -autoChoose=1 -maxit=20 -g=pump2dGride8.order2.s8.ml1.hdf -cgSolver=yale
+
+
+ ogen -noplot pump2dGrid -interp=e -ml=1 -factor=4
+****************************
 ****** July 19, 2019
 
 

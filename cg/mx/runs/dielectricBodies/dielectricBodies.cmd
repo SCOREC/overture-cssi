@@ -1,7 +1,7 @@
 #================================================================================================
 #
 #  cgmx example:  scattering from various dielectric bodies
-echo to terminal 0
+echo to terminal 1
 #
 # Usage:
 #   
@@ -69,7 +69,8 @@ $selectiveDissipation=0;
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); # for a second GDM domain 
-$dmFile=""; # "SilverJCDispersionFits.txt"; 
+$dmFile=""; # old way
+$matFile=""; # "SilverJCDispersionFits.txt"; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
@@ -89,12 +90,13 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s"=>\$dmFile,"probeFrequency=i"=>\$probeFrequency );
+  "dmFile=s"=>\$dmFile,"matFile=s"=>\$matFile,"probeFrequency=i"=>\$probeFrequency );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
 if( $dm eq "gdm" ){ $dm="GDM"; $cons=0; } # Turn off conservative for GDM
 #
+if( $dmFile ne "" ){ $matFile=$dmFile; } # for backward compat
 #
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }
@@ -136,6 +138,7 @@ if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroIni
 if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
 $cmd 
+# 
 if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
 $known
 $kxa= abs($kx);
@@ -209,7 +212,7 @@ if( $npv[0] == 2 ){ \
 $cmd
   #
   # -- read material parameters from a file 
-  if( $dmFile ne "" ) { $cmd="material file: $dmFile" }else{ $cmd="#"; }
+  if( $matFile ne "" ) { $cmd="material file: $matFile"; }else{ $cmd="#"; }
   $cmd 
 #
 # *****************
@@ -346,11 +349,15 @@ $cmd
 continue
 #
 #
-plot:Ey
+if( $az==0 ){ $cmd="plot:Ey"; }else{ $cmd="plot:Ez"; }
+$cmd 
 contour
   plot contour lines (toggle)
   # vertical scale factor 0.2
   # min max -1.1 1.1
+  # plot a contour plane in 3d 
+  if( $grid =~ /3d/ ){ $cmd="delete contour plane 2\n delete contour plane 1\n delete contour plane 0\n add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 0 0 0"; }else{ $cmd="#"; }
+  $cmd
 exit
 $go
 
@@ -368,8 +375,8 @@ $go
 #
 plot:Ex
 contour
-plot contour lines (toggle)
-vertical scale factor 0.
-# min max -1.1 1.1
+  plot contour lines (toggle)
+  vertical scale factor 0.
+  # min max -1.1 1.1
 exit
 $go

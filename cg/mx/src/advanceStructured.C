@@ -9,6 +9,7 @@
 #define advMaxwell EXTERN_C_NAME(advmaxwell)
 #define mxFilter EXTERN_C_NAME(mxfilter)
 #define getGDMParameters EXTERN_C_NAME(getgdmparameters)
+#define getMultilevelAtomicParameters EXTERN_C_NAME(getmultilevelatomicparameters)
 
 extern "C"
 {
@@ -16,9 +17,10 @@ extern "C"
             const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,
             const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
             const int&nd4a,const int&nd4b,
-            const int&mask,const real&rx,  
-            const real&um, const real&u, real&un, const real&f, const real&fa,
-            const real&ut1,const real&ut2,const real&ut3, const real&ut4,const real&ut5,const real&ut6,const real&ut7,
+            const int&mask, const real&xy,  const real&rx,  
+            const real&um, const real&u, real&un, const real&f, const real&fa,  const real&v,
+            const real& pm,const real& p, const real& pn,
+            const real& qm,const real& q,const real & qn,
             const int&bc, const real &dis, const real &varDis, const int&ipar, const real&rpar, int&ierr );
 
   void mxFilter(const int&nd,
@@ -33,7 +35,7 @@ extern "C"
 {
 
 // ================================================================================
-///  \brief Return the gdm parameters
+///  \brief Return the gdm parameters (called by advOpt)
 /// \param grid (input) : return parameters for this grid 
 /// \param numberOfPolarizationVectors (output) : 
 /// \param alphaP
@@ -85,7 +87,68 @@ void getGDMParameters( int & grid, real & alphaP, real *gdmPar,
 #undef gdmVar  
 }
 
+
+// ================================================================================
+///  \brief Return the parameters for nonlinear models (called by advOpt)
+/// \param grid (input) : return parameters for this grid 
+/// \param pnlPar : pointer to a 3d array "nlPar" that on output holds three matrices:
+/// \param nda,nd2 (input) : leading dimensions of the array nlPar(0:nd-1,0:nd-1,0:*) 
+/// \param numberOfPolarizationVectors (output) : np 
+/// \param numberOfAtomicLevels (output) : na 
+///    nlPar(0:*,0:*,0) = polarizationNECoefficients(0:np-1,0:na-1) : coefficient tensors in multilevelAtomic model:
+///    nlPar(0:*,0:*,1) = populationRelaxationCoefficients(0:na-1,0:na-1) : coefficient tensors in multilevelAtomic model:
+///    nlPar(0:*,0:*,2) = populationEPtCoefficients(0:na-1,0:np-1) : coefficient tensors in multilevelAtomic model:
+//       
+// ===========================================================================================
+void getMultilevelAtomicParameters( int & grid,
+                            				    real *pnlPar, int & nd1, int & nd2, 
+                            				    int & numberOfPolarizationVectors,
+                            				    int & numberOfAtomicLevels )
+{
+#define nlPar(m1,m2,iv) pnlPar[(m1)+nd1*( (m2) + nd2*( iv ) )]
+
+    assert( cgmxPointer != NULL );
+
+    CompositeGrid *&cgp = cgmxPointer->cgp;
+    assert( cgp!=NULL );
+    CompositeGrid & cg= *cgp;
+
+    const int domain = cg.domainNumber(grid);
+    const DispersiveMaterialParameters & dmp =  cgmxPointer->getDomainDispersiveMaterialParameters(domain);
+    
+    numberOfPolarizationVectors = dmp.getNumberOfPolarizationVectors();
+    
+    RealArray multilevelAtomicParams;
+    dmp.getNonlinearParameters( numberOfAtomicLevels, multilevelAtomicParams );  
+
+    printF("getMultilevelAtomicParameters: grid=%d, nd1=%d, nd2=%d, numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
+       	 grid,nd1,nd2,numberOfPolarizationVectors,numberOfAtomicLevels);
+
+    const int numberOfCoefficientTensors=3;
+
+  // Pv_{m1,tt} + b_{1,m1} Pv_{m1,t}  + b_{0,m1} Pv_{m1}  = a_{m1,m2} N_{m2} Ev 
+    for( int m1=0; m1<numberOfPolarizationVectors; m1++ )
+        for( int m2=0; m2<numberOfAtomicLevels; m2++ )
+            nlPar(m1,m2,0) = multilevelAtomicParams(m1,m2,0);  // a_{m1,m2}  = polarizationNECoefficients
+
+  // N_{m1, t} = SUM_m2 alpha_{m1,m2} N_{m2} + beta_{m1,m2} \Ev dot \Pv_{m2, t}  
+    for( int m1=0; m1<numberOfAtomicLevels; m1++ )
+        for( int m2=0; m2<numberOfAtomicLevels; m2++ )
+            nlPar(m1,m2,1) = multilevelAtomicParams(m1,m2,1); // alpha = populationRelaxationCoefficients(0:na-1,0:na-1)
+  
+    for( int m1=0; m1<numberOfAtomicLevels; m1++ )
+        for( int m2=0; m2<numberOfPolarizationVectors; m2++ )
+          nlPar(m1,m2,2) = multilevelAtomicParams(m1,m2,2); // beta = populationEPtCoefficients(0:na-1,0:np-1) 
+  
+
+#undef nlVar  
 }
+
+
+
+
+
+} // end extern "C"
 
 #define evalUserDefinedKnownSolution EXTERN_C_NAME(evaluserdefinedknownsolution)
 extern "C"
@@ -331,6 +394,10 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
             const int domain = cg.domainNumber(grid);
             const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
             const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;      
+
+      // const int numberOfNonlinearVectors    = dmp.getNumberOfNonlinearVectors();  // show probably use this 
+            const int numberOfAtomicLevels  = dmp.getNumberOfAtomicLevels();
+
       // Each grid may or may not have dispersion model: 
             const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
             
@@ -532,6 +599,23 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                     pmptr=pmLocal.getDataPointer();
             // ::display(pLocal,"pLocal");
                 }
+        // --- Get pointers to arrays for the nonlinear model ----
+                real *nnptr=unLocal.getDataPointer();
+                real *nptr = uLocal.getDataPointer();
+                real *nmptr=umLocal.getDataPointer(); // set defaults if not used  -- just point to u 
+                if( numberOfAtomicLevels>0 )
+                {
+          // --- Get grid functions for the nonlinear model ----
+                    realMappedGridFunction & nNext= getNonlinearModelMappedGridFunction( grid,next );
+                    realMappedGridFunction & nCur = getNonlinearModelMappedGridFunction( grid,current );
+                    realMappedGridFunction & nPrev= getNonlinearModelMappedGridFunction( grid,prev );
+                    OV_GET_SERIAL_ARRAY(real,nNext,nnLocal);
+                    OV_GET_SERIAL_ARRAY(real, nCur,nLocal);
+                    OV_GET_SERIAL_ARRAY(real,nPrev,nmLocal);
+                    nnptr=nnLocal.getDataPointer();
+                    nptr = nLocal.getDataPointer();
+                    nmptr=nmLocal.getDataPointer();
+                }
                 bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3);
                 real timeAdv=getCPU();
         // In some cases we combine the artificial dissipation loop with the main loop
@@ -567,7 +651,8 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                         	      localDispersionModel,
                         	      pxc,pyc,pzc, 
                                         numberOfPolarizationVectors,grid,
-                                        0, 0,0,0,  // for future use
+                                        nonlinearModel,
+                        	      0,0,0,  // for future use
                     // qxc,qyc,qzc, 
                     // rxc,ryc,rzc,
                         	      useSosupDissipation,
@@ -659,6 +744,10 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                     ut2ptr = pmptr;
                     ut3ptr = pptr;
                     ut4ptr = pnptr;
+          // nonlinear model
+                    ut5ptr = nmptr;
+                    ut6ptr = nptr;
+                    ut7ptr = nnptr;
                 }
                 else  // MOL time-stepping : Stoermer 
                 {
@@ -706,13 +795,14 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                     rxptr = rxLocal.getDataPointer();
                 }
                 const bool centerNeeded = forcingOption == twilightZoneForcing;
+                real *xyptr =uptr;  // default value if not used 
                 if( centerNeeded && timeSteppingMethod==modifiedEquationTimeStepping )
                 {
           // Pass the xy array for twilight-zone -- needed for dispersive models  *wdh* Sept 2, 2017
                     OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
-                    real *xyptr = xLocal.getDataPointer();
+                    xyptr = xLocal.getDataPointer();
                     assert( xyptr!=NULL );
-                    ut5ptr = xyptr;
+          // ut5ptr = xyptr;
                 }
                 if( debug & 8 )
                 {
@@ -743,10 +833,12 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                          	       uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
                          	       uLocal.getBase(2),uLocal.getBound(2),
                          	       uLocal.getBase(3),uLocal.getBound(3),
-                         	       *maskptr,*rxptr,  
+                         	       *maskptr,*xyptr, *rxptr,  
                          	       *umptr,*uptr,*unptr, *fptr,
                          	       *faptr,  // forcing at multiple time levels 
-                         	       *ut1ptr,*ut2ptr,*ut3ptr,*ut4ptr,*ut5ptr,*ut6ptr,*ut7ptr,   
+                         	       *ut1ptr, // holds v for dissipation 
+                         	       *ut2ptr,*ut3ptr,*ut4ptr,  // hold pm,p,pn for polarizations
+                         	       *ut5ptr,*ut6ptr,*ut7ptr,  // hold qm,q,qn for nonlinear models  
                          	       mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
                 }
                 timeAdv=getCPU()-timeAdv;

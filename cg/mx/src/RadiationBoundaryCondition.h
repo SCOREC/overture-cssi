@@ -7,6 +7,9 @@
 class RadiationKernel;
 class OGFunction;
 
+#define KK_DEBUG
+#include "DBase.hh"
+using namespace DBase;
 
 class RadiationBoundaryCondition
 {
@@ -37,14 +40,17 @@ protected:
 
 RadiationKernel *radiationKernel; 
 
-int nc1,nc2,numberOfGridPoints, numberOfModes, orderOfTimeStepping, numberOfPoles;
-double period, c, radius; 
+int nc1,nc2,numberOfGridPoints1,numberOfGridPoints2, numberOfModes1,numberOfModes2, orderOfTimeStepping, numberOfPoles;
+double period1, period2, c, radius; 
 
 int rside,raxis;   // apply BC on this face
 
 int orderOfAccuracy,numberOfDerivatives,numberOfTimeLevels,currentTimeLevel;
 real currentTime;
 RealArray uSave, uxSave;
+
+// The database is the new place to store parameters
+mutable DataBase dbase;
 
 };
 

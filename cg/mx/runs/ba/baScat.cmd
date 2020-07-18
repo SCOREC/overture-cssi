@@ -36,7 +36,7 @@ $kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $meth
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numBlocks=0; # 0 = default case of scattering from a "innerDomain" 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
-$omega=5.; # Gaussian souce
+$omega=5.;  $amp=1.; $rampTime=-1.;  # Gaussian souce
 $xc=.5; $yc=.5; $zc=0.; $radius=.25; # for cylinder material region
 $ae=.25; $be=.25; $ce=.25;  # for sphere or ellipsoid material region
 $eps0=1.; $mu0=1.; # outer domain 
@@ -52,7 +52,8 @@ $grid="afm2.order4.hdf";
 $cons=1; $go="halt"; 
 $xa=-100.; $xb=-1.5; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
 $leftBC="rbc"; $bcBody=""; $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
-$probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
+$probeFileName="";
+$xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
 $intProbeName="";  # integral probe
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
 $xat= 1.; $xbt= 2.; # transmission probe x-bounds 
@@ -90,8 +91,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"matFile3=s"=>\$matFile3,"matFile4=s"=>\$matFile4,\
   "numMatRegions=i"=>\$numMatRegions,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
   "solveForAllFields=i"=>\$solveForAllFields,"regionFile=s"=>\$regionFile,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
-  "radius=f"=>\$radius,"omega=f"=>\$omega,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
-  "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName  );
+  "radius=f"=>\$radius,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
+  "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName,"amp=f"=>\$amp,"omega=f"=>\$omega,"rampTime=f"=>\$rampTime  );
 # -------------------------------------------------------------------------------------------------
 #
 if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
@@ -156,15 +157,15 @@ super-grid width $superGridWidth
 if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
 if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
-if( $ic eq "gs"  ){ $cmd="gaussianSource\n Gaussian source: $beta $omega $x0 $y0 $z0"; }
+if( $ic eq "gs"  ){ $cmd="gaussianSource\n Gaussian source: $beta $omega $x0 $y0 $z0 $amp $rampTime"; }
 if( $ic eq "mgs"  ){ $a=1.; $t0=0; $p=1; $cmd="userDefinedForcing\n my source\n $a $beta $omega $p $x0 $&y0 $z0 $t0\n exit"; }
 $cmd 
-if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
+if( $checkErrors && $ic eq "pw" ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
 $known
 $kxa= abs($kx);
 if( $kxa > 1. ){ $xb = int( $xb*$kxa +.5 )/$kxa; }  # we need to clip the plane wave on a period
 if( $kx < 0 ){ $xa=$xb; $xb=100.; }
-if( $leftBC eq "rbc" && $ic ne "gp" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
+if( $leftBC eq "rbc" && $ic ne "gp" && $ic ne "gpw" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
 $cmd
 # initial condition bounding box $xa $xb $ya $yb $za $zb
 #  damp initial conditions at face (side,axis)=(0,1) of the box
@@ -352,22 +353,31 @@ probe frequency $probeFrequency
 #- exit
 # 
 # -- surface integral probe --
-if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n grid coordinate plane 0 .2512 0 0 (axis, x,y,z)\n   integral\n  all components\n exit"; }else{ $cmd="#"; }
+#-- if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n grid coordinate plane 0 .2512 0 0 (axis, x,y,z)\n   integral\n  all components\n exit"; }else{ $cmd="#"; }
+#-- $cmd 
+#-- #
+#-- # Point probe: 
+#-- create a probe...
+#--   $leftProbeFileName="left$probeFileName.dat"; 
+#--   file name $leftProbeFileName
+#--   probe name leftProbe
+#--   nearest grid point to $xLeftProbe $yLeftProbe 0
+#-- exit
+#-- create a probe...
+#--   $rightProbeFileName="right$probeFileName.dat"; 
+#--   file name $rightProbeFileName
+#--   probe name rightProbe
+#--   nearest grid point to $xRightProbe $yRightProbe 0
+#-- exit
+# **NEW** May 15, 2020
+# -- surface integral probe, "average" option means scale by surface area  --
+if( $probeFileName ne "" ){ $intProbeName = "integralLeft$probeFileName"; }
+if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n  grid coordinate plane 0 $xLeftProbe $yLeftProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
 $cmd 
-#
-# Point probe: 
-create a probe...
-  $leftProbeFileName="left$probeFileName.dat"; 
-  file name $leftProbeFileName
-  probe name leftProbe
-  nearest grid point to $xLeftProbe $yLeftProbe 0
-exit
-create a probe...
-  $rightProbeFileName="right$probeFileName.dat"; 
-  file name $rightProbeFileName
-  probe name rightProbe
-  nearest grid point to $xRightProbe $yRightProbe 0
-exit
+# 
+if( $probeFileName ne "" ){ $intProbeName = "integralRight$probeFileName"; }
+if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n grid coordinate plane 0 $xRightProbe $yRightProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
+$cmd
 # OLD: 
 # probe file: probeFile.dat
 # specify probes

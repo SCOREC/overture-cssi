@@ -6,6 +6,8 @@
 # ogen = /home/henshw/Overture.g/bin/ogen
 ogen = $(Overture)/bin/ogen
 
+cgmx = $(CGBUILDPREFIX)/mx/bin/cgmx
+
 # Make the documentation:
 doc:
 	pdflatex dielectricBodies
@@ -39,6 +41,32 @@ rectangle:
 	 $(ogen) -noplot rectangleArg -prefix=noPecDisk -order=4 -xa=-3 -xb=3 -ya=-1.25 -yb=1.25 -periodic=np -factor=8
 
 
+# block grid 3d width=1
+blockGrid3d:
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=2 -factor=2
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=2 -factor=4
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=2 -factor=8
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=2 
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=4 
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=8 
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=2 -numGhost=3
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=4 -numGhost=3
+	 $(ogen) -noplot dielectricBlockGrid3d -prefix=blockGrid3d -width=1 -interp=e -order=4 -factor=8 -numGhost=3
+
+
+# new block grid, width=1
+blockGrid:
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=2 -periodic=np -factor=2
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=2 -periodic=np -factor=4
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=2 -periodic=np -factor=8
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=2 
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=4 
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=8 
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=2 -numGhost=3
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=4 -numGhost=3
+	 $(ogen) -noplot dielectricBlockGrid2d -prefix=blockGrid -width=1 -interp=e -order=4 -periodic=np -factor=8 -numGhost=3
+
+# Old dielectric block grid:
 dielectricBlockGrid2d:
 	 $(ogen) -noplot dielectricBlockGrid2d -interp=e -order=2 -periodic=np -factor=2
 	 $(ogen) -noplot dielectricBlockGrid2d -interp=e -order=2 -periodic=np -factor=4
@@ -77,11 +105,24 @@ pecDisk:
 
 
 disk:
+	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2
 	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
-	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -fact	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
-	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8
-	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -fact	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4 -numGhost=3
-	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -fact	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8 -numGhost=3
+	$(ogen) -noplot io -prefix=diskInBox -order=2 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8
+	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2 -numGhost=3
+	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4 -numGhost=3
+	$(ogen) -noplot io -prefix=diskInBox -order=4 -interp=e -xa=-5.5 -xb=5.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8 -numGhost=3
+
+# For BA Homogenization 
+solidDisk:
+	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2
+	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
+	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8
+	$(ogen) -noplot io -prefix=solidDisk -order=4 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2 -numGhost=3
+	$(ogen) -noplot io -prefix=solidDisk -order=4 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4 -numGhost=3
+	$(ogen) -noplot io -prefix=solidDisk -order=4 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8 -numGhost=3
+
+
+
 
 ellipse:
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -factor=4
@@ -139,7 +180,7 @@ ellipseL2Angle30:
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL2p -angle=30 -xa=-1 -xb=1 -interp=e -numGhost=3 -order=4 -factor=16
  
 # Non periodic grid for oblique incidence test 
-ellipse:
+ellipsenp:
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0 -xa=-2. -xb=2. -interp=e -factor=4
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0  -xa=-2. -xb=2. -interp=e -factor=8
 	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridn -per=0  -xa=-2. -xb=2. -interp=e -order=4 -factor=8
@@ -174,4 +215,76 @@ sphere:
 pillbox:
 	$(ogen) -noplot solidPillBoxGrid.cmd -interp=e -factor=4 
 
+
+
+
+# Probe runs
+#   Single dielectric block, eps=1, 2, 3, 4
+probeBlock:
+	$(cgmx) -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps4G8 -eps1=4 -go=go > blockEps4G8.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps4G4 -eps1=4 -go=go > blockEps4G4.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps4G2 -eps1=4 -go=go > blockEps4G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G8 -eps1=3 -go=go > blockEps3G8.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G4 -eps1=3 -go=go > blockEps4G3.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps3G2 -eps1=3 -go=go > blockEps4G3.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G8 -eps1=2 -go=go > blockEps2G8.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G4 -eps1=2 -go=go > blockEps2G4.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps2G2 -eps1=2 -go=go > blockEps2G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G8 -eps1=1 -go=go > blockEps1G8.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G4 -eps1=1 -go=go > blockEps1G4.out
+	$(cgmx) -noplot dielectricBodies -g=blockGride2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=-2 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-2 -xRightProbe=2 -dm=none -probeFrequency=1 -probeFileName=blockEps1G2 -eps1=1 -go=go > blockEps1G2.out
+
+# Probe runs in 3d 
+#   Single dielectric block, eps=1, 2, 3, 4
+#   Polarization:
+#     P1 or PEy :  Ex-Ey-Hz  -->  x-direction: (0,Ey,Hz)
+#     P2 or PEz :  Hx-Hy-Ez  -->  x-direction: (0,Hy,Ez) 
+# Notes:
+#   using abcEM2 + probeLocation=-2 : looks 2nd order
+probeBlock3dEps1:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G2 -eps1=1 -go=go > block3dP1Eps1G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G4 -eps1=1 -go=go > block3dP1Eps1G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G8 -eps1=1 -go=go > block3dP1Eps1G8.out
+
+probeBlock3dEps2:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G2 -eps1=2 -go=go > block3dP1Eps2G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G4 -eps1=2 -go=go > block3dP1Eps2G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G8 -eps1=2 -go=go > block3dP1Eps2G8.out
+
+
+probeBlock3dEps4:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G2 -eps1=4 -go=go > block3dP1Eps4G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G4 -eps1=4 -go=go > block3dP1Eps4G4.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G8 -eps1=4 -go=go > block3dP1Eps4G8.out
+
+
+# PML VERSIONS
+probeBlock3dEps1PML:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G2 -eps1=1 -go=go > block3dP1Eps1G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G4 -eps1=1 -go=go > block3dP1Eps1G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps1G8 -eps1=1 -go=go > block3dP1Eps1G8.out
+
+probeBlock3dEps2PML:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G2 -eps1=2 -go=go > block3dP1Eps2G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G4 -eps1=2 -go=go > block3dP1Eps2G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps2G8 -eps1=2 -go=go > block3dP1Eps2G8.out
+
+
+probeBlock3dEps4PML:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G2 -eps1=4 -go=go > block3dP1Eps4G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G4 -eps1=4 -go=go > block3dP1Eps4G4.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -xb=1 -rbc=abcPML -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP1Eps4G8 -eps1=4 -go=go > block3dP1Eps4G8.out
+
+
+
+# **** POLARIZATION 2 : Ez 
+probeBlock3dP2Eps1:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps1G2 -eps1=1 -go=go > block3dP2Eps1G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps1G4 -eps1=1 -go=go > block3dP2Eps1G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps1G8 -eps1=1 -go=go > block3dP2Eps1G8.out
+
+probeBlock3dP2Eps2:
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de2.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps2G2 -eps1=2 -go=go > block3dP2Eps2G2.out
+	$(cgmx) -noplot dielectricBodies -g=blockGrid3de4.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps2G4 -eps1=2 -go=go > block3dP2Eps2G4.out
+#	$(cgmx) -noplot dielectricBodies -g=blockGrid3de8.order4.ng3.hdf -tf=30 -tp=1 -useSosupDissipation=1 -ic=pw -kx=1 -az=1 -xb=-1 -rbc=abcEM2 -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=block3dP2Eps2G8 -eps1=2 -go=go > block3dP2Eps2G8.out
 

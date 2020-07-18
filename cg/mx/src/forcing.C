@@ -354,6 +354,14 @@ exx(OGFunction *&ep, const real &x, const real &y,const real &z, const int & c, 
 // *new* Oct 2019 
 // =================================================================================================
 
+
+// ==============================================================================================================
+// Macro: gaussianSourceForcing
+//    Assign the gaussian source forcing 
+// ==============================================================================================================
+
+
+
 int Maxwell::
 getForcing(int current, int grid, realArray & u , real t, real dt, int option /* = 0 */ )
 // ========================================================================================
@@ -1924,55 +1932,180 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
         }
         else if( forcingOption==gaussianSource )
         {
-      //  f3(x,t) = sin(2*pi*omega*t)*exp( -beta*( |x-x0|^2 ) )
             const real beta =gaussianSourceParameters[0];
             const real omega=gaussianSourceParameters[1];
             const real x0   =gaussianSourceParameters[2];
             const real y0   =gaussianSourceParameters[3];
             const real z0   =gaussianSourceParameters[4];
 
-            const realArray & x = mg.center();
-
-            const real t0=0.; // .25;
-            const real ctE=cos(2.*Pi*omega*(tE-t0));
-            const real stE=sin(2.*Pi*omega*(tE-t0));
-            const real ctH=cos(2.*Pi*omega*(tH-t0));
-            const real stH=sin(2.*Pi*omega*(tH-t0));
-
-            const bool isRectangular = mg.isRectangular();
-
-            if( debug & 4 )
-      	printF(" addForcing:gaussianSource: beta=%8.2e omega=%8.2e x0=(%8.2e,%8.2e,%8.2e) \n",
-             	       beta,omega,x0,y0,z0);
-
-            if( !isRectangular )
+            bool useOptGaussianSource=  method==nfdtd || method==bamx;
+            if( useOptGaussianSource )
             {
-            
-      	realSerialArray f3E(Ie1,Ie2,Ie3),f3H(Ih1,Ih2,Ih3);
-
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  f3H=exp( -beta*( SQR(xh(Ih1,Ih2,Ih3)-x0)+SQR(yh(Ih1,Ih2,Ih3)-y0) ) );
-        	  f3E=exp( -beta*( SQR(xe(Ie1,Ie2,Ie3)-x0)+SQR(ye(Ie1,Ie2,Ie3)-y0) ) );
-
-        	  if( option==0 )
-        	  {
-          	    uLocal(Ih1,Ih2,Ih3,hz)+=( 2.*Pi*omega*ctH)*f3H;
-          	    uLocal(Ie1,Ie2,Ie3,ex)+=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
-          	    uLocal(Ie1,Ie2,Ie3,ey)+=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
-        	  }
-        	  else
-        	  {
-          	    uLocal(Ih1,Ih2,Ih3,hz)=( 2.*Pi*omega*ctH)*f3H;
-          	    uLocal(Ie1,Ie2,Ie3,ex)=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
-          	    uLocal(Ie1,Ie2,Ie3,ey)=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
-                        if( solveForAllFields )
-                        {
-                            uLocal(Ie1,Ie2,Ie3,ez)=0.;
-                            uLocal(Ih1,Ih2,Ih3,hx)=0.;
-                            uLocal(Ih1,Ih2,Ih3,hy)=0.;
-                        }
+	// --- Optimized version -- July 4, 2020
+        // NOTE: new scaling for source terms
+                {
+                    const realArray & f = u;  // do this for now
+                    const intArray & mask = mg.mask();
+                    realArray & x = isRectangular ? u : mg.center();
+                    realArray & rx = isRectangular ? u : mg.inverseVertexDerivative();
+                  #ifdef USE_PPP
+                    const realSerialArray & uLocal  =  u.getLocalArrayWithGhostBoundaries();
+                    const realSerialArray & fLocal  =  f.getLocalArrayWithGhostBoundaries();
+                    const realSerialArray & rxLocal = rx.getLocalArrayWithGhostBoundaries();
+                    const intSerialArray & maskLocal  =  mask.getLocalArrayWithGhostBoundaries();
+                  #else
+                    const realSerialArray & uLocal  =  u;
+                    const realSerialArray & fLocal  =  f;
+                    const realSerialArray & rxLocal = rx; 
+                    const intSerialArray & maskLocal  =  mask; 
+                  #endif
+                    real *uptr = uLocal.getDataPointer();
+                    real *fptr = fLocal.getDataPointer();
+                    real *xptr = xLocal.getDataPointer();
+                    real *rxptr = rxLocal.getDataPointer();
+                    int *maskptr = maskLocal.getDataPointer();
+                    if( option==1 )
+                    {
+                        realSerialArray & fnc = (realSerialArray&)fLocal; // cast away const
+                      	fnc=0.;  // the forcing function always adds a contribution to f
                     }
+          // int ngcs=0;
+          // real amplitude=gaussianChargeSourceParameters[ngcs][0];
+          // real beta     =gaussianChargeSourceParameters[ngcs][1];
+          // real p        =gaussianChargeSourceParameters[ngcs][2];
+          // real xp0      =gaussianChargeSourceParameters[ngcs][3];
+          // real xp1      =gaussianChargeSourceParameters[ngcs][4];
+          // real xp2      =gaussianChargeSourceParameters[ngcs][5];
+          // real vp0      =gaussianChargeSourceParameters[ngcs][6];
+          // real vp1      =gaussianChargeSourceParameters[ngcs][7];
+          // real vp2      =gaussianChargeSourceParameters[ngcs][8];
+                    real amplitude= gaussianSourceParameters[5];
+                    real rampTime = gaussianSourceParameters[6];
+                    real p=2;
+                    real xp0=x0;
+                    real xp1=y0;
+                    real xp2=z0;
+                    real vp0=0, vp1=0, vp2=0;
+                    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                    int gridType = isRectangular? 0 : 1;
+                    int useForcing=1;
+                    int useWhereMask=1;
+                    int orderOfExtrapolation=orderOfAccuracyInSpace+1;
+                    real ep=0;   // pointer to TZ function -- not used yet
+                    int ipar[30];
+                    real rpar[30];
+                    ipar[0] =J1.getBase(); 
+                    ipar[1] =J1.getBound(); 
+                    ipar[2] =J2.getBase(); 
+                    ipar[3] =J2.getBound();
+                    ipar[4] =J3.getBase();
+                    ipar[5] =J3.getBound();
+                    ipar[6] =gridType;
+                    ipar[7] =orderOfAccuracyInSpace;
+                    ipar[8] =orderOfAccuracyInTime;
+                    ipar[9] =orderOfExtrapolation;
+                    ipar[10]=useForcing;
+                    ipar[11]=ex;
+                    ipar[12]=ey;
+                    ipar[13]=ez;
+                    ipar[14]=hx;
+                    ipar[15]=hy;
+                    ipar[16]=hz;
+                    ipar[17]=useWhereMask;
+                    ipar[18]=grid;
+                    ipar[19]=debug;
+                    ipar[20]=forcingOption;
+                    ipar[21]=method;
+                    rpar[0] =dx[0];
+                    rpar[1] =dx[1];
+                    rpar[2] =dx[2];
+                    rpar[3] =mg.gridSpacing(0);
+                    rpar[4] =mg.gridSpacing(1);
+                    rpar[5] =mg.gridSpacing(2);
+                    rpar[6] =t;
+                    rpar[7] =ep;
+                    rpar[8] =dt;
+                    rpar[9] =c;
+                    rpar[10]=eps;
+                    rpar[11]=mu;
+                    rpar[12]=kx;
+                    rpar[13]=ky;
+                    rpar[14]=kz;
+                    rpar[15]=slowStartInterval;
+                    rpar[16]=xab[0][0];
+                    rpar[17]=xab[0][1];
+                    rpar[18]=xab[0][2];
+                    rpar[19]=amplitude;
+                    rpar[20]=beta;
+                    rpar[21]=p;   
+                    rpar[22]=xp0;
+                    rpar[23]=xp1;
+                    rpar[24]=xp2;
+                    rpar[25]=vp0;
+                    rpar[26]=vp1;
+                    rpar[27]=vp2;
+                    rpar[28]=omega;
+                    rpar[29]=rampTime;
+                    int ierr=0;
+                    forcingOptMaxwell( mg.numberOfDimensions(),
+                                                          uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+                                   			 uLocal.getBase(2),uLocal.getBound(2),
+                                                          fLocal.getBase(0),fLocal.getBound(0),fLocal.getBase(1),fLocal.getBound(1),
+                                   			 fLocal.getBase(2),fLocal.getBound(2),
+                                   			 *uptr,*fptr,*maskptr,*rxptr, *xptr,
+                                                          ipar[0], rpar[0], ierr );
+                }
+            }
+            else
+            {
+	// *** old way 
+
+	//  f3(x,t) = sin(2*pi*omega*t)*exp( -beta*( |x-x0|^2 ) )
+
+      	const realArray & x = mg.center();
+
+      	const real t0=0.; // .25;
+      	const real ctE=cos(2.*Pi*omega*(tE-t0));
+      	const real stE=sin(2.*Pi*omega*(tE-t0));
+      	const real ctH=cos(2.*Pi*omega*(tH-t0));
+      	const real stH=sin(2.*Pi*omega*(tH-t0));
+
+      	const bool isRectangular = mg.isRectangular();
+
+      	if( debug & 4 )
+        	  printF(" addForcing:gaussianSource: beta=%8.2e omega=%8.2e x0=(%8.2e,%8.2e,%8.2e) \n",
+             		 beta,omega,x0,y0,z0);
+
+      	if( !isRectangular )
+      	{
+            
+        	  realSerialArray f3E(Ie1,Ie2,Ie3),f3H(Ih1,Ih2,Ih3);
+
+        	  if( mg.numberOfDimensions()==2 )
+        	  {
+          	    f3H=exp( -beta*( SQR(xh(Ih1,Ih2,Ih3)-x0)+SQR(yh(Ih1,Ih2,Ih3)-y0) ) );
+          	    f3E=exp( -beta*( SQR(xe(Ie1,Ie2,Ie3)-x0)+SQR(ye(Ie1,Ie2,Ie3)-y0) ) );
+
+          	    if( option==0 )
+          	    {
+            	      uLocal(Ih1,Ih2,Ih3,hz)+=( 2.*Pi*omega*ctH)*f3H;
+            	      uLocal(Ie1,Ie2,Ie3,ex)+=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
+            	      uLocal(Ie1,Ie2,Ie3,ey)+=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
+          	    }
+          	    else
+          	    {
+            	      uLocal(Ih1,Ih2,Ih3,hz)=( 2.*Pi*omega*ctH)*f3H;
+            	      uLocal(Ie1,Ie2,Ie3,ex)=(-2.*beta*stE)*(ye(Ie1,Ie2,Ie3)-y0)*f3E;
+            	      uLocal(Ie1,Ie2,Ie3,ey)=( 2.*beta*stE)*(xe(Ie1,Ie2,Ie3)-x0)*f3E;
+            	      if( solveForAllFields )
+            	      {
+            		uLocal(Ie1,Ie2,Ie3,ez)=0.;
+            		uLocal(Ih1,Ih2,Ih3,hx)=0.;
+            		uLocal(Ih1,Ih2,Ih3,hy)=0.;
+            	      }
+          	    }
                     
 // 	    if( option==0 )
 // 	    {
@@ -1986,143 +2119,144 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 // 	      u(I1,I2,I3,ex)=(-2.*beta*st)*(x(I1,I2,I3,1)-y0)*f3;
 // 	      u(I1,I2,I3,ey)=( 2.*beta*st)*(x(I1,I2,I3,0)-x0)*f3;
 // 	    }
-      	}
-      	else // *** 3D ***
-      	{
-	  // scale by beta*beta to make O(1)
-        	  f3E(I1,I2,I3)=(beta*beta*ctE)*exp( -beta*( SQR(xe(I1,I2,I3)-x0)+SQR(ye(I1,I2,I3)-y0)+SQR(ze(I1,I2,I3)-z0) ) );
-        	  if( option==0 )
-        	  {
-          	    uLocal(I1,I2,I3,ex)+=( (ze(I1,I2,I3)-z0)-(ye(I1,I2,I3)-y0) )*f3E(I1,I2,I3);
-          	    uLocal(I1,I2,I3,ey)+=( (xe(I1,I2,I3)-x0)-(ze(I1,I2,I3)-z0) )*f3E(I1,I2,I3);
-          	    uLocal(I1,I2,I3,ez)+=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
         	  }
-        	  else
+        	  else // *** 3D ***
         	  {
-          	    uLocal(I1,I2,I3,ex)=( (ze(I1,I2,I3)-z0)-(ye(I1,I2,I3)-y0) )*f3E(I1,I2,I3);
-          	    uLocal(I1,I2,I3,ey)=( (xe(I1,I2,I3)-x0)-(ze(I1,I2,I3)-z0) )*f3E(I1,I2,I3);
-          	    uLocal(I1,I2,I3,ez)=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
-                        if( method==bamx )
-                        {
-                            uLocal(I1,I2,I3,hx)= 0.;
-                            uLocal(I1,I2,I3,hy)= 0.;
-                            uLocal(I1,I2,I3,hz)= 0.; 
-                        }
-                    }
+	    // scale by beta*beta to make O(1)
+          	    f3E(I1,I2,I3)=(beta*beta*ctE)*exp( -beta*( SQR(xe(I1,I2,I3)-x0)+SQR(ye(I1,I2,I3)-y0)+SQR(ze(I1,I2,I3)-z0) ) );
+          	    if( option==0 )
+          	    {
+            	      uLocal(I1,I2,I3,ex)+=( (ze(I1,I2,I3)-z0)-(ye(I1,I2,I3)-y0) )*f3E(I1,I2,I3);
+            	      uLocal(I1,I2,I3,ey)+=( (xe(I1,I2,I3)-x0)-(ze(I1,I2,I3)-z0) )*f3E(I1,I2,I3);
+            	      uLocal(I1,I2,I3,ez)+=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
+          	    }
+          	    else
+          	    {
+            	      uLocal(I1,I2,I3,ex)=( (ze(I1,I2,I3)-z0)-(ye(I1,I2,I3)-y0) )*f3E(I1,I2,I3);
+            	      uLocal(I1,I2,I3,ey)=( (xe(I1,I2,I3)-x0)-(ze(I1,I2,I3)-z0) )*f3E(I1,I2,I3);
+            	      uLocal(I1,I2,I3,ez)=( (ye(I1,I2,I3)-y0)-(xe(I1,I2,I3)-x0) )*f3E(I1,I2,I3);
+            	      if( method==bamx )
+            	      {
+            		uLocal(I1,I2,I3,hx)= 0.;
+            		uLocal(I1,I2,I3,hy)= 0.;
+            		uLocal(I1,I2,I3,hz)= 0.; 
+            	      }
+          	    }
                     
-      	}
+        	  }
         	  
-            }
-            else
-            {
-      	real dx[3],xab[2][3];
-      	mg.getRectangularGridParameters( dx, xab );
+      	}
+      	else
+      	{
+        	  real dx[3],xab[2][3];
+        	  mg.getRectangularGridParameters( dx, xab );
 
-      	const int i0a=mg.gridIndexRange(0,0);
-      	const int i1a=mg.gridIndexRange(0,1);
-      	const int i2a=mg.gridIndexRange(0,2);
+        	  const int i0a=mg.gridIndexRange(0,0);
+        	  const int i1a=mg.gridIndexRange(0,1);
+        	  const int i2a=mg.gridIndexRange(0,2);
 
-      	const real xa=xab[0][0], dx0=dx[0];
-      	const real ya=xab[0][1], dy0=dx[1];
-      	const real za=xab[0][2], dz0=dx[2];
+        	  const real xa=xab[0][0], dx0=dx[0];
+        	  const real ya=xab[0][1], dy0=dx[1];
+        	  const real za=xab[0][2], dz0=dx[2];
       	
 #define X0(i0,i1,i2) (xa+dx0*(i0-i0a))
 #define X1(i0,i1,i2) (ya+dy0*(i1-i1a))
 #define X2(i0,i1,i2) (za+dz0*(i2-i2a))
 
-      	int i1,i2,i3;
-      	real xd,yd,zd,f3;
-      	Index J1,J2,J3;
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  if( option==0 )
+        	  int i1,i2,i3;
+        	  real xd,yd,zd,f3;
+        	  Index J1,J2,J3;
+        	  if( mg.numberOfDimensions()==2 )
         	  {
-	    //XXX not fully implemented for staggered schemes yet!
-          	    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-          	    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-          	    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-          	    FOR_3D(i1,i2,i3,J1,J2,J3)
+          	    if( option==0 )
           	    {
-            	      xd=X0(i1,i2,i3)-x0;
-            	      yd=X1(i1,i2,i3)-y0;
+	      //XXX not fully implemented for staggered schemes yet!
+            	      J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+            	      J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+            	      J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+            	      FOR_3D(i1,i2,i3,J1,J2,J3)
+            	      {
+            		xd=X0(i1,i2,i3)-x0;
+            		yd=X1(i1,i2,i3)-y0;
           	    
-            	      f3=exp( -beta*( xd*xd+yd*yd ) );
-            	      U(i1,i2,i3,hz)+=( 2.*Pi*omega*ctH)*f3;
-            	      U(i1,i2,i3,ex)+=(-2.*beta*stE)*yd*f3;
-            	      U(i1,i2,i3,ey)+=( 2.*beta*stE)*xd*f3;
+            		f3=exp( -beta*( xd*xd+yd*yd ) );
+            		U(i1,i2,i3,hz)+=( 2.*Pi*omega*ctH)*f3;
+            		U(i1,i2,i3,ex)+=(-2.*beta*stE)*yd*f3;
+            		U(i1,i2,i3,ey)+=( 2.*beta*stE)*xd*f3;
+            	      }
           	    }
-        	  }
-        	  else
-        	  {
-          	    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-          	    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-          	    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-          	    FOR_3D(i1,i2,i3,J1,J2,J3)
+          	    else
           	    {
-            	      xd=X0(i1,i2,i3)-x0;
-            	      yd=X1(i1,i2,i3)-y0;
+            	      J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+            	      J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+            	      J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+            	      FOR_3D(i1,i2,i3,J1,J2,J3)
+            	      {
+            		xd=X0(i1,i2,i3)-x0;
+            		yd=X1(i1,i2,i3)-y0;
           	    
-            	      f3=exp( -beta*( xd*xd+yd*yd ) );
-            	      U(i1,i2,i3,hz)=( 2.*Pi*omega*ctH)*f3;
-            	      U(i1,i2,i3,ex)=(-2.*beta*stE)*yd*f3;
-            	      U(i1,i2,i3,ey)=( 2.*beta*stE)*xd*f3;
-                            if( solveForAllFields )
-                            {
-                                U(i1,i2,i3,ez)=0.;
-                                U(i1,i2,i3,hx)=0.;
-                                U(i1,i2,i3,hy)=0.;
-                            }
+            		f3=exp( -beta*( xd*xd+yd*yd ) );
+            		U(i1,i2,i3,hz)=( 2.*Pi*omega*ctH)*f3;
+            		U(i1,i2,i3,ex)=(-2.*beta*stE)*yd*f3;
+            		U(i1,i2,i3,ey)=( 2.*beta*stE)*xd*f3;
+            		if( solveForAllFields )
+            		{
+              		  U(i1,i2,i3,ez)=0.;
+              		  U(i1,i2,i3,hx)=0.;
+              		  U(i1,i2,i3,hy)=0.;
+            		}
 
-          	    }
+            	      }
         	  
-        	  }
-      	}
-      	else // 3D
-      	{
-	  // scale by beta*beta to make O(1)
-        	  J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-        	  J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-        	  J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-        	  real betaSqct=beta*beta*ctE;
-        	  if( option==0 )
-        	  {
-          	    FOR_3D(i1,i2,i3,J1,J2,J3)
-          	    {
-            	      xd=X0(i1,i2,i3)-x0;
-            	      yd=X1(i1,i2,i3)-y0;
-            	      zd=X2(i1,i2,i3)-z0;
-          	    
-            	      f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
-            	      U(i1,i2,i3,ex)+=( zd-yd )*f3;
-            	      U(i1,i2,i3,ey)+=( xd-zd )*f3;
-            	      U(i1,i2,i3,ez)+=( yd-xd )*f3;
           	    }
         	  }
-        	  else
+        	  else // 3D
         	  {
-          	    FOR_3D(i1,i2,i3,J1,J2,J3)
+	    // scale by beta*beta to make O(1)
+          	    J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+          	    J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+          	    J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+          	    real betaSqct=beta*beta*ctE;
+          	    if( option==0 )
           	    {
-            	      xd=X0(i1,i2,i3)-x0;
-            	      yd=X1(i1,i2,i3)-y0;
-            	      zd=X2(i1,i2,i3)-z0;
+            	      FOR_3D(i1,i2,i3,J1,J2,J3)
+            	      {
+            		xd=X0(i1,i2,i3)-x0;
+            		yd=X1(i1,i2,i3)-y0;
+            		zd=X2(i1,i2,i3)-z0;
           	    
-            	      f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
-            	      U(i1,i2,i3,ex)=( zd-yd )*f3;
-            	      U(i1,i2,i3,ey)=( xd-zd )*f3;
-            	      U(i1,i2,i3,ez)=( yd-xd )*f3;
-                            if( method==bamx )
-                            {
-            		U(i1,i2,i3,hx)=0.;
-            		U(i1,i2,i3,hy)=0.;
-            		U(i1,i2,i3,hz)=0.;
-                            }
+            		f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
+            		U(i1,i2,i3,ex)+=( zd-yd )*f3;
+            		U(i1,i2,i3,ey)+=( xd-zd )*f3;
+            		U(i1,i2,i3,ez)+=( yd-xd )*f3;
+            	      }
+          	    }
+          	    else
+          	    {
+            	      FOR_3D(i1,i2,i3,J1,J2,J3)
+            	      {
+            		xd=X0(i1,i2,i3)-x0;
+            		yd=X1(i1,i2,i3)-y0;
+            		zd=X2(i1,i2,i3)-z0;
+          	    
+            		f3=betaSqct*exp( -beta*( xd*xd+yd*yd+zd*zd ) );
+            		U(i1,i2,i3,ex)=( zd-yd )*f3;
+            		U(i1,i2,i3,ey)=( xd-zd )*f3;
+            		U(i1,i2,i3,ez)=( yd-xd )*f3;
+            		if( method==bamx )
+            		{
+              		  U(i1,i2,i3,hx)=0.;
+              		  U(i1,i2,i3,hy)=0.;
+              		  U(i1,i2,i3,hz)=0.;
+            		}
                             
+            	      }
           	    }
         	  }
-      	}
 
-            }
-            
+      	}
+            } // end OLD WAY -- Gaussian source
+
         }
         else if( forcingOption==gaussianChargeSource )
         {
@@ -2212,6 +2346,7 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
             ipar[18]=grid;
             ipar[19]=debug;
             ipar[20]=forcingOption;
+            ipar[21]=method;
 
             rpar[0] =dx[0];
             rpar[1] =dx[1];
@@ -2241,7 +2376,8 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
             rpar[25]=vp0;
             rpar[26]=vp1;
             rpar[27]=vp2;
-
+            rpar[28]=0;
+            rpar[29]=0;
 
             int ierr=0;
   

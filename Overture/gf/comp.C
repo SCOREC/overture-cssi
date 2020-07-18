@@ -268,6 +268,7 @@ outputLatexTable( const std::vector<aString> gridName,
 		  const RealArray & cErr, 
 		  const RealArray & cSigma,  
                   const RealArray & timeArray,
+                  const aString & captionLabel,
                   const int norm=-1,
 		  FILE *file=stdout,
                   const bool assumeFineGridHoldsExactSolution=false )
@@ -330,7 +331,7 @@ outputLatexTable( const std::vector<aString> gridName,
   aString dateString = ctime(tp);
   delete tp;
     
-  fprintf(file,"\\caption{%s-norm self convergence results, t=%12.6e, %s. }\n",
+  fprintf(file,"\\caption{%s. %s-norm self convergence results, t=%12.6e, %s. }\n",(const char*)captionLabel,
 	  (norm==0 ? "Max" : norm==1 ? "L2" : "L1"),timeArray(0),
           (const char*)dateString(0,dateString.length()-2) );   // caption
 
@@ -341,7 +342,7 @@ outputLatexTable( const std::vector<aString> gridName,
 }
 
 //==============================================================================
-/// \brief Output results in the form of a latex table 
+/// \brief Output results for a Matlab file 
 //==============================================================================
 int
 outputMatlabFile( const std::vector<aString> gridName,
@@ -350,6 +351,7 @@ outputMatlabFile( const std::vector<aString> gridName,
 		  const RealArray & cErr, 
 		  const RealArray & cSigma,  
                   const RealArray & timeArray,
+                  const aString & captionLabel,
                   const int norm=-1,
 		  FILE *file=stdout,
                   const bool assumeFineGridHoldsExactSolution=false )
@@ -366,6 +368,7 @@ outputMatlabFile( const std::vector<aString> gridName,
 
     fprintf(file,"%% Matlab readable file written by Overture program comp.C, date=%s\n",(const char*)dateString(0,dateString.length()-2));
     fprintf(file,"%% Errors at time t=%14.8e\n",timeArray(0));
+    fprintf(file,"%% %s\n",(const char*)captionLabel);
     for( int grid=0; grid<gridName.size(); grid++ )
     {
       fprintf(file,"%% grid=%i: name=%s\n",grid,(const char*)gridName[grid]);
@@ -575,7 +578,8 @@ int computeDifferences( int numberOfFiles,
                         int interpolationWidth,
                         bool useOldWay, bool useNewWay,
                         bool interpolateFromSameDomain,
-                        int boundaryErrorOffset=0 )
+                        int boundaryErrorOffset=0,
+                        real absorbingLayerWidth=0. )
 {
   const int n =numberOfFiles-1;  // finest grid
   
@@ -808,6 +812,62 @@ int computeDifferences( int numberOfFiles,
     }// end if boundaryErrorOffset>0
     
       
+    if( absorbingLayerWidth>0. )
+    {
+      // --- set the differences to zero near physical boundaries (Could be a supergrid layer)
+      // **wdhw** July 5, 2020
+      printF(">>>>>> SET DIFFERENCES TO ZERO WITHIN A DISTANCE absorbingLayerWidth=%g of physical boundaries <<<<<<<\n",absorbingLayerWidth);
+
+
+      Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
+      for( int grid=0; grid<cg[i].numberOfComponentGrids(); grid++ )
+      {
+	MappedGrid & mg = cg[i][grid];
+        real dx[3]={1.,1.,1.}; // 
+	if( mg.isRectangular() )
+	{
+          mg.getDeltaX(dx);	  
+	}
+	    
+	ForBoundary(side,axis)
+	{
+	  if( mg.boundaryCondition(side,axis)>0 )
+	  {
+	    // mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );
+	    OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+	    OV_GET_SERIAL_ARRAY(real,ud[i][grid],uLocal);
+	    int is = 1-2*side;
+
+	    if( !mg.isRectangular() )
+	    {
+	      printF("\n +++++ comp:ERROR: absorbingLayerWidth not implemented for curvilinear grids -- **FIX ME** ++++++\n\n");
+	    }
+	    else
+	    {
+	      const int numberOfLines = int( absorbingLayerWidth/dx[axis]+.5 );
+
+	      getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+	      int ia = Ibv[axis].getBase(), ib=Ibv[axis].getBase()+numberOfLines*is-1;
+	    
+	      Ibv[axis]=Range( min(ia,ib), max(ia,ib) );
+
+	      bool ok = ParallelUtility::getLocalArrayBounds(mg.mask(),maskLocal,Ib1,Ib2,Ib3);
+	      Range all;
+	      if( ok ) 
+	      {
+		uLocal(Ib1,Ib2,Ib3,all)=0.;
+	      }
+	    }
+	  }
+	}
+	// end for boundary
+	  
+
+      } // end for grid
+    }// end if absorbingLayerWidth>0
+
+
+      
 
 	  
   } // end for( int i=0; i<n; i++ )
@@ -965,7 +1025,10 @@ main(int argc, char *argv[])
   // we can define vectors of components for computing errors such as the norm of the velocity components.
   std::vector<ComponentVector> componentVector;
 
-  int boundaryErrorOffset=0;  // --- set the differences to zero near physical boundaries (Could be a PML layer)
+  int boundaryErrorOffset=0;    // --- set the differences to zero near physical boundaries - nuimber of lines (Could be a PML layer)
+  real absorbingLayerWidth=0.;  // --- set the differences to zero near physical boundaries - physical width (Could be a supergrid layer)
+
+  aString captionLabel="comp";     // Label for caption in LateX table and matlab file 
 
   // ---------------- Build the GUI -------------------
   GUIState dialog;
@@ -1006,7 +1069,9 @@ main(int argc, char *argv[])
   textLabels[nt] = "matlab file name:";  sPrintF(textStrings[nt],"%s",(const char*)matlabFileName);  nt++; 
   textLabels[nt] = "interpolation width:";  sPrintF(textStrings[nt],"%i",interpolationWidth);  nt++; 
   textLabels[nt] = "output show file:";  sPrintF(textStrings[nt],"%s",(const char*)outputShowFile);  nt++; 
-  textLabels[nt] = "boundary error offset:";  sPrintF(textStrings[nt],"%i",boundaryErrorOffset);  nt++; 
+  textLabels[nt] = "boundary error offset:";  sPrintF(textStrings[nt],"%i (lines)",boundaryErrorOffset);  nt++; 
+  textLabels[nt] = "absorbing layer width:";  sPrintF(textStrings[nt],"%g",absorbingLayerWidth);  nt++; 
+  textLabels[nt] = "caption label:";  sPrintF(textStrings[nt],"%s",captionLabel);  nt++; 
 
   // null strings terminal list
   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );
@@ -1073,6 +1138,12 @@ main(int argc, char *argv[])
 	numberOfFiles++;
       }
     }
+    else if( dialog.getTextValue(answer,"caption label:","%s",captionLabel) )
+    {
+      printF("Setting captionLabel=[%s]\n",(const char*)captionLabel);
+    }
+    
+
     else if( dialog.getTextValue(answer,"output file name:","%s",outputFileName) ){}  //
     else if( dialog.getTextValue(answer,"matlab file name:","%s",matlabFileName) ){}  //
     else if( dialog.getTextValue(answer,"output show file:","%s",outputShowFile) ){}  //
@@ -1085,6 +1156,12 @@ main(int argc, char *argv[])
     {
       printF("Setting boundaryErrorOffset=%i: zero out errors %d lines from any physical boundary (e.g. for PML)\n",
 	     boundaryErrorOffset,boundaryErrorOffset);
+    }
+    
+    else if( dialog.getTextValue(answer,"absorbing layer width:","%e",absorbingLayerWidth) )
+    {
+      printF("Setting absorbingLayerWidth=%g: zero out errors this distance from any physical boundary (e.g. for a supergrid layer)\n",absorbingLayerWidth);
+
     }
     
 
@@ -1378,7 +1455,7 @@ main(int argc, char *argv[])
       // ----------------- Compute differences -------------
       //    du[i] = Interp(uFine) - uCoarse[i] 
       computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay,interpolateFromSameDomain,
-			  boundaryErrorOffset );
+			  boundaryErrorOffset,absorbingLayerWidth );
       
       for( int i=0; i<n; i++ )
       {
@@ -1569,11 +1646,11 @@ main(int argc, char *argv[])
 	  for( int io=0; io<=1; io++ )
 	  {
 	    FILE *file = io==0 ? stdout : outFile;
-	    outputLatexTable( gridName, cName, cErr, cSigma, time, norm, file, assumeFineGridHoldsExactSolution );
+	    outputLatexTable( gridName, cName, cErr, cSigma, time, captionLabel, norm, file, assumeFineGridHoldsExactSolution );
 
             // *new* Sept 20, 2019 *wdh*
             if( io==1 )
-	      outputMatlabFile( gridName, cName, h, cErr, cSigma, time, norm, matlabFile, assumeFineGridHoldsExactSolution );
+	      outputMatlabFile( gridName, cName, h, cErr, cSigma, time, captionLabel, norm, matlabFile, assumeFineGridHoldsExactSolution );
 	  }
 
 
@@ -1742,7 +1819,7 @@ main(int argc, char *argv[])
 	// ----------------- Compute differences -------------
 	//    du[i] = Interp(uFine) - uCoarse[i] 
 	computeDifferences( numberOfFiles, cg, u, ud, interpolationWidth, useOldWay, useNewWay, interpolateFromSameDomain,
-   	                    boundaryErrorOffset );
+   	                    boundaryErrorOffset,absorbingLayerWidth );
 
 
         printF("Saving solution %i to show file: t=%16.10e\n",solution,time(0));

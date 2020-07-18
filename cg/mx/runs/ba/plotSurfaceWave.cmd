@@ -1,6 +1,6 @@
 #
 # 
-#   plotStuff plotSurfaceWave.cmd -show=baSurfaceWaveG16.show -name=baSurfaceWaveG32 -solution=11
+#   plotStuff plotSurfaceWave.cmd -show=baSurfaceWaveG16.show -name=baSurfaceWaveG16 -solution=11
 #   plotStuff plotSurfaceWave.cmd -show=baSurfaceWaveG32.show -name=baSurfaceWaveG32 -solution=11
 #
 #   plotStuff plotSurfaceWave.cmd -show=baSurfaceWaveTimePeriodicG8.show -name=baSurfaceWaveTimePeriodicG8 -solution=11
@@ -25,6 +25,8 @@ contour
   # min max 0 0.8
 exit
 x-
+
+
 solution: $solution
 pause
 DISPLAY AXES:0 0

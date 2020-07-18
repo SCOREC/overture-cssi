@@ -79,6 +79,9 @@ Maxwell:: Maxwell()
   dispersionModel=noDispersion;
   dbase.put<aString>("dispersionModelName")="none";
   
+  nonlinearModel = noNonlinearModel;
+  dbase.put<aString>("nonlinearModelName")="none";
+
   int & numberOfComponents = dbase.put<int>("numberOfComponents")=0;
   int & numberOfComponentsForTZ = dbase.put<int>("numberOfComponentsForTZ")=0;
   int & numberOfErrorComponents = dbase.put<int>("numberOfErrorComponents")=0;
@@ -207,6 +210,15 @@ Maxwell:: Maxwell()
   // materialList[grid](i) = material ID, i=0,1,...,numberOfMaterials(grid)-1
   parameters.dbase.put<std::vector<IntegerArray> >("materialList");  
 
+  // --- Nonlinear Model Data -----
+
+  // nonlinearModelGridFunction[domain][numTimeLevels] : 
+  parameters.dbase.put<realCompositeGridFunction**>("nonlinearModelGridFunction")=NULL;
+  parameters.dbase.put<realCompositeGridFunction*>("nonlinearModelErrorGridFunction")=NULL;
+  parameters.dbase.put<int>("maxNumberOfNonlinearVectors")=0;   // for allocating the TZ solution
+
+
+
   artificialDissipation=0.;
   artificialDissipationCurvilinear=-1.; // set to non-negative to use this instead of the above
 
@@ -244,11 +256,13 @@ Maxwell:: Maxwell()
   y0GaussianPlaneWave=0.;
   z0GaussianPlaneWave=0.;
 
-  gaussianSourceParameters[0]=100.; // gamma,omega,x0,y0,z0
-  gaussianSourceParameters[1]=5.;
-  gaussianSourceParameters[2]=.0;
-  gaussianSourceParameters[3]=.0;
-  gaussianSourceParameters[4]=.0;
+  gaussianSourceParameters[0]=100.; // beta
+  gaussianSourceParameters[1]=5.;   // omega 
+  gaussianSourceParameters[2]=.0;   // x0
+  gaussianSourceParameters[3]=.0;   // y0 
+  gaussianSourceParameters[4]=.0;   // z0 
+  gaussianSourceParameters[5]=1.;   // amp 
+  gaussianSourceParameters[6]=-1.;  // rampTime
   
   numberOfGaussianPulses=0;
   gaussianPulseParameters[0][0]=10.;   // beta scale, exponent, x0,y0,z0
@@ -394,6 +408,7 @@ Maxwell:: Maxwell()
   // for radiation BC's
   radbcGrid[0]=radbcGrid[1]=-1; radbcSide[0]=radbcSide[1]=-1; radbcAxis[0]=radbcAxis[1]=-1;
   radiationBoundaryCondition=NULL;
+  dbase.put<int>("numberOfPolesRadiationBoundaryCondition")=-1;   // -1 : use default (21) 
 
   useStreamMode=true;
   saveGridInShowFile=true;
@@ -458,6 +473,10 @@ Maxwell:: Maxwell()
   // For dispersive models keep track of the maximum errors in the polarization vector per domain  
   dbase.put<RealArray>("polarizationNorm");
   dbase.put<RealArray>("maxErrPolarization");
+  
+  // For nonlinear models keep track of the maximum errors in the nonlinear variables per domain  
+  dbase.put<RealArray>("nonlinearNorm");
+  dbase.put<RealArray>("maxErrNonlinear");
   
   //  Super-grid absorbing layer 
   parameters.dbase.put<int>("useSuperGrid")=false;
@@ -848,7 +867,7 @@ initializeRadiationBoundaryConditions()
 	    {
 	      printF("Maxwell::initializeRadiationBoundaryConditions:ERROR: there are too many sides with\n"
                      "  radiation boundary conditions -- there should be at most 2\n");
-	      Overture::abort("error");
+	      OV_ABORT("error");
 	    }
 	  }
 	}
@@ -886,8 +905,13 @@ initializeRadiationBoundaryConditions()
       MappedGrid & mg = cg[radbcGrid[i]];
       real cRadBC = cGrid(radbcGrid[i]);  // *wdh* May 26, 2020
       // printF("**** initializeRadiationBoundaryConditions: c=%9.2e\n",cRadBC); 
-
-      radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC);
+      
+      const int & numberOfPoles = dbase.get<int>("numberOfPolesRadiationBoundaryCondition"); // -1 = use default 
+      
+      real period=-1.;
+      int numberOfModes=-1, orderOfTimeStepping=-1; // use defaults 
+      
+      radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC, period, numberOfModes, orderOfTimeStepping, numberOfPoles);
     }
     
   }
@@ -1565,6 +1589,9 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   aString dispersionModelCommands[] = {"no dispersion", "Drude", "GDM", "" };
   dialog.addOptionMenu("dispersion model:", dispersionModelCommands, dispersionModelCommands, (int)dispersionModel );
 
+  aString nonlinearModelCommands[] = {"no nonlinear model", "multilevelAtomic", "" };
+  dialog.addOptionMenu("nonlinear model:", nonlinearModelCommands, nonlinearModelCommands, (int)nonlinearModel );
+
   aString timeSteppingMethodCommands[] = {"defaultTimeStepping", 
 					  "adamsBashforthSymmetricThirdOrder",
 					  "rungeKutta",
@@ -1834,7 +1861,7 @@ buildForcingOptionsDialog(DialogData & dialog )
 
 
   // ----- Text strings ------
-  const int numberOfTextStrings=30;
+  const int numberOfTextStrings=35;
   aString textCommands[numberOfTextStrings];
   aString textLabels[numberOfTextStrings];
   aString textStrings[numberOfTextStrings];
@@ -1852,9 +1879,9 @@ buildForcingOptionsDialog(DialogData & dialog )
 
   textCommands[nt] = "Gaussian source:";
   textLabels[nt]=textCommands[nt]; 
-  sPrintF(textStrings[nt], "%g %g %g %g %g (beta,omega,x0,y0,z0)",
-	  gaussianSourceParameters[0],gaussianSourceParameters[1],
-          gaussianSourceParameters[2],gaussianSourceParameters[3],gaussianSourceParameters[4]); nt++;
+  sPrintF(textStrings[nt], "%g %g %g %g %g %g %g (beta,omega,x0,y0,z0,amp,rampTime)",
+	  gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],gaussianSourceParameters[3],
+	  gaussianSourceParameters[4],gaussianSourceParameters[5],gaussianSourceParameters[6]); nt++;
 
   textCommands[nt] = "Gaussian pulse:";
   textLabels[nt]=textCommands[nt]; 
@@ -1899,6 +1926,12 @@ buildForcingOptionsDialog(DialogData & dialog )
   textCommands[nt] = "chirp parameters";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g, %g, %g, %g, %g, %g, %g, %g (ta,tb,alpha,beta,amp,x0,y0,z0)",
                                            cpw(0),cpw(1),cpw(2),cpw(3),cpw(4),cpw(5),cpw(6),cpw(7)); nt++; 
+
+  const int & numberOfPoles = dbase.get<int>("numberOfPolesRadiationBoundaryCondition"); // -1 = use default 
+  textCommands[nt] = "numberOfPoles";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i (radiation BC)",numberOfPoles); nt++;       
+
+
   // null strings terminal list
   assert( nt<numberOfTextStrings );
   textCommands[nt]="";   textLabels[nt]="";   textStrings[nt]="";  
@@ -2356,6 +2389,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & boundingBoxDecaySide = dbase.get<int>("boundingBoxDecaySide");
   int & boundingBoxDecayAxis = dbase.get<int>("boundingBoxDecayAxis");
   real alphaP=1.; // default GDM model parameter
+  int & numberOfPoles = dbase.get<int>("numberOfPolesRadiationBoundaryCondition"); // -1 = use default 
   
   gi.pushGUI(gui);
   aString answer,line;
@@ -2530,6 +2564,29 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
       
     }
+    else if( answer=="no nonlinear model" ||
+	     answer=="multilevelAtomic" )
+    {
+      // ------------- CHOOSE A NONLINEAR MODELS -----------
+      aString & nonlinearModelName=dbase.get<aString>("nonlinearModelName");
+      if( answer=="no nonlinear model" )
+      {
+        nonlinearModel=noNonlinearModel;
+	nonlinearModelName="none";
+      }
+      else if(  answer=="multilevelAtomic" )
+      {
+        nonlinearModel=multilevelAtomic;
+	nonlinearModelName="multilevelAtomic";
+      }
+      else
+      {
+	OV_ABORT("ERROR: unknown nonlinear model: this should not happen!");
+      }
+      printF("Setting nonlinear model=[%s]\n",(const char*)nonlinearModelName);
+      timeSteppingOptionsDialog.getOptionMenu("nonlinear model:").setCurrentChoice((int)nonlinearModel);
+    }
+    
 
     else if( answer=="computeFrequency" ||
 	     answer=="computeWaveNumber" )
@@ -2838,10 +2895,14 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF(" These 5 values, a1,a2,a3, eps,mu define the plane wave solution:\n"
              " (Ex,Ey,Ez) = sin(twoPi*(kx*x+ky*y+kz*z-cc*t)) (a1,a2,a3),\n"
              " These coefficients should satisfy (since div(E)=0)\n"
-             "      a1*kx + a2*ky + a3*kz = 0  ( a.k=0 )\n");
+             "      a1*kx + a2*ky + a3*kz = 0  ( a.k=0 )\n"
+             " Setting a1=0 a2=0 and a3=0 : choose default direction\n");
 
       sScanF(answer(len,answer.length()-1),"%e %e %e %e %e",&pwc[0],&pwc[1],&pwc[2],&epsPW,&muPW);
       initialConditionsOptionsDialog.setTextLabel("plane wave coefficients",sPrintF(line, "%g,%g,%g, %g,%g",pwc[0],pwc[1],pwc[2],epsPW,muPW));
+      printF(" INFO: pwc[0]=%g, pwc[1]=%g, pwc[2]=%g, epsPW=%g, muPW=%g\n", pwc[0],pwc[1],pwc[2],epsPW,muPW);
+
+      
     }
     else if( len=answer.matches("degreeSpace, degreeTime") )
     {
@@ -2978,6 +3039,12 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
 
     else if( forcingOptionsDialog.getTextValue(answer,"slow start interval","%f",slowStartInterval) ){}//
+
+    else if( forcingOptionsDialog.getTextValue(answer,"number of poles","%i",numberOfPoles) )
+    {
+      printF("Setting numberOfPoles=%d for the non-local radiation BC (-1=use default, available choices=21 or 31)\n",numberOfPoles);
+    }
+    
 
     else if( forcingOptionsDialog.getTextValue(answer,"scattering radius","%f",dbase.get<real>("scatteringRadius")) ){}//
 
@@ -3231,12 +3298,14 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     else if( len=answer.matches("Gaussian source:") )
     {
-      sScanF(&answer[len],"%e %e %e %e %e",&gaussianSourceParameters[0],&gaussianSourceParameters[1],
-             &gaussianSourceParameters[2],&gaussianSourceParameters[3],&gaussianSourceParameters[4]);
+      sScanF(&answer[len],"%e %e %e %e %e %e %e",&gaussianSourceParameters[0],&gaussianSourceParameters[1],
+             &gaussianSourceParameters[2],&gaussianSourceParameters[3],&gaussianSourceParameters[4],
+	     &gaussianSourceParameters[5],&gaussianSourceParameters[6]);  // two more added -- July 4, 2020 *wdh*
       
-      forcingOptionsDialog.setTextLabel("Gaussian source:",sPrintF(line,"%g %g %g %g %g (beta,omega,x0,y0,z0)",
+      forcingOptionsDialog.setTextLabel("Gaussian source:",sPrintF(line,"%g %g %g %g %g %g %g (beta,omega,x0,y0,z0,amp,RampTime)",
 								   gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],
-								   gaussianSourceParameters[3],gaussianSourceParameters[4]));  
+								   gaussianSourceParameters[3],gaussianSourceParameters[4],
+								   gaussianSourceParameters[5],gaussianSourceParameters[6]));  
     }
     else if( len=answer.matches("Gaussian pulse:") )
     {
@@ -3378,29 +3447,32 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       
 
       // if( gridsToCheck.size()>=1 ) // *wdh* June 23, 2018
-      if( cg.numberOfDomains()>1 )
-        gridHasMaterialInterfaces=true;
-      printF(" **** setting gridHasMaterialInterfaces=true ****\n");
+
+      // This next check for material interfaces has been moved to below *wdh* June 13, 2020
+      // if( cg.numberOfDomains()>1 )
+      //   gridHasMaterialInterfaces=true;
+      // printF(" **** setting gridHasMaterialInterfaces=true ****\n");
+
       for( int g=0; g<gridsToCheck.size(); g++ )
       {
         int grid=gridsToCheck[g];
 	
-	MappedGrid & mg = cg[grid];
-	const IntegerArray & bc = mg.boundaryCondition();
-	const IntegerArray & share = mg.sharedBoundaryFlag();
-	for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
-	    {
-	      bc(side,axis)=interfaceBoundaryCondition;
+	// MappedGrid & mg = cg[grid];
+	// const IntegerArray & bc = mg.boundaryCondition();
+	// const IntegerArray & share = mg.sharedBoundaryFlag();
+	// for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+	// {
+	//   for( int side=0; side<=1; side++ )
+	//   {
+	//     if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
+	//     {
+	//       bc(side,axis)=interfaceBoundaryCondition;
 
-	      printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
+	//       printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
 		
-	    }
-	  }
-	}
+	//     }
+	//   }
+	// }
 	
 	epsGrid(grid)=eps;
 	muGrid(grid)=mu;
@@ -3816,6 +3888,37 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   }
 
   gi.popGUI();  // pop dialog
+
+  // ------ check for interfaces here ----
+  // *new* put this down here *wdh* June 13, 2020
+  if( cg.numberOfDomains()>1 )
+  {
+    gridHasMaterialInterfaces=true;
+
+    // This grid has material interfaces 
+    printF("CgMx::interactiveUpdate:INFO This grid has material interfaces, numberOfDomains=%d\n",cg.numberOfDomains());
+    
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      MappedGrid & mg = cg[grid];
+      const IntegerArray & bc = mg.boundaryCondition();
+      const IntegerArray & share = mg.sharedBoundaryFlag();
+      for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+      {
+	for( int side=0; side<=1; side++ )
+	{
+	  if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
+	  {
+	    bc(side,axis)=interfaceBoundaryCondition;
+	    printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition since share(%i,%i)=%d is >=100 \n",
+		   side,axis,grid,side,axis,share(side,axis));
+		
+	  }
+	}
+      }
+    }
+  }
+  
 
   // If artificialDissipationCurvilinear was not set then use artificialDissipation.
   if( artificialDissipationCurvilinear<0. )
@@ -4532,7 +4635,8 @@ int Maxwell::
 readDispersionParameters( const aString & domainName, const aString & materialFile,
 			 int numberOfPolarizationVectors, int modeGDM )
 {
-  if( dispersionModel==noDispersion && method!=bamx )
+  if( false &&  // May 13, 2020 -- allow material file to set non-dispersive materials too
+     dispersionModel==noDispersion && method!=bamx )
   {
     printF("Cgmx:INFO: Not setting dispersion parameters since there is no dispersion model specified.\n");
     return 0;
@@ -4609,15 +4713,17 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
       
       // Set background eps for all grids in this domain
       real epsInf= dmp.getEpsInf();
+      real muInf = dmp.getMuInf();
       
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
 	if( cg.domainNumber(grid)==domain )
 	{
-	  printF(" Maxwell: grid=%i: setting epsInf=%g \n",grid, epsInf);
+	  printF(" Maxwell: grid=%i: setting epsInf=%g, muInf=%g \n",grid, epsInf,muInf);
 
 	  epsGrid(grid)=epsInf;
-          cGrid(grid)=1./sqrt(epsInf*mu);
+	  muGrid(grid) =muInf;
+          cGrid(grid)=1./sqrt(epsInf*muInf);
 	}
 	  
       }
@@ -4933,6 +5039,9 @@ Maxwell::getDispersionModelMappedGridFunction( const int grid, const int timeLev
       realCompositeGridFunction **& dmgf = 
         parameters.dbase.get<realCompositeGridFunction**>("dispersionModelGridFunction");
       
+      assert( dmgf!=NULL );
+      assert( dmgf[domain]!=NULL );
+
       return dmgf[domain][timeLevel][gridDomain];
     }
     else
@@ -4940,30 +5049,6 @@ Maxwell::getDispersionModelMappedGridFunction( const int grid, const int timeLev
       // -- return the grid function for the Polarization error ---
       realCompositeGridFunction & cgfErr = 
         *getDispersionModelCompositeGridFunction(domain,timeLevel,getErrorGridFunction);
-      
-
-      // realCompositeGridFunction *& cgfErrArray = 
-      //   parameters.dbase.get<realCompositeGridFunction*>("dispersionModelErrorGridFunction");
-      // if( cgfErrArray==NULL )
-      // {
-      //   cgfErrArray = new realCompositeGridFunction[cg.numberOfDomains()];
-      //   // for( int d=0; d<cg.numberOfDomains(); d++ )
-      //   // {
-      //   // }
-        
-      // }
-      // realCompositeGridFunction & cgfErr = cgfErrArray[gridDomain];
-      // printF(" cgfErr.numberOfComponentGrids=%i, cgfErr.getComponentDimension(0)=%i\n",cgfErr.numberOfComponentGrids(),cgfErr.getComponentDimension(0));
-      
-      // if( cgfErr.numberOfComponentGrids()==0 )
-      // {
-      //   printF(" dimension: cgfErr domain=%i... \n",gridDomain);
-      //   CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
-      //   Range all;
-      //   cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfPolarizationVectors*cg.numberOfDimensions());
-      //   cgfErr=0.;
-      // }
-      
       
       return cgfErr[gridDomain];
     }
@@ -5015,6 +5100,9 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
       // dispersionModelGridFunction[domain][numTimeLevels] : 
       realCompositeGridFunction **& dmgf = 
         parameters.dbase.get<realCompositeGridFunction**>("dispersionModelGridFunction");
+
+      assert( dmgf!=NULL );
+      assert( dmgf[domain]!=NULL );
 
       return &(dmgf[domain][timeLevel]);
     }
@@ -5069,6 +5157,155 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
 	
       }
       
+      
+      return &cgfErr;
+    }
+    
+  }
+
+  return NULL;
+}
+
+
+
+// =======================================================================================
+/// \brief Return the realMappedGridFunction (rMGF) that holds the data for the 
+///        nonlinear model (e.g. N's in a multilevelAtomic model). Return a NULL rMGF is there is
+///        no nonlinear model data. 
+///
+/// \param grid (input) : return rMGF for this grid
+/// \param timeLevel (input)l : return rMGF for this time level (0,1,,..,numberOfTimeLevels-1)
+/// \param getErrorGridFunction (input} :  if true return the grid function that holds the error in P (in which
+///   case timeLevel has no meaning.
+// =======================================================================================
+realMappedGridFunction & 
+Maxwell::getNonlinearModelMappedGridFunction( const int grid, const int timeLevel, 
+                                               const bool getErrorGridFunction /* =false */ )
+{
+  
+  if( nonlinearModel == noNonlinearModel )
+    return Overture::nullRealMappedGridFunction();
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg = *cgp;
+
+  assert( grid>=0 && grid<cg.numberOfComponentGrids() );
+
+  // --- Get info for the dispersive model ----
+  const int domain = cg.domainNumber(grid);
+  const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+
+  const bool isNonlinear = dmp.isNonlinearMaterial();
+  if( isNonlinear )
+  {
+    assert( timeLevel>=0 && timeLevel<numberOfTimeLevels );
+    
+
+    IntegerArray & domainGridNumber = parameters.dbase.get<IntegerArray>("domainGridNumber");
+    const int gridDomain=domainGridNumber(grid); // cg[grid] -> cg.domain[d][gridDomain] 
+    // printF("\n @@@@@@@@ getNonlinearModelMappedGridFunction: domain=%i grid=%i --> gridDomain=%i\n",domain,grid,gridDomain);
+
+    if( !getErrorGridFunction )
+    {
+      // nonlinearModelGridFunction[domain][numTimeLevels] : 
+      realCompositeGridFunction **& dmgf = parameters.dbase.get<realCompositeGridFunction**>("nonlinearModelGridFunction");
+      
+      assert( dmgf!=NULL );
+      assert( dmgf[domain]!=NULL );
+
+      return dmgf[domain][timeLevel][gridDomain];
+    }
+    else
+    {
+      // -- return the grid function for the Polarization error ---
+      realCompositeGridFunction & cgfErr = *getNonlinearModelCompositeGridFunction(domain,timeLevel,getErrorGridFunction);
+      
+      return cgfErr[gridDomain];
+    }
+    
+  }
+
+  return Overture::nullRealMappedGridFunction();
+}
+
+
+// =======================================================================================
+/// \brief Return a pointer to the realCompositeGridFunction (rCGF) that holds the data for the 
+///        nonlinear model (polarization vectors). Return a NULL if there is
+///        no nonlinear model data. 
+///
+/// \param domain (input) : return rCGF for this domain.
+/// \param (input) timeLevel : return rCGF for this time level (0,1,,..,numberOfTimeLevels-1)
+/// \param getErrorGridFunction (input} :  if true return the grid function that holds the error in P (in which
+///   case timeLevel has no meaning.
+// =======================================================================================
+realCompositeGridFunction* 
+Maxwell::getNonlinearModelCompositeGridFunction( const int domain, const int timeLevel, 
+                                                  const bool getErrorGridFunction /* =false */ )
+{
+  
+  if( nonlinearModel == noNonlinearModel )
+    return NULL;
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg = *cgp;
+
+  // --- Get info for the nonlinear model ----
+  const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+
+  const int grid=0;  // for BMAX -- fix me 
+  const bool isNonlinear = dmp.isNonlinearMaterial();
+  if( isNonlinear )
+  // if( numberOfPolarizationVectors>0 )
+  {
+    assert( domain>=0 && domain<cg.numberOfDomains() );
+    assert( timeLevel>=0 && timeLevel<numberOfTimeLevels );
+
+    if( !getErrorGridFunction )
+    {
+      // nonlinearModelGridFunction[domain][numTimeLevels] : 
+      realCompositeGridFunction **& dmgf = parameters.dbase.get<realCompositeGridFunction**>("nonlinearModelGridFunction");
+
+      assert( dmgf!=NULL );
+      assert( dmgf[domain]!=NULL );
+
+      return &(dmgf[domain][timeLevel]);
+    }
+    else
+    {
+      // -- return the grid function for the nonlinear error ---
+      realCompositeGridFunction *& cgfErrArray = parameters.dbase.get<realCompositeGridFunction*>("nonlinearModelErrorGridFunction");
+      if( cgfErrArray==NULL )
+      {
+        cgfErrArray = new realCompositeGridFunction[cg.numberOfDomains()];
+      }
+      realCompositeGridFunction & cgfErr = cgfErrArray[domain];
+      if( cgfErr.numberOfComponentGrids()==0 )
+      {
+        const int numberOfDimensions = cg.numberOfDimensions();
+        
+        CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
+        Range all;
+	if( method==nfdtd )
+	{
+          const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+	  assert( numberOfAtomicLevels>0 );
+	  
+	  cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfAtomicLevels);
+	  cgfErr=0.;
+	  for( int iv=0; iv<numberOfAtomicLevels; iv++ )
+	    cgfErr.setName(sPrintF("N%ierr",iv),iv);
+	}
+	else if( method==bamx )
+	{
+	  OV_ABORT("error");
+	}
+	else
+	{
+	  OV_ABORT("error");
+	}
+	
+      }
       
       return &cgfErr;
     }

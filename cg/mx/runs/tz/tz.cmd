@@ -5,7 +5,8 @@
 #   
 #  cgmx [-noplot] tz -g=<name> -tz=<poly/trig> -degreex=<> -degreet=<> -tf=<tFinal> -tp=<tPlot> ...
 #                    -bcn=[pec|d|s] -diss=<> -order=<2/4> -debug=<num> -bg=<backGround> -cons=[0/1] ...
-#                    -method=[nfdtd|Yee|sosup] -dm=[none|gdm] -ts=[me|rk1|rk2|rk3|rk4] -go=[run/halt/og]
+#                    -method=[nfdtd|Yee|sosup] -dm=[none|gdm] -ts=[me|rk1|rk2|rk3|rk4] ...
+#                    -nm=[none|mla] -go=[run/halt/og]
 # 
 #  -dm : dispersion model
 #  -diss : coeff of artificial diffusion 
@@ -90,6 +91,7 @@ $eps=1.; $mu=1.;
 $npv=1; $alphaP=1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below
 #
+$nm="#"; # nonlinear model 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"dissOrder=i"=>\$dissOrder, \
@@ -99,7 +101,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"domain=s"=>\$domain,"solveForAllFields=i"=>\$solveForAllFields,\
   "eps=f"=>\$eps,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,\
   "useTZmaterials=i"=>\$useTZmaterials,"fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,"dm=s"=>\$dm,\
-  "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv );
+  "alphaP=f"=>\$alphaP,"a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"npv=i"=>\$npv,"nm=s"=>\$nm );
 # -------------------------------------------------------------------------------------------------
 #
 if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
@@ -133,6 +135,9 @@ if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
 if( $dm eq"gdm" ){ $dm="GDM"; }
 #
+if( $nm eq "none" ){ $nm="#"; }
+if( $nm eq "mla" ){ $nm="multilevelAtomic"; }
+#
 $grid
 # 
 $method
@@ -145,12 +150,14 @@ solve for all fields $solveForAllFields
 # dispersion model:
 $dm
 #
+#  --- nonlinear model ----
+$nm
 # 
 coefficients $eps $mu  all (eps,mu,grid/domain name)
 #
 # -- specify material regions or material file
 $cmd="#"; 
-if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
+if( $matFile ne "" && $nm eq "#" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
 $cmd
 $cmd="#"; 
 if( $numMatRegions>1 ){\
@@ -175,6 +182,13 @@ if( $npv == 2 ){ \
    $cmd .= " GDM coeff: 0 $a0[0] $a1[0] $b0[0] $b1[0] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 1 $a0[1] $a1[1] $b0[1] $b1[1] (eqn, a0,a1,b0,b1)"; \
       }
+# ------- specify material for multilevelAtomic model ---------
+if( $nm eq "multilevelAtomic" && $npv == 2){  \
+   $cmd  = "GDM domain name: $domain\n"; \
+   $cmd .= " number of polarization vectors: $npv\n"; \
+   $cmd .= "material file: $matFile";\
+   }
+#    
 $cmd
 #
 #

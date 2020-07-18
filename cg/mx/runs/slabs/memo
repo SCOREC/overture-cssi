@@ -1,0 +1,264 @@
+*****************************************
+******* Thurs June 18, 2020
+
+
+START: THREE SLAB CASE For Homogenization
+
+Wegner example: eps=[2,6,12]
+
+ABCEM2
+runScat.p -tf=50 -cmdFile=slabs -grid=slabsGrid2d3Slabs -case=ThreeSlabsEps2Eps6Eps12 -numSlabs=3 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps6 -matFile3=baMatIsoEps12 -ic=gpw -rbc=abcEM2 -dm=none -direction=-1  -polarization=1 -resStart=1 -numResolutions=3
+
+
+
+tf=50: TROUBLE rbcNonLocal for G16 --*maybe* narrow y domain ?
+runScat.p -tf=50 -cmdFile=slabs -grid=slabsGrid2d3Slabs -case=ThreeSlabsEps2Eps6Eps12 -numSlabs=3 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps6 -matFile3=baMatIsoEps12 -ic=gpw  -dm=none -direction=-1  -polarization=1 -resStart=1 -numResolutions=3
+
+
+GPW
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Slabse4.order4p.hdf -numSlabs=3 -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps6.txt -matFile3=baMatIsoEps12.txt -tf=100 -tp=.1 -useSosupDissipation=1 -ic=gpw -x0=-2  -rbc=rbcNonLocal -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=none -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+
+TRUE:
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Slabse4.order4p.hdf -numSlabs=3 -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps6.txt -matFile3=baMatIsoEps12.txt -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=none -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+*****************************************
+******* Thurs June 18, 2020
+
+
+START: THREE SLAB CASE For Homogenization
+
+
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Slabse4.order4p.hdf -numSlabs=3 -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps4.txt -matFile3=baMatIsoEps6.txt -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=none -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+
+*****************************************
+******* Wed June 17, 2020
+
+tf=200: 
+runScat.p -tf=200 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -matFile=Eps2Eps4 -dm=none -direction=-1  -polarization=1 -resStart=1 -numResolutions=3
+
+
+*****************************************
+******* Tues June 16, 2020
+
+>>>>>>> *FIXED* GAUSSIN PLANE WAVE in 2D to use pwc[]
+
+
+Run 2 directions: 
+runScat.p -tf=100 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -matFile=Eps2Eps4 -dm=none -direction=-1  -polarization=1 -resStart=1 -numResolutions=3
+
+
+
+
+INCREASE x-domain size to [-2.5,2.5] -- seems important *FIX ME*
+
+TEST ay=1:
+cgmx -noplot -noplot slabs -g=slabsGrid2d2Slabse2.order4p.hdf -numSlabs=2 -tf=100 -tp=1 -useSosupDissipation=1 -ic=gpw -kx=-1 -ay=1 -az=0 -x0=2 -rbc=rbcNonLocal -xLeftProbe=-1 -xRightProbe=1 -dm=none -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps4.txt -matFile3=baMatIsoEps4.txt -matFile4=baMatIsoEps8.txt -probeFrequency=1 -probeFileName=2SlabsEps2Eps4Polar1Dir2G2 -matFile=Eps2Eps4.txt -go=og
+
+ay=-1
+cgmx -noplot -noplot slabs -g=slabsGrid2d2Slabse2.order4p.hdf -numSlabs=2 -tf=100 -tp=1 -useSosupDissipation=1 -ic=gpw -kx=-1 -ay=-1 -az=0 -x0=2 -rbc=rbcNonLocal -xLeftProbe=-1 -xRightProbe=1 -dm=none -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps4.txt -matFile3=baMatIsoEps4.txt -matFile4=baMatIsoEps8.txt -probeFrequency=1 -probeFileName=2SlabsEps2Eps4Polar1Dir2G2 -matFile=Eps2Eps4.txt -go=og
+
+
+
+BACkward scattering
+run more resolutions -- P1= D=1
+runScat.p -tf=50 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -matFile=Eps2Eps4 -dm=none -direction=2  -polarization=1 -resStart=1 -numResolutions=3
+
+
+run more resolutions -- P1= D=1
+runScat.p -tf=50 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -matFile=Eps2Eps4 -dm=none -direction=1  -polarization=1 -resStart=1 -numResolutions=3
+
+
+*****************************************
+******* Sun June 14, 2020
+
+runScat.p -tf=100 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -x0=-1.5 -matFile=Eps2Eps4 -dm=none -direction=-1  -polarization=1 -resStart=2 -numResolutions=2
+
+
+
+*****************************************
+******* Sat June 13, 2020
+
+RENAME GRIDS : Blocks -> Slabs
+
+
+***** BUG FIXED  -- MATERIAL INTERFACES WERE NOT BEING TURNED ON ******
+
+
+G4: 
+integralLeft2SlabsEps2Eps4Polar1Dir1G8.dat
+
+runScat.p -tf=50 -cmdFile=slabs -grid=slabsGrid2d2Slabs -case=2Slabs -numSlabs=2 -matFile1=baMatIsoEps2 -matFile2=baMatIsoEps4 -ic=gpw -x0=-1.5 -matFile=Eps2Eps4 -dm=none -direction=-1  -polarization=1 -resStart=2 -numResolutions=2
+
+
+
+>>>>>>>>>> START: homogenize two slabs into one
+
+GAUSSIAN PLANE WAVE 
+cgmx -noplot slabs.cmd -g=slabsGrid2d2Slabse4.order4p.hdf -numSlabs=3 -tf=100 -tp=.2 -useSosupDissipation=1 -ic=gpw -x0=-1.5 -rbc=rbcNonLocal -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps4.txt  -checkErrors=0 -kx=1 -ky=0 -go=og
+
+
+2 blocks
+cgmx -noplot slabs.cmd -g=slabsGrid2d2Slabse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile1=baMatIsoEps2.txt -matFile2=baMatIsoEps4.txt  -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+
+>>>>>>>>>>>> CONTINUE: DISPERSIVE SLABS exact solution
+
+WARNING: GDM Material must be isotropic to use with cgmx !!  epsHat1=epsHat2=epsHat3
+
+
+TURN ON GDM 
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+G4
+--getErrors: t=5.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=1.579e-02 max-err = 1.156e-07
+>>> t=5.00e-01 dt=1.4e-02 max errors:[1.47e-04,7.81e-04,1.65e+00,], max (u):[3.87e-01,7.63e-01,1.77e+00,] (35 steps)
+
+G8 
+--getErrors: t=5.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=1.579e-02 max-err = 7.330e-09
+>>> t=5.00e-01 dt=7.7e-03 max errors:[7.80e-06,4.10e-05,1.65e+00,], max (u):[3.87e-01,7.63e-01,1.77e+00,] (65 steps)
+
+
++++++ baMatGDM1.txt  **THIS IS WRONG: epsHat2 was different from epsHat1 !!
+G4 
+>>> Cgmx:FD: t=5.00e-01 dt=1.4e-02 TS=ME GDM |div(E)|/|grad(E)|=1.02e-03 (=1.24e-02/1.21e+01) 35 steps mem=56.3(Mb) cpu=9.78e+00(s)
+--getErrors: t=5.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=1.579e-02 max-err = 1.900e-05
+>>> t=5.00e-01 dt=1.4e-02 max errors:[2.90e-04,7.80e-04,1.65e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (35 steps)
+
+G8 
+>>> Cgmx:FD: t=5.00e-01 dt=7.7e-03 TS=ME GDM |div(E)|/|grad(E)|=2.86e-04 (=3.47e-03/1.21e+01) 65 steps mem=62(Mb) cpu=1.22e+01(s)
+--getErrors: t=5.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=1.579e-02 max-err = 1.866e-05
+>>> t=5.00e-01 dt=7.7e-03 max errors:[2.90e-04,4.53e-04,1.65e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (65 steps)
+
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baAirGDM.txt -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+*****************************************
+******* Friday June 12, 2020
+
+START ON DISPERSIVE SLABS exact solution
+
+TURN ON GDM -- something wrong in the GDM material *FIX ME*
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+G8 
+>>> t=5.00e-01 dt=1.4e-02 max errors:[8.06e-04,1.51e-03,1.65e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (35 steps)
+G16 
+>>> t=5.00e-01 dt=7.7e-03 max errors:[8.15e-04,1.52e-03,1.65e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (65 steps)
+
+
+FAKE GDM: 
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baAirGDM.txt -checkErrors=1 -kx=1 -ky=0 -go=og
+
+IGNORE Hz errors ---
+G8 
+>>> t=5.00e-01 dt=1.4e-02 max errors:[0.00e+00,3.51e-04,2.41e+00,], max (u):[0.00e+00,5.47e-01,1.53e+00,] (35 steps)
+G16
+>>> t=5.00e-01 dt=7.7e-03 max errors:[0.00e+00,2.15e-05,2.44e+00,], max (u):[0.00e+00,5.47e-01,1.54e+00,] (65 steps)
+
+
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -kx=1 -ky=0 -go=og
+
+
+
+*****************************************
+******* Thurs June 11, 2020
+
+THREE-DIMENSIONS
+cgmx -noplot slabs.cmd -g=slabsGrid3d1Blockse4.order4.hdf -numSlabs=1 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -kx=1 -ky=.5 -kz=.5 -go=og
+
+>>> t=1.00e-01 dt=1.3e-02 max errors:[1.16e-06,3.76e-06,4.52e-07,], max (u):[3.72e-01,7.24e-01,8.58e-02,] (8 steps)
+
+
+THREE SLABS -- very oblique: 
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse8.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -kx=1 -ky=2 -go=og
+
+
+*****************************************
+******* Wed June 10, 2020
+
+TEST NEW -- SlabsExactSolution : COMPUTES EXACT SOLUTION FROM SCRATCH
+
+THREE SLABS -- very oblique: 
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse8.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -kx=1 -ky=2 -go=og
+
+cgmx -noplot slabs.cmd -g=slabsGrid2d3Blockse4.order4.hdf -numSlabs=3 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+>>> t=5.00e-01 dt=1.4e-02 max errors:[1.39e-04,7.37e-04,2.49e-03,], max (u):[4.35e-01,8.70e-01,1.68e+00,] (35 steps)
+
+TRY TWO SLABS: OK
+slabsGrid2d2Blockse16.order4.hdf
+cgmx -noplot slabs.cmd -g=slabsGrid2d2Blockse4.order4.hdf -numSlabs=2 -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+>>> t=2.00e-01 dt=1.4e-02 max errors:[7.46e-06,2.68e-05,5.01e-05,], max (u):[4.01e-01,8.02e-01,1.09e+00,] (14 steps)
+
+
+
+texact -option=6 -numSlabs=1
+
+
+
+*new* slabs grid 
+cgmx -noplot slabs.cmd -g=slabsGrid2d1Blockse4.order4.hdf -numSlabs=2  -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+cgmx -noplot slabs.cmd -g=slabsGrid2d1Blockse4.order2.hdf -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+
+
+cgmx -noplot slabs.cmd -g=blockGride4.order4.ng3.hdf -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+>>> Cgmx:FD: t=2.00e-01 dt=1.4e-02 TS=ME |div(E)|/|grad(E)|=4.78e-05 (=2.36e-04/4.94e+00) 14 steps mem=59.1(Mb) cpu=1.98e+01(s)
+>>> t=2.00e-01 dt=1.4e-02 max errors:[1.04e-05,7.96e-06,1.45e-05,], max (u):[4.37e-01,7.58e-01,8.99e-01,] (14 steps)
+
+
+
+texact -option=6
+
+
+
+
+*****************************************
+******* Tues June 9, 2020
+
+CONTINUE ON SLABS EXACT SOLUTION
+
+texact -option=6
+
+*****************************************
+******* Mon June 8, 2020
+
+CONTINUE ON SLABS EXACT SOLUTION
+
+texact -option=6
+
+
+
+
+CHECK probe frequency 10 
+
+cgmx -noplot slabs.cmd -g=blockGride4.order4.ng3.hdf -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+
+cgmx -noplot slabs.cmd -g=blockGride4.order4.ng3.hdf -tf=100 -tp=.1 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+>>> t=5.00e-01 dt=1.3e-02 max errors:[1.25e-05,1.83e-05,2.35e-05,], max (u):[4.37e-01,7.58e-01,8.99e-01,] (40 steps)
+
+
+cgmx -noplot slabs.cmd -g=blockGride4.order2.hdf -tf=100 -tp=.05 -useSosupDissipation=1 -ic=slabs -kx=1 -ky=.5 -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=probe -matFile=baMatIsoEps2.txt -checkErrors=1 -go=og
+
+ +++++ getErrors checkErrors=1, knownSolutionOption=13 
+>>> t=5.00e-01 dt=1.4e-02 max errors:[1.99e-03,3.33e-03,3.89e-15,], max (u):[4.37e-01,7.57e-01,5.02e-01,] (35 steps)
+
+*****************************************
+******* Sun June 7, 2020
+
+START ON SLABS EXACT SOLUTION
+
+
+texact -option=6
+
+

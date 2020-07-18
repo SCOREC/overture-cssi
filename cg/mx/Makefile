@@ -106,7 +106,7 @@ tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterial
 # Test program for exact solutions
 TESTS += $(BINDIR)texact
 
-texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o
+texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o $(OBJDIR)SlabsExactSolution.o $(OBJDIR)ComplexArray.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)texact $(OBJDIR)texact.o $(OBJALL) $(LIBS)
 
 

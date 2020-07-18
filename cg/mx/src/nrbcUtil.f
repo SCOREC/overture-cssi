@@ -136,12 +136,13 @@
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field in 2D   
+!   Define a Gaussian Plane Wave incident field in 2D   
 !===============================================================================================
 
 !===============================================================================================
 ! Macro:
-!   Define a Gaussian pulse incident field in 3D   
+!   Define a Gaussian Plane Wave incident field in 3D   
+!   Changed: May 16, 2020 -- use pwc() coefficients 
 !===============================================================================================
 
 ! ===================================================================================
@@ -190,7 +191,7 @@
 
       integer side,axis,gridType,orderOfAccuracy,orderOfExtrapolation,
      & useForcing,ex,ey,ez,hx,hy,hz,useWhereMask,grid,debug,side1,
-     & side2,side3
+     & side2,side3,solveForAllFields
       real dx(0:2),dr(0:2),xa(0:2)
       real t,ep,dt,c
       real dxa,dya,dza
@@ -236,11 +237,12 @@
       integer dirichlet,perfectElectricalConductor,
      & perfectMagneticConductor,planeWaveBoundaryCondition,
      & interfaceBC,symmetryBoundaryCondition,abcEM2,abcPML,abc3,abc4,
-     & abc5,rbcNonLocal,rbcLocal,lastBC
+     & abc5,rbcNonLocal,rbcLocal,characteristic,absorbing,lastBC
       parameter( dirichlet=1,perfectElectricalConductor=2,
      & perfectMagneticConductor=3,planeWaveBoundaryCondition=4,
      & symmetryBoundaryCondition=5,interfaceBC=6,abcEM2=7,abcPML=8,
-     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,lastBC=13 )
+     & abc3=9,abc4=10,abc5=11,rbcNonLocal=12,rbcLocal=13,
+     & characteristic=14,absorbing=15,lastBC=15 )
 
       integer rectangular,curvilinear
       parameter(rectangular=0,curvilinear=1)
@@ -313,6 +315,8 @@
 
       incidentFieldType    =ipar(37)  ! defines type of incident field -- plane wave, Gaussian pulse, ...
 
+      solveForAllFields    =ipar(38)
+
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
       dx(2)                =rpar(2)
@@ -352,6 +356,16 @@
       xv0(2) =rpar(35)
 
 
+      ! If we are given an initial condition bounding box then only adjust points in this box
+      if( icBoundingBox(0,0) .lt. icBoundingBox(1,0) )then
+        adjustForBoundingBox=.true.
+        ! write(*,'(" adjustForIncident: adjustForBoundingBox, grid=",i4," t=",e9.3)') grid,t
+      else
+        adjustForBoundingBox=.false.
+      end if
+
+      ! adjustForBoundingBox=.false.
+
       ! Gaussian pulse fix me: 
       if( incidentFieldType.eq.gaussianPlaneWaveIncidentField )then
        ! incidentFieldType=1
@@ -364,6 +378,14 @@
      & incidentFieldType=gaussianPlaneWaveIncidentField")')
           write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,
      & ") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+          write(*,'(" n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') n1a,n1b,n2a,n2b,
+     & n3a,n3b
+          write(*,'(" solveForAllFields=",i2," adjustForBoundingBox=",
+     & l2)') solveForAllFields,adjustForBoundingBox
+          write(*,'(" adjustForIncident: icbb=[",e8.2,",",e8.2,"][",
+     & e8.2,",",e8.2,"][",e8.2,",",e8.2,"]")') icBoundingBox(0,0),
+     & icBoundingBox(1,0),icBoundingBox(0,1),icBoundingBox(1,1),
+     & icBoundingBox(0,2),icBoundingBox(1,2)
         end if
       end if
 
@@ -377,16 +399,6 @@
         ! ' 
       end if
 
-      ! If we are given an initial condition bounding box then only adjust points in this box
-      if( icBoundingBox(0,0) .lt. icBoundingBox(1,0) )then
-        adjustForBoundingBox=.true.
-        ! write(*,'(" adjustForIncident: adjustForBoundingBox, grid=",i4," t=",e9.3)') grid,t
-      else
-        adjustForBoundingBox=.false.
-      end if
-      ! write(*,'(" adjustForIncident: icbb=[",e8.2,",",e8.2,"][",e8.2,",",e8.2,"][",e8.2,",",e8.2,"]")') icBoundingBox(0,0),icBoundingBox(1,0),!    icBoundingBox(0,1),icBoundingBox(1,1),icBoundingBox(0,2),icBoundingBox(1,2)
-
-      ! adjustForBoundingBox=.false.
 
       ! for plane wave forcing 
       twoPi=8.*atan2(1.,1.)
@@ -522,30 +534,81 @@
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
-                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                       ! u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                       ! u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     else
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                       u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) - expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
-                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                       ! un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                       ! un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                     else
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                       un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) - expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) - expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
-                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       if( solveForAllFields.eq.0 )then
+                         ! *new* way June 16, 2020 *wdh*
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                         ! *old way*
+                         ! uhz = expxi
+                         ! uex = uhz*(-ky/(eps*cc))
+                         ! uey = uhz*( kx/(eps*cc))
+                         ! um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                         ! um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                         ! um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                       else
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(
+     & 2)
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) - expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) - expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -557,6 +620,10 @@
                end do
                end do
              else
+               ! --- THREE DIMENSIONS ---
+               !if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+               !  write(*,'(" - YES : alter fields for gaussianPlaneWaveIncidentField ")')
+               !end if 
                do i3=n3a,n3b
                do i2=n2a,n2b
                do i1=n1a,n1b
@@ -606,35 +673,41 @@
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
-                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) - expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
-                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) - expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) - expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       uez = 0.
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
-                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - uez
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(0)
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(1)
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(2)
+                       if( solveForAllFields.eq.1 )then
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) - expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) - expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -764,30 +837,81 @@
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
-                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
+                       ! u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
+                       ! u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - uhz
+                     else
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                       u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) - expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
-                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
+                       ! un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
+                       ! un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - uhz
+                     else
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                       un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) - expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) - expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
-                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       if( solveForAllFields.eq.0 )then
+                         ! *new* way June 16, 2020 *wdh*
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                         ! *old way*
+                         ! uhz = expxi
+                         ! uex = uhz*(-ky/(eps*cc))
+                         ! uey = uhz*( kx/(eps*cc))
+                         ! um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
+                         ! um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
+                         ! um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - uhz
+                       else
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(
+     & 2)
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) - expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) - expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -798,6 +922,10 @@
                end do
                end do
              else
+               ! --- THREE DIMENSIONS ---
+               !if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+               !  write(*,'(" - NO : alter fields for gaussianPlaneWaveIncidentField ")')
+               !end if 
                do i3=n3a,n3b
                do i2=n2a,n2b
                do i1=n1a,n1b
@@ -837,35 +965,41 @@
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - uey
-                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) - expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - uey
-                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) - expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) - expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       uez = 0.
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - uey
-                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - uez
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(0)
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(1)
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(2)
+                       if( solveForAllFields.eq.1 )then
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) - expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) - expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) - expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -1010,30 +1144,81 @@
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
-                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                       ! u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                       ! u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     else
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                       u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) + expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
-                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                       ! un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                       ! un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                     else
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                       un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) + expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) + expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
-                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       if( solveForAllFields.eq.0 )then
+                         ! *new* way June 16, 2020 *wdh*
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                         ! *old way*
+                         ! uhz = expxi
+                         ! uex = uhz*(-ky/(eps*cc))
+                         ! uey = uhz*( kx/(eps*cc))
+                         ! um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                         ! um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                         ! um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                       else
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(
+     & 2)
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) + expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) + expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -1045,6 +1230,10 @@
                end do
                end do
              else
+               ! --- THREE DIMENSIONS ---
+               !if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+               !  write(*,'(" + YES : alter fields for gaussianPlaneWaveIncidentField ")')
+               !end if 
                do i3=n3a,n3b
                do i2=n2a,n2b
                do i1=n1a,n1b
@@ -1094,35 +1283,41 @@
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
-                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) + expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
-                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) + expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) + expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       uez = 0.
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
-                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + uez
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(0)
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(1)
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(2)
+                       if( solveForAllFields.eq.1 )then
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) + expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) + expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -1252,30 +1447,81 @@
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
-                     u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
+                       ! u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
+                       ! u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + uhz
+                     else
+                       u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                       u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                       u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) + expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
-                     un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     if( solveForAllFields.eq.0 )then
+                       ! *new* way June 16, 2020 *wdh*
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                       ! *old way*
+                       ! uhz = expxi
+                       ! uex = uhz*(-ky/(eps*cc))
+                       ! uey = uhz*( kx/(eps*cc))
+                       ! un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
+                       ! un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
+                       ! un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + uhz
+                     else
+                       un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                       un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                       un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) + expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) + expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
-                       um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       if( solveForAllFields.eq.0 )then
+                         ! *new* way June 16, 2020 *wdh*
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                         ! *old way*
+                         ! uhz = expxi
+                         ! uex = uhz*(-ky/(eps*cc))
+                         ! uey = uhz*( kx/(eps*cc))
+                         ! um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
+                         ! um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
+                         ! um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + uhz
+                       else
+                         um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
+     & 0)
+                         um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(
+     & 1)
+                         um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(
+     & 2)
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) + expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) + expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 
@@ -1286,6 +1532,10 @@
                end do
                end do
              else
+               ! --- THREE DIMENSIONS ---
+               !if( incidentFieldType .eq. gaussianPlaneWaveIncidentField )then
+               !  write(*,'(" + NO : alter fields for gaussianPlaneWaveIncidentField ")')
+               !end if 
                do i3=n3a,n3b
                do i2=n2a,n2b
                do i1=n1a,n1b
@@ -1325,35 +1575,41 @@
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + uex
-                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + uey
-                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
+                     u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
+                     u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       u(i1,i2,i3,hx) = u(i1,i2,i3,hx) + expxi*pwc(3)
+                       u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
+                       u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = exp(-betaGP*xi*xi )
-                     uhz = amp*expxi
-                     uex = uhz*(-ky/(eps*cc))
-                     uey = uhz*( kx/(eps*cc))
-                     uez = 0.
-                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + uex
-                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + uey
-                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + uez
+                     expxi = amp*exp(-betaGP*xi*xi )
+                     un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
+                     un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
+                     un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
+                     if( solveForAllFields.eq.1 )then
+                       un(i1,i2,i3,hx) = un(i1,i2,i3,hx) + expxi*pwc(3)
+                       un(i1,i2,i3,hy) = un(i1,i2,i3,hy) + expxi*pwc(4)
+                       un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
+                     end if
                    if( adjustThreeLevels.eq.1 )then
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = exp(-betaGP*xi*xi )
-                       uhz = amp*expxi
-                       uex = uhz*(-ky/(eps*cc))
-                       uey = uhz*( kx/(eps*cc))
-                       uez = 0.
-                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + uex
-                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + uey
-                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + uez
+                       expxi = amp*exp(-betaGP*xi*xi )
+                       um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(0)
+                       um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(1)
+                       um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(2)
+                       if( solveForAllFields.eq.1 )then
+                         um(i1,i2,i3,hx) = um(i1,i2,i3,hx) + expxi*pwc(
+     & 3)
+                         um(i1,i2,i3,hy) = um(i1,i2,i3,hy) + expxi*pwc(
+     & 4)
+                         um(i1,i2,i3,hz) = um(i1,i2,i3,hz) + expxi*pwc(
+     & 5)
+                       end if
                    end if
                  else
                    write(*,'("adjust Inc. : ERROR: unknown incident 

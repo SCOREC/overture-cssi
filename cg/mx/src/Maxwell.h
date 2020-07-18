@@ -203,7 +203,13 @@ class Maxwell
     GDM,
   } dispersionModel;
 
-  
+  // Nonlinear models  -- currently matches the one oin DispersiveMaterialParameters.h
+  enum NonlinearModelEnum
+  {
+    noNonlinearModel=0,
+    multilevelAtomic,  // Mawell Bloch equations
+  } nonlinearModel;
+     
 
   enum StageOptionEnum
   {
@@ -447,6 +453,14 @@ protected:
   realMappedGridFunction&  getDispersionModelMappedGridFunction( const int grid, const int timeLevel,
                                                                  const bool getErrorGridFunction =false );
 
+  realCompositeGridFunction* getNonlinearModelCompositeGridFunction( const int domain, const int timeLevel,
+                                                                      const bool getErrorGridFunction =false );
+
+  realMappedGridFunction&  getNonlinearModelMappedGridFunction( const int grid, const int timeLevel,
+                                                                 const bool getErrorGridFunction =false );
+
+  int plotNonlinearVariables( int current, real t, real dt );
+
   int plotPolarization( int current, real t, real dt );
 
   int saveSequenceInfo( real t0, RealArray & sequenceData );
@@ -511,7 +525,7 @@ public: //  should be protected:
   IntegerArray adjustFarFieldBoundariesForIncidentField; // subtract out the incident field before apply NRBC's
 
   real betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave;
-  real gaussianSourceParameters[5];  // gamma,omega,x0,y0,z0
+  real gaussianSourceParameters[10];  // beta,omega,x0,y0,z0,amp,rampTime 
 
   enum { maxNumberOfGaussianPulses=20};
   int numberOfGaussianPulses;

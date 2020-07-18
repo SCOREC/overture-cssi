@@ -1,3 +1,41 @@
+
+***************************
+******* Sat July 18, 2020
+
+TEST multilevelAtomic
+
+cgmx -noplot tz -g=square8.order2 -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=2.107e+00 max-err = 4.441e-16
+--getErrors: t=1.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=2.047e+00 max-err = 0.000e+00
+>>> t=1.00e-01 dt=5.0e-02 max errors:[4.44e-16,8.88e-16,7.45e-02,], max (u):[4.21e+00,2.11e+00,1.58e+00,] (2 steps)
+
+
+
+***************************
+******* Wed July 15, 2020
+
+START TEST multilevelAtomic
+
+cgmx -noplot tz -g=square8.order2 -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=og
+
+***************************
+******* Wed July 15, 2020
+
+START TEST multilevelAtomic
+
+cgmx -noplot tz -g=square8.order2 -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+
+
+GDM: exact 
+cgmx -noplot tz -g=square8.order2 -npv=2 -degreex=2 -degreet=2 -dm=gdm -a0=1 -a1=.1 -b0=1 -b1=.1  -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.1 -go=go
+
+>>> t=1.00e-01 dt=5.0e-02 max errors:[1.33e-15,1.11e-15,7.45e-02,], max (u):[4.21e+00,2.11e+00,1.58e+00,] (2 steps)
+
+
+
+
 ***************************
 ******* March 31, 2020
 

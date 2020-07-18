@@ -615,11 +615,12 @@ solve(GL_GraphicsInterface &gi )
       current = next;
       next= (next+1) % numberOfTimeLevels;
 
-      gf[current].t=t;  // *wdh* April 18, 2019 -- for probes 
+      numberOfStepsTaken++;
 
+      gf[current].t=t;  // *wdh* April 18, 2019 -- for probes 
+      // moves this line after numberOfStepsTaken++; above to get probeFrequency right *wdh* June 8, 2020
       outputResultsAfterEachTimeStep( current,t,dt,numberOfStepsTaken,nextTimeToPlot );
 
-      numberOfStepsTaken++;
     }
     
     timing(timeForAdvance)+=getCPU()-time1;

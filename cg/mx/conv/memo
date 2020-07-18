@@ -3,6 +3,60 @@
 
 -matFile=baMatGDMCase1.txt -matFile2=baMatGDM4.txt
 
+******************************
+******** June 18, 2020
+
+
+TEST INTERFACE CONVERGENCE WITH NON MATCHING dx for Qing 
+
+NON-MATCHING:
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresNonMatchingInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresNonMatchingInterface2 &     1 & 2.42e-03 &      & 3.65e-03 &      & 6.05e-03 &      & 3.65e-03 &      & 4.50e-03 &      
+twoSquaresNonMatchingInterface4 &     2 & 1.06e-04 & 22.83 & 1.66e-04 & 21.99 & 2.72e-04 & 22.24 & 1.66e-04 & 21.99 & 2.54e-04 & 17.72 
+twoSquaresNonMatchingInterface8 &     4 & 4.92e-06 & 21.54 & 8.69e-06 & 19.10 & 1.34e-05 & 20.30 & 8.69e-06 & 19.10 & 1.46e-05 & 17.40 
+twoSquaresNonMatchingInterface16 &     8 & 2.82e-07 & 17.45 & 4.87e-07 & 17.84 & 7.49e-07 & 17.89 & 4.87e-07 & 17.84 & 8.80e-07 & 16.59 
+twoSquaresNonMatchingInterface32 &    16 & 1.75e-08 & 16.11 & 2.96e-08 & 16.45 & 4.65e-08 & 16.11 & 2.96e-08 & 16.45 & 5.43e-08 & 16.21 
+twoSquaresNonMatchingInterface64 &    32 & 1.10e-09 & 15.91 & 1.85e-09 & 16.00 & 2.91e-09 & 15.98 & 1.85e-09 & 16.00 & 3.61e-09 & 15.04 
+
+NO-DISS
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresNonMatchingInterface -order=4 -useSosupDissipation=0 -diss=0 -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+twoSquaresNonMatchingInterface2 &     1 & 1.22e-03 &      & 2.13e-03 &      & 3.08e-03 &      & 2.13e-03 &      & 3.32e-03 &      
+twoSquaresNonMatchingInterface4 &     2 & 7.56e-05 & 16.14 & 1.29e-04 & 16.51 & 1.98e-04 & 15.56 & 1.29e-04 & 16.51 & 2.21e-04 & 15.02 
+twoSquaresNonMatchingInterface8 &     4 & 4.67e-06 & 16.19 & 8.03e-06 & 16.06 & 1.24e-05 & 15.97 & 8.03e-06 & 16.06 & 1.39e-05 & 15.90 
+twoSquaresNonMatchingInterface16 &     8 & 2.83e-07 & 16.50 & 4.79e-07 & 16.76 & 7.48e-07 & 16.58 & 4.79e-07 & 16.76 & 8.60e-07 & 16.16 
+twoSquaresNonMatchingInterface32 &    16 & 1.76e-08 & 16.08 & 2.99e-08 & 16.02 & 4.67e-08 & 16.02 & 2.99e-08 & 16.02 & 5.39e-08 & 15.96
+Convergence rates: c0=4.02 c1=4.03 c2=4.01 c3=4.03 c4=3.98 
+
+
+MATCHING:
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+twoSquaresInterface32 &    16 & 3.61e-08 & 16.07 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 9.21e-08 & 16.07 & 1.51e-07 & 15.96 
+Convergence rates: c0=4.27 c1=4.27 c2=4.27 c3=4.27 c4=4.14 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceMode1Order4maxNormConvTable.tex *****
+
+
+
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+Convergence rates: c0=4.37 c1=4.37 c2=4.37 c3=4.37 c4=4.18 
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceMode1Order4maxNormConvTable.tex *****
+
+
+
 ********************************
 ********  Wed Feb 6, 2020
 

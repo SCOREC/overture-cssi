@@ -1899,6 +1899,7 @@ c Evaluate the BC equations and fill in f(i)
 
 !*         end if
        else
+         write(*,'("ERROR: interfaceNew.bf")') 
          stop 3214
        end if
       else  

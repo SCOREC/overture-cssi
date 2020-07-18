@@ -280,6 +280,8 @@ void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,con
 //------------------------------------------------------------------------------------
 
 
+
+
 //==================================================================================================
 //==================================================================================================
 int 
@@ -710,15 +712,19 @@ initializePlaneMaterialInterface()
 // ================================================================================================================
 
 
+// =============== Macro: GAUSSIAN PLANE WAVE ==================
 
-//! Assign initial conditions
+
+// ===========================================================================================
+/// \brief Assign initial conditions
+//
+// 
 //   (Ex).t = (1/eps)*[  (Hz).y ]
 //   (Ey).t = (1/eps)*[ -(Hz).x ]
 //   (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
+// ===========================================================================================
 void Maxwell::
 assignInitialConditions(int current, real t, real dt )
-// ===========================================================================================
-// ===========================================================================================
 {
 
     real time0=getCPU();
@@ -1778,6 +1784,37 @@ assignInitialConditions(int current, real t, real dt )
                     }
                 }
             }
+            int lastTZComponent = hz+1;  // keep track of the last TZ component assigned above so we can fill in MLA components
+            if( dispersionModel != noDispersion )
+            {
+                int numberOfPolarizationComponents=maxNumberOfPolarizationVectors;  // ** CHECK ME ***
+                lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+                if( method==bamx )
+                    lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+            }
+            if( dispersionModel != noDispersion &&  nonlinearModel==multilevelAtomic )
+            {
+        // Nonlinear model : multilevelAtomic 
+        // printF("\n >>> INIT TZ: Fill in nonlinear TZ variables starting at lastTZComponent=%d <<<\n\n",lastTZComponent);
+                const int degreeSpaceZ = numberOfDimensions==2 ? degreeSpace : 0;
+                const int & maxNumberOfNonlinearVectors = parameters.dbase.get<int>("maxNumberOfNonlinearVectors");
+                for( int m=0; m<maxNumberOfNonlinearVectors; m++ )
+                {
+                    int na = lastTZComponent+m; 
+          // printF("POLY-TZ: multilevelAtomic: set TZ for N_%d (TZ component=%d)\n",m,na);
+                    for( int iz=0; iz<=degreeSpaceZ; iz++ )
+                    {
+                        for( int iy=0; iy<=degreeSpace; iy++ )
+                        {
+                  	for( int ix=0; ix<=degreeSpace; ix++ )
+                  	{
+      	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
+                    	  spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
+                  	}
+                        }
+                    }
+                }
+            }
             for( int n=0; n<numberOfComponentsForTZ; n++ )
             {
                 for( int i=0; i<ndp; i++ )
@@ -2126,7 +2163,7 @@ assignInitialConditions(int current, real t, real dt )
             	      if( numberOfDimensions==3 ) 
             		zc=X2(i1,i2,i3)+.5*dx[2];
             
-	      // Here we assume the material properaties are independent of time 
+	      // Here we assume the material properties are independent of time 
             	      media(i1,i2,i3)=nr;
             	      epsv(nr)   =e(xc,yc,zc,epsc,t);
             	      muv(nr)    =e(xc,yc,zc,muc,t);
@@ -2688,6 +2725,8 @@ assignInitialConditions(int current, real t, real dt )
       // Each grid may or may not have dispersion model: 
             const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
 
+            
+
       // --- Get Arrays for the dispersive model ----
             realMappedGridFunction & pCur = getDispersionModelMappedGridFunction( grid,current );
             realMappedGridFunction & pPrev= getDispersionModelMappedGridFunction( grid,prev );
@@ -2703,6 +2742,21 @@ assignInitialConditions(int current, real t, real dt )
         // ::display(pLocal,"pLocal");
             }
 
+      // -- For nonlinear model: 
+            const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+            RealArray qLocal,qmLocal;
+            if( numberOfAtomicLevels>0 )
+            {
+      	realMappedGridFunction & qCur = getNonlinearModelMappedGridFunction( grid,current );
+      	realMappedGridFunction & qPrev= getNonlinearModelMappedGridFunction( grid,prev );
+                OV_GET_SERIAL_ARRAY(real, qCur,qLoc);
+                OV_GET_SERIAL_ARRAY(real,qPrev,qmLoc);
+                qLocal.reference(qLoc);
+                qmLocal.reference(qmLoc);
+
+            }
+
+            
 
       // RealArray pLocal,pmLocal;
       // if( numberOfPolarizationVectors>0 )
@@ -2771,6 +2825,8 @@ assignInitialConditions(int current, real t, real dt )
                     {
                         assert( tz!=NULL );
                         OGFunction & e = *tz;
+            // Index location for TZ nonlinear variables: 
+                        const int nce = pxc +numberOfPolarizationVectors*numberOfDimensions;
                         if( method==bamx )
                         {
               // printF("\n @@@@@@@@ BA MAXWELL SET IC's TZ for grid=%d, localDispersionModel=%d\n",grid,(int)localDispersionModel);
@@ -2823,8 +2879,14 @@ assignInitialConditions(int current, real t, real dt )
                                         const int pc= iv*numberOfDimensions;
                                         pLocal(i1,i2,i3,pc  ) =e(xe0,ye0,0.,pxc+pc,tE);
                                         pLocal(i1,i2,i3,pc+1) =e(xe0,ye0,0.,pyc+pc,tE);
-                    // printF(" IC: PV: pxc=%i (i1,i2)=(%i,%i) p=(%e,%e)\n",pxc,i1,i2,i3,pLocal(i1,i2,i3,pc  ),pLocal(i1,i2,i3,pc+1));
+                    // printF(" IC: PV: pxc=%i (i1,i2)=(%i,%i) p=(%e,%e)\n",pxc,i1,i2,pLocal(i1,i2,i3,pc  ),pLocal(i1,i2,i3,pc+1));
                                     }
+                  // --- nonlinear model variables ---
+                                    for( int na=0; na<numberOfAtomicLevels; na++ )
+                          	{
+                                        qLocal(i1,i2,i3,na) = e(xe0,ye0,0.,nce+na,tE);
+                    // printF(" IC: MLA: na+nc=%d (i1,i2)=(%i,%i) q=(%e)\n",na+nc,i1,i2,qLocal(i1,i2,i3,na));
+                          	}
                                 }
                             } // end for_3d 
                             if( method!=sosup )
@@ -2844,6 +2906,11 @@ assignInitialConditions(int current, real t, real dt )
                                             pmLocal(i1,i2,i3,pc  ) =e(xe0,ye0,0.,pxc+pc,tE-dt);
                                             pmLocal(i1,i2,i3,pc+1) =e(xe0,ye0,0.,pyc+pc,tE-dt);
                                         }
+          	  // --- nonlinear model variables ---
+                            	  for( int na=0; na<numberOfAtomicLevels; na++ )
+                            	  {
+                              	    qmLocal(i1,i2,i3,na) = e(xe0,ye0,0.,nce+na,tE-dt);
+                            	  }
                                     }
                                 }
                             }
@@ -2933,6 +3000,12 @@ assignInitialConditions(int current, real t, real dt )
                                             pmLocal(i1,i2,i3,pc+1) =e(x0,y0,z0,pyc+pc,tE-dt);
                                             pmLocal(i1,i2,i3,pc+2) =e(x0,y0,z0,pzc+pc,tE-dt);
                                         }
+          	  // --- nonlinear model variables ---
+                            	  for( int na=0; na<numberOfAtomicLevels; na++ )
+                            	  {
+                              	    qLocal(i1,i2,i3,na)  = e(x0,y0,z0,nce+na,tE);
+                              	    qmLocal(i1,i2,i3,na) = e(x0,y0,z0,nce+na,tE-dt);
+                            	  }
                                     }
                                 } // end if dispersion model 
                             } // end if solve for electric field
@@ -3791,42 +3864,108 @@ assignInitialConditions(int current, real t, real dt )
       	}
       	else if( initialConditionOption==gaussianPlaneWave )
       	{
-	  // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
-        	  printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
-                                  kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave);
-          	    
-        	  realSerialArray xei,xhi;
+          // =============== GAUSSIAN PLANE WAVE ==================
 
-        	  xei=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*tE;
-        	  xhi=kx*(xh-x0GaussianPlaneWave)+ky*(yh-y0GaussianPlaneWave) -cc*tH;
+                    {
+            // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
+                        printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
+                                                    kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave);
+                        realSerialArray xei,xhi;
+                        if( numberOfDimensions==2 && !solveForAllFields )
+                        {
+                            if( true )
+                            {
+                // *new* way June 16 -- use pwc[]
+                                xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) -cc*tE;
+                                RealArray gpw(I1,I2,I3);
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                                uLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                                uLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                                uLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                                if( method==nfdtd  || method==bamx )
+                                {
+          	// Set values at previous time 
+                          	xei+=cc*dt;
+                          	gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                          	umLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                          	umLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                          	umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                                }
+                                if( saveExtraForcingLevels )
+                                {
+                          	OV_ABORT("finish me: Gaussian Plane Wave: saveExtraForcingLevels");
+                                }
+                            }
+                            else
+                            {
+                // **old way**
+                                xei=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*tE;
+                                xhi=kx*(xh-x0GaussianPlaneWave)+ky*(yh-y0GaussianPlaneWave) -cc*tH;
+                                uh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
+                                ue(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);
+                                ue(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);
+                                xhi+=cc*dt;
+                                xei+=cc*dt;
+                                umh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
+                                ume(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);
+                                ume(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);
+                                if( saveExtraForcingLevels )
+                                {
+          	// we need to save the "RHS" at some previous times.
+                          	for( int m=0; m<numberOfFunctions; m++ )
+                          	{
+                                        #ifdef USE_PPP
+                              	    realSerialArray fnLocal; getLocalArrayWithGhostBoundaries(FN(m),fnLocal);
+                              	    OV_ABORT("finish me for parallel");
+                                        #else
+                                      	    realSerialArray & fnLocal = FN(m);
+                                        #endif
+                            	  xhi=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*(t-dt*(m+1));
+                            	  fnLocal(I1,I2,I3,hz)=hzLaplacianGaussianPulse(xhi);
+                            	  fnLocal(I1,I2,I3,ex)=fnLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
+                            	  fnLocal(I1,I2,I3,ey)=fnLocal(I1,I2,I3,hz)*( kx/(eps*cc));
+                          	}
+                                }
+                            }
+                        }
+                        else 
+                        {
+              // Use pwc[] coefficients so we can assign TEz and TMz modes 
+              // *new* May 16, 2020
+                            if( numberOfDimensions==2 )
+                                xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) -cc*tE;
+                            else 
+                                xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) + kz*(ze-z0GaussianPlaneWave)  -cc*tE;
+                            RealArray gpw(I1,I2,I3);
+                            gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                            uLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                            uLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                            uLocal(Ie1,Ie2,Ie3,ez)=gpw(Ie1,Ie2,Ie3) * pwc[2];
+                            if( solveForAllFields )
+                            {
+                                uLocal(Ie1,Ie2,Ie3,hx)=gpw(Ie1,Ie2,Ie3) * pwc[3];
+                                uLocal(Ie1,Ie2,Ie3,hy)=gpw(Ie1,Ie2,Ie3) * pwc[4];
+                                uLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                            }
+                            if( method==nfdtd  || method==bamx )
+                            {
+                // Set values at previous time 
+                                xei+=cc*dt;
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                                umLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                                umLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                                umLocal(Ie1,Ie2,Ie3,ez)=gpw(Ie1,Ie2,Ie3) * pwc[2];
+                                if( solveForAllFields )
+                                {
+                          	umLocal(Ie1,Ie2,Ie3,hx)=gpw(Ie1,Ie2,Ie3) * pwc[3];
+                          	umLocal(Ie1,Ie2,Ie3,hy)=gpw(Ie1,Ie2,Ie3) * pwc[4];
+                          	umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                                }
+                            }
+                        }
+                    }
 
-        	  uh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
-        	  ue(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);//u(I1,I2,I3,hz)*(-ky/(eps*cc));
-        	  ue(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);//u(I1,I2,I3,hz)*( kx/(eps*cc));
 
-        	  xhi+=cc*dt;
-        	  xei+=cc*dt;
-        	  umh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
-        	  ume(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);//u(I1,I2,I3,hz)*(-ky/(eps*cc));
-        	  ume(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);//u(I1,I2,I3,hz)*( kx/(eps*cc));
-
-        	  if( saveExtraForcingLevels )
-        	  {
-	    // we need to save the "RHS" at some previous times.
-          	    for( int m=0; m<numberOfFunctions; m++ )
-          	    {
-#ifdef USE_PPP
-            	      realSerialArray fnLocal; getLocalArrayWithGhostBoundaries(FN(m),fnLocal);
-            	      OV_ABORT("finish me for parallel");
-#else
-            	      realSerialArray & fnLocal = FN(m);
-#endif
-            	      xhi=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*(t-dt*(m+1));
-            	      fnLocal(I1,I2,I3,hz)=hzLaplacianGaussianPulse(xhi);
-            	      fnLocal(I1,I2,I3,ex)=fnLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
-            	      fnLocal(I1,I2,I3,ey)=fnLocal(I1,I2,I3,hz)*( kx/(eps*cc));
-          	    }
-        	  }
       	}
       	else if( initialConditionOption==gaussianPulseInitialCondition )
       	{

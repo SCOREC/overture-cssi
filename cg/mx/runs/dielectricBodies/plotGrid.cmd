@@ -1,9 +1,13 @@
 #
+#   plotStuff plotGrid.cmd -show=blockGride2.order4.ng3.hdf -name=blockGrid
+#
 #   plotStuff plotGrid.cmd -show=ellipticalDiskGride8.order2.hdf -name=ellipticalDiskGrid8
 # 
 #   plotStuff plotGrid.cmd -show=rodGrid2de8.order2 -name=rodGridG8
 #
 #   plotStuff plotGrid.cmd -show=diskInBoxYpe4.order2.hdf -name=diskInBoxG4
+#
+#   plotStuff plotGrid.cmd -show=solidDiskYpe2.order2 -name=solidDiskG2
 # 
 #   plotStuff plotGrid.cmd -show=dielectricSphereGride4.order2 -name=sphereG4
 # 

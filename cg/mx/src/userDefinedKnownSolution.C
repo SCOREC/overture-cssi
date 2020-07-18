@@ -7,6 +7,7 @@
 #include "PlaneInterfaceExactSolution.h"
 
 #include "SurfaceWaveExactSolution.h"
+#include "SlabsExactSolution.h"
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3)                                       int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++)                                       for(i2=I2Base; i2<=I2Bound; i2++)                                     for(i1=I1Base; i1<=I1Bound; i1++)
 
@@ -625,6 +626,88 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
         
     }
     
+    else if( userKnownSolution=="slabs" )
+    {
+    // ======= SCATTERING FROM ONE OR MORE ADJACENT SLABS ===============
+        if( method==nfdtd )
+        {
+            if( !dbase.has_key("slabsExactSolution") )
+            {
+	// -- first time through: create class and initialize
+      	SlabsExactSolution & ses = dbase.put<SlabsExactSolution>("slabsExactSolution");
+
+                int numberOfDomains=cg.numberOfComponentGrids();
+
+      	if( !parameters.dbase.has_key("materialRegionParameters") )
+      	{
+          // **** put this some where else ****
+        	  printF("\n ################ UDKS : CREATE DMP VECTOR ##################\n\n");
+        	  
+        	  std::vector<DispersiveMaterialParameters> & dmpVector =
+          	    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+	  // const int domain1 = 0, domain2=1, domain3=2;
+        	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        	  {
+          	    int domain = grid;
+                    	    DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+          	    dmpVector.push_back(dmp);
+        	  }
+        	  
+
+	  // for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+	  // {
+	  //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+	  //   dmpVector.push_back(dmp0);
+	  // }
+	  // if( cg.numberOfDomains()<numberOfDomains )
+	  // {
+          //   int domain=0;  // first domain equals last 
+	  //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+	  //   dmpVector.push_back(dmp0);
+	  // }
+        	  
+
+      	}
+      	
+      	std::vector<DispersiveMaterialParameters> & dmpVector = 
+        	  parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+      	RealArray kvI(3);
+        // real kx=1., ky=.5;
+	// kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=0.;
+        
+
+      	kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=kz*twoPi;
+                real c0=1.;  // *fix me**
+                real omega= c0*sqrt( SQR(kvI(0)) + SQR(kvI(1)) + SQR(kvI(2)) );
+                const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+
+                ses.initialize( cg, numberOfDomains,dmpVector,omega,kvI,solveForAllFields );
+
+        //  -- **make this an option**:	
+                int scatCase=0;  // forward TEz
+        // int scatCase=2;  // backward TEz
+                ses.setScatteringCase( scatCase );
+      	
+                printF(" SLABS: kx/(2*pi)=%g, ky/(2*pi)=%g, kz/(2*pi)=%g, omega/(2*pi)=%g\n",kx,ky,kz,omega/(twoPi));
+
+            }
+
+            SlabsExactSolution & ses = dbase.get<SlabsExactSolution>("slabsExactSolution");
+            bool computeMagneticField=false;
+            ses.eval( t, cg, grid, ua, pv ,I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+
+        }
+        else if( method==bamx )
+        {
+            OV_ABORT("finish me: SLABS BAMX");
+            
+        }
+    }
+    
+
+
 /* -----
     else if( userKnownSolution=="dispersivePlaneWaveInterface" )
     {
@@ -1719,6 +1802,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
             "dispersive plane wave",
             "dispersive plane wave interface",
             "interface surface wave",
+            "slabs",
             "done",
             ""
         }; 
@@ -1810,6 +1894,24 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
            	     " Available caseNames:\n"
            	     "  (1) surfaceWaveCase1SpacePeriodic \n"
            	     "  (2) surfaceWaveCase1TimePeriodic \n"
+      	);
+            gi.inputString(caseName,"Enter the caseName");
+            
+        }
+        
+        else if( answer=="slabs" ) 
+        {
+            userKnownSolution="slabs";
+            dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
+            
+            if( !dbase.has_key("caseName") )
+      	dbase.put<aString>("caseName");
+
+            aString & caseName = dbase.get<aString>("caseName");
+            
+            printF("Slabs is an exact solution for a plane wave scattering from one or more slabs.\n"
+           	     " Available caseNames:\n"
+           	     "  (1) oneSlabIsoEps2 \n"
       	);
             gi.inputString(caseName,"Enter the caseName");
             

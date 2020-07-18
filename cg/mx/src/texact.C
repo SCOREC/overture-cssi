@@ -14,6 +14,8 @@
 
 #include "PlaneInterfaceExactSolution.h"
 
+#include "SlabsExactSolution.h"
+
 typedef ::real LocalReal;
 typedef ::real OV_real;
 
@@ -33,11 +35,13 @@ main(int argc, char *argv[])
          "            3 : plane interface 3d\n"
          "            4 : BA plane interface 2d\n"
          "            5 : BA plane interface 2d\n"
+         "            6 : slabs\n"
          " computeOption : for BA plane interface, 0=computeComplexFrequency, 1=computeComplexWaveNumber\n"
          " [kx,ky,kz] : wave-number for BA plane interface\n"
           );
 
-  const int pecSphere=0, dispersiveSphere=1, planeInterface2D=2, planeInterface3D=3, BAplaneInterface2D=4, BAplaneInterface3D=5;
+  const int pecSphere=0, dispersiveSphere=1, planeInterface2D=2, planeInterface3D=3, BAplaneInterface2D=4,
+    BAplaneInterface3D=5, slabs=6;
   int option = pecSphere;  
   option = dispersiveSphere;
 
@@ -54,6 +58,8 @@ main(int argc, char *argv[])
   int computeOption=0; // for BA, 0=computeComplexFrequency, 1=computeComplexWaveNumber
   real kx=1., ky=1., kz=0.;
   
+  int numSlabs=1;  // for SlabsExactSolution
+
      
   // char buff[180];
   int len=0;
@@ -71,6 +77,11 @@ main(int argc, char *argv[])
       {
         sScanF(line(len,line.length()-1),"%i",&option);
 	printF("option = %i\n",option);
+      }
+      else if( len=line.matches("-numSlabs=") )
+      {
+        sScanF(line(len,line.length()-1),"%i",&numSlabs);
+	printF("numSlabs = %i\n",numSlabs);
       }
       else if( len=line.matches("-computeOption=") )
       {
@@ -131,6 +142,31 @@ main(int argc, char *argv[])
       nameOfGridFile="twoSquaresInterfacee8.order2.hdf";
     else if( option==planeInterface3D || option==BAplaneInterface3D )
       nameOfGridFile= "twoBoxesInterfacee4.order2.hdf";
+    else if( option==slabs )
+    {
+      if( numSlabs==1 )
+      {
+        nameOfGridFile="slabsGrid2d1Blockse4.order4.hdf";
+      }
+      else if( numSlabs==2 )
+      {
+        nameOfGridFile="slabsGrid2d2Blockse4.order4.hdf";
+      }
+      else if( numSlabs==3 )
+      {
+        nameOfGridFile="slabsGrid2d3Blockse4.order4.hdf";
+      }
+      else if( numSlabs==4 )
+      {
+        nameOfGridFile="slabsGrid2d4Blockse4.order4.hdf";
+      }
+      else
+      {
+	OV_ABORT("ERROR: numSlabs");
+      }
+      
+      // nameOfGridFile= "blockGride4.order2.hdf";   
+    }
     else
     {
       OV_ABORT("ERROR: unknown option");
@@ -531,6 +567,131 @@ main(int argc, char *argv[])
       
     }
      
+
+
+  }
+  else if( option==slabs )
+  {
+    
+
+    bool openGraphicsWindow=false;
+    PlotStuff gi(openGraphicsWindow,"texactSlabs");  // create a PlotStuff object
+
+
+    // ses.evalTest();
+    // ** old ** ses.initialize();
+
+    // MxParameters parameters;  // parameters class
+
+    // New way: compute solution in C++ code  **finish me**
+    // parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters =
+    //        parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    std::vector<DispersiveMaterialParameters> dispersiveMaterialParameters;
+
+    int numberOfDomains= numSlabs+2; 
+    aString matFile[10];
+    matFile[                0]="baMatIsoEps1.txt";
+    matFile[                1]="baMatIsoEps2.txt";
+    matFile[                2]="baMatIsoEps8.txt";
+    matFile[                3]="baMatIsoEps3.txt";
+    matFile[                4]="baMatIsoEps5.txt";
+    matFile[numberOfDomains-1]="baMatIsoEps1.txt";
+    
+    // ={ "baMatIsoEps1.txt", "baMatIsoEps2.txt", "baMatIsoEps1.txt" };  // 
+
+
+    dispersiveMaterialParameters.resize(numberOfDomains);
+    for( int m=0; m<numberOfDomains; m++ )
+    {
+      DispersiveMaterialParameters & dmp = dispersiveMaterialParameters[m];
+      // aString materialType = "bianisotropic";
+      dmp.setMaterialType( DispersiveMaterialParameters::bianisotropic );
+      // dmp.setScales( velocityScale,lengthScale );
+      dmp.readFromFile( matFile[m] );
+    }
+    
+
+    RealArray kvI(3); kvI=0.;
+    LocalReal kx=1., ky=.5;
+    kvI(0)=kx*twoPi; kvI(1)=ky*twoPi;
+    
+    real omega = twoPi;  // is this correct ? 
+    int solveForAllFields=0;
+
+    SlabsExactSolution ses;
+    ses.initialize( cg,numberOfDomains,dispersiveMaterialParameters,omega,kvI,solveForAllFields );
+    
+
+    // ---- plot the solution over time ----
+    if( true )
+    {
+      gi.createWindow("texactSlabs");
+
+      PlotStuffParameters psp;                      // This object is used to change plotting parameters
+  
+      int numberOfTimeDerivatives=0;
+    
+      cg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+
+      Range all;
+      int nc= cg.numberOfDimensions()==2 ? 3 : 6;  //  [Ex,Ey,Hz] or [Ex,Ey,Ez, Hx,Hy,Hz ] 
+      realCompositeGridFunction u(cg,all,all,all,nc);
+      u=0.;
+  
+      u.setName("E");
+      u.setName("Ex",0);
+      u.setName("Ey",1);
+      if( cg.numberOfDimensions()==2 )
+	u.setName("Hz",2);
+      else
+      {
+	u.setName("Ez",2);
+	u.setName("Hx",3);
+	u.setName("Hy",4);
+	u.setName("Hz",5);
+      }
+     
+      int npvMax=4;
+      realCompositeGridFunction pv(cg,all,all,all,npvMax);
+
+
+      real dt=.1;
+      const int numSteps=11;
+      for( int step=0; step<numSteps; step++ )
+      {
+	real t = dt*step;
+     
+	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+	{
+	  Index I1,I2,I3;
+	  getIndex(cg[grid].dimension(),I1,I2,I3);
+
+	  bool computeMagneticField=true;
+	  // ses.eval( t, cg, grid, u[grid], pv[grid],I1,I2,I3, 0, computeMagneticField);
+	  realArray pvg;
+	  ses.eval( t, cg, grid, u[grid], pvg,I1,I2,I3, 0, computeMagneticField);
+
+	}
+
+	gi.erase();
+	psp.set(GI_TOP_LABEL,sPrintF("SLAB Solution t=%5.2f",t));
+	// PlotIt::plot(gi,cg,psp);
+	if( step==0 || step==(numSteps-1) )
+	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);      
+	else
+	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);      
+
+	PlotIt::contour(gi,u,psp);
+
+	gi.redraw(TRUE);
+      
+      }
+    }
+    
+
   }
   else
   {

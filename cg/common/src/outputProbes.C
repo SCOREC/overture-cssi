@@ -144,10 +144,20 @@ outputProbes( Parameters & parameters, GridFunction & gf0, int stepNumber, std::
 
     if(!parameters.dbase.has_key("probeList") ) return 0;
 
-  // printP("outputProbes: step=%i t=%8.2e\n",stepNumber,gf0.t);
-    
-    if( stepNumber % parameters.dbase.get<int>("probeFileFrequency") != 0 ) return 0;
+    const int & probeFileFrequency = parameters.dbase.get<int>("probeFileFrequency");
 
+    
+  // Check stepNumber versus probeFrequency to see if we output this step : 
+    if( (stepNumber % probeFileFrequency ) != 0 )
+    {
+    // printF("\n ###### outputProbes: step=%i t=%8.2e, probeFileFrequency=%d .. DO NOT SAVE PROBE.\n\n",stepNumber,gf0.t,probeFileFrequency);
+        return 0;
+    }
+    else
+    {
+    // printF("\n ###### outputProbes: step=%i t=%8.2e, probeFileFrequency=%d .. SAVE PROBE.\n\n",stepNumber,gf0.t,probeFileFrequency);
+    }
+    
     std::vector<ProbeInfo*> & probeList = parameters.dbase.get<std::vector<ProbeInfo*> >("probeList");
 
     const int & debug = parameters.dbase.get<int >("debug");

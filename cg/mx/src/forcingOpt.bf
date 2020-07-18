@@ -1,6 +1,6 @@
-c *******************************************************************************
-c   Add the forcing to Maxwell's equations such as for moving charges
-c *******************************************************************************
+! *******************************************************************************
+!   Add the forcing to Maxwell's equations such as for moving charges
+! *******************************************************************************
 
 #beginMacro beginLoops()
 do i3=n3a,n3b
@@ -16,6 +16,39 @@ end do
 end do
 #endMacro
 
+! This (cubic) ramp has 1-derivative zero at t=0 and t=tba
+#defineMacro ramp3(t,tba)  (t)*(t)*( -(t)/3.+.5*tba )*6./(tba*tba*tba)
+#defineMacro ramp3t(t,tba) (t)*( -(t) + tba )*6./(tba*tba*tba)
+#defineMacro ramp3tt(t,tba) ( -2.*(t) + tba )*6./(tba*tba*tba)
+#defineMacro ramp3ttt(t,tba) ( -2. )*6./(tba*tba*tba)
+
+! This ramp has 3-derivatives zero at t=0 and t=1
+! This is from ramp.maple
+! r=-84*t**5+35*t**4-20*t**7+70*t**6
+! rt=-420*t**4+140*t**3-140*t**6+420*t**5
+! rtt=-1680*t**3+420*t**2-840*t**5+2100*t**4
+! rttt=-5040*t**2+840*t-4200*t**4+8400*t**3
+
+#defineMacro ramp(t)    ( -84*(t)**5+35*(t)**4-20*(t)**7+70*(t)**6 )
+#defineMacro rampt(t)   ( -420*(t)**4+140*(t)**3-140*(t)**6+420*(t)**5 )
+#defineMacro ramptt(t)  ( -1680*(t)**3+420*(t)**2-840*(t)**5+2100*(t)**4 )
+#defineMacro rampttt(t) ( -5040*(t)**2+840*(t)-4200*(t)**4+8400*(t)**3 )
+
+! This ramp has 4-derivatives zero at t=0 and t=1
+! This is from ramp.maple
+! r=126*(t)**5-315*(t)**8+70*(t)**9-420*(t)**6+540*(t)**7
+! rt=630*(t)**4-2520*(t)**7+630*(t)**8-2520*(t)**5+3780*(t)**6
+! rtt=2520*(t)**3-17640*(t)**6+5040*(t)**7-12600*(t)**4+22680*(t)**5
+! rttt=7560*(t)**2-105840*(t)**5+35280*(t)**6-50400*(t)**3+113400*(t)**4
+
+#defineMacro ramp4(t)    ( 126*(t)**5-315*(t)**8+70*(t)**9-420*(t)**6+540*(t)**7 )              
+#defineMacro ramp4t(t)   ( 630*(t)**4-2520*(t)**7+630*(t)**8-2520*(t)**5+3780*(t)**6 )         
+#defineMacro ramp4tt(t)  ( 2520*(t)**3-17640*(t)**6+5040*(t)**7-12600*(t)**4+22680*(t)**5 )   
+#defineMacro ramp4ttt(t) ( 7560*(t)**2-105840*(t)**5+35280*(t)**6-50400*(t)**3+113400*(t)**4 )
+#defineMacro ramp4tttt(t) ( 15120*(t)-529200*(t)**4+211680*(t)**5-151200*(t)**2+453600*(t)**3 )
+
+
+
 #beginMacro declareGaussianVariables()
  real x0,x1,x2,q,r2Min,realMin,betap,a0,ap,app,appp
  real rho,rhop,rhopp,rhoppp
@@ -29,11 +62,11 @@ end do
  real deltaJ0t,deltaJ1t,deltaJ2t,j0ttt,j1ttt,j2ttt
 #endMacro
 
-c =====================================================================
-c Evaluate the Gaussian pulse 
-c
-c      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
-c =====================================================================
+! =====================================================================
+! Evaluate the Gaussian pulse 
+!
+!      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
+! =====================================================================
 #beginMacro evalGaussianPulse(DIM,x,y,z,t,rho)
 
    x0 = x -xp0
@@ -73,14 +106,35 @@ c =====================================================================
  #End
 #endMacro
 
+#beginMacro getSourceCoords(x0,x1,x2,DIM,GRIDTYPE)
+ #If #GRIDTYPE eq "curvilinear"
+   x0 = xy(i1,i2,i3,0)-xp0
+   x1 = xy(i1,i2,i3,1)-xp1
+   #If #DIM == "3"
+     x2 = xy(i1,i2,i3,2)-xp2
+   #End
+ #Else
+   x0 = xa(0)+i1*dx(0) -xp0
+   x1 = xa(1)+i2*dx(1) -xp1
+   #If #DIM == "3"
+     x2 = xa(2)+i3*dx(2) -xp2
+   #End
+ #End
+ #If #DIM == "2"
+   r2 = ( x0 )**2 + ( x1 )**2
+ #Else
+   r2 = ( x0 )**2 + ( x1 )**2 + ( x2 )**2 
+ #End
+#endMacro
 
-c =====================================================================
-c Evaluate the Gaussian pulse and its deriatives
-c
-c      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
-c
-c  p should be even and positive: 2,4,6,...
-c =====================================================================
+
+! =====================================================================
+! Evaluate the Gaussian pulse and its deriatives
+!
+!      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
+!
+!  p should be even and positive: 2,4,6,...
+! =====================================================================
 #beginMacro evalGaussianPulseAndDerivatives(x0,x1,x2,DIM,GRIDTYPE,NDER)
 
    ! radx == r*r_x = .5* (r^2)_x 
@@ -185,23 +239,23 @@ c =====================================================================
 #endMacro
 
 
-c ===========================================================================
-c     Forcing for a Moving Gaussian Pulse of Charge rho(x,t)
-c
-c      E_tt = c^2 [ Delta(E) - grad(rho/eps) - mu J_t ]
-c      H_tt = c^2 [ Delta(H) + curl( J ) ]
-c
-c      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
-c      J = rho*vv 
-c
-c  DIM : 2,3
-c  ORDER: 2,4
-c  GRIDTYPE : curvilinear, rectangular
-c ===========================================================================
+! ===========================================================================
+!     Forcing for a Moving Gaussian Pulse of Charge rho(x,t)
+!
+!      E_tt = c^2 [ Delta(E) - grad(rho/eps) - mu J_t ]
+!      H_tt = c^2 [ Delta(H) + curl( J ) ]
+!
+!      rho = a*exp( - [beta* | (xv-xpv) - vv*t |]^p ) )
+!      J = rho*vv 
+!
+!  DIM : 2,3
+!  ORDER: 2,4
+!  GRIDTYPE : curvilinear, rectangular
+! ===========================================================================
 #beginMacro assignGaussianPulseChargeDensity(DIM,ORDER,GRIDTYPE)
 
 
-c f = grad(rho) - J_t 
+! f = grad(rho) - J_t 
 
 
 icount=0
@@ -431,9 +485,9 @@ beginLoops()
 #endMacro
 
       subroutine testGaussianPulse()
-c =========================================================================
-c  Test the Gaussian pulse and derivatives
-c =========================================================================
+! =========================================================================
+!  Test the Gaussian pulse and derivatives
+! =========================================================================
       implicit none
 
       real xa(0:2),dx(0:2)
@@ -514,18 +568,126 @@ c =========================================================================
       end
 
 
+! ===========================================================================
+!     Gaussian Source Forcing 
+!
+!      E_tt = c^2 Delta(E) + f_E 
+!      H_tt = c^2 Delta(H) + f_H 
+!
+!      phi = amp*exp( - beta* | (xv-xv0) |^2 )
+!      phiE = sin(2*pi*omega t)* phi 
+!      phiH = cos(2*pi*omega t)* phi
+!
+!   2D:
+!       fE1 = -( y-y0 ) phiE  
+!       fE2 =  ( x-y0 ) phiE   
+!       fH3 =  phiH                       **what should this be ?   
+!   3D:
+!       fE1 = [ (z-z0) - (y-y0) ] phiE       
+!       fE2 = [ (x-x0) - (z-z0) ] phiE       
+!       fE3 = [ (y-y0) - (x-x0) ] phiE       
+!
+!  DIM : 2,3
+!  ORDER: 2,4
+!  GRIDTYPE : curvilinear, rectangular
+! ===========================================================================
+#beginMacro assignGaussianSource(DIM,ORDER,GRIDTYPE)
+
+
+icount=0
+beginLoops()
+
+ getSourceCoords(x0,x1,x2,DIM,GRIDTYPE)
+ ! only evaluate if this is a valid point and pulse value is not too small
+ if( mask(i1,i2,i3).gt.0 .and. (r2 .lt. tolGaussian) )then
+ ! if( .true. )then
+
+  phi = ampE*exp( -beta*( r2 ) )
+  phiE = phi*g
+
+  #If #ORDER == "2" 
+
+   #If #DIM == "2"
+     f(i1,i2,i3,ex)=f(i1,i2,i3,ex) -x1*phiE
+     f(i1,i2,i3,ey)=f(i1,i2,i3,ey) +x0*phiE
+     phiH = phi*g
+     f(i1,i2,i3,hz)= f(i1,i2,i3,hz) + (ampH/ampE)*phiH
+   #Else
+     f(i1,i2,i3,ex)=f(i1,i2,i3,ex) + (x2-x1)*phiE
+     f(i1,i2,i3,ey)=f(i1,i2,i3,ey) + (x0-x2)*phiE
+     f(i1,i2,i3,ez)=f(i1,i2,i3,ez) + (x1-x0)*phiE
+   #End
+
+
+  #Elif #ORDER == "4"
+
+   ! for 4th order in time we need to add corrections for the modified equation time-stepping
+   !     f + (dt^2/12)*( c^2 Delta(f) + f_tt ) 
+
+   phix = -2.*beta*x0*phi
+   phiy = -2.*beta*x1*phi
+
+   phixx = -2.*beta*phi + (2.*beta*x0)**2 * phi
+   phiyy = -2.*beta*phi + (2.*beta*x1)**2 * phi
+
+   phiEtt = phi*gtt
+
+   #If #DIM == "2"
+     lapPhi = phixx+phiyy
+     lapF1   = -x1*lapPhi - 2.*phiy  ! Delta( -(y-y0)*phi )
+     lapF2   =  x0*lapPhi + 2.*phix  ! Delta(  (x-x0)*phi )
+
+     f(i1,i2,i3,ex)=f(i1,i2,i3,ex) -x1*phiE + dtsqBy12*( csq*lapF1*g - x1*phiEtt )
+     f(i1,i2,i3,ey)=f(i1,i2,i3,ey) +x0*phiE + dtsqBy12*( csq*lapF2*g + x0*phiEtt )
+
+     ! phiH = phi*cost
+     ! lapPhiH = lapPhi *cost
+     ! Do this:
+     phiH = phi*g
+     lapPhiH = lapPhi *g
+
+     f(i1,i2,i3,hz)= f(i1,i2,i3,hz) + (ampH/ampE)*( phiH + dtsqBy12*( csq*lapPhiH + phi*gtt ) )
+   #Else
+     phiz = -2.*beta*x2*phi
+     phizz = -2.*beta*phi + (2.*beta*x2)**2 * phi
+
+     lapPhi = phixx+phiyy+phizz
+     lapF1   = (x2-x1)*lapPhi + 2.*(phiz-phiy)        ! Delta( [(z-z0)-(y-y0)] *phi )
+     lapF2   = (x0-x2)*lapPhi + 2.*(phix-phiz)        ! Delta( [(x-x0)-(z-z0)] *phi )
+     lapF3   = (x1-x0)*lapPhi + 2.*(phiy-phix)        ! Delta( [(y-y0)-(x-x0)] *phi )
+
+     f(i1,i2,i3,ex)=f(i1,i2,i3,ex) + (x2-x1)*phiE + dtsqBy12*( csq*lapF1*g + (x2-x1)*phiEtt )
+     f(i1,i2,i3,ey)=f(i1,i2,i3,ey) + (x0-x2)*phiE + dtsqBy12*( csq*lapF2*g + (x0-x2)*phiEtt )
+     f(i1,i2,i3,ez)=f(i1,i2,i3,ez) + (x1-x0)*phiE + dtsqBy12*( csq*lapF3*g + (x1-x0)*phiEtt )
+   #End
+
+  #Else
+    stop 4103
+  #End
+
+  else
+   icount=icount+1 ! this point not evaluated
+  end if
+ endLoops()
+ if( t.le.5*dt )then
+ write(*,'("Gaussian source: total points=",i6," points evaluated=",i6," : r2>tolGaussian=",e8.2)') \
+   (n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,tolGaussian
+ end if 
+#endMacro
+
+
       subroutine forcingOptMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                ndf1a,ndf1b,ndf2a,ndf2b,ndf3a,ndf3b,\
                                u,f,mask,rsxy, xy,\
                                ipar, rpar, ierr )
-c ===================================================================================
-c  Optimised Forcing functions for Maxwell's Equations.
-c
-c   Add the source terms for changes to the forcing RHS f.
-c
-c             f <- f + (charge source terms)
-c
-c ===================================================================================
+! ===================================================================================
+!  Optimised Forcing functions for Maxwell's Equations.
+!
+!   Add the source terms for changes to the forcing RHS f.
+!
+!             f <- f + (charge source terms)
+!
+! ===================================================================================
 
       implicit none
 
@@ -540,11 +702,17 @@ c ==============================================================================
       integer ipar(0:*)
       real rpar(0:*)
 
-c     --- local variables ----
+!     --- local variables ----
       
       integer ierr,orderOfExtrapolation
       integer n1a,n1b,n2a,n2b,n3a,n3b
       integer i1,i2,i3
+
+      ! Gaussian source variables: 
+      real phi,phiE,phiH, phix,phiy,phiz, phixx,phiyy,phizz, phiEtt, lapF1,lapF2,lapF3, lapPhiH, lapPhi 
+      real ampE,ampH,cost,sint,tolGaussian,dtsqBy12 ,omega, pi 
+      real rampTime,tba,g,rt,rtt,gtt
+
 
       ! for macro:
       declareGaussianVariables()
@@ -563,6 +731,11 @@ c     --- local variables ----
       real xa(0:2)
       real amplitude,p,beta,xp0,xp1,xp2,vp0,vp1,vp2
       real tol, tolPulse
+
+       integer method,nfdtd,bamx
+       parameter( nfdtd=5, bamx=7 )
+
+
 
       ierr=0
 
@@ -587,6 +760,7 @@ c     --- local variables ----
       grid                  =ipar(18)
       debug                 =ipar(19)
       forcingOption         =ipar(20)
+      method                =ipar(21)
 
       dx(0)                 =rpar(0)
       dx(1)                 =rpar(1)
@@ -617,12 +791,15 @@ c     --- local variables ----
       vp0                   =rpar(25)  ! speed of the pulse
       vp1                   =rpar(26)
       vp2                   =rpar(27)
+      omega                 =rpar(28)
+      rampTime              =rpar(29)
 
       realMin=1.e-30  ! should be REAL_MIN ******************** fix this ************
 
       csq=c*c 
       dtsq=dt*dt
-
+      pi=atan2(1.,1.)*4.
+      
       betap=beta**p 
       q=p/2.
       r2Min=realMin*100.
@@ -691,6 +868,95 @@ c     --- local variables ----
         write(*,'("forcingOptMaxwell: unknown orderOfAccuracyInTime",i6)') orderOfAccuracyInTime
         stop 5219
        end if
+
+
+      else if( forcingOption.eq.gaussianSource )then
+
+       ! --- Gaussian Source ------   July 4, 2020
+
+       ! amp = amplitude*beta**2   ! scale by beta^2 to make solution O(1) 
+       if( method .eq. nfdtd )then
+         ampE = amplitude*(2.*pi*omega)**2*sqrt(2.*beta)   ! scale to make solution O(1) 
+         ampH = amplitude*(2.*pi*omega)**2                 ! scale to make solution O(1) 
+       else if( method.eq.bamx )then
+         ampE = amplitude*(2.*pi*omega)*sqrt(2.*beta)   ! scale to make solution O(1) 
+         ampH = amplitude*(2.*pi*omega)                 ! scale to make solution O(1) 
+       else        
+          write(*,'("forcingOpt: Unknown method=",i6)') method
+          stop 11223
+       end if 
+       ! exp( -beta*r2 ) < tol
+       !  beta*r2 < log(1/tol)          
+       tolGaussian = log(1./tol)/beta ! tolerance for r2=r^2 
+
+       dtsqBy12 = (dt**2)/12.
+
+       sint = sin(2.*pi*omega*t )
+       cost = cos(2.*pi*omega*t )
+
+       ! Forcing time dependence is g(t)
+       tba = rampTime
+       if( t.le.tba )then 
+         ! slow start time function        
+         g = ramp3(t,tba)*sint 
+         rt = ramp3t(t,tba)
+         rtt = ramp3tt(t,tba) 
+         gtt = rtt*sint + 2.*rt*cost*(2.*pi*omega) - (2.*pi*omega)**2 * g 
+       else
+         g   = sint       
+         gtt = -(2.*pi*omega)**2 * sint 
+       end if
+      
+       if( t.le.5*dt )then
+         write(*,'(">> forcingOpt:GaussianSource: t=",e10.2," beta=",e10.2," omega=",e10.2)') t,beta,omega
+         write(*,'(">> amplitude",e10.2," ampE=",e10.2," ampH=",e10.2)') amplitude,ampE,ampH
+         write(*,'(">> rampTime=",e10.2," g=",e10.2," gtt=",e10.2)') rampTime,g,gtt
+         write(*,'(">> method=",i3," (5=nfdtd, 7=bamx)")') method
+       end if     
+
+       if( orderOfAccuracyInTime.eq.2 .or. method.eq.bamx )then
+        ! ***** NFDTD: 2nd order in time , OR BAMX (RK)*****
+        if( gridType.eq.curvilinear .and. nd.eq.2 )then
+          assignGaussianSource(2,2,curvilinear) 
+
+        else if( gridType.eq.rectangular .and. nd.eq.2 )then
+          assignGaussianSource(2,2,rectangular) 
+
+        else if( gridType.eq.curvilinear .and. nd.eq.3 )then
+          assignGaussianSource(3,2,curvilinear) 
+
+        else if( gridType.eq.rectangular .and. nd.eq.3 )then
+          assignGaussianSource(3,2,rectangular) 
+
+        else
+          write(*,'("forcingOptMaxwell: case not implemented")')
+          stop 7729
+        end if
+
+       else if( orderOfAccuracyInTime.eq.4 )then
+        ! ***** 4th order in time *****
+        if( gridType.eq.curvilinear .and. nd.eq.2 )then
+          assignGaussianSource(2,4,curvilinear) 
+
+        else if( gridType.eq.rectangular .and. nd.eq.2 )then
+          assignGaussianSource(2,4,rectangular) 
+
+        else if( gridType.eq.curvilinear .and. nd.eq.3 )then
+          assignGaussianSource(3,4,curvilinear) 
+
+        else if( gridType.eq.rectangular .and. nd.eq.3 )then
+          assignGaussianSource(3,4,rectangular) 
+
+        else
+          write(*,'("forcingOptMaxwell: case not implemented")')
+          stop 7729
+        end if
+
+       else
+        write(*,'("forcingOptMaxwell: unknown orderOfAccuracyInTime",i6)') orderOfAccuracyInTime
+        stop 5219
+       end if
+
 
       else
         write(*,'("forcingOptMaxwell: unknown forcingOption=",i6)') forcingOption

@@ -113,6 +113,13 @@ DispersiveMaterialParameters()
   modelParameters.redim(numberOfModelParameters,1); // fill in defaults of zero
   modelParameters=0.;
 
+  nonlinearModel = noNonlinearModel;
+  dbase.put<aString>("nonlinearModelName")="none"; 
+  dbase.put<bool>("isNonlinearMaterial")=false;
+  dbase.put<RealArray>("nonlinearModelParameters");  // holds parameters for nonlinear models
+
+  dbase.put<int>("numberOfAtomicLevels")=0;  // number of atomic levels ( N's ) for the multilevelAtomic (Maxwell-Bloch) model
+
   // **OLD WAY: 
   // Drude-Lorentz model:  
   //     P_tt + gamma P_t = omegap^2 E 
@@ -218,6 +225,8 @@ operator =( const DispersiveMaterialParameters & x )
   chiSumi0 = x.chiSumi0;
 
   epsInf=x.epsInf;
+  muInf =x.muInf;
+  
   alphaP=x.alphaP;
   mode  =x.mode;
   rootComputed=x.rootComputed;
@@ -229,6 +238,21 @@ operator =( const DispersiveMaterialParameters & x )
   if( !dbase.has_key("isDispersive" ) ) dbase.put<bool>("isDispersive");
   dbase.get<bool>("isDispersive")= x.dbase.get<bool>("isDispersive");
   
+
+  nonlinearModel = x.nonlinearModel;
+  if( !dbase.has_key("nonlinearModelName") ) dbase.put<aString>("nonlinearModelName");
+  dbase.get<aString>("nonlinearModelName")= x.dbase.get<aString>("nonlinearModelName");
+
+  if( !dbase.has_key("isNonlinearMaterial") ) dbase.put<bool>("isNonlinearMaterial");
+  dbase.get<bool>("isNonlinearMaterial")= x.dbase.get<bool>("isNonlinearMaterial");
+
+  if( !dbase.has_key("numberOfAtomicLevels") ) dbase.put<int>("numberOfAtomicLevels");
+  dbase.get<int>("numberOfAtomicLevels")= x.dbase.get<int>("numberOfAtomicLevels");
+
+  if( !dbase.has_key("nonlinearModelParameters") ) dbase.put<RealArray>("nonlinearModelParameters");
+  RealArray & nonlinearModelParameters = dbase.get<RealArray>("nonlinearModelParameters");
+  nonlinearModelParameters.redim(0);
+  nonlinearModelParameters = x.dbase.get<RealArray>("nonlinearModelParameters"); 
 
   if( !dbase.has_key("debug" ) ) dbase.put<int>("debug");
   dbase.get<int>("debug")= x.dbase.get<int>("debug");
@@ -280,6 +304,32 @@ bool DispersiveMaterialParameters::isDispersiveMaterial() const
 {
   return dbase.get<bool>("isDispersive");
 }
+
+
+// ==========================================================================================
+/// \brief Return true if the material is nonlinear
+// ==========================================================================================
+bool DispersiveMaterialParameters::isNonlinearMaterial() const
+{
+  return dbase.get<bool>("isNonlinearMaterial");
+}
+
+// ==========================================================================================
+/// \brief Return the number of atomic levels (N's) in the multilevelAtomic model
+// ==========================================================================================
+int DispersiveMaterialParameters::getNumberOfAtomicLevels() const
+{
+  return dbase.get<int>("numberOfAtomicLevels");
+}
+
+// ==========================================================================================
+/// \brief Return the number of polarization vectors for isotropic materials
+// ==========================================================================================
+int DispersiveMaterialParameters::getNumberOfPolarizationVectors() const
+{
+  return numberOfPolarizationVectors;
+}
+
 
 
 // ==========================================================================================
@@ -636,6 +686,29 @@ getIsotropicParameters( int & Np,  real & epsInf_, RealArray & modelParams ) con
   return 0;
 }
 
+// ==========================================================================================
+/// \brief Return the parameters from nonlinear models 
+/// \param numberOfNonlinearVariables (output) : number Of nonlinear unknowns
+/// \param nlPar (output) : nonlinear parameters:
+///    nlPar(0:numPar,0:numberOfNonlinearVariables-1) : 
+/// 
+// ==========================================================================================
+int DispersiveMaterialParameters::
+getNonlinearParameters( int & numberOfNonlinearVariables, RealArray & nlPar ) const 
+{
+  int & numberOfAtomicLevels = dbase.get<int>("numberOfAtomicLevels"); // for multilevelAtomic model 
+  RealArray & nonlinearModelParameters = dbase.get<RealArray>("nonlinearModelParameters");
+
+
+  numberOfNonlinearVariables = numberOfAtomicLevels;
+  nlPar.redim(0);
+  nlPar = nonlinearModelParameters;
+  
+  return 0;
+  
+}
+
+
 
 
 // ===================================================================================================
@@ -756,7 +829,18 @@ getBianisotropicMaterialMatrix( RealArray & K0 ) const
   }
   else
   {
-    printF("DispersiveMaterialParameters::getBianisotropicMaterialMatrix:ERROR: materialType is not equal to bianisotropic\n");
+    printF("DispersiveMaterialParameters::getBianisotropicMaterialMatrix:WARNING: materialType is not equal to bianisotropic.\n");
+    printF("DMP: Returning K0 for an isotropic material with epsInf=%9.3e, muInf=%9.3e\n",epsInf,muInf);
+    K0.redim(6,6);
+    K0=0.;
+    for( int i=0; i<3; i++ )
+    {
+      K0(i  ,i  )=epsInf;
+      K0(i+3,i+3)=muInf;
+    }
+    
+
+
     return 1;
   }
 
@@ -966,6 +1050,63 @@ writeToFile( const aString & fileName )
 }
 
 
+// ===============================================================================================================
+/// \brief Fill in a matrix of values from an input string 
+/// \param aline (input) : string containing comma separated values of the form 
+///        aline(len,end)  = "[ val, val, val, ..., val ];" 
+///  \param par (output) : fill in values par(n1a:n1b,n2a:n2b,n3a:n3b) 
+/// \return value: 1=success, 0=failed to read all values. 
+// ===============================================================================================================
+int getMatrixValuesFromString( const aString & aline, int len,
+			       int n1a, int n1b,
+			       int n2a, int n2b,
+			       int n3a, int n3b, 
+			       RealArray & par )
+{
+  int debug=0; // 1 
+  if( debug )
+  {
+    printF("getMatrixValuesFromString: aline=%s\n",(const char*)aline); 
+    printF("getMatrixValuesFromString: [n1a,n1b][n2a,n2b][n3a,n3b]=[%d,%d][%d,%d][%d,%d]\n",n1a,n1b,n2a,n2b,n3a,n3b);
+  }
+
+
+  int length=aline.length();
+  int ia=len+1;  // parameters start here
+  for( int m3=n3a; m3<=n3b; m3++ )
+  {
+    for( int m1=n1a; m1<=n1b; m1++ )  // *NOTE* since it is a MATRIX and not an array, reverse order of m1 and m2 when reading
+    {
+      for( int m2=n2a; m2<=n2b; m2++ )
+      {
+        //  Read one value at a time ...
+
+	int ie=ia+1;  // find ie = end of next number 
+	while( ie<length && aline[ie] != ',' && aline[ie] != ']' )
+	{
+	  if( debug ) { printF(" aline[%d]=%c\n",ie,aline[ie]);  } 
+	  
+	  ie++;
+	}
+        if( debug ) { printF("read aline(ia,ie-1)=[%s]\n",(const char*)aline(ia,ie-1));;  } // 
+	
+	sScanF(aline(ia,ie-1),"%e",&par(m1,m2,m3));
+
+	if( debug ) {  printF("par(%i,%i,%i)=%g\n",m1,m2,m3,par(m1,m2,m3));  } // 
+	ia=ie+1;	
+	if( ia>=length )
+	{
+	  printF("getMatrixValuesFromString:ERROR not enough values found from string=[%s]\n",(const char*)aline);
+	  return 0;
+	}
+    
+      }
+      if( ia>=length )
+	break;
+    }
+  }
+  return 1;
+}
 
 
 // ==========================================================================================
@@ -988,14 +1129,17 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
     OV_ABORT("error");
   }
 
+  const int NpMax=10;  // **FIX ME**
+
+
   MaterialTypeEnum & materialType = dbase.get<MaterialTypeEnum>("materialType");
   if( materialType == bianisotropic )
   {
-     //    K(6,6) : material tensor 
-     //
-     //     K0(6,6)  : constant part of material tensor 
-     //     bianisotropicParameters(4,Np,6,6)        : GDM 
-     //     Np(6,6) : number of polarization vectors 
+    //    K(6,6) : material tensor 
+    //
+    //     K0(6,6)  : constant part of material tensor 
+    //     bianisotropicParameters(4,Np,6,6)        : GDM 
+    //     Np(6,6) : number of polarization vectors 
 
     printF("DispersiveMaterialParameters::readFromFile: This is an bianisotropic material\n");
 
@@ -1006,7 +1150,6 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
       dbase.put<RealArray>("bianisotropicParameters");
      
       RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
-      int NpMax=10;   // max Np **FIX ME**
       bianisotropicParameters.redim(4,NpMax,6,6);
 
       bianisotropicParameters=0.;
@@ -1023,6 +1166,10 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   bool & isDispersive = dbase.get<bool>("isDispersive");
   isDispersive=false;
   
+  aString & nonlinearModelName = dbase.get<aString>("nonlinearModelName");
+  int & numberOfAtomicLevels = dbase.get<int>("numberOfAtomicLevels"); // for multilevelAtomic model 
+
+
   real & omegaMin = dbase.get<real>("omegaMin");   
   real & omegaMax = dbase.get<real>("omegaMax");   
   
@@ -1031,8 +1178,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   real & omegaScale = dbase.get<real>("omegaScale");
   RealArray gdmPars;
   real epsInf0;
-  int npMax=10;
-  RealArray a0v(npMax),a1v(npMax),b0v(npMax),b1v(npMax);
+  RealArray a0v(NpMax),a1v(NpMax),b0v(NpMax),b1v(NpMax);
 
 
   const real nm = 1e-9;         // nanometers  (meter-per-nm)
@@ -1046,6 +1192,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   real L0 = dbase.get<real>("lengthScale"); 
   real T0 = L0/V0;  // time scale 
   
+  bool normalizedUnits=false;  // if true, do not scale GMD parameters by wSacel
+
   // real Omega0 = 2.*Pi/T0;       // angular frequency scale : omega = c0*k = c0*(2*pi)/lambda = 2*pi * c0/L0 
   real Omega0 = 1./T0;             // angular frequency scales by this if we scale x/L0 and t/T0 
 
@@ -1130,12 +1278,20 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	else if( len=aline.matches("omegaScale=") )
 	{
 	  sScanF(aline(len,aline.length()-1),"%e",&omegaScale);
-	  printF("omegaScale=%22.16e\n",omegaScale);
+	  printF("omegaScale=%22.16e, Omega0=%22.16e\n",omegaScale,Omega0);
 
-	  wScale=omegaScale/Omega0; // Frequency scale 
-	  printF("DispersiveMaterialParameters::readFromFile: non-dimensionalize: L0=%g(nm) = %g(m) T0=%g(s) Omega0=%g omegaScale=%g,  "
-		 "wscale= omegaScale*T0/(2*pi)=%g\n", L0/nm,L0,T0,Omega0,omegaScale,wScale);
-
+	  if( !normalizedUnits )
+	  {
+	    
+	    wScale=omegaScale/Omega0; // Frequency scale 
+	    printF("DispersiveMaterialParameters::readFromFile: non-dimensionalize: L0=%g(nm) = %g(m) T0=%g(s) Omega0=%g omegaScale=%g,  "
+		   "wscale= omegaScale/Omega0 = omegaScale*T0/(2*pi)=%g\n", L0/nm,L0,T0,Omega0,omegaScale,wScale);
+	  }
+	  else
+	  {
+            printF("DMP: Ignoring omegaScale=%g since units=`normalizedUnits'\n",omegaScale);
+	  }
+	  
 	}
 	else if( len=aline.matches("omegaDataMin=") )
 	{
@@ -1152,7 +1308,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	else if( len=aline.matches("name=") )
 	{
 	  name=aline(len,aline.length()-1-shiftForSemiColon); // skip final ";"
-	  printF("name=%s\n",(const char*)name);
+	  printF("DMP: name=%s\n",(const char*)name);
 	  int nl=name.length()-1;
 	  if( name[0]=='"' && name[nl]=='"' )
 	    name = name(1,nl-1);  // remove double quotes 
@@ -1160,8 +1316,161 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	else if( len=aline.matches("units=") )
 	{
 	  units=aline(len,aline.length()-1-shiftForSemiColon); // skip final ";"
-	  printF("units=%s\n",(const char*)units);
+          int nl=units.length()-1;
+	  if( units[0]=='"' && units[nl]=='"' )
+	    units = units(1,nl-1);  // remove double quotes 
+
+          if( units == "normalized" )  
+	  {
+	    printF("DMP::INFO: units=%s : GDM parameters will NOT be scaled by a reference frequency.\n",(const char*)units);
+	    normalizedUnits=true;   // do not scale GDM parameters
+	    wScale=1.;
+	  }
+	  else
+	    printF("DMP: units=[%s].\n",(const char*)units);
+
 	}
+        else if( len=aline.matches("nonlinearModel=") )
+	{
+	  nonlinearModelName=aline(len,aline.length()-1-shiftForSemiColon); // skip final ";"
+          int nl=nonlinearModelName.length()-1;
+	  if( nonlinearModelName[0]=='"' && nonlinearModelName[nl]=='"' )
+	    nonlinearModelName = nonlinearModelName(1,nl-1);  // remove double quotes 
+
+	  printF("Setting nonlinearModel=[%s]\n",(const char*)nonlinearModelName);
+	  if( nonlinearModelName == "multilevelAtomic" )
+	  {
+	    nonlinearModel=multilevelAtomic;
+	    dbase.get<bool>("isNonlinearMaterial")=true;
+	  }
+	  else
+	  {
+            printF("DispersiveMaterialParameters:WARNING: IGNORING UNKNOWN NONLINEAR MDOEL model=[%s]]\\n",(const char*)nonlinearModelName);
+	  }
+
+	}
+        else if( len=aline.matches("numberOfAtomicLevels=") )
+	{
+           sScanF(aline(len,aline.length()-1),"%i",&numberOfAtomicLevels);
+	   printF("DMP: Setting numberOfAtomicLevels=%d\n",numberOfAtomicLevels);
+	}
+        else if( len=aline.matches("numberOfPolarizationVectors=") )
+	{
+	  // **do this for now for the MLA model ***
+           sScanF(aline(len,aline.length()-1),"%i",&numberOfPolarizationVectors);
+	   printF("DMP: Setting numberOfPolarizationVectors=%d\n",numberOfPolarizationVectors);
+
+	   if( numberOfPolarizationVectors > numberOfPolarizationVectorsRequested )
+	   {
+	     printF("\n ++++++ ERROR: numberOfPolarizationVectors=%d (from file) is greater than numberOfPolarizationVectorsRequested=%d.\n"
+		    " You should change numberOfPolarizationVectorsRequested to %d.\n",
+		    numberOfPolarizationVectors,numberOfPolarizationVectorsRequested,numberOfPolarizationVectors);
+	     OV_ABORT("DMP:ERROR");
+	   }
+	   
+
+	}
+
+        else if( (len=aline.matches("polarizationNECoefficients=")) || 
+	         (len=aline.matches("populationRelaxationCoefficients="))|| 
+	         (len=aline.matches("populationEPtCoefficients="))  )
+	{
+	  int & numberOfAtomicLevels = dbase.get<int>("numberOfAtomicLevels"); // for multilevelAtomic model 
+	  RealArray & nonlinearModelParameters = dbase.get<RealArray>("nonlinearModelParameters");
+
+          // We store 3 arrays of coefficients  ** FIX ME ***
+	  //    P[ij]_tt + ...   =    alpha(i,j) * P[ij]_t E_j 
+	  //   alpha(i,j), beta(i,j), gamma(i,j)   i,j = 0,1,...,numberOfAtomicLevels
+
+          const int numberOfCoefficientTensors = 3; // a, alpha, beta 
+          const int maxCoeff = max(numberOfAtomicLevels,numberOfPolarizationVectors);
+          if( nonlinearModelParameters.getLength(0) != maxCoeff )
+	  {
+	    nonlinearModelParameters.redim(maxCoeff,maxCoeff,numberOfCoefficientTensors);
+            nonlinearModelParameters=0.;
+	  }
+	  
+          if( len=aline.matches("polarizationNECoefficients=") )
+	  {
+            printF("Reading polarizationNECoefficients matrix: numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
+		   numberOfPolarizationVectors,numberOfAtomicLevels );
+	
+            // read matrix values:
+	    //     nonlinearModelParameters(0:np-1,0:na-1,0:0) 
+            int ok= getMatrixValuesFromString( aline,len,
+					       0,numberOfPolarizationVectors-1,  // range for first component
+					       0,numberOfAtomicLevels-1,         // range for second component
+					       0,0,                              // range for third component 
+					       nonlinearModelParameters );
+            Range R1=numberOfPolarizationVectors, R2=numberOfAtomicLevels;
+	    ::display(nonlinearModelParameters(R1,R2,0),"polarizationNECoefficients (TRANSPOSE)","%6.2f ");
+	    
+            if( !ok )
+	    {
+	      printf("DMP:readFromFile:ERROR reading matrix values for polarizationNECoefficients!\n");
+	    }
+	    // OV_ABORT("polarizationNECoefficients: stop here for now");
+	    
+
+
+	  }
+	  else if( len=aline.matches("populationRelaxationCoefficients=") )
+	  {
+            
+            printF("Reading populationRelaxationCoefficients matrix: numberOfAtomicLevels=%d\n",
+		   numberOfAtomicLevels );
+	
+            // read matrix values:
+	    //     nonlinearModelParameters(0:np-1,0:na-1,0:0) 
+            int ok= getMatrixValuesFromString( aline,len,
+					       0,numberOfAtomicLevels-1,         // range for first component
+					       0,numberOfAtomicLevels-1,         // range for second component
+					       1,1,                              // range for third component *NOTE*
+					       nonlinearModelParameters );
+            Range R1=numberOfAtomicLevels, R2=numberOfAtomicLevels;
+	    ::display(nonlinearModelParameters(R1,R2,1),"populationRelaxationCoefficients (TRANSPOSE)","%6.2f ");
+	    
+            if( !ok )
+	    {
+	      printf("DMP:readFromFile:ERROR reading matrix values for populationRelaxationCoefficients!\n");
+	    }
+	    // OV_ABORT("populationRelaxationCoefficients: stop here for now");
+
+	  }
+	  else if( len=aline.matches("populationEPtCoefficients=") )
+	  {
+            
+            printF("Reading populationEPtCoefficients matrix: numberOfAtomicLevels=%d, numberOfPolarizationVectors=%d\n",
+		   numberOfAtomicLevels,numberOfPolarizationVectors );
+	
+            // read matrix values:
+	    //     nonlinearModelParameters(0:na-1,0:np-1,0:0) 
+            int ok= getMatrixValuesFromString( aline,len,
+					       0,numberOfAtomicLevels-1,            // range for first component
+					       0,numberOfPolarizationVectors-1,     // range for second component
+					       2,2,                                 // range for third component *NOTE*
+					       nonlinearModelParameters );
+            Range R1=numberOfAtomicLevels, R2=numberOfPolarizationVectors;
+	    ::display(nonlinearModelParameters(R1,R2,2),"populationEPtCoefficients (TRANSPOSE)","%6.2f ");
+	    
+            if( !ok )
+	    {
+	      printf("DMP:readFromFile:ERROR reading matrix values for populationEPtCoefficients!\n");
+	    }
+	    // OV_ABORT("populationEPtCoefficients: stop here for now");
+
+	  }
+
+	  else
+	  {
+	    OV_ABORT("ERROR -- this should not happen!");
+	  }
+	  
+
+	  
+	}
+	
+
 	else if( len=aline.matches("epsGDMPars") )	
 	{
 	  // "epsGDMPars1=["
@@ -1228,6 +1537,10 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  // printF("\n DMP ***** TEMP******* set wScale=1 (was %9.2e)\n",wScale);
 	  // wScale=1; // ********** TEMP ***********
         
+	  if( normalizedUnits )
+	     wScale=1.;
+	   
+
 	  if( Np <= numberOfPolarizationVectorsRequested && Np>currentBestNp )
 	  {
 	    currentBestNp=Np;
@@ -1268,7 +1581,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	}
 
 
-	else if( materialType == bianisotropic && (len=aline.matches("bianistropicK0"))   )	
+	else if( ( true || materialType == bianisotropic)  && (len=aline.matches("bianistropicK0"))   )	
 	{
 	  // ---- BI-ANISTROPIC MATERIAL MATRIX K0 ---
 	  //   bianistropicK0=[...]; 
@@ -1276,6 +1589,9 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 
           parametersSet=true;
           
+          if( ! dbase.has_key("K0") )
+	    dbase.put<RealArray>("K0");
+
 	  RealArray & K0 = dbase.get<RealArray>("K0");
 	  K0.redim(6,6);
 	
@@ -1310,10 +1626,22 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	      break;
 	  }
 	
+          if( materialType == isotropic )
+	  {
+            // Isotropic material: 
+	    epsInf= K0(0,0);
+            muInf = K0(3,3);
+	    alphaP=1./epsInf;
+
+            printF("DMP:readFromFile: Setting isotropic epsInf = K0(0,0) = %g, muInf = K0(3,3) = %g \n",epsInf,muInf);
+   
+	  }
+	  
+
 	  ::display(K0,"K0");
 	}
       
-	else if( materialType == bianisotropic && (len=aline.matches("bianistropicPars")) )	
+	else if( (true || materialType == bianisotropic) && (len=aline.matches("bianistropicPars")) )	
 	{
 	  // ---- BI-ANISTROPIC MATERIAL GDM COEFFICIENTS ---
 
@@ -1323,14 +1651,29 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  isDispersive=true;
 	  
 	  // bianisotropicParameters(4,Np,6,6) 
+          if( ! dbase.has_key("bianisotropicParameters") )
+	  {
+	    dbase.put<RealArray>("bianisotropicParameters");
+            RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+	    bianisotropicParameters.redim(4,NpMax,6,6);
+            bianisotropicParameters=0.;
+
+	    dbase.put<IntegerArray>("NpBA");
+  	    IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+            NpBA.redim(6,6); NpBA=0;
+
+	  }
+
 	  RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
 	  IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
 
 	  // GDM parameters
+	  if( normalizedUnits )
+	     wScale=1.;
+	   
 	  int k1=1,k2=1;
 	  sScanF(aline(len  ,len  ),"%i1",&k1);
 	  sScanF(aline(len+1,len+1),"%i1",&k2);
-	  // printF("Reading GDM parameters for material matrix K%d%d\n",k1,k2);
 
 	  assert( k1>=1 && k1<=6 );
 	  assert( k2>=1 && k2<=6 );
@@ -1338,6 +1681,11 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  // printf("aline(len+5,len+5)=[%s]\n",(const char*)aline(len+5,len+5));
 	
 	  sScanF(aline(len+5,len+5),"%i1",&Np);
+
+	  if( true )
+	    printF("Reading GDM parameters for material matrix K%d%d, Np=%d, numberOfPolarizationVectorsRequested=%d\n",
+		   k1,k2,Np,numberOfPolarizationVectorsRequested);
+
 	  // --- Read the GDM data ----
 	  if( Np <= numberOfPolarizationVectorsRequested )
 	  {
@@ -1390,7 +1738,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	    }
 	
 
-
+	    
 	  } // end if Np <= 
 	
 
@@ -1408,6 +1756,65 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 
   } // end if !feof(file) 
      
+
+  if( nonlinearModel == multilevelAtomic )
+  {
+
+    IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+
+    printF("DispersiveMaterialParameters: nonlinearModel=multilevelAtomic  NpBA(0,0)=%d, numberOfPolarizationVectors=%d\n",
+	   NpBA(0,0),numberOfPolarizationVectors);
+
+    if( NpBA(0,0) != numberOfPolarizationVectors )
+    {
+      printF("\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+      printF("DispersiveMaterialParameters:ERROR reading file=[%s]\n",(const char*)fileName);
+      printF("DMP: nonlinearModel = multilevelAtomic, but numberOfPolarizationVectors=%d is not equal to NpBA(0,0)=%d\n",
+	     numberOfPolarizationVectors, NpBA(0,0));
+      printF("DMP: Something is wrong here. Maybe numberOfPolarizationVectorsRequested=%d is wrong.\n",
+	     numberOfPolarizationVectorsRequested);
+      OV_ABORT("DMP::error");
+    }
+    
+  }
+  
+
+  if( materialType==isotropic && dbase.has_key("bianisotropicParameters") )
+  {
+    // Fill in isotropic parameters
+    RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+    IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+
+    printf("DMP::readFromFile:Setting [a0,a1,b0,b1] from BA parameters for an non-BA material.\n");
+    printf("DMP::INFO scaling GDM parameters a0,a1 by epsInf=%g since \n"
+	   "        K(s)   = K0 + K1(s)\n"
+	   "        eps(s) = epsInf*( 1 + chi(s) ) = epsInf + epsInf*chi(s) \n"
+	   "   =>   chi(s) = K1(s)/epsInf \n",epsInf);
+    int k1=1, k2=1;
+    int Np = NpBA(k1-1,k2-1);
+    numberOfPolarizationVectors = Np;
+
+    modelParameters.redim(4,Np);
+
+    for( int j=0; j<Np; j++ )
+    {
+      assert( j<bianisotropicParameters.getLength(1) );
+	  
+      a0v(j) = bianisotropicParameters(0,j,k1-1,k2-1)/epsInf;
+      a1v(j) = bianisotropicParameters(1,j,k1-1,k2-1)/epsInf;
+      b0v(j) = bianisotropicParameters(2,j,k1-1,k2-1);
+      b1v(j) = bianisotropicParameters(3,j,k1-1,k2-1);
+	  
+      modelParameters(0,j)=a0v(j);
+      modelParameters(1,j)=a1v(j);
+      modelParameters(2,j)=b0v(j);
+      modelParameters(3,j)=b1v(j);
+
+
+      printF("j=%d: [a0,a1,b0,b1]=[%g,%g,%g,%g]\n",j,a0v(j),a1v(j),b0v(j),b1v(j));
+    }
+  }
+
 
   if( !parametersSet )
   {
@@ -2426,4 +2833,90 @@ update( GenericGraphicsInterface & gi )
 
 
 
+// ------ routines use COMPLEX arithmetic go at the bottom to avoid name conflicts with "real" ---------------
+
+#include <complex>
+typedef ::real LocalReal;
+typedef ::real OvReal;
+
+#include "ComplexArray.h"
+
+
+  
+
+// ===============================================================================================================================
+/// \brief Return the frequency space BA material matrix evaluated at "s"
+// ===============================================================================================================================
+int DispersiveMaterialParameters::
+getK( ComplexArray & K, Complex & s ) const
+{
+  printF("DMP:: ENTERING getK\n");
+  if( !dbase.has_key("K0") )
+  {
+    // --- isotropic case ---
+    printF("DMP::getK: there is no K0 matrix!\n");
+    for( int i1=0; i1<6; i1++ )
+    {
+      for( int i2=0; i2<6; i2++ )
+      {
+	K(i1,i2) = 0.;
+      }
+    }
+    for( int i=0; i<3; i++ ){ K(i,i)=epsInf; } // 
+    for( int i=3; i<6; i++ ){ K(i,i)=muInf; } // 
+
+    if( isDispersiveMaterial() )
+    {
+      OV_ABORT("DMP::getK: finish me for dispersive");
+    }
+    
+    return 0;
+
+  }
+  
+  RealArray & K0 = dbase.get<RealArray>("K0");
+
+  for( int i1=0; i1<6; i1++ )
+  {
+    for( int i2=0; i2<6; i2++ )
+    {
+      K(i1,i2) = K0(i1,i2);
+    }
+  }
+  if( !isDispersiveMaterial() )
+  {
+    return 0;
+  }
+  
+
+  // bianisotropicParameters(4,Np,6,6) 
+  if(!dbase.has_key("bianisotropicParameters") )
+  {
+   printF("DMP::getK: there is no array bianisotropicParameters!\n");
+  }
+  
+
+  RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+  IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+
+  for( int i1=0; i1<6; i1++ )
+  {
+    for( int i2=0; i2<6; i2++ )
+    {
+      // K(i1,i2) = K0(i1,i2);
+      for( int n=0; n<NpBA(i1,i2); n++ )
+      {
+	OvReal a0=bianisotropicParameters(0,n,i1,i2);
+	OvReal a1=bianisotropicParameters(1,n,i1,i2);
+	OvReal b0=bianisotropicParameters(2,n,i1,i2);
+	OvReal b1=bianisotropicParameters(3,n,i1,i2);
+	  
+	K(i1,i2) = K(i1,i2) + (a0+a1*s)/( b0+b1*s+s*s);
+      }
+    }
+  }
+
+
+  return 0;
+}
 

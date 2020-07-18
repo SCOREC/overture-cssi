@@ -1,7 +1,7 @@
 ! This file automatically generated from advOptNew.bf with bpp.
         subroutine advMx2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f,fa, v, pm,
-     & p,pn, xy, ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f,fa, v, 
+     & pm,p,pn, qm, q,qn, bc, dis, varDis, ipar, rpar, ierr )
        !======================================================================
        !   Advance a time step for Maxwells equations
        !     OPTIMIZED version for rectangular grids.
@@ -26,9 +26,12 @@
         real pm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
         real pn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+        ! Vectors for the nonlinear multilevel Atomic model 
         real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
-        real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
-        real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+        ! for nonlinear model
+        real qm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+        real q(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+        real qn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
@@ -86,6 +89,10 @@
         ! Dispersion models
        integer noDispersion,drude,gdm
        parameter( noDispersion=0, drude=1, gdm=2 )
+        ! Nonlinear models
+       integer noNonlinearModel,multilevelAtomic
+       parameter( noNonlinearModel=0, multilevelAtomic=1 )
+             integer nonlinearModel
         ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,
@@ -1471,11 +1478,24 @@
         real fp00v(0:maxNumberOfPolarizationVectors-1)
         real ptttStarv(0:maxNumberOfPolarizationVectors-1)
         real pvn(0:maxNumberOfPolarizationVectors-1)
+        ! ----- multilevel atomic model -----
+        integer numberOfAtomicLevels,maxPar,m1,m2,na,nce
+        real q0,q0t,q0tt
+        real pnec,prc,peptc
+        parameter( maxPar=20 )
+        real nlPar(0:maxPar-1,0:maxPar-1,0:2)
        ! .......statement functions for GDM parameters
         a0v(iv) = gdmPar(0,iv)
         a1v(iv) = gdmPar(1,iv)
         b0v(iv) = gdmPar(2,iv)
         b1v(iv) = gdmPar(3,iv)
+        ! ..... statement functions for multilevel atomic model
+        ! pnec  = polarizationNECoefficients
+        ! prc   = populationRelaxationCoefficients
+        ! peptc = populationEPtCoefficients
+        pnec(m1,m2)  = nlPar(m1,m2,0)
+        prc(m1,m2)  = nlPar(m1,m2,1)
+        peptc(m1,m2) = nlPar(m1,m2,2)
        !.......statement functions for jacobian
         rx(i1,i2,i3)=rsxy(i1,i2,i3,0,0)
         ry(i1,i2,i3)=rsxy(i1,i2,i3,0,1)
@@ -5049,7 +5069,7 @@ c===============================================================================
         pzc                 =ipar(27)
         numberOfPolarizationVectors =ipar(28)
         grid                =ipar(29)
-        ! qzc                 =ipar(30) ! for future use
+        nonlinearModel      =ipar(30)
         ! rxc                 =ipar(31) ! for future use
         ! ryc                 =ipar(32) ! for future use
         ! rzc                 =ipar(33) ! for future use
@@ -5064,8 +5084,8 @@ c===============================================================================
         fnext = mod(fcur+1                         ,max(1,
      & numberOfForcingFunctions))
         if( t.le.3*dt )then
-          write(*,'("Inside advOptNew... t=",e10.3," grid=",i3)') t,
-     & grid
+          write(*,'(/,">>>> Inside advOptNew... t=",e10.3," grid=",i3)
+     & ') t,grid
         end if
         ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
         !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
@@ -5114,17 +5134,42 @@ c===============================================================================
           end if
           if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
             ! ---- Dispersive Maxwell ----
-            write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",
+            write(*,'("--advOptNew-- dispersionModel=",i4," px,py,pz=",
      & 3i3)') dispersionModel,pxc,pyc,pzc
-            write(*,'("--advOpt-- GDM: numberOfPolarizationVectors=",
-     & i4," alphaP=",e8.2)') numberOfPolarizationVectors,alphaP
-            write(*,'("--advOpt-- GDM: alphaP,a0,a1,b0,b1=",5(1p,e10.2)
-     & )') alphaP,a0,a1,b0,b1
+            write(*,'("--advOptNew-- GDM: 
+     & numberOfPolarizationVectors=",i4," alphaP=",e8.2)') 
+     & numberOfPolarizationVectors,alphaP
+            write(*,'("--advOptNew-- GDM: alphaP,a0,a1,b0,b1=",5(1p,
+     & e10.2))') alphaP,a0,a1,b0,b1
             do iv=0,numberOfPolarizationVectors-1
-              write(*,'("--advOpt-- GDM: eqn=",i3," a0,a1,b0,b1=",4(1p,
-     & e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
+              write(*,'("--advOptNew-- GDM: eqn=",i3," a0,a1,b0,b1=",4(
+     & 1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
             end do
          end if
+        end if
+        if( nonlinearModel .ne. noNonlinearModel )then
+          write(*,'("--advOptNew-- nonlinearModel=",i4," (
+     & 1=multilevelAtomic)")') nonlinearModel
+          call getMultilevelAtomicParameters( grid, nlPar, maxPar, 
+     & maxPar, numberOfPolarizationVectors, numberOfAtomicLevels )
+          write(*,'("multilevelAtomic: numberOfPolarizationVectors",i4,
+     & "  numberOfAtomicLevels=",i4)') numberOfPolarizationVectors, 
+     & numberOfAtomicLevels
+          write(*,'("polarizationNECoefficients:")')
+          do m1=0,numberOfPolarizationVectors-1
+            write(*,'( 10(e12.3,1x) )') (pnec(m1,m2),m2=0,
+     & numberOfAtomicLevels-1)
+          end do
+          write(*,'("populationRelaxationCoefficients:")')
+          do m1=0,numberOfAtomicLevels-1
+            write(*,'( 10(e12.3,1x) )') (prc(m1,m2),m2=0,
+     & numberOfAtomicLevels-1)
+          end do
+          write(*,'("populationEPtCoefficients:")')
+          do m1=0,numberOfAtomicLevels-1
+            write(*,'( 10(e12.3,1x) )') (peptc(m1,m2),m2=0,
+     & numberOfPolarizationVectors-1)
+          end do
         end if
         if( useSosupDissipation.ne.0 )then
          ! Coefficients in the sosup dissipation from Jordan Angel
@@ -5333,20 +5378,20 @@ c===============================================================================
          !         if( add.gt.0. )
         if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
           call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,pm,p,pn,
-     & xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,pm,p,
+     & pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
         else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
           call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,pm,p,pn,
-     & xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,pm,p,
+     & pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
           call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,pm,p,pn,
-     & xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,pm,p,
+     & pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
           call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,pm,p,pn,
-     & xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,pm,p,
+     & pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
         else
           if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 
      & .or. add.gt.0. )then
@@ -5385,10 +5430,9 @@ c===============================================================================
           if( t.le.3*dt )then
             write(*,*) 'Inside advOptNew rectangular order=2...'
           end if
-           if( dispersionModel.ne.noDispersion )then
-             ! --dispersion model --
-             ! XYZ
-             ! newer version from MJJ
+           if( dispersionModel.ne.noDispersion .and. 
+     & nonlinearModel.eq.noNonlinearModel )then
+             ! --- linear dispersion model --- 
                if( t.le.3*dt )then
                  if( t.le.3.*dt )then
                    write(*,'("advOPT>>>","update-
@@ -5506,13 +5550,140 @@ c===============================================================================
                  end do
                  end do
                  end do
-             ! initial version WDH: 
-             ! updateRectangular2dOrder2Dispersive()
-       !-    else if( useSosupDissipation.ne.0 )then
-       !-
-       !-     ! FD22s (rectangular grid) with upwind (sosup) dissipation (wide stencil dissiption)
-       !-      updateUpwindDissipationRectangular2dOrder2()
-       !-
+           else if( dispersionModel.ne.noDispersion .and. 
+     & nonlinearModel.eq.multilevelAtomic )then
+             ! --- Multilevel Atomic (Maxwell-Bloch) nonlinear model --- 
+               if( t.le.3*dt )then
+                 if( t.le.3.*dt )then
+                   write(*,'("advOPT>>>","update-MULTI-LEVEL-
+     & ATOMIC_dim=2_order=2_gridType=rectangular")')
+                 end if
+               end if
+               fe=0.
+               ! -- first compute some coefficients ---
+               beta=0.
+               do iv=0,numberOfPolarizationVectors-1
+                 betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+                 beta = beta + .5*dt*a1v(iv)*betav(iv)
+                 fpv(iv)=0.  ! initialize if not used
+                 b1tttv(iv)=b1v(iv)*b1v(iv)-b0v(iv)
+                 b0tttv(iv)=b1v(iv)*b0v(iv)
+                 a0tttv(iv)=-a0v(iv)*b1v(iv)
+                 a1tttv(iv)=a0v(iv)-a1v(iv)*b1v(iv)
+                 a2tttv(iv)=a1v(iv)
+               end do
+               ! index location for first TZ nonlinear variable: 
+               nce = pxc+nd*numberOfPolarizationVectors
+               ! write(*,'(" *** UpadateMLA: pxc=",i2," numberOfPolarizationVectors=",i4," nce=",i4)') pxc,numberOfPolarizationVectors,nce 
+                 do i3=n3a,n3b
+                 do i2=n2a,n2b
+                 do i1=n1a,n1b
+                   if( mask(i1,i2,i3).gt.0 )then
+               do m=0,nd-1
+                 pc=pxc+m
+                 ec=ex+m
+                 ! This is only needed for the second order code
+                 if( addForcing.ne.0 )then ! forcing in E equation already added to f
+                   ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+                   fe = dtsq*f(i1,i2,i3,ec)
+                   ! this next function will adjust fe by affing -alphaP*Ptt
+                    if( addForcing.ne.0 )then
+                      ! fp = dtsq*f(i1,i2,i3,pc)
+                      if( forcingOption.eq.twilightZoneForcing )then
+                        if( nd.eq.2 )then
+                            call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, ec,e0 )
+                            call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, ec,e0t )
+                        else
+                            call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
+                            call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
+                        end if
+                        do iv=0,numberOfPolarizationVectors-1
+                          pce = pc+iv*nd
+                          if( nd.eq.2 )then
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0t )
+                              call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),0.,t, pce,p0tt )
+                          else
+                              call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
+                              call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
+                              call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
+     & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
+                          end if
+                          fe = fe + dtsq*alphaP*p0tt
+                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+                          fpv(iv) = dtsq*( p0tt + b1v(iv)*p0t + b0v(iv)
+     & *p0 - a0v(iv)*e0 - a1v(iv)*e0t )
+                        end do
+                        !if( abs(fp-fp2).gt. 1.e-14 )then
+                        !  write(*,'(" (i1,i2)=",2i6," fp,fp2,diff=",3e12.4)') i1,i2,fp,fp2,fp-fp2
+                        !else
+                        !  fp=fp2
+                        !end if
+                      else
+                        do iv=0,numberOfPolarizationVectors-1
+                          fpv(iv)=0.
+                        end do
+                      end if
+                    end if
+                   fp=fpv(0)
+                 end if
+                 ev = u(i1,i2,i3,ec)
+                 evm=um(i1,i2,i3,ec)
+                 do iv=0,numberOfPolarizationVectors-1
+                   pv(iv) = p(i1,i2,i3,m+iv*nd)
+                   pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                 end do
+                 rhsP = 0.
+                 pSum = 0.
+                 ! write(*,*) 'Inside updateDispersive'
+                     ! write(*,*) 'Inside updateDispersive order=2'
+                           ! INFO("FD22r-2D-dispersive-Any-PV");
+                           ! write(*,*) 'Inside updateDispersive rectangular order=2'
+                           elap2 = lap2d2(i1,i2,i3,ec)
+                     do iv=0,numberOfPolarizationVectors-1
+                       rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)*
+     & pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev ) 
+     & + fpv(iv)
+                       rhsP = rhsP + betav(iv)*rhspv(iv)
+                       pSum = pSum + 2.*pv(iv) - pvm(iv)
+                       !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
+                     end do
+                     rhsE = (2.*ev-evm) + csq*dtsq*elap2 + alphaP*( 
+     & pSum - rhsP ) + fe
+                     evn = rhsE / (1.+ alphaP*beta)
+                     un(i1,i2,i3,ec) = evn
+                     do iv=0,numberOfPolarizationVectors-1
+                       pn(i1,i2,i3,m+iv*nd)  = betav(iv)*( .5*dt*a1v(
+     & iv)*evn + rhspv(iv) )
+                       ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv)=",4e16.8)') i1,i2,m,pn(i1,i2,i3,m+iv*nd)
+                     end do
+                     ! End of second order code
+                 ! End of fourth order code
+               end do !m=0,nd-1
+                 ! E(t+dt) and P(t+dt) are now known 
+                 ! --- update N here --- 
+                 ! fill in the population densities "N"
+                 do na=0,numberOfAtomicLevels-1
+                     !          t x y z                 comp   output
+                       call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,0),xy(i1,
+     & i2,i3,1),0.,t+dt, nce+na,q0 )
+                   ! qm(i1,i2,i3) 
+                   ! q(i1,i2,i3)
+                   qn(i1,i2,i3,na) = q0
+                 end do
+                   end if
+                 end do
+                 end do
+                 end do
            else if( useDivergenceCleaning.eq.0 )then
             ! FD22 with no dissipation
             if( addForcing.eq.0 .and. .not.addDissipation )then

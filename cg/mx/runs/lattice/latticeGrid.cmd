@@ -30,10 +30,17 @@ $orderOfAccuracy = "second order";
 $interp="i"; $factor=1; 
 $nCylx=2; $nCyly=2;   # number of cylinders in each direction
 $bc = "1 2 -1 -1";
+$ml=0; 
+#
+$rad=.25; $deltaY=1.; $deltaX=1.;   # cylinder radius, spacing 
+#
+$xa=0; $xb=-1; # for backGround grid -- set $xb > $xa to turn on 
+$ya=0; $yb=-1; # for backGround grid -- set $xb > $xa to turn on 
 # 
 #
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
+            "rad=f"=>\$rad,"deltaX=f"=>\$deltaX,"deltaY=f"=>\$deltaY,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"nCylx=i"=>\$nCylx,"nCyly=i"=>\$nCyly, "prefix=s"=> \$prefix );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -43,13 +50,14 @@ if( $interp eq "e" ){ $interpType = "explicit for all grids"; }else{ $interpType
 # 
 $suffix = ".order$order"; 
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
-if( $name eq "" ){$name = $prefix . "$nCylx" . "x" . "$nCyly" . "y" . "$interp$factor" . $suffix . ".hdf";}
+if( $prefix eq "latticeGrid" ){  $prefix .=  "$nCylx" . "x" . "$nCyly" . "y"; } 
+if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 #
 # -- back-ground grid:
-$rxa=-($nCylx/2.+1.); $rxb=-$rxa;
+if( $xb > $xa ){ $rxa=$xa; $rxb=$xb }else{ $rxa=-($nCylx/2.+1.); $rxb=-$rxa; }
 # $rya=-($nCyly/2.+1.); $ryb=-$rya;
 # Make the lower and upper boundaries consistent with a periodic array
-$rya=-($nCyly/2.); $ryb=-$rya;
+if( $yb > $ya ){ $rya=$ya; $ryb=$yb; }else{ $rya=-($nCyly/2.); $ryb=-$rya; }
 #
 # Define a subroutine to convert the number of grid points
 sub getGridPoints\
@@ -163,7 +171,6 @@ sub makeDiskArray \
   $commands=$cmds; \
 }
 #
-$rad=.25; $deltaY=1.; $deltaX=1.;
 # 
 $x0=-($nCylx-1)*$deltaX*.5; $y0=-($nCyly-1)*$deltaY*.5;  
 makeDiskArray($rad,$nCylx,$nCyly,$x0,$deltaX,$y0,$deltaY);

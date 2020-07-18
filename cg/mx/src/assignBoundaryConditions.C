@@ -1838,11 +1838,42 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           	    else if( initialConditionOption==gaussianPlaneWave )
           	    {
             	      realSerialArray xi;
-            	      xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)+ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
+                            if( numberOfDimensions==2 && !solveForAllFields )
+            	      {
+            		xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)+ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
 
-            	      uLocal(I1,I2,I3,hz)=hzGaussianPulse(xi); 
-            	      uLocal(I1,I2,I3,ex)=uLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
-            	      uLocal(I1,I2,I3,ey)=uLocal(I1,I2,I3,hz)*( kx/(eps*cc));
+            		uLocal(I1,I2,I3,hz)=hzGaussianPulse(xi); 
+            		uLocal(I1,I2,I3,ex)=uLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
+            		uLocal(I1,I2,I3,ey)=uLocal(I1,I2,I3,hz)*( kx/(eps*cc));
+            	      }
+            	      else
+            	      {
+		// Use pwc[] coefficients so we can assign TEz and TMz modes 
+		// *new* May 16, 2020
+                                if( numberOfDimensions==2 )
+              		  xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
+                		    +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
+                                else
+              		  xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
+                		    +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave)
+                		    +kz*(xLocal(I1,I2,I3,2)-z0GaussianPlaneWave) -cc*t;
+
+            		RealArray gpw(I1,I2,I3);
+            		gpw(I1,I2,I3) = exp(-betaGaussianPlaneWave*((xi)*(xi)));
+
+            		uLocal(I1,I2,I3,ex)=gpw(I1,I2,I3) * pwc[0];
+            		uLocal(I1,I2,I3,ey)=gpw(I1,I2,I3) * pwc[1];
+            		uLocal(I1,I2,I3,ez)=gpw(I1,I2,I3) * pwc[2];
+                                if( solveForAllFields )
+            		{
+                	  	  uLocal(I1,I2,I3,hx)=gpw(I1,I2,I3) * pwc[3];
+              		  uLocal(I1,I2,I3,hy)=gpw(I1,I2,I3) * pwc[4];
+              		  uLocal(I1,I2,I3,hz)=gpw(I1,I2,I3) * pwc[5];
+            		}
+            		
+        
+            	      }
+            	      
           	    }
                         else if( boundaryForcingOption==planeWaveBoundaryForcing ||
                                           initialConditionOption==planeWaveScatteredFieldInitialCondition )
@@ -2764,6 +2795,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 ipar[26]=numberLinesForPML;
                 ipar[27]=adjustThreeLevels;
                 ipar[28]=method;
+                ipar[38]=solveForAllFields;
                 if( adjustFarFieldBoundariesForIncidentField(grid) )
                 {
           // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -3347,6 +3379,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
                     ipar[28]=method;
+                    ipar[38]=solveForAllFields;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);
@@ -3934,6 +3967,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
                     ipar[28]=method;
+                    ipar[38]=solveForAllFields;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
             // printF(" ***** adjustFarFieldBoundariesForIncidentField for grid %i ********\n",grid);

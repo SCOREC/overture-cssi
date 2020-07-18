@@ -127,6 +127,7 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
      #*      leftSquare
   exit
 #
+# -- right grid ----
 #
   rectangle
     $xa= 0.0;  $xb=1.0; 

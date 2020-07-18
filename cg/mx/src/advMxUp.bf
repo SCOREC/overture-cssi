@@ -1571,7 +1571,7 @@ else if( updateSolution.eq.1 )then
 ! **********************************************************************************
 #beginMacro ADV_MAXWELL(NAME,DIM,ORDER,GRIDTYPE)
  subroutine NAME(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                 mask,rsxy,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                 mask,xy,rsxy,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells equations
 !     OPTIMIZED version for rectangular grids.
@@ -1600,6 +1600,7 @@ else if( updateSolution.eq.1 )then
  real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
  real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
  real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+ real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
 
  integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
@@ -2599,19 +2600,19 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
   !         if( add.gt.0. )
  if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
    call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
      vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
  else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
    call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
      vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
  else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
    call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
      vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
  else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
    call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
      vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
  else
    if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) .or. add.gt.0. )then
@@ -3660,7 +3661,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 ! build an empty version of high order files so we do not have to compile the full version
 #beginMacro ADV_MAXWELL_NULL(NAME,DIM,ORDER,GRIDTYPE)
  subroutine NAME(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                 mask,rsxy,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                 mask,xy,rsxy,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -3702,7 +3703,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
 ! ******* THIS IS NOT CURRENTLY USED -- see verion in advOpt.bf *******************
       subroutine advMaxwellUp(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                            mask,rx,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                            mask,xy,rx,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -3729,6 +3730,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+      real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
       real rx(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
 
       integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
@@ -3757,16 +3759,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
         if( nd.eq.2 .and. gridType.eq.rectangular ) then
           call advMx2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
           call advMx2dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.rectangular ) then
           call advMx3dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                             mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                             mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
           call advMx3dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                             mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                             mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else
           stop 2271
         end if
@@ -3774,16 +3776,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       else if( orderOfAccuracy.eq.4 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if
@@ -3792,16 +3794,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       else if( orderOfAccuracy.eq.6 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if
@@ -3810,16 +3812,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if

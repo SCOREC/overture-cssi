@@ -82,7 +82,8 @@ $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; 
 $useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
 $useImpedanceInterfaceProjection=1; $cons=1; 
 $useSosupDissipation=0; $sosupParameter=1.; 
-$ts="me"; $matFile=""; $solveForAllFields=0;  $matFile2="baAir.txt";  $numMatRegions=1; $regionFile="";
+$ts="me"; $matFile=""; $solveForAllFields=0;  $numMatRegions=1; $regionFile="";
+$matFile1=""; $matFile2=""; 
 #
 $eps1=1.; $mu1=1.;
 $eps2=1.; $mu2=1.;
@@ -96,6 +97,7 @@ $tz = "#"; $go="halt";
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); 
+$nm="#"; # nonlinear model 
 # ----------------------------- get command line arguments ---------------------------------------
 #  -- first get any commonly used options: (requires the env variable CG to be set)
 # $getCommonOptions = "$ENV{'CG'}/mp/cmd/getCommonOptions.h";
@@ -115,8 +117,8 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-	   "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
-	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields);
+	   "matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
+	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm);
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -139,6 +141,10 @@ if( $ts eq "rk4" ){ $ts="rungeKutta"; $orderOfRungeKutta=4; }
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"gdm" ){ $dm="GDM"; }
+#
+if( $nm eq "none" ){ $nm="#"; }
+if( $nm eq "mla" ){ $nm="multilevelAtomic"; }
+#
 # Give defaults here for array arguments: 
 if( $alphaP[0] eq "" ){ @alphaP=(-1,-1); } # default -1 means use 1/eps
 if( $interfaceNormal[0] eq "" ){ @interfaceNormal=(1,0,0); }
@@ -166,6 +172,8 @@ solve for all fields $solveForAllFields
 # dispersion model:
 $dm
 # printf(" dm=$dm\n");
+#  --- nonlinear model ----
+$nm
 #
 kx,ky,kz $kx $ky $kz
 plane wave coefficients $ax $ay $az $eps1 $mu1
@@ -239,6 +247,9 @@ if( $npv[0] == 3 ){ \
    $cmd .= " GDM coeff: 1 $a01[1] $a11[1] $b01[1] $b11[1] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 2 $a01[2] $a11[2] $b01[2] $b11[2] (eqn, a0,a1,b0,b1)"; \
       }
+#
+if( $matFile1 ne "" ){ $cmd="material file: $matFile1"; } # new way , over-ride above
+#
 $cmd
 # ------------ Set GDM parameters on the right domain -----------
 GDM domain name: rightDomain
@@ -257,6 +268,9 @@ if( $npv[1] == 3 ){ \
    $cmd .= " GDM coeff: 1 $a02[1] $a12[1] $b02[1] $b12[1] (eqn, a0,a1,b0,b1)\n"; \
    $cmd .= " GDM coeff: 2 $a02[2] $a12[2] $b02[2] $b12[2] (eqn, a0,a1,b0,b1)"; \
       }
+# 
+if( $matFile2 ne "" ){ $cmd="material file: $matFile2"; } # new way  , over-ride above
+#
 $cmd
 #
 # 

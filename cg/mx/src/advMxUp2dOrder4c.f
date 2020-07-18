@@ -1,7 +1,8 @@
 ! This file automatically generated from advMxUp.bf with bpp.
         subroutine advMxUp2dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,
-     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f,fa, v,
-     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f,fa,
+     &  v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, 
+     & ierr )
        !======================================================================
        !   Advance a time step for Maxwells equations
        !     OPTIMIZED version for rectangular grids.
@@ -30,6 +31,7 @@
         real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+        real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
         integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         integer bc(0:1,0:2),ierr
@@ -3762,19 +3764,19 @@ c===============================================================================
          !         if( add.gt.0. )
         if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
           call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
         else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
           call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
           call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
           call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
         else
           if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) 

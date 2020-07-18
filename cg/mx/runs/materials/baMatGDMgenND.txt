@@ -28,7 +28,7 @@ bianistropicPars15GDM1=[1.4,0.0,1.,.0];
 bianistropicPars16GDM1=[1.5,0.0,1.,.0];		
 ## 
 bianistropicPars21GDM1=[1.6,0.0,1.,.0];		
-bianistropicPars21GDM3=[1.6,0.0,1.,.0, 1.6,0.0,1.5,.0];
+bianistropicPars21GDM2=[1.6,0.0,1.,.0, 1.6,0.0,1.5,.0];
 bianistropicPars21GDM3=[1.6,0.0,1.,.0, 1.6,0.0,1.5,.0, 1.6,0.0,2.0.,.0];		
 bianistropicPars22GDM1=[1.7,0.0,1.,.0];		
 bianistropicPars22GDM3=[1.7,0.0,1.,.0, 1.4,0.0,1.6,.0, 1.2,0.0,1.4,.0];		

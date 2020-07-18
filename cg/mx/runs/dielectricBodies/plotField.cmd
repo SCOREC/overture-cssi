@@ -81,6 +81,8 @@ echo to terminal 0
 # L10 PML41  compared to long G8
 #  plotStuff plotField.cmd -show=ellL10G4PML41Order2vL20G8.show -name=ellL10pml41Order2 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error"
 #
+#  plotStuff plotField.cmd -show=blockMatIsoGDM2G8.show -name=blockMatIsoGDM2G8 -solution=5
+#
 $show="ellipseG8.hdf"; $solution="-1"; $name="plot"; $field="Ey"; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 # get command line arguments
@@ -106,6 +108,14 @@ DISPLAY AXES:0 0
 #
 #
 solution: $solution
+#
+contour
+  plot contour lines (toggle)
+  set view:0 -0.0969789 -0.0120846 0 1.02795 1 0 0 0 1 0 0 0 1
+  hardcopy file name:0 BlockMatIsoGDM2G8Ey.ps
+  hardcopy save:0
+
+
 pause
 hardcopy vertical resolution:0 2048
 hardcopy horizontal resolution:0 2048

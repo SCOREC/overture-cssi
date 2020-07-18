@@ -221,7 +221,14 @@ c To include derivatives of rx use OPTION=RX
 !
 ! Initial version from Michael Jenkinson 2018
 !
-!     XYZ Please Finish
+! **********************************************************************************
+
+
+! **********************************************************************************
+! Macro updateMultilevelAtomic
+!
+! Initial version: July 2020
+!
 ! **********************************************************************************
 
 
@@ -276,10 +283,10 @@ c To include derivatives of rx use OPTION=RX
 
 
 
-! ******* THIS IS NOT CURRENTLY USED -- see verion in advOpt.bf *******************
+! ******* THIS IS NOT CURRENTLY USED -- see version in advOpt.bf *******************
       subroutine advMaxwellNew(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx,  um,u,un,f,fa, v,vvt2,
-     & ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx,  um,u,un,f,fa, v, 
+     & vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -306,6 +313,7 @@ c To include derivatives of rx use OPTION=RX
       real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+      real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
       real rx(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
 
       integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
@@ -334,19 +342,19 @@ c To include derivatives of rx use OPTION=RX
 
         if( nd.eq.2 .and. gridType.eq.rectangular ) then
           call advMx2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
           call advMx2dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.rectangular ) then
           call advMx3dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
           call advMx3dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else
           stop 2271
@@ -355,19 +363,19 @@ c To include derivatives of rx use OPTION=RX
       else if( orderOfAccuracy.eq.4 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
@@ -377,19 +385,19 @@ c To include derivatives of rx use OPTION=RX
       else if( orderOfAccuracy.eq.6 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
@@ -399,19 +407,19 @@ c To include derivatives of rx use OPTION=RX
 
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,
-     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rx, um,u,un,f,fa, v,vvt2,
+     & nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rx, um,u,un,f,fa, v,vvt2,
      & ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843

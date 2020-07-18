@@ -23,7 +23,6 @@ extern "C"
 
 }
 
-
 #define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
 
 #define FOR_3(i1,i2,i3,I1,I2,I3) I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
@@ -243,7 +242,9 @@ extern "C"
 //------------------------------------------------------------------------------------
 
 
+// -------------------------------------------------------------------------------------------------------------
 //! local function to compute errors for the staggered grid DSI schemes
+// -------------------------------------------------------------------------------------------------------------
 void
 computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, realArray &ue, realArray &uep,
               		  realArray &errh, realArray &erre, 
@@ -385,7 +386,7 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
 // =============================================================================================
 
 // =============================================================================================
-// MACRO: Get errors for a Guassian plane wave
+// MACRO: Get errors for a Gaussian plane wave
 // =============================================================================================
 
 // =============================================================================================
@@ -407,7 +408,9 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
 void Maxwell::
 getErrors( int current, real t, real dt )
 {
-  // printF("\n +++++ getErrors checkErrors=%d\n",(int)checkErrors);
+    if( t<= 2*dt )
+        printF("\n +++++ getErrors checkErrors=%d, knownSolutionOption=%d \n",(int)checkErrors,(int)knownSolutionOption);
+
     if( !checkErrors )
     {
     // Compute solution norms (used by the check file)  *wdh* Dec 21, 2019
@@ -543,7 +546,7 @@ getErrors( int current, real t, real dt )
   //kkc 040310 moved this assertion outside the following loop
     assert( cgerrp!=NULL || errp!=NULL );
 
-  // For dispersive models keep track of the maxium errors in the polarization vector per domain  
+  // --- For dispersive models keep track of the maxium errors in the polarization vector per domain -- 
     RealArray & polarizationNorm   =  dbase.get<RealArray>("polarizationNorm");
     RealArray & maxErrPolarization =  dbase.get<RealArray>("maxErrPolarization");
     
@@ -555,7 +558,18 @@ getErrors( int current, real t, real dt )
     polarizationNorm=0.;
     maxErrPolarization=0.;
 
-  // printF("cg.numberOfDomains()=%d, maxErrPolarization.getLength(0)=%d\n",cg.numberOfDomains(),maxErrPolarization.getLength(0));
+  // --- For nonlinear models keep track of the maxium errors in the nonlinear variables per domain -- 
+    RealArray & nonlinearNorm   =  dbase.get<RealArray>("nonlinearNorm");
+    RealArray & maxErrNonlinear =  dbase.get<RealArray>("maxErrNonlinear");
+    
+    if( nonlinearNorm.getLength(0)!=cg.numberOfDomains() || maxErrNonlinear.getLength(0)!=cg.numberOfDomains())
+    {
+        nonlinearNorm.redim(cg.numberOfDomains());
+        maxErrNonlinear.redim(cg.numberOfDomains());
+    }
+    nonlinearNorm=0.;
+    maxErrNonlinear=0.;
+
     
 
   // *************************************************************
@@ -1139,7 +1153,7 @@ getErrors( int current, real t, real dt )
       // ::display(pLocal,"pLocal");
         }
 
-    // --- Get grid function tht holds the error in the polarization vector ----
+    // --- Get grid function that holds the error in the polarization vector ----
         bool getErrorGridFunction=true;
         realMappedGridFunction & pErr = getDispersionModelMappedGridFunction( grid,current,getErrorGridFunction );
 
@@ -1154,7 +1168,22 @@ getErrors( int current, real t, real dt )
       //       errPolarization=0.;
         }    
 
-
+    // -- For nonlinear model: 
+        const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+    // Index location for TZ nonlinear variables: 
+        const int nce = pxc +numberOfPolarizationVectors*numberOfDimensions;
+        RealArray qLocal,errNonlinear;
+        if( numberOfAtomicLevels>0 )
+        {
+            realMappedGridFunction & qCur = getNonlinearModelMappedGridFunction( grid,current);
+            OV_GET_SERIAL_ARRAY(real, qCur,qLoc);
+            qLocal.reference(qLoc);
+            
+            realMappedGridFunction & qErr = getNonlinearModelMappedGridFunction( grid,current,getErrorGridFunction );
+            OV_GET_SERIAL_ARRAY(real, qErr,qErrLocal );
+            errNonlinear.reference(qErrLocal);
+        }
+        
         bool energyOnly = false;
 
         const int i0a=mg.gridIndexRange(0,0);
@@ -1575,9 +1604,14 @@ getErrors( int current, real t, real dt )
                             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
                             {
                                 const int pc= iv*numberOfDimensions;
-                                errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  )- e(x0,y0,0.,pxc+pc,tE);
-                                errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1)- e(x0,y0,0.,pyc+pc,tE);
+                                errPolarization(i1,i2,i3,pc  ) = pLocal(i1,i2,i3,pc  ) - e(x0,y0,0.,pxc+pc,tE);
+                                errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - e(x0,y0,0.,pyc+pc,tE);
                             }
+              // --- nonlinear model variables ---
+                            for( int na=0; na<numberOfAtomicLevels; na++ )
+                  	{
+                                errNonlinear(i1,i2,i3,na) = qLocal(i1,i2,i3,na) - e(x0,y0,0.,nce+na,tE);
+                  	}
                         }
                     }
                     else if( localDispersionModel != noDispersion && method==bamx )
@@ -1675,6 +1709,11 @@ getErrors( int current, real t, real dt )
                                 errPolarization(i1,i2,i3,pc+1) = pLocal(i1,i2,i3,pc+1) - e(x0,y0,z0,pyc+pc,tE);
                                 errPolarization(i1,i2,i3,pc+2) = pLocal(i1,i2,i3,pc+2) - e(x0,y0,z0,pzc+pc,tE);
                             }
+              // --- nonlinear model variables ---
+                            for( int na=0; na<numberOfAtomicLevels; na++ )
+                  	{
+                                errNonlinear(i1,i2,i3,na) = qLocal(i1,i2,i3,na) -e(x0,y0,z0,nce+na,tE);
+                  	}
                         }
                     } 
                     else if( localDispersionModel != noDispersion && method==bamx )
@@ -1708,19 +1747,66 @@ getErrors( int current, real t, real dt )
         {
       // ********** Gaussian plane wave **********
             {
-                realSerialArray xei(Ie1,Ie2,Ie3),xhi(Ih1,Ih2,Ih3);
-        //xi=kx*(x-x0GaussianPlaneWave)+ky*(y-y0GaussianPlaneWave) -cc*t;
-                xei=kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave)+ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) -cc*tE;
-                xhi=kx*(xh(Ih1,Ih2,Ih3)-x0GaussianPlaneWave)+ky*(yh(Ih1,Ih2,Ih3)-y0GaussianPlaneWave) -cc*tH;
+                printF("GET ERRORS for GaussianPlaneWave solveForAllFields=%d, t=%9.3e\n",solveForAllFields,tE);
+                if( numberOfDimensions==2 && !solveForAllFields )
+                {
+                    if( true )
+                    {
+            // ** new way June 16, 2020 -- use plane-wave-coefficients to scale
+                        OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                        realSerialArray xei(Ie1,Ie2,Ie3);
+                        xei= ( kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
+                       	     ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
+                       	     -cc*tE );
+                        RealArray gpw(Ie1,Ie2,Ie3);
+                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                        errLocal(Ie1,Ie2,Ie3,ex) = uLocal(Ie1,Ie2,Ie3,ex) - gpw(Ie1,Ie2,Ie3) * pwc[0];
+                        errLocal(Ie1,Ie2,Ie3,ey) = uLocal(Ie1,Ie2,Ie3,ey) - gpw(Ie1,Ie2,Ie3) * pwc[1];
+                        errLocal(Ie1,Ie2,Ie3,hz) = uLocal(Ie1,Ie2,Ie3,hz) - gpw(Ie1,Ie2,Ie3) * pwc[5];
+                    }
+                    else
+                    {
+                        realSerialArray xei(Ie1,Ie2,Ie3),xhi(Ih1,Ih2,Ih3);
+            //xi=kx*(x-x0GaussianPlaneWave)+ky*(y-y0GaussianPlaneWave) -cc*t;
+                        xei=kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave)+ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) -cc*tE;
+                        xhi=kx*(xh(Ih1,Ih2,Ih3)-x0GaussianPlaneWave)+ky*(yh(Ih1,Ih2,Ih3)-y0GaussianPlaneWave) -cc*tH;
       //             err(I1,I2,I3,hz)=hzGaussianPulse(xi);  // save Hz here temporarily
       //             err(I1,I2,I3,ex)=u(I1,I2,I3,ex)-err(I1,I2,I3,hz)*(-ky/(eps*cc));
       //             err(I1,I2,I3,ey)=u(I1,I2,I3,ey)-err(I1,I2,I3,hz)*( kx/(eps*cc));
       // 	    err(I1,I2,I3,hz)-=u(I1,I2,I3,hz);
-                realSerialArray hzei(Ie1,Ie2,Ie3);
-                hzei = hzGaussianPulse(xei);
-                erre(Ie1,Ie2,Ie3,ex)=ue(Ie1,Ie2,Ie3,ex)-hzei(Ie1,Ie2,Ie3)*(-ky/(eps*cc));
-                erre(Ie1,Ie2,Ie3,ey)=ue(Ie1,Ie2,Ie3,ey)-hzei(Ie1,Ie2,Ie3)*( kx/(eps*cc));
-                errh(Ih1,Ih2,Ih3,hz)=uh(Ih1,Ih2,Ih3,hz) - hzGaussianPulse(xhi(Ih1,Ih2,Ih3));
+                        realSerialArray hzei(Ie1,Ie2,Ie3);
+                        hzei = hzGaussianPulse(xei);
+                        erre(Ie1,Ie2,Ie3,ex)=ue(Ie1,Ie2,Ie3,ex)-hzei(Ie1,Ie2,Ie3)*(-ky/(eps*cc));
+                        erre(Ie1,Ie2,Ie3,ey)=ue(Ie1,Ie2,Ie3,ey)-hzei(Ie1,Ie2,Ie3)*( kx/(eps*cc));
+                        errh(Ih1,Ih2,Ih3,hz)=uh(Ih1,Ih2,Ih3,hz) - hzGaussianPulse(xhi(Ih1,Ih2,Ih3));
+                    }
+                }
+                else
+                {
+          // *new* May 16, 2020
+                    OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                    realSerialArray xei(Ie1,Ie2,Ie3);
+                    if( numberOfDimensions==2 )
+                        xei=  kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
+                      	    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
+                                    -cc*tE;
+                    else
+                        xei=  kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
+                      	    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) +
+                      	    kz*(ze(Ie1,Ie2,Ie3)-z0GaussianPlaneWave)
+                                    -cc*tE;
+                    RealArray gpw(Ie1,Ie2,Ie3);
+                    gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                    errLocal(Ie1,Ie2,Ie3,ex) = uLocal(Ie1,Ie2,Ie3,ex) - gpw(Ie1,Ie2,Ie3) * pwc[0];
+                    errLocal(Ie1,Ie2,Ie3,ey) = uLocal(Ie1,Ie2,Ie3,ey) - gpw(Ie1,Ie2,Ie3) * pwc[1];
+                    errLocal(Ie1,Ie2,Ie3,ez) = uLocal(Ie1,Ie2,Ie3,ez) - gpw(Ie1,Ie2,Ie3) * pwc[2];
+                    if( solveForAllFields )
+                    {
+                        errLocal(Ie1,Ie2,Ie3,hx) = uLocal(Ie1,Ie2,Ie3,hx) - gpw(Ie1,Ie2,Ie3) * pwc[3];
+                        errLocal(Ie1,Ie2,Ie3,hy) = uLocal(Ie1,Ie2,Ie3,hy) - gpw(Ie1,Ie2,Ie3) * pwc[4];
+                        errLocal(Ie1,Ie2,Ie3,hz) = uLocal(Ie1,Ie2,Ie3,hz) - gpw(Ie1,Ie2,Ie3) * pwc[5];
+                    }
+                }
             }
             
 
@@ -2661,8 +2747,13 @@ getErrors( int current, real t, real dt )
             OV_GET_SERIAL_ARRAY(real,(*uReference)[grid],urLocal);
           	    
       //            err(I1,I2,I3,C)=fabs(u(I1,I2,I3,C)-ur(I1,I2,I3,C));
-            Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
-            errh(Ih1,Ih2,Ih3,Ch)=uh(Ih1,Ih2,Ih3,Ch)-urLocal(Ih1,Ih2,Ih3,Ch);
+
+            if( solveForMagneticField )
+            {
+      	Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
+      	errh(Ih1,Ih2,Ih3,Ch)=uh(Ih1,Ih2,Ih3,Ch)-urLocal(Ih1,Ih2,Ih3,Ch);
+            }
+            
             Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
             erre(Ie1,Ie2,Ie3,Ce)=ue(Ie1,Ie2,Ie3,Ce) - urLocal(Ie1,Ie2,Ie3,Ce);
         }
@@ -3027,7 +3118,6 @@ getErrors( int current, real t, real dt )
               		  maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
               		  polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
             		}
-                            
             	      }
           	    }
           	    else if( method==bamx )
@@ -3043,6 +3133,14 @@ getErrors( int current, real t, real dt )
             		polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,m))); 
             	      }
           	    }
+
+            // --- nonlinear variables ---
+                        for( int na=0; na<numberOfAtomicLevels; na++ )
+          	    {
+            	      maxErrNonlinear(domain) = max(maxErrNonlinear(domain),fabs(errNonlinear(i1,i2,i3,na)));
+            	      nonlinearNorm(domain)   = max(nonlinearNorm(domain),fabs(qLocal(i1,i2,i3,na))); 
+          	    }
+          	    
           	    
                     }
           // ::display(pLocal,"pLocal","%8.1e ");
@@ -3358,6 +3456,27 @@ getErrors( int current, real t, real dt )
                 printF("--getErrors: t=%9.3e domain=%i (%s) numPolarizationVectors=%i P-norm=%9.3e max-err = %9.3e\n",
                               t,domain,(const char*)cg.getDomainName(domain), numberOfPolarizationVectors,
                               polarizationNorm(domain),maxErrPolarization(domain));
+            }
+        }
+        
+    }
+    
+  // -------- PRINT ERRORS IN NONLINEAR MODELS --------
+    if( nonlinearModel != noNonlinearModel )
+    {
+        for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+        {
+            DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+            int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+
+            maxErrNonlinear(domain) = getMaxValue(maxErrNonlinear(domain)); // fix me -- could do all at once
+            nonlinearNorm(domain)   = getMaxValue(nonlinearNorm(domain)); // fix me -- could do all at once
+
+            if( numberOfAtomicLevels>0 )
+            {
+                printF("--getErrors: t=%9.3e domain=%i (%s) numberOfAtomicLevels=%i   Q-norm=%9.3e max-err = %9.3e\n",
+                              t,domain,(const char*)cg.getDomainName(domain), numberOfAtomicLevels,
+                              nonlinearNorm(domain),maxErrNonlinear(domain));
             }
         }
         

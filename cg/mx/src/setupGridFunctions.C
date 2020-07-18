@@ -610,12 +610,21 @@ setupGridFunctions()
       realCompositeGridFunction **& dmgf = 
                    parameters.dbase.get<realCompositeGridFunction**>("dispersionModelGridFunction");
 
+      // nonlinearModelGridFunction[domain][numTimeLevels] : 
+      realCompositeGridFunction **& nmgf = parameters.dbase.get<realCompositeGridFunction**>("nonlinearModelGridFunction");
+
+
       const int & numberOfDomains = cg.numberOfDomains();
       const int numberOfComponentGrids = cg.numberOfComponentGrids();
       
       int & maxNumberOfPolarizationVectors = parameters.dbase.get<int>("maxNumberOfPolarizationVectors");
       maxNumberOfPolarizationVectors=0;
       
+      // max number of extries on a grid (for TZ) for bamx
+      int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+      maxNumberOfPolarizationComponents=0;
+
+
       // total number of polarization components per grid 
       IntegerArray & totalNumberOfPolarizationComponents =
 	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
@@ -647,7 +656,19 @@ setupGridFunctions()
         
         maxNumberOfPolarizationVectors=0; // keep track of the max number of polarization vectors for TZ
 
+        int & maxNumberOfNonlinearVectors = parameters.dbase.get<int>("maxNumberOfNonlinearVectors");
+        maxNumberOfNonlinearVectors=0;    // keep track for TZ 
 
+	if(  !( nonlinearModel == noNonlinearModel)  )
+	{
+          // --- nonlinear model ----
+	  // Allocate pointers to the composite grid functions on different domains 
+	  assert( nmgf==NULL );
+	  nmgf = new realCompositeGridFunction* [numberOfDomains];
+
+	}
+	
+        // ------------------------- START DOMAIN --------------------------------
         for( int domain=0; domain<cg.numberOfDomains(); domain++ ) 
         {
           dmgf[domain]=NULL;  // default 
@@ -657,6 +678,10 @@ setupGridFunctions()
 	    const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
 	    const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
 	    maxNumberOfPolarizationVectors=max(maxNumberOfPolarizationVectors,numberOfPolarizationVectors);
+
+	    if( true )
+              printF("setupGF: domain=%d: numberOfPolarizationVectors=%d\n",domain,numberOfPolarizationVectors);
+	    
 
 	    if( numberOfPolarizationVectors>0 )
 	    {
@@ -690,7 +715,36 @@ setupGridFunctions()
 	    pyc=pxc+1;
 	    if( numberOfDimensions==3 ) pzc=pyc+1;
         
-	    numberOfComponentsForTZ += numberOfDimensions*maxNumberOfPolarizationVectors;
+            if( dmp.isNonlinearMaterial() )
+	    {
+	      // -------- nonlinear material -----
+              // allocate grid functions to hold N's 
+	      assert( nmgf != NULL );
+
+              const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+	      printF("MX:setupGridFunctions: numberOfAtomicLevels=%d\n",numberOfAtomicLevels);
+
+	      maxNumberOfNonlinearVectors = max(maxNumberOfNonlinearVectors,numberOfAtomicLevels);
+	       
+	      if( numberOfAtomicLevels>0 )
+	      {
+		nmgf[domain] = new realCompositeGridFunction [numberOfTimeLevels];
+
+		CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
+		for( int n=0; n<numberOfTimeLevels; n++ )
+		{
+              
+		  realCompositeGridFunction & unl = nmgf[domain][n];
+		  const int numComp = numberOfAtomicLevels;
+		  unl.updateToMatchGrid(cgd,all,all,all,numComp);
+		  unl=0.;
+		  for( int inl=0; inl<numComp; inl++ )
+		  {
+		    unl.setName(sPrintF("N%i",inl),inl);  
+		  }
+		}
+	      }
+	    }
 
 	  }
 	  else if( method==bamx )
@@ -698,10 +752,6 @@ setupGridFunctions()
             // BA GDM equations
             assert( domain==0 );
 
-
-	    // max number of extries on a grid (for TZ) 
-            int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-            maxNumberOfPolarizationComponents=0;
 
 	    if( !dbase.has_key("materialRegionParameters") )
 	    {
@@ -765,11 +815,30 @@ setupGridFunctions()
             
 	    }
 
-            numberOfComponentsForTZ += maxNumberOfPolarizationComponents*2;
+            // numberOfComponentsForTZ += maxNumberOfPolarizationComponents*2;  // July 17, 2020 -- move below 
 
 	  }
 	  
-        }
+        } // ----- end for domain ------
+	
+
+	if(  method!=bamx )
+	{
+	  numberOfComponentsForTZ += numberOfDimensions*maxNumberOfPolarizationVectors; // *** check me *** why inside the loop ?
+	}
+	else
+	{
+	  numberOfComponentsForTZ += maxNumberOfPolarizationComponents*2;
+	}
+	
+
+	numberOfComponentsForTZ += maxNumberOfNonlinearVectors;
+	
+
+	// *** CHECK numberOfComponentsForTZ  July 15, 2020 **FINISH ME***
+	printf("\n +++++++ setupGridFunctions: numberOfDomains=%d, numberOfComponents=%d maxNumberOfPolarizationVectors=%d, "
+	       " maxNumberOfNonlinearVectors=%d numberOfComponentsForTZ=%d\n",
+	       numberOfDomains,numberOfComponents,maxNumberOfPolarizationVectors,maxNumberOfNonlinearVectors,numberOfComponentsForTZ);
 	
 
         
@@ -785,6 +854,7 @@ setupGridFunctions()
           nG(d)++;
         }
       }
+      
 
 
       printF("\n >>>>>>>>>>> setupGridFunctions: numberOfDomains=%i\n",numberOfDomains);

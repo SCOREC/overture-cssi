@@ -4359,7 +4359,6 @@ else if( updateSolution.eq.1 )then
 !
 ! Initial version from Michael Jenkinson 2018
 !
-!     XYZ Please Finish
 ! **********************************************************************************
 #beginMacro updateDispersive(DIM,ORDER,GRIDTYPE)
 
@@ -4705,6 +4704,376 @@ else if( updateSolution.eq.1 )then
 
 
 ! **********************************************************************************
+! Macro updateMultilevelAtomic
+!
+! Initial version: July 2020
+!
+! **********************************************************************************
+#beginMacro updateMultilevelAtomic(DIM,ORDER,GRIDTYPE)
+
+  if( t.le.3*dt )then
+    INFO("update-MULTI-LEVEL-ATOMIC_dim=DIM _order=ORDER _gridType=GRIDTYPE");
+  end if
+
+  fe=0.
+  ! -- first compute some coefficients ---
+  beta=0.
+  do iv=0,numberOfPolarizationVectors-1
+    betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+    beta = beta + .5*dt*a1v(iv)*betav(iv)
+    fpv(iv)=0.  ! initialize if not used
+    b1tttv(iv)=b1v(iv)*b1v(iv)-b0v(iv)
+    b0tttv(iv)=b1v(iv)*b0v(iv)
+    a0tttv(iv)=-a0v(iv)*b1v(iv)
+    a1tttv(iv)=a0v(iv)-a1v(iv)*b1v(iv)
+    a2tttv(iv)=a1v(iv)
+  end do
+
+  ! index location for first TZ nonlinear variable: 
+  nce = pxc+nd*numberOfPolarizationVectors
+  ! write(*,'(" *** UpadateMLA: pxc=",i2," numberOfPolarizationVectors=",i4," nce=",i4)') pxc,numberOfPolarizationVectors,nce 
+  
+  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+
+    
+  do m=0,nd-1
+    pc=pxc+m
+    ec=ex+m
+
+    ! This is only needed for the second order code
+    if( addForcing.ne.0 )then ! forcing in E equation already added to f
+      ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
+      fe = dtsq*f(i1,i2,i3,ec)
+      ! this next function will adjust fe by affing -alphaP*Ptt
+      getGDMForcing(ec,pc)
+
+      fp=fpv(0)
+    end if
+
+    ev = u(i1,i2,i3,ec)
+    evm=um(i1,i2,i3,ec)
+
+    do iv=0,numberOfPolarizationVectors-1
+      pv(iv) = p(i1,i2,i3,m+iv*nd)
+      pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+    end do
+
+    rhsP = 0.
+    pSum = 0.
+
+    ! write(*,*) 'Inside updateDispersive'
+
+    #If #ORDER eq "2"
+
+        ! write(*,*) 'Inside updateDispersive order=2'
+
+        #If #DIM eq "2"
+            #If #GRIDTYPE eq "rectangular"
+
+              ! INFO("FD22r-2D-dispersive-Any-PV");
+              ! write(*,*) 'Inside updateDispersive rectangular order=2'
+
+              elap2 = lap2d2(i1,i2,i3,ec)
+
+            #Elif #GRIDTYPE eq "curvilinear"
+
+              ! INFO("FD22c-2D-dispersive-any-PV");
+
+              ! write(*,*) 'Inside updateDispersive curvilinear order=2'
+
+              elap2 = ulaplacian22(i1,i2,i3,ec)
+
+            #End
+
+
+        #Elif #DIM eq "3"
+            #If #GRIDTYPE eq "rectangular"
+
+              ! INFO("FD22r-3D-dispersive-Any-PV");
+
+              elap2 = lap3d2(i1,i2,i3,ec)
+
+            #Elif #GRIDTYPE eq "curvilinear"
+
+              ! INFO("FD22c-3D-dispersive-any-PV");
+
+              elap2 = ulaplacian23(i1,i2,i3,ec)
+
+            #End
+
+
+        #Else
+            ! Stop message
+            stop 123
+        #End
+
+        do iv=0,numberOfPolarizationVectors-1
+
+          rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev ) + fpv(iv)
+          rhsP = rhsP + betav(iv)*rhspv(iv)
+          pSum = pSum + 2.*pv(iv) - pvm(iv)
+
+          !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
+
+        end do
+
+        rhsE = (2.*ev-evm) + csq*dtsq*elap2 + alphaP*( pSum - rhsP ) + fe
+
+        evn = rhsE / (1.+ alphaP*beta)
+
+        un(i1,i2,i3,ec) = evn
+
+        do iv=0,numberOfPolarizationVectors-1
+          pn(i1,i2,i3,m+iv*nd)  = betav(iv)*( .5*dt*a1v(iv)*evn + rhspv(iv) )
+          ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv)=",4e16.8)') i1,i2,m,pn(i1,i2,i3,m+iv*nd)
+        end do
+
+        ! End of second order code
+
+    #Elif #ORDER eq "4"
+
+        ! write(*,*) 'Inside updateDispersive order=4'
+
+        #If #DIM eq "2"
+            #If #GRIDTYPE eq "rectangular"
+
+              ! INFO("FD44r-2D-dispersive-Any-PV");
+              ! write(*,*) 'Inside updateDispersive 2D rectangular order=4'
+
+              elap4   = lap2d4(i1,i2,i3,ec)
+              elap4m  = lap2d4m(i1,i2,i3,ec)
+              elapsq2 = lap2d2Pow2(i1,i2,i3,ec)
+              elap2m  = lap2d2m(i1,i2,i3,ec)
+
+              do iv=0,numberOfPolarizationVectors-1
+                pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
+                pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
+              end do
+
+            #Elif #GRIDTYPE eq "curvilinear"
+
+              ! INFO("FD44c-2D-dispersive-any-PV");
+
+              ! write(*,*) 'Inside updateDispersive 2D curvilinear order=4'
+
+              elap4   = ulaplacian42(i1,i2,i3,ec)
+              elap4m  = umlaplacian42(i1,i2,i3,ec)
+              elapsq2 = vlaplacian22(i1,i2,i3,ec)
+              elap2m  = umlaplacian22(i1,i2,i3,ec)
+
+              do iv=0,numberOfPolarizationVectors-1
+                pxxv(iv)  = plaplacian42(i1,i2,i3,m+iv*nd)
+                pxxvm(iv) = pmlaplacian42(i1,i2,i3,m+iv*nd)
+              end do
+
+            #End
+
+
+        #Elif #DIM eq "3"
+            #If #GRIDTYPE eq "rectangular"
+
+              ! INFO("FD44r-3D-dispersive-Any-PV");
+              ! write(*,*) 'Inside updateDispersive 3D rectangular order=4'
+
+              elap4   = lap3d4(i1,i2,i3,ec)
+              elap4m  = lap3d4m(i1,i2,i3,ec)
+              elapsq2 = lap3d2Pow2(i1,i2,i3,ec)
+              elap2m  = lap3d2m(i1,i2,i3,ec)
+
+              do iv=0,numberOfPolarizationVectors-1
+                pxxv(iv)  = plap3d4(i1,i2,i3,m+iv*nd)
+                pxxvm(iv) = plap3d4m(i1,i2,i3,m+iv*nd)
+              end do
+
+            #Elif #GRIDTYPE eq "curvilinear"
+
+              ! INFO("FD44c-3D-dispersive-any-PV");
+              ! write(*,*) 'Inside updateDispersive 3D curvilinear order=4'
+
+              elap4   = ulaplacian43(i1,i2,i3,ec)
+              elap4m  = umlaplacian43(i1,i2,i3,ec)
+              elapsq2 = vlaplacian23(i1,i2,i3,ec)
+              elap2m  = umlaplacian23(i1,i2,i3,ec)
+
+              do iv=0,numberOfPolarizationVectors-1
+                pxxv(iv)  = plaplacian43(i1,i2,i3,m+iv*nd)
+                pxxvm(iv) = pmlaplacian43(i1,i2,i3,m+iv*nd)
+              end do
+
+            #End
+         #End
+
+         ! Bug fixed, May 28, 2018 -- use 2D or 3D versions of ogderiv *wdh* 
+         #If #DIM eq "2" 
+           getGDMForcing44(ec,pc,OGDERIV2D)
+         #Else
+           getGDMForcing44(ec,pc,OGDERIV3D)
+         #End
+
+         rhsPxx = 0.
+         pxxSum = 0.
+
+         exxv  = elap4
+         exxvm = elap4m
+
+         ! First we do the second order prediction on (i) E, (ii) Exx, (iii) Pxx, (iv) Individual pk
+         do iv=0,numberOfPolarizationVectors-1
+
+           rhspv(iv) = 2.*pv(iv)-pvm(iv) + .5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm ) + dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev ) + dtsq*fp00v(iv)
+           rhsP = rhsP + betav(iv)*rhspv(iv)
+           pSum = pSum + 2.*pv(iv) - pvm(iv)
+
+           !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pv,pvm,rhspv,rhsP,pSum,fpv=",6e16.8)') i1,i2,m,pv(iv),pvm(iv),rhspv(iv),rhsP,pSum,fp00v(iv)
+           !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") ev,evm,rhspv,rhsP,pSum,fpv=",6e16.8)') i1,i2,m,ev,evm,a1v(iv),a0v(iv),b1v(iv),b0v(iv)
+           !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") first term=",1e16.8)') i1,i2,m,2.*pv(iv)-pvm(iv)
+           !write(*,'(" (i2,i2,m)=(",i3,i3,i2,") two terms",2e16.8)') i1,i2,m,.5*dt*( b1v(iv)*pvm(iv) -a1v(iv)*evm ),dtSq*( -b0v(iv)*pv(iv) + a0v(iv)*ev )
+
+           rhspxxv(iv) = 2.*pxxv(iv)-pxxvm(iv) + .5*dt*( b1v(iv)*pxxvm(iv) -a1v(iv)*exxvm ) + dtSq*( -b0v(iv)*pxxv(iv) + a0v(iv)*exxv ) + f6v(iv)
+           rhsPxx = rhsPxx + betav(iv)*rhspxxv(iv)
+           pxxSum = pxxSum + 2.*pxxv(iv) - pxxvm(iv)
+
+         end do
+
+         rhsE   = 2.*ev   - evm   + cdtsq*elap4   + alphaP*( pSum   - rhsP   ) + dtsq * fe00
+         rhsExx = 2.*exxv - exxvm + cdtsq*elapsq2 + alphaP*( pxxSum - rhsPxx ) + f5
+
+         evn   = rhsE   / (1.+ alphaP*beta)
+         exxvn = rhsExx / (1.+ alphaP*beta)
+
+         ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") rhsE,evn,fe00=",3e16.8)') i1,i2,m,rhsE,evn,fe00
+
+         ! Update x derivative of P
+         Pxxn  = beta * exxvn + rhsPxx
+
+         ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") exxvn,Pxxn=",2e16.8)') i1,i2,m,exxvn,Pxxn
+
+         ! Now we predict individual pk (pvn) and their third time derivative to second order
+         PtttStar = 0
+
+         do iv=0,numberOfPolarizationVectors-1
+           pvn(iv) = betav(iv)*( .5*dt*a1v(iv)*evn + rhspv(iv) )
+           ! Now update PtttStar for correction terms and use in Ettt
+           ptttStarv(iv) = b1tttv(iv)*(pvn(iv)-pvm(iv))/(2.*dt) + b0tttv(iv)*pv(iv) + a0tttv(iv)*ev + a1tttv(iv)*(evn-evm)/(2.*dt) + a2tttv(iv)*(evn-2*ev+evm)/dtsq + f2v(iv)
+           PtttStar = PtttStar + ptttStarv(iv)
+
+           ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvm,pv,pvn,evm,ev,evn=",6e16.8)') i1,i2,m,pvm(iv),pv(iv),pvn(iv),evm,ev,evn
+           ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") evn-evm, evn-2*ev+evm=",2e16.8)') i1,i2,m,evn-evm,evn-2*ev+evm
+           ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") 1diff,2diff,3diff,f2v(iv)=",4e16.8)') i1,i2,m,(pvn(iv)-pvm(iv))/(2.*dt),(evn-evm)/(2.*dt),(evn-2*ev+evm)/dtsq,f2v(iv)   
+           ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") pvn(iv),ptttStarv,dtsq=",3e16.8)') i1,i2,m,pvn(iv),ptttStarv(iv),dtsq
+         end do
+
+         ! Second Order Updates Complete, now we construct necessary terms
+         ! LapPtt using prediction
+         QxxStar = (Pxxn  - pxxSum)/dtsq
+         EtxxStar    = (exxvn -  exxvm)/(2.*dt)
+         EtttStar    = csq*EtxxStar - alphaP*PtttStar + f1
+
+         ! write(*,'(" (i2,i2,m)=(",i3,i3,i2,") QxxStar,exxvn,Pxxn,EtxxStar,PtttStar,EtttStar=",7e16.8)') i1,i2,m,QxxStar,exxvn,Pxxn,EtxxStar,PtttStar,EtttStar,f1
+
+         rhsP4 = 0
+         LHSev = 0
+
+         do iv=0,numberOfPolarizationVectors-1
+           ! Coeff for pk(n+1) for  LHS of invidiual p equation
+           LHSpv(iv) = 1+ b1v(iv)*dt/2.  + b0v(iv)*dtsq/12.
+
+           ! Build coeff for ev for left hand side of full P equation
+           LHSev     = LHSev + ((-a1v(iv)*dt/2.  -a0v(iv)*dtsq/12.)/LHSpv(iv))
+
+           ! LHS for pk for pk equation
+           rhspv(iv) = ((2.*pv(iv)-pvm(iv))\
+                       + b1v(iv)*dt*pvm(iv)/(2.)\
+                       - dtsq*b0v(iv)*pv(iv)\
+                       + dtsq*a0v(iv)*ev\
+                       - a1v(iv)*(dt/2.)*evm\
+                       - a1v(iv)*(dt**4/12.)*( EtttStar )\
+                       + b1v(iv)*(dt**4/12.)*( ptttStarv(iv) )\
+                       + (dtsq/12.)*( -b0v(iv)*(0. -2.*pv(iv)+pvm(iv)) + a0v(iv)*(0. -2.*ev+evm) )\
+                       + f3v(iv))
+
+           ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") LHSpv,rhspv=",2e16.8)') i1,i2,m,LHSpv(iv),rhspv(iv)
+
+           rhsP4 = rhsP4 + ( rhspv(iv) )/LHSpv(iv)
+
+         end do
+
+         ! We have now built the equation for P
+         A(1,1) = LHSev
+         A(1,2) = 1.
+
+         b(1) = rhsP4
+
+         ! Now we build the equation for E in terms of E and P
+
+         A(2,1) = 1.        ! coeff of E^{n+1}
+         A(2,2) = alphaP    ! coeff of P^{n+1}
+
+         ! Note that Psum - rhsP here is same as for second order code
+         !  (but using 4th order accurate version of p to compute them)
+         b(2) = (2.*ev-evm)\
+                +csq*dtsq*elap4\
+                +alphaP*( Psum )\
+                +csq**2*dt**4*elapsq2/(12.)\
+                -csq*dt**4*alphaP*QxxStar/(12.)\
+                + f4
+
+
+         ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") b2,f4=",2e16.8)') i1,i2,m,b(2),f4
+
+
+         deti = 1./(A(1,1)*A(2,2) - A(1,2)*A(2,1))
+
+         y(1) = deti *( A(2,2) * b(1) - A(1,2) * b(2))
+         y(2) = deti *(-A(2,1) * b(1) + A(1,1) * b(2))
+
+         ! write(*,'(" (i1,i2,m)=(",i3,i3,i2,") b1,b2,y1,y2,deti=",5e16.8)') i1,i2,m,b(1),b(2),y(1),y(2),deti
+
+         ! Update E^{n+1}
+         un(i1,i2,i3,ec) = y(1)
+         evn             = y(1)
+
+         ! Update pk using new E^{n+1} = evn
+         do iv=0,numberOfPolarizationVectors-1
+           rhspv(iv) = rhspv(iv) + (a1v(iv) * dt/(2.) + a0v(iv)*dtsq/(12.))*evn
+           pn(i1,i2,i3,m+iv*nd)  = (1/LHSpv(iv)) * rhspv(iv)
+
+           ! write(*,'("advOpt: i1,i2=",2i3," f,fe,fp,pn=",4e12.4)') i1,i2,f(i1,i2,i3,ec),fe,fp,pn(i1,i2,i3,m+iv*nd)
+         end do
+
+         ! End of fourth order code
+
+    #Else
+            ! Stop message if order not 2 or 4
+            stop 123
+    #End
+
+
+    ! End of fourth order code
+
+  end do !m=0,nd-1
+
+    ! E(t+dt) and P(t+dt) are now known 
+
+    ! --- update N here --- 
+    ! fill in the population densities "N"
+    do na=0,numberOfAtomicLevels-1
+      #If #DIM eq "2" 
+        !          t x y z                 comp   output
+        OGDERIV2D( 0,0,0,0,i1,i2,i3,t+dt, nce+na, q0 )
+      #Else
+        OGDERIV3D( 0,0,0,0,i1,i2,i3,t+dt, nce+na, q0 )
+      #End   
+      ! qm(i1,i2,i3) 
+      ! q(i1,i2,i3)
+      qn(i1,i2,i3,na) = q0 
+    end do
+
+  endLoopsMask()
+
+#endMacro
+
+
+! **********************************************************************************
 ! Macro ADV_MAXWELL:
 !  NAME: name of the subroutine
 !  DIM : 2 or 3
@@ -4713,7 +5082,7 @@ else if( updateSolution.eq.1 )then
 ! **********************************************************************************
 #beginMacro ADV_MAXWELL(NAME,DIM,ORDER,GRIDTYPE)
  subroutine NAME(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                 mask,rsxy,  um,u,un,f,fa, v, pm,p,pn, xy, ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                 mask,xy,rsxy,  um,u,un,f,fa, v, pm,p,pn, qm, q,qn, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells equations
 !     OPTIMIZED version for rectangular grids.
@@ -4738,11 +5107,15 @@ else if( updateSolution.eq.1 )then
  real pm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
  real p(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
  real pn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
+ ! Vectors for the nonlinear multilevel Atomic model 
 
  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:*)
 
- real ut6(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
- real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+ ! for nonlinear model
+ real qm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+ real q(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+ real qn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+
  real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
  real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
@@ -4806,6 +5179,10 @@ else if( updateSolution.eq.1 )then
  ! Dispersion models
       #Include "dispersionModelsFortranInclude.h"
 
+ ! Nonlinear models
+      #Include "nonlinearModelsFortranInclude.h"
+      integer nonlinearModel
+           
  ! forcing options
       #Include "forcingDefineFortranInclude.h"
 
@@ -4921,11 +5298,28 @@ else if( updateSolution.eq.1 )then
  real ptttStarv(0:maxNumberOfPolarizationVectors-1)
  real pvn(0:maxNumberOfPolarizationVectors-1)
 
+ ! ----- multilevel atomic model -----
+ integer numberOfAtomicLevels,maxPar,m1,m2,na,nce
+ real q0,q0t,q0tt
+ real pnec,prc,peptc
+ parameter( maxPar=20 )
+ real nlPar(0:maxPar-1,0:maxPar-1,0:2)
+ 
+
 ! .......statement functions for GDM parameters
  a0v(iv) = gdmPar(0,iv)
  a1v(iv) = gdmPar(1,iv)
  b0v(iv) = gdmPar(2,iv)
  b1v(iv) = gdmPar(3,iv)
+
+ ! ..... statement functions for multilevel atomic model
+ ! pnec  = polarizationNECoefficients
+ ! prc   = populationRelaxationCoefficients
+ ! peptc = populationEPtCoefficients
+ pnec(m1,m2)  = nlPar(m1,m2,0)
+ prc(m1,m2)  = nlPar(m1,m2,1)
+ peptc(m1,m2) = nlPar(m1,m2,2)
+ 
 
 !.......statement functions for jacobian
  rx(i1,i2,i3)=rsxy(i1,i2,i3,0,0)
@@ -5606,7 +6000,8 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  pzc                 =ipar(27)
  numberOfPolarizationVectors =ipar(28)
  grid                =ipar(29)
- ! qzc                 =ipar(30) ! for future use
+ nonlinearModel      =ipar(30)
+ 
  ! rxc                 =ipar(31) ! for future use
  ! ryc                 =ipar(32) ! for future use
  ! rzc                 =ipar(33) ! for future use
@@ -5622,7 +6017,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  fnext = mod(fcur+1                         ,max(1,numberOfForcingFunctions))
 
  if( t.le.3*dt )then
-   write(*,'("Inside advOptNew... t=",e10.3," grid=",i3)') t,grid
+   write(*,'(/,">>>> Inside advOptNew... t=",e10.3," grid=",i3)') t,grid
  end if
 
  ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
@@ -5684,15 +6079,39 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
    if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
      ! ---- Dispersive Maxwell ----
-     write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",3i3)') dispersionModel,pxc,pyc,pzc
-     write(*,'("--advOpt-- GDM: numberOfPolarizationVectors=",i4," alphaP=",e8.2)') numberOfPolarizationVectors,alphaP
-     write(*,'("--advOpt-- GDM: alphaP,a0,a1,b0,b1=",5(1p,e10.2))') alphaP,a0,a1,b0,b1
+     write(*,'("--advOptNew-- dispersionModel=",i4," px,py,pz=",3i3)') dispersionModel,pxc,pyc,pzc
+     write(*,'("--advOptNew-- GDM: numberOfPolarizationVectors=",i4," alphaP=",e8.2)') numberOfPolarizationVectors,alphaP
+     write(*,'("--advOptNew-- GDM: alphaP,a0,a1,b0,b1=",5(1p,e10.2))') alphaP,a0,a1,b0,b1
 
      do iv=0,numberOfPolarizationVectors-1
-       write(*,'("--advOpt-- GDM: eqn=",i3," a0,a1,b0,b1=",4(1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
+       write(*,'("--advOptNew-- GDM: eqn=",i3," a0,a1,b0,b1=",4(1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
      end do
   end if
  end if
+
+ 
+ if( nonlinearModel .ne. noNonlinearModel )then
+   write(*,'("--advOptNew-- nonlinearModel=",i4," (1=multilevelAtomic)")') nonlinearModel
+   call getMultilevelAtomicParameters( grid, nlPar, maxPar, maxPar, numberOfPolarizationVectors, numberOfAtomicLevels )
+
+   write(*,'("multilevelAtomic: numberOfPolarizationVectors",i4,"  numberOfAtomicLevels=",i4)') numberOfPolarizationVectors, numberOfAtomicLevels
+   write(*,'("polarizationNECoefficients:")')
+   do m1=0,numberOfPolarizationVectors-1
+     write(*,'( 10(e12.3,1x) )') (pnec(m1,m2),m2=0,numberOfAtomicLevels-1)
+   end do 
+
+   write(*,'("populationRelaxationCoefficients:")')
+   do m1=0,numberOfAtomicLevels-1
+     write(*,'( 10(e12.3,1x) )') (prc(m1,m2),m2=0,numberOfAtomicLevels-1)
+   end do 
+
+   write(*,'("populationEPtCoefficients:")')
+   do m1=0,numberOfAtomicLevels-1
+     write(*,'( 10(e12.3,1x) )') (peptc(m1,m2),m2=0,numberOfPolarizationVectors-1)
+   end do 
+
+   
+ end if 
 
  if( useSosupDissipation.ne.0 )then
 
@@ -5908,20 +6327,20 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
   !         if( add.gt.0. )
  if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
    call advMxDiss2dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-     pm,p,pn,xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
+     pm,p,pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
  else if(  nd.eq.2 .and. orderOfAccuracy.eq.4 )then
    call advMxDiss2dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-     pm,p,pn,xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
+     pm,p,pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
  else if( nd.eq.3 .and. orderOfAccuracy.eq.2 )then
    call advMxDiss3dOrder2(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-     pm,p,pn,xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
+     pm,p,pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
  else if(  nd.eq.3 .and. orderOfAccuracy.eq.4 )then
    call advMxDiss3dOrder4(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,\
-     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,rsxy,  um,u,un,f, v,\
-     pm,p,pn,xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+     nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,mask,xy,rsxy,  um,u,un,f, v,\
+     pm,p,pn,qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
  else
    if( (adc.gt.0. .and. combineDissipationWithAdvance.eq.0) .or. add.gt.0. )then
      stop 1116
@@ -5972,21 +6391,18 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
      write(*,*) 'Inside advOptNew rectangular order=2...'
    end if
    #If #DIM eq "2"
-    if( dispersionModel.ne.noDispersion )then
-      ! --dispersion model --
-      ! XYZ
+    if( dispersionModel.ne.noDispersion .and. nonlinearModel.eq.noNonlinearModel )then
+      ! --- linear dispersion model --- 
 
-      ! newer version from MJJ
       updateDispersive(2,2,rectangular)
 
-      ! initial version WDH: 
-      ! updateRectangular2dOrder2Dispersive()
+    else if( dispersionModel.ne.noDispersion .and. nonlinearModel.eq.multilevelAtomic )then
 
-!-    else if( useSosupDissipation.ne.0 )then
-!-
-!-     ! FD22s (rectangular grid) with upwind (sosup) dissipation (wide stencil dissiption)
-!-      updateUpwindDissipationRectangular2dOrder2()
-!-
+      ! --- Multilevel Atomic (Maxwell-Bloch) nonlinear model --- 
+
+      updateMultilevelAtomic(2,2,rectangular)
+
+
     else if( useDivergenceCleaning.eq.0 )then
 
      ! FD22 with no dissipation
@@ -6825,7 +7241,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 ! build an empty version of high order files so we do not have to compile the full version
 #beginMacro ADV_MAXWELL_NULL(NAME,DIM,ORDER,GRIDTYPE)
  subroutine NAME(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                 mask,rsxy,  um,u,un,f,fa, v, pm,p,pn, xy,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                 mask,xy,rsxy,  um,u,un,f,fa, v, pm,p,pn, qm,q,qn, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -6864,9 +7280,9 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
 
 
-! ******* THIS IS NOT CURRENTLY USED -- see verion in advOpt.bf *******************
+! ******* THIS IS NOT CURRENTLY USED -- see version in advOpt.bf *******************
       subroutine advMaxwellNew(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                            mask,rx,  um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
+                            mask,xy,rx,  um,u,un,f,fa, v, vvt2,ut3,vvt4,ut5,ut6,ut7, bc, dis, varDis, ipar, rpar, ierr )
 !======================================================================
 !   Advance a time step for Maxwells eqution
 !     OPTIMIZED version for rectangular grids.
@@ -6893,6 +7309,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       real ut7(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
       real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
       real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+      real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
       real rx(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
 
       integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
@@ -6921,16 +7338,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
         if( nd.eq.2 .and. gridType.eq.rectangular ) then
           call advMx2dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
           call advMx2dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.rectangular ) then
           call advMx3dOrder2r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                             mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                             mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
           call advMx3dOrder2c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                             mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                             mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else
           stop 2271
         end if
@@ -6938,16 +7355,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       else if( orderOfAccuracy.eq.4 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder4r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder4c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if
@@ -6956,16 +7373,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
       else if( orderOfAccuracy.eq.6 ) then
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder6r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder6c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if
@@ -6974,16 +7391,16 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
         if( nd.eq.2 .and. gridType.eq.rectangular )then
           call advMx2dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(nd.eq.2 .and. gridType.eq.curvilinear )then
           call advMx2dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.rectangular )then
           call advMx3dOrder8r(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
         else if(  nd.eq.3 .and. gridType.eq.curvilinear )then
           call advMx3dOrder8c(nd,n1a,n1b,n2a,n2b,n3a,n3b,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
-                              mask,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
+                              mask,xy,rx, um,u,un,f,fa, v,vvt2,ut3,vvt4,ut5,ut6,ut7,bc, dis,varDis, ipar, rpar, ierr )
        else
          stop 8843
        end if

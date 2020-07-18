@@ -30,6 +30,7 @@ void interfaceMaxwell( const int&nd,
                                               real&aa2, real&aa4, real&aa8, 
                                               int&ipvt2, int&ipvt4, int&ipvt8,
                                               int&ierr );
+
 void newInterfaceMaxwell( const int&nd, 
                                               const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
                    		       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
@@ -38,18 +39,21 @@ void newInterfaceMaxwell( const int&nd,
                    		       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
                                               const int&boundaryCondition2,
                    		       const int&ipar, const real&rpar, int&ierr );
+
 void interface3dMaxwell( const int&nd, 
                                               const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
                    		       const int&gridIndexRange1, 
                                               real&u1, const real&u1n, const real&u1m, real& v1, 
                                               const int&mask1,const real&rsxy1, const real&xy1, 
                                               real&p1, const real&p1n, const real&p1m, 
+                                              real&q1, const real&q1n, const real&q1m, 
                                               const int&boundaryCondition1, 
                    		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
                                               const int&gridIndexRange2, 
                                               real&u2, const real&u2n, const real&u2m, real & v2,
                                               const int&mask2,const real&rsxy2, const real&xy2, 
                                               real&p2, const real&p2n, const real&p2m,  
+                                              real&q2, const real&q2n, const real&q2m,  
                                               const int&boundaryCondition2,
                    		       const int&ipar, const real&rpar, 
                                               real&aa2, real&aa4, real&aa8, 
@@ -582,6 +586,19 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
             isRectangular2=false;
 
         }
+
+    // Extra check added *wdh* May 11, 2020
+        if( numberOfDimensions==3 && (isRectangular1 || isRectangular2) )
+        {
+            if( t<= 1.5*dt  )
+                printf("CGMX:assignInterfaceBCs: WARNING: 3D rectangular grids not implemented. Use curvilinear version instead\n");
+
+            isRectangular1=false;
+            isRectangular2=false;
+            
+        }
+        
+
         if( !isRectangular1 )
         {
             mg1.update(MappedGrid::THEinverseVertexDerivative);
@@ -898,6 +915,46 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
             p2mptr=p2mLocal.getDataPointer();
         }
 
+    // --- Get pointers to arrays for the nonlinear model ----
+        real *q1ptr = u1Local.getDataPointer();  // set default when not used
+        real *q2ptr = u2Local.getDataPointer();  // set default when not used
+
+        real *q1nptr = u1Local.getDataPointer();  // set default when not used
+        real *q2nptr = u2Local.getDataPointer();  // set default when not used
+
+        real *q1mptr = u1Local.getDataPointer();  // set default when not used
+        real *q2mptr = u2Local.getDataPointer();  // set default when not used
+
+        if( dmp1.isNonlinearMaterial() )
+        {
+            realMappedGridFunction & q1 = getNonlinearModelMappedGridFunction( grid1,next );
+            OV_GET_SERIAL_ARRAY(real,q1,q1Local);
+            q1ptr=q1Local.getDataPointer();
+
+            realMappedGridFunction & q1n = getNonlinearModelMappedGridFunction( grid1,current );
+            OV_GET_SERIAL_ARRAY(real,q1n,q1nLocal);
+            q1nptr=q1nLocal.getDataPointer();
+
+            realMappedGridFunction & q1m = getNonlinearModelMappedGridFunction( grid1,prev );
+            OV_GET_SERIAL_ARRAY(real,q1m,q1mLocal);
+            q1mptr=q1mLocal.getDataPointer();
+        }
+        if( dmp2.isNonlinearMaterial() )
+        {
+            realMappedGridFunction & q2 = getNonlinearModelMappedGridFunction( grid2,next );
+            OV_GET_SERIAL_ARRAY(real,q2,q2Local);
+            q2ptr=q2Local.getDataPointer();
+
+            realMappedGridFunction & q2n = getNonlinearModelMappedGridFunction( grid2,current );
+            OV_GET_SERIAL_ARRAY(real,q2n,q2nLocal);
+            q2nptr=q2nLocal.getDataPointer();
+
+            realMappedGridFunction & q2m = getNonlinearModelMappedGridFunction( grid2,prev );
+            OV_GET_SERIAL_ARRAY(real,q2m,q2mLocal);
+            q2mptr=q2mLocal.getDataPointer();
+        }
+
+
 
         int n1a=I1.getBase(),n1b=I1.getBound(),
             n2a=I2.getBase(),n2b=I2.getBound(),
@@ -985,6 +1042,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
           // Each grid may or may not have dispersion model: 
                     const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                     const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                    const int nonlinearModel1 = dmp1.getNonlinearModel();
+                    const int nonlinearModel2 = dmp2.getNonlinearModel();
                     int ipar[]={ //
                         side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                             n1a,n1b,n2a,n2b,n3a,n3b,
@@ -1020,7 +1079,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         dispersionModel2, // ipar[45]
                         pxc,              // ipar[46]
                         knownSolutionOption,
-                        useJacobiUpdate
+                        useJacobiUpdate,
+                        nonlinearModel1,   // ipar[49]
+                        nonlinearModel2    // ipar[50]
                     };
                 const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                 const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1110,6 +1171,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u1p, *u1np, *u1mp, *v1p,
                                                                 *mask1p,*prsxy1, *pxy1, 
                                                                 *p1ptr,*p1nptr,*p1mptr,  
+                                                                *q1ptr,*q1nptr,*q1mptr,   
                                                                 bc1Local(0,0), 
                                     		        u2bLocal.getBase(0),u2bLocal.getBound(0),
                                     		        u2bLocal.getBase(1),u2bLocal.getBound(1),
@@ -1121,6 +1183,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u2bLocal.getDataPointer(), *u2np, *u2mp, *v2p,
                                                                 *pmask2b,*prsxy2b,*pxy2b, 
                                                                 *p2ptr,*p2nptr,*p2mptr, 
+                                                                *q2ptr,*q2nptr,*q2mptr, 
                                                                 bc1Local(0,0),
                                   		      ipar[0], rpar[0], 
                                   		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1137,6 +1200,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
             // Each grid may or may not have dispersion model: 
                         const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                         const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                        const int nonlinearModel1 = dmp1.getNonlinearModel();
+                        const int nonlinearModel2 = dmp2.getNonlinearModel();
                         int ipar[]={ //
                             side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                                 n1a,n1b,n2a,n2b,n3a,n3b,
@@ -1172,7 +1237,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             dispersionModel2, // ipar[45]
                             pxc,              // ipar[46]
                             knownSolutionOption,
-                            useJacobiUpdate
+                            useJacobiUpdate,
+                            nonlinearModel1,   // ipar[49]
+                            nonlinearModel2    // ipar[50]
                         };
                     const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                     const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1262,6 +1329,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u1p, *u1np, *u1mp, *v1p,
                                                                     *mask1p,*prsxy1, *pxy1, 
                                                                     *p1ptr,*p1nptr,*p1mptr,  
+                                                                    *q1ptr,*q1nptr,*q1mptr,   
                                                                     bc1Local(0,0), 
                                         		        u2bLocal.getBase(0),u2bLocal.getBound(0),
                                         		        u2bLocal.getBase(1),u2bLocal.getBound(1),
@@ -1273,6 +1341,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u2bLocal.getDataPointer(), *u2np, *u2mp, *v2p,
                                                                     *pmask2b,*prsxy2b,*pxy2b, 
                                                                     *p2ptr,*p2nptr,*p2mptr, 
+                                                                    *q2ptr,*q2nptr,*q2mptr, 
                                                                     bc1Local(0,0),
                                       		      ipar[0], rpar[0], 
                                       		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1294,6 +1363,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
           // Each grid may or may not have dispersion model: 
                     const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                     const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                    const int nonlinearModel1 = dmp1.getNonlinearModel();
+                    const int nonlinearModel2 = dmp2.getNonlinearModel();
                     int ipar[]={ //
                         side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                             m1a,m1b,m2a,m2b,m3a,m3b,  // use grid2 dimensions for grid1 when we solve on grid2
@@ -1329,7 +1400,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         dispersionModel2, // ipar[45]
                         pxc,              // ipar[46]
                         knownSolutionOption,
-                        useJacobiUpdate
+                        useJacobiUpdate,
+                        nonlinearModel1,   // ipar[49]
+                        nonlinearModel2    // ipar[50]
                     };
                 const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                 const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1422,6 +1495,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u1bLocal.getDataPointer(), *u1np,*u1mp, *v1p, 
                                                                 *pmask1b,*prsxy1b,*pxy1b, 
                                                                 *p1ptr,*p1nptr,*p1mptr,   
+                                                                *q1ptr,*q1nptr,*q1mptr,   
                                                                 bc2Local(0,0),
                                     		        u2Local.getBase(0),u2Local.getBound(0),
                                     		        u2Local.getBase(1),u2Local.getBound(1),
@@ -1430,6 +1504,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u2p, *u2np, *u2mp, *v2p,
                                                                 *mask2p,*prsxy2, *pxy2, 
                                                                 *p2ptr,*p2nptr,*p2mptr, 
+                                                                *q2ptr,*q2nptr,*q2mptr, 
                                                                 bc2Local(0,0), 
                                   		      ipar[0], rpar[0], 
                                   		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1446,6 +1521,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
             // Each grid may or may not have dispersion model: 
                         const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                         const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                        const int nonlinearModel1 = dmp1.getNonlinearModel();
+                        const int nonlinearModel2 = dmp2.getNonlinearModel();
                         int ipar[]={ //
                             side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                                 m1a,m1b,m2a,m2b,m3a,m3b,  // use grid2 dimensions for grid1 when we solve on grid2
@@ -1481,7 +1558,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             dispersionModel2, // ipar[45]
                             pxc,              // ipar[46]
                             knownSolutionOption,
-                            useJacobiUpdate
+                            useJacobiUpdate,
+                            nonlinearModel1,   // ipar[49]
+                            nonlinearModel2    // ipar[50]
                         };
                     const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                     const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1574,6 +1653,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u1bLocal.getDataPointer(), *u1np,*u1mp, *v1p, 
                                                                     *pmask1b,*prsxy1b,*pxy1b, 
                                                                     *p1ptr,*p1nptr,*p1mptr,   
+                                                                    *q1ptr,*q1nptr,*q1mptr,   
                                                                     bc2Local(0,0),
                                         		        u2Local.getBase(0),u2Local.getBound(0),
                                         		        u2Local.getBase(1),u2Local.getBound(1),
@@ -1582,6 +1662,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u2p, *u2np, *u2mp, *v2p,
                                                                     *mask2p,*prsxy2, *pxy2, 
                                                                     *p2ptr,*p2nptr,*p2mptr, 
+                                                                    *q2ptr,*q2nptr,*q2mptr, 
                                                                     bc2Local(0,0), 
                                       		      ipar[0], rpar[0], 
                                       		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1602,6 +1683,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
           // Each grid may or may not have dispersion model: 
                     const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                     const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                    const int nonlinearModel1 = dmp1.getNonlinearModel();
+                    const int nonlinearModel2 = dmp2.getNonlinearModel();
                     int ipar[]={ //
                         side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                             n1a,n1b,n2a,n2b,n3a,n3b,
@@ -1637,7 +1720,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                         dispersionModel2, // ipar[45]
                         pxc,              // ipar[46]
                         knownSolutionOption,
-                        useJacobiUpdate
+                        useJacobiUpdate,
+                        nonlinearModel1,   // ipar[49]
+                        nonlinearModel2    // ipar[50]
                     };
                 const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                 const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1724,6 +1809,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u1p, *u1np, *u1mp, *v1p,
                                                                 *mask1p,*prsxy1, *pxy1, 
                                                                 *p1ptr,*p1nptr,*p1mptr,  
+                                                                *q1ptr,*q1nptr,*q1mptr,   
                                                                 bc1Local(0,0), 
                                     		        u2Local.getBase(0),u2Local.getBound(0),
                                     		        u2Local.getBase(1),u2Local.getBound(1),
@@ -1732,6 +1818,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                 *u2p, *u2np, *u2mp, *v2p,
                                                                 *mask2p,*prsxy2, *pxy2, 
                                                                 *p2ptr,*p2nptr,*p2mptr, 
+                                                                *q2ptr,*q2nptr,*q2mptr, 
                                                                 bc2Local(0,0), 
                                   		      ipar[0], rpar[0], 
                                   		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1749,6 +1836,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
             // Each grid may or may not have dispersion model: 
                         const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                         const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                        const int nonlinearModel1 = dmp1.getNonlinearModel();
+                        const int nonlinearModel2 = dmp2.getNonlinearModel();
                         int ipar[]={ //
                             side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                                 n1a,n1b,n2a,n2b,n3a,n3b,
@@ -1784,7 +1873,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                             dispersionModel2, // ipar[45]
                             pxc,              // ipar[46]
                             knownSolutionOption,
-                            useJacobiUpdate
+                            useJacobiUpdate,
+                            nonlinearModel1,   // ipar[49]
+                            nonlinearModel2    // ipar[50]
                         };
                     const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
                     const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
@@ -1871,6 +1962,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u1p, *u1np, *u1mp, *v1p,
                                                                     *mask1p,*prsxy1, *pxy1, 
                                                                     *p1ptr,*p1nptr,*p1mptr,  
+                                                                    *q1ptr,*q1nptr,*q1mptr,   
                                                                     bc1Local(0,0), 
                                         		        u2Local.getBase(0),u2Local.getBound(0),
                                         		        u2Local.getBase(1),u2Local.getBound(1),
@@ -1879,6 +1971,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                                                                     *u2p, *u2np, *u2mp, *v2p,
                                                                     *mask2p,*prsxy2, *pxy2, 
                                                                     *p2ptr,*p2nptr,*p2mptr, 
+                                                                    *q2ptr,*q2nptr,*q2mptr, 
                                                                     bc2Local(0,0), 
                                       		      ipar[0], rpar[0], 
                                       		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
@@ -1908,6 +2001,8 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
         // Each grid may or may not have dispersion model: 
                 const DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
                 const DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
+                const int nonlinearModel1 = dmp1.getNonlinearModel();
+                const int nonlinearModel2 = dmp2.getNonlinearModel();
                 int ipar[]={ //
                     side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
                         n1a,n1b,n2a,n2b,n3a,n3b,
@@ -1943,7 +2038,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
                     dispersionModel2, // ipar[45]
                     pxc,              // ipar[46]
                     knownSolutionOption,
-                    useJacobiUpdate
+                    useJacobiUpdate,
+                    nonlinearModel1,   // ipar[49]
+                    nonlinearModel2    // ipar[50]
                 };
             const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
             const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
