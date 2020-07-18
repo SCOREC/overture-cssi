@@ -528,7 +528,7 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     {
       
       std::complex<LocalReal> kcInverse = lambda(i); 
-      if( fabs(kcInverse) > tol )  //  skip zero eigenvalues 
+      if( abs(kcInverse) > tol )  //  skip zero eigenvalues 
       {
         std::complex<LocalReal> kxt = 1./kcInverse; 
 	if( idebug>1 )
@@ -829,7 +829,7 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     {
       printF(" i=%2d:",i);
       for( int j=0; j<nrt; j++ )
-	printF(" %6.2f, ",A(i,j));
+	printF(" %6.2f, ",std::real(A(i,j)));
       printF("\n");
     }
   }
