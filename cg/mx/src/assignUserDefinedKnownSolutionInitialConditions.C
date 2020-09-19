@@ -74,25 +74,29 @@ assignUserDefinedKnownSolutionInitialConditions(int current, real t, real dt )
     {
       // -- assign solution at time t:
       realMappedGridFunction & pv = getDispersionModelMappedGridFunction( grid,current );
-      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv, I1,I2,I3,numberOfTimeDerivatives);
+      realMappedGridFunction & qv = getNonlinearModelMappedGridFunction( grid,current );
+      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv,qv, I1,I2,I3,numberOfTimeDerivatives);
 
       // assign solution at time t-dt
       realMappedGridFunction & pvm = getDispersionModelMappedGridFunction( grid,prev );
-      getUserDefinedKnownSolution( prev,t-dt, cg,grid,um[grid],pvm,I1,I2,I3,numberOfTimeDerivatives);
+      realMappedGridFunction & qvm = getNonlinearModelMappedGridFunction( grid,prev );
+      getUserDefinedKnownSolution( prev,t-dt, cg,grid,um[grid],pvm,qvm,I1,I2,I3,numberOfTimeDerivatives);
 
     }
     else if( method==bamx ) 
     {
       // -- assign solution at time t:
       realMappedGridFunction & pv = getDispersionModelMappedGridFunction( grid,current );
-      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv, I1,I2,I3,numberOfTimeDerivatives);
+      realMappedGridFunction & qv = getNonlinearModelMappedGridFunction( grid,current );
+      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv,qv, I1,I2,I3,numberOfTimeDerivatives);
 
     }
     else if( method==sosup )
     {
       // -- assign solution at time t:
       realMappedGridFunction & pv = getDispersionModelMappedGridFunction( grid,current );
-      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv,I1,I2,I3,numberOfTimeDerivatives);
+      realMappedGridFunction & qv = getNonlinearModelMappedGridFunction( grid,current );
+      getUserDefinedKnownSolution( current,t, cg,grid, u[grid],pv,qv,I1,I2,I3,numberOfTimeDerivatives);
 
     }
     else

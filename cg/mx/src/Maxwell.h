@@ -337,7 +337,7 @@ class Maxwell
   void getTimeSteppingLabel( real dt, aString & label ) const;
 
   int getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid, realArray & ua, 
-                                  realArray & pv,
+                                  realArray & pv, realArray & qv,
 				  const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives = 0 );
 
   int getValuesFDTD(int option, int *iparam, int current, real t, real dt, realCompositeGridFunction *v= NULL );

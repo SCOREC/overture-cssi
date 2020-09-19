@@ -5167,7 +5167,6 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
 }
 
 
-
 // =======================================================================================
 /// \brief Return the realMappedGridFunction (rMGF) that holds the data for the 
 ///        nonlinear model (e.g. N's in a multilevelAtomic model). Return a NULL rMGF is there is

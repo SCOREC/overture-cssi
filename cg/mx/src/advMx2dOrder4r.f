@@ -32,6 +32,7 @@
         real qm(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real q(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real qn(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+        real qe(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b,nd4a:nd4b)
         real dis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
         real varDis(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
         real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
@@ -887,6 +888,103 @@
          real pmyyzz23r
          real pmLapSq22r
          real pmLapSq23r
+        ! MLA
+         real nepr2
+         real neps2
+         real nept2
+         real neprr2
+         real nepss2
+         real neprs2
+         real neptt2
+         real neprt2
+         real nepst2
+         real neprrr2
+         real nepsss2
+         real nepttt2
+         real nepx21
+         real nepy21
+         real nepz21
+         real nepx22
+         real nepy22
+         real nepz22
+         real nepx23
+         real nepy23
+         real nepz23
+         real nepxx21
+         real nepyy21
+         real nepxy21
+         real nepxz21
+         real nepyz21
+         real nepzz21
+         real neplaplacian21
+         real nepxx22
+         real nepyy22
+         real nepxy22
+         real nepxz22
+         real nepyz22
+         real nepzz22
+         real neplaplacian22
+         real nepxx23
+         real nepyy23
+         real nepzz23
+         real nepxy23
+         real nepxz23
+         real nepyz23
+         real neplaplacian23
+         real nepx23r
+         real nepy23r
+         real nepz23r
+         real nepxx23r
+         real nepyy23r
+         real nepxy23r
+         real nepzz23r
+         real nepxz23r
+         real nepyz23r
+         real nepx21r
+         real nepy21r
+         real nepz21r
+         real nepxx21r
+         real nepyy21r
+         real nepzz21r
+         real nepxy21r
+         real nepxz21r
+         real nepyz21r
+         real neplaplacian21r
+         real nepx22r
+         real nepy22r
+         real nepz22r
+         real nepxx22r
+         real nepyy22r
+         real nepzz22r
+         real nepxy22r
+         real nepxz22r
+         real nepyz22r
+         real neplaplacian22r
+         real neplaplacian23r
+         real nepxxx22r
+         real nepyyy22r
+         real nepxxy22r
+         real nepxyy22r
+         real nepxxxx22r
+         real nepyyyy22r
+         real nepxxyy22r
+         real nepxxx23r
+         real nepyyy23r
+         real nepzzz23r
+         real nepxxy23r
+         real nepxxz23r
+         real nepxyy23r
+         real nepyyz23r
+         real nepxzz23r
+         real nepyzz23r
+         real nepxxxx23r
+         real nepyyyy23r
+         real nepzzzz23r
+         real nepxxyy23r
+         real nepxxzz23r
+         real nepyyzz23r
+         real nepLapSq22r
+         real nepLapSq23r
          real d14
          real d24
          real h41
@@ -1408,22 +1506,24 @@
      & lap3d2Pow4,lap2d4Pow2,lap3d4Pow2,lap2d4Pow3,lap3d4Pow3,
      & lap2d6Pow2,lap3d6Pow2
         real lap2d2m,lap3d2m
+        real qelap2d2,qelap3d2
         real du,fd22d,fd23d,fd42d,fd43d,fd62d,fd63d,fd82d,fd83d
-        real elap4, elap4m, lap2d4m, lap3d4m, elapsq2, elap2, elap2m, 
-     & plap2, plap2m, plap4, plap4m, plap2d2, plap2d2m, plap2d4, 
-     & plap2d4m
+        real elap4, elap4m, lap2d4m, lap3d4m, elapsq2, elap2n, elap2, 
+     & elap2m, plap2, plap2m, plap4, plap4m, plap2d2, plap2d2m, 
+     & plap2d4, plap2d4m
         real a0ttt, a1ttt, a2ttt, b0ttt, b1ttt, Exx, Exxxx, En, Enm1, 
      & Pnm1, Exxn, Exxnm1, betaP, Pxxn, Pxxnm1, Etxx,cStar, 
      & PtttStarRhs, rhsExxnp1Predict, rhsPxxnp1Predict, Exxnp1Predict,
      &  Pxxnp1Predict, A(2,2), b(2), y(2),f1, f2, f3, f4, f5, f6
         real p0ttt, p0tttt, p0xx, p0yy, p0xxt, p0yyt, p0xxtt, p0yytt, 
-     & e0ttt, e0tttt,e0xx, e0yy, e0xxt, e0yyt, e0xxtt, e0yytt, e0xxxx,
-     &  e0xxyy, e0yyyy
+     & e0ttt, e0tttt,e0x,e0y,e0z, e0xx, e0yy, e0xxt, e0yyt, e0xxtt, 
+     & e0yytt, e0xxxx, e0xxyy, e0yyyy
         real fp00, fp10, fp20, fp02x, fp02y, fp02, fe00, fe10, fe20, 
      & fe02x, fe02y, fe02
         real p0zz, p0zzt, p0zztt, e0zz, e0zzt, e0zztt, e0xxzz, e0yyzz, 
      & e0zzzz, fp02z, fe02z
         real plap3d2, plap3d2m, plap3d4, plap3d4m
+        real q0x,q0y,q0z,q0xx,q0yy,q0zz
         ! forcing correction functions:
         real lap2d2f,f2drme44, lap3d2f, f3drme44, f2dcme44, f3dcme44, 
      & ff
@@ -1459,6 +1559,9 @@
         real rhspv(0:maxNumberOfPolarizationVectors-1)
         real betav(0:maxNumberOfPolarizationVectors-1)
         real fpv(0:maxNumberOfPolarizationVectors-1)
+        real fptv(0:maxNumberOfPolarizationVectors-1)
+        real fpttv(0:maxNumberOfPolarizationVectors-1)
+        real lapfpv(0:maxNumberOfPolarizationVectors-1)
        ! More Generalized dispersion model parameters
         real pSum0tt, pSum0ttt, pSum0tttt, pSum0xxtt, pSum0yytt, 
      & pSum0zztt, rhsPxx, pxxSum, PtttStar, QxxStar, EtxxStar, 
@@ -1471,6 +1574,7 @@
         real f2v(0:maxNumberOfPolarizationVectors-1)
         real f3v(0:maxNumberOfPolarizationVectors-1)
         real f6v(0:maxNumberOfPolarizationVectors-1)
+        real pxxvn(0:maxNumberOfPolarizationVectors-1)
         real pxxv(0:maxNumberOfPolarizationVectors-1)
         real pxxvm(0:maxNumberOfPolarizationVectors-1)
         real rhspxxv(0:maxNumberOfPolarizationVectors-1)
@@ -1480,10 +1584,26 @@
         real pvn(0:maxNumberOfPolarizationVectors-1)
         ! ----- multilevel atomic model -----
         integer numberOfAtomicLevels,maxPar,m1,m2,na,nce
-        real q0,q0t,q0tt
+        real q0,q0t,q0tt,q0ttt,q0tttt
         real pnec,prc,peptc
         parameter( maxPar=20 )
         real nlPar(0:maxPar-1,0:maxPar-1,0:2)
+        real fnv(0:maxPar-1)
+        real fntv(0:maxPar-1)
+        real fnttv(0:maxPar-1)
+        real fntttv(0:maxPar-1)
+        real qvec(0:maxPar-1)
+        real qt(0:maxPar-1)
+        real qtt(0:maxPar-1)
+        real qttt(0:maxPar-1)
+        real qtttt(0:maxPar-1)
+        real qelap2(0:maxPar-1)
+        real et,ett,ettt
+        real etv(0:2),ettv(0:2),etttv(0:2)
+        real ptv(0:2,0:maxPar-1),pttv(0:2,0:maxPar-1),ptttv(0:2,
+     & 0:maxPar-1),pttttv(0:2,0:maxPar-1)
+        real ptttSum,lapfe,fet,fett
+        real nep(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd*maxPar-1)
        ! .......statement functions for GDM parameters
         a0v(iv) = gdmPar(0,iv)
         a1v(iv) = gdmPar(1,iv)
@@ -4604,6 +4724,265 @@ c===============================================================================
      & i3,kd)
         pmlaplacian43r(i1,i2,i3,kd)=pmxx43r(i1,i2,i3,kd)+pmyy43r(i1,i2,
      & i3,kd)+pmzz43r(i1,i2,i3,kd)
+        ! MLA
+        nepr2(i1,i2,i3,kd)=(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,kd))*d12(
+     & 0)
+        neps2(i1,i2,i3,kd)=(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,kd))*d12(
+     & 1)
+        nept2(i1,i2,i3,kd)=(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,kd))*d12(
+     & 2)
+        neprr2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1+1,i2,i3,kd)+
+     & nep(i1-1,i2,i3,kd)) )*d22(0)
+        nepss2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2+1,i3,kd)+
+     & nep(i1,i2-1,i3,kd)) )*d22(1)
+        neprs2(i1,i2,i3,kd)=(nepr2(i1,i2+1,i3,kd)-nepr2(i1,i2-1,i3,kd))
+     & *d12(1)
+        neptt2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2,i3+1,kd)+
+     & nep(i1,i2,i3-1,kd)) )*d22(2)
+        neprt2(i1,i2,i3,kd)=(nepr2(i1,i2,i3+1,kd)-nepr2(i1,i2,i3-1,kd))
+     & *d12(2)
+        nepst2(i1,i2,i3,kd)=(neps2(i1,i2,i3+1,kd)-neps2(i1,i2,i3-1,kd))
+     & *d12(2)
+        neprrr2(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
+     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*d22(0)*d12(0)
+        nepsss2(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
+     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*d22(1)*d12(1)
+        nepttt2(i1,i2,i3,kd)=(-2.*(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,
+     & kd))+(nep(i1,i2,i3+2,kd)-nep(i1,i2,i3-2,kd)) )*d22(2)*d12(2)
+        nepx21(i1,i2,i3,kd)= rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)
+        nepy21(i1,i2,i3,kd)=0
+        nepz21(i1,i2,i3,kd)=0
+        nepx22(i1,i2,i3,kd)= rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sx(i1,i2,
+     & i3)*neps2(i1,i2,i3,kd)
+        nepy22(i1,i2,i3,kd)= ry(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sy(i1,i2,
+     & i3)*neps2(i1,i2,i3,kd)
+        nepz22(i1,i2,i3,kd)=0
+        nepx23(i1,i2,i3,kd)=rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sx(i1,i2,
+     & i3)*neps2(i1,i2,i3,kd)+tx(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        nepy23(i1,i2,i3,kd)=ry(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sy(i1,i2,
+     & i3)*neps2(i1,i2,i3,kd)+ty(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        nepz23(i1,i2,i3,kd)=rz(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sz(i1,i2,
+     & i3)*neps2(i1,i2,i3,kd)+tz(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        nepxx21(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+(
+     & rxx22(i1,i2,i3))*nepr2(i1,i2,i3,kd)
+        nepyy21(i1,i2,i3,kd)=0
+        nepxy21(i1,i2,i3,kd)=0
+        nepxz21(i1,i2,i3,kd)=0
+        nepyz21(i1,i2,i3,kd)=0
+        nepzz21(i1,i2,i3,kd)=0
+        neplaplacian21(i1,i2,i3,kd)=nepxx21(i1,i2,i3,kd)
+        nepxx22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+2.*(
+     & rx(i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**
+     & 2)*nepss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
+     & sxx22(i1,i2,i3))*neps2(i1,i2,i3,kd)
+        nepyy22(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+2.*(
+     & ry(i1,i2,i3)*sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sy(i1,i2,i3)**
+     & 2)*nepss2(i1,i2,i3,kd)+(ryy22(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
+     & syy22(i1,i2,i3))*neps2(i1,i2,i3,kd)
+        nepxy22(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*neprr2(i1,i2,i3,
+     & kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*
+     & neprs2(i1,i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*nepss2(i1,i2,i3,
+     & kd)+rxy22(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxy22(i1,i2,i3)*neps2(
+     & i1,i2,i3,kd)
+        nepxz22(i1,i2,i3,kd)=0
+        nepyz22(i1,i2,i3,kd)=0
+        nepzz22(i1,i2,i3,kd)=0
+        neplaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & neprr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)
+     & *sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,
+     & i3)**2)*nepss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*
+     & nepr2(i1,i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*neps2(i1,
+     & i2,i3,kd)
+        nepxx23(i1,i2,i3,kd)=rx(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sx(i1,
+     & i2,i3)**2*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)**2*neptt2(i1,i2,i3,
+     & kd)+2.*rx(i1,i2,i3)*sx(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*rx(i1,
+     & i2,i3)*tx(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,
+     & i2,i3)*nepst2(i1,i2,i3,kd)+rxx23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
+     & sxx23(i1,i2,i3)*neps2(i1,i2,i3,kd)+txx23(i1,i2,i3)*nept2(i1,i2,
+     & i3,kd)
+        nepyy23(i1,i2,i3,kd)=ry(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sy(i1,
+     & i2,i3)**2*nepss2(i1,i2,i3,kd)+ty(i1,i2,i3)**2*neptt2(i1,i2,i3,
+     & kd)+2.*ry(i1,i2,i3)*sy(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*ry(i1,
+     & i2,i3)*ty(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,
+     & i2,i3)*nepst2(i1,i2,i3,kd)+ryy23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
+     & syy23(i1,i2,i3)*neps2(i1,i2,i3,kd)+tyy23(i1,i2,i3)*nept2(i1,i2,
+     & i3,kd)
+        nepzz23(i1,i2,i3,kd)=rz(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sz(i1,
+     & i2,i3)**2*nepss2(i1,i2,i3,kd)+tz(i1,i2,i3)**2*neptt2(i1,i2,i3,
+     & kd)+2.*rz(i1,i2,i3)*sz(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*rz(i1,
+     & i2,i3)*tz(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,
+     & i2,i3)*nepst2(i1,i2,i3,kd)+rzz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
+     & szz23(i1,i2,i3)*neps2(i1,i2,i3,kd)+tzz23(i1,i2,i3)*nept2(i1,i2,
+     & i3,kd)
+        nepxy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*neprr2(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & ty(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(
+     & i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(
+     & i1,i2,i3)+ry(i1,i2,i3)*tx(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sx(
+     & i1,i2,i3)*ty(i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*nepst2(i1,i2,
+     & i3,kd)+rxy23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxy23(i1,i2,i3)*
+     & neps2(i1,i2,i3,kd)+txy23(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        nepxz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*neprr2(i1,i2,i3,
+     & kd)+sx(i1,i2,i3)*sz(i1,i2,i3)*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
+     & tz(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(
+     & i1,i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sx(
+     & i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*nepst2(i1,i2,
+     & i3,kd)+rxz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*
+     & neps2(i1,i2,i3,kd)+txz23(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        nepyz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*neprr2(i1,i2,i3,
+     & kd)+sy(i1,i2,i3)*sz(i1,i2,i3)*nepss2(i1,i2,i3,kd)+ty(i1,i2,i3)*
+     & tz(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(
+     & i1,i2,i3)*sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(
+     & i1,i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sy(
+     & i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*nepst2(i1,i2,
+     & i3,kd)+ryz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+syz23(i1,i2,i3)*
+     & neps2(i1,i2,i3,kd)+tyz23(i1,i2,i3)*nept2(i1,i2,i3,kd)
+        neplaplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+
+     & rz(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,
+     & i3)**2+sz(i1,i2,i3)**2)*nepss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+
+     & ty(i1,i2,i3)**2+tz(i1,i2,i3)**2)*neptt2(i1,i2,i3,kd)+2.*(rx(i1,
+     & i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(
+     & i1,i2,i3))*neprs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ 
+     & ry(i1,i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*neprt2(i1,
+     & i2,i3,kd)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,
+     & i3)+sz(i1,i2,i3)*tz(i1,i2,i3))*nepst2(i1,i2,i3,kd)+(rxx23(i1,
+     & i2,i3)+ryy23(i1,i2,i3)+rzz23(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
+     & sxx23(i1,i2,i3)+syy23(i1,i2,i3)+szz23(i1,i2,i3))*neps2(i1,i2,
+     & i3,kd)+(txx23(i1,i2,i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*nept2(
+     & i1,i2,i3,kd)
+c============================================================================================
+c Define derivatives for a rectangular grid
+c
+c============================================================================================
+        nepx23r(i1,i2,i3,kd)=(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,kd))*
+     & h12(0)
+        nepy23r(i1,i2,i3,kd)=(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,kd))*
+     & h12(1)
+        nepz23r(i1,i2,i3,kd)=(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,kd))*
+     & h12(2)
+        nepxx23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1+1,i2,i3,kd)
+     & +nep(i1-1,i2,i3,kd)) )*h22(0)
+        nepyy23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2+1,i3,kd)
+     & +nep(i1,i2-1,i3,kd)) )*h22(1)
+        nepxy23r(i1,i2,i3,kd)=(nepx23r(i1,i2+1,i3,kd)-nepx23r(i1,i2-1,
+     & i3,kd))*h12(1)
+        nepzz23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2,i3+1,kd)
+     & +nep(i1,i2,i3-1,kd)) )*h22(2)
+        nepxz23r(i1,i2,i3,kd)=(nepx23r(i1,i2,i3+1,kd)-nepx23r(i1,i2,i3-
+     & 1,kd))*h12(2)
+        nepyz23r(i1,i2,i3,kd)=(nepy23r(i1,i2,i3+1,kd)-nepy23r(i1,i2,i3-
+     & 1,kd))*h12(2)
+        nepx21r(i1,i2,i3,kd)= nepx23r(i1,i2,i3,kd)
+        nepy21r(i1,i2,i3,kd)= nepy23r(i1,i2,i3,kd)
+        nepz21r(i1,i2,i3,kd)= nepz23r(i1,i2,i3,kd)
+        nepxx21r(i1,i2,i3,kd)= nepxx23r(i1,i2,i3,kd)
+        nepyy21r(i1,i2,i3,kd)= nepyy23r(i1,i2,i3,kd)
+        nepzz21r(i1,i2,i3,kd)= nepzz23r(i1,i2,i3,kd)
+        nepxy21r(i1,i2,i3,kd)= nepxy23r(i1,i2,i3,kd)
+        nepxz21r(i1,i2,i3,kd)= nepxz23r(i1,i2,i3,kd)
+        nepyz21r(i1,i2,i3,kd)= nepyz23r(i1,i2,i3,kd)
+        neplaplacian21r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)
+        nepx22r(i1,i2,i3,kd)= nepx23r(i1,i2,i3,kd)
+        nepy22r(i1,i2,i3,kd)= nepy23r(i1,i2,i3,kd)
+        nepz22r(i1,i2,i3,kd)= nepz23r(i1,i2,i3,kd)
+        nepxx22r(i1,i2,i3,kd)= nepxx23r(i1,i2,i3,kd)
+        nepyy22r(i1,i2,i3,kd)= nepyy23r(i1,i2,i3,kd)
+        nepzz22r(i1,i2,i3,kd)= nepzz23r(i1,i2,i3,kd)
+        nepxy22r(i1,i2,i3,kd)= nepxy23r(i1,i2,i3,kd)
+        nepxz22r(i1,i2,i3,kd)= nepxz23r(i1,i2,i3,kd)
+        nepyz22r(i1,i2,i3,kd)= nepyz23r(i1,i2,i3,kd)
+        neplaplacian22r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)+nepyy23r(i1,
+     & i2,i3,kd)
+        neplaplacian23r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)+nepyy23r(i1,
+     & i2,i3,kd)+nepzz23r(i1,i2,i3,kd)
+        nepxxx22r(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
+     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        nepyyy22r(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
+     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        nepxxy22r(i1,i2,i3,kd)=( nepxx22r(i1,i2+1,i3,kd)-nepxx22r(i1,
+     & i2-1,i3,kd))/(2.*dx(1))
+        nepxyy22r(i1,i2,i3,kd)=( nepyy22r(i1+1,i2,i3,kd)-nepyy22r(i1-1,
+     & i2,i3,kd))/(2.*dx(0))
+        nepxxxx22r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1+1,i2,
+     & i3,kd)+nep(i1-1,i2,i3,kd))+(nep(i1+2,i2,i3,kd)+nep(i1-2,i2,i3,
+     & kd)) )/(dx(0)**4)
+        nepyyyy22r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2+1,
+     & i3,kd)+nep(i1,i2-1,i3,kd))+(nep(i1,i2+2,i3,kd)+nep(i1,i2-2,i3,
+     & kd)) )/(dx(1)**4)
+        nepxxyy22r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
+     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(i1,i2-1,
+     & i3,kd))   +   (nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,kd)+nep(
+     & i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        ! 2D laplacian squared = nep.xxxx + 2 nep.xxyy + nep.yyyy
+        nepLapSq22r(i1,i2,i3,kd)= ( 6.*nep(i1,i2,i3,kd)   - 4.*(nep(i1+
+     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd))    +(nep(i1+2,i2,i3,kd)+nep(i1-
+     & 2,i2,i3,kd)) )/(dx(0)**4) +( 6.*nep(i1,i2,i3,kd)    -4.*(nep(
+     & i1,i2+1,i3,kd)+nep(i1,i2-1,i3,kd))    +(nep(i1,i2+2,i3,kd)+nep(
+     & i1,i2-2,i3,kd)) )/(dx(1)**4)  +( 8.*nep(i1,i2,i3,kd)     -4.*(
+     & nep(i1+1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(
+     & i1,i2-1,i3,kd))   +2.*(nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,
+     & kd)+nep(i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(
+     & 1)**2)
+        nepxxx23r(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
+     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        nepyyy23r(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
+     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        nepzzz23r(i1,i2,i3,kd)=(-2.*(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,
+     & kd))+(nep(i1,i2,i3+2,kd)-nep(i1,i2,i3-2,kd)) )*h22(1)*h12(2)
+        nepxxy23r(i1,i2,i3,kd)=( nepxx22r(i1,i2+1,i3,kd)-nepxx22r(i1,
+     & i2-1,i3,kd))/(2.*dx(1))
+        nepxyy23r(i1,i2,i3,kd)=( nepyy22r(i1+1,i2,i3,kd)-nepyy22r(i1-1,
+     & i2,i3,kd))/(2.*dx(0))
+        nepxxz23r(i1,i2,i3,kd)=( nepxx22r(i1,i2,i3+1,kd)-nepxx22r(i1,
+     & i2,i3-1,kd))/(2.*dx(2))
+        nepyyz23r(i1,i2,i3,kd)=( nepyy22r(i1,i2,i3+1,kd)-nepyy22r(i1,
+     & i2,i3-1,kd))/(2.*dx(2))
+        nepxzz23r(i1,i2,i3,kd)=( nepzz22r(i1+1,i2,i3,kd)-nepzz22r(i1-1,
+     & i2,i3,kd))/(2.*dx(0))
+        nepyzz23r(i1,i2,i3,kd)=( nepzz22r(i1,i2+1,i3,kd)-nepzz22r(i1,
+     & i2-1,i3,kd))/(2.*dx(1))
+        nepxxxx23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1+1,i2,
+     & i3,kd)+nep(i1-1,i2,i3,kd))+(nep(i1+2,i2,i3,kd)+nep(i1-2,i2,i3,
+     & kd)) )/(dx(0)**4)
+        nepyyyy23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2+1,
+     & i3,kd)+nep(i1,i2-1,i3,kd))+(nep(i1,i2+2,i3,kd)+nep(i1,i2-2,i3,
+     & kd)) )/(dx(1)**4)
+        nepzzzz23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2,i3+
+     & 1,kd)+nep(i1,i2,i3-1,kd))+(nep(i1,i2,i3+2,kd)+nep(i1,i2,i3-2,
+     & kd)) )/(dx(2)**4)
+        nepxxyy23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
+     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(i1,i2-1,
+     & i3,kd))   +   (nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,kd)+nep(
+     & i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        nepxxzz23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
+     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2,i3+1,kd)+nep(i1,i2,i3-
+     & 1,kd))   +   (nep(i1+1,i2,i3+1,kd)+nep(i1-1,i2,i3+1,kd)+nep(i1+
+     & 1,i2,i3-1,kd)+nep(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)
+        nepyyzz23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1,
+     & i2+1,i3,kd)  +nep(i1,i2-1,i3,kd)+  nep(i1,i2  ,i3+1,kd)+nep(i1,
+     & i2  ,i3-1,kd))   +   (nep(i1,i2+1,i3+1,kd)+nep(i1,i2-1,i3+1,kd)
+     & +nep(i1,i2+1,i3-1,kd)+nep(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**
+     & 2)
+        ! 3D laplacian squared = nep.xxxx + nep.yyyy + nep.zzzz + 2 (nep.xxyy + nep.xxzz + nep.yyzz )
+        nepLapSq23r(i1,i2,i3,kd)= ( 6.*nep(i1,i2,i3,kd)   - 4.*(nep(i1+
+     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd))    +(nep(i1+2,i2,i3,kd)+nep(i1-
+     & 2,i2,i3,kd)) )/(dx(0)**4) +( 6.*nep(i1,i2,i3,kd)    -4.*(nep(
+     & i1,i2+1,i3,kd)+nep(i1,i2-1,i3,kd))    +(nep(i1,i2+2,i3,kd)+nep(
+     & i1,i2-2,i3,kd)) )/(dx(1)**4)  +( 6.*nep(i1,i2,i3,kd)    -4.*(
+     & nep(i1,i2,i3+1,kd)+nep(i1,i2,i3-1,kd))    +(nep(i1,i2,i3+2,kd)+
+     & nep(i1,i2,i3-2,kd)) )/(dx(2)**4)  +( 8.*nep(i1,i2,i3,kd)     -
+     & 4.*(nep(i1+1,i2,i3,kd)  +nep(i1-1,i2,i3,kd)  +nep(i1  ,i2+1,i3,
+     & kd)+nep(i1  ,i2-1,i3,kd))   +2.*(nep(i1+1,i2+1,i3,kd)+nep(i1-1,
+     & i2+1,i3,kd)+nep(i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)
+     & **2*dx(1)**2)+( 8.*nep(i1,i2,i3,kd)     -4.*(nep(i1+1,i2,i3,kd)
+     &   +nep(i1-1,i2,i3,kd)  +nep(i1  ,i2,i3+1,kd)+nep(i1  ,i2,i3-1,
+     & kd))   +2.*(nep(i1+1,i2,i3+1,kd)+nep(i1-1,i2,i3+1,kd)+nep(i1+1,
+     & i2,i3-1,kd)+nep(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)+( 8.*
+     & nep(i1,i2,i3,kd)     -4.*(nep(i1,i2+1,i3,kd)  +nep(i1,i2-1,i3,
+     & kd)  +nep(i1,i2  ,i3+1,kd)+nep(i1,i2  ,i3-1,kd))   +2.*(nep(i1,
+     & i2+1,i3+1,kd)+nep(i1,i2-1,i3+1,kd)+nep(i1,i2+1,i3-1,kd)+nep(i1,
+     & i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
         ! 2nd-order in space and time
         maxwell2dr(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtdx*(
      & u(i1-1,i2,i3,n)+u(i1+1,i2,i3,n)-2.*u(i1,i2,i3,n))+cdtdy*(u(i1,
@@ -4691,6 +5070,16 @@ c===============================================================================
      & fa(i1-1,i2,i3,c,m))*dxsqi+(fa(i1,i2+1,i3,c,m)-2.*fa(i1,i2,i3,c,
      & m)+fa(i1,i2-1,i3,c,m))*dysqi+(fa(i1,i2,i3+1,c,m)-2.*fa(i1,i2,
      & i3,c,m)+fa(i1,i2,i3-1,c,m))*dzsqi
+        ! MLA
+        ! qelap2d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi!                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi
+        ! qelap3d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi!                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi!                          +(qe(i1,i2,i3+1,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2,i3-1,na,c))*dzsqi
+        qelap2d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+
+     & nep(i1-1,i2,i3,c))*dxsqi+(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+
+     & nep(i1,i2-1,i3,c))*dysqi
+        qelap3d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+
+     & nep(i1-1,i2,i3,c))*dxsqi+(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+
+     & nep(i1,i2-1,i3,c))*dysqi+(nep(i1,i2,i3+1,c)-2.*nep(i1,i2,i3,c)+
+     & nep(i1,i2,i3-1,c))*dzsqi
         ! 2D laplacian squared = u.xxxx + 2 u.xxyy + u.yyyy
         lap2d2Pow2(i1,i2,i3,c)= ( 6.*u(i1,i2,i3,c)   - 4.*(u(i1+1,i2,
      & i3,c)+u(i1-1,i2,i3,c))    +(u(i1+2,i2,i3,c)+u(i1-2,i2,i3,c)) )*
@@ -5134,27 +5523,26 @@ c===============================================================================
           end if
           if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
             ! ---- Dispersive Maxwell ----
-            write(*,'("--advOptNew-- dispersionModel=",i4," px,py,pz=",
-     & 3i3)') dispersionModel,pxc,pyc,pzc
-            write(*,'("--advOptNew-- GDM: 
-     & numberOfPolarizationVectors=",i4," alphaP=",e8.2)') 
-     & numberOfPolarizationVectors,alphaP
-            write(*,'("--advOptNew-- GDM: alphaP,a0,a1,b0,b1=",5(1p,
+            write(*,'("--advOptNew-- dispersionModel =",i4," px,py,pz 
+     & =",3i3)') dispersionModel,pxc,pyc,pzc
+            write(*,'("--advOptNew-- GDM: numberOfPolarizationVectors 
+     & =",i4," alphaP =",e8.2)') numberOfPolarizationVectors,alphaP
+            write(*,'("--advOptNew-- GDM: alphaP,a0,a1,b0,b1 =",5(1p,
      & e10.2))') alphaP,a0,a1,b0,b1
             do iv=0,numberOfPolarizationVectors-1
-              write(*,'("--advOptNew-- GDM: eqn=",i3," a0,a1,b0,b1=",4(
-     & 1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
+              write(*,'("--advOptNew-- GDM: eqn=",i3," a0,a1,b0,b1 =",
+     & 4(1p,e10.2))') iv,a0v(iv),a1v(iv),b0v(iv),b1v(iv)
             end do
          end if
         end if
         if( nonlinearModel .ne. noNonlinearModel )then
-          write(*,'("--advOptNew-- nonlinearModel=",i4," (
+          write(*,'("--advOptNew-- nonlinearModel =",i4,"(
      & 1=multilevelAtomic)")') nonlinearModel
           call getMultilevelAtomicParameters( grid, nlPar, maxPar, 
      & maxPar, numberOfPolarizationVectors, numberOfAtomicLevels )
-          write(*,'("multilevelAtomic: numberOfPolarizationVectors",i4,
-     & "  numberOfAtomicLevels=",i4)') numberOfPolarizationVectors, 
-     & numberOfAtomicLevels
+          write(*,'("multilevelAtomic: numberOfPolarizationVectors =",
+     & i4,"  numberOfAtomicLevels =",i4)') 
+     & numberOfPolarizationVectors, numberOfAtomicLevels
           write(*,'("polarizationNECoefficients:")')
           do m1=0,numberOfPolarizationVectors-1
             write(*,'( 10(e12.3,1x) )') (pnec(m1,m2),m2=0,
@@ -5437,7 +5825,8 @@ c===============================================================================
              ! ------------------------------------------------------------------------------
              !    2D : 4th order modified equation (rectangular)
              ! ------------------------------------------------------------------------------
-             if( dispersionModel.ne.noDispersion )then
+             if( dispersionModel.ne.noDispersion .and. 
+     & nonlinearModel.eq.noNonlinearModel )then
                ! --dispersion model --
                ! updateRectangular2dOrder4Dispersive()
                  if( t.le.3*dt )then
@@ -5787,6 +6176,812 @@ c===============================================================================
                         ! End of fourth order code
                    ! End of fourth order code
                  end do !m=0,nd-1
+                     end if
+                   end do
+                   end do
+                   end do
+             else if( dispersionModel.ne.noDispersion .and. 
+     & nonlinearModel.eq.multilevelAtomic )then
+               ! --- Multilevel Atomic (Maxwell-Bloch) nonlinear model --- 
+                 if( t.le.3*dt )then
+                   if( t.le.3.*dt )then
+                     write(*,'("advOPT>>>","update-MULTI-LEVEL-
+     & ATOMIC_dim=2_order=4_gridType=rectangular")')
+                   end if
+                 end if
+                 fe=0.
+                 fet = 0.
+                 fett = 0.
+                 lapfe = 0.
+                 ! -- first compute some coefficients ---
+                 do iv=0,numberOfPolarizationVectors-1
+                   betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+                   fpv(iv)=0.  ! initialize if not used
+                   fptv(iv)=0.
+                   fpttv(iv)=0.
+                   lapfpv(iv)=0.
+                 end do
+                 ! index location for first TZ nonlinear variable: 
+                 nce = pxc+nd*numberOfPolarizationVectors
+                 ! write(*,'(" *** UpadateMLA: pxc=",i2," numberOfPolarizationVectors=",i4," nce=",i4)') pxc,numberOfPolarizationVectors,nce 
+                 ! NE product if order=4
+                       do i3=n3a,n3b
+                       do i2=n2a,n2b
+                       do i1=n1a,n1b
+                         if( mask(i1,i2,i3).gt.0 )then
+                     iv = 0;
+                     do m=0,nd-1
+                       do na = 0,numberOfAtomicLevels-1
+                         iv = iv + 1
+                         qe(i1,i2,i3,na,m) = q(i1,i2,i3,na)*u(i1,i2,i3,
+     & m)
+                         nep(i1,i2,i3,iv) = qe(i1,i2,i3,na,m)
+                       enddo
+                     enddo
+                         end if
+                       end do
+                       end do
+                       end do
+                 ! loop over space
+                   do i3=n3a,n3b
+                   do i2=n2a,n2b
+                   do i1=n1a,n1b
+                     if( mask(i1,i2,i3).gt.0 )then
+                   ! write(*,*) 'HERE HERE HERE HERE'
+                   ! stop
+                   !
+                   ! second order predictions
+                   !
+                   do m=0,nd-1
+                     pc=pxc+m
+                     ec=ex+m
+                     ! This is only needed for the second order code
+                     if ( addForcing.ne.0) then
+                         if( addForcing.ne.0 )then
+                           if( forcingOption.eq.twilightZoneForcing )
+     & then
+                             if( nd.eq.2 )then
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,e0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,e0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,e0tt )
+                                 call ogDeriv(ep, 0,2,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,e0xx )
+                                 call ogDeriv(ep, 0,0,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, ec,e0yy )
+                             else
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tt )
+                                 call ogDeriv(ep, 0,2,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xx )
+                                 call ogDeriv(ep, 0,0,2,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yy )
+                                 call ogDeriv(ep, 0,0,0,2, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zz )
+                             end if
+                             if( nd.eq.2 )then
+                               fe =  e0tt-csq * (e0xx + e0yy)
+                             else
+                               fe =  e0tt-csq * (e0xx + e0yy + e0zz)
+                             endif
+                             nce = pxc+nd*numberOfPolarizationVectors
+                             ! do iv=0,numberOfAtomicLevels-1
+                             !   if( nd.eq.2 )then
+                             !     OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
+                             !   else
+                             !     OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
+                             !   end if
+                             !   qvec(iv) = q0
+                             ! enddo
+                             do iv=0,numberOfPolarizationVectors-1
+                               pce = pc+iv*nd
+                               if( nd.eq.2 )then
+                                   call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pce,p0 )
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pce,p0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pce,p0tt )
+                               else
+                                   call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
+                               end if
+                               fe =  fe + alphaP*p0tt ! sum over P
+                               ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+                               fpv(iv) = p0tt + b1v(iv)*p0t + b0v(iv)*
+     & p0
+                               do na = 0,numberOfAtomicLevels-1
+                                 if( nd.eq.2 )then
+                                     call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0 )
+                                 else
+                                     call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0 )
+                                 end if
+                                 ! fpv(iv) = fpv(iv) - pnec(iv,na)*qvec(na)*e0
+                                 fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
+                               enddo
+                             end do
+                           else
+                             fe = 0.
+                             do iv=0,numberOfPolarizationVectors-1
+                               fpv(iv)=0.
+                             end do
+                           end if
+                         end if
+                     end if
+                     ev = u(i1,i2,i3,ec)
+                     evm=um(i1,i2,i3,ec)
+                     do iv=0,numberOfPolarizationVectors-1
+                       pv(iv) = p(i1,i2,i3,m+iv*nd)
+                       pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                     end do
+                           ! INFO("FD22r-2D-dispersive-Any-PV");
+                           ! write(*,*) 'Inside updateDispersive rectangular order=2'
+                           elap2 = lap2d2(i1,i2,i3,ec)
+                     ! second order update of P_m
+                     pSum = 0.
+                     do iv=0,numberOfPolarizationVectors-1
+                       pvn(iv) = 2.*pv(iv)-pvm(iv) + 0.5*dt*b1v(iv)*
+     & pvm(iv) - dtsq*b0v(iv)*pv(iv) + dtsq*fpv(iv)
+                       do na = 0,numberOfAtomicLevels-1 ! \Delta N^n*E^n
+                         pvn(iv) = pvn(iv) + dtsq*pnec(iv,na)*q(i1,i2,
+     & i3,na)*ev
+                       enddo
+                       pn(i1,i2,i3,m+iv*nd) = betav(iv)*pvn(iv)
+                       pSum = pSum + betav(iv)*pvn(iv) -2.*pv(iv) + 
+     & pvm(iv)
+                     end do
+                     ! second order update of E
+                     evn = (2.*ev-evm) + csq*dtsq*elap2 - alphaP*pSum +
+     &  dtsq*fe
+                     un(i1,i2,i3,ec) = evn
+                     ! End of second order code
+                   end do !m=0,nd-1 over space dim
+                   ! outside of dimension loop
+                   ! --- second order update of N ---
+                   ! MLA
+                   do na=0,numberOfAtomicLevels-1
+                     ! forcing function
+                       if( addForcing.ne.0 )then
+                         if( forcingOption.eq.twilightZoneForcing ) 
+     & then
+                           !
+                           ! for carrier population density
+                           !
+                           ! first place for nonlinear model
+                           nce = pxc+nd*numberOfPolarizationVectors
+                           !
+                           ! na-th level
+                           if( nd.eq.2 )then
+                             ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
+                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),0.,t, nce+na,q0t )
+                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),0.,t, nce+na,q0tt )
+                               call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),0.,t, nce+na,q0ttt )
+                               call ogDeriv(ep, 4,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),0.,t, nce+na,q0tttt )
+                           else
+                             ! OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
+                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0t )
+                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0tt )
+                               call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0ttt )
+                               call ogDeriv(ep, 4,0,0,0, xy(i1,i2,i3,0)
+     & ,xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0tttt )
+                           end if
+                           ! initialize
+                           fnv(na)    = q0t ! forcing for \partial_tN_\ell = alpha_{\ell,k}N_k+\beta_{\ell,m}E\cdot\partial_tP_k
+                           fntv(na)   = q0tt ! next derivative
+                           fnttv(na)  = q0ttt
+                           fntttv(na) = q0tttt
+                           ! relaxation (alpha_{\ell,m})
+                           do iv=0,numberOfAtomicLevels-1
+                             if( nd.eq.2 )then
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, nce+iv,q0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, nce+iv,q0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, nce+iv,q0tt )
+                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, nce+iv,q0ttt )
+                             else
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+iv,q0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+iv,q0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+iv,q0tt )
+                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+iv,q0ttt )
+                             end if
+                             fnv(na)    = fnv(na)    - prc(na,iv)*q0
+                             fntv(na)   = fntv(na)   - prc(na,iv)*q0t
+                             fnttv(na)  = fnttv(na)  - prc(na,iv)*q0tt
+                             fntttv(na) = fntttv(na) - prc(na,iv)*q0ttt
+                           enddo
+                           ! dot product (\beta_{\ell,k})
+                           do m=0,nd-1 ! loop over dim
+                             ! electric field
+                             if ( nd.eq.2 ) then
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, m,e0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, m,e0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, m,e0tt )
+                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),0.,t, m,e0ttt )
+                             else
+                                 call ogDeriv(ep, 0,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, m,e0 )
+                                 call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, m,e0t )
+                                 call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, m,e0tt )
+                                 call ogDeriv(ep, 3,0,0,0, xy(i1,i2,i3,
+     & 0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, m,e0ttt )
+                             endif
+                             ! corresponding polarization vector
+                             do iv=0,numberOfPolarizationVectors-1
+                               if( nd.eq.2 )then
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pxc+m+iv*nd,p0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pxc+m+iv*nd,p0tt )
+                                   call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pxc+m+iv*nd,p0ttt )
+                                   call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, pxc+m+iv*nd,p0tttt )
+                               else
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pxc+m+iv*nd,p0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pxc+m+iv*nd,p0tt )
+                                   call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pxc+m+iv*nd,p0ttt )
+                                   call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pxc+m+iv*nd,p0tttt )
+                               end if
+                               fnv(na)  = fnv(na) - peptc(na,iv)*e0*p0t
+                               fntv(na) = fntv(na) - peptc(na,iv)*e0t*
+     & p0t - peptc(na,iv)*e0*p0tt
+                               fnttv(na) = fnttv(na) - peptc(na,iv)*
+     & e0tt*p0t - 2.*peptc(na,iv)*e0t*p0tt - peptc(na,iv)*e0*p0ttt
+                               fntttv(na) = fntttv(na) - peptc(na,iv)*
+     & e0ttt*p0t - 3.*peptc(na,iv)*e0tt*p0tt - 3.*peptc(na,iv)*e0t*
+     & p0ttt - peptc(na,iv)*e0*p0tttt
+                             enddo
+                           enddo
+                        ! no forcing
+                         else
+                           fnv(na)    = 0.
+                           fntv(na)   = 0.
+                           fnttv(na)  = 0.
+                           fntttv(na) = 0.
+                         end if
+                       end if
+                   enddo
+                   ! N_t
+                   do na=0,numberOfAtomicLevels-1
+                     qt(na) = fnv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qt(na) = qt(na)+prc(na,iv)*q(i1,i2,i3,iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qt(na) = qt(na)+peptc(na,iv)*u(i1,i2,i3,m)*(
+     & pn(i1,i2,i3,m+iv*nd)-pm(i1,i2,i3,m+iv*nd))/(2.*dt)
+                       enddo
+                     enddo
+                   enddo
+                   ! N_tt
+                   do na=0,numberOfAtomicLevels-1
+                     ! ! forcing function
+                     ! getMLAForcing(na)
+                     qtt(na) = fntv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qtt(na) = qtt(na)+prc(na,iv)*qt(iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qtt(na) = qtt(na)+peptc(na,iv)*(un(i1,i2,i3,m)
+     & -um(i1,i2,i3,m))/(2.*dt)*(pn(i1,i2,i3,m+iv*nd)-pm(i1,i2,i3,m+
+     & iv*nd))/(2.0*dt) +peptc(na,iv)*u(i1,i2,i3,m)*(pn(i1,i2,i3,m+iv*
+     & nd)-2.0*p(i1,i2,i3,m+iv*nd)+pm(i1,i2,i3,m+iv*nd))/dtsq
+                       enddo
+                     enddo
+                     ! print *, qt(na),qtt(na)
+                   enddo
+                   ! fill in the population densities "N"
+                   do na=0,numberOfAtomicLevels-1
+                     qn(i1,i2,i3,na) = q(i1,i2,i3,na) + dt*qt(na) + dt*
+     & *2/2.*qtt(na)
+                   end do
+                   !----------------------
+                   ! fourth order update
+                   !----------------------
+                   ! write(*,*) 'Inside updateMultilevelAtomic 2D rectangular order=4'
+                   do m=0,nd-1 ! loop over dimension
+                     pc=pxc+m
+                     ec=ex+m
+                     if( addForcing.ne.0 )then
+                       ! Bug fixed, May 28, 2018 -- use 2D or 3D versions of ogderiv *wdh* 
+                           if( addForcing.ne.0 )then
+                             if( forcingOption.eq.twilightZoneForcing )
+     & then
+                               if( nd.eq.2 )then
+                                   call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0 )
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0tt )
+                                   call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0ttt )
+                                   call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0tttt )
+                                   call ogDeriv(ep, 0,1,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0x )
+                                   call ogDeriv(ep, 0,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xx )
+                                   call ogDeriv(ep, 1,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxt )
+                                   call ogDeriv(ep, 0,0,1,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0y )
+                                   call ogDeriv(ep, 0,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yy )
+                                   call ogDeriv(ep, 1,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yyt )
+                                   call ogDeriv(ep, 2,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxtt )
+                                   call ogDeriv(ep, 2,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yytt )
+                                   call ogDeriv(ep, 0,4,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxxx )
+                                   call ogDeriv(ep, 0,2,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0xxyy )
+                                   call ogDeriv(ep, 0,0,4,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),0.,t, ec,e0yyyy )
+                               else
+                                   call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0 )
+                                   call ogDeriv(ep, 1,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0t )
+                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tt )
+                                   call ogDeriv(ep, 3,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0ttt )
+                                   call ogDeriv(ep, 4,0,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0tttt )
+                                   call ogDeriv(ep, 0,1,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0x )
+                                   call ogDeriv(ep, 0,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xx )
+                                   call ogDeriv(ep, 1,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxt )
+                                   call ogDeriv(ep, 0,0,1,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0y )
+                                   call ogDeriv(ep, 0,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yy )
+                                   call ogDeriv(ep, 1,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyt )
+                                   call ogDeriv(ep, 0,0,0,1, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0z )
+                                   call ogDeriv(ep, 0,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zz )
+                                   call ogDeriv(ep, 1,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzt )
+                                   call ogDeriv(ep, 2,2,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxtt )
+                                   call ogDeriv(ep, 2,0,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yytt )
+                                   call ogDeriv(ep, 2,0,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zztt )
+                                   call ogDeriv(ep, 0,4,0,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxxx )
+                                   call ogDeriv(ep, 0,0,4,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyyy )
+                                   call ogDeriv(ep, 0,0,0,4, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0zzzz )
+                                   call ogDeriv(ep, 0,2,2,0, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxyy )
+                                   call ogDeriv(ep, 0,2,0,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0xxzz )
+                                   call ogDeriv(ep, 0,0,2,2, xy(i1,i2,
+     & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, ec,e0yyzz )
+                               end if
+                               if( nd.eq.2 )then
+                                 fe =  e0tt-csq * (e0xx + e0yy)
+                                 lapfe = e0xxtt+e0yytt-csq*(e0xxxx+2.*
+     & e0xxyy+e0yyyy)
+                                 fet =  e0ttt-csq * (e0xxt + e0yyt)
+                                 fett = e0tttt-csq * (e0xxtt + e0yytt)
+                               else
+                                 fe =  e0tt-csq * (e0xx + e0yy + e0zz)
+                                 lapfe = e0xxtt+e0yytt+e0zztt-csq*(
+     & e0xxxx+e0yyyy+e0zzzz+2.*(e0xxyy+e0xxzz+e0yyzz))
+                                 fet =  e0ttt-csq * (e0xxt + e0yyt + 
+     & e0zzt)
+                                 fett =  e0tttt-csq * (e0xxtt + e0yytt 
+     & + e0zztt)
+                               endif
+                               nce = pxc+nd*numberOfPolarizationVectors
+                               ! do iv=0,numberOfAtomicLevels-1
+                               !   if( nd.eq.2 )then
+                               !     OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
+                               !   else
+                               !     OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
+                               !   end if
+                               !   qvec(iv) = q0
+                               ! enddo
+                               do iv=0,numberOfPolarizationVectors-1
+                                 pce = pc+iv*nd
+                                 if( nd.eq.2 )then
+                                     call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0 )
+                                     call ogDeriv(ep, 0,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0xx )
+                                     call ogDeriv(ep, 0,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0yy )
+                                     call ogDeriv(ep, 1,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0t )
+                                     call ogDeriv(ep, 1,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0xxt )
+                                     call ogDeriv(ep, 1,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0yyt )
+                                     call ogDeriv(ep, 2,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0tt )
+                                     call ogDeriv(ep, 3,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0ttt )
+                                     call ogDeriv(ep, 4,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0tttt )
+                                     call ogDeriv(ep, 2,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0xxtt )
+                                     call ogDeriv(ep, 2,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, pce,p0yytt )
+                                   fp02x     = p0xxtt + b1v(iv)*p0xxt +
+     &  b0v(iv)*p0xx
+                                   fp02y     = p0yytt + b1v(iv)*p0yyt +
+     &  b0v(iv)*p0yy
+                                   fp02      = fp02x  + fp02y
+                                 else
+                                     call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0 )
+                                     call ogDeriv(ep, 0,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0xx )
+                                     call ogDeriv(ep, 0,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0yy )
+                                     call ogDeriv(ep, 0,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0zz )
+                                     call ogDeriv(ep, 1,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0t )
+                                     call ogDeriv(ep, 1,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0xxt )
+                                     call ogDeriv(ep, 1,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0yyt )
+                                     call ogDeriv(ep, 1,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0zzt )
+                                     call ogDeriv(ep, 2,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
+                                     call ogDeriv(ep, 3,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0ttt )
+                                     call ogDeriv(ep, 4,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tttt )
+                                     call ogDeriv(ep, 2,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0xxtt )
+                                     call ogDeriv(ep, 2,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0yytt )
+                                     call ogDeriv(ep, 2,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0zztt )
+                                   fp02x     = p0xxtt + b1v(iv)*p0xxt +
+     &  b0v(iv)*p0xx
+                                   fp02y     = p0yytt + b1v(iv)*p0yyt +
+     &  b0v(iv)*p0yy
+                                   fp02z     = p0zztt + b1v(iv)*p0zzt +
+     &  b0v(iv)*p0zz
+                                   fp02      = fp02x  + fp02y + fp02z
+                                 end if
+                                 fe =  fe + alphaP*p0tt ! sum over P
+                                 fet =  fet + alphaP*p0ttt
+                                 fett =  fett + alphaP*p0tttt
+                                 if( nd.eq.2 )then
+                                     lapfe = lapfe + alphaP*p0xxtt + 
+     & alphaP*p0yytt
+                                   else
+                                     lapfe = lapfe + alphaP*p0xxtt + 
+     & alphaP*p0yytt + alphaP*p0zztt
+                                 endif
+                                 lapfpv(iv) = fp02
+                                 ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+                                 fpv(iv)   = p0tt   + b1v(iv)*p0t   + 
+     & b0v(iv)*p0
+                                 fptv(iv)  = p0ttt  + b1v(iv)*p0tt  + 
+     & b0v(iv)*p0t
+                                 fpttv(iv) = p0tttt + b1v(iv)*p0ttt + 
+     & b0v(iv)*p0tt
+                                 do na = 0,numberOfAtomicLevels-1
+                                   if( nd.eq.2 )then
+                                       call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0 )
+                                       call ogDeriv(ep, 0,1,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0x )
+                                       call ogDeriv(ep, 0,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0xx )
+                                       call ogDeriv(ep, 0,0,1,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0y )
+                                       call ogDeriv(ep, 0,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0yy )
+                                       call ogDeriv(ep, 1,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0t )
+                                       call ogDeriv(ep, 2,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),0.,t, nce+na,q0tt )
+                                     fp02 = q0xx*e0+2.*q0x*e0x+q0*e0xx 
+     & + q0yy*e0+2.*q0y*e0y+q0*e0yy
+                                   else
+                                       call ogDeriv(ep, 0,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0 )
+                                       call ogDeriv(ep, 0,1,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0x )
+                                       call ogDeriv(ep, 0,2,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0xx )
+                                       call ogDeriv(ep, 0,0,1,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0y )
+                                       call ogDeriv(ep, 0,0,2,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0yy )
+                                       call ogDeriv(ep, 0,0,0,1, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0z )
+                                       call ogDeriv(ep, 0,0,0,2, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0zz )
+                                       call ogDeriv(ep, 1,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0t )
+                                       call ogDeriv(ep, 2,0,0,0, xy(i1,
+     & i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0tt )
+                                     fp02 = q0xx*e0+2.*q0x*e0x+q0*e0xx 
+     & + q0yy*e0+2.*q0y*e0y+q0*e0yy + q0zz*e0+2.*q0z*e0z+q0*e0zz
+                                   end if
+                                   ! fpv(iv) = fpv(iv) - pnec(iv,na)*qvec(na)*e0
+                                   lapfpv(iv) = lapfpv(iv) - pnec(iv,
+     & na)*fp02
+                                   fpv(iv) = fpv(iv) - pnec(iv,na)*q0*
+     & e0
+                                   fptv(iv) = fptv(iv) - pnec(iv,na)*
+     & q0t*e0 - pnec(iv,na)*q0*e0t
+                                   fpttv(iv) = fpttv(iv) - pnec(iv,na)*
+     & q0tt*e0 - 2.*pnec(iv,na)*q0t*e0t - pnec(iv,na)*q0*e0tt
+                                 enddo
+                               end do
+                             else
+                               fe = 0.
+                               lapfe = 0.
+                               fet  = 0.
+                               fett = 0.
+                               do iv=0,numberOfPolarizationVectors-1
+                                 fpv(iv)=0.
+                                 fptv(iv)=0.
+                                 fpttv(iv)=0.
+                                 lapfpv(iv)=0.
+                               end do
+                             end if
+                           end if
+                     end if
+                     ! ping the current indexed values of E and P
+                     evn=un(i1,i2,i3,ec)
+                     ev = u(i1,i2,i3,ec)
+                     evm=um(i1,i2,i3,ec)
+                     do iv=0,numberOfPolarizationVectors-1
+                       pvn(iv)=pn(i1,i2,i3,m+iv*nd)
+                       pv(iv) = p(i1,i2,i3,m+iv*nd)
+                       pvm(iv)=pm(i1,i2,i3,m+iv*nd)
+                     end do
+                     ! write(*,*) 'Inside updateDispersive order=4'
+                         ! INFO("FD44r-2D-dispersive-Any-PV");
+                         ! write(*,*) 'Inside updateDispersive 2D rectangular order=4'
+                         elap4   = lap2d4(i1,i2,i3,ec)
+                         ! elap4m  = lap2d4m(i1,i2,i3,ec)
+                         elapsq2 = lap2d2Pow2(i1,i2,i3,ec)
+                         elap2   = lap2d2(i1,i2,i3,ec)
+                         elap2m  = lap2d2m(i1,i2,i3,ec)
+                         do iv=0,numberOfPolarizationVectors-1
+                           pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
+                           pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
+                         end do
+                         do na=0,numberOfAtomicLevels-1
+                           ! qelap2(na) = qelap2d2(i1,i2,i3,na,ec)
+                           qelap2(na) = qelap2d2(i1,i2,i3,na+ec+nd)
+                         enddo
+                     !--------------------
+                     ! fourth order P
+                     !--------------------
+                     ! second order accurate terms
+                     et = (evn-evm)/(2.0*dt)
+                     ett = (evn-2.*ev+evm)/dtsq
+                     ptttSum = 0.
+                     do iv = 0,numberOfPolarizationVectors-1
+                       ! pce = pc+iv*nd
+                       ! OGDERIV2D( 1,0,0,0,i1,i2,i3,t, pce, p0t)
+                       ! OGDERIV2D( 2,0,0,0,i1,i2,i3,t, pce, p0tt)
+                       ! OGDERIV2D( 3,0,0,0,i1,i2,i3,t, pce, p0ttt)
+                       ! OGDERIV2D( 4,0,0,0,i1,i2,i3,t, pce, p0tttt)
+                       ! ptv(m,iv) = p0t
+                       ! pttv(m,iv) = p0tt
+                       ! ptttv(m,iv) = p0ttt
+                       ! pttttv(m,iv) = p0tttt
+                       ptv(m,iv) = (pvn(iv)-pvm(iv))/(2.0*dt)
+                       pttv(m,iv) = (pvn(iv)-2.0*pv(iv)+pvm(iv))/dtsq
+                       ptttv(m,iv) = -b1v(iv)*pttv(m,iv)-b0v(iv)*ptv(m,
+     & iv)+fptv(iv)
+                       do na = 0,numberOfAtomicLevels-1
+                         ptttv(m,iv) = ptttv(m,iv) + pnec(iv,na)*qt(na)
+     & *ev + pnec(iv,na)*q(i1,i2,i3,na)*et
+                       enddo
+                       pttttv(m,iv) = -b1v(iv)*ptttv(m,iv)-b0v(iv)*
+     & pttv(m,iv)+fpttv(iv)
+                       do na = 0,numberOfAtomicLevels-1
+                         pttttv(m,iv) = pttttv(m,iv) + pnec(iv,na)*qtt(
+     & na)*ev + 2.*pnec(iv,na)*qt(na)*et + pnec(iv,na)*q(i1,i2,i3,na)*
+     & ett
+                       enddo
+                       ptttSum = ptttSum + ptttv(m,iv)
+                     enddo
+                     ! update P
+                     pSum = 0.
+                     pxxSum = 0.
+                     do iv=0,numberOfPolarizationVectors-1
+                       pvn(iv) = 2.*pv(iv)-pvm(iv) + 0.5*dt*b1v(iv)*
+     & pvm(iv) + dt**4/12.*pttttv(m,iv) + dt**4/6.*b1v(iv)*ptttv(m,iv)
+     &  - dtsq*b0v(iv)*pv(iv) + dtsq*fpv(iv)
+                       do na = 0,numberOfAtomicLevels-1 ! \Delta N^n*E^n
+                         pvn(iv) = pvn(iv) + dtsq*pnec(iv,na)*q(i1,i2,
+     & i3,na)*ev
+                       enddo
+                       pvn(iv) = betav(iv)*pvn(iv)
+                       pn(i1,i2,i3,m+iv*nd) = pvn(iv)
+                       pSum = pSum + pvn(iv) - 2.*pv(iv) + pvm(iv)
+                       pxxvn(iv) = 2.*pxxv(iv)-pxxvm(iv) + 0.5*dt*b1v(
+     & iv)*pxxvm(iv) - dtsq*b0v(iv)*pxxv(iv) + dtsq*lapfpv(iv)
+                       do na = 0,numberOfAtomicLevels-1 ! \Delta N^n*E^n
+                         pxxvn(iv) = pxxvn(iv) + dtsq*pnec(iv,na)*
+     & qelap2(na)
+                       enddo
+                       pxxSum = pxxSum + betav(iv)*pxxvn(iv) - 2.*pxxv(
+     & iv) + pxxvm(iv)
+                       ! pce = pc+iv*nd
+                       ! OGDERIV2D( 0,2,0,0,i1,i2,i3,t+dt, pce, p0xx)
+                       ! OGDERIV2D( 0,0,2,0,i1,i2,i3,t+dt, pce, p0yy)
+                       ! write(*,*) betav(iv)*pxxvn(iv)-(p0xx+p0yy)
+                     end do
+                     !-------------------
+                     ! fourth order E
+                     !-------------------
+                     evn =   (2.*ev-evm) + csq*dtsq*elap4 - alphaP*
+     & pSum + dtsq*fe + dt**4/12.*(csq**2*elapsq2 - alphaP*csq*
+     & pxxSum/dtsq + csq*lapfe + fett)
+                     un(i1,i2,i3,ec) = evn
+                     ! OGDERIV2D( 0,2,0,0,i1,i2,i3,t, ec, e0xx )
+                     ! OGDERIV2D( 0,0,2,0,i1,i2,i3,t, ec, e0yy )
+                     elap2n = 2.*elap2-elap2m+dtsq*csq*elapsq2-alphaP*
+     & pxxSum + dtsq*lapfe
+                     ettt = (csq*elap2n-csq*elap2m)/(2.0*dt)-alphaP*
+     & ptttSum + fet
+                     ! write(*,*) elap2-(e0xx+e0yy)
+                     ! write(*,*) elap2n,elap2m,evn,ev,evm
+                     ! OGDERIV2D( 3,0,0,0,i1,i2,i3,t, ec, e0ttt )
+                     ! ettt = e0ttt
+                     ! second order accurate terms
+                     ! write(*,*) ettt,e0ttt,ettt-e0ttt
+                     ettv(m) = (evn-2.*ev+evm)/dtsq
+                     etttv(m) = ettt
+                     ! fourth order accurate terms
+                     etv(m) = (evn-evm)/(2.*dt)-dtsq/6.*ettt
+                     do iv = 0,numberOfPolarizationVectors-1
+                       ptv(m,iv) = (pvn(iv)-pvm(iv))/(2.*dt)-dtsq/6.*
+     & ptttv(m,iv)
+                       pttv(m,iv) = -b1v(iv)*ptv(m,iv)-b0v(iv)*pv(iv) +
+     &  fpv(iv)
+                       do na = 0,numberOfAtomicLevels-1
+                         pttv(m,iv) = pttv(m,iv) + pnec(iv,na)*q(i1,i2,
+     & i3,na)*ev
+                       enddo
+                       ! second order accurate terms
+                       ptttv(m,iv) = -b1v(iv)*pttv(m,iv)-b0v(iv)*ptv(m,
+     & iv)+fptv(iv)
+                       do na = 0,numberOfAtomicLevels-1
+                         ptttv(m,iv) = ptttv(m,iv) + pnec(iv,na)*qt(na)
+     & *ev +pnec(iv,na)*q(i1,i2,i3,na)*etv(m)
+                       enddo
+                       pttttv(m,iv) = -b1v(iv)*ptttv(m,iv)-b0v(iv)*
+     & pttv(m,iv)+fpttv(iv)
+                       do na = 0,numberOfAtomicLevels-1
+                         pttttv(m,iv) = pttttv(m,iv) + pnec(iv,na)*qtt(
+     & na)*ev +2.0*pnec(iv,na)*qt(na)*etv(m) + pnec(iv,na)*q(i1,i2,i3,
+     & na)*ettv(m)
+                       enddo
+                     enddo
+                   enddo ! m=0,nd-1
+                   !-------------------
+                   ! fourth order N
+                   !-------------------
+                   ! need forcing functions here
+                   ! MLA
+                   ! do na=0,numberOfAtomicLevels-1
+                   !   ! forcing function
+                   !   getMLAForcing44(na)
+                   ! enddo
+                   ! fourth order accurate terms
+                   ! N_t
+                   do na=0,numberOfAtomicLevels-1
+                     qt(na) = fnv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qt(na) = qt(na)+prc(na,iv)*q(i1,i2,i3,iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qt(na) = qt(na)+peptc(na,iv)*u(i1,i2,i3,m)*
+     & ptv(m,iv)
+                       enddo
+                     enddo
+                   enddo
+                   ! N_tt
+                   do na=0,numberOfAtomicLevels-1
+                     qtt(na) = fntv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qtt(na) = qtt(na)+prc(na,iv)*qt(iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qtt(na) = qtt(na)+peptc(na,iv)*etv(m)*ptv(m,
+     & iv) +peptc(na,iv)*u(i1,i2,i3,m)*pttv(m,iv)
+                       enddo
+                     enddo
+                   enddo
+                   ! N_ttt
+                   do na=0,numberOfAtomicLevels-1
+                     qttt(na) = fnttv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qttt(na) = qttt(na)+prc(na,iv)*qtt(iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qttt(na) = qttt(na)+peptc(na,iv)*ettv(m)*ptv(
+     & m,iv) +2.*peptc(na,iv)*etv(m)*pttv(m,iv) +peptc(na,iv)*u(i1,i2,
+     & i3,m)*ptttv(m,iv)
+                       enddo
+                     enddo
+                   enddo
+                   ! N_tttt
+                   do na=0,numberOfAtomicLevels-1
+                     qtttt(na) = fntttv(na)
+                     do iv=0,numberOfAtomicLevels-1 ! relaxation
+                       qtttt(na) = qtttt(na)+prc(na,iv)*qttt(iv)
+                     enddo
+                     do m=0,nd-1 ! dot product
+                       do iv = 0,numberOfPolarizationVectors-1 ! loop over pc
+                         qtttt(na) = qtttt(na)+peptc(na,iv)*etttv(m)*
+     & ptv(m,iv) +3.*peptc(na,iv)*ettv(m)*pttv(m,iv) +3.*peptc(na,iv)*
+     & etv(m)*ptttv(m,iv) +peptc(na,iv)*u(i1,i2,i3,m)*pttttv(m,iv)
+                       enddo
+                     enddo
+                   enddo
+                   do na=0,numberOfAtomicLevels-1
+                     qn(i1,i2,i3,na) = q(i1,i2,i3,na) + dt*qt(na) + dt*
+     & *2/2.*qtt(na) + dt**3/6.*qttt(na) + dt**4/24.*qtttt(na)
+                   end do
                      end if
                    end do
                    end do

@@ -1670,10 +1670,11 @@ getErrors( int current, real t, real dt )
     {
       realCompositeGridFunction & cgerr = (*cgerrp);
       realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);      
+      realMappedGridFunction & qErr = getNonlinearModelMappedGridFunction( grid,current,getErrorGridFunction );
 
       // NOTE: save exact solution in cgerr (and pErr for dispersive)
       int numberOfTimeDerivatives=0;
-      getUserDefinedKnownSolution( current, t, cg,grid, cgerr[grid],pErr, I1,I2,I3,numberOfTimeDerivatives);
+      getUserDefinedKnownSolution( current, t, cg,grid, cgerr[grid],pErr,qErr, I1,I2,I3,numberOfTimeDerivatives);
 
       errLocal(I1,I2,I3,C) = errLocal(I1,I2,I3,C) -  uLocal(I1,I2,I3,C);
 
@@ -1681,6 +1682,13 @@ getErrors( int current, real t, real dt )
       {
 	  Range Pc = numberOfPolarizationVectors*numberOfDimensions;
 	  errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+
+	  if( numberOfAtomicLevels>0 )
+	  {
+	    Range Na=numberOfAtomicLevels;
+	    errNonlinear(I1,I2,I3,Na) -= qLocal(I1,I2,I3,Na);  // **check me**
+	  }
+	  
       }
       if( method==bamx )
       {

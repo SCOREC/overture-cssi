@@ -1,0 +1,334 @@
+#include "NonlinearExactSolution.h"
+
+#include "DispersiveMaterialParameters.h"
+
+#include "ParallelUtility.h"
+
+// ===============================================================================
+// Class to define exact solutions to Maxwell's equations for
+//                 NONLINEAR MODELS
+// 
+// ===============================================================================
+
+
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
+int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
+int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
+    for(i1=I1Base; i1<=I1Bound; i1++)
+
+
+// ===============================================================================
+/// \brief  Constructor 
+// ===============================================================================
+NonlinearExactSolution::
+NonlinearExactSolution( )
+{
+
+  dbase.put<int>("initialized")=0;
+
+
+  // dbase.put<int>("numberOfDimensions")=2;
+  // dbase.put<int>("numberOfDomains")=3;
+  // dbase.put<int>("numScatteringCoeff")=-1;
+  // dbase.put<int>("solveForAllFields")=0;
+
+
+  // dbase.put<int>("scatteringCase")=0;   // There are four scattering cases, 2 polarizations, forward/backward 
+
+  // dbase.put<std::complex<LocalReal>* >("Vvc")=NULL;   
+  // dbase.put<std::complex<LocalReal>* >("kvc")=NULL;   
+  // dbase.put<std::complex<LocalReal>* >("rtc")=NULL;   
+  // dbase.put<std::complex<LocalReal> >("s");   
+
+
+}
+
+
+
+// ===============================================================================
+/// \brief destructor for the class that defines exact solutions to Maxwell's equations for a sphere
+// ===============================================================================
+NonlinearExactSolution::
+~NonlinearExactSolution()
+{
+  // std::complex<LocalReal> *& Vvc = dbase.get<std::complex<LocalReal>* >("Vvc"); 
+  // delete [] Vvc;
+
+  // std::complex<LocalReal> *& kvc = dbase.get<std::complex<LocalReal>* >("kvc"); 
+  // delete [] kvc;
+
+  // std::complex<LocalReal> *& rtc = dbase.get<std::complex<LocalReal>* >("rtc"); 
+  // delete [] rtc;
+
+}
+
+
+// ------------------ Here is how to call Fortran routines -------
+//- 
+//- // lapack routines
+//- #ifdef OV_USE_DOUBLE
+//-   #define GESV EXTERN_C_NAME(zgesv)
+//-   #define GEEV EXTERN_C_NAME(zgeev)
+//- #else
+//-   #define GESV EXTERN_C_NAME(cgesv)
+//-   #define GEEV EXTERN_C_NAME(cgeev)
+//- #endif
+//- 
+//- extern "C"
+//- {
+//-   /* Solve  A*X = B (complex) */
+//-   void GESV( int & N, int & NRHS, std::complex<LocalReal>  & a, const int & lda, int & ipvt, std::complex<LocalReal> & b, int & LDB, int & info );
+//- 
+//-   void GEEV( char *jobvl,
+//- 	     char* jobvr,
+//- 	     int & n,
+//- 	     std::complex<LocalReal> & a,
+//- 	     const int & lda,
+//- 	     std::complex<LocalReal> & w,
+//- 	     std::complex<LocalReal> &vl,
+//- 	     int & ldvl,
+//- 	     std::complex<LocalReal> &vr,
+//- 	     int & ldvr,
+//- 	     std::complex<LocalReal> & work,
+//- 	     int & lwork,
+//- 	     LocalReal & rwork,
+//- 	     int & info );
+//- }
+//- 
+
+//==============================================================================
+//==================================  INITIALIZE  ==============================
+///
+/// \brief Init the nonlinear solution.
+///
+//==============================================================================
+int NonlinearExactSolution::
+initialize( CompositeGrid & cg, int numberOfDomains,
+	    std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters,
+	    const real & omega, const RealArray & kvI, const int solveForAllFields )
+{
+
+  int & initialized = dbase.get<int>("initialized");
+  if( initialized )
+  {
+    printF("NonlinearExactSolution::initialize - WARNING: already initialized! Nothing to be done\n");
+    return 0;
+  }
+  
+  initialized=1;
+
+  // Keep a pointer to the vector of DispersiveMaterialParameters
+  dbase.put<std::vector<DispersiveMaterialParameters>* >("pDispersiveMaterialParameters") = &dispersiveMaterialParameters;
+  
+
+  // OV_ABORT("NonlinearExactSolution::initialize *new*  stop here for now");
+   
+
+  return 0;
+}
+
+
+
+
+
+// ==========================================================================================
+/// \brief  Evaluate the solution and save in an array.
+///
+/// \param numberOfTimeDerivatives (input) : evaluate this many time-derivatives of the solution.
+/// \param computeMagneticField (input): if true return the magnetic field in 3D (in 2D the magnetic field is always computed). 
+// ==========================================================================================
+int NonlinearExactSolution::
+eval(real t, CompositeGrid & cg, int grid, 
+     realArray & ua, realArray & pv, realArray & qv,
+     const Index & I1a, const Index &I2a, const Index &I3a, 
+     int numberOfTimeDerivatives /* = 0 */,
+     bool computeMagneticField /* = false */ )
+{
+
+  // domain number for this grid: 
+  const int & numberOfDomains = cg.numberOfDomains();
+  const int myDomain = cg.domainNumber(grid);
+
+
+  if( t <= 0. )
+    printF("--NonlinearExactSolution--  eval on grid=%i, domain=%i, at t=%9.3e (numberOfDomains=%d) \n",grid,myDomain,t,numberOfDomains);
+
+  MappedGrid & mg = cg[grid];
+  const int numberOfDimensions = cg.numberOfDimensions();
+  
+  
+  std::vector<DispersiveMaterialParameters> & dmpVector = *dbase.get<std::vector<DispersiveMaterialParameters>* >("pDispersiveMaterialParameters");
+
+//    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+
+  DispersiveMaterialParameters & dmp    = dmpVector[myDomain];
+  const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+  RealArray & gdmPar                    = dmp.modelParameters;
+
+  // --- Here are the parameters in the nonlinear model ---
+  RealArray multilevelAtomicParams;
+  int numberOfAtomicLevels=-1;
+  dmp.getNonlinearParameters( numberOfAtomicLevels, multilevelAtomicParams );  
+
+  if( true && t<=0. && dmp.isDispersiveMaterial() )
+  {
+    //   OV_ABORT("NonlinearExactSolution::eval -- finish me for dispersive materials");
+    printF("SES:eval: grid=%d: numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
+	      grid,numberOfPolarizationVectors,numberOfAtomicLevels);
+    ::display(multilevelAtomicParams,"multilevelAtomicParams");
+  }
+  
+  
+  OV_GET_SERIAL_ARRAY(real,ua,uLocal);
+
+  Index I1=I1a, I2=I2a, I3=I3a;
+  bool ok = ParallelUtility::getLocalArrayBounds(ua,uLocal,I1,I2,I3,1);   
+  if( !ok ) return 0;  // no points on this processor (NOTE: no communication should be done after this point)
+
+  // -- we optimize for Cartesian grids (we can avoid creating the vertex array)
+  const bool isRectangular=mg.isRectangular();
+  if( !isRectangular )
+    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+  OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+
+  real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+  int iv0[3]={0,0,0}; //
+  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];  // NOTE: iv[0]==i1, iv[1]==i2, iv[2]==i3
+  real xv[3]={0.,0.,0.};
+  if( isRectangular )
+  {
+    mg.getRectangularGridParameters( dvx, xab );
+    for( int dir=0; dir<mg.numberOfDimensions(); dir++ )
+    {
+      iv0[dir]=mg.gridIndexRange(0,dir);
+      if( mg.isAllCellCentered() )
+	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+    }
+  }
+  // This macro defines the grid points for rectangular grids:
+#undef XC
+#define XC(iv,axis) (xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]))
+
+  
+  // -- Store components here: 
+  const int ex=0, ey=1, ez=2;
+  const int hx=3, hy=4, hz=numberOfDimensions==2 ? 2 :  5;
+
+  if( computeMagneticField && numberOfDimensions==3 && ua.getLength(3)<6 )
+  {
+    printF(" NonlinearExactSolution::ERROR: Not enough space in ua to hold the H field\n");
+    OV_ABORT("error");
+  }
+  
+
+  // --- Get Arrays for the dispersive model ----
+
+  RealArray pLocal, qLocal;
+  if( numberOfPolarizationVectors>0 )
+  {
+    OV_GET_SERIAL_ARRAY(real, pv,pLoc);
+    pLocal.reference(pLoc);
+  }
+  if( numberOfAtomicLevels>0 )
+  {
+    OV_GET_SERIAL_ARRAY(real, qv,qLoc);
+    qLocal.reference(qLoc);
+  }
+  
+
+  real x0[3]={0.,0.,0.};   //     
+  real x,y,z=0.;
+  if( numberOfTimeDerivatives==0 )
+  {
+    FOR_3D(i1,i2,i3,I1,I2,I3)
+    {
+      if( !isRectangular )
+      {
+	x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+	y= xLocal(i1,i2,i3,1)-x0[1];
+	if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2)-x0[2];
+      }
+      else
+      {
+	x=XC(iv,0)-x0[0];
+	y=XC(iv,1)-x0[1];
+	if( numberOfDimensions==3 ) z=XC(iv,2)-x0[2];
+      }
+
+ 
+      if( numberOfDimensions==2 )
+      {
+	uLocal(i1,i2,i3,ex) = 1.;
+	uLocal(i1,i2,i3,ey) = 2.;
+	uLocal(i1,i2,i3,hz) = 3.;
+      }
+      else if( numberOfDimensions==3 )
+      {
+	uLocal(i1,i2,i3,ex) = 1.;
+	uLocal(i1,i2,i3,ey) = 2.;
+	uLocal(i1,i2,i3,ez) = 3.;
+      }
+
+      // --- assign polarization vectors ---
+      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+      {
+	const int pc= iv*numberOfDimensions;
+	pLocal(i1,i2,i3,pc  ) = pc+1.;
+	pLocal(i1,i2,i3,pc+1) = pc+2.;
+
+	if( numberOfDimensions==3 )
+	{
+	  pLocal(i1,i2,i3,pc+2) = pc+3.;
+	}
+	  
+      }
+      // -- assign population densities ----
+      for( int na=0; na<numberOfAtomicLevels; na++ )
+      {
+	qLocal(i1,i2,i3,na) = na+1.;
+      }
+
+
+    }  // end for i1,i2,i3
+
+
+  }
+  else
+  {
+    OV_ABORT("NonlinearExactSolution::ERROR: numberOfTimeDerivatives != 0 ");
+    
+  } // end if number of time derivatives 
+    
+  
+
+  return 0;
+
+}
+
+
+
+
+
+// ===============================================================================
+/// \brief Check the solution.
+// ===============================================================================
+int NonlinearExactSolution::
+NonlinearExactSolution::check()
+{
+
+  // ------------- CHECK THAT THE EQUATIONS ARE SATISFIED AT POINTS INSIDE AND OUTSIDE ------
+
+  printF("------------ NonlinearExactSolution::check: CHECK THE EQUATIONS ------------\n\n");
+
+  real maxErr=0.;
+
+  printF("\n------------ FINSHED CHECK EQUATIONS ------------\n\n");
+
+
+  
+  return 0;
+}
+
+

@@ -1628,10 +1628,10 @@ plotNonlinearVariables( int current, real t, real dt )
             {
                 gi.erase();
                 if( answer!="contour" )
-                {
                     pspNonlinear.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
-                }
-
+      	else
+                    pspNonlinear.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+      	
                 real pMin=REAL_MAX, pMax=-pMin; // keep track of min and max over all domains 
                 
       	for( int domain=domainStart; domain<=domainEnd; domain++ )

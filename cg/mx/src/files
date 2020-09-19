@@ -16,7 +16,8 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      userDefinedKnownSolution.C assignUserDefinedKnownSolutionInitialConditions.C \
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
      PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C \
-     buildSuperGrid.C SurfaceWaveExactSolution.C computeTimeStep.C SlabsExactSolution.C ComplexArray.C
+     buildSuperGrid.C SurfaceWaveExactSolution.C computeTimeStep.C SlabsExactSolution.C ComplexArray.C \
+     NonlinearExactSolution.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
@@ -145,6 +146,10 @@ src/BAPlaneInterface.C : src/BAPlaneInterface.bC; $(BPP) -quiet -clean $<
 src/SlabsExactSolution.C : src/SlabsExactSolution.bC; $(BPP) -quiet -clean $<
 
 src/SurfaceWaveExactSolution.C : src/SurfaceWaveExactSolution.bC; $(BPP) -quiet -clean $<
+
+src/NonlinearExactSolution.C : src/NonlinearExactSolution.bC; $(BPP) -quiet -clean $<
+
+
 
 src/evalDispersionRelation.f : src/evalDispersionRelation.bf; $(BPP) -quiet -clean $<
 

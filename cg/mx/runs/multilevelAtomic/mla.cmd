@@ -9,7 +9,7 @@ echo to terminal 1
 #                 -plotIntensity=[0|1] -diss=<>  -filter=[0|1] -debug=<num> -cons=[0/1] -varDiss=<0|1> ...
 #                 -rbc=[abcEM2|rbcNonLocal|abcPML] -leftBC=[rbc|planeWave] -method=[fd|Yee|sosup] 
 #                 -probeFileName=<s> -xLeftProbe=<f> -xRightProbe=<f> ...
-#                 -useSosupDissipation=[0|1] -dm=[none|gdm] -ic=[slabs|pw|gp] -go=[run/halt/og]
+#                 -useSosupDissipation=[0|1] -dm=[none|gdm] -ic=[slabs|pw|gp|pulse] -go=[run/halt/og]
 #
 # Arguments:
 #  -kx= -ky= -kz= : wave number of the incident wave
@@ -131,11 +131,12 @@ bounding box decay exponent $betaBB
 $epsPW=$eps0; $muPW=$mu0; # parameters for the incident plane wave
 plane wave coefficients $ax $ay $az $epsPW $muPW
 #
-# planeWaveInitialCondition
 # if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
 # if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
 if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
 if( $ic eq "slabs" ){ $cmd="user defined known solution\n  slabs\n  oneSlabIsoEps2\n done\n userDefinedKnownSolutionInitialCondition"; }
+if( $ic eq "pulse" ){ $cmd="user defined known solution\n nonlinear pulse\n soliton\n done\n userDefinedKnownSolutionInitialCondition"; }
+# Execute the initial condition commands: 
 $cmd
 # 
 # if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
@@ -175,16 +176,21 @@ adjust boundaries for incident field $adjustFields $backGround
 #  -- Assign material parameters ---
 #  For multi-block grids we assume domain names of blockDomain0, blockDomain1, etc. 
 #
+#  for single domains:
+number of polarization vectors: $npv[1]
+if( $numSlabs eq 0 ){ $cmd="GDM domain name: all\n material file: $matFile1"; }else{ $cmd="#"; }
+$cmd
 # 
 GDM domain name: leftDomain
 material file: $matFileLeft
 GDM domain name: rightDomain
 material file: $matFileRight
 #
-GDM domain name: blockDomain0
-number of polarization vectors: $npv[1]
-material file: $matFile1
-# pause
+# GDM domain name: blockDomain0
+# number of polarization vectors: $npv[1]
+# material file: $matFile1
+if( $numSlabs ge 1 ){ $cmd="GDM domain name: blockDomain0\n material file: $matFile1"; }else{ $cmd="#"; }
+$cmd 
 #
 if( $numSlabs ge 2 ){ $cmd="GDM domain name: blockDomain1\n material file: $matFile2"; }else{ $cmd="#"; }
 $cmd
@@ -234,6 +240,7 @@ debug 0
 #
 cfl $cfl 
 plot divergence 0
+printf("checkErrors=$checkErrors\n");
 plot errors $checkErrors
 check errors $checkErrors
 plot intensity $plotIntensity

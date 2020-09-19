@@ -118,7 +118,7 @@ void getMultilevelAtomicParameters( int & grid,
   numberOfPolarizationVectors = dmp.getNumberOfPolarizationVectors();
   
   RealArray multilevelAtomicParams;
-  dmp.getNonlinearParameters( numberOfAtomicLevels, multilevelAtomicParams );  
+  dmp.getNonlinearParameters( numberOfAtomicLevels, multilevelAtomicParams );
 
   printF("getMultilevelAtomicParameters: grid=%d, nd1=%d, nd2=%d, numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
 	 grid,nd1,nd2,numberOfPolarizationVectors,numberOfAtomicLevels);
@@ -181,7 +181,8 @@ void evalUserDefinedKnownSolution( real & t, int & grid, int & i1, int & i2, int
   // parameters.getUserDefinedDeformingBodyKnownSolution( body,stateOption,t, grid, mg, Ib1,Ib2,Ib3,n,value );
   int current=0; // not currently used
 #ifndef USE_PPP
-  cgmxPointer->getUserDefinedKnownSolution( current, t, cg, grid,ua,pv,I1,I2,I3, numberOfTimeDerivatives);
+  // ** FIX ME : pv,pv --> pv,qv
+  cgmxPointer->getUserDefinedKnownSolution( current, t, cg, grid,ua,pv,pv,I1,I2,I3, numberOfTimeDerivatives);
 #else
   OV_ABORT("finish me for parallel");
 #endif

@@ -2,6 +2,7 @@
 !
 ! Optimized advance routines for cgmx
 !
+!
 ! These next include files will define the macros that will define the difference approximations
 ! The actual macro is called below
 c Use this next macro to declare the statement functions that are defined below
@@ -149,6 +150,43 @@ c To include derivatives of rx use OPTION=RX
 !    fpv(iv) : forcing for polarization vector iv=0,1,2,...
 ! ========================================================================
 
+! ========================================================================
+! Macro: Getting forcing for E and P in multilevel atomic (MLA) system (2nd order)
+!  Input:
+!    ec : E component
+!    pc : P component
+!  Output:
+!    fe : forcing for E is updated
+!    fpv(iv) : forcing for polarization vector iv=0,1,2,...
+! ========================================================================
+
+
+! ========================================================================
+! Macro: Getting forcing for E and P in multilevel atomic (MLA) system (4th order)
+!  Input:
+!    ec : E component
+!    pc : P component
+!  Output:
+!    fe : forcing for E is updated
+!    fpv(iv) : forcing for polarization vector iv=0,1,2,...
+! ========================================================================
+
+! ========================================================================
+! Macro: Getting forcing for N in multilevel atomic (MLA) system (2nd order)
+!  Input:
+!    na : N component
+!  Output:
+!    fnv(iv) : forcing for population density vector iv=0,1,2,...
+! ========================================================================
+
+! ========================================================================
+! Macro: Getting forcing for N in multilevel atomic (MLA) system (4th order)
+!  Input:
+!    na : N component
+!  Output:
+!    fnv(iv) : forcing for population density vector iv=0,1,2,...
+! ========================================================================
+
 
 ! ========================================================================
 ! Macro: Getting forcing for fourth-order accurate GDM
@@ -223,14 +261,16 @@ c To include derivatives of rx use OPTION=RX
 !
 ! **********************************************************************************
 
+! ******************************************
+! product of N_na and E_m
+! ****************************************** 
 
 ! **********************************************************************************
-! Macro updateMultilevelAtomic
+! Macro updateMultilevelAtomic (MLA)
 !
 ! Initial version: July 2020
 !
 ! **********************************************************************************
-
 
 ! **********************************************************************************
 ! Macro ADV_MAXWELL:

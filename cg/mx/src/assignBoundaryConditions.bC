@@ -2087,6 +2087,9 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
       // ::display(pLocal,"pLocal");
     }
 
+    // For nonlinear models: 
+    realMappedGridFunction & qv = getNonlinearModelMappedGridFunction( grid,next );
+
     const IntegerArray & bcg = mg.boundaryCondition();
     IntegerArray gid, dim, bc;
     getLocalBoundsAndBoundaryConditions( u, gid, dim, bc );
@@ -2244,7 +2247,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
                 int numberOfTimeDerivatives=0;
                 CompositeGrid & cg = *(cgfields[next].getCompositeGrid());
-		getUserDefinedKnownSolution( next, t, cg,grid, u,pv,I1,I2,I3,numberOfTimeDerivatives);
+		getUserDefinedKnownSolution( next, t, cg,grid, u,pv,qv,I1,I2,I3,numberOfTimeDerivatives);
  
 	      }
 	      else
@@ -2525,6 +2528,34 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
         p.finishBoundaryConditions(extrapParams,Pc);
       }
       
+      // ----- apply boundary conditions to nonlinear variables ------
+            // -- For nonlinear model: 
+      const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
+      if( numberOfAtomicLevels>0 )
+      {
+	realMappedGridFunction & q = getNonlinearModelMappedGridFunction( grid,next );
+        q.setOperators(mgop);
+
+        Range Nc = numberOfAtomicLevels;
+	int ghostStart=1, ghostEnd=orderOfAccuracyInSpace/2;
+	BoundaryConditionParameters extrapParams;
+	extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1;  // what should this be ?
+	extrapParams.extraInTangentialDirections=ghostEnd;
+	for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
+	{
+	  extrapParams.ghostLineToAssign=ghost;
+	  q.applyBoundaryCondition(Nc,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+	}
+
+	extrapParams.ghostLineToAssign=1;  // reset 
+	extrapParams.numberOfCornerGhostLinesToAssign= ghostEnd+1;
+	q.finishBoundaryConditions(extrapParams,Pc);
+
+
+      }
+
+
+
     }
 
     // ** OLD ****
