@@ -961,6 +961,12 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                         {
                             ppNext->interpolate();
                         }
+
+                        realCompositeGridFunction *pqNext= getNonlinearModelCompositeGridFunction( domain,next );
+                        if( pqNext!=NULL )
+                        {
+                            pqNext->interpolate();
+                        }
                         
                     }
                     

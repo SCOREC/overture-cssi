@@ -2,7 +2,78 @@
 ***************************
 ******* Sat Sept 19, 2020
 
-TEST Qing's new advOptNew.bf
+======== TEST Qing's new advOptNew.bf =====
+
++++++++++++++++  TRIG TZ 
+cgmx -noplot tz -g=sise4.order2.hdf -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+
+G4 
+--getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=9.969e-01 max-err = 1.238e-07
+--getErrors: t=5.000e-02 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=9.969e-01 max-err = 1.613e-07
+>>> t=5.00e-02 dt=1.3e-02 max errors:[4.30e-07,4.25e-07,9.96e-01,], max (u):[4.98e-01,4.98e-01,9.97e-01,] (4 steps)
+
+G8 ** Q errors look funny
+--getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=9.969e-01 max-err = 3.695e-08
+--getErrors: t=5.000e-02 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=9.969e-01 max-err = 1.651e-07
+>>> t=5.00e-02 dt=7.1e-03 max errors:[9.37e-08,9.35e-08,9.97e-01,], max (u):[4.98e-01,4.98e-01,9.97e-01,] (7 steps)
+
+G16:
+>>> Cgmx:FD: t=5.00e-02 dt=3.8e-03 TS=ME GDM |div(E)|/|grad(E)|=9.30e-07 (=7.28e-07/7.83e-01) 13 steps mem=117(Mb) cpu=3.63e+01(s)
+--getErrors: t=5.000e-02 domain=0 (domain0) numPolarizationVectors=2 P-norm=9.969e-01 max-err = 1.010e-08
+--getErrors: t=5.000e-02 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=9.969e-01 max-err = 6.905e-08
+>>> t=5.00e-02 dt=3.8e-03 max errors:[2.13e-08,2.14e-08,9.97e-01,], max (u):[4.98e-01,4.98e-01,9.97e-01,] (13 steps)
+
+
+TZ TRIG G32 -- trouble with Q ??
+cgmx -noplot tz -g=square32.order2.hdf -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.4 -go=og
+
+G16 
+cgmx -noplot tz -g=square16.order2.hdf -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=.4 -go=og
+
+G16 cfl=.9 
+>>> Cgmx:FD: t=2.50e-01 dt=2.5e-02 TS=ME GDM |div(E)|/|grad(E)|=4.31e-04 (=3.12e-04/7.24e-01) 10 steps mem=53(Mb) cpu=9.09e+00(s)
+--getErrors: t=2.500e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=9.239e-01 max-err = 1.515e-05
+--getErrors: t=2.500e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=9.237e-01 max-err = 6.899e-04
+>>> t=2.50e-01 dt=2.5e-02 max errors:[4.49e-05,4.88e-05,9.15e-01,], max (u):[4.62e-01,4.62e-01,9.24e-01,] (10 steps)
+
+G16 cfl=.5 ***Q error is bigger!
+--getErrors: t=2.500e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=9.239e-01 max-err = 7.831e-06
+--getErrors: t=2.500e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=9.247e-01 max-err = 1.245e-03
+>>> t=2.50e-01 dt=1.7e-02 max errors:[3.72e-05,4.81e-05,7.54e-02,], max (u):[4.62e-01,4.62e-01,9.90e-01,] (15 steps)
+
+
+
+G32 cfl=.2:
+>>> Cgmx:FD: t=4.00e-01 dt=4.2e-03 TS=ME GDM |div(E)|/|grad(E)|=1.31e-02 (=8.33e-03/6.35e-01) 96 steps mem=54.1(Mb) cpu=1.69e+01(s)
+--getErrors: t=4.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.093e-01 max-err = 4.550e-04
+--getErrors: t=4.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=8.917e-01 max-err = 8.849e-02
+>>> t=4.00e-01 dt=4.2e-03 max errors:[5.42e-04,5.11e-05,1.91e-01,], max (u):[4.05e-01,4.05e-01,9.98e-01,] (96 steps)
+
+G32 cfl=.1 
+>>> Cgmx:FD: t=4.00e-01 dt=2.2e-03 TS=ME GDM |div(E)|/|grad(E)|=6.47e-03 (=4.11e-03/6.35e-01) 184 steps mem=54(Mb) cpu=1.83e+01(s)
+--getErrors: t=4.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.091e-01 max-err = 2.350e-04
+--getErrors: t=4.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=8.488e-01 max-err = 4.556e-02
+>>> t=4.00e-01 dt=2.2e-03 max errors:[2.61e-04,3.34e-05,8.07e-01,], max (u):[4.05e-01,4.05e-01,8.09e-01,] (184 steps)
+
+G32 cfl=.05
+--getErrors: t=4.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=8.090e-01 max-err = 1.595e-04
+--getErrors: t=4.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=8.341e-01 max-err = 3.075e-02
+>>> t=4.00e-01 dt=1.1e-03 max errors:[1.66e-04,5.50e-05,1.91e-01,], max (u):[4.05e-01,4.05e-01,9.98e-01,] (368 steps)
+
+
++++++++++++++++++++++++++++++++++++++
+
+
+sise4.order2.hdf
+SIS: ORDER=2 degree=(2,2) EXACT: 
+cgmx -noplot tz -g=sise4.order2.hdf -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+--getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=2.107e+00 max-err = 2.396e-13
+--getErrors: t=1.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=2.047e+00 max-err = 2.321e-11
+>>> t=1.00e-01 dt=1.3e-02 max errors:[1.83e-13,9.59e-14,8.19e-02,], max (u):[4.21e+00,2.11e+00,1.58e+00,] (8 steps)
+
+
 
 ORDER=4: degree=(1,1)  NOT EXACT, even in the interior:   **WHY***
 cgmx -noplot tz -g=square8.order4 -degreex=1 -degreet=1 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
@@ -27,6 +98,7 @@ cgmx -noplot tz -g=square8.order2 -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -
 --getErrors: t=1.000e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=2.107e+00 max-err = 2.220e-15
 --getErrors: t=1.000e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=2.047e+00 max-err = 1.978e-13
 >>> t=1.00e-01 dt=5.0e-02 max errors:[2.66e-15,1.78e-15,7.45e-02,], max (u):[4.21e+00,2.11e+00,1.58e+00,] (2 steps)
+
 
 
 ***************************

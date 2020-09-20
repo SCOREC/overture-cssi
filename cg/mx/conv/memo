@@ -1,7 +1,25 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
 
--matFile=baMatGDMCase1.txt -matFile2=baMatGDM4.txt
+***************************
+******* Sat Sept 19, 2020
+
+ADD TZ TEST FOR NONLINEAR 
+
+
+TRIG:
+conv.p exact.conv -option=tz -tz=trig -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.6 -tp=.6 -order=2 -npv=2 -ng=4
+
+
+POLY
+conv.p exact.conv -option=tz -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.1 -tp=.1 -order=2 -npv=2 -ng=2
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   square8 &     1 & 2.66e-15 &      & 2.00e-15 &      & 1.16e-01 &      & 2.66e-15 &      & 2.22e-15 &      & 2.74e-15 &      
+  square16 &     2 & 1.42e-14 &  0.19 & 7.11e-15 &  0.28 & 8.00e-02 &  1.45 & 1.42e-14 &  0.19 & 1.11e-14 &  0.20 & 2.32e-14 &  0.12 
+Convergence rates: c0=-2.42 c1=-1.83 c2=0.54 c3=-2.42 c4=-2.32 c5=-3.08 
+
+
 
 ******************************
 ******** June 18, 2020

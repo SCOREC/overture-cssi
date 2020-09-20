@@ -33,7 +33,9 @@ $dm="none"; # dispersive model
 $diss=.0; $dissOrder=-1; $drOption="computeFrequency"; # dispersion relation option 
 $errorNorm=0; $method="NFDTD"; 
 $alwaysCompute=1; $saveVectorErrors=0; 
-$numberOfDimensions=2; 
+$numberOfDimensions=2;
+$nm="#"; # nonlinear model
+$tz = "poly"; $degreex=2; $degreet=2; $fx=.5; $fy=$fx; $fz=$fx; $ft=$fx;
 #
 GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"interp=s"=>\$interp,"diss=f"=>\$diss,\
             "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"tp=f"=>\$tp,\
@@ -42,11 +44,14 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"inter
             "alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"saveVectorErrors=i"=>\$saveVectorErrors,\
             "kx=i"=>\$kx,"ky=i"=>\$ky,"kz=i"=>\$kz,"npv=i"=>\$npv,"modeGDM=i"=>\$modeGDM,\
             "a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"cons=i"=>\$cons,\
-            "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"matFile=s"=>\$matFile, "drOption=s"=>\$drOption  );
+            "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"matFile=s"=>\$matFile, "drOption=s"=>\$drOption,\
+	    "nm=s"=>\$nm,"tz=s"=>\$tz,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,\
+	    "fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft );
 # ------------------------ planeWave ------------------------------------------
 $name=$option; 
 if( $option eq "chirped" ){ $cmdFile="../runs/embeddedBody/chirped.cmd";  }
 if( $option eq "planeWave" ){ $cmdFile="../runs/planeWave/planeWave.cmd";  }
+if( $option eq "tz" ){ $cmdFile="../runs/tz/tz.cmd";  }
 if( $cg =~ /nonSquarenp/ ){ $bg="square"; }
 if( $cg =~ /nonSquare/ ){ $bg="square"; }
 if( $cg =~ /nonBoxnpp/ ){ $bg="box"; }
@@ -123,13 +128,13 @@ if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorE
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 if( $method eq "bamx" ){ $labelMethod="BAMX$order"; }
-$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, method=$method, ts=$ts, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, kx=$kx, ky=$ky, kz=$kz, cons=$cons, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
+$caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, method=$method, ts=$ts, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$, kx=$kx, ky=$ky, kz=$kz, cons=$cons, nm=$nm, dm=$dm, alphaP=$alphaP, npv=$npv, modeGDM=$modeGDM a0=($a0[0],$a0[1],$a0[2]), a1=($a1[0],$a1[1],$a1[2]), b0=($b0[0],$b0[1],$b0[2]), b1=($b1[0],$b1[1],$b1[2]) tz=$tz degreex=$degreex degreet=$degreet fx=$fx fy=$fy fz=$fz -ft=$ft $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
 if( $method eq "bamx" ){\
 $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, method=$method, ts=$ts, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, kx=$kx, ky=$ky, kz=$kz, dm=$dm, -matFile=$matFile -drOption=$drOption -solveForAllFields=$solveForAllFields $date}\\label\{table:$name" . $method . "Order$order$normName}"; \
 }
 #
 # 
-$options = "-diss=$diss -dissOrder=$dissOrder -ts=$ts -dm=$dm -radius=$radius -bg=$bg -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ta=$ta -tb=$tb -alphaP=$alphaP -npv=$npv -modeGDM=$modeGDM -a0=$a0[0] $a0[1] $a0[2] -a1=$a1[0] $a1[1] $a1[2] -b0=$b0[0] $b0[1] $b0[2] -b1=$b1[0] $b1[1] $b1[2] -kx=$kx -ky=$ky -kz=$kz -checkErrors=1 -matFile=$matFile -solveForAllFields=$solveForAllFields -drOption=$drOption -cons=0 -go=go";
+$options = "-diss=$diss -dissOrder=$dissOrder -ts=$ts -dm=$dm -radius=$radius -bg=$bg -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ta=$ta -tb=$tb -alphaP=$alphaP -npv=$npv -modeGDM=$modeGDM -a0=$a0[0] $a0[1] $a0[2] -a1=$a1[0] $a1[1] $a1[2] -b0=$b0[0] $b0[1] $b0[2] -b1=$b1[0] $b1[1] $b1[2] -kx=$kx -ky=$ky -kz=$kz -checkErrors=1 -matFile=$matFile -solveForAllFields=$solveForAllFields -drOption=$drOption -cons=0 -nm=$nm -tz=$tz -degreex=$degreex -degreet=$degreet -fx=$fx -fy=$fy -fz=$fz -ft=$ft -go=go";
 #
 $suffix="";
 if( ($method eq "sosup") && ($order eq 4) ){ $suffix=".ng3"; }
