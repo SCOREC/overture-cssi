@@ -18,7 +18,9 @@ XLIBS_LIB = $(XLIBS)/$(LIB64)
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11 
 # New Max does not need libXpm - Dec 7, 2019 
-OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXp -lXt -lXmu -lXi -lXext -lX11 
+# OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXp -lXt -lXmu -lXi -lXext -lX11 
+# Newest Mac does not need -lXi 
+OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXp -lXt -lXmu -lXext -lX11 
 # 
 # Daniel make this change for his Mac: 
 # OV_X_LIBRARIES = -L$(XLIBS_LIB) -lXpm -lXp -lXt -lXmu -lXi -lXext -lX11 -Wl,-dylib_file,/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
@@ -64,7 +66,11 @@ cc_FLAGS = -fPIC
 #  HAS_MODFL_PROTO is for a perl compile error of OvertureParser.C for gcc 3.4.3
 CC_FLAGS = -fPIC -DHAS_MODFL_PROTO
 #xlc FF_FLAGS = -qpic -qextname -qfixed=128 -qcompact -qautodbl=dbl
-FF_FLAGS = -fPIC
+
+# *wdh* Dec 4, 2020 For latest gfortran add extra flag to avoid error in the Ncar fft routine s 
+FF_FLAGS = -fPIC -fallow-argument-mismatch
+
+
 # turn off warnings from intel f95 compiler
 #ifc FF_FLAGS = -fPIC -w
 
@@ -161,7 +167,8 @@ OLIBS = $(LDFLAGS)$(Overture)/lib $(LibOverture)
 RLIBS = $(LDFLAGS)$(Overture)/lib $(LibRapsodi)
 # *wdh* 2014/08/23  LIBLIBS = $(GLIBS) $(LDFLAGS)$(Overture)/lib -lOverture_static $(HDF_LIBS) $(FORTRAN_LIBS) $(AppLibraries) -Wl-weak-framework,vecLib 
 # *wdh* 2014/08/23  -- remove AppLibraries
-LIBLIBS = $(GLIBS) $(LDFLAGS)$(Overture)/lib -lOverture_static $(HDF_LIBS) $(FORTRAN_LIBS) 
+# *wdh* 2020/12/05  -- ADD back AppLibraries for parallel 
+LIBLIBS = $(GLIBS) $(LDFLAGS)$(Overture)/lib -lOverture_static $(AppLibraries) $(HDF_LIBS) $(FORTRAN_LIBS) 
 # RLIBLIBS = $(GLIBS) $(LDFLAGS)$(Overture)/lib -lOverture -lOverture_static $(HDF_LIBS) $(FORTRAN_LIBS) $(AppLibraries) -Wl-weak-framework,vecLib 
 RLIBLIBS = $(GLIBS) $(HDF_LIBS) $(FORTRAN_LIBS) $(AppLibraries)
 

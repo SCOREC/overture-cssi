@@ -832,7 +832,7 @@ assignInitialConditions(int current, real t, real dt )
                         }
                         else if( method==bamx )
                         {
-      	 // done below
+      	// done below
                         }
                     }
                 }
@@ -1010,7 +1010,7 @@ assignInitialConditions(int current, real t, real dt )
                     if( dispersionModel != noDispersion )
                     {
                         printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-                              maxNumberOfPolarizationVectors);
+                       	     maxNumberOfPolarizationVectors);
                         if( method==nfdtd )
                         {
                   	for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
@@ -1778,7 +1778,10 @@ assignInitialConditions(int current, real t, real dt )
                   	for( int ix=0; ix<=degreeSpace; ix++ )
                   	{
       	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
-                    	  spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+                    	  if( ix+iy+iz <= 2 )
+                    	  {
+                      	    spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+                    	  }
                   	}
                         }
                     }
@@ -1809,7 +1812,10 @@ assignInitialConditions(int current, real t, real dt )
                   	for( int ix=0; ix<=degreeSpace; ix++ )
                   	{
       	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
-                    	  spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
+                    	  if( ix+iy+iz <= 2 )
+                    	  {
+                      	    spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
+                                }
                   	}
                         }
                     }

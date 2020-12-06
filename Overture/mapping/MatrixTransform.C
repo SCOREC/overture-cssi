@@ -120,6 +120,8 @@ getPeriodVector( const int direction, real vect[3] ) const
          direction,pv[0],pv[1],pv[2], vect[0],vect[1],vect[2]);
   
   // return Mapping::getPeriodVector( direction,vect );
+  return 0;
+  
 }
 
 // =================================================================================================

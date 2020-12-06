@@ -8,8 +8,8 @@ static int
 gdbError(const aString & func )
 {
   cout << "GenericDataBase:ERROR: function `" << (const char *) func << "' in base class called!\n";
-  if( &func )
-    throw "GenericDataBase:ERROR";
+
+  throw "GenericDataBase:ERROR";
   return 1;
 }
 

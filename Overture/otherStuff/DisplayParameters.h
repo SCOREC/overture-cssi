@@ -74,27 +74,27 @@ class DisplayParameters
 		      FILE *file,
 		      const char *format_ ,
 		      const DisplayParameters *displayParameters, 
-                      const Index *Iv =NULL );
+                      const Index *Iv );
   
   friend int display( const floatSerialArray & x, 
 		      const char *label,
 		      FILE *file,
 		      const char *format_ ,
 		      const DisplayParameters *displayParameters, 
-                      const Index *Iv =NULL );
+                      const Index *Iv );
   
   friend int display( const doubleSerialArray & x, 
 		      const char *label,
 		      FILE *file,
 		      const char *format_ ,
 		      const DisplayParameters *displayParameters, 
-                      const Index *Iv =NULL );
+                      const Index *Iv );
 
   friend int displayMaskPrivate( const intSerialArray & mask, 
 				 const aString & label,
 				 FILE *file,
 				 const DisplayParameters *displayParameters, 
-                                 const Index *Iv =NULL );
+                                 const Index *Iv );
 #endif
 };
 

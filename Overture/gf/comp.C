@@ -1071,7 +1071,7 @@ main(int argc, char *argv[])
   textLabels[nt] = "output show file:";  sPrintF(textStrings[nt],"%s",(const char*)outputShowFile);  nt++; 
   textLabels[nt] = "boundary error offset:";  sPrintF(textStrings[nt],"%i (lines)",boundaryErrorOffset);  nt++; 
   textLabels[nt] = "absorbing layer width:";  sPrintF(textStrings[nt],"%g",absorbingLayerWidth);  nt++; 
-  textLabels[nt] = "caption label:";  sPrintF(textStrings[nt],"%s",captionLabel);  nt++; 
+  textLabels[nt] = "caption label:";  sPrintF(textStrings[nt],"%s",(const char*)captionLabel);  nt++; 
 
   // null strings terminal list
   textLabels[nt]="";   textStrings[nt]="";  assert( nt<numberOfTextStrings );

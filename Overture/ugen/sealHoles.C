@@ -1763,7 +1763,7 @@ sealHoles3D( CompositeGrid &cg, intArray *gridIndexVertexMap, intArray &boundary
       //delete cgsurfp;
     }
   
-  delete indexMappings;
+  delete [] indexMappings;
 }
 
 #endif

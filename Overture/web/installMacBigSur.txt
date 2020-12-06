@@ -1,0 +1,143 @@
+Dec 4, 2020 -- installed  Overture and cg on Macbook Pro -  Big Sur (WDH) 
+-------------------------------------------------------------------------
+
+
+(1) Goto Apple app store and install Xcode (developer tools)
+
+(2) Install Xcode commandline tools (see previous help)
+       xcode-select --install    
+
+(3) Install homebrew  (package installer) 
+
+   From bash shell: 
+   >bash
+   >/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+   NOTE: see website formula.brew.sh for brew search engine
+
+(4) Install emacs if you use it.
+      brew cask install emacs     (note: this command is deprecated)
+
+(5) Install gfortran
+     brew install --cask gfortran
+
+(6) Install other packages: 
+    brew install openmotif    (--> also installs X11, --> lib files go into /us/local/lib)
+    brew install mesa
+    brew install mesa-glu
+
+    # get new perl for Overture 
+    brew install perl
+
+    # get XQuartz  (note: after installing XQuartz you need to logout and log back in, so the DISPLAY is set)
+    brew install --cask xquartz    
+
+
+(7) Install  HDF,  NOTE: get patched version from overtureFramework/packages 
+
+tar xzf hdf5-1.8.15-macPatch.tar.gz
+mv hdf5-1.8.15-macPatch hdf5-1.8.15
+cd hdf5-1.8.15
+unsetenv CC
+setenv CC gcc
+./configure --prefix=`pwd`
+make
+make install
+
+
+(8) Install serial version of A++  NOTE: get version from overtureFramework/packages
+
+
+tar xzf AP-0.8.3.tar.gz
+mv A++P++-0.8.3 A++P++-0.8.3_clang12.0.0
+cd A++P++-0.8.3_clang12.0.0
+./configure --disable-SHARED_LIBS --prefix=`pwd` --enable-C_OPTIONS=-Wno-implicit-function-declaration
+make -j4
+make install
+
+
+(9) Install Lapack (or may be able to use homebrew)
+
+tar xzf lapack-3.8.0.tar.gz
+cd lapack-3.8.0
+
+cp make.inc.example make.inc
+
+make blaslib
+make lapacklib
+
+
+
+(10) Install Overture from sourceforge git repo.
+
+  (10.1) Get Overture from sourceForge.net: (replace wdhenshaw with your sourceforce userid) 
+     git clone ssh://wdhenshaw@git.code.sf.net/p/overtureframework/code overtureFramework 
+
+  (10.2) Set Overture enviroment variables (see normal install)
+
+  (10.3) From overtureFrame/Overture:
+     setenv OvertureBuild /Users/henshaw/Overture.g  (for example) 
+     buildOverture
+
+  (10.4) Goto Overture.g
+     configure
+     make
+     make check     (1 test may fail on the mac)
+
+
+(11) Compile cg
+      cd overtureFramework/cg
+      make -j4         (may need to repeat this command as parallel make gets confused)
+
+
+********************* PARALLEL VERSION ON MAC **********************
+
+(12) INSTALL MPI FOR MAC
+
+brew install mpich    (note: this installed gcc and tried to install gfortran again, ignore warning for gfortran already there)
+
+
+
+(13) --- install P++ -- get latest version 0.8.3 from overtureFramewok/packages 
+
+
+tar xzf AP-0.8.3.tar.gz
+mv A++P++-0.8.3 AppPpp-0.8.3-clang12.0.0-parallel
+cd AppPpp-0.8.3-clang12.0.0-parallel
+configure --enable-PXX --prefix=`pwd` --disable-SHARED_LIBS --with-mpi-include=-I${MPI_ROOT}/include --with-mpi-lib-dirs="-L${MPI_ROOT}/lib" --with-mpi-libs="-lmpich -lmpl -lc -lm" --with-mpirun=${MPI_ROOT}/bin/mpiexec --without-PADRE --disable-mpirun-check
+
+make -j4 >& make.log 
+make install
+
+
+(14) Parallel HDF --- get patched version from overtureFramework/packages 
+
+tar xzf hdf5-1.8.15-macPatch.tar.gz
+mv hdf5-1.8.15-macPatch hdf5-1.8.15-parallel
+
+cd hdf5-1.8.15-parallel
+unsetenv CC
+unsetenv cc
+setenv CC $MPI_ROOT/bin/mpicc
+./configure --prefix=`pwd` --enable-parallel
+make -j4
+make install
+
+
+(15) Parallel Overture
+
+set enviromenetal variables (see usual install)
+
+From overtureFrame/Overture:
+   setenv OvertureBuild /Users/henshaw/Overture.p    (for example) 
+   buildOverture
+
+   cd /Users/henshaw/Overture.p
+   configure parallel 
+   make
+
+
+(16) Compile cg
+      cd overtureFramework/cg
+      make -j4         (may need to repeat this command as parallel make gets confused)
+

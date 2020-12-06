@@ -83,6 +83,7 @@ equationNo( const int n, const int i1, const int i2, const int i3, const int gri
 {
   printF("EquationSolver::equationNo:ERROR: base class function called\n");
   OV_ABORT("error");
+  return 0;
 }
 
 

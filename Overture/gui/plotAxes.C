@@ -79,7 +79,8 @@ plotAxes(const RealArray & xBound_,
 //                               windowScaleFactor[1]==windowScaleFactor[2]) ;
 
 //  bool scalesEqual= fabs(aspectRatio[win_number]-1.)<1.e-3;
-  bool scalesEqual= keepAspectRatio && fabs(aspectRatio[win_number]-1.)<1.e-3;
+// *wdh* Dec 5, 2020   bool scalesEqual= keepAspectRatio && fabs(aspectRatio[win_number]-1.)<1.e-3;
+  bool scalesEqual= keepAspectRatio[win_number] && fabs(aspectRatio[win_number]-1.)<1.e-3;
 // AP: scalesEqual==true produces strange axes!!!
   scalesEqual = false;
 

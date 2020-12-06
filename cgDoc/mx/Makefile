@@ -47,10 +47,9 @@ modifiedwave.pdf: modifiedwave.tex
 	ps2pdf modifiedwave.ps
 
 # parallel performance results
-parallel.pdf: parallel.tex 
-	latex parallel
-	dvips -P pdf -G0 -o parallel.ps parallel
-	ps2pdf parallel.ps
+parallel: parallel.tex 
+	pdflatex parallel
+
 
 stabilizedDSI.pdf: stabilizedDSI.tex 
 	latex stabilizedDSI

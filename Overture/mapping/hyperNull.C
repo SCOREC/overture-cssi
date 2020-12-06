@@ -17,8 +17,8 @@ hyper(
       realArray & XW, realArray & YW, realArray & ZW )
 {
   cout << "Sorry -- hypgen not available, talk to Bill Henshaw \n";
-  if( &IFORM )
-    {throw "error";}
+  OV_ABORT("ERROR");
+  
   return 1;
 }
 

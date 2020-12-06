@@ -4838,7 +4838,7 @@ createBoundedSurface(int entity, IgesReader &iges, Mapping *&mapPointer)
 	  cout<<"ERROR : could not create boundary entity "<<bdyEnt<<" for surface "<<entity<<endl;
 	  for ( int delEnt=0; delEnt<bdyEnt; delEnt++ ) 
 	    if ( boundaryEntities[delEnt]->decrementReferenceCount() == 0 ) delete boundaryEntities[delEnt];
-	  delete boundaryEntities;
+	  delete [] boundaryEntities;
 	  return 1;
 	}
       else
@@ -4864,7 +4864,7 @@ createBoundedSurface(int entity, IgesReader &iges, Mapping *&mapPointer)
       cout<<"ERROR : could not create outer boundary entity "<<" for surface "<<entity<<endl;
       for ( int delEnt=0; delEnt<numberOfBoundaryEntities; delEnt++ ) 
 	if ( boundaryEntities[delEnt]->decrementReferenceCount() == 0 ) delete boundaryEntities[delEnt];
-      delete boundaryEntities;
+      delete [] boundaryEntities;
       return 1;
     }
 

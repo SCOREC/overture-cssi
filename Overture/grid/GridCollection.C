@@ -499,8 +499,7 @@ displayDistribution(const aString & label, FILE *file /* =stdout */ )
     GridCollection & gc = *this;
     fprintf(file,
 	    " ======== Parallel Distribution for %s (np=%i)============\n",(const char*)label,np);
-    fprintf(file," numberOfGrids=%i, gridDistributionList.size()=%ul \n",gc.numberOfGrids(),
-	    gc->gridDistributionList.size());
+    fprintf(file," numberOfGrids=%i, gridDistributionList.size()=%ul \n",gc.numberOfGrids(),gc->gridDistributionList.size());
     for( int grid=0; grid<gc.numberOfComponentGrids(); grid++ )
     {
       MappedGrid & mg = gc[grid];

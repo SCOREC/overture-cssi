@@ -311,7 +311,7 @@ if( numberOfDimensions==2 )
       }
       else if( method==bamx )
       {
-	 // done below
+	// done below
       }
       
     }
@@ -525,7 +525,7 @@ if( numberOfDimensions==2 )
     if( dispersionModel != noDispersion )
     {
       printF("\n >>>> set TZ for P maxNumberOfPolarizationVectors=%i ** FINISH ME ** <<<<\n\n",
-         maxNumberOfPolarizationVectors);
+	     maxNumberOfPolarizationVectors);
 
       if( method==nfdtd )
       {
@@ -792,7 +792,11 @@ if( dispersionModel != noDispersion &&  method==bamx )
 	for( int ix=0; ix<=degreeSpace; ix++ )
 	{
 	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
-	  spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+	  if( ix+iy+iz <= 2 )
+	  {
+	    spatialCoefficientsForTZ(ix,iy,iz,pc)=(ix+.5*iy+.3*iz+ (2.*m)/maxNumberOfPolarizationComponents)/(degreeSpace*5. + 1.);
+	  }
+	  
 	}
       }
       
@@ -833,7 +837,11 @@ if( dispersionModel != noDispersion &&  nonlinearModel==multilevelAtomic )
 	for( int ix=0; ix<=degreeSpace; ix++ )
 	{
 	  // printF("*** initTZ functions: in P pc=%d, m=%d, ix=%d, iy=%d\n",pc,m,ix,iy);
-	  spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
+	  if( ix+iy+iz <= 2 )
+	  {
+	    spatialCoefficientsForTZ(ix,iy,iz,na)=(ix+.25*iy+.35*iz+ (1.5*m)/maxNumberOfNonlinearVectors)/(degreeSpace*5. + 1.);
+          }
+	  
 	}
       }
       

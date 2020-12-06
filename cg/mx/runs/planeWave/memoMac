@@ -1,0 +1,27 @@
+*******************
+**** Dec 6, 2020
+
+
+TEST parallel version on mac .. WORKS !
+
+parallel
+mpirun -np 2 $cgmxx -noplot planeWave -numberOfParallelGhost=3 -g=square1024.order4.ng3 -useSosupDissipation=1 -tp=.1 -tf=.1 -cfl=1 -checkErrors=1 -go=go
+
+-np=4 
+total time..........................  1.95e+00    1.35e-02    1.27e-08   100.000   1.952e+00   1.952e+00
+
+-np=2 
+total time..........................  3.75e+00    2.59e-02    2.43e-08   100.000   3.751e+00   3.751e+00
+
+
+-np=1 
+>>> t=1.00e-01 dt=6.9e-04 max errors:[0.00e+00,7.35e-11,7.35e-11,], max (u):[0.00e+00,1.00e+00,1.00e+00,] (145 steps)
+total time..........................  6.37e+00    4.39e-02    4.13e-08   100.000   6.369e+00   6.369e+00
+
+
+
+serial
+cgmx -noplot planeWave -g=square64.order4.ng3 -useSosupDissipation=1 -tp=.1 -tf=1 -cfl=1 -checkErrors=1 -go=go
+
+
+>>> t=1.00e-01 dt=1.0e-02 max errors:[0.00e+00,6.24e-06,6.24e-06,], max (u):[0.00e+00,9.97e-01,9.97e-01,] (10 steps)

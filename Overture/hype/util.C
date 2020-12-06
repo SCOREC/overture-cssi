@@ -1220,14 +1220,14 @@ formCMatrix(RealArray & xr,
 ///   A (\xv-\xv_0)_r + B ( \xv-\xv_0)_s + C( \xv-\xv_0)_t = \fv
 ///  \]
 ///  \[
-///   A =  \begin{bmatrix}   \xv_t^T   \\
-///                            0      \\ 
+///   A =  \begin{bmatrix}   \xv_t^T  
+///                            0      
 ///                          \av^T    \end{bmatrix} \qquad
-///   B =  \begin{bmatrix}    0        \\
-///                          \xv_t^T  \\ 
+///   B =  \begin{bmatrix}    0       
+///                          \xv_t^T  
 ///                          \bv^T    \end{bmatrix} \qquad
-///   C =  \begin{bmatrix}   \xv_r^T   \\
-///                          \xv_s^T  \\ 
+///   C =  \begin{bmatrix}   \xv_r^T  
+///                          \xv_s^T  
 ///                          \nv^T    \end{bmatrix}
 ///  \]
 ///  \begin{align*}

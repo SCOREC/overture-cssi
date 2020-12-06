@@ -2,10 +2,14 @@
 % Maxwell Solver -- results for parallel runs
 %
 %-----------------------------------------------------------------------
-\documentclass[12pt]{article}
-\usepackage{times}  % for embeddable fonts, Also use: dvips -P pdf -G0
+\documentclass[11pt]{article}
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
 
-\input documentationPageSize.tex
+
+% \input documentationPageSize.tex
+
+\usepackage{calc}
+\usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
 
 % \voffset=-1.25truein
 % \hoffset=-1.truein
@@ -16,8 +20,8 @@
 \hbadness=10000 % \tolerance=10000
 \sloppy \hfuzz=30pt
 
-\input{pstricks}\input{pst-node}
-\input{colours}
+% \input{pstricks}\input{pst-node}
+% \input{colours}
 
 
 \usepackage{amsmath}
@@ -35,9 +39,9 @@
 % * \usepackage{fancybox}
 
 
-\usepackage{makeidx} % index
-\makeindex
-\newcommand{\Index}[1]{#1\index{#1}}
+% \usepackage{makeidx} % index
+% \makeindex
+% \newcommand{\Index}[1]{#1\index{#1}}
 
 
 % ---- we have lemmas and theorems in this paper ----
@@ -58,11 +62,19 @@
 \newcommand{\drb}{{\Delta r_2}}%
 \newcommand{\drc}{{\Delta r_3}}%
 
+\renewcommand\floatpagefraction{.99}
+\renewcommand\topfraction{.99}
+\renewcommand\bottomfraction{.99}
+\renewcommand\textfraction{.01}   
+\setcounter{totalnumber}{50}
+\setcounter{topnumber}{50}
+\setcounter{bottomnumber}{50}
+
 \begin{document}
 % \Large
 
 % -----definitions-----
-\input wdhDefinitions.tex
+\input ../common/wdhDefinitions.tex
 
 \newcommand{\Div}{\grad\cdot}
 \newcommand{\tauv}{\boldsymbol{\tau}}
@@ -70,16 +82,19 @@
 % \newcommand{\half}{{1\over2}}
 \newcommand{\deltaT}{{\Delta t}}
 \newcommand{\dt}{{\Delta t}}
-\newcommand{\figWidth}{.3\linewidth}
+\newcommand{\figWidth}{.475\linewidth}
 
 \vspace{5\baselineskip}
 \begin{flushleft}
-{\LARGE Parallel Performance of the MX Time Domain Maxwell Solver} \\
+{\LARGE Parallel Performance of the CgMx Time Domain Maxwell Solver} \\
 \vspace{2\baselineskip}
-Bill Henshaw  \\
-% \vspace{\baselineskip}
-Centre for Applied Scientific Computing  \\
-Lawrence Livermore National Laboratory      \\
+William D. Henshaw  \\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
+%% % \vspace{\baselineskip}
+%% Centre for Applied Scientific Computing  \\
+%% Lawrence Livermore National Laboratory      \\
 % Livermore, CA, 94551.  \\
 % henshaw@llnl.gov \\
 % http://www.llnl.gov/casc/people/henshaw \\
@@ -93,7 +108,7 @@ Lawrence Livermore National Laboratory      \\
 
 \noindent{\bf\large Abstract:}
 
-This paper documents the parallel performance of the MX time-domain Maxwell solver.
+This article documents the parallel performance of the CgMx time-domain Maxwell solver.
 
 \end{flushleft}
 
@@ -105,43 +120,73 @@ This paper documents the parallel performance of the MX time-domain Maxwell solv
 \clearpage
 \section{Introduction}
 
-\clearpage
-\section{pppWave -- simple wave equation solver, Box300}
+This article documents the parallel performance of the CgMx time-domain Maxwell solver.
 
-Here are some results from the pppWave wave equation solver for a 3D problem.
+\bigskip\noindent 
+Notes:
+\begin{enumerate}
+  \item Todo: revisit ghost boundary updates to make sure all are needed.
+  \item Could test new GhostBoundaryUpdate class, especially for periodic grids.
+\end{enumerate}  
 
-%------wave: nx=   300, steps=100, np=2,  cpu=4.68e+01 (s) cpu/step=4.677e-01   1
-%------wave: nx=   300, steps=100, np=4,  cpu=2.40e+01 (s) cpu/step=2.398e-01   1.95
-%------wave: nx=   300, steps=100, np=8,  cpu=1.26e+01 (s) cpu/step=1.261e-01   3.71
-%------wave: nx=   300, steps=100, np=16,  cpu=7.04e+00 (s) cpu/step=7.043e-02  6.6
-%------wave: nx=   300, steps=100, np=32,  cpu=3.77e+00 (s) cpu/step=3.766e-02  12.4
-
-\begin{table}[hbt]
-\begin{center}\footnotesize
-\begin{tabular}{|c|c|c|} \hline 
-     NP       & sec/step   & ratio \\   \hline\hline 
-     2        &  $.468$    & $ 1.  $   \\ 
-     4        &  $.240$    & $ 1.95$   \\ 
-     8        &  $.126$    & $ 3.7 $   \\ 
-    16        &  $.070$    & $ 6.6 $   \\ 
-    32        &  $.037$    & $12.4 $   \\ \hline 
-\end{tabular}		
-\end{center}		
-\caption{pppWave: wave equation solver $300^3$ box, 27.e6 grid points, MCR linux cluster, 2.4GHz Zeon processors.}
- \label{tab:box} 
-\end{table}
-
-\begin{figure}
-\begin{center}
-\epsfig{file=speedupMCR-ppWave300.eps,width=.475\linewidth}  
-\end{center}
-\caption{Parallel speedup, pppWave wave equation solver, MCR linux cluster.}
-\end{figure}
 
 
 
 \clearpage
-\section{Square}
+% ===================================================================================================
+% ================================ SQUARE ===========================================================
+% ===================================================================================================
+\section{Square -- RPI results}
+
+\newcommand{\tableFont}{\footnotesize}
+% \twocolumn{% START twocolumn
+
+% RESULTS FROM runs/mx/parallel/runCgmx.p 
+
+\input tables/squareEigen512Order2ParPerfUPC2.tex
+
+\input tables/squareEigen1024Order4ParPerfUPC4.tex
+
+\input tables/nonSquareEigen1024Order4ParPerfUPC4.tex
+
+\input tables/planeWavesquare1024matGDM2ParPerfFD44s.tex
+
+\input tables/squareEigen512ParPerfFD44s.tex
+
+\input tables/planeWavesquare1024matGDM2ParPerfFD44s.tex
+
+\input tables/planeWavenonSquare1024matGDM2ParPerfFD44s.tex
+
+% -----------------BA-GDM----------------------------------------
+
+\clearpage
+\subsection{BA-GDM results}
+
+\input tables/basquare1024baMatGDM4ParPerfFD44s.tex
+
+\input tables/basquare2048baMatGDM4ParPerfFD44s.tex
+
+\clearpage
+% ===================================================================================================
+% ================================ BOX    ===========================================================
+% ===================================================================================================
+\section{Box -- RPI results}
+
+\input tables/boxEigen320Order2ParPerfUPC2.tex
+
+\input tables/boxEigen320Order4ParPerfUPC4.tex
+
+\input tables/planeWavebox16matGDM2ParPerfFD44s.tex
+
+\input tables/planeWavebox32matGDM2ParPerfFD44s.tex
+
+\input tables/planeWavenonBox16matGDM2ParPerfFD44s.tex
+
+% }% END twocolumn
+
+\clearpage
+% ===================================================================================================
+\section{Square -- LLNL results}
 
 \begin{table}[hbt]
 \begin{center}\footnotesize
@@ -267,7 +312,8 @@ Here are some results from the pppWave wave equation solver for a 3D problem.
 
 \begin{figure}
 \begin{center}
-\epsfig{file=speedupMCR-cic5-order4.eps,width=.75\linewidth}  
+  \includegraphics[width=.5\linewidth]{figures/speedupMCR-cic5-order4}
+  % \epsfig{file=speedupMCR-cic5-order4.eps,width=.75\linewidth}  
 \end{center}
 \caption{Parallel speedup, cic5.order4, 3.8e6 grid points, MCR linux cluster.}
 \end{figure}
@@ -306,8 +352,10 @@ Here are some results from the pppWave wave equation solver for a 3D problem.
 
 \begin{figure}
 \begin{center}
-\epsfig{file=speedupMCR-box128-order4.eps,width=.475\linewidth}  
-\epsfig{file=speedupMCR-box256-order4.eps,width=.475\linewidth}  
+  \includegraphics[width=\figWidth]{figures/speedupMCR-box128-order4}
+  \includegraphics[width=\figWidth]{figures/speedupMCR-box256-order4}
+  % \epsfig{file=speedupMCR-box128-order4.eps,width=.475\linewidth}  
+  % \epsfig{file=speedupMCR-box256-order4.eps,width=.475\linewidth}  
 \end{center}
 \caption{Parallel speedup,  MCR linux cluster.}
 \end{figure}
@@ -412,7 +460,8 @@ plotting\dotfill &   4.96e-01 &   9.92e-02 &   2.45e-07 &   4.994 \\
 
 \begin{figure}
 \begin{center}
-\epsfig{file=speedupMCR-pillBox4-order4.eps,width=.75\linewidth}  
+  \includegraphics[width=.75\linewidth]{figures/speedupMCR-pillBox4-order4}
+  % \epsfig{file=speedupMCR-pillBox4-order4.eps,width=.75\linewidth}  
 \end{center}
 \caption{Parallel speedup, pillBox4.order4, 3.2e6 grid points, MCR linux cluster.}
 \end{figure}
@@ -438,7 +487,8 @@ plotting\dotfill &   4.96e-01 &   9.92e-02 &   2.45e-07 &   4.994 \\
 
 \begin{figure}
 \begin{center}
-\epsfig{file=speedupMCR-pillBox6-order4.eps,width=.75\linewidth}  
+  \includegraphics[width=.75\linewidth]{figures/speedupMCR-pillBox6-order4}
+  % \epsfig{file=speedupMCR-pillBox6-order4.eps,width=.75\linewidth}  
 \end{center}
 \caption{Parallel speedup, pillBox6.order4, 10.2e6 grid points, MCR linux cluster.}
 \end{figure}
@@ -461,3 +511,39 @@ plotting............................  1.40e+00    2.80e-01    1.08e-07     2.105
 \caption{tube4.order4, 2.6e6 grid points, gps320 1 GHz Processor.}
  \label{tab:box} 
 \end{table}
+
+
+\clearpage
+\section{pppWave -- simple wave equation solver, Box300}
+
+Here are some results from the pppWave wave equation solver for a 3D problem.
+
+%------wave: nx=   300, steps=100, np=2,  cpu=4.68e+01 (s) cpu/step=4.677e-01   1
+%------wave: nx=   300, steps=100, np=4,  cpu=2.40e+01 (s) cpu/step=2.398e-01   1.95
+%------wave: nx=   300, steps=100, np=8,  cpu=1.26e+01 (s) cpu/step=1.261e-01   3.71
+%------wave: nx=   300, steps=100, np=16,  cpu=7.04e+00 (s) cpu/step=7.043e-02  6.6
+%------wave: nx=   300, steps=100, np=32,  cpu=3.77e+00 (s) cpu/step=3.766e-02  12.4
+
+\begin{table}[hbt]
+\begin{center}\footnotesize
+\begin{tabular}{|c|c|c|} \hline 
+     NP       & sec/step   & ratio \\   \hline\hline 
+     2        &  $.468$    & $ 1.  $   \\ 
+     4        &  $.240$    & $ 1.95$   \\ 
+     8        &  $.126$    & $ 3.7 $   \\ 
+    16        &  $.070$    & $ 6.6 $   \\ 
+    32        &  $.037$    & $12.4 $   \\ \hline 
+\end{tabular}		
+\end{center}		
+\caption{pppWave: wave equation solver $300^3$ box, 27.e6 grid points, MCR linux cluster, 2.4GHz Zeon processors.}
+ \label{tab:box} 
+\end{table}
+
+\begin{figure}
+\begin{center}
+  \includegraphics[width=.475\linewidth]{figures/speedupMCR-ppWave300}
+  % \epsfig{file=speedupMCR-ppWave300.eps,width=.475\linewidth}  
+\end{center}
+\caption{Parallel speedup, pppWave wave equation solver, MCR linux cluster.}
+\end{figure}
+
