@@ -43,6 +43,7 @@ echo to terminal 1
 # 
 $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $varDissSmooths=20; $sidebc="symmetry"; 
 $kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="pw"; 
+$plotPolarizationComponents=1;
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numBlocks=0; # 0 = default case of scattering from a "innerDomain" 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
@@ -144,7 +145,7 @@ $known
 $kxa= abs($kx);
 if( $kxa > 1. ){ $xb = int( $xb*$kxa +.5 )/$kxa; }  # we need to clip the plane wave on a period
 if( $kx < 0 ){ $xa=$xb; $xb=100.; }
-if( $leftBC eq "rbc" && $ic ne "gp" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
+if( $leftBC eq "rbc" && $ic ne "gp"  && $ic ne "gpw" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
 $cmd
 # initial condition bounding box $xa $xb $ya $yb $za $zb
 #  damp initial conditions at face (side,axis)=(0,1) of the box
@@ -167,6 +168,7 @@ kx,ky,kz $kx $ky $kz
 #
 # bc: all=dirichlet
 # bc: all=perfectElectricalConductor
+if( $rbc eq "pec" ){ $rbc="perfectElectricalConductor"; }
 bc: all=$rbc
 #
 if( $leftBC eq "planeWave" ){ $cmd="bc: $backGround(0,0)=planeWaveBoundaryCondition"; }else{ $cmd="#"; }
@@ -259,12 +261,13 @@ use variable dissipation $varDiss
 number of variable dissipation smooths $varDissSmooths
 use conservative difference $cons
 # order of dissipation 4
-debug 0
+debug $debug
 #
 cfl $cfl 
 plot divergence 0
 plot errors $checkErrors
 check errors $checkErrors
+plot polarization components $plotPolarizationComponents
 plot intensity $plotIntensity
 intensity option $intensityOption
 $intensityAveragingInterval=1.;
@@ -356,7 +359,7 @@ contour
   # vertical scale factor 0.2
   # min max -1.1 1.1
   # plot a contour plane in 3d 
-  if( $grid =~ /3d/ ){ $cmd="delete contour plane 2\n delete contour plane 1\n delete contour plane 0\n add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 0 0 0"; }else{ $cmd="#"; }
+  if( $grid =~ /3d/ || $grid =~ /Sphere/ || $grid =~ /Ellipsoid/ ){ $cmd="delete contour plane 2\n delete contour plane 1\n delete contour plane 0\n add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 0 0 0"; }else{ $cmd="#"; }
   $cmd
 exit
 $go

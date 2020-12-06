@@ -1,3 +1,15 @@
+cgmx -noplot tz -g=nonSquare8.order2 -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+
+***************************
+******* Sat Nov 28, 2020
+
+ADD OPTION TO PLOT N
+
+cgmx -noplot tz -g=sise4.order2.hdf -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+cgmx -noplot tz -g=sise4.order2.hdf -tz=poly -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -show=nlm.show -go=og
+
 
 ***************************
 ******* Sat Sept 19, 2020

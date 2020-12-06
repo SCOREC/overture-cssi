@@ -2041,8 +2041,8 @@ getErrors( int current, real t, real dt )
 
   for( int c=C.getBase(); c<=C.getBound(); c++ )
   {
-    solutionNorm(c)=getMaxValue(solutionNorm(c)); // fix me -- could do all at once
-    maximumError(c)=getMaxValue(maximumError(c));
+    solutionNorm(c)=ParallelUtility::getMaxValue(solutionNorm(c)); // fix me -- could do all at once
+    maximumError(c)=ParallelUtility::getMaxValue(maximumError(c));
   }
 
   if( debug & 2 )
@@ -2073,8 +2073,8 @@ getErrors( int current, real t, real dt )
       
       // printF("getErrors: domain=%d, numPolarizationVectors=%i\n",domain,numberOfPolarizationVectors);
 
-      maxErrPolarization(domain) = getMaxValue(maxErrPolarization(domain)); // fix me -- could do all at once
-      polarizationNorm(domain) = getMaxValue(polarizationNorm(domain)); // fix me -- could do all at once
+      maxErrPolarization(domain) = ParallelUtility::getMaxValue(maxErrPolarization(domain)); // fix me -- could do all at once
+      polarizationNorm(domain)   = ParallelUtility::getMaxValue(polarizationNorm(domain)); // fix me -- could do all at once
 
       if( numberOfPolarizationVectors>0 )
       {
@@ -2094,8 +2094,8 @@ getErrors( int current, real t, real dt )
       DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
       int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
 
-      maxErrNonlinear(domain) = getMaxValue(maxErrNonlinear(domain)); // fix me -- could do all at once
-      nonlinearNorm(domain)   = getMaxValue(nonlinearNorm(domain)); // fix me -- could do all at once
+      maxErrNonlinear(domain) = ParallelUtility::getMaxValue(maxErrNonlinear(domain)); // fix me -- could do all at once
+      nonlinearNorm(domain)   = ParallelUtility::getMaxValue(nonlinearNorm(domain)); // fix me -- could do all at once
 
       if( numberOfAtomicLevels>0 )
       {

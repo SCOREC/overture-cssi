@@ -18,6 +18,7 @@
 #define FOR_3(i1,i2,i3,I1,I2,I3) I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
 
 // Define macros for forcing functions:
+// #Include "forcing.h"
 //   (Ex).t = (1/eps)*[  (Hz).y ]
 //   (Ey).t = (1/eps)*[ -(Hz).x ]
 //   (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
@@ -375,684 +376,6 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 }
 
 
-
-// =============================================================================================
-/// \brief Create a grid function that holds all the things we can plot.
-/// \param t (input) : if t<0 then only fill the component names into the grid function v.
-// =============================================================================================
-realCompositeGridFunction& Maxwell::
-getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
-{
-  // if( true ) return gf[current].u; // test 
-    
-    assert( cgp!=NULL );
-    CompositeGrid & cg = *cgp;
-    const int numberOfDimensions = cg.numberOfDimensions();
-    
-  // const int numberOfComponents=mgp==NULL ? cgfields[current][0].getLength(3) : fields[current].getLength(3);
-
-    int numberOfComponents;
-        numberOfComponents= dbase.get<int>("numberOfComponents"); // *new way* Sept 01, 2017 *wdh*
-
-    const bool saveErrors = plotErrors && !(errp==NULL && cgerrp==NULL);
-    const bool saveDissipation =  plotDissipation && (( (artificialDissipation>0. || artificialDissipationCurvilinear>0.) 
-                                                                && (method==nfdtd || method==bamx)) || dissipation || cgdissipation);
-
-    const int & solveForAllFields = dbase.get<int>("solveForAllFields");
-
-    Range all;
-    const bool saveDsiDiss= saveDissipation && method==dsiMatVec && cg.numberOfDimensions()==3;
-    
-  // Determine the number of components to plot and the component numbers for the errors, etc.
-  //    nErr : component where the error is stored
-  //    ndd  : component where the dissipation is stored
-    int numberToPlot=numberOfComponents;                  // save fields
-    int nErr=numberToPlot;    numberToPlot += numberOfComponents*int(saveErrors);
-    int ndd=numberToPlot;     numberToPlot += numberOfComponents*int(saveDissipation);
-                                                        numberToPlot += cg.numberOfDimensions()*int( saveDsiDiss ); 
-    int nVarDis=numberToPlot; numberToPlot += int(useVariableDissipation);
-    int nDivE=numberToPlot;   numberToPlot += int(plotDivergence); 
-
-    int nDivH=-1;
-    int plotDivH = plotDivergence && (method==yee || solveForMagneticField ) && numberOfDimensions==3;
-    plotDivH = plotDivH || ( method==bamx && (solveForAllFields==1 || numberOfDimensions==3) );
-    if( plotDivH ) 
-    { // plot div(H) or div(B) too
-        nDivH=numberToPlot;  numberToPlot +=1;
-    }
-    if( method!=nfdtd && method!=yee && method!=sosup && method!=bamx )
-    {
-        numberToPlot += 2;  // something for Kyle
-    }
-    int nEdiss=numberToPlot;  numberToPlot += (cg.numberOfDimensions()+1)*int(e_cgdissipation ? 1 : 0);
-    int nRho=numberToPlot;    numberToPlot += int(plotRho); 
-    int nEnergyDensity=numberToPlot; numberToPlot += int(plotEnergyDensity);
-    int nIntensity=numberToPlot; numberToPlot += int(plotIntensity);
-
-  // There are 2 components of the harmonic field, Er and Ei for each component of E. 
-    int nHarmonicE=numberToPlot;  numberToPlot += 2*(cg.numberOfDimensions())*int(plotHarmonicElectricFieldComponents);
-
-    bool plotCurlE=false;     // for testing plot curl( E_known )
-    if( method==yee && false )
-        plotCurlE=true;
-    int nCurlE = numberToPlot; numberToPlot += 2*(1 + 2*(numberOfDimensions-2))*int(plotCurlE);
-    
-    const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-  // total number of polarization components per grid 
-    const IntegerArray & totalNumberOfPolarizationComponents =
-        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
-
-    const int numPolarizationVectors=6;  // [Px,Py,Pz, Mx,My,Mz]
-    bool plotPolarization = false && method==bamx && solveForAllFields && dispersionModel!=noDispersion; // *** FIX ME ***
-    bool plotPolarizationErrors = plotPolarization && saveErrors;
-    
-    const int nPolarization=numberToPlot;
-    const int nPolarizationErr=nPolarization+numPolarizationVectors;
-    if(  plotPolarization )
-        numberToPlot += numPolarizationVectors; // Plot polarization and magnetization vectors
-
-    if( plotPolarizationErrors )
-        numberToPlot += numPolarizationVectors;
-
-    
-    
-
-//   int numberToPlot=numberOfComponents*(1+int(saveErrors)+int(saveDissipation))
-//     + cg.numberOfDimensions()*int(saveDissipation&&method==dsiMatVec&&cg.numberOfDimensions()==3)
-//     + int(useVariableDissipation)
-//     + int(plotDivergence) + 2*(method!=nfdtd) + (cg.numberOfDimensions()+1)*int(e_cgdissipation ? 1 : 0);
-
-  // we build a grid function with more components (errors, dissipation) for plotting
-    v.updateToMatchGrid(cg,all,all,all,numberToPlot);
-
-    v=0;
-    if( method==nfdtd || method==yee || method==sosup || method==bamx ) 
-    {
-        for( int n=0; n<numberOfComponents; n++ )
-        {
-            if( mgp!=NULL )
-            {
-      	MappedGrid & mg = *mgp;
-      	if( mg.getGridType()==MappedGrid::structuredGrid )
-      	{
-        	  if ( method==nfdtd || method==sosup || method==bamx || ( n<fields[current].getLength(3) ) )
-          	    v.setName(fields[current].getName(n),n);
-        	  else if ( n<fields[current].getLength(3) ) 
-          	    v.setName(fields[current+numberOfTimeLevels].getName(n-fields[current].getLength(3)),n);
-              		  
-        	  if( saveErrors )
-          	    v.setName(errp->getName(n),n+numberOfComponents);
-      	}
-            }
-            else
-            {
-	// *wdh* v.setName(cgfields[current].getName(n),n);
-      	v.setName(getCGField(HField,current).getName(n),n);
-      	if( saveErrors )
-        	  v.setName(cgerrp->getName(n),n+numberOfComponents);
-      	if( saveDissipation )
-        	  v.setName(cgdissipation->getName(n),n+ndd);
-            }
-        	  
-        }
-    }
-    else
-    {
-        if( cg.numberOfDimensions()==2 )
-        {
-            int i=3;
-            v.setName("Hz",0);
-            v.setName("Ex",1);
-            v.setName("Ey",2);
-            if( method==dsiMatVec )
-            {
-      	v.setName("E.n",3);
-      	i=4;
-            }
-            if ( (dissipation ||cgdissipation )&& plotDissipation)
-            {
-      	v.setName("Hz dissp",i++);
-      	v.setName("E.n dissp",i++);
-      	v.setName("Ex dissp",i++);
-      	v.setName("Ey dissp",i++);
-            }
-            if( saveErrors )
-            {
-      	v.setName("Hz-err",i++);
-      	v.setName("Ex-err",i++);
-      	v.setName("Ey-err",i);
-            }
-        }
-        else
-        {
-            v.setName("Hx",hx);
-            v.setName("Hy",hy);
-            v.setName("Hz",hz);
-            v.setName("Ex",ex+3);
-            v.setName("Ey",ey+3);
-            v.setName("Ez",ez+3);
-            v.setName("H.n",ez+4);
-            v.setName("E.n",ez+5);
-        	  
-            int i=8;
-            if ( (dissipation ||cgdissipation) && plotDissipation)
-            {
-      	v.setName("H.n dissp",i++);
-      	v.setName("Hx dissp",i++);
-      	v.setName("Hy dissp",i++);
-      	v.setName("Hz dissp",i++);
-      	v.setName("E.n dissp",i++);
-      	v.setName("Ex dissp",i++);
-      	v.setName("Ey dissp",i++);
-      	v.setName("Ez dissp",i++);
-            }
-        	  
-            if( saveErrors )
-            {
-      	v.setName("Hx-err",i++);
-      	v.setName("Hy-err",i++);
-      	v.setName("Hz-err",i++);
-            	      
-      	v.setName("Ex-err",i++);
-      	v.setName("Ey-err",i++);
-      	v.setName("Ez-err",i);
-            }
-        	  
-        	  
-        }
-            
-    }
-
-    if( plotDivergence && (method==nfdtd || method==yee || method==sosup || method==bamx) )
-    {
-        if( method==bamx )
-        {
-            v.setName("div(D)",nDivE);
-            if( nDivH>=0 )
-                v.setName("div(B)",nDivH);
-        }
-        else
-        {
-            v.setName("div(E)",nDivE);
-            if( nDivH>=0 )
-                v.setName("div(H)",nDivH);
-        }
-        
-    }
-    if( plotCurlE && (method==nfdtd || method==yee || method==sosup || method==bamx) )
-    {
-        if( numberOfDimensions==3 )
-        {
-            v.setName("curlExr",nCurlE  );
-            v.setName("curlEyr",nCurlE+1);
-            v.setName("curlEzr",nCurlE+2);
-            v.setName("curlExi",nCurlE+3);
-            v.setName("curlEyi",nCurlE+4);
-            v.setName("curlEzi",nCurlE+5);
-        }
-        
-    }
-    
-    if( plotPolarization )
-    {
-        v.setName("Px",nPolarization+0);
-        v.setName("Py",nPolarization+1);
-        v.setName("Pz",nPolarization+2);
-        v.setName("Mx",nPolarization+3);
-        v.setName("My",nPolarization+4);
-        v.setName("Mz",nPolarization+5);
-    }
-    if( plotPolarizationErrors )
-    {
-        v.setName("Px error",nPolarizationErr+0);
-        v.setName("Py error",nPolarizationErr+1);
-        v.setName("Pz error",nPolarizationErr+2);
-        v.setName("Mx error",nPolarizationErr+3);
-        v.setName("My error",nPolarizationErr+4);
-        v.setName("Mz error",nPolarizationErr+5);
-    }
-    
-    if( useVariableDissipation )
-        v.setName("varDis",nVarDis);
-    if( plotRho )
-        v.setName("rho",nRho);
-    if( plotEnergyDensity )
-        v.setName("energyDensity",nEnergyDensity);
-
-    if( plotIntensity )
-    {
-        v.setName("intensity",nIntensity);
-    }
-        
-    if( plotHarmonicElectricFieldComponents )
-    {
-        v.setName("Exr",nHarmonicE+0);
-        v.setName("Exi",nHarmonicE+1);
-        v.setName("Eyr",nHarmonicE+2);
-        v.setName("Eyi",nHarmonicE+3);
-        if( numberOfDimensions==3 )
-        {
-            v.setName("Ezr",nHarmonicE+4);
-            v.setName("Ezi",nHarmonicE+5);
-        }
-    }
-        
-    if( t<0. )
-    {
-    // in this case we only assign the component names and return 
-        return v;
-    }
-
-
-//   if( plotIntensity || plotHarmonicElectricFieldComponents )
-//   {
-//     if( false && intensityOption==1 )
-//     {
-//       // compute the intensity using current and prev values
-//       int stepNumber=0;
-//       real nextTimeToPlot=0.;
-//       real dt=deltaT; // check this 
-//       computeIntensity(current,t,dt,stepNumber,nextTimeToPlot);
-//     }
-//   }
-  // printF(" plot: cg.numberOfComponentGrids() = %i \n",cg.numberOfComponentGrids());
-    
-
-    divEMax=0.;
-
-    if( method==yee )
-    {
-    // compute node centered fields for plotting -- this will fill in v ---
-        int option=3;
-        int iparam[5] = { nDivE,nDivH,0,0,0 }; // 
-        getValuesFDTD( option, iparam, current, t, deltaT, &v );
-    // ::display(v[0],"v after getValuesFDTD","%5.2f");
-        if( plotDivergence )
-        {
-            option=2; // compute div(E) ( and div(H) in 3D)
-            getValuesFDTD( option, iparam, current, t, deltaT, &v );
-        }
-        if( plotCurlE )
-        {
-            option=4; // compute curl(E)
-            iparam[0]=nCurlE;
-            getValuesFDTD( option, iparam, current, t, deltaT, &v );
-        }
-        
-    }
-
-
-    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-    {
-        MappedGrid & mg = mgp!=NULL ? *mgp : cg[grid];
-
-        realMappedGridFunction & u = mgp!=NULL ? fields[current] : getCGField(HField,current)[grid];
-        realMappedGridFunction & vg = v[grid];
-    
-#ifdef USE_PPP
-        realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
-        realSerialArray vLocal; getLocalArrayWithGhostBoundaries(vg,vLocal);
-    // const int includeGhost=1;
-    // ok = ParallelUtility::getLocalArrayBounds(u[grid],uLocal,I1,I2,I3,includeGhost); 
-#else
-        const realSerialArray & uLocal = u;
-        const realSerialArray & vLocal = vg;
-#endif
-
-        Range N=numberOfComponents;
-        if( method==yee )
-        {
-      // this is done above
-        }
-        else if( method==nfdtd  || method==sosup || method==bamx )
-        {
-            vLocal(all,all,all,N)=uLocal(all,all,all,N); // for now make a copy *** fix this **
-        }
-        else
-        {
-            Range N1 = fields[current].getLength(3);
-            Range N2 =fields[current+numberOfTimeLevels].getLength(3);
-#ifdef USE_PPP
-            realSerialArray f1Local; getLocalArrayWithGhostBoundaries(fields[current],f1Local);
-            realSerialArray f2Local; getLocalArrayWithGhostBoundaries(fields[current+numberOfTimeLevels],f2Local);
-#else
-            const realSerialArray & f1Local = fields[current];
-            const realSerialArray & f2Local = fields[current+numberOfTimeLevels];
-#endif
-            vLocal(all,all,all,N1) = f1Local(all,all,all,N1);
-            vLocal(all,all,all,N2) = f2Local(all,all,all,N2);
-        }
-
-
-        const bool & solveForScatteredField = dbase.get<bool>("solveForScatteredField");
-        
-        if( ( solveForScatteredField && plotTotalField ) &&
-      	cg.domainNumber(grid)==0 )  //   assumes domain 0 is the exterior domain
-        {
-      // *** NOTE: only add plane wave to the outer domain
-
-            const real cc= c*sqrt( kx*kx+ky*ky+kz*kz );
-      	
-            mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex);  // *** fix for rectangular ***
-      	
-      // // subtract off or add on the the incident field
-      // const real pm = plotScatteredField ? 1. : -1.;
-
-            const real pm = 1.;  // add on the incident field
-            
-            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-            getIndex(mg.dimension(),I1,I2,I3);
-            const int includeGhost=1;
-            bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost); 
-
-
-#ifdef USE_PPP
-            realSerialArray xLocal; getLocalArrayWithGhostBoundaries(mg.center(),xLocal);
-#else
-            const realSerialArray & xLocal = mg.center();
-#endif
-
-            if( ok )
-            {
-      	if( mg.numberOfDimensions()==2 )
-      	{
-        	  const realSerialArray & x = xLocal(I1,I2,I3,0);
-        	  const realSerialArray & y = xLocal(I1,I2,I3,1);
-
-        	  vLocal(I1,I2,I3,ex)-=pm*exTrue(x,y,t);
-        	  vLocal(I1,I2,I3,ey)-=pm*eyTrue(x,y,t);
-        	  vLocal(I1,I2,I3,hz)-=pm*hzTrue(x,y,t);
-        	  if( method==sosup )
-        	  {
-          	    vLocal(I1,I2,I3,ext)-=pm*extTrue(x,y,t);
-          	    vLocal(I1,I2,I3,eyt)-=pm*eytTrue(x,y,t);
-          	    vLocal(I1,I2,I3,hzt)-=pm*hztTrue(x,y,t);
-        	  }
-        	  
-      	}
-      	else
-      	{
-        	  const realSerialArray & x = xLocal(I1,I2,I3,0);
-        	  const realSerialArray & y = xLocal(I1,I2,I3,1);
-        	  const realSerialArray & z = xLocal(I1,I2,I3,2);
-
-        	  if( solveForElectricField )
-        	  {
-          	    vLocal(I1,I2,I3,ex)-=pm*exTrue3d(x,y,z,t);
-          	    vLocal(I1,I2,I3,ey)-=pm*eyTrue3d(x,y,z,t);
-          	    vLocal(I1,I2,I3,ez)-=pm*ezTrue3d(x,y,z,t);
-          	    if( method==sosup )
-          	    {
-            	      vLocal(I1,I2,I3,ext)-=pm*extTrue3d(x,y,z,t);
-            	      vLocal(I1,I2,I3,eyt)-=pm*eytTrue3d(x,y,z,t);
-            	      vLocal(I1,I2,I3,ezt)-=pm*eztTrue3d(x,y,z,t);
-          	    }
-          	    
-        	  }
-
-      	}
-            } // end if ok 
-      	
-        } // end if( plotScatteredField || plotTotalField )
-            
-        if( plotEnergyDensity )
-        {
-            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-            getIndex(mg.dimension(),I1,I2,I3);
-            const int includeGhost=1;
-            bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost); 
-
-            if( ok )
-            {
-      	c = cGrid(grid);
-      	eps = epsGrid(grid);
-      	mu = muGrid(grid);
-
-      	if( mg.numberOfDimensions()==2 )
-      	{
-	  // vLocal(I1,I2,I3,nEnergyDensity)= eps*( SQR(uLocal(I1,I2,I3,ex))+SQR(uLocal(I1,I2,I3,ey)) );
-        	  vLocal(I1,I2,I3,nEnergyDensity)= ( (.5*eps)*( SQR(uLocal(I1,I2,I3,ex))+SQR(uLocal(I1,I2,I3,ey)) )+
-                                   					     (.5*mu )*( SQR(uLocal(I1,I2,I3,hz)) ) );
-      	}
-      	else
-      	{
-                    Overture::abort("finish me -- we need H here");
-        	  vLocal(I1,I2,I3,nEnergyDensity)= eps*( SQR(uLocal(I1,I2,I3,ex))+SQR(uLocal(I1,I2,I3,ey))+
-                                                                                                  SQR(uLocal(I1,I2,I3,ez)) );
-      	}
-            } // end if ok 
-      	
-        } // end if( plotEnergyDensity )
-            
-        if( plotPolarization )
-        {
-      // --- plot P and M (sums) ----
-            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-            getIndex(mg.dimension(),I1,I2,I3);
-            const int includeGhost=1;
-
-      // const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid);
-
-            realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
-            OV_GET_SERIAL_ARRAY(real,p,pLocal);
-            bool ok = ParallelUtility::getLocalArrayBounds(p,pLocal,I1,I2,I3,includeGhost); 
-
-      // --- Errors in P ----
-            bool getErrorGridFunction=plotPolarizationErrors;
-            realMappedGridFunction & pErr = getDispersionModelMappedGridFunction( grid,current,getErrorGridFunction );
-            OV_GET_SERIAL_ARRAY(real,pErr,pErrLocal);
-
-      // printF("pLocal: [%d,%d][%d,%d][%d,%d][%d,%d]\n",
-      //        pLocal.getBase(0),pLocal.getBound(0),
-      //        pLocal.getBase(1),pLocal.getBound(1),
-      //        pLocal.getBase(2),pLocal.getBound(2),
-      //        pLocal.getBase(3),pLocal.getBound(3));
-
-      // printF("vLocal: [%d,%d][%d,%d][%d,%d][%d,%d]\n",
-      //        vLocal.getBase(0),vLocal.getBound(0),
-      //        vLocal.getBase(1),vLocal.getBound(1),
-      //        vLocal.getBase(2),vLocal.getBound(2),
-      //        vLocal.getBase(3),vLocal.getBound(3));
-            
-
-            std::vector<DispersiveMaterialParameters> & dmpVector = 
-      	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
-
-            if( ok )
-            {
-                if( numberOfMaterialRegions>1 )
-                {
-          // assert( pBodyMask!=NULL );
-          // const IntegerArray & matMask = *pBodyMask;  // material index 
-
-        	  intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
-        	  OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
-
-                    int i1,i2,i3;
-                    FOR_3D(i1,i2,i3,I1,I2,I3)
-                    {
-                        const int mr = matMask(i1,i2,i3);
-                        assert( mr>=0 && mr<numberOfMaterialRegions );
-                        
-                        DispersiveMaterialParameters & dmp = dmpVector[mr]; 
-                        const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
-                        int pc=0;
-                        for( int k1=0; k1<6; k1++ )
-                        {
-                            int ec=k1;
-                            vLocal(i1,i2,i3,nPolarization+ec)=0.;
-            	      if( plotPolarizationErrors )
-            		vLocal(i1,i2,i3,nPolarizationErr+ec)=0.;
-                            for( int k2=0; k2<6; k2++ )
-                            {
-                                for( int n=0; n<Np(k1,k2); n++ )
-                                {
-                                    vLocal(i1,i2,i3,nPolarization+ec) += pLocal(i1,i2,i3,pc);
-              		  if( plotPolarizationErrors )
-                		    vLocal(i1,i2,i3,nPolarizationErr+ec) += pErrLocal(i1,i2,i3,pc);
-
-                                    pc+=2;   // we store p and pt so increment by 2
-                                }
-                            }
-                        }
-                        
-                    }
-                    
-                }
-                else
-                {
-          // single material region
-                    for( int mr=0; mr<numberOfMaterialRegions; mr++ )
-                    {
-                        DispersiveMaterialParameters & dmp = dmpVector[mr]; 
-                        const IntegerArray & Np = dmp.getBianisotropicNp();
-                        int pc=0;
-                        for( int k1=0; k1<6; k1++ )
-                        {
-                            int ec=k1;
-                            vLocal(I1,I2,I3,nPolarization+ec)=0.;
-            	      if( plotPolarizationErrors )
-            		vLocal(I1,I2,I3,nPolarizationErr+ec)=0.;
-                            for( int k2=0; k2<6; k2++ )
-                            {
-                                for( int n=0; n<Np(k1,k2); n++ )
-                                {
-                                    vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
-              		  if( plotPolarizationErrors )
-                		    vLocal(I1,I2,I3,nPolarizationErr+ec) += pErrLocal(I1,I2,I3,pc);
-
-                                    pc+=2;   // we store p and pt so increment by 2
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-        } // end if plotPolarization
-
-
-
-        if( plotIntensity )
-        {
-            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-            getIndex(mg.dimension(),I1,I2,I3);
-            const int includeGhost=1;
-            bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost); 
-
-            if( pIntensity!=NULL )
-            {
-      	realCompositeGridFunction & intensity = *pIntensity;
-                #ifdef USE_PPP
-                    realSerialArray intensityLocal; getLocalArrayWithGhostBoundaries(intensity[grid],intensityLocal);
-                #else
-                    const realSerialArray & intensityLocal = intensity[grid];
-                #endif
-      	if( ok )
-      	{
-        	  vLocal(I1,I2,I3,nIntensity)= intensityLocal(I1,I2,I3);
-      	} // end if ok 
-            }
-            else
-            {
-      	vLocal(I1,I2,I3,nIntensity)=0.;
-            }
-        } // end if( plotIntensity )
-
-        if( plotHarmonicElectricFieldComponents )
-        {
-      // plot Er and Ei assuming : E(x,t) = Er(x)*cos(w*t) + Ei(x)*sin(w*t)
-
-            Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-            getIndex(mg.dimension(),I1,I2,I3);
-            const int includeGhost=1;
-            bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost); 
-
-            Range Rx2=2*numberOfDimensions;
-            if( pHarmonicElectricField!=NULL )
-            {
-      	realCompositeGridFunction & hef = *pHarmonicElectricField;
-                #ifdef USE_PPP
-                    realSerialArray hefLocal; getLocalArrayWithGhostBoundaries(hef[grid],hefLocal);
-                #else
-                    const realSerialArray & hefLocal = hef[grid];
-                #endif
-      	if( ok )
-      	{
-        	  vLocal(I1,I2,I3,Rx2+nHarmonicE)= hefLocal(I1,I2,I3,Rx2);
-      	} // end if ok 
-            }
-            else
-            {
-      	vLocal(I1,I2,I3,Rx2+nHarmonicE)=0.;
-            }
-        }
-
-
-        if( saveErrors )
-        {
-            realMappedGridFunction & err = errp!=NULL ? *errp : cgerrp!=NULL ? (*cgerrp)[grid] : u;    
-#ifdef USE_PPP
-            realSerialArray errLocal; getLocalArrayWithGhostBoundaries(err,errLocal);
-#else
-            const realSerialArray & errLocal = err;
-#endif
-            vLocal(all,all,all,N+numberOfComponents)=errLocal(all,all,all,N);
-        }
-            
-        if( useVariableDissipation )
-        {
-#ifdef USE_PPP
-            realSerialArray varDissLocal; getLocalArrayWithGhostBoundaries((*variableDissipation)[grid],varDissLocal);
-#else
-            const realSerialArray & varDissLocal = (*variableDissipation)[grid];
-#endif
-            vLocal(all,all,all,nVarDis)=varDissLocal;
-        }
-            
-        if( saveDissipation )
-        {
-#ifdef USE_PPP
-            realSerialArray dissLocal; getLocalArrayWithGhostBoundaries((*cgdissipation)[grid],dissLocal);
-#else
-            const realSerialArray & dissLocal = (*cgdissipation)[grid];
-#endif
-            vLocal(all,all,all,N+ndd)=dissLocal(all,all,all,N);
-        }
-
-        if( plotRho )
-        {
-            getChargeDensity( current,t,v,nRho );
-        }
-
-    // **New way **
-        if( method==nfdtd  || method==sosup || method==bamx )
-        {
-      // printF(" $$$$ plot: call getMaxDivergence $$$$\n");
-
-            if( plotDivergence )
-            {
-      	getMaxDivergence( current,t, &v,nDivE, &v,nRho);
-            }
-            else
-            {
-      	getMaxDivergence( current,t );
-            }   
-        }
-
-    }
-
-// #ifndef USE_PPP  // *wdh* 090709
-    if( plotDivergence && mgp==NULL ) 
-    {
-    // we need to interpolate the divergence to give values at the interp. pts. for plotting
-        v.interpolate(Range(nDivE,nDivE));
-    }
-// #endif
-    
-    return v;
-    
-}
 
 // =============================================================================================
 /// \brief Plot the polarization vectors for dispersion domains. Different domains will have
@@ -1719,19 +1042,24 @@ buildRunTimeDialog()
         dialog.setWindowTitle("Maxwell");
         dialog.setExitCommand("finish", "finish");
 
-        aString cmds[] = {"break","continue",
-                                            "movie mode","movie and save",
-                                            "contour", "E field lines",
-                                            "grid", "erase",
+        aString cmds[] = {"break",
+                                            "continue",
+                                            "movie mode",
+                                            "movie and save",
+                                            "contour",
+                                            "E field lines",
+                                            "grid",
+                                            "erase",
                                             "plot options...",
                                             "parameters...",
-                                            "plot P...",
-                                            "plot N...",
+                                            "plot distribution",
+                      // "plot P...",
+                      // "plot N...",
                       // "change the grid...",
                       // "show file options...","file output...",
                       // "pde parameters...",
                                             ""};
-        numberOfPushButtons=10;  // number of entries in cmds
+        numberOfPushButtons=11;  // number of entries in cmds
         int numRows=(numberOfPushButtons+1)/2;
         dialog.setPushButtons( cmds, cmds, numRows ); 
 
@@ -2002,9 +1330,9 @@ plot( int current, real t, real dt )
 
   // we need to know if the graphics is open on any processor -- fix this in the GraphicsInterface.
     int graphicsIsOn = ps.isGraphicsWindowOpen();
-    graphicsIsOn=getMaxValue(graphicsIsOn);
+    graphicsIsOn = ParallelUtility::getMaxValue(graphicsIsOn);
     int readingCommandFile = ps.readingFromCommandFile();
-    readingCommandFile=getMaxValue(readingCommandFile);
+    readingCommandFile = ParallelUtility::getMaxValue(readingCommandFile);
 
   // printF(" **** t=%e, graphicsIsOn=%i readingCommandFile=%i, processor=%i\n",t,graphicsIsOn,readingCommandFile, 
   //            myid);
@@ -2078,6 +1406,8 @@ plot( int current, real t, real dt )
     const int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
     int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
 
+    bool & plotPolarizationComponents = dbase.get<bool>("plotPolarizationComponents");
+    bool & plotNonlinearComponents    = dbase.get<bool>("plotNonlinearComponents");
 
     if( movieFrame>=0   )
     { // save a ppm file as part of a movie.
@@ -2256,6 +1586,13 @@ plot( int current, real t, real dt )
                     plotNonlinearVariables( current,t,dt );
                 }
 
+                else if( answer=="plot distribution" )
+                {
+                    ps.erase();
+                    PlotIt::plotParallelGridDistribution(cg,ps,psp );
+                }
+                
+
       	else if( answer=="E field lines" )
       	{
                     int uc,vc;
@@ -2415,6 +1752,14 @@ plot( int current, real t, real dt )
                 { printF("plotTotalField=%i\n",(int)plotTotalField);
                     replot=true; 
                 }
+
+                else if( plotOptionsDialog.getToggleValue(answer,"plot polarization components",plotPolarizationComponents) )
+                {
+                    printF("plotPolarizationComponents=%d : 1=plot all component polarization variables for dispersive materials.\n",
+                                  plotPolarizationComponents);
+                }
+        
+                else if( plotOptionsDialog.getToggleValue(answer,"plot nonlinear components",plotNonlinearComponents) ){}//
 
       	else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){replot=true;}//
       	else if( plotOptionsDialog.getToggleValue(answer,"plot divergence",plotDivergence) ){replot=true;}//

@@ -14,22 +14,22 @@
 #     -interp=[e/i]     : implicit or explicit interpolation
 #     -bc=[d|p]
 # Examples: 
-#    ogen noplot twoBoxesInterface -xFactor=1 -order=2 -interp=e    (creates twoBoxesInterfacee111.order2.hdf)
-#    ogen noplot twoBoxesInterface -factor=1 -order=2 -interp=e
-#    ogen noplot twoBoxesInterface -factor=2 -order=2 -interp=e
-#    ogen noplot twoBoxesInterface -factor=4 -order=2 -interp=e
-#    ogen noplot twoBoxesInterface -factor=8 -order=2 -interp=e
+#    ogen -noplot twoBoxesInterface -xFactor=1 -order=2 -interp=e    (creates twoBoxesInterfacee111.order2.hdf)
+#    ogen -noplot twoBoxesInterface -factor=1 -order=2 -interp=e
+#    ogen -noplot twoBoxesInterface -factor=2 -order=2 -interp=e
+#    ogen -noplot twoBoxesInterface -factor=4 -order=2 -interp=e
+#    ogen -noplot twoBoxesInterface -factor=8 -order=2 -interp=e
 # 
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -factor=1
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -factor=2
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -factor=4
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -factor=8
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -factor=16
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -factor=1
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -factor=2
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -factor=4
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -factor=8
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -factor=16
 # -- periodic
-#    ogen noplot twoBoxesInterface -order=4 -interp=e -bc=p -factor=2
+#    ogen -noplot twoBoxesInterface -order=4 -interp=e -bc=p -factor=2
 # -- rotated:
-#    ogen noplot twoBoxesInterface -factor=1 -order=2 -angle=45 -name="twoBoxesInterfaceRotated1.order2.hdf" 
-#    ogen noplot twoBoxesInterface -factor=1 -order=4 -angle=45 -name="twoBoxesInterfaceRotated1.order4.hdf" 
+#    ogen -noplot twoBoxesInterface -factor=1 -order=2 -angle=45 -name="twoBoxesInterfaceRotated1.order2.hdf" 
+#    ogen -noplot twoBoxesInterface -factor=1 -order=4 -angle=45 -name="twoBoxesInterfaceRotated1.order4.hdf" 
 # 
 #**************************************************************************
 $prefix="twoBoxesInterface"; $name=""; 
@@ -46,15 +46,18 @@ $bcRight= "100 1  1  1  1 1";
 $bclp = "1 100 -1 -1  -1 -1 ";  # periodic in the y/z-direction
 $bcrp= "100 1 -1 -1  -1 -1 ";  # periodic in the y/z-direction
 # 
+$xa=-1;    $xb=1.; 
 $ya= 0.;   $yb=.5; 
 $za= 0.;   $zb=.5; 
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 #
 # 
 # get command line arguments
-GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,"interp=s"=> \$interp,\
+GetOptions("order=i"=>\$order,"factor=i"=> \$factor,"xFactor=i"=> \$xFactor,"yFactor=i"=> \$yFactor,"zFactor=i"=> \$zFactor,\
+           "interp=s"=> \$interp,\
            "name=s"=>\$name,"bc=s"=>\$bc,"numGhost=i"=>\$numGhost,"prefix=s"=>\$prefix,"xFactorScale=f"=>\$xFactorScale,\
-	   "angle=f"=> \$angle,"rotAxis=i"=> \$rotAxis,"angle2=f"=> \$angle2,"rotAxis2=i"=> \$rotAxis2 );
+	   "angle=f"=> \$angle,"rotAxis=i"=> \$rotAxis,"angle2=f"=> \$angle2,"rotAxis2=i"=> \$rotAxis2,\
+           "xa=f"=> \$xa,"xb=f"=> \$xb );
 # 
 if( $factor>0 ){ $xFactor=$factor; $yFactor=$factor; $zFactor=$factor; }
 if( $order eq 2 ){ $orderOfAccuracy="second order"; $ng=2; }\
@@ -92,11 +95,11 @@ create mappings
 #  here is the left grid
 #
   Box
-    $xa=-1.0;  $xb=0.0; 
+    $xar=$xa;  $xbr=0.0; 
     set corners
-     $xa $xb $ya $yb $za $zb
+     $xar $xbr $ya $yb $za $zb
     lines
-      $nx=int( ($xb-$xa)/$dsx+1.5 );
+      $nx=int( ($xbr-$xar)/$dsx+1.5 );
       $ny=int( ($yb-$ya)/$dsy+1.5 );
       $nz=int( ($zb-$za)/$dsz+1.5 );
       $nx $ny $nz
@@ -111,11 +114,11 @@ create mappings
 #
 #
   Box
-    $xa= 0.0;  $xb=1.0; 
+    $xar= 0.0;  $xbr=$xb;
     set corners
-     $xa $xb $ya $yb $za $zb
+     $xar $xbr $ya $yb $za $zb
     lines
-      $nx=int( ($xb-$xa)/$dsx+1.5 );
+      $nx=int( ($xbr-$xar)/$dsx+1.5 );
       $nx $ny $nz
     boundary conditions
       $bcRight

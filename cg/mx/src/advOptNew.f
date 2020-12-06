@@ -1,7 +1,7 @@
 ! This file automatically generated from advOptNew.bf with bpp.
 !
 ! Optimized advance routines for cgmx
-!
+!   This version includes routines for dispersion
 !
 ! These next include files will define the macros that will define the difference approximations
 ! The actual macro is called below

@@ -19,7 +19,8 @@ echo to terminal 1
 #================================================================================================
 # 
 $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $varDissSmooths=20; $sidebc="symmetry"; 
-$kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="slabs"; 
+$kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="slabs";
+$debug=0; $plotPolarizationComponents=0; 
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numSlabs=0; # 0 = default case of scattering from a "innerDomain" 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
@@ -77,7 +78,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
   "dmFile=s"=>\$dmFile,"matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"matFile3=s"=>\$matFile3,"matFile4=s"=>\$matFile4,\
-  "matFileLeft=s"=>\$matFileLeft,"matFileRight=s"=>\$matFileRight,"probeFrequency=i"=>\$probeFrequency );
+  "matFileLeft=s"=>\$matFileLeft,"matFileRight=s"=>\$matFileRight,"probeFrequency=i"=>\$probeFrequency, \
+  "plotPolarizationComponents=i"=>\$plotPolarizationComponents );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -123,7 +125,7 @@ $dm
 $kxa= abs($kx);
 if( $kxa > 1. ){ $xb = int( $xb*$kxa +.5 )/$kxa; }  # we need to clip the plane wave on a period
 if( $kx < 0 ){ $xa=$xb; $xb=100.; }
-if( $leftBC eq "rbc" && $ic ne "gp" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
+if( $leftBC eq "rbc" && $ic ne "gpw" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
 $cmd
 # initial condition bounding box $xa $xb $ya $yb $za $zb
 #  damp initial conditions at face (side,axis)=(0,1) of the box
@@ -264,10 +266,11 @@ use variable dissipation $varDiss
 number of variable dissipation smooths $varDissSmooths
 use conservative difference $cons
 # order of dissipation 4
-debug 0
+debug $debug
 #
 cfl $cfl 
 plot divergence 0
+plot polarization components $plotPolarizationComponents
 plot errors $checkErrors
 check errors $checkErrors
 plot intensity $plotIntensity

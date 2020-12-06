@@ -373,7 +373,7 @@
         y0GP  =rpar(51)
         z0GP  =rpar(52)
         betaGP=rpar(53)
-        if( t.le.2*dt )then
+        if( t.le.2*dt .and. debug.gt.1 )then
           write(*,'(" adjustForIncident: 
      & incidentFieldType=gaussianPlaneWaveIncidentField")')
           write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,
@@ -471,9 +471,9 @@
               n2b=range(1,1)
               n3a=range(0,2)
               n3b=range(1,2)
-              if( debug.gt.0 )then
+              if( debug.gt.2 )then
                 write(*,'(" abc:adjustIncindent: side,axis,bc=",3i2," 
-     & n1a,n1b,...=",3(i3,1x))') side,axis,boundaryCondition(side,
+     & n1a,n1b,...=",6(i3,1x))') side,axis,boundaryCondition(side,
      & axis),n1a,n1b,n2a,n2b,n3a,n3b
                 write(*,'(" abc:adjustIncindent: gid=",4i4)') gid(0,0),
      & gid(1,0),gid(0,1),gid(1,1)
@@ -787,9 +787,9 @@
               n2b=range(1,1)
               n3a=range(0,2)
               n3b=range(1,2)
-              if( debug.gt.0 )then
+              if( debug.gt.2 )then
                 write(*,'(" abc:adjustIncindent: side,axis,bc=",3i2," 
-     & n1a,n1b,...=",3(i3,1x))') side,axis,boundaryCondition(side,
+     & n1a,n1b,...=",6(i3,1x))') side,axis,boundaryCondition(side,
      & axis),n1a,n1b,n2a,n2b,n3a,n3b
                 write(*,'(" abc:adjustIncindent: gid=",4i4)') gid(0,0),
      & gid(1,0),gid(0,1),gid(1,1)
@@ -1081,9 +1081,9 @@
               n2b=range(1,1)
               n3a=range(0,2)
               n3b=range(1,2)
-              if( debug.gt.0 )then
+              if( debug.gt.2 )then
                 write(*,'(" abc:adjustIncindent: side,axis,bc=",3i2," 
-     & n1a,n1b,...=",3(i3,1x))') side,axis,boundaryCondition(side,
+     & n1a,n1b,...=",6(i3,1x))') side,axis,boundaryCondition(side,
      & axis),n1a,n1b,n2a,n2b,n3a,n3b
                 write(*,'(" abc:adjustIncindent: gid=",4i4)') gid(0,0),
      & gid(1,0),gid(0,1),gid(1,1)
@@ -1397,9 +1397,9 @@
               n2b=range(1,1)
               n3a=range(0,2)
               n3b=range(1,2)
-              if( debug.gt.0 )then
+              if( debug.gt.2 )then
                 write(*,'(" abc:adjustIncindent: side,axis,bc=",3i2," 
-     & n1a,n1b,...=",3(i3,1x))') side,axis,boundaryCondition(side,
+     & n1a,n1b,...=",6(i3,1x))') side,axis,boundaryCondition(side,
      & axis),n1a,n1b,n2a,n2b,n3a,n3b
                 write(*,'(" abc:adjustIncindent: gid=",4i4)') gid(0,0),
      & gid(1,0),gid(0,1),gid(1,1)

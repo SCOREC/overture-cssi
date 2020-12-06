@@ -3,6 +3,7 @@
 #include "HDF_DataBase.h"
 #include "display.h"
 #include "BodyForce.h"
+#include "DispersiveMaterialParameters.h"
 
 // static int restartNumber=-1;
 
@@ -46,6 +47,36 @@ saveShow( int current, real t, real dt )
     saveParametersToShowFile();
   }
   
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+
+  bool isDispersiveSingleDomain=false;
+  bool isDispersiveMultiDomain=false;
+  if( cg.numberOfDomains()>1 )
+  {
+    for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+    {
+      const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+      // const bool isDispersive = dmp.isDispersiveMaterial() ||  (method==bamx && totalNumberOfPolarizationComponents(grid)>0);
+      isDispersiveMultiDomain = isDispersiveMultiDomain || dmp.isDispersiveMaterial();
+      if( isDispersiveMultiDomain ) break;
+    }
+    
+    if( isDispersiveMultiDomain )
+      printF("\n +++++ saveShow: MULTI-DOMAIN PROBLEM AND DISPERSIVE +++++++\n\n");
+
+  }
+  else
+  {
+    int domain=0;
+    const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+    isDispersiveSingleDomain = dmp.isDispersiveMaterial();
+    
+    if( isDispersiveSingleDomain )
+      printF("\n +++++ saveShow: SINGLE-DOMAIN PROBLEM AND DISPERSIVE +++++++\n\n");
+  }
+  
+
 
   showFile.startFrame();
 
@@ -114,8 +145,6 @@ saveShow( int current, real t, real dt )
     }
   }
   
-  assert( cgp!=NULL );
-  CompositeGrid & cg= *cgp;
   
   char buffer[80]; 
   aString showFileTitle[5];
@@ -126,107 +155,6 @@ saveShow( int current, real t, real dt )
 
   for( int i=0; showFileTitle[i]!=""; i++ )
     showFile.saveComment(i,showFileTitle[i]);
-
-  // *** use getAugmentedSolution to form the solution for the show file ****
-
-
-
-
-    // save parameters
-//      db.put("incompressibleNavierStokes","pde");
-//      db.put(parameters.nu,"nu");
-//      db.put(parameters.reynoldsNumber,"reynoldsNumber");
-//      db.put(parameters.machNumber,"machNumber");
-
-//      db.put(pc,"pressureComponent");
-//      db.put(uc,"uComponent");
-//      db.put(vc,"vComponent");
-//      db.put(wc,"wComponent");
-
-/* -----------------------------------------------------------------------------
-  aString *showVariableName=parameters.showVariableName;
-  const IntegerArray & showVariable = parameters.showVariable;
-
-  // first count the number of variables we are going to save
-  int numberOfShowVariables=0;
-  int i;
-  for( i=0; showVariableName[i]!=""; i++ )
-    if( showVariable(i)>=0 )
-      numberOfShowVariables++;
-  Range all;
-  realCompositeGridFunction q(cg0,all,all,all,numberOfShowVariables);  
-  q.setOperators(*gf0.u.getOperators());
-
-  // save some parameters for a restart
-  db.put(gf0.t,"t");
-
-
-  aString solutionName[1] = { "u" }; // *******************************************
-  q.setName(solutionName[0]);                           // name grid function
-
-  int grid;
-  i=-1;
-  for( int n=0; showVariableName[n]!=""; n++ )
-  {
-    // printF(" n=%i showVariableName=%s showVariable=%i\n",n,(const char*)(showVariableName[n]),showVariable(n));
-    
-    if( showVariable(n)< 0 )
-      continue;
-
-    i++;
-    
-    q.setName( showVariableName[n],i);
-
-    if( showVariable(n) < parameters.numberOfComponents )
-    {
-      for( grid=0; grid<cg0.numberOfComponentGrids(); grid++ )
-        q[grid](all,all,all,i)=u[grid](all,all,all,showVariable(n));
-    }
-    else if( showVariableName[n]=="divergence" )
-    {
-      for( grid=0; grid<cg0.numberOfComponentGrids(); grid++ )
-        if( cg0.numberOfDimensions()==1 )
-          q[grid](all,all,all,i)=u[grid].x()(all,all,all,uc);
-        else if( cg0.numberOfDimensions()==2 )
-	{
-          q[grid](all,all,all,i)=u[grid].x()(all,all,all,uc)+u[grid].y()(all,all,all,vc); 
-	  if( parameters.isAxisymmetric() )
-	  {
-            // div(u) = u.x + v.y + v/y for y>0   or u.x + 2 v.y at y=0
-	    RealArray radiusInverse = 1./max(REAL_MIN,cg0[grid].vertex()(all,all,all,axis2));
-            Index Ib1,Ib2,Ib3;
-            for( int axis=0; axis<cg0.numberOfDimensions(); axis++ )
-	    {
-	      for( int side=0; side<=1; side++ )
-	      {
-		if( cg0[grid].boundaryCondition(side,axis)==OB_Parameters::axisymmetric )
-		{
-		  getBoundaryIndex(cg0[grid].gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-		  radiusInverse(Ib1,Ib2,Ib3)=0.;
-		  q[grid](Ib1,Ib2,Ib3,i)+=u[grid].y()(Ib1,Ib2,Ib3,vc);
-		}
-	      }
-	    }
-	    q[grid](all,all,all,i)+=u[grid](all,all,all,vc)*radiusInverse;
-	  }
-	}
-        else
-          q[grid](all,all,all,i)=u[grid].x()(all,all,all,uc)+u[grid].y()(all,all,all,vc)
-                                +u[grid].z()(all,all,all,wc);
-    }
-    else 
-    {
-      cout << "saveShow: unknown showVariableName = " << (const char*) showVariableName[n] << endl;
-      for( grid=0; grid<cg0.numberOfComponentGrids(); grid++ )
-        q[grid](all,all,all,i)=0.;
-    }
-  }
-  q.interpolate();          // interpolate to get divergence correct  
-  
-  ------------------------------------------------------- */
-
-
-//    realMappedGridFunction & fieldCurrent = mgp==NULL ? getCGField(HField,current)[grid] : fields[current];
 
 
   if( mgp==NULL )

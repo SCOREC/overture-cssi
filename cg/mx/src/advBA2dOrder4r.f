@@ -2378,7 +2378,7 @@ c===============================================================================
        else
          numComp=6
        end if
-       if( t.le.2*dt )then
+       if( t.le.2*dt .and. debug.gt.0 )then
          write(*,*) 'Inside advBA2dOrder4r...'
          write(*,'("addForcing=",i2, " solveForAllFields=",i2," 
      & useSuperGrid=",i2)') addForcing,solveForAllFields
@@ -2413,7 +2413,7 @@ c===============================================================================
          Ki(2,1,mr) = K0i(5,1,mr)
          Ki(2,2,mr) = K0i(5,5,mr)
        end do
-       if( t.lt.dt )then
+       if( t.lt.dt .and. debug.gt.0 )then
          write(*,*) 'materialType=',materialType
          write(*,*) 'numberOfMaterialRegions=',numberOfMaterialRegions
          do mr=0,numberOfMaterialRegions-1
@@ -2453,7 +2453,8 @@ c===============================================================================
      & maxNumPolarizationTerms")');
             stop 1234
          end if
-         if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+         if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. 
+     & debug.gt.0 )then
            ! ---- Dispersive Maxwell ----
            write(*,'("--advOpt-- dispersionModel=",i4," 
      & numPolarizationTerms=",i6)') dispersionModel,
@@ -2520,7 +2521,8 @@ c===============================================================================
        do m=0,10
           fv(m)=0.  ! temp for forcing
        end do
-       if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+       if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. 
+     & debug.gt.0 )then
           write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",3i2)
      & ') dispersionModel,pxc,pyc,pzc
        end if
@@ -2539,7 +2541,7 @@ c===============================================================================
              ! TEZ polarization
                if( dispersionModel.eq.noDispersion )then
                  if( useSuperGrid.eq.0  ) then
-                     if( t.lt.2*dt )then
+                     if( t.lt.2*dt .and. debug.gt.0 )then
                        write(*,'("advBA: advance BA dim=2, order=4 
      & grid=rectangular polar=TEZ... t=",e10.2)') t
                      end if
@@ -2585,13 +2587,13 @@ c===============================================================================
                      end if ! end MOL
                  else
                    ! --- SUPERGRID ---
-                   if( t.le.3*dt )then
+                   if( t.le.3*dt .and. debug.gt.0 )then
                      write(*,'(" USE SUPERGRID...")' )
                    end if
                        !  --- TWO-DIMENSIONS ---
                        if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -2639,7 +2641,7 @@ c===============================================================================
                            end if ! end MOL
                        else if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.0 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -2687,7 +2689,7 @@ c===============================================================================
                            end if ! end MOL
                        else if( useAbsorbingLayer(0).eq.0 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -2733,7 +2735,7 @@ c===============================================================================
                             end if
                            end if ! end MOL
                        else
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -2782,7 +2784,7 @@ c===============================================================================
                  end if
                else
                  if( useSuperGrid.eq.0  ) then
-                     if( t.lt.2*dt )then
+                     if( t.lt.2*dt .and. debug.gt.0 )then
                        write(*,'("advBA: advance BA GDM dim=2 order=4 
      & grid=rectangular polar=TEZ... t=",e10.2)') t
                      end if
@@ -3011,13 +3013,13 @@ c===============================================================================
                      end if
                  else
                    ! --- SUPERGRID ---
-                   if( t.le.3*dt )then
+                   if( t.le.3*dt .and. debug.gt.0 )then
                      write(*,'(" USE SUPERGRID...")' )
                    end if
                        !  --- TWO-DIMENSIONS ---
                        if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -3253,7 +3255,7 @@ c===============================================================================
                            end if
                        else if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.0 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -3489,7 +3491,7 @@ c===============================================================================
                            end if
                        else if( useAbsorbingLayer(0).eq.0 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -3721,7 +3723,7 @@ c===============================================================================
                             end if
                            end if
                        else
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=TEZ... t=",e10.2)') t
                            end if
@@ -3958,7 +3960,7 @@ c===============================================================================
            else
                if( dispersionModel.eq.noDispersion )then
                  if( useSuperGrid.eq.0  ) then
-                     if( t.lt.2*dt )then
+                     if( t.lt.2*dt .and. debug.gt.0 )then
                        write(*,'("advBA: advance BA dim=2, order=4 
      & grid=rectangular polar=NONE... t=",e10.2)') t
                      end if
@@ -4011,13 +4013,13 @@ c===============================================================================
                      end if ! end MOL
                  else
                    ! --- SUPERGRID ---
-                   if( t.le.3*dt )then
+                   if( t.le.3*dt .and. debug.gt.0 )then
                      write(*,'(" USE SUPERGRID...")' )
                    end if
                        !  --- TWO-DIMENSIONS ---
                        if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4072,7 +4074,7 @@ c===============================================================================
                            end if ! end MOL
                        else if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.0 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4127,7 +4129,7 @@ c===============================================================================
                            end if ! end MOL
                        else if( useAbsorbingLayer(0).eq.0 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4179,7 +4181,7 @@ c===============================================================================
                             end if
                            end if ! end MOL
                        else
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA dim=2, 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4234,7 +4236,7 @@ c===============================================================================
                  end if
                else
                  if( useSuperGrid.eq.0  ) then
-                     if( t.lt.2*dt )then
+                     if( t.lt.2*dt .and. debug.gt.0 )then
                        write(*,'("advBA: advance BA GDM dim=2 order=4 
      & grid=rectangular polar=NONE... t=",e10.2)') t
                      end if
@@ -4460,13 +4462,13 @@ c===============================================================================
                      end if
                  else
                    ! --- SUPERGRID ---
-                   if( t.le.3*dt )then
+                   if( t.le.3*dt .and. debug.gt.0 )then
                      write(*,'(" USE SUPERGRID...")' )
                    end if
                        !  --- TWO-DIMENSIONS ---
                        if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4697,7 +4699,7 @@ c===============================================================================
                            end if
                        else if( useAbsorbingLayer(0).eq.1 .and. 
      & useAbsorbingLayer(1).eq.0 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -4928,7 +4930,7 @@ c===============================================================================
                            end if
                        else if( useAbsorbingLayer(0).eq.0 .and. 
      & useAbsorbingLayer(1).eq.1 )then
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -5156,7 +5158,7 @@ c===============================================================================
                             end if
                            end if
                        else
-                           if( t.lt.2*dt )then
+                           if( t.lt.2*dt .and. debug.gt.0 )then
                              write(*,'("advBA: advance BA GDM dim=2 
      & order=4 grid=rectangular polar=NONE... t=",e10.2)') t
                            end if
@@ -5396,7 +5398,7 @@ c===============================================================================
           !    2D : 4th order (rectangular)
           ! ------------------------------------------------------------------------------
           if( addDissipation )then
-            if( t.le.3*dt )then
+            if( t.le.3*dt .and. debug.gt.0 )then
               write(*,'("advBA: order=4: addDissipation=",l2," adc=",
      & e10.2)') addDissipation,adc
             end if

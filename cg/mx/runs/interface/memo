@@ -1,3 +1,521 @@
+*****************************************
+******* Tues Dec 1, 2020
+
+4TH ORDER 3D GDM:  LOOKS OK
+mpirun -np 1 $cgmx -noplot  interface -numberOfParallelGhost=3 -g=tbiGride2.order4.ng3 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0.5 -tp=.01 -tf=.03 -ic=pmic -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=go 
+
+-np=2,4 
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=3.539e-02 max-err = 2.686e-08
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.865e-02 max-err = 1.867e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-05,1.46e-05,4.10e-08,], max (u):[5.09e-01,8.60e-01,4.10e-08,] (3 steps)
+
+-np=1
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=3.539e-02 max-err = 2.686e-08
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.865e-02 max-err = 1.867e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-05,1.46e-05,4.10e-08,], max (u):[5.09e-01,8.60e-01,4.10e-08,] (3 steps)
+
+
+
+
+mpirun -np 1 $cgmx -noplot  interface -numberOfParallelGhost=3 -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0.5 -tp=.01 -tf=.03 -ic=pmic -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=go 
+
+
+
+*****************************************
+******* Mon Nov 30, 2020
+
+FIX PARALLEL 3D INTERFACE ORDER=4 --> interface3dOrder4.bf 
+
+
+TO-DO 
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4p -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0 -tp=.01 -tf=1 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+TO-DO 
+cgmx -noplot  interface -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=0 -tp=.01 -tf=1 -ic=gp -x0=-.5 -diss=0. -bc=d -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=.0 -dm=gdm -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=og
+
+
+
+--------- SHORTER DOMAIN:
+mpirun -np 1 $cgmx -noplot  interface -numberOfParallelGhost=3 -g=tbiGride2.order4.ng3 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=.5 -tp=.01 -tf=.03 -ic=pmic -x0=-.5 -diss=0 -bc=d -dm=none -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=go 
+
+
+NOTE** numberOfParallelGhost=3 is CURRENTLY NEEDED 
+
+-np=2,3,4 : fixes to stage 1 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.37e-05,1.54e-05,4.24e-08,], max (u):[5.10e-01,8.58e-01,4.24e-08,] (3 steps)
+
+-np=2 original: **differs***
+>>> t=3.00e-02 dt=1.0e-02 max errors:[5.12e-05,3.09e-05,1.50e-07,], max (u):[5.10e-01,8.58e-01,1.50e-07,] (3 steps)
+
+-np=1
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.37e-05,1.54e-05,4.24e-08,], max (u):[5.10e-01,8.58e-01,4.24e-08,] (3 steps)
+
+
+
+
+
+
+NO-GDM: 
+mpirun -np 4 $cgmx -noplot  interface -numberOfParallelGhost=3 -g=twoBoxesInterfacee4.order4 -interfaceNormal=1 0 0 -interfacePoint=0 .25 .25  -eps2=2 -kx=1 -ky=.5 -tp=.01 -tf=.03 -ic=pmic -x0=-.5 -diss=0 -bc=d -dm=none -cons=0 -interfaceIts=1 -interfaceOmega=1 -go=go 
+
+
+-np=4
+new: *broken*
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.25e-03,1.16e-03,1.56e-05,], max (u):[5.11e-01,9.54e-01,1.56e-05,] (3 steps)
+old: 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.33e-06,1.55e-06,3.23e-08,], max (u):[5.11e-01,9.54e-01,3.23e-08,] (3 steps)
+
+-np=1,2 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.31e-06,1.55e-06,1.62e-08,], max (u):[5.11e-01,9.54e-01,1.62e-08,] (3 steps)
+
+serial:
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.31e-06,1.55e-06,1.62e-08,], max (u):[5.11e-01,9.54e-01,1.62e-08,] (3 steps)
+
+*****************************************
+******* Thurs Nov 25, 2020
+
+
+REVISIT PARALLEL
+**BUG FIXED ** -- ParallelGridUtiity.bC --> internalGhostBC
+
+OK: 
+mpirun -np 4 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee8p.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=og
+
+
+mpirun -np 1 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+*fixed* : np=2
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.31e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+>>> t=2.00e-01 dt=1.0e-01 max errors:[8.10e-03,2.98e-03,4.55e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+
+-np=1 
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.31e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+
+*******************************************
+************* Wed Nov. 25, 2020
+
+CHECK PERIODIC AND GDM
+
+-- looks ok: 
+mpirun -np 4 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee8p.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.02 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+$cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee2p.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.02 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+$cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee2p.order4.ng3 -eps2=2 -npv=0 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.02 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+
+
+mpirun -np 8 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee32.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.5 -tf=1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+-np=8
+total time..........................  7.65e+00    1.52e-02    7.37e-08   100.000   7.655e+00   7.655e+00
+
+>>> t=1.00e+00 dt=2.0e-03 max errors:[3.18e-08,5.55e-08,2.39e+00,], max (u):[6.85e-01,7.00e-01,1.32e+00,] (504 steps)
+
+-np=4
+total time..........................  1.15e+01    2.29e-02    1.11e-07   100.000   1.153e+01   1.153e+01
+
+>>> t=1.00e+00 dt=2.0e-03 max errors:[3.18e-08,5.55e-08,2.39e+00,], max (u):[6.85e-01,7.00e-01,1.32e+00,] (504 steps)
+
+++++++++++++++++++++++++++++++++++++++=
+TEST -- do we need a Jacobi update for interfaces ?? --> **YES** we need to use the STAGE I second-order updates for ghost line 1
+
+$cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=1 -useJacobiInterfaceUpdate=1 -go=go
+
+NO JACOBI
+>>> t=2.00e-01 dt=1.0e-01 max errors:[3.64e-03,6.67e-03,7.90e-03,], max (u):[7.51e-01,7.47e-01,1.07e+00,] (2 steps)
+
+JACOBI: 
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.31e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+
+*******************************************
+************* Tues Nov. 24, 2020
+
+--- TEST GDM
+
+mpirun -np 8 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee8.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=3 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=og
+
+
+mpirun -np 1 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+-np=2
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.36e-05,7.03e-05,2.91e-01,], max (u):[7.55e-01,7.45e-01,1.10e+00,] (3 steps)
+-np=1
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.36e-05,7.03e-05,2.91e-01,], max (u):[7.55e-01,7.45e-01,1.10e+00,] (3 steps)
+
+
+
+
+--- TEST PARALLEL -- looks ok
+mpirun -np 8 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee8.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic  -useSosupDissipation=1 -diss=0 -bc=d -debug=0 -debug=1 -go=og
+
+mpirun -np 4 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee4.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic  -useSosupDissipation=1 -diss=0 -bc=d -debug=0 -debug=1 -go=og
+
+*******************************************
+************* Mon Nov. 23, 2020
+
+CONTINUE -- check parallel: solutions differ near parallel boundary on the interface -> *why?
+
+TRY 4 parallel ghost 
+mpirun -np 1 $cgmx -noplot interface -numberOfParallelGhost=4 -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+
+ADD 3 PARALLEL GHOST 
+
+
+mpirun -np 2 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.14e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+mpirun -np 1 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.31e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+*******************************************
+************* Sun Nov. 22, 2020
+
+>>>>>>>>> START ON CheckParallel CLASS
+
+
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=7 -go=go
+
+
+
+
+
+
+WRITE A SHOW FILE TO SHOW DIFF's using comp 
+
+mpirun -np 4 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee4.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.1 -tf=.5 -ic=pmic  -useSosupDissipation=1 -diss=0 -bc=d -debug=0 -debug=3 -show=tsiNP4.show -go=go
+
+>>> t=5.00e-01 dt=2.0e-02 max errors:[5.29e-05,9.17e-05,1.50e-04,], max (u):[7.57e-01,7.57e-01,1.07e+00,] (25 steps)
+
+mpirun -np 1 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee4.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.1 -tf=.5 -ic=pmic  -useSosupDissipation=1 -diss=0 -bc=d -debug=0 -debug=3 -show=tsiNP1.show -go=go
+
+>>> t=5.00e-01 dt=2.0e-02 max errors:[5.27e-05,9.13e-05,1.49e-04,], max (u):[7.57e-01,7.57e-01,1.07e+00,] (25 steps)
+
+
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.02 -ic=pmic -diss=0 -bc=d -debug=0 -debug=3 -show=tsiNP2.show -go=go
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.02 -ic=pmic -diss=0 -bc=d -debug=0 -debug=3 -show=tsiNP1.show -go=go
+
+
+
+-----------ADD FIX FOR Stage I interface at 2nd-order
+
+
+TZ : 
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go
+
+-np=2 : not exact 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.70e-04,6.04e-05,1.26e-04,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+-np=1 : exact 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.00e-15,1.33e-15,7.77e-16,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+
+
+
+
+
+TAKE A BIG STEP TO SHOW DIFF's ? 
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.2 -tf=.4 -ic=pmic -diss=0 -bc=d -debug=0 -debug=3 -go=go
+
+-np=2
+>>> t=2.00e-01 dt=2.0e-01 max errors:[5.20e-02,5.02e-02,7.35e-02,], max (u):[7.42e-01,7.47e-01,1.07e+00,] (1 steps)
+>>> t=4.00e-01 dt=2.0e-01 max errors:[4.09e+00,3.77e+00,5.78e+00,], max (u):[3.69e+00,3.45e+00,5.22e+00,] (2 steps)
+
+-np=1
+>>> t=2.00e-01 dt=2.0e-01 max errors:[5.20e-02,5.02e-02,7.35e-02,], max (u):[7.42e-01,7.47e-01,1.07e+00,] (1 steps)
+>>> t=4.00e-01 dt=2.0e-01 max errors:[4.09e+00,3.77e+00,5.78e+00,], max (u):[3.69e+00,3.45e+00,5.22e+00,] (2 steps)
+
+
+
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -cfl=1000 -tp=.1 -tf=.2 -ic=pmic -diss=0 -bc=d -debug=0 -debug=3 -go=go
+
+-np=2
+>>> t=1.00e-01 dt=1.0e-01 max errors:[4.37e-04,4.23e-04,6.19e-04,], max (u):[7.57e-01,7.49e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-01 dt=1.0e-01 max errors:[8.10e-03,2.98e-03,4.55e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+-np=1
+>>> t=1.00e-01 dt=1.0e-01 max errors:[4.37e-04,4.23e-04,6.19e-04,], max (u):[7.57e-01,7.49e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-01 dt=1.0e-01 max errors:[4.07e-03,2.34e-03,2.31e-03,], max (u):[7.52e-01,7.47e-01,1.07e+00,] (2 steps)
+
+
+
+
+
+
+exact: 
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go
+
+*******************************************
+************* Sat Nov. 21, 2020
+
+++++ Fortran debug files from interface3d: .fdebug 
+
+
+ORDER=4 NO-GDM
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -debug=0 -debug=3 -go=go
+
+
+
+
+
+>>>>>>>>> -np=2
+
+myid=  0 n1a,n1b,...  =    0    0    0    9    0    0
+myid=  0 m1a,m1b,...  =    0    0    0    9    0    0
+myid=  1 n1a,n1b,...  =    0    0   10   20    0    0
+myid=  1 m1a,m1b,...  =    0    0   10   20    0    0
+myid=  1 nn1a,nn1b,...=    0    0    8   20    0    0
+myid=  0 nn1a,nn1b,...=    0    0    0   11    0    0
+myid=  0 mm1a,mm1b,...=    0    0    0   11    0    0
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.68e-06,6.01e-06,], max (u):[7.55e-01,7.43e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[5.41e-05,2.37e-05,2.96e-05,], max (u):[7.51e-01,7.45e-01,1.07e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.45e-04,5.77e-05,7.36e-05,], max (u):[7.57e-01,7.49e-01,1.07e+00,] (3 steps)
+
+
+
+>>>>>>>>> -np=1
+
+
+myid=  0 n1a,n1b,...  =    0    0    0   20    0    0
+myid=  0 m1a,m1b,...  =    0    0    0   20    0    0
+myid=  0 nn1a,nn1b,...=    0    0    0   20    0    0
+myid=  0 mm1a,mm1b,...=    0    0    0   20    0    0
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.68e-06,6.01e-06,], max (u):[7.55e-01,7.43e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.49e-05,1.10e-05,1.79e-05,], max (u):[7.51e-01,7.45e-01,1.07e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.77e-05,2.37e-05,4.38e-05,], max (u):[7.57e-01,7.49e-01,1.07e+00,] (3 steps)
+
+
+
+
+
+
+SHORT DOMAIN SO PROBLEM SHULD OCCUR WITH -np=2
+
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -debug=0 -go=go 
+
+ ======== Parallel Distribution for cgmx: after getFromADataBase (np=2)============
+ numberOfGrids=2, gridDistributionList.size()=2l 
+  grid=0: procs=2 [0,1], proc-decomp=[1]x[2]x[1], pts=297=[11]x[27]x[1], pts/proc=143=[11]x[13]x[1], ratio=13/11=  1, ghost=[2,2,0]
+  grid=1: procs=2 [0,1], proc-decomp=[1]x[2]x[1], pts=297=[11]x[27]x[1], pts/proc=143=[11]x[13]x[1], ratio=13/11=  1, ghost=[2,2,0]
+
+
+>>>>>>> -np=2
+myid=  0 n1a,n1b,...  =    0    0    0    9    0    0
+myid=  0 m1a,m1b,...  =    0    0    0    9    0    0
+myid=  0 nn1a,nn1b,...=    0    0    0   11    0    0
+myid=  0 mm1a,mm1b,...=    0    0    0   11    0    0
+myid=  1 n1a,n1b,...  =    0    0   10   20    0    0
+myid=  1 m1a,m1b,...  =    0    0   10   20    0    0
+myid=  1 nn1a,nn1b,...=    0    0    8   20    0    0
+myid=  1 mm1a,mm1b,...=    0    0    8   20    0    0
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.19e-06,3.80e-06,1.09e+00,], max (u):[7.54e-01,7.40e-01,1.09e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[4.74e-05,2.06e-05,2.92e-01,], max (u):[7.50e-01,7.43e-01,1.09e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.25e-04,4.80e-05,2.91e-01,], max (u):[7.55e-01,7.45e-01,1.10e+00,] (3 steps)
+
+
+
+-np=1 
+myid=  0 n1a,n1b,...  =    0    0    0   20    0    0
+myid=  0 m1a,m1b,...  =    0    0    0   20    0    0
+myid=  0 nn1a,nn1b,...=    0    0    0   20    0    0
+myid=  0 mm1a,mm1b,...=    0    0    0   20    0    0
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.19e-06,3.80e-06,1.09e+00,], max (u):[7.54e-01,7.40e-01,1.09e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[9.88e-06,1.13e-05,2.92e-01,], max (u):[7.50e-01,7.43e-01,1.09e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.29e-05,3.53e-05,2.91e-01,], max (u):[7.55e-01,7.45e-01,1.10e+00,] (3 steps)
+
+
+
+>>>>>>>>>>>>>>>>>>>>>> TEST TZ -- looks OK ?!
+
+exact 
+mpirun -np 4 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go
+
+
+ORDER=4:  exact degree=(4,2) degree=(4,3), degree=(4,4) exact 
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.66e-15,1.78e-15,1.11e-15,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+ORDER=4:  exact degree=(4,2) ... OK!!
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=2 -diss=0 -bc=d -go=go
+
+
+
+>>>>>>>>>>.I think new non-disperisve should be broken too at 4th-order,
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -debug=0 -go=go
+
+-np=1,2
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.69e-06,6.03e-06,], max (u):[7.55e-01,7.55e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.49e-05,1.10e-05,1.80e-05,], max (u):[7.51e-01,7.51e-01,1.07e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.77e-05,2.37e-05,4.38e-05,], max (u):[7.57e-01,7.57e-01,1.07e+00,] (3 steps)
+
+-np=4 *new*
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.02e-04,2.67e-04,1.28e-04,], max (u):[7.57e-01,7.57e-01,1.07e+00,] (3 steps)
+
+-np=4
+>>> t=1.00e-02 dt=1.0e-02 max errors:[2.13e-06,3.69e-06,6.03e-06,], max (u):[7.55e-01,7.55e-01,1.07e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[5.42e-05,2.37e-05,2.97e-05,], max (u):[7.51e-01,7.51e-01,1.07e+00,] (2 steps)
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.45e-04,5.77e-05,7.36e-05,], max (u):[7.57e-01,7.57e-01,1.07e+00,] (3 steps)
+
+
+*******************************************
+************* Thurs Nov. 19, 2020
+
+**bug fixed**  PlaneInterfaceExactSolution.bC --> normal computation
+
+TROUBLE : ORDER=4: -np=4 --> is seond-order predictor computed at some parallel ghost ??
+
+
+PMIC: ORDER=4
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -debug=0 -go=go >! junk
+
+
+-np=1
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.942e-02 max-err = 5.363e-08
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.766e-02 max-err = 4.466e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.29e-05,3.53e-05,3.30e-01,], max (u):[7.55e-01,7.72e-01,1.25e+00,] (3 steps)
+
+-np=2:
+>>> Cgmx:FD: t=3.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=1.45e-03 (=1.22e-02/8.37e+00) 3 steps mem=62.1(Mb) cpu=2.97e-02(s)
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.942e-02 max-err = 5.363e-08
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.766e-02 max-err = 4.466e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.29e-05,3.53e-05,3.30e-01,], max (u):[7.55e-01,7.72e-01,1.25e+00,] (3 steps)
+
+
+-np=4: **TROUBLE**  --update parallel ghost needed ??
+>>> Cgmx:FD: t=3.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=1.45e-03 (=1.22e-02/8.37e+00) 3 steps mem=64.3(Mb) cpu=2.76e-02(s)
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.942e-02 max-err = 2.145e-07
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.766e-02 max-err = 5.732e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.25e-04,4.80e-05,3.30e-01,], max (u):[7.55e-01,7.72e-01,1.25e+00,] (3 steps)
+
+
++++++++++++++++++++++++++++++++++++++
+PMIC: ORDER=2
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -debug=0 -go=go 
+
+-np=1,2,4
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.942e-02 max-err = 1.562e-06
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.766e-02 max-err = 6.639e-07
+>>> t=3.00e-02 dt=1.0e-02 max errors:[8.71e-04,9.82e-04,3.30e-01,], max (u):[7.56e-01,7.72e-01,1.25e+00,] (3 steps)
+
+
+
+
+mpiexec -n 2 xterm -e gdb --args  $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -go=go
+
+
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -go=go
+
+*******************************************
+************* Wed Nov. 18, 2020
+
+++++ DISPERSIVE CASE
+
+mpiexec -n 2 xterm -e gdb --args  $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -go=go
+
+
+PMIC: *trouble with -np=2 
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -ic=pmic -diss=0 -bc=d -go=go
+
+-np=1
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.942e-02 max-err = 5.363e-08
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.766e-02 max-err = 4.466e-09
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.29e-05,3.53e-05,3.30e-01,], max (u):[7.55e-01,7.72e-01,1.25e+00,] (3 steps)
+
+
+ORDER=4:  exact degree=(4,2) ... OK!!
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=2 -diss=0 -bc=d -go=go
+
+np=1,2,4 
+>>> Cgmx:FD: t=3.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=8.26e-15 (=7.55e-14/9.14e+00) 3 steps mem=60.5(Mb) cpu=6.10e-02(s)
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.015e+00 max-err = 8.882e-16
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.031e+00 max-err = 1.776e-15
+>>> t=3.00e-02 dt=1.0e-02 max errors:[5.33e-15,3.11e-15,4.04e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+ORDER=2 - TZ OK!!
+mpirun -np 1 $cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+
+np=1,2,4 : exact 
+>>> Cgmx:FD: t=3.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=3.28e-15 (=1.33e-14/4.06e+00) 3 steps mem=59.4(Mb) cpu=1.44e-02(s)
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.015e+00 max-err = 7.772e-16
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.031e+00 max-err = 4.441e-16
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.22e-15,1.33e-15,1.57e-02,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+
+
+
+
+mpirun -np 2 $cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go 
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-15,8.88e-16,6.66e-16,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+
+
+
+
+mpiexec -n 2 xterm -e gdb --args  $cgmx  -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+ORDER=4: **BUG FIXED** getForcing --> ok = ...
+mpirun -np 2 $cgmx  -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go 
+
+
+ORDER=4 : EXACT 
+mpirun -np 1 $cgmx  -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go 
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.55e-15,1.55e-15,8.88e-16,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+*******************************************
+************* Tues Nov. 17, 2020
+
+
+START ON CONFIG PARALLEL DISPERSIVE INTERAFCES
+
+TZ -- *bug* fixed
+mpirun -np 2 $cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=og
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-15,8.88e-16,6.66e-16,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+
+--- PMIC: looks ok: 
+mpirun -np 2 $cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0 -bc=d -go=og
+
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.42e-03,2.87e-03,4.28e-03,], max (u):[5.12e-01,1.00e+00,1.15e+00,] (2 steps)
+
+
+
+
+
+TZ -- EXACT:
+cgmx -noplot interface -g=twoSquaresInterfacee1.order2 -eps2=2 -npv=1 1 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt  -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=og
+
+
+
+--- GDM-PMIC: 
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0 -bc=d -npv=1 0 -a01=1.0 -a11=.1 -b01=1.0 -b11=.1 -a02=1.5 -a12=.15 -b02=2.0 -b12=.05 -dm=gdm -cons=0 -go=og
+
+>>> Cgmx:FD: t=2.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=4.95e-02 (=6.61e-01/1.33e+01) 2 steps mem=58.2(Mb) cpu=1.04e+01(s)
+
+--- PMIC: 
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2 -kx=2 -ky=1 -tp=.01 -tf=.1 -ic=pmic -diss=0 -bc=d -go=og
+
+>>> t=1.00e-02 dt=1.0e-02 max errors:[4.20e-04,9.66e-04,1.44e-03,], max (u):[5.06e-01,9.99e-01,1.13e+00,] (1 steps)
+>>> t=2.00e-02 dt=1.0e-02 max errors:[1.42e-03,2.87e-03,4.28e-03,], max (u):[5.12e-01,1.00e+00,1.15e+00,] (2 steps)
+
 ******************************
 ******** June 18, 2020
 

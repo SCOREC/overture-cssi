@@ -627,8 +627,6 @@
 !...........end   statement functions
 
 
- debug=0
-
  dx(0) =rpar(0)
  dx(1) =rpar(1)
  dx(2) =rpar(2)
@@ -657,9 +655,10 @@
 
  solveForAllFields  =ipar(12)
  numberOfMaterialRegions = ipar(13)
+ debug              =ipar(14)
  
 
- if( t.le.2*dt )then
+ if( t.le.2*dt .and. debug.gt.0 )then
    write(*,*) 'Inside NAME...'
    write(*,'("solveForAllFields=",i2)') solveForAllFields
    write(*,'("dispersionModel=",i2)') dispersionModel
@@ -733,8 +732,10 @@
 
    if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
      ! ---- Dispersive Maxwell ----
-     write(*,'("--getDiv-- dispersionModel=",i4," numPolarizationTerms=",i6)') dispersionModel,numPolarizationTerms
-
+     if( debug.gt.1 )then
+       write(*,'("--getDiv-- dispersionModel=",i4," numPolarizationTerms=",i6)') dispersionModel,numPolarizationTerms
+     end if
+     
      if( .false. )then
       do mr=0,numberOfMaterialRegions-1 
         write(*,'("BA-GDM: material region mr=",i2)') mr
@@ -758,7 +759,7 @@
  end if
 
 
- if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+ if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. debug>1 )then
     write(*,'("--getDiv-- dispersionModel=",i4)') dispersionModel
  end if
 

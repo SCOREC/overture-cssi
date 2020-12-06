@@ -397,7 +397,7 @@ display( FILE *file /* = stdout */, const aString & label /* = nullString */   )
   else if( materialType==bianisotropic )
   {
     RealArray & K0 = dbase.get<RealArray>("K0");
-    ::display(K0,"K0",file);
+    // ::display(K0,"K0",file);
           
     // bianisotropicParameters(4,Np,6,6) 
     RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
@@ -909,8 +909,11 @@ getBianisotropicMaterialMatrixInverse( RealArray & K0i )
       if( info!=0 )
         OV_ABORT("GETRI: info !=0 ");
 
-      ::display(K0,"K0");
-      ::display(K0Inverse,"K0Inverse");
+      if( false )
+      {
+        ::display(K0,"K0");
+        ::display(K0Inverse,"K0Inverse");
+      }
       
 
     }
@@ -1119,6 +1122,8 @@ int getMatrixValuesFromString( const aString & aline, int len,
 int DispersiveMaterialParameters::
 readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested /* = -1 */ )
 {
+  const int myid = max(0,Communication_Manager::My_Process_Number);
+
   if( numberOfPolarizationVectorsRequested <=0 )
     numberOfPolarizationVectorsRequested=INT_MAX;  // choose maximum number available
 
@@ -1199,7 +1204,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 
   real wScale=1.; // Frequency scale -- set below 
 
-  int currentBestNp=0;
+  int currentBestNp=-1;
   
   int len;
   const int buffLength=2000;  // allow for continuation lines
@@ -1483,7 +1488,12 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  
 	  int Np=1;
 	  sScanF(aline(len,len+1),"%i",&Np);
-	  if( Np==1 )
+          if( Np==0 )
+          {
+            // non-dispersive material parameters
+            sScanF(aline(len+3,aline.length()-1),"%e",&epsInf0);
+          }
+          else if( Np==1 )
 	    sScanF(aline(len+3,aline.length()-1),"%e %e %e %e %e",&epsInf0,&a0v(0),&a1v(0),&b0v(0),&b1v(0));
 	  else if( Np==2 )
 	    sScanF(aline(len+3,aline.length()-1),"%e %e %e %e %e %e %e %e %e",&epsInf0,
@@ -1540,8 +1550,7 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  if( normalizedUnits )
 	     wScale=1.;
 	   
-
-	  if( Np <= numberOfPolarizationVectorsRequested && Np>currentBestNp )
+          if( Np <= numberOfPolarizationVectorsRequested && Np>currentBestNp )
 	  {
 	    currentBestNp=Np;
 	  
@@ -1551,20 +1560,27 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	    numberOfPolarizationVectors=Np;
 	    printF("\n DispersiveMaterialParameters: SETTING numberOfPolarizationVectors=%d\n\n",numberOfPolarizationVectors);
 
-	    modelParameters.redim(4,Np);
-	    for( int j=0; j<Np; j++ )
-	    {
-	      // Check the scaling
-	      // modelParameters(0,j)=a0v(j)*(wScale*wScale)/epsInf; 
-	      // modelParameters(1,j)=a1v(j)*(       wScale)/epsInf;
-	      // modelParameters(2,j)=b0v(j)*(wScale*wScale)/epsInf;
-	      // modelParameters(3,j)=b1v(j)*(       wScale)/epsInf;
+            if( Np==0 )
+            {
+              isDispersive=false;
+            }
+            else if( Np>0 )
+            {
+              modelParameters.redim(4,Np);
+              for( int j=0; j<Np; j++ )
+              {
+                // Check the scaling
+                // modelParameters(0,j)=a0v(j)*(wScale*wScale)/epsInf; 
+                // modelParameters(1,j)=a1v(j)*(       wScale)/epsInf;
+                // modelParameters(2,j)=b0v(j)*(wScale*wScale)/epsInf;
+                // modelParameters(3,j)=b1v(j)*(       wScale)/epsInf;
 
-	      modelParameters(0,j)=a0v(j)*(wScale*wScale); 
-	      modelParameters(1,j)=a1v(j)*(       wScale);
-	      modelParameters(2,j)=b0v(j)*(wScale*wScale);
-	      modelParameters(3,j)=b1v(j)*(       wScale);
-	    }
+                modelParameters(0,j)=a0v(j)*(wScale*wScale); 
+                modelParameters(1,j)=a1v(j)*(       wScale);
+                modelParameters(2,j)=b0v(j)*(wScale*wScale);
+                modelParameters(3,j)=b1v(j)*(       wScale);
+              }
+            }
 	  }
 	
 
@@ -1577,6 +1593,12 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	    printF("dispersiveModel = GDM. Setting isDispersive=true\n");
 	    // isDispersive=true;
 	  }
+          printF("\n DMP:readFromFile: aline=[%s] dm=[%s]\n",(const char*)aline,(const char*)dm);
+          if( dm=="\"none\"" || dm=="\"none\";" )
+          {
+            isDispersive=false;
+          }
+          
 	  
 	}
 
@@ -1637,8 +1659,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
    
 	  }
 	  
-
-	  ::display(K0,"K0");
+          if( myid==0 && false  )
+            ::display(K0,"K0");
 	}
       
 	else if( (true || materialType == bianisotropic) && (len=aline.matches("bianistropicPars")) )	
@@ -1824,6 +1846,14 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   
 
   fclose(file);
+
+  // ----- sanity check ---
+  if( numberOfPolarizationVectors>0 && !isDispersiveMaterial() )
+  {
+    printF("DispersiveMaterialParameters::readFromFile:ERROR: numberOfPolarizationVectors=%d >0 BUT isDispersiveMaterial()=%d\n",
+           numberOfPolarizationVectors,(int)isDispersiveMaterial());
+    OV_ABORT("error");
+  }   
 
   return 0;
   

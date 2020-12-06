@@ -677,7 +677,7 @@ end if
   ! eps* v_t = - w_x
   ! mu* w_t = u_y - v_x 
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BI-ANISTROPIC 2D, 2nd-order, rectangular... t=",e10.2)') t
   end if
   mr=0
@@ -1160,7 +1160,7 @@ end if
 ! ========================================================================================
 #beginMacro updateBA3dOrder2()
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BI-ANISTROPIC 3D, 2nd-order, rectangular... t=",e10.2)') t
   end if
   mr=0
@@ -1212,7 +1212,7 @@ end if
 ! ========================================================================================
 #beginMacro updateBA3dOrder4()
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BI-ANISTROPIC 3D, 4th-order, rectangular... t=",e10.2)') t
   end if
   mr=0
@@ -1274,7 +1274,7 @@ end if
 ! ========================================================================================
 #beginMacro updateBAGDM(DIM,ORDER,GRIDTYPE)
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BA GDM, dim=DIM, order=ORDER grid=GRIDTYPE... t=",e10.2)') t
   end if
   mr=0
@@ -1589,7 +1589,7 @@ end if
 ! ========================================================================================
 #beginMacro updateBAGDMOpt(DIM,ORDER,GRIDTYPE,POLAR,ETAXOP,ETAYOP,ETAZOP)
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BA GDM dim=DIM order=ORDER grid=GRIDTYPE polar=POLAR... t=",e10.2)') t
   end if
   
@@ -1910,7 +1910,7 @@ end if
 ! ========================================================================================
 #beginMacro updateBAOpt(DIM,ORDER,GRIDTYPE,POLAR,ETAXOP,ETAYOP,ETAZOP)
 
-  if( t.lt.2*dt )then
+  if( t.lt.2*dt .and. debug.gt.0 )then
     write(*,'("advBA: advance BA dim=DIM, order=ORDER grid=GRIDTYPE polar=POLAR... t=",e10.2)') t
   end if
   
@@ -2079,7 +2079,7 @@ end if
       updateBAOpt(DIM,ORDER,GRIDTYPE,POLAR,,,)
     else
       ! --- SUPERGRID ---
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'(" USE SUPERGRID...")' )
       end if
 
@@ -2093,7 +2093,7 @@ end if
       updateBAGDMOpt(DIM,ORDER,GRIDTYPE,POLAR,,,)
     else
       ! --- SUPERGRID ---
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'(" USE SUPERGRID...")' )
       end if
 
@@ -2617,7 +2617,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
  end if
     
 
- if( t.le.2*dt )then
+ if( t.le.2*dt .and. debug.gt.0 )then
    write(*,*) 'Inside NAME...'
    write(*,'("addForcing=",i2, " solveForAllFields=",i2," useSuperGrid=",i2)') addForcing,solveForAllFields
    write(*,'(" useSuperGrid=",i2," useAbsorbingLayer(0:2)=",3i2)') useSuperGrid,(useAbsorbingLayer(n),n=0,2)
@@ -2656,7 +2656,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
    Ki(2,2,mr) = K0i(5,5,mr)
  end do
 
- if( t.lt.dt )then
+ if( t.lt.dt .and. debug.gt.0 )then
   
    write(*,*) 'materialType=',materialType
    write(*,*) 'numberOfMaterialRegions=',numberOfMaterialRegions
@@ -2700,7 +2700,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
       stop 1234
    end if      
 
-   if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+   if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. debug.gt.0 )then
      ! ---- Dispersive Maxwell ----
      write(*,'("--advOpt-- dispersionModel=",i4," numPolarizationTerms=",i6)') dispersionModel,numPolarizationTerms
      !write(*,'("--advOpt-- GDM: numberOfPolarizationVectors=",i4," alphaP=",e8.2)') numberOfPolarizationVectors,alphaP
@@ -2785,7 +2785,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
     fv(m)=0.  ! temp for forcing
  end do    
 
- if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+ if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. debug.gt.0 )then
     write(*,'("--advOpt-- dispersionModel=",i4," px,py,pz=",3i2)') dispersionModel,pxc,pyc,pzc
  end if
 
@@ -2833,7 +2833,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
     
     if( addDissipation )then
 
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'("advBA: order=2: addDissipation=",l2," adc=",e10.2)') addDissipation,adc
       end if
      
@@ -2876,7 +2876,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
 
     if( addDissipation )then
 
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'("advBA: order=2: addDissipation=",l2," adc=",e10.2)') addDissipation,adc
       end if        
       sigma1=1.
@@ -2920,7 +2920,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
 
     if( addDissipation )then
 
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'("advBA: order=4: addDissipation=",l2," adc=",e10.2)') addDissipation,adc
       end if           
       sigma1=adc
@@ -2959,7 +2959,7 @@ lap2d4(i1,i2,i3,c)=( -30.*u(i1,i2,i3,c)     \
 
     if( addDissipation )then
 
-      if( t.le.3*dt )then
+      if( t.le.3*dt .and. debug.gt.0 )then
         write(*,'("advBA: order=4: addDissipation=",l2," adc=",e10.2)') addDissipation,adc
       end if
             

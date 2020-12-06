@@ -35,7 +35,7 @@ $grid="sib1.order4.hdf"; $ic="gs"; $ks="none"; $ic="gs"; $beta=50; $debug=0; $co
 $cons=0; $go="halt"; $rbc="abcEM2"; $bcn="debug $debug"; 
 $pmlWidth=11; $pmlStrength=50.; $pmlPower=4.;
 $useICBB=0; # 1=use initial condition bounding box for letting a wave enter from outside 
-$compareToShowFile=""; $useSosupDissipation=0;
+$compareToShowFile=""; $useSosupDissipation=0; $useParallelRadBC=0;
 $omega=5.; $amp=1.; $rampTime=.5;
 $numberOfPoles=-1; # use default: options 21 or 31 
 # ----------------------------- get command line arguments ---------------------------------------
@@ -45,7 +45,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
    "ks=s"=>\$ks,"rbc=s"=>\$rbc,"pmlWidth=f"=>\$pmlWidth,"pmlStrength=f"=>\$pmlStrength,"pmlPower=f"=>\$pmlPower,\
    "eps=f"=>\$eps,"ic=s"=>\$ic,"beta=f"=>\$beta,"debug=i"=>\$debug,"useICBB=i"=>\$useICBB,"ax=f"=>\$ax,"ay=f"=>\$ay,"az=f"=>\$az,\
    "compareToShowFile=s"=>\$compareToShowFile,"useSosupDissipation=i"=>\$useSosupDissipation,\
-   "amp=f"=>\$amp,"omega=f"=>\$omega,"rampTime=f"=>\$rampTime,"numberOfPoles=i"=>\$numberOfPoles );
+   "amp=f"=>\$amp,"omega=f"=>\$omega,"rampTime=f"=>\$rampTime,"numberOfPoles=i"=>\$numberOfPoles,\
+   "useParallelRadBC=i"=>\$useParallelRadBC );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -57,10 +58,13 @@ NFDTD
 #
 coefficients $eps 1 all (eps,mu,grid/domain name)
 #
-# All boundaries get the far field BC: 
-bc: all=$rbc
 # Number of poles in the non-local rad-BC approximation
 number of poles $numberOfPoles
+# Use new parallel version of the rad-BC even in serial
+use parallel radiation boundary condition $useParallelRadBC 
+#
+# All boundaries get the far field BC: 
+bc: all=$rbc
 #
 $xa=-100; $xb=.5; $ya=-100; $yb=100; $za=-100; $zb=100; 
 # $useICBB=1; # use initial condition bounding box
@@ -113,7 +117,7 @@ if( $az==0 ){ $cmd="plot:Ey"; }else{ $cmd="plot:Ez"; }
 #
 $cmd="#";
 # for thinBoxGrid: 
-if( $grid =~ /^thin/ ){ $cmd="plot:Ey\n contour\n  add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 -1.43862e-02 -8.55536e-03  1.17979e-02\n exit";}
+if( $grid =~ /^thinBox/ ){ $cmd="plot:Ey\n contour\n  add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 -1.43862e-02 -8.55536e-03  1.17979e-02\n exit";}
 $cmd
 $go 
 

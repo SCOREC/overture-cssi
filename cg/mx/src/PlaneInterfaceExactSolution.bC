@@ -145,8 +145,9 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
   real & a = dbase.get<real>("amp");
   a =1.;  // amplitude 
 
-  // -- Find the normal to the interface and a point on it --
-  int grid=0, side=1, axis=0;
+  // --------- Find the normal to the interface and a point on it -------
+
+  const int grid=0, side=1, axis=0;
   
   MappedGrid & mg = cg[grid];
   mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex | MappedGrid::THEvertexBoundaryNormal);  
@@ -179,19 +180,49 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
   real *x0 = x0PlaneMaterialInterface;
   for( int i=0; i<3; i++ ){ nv[i]=0.; x0[i]=0.; }  // 
   
-  const IntegerArray & gid = mg.gridIndexRange();
-  // mid point of a face: 
-  int i1 = gid(1,0), i2= int( (gid(0,1)+gid(1,1))/2 ), i3= int( (gid(0,2)+gid(1,2))/2 );
-  for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+  if( true )
   {
-    nv[axis]=normal(i1,i2,i3,axis);
-    x0[axis]=xLocal(i1,i2,i3,axis);
+    // --- evaluate the normal to the interface and a point on the interface ---
+    // *new* way for parallel Nov. 18, 2020 *wdh*
+    Mapping & map = mg.mapping().getMapping();
+		  
+    RealArray r(1,3), x(1,3), rx(1,3,3);
+    r=.5; r(0,axis)=side;    // r-coords for a point on the middle of the face of (grid,side,axis)
+    map.mapS(r,x); 
+    map.inverseMapS(x,r,rx);  // easier to get normal from rx
+
+    // length :  || grad(r)_xv ||
+    const real norm = cg.numberOfDimensions()==2 ?
+      sqrt(SQR(rx(0,axis,0))+SQR(rx(0,axis,1))) :
+      sqrt(SQR(rx(0,axis,0))+SQR(rx(0,axis,1))+SQR(rx(0,axis,2)));
+    assert( norm>0. );
+    for( int dir=0; dir<cg.numberOfDimensions(); dir++ )
+    {
+      nv[dir] = (2*side-1.)*rx(0,axis,dir)/norm; // outward normal = grad(r)_xv / || grad(r)_xv ||
+      x0[dir] = x(0,dir);
+    }
+
   }
-
-
   printF("\n ------------------- PlaneInterfaceExactSolution::initialize ------------------------\n\n");
   printF(" av=[%g,%g,%g] x0=[%g,%g,%g] nv=[%g,%g,%g]\n",av[0],av[1],av[2],x0[0],x0[1],x0[2],nv[0],nv[1],nv[2]);
 
+  if( false )
+  {
+    // **old way**     
+    const IntegerArray & gid = mg.gridIndexRange();
+    // mid point of a face: 
+    int i1 = gid(1,0), i2= int( (gid(0,1)+gid(1,1))/2 ), i3= int( (gid(0,2)+gid(1,2))/2 );
+    for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+    {
+      nv[axis]=normal(i1,i2,i3,axis);
+      x0[axis]=xLocal(i1,i2,i3,axis);
+    }
+  
+
+    printF("\n ------------------- PlaneInterfaceExactSolution::initialize **OLD** ------------------------\n\n");
+    printF(" av=[%g,%g,%g] x0=[%g,%g,%g] nv=[%g,%g,%g]\n",av[0],av[1],av[2],x0[0],x0[1],x0[2],nv[0],nv[1],nv[2]);
+  }
+  
   // Should n.k be always positive ??
   real nDotK = nv[0]*kx + nv[1]*ky + nv[2]*kz;
   printF(" n.k = %g\n",nDotK);
@@ -654,7 +685,8 @@ eval(real t, CompositeGrid & cg, int grid,
   const bool isRectangular=mg.isRectangular();
   if( !isRectangular )
     mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
-  OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+
+  OV_GET_SERIAL_ARRAY_CONDITIONAL(real,mg.center(),xLocal,!isRectangular); // *wdh* added conditional, Nov 21, 2020
 
   real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
   int iv0[3]={0,0,0}; //

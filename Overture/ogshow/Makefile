@@ -261,6 +261,11 @@ ParallelUtility.C: ParallelUtility.bC; bpp ParallelUtility.bC
 ParallelGridUtility.C: ParallelGridUtility.bC; bpp ParallelGridUtility.bC
 CopyArray.C: CopyArray.bC; bpp CopyArray.bC
 
+tug.C: tug.bC; bpp tug.bC
+GhostBoundaryUpdate.C: GhostBoundaryUpdate.bC; bpp GhostBoundaryUpdate.bC
+
+testUpdateGhostAndPeriodic.C: testUpdateGhostAndPeriodic.bC; bpp testUpdateGhostAndPeriodic.bC
+
 mogl.o: mogl.C
 	$(CC) $(CCFLAGS)  -I$(Overture)/static -c $*.C
 
@@ -316,9 +321,16 @@ FTGLDemo: $(FTGLDemo)
 
 # Test the parallel copy function copyArray
 tca = tca.o ParallelUtility.o CopyArray.o ca.o
-tca = tca.o ParallelUtility.o CopyArray.o 
+tca = tca.o ParallelUtility.o CopyArray.o testUpdateGhostAndPeriodic.o
 tca: $(tca) 
 	$(CC) $(CCFLAGS) -o $@ $(tca) \
+        $(CLIBS) $(FLIBS) $(GLIBS)   
+
+# Test the parallel update ghost and periodic 
+# tug = tug.o ParallelUtility.o CopyArray.o testUpdateGhostAndPeriodic.o
+tug = tug.o ParallelUtility.o CopyArray.o GhostBoundaryUpdate.o
+tug: $(tug) 
+	$(CC) $(CCFLAGS) -o $@ $(tug) \
         $(CLIBS) $(FLIBS) $(GLIBS)   
 
 testnc = testnc.o 
@@ -553,7 +565,7 @@ CriticalSection.o: CriticalSection.c CriticalSection.h
 	$(cc) $(VDL_FLAGS) -c CriticalSection.c
 
 clean:
-	rm -f *.o togshow tsfr plotStuff pl nl ps2ppm pk showPlot3d tbsf tsf tds
+	rm -f *.o togshow tsfr plotStuff pl nl ps2ppm pk showPlot3d tbsf tsf tds tug
 
 
 # here are things we make dependencies for:

@@ -122,6 +122,23 @@ $xShift=2; $yShift=-1.5; $angle=-90; $xMin=-$radY; $xMax=-$xMin; $yMin=-$radX; $
 include buildSplitRingGrids.h 
 #
 #
+# Convert to NURBS  **FINISH ME**
+#
+$numGhost=$ng+1; 
+sub convertToNurbs\
+{ local($old,$new,$angle)=@_; \
+  $commands = "nurbs (surface)\n" . \
+              "interpolate from mapping with options\n" . "$old\n" . "parameterize by index (uniform)\n" . \
+              " number of ghost points to include\n $numGhost\n" . \
+              "done\n" . \
+              "rotate\n" . "$angle 1\n" . "0 0 0\n" . \
+              "mappingName\n" . "$new\n" . "exit\n"; \
+}
+# convertToNurbs("outerShape0","outerShape",$angle);
+# $commands
+# convertToNurbs("innerShape0","innerShape",$angle);
+# $commands
+#
 exit 
 #
 generate an overlapping grid

@@ -38,7 +38,7 @@
         integer ipar(0:*)
         real rpar(0:*)
        !     ---- local variables -----
-        integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd
+        integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd,debug
         integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,axis,
      & dir
         integer addForcing,orderOfDissipation,option
@@ -994,7 +994,8 @@
         real cdcE,cdcELap,cdcELapsq,cdcELapm,cdcHzxLap,cdcHzyLap
         real cdcH,cdcHLap,cdcHLapsq,cdcHLapm
         ! dispersion
-        integer dispersionModel,pxc,pyc,pzc,qxc,qyc,qzc,rxc,ryc,rzc
+        integer dispersionModel,pxc,pyc,pzc
+        ! integer qxc,qyc,qzc,rxc,ryc,rzc
         integer ec,pc
         real gamma,omegap
         real gammaDt,omegapDtSq,ptt, fe,fp
@@ -3504,12 +3505,10 @@ c===============================================================================
         pxc                 =ipar(25)
         pyc                 =ipar(26)
         pzc                 =ipar(27)
-        qxc                 =ipar(28)
-        qyc                 =ipar(29)
-        qzc                 =ipar(30)
-        rxc                 =ipar(31)
-        ryc                 =ipar(32)
-        rzc                 =ipar(33)
+        ! numberOfPolarizationVectors = ipar(28)
+        ! grid                =ipar(29)
+        ! nonlinearModel      =ipar(30)
+        debug               =ipar(31)
         useSosupDissipation   =ipar(34)
         sosupDissipationOption=ipar(35)
         updateSolution        =ipar(36)
@@ -3551,7 +3550,8 @@ c===============================================================================
         dydzi2=1./(dy*dy*dz*dz)
         gammaDt=gamma*dt
         omegapDtSq=(omegap*dt)**2
-        if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+        if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. 
+     & debug.gt.1 )then
            write(*,'("--advMxUp-- dispersionModel=",i4," px,py,pz=",
      & 3i2)') dispersionModel,pxc,pyc,pzc
         end if
@@ -3569,9 +3569,11 @@ c===============================================================================
          uDotFactor=.5  ! By default uDot is D-zero and so we scale (un-um) by .5 --> .5*(un-um)/(dt)
          ! sosupParameter=gamma in sosup scheme  0<= gamma <=1   0=centered scheme
          adSosup=sosupParameter*adSosup
-         if( t.le.2*dt )then
+         if( t.le.2*dt .and. debug.gt.1 )then
            write(*,'("advMxUp: useSosup dissipation, t,dt,adSosup=",
      & 3e10.2)') t,dt,adSosup
+           write(*,'("advMxUp: useSosup dissipation, debug=",i3)') 
+     & debug
            write(*,'("advMxUp: sosupDissipationOption=",i2," 
      & sosupParameter=",1pe10.2)') sosupDissipationOption,
      & sosupParameter
@@ -3810,9 +3812,9 @@ c===============================================================================
            end if
            if( useSosupDissipation.ne.0 )then
              ! ---- use sosup dissipation (wider stencil) ---
-              if( t.le.2.*dt )then
-                write(*,'(" advMxUp: FD22 + sosup-dissipation for 
-     & curvilinear")')
+              if( t.le.3.*dt .and. debug.gt.1 )then
+                write(*,'("advMxUp>>>","advMxUp:FD22+sosup-
+     & dissipationforcurvilinear")')
               end if
               if( useNewForcingMethod.ne.0 )then
                write(*,'(" finish me: useSosupDissipation && 
@@ -3824,7 +3826,7 @@ c===============================================================================
      & then
                ! advance + sosup dissipation: 
                ! note: forcing is already added to the rhs.
-               if( t.le.3.*dt )then
+               if( t.le.3.*dt .and. debug.gt.1 )then
                  write(*,'("advMxUp>>>","FD22c-UP...update-solution-
      & and-dissipation")')
                end if
@@ -3881,7 +3883,7 @@ c===============================================================================
                uDotFactor=.5 ! reset
              else if( updateSolution.eq.1 )then
                 ! advance to time n+1
-               if( t.le.3.*dt )then
+               if( t.le.3.*dt .and. debug.gt.1 )then
                  write(*,'("advMxUp>>>","FD22c-UP...update-solution")')
                end if
                ! note: forcing is already added to the rhs.
@@ -3921,7 +3923,7 @@ c===============================================================================
                if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )
      & then
                 ! apply sosup dissipation to time n+1 (use precomputed v=uDot)
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-un-with-
      & dissipation-using-v")')
                 end if
@@ -3950,7 +3952,7 @@ c===============================================================================
                else if( sosupDissipationOption.eq.0 .and. 
      & computeUt.eq.0 )then
                 ! apply sosup dissipation to time n+1
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-un-with-
      & dissipation")')
                 end if
@@ -3980,7 +3982,7 @@ c===============================================================================
                 ! apply sosup dissipation to time n using times n-1 and n-2
                 ! assume un holds u(t-2*dt) on input 
                 ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-u-with-
      & dissipation")')
                 end if
@@ -4028,9 +4030,9 @@ c===============================================================================
             !  --> For example, mainly when using conservative operators
            if( useSosupDissipation.ne.0 )then
              ! ---- use sosup dissipation (wider stencil) ---
-              if( t.le.2.*dt )then
-                write(*,'(" advMxUp: FD22 + sosup-dissipation for 
-     & curvilinear")')
+              if( t.le.3.*dt .and. debug.gt.1 )then
+                write(*,'("advMxUp>>>","advMxUp:FD22+sosup-
+     & dissipationforcurvilinear")')
               end if
               if( useNewForcingMethod.ne.0 )then
                write(*,'(" finish me: useSosupDissipation && 
@@ -4042,7 +4044,7 @@ c===============================================================================
      & then
                ! advance + sosup dissipation: 
                ! note: forcing is already added to the rhs.
-               if( t.le.3.*dt )then
+               if( t.le.3.*dt .and. debug.gt.1 )then
                  write(*,'("advMxUp>>>","FD22c-UP...update-solution-
      & and-dissipation")')
                end if
@@ -4099,7 +4101,7 @@ c===============================================================================
                uDotFactor=.5 ! reset
              else if( updateSolution.eq.1 )then
                 ! advance to time n+1
-               if( t.le.3.*dt )then
+               if( t.le.3.*dt .and. debug.gt.1 )then
                  write(*,'("advMxUp>>>","FD22c-UP...update-solution")')
                end if
                ! note: forcing is already added to the rhs.
@@ -4139,7 +4141,7 @@ c===============================================================================
                if( sosupDissipationOption.eq.0 .and. computeUt.eq.1 )
      & then
                 ! apply sosup dissipation to time n+1 (use precomputed v=uDot)
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-un-with-
      & dissipation-using-v")')
                 end if
@@ -4168,7 +4170,7 @@ c===============================================================================
                else if( sosupDissipationOption.eq.0 .and. 
      & computeUt.eq.0 )then
                 ! apply sosup dissipation to time n+1
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-un-with-
      & dissipation")')
                 end if
@@ -4198,7 +4200,7 @@ c===============================================================================
                 ! apply sosup dissipation to time n using times n-1 and n-2
                 ! assume un holds u(t-2*dt) on input 
                 ! NOTE: the dissipation is added to u in a Gauss-Siedel fashion
-                if( t.le.3.*dt )then
+                if( t.le.3.*dt .and. debug.gt.1 )then
                   write(*,'("advMxUp>>>","FD22c-UP...update-u-with-
      & dissipation")')
                 end if

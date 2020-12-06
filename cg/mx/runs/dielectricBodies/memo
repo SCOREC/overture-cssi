@@ -1,3 +1,474 @@
+*****************************************
+******* Sun Nov 28, 2020
+
+START TEST RUN PARALLEL
+
+runParallel.p -runCase=performance -configFile="bodyConfig.pl" -npv=2 -matFile=matGDM2.txt -tf=0.5 -factor=64 -order=4 -numRuns=3
+
+
+runParallel.p -runCase=performance -configFile="bodyConfig.pl" -npv=2 -matFile=matGDM2.txt -tf=0.5 -factor=32 -order=4 -numRuns=3
+
+
+\begin{table}[hbt]
+\begin{center}\tableFont
+\begin{tabular}{|c|c|c|} \hline
+  NP  & sec/step   &  speedup  \\   \hline\hline 
+   1  &  1.2e-01   &     1.0  \\
+   2  &  7.3e-02   &     1.7  \\
+   4  &  5.9e-02   &     2.1  \\
+ \hline 
+\end{tabular}
+\end{center}
+\caption{bodysquare137438953472matGDM2,   shortSolidDiskGridYpe32.order4.ng3.hdf , 1.20972e+06 grid points, Computer: CG6, 48 procs = 2 X 12 core (X 2 threads), Intel Xeon CPU E5-2697 v2 @ 2
+.70GHz, 132 Gb, Sun Nov 29 14:46:45 2020.}
+\label{tab:bodysquare137438953472matGDM2} 
+\end{table}
+
+
+
+runParallel.p -runCase=performance -configFile="bodyConfig.pl" -npv=2 -matFile=matGDM2.txt -tf=0.5 -factor=16 -order=4 -numRuns=2
+
+factor=16
+Case 0 np=1: advance: cpu=1.17e+01, cpu/step=4.21e-02, percent=97.003 
+Case 1 np=2: advance: cpu=8.31e+00, cpu/step=2.99e-02, percent=97.933 
+
+
+
+
+
+TEST THREE DIMENSIONS
+
+
+ELLIPSOID
+
+mpirun -np=2 $cgmx -noplot -noplot dielectricBodies -g=solidEllipsoidInABoxGride4.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-.75 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-.7 -xRightProbe=.7 -dm=none -probeFrequency=1 -probeFileName=EllipsoidEps4Polar1Dir1G4 -matFile=baMatIsoEps4.txt -go=og
+
+runScat.p -tf=1 -case=EllipsoidEps4 -grid=solidEllipsoidInABoxGrid -order=2 -xProbe=.65 -xGaussianPlaneWaveStartPoint=1.5 -matFile=matIsoEps4 -dm=none -direction=1 -polarization=-1 -resStart=2 -numResolutions=2
+
+
+
+GDM SPHERE - order=4  OK 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=dielectricSphereGride4.order4.ng3.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=gdm -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=baMatGDM1.txt -debug=0 -go=og
+
+GDM SPHERE - order=2  OK 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=dielectricSphereGride4.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=gdm -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=baMatGDM1.txt -debug=0 -go=og
+
+
+
+SPHERE -- **trouble --> matIsoEps4.txt leads to a dispersive material **    --> ADDED CHECK 
+mpirun -np 1 $cgmx -noplot dielectricBodies -g=dielectricSphereGride2.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=matIsoEps4.txt -go=og
+
+SPHERE - order=4  OK 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=dielectricSphereGride4.order4.ng3.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=baMatIsoEps4.txt -go=og
+
+SPHERE - order=2 OK 
+mpirun -np 1 $cgmx -noplot dielectricBodies -g=dielectricSphereGride2.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=baMatIsoEps4.txt -go=og
+
+serial OK 
+$cgmx -noplot dielectricBodies -g=dielectricSphereGride2.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.0 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=1 -probeFileName=SphereEps4Polar1Dir1G4 -matFile=matIsoEps4.txt -go=og 
+
+
+runScat.p -tf=200 -case=SphereEps4 -grid=dielectricSphereGrid -order=2 -xProbe=.75 -xGaussianPlaneWaveStartPoint=1.5 -matFile=matIsoEps4 -dm=none -direction=1 -polarization=1 -resStart=2 -numResolutions=2
+
+
+
+
+
+I-BEAM -OK 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride16.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.2 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+
+
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe8.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=.5 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=0 -go=og
+
+
+
+BUG FOUND IN MASK CHECK ON INTERACE
+
+
+TEST INTERFACE MASK CHECK
+
+
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=.01 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=3 -go=go 
+
+*****************************************
+******* Sat Nov 27, 2020
+
+
+BACK T0 PARALLEL
+
+
+ISSUE WITH MASK ON INTERFACE -- parallel check is broken ??
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe8.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=.5 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=0 -go=og 
+
+
+ISSUE WITH MASK ON INTERFACE -- parallel check is broken ??
+mpirun -np=4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride16.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+OK 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+
+
+PLOT POLARIZATION COMPONENTS
+
+
+cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=5 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=1 -show=db.show -go=og 
+
+NPV=2 : 
+cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=5 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -npv=2 -matFile=baMatGDM2.txt -debug=1 -show=db.show -go=og 
+
+
+*****************************************
+******* Fri Nov 26, 2020
+
+Now OK: 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+
+
+>>>>>>>>>>>>>   **bug found** RadiationBC.C includeGhost
+
+
+
++++++++++++++ ORDER=2 *trouble*
+NO-GDM : TROUBLE on the interface for FOR np=4 
+ERROR AT OUTFLOW in Ex 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=1 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+
+
+
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
++++++++++++++++++++++ ORDER=4 LOOKS OK
++++ test order=4
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.05 -tf=1 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=10 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=none -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+
+********************************
+********  Thurs Nov 26, 2020
+
+TODO -- fix show file for P and N
+
+$cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=.5 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=1 -show=db.show -go=go 
+
+
+
+
+++++++++++ MORE PARALLEL TESTS 
+
+-- ELLIPSE 
+ellipticalSmallGride2.order2.hdf
+
+NO-GMD *bad* for -np=6 -np=8 
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+CHECK PARALLEL: 
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=.03 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatIsoEps2.txt -debug=7 -go=go 
+
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=.03 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=7 -go=go 
+
+
+
+
+OK for np=2 -- bad for np=4
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=ellipticalSmallGride2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+
+
+----- IBeam
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride8.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+parallel -- np=1 : ok , *trouble: np=2
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride8.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+ORDER=4 : OK for np=1
+mpirun -np=1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride16.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+>>> TEST: **TROUBLE np=2 
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride8.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+try no-GDM  **TROUBLE np=2 
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride8.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatIsoEps2.txt -debug=1 -go=og
+
+
+
+>>>>>> Serial -- OK
+
+$cgmx -noplot dielectricBodies -numParallelGhost=3 -g=IBeamGride8.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+
+
+
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1a.txt -debug=1 -go=og
+
+
+
+********************************
+********  Wed Nov 25, 2020
+
+BUG FOUND --> interface3d: only extend STAGE 1 bounds on parallel boundaries 
+
+
+START TEST PARALLEL + interfaces + GDM 
+
+--OK--
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.1 -tf=3 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=1 -go=og
+
+
+
+
+debug=7 : no nan's 
+
+$cgmx -noplot dielectricBodies -numParallelGhost=2 -g=shortSolidDiskGridYpe1.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=.01 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=7 -go=go 
+
+
+>>> Cgmx:FD: t=1.00e-02 dt=1.0e-02 TS=ME GDM |div(E)|/|grad(E)|=     nan (=3.03e-04/     nan) 1 steps mem=66.9(Mb) cpu=7.58e+00(s)
+
+
+
+GDM: TROUBLE: nan's 
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tp=.01 -tf=.03 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=1 -go=og
+
+valgrind $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe2.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.03 -tp=.01 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=3 -go=go
+
+
+
+++++++ Order=2 **TROUBLE**
+
+valgrind $cgmx -noplot dielectricBodies -numParallelGhost=2 -g=shortSolidDiskGridYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.01 -tp=.01 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=3 -go=go >& junk
+
+**TROUBLE**
+$cgmx -noplot dielectricBodies -numParallelGhost=2 -g=shortSolidDiskGridYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.03-tp=.01 -xLeftProbe=-0.7 -xRightProbe=0.7 -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -dm=gdm -matFile=baMatGDM1.txt -debug=3 -go=og
+
+
+NO-GDM -OK-
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-0.7 -xRightProbe=0.7  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+********************************
+********  Sun Nov 15, 2020
+
+
+SIMPLE TEST CASE FOR PARALLEL PERF.
+
+
+$cgmx -noplot dielectricBodies -numParallelGhost=3 -g=square256.order4.ng3.hdf -backGround=outerSquare -rbc=pec  -background=OuterSquare -ic=gpw -x0=0.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.5 -tp=.5  -xLeftProbe=.25 -xRightProbe=0.75  -matFile=baMatIsoEps2.txt -go=go 
+
+
+********************************
+********  Tues Nov 10, 2020
+
+START THINKING OF PARALLEL FOR DISPERSIVE
+
+
+TEST Shorter domain
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-0.7 -xRightProbe=0.7  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+Timing: 
+mpirun -np 1 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=shortSolidDiskGridYpe8.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-1.0 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=1 -tp=1  -xLeftProbe=-0.7 -xRightProbe=0.7  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=go 
+
+
+++++++++++ -np=4
+              ---------Maxwell Summary------- 
+                       Tue Nov 10 07:41:06 2020
+               Grid:   shortSolidDiskGridYpe8.order4.ng3.hdf 
+  ==== final time= 1.00e+00, numberOfStepsTaken =      252, grids=4, gridpts =80541, interp pts=3648, processors=4 ==== 
+  ==== memory per-proc: [min=68.4648,ave=69.2295,max=69.7539](Mb), max-recorded=69.1719 (Mb), total=276.918 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  4.25e+00    1.69e-02    2.10e-07   100.000   4.252e+00   4.252e+00
+setup and initialize................  7.58e-03    3.01e-05    3.73e-10     0.178   7.588e-03   7.561e-03
+initial conditions..................  5.00e-03    1.98e-05    2.46e-10     0.117   5.194e-03   4.793e-03
+advance.............................  4.20e+00    1.67e-02    2.07e-07    98.798   4.201e+00   4.201e+00
+  advance rectangular grids.........  1.24e+00    4.92e-03    6.11e-08    29.187   1.243e+00   1.239e+00
+  advance curvilinear grids.........  4.63e-01    1.84e-03    2.28e-08    10.897   4.644e-01   4.618e-01
+   (advOpt).........................  1.37e+00    5.43e-03    6.74e-08    32.194   1.371e+00   1.367e+00
+  boundary conditions...............  1.05e+00    4.18e-03    5.19e-08    24.794   1.066e+00   1.042e+00
+  interface bc......................  8.35e-01    3.31e-03    4.11e-08    19.638   8.412e-01   8.172e-01
+  radiation bc......................  7.99e-01    3.17e-03    3.94e-08    18.783   8.078e-01   7.736e-01
+  radiationKernel...................  7.58e-01    3.01e-03    3.74e-08    17.829   7.669e-01   7.334e-01
+    Fourier transform...............  5.87e-01    2.33e-03    2.89e-08    13.806   5.945e-01   5.659e-01
+  interpolation.....................  3.68e-01    1.46e-03    1.81e-08     8.647   4.322e-01   1.742e-01
+  update ghost (parallel)...........  3.45e-01    1.37e-03    1.70e-08     8.122   7.180e-01   1.117e-01
+  get norms.........................  6.58e-04    2.61e-06    3.24e-11     0.015   6.580e-04   6.571e-04
+get divergence......................  1.99e-02    7.91e-05    9.83e-10     0.469   1.996e-02   1.989e-02
+compute dt..........................  1.42e-03    5.64e-06    7.00e-11     0.033   1.441e-03   1.405e-03
+plotting............................  2.02e-02    8.02e-05    9.96e-10     0.475   2.022e-02   2.020e-02
+output results......................  7.50e-02    2.98e-04    3.70e-09     1.764   7.989e-02   7.261e-02
+waiting (not counted)...............  4.17e-04    1.65e-06    2.05e-11     0.010   4.249e-04   4.025e-04
+
+++++++++++ -np=2
+              ---------Maxwell Summary------- 
+                       Tue Nov 10 07:40:22 2020
+               Grid:   shortSolidDiskGridYpe8.order4.ng3.hdf 
+  ==== final time= 1.00e+00, numberOfStepsTaken =      252, grids=4, gridpts =80541, interp pts=3648, processors=2 ==== 
+  ==== memory per-proc: [min=74.2188,ave=75.5,max=76.7812](Mb), max-recorded=75.7891 (Mb), total=151 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  7.87e+00    3.12e-02    3.88e-07   100.000   7.868e+00   7.868e+00
+setup and initialize................  1.21e-02    4.82e-05    5.98e-10     0.154   1.214e-02   1.214e-02
+initial conditions..................  8.15e-03    3.24e-05    4.02e-10     0.104   8.152e-03   8.152e-03
+advance.............................  7.79e+00    3.09e-02    3.84e-07    99.034   7.792e+00   7.792e+00
+  advance rectangular grids.........  2.37e+00    9.40e-03    1.17e-07    30.119   2.823e+00   1.916e+00
+  advance curvilinear grids.........  1.51e+00    6.01e-03    7.46e-08    19.243   1.514e+00   1.514e+00
+   (advOpt).........................  2.64e+00    1.05e-02    1.30e-07    33.536   2.808e+00   2.469e+00
+  boundary conditions...............  1.49e+00    5.92e-03    7.34e-08    18.947   1.491e+00   1.491e+00
+  interface bc......................  2.58e+00    1.02e-02    1.27e-07    32.744   2.576e+00   2.576e+00
+  radiation bc......................  1.24e+00    4.92e-03    6.11e-08    15.758   1.240e+00   1.240e+00
+  radiationKernel...................  1.17e+00    4.65e-03    5.78e-08    14.899   1.172e+00   1.172e+00
+    Fourier transform...............  8.58e-01    3.41e-03    4.23e-08    10.910   8.584e-01   8.584e-01
+  interpolation.....................  4.01e-01    1.59e-03    1.98e-08     5.097   6.545e-01   1.475e-01
+  update ghost (parallel)...........  9.36e-02    3.71e-04    4.61e-09     1.189   1.348e-01   5.230e-02
+  get norms.........................  1.01e-03    4.00e-06    4.97e-11     0.013   1.008e-03   1.008e-03
+get divergence......................  3.71e-02    1.47e-04    1.83e-09     0.471   3.707e-02   3.707e-02
+compute dt..........................  2.84e-03    1.13e-05    1.40e-10     0.036   3.484e-03   2.205e-03
+plotting............................  3.52e-02    1.40e-04    1.73e-09     0.447   3.520e-02   3.520e-02
+output results......................  1.31e+00    5.21e-03    6.47e-08    16.689   2.550e+00   7.628e-02
+waiting (not counted)...............  4.08e-04    1.62e-06    2.01e-11     0.005   4.077e-04   4.077e-04
+--------------------------------------------------------------------------------------------------------
+
+++++++++++++++++++ -np=1
+
+              ---------Maxwell Summary------- 
+                       Tue Nov 10 07:39:52 2020
+               Grid:   shortSolidDiskGridYpe8.order4.ng3.hdf 
+  ==== final time= 1.00e+00, numberOfStepsTaken =      252, grids=4, gridpts =80541, interp pts=3648, processors=1 ==== 
+  ==== memory per-proc: [min=87.1914,ave=87.1914,max=87.1914](Mb), max-recorded=85.3945 (Mb), total=87.1914 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  1.07e+01    4.23e-02    5.25e-07   100.000   1.065e+01   1.065e+01
+setup and initialize................  1.40e-02    5.54e-05    6.87e-10     0.131   1.395e-02   1.395e-02
+initial conditions..................  1.26e-02    4.98e-05    6.19e-10     0.118   1.256e-02   1.256e-02
+advance.............................  1.05e+01    4.18e-02    5.19e-07    98.905   1.054e+01   1.054e+01
+  advance rectangular grids.........  4.67e+00    1.85e-02    2.30e-07    43.852   4.672e+00   4.672e+00
+  advance curvilinear grids.........  1.50e+00    5.95e-03    7.38e-08    14.064   1.498e+00   1.498e+00
+   (advOpt).........................  5.22e+00    2.07e-02    2.57e-07    49.020   5.223e+00   5.223e+00
+  boundary conditions...............  1.55e+00    6.16e-03    7.65e-08    14.569   1.552e+00   1.552e+00
+  interface bc......................  2.53e+00    1.00e-02    1.25e-07    23.728   2.528e+00   2.528e+00
+  radiation bc......................  1.21e+00    4.82e-03    5.98e-08    11.392   1.214e+00   1.214e+00
+  radiationKernel...................  1.09e+00    4.31e-03    5.35e-08    10.194   1.086e+00   1.086e+00
+    Fourier transform...............  4.82e-01    1.91e-03    2.37e-08     4.520   4.816e-01   4.816e-01
+  interpolation.....................  1.41e-01    5.60e-04    6.95e-09     1.324   1.411e-01   1.411e-01
+  update ghost (parallel)...........  1.17e-02    4.64e-05    5.76e-10     0.110   1.169e-02   1.169e-02
+  get norms.........................  1.25e-03    4.97e-06    6.17e-11     0.012   1.252e-03   1.252e-03
+get divergence......................  7.02e-02    2.79e-04    3.46e-09     0.659   7.024e-02   7.024e-02
+compute dt..........................  2.15e-03    8.54e-06    1.06e-10     0.020   2.152e-03   2.152e-03
+plotting............................  6.49e-02    2.58e-04    3.20e-09     0.609   6.491e-02   6.491e-02
+output results......................  9.27e-02    3.68e-04    4.57e-09     0.870   9.269e-02   9.269e-02
+waiting (not counted)...............  3.52e-04    1.40e-06    1.73e-11     0.003   3.519e-04   3.519e-04
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+
+
+********************************
+********  Sun Nov 8, 2020
+
+**BUG FIXED : assignInterfaceBCs.bC -- fix workspace for Jacobi update for parallel
+
+
+**BUG FIXED : computeTimeStep.C -- getGridSpacing uses communication!
+
+ORDER=4 -np=2 : OK -np=3: TROUBLE 
+mpiexec -n 3 xterm -e gdb --args $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=go
+
+ORDER=4 -np=2 : OK -np=3: TROUBLE
+mpirun -np 4 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+ORDER=2
+mpirun -np 4 $cgmx -noplot dielectricBodies -g=solidDiskYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+mpirun -np 2 $cgmx -noplot dielectricBodies -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+
+********************************
+********  Sat Nov 7, 2020
+
+**BUG FIXED in RaditionBoundaryCondition.C *** routines: 
+
+START TEST PARALLEL NLNR BC's in parallel
+
+recte2np.order2.hdf
+
++++++++++++ DISK 
+
+mpiexec -np 2 valgrind --log-file=cgmx.out.np%p $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe1.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.1 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=go 
+
+
+TROUBLE:
+mpiexec -n 2 xterm -e gdb --args $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe1.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+TROUBLE:
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+mpirun -np 2 $cgmx -noplot dielectricBodies  -g=solidDiskYpe1.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og -debug=3
+
+
+
+valgrind $cgmx -noplot dielectricBodies  -g=solidDiskYpe1.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.1 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=go -debug=3 >& junk
+
+
+
+DIRICHLET BC OK 
+cgmx -noplot dielectricBodies -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=dirichlet  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.01  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+**BUG FIXED in RaditionBoundaryCondition.C ***
+
+TROUBLE
+cgmx -noplot dielectricBodies -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.02 -tp=.01  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=go > junk
+
+cgmx -noplot dielectricBodies -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=1 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og 
+
+valgrind $cgmx -noplot dielectricBodies -g=solidDiskYpe2.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=1 -tp=.01  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og
+
+
++++++++++++++++  RECTANGLE: 
+
+OK
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=recte4np.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+OK
+mpirun -np 2 $cgmx -noplot dielectricBodies -g=recte2np.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+**TROUBLE**
+cgmx -noplot dielectricBodies -g=recte2np.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+valgrind $cgmx -noplot dielectricBodies -g=recte2np.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=.2 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=go
+
+cgmx -noplot dielectricBodies -g=recte2np.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-.5 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+
+
+
+
+>>> TRY baMatIsoEps2
+mpirun -np 2 $cgmx -noplot dielectricBodies -numParallelGhost=3 -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.5  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og 
+
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.5  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=baMatIsoEps2.txt -go=og 
+
+
+NOT DISPERSIVE ?!
+--MX-- INTERFACE - finish me for dispersive and parallel
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og 
+
+
+SERIAL, ORDER=2: **BROKEN** NAN's
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.01  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+SERIAL ORDER=4 : OK 
+cgmx -noplot dielectricBodies -g=solidDiskYpe4.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal  -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1 -useSosupDissipation=1 -tf=30 -tp=.1  -xLeftProbe=-1 -xRightProbe=1  -probeFrequency=1 -probeFileName=SolidDiskMatIsoEps2 -matFile=matIsoEps2.txt -go=og
+
+********************************
+********  Fri Oct 23, 2020
+
+ogen -noplot solidCylinderInABoxGrid -prefix=solidCylGrid -order=2 -interp=e -ybc=p -zbc=p -factor=2 -za=-.5 -zb=.5 
+
+
+
 ********************************
 ********  Sat Jun 27, 2020
 

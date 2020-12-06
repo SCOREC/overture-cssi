@@ -7,14 +7,19 @@
 # examples:
 #     ogen noplot shapesArg -order=2 -factor=1 
 #     ogen noplot shapesArg -order=2 -interp=e -factor=2
+#
+# Fixed radial distance:
+#     ogen noplot shapesArg -prefix=shapesFixed -rgd=fixed -order=2 -interp=e -factor=2
 # 
+$prefix="shapes"; 
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
-$name=""; $xa=-1.25; $xb=1.25; $ya=-1.; $yb=1.; 
+$name=""; $xa=-1.25; $xb=1.25; $ya=-1.; $yb=1.;
+$rgd="var"; $dist=.175; 
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
-            "interp=s"=> \$interp,"name=s"=> \$name);
+            "interp=s"=> \$interp,"name=s"=> \$name,"prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"dist=f"=> \$dist );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -22,7 +27,7 @@ elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
 $suffix = ".order$order"; 
-if( $name eq "" ){$name = "shapes" . "$interp$factor" . $suffix . ".hdf";}
+if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 # 
 $ds=.05/$factor;
 #
@@ -51,7 +56,8 @@ create mappings
       -1 -1 1 0
     n-dist
     fixed normal distance
-      $nDist=5.*$ds; 
+      $nDist=5.*$ds;
+      if( $rgd eq "fixed" ){ $nDist=$dist; } # fixed normal distance 
       # -.15
       -$nDist
     n-stretch

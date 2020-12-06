@@ -2,6 +2,104 @@
 
 
 ***************************
+******* Nov 23, 2020
+
+
+REVISIT FOURTH-ORDER INTERFACE
+
+
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+-----> REAL ORDER=2 stage 1 interface --> accuracy degrades WHY?
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 4.69e-05 & 16.33 
+twoSquaresInterface16 &     8 & 9.74e-07 & 10.37 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 7.29e-06 &  6.43 
+twoSquaresInterface32 &    16 & 1.12e-07 &  8.70 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 1.12e-07 & 13.21 & 1.49e-06 &  4.89 
+twoSquaresInterface64 &    32 & 1.34e-08 &  8.36 & 6.56e-09 & 14.04 & 1.12e-08 & 15.27 & 1.34e-08 &  8.36 & 3.63e-07 &  4.10 
+Convergence rates: c0=3.68 c1=4.18 c2=4.20 c3=4.01 c4=3.03 
+
+
+
+
+--------- FIXED
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+twoSquaresInterface32 &    16 & 3.61e-08 & 16.07 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 9.21e-08 & 16.07 & 1.51e-07 & 15.96 
+twoSquaresInterface64 &    32 & 2.35e-09 & 15.36 & 6.00e-09 & 15.35 & 1.12e-08 & 15.27 & 6.00e-09 & 15.35 & 1.02e-08 & 14.80 
+Convergence rates: c0=4.20 c1=4.20 c2=4.20 c3=4.20 c4=4.09
+
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+twoSquaresInterface32 &    16 & 3.61e-08 & 16.07 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 9.21e-08 & 16.07 & 1.51e-07 & 15.96 
+Convergence rates: c0=4.27 c1=4.27 c2=4.27 c3=4.27 c4=4.14 
+
+
+
+**BROKEN** -- CHECK NEW TIME-STEP computation ---> *FIXED*
+
+OLD:
+>>> t=1.00e-01 dt=2.8e-03 max errors:[7.33e-09,1.52e-08,2.47e-08,], max (u):[3.42e-01,6.84e-01,1.08e+00,] (36 steps)
+
+NEW computeTimeStep
+>>> t=1.00e-01 dt=3.8e-03 max errors:[5.11e-09,1.11e-08,1.88e-08,], max (u):[3.42e-01,6.84e-01,1.08e+00,] (26 steps)
+
+CFL=.7 OK 
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -cfl=.75 -ng=5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.91e-03 &      & 1.25e-02 &      & 2.33e-02 &      & 1.25e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.01e-04 & 24.43 & 5.11e-04 & 24.46 & 9.51e-04 & 24.50 & 5.11e-04 & 24.46 & 7.31e-04 & 19.43 
+twoSquaresInterface8 &     4 & 9.15e-06 & 21.97 & 2.33e-05 & 21.93 & 4.34e-05 & 21.91 & 2.33e-05 & 21.93 & 3.84e-05 & 19.04 
+twoSquaresInterface16 &     8 & 5.07e-07 & 18.05 & 1.29e-06 & 18.06 & 2.40e-06 & 18.08 & 1.29e-06 & 18.06 & 2.26e-06 & 16.99 
+twoSquaresInterface32 &    16 & 2.93e-08 & 17.30 & 7.48e-08 & 17.25 & 1.39e-07 & 17.27 & 7.48e-08 & 17.25 & 1.39e-07 & 16.26 
+Convergence rates: c0=4.33 c1=4.33 c2=4.33 c3=4.33 c4=4.16
+
+
+
+**BROKEN** --> new dt computation is off
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5 
+
+old dt: 
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+twoSquaresInterface32 &    16 & 3.61e-08 & 16.07 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 9.21e-08 & 16.07 & 1.51e-07 & 15.96 
+Convergence rates: c0=4.27 c1=4.27 c2=4.27 c3=4.27 c4=4.14 
+
+new dt:
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.91e-03 &      & 1.25e-02 &      & 2.33e-02 &      & 1.25e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.01e-04 & 24.43 & 5.11e-04 & 24.46 & 9.51e-04 & 24.50 & 5.11e-04 & 24.46 & 7.31e-04 & 19.43 
+twoSquaresInterface8 &     4 & 7.90e-06 & 25.44 & 2.01e-05 & 25.42 & 3.75e-05 & 25.36 & 2.01e-05 & 25.42 & 3.66e-05 & 19.97 
+twoSquaresInterface16 &     8 & 8.30e-07 &  9.52 & 1.41e-06 & 14.26 & 2.62e-06 & 14.31 & 1.41e-06 & 14.26 & 1.38e-05 &  2.65 
+twoSquaresInterface32 &    16 & 4.19e-03 &  0.00 & 7.12e-03 &  0.00 & 1.33e-02 &  0.00 & 7.12e-03 &  0.00 & 1.46e-01 &  0.00 
+Convergence rates: c0=0.84 c1=1.01 c2=1.01 c3=1.01 c4=-0.10 
+
+OLD ---
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 3.99e-05 & 19.20 
+twoSquaresInterface16 &     8 & 5.80e-07 & 17.41 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 2.41e-06 & 16.56 
+twoSquaresInterface32 &    16 & 3.61e-08 & 16.07 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 9.21e-08 & 16.07 & 1.51e-07 & 15.96 
+Convergence rates: c0=4.27 c1=4.27 c2=4.27 c3=4.27 c4=4.14
+
+
+
+***************************
 ******* Sat Sept 19, 2020
 
 ADD TZ TEST FOR NONLINEAR 

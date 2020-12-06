@@ -44,6 +44,7 @@ $radX=.7; $radY=.35; # radii of the ellipse in the x and y directions
 $cx=0.; $cy=0.;  # center for the ellipse
 $blf=1;  # this means no stretching
 $deltaRadius0=.3; # radius for rgd fixed
+$nr0=7; 
 # For IBeam: 
 $centerHeight=.75; $centerWidth=.25;
 $edgeHeight=.25;   $edgeWidth=1.;
@@ -53,7 +54,7 @@ $numGhost=-1;  # if this value is set, then use this number of ghost points
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,\
             "interp=s"=> \$interp,"name=s"=> \$name,"ml=i"=>\$ml,"blf=f"=> \$blf, "prefix=s"=> \$prefix,\
             "cx=f"=>\$cx,"cy=f"=>\$cy,"rgd=s"=> \$rgd,"radX=f"=>\$radX,"radY=f"=>\$radY,"angle=f"=>\$angle,\
-            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,"per=i"=>\$per,\
+            "branch=i"=>\$branch,"prefix=s"=> \$prefix,"shape=s"=> \$shape,"per=i"=>\$per,"nr0r=i"=>\$nr0,\
             "edgeHeight=f"=>\$edgeHeight,"edgeWidth=f"=>\$edgeWidth,"numGhost=i"=>\$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -118,7 +119,7 @@ $cmd
 # 
 # -- Make a hyperbolic grid --
 #
-  $nr = intmg( 7 + $order/2 );
+  $nr = intmg( $nr0 + $order/2 );
   hyperbolic
     forward
     $nDist=($nr-4)*$ds;

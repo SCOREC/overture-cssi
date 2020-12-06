@@ -1,5 +1,12 @@
+      ! original calling sequence
       subroutine bcperq31(p,f,ploc,c,len,dt,n,m,md,ns,ord,fold,phi,amc,
      &                    fftsave,bcinit)
+      integer n,m,bcinit,i,j,k,l,ord,ns,md
+      complex*16 phi(md,31,m)
+      complex*16 fold(0:ord-2,md,31,m),adon,phat,xfact
+      double precision p(n,m),f(n,m),ploc(n),fftsave(ns)
+      double precision amc(-1:ord-2),scl,dt,w,len,c
+
       call  bcperq31d(1,n,p,f,ploc,c,len,dt,n,m,md,ns,
      &                ord,fold,phi,amc,fftsave,bcinit)
       return

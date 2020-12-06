@@ -57,7 +57,7 @@ if( dispersive.gt.0 )then
     !  (see maxwell.pdf)
     !
 
-    if( t.le.3*dt )then
+    if( t.le.3*dt .and. debug.gt.0  )then
       write(*,'("cgmx:interface3d: PROJECT INTERFACE DISPERSIVE in 2D")')
     end if
 
@@ -241,7 +241,7 @@ if( dispersive.gt.0 )then
     !  (see maxwell.pdf)
     !
 
-    if( t.le.3*dt )then
+    if( t.le.3*dt .and. debug.gt.0 )then
       write(*,'("cgmx:interface3d: PROJECT INTERFACE DISPERSIVE in 3D")')
     end if
 
@@ -1113,3 +1113,4 @@ end if
 #endMacro
 
 
+  

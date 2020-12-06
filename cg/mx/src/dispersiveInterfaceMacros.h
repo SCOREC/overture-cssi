@@ -2143,7 +2143,7 @@ end do
      ! write(debugFile,'(" interface:E: initialized,it=",2i4)') initialized,it
      if( .false. .or. (initialized.eq.0 .and. it.eq.1) )then
        ! form the matrix (and save factor for later use)
-       if( nn.eq.0 )then
+       if( nn.eq.0 .and. debug.gt.0 )then
          write(*,'(" Interface42c: form matrix and factor, it=",i4)') it
        end if
 

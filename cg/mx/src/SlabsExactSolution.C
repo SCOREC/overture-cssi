@@ -313,7 +313,8 @@ initialize( CompositeGrid & cg, int numberOfDomains,
         const bool isRectangular=mg.isRectangular();
         if( !isRectangular )
             mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
-        OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+
+        OV_GET_SERIAL_ARRAY_CONDITIONAL(real,mg.center(),xLocal,!isRectangular); // *wdh* added conditional, Nov 21, 2020
 
         LocalReal dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
         if( isRectangular )
@@ -1269,7 +1270,9 @@ eval(LocalReal t, CompositeGrid & cg, int grid,
     const bool isRectangular=mg.isRectangular();
     if( !isRectangular )
         mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
-    OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
+
+    OV_GET_SERIAL_ARRAY_CONDITIONAL(real,mg.center(),xLocal,!isRectangular); // *wdh* added conditional, Nov 21, 2020
+
 
     LocalReal dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
     int iv0[3]={0,0,0}; //

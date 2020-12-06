@@ -480,7 +480,9 @@ outputHeader()
       maxMin=max(maxMin,hMin);
       minMin=min(minMin,hMin);
     
-      real numGridPoints = c.mask().elementCount();
+      // real numGridPoints = c.mask().elementCount();  // *wdh* Sept 30, 2020
+      const IntegerArray & gid = c.gridIndexRange();
+      real numGridPoints = (gid(1,0)-gid(0,0)+1)*(gid(1,1)-gid(0,1)+1)*(gid(1,2)-gid(0,2)+1);
     
       // fPrintF(file,"%4i: %20s ([%2i:%5i],[%2i:%5i],[%2i:%5i])  %8i   %8.2e %8.2e \n",
       fPrintF(file,buff,grid, (const char *)cg[grid].getName(),
@@ -488,6 +490,7 @@ outputHeader()
 	      c.gridIndexRange(Start,axis2),c.gridIndexRange(End,axis2),
 	      c.gridIndexRange(Start,axis3),c.gridIndexRange(End,axis3),
 	      numGridPoints,hMax,hMin);
+
       numberOfGridPoints+=numGridPoints;
     }
     fPrintF(file," total number of grid points =%g, min(hmn)=%6.2e, max(hmn)=%6.2e, max(hmx)=%6.2e,  \n\n",

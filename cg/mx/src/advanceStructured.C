@@ -359,7 +359,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         if( numberOfStages>1 && addDissipation && ( numberOfStepsTaken % sosupDissipationFrequency != 0 ) )
             continue;  // skip sosup dissipation 
 
-        if( numberOfStepsTaken<=4 )
+        if( numberOfStepsTaken<=4 && (debug & 2) )
         {
             printF("\n +++++ FD t=%9.3e STAGE %i: computeUt=%i updateInterior=%i addDissipation=%i applyBCs=%i\n",
                           t+dt,stage,(stageInfo & computeUtInStage ? 1:0),(stageInfo & updateInteriorInStage ? 1 : 0),
@@ -402,6 +402,14 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
       // Each grid may or may not have dispersion model: 
             const DispersionModelEnum localDispersionModel = numberOfPolarizationVectors>0 ? dispersionModel : noDispersion;
             
+            if( numberOfPolarizationVectors>0 && !dmp.isDispersiveMaterial() )
+            {
+                printF("advanceStructured:ERROR: numberOfPolarizationVectors=%d >0 BUT dmp.isDispersiveMaterial()=%d\n",
+                              numberOfPolarizationVectors,(int)dmp.isDispersiveMaterial());
+                OV_ABORT("error");
+            }
+            
+
 
             MappedGrid & mg = cg[grid];
             assert( mgp==NULL || op!=NULL );
@@ -439,7 +447,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
             eps = epsGrid(grid);
             mu = muGrid(grid);
         
-            if( numberOfStepsTaken<1 ) 
+            if( numberOfStepsTaken<1 && debug & 4 ) 
                 printF(" advanceNFDTD:INFO eps,mu,c=%8.2e %8.2e %8.2e for grid=%i (%s) \n",eps,mu,c,grid,
                               (const char*)cg[grid].getName());
         
@@ -537,7 +545,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
       	// printF(" max(fabs(lapSq))=%8.2e min=%8.2e\n",max(fabs(lapSq(I1,I2,I3,C))),min(fabs(lapSq(I1,I2,I3,C))));
                         }
             // compute laplacian for curvilinear grids
-                        if( t<3.*dt )
+                        if( t<3.*dt && debug & 4 )
                         {
                   	printF("--MX-- advStr: compute laplacian for curvilinear grids useConservative=%i\n",(int)useConservative);
                         }
@@ -651,9 +659,11 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                         	      fCurrent,
                         	      localDispersionModel,
                         	      pxc,pyc,pzc, 
-                                        numberOfPolarizationVectors,grid,
-                                        nonlinearModel,
-                        	      0,0,0,  // for future use
+                                        numberOfPolarizationVectors,  // ipar[28]
+                                        grid,                         // ipar[29]
+                                        nonlinearModel,               // ipar[30]
+                        	      debug,                        // ipar[31]
+                                        0,0,  // for future use
                     // qxc,qyc,qzc, 
                     // rxc,ryc,rzc,
                         	      useSosupDissipation,
@@ -797,7 +807,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 }
                 const bool centerNeeded = forcingOption == twilightZoneForcing;
                 real *xyptr =uptr;  // default value if not used 
-                if( centerNeeded && timeSteppingMethod==modifiedEquationTimeStepping )
+                if( ok && centerNeeded && timeSteppingMethod==modifiedEquationTimeStepping )
                 {
           // Pass the xy array for twilight-zone -- needed for dispersive models  *wdh* Sept 2, 2017
                     OV_GET_SERIAL_ARRAY(real,mg.center(),xLocal);
@@ -909,7 +919,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
         if( applyBC )
         {
       // ------ APPLY BOUNDARY CONDITIONS ------
-            if( numberOfStages>1 && numberOfStepsTaken<=4 )
+            if( numberOfStages>1 && numberOfStepsTaken<=4 && (debug & 8) )
             {
                 printF(" +++ apply boundary conditions...\n");
             }

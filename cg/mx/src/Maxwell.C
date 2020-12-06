@@ -10,10 +10,12 @@
 #include "ShowFileReader.h"
 #include "RadiationBoundaryCondition.h"
 #include "RadiationKernel.h"
+#include "FourierTransform.h"
 #include "Oges.h"
 #include "ParallelUtility.h"
 #include "DispersiveMaterialParameters.h"
 #include "ProbeInfo.h"
+#include "CheckParallel.h"
 
 aString Maxwell::
 bcName[numberOfBCNames]={
@@ -65,16 +67,20 @@ Maxwell:: Maxwell()
    
   np= max(1,Communication_Manager::numberOfProcessors());
   aString buff;
-#ifndef USE_PPP
-  debugFile   = fopen("mx.debug","w" );        // Here is the log file
-  pDebugFile= debugFile;
-#else
-  debugFile = fopen(sPrintF(buff,"mxNP%i.debug",np),"w" );  // Here is the debug file
-  pDebugFile = fopen(sPrintF(buff,"mx%i.debug",myid),"w");
-#endif
+  #ifndef USE_PPP
+    debugFile   = fopen("mx.debug","w" );        // Here is the log file
+    pDebugFile= debugFile;
+  #else
+    debugFile = fopen(sPrintF(buff,"mxNP%i.debug",np),"w" );  // Here is the debug file
+    pDebugFile = fopen(sPrintF(buff,"mxNP%ip%i.debug",np,myid),"w");
+  #endif
 
   checkFile   = fopen("mx.check","w" );        // for regression and convergence tests
   
+  dbase.put<CheckParallel>("checkParallel");  // use to check parallel computations
+  CheckParallel & checkParallel = dbase.get<CheckParallel>("checkParallel");
+  checkParallel.setDefaultFile( pDebugFile ); // set default file for debug output 
+
   method=defaultMethod;
   dispersionModel=noDispersion;
   dbase.put<aString>("dispersionModelName")="none";
@@ -118,6 +124,9 @@ Maxwell:: Maxwell()
   //                                 = 0 : use old, ad-hoc interface projection 
   if( !dbase.has_key("useImpedanceInterfaceProjection") ) dbase.put<int>("useImpedanceInterfaceProjection")=1; 
   
+  // useJacobiInterfaceUpdate = 1 : use a Jacobi like update for assigning ghost at intefaces
+  if( !dbase.has_key("useJacobiInterfaceUpdate") ) dbase.put<int>("useJacobiInterfaceUpdate")=1; 
+  
 
   frequency=5.;
   checkErrors=true;
@@ -147,6 +156,11 @@ Maxwell:: Maxwell()
   
   plotHarmonicElectricFieldComponents=false;  // plot Er and Ei assuming : E(x,t) = Er(x)*cos(w*t) + Ei(x)*sin(w*t) 
   pHarmonicElectricField=NULL;
+
+  // For dispersive materials plot all the component polarizations: 
+  dbase.put<bool>("plotPolarizationComponents")=false;
+  // For nonlinear materials plot the nonlinear variables 
+  dbase.put<bool>("plotNonlinearComponents")=false;
 
   numberOfMaterialRegions=1; // for variable coefficients -- number of piecewise constant regions
   maskBodies=false;          // if true then PEC bodies with stair-stepping are defined
@@ -319,7 +333,7 @@ Maxwell:: Maxwell()
   cylinderRadius=1.;
   cylinderAxisStart=0.; cylinderAxisEnd=1.; // for eigenfunctions of the cylinder
 
-  dbase.put<real>("scatteringRadius")=.5; // radius od cylinder or sphere for scattering solution
+  dbase.put<real>("scatteringRadius")=.5; // radius of cylinder or sphere for scattering solution
 
   orderOfAccuracyInSpace=2;
   orderOfAccuracyInTime=2;
@@ -409,6 +423,12 @@ Maxwell:: Maxwell()
   radbcGrid[0]=radbcGrid[1]=-1; radbcSide[0]=radbcSide[1]=-1; radbcAxis[0]=radbcAxis[1]=-1;
   radiationBoundaryCondition=NULL;
   dbase.put<int>("numberOfPolesRadiationBoundaryCondition")=-1;   // -1 : use default (21) 
+
+  // optionally use the new parallel "exact" radiation BC 
+  dbase.put<int>("useParallelRadiationBoundaryCondition")=0;
+  #ifdef USE_PPP
+    dbase.get<int>("useParallelRadiationBoundaryCondition")=1;
+  #endif 
 
   useStreamMode=true;
   saveGridInShowFile=true;
@@ -528,7 +548,8 @@ Maxwell:: Maxwell()
   timingName[timeForBoundaryConditions]          ="  boundary conditions";
   timingName[timeForInterfaceBC]                 ="  interface bc";
   timingName[timeForRadiationBC]                 ="  radiation bc";
-  timingName[timeForRaditionKernel]              ="  radiationKernel";
+  timingName[timeForRadiationKernel]             ="  radiationKernel";
+  timingName[timeForFourierTransform]            ="    Fourier transform";
   timingName[timeForUpdateGhostBoundaries]       ="  update ghost (parallel)";
   timingName[timeForInterpolate]                 ="  interpolation";
   timingName[timeForIntensity]                   ="compute intensity";
@@ -881,6 +902,10 @@ initializeRadiationBoundaryConditions()
     for( int i=0; i<numberOfNonLocal; i++ )
     {
       radiationBoundaryCondition[i].setOrderOfAccuracy(orderOfAccuracyInSpace);
+
+      // Optionally use the new parallel version
+      int & useParallelRadiationBoundaryCondition = dbase.get<int>("useParallelRadiationBoundaryCondition");
+      radiationBoundaryCondition[i].useParallelVersion( useParallelRadiationBoundaryCondition );
       
       int nc1=0, nc2=0;      // component range
       if( cg.numberOfDimensions()==2 )
@@ -901,7 +926,7 @@ initializeRadiationBoundaryConditions()
 	}
       }
 
-      
+      int grid = radbcGrid[i];
       MappedGrid & mg = cg[radbcGrid[i]];
       real cRadBC = cGrid(radbcGrid[i]);  // *wdh* May 26, 2020
       // printF("**** initializeRadiationBoundaryConditions: c=%9.2e\n",cRadBC); 
@@ -911,7 +936,14 @@ initializeRadiationBoundaryConditions()
       real period=-1.;
       int numberOfModes=-1, orderOfTimeStepping=-1; // use defaults 
       
-      radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC, period, numberOfModes, orderOfTimeStepping, numberOfPoles);
+      int current=0;
+      realMappedGridFunction & u = cgfields[current][grid];
+
+      radiationBoundaryCondition[i].initialize(u,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC, period, numberOfModes, orderOfTimeStepping, numberOfPoles);
+
+      // radiationBoundaryCondition[i].initialize(mg,radbcSide[i],radbcAxis[i],nc1,nc2,cRadBC, period, numberOfModes, orderOfTimeStepping, numberOfPoles);
+
+
     }
     
   }
@@ -1200,7 +1232,11 @@ printStatistics(FILE *file /* = stdout */)
   {
     for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
     {
-      numberOfGridPoints+=cg[grid].mask().elementCount();
+      MappedGrid & mg = cg[grid];
+      const IntegerArray & gid = mg.gridIndexRange();
+      // numberOfGridPoints+=cg[grid].mask().elementCount();  // *wdh* Sept 30, 2020 -- this includes ghost points
+      numberOfGridPoints += (gid(1,0)-gid(0,0)+1)*(gid(1,1)-gid(0,1)+1)*(gid(1,2)-gid(0,2)+1);
+      
     }
   }
   else
@@ -1223,11 +1259,13 @@ printStatistics(FILE *file /* = stdout */)
     poisson->printStatistics(logFile);
 
   timing(timeForRadiationBC)=RadiationBoundaryCondition::cpuTime; 
-  timing(timeForRaditionKernel)=RadiationKernel::cpuTime;
+  timing(timeForRadiationKernel)=RadiationKernel::cpuTime;
+
+  timing(timeForFourierTransform)=FourierTransform::cpuTime;
 
   int i;
   for( i=0; i<maximumNumberOfTimings; i++ )
-    timing(i) =getMaxValue(timing(i),0);  // get max over processors -- results only go to processor=0
+    timing(i) = ParallelUtility::getMaxValue(timing(i),0);  // get max over processors -- results only go to processor=0
 
   // adjust times for waiting
   real timeWaiting=timing(timeForWaiting);
@@ -1522,11 +1560,12 @@ buildInterfaceOptionsDialog(DialogData & dialog )
   aString tbCommands[] = {
                           "use new interface routines",
                           "use impedance interface projection",
+                          "use jacobi interface update",
  			  ""};
   int tbState[20];
   tbState[0] = useNewInterfaceRoutines; 
-  tbState[1]= dbase.get<int>("useImpedanceInterfaceProjection");
-  
+  tbState[1] = dbase.get<int>("useImpedanceInterfaceProjection");
+  tbState[2] = dbase.get<int>("useJacobiInterfaceUpdate");
 
   int numColumns=1;
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
@@ -1853,6 +1892,7 @@ buildForcingOptionsDialog(DialogData & dialog )
                             (int)knownSolutionOption );
 
   aString tbCommands[] = {"use twilightZone materials",
+			  "use parallel radiation boundary condition",
  			  ""};
   int tbState[10];
   tbState[0] = useTwilightZoneMaterials;
@@ -1951,6 +1991,9 @@ buildPlotOptionsDialog(DialogData & dialog )
 
   const int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
 
+  const bool & plotPolarizationComponents = dbase.get<bool>("plotPolarizationComponents");
+  const bool & plotNonlinearComponents    = dbase.get<bool>("plotNonlinearComponents");
+
   // ************** PUSH BUTTONS *****************
   dialog.setOptionMenuColumns(1);
 
@@ -1962,13 +2005,15 @@ buildPlotOptionsDialog(DialogData & dialog )
                           "plot energy density",
                           "plot intensity",
                           "plot harmomic E field",
+                          "plot polarization components",
+                          "plot nonlinear components",
                           "check errors",
                           "compare to show file",
                           "compute energy",
                           "plot rho",
 			  "plot dsi vertex max",
  			  ""};
-  int tbState[15];
+  int tbState[20];
   tbState[0] = plotErrors;
   tbState[1] = plotDivergence;
   tbState[2] = plotDissipation;
@@ -1977,11 +2022,13 @@ buildPlotOptionsDialog(DialogData & dialog )
   tbState[5] = plotEnergyDensity;
   tbState[6] = plotIntensity;
   tbState[7] = plotHarmonicElectricFieldComponents;
-  tbState[7] = checkErrors;
-  tbState[8] = compareToReferenceShowFile;
-  tbState[9] = computeEnergy;
-  tbState[10]= plotRho;
-  tbState[11]= plotDSIMaxVertVals;
+  tbState[8] = plotPolarizationComponents;
+  tbState[9] = plotNonlinearComponents;
+  tbState[10]= checkErrors;
+  tbState[11]= compareToReferenceShowFile;
+  tbState[12]= computeEnergy;
+  tbState[13]= plotRho;
+  tbState[14]= plotDSIMaxVertVals;
 
   int numColumns=2;
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
@@ -2236,6 +2283,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
   int & setDivergenceAtInterfaces = dbase.get<int>("setDivergenceAtInterfaces");
   int & useImpedanceInterfaceProjection = dbase.get<int>("useImpedanceInterfaceProjection");
+  int & useJacobiInterfaceUpdate = dbase.get<int>("useJacobiInterfaceUpdate");
+  
   BoundaryForcingEnum & boundaryForcingOption =dbase.get<BoundaryForcingEnum>("boundaryForcingOption");
   bool & solveForScatteredField = dbase.get<bool>("solveForScatteredField");
   ChirpedArrayType & cpw = dbase.get<ChirpedArrayType>("chirpedParameters");
@@ -2249,6 +2298,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & useSuperGrid = parameters.dbase.get<int>("useSuperGrid");
   real & superGridWidth = parameters.dbase.get<real>("superGridWidth");
   int & absorbingLayerErrorOffset = parameters.dbase.get<int>("absorbingLayerErrorOffset");
+
+  int & useParallelRadiationBoundaryCondition = dbase.get<int>("useParallelRadiationBoundaryCondition");
 
   int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
 
@@ -2264,6 +2315,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   aString materialFile="none";
   aString materialFileToSave="myMaterial.txt";
   
+  bool & plotPolarizationComponents = dbase.get<bool>("plotPolarizationComponents");
+  bool & plotNonlinearComponents    = dbase.get<bool>("plotNonlinearComponents");
+
   real & velocityScale = dbase.get<real>("velocityScale");
   real & lengthScale = dbase.get<real>("lengthScale"); 
 
@@ -3050,6 +3104,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
     else if( forcingOptionsDialog.getToggleValue(answer,"use twilightZone materials",useTwilightZoneMaterials) ){}//
 
+    else if( forcingOptionsDialog.getToggleValue(answer,"use parallel radiation boundary condition",useParallelRadiationBoundaryCondition) ){}//
+
     else if( plotOptionsDialog.getTextValue(answer,"radius for checking errors","%f",radiusForCheckingErrors) ){}//
     else if( plotOptionsDialog.getTextValue(answer,"intensity option","%i",intensityOption) ){}//
     else if( plotOptionsDialog.getTextValue(answer,"intensity averaging interval","%e (periods)",intensityAveragingInterval) ){}//
@@ -3100,8 +3156,13 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( interfaceOptionsDialog.getToggleValue(answer,"use impedance interface projection",
 						      useImpedanceInterfaceProjection) )
     {
-      printF("useImpedanceInterfaceProjection=%i : 0=ad-hoc (old),  1=use impedance (new)\n",
+      printF("useImpedanceInterfaceProjection=%i : 0=ad-hoc (old),  1=use impedance (new).\n",
               useImpedanceInterfaceProjection);
+    }
+    else if( interfaceOptionsDialog.getToggleValue(answer,"use jacobi interface update",useJacobiInterfaceUpdate) )
+    {
+      printF("useJacobiInterfaceUpdate=%i : 0=use Gauss-Seidel like, 1=use Jacobi-like, update for interface ghost points.\n",
+              useJacobiInterfaceUpdate);
     }
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use divergence cleaning",useDivergenceCleaning) ){}//
 
@@ -3270,6 +3331,15 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( plotOptionsDialog.getToggleValue(answer,"plot errors",plotErrors) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"plot scattered field",plotScatteredField) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"plot total field",plotTotalField) ){}//
+
+    else if( plotOptionsDialog.getToggleValue(answer,"plot polarization components",plotPolarizationComponents) )
+    {
+      printF("plotPolarizationComponents=%d : 1=plot all component polarization variables for dispersive materials.\n",
+             plotPolarizationComponents);
+    }
+    
+    else if( plotOptionsDialog.getToggleValue(answer,"plot nonlinear components",plotNonlinearComponents) ){}//
+
     else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"plot divergence",plotDivergence) ){}//
     else if( plotOptionsDialog.getToggleValue(answer,"check errors",checkErrors) ){}//
@@ -4698,6 +4768,15 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
 
       // we could read once and copy parameters -- do this for now
       dmp.readFromFile( materialFile,numberOfPolarizationVectors );
+
+      if( dmp.isDispersiveMaterial() && dispersionModel==noDispersion )
+      {
+        // Sanity check 
+        printF("CgMx:::ERROR: This material is dispersive but dispersionModel==noDispersion.\n"
+               "  Choose a different material or change the dispersion model.\n");
+        OV_ABORT("ERROR");
+      }
+
 
       if( method == bamx )
       {

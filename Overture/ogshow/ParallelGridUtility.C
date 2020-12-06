@@ -378,7 +378,7 @@ getLocalBoundaryConditions( const realMappedGridFunction & a,
         else
         {
       // for internal ghost mark as periodic since these behave in the same was as periodic
-            bcLocal(0,axis) = -1; // bc(0,axis)>=0 ? 0 : -1;
+            bcLocal(0,axis) = internalGhostBC; // bc(0,axis)>=0 ? 0 : -1;
         }
         
         if( a.getLocalBound(axis) == a.getBound(axis) ) 
@@ -387,7 +387,7 @@ getLocalBoundaryConditions( const realMappedGridFunction & a,
         else
         {
       // for internal ghost mark as periodic since these behave in the same was as periodic
-            bcLocal(1,axis) = -1; // bc(1,axis)>=0 ? 0 : -1;
+            bcLocal(1,axis) = internalGhostBC; // bc(1,axis)>=0 ? 0 : -1;
         }
         
     }
@@ -420,7 +420,7 @@ getLocalBoundaryConditions( const MappedGrid & mg,
         else
         {
       // for internal ghost mark as periodic since these behave in the same was as periodic
-            bcLocal(0,axis) = -1; // bc(0,axis)>=0 ? 0 : -1;
+            bcLocal(0,axis) = internalGhostBC; // bc(0,axis)>=0 ? 0 : -1;
         }
         
         if( a.getLocalBound(axis) == a.getBound(axis) ) 
@@ -429,7 +429,7 @@ getLocalBoundaryConditions( const MappedGrid & mg,
         else
         {
       // for internal ghost mark as periodic since these behave in the same was as periodic
-            bcLocal(1,axis) = -1; // bc(1,axis)>=0 ? 0 : -1;
+            bcLocal(1,axis) = internalGhostBC; // bc(1,axis)>=0 ? 0 : -1;
         }
         
     }

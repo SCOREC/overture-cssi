@@ -19,7 +19,7 @@ RadiationBoundaryCondition(int orderOfAccuracy=4);
 ~RadiationBoundaryCondition();
 
 
-int initialize( MappedGrid & mg, 
+int initialize( realMappedGridFunction & u, 
 		int side, int axis,
                 int nc1=0, int nc2=0, 
 		real c_=1., real period_=-1.,  
@@ -29,7 +29,13 @@ int initialize( MappedGrid & mg,
 int assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
 			   realMappedGridFunction & u2 );
 
-int setOrderOfAccuracy(int orderOfAccuracy );
+int setDebug( int debugFlag, FILE *pDebugFile=stdout );
+
+int setOrderOfAccuracy( int orderOfAccuracy );
+int setNumberOfPoles( int numPoles  );
+
+// use new parallel version
+int useParallelVersion( bool trueOrFalse );
 
 static int debug;
 static real cpuTime;

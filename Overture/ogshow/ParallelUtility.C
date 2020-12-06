@@ -1608,6 +1608,7 @@ IndexBox::IndexBox()
         ab[d][1]=-1;
     }
     processor=-1;
+    tag=0;
 }
 
 IndexBox::IndexBox(int i1a, int i1b, int i2a, int i2b, int i3a, int i3b, int i4a, int i4b)
@@ -1667,6 +1668,16 @@ size() const
     return num;
 }
 
+/// \brief Set the base and bound for axis=d 
+void IndexBox::
+setBaseBound( int d, int base, int bound)
+{
+    assert( d<MAX_DISTRIBUTED_DIMENSIONS );
+    ab[d][0] = base;
+    ab[d][1] = bound;
+}
+
+
 
 bool IndexBox::
 intersect(const IndexBox & a, const IndexBox & b, IndexBox & c)
@@ -1691,6 +1702,23 @@ intersect(const IndexBox & a, const IndexBox & b, IndexBox & c)
     c.setBounds(ia[0],ib[0], ia[1],ib[1], ia[2],ib[2], ia[3],ib[3]);
     return notEmpty;
 }
+
+bool IndexBox::
+contains(const IndexBox & a )
+//   Return true if this box contains "a"
+// 
+{
+    for( int d=0; d<MAX_DISTRIBUTED_DIMENSIONS; d++ )
+    {
+        if( a.base(d) < ab[d][0] || a.bound(d)> ab[d][1] )
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 
 static FILE *debugFile=NULL;
 
@@ -2095,7 +2123,9 @@ static FILE *debugFile=NULL;
               {
         	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                           myid,bufSize,p,m,numReceive,myid);
-        	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+             //          #If "MPI_Real" eq "MPI_INT"
+             //          #Else
+          	  for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
         	fprintf(debugFile,"\n");
               }
        // fill in the entries of vLocal
@@ -2566,7 +2596,9 @@ static FILE *debugFile=NULL;
               {
         	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                           myid,bufSize,p,m,numReceive,myid);
-        	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+             //          #If "MPI_Real" eq "MPI_INT"
+             //          #Else
+          	  for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
         	fprintf(debugFile,"\n");
               }
        // fill in the entries of vLocal
@@ -3038,7 +3070,8 @@ static FILE *debugFile=NULL;
               {
         	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                           myid,bufSize,p,m,numReceive,myid);
-        	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+             //          #If "MPI_INT" eq "MPI_INT"
+              	  for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3i ",rBuff[m][j]);
         	fprintf(debugFile,"\n");
               }
        // fill in the entries of vLocal

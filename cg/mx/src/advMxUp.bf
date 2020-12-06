@@ -741,7 +741,7 @@ end if
 ! Macro: Output some debug info for the first few time-steps 
 ! ===========================================================================================
 #beginMacro INFO(string)
-if( t.le.3.*dt )then
+if( t.le.3.*dt .and. debug.gt.1 )then
   write(*,'("advMxUp>>>",string)')
 end if
 #endMacro
@@ -1038,9 +1038,8 @@ end if
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 2D, ORDER 2
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear2dOrder2()
- if( t.le.2.*dt )then
-   write(*,'(" advMxUp: FD22 + sosup-dissipation for curvilinear")')
- end if 
+
+ INFO(" advMxUp: FD22 + sosup-dissipation for curvilinear")
 
  if( useNewForcingMethod.ne.0 )then
   write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
@@ -1149,9 +1148,8 @@ else if( updateSolution.eq.1 )then
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 2D, ORDER 4
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear2dOrder4()
-  if( t.le.2.*dt )then
-    write(*,'(" advMxUp: FD44 + upwind-dissipation for curvilinear")')
-  end if 
+
+  INFO(" advMxUp: FD44 + upwind-dissipation for curvilinear")
 
   if( useNewForcingMethod.ne.0 )then
    write(*,'(" finish me: FD44 + sosup-dissipation && useNewForcingMethod")')
@@ -1235,9 +1233,8 @@ else if( updateSolution.eq.1 )then
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 2D, ORDER 4, Conservative operators
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear2dOrder4Cons()
-  if( t.le.2.*dt )then
-    write(*,'(" advMxUp: FD44 + upwind-dissipation for curvilinear")')
-  end if 
+
+  INFO(" advMxUp: FD44 + upwind-dissipation for curvilinear")
 
   if( useNewForcingMethod.ne.0 )then
    write(*,'(" finish me: FD44 + sosup-dissipation && useNewForcingMethod")')
@@ -1312,9 +1309,9 @@ else if( updateSolution.eq.1 )then
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 2
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear3dOrder2()
- if( t.le.2.*dt )then
-   write(*,'(" advMxUp: FD44 + sosup-dissipation for curvilinear")')
- end if 
+
+ INFO(" advMxUp: FD44 + sosup-dissipation for curvilinear")
+
 
  if( useNewForcingMethod.ne.0 )then
   write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
@@ -1402,9 +1399,9 @@ else if( updateSolution.eq.1 )then
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 4
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear3dOrder4()
- if( t.le.2.*dt )then
-   write(*,'(" advMxUp: FD44 + sosup-dissipation for curvilinear")')
- end if 
+
+ INFO(" advMxUp: FD44 + sosup-dissipation for curvilinear")
+
 
  if( useNewForcingMethod.ne.0 )then
   write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
@@ -1483,9 +1480,8 @@ else if( updateSolution.eq.1 )then
 ! Macro:     UPWIND DISSIPATION, CURVILINEAR, 3D, ORDER 4, Conservative
 ! ===========================================================================================
 #beginMacro updateUpwindDissipationCurvilinear3dOrder4Cons()
- if( t.le.2.*dt )then
-   write(*,'(" advMxUp: FD44 + sosup-dissipation for curvilinear")')
- end if 
+
+ INFO(" advMxUp: FD44 + sosup-dissipation for curvilinear")
 
  if( useNewForcingMethod.ne.0 )then
   write(*,'(" finish me: useSosupDissipation && useNewForcingMethod")')
@@ -1610,7 +1606,7 @@ else if( updateSolution.eq.1 )then
  real rpar(0:*)
       
 !     ---- local variables -----
- integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd
+ integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd,debug
 
  integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,axis,dir
  integer addForcing,orderOfDissipation,option
@@ -1710,7 +1706,8 @@ else if( updateSolution.eq.1 )then
  real cdcH,cdcHLap,cdcHLapsq,cdcHLapm
 
  ! dispersion
- integer dispersionModel,pxc,pyc,pzc,qxc,qyc,qzc,rxc,ryc,rzc
+ integer dispersionModel,pxc,pyc,pzc
+ ! integer qxc,qyc,qzc,rxc,ryc,rzc
  integer ec,pc
  real gamma,omegap
  real gammaDt,omegapDtSq,ptt, fe,fp
@@ -2322,12 +2319,11 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  pxc                 =ipar(25)
  pyc                 =ipar(26)
  pzc                 =ipar(27)
- qxc                 =ipar(28)
- qyc                 =ipar(29)
- qzc                 =ipar(30)
- rxc                 =ipar(31)
- ryc                 =ipar(32)
- rzc                 =ipar(33)
+
+ ! numberOfPolarizationVectors = ipar(28)
+ ! grid                =ipar(29)
+ ! nonlinearModel      =ipar(30)
+ debug               =ipar(31)
 
  useSosupDissipation   =ipar(34)
  sosupDissipationOption=ipar(35)
@@ -2381,7 +2377,7 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
  gammaDt=gamma*dt
  omegapDtSq=(omegap*dt)**2
- if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+ if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. debug.gt.1 )then
     write(*,'("--advMxUp-- dispersionModel=",i4," px,py,pz=",3i2)') dispersionModel,pxc,pyc,pzc
  end if
 
@@ -2402,8 +2398,9 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
 
   ! sosupParameter=gamma in sosup scheme  0<= gamma <=1   0=centered scheme
   adSosup=sosupParameter*adSosup
-  if( t.le.2*dt )then
+  if( t.le.2*dt .and. debug.gt.1 )then
     write(*,'("advMxUp: useSosup dissipation, t,dt,adSosup=",3e10.2)') t,dt,adSosup
+    write(*,'("advMxUp: useSosup dissipation, debug=",i3)') debug
     write(*,'("advMxUp: sosupDissipationOption=",i2," sosupParameter=",1pe10.2)') sosupDissipationOption,sosupParameter
     write(*,'("advMxUp: updateDissipation=",i2)') updateDissipation
     write(*,'("advMxUp: updateSolution=",i2)') updateSolution

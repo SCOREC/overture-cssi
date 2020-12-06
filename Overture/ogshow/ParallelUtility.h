@@ -138,11 +138,17 @@ inline int bb(int side, int d) const {return ab[d][side];} //
 
 void setBounds(int i1a, int i1b, int i2a=0, int i2b=0, int i3a=0, int i3b=0, int i4a=0, int i4b=0);
 
+void setBaseBound( int d, int base, int bound);
+
 static bool intersect(const IndexBox & a, const IndexBox & b, IndexBox & c);
+
+//   Return true if this box contains "a"
+bool contains( const IndexBox & a );
 
 bool isEmpty() const;
 
 int processor;  // processor number associated with this IndexBox
+int tag;        // a tag for use by the user
 
 protected:
   int ab[MAX_DISTRIBUTED_DIMENSIONS][2];  // base and bounds

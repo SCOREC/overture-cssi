@@ -293,23 +293,46 @@ sub addInlineMacroDefinition
 
 
 
-
+# =========================================================================================
+#  Output macro definitions to a file 
+#
+# =========================================================================================
 sub outputMacroDefinitions {
 
     my $ii;
     my $line;
     my @macro;
 
+    # FIX ME -- output macros to the file when they are defined since macros can be redefined. ***************
+    
+    # -- output inline macros ---
+    for( $ii=0;  $ii< $numberOfInlineMacros; $ii++ )
+    {
+	print MFILE "#defineMacro $inlineMacroNames[$ii]($inlineMacroArgs[$ii]) ";
+	@macro = @{@inlineMacroDefinitions[$ii]};
+
+	foreach $line ( @macro ) 
+        {
+	  print MFILE $line;
+	}
+        print MFILE "\n\n"; 
+    }
+
+    # -- output normal macros ---
     for( $ii=0;  $ii< $numberOfMacros; $ii++ )
     {
-	print( "****** MACRO $ii ($macroNames[$ii]) (args=$macroArgs[$ii]) ***** \n");
+	# print MFILE "****** MACRO $ii ($macroNames[$ii]) (args=$macroArgs[$ii]) ***** \n";
+	print MFILE "#beginMacro $macroNames[$ii]($macroArgs[$ii])\n";
 	@macro = @{@macroDefinitions[$ii]};
 
 	foreach $line ( @macro ) 
         {
-	  print $line;
+	  print MFILE $line;
 	}
+	print MFILE "#endMacro\n\n";
     }
+
+
 }
 
 sub getArguments # ($s,$a)
@@ -1123,6 +1146,7 @@ if( $#ARGV < 0 )
   exit;
 }
 
+$saveMacros=0;
 
 # ----- read flags ---------------
 $i=0;
@@ -1147,6 +1171,14 @@ foreach $arg ( @ARGV )
     elsif( $arg eq "-clean" )
     {
       $clean=1;
+    }
+    elsif( $arg =~ /^-saveMacros=/ )
+    {
+      # Save macros to a file 
+      $saveMacros=1;
+      $macrosFileName=$arg;
+      $macrosFileName =~ s/^-saveMacros=//;
+      printf("Save macros to file=[$macrosFileName]\n");
     }
     elsif( $arg =~ /^-I/ )
     {
@@ -1387,10 +1419,20 @@ foreach $fileName ( @fileNames )  # process all files
     }
 
   }
-    if( $debug > 0 ){ &outputMacroDefinitions; }
+  #  if( $debug > 0 ){ &outputMacroDefinitions; }
 
   &closeOutputFile;
   close(FILE);
+
+  if( $saveMacros eq 1 )
+  {
+    open(MFILE,">$macrosFileName") || die "cannot open file $macrosFileName!" ;
+
+    &outputMacroDefinitions;    
+
+    close(MFILE);
+    printf("Wrote macros in file=[$macrosFileName]\n");
+  }
 }
 
 

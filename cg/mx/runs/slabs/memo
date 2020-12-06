@@ -1,4 +1,120 @@
 *****************************************
+******* Sun Nov 28, 2020
+
+REVISIT : TEST INTERFACE MASK CHECK
+
+
+perioidic -- ok 
+mpirun -np 3 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d3Slabse8.order4p.hdf -numSlabs=3 -tf=.1 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=3 -go=go
+
+
+
+mpirun -np 3 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse2.order4.hdf -numSlabs=3 -tf=.1 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=3 -go=go
+
+
+*****************************************
+******* Sat Nov 27, 2020
+
+
+cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse4.order4.hdf -numSlabs=3 -tp=.1 -tf=5 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -debug=1 -plotPolarizationComponents=1 -go=og
+
+
+*****************************************
+******* Fri Nov 26, 2020
+
+
+TEST SHOW FILE WITH POLARIZATIONS
+
+FIX FOR 2 POLARIZATION VECTORS in slabs.cmd 
+
+
+cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse4.order4.hdf -numSlabs=3 -tp=.1 -tf=5 -useSosupDissipation=1 -ic=gpw  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -npv= 1 2 -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoGDM2.txt -checkErrors=0 -kx=1 -ky=.5 -debug=1 -plotPolarizationComponents=1 -go=og 
+
+cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse4.order4.hdf -numSlabs=3 -tp=.1 -tf=5 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoGDM1.txt -checkErrors=0 -kx=1 -ky=.5 -debug=1 -plotPolarizationComponents=1 -go=og 
+
+
+
+
+
+OK: 
+mpirun -np 6 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse8.order4.hdf -numSlabs=3 -tp=.1 -tf=5 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=1 -go=og
+
+
+TEST INTERFACE MASK CHECK --> **FIXED** 
+
+
+mpirun -np 3 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse2.order4.hdf -numSlabs=3 -tf=.1 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=3 -go=go
+
+
+*****************************************
+******* Thurs Nov 25, 2020
+
+
+START TEST PARALLEL + GDM + INTERFACE
+
+2-slabs:
+
+*trouble*  CONFORMABILITY ERROR --> interface mask check is bad
+mpiexec -n 3 xterm -e gdb --args $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse8.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+TEST
+mpirun -np 3 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse2.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=3 -go=go
+
+
+mpirun -np 3 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse8.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -debug=3 -go=go 
+
+
+mpirun -np 8 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d2Slabse8.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -matFile2=baMatIsoEps4.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+--getErrors: t=5.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=1.744e-02 max-err = 4.573e-07
+>>> t=5.00e-01 dt=7.7e-03 max errors:[1.00e-05,1.06e-05,1.83e+00,], max (u):[4.27e-01,8.43e-01,1.23e+00,] (65 steps)
+
+
+
+
+1-slab
+mpirun -np 8 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d1Slabse16.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+-np=8: 
+>>> t=1.00e-01 dt=3.8e-03 max errors:[6.21e-09,1.68e-08,5.24e-01,], max (u):[3.23e-01,6.37e-01,7.35e-01,] (26 steps)
+
+
+
+
+*** NOTE** ERRORS ARE OFF FOR THIS MATERIAL **check Me**
+mpirun -np 8 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d1Slabse4.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+-np=2,4,8
+>>> t=1.00e-01 dt=1.4e-02 max errors:[5.53e-02,8.23e-02,7.19e-01,], max (u):[3.45e-01,7.50e-01,7.22e-01,] (7 steps)
+
+-np=1
+--getErrors: t=1.000e-01 domain=1 (blockDomain0) numPolarizationVectors=1 P-norm=6.920e-03 max-err = 1.971e-03
+>>> t=1.00e-01 dt=1.4e-02 max errors:[5.53e-02,8.23e-02,7.19e-01,], max (u):[3.45e-01,7.50e-01,7.22e-01,] (7 steps)
+
+
+
+**BUG FIXED** assignnInterf : create u1n, u2n if either side is dispersive
+
+TEST baMatGDM1.txt
+mpirun -np 2 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d1Slabse4.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+
+
+3 slabs (5 domains)
+mpirun -np 2 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d3Slabse4.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+-np=1
+>>> t=1.00e+00 dt=1.4e-02 max errors:[8.84e-04,1.75e-03,1.21e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (70 steps)
+
+-np=2 
+>>> t=1.00e+00 dt=1.4e-02 max errors:[8.84e-04,1.75e-03,1.21e+00,], max (u):[3.86e-01,7.63e-01,1.77e+00,] (70 steps)
+
+1 slab (3 domains)  ** works !!
+mpirun -np 2 $cgmx -noplot slabs.cmd -numberOfParallelGhost=3 -g=slabsGrid2d1Slabse4.order4.hdf -numSlabs=3 -tf=10 -tp=.1 -useSosupDissipation=1 -ic=slabs  -rbc=dirichlet -xLeftProbe=-1 -xRightProbe=1 -dm=none -probeFrequency=10 -probeFileName=probe -dm=gdm -matFile1=baMatIsoGDM1.txt -checkErrors=1 -kx=1 -ky=.5 -go=og
+
+
+
+*****************************************
 ******* Thurs June 18, 2020
 
 

@@ -81,7 +81,8 @@
 # 
 # --- set default values for parameters ---
 # 
-$noplot=""; $backGround="square"; $grid="square10"; $mu=1.; $lambda=1.;$method="NFDTD"; 
+$noplot=""; $backGround="square"; $grid="square10"; $mu=1.; $lambda=1.; $method="NFDTD";
+$show=" "; $flushFrequency=10;
 $debug = 0;  $tPlot=.1; $diss=.1; $dissOrder=2; $bcn="pec"; $cons=0; $dm="none"; $domain="all"; 
 $tz = "poly"; $degreex=2; $degreet=2; $fx=.5; $fy=$fx; $fz=$fx; $ft=$fx; $useTZmaterials=0; $solveForAllFields=0; 
 $order = 2; $go="run"; $useSosupDissipation=0; $sosupParameter=1.; $sosupDissipationOption=0; 
@@ -96,7 +97,7 @@ $nm="#"; # nonlinear model
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"dissOrder=i"=>\$dissOrder, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,"ts=s"=>\$ts,\
-  "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,\
+  "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"show=s"=>\$show,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"domain=s"=>\$domain,"solveForAllFields=i"=>\$solveForAllFields,\
   "eps=f"=>\$eps,"mu=f"=>\$mu,"lambda=f"=>\$lambda,"dtMax=f"=>\$dtMax, "cons=i"=>\$cons,"method=s"=>\$method,\
@@ -217,6 +218,16 @@ $bcn
 debug $debug
 check errors 1
 plot errors 1
+plot nonlinear components 1
+#*********************************
+show file options...
+  MXSF:compressed
+  MXSF:open
+    $show
+  # MXSF:frequency to save 
+  MXSF:frequency to flush $flushFrequency 
+exit
+#**********************************
 #
 # TEST coordinate plane probe 
 #-create a probe...

@@ -33,14 +33,14 @@ cp {GLwDrawA.c,GLwDrawA.h,GLwDrawAP.h,GLwMDrawA.c,GLwMDrawA.h,GLwMDrawAP.h}.back
 # no: cp {context.h,osmesa.h,osmesa.c}.backup $OvertureStatic
 
 cp {Ogshow,ShowFileReader,NameList,ParallelUtility,PlotStuff,ShowFilePlotter}.C       $OvertureOgshow
-cp {plotMapping,xInterpolate,plotAdvancingFront,CopyArray}.C                          $OvertureOgshow
+cp {plotMapping,xInterpolate,plotAdvancingFront,CopyArray,GhostBoundaryUpdate}.C      $OvertureOgshow
 cp {plotCompositeSurface,plotUnstructured,plotStructured}.C                           $OvertureOgshow
 cp {grid3d,grid,gridOpt,contour,contourOpt,contour3dOpt,ShowFileParameter}.C          $OvertureOgshow
 cp {contour3d,DerivedFunctions,plot3dToOverture,ParallelGridUtility}.C                $OvertureOgshow
 cp {FileOutput,streamLines,streamLinesOpt,streamLines3d}.C                            $OvertureOgshow
 cp {GridStatistics,plotGridQuality,userDefinedDerivedFunction,userDefinedOutput}.C    $OvertureOgshow
 cp {contourOpt,CopyArray,gridOpt,grid3d,GridStatistics,ParallelUtility}.bC            $OvertureOgshow
-cp {ParallelGridUtility,GridStatistics}.bC                                            $OvertureOgshow
+cp {ParallelGridUtility,GridStatistics,GhostBoundaryUpdate}.bC                        $OvertureOgshow
 cp {getLocalInterpolationData.C,showFileFromDataFile.C,ContourSurface.C}              $OvertureOgshow
 cp cggi.f isosurf.f                                                                   $OvertureOgshow
 
@@ -49,6 +49,7 @@ cp {PlotIt,broadCast,ContourSurface}.h                                          
 cp {Ogshow,ShowFileReader,NameList}.h                                                 $OvertureInclude
 cp {ParallelUtility,DerivedFunctions,FileOutput,ParallelGridUtility}.{h}              $OvertureInclude
 cp {GridStatistics,ShowFileParameter,ShowFilePlotter,InterpolationData}.h             $OvertureInclude
+cp {GhostBoundaryUpdate}.h                                                            $OvertureInclude
 
 # Here is the plotStuff program for displaying show files
 cp {plotStuffDriver,plotStuffFunction}.C                                                   $OvertureBin

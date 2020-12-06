@@ -25,20 +25,25 @@ c
         cof(0)=1.d0
         do j=2-qord,1
           if (j.ne.k) then
-            fc=1.d0/float(k-j)
+            !            fc=1.d0/float(k-j)
+            fc=1.d0/(k-j)
             do l=i,0,-1
               if (l.ne.0) then
-                cof(l)=-fc*float(j)*cof(l)+fc*cof(l-1)
+!                 cof(l)=-fc*float(j)*cof(l)+fc*cof(l-1)
+                cof(l)=-fc*(j)*cof(l)+fc*cof(l-1)
               else
-                cof(l)=-fc*float(j)*cof(l)
+!                cof(l)=-fc*float(j)*cof(l)
+                cof(l)=-fc*(j)*cof(l)
               end if
             end do
             i=i+1
           end if
         end do
+        ! write(*,*) "amc: ord=",ord," (-k)=",-k," amc(-k)=",cof(0)
         amc(-k)=cof(0)
         do l=1,qord-1 
-          amc(-k)=amc(-k)+cof(l)/float(l+1)
+!           amc(-k)=amc(-k)+cof(l)/float(l+1)
+          amc(-k)=amc(-k)+cof(l)/(l+1)
         end do
       end do
 c

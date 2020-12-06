@@ -52,7 +52,8 @@
 #**************************************************************************
 $order=2;  $orderOfAccuracy = "second order"; $prefix="twoSquaresInterface"; 
 $interp="i"; $interpType = "implicit for all grids";
-$order=2; $interp="i"; $name=""; $bc="d"; 
+$order=2; $interp="i"; $name=""; $bc="d";
+$xa=-1; $xb=1; # far left and far right
 $ml=0;  # to-do: add MG levels
 $numGhost=-1; # if >0 use this many ghost 
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
@@ -76,10 +77,10 @@ elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
 elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
-$suffix = ".order$order"; 
+if( $bc eq p ){ $suffix = "p"; }else{ $suffix=""; } 
+$suffix .= ".order$order"; 
 if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
-if( $bc eq p ){ $suffix .= ".p"; } 
 if( $ml ne 0 ){ $suffix .= ".ml$ml"; }
 if( $name eq "" ){ $name = $prefix . "$interp$factor" . $suffix . ".hdf"; }
 #
@@ -108,13 +109,13 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
 #  here is the left grid
 #
   rectangle
-    $xa=-1.0;  $xb=0.0; 
-    $ya= 0.;   $yb=1.; 
+    $xar=$xa;   $xbr=0.0; 
+    $yar= 0.;   $ybr=1.; 
     set corners
-     $xa $xb $ya $yb 
+     $xar $xbr $yar $ybr 
     lines
-      $nx=int( ($xb-$xa)/$dsx+1.5 );
-      $ny=int( ($yb-$ya)/$dsy+1.5 );
+      $nx=int( ($xbr-$xar)/$dsx+1.5 );
+      $ny=int( ($ybr-$yar)/$dsy+1.5 );
       $nx $ny
     boundary conditions
       $bcLeft
@@ -130,15 +131,15 @@ if( $angle eq "0" ){ $rightSquareBase="rightSquare"; $rightSquareRotated="rightS
 # -- right grid ----
 #
   rectangle
-    $xa= 0.0;  $xb=1.0; 
-    $ya= 0.;   $yb=1.; 
+    $xar= 0.0;  $xbr=$xb;
+    $yar= 0.;   $ybr=1.; 
     set corners
-     $xa $xb $ya $yb 
+     $xar $xbr $yar $ybr 
     lines
       $dsx = $dsx/$xFactorRight;
       $dsy = $dsy/$yFactorRight;
-      $nx=int( ($xb-$xa)/$dsx+1.5 );
-      $ny=int( ($yb-$ya)/$dsy+1.5 );
+      $nx=int( ($xbr-$xar)/$dsx+1.5 );
+      $ny=int( ($ybr-$yar)/$dsy+1.5 );
       $nx $ny
     boundary conditions
       $bcRight

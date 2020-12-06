@@ -41,7 +41,7 @@
         integer ipar(0:*)
         real rpar(0:*)
        !     ---- local variables -----
-        integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd
+        integer m1a,m1b,m2a,m2b,m3a,m3b,numGhost,nStart,nEnd,debug
         integer c,i1,i2,i3,n,gridType,orderOfAccuracy,orderInTime,axis,
      & dir
         integer addForcing,orderOfDissipation,option
@@ -5459,6 +5459,7 @@ c===============================================================================
         numberOfPolarizationVectors =ipar(28)
         grid                =ipar(29)
         nonlinearModel      =ipar(30)
+        debug               =ipar(31)
         ! rxc                 =ipar(31) ! for future use
         ! ryc                 =ipar(32) ! for future use
         ! rzc                 =ipar(33) ! for future use
@@ -5472,7 +5473,7 @@ c===============================================================================
      & numberOfForcingFunctions))
         fnext = mod(fcur+1                         ,max(1,
      & numberOfForcingFunctions))
-        if( t.le.3*dt )then
+        if( t.le.3*dt .and. debug.gt.1 )then
           write(*,'(/,">>>> Inside advOptNew... t=",e10.3," grid=",i3)
      & ') t,grid
         end if
@@ -5521,7 +5522,8 @@ c===============================================================================
             write(*,'(" advOptNew: ERROR alphaP != 1/eps ")')
             stop 2288
           end if
-          if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+          if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. 
+     & debug.gt.1 )then
             ! ---- Dispersive Maxwell ----
             write(*,'("--advOptNew-- dispersionModel =",i4," px,py,pz 
      & =",3i3)') dispersionModel,pxc,pyc,pzc
@@ -5571,7 +5573,7 @@ c===============================================================================
          uDotFactor=.5  ! By default uDot is D-zero and so we scale (un-um) by .5 --> .5*(un-um)/(dt)
          ! sosupParameter=gamma in sosup scheme  0<= gamma <=1   0=centered scheme
          adSosup=sosupParameter*adSosup
-         if( t.le.2*dt )then
+         if( t.le.2*dt .and. debug.gt.1 )then
            write(*,'("advOPT: useSosup dissipation, t,dt,adSosup=",
      & 3e10.2)') t,dt,adSosup
            write(*,'("advOPT: sosupDissipationOption=",i2)') 
@@ -5825,7 +5827,7 @@ c===============================================================================
      & nonlinearModel.eq.noNonlinearModel )then
               !updateCurvilinear2dOrder2Dispersive()
                 if( t.le.3*dt )then
-                  if( t.le.3.*dt )then
+                  if( t.le.3.*dt .and. debug.gt.1 )then
                     write(*,'("advOPT>>>","update-
      & dispersive_dim=2_order=2_gridType=curvilinear")')
                   end if
@@ -5945,7 +5947,7 @@ c===============================================================================
      & nonlinearModel.eq.multilevelAtomic )then
              ! --- Multilevel Atomic (Maxwell-Bloch) nonlinear model --- 
                 if( t.le.3*dt )then
-                  if( t.le.3.*dt )then
+                  if( t.le.3.*dt .and. debug.gt.1 )then
                     write(*,'("advOPT>>>","update-MULTI-LEVEL-
      & ATOMIC_dim=2_order=2_gridType=curvilinear")')
                   end if

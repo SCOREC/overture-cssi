@@ -2480,7 +2480,7 @@
          gtt = -(2.*pi*omega)**2 * sint
        end if
 
-       if( t.le.5*dt )then
+       if( t.le.3*dt .and. debug.gt.0 )then
          write(*,'(">> forcingOpt:GaussianSource: t=",e10.2," beta=",
      & e10.2," omega=",e10.2)') t,beta,omega
          write(*,'(">> amplitude",e10.2," ampE=",e10.2," ampH=",e10.2)
@@ -2517,7 +2517,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2549,7 +2549,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2581,7 +2581,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2613,7 +2613,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2669,7 +2669,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2718,7 +2718,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2766,7 +2766,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,
@@ -2814,7 +2814,7 @@
            end do
            end do
            end do
-           if( t.le.5*dt )then
+           if( t.le.5*dt .and. debug.gt.0 )then
            write(*,'("Gaussian source: total points=",i6," points 
      & evaluated=",i6," : r2>tolGaussian=",e8.2)') (n1b-n1a+1)*(n2b-
      & n2a+1)*(n3b-n3a+1),(n1b-n1a+1)*(n2b-n2a+1)*(n3b-n3a+1)-icount,

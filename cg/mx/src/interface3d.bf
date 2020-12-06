@@ -55,7 +55,7 @@
 ! Macro: Output some debug info for the first few time-steps 
 ! ===========================================================================================
 #beginMacro INFO(string)
-if( t.le.3.*dt )then
+if( t.le.3.*dt .and. debug.gt.0 )then
   write(*,'("Interface>>>",string)')
 end if
 #endMacro
@@ -2425,9 +2425,52 @@ end if
 ! eval3dJumpOrder2()
 ! evalInterfaceEquations23c()
 ! assignInterfaceGhost23c()
+! initializeInterfaceVariablesMacro(LABEL)
+! setIndexBoundsExtraGhost()
+! resetIndexBounds()  
 #Include "interfaceMacros3d.h"
 
 
+! ==============================================================================
+! Macro: get index bounds that include ghost points 
+!  Output: ng1a,ng1b,ng2a,ng2b,ng3a,ng3b
+!  Output: mg1a,mg1b,mg2a,mg2b,mg3a,mg3b
+! ==============================================================================
+#beginMacro getGhostBounds( numGhost )
+  ng1a=n1a
+  ng1b=n1b
+  ng2a=n2a
+  ng2b=n2b
+  ng3a=n3a
+  ng3b=n3b
+  if( side1.eq.0 )then
+    ng1a=ng1a-is1*numGhost
+    ng2a=ng2a-is2*numGhost
+    ng3a=ng3a-is3*numGhost
+  else
+    ng1b=ng1b-is1*numGhost
+    ng2b=ng2b-is2*numGhost
+    ng3b=ng3b-is3*numGhost
+  end if
+  
+  ! grid2
+  mg1a=m1a
+  mg1b=m1b
+  mg2a=m2a
+  mg2b=m2b
+  mg3a=m3a
+  mg3b=m3b
+  if( side2.eq.0 )then
+    mg1a=mg1a-js1*numGhost
+    mg2a=mg2a-js2*numGhost
+    mg3a=mg3a-js3*numGhost
+  else
+    mg1b=mg1b-js1*numGhost
+    mg2b=mg2b-js2*numGhost
+    mg3b=mg3b-js3*numGhost
+  end if
+
+#endMacro          
 
 
       subroutine interface3dMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
@@ -2531,10 +2574,20 @@ end if
       integer ii1,ii2,ii3,numberOfIterations
       integer interfaceOption,interfaceEquationsOption,initialized,forcingOption
       integer assignInterfaceValues,assignInterfaceGhostValues,setDivergenceAtInterfaces
-      integer numGhost,giveDiv
+      integer numGhost,numGhost2,giveDiv
+      ! grid1
+      integer ns1a,ns1b,ns2a,ns2b,ns3a,ns3b  ! save n1a,n1b,...
+      integer ne1a,ne1b,ne2a,ne2b,ne3a,ne3b  ! one extra ghost for 4th-order Stage I order2 
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+      integer ng1a,ng1b,ng2a,ng2b,ng3a,ng3b  ! for ghost too    
+      ! grid2
+      integer ms1a,ms1b,ms2a,ms2b,ms3a,ms3b  ! save m1a,m1b,...
+      integer me1a,me1b,me2a,me2b,me3a,me3b  ! one extra ghost for 4th-order Stage I order2 
       integer mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
+      integer mg1a,mg1b,mg2a,mg2b,mg3a,mg3b  ! for ghost too 
       integer m1,m2,mm
+
+      integer internalGhostBC
 
       real rx1,ry1,rz1,rx2,ry2,rz2
 
@@ -2797,6 +2850,11 @@ end if
       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
 
+      real checkParallelFortranArrayReal, checkParallelFortranArrayInt, pdiff
+      integer numParallelGhost
+      integer nd4a,nd4b,n4a,n4b
+      integer md4a,md4b,m4a,m4b
+      character*180 label
 
 
 !     --- start statement function ----
@@ -2924,6 +2982,9 @@ end if
 
       nonlinearModel1     = ipar(49)
       nonlinearModel2     = ipar(50)
+      numParallelGhost    = ipar(51)
+
+      internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
 
       dx1(0)                =rpar(0)
       dx1(1)                =rpar(1)
@@ -3035,20 +3096,24 @@ end if
         ! INQUIRE(FILE=filen, EXIST=filex)
       end if
 
-      if( .true. .and. t.le. 1.5*dt )then
+      if( t.le. 1.5*dt .and. debug.gt.0 )then
         write(*,'(" +++++++++cgmx interface3d t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
            ! '
         write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
+        write(*,'("  ... useJacobiUpdate=",i2," numParallelGhost=",i2)') useJacobiUpdate,numParallelGhost
         write(*,'("  ... setDivergenceAtInterfaces=",i2)') setDivergenceAtInterfaces
         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
         write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
+        write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,1),i2=0,nd-1)
+        write(*,'("  ... bc2=",6i6)') ((boundaryCondition2(i1,i2),i1=0,1),i2=0,nd-1)
+        write(*,'("  ... internalGhostBC=",i6)') internalGhostBC
 
       end if
 
-      if( t.lt.1.5*dt )then
+      if( t.lt.1.5*dt .and. debug.gt.0 )then
         write(debugFile,'(" +++++++++cgmx interface3d t=",e9.2," ++++++++")') t
            ! '
         write(debugFile,'(" interface3d: nd=",i2," gridType=",i2)') nd,gridType
@@ -3105,7 +3170,7 @@ end if
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid1,alphaP1,gdmPar1,numberOfPolarizationVectors1, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
 
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d-- dispersionModel1=",i4," grid1=",i4," pxc=",i4)') dispersionModel1,grid1,pxc
           write(*,'("--interface3d-- GDM: numberOfPolarizationVectors1=",i4," alphaP1=",e8.2)') numberOfPolarizationVectors1,alphaP1
@@ -3123,7 +3188,7 @@ end if
         ! get the gdm parameters
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid2,alphaP2,gdmPar2,numberOfPolarizationVectors2, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d-- dispersionModel2=",i4," grid2=",i4)') dispersionModel2,grid2
           write(*,'("--interface3d-- GDM: numberOfPolarizationVectors2=",i4," alphaP2=",e8.2)') numberOfPolarizationVectors2,alphaP2
@@ -3194,176 +3259,10 @@ end if
       end if 
 
 
-      ! *** do this for now --- assume grids have equal spacing
-!      dx(0)=dx1(0)
-!      dx(1)=dx1(1)
-!      dx(2)=dx1(2)
-
-!      dr(0)=dr1(0)
-!      dr(1)=dr1(1)
-!      dr(2)=dr1(2)
-
       epsx=1.e-20  ! fix this 
 
-      do kd=0,nd-1
-       dx112(kd) = 1./(2.*dx1(kd))
-       dx122(kd) = 1./(dx1(kd)**2)
-       dx212(kd) = 1./(2.*dx2(kd))
-       dx222(kd) = 1./(dx2(kd)**2)
-
-       dx141(kd) = 1./(12.*dx1(kd))
-       dx142(kd) = 1./(12.*dx1(kd)**2)
-       dx241(kd) = 1./(12.*dx2(kd))
-       dx242(kd) = 1./(12.*dx2(kd)**2)
-
-       dr114(kd) = 1./(12.*dr1(kd))
-       dr214(kd) = 1./(12.*dr2(kd))
-      end do
-
-      numGhost=orderOfAccuracy/2
-      giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
-
-      ! bounds for loops that include ghost points in the tangential directions:
-      nn1a=n1a
-      nn1b=n1b
-      nn2a=n2a
-      nn2b=n2b
-      nn3a=n3a
-      nn3b=n3b
-
-      mm1a=m1a
-      mm1b=m1b
-      mm2a=m2a
-      mm2b=m2b
-      mm3a=m3a
-      mm3b=m3b
-
-      i3=n3a
-      j3=m3a
-
-      axis1p1=mod(axis1+1,nd)
-      axis1p2=mod(axis1+2,nd)
-      axis2p1=mod(axis2+1,nd)
-      axis2p2=mod(axis2+2,nd)
-
-      is1=0
-      is2=0
-      is3=0
-
-      if( axis1.ne.0 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        ! *wdh* Also include ghost on interpolation boundaries 2015/06/29 
-        if( boundaryCondition1(0,0).le.0 )then ! parallel ghost may only have bc<0 on one side
-          nn1a=nn1a-numGhost
-          if( boundaryCondition2(0,0).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 178
-          end if
-        end if
-        if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
-          nn1b=nn1b+numGhost
-          if( boundaryCondition2(1,0).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 179
-          end if
-        end if
-      end if
-      if( axis1.ne.1 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,1).le.0 )then
-          nn2a=nn2a-numGhost
-          if( boundaryCondition2(0,1).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 180
-          end if
-        end if
-        if( boundaryCondition1(1,1).le.0 )then
-          nn2b=nn2b+numGhost
-          if( boundaryCondition2(1,1).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 181
-          end if
-        end if
-      end if
-      if( nd.eq.3 .and. axis1.ne.2 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,2).le.0 )then
-          nn3a=nn3a-numGhost
-          if( boundaryCondition2(0,2).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 182
-          end if
-        end if
-        if( boundaryCondition1(1,2).le.0 )then
-          nn3b=nn3b+numGhost
-          if( boundaryCondition2(1,2).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 183
-          end if
-        end if
-      end if
-
-      if( axis1.eq.0 ) then
-        is1=1-2*side1
-        an1Cartesian=1. ! normal for a cartesian grid
-        an2Cartesian=0.
-        an3Cartesian=0.
-
-      else if( axis1.eq.1 )then
-        is2=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=1.
-        an3Cartesian=0.
-
-      else if( axis1.eq.2 )then
-        is3=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=0.
-        an3Cartesian=1.
-      else
-        stop 5528
-      end if
-
-
-      js1=0
-      js2=0
-      js3=0
-      if( axis2.ne.0 )then
-        if( boundaryCondition2(0,0).le.0 )then
-          mm1a=mm1a-numGhost
-        end if
-        if( boundaryCondition2(1,0).le.0 )then
-          mm1b=mm1b+numGhost
-        end if
-      end if
-      if( axis2.ne.1 )then
-        if( boundaryCondition2(0,1).le.0 )then
-          mm2a=mm2a-numGhost
-        end if
-        if( boundaryCondition2(1,1).le.0 )then
-          mm2b=mm2b+numGhost
-        end if
-      end if
-      if( nd.eq.3 .and. axis2.ne.2 )then
-        if( boundaryCondition2(0,2).le.0 )then
-          mm3a=mm3a-numGhost
-        end if
-        if( boundaryCondition2(1,2).le.0 )then
-          mm3b=mm3b+numGhost
-        end if
-      end if
-      if( axis2.eq.0 ) then
-        js1=1-2*side2
-      else if( axis2.eq.1 ) then
-        js2=1-2*side2
-      else  if( axis2.eq.2 ) then
-        js3=1-2*side2
-      else
-        stop 3384
-      end if
-
-      is=1-2*side1
-      js=1-2*side2
+      ! --- init various variables and loop bounds ----
+      initializeInterfaceVariablesMacro(interface3d)
 
       rx1=0.
       ry1=0.
@@ -3386,21 +3285,6 @@ end if
       else 
         rz2=1.
       endif
-
-      if( debug.gt.1 )then
-        write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
-        write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
-
-      end if
-
-      if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<3 ")')
-        stop 7716
-      end if
-      if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<4 ")')
-        stop 7716
-      end if
 
       ! first time through check that the mask's are consistent
       ! For now we require the masks to both be positive at the same points on the interface
@@ -3437,7 +3321,6 @@ end if
          ! ' 
        end if
       end if
-
 
       if( nd.eq.2 .and. orderOfAccuracy.eq.2 .and. gridType.eq.rectangular )then
  
@@ -3720,46 +3603,137 @@ end if
 
          ! initialization step: assign first ghost line by extrapolation
          ! NOTE: assign ghost points outside the ends
-
-         
          extrapolateGhost2dOrder4()
 
          if( avoidInterfaceIterations.eq.1 )then
+
+           ! ---- STAGE I: assign first ghost to 2nd-order accuracy -----
+
            ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
            ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
            !!  perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2;
-           ! **TEST** assign ghost to 2nd-order first
 
-           if( t.lt. 3.*dt )then
-             write(*,'(" **** ASSIGN GHOST TO 2ND ORDER ****")')
+           ! Turn this on -- November 22, 2020 
+           ! Nov. 22, 2020: Accuracy degrades to 3rd order for PMIC
+           ! perl $ORDER=2; 
+           if( t.lt. 3.*dt .and. debug.gt.0 )then
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER INTERFACE ****")')
            end if 
            orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+
+           ! in parallel we add extra points in the tangential direction on parallel boundaries
+           ! (otherwise we would use extrapolated values which is probably ok) 
+           setIndexBoundsExtraGhost()
            if( dispersive.eq.0 )then
              assignInterfaceGhost22c()
            else
              assignDispersiveInterfaceGhost22c()
            end if
+           resetIndexBounds()         
+
            orderOfAccuracy=4 ! reset 
          end if
-         !! perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
 
+#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
+
+         if( debug.gt.3 )then
+
+           ! macro to get bounds including ghost points: ng1a,ng1b,... mg1a,mg1b, 
+           setIndexBoundsExtraGhost()
+           getGhostBounds( numGhost )
+           resetIndexBounds()         
+
+           nd4a=0
+           nd4b=0
+           n4a=0
+           n4b=0
+           write(label,'("mask1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           pdiff = checkParallelFortranArrayInt(label, \
+                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                         mask1, \
+                         len(label) )
+
+           write(label,'("mask2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           md4a=0
+           md4b=0
+           m4a=0
+           m4b=0
+           pdiff = checkParallelFortranArrayInt(label, \
+                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                         mask2, \
+                         len(label) )
+
+           nd4a=0
+           nd4b=2*nd-1
+           n4a=0
+           n4b=2*nd-1
+           write(label,'("rsxy1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           pdiff = checkParallelFortranArrayReal(label, \
+                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                         rsxy1, \
+                         len(label) )
+
+           write(label,'("rsxy2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           md4a=0
+           md4b=2*nd-1
+           m4a=0
+           m4b=2*nd-1
+           pdiff = checkParallelFortranArrayReal(label, \
+                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                         rsxy2, \
+                         len(label) )
+
+
+           write(label,'("u1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           ! fix me: -- use number of components 
+           nd4a=0
+           nd4b=2
+           n4a=0
+           n4b=2
+           pdiff = checkParallelFortranArrayReal(label, \
+                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                         u1, \
+                         len(label) )
+
+
+           write(label,'("u2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+           ! fix me: 
+           md4a=0
+           md4b=2
+           m4a=0
+           m4b=2
+           pdiff = checkParallelFortranArrayReal(label, \
+                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                         u2, \
+                         len(label) )
+
+         end if
 
          ! Assign polarization vectors on ghost lines
-         if( .false. )then
-           ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-           assignPolarizationOnGhostOrder4()
-         end if
-         if( .false. )then 
-           ! Smooth P on the interface (for dispersive)
-           ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-           ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
-           smoothInterfaceP()
-         end if
+         ! if( .false. )then
+         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+         !   assignPolarizationOnGhostOrder4()
+         ! end if
+         ! if( .false. )then 
+         !   ! Smooth P on the interface (for dispersive)
+         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+         !   ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
+         !   smoothInterfaceP()
+         ! end if
 
          ! write(debugFile,'(">>> interface: order=4 initialized=",i4)') initialized
 
          ! *********************************************************
          ! **************** begin interface iteration **************
+
+         ! ---- STAGE II: assign two ghost to 4th-order accuracy -----
+
          errOld=1.
          ratioAve=0.
          do it=1,nit 
@@ -3789,7 +3763,7 @@ end if
           end if 
           errOld=err
 
-          if( t.le.5*dt .or. debug.gt.3 )then
+          if( (t.le.5*dt .and. debug.gt.0 ) .or. debug.gt.3 )then
            if( it.eq.1 )then
              write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2,"           (omega=",f4.2,")")') t,grid1,grid2,it,err,omega
            else

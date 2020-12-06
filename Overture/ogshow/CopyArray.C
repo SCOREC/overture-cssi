@@ -363,7 +363,7 @@ copyArray( intArray & dest, Index *D0,
                 receiveBoxes.push_back(destReceiveBox);
       	if( debug!=0 )
       	{
-        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i][%i,%i][%i,%i][%i,%i] \n",
+        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i,%i][%i,%i,%i][%i,%i,%i][%i,%i,%i] \n",
               		  destReceiveBox.base(0),destReceiveBox.bound(0),D[0].getStride(),
               		  destReceiveBox.base(1),destReceiveBox.bound(1),D[1].getStride(),
               		  destReceiveBox.base(2),destReceiveBox.bound(2),D[2].getStride(),
@@ -445,7 +445,8 @@ copyArray( intArray & dest, Index *D0,
             {
       	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                         myid,bufSize,p,m,numReceive,myid);
-      	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+            //         #If "MPI_INT" eq "MPI_INT"
+           	 for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3i ",rBuff[m][j]);
       	fprintf(debugFile,"\n");
             }
       // fill in the entries of vLocal
@@ -895,7 +896,7 @@ copyArray( floatArray & dest, Index *D0,
                 receiveBoxes.push_back(destReceiveBox);
       	if( debug!=0 )
       	{
-        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i][%i,%i][%i,%i][%i,%i] \n",
+        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i,%i][%i,%i,%i][%i,%i,%i][%i,%i,%i] \n",
               		  destReceiveBox.base(0),destReceiveBox.bound(0),D[0].getStride(),
               		  destReceiveBox.base(1),destReceiveBox.bound(1),D[1].getStride(),
               		  destReceiveBox.base(2),destReceiveBox.bound(2),D[2].getStride(),
@@ -977,7 +978,9 @@ copyArray( floatArray & dest, Index *D0,
             {
       	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                         myid,bufSize,p,m,numReceive,myid);
-      	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+            //         #If "MPI_FLOAT" eq "MPI_INT"
+            //         #Else
+       	 for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
       	fprintf(debugFile,"\n");
             }
       // fill in the entries of vLocal
@@ -1427,7 +1430,7 @@ copyArray( doubleArray & dest, Index *D0,
                 receiveBoxes.push_back(destReceiveBox);
       	if( debug!=0 )
       	{
-        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i][%i,%i][%i,%i][%i,%i] \n",
+        	  fprintf(debugFile,"      --> in dest index-space box =[%i,%i,%i][%i,%i,%i][%i,%i,%i][%i,%i,%i] \n",
               		  destReceiveBox.base(0),destReceiveBox.bound(0),D[0].getStride(),
               		  destReceiveBox.base(1),destReceiveBox.bound(1),D[1].getStride(),
               		  destReceiveBox.base(2),destReceiveBox.bound(2),D[2].getStride(),
@@ -1509,7 +1512,9 @@ copyArray( doubleArray & dest, Index *D0,
             {
       	fprintf(debugFile,">>> myid=%i: received buffer of size %i from p=%i (m=%i,numReceive=%i)\n myid=%i: buff=",
                         myid,bufSize,p,m,numReceive,myid);
-      	for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
+            //         #If "MPI_DOUBLE" eq "MPI_INT"
+            //         #Else
+       	 for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.1f ",rBuff[m][j]);
       	fprintf(debugFile,"\n");
             }
       // fill in the entries of vLocal
@@ -2052,7 +2057,7 @@ copyArray( const intSerialArray & uLocal,
     if( debug !=0 )
     {
         fprintf(debugFile,"++++ copyArray: v = uLocal,  *start* myid=%i +++++\n",myid);
-        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i]\n",
+        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i][%i,%i]\n",
           	    uLocal.getBase(0),uLocal.getBound(0),
           	    uLocal.getBase(1),uLocal.getBound(1),
           	    uLocal.getBase(2),uLocal.getBound(2),
@@ -2309,7 +2314,8 @@ copyArray( const intSerialArray & uLocal,
       	fprintf(debugFile,"myid=%i : send %i data items to p=%i\n",myid,buffSize,pp);
       	fprintf(debugFile,"          sbuff=");
       	for( int j=0; j<buffSize; j++ )
-        	  fprintf(debugFile,"%8.2e ",sbuff[p][j]);
+      //         #If "MPI_INT" eq "MPI_INT"
+        	  fprintf(debugFile,"%8i ",sbuff[p][j]);
       	fprintf(debugFile,"\n");
             }
       // send data
@@ -2384,7 +2390,8 @@ copyArray( const intSerialArray & uLocal,
             		rBox.base(3),rBox.bound(3),pp);
       	fprintf(debugFile,"   rbuff=");
       	for( int j=0; j<rhbuff[p][0]; j++ )
-        	  fprintf(debugFile,"%8.2e ",rbuff[mpr][j]);
+      //           #If "MPI_INT" eq "MPI_INT"
+              	    fprintf(debugFile,"%8i ",rbuff[mpr][j]);
       	fprintf(debugFile,"\n");
             }
             int k=0;
@@ -2513,7 +2520,7 @@ copyArray( const floatSerialArray & uLocal,
     if( debug !=0 )
     {
         fprintf(debugFile,"++++ copyArray: v = uLocal,  *start* myid=%i +++++\n",myid);
-        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i]\n",
+        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i][%i,%i]\n",
           	    uLocal.getBase(0),uLocal.getBound(0),
           	    uLocal.getBase(1),uLocal.getBound(1),
           	    uLocal.getBase(2),uLocal.getBound(2),
@@ -2770,6 +2777,8 @@ copyArray( const floatSerialArray & uLocal,
       	fprintf(debugFile,"myid=%i : send %i data items to p=%i\n",myid,buffSize,pp);
       	fprintf(debugFile,"          sbuff=");
       	for( int j=0; j<buffSize; j++ )
+      //         #If "MPI_FLOAT" eq "MPI_INT"
+      //         #Else
         	  fprintf(debugFile,"%8.2e ",sbuff[p][j]);
       	fprintf(debugFile,"\n");
             }
@@ -2845,7 +2854,9 @@ copyArray( const floatSerialArray & uLocal,
             		rBox.base(3),rBox.bound(3),pp);
       	fprintf(debugFile,"   rbuff=");
       	for( int j=0; j<rhbuff[p][0]; j++ )
-        	  fprintf(debugFile,"%8.2e ",rbuff[mpr][j]);
+      //           #If "MPI_FLOAT" eq "MPI_INT"
+      //           #Else
+              	    fprintf(debugFile,"%8.2e ",rbuff[mpr][j]);
       	fprintf(debugFile,"\n");
             }
             int k=0;
@@ -2974,7 +2985,7 @@ copyArray( const doubleSerialArray & uLocal,
     if( debug !=0 )
     {
         fprintf(debugFile,"++++ copyArray: v = uLocal,  *start* myid=%i +++++\n",myid);
-        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i]\n",
+        fprintf(debugFile," uLocal=[%i,%i][%i,%i][%i,%i], Jv=[%i,%i][%i,%i][%i,%i][%i,%i]\n",
           	    uLocal.getBase(0),uLocal.getBound(0),
           	    uLocal.getBase(1),uLocal.getBound(1),
           	    uLocal.getBase(2),uLocal.getBound(2),
@@ -3231,6 +3242,8 @@ copyArray( const doubleSerialArray & uLocal,
       	fprintf(debugFile,"myid=%i : send %i data items to p=%i\n",myid,buffSize,pp);
       	fprintf(debugFile,"          sbuff=");
       	for( int j=0; j<buffSize; j++ )
+      //         #If "MPI_DOUBLE" eq "MPI_INT"
+      //         #Else
         	  fprintf(debugFile,"%8.2e ",sbuff[p][j]);
       	fprintf(debugFile,"\n");
             }
@@ -3306,7 +3319,9 @@ copyArray( const doubleSerialArray & uLocal,
             		rBox.base(3),rBox.bound(3),pp);
       	fprintf(debugFile,"   rbuff=");
       	for( int j=0; j<rhbuff[p][0]; j++ )
-        	  fprintf(debugFile,"%8.2e ",rbuff[mpr][j]);
+      //           #If "MPI_DOUBLE" eq "MPI_INT"
+      //           #Else
+              	    fprintf(debugFile,"%8.2e ",rbuff[mpr][j]);
       	fprintf(debugFile,"\n");
             }
             int k=0;

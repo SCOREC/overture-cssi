@@ -622,13 +622,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
     if( centerNeeded )
     {
-        if( (true || debug & 1) && t<2.*dt ) 
+        if( (debug & 1) && t<2.*dt ) 
             printF("\n --MX-BC--  CREATE VERTEX grid=%i ---\n\n",grid);
         mg.update(MappedGrid::THEcenter | MappedGrid::THEvertex );
     }
     else
     {
-        if( (true || debug & 1) && t<2.*dt ) 
+        if( (debug & 1) && t<2.*dt ) 
             printF("\n --MX-BC--  VERTEX ARRAY NOT NEEDED grid=%i ---\n\n",grid);
     }
     
@@ -1515,8 +1515,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                             const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                                             real sr, si, chir[10],chii[10],chiSumr,chiSumi;
                                             dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                                            if( t<=3.*dt )
-                                                printF("--MX--Dirichlet BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+                      // if( t<=3.*dt )
+                      //   printF("--MX--Dirichlet BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
                                             real expt=exp(sr*t);
                                             real ct = cos(si*t)*expt, st=sin(si*t)*expt;
                       // Hz = (i/s) * (-1) * (kx*Ey - ky*Ex )/mu
@@ -1694,8 +1694,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                             const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz );
                                             real sr, si, chir[10],chii[10], chiSumr,chiSumi;
                                             dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                                            if( t<=3.*dt )
-                                                printF("--MX--Dirichlet BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+                      // if( t<=3.*dt )
+                      //   printF("--MX--Dirichlet BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
                                             real expt=exp(sr*t);
                                             real ct = cos(si*t)*expt, st=sin(si*t)*expt;
                                             FOR_3D(i1,i2,i3,I1,I2,I3)
@@ -2660,8 +2660,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                     DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                     dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                    if( t<=3.*dt )
-                        printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+          // if( t<=3.*dt )
+          //   printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
                 }
                 rpar[37]=sr;
                 rpar[38]=si;
@@ -3086,7 +3086,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           // ** FIX ME for SOSUP ***
                     if( radbcGrid[i]==grid )
                     {
-                        RadiationBoundaryCondition::debug=debug;
+            // RadiationBoundaryCondition::debug=debug;
+                        radiationBoundaryCondition[i].setDebug(debug,pDebugFile);
                         radiationBoundaryCondition[i].tz=tz; // fix this 
                         radiationBoundaryCondition[i].assignBoundaryConditions( u,t,dt,uOld );
                     }
@@ -3244,8 +3245,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                         dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                        if( t<=3.*dt )
-                            printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+            // if( t<=3.*dt )
+            //   printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
                     }
                     rpar[37]=sr;
                     rpar[38]=si;
@@ -3670,7 +3671,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             // ** FIX ME for SOSUP ***
                         if( radbcGrid[i]==grid )
                         {
-                            RadiationBoundaryCondition::debug=debug;
+              // RadiationBoundaryCondition::debug=debug;
+                            radiationBoundaryCondition[i].setDebug(debug,pDebugFile);
                             radiationBoundaryCondition[i].tz=tz; // fix this 
                             radiationBoundaryCondition[i].assignBoundaryConditions( u,t,dt,uOld );
                         }
@@ -3832,8 +3834,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         const real kk = twoPi*sqrt( kx*kx+ky*ky+kz*kz);
                         DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
                         dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                        if( t<=3.*dt )
-                            printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
+            // if( t<=3.*dt )
+            //   printF("--MX--BC dispersion: s=(%12.4e,%12.4e)\n",sr,si);
                     }
                     rpar[37]=sr;
                     rpar[38]=si;
@@ -4258,7 +4260,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             // ** FIX ME for SOSUP ***
                         if( radbcGrid[i]==grid )
                         {
-                            RadiationBoundaryCondition::debug=debug;
+              // RadiationBoundaryCondition::debug=debug;
+                            radiationBoundaryCondition[i].setDebug(debug,pDebugFile);
                             radiationBoundaryCondition[i].tz=tz; // fix this 
                             radiationBoundaryCondition[i].assignBoundaryConditions( u,t,dt,uOld );
                         }
@@ -4352,7 +4355,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
       	extrapParams.ghostLineToAssign=1;  // reset 
       	extrapParams.numberOfCornerGhostLinesToAssign= ghostEnd+1;
-      	q.finishBoundaryConditions(extrapParams,Pc);
+      	q.finishBoundaryConditions(extrapParams,Nc);
 
 
             }

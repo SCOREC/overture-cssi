@@ -326,11 +326,11 @@ class Maxwell
                          realCompositeGridFunction *pDensity=NULL, int rhoComponent=0,
                          bool computeMaxNorms= true );
 
-  static real getMaxValue(real value, int processor=-1);  // get max over all processors
-  static int getMaxValue(int value, int processor=-1);
+  // static real getMaxValue(real value, int processor=-1);  // get max over all processors
+  // static int getMaxValue(int value, int processor=-1);
 
-  static real getMinValue(real value, int processor=-1);  // get min over all processors
-  static int getMinValue(int value, int processor=-1);
+  // static real getMinValue(real value, int processor=-1);  // get min over all processors
+  // static int getMinValue(int value, int processor=-1);
 
   void getNorms( int current, real t, real dt, bool getErrorNorms = true );
 
@@ -770,7 +770,8 @@ public: //  should be protected:
     timeForBoundaryConditions,
     timeForInterfaceBC,
     timeForRadiationBC,
-    timeForRaditionKernel,
+    timeForRadiationKernel,
+    timeForFourierTransform,
     timeForInterpolate,
     timeForUpdateGhostBoundaries,
     timeForForcing,

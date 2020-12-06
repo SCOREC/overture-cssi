@@ -103,7 +103,7 @@
   !   [ n.Lap(E)/mu ] = 0 
   !   [ tau.Lap(E)/(eps*mu) ] = 0   (2 tangents)
 
-  if( t.le.2*dt )then
+  if( t.le.2*dt .and. debug.gt.1 )then
     write(*,'("assignInterfaceGhost23c ...")')
   end if
 
@@ -319,3 +319,353 @@
 
 
 #endMacro         
+
+
+! =====================================================================================================
+!  Macro:
+!     Initialize various variables and loop bounds
+!     Called by interface3d.bf and interface3dOrder4.bf 
+! =====================================================================================================
+#beginMacro initializeInterfaceVariablesMacro(LABEL)
+      do kd=0,nd-1
+       dx112(kd) = 1./(2.*dx1(kd))
+       dx122(kd) = 1./(dx1(kd)**2)
+       dx212(kd) = 1./(2.*dx2(kd))
+       dx222(kd) = 1./(dx2(kd)**2)
+
+       dx141(kd) = 1./(12.*dx1(kd))
+       dx142(kd) = 1./(12.*dx1(kd)**2)
+       dx241(kd) = 1./(12.*dx2(kd))
+       dx242(kd) = 1./(12.*dx2(kd)**2)
+
+       dr114(kd) = 1./(12.*dr1(kd))
+       dr214(kd) = 1./(12.*dr2(kd))
+      end do
+
+      numGhost=orderOfAccuracy/2
+      giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
+
+      ! save n1a,n1b,... for 2-stage fourth-order scheme
+      ns1a=n1a
+      ns1b=n1b
+      ns2a=n2a
+      ns2b=n2b
+      ns3a=n3a
+      ns3b=n3b
+
+      ms1a=m1a
+      ms1b=m1b
+      ms2a=m2a
+      ms2b=m2b
+      ms3a=m3a
+      ms3b=m3b
+
+      ! For 2nd-order Stage 1 of fourth-order scheme (parallel)
+      if( numParallelGhost.eq.3 )then
+        numGhost2=1  ! num ghost for 2nd-order update (Stage I of 4th order update)
+      else if( numParallelGhost.gt.3 )then
+        numGhost2=2  ! include an extra ghost -- is this needed ? 
+      else
+        numGhost2=0
+        if( orderOfAccuracy.eq.4 .and. numParallelGhost.gt.0 )then
+          if( t.le. 1.5*dt .and. debug.gt.0 )then
+            write(*,'(/,"---------------------------------------------------------------")')
+            write(*,'("LABEL:WARNING: orderOfAccuracy=",i2," but numParallelGhost=",i3)') orderOfAccuracy,numParallelGhost
+            write(*,'("LABEL: Choose numParallelGhost==3 to make answers match to np=1 results")') 
+            write(*,'("---------------------------------------------------------------",/)')
+          end if 
+        end if
+      end if 
+
+      ne1a=n1a
+      ne1b=n1b
+      ne2a=n2a
+      ne2b=n2b
+      ne3a=n3a
+      ne3b=n3b
+
+      me1a=m1a
+      me1b=m1b
+      me2a=m2a
+      me2b=m2b
+      me3a=m3a
+      me3b=m3b
+
+      ! bounds for loops that include ghost points in the tangential directions:
+      nn1a=n1a
+      nn1b=n1b
+      nn2a=n2a
+      nn2b=n2b
+      nn3a=n3a
+      nn3b=n3b
+
+      mm1a=m1a
+      mm1b=m1b
+      mm2a=m2a
+      mm2b=m2b
+      mm3a=m3a
+      mm3b=m3b
+
+      i3=n3a
+      j3=m3a
+
+      axis1p1=mod(axis1+1,nd)
+      axis1p2=mod(axis1+2,nd)
+      axis2p1=mod(axis2+1,nd)
+      axis2p2=mod(axis2+2,nd)
+
+      is1=0
+      is2=0
+      is3=0
+
+      if( axis1.ne.0 )then
+        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+        ! *wdh* Also include ghost on interpolation boundaries 2015/06/29 
+        if( boundaryCondition1(0,0).le.0 )then ! parallel ghost may only have bc<0 on one side
+          nn1a=nn1a-numGhost
+          if( boundaryCondition2(0,0).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 178
+          end if
+        end if
+        if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
+          nn1b=nn1b+numGhost
+          if( boundaryCondition2(1,0).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 179
+          end if
+        end if
+
+        ! -- bounds for order 2 stage I of fourth-order scheme 
+        if( boundaryCondition1(0,0).eq.internalGhostBC )then
+          ! parallel ghost: 
+          ne1a=ne1a-numGhost2
+        end if 
+        if( boundaryCondition1(1,0).eq.internalGhostBC )then
+          ! parallel ghost:  
+          ne1b=ne1b+numGhost2
+        end if 
+        
+      end if
+      if( axis1.ne.1 )then
+        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+        if( boundaryCondition1(0,1).le.0 )then
+          nn2a=nn2a-numGhost
+          if( boundaryCondition2(0,1).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 180
+          end if
+        end if
+        if( boundaryCondition1(1,1).le.0 )then
+          nn2b=nn2b+numGhost
+          if( boundaryCondition2(1,1).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 181
+          end if
+        end if
+
+        ! -- bounds for order 2 stage I of fourth-order scheme 
+        if( boundaryCondition1(0,1).eq.internalGhostBC )then
+          ! adjust for parallel ghost 
+          ne2a=ne2a-numGhost2
+        end if 
+        if( boundaryCondition1(1,1).eq.internalGhostBC )then
+          ! adjust for parallel ghost 
+          ne2b=ne2b+numGhost2
+        end if
+        
+      end if
+
+      if( nd.eq.3 .and. axis1.ne.2 )then
+        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+        if( boundaryCondition1(0,2).le.0 )then
+          nn3a=nn3a-numGhost
+          if( boundaryCondition2(0,2).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 182
+          end if
+        end if
+        if( boundaryCondition1(1,2).le.0 )then
+          nn3b=nn3b+numGhost
+          if( boundaryCondition2(1,2).gt.0 )then
+            write(*,'("LABEL: bc is inconsistent")')
+            stop 183
+          end if
+        end if
+
+        ! -- bounds for order 2 stage I of fourth-order scheme 
+        if( boundaryCondition1(0,2).eq.internalGhostBC )then
+          ! adjust for parallel ghost 
+          ne3a=ne3a-numGhost2
+        end if
+        if( boundaryCondition1(1,2).eq.internalGhostBC )then
+          ! adjust for parallel ghost 
+          ne3b=ne3b+numGhost2
+        end if 
+
+      end if
+
+      if( axis1.eq.0 ) then
+        is1=1-2*side1
+        an1Cartesian=1. ! normal for a cartesian grid
+        an2Cartesian=0.
+        an3Cartesian=0.
+
+      else if( axis1.eq.1 )then
+        is2=1-2*side1
+        an1Cartesian=0.
+        an2Cartesian=1.
+        an3Cartesian=0.
+
+      else if( axis1.eq.2 )then
+        is3=1-2*side1
+        an1Cartesian=0.
+        an2Cartesian=0.
+        an3Cartesian=1.
+      else
+        stop 5528
+      end if
+
+
+      js1=0
+      js2=0
+      js3=0
+      if( axis2.ne.0 )then
+
+        if( boundaryCondition2(0,0).le.0 )then
+          mm1a=mm1a-numGhost
+        end if
+        if( boundaryCondition2(1,0).le.0 )then
+          mm1b=mm1b+numGhost
+        end if
+
+        if( boundaryCondition2(0,0).eq.internalGhostBC )then
+          me1a=me1a-numGhost2
+        end if
+        if( boundaryCondition2(1,0).eq.internalGhostBC )then
+          me1b=me1b+numGhost2
+        end if
+
+      end if
+
+      if( axis2.ne.1 )then
+        if( boundaryCondition2(0,1).le.0 )then
+          mm2a=mm2a-numGhost
+        end if
+        if( boundaryCondition2(1,1).le.0 )then
+          mm2b=mm2b+numGhost
+        end if
+
+        if( boundaryCondition2(0,1).eq.internalGhostBC )then
+          me2a=me2a-numGhost2
+        end if
+        if( boundaryCondition2(1,1).eq.internalGhostBC )then
+          me2b=me2b+numGhost2
+        end if
+      end if
+
+      if( nd.eq.3 .and. axis2.ne.2 )then
+        if( boundaryCondition2(0,2).le.0 )then
+          mm3a=mm3a-numGhost
+        end if
+        if( boundaryCondition2(1,2).le.0 )then
+          mm3b=mm3b+numGhost
+        end if
+
+        if( boundaryCondition2(0,2).eq.internalGhostBC )then
+          me3a=me3a-numGhost2
+        end if
+        if( boundaryCondition2(1,2).eq.internalGhostBC )then
+          me3b=me3b+numGhost2
+        end if
+      end if
+
+      if( axis2.eq.0 ) then
+        js1=1-2*side2
+      else if( axis2.eq.1 ) then
+        js2=1-2*side2
+      else  if( axis2.eq.2 ) then
+        js3=1-2*side2
+      else
+        stop 3384
+      end if
+
+      is=1-2*side1
+      js=1-2*side2
+
+
+      if( t.le. 1.5*dt .and. debug.gt.0 )then
+        write(debugFile,'("myid=",i3," nd1a,nd1b,...  =",6i5)') myid,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b
+        write(debugFile,'("myid=",i3," n1a,n1b,...    =",6i5)') myid,n1a,n1b,n2a,n2b,n3a,n3b
+        write(debugFile,'("myid=",i3," ne1a,ne1b,...  =",6i5)') myid,ne1a,ne1b,ne2a,ne2b,ne3a,ne3b
+
+        write(debugFile,'("myid=",i3," md1a,md1b,...  =",6i5)') myid,md1a,md1b,md2a,md2b,md3a,md3b
+        write(debugFile,'("myid=",i3," m1a,m1b,...    =",6i5)') myid,m1a,m1b,m2a,m2b,m3a,m3b
+        write(debugFile,'("myid=",i3," me1a,me1b,...  =",6i5)') myid,me1a,me1b,me2a,me2b,me3a,me3b
+      end if
+
+      if( debug.gt.1 )then
+        write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+        write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
+
+      end if
+
+      if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )then
+        write(debugFile,'(" ERROR: LABEL: orderOfExtrapolation<3 ")')
+        stop 7716
+      end if
+      if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )then
+        write(debugFile,'(" ERROR: LABEL: orderOfExtrapolation<4 ")')
+        stop 7716
+      end if
+
+
+#endMacro 
+
+
+
+
+! ==============================================================================
+! Macro: Set index bounds to include extra ghost in tangential directions
+!   We do this for stage I in the new 4th order scheme (for parallel) where we
+!   assign the first ghost point to second-order
+! ==============================================================================
+#beginMacro setIndexBoundsExtraGhost()
+  ! grid1: nn1a,nn1b, etc includes extra ghost in tangential directions
+  n1a=ne1a
+  n1b=ne1b
+  n2a=ne2a
+  n2b=ne2b
+  n3a=ne3a
+  n3b=ne3b
+
+  ! grid2
+  m1a=me1a
+  m1b=me1b
+  m2a=me2a
+  m2b=me2b
+  m3a=me3a
+  m3b=me3b
+#endMacro
+
+! ==============================================================================
+! Macro: reset index bounds 
+! ==============================================================================
+#beginMacro resetIndexBounds()
+  ! grid1: ns1a,ns1b, ...  are saved values of n1a,n1b,...
+  n1a=ns1a
+  n1b=ns1b
+  n2a=ns2a
+  n2b=ns2b
+  n3a=ns3a
+  n3b=ns3b
+
+  ! grid2
+  m1a=ms1a
+  m1b=ms1b
+  m2a=ms2a
+  m2b=ms2b
+  m3a=ms3a
+  m3b=ms3b
+#endMacro
+      

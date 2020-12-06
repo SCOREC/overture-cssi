@@ -524,6 +524,7 @@
 
 
 
+
 ! ********************************************************************************
 !     Usage: setJacobianRS( aj1, r, s)
 !            setJacobianRS( aj1, s, r)
@@ -1172,6 +1173,9 @@
 ! eval3dJumpOrder2()
 ! evalInterfaceEquations23c()
 ! assignInterfaceGhost23c()
+! initializeInterfaceVariablesMacro(LABEL)
+! setIndexBoundsExtraGhost()
+! resetIndexBounds()  
 !         -*- mode: F90 -*-
 ! --------------------------------------------------------------------------
 ! ******** define some interface macros for 3D *********
@@ -1194,6 +1198,32 @@
 ! --------------------------------------------------------------------------
 
 
+! =====================================================================================================
+!  Macro:
+!     Initialize various variables and loop bounds
+!     Called by interface3d.bf and interface3dOrder4.bf 
+! =====================================================================================================
+
+
+
+
+! ==============================================================================
+! Macro: Set index bounds to include extra ghost in tangential directions
+!   We do this for stage I in the new 4th order scheme (for parallel) where we
+!   assign the first ghost point to second-order
+! ==============================================================================
+
+! ==============================================================================
+! Macro: reset index bounds 
+! ==============================================================================
+
+
+
+! ==============================================================================
+! Macro: get index bounds that include ghost points 
+!  Output: ng1a,ng1b,ng2a,ng2b,ng3a,ng3b
+!  Output: mg1a,mg1b,mg2a,mg2b,mg3a,mg3b
+! ==============================================================================
 
 
       subroutine interface3dMaxwell( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
@@ -1299,10 +1329,20 @@
      & forcingOption
       integer assignInterfaceValues,assignInterfaceGhostValues,
      & setDivergenceAtInterfaces
-      integer numGhost,giveDiv
+      integer numGhost,numGhost2,giveDiv
+      ! grid1
+      integer ns1a,ns1b,ns2a,ns2b,ns3a,ns3b  ! save n1a,n1b,...
+      integer ne1a,ne1b,ne2a,ne2b,ne3a,ne3b  ! one extra ghost for 4th-order Stage I order2
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+      integer ng1a,ng1b,ng2a,ng2b,ng3a,ng3b  ! for ghost too
+      ! grid2
+      integer ms1a,ms1b,ms2a,ms2b,ms3a,ms3b  ! save m1a,m1b,...
+      integer me1a,me1b,me2a,me2b,me3a,me3b  ! one extra ghost for 4th-order Stage I order2
       integer mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
+      integer mg1a,mg1b,mg2a,mg2b,mg3a,mg3b  ! for ghost too
       integer m1,m2,mm
+
+      integer internalGhostBC
 
       real rx1,ry1,rz1,rx2,ry2,rz2
 
@@ -1640,6 +1680,12 @@
       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
 
+      real checkParallelFortranArrayReal, checkParallelFortranArrayInt,
+     &  pdiff
+      integer numParallelGhost
+      integer nd4a,nd4b,n4a,n4b
+      integer md4a,md4b,m4a,m4b
+      character*180 label
 
 
 !     --- start statement function ----
@@ -2688,6 +2734,9 @@
 
       nonlinearModel1     = ipar(49)
       nonlinearModel2     = ipar(50)
+      numParallelGhost    = ipar(51)
+
+      internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries
 
       dx1(0)                =rpar(0)
       dx1(1)                =rpar(1)
@@ -2805,7 +2854,7 @@
         ! INQUIRE(FILE=filen, EXIST=filex)
       end if
 
-      if( .true. .and. t.le. 1.5*dt )then
+      if( t.le. 1.5*dt .and. debug.gt.0 )then
         write(*,'(" +++++++++cgmx interface3d t=",e9.2," dt=",e9.2," 
      & nit=",i3," ++++++++")') t,dt,nit
            ! '
@@ -2813,6 +2862,8 @@
      & debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') 
      & assignInterfaceValues,assignInterfaceGhostValues
+        write(*,'("  ... useJacobiUpdate=",i2," numParallelGhost=",i2)
+     & ') useJacobiUpdate,numParallelGhost
         write(*,'("  ... setDivergenceAtInterfaces=",i2)') 
      & setDivergenceAtInterfaces
         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') 
@@ -2824,10 +2875,15 @@
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3,
      & " absoluteTol=",e12.3)') relativeErrorTolerance,
      & absoluteErrorTolerance
+        write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,
+     & 1),i2=0,nd-1)
+        write(*,'("  ... bc2=",6i6)') ((boundaryCondition2(i1,i2),i1=0,
+     & 1),i2=0,nd-1)
+        write(*,'("  ... internalGhostBC=",i6)') internalGhostBC
 
       end if
 
-      if( t.lt.1.5*dt )then
+      if( t.lt.1.5*dt .and. debug.gt.0 )then
         write(debugFile,'(" +++++++++cgmx interface3d t=",e9.2," ++++++
      & ++")') t
            ! '
@@ -2902,7 +2958,7 @@
      & numberOfPolarizationVectors1, maxNumberOfParameters,
      & maxNumberOfPolarizationVectors,gdmParOption )
 
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d-- dispersionModel1=",i4," grid1=",
      & i4," pxc=",i4)') dispersionModel1,grid1,pxc
@@ -2926,7 +2982,7 @@
         call getGDMParameters( grid2,alphaP2,gdmPar2,
      & numberOfPolarizationVectors2, maxNumberOfParameters,
      & maxNumberOfPolarizationVectors,gdmParOption )
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d-- dispersionModel2=",i4," grid2=",
      & i4)') dispersionModel2,grid2
@@ -3017,176 +3073,276 @@
       end if
 
 
-      ! *** do this for now --- assume grids have equal spacing
-!      dx(0)=dx1(0)
-!      dx(1)=dx1(1)
-!      dx(2)=dx1(2)
-
-!      dr(0)=dr1(0)
-!      dr(1)=dr1(1)
-!      dr(2)=dr1(2)
-
       epsx=1.e-20  ! fix this
 
-      do kd=0,nd-1
-       dx112(kd) = 1./(2.*dx1(kd))
-       dx122(kd) = 1./(dx1(kd)**2)
-       dx212(kd) = 1./(2.*dx2(kd))
-       dx222(kd) = 1./(dx2(kd)**2)
-
-       dx141(kd) = 1./(12.*dx1(kd))
-       dx142(kd) = 1./(12.*dx1(kd)**2)
-       dx241(kd) = 1./(12.*dx2(kd))
-       dx242(kd) = 1./(12.*dx2(kd)**2)
-
-       dr114(kd) = 1./(12.*dr1(kd))
-       dr214(kd) = 1./(12.*dr2(kd))
-      end do
-
-      numGhost=orderOfAccuracy/2
-      giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
-
-      ! bounds for loops that include ghost points in the tangential directions:
-      nn1a=n1a
-      nn1b=n1b
-      nn2a=n2a
-      nn2b=n2b
-      nn3a=n3a
-      nn3b=n3b
-
-      mm1a=m1a
-      mm1b=m1b
-      mm2a=m2a
-      mm2b=m2b
-      mm3a=m3a
-      mm3b=m3b
-
-      i3=n3a
-      j3=m3a
-
-      axis1p1=mod(axis1+1,nd)
-      axis1p2=mod(axis1+2,nd)
-      axis2p1=mod(axis2+1,nd)
-      axis2p2=mod(axis2+2,nd)
-
-      is1=0
-      is2=0
-      is3=0
-
-      if( axis1.ne.0 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        ! *wdh* Also include ghost on interpolation boundaries 2015/06/29 
-        if( boundaryCondition1(0,0).le.0 )then ! parallel ghost may only have bc<0 on one side
-          nn1a=nn1a-numGhost
-          if( boundaryCondition2(0,0).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 178
-          end if
-        end if
-        if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
-          nn1b=nn1b+numGhost
-          if( boundaryCondition2(1,0).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 179
-          end if
-        end if
-      end if
-      if( axis1.ne.1 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,1).le.0 )then
-          nn2a=nn2a-numGhost
-          if( boundaryCondition2(0,1).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 180
-          end if
-        end if
-        if( boundaryCondition1(1,1).le.0 )then
-          nn2b=nn2b+numGhost
-          if( boundaryCondition2(1,1).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 181
-          end if
-        end if
-      end if
-      if( nd.eq.3 .and. axis1.ne.2 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,2).le.0 )then
-          nn3a=nn3a-numGhost
-          if( boundaryCondition2(0,2).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 182
-          end if
-        end if
-        if( boundaryCondition1(1,2).le.0 )then
-          nn3b=nn3b+numGhost
-          if( boundaryCondition2(1,2).gt.0 )then
-            write(*,'("Interaface3d: bc is inconsistent")')
-            stop 183
-          end if
-        end if
-      end if
-
-      if( axis1.eq.0 ) then
-        is1=1-2*side1
-        an1Cartesian=1. ! normal for a cartesian grid
-        an2Cartesian=0.
-        an3Cartesian=0.
-
-      else if( axis1.eq.1 )then
-        is2=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=1.
-        an3Cartesian=0.
-
-      else if( axis1.eq.2 )then
-        is3=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=0.
-        an3Cartesian=1.
-      else
-        stop 5528
-      end if
-
-
-      js1=0
-      js2=0
-      js3=0
-      if( axis2.ne.0 )then
-        if( boundaryCondition2(0,0).le.0 )then
-          mm1a=mm1a-numGhost
-        end if
-        if( boundaryCondition2(1,0).le.0 )then
-          mm1b=mm1b+numGhost
-        end if
-      end if
-      if( axis2.ne.1 )then
-        if( boundaryCondition2(0,1).le.0 )then
-          mm2a=mm2a-numGhost
-        end if
-        if( boundaryCondition2(1,1).le.0 )then
-          mm2b=mm2b+numGhost
-        end if
-      end if
-      if( nd.eq.3 .and. axis2.ne.2 )then
-        if( boundaryCondition2(0,2).le.0 )then
-          mm3a=mm3a-numGhost
-        end if
-        if( boundaryCondition2(1,2).le.0 )then
-          mm3b=mm3b+numGhost
-        end if
-      end if
-      if( axis2.eq.0 ) then
-        js1=1-2*side2
-      else if( axis2.eq.1 ) then
-        js2=1-2*side2
-      else  if( axis2.eq.2 ) then
-        js3=1-2*side2
-      else
-        stop 3384
-      end if
-
-      is=1-2*side1
-      js=1-2*side2
+      ! --- init various variables and loop bounds ----
+            do kd=0,nd-1
+             dx112(kd) = 1./(2.*dx1(kd))
+             dx122(kd) = 1./(dx1(kd)**2)
+             dx212(kd) = 1./(2.*dx2(kd))
+             dx222(kd) = 1./(dx2(kd)**2)
+             dx141(kd) = 1./(12.*dx1(kd))
+             dx142(kd) = 1./(12.*dx1(kd)**2)
+             dx241(kd) = 1./(12.*dx2(kd))
+             dx242(kd) = 1./(12.*dx2(kd)**2)
+             dr114(kd) = 1./(12.*dr1(kd))
+             dr214(kd) = 1./(12.*dr2(kd))
+            end do
+            numGhost=orderOfAccuracy/2
+            giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
+            ! save n1a,n1b,... for 2-stage fourth-order scheme
+            ns1a=n1a
+            ns1b=n1b
+            ns2a=n2a
+            ns2b=n2b
+            ns3a=n3a
+            ns3b=n3b
+            ms1a=m1a
+            ms1b=m1b
+            ms2a=m2a
+            ms2b=m2b
+            ms3a=m3a
+            ms3b=m3b
+            ! For 2nd-order Stage 1 of fourth-order scheme (parallel)
+            if( numParallelGhost.eq.3 )then
+              numGhost2=1  ! num ghost for 2nd-order update (Stage I of 4th order update)
+            else if( numParallelGhost.gt.3 )then
+              numGhost2=2  ! include an extra ghost -- is this needed ?
+            else
+              numGhost2=0
+              if( orderOfAccuracy.eq.4 .and. numParallelGhost.gt.0 )
+     & then
+                if( t.le. 1.5*dt .and. debug.gt.0 )then
+                  write(*,'(/,"----------------------------------------
+     & -----------------------")')
+                  write(*,'("interface3d:WARNING: orderOfAccuracy=",i2,
+     & " but numParallelGhost=",i3)') orderOfAccuracy,numParallelGhost
+                  write(*,'("interface3d: Choose numParallelGhost==3 
+     & to make answers match to np=1 results")')
+                  write(*,'("------------------------------------------
+     & ---------------------",/)')
+                end if
+              end if
+            end if
+            ne1a=n1a
+            ne1b=n1b
+            ne2a=n2a
+            ne2b=n2b
+            ne3a=n3a
+            ne3b=n3b
+            me1a=m1a
+            me1b=m1b
+            me2a=m2a
+            me2b=m2b
+            me3a=m3a
+            me3b=m3b
+            ! bounds for loops that include ghost points in the tangential directions:
+            nn1a=n1a
+            nn1b=n1b
+            nn2a=n2a
+            nn2b=n2b
+            nn3a=n3a
+            nn3b=n3b
+            mm1a=m1a
+            mm1b=m1b
+            mm2a=m2a
+            mm2b=m2b
+            mm3a=m3a
+            mm3b=m3b
+            i3=n3a
+            j3=m3a
+            axis1p1=mod(axis1+1,nd)
+            axis1p2=mod(axis1+2,nd)
+            axis2p1=mod(axis2+1,nd)
+            axis2p2=mod(axis2+2,nd)
+            is1=0
+            is2=0
+            is3=0
+            if( axis1.ne.0 )then
+              ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+              ! *wdh* Also include ghost on interpolation boundaries 2015/06/29 
+              if( boundaryCondition1(0,0).le.0 )then ! parallel ghost may only have bc<0 on one side
+                nn1a=nn1a-numGhost
+                if( boundaryCondition2(0,0).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 178
+                end if
+              end if
+              if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
+                nn1b=nn1b+numGhost
+                if( boundaryCondition2(1,0).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 179
+                end if
+              end if
+              ! -- bounds for order 2 stage I of fourth-order scheme 
+              if( boundaryCondition1(0,0).eq.internalGhostBC )then
+                ! parallel ghost: 
+                ne1a=ne1a-numGhost2
+              end if
+              if( boundaryCondition1(1,0).eq.internalGhostBC )then
+                ! parallel ghost:  
+                ne1b=ne1b+numGhost2
+              end if
+            end if
+            if( axis1.ne.1 )then
+              ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+              if( boundaryCondition1(0,1).le.0 )then
+                nn2a=nn2a-numGhost
+                if( boundaryCondition2(0,1).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 180
+                end if
+              end if
+              if( boundaryCondition1(1,1).le.0 )then
+                nn2b=nn2b+numGhost
+                if( boundaryCondition2(1,1).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 181
+                end if
+              end if
+              ! -- bounds for order 2 stage I of fourth-order scheme 
+              if( boundaryCondition1(0,1).eq.internalGhostBC )then
+                ! adjust for parallel ghost 
+                ne2a=ne2a-numGhost2
+              end if
+              if( boundaryCondition1(1,1).eq.internalGhostBC )then
+                ! adjust for parallel ghost 
+                ne2b=ne2b+numGhost2
+              end if
+            end if
+            if( nd.eq.3 .and. axis1.ne.2 )then
+              ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+              if( boundaryCondition1(0,2).le.0 )then
+                nn3a=nn3a-numGhost
+                if( boundaryCondition2(0,2).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 182
+                end if
+              end if
+              if( boundaryCondition1(1,2).le.0 )then
+                nn3b=nn3b+numGhost
+                if( boundaryCondition2(1,2).gt.0 )then
+                  write(*,'("interface3d: bc is inconsistent")')
+                  stop 183
+                end if
+              end if
+              ! -- bounds for order 2 stage I of fourth-order scheme 
+              if( boundaryCondition1(0,2).eq.internalGhostBC )then
+                ! adjust for parallel ghost 
+                ne3a=ne3a-numGhost2
+              end if
+              if( boundaryCondition1(1,2).eq.internalGhostBC )then
+                ! adjust for parallel ghost 
+                ne3b=ne3b+numGhost2
+              end if
+            end if
+            if( axis1.eq.0 ) then
+              is1=1-2*side1
+              an1Cartesian=1. ! normal for a cartesian grid
+              an2Cartesian=0.
+              an3Cartesian=0.
+            else if( axis1.eq.1 )then
+              is2=1-2*side1
+              an1Cartesian=0.
+              an2Cartesian=1.
+              an3Cartesian=0.
+            else if( axis1.eq.2 )then
+              is3=1-2*side1
+              an1Cartesian=0.
+              an2Cartesian=0.
+              an3Cartesian=1.
+            else
+              stop 5528
+            end if
+            js1=0
+            js2=0
+            js3=0
+            if( axis2.ne.0 )then
+              if( boundaryCondition2(0,0).le.0 )then
+                mm1a=mm1a-numGhost
+              end if
+              if( boundaryCondition2(1,0).le.0 )then
+                mm1b=mm1b+numGhost
+              end if
+              if( boundaryCondition2(0,0).eq.internalGhostBC )then
+                me1a=me1a-numGhost2
+              end if
+              if( boundaryCondition2(1,0).eq.internalGhostBC )then
+                me1b=me1b+numGhost2
+              end if
+            end if
+            if( axis2.ne.1 )then
+              if( boundaryCondition2(0,1).le.0 )then
+                mm2a=mm2a-numGhost
+              end if
+              if( boundaryCondition2(1,1).le.0 )then
+                mm2b=mm2b+numGhost
+              end if
+              if( boundaryCondition2(0,1).eq.internalGhostBC )then
+                me2a=me2a-numGhost2
+              end if
+              if( boundaryCondition2(1,1).eq.internalGhostBC )then
+                me2b=me2b+numGhost2
+              end if
+            end if
+            if( nd.eq.3 .and. axis2.ne.2 )then
+              if( boundaryCondition2(0,2).le.0 )then
+                mm3a=mm3a-numGhost
+              end if
+              if( boundaryCondition2(1,2).le.0 )then
+                mm3b=mm3b+numGhost
+              end if
+              if( boundaryCondition2(0,2).eq.internalGhostBC )then
+                me3a=me3a-numGhost2
+              end if
+              if( boundaryCondition2(1,2).eq.internalGhostBC )then
+                me3b=me3b+numGhost2
+              end if
+            end if
+            if( axis2.eq.0 ) then
+              js1=1-2*side2
+            else if( axis2.eq.1 ) then
+              js2=1-2*side2
+            else  if( axis2.eq.2 ) then
+              js3=1-2*side2
+            else
+              stop 3384
+            end if
+            is=1-2*side1
+            js=1-2*side2
+            if( t.le. 1.5*dt .and. debug.gt.0 )then
+              write(debugFile,'("myid=",i3," nd1a,nd1b,...  =",6i5)') 
+     & myid,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b
+              write(debugFile,'("myid=",i3," n1a,n1b,...    =",6i5)') 
+     & myid,n1a,n1b,n2a,n2b,n3a,n3b
+              write(debugFile,'("myid=",i3," ne1a,ne1b,...  =",6i5)') 
+     & myid,ne1a,ne1b,ne2a,ne2b,ne3a,ne3b
+              write(debugFile,'("myid=",i3," md1a,md1b,...  =",6i5)') 
+     & myid,md1a,md1b,md2a,md2b,md3a,md3b
+              write(debugFile,'("myid=",i3," m1a,m1b,...    =",6i5)') 
+     & myid,m1a,m1b,m2a,m2b,m3a,m3b
+              write(debugFile,'("myid=",i3," me1a,me1b,...  =",6i5)') 
+     & myid,me1a,me1b,me2a,me2b,me3a,me3b
+            end if
+            if( debug.gt.1 )then
+              write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,
+     & nn2b,nn3a,nn3b
+              write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,
+     & mm2b,mm3a,mm3b
+            end if
+            if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )
+     & then
+              write(debugFile,'(" ERROR: interface3d: 
+     & orderOfExtrapolation<3 ")')
+              stop 7716
+            end if
+            if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )
+     & then
+              write(debugFile,'(" ERROR: interface3d: 
+     & orderOfExtrapolation<4 ")')
+              stop 7716
+            end if
 
       rx1=0.
       ry1=0.
@@ -3209,25 +3365,6 @@
       else
         rz2=1.
       endif
-
-      if( debug.gt.1 )then
-        write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,nn2b,
-     & nn3a,nn3b
-        write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,mm2b,
-     & mm3a,mm3b
-
-      end if
-
-      if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<3 
-     & ")')
-        stop 7716
-      end if
-      if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<4 
-     & ")')
-        stop 7716
-      end if
 
       ! first time through check that the mask's are consistent
       ! For now we require the masks to both be positive at the same points on the interface
@@ -3289,7 +3426,6 @@
        end if
       end if
 
-
       if( nd.eq.2 .and. orderOfAccuracy.eq.2 .and. 
      & gridType.eq.rectangular )then
 
@@ -3324,7 +3460,7 @@
                 ! --------------------------------------------------------------
                 !  (see maxwell.pdf)
                 !
-                if( t.le.3*dt )then
+                if( t.le.3*dt .and. debug.gt.0  )then
                   write(*,'("cgmx:interface3d: PROJECT INTERFACE 
      & DISPERSIVE in 2D")')
                 end if
@@ -3945,7 +4081,7 @@
              ! ****************************************************
              ! ***********  2D, ORDER=2, RECTANGULAR **************
              ! ****************************************************
-            if( t.le.3.*dt )then
+            if( t.le.3.*dt .and. debug.gt.0 )then
               write(*,'("Interface>>>","22r-GDM")')
             end if
             ! For rectangular, both sides must axis axis1==axis2: 
@@ -5059,7 +5195,7 @@
                ! --------------------------------------------------------------
                !  (see maxwell.pdf)
                !
-               if( t.le.3*dt )then
+               if( t.le.3*dt .and. debug.gt.0  )then
                  write(*,'("cgmx:interface3d: PROJECT INTERFACE 
      & DISPERSIVE in 2D")')
                end if
@@ -6731,7 +6867,7 @@
              ! ****************************************************
              ! ***********  2D, ORDER=2, CURVILINEAR **************
              ! ****************************************************
-           if( t.le.3.*dt )then
+           if( t.le.3.*dt .and. debug.gt.0 )then
              write(*,'("Interface>>>","22c-GDM")')
            end if
            ! --- initialize some forcing functions ---
@@ -8199,7 +8335,7 @@
              ! ****************************************************
              ! ***********  2D, ORDER=2, CURVILINEAR **************
              ! ****************************************************
-           if( t.le.3.*dt )then
+           if( t.le.3.*dt .and. debug.gt.0 )then
              write(*,'("Interface>>>","22c-MLA")')
            end if
            ! --- initialize some forcing functions ---
@@ -9923,7 +10059,7 @@
                ! --------------------------------------------------------------
                !  (see maxwell.pdf)
                !
-               if( t.le.3*dt )then
+               if( t.le.3*dt .and. debug.gt.0  )then
                  write(*,'("cgmx:interface3d: PROJECT INTERFACE 
      & DISPERSIVE in 2D")')
                end if
@@ -11745,7 +11881,7 @@
                ! --------------------------------------------------------------
                !  (see maxwell.pdf)
                !
-               if( t.le.3*dt )then
+               if( t.le.3*dt .and. debug.gt.0  )then
                  write(*,'("cgmx:interface3d: PROJECT INTERFACE 
      & DISPERSIVE in 2D")')
                end if
@@ -12081,8 +12217,6 @@
 
          ! initialization step: assign first ghost line by extrapolation
          ! NOTE: assign ghost points outside the ends
-
-
          if( .true. )then
            i3=n3a
            j3=m3a
@@ -12271,15 +12405,38 @@
          end if
 
          if( avoidInterfaceIterations.eq.1 )then
+
+           ! ---- STAGE I: assign first ghost to 2nd-order accuracy -----
+
            ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
            ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
            !!  perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2;
-           ! **TEST** assign ghost to 2nd-order first
 
-           if( t.lt. 3.*dt )then
-             write(*,'(" **** ASSIGN GHOST TO 2ND ORDER ****")')
+           ! Turn this on -- November 22, 2020 
+           ! Nov. 22, 2020: Accuracy degrades to 3rd order for PMIC
+           ! perl $ORDER=2; 
+           if( t.lt. 3.*dt .and. debug.gt.0 )then
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 
+     & 4TH ORDER INTERFACE ****")')
            end if
            orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+
+           ! in parallel we add extra points in the tangential direction on parallel boundaries
+           ! (otherwise we would use extrapolated values which is probably ok) 
+             ! grid1: nn1a,nn1b, etc includes extra ghost in tangential directions
+             n1a=ne1a
+             n1b=ne1b
+             n2a=ne2a
+             n2b=ne2b
+             n3a=ne3a
+             n3b=ne3b
+             ! grid2
+             m1a=me1a
+             m1b=me1b
+             m2a=me2a
+             m2b=me2b
+             m3a=me3a
+             m3b=me3b
            if( dispersive.eq.0 )then
                ! ****************************************************
                ! ***********  2D, ORDER=2, CURVILINEAR **************
@@ -13848,7 +14005,7 @@
                ! ****************************************************
                ! ***********  2D, ORDER=2, CURVILINEAR **************
                ! ****************************************************
-             if( t.le.3.*dt )then
+             if( t.le.3.*dt .and. debug.gt.0 )then
                write(*,'("Interface>>>","22c-GDM")')
              end if
              ! --- initialize some forcing functions ---
@@ -15517,1187 +15674,173 @@
      & max(diff) = ",1pe8.2)') coeffDiff
               end if
            end if
+             ! grid1: ns1a,ns1b, ...  are saved values of n1a,n1b,...
+             n1a=ns1a
+             n1b=ns1b
+             n2a=ns2a
+             n2b=ns2b
+             n3a=ns3a
+             n3b=ns3b
+             ! grid2
+             m1a=ms1a
+             m1b=ms1b
+             m2a=ms2a
+             m2b=ms2b
+             m3a=ms3a
+             m3b=ms3b
+
            orderOfAccuracy=4 ! reset
          end if
-         !! perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
 
+
+         if( debug.gt.3 )then
+
+           ! macro to get bounds including ghost points: ng1a,ng1b,... mg1a,mg1b, 
+             ! grid1: nn1a,nn1b, etc includes extra ghost in tangential directions
+             n1a=ne1a
+             n1b=ne1b
+             n2a=ne2a
+             n2b=ne2b
+             n3a=ne3a
+             n3b=ne3b
+             ! grid2
+             m1a=me1a
+             m1b=me1b
+             m2a=me2a
+             m2b=me2b
+             m3a=me3a
+             m3b=me3b
+             ng1a=n1a
+             ng1b=n1b
+             ng2a=n2a
+             ng2b=n2b
+             ng3a=n3a
+             ng3b=n3b
+             if( side1.eq.0 )then
+               ng1a=ng1a-is1*numGhost
+               ng2a=ng2a-is2*numGhost
+               ng3a=ng3a-is3*numGhost
+             else
+               ng1b=ng1b-is1*numGhost
+               ng2b=ng2b-is2*numGhost
+               ng3b=ng3b-is3*numGhost
+             end if
+             ! grid2
+             mg1a=m1a
+             mg1b=m1b
+             mg2a=m2a
+             mg2b=m2b
+             mg3a=m3a
+             mg3b=m3b
+             if( side2.eq.0 )then
+               mg1a=mg1a-js1*numGhost
+               mg2a=mg2a-js2*numGhost
+               mg3a=mg3a-js3*numGhost
+             else
+               mg1b=mg1b-js1*numGhost
+               mg2b=mg2b-js2*numGhost
+               mg3b=mg3b-js3*numGhost
+             end if
+             ! grid1: ns1a,ns1b, ...  are saved values of n1a,n1b,...
+             n1a=ns1a
+             n1b=ns1b
+             n2a=ns2a
+             n2b=ns2b
+             n3a=ns3a
+             n3b=ns3b
+             ! grid2
+             m1a=ms1a
+             m1b=ms1b
+             m2a=ms2a
+             m2b=ms2b
+             m3a=ms3a
+             m3b=ms3b
+
+           nd4a=0
+           nd4b=0
+           n4a=0
+           n4b=0
+           write(label,'("mask1 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           pdiff = checkParallelFortranArrayInt(label, nd1a, nd1b, 
+     & nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, ng1a, ng1b, ng2a, ng2b, 
+     & ng3a, ng3b, n4a, n4b,mask1, len(label) )
+
+           write(label,'("mask2 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           md4a=0
+           md4b=0
+           m4a=0
+           m4b=0
+           pdiff = checkParallelFortranArrayInt(label, md1a, md1b, 
+     & md2a, md2b, md3a, md3b, md4a, md4b, mg1a, mg1b, mg2a, mg2b, 
+     & mg3a, mg3b, m4a, m4b,mask2, len(label) )
+
+           nd4a=0
+           nd4b=2*nd-1
+           n4a=0
+           n4b=2*nd-1
+           write(label,'("rsxy1 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           pdiff = checkParallelFortranArrayReal(label, nd1a, nd1b, 
+     & nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, ng1a, ng1b, ng2a, ng2b, 
+     & ng3a, ng3b, n4a, n4b,rsxy1, len(label) )
+
+           write(label,'("rsxy2 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           md4a=0
+           md4b=2*nd-1
+           m4a=0
+           m4b=2*nd-1
+           pdiff = checkParallelFortranArrayReal(label, md1a, md1b, 
+     & md2a, md2b, md3a, md3b, md4a, md4b, mg1a, mg1b, mg2a, mg2b, 
+     & mg3a, mg3b, m4a, m4b,rsxy2, len(label) )
+
+
+           write(label,'("u1 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           ! fix me: -- use number of components 
+           nd4a=0
+           nd4b=2
+           n4a=0
+           n4b=2
+           pdiff = checkParallelFortranArrayReal(label, nd1a, nd1b, 
+     & nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, ng1a, ng1b, ng2a, ng2b, 
+     & ng3a, ng3b, n4a, n4b,u1, len(label) )
+
+
+           write(label,'("u2 : interface3d.f After stage 1 (order=2 
+     & update) t=",e10.2)') t
+           ! fix me: 
+           md4a=0
+           md4b=2
+           m4a=0
+           m4b=2
+           pdiff = checkParallelFortranArrayReal(label, md1a, md1b, 
+     & md2a, md2b, md3a, md3b, md4a, md4b, mg1a, mg1b, mg2a, mg2b, 
+     & mg3a, mg3b, m4a, m4b,u2, len(label) )
+
+         end if
 
          ! Assign polarization vectors on ghost lines
-         if( .false. )then
-           ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-            if( knownSolutionOption.eq.userDefinedKnownSolution )then
-              write(*,'(" assignPolarizationOnGhostOrder4: set P in 
-     & ghost 1 with 2nd-order")')
-            end if
-            if( nd.eq.2 )then
-             ! --- LOOP over the interface ---
-              i3=n3a
-              j3=m3a
-              j2=mm2a
-              do i2=nn2a,nn2b
-               j1=mm1a
-               do i1=nn1a,nn1b
-               ! if( mask1(i1,i2,i3).gt.0 .and. mask2(j1,j2,j3).gt.0 )then
-               ! *wdh* 2015/08/14 -- project interpolation points too
-               if( mask1(i1,i2,i3).ne.0 .and. mask2(j1,j2,j3).ne.0 )
-     & then
-              if( dispersionModel1.ne.noDispersion )then
-                ! Compute P at the first ghost using the 2nd order method
-                i1m=i1-is1
-                i2m=i2-is2
-                i3m=i3
-                tm=t-dt
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors1-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v1(jv) )
-                   beta = beta + .5*dt*a1v1(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u1n.xx, u1n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj1rx = rsxy1(i1m,i2m,i3m,0,0)
-                   aj1rxr = (-rsxy1(i1m-1,i2m,i3m,0,0)+rsxy1(i1m+1,i2m,
-     & i3m,0,0))/(2.*dr1(0))
-                   aj1rxs = (-rsxy1(i1m,i2m-1,i3m,0,0)+rsxy1(i1m,i2m+1,
-     & i3m,0,0))/(2.*dr1(1))
-                   aj1sx = rsxy1(i1m,i2m,i3m,1,0)
-                   aj1sxr = (-rsxy1(i1m-1,i2m,i3m,1,0)+rsxy1(i1m+1,i2m,
-     & i3m,1,0))/(2.*dr1(0))
-                   aj1sxs = (-rsxy1(i1m,i2m-1,i3m,1,0)+rsxy1(i1m,i2m+1,
-     & i3m,1,0))/(2.*dr1(1))
-                   aj1ry = rsxy1(i1m,i2m,i3m,0,1)
-                   aj1ryr = (-rsxy1(i1m-1,i2m,i3m,0,1)+rsxy1(i1m+1,i2m,
-     & i3m,0,1))/(2.*dr1(0))
-                   aj1rys = (-rsxy1(i1m,i2m-1,i3m,0,1)+rsxy1(i1m,i2m+1,
-     & i3m,0,1))/(2.*dr1(1))
-                   aj1sy = rsxy1(i1m,i2m,i3m,1,1)
-                   aj1syr = (-rsxy1(i1m-1,i2m,i3m,1,1)+rsxy1(i1m+1,i2m,
-     & i3m,1,1))/(2.*dr1(0))
-                   aj1sys = (-rsxy1(i1m,i2m-1,i3m,1,1)+rsxy1(i1m,i2m+1,
-     & i3m,1,1))/(2.*dr1(1))
-                   aj1rxx = aj1rx*aj1rxr+aj1sx*aj1rxs
-                   aj1rxy = aj1ry*aj1rxr+aj1sy*aj1rxs
-                   aj1sxx = aj1rx*aj1sxr+aj1sx*aj1sxs
-                   aj1sxy = aj1ry*aj1sxr+aj1sy*aj1sxs
-                   aj1ryx = aj1rx*aj1ryr+aj1sx*aj1rys
-                   aj1ryy = aj1ry*aj1ryr+aj1sy*aj1rys
-                   aj1syx = aj1rx*aj1syr+aj1sx*aj1sys
-                   aj1syy = aj1ry*aj1syr+aj1sy*aj1sys
-                    uu1 = u1n(i1m,i2m,i3m,ex)
-                    uu1r = (-u1n(i1m-1,i2m,i3m,ex)+u1n(i1m+1,i2m,i3m,
-     & ex))/(2.*dr1(0))
-                    uu1s = (-u1n(i1m,i2m-1,i3m,ex)+u1n(i1m,i2m+1,i3m,
-     & ex))/(2.*dr1(1))
-                    uu1rr = (u1n(i1m-1,i2m,i3m,ex)-2.*u1n(i1m,i2m,i3m,
-     & ex)+u1n(i1m+1,i2m,i3m,ex))/(dr1(0)**2)
-                    uu1rs = (-(-u1n(i1m-1,i2m-1,i3m,ex)+u1n(i1m-1,i2m+
-     & 1,i3m,ex))/(2.*dr1(1))+(-u1n(i1m+1,i2m-1,i3m,ex)+u1n(i1m+1,i2m+
-     & 1,i3m,ex))/(2.*dr1(1)))/(2.*dr1(0))
-                    uu1ss = (u1n(i1m,i2m-1,i3m,ex)-2.*u1n(i1m,i2m,i3m,
-     & ex)+u1n(i1m,i2m+1,i3m,ex))/(dr1(1)**2)
-                     u1nx = aj1rx*uu1r+aj1sx*uu1s
-                     u1ny = aj1ry*uu1r+aj1sy*uu1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     u1nxx = t1*uu1rr+2*aj1rx*aj1sx*uu1rs+t6*uu1ss+
-     & aj1rxx*uu1r+aj1sxx*uu1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     u1nyy = t1*uu1rr+2*aj1ry*aj1sy*uu1rs+t6*uu1ss+
-     & aj1ryy*uu1r+aj1syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u1n(i1m,i2m,i3m,ey)
-                    vv1r = (-u1n(i1m-1,i2m,i3m,ey)+u1n(i1m+1,i2m,i3m,
-     & ey))/(2.*dr1(0))
-                    vv1s = (-u1n(i1m,i2m-1,i3m,ey)+u1n(i1m,i2m+1,i3m,
-     & ey))/(2.*dr1(1))
-                    vv1rr = (u1n(i1m-1,i2m,i3m,ey)-2.*u1n(i1m,i2m,i3m,
-     & ey)+u1n(i1m+1,i2m,i3m,ey))/(dr1(0)**2)
-                    vv1rs = (-(-u1n(i1m-1,i2m-1,i3m,ey)+u1n(i1m-1,i2m+
-     & 1,i3m,ey))/(2.*dr1(1))+(-u1n(i1m+1,i2m-1,i3m,ey)+u1n(i1m+1,i2m+
-     & 1,i3m,ey))/(2.*dr1(1)))/(2.*dr1(0))
-                    vv1ss = (u1n(i1m,i2m-1,i3m,ey)-2.*u1n(i1m,i2m,i3m,
-     & ey)+u1n(i1m,i2m+1,i3m,ey))/(dr1(1)**2)
-                     v1nx = aj1rx*vv1r+aj1sx*vv1s
-                     v1ny = aj1ry*vv1r+aj1sy*vv1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     v1nxx = t1*vv1rr+2*aj1rx*aj1sx*vv1rs+t6*vv1ss+
-     & aj1rxx*vv1r+aj1sxx*vv1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     v1nyy = t1*vv1rr+2*aj1ry*aj1sy*vv1rs+t6*vv1ss+
-     & aj1ryy*vv1r+aj1syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq1*u1nLap
-                  LE(1) = cSq1*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),
-     & xy1(i1m,i2m,i3m,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy1(i1m,i2m,i3m,0),
-     & xy1(i1m,i2m,i3m,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy1(i1m,i2m,i3m,0),
-     & xy1(i1m,i2m,i3m,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy1(i1m,i2m,i3m,0),
-     & xy1(i1m,i2m,i3m,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy1(i1m,i2m,i3m,0),
-     & xy1(i1m,i2m,i3m,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq1*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq1*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors1-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,
-     & 0),xy1(i1m,i2m,i3m,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy1(i1m,i2m,i3m,
-     & 0),xy1(i1m,i2m,i3m,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy1(i1m,i2m,i3m,
-     & 0),xy1(i1m,i2m,i3m,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP1*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v1(jv)*p0t + b0v1(
-     & jv)*p0 - a0v1(jv)*ue - a1v1(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors1-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u1n(i1m,i2m,i3m,ec)
-                   evm=u1m(i1m,i2m,i3m,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors1-1
-                     pvc(jv)= p1n(i1m,i2m,i3m,m+jv*nd)
-                     pvm(jv)=p1m(i1m,i2m,i3m,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v1(jv)*
-     & pvm(jv) -a1v1(jv)*evm ) + dtSq*( -b0v1(jv)*pvc(jv) + a0v1(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u1n(i1m,i2m,i3m,ec)-u1m(i1m,i2m,i3m,ec)+ 
-     & dtSq*LE(m)+ fe + alphaP1*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP1*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u1n(i1m,i2m,i3m,ec),u1m(i1m,i2m,i3m,ec),fe,rhsE
-                   ! un(i1m,i2m,i3m,ec) = evn
-                   do jv=0,numberOfPolarizationVectors1-1
-                     ! pn(i1m,i2m,i3m,m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn + rhspv(jv) )
-                     pvalsm(m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn 
-     & + rhspv(jv) )
-                  end do
-                 end do
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors1-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v1(jv) )
-                   beta = beta + .5*dt*a1v1(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u1n.xx, u1n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj1rx = rsxy1(i1,i2,i3,0,0)
-                   aj1rxr = (-rsxy1(i1-1,i2,i3,0,0)+rsxy1(i1+1,i2,i3,0,
-     & 0))/(2.*dr1(0))
-                   aj1rxs = (-rsxy1(i1,i2-1,i3,0,0)+rsxy1(i1,i2+1,i3,0,
-     & 0))/(2.*dr1(1))
-                   aj1sx = rsxy1(i1,i2,i3,1,0)
-                   aj1sxr = (-rsxy1(i1-1,i2,i3,1,0)+rsxy1(i1+1,i2,i3,1,
-     & 0))/(2.*dr1(0))
-                   aj1sxs = (-rsxy1(i1,i2-1,i3,1,0)+rsxy1(i1,i2+1,i3,1,
-     & 0))/(2.*dr1(1))
-                   aj1ry = rsxy1(i1,i2,i3,0,1)
-                   aj1ryr = (-rsxy1(i1-1,i2,i3,0,1)+rsxy1(i1+1,i2,i3,0,
-     & 1))/(2.*dr1(0))
-                   aj1rys = (-rsxy1(i1,i2-1,i3,0,1)+rsxy1(i1,i2+1,i3,0,
-     & 1))/(2.*dr1(1))
-                   aj1sy = rsxy1(i1,i2,i3,1,1)
-                   aj1syr = (-rsxy1(i1-1,i2,i3,1,1)+rsxy1(i1+1,i2,i3,1,
-     & 1))/(2.*dr1(0))
-                   aj1sys = (-rsxy1(i1,i2-1,i3,1,1)+rsxy1(i1,i2+1,i3,1,
-     & 1))/(2.*dr1(1))
-                   aj1rxx = aj1rx*aj1rxr+aj1sx*aj1rxs
-                   aj1rxy = aj1ry*aj1rxr+aj1sy*aj1rxs
-                   aj1sxx = aj1rx*aj1sxr+aj1sx*aj1sxs
-                   aj1sxy = aj1ry*aj1sxr+aj1sy*aj1sxs
-                   aj1ryx = aj1rx*aj1ryr+aj1sx*aj1rys
-                   aj1ryy = aj1ry*aj1ryr+aj1sy*aj1rys
-                   aj1syx = aj1rx*aj1syr+aj1sx*aj1sys
-                   aj1syy = aj1ry*aj1syr+aj1sy*aj1sys
-                    uu1 = u1n(i1,i2,i3,ex)
-                    uu1r = (-u1n(i1-1,i2,i3,ex)+u1n(i1+1,i2,i3,ex))/(
-     & 2.*dr1(0))
-                    uu1s = (-u1n(i1,i2-1,i3,ex)+u1n(i1,i2+1,i3,ex))/(
-     & 2.*dr1(1))
-                    uu1rr = (u1n(i1-1,i2,i3,ex)-2.*u1n(i1,i2,i3,ex)+
-     & u1n(i1+1,i2,i3,ex))/(dr1(0)**2)
-                    uu1rs = (-(-u1n(i1-1,i2-1,i3,ex)+u1n(i1-1,i2+1,i3,
-     & ex))/(2.*dr1(1))+(-u1n(i1+1,i2-1,i3,ex)+u1n(i1+1,i2+1,i3,ex))/(
-     & 2.*dr1(1)))/(2.*dr1(0))
-                    uu1ss = (u1n(i1,i2-1,i3,ex)-2.*u1n(i1,i2,i3,ex)+
-     & u1n(i1,i2+1,i3,ex))/(dr1(1)**2)
-                     u1nx = aj1rx*uu1r+aj1sx*uu1s
-                     u1ny = aj1ry*uu1r+aj1sy*uu1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     u1nxx = t1*uu1rr+2*aj1rx*aj1sx*uu1rs+t6*uu1ss+
-     & aj1rxx*uu1r+aj1sxx*uu1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     u1nyy = t1*uu1rr+2*aj1ry*aj1sy*uu1rs+t6*uu1ss+
-     & aj1ryy*uu1r+aj1syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u1n(i1,i2,i3,ey)
-                    vv1r = (-u1n(i1-1,i2,i3,ey)+u1n(i1+1,i2,i3,ey))/(
-     & 2.*dr1(0))
-                    vv1s = (-u1n(i1,i2-1,i3,ey)+u1n(i1,i2+1,i3,ey))/(
-     & 2.*dr1(1))
-                    vv1rr = (u1n(i1-1,i2,i3,ey)-2.*u1n(i1,i2,i3,ey)+
-     & u1n(i1+1,i2,i3,ey))/(dr1(0)**2)
-                    vv1rs = (-(-u1n(i1-1,i2-1,i3,ey)+u1n(i1-1,i2+1,i3,
-     & ey))/(2.*dr1(1))+(-u1n(i1+1,i2-1,i3,ey)+u1n(i1+1,i2+1,i3,ey))/(
-     & 2.*dr1(1)))/(2.*dr1(0))
-                    vv1ss = (u1n(i1,i2-1,i3,ey)-2.*u1n(i1,i2,i3,ey)+
-     & u1n(i1,i2+1,i3,ey))/(dr1(1)**2)
-                     v1nx = aj1rx*vv1r+aj1sx*vv1s
-                     v1ny = aj1ry*vv1r+aj1sy*vv1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     v1nxx = t1*vv1rr+2*aj1rx*aj1sx*vv1rs+t6*vv1ss+
-     & aj1rxx*vv1r+aj1sxx*vv1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     v1nyy = t1*vv1rr+2*aj1ry*aj1sy*vv1rs+t6*vv1ss+
-     & aj1ryy*vv1r+aj1syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq1*u1nLap
-                  LE(1) = cSq1*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq1*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq1*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors1-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),
-     & xy1(i1,i2,i3,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP1*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v1(jv)*p0t + b0v1(
-     & jv)*p0 - a0v1(jv)*ue - a1v1(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors1-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u1n(i1,i2,i3,ec)
-                   evm=u1m(i1,i2,i3,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors1-1
-                     pvc(jv)= p1n(i1,i2,i3,m+jv*nd)
-                     pvm(jv)=p1m(i1,i2,i3,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v1(jv)*
-     & pvm(jv) -a1v1(jv)*evm ) + dtSq*( -b0v1(jv)*pvc(jv) + a0v1(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u1n(i1,i2,i3,ec)-u1m(i1,i2,i3,ec)+ dtSq*
-     & LE(m)+ fe + alphaP1*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP1*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u1n(i1,i2,i3,ec),u1m(i1,i2,i3,ec),fe,rhsE
-                   ! un(i1,i2,i3,ec) = evn
-                   do jv=0,numberOfPolarizationVectors1-1
-                     ! pn(i1,i2,i3,m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn + rhspv(jv) )
-                     pvals(m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn +
-     &  rhspv(jv) )
-                  end do
-                 end do
-                i1p=i1+is1
-                i2p=i2+is2
-                i3p=i3
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors1-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v1(jv) )
-                   beta = beta + .5*dt*a1v1(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u1n.xx, u1n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj1rx = rsxy1(i1p,i2p,i3p,0,0)
-                   aj1rxr = (-rsxy1(i1p-1,i2p,i3p,0,0)+rsxy1(i1p+1,i2p,
-     & i3p,0,0))/(2.*dr1(0))
-                   aj1rxs = (-rsxy1(i1p,i2p-1,i3p,0,0)+rsxy1(i1p,i2p+1,
-     & i3p,0,0))/(2.*dr1(1))
-                   aj1sx = rsxy1(i1p,i2p,i3p,1,0)
-                   aj1sxr = (-rsxy1(i1p-1,i2p,i3p,1,0)+rsxy1(i1p+1,i2p,
-     & i3p,1,0))/(2.*dr1(0))
-                   aj1sxs = (-rsxy1(i1p,i2p-1,i3p,1,0)+rsxy1(i1p,i2p+1,
-     & i3p,1,0))/(2.*dr1(1))
-                   aj1ry = rsxy1(i1p,i2p,i3p,0,1)
-                   aj1ryr = (-rsxy1(i1p-1,i2p,i3p,0,1)+rsxy1(i1p+1,i2p,
-     & i3p,0,1))/(2.*dr1(0))
-                   aj1rys = (-rsxy1(i1p,i2p-1,i3p,0,1)+rsxy1(i1p,i2p+1,
-     & i3p,0,1))/(2.*dr1(1))
-                   aj1sy = rsxy1(i1p,i2p,i3p,1,1)
-                   aj1syr = (-rsxy1(i1p-1,i2p,i3p,1,1)+rsxy1(i1p+1,i2p,
-     & i3p,1,1))/(2.*dr1(0))
-                   aj1sys = (-rsxy1(i1p,i2p-1,i3p,1,1)+rsxy1(i1p,i2p+1,
-     & i3p,1,1))/(2.*dr1(1))
-                   aj1rxx = aj1rx*aj1rxr+aj1sx*aj1rxs
-                   aj1rxy = aj1ry*aj1rxr+aj1sy*aj1rxs
-                   aj1sxx = aj1rx*aj1sxr+aj1sx*aj1sxs
-                   aj1sxy = aj1ry*aj1sxr+aj1sy*aj1sxs
-                   aj1ryx = aj1rx*aj1ryr+aj1sx*aj1rys
-                   aj1ryy = aj1ry*aj1ryr+aj1sy*aj1rys
-                   aj1syx = aj1rx*aj1syr+aj1sx*aj1sys
-                   aj1syy = aj1ry*aj1syr+aj1sy*aj1sys
-                    uu1 = u1n(i1p,i2p,i3p,ex)
-                    uu1r = (-u1n(i1p-1,i2p,i3p,ex)+u1n(i1p+1,i2p,i3p,
-     & ex))/(2.*dr1(0))
-                    uu1s = (-u1n(i1p,i2p-1,i3p,ex)+u1n(i1p,i2p+1,i3p,
-     & ex))/(2.*dr1(1))
-                    uu1rr = (u1n(i1p-1,i2p,i3p,ex)-2.*u1n(i1p,i2p,i3p,
-     & ex)+u1n(i1p+1,i2p,i3p,ex))/(dr1(0)**2)
-                    uu1rs = (-(-u1n(i1p-1,i2p-1,i3p,ex)+u1n(i1p-1,i2p+
-     & 1,i3p,ex))/(2.*dr1(1))+(-u1n(i1p+1,i2p-1,i3p,ex)+u1n(i1p+1,i2p+
-     & 1,i3p,ex))/(2.*dr1(1)))/(2.*dr1(0))
-                    uu1ss = (u1n(i1p,i2p-1,i3p,ex)-2.*u1n(i1p,i2p,i3p,
-     & ex)+u1n(i1p,i2p+1,i3p,ex))/(dr1(1)**2)
-                     u1nx = aj1rx*uu1r+aj1sx*uu1s
-                     u1ny = aj1ry*uu1r+aj1sy*uu1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     u1nxx = t1*uu1rr+2*aj1rx*aj1sx*uu1rs+t6*uu1ss+
-     & aj1rxx*uu1r+aj1sxx*uu1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     u1nyy = t1*uu1rr+2*aj1ry*aj1sy*uu1rs+t6*uu1ss+
-     & aj1ryy*uu1r+aj1syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u1n(i1p,i2p,i3p,ey)
-                    vv1r = (-u1n(i1p-1,i2p,i3p,ey)+u1n(i1p+1,i2p,i3p,
-     & ey))/(2.*dr1(0))
-                    vv1s = (-u1n(i1p,i2p-1,i3p,ey)+u1n(i1p,i2p+1,i3p,
-     & ey))/(2.*dr1(1))
-                    vv1rr = (u1n(i1p-1,i2p,i3p,ey)-2.*u1n(i1p,i2p,i3p,
-     & ey)+u1n(i1p+1,i2p,i3p,ey))/(dr1(0)**2)
-                    vv1rs = (-(-u1n(i1p-1,i2p-1,i3p,ey)+u1n(i1p-1,i2p+
-     & 1,i3p,ey))/(2.*dr1(1))+(-u1n(i1p+1,i2p-1,i3p,ey)+u1n(i1p+1,i2p+
-     & 1,i3p,ey))/(2.*dr1(1)))/(2.*dr1(0))
-                    vv1ss = (u1n(i1p,i2p-1,i3p,ey)-2.*u1n(i1p,i2p,i3p,
-     & ey)+u1n(i1p,i2p+1,i3p,ey))/(dr1(1)**2)
-                     v1nx = aj1rx*vv1r+aj1sx*vv1s
-                     v1ny = aj1ry*vv1r+aj1sy*vv1s
-                     t1 = aj1rx**2
-                     t6 = aj1sx**2
-                     v1nxx = t1*vv1rr+2*aj1rx*aj1sx*vv1rs+t6*vv1ss+
-     & aj1rxx*vv1r+aj1sxx*vv1s
-                     t1 = aj1ry**2
-                     t6 = aj1sy**2
-                     v1nyy = t1*vv1rr+2*aj1ry*aj1sy*vv1rs+t6*vv1ss+
-     & aj1ryy*vv1r+aj1syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq1*u1nLap
-                  LE(1) = cSq1*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy1(i1p,i2p,i3p,0),
-     & xy1(i1p,i2p,i3p,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy1(i1p,i2p,i3p,0),
-     & xy1(i1p,i2p,i3p,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy1(i1p,i2p,i3p,0),
-     & xy1(i1p,i2p,i3p,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy1(i1p,i2p,i3p,0),
-     & xy1(i1p,i2p,i3p,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy1(i1p,i2p,i3p,0),
-     & xy1(i1p,i2p,i3p,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq1*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq1*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors1-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy1(i1p,i2p,i3p,
-     & 0),xy1(i1p,i2p,i3p,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy1(i1p,i2p,i3p,
-     & 0),xy1(i1p,i2p,i3p,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy1(i1p,i2p,i3p,
-     & 0),xy1(i1p,i2p,i3p,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP1*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v1(jv)*p0t + b0v1(
-     & jv)*p0 - a0v1(jv)*ue - a1v1(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors1-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u1n(i1p,i2p,i3p,ec)
-                   evm=u1m(i1p,i2p,i3p,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors1-1
-                     pvc(jv)= p1n(i1p,i2p,i3p,m+jv*nd)
-                     pvm(jv)=p1m(i1p,i2p,i3p,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v1(jv)*
-     & pvm(jv) -a1v1(jv)*evm ) + dtSq*( -b0v1(jv)*pvc(jv) + a0v1(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u1n(i1p,i2p,i3p,ec)-u1m(i1p,i2p,i3p,ec)+ 
-     & dtSq*LE(m)+ fe + alphaP1*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP1*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u1n(i1p,i2p,i3p,ec),u1m(i1p,i2p,i3p,ec),fe,rhsE
-                   ! un(i1p,i2p,i3p,ec) = evn
-                   do jv=0,numberOfPolarizationVectors1-1
-                     ! pn(i1p,i2p,i3p,m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn + rhspv(jv) )
-                     pvalsp(m+jv*nd)  = betav(jv)*( .5*dt*a1v1(jv)*evn 
-     & + rhspv(jv) )
-                  end do
-                 end do
-                if( .false. .and. twilightZone.eq.1 )then
-                  do jv=0,numberOfPolarizationVectors1-1
-                    do n=0,nd-1
-                      pc = n + jv*nd
-                      ! The TZ component is offset by pxc
-                      pce = pxc + pc
-                      call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(
-     & i1m,i2m,i3m,1),0.,t,pce, pvalse(pc)   )
-                    end do
-                  end do
-           !         call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(i1m,i2m,i3m,1),0.,tm,ex, ue   )
-           ! write(*,'(" ghost: Ex(t-dt): u1n,exact=",2(1pe14.4)," error=",1pe12.2)') u1n(i1m,i2m,i3m,ex),ue,u1n(i1m,i2m,i3m,ex)-ue
-           !         call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(i1m,i2m,i3m,1),0.,tm-dt,ex, ue   )
-           ! write(*,'(" ghost: Ex(t-2*dt): u1m,exact=",2(1pe14.4)," error=",1pe12.2)') u1m(i1m,i2m,i3m,ex),ue,u1m(i1m,i2m,i3m,ex)-ue
-                    call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(
-     & i1m,i2m,i3m,1),0.,t,ex, ue   )
-            write(*,'(" ghost: Ex(t): evn,exact=",2(1pe14.4)," error=",
-     & 1pe12.2)') evals(0),ue,evals(0)-ue
-           !         call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(i1m,i2m,i3m,1),0.,tm,pxc, p0   )
-           ! write(*,'(" ghost: p1n,exact=",2(1pe14.4)," error=",1pe12.2)') p1n(i1m,i2m,i3m,0),p0,p1n(i1m,i2m,i3m,0)-p0
-           !         call ogderiv(ep, 0,0,0,0, xy1(i1m,i2m,i3m,0),xy1(i1m,i2m,i3m,1),0.,tm-dt,pxc, p0   )
-           ! write(*,'(" ghost: p1m,exact=",2(1pe14.4)," error=",1pe12.2)') p1m(i1m,i2m,i3m,0),p0,p1m(i1m,i2m,i3m,0)-p0
-            write(*,'(" grid1,i1,i2=",3i3," p(-1)=",2(1pe14.4)," 
-     & exact=",2(1pe14.4)," err=",2(1pe12.2))') grid1,i1,i2,pvals(0),
-     & pvals(1),pvalse(0),pvalse(1),pvals(0)-pvalse(0),pvals(1)-
-     & pvalse(1)
-                end if
-                if( .true. .and. 
-     & knownSolutionOption.eq.userDefinedKnownSolution )then
-                  ! Evaluate the user defined known solution
-                  numberOfTimeDerivatives=0
-                  call evalUserDefinedKnownSolution( t, grid1,i1m,i2m,
-     & i3m,evalse,pvalse, numberOfTimeDerivatives )
-            !write(*,'(" grid1,i1,i2=",3i3," p(-1)=",2(1pe14.4)," exact=",2(1pe14.4)," err=",2(1pe12.2))') !           grid1,i1,i2,pvals(0),pvals(1),pvalse(0),pvalse(1),pvals(0)-pvalse(0),pvals(1)-pvalse(1)
-                  ! **** SET EXACT VALUE ON FIRST GHOST ****
-                  if( .false. )then
-                   do jv=0,numberOfPolarizationVectors1-1
-                     do n=0,nd-1
-                       pc = n + jv*nd
-                       pvals(pc)=pvalse(pc)
-                     end do
-                   end do
-                  end if
-                end if
-                do jv=0,numberOfPolarizationVectors1-1
-                  do n=0,nd-1
-                    pc = n + jv*nd
-                    p1(i1m,i2m,i3m,pc) = pvals(pc)
-                    ! Second-order estimate for "second-derivative": 
-                    !** dpdm = pvalsm(pc)-2.*pvals(pc)+pvalsp(pc)
-                    ! Combine 2nd-order values and fourth-order interior+bndry values
-                    !** p1(i1m     ,i2m     ,i3m,pc) =2.*p1(i1,i2,i3,pc)-p1(i1p     ,i2p     ,i3p,pc) + dpdm
-                    ! 2nd -ghost : use D+D- with 2h --> leads to dpdm*4.
-                    ! p1(i1-2*is1,i2-2*is2,i3 ,pc) =2.*p1(i1,i2,i3,pc)-p1(i1+2*is1,i2+2*is2,i3 ,pc) + dpdm*.4
-                  end do
-                end do
-              end if
-              if( dispersionModel2.ne.noDispersion )then
-                ! Compute P at the first ghost using the 2nd order method
-                j1m=j1-js1
-                j2m=j2-js2
-                j3m=j3
-                tm=t-dt
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors2-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v2(jv) )
-                   beta = beta + .5*dt*a1v2(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u2n.xx, u2n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj2rx = rsxy2(j1m,j2m,j3m,0,0)
-                   aj2rxr = (-rsxy2(j1m-1,j2m,j3m,0,0)+rsxy2(j1m+1,j2m,
-     & j3m,0,0))/(2.*dr2(0))
-                   aj2rxs = (-rsxy2(j1m,j2m-1,j3m,0,0)+rsxy2(j1m,j2m+1,
-     & j3m,0,0))/(2.*dr2(1))
-                   aj2sx = rsxy2(j1m,j2m,j3m,1,0)
-                   aj2sxr = (-rsxy2(j1m-1,j2m,j3m,1,0)+rsxy2(j1m+1,j2m,
-     & j3m,1,0))/(2.*dr2(0))
-                   aj2sxs = (-rsxy2(j1m,j2m-1,j3m,1,0)+rsxy2(j1m,j2m+1,
-     & j3m,1,0))/(2.*dr2(1))
-                   aj2ry = rsxy2(j1m,j2m,j3m,0,1)
-                   aj2ryr = (-rsxy2(j1m-1,j2m,j3m,0,1)+rsxy2(j1m+1,j2m,
-     & j3m,0,1))/(2.*dr2(0))
-                   aj2rys = (-rsxy2(j1m,j2m-1,j3m,0,1)+rsxy2(j1m,j2m+1,
-     & j3m,0,1))/(2.*dr2(1))
-                   aj2sy = rsxy2(j1m,j2m,j3m,1,1)
-                   aj2syr = (-rsxy2(j1m-1,j2m,j3m,1,1)+rsxy2(j1m+1,j2m,
-     & j3m,1,1))/(2.*dr2(0))
-                   aj2sys = (-rsxy2(j1m,j2m-1,j3m,1,1)+rsxy2(j1m,j2m+1,
-     & j3m,1,1))/(2.*dr2(1))
-                   aj2rxx = aj2rx*aj2rxr+aj2sx*aj2rxs
-                   aj2rxy = aj2ry*aj2rxr+aj2sy*aj2rxs
-                   aj2sxx = aj2rx*aj2sxr+aj2sx*aj2sxs
-                   aj2sxy = aj2ry*aj2sxr+aj2sy*aj2sxs
-                   aj2ryx = aj2rx*aj2ryr+aj2sx*aj2rys
-                   aj2ryy = aj2ry*aj2ryr+aj2sy*aj2rys
-                   aj2syx = aj2rx*aj2syr+aj2sx*aj2sys
-                   aj2syy = aj2ry*aj2syr+aj2sy*aj2sys
-                    uu1 = u2n(j1m,j2m,j3m,ex)
-                    uu1r = (-u2n(j1m-1,j2m,j3m,ex)+u2n(j1m+1,j2m,j3m,
-     & ex))/(2.*dr2(0))
-                    uu1s = (-u2n(j1m,j2m-1,j3m,ex)+u2n(j1m,j2m+1,j3m,
-     & ex))/(2.*dr2(1))
-                    uu1rr = (u2n(j1m-1,j2m,j3m,ex)-2.*u2n(j1m,j2m,j3m,
-     & ex)+u2n(j1m+1,j2m,j3m,ex))/(dr2(0)**2)
-                    uu1rs = (-(-u2n(j1m-1,j2m-1,j3m,ex)+u2n(j1m-1,j2m+
-     & 1,j3m,ex))/(2.*dr2(1))+(-u2n(j1m+1,j2m-1,j3m,ex)+u2n(j1m+1,j2m+
-     & 1,j3m,ex))/(2.*dr2(1)))/(2.*dr2(0))
-                    uu1ss = (u2n(j1m,j2m-1,j3m,ex)-2.*u2n(j1m,j2m,j3m,
-     & ex)+u2n(j1m,j2m+1,j3m,ex))/(dr2(1)**2)
-                     u1nx = aj2rx*uu1r+aj2sx*uu1s
-                     u1ny = aj2ry*uu1r+aj2sy*uu1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     u1nxx = t1*uu1rr+2*aj2rx*aj2sx*uu1rs+t6*uu1ss+
-     & aj2rxx*uu1r+aj2sxx*uu1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     u1nyy = t1*uu1rr+2*aj2ry*aj2sy*uu1rs+t6*uu1ss+
-     & aj2ryy*uu1r+aj2syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u2n(j1m,j2m,j3m,ey)
-                    vv1r = (-u2n(j1m-1,j2m,j3m,ey)+u2n(j1m+1,j2m,j3m,
-     & ey))/(2.*dr2(0))
-                    vv1s = (-u2n(j1m,j2m-1,j3m,ey)+u2n(j1m,j2m+1,j3m,
-     & ey))/(2.*dr2(1))
-                    vv1rr = (u2n(j1m-1,j2m,j3m,ey)-2.*u2n(j1m,j2m,j3m,
-     & ey)+u2n(j1m+1,j2m,j3m,ey))/(dr2(0)**2)
-                    vv1rs = (-(-u2n(j1m-1,j2m-1,j3m,ey)+u2n(j1m-1,j2m+
-     & 1,j3m,ey))/(2.*dr2(1))+(-u2n(j1m+1,j2m-1,j3m,ey)+u2n(j1m+1,j2m+
-     & 1,j3m,ey))/(2.*dr2(1)))/(2.*dr2(0))
-                    vv1ss = (u2n(j1m,j2m-1,j3m,ey)-2.*u2n(j1m,j2m,j3m,
-     & ey)+u2n(j1m,j2m+1,j3m,ey))/(dr2(1)**2)
-                     v1nx = aj2rx*vv1r+aj2sx*vv1s
-                     v1ny = aj2ry*vv1r+aj2sy*vv1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     v1nxx = t1*vv1rr+2*aj2rx*aj2sx*vv1rs+t6*vv1ss+
-     & aj2rxx*vv1r+aj2sxx*vv1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     v1nyy = t1*vv1rr+2*aj2ry*aj2sy*vv1rs+t6*vv1ss+
-     & aj2ryy*vv1r+aj2syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq2*u1nLap
-                  LE(1) = cSq2*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy2(j1m,j2m,j3m,0),
-     & xy2(j1m,j2m,j3m,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy2(j1m,j2m,j3m,0),
-     & xy2(j1m,j2m,j3m,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy2(j1m,j2m,j3m,0),
-     & xy2(j1m,j2m,j3m,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy2(j1m,j2m,j3m,0),
-     & xy2(j1m,j2m,j3m,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy2(j1m,j2m,j3m,0),
-     & xy2(j1m,j2m,j3m,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq2*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq2*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors2-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy2(j1m,j2m,j3m,
-     & 0),xy2(j1m,j2m,j3m,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy2(j1m,j2m,j3m,
-     & 0),xy2(j1m,j2m,j3m,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy2(j1m,j2m,j3m,
-     & 0),xy2(j1m,j2m,j3m,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP2*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v2(jv)*p0t + b0v2(
-     & jv)*p0 - a0v2(jv)*ue - a1v2(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors2-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u2n(j1m,j2m,j3m,ec)
-                   evm=u2m(j1m,j2m,j3m,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors2-1
-                     pvc(jv)= p2n(j1m,j2m,j3m,m+jv*nd)
-                     pvm(jv)=p2m(j1m,j2m,j3m,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v2(jv)*
-     & pvm(jv) -a1v2(jv)*evm ) + dtSq*( -b0v2(jv)*pvc(jv) + a0v2(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u2n(j1m,j2m,j3m,ec)-u2m(j1m,j2m,j3m,ec)+ 
-     & dtSq*LE(m)+ fe + alphaP2*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP2*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u2n(j1m,j2m,j3m,ec),u2m(j1m,j2m,j3m,ec),fe,rhsE
-                   ! un(j1m,j2m,j3m,ec) = evn
-                   do jv=0,numberOfPolarizationVectors2-1
-                     ! pn(j1m,j2m,j3m,m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn + rhspv(jv) )
-                     pvalsm(m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn 
-     & + rhspv(jv) )
-                  end do
-                 end do
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors2-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v2(jv) )
-                   beta = beta + .5*dt*a1v2(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u2n.xx, u2n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj2rx = rsxy2(j1,j2,j3,0,0)
-                   aj2rxr = (-rsxy2(j1-1,j2,j3,0,0)+rsxy2(j1+1,j2,j3,0,
-     & 0))/(2.*dr2(0))
-                   aj2rxs = (-rsxy2(j1,j2-1,j3,0,0)+rsxy2(j1,j2+1,j3,0,
-     & 0))/(2.*dr2(1))
-                   aj2sx = rsxy2(j1,j2,j3,1,0)
-                   aj2sxr = (-rsxy2(j1-1,j2,j3,1,0)+rsxy2(j1+1,j2,j3,1,
-     & 0))/(2.*dr2(0))
-                   aj2sxs = (-rsxy2(j1,j2-1,j3,1,0)+rsxy2(j1,j2+1,j3,1,
-     & 0))/(2.*dr2(1))
-                   aj2ry = rsxy2(j1,j2,j3,0,1)
-                   aj2ryr = (-rsxy2(j1-1,j2,j3,0,1)+rsxy2(j1+1,j2,j3,0,
-     & 1))/(2.*dr2(0))
-                   aj2rys = (-rsxy2(j1,j2-1,j3,0,1)+rsxy2(j1,j2+1,j3,0,
-     & 1))/(2.*dr2(1))
-                   aj2sy = rsxy2(j1,j2,j3,1,1)
-                   aj2syr = (-rsxy2(j1-1,j2,j3,1,1)+rsxy2(j1+1,j2,j3,1,
-     & 1))/(2.*dr2(0))
-                   aj2sys = (-rsxy2(j1,j2-1,j3,1,1)+rsxy2(j1,j2+1,j3,1,
-     & 1))/(2.*dr2(1))
-                   aj2rxx = aj2rx*aj2rxr+aj2sx*aj2rxs
-                   aj2rxy = aj2ry*aj2rxr+aj2sy*aj2rxs
-                   aj2sxx = aj2rx*aj2sxr+aj2sx*aj2sxs
-                   aj2sxy = aj2ry*aj2sxr+aj2sy*aj2sxs
-                   aj2ryx = aj2rx*aj2ryr+aj2sx*aj2rys
-                   aj2ryy = aj2ry*aj2ryr+aj2sy*aj2rys
-                   aj2syx = aj2rx*aj2syr+aj2sx*aj2sys
-                   aj2syy = aj2ry*aj2syr+aj2sy*aj2sys
-                    uu1 = u2n(j1,j2,j3,ex)
-                    uu1r = (-u2n(j1-1,j2,j3,ex)+u2n(j1+1,j2,j3,ex))/(
-     & 2.*dr2(0))
-                    uu1s = (-u2n(j1,j2-1,j3,ex)+u2n(j1,j2+1,j3,ex))/(
-     & 2.*dr2(1))
-                    uu1rr = (u2n(j1-1,j2,j3,ex)-2.*u2n(j1,j2,j3,ex)+
-     & u2n(j1+1,j2,j3,ex))/(dr2(0)**2)
-                    uu1rs = (-(-u2n(j1-1,j2-1,j3,ex)+u2n(j1-1,j2+1,j3,
-     & ex))/(2.*dr2(1))+(-u2n(j1+1,j2-1,j3,ex)+u2n(j1+1,j2+1,j3,ex))/(
-     & 2.*dr2(1)))/(2.*dr2(0))
-                    uu1ss = (u2n(j1,j2-1,j3,ex)-2.*u2n(j1,j2,j3,ex)+
-     & u2n(j1,j2+1,j3,ex))/(dr2(1)**2)
-                     u1nx = aj2rx*uu1r+aj2sx*uu1s
-                     u1ny = aj2ry*uu1r+aj2sy*uu1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     u1nxx = t1*uu1rr+2*aj2rx*aj2sx*uu1rs+t6*uu1ss+
-     & aj2rxx*uu1r+aj2sxx*uu1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     u1nyy = t1*uu1rr+2*aj2ry*aj2sy*uu1rs+t6*uu1ss+
-     & aj2ryy*uu1r+aj2syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u2n(j1,j2,j3,ey)
-                    vv1r = (-u2n(j1-1,j2,j3,ey)+u2n(j1+1,j2,j3,ey))/(
-     & 2.*dr2(0))
-                    vv1s = (-u2n(j1,j2-1,j3,ey)+u2n(j1,j2+1,j3,ey))/(
-     & 2.*dr2(1))
-                    vv1rr = (u2n(j1-1,j2,j3,ey)-2.*u2n(j1,j2,j3,ey)+
-     & u2n(j1+1,j2,j3,ey))/(dr2(0)**2)
-                    vv1rs = (-(-u2n(j1-1,j2-1,j3,ey)+u2n(j1-1,j2+1,j3,
-     & ey))/(2.*dr2(1))+(-u2n(j1+1,j2-1,j3,ey)+u2n(j1+1,j2+1,j3,ey))/(
-     & 2.*dr2(1)))/(2.*dr2(0))
-                    vv1ss = (u2n(j1,j2-1,j3,ey)-2.*u2n(j1,j2,j3,ey)+
-     & u2n(j1,j2+1,j3,ey))/(dr2(1)**2)
-                     v1nx = aj2rx*vv1r+aj2sx*vv1s
-                     v1ny = aj2ry*vv1r+aj2sy*vv1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     v1nxx = t1*vv1rr+2*aj2rx*aj2sx*vv1rs+t6*vv1ss+
-     & aj2rxx*vv1r+aj2sxx*vv1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     v1nyy = t1*vv1rr+2*aj2ry*aj2sy*vv1rs+t6*vv1ss+
-     & aj2ryy*vv1r+aj2syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq2*u1nLap
-                  LE(1) = cSq2*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq2*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq2*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors2-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),
-     & xy2(j1,j2,j3,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP2*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v2(jv)*p0t + b0v2(
-     & jv)*p0 - a0v2(jv)*ue - a1v2(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors2-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u2n(j1,j2,j3,ec)
-                   evm=u2m(j1,j2,j3,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors2-1
-                     pvc(jv)= p2n(j1,j2,j3,m+jv*nd)
-                     pvm(jv)=p2m(j1,j2,j3,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v2(jv)*
-     & pvm(jv) -a1v2(jv)*evm ) + dtSq*( -b0v2(jv)*pvc(jv) + a0v2(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u2n(j1,j2,j3,ec)-u2m(j1,j2,j3,ec)+ dtSq*
-     & LE(m)+ fe + alphaP2*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP2*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u2n(j1,j2,j3,ec),u2m(j1,j2,j3,ec),fe,rhsE
-                   ! un(j1,j2,j3,ec) = evn
-                   do jv=0,numberOfPolarizationVectors2-1
-                     ! pn(j1,j2,j3,m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn + rhspv(jv) )
-                     pvals(m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn +
-     &  rhspv(jv) )
-                  end do
-                 end do
-                j1p=j1+js1
-                j2p=j2+js2
-                j3p=j3
-                 ! -- first compute some coefficients ---
-                 beta=0.
-                 do jv=0,numberOfPolarizationVectors2-1
-                   betav(jv) = 1./( 1.+.5*dt*b1v2(jv) )
-                   beta = beta + .5*dt*a1v2(jv)*betav(jv)
-                   fpv(jv)=0.  ! initialize if not used
-                 end do
-                  ! Evaluate u2n.xx, u2n.yy, ...
-                   ! this next call will define the jacobian and its derivatives (parameteric and spatial)
-                   aj2rx = rsxy2(j1p,j2p,j3p,0,0)
-                   aj2rxr = (-rsxy2(j1p-1,j2p,j3p,0,0)+rsxy2(j1p+1,j2p,
-     & j3p,0,0))/(2.*dr2(0))
-                   aj2rxs = (-rsxy2(j1p,j2p-1,j3p,0,0)+rsxy2(j1p,j2p+1,
-     & j3p,0,0))/(2.*dr2(1))
-                   aj2sx = rsxy2(j1p,j2p,j3p,1,0)
-                   aj2sxr = (-rsxy2(j1p-1,j2p,j3p,1,0)+rsxy2(j1p+1,j2p,
-     & j3p,1,0))/(2.*dr2(0))
-                   aj2sxs = (-rsxy2(j1p,j2p-1,j3p,1,0)+rsxy2(j1p,j2p+1,
-     & j3p,1,0))/(2.*dr2(1))
-                   aj2ry = rsxy2(j1p,j2p,j3p,0,1)
-                   aj2ryr = (-rsxy2(j1p-1,j2p,j3p,0,1)+rsxy2(j1p+1,j2p,
-     & j3p,0,1))/(2.*dr2(0))
-                   aj2rys = (-rsxy2(j1p,j2p-1,j3p,0,1)+rsxy2(j1p,j2p+1,
-     & j3p,0,1))/(2.*dr2(1))
-                   aj2sy = rsxy2(j1p,j2p,j3p,1,1)
-                   aj2syr = (-rsxy2(j1p-1,j2p,j3p,1,1)+rsxy2(j1p+1,j2p,
-     & j3p,1,1))/(2.*dr2(0))
-                   aj2sys = (-rsxy2(j1p,j2p-1,j3p,1,1)+rsxy2(j1p,j2p+1,
-     & j3p,1,1))/(2.*dr2(1))
-                   aj2rxx = aj2rx*aj2rxr+aj2sx*aj2rxs
-                   aj2rxy = aj2ry*aj2rxr+aj2sy*aj2rxs
-                   aj2sxx = aj2rx*aj2sxr+aj2sx*aj2sxs
-                   aj2sxy = aj2ry*aj2sxr+aj2sy*aj2sxs
-                   aj2ryx = aj2rx*aj2ryr+aj2sx*aj2rys
-                   aj2ryy = aj2ry*aj2ryr+aj2sy*aj2rys
-                   aj2syx = aj2rx*aj2syr+aj2sx*aj2sys
-                   aj2syy = aj2ry*aj2syr+aj2sy*aj2sys
-                    uu1 = u2n(j1p,j2p,j3p,ex)
-                    uu1r = (-u2n(j1p-1,j2p,j3p,ex)+u2n(j1p+1,j2p,j3p,
-     & ex))/(2.*dr2(0))
-                    uu1s = (-u2n(j1p,j2p-1,j3p,ex)+u2n(j1p,j2p+1,j3p,
-     & ex))/(2.*dr2(1))
-                    uu1rr = (u2n(j1p-1,j2p,j3p,ex)-2.*u2n(j1p,j2p,j3p,
-     & ex)+u2n(j1p+1,j2p,j3p,ex))/(dr2(0)**2)
-                    uu1rs = (-(-u2n(j1p-1,j2p-1,j3p,ex)+u2n(j1p-1,j2p+
-     & 1,j3p,ex))/(2.*dr2(1))+(-u2n(j1p+1,j2p-1,j3p,ex)+u2n(j1p+1,j2p+
-     & 1,j3p,ex))/(2.*dr2(1)))/(2.*dr2(0))
-                    uu1ss = (u2n(j1p,j2p-1,j3p,ex)-2.*u2n(j1p,j2p,j3p,
-     & ex)+u2n(j1p,j2p+1,j3p,ex))/(dr2(1)**2)
-                     u1nx = aj2rx*uu1r+aj2sx*uu1s
-                     u1ny = aj2ry*uu1r+aj2sy*uu1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     u1nxx = t1*uu1rr+2*aj2rx*aj2sx*uu1rs+t6*uu1ss+
-     & aj2rxx*uu1r+aj2sxx*uu1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     u1nyy = t1*uu1rr+2*aj2ry*aj2sy*uu1rs+t6*uu1ss+
-     & aj2ryy*uu1r+aj2syy*uu1s
-                   u1nLap = u1nxx+ u1nyy
-                    vv1 = u2n(j1p,j2p,j3p,ey)
-                    vv1r = (-u2n(j1p-1,j2p,j3p,ey)+u2n(j1p+1,j2p,j3p,
-     & ey))/(2.*dr2(0))
-                    vv1s = (-u2n(j1p,j2p-1,j3p,ey)+u2n(j1p,j2p+1,j3p,
-     & ey))/(2.*dr2(1))
-                    vv1rr = (u2n(j1p-1,j2p,j3p,ey)-2.*u2n(j1p,j2p,j3p,
-     & ey)+u2n(j1p+1,j2p,j3p,ey))/(dr2(0)**2)
-                    vv1rs = (-(-u2n(j1p-1,j2p-1,j3p,ey)+u2n(j1p-1,j2p+
-     & 1,j3p,ey))/(2.*dr2(1))+(-u2n(j1p+1,j2p-1,j3p,ey)+u2n(j1p+1,j2p+
-     & 1,j3p,ey))/(2.*dr2(1)))/(2.*dr2(0))
-                    vv1ss = (u2n(j1p,j2p-1,j3p,ey)-2.*u2n(j1p,j2p,j3p,
-     & ey)+u2n(j1p,j2p+1,j3p,ey))/(dr2(1)**2)
-                     v1nx = aj2rx*vv1r+aj2sx*vv1s
-                     v1ny = aj2ry*vv1r+aj2sy*vv1s
-                     t1 = aj2rx**2
-                     t6 = aj2sx**2
-                     v1nxx = t1*vv1rr+2*aj2rx*aj2sx*vv1rs+t6*vv1ss+
-     & aj2rxx*vv1r+aj2sxx*vv1s
-                     t1 = aj2ry**2
-                     t6 = aj2sy**2
-                     v1nyy = t1*vv1rr+2*aj2ry*aj2sy*vv1rs+t6*vv1ss+
-     & aj2ryy*vv1r+aj2syy*vv1s
-                   v1nLap = v1nxx+ v1nyy
-                  ! Here are c^2*Delta(E) 
-                  LE(0) = cSq2*u1nLap
-                  LE(1) = cSq2*v1nLap
-                  ! -- loop over components of the vector --
-                 do m=0,nd-1
-                   pc=pxc+m ! FIX ME
-                   ec=ex+m
-                   ! Compute fe, fpv(iv) :
-                    ! --- compute forcing terms for ADE-GDM equations ----
-                    if( addForcing.ne.0 )then
-                      if( forcingOption.eq.twilightZoneForcing )then
-                        if( nd.eq.2 )then
-                          call ogderiv(ep, 0,0,0,0, xy2(j1p,j2p,j3p,0),
-     & xy2(j1p,j2p,j3p,1),0.,tm, ec, ue )
-                          call ogderiv(ep, 1,0,0,0, xy2(j1p,j2p,j3p,0),
-     & xy2(j1p,j2p,j3p,1),0.,tm, ec, uet )
-                          call ogderiv(ep, 2,0,0,0, xy2(j1p,j2p,j3p,0),
-     & xy2(j1p,j2p,j3p,1),0.,tm, ec, uett )
-                          call ogderiv(ep, 0,2,0,0, xy2(j1p,j2p,j3p,0),
-     & xy2(j1p,j2p,j3p,1),0.,tm, ec, uexx )
-                          call ogderiv(ep, 0,0,2,0, xy2(j1p,j2p,j3p,0),
-     & xy2(j1p,j2p,j3p,1),0.,tm, ec, ueyy )
-                          fe = dtSq*(uett - cSq2*(uexx + ueyy))
-                          ! write(*,'("fe,uett,dtSq=",3(1pe14.4)," c**2*Delta*E=",1pe14.4," exact=",1pe14.2)') fe,uett,dtSq,cSq2*(uexx + ueyy),LE(m)
-                        else
-                          stop 33387
-                        end if
-                        do jv=0,numberOfPolarizationVectors2-1
-                          ! The TZ component is offset by pxc
-                          pce = pc+jv*nd
-                          if( nd.eq.2 )then
-                            call ogderiv(ep, 0,0,0,0, xy2(j1p,j2p,j3p,
-     & 0),xy2(j1p,j2p,j3p,1),0.,tm,pce, p0   )
-                            call ogderiv(ep, 1,0,0,0, xy2(j1p,j2p,j3p,
-     & 0),xy2(j1p,j2p,j3p,1),0.,tm,pce, p0t  )
-                            call ogderiv(ep, 2,0,0,0, xy2(j1p,j2p,j3p,
-     & 0),xy2(j1p,j2p,j3p,1),0.,tm,pce, p0tt )
-                          else
-                            stop 1111
-                          end if
-                          fe = fe + dtSq*alphaP2*p0tt
-                          ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
-                          fpv(jv) = dtSq*( p0tt + b1v2(jv)*p0t + b0v2(
-     & jv)*p0 - a0v2(jv)*ue - a1v2(jv)*uet )
-                        end do
-                      else
-                        fe=0.
-                        do jv=0,numberOfPolarizationVectors2-1
-                          fpv(jv)=0.
-                        end do
-                      end if
-                    end if
-                   ev = u2n(j1p,j2p,j3p,ec)
-                   evm=u2m(j1p,j2p,j3p,ec)
-                   rhsP = 0.
-                   pSum=0.
-                   do jv=0,numberOfPolarizationVectors2-1
-                     pvc(jv)= p2n(j1p,j2p,j3p,m+jv*nd)
-                     pvm(jv)=p2m(j1p,j2p,j3p,m+jv*nd)
-                     rhspv(jv) = 2.*pvc(jv)-pvm(jv) + .5*dt*( b1v2(jv)*
-     & pvm(jv) -a1v2(jv)*evm ) + dtSq*( -b0v2(jv)*pvc(jv) + a0v2(jv)*
-     & ev ) + fpv(jv)
-                     rhsP = rhsP + betav(jv)*rhspv(jv)
-                     pSum = pSum + 2.*pvc(jv) - pvm(jv)
-                   end do
-                   rhsE = 2.*u2n(j1p,j2p,j3p,ec)-u2m(j1p,j2p,j3p,ec)+ 
-     & dtSq*LE(m)+ fe + alphaP2*( pSum - rhsP )
-                   evn = rhsE / (1.+ alphaP2*beta)
-                   evals(m)=evn
-                   ! write(*,'(" ec=",i4," E(tm-dt),E(tm-2*dt),fe,rhsE=",4(1pe14.4))') ec,u2n(j1p,j2p,j3p,ec),u2m(j1p,j2p,j3p,ec),fe,rhsE
-                   ! un(j1p,j2p,j3p,ec) = evn
-                   do jv=0,numberOfPolarizationVectors2-1
-                     ! pn(j1p,j2p,j3p,m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn + rhspv(jv) )
-                     pvalsp(m+jv*nd)  = betav(jv)*( .5*dt*a1v2(jv)*evn 
-     & + rhspv(jv) )
-                  end do
-                 end do
-                if( .false. .and. twilightZone.eq.1 )then
-                  do jv=0,numberOfPolarizationVectors2-1
-                    do n=0,nd-1
-                      pc = n + jv*nd
-                      ! The TZ component is offset by pxc
-                      pce = pxc + pc
-                      call ogderiv(ep, 0,0,0,0, xy2(j1m,j2m,j3m,0),xy2(
-     & j1m,j2m,j3m,1),0.,t,pce, pvalse(pc)   )
-                    end do
-                  end do
-            write(*,'(" grid2,j1,j2=",3i3," p(-1)=",2(1pe14.4)," 
-     & exact=",2(1pe14.4)," err=",2(1pe12.2))') grid2,j1,j2,pvals(0),
-     & pvals(1),pvalse(0),pvalse(1),pvals(0)-pvalse(0),pvals(1)-
-     & pvalse(1)
-                end if
-                if( .true. .and. 
-     & knownSolutionOption.eq.userDefinedKnownSolution )then
-                  ! Evaluate the user defined known solution
-                  numberOfTimeDerivatives=0
-                  call evalUserDefinedKnownSolution( t, grid2,j1m,j2m,
-     & j3,evalse,pvalse, numberOfTimeDerivatives )
-           ! write(*,'(" grid2,j1,j2=",3i3," p(-1)=",2(1pe14.4)," exact=",2(1pe14.4)," err=",2(1pe12.2))') !            grid2,j1,j2,pvals(0),pvals(1),pvalse(0),pvalse(1),pvals(0)-pvalse(0),pvals(1)-pvalse(1)
-                  ! **** SET EXACT VALUE ON FIRST GHOST ****
-                  if( .false. )then
-                   do jv=0,numberOfPolarizationVectors2-1
-                     do n=0,nd-1
-                       pc = n + jv*nd
-                       pvals(pc)=pvalse(pc)
-                     end do
-                   end do
-                  end if
-                end if
-                do jv=0,numberOfPolarizationVectors2-1
-                  do n=0,nd-1
-                    pc = n + jv*nd
-                    p2(j1m,j2m,j3m,pc) = pvals(pc)
-                    ! dpdm = pvalsm(pc)-2.*pvals(pc)+pvalsp(pc)
-                    ! Combine 2nd-order values and fourth-order interior+bndry values
-                    ! p2(j1m     ,j2m     ,j3m,pc) =2.*p2(j1,j2,j3,pc)-p2(j1p     ,j2p     ,j3p,pc) + dpdm
-                    ! p2(j1-2*js1,j2-2*js2,j3 ,pc) =2.*p2(j1,j2,j3,pc)-p2(j1+2*js1,j2+2*js2,j3 ,pc) + dpdm*4.
-                  end do
-                end do
-              end if
-                end if
-                j1=j1+1
-               end do
-               j2=j2+1
-              end do
-            else
-              write(*,'(
-     & "cgmx:interface3d:assignPolarizationOnGhostOrder4: finish me 
-     & 3D")')
-              stop 2975
-            end if
-            ! stop 9876
-         end if
-         if( .false. )then
-           ! Smooth P on the interface (for dispersive)
-           ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-           ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
-            if( .true. .and. orderOfAccuracy.eq.4  )then
-              ! ----- Add some smoothing on the boundary for P ------
-              ! Fourth-order filter: 
-              !    p <- p + cd*[ -1 p(i-2) + 4*p(i-1) -6 p(i) + 4 p(i+1) - p(i+2) ]
-              !           + cd*[ -1 p(j-2) + 4*p(j-1) -6 p(j) + 4 p(j+1) - p(j+2) ]
-              ! cd = 1.(sum-of-coefficients)
-              ! In 2d: cd=16*2
-              ! In 3d: cd=16*3
-              write(*,'(" interface-project: add smoothing to P")')
-              if( nd.eq.2 )then
-               ! --- LOOP over the interface ---
-               ! Question: should we use a Jacobi iteration?
-                i3=n3a
-                j3=m3a
-                j2=mm2a
-                do i2=nn2a,nn2b
-                 j1=mm1a
-                 do i1=nn1a,nn1b
-                 ! if( mask1(i1,i2,i3).gt.0 .and. mask2(j1,j2,j3).gt.0 )then
-                 ! *wdh* 2015/08/14 -- project interpolation points too
-                 if( mask1(i1,i2,i3).ne.0 .and. mask2(j1,j2,j3).ne.0 )
-     & then
-                if( dispersionModel1.ne.noDispersion )then
-                  do n=0,nd-1
-                   do jv=0,numberOfPolarizationVectors1-1
-                     pc = jv*nd+n
-                     ! smooth in the normal direction: 
-                     p1(i1,i2,i3,pc) = ( -( p1(i1-2*is1,i2-2*is2,i3,pc)
-     & +p1(i1+2*is1,i2+2*is2,i3,pc) ) +4.*( p1(i1-  is1,i2-  is2,i3,
-     & pc)+p1(i1+  is1,i2+  is2,i3,pc) ) +10.* p1(i1,i2,i3,pc) )/16.
-                     ! p1(i1,i2,i3,pc) = ( -( p1(i1-2,i2,i3,pc)+p1(i1+2,i2,i3,pc)+p1(i1,i2-2,i3,pc)+p1(i1,i2+2,i3,pc) ) !                 +4.*( p1(i1-1,i2,i3,pc)+p1(i1+1,i2,i3,pc)+p1(i1,i2-1,i3,pc)+p1(i1,i2+1,i3,pc) ) !                 +20.* p1(i1,i2,i3,pc) )/32.
-                   end do
-                  end do
-                end if
-                if( dispersionModel2.ne.noDispersion )then
-                  do n=0,nd-1
-                    do jv=0,numberOfPolarizationVectors2-1
-                     pc = jv*nd+n
-                     p2(j1,j2,j3,pc) = ( -( p2(j1-2*js1,j2-2*js2,j3,pc)
-     & +p2(j1+2*js1,j2+2*js2,j3,pc) ) +4.*( p2(j1-  js1,j2-  js2,j3,
-     & pc)+p2(j1+  js1,j2+  js2,j3,pc) ) +10.* p2(j1,j2,j3,pc) )/16.
-                      ! p2(j1,j2,j3,pc) = ( -( p2(j1-2,j2,j3,pc)+p2(j1+2,j2,j3,pc)+p2(j1,j2-2,j3,pc)+p2(j1,j2+2,j3,pc) ) !                 +4.*( p2(j1-1,j2,j3,pc)+p2(j1+1,j2,j3,pc)+p2(j1,j2-1,j3,pc)+p2(j1,j2+1,j3,pc) ) !                 +20.* p2(j1,j2,j3,pc) )/32.
-                    end do
-                  end do
-                end if
-                  end if
-                  j1=j1+1
-                 end do
-                 j2=j2+1
-                end do
-              else
-                write(*,'("cgmx:interface3d:smoothInterfaceP: finish 
-     & me 3D")')
-                stop 2975
-              end if
-            end if
-         end if
+         ! if( .false. )then
+         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+         !   assignPolarizationOnGhostOrder4()
+         ! end if
+         ! if( .false. )then 
+         !   ! Smooth P on the interface (for dispersive)
+         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+         !   ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
+         !   smoothInterfaceP()
+         ! end if
 
          ! write(debugFile,'(">>> interface: order=4 initialized=",i4)') initialized
 
          ! *********************************************************
          ! **************** begin interface iteration **************
+
+         ! ---- STAGE II: assign two ghost to 4th-order accuracy -----
+
          errOld=1.
          ratioAve=0.
          do it=1,nit
@@ -30957,7 +30100,7 @@
              ! ****************************************************************
              ! ***********  DISPERSIVE, 2D, ORDER=4, CURVILINEAR **************
              ! ****************************************************************
-             if( t.le.3.*dt )then
+             if( t.le.3.*dt .and. debug.gt.0 )then
                write(*,'("Interface>>>","24c-GDM")')
              end if
             ! --- initialize some forcing functions ---
@@ -47422,7 +46565,7 @@
           end if
           errOld=err
 
-          if( t.le.5*dt .or. debug.gt.3 )then
+          if( (t.le.5*dt .and. debug.gt.0 ) .or. debug.gt.3 )then
            if( it.eq.1 )then
              write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,
      & ",",i3,"), it=",i3,", err=",e10.2,"           (omega=",f4.2,")
@@ -47550,7 +46693,7 @@
                ! --------------------------------------------------------------
                !  (see maxwell.pdf)
                !
-               if( t.le.3*dt )then
+               if( t.le.3*dt .and. debug.gt.0 )then
                  write(*,'("cgmx:interface3d: PROJECT INTERFACE 
      & DISPERSIVE in 3D")')
                end if
@@ -48015,7 +47158,7 @@
               !   [ tau. curl(E)/mu ] = 0       (2 tangents)
               !   [ n.Lap(E)/mu ] = 0 
               !   [ tau.Lap(E)/(eps*mu) ] = 0   (2 tangents)
-              if( t.le.2*dt )then
+              if( t.le.2*dt .and. debug.gt.1 )then
                 write(*,'("assignInterfaceGhost23c ...")')
               end if
                j3=m3a
@@ -51099,7 +50242,7 @@
               end if
           else
             ! dispersive case
-              if( t.le.3.*dt )then
+              if( t.le.3.*dt .and. debug.gt.0 )then
                 write(*,'("Interface>>>","23c-GDM")')
               end if
               ! write(*,'(" FINISH ME for non-zero GDM ")')

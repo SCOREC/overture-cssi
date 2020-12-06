@@ -114,6 +114,7 @@ disk:
 
 # For BA Homogenization 
 solidDisk:
+	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=1
 	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2
 	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
 	$(ogen) -noplot io -prefix=solidDisk -order=2 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8
@@ -121,23 +122,49 @@ solidDisk:
 	$(ogen) -noplot io -prefix=solidDisk -order=4 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4 -numGhost=3
 	$(ogen) -noplot io -prefix=solidDisk -order=4 -interp=e -xa=-2.5 -xb=2.5 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8 -numGhost=3
 
+# short domain 
+shortSolidDiskGrid:
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=1
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=16
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=32
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=2 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=64
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=2 -numGhost=3
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=4 -numGhost=3
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=8 -numGhost=3
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=16 -numGhost=3
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=32 -numGhost=3
+	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=64 -numGhost=3
+
 
 
 
 ellipse:
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -factor=4
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5 -xb=5 -interp=e -factor=2
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5 -xb=5 -interp=e -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5 -xb=5 -interp=e -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5 -xb=5 -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -xa=-5 -xb=5 -interp=e -order=4 -factor=16
+
+
+ellipseSmallDomain:
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -nr0=6 -factor=2
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -order=4 -factor=4  -numGhost=3
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -order=4 -factor=8  -numGhost=3
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalSmallGrid -radX=.5 -radY=.45 -xa=-1.5 -xb=1.5 -ya=-.75 -yb=.75 -interp=e -order=4 -factor=16 -numGhost=3
 
 ellipseAngle30:
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=4
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=4
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGrid -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=16
  
 # Long domain L=20 : [-10,10]
 ellipseL20Angle30:
@@ -151,13 +178,13 @@ ellipseL20Angle30:
 
 # Mediumdomain L=10 : [-5,5]
 ellipseL10Angle30:
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=4
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=2 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -order=4 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=4
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5. -xb=5. -interp=e -numGhost=3 -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -order=2 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=4
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=ellipse -prefix=ellipticalGridL10 -angle=30 -xa=-5 -xb=5 -interp=e -numGhost=3 -order=4 -factor=16
 
 # Short domain L=4 : [-2,2]
 ellipseL4Angle30:
@@ -189,23 +216,24 @@ ellipsenp:
 
 
 rod:
-	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=4
-	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=8
-	$(ogen) -noplot rodGrid2d -order=2 -xa=-5. -xb=5. -interp=e -factor=16
-	$(ogen) -noplot rodGrid2d -order=4 -xa=-5. -xb=5. -interp=e -factor=8
-	$(ogen) -noplot rodGrid2d -order=4 -xa=-5. -xb=5. -interp=e -factor=16
+	$(ogen) -noplot rodGrid2d -order=2 -xa=-5 -xb=5 -interp=e -factor=4
+	$(ogen) -noplot rodGrid2d -order=2 -xa=-5 -xb=5 -interp=e -factor=8
+	$(ogen) -noplot rodGrid2d -order=2 -xa=-5 -xb=5 -interp=e -factor=16
+	$(ogen) -noplot rodGrid2d -order=4 -xa=-5 -xb=5 -interp=e -factor=8
+	$(ogen) -noplot rodGrid2d -order=4 -xa=-5 -xb=5 -interp=e -factor=16
 
 cross:
-	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5. -xb=5. -interp=e -order=2 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5. -xb=5. -interp=i -order=4 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5 -xb=5 -interp=e -order=2 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5 -xb=5 -interp=i -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=cross -prefix=crossGrid -xa=-5 -xb=5 -interp=e -order=4 -factor=16
 
+# IBeam -- shorter domain Nov 26, 2020
 IBeam:
-	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=2 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=2 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=i -order=4 -factor=8
-	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=4 -factor=16
-	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-5. -xb=5. -interp=e -order=4 -numGhost=3 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-1 -xb=1 -interp=e -order=2 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-1 -xb=1 -interp=e -order=2 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-1 -xb=1 -interp=i -order=4 -factor=8
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-1 -xb=1 -interp=e -order=4 -factor=16
+	$(ogen) -noplot shapedDiskGrid -shape=IBeam -prefix=IBeamGrid -xa=-1 -xb=1 -interp=e -order=4 -numGhost=3 -factor=16
 
 sphere:
 	$(ogen) -noplot solidSphereInABox -prefix=dielectricSphereGrid -xa=-3 -xb=3 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -outerBC=yzPeriodic -order=2 -interp=e -factor=2

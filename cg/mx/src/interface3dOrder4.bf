@@ -66,7 +66,7 @@
 ! Macro: Output some debug info for the first few time-steps 
 ! ===========================================================================================
 #beginMacro INFO(string)
-if( t.le.3.*dt )then
+if( t.le.3.*dt .and. debug.gt.0 )then
   write(*,'("Interface>>>",string)')
 end if
 #endMacro
@@ -3925,6 +3925,9 @@ end do
 ! eval3dJumpOrder2()
 ! evalInterfaceEquations23c()
 ! assignInterfaceGhost23c()
+! initializeInterfaceVariablesMacro(LABEL)
+! setIndexBoundsExtraGhost()
+! resetIndexBounds()  
 #Include "interfaceMacros3d.h"
 
 
@@ -4014,7 +4017,14 @@ end do
       real absoluteErrorTolerance,relativeErrorTolerance
 
       integer numGhost,giveDiv
+      ! grid1
       integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+      integer ns1a,ns1b,ns2a,ns2b,ns3a,ns3b  ! save n1a,n1b,...
+      integer ne1a,ne1b,ne2a,ne2b,ne3a,ne3b  ! one extra ghost for 4th-order Stage I order2 
+
+      ! grid2
+      integer ms1a,ms1b,ms2a,ms2b,ms3a,ms3b  ! save m1a,m1b,...
+      integer me1a,me1b,me2a,me2b,me3a,me3b  ! one extra ghost for 4th-order Stage I order2 
       integer mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
       integer m1,m2
 
@@ -4299,6 +4309,8 @@ end do
       integer hw1,hw2,hw3
       real f0(0:11),delta
 
+      integer internalGhostBC,numGhost2,numParallelGhost
+
       !...................start statement functions
 
       ! .......statement functions for GDM parameters
@@ -4382,6 +4394,12 @@ end do
       knownSolutionOption = ipar(47)
       useJacobiUpdate     = ipar(48)      
 
+      ! nonlinearModel1     = ipar(49)
+      ! nonlinearModel2     = ipar(50)
+
+      numParallelGhost    = ipar(51)
+      internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
+
       ! numberOfInterfaceIterationsUsed = ipar(43)  ! returned value 
      
       dx1(0)                =rpar(0)
@@ -4461,15 +4479,20 @@ end do
 
       debugFile=10
 
-      if( .true. .and. t.le. 1.5*dt )then
+      if(  t.le. 1.5*dt .and. debug>0 )then
         write(*,'(" +++++++++cgmx interface3dOrder4 t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
            ! '
         write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
+        write(*,'("  ... useJacobiUpdate=",i2," numParallelGhost=",i2)') useJacobiUpdate,numParallelGhost
         write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
+        write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
         write(*,'("  ... interfaceOption=",i2)') interfaceOption
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
         write(*,'("  ... eps1,mu1=",2(1pe10.2)," eps2,mu2=",2(1pe10.2))') eps1,mu1,eps2,mu2
+        write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,1),i2=0,nd-1)
+        write(*,'("  ... bc2=",6i6)') ((boundaryCondition2(i1,i2),i1=0,1),i2=0,nd-1)
+        write(*,'("  ... internalGhostBC=",i6)') internalGhostBC
 
       end if
 
@@ -4547,7 +4570,7 @@ end do
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid1,alphaP1,gdmPar1,numberOfPolarizationVectors1, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
 
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d4-- dispersionModel1=",i4," grid1=",i4," pxc=",i4)') dispersionModel1,grid1,pxc
           write(*,'("--interface3d4-- GDM: numberOfPolarizationVectors1=",i4," alphaP1=",e8.2)') numberOfPolarizationVectors1,alphaP1
@@ -4565,7 +4588,7 @@ end do
         ! get the gdm parameters
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid2,alphaP2,gdmPar2,numberOfPolarizationVectors2, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
-        if( t.le. 1.5*dt )then
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d4-- dispersionModel2=",i4," grid2=",i4)') dispersionModel2,grid2
           write(*,'("--interface3d4-- GDM: numberOfPolarizationVectors2=",i4," alphaP2=",e8.2)') numberOfPolarizationVectors2,alphaP2
@@ -4583,208 +4606,210 @@ end do
 
 
 
-      do kd=0,nd-1
-       dx112(kd) = 1./(2.*dx1(kd))
-       dx122(kd) = 1./(dx1(kd)**2)
-       dx212(kd) = 1./(2.*dx2(kd))
-       dx222(kd) = 1./(dx2(kd)**2)
+      initializeInterfaceVariablesMacro(interface3dOrder4)
 
-       dx141(kd) = 1./(12.*dx1(kd))
-       dx142(kd) = 1./(12.*dx1(kd)**2)
-       dx241(kd) = 1./(12.*dx2(kd))
-       dx242(kd) = 1./(12.*dx2(kd)**2)
-
-       dr114(kd) = 1./(12.*dr1(kd))
-       dr214(kd) = 1./(12.*dr2(kd))
-      end do
-
-      numGhost=orderOfAccuracy/2
-      giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
-
-      ! bounds for loops that include ghost points in the tangential directions:
-      nn1a=n1a
-      nn1b=n1b
-      nn2a=n2a
-      nn2b=n2b
-      nn3a=n3a
-      nn3b=n3b
-
-      mm1a=m1a
-      mm1b=m1b
-      mm2a=m2a
-      mm2b=m2b
-      mm3a=m3a
-      mm3b=m3b
-
-      i3=n3a
-      j3=m3a
-
-      axis1p1=mod(axis1+1,nd)
-      axis1p2=mod(axis1+2,nd)
-      axis2p1=mod(axis2+1,nd)
-      axis2p2=mod(axis2+2,nd)
-
-      is1=0
-      is2=0
-      is3=0
-
-      ! -----
-      ! Set bounds nn1a,nn1b,... used for loops that include ghost points in tangential directions 
-      ! -----
-      if( axis1.ne.0 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        ! NOTE: ! parallel ghost may only have bc<0 on one side
-        if( boundaryCondition1(0,0).lt.0 .and. boundaryCondition2(0,0).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 178
-        end if
-        if( boundaryCondition1(1,0).lt.0 .and. boundaryCondition2(1,0).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 179
-        end if
-        if( boundaryCondition1(0,0).le.0 )then ! *wdh* 090506 include interp 
-          nn1a=nn1a-numGhost
-        end if
-        if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
-          nn1b=nn1b+numGhost
-        end if
-      end if
-      if( axis1.ne.1 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,1).lt.0 .and. boundaryCondition2(0,1).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 180
-        end if
-        if( boundaryCondition1(1,1).lt.0 .and. boundaryCondition2(1,1).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 181
-        end if
-        if( boundaryCondition1(0,1).le.0 )then
-          nn2a=nn2a-numGhost
-        end if
-        if( boundaryCondition1(1,1).le.0 )then
-          nn2b=nn2b+numGhost
-        end if
-      end if
-      if( nd.eq.3 .and. axis1.ne.2 )then
-        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
-        if( boundaryCondition1(0,2).lt.0 .and. boundaryCondition2(0,2).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 182
-        end if
-        if( boundaryCondition1(1,2).lt.0 .and. boundaryCondition2(1,2).ge.0 )then
-          write(*,'("Interface3d: bc is inconsistent")')
-          stop 183
-        end if
-        if( boundaryCondition1(0,2).le.0 )then
-          nn3a=nn3a-numGhost
-        end if
-        if( boundaryCondition1(1,2).le.0 )then
-          nn3b=nn3b+numGhost
-        end if
-      end if
-
-      if( axis1.eq.0 ) then
-        is1=1-2*side1
-        an1Cartesian=1. ! normal for a cartesian grid
-        an2Cartesian=0.
-        an3Cartesian=0.
-
-      else if( axis1.eq.1 )then
-        is2=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=1.
-        an3Cartesian=0.
-
-      else if( axis1.eq.2 )then
-        is3=1-2*side1
-        an1Cartesian=0.
-        an2Cartesian=0.
-        an3Cartesian=1.
-      else
-        stop 5528
-      end if
-
-
-      js1=0
-      js2=0
-      js3=0
-      ! -----
-      ! Set bounds mm1a,mm1b,... used for loops that include ghost points in tangential directions 
-      ! -----
-      if( axis2.ne.0 )then
-        if( boundaryCondition2(0,0).le.0 )then ! *wdh* 090506 include interp 
-          mm1a=mm1a-numGhost
-        end if
-        if( boundaryCondition2(1,0).le.0 )then
-          mm1b=mm1b+numGhost
-        end if
-      end if
-      if( axis2.ne.1 )then
-        if( boundaryCondition2(0,1).le.0 )then
-          mm2a=mm2a-numGhost
-        end if
-        if( boundaryCondition2(1,1).le.0 )then
-          mm2b=mm2b+numGhost
-        end if
-      end if
-      if( nd.eq.3 .and. axis2.ne.2 )then
-        if( boundaryCondition2(0,2).le.0 )then
-          mm3a=mm3a-numGhost
-        end if
-        if( boundaryCondition2(1,2).le.0 )then
-          mm3b=mm3b+numGhost
-        end if
-      end if
-      if( axis2.eq.0 ) then
-        js1=1-2*side2
-      else if( axis2.eq.1 ) then
-        js2=1-2*side2
-      else  if( axis2.eq.2 ) then
-        js3=1-2*side2
-      else
-        stop 3384
-      end if
-
-      is=1-2*side1
-      js=1-2*side2
-
-!$$$      rx1=0.
-!$$$      ry1=0.
-!$$$      rz1=0.
-!$$$      if( axis1.eq.0 )then
-!$$$        rx1=1.
-!$$$      else if( axis1.eq.1 )then
-!$$$        ry1=1.
-!$$$      else 
-!$$$        rz1=1.
-!$$$      endif
-!$$$
-!$$$      rx2=0.
-!$$$      ry2=0.
-!$$$      rz2=0.
-!$$$      if( axis2.eq.0 )then
-!$$$        rx2=1.
-!$$$      else if( axis2.eq.1 )then
-!$$$        ry2=1.
-!$$$      else 
-!$$$        rz2=1.
-!$$$      endif
-
-      if( debug.gt.3 )then
-        write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
-        write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
-
-      end if
-
-      if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<3 ")')
-        stop 7716
-      end if
-      if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )then
-        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<4 ")')
-        stop 7716
-      end if
+!      do kd=0,nd-1
+!       dx112(kd) = 1./(2.*dx1(kd))
+!       dx122(kd) = 1./(dx1(kd)**2)
+!       dx212(kd) = 1./(2.*dx2(kd))
+!       dx222(kd) = 1./(dx2(kd)**2)
+!
+!       dx141(kd) = 1./(12.*dx1(kd))
+!       dx142(kd) = 1./(12.*dx1(kd)**2)
+!       dx241(kd) = 1./(12.*dx2(kd))
+!       dx242(kd) = 1./(12.*dx2(kd)**2)
+!
+!       dr114(kd) = 1./(12.*dr1(kd))
+!       dr214(kd) = 1./(12.*dr2(kd))
+!      end do
+!
+!      numGhost=orderOfAccuracy/2
+!      giveDiv=0   ! set to 1 to give div(u) on both sides, rather than setting the jump in div(u)
+!
+!      ! bounds for loops that include ghost points in the tangential directions:
+!      nn1a=n1a
+!      nn1b=n1b
+!      nn2a=n2a
+!      nn2b=n2b
+!      nn3a=n3a
+!      nn3b=n3b
+!
+!      mm1a=m1a
+!      mm1b=m1b
+!      mm2a=m2a
+!      mm2b=m2b
+!      mm3a=m3a
+!      mm3b=m3b
+!
+!      i3=n3a
+!      j3=m3a
+!
+!      axis1p1=mod(axis1+1,nd)
+!      axis1p2=mod(axis1+2,nd)
+!      axis2p1=mod(axis2+1,nd)
+!      axis2p2=mod(axis2+2,nd)
+!
+!      is1=0
+!      is2=0
+!      is3=0
+!
+!      ! -----
+!      ! Set bounds nn1a,nn1b,... used for loops that include ghost points in tangential directions 
+!      ! -----
+!      if( axis1.ne.0 )then
+!        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+!        ! NOTE: ! parallel ghost may only have bc<0 on one side
+!        if( boundaryCondition1(0,0).lt.0 .and. boundaryCondition2(0,0).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 178
+!        end if
+!        if( boundaryCondition1(1,0).lt.0 .and. boundaryCondition2(1,0).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 179
+!        end if
+!        if( boundaryCondition1(0,0).le.0 )then ! *wdh* 090506 include interp 
+!          nn1a=nn1a-numGhost
+!        end if
+!        if( boundaryCondition1(1,0).le.0 )then ! parallel ghost may only have bc<0 on one side
+!          nn1b=nn1b+numGhost
+!        end if
+!      end if
+!      if( axis1.ne.1 )then
+!        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+!        if( boundaryCondition1(0,1).lt.0 .and. boundaryCondition2(0,1).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 180
+!        end if
+!        if( boundaryCondition1(1,1).lt.0 .and. boundaryCondition2(1,1).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 181
+!        end if
+!        if( boundaryCondition1(0,1).le.0 )then
+!          nn2a=nn2a-numGhost
+!        end if
+!        if( boundaryCondition1(1,1).le.0 )then
+!          nn2b=nn2b+numGhost
+!        end if
+!      end if
+!      if( nd.eq.3 .and. axis1.ne.2 )then
+!        ! include ghost lines in tangential periodic (and parallel) directions (for extrapolating)
+!        if( boundaryCondition1(0,2).lt.0 .and. boundaryCondition2(0,2).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 182
+!        end if
+!        if( boundaryCondition1(1,2).lt.0 .and. boundaryCondition2(1,2).ge.0 )then
+!          write(*,'("Interface3d: bc is inconsistent")')
+!          stop 183
+!        end if
+!        if( boundaryCondition1(0,2).le.0 )then
+!          nn3a=nn3a-numGhost
+!        end if
+!        if( boundaryCondition1(1,2).le.0 )then
+!          nn3b=nn3b+numGhost
+!        end if
+!      end if
+!
+!      if( axis1.eq.0 ) then
+!        is1=1-2*side1
+!        an1Cartesian=1. ! normal for a cartesian grid
+!        an2Cartesian=0.
+!        an3Cartesian=0.
+!
+!      else if( axis1.eq.1 )then
+!        is2=1-2*side1
+!        an1Cartesian=0.
+!        an2Cartesian=1.
+!        an3Cartesian=0.
+!
+!      else if( axis1.eq.2 )then
+!        is3=1-2*side1
+!        an1Cartesian=0.
+!        an2Cartesian=0.
+!        an3Cartesian=1.
+!      else
+!        stop 5528
+!      end if
+!
+!
+!      js1=0
+!      js2=0
+!      js3=0
+!      ! -----
+!      ! Set bounds mm1a,mm1b,... used for loops that include ghost points in tangential directions 
+!      ! -----
+!      if( axis2.ne.0 )then
+!        if( boundaryCondition2(0,0).le.0 )then ! *wdh* 090506 include interp 
+!          mm1a=mm1a-numGhost
+!        end if
+!        if( boundaryCondition2(1,0).le.0 )then
+!          mm1b=mm1b+numGhost
+!        end if
+!      end if
+!      if( axis2.ne.1 )then
+!        if( boundaryCondition2(0,1).le.0 )then
+!          mm2a=mm2a-numGhost
+!        end if
+!        if( boundaryCondition2(1,1).le.0 )then
+!          mm2b=mm2b+numGhost
+!        end if
+!      end if
+!      if( nd.eq.3 .and. axis2.ne.2 )then
+!        if( boundaryCondition2(0,2).le.0 )then
+!          mm3a=mm3a-numGhost
+!        end if
+!        if( boundaryCondition2(1,2).le.0 )then
+!          mm3b=mm3b+numGhost
+!        end if
+!      end if
+!      if( axis2.eq.0 ) then
+!        js1=1-2*side2
+!      else if( axis2.eq.1 ) then
+!        js2=1-2*side2
+!      else  if( axis2.eq.2 ) then
+!        js3=1-2*side2
+!      else
+!        stop 3384
+!      end if
+!
+!      is=1-2*side1
+!      js=1-2*side2
+!
+!!$$$      rx1=0.
+!!$$$      ry1=0.
+!!$$$      rz1=0.
+!!$$$      if( axis1.eq.0 )then
+!!$$$        rx1=1.
+!!$$$      else if( axis1.eq.1 )then
+!!$$$        ry1=1.
+!!$$$      else 
+!!$$$        rz1=1.
+!!$$$      endif
+!!$$$
+!!$$$      rx2=0.
+!!$$$      ry2=0.
+!!$$$      rz2=0.
+!!$$$      if( axis2.eq.0 )then
+!!$$$        rx2=1.
+!!$$$      else if( axis2.eq.1 )then
+!!$$$        ry2=1.
+!!$$$      else 
+!!$$$        rz2=1.
+!!$$$      endif
+!
+!      if( debug.gt.3 )then
+!        write(debugFile,'("nn1a,nn1b,...=",6i5)') nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+!        write(debugFile,'("mm1a,mm1b,...=",6i5)') mm1a,mm1b,mm2a,mm2b,mm3a,mm3b
+!
+!      end if
+!
+!      if( orderOfAccuracy.eq.2 .and. orderOfExtrapolation.lt.3 )then
+!        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<3 ")')
+!        stop 7716
+!      end if
+!      if( orderOfAccuracy.eq.4 .and. orderOfExtrapolation.lt.4 )then
+!        write(debugFile,'(" ERROR: interface3d: orderOfExtrapolation<4 ")')
+!        stop 7716
+!      end if
 
       ! first time through check that the mask's are consistent
       ! For now we require the masks to both be positive at the same points on the interface
@@ -4891,7 +4916,7 @@ end do
         ! ***** 3D fourth-order curvilinear case (extrapolate 2nd ghost line) *****
         ! *************************************************************************
 
-        if( t.lt.3*dt .or. debug.gt.2 )then
+        if( t.lt.3*dt .and. debug.gt.2 )then
           write(*,'("interface3d : *OLD* order 4 with extrapolation for 2nd ghost t=",e10.2)') t
         end if
 
@@ -5042,16 +5067,24 @@ end do
            !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2;
 
            ! **TEST** assign ghost to 2nd-order first
-           if( t .lt. 3.*dt )then
-             write(*,'(" **** ASSIGN GHOST TO 2ND ORDER ****")')
+           if( t .lt. 3.*dt .and. debug.gt.0 )then
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER ****")')
            end if
 
            orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+
+           ! in parallel we add extra points in the tangential direction on parallel boundaries
+           ! (otherwise we would use extrapolated values which is probably ok) 
+           setIndexBoundsExtraGhost()
+
            if( dispersive.eq.0 )then
              assignInterfaceGhost23c()
            else
              assignDispersiveInterfaceGhost23c()
            end if
+           resetIndexBounds()         
+
+
            orderOfAccuracy=4 ! reset 
            !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
          end if
@@ -5095,7 +5128,7 @@ end do
             errOld=err
             err2Old=err2
 
-            if( t.le.5*dt )then
+            if( t.le.5*dt .and. debug.gt.0 )then
              write(*,'("interface3d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err[max,l2]=",2(e10.2,1x)," rate[max,l2]=",2(f5.2,1x)," (omega=",f4.2,")")') t,grid1,grid2,it,err,err2,errRatio,err2Ratio,omega
             end if
 

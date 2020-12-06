@@ -82,9 +82,20 @@ C
       implicit double precision (a-h,o-z)
       dimension xs(*),ys(*),tau(*),var(*),amp(*)
 c
+
+
       wx=wex(nsources,xs,ys,tau,var,amp,a,x,y,time,1)
       wy=wex(nsources,xs,ys,tau,var,amp,a,x,y,time,2)
       wt=wex(nsources,xs,ys,tau,var,amp,a,x,y,time,3)
+
+      ! write(*,*) "exmax:",nsources,xs(1),ys(1),tau(1),var(1),amp(1),a,x,y,time
+      ! write(*,'("wx,wy,wt=",3e16.8)') wx,wy,wt
+      if( abs(wx)>1.e10 .or. abs(wy)>1.e10 .or. abs(wt)>1.e10 )then
+        wy=wex(nsources,xs,ys,tau,var,amp,a,x,y,time,2)
+       write(*,'("wx,wy,wt=",3e16.8)') wx,wy,wt
+        stop 1234
+      end if 
+
 c
       return
       end
@@ -298,6 +309,8 @@ c
          else if ( (time-rdis).lt.tmaxd) then
 	    call singquad(time,tmin,x,y,rdis,rx,ry,tau(i),var(i),
      &                    amp(i),ider,pinc)
+           ! write(*,*) "exmax (313): pinc=",pinc
+
 	    wex = wex + pinc
          else 
 c
@@ -312,6 +325,8 @@ c
                  sinc = densj(j)/(dsqrt((time-ts(j))**2-r2))
                end if
 	       wex = wex + sinc*ws(j)
+               ! write(*,*) "exmax (329): sinc=",sinc
+
 300 	    continue
          endif
 1000     continue
@@ -340,6 +355,8 @@ c
                  else
                    sinc = densj(j)/(dsqrt((time-ts(j))**2-r2))
                  end if
+                 ! write(*,*) "exmax (355): sinc=",sinc
+
 	         wex = wex + sinc*ws(j)
 400 	       continue
             endif
@@ -348,6 +365,7 @@ c
 c
 c        process (-) images
 c
+         ! write(*,*) "exmax: wex=",wex
 	 do 3000 k = 1,10000
             ry = ys(i) - k*a - y
 	    r2 = rx*rx + ry*ry
@@ -459,7 +477,9 @@ c
         implicit real *8 (a-h,o-z)
         dimension sigma(1),whtsl(12),whtsr(12)
         data ml7/-2431034/,mr7/-2431034/,tt7/-2341034.0d0/,
-     1      zermach/1.0d-18/
+     1       zermach/1.0d-18/
+        ! *wdh* Sept 24, 2020:  
+        save whtsl,whtsr,ml7,mr7,tt7,zermach
 c
 c       this subroutine uses the end-point corrected 
 c       trapezoidal rule to evaluate the integral 
@@ -504,6 +524,9 @@ c
 c        . . . obtain the correction weights for the 
 c              left (non-singular) end
 c
+        ier=0 ! *wdh* Sept 24, 2020
+        trap=0 ! *wdh* Sept 24, 2020
+        ! write(*,*) "wavgrcor(start) ml=",ml," ml7=",ml7
         if (ml .ne. ml7) call alptrap0(ier,ml,whtsl)
           if(ier. eq. 4) return
           ml7=ml
@@ -545,6 +568,9 @@ c
         do 1600 i=1,ml-1
         tt=a+(i-1)*h
         corrl=corrl+whtsl(i)*sigma(i)/dsqrt((u-tt)**2-u**2)
+!        write(*,*) "wavgrcor:corrl: i=",i,"corrl=",corrl,
+!     &        "whtsl=",whtsl(i),"sigma=",sigma(i),
+!     &        "denom=",dsqrt((u-tt)**2-u**2)
  1600 continue
 cccc         call prin2('corrl=*',corrl*h,1)
 c
@@ -561,6 +587,9 @@ c
  1800 continue
 cccc         call prin2('corrr=*',corrr,1)
         trap=trap+corrr
+
+!        write(*,*) "wavgrcor(end): trap=",trap,
+!     &        " corrl=",corrl," corrr=",corrr
         return
         end
 c

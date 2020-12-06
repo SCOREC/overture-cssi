@@ -1194,7 +1194,7 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
     if( numberOfStages>1 && addDissipation && ( numberOfStepsTaken % sosupDissipationFrequency != 0 ) )
       continue;  // skip sosup dissipation 
 
-    if( numberOfStepsTaken<=1 )
+    if( numberOfStepsTaken<=1 && debug > 0 )
     {
       printF("\n +++++ FDBA t=%9.3e STAGE %i: computeUt=%i updateInterior=%i addDissipation=%i applyBCs=%i"
 	     " tBC=%9.3e tForce=%9.3e\n",
@@ -1216,13 +1216,13 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
       {
         if( addDissipation && !updateInterior )
         {
-          if( t<= 3.*dt && addDissipation )
+          if( t<= 3.*dt && addDissipation && debug > 0 )
             printF("--ADV-- Skip this dissipation stage for grid=%i (%s)\n",grid,(const char*)cg[grid].getName());
 
           // skip this step 
           continue;
         }
-        else if( addDissipation && updateInterior )
+        else if( addDissipation && updateInterior && debug > 0 )
         {
           if( t<= 3.*dt && addDissipation )
             printF("--ADV-- Turn off dissipation on grid=%i (%s)\n",grid,(const char*)cg[grid].getName());
@@ -1281,7 +1281,7 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
       eps = epsGrid(grid);
       mu = muGrid(grid);
     
-      if( numberOfStepsTaken<1 ) 
+      if( numberOfStepsTaken<1 && debug>0 ) 
         printF(" advanceBAMX:INFO eps,mu,c=%8.2e %8.2e %8.2e for grid=%i (%s) \n",eps,mu,c,grid,
                (const char*)cg[grid].getName());
     

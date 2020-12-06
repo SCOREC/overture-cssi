@@ -309,11 +309,11 @@ testGeneralCopy()
   MPI_Allreduce(&ok, &allOk, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
   if( allOk==true )
   {
-    printf("**** Success: All entries in v appear to be correct *****\n",myid);
+    printf("**** Success: All entries in v appear to be correct myid=%d *****\n",myid);
   }
   else
   {
-    printf("**** Test failed: Not all entries in v are correct *****\n",myid);
+    printf("**** Test failed: Not all entries in v are correct myid=%d *****\n",myid);
   }
 
   return 0;
@@ -953,6 +953,12 @@ testSerialToDistributedCopy()
 }
 
 
+// ==================================================================================
+// *wdh* Oct 12, 2020
+// ==================================================================================
+void testUpdateGhostAndPeriodic();
+
+
 
 int
 main( int argc, char *argv[])
@@ -1015,10 +1021,16 @@ main( int argc, char *argv[])
     testSerialCopyArray();
   }
   
-  else 
+  else if( false )
   { 
     testSerialToDistributedCopy();
   }
+  else
+  {
+    // *wdh* Oct 12, 2020
+    testUpdateGhostAndPeriodic();
+  }
+  
   
 
   Optimization_Manager::Exit_Virtual_Machine();

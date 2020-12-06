@@ -1,4 +1,125 @@
 *********************
+**** Mon Oct 16 2020
+
+*** check bug from trad ***
+
+--> trouble: 
+mpirun -np 1 tug -nd=2 -ndfft=1 -nc=1 -nx=5 -ny=5 -nz=1 -isPeriodic0=1 -isPeriodic2=0 -fside=0 -faxis=1
+
+v AFTER updateGhostBoundaries
+     ( -2) ( -1) (  0) (  1) (  2) (  3) (  4) (  5) (  6) 
+(-2) -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 
+(-1) -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 
+( 0)  0.00 -1.00  0.00  1.00  0.00 -1.00  0.00  1.00  0.00 
+( 1) -9.00 -9.00 -0.00 -1.00 -0.00  1.00 -9.00 -9.00 -9.00 
+( 2) -9.00 -9.00  0.00  1.00  0.00 -1.00 -9.00 -9.00 -9.00 
+( 3) -9.00 -9.00 -0.00 -1.00 -0.00  1.00 -9.00 -9.00 -9.00 
+( 4) -9.00 -9.00  0.00  1.00  0.00 -1.00 -9.00 -9.00 -9.00 
+( 5) -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 
+( 6) -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 -9.00 
+check error at points [ -2,  6][  0,  4][  0,  0] components=[0,0]
+++++++ MAX ERROR (including parallel ghost) = 1.000e+01 ++++
+
+
+TROUBLE: 
+mpirun -np 2 $tradpx -option=checkParallel -nd=2 -nx=5 -ny=5 -nz=1 -debug=3 -rside=0 -raxis=1
+
+
+
+*********************
+**** Mon Oct 19 2020
+
+**FIX ME: 
+tug -nd=3 -ndfft=3 -nc=1 -nx=5 -ny=5 -nz=5 -isPeriodic0=1 -isPeriodic1=1 -isPeriodic2=1
+
+*********************
+**** Sat Oct 17 2020
+
+FIX FOR multiple components
+tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 -nc=2 -nc0=1 -nc1=1
+tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 -nc=2 
+
+
+CHECK SERIAL version
+
+
+tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1
+
+*********************
+**** Fri Oct 16 2020
+
+>> CHECK USING A SUBSET OF PROCESSORS
+
+FIX: 
+mpiexec -n 2 xterm -e gdb --args tug -nd=2 -nc=1 -isPeriodic0=0 -isPeriodic1=0 -debug=3 -npMin=1 -nMax=1
+
+mpirun -np 2 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=0 -debug=1 -npMin=1 -nMax=1
+
+
+
+Check error at periodic ghost
+
+mpirun -np 4 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1
+mpirun -np 1 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1
+
+*********************
+**** Thurs Oct 15 2020
+
+START ON CLASS --- GhostBoundaryUpdate -----
+
+
+mpirun -np 2 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1
+
+++++++ MAX ERROR (including parallel ghost) = 2.449e-16 ++++
+
+CHECK 
+mpiexec -n 2 xterm -e gdb --args tug -nd=2 -nc=1 
+
+mpirun -np 2 valgrind --log-file=ft.out.np%p  tug -nd=2 -nc=1 
+
+
+
+mpirun -np 4 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 
+
+*********************
+**** Oct 14 2020
+
+TEST UPDATE ON A FACE ONLY
+
+
+
+mpirun -np 4 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 -fside=0 -faxis=1
+
+looks ok: 
+mpirun -np 4 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 -fside=0 -faxis=0
+
+
+mpirun -np 1 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 -fside=0 -faxis=1
+
+
+Continue on update parallel ghost and periodic --
+
+trouble with doubley periodic -- double counting of corners
+
+mpirun -np 4 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 
+
+mpirun -np 1 tug -nd=2 -nc=1 -isPeriodic0=1 -isPeriodic1=1 
+
+
+*********************
+**** Oct 12/13 2020
+
+START ON PARALLEL update ghost and periodic -- needed by radiation BC's
+
+-- check periodic
+mpirun -np 1 tug -nd=2 -isPeriodic0=1 
+
+mpirun -np 1 tug -nd=2 -passMessages=0 -isPeriodic0=1 
+
+mpirun -np 2 tug 
+
+
+*********************
 **** Sept 8, 2015
 
 FIX CASE when last show file is not full

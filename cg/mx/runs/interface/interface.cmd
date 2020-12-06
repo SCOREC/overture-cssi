@@ -80,8 +80,8 @@
 $kx=2; $ky=0; $kz=0; $left="leftSquare*"; $right="rightSquare*"; $degreex=2; $degreet=2; $method="NFDTD";
 $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; $dissOrder=-1;
 $useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
-$useImpedanceInterfaceProjection=1; $cons=1; 
-$useSosupDissipation=0; $sosupParameter=1.; 
+$useImpedanceInterfaceProjection=1; $cons=0; 
+$useSosupDissipation=0; $sosupParameter=1.; $useJacobiInterfaceUpdate=1;
 $ts="me"; $matFile=""; $solveForAllFields=0;  $numMatRegions=1; $regionFile="";
 $matFile1=""; $matFile2=""; 
 #
@@ -118,7 +118,8 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
            "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
 	   "matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
-	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm);
+	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm,\
+           "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -216,6 +217,7 @@ omega for interface iterations $interfaceOmega
 #
 interface BC iterations $interfaceIts
 #
+use jacobi interface update $useJacobiInterfaceUpdate
 #
 # *****************
 #   --- Define eps and mu in the difference domains -----
@@ -314,7 +316,8 @@ exit
 continue
 #
 plot:Ey
-if( $grid =~ /^twoBox/ ){ $cmd="contour\n -shift contour planes\n -shift contour planes\n -shift contour planes\n exit"; }else{ $cmd="#"; }
+if( $grid =~ /^twoBox/ || $grid =~ /^tbiGrid/ ){ $cmd="contour\n -shift contour planes\n -shift contour planes\n -shift contour planes\n exit"; }else{ $cmd="#"; }
+# if( $grid =~ /^twoBox/ || $grid =~ /^tbiGrid/ ){ $cmd="contour\n delete contour plane 2\n delete contour plane 1\n delete contour plane 0\n add contour plane  0.00000e+00  0.00000e+00  1.00000e+00 0 0.25 0.25"; }else{ $cmd="#"; }
 $cmd
 # 
 $go

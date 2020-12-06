@@ -887,7 +887,8 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                     dispersionModel,    // =ipar(10)
                     grid,               // =ipar(11)
                     solveForAllFields,  // =ipar(12)
-                    numberOfMaterialRegions // = ipar(13)
+                    numberOfMaterialRegions, // = ipar(13)
+                    debug               // =ipar(14)
                 };
                 real rpar[11]= {
                     dx[0], // =rpar(0)
@@ -1006,17 +1007,17 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
 
     if( computeMaxNorms )
     {
-        divEMax=getMaxValue(divEMax);  // get max over all processors
-        gradEMax=getMaxValue(gradEMax);  // get max over all processors
+        divEMax =ParallelUtility::getMaxValue(divEMax);  // get max over all processors
+        gradEMax=ParallelUtility::getMaxValue(gradEMax);  // get max over all processors
 
         if( solveForMagneticField && cg.numberOfDimensions()==3 )
         {
-            divHMax=getMaxValue(divHMax);  // get max over all processors
-            gradHMax=getMaxValue(gradHMax);  // get max over all processors
+            divHMax=ParallelUtility::getMaxValue(divHMax);  // get max over all processors
+            gradHMax=ParallelUtility::getMaxValue(gradHMax);  // get max over all processors
         }
         
         for( int c=C.getBase(); c<=C.getBound(); c++ )
-            solutionNorm(c)=getMaxValue(solutionNorm(c)); // get max over all processors
+            solutionNorm(c)=ParallelUtility::getMaxValue(solutionNorm(c)); // get max over all processors
     }
     
 

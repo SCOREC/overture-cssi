@@ -92,11 +92,15 @@ rectanglenp:
 	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=8
 	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=16
 	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=32
+	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=64
+	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=128
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=2
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=4
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=8
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=16
 	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=32
+	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=64
+	 $(ogen) -noplot rectangleArg -prefix=rect -numGhost=3 -order=4 -xa=-1 -xb=1 -ya=-.5 -yb=.5 -periodic=np -factor=128 
 
 bigRect:
 	 $(ogen) -noplot rectangleArg -prefix=bigRect -order=2 -xa=-2 -xb=2 -ya=-1  -yb=1  -factor=2

@@ -1,6 +1,9 @@
   implicit none
   emplicit none
 
+
+#defineMacro extrap(u,i1,i2,i3) 2*u(i1,i2,i3)-u(i1+1,i2,i3) 
+
 subroutine test1( )
 
 #beginMacro cases(name)

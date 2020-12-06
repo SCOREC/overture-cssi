@@ -1383,6 +1383,11 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
     Index I1,I2,I3;
 
     getIndex(mg.gridIndexRange(),I1,I2,I3,extra);
+
+    // *wdh* Nov 18, 2020
+    int includeGhost=1; 
+    bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+
     // For working with local arrays (parallel):
     Index J1,J2,J3;
 
@@ -1406,16 +1411,18 @@ getForcing(int current, int grid, realArray & u , real t, real dt, int option /*
 #ifdef USE_PPP
       useScalarLoops=true;
 #endif 
-
-      if( method==bamx )
+      if( ok )
       {
-        getTZForcingBAMX();
+        if( method==bamx )
+        {
+          getTZForcingBAMX();
+        }
+        else
+        {
+          getTZForcing();
+        }
       }
-      else
-      {
-        getTZForcing();
-      }
-
+      
     }
     else if( forcingOption==gaussianSource )
     {

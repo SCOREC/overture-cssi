@@ -3,6 +3,77 @@ WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=
 -m=1 -n=1 -tp=.5 -tf=2 -go=go
 
 
+
+*****************************************
+******* Thurs Dec 3, 2020 
+
+
+SIX BOXES  -- looks Ok 
+rect64: 800K pts 
+
+ADD: 
+-g=rect128np.order2
+
+runParallel.p -runCase=performance -configFile="baParallelConfig.pl" -numRegions=3 -dm=gdm -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt -tf=0.5 -factor=6 -order=2 -numRuns=5
+
+rect64: 
+  NP  & sec/step   &  speedup  \\   \hline\hline 
+   1  &  1.5e-01   &     1.0  \\
+   2  &  8.8e-02   &     1.7  \\
+   4  &  4.7e-02   &     3.2  \\
+   8  &  3.4e-02   &     4.3  \\
+  16  &  2.1e-02   &     7.2  \\
+
+
+rect32
+ NP  & sec/step   &  speedup  \\   \hline\hline 
+   1  &  2.9e-02   &     1.0  \\
+   2  &  1.7e-02   &     1.7  \\
+   4  &  9.6e-03   &     3.0  \\
+   8  &  6.9e-03   &     4.1  \\
+  16  &  5.7e-03   &     5.1  \\
+
+mpirun -np 8 $cgmx -noplot baScat -numberOfParallelGhost=3 -g=rect64np.order2 -method=bamx -numMatRegions=3 -regionFile=boxRegion6.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1  -useSuperGrid=1 -superGridWidth=.1 -rbc=absorbing -go=og
+
+mpirun -np 8 $cgmx -noplot baScat -numberOfParallelGhost=3 -g=rect64np.order4.ng3 -method=bamx -numMatRegions=3 -regionFile=boxRegion6.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1  -useSuperGrid=1 -superGridWidth=.1 -rbc=absorbing -go=og
+
+mpirun -np 2 $cgmx -noplot baScat -numberOfParallelGhost=3 -g=rect32np.order4.ng3 -method=bamx -numMatRegions=3 -regionFile=boxRegion6.h -matFile=baAir.txt -matFile2=baIsoEps2.txt -matFile3=baIsoEps4.txt  -ts=rk2 -eps1=1 -eps2=1 -ic=gp -x0=-.75 -beta=800 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1  -useSuperGrid=1 -superGridWidth=.1 -rbc=absorbing -go=og
+
+
+
+Gaussian plane-wave -- single embeded sub-region
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og
+
+
+
+*****************************************
+******* Wed Nov 25, 2020
+
+TEST PARALLEL AGAIN: 
+
+mpirun -np 1 $cgmx -noplot -numParallelGhost=3 baScat -g=square1024.order4.ng3 -method=bamx -matFile=baAir.txt -ts=rk4 -eps1=1 -eps2=1 -ic=gs -x0=.5 -y0=.5 -beta=400 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.1 -go=go
+
+
+-np=32
+total time..........................  8.05e+00    5.09e-02    4.85e-08   100.000   8.050e+00   8.048e+00
+
+-np=16
+total time..........................  7.66e+00    4.85e-02    4.61e-08   100.000   7.658e+00   7.657e+00
+
+-np=8
+total time..........................  1.11e+01    7.03e-02    6.69e-08   100.000   1.110e+01   1.110e+01
+
+
+-np=4 
+total time..........................  2.02e+01    1.28e-01    1.22e-07   100.000   2.024e+01   2.024e+01
+
+-np=2
+total time..........................  3.92e+01    2.48e-01    2.36e-07   100.000   3.918e+01   3.918e+01
+
+
+-np=1
+total time..........................  8.39e+01    5.31e-01    5.05e-07   100.000   8.389e+01   8.389e+01
+
 *****************************************
 ******* Mon July 6, 2020
 

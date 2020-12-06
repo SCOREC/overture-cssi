@@ -28,57 +28,57 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 //  Return the max value of a scalar over all processors
 //  /processor: return the result to this processor (-1 equals all processors)
 // ======================================================================================
-real Maxwell::
-getMaxValue(real value, int processor /* = -1 */)
-{
-  real maxValue=value;
-  #ifdef USE_PPP 
-  if( processor==-1 )
-    MPI_Allreduce(&value, &maxValue, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  else
-    MPI_Reduce        (&value, &maxValue, 1, MPI_DOUBLE, MPI_MAX, processor, MPI_COMM_WORLD);
-  #endif
-  return maxValue;
-}
+// real Maxwell::
+// getMaxValue(real value, int processor /* = -1 */)
+// {
+//   real maxValue=value;
+//   #ifdef USE_PPP 
+//   if( processor==-1 )
+//     MPI_Allreduce(&value, &maxValue, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+//   else
+//     MPI_Reduce        (&value, &maxValue, 1, MPI_DOUBLE, MPI_MAX, processor, MPI_COMM_WORLD);
+//   #endif
+//   return maxValue;
+// }
 
-int Maxwell::
-getMaxValue(int value, int processor /* = -1 */)
-{
-  int maxValue=value;
-  #ifdef USE_PPP 
-  if( processor==-1 )
-    MPI_Allreduce(&value, &maxValue, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-  else
-    MPI_Reduce        (&value, &maxValue, 1, MPI_INT, MPI_MAX, processor, MPI_COMM_WORLD);
-  #endif
-  return maxValue;
-}
+// int Maxwell::
+// getMaxValue(int value, int processor /* = -1 */)
+// {
+//   int maxValue=value;
+//   #ifdef USE_PPP 
+//   if( processor==-1 )
+//     MPI_Allreduce(&value, &maxValue, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+//   else
+//     MPI_Reduce        (&value, &maxValue, 1, MPI_INT, MPI_MAX, processor, MPI_COMM_WORLD);
+//   #endif
+//   return maxValue;
+// }
 
-real Maxwell::
-getMinValue(real value, int processor /* = -1 */ )
-{
-  real minValue=value;
-  #ifdef USE_PPP 
-  if( processor==-1 )
-    MPI_Allreduce(&value, &minValue, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-  else
-    MPI_Reduce        (&value, &minValue, 1, MPI_DOUBLE, MPI_MIN, processor, MPI_COMM_WORLD);
-  #endif
-  return minValue;
-}
+// real Maxwell::
+// getMinValue(real value, int processor /* = -1 */ )
+// {
+//   real minValue=value;
+//   #ifdef USE_PPP 
+//   if( processor==-1 )
+//     MPI_Allreduce(&value, &minValue, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+//   else
+//     MPI_Reduce        (&value, &minValue, 1, MPI_DOUBLE, MPI_MIN, processor, MPI_COMM_WORLD);
+//   #endif
+//   return minValue;
+// }
 
-int Maxwell::
-getMinValue(int value, int processor /* = -1 */)
-{
-  int minValue=value;
-  #ifdef USE_PPP 
-  if( processor==-1 )
-    MPI_Allreduce(&value, &minValue, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-  else
-    MPI_Reduce        (&value, &minValue, 1, MPI_INT, MPI_MIN, processor, MPI_COMM_WORLD);
-  #endif
-  return minValue;
-}
+// int Maxwell::
+// getMinValue(int value, int processor /* = -1 */)
+// {
+//   int minValue=value;
+//   #ifdef USE_PPP 
+//   if( processor==-1 )
+//     MPI_Allreduce(&value, &minValue, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+//   else
+//     MPI_Reduce        (&value, &minValue, 1, MPI_INT, MPI_MIN, processor, MPI_COMM_WORLD);
+//   #endif
+//   return minValue;
+// }
 
 // =============================================================================================
 /// \brief Determine the time step
@@ -202,6 +202,12 @@ computeTimeStep()
     
   }
   
+   
+  // *wdh* Oct. 1, 2020 -- more accurate time step (e.g. nonSquare now matches square)
+  // Nov 23, 2020 -- something is wrog with the new way for twoSquaresInterface left-grid, eps=2
+  // Old: dt=2.8e-3
+  // New: dt=3.8e-3 !!
+  const bool useNewTimeStep=true; // false; // true;
 
   for( int grid=0; grid<numberOfComponentGrids; grid++ )
   {
@@ -280,10 +286,11 @@ computeTimeStep()
 	dxMinMax(grid,0)=numberOfDimensions==2 ? min(dx[0],dx[1]) : min(dx[0],dx[1],dx[2]);
 	dxMinMax(grid,1)=numberOfDimensions==2 ? max(dx[0],dx[1]) : max(dx[0],dx[1],dx[2]);
 	
-	// printF(" computeTimeStep: dx=%8.2e dy=%8.2e c=%8.2e, dtg=%8.2e\n",dx[0],dx[1],c,dtg);
+	printf(" computeTimeStep: grid=%d dx=%8.2e dy=%8.2e c=%8.2e, dtg=%8.2e\n",grid,dx[0],dx[1],c,dtg);
       }
-      else
-      {
+      else // curvilinear grids 
+      {  // curvilinear grids 
+
 	mg.update(MappedGrid::THEinverseVertexDerivative);
 	const realArray & rx = mg.inverseVertexDerivative();
 	const intArray & mask = mg.mask();
@@ -394,8 +401,8 @@ computeTimeStep()
 	    
 	    
 	  }
-	  else
-	  { // ***** 3D ********
+	  else  //   ***** 3D ********
+	  { //   ***** 3D ********
 
 #define rxDotRx(axis,dir) (RX(i1,i2,i3,axis,0)*RX(i1,i2,i3,dir,0) \
 			 + RX(i1,i2,i3,axis,1)*RX(i1,i2,i3,dir,1) \
@@ -451,18 +458,63 @@ computeTimeStep()
 	    }
 	    
 #undef rxDotRx
-	  }
+	  } // end if 3D
+          
+          
 
-	  dxMinMax(grid,0)=a11Min; 
-	  dxMinMax(grid,1)=a11Max;
-	  dtg = (cfl/c) * dxMinMax(grid,0); 
 	}
+        // end if OK 
 	
-      }
-    
-      dtg=getMinValue(dtg);  // compute min over all processors
-      dxMinMax(grid,0)=getMinValue(dxMinMax(grid,0));
-      dxMinMax(grid,1)=getMaxValue(dxMinMax(grid,1));
+        if( useNewTimeStep )
+        {
+          // *wdh* Oct. 1, 2020 -- more accurate time step (e.g. nonSquare now matches square)
+          real dsMin[3],dsAve[3],dsMax[3];
+          // Note: there is communication here: 
+          GridStatistics::getGridSpacing( mg, dsMin, dsAve, dsMax );
+
+          assert( method!=sosup );
+
+          // Nov 23, 2020 *fixed* formula
+          dx[0]=dsMin[0]; dx[1]=dsMin[1]; dx[2]=dsMin[2];
+          
+	  if( numberOfDimensions==2 )
+	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
+	  else
+	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
+
+          dxMinMax(grid,0) = numberOfDimensions == 2 ? min(dsMin[0],dsMin[1]) : min(dsMin[0],dsMin[1],dsMin[2]);
+          dxMinMax(grid,1) = numberOfDimensions == 2 ? max(dsMax[0],dsMax[1]) : max(dsMax[0],dsMax[1],dsMax[2]);
+        }
+        else
+        {
+          dxMinMax(grid,0)=a11Min;  // *wdh* Sept 30, 2020 -- use actual grid spacing below:
+          dxMinMax(grid,1)=a11Max;
+  
+          dtg = (cfl/c) * dxMinMax(grid,0); 
+        }
+	  
+
+
+
+      }    // end curvilinear grid 
+
+      // if( debug & 1 )
+      // {
+      //   printf("grid=%d: dtg=%e debug=%d(before)\n",grid,dtg,debug);
+      //   fprintf(pDebugFile,"grid=%d: dtg=%e (before)\n",grid,dtg);
+      //   ::display(dxMinMax,"dxMinMax",pDebugFile);
+      //   fflush(pDebugFile);
+      // }
+      
+      dtg             =ParallelUtility::getMinValue(dtg);  // compute min over all processors
+      dxMinMax(grid,0)=ParallelUtility::getMinValue(dxMinMax(grid,0));
+      dxMinMax(grid,1)=ParallelUtility::getMaxValue(dxMinMax(grid,1));
+      
+      // if( debug & 1 )
+      // {
+      //   fprintf(pDebugFile,"grid=%d: dtg=%e (after)\n",grid,dtg);
+      //   fflush(pDebugFile);
+      // }
       
       // Cartesian grids use: artificialDissipation
       // Curvilinear grids use: artificialDissipationCurvilinear
@@ -763,9 +815,22 @@ computeTimeStep()
     
   } // end for grid
 
-  deltaT=getMinValue(deltaT);  // min value over all processors
+  // if( debug & 1 )
+  // {
+  //   fprintf(pDebugFile,"computeDT: deltaT=%e (before)\n",deltaT);
+  //   fflush(pDebugFile);
+  // }
+  
+
+  deltaT = ParallelUtility::getMinValue(deltaT);  // min value over all processors
   deltaT = min(dtMax,deltaT);
   
+  // if( debug & 1 )
+  // {
+  //   fprintf(pDebugFile,"computeDT: deltaT=%e (after)\n",deltaT);
+  //   fflush(pDebugFile);
+  // }
+
   printF("==== computeTimeStep: deltaT=%8.2e\n",deltaT);
   if( debug & 4 )
     fprintf(pDebugFile,"==== computeTimeStep: deltaT=%8.2e, myid=%i\n",deltaT,myid);
@@ -873,7 +938,7 @@ computeTimeStepBA()
   }
   
 
-  deltaT=getMinValue(deltaT);  // min value over all processors
+  deltaT = ParallelUtility::getMinValue(deltaT);  // min value over all processors
   deltaT = min(dtMax,deltaT);
   
   printF("==== computeTimeStepBA: deltaT=%8.2e =========\n\n",deltaT);

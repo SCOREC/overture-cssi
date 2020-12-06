@@ -1,0 +1,1009 @@
+
+
+// ******************************************************************
+//   Test Update Ghost and Periodic 
+//
+//  mpirun -np 2 tugp
+// 
+// *******************************************************************
+#include "ParallelUtility.h"
+#include "display.h"
+#include "GhostBoundaryUpdate.h"
+#include "SquareMapping.h"
+#include "BoxMapping.h"
+
+// static int sent=0, received=0; 
+
+#ifdef USE_PPP
+// void
+// displayPartiData(realArray & u, const aString & name)
+// {
+//   const int myid = Communication_Manager::My_Process_Number;
+//   const int np=max(1,Communication_Manager::Number_Of_Processors);
+
+//   DARRAY *uDArray = u.Array_Descriptor.Array_Domain.BlockPartiArrayDomain;
+//   DECOMP *uDecomp = uDArray->decomp;
+
+//   printf(" *************** %s: DARRAY uDArray->nDims=p=%i *******************\n"
+//          "  nDims=%i  : number of array dimensions\n",(const char*)name,myid,uDArray->nDims);
+  
+//   int i;
+//   for( int i=0; i<uDArray->nDims; i++ )
+//   {
+//     printf(" myid=%i: dim=%i: internal-ghost-cells=%i, total-size=%i, left,central,right-size=[%i,%i,%i] \n"
+//            "                  global=[%i,%i] local-size=%i\n",myid,
+// 	   i,uDArray->ghostCells[i],uDArray->dimVecG[i],
+//            uDArray->dimVecL_L[i],uDArray->dimVecL[i],uDArray->dimVecL_R[i],
+//            uDArray->g_index_low[i],uDArray->g_index_hi[i],uDArray->local_size[i]);
+//   }
+
+//   printf(" *************** u: DECOMP p=%i *******************\n"
+//          "  nDims=%i, nProcs=%i, baseProc=%i \n",
+// 	 myid,uDecomp->nDims,uDecomp->nProcs,uDecomp->baseProc);
+
+//   for( int i=0; i<uDecomp->nDims; i++ )
+//   {
+//     printf(" myid=%i: dim=%i: dimVec=%i (size of decomposition) \n"
+//            "                  dimProc=%i (number of processors allocated to this dimension) \n",
+// 	   myid,i,uDecomp->dimVec[i],uDecomp->dimProc[i]);
+//   }
+// }
+#endif 
+
+
+int
+main( int argc, char *argv[])
+{
+  printF("Usage: `tug [options]' \n"
+          "   -noplot                               \n"
+          "   -nd=[2|3] number of distributed dimensions in the array  \n"
+          "   -isPeriodic0=[0|1]  : 1-periodic in direction 0 \n"
+          "   -isPeriodic1=[0|1]  : 1-periodic in direction 1 \n"
+          "   -isPeriodic2=[0|1]  : 1-periodic in direction 2 \n"
+          "   -npMin=<i>, -npMax=<i> : restrict processor range to [npMin,npMax]\n"
+  	  );
+
+  Overture::start(argc,argv);  // initialize Overture
+
+  const int myid = Communication_Manager::My_Process_Number;
+  const int np=max(1,Communication_Manager::Number_Of_Processors);
+
+
+  int debug=1;
+
+  int numberOfDimensions=2;  // at most 3 !
+  IntegerArray gid(2,3), dim(2,3), isPeriodic(3), indexRange(2,3);
+  dim=0; gid=0; isPeriodic=0; indexRange=0;
+  // isPeriodic(0)=1;
+  // isPeriodic(1)=1;
+  // isPeriodic(2)=1;
+  
+  // --- Number of grid points in each direction ---
+  int nx=11, ny=11, nz=11;
+  int nc=2;  // number of components
+  int nc0=0, nc1=-1; // range of components to assign (by default do all)
+   
+  int fside=-1, faxis=-1;  // if valid, update ghost and periodic on this face only 
+
+  int npMin=-1, npMax=INT_MAX;  // restrict processor range to [npMin,npMax]
+
+  // int passMessages=1;
+  
+  aString buff;
+  aString commandFileName="";
+  bool plotOption=true;  // by default we plot interactively
+  int len=0;
+  if( argc > 1 )
+  {
+    for( int i=1; i<argc; i++ )
+    {
+      aString line=argv[i];
+      
+      if( len=line.matches("-nd=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&numberOfDimensions);
+	printF(" Setting numberOfDimensions=%i\n",numberOfDimensions);
+      }
+      else if( len=line.matches("-nx=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&nx);
+	printF(" Setting nx=%i\n",nx);
+      }
+      else if( len=line.matches("-ny=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&ny);
+	printF(" Setting ny=%i\n",ny);
+      }
+      else if( len=line.matches("-nz=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&nz);
+	printF(" Setting nz=%i\n",nz);
+      }
+
+      else if( len=line.matches("-nc=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&nc);
+	printF(" Setting nc=%i\n",nc);
+      }
+      else if( len=line.matches("-nc0=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&nc0);
+	printF(" Setting nc0=%i\n",nc0);
+      }
+      else if( len=line.matches("-nc1=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&nc1);
+	printF(" Setting nc1=%i\n",nc1);
+      }
+
+      else if( len=line.matches("-debug=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&debug);
+	printF(" Setting debug=%i\n",debug);
+      }
+
+      else if( len=line.matches("-fside=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&fside);
+	printF(" Setting fside=%i\n",fside);
+      }
+      else if( len=line.matches("-faxis=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&faxis);
+	printF(" Setting faxis=%i\n",faxis);
+      }
+
+      else if( len=line.matches("-npMin=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&npMin);
+	printF(" Setting npMin=%i\n",npMin);
+      }
+      else if( len=line.matches("-npMax=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&npMax);
+	printF(" Setting npMax=%i\n",npMax);
+      }
+
+
+      else if( len=line.matches("-isPeriodic0=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&isPeriodic(0));
+	printF(" Setting isPeriodic(0)=%i\n",isPeriodic(0));
+      }
+      else if( len=line.matches("-isPeriodic1=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&isPeriodic(1));
+	printF(" Setting isPeriodic(1)=%i\n",isPeriodic(1));
+      }
+      else if( len=line.matches("-isPeriodic2=") )
+      {
+       	sScanF(line(len,line.length()-1),"%i",&isPeriodic(2));
+	printF(" Setting isPeriodic(2)=%i\n",isPeriodic(2));
+      }
+      // else if( len=line.matches("-passMessages=") )
+      // {
+      //  	sScanF(line(len,line.length()-1),"%i",&passMessages);
+      // 	printF(" Setting passMessages=%i\n",passMessages);
+      // }
+      else
+	commandFileName=line;
+    }
+  }
+
+
+
+  
+
+  // *wdh* Oct 12, 2020
+  // testUpdateGhostAndPeriodic();
+
+  // ---- test the general update ghost and periodic points -----
+  printF("------------------------------------------------------------\n");
+  printF("---- test the general update ghost and periodic points -----\n");
+
+
+  int nxv[3]={nx,ny,nz};
+
+  int numGhostLeft =2;  // number of real ghost 
+  int numGhostRight=2;  // number of real ghost 
+  for( int axis=0; axis<numberOfDimensions; axis++ )
+  {
+    // isPeriodic(axis)=1;
+    gid(0,axis)=0;
+    gid(1,axis)=nxv[axis]-1;
+    dim(0,axis)=gid(0,axis)-numGhostLeft;
+    dim(1,axis)=gid(1,axis)+numGhostRight;
+ 
+    if( isPeriodic(axis) )
+      indexRange(1,axis)=gid(1,axis)-1;
+    else
+      indexRange(1,axis)=gid(1,axis);
+  }
+  
+
+
+  Partitioning_Type pu;
+
+  int ndp=numberOfDimensions, numParallelGhost=2;  // ndp = number of distributed dimensions 
+
+  // Target processors (0:1)
+  // int up0=0, up1=max(0,np-1);
+  // int up0=0, up1=min(1,np-1); 
+  int startProc =max(npMin,0);
+  int endProc   =min(np-1,npMax);
+  Range procRange(startProc,endProc);
+  printf("++++ myid=%d, np=%d , procRange=[%d,%d]\n",
+	  myid,np,procRange.getBase(),procRange.getBound());
+
+  pu.SpecifyProcessorRange(procRange);
+  pu.SpecifyDecompositionAxes(ndp);
+  for( int d=0; d<MAX_ARRAY_DIMENSION; d++ )
+  {
+    if( d<ndp )
+      pu.partitionAlongAxis(d, true, numParallelGhost ); 
+    else
+      pu.partitionAlongAxis(d, false, 0 ); 
+  }
+
+  // FILE *debugFile=NULL; // stdout;
+  // if( debug !=0 && debugFile==NULL )
+  // {
+  //   char fileName[40];
+  //   sprintf(fileName,"tug%i.debug",myid);
+  //   debugFile= fopen(fileName,"w");
+  // }
+  // if( debug !=0 )
+  // {
+  //   fprintf(debugFile,"++++ updateGhostAndPeriodic np=%d , procRange=[%d,%d] numberOfDimensions=%d, numGhost=[%d,%d] "
+  // 	              "numParallelGhost=%d ndp=%d +++++\n",
+  // 	    np,procRange.getBase(),procRange.getBound(),numberOfDimensions,numGhostLeft,numGhostRight,numParallelGhost,ndp);
+  //   fprintf(debugFile,"+++++++ isPeriodic=[%d,%d,%d] [fside,faxis]=[%d,%d] \n",
+  // 	    isPeriodic(0),isPeriodic(1),isPeriodic(2),fside,faxis);
+  //   fflush(debugFile);
+  // }
+
+
+
+  realArray u;
+  u.partition(pu);  
+
+  // printf("myid=%d: u.Array_ID()=%d\n",myid,u.Array_ID());
+  
+
+  // int ng=1;  // number of real ghost 
+  // Range R(-ng,nd+ng-1);
+  Index I1,I2,I3;
+  getIndex(dim,I1,I2,I3);
+  
+  if( numberOfDimensions==2 )
+  {
+    u.redim(I1,I2,nc);
+  }
+  else
+  {
+    u.redim(I1,I2,I3,nc);
+  }
+  OV_GET_SERIAL_ARRAY(real,u,uLocal);
+  uLocal=-1.;
+
+  getIndex(dim,I1,I2,I3);
+  int includeGhost=0;
+  bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+  Range all;
+  // --- fill all points with -2 ---
+  if( numberOfDimensions==2 )
+    uLocal(I1,I2,all)= -2;
+  else
+    uLocal(I1,I2,I3,all)= -2;
+
+  // fill interior points with myid leaving "true" ghost = -2 
+  getIndex(indexRange,I1,I2,I3);  // use indexRange to skip periodic images 
+  ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+  if( numberOfDimensions==2 )
+    uLocal(I1,I2,all)= myid;
+  else
+    uLocal(I1,I2,I3,all)= myid;
+
+  
+
+  if( true )
+  {
+    // new way 
+    
+    GhostBoundaryUpdate ghostBoundaryUpdate("tug");
+    ghostBoundaryUpdate.setDebug(debug);
+    
+    ghostBoundaryUpdate.initialize( u, numberOfDimensions,gid,dim,indexRange,isPeriodic,fside,faxis );
+    ghostBoundaryUpdate.updateGhostBoundaries( u );
+
+
+    printF(" \n ----- START NEW CHECK -------\n");
+
+    // ---- Here is a test to check the results -----
+    // uLocal=-99.;
+    
+    real xa=0, xb=1., ya=0., yb=1., za=0., zb=1.;
+    Mapping *pmap=NULL;
+    if( numberOfDimensions==2 )
+      pmap = new SquareMapping(xa,xb,ya,yb);
+    else
+      pmap = new BoxMapping(xa,xb,ya,yb,za,zb);
+    pmap->incrementReferenceCount();
+  
+    Mapping & map = *pmap;
+  
+    // int nxv[3]={nx,ny,nz};  //
+    for( int axis=0; axis<map.getDomainDimension(); axis++ )
+    {
+      map.setGridDimensions(axis,nxv[axis]);
+    }
+  
+    int numberOfGhostPoints=2; // orderOfAccuracy/2+1;
+    int extra[3]={0,0,0}; //  for checking periodic points 
+    for( int axis=0; axis<map.getDomainDimension(); axis++ )
+    {
+      if( isPeriodic(axis) )
+      {
+	map.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        extra[axis]=numberOfGhostPoints;
+      }
+      
+    }
+    
+    #ifdef USE_PPP
+      // On Parallel machines always add at least this many ghost lines on local arrays (used in MappedGrid)
+      int numberOfParallelGhost=2;
+      printF("tug: Seting numberOfParallelGhost=%d\n",numberOfParallelGhost);
+      MappedGrid::setMinimumNumberOfDistributedGhostLines(numberOfParallelGhost);
+    #endif
+  
+    MappedGrid mg(map);
+    for( int axis=0; axis<map.getDomainDimension(); axis++ )
+    {
+      for( int side=Start; side<=End; side++ )
+	mg.setNumberOfGhostPoints(side,axis,numberOfGhostPoints);
+    }
+    mg.update(MappedGrid::THEmask | MappedGrid::THEvertex | MappedGrid::THEcenter );
+
+    Range all;
+    Range C = nc;
+    realMappedGridFunction v(mg,all,all,all,C), ve(mg,all,all,all,C);
+
+    OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+    OV_GET_SERIAL_ARRAY(real,v,vLocal);
+    OV_GET_SERIAL_ARRAY(real,ve,veLocal);
+
+    // assign exact solution everywhere 
+    veLocal=-99;
+    getIndex(mg.dimension(),I1,I2,I3);
+    includeGhost=1;
+    ok = ParallelUtility::getLocalArrayBounds(v,vLocal,I1,I2,I3,includeGhost);
+    if( ok )
+    {
+      // Fill in points but exclude parallel ghost and periodic points 
+      for( int c=0; c<nc; c++ )
+      {
+        real fx = twoPi*(c+1.);
+        real fy = twoPi*(c+2.);
+        real fz = twoPi*(c+3.);
+	if( mg.numberOfDimensions()==2 )
+	  veLocal(I1,I2,I3,c) = ( sin(fx*xLocal(I1,I2,I3,0))*
+				  cos(fy*xLocal(I1,I2,I3,1)) );
+	else
+	  veLocal(I1,I2,I3,c) = ( sin(fx*xLocal(I1,I2,I3,0))*
+				  cos(fy*xLocal(I1,I2,I3,1))*
+				  cos(fz*xLocal(I1,I2,I3,2)) );
+      }
+    }
+
+    vLocal=-9.;  // bogus value 
+
+    getIndex(mg.indexRange(),I1,I2,I3); // note indexRange -- no periodic point on right
+    includeGhost=0;
+    ok = ParallelUtility::getLocalArrayBounds(v,vLocal,I1,I2,I3,includeGhost);
+    if( ok )
+    {
+      // Fill in points but exclude parallel ghost and periodic points 
+      vLocal(I1,I2,I3,C) = veLocal(I1,I2,I3,C);
+      
+      // if( mg.numberOfDimensions()==2 )
+      //   vLocal(I1,I2,I3) = sin(twoPi*xLocal(I1,I2,I3,0))*cos(2.*twoPi*xLocal(I1,I2,I3,1));
+      // else
+      //   vLocal(I1,I2,I3) = ( sin(   twoPi*xLocal(I1,I2,I3,0))*
+      // 			     cos(2.*twoPi*xLocal(I1,I2,I3,1))*
+      // 			     cos(3.*twoPi*xLocal(I1,I2,I3,2)) );
+    }
+  
+    if( debug & 1 )
+      ::display(v ,"v BEFORE updateGhostBoundaries","%5.2f ");
+
+    // --- Range of components to assign ---
+    Range C0 = nc1>=nc0 ? Range(nc0,nc1) : C;
+    // printF("nc0=%d, nc1=%d C0=[%d,%d]\n",nc0,nc1,C0.getBase(),C0.getBound());
+
+    GhostBoundaryUpdate ghostBoundaryUpdate2("gbu");
+    ghostBoundaryUpdate2.setDebug(debug);
+
+    ghostBoundaryUpdate2.initialize( v, fside,faxis );
+    
+    ghostBoundaryUpdate2.updateGhostBoundaries( v,C0 );
+
+
+    if( debug & 1 )
+      ::display(v ,"v AFTER updateGhostBoundaries","%5.2f ");
+
+    // ::display(ve,"ve","%5.2f ");
+
+
+
+    // check errors
+    if( faxis<0 )
+      getIndex(mg.gridIndexRange(),I1,I2,I3,extra[0],extra[1],extra[2]); // should include periodic ghost **FIX ME**
+    else
+      getBoundaryIndex(mg.gridIndexRange(),fside,faxis,I1,I2,I3,extra[0],extra[1],extra[2]); // should include periodic ghost **FIX ME**
+    printF("check error at points [%3i,%3i][%3i,%3i][%3i,%3i] components=[%i,%i]\n",
+	   I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),C0.getBase(),C0.getBound());
+    
+    includeGhost=1;
+    ok = ParallelUtility::getLocalArrayBounds(v,vLocal,I1,I2,I3,includeGhost);
+    real maxErr=0.;
+    if( ok )
+    {
+      maxErr = max(fabs(vLocal(I1,I2,I3,C0)-veLocal(I1,I2,I3,C0)));
+    }
+    maxErr = ParallelUtility::getMaxValue( maxErr );
+    printF("++++++ MAX ERROR (including parallel ghost) = %9.3e ++++\n",maxErr );
+    
+
+  }
+  else
+  {
+    // ********************** old way ************************************
+/* -----
+
+    const intSerialArray & uProcessorSet = u.getPartition().getProcessorSet();
+
+    if( false )
+    {
+      ::display(uProcessorSet,"uProcessorSet");
+      displayPartiData(u,"u");
+    }
+    ::display(uLocal,"uLocal (before)",debugFile,"%4.0f ");
+    ::display(u,"u (before)","%4.0f ");
+
+    IndexBox uBox;
+    CopyArray::getLocalArrayBox( myid, u, uBox );
+
+    fprintf(debugFile," myid=%i uLocal bounds=[%2i,%2i][%2i,%2i][%2i,%2i][%2i,%2i] (no parallel ghost)\n",
+	    myid,
+	    uBox.base(0),uBox.bound(0),
+	    uBox.base(1),uBox.bound(1),
+	    uBox.base(2),uBox.bound(2),
+	    uBox.base(3),uBox.bound(3));
+
+    IndexBox uBoxGhost;
+    CopyArray::getLocalArrayBoxWithGhost( myid, u, uBoxGhost );
+
+    fprintf(debugFile," myid=%i uLocal bounds=[%2i,%2i][%2i,%2i][%2i,%2i][%2i,%2i] (with parallel ghost)\n",
+	    myid,
+	    uBoxGhost.base(0),uBoxGhost.bound(0),
+	    uBoxGhost.base(1),uBoxGhost.bound(1),
+	    uBoxGhost.base(2),uBoxGhost.bound(2),
+	    uBoxGhost.base(3),uBoxGhost.bound(3));
+
+    bool copyOnProcessor=true;  // if true do not send messages to the same processor
+
+    int index[4]={0,0,0,0};
+    //     for( axis=0; axis<numberOfDimensions; axis++ ) index[axis]=ips(i,axis);
+
+    // int proc= u.Array_Descriptor.findProcNum( index );  // processor for this point 
+    // printF(" Point [%i,%i,%i] proc=%d\n",index[0],index[1],index[2],proc);
+   
+    // index[0]=nd;
+    // proc= u.Array_Descriptor.findProcNum( index );  // processor for this point 
+    // printF(" Point [%i,%i,%i] proc=%d\n",index[0],index[1],index[2],proc);
+   
+    // index[1]=nd;
+    // proc= u.Array_Descriptor.findProcNum( index );  // processor for this point 
+    // printF(" Point [%i,%i,%i] proc=%d\n",index[0],index[1],index[2],proc);
+   
+
+
+
+    // --- Make a list of boxes to receive and send ----
+
+    const int maxDim=MAX_DISTRIBUTED_DIMENSIONS;
+    assert( maxDim==4 );
+  
+    // Bounding box for uLocal:
+    int pubb[2*MAX_ARRAY_DIMENSION];
+    #define ubb(side,axis) pubb[(side)+2*(axis)]
+    for( int i=0; i<2*MAX_ARRAY_DIMENSION; i++ )
+      pubb[i]=0;
+  
+    // num parallel ghost 
+    int png[MAX_ARRAY_DIMENSION];
+    #define ng(dir) png[dir]   
+    for( int i=0; i<MAX_ARRAY_DIMENSION; i++ )
+      ng(i)=0;
+
+    // ------ Assign ubb(0:1,0:*) -- bounding box array for uLocal (no parallel ghost)
+    //        ng(axis) = num parallel ghost 
+    const int numDim = u.numberOfDimensions();  
+    for( int dir=0; dir<numDim; dir++ )
+    {
+      ubb(0,dir) = uBox.base(dir);
+      ubb(1,dir) = uBox.bound(dir);
+      ng(dir) = u.getGhostBoundaryWidth(dir);
+
+      if( dir==faxis && fside>=0 )
+      {
+	// --- restrict the bounding box to live on the face ---
+	isPeriodic(faxis)=0;  // turn off periodicity along this axis 
+	ng(faxis)=0;          // turn off parallel ghost along this axis 
+	ubb(0,dir) = max(ubb(0,dir),gid(fside,faxis));
+	ubb(1,dir) = min(ubb(1,dir),gid(fside,faxis));
+    
+      }
+    
+    }
+
+    if( true )
+    {
+      fprintf(debugFile," ubb=[%i,%i][%i,%i][%i,%i][%i,%i] u=[%i,%i][%i,%i][%i,%i][%i,%i]\n",
+	      ubb(0,0),ubb(1,0),ubb(0,1),ubb(1,1),ubb(0,2),ubb(1,2),ubb(0,3),ubb(1,3),
+	      u.getBase(0),u.getBound(0),u.getBase(1),u.getBound(1),u.getBase(2),u.getBound(2),u.getBase(3),u.getBound(3));
+    }
+  
+    // Receive bounding box 
+    int pbbr[2*MAX_ARRAY_DIMENSION];
+    #define bbr(side,axis) pbbr[(side)+2*(axis)]
+    for( int i=0; i<2*MAX_ARRAY_DIMENSION; i++ )
+      pbbr[i]=0;
+
+    // Send bounding box 
+    int pbbs[2*MAX_ARRAY_DIMENSION];
+    #define bbs(side,axis) pbbs[(side)+2*(axis)]
+    for( int i=0; i<2*MAX_ARRAY_DIMENSION; i++ )
+      pbbs[i]=0;
+
+    // Make a list of boxes for data we should send and receive
+    ListOfIndexBox sendBoxes;
+    ListOfIndexBox receiveBoxes;
+
+    // receiveMap[tag] = m <-> IndexBox : receiveBoxes[m]
+    std::map<int,int> receiveMap;
+
+    // isGhostn = 1 if there are parallel ghost in direction n
+    const int isGhost0 = ng(0)==0 ? 0 : 1;
+    const int isGhost1 = ng(1)==0 ? 0 : 1;
+    const int isGhost2 = ng(2)==0 ? 0 : 1;
+    const int isGhost3 = ng(3)==0 ? 0 : 1;
+
+    for( int d3=-isGhost3; d3<=isGhost3; d3++ )  // loop -1:1, or 0:0 if no parallel ghost 
+    {
+      int dir=3;
+      setReceiveBoxBounds(bbr,d3,dir,centerBox3,leftMostBox3,rightMostBox3,isPeriodicBox3);
+      setSendBoxBounds(bbs,d3,dir,centerBox3,leftMostBox3,rightMostBox3,isPeriodicBox3);
+
+      for( int d2=-isGhost2; d2<=isGhost2; d2++ )  // loop -1:1, or 0:0 if no parallel ghost 
+      {
+	int dir=2;
+	setReceiveBoxBounds(bbr,d2,dir,centerBox2,leftMostBox2,rightMostBox2,isPeriodicBox2);
+	setSendBoxBounds(bbs,d2,dir,centerBox2,leftMostBox2,rightMostBox2,isPeriodicBox2);
+
+	for( int d1=-isGhost1; d1<=isGhost1; d1++ )   // loop -1:1, or 0:0 if no parallel ghost 
+	{
+	  int dir=1;
+	  setReceiveBoxBounds(bbr,d1,dir,centerBox1,leftMostBox1,rightMostBox1,isPeriodicBox1);
+	  setSendBoxBounds(bbs,d1,dir,centerBox1,leftMostBox1,rightMostBox1,isPeriodicBox1);
+    
+	  for( int d0=-isGhost0; d0<=isGhost0; d0++ )  // loop -1:1, or 0:0 if no parallel ghost 
+	  {
+	    int dir=0;
+	    setReceiveBoxBounds(bbr,d0,dir,centerBox0,leftMostBox0,rightMostBox0,isPeriodicBox0);
+	    setSendBoxBounds(bbs,d0,dir,centerBox0,leftMostBox0,rightMostBox0,isPeriodicBox0);
+
+	    bool centerBox     = centerBox0     && centerBox1     && centerBox2;
+	    bool leftMostBox   = leftMostBox0   || leftMostBox1   || leftMostBox2;
+	    bool rightMostBox  = rightMostBox0  || rightMostBox1  || rightMostBox2;
+	    bool isPeriodicBox = isPeriodicBox0 || isPeriodicBox1 ||  isPeriodicBox2;
+	    // fprintf(debugFile,"d0=%d d1=%d leftMostBox0=%i rightMostBox0=%i\n",d0,d1,leftMostBox0,rightMostBox0);
+	  
+	    if( debug & 2 )
+	    {
+	      IndexBox rBox(bbr(0,0),bbr(1,0), bbr(0,1),bbr(1,1), bbr(0,2),bbr(1,2), bbr(0,3),bbr(1,3) );
+	      fprintf(debugFile,"d0=%2d d1=%2d rBox=[%d,%d][%d,%d][%d,%d][%d,%d], isPeriodicBox=%d isEmpty=%d\n",
+		      d0,d1, bbr(0,0),bbr(1,0),bbr(0,1),bbr(1,1),bbr(0,2),bbr(1,2),bbr(0,3),bbr(1,3),(int)isPeriodicBox,
+		      (int)rBox.isEmpty());
+	      IndexBox sBox(bbs(0,0),bbs(1,0), bbs(0,1),bbs(1,1), bbs(0,2),bbs(1,2), bbs(0,3),bbs(1,3) );
+	      fprintf(debugFile,"d0=%2d d1=%2d sBox=[%d,%d][%d,%d][%d,%d][%d,%d], isPeriodicBox=%d isEmpty=%d\n",
+		      d0,d1,bbs(0,0),bbs(1,0),bbs(0,1),bbs(1,1),bbs(0,2),bbs(1,2),bbs(0,3),bbs(1,3),(int)isPeriodicBox,
+		      (int)sBox.isEmpty());
+
+	    }
+	  
+	    if( ( !centerBox && !leftMostBox && !rightMostBox) || isPeriodicBox )
+	    {
+	      // Create a receive box
+	      IndexBox rBox(bbr(0,0),bbr(1,0), bbr(0,1),bbr(1,1), bbr(0,2),bbr(1,2), bbr(0,3),bbr(1,3) );
+	    
+	      if( !rBox.isEmpty() )
+	      {
+		fprintf(debugFile,"    Add receive box=[%3i,%3i][%3i,%3i][%3i,%3i][%3i,%3i], isPeriodicBox=%d\n",
+			bbr(0,0),bbr(1,0),bbr(0,1),bbr(1,1),bbr(0,2),bbr(1,2),bbr(0,3),bbr(1,3),(int)isPeriodicBox);
+
+		// Find which processor holds the data we need to receive: 
+		for( int axis=0; axis<4; axis++ )
+		{
+		  // choose a point near the middle of the box: 
+		  index[axis]=(bbr(0,axis)+bbr(1,axis))/2;  
+
+		  // Adjust point for periodic grids 
+		  if( isPeriodicBox && axis<numberOfDimensions && isPeriodic(axis) )
+		  {
+		    if( (axis==0 && leftMostBox0) || (axis==1 && leftMostBox1) || (axis==2 && leftMostBox2) )
+		      index[axis] += gid(1,axis) - gid(0,axis);  // periodic image
+		    else if( (axis==0 && rightMostBox0) || (axis==1 && rightMostBox1) || (axis==2 && rightMostBox2) )
+		      index[axis] -= gid(1,axis) - gid(0,axis);  // periodic image
+		  }
+		
+		}  // 
+		rBox.processor= u.Array_Descriptor.findProcNum( index );  // processor for this point 
+
+		int tag;
+		encodeTag( tag,d0,d1,d2,d3);
+		rBox.tag=tag;
+		receiveMap[tag]= receiveBoxes.size();
+
+		receiveBoxes.push_back(rBox);     
+
+	      
+
+	      }
+	    
+	      // Create a send box
+	      IndexBox sBox(bbs(0,0),bbs(1,0), bbs(0,1),bbs(1,1), bbs(0,2),bbs(1,2), bbs(0,3),bbs(1,3) );
+
+	      if( !sBox.isEmpty() )
+	      {
+		fprintf(debugFile,"    Add    send box=[%3i,%3i][%3i,%3i][%3i,%3i][%3i,%3i], isPeriodicBox=%d\n",
+			bbs(0,0),bbs(1,0),bbs(0,1),bbs(1,1),bbs(0,2),bbs(1,2),bbs(0,3),bbs(1,3),(int)isPeriodicBox);
+
+
+		// for( int axis=0; axis<4; axis++ ){ index[axis]=bbs(0,axis); }  // 
+		// sBox.processor= u.Array_Descriptor.findProcNum( index );  // processor for this point 
+
+		// we send data to the same proc that we receive the ghost point from: 
+		sBox.processor= rBox.processor; 
+
+		int tag;
+		encodeTag( tag,d0,d1,d2,d3);
+		sBox.tag=tag;
+
+		sendBoxes.push_back(sBox);     
+	      }
+	    
+	    }
+
+	  } // end for d0
+	} // end for d1
+      } // end for d2 
+    } // end for d3
+   
+
+
+
+    ListOfIndexBox::iterator iter; 
+    int ireceive=0;
+    for(iter = receiveBoxes.begin(); iter!=receiveBoxes.end(); iter++ )
+    {
+      IndexBox & box = *iter;
+      if( debug!=0 )
+      {
+	int sourceTag = box.tag, destTag;
+	convertTag(sourceTag,destTag);
+      
+	fprintf(debugFile,
+		">>> receive box %2i =[%3i,%3i][%3i,%3i][%3i,%3i][%3i,%3i], [rTag=%d, map=%d] from processor p=%i sTag=%d\n",
+		ireceive,
+		box.base(0),box.bound(0),
+		box.base(1),box.bound(1),
+		box.base(2),box.bound(2),
+		box.base(3),box.bound(3),
+		box.tag, receiveMap.at(box.tag),box.processor,destTag );
+	ireceive++;
+      }
+      
+    }
+
+    // ListOfIndexBox::iterator iter; 
+    int isend=0;
+    for(iter = sendBoxes.begin(); iter!=sendBoxes.end(); iter++ )
+    {
+      IndexBox & box = *iter;
+      if( debug!=0 )
+      {
+	int sourceTag = box.tag, destTag;
+	convertTag(sourceTag,destTag);
+
+	fprintf(debugFile,
+		">>>    send box %2i =[%3i,%3i][%3i,%3i][%3i,%3i][%3i,%3i] sTag=%d, to processor p=%i for rTag=%d\n",
+		isend,
+		box.base(0),box.bound(0),
+		box.base(1),box.bound(1),
+		box.base(2),box.bound(2),
+		box.base(3),box.bound(3),
+		box.tag,box.processor,destTag);
+	isend++;
+      }
+      
+    }
+  
+    #define FOR_BOX(i0,i1,i2,i3,box)					\
+      const int i0b=box.bound(0),i1b=box.bound(1),i2b=box.bound(2),i3b=box.bound(3); \
+      for( int i3=box.base(3); i3<=i3b; i3++ )				\
+	for( int i2=box.base(2); i2<=i2b; i2++ )			\
+	  for( int i1=box.base(1); i1<=i1b; i1++ )			\
+	    for( int i0=box.base(0); i0<=i0b; i0++ )
+
+
+    // ************** MPI calls *****************
+    if( passMessages )
+    {
+
+      if( debugFile!=NULL ) fflush(debugFile);
+
+      const int numReceive=receiveBoxes.size();
+      real **rBuff=NULL;   // buffers for receiving data
+      MPI_Request *receiveRequest=NULL;
+      MPI_Status *receiveStatus=NULL;
+      int *receiveBoxIndex = new int [np];  // maps processor number to index in receiveBoxes
+      for( int p=0; p<np; p++ ) receiveBoxIndex[p]=-1;
+
+      fprintf(debugFile,"+++ numReceive=%d\n",numReceive);
+    
+
+      if( numReceive>0 )
+      {
+	// post receives first
+
+	receiveRequest= new MPI_Request[numReceive]; // remember to delete these
+	receiveStatus= new MPI_Status[numReceive]; 
+
+	rBuff = new real* [numReceive];
+	// int sendingProc = new int [numReceive];
+    
+	for(int m=0; m<numReceive; m++ )
+	{
+	  IndexBox & pReceiveBox = receiveBoxes[m];
+
+	  // sendingProc[m]=pReceiveBox.processor;  // this processor will be sending the data
+	  int bufSize=pReceiveBox.size();
+	  rBuff[m]= new real [bufSize];
+      
+	  assert( pReceiveBox.processor>=0 && pReceiveBox.processor<np );
+      
+	  receiveBoxIndex[pReceiveBox.processor]=m;  // maps processor number to index in receiveBoxes
+	  if( debug!=0 )
+	  {
+	    fprintf(debugFile,">>> myid=%i: post a receive for buffer of size %5i from p=%i (m=%i,numReceive=%i) \n",
+		    myid,bufSize,pReceiveBox.processor,m,numReceive);
+	  }
+
+	  // --- Convert the tag associated with the receive box to the expected tag from the sender ---
+
+
+	
+	  int tag = pReceiveBox.tag, rtag;  
+	  convertTag(tag,rtag);
+
+	  // int d0,d1,d2,d3;
+	  // decodeTag(tag,d0,d1,d2,d3);
+	  // if( debug & 2 ) 
+	  //   fprintf(debugFile,"Decode tag=%d : [d0,d1,d2,d3]=[%2i,%2i,%2i,%2i]\n",tag,d0,d1,d2,d3);
+	  // // The received tag specifies the location [d0,d1,d2,d3] of the box in the sender's domain
+	  // // The corresponding location in my domain has negative values : [-d0,-d1,-d2,-d3]
+	  // encodeTag(rtag,-d0,-d1,-d2,-d3);
+	  if( debug  & 2 ) 
+	    fprintf(debugFile,"Encode tag=%d --> rtag=%d \n",tag,rtag);
+
+	  // int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source,
+	  //               int tag, MPI_Comm comm, MPI_Request *request)
+	  // MPI_Irecv(rBuff[m],bufSize,MPI_Real,pReceiveBox.processor,MPI_ANY_TAG,MPI_COMM_WORLD,&receiveRequest[m] );
+	  MPI_Irecv(rBuff[m],bufSize,MPI_Real,pReceiveBox.processor,rtag,MPI_COMM_WORLD,&receiveRequest[m] );
+      
+	}
+      }
+  
+      // Now send the data
+      const int numSend=sendBoxes.size();
+      MPI_Request *sendRequest=NULL;
+      real **sBuff=NULL;
+      if( numSend>0 )
+      {
+	// send data
+
+	sendRequest= new MPI_Request[numSend]; // remember to delete these
+	sBuff = new real* [numSend];
+    
+	for(int m=0; m<numSend; m++ )
+	{
+	  IndexBox & pSendBox = sendBoxes[m]; 
+	  int bufSize=pSendBox.size();
+	  sBuff[m]= new real [bufSize];
+//       for( int i=0; i<bufSize; i++ )
+//       {
+// 	sBuff[m][i]=i;
+//       }
+
+	  real *buff=sBuff[m];
+	  int i=0;
+	  FOR_BOX(i0,i1,i2,i3,pSendBox)
+	  {
+	    buff[i]=uLocal(i0,i1,i2,i3);  
+	    i++;
+	  }
+
+
+	  if( debug!=0 )
+	  {
+	    fprintf(debugFile,"<<< myid=%i: send buffer of size %5i (tag=%d) to p=%i\n",
+		    myid,bufSize,pSendBox.tag,pSendBox.processor);
+	  }
+      
+	  // int MPI_Isend(const void *buf, int count, MPI_Datatype datatype, int dest, int tag,
+	  //               MPI_Comm comm, MPI_Request * request)
+	  // MPI_Isend(sBuff[m],bufSize,MPI_Real,pSendBox.processor,bufSize,MPI_COMM_WORLD,&sendRequest[m] );
+	  MPI_Isend(sBuff[m],bufSize,MPI_Real,pSendBox.processor,pSendBox.tag,MPI_COMM_WORLD,&sendRequest[m] );
+	}
+      }
+
+      if( debug )  fflush(debugFile);
+
+      if( numReceive>0 )
+      {
+	MPI_Waitall( numReceive, receiveRequest, receiveStatus );  // wait to receive all messages
+  
+	for(int m=0; m<numReceive; m++  )
+	{
+	  // int bufSize=receiveStatus[m].MPI_TAG;
+	  int tag =receiveStatus[m].MPI_TAG;
+
+	  int p = receiveStatus[m].MPI_SOURCE;
+	  assert( p>=0 && p<np );
+      
+	  if( receiveStatus[m].MPI_ERROR !=0  ) 
+	  {
+	    fprintf(debugFile," Receive: m=%d, receiveStatus[m].MPI_ERROR=%d\n",m,(int)receiveStatus[m].MPI_ERROR);
+	    fflush(debugFile);
+	  }
+
+	  int rtag;  
+	  convertTag(tag,rtag);
+
+	  // int d0,d1,d2,d3;
+	  // decodeTag(tag,d0,d1,d2,d3);
+	  // if( debug & 2 ) 
+	  //   fprintf(debugFile,"Decode tag=%d : [d0,d1,d2,d3]=[%2i,%2i,%2i,%2i]\n",tag,d0,d1,d2,d3);
+	  // // The received tag specifies the location [d0,d1,d2,d3] of the box in the sender's domain
+	  // // The corresponding location in my domain has negative values : [-d0,-d1,-d2,-d3]
+	  // int rtag;
+	  // encodeTag(rtag,-d0,-d1,-d2,-d3);
+
+	  // int mybox = receiveMap[rtag];  // which receiveBox 
+	  int mybox = receiveMap.at(rtag);  // which receiveBox   (this version throws an exeception if rtag is not there)
+	  if( debug & 2  ) 
+	    fprintf(debugFile,"Encode tag=%d -> rtag=%d -> box number %d (from receiveMap[rtag]) \n",tag,rtag,mybox);
+
+	  if( debug & 2 )
+	  {
+	    IndexBox & rBox = receiveBoxes[mybox];
+	    int bufSize = rBox.size();
+	    fprintf(debugFile,">>> myid=%i: received buffer tag=%i from p=%i (mybox=%i,bufSize=%d, numReceive=%i)\n",
+		    myid,tag,p,mybox,bufSize,numReceive);
+	    for( int j=0; j<bufSize; j++ ) fprintf(debugFile,"%3.0f",rBuff[mybox][j]);
+	    fprintf(debugFile,"\n");
+	  }
+      
+	  // fill in the entries of vLocal
+	  // old: int n = receiveBoxIndex[p];
+	  int n = mybox;
+	  assert( n>=0 && n<numReceive );
+	  IndexBox & rBox = receiveBoxes[n];
+	  assert( rBox.processor==p );
+
+	  // assign vLocal(rBox) = rBuff[m][0...]
+	  const real *buff = rBuff[mybox];
+      
+	  int i=0;
+	  FOR_BOX(i0,i1,i2,i3,rBox)
+	  {
+	    uLocal(i0,i1,i2,i3)=buff[i]; 
+	    i++;
+	  }
+	}
+
+      }
+  
+//   if( debug & 2 )
+//   {
+//     ListOfIndexBox::iterator iter; 
+//     for(int m=0; iter = receiveBoxes.begin(); m++, iter!=receiveBoxes.end(); iter++ )
+//     {
+//       IndexBox & pReceiveBox = *iter;
+
+//       int bufSize=receiveStatus[m].MPI_TAG;
+
+//       fprintf(debugFile,"<- processor %i: received msg from processor %i, tag=%i p=%i values=",myID,
+// 	      receiveStatus[m].MPI_SOURCE,receiveStatus[m].MPI_TAG,p);
+//       for( j=0; j<nivd; j++ ) fprintf(debugFile,"%8.2e ",dbuff[p][j]);
+//       fprintf(debugFile,"\n");
+
+//       }
+//     }
+//   }
+
+
+
+
+      // wait to send messages before deleting buffers
+      if( numSend>0 )
+      {
+	if( debug!=0 )
+	{
+	  fprintf(debugFile,"+++ myid=%i: wait for all messges to be sent, numSend=%i\n",myid,numSend); 
+	  fflush(debugFile);
+	}
+
+	MPI_Status *sendStatus = new MPI_Status[numSend]; 
+	MPI_Waitall( numSend, sendRequest, sendStatus );   
+	delete [] sendStatus;
+      }
+
+      if( debug!=0 )
+      {
+	fprintf(debugFile,"+++ myid=%i: cleanup buffers...\n",myid); 
+	fflush(debugFile);
+      }
+
+  
+      for (int i=0; i<numReceive; i++ )
+      {
+	delete [] rBuff[i];
+      }
+      delete [] rBuff;
+      delete [] receiveStatus;
+      delete [] receiveRequest;
+      delete [] receiveBoxIndex;
+  
+      for (int i=0; i<numSend; i++ )
+      {
+	delete [] sBuff[i];
+      }
+      delete [] sBuff;
+      delete [] sendRequest;
+  
+
+      if( debugFile!=NULL )
+      {
+	fprintf(debugFile,"**** myid=%i finished updateGhostAndPeriodic ****\n",myid);
+	fflush(debugFile);
+      }
+
+      if( debug )
+      {
+	::display(uLocal,"uLocal (after)",debugFile,"%4.0f ");
+
+	::display(u,"u (after)","%4.0f ");
+      }
+    
+    }
+    ---- */
+    
+  }  // end old way 
+
+  Overture::finish();          
+  return 0;  
+
+}

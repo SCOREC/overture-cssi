@@ -36,7 +36,7 @@ main(int argc, char *argv[])
   Overture::start(argc,argv);
   // Use this to avoid un-necessary communication: 
   Optimization_Manager::setForceVSG_Update(Off);
-  const int myid=Communication_Manager::My_Process_Number;
+  const int myid = max(0,Communication_Manager::My_Process_Number);
 
   Overture::turnOnMemoryChecking(true);
 
@@ -406,6 +406,11 @@ main(int argc, char *argv[])
     solver.cgp=new CompositeGrid;
     CompositeGrid & cg = *solver.cgp;
     getFromADataBase(cg,solver.nameOfGridFile); // read in the grid with the default loadBalancer
+
+    if( Communication_Manager::Number_Of_Processors >1 )
+    { // display the parallel distribution
+      cg.displayDistribution("cgmx: after getFromADataBase",stdout);
+    }
 
   }
 

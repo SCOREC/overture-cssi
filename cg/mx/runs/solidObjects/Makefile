@@ -8,7 +8,9 @@ ogen = $(Overture)/bin/ogen
 # Note: grids need to be initially fine enough to handle corners
 grids:
 	$(ogen) -noplot solidObjectsGrid -interp=e -order=2 -factor=4 
+	$(ogen) -noplot solidObjectsGrid -interp=e -order=2 -factor=8 
 	$(ogen) -noplot solidObjectsGrid -interp=e -numGhost=3 -order=4 -factor=6
+	$(ogen) -noplot solidObjectsGrid -interp=e -numGhost=3 -order=4 -factor=8
 
 # to avoid negative volumes at order=4, start at factor=8 *fix me*
 rpiGrids:

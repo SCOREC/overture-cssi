@@ -17,13 +17,13 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
      PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C \
      buildSuperGrid.C SurfaceWaveExactSolution.C computeTimeStep.C SlabsExactSolution.C ComplexArray.C \
-     NonlinearExactSolution.C
+     NonlinearExactSolution.C CheckParallel.C getAugmentedSolution.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
 
 # C++ source files to be compiled optimized by default
-CSRCO += forcing.C divergence.C getInitialConditions.C getErrors.C computeIntensity.C getNorms.C
+CSRCO += forcing.C divergence.C getInitialConditions.C getErrors.C computeIntensity.C getNorms.C FourierTransform.C
 
 # advMxFiles: (always compile opt)
 # NOTE: gcc 4.4.7 has trouble with -O3 and advMx3dOrder4r.f
@@ -99,10 +99,15 @@ else
 endif
 
 # radiationFiles:
-SRC_FILES += RadiationKernel.C RadiationBoundaryCondition.C
-FSRCO +=  bcperq21.f bcperq31.f amcof.f bccyl.f gaussianIntegral.f radEval.f
+# SRC_FILES += RadiationKernel.C RadiationBoundaryCondition.C
+CSRCO += RadiationKernel.C RadiationBoundaryCondition.C
+FSRCO +=  radEval.f evalRadKernel.f 
+# FSRC +=  radEval.f evalRadKernel.f 
 # 3D versions:
-FSRCO +=  bcper3dq21.f dffti.f zffti.f dfftf.f zfftf.f zfftb.f dfftb.f 
+FSRCO +=  dffti.f zffti.f dfftf.f zfftf.f zfftb.f dfftb.f 
+
+# NOTE: These SHOULD BE COMPILE AUTO-DOUBLE !
+FSRCO += gaussianIntegral.f bcperq21.f bcperq31.f amcof.f bccyl.f bcper3dq21.f 
 
 
 # Optionally compile 6th and 8th order approximations (or null versions)
@@ -128,9 +133,11 @@ plot.C : forcing.h
 src/getInitialConditions.C : src/getInitialConditions.bC forcing.h annulusEigenFunction.h boxEigenFunction.h gaussianPulse.h polynomialTZ.h trigonometricTZ.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
 
 src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC forcing.h planeMaterialInterface.h annulusEigenFunction.h dispersionMacros.h; $(BPP) -quiet -clean $<
-src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.bC; $(BPP) -quiet -clean -I$(Overture)/include $<
+src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.bC getLocalInterfaceArraysMacro.h ; $(BPP) -quiet -clean -I$(Overture)/include $<
 
 src/getErrors.C : src/getErrors.bC forcing.h annulusEigenFunction.h boxEigenFunction.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
+
+src/getAugmentedSolution.C : src/getAugmentedSolution.bC; $(BPP) -quiet -clean $<
 
 src/getNorms.C : src/getNorms.bC; $(BPP) -quiet -clean $<
 
@@ -149,6 +156,9 @@ src/SurfaceWaveExactSolution.C : src/SurfaceWaveExactSolution.bC; $(BPP) -quiet 
 
 src/NonlinearExactSolution.C : src/NonlinearExactSolution.bC; $(BPP) -quiet -clean $<
 
+src/trad.C : src/trad.bC; $(BPP) -quiet -clean $<
+
+src/CheckParallel.C : src/CheckParallel.bC; $(BPP) -quiet -clean $<
 
 
 src/evalDispersionRelation.f : src/evalDispersionRelation.bf; $(BPP) -quiet -clean $<
@@ -335,6 +345,9 @@ src/scatSphere.f: src/scatSphere.bf
 # evaluate the radiation BC's
 src/radEval.f: src/radEval.bf
 	       @cd src; $(BPP) -clean -quiet -I$(Overture)/include radEval.bf
+
+src/evalRadKernel.f: src/evalRadKernel.bf
+	       @cd src; $(BPP) -clean -quiet -I$(Overture)/include evalRadKernel.bf
 
 src/nrbcUtil.f: src/nrbcUtil.bf 
 	   @cd src; $(BPP) -clean -quiet -I$(Overture)/include nrbcUtil.bf

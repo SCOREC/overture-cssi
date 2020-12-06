@@ -87,27 +87,57 @@ libCommon:=$(CGBUILDPREFIX)common/libCgCommon
 PETSC_FILES_OBJ := $(addprefix $(OBJPREFIX),$(PETSC_FILES))
 CGMX_EXTRA_FILES = $(PETSC_FILES_OBJ)
 
+fftmpi:
+	-@echo "USE_FFTMPI = $(USE_FFTMPI)"
+
+# For parallel FFTs you should "setenv USE_FFTMPI" 
+ifneq ($(USE_FFTMPI),)
+  # Note: if you change the version of fftmpi, recompile FourierTransform.o 
+
+  # For now this is where fftmpi is found:
+  ifeq ( $(USE_FFTMPI),KISS )
+    # Version of fftMPI using KISS FFT: 
+    FFTDIR = /home/henshw/software/fftmpi-1Oct18
+  else 
+    # Version of fftMPI using FFTW:
+    FFTDIR = /home/henshw/software/fftmpiFFTW
+    FFT1D = -L/home/henshw/software/fftw-3.3.8/lib -lfftw3
+  endif 
+
+  FFT_INC =       -DUSE_FFTMPI -I$(FFTDIR)/src
+  FFT_PATH =      -L$(FFTDIR)/src
+  FFT2D_LIB =   -Wl,-rpath,$(FFTDIR)/src $(FFT_PATH) -lfft2dmpi $(FFT1D)
+  FFT3D_LIB =   -Wl,-rpath,$(FFTDIR)/src $(FFT_PATH) -lfft3dmpi $(FFT1D)
+endif 
+
+$(OBJDIR)FourierTransform.o: ./src/FourierTransform.C; $(CXX) $(CXX_FLAGSO) $(FFT_INC) -o $(OBJDIR)$*.o -c $<
+
+
 # $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) src/dbAccess.C
 $(BINDIR)cgmx: $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(libCommon)
 	-@mkdir -p $(BINDIR)
-	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
+	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(OBJALL) $(CGMX_EXTRA_FILES)  $(FFT2D_LIB) $(FFT3D_LIB) $(LIBS)
 
 #	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmx.o $(CGMX) $(OBJALL) $(CGMX_EXTRA_FILES) $(LIBS)
 
 
 # test program to read a Dispersive Material File
 TESTS += $(BINDIR)trdmf
-
-
 tr: $(OBJDIR)trdmf.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o \
         $(OBJDIR)PlaneWaveExactSolution.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)trdmf $(OBJDIR)trdmf.o $(OBJALL) $(LIBS)
 
 # Test program for exact solutions
 TESTS += $(BINDIR)texact
-
 texact: $(OBJDIR)texact.o $(OBJDIR)SphereExactSolutions.o $(OBJDIR)scatSphere.o $(OBJDIR)PlaneInterfaceExactSolution.o $(OBJDIR)evalDispersionRelation.o $(OBJDIR)DispersiveMaterialParameters.o $(OBJDIR)BAMaterialFunctions.o $(OBJDIR)BAPlaneInterface.o $(OBJDIR)SlabsExactSolution.o $(OBJDIR)ComplexArray.o
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)texact $(OBJDIR)texact.o $(OBJALL) $(LIBS)
+
+# Test program for non-local radiation BC
+TESTS += $(BINDIR)trad
+# trad: $(OBJDIR)trad.o $(OBJDIR)RadiationBoundaryCondition.o $(OBJDIR)RadiationKernel.o $(OBJDIR)gaussianIntegral.o $(OBJDIR)FourierTransform1.o $(OBJDIR)FourierTransform.o 
+trad: $(OBJDIR)trad.o $(OBJDIR)RadiationBoundaryCondition.o $(OBJDIR)RadiationKernel.o $(OBJDIR)gaussianIntegral.o $(OBJDIR)FourierTransform.o 
+	$(CXX) $(CXX_FLAGS) -o $(BINDIR)trad $(OBJDIR)trad.o $(OBJALL) $(LIBS) $(FFT2D_LIB) $(FFT3D_LIB)
+
 
 
 # tb: $(OBJDIR)tbm.o $(OBJDIR)DispersiveMaterialParameters.o

@@ -5,7 +5,7 @@ dispersiveModel="GDM";
 # With normalized units we do not adjust the GDM parameters by a frequency scale
 units="normalized";
 #
-bianistropicK0=[1.,0.,0.,0.,0.,0., \
+bianistropicK0=[2.,0.,0.,0.,0.,0., \
                 0.,1.,0.,0.,0.,0., \
                 0.,0.,1.,0.,0.,0., \
                 0.,0.,0.,1.,0.,0., \

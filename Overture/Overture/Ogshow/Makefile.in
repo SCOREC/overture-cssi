@@ -50,7 +50,8 @@ Ogshow_f_date: ${SourceF:.f=.o}
 
 # Here are the files that Bill always likes to optimize -- 
 filesOpt = grid3d.C contourOpt.C plotMapping.C gridOpt.C contour3dOpt.C streamLinesOpt.C plotUnstructured.C \
-           GridStatistics.C ParallelUtility.C CopyArray.C ParallelGridUtility.C getLocalInterpolationData.C
+           GridStatistics.C ParallelUtility.C CopyArray.C ParallelGridUtility.C getLocalInterpolationData.C \
+           GhostBoundaryUpdate.o
 Ogshow_Opt_date: ${filesOpt:.C=.o}
 	  touch $@
 
@@ -66,6 +67,7 @@ ParallelUtility.o :           ${@:.o=.C}; $(CC) $(CCFLAGSF) -c ${@:.o=.C}
 CopyArray.o :                 ${@:.o=.C}; $(CC) $(CCFLAGSF) -c ${@:.o=.C}
 ParallelGridUtility.o :       ${@:.o=.C}; $(CC) $(CCFLAGSF) -c ${@:.o=.C}
 getLocalInterpolationData.o : ${@:.o=.C}; $(CC) $(CCFLAGSF) -c ${@:.o=.C}
+GhostBoundaryUpdate.o :       ${@:.o=.C}; $(CC) $(CCFLAGSF) -c ${@:.o=.C}
 
 
 

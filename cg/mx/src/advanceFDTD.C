@@ -445,10 +445,10 @@ getValuesFDTD(int option, int *iparam, int current, real t, real dt, realComposi
   }
   if( option==2 )
   {
-    divEMax=getMaxValue(divEMax);
-    divHMax=getMaxValue(divHMax);
-    gradEMax=getMaxValue(gradEMax);
-    gradHMax=getMaxValue(gradHMax);
+    divEMax =ParallelUtility::getMaxValue(divEMax);
+    divHMax =ParallelUtility::getMaxValue(divHMax);
+    gradEMax=ParallelUtility::getMaxValue(gradEMax);
+    gradHMax=ParallelUtility::getMaxValue(gradHMax);
     
   }
   

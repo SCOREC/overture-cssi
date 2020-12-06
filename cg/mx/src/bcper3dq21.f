@@ -163,6 +163,13 @@ c
             end do
           end if
 	end do
+        if( .false. )then
+          write(*,*) "Stage 1: After initial FFTs, zl:"
+          do k2=1,n2
+            write(*, "(*('('sf7.3xspf7.3x'i)':x))") (zl(k1,k2),k1=1,n1)
+          end do
+        end if
+      
 	do k1=1,n1
 	  do k2=1,n2
 	    zl2(k2)=zl(k1,k2)
@@ -172,6 +179,14 @@ c
             zl(k1,k2)=zl2(k2)
           end do   
         end do
+        if( .false. )then
+          write(*,*) "Stage 1: After 2nd FFTs, zl:"
+          do k2=1,n2
+            write(*, "(*('('sf7.3xspf7.3x'i)':x))") (zl(k1,k2),k1=1,n1)
+          end do
+        end if
+
+        
         do j=1,21
           do k2=1,n2
             if (k2.le.(md2+1)) then

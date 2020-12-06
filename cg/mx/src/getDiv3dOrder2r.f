@@ -1149,7 +1149,6 @@ c===============================================================================
        vlaplacian43r(i1,i2,i3,kd)=vxx43r(i1,i2,i3,kd)+vyy43r(i1,i2,i3,
      & kd)+vzz43r(i1,i2,i3,kd)
       !...........end   statement functions
-       debug=0
        dx(0) =rpar(0)
        dx(1) =rpar(1)
        dx(2) =rpar(2)
@@ -1176,7 +1175,8 @@ c===============================================================================
        grid               =ipar(11)
        solveForAllFields  =ipar(12)
        numberOfMaterialRegions = ipar(13)
-       if( t.le.2*dt )then
+       debug              =ipar(14)
+       if( t.le.2*dt .and. debug.gt.0 )then
          write(*,*) 'Inside getDiv3dOrder2r...'
          write(*,'("solveForAllFields=",i2)') solveForAllFields
          write(*,'("dispersionModel=",i2)') dispersionModel
@@ -1240,9 +1240,11 @@ c===============================================================================
          end if
          if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
            ! ---- Dispersive Maxwell ----
-           write(*,'("--getDiv-- dispersionModel=",i4," 
+           if( debug.gt.1 )then
+             write(*,'("--getDiv-- dispersionModel=",i4," 
      & numPolarizationTerms=",i6)') dispersionModel,
      & numPolarizationTerms
+           end if
            if( .false. )then
             do mr=0,numberOfMaterialRegions-1
               write(*,'("BA-GDM: material region mr=",i2)') mr
@@ -1264,7 +1266,8 @@ c===============================================================================
           ! stop 3333
         end if
        end if
-       if( t.eq.0. .and. dispersionModel.ne.noDispersion )then
+       if( t.eq.0. .and. dispersionModel.ne.noDispersion .and. debug>1 
+     & )then
           write(*,'("--getDiv-- dispersionModel=",i4)') dispersionModel
        end if
         ! We need to evaluate D and B at extra points so that we can take the divergence
