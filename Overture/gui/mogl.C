@@ -5755,7 +5755,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, int number )
 {
   if( widgetType==optionMenuWidget )
   {
-    if( number>=0 && number<n_optionMenu  && opMenuData!=NULL )
+    if( number>=0 && number<n_optionMenu  )
     {
       opMenuData[number].setSensitive(trueOrFalse);
 //        opMenuData[number].sensitive=trueOrFalse;
@@ -5765,7 +5765,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, int number )
   }
   else if( widgetType==pullDownWidget )
   {
-    if( number>=0 && number<n_pullDownMenu  && pdMenuData!=NULL )
+    if( number>=0 && number<n_pullDownMenu )
     {
       pdMenuData[number].sensitive=trueOrFalse;
       if( pdMenuData[number].menupane!=NULL )
@@ -5803,7 +5803,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, int number )
   }
   else if( widgetType==radioBoxWidget )
   {
-    if( number>=0 && number<n_radioBoxes  && radioBoxData!=NULL )
+    if( number>=0 && number<n_radioBoxes  )
     {
       radioBoxData[number].setSensitive(trueOrFalse);
     }
@@ -5885,7 +5885,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, const aString & label)
 	for( i=0; i<n_pullDownMenu; i++ )
 	  printf("[%s]\n",(const char*)pdMenuData[i].menuTitle.c_str());
       }
-      if( number>=0 && number<n_pullDownMenu  && pdMenuData!=NULL )
+      if( number>=0 && number<n_pullDownMenu  )
       {
 	pdMenuData[number].sensitive=trueOrFalse;
 	if( pdMenuData[number].menupane!=NULL )
@@ -5982,7 +5982,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, const aString & label)
   }
   else if( widgetType==radioBoxWidget )
   {
-    if( radioBoxData!=NULL )
+    if( true ) // radioBoxData!=NULL )
     {
       for( i=0; i<n_radioBoxes; i++ )
       {
@@ -5999,7 +5999,7 @@ setSensitive(bool trueOrFalse, WidgetTypeEnum widgetType, const aString & label)
 	for( i=0; i<n_radioBoxes; i++ )
 	  printf("[%s]\n",(const char*)radioBoxData[i].radioLabel.c_str());
       }
-      if( number>=0 && number<n_radioBoxes  && radioBoxData!=NULL )
+      if( number>=0 && number<n_radioBoxes )
       {
 	radioBoxData[number].setSensitive(trueOrFalse);
       }

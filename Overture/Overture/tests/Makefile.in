@@ -38,8 +38,10 @@ paperplane : $(paperplane)
 # This example assumes that the PETSC_DIR environmental variable is defined and that
 # PETSc was compiled with it's own implementation of mpi (mpiuni)
 
-# for version 2.3.2
-PETSC_INCLUDE = -DOVERTURE_USE_PETSC -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) -I$(PETSC_DIR)/include/mpiuni
+# If you have PETSc then: 
+#   setenv OvertureUsePETSc "-DOVERTURE_USE_PETSC"
+PETSC_INCLUDE = $(OvertureUsePETSc) -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) -I$(PETSC_DIR)/include/mpiuni
+## PETSC_INCLUDE = -DOVERTURE_USE_PETSC -I$(PETSC_DIR)/include -I$(PETSC_DIR)/bmake/$(PETSC_ARCH) -I$(PETSC_DIR)/include/mpiuni
 usePPP = $(USE_PPP_FLAG)
 ifneq ($(strip $(usePPP)),)
   # serial version
@@ -69,7 +71,7 @@ PETScSolver.o : $(Oges)/PETScSolver.C
 
 # For parallel tcm3 needs to be compiled with -DOVERTURE_USE_PETSC
 tcm3.o : tcm3.C
-	$(CC) $(CCFLAGSP) -DOVERTURE_USE_PETSC -c tcm3.C
+	$(CC) $(CCFLAGSP) $(OvertureUsePETSc) -c tcm3.C
 
 # Parallel tcm3 example: 
 # mpirun -np 2 tcm3 square20.hdf -solver=petsc -dirichlet

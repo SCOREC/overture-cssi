@@ -89,7 +89,7 @@ main(int argc, char **argv)
     cin >> debug;  
 --- */
 
-    real cutOff = (REAL_EPSILON == DBL_EPSILON) && !useSinglePrecisionTolerance ) ? 5.e-12 : 2.e-3;  // *wdh* 030112
+    real cutOff = (REAL_EPSILON == DBL_EPSILON) && !useSinglePrecisionTolerance ? 5.e-12 : 2.e-3;  // *wdh* DEc 5, 2020
 
     printF(" **** setting cutOff tolerance = %8.2e\n",cutOff);
     
