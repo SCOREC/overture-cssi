@@ -63,7 +63,7 @@ main(int argc, char **argv)
       	tz=0;
             else if( line.matches("-sp") )
       	useSinglePrecisionTolerance=true;
-            else if( len=line.matches("-degree=") )
+            else if( (len=line.matches("-degree=")) )
             {
                 sScanF(line(len,line.length()-1),"%i",&degreeSpace);
       	printf("Setting degreeSpace=%i for polynomial TZ\n",degreeSpace);
