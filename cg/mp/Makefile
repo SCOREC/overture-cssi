@@ -103,13 +103,13 @@ CGMP_EXTRA_FILES = $(PETSC_FILES_OBJ)
 libCommon:=$(CGBUILDPREFIX)common/libCgCommon
 
 $(BINDIR)cgmp: $(OBJDIR)cgmpMain.o $(LIB_OBJS) $(CGMP_EXTRA_FILES) SOLVER_LIBS $(libCommon)
-	-@mkdir $(BINDIR)
+	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgmpMain.o $(CGMP) $(LIB_OBJS) $(CGMP_EXTRA_FILES) $(LIBS)
 
 # Here is the test routine for multi-physics and multi-domain problems
 MPOBJ = 
 mp: $(OBJDIR)mp.o $(MPOBJ)
-	-@mkdir $(BINDIR)
+	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $(BINDIR)$@ $(OBJDIR)mp.o  $(MPOBJ) $(LIBS)
 
 # build the library in cg/common
@@ -129,7 +129,7 @@ $(BINDIR) $(LIBDIR) $(DEPDIR) $(OBJDIR):
 	@-mkdir -p $@
 
 doc:
-	-@mkdir doc
+	-@mkdir -p doc
 
 check: 
 

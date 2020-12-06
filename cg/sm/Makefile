@@ -117,7 +117,7 @@ PETSC_FILES_OBJ := $(addprefix $(OBJPREFIX),$(PETSC_FILES))
 CGSM_EXTRA_FILES = $(PETSC_FILES_OBJ)
 
 $(BINDIR)cgsm: $(SHARED_LIBRARY) $(OBJDIR)cgsmMain.o $(CGSM_EXTRA_FILES) $(libCommon)
-	-@mkdir $(BINDIR)
+	-@mkdir -p $(BINDIR)
 	$(CXX) $(CXX_FLAGS) -o $@ $(OBJDIR)cgsmMain.o $(CGSM) $(CGSM_EXTRA_FILES) $(LIBS)
 
 
