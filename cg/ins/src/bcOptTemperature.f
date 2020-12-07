@@ -208,7 +208,8 @@ c To include derivatives of rx use OPTION=RX
       parameter(rectangular=0,curvilinear=1)
 
       ! Temperature boundary conditions:
-      integer tbc(2,3)
+      ! *wdh* Dec 6, 2020 integer tbc(2,3)
+      integer tbc(0:1,0:2)
       integer dirichlet,neumann,extrapolate,evenSymmetry
       parameter( dirichlet=1, neumann=2, extrapolate=3, evenSymmetry=4 
      &  )
