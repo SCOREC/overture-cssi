@@ -1469,7 +1469,8 @@ initializePlaneMaterialInterface()
 #beginMacro setGaussianPlaneWaveInitialConditions()
 {
   // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
-  printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
+  if( debug & 2 )
+    printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
                 kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave);
     
   realSerialArray xei,xhi;
@@ -2484,7 +2485,8 @@ assignInitialConditions(int current, real t, real dt )
 	}
 	else if( initialConditionOption==planeWaveScatteredFieldInitialCondition )
 	{
-	  printF("Setting initial conditions to be planeWaveScatterFieldInitialCondition. dt=%14.6e\n",dt);
+          if( debug & 1 )
+ 	    printF("Setting initial conditions to be planeWaveScatterFieldInitialCondition. dt=%14.6e\n",dt);
 	  if( debug & 2 ) fPrintF(debugFile,
 				  "Setting initial conditions to be planeWaveScatterFieldInitialCondition. dt=%14.6e\n",dt);
 

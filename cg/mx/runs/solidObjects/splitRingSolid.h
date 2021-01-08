@@ -20,6 +20,15 @@
 #
 #
 #
+# Optional input:
+#   $numPointsPerSegment = number of extra points per segment (default=3) increase to make sharper corners
+#   $arcLengthScaleFactor : scale arcLenght by this value for computing number of grid point default =1
+#   $numRadial :  number of point in radial direction is $numRadial + $order/2  (default=6)
+#
+# number of control points per segment -- increase to make corners sharper: 
+if( $numPointsPerSegment eq "" ){ $numPerSegment=3; }else{ $numPerSegment=$numPointsPerSegment;}   # 
+if( $arcLengthScaleFactor eq "" ){ $arcLengthScaleFactor=1; };
+if( $numRadial eq "" ){ $nr0=6; }else{ $nr0=$numRadial;}   # 
 #
 $degree=3;  # degree of Nurbs 
 $H=.5; $W=.5; $w=.2; $d=.2;
@@ -27,7 +36,7 @@ $H=.5; $W=.5; $w=.2; $d=.2;
 $numberOfVolumeSmooths=20;
 #
 $nc=14;  # number of control points 
-$numPerSegment=3; # number of control points per segment -- increase to make corners sharper
+# $numPerSegment=3; # number of control points per segment -- increase to make corners sharper
 #
     $x1 =-$W;    $y1 =0;
     $x2 = $x1;   $y2 =-$H;
@@ -87,14 +96,14 @@ exit
 # 
 # -- Make a hyperbolic grid (OUTSIDE) --
 #
-  $nr = intmg( 6 + $order/2 );
+  $nr = intmg( $nr0 + $order/2 );
   hyperbolic
     forward
     $nDist=($nr-2.5)*$ds;
     distance to march $nDist
     $nrm=$nr-1; 
     lines to march $nrm
-    $nTheta = int($arcLength/$ds+1.5);
+    $nTheta = int($arcLengthScaleFactor*$arcLength/$ds+1.5);
     points on initial curve $nTheta
     uniform dissipation 0.075
     volume smooths $numberOfVolumeSmooths
@@ -113,14 +122,14 @@ exit
   exit
 # -- Make a hyperbolic grid (INSIDE) --
 #
-  $nr = intmg( 5 + $order/2 );
+  $nr = intmg( $nr0-1 + $order/2 );
   hyperbolic
     backward
     $nDist=($nr-3)*$ds;
     distance to march $nDist
     $nrm=$nr-1; 
     lines to march $nrm
-    $nTheta = int($arcLength/$ds+1.5);
+    # $nTheta = int($arcLengthScaleFactor*$arcLength/$ds+1.5);
     points on initial curve $nTheta
     uniform dissipation 0.05
     volume smooths $numberOfVolumeSmooths

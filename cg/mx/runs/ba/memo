@@ -5,6 +5,50 @@ WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=
 
 
 *****************************************
+******* Mon Dec 14, 2020 
+
+THREE-D: box3de8.order2 
+
+cgmx -noplot baScat.cmd -g=box3de16.order2 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=3 -xWidth=.25 -yWidth=.25 -zWidth=.25 -xc=-.5 -yc=-.375 -zc=-.375 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=-.75 -beta=400 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -useSuperGrid=1 -superGridWidth=.1 -rbc=absorbing -flushFrequency=2 -show=baBox27G16.show -go=go > baBox27G16.out 
+
+
+
+cgmx -noplot baScat.cmd -g=box3de8.order2 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=3 -xWidth=.25 -yWidth=.25 -zWidth=.25 -xc=-.5 -yc=-.375 -zc=-.375 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=-.75 -beta=400 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -useSuperGrid=1 -superGridWidth=.1 -rbc=absorbing -go=og
+
+
+cgmx -noplot baScat.cmd -g=square512.order4.ng3 -method=bamx -numMatRegions=10 -nx=6 -ny=6 -nz=1 -xWidth=.1 -yWidth=.1 -xc=.2 -yc=.2 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=400 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+cgmx -noplot baScat.cmd -g=square256.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=1 -xWidth=.2 -yWidth=.2 -xc=.2 -yc=.2 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=400 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+cgmx -noplot baScat.cmd -g=square256.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=2 -nz=1 -xWidth=.2 -yWidth=.3 -xc=.2 -yc=.2 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=400 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+
+cgmx -noplot baScat.cmd -g=square256.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=400 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+
+*****************************************
+******* Sun Dec 13, 2020 
+
+
+START ON BA FOR DARPA CLOSE-OUT DEMO -> many sub-regions with different parameter
+
+MAKE A MATERIAL CONFIG FILE 
+
+
+*NEW* boxRegionArray.h 
+cgmx -noplot baScat.cmd -g=square256.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=400 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=200 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
+
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=5 -nx=2 $ny=2 $nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og
+
+
+
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og
+
+
+
+*****************************************
 ******* Thurs Dec 3, 2020 
 
 

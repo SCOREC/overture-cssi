@@ -669,8 +669,9 @@ cutHolesNew(CompositeGrid & cg)
 
                   // periodVector2[dir]=g2.mapping().getMapping().getPeriodVector(dir,dir);
                                     g2.mapping().getMapping().getPeriodVector( dir,periodVector2[dir] );
-                                    printF(" grid2=%i dir=%i isDerivativePeriodic: periodVector2[dir]=(%g,%g,%g) (period-vector)\n",
-                                                  grid2,dir,periodVector2[dir][0],periodVector2[dir][1],periodVector2[dir][2]);
+                                    if( debug & 2 )
+                                        printF(" grid2=%i dir=%i isDerivativePeriodic: periodVector2[dir]=(%g,%g,%g) (period-vector)\n",
+                                                      grid2,dir,periodVector2[dir][0],periodVector2[dir][1],periodVector2[dir][2]);
 
                                     assert( fabs(periodVector2[dir][0]) + 
                                                     fabs(periodVector2[dir][1]) + 

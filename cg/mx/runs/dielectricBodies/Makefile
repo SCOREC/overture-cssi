@@ -244,6 +244,9 @@ pillbox:
 	$(ogen) -noplot solidPillBoxGrid.cmd -interp=e -factor=4 
 
 
+ellipsoidGrids:
+	$(ogen) -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.375 -b=.4 -c=.5 -factor=4
+
 
 
 # Probe runs

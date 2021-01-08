@@ -1,3 +1,11 @@
+***************************
+******* Tues Jan 5, 2021
+
+cgmx -noplot tz -g=square16.order4 -tz=poly -degreex=4 -degreet=4 -diss=0 -method=nfdtd -bc=d -tp=.1 -tf=1 -go=og
+
+
+
+
 cgmx -noplot tz -g=nonSquare8.order2 -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
 
 

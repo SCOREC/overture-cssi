@@ -22,6 +22,7 @@
 #   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p0 -eMax=.9 -solution=11
 #   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p2 -eMax=.9 -solution=13
 #   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p5 -eMax=.9 -solution=16
+#
 # 
 $show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $eMin=0; $eMax=0; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals

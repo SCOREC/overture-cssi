@@ -1262,7 +1262,7 @@ computeDerivedFunctions( realCompositeGridFunction & u )
 	}
 	else
      	{
-          printF("++++ DerivedFunctions: eFieldNorm includes ex,ey, and ez.\n");
+          // printF("++++ DerivedFunctions: eFieldNorm includes ex,ey, and ez.\n");
 	  v(I1,I2,I3,j)=sqrt( SQR(v(I1,I2,I3,ex))+SQR(v(I1,I2,I3,ey))+SQR(v(I1,I2,I3,ez)) );
 	}
       }

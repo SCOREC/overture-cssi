@@ -70,7 +70,8 @@ CC_FLAGS_FIXFP = -ffloat-store -mno-sse -mno-sse2
 
 ## *wdh* 2014/08/23 FC_FLAGS_REQ = -fpic $(OV_AUTO_DOUBLE_FLAGS) $(OV_FORTRAN_FLAGS) -fno-common  -fdefault-double-8
 ## *wdh* 2020/11/05 add -fallow-argument-mismatch
-FC_FLAGS_REQ = -fpic $(OV_AUTO_DOUBLE_FLAGS) $(OV_FORTRAN_FLAGS) -fdefault-double-8 -fallow-argument-mismatch
+## *wdh* 2020/11/08  allow unlimited length lines for f90 
+FC_FLAGS_REQ = -fpic $(OV_AUTO_DOUBLE_FLAGS) $(OV_FORTRAN_FLAGS) -fdefault-double-8 -fallow-argument-mismatch  -ffree-line-length-none
 # FC_FLAGS_DBG = -g -fbounds-check 
 ifneq ($(FC),fort77)
   FC_FLAGS_DBG = -g 

@@ -1043,21 +1043,22 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
       getChargeDensity( current,t,v,nRho );
     }
 
-    // **New way **
-    if( method==nfdtd  || method==sosup || method==bamx )
+
+  }  // end for grid 
+   
+  // Moved outside grid loop ! *wdh* Dec 13, 2020
+  if( method==nfdtd  || method==sosup || method==bamx )
+  {
+    // printF(" $$$$ plot: call getMaxDivergence $$$$\n");
+
+    if( plotDivergence )
     {
-      // printF(" $$$$ plot: call getMaxDivergence $$$$\n");
-
-      if( plotDivergence )
-      {
-	getMaxDivergence( current,t, &v,nDivE, &v,nRho);
-      }
-      else
-      {
-	getMaxDivergence( current,t );
-      }   
+      getMaxDivergence( current,t, &v,nDivE, &v,nRho);
     }
-
+    else
+    {
+      getMaxDivergence( current,t );
+    }   
   }
 
   if( plotDivergence && mgp==NULL ) 

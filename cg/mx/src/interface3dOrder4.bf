@@ -5015,7 +5015,7 @@ end do
         ! ***** 3D fourth-order curvilinear case *****
         ! ********************************************
 
-        if( t.lt.3*dt )then
+        if( t.lt.3*dt .and. debug.gt.2 )then
           write(*,'("interface3d : *NEW* order 4 with centered approx for 2nd ghost t=",e10.2)') t
         end if
 

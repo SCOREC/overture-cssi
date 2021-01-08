@@ -13,6 +13,7 @@
 #include "ParallelGridUtility.h"
 #include "DispersiveMaterialParameters.h"
 #include "CheckParallel.h"
+#include "InterfaceMaxwell.h"
 
 #define interfaceMaxwell EXTERN_C_NAME(interfacemaxwell)
 #define newInterfaceMaxwell EXTERN_C_NAME(newinterfacemaxwell)
@@ -382,6 +383,23 @@ initializeInterfaces()
 		      {
 			printF("       ERROR: the mask arrays do not match on the interface. This is currently required.\n");
 			printF("       Try re-generating the grid with more lines in the normal direction, this sometimes fixes this problem.\n");
+			printF("       See debug file for more info if debug &2 \n");
+                        if( debug & 2 )
+                        {
+                          displayMask(mask1Local(I1,I2,I3),"mask1Local(I1,I2,I3)",pDebugFile);
+                          displayMask(mask2Local(J1,J2,J3),"mask2Local(J1,J2,J3)",pDebugFile);
+                          IntegerArray md(I1,I2,I3);
+                          md = ( (mask1Local(I1,I2,I3) & MappedGrid::ISdiscretizationPoint) -
+                                 (mask2Local(J1,J2,J3) & MappedGrid::ISdiscretizationPoint) );
+                          where( md>0 )
+                          {
+                            md=1;
+                          }
+                          
+                         ::display(md,"difference)",pDebugFile,"%2i ");
+
+                          fprintf(pDebugFile,"       INFO: interface grid points match: mask arrays agree on the interface.\n\n");
+                        }
 			OV_ABORT("ERROR");
 		      }
 		      else
@@ -520,7 +538,9 @@ initializeInterfaces()
     interface.rwk = new real [nrwk];
     niwk=max(1,niwk);
     interface.iwk = new int [niwk];
-    printF("**** Maxwell::initializeInterfaces: interface %i allocate rwk[%i], iwk[%i] ****\n",inter,nrwk,niwk);
+
+    if( false )
+      printF("**** Maxwell::initializeInterfaces: interface %i allocate rwk[%i], iwk[%i] ****\n",inter,nrwk,niwk);
 		  
   }
   
@@ -830,6 +850,17 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
     initializeInterfaces();
     if( interfaceInfo.size()==0 )
       gridHasMaterialInterfaces=false;  // there are no material interfaces *wdh* 090425
+
+    
+
+    if( false )
+    {
+      // *** TESTING ***
+      // Here is the new class for assigning interfaces 
+      InterfaceMaxwell interfaceMaxwell(*this);
+      interfaceMaxwell.computeStencilCoefficients( current, t, dt);
+    }
+    
   }
 		    
 

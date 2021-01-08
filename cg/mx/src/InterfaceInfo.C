@@ -51,7 +51,8 @@ InterfaceInfo::
 InterfaceInfo(const InterfaceInfo& x)
 // copy constructor
 {
-  printF("+++ Inside InterfaceInfo copy constructor +++\n");
+  if( false )
+    printF("+++ Inside InterfaceInfo copy constructor +++\n");
 
   // grid1=-1; side1=-1; dir1=-1;
   // grid2=-1; side2=-1; dir2=-1;
@@ -82,7 +83,8 @@ InterfaceInfo(const InterfaceInfo& x)
 InterfaceInfo& InterfaceInfo::
 operator=( const InterfaceInfo& x)
 {
-  printF("+++ Inside InterfaceInfo operator= +++\n");
+  if( false )
+    printF("+++ Inside InterfaceInfo operator= +++\n");
 
   grid1=x.grid1;
   side1=x.side1;
@@ -121,7 +123,8 @@ InterfaceInfo::
 ~InterfaceInfo()
 {
 
-  printF("+++ Inside InterfaceInfo destructor+++\n");
+  if( false )
+    printF("+++ Inside InterfaceInfo destructor+++\n");
   
   delete [] rwk;
   delete [] iwk;

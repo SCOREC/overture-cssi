@@ -1,5 +1,5 @@
 #
-# Define a 4 box material region for the BA MX solver
+# Define a 6 box material region for the BA MX solver
 # 
 forcing options...
 define material region...

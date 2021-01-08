@@ -1461,10 +1461,13 @@ plotGrid(GenericGraphicsInterface &gi, GridCollection & gc,
 
   bool plotNegativeVolumes = false;
 
-// AP: Not relevant anymore  axesOrigin[currentWindow] = psp.axesOrigin;
 
   bool plotGrid=TRUE;
   
+  // we keep track of certain messages and stop printing them if there are too many: 
+  int numSetColourMessages=0;
+  int numChooseColoursMessages=0;
+
   gi.setKeepAspectRatio(psp.keepAspectRatio); 
 
 //  if( numberOfGhostLinesToPlot> 0 )
@@ -3309,8 +3312,13 @@ plotGrid(GenericGraphicsInterface &gi, GridCollection & gc,
 //      }
     else if( answer.matches("grid colour") || answer.matches("grid boundary colour (side,axis,grid,colour):") )
     {
-      gi.outputString("Choose colours for grid. Select `colour grids by chosen name' to use these colours");
-
+      
+      if( numChooseColoursMessages < 3 )
+      {
+        numChooseColoursMessages++;
+        gi.outputString("Choose colours for grid. Select `colour grids by chosen name' to use these colours");
+      }
+      
       boundaryColourOption=GraphicsParameters::colourByIndex;
       dialog.getOptionMenu(0).setCurrentChoice(2);
 
@@ -3342,8 +3350,18 @@ plotGrid(GenericGraphicsInterface &gi, GridCollection & gc,
 	printF(" ERROR: colour=[%s] not recognized! using blue instead\n",(const char*)colour);
 	index=getXColour("blue");
       }
-      printF(" Setting grid=%i colour=%s (X colour index=%i)\n",grid,(const char*)colour,index);
-
+      
+      if( numSetColourMessages < 5 )
+      {
+        numSetColourMessages++;
+        printF(" Setting grid=%i colour=%s (X colour index=%i)\n",grid,(const char*)colour,index);
+      }
+      else if( numSetColourMessages==5 )
+      {
+        numSetColourMessages++;
+        printF("Too many Setting grid colours ... not printing any more.\n");
+      }
+      
       if( grid<-1 || grid>=gc.numberOfComponentGrids() )
       {
 	printF("Invalid grid = %i. Should be -1 for all or between 0...%i\n",grid,gc.numberOfComponentGrids()-1);

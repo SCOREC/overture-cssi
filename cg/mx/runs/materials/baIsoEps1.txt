@@ -1,5 +1,5 @@
 # BA material file for an eps=1 material 
-name="matIsoEps2";
+name="matIsoEps1";
 materialType="bianisotropic";
 dispersiveModel="GDM";
 units="MKS";

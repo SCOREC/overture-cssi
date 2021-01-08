@@ -48,7 +48,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                                     int rhoComponent /* =0 */,
                                     bool computeMaxNorms /* = true */ )
 // ======================================================================================
-// Compute the maximum divergence AND the max-norm of the solution
+// Compute the maximum divergence 
 // 
 //  /pdiv,component (input) : save the divergence in 'component' if this pointer is non-NULL.
 //
@@ -58,6 +58,16 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
 {
     real time0 = getCPU();
     
+    if( debug & 8  )
+    {
+    // This routine is sometimes called more times than necessary:
+    //   getAugmentedSolution
+    //   printTimeStepInfo
+        printF("\n $$$$$$ getMaxDivergence t=%8.2e $$$$$$$$\n\n",t);
+    }
+    
+
+
     Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
 
     assert( cgp!=NULL );
@@ -167,24 +177,372 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
             }
             
 
-            if( (solveForMagneticField && cg.numberOfDimensions()==3) ||
-                    method==bamx && ( solveForAllFields==1 || cg.numberOfDimensions()==3 ) )
+            if( true ) // **TEMP** turn off for checking timing 
             {
-                Range H(hx,hx+mg.numberOfDimensions()-1);
+                if( (solveForMagneticField && cg.numberOfDimensions()==3) ||
+                        method==bamx && ( solveForAllFields==1 || cg.numberOfDimensions()==3 ) )
+                {
+
+                    Range H(hx,hx+mg.numberOfDimensions()-1);
+                      if( computeMaxNorms )
+                      {
+                          mgop.useConservativeApproximations(false);  // turn off since there are no conservative
+                          divLocal=0.;
+                          if( method!=bamx )
+                          {
+                              realSerialArray udLocal(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),H);
+                              real *udp = udLocal.Array_Descriptor.Array_View_Pointer3;
+                              const int udDim0=udLocal.getRawDataSize(0);
+                              const int udDim1=udLocal.getRawDataSize(1);
+                              const int udDim2=udLocal.getRawDataSize(2);
+                    #undef UD
+                    #define UD(i0,i1,i2,i3) udp[i0+udDim0*(i1+udDim1*(i2+udDim2*(i3)))]
+                              mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,H);
+               //display(div(I1,I2,I3)," compute div: ux","%6.2f ");
+                              if( mg.numberOfDimensions()==2 )
+                              {
+                                  FOR_3D(i1,i2,i3,I1,I2,I3)
+                                  {
+                                      if( MASK(i1,i2,i3)>0 )
+                                      { // find max of x-derivatives:
+                                          gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy))));
+                                          DIV(i1,i2,i3)=UD(i1,i2,i3,hx);
+                                      }
+                                  }
+                              }
+                              else
+                              {
+                                  FOR_3D(i1,i2,i3,I1,I2,I3)
+                                  {
+                                      if( MASK(i1,i2,i3)>0 )
+                                      { // find max of x-derivatives:
+                                          gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz))));
+                                          DIV(i1,i2,i3)=UD(i1,i2,i3,hx);
+                                      }
+                                  }
+                              }
+                              mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,H);
+               //display(ud(I1,I2,I3)," compute div: uy","%6.2f ");
+                              if( mg.numberOfDimensions()==2 )
+                              {
+                                  FOR_3D(i1,i2,i3,I1,I2,I3)
+                                  {
+                                      if( MASK(i1,i2,i3)>0 )
+                                      {  // include max of y-derivatives:
+                                          gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy))));
+                                          DIV(i1,i2,i3)+=UD(i1,i2,i3,hy);
+                                      }
+                                  }
+                              }
+                              else
+                              {
+                                  FOR_3D(i1,i2,i3,I1,I2,I3)
+                                  {
+                                      if( MASK(i1,i2,i3)>0 )
+                                      { // include max of y-derivatives:
+                                          gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz))));
+                                          DIV(i1,i2,i3)+=UD(i1,i2,i3,hy);
+                                      }
+                                  }
+                                  mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,H);
+                                  FOR_3(i1,i2,i3,I1,I2,I3)
+                                  { 
+                                      if( MASK(i1,i2,i3)>0 )
+                                      { // include max of z-derivatives:
+                                          gradHMax=max(gradHMax,fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz)));
+                                          DIV(i1,i2,i3)+=UD(i1,i2,i3,hz);
+                                      }
+                                  }
+                              }
+                          }
+                          else
+                          {
+               // ----- BA - MAXWELL : compute div(D) and div(B) ----
+                              if( false )
+                              {
+                                  if( hx==0 )
+                           	 printF("compute div(D) for BA Maxwell. t=%9.3e\n",t);
+                                  else
+                           	 printF("compute div(B) for BA Maxwell. t=%9.3e\n",t);
+                              }
+               // assert( solveForAllFields==1 );
+                              const int & solveForAllFields = dbase.get<int>("solveForAllFields");
+                              const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+               // total number of polarization components per grid 
+                              const IntegerArray & totalNumberOfPolarizationComponents =
+                                  parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+                              std::vector<DispersiveMaterialParameters> & dmpVector =
+                                                dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+               // w(i1,i2,i3,0:2) holds D or B 
+                              Range R3=3;
+                              RealArray w(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),R3);  
+               // -- This next code is also found in getForcing **FIX ME** put somewhere -- 
+                              if( !dbase.has_key("K0") )
+                              {
+                 // -- build the K0(6,6,numberOfMaterialRegions) for TZ forcing 
+                                  RealArray & K0 = dbase.put<RealArray>("K0");
+                                  K0.redim(6,6,numberOfMaterialRegions);
+                                  std::vector<DispersiveMaterialParameters> & dmpVector = 
+                           	 dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                                  RealArray K0Temp;
+                                  for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+                                  {
+                           	 DispersiveMaterialParameters & dmp = dmpVector[mr];  
+                           	 dmp.getBianisotropicMaterialMatrix( K0Temp );
+                           	 K0(all,all,mr)=K0Temp;
+                                  }
+                                  if( false )
+                           	 ::display(K0,"compute div(D) and div(B) for BAMX: combined Material matrix K0(*,*,*):","%5.2f ");
+                              }
+                              RealArray & K0 = dbase.get<RealArray>("K0");
+               // ::display(K0,"K0","%5.2f ");
+               // ------- Compute D or B --------
+                              w=0.;
+                              if( numberOfMaterialRegions==1 )
+                              {
+                                  const int mr=0;
+                 // include ghost since we compute derivatives: 
+                                  if( numberOfDimensions==3 || solveForAllFields )
+                                  {
+                           	 for(int m2=0; m2<6; m2++ )
+                           	 {
+                             	   for(int m1=0; m1<3; m1++ )
+                             	   {
+          	     // W = K0*U 
+                               	     const int m1a=m1+hx;
+                               	     w(D1,D2,D3,m1) += K0(m1a,m2,mr)*uLocal(D1,D2,D3,m2);  
+                             	   }
+                           	 }
+                                  }
+                                  else
+                                  {
+          	 // TEZ polarization: 
+                                      assert( hx==0 );
+                           	 w(D1,D2,D3,0) += (K0(0,0,mr)*uLocal(D1,D2,D3,0) +
+                                         			   K0(0,1,mr)*uLocal(D1,D2,D3,1) +
+                                         			   K0(0,5,mr)*uLocal(D1,D2,D3,2));  
+                           	 w(D1,D2,D3,1) += (K0(1,0,mr)*uLocal(D1,D2,D3,0) +
+                                         			   K0(1,1,mr)*uLocal(D1,D2,D3,1) +
+                                         			   K0(1,5,mr)*uLocal(D1,D2,D3,2));  
+                                  }
+                                  if( dispersionModel!=noDispersion )
+                                  {
+                           	 realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
+                           	 OV_GET_SERIAL_ARRAY(real,p,pLocal);
+                   // -- add on P or M ----
+                           	 DispersiveMaterialParameters & dmp = dmpVector[mr]; 
+                           	 const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
+                           	 int pc=0;
+                           	 for( int k1=0; k1<6; k1++ )
+                           	 {
+                             	   const int ec=k1, ecw=ec-hx;
+          	   // vLocal(I1,I2,I3,nPolarization+ec)=0.;
+                             	   for( int k2=0; k2<6; k2++ )
+                             	   {
+                               	     for( int n=0; n<Np(k1,k2); n++ )
+                               	     {
+                                                  if( ecw>=0 && ecw<3 )
+                                       	         w(D1,D2,D3,ecw) +=  pLocal(D1,D2,D3,pc);
+          	       // vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
+                                 	       pc+=2;   // we store p and pt so increment by 2
+                               	     }
+                             	   }
+                           	 }
+                                  }
+                              }
+                              else
+                              {
+                 // assert( pBodyMask!=NULL );
+                 // IntegerArray & matMask = *pBodyMask;
+                                  intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+                                  OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+                 // include ghost since we compute derivatives: 
+                                  if( numberOfDimensions==3 || solveForAllFields )
+                                  {
+                           	 FOR_3D(i1,i2,i3,D1,D2,D3)
+                           	 {
+                             	   const int mr = matMask(i1,i2,i3);
+                             	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
+                             	   for(int m2=0; m2<6; m2++ )
+                             	   {
+                               	     for(int m1=0; m1<3; m1++ )
+                               	     {
+          	       // W = K0*U 
+                                 	       const int m1a=m1+hx;
+                                 	       w(i1,i2,i3,m1) += K0(m1a,m2,mr)*uLocal(i1,i2,i3,m2); // Optimize this
+                               	     }
+                             	   }
+                           	 }
+                                  }
+                                  else
+                                  {
+                           	 FOR_3D(i1,i2,i3,D1,D2,D3)
+                           	 {
+                             	   const int mr = matMask(i1,i2,i3);
+                             	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
+          	   // TEZ polarization: 
+                             	   assert( hx==0 );
+                             	   w(i1,i2,i3,0) += (K0(0,0,mr)*uLocal(i1,i2,i3,0) +
+                                           			     K0(0,1,mr)*uLocal(i1,i2,i3,1) +
+                                           			     K0(0,5,mr)*uLocal(i1,i2,i3,2));  
+                             	   w(i1,i2,i3,1) += (K0(1,0,mr)*uLocal(i1,i2,i3,0) +
+                                           			     K0(1,1,mr)*uLocal(i1,i2,i3,1) +
+                                           			     K0(1,5,mr)*uLocal(i1,i2,i3,2));  
+                           	 }
+                                  }
+                                  if( dispersionModel!=noDispersion )
+                                  {
+                           	 realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
+                           	 OV_GET_SERIAL_ARRAY(real,p,pLocal);
+                   // -- add on P or M ----
+                           	 FOR_3D(i1,i2,i3,D1,D2,D3)
+                           	 {
+                             	   const int mr = matMask(i1,i2,i3);
+                             	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
+                             	   DispersiveMaterialParameters & dmp = dmpVector[mr]; 
+                             	   const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
+                             	   int pc=0;
+                             	   for( int k1=0; k1<6; k1++ )
+                             	   {
+                               	     const int ec=k1, ecw=ec-hx;
+          	     // vLocal(I1,I2,I3,nPolarization+ec)=0.;
+                               	     for( int k2=0; k2<6; k2++ )
+                               	     {
+                                 	       for( int n=0; n<Np(k1,k2); n++ )
+                                 	       {
+                                 		 if( ecw>=0 && ecw<3 )
+                                   		   w(i1,i2,i3,ecw) +=  pLocal(i1,i2,i3,pc);
+          		 // vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
+                                 		 pc+=2;   // we store p and pt so increment by 2
+                                 	       }
+                               	     }
+                             	   }
+                           	 }
+                                  }
+                              }
+                              realSerialArray ux(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),R3), &uy=ux, &uz=ux;
+                              mgop.derivative(MappedGridOperators::xDerivative,w,ux,I1,I2,I3,R3);
+                              divLocal(I1,I2,I3) = ux(I1,I2,I3,0);
+                              gradHMax=max(fabs(ux(I1,I2,I3,R3)));
+                              mgop.derivative(MappedGridOperators::yDerivative,w,uy,I1,I2,I3,R3);
+                              divLocal(I1,I2,I3) += uy(I1,I2,I3,1);
+                              gradHMax=max( gradHMax, max(fabs(uy(I1,I2,I3,R3))));
+                              if( numberOfDimensions==3 )
+                              {
+                                  mgop.derivative(MappedGridOperators::zDerivative,w,uz,I1,I2,I3,R3);
+                                  divLocal(I1,I2,I3) += uz(I1,I2,I3,2);
+                                  gradHMax=max( gradHMax, max(fabs(uz(I1,I2,I3,R3))) );
+                              }
+                              if( false )
+                              {
+                                  if( hx==0 )
+                           	 printF(" max(abs(div(D))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
+                                  else
+                           	 printF(" max(abs(div(B))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
+                              }
+                          }
+                          if( debug & 8 )
+                          {
+                              display(divLocal,sPrintF(" divLocal p=%i, t=%9.3e",myid,t), pDebugFile," %10.2e ");
+                          }
+                      } // end if compute max norms
+                      if( !computeMaxNorms || useConservativeDivergence )
+                      {
+             // just compute div(H) -- no max norms
+                          if( useConservativeDivergence )
+                          	mgop.useConservativeApproximations(useConservative);
+                          else
+                              mgop.useConservativeApproximations(false); 
+                          if( (debug & 4) && useConservativeDivergence )
+                              printF("getMaxDivergence: get conservative divergence t=%9.3e, useConservative=%i\n",t,useConservative);
+                          mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3,H);
+                      }
+                      mgop.useConservativeApproximations(useConservative);  // reset
+                      if( useChargeDensity )
+                      {
+             // --- Subtract off rho from div(H) ----
+                          assert( pDensity!=NULL );
+                          realMappedGridFunction & rhog = (*pDensity)[grid]; 
+                          #ifdef USE_PPP
+                              realSerialArray rhoLocal; getLocalArrayWithGhostBoundaries(rhog,rhoLocal);
+                          #else
+                              const realSerialArray & rhoLocal = rhog;
+                          #endif
+                          real *rhop = rhoLocal.Array_Descriptor.Array_View_Pointer3;
+                          const int rhoDim0=rhoLocal.getRawDataSize(0);
+                          const int rhoDim1=rhoLocal.getRawDataSize(1);
+                          const int rhoDim2=rhoLocal.getRawDataSize(2);
+                          const int rhod3=rhoDim2*(rhoComponent);
+                          #define RHO(i0,i1,i2) rhop[i0+rhoDim0*(i1+rhoDim1*(i2+rhod3))]
+                          FOR_3D(i1,i2,i3,I1,I2,I3)
+                          {
+                              if( MASK(i1,i2,i3)>0 )
+                              {  
+                                    DIV(i1,i2,i3)-=RHO(i1,i2,i3);
+                              }
+                              else
+                              {
+                                  DIV(i1,i2,i3)=0.; 
+                              }
+                          }
+                      }
+                      if( computeMaxNorms )
+                      {
+                          real uMax[3]={0.,0.,0.}; //
+                          FOR_3D(i1,i2,i3,I1,I2,I3)
+                          {
+                              if( MASK(i1,i2,i3)>0 )
+                              {
+                                  if( fabs(DIV(i1,i2,i3))>divHMax )
+                                  {
+                                      i1Max=i1; i2Max=i2; i3Max=i3; gridMax=grid;
+                                      divHMax=fabs(DIV(i1,i2,i3));
+                                  }
+                                  uMax[0]=max(fabs(U(i1,i2,i3,hx)),uMax[0]);
+                                  uMax[1]=max(fabs(U(i1,i2,i3,hy)),uMax[1]);
+                                  uMax[2]=max(fabs(U(i1,i2,i3,hz)),uMax[2]);  // hz=hz for 3D
+                              }
+                              else
+                              {
+                                  DIV(i1,i2,i3)=0.;
+                              }
+                          }
+             // *** FIX ME *****
+                          solutionNorm=-1;
+                          solutionNorm(hx)=max(solutionNorm(hx),uMax[0]);
+                          solutionNorm(hy)=max(solutionNorm(hy),uMax[1]);
+                          solutionNorm(hz)=max(solutionNorm(hz),uMax[2]);  // hz=hz for 3D
+                        RealArray & polarizationNorm   =  dbase.get<RealArray>("polarizationNorm");
+                        if( polarizationNorm.getLength(0)!=cg.numberOfDomains() )
+                            polarizationNorm.redim(cg.numberOfDomains());
+                        polarizationNorm=-1;
+                      }
+                        if( pdiv!=NULL )
+                        {
+              // save the divergence (for plotting probably)
+                            OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
+                            div(I1,I2,I3,component+1)=divLocal(I1,I2,I3);  // we could avoid storage for div in this case
+                        }
+
+                    if( computeMaxNorms && debug & 4 )
+                        fprintf(pDebugFile,"+++ divHMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",divHMax,i1Max,i2Max,i3Max,gridMax);
+                }
+
+                Range E(ex,ex+mg.numberOfDimensions()-1);
                   if( computeMaxNorms )
                   {
                       mgop.useConservativeApproximations(false);  // turn off since there are no conservative
                       divLocal=0.;
                       if( method!=bamx )
                       {
-                          realSerialArray udLocal(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),H);
+                          realSerialArray udLocal(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),E);
                           real *udp = udLocal.Array_Descriptor.Array_View_Pointer3;
                           const int udDim0=udLocal.getRawDataSize(0);
                           const int udDim1=udLocal.getRawDataSize(1);
                           const int udDim2=udLocal.getRawDataSize(2);
                 #undef UD
                 #define UD(i0,i1,i2,i3) udp[i0+udDim0*(i1+udDim1*(i2+udDim2*(i3)))]
-                          mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,H);
+                          mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,E);
              //display(div(I1,I2,I3)," compute div: ux","%6.2f ");
                           if( mg.numberOfDimensions()==2 )
                           {
@@ -192,8 +550,8 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                               {
                                   if( MASK(i1,i2,i3)>0 )
                                   { // find max of x-derivatives:
-                                      gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy))));
-                                      DIV(i1,i2,i3)=UD(i1,i2,i3,hx);
+                                      gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey))));
+                                      DIV(i1,i2,i3)=UD(i1,i2,i3,ex);
                                   }
                               }
                           }
@@ -203,12 +561,12 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                               {
                                   if( MASK(i1,i2,i3)>0 )
                                   { // find max of x-derivatives:
-                                      gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz))));
-                                      DIV(i1,i2,i3)=UD(i1,i2,i3,hx);
+                                      gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez))));
+                                      DIV(i1,i2,i3)=UD(i1,i2,i3,ex);
                                   }
                               }
                           }
-                          mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,H);
+                          mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,E);
              //display(ud(I1,I2,I3)," compute div: uy","%6.2f ");
                           if( mg.numberOfDimensions()==2 )
                           {
@@ -216,8 +574,8 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                               {
                                   if( MASK(i1,i2,i3)>0 )
                                   {  // include max of y-derivatives:
-                                      gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy))));
-                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,hy);
+                                      gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey))));
+                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,ey);
                                   }
                               }
                           }
@@ -227,17 +585,17 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                               {
                                   if( MASK(i1,i2,i3)>0 )
                                   { // include max of y-derivatives:
-                                      gradHMax=max(gradHMax,max(fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz))));
-                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,hy);
+                                      gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez))));
+                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,ey);
                                   }
                               }
-                              mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,H);
+                              mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,E);
                               FOR_3(i1,i2,i3,I1,I2,I3)
                               { 
                                   if( MASK(i1,i2,i3)>0 )
                                   { // include max of z-derivatives:
-                                      gradHMax=max(gradHMax,fabs(UD(i1,i2,i3,hx)),fabs(UD(i1,i2,i3,hy)),fabs(UD(i1,i2,i3,hz)));
-                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,hz);
+                                      gradEMax=max(gradEMax,fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez)));
+                                      DIV(i1,i2,i3)+=UD(i1,i2,i3,ez);
                                   }
                               }
                           }
@@ -247,7 +605,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
              // ----- BA - MAXWELL : compute div(D) and div(B) ----
                           if( false )
                           {
-                              if( hx==0 )
+                              if( ex==0 )
                        	 printF("compute div(D) for BA Maxwell. t=%9.3e\n",t);
                               else
                        	 printF("compute div(B) for BA Maxwell. t=%9.3e\n",t);
@@ -296,7 +654,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                          	   for(int m1=0; m1<3; m1++ )
                          	   {
         	     // W = K0*U 
-                           	     const int m1a=m1+hx;
+                           	     const int m1a=m1+ex;
                            	     w(D1,D2,D3,m1) += K0(m1a,m2,mr)*uLocal(D1,D2,D3,m2);  
                          	   }
                        	 }
@@ -304,7 +662,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                               else
                               {
         	 // TEZ polarization: 
-                                  assert( hx==0 );
+                                  assert( ex==0 );
                        	 w(D1,D2,D3,0) += (K0(0,0,mr)*uLocal(D1,D2,D3,0) +
                                      			   K0(0,1,mr)*uLocal(D1,D2,D3,1) +
                                      			   K0(0,5,mr)*uLocal(D1,D2,D3,2));  
@@ -322,7 +680,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                        	 int pc=0;
                        	 for( int k1=0; k1<6; k1++ )
                        	 {
-                         	   const int ec=k1, ecw=ec-hx;
+                         	   const int ec=k1, ecw=ec-ex;
         	   // vLocal(I1,I2,I3,nPolarization+ec)=0.;
                          	   for( int k2=0; k2<6; k2++ )
                          	   {
@@ -355,7 +713,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                            	     for(int m1=0; m1<3; m1++ )
                            	     {
         	       // W = K0*U 
-                             	       const int m1a=m1+hx;
+                             	       const int m1a=m1+ex;
                              	       w(i1,i2,i3,m1) += K0(m1a,m2,mr)*uLocal(i1,i2,i3,m2); // Optimize this
                            	     }
                          	   }
@@ -368,7 +726,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                          	   const int mr = matMask(i1,i2,i3);
                          	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
         	   // TEZ polarization: 
-                         	   assert( hx==0 );
+                         	   assert( ex==0 );
                          	   w(i1,i2,i3,0) += (K0(0,0,mr)*uLocal(i1,i2,i3,0) +
                                        			     K0(0,1,mr)*uLocal(i1,i2,i3,1) +
                                        			     K0(0,5,mr)*uLocal(i1,i2,i3,2));  
@@ -391,7 +749,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                          	   int pc=0;
                          	   for( int k1=0; k1<6; k1++ )
                          	   {
-                           	     const int ec=k1, ecw=ec-hx;
+                           	     const int ec=k1, ecw=ec-ex;
         	     // vLocal(I1,I2,I3,nPolarization+ec)=0.;
                            	     for( int k2=0; k2<6; k2++ )
                            	     {
@@ -410,19 +768,19 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                           realSerialArray ux(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),R3), &uy=ux, &uz=ux;
                           mgop.derivative(MappedGridOperators::xDerivative,w,ux,I1,I2,I3,R3);
                           divLocal(I1,I2,I3) = ux(I1,I2,I3,0);
-                          gradHMax=max(fabs(ux(I1,I2,I3,R3)));
+                          gradEMax=max(fabs(ux(I1,I2,I3,R3)));
                           mgop.derivative(MappedGridOperators::yDerivative,w,uy,I1,I2,I3,R3);
                           divLocal(I1,I2,I3) += uy(I1,I2,I3,1);
-                          gradHMax=max( gradHMax, max(fabs(uy(I1,I2,I3,R3))));
+                          gradEMax=max( gradEMax, max(fabs(uy(I1,I2,I3,R3))));
                           if( numberOfDimensions==3 )
                           {
                               mgop.derivative(MappedGridOperators::zDerivative,w,uz,I1,I2,I3,R3);
                               divLocal(I1,I2,I3) += uz(I1,I2,I3,2);
-                              gradHMax=max( gradHMax, max(fabs(uz(I1,I2,I3,R3))) );
+                              gradEMax=max( gradEMax, max(fabs(uz(I1,I2,I3,R3))) );
                           }
                           if( false )
                           {
-                              if( hx==0 )
+                              if( ex==0 )
                        	 printF(" max(abs(div(D))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
                               else
                        	 printF(" max(abs(div(B))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
@@ -435,19 +793,19 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                   } // end if compute max norms
                   if( !computeMaxNorms || useConservativeDivergence )
                   {
-           // just compute div(H) -- no max norms
+           // just compute div(E) -- no max norms
                       if( useConservativeDivergence )
                       	mgop.useConservativeApproximations(useConservative);
                       else
                           mgop.useConservativeApproximations(false); 
                       if( (debug & 4) && useConservativeDivergence )
                           printF("getMaxDivergence: get conservative divergence t=%9.3e, useConservative=%i\n",t,useConservative);
-                      mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3,H);
+                      mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3,E);
                   }
                   mgop.useConservativeApproximations(useConservative);  // reset
                   if( useChargeDensity )
                   {
-           // --- Subtract off rho from div(H) ----
+           // --- Subtract off rho from div(E) ----
                       assert( pDensity!=NULL );
                       realMappedGridFunction & rhog = (*pDensity)[grid]; 
                       #ifdef USE_PPP
@@ -480,14 +838,14 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                       {
                           if( MASK(i1,i2,i3)>0 )
                           {
-                              if( fabs(DIV(i1,i2,i3))>divHMax )
+                              if( fabs(DIV(i1,i2,i3))>divEMax )
                               {
                                   i1Max=i1; i2Max=i2; i3Max=i3; gridMax=grid;
-                                  divHMax=fabs(DIV(i1,i2,i3));
+                                  divEMax=fabs(DIV(i1,i2,i3));
                               }
-                              uMax[0]=max(fabs(U(i1,i2,i3,hx)),uMax[0]);
-                              uMax[1]=max(fabs(U(i1,i2,i3,hy)),uMax[1]);
-                              uMax[2]=max(fabs(U(i1,i2,i3,hz)),uMax[2]);  // hz=hz for 3D
+                              uMax[0]=max(fabs(U(i1,i2,i3,ex)),uMax[0]);
+                              uMax[1]=max(fabs(U(i1,i2,i3,ey)),uMax[1]);
+                              uMax[2]=max(fabs(U(i1,i2,i3,hz)),uMax[2]);  // hz=ez for 3D
                           }
                           else
                           {
@@ -496,9 +854,9 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                       }
            // *** FIX ME *****
                       solutionNorm=-1;
-                      solutionNorm(hx)=max(solutionNorm(hx),uMax[0]);
-                      solutionNorm(hy)=max(solutionNorm(hy),uMax[1]);
-                      solutionNorm(hz)=max(solutionNorm(hz),uMax[2]);  // hz=hz for 3D
+                      solutionNorm(ex)=max(solutionNorm(ex),uMax[0]);
+                      solutionNorm(ey)=max(solutionNorm(ey),uMax[1]);
+                      solutionNorm(hz)=max(solutionNorm(hz),uMax[2]);  // hz=ez for 3D
                     RealArray & polarizationNorm   =  dbase.get<RealArray>("polarizationNorm");
                     if( polarizationNorm.getLength(0)!=cg.numberOfDomains() )
                         polarizationNorm.redim(cg.numberOfDomains());
@@ -508,352 +866,17 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                     {
             // save the divergence (for plotting probably)
                         OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
-                        div(I1,I2,I3,component+1)=divLocal(I1,I2,I3);  // we could avoid storage for div in this case
+                        div(I1,I2,I3,component)=divLocal(I1,I2,I3);  // we could avoid storage for div in this case
                     }
-                if( computeMaxNorms && debug & 4 )
-                    fprintf(pDebugFile,"+++ divHMax=%8.2e max at i=(%i,%i,%i) grid=%i \n",divHMax,i1Max,i2Max,i3Max,gridMax);
             }
+            else
+            {
+                divEMax=0.; gradEMax=1.;
+                divHMax=0.; gradHMax=1.;
+                
+            }
+            
 
-            Range E(ex,ex+mg.numberOfDimensions()-1);
-              if( computeMaxNorms )
-              {
-                  mgop.useConservativeApproximations(false);  // turn off since there are no conservative
-                  divLocal=0.;
-                  if( method!=bamx )
-                  {
-                      realSerialArray udLocal(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),E);
-                      real *udp = udLocal.Array_Descriptor.Array_View_Pointer3;
-                      const int udDim0=udLocal.getRawDataSize(0);
-                      const int udDim1=udLocal.getRawDataSize(1);
-                      const int udDim2=udLocal.getRawDataSize(2);
-            #undef UD
-            #define UD(i0,i1,i2,i3) udp[i0+udDim0*(i1+udDim1*(i2+udDim2*(i3)))]
-                      mgop.derivative(MappedGridOperators::xDerivative,uLocal,udLocal,I1,I2,I3,E);
-           //display(div(I1,I2,I3)," compute div: ux","%6.2f ");
-                      if( mg.numberOfDimensions()==2 )
-                      {
-                          FOR_3D(i1,i2,i3,I1,I2,I3)
-                          {
-                              if( MASK(i1,i2,i3)>0 )
-                              { // find max of x-derivatives:
-                                  gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey))));
-                                  DIV(i1,i2,i3)=UD(i1,i2,i3,ex);
-                              }
-                          }
-                      }
-                      else
-                      {
-                          FOR_3D(i1,i2,i3,I1,I2,I3)
-                          {
-                              if( MASK(i1,i2,i3)>0 )
-                              { // find max of x-derivatives:
-                                  gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez))));
-                                  DIV(i1,i2,i3)=UD(i1,i2,i3,ex);
-                              }
-                          }
-                      }
-                      mgop.derivative(MappedGridOperators::yDerivative,uLocal, udLocal,I1,I2,I3,E);
-           //display(ud(I1,I2,I3)," compute div: uy","%6.2f ");
-                      if( mg.numberOfDimensions()==2 )
-                      {
-                          FOR_3D(i1,i2,i3,I1,I2,I3)
-                          {
-                              if( MASK(i1,i2,i3)>0 )
-                              {  // include max of y-derivatives:
-                                  gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey))));
-                                  DIV(i1,i2,i3)+=UD(i1,i2,i3,ey);
-                              }
-                          }
-                      }
-                      else
-                      {
-                          FOR_3D(i1,i2,i3,I1,I2,I3)
-                          {
-                              if( MASK(i1,i2,i3)>0 )
-                              { // include max of y-derivatives:
-                                  gradEMax=max(gradEMax,max(fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez))));
-                                  DIV(i1,i2,i3)+=UD(i1,i2,i3,ey);
-                              }
-                          }
-                          mgop.derivative(MappedGridOperators::zDerivative,uLocal,udLocal,I1,I2,I3,E);
-                          FOR_3(i1,i2,i3,I1,I2,I3)
-                          { 
-                              if( MASK(i1,i2,i3)>0 )
-                              { // include max of z-derivatives:
-                                  gradEMax=max(gradEMax,fabs(UD(i1,i2,i3,ex)),fabs(UD(i1,i2,i3,ey)),fabs(UD(i1,i2,i3,ez)));
-                                  DIV(i1,i2,i3)+=UD(i1,i2,i3,ez);
-                              }
-                          }
-                      }
-                  }
-                  else
-                  {
-           // ----- BA - MAXWELL : compute div(D) and div(B) ----
-                      if( false )
-                      {
-                          if( ex==0 )
-                   	 printF("compute div(D) for BA Maxwell. t=%9.3e\n",t);
-                          else
-                   	 printF("compute div(B) for BA Maxwell. t=%9.3e\n",t);
-                      }
-           // assert( solveForAllFields==1 );
-                      const int & solveForAllFields = dbase.get<int>("solveForAllFields");
-                      const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-           // total number of polarization components per grid 
-                      const IntegerArray & totalNumberOfPolarizationComponents =
-                          parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
-                      std::vector<DispersiveMaterialParameters> & dmpVector =
-                                        dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
-           // w(i1,i2,i3,0:2) holds D or B 
-                      Range R3=3;
-                      RealArray w(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),R3);  
-           // -- This next code is also found in getForcing **FIX ME** put somewhere -- 
-                      if( !dbase.has_key("K0") )
-                      {
-             // -- build the K0(6,6,numberOfMaterialRegions) for TZ forcing 
-                          RealArray & K0 = dbase.put<RealArray>("K0");
-                          K0.redim(6,6,numberOfMaterialRegions);
-                          std::vector<DispersiveMaterialParameters> & dmpVector = 
-                   	 dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
-                          RealArray K0Temp;
-                          for( int mr=0; mr<numberOfMaterialRegions; mr++ )
-                          {
-                   	 DispersiveMaterialParameters & dmp = dmpVector[mr];  
-                   	 dmp.getBianisotropicMaterialMatrix( K0Temp );
-                   	 K0(all,all,mr)=K0Temp;
-                          }
-                          if( false )
-                   	 ::display(K0,"compute div(D) and div(B) for BAMX: combined Material matrix K0(*,*,*):","%5.2f ");
-                      }
-                      RealArray & K0 = dbase.get<RealArray>("K0");
-           // ::display(K0,"K0","%5.2f ");
-           // ------- Compute D or B --------
-                      w=0.;
-                      if( numberOfMaterialRegions==1 )
-                      {
-                          const int mr=0;
-             // include ghost since we compute derivatives: 
-                          if( numberOfDimensions==3 || solveForAllFields )
-                          {
-                   	 for(int m2=0; m2<6; m2++ )
-                   	 {
-                     	   for(int m1=0; m1<3; m1++ )
-                     	   {
-      	     // W = K0*U 
-                       	     const int m1a=m1+ex;
-                       	     w(D1,D2,D3,m1) += K0(m1a,m2,mr)*uLocal(D1,D2,D3,m2);  
-                     	   }
-                   	 }
-                          }
-                          else
-                          {
-      	 // TEZ polarization: 
-                              assert( ex==0 );
-                   	 w(D1,D2,D3,0) += (K0(0,0,mr)*uLocal(D1,D2,D3,0) +
-                                 			   K0(0,1,mr)*uLocal(D1,D2,D3,1) +
-                                 			   K0(0,5,mr)*uLocal(D1,D2,D3,2));  
-                   	 w(D1,D2,D3,1) += (K0(1,0,mr)*uLocal(D1,D2,D3,0) +
-                                 			   K0(1,1,mr)*uLocal(D1,D2,D3,1) +
-                                 			   K0(1,5,mr)*uLocal(D1,D2,D3,2));  
-                          }
-                          if( dispersionModel!=noDispersion )
-                          {
-                   	 realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
-                   	 OV_GET_SERIAL_ARRAY(real,p,pLocal);
-               // -- add on P or M ----
-                   	 DispersiveMaterialParameters & dmp = dmpVector[mr]; 
-                   	 const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
-                   	 int pc=0;
-                   	 for( int k1=0; k1<6; k1++ )
-                   	 {
-                     	   const int ec=k1, ecw=ec-ex;
-      	   // vLocal(I1,I2,I3,nPolarization+ec)=0.;
-                     	   for( int k2=0; k2<6; k2++ )
-                     	   {
-                       	     for( int n=0; n<Np(k1,k2); n++ )
-                       	     {
-                                          if( ecw>=0 && ecw<3 )
-                               	         w(D1,D2,D3,ecw) +=  pLocal(D1,D2,D3,pc);
-      	       // vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
-                         	       pc+=2;   // we store p and pt so increment by 2
-                       	     }
-                     	   }
-                   	 }
-                          }
-                      }
-                      else
-                      {
-             // assert( pBodyMask!=NULL );
-             // IntegerArray & matMask = *pBodyMask;
-                          intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
-                          OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
-             // include ghost since we compute derivatives: 
-                          if( numberOfDimensions==3 || solveForAllFields )
-                          {
-                   	 FOR_3D(i1,i2,i3,D1,D2,D3)
-                   	 {
-                     	   const int mr = matMask(i1,i2,i3);
-                     	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
-                     	   for(int m2=0; m2<6; m2++ )
-                     	   {
-                       	     for(int m1=0; m1<3; m1++ )
-                       	     {
-      	       // W = K0*U 
-                         	       const int m1a=m1+ex;
-                         	       w(i1,i2,i3,m1) += K0(m1a,m2,mr)*uLocal(i1,i2,i3,m2); // Optimize this
-                       	     }
-                     	   }
-                   	 }
-                          }
-                          else
-                          {
-                   	 FOR_3D(i1,i2,i3,D1,D2,D3)
-                   	 {
-                     	   const int mr = matMask(i1,i2,i3);
-                     	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
-      	   // TEZ polarization: 
-                     	   assert( ex==0 );
-                     	   w(i1,i2,i3,0) += (K0(0,0,mr)*uLocal(i1,i2,i3,0) +
-                                   			     K0(0,1,mr)*uLocal(i1,i2,i3,1) +
-                                   			     K0(0,5,mr)*uLocal(i1,i2,i3,2));  
-                     	   w(i1,i2,i3,1) += (K0(1,0,mr)*uLocal(i1,i2,i3,0) +
-                                   			     K0(1,1,mr)*uLocal(i1,i2,i3,1) +
-                                   			     K0(1,5,mr)*uLocal(i1,i2,i3,2));  
-                   	 }
-                          }
-                          if( dispersionModel!=noDispersion )
-                          {
-                   	 realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
-                   	 OV_GET_SERIAL_ARRAY(real,p,pLocal);
-               // -- add on P or M ----
-                   	 FOR_3D(i1,i2,i3,D1,D2,D3)
-                   	 {
-                     	   const int mr = matMask(i1,i2,i3);
-                     	   assert( mr>=0 && mr<numberOfMaterialRegions );  // ** eventually remove this **
-                     	   DispersiveMaterialParameters & dmp = dmpVector[mr]; 
-                     	   const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
-                     	   int pc=0;
-                     	   for( int k1=0; k1<6; k1++ )
-                     	   {
-                       	     const int ec=k1, ecw=ec-ex;
-      	     // vLocal(I1,I2,I3,nPolarization+ec)=0.;
-                       	     for( int k2=0; k2<6; k2++ )
-                       	     {
-                         	       for( int n=0; n<Np(k1,k2); n++ )
-                         	       {
-                         		 if( ecw>=0 && ecw<3 )
-                           		   w(i1,i2,i3,ecw) +=  pLocal(i1,i2,i3,pc);
-      		 // vLocal(I1,I2,I3,nPolarization+ec) += pLocal(I1,I2,I3,pc);
-                         		 pc+=2;   // we store p and pt so increment by 2
-                         	       }
-                       	     }
-                     	   }
-                   	 }
-                          }
-                      }
-                      realSerialArray ux(uLocal.dimension(0),uLocal.dimension(1),uLocal.dimension(2),R3), &uy=ux, &uz=ux;
-                      mgop.derivative(MappedGridOperators::xDerivative,w,ux,I1,I2,I3,R3);
-                      divLocal(I1,I2,I3) = ux(I1,I2,I3,0);
-                      gradEMax=max(fabs(ux(I1,I2,I3,R3)));
-                      mgop.derivative(MappedGridOperators::yDerivative,w,uy,I1,I2,I3,R3);
-                      divLocal(I1,I2,I3) += uy(I1,I2,I3,1);
-                      gradEMax=max( gradEMax, max(fabs(uy(I1,I2,I3,R3))));
-                      if( numberOfDimensions==3 )
-                      {
-                          mgop.derivative(MappedGridOperators::zDerivative,w,uz,I1,I2,I3,R3);
-                          divLocal(I1,I2,I3) += uz(I1,I2,I3,2);
-                          gradEMax=max( gradEMax, max(fabs(uz(I1,I2,I3,R3))) );
-                      }
-                      if( false )
-                      {
-                          if( ex==0 )
-                   	 printF(" max(abs(div(D))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
-                          else
-                   	 printF(" max(abs(div(B))) = %9.3e\n",max(fabs(divLocal(I1,I2,I3))));
-                      }
-                  }
-                  if( debug & 8 )
-                  {
-                      display(divLocal,sPrintF(" divLocal p=%i, t=%9.3e",myid,t), pDebugFile," %10.2e ");
-                  }
-              } // end if compute max norms
-              if( !computeMaxNorms || useConservativeDivergence )
-              {
-         // just compute div(E) -- no max norms
-                  if( useConservativeDivergence )
-                  	mgop.useConservativeApproximations(useConservative);
-                  else
-                      mgop.useConservativeApproximations(false); 
-                  if( (debug & 4) && useConservativeDivergence )
-                      printF("getMaxDivergence: get conservative divergence t=%9.3e, useConservative=%i\n",t,useConservative);
-                  mgop.derivative(MappedGridOperators::divergence,uLocal,divLocal,I1,I2,I3,E);
-              }
-              mgop.useConservativeApproximations(useConservative);  // reset
-              if( useChargeDensity )
-              {
-         // --- Subtract off rho from div(E) ----
-                  assert( pDensity!=NULL );
-                  realMappedGridFunction & rhog = (*pDensity)[grid]; 
-                  #ifdef USE_PPP
-                      realSerialArray rhoLocal; getLocalArrayWithGhostBoundaries(rhog,rhoLocal);
-                  #else
-                      const realSerialArray & rhoLocal = rhog;
-                  #endif
-                  real *rhop = rhoLocal.Array_Descriptor.Array_View_Pointer3;
-                  const int rhoDim0=rhoLocal.getRawDataSize(0);
-                  const int rhoDim1=rhoLocal.getRawDataSize(1);
-                  const int rhoDim2=rhoLocal.getRawDataSize(2);
-                  const int rhod3=rhoDim2*(rhoComponent);
-                  #define RHO(i0,i1,i2) rhop[i0+rhoDim0*(i1+rhoDim1*(i2+rhod3))]
-                  FOR_3D(i1,i2,i3,I1,I2,I3)
-                  {
-                      if( MASK(i1,i2,i3)>0 )
-                      {  
-                            DIV(i1,i2,i3)-=RHO(i1,i2,i3);
-                      }
-                      else
-                      {
-                          DIV(i1,i2,i3)=0.; 
-                      }
-                  }
-              }
-              if( computeMaxNorms )
-              {
-                  real uMax[3]={0.,0.,0.}; //
-                  FOR_3D(i1,i2,i3,I1,I2,I3)
-                  {
-                      if( MASK(i1,i2,i3)>0 )
-                      {
-                          if( fabs(DIV(i1,i2,i3))>divEMax )
-                          {
-                              i1Max=i1; i2Max=i2; i3Max=i3; gridMax=grid;
-                              divEMax=fabs(DIV(i1,i2,i3));
-                          }
-                          uMax[0]=max(fabs(U(i1,i2,i3,ex)),uMax[0]);
-                          uMax[1]=max(fabs(U(i1,i2,i3,ey)),uMax[1]);
-                          uMax[2]=max(fabs(U(i1,i2,i3,hz)),uMax[2]);  // hz=ez for 3D
-                      }
-                      else
-                      {
-                          DIV(i1,i2,i3)=0.;
-                      }
-                  }
-         // *** FIX ME *****
-                  solutionNorm=-1;
-                  solutionNorm(ex)=max(solutionNorm(ex),uMax[0]);
-                  solutionNorm(ey)=max(solutionNorm(ey),uMax[1]);
-                  solutionNorm(hz)=max(solutionNorm(hz),uMax[2]);  // hz=ez for 3D
-                RealArray & polarizationNorm   =  dbase.get<RealArray>("polarizationNorm");
-                if( polarizationNorm.getLength(0)!=cg.numberOfDomains() )
-                    polarizationNorm.redim(cg.numberOfDomains());
-                polarizationNorm=-1;
-              }
-                if( pdiv!=NULL )
-                {
-          // save the divergence (for plotting probably)
-                    OV_GET_SERIAL_ARRAY(real,(*pdiv)[grid],div);
-                    div(I1,I2,I3,component)=divLocal(I1,I2,I3);  // we could avoid storage for div in this case
-                }
         }
         else
         {
@@ -958,20 +981,28 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                 RealArray & K0 = dbase.get<RealArray>("K0");  // may have been created with old way call *** FIX ME **
         // divD=0; divB=0;
                 int ierr=0;
-                getDiv(numberOfDimensions,
-                              I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-                              uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-                              uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
-                              *maskLocal.getDataPointer(),*rxptr,
-                              *uLocal.getDataPointer(), *pLocal.getDataPointer(), *vLocal.getDataPointer(),
-                              *pDivD, *pDivB, *K0.getDataPointer(), *pMatMask,
-                              ipar[0],rpar[0],ierr );
-        // return values 
-                divDmax=rpar[7]; gradDmax=rpar[8]; divBmax=rpar[9]; gradBmax=rpar[10];
-                if( false )
+                if( true )
                 {
-                    printF("After getDiv t=%9.3e: divDmax=%9.3e, gradDmax=%8.2e, divBmax=%9.3e, gradBmax=%8.2e (saveDivergence=%i)\n",
-                       	 t,divDmax,gradDmax,divBmax,gradBmax,(int)saveDivergence);
+                    getDiv(numberOfDimensions,
+                                  I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+                                  uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+                                  uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
+                                  *maskLocal.getDataPointer(),*rxptr,
+                                  *uLocal.getDataPointer(), *pLocal.getDataPointer(), *vLocal.getDataPointer(),
+                                  *pDivD, *pDivB, *K0.getDataPointer(), *pMatMask,
+                                  ipar[0],rpar[0],ierr );
+          // return values 
+                    divDmax=rpar[7]; gradDmax=rpar[8]; divBmax=rpar[9]; gradBmax=rpar[10];
+                    if( false )
+                    {
+                        printF("After getDiv t=%9.3e: divDmax=%9.3e, gradDmax=%8.2e, divBmax=%9.3e, gradBmax=%8.2e (saveDivergence=%i)\n",
+                           	 t,divDmax,gradDmax,divBmax,gradBmax,(int)saveDivergence);
+                    }
+                }
+                else
+                {
+          // for testing do not compute the divergence 
+                    divDmax=0.; gradDmax=0.; divBmax=0.; gradBmax=0.;
                 }
                 if( outputDiv )
                 {

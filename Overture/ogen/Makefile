@@ -387,7 +387,7 @@ tmove.o			: Ogen.h
 tamr.o			: Ogen.h
 
 # to remake the dependencies:  'make dep'
-dep: ; 
+dep:; 
 	makeDepend -fdepend -Y -- $(CCFLAGS) -- $(SRC)
 
 # include the dependencies here

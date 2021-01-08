@@ -1,0 +1,9 @@
+********************
+***** Dec 8, 2020
+
+
+Add support for f90  .... Kyle already did this !
+
+bpp test1.bf90
+
+gfortran -fPIC -fdefault-real-8 -fdefault-double-8  -o test1.o -c test1.f90

@@ -1,0 +1,232 @@
+\section{Installing Overture on Ubuntu}  \label{sec:installUbuntu}
+
+
+Here are instructions for Ubuntu version 18.04.
+
+\bigskip\noindent
+(I) Sudo install the following to get Ubuntu setup.
+\begin{verbatim}
+  apt install build-essential
+  apt install build-essential
+  apt install gfortran
+  apt install autoconf
+  apt install mpich
+  apt install emacs    (optional)
+  apt install libperl-dev
+\end{verbatim}
+
+\bigskip\noindent
+(IIa) If you do not build your own version of OpenGL Mesa (instructions below),  then 
+install OpenGL: (libjpeg62-dev may be needed even if you do install Mesa)
+\begin{verbatim}
+  apt install libmotif-dev
+  apt install libgl1-mesa-dev
+  apt install libglu1-mesa libxi-dev libxmu-dev libglu1-mesa-dev
+  apt install libjpeg62-dev
+\end{verbatim}
+
+\noindent
+(IIb) Optionally install Mesa OpenGL for better hardcopies.
+Get MesaLib-7.2.tar.gz from OvertureFramework install page
+\begin{verbatim}
+  tar xzf MesaLib-7.2.tar.gz
+  tar xzf MesaDemos-7.2.tar.gz
+  cd Mesa-7.2/
+  make linux-x86-64   (note: Error building demos, but lib's built OK) 
+
+  --- REPLACE THE GL Header files in /usr/include with the MESA versions
+  su -c "cp /home/henshw/software/Mesa-7.2/include/GLView.h /usr/include/GLView.h"
+  su -c "cp -r /home/henshw/software/Mesa-7.2/include/GL /usr/include/GL"  
+\end{verbatim}
+
+
+
+\bigskip\noindent
+(III) Install HDF (serial version) from hdf5-1.8.15-patch1.tar.gz -- follow normal instructions:
+\begin{verbatim}
+  tar xzf hdf5-1.8.15-patch1.tar.gz
+  mv hdf5-1.8.15-patch1 hdf5-1.8.15-gcc7.4.0
+
+  cd hdf5-1.8.15-gcc7.4.0
+  unsetenv cc
+  setenv CC gcc
+ ./configure --prefix=`pwd` 
+  make
+  make install
+\end{verbatim}
+
+\bigskip\noindent
+(IV) Install A++ following normal instructions (get AP-0.8.2.tar.gz from overtureFramework.org)
+\begin{verbatim}
+  su -c "ln -s /usr/bin/make /usr/bin/gmake"
+
+  tar -xzf AP-0.8.2.tar.gz
+  mv A++P++-0.8.2 AppPpp-0.8.2-gcc7.4.0
+  cd AppPpp-0.8.2-gcc7.4.0
+  configure --enable-SHARED_LIBS --prefix=`pwd`
+  make -j24
+  make install
+\end{verbatim}
+
+\bigskip\noindent
+(V) Optionally install PETSc 3.4.5 (linear solvers for cgins, for example)
+\begin{verbatim}
+  tar xzf petsc-3.4.5.tar.gz
+  mv petsc-3.4.5 petsc-3.4.5-serial
+  setenv PETSC_DIR /home/henshw/software/petsc-3.4.5-serial
+  cd petsc-3.4.5-serial
+  configure --with-cc=gcc --with-fc=gfortran --PETSC_ARCH=linux-gnu-opt --with-debugging=0 \
+            --with-fortran=0 --with-matlab=0 --with-mpi=0 --with-shared-libraries=1
+  make 
+\end{verbatim}
+
+
+\bigskip\noindent
+(VI) Install Overture from sourceforge: -- if you have an account on sourceforge you can download the
+latest Overture using 
+\begin{verbatim}
+   git clone ssh://USERNAME@git.code.sf.net/p/overtureframework/code /home/USERNAME/overtureFramework
+\end{verbatim}
+
+Goto overtureFramework/Overture and read the README file there.
+\begin{verbatim}
+   cd /home/USERNAME/overtureFramework/Overture
+   # Location for compiled version of Overture g=serial debug version : 
+   setenv OvertureBuild /home/USERNAME/Overture.g   
+   buildOverture
+   cd /home/USERNAME/Overture.g 
+   -- set Overture enviromental variables found in Overture.g/defenv  ---
+   configure
+   make -j8    
+\end{verbatim}
+
+To build cg:
+\begin{verbatim}
+   setenv CG /home/USERNAME/overtureFramework/cg  (location of cg source files)
+   setenv CGBUILDPREFIX /home/USERNAME/cg.g       (location for compiled version of cg)
+   cd /home/USERNAME/overtureFramework/cg
+   make   
+\end{verbatim}
+
+\bigskip 
+\bigskip 
+\bigskip\noindent
+For the \textbf{parallel version}, install P++ 
+\begin{verbatim}
+  tar xzf AP-0.8.2.tar.gz
+  mv A++P++-0.8.2 AppPpp-0.8.2-gcc7.4.0-parallel
+  
+  cd AppPpp-0.8.2-gcc7.4.0-parallel
+  NOTE: mpi include directory: 
+  configure --enable-PXX --prefix=`pwd` --enable-SHARED_LIBS \
+            --with-mpi-include=-I${MPI_ROOT}/include/mpich \  
+            --with-mpi-lib-dirs="-L${MPI_ROOT}/lib" --with-mpi-libs="-lmpich -lmpl -lc -lm" \
+            --with-mpirun=${MPI_ROOT}/bin/mpiexec --without-PADRE --disable-mpirun-check 
+  make -j24
+  make install
+\end{verbatim}
+
+\bigskip\noindent
+Parallel hdf5:
+\begin{verbatim}
+  tar xzf hdf5-1.8.15-patch1.tar.gz
+  mv hdf5-1.8.15-patch1 hdf5-1.8.15-gcc7.4.0-parallel
+
+  cd hdf5-1.8.15-gcc7.4.0-parallel
+  unsetenv CC
+  unsetenv cc
+  setenv CC $MPI_ROOT/bin/mpicc
+   ./configure --prefix=`pwd` --enable-parallel
+  make
+  make install
+\end{verbatim}
+
+\bigskip\noindent
+To build parallel Overture
+\begin{verbatim}
+   cd /home/USERNAME/overtureFramework/Overture
+   # Location for compiled version of Overture p=parallel debug version : 
+   setenv OvertureBuild /home/USERNAME/Overture.p    
+   buildOverture
+   cd /home/USERNAME/Overture.p 
+   -- set Overture enviromental variables found in Overture.g/defenv  ---
+   configure parallel
+   make -j8    
+\end{verbatim}
+
+\bigskip\noindent
+To build parallel cg:
+\begin{verbatim}
+   setenv CG /home/USERNAME/overtureFramework/cg  (location of cg source files)
+   setenv CGBUILDPREFIX /home/USERNAME/cg.p       (location for compiled version of cg)
+   cd /home/USERNAME/overtureFramework/cg
+   make   
+\end{verbatim}
+
+
+% 
+% \begin{verbatim}
+% Sudo intall the following Ubuntu packages:
+% -- build-essential
+% -- gfortran
+% -- autoconf
+% -- mpich (this one is optional)
+% 
+% -- tcsh
+% -- emacs
+% 
+% -- libmotif-dev
+% -- libgl1-mesa-dev (DIR: x86_64-linux-gnu) this part is taken care of by supplying the distribution
+% -- libperl-dev
+% -- libglu1-mesa libxi-dev libxmu-dev libglu1-mesa-dev
+% -- libjpeg62-dev
+% 
+% **Note: 
+% ***in file config/MakeDefs.linux, remove "-lXp", possibly "-lXmu -lXext" too 
+% ***in ".cshrc", change LOCALE to en-US.UTF-8 
+% 
+% -- hdf5
+% **Note: line 647, h5diff.c, change C++ comment "//" to "/* */"
+% 
+% -- A++
+% **Note in the /usr/bin directory: sudo ln -s make gmake (need gmake)
+% 
+% -- LAPACK BLAS
+% libblas-dev liblapack-dev (install DIR: x86_64-linux-gnu) this part is taken care of by supplying the distribution
+% 
+% -- Overture
+% ./configure distribution=ubuntu
+% **Note: getAnswer.C line 2107, change '\0' to NULL
+% **Note: set MOTIF,XLIBS,OPENGL,LAPACK to /usr and the rest of the environment to the install dir.
+% 
+% \end{verbatim}
+% 
+% 
+% 
+% 
+% \subsection{OS X 10.9 - Mavericks} 
+% 
+% \vskip\baselineskip
+% \noindent{\bf Stage I:}
+% The default compiler for Mavericks is {\em clang} which replaces gcc and g++. DO NOT install gcc. 
+% \begin{enumerate}
+%   \item Install Xcode from the apple web site.
+%   \item Install the command line tools in Xcode: 
+%     \begin{verbatim}
+%        xcode-select --install
+%     \end{verbatim}
+%     This command will ask you whether you want to install the command lines tools. You will know if you have the
+%     command lines tools if you can issue the command {\tt gcc --version}. 
+%   \item Install gfortran from {\tt http://gcc.gnu.org/wiki/GFortranBinaries\#MacOS}
+%   \item Install XQuartz (if you do not already have it). This should install X11 libraries in {\tt /opt/X11/lib}. This is needed
+%                  so you can pop up X windows but since there is no Motif here we will need to install another version using Macports.
+%   \item Install Macports
+%   \item Use Macports to install Open Motif and OpenGL:
+%      \begin{verbatim}
+%          sudo port install openmotif
+%          sudo port install mesa
+%          sudo port install libGLU
+%     \end{verbatim}
+%     This will install another version of X11 in {\tt /opt/local/lib} in addition to the Open Motif and Mesa libraries. 
+% \end{enumerate}
+% 

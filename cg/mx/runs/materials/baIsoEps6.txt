@@ -1,0 +1,12 @@
+# BA material file for an eps=3 material 
+name="matIsoEps6";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="MKS";
+omegaScale=1.00000000000000e+00;
+bianistropicK0=[6.,0.,0.,0.,0.,0., \
+                0.,6.,0.,0.,0.,0., \
+                0.,0.,6.,0.,0.,0., \
+                0.,0.,0.,1.,0.,0., \
+                0.,0.,0.,0.,1.,0., \
+                0.,0.,0.,0.,0.,1., ];

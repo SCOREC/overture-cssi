@@ -63,7 +63,8 @@ sub help
 
 $debug = 0;
 $fortran = 0;  # set to 1 if we are processing fortran
-$fortranFreeForm=0;  # set to 1 if we are processing fortran free format
+$fortranFreeForm=0;   # set to 1 if we are processing fortran free format
+$splitFortranLines=1; # by default split fortran lines to be at most 72 chars long 
 $appendToOutputFile=0;  # if =1 we append to an output file
 
 $quiet = 0;
@@ -132,7 +133,7 @@ sub printouti # ($a,$b,...)
 # output a line to the file with indentation
 # add indentation
 {
-  if( $fortran ==0 )
+  if( $fortran ==0 || $splitFortranLines == 0 )
   {
 
     print OUTFILE $indent, @_;
@@ -1187,6 +1188,11 @@ foreach $arg ( @ARGV )
       $includeDirs[$numberOfIncludeDirs] = $arg; 
       $numberOfIncludeDirs++;      
     }
+    elsif( $arg =~ /^-splitFortranLines=0/ )
+    {
+      $splitFortranLines=0;
+      printf("bpp: Will NOT split fortran lines\n");
+    }
     else 
     {
       printf("bpp: ERROR: unknown flag: [$arg]\n");
@@ -1219,6 +1225,7 @@ foreach $fileName ( @fileNames )  # process all files
   {
     $fortran=1;
     $fortranFreeForm=1;
+    $splitFortranLines=0;        # wdh Dec 8, 2020 Do not split f90 lines 
     $outfile =~ s/.bf90$//;
     $outfile = "$outfile.f90";
   }

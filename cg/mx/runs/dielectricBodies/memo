@@ -1,4 +1,62 @@
 *****************************************
+******* Sat Dec 12, 2020
+
+
+ADJUST SURFACE GRIDS TO REDUCE OVERLAP
+
+
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.45 -b=.4 -c=.5 -overlapOption=maximize -factor=6
+
+
+
+TRY maximize overlap --> WORKS , But there are small cells near the pole
+
+
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.45 -b=.4 -c=.5 -angle1=45 -rotationAxis1=1 -angle2=45 -rotationAxis2=0 -overlapOption=maximize -factor=3
+
+
+
+REVISIT solid ellipsoid  *TROUBLE* non-matching mask at interface 
+
+G3 -- 
+
+$cgmx -noplot -noplot dielectricBodies -g=solidEllipsoidInABoxGride3.order2.hdf -tf=1 -tp=.1 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-.75 -rbc=rbcNonLocal -background=OuterSquare -xLeftProbe=-.7 -xRightProbe=.7 -dm=none -probeFrequency=1 -probeFileName=EllipsoidEps4Polar1Dir1G4 -matFile=baMatIsoEps4.txt -go=og
+
+
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.45 -b=.4 -c=.5 -angle1=45 -rotationAxis1=1 -angle2=45 -rotationAxis2=0 -factor=3
+
+
+--MX-- POTENTIAL Interface: ellipsoidOuterGrid=(grid1,side,dir1)=(1,0,2) AND ellipsoidInnerGrid=(grid2,side2,dir2)=(5,0,2) share=100
+ grid1: r1=[5.00e-01,5.00e-01,0.00e+00] x1=[-3.18e-01,-2.25e-01,2.25e-01]
+ grid2: r2=[5.00e-01,5.00e-01,-5.93e-31] x2=[-3.18e-01,-2.25e-01,2.25e-01] .. rDist=5.93e-31 xDist=1.52e-17, xNorm=3.66e+00
+--MX-- Interface found: ellipsoidOuterGrid=(grid1,side,dir1)=(1,0,2) matches ellipsoidInnerGrid=(grid2,side2,dir2)=(5,0,2) share=100
+       ERROR: the mask arrays do not match on the interface. This is currently required.
+       Try re-generating the grid with more lines in the normal direction, this sometimes fixes this problem.
+       See debug file for more info if debug &2 
+
+
+*****************************************
+******* Wed Dec 9, 2020
+
+REVISIT ELLIPSOID
+
+
+
+To-do:
+    - convert to Nurbs
+    - periodic 
+
+
+
+NURBS and rotated: 
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.375 -b=.4 -c=.5 -angle1=45 -rotationAxis1=1 -angle2=45 -rotationAxis2=0 -factor=4
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.375 -b=.4 -c=.5 -angle1=45 -rotationAxis1=1 -factor=4
+
+
+ogen -noplot solidEllipsoidInABoxGrid -order=2 -interp=e -factor=4
+
+
+*****************************************
 ******* Sun Nov 28, 2020
 
 START TEST RUN PARALLEL

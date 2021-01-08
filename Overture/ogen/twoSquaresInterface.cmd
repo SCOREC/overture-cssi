@@ -41,7 +41,7 @@
 #    ogen -noplot twoSquaresInterface -factor=1 -order=4 -angle=45 -name="twoSquaresInterfaceRotated1.order4.hdf"
 # 
 # nonSquares:
-#    ogen -noplot twoSquaresInterface -interp=e -angle=0. -prefix=twoNonSquaresInterface -order=4 -factor=2 
+#    ogen -noplot twoSquaresInterface -interp=e -angle=0.0 -prefix=twoNonSquaresInterface -order=4 -factor=2 
 # non-matching:
 #    ogen -noplot twoSquaresInterface -factor=1 -yFactor=.5 -yFactorRight=2. -name="twoSquaresInterface1to2.order2.hdf"
 #

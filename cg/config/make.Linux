@@ -83,7 +83,8 @@ CC_FLAGS_FIXFP = -ffloat-store -mno-sse -mno-sse2
 
 ## ## Fortran Compiler options
 
-FC_FLAGS_REQ = $(OV_FORTRAN_FLAGS) $(OV_AUTO_DOUBLE_FLAGS) 
+## *wdh* 2020/11/08  allow unlimited length lines for f90 
+FC_FLAGS_REQ = $(OV_FORTRAN_FLAGS) $(OV_AUTO_DOUBLE_FLAGS) -ffree-line-length-none
 # FC_FLAGS_DBG = -g -fbounds-check 
 ifneq ($(FC),fort77)
   FC_FLAGS_DBG = -g 

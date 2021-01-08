@@ -1,4 +1,202 @@
 *****************************************
+******* Dec 22, 2020
+
+>>> COMPUTE STENCIL FOR GDM 
+
+
+GDM NON-SQUARE  - exact 
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order2 -dm=none -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.077e-01 max-err = 4.996e-16
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=7.310e-01 max-err = 4.441e-16
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.11e-15,8.88e-16,1.53e-02,], max (u):[1.46e+00,1.38e+00,1.02e+00,] (3 steps)
+
+
+*****************************************
+******* Dec 22, 2020
+
+NON-SQUARE 
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order2 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+
+
+*****************************************
+******* Dec 20, 2020
+
+START TEST SAVE STENCIL
+
+
+NON-SQUARE 
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order2 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+
+
+*****************************************
+******* Dec 16/17/19, 2020
+
+
+CONTINUE START ON OPTIMIZING THE SERIAL AND PARALLEL INTERFACE ROUTINES
+
+NON-SQUARE -- TEST interfaceOpt
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order2 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+
+
+
+TZ: EXACT 
+cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order2 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[6.66e-16,4.44e-16,1.69e-17,], max (u):[1.46e+00,1.38e+00,1.42e-01,] (3 steps)
+
+
+TZ: EXACT 
+cgmx -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -go=go
+
+
+
+
+cgmx -noplot interface -g=twoSquaresInterfacee2.order2 -eps2=2 -dm=none -kx=1 -ky=1 -tp=.01 -tf=.01 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee8.order2 -eps2=2 -dm=none -kx=1 -ky=1 -tp=.01 -tf=.01 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+
+*****************************************
+******* Mon Dec 14/15, 2020
+
+START ON OPTIMIZING THE SERIAL AND PARALLEL INTERFACE ROUTINES 
+
+
+BASELINE RUNS 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+GDM 2D order4
+cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee32p.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+
+              ---------Maxwell Summary------- 
+                       Tue Dec 15 08:03:27 2020
+               Grid:   /home/henshw/grids/twoSquaresInterfacee32p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =       51, grids=2, gridpts =206082, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=95.1523,ave=95.1523,max=95.1523](Mb), max-recorded=109.633 (Mb), total=95.1523 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  3.88e+00    7.61e-02    3.69e-07   100.000   3.881e+00   3.881e+00
+setup and initialize................  1.94e-02    3.80e-04    1.85e-09     0.500   1.940e-02   1.940e-02
+initial conditions..................  4.01e-01    7.86e-03    3.82e-08    10.334   4.011e-01   4.011e-01
+advance.............................  3.01e+00    5.90e-02    2.86e-07    77.544   3.010e+00   3.010e+00
+  advance rectangular grids.........  2.73e+00    5.35e-02    2.60e-07    70.288   2.728e+00   2.728e+00
+   (advOpt).........................  2.72e+00    5.34e-02    2.59e-07    70.101   2.721e+00   2.721e+00
+  boundary conditions...............  1.29e-01    2.52e-03    1.22e-08     3.314   1.286e-01   1.286e-01
+  interface bc......................  1.42e-01    2.79e-03    1.35e-08     3.668   1.424e-01   1.424e-01
+  interpolation.....................  6.97e-03    1.37e-04    6.64e-10     0.180   6.974e-03   6.974e-03
+  update ghost (parallel)...........  2.40e-05    4.71e-07    2.28e-12     0.001   2.400e-05   2.400e-05
+get errors..........................  3.95e-01    7.75e-03    3.76e-08    10.179   3.951e-01   3.951e-01
+  get norms.........................  5.90e-05    1.16e-06    5.61e-12     0.002   5.900e-05   5.900e-05
+get divergence......................  2.09e-02    4.09e-04    1.98e-09     0.537   2.086e-02   2.086e-02
+compute dt..........................  7.10e-05    1.39e-06    6.76e-12     0.002   7.100e-05   7.100e-05
+plotting............................  3.51e-02    6.89e-04    3.34e-09     0.905   3.512e-02   3.512e-02
+output results......................  6.36e-04    1.25e-05    6.05e-11     0.016   6.360e-04   6.360e-04
+waiting (not counted)...............  3.78e-04    7.41e-06    3.60e-11     0.010   3.780e-04   3.780e-04
+--------------------------------------------------------------------------------------------------------
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+3D order4
+cgmx -noplot interface -numberOfParallelGhost=3 -g=twoBoxesInterfacee8.order4.ng3 -eps2=2 -dm=none -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+Parallel:
+-np=1
+  interface bc......................  1.28e+00    7.98e-02    2.93e-07    22.119   1.276e+00   1.276e+00
+-np=4
+  interface bc......................  4.60e-01    2.87e-02    1.06e-07    25.172   4.610e-01   4.571e-01
+  
+              ---------Maxwell Summary------- 
+                       Tue Dec 15 08:11:12 2020
+               Grid:   twoBoxesInterfacee8.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =       16, grids=2, gridpts =272322, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=132.867,ave=132.867,max=132.867](Mb), max-recorded=158.297 (Mb), total=132.867 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  4.82e+00    3.02e-01    1.11e-06   100.000   4.824e+00   4.824e+00
+setup and initialize................  3.72e-01    2.32e-02    8.53e-08     7.708   3.718e-01   3.718e-01
+initial conditions..................  9.11e-02    5.69e-03    2.09e-08     1.888   9.107e-02   9.107e-02
+advance.............................  4.10e+00    2.57e-01    9.42e-07    85.082   4.105e+00   4.105e+00
+  advance curvilinear grids.........  3.15e+00    1.97e-01    7.23e-07    65.301   3.150e+00   3.150e+00
+   (advOpt).........................  3.15e+00    1.97e-01    7.23e-07    65.278   3.149e+00   3.149e+00
+  boundary conditions...............  3.52e-01    2.20e-02    8.08e-08     7.297   3.521e-01   3.521e-01
+  interface bc......................  6.02e-01    3.76e-02    1.38e-07    12.483   6.022e-01   6.022e-01
+  interpolation.....................  1.44e-03    8.99e-05    3.30e-10     0.030   1.439e-03   1.439e-03
+  update ghost (parallel)...........  1.60e-05    1.00e-06    3.67e-12     0.000   1.600e-05   1.600e-05
+get errors..........................  8.64e-02    5.40e-03    1.98e-08     1.792   8.644e-02   8.644e-02
+  get norms.........................  1.22e-04    7.62e-06    2.80e-11     0.003   1.220e-04   1.220e-04
+get divergence......................  1.15e-01    7.19e-03    2.64e-08     2.385   1.151e-01   1.151e-01
+compute dt..........................  5.80e-02    3.62e-03    1.33e-08     1.202   5.798e-02   5.798e-02
+plotting............................  1.14e-01    7.14e-03    2.62e-08     2.368   1.142e-01   1.142e-01
+output results......................  3.13e-04    1.96e-05    7.18e-11     0.006   3.130e-04   3.130e-04
+waiting (not counted)...............  5.54e-04    3.46e-05    1.27e-10     0.011   5.540e-04   5.540e-04
+--------------------------------------------------------------------------------------------------------
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+2D order4
+cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee64p.order4.ng3 -eps2=2 -dm=none -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+              ---------Maxwell Summary------- 
+                       Tue Dec 15 08:05:16 2020
+               Grid:   /home/henshw/grids/twoSquaresInterfacee64p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      101, grids=2, gridpts =821762, interp pts=0, processors=1 ==== 
+  ==== memory per-proc: [min=223.191,ave=223.191,max=223.191](Mb), max-recorded=223.191 (Mb), total=223.191 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  6.51e+00    6.45e-02    7.85e-08   100.000   6.513e+00   6.513e+00
+setup and initialize................  3.96e-02    3.92e-04    4.77e-10     0.607   3.955e-02   3.955e-02
+initial conditions..................  2.18e-01    2.16e-03    2.62e-09     3.344   2.178e-01   2.178e-01
+advance.............................  5.84e+00    5.78e-02    7.03e-08    89.621   5.837e+00   5.837e+00
+  advance rectangular grids.........  5.23e+00    5.18e-02    6.30e-08    80.280   5.229e+00   5.229e+00
+   (advOpt).........................  5.22e+00    5.17e-02    6.29e-08    80.169   5.222e+00   5.222e+00
+  boundary conditions...............  1.34e-01    1.32e-03    1.61e-09     2.051   1.336e-01   1.336e-01
+  interface bc......................  4.52e-01    4.47e-03    5.44e-09     6.933   4.516e-01   4.516e-01
+  interpolation.....................  1.40e-02    1.39e-04    1.69e-10     0.216   1.404e-02   1.404e-02
+  update ghost (parallel)...........  7.90e-05    7.82e-07    9.52e-13     0.001   7.900e-05   7.900e-05
+get errors..........................  2.23e-01    2.21e-03    2.69e-09     3.427   2.232e-01   2.232e-01
+  get norms.........................  2.10e-04    2.08e-06    2.53e-12     0.003   2.100e-04   2.100e-04
+get divergence......................  1.01e-01    1.00e-03    1.22e-09     1.557   1.014e-01   1.014e-01
+compute dt..........................  1.02e-04    1.01e-06    1.23e-12     0.002   1.020e-04   1.020e-04
+plotting............................  1.35e-01    1.34e-03    1.63e-09     2.075   1.351e-01   1.351e-01
+output results......................  1.87e-03    1.85e-05    2.26e-11     0.029   1.872e-03   1.872e-03
+waiting (not counted)...............  4.40e-04    4.36e-06    5.30e-12     0.007   4.400e-04   4.400e-04
+--------------------------------------------------------------------------------------------------------
+
+PARALLEL
+mpirun -np 2 $cgmx -noplot interface -numberOfParallelGhost=3 -g=twoSquaresInterfacee64p.order4.ng3 -eps2=2 -dm=none -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic -useSosupDissipation=1 -bc=d -debug=0 -go=go
+
+-np=1
+  interface bc......................  1.22e+00    1.21e-02    1.47e-08    16.889   1.220e+00   1.220e+00
+
+              ---------Maxwell Summary------- 
+                       Tue Dec 15 08:06:33 2020
+               Grid:   /home/henshw/grids/twoSquaresInterfacee64p.order4.ng3.hdf 
+  ==== final time= 1.00e-01, numberOfStepsTaken =      101, grids=2, gridpts =821762, interp pts=0, processors=2 ==== 
+  ==== memory per-proc: [min=202.281,ave=202.654,max=203.027](Mb), max-recorded=203.027 (Mb), total=405.309 (Mb)
+   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %     [max-s/proc] [min-s/proc]
+total time..........................  4.00e+00    3.96e-02    4.82e-08   100.000   3.999e+00   3.999e+00
+setup and initialize................  2.17e-02    2.15e-04    2.62e-10     0.543   2.172e-02   2.172e-02
+initial conditions..................  1.08e-01    1.07e-03    1.30e-09     2.706   1.082e-01   1.082e-01
+advance.............................  3.65e+00    3.62e-02    4.40e-08    91.386   3.655e+00   3.655e+00
+  advance rectangular grids.........  2.56e+00    2.54e-02    3.09e-08    64.031   2.561e+00   2.561e+00
+   (advOpt).........................  2.55e+00    2.53e-02    3.07e-08    63.809   2.552e+00   2.552e+00
+  boundary conditions...............  1.62e-01    1.61e-03    1.96e-09     4.061   1.626e-01   1.622e-01
+  interface bc......................  7.81e-01    7.73e-03    9.41e-09    19.530   7.812e-01   7.809e-01
+  interpolation.....................  7.87e-02    7.79e-04    9.48e-10     1.968   7.894e-02   7.849e-02
+  update ghost (parallel)...........  1.45e-01    1.43e-03    1.74e-09     3.617   1.536e-01   1.357e-01
+get errors..........................  1.24e-01    1.23e-03    1.50e-09     3.109   1.244e-01   1.243e-01
+  get norms.........................  1.20e-04    1.19e-06    1.44e-12     0.003   1.884e-04   5.150e-05
+get divergence......................  4.68e-02    4.64e-04    5.64e-10     1.171   4.723e-02   4.643e-02
+compute dt..........................  9.82e-05    9.73e-07    1.18e-12     0.002   9.871e-05   9.775e-05
+plotting............................  6.06e-02    6.00e-04    7.30e-10     1.515   6.062e-02   6.057e-02
+output results......................  2.22e-03    2.20e-05    2.68e-11     0.056   2.222e-03   2.222e-03
+waiting (not counted)...............  4.81e-04    4.77e-06    5.80e-12     0.012   5.085e-04   4.544e-04
+--------------------------------------------------------------------------------------------------------
+
+
+*****************************************
 ******* Tues Dec 1, 2020
 
 4TH ORDER 3D GDM:  LOOKS OK

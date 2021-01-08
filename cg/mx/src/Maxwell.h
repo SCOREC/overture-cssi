@@ -432,6 +432,7 @@ class Maxwell
 
 
 protected:
+  friend class InterfaceMaxwell;
 
   int buildDispersionParametersDialog(DialogData & dialog );
   int buildDissipationParametersDialog(DialogData & dialog );

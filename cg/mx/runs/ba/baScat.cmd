@@ -68,6 +68,10 @@ $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1;
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); # for a second GDM domain 
 $dmFile=""; # "SilverJCDispersionFits.txt"; 
+# -- new: boxRegionArray.h defines regions
+$nx=2; $ny=2; $nz=1;
+$xWidth=.25; $yWidth=.25; $zWidth=.25; # width of boxes 
+$xc=.125; $yc=.125; $zc=.125;  # lower left corner of the boxes
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
@@ -92,7 +96,9 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "numMatRegions=i"=>\$numMatRegions,"bc1=s"=>\$bc1,"bc2=s"=>\$bc2,"bc3=s"=>\$bc3,"bc4=s"=>\$bc4,"bc5=s"=>\$bc5,"bc6=s"=>\$bc6,\
   "solveForAllFields=i"=>\$solveForAllFields,"regionFile=s"=>\$regionFile,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
   "radius=f"=>\$radius,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
-  "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName,"amp=f"=>\$amp,"omega=f"=>\$omega,"rampTime=f"=>\$rampTime  );
+  "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName,"amp=f"=>\$amp,"omega=f"=>\$omega,\
+  "rampTime=f"=>\$rampTime,"nx=i"=>\$nx,"ny=i"=>\$ny,"nz=i"=>\$nz,\
+  "xWidth=f"=>\$xWidth,"yWidth=f"=>\$yWidth,"zWidth=f"=>\$zWidth,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc );
 # -------------------------------------------------------------------------------------------------
 #
 if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }

@@ -6,7 +6,8 @@
 # $xShift=-1; $yShift=0; $angle=0; $xMin=-$radX; $xMax=-$xMin; $yMin=-$radY; $yMax=-$yMin;
 $count=$count+1; $gridName="iBeam$count"; $gridNames .= "\n" . $gridName;
 $mapName="iBeamGridBase";
-include transform.h
+# include transform.h
+include transformToNurbs.h
 # 
 # Inner background grid 
 $gridName="iBeamSolidCore$count"; $iBeamNames .= "\n" . $gridName;
@@ -28,4 +29,5 @@ rectangle
   exit
 $mapName="iBeamGridBaseSolid";
 $gridName="iBeamSolid$count"; $iBeamNames .= "\n" . $gridName;
-include transform.h
+# include transform.h
+include transformToNurbs.h

@@ -29,7 +29,7 @@
 # 
 $prefix="solidSphereArrayGrid";
 $xa=-4.; $xb=4.; $ya=-4; $yb=4; $za=-4.; $zb=4.; $nrMin=3; $nrExtra=0; $rgd="var"; $name=""; 
-$order=2; $factor=1; $interp="i"; # default values
+$order=2; $factor=1; $interp="e"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids"; $dse=0.; 
 $deltaRadius0=.3; # do not make larger than .3 or troubles with cgmx
 $numGhost=-1;  # if this value is set, then use this number of ghost points

@@ -23,6 +23,7 @@ echo to terminal 0
 $numSpheres=1; # number of spheres
 $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $varDissSmooths=20; $sidebc="symmetry"; 
 $kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="pw"; 
+$domainBaseName="sphereDomain"; # or ellipsoid 
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numBlocks=0; # 0 = default case of scattering from a "innerDomain" 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
@@ -49,6 +50,8 @@ $dm="none";  @npv=();  $modeGDM=-1;
 # Material files:
 # @dmFile= ("gdmMaterial1.txt", "gdmMaterial2.txt", "gdmMaterial3.txt", "gdmMaterial4.txt" ); # "SilverJCDispersionFits.txt"; 
 @dmFile= (); # "SilverJCDispersionFits.txt"; 
+# new way: specify materials in a file: 
+$materialFile="ellipsoidMaterials.h";
 # 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
@@ -64,11 +67,11 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
    "pmlPower=i"=>\$pmlPower,"pmlStrength=f"=>\$pmlStrength,"leftBC=s"=>\$leftBC,"bcBody=s"=>\$bcBody,\
    "eps0=f"=>\$eps0,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"eps3=f"=>\$eps3,"eps4=f"=>\$eps4,\
    "xar=f"=>\$xar,"xbr=f"=>\$xbr,"xat=f"=>\$xat,"xbt=f"=>\$xbt,"dm=s"=>\$dm,"ic=s"=>\$ic,\
-   "npv=i{1,}"=>\@npv,"numSpheres=i"=>\$numSpheres,\
+   "npv=i{1,}"=>\@npv,"numSpheres=i"=>\$numSpheres,"domainBaseName=s"=>\$domainBaseName,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s{1,}"=>\@dmFile, "interfaceEquationOption=i"=>\$interfaceEquationOption );
+  "dmFile=s{1,}"=>\@dmFile, "interfaceEquationOption=i"=>\$interfaceEquationOption,"materialFile=s"=>\$materialFile );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
@@ -153,38 +156,40 @@ for( $i=1; $i<=$numSpheres; $i++ ){ $epsv[$i]=$eps1; $muv[$i]=$mu1; }  # DO THIS
 # 
 $numDomains=$numSpheres+1; 
 @domainName = ( "outerDomain" );
-for( $i=1; $i<=$numSpheres; $i++ ){ $domainName[$i]="sphereDomain$i"; }
-## $domainName[1]="innerDomain"; # *** TEMP***
+for( $i=1; $i<=$numSpheres; $i++ ){ $domainName[$i]="$domainBaseName$i"; }
+# for( $i=1; $i<=$numSpheres; $i++ ){ $domainName[$i]="sphereDomain$i"; }
+# for( $i=1; $i<=$numSpheres; $i++ ){ $domainName[$i]="ellipsoid$i"; }
+#
 $cmd="#";
 for( $i=0; $i<$numDomains; $i++ ){ $cmd .= "\n coefficients $epsv[$i] $muv[$i] $domainName[$i]   (eps,mu,grid/domain-name)"; }
-printf("cmd=\n$cmd\n");
+# printf("cmd=\n$cmd\n");
 # 
 $cmd 
-# coefficients $eps0 $mu0 outerDomain   (eps,mu,grid/domain-name)
-# New: Aug 19, 2019 
-# ------------ Set GDM parameters for sphere domains -----------
+# 
+#- # New: Aug 19, 2019 
+#- # ------------ Set GDM parameters for sphere domains -----------
+#- $cmd=""; 
+#- for( $i=1; $i<=$numSpheres; $i++ ){ \
+#-   $cmd .= "GDM domain name: $domainName[$i]\n";  \
+#-   $cmd .= "number of polarization vectors: $npv[$i]\n";  \
+#-   $cmd .= "material file: $dmFile[0]\n"; \
+#-   }
+#-   $cmd .= "#";
+#-   # printf("cmd=\n$cmd\n");
+#- ## TURN OFF $cmd
+#
+# -- new way -- specify material properties for all bodies in a file Dec 12, 2020
+# 
+include $materialFile
 $cmd=""; 
 for( $i=1; $i<=$numSpheres; $i++ ){ \
   $cmd .= "GDM domain name: $domainName[$i]\n";  \
   $cmd .= "number of polarization vectors: $npv[$i]\n";  \
-  $cmd .= "material file: $dmFile[0]\n"; \
+  $cmd .= "material file: $dmFile[$i]\n"; \
   }
   $cmd .= "#";
   # printf("cmd=\n$cmd\n");
 $cmd
-#
-#- # ------------ Set GDM parameters for domain 2 -----------
-#- GDM domain name:  $domainName[2]
-#-   number of polarization vectors: $npv[1]
-#-   # -- read material parameters from a file 
-#-   material file: $dmFile[1]
-#
-# *****************
-# for Yee we define the material regions
-# if( $method eq "Yee" ){ $cmds = "define embedded bodies\n PEC cylinder\n $rad $x0 $y0 $z0\n exit"; }else{ $cmds="#"; }
-if( $method eq "Yee" ){ $cmds = "define embedded bodies\n plane material interface\n 1 0 0 0 0 0\n $eps1 $mu1 0 0\n exit"; }else{ $cmds="#"; }
-$cmds 
-# ****************
 #
 interface BC iterations $interfaceIterations
 # interfaceEquationsOption=0 : use extrap for 2nd ghost, 1=use eqns
@@ -223,7 +228,7 @@ use variable dissipation $varDiss
 number of variable dissipation smooths $varDissSmooths
 use conservative difference $cons
 # order of dissipation 4
-debug 0
+debug $debug
 #
 cfl $cfl 
 plot divergence 0
@@ -305,6 +310,26 @@ exit
 continue
 #
 #
+plot:Ey
+contour
+  plot contour lines (toggle)
+  # if( $grid =~ /3d/ || $grid =~ /Sphere/ || $grid =~ /Ellipsoid/ )
+  $cmd="delete contour plane 2\n delete contour plane 1\n delete contour plane 0"; 
+  $cmd
+  $ypos=-.65; $zpos=-.65;  # z-position of contour plane 
+  add contour plane  0  0  1  0   0   $zpos
+  add contour plane  0  1  0  0 $ypos  0 
+exit
+grid
+ plot block boundaries 0
+  plot shaded surfaces (3D) 0
+  toggle grid 0 0
+  coarsening factor 2
+exit this menu
+# 
+$go 
+
+
 plot:Ey
 contour
   plot contour lines (toggle)

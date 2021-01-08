@@ -6,7 +6,8 @@
 # $xShift=-1; $yShift=0; $angle=0; $xMin=-$radX; $xMax=-$xMin; $yMin=-$radY; $yMax=-$yMin;
 $count=$count+1; $gridName="splitRing$count"; $gridNames .= "\n" . $gridName;
 $mapName="splitRingGridBase";
-include transform.h
+# include transform.h
+include transformToNurbs.h
 # 
 # Inner background grid 
 $gridName="splitRingSolidCore$count"; $splitRingNames .= "\n" . $gridName;
@@ -28,4 +29,6 @@ rectangle
   exit
 $mapName="splitRingGridBaseSolid";
 $gridName="splitRingSolid$count"; $splitRingNames .= "\n" . $gridName;
-include transform.h
+# include transform.h
+include transformToNurbs.h
+

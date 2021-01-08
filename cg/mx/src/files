@@ -17,7 +17,7 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
      PlaneInterfaceExactSolution.C advanceBAMX.C defineMaterialRegion.C BAMaterialFunctions.C BAPlaneInterface.C \
      buildSuperGrid.C SurfaceWaveExactSolution.C computeTimeStep.C SlabsExactSolution.C ComplexArray.C \
-     NonlinearExactSolution.C CheckParallel.C getAugmentedSolution.C
+     NonlinearExactSolution.C CheckParallel.C getAugmentedSolution.C InterfaceMaxwell.C
 
 # Include Kyle's dbase functions with cgmx
 # SRC_FILES += dbAccess.C dbFunctions.f kk_ptr.cc
@@ -86,6 +86,10 @@ FSRCO +=  bcOptMaxwell.f bcOptMaxwell2dOrder2.f bcOptMaxwell3dOrder2.f \
 
 FSRCO +=interface3d.f interface3dOrder4.f
 
+# New interface routine -- testing for now
+#   FINISH ME 
+FNSRCO +=interfaceOpt.f90 
+
 # misc. fortran files
 FSRCO += abc.f pml.f dsimv.f lscoeff.f interfaceNew.f interfaceDerivatives.f \
          forcingOpt.f linpack.f scatCyl.f scatSphere.f rjbesl.f rybesl.f gamma.f nrbcUtil.f \
@@ -144,6 +148,8 @@ src/getNorms.C : src/getNorms.bC; $(BPP) -quiet -clean $<
 src/divergence.C : src/divergence.bC; $(BPP) -quiet -clean $<
 
 src/defineMaterialRegion.C : src/defineMaterialRegion.bC; $(BPP) -quiet -clean $<
+
+src/InterfaceMaxwell.C : src/InterfaceMaxwell.bC; $(BPP) -quiet -clean $<
 
 src/SphereExactSolutions.C : src/SphereExactSolutions.bC; $(BPP) -quiet -clean $<
 
@@ -308,6 +314,13 @@ src/bcAdjacent.f: src/bcAdjacent.bf src/bcDefineFortranInclude.h
 
 src/interface.f: src/interface.bf src/bcDefineFortranInclude.h 
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface.bf
+
+# -- *start* on new interface routine that generates multiple files
+#   FINISH ME 
+src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt.bf90
+
+
 
 src/interface3d.f: src/interface3d.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h  
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3d.bf
