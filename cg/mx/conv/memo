@@ -1,5 +1,111 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
+***************************
+******* Jan 8, 2021
+
+TEST NEW VERSION OF QING'S MULA SCHEME
+MLA 
+
+------ INTERFACE
+MLA44 : trig
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+
+TRIG: different mat's
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.28e-03 &      & 3.29e-03 &      & 2.00e+00 &      & 3.29e-03 &      & 8.36e-04 &      & 1.22e-02 &      
+twoSquaresInterface4 &     2 & 2.04e-04 &  6.27 & 7.73e-04 &  4.26 & 1.00e+00 &  2.00 & 7.73e-04 &  4.26 & 2.50e-04 &  3.34 & 2.59e-03 &  4.71 
+twoSquaresInterface8 &     4 & 5.03e-05 &  4.06 & 2.08e-04 &  3.72 & 2.00e+00 &  0.50 & 2.08e-04 &  3.72 & 6.79e-05 &  3.68 & 6.28e-04 &  4.12 
+Convergence rates: c0=2.33 c1=1.99 c2=0.00 c3=1.99 c4=1.81 c5=2.14 
+
+
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+TRIG: same mat
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.38e-05 &      & 3.50e-05 &      & 1.00e+00 &      & 4.38e-05 &      & 7.30e-05 &      & 1.12e-03 &      
+twoSquaresInterface4 &     2 & 1.96e-06 & 22.35 & 2.14e-06 & 16.36 & 1.99e+00 &  0.50 & 2.14e-06 & 20.47 & 4.16e-06 & 17.55 & 7.73e-05 & 14.49 
+twoSquaresInterface8 &     4 & 1.20e-07 & 16.33 & 1.50e-07 & 14.27 & 2.00e+00 &  0.99 & 1.50e-07 & 14.27 & 4.27e-07 &  9.74 & 4.90e-06 & 15.78 
+Convergence rates: c0=4.26 c1=3.93 c2=-0.50 c3=4.09 c4=3.71 c5=3.92
+
+
+MLA44 : exact degree=[2,2]
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -ic=tz -tz=poly -degreex=4 -degreet=4 -bc=d -cg=twoSquaresInterface -order=4 -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+
+degree=[4,4]
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 8.89e-08 &      & 4.78e-08 &      & 3.64e+00 &      & 8.89e-08 &      & 8.31e-07 &      & 7.71e-08 &      
+twoSquaresInterface4 &     2 & 5.79e-09 & 15.35 & 3.12e-09 & 15.32 & 1.13e+00 &  3.22 & 5.79e-09 & 15.35 & 5.18e-08 & 16.04 & 6.50e-09 & 11.86 
+twoSquaresInterface8 &     4 & 6.46e-10 &  8.96 & 3.45e-10 &  9.04 & 1.17e+00 &  0.97 & 6.46e-10 &  8.96 & 5.53e-09 &  9.37 & 8.21e-10 &  7.92 
+Convergence rates: c0=3.55 c1=3.56 c2=0.82 c3=3.55 c4=3.62 c5=3.28
+
+
+MLA22 : exact degree=[2,2]
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -ic=tz -tz=poly -degreex=2 -degreet=2 -bc=d -cg=twoSquaresInterface -order=2 -tf=.5 -tp=.1 -modeGDM=1 -ng=1
+
+
+FD44 - TRIG 
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.30e-05 &      & 2.35e-05 &      & 1.31e+00 &      & 2.35e-05 &      & 7.34e-06 &      & 2.48e-04 &      
+twoSquaresInterface4 &     2 & 1.06e-06 & 21.70 & 7.54e-07 & 31.17 & 1.31e+00 &  1.00 & 1.06e-06 & 22.17 & 4.62e-07 & 15.89 & 1.56e-05 & 15.90 
+twoSquaresInterface8 &     4 & 7.60e-08 & 13.95 & 1.76e-08 & 42.84 & 1.31e+00 &  1.00 & 7.60e-08 & 13.95 & 3.10e-08 & 14.90 & 9.52e-07 & 16.39 
+Convergence rates: c0=4.12 c1=5.19 c2=-0.00 c3=4.14 c4=3.94 c5=4.01 
+
+
+FD44 - POLY  EXACT degree = [4,4]
+conv.p interface.conv -dm=gdm -npv=1 1 -degreex=4 -degreet=4 -tz=poly -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
+
+convRate: numberOfComponents=6 (from header)
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.71e-14 &      & 1.04e-14 &      & 2.26e-01 &      & 2.71e-14 &      & 2.13e-14 &      & 5.11e-14 &      
+twoSquaresInterface4 &     2 & 4.49e-14 &  0.60 & 1.95e-14 &  0.53 & 2.48e-01 &  0.91 & 4.49e-14 &  0.60 & 8.93e-14 &  0.24 & 1.08e-13 &  0.47 
+Convergence rates: c0=-0.73 c1=-0.91 c2=-0.13 c3=-0.73 c4=-2.07 c5=-1.08 
+
+
+
+---------TRIG: ORDER=4 *trouble*
+conv.p exact.conv -option=tz -tz=trig -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.6 -tp=.6 -order=4 -npv=2 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   square8 &     1 & 2.13e+01 &      & 1.19e+00 &      & 4.05e-01 &      & 2.13e+01 &      & 1.52e+01 &      & 2.52e-01 &      
+  square16 &     2 & 1.17e-01 &182.05 & 1.42e-02 & 83.80 & 5.88e-01 &  0.69 & 1.17e-01 &182.05 & 9.26e-02 &164.15 & 1.07e-01 &  2.36 
+  square32 &     4 & 2.52e-02 &  4.64 & 3.12e-03 &  4.55 & 5.88e-01 &  1.00 & 2.52e-02 &  4.64 & 2.20e-02 &  4.21 & 7.34e-02 &  1.46 
+  square64 &     8 & 3.28e-03 &  7.68 & 3.84e-04 &  8.12 & 5.88e-01 &  1.00 & 3.28e-03 &  7.68 & 2.68e-03 &  8.21 & 1.32e-02 &  5.56 
+Convergence rates: c0=4.02 c1=3.70 c2=-0.16 c3=4.02 c4=3.95 c5=1.33 
+
+
+
+---------TRIG: ORDER=2 *trouble*
+conv.p exact.conv -option=tz -tz=trig -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.6 -tp=.6 -order=2 -npv=2 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   square8 &     1 & 2.77e+00 &      & 5.44e-01 &      & 4.05e-01 &      & 2.77e+00 &      & 2.03e+00 &      & 1.66e-01 &      
+  square16 &     2 & 7.21e+00 &  0.38 & 1.03e+00 &  0.53 & 5.88e-01 &  0.69 & 7.21e+00 &  0.38 & 5.12e+00 &  0.40 & 1.08e-01 &  1.54 
+  square32 &     4 & 4.13e-01 & 17.46 & 1.27e-01 &  8.11 & 5.88e-01 &  1.00 & 4.13e-01 & 17.46 & 5.55e-01 &  9.23 & 1.20e-01 &  0.90 
+  square64 &     8 & 3.97e-01 &  1.04 & 2.06e-01 &  0.62 & 5.88e-01 &  1.00 & 3.97e-01 &  1.04 & 1.16e+00 &  0.48 & 5.18e-02 &  2.32 
+Convergence rates: c0=1.25 c1=0.72 c2=-0.16 c3=1.25 c4=0.56 c5=0.49 
+
+
+--------POLY ORDER4:  exact degree=[2,2]
+conv.p exact.conv -option=tz -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.1 -tp=.1 -order=4 -degreex=4 -degreet=4 -npv=2 -ng=4
+
+degree=[4,4]
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   square8 &     1 & 5.95e-03 &      & 5.23e-03 &      & 2.49e-01 &      & 5.95e-03 &      & 1.40e-02 &      & 4.98e-04 &      
+  square16 &     2 & 5.99e-03 &  0.99 & 4.37e-03 &  1.20 & 1.72e-01 &  1.45 & 5.99e-03 &  0.99 & 9.45e-03 &  1.48 & 5.79e-04 &  0.86 
+  square32 &     4 & 1.36e-03 &  4.40 & 8.68e-04 &  5.03 & 1.72e-01 &  1.00 & 1.36e-03 &  4.40 & 1.75e-03 &  5.40 & 1.97e-04 &  2.94 
+  square64 &     8 & 1.64e-04 &  8.29 & 1.01e-04 &  8.59 & 1.86e-01 &  0.92 & 1.64e-04 &  8.29 & 2.09e-04 &  8.37 & 2.75e-05 &  7.16 
+Convergence rates: c0=1.77 c1=1.94 c2=0.13 c3=1.77 c4=2.06 c5=1.41
+
+
+
+
+-------POLY ORDER2: exact: degreex=[2,2]
+conv.p exact.conv -option=tz -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.1 -tp=.1 -order=2 -degreex=2 -degreet=2 -npv=2 -ng=2
+
+
+
+
 
 ***************************
 ******* Nov 23, 2020

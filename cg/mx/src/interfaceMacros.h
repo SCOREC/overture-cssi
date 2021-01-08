@@ -906,6 +906,193 @@ end if
 
 #endMacro
 
+#beginMacro checkNonlinearCoefficients(i1,i2,i3, j1,j2,j3, numberOfEquations,am,evalInterfaceEquations,getDispersiveForcing )
+
+  ! hw1 = half stencil width
+  hw1=orderOfAccuracy/2
+  hw2=hw1
+  if( nd.eq.2 )then
+    hw3=0
+  else
+    hw3=hw1
+  end if
+
+  write(*,'("CHECK-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  ! get constant dispersive forcing
+  getDispersiveForcing()
+
+  ! First eval equations with no pertutbation --> save in f0 
+  evalInterfaceEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  do n2=0,numberOfEquations-1
+
+    ! pertub one component: 
+    perturbComponent(n2,delta)
+
+    evalInterfaceEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+    end do
+
+    ! write(*,'(" u1x,v1y,u2x,v2y=",4(1pe10.2))') u1x,v1y, u2x,v2y
+    if( .false. )then
+     if( numberOfEquations.eq.4 )then
+      write(*,'(" am(*,",i1,")=",4(1pe10.2)," diff(*)=",4(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.6 )then
+      write(*,'(" am(*,",i1,")=",6(1pe10.2)," diff(*)=",6(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.8 )then
+      write(*,'(" am(*,",i1,")=",8(1pe10.2)," diff(*)=",8(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.12 )then
+      write(*,'(" am(*,",i1,")=",12(1pe10.2)," diff(*)=",12(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else 
+       stop 8181
+     end if
+    else
+     if( numberOfEquations.eq.4 )then
+      write(*,'(" am(*,",i1,")=",4(1pe10.2)," f(*)=",4(1pe10.2)," diff(*)=",4(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(f(n1),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.6 )then
+      write(*,'(" am(*,",i1,")=",6(1pe10.2)," f(*)=",6(1pe10.2)," diff(*)=",6(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(f(n1),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.8 )then
+      write(*,'(" am(*,",i1,")=",8(1pe10.2)," f(*)=",8(1pe10.2)," diff(*)=",8(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(f(n1),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.12 )then
+      write(*,'(" am(*,",i1,")=",12(1pe10.2)," f(*)=",12(1pe10.2)," diff(*)=",12(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(f(n1),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else 
+       stop 8181
+     end if
+    end if
+
+    do n1=0,numberOfEquations-1
+      coeffDiff = max(coeffDiff,abs(am(n1,n2)-f(n1)))
+    end do
+
+    ! reset pertubation
+    perturbComponent(n2,-delta)
+
+  end do 
+
+  ! restore 
+  evalInterfaceEquations()
+
+#endMacro
+
+#beginMacro getNonlinearCoefficients(i1,i2,i3, j1,j2,j3, numberOfEquations,am,evalInterfaceEquations,getDispersiveForcing )
+
+  ! hw1 = half stencil width
+  hw1=orderOfAccuracy/2
+  hw2=hw1
+  if( nd.eq.2 )then
+    hw3=0
+  else
+    hw3=hw1
+  end if
+
+  ! write(*,'("CHECK-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  getDispersiveForcing()
+
+  ! First eval equations with no perturbation --> save in f0 
+  evalInterfaceEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  do n2=0,numberOfEquations-1
+
+    ! perturb one component: 
+    perturbComponent(n2,delta)
+
+    evalInterfaceEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+    end do
+
+    do n1=0,numberOfEquations-1
+      am(n1,n2)=f(n1)
+    end do
+
+    if( numberOfEquations.eq.4 )then
+      write(*,'(" am(*,",i1,")=",4(1pe10.2)," diff(*)=",4(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.6 )then
+      write(*,'(" am(*,",i1,")=",6(1pe10.2)," diff(*)=",6(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.8 )then
+      write(*,'(" am(*,",i1,")=",8(1pe10.2)," diff(*)=",8(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else if( numberOfEquations.eq.12 )then
+      write(*,'(" am(*,",i1,")=",12(1pe10.2)," diff(*)=",12(1pe10.2) )') n2,(am(n1,n2),n1=0,numberOfEquations-1),(am(n1,n2)-f(n1),n1=0,numberOfEquations-1)
+     else 
+       stop 8181
+    end if
+
+    ! reset perturbation
+    perturbComponent(n2,-delta)
+
+  end do 
+
+  ! restore 
+  evalInterfaceEquations()
+
+#endMacro
+
+!--------------------
+! get coefficients using delta function approach
+!--------------------
+#beginMacro evalNonlinearCoefficients(i1,i2,i3, j1,j2,j3, numberOfEquations,am,evalInterfaceEquations,getDispersiveForcing )
+
+  ! hw1 = half stencil width
+  hw1=orderOfAccuracy/2
+  hw2=hw1
+  if( nd.eq.2 )then
+    hw3=0
+  else
+    hw3=hw1
+  end if
+
+  !  write(*,'("EVAL-COEFF: i1,i2,i3=",3i3," hw1,hw2,hw3=",3i2)') i1,i2,i3,hw1,hw2,hw3
+
+  ! get dispersive forcing
+  getDispersiveForcing()
+
+  ! First eval equartions with no pertutbation --> save in f0 
+  evalInterfaceEquations()
+  do n1=0,numberOfEquations-1
+   f0(n1)=f(n1)
+  end do
+
+  delta=1.  ! perturb E by this amount 
+  do n2=0,numberOfEquations-1
+
+    ! pertub one component: 
+    perturbComponent(n2,delta)
+
+    evalInterfaceEquations()
+    
+    ! compute the difference
+    do n1=0,numberOfEquations-1
+     f(n1)=f(n1)-f0(n1)
+     am(n1,n2) = f(n1)
+    end do
+
+    ! reset pertubation
+    perturbComponent(n2,-delta)
+
+  end do 
+
+  ! restore 
+  evalInterfaceEquations()
+
+#endMacro
+
+
+
 ! ----------------------------------------------------------------------------------
 !  Macro:
 !    --- eval matrix coefficients by delta function approach ----

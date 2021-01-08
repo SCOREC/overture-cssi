@@ -3179,11 +3179,26 @@ end if
       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
 
+      real fnv(0:maxPar-1),fnv1(0:maxPar-1),fnv2(0:maxPar-1)
+      real fntv(0:maxPar-1),fntv1(0:maxPar-1),fntv2(0:maxPar-1)
+      real fnttv(0:maxPar-1),fnttv1(0:maxPar-1),fnttv2(0:maxPar-1)
+      real fntttv(0:maxPar-1),fntttv1(0:maxPar-1),fntttv2(0:maxPar-1)
+      real qv(0:maxPar-1),qvn(0:maxPar-1),qvm(0:maxPar-1)
+      real qt(0:maxPar-1),qtt(0:maxPar-1),qttt(0:maxPar-1),qtttt(0:maxPar-1)
+      real qex(0:maxPar-1),qey(0:maxPar-1),qeLap(0:maxPar-1)
+
+      real q1x,q1y,q1Lap,q1xx,q1yy,q1xy
+      real q2x,q2y,q2Lap,q2xx,q2yy,q2xy
+      real qvx,qvy,qvLap
+
+      real evx0,evy0,pv0,ev0,evLap
+
       real checkParallelFortranArrayReal, checkParallelFortranArrayInt, pdiff
       integer numParallelGhost
       integer nd4a,nd4b,n4a,n4b
       integer md4a,md4b,m4a,m4b
       character*180 label
+
 
 
 !     --- start statement function ----

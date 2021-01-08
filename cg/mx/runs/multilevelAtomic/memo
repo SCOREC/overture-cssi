@@ -1,3 +1,13 @@
+***************************
+******* Fri Jan 8, 2021
+
+TEST QING'S NEW MLA Routines
+
+Soliton solution
+
+cgmx -noplot mla -g=rectangle1.order2 -tf=100 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=pulse -xLeftProbe=.5 -go=og
+
+
 ***********************************************************
 ********* Wed July 15, 2020
 

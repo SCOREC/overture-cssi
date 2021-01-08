@@ -130,6 +130,10 @@ else
  # SRC_FILES += bcOptMaxwell2dOrder8Null.f bcOptMaxwell3dOrder8Null.f
 endif
 
+# this is the version for 1D Maxwell-Bloch solutions with 1 polarization and 2 atomic levels
+# (it uses the variable D as N0-N1 instead of two level variables N0 and N1)
+FNSRCO += mbe1d.f90 
+
 # files that depend on bpp include files
 forcing.C : forcing.h annulusEigenFunction.h planeMaterialInterface.h
 plot.C : forcing.h

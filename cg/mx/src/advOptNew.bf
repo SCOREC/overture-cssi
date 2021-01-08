@@ -1046,14 +1046,6 @@ else if( updateSolution.eq.1 )then
       endif
 
       nce = pxc+nd*numberOfPolarizationVectors
-      ! do iv=0,numberOfAtomicLevels-1
-      !   if( nd.eq.2 )then
-      !     OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-      !   else
-      !     OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-      !   end if
-      !   qvec(iv) = q0
-      ! enddo
 
       do iv=0,numberOfPolarizationVectors-1
         pce = pc+iv*nd
@@ -1066,8 +1058,10 @@ else if( updateSolution.eq.1 )then
           OGDERIV3D( 1,0,0,0,i1,i2,i3,t, pce, p0t )
           OGDERIV3D( 2,0,0,0,i1,i2,i3,t, pce, p0tt)
         end if
+        ! adding polarizations
         fe =  fe + alphaP*p0tt ! sum over P
-        ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+
+        ! left hand side of gdm equations
         fpv(iv) = p0tt + b1v(iv)*p0t + b0v(iv)*p0
         do na = 0,numberOfAtomicLevels-1
           if( nd.eq.2 )then
@@ -1075,7 +1069,7 @@ else if( updateSolution.eq.1 )then
           else
             OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
           end if
-          ! fpv(iv) = fpv(iv) - pnec(iv,na)*qvec(na)*e0
+          ! adding \Delta N*E
           fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
         enddo
       end do
@@ -1147,8 +1141,8 @@ else if( updateSolution.eq.1 )then
 
       if( nd.eq.2 )then
         fe =  e0tt-csq * (e0xx + e0yy)
-        lapfe = e0xxtt+e0yytt-csq*(e0xxxx+2.*e0xxyy+e0yyyy)
-        fet =  e0ttt-csq * (e0xxt + e0yyt)
+        lapfe = e0xxtt+e0yytt-csq*(e0xxxx+2.*e0xxyy+e0yyyy) ! laplacian of fe
+        fet =  e0ttt-csq * (e0xxt + e0yyt) ! time derivatives of fe
         fett = e0tttt-csq * (e0xxtt + e0yytt)
       else
         fe =  e0tt-csq * (e0xx + e0yy + e0zz)
@@ -1158,14 +1152,6 @@ else if( updateSolution.eq.1 )then
       endif
 
       nce = pxc+nd*numberOfPolarizationVectors
-      ! do iv=0,numberOfAtomicLevels-1
-      !   if( nd.eq.2 )then
-      !     OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-      !   else
-      !     OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-      !   end if
-      !   qvec(iv) = q0
-      ! enddo
 
       do iv=0,numberOfPolarizationVectors-1
         pce = pc+iv*nd
@@ -1181,6 +1167,7 @@ else if( updateSolution.eq.1 )then
           OGDERIV2D( 4,0,0,0,i1,i2,i3,t, pce, p0tttt)
           OGDERIV2D( 2,2,0,0,i1,i2,i3,t, pce, p0xxtt)
           OGDERIV2D( 2,0,2,0,i1,i2,i3,t, pce, p0yytt)
+          ! laplacians
           fp02x     = p0xxtt + b1v(iv)*p0xxt + b0v(iv)*p0xx
           fp02y     = p0yytt + b1v(iv)*p0yyt + b0v(iv)*p0yy
           fp02      = fp02x  + fp02y
@@ -1199,11 +1186,14 @@ else if( updateSolution.eq.1 )then
           OGDERIV3D( 2,2,0,0,i1,i2,i3,t, pce, p0xxtt)
           OGDERIV3D( 2,0,2,0,i1,i2,i3,t, pce, p0yytt)
           OGDERIV3D( 2,0,0,2,i1,i2,i3,t, pce, p0zztt)
+          ! laplacians
           fp02x     = p0xxtt + b1v(iv)*p0xxt + b0v(iv)*p0xx
           fp02y     = p0yytt + b1v(iv)*p0yyt + b0v(iv)*p0yy
           fp02z     = p0zztt + b1v(iv)*p0zzt + b0v(iv)*p0zz
           fp02      = fp02x  + fp02y + fp02z
         end if
+
+        ! adding polarizations
         fe =  fe + alphaP*p0tt ! sum over P
         fet =  fet + alphaP*p0ttt
         fett =  fett + alphaP*p0tttt
@@ -1212,9 +1202,10 @@ else if( updateSolution.eq.1 )then
           else
             lapfe = lapfe + alphaP*p0xxtt + alphaP*p0yytt + alphaP*p0zztt
         endif
+
+        ! initialize laplacian of forcing functions of P
         lapfpv(iv) = fp02
-         
-        ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+        ! 
         fpv(iv)   = p0tt   + b1v(iv)*p0t   + b0v(iv)*p0
         fptv(iv)  = p0ttt  + b1v(iv)*p0tt  + b0v(iv)*p0t
         fpttv(iv) = p0tttt + b1v(iv)*p0ttt + b0v(iv)*p0tt
@@ -1243,7 +1234,8 @@ else if( updateSolution.eq.1 )then
                  + q0yy*e0+2.*q0y*e0y+q0*e0yy \
                  + q0zz*e0+2.*q0z*e0z+q0*e0zz
           end if
-          ! fpv(iv) = fpv(iv) - pnec(iv,na)*qvec(na)*e0
+          
+          ! adding \Delta N*E terms
           lapfpv(iv) = lapfpv(iv) - pnec(iv,na)*fp02
           fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
           fptv(iv) = fptv(iv) - pnec(iv,na)*q0t*e0 \
@@ -1289,11 +1281,9 @@ else if( updateSolution.eq.1 )then
       !
       ! na-th level
       if( nd.eq.2 )then
-        ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
         OGDERIV2D( 1,0,0,0,i1,i2,i3,t, nce+na, q0t )
         OGDERIV2D( 2,0,0,0,i1,i2,i3,t, nce+na, q0tt)
       else
-        ! OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
         OGDERIV3D( 1,0,0,0,i1,i2,i3,t, nce+na, q0t )
         OGDERIV3D( 2,0,0,0,i1,i2,i3,t, nce+na, q0tt)
       end if
@@ -1367,13 +1357,11 @@ else if( updateSolution.eq.1 )then
       !
       ! na-th level
       if( nd.eq.2 )then
-        ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
         OGDERIV2D( 1,0,0,0,i1,i2,i3,t, nce+na, q0t )
         OGDERIV2D( 2,0,0,0,i1,i2,i3,t, nce+na, q0tt)
         OGDERIV2D( 3,0,0,0,i1,i2,i3,t, nce+na, q0ttt)
         OGDERIV2D( 4,0,0,0,i1,i2,i3,t, nce+na, q0tttt)
       else
-        ! OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
         OGDERIV3D( 1,0,0,0,i1,i2,i3,t, nce+na, q0t )
         OGDERIV3D( 2,0,0,0,i1,i2,i3,t, nce+na, q0tt)
         OGDERIV3D( 3,0,0,0,i1,i2,i3,t, nce+na, q0ttt)
@@ -5145,24 +5133,6 @@ else if( updateSolution.eq.1 )then
 
 #endMacro
 
-! ******************************************
-! product of N_na and E_m
-! ****************************************** 
-#beginMacro NEprod()
-  
-  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
-  iv = 0;
-  do m=0,nd-1
-    do na = 0,numberOfAtomicLevels-1
-      iv = iv + 1
-      qe(i1,i2,i3,na,m) = q(i1,i2,i3,na)*u(i1,i2,i3,m)
-      nep(i1,i2,i3,iv) = qe(i1,i2,i3,na,m)
-    enddo
-  enddo
-
-  endLoopsMask()
-#endMacro
-
 ! **********************************************************************************
 ! Macro updateMultilevelAtomic (MLA)
 !
@@ -5174,14 +5144,14 @@ else if( updateSolution.eq.1 )then
   if( t.le.3*dt )then
     INFO("update-MULTI-LEVEL-ATOMIC_dim=DIM _order=ORDER _gridType=GRIDTYPE");
   end if
-
+  
+  ! initialize forcing functions
   fe=0.
   fet = 0.
   fett = 0.
   lapfe = 0.
-  ! -- first compute some coefficients ---
   do iv=0,numberOfPolarizationVectors-1
-    betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+    betav(iv) = 1./( 1.+.5*dt*b1v(iv) ) ! coefficients
     fpv(iv)=0.  ! initialize if not used
     fptv(iv)=0. 
     fpttv(iv)=0. 
@@ -5191,11 +5161,6 @@ else if( updateSolution.eq.1 )then
   ! index location for first TZ nonlinear variable: 
   nce = pxc+nd*numberOfPolarizationVectors
   ! write(*,'(" *** UpadateMLA: pxc=",i2," numberOfPolarizationVectors=",i4," nce=",i4)') pxc,numberOfPolarizationVectors,nce 
-  
-  ! NE product if order=4
-  #If #ORDER eq '4'
-    NEprod()
-  #End
 
   ! loop over space
   beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
@@ -5204,18 +5169,13 @@ else if( updateSolution.eq.1 )then
       pc=pxc+m
       ec=ex+m
 
-      ! This is only needed for the second order code
-      if( addForcing.ne.0 )then ! forcing in E equation already added to f
-        ! ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
-        ! fe = f(i1,i2,i3,ec)
-        ! this next function will adjust fe by adding -alphaP*Ptt
-        getEPMLAForcing(ec,pc)
-
+      if( addForcing.ne.0 )then
+        getEPMLAForcing(ec,pc) ! forcing functions for E and P
       end if
 
+      ! ping old values
       ev = u(i1,i2,i3,ec)
       evm=um(i1,i2,i3,ec)
-
       do iv=0,numberOfPolarizationVectors-1
         pv(iv) = p(i1,i2,i3,m+iv*nd)
         pvm(iv)=pm(i1,i2,i3,m+iv*nd)
@@ -5224,13 +5184,15 @@ else if( updateSolution.eq.1 )then
       ! write(*,*) 'Inside updateDispersive'
 
       ! write(*,*) 'Inside updateDispersive order=2'
-
+      
+      ! get laplacians
       #If #DIM eq "2"
           #If #GRIDTYPE eq "rectangular"
 
             ! INFO("FD22r-2D-dispersive-Any-PV");
             ! write(*,*) 'Inside updateDispersive rectangular order=2'
 
+            ! elap2 = ulaplacian22r(i1,i2,i3,ec)
             elap2 = lap2d2(i1,i2,i3,ec)
 
           #Elif #GRIDTYPE eq "curvilinear"
@@ -5297,8 +5259,6 @@ else if( updateSolution.eq.1 )then
     enddo
     ! N_t
     do na=0,numberOfAtomicLevels-1
-      ! ! forcing function
-      ! getMLAForcing(na)
       ! first time derivative
       qt(na) = fnv(na)
       do iv=0,numberOfAtomicLevels-1 ! relaxation
@@ -5312,8 +5272,6 @@ else if( updateSolution.eq.1 )then
     enddo
     ! N_tt
     do na=0,numberOfAtomicLevels-1
-      ! ! forcing function
-      ! getMLAForcing(na)
       qtt(na) = fntv(na)
       do iv=0,numberOfAtomicLevels-1 ! relaxation
         qtt(na) = qtt(na)+prc(na,iv)*qt(iv)
@@ -5324,20 +5282,14 @@ else if( updateSolution.eq.1 )then
                            +peptc(na,iv)*u(i1,i2,i3,m)*(pn(i1,i2,i3,m+iv*nd)-2.0*p(i1,i2,i3,m+iv*nd)+pm(i1,i2,i3,m+iv*nd))/dtsq
         enddo
       enddo
-      ! print *, qt(na),qtt(na)
     enddo
+
     ! fill in the population densities "N"
     do na=0,numberOfAtomicLevels-1
       qn(i1,i2,i3,na) = q(i1,i2,i3,na) + dt*qt(na) + dt**2/2.*qtt(na)
     end do
 
-    ! write(*,*) 'THERE THERET THERE THERE'
-    ! stop
-
   #Elif #ORDER eq '4'
-
-    ! write(*,*) 'HERE HERE HERE HERE'
-    ! stop
     !
     ! second order predictions
     !
@@ -5345,19 +5297,19 @@ else if( updateSolution.eq.1 )then
       pc=pxc+m
       ec=ex+m
 
-      ! This is only needed for the second order code
       if ( addForcing.ne.0) then 
-        getEPMLAForcing(ec,pc)
+        getEPMLAForcing(ec,pc) ! forcing functions for E and P
       end if
 
+      ! ping old values
       ev = u(i1,i2,i3,ec)
       evm=um(i1,i2,i3,ec)
-
       do iv=0,numberOfPolarizationVectors-1
         pv(iv) = p(i1,i2,i3,m+iv*nd)
         pvm(iv)=pm(i1,i2,i3,m+iv*nd)
       end do
 
+      ! get laplacians
       #If #DIM eq "2"
           #If #GRIDTYPE eq "rectangular"
 
@@ -5416,13 +5368,13 @@ else if( updateSolution.eq.1 )then
       un(i1,i2,i3,ec) = evn
 
       ! End of second order code
-    end do !m=0,nd-1 over space dim
+    end do ! m=0,nd-1 over space dim
 
     ! outside of dimension loop
     ! --- second order update of N ---
     ! MLA
     do na=0,numberOfAtomicLevels-1
-      ! forcing function
+      ! forcing functions for both the second order codes and fourth order codes
       getMLAForcing44(na)
     enddo
     ! N_t
@@ -5439,8 +5391,6 @@ else if( updateSolution.eq.1 )then
     enddo
     ! N_tt
     do na=0,numberOfAtomicLevels-1
-      ! ! forcing function
-      ! getMLAForcing(na)
       qtt(na) = fntv(na)
       do iv=0,numberOfAtomicLevels-1 ! relaxation
         qtt(na) = qtt(na)+prc(na,iv)*qt(iv)
@@ -5451,7 +5401,6 @@ else if( updateSolution.eq.1 )then
                            +peptc(na,iv)*u(i1,i2,i3,m)*(pn(i1,i2,i3,m+iv*nd)-2.0*p(i1,i2,i3,m+iv*nd)+pm(i1,i2,i3,m+iv*nd))/dtsq
         enddo
       enddo
-      ! print *, qt(na),qtt(na)
     enddo
     ! fill in the population densities "N"
     do na=0,numberOfAtomicLevels-1
@@ -5467,7 +5416,6 @@ else if( updateSolution.eq.1 )then
       ec=ex+m
 
       if( addForcing.ne.0 )then
-        ! Bug fixed, May 28, 2018 -- use 2D or 3D versions of ogderiv *wdh* 
           getEPMLAForcing44(ec,pc)
       end if
 
@@ -5484,26 +5432,36 @@ else if( updateSolution.eq.1 )then
 
       ! write(*,*) 'Inside updateDispersive order=4'
 
+      ! space derivatives of E, P, N
       #If #DIM eq "2"
         #If #GRIDTYPE eq "rectangular"
 
           ! INFO("FD44r-2D-dispersive-Any-PV");
           ! write(*,*) 'Inside updateDispersive 2D rectangular order=4'
 
+          ! laplacians of E
           elap4   = lap2d4(i1,i2,i3,ec)
-          ! elap4m  = lap2d4m(i1,i2,i3,ec)
           elapsq2 = lap2d2Pow2(i1,i2,i3,ec)
           elap2   = lap2d2(i1,i2,i3,ec)
           elap2m  = lap2d2m(i1,i2,i3,ec)
 
+          ! first order derivatives of E
+          ex2v = ex2(i1,i2,i3,ec)
+          ey2v = ey2(i1,i2,i3,ec)
+
+          ! laplacians of P
           do iv=0,numberOfPolarizationVectors-1
             pxxv(iv)  = plap2d4(i1,i2,i3,m+iv*nd)
             pxxvm(iv) = plap2d4m(i1,i2,i3,m+iv*nd)
           end do
 
+          
           do na=0,numberOfAtomicLevels-1
-            ! qelap2(na) = qelap2d2(i1,i2,i3,na,ec)
-            qelap2(na) = qelap2d2(i1,i2,i3,na+ec+nd)
+            qlap2(na) = qlap2d2(i1,i2,i3,na) ! laplacian of N
+            qx2v(na) =  qx2(i1,i2,i3,na) ! first order derivatives of N
+            qy2v(na) =  qy2(i1,i2,i3,na)
+            ! chain rule for \Delta (E*N)
+            qelap2(na) = ev*qlap2(na)+q(i1,i2,i3,na)*elap2+2.*ex2v*qx2v(na)+2.*ey2v*qy2v(na)
           enddo
 
         #Elif #GRIDTYPE eq "curvilinear"
@@ -5512,19 +5470,28 @@ else if( updateSolution.eq.1 )then
 
           ! write(*,*) 'Inside updateDispersive 2D curvilinear order=4'
 
+          ! laplacians of E
           elap4   = ulaplacian42(i1,i2,i3,ec)
-          ! elap4m  = umlaplacian42(i1,i2,i3,ec)
           elapsq2 = vlaplacian22(i1,i2,i3,ec)
           elap2   = ulaplacian22(i1,i2,i3,ec)
           elap2m  = umlaplacian22(i1,i2,i3,ec)
 
+          ! first order derivatives of E
+          ex2v = ux22(i1,i2,i3,ec)
+          ey2v = uy22(i1,i2,i3,ec)
+
+          ! laplacians of P
           do iv=0,numberOfPolarizationVectors-1
             pxxv(iv)  = plaplacian42(i1,i2,i3,m+iv*nd)
             pxxvm(iv) = pmlaplacian42(i1,i2,i3,m+iv*nd)
           end do
-          
+
           do na=0,numberOfAtomicLevels-1
-            qelap2(na) = neplaplacian22(i1,i2,i3,na+ec*nd)
+            qlap2(na) = qlaplacian22(i1,i2,i3,na)
+            qx2v(na) =  qx22(i1,i2,i3,na)
+            qy2v(na) =  qy22(i1,i2,i3,na)
+            ! chain rule for \Delta (E*N)
+            qelap2(na) = ev*qlap2(na)+q(i1,i2,i3,na)*elap2+2.*ex2v*qx2v(na)+2.*ey2v*qy2v(na)
           enddo
 
         #End
@@ -5535,21 +5502,31 @@ else if( updateSolution.eq.1 )then
 
           ! INFO("FD44r-3D-dispersive-Any-PV");
           ! write(*,*) 'Inside updateDispersive 3D rectangular order=4'
-
+          
+          ! laplacians of E
           elap4   = lap3d4(i1,i2,i3,ec)
-          ! elap4m  = lap3d4m(i1,i2,i3,ec)
           elapsq2 = lap3d2Pow2(i1,i2,i3,ec)
           elap2   = lap3d2(i1,i2,i3,ec)
           elap2m  = lap3d2m(i1,i2,i3,ec)
 
+          ! first order derivatives of E
+          ex2v = ex2(i1,i2,i3,ec)
+          ey2v = ey2(i1,i2,i3,ec)
+          ez2v = ez2(i1,i2,i3,ec)
+
+          ! laplacians of P
           do iv=0,numberOfPolarizationVectors-1
             pxxv(iv)  = plap3d4(i1,i2,i3,m+iv*nd)
             pxxvm(iv) = plap3d4m(i1,i2,i3,m+iv*nd)
           end do
 
           do na=0,numberOfAtomicLevels-1
-            ! qelap2(na) = qelap3d2(i1,i2,i3,na,ec)
-            qelap2(na) = qelap3d2(i1,i2,i3,na+ec*nd)
+            qlap2(na) = qlap3d2(i1,i2,i3,na)
+            qx2v(na) =  qx2(i1,i2,i3,na)
+            qy2v(na) =  qy2(i1,i2,i3,na)
+            qz2v(na) =  qz2(i1,i2,i3,na)
+            ! chain rule for \Delta (E*N)
+            qelap2(na) = ev*qlap2(na)+q(i1,i2,i3,na)*elap2+2.*ex2v*qx2v(na)+2.*ey2v*qy2v(na)+2.*ez2v*qz2v(na)
           enddo
 
         #Elif #GRIDTYPE eq "curvilinear"
@@ -5557,19 +5534,30 @@ else if( updateSolution.eq.1 )then
           ! INFO("FD44c-3D-dispersive-any-PV");
           ! write(*,*) 'Inside updateDispersive 3D curvilinear order=4'
 
+          ! laplacians of E
           elap4   = ulaplacian43(i1,i2,i3,ec)
-          ! elap4m  = umlaplacian43(i1,i2,i3,ec)
           elapsq2 = vlaplacian23(i1,i2,i3,ec)
           elap2   = ulaplacian23(i1,i2,i3,ec)
           elap2m  = umlaplacian23(i1,i2,i3,ec)
 
+          ! first order derivatives of E
+          ex2v = ux23(i1,i2,i3,ec)
+          ey2v = uy23(i1,i2,i3,ec)
+          ez2v = uz23(i1,i2,i3,ec)
+
+          ! laplacians of P
           do iv=0,numberOfPolarizationVectors-1
             pxxv(iv)   = plaplacian43(i1,i2,i3,m+iv*nd)
             pxxvm(iv) = pmlaplacian43(i1,i2,i3,m+iv*nd)
           end do
 
           do na=0,numberOfAtomicLevels-1
-            qelap2(na) = neplaplacian23(i1,i2,i3,na+ec*nd)
+            qlap2(na) = qlaplacian23(i1,i2,i3,na)
+            qx2v(na) =  qx23(i1,i2,i3,na)
+            qy2v(na) =  qy23(i1,i2,i3,na)
+            qz2v(na) =  qz23(i1,i2,i3,na)
+            ! chain rule for \Delta (E*N)
+            qelap2(na) = ev*qlap2(na)+q(i1,i2,i3,na)*elap2+2.*ex2v*qx2v(na)+2.*ey2v*qy2v(na)+2.*ez2v*qz2v(na)
           enddo
 
         #End
@@ -5583,26 +5571,14 @@ else if( updateSolution.eq.1 )then
       ett = (evn-2.*ev+evm)/dtsq
       ptttSum = 0.
       do iv = 0,numberOfPolarizationVectors-1
-        ! pce = pc+iv*nd
-        ! OGDERIV2D( 1,0,0,0,i1,i2,i3,t, pce, p0t)
-        ! OGDERIV2D( 2,0,0,0,i1,i2,i3,t, pce, p0tt)
-        ! OGDERIV2D( 3,0,0,0,i1,i2,i3,t, pce, p0ttt)
-        ! OGDERIV2D( 4,0,0,0,i1,i2,i3,t, pce, p0tttt)
-
-        ! ptv(m,iv) = p0t
-        ! pttv(m,iv) = p0tt
-        ! ptttv(m,iv) = p0ttt
-        ! pttttv(m,iv) = p0tttt
-
-
         ptv(m,iv) = (pvn(iv)-pvm(iv))/(2.0*dt)
         pttv(m,iv) = (pvn(iv)-2.0*pv(iv)+pvm(iv))/dtsq
         ptttv(m,iv) = -b1v(iv)*pttv(m,iv)-b0v(iv)*ptv(m,iv)+fptv(iv)
-        do na = 0,numberOfAtomicLevels-1
+        do na = 0,numberOfAtomicLevels-1 ! update using ODE
           ptttv(m,iv) = ptttv(m,iv) + pnec(iv,na)*qt(na)*ev \
                                     + pnec(iv,na)*q(i1,i2,i3,na)*et
         enddo
-        pttttv(m,iv) = -b1v(iv)*ptttv(m,iv)-b0v(iv)*pttv(m,iv)+fpttv(iv)
+        pttttv(m,iv) = -b1v(iv)*ptttv(m,iv)-b0v(iv)*pttv(m,iv)+fpttv(iv) ! update using ODE
         do na = 0,numberOfAtomicLevels-1
           pttttv(m,iv) = pttttv(m,iv) + pnec(iv,na)*qtt(na)*ev \
                                    + 2.*pnec(iv,na)*qt(na)*et \
@@ -5611,7 +5587,7 @@ else if( updateSolution.eq.1 )then
         ptttSum = ptttSum + ptttv(m,iv)
       enddo
 
-      ! update P
+      ! update 4th order accurate P
       pSum = 0.
       pxxSum = 0.
       do iv=0,numberOfPolarizationVectors-1
@@ -5624,23 +5600,18 @@ else if( updateSolution.eq.1 )then
 
         pvn(iv) = betav(iv)*pvn(iv)
 
-        pn(i1,i2,i3,m+iv*nd) = pvn(iv)
+        pn(i1,i2,i3,m+iv*nd) = pvn(iv) ! store updated P
 
-        pSum = pSum + pvn(iv) - 2.*pv(iv) + pvm(iv)
+        pSum = pSum + pvn(iv) - 2.*pv(iv) + pvm(iv) ! sum P_tt
 
+        ! laplacians of P^{n+1}
         pxxvn(iv) = 2.*pxxv(iv)-pxxvm(iv) + 0.5*dt*b1v(iv)*pxxvm(iv) - dtsq*b0v(iv)*pxxv(iv) + dtsq*lapfpv(iv)
 
         do na = 0,numberOfAtomicLevels-1 ! \Delta N^n*E^n
           pxxvn(iv) = pxxvn(iv) + dtsq*pnec(iv,na)*qelap2(na)
         enddo
-
+        ! time derivatives of laplacian of P
         pxxSum = pxxSum + betav(iv)*pxxvn(iv) - 2.*pxxv(iv) + pxxvm(iv)
-
-        ! pce = pc+iv*nd
-        ! OGDERIV2D( 0,2,0,0,i1,i2,i3,t+dt, pce, p0xx)
-        ! OGDERIV2D( 0,0,2,0,i1,i2,i3,t+dt, pce, p0yy)
-
-        ! write(*,*) betav(iv)*pxxvn(iv)-(p0xx+p0yy)
 
       end do
 
@@ -5650,21 +5621,15 @@ else if( updateSolution.eq.1 )then
       
       evn =   (2.*ev-evm) + csq*dtsq*elap4 - alphaP*pSum + dtsq*fe \
             + dt**4/12.*(csq**2*elapsq2 - alphaP*csq*pxxSum/dtsq + csq*lapfe + fett)
+      
+      ! store 4th order accurate E
       un(i1,i2,i3,ec) = evn
 
-      ! OGDERIV2D( 0,2,0,0,i1,i2,i3,t, ec, e0xx )
-      ! OGDERIV2D( 0,0,2,0,i1,i2,i3,t, ec, e0yy )
+      ! laplacian of E at new time
       elap2n = 2.*elap2-elap2m+dtsq*csq*elapsq2-alphaP*pxxSum + dtsq*lapfe
-      ettt = (csq*elap2n-csq*elap2m)/(2.0*dt)-alphaP*ptttSum + fet
-
-      ! write(*,*) elap2-(e0xx+e0yy)
-
-      ! write(*,*) elap2n,elap2m,evn,ev,evm
-
-      ! OGDERIV2D( 3,0,0,0,i1,i2,i3,t, ec, e0ttt )
-      ! ettt = e0ttt
-      ! second order accurate terms
-      ! write(*,*) ettt,e0ttt,ettt-e0ttt
+      ettt = (csq*elap2n-csq*elap2m)/(2.0*dt)-alphaP*ptttSum + fet ! E_ttt
+      
+      ! store in (Ex,Ey,E_z)
       ettv(m) = (evn-2.*ev+evm)/dtsq
       etttv(m) = ettt
 
@@ -5695,12 +5660,6 @@ else if( updateSolution.eq.1 )then
     !-------------------
     ! fourth order N
     !-------------------
-    ! need forcing functions here
-    ! MLA
-    ! do na=0,numberOfAtomicLevels-1
-    !   ! forcing function
-    !   getMLAForcing44(na)
-    ! enddo
     ! fourth order accurate terms
     ! N_t
     do na=0,numberOfAtomicLevels-1
@@ -5898,7 +5857,7 @@ else if( updateSolution.eq.1 )then
  declareDifferenceOrder2(p,none)
  declareDifferenceOrder2(pm,none)
  ! MLA
- declareDifferenceOrder2(nep,none)
+ declareDifferenceOrder2(q,none)
 
  declareDifferenceOrder4(u,RX)
  declareDifferenceOrder4(un,none)
@@ -5936,7 +5895,9 @@ else if( updateSolution.eq.1 )then
  real lap2d2,lap3d2,lap2d4,lap3d4,lap2d6,lap3d6,lap2d8,lap3d8,lap2d2Pow2,lap3d2Pow2,lap2d2Pow3,lap3d2Pow3,\
       lap2d2Pow4,lap3d2Pow4,lap2d4Pow2,lap3d4Pow2,lap2d4Pow3,lap3d4Pow3,lap2d6Pow2,lap3d6Pow2
  real lap2d2m,lap3d2m
- real qelap2d2,qelap3d2
+
+ real ex2,ey2,ez2,qx2,qy2,qz2,qlap2d2,qlap3d2,ex2v,ey2v,ez2v
+
  real du,fd22d,fd23d,fd42d,fd43d,fd62d,fd63d,fd82d,fd83d
  real elap4, elap4m, lap2d4m, lap3d4m, elapsq2, elap2n, elap2, elap2m, plap2, plap2m, plap4, plap4m, plap2d2, plap2d2m, plap2d4, plap2d4m
 
@@ -6023,11 +5984,12 @@ else if( updateSolution.eq.1 )then
  real qttt(0:maxPar-1)
  real qtttt(0:maxPar-1)
  real qelap2(0:maxPar-1)
+ real qx2v(0:maxPar-1),qy2v(0:maxPar-1),qz2v(0:maxPar-1)
+ real qlap2(0:maxPar-1)
  real et,ett,ettt
  real etv(0:2),ettv(0:2),etttv(0:2)
  real ptv(0:2,0:maxPar-1),pttv(0:2,0:maxPar-1),ptttv(0:2,0:maxPar-1),pttttv(0:2,0:maxPar-1)
  real ptttSum,lapfe,fet,fett
- real nep(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd*maxPar-1)
  
 
 ! .......statement functions for GDM parameters
@@ -6078,7 +6040,7 @@ else if( updateSolution.eq.1 )then
  defineDifferenceOrder4Components1(pm,none)
 
  ! MLA
- defineDifferenceOrder2Components1(nep,none)
+ defineDifferenceOrder2Components1(q,none)
 
  ! 2nd-order in space and time
  maxwell2dr(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+\
@@ -6273,18 +6235,25 @@ else if( updateSolution.eq.1 )then
  lap3d2f(i1,i2,i3,c,m)=(fa(i1+1,i2,i3,c,m)-2.*fa(i1,i2,i3,c,m)+fa(i1-1,i2,i3,c,m))*dxsqi\
                       +(fa(i1,i2+1,i3,c,m)-2.*fa(i1,i2,i3,c,m)+fa(i1,i2-1,i3,c,m))*dysqi\
                       +(fa(i1,i2,i3+1,c,m)-2.*fa(i1,i2,i3,c,m)+fa(i1,i2,i3-1,c,m))*dzsqi
- ! MLA
- ! qelap2d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi\
- !                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi
- ! qelap3d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi\
- !                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi\
- !                          +(qe(i1,i2,i3+1,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2,i3-1,na,c))*dzsqi
 
- qelap2d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+nep(i1-1,i2,i3,c))*dxsqi\
-                       +(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+nep(i1,i2-1,i3,c))*dysqi
- qelap3d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+nep(i1-1,i2,i3,c))*dxsqi\
-                       +(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+nep(i1,i2-1,i3,c))*dysqi\
-                       +(nep(i1,i2,i3+1,c)-2.*nep(i1,i2,i3,c)+nep(i1,i2,i3-1,c))*dzsqi
+ ! MLA
+ ! first derivatives of E
+ ex2(i1,i2,i3,c)=(u(i1+1,i2,i3,c)-u(i1-1,i2,i3,c))/(2.*dx(0))
+ ey2(i1,i2,i3,c)=(u(i1,i2+1,i3,c)-u(i1,i2-1,i3,c))/(2.*dx(1))
+ ez2(i1,i2,i3,c)=(u(i1,i2,i3+1,c)-u(i1,i2,i3-1,c))/(2.*dx(2))
+
+ ! first derivatives of N
+ qx2(i1,i2,i3,c)=(q(i1+1,i2,i3,c)-q(i1-1,i2,i3,c))/(2.*dx(0))
+ qy2(i1,i2,i3,c)=(q(i1,i2+1,i3,c)-q(i1,i2-1,i3,c))/(2.*dx(1))
+ qz2(i1,i2,i3,c)=(q(i1,i2,i3+1,c)-q(i1,i2,i3-1,c))/(2.*dx(2))
+
+ ! laplacians of N
+ qlap2d2(i1,i2,i3,c) = (q(i1+1,i2,i3,c)-2.*q(i1,i2,i3,c)+q(i1-1,i2,i3,c))*dxsqi\
+                       +(q(i1,i2+1,i3,c)-2.*q(i1,i2,i3,c)+q(i1,i2-1,i3,c))*dysqi
+ qlap3d2(i1,i2,i3,c) = (q(i1+1,i2,i3,c)-2.*q(i1,i2,i3,c)+q(i1-1,i2,i3,c))*dxsqi\
+                       +(q(i1,i2+1,i3,c)-2.*q(i1,i2,i3,c)+q(i1,i2-1,i3,c))*dysqi\
+                       +(q(i1,i2,i3+1,c)-2.*q(i1,i2,i3,c)+q(i1,i2,i3-1,c))*dzsqi
+
 
  ! 2D laplacian squared = u.xxxx + 2 u.xxyy + u.yyyy
  lap2d2Pow2(i1,i2,i3,c)= ( 6.*u(i1,i2,i3,c)   \

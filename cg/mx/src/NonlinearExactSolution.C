@@ -7,9 +7,18 @@
 
 // ===============================================================================
 // Class to define exact solutions to Maxwell's equations for
-//                 NONLINEAR MODELS
+//                 NONLINEAR MULTILEVEL ATOMIC MODELS
 // 
 // ===============================================================================
+
+#define mbe1d EXTERN_C_NAME(mbe1d)
+
+extern "C"
+{
+
+void mbe1d(double & epsilon, double & dt, double & xa, double &xb, int &n, double &tfinal, double &un);
+
+}
 
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3)                                       int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++)                                       for(i2=I2Base; i2<=I2Bound; i2++)                                     for(i1=I1Base; i1<=I1Bound; i1++)
@@ -78,19 +87,19 @@ NonlinearExactSolution::
 //-   void GESV( int & N, int & NRHS, std::complex<LocalReal>  & a, const int & lda, int & ipvt, std::complex<LocalReal> & b, int & LDB, int & info );
 //- 
 //-   void GEEV( char *jobvl,
-//- 	     char* jobvr,
-//- 	     int & n,
-//- 	     std::complex<LocalReal> & a,
-//- 	     const int & lda,
-//- 	     std::complex<LocalReal> & w,
-//- 	     std::complex<LocalReal> &vl,
-//- 	     int & ldvl,
-//- 	     std::complex<LocalReal> &vr,
-//- 	     int & ldvr,
-//- 	     std::complex<LocalReal> & work,
-//- 	     int & lwork,
-//- 	     LocalReal & rwork,
-//- 	     int & info );
+//-          char* jobvr,
+//-          int & n,
+//-          std::complex<LocalReal> & a,
+//-          const int & lda,
+//-          std::complex<LocalReal> & w,
+//-          std::complex<LocalReal> &vl,
+//-          int & ldvl,
+//-          std::complex<LocalReal> &vr,
+//-          int & ldvr,
+//-          std::complex<LocalReal> & work,
+//-          int & lwork,
+//-          LocalReal & rwork,
+//-          int & info );
 //- }
 //- 
 
@@ -102,8 +111,8 @@ NonlinearExactSolution::
 //==============================================================================
 int NonlinearExactSolution::
 initialize( CompositeGrid & cg, int numberOfDomains,
-          	    std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters,
-          	    const real & omega, const RealArray & kvI, const int solveForAllFields )
+                std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters,
+                const real & omega, const RealArray & kvI, const RealArray & asymParams, const int solveForAllFields )
 {
 
     int & initialized = dbase.get<int>("initialized");
@@ -111,6 +120,32 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     {
         printF("NonlinearExactSolution::initialize - WARNING: already initialized! Nothing to be done\n");
         return 0;
+    }
+
+  // initialize
+    if( numberOfDomains==1 )
+    {
+    // ---- 1 domain problem
+    // parameters for asymptotic solutions
+        const double eps = 0.01;
+        const double U = 1./2;
+        const double eta = 1.;
+        const double x0 = 0.;
+        double epsHat = eps/2.*sqrt(eta/(U-U*U));
+
+    // parameters for asymptotic solutions
+        asymParams(0) = U;
+        asymParams(1) = x0;
+        asymParams(2) = epsHat;
+        asymParams(3) = 2.*sqrt(eta*U/(1.-U)); // coefficients for the asymptotic solution of E
+
+        printF("Nonlinear MLA Exact Solution: initialize for one domain\n");
+    }
+    else
+    {
+    // ---- 2 domain scattering problem (TODO)
+        printF("Nonlinear MLA Exact Solution: initialize for two domains (TODO)\n");
+    
     }
     
     initialized=1;
@@ -136,7 +171,7 @@ initialize( CompositeGrid & cg, int numberOfDomains,
 /// \param computeMagneticField (input): if true return the magnetic field in 3D (in 2D the magnetic field is always computed). 
 // ==========================================================================================
 int NonlinearExactSolution::
-eval(real t, CompositeGrid & cg, int grid, 
+eval(real dt, real t, CompositeGrid & cg, int grid, 
           realArray & ua, realArray & pv, realArray & qv,
           const Index & I1a, const Index &I2a, const Index &I3a, 
           int numberOfTimeDerivatives /* = 0 */,
@@ -171,8 +206,8 @@ eval(real t, CompositeGrid & cg, int grid,
     if( true && t<=0. && dmp.isDispersiveMaterial() )
     {
     //   OV_ABORT("NonlinearExactSolution::eval -- finish me for dispersive materials");
-        printF("SES:eval: grid=%d: numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
-            	      grid,numberOfPolarizationVectors,numberOfAtomicLevels);
+        printF("NES:eval: grid=%d: numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
+                    grid,numberOfPolarizationVectors,numberOfAtomicLevels);
         ::display(multilevelAtomicParams,"multilevelAtomicParams");
     }
     
@@ -200,7 +235,7 @@ eval(real t, CompositeGrid & cg, int grid,
         {
             iv0[dir]=mg.gridIndexRange(0,dir);
             if( mg.isAllCellCentered() )
-      	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+        xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
         }
     }
   // This macro defines the grid points for rectangular grids:
@@ -233,57 +268,104 @@ eval(real t, CompositeGrid & cg, int grid,
         qLocal.reference(qLoc);
     }
     
+    const IntegerArray &gid=mg.gridIndexRange();
+    int n=gid(1,0)-gid(0,0);
+
+  // ::display(gid,"gid");
+  // get 
+  // realArray un;
+    const int size = n+3; // index goes from -1 to n+1
+    const int base = -1;
+    const int bound = n+1;
+
+    double *pun = new double[3*size]; // hardcoded 3 variables [E,P,D]; see mbe1d.f90 for details.
+    #define un(i,j) pun[(i-base)+(size)*(j)] //
+
+  // real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+  // mg.getRectangularGridParameters( dvx, xab );
+
+    real xa = xab[0][0];
+    real xb = xab[1][0];
+  
+  // Call a Fortran subroutine
+    real epsilon=sqrt(multilevelAtomicParams(0,0,0));
+    mbe1d(epsilon,dt,xa,xb,n,t,un(base,0));
+  // ::display(multilevelAtomicParams,"params");
+    cout << "At time (NES): " << t << endl;
+    cout << "Time step (NES): " << dt << endl;
+    cout << "Bounds in x are (NES): " << I1.getBase() << " "<<  I1.getBound() << " " << n <<" " << gid(1,0) << " " << gid(0,0) << endl;
+  // cout << "Bounds in (x,y,z) are (NES): " << I1a.getBase() << " "<<  I1a.getBound() << " " << I2a.getBase() << " "<<  I2a.getBound() << " " << I3a.getBase() << " "<<  I3a.getBound() << endl;
+
+
+    realArray v(I1,3);
+    v = 0.;
+    for (int i = I1.getBase(); i<=I1.getBound(); i++){
+        for (int j=0;j<3;j++){
+                v(i,j) = un(i,j);
+        }
+    }
+
+  // ::display(v,"v");
 
     real x0[3]={0.,0.,0.};   //     
     real x,y,z=0.;
+
+  // ::display(pLocal,"pLocal");
+    if (numberOfPolarizationVectors*numberOfDimensions > pLocal.getLength(3)){
+        printF("Error: too many polarization vectors");
+        OV_ABORT("Error");
+    }
+
     if( numberOfTimeDerivatives==0 )
     {
         FOR_3D(i1,i2,i3,I1,I2,I3)
         {
             if( !isRectangular )
             {
-      	x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
-      	y= xLocal(i1,i2,i3,1)-x0[1];
-      	if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2)-x0[2];
+                x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+                y= xLocal(i1,i2,i3,1)-x0[1];
+                if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2)-x0[2];
             }
             else
             {
-      	x=XC(iv,0)-x0[0];
-      	y=XC(iv,1)-x0[1];
-      	if( numberOfDimensions==3 ) z=XC(iv,2)-x0[2];
+                x=XC(iv,0)-x0[0];
+                y=XC(iv,1)-x0[1];
+                if( numberOfDimensions==3 ) z=XC(iv,2)-x0[2];
             }
 
   
             if( numberOfDimensions==2 )
             {
-      	uLocal(i1,i2,i3,ex) = 1.;
-      	uLocal(i1,i2,i3,ey) = 2.;
-      	uLocal(i1,i2,i3,hz) = 3.;
+                uLocal(i1,i2,i3,ex) = 0.;
+                uLocal(i1,i2,i3,ey) = v(i1,0);
+                uLocal(i1,i2,i3,hz) = 0.;
             }
             else if( numberOfDimensions==3 )
             {
-      	uLocal(i1,i2,i3,ex) = 1.;
-      	uLocal(i1,i2,i3,ey) = 2.;
-      	uLocal(i1,i2,i3,ez) = 3.;
+                uLocal(i1,i2,i3,ex) = 0.;
+                uLocal(i1,i2,i3,ey) = v(i1,0);
+                uLocal(i1,i2,i3,ez) = 0.;
             }
+
+
 
       // --- assign polarization vectors ---
             for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
             {
-      	const int pc= iv*numberOfDimensions;
-      	pLocal(i1,i2,i3,pc  ) = pc+1.;
-      	pLocal(i1,i2,i3,pc+1) = pc+2.;
+                const int pc= iv*numberOfDimensions;
+                pLocal(i1,i2,i3,pc  ) = 0.;
+                pLocal(i1,i2,i3,pc+1) = v(i1,1);
 
-      	if( numberOfDimensions==3 )
-      	{
-        	  pLocal(i1,i2,i3,pc+2) = pc+3.;
-      	}
-        	  
+                if( numberOfDimensions==3 )
+                {
+                    pLocal(i1,i2,i3,pc+2) = 0.;
+                }
+            
             }
       // -- assign population densities ----
             for( int na=0; na<numberOfAtomicLevels; na++ )
             {
-      	qLocal(i1,i2,i3,na) = na+1.;
+                qLocal(i1,i2,i3,na) = v(i1,2);
             }
 
 
@@ -319,6 +401,18 @@ NonlinearExactSolution::check()
     printF("------------ NonlinearExactSolution::check: CHECK THE EQUATIONS ------------\n\n");
 
     real maxErr=0.;
+
+    real errE = 0.;
+    real errP = 0.;
+    real errD = 0.;
+
+  // E_tt - E_xx = epsilon*alphaP*P_tt
+  // P_tt + P = epsilon*(N0-N1)*E
+  // D_t = -epsilon*E*P_t (D=N0-N1)
+
+
+
+    printF("\n Max-error in tests = %9.2e. TESTS %s.\n",maxErr,(maxErr<1.e-5 ? "PASSED" : "***FAILED***"));
 
     printF("\n------------ FINSHED CHECK EQUATIONS ------------\n\n");
 

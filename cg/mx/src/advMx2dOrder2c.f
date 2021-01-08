@@ -889,102 +889,102 @@
          real pmLapSq22r
          real pmLapSq23r
         ! MLA
-         real nepr2
-         real neps2
-         real nept2
-         real neprr2
-         real nepss2
-         real neprs2
-         real neptt2
-         real neprt2
-         real nepst2
-         real neprrr2
-         real nepsss2
-         real nepttt2
-         real nepx21
-         real nepy21
-         real nepz21
-         real nepx22
-         real nepy22
-         real nepz22
-         real nepx23
-         real nepy23
-         real nepz23
-         real nepxx21
-         real nepyy21
-         real nepxy21
-         real nepxz21
-         real nepyz21
-         real nepzz21
-         real neplaplacian21
-         real nepxx22
-         real nepyy22
-         real nepxy22
-         real nepxz22
-         real nepyz22
-         real nepzz22
-         real neplaplacian22
-         real nepxx23
-         real nepyy23
-         real nepzz23
-         real nepxy23
-         real nepxz23
-         real nepyz23
-         real neplaplacian23
-         real nepx23r
-         real nepy23r
-         real nepz23r
-         real nepxx23r
-         real nepyy23r
-         real nepxy23r
-         real nepzz23r
-         real nepxz23r
-         real nepyz23r
-         real nepx21r
-         real nepy21r
-         real nepz21r
-         real nepxx21r
-         real nepyy21r
-         real nepzz21r
-         real nepxy21r
-         real nepxz21r
-         real nepyz21r
-         real neplaplacian21r
-         real nepx22r
-         real nepy22r
-         real nepz22r
-         real nepxx22r
-         real nepyy22r
-         real nepzz22r
-         real nepxy22r
-         real nepxz22r
-         real nepyz22r
-         real neplaplacian22r
-         real neplaplacian23r
-         real nepxxx22r
-         real nepyyy22r
-         real nepxxy22r
-         real nepxyy22r
-         real nepxxxx22r
-         real nepyyyy22r
-         real nepxxyy22r
-         real nepxxx23r
-         real nepyyy23r
-         real nepzzz23r
-         real nepxxy23r
-         real nepxxz23r
-         real nepxyy23r
-         real nepyyz23r
-         real nepxzz23r
-         real nepyzz23r
-         real nepxxxx23r
-         real nepyyyy23r
-         real nepzzzz23r
-         real nepxxyy23r
-         real nepxxzz23r
-         real nepyyzz23r
-         real nepLapSq22r
-         real nepLapSq23r
+         real qr2
+         real qs2
+         real qt2
+         real qrr2
+         real qss2
+         real qrs2
+         real qtt2
+         real qrt2
+         real qst2
+         real qrrr2
+         real qsss2
+         real qttt2
+         real qx21
+         real qy21
+         real qz21
+         real qx22
+         real qy22
+         real qz22
+         real qx23
+         real qy23
+         real qz23
+         real qxx21
+         real qyy21
+         real qxy21
+         real qxz21
+         real qyz21
+         real qzz21
+         real qlaplacian21
+         real qxx22
+         real qyy22
+         real qxy22
+         real qxz22
+         real qyz22
+         real qzz22
+         real qlaplacian22
+         real qxx23
+         real qyy23
+         real qzz23
+         real qxy23
+         real qxz23
+         real qyz23
+         real qlaplacian23
+         real qx23r
+         real qy23r
+         real qz23r
+         real qxx23r
+         real qyy23r
+         real qxy23r
+         real qzz23r
+         real qxz23r
+         real qyz23r
+         real qx21r
+         real qy21r
+         real qz21r
+         real qxx21r
+         real qyy21r
+         real qzz21r
+         real qxy21r
+         real qxz21r
+         real qyz21r
+         real qlaplacian21r
+         real qx22r
+         real qy22r
+         real qz22r
+         real qxx22r
+         real qyy22r
+         real qzz22r
+         real qxy22r
+         real qxz22r
+         real qyz22r
+         real qlaplacian22r
+         real qlaplacian23r
+         real qxxx22r
+         real qyyy22r
+         real qxxy22r
+         real qxyy22r
+         real qxxxx22r
+         real qyyyy22r
+         real qxxyy22r
+         real qxxx23r
+         real qyyy23r
+         real qzzz23r
+         real qxxy23r
+         real qxxz23r
+         real qxyy23r
+         real qyyz23r
+         real qxzz23r
+         real qyzz23r
+         real qxxxx23r
+         real qyyyy23r
+         real qzzzz23r
+         real qxxyy23r
+         real qxxzz23r
+         real qyyzz23r
+         real qLapSq22r
+         real qLapSq23r
          real d14
          real d24
          real h41
@@ -1506,7 +1506,7 @@
      & lap3d2Pow4,lap2d4Pow2,lap3d4Pow2,lap2d4Pow3,lap3d4Pow3,
      & lap2d6Pow2,lap3d6Pow2
         real lap2d2m,lap3d2m
-        real qelap2d2,qelap3d2
+        real ex2,ey2,ez2,qx2,qy2,qz2,qlap2d2,qlap3d2,ex2v,ey2v,ez2v
         real du,fd22d,fd23d,fd42d,fd43d,fd62d,fd63d,fd82d,fd83d
         real elap4, elap4m, lap2d4m, lap3d4m, elapsq2, elap2n, elap2, 
      & elap2m, plap2, plap2m, plap4, plap4m, plap2d2, plap2d2m, 
@@ -1598,12 +1598,13 @@
         real qttt(0:maxPar-1)
         real qtttt(0:maxPar-1)
         real qelap2(0:maxPar-1)
+        real qx2v(0:maxPar-1),qy2v(0:maxPar-1),qz2v(0:maxPar-1)
+        real qlap2(0:maxPar-1)
         real et,ett,ettt
         real etv(0:2),ettv(0:2),etttv(0:2)
         real ptv(0:2,0:maxPar-1),pttv(0:2,0:maxPar-1),ptttv(0:2,
      & 0:maxPar-1),pttttv(0:2,0:maxPar-1)
         real ptttSum,lapfe,fet,fett
-        real nep(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd*maxPar-1)
        ! .......statement functions for GDM parameters
         a0v(iv) = gdmPar(0,iv)
         a1v(iv) = gdmPar(1,iv)
@@ -4725,264 +4726,249 @@ c===============================================================================
         pmlaplacian43r(i1,i2,i3,kd)=pmxx43r(i1,i2,i3,kd)+pmyy43r(i1,i2,
      & i3,kd)+pmzz43r(i1,i2,i3,kd)
         ! MLA
-        nepr2(i1,i2,i3,kd)=(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,kd))*d12(
-     & 0)
-        neps2(i1,i2,i3,kd)=(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,kd))*d12(
+        qr2(i1,i2,i3,kd)=(q(i1+1,i2,i3,kd)-q(i1-1,i2,i3,kd))*d12(0)
+        qs2(i1,i2,i3,kd)=(q(i1,i2+1,i3,kd)-q(i1,i2-1,i3,kd))*d12(1)
+        qt2(i1,i2,i3,kd)=(q(i1,i2,i3+1,kd)-q(i1,i2,i3-1,kd))*d12(2)
+        qrr2(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1+1,i2,i3,kd)+q(i1-1,
+     & i2,i3,kd)) )*d22(0)
+        qss2(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1,i2+1,i3,kd)+q(i1,
+     & i2-1,i3,kd)) )*d22(1)
+        qrs2(i1,i2,i3,kd)=(qr2(i1,i2+1,i3,kd)-qr2(i1,i2-1,i3,kd))*d12(
      & 1)
-        nept2(i1,i2,i3,kd)=(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,kd))*d12(
+        qtt2(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1,i2,i3+1,kd)+q(i1,
+     & i2,i3-1,kd)) )*d22(2)
+        qrt2(i1,i2,i3,kd)=(qr2(i1,i2,i3+1,kd)-qr2(i1,i2,i3-1,kd))*d12(
      & 2)
-        neprr2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1+1,i2,i3,kd)+
-     & nep(i1-1,i2,i3,kd)) )*d22(0)
-        nepss2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2+1,i3,kd)+
-     & nep(i1,i2-1,i3,kd)) )*d22(1)
-        neprs2(i1,i2,i3,kd)=(nepr2(i1,i2+1,i3,kd)-nepr2(i1,i2-1,i3,kd))
-     & *d12(1)
-        neptt2(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2,i3+1,kd)+
-     & nep(i1,i2,i3-1,kd)) )*d22(2)
-        neprt2(i1,i2,i3,kd)=(nepr2(i1,i2,i3+1,kd)-nepr2(i1,i2,i3-1,kd))
-     & *d12(2)
-        nepst2(i1,i2,i3,kd)=(neps2(i1,i2,i3+1,kd)-neps2(i1,i2,i3-1,kd))
-     & *d12(2)
-        neprrr2(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
-     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*d22(0)*d12(0)
-        nepsss2(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
-     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*d22(1)*d12(1)
-        nepttt2(i1,i2,i3,kd)=(-2.*(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,
-     & kd))+(nep(i1,i2,i3+2,kd)-nep(i1,i2,i3-2,kd)) )*d22(2)*d12(2)
-        nepx21(i1,i2,i3,kd)= rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)
-        nepy21(i1,i2,i3,kd)=0
-        nepz21(i1,i2,i3,kd)=0
-        nepx22(i1,i2,i3,kd)= rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sx(i1,i2,
-     & i3)*neps2(i1,i2,i3,kd)
-        nepy22(i1,i2,i3,kd)= ry(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sy(i1,i2,
-     & i3)*neps2(i1,i2,i3,kd)
-        nepz22(i1,i2,i3,kd)=0
-        nepx23(i1,i2,i3,kd)=rx(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sx(i1,i2,
-     & i3)*neps2(i1,i2,i3,kd)+tx(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        nepy23(i1,i2,i3,kd)=ry(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sy(i1,i2,
-     & i3)*neps2(i1,i2,i3,kd)+ty(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        nepz23(i1,i2,i3,kd)=rz(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sz(i1,i2,
-     & i3)*neps2(i1,i2,i3,kd)+tz(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        nepxx21(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+(
-     & rxx22(i1,i2,i3))*nepr2(i1,i2,i3,kd)
-        nepyy21(i1,i2,i3,kd)=0
-        nepxy21(i1,i2,i3,kd)=0
-        nepxz21(i1,i2,i3,kd)=0
-        nepyz21(i1,i2,i3,kd)=0
-        nepzz21(i1,i2,i3,kd)=0
-        neplaplacian21(i1,i2,i3,kd)=nepxx21(i1,i2,i3,kd)
-        nepxx22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+2.*(
-     & rx(i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**
-     & 2)*nepss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
-     & sxx22(i1,i2,i3))*neps2(i1,i2,i3,kd)
-        nepyy22(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+2.*(
-     & ry(i1,i2,i3)*sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sy(i1,i2,i3)**
-     & 2)*nepss2(i1,i2,i3,kd)+(ryy22(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
-     & syy22(i1,i2,i3))*neps2(i1,i2,i3,kd)
-        nepxy22(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*neprr2(i1,i2,i3,
-     & kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*
-     & neprs2(i1,i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*nepss2(i1,i2,i3,
-     & kd)+rxy22(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxy22(i1,i2,i3)*neps2(
-     & i1,i2,i3,kd)
-        nepxz22(i1,i2,i3,kd)=0
-        nepyz22(i1,i2,i3,kd)=0
-        nepzz22(i1,i2,i3,kd)=0
-        neplaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
-     & neprr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)
-     & *sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,
-     & i3)**2)*nepss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*
-     & nepr2(i1,i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*neps2(i1,
-     & i2,i3,kd)
-        nepxx23(i1,i2,i3,kd)=rx(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sx(i1,
-     & i2,i3)**2*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)**2*neptt2(i1,i2,i3,
-     & kd)+2.*rx(i1,i2,i3)*sx(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*rx(i1,
-     & i2,i3)*tx(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,
-     & i2,i3)*nepst2(i1,i2,i3,kd)+rxx23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
-     & sxx23(i1,i2,i3)*neps2(i1,i2,i3,kd)+txx23(i1,i2,i3)*nept2(i1,i2,
-     & i3,kd)
-        nepyy23(i1,i2,i3,kd)=ry(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sy(i1,
-     & i2,i3)**2*nepss2(i1,i2,i3,kd)+ty(i1,i2,i3)**2*neptt2(i1,i2,i3,
-     & kd)+2.*ry(i1,i2,i3)*sy(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*ry(i1,
-     & i2,i3)*ty(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,
-     & i2,i3)*nepst2(i1,i2,i3,kd)+ryy23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
-     & syy23(i1,i2,i3)*neps2(i1,i2,i3,kd)+tyy23(i1,i2,i3)*nept2(i1,i2,
-     & i3,kd)
-        nepzz23(i1,i2,i3,kd)=rz(i1,i2,i3)**2*neprr2(i1,i2,i3,kd)+sz(i1,
-     & i2,i3)**2*nepss2(i1,i2,i3,kd)+tz(i1,i2,i3)**2*neptt2(i1,i2,i3,
-     & kd)+2.*rz(i1,i2,i3)*sz(i1,i2,i3)*neprs2(i1,i2,i3,kd)+2.*rz(i1,
-     & i2,i3)*tz(i1,i2,i3)*neprt2(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,
-     & i2,i3)*nepst2(i1,i2,i3,kd)+rzz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+
-     & szz23(i1,i2,i3)*neps2(i1,i2,i3,kd)+tzz23(i1,i2,i3)*nept2(i1,i2,
-     & i3,kd)
-        nepxy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*neprr2(i1,i2,i3,
-     & kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
-     & ty(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(
-     & i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(
-     & i1,i2,i3)+ry(i1,i2,i3)*tx(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sx(
-     & i1,i2,i3)*ty(i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*nepst2(i1,i2,
-     & i3,kd)+rxy23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxy23(i1,i2,i3)*
-     & neps2(i1,i2,i3,kd)+txy23(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        nepxz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*neprr2(i1,i2,i3,
-     & kd)+sx(i1,i2,i3)*sz(i1,i2,i3)*nepss2(i1,i2,i3,kd)+tx(i1,i2,i3)*
-     & tz(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(
-     & i1,i2,i3)*sx(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(
-     & i1,i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sx(
-     & i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*nepst2(i1,i2,
-     & i3,kd)+rxz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*
-     & neps2(i1,i2,i3,kd)+txz23(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        nepyz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*neprr2(i1,i2,i3,
-     & kd)+sy(i1,i2,i3)*sz(i1,i2,i3)*nepss2(i1,i2,i3,kd)+ty(i1,i2,i3)*
-     & tz(i1,i2,i3)*neptt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(
-     & i1,i2,i3)*sy(i1,i2,i3))*neprs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(
-     & i1,i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*neprt2(i1,i2,i3,kd)+(sy(
-     & i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*nepst2(i1,i2,
-     & i3,kd)+ryz23(i1,i2,i3)*nepr2(i1,i2,i3,kd)+syz23(i1,i2,i3)*
-     & neps2(i1,i2,i3,kd)+tyz23(i1,i2,i3)*nept2(i1,i2,i3,kd)
-        neplaplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+
-     & rz(i1,i2,i3)**2)*neprr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,
-     & i3)**2+sz(i1,i2,i3)**2)*nepss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+
-     & ty(i1,i2,i3)**2+tz(i1,i2,i3)**2)*neptt2(i1,i2,i3,kd)+2.*(rx(i1,
-     & i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(
-     & i1,i2,i3))*neprs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ 
-     & ry(i1,i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*neprt2(i1,
-     & i2,i3,kd)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,
-     & i3)+sz(i1,i2,i3)*tz(i1,i2,i3))*nepst2(i1,i2,i3,kd)+(rxx23(i1,
-     & i2,i3)+ryy23(i1,i2,i3)+rzz23(i1,i2,i3))*nepr2(i1,i2,i3,kd)+(
-     & sxx23(i1,i2,i3)+syy23(i1,i2,i3)+szz23(i1,i2,i3))*neps2(i1,i2,
-     & i3,kd)+(txx23(i1,i2,i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*nept2(
-     & i1,i2,i3,kd)
+        qst2(i1,i2,i3,kd)=(qs2(i1,i2,i3+1,kd)-qs2(i1,i2,i3-1,kd))*d12(
+     & 2)
+        qrrr2(i1,i2,i3,kd)=(-2.*(q(i1+1,i2,i3,kd)-q(i1-1,i2,i3,kd))+(q(
+     & i1+2,i2,i3,kd)-q(i1-2,i2,i3,kd)) )*d22(0)*d12(0)
+        qsss2(i1,i2,i3,kd)=(-2.*(q(i1,i2+1,i3,kd)-q(i1,i2-1,i3,kd))+(q(
+     & i1,i2+2,i3,kd)-q(i1,i2-2,i3,kd)) )*d22(1)*d12(1)
+        qttt2(i1,i2,i3,kd)=(-2.*(q(i1,i2,i3+1,kd)-q(i1,i2,i3-1,kd))+(q(
+     & i1,i2,i3+2,kd)-q(i1,i2,i3-2,kd)) )*d22(2)*d12(2)
+        qx21(i1,i2,i3,kd)= rx(i1,i2,i3)*qr2(i1,i2,i3,kd)
+        qy21(i1,i2,i3,kd)=0
+        qz21(i1,i2,i3,kd)=0
+        qx22(i1,i2,i3,kd)= rx(i1,i2,i3)*qr2(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)
+        qy22(i1,i2,i3,kd)= ry(i1,i2,i3)*qr2(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)
+        qz22(i1,i2,i3,kd)=0
+        qx23(i1,i2,i3,kd)=rx(i1,i2,i3)*qr2(i1,i2,i3,kd)+sx(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+tx(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qy23(i1,i2,i3,kd)=ry(i1,i2,i3)*qr2(i1,i2,i3,kd)+sy(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+ty(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qz23(i1,i2,i3,kd)=rz(i1,i2,i3)*qr2(i1,i2,i3,kd)+sz(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+tz(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qxx21(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*qrr2(i1,i2,i3,kd)+(rxx22(
+     & i1,i2,i3))*qr2(i1,i2,i3,kd)
+        qyy21(i1,i2,i3,kd)=0
+        qxy21(i1,i2,i3,kd)=0
+        qxz21(i1,i2,i3,kd)=0
+        qyz21(i1,i2,i3,kd)=0
+        qzz21(i1,i2,i3,kd)=0
+        qlaplacian21(i1,i2,i3,kd)=qxx21(i1,i2,i3,kd)
+        qxx22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2)*qrr2(i1,i2,i3,kd)+2.*(rx(
+     & i1,i2,i3)*sx(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2)*
+     & qss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3))*qr2(i1,i2,i3,kd)+(sxx22(i1,
+     & i2,i3))*qs2(i1,i2,i3,kd)
+        qyy22(i1,i2,i3,kd)=(ry(i1,i2,i3)**2)*qrr2(i1,i2,i3,kd)+2.*(ry(
+     & i1,i2,i3)*sy(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(sy(i1,i2,i3)**2)*
+     & qss2(i1,i2,i3,kd)+(ryy22(i1,i2,i3))*qr2(i1,i2,i3,kd)+(syy22(i1,
+     & i2,i3))*qs2(i1,i2,i3,kd)
+        qxy22(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*qrr2(i1,i2,i3,kd)+
+     & (rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,i3)*sx(i1,i2,i3))*qrs2(i1,
+     & i2,i3,kd)+sx(i1,i2,i3)*sy(i1,i2,i3)*qss2(i1,i2,i3,kd)+rxy22(i1,
+     & i2,i3)*qr2(i1,i2,i3,kd)+sxy22(i1,i2,i3)*qs2(i1,i2,i3,kd)
+        qxz22(i1,i2,i3,kd)=0
+        qyz22(i1,i2,i3,kd)=0
+        qzz22(i1,i2,i3,kd)=0
+        qlaplacian22(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2)*
+     & qrr2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & sy(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2)*qss2(i1,i2,i3,kd)+(rxx22(i1,i2,i3)+ryy22(i1,i2,i3))*qr2(i1,
+     & i2,i3,kd)+(sxx22(i1,i2,i3)+syy22(i1,i2,i3))*qs2(i1,i2,i3,kd)
+        qxx23(i1,i2,i3,kd)=rx(i1,i2,i3)**2*qrr2(i1,i2,i3,kd)+sx(i1,i2,
+     & i3)**2*qss2(i1,i2,i3,kd)+tx(i1,i2,i3)**2*qtt2(i1,i2,i3,kd)+2.*
+     & rx(i1,i2,i3)*sx(i1,i2,i3)*qrs2(i1,i2,i3,kd)+2.*rx(i1,i2,i3)*tx(
+     & i1,i2,i3)*qrt2(i1,i2,i3,kd)+2.*sx(i1,i2,i3)*tx(i1,i2,i3)*qst2(
+     & i1,i2,i3,kd)+rxx23(i1,i2,i3)*qr2(i1,i2,i3,kd)+sxx23(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+txx23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qyy23(i1,i2,i3,kd)=ry(i1,i2,i3)**2*qrr2(i1,i2,i3,kd)+sy(i1,i2,
+     & i3)**2*qss2(i1,i2,i3,kd)+ty(i1,i2,i3)**2*qtt2(i1,i2,i3,kd)+2.*
+     & ry(i1,i2,i3)*sy(i1,i2,i3)*qrs2(i1,i2,i3,kd)+2.*ry(i1,i2,i3)*ty(
+     & i1,i2,i3)*qrt2(i1,i2,i3,kd)+2.*sy(i1,i2,i3)*ty(i1,i2,i3)*qst2(
+     & i1,i2,i3,kd)+ryy23(i1,i2,i3)*qr2(i1,i2,i3,kd)+syy23(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+tyy23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qzz23(i1,i2,i3,kd)=rz(i1,i2,i3)**2*qrr2(i1,i2,i3,kd)+sz(i1,i2,
+     & i3)**2*qss2(i1,i2,i3,kd)+tz(i1,i2,i3)**2*qtt2(i1,i2,i3,kd)+2.*
+     & rz(i1,i2,i3)*sz(i1,i2,i3)*qrs2(i1,i2,i3,kd)+2.*rz(i1,i2,i3)*tz(
+     & i1,i2,i3)*qrt2(i1,i2,i3,kd)+2.*sz(i1,i2,i3)*tz(i1,i2,i3)*qst2(
+     & i1,i2,i3,kd)+rzz23(i1,i2,i3)*qr2(i1,i2,i3,kd)+szz23(i1,i2,i3)*
+     & qs2(i1,i2,i3,kd)+tzz23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qxy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*qrr2(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sy(i1,i2,i3)*qss2(i1,i2,i3,kd)+tx(i1,i2,i3)*ty(i1,
+     & i2,i3)*qtt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sy(i1,i2,i3)+ry(i1,i2,
+     & i3)*sx(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*ty(i1,i2,i3)+
+     & ry(i1,i2,i3)*tx(i1,i2,i3))*qrt2(i1,i2,i3,kd)+(sx(i1,i2,i3)*ty(
+     & i1,i2,i3)+sy(i1,i2,i3)*tx(i1,i2,i3))*qst2(i1,i2,i3,kd)+rxy23(
+     & i1,i2,i3)*qr2(i1,i2,i3,kd)+sxy23(i1,i2,i3)*qs2(i1,i2,i3,kd)+
+     & txy23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qxz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*qrr2(i1,i2,i3,kd)+
+     & sx(i1,i2,i3)*sz(i1,i2,i3)*qss2(i1,i2,i3,kd)+tx(i1,i2,i3)*tz(i1,
+     & i2,i3)*qtt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sx(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*tx(i1,i2,i3))*qrt2(i1,i2,i3,kd)+(sx(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*qst2(i1,i2,i3,kd)+rxz23(
+     & i1,i2,i3)*qr2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*qs2(i1,i2,i3,kd)+
+     & txz23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qyz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*qrr2(i1,i2,i3,kd)+
+     & sy(i1,i2,i3)*sz(i1,i2,i3)*qss2(i1,i2,i3,kd)+ty(i1,i2,i3)*tz(i1,
+     & i2,i3)*qtt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,
+     & i3)*sy(i1,i2,i3))*qrs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,i2,i3)+
+     & rz(i1,i2,i3)*ty(i1,i2,i3))*qrt2(i1,i2,i3,kd)+(sy(i1,i2,i3)*tz(
+     & i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*qst2(i1,i2,i3,kd)+ryz23(
+     & i1,i2,i3)*qr2(i1,i2,i3,kd)+syz23(i1,i2,i3)*qs2(i1,i2,i3,kd)+
+     & tyz23(i1,i2,i3)*qt2(i1,i2,i3,kd)
+        qlaplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(
+     & i1,i2,i3)**2)*qrr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**
+     & 2+sz(i1,i2,i3)**2)*qss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,i2,
+     & i3)**2+tz(i1,i2,i3)**2)*qtt2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(
+     & i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,i3))
+     & *qrs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,i2,i3)*
+     & ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*qrt2(i1,i2,i3,kd)+2.*(
+     & sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+sz(i1,i2,
+     & i3)*tz(i1,i2,i3))*qst2(i1,i2,i3,kd)+(rxx23(i1,i2,i3)+ryy23(i1,
+     & i2,i3)+rzz23(i1,i2,i3))*qr2(i1,i2,i3,kd)+(sxx23(i1,i2,i3)+
+     & syy23(i1,i2,i3)+szz23(i1,i2,i3))*qs2(i1,i2,i3,kd)+(txx23(i1,i2,
+     & i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*qt2(i1,i2,i3,kd)
 c============================================================================================
 c Define derivatives for a rectangular grid
 c
 c============================================================================================
-        nepx23r(i1,i2,i3,kd)=(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,kd))*
-     & h12(0)
-        nepy23r(i1,i2,i3,kd)=(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,kd))*
-     & h12(1)
-        nepz23r(i1,i2,i3,kd)=(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,kd))*
-     & h12(2)
-        nepxx23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1+1,i2,i3,kd)
-     & +nep(i1-1,i2,i3,kd)) )*h22(0)
-        nepyy23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2+1,i3,kd)
-     & +nep(i1,i2-1,i3,kd)) )*h22(1)
-        nepxy23r(i1,i2,i3,kd)=(nepx23r(i1,i2+1,i3,kd)-nepx23r(i1,i2-1,
-     & i3,kd))*h12(1)
-        nepzz23r(i1,i2,i3,kd)=(-2.*nep(i1,i2,i3,kd)+(nep(i1,i2,i3+1,kd)
-     & +nep(i1,i2,i3-1,kd)) )*h22(2)
-        nepxz23r(i1,i2,i3,kd)=(nepx23r(i1,i2,i3+1,kd)-nepx23r(i1,i2,i3-
-     & 1,kd))*h12(2)
-        nepyz23r(i1,i2,i3,kd)=(nepy23r(i1,i2,i3+1,kd)-nepy23r(i1,i2,i3-
-     & 1,kd))*h12(2)
-        nepx21r(i1,i2,i3,kd)= nepx23r(i1,i2,i3,kd)
-        nepy21r(i1,i2,i3,kd)= nepy23r(i1,i2,i3,kd)
-        nepz21r(i1,i2,i3,kd)= nepz23r(i1,i2,i3,kd)
-        nepxx21r(i1,i2,i3,kd)= nepxx23r(i1,i2,i3,kd)
-        nepyy21r(i1,i2,i3,kd)= nepyy23r(i1,i2,i3,kd)
-        nepzz21r(i1,i2,i3,kd)= nepzz23r(i1,i2,i3,kd)
-        nepxy21r(i1,i2,i3,kd)= nepxy23r(i1,i2,i3,kd)
-        nepxz21r(i1,i2,i3,kd)= nepxz23r(i1,i2,i3,kd)
-        nepyz21r(i1,i2,i3,kd)= nepyz23r(i1,i2,i3,kd)
-        neplaplacian21r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)
-        nepx22r(i1,i2,i3,kd)= nepx23r(i1,i2,i3,kd)
-        nepy22r(i1,i2,i3,kd)= nepy23r(i1,i2,i3,kd)
-        nepz22r(i1,i2,i3,kd)= nepz23r(i1,i2,i3,kd)
-        nepxx22r(i1,i2,i3,kd)= nepxx23r(i1,i2,i3,kd)
-        nepyy22r(i1,i2,i3,kd)= nepyy23r(i1,i2,i3,kd)
-        nepzz22r(i1,i2,i3,kd)= nepzz23r(i1,i2,i3,kd)
-        nepxy22r(i1,i2,i3,kd)= nepxy23r(i1,i2,i3,kd)
-        nepxz22r(i1,i2,i3,kd)= nepxz23r(i1,i2,i3,kd)
-        nepyz22r(i1,i2,i3,kd)= nepyz23r(i1,i2,i3,kd)
-        neplaplacian22r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)+nepyy23r(i1,
-     & i2,i3,kd)
-        neplaplacian23r(i1,i2,i3,kd)=nepxx23r(i1,i2,i3,kd)+nepyy23r(i1,
-     & i2,i3,kd)+nepzz23r(i1,i2,i3,kd)
-        nepxxx22r(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
-     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
-        nepyyy22r(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
-     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
-        nepxxy22r(i1,i2,i3,kd)=( nepxx22r(i1,i2+1,i3,kd)-nepxx22r(i1,
-     & i2-1,i3,kd))/(2.*dx(1))
-        nepxyy22r(i1,i2,i3,kd)=( nepyy22r(i1+1,i2,i3,kd)-nepyy22r(i1-1,
-     & i2,i3,kd))/(2.*dx(0))
-        nepxxxx22r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1+1,i2,
-     & i3,kd)+nep(i1-1,i2,i3,kd))+(nep(i1+2,i2,i3,kd)+nep(i1-2,i2,i3,
-     & kd)) )/(dx(0)**4)
-        nepyyyy22r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2+1,
-     & i3,kd)+nep(i1,i2-1,i3,kd))+(nep(i1,i2+2,i3,kd)+nep(i1,i2-2,i3,
-     & kd)) )/(dx(1)**4)
-        nepxxyy22r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
-     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(i1,i2-1,
-     & i3,kd))   +   (nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,kd)+nep(
-     & i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
-        ! 2D laplacian squared = nep.xxxx + 2 nep.xxyy + nep.yyyy
-        nepLapSq22r(i1,i2,i3,kd)= ( 6.*nep(i1,i2,i3,kd)   - 4.*(nep(i1+
-     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd))    +(nep(i1+2,i2,i3,kd)+nep(i1-
-     & 2,i2,i3,kd)) )/(dx(0)**4) +( 6.*nep(i1,i2,i3,kd)    -4.*(nep(
-     & i1,i2+1,i3,kd)+nep(i1,i2-1,i3,kd))    +(nep(i1,i2+2,i3,kd)+nep(
-     & i1,i2-2,i3,kd)) )/(dx(1)**4)  +( 8.*nep(i1,i2,i3,kd)     -4.*(
-     & nep(i1+1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(
-     & i1,i2-1,i3,kd))   +2.*(nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,
-     & kd)+nep(i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(
-     & 1)**2)
-        nepxxx23r(i1,i2,i3,kd)=(-2.*(nep(i1+1,i2,i3,kd)-nep(i1-1,i2,i3,
-     & kd))+(nep(i1+2,i2,i3,kd)-nep(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
-        nepyyy23r(i1,i2,i3,kd)=(-2.*(nep(i1,i2+1,i3,kd)-nep(i1,i2-1,i3,
-     & kd))+(nep(i1,i2+2,i3,kd)-nep(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
-        nepzzz23r(i1,i2,i3,kd)=(-2.*(nep(i1,i2,i3+1,kd)-nep(i1,i2,i3-1,
-     & kd))+(nep(i1,i2,i3+2,kd)-nep(i1,i2,i3-2,kd)) )*h22(1)*h12(2)
-        nepxxy23r(i1,i2,i3,kd)=( nepxx22r(i1,i2+1,i3,kd)-nepxx22r(i1,
-     & i2-1,i3,kd))/(2.*dx(1))
-        nepxyy23r(i1,i2,i3,kd)=( nepyy22r(i1+1,i2,i3,kd)-nepyy22r(i1-1,
-     & i2,i3,kd))/(2.*dx(0))
-        nepxxz23r(i1,i2,i3,kd)=( nepxx22r(i1,i2,i3+1,kd)-nepxx22r(i1,
-     & i2,i3-1,kd))/(2.*dx(2))
-        nepyyz23r(i1,i2,i3,kd)=( nepyy22r(i1,i2,i3+1,kd)-nepyy22r(i1,
-     & i2,i3-1,kd))/(2.*dx(2))
-        nepxzz23r(i1,i2,i3,kd)=( nepzz22r(i1+1,i2,i3,kd)-nepzz22r(i1-1,
-     & i2,i3,kd))/(2.*dx(0))
-        nepyzz23r(i1,i2,i3,kd)=( nepzz22r(i1,i2+1,i3,kd)-nepzz22r(i1,
-     & i2-1,i3,kd))/(2.*dx(1))
-        nepxxxx23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1+1,i2,
-     & i3,kd)+nep(i1-1,i2,i3,kd))+(nep(i1+2,i2,i3,kd)+nep(i1-2,i2,i3,
-     & kd)) )/(dx(0)**4)
-        nepyyyy23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2+1,
-     & i3,kd)+nep(i1,i2-1,i3,kd))+(nep(i1,i2+2,i3,kd)+nep(i1,i2-2,i3,
-     & kd)) )/(dx(1)**4)
-        nepzzzz23r(i1,i2,i3,kd)=(6.*nep(i1,i2,i3,kd)-4.*(nep(i1,i2,i3+
-     & 1,kd)+nep(i1,i2,i3-1,kd))+(nep(i1,i2,i3+2,kd)+nep(i1,i2,i3-2,
-     & kd)) )/(dx(2)**4)
-        nepxxyy23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
-     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2+1,i3,kd)+nep(i1,i2-1,
-     & i3,kd))   +   (nep(i1+1,i2+1,i3,kd)+nep(i1-1,i2+1,i3,kd)+nep(
-     & i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
-        nepxxzz23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1+
-     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd)+nep(i1,i2,i3+1,kd)+nep(i1,i2,i3-
-     & 1,kd))   +   (nep(i1+1,i2,i3+1,kd)+nep(i1-1,i2,i3+1,kd)+nep(i1+
-     & 1,i2,i3-1,kd)+nep(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)
-        nepyyzz23r(i1,i2,i3,kd)=( 4.*nep(i1,i2,i3,kd)     -2.*(nep(i1,
-     & i2+1,i3,kd)  +nep(i1,i2-1,i3,kd)+  nep(i1,i2  ,i3+1,kd)+nep(i1,
-     & i2  ,i3-1,kd))   +   (nep(i1,i2+1,i3+1,kd)+nep(i1,i2-1,i3+1,kd)
-     & +nep(i1,i2+1,i3-1,kd)+nep(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**
-     & 2)
-        ! 3D laplacian squared = nep.xxxx + nep.yyyy + nep.zzzz + 2 (nep.xxyy + nep.xxzz + nep.yyzz )
-        nepLapSq23r(i1,i2,i3,kd)= ( 6.*nep(i1,i2,i3,kd)   - 4.*(nep(i1+
-     & 1,i2,i3,kd)+nep(i1-1,i2,i3,kd))    +(nep(i1+2,i2,i3,kd)+nep(i1-
-     & 2,i2,i3,kd)) )/(dx(0)**4) +( 6.*nep(i1,i2,i3,kd)    -4.*(nep(
-     & i1,i2+1,i3,kd)+nep(i1,i2-1,i3,kd))    +(nep(i1,i2+2,i3,kd)+nep(
-     & i1,i2-2,i3,kd)) )/(dx(1)**4)  +( 6.*nep(i1,i2,i3,kd)    -4.*(
-     & nep(i1,i2,i3+1,kd)+nep(i1,i2,i3-1,kd))    +(nep(i1,i2,i3+2,kd)+
-     & nep(i1,i2,i3-2,kd)) )/(dx(2)**4)  +( 8.*nep(i1,i2,i3,kd)     -
-     & 4.*(nep(i1+1,i2,i3,kd)  +nep(i1-1,i2,i3,kd)  +nep(i1  ,i2+1,i3,
-     & kd)+nep(i1  ,i2-1,i3,kd))   +2.*(nep(i1+1,i2+1,i3,kd)+nep(i1-1,
-     & i2+1,i3,kd)+nep(i1+1,i2-1,i3,kd)+nep(i1-1,i2-1,i3,kd)) )/(dx(0)
-     & **2*dx(1)**2)+( 8.*nep(i1,i2,i3,kd)     -4.*(nep(i1+1,i2,i3,kd)
-     &   +nep(i1-1,i2,i3,kd)  +nep(i1  ,i2,i3+1,kd)+nep(i1  ,i2,i3-1,
-     & kd))   +2.*(nep(i1+1,i2,i3+1,kd)+nep(i1-1,i2,i3+1,kd)+nep(i1+1,
-     & i2,i3-1,kd)+nep(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)+( 8.*
-     & nep(i1,i2,i3,kd)     -4.*(nep(i1,i2+1,i3,kd)  +nep(i1,i2-1,i3,
-     & kd)  +nep(i1,i2  ,i3+1,kd)+nep(i1,i2  ,i3-1,kd))   +2.*(nep(i1,
-     & i2+1,i3+1,kd)+nep(i1,i2-1,i3+1,kd)+nep(i1,i2+1,i3-1,kd)+nep(i1,
-     & i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        qx23r(i1,i2,i3,kd)=(q(i1+1,i2,i3,kd)-q(i1-1,i2,i3,kd))*h12(0)
+        qy23r(i1,i2,i3,kd)=(q(i1,i2+1,i3,kd)-q(i1,i2-1,i3,kd))*h12(1)
+        qz23r(i1,i2,i3,kd)=(q(i1,i2,i3+1,kd)-q(i1,i2,i3-1,kd))*h12(2)
+        qxx23r(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1+1,i2,i3,kd)+q(i1-
+     & 1,i2,i3,kd)) )*h22(0)
+        qyy23r(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1,i2+1,i3,kd)+q(i1,
+     & i2-1,i3,kd)) )*h22(1)
+        qxy23r(i1,i2,i3,kd)=(qx23r(i1,i2+1,i3,kd)-qx23r(i1,i2-1,i3,kd))
+     & *h12(1)
+        qzz23r(i1,i2,i3,kd)=(-2.*q(i1,i2,i3,kd)+(q(i1,i2,i3+1,kd)+q(i1,
+     & i2,i3-1,kd)) )*h22(2)
+        qxz23r(i1,i2,i3,kd)=(qx23r(i1,i2,i3+1,kd)-qx23r(i1,i2,i3-1,kd))
+     & *h12(2)
+        qyz23r(i1,i2,i3,kd)=(qy23r(i1,i2,i3+1,kd)-qy23r(i1,i2,i3-1,kd))
+     & *h12(2)
+        qx21r(i1,i2,i3,kd)= qx23r(i1,i2,i3,kd)
+        qy21r(i1,i2,i3,kd)= qy23r(i1,i2,i3,kd)
+        qz21r(i1,i2,i3,kd)= qz23r(i1,i2,i3,kd)
+        qxx21r(i1,i2,i3,kd)= qxx23r(i1,i2,i3,kd)
+        qyy21r(i1,i2,i3,kd)= qyy23r(i1,i2,i3,kd)
+        qzz21r(i1,i2,i3,kd)= qzz23r(i1,i2,i3,kd)
+        qxy21r(i1,i2,i3,kd)= qxy23r(i1,i2,i3,kd)
+        qxz21r(i1,i2,i3,kd)= qxz23r(i1,i2,i3,kd)
+        qyz21r(i1,i2,i3,kd)= qyz23r(i1,i2,i3,kd)
+        qlaplacian21r(i1,i2,i3,kd)=qxx23r(i1,i2,i3,kd)
+        qx22r(i1,i2,i3,kd)= qx23r(i1,i2,i3,kd)
+        qy22r(i1,i2,i3,kd)= qy23r(i1,i2,i3,kd)
+        qz22r(i1,i2,i3,kd)= qz23r(i1,i2,i3,kd)
+        qxx22r(i1,i2,i3,kd)= qxx23r(i1,i2,i3,kd)
+        qyy22r(i1,i2,i3,kd)= qyy23r(i1,i2,i3,kd)
+        qzz22r(i1,i2,i3,kd)= qzz23r(i1,i2,i3,kd)
+        qxy22r(i1,i2,i3,kd)= qxy23r(i1,i2,i3,kd)
+        qxz22r(i1,i2,i3,kd)= qxz23r(i1,i2,i3,kd)
+        qyz22r(i1,i2,i3,kd)= qyz23r(i1,i2,i3,kd)
+        qlaplacian22r(i1,i2,i3,kd)=qxx23r(i1,i2,i3,kd)+qyy23r(i1,i2,i3,
+     & kd)
+        qlaplacian23r(i1,i2,i3,kd)=qxx23r(i1,i2,i3,kd)+qyy23r(i1,i2,i3,
+     & kd)+qzz23r(i1,i2,i3,kd)
+        qxxx22r(i1,i2,i3,kd)=(-2.*(q(i1+1,i2,i3,kd)-q(i1-1,i2,i3,kd))+(
+     & q(i1+2,i2,i3,kd)-q(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        qyyy22r(i1,i2,i3,kd)=(-2.*(q(i1,i2+1,i3,kd)-q(i1,i2-1,i3,kd))+(
+     & q(i1,i2+2,i3,kd)-q(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        qxxy22r(i1,i2,i3,kd)=( qxx22r(i1,i2+1,i3,kd)-qxx22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        qxyy22r(i1,i2,i3,kd)=( qyy22r(i1+1,i2,i3,kd)-qyy22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        qxxxx22r(i1,i2,i3,kd)=(6.*q(i1,i2,i3,kd)-4.*(q(i1+1,i2,i3,kd)+
+     & q(i1-1,i2,i3,kd))+(q(i1+2,i2,i3,kd)+q(i1-2,i2,i3,kd)) )/(dx(0)*
+     & *4)
+        qyyyy22r(i1,i2,i3,kd)=(6.*q(i1,i2,i3,kd)-4.*(q(i1,i2+1,i3,kd)+
+     & q(i1,i2-1,i3,kd))+(q(i1,i2+2,i3,kd)+q(i1,i2-2,i3,kd)) )/(dx(1)*
+     & *4)
+        qxxyy22r(i1,i2,i3,kd)=( 4.*q(i1,i2,i3,kd)     -2.*(q(i1+1,i2,
+     & i3,kd)+q(i1-1,i2,i3,kd)+q(i1,i2+1,i3,kd)+q(i1,i2-1,i3,kd))   + 
+     &   (q(i1+1,i2+1,i3,kd)+q(i1-1,i2+1,i3,kd)+q(i1+1,i2-1,i3,kd)+q(
+     & i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        ! 2D laplacian squared = q.xxxx + 2 q.xxyy + q.yyyy
+        qLapSq22r(i1,i2,i3,kd)= ( 6.*q(i1,i2,i3,kd)   - 4.*(q(i1+1,i2,
+     & i3,kd)+q(i1-1,i2,i3,kd))    +(q(i1+2,i2,i3,kd)+q(i1-2,i2,i3,kd)
+     & ) )/(dx(0)**4) +( 6.*q(i1,i2,i3,kd)    -4.*(q(i1,i2+1,i3,kd)+q(
+     & i1,i2-1,i3,kd))    +(q(i1,i2+2,i3,kd)+q(i1,i2-2,i3,kd)) )/(dx(
+     & 1)**4)  +( 8.*q(i1,i2,i3,kd)     -4.*(q(i1+1,i2,i3,kd)+q(i1-1,
+     & i2,i3,kd)+q(i1,i2+1,i3,kd)+q(i1,i2-1,i3,kd))   +2.*(q(i1+1,i2+
+     & 1,i3,kd)+q(i1-1,i2+1,i3,kd)+q(i1+1,i2-1,i3,kd)+q(i1-1,i2-1,i3,
+     & kd)) )/(dx(0)**2*dx(1)**2)
+        qxxx23r(i1,i2,i3,kd)=(-2.*(q(i1+1,i2,i3,kd)-q(i1-1,i2,i3,kd))+(
+     & q(i1+2,i2,i3,kd)-q(i1-2,i2,i3,kd)) )*h22(0)*h12(0)
+        qyyy23r(i1,i2,i3,kd)=(-2.*(q(i1,i2+1,i3,kd)-q(i1,i2-1,i3,kd))+(
+     & q(i1,i2+2,i3,kd)-q(i1,i2-2,i3,kd)) )*h22(1)*h12(1)
+        qzzz23r(i1,i2,i3,kd)=(-2.*(q(i1,i2,i3+1,kd)-q(i1,i2,i3-1,kd))+(
+     & q(i1,i2,i3+2,kd)-q(i1,i2,i3-2,kd)) )*h22(1)*h12(2)
+        qxxy23r(i1,i2,i3,kd)=( qxx22r(i1,i2+1,i3,kd)-qxx22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        qxyy23r(i1,i2,i3,kd)=( qyy22r(i1+1,i2,i3,kd)-qyy22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        qxxz23r(i1,i2,i3,kd)=( qxx22r(i1,i2,i3+1,kd)-qxx22r(i1,i2,i3-1,
+     & kd))/(2.*dx(2))
+        qyyz23r(i1,i2,i3,kd)=( qyy22r(i1,i2,i3+1,kd)-qyy22r(i1,i2,i3-1,
+     & kd))/(2.*dx(2))
+        qxzz23r(i1,i2,i3,kd)=( qzz22r(i1+1,i2,i3,kd)-qzz22r(i1-1,i2,i3,
+     & kd))/(2.*dx(0))
+        qyzz23r(i1,i2,i3,kd)=( qzz22r(i1,i2+1,i3,kd)-qzz22r(i1,i2-1,i3,
+     & kd))/(2.*dx(1))
+        qxxxx23r(i1,i2,i3,kd)=(6.*q(i1,i2,i3,kd)-4.*(q(i1+1,i2,i3,kd)+
+     & q(i1-1,i2,i3,kd))+(q(i1+2,i2,i3,kd)+q(i1-2,i2,i3,kd)) )/(dx(0)*
+     & *4)
+        qyyyy23r(i1,i2,i3,kd)=(6.*q(i1,i2,i3,kd)-4.*(q(i1,i2+1,i3,kd)+
+     & q(i1,i2-1,i3,kd))+(q(i1,i2+2,i3,kd)+q(i1,i2-2,i3,kd)) )/(dx(1)*
+     & *4)
+        qzzzz23r(i1,i2,i3,kd)=(6.*q(i1,i2,i3,kd)-4.*(q(i1,i2,i3+1,kd)+
+     & q(i1,i2,i3-1,kd))+(q(i1,i2,i3+2,kd)+q(i1,i2,i3-2,kd)) )/(dx(2)*
+     & *4)
+        qxxyy23r(i1,i2,i3,kd)=( 4.*q(i1,i2,i3,kd)     -2.*(q(i1+1,i2,
+     & i3,kd)+q(i1-1,i2,i3,kd)+q(i1,i2+1,i3,kd)+q(i1,i2-1,i3,kd))   + 
+     &   (q(i1+1,i2+1,i3,kd)+q(i1-1,i2+1,i3,kd)+q(i1+1,i2-1,i3,kd)+q(
+     & i1-1,i2-1,i3,kd)) )/(dx(0)**2*dx(1)**2)
+        qxxzz23r(i1,i2,i3,kd)=( 4.*q(i1,i2,i3,kd)     -2.*(q(i1+1,i2,
+     & i3,kd)+q(i1-1,i2,i3,kd)+q(i1,i2,i3+1,kd)+q(i1,i2,i3-1,kd))   + 
+     &   (q(i1+1,i2,i3+1,kd)+q(i1-1,i2,i3+1,kd)+q(i1+1,i2,i3-1,kd)+q(
+     & i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)
+        qyyzz23r(i1,i2,i3,kd)=( 4.*q(i1,i2,i3,kd)     -2.*(q(i1,i2+1,
+     & i3,kd)  +q(i1,i2-1,i3,kd)+  q(i1,i2  ,i3+1,kd)+q(i1,i2  ,i3-1,
+     & kd))   +   (q(i1,i2+1,i3+1,kd)+q(i1,i2-1,i3+1,kd)+q(i1,i2+1,i3-
+     & 1,kd)+q(i1,i2-1,i3-1,kd)) )/(dx(1)**2*dx(2)**2)
+        ! 3D laplacian squared = q.xxxx + q.yyyy + q.zzzz + 2 (q.xxyy + q.xxzz + q.yyzz )
+        qLapSq23r(i1,i2,i3,kd)= ( 6.*q(i1,i2,i3,kd)   - 4.*(q(i1+1,i2,
+     & i3,kd)+q(i1-1,i2,i3,kd))    +(q(i1+2,i2,i3,kd)+q(i1-2,i2,i3,kd)
+     & ) )/(dx(0)**4) +( 6.*q(i1,i2,i3,kd)    -4.*(q(i1,i2+1,i3,kd)+q(
+     & i1,i2-1,i3,kd))    +(q(i1,i2+2,i3,kd)+q(i1,i2-2,i3,kd)) )/(dx(
+     & 1)**4)  +( 6.*q(i1,i2,i3,kd)    -4.*(q(i1,i2,i3+1,kd)+q(i1,i2,
+     & i3-1,kd))    +(q(i1,i2,i3+2,kd)+q(i1,i2,i3-2,kd)) )/(dx(2)**4) 
+     &  +( 8.*q(i1,i2,i3,kd)     -4.*(q(i1+1,i2,i3,kd)  +q(i1-1,i2,i3,
+     & kd)  +q(i1  ,i2+1,i3,kd)+q(i1  ,i2-1,i3,kd))   +2.*(q(i1+1,i2+
+     & 1,i3,kd)+q(i1-1,i2+1,i3,kd)+q(i1+1,i2-1,i3,kd)+q(i1-1,i2-1,i3,
+     & kd)) )/(dx(0)**2*dx(1)**2)+( 8.*q(i1,i2,i3,kd)     -4.*(q(i1+1,
+     & i2,i3,kd)  +q(i1-1,i2,i3,kd)  +q(i1  ,i2,i3+1,kd)+q(i1  ,i2,i3-
+     & 1,kd))   +2.*(q(i1+1,i2,i3+1,kd)+q(i1-1,i2,i3+1,kd)+q(i1+1,i2,
+     & i3-1,kd)+q(i1-1,i2,i3-1,kd)) )/(dx(0)**2*dx(2)**2)+( 8.*q(i1,
+     & i2,i3,kd)     -4.*(q(i1,i2+1,i3,kd)  +q(i1,i2-1,i3,kd)  +q(i1,
+     & i2  ,i3+1,kd)+q(i1,i2  ,i3-1,kd))   +2.*(q(i1,i2+1,i3+1,kd)+q(
+     & i1,i2-1,i3+1,kd)+q(i1,i2+1,i3-1,kd)+q(i1,i2-1,i3-1,kd)) )/(dx(
+     & 1)**2*dx(2)**2)
         ! 2nd-order in space and time
         maxwell2dr(i1,i2,i3,n)=2.*u(i1,i2,i3,n)-um(i1,i2,i3,n)+cdtdx*(
      & u(i1-1,i2,i3,n)+u(i1+1,i2,i3,n)-2.*u(i1,i2,i3,n))+cdtdy*(u(i1,
@@ -5071,15 +5057,22 @@ c===============================================================================
      & m)+fa(i1,i2-1,i3,c,m))*dysqi+(fa(i1,i2,i3+1,c,m)-2.*fa(i1,i2,
      & i3,c,m)+fa(i1,i2,i3-1,c,m))*dzsqi
         ! MLA
-        ! qelap2d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi!                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi
-        ! qelap3d2(i1,i2,i3,na,c) = (qe(i1+1,i2,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1-1,i2,i3,na,c))*dxsqi!                          +(qe(i1,i2+1,i3,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2-1,i3,na,c))*dysqi!                          +(qe(i1,i2,i3+1,na,c)-2.*qe(i1,i2,i3,na,c)+qe(i1,i2,i3-1,na,c))*dzsqi
-        qelap2d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+
-     & nep(i1-1,i2,i3,c))*dxsqi+(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+
-     & nep(i1,i2-1,i3,c))*dysqi
-        qelap3d2(i1,i2,i3,c) = (nep(i1+1,i2,i3,c)-2.*nep(i1,i2,i3,c)+
-     & nep(i1-1,i2,i3,c))*dxsqi+(nep(i1,i2+1,i3,c)-2.*nep(i1,i2,i3,c)+
-     & nep(i1,i2-1,i3,c))*dysqi+(nep(i1,i2,i3+1,c)-2.*nep(i1,i2,i3,c)+
-     & nep(i1,i2,i3-1,c))*dzsqi
+        ! first derivatives of E
+        ex2(i1,i2,i3,c)=(u(i1+1,i2,i3,c)-u(i1-1,i2,i3,c))/(2.*dx(0))
+        ey2(i1,i2,i3,c)=(u(i1,i2+1,i3,c)-u(i1,i2-1,i3,c))/(2.*dx(1))
+        ez2(i1,i2,i3,c)=(u(i1,i2,i3+1,c)-u(i1,i2,i3-1,c))/(2.*dx(2))
+        ! first derivatives of N
+        qx2(i1,i2,i3,c)=(q(i1+1,i2,i3,c)-q(i1-1,i2,i3,c))/(2.*dx(0))
+        qy2(i1,i2,i3,c)=(q(i1,i2+1,i3,c)-q(i1,i2-1,i3,c))/(2.*dx(1))
+        qz2(i1,i2,i3,c)=(q(i1,i2,i3+1,c)-q(i1,i2,i3-1,c))/(2.*dx(2))
+        ! laplacians of N
+        qlap2d2(i1,i2,i3,c) = (q(i1+1,i2,i3,c)-2.*q(i1,i2,i3,c)+q(i1-1,
+     & i2,i3,c))*dxsqi+(q(i1,i2+1,i3,c)-2.*q(i1,i2,i3,c)+q(i1,i2-1,i3,
+     & c))*dysqi
+        qlap3d2(i1,i2,i3,c) = (q(i1+1,i2,i3,c)-2.*q(i1,i2,i3,c)+q(i1-1,
+     & i2,i3,c))*dxsqi+(q(i1,i2+1,i3,c)-2.*q(i1,i2,i3,c)+q(i1,i2-1,i3,
+     & c))*dysqi+(q(i1,i2,i3+1,c)-2.*q(i1,i2,i3,c)+q(i1,i2,i3-1,c))*
+     & dzsqi
         ! 2D laplacian squared = u.xxxx + 2 u.xxyy + u.yyyy
         lap2d2Pow2(i1,i2,i3,c)= ( 6.*u(i1,i2,i3,c)   - 4.*(u(i1+1,i2,
      & i3,c)+u(i1-1,i2,i3,c))    +(u(i1+2,i2,i3,c)+u(i1-2,i2,i3,c)) )*
@@ -5952,13 +5945,13 @@ c===============================================================================
      & ATOMIC_dim=2_order=2_gridType=curvilinear")')
                   end if
                 end if
+                ! initialize forcing functions
                 fe=0.
                 fet = 0.
                 fett = 0.
                 lapfe = 0.
-                ! -- first compute some coefficients ---
                 do iv=0,numberOfPolarizationVectors-1
-                  betav(iv) = 1./( 1.+.5*dt*b1v(iv) )
+                  betav(iv) = 1./( 1.+.5*dt*b1v(iv) ) ! coefficients
                   fpv(iv)=0.  ! initialize if not used
                   fptv(iv)=0.
                   fpttv(iv)=0.
@@ -5967,7 +5960,6 @@ c===============================================================================
                 ! index location for first TZ nonlinear variable: 
                 nce = pxc+nd*numberOfPolarizationVectors
                 ! write(*,'(" *** UpadateMLA: pxc=",i2," numberOfPolarizationVectors=",i4," nce=",i4)') pxc,numberOfPolarizationVectors,nce 
-                ! NE product if order=4
                 ! loop over space
                   do i3=n3a,n3b
                   do i2=n2a,n2b
@@ -5976,11 +5968,7 @@ c===============================================================================
                   do m=0,nd-1
                     pc=pxc+m
                     ec=ex+m
-                    ! This is only needed for the second order code
-                    if( addForcing.ne.0 )then ! forcing in E equation already added to f
-                      ! ! wdh: Keep this term now: NOTE : fe is replaced for fourth-order below
-                      ! fe = f(i1,i2,i3,ec)
-                      ! this next function will adjust fe by adding -alphaP*Ptt
+                    if( addForcing.ne.0 )then
                         if( addForcing.ne.0 )then
                           if( forcingOption.eq.twilightZoneForcing )
      & then
@@ -6015,14 +6003,6 @@ c===============================================================================
                               fe =  e0tt-csq * (e0xx + e0yy + e0zz)
                             endif
                             nce = pxc+nd*numberOfPolarizationVectors
-                            ! do iv=0,numberOfAtomicLevels-1
-                            !   if( nd.eq.2 )then
-                            !     OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-                            !   else
-                            !     OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+iv, q0  )
-                            !   end if
-                            !   qvec(iv) = q0
-                            ! enddo
                             do iv=0,numberOfPolarizationVectors-1
                               pce = pc+iv*nd
                               if( nd.eq.2 )then
@@ -6040,8 +6020,9 @@ c===============================================================================
                                   call ogDeriv(ep, 2,0,0,0, xy(i1,i2,
      & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, pce,p0tt )
                               end if
+                              ! adding polarizations
                               fe =  fe + alphaP*p0tt ! sum over P
-                              ! write(*,'(" fe,p0tt=",2e12.4)') fe,p0tt
+                              ! left hand side of gdm equations
                               fpv(iv) = p0tt + b1v(iv)*p0t + b0v(iv)*p0
                               do na = 0,numberOfAtomicLevels-1
                                 if( nd.eq.2 )then
@@ -6051,7 +6032,7 @@ c===============================================================================
                                     call ogDeriv(ep, 0,0,0,0, xy(i1,i2,
      & i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0 )
                                 end if
-                                ! fpv(iv) = fpv(iv) - pnec(iv,na)*qvec(na)*e0
+                                ! adding \Delta N*E
                                 fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
                               enddo
                             end do
@@ -6063,6 +6044,7 @@ c===============================================================================
                           end if
                         end if
                     end if
+                    ! ping old values
                     ev = u(i1,i2,i3,ec)
                     evm=um(i1,i2,i3,ec)
                     do iv=0,numberOfPolarizationVectors-1
@@ -6071,6 +6053,7 @@ c===============================================================================
                     end do
                     ! write(*,*) 'Inside updateDispersive'
                     ! write(*,*) 'Inside updateDispersive order=2'
+                    ! get laplacians
                           ! INFO("FD22c-2D-dispersive-any-PV");
                           ! write(*,*) 'Inside updateDispersive curvilinear order=2'
                           elap2 = ulaplacian22(i1,i2,i3,ec)
@@ -6109,13 +6092,11 @@ c===============================================================================
                           !
                           ! na-th level
                           if( nd.eq.2 )then
-                            ! OGDERIV2D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),0.,t, nce+na,q0t )
                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),0.,t, nce+na,q0tt )
                           else
-                            ! OGDERIV3D( 0,0,0,0,i1,i2,i3,t, nce+na, q0  )
                               call ogDeriv(ep, 1,0,0,0, xy(i1,i2,i3,0),
      & xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, nce+na,q0t )
                               call ogDeriv(ep, 2,0,0,0, xy(i1,i2,i3,0),
@@ -6181,8 +6162,6 @@ c===============================================================================
                   enddo
                   ! N_t
                   do na=0,numberOfAtomicLevels-1
-                    ! ! forcing function
-                    ! getMLAForcing(na)
                     ! first time derivative
                     qt(na) = fnv(na)
                     do iv=0,numberOfAtomicLevels-1 ! relaxation
@@ -6197,8 +6176,6 @@ c===============================================================================
                   enddo
                   ! N_tt
                   do na=0,numberOfAtomicLevels-1
-                    ! ! forcing function
-                    ! getMLAForcing(na)
                     qtt(na) = fntv(na)
                     do iv=0,numberOfAtomicLevels-1 ! relaxation
                       qtt(na) = qtt(na)+prc(na,iv)*qt(iv)
@@ -6211,15 +6188,12 @@ c===============================================================================
      & -2.0*p(i1,i2,i3,m+iv*nd)+pm(i1,i2,i3,m+iv*nd))/dtsq
                       enddo
                     enddo
-                    ! print *, qt(na),qtt(na)
                   enddo
                   ! fill in the population densities "N"
                   do na=0,numberOfAtomicLevels-1
                     qn(i1,i2,i3,na) = q(i1,i2,i3,na) + dt*qt(na) + dt**
      & 2/2.*qtt(na)
                   end do
-                  ! write(*,*) 'THERE THERET THERE THERE'
-                  ! stop
                     end if
                   end do
                   end do

@@ -714,7 +714,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     else if( userKnownSolution=="nonlinearPulse" )
     {
     // ======= NONLINEAR PULSE EXACT SOLUTION ===============
-        printF("UDKS: nonlinearPulse: t=%9.3e, FINISH ME ...\n",t);
+        printF("UDKS: nonlinearPulse: t=%9.3e.\n",t);
 
 
         if( !dbase.has_key("nonlinearExactSolution") )
@@ -744,6 +744,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       	parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
             RealArray kvI(3);
+            RealArray asymParams(4);
       // real kx=1., ky=.5;
       // kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=0.;
         
@@ -753,13 +754,18 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             real omega= c0*sqrt( SQR(kvI(0)) + SQR(kvI(1)) + SQR(kvI(2)) );
             const int & solveForAllFields = dbase.get<int>("solveForAllFields");
 
-            nes.initialize( cg, numberOfDomains,dmpVector,omega,kvI,solveForAllFields );
+            nes.initialize( cg, numberOfDomains,dmpVector,omega,kvI,asymParams,solveForAllFields );
 
         }
 
         NonlinearExactSolution & nes = dbase.get<NonlinearExactSolution>("nonlinearExactSolution");
         bool computeMagneticField=false;
-        nes.eval( t, cg, grid, ua, pv, qv, I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+    // printF("\n ################ UDKS : NONLINEAR PULSE: evaluate here ##################\n\n");
+        nes.eval(dt, t, cg, grid, ua, pv, qv, I1a,I2a,I3a, numberOfTimeDerivatives, computeMagneticField);
+
+    // printF("#######\n");
+    // cout << "Bounds in (x,y,z) are (UDKS): " << I1a.getBase() << " "<<  I1a.getBound() << " " << I2a.getBase() << " "<<  I2a.getBound() << " " << I3a.getBase() << " "<<  I3a.getBound() << endl;
+    // printF("#######\n");
 
     }
   // end nonlinearPulse

@@ -30,6 +30,10 @@
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,2,1,2)
 
+ ! q1 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,4,1,2)
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,2,1,2)
+
  ! We need up to 2 derivatives of p1 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p1,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(p1n,dr1,dx1,3,4,1,2)
@@ -41,9 +45,13 @@
  defineParametricDerivativeMacros(u2,dr2,dx2,3,2,1,4)
  defineParametricDerivativeMacros(u2,dr2,dx2,3,4,1,2)
 
- ! We need up to 2 derivatives of u1n to order 2-- do order 4 for TZ
+ ! We need up to 2 derivatives of u2n to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,4,1,2)
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,2,1,2)
+
+ ! q2 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,4,1,2)
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,2,1,2)
 
  ! We need up to 2 derivatives of p2 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p2,dr1,dx1,3,4,1,2)
@@ -2278,6 +2286,19 @@ beginLoopsMask2d()
         end do
       end do
      end if
+
+    if (nonlinearModel .ne. noNonlinearModel) then
+
+      do na = 0,numberOfAtomicLevels1-1
+        q1(i1  -is1,i2  -is2,i3,na)=extrap3(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+        q1(i1-2*is1,i2-2*is2,i3,na)=extrap3(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+      enddo
+
+      do na = 0,numberOfAtomicLevels2-1
+        q2(j1  -js1,j2  -js2,j3,na)=extrap3(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+        q2(j1-2*js1,j2-2*js2,j3,na)=extrap3(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+      enddo
+    endif
    endLoops2d()
 
   end if
@@ -2344,6 +2365,19 @@ if( .true. )then
    end do
   end if
 
+  if (nonlinearModel .ne. noNonlinearModel) then
+
+    do na = 0,numberOfAtomicLevels1-1
+      q1(i1  -is1,i2  -is2,i3,na)=extrap5(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+      q1(i1-2*is1,i2-2*is2,i3,na)=extrap5(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+    enddo
+
+    do na = 0,numberOfAtomicLevels2-1
+      q2(j1  -js1,j2  -js2,j3,na)=extrap5(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+      q2(j1-2*js1,j2-2*js2,j3,na)=extrap5(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+    enddo
+  endif
+
  endLoops2d()
 else
 
@@ -2384,6 +2418,19 @@ else
      end do
    end do
   end if
+
+  if (nonlinearModel .ne. noNonlinearModel) then
+
+    do na = 0,numberOfAtomicLevels1-1
+      q1(i1  -is1,i2  -is2,i3,na)=extrap4(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+      q1(i1-2*is1,i2-2*is2,i3,na)=extrap4(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+    enddo
+
+    do na = 0,numberOfAtomicLevels2-1
+      q2(j1  -js1,j2  -js2,j3,na)=extrap4(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+      q2(j1-2*js1,j2-2*js2,j3,na)=extrap4(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+    enddo
+  endif
 
  endLoops2d()
 end if
@@ -2781,8 +2828,9 @@ end if
       real curl2um1,curl2vm1,curl2um2,curl2vm2
 
 
-      real evn,pvn
-      real alpha,d4,LP,LPm
+      real evn,pvn,evec(0:2),pvec(0:2,0:maxNumberOfPolarizationVectors-1)
+      real ptv(0:2,0:maxNumberOfPolarizationVectors-1),pttv(0:2,0:maxNumberOfPolarizationVectors-1),ptttv(0:2,0:maxNumberOfPolarizationVectors-1),pttttv(0:2,0:maxNumberOfPolarizationVectors-1)
+      real alpha,d4,LPn,LP,LPm
       real LE(0:2)
       real LE1(0:2),LE1m(0:2),LLE1(0:2), LEx1(0:2),LEy1(0:2)
       real LE2(0:2),LE2m(0:2),LLE2(0:2), LEx2(0:2),LEy2(0:2) 
@@ -2796,10 +2844,13 @@ end if
       real fPtt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt2(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL1(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx1(0:2,0:maxNumberOfPolarizationVectors-1),pevtty1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx2(0:2,0:maxNumberOfPolarizationVectors-1),pevtty2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttSum1(0:2),pevttxSum1(0:2),pevttySum1(0:2)
       real pevttSum2(0:2),pevttxSum2(0:2),pevttySum2(0:2)
+      real pevttt1(0:2,0:maxNumberOfPolarizationVectors-1),pevttt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtttt1(0:2,0:maxNumberOfPolarizationVectors-1),pevtttt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttLSum1(0:2),pevttLSum2(0:2),pevttttSum1(0:2),pevttttSum2(0:2)
 
@@ -2842,14 +2893,27 @@ end if
       integer nonlinearModel1,numberOfAtomicLevels1,maxPar1,numPolar1
       integer nonlinearModel2,numberOfAtomicLevels2,maxPar2,numPolar2
       integer na,nce
-      real q0,q0t,q0tt
+      real q0,q0t,q0tt,q0ttt,q0tttt,q0xx,q0yy,q0x,q0y
       real pnec1,prc1,peptc1
       real pnec2,prc2,peptc2
       integer maxPar
       parameter( maxPar=20 )
       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
+      real fnv(0:maxPar-1),fnv1(0:maxPar-1),fnv2(0:maxPar-1)
+      real fntv(0:maxPar-1),fntv1(0:maxPar-1),fntv2(0:maxPar-1)
+      real fnttv(0:maxPar-1),fnttv1(0:maxPar-1),fnttv2(0:maxPar-1)
+      real fntttv(0:maxPar-1),fntttv1(0:maxPar-1),fntttv2(0:maxPar-1)
+      real qv(0:maxPar-1),qvn(0:maxPar-1),qvm(0:maxPar-1)
+      real qt(0:maxPar-1),qtt(0:maxPar-1),qttt(0:maxPar-1),qtttt(0:maxPar-1)
+      real qex(0:maxPar-1),qey(0:maxPar-1),qeLap(0:maxPar-1)
 
+      real q1x,q1y,q1Lap,q1xx,q1yy,q1xy
+      real q2x,q2y,q2Lap,q2xx,q2yy,q2xy
+      real qvx,qvy,qvLap
+
+      real evx0,evy0,pv0,ev0,evLap
+      
       real checkParallelFortranArrayReal, checkParallelFortranArrayInt, pdiff
       integer numParallelGhost
       integer nd4a,nd4b,n4a,n4b
@@ -3365,9 +3429,12 @@ end if
           ! Macro to assign ghost values:
           if( dispersive.eq.0 )then
             assignInterfaceGhost22r()
-          else
+          else if( useNonlinearModel.eq.0 )then
             ! dispersive case
             assignDispersiveInterfaceGhost22r()
+          else
+            ! nonlinear dispersive case
+            assignNonlinearInterfaceGhost22r()
           end if    
 
           ! fixup values on ends *wdh* June 22, 2016
@@ -3603,6 +3670,8 @@ end if
 
          ! initialization step: assign first ghost line by extrapolation
          ! NOTE: assign ghost points outside the ends
+
+         
          extrapolateGhost2dOrder4()
 
          if( avoidInterfaceIterations.eq.1 )then
@@ -3626,8 +3695,10 @@ end if
            setIndexBoundsExtraGhost()
            if( dispersive.eq.0 )then
              assignInterfaceGhost22c()
-           else
+           else if( useNonlinearModel.eq.0 )then
              assignDispersiveInterfaceGhost22c()
+           else
+             assignNonlinearInterfaceGhost22c()
            end if
            resetIndexBounds()         
 
@@ -3741,9 +3812,11 @@ end if
           ! Macro to assign ghost values:
           if( dispersive.eq.0 )then
             assignInterfaceGhost24c()
-          else
+          else if (useNonlinearModel.eq.0) then
             ! dispersive case
             assignDispersiveInterfaceGhost24c()
+          else
+            assignNonlinearInterfaceGhost24c()
           end if    
 
           ! fixup corner points 
@@ -3905,9 +3978,11 @@ end if
           ! Macro to assign ghost values:
           if( dispersive.eq.0 )then
             assignInterfaceGhost23c()
-          else
+          else if( useNonlinearModel.eq.0 )then
             ! dispersive case
             assignDispersiveInterfaceGhost23c()
+          else
+            assignNonlinearInterfaceGhost23c()
           end if    
 
 

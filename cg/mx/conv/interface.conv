@@ -19,7 +19,8 @@ $CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
 $cgmx = "$CGBUILDPREFIX/mx/bin/cgmx";  # command for cgmx
 $cmdDir="$ENV{CG}/mx/runs/interface";  
 $tf=.5; $tp=.1; $order = "2"; $ng=3; $cfl=.9; $bg="box"; $interfaceIts=3; 
-$eps1=1.; $eps2=1.; $ic="pmic"; $bc="d"; $cons=0;  $useSosupDissipation=0; $tz=""; 
+$eps1=1.; $eps2=1.; $ic="pmic"; $bc="d"; $cons=0;  $useSosupDissipation=0;
+$tz=""; $degreex=2; $degreet=2; 
 $kx=1; $ky=0; $kz=0; 
 @interfaceNormal = (); @interfacePoint = ();
 $modeGDM=-1; 
@@ -31,7 +32,9 @@ $errorNorm=0; $method="NFDTD";
 $alwaysCompute=1; $saveVectorErrors=0; 
 $numberOfDimensions=2;
 $xa=.00001; $xb=1.1; $ya=-.55;  $yb=.55; $za=-.55; $zb=.55; # material box for BA
-$matFile=""; $solveForAllFields=1;  $matFile2="baAir.txt";  $numMatRegions=1; $regionFile=""; $dispersionOption="s"; $ts="rk4"; 
+$matFile=""; $matFile1=""; $matFile2="baAir.txt"; 
+$nm="#"; # nonlinear model
+$solveForAllFields=1;   $numMatRegions=1; $regionFile=""; $dispersionOption="s"; $ts="rk4"; 
 $gridSuffix="";
 #
 GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"diss=f"=>\$diss,\
@@ -44,9 +47,11 @@ GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"diss=
             "a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
             "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
             "interfacePoint=f{1,}"=>\@interfacePoint,"interfaceNormal=f{1,}"=>\@interfaceNormal,\
-	    "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
+	    "matFile=s"=>\$matFile,"matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,\
+            "numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
             "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb,\
-	    "solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption,"ts=s"=>\$ts );
+	    "solveForAllFields=i"=>\$solveForAllFields, "dispersionOption=s"=>\$dispersionOption,\
+            "ts=s"=>\$ts,"nm=s"=>\$nm,"degreex=i"=>\$degreex,"degreet=i"=>\$degreet );
 # ------------------------ plane material interface ------------------------------------------
 $name=$option; 
 if( $ic eq "isw" ){ $name = $option . "SurfaceWave"; }
@@ -143,12 +148,12 @@ if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorE
 $labelMethod=$method;
 if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
 if( $method eq "bamx" ){ $labelMethod="BAMX$order"; }
-if( $method eq "NFDTD" ){ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, interfaceIts=$interfaceIts, tz=$tz, kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, eps1=$eps1, eps2=$eps2, alphaP=$alphaP[0],$alphaP[1], npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) $date}\\label\{table:$name" . $method . "Order$order$normName}"; }
+if( $method eq "NFDTD" ){ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, interfaceIts=$interfaceIts, tz=$tz, degreex=$degreex degreet=$degreet kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, eps1=$eps1, eps2=$eps2, alphaP=$alphaP[0],$alphaP[1], npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) matFile1=$matFile1 matFile2=$mathFile2 nm=$nm $date}\\label\{table:$name" . $method . "Order$order$normName}"; }
 #
 if( $method eq "bamx" ){ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, ts=$ts, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, tz=$tz, kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, modeGDM=$modeGDM, matFile=$matFile, matFile2=$matFile2, dispersionOption=$dispersionOption, xa=$xa xb=$xb ya=$ya yb=$yb za=$za zb=$zb $date}\\label\{table:$name" . $method . "Order$order$normName}"; }
 #
 # 
-if( $method eq "NFDTD" ){ $options = "-diss=$diss -dissOrder=$dissOrder -dm=$dm  -eps1=$eps1 -eps2=$eps2 -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ic=$ic -tz=$tz -bc=$bc -alphaP=$alphaP[0] $alphaP[1] -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -kx=$kx -ky=$ky -kz=$kz -useSosupDissipation=$useSosupDissipation -cons=$cons -checkErrors=1 -interfaceIts=$interfaceIts -interfaceNormal=$interfaceNormal[0] $interfaceNormal[1] $interfaceNormal[2] -interfacePoint=$interfacePoint[0] $interfacePoint[1] $interfacePoint[2]  -go=go"; }
+if( $method eq "NFDTD" ){ $options = "-diss=$diss -dissOrder=$dissOrder -dm=$dm  -eps1=$eps1 -eps2=$eps2 -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ic=$ic -tz=$tz -bc=$bc -alphaP=$alphaP[0] $alphaP[1] -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -a01=$a01[0] $a01[1] $a01[2] -a11=$a11[0] $a11[1] $a11[2] -b01=$b01[0] $b01[1] $b01[2] -b11=$b11[0] $b11[1] $b11[2] -a02=$a02[0] $a02[1] $a02[2] -a12=$a12[0] $a12[1] $a12[2] -b02=$b02[0] $b02[1] $b02[2] -b12=$b12[0] $b12[1] $b12[2] -matFile1=$matFile1 -matFile2=$matFile2 -nm=$nm -kx=$kx -ky=$ky -kz=$kz -degreex=$degreex -degreet=$degreet -useSosupDissipation=$useSosupDissipation -cons=$cons -checkErrors=1 -interfaceIts=$interfaceIts -interfaceNormal=$interfaceNormal[0] $interfaceNormal[1] $interfaceNormal[2] -interfacePoint=$interfacePoint[0] $interfacePoint[1] $interfacePoint[2]  -go=go"; }
 # bamx options: 
 if( $method eq "bamx" ){  $options = "-diss=$diss -dissOrder=$dissOrder -method=bamx -dm=gdm -ts=$ts -matFile=$cmdDir/$matFile -matFile2=$cmdDir/$matFile2 -dm=$dm -solveForAllFields=$solveForAllFields -dispersionOption=$dispersionOption -cfl=$cfl -method=$method -errorNorm=$errorNorm -tf=$tf -tp=$tp -ic=$ic -tz=$tz -bc=$bc -npv=$npv[0] $npv[1] -modeGDM=$modeGDM -kx=$kx -ky=$ky -kz=$kz -checkErrors=1 -interfaceNormal=$interfaceNormal[0] $interfaceNormal[1] $interfaceNormal[2] -interfacePoint=$interfacePoint[0] $interfacePoint[1] $interfacePoint[2] -errorNorm=$errorNorm -xa=$xa -xb=$xb -ya=$ya -yb=$yb -za=$za -zb=$zb -go=go"; }
 #

@@ -1,3 +1,20 @@
+***************************
+******* Fri Jan 8, 2021
+
+TEST QING'S NEW MLA Routines
+
+FOA -- exact degree=[3,2]
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte1.order4.ng3 -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -dm=gdm -nm=mla -tp=1 -tf=1 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -cons=0 -go=og -debug=1
+
+cgmx -noplot interface -g=twoNonSquaresInterfacee1.order4 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -dm=gdm -nm=mla -tp=.05 -tf=1 -tz=poly -ic=tz -degreex=0 -degreet=4 -diss=0 -bc=d -cons=0 -go=og -debug=1
+
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte1.order4.ng3 -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -dm=gdm -nm=mla -tp=1 -tf=1 -tz=poly -ic=tz -degreex=2 -degreet=0 -diss=0 -bc=d -cons=0 -go=og -debug=1
+
+
+Order=2 exact degree=[2,2]
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte1.order2 -matFile1=mlaMat3.txt -matFile2=mlaMat3.txt -dm=gdm -nm=mla -tp=1 -tf=1 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -cons=0 -go=og -debug=1
+
+
 *****************************************
 ******* Dec 22, 2020
 

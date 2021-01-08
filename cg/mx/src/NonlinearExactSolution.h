@@ -5,7 +5,7 @@
 // ===============================================================================
 // Class to define exact solutions for nonlinear models
 // 
-//   (1) Solution to 1D Maxwell Bloch equations
+//   (1) Solution to 1D Maxwell-Bloch equations
 //
 // ===============================================================================
 
@@ -33,7 +33,7 @@ int check();
 
 
 // evaluate the solution
-int eval(real t, CompositeGrid & cg, int grid, 
+int eval(real dt, real t, CompositeGrid & cg, int grid, 
 	 realArray & ua, realArray & pv, realArray & qv,
 	 const Index & I1a, const Index &I2a, const Index &I3a, 
 	 int numberOfTimeDerivatives = 0,
@@ -45,7 +45,7 @@ int eval(real t, CompositeGrid & cg, int grid,
 
 int initialize( CompositeGrid & cg, int numberOfDomains,
 		std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters,
-		const real & omega, const RealArray & kvI, const int solveForAllFields );
+		const real & omega, const RealArray & kvI, const RealArray & asymParams, const int solveForAllFields );
 
 private:
 

@@ -19,7 +19,7 @@ echo to terminal 1
 #================================================================================================
 # 
 $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $varDissSmooths=20; $sidebc="symmetry"; 
-$kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="slabs"; 
+$kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=1; $method="NFDTD"; $dm="none"; $ic="slabs"; 
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
 $numSlabs=0; # 0 = default case of scattering from a "innerDomain" 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
@@ -46,6 +46,7 @@ $leftBC="rbc"; $bcBody="";
 $probeFileName="probeFile"; $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
 $xar=-2.; $xbr=-1.; # reflection probe x-bounds
 $xat= 1.; $xbt= 2.; # transmission probe x-bounds 
+$bc=""; 
 $rbc="abcEM2"; $pmlLines=11; $pmlPower=6; $pmlStrength=50.; 
 # -- sosup dissipation --
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
@@ -59,7 +60,7 @@ $dmFile=""; # old way
 $matFile=""; # "SilverJCDispersionFits.txt"; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
- "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
+ "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"go=s"=>\$go,"noplot=s"=>\$noplot,\
    "plotIntensity=i"=>\$plotIntensity,"ax=f"=>\$ax,"ay=f"=>\$ay,"az=f"=>\$az,"intensityOption=i"=>\$intensityOption,\
   "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz, "numSlabs=i"=>\$numSlabs,\
    "ii=i"=>\$interfaceIterations,"varDiss=i"=>\$varDiss ,"varDissSmooths=i"=>\$varDissSmooths,\
@@ -67,12 +68,12 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
    "probeFileName=s"=>\$probeFileName,"xLeftProbe=f"=>\$xLeftProbe,"xRightProbe=f"=>\$xRightProbe,\
    "yLeftProbe=f"=>\$yLeftProbe,"yRightProbe=f"=>\$yRightProbe,"flushFrequency=f"=>\$flushFrequency,\
    "checkErrors=i"=>\$checkErrors,"sidebc=s"=>\$sidebc,"dissOrder=i"=>\$dissOrder,"method=s"=>\$method,\
-   "filter=i"=>\$filter, "backGround=s"=>\$backGround,"rbc=s"=>\$rbc,"pmlLines=i"=>\$pmlLines,\
+   "filter=i"=>\$filter, "backGround=s"=>\$backGround,"bc=s"=>\$rb,"bc=s"=>\$rbcc,"pmlLines=i"=>\$pmlLines,\
    "pmlPower=i"=>\$pmlPower,"pmlStrength=f"=>\$pmlStrength,"leftBC=s"=>\$leftBC,"bcBody=s"=>\$bcBody,\
    "eps0=f"=>\$eps0,"eps1=f"=>\$eps1,"eps2=f"=>\$eps2,"eps3=f"=>\$eps3,"eps4=f"=>\$eps4,\
    "xar=f"=>\$xar,"xbr=f"=>\$xbr,"xat=f"=>\$xat,"xbt=f"=>\$xbt,"dm=s"=>\$dm,"ic=s"=>\$ic,\
    "npv=i{1,}"=>\@npv,"alphaP=f{1,}"=>\@alphaP,"a01=f{1,}"=>\@a01,"a11=f{1,}"=>\@a11,"b01=f{1,}"=>\@b01,"b11=f{1,}"=>\@b11,\
-   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
+   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,"bc=s"=>\$bc,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
@@ -105,6 +106,9 @@ if( $a02[0] eq "" ){ @a02=(1,0,0,0); }
 if( $a12[0] eq "" ){ @a12=(0,0,0,0); }
 if( $b02[0] eq "" ){ @b02=(0,0,0,0); }
 if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
+#
+if( $bc eq "d" ){ $rbc="dirichlet"; }
+# printf(" bc=$bc rbc=$rbc\n");
 # 
 $grid
 #
@@ -244,6 +248,8 @@ printf("checkErrors=$checkErrors\n");
 plot errors $checkErrors
 check errors $checkErrors
 plot intensity $plotIntensity
+plot nonlinear components 1
+plot polarization components 1
 intensity option $intensityOption
 $intensityAveragingInterval=1.;
 intensity averaging interval $intensityAveragingInterval

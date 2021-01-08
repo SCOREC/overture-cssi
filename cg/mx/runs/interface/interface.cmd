@@ -303,6 +303,8 @@ debug $debug
 cfl $cfl 
 plot errors 1
 check errors 1
+plot nonlinear components 1
+plot polarization components 1
 error norm $errorNorm
 #*********************************
 show file options...

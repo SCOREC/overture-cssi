@@ -16,6 +16,8 @@
 
 #include "SlabsExactSolution.h"
 
+#include "NonlinearExactSolution.h"
+
 typedef ::real LocalReal;
 typedef ::real OV_real;
 
@@ -27,7 +29,7 @@ main(int argc, char *argv[])
 {
   Overture::start(argc,argv);  // initialize Overture and A++/P++
 
-  printF("Usage: texact -option=[0|1|2|3|4|5] -g=<grid>  -dm=[none|gdm] -matFile1=<s> -matFile2=<> ...\n"
+  printF("Usage: texact -option=[0|1|2|3|4|5|6|7] -g=<grid>  -dm=[none|gdm] -nlm=mla -matFile1=<s> -matFile2=<> ...\n"
          "              -computeOption=[0|1}  -kx=<f> -ky=<f> -kz=<f> \n"
          "  option =  0 : pec sphere\n"
          "            1 : dispersive sphere\n"
@@ -36,12 +38,13 @@ main(int argc, char *argv[])
          "            4 : BA plane interface 2d\n"
          "            5 : BA plane interface 2d\n"
          "            6 : slabs\n"
+         "            7 : Nonlinear Multilevel Atomic System\n"
          " computeOption : for BA plane interface, 0=computeComplexFrequency, 1=computeComplexWaveNumber\n"
          " [kx,ky,kz] : wave-number for BA plane interface\n"
           );
 
   const int pecSphere=0, dispersiveSphere=1, planeInterface2D=2, planeInterface3D=3, BAplaneInterface2D=4,
-    BAplaneInterface3D=5, slabs=6;
+    BAplaneInterface3D=5, slabs=6, nonlinearSlabs=7;
   int option = pecSphere;  
   option = dispersiveSphere;
 
@@ -50,8 +53,9 @@ main(int argc, char *argv[])
   aString nameOfGridFile="";
 
   int plotOption=true;
-  const int none=0, gdm=1;
+  const int none=0, gdm=1, mla=1;
   int dispersionModel =none;
+  int nonlinearModel = none;
   
   aString matFile1="baAir.txt";
   aString matFile2="baAir.txt";
@@ -59,7 +63,6 @@ main(int argc, char *argv[])
   real kx=1., ky=1., kz=0.;
   
   int numSlabs=1;  // for SlabsExactSolution
-
      
   // char buff[180];
   int len=0;
@@ -76,52 +79,57 @@ main(int argc, char *argv[])
       else if( len=line.matches("-option=") )
       {
         sScanF(line(len,line.length()-1),"%i",&option);
-	printF("option = %i\n",option);
+	      printF("option = %i\n",option);
       }
       else if( len=line.matches("-numSlabs=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numSlabs);
-	printF("numSlabs = %i\n",numSlabs);
+	      printF("numSlabs = %i\n",numSlabs);
       }
       else if( len=line.matches("-computeOption=") )
       {
         sScanF(line(len,line.length()-1),"%i",&computeOption);
-	printF("computeOption = %i\n",computeOption);
+	      printF("computeOption = %i\n",computeOption);
       }
       else if( len=line.matches("-matFile1=") )
       {
         matFile1=line(len,line.length()-1);
-	printF("matFile1 = %s\n",(const char*)matFile1);
+	      printF("matFile1 = %s\n",(const char*)matFile1);
       }
       else if( len=line.matches("-matFile2=") )
       {
         matFile2=line(len,line.length()-1);
-	printF("matFile2 = %s\n",(const char*)matFile2);
+	      printF("matFile2 = %s\n",(const char*)matFile2);
       }
       else if( len=line.matches("-kx=") )
       {
         sScanF(line(len,line.length()-1),"%e",&kx);
-	printF("kx = %g\n",kx);
+	      printF("kx = %g\n",kx);
       }
       else if( len=line.matches("-ky=") )
       {
         sScanF(line(len,line.length()-1),"%e",&ky);
-	printF("ky = %g\n",ky);
+	      printF("ky = %g\n",ky);
       }
       else if( len=line.matches("-kz=") )
       {
         sScanF(line(len,line.length()-1),"%e",&kz);
-	printF("kz = %g\n",kz);
+	      printF("kz = %g\n",kz);
       }
       else if( len=line.matches("-g=") )
       {
         nameOfGridFile=line(len,line.length()-1);
-	printF("nameOfGridFile=[%s]\n",(const char*)nameOfGridFile);
+	      printF("nameOfGridFile=[%s]\n",(const char*)nameOfGridFile);
       }
       else if( len=line.matches("-dm=gdm") )
       {
-	dispersionModel=gdm;
+	      dispersionModel=gdm;
         printF("Setting dispersionModel=gdm\n");
+      }
+      else if( len=line.matches("-nlm=mla") )
+      {
+        nonlinearModel=mla;
+        printF("Setting nonlinearModel=mla\n");
       }
      
     }
@@ -162,10 +170,20 @@ main(int argc, char *argv[])
       }
       else
       {
-	OV_ABORT("ERROR: numSlabs");
+	      OV_ABORT("ERROR: numSlabs");
       }
-      
-      // nameOfGridFile= "blockGride4.order2.hdf";   
+       // nameOfGridFile= "blockGride4.order2.hdf";   
+    }
+    else if (option==nonlinearSlabs) // 
+    {
+      if (numSlabs==1)
+      {
+        nameOfGridFile="square8.order2.hdf";
+      }
+      else
+      {
+        OV_ABORT("ERROR: numSlabs");
+      }
     }
     else
     {
@@ -693,27 +711,144 @@ main(int argc, char *argv[])
     
 
   }
+  // nonlinear 
+  else if( option==nonlinearSlabs )
+  {
+    
+
+    bool openGraphicsWindow=false;
+    PlotStuff gi(openGraphicsWindow,"texactMLASlabs");  // create a PlotStuff object
+
+
+    // ses.evalTest();
+    // ** old ** ses.initialize();
+
+    // MxParameters parameters;  // parameters class
+
+    // New way: compute solution in C++ code  **finish me**
+    // parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    // std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters =
+    //        parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+
+    std::vector<DispersiveMaterialParameters> dispersiveMaterialParameters;
+
+    int numberOfDomains= 1; 
+    aString matFile[10];
+    matFile[0]=matFile1;
+
+    dispersiveMaterialParameters.resize(numberOfDomains);
+    for( int m=0; m<numberOfDomains; m++ )
+    {
+      DispersiveMaterialParameters & dmp = dispersiveMaterialParameters[m];
+      dmp.setMaterialType( DispersiveMaterialParameters::isotropic ); // TODO: nonlinear type
+      dmp.readFromFile( matFile[m] );
+    }
+    
+
+    RealArray kvI(3); kvI=0.;
+    RealArray  asymParams(4); 
+    LocalReal kx=1., ky=.5;
+    kvI(0)=kx*twoPi; kvI(1)=ky*twoPi;
+    
+    real omega = twoPi;  // is this correct ? 
+    int solveForAllFields=0;
+
+    NonlinearExactSolution nes;
+    nes.initialize( cg,numberOfDomains,dispersiveMaterialParameters,omega,kvI,asymParams,solveForAllFields );
+    
+
+    // ---- plot the solution over time ----
+    if( true )
+    {
+      gi.createWindow("texactMLASlabs");
+
+      PlotStuffParameters psp;                      // This object is used to change plotting parameters
+  
+      int numberOfTimeDerivatives=0;
+    
+      cg.update(MappedGrid::THEvertex | MappedGrid::THEcenter);
+
+      Range all;
+      int nc= cg.numberOfDimensions()==2 ? 3 : 6;  //  [Ex,Ey,Hz] or [Ex,Ey,Ez, Hx,Hy,Hz ] 
+      realCompositeGridFunction u(cg,all,all,all,nc);
+      u=0.;
+  
+      u.setName("E"); // this only stores E and doesn't need to be changed
+      u.setName("Ex",0);
+      u.setName("Ey",1);
+      if( cg.numberOfDimensions()==2 )
+        u.setName("Hz",2);
+      else
+      {
+        u.setName("Ez",2);
+        u.setName("Hx",3);
+        u.setName("Hy",4);
+        u.setName("Hz",5);
+      }
+     
+      int npvMax=2;
+      int nqvMax=2;
+      realCompositeGridFunction pv(cg,all,all,all,npvMax);
+      realCompositeGridFunction qv(cg,all,all,all,npvMax);
+      pv = 0.;
+      qv = 0.;
+
+      // hard-coded for domain [0,1000] to final time t=100, need to match the domain in mbe1d.f90
+      MappedGrid & mg = cg[0];// first grid, for single domain case
+      // const IntegerArray &gid=mg.gridIndexRange();
+      real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+      mg.getRectangularGridParameters( dvx, xab );
+      // int n=gid(1,1)-gid(0,1);
+      real tfinal = 100.;
+      real c = 1.;
+      real cfl=0.9;
+      real dx = dvx[0];
+      real dt = cfl*dx/c;
+      const int numSteps=ceil(abs(tfinal)/dt);
+      dt = tfinal/numSteps;
+      // real dt=10./29.;
+      // const int numSteps=29;
+      for( int step=0; step<numSteps; step++ )
+      {
+        real t = dt*step;
+           
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          Index I1,I2,I3;
+          getIndex(cg[grid].dimension(),I1,I2,I3);
+
+          bool computeMagneticField=false;
+          // ses.eval( t, cg, grid, u[grid], pv[grid],I1,I2,I3, 0, computeMagneticField);
+          // realArray pvg,qvg;
+          nes.eval(dt, t, cg, grid, u[grid], pv[grid], qv[grid], I1,I2,I3, 0, computeMagneticField);
+
+        }
+
+        gi.erase();
+        psp.set(GI_TOP_LABEL,sPrintF("MLA SLAB Solution t=%5.2f",t));
+        // PlotIt::plot(gi,cg,psp);
+        // if( step==0 || step==(numSteps-1) )
+        if( ( step % 2 )==0 ) // plot every 2 time steps
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);      
+        else
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);      
+
+        PlotIt::contour(gi,u,psp); // can be qv or pv (replace u)
+
+        gi.redraw(TRUE);
+      
+      }
+    }
+  }
   else
   {
     OV_ABORT("error: unknown option");
   }
   
-  
-
-
-
-
-  // realCompositeGridFunction v(cg,all,all,all,1);
-  // v.setName("E",0);
-  // v=0.;
-  // PlotIt::contour(gi,v,psp);
-
-
   Overture::finish(); 
   return 0;
-  
-
-  
+   
 }
 
 
@@ -737,9 +872,11 @@ int computeS( const LocalReal epsHat[2], const LocalReal muHat[2], const LocalRe
 	      LocalReal & sr, LocalReal & si,  LocalReal & kr, LocalReal & ki  )
 {
   std::complex<LocalReal> m,eps,mu,s,k;
+
+  std::complex<LocalReal> I(0.0,1.0);
    
-  eps = epsHat[0] + 1i*epsHat[1]; // complex eps 
-  mu  = muHat[0]  + 1i*muHat[1];
+  eps = epsHat[0] + I*epsHat[1]; // complex eps 
+  mu  = muHat[0]  + I*muHat[1];
   
   s = beta/sqrt(-eps*mu);  
   if( std::imag(s)>0. ){ s=-s; } // choose root with si < 0 
