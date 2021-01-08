@@ -1,0 +1,1039 @@
+// ======================================================================================
+// Class to assign interface conditions for Maxwell's equations
+// 
+// Dec 2020 - initial version wdh
+// ======================================================================================
+
+
+#include "InterfaceMaxwell.h"
+
+#include "ParallelUtility.h"
+#include "ParallelGridUtility.h"
+#include "DispersiveMaterialParameters.h"
+#include "CheckParallel.h"
+
+#define interfaceMaxwell EXTERN_C_NAME(interfacemaxwell)
+#define newInterfaceMaxwell EXTERN_C_NAME(newinterfacemaxwell)
+#define interface3dMaxwell EXTERN_C_NAME(interface3dmaxwell)
+#define interfaceOpt EXTERN_C_NAME(interfaceopt)
+extern "C"
+{
+void interfaceMaxwell( const int&nd, 
+                       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+		       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
+                       const int&boundaryCondition1, 
+		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+		       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
+                       const int&boundaryCondition2,
+		       const int&ipar, const real&rpar, 
+                       real&aa2, real&aa4, real&aa8, 
+                       int&ipvt2, int&ipvt4, int&ipvt8,
+                       int&ierr );
+
+void newInterfaceMaxwell( const int&nd, 
+                       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+		       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
+                       const int&boundaryCondition1, 
+		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+		       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
+                       const int&boundaryCondition2,
+		       const int&ipar, const real&rpar, int&ierr );
+
+void interface3dMaxwell( const int&nd, 
+                       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+		       const int&gridIndexRange1, 
+                       real&u1, const real&u1n, const real&u1m, real& v1, 
+                       const int&mask1,const real&rsxy1, const real&xy1, 
+                       real&p1, const real&p1n, const real&p1m, 
+                       real&q1, const real&q1n, const real&q1m, 
+                       const int&boundaryCondition1, 
+		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                       const int&gridIndexRange2, 
+                       real&u2, const real&u2n, const real&u2m, real & v2,
+                       const int&mask2,const real&rsxy2, const real&xy2, 
+                       real&p2, const real&p2n, const real&p2m,  
+                       real&q2, const real&q2n, const real&q2m,  
+                       const int&boundaryCondition2,
+		       const int&ipar, const real&rpar, 
+                       real&aa2, real&aa4, real&aa8, 
+                       int&ipvt2, int&ipvt4, int&ipvt8,
+                       int&ierr );
+
+void interfaceOpt( const int&nd, 
+                       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+		       const int&gridIndexRange1, 
+                       real&u1, const real&u1n, const real&u1m, real& v1, 
+                       const int&mask1,const real&rsxy1, const real&xy1, 
+                       real&p1, const real&p1n, const real&p1m, 
+                       real&q1, const real&q1n, const real&q1m, 
+                       const int&boundaryCondition1, 
+		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                       const int&gridIndexRange2, 
+                       real&u2, const real&u2n, const real&u2m, real & v2,
+                       const int&mask2,const real&rsxy2, const real&xy2, 
+                       real&p2, const real&p2n, const real&p2m,  
+                       real&q2, const real&q2n, const real&q2m,  
+                       const int&boundaryCondition2,
+		       const int&ipar, const real&rpar, 
+                       real&aa2, real&aa4, real&aa8, 
+                       int&ipvt2, int&ipvt4, int&ipvt8,
+                       int&ierr );
+
+}
+
+
+static CheckParallel *pCheckParallel=NULL;
+
+
+// ==================================================================================================
+// ------ This macro next assigns the local arrays that hold the interface values in parallel ------
+// ==================================================================================================
+#Include "getLocalInterfaceArraysMacro.h"
+
+
+// ============================================================================
+//   Assign the parameters for the optimized interface routines.
+// 
+//  OPTION: serial, parallel1, parallel2 
+//    serial : solve on both grids simultaneously in serial
+//    parallel1 : solve on grid 1 
+//    parallel2 : solve on grid 2
+// ============================================================================
+#beginMacro assignOptParameters(OPTION,exa,eya,eza,hxa,hya,hza)
+
+  // Each grid may or may not have dispersion model: 
+  const Maxwell::DispersionModelEnum dispersionModel1 = dmp1.numberOfPolarizationVectors>0 ? dispersionModel : Maxwell::noDispersion;
+  const Maxwell::DispersionModelEnum dispersionModel2 = dmp2.numberOfPolarizationVectors>0 ? dispersionModel : Maxwell::noDispersion;
+
+  const int nonlinearModel1 = dmp1.getNonlinearModel();
+  const int nonlinearModel2 = dmp2.getNonlinearModel();
+
+  int ipar[]={ //
+    side1, dir1, grid1,         // keep side1,dir1 since we don't reverse the points.
+    #If #OPTION eq "parallel2"
+      m1a,m1b,m2a,m2b,m3a,m3b,  // use grid2 dimensions for grid1 when we solve on grid2
+    #Else
+      n1a,n1b,n2a,n2b,n3a,n3b,
+    #End
+    side2, dir2, grid2,         //  keep side2,dir2 since we don't reverse the points.
+    #If #OPTION eq "parallel1"
+      n1a,n1b,n2a,n2b,n3a,n3b,  // use grid1 dimensions for grid2 when we solve on grid1
+    #Else
+      m1a,m1b,m2a,m2b,m3a,m3b,
+    #End
+    gridType,            
+    bcOrderOfAccuracy,
+    orderOfExtrapolation,
+    useForcing,          
+    exa,                  
+    eya,                  
+    eza,                  
+    hxa ,                 
+    hya,                  
+    hza,                  
+    (int)solveForElectricField,          
+    (int)solveForMagneticField,          
+    useWhereMask,       
+    debug,
+    numberOfIterationsForInterfaceBC,
+    materialInterfaceOption,
+    (int)interface.initialized,
+    myid,
+    parallel,
+    (int)forcingOption,
+    interfaceEquationsOption,
+    (int)assignInterfaceValues,
+    (int)assignInterfaceGhostValues,
+    mx.dbase.get<int>("setDivergenceAtInterfaces"),
+    mx.dbase.get<int>("useImpedanceInterfaceProjection"),
+    0,   // numberOfInterfaceIterationsUsed : returned value ipar[43]
+    dispersionModel1,   // ipar[44]
+    dispersionModel2,   // ipar[45]
+    pxc,                // ipar[46]
+    knownSolutionOption,
+    useJacobiUpdate,
+    nonlinearModel1,      // ipar[49]
+    nonlinearModel2,      // ipar[50]
+    numParallelGhost,     // ipar[51]
+    internalGhostBC       // ipar[52]
+  };
+		  
+const real & rtolForInterfaceIterations = mx.dbase.get<real>("rtolForInterfaceIterations");
+const real & atolForInterfaceIterations = mx.dbase.get<real>("atolForInterfaceIterations");
+
+real rpar[]={ //
+  dx1[0],
+  dx1[1],
+  dx1[2],
+  mg1.gridSpacing(0),
+  mg1.gridSpacing(1),
+  mg1.gridSpacing(2),
+  dx2[0],
+  dx2[1],
+  dx2[2],
+  mg2.gridSpacing(0),
+  mg2.gridSpacing(1),
+  mg2.gridSpacing(2),
+  t,    
+  (real &)tz,  // twilight zone pointer
+  dt,    
+  epsGrid(grid1),
+  muGrid(grid1),   
+  cGrid(grid1),    
+  epsGrid(grid2),  
+  muGrid(grid2),   
+  cGrid(grid2),
+  omegaForInterfaceIteration,
+  0., // return value averageInterfaceConvergenceRate
+  0.,  // return value maxFinalResidual
+  rtolForInterfaceIterations,
+  atolForInterfaceIterations
+};
+#endMacro
+// =============== end assignOptParameters() ==============
+
+
+// ===============================================================================================
+//   Call the optimized interface routines.
+//
+//  OPTION: serial, parallel1, parallel2 
+//    serial : solve on both grids simultaneously in serial
+//    parallel1 : solve on grid 1 
+//    parallel2 : solve on grid 2
+// ===============================================================================================
+#beginMacro assignOptInterface(OPTION,ex,ey,ez,hx,hy,hz)
+
+assignOptParameters(OPTION,ex,ey,ez,hx,hy,hz);
+
+// work space: 
+real *rwk=interface.rwk;
+int *iwk=interface.iwk;
+assert( rwk!=NULL && iwk!=NULL );
+      
+const int ndf = max(interface.ndf1,interface.ndf2); 
+
+// assign pointers into the work spaces
+int pa2=0,pa4=0,pa8=0, pipvt2=0,pipvt4=0,pipvt8=0;
+if( bcOrderOfAccuracy==2 )
+{
+  if( !( mg1.numberOfDimensions()==3 ) )  // new 3D doesn't use work-space yet
+  {
+    pa2=0; 
+    pa4=pa2 + 2*2*2*ndf;
+    pa8=0;  // not used
+	
+    pipvt2=0;
+    pipvt4=pipvt2 + 2*ndf; 
+    pipvt8=0;
+  }
+}
+else if( bcOrderOfAccuracy==4 )
+{
+  pa2=0; // not used
+  pa4=0;
+  pa8=pa4+4*4*2*ndf;
+	
+  pipvt2=0;
+  pipvt4=0;
+  pipvt8=pipvt4+4*ndf;
+	
+}
+
+if( mg1.numberOfDimensions()==2 && !useNewInterfaceRoutines )
+{
+  // OLD interface routines
+  interfaceMaxwell( mg1.numberOfDimensions(), 
+                    #If #OPTION eq "parallel2"
+		      u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
+		      u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
+		      u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
+		      // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
+                      // mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *mask2p,*prsxy2, *pxy2, bc2Local(0,0),
+                      // fixed version: but note bc2Local 
+                      mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *pmask1b,*prsxy1b, *pxy1b, bc2Local(0,0),
+                    #Else
+		      u1Local.getBase(0),u1Local.getBound(0),
+		      u1Local.getBase(1),u1Local.getBound(1),
+		      u1Local.getBase(2),u1Local.getBound(2),
+		      mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
+                    #End
+                    #If #OPTION eq "parallel1"
+		      u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
+		      u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
+		      u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
+		      // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
+		      // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
+                      // fixed version: but note bc1Local 
+                      mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *pmask2b,*prsxy2b,*pxy2b, bc1Local(0,0),
+                    #Else
+		      u2Local.getBase(0),u2Local.getBound(0),
+		      u2Local.getBase(1),u2Local.getBound(1),
+		      u2Local.getBase(2),u2Local.getBound(2),
+		      mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2Local(0,0), 
+                    #End
+		    ipar[0], rpar[0], 
+		    rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
+		    ierr );
+}
+else
+{
+  // new interface routines -- 2D versions are done here too
+  // interface3dMaxwell( mg1.numberOfDimensions(), 
+  interfaceOpt( mg1.numberOfDimensions(), 
+                      #If #OPTION eq "parallel2"
+		        u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
+		        u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
+		        u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
+		        // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
+                        // mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *mask2p,*prsxy2, *pxy2, bc2Local(0,0),
+                        // fixed version: but note bc2Local 
+                        mg2.gridIndexRange(0,0), 
+                        *u1CopyLocal.getDataPointer(),   
+                        // *u1np,
+                        *u1nCopyLocal.getDataPointer(),
+                        *u1mp, *v1bp, 
+                        *pmask1b,*prsxy1b,*pxy1b, 
+                        // *p1ptr,*p1nptr,
+                        *p1CopyLocal.getDataPointer(),
+                        *p1nCopyLocal.getDataPointer(),
+                        *p1mptr,   
+                        *q1ptr,*q1nptr,*q1mptr,   
+                        bc2Local(0,0),
+                      #Else
+                        // --- serial case ---
+		        u1Local.getBase(0),u1Local.getBound(0),
+		        u1Local.getBase(1),u1Local.getBound(1),
+		        u1Local.getBase(2),u1Local.getBound(2),
+                        mg1.gridIndexRange(0,0), 
+                        *u1p, *u1np, *u1mp, *v1p,
+                        *mask1p,*prsxy1, *pxy1, 
+                        *p1ptr,*p1nptr,*p1mptr,  
+                        *q1ptr,*q1nptr,*q1mptr,   
+                        bc1Local(0,0), 
+                      #End
+                      #If #OPTION eq "parallel1"
+		        u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
+		        u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
+		        u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
+		        // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
+		        // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0),
+                        // fixed version: but note bc1Local 
+                        mg1.gridIndexRange(0,0), 
+                        *u2CopyLocal.getDataPointer(),
+                        // *u2np,
+                        *u2nCopyLocal.getDataPointer(),
+                        *u2mp, *v2bp,
+                        *pmask2b,*prsxy2b,*pxy2b, 
+                        // *p2ptr,*p2nptr,
+                        *p2CopyLocal.getDataPointer(),
+                        *p2nCopyLocal.getDataPointer(),
+                        *p2mptr, 
+                        *q2ptr,*q2nptr,*q2mptr, 
+                        bc1Local(0,0),
+                      #Else
+                        // --- serial case ---
+		        u2Local.getBase(0),u2Local.getBound(0),
+		        u2Local.getBase(1),u2Local.getBound(1),
+		        u2Local.getBase(2),u2Local.getBound(2),
+                        mg2.gridIndexRange(0,0), 
+                        *u2p, *u2np, *u2mp, *v2p,
+                        *mask2p,*prsxy2, *pxy2, 
+                        *p2ptr,*p2nptr,*p2mptr, 
+                        *q2ptr,*q2nptr,*q2mptr, 
+                        bc2Local(0,0), 
+                      #End
+		      ipar[0], rpar[0], 
+		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
+		      ierr );
+   
+
+}
+// sosup solves for E and E.t so we need to divide some counts by 2: 
+const real numSolvesPerStep = method==Maxwell::sosup ? 2. : 1.;
+interface.totalInterfaceIterations+=ipar[43]/numSolvesPerStep; // counts total number of interface iterations
+interface.averageInterfaceConvergenceRate+=rpar[22]/numSolvesPerStep;
+interface.maxFinalResidual=max(rpar[23],interface.maxFinalResidual);
+interface.averageFinalResidual+=rpar[23]/numSolvesPerStep;  // keeps sums of residuals 
+#endMacro
+// ======================= end  assignOptInterface() ====================================
+
+
+
+
+
+
+
+// ======================================================================================
+/// \brief Constructor for class to assign interface conditions for Maxwell's equations
+// ======================================================================================
+InterfaceMaxwell::InterfaceMaxwell( Maxwell & cgmx ) : mx(cgmx)
+{
+}
+
+
+
+// ======================================================================================
+/// \brief Destructor for class to assign interface conditions for Maxwell's equations
+// ======================================================================================
+InterfaceMaxwell::~InterfaceMaxwell()
+{
+}
+
+
+
+// ======================================================================================
+/// \brief Pre-compute the coefficients in the stencil for the interface equations
+// ======================================================================================
+int InterfaceMaxwell::computeStencilCoefficients(int current, real t, real dt )
+{
+  printF("\n >>>>>>>>>> InterfaceMaxwell:: Entering computeStencilCoefficients\n");
+  
+  CompositeGrid *& cgp = mx.cgp;
+  int & debug = mx.debug;
+  int & orderOfAccuracyInSpace = mx.orderOfAccuracyInSpace;
+
+  std::vector<InterfaceInfo> & interfaceInfo = mx.interfaceInfo;  // holds info and work-space for interfaces
+
+  int & numberOfTimeLevels = mx.numberOfTimeLevels;
+  bool & useNewInterfaceRoutines = mx.useNewInterfaceRoutines;
+  int & interfaceEquationsOption = mx.interfaceEquationsOption;
+  int & numberOfIterationsForInterfaceBC = mx.numberOfIterationsForInterfaceBC;
+  int & materialInterfaceOption = mx.materialInterfaceOption;
+  
+  bool & solveForElectricField = mx.solveForElectricField;
+  bool & solveForMagneticField = mx.solveForMagneticField;
+  
+  real & omegaForInterfaceIteration = mx.omegaForInterfaceIteration;
+  // real & atolForInterfaceIterations = mx.atolForInterfaceIterations;
+
+  RealArray & epsGrid = mx.epsGrid;
+  RealArray & muGrid = mx.muGrid;
+  RealArray & cGrid = mx.cGrid;
+  
+
+  int & myid = mx.myid;
+
+  int & ex = mx.ex;
+  int & ey = mx.ey;
+  int & ez = mx.ez;
+  int & hx = mx.hx;
+  int & hy = mx.hy;
+  int & hz = mx.hz;
+
+  int & ext = mx.ext;
+  int & eyt = mx.eyt;
+  int & ezt = mx.ezt;
+  int & hxt = mx.hxt;
+  int & hyt = mx.hyt;
+  int & hzt = mx.hzt;
+
+  int & pxc = mx.pxc;
+
+  Maxwell::MethodEnum & method = mx.method;
+  Maxwell::ForcingEnum & forcingOption  = mx.forcingOption;
+  Maxwell::DispersionModelEnum & dispersionModel = mx.dispersionModel;
+  Maxwell::KnownSolutionEnum & knownSolutionOption = mx.knownSolutionOption;
+  
+  OGFunction *& tz = mx.tz;
+  
+
+  FILE *&debugFile = mx.debugFile;
+  FILE *& pDebugFile = mx.pDebugFile; 
+
+  realCompositeGridFunction *& cgfields = mx.cgfields;
+
+  int assignInterfaceValues=1;
+  int assignInterfaceGhostValues=1;
+
+
+  // --- COPIED FROM assignInterfaceBoundaryConditions.bC ------
+
+
+  assert( cgp!=NULL );
+  CompositeGrid & cg= *cgp;
+  const int numberOfDimensions = cg.numberOfDimensions();
+  const int numberOfComponentGrids = cg.numberOfComponentGrids();
+
+  Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+  Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
+
+  const int prev = (current-1+numberOfTimeLevels) % numberOfTimeLevels;
+  const int next = (current+1) % numberOfTimeLevels;
+
+  // *** could iterate to solve the interface conditions for 4th order
+
+  bool interpolateThisDomain=false;  // set to true if we need to interpolate again after setting the interface values
+  
+  bool reduceOrderOfAccuracyForSosup=true;
+
+  CheckParallel & checkParallel = mx.dbase.get<CheckParallel>("checkParallel");  // use to check parallel computations  
+  pCheckParallel = &checkParallel;  // set pointer 
+
+  int bcOrderOfAccuracy=orderOfAccuracyInSpace;
+  if( reduceOrderOfAccuracyForSosup && method==Maxwell::sosup && orderOfAccuracyInSpace==6 )
+  {
+    // NOTE: for now apply 4th order BC's for sosup order 6
+    bcOrderOfAccuracy=4;
+  }
+
+  //  ----------------------------------------------------------------------------
+  //  ------------------------- loop over interfaces -----------------------------
+  //  ----------------------------------------------------------------------------
+  for( int inter=0; inter < interfaceInfo.size(); inter++ )
+  {
+    InterfaceInfo & interface = interfaceInfo[inter]; 
+
+    const int grid1=interface.grid1, side1=interface.side1, dir1=interface.dir1;
+    const int grid2=interface.grid2, side2=interface.side2, dir2=interface.dir2;
+    
+    MappedGrid & mg1 = cg[grid1];
+    const IntegerArray & bc1 = mg1.boundaryCondition();
+    const IntegerArray & share1 = mg1.sharedBoundaryFlag();
+
+    MappedGrid & mg2 = cg[grid2];
+    const IntegerArray & bc2 = mg2.boundaryCondition();
+    const IntegerArray & share2 = mg2.sharedBoundaryFlag();
+
+
+    printF("--InterfaceMaxwell-- Interface: %s=(grid1,side,dir1)=(%i,%i,%i) "
+           "AND %s=(grid2,side2,dir2)=(%i,%i,%i) share=%i\n",
+           (const char*)mg1.getName(),grid1,side1,dir1,
+           (const char*)mg2.getName(),grid2,side2,dir2,share1(side1,dir1));
+
+
+    realArray & u1 = cgfields[next][grid1];
+    realArray & u2 = cgfields[next][grid2];
+
+    realArray & u1n = cgfields[current][grid1];
+    realArray & u2n = cgfields[current][grid2];
+
+    realArray & u1m = cgfields[prev][grid1];
+    realArray & u2m = cgfields[prev][grid2];
+
+
+    const int numParallelGhost = u1.getGhostBoundaryWidth(0);
+
+    IntegerArray bc1Local(2,3), bc2Local(2,3);
+
+    const int internalGhostBC=-9876; // set bc at internal parallel ghost to this value 
+     
+    ParallelGridUtility::getLocalBoundaryConditions( cgfields[next][grid1],bc1Local,internalGhostBC );
+    ParallelGridUtility::getLocalBoundaryConditions( cgfields[next][grid2],bc2Local,internalGhostBC  );
+    // ::display(bc1Local,"bc1Local");
+    // ::display(bc2Local,"bc2Local");
+
+
+    const int extra=0; // orderOfAccuracyInSpace/2;
+    getBoundaryIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3,extra);
+    getBoundaryIndex(mg2.gridIndexRange(),side2,dir2,J1,J2,J3,extra);
+  
+    // check that the number of points in the tangential directions match -- eventually we will fix this
+    for( int dir=1; dir<mg1.numberOfDimensions(); dir++ )
+    {
+      int dir1p = (dir1+dir) % mg1.numberOfDimensions();
+      int dir2p = (dir2+dir) % mg2.numberOfDimensions();
+      if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
+      {
+	printF("Cgmx::applyInterfaceBC:ERROR: The number of grid points on the two interfaces do not match\n"
+	       " (grid1,side1,dir1,bc1)=(%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
+	       " (grid2,side2,dir2,bc2)=(%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+	       grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+	       I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
+	       grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
+	       J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
+	printF("grid names are %s and %s\n",(const char*)mg1.getName(),(const char*)mg2.getName());
+	OV_ABORT("error"); // this prints the file and line number and calls Overture::abort. 
+      }
+
+      // We need to interpolate the grid function if an interface has interpolation points on it:
+      if( bc1(0,dir1p)==0 || bc1(1,dir1p)==0 )
+      {
+	interpolateThisDomain=true;
+      }
+      if( bc2(0,dir2p)==0 || bc2(1,dir2p)==0 )
+      {
+	interpolateThisDomain=true;
+      }
+    } // end for dir 
+  
+
+    intArray & mask1 = mg1.mask();
+    intArray & mask2 = mg2.mask();
+    OV_GET_SERIAL_ARRAY(int,mask1,mask1Local);
+    OV_GET_SERIAL_ARRAY(int,mask2,mask2Local);
+
+    // #ifdef USE_PPP
+    //  intSerialArray mask1Local; getLocalArrayWithGhostBoundaries(mask1,mask1Local);
+    //  intSerialArray mask2Local; getLocalArrayWithGhostBoundaries(mask2,mask2Local);
+    // #else
+    //  intSerialArray & mask1Local = mask1;
+    //  intSerialArray & mask2Local = mask2;
+    // #endif
+
+    bool isRectangular1= mg1.isRectangular();
+    real dx1[3]={0.,0.,0.}; //
+    if( isRectangular1 )
+      mg1.getDeltaX(dx1);
+
+    bool isRectangular2= mg2.isRectangular();
+    real dx2[3]={0.,0.,0.}; //
+    if( isRectangular2 )
+      mg2.getDeltaX(dx2);
+
+
+    if( orderOfAccuracyInSpace >=4 && useNewInterfaceRoutines )
+    { 
+      // WARNING: Do not use the fourth-order rectangular grid interface conditions in interface3d.bf 
+      //   since these require iterations which have not been implemented
+
+      if( numberOfDimensions==3 && interfaceEquationsOption==0 && ( !isRectangular1 || !isRectangular2) )
+      {
+	printF("--MX--assignInterface:WARNING: interfaceEquationsOption=0 is NOT recommended"
+               " for order=4 in 3D (curvilinear)!! Use new routines: interfaceEquationsOption=1.\n");
+        if( numberOfIterationsForInterfaceBC !=1 ) 
+	{
+	  printF("--MX--assignInterface: ERROR numberOfIterationsForInterfaceBC=%i should be 1"
+		 " for interfaceEquationsOption=0 (3D, order=4)\n",numberOfIterationsForInterfaceBC);
+          printf("This is a fatal error to make sure that you really wanted to use interfaceEquationsOption=0 \n");
+	  OV_ABORT("error");
+	}
+	
+      }
+
+      if( (isRectangular1 && isRectangular2) && t<= 1.5*dt  )
+      {
+	// printF("--MX-- assignInterfaceBC: INFO - using curvilinear version since iterations are required.\n");
+	printF("--MX-- assignInterfaceBC: INFO - grids are rectangular but using curvilinear interface version ...\n"
+               "      ... for 4th-order since latest version not implemented for rectangular grids.\n");
+      }
+      
+      isRectangular1=false;
+      isRectangular2=false;
+
+    }
+
+    // Extra check added *wdh* May 11, 2020
+    if( numberOfDimensions==3 && (isRectangular1 || isRectangular2) )
+    {
+      if( t<= 1.5*dt  )
+        printf("CGMX:assignInterfaceBCs: WARNING: 3D rectangular grids not implemented. Use curvilinear version instead\n");
+
+      isRectangular1=false;
+      isRectangular2=false;
+      
+    }
+    
+
+    if( !isRectangular1 )
+    {
+      mg1.update(MappedGrid::THEinverseVertexDerivative);
+      mg2.update(MappedGrid::THEinverseVertexDerivative);
+    }
+		  
+    assert(isRectangular1==isRectangular2);
+
+    const bool centerNeeded = forcingOption==Maxwell::twilightZoneForcing;  // we need the grid points 
+
+    // For dispersion materials, look up arrays of polarization vectors
+    // The number of Pv vectors may be different on either side
+    // --- Lookup info for the dispersion model ---
+    const DispersiveMaterialParameters & dmp1 = mx.getDispersiveMaterialParameters(grid1);
+    const int numberOfPolarizationVectors1 = dmp1.numberOfPolarizationVectors; 
+
+    const DispersiveMaterialParameters & dmp2 = mx.getDispersiveMaterialParameters(grid2);
+    const int numberOfPolarizationVectors2 = dmp2.numberOfPolarizationVectors; 
+
+    const bool isDispersive = dmp1.isDispersiveMaterial() || dmp2.isDispersiveMaterial();
+    if(  isDispersive && dispersionModel==Maxwell::noDispersion )
+    {
+      // Sanity check 
+      printF("CgMx::assignInterfaceBC:ERROR: Some materials are dispersive but dispersionModel==noDispersion\n"
+             "  Something is wrong here\n");
+      OV_ABORT("ERROR");
+    }
+    
+
+
+    // --- Get pointers to arrays for the dispersive model ----
+    real tempValue;
+    real *p1ptr = &tempValue;  // set default when not used
+    real *p2ptr = &tempValue;  // set default when not used
+
+    real *p1nptr = &tempValue;  // set default when not used
+    real *p2nptr = &tempValue;  // set default when not used
+
+    real *p1mptr = &tempValue;  // set default when not used
+    real *p2mptr = &tempValue;  // set default when not used
+
+    // real *p1ptr = u1Local.getDataPointer();  // set default when not used
+    // real *p2ptr = u2Local.getDataPointer();  // set default when not used
+
+    // real *p1nptr = u1Local.getDataPointer();  // set default when not used
+    // real *p2nptr = u2Local.getDataPointer();  // set default when not used
+
+    // real *p1mptr = u1Local.getDataPointer();  // set default when not used
+    // real *p2mptr = u2Local.getDataPointer();  // set default when not used
+
+    if( numberOfPolarizationVectors1>0 )
+    {
+      realMappedGridFunction & p1 = mx.getDispersionModelMappedGridFunction( grid1,next );
+      OV_GET_SERIAL_ARRAY(real,p1,p1Local);
+      p1ptr=p1Local.getDataPointer();
+
+      realMappedGridFunction & p1n = mx.getDispersionModelMappedGridFunction( grid1,current );
+      OV_GET_SERIAL_ARRAY(real,p1n,p1nLocal);
+      p1nptr=p1nLocal.getDataPointer();
+
+      realMappedGridFunction & p1m = mx.getDispersionModelMappedGridFunction( grid1,prev );
+      OV_GET_SERIAL_ARRAY(real,p1m,p1mLocal);
+      p1mptr=p1mLocal.getDataPointer();
+    }
+    if( numberOfPolarizationVectors2>0 )
+    {
+      realMappedGridFunction & p2 = mx.getDispersionModelMappedGridFunction( grid2,next );
+      OV_GET_SERIAL_ARRAY(real,p2,p2Local);
+      p2ptr=p2Local.getDataPointer();
+
+      realMappedGridFunction & p2n = mx.getDispersionModelMappedGridFunction( grid2,current );
+      OV_GET_SERIAL_ARRAY(real,p2n,p2nLocal);
+      p2nptr=p2nLocal.getDataPointer();
+
+      realMappedGridFunction & p2m = mx.getDispersionModelMappedGridFunction( grid2,prev );
+      OV_GET_SERIAL_ARRAY(real,p2m,p2mLocal);
+      p2mptr=p2mLocal.getDataPointer();
+    }
+    realArray & p1  = numberOfPolarizationVectors1>0 ? mx.getDispersionModelMappedGridFunction( grid1,next ) : u1;
+    realArray & p1n = numberOfPolarizationVectors1>0 ? mx.getDispersionModelMappedGridFunction( grid1,current ) : u1n;
+    
+    realArray & p2  = numberOfPolarizationVectors2>0 ? mx.getDispersionModelMappedGridFunction( grid2,next ) : u2;
+    realArray & p2n = numberOfPolarizationVectors2>0 ? mx.getDispersionModelMappedGridFunction( grid2,current ) : u2n;
+    
+
+    // --- Get pointers to arrays for the nonlinear model ----
+    real *q1ptr = &tempValue;   // set default when not used
+    real *q2ptr = &tempValue;   // set default when not used
+
+    real *q1nptr = &tempValue;  // set default when not used
+    real *q2nptr = &tempValue;  // set default when not used
+
+    real *q1mptr = &tempValue;  // set default when not used
+    real *q2mptr = &tempValue;  // set default when not used
+
+    if( dmp1.isNonlinearMaterial() )
+    {
+      realMappedGridFunction & q1 = mx.getNonlinearModelMappedGridFunction( grid1,next );
+      OV_GET_SERIAL_ARRAY(real,q1,q1Local);
+      q1ptr=q1Local.getDataPointer();
+
+      realMappedGridFunction & q1n = mx.getNonlinearModelMappedGridFunction( grid1,current );
+      OV_GET_SERIAL_ARRAY(real,q1n,q1nLocal);
+      q1nptr=q1nLocal.getDataPointer();
+
+      realMappedGridFunction & q1m = mx.getNonlinearModelMappedGridFunction( grid1,prev );
+      OV_GET_SERIAL_ARRAY(real,q1m,q1mLocal);
+      q1mptr=q1mLocal.getDataPointer();
+    }
+    if( dmp2.isNonlinearMaterial() )
+    {
+      realMappedGridFunction & q2 = mx.getNonlinearModelMappedGridFunction( grid2,next );
+      OV_GET_SERIAL_ARRAY(real,q2,q2Local);
+      q2ptr=q2Local.getDataPointer();
+
+      realMappedGridFunction & q2n = mx.getNonlinearModelMappedGridFunction( grid2,current );
+      OV_GET_SERIAL_ARRAY(real,q2n,q2nLocal);
+      q2nptr=q2nLocal.getDataPointer();
+
+      realMappedGridFunction & q2m = mx.getNonlinearModelMappedGridFunction( grid2,prev );
+      OV_GET_SERIAL_ARRAY(real,q2m,q2mLocal);
+      q2mptr=q2mLocal.getDataPointer();
+    }
+
+
+    // ----------- PARALLEL COPY ---------
+    //  Determine the local arrays that hold in the interface values.
+    //  In parallel we build new local arrays with a copy of the values from the
+    //  other side. 
+    bool ok1=true, ok2=true;
+    getLocalInterfaceArraysMacro();
+
+    if( debug & 4 ) 
+    {
+      ::display(u1Local,sPrintF("u1Local before assignOptInterface grid1=%i, t=%8.2e",grid1,t),pDebugFile,"%9.2e ");
+      ::display(u2Local,sPrintF("u2Local before assignOptInterface grid2=%i, t=%8.2e",grid2,t),pDebugFile,"%9.2e ");
+    }
+    if( debug & 4 )
+    {
+      checkParallel.checkDiff(u1Local,sPrintF("u1Local before assignOptInterface grid1=%i, t=%8.2e",grid1,t),pDebugFile);
+      checkParallel.checkDiff(u2Local,sPrintF("u2Local before assignOptInterface grid2=%i, t=%8.2e",grid2,t),pDebugFile);
+    }
+
+
+    int n1a=I1.getBase(),n1b=I1.getBound(),
+      n2a=I2.getBase(),n2b=I2.getBound(),
+      n3a=I3.getBase(),n3b=I3.getBound();
+
+    int m1a=J1.getBase(),m1b=J1.getBound(),
+      m2a=J2.getBase(),m2b=J2.getBound(),
+      m3a=J3.getBase(),m3b=J3.getBound();
+
+
+    real temp;
+    real *ptemp=&temp;
+
+    int gridType = isRectangular1 ? 0 : 1;
+    int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
+    int useForcing = forcingOption==Maxwell::twilightZoneForcing;
+    int useWhereMask=true;
+    int parallel=0;
+    #ifdef USE_PPP
+      parallel=1;
+    #endif
+
+    real *u1p=u1Local.getDataPointer();
+    real *u1np=u1nLocal.getDataPointer();
+    real *u1mp=u1mLocal.getDataPointer();
+    real *prsxy1=isRectangular1 ? ptemp : mg1.inverseVertexDerivative().getLocalArray().getDataPointer();
+    real *pxy1= centerNeeded ? mg1.center().getLocalArray().getDataPointer() : ptemp; 
+    int *mask1p=mask1Local.getDataPointer();
+
+    real *u2p=u2Local.getDataPointer();
+    real *u2np=u2nLocal.getDataPointer();
+    real *u2mp=u2mLocal.getDataPointer();
+    real *prsxy2=isRectangular2 ? ptemp : mg2.inverseVertexDerivative().getLocalArray().getDataPointer();
+    real *pxy2= centerNeeded ? mg2.center().getLocalArray().getDataPointer() : ptemp; 
+    int *mask2p=mask2Local.getDataPointer();
+
+    #ifdef USE_PPP
+     // pointers to copies of the interface geometry and mask data 
+     int *pmask1b = interface.pmask1->getDataPointer();
+     int *pmask2b = interface.pmask2->getDataPointer();
+    
+     real *prsxy1b = isRectangular1 ? ptemp : interface.prsxy1->getDataPointer();
+     real *prsxy2b = isRectangular2 ? ptemp : interface.prsxy2->getDataPointer();
+     
+     real *pxy1b = !centerNeeded ? ptemp : interface.pxy1->getDataPointer();
+     real *pxy2b = !centerNeeded ? ptemp : interface.pxy2->getDataPointer();
+    #endif
+
+     // We need some temp space for jacobi updates
+    const int & useJacobiInterfaceUpdate = mx.dbase.get<int>("useJacobiInterfaceUpdate");
+
+    bool useJacobiUpdate=false;
+    if( orderOfAccuracyInSpace==4 )
+    {
+      useJacobiUpdate = useJacobiInterfaceUpdate; 
+    }
+    RealArray v1,v2, v1b, v2b;
+    real *v1p =u1p, *v2p =u2p; // default when not used
+    real *v1bp=u1p, *v2bp=u2p; // default when not used
+    if( useJacobiUpdate )
+    {
+      // --- allocate temp-space for Jacobi update -----
+
+      // Do this for now -- we can optimize ----
+
+      v1.redim(u1Local);         v2.redim(u2Local);
+      v1p=v1.getDataPointer();   v2p=v2.getDataPointer();
+      // Fix for parallel -- use u1Copy, u2Copy
+      #ifdef USE_PPP
+        v1b.redim(u1CopyLocal);         v2b.redim(u2CopyLocal);
+        v1bp=v1b.getDataPointer();      v2bp=v2b.getDataPointer();
+      #endif
+    }
+
+
+
+    int ierr=0;
+
+    if( bcOrderOfAccuracy<6 )
+    { 
+      // ------------------------------------
+      // ----- order of accuracy <= 4 -------
+      // ------------------------------------
+
+      // macro: 
+
+      #ifdef USE_PPP
+        assert( dir1==dir2 );
+        // In parallel we solve the equations in serial on both sides of the interface
+        if( ok1 )
+	{
+          orderOfExtrapolation=extrapolationWidth1+1;
+	  assignOptInterface(parallel1,ex,ey,ez,hx,hy,hz);
+	  if( method==Maxwell::sosup )
+	  { // for sosup we assign E.t
+	    assignOptInterface(parallel1,ext,eyt,ezt,hxt,hyt,hzt);
+	  }
+	  if( debug & 16 )
+            ::display(u1Local,sPrintF("u1Local after assignOptInterface t=%8.2e",t),pDebugFile,"%5.2f ");
+	}
+	if( ok2 )
+	{
+          orderOfExtrapolation=extrapolationWidth2+1;
+	  assignOptInterface(parallel2,ex,ey,ez,hx,hy,hz);
+	  if( method==Maxwell::sosup )
+	  { // for sosup we assign E.t
+	    assignOptInterface(parallel2,ext,eyt,ezt,hxt,hyt,hzt);
+	  }
+	  if( debug & 16 )
+            ::display(u1Local,sPrintF("u2Local after assignOptInterface t=%8.2e",t),pDebugFile,"%5.2f ");
+	}
+      #else
+        // serial
+        assignOptInterface(serial,ex,ey,ez,hx,hy,hz);
+        if( method==Maxwell::sosup )
+	{ // for sosup we assign E.t
+          // printF("Assign interface values for sosup: E.t at t=%9.3e\n",t);
+          assignOptInterface(serial,ext,eyt,ezt,hxt,hyt,hzt);
+	}
+	
+      #endif
+
+      
+    }
+    else
+    {
+      // *** test the new interface routines for order of accuracy >= 6 
+
+      printF("Call new interface routines for order=%i at t=%9.3e\n",orderOfAccuracyInSpace,t);
+
+      assert( mg1.numberOfDimensions()==2 );
+
+      // macro: 
+      assignOptParameters(serial,ex,ey,ez,hx,hy,hz);
+
+      newInterfaceMaxwell( mg1.numberOfDimensions(), 
+			   u1Local.getBase(0),u1Local.getBound(0),
+			   u1Local.getBase(1),u1Local.getBound(1),
+			   u1Local.getBase(2),u1Local.getBound(2),
+			   mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1(0,0), 
+			   u2Local.getBase(0),u2Local.getBound(0),
+			   u2Local.getBase(1),u2Local.getBound(1),
+			   u2Local.getBase(2),u2Local.getBound(2),
+			   mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2(0,0), 
+			   ipar[0], rpar[0], ierr );
+
+    }
+		  
+    // wait to set initialized=true until ghost values have been assigned the first time : 
+    if( assignInterfaceGhostValues )
+      interface.initialized=true;
+    
+    // In some cases we have an optimized periodic update implemented
+    bool updatePeriodic = mg1.numberOfDimensions()==3; 
+    #ifdef USE_PPP
+      // in parallel we cannot use the optimized periodic update in the interface routines.
+      updatePeriodic=true;
+    #endif
+    if(  updatePeriodic )
+    {
+      // printF("After assign interfaces: periodic update...\n");
+      
+      cgfields[next][grid1].periodicUpdate(); 
+      cgfields[next][grid2].periodicUpdate();
+      u1.updateGhostBoundaries(); // *wdh* 081127 
+      u2.updateGhostBoundaries();
+    }
+    
+    if( debug & 4 )
+      fprintf(pDebugFile," **** After assigning interfaces t=%8.2e, tz=%i\n",t,(tz==NULL ? 0 : 1));
+    
+    if( debug & 4 ) 
+    {
+      if( tz!=NULL && pDebugFile!=NULL )
+      {
+        realArray & x1 = mg1.center();
+        realArray & x2 = mg2.center();
+        #ifdef USE_PPP
+          realSerialArray x1Local; getLocalArrayWithGhostBoundaries(x1,x1Local);
+          realSerialArray x2Local; getLocalArrayWithGhostBoundaries(x2,x2Local);
+        #else
+          realSerialArray & x1Local = x1;
+          realSerialArray & x2Local = x2;
+        #endif
+		    
+	OGFunction & e = *tz;
+        Range E(ex,ex+numberOfDimensions-1);
+	int isRectangular=0;
+	getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3);
+
+	int includeGhost=0; 
+	bool ok = ParallelUtility::getLocalArrayBounds(u1,u1Local,I1,I2,I3,includeGhost);
+	if( ok )
+	{
+	  realSerialArray err(I1,I2,I3,E);
+	  realSerialArray ue(I1,I2,I3,E);
+		  
+	  // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
+
+
+	  e.gd( ue  ,x1Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
+	  err=u1Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
+	  ::display(u1Local(I1,I2,I3,E),sPrintF("u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
+	  ::display(err,sPrintF("err in u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
+
+	  // getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3,-1);
+	  // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
+	  // ::display(err,sPrintF("err in u1 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
+	}
+	
+
+	getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3);
+	ok = ParallelUtility::getLocalArrayBounds(u2,u2Local,I1,I2,I3,includeGhost);
+	if( ok )
+	{
+	  realSerialArray err(I1,I2,I3,E);
+	  realSerialArray ue(I1,I2,I3,E);
+         
+	  e.gd( ue  ,x2Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
+	  err=u2Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
+	  ::display(u2Local(I1,I2,I3,E),sPrintF("u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
+	  ::display(err,sPrintF("err in u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
+
+	  // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
+	  // ::display(err,sPrintF("err in u2 (ex,ghost) after interface, t=%e",t),pDebugFile,"%8.1e ");
+	  // getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3,-1);
+	  // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
+	  // ::display(err,sPrintF("err in u2 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
+	}
+	
+      }
+    }
+    
+    if( debug & 4 ) 
+    {
+      ::display(u1Local,sPrintF("u1Local after assignOptInterface grid1=%i, t=%8.2e",grid1,t),pDebugFile,"%9.2e ");
+      ::display(u2Local,sPrintF("u2Local after assignOptInterface grid2=%i, t=%8.2e",grid2,t),pDebugFile,"%9.2e ");
+    }
+    if( debug & 4 )
+    {
+      checkParallel.checkDiff(u1Local,sPrintF("u1Local after assignOptInterface grid1=%i, t=%8.2e",grid1,t),pDebugFile);
+      checkParallel.checkDiff(u2Local,sPrintF("u2Local after assignOptInterface grid2=%i, t=%8.2e",grid2,t),pDebugFile);
+    }
+    
+
+  }
+  
+
+  printF("\n <<<<<<<<<<< InterfaceMaxwell:: done computeStencilCoefficients.\n\n");
+
+  return 0;
+}
+
+
+/* ---
+void InterfaceMaxwell::
+initializeInterfaces( Maxwell & mx )
+// =====================================================================================================
+//   /Description:
+//      Find the interfaces and initialize the work-space. 
+// =====================================================================================================
+{
+  CompositeGrid *& cgp = mx.cgp;
+  int & debug = mx.debug;
+  int & orderOfAccuracyInSpace = mx.orderOfAccuracyInSpace;
+  
+}
+--- */
+
+
