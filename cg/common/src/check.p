@@ -88,7 +88,10 @@ $program = "none";
 if( $parallel eq "" || !( -e "parallel_tests.pm") )
 {
   # serial regressions tests
-  # $fileName = "tests";
+
+  # 
+  # --- READ $testsFile and make a list of commands to execute:
+  #          $cmdFiles[$n]
   $fileName = $testsFile;
   open(FILE,"$fileName") || die print "unable to open $fileName\n";
   $n=-2;

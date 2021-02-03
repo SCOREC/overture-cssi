@@ -360,13 +360,17 @@
       ms3a=m3a
       ms3b=m3b
 
-      ! For 2nd-order Stage 1 of fourth-order scheme (parallel)
+      ! For 2nd-order Stage 1 of fourth-order scheme 
+      if( nd.eq.2 )then
+        numGhost2=1 ! we always do at least this many 
+      else
+        numGhost2=0 ! FIX 3D Order 4 -- do this for backward compatibility
+      end if 
       if( numParallelGhost.eq.3 )then
         numGhost2=1  ! num ghost for 2nd-order update (Stage I of 4th order update)
       else if( numParallelGhost.gt.3 )then
         numGhost2=2  ! include an extra ghost -- is this needed ? 
       else
-        numGhost2=0
         if( orderOfAccuracy.eq.4 .and. numParallelGhost.gt.0 )then
           if( t.le. 1.5*dt .and. debug.gt.0 )then
             write(*,'(/,"---------------------------------------------------------------")')
@@ -437,11 +441,11 @@
         end if
 
         ! -- bounds for order 2 stage I of fourth-order scheme 
-        if( boundaryCondition1(0,0).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(0,0).eq.internalGhostBC )then
           ! parallel ghost: 
           ne1a=ne1a-numGhost2
         end if 
-        if( boundaryCondition1(1,0).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(1,0).eq.internalGhostBC )then
           ! parallel ghost:  
           ne1b=ne1b+numGhost2
         end if 
@@ -465,11 +469,11 @@
         end if
 
         ! -- bounds for order 2 stage I of fourth-order scheme 
-        if( boundaryCondition1(0,1).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(0,1).eq.internalGhostBC )then
           ! adjust for parallel ghost 
           ne2a=ne2a-numGhost2
         end if 
-        if( boundaryCondition1(1,1).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(1,1).eq.internalGhostBC )then
           ! adjust for parallel ghost 
           ne2b=ne2b+numGhost2
         end if
@@ -494,11 +498,11 @@
         end if
 
         ! -- bounds for order 2 stage I of fourth-order scheme 
-        if( boundaryCondition1(0,2).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(0,2).eq.internalGhostBC )then
           ! adjust for parallel ghost 
           ne3a=ne3a-numGhost2
         end if
-        if( boundaryCondition1(1,2).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition1(1,2).eq.internalGhostBC )then
           ! adjust for parallel ghost 
           ne3b=ne3b+numGhost2
         end if 
@@ -539,10 +543,10 @@
           mm1b=mm1b+numGhost
         end if
 
-        if( boundaryCondition2(0,0).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(0,0).eq.internalGhostBC )then
           me1a=me1a-numGhost2
         end if
-        if( boundaryCondition2(1,0).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(1,0).eq.internalGhostBC )then
           me1b=me1b+numGhost2
         end if
 
@@ -556,10 +560,10 @@
           mm2b=mm2b+numGhost
         end if
 
-        if( boundaryCondition2(0,1).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(0,1).eq.internalGhostBC )then
           me2a=me2a-numGhost2
         end if
-        if( boundaryCondition2(1,1).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(1,1).eq.internalGhostBC )then
           me2b=me2b+numGhost2
         end if
       end if
@@ -572,10 +576,10 @@
           mm3b=mm3b+numGhost
         end if
 
-        if( boundaryCondition2(0,2).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(0,2).eq.internalGhostBC )then
           me3a=me3a-numGhost2
         end if
-        if( boundaryCondition2(1,2).eq.internalGhostBC )then
+        if( .true. .or. boundaryCondition2(1,2).eq.internalGhostBC )then
           me3b=me3b+numGhost2
         end if
       end if

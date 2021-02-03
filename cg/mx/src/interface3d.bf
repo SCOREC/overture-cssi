@@ -1265,6 +1265,12 @@ beginLoopsMask2d()
  ! ***********  2D, ORDER=4, RECTANGULAR **************
  ! ****************************************************
 
+ if( t.le.5*dt .or. debug.gt.3 )then
+   if( it.le.2 )then
+     write(*,'("macro: assignInterfaceGhost24r : it=",i6," t,dt=",2e10.2)') it,t,dt
+   end if
+ end if
+
  ! normal and tangent (for TZ forcing)
  an1=an1Cartesian
  an2=an2Cartesian
@@ -1395,27 +1401,49 @@ beginLoopsMask2d()
    !     & i1,i2-1,i3,kd)) )*dx122(1)
    !     u1xyy22r(i1,i2,i3,kd)=( u1yy22r(i1+1,i2,i3,kd)-u1yy22r(i1-1,i2,
    !     & i3,kd))/(2.*dx1(0))
-  a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))
-  a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))
+   ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+  a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) )
+  a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1) )
   a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )  
   a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1))
 
-  a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))
-  a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))
-  a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2))   
-  a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2))
+  a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) )
+  a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2) )
+  a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2) )   
+  a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2) )
+
+!-  a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))
+!-  a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))
+!-  a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )  
+!-  a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1))
+!-
+!-  a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))
+!-  a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))
+!-  a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2))   
+!-  a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2))
 
   ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
 
-  a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))/eps1
-  a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))/eps1
-  a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1))/eps1
-  a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1))/eps1   
+ ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+  a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1) )/eps1
+  a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) )/eps1
+  a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1) )/eps1
+  a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1) )/eps1   
 
-  a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))/eps2
-  a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))/eps2
-  a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2))/eps2
-  a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2))/eps2   
+  a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2) )/eps2
+  a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) )/eps2
+  a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2) )/eps2
+  a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2) )/eps2   
+
+!-  a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))/eps1
+!-  a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))/eps1
+!-  a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1))/eps1
+!-  a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1))/eps1   
+!-
+!-  a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))/eps2
+!-  a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))/eps2
+!-  a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2))/eps2
+!-  a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2))/eps2   
 
    ! 6  [ Delta^2 u/eps ] = 0
    !     u1LapSq22r(i1,i2,i3,kd)= ( 6.*u1(i1,i2,i3,kd)- 4.*(u1(i1+1,i2,i3,
@@ -1427,26 +1455,48 @@ beginLoopsMask2d()
    !    & u1(i1-1,i2+1,i3,kd)+u1(i1+1,i2-1,i3,kd)+u1(i1-1,i2-1,i3,kd)) )
    !    & /(dx1(0)**2*dx1(1)**2)
 
-   a8(6,0) = -(4./(dx1(axis1)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps1
+ ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+   a8(6,0) = -( 4./(dx1(axis1)**4) )/eps1
    a8(6,1) = 0.
-   a8(6,4) =   1./(dx1(axis1)**4)/eps1
+   a8(6,4) =  ( 1./(dx1(axis1)**4) )/eps1
    a8(6,5) = 0.
 
-   a8(6,2) = (4./(dx2(axis2)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps2
+   a8(6,2) =  ( 4./(dx2(axis2)**4) )/eps2
    a8(6,3) = 0.
-   a8(6,6) =  -1./(dx2(axis2)**4)/eps2
+   a8(6,6) =  (-1./(dx2(axis2)**4) )/eps2
    a8(6,7) = 0.
 
+!-   a8(6,0) = -(4./(dx1(axis1)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps1
+!-   a8(6,1) = 0.
+!-   a8(6,4) =   1./(dx1(axis1)**4)/eps1
+!-   a8(6,5) = 0.
+!-
+!-   a8(6,2) = (4./(dx2(axis2)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps2
+!-   a8(6,3) = 0.
+!-   a8(6,6) =  -1./(dx2(axis2)**4)/eps2
+!-   a8(6,7) = 0.
+   
    ! 7  [ Delta^2 v/eps^2 ] = 0 
+   ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
    a8(7,0) = 0.
-   a8(7,1) = -(4./(dx1(axis1)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps1**2
+   a8(7,1) =  -(4./(dx1(axis1)**4) )/eps1**2
    a8(7,4) = 0.
-   a8(7,5) =   1./(dx1(axis1)**4)/eps1**2
+   a8(7,5) =   (1./(dx1(axis1)**4) )/eps1**2
 
    a8(7,2) = 0.
-   a8(7,3) =  (4./(dx2(axis2)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps2**2
+   a8(7,3) =   (4./(dx2(axis2)**4) )/eps2**2
    a8(7,6) = 0.
-   a8(7,7) =  -1./(dx2(axis2)**4)/eps2**2
+   a8(7,7) =  (-1./(dx2(axis2)**4) )/eps2**2
+
+!-   a8(7,0) = 0.
+!-   a8(7,1) = -(4./(dx1(axis1)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps1**2
+!-   a8(7,4) = 0.
+!-   a8(7,5) =   1./(dx1(axis1)**4)/eps1**2
+!-
+!-   a8(7,2) = 0.
+!-   a8(7,3) =  (4./(dx2(axis2)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps2**2
+!-   a8(7,6) = 0.
+!-   a8(7,7) =  -1./(dx2(axis2)**4)/eps2**2
 
    q(0) = u1(i1-is1,i2-is2,i3,ex)
    q(1) = u1(i1-is1,i2-is2,i3,ey)
@@ -1477,17 +1527,49 @@ beginLoopsMask2d()
 
    !write(debugFile,'(" --> 4th: i1,i2=",2i4," f(solve)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7)
 
-   if( .true. )then
-   u1(i1-is1,i2-is2,i3,ex)=f(0)
-   u1(i1-is1,i2-is2,i3,ey)=f(1)
-   u2(j1-js1,j2-js2,j3,ex)=f(2)
-   u2(j1-js1,j2-js2,j3,ey)=f(3)
+   if( .true. .and. twilightZone.eq.1 )then
+     ! check errors
+     call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, evv(0) )
+     call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, evv(1) )
 
-   u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
-   u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
-   u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
-   u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+     call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ex, evv(2) )
+     call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ey, evv(3) )
+
+     call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ex, evv(4) )
+     call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ey, evv(5) )
+
+     call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ex, evv(6) )
+     call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ey, evv(7) )
+
+     write(*,'("24r: i1,i2=",2i4," err= ",8e8.1)') i1,i2, (abs(evv(n)-f(n)),n=0,7)
+
    end if
+
+
+   
+   if( useJacobiUpdate.eq.0 )then
+     u1(i1-is1,i2-is2,i3,ex)=f(0)
+     u1(i1-is1,i2-is2,i3,ey)=f(1)
+     u2(j1-js1,j2-js2,j3,ex)=f(2)
+     u2(j1-js1,j2-js2,j3,ey)=f(3)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+   else
+     ! Jacobi-update
+     wk1(i1-is1,i2-is2,i3,ex)=f(0)
+     wk1(i1-is1,i2-is2,i3,ey)=f(1)
+     wk2(j1-js1,j2-js2,j3,ex)=f(2)
+     wk2(j1-js1,j2-js2,j3,ey)=f(3)
+
+     wk1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+     wk1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+     wk2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+     wk2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+   end if
+
 
   if( debug.gt.3 )then ! re-evaluate
    evalDerivs2dOrder4()
@@ -1588,20 +1670,20 @@ beginLoopsMask2d()
    job=0
    call dgesl( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
 
-   if( .true. )then
-    u1(i1-is1,i2-is2,i3,hz)=f(0)
-    u2(j1-js1,j2-js2,j3,hz)=f(1)
-    u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
-    u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
+   if( useJacobiUpdate.eq.0 )then
+     u1(i1-  is1,i2-  is2,i3,hz)=f(0)
+     u2(j1-  js1,j2-  js2,j3,hz)=f(1)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
    else
-    ! do this for now
-    u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-    u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
-    u1(i1-2*is1,i2-2*is2,i3,hz)=u2(j1+2*js1,j2+2*js2,j3,hz) 
-    u2(j1-2*js1,j2-2*js2,j3,hz)=u1(i1+2*is1,i2+2*is2,i3,hz)
+     ! Jacobi update -- save answer in work space
+     wk1(i1-  is1,i2-  is2,i3,hz)=f(0)
+     wk2(j1-  js1,j2-  js2,j3,hz)=f(1)
+     wk1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+     wk2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
    end if
 
-   if( .false. .or. debug.gt.0 )then ! re-evaluate
+   if( .false. .and. debug.gt.0 )then ! re-evaluate
 
     call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, hz, we0  )
     call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, hz, we1  )
@@ -1625,7 +1707,32 @@ beginLoopsMask2d()
    end if
 
 
- endLoopsMask2d()
+  endLoopsMask2d()
+ ! =============== end loops =======================
+      
+
+ if( useJacobiUpdate.ne.0 )then
+   ! Jacobi-update: now fill in values 
+   beginLoopsMask2d() 
+     u1(i1-is1,i2-is2,i3,ex)=wk1(i1-is1,i2-is2,i3,ex)
+     u1(i1-is1,i2-is2,i3,ey)=wk1(i1-is1,i2-is2,i3,ey)
+     u2(j1-js1,j2-js2,j3,ex)=wk2(j1-js1,j2-js2,j3,ex)
+     u2(j1-js1,j2-js2,j3,ey)=wk2(j1-js1,j2-js2,j3,ey)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=wk1(i1-2*is1,i2-2*is2,i3,ex)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=wk1(i1-2*is1,i2-2*is2,i3,ey)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=wk2(j1-2*js1,j2-2*js2,j3,ex)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=wk2(j1-2*js1,j2-2*js2,j3,ey)
+
+     u1(i1-  is1,i2-  is2,i3,hz)=wk1(i1-  is1,i2-  is2,i3,hz)
+     u2(j1-  js1,j2-  js2,j3,hz)=wk2(j1-  js1,j2-  js2,j3,hz)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=wk1(i1-2*is1,i2-2*is2,i3,hz)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=wk2(j1-2*js1,j2-2*js2,j3,hz)
+   endLoopsMask2d()
+ end if
+
+
+   
 #endMacro
 
 ! --------------------------------------------------------------------------
@@ -2287,13 +2394,15 @@ beginLoopsMask2d()
       end do
      end if
 
-    if (nonlinearModel .ne. noNonlinearModel) then
+    if (nonlinearModel1 .ne. noNonlinearModel) then
 
       do na = 0,numberOfAtomicLevels1-1
         q1(i1  -is1,i2  -is2,i3,na)=extrap3(q1,i1    ,i2    ,i3,na,is1,is2,is3)
         q1(i1-2*is1,i2-2*is2,i3,na)=extrap3(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
       enddo
-
+    end if
+    
+    if (nonlinearModel2 .ne. noNonlinearModel) then
       do na = 0,numberOfAtomicLevels2-1
         q2(j1  -js1,j2  -js2,j3,na)=extrap3(q2,j1    ,j2    ,j3,na,js1,js2,js3)
         q2(j1-2*js1,j2-2*js2,j3,na)=extrap3(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
@@ -2365,13 +2474,14 @@ if( .true. )then
    end do
   end if
 
-  if (nonlinearModel .ne. noNonlinearModel) then
-
+  if (nonlinearModel1 .ne. noNonlinearModel) then
     do na = 0,numberOfAtomicLevels1-1
       q1(i1  -is1,i2  -is2,i3,na)=extrap5(q1,i1    ,i2    ,i3,na,is1,is2,is3)
       q1(i1-2*is1,i2-2*is2,i3,na)=extrap5(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
     enddo
-
+  end if
+  
+  if (nonlinearModel2 .ne. noNonlinearModel) then
     do na = 0,numberOfAtomicLevels2-1
       q2(j1  -js1,j2  -js2,j3,na)=extrap5(q2,j1    ,j2    ,j3,na,js1,js2,js3)
       q2(j1-2*js1,j2-2*js2,j3,na)=extrap5(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
@@ -2419,13 +2529,14 @@ else
    end do
   end if
 
-  if (nonlinearModel .ne. noNonlinearModel) then
-
+  if (nonlinearModel1 .ne. noNonlinearModel) then
     do na = 0,numberOfAtomicLevels1-1
       q1(i1  -is1,i2  -is2,i3,na)=extrap4(q1,i1    ,i2    ,i3,na,is1,is2,is3)
       q1(i1-2*is1,i2-2*is2,i3,na)=extrap4(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
     enddo
-
+  end if
+  
+  if (nonlinearModel2 .ne. noNonlinearModel) then
     do na = 0,numberOfAtomicLevels2-1
       q2(j1  -js1,j2  -js2,j3,na)=extrap4(q2,j1    ,j2    ,j3,na,js1,js2,js3)
       q2(j1-2*js1,j2-2*js2,j3,na)=extrap4(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
@@ -2718,7 +2829,7 @@ end if
 
       ! these are for the exact solution from TZ flow: 
       real ue,ve,we, we0,we1,we2,we3
-      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez
+      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez, evv(0:11), errv(0:11)
       real uexx,ueyy,uezz, vexx,veyy,vezz, wexx,weyy,wezz
       real ueLap, veLap, weLap
       real curlEex,curlEey,curlEez,nDotCurlEe,nDotLapEe
@@ -2750,7 +2861,7 @@ end if
 
       ! Nonlinear models
       #Include "nonlinearModelsFortranInclude.h"
-      integer nonlinearModel
+      ! integer nonlinearModel
 
       
       ! forcing options
@@ -3549,10 +3660,11 @@ end if
          ! We need to add itertions to this version but then the curvlinear version is
          ! almost as efficient since the equations are saved. *wdh* June 25, 2016
 
+         ! *wdh* Jan 17, 2021 -- start implementing the rectangular versions ...
          if( .true. )then
            write(*,'("interface3d.bf: ERROR: do NOT USE THIS option: ORDER=4 RECTANGULAR")')
            write(*,'("interface3d.bf: USE CURVILINEAR VERSION INSTEAD SINCE ITERATIONS ARE REQUIRED")')
-           stop 6543
+           ! stop 6543
          end if
 
 
@@ -3587,44 +3699,46 @@ end if
         ! ----- assign ghost using jump conditions -----
         if( assignInterfaceGhostValues.eq.1 )then
 
-         ! initialization step: assign first ghost line by extrapolation
-         ! NOTE: assign ghost points outside the ends
-         beginGhostLoops2d()
-           ! extrap to order 5 so exact for degree 4 *wdh* 2015/06/29
-           u1(i1-is1,i2-is2,i3,ex)=extrap5(u1,i1,i2,i3,ex,is1,is2,is3)
-           u1(i1-is1,i2-is2,i3,ey)=extrap5(u1,i1,i2,i3,ey,is1,is2,is3)
-           u1(i1-is1,i2-is2,i3,hz)=extrap5(u1,i1,i2,i3,hz,is1,is2,is3)
+          ! initialization step: assign two ghost lines by extrapolation
+          extrapolateGhost2dOrder4()
 
-           u2(j1-js1,j2-js2,j3,ex)=extrap5(u2,j1,j2,j3,ex,js1,js2,js3)
-           u2(j1-js1,j2-js2,j3,ey)=extrap5(u2,j1,j2,j3,ey,js1,js2,js3)
-           u2(j1-js1,j2-js2,j3,hz)=extrap5(u2,j1,j2,j3,hz,js1,js2,js3)
+          if( t.lt. 3.*dt .and. debug.gt.0 )then
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER RECTANGUAR INTERFACE ****")')
+          end if 
+          orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
 
-           ! u1(i1-is1,i2-is2,i3,ex)=extrap4(u1,i1,i2,i3,ex,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,ey)=extrap4(u1,i1,i2,i3,ey,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,hz)=extrap4(u1,i1,i2,i3,hz,is1,is2,is3)
+          ! This next perl command will cause macro derivatives to be computed to order=2
+#perl $ORDER=2;
+          ! in parallel we add extra points in the tangential direction on parallel boundaries
+          ! (otherwise we would use extrapolated values which is probably ok) 
+          setIndexBoundsExtraGhost()
 
-           ! u2(j1-js1,j2-js2,j3,ex)=extrap4(u2,j1,j2,j3,ex,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,ey)=extrap4(u2,j1,j2,j3,ey,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,hz)=extrap4(u2,j1,j2,j3,hz,js1,js2,js3)
+          ! Macro to assign ghost values:
+          if( dispersive.eq.0 )then
+            assignInterfaceGhost22r()
+          else if( useNonlinearModel.eq.0 )then
+            ! dispersive case
+            ! *TEMP* assignDispersiveInterfaceGhost22r()
+          else
+            ! nonlinear dispersive case
+            ! *TEMP* assignNonlinearInterfaceGhost22r()
+          end if    
+          resetIndexBounds()         
 
-           ! --- also extrap 2nd line for now
-           ! u1(i1-2*is1,i2-2*is2,i3,ex)=extrap4(u1,i1-is1,i2-is2,i3,ex,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,ey)=extrap4(u1,i1-is1,i2-is2,i3,ey,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,hz)=extrap4(u1,i1-is1,i2-is2,i3,hz,is1,is2,is3)
+          orderOfAccuracy=4 ! reset 
 
-           ! u2(j1-2*js1,j2-2*js2,j3,ex)=extrap4(u2,j1-js1,j2-js2,j3,ex,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,ey)=extrap4(u2,j1-js1,j2-js2,j3,ey,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,hz)=extrap4(u2,j1-js1,j2-js2,j3,hz,js1,js2,js3)
-         endLoops2d()
+          ! This next perl command will reset the macro derivatives to be computed to order=4
+#perl $ORDER=4;
+
 
          ! Macro to assign ghost values:
          assignInterfaceGhost24r()
          
          ! fixup corner points 
-         if( .false. )then
-           fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
-           fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
-         end if
+         ! if( .false. )then
+         !   fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+         !   fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+         ! end if
 
          ! periodic update
          periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
@@ -3820,10 +3934,10 @@ end if
           end if    
 
           ! fixup corner points 
-          if( .false. )then
-            fixupInterfaceEndValues(2,curvilinear,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
-            fixupInterfaceEndValues(2,curvilinear,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
-          end if
+          ! if( .false. )then
+          !   fixupInterfaceEndValues(2,curvilinear,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+          !   fixupInterfaceEndValues(2,curvilinear,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+          ! end if
 
           periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
           periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)

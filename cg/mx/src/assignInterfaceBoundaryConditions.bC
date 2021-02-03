@@ -17,7 +17,12 @@
 
 #define interfaceMaxwell EXTERN_C_NAME(interfacemaxwell)
 #define newInterfaceMaxwell EXTERN_C_NAME(newinterfacemaxwell)
-#define interface3dMaxwell EXTERN_C_NAME(interface3dmaxwell)
+
+// ***NOTE*** interface3dMaxwell is *RENAMED* interface3dMaxwell to interfaceOpt (new way) Jan 26, 2021 *wdh*
+#define interface3dMaxwell EXTERN_C_NAME(interfaceopt)
+// OLD: 
+// #define interface3dMaxwell EXTERN_C_NAME(interface3dmaxwell)
+
 extern "C"
 {
 void interfaceMaxwell( const int&nd, 
@@ -993,8 +998,6 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
 
     if( orderOfAccuracyInSpace >=4 && useNewInterfaceRoutines )
     { 
-      // WARNING: Do not use the fourth-order rectangular grid interface conditions in interface3d.bf 
-      //   since these require iterations which have not been implemented
 
       if( numberOfDimensions==3 && interfaceEquationsOption==0 && ( !isRectangular1 || !isRectangular2) )
       {
@@ -1010,15 +1013,24 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
 	
       }
 
-      if( (isRectangular1 && isRectangular2) && t<= 1.5*dt  )
+      // WARNING: Do not use the fourth-order rectangular grid interface conditions in interface3d.bf 
+      //   since these require iterations which have not been implemented
+
+      bool useFourthOrderRectangular = true;  // *wdh* Jan 18, 2021 -- this version now (being) implemented 
+      
+      if( !useFourthOrderRectangular )
       {
-	// printF("--MX-- assignInterfaceBC: INFO - using curvilinear version since iterations are required.\n");
-	printF("--MX-- assignInterfaceBC: INFO - grids are rectangular but using curvilinear interface version ...\n"
-               "      ... for 4th-order since latest version not implemented for rectangular grids.\n");
+        if(  (isRectangular1 && isRectangular2) && t<= 1.5*dt  )
+        {
+          // printF("--MX-- assignInterfaceBC: INFO - using curvilinear version since iterations are required.\n");
+          printF("--MX-- assignInterfaceBC: INFO - grids are rectangular but using curvilinear interface version ...\n"
+                 "      ... for 4th-order since latest version not implemented for rectangular grids.\n");
+        }
+      
+        isRectangular1=false;
+        isRectangular2=false;
       }
       
-      isRectangular1=false;
-      isRectangular2=false;
 
     }
 

@@ -4,8 +4,8 @@
 #
 # usage: ogen [noplot] twoSquaresInterface -factor=<num> -order=[2/4/6/8] -interp=[e/i] -name= -bc=[d|p]
 # 
-#  factor : grid resolution factor 
-#
+#    factor : grid resolution factor 
+#    yFactor : if set, use this grid resolution factro in y 
 # 
 # Examples:
 #        ogen -noplot twoSquaresInterface -factor=.25 -yFactor=.25 -interp=e -name="twoSquaresInterface0.hdf"

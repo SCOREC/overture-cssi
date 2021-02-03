@@ -1,3 +1,616 @@
+***************************************************
+******* Wed Feb 3, 2021
+
+CLEAN UP interface routines 
+
+
+
+
+
+
+24c GDM - NOT exact 
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order4.ng3 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+24r GDM - NOT exact 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+
+22c GDM - exact 
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order2 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+
+22r GDM - exact 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+
+24c - exact 
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+24r - exact 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+22c - exact 
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order2 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+22r - exact 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+
+
+
+***************************************************
+******* Tues Feb 2, 2021
+
+CONTINUE ON INTERFACE ROUTINES 
+
+
+***************************************************
+******* Mon Feb 1, 2021
+
+CONTINUE ON INTERFACE ROUTINES 
+
+Bugs: TZ forcing missing in gdm22r
+
+>>>>>>>>>>
+
+GDM ORDER4
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+EXACT? degree=[4,4]
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.01e-12,1.49e-11,3.28e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+GDM 24r -- GDM with a0=a1=0, eps1=1, eps2=2
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+EXCAT ??
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.10e-12,1.49e-11,3.28e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+
+>>>>>>>>>>>>>>>FIRST CHECK ORDER=2 -- EXACT degree=[2,2]
+
+EXACT: 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.33e-15,1.33e-15,1.57e-02,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+
+
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order2 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+--- gdm22c
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.89e-15,1.55e-15,1.57e-02,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+--- gdm22r
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.89e-15,1.55e-15,1.57e-02,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+NO JUMP IN MATERIALS -- EXACT 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoGDM4.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -debug=1 -go=go
+
+
+>>> ORDER=4: with GDM 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=3 -diss=0 -bc=d -debug=1 -go=go
+
+NOT-exact degree=[4,3]
+EXACT degree=[4,2]
+
+
+
+
+TRIG 
+$cgmx  -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.1 -tf=.1 -tz=trig -ic=tz -diss=0 -bc=d -debug=1 -go=go
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.1 -tf=.1 -tz=trig -ic=tz -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=1.00e-01 dt=5.0e-02 max errors:[1.73e-04,1.14e-03,1.35e-01,], max (u):[4.05e-01,3.66e-01,9.05e-01,] (2 steps)
+
+G2 
+>>> t=1.00e-01 dt=2.5e-02 max errors:[9.16e-06,1.93e-04,8.09e-01,], max (u):[4.05e-01,4.05e-01,8.09e-01,] (4 steps)
+G4 
+>>> t=1.00e-01 dt=1.4e-02 max errors:[3.09e-07,1.45e-05,8.09e-01,], max (u):[4.05e-01,4.05e-01,8.09e-01,] (7 steps)
+
+
+
+*new* 
+GDM 24r -- "NO ="dispersion, eps1=1, eps2=2
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.01 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+DEGREE=[4,4]
+ gdm22r: Matrix a4
+
+ gdm22r --> i1,i2=  10   0 RHS f=   0.10070  -0.00000   0.10063   0.75472
+                              q=   0.01007   0.01006   0.01007   0.01006
+gdm22r: i1,i2,i3=  10   0   0 t=0.100E-01
+     true=   1.01E-02  1.01E-02  1.01E-02  1.01E-02
+      err=  1.2E-15 4.1E-16 1.2E-15 2.0E-15 -> maxErr= 2.0E-15
+ gdm22r --> i1,i2=  10   1 RHS f=   0.20171   4.04024  -0.00013  -2.52358
+                              q=   0.04037  -0.02019  -0.00003   0.02017
+gdm22r: i1,i2,i3=  10   1   0 t=0.100E-01
+     true=   4.04E-02 -2.02E-02 -3.02E-05  2.02E-02
+      err=  3.9E-15 7.9E-16 6.5E-16 2.3E-15 -> maxErr= 3.9E-15
+ gdm22r --> i1,i2=  10   2 RHS f=   0.51076   8.20107  -0.30540  -7.33580
+                              q=   0.09208  -0.07090   0.01007   0.00982
+gdm22r: i1,i2,i3=  10   2   0 t=0.100E-01
+     true=   9.21E-02 -7.09E-02  1.01E-02  9.82E-03
+      err=  3.3E-15 6.0E-16 1.6E-15 3.2E-16 -> maxErr= 3.3E-15
+ gdm22r --> i1,i2=  10   3 RHS f=   1.04594  12.60312  -0.82425 -13.74980
+                              q=   0.16761  -0.14297   0.04158  -0.02188
+gdm22r: i1,i2,i3=  10   3   0 t=0.100E-01
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.10e-12,1.48e-11,3.28e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+G2: 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[3.63e-13,7.68e-12,4.04e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+ 42r: Matrix a8
+  6.67E+00  0.00E+00  6.67E+00  0.00E+00 -8.33E-01 -0.00E+00 -8.33E-01 -0.00E+00
+  1.33E+02  0.00E+00 -1.33E+02  0.00E+00 -8.33E+00  0.00E+00  8.33E+00  0.00E+00
+ -0.00E+00  6.67E+00 -0.00E+00  6.67E+00  0.00E+00 -8.33E-01  0.00E+00 -8.33E-01
+  0.00E+00  1.33E+02  0.00E+00 -3.33E+01  0.00E+00 -8.33E+00  0.00E+00  2.08E+00
+ -1.00E+03  0.00E+00 -2.50E+02  0.00E+00  5.00E+02  0.00E+00  1.25E+02  0.00E+00
+  0.00E+00 -1.00E+03  0.00E+00 -2.50E+02 -0.00E+00  5.00E+02 -0.00E+00  1.25E+02
+ -4.00E+04  0.00E+00  1.00E+04  0.00E+00  1.00E+04  0.00E+00 -2.50E+03  0.00E+00
+  0.00E+00 -4.00E+04  0.00E+00  2.50E+03  0.00E+00  1.00E+04  0.00E+00 -6.25E+02
+
+ gdm42r: Matrix a8
+  6.67E+00  0.00E+00  6.67E+00  0.00E+00 -8.33E-01 -0.00E+00 -8.33E-01 -0.00E+00
+  1.33E+02  0.00E+00 -1.33E+02  0.00E+00 -8.33E+00  0.00E+00  8.33E+00  0.00E+00
+ -0.00E+00  6.67E+00 -0.00E+00  6.67E+00  0.00E+00 -8.33E-01  0.00E+00 -8.33E-01
+ -0.00E+00  1.33E+02  0.00E+00 -3.33E+01  0.00E+00 -8.33E+00 -0.00E+00  2.08E+00
+ -1.00E+03  0.00E+00 -2.50E+02  0.00E+00  5.00E+02  0.00E+00  1.25E+02  0.00E+00
+  0.00E+00 -1.00E+03 -0.00E+00 -2.50E+02  0.00E+00  5.00E+02 -0.00E+00  1.25E+02
+ -4.00E+04 -0.00E+00  1.00E+04  0.00E+00  1.00E+04  0.00E+00 -2.50E+03 -0.00E+00
+  0.00E+00 -4.00E+04 -0.00E+00  2.50E+03 -0.00E+00  1.00E+04  0.00E+00 -6.25E+02
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   0 err=  0.1E-10 0.5E-15 0.9E-10 0.2E-14 0.2E-09 0.5E-15 0.1E-08 0.2E-14 -> maxErr= 0.1E-08
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   1 err=  0.1E-10 0.6E-10 0.9E-10 0.3E-09 0.2E-09 0.3E-09 0.1E-08 0.3E-08 -> maxErr= 0.3E-08
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   2 err=  0.1E-10 0.1E-09 0.9E-10 0.7E-09 0.2E-09 0.7E-09 0.1E-08 0.6E-08 -> maxErr= 0.6E-08
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   3 err=  0.1E-10 0.2E-09 0.9E-10 0.1E-08 0.2E-09 0.1E-08 0.1E-08 0.9E-08 -> maxErr= 0.9E-08
+
+
+NO GDM EXACT Degree =4 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.01 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+-----alphaP1=0 alphaP2=0 
+ gdm22r: Matrix a4
+  5.00E+00  0.00E+00  5.00E+00  0.00E+00
+  1.00E+02  0.00E+00 -1.00E+02  0.00E+00
+  0.00E+00  5.00E+00  0.00E+00  5.00E+00
+  0.00E+00  1.00E+02  0.00E+00 -2.50E+01
+ gdm22r --> i1,i2=  10  -1 RHS f=   0.2017102  -4.0402350  -0.0001256   2.5216921
+                              q=  -0.0000302   0.0201685   0.0403722  -0.0201936
+gdm22r: i1,i2,i3=  10  -1   0 t=0.100E-01
+     true=  -3.02E-05  2.02E-02  4.04E-02 -2.02E-02
+      err=  1.1E-17 6.9E-18 1.4E-17 3.5E-17 -> maxErr= 3.5E-17
+
+ gdm22r --> i1,i2=  10   0 RHS f=   0.1007044  -0.0000000   0.1006290   0.7547174
+                              q=   0.0100704   0.0100629   0.0100704   0.0100629
+gdm22r: i1,i2,i3=  10   0   0 t=0.100E-01
+     true=   1.01E-02  1.01E-02  1.01E-02  1.01E-02
+      err=  1.2E-15 4.1E-16 1.2E-15 2.0E-15 -> maxErr= 2.0E-15
+ gdm22r --> i1,i2=  10   1 RHS f=   0.2017102   4.0402350  -0.0001256  -2.5235765
+                              q=   0.0403722  -0.0201936  -0.0000302   0.0201685
+
+
+DEGREE=[4,4]
+ 22r: Matrix a4
+  5.00E+00  0.00E+00  5.00E+00  0.00E+00
+  1.00E+02  0.00E+00 -1.00E+02  0.00E+00
+  0.00E+00  5.00E+00  0.00E+00  5.00E+00
+  0.00E+00  1.00E+02  0.00E+00 -2.50E+01
+   22r --> i1,i2=  10  -1 RHS f=   0.2017102  -4.0402350  -0.0001256   2.5235765
+                             q=  -0.0000302   0.0201685   0.0403722  -0.0201936
+22r: i1,i2,i3=  10  -1   0 t=0.100E-01
+     true=  -3.02E-05  2.02E-02  4.04E-02 -2.02E-02
+      err=  1.1E-17 1.5E-05 1.4E-17 1.5E-05 -> maxErr= 1.5E-05
+   22r --> i1,i2=  10   0 RHS f=   0.1007044   0.0000000   0.1006290   0.7566018
+                             q=   0.0100704   0.0100629   0.0100704   0.0100629
+22r: i1,i2,i3=  10   0   0 t=0.100E-01
+     true=   1.01E-02  1.01E-02  1.01E-02  1.01E-02
+      err=  1.9E-17 1.5E-05 5.2E-18 1.5E-05 -> maxErr= 1.5E-05
+   22r --> i1,i2=  10   1 RHS f=   0.2017102   4.0402350  -0.0001256  -2.5216921
+                             q=   0.0403722  -0.0201936  -0.0000302   0.0201685
+
+
+
+
+
+22r: Matrix a4
+  5.00E+00  0.00E+00  5.00E+00  0.00E+00
+  1.00E+02  0.00E+00 -1.00E+02  0.00E+00
+  0.00E+00  5.00E+00  0.00E+00  5.00E+00
+  0.00E+00  1.00E+02  0.00E+00 -2.50E+01
+
+
+
+
+
+
+
+ 42r: Matrix a8
+  6.67E+00  0.00E+00  6.67E+00  0.00E+00 -8.33E-01 -0.00E+00 -8.33E-01 -0.00E+00
+  1.33E+02  0.00E+00 -1.33E+02  0.00E+00 -8.33E+00  0.00E+00  8.33E+00  0.00E+00
+ -0.00E+00  6.67E+00 -0.00E+00  6.67E+00  0.00E+00 -8.33E-01  0.00E+00 -8.33E-01
+  0.00E+00  1.33E+02  0.00E+00 -3.33E+01  0.00E+00 -8.33E+00  0.00E+00  2.08E+00
+ -1.00E+03  0.00E+00 -2.50E+02  0.00E+00  5.00E+02  0.00E+00  1.25E+02  0.00E+00
+  0.00E+00 -1.00E+03  0.00E+00 -2.50E+02 -0.00E+00  5.00E+02 -0.00E+00  1.25E+02
+ -4.00E+04  0.00E+00  1.00E+04  0.00E+00  1.00E+04  0.00E+00 -2.50E+03  0.00E+00
+  0.00E+00 -4.00E+04  0.00E+00  2.50E+03  0.00E+00  1.00E+04  0.00E+00 -6.25E+02
+ -->    24r: i1,i2=  10   0 RHS(A)=-4.97287E-16-3.55271E-15 8.44241E-16 2.51258E-03 2.59341E-13-1.13066E-02 5.51026E-12-6.40709E-01
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   0 err=  0.0E+00 0.1E-16 0.2E-16 0.3E-17 0.6E-16 0.4E-16 0.2E-15 0.8E-16 -> maxErr= 0.2E-15
+ -->    24r: i1,i2=  10   1 RHS(A)=-8.32667E-16 1.06581E-14 4.99600E-16 2.51258E-03 1.17517E-13-1.13066E-02-4.53682E-12-6.40709E-01
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   1 err=  0.3E-16 0.2E-16 0.2E-16 0.5E-16 0.4E-16 0.1E-15 0.3E-15 0.4E-15 -> maxErr= 0.4E-15
+ -->    24r: i1,i2=  10   2 RHS(A)= 3.16414E-15-3.37508E-14-6.66134E-16 2.51258E-03-4.65961E-13-1.13066E-02 1.08233E-11-6.40709E-01
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   2 err=  0.3E-16 0.4E-16 0.4E-16 0.2E-16 0.2E-15 0.7E-16 0.3E-15 0.4E-15 -> maxErr= 0.4E-15
+ -->    24r: i1,i2=  10   3 RHS(A)=-6.66134E-16 1.33227E-14 0.00000E+00 2.51258E-03-8.97060E-14-1.13066E-02-7.78577E-12-6.40709E-01
+
+
+ --> gdm24r: i1,i2=  10   0 RHS(A)= -4.74158E-16 -2.75335E-14  3.20924E-15  2.51258E-03  1.24727E-12 -1.13066E-02  7.34524E-11 -6.40709E-01
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   0 err=  0.1E-14 0.6E-15 0.2E-14 0.2E-14 0.5E-14 0.2E-14 0.1E-13 0.8E-15 -> maxErr= 0.1E-13
+ --> gdm24r: i1,i2=  10   1 RHS(A)=  5.46785E-15  1.68754E-13  3.16414E-15  2.51258E-03 -5.88468E-12 -1.13066E-02 -2.13937E-10 -6.40709E-01
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   1 err=  0.4E-14 0.3E-15 0.7E-15 0.2E-14 0.6E-14 0.2E-14 0.1E-13 0.7E-14 -> maxErr= 0.1E-13
+ --> gdm24r: i1,i2=  10   2 RHS(A)=  8.32667E-15  1.31450E-13  3.55271E-15  2.51258E-03 -5.29166E-12 -1.13066E-02 -1.27104E-10 -6.40709E-01
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   2 err=  0.3E-14 0.3E-15 0.1E-14 0.2E-14 0.2E-14 0.3E-15 0.4E-15 0.9E-14 -> maxErr= 0.9E-14
+ --> gdm24r: i1,i2=  10   3 RHS(A)=  7.77156E-16  1.83853E-13  2.22045E-15  2.51258E-03 -4.12803E-12 -1.13066E-02 -1.45178E-10 -6.40709E-01
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+gdm24r: i1,i2=  10   3 err=  0.4E-14 0.3E-15 0.1E-14 0.1E-14 0.3E-14 0.5E-15 0.4E-15 0.5E-14 -> maxErr= 0.5E-14
+ --> gdm24r: i1,i2=  10   4 RHS(A)=  5.55112E-15  1.08358E-13 -1.33227E-15  2.51258E-03 -4.15823E-12 -1.13066E-02 -1.08441E-10 -6.40709E-01
+gdm24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+
+
+ 
+
+***************************************************
+******* Sun Jan 31, 2021
+
+CONTINUE ON INTERFACE ROUTINES 
+
+
+
+--- 3D check for interfaces is different =. WHY? ... *fixed*
+--- 3D 34r 
+$cgmx  -noplot interface -g=twoBoxesInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+GDM 24c *why is this different from old way below?? (STARTING VERSION)
+$cgmx  -noplot interface -g=twoNonSquaresInterfacee1.order4.ng3 -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.17e-11,1.06e-11,3.28e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+*** GDM 24r --> ***This is no rectangular version yet***
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+STARTING VERSION
+>>> t=3.00e-02 dt=1.0e-02 max errors:[7.95e-14,1.35e-13,3.28e-02,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+GDM 22r 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.78e-15,1.78e-15,1.57e-02,], max (u):[4.06e+00,2.03e+00,1.52e+00,] (3 steps)
+
+
+24r
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+***************************************************
+******* Sat Jan 30, 2021
+
+
+-----> START ON 24c
+
+$cgmx  -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+EXACT: even before fix *why* ?? -> maybe need a jump in the higher derivatives 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-15,4.44e-16,8.88e-16,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+
+
+-----> START ON 22c
+
+22c - exact for degree = [2,2]
+$cgmx  -noplot interface -g=twoNonSquaresInterfaceShorte1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+
+
+BUGS FOUND:
+  - assignInterfaceGhost22r : missing TZ forcing!
+  - assignInterfaceGhost24r : missing TZ eval of uex, uey, vex, vey 
+  - assignInterfaceGhost24r : [c^4 Delta^2 v]=0 NOT [c^2 Delta^2 v]
+
+
+
+SOA STEP FIXED for hz -- but now order4 not exact -- but still may be order 4  --> TURNED OFF computation of Hz .. now exact 
+EXACT Degree =4 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.22e-15,1.33e-15,7.77e-16,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.22e-15,1.33e-15,2.12e-07,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+
+CONT TEST ALTERED FOA INTERFACE 
+
+**** Hz broken *** ... FIXED
+ORDER=2 -- > BROKEN ... FIXED 
+valgrind $cgmx  -noplot interface -g=twoSquaresInterfacee1.order2 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=2 -degreet=2 -diss=0 -bc=d -debug=1 -go=go
+
+
+PMIC order=4 
+cgmx -noplot interface -g=twoSquaresInterfacee8p.order4.ng3  -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=og 
+
+
+EXACT Degree =4 
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[8.88e-16,1.33e-15,2.22e-16,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.22e-15,1.33e-15,2.22e-16,], max (u):[5.79e+00,2.97e+00,3.25e+00,] (3 steps)
+
+
+
+MATCH wave.m 10x10
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.01 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=go
+
+
+22r: i1,i2=  10   0 true=  1.007E-02 1.006E-02 1.007E-02 1.006E-02
+22r: i1,i2=  10   0  err=  1.9E-17 8.4E-06 5.2E-18 8.4E-06 -> maxErr= 1.1E-04
+
+
+ 22r: Matrix a4
+  5.00E+00  0.00E+00  5.00E+00  0.00E+00
+  1.00E+02  0.00E+00 -1.00E+02  0.00E+00
+  0.00E+00  5.00E+00  0.00E+00  5.00E+00
+  0.00E+00  1.00E+02  0.00E+00 -2.50E+01
+
+
+ 42r: Matrix a8
+  6.67E+00  0.00E+00  6.67E+00  0.00E+00 -8.33E-01 -0.00E+00 -8.33E-01 -0.00E+00
+  1.33E+02  0.00E+00 -1.33E+02  0.00E+00 -8.33E+00  0.00E+00  8.33E+00  0.00E+00
+ -0.00E+00  6.67E+00 -0.00E+00  6.67E+00  0.00E+00 -8.33E-01  0.00E+00 -8.33E-01
+  0.00E+00  1.33E+02  0.00E+00 -3.33E+01  0.00E+00 -8.33E+00  0.00E+00  2.08E+00
+ -1.00E+03  0.00E+00 -2.50E+02  0.00E+00  5.00E+02  0.00E+00  1.25E+02  0.00E+00
+  0.00E+00 -1.00E+03  0.00E+00 -2.50E+02 -0.00E+00  5.00E+02 -0.00E+00  1.25E+02
+ -4.00E+04  0.00E+00  1.00E+04  0.00E+00  1.00E+04  0.00E+00 -2.50E+03  0.00E+00
+  0.00E+00 -4.00E+04  0.00E+00  2.50E+03  0.00E+00  1.00E+04  0.00E+00 -6.25E+02
+
+
+
+----- MATLAB : wave.m 
+
+assignInterface2: A4 -- coeff matrix (CGMX Order)
+i1=  1:    5.00e+00  0.00e+00  5.00e+00  0.00e+00
+i1=  2:    1.00e+02  0.00e+00 -1.00e+02  0.00e+00
+i1=  3:    0.00e+00  5.00e+00  0.00e+00  5.00e+00
+i1=  4:    0.00e+00  1.00e+02  0.00e+00 -2.50e+01
+
+
+assignInterface2: exact solution in ghost 1, including ghost in tangential, tn=1.000e-02
+ic=1: u1e=[-3.02e-05  1.01e-02  4.04e-02  9.21e-02  1.68e-01  2.71e-01  4.06e-01  5.79e-01  7.98e-01  1.07e+00  1.41e+00  1.82e+00  2.32e+00 ]
+ic=1: u2e=[ 4.04e-02  1.01e-02 -3.02e-05  1.01e-02  4.16e-02  9.69e-02  1.80e-01  2.95e-01  4.48e-01  6.47e-01  9.00e-01  1.22e+00  1.61e+00 ]
+ic=2: u1e=[ 2.02e-02  1.01e-02 -2.02e-02 -7.09e-02 -1.43e-01 -2.38e-01 -3.58e-01 -5.05e-01 -6.84e-01 -8.98e-01 -1.15e+00 -1.45e+00 -1.80e+00 ]
+ic=2: u2e=[-2.02e-02  1.01e-02  2.02e-02  9.82e-03 -2.19e-02 -7.65e-02 -1.56e-01 -2.63e-01 -4.01e-01 -5.75e-01 -7.87e-01 -1.04e+00 -1.35e+00 ]
+assignInterface2: Errors in ghost 1, including ghost in tangential, tn=1.000e-02
+ic=1: u1Err=[ 6.89e-18 -1.39e-17 -2.78e-17  0.00e+00  0.00e+00 -1.11e-16  1.11e-16  0.00e+00  2.22e-16 -2.22e-16  0.00e+00  0.00e+00  0.00e+00 ]
+ic=1: u2Err=[-6.94e-18 -6.94e-18 -3.43e-18 -1.73e-18  0.00e+00  6.94e-17 -8.33e-17  2.22e-16 -1.11e-16  2.22e-16  3.33e-16  0.00e+00  6.66e-16 ]
+ic=2: u1Err=[ 1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05  1.51e-05 ]
+ic=2: u2Err=[-1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 -1.51e-05 ]
+tn=1.000e-02: Max Error in ghost1: err-u1=1.51e-05, err-u2=1.51e-05
+
+
+
+macro: assignInterfaceGhost22r : t,dt=  0.10E-01  0.10E-01
+22r: i1,i2,i3=  10  -1   0 t=0.100E-01
+     true=  -3.02E-05  2.02E-02  4.04E-02 -2.02E-02
+      err=  1.1E-17 1.5E-05 1.4E-17 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   0   0 t=0.100E-01
+     true=   1.01E-02  1.01E-02  1.01E-02  1.01E-02
+      err=  1.9E-17 1.5E-05 5.2E-18 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   1   0 t=0.100E-01
+     true=   4.04E-02 -2.02E-02 -3.02E-05  2.02E-02
+      err=  3.5E-17 1.5E-05 2.1E-18 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   2   0 t=0.100E-01
+     true=   9.21E-02 -7.09E-02  1.01E-02  9.82E-03
+      err=  4.2E-17 1.5E-05 2.4E-17 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   3   0 t=0.100E-01
+     true=   1.68E-01 -1.43E-01  4.16E-02 -2.19E-02
+      err=  8.3E-17 1.5E-05 0.0E+00 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   4   0 t=0.100E-01
+     true=   2.71E-01 -2.38E-01  9.69E-02 -7.65E-02
+      err=  1.7E-16 1.5E-05 6.9E-17 1.5E-05 -> maxErr= 1.5E-05
+22r: i1,i2,i3=  10   5   0 t=0.100E-01
+     true=   4.06E-01 -3.58E-01  1.80E-01 -1.56E-01
+      err=  3.3E-16 1.5E-05 2.2E-16 1.5E-05 -> maxErr= 1.5E-05
+
+Errors in ghost 1, including ghost in tangential
+ic=1: u1Err=[ 1.21e-17  8.21e-17 -4.51e-17 -2.78e-17 -2.78e-17 -2.78e-17 -5.55e-17  5.55e-17  0.00e+00  1.11e-16 -2.22e-16 -4.44e-16  2.22e-16 -1.78e-15  8.88e-16 ]
+ic=1: u2Err=[ 4.16e-17 -2.71e-16 -5.55e-17 -1.44e-17 -1.04e-17 -3.47e-17  1.11e-16 -3.33e-16  2.78e-16 -6.11e-16  5.55e-16 -8.88e-16 -2.22e-15  1.78e-15 -4.44e-15 ]
+ic=2: u1Err=[-1.32e-16  2.32e-16  1.39e-17 -6.94e-18  2.78e-17  0.00e+00  0.00e+00  3.33e-16 -1.11e-16  0.00e+00  3.33e-16 -4.44e-16  1.55e-15  1.55e-15 -1.78e-15 ]
+ic=2: u2Err=[-5.55e-17  1.91e-16 -2.60e-17 -3.47e-17  2.78e-17 -1.39e-17  8.33e-17 -2.50e-16 -1.11e-16  2.78e-16 -2.22e-16 -3.33e-16 -2.22e-15  2.44e-15 -5.55e-15 ]
+tn=1.000e-02: Max Error in ghost1: err-u1=1.78e-15, err-u2=5.55e-15
+Errors in ghost 2, including ghost in tangential
+ic=1: u1Err=[ 3.89e-16 -1.42e-16 -1.87e-16 -9.71e-17 -2.78e-17  5.55e-17 -5.00e-16  5.55e-16 -5.55e-16  4.44e-16 -1.11e-15  0.00e+00  4.44e-16  2.22e-15 -2.66e-15 ]
+ic=1: u2Err=[-1.08e-15 -5.97e-16 -2.78e-16 -1.39e-17 -2.81e-16 -5.98e-16  8.26e-16 -3.05e-15  1.50e-15 -5.16e-15  2.44e-15 -1.13e-14 -8.44e-15 -1.62e-14  1.02e-14 ]
+ic=2: u1Err=[ 1.10e-15 -9.71e-17  1.18e-16 -5.20e-18  6.94e-17 -8.33e-17  1.11e-16  1.50e-15 -5.55e-16  0.00e+00  4.44e-16  2.22e-16  5.11e-15  9.55e-15  4.00e-15 ]
+ic=2: u2Err=[ 9.58e-16  8.67e-18 -8.33e-17 -4.58e-16  1.94e-16 -2.64e-16 -2.98e-16 -1.34e-15  3.33e-16 -9.71e-16  8.88e-16 -6.33e-15 -1.02e-14 -9.99e-15  9.33e-15 ]
+tn=1.000e-02: Max Error in ghost2: err-u1=9.55e-15, err-u2=1.62e-14
+
+
+macro: assignInterfaceGhost24r : it=    -1 t,dt=  0.10E-01  0.10E-01
+24r: i1,i2=  10   0 RHS f=   6.67E-02  6.66E-16  6.68E-02  7.54E-01  1.27E+01  1.27E+01  1.81E+00  1.41E+00
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   0 err=  0.0E+00 0.1E-16 0.2E-16 0.3E-17 0.6E-16 0.4E-16 0.2E-15 0.8E-16 -> maxErr= 0.2E-04
+
+24r: i1,i2=  10   1 RHS f=   1.85E-01  4.71E+00 -5.07E-02 -3.13E+00  6.43E+00  1.88E+01 -7.30E+02  7.09E+02
+
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   1 err=  0.3E-16 0.2E-16 0.2E-16 0.5E-16 0.4E-16 0.1E-15 0.3E-15 0.4E-15 -> maxErr= 0.2E-04
+24r: i1,i2=  10   2 RHS f=   5.45E-01  9.57E+00 -4.07E-01 -8.93E+00 -1.29E+01  3.77E+01 -1.95E+03  1.99E+03
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   2 err=  0.3E-16 0.4E-16 0.4E-16 0.2E-16 0.2E-15 0.7E-16 0.3E-15 0.4E-15 -> maxErr= 0.2E-04
+24r: i1,i2=  10   3 RHS f=   1.17E+00  1.47E+01 -1.01E+00 -1.67E+01 -4.63E+01  6.99E+01 -3.70E+03  3.87E+03
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   3 err=  0.6E-16 0.3E-16 0.3E-16 0.3E-17 0.1E-15 0.2E-15 0.9E-17 0.3E-16 -> maxErr= 0.2E-04
+24r: i1,i2=  10   4 RHS f=   2.09E+00  2.03E+01 -1.88E+00 -2.67E+01 -9.58E+01  1.16E+02 -6.08E+03  6.40E+03
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   4 err=  0.2E-15 0.6E-16 0.2E-15 0.2E-15 0.8E-15 0.1E-15 0.1E-14 0.2E-14 -> maxErr= 0.2E-04
+24r: i1,i2=  10   5 RHS f=   3.36E+00  2.64E+01 -3.05E+00 -3.90E+01 -1.64E+02  1.79E+02 -9.18E+03  9.63E+03
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   5 err=  0.3E-15 0.2E-15 0.6E-15 0.2E-15 0.1E-14 0.9E-15 0.3E-14 0.4E-15 -> maxErr= 0.2E-04
+24r: i1,i2=  10   6 RHS f=   5.05E+00  3.32E+01 -4.53E+00 -5.38E+01 -2.54E+02  2.58E+02 -1.32E+04  1.36E+04
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+24r: i1,i2=  10   6 err=  0.6E-15 0.1E-15 0.1E-15 0.3E-15 0.6E-15 0.1E-14 0.4E-14 0.2E-15 -> maxErr= 0.2E-04
+24r: i1,i2=  10   7 RHS f=   7.22E+00  4.09E+01 -6.38E+00 -7.16E+01 -3.70E+02  3.57E+02 -1.82E+04  1.85E+04
+24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
+
+
+
+ RHS (cgmx order)
+i2= 15:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+i2= 14:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+i2= 13:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+i2= 12:    1.34e+01  5.93e+01 -1.14e+01 -1.17e+02 -7.02e+02  6.23e+02 -3.21e+04  3.13e+04
+i2= 11:    9.97e+00  4.95e+01 -8.64e+00 -9.27e+01 -5.18e+02  4.78e+02 -2.44e+04  2.44e+04
+i2= 10:    7.22e+00  4.09e+01 -6.38e+00 -7.16e+01 -3.70e+02  3.57e+02 -1.82e+04  1.85e+04
+i2=  9:    5.05e+00  3.32e+01 -4.53e+00 -5.38e+01 -2.54e+02  2.58e+02 -1.32e+04  1.36e+04
+i2=  8:    3.36e+00  2.64e+01 -3.05e+00 -3.90e+01 -1.64e+02  1.79e+02 -9.18e+03  9.63e+03
+i2=  7:    2.09e+00  2.03e+01 -1.88e+00 -2.67e+01 -9.58e+01  1.16e+02 -6.08e+03  6.40e+03
+i2=  6:    1.17e+00  1.47e+01 -1.01e+00 -1.67e+01 -4.63e+01  6.99e+01 -3.70e+03  3.87e+03
+
+i2=  5:    5.45e-01  9.57e+00 -4.07e-01 -8.93e+00 -1.29e+01  3.77e+01 -1.95e+03  1.99e+03
+
+i2=  4:    1.85e-01  4.71e+00 -5.07e-02 -3.13e+00  6.43e+00  1.88e+01 -7.30e+02  7.09e+02
+
+i2=  3:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+i2=  2:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+i2=  1:    0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00  0.00e+00
+***************************************************
+******* Fri Jan 29, 2021
+
+CONT TEST ALTERED FOA INTERFACE 
+
+
+MATCH wave.m 10x10
+$cgmx  -noplot interface -g=twoSquaresInterfacee1.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=og
+
+$cgmx  -noplot interface -g=twoSquaresInterfacee2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=og
+
+$cgmx  -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -debug=1 -go=og
+
+***************************
+******* Wed Jan 27, 2021
+
+TEST ALTERED FOA INTERFACE 
+
+NOT EXACT FOR degree=[4,4] WHY? --> trouble near top boundary 
+
+$cgmx  -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go
+
+***************************
+******* Sun Jan 17, 2021
+
+
+IMPLEMENT rectangular versions of 4th-order BC's
+
+
+TEST: 
+$cgmx  -noplot interface -g=twoSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go 
+
+
+
+CURVILINEAR CODE: 
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-15,6.66e-16,8.88e-16,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+***************************
+******* Sat Jan 16, 2021
+
+
+START ON FIXING INTERFACE - SOA update for FOA scheme
+
+
+EXACT degree=[4,4]
+$cgmx  -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go 
+
+
+PMI -- NEW WAY 
+cgmx -noplot interface -g=twoSquaresInterfacee32p.order4.ng3 -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go
+
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.945e-02 max-err = 7.732e-12
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=2.096e-02 max-err = 2.629e-11
+>>> t=1.00e-01 dt=2.8e-03 max errors:[2.24e-09,4.30e-09,9.54e-01,], max (u):[7.59e-01,7.59e-01,1.57e+00,] (36 steps)
+
+
+PMI - GDM 2D order4
+cgmx -noplot interface -g=twoSquaresInterfacee32p.order4.ng3 -eps2=2 -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.1 -tf=.1 -ic=pmic  -useSosupDissipation=1 -bc=d -debug=0 -go=go 
+
+G16
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.933e-02 max-err = 1.039e-09
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.755e-02 max-err = 3.118e-10
+>>> t=1.00e-01 dt=3.8e-03 max errors:[4.03e-08,9.48e-08,1.16e+00,], max (u):[7.50e-01,7.68e-01,1.30e+00,] (26 steps)
+
+G32
+--getErrors: t=1.000e-01 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=1.933e-02 max-err = 6.686e-11
+--getErrors: t=1.000e-01 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=1.755e-02 max-err = 1.835e-11
+>>> t=1.00e-01 dt=2.0e-03 max errors:[2.39e-09,5.78e-09,1.11e+00,], max (u):[7.50e-01,7.68e-01,1.32e+00,] (51 steps)
+
+
+
+GDM NEW WAY WITH MAT FILES
+$cgmx  -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -dm=gdm -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=2 -diss=0 -bc=d -go=go 
+
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.077e-01 max-err = 4.996e-16
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=7.310e-01 max-err = 1.110e-15
+>>> t=3.00e-02 dt=1.0e-02 max errors:[1.33e-15,1.78e-15,1.53e-02,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+
+NEW WAY WITH MAT FILES
+$cgmx  -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -matFile1=baMatIsoEps1.txt -matFile2=baMatIsoEps2.txt -dm=none -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go 
+
+
+
+GDM EXACT for degree=[4,2]
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -eps2=2  -npv=1 1 -a01=1 -a11=.2 -b01=.8 -b11=0.1 -a02=.9 -a12=.0 -b02=1.2 -b12=0.0 -dm=gdm  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go
+
+degree=[4,2] : exact 
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.077e-01 max-err = 4.441e-16
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=7.310e-01 max-err = 7.772e-16
+>>> t=3.00e-02 dt=1.0e-02 max errors:[2.00e-15,1.33e-15,1.53e-02,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+degree=[4,4]
+--getErrors: t=3.000e-02 domain=0 (leftDomain) numPolarizationVectors=1 P-norm=5.077e-01 max-err = 1.302e-13
+--getErrors: t=3.000e-02 domain=1 (rightDomain) numPolarizationVectors=1 P-norm=7.310e-01 max-err = 5.974e-13
+>>> t=3.00e-02 dt=1.0e-02 max errors:[8.82e-11,1.55e-11,1.53e-02,], max (u):[2.17e+00,1.64e+00,1.15e+00,] (3 steps)
+
+
+
+
+
+EXACT degree=[4,4]
+cgmx -noplot interface -g=twoNonSquaresInterfaceShorte2.order4.ng3 -eps2=2 -dm=none  -kx=1 -ky=1 -tp=.01 -tf=.03 -tz=poly -ic=tz -degreex=4 -degreet=4 -diss=0 -bc=d -go=go
+
+
 ***************************
 ******* Fri Jan 8, 2021
 

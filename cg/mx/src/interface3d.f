@@ -1428,7 +1428,8 @@
 
       ! these are for the exact solution from TZ flow: 
       real ue,ve,we, we0,we1,we2,we3
-      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez
+      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez, evv(
+     & 0:11), errv(0:11)
       real uexx,ueyy,uezz, vexx,veyy,vezz, wexx,weyy,wezz
       real ueLap, veLap, weLap
       real curlEex,curlEey,curlEez,nDotCurlEe,nDotLapEe
@@ -1470,7 +1471,7 @@
       ! Nonlinear models
        integer noNonlinearModel,multilevelAtomic
        parameter( noNonlinearModel=0, multilevelAtomic=1 )
-      integer nonlinearModel
+      ! integer nonlinearModel
 
 
       ! forcing options
@@ -3128,13 +3129,17 @@
             ms2b=m2b
             ms3a=m3a
             ms3b=m3b
-            ! For 2nd-order Stage 1 of fourth-order scheme (parallel)
+            ! For 2nd-order Stage 1 of fourth-order scheme 
+            if( nd.eq.2 )then
+              numGhost2=1 ! we always do at least this many
+            else
+              numGhost2=0 ! FIX 3D Order 4 -- do this for backward compatibility
+            end if
             if( numParallelGhost.eq.3 )then
               numGhost2=1  ! num ghost for 2nd-order update (Stage I of 4th order update)
             else if( numParallelGhost.gt.3 )then
               numGhost2=2  ! include an extra ghost -- is this needed ?
             else
-              numGhost2=0
               if( orderOfAccuracy.eq.4 .and. numParallelGhost.gt.0 )
      & then
                 if( t.le. 1.5*dt .and. debug.gt.0 )then
@@ -3201,11 +3206,13 @@
                 end if
               end if
               ! -- bounds for order 2 stage I of fourth-order scheme 
-              if( boundaryCondition1(0,0).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(0,0)
+     & .eq.internalGhostBC )then
                 ! parallel ghost: 
                 ne1a=ne1a-numGhost2
               end if
-              if( boundaryCondition1(1,0).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(1,0)
+     & .eq.internalGhostBC )then
                 ! parallel ghost:  
                 ne1b=ne1b+numGhost2
               end if
@@ -3227,11 +3234,13 @@
                 end if
               end if
               ! -- bounds for order 2 stage I of fourth-order scheme 
-              if( boundaryCondition1(0,1).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(0,1)
+     & .eq.internalGhostBC )then
                 ! adjust for parallel ghost 
                 ne2a=ne2a-numGhost2
               end if
-              if( boundaryCondition1(1,1).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(1,1)
+     & .eq.internalGhostBC )then
                 ! adjust for parallel ghost 
                 ne2b=ne2b+numGhost2
               end if
@@ -3253,11 +3262,13 @@
                 end if
               end if
               ! -- bounds for order 2 stage I of fourth-order scheme 
-              if( boundaryCondition1(0,2).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(0,2)
+     & .eq.internalGhostBC )then
                 ! adjust for parallel ghost 
                 ne3a=ne3a-numGhost2
               end if
-              if( boundaryCondition1(1,2).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition1(1,2)
+     & .eq.internalGhostBC )then
                 ! adjust for parallel ghost 
                 ne3b=ne3b+numGhost2
               end if
@@ -3290,10 +3301,12 @@
               if( boundaryCondition2(1,0).le.0 )then
                 mm1b=mm1b+numGhost
               end if
-              if( boundaryCondition2(0,0).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(0,0)
+     & .eq.internalGhostBC )then
                 me1a=me1a-numGhost2
               end if
-              if( boundaryCondition2(1,0).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(1,0)
+     & .eq.internalGhostBC )then
                 me1b=me1b+numGhost2
               end if
             end if
@@ -3304,10 +3317,12 @@
               if( boundaryCondition2(1,1).le.0 )then
                 mm2b=mm2b+numGhost
               end if
-              if( boundaryCondition2(0,1).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(0,1)
+     & .eq.internalGhostBC )then
                 me2a=me2a-numGhost2
               end if
-              if( boundaryCondition2(1,1).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(1,1)
+     & .eq.internalGhostBC )then
                 me2b=me2b+numGhost2
               end if
             end if
@@ -3318,10 +3333,12 @@
               if( boundaryCondition2(1,2).le.0 )then
                 mm3b=mm3b+numGhost
               end if
-              if( boundaryCondition2(0,2).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(0,2)
+     & .eq.internalGhostBC )then
                 me3a=me3a-numGhost2
               end if
-              if( boundaryCondition2(1,2).eq.internalGhostBC )then
+              if( .true. .or. boundaryCondition2(1,2)
+     & .eq.internalGhostBC )then
                 me3b=me3b+numGhost2
               end if
             end if
@@ -3836,7 +3853,7 @@
                   end do
                 end do
                end if
-              if (nonlinearModel .ne. noNonlinearModel) then
+              if (nonlinearModel1 .ne. noNonlinearModel) then
                 do na = 0,numberOfAtomicLevels1-1
                   q1(i1  -is1,i2  -is2,i3,na)=(3.*q1(i1,i2,i3,na)-3.*
      & q1(i1+is1,i2+is2,i3+is3,na)+q1(i1+2*is1,i2+2*is2,i3+2*is3,na))
@@ -3844,6 +3861,8 @@
      & na)-3.*q1(i1-is1+is1,i2-is2+is2,i3+is3,na)+q1(i1-is1+2*is1,i2-
      & is2+2*is2,i3+2*is3,na))
                 enddo
+              end if
+              if (nonlinearModel2 .ne. noNonlinearModel) then
                 do na = 0,numberOfAtomicLevels2-1
                   q2(j1  -js1,j2  -js2,j3,na)=(3.*q2(j1,j2,j3,na)-3.*
      & q2(j1+js1,j2+js2,j3+js3,na)+q2(j1+2*js1,j2+2*js2,j3+2*js3,na))
@@ -6190,7 +6209,7 @@
                  end do
                end do
               end if
-             if (nonlinearModel .ne. noNonlinearModel) then
+             if (nonlinearModel1 .ne. noNonlinearModel) then
                do na = 0,numberOfAtomicLevels1-1
                  q1(i1  -is1,i2  -is2,i3,na)=(3.*q1(i1,i2,i3,na)-3.*q1(
      & i1+is1,i2+is2,i3+is3,na)+q1(i1+2*is1,i2+2*is2,i3+2*is3,na))
@@ -6198,6 +6217,8 @@
      & na)-3.*q1(i1-is1+is1,i2-is2+is2,i3+is3,na)+q1(i1-is1+2*is1,i2-
      & is2+2*is2,i3+2*is3,na))
                enddo
+             end if
+             if (nonlinearModel2 .ne. noNonlinearModel) then
                do na = 0,numberOfAtomicLevels2-1
                  q2(j1  -js1,j2  -js2,j3,na)=(3.*q2(j1,j2,j3,na)-3.*q2(
      & j1+js1,j2+js2,j3+js3,na)+q2(j1+2*js1,j2+2*js2,j3+2*js3,na))
@@ -10752,12 +10773,13 @@
          ! We need to add itertions to this version but then the curvlinear version is
          ! almost as efficient since the equations are saved. *wdh* June 25, 2016
 
+         ! *wdh* Jan 17, 2021 -- start implementing the rectangular versions ...
          if( .true. )then
            write(*,'("interface3d.bf: ERROR: do NOT USE THIS option: 
      & ORDER=4 RECTANGULAR")')
            write(*,'("interface3d.bf: USE CURVILINEAR VERSION INSTEAD 
      & SINCE ITERATIONS ARE REQUIRED")')
-           stop 6543
+           ! stop 6543
          end if
 
 
@@ -11104,66 +11126,560 @@
         ! ----- assign ghost using jump conditions -----
         if( assignInterfaceGhostValues.eq.1 )then
 
-         ! initialization step: assign first ghost line by extrapolation
-         ! NOTE: assign ghost points outside the ends
-          i3=n3a
-          j3=m3a
-          j2=mm2a
-          do i2=nn2a,nn2b
-           j1=mm1a
-           do i1=nn1a,nn1b
-           ! extrap to order 5 so exact for degree 4 *wdh* 2015/06/29
-           u1(i1-is1,i2-is2,i3,ex)=(5.*u1(i1,i2,i3,ex)-10.*u1(i1+is1,
+          ! initialization step: assign two ghost lines by extrapolation
+          if( .true. )then
+            i3=n3a
+            j3=m3a
+            j2=mm2a
+            do i2=nn2a,nn2b
+             j1=mm1a
+             do i1=nn1a,nn1b
+            ! ---- extrapolate to order 5 -----
+            ! extrap to order 5 so exact for degree 4 *wdh* 2015/06/29
+            u1(i1-is1,i2-is2,i3,ex)=(5.*u1(i1,i2,i3,ex)-10.*u1(i1+is1,
      & i2+is2,i3+is3,ex)+10.*u1(i1+2*is1,i2+2*is2,i3+2*is3,ex)-5.*u1(
      & i1+3*is1,i2+3*is2,i3+3*is3,ex)+u1(i1+4*is1,i2+4*is2,i3+4*is3,
      & ex))
-           u1(i1-is1,i2-is2,i3,ey)=(5.*u1(i1,i2,i3,ey)-10.*u1(i1+is1,
+            u1(i1-is1,i2-is2,i3,ey)=(5.*u1(i1,i2,i3,ey)-10.*u1(i1+is1,
      & i2+is2,i3+is3,ey)+10.*u1(i1+2*is1,i2+2*is2,i3+2*is3,ey)-5.*u1(
      & i1+3*is1,i2+3*is2,i3+3*is3,ey)+u1(i1+4*is1,i2+4*is2,i3+4*is3,
      & ey))
-           u1(i1-is1,i2-is2,i3,hz)=(5.*u1(i1,i2,i3,hz)-10.*u1(i1+is1,
+            u1(i1-is1,i2-is2,i3,hz)=(5.*u1(i1,i2,i3,hz)-10.*u1(i1+is1,
      & i2+is2,i3+is3,hz)+10.*u1(i1+2*is1,i2+2*is2,i3+2*is3,hz)-5.*u1(
      & i1+3*is1,i2+3*is2,i3+3*is3,hz)+u1(i1+4*is1,i2+4*is2,i3+4*is3,
      & hz))
-
-           u2(j1-js1,j2-js2,j3,ex)=(5.*u2(j1,j2,j3,ex)-10.*u2(j1+js1,
+            u2(j1-js1,j2-js2,j3,ex)=(5.*u2(j1,j2,j3,ex)-10.*u2(j1+js1,
      & j2+js2,j3+js3,ex)+10.*u2(j1+2*js1,j2+2*js2,j3+2*js3,ex)-5.*u2(
      & j1+3*js1,j2+3*js2,j3+3*js3,ex)+u2(j1+4*js1,j2+4*js2,j3+4*js3,
      & ex))
-           u2(j1-js1,j2-js2,j3,ey)=(5.*u2(j1,j2,j3,ey)-10.*u2(j1+js1,
+            u2(j1-js1,j2-js2,j3,ey)=(5.*u2(j1,j2,j3,ey)-10.*u2(j1+js1,
      & j2+js2,j3+js3,ey)+10.*u2(j1+2*js1,j2+2*js2,j3+2*js3,ey)-5.*u2(
      & j1+3*js1,j2+3*js2,j3+3*js3,ey)+u2(j1+4*js1,j2+4*js2,j3+4*js3,
      & ey))
-           u2(j1-js1,j2-js2,j3,hz)=(5.*u2(j1,j2,j3,hz)-10.*u2(j1+js1,
+            u2(j1-js1,j2-js2,j3,hz)=(5.*u2(j1,j2,j3,hz)-10.*u2(j1+js1,
      & j2+js2,j3+js3,hz)+10.*u2(j1+2*js1,j2+2*js2,j3+2*js3,hz)-5.*u2(
      & j1+3*js1,j2+3*js2,j3+3*js3,hz)+u2(j1+4*js1,j2+4*js2,j3+4*js3,
      & hz))
+            ! --- also extrap 2nd line for now
+            u1(i1-2*is1,i2-2*is2,i3,ex)=(5.*u1(i1-is1,i2-is2,i3,ex)-
+     & 10.*u1(i1-is1+is1,i2-is2+is2,i3+is3,ex)+10.*u1(i1-is1+2*is1,i2-
+     & is2+2*is2,i3+2*is3,ex)-5.*u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
+     & is3,ex)+u1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,ex))
+            u1(i1-2*is1,i2-2*is2,i3,ey)=(5.*u1(i1-is1,i2-is2,i3,ey)-
+     & 10.*u1(i1-is1+is1,i2-is2+is2,i3+is3,ey)+10.*u1(i1-is1+2*is1,i2-
+     & is2+2*is2,i3+2*is3,ey)-5.*u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
+     & is3,ey)+u1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,ey))
+            u1(i1-2*is1,i2-2*is2,i3,hz)=(5.*u1(i1-is1,i2-is2,i3,hz)-
+     & 10.*u1(i1-is1+is1,i2-is2+is2,i3+is3,hz)+10.*u1(i1-is1+2*is1,i2-
+     & is2+2*is2,i3+2*is3,hz)-5.*u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
+     & is3,hz)+u1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,hz))
+            u2(j1-2*js1,j2-2*js2,j3,ex)=(5.*u2(j1-js1,j2-js2,j3,ex)-
+     & 10.*u2(j1-js1+js1,j2-js2+js2,j3+js3,ex)+10.*u2(j1-js1+2*js1,j2-
+     & js2+2*js2,j3+2*js3,ex)-5.*u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*
+     & js3,ex)+u2(j1-js1+4*js1,j2-js2+4*js2,j3+4*js3,ex))
+            u2(j1-2*js1,j2-2*js2,j3,ey)=(5.*u2(j1-js1,j2-js2,j3,ey)-
+     & 10.*u2(j1-js1+js1,j2-js2+js2,j3+js3,ey)+10.*u2(j1-js1+2*js1,j2-
+     & js2+2*js2,j3+2*js3,ey)-5.*u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*
+     & js3,ey)+u2(j1-js1+4*js1,j2-js2+4*js2,j3+4*js3,ey))
+            u2(j1-2*js1,j2-2*js2,j3,hz)=(5.*u2(j1-js1,j2-js2,j3,hz)-
+     & 10.*u2(j1-js1+js1,j2-js2+js2,j3+js3,hz)+10.*u2(j1-js1+2*js1,j2-
+     & js2+2*js2,j3+2*js3,hz)-5.*u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*
+     & js3,hz)+u2(j1-js1+4*js1,j2-js2+4*js2,j3+4*js3,hz))
+            if( dispersive.ne.noDispersion )then
+             do jv=0,numberOfPolarizationVectors1-1
+               do n=0,nd-1
+                 pc = n + jv*nd
+                 p1(i1  -is1,i2  -is2,i3,pc)=(5.*p1(i1,i2,i3,pc)-10.*
+     & p1(i1+is1,i2+is2,i3+is3,pc)+10.*p1(i1+2*is1,i2+2*is2,i3+2*is3,
+     & pc)-5.*p1(i1+3*is1,i2+3*is2,i3+3*is3,pc)+p1(i1+4*is1,i2+4*is2,
+     & i3+4*is3,pc))
+                 p1(i1-2*is1,i2-2*is2,i3,pc)=(5.*p1(i1-is1,i2-is2,i3,
+     & pc)-10.*p1(i1-is1+is1,i2-is2+is2,i3+is3,pc)+10.*p1(i1-is1+2*
+     & is1,i2-is2+2*is2,i3+2*is3,pc)-5.*p1(i1-is1+3*is1,i2-is2+3*is2,
+     & i3+3*is3,pc)+p1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,pc))
+                 if( .false. .and. twilightZone.eq.1 )then
+                   ! *** TEST ****
+                   ! call ogderiv(ep, 0,0,0,0, xy1(i1      ,i2      ,i3,0),xy1(i1      ,i2      ,i3,1),0.,t,pc+pxc, p1(i1      ,i2      ,i3,pc)   )
+                   call ogderiv(ep, 0,0,0,0, xy1(i1-  is1,i2-  is2,i3,
+     & 0),xy1(i1-  is1,i2-  is2,i3,1),0.,t,pc+pxc, p1(i1-  is1,i2-  
+     & is2,i3,pc)   )
+                   call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,
+     & 0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t,pc+pxc, p1(i1-2*is1,i2-2*
+     & is2,i3,pc)   )
+                 end if
+               end do
+             end do
+             do jv=0,numberOfPolarizationVectors2-1
+               do n=0,nd-1
+                 pc = n + jv*nd
+                 p2(j1  -js1,j2  -js2,j3,pc)=(5.*p2(j1,j2,j3,pc)-10.*
+     & p2(j1+js1,j2+js2,j3+js3,pc)+10.*p2(j1+2*js1,j2+2*js2,j3+2*js3,
+     & pc)-5.*p2(j1+3*js1,j2+3*js2,j3+3*js3,pc)+p2(j1+4*js1,j2+4*js2,
+     & j3+4*js3,pc))
+                 p2(j1-2*js1,j2-2*js2,j3,pc)=(5.*p2(j1-js1,j2-js2,j3,
+     & pc)-10.*p2(j1-js1+js1,j2-js2+js2,j3+js3,pc)+10.*p2(j1-js1+2*
+     & js1,j2-js2+2*js2,j3+2*js3,pc)-5.*p2(j1-js1+3*js1,j2-js2+3*js2,
+     & j3+3*js3,pc)+p2(j1-js1+4*js1,j2-js2+4*js2,j3+4*js3,pc))
+                 if( .false. .and. twilightZone.eq.1 )then
+                   ! *** TEST ****
+                   ! call ogderiv(ep, 0,0,0,0, xy2(j1      ,j2      ,j3,0),xy2(j1      ,j2      ,j3,1),0.,t,pc+pxc, p2(j1      ,j2      ,j3,pc)   )
+                   call ogderiv(ep, 0,0,0,0, xy2(j1-  js1,j2-  js2,j3,
+     & 0),xy2(j1-  js1,j2-  js2,j3,1),0.,t,pc+pxc, p2(j1-  js1,j2-  
+     & js2,j3,pc)   )
+                   call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,
+     & 0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t,pc+pxc, p2(j1-2*js1,j2-2*
+     & js2,j3,pc)   )
+                 end if
+               end do
+             end do
+            end if
+            if (nonlinearModel1 .ne. noNonlinearModel) then
+              do na = 0,numberOfAtomicLevels1-1
+                q1(i1  -is1,i2  -is2,i3,na)=(5.*q1(i1,i2,i3,na)-10.*q1(
+     & i1+is1,i2+is2,i3+is3,na)+10.*q1(i1+2*is1,i2+2*is2,i3+2*is3,na)-
+     & 5.*q1(i1+3*is1,i2+3*is2,i3+3*is3,na)+q1(i1+4*is1,i2+4*is2,i3+4*
+     & is3,na))
+                q1(i1-2*is1,i2-2*is2,i3,na)=(5.*q1(i1-is1,i2-is2,i3,na)
+     & -10.*q1(i1-is1+is1,i2-is2+is2,i3+is3,na)+10.*q1(i1-is1+2*is1,
+     & i2-is2+2*is2,i3+2*is3,na)-5.*q1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
+     & is3,na)+q1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,na))
+              enddo
+            end if
+            if (nonlinearModel2 .ne. noNonlinearModel) then
+              do na = 0,numberOfAtomicLevels2-1
+                q2(j1  -js1,j2  -js2,j3,na)=(5.*q2(j1,j2,j3,na)-10.*q2(
+     & j1+js1,j2+js2,j3+js3,na)+10.*q2(j1+2*js1,j2+2*js2,j3+2*js3,na)-
+     & 5.*q2(j1+3*js1,j2+3*js2,j3+3*js3,na)+q2(j1+4*js1,j2+4*js2,j3+4*
+     & js3,na))
+                q2(j1-2*js1,j2-2*js2,j3,na)=(5.*q2(j1-js1,j2-js2,j3,na)
+     & -10.*q2(j1-js1+js1,j2-js2+js2,j3+js3,na)+10.*q2(j1-js1+2*js1,
+     & j2-js2+2*js2,j3+2*js3,na)-5.*q2(j1-js1+3*js1,j2-js2+3*js2,j3+3*
+     & js3,na)+q2(j1-js1+4*js1,j2-js2+4*js2,j3+4*js3,na))
+              enddo
+            endif
+              j1=j1+1
+             end do
+             j2=j2+1
+            end do
+          else
+           ! ---- extrapolate to order 4 -----
+            i3=n3a
+            j3=m3a
+            j2=mm2a
+            do i2=nn2a,nn2b
+             j1=mm1a
+             do i1=nn1a,nn1b
+            u1(i1-is1,i2-is2,i3,ex)=(4.*u1(i1,i2,i3,ex)-6.*u1(i1+is1,
+     & i2+is2,i3+is3,ex)+4.*u1(i1+2*is1,i2+2*is2,i3+2*is3,ex)-u1(i1+3*
+     & is1,i2+3*is2,i3+3*is3,ex))
+            u1(i1-is1,i2-is2,i3,ey)=(4.*u1(i1,i2,i3,ey)-6.*u1(i1+is1,
+     & i2+is2,i3+is3,ey)+4.*u1(i1+2*is1,i2+2*is2,i3+2*is3,ey)-u1(i1+3*
+     & is1,i2+3*is2,i3+3*is3,ey))
+            u1(i1-is1,i2-is2,i3,hz)=(4.*u1(i1,i2,i3,hz)-6.*u1(i1+is1,
+     & i2+is2,i3+is3,hz)+4.*u1(i1+2*is1,i2+2*is2,i3+2*is3,hz)-u1(i1+3*
+     & is1,i2+3*is2,i3+3*is3,hz))
+            u2(j1-js1,j2-js2,j3,ex)=(4.*u2(j1,j2,j3,ex)-6.*u2(j1+js1,
+     & j2+js2,j3+js3,ex)+4.*u2(j1+2*js1,j2+2*js2,j3+2*js3,ex)-u2(j1+3*
+     & js1,j2+3*js2,j3+3*js3,ex))
+            u2(j1-js1,j2-js2,j3,ey)=(4.*u2(j1,j2,j3,ey)-6.*u2(j1+js1,
+     & j2+js2,j3+js3,ey)+4.*u2(j1+2*js1,j2+2*js2,j3+2*js3,ey)-u2(j1+3*
+     & js1,j2+3*js2,j3+3*js3,ey))
+            u2(j1-js1,j2-js2,j3,hz)=(4.*u2(j1,j2,j3,hz)-6.*u2(j1+js1,
+     & j2+js2,j3+js3,hz)+4.*u2(j1+2*js1,j2+2*js2,j3+2*js3,hz)-u2(j1+3*
+     & js1,j2+3*js2,j3+3*js3,hz))
+            ! --- also extrap 2nd line for now
+            u1(i1-2*is1,i2-2*is2,i3,ex)=(4.*u1(i1-is1,i2-is2,i3,ex)-6.*
+     & u1(i1-is1+is1,i2-is2+is2,i3+is3,ex)+4.*u1(i1-is1+2*is1,i2-is2+
+     & 2*is2,i3+2*is3,ex)-u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*is3,ex))
+            u1(i1-2*is1,i2-2*is2,i3,ey)=(4.*u1(i1-is1,i2-is2,i3,ey)-6.*
+     & u1(i1-is1+is1,i2-is2+is2,i3+is3,ey)+4.*u1(i1-is1+2*is1,i2-is2+
+     & 2*is2,i3+2*is3,ey)-u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*is3,ey))
+            u1(i1-2*is1,i2-2*is2,i3,hz)=(4.*u1(i1-is1,i2-is2,i3,hz)-6.*
+     & u1(i1-is1+is1,i2-is2+is2,i3+is3,hz)+4.*u1(i1-is1+2*is1,i2-is2+
+     & 2*is2,i3+2*is3,hz)-u1(i1-is1+3*is1,i2-is2+3*is2,i3+3*is3,hz))
+            u2(j1-2*js1,j2-2*js2,j3,ex)=(4.*u2(j1-js1,j2-js2,j3,ex)-6.*
+     & u2(j1-js1+js1,j2-js2+js2,j3+js3,ex)+4.*u2(j1-js1+2*js1,j2-js2+
+     & 2*js2,j3+2*js3,ex)-u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*js3,ex))
+            u2(j1-2*js1,j2-2*js2,j3,ey)=(4.*u2(j1-js1,j2-js2,j3,ey)-6.*
+     & u2(j1-js1+js1,j2-js2+js2,j3+js3,ey)+4.*u2(j1-js1+2*js1,j2-js2+
+     & 2*js2,j3+2*js3,ey)-u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*js3,ey))
+            u2(j1-2*js1,j2-2*js2,j3,hz)=(4.*u2(j1-js1,j2-js2,j3,hz)-6.*
+     & u2(j1-js1+js1,j2-js2+js2,j3+js3,hz)+4.*u2(j1-js1+2*js1,j2-js2+
+     & 2*js2,j3+2*js3,hz)-u2(j1-js1+3*js1,j2-js2+3*js2,j3+3*js3,hz))
+            if( dispersive.ne.noDispersion )then
+             do jv=0,numberOfPolarizationVectors1-1
+               do n=0,nd-1
+                 pc = n + jv*nd
+                 p1(i1  -is1,i2  -is2,i3,pc)=(4.*p1(i1,i2,i3,pc)-6.*p1(
+     & i1+is1,i2+is2,i3+is3,pc)+4.*p1(i1+2*is1,i2+2*is2,i3+2*is3,pc)-
+     & p1(i1+3*is1,i2+3*is2,i3+3*is3,pc))
+                 p1(i1-2*is1,i2-2*is2,i3,pc)=(4.*p1(i1-is1,i2-is2,i3,
+     & pc)-6.*p1(i1-is1+is1,i2-is2+is2,i3+is3,pc)+4.*p1(i1-is1+2*is1,
+     & i2-is2+2*is2,i3+2*is3,pc)-p1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
+     & is3,pc))
+               end do
+             end do
+             do jv=0,numberOfPolarizationVectors2-1
+               do n=0,nd-1
+                 pc = n + jv*nd
+                 p2(j1  -js1,j2  -js2,j3,pc)=(4.*p2(j1,j2,j3,pc)-6.*p2(
+     & j1+js1,j2+js2,j3+js3,pc)+4.*p2(j1+2*js1,j2+2*js2,j3+2*js3,pc)-
+     & p2(j1+3*js1,j2+3*js2,j3+3*js3,pc))
+                 p2(j1-2*js1,j2-2*js2,j3,pc)=(4.*p2(j1-js1,j2-js2,j3,
+     & pc)-6.*p2(j1-js1+js1,j2-js2+js2,j3+js3,pc)+4.*p2(j1-js1+2*js1,
+     & j2-js2+2*js2,j3+2*js3,pc)-p2(j1-js1+3*js1,j2-js2+3*js2,j3+3*
+     & js3,pc))
+               end do
+             end do
+            end if
+            if (nonlinearModel1 .ne. noNonlinearModel) then
+              do na = 0,numberOfAtomicLevels1-1
+                q1(i1  -is1,i2  -is2,i3,na)=(4.*q1(i1,i2,i3,na)-6.*q1(
+     & i1+is1,i2+is2,i3+is3,na)+4.*q1(i1+2*is1,i2+2*is2,i3+2*is3,na)-
+     & q1(i1+3*is1,i2+3*is2,i3+3*is3,na))
+                q1(i1-2*is1,i2-2*is2,i3,na)=(4.*q1(i1-is1,i2-is2,i3,na)
+     & -6.*q1(i1-is1+is1,i2-is2+is2,i3+is3,na)+4.*q1(i1-is1+2*is1,i2-
+     & is2+2*is2,i3+2*is3,na)-q1(i1-is1+3*is1,i2-is2+3*is2,i3+3*is3,
+     & na))
+              enddo
+            end if
+            if (nonlinearModel2 .ne. noNonlinearModel) then
+              do na = 0,numberOfAtomicLevels2-1
+                q2(j1  -js1,j2  -js2,j3,na)=(4.*q2(j1,j2,j3,na)-6.*q2(
+     & j1+js1,j2+js2,j3+js3,na)+4.*q2(j1+2*js1,j2+2*js2,j3+2*js3,na)-
+     & q2(j1+3*js1,j2+3*js2,j3+3*js3,na))
+                q2(j1-2*js1,j2-2*js2,j3,na)=(4.*q2(j1-js1,j2-js2,j3,na)
+     & -6.*q2(j1-js1+js1,j2-js2+js2,j3+js3,na)+4.*q2(j1-js1+2*js1,j2-
+     & js2+2*js2,j3+2*js3,na)-q2(j1-js1+3*js1,j2-js2+3*js2,j3+3*js3,
+     & na))
+              enddo
+            endif
+              j1=j1+1
+             end do
+             j2=j2+1
+            end do
+          end if
 
-           ! u1(i1-is1,i2-is2,i3,ex)=extrap4(u1,i1,i2,i3,ex,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,ey)=extrap4(u1,i1,i2,i3,ey,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,hz)=extrap4(u1,i1,i2,i3,hz,is1,is2,is3)
+          if( t.lt. 3.*dt .and. debug.gt.0 )then
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 
+     & 4TH ORDER RECTANGUAR INTERFACE ****")')
+          end if
+          orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
 
-           ! u2(j1-js1,j2-js2,j3,ex)=extrap4(u2,j1,j2,j3,ex,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,ey)=extrap4(u2,j1,j2,j3,ey,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,hz)=extrap4(u2,j1,j2,j3,hz,js1,js2,js3)
+          ! This next perl command will cause macro derivatives to be computed to order=2
+          ! in parallel we add extra points in the tangential direction on parallel boundaries
+          ! (otherwise we would use extrapolated values which is probably ok) 
+            ! grid1: nn1a,nn1b, etc includes extra ghost in tangential directions
+            n1a=ne1a
+            n1b=ne1b
+            n2a=ne2a
+            n2b=ne2b
+            n3a=ne3a
+            n3b=ne3b
+            ! grid2
+            m1a=me1a
+            m1b=me1b
+            m2a=me2a
+            m2b=me2b
+            m3a=me3a
+            m3b=me3b
 
-           ! --- also extrap 2nd line for now
-           ! u1(i1-2*is1,i2-2*is2,i3,ex)=extrap4(u1,i1-is1,i2-is2,i3,ex,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,ey)=extrap4(u1,i1-is1,i2-is2,i3,ey,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,hz)=extrap4(u1,i1-is1,i2-is2,i3,hz,is1,is2,is3)
+          ! Macro to assign ghost values:
+          if( dispersive.eq.0 )then
+             ! ****************************************************
+             ! ***********  2D, ORDER=2, RECTANGULAR **************
+             ! ****************************************************
+             i3=n3a
+             j3=m3a
+             j2=m2a
+             do i2=n2a,n2b
+              j1=m1a
+              do i1=n1a,n1b
+               if( mask1(i1,i2,i3).gt.0 .and. mask2(j1,j2,j3).gt.0 )
+     & then
+             ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+               ! NOTE: the jacobian derivatives can be computed once for all components
+                 uu1=u1(i1,i2,i3,ex) ! in the rectangular case just eval the solution
+                  u1x = (-u1(i1-1,i2,i3,ex)+u1(i1+1,i2,i3,ex))/(2.*dx1(
+     & 0))
+                  u1y = (-u1(i1,i2-1,i3,ex)+u1(i1,i2+1,i3,ex))/(2.*dx1(
+     & 1))
+                  u1xx = (u1(i1-1,i2,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1+1,
+     & i2,i3,ex))/(dx1(0)**2)
+                  u1yy = (u1(i1,i2-1,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1,
+     & i2+1,i3,ex))/(dx1(1)**2)
+                u1Lap = u1xx+ u1yy
+                 vv1=u1(i1,i2,i3,ey) ! in the rectangular case just eval the solution
+                  v1x = (-u1(i1-1,i2,i3,ey)+u1(i1+1,i2,i3,ey))/(2.*dx1(
+     & 0))
+                  v1y = (-u1(i1,i2-1,i3,ey)+u1(i1,i2+1,i3,ey))/(2.*dx1(
+     & 1))
+                  v1xx = (u1(i1-1,i2,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1+1,
+     & i2,i3,ey))/(dx1(0)**2)
+                  v1yy = (u1(i1,i2-1,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1,
+     & i2+1,i3,ey))/(dx1(1)**2)
+                v1Lap = v1xx+ v1yy
+               ! NOTE: the jacobian derivatives can be computed once for all components
+                 uu2=u2(j1,j2,j3,ex) ! in the rectangular case just eval the solution
+                  u2x = (-u2(j1-1,j2,j3,ex)+u2(j1+1,j2,j3,ex))/(2.*dx2(
+     & 0))
+                  u2y = (-u2(j1,j2-1,j3,ex)+u2(j1,j2+1,j3,ex))/(2.*dx2(
+     & 1))
+                  u2xx = (u2(j1-1,j2,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1+1,
+     & j2,j3,ex))/(dx2(0)**2)
+                  u2yy = (u2(j1,j2-1,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1,
+     & j2+1,j3,ex))/(dx2(1)**2)
+                u2Lap = u2xx+ u2yy
+                 vv2=u2(j1,j2,j3,ey) ! in the rectangular case just eval the solution
+                  v2x = (-u2(j1-1,j2,j3,ey)+u2(j1+1,j2,j3,ey))/(2.*dx2(
+     & 0))
+                  v2y = (-u2(j1,j2-1,j3,ey)+u2(j1,j2+1,j3,ey))/(2.*dx2(
+     & 1))
+                  v2xx = (u2(j1-1,j2,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1+1,
+     & j2,j3,ey))/(dx2(0)**2)
+                  v2yy = (u2(j1,j2-1,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1,
+     & j2+1,j3,ey))/(dx2(1)**2)
+                v2Lap = v2xx+ v2yy
+              f(0)=(u1x+v1y) - (u2x+v2y)
+              if( setDivergenceAtInterfaces.eq.0 )then
+                f(1)=(u1xx+u1yy) - (u2xx+u2yy)
+              else
+                ! set div(E)=0 at both intefaces 
+                f(1)=(u1x+v1y)
+              end if
+              f(2)=(v1x-u1y)/mu1 - (v2x-u2y)/mu2
+              f(3)=(v1xx+v1yy)/epsmu1 - (v2xx+v2yy)/epsmu2
+              ! write(debugFile,'(" --> i1,i2=",2i4," f(start)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+               ! here is the matrix of coefficients for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
+               ! Solve:
+               !     
+               !       A [ U ] = A [ U(old) ] - [ f ]
+               if( axis1.eq.0 )then
+                 a4(0,0) = -is1/(2.*dx1(0))    ! coeff of u1(-1) from [u.x+v.y]
+                 a4(0,1) = 0.                  ! coeff of v1(-1) from [u.x+v.y]
+                 a4(2,0) = 0.
+                 a4(2,1) = -is1/(2.*dx1(0))    ! coeff of v1(-1) from [v.x - u.y]
+               else
+                 a4(0,0) = 0.
+                 a4(0,1) = -is2/(2.*dx1(1))    ! coeff of v1(-1) from [u.x+v.y]
+                 a4(2,0) =  is2/(2.*dx1(1))    ! coeff of u1(-1) from [v.x - u.y]
+                 a4(2,1) = 0.
+               end if
+               if( axis2.eq.0 )then
+                 a4(0,2) = js1/(2.*dx2(0))    ! coeff of u2(-1) from [u.x+v.y]
+                 a4(0,3) = 0.
+                 a4(2,2) = 0.
+                 a4(2,3) = js1/(2.*dx2(0))    ! coeff of v2(-1) from [v.x - u.y]
+               else
+                 a4(0,2) = 0.
+                 a4(0,3) = js2/(2.*dx2(1))    ! coeff of v2(-1) from [u.x+v.y]
+                 a4(2,2) =-js2/(2.*dx2(1))    ! coeff of u2(-1) from [v.x - u.y]
+                 a4(2,3) = 0.
+               end if
+               ! equation 1:
+               if( setDivergenceAtInterfaces.eq.0 )then
+                 a4(1,0) = 1./(dx1(axis1)**2)   ! coeff of u1(-1) from [u.xx + u.yy]
+                 a4(1,1) = 0.
+                 a4(1,2) =-1./(dx2(axis2)**2)   ! coeff of u2(-1) from [u.xx + u.yy]
+                 a4(1,3) = 0.
+               else
+                 ! u1x+v1y=0
+                 if( axis1.eq.0 )then
+                   a4(1,0) = -is1/(2.*dx1(0))    ! coeff of u1(-1) from [u.x+v.y]
+                   a4(1,1) = 0.                  ! coeff of v1(-1) from [u.x+v.y]
+                 else
+                   a4(1,0) = 0.
+                   a4(1,1) = -is2/(2.*dx1(1))    ! coeff of v1(-1) from [u.x+v.y]
+                 end if
+                 a4(1,2) = 0.
+                 a4(1,3) = 0.
+               end if
+               ! equation 3: 
+               a4(3,0) = 0.
+               a4(3,1) = 1./(dx1(axis1)**2)/eps1 ! coeff of v1(-1) from [(v.xx+v.yy)/eps]
+               a4(3,2) = 0.
+               a4(3,3) =-1./(dx2(axis2)**2)/eps2 ! coeff of v2(-1) from [(v.xx+v.yy)/eps]
+               q(0) = u1(i1-is1,i2-is2,i3,ex)
+               q(1) = u1(i1-is1,i2-is2,i3,ey)
+               q(2) = u2(j1-js1,j2-js2,j3,ex)
+               q(3) = u2(j1-js1,j2-js2,j3,ey)
+               ! subtract off the contributions from the wrong values at the ghost points:
+               do n=0,3
+                 f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)
+     & *q(3)) - f(n)
+               end do
+               ! write(debugFile,'(" --> i1,i2=",2i4," f(subtract)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+               ! solve A Q = F
+               ! factor the matrix
+               numberOfEquations=4
+               call dgeco( a4(0,0), numberOfEquations, 
+     & numberOfEquations, ipvt(0),rcond,work(0))
+               ! solve
+               ! write(debugFile,'(" --> i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
+               job=0
+               call dgesl( a4(0,0), numberOfEquations, 
+     & numberOfEquations, ipvt(0), f(0), job)
+               ! write(debugFile,'(" --> i1,i2=",2i4," f(solve)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+               u1(i1-is1,i2-is2,i3,ex)=f(0)
+               u1(i1-is1,i2-is2,i3,ey)=f(1)
+               u2(j1-js1,j2-js2,j3,ex)=f(2)
+               u2(j1-js1,j2-js2,j3,ey)=f(3)
+               if( debug.gt.2 )then ! re-evaluate
+                 ! NOTE: the jacobian derivatives can be computed once for all components
+                   uu1=u1(i1,i2,i3,ex) ! in the rectangular case just eval the solution
+                    u1x = (-u1(i1-1,i2,i3,ex)+u1(i1+1,i2,i3,ex))/(2.*
+     & dx1(0))
+                    u1y = (-u1(i1,i2-1,i3,ex)+u1(i1,i2+1,i3,ex))/(2.*
+     & dx1(1))
+                    u1xx = (u1(i1-1,i2,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1+
+     & 1,i2,i3,ex))/(dx1(0)**2)
+                    u1yy = (u1(i1,i2-1,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1,
+     & i2+1,i3,ex))/(dx1(1)**2)
+                  u1Lap = u1xx+ u1yy
+                   vv1=u1(i1,i2,i3,ey) ! in the rectangular case just eval the solution
+                    v1x = (-u1(i1-1,i2,i3,ey)+u1(i1+1,i2,i3,ey))/(2.*
+     & dx1(0))
+                    v1y = (-u1(i1,i2-1,i3,ey)+u1(i1,i2+1,i3,ey))/(2.*
+     & dx1(1))
+                    v1xx = (u1(i1-1,i2,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1+
+     & 1,i2,i3,ey))/(dx1(0)**2)
+                    v1yy = (u1(i1,i2-1,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1,
+     & i2+1,i3,ey))/(dx1(1)**2)
+                  v1Lap = v1xx+ v1yy
+                 ! NOTE: the jacobian derivatives can be computed once for all components
+                   uu2=u2(j1,j2,j3,ex) ! in the rectangular case just eval the solution
+                    u2x = (-u2(j1-1,j2,j3,ex)+u2(j1+1,j2,j3,ex))/(2.*
+     & dx2(0))
+                    u2y = (-u2(j1,j2-1,j3,ex)+u2(j1,j2+1,j3,ex))/(2.*
+     & dx2(1))
+                    u2xx = (u2(j1-1,j2,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1+
+     & 1,j2,j3,ex))/(dx2(0)**2)
+                    u2yy = (u2(j1,j2-1,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1,
+     & j2+1,j3,ex))/(dx2(1)**2)
+                  u2Lap = u2xx+ u2yy
+                   vv2=u2(j1,j2,j3,ey) ! in the rectangular case just eval the solution
+                    v2x = (-u2(j1-1,j2,j3,ey)+u2(j1+1,j2,j3,ey))/(2.*
+     & dx2(0))
+                    v2y = (-u2(j1,j2-1,j3,ey)+u2(j1,j2+1,j3,ey))/(2.*
+     & dx2(1))
+                    v2xx = (u2(j1-1,j2,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1+
+     & 1,j2,j3,ey))/(dx2(0)**2)
+                    v2yy = (u2(j1,j2-1,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1,
+     & j2+1,j3,ey))/(dx2(1)**2)
+                  v2Lap = v2xx+ v2yy
+                f(0)=(u1x+v1y) - (u2x+v2y)
+                if( setDivergenceAtInterfaces.eq.0 )then
+                  f(1)=(u1xx+u1yy) - (u2xx+u2yy)
+                else
+                  f(1)=(u1x+v1y)
+                end if
+                f(2)=(v1x-u1y)/mu1 - (v2x-u2y)/mu2
+                f(3)=(v1xx+v1yy)/epsmu1 - (v2xx+v2yy)/epsmu2
+                write(debugFile,'("i3d: --> i1,i2=",2i4," f(re-eval)=",
+     & 4e10.2)') i1,i2,f(0),f(1),f(2),f(3)
+               end if
+               ! -------------------------------------------------------
+               ! solve for Hz         *fixed* *wdh* June 24, 2016
+               !  [ w.n/eps] = 0
+               !  [ Lap(w)/eps] = 0
+                  ww1=u1(i1,i2,i3,hz) ! in the rectangular case just eval the solution
+                   w1x = (-u1(i1-1,i2,i3,hz)+u1(i1+1,i2,i3,hz))/(2.*
+     & dx1(0))
+                   w1y = (-u1(i1,i2-1,i3,hz)+u1(i1,i2+1,i3,hz))/(2.*
+     & dx1(1))
+                   w1xx = (u1(i1-1,i2,i3,hz)-2.*u1(i1,i2,i3,hz)+u1(i1+
+     & 1,i2,i3,hz))/(dx1(0)**2)
+                   w1yy = (u1(i1,i2-1,i3,hz)-2.*u1(i1,i2,i3,hz)+u1(i1,
+     & i2+1,i3,hz))/(dx1(1)**2)
+                 w1Lap = w1xx+ w1yy
+                  ww2=u2(j1,j2,j3,hz) ! in the rectangular case just eval the solution
+                   w2x = (-u2(j1-1,j2,j3,hz)+u2(j1+1,j2,j3,hz))/(2.*
+     & dx2(0))
+                   w2y = (-u2(j1,j2-1,j3,hz)+u2(j1,j2+1,j3,hz))/(2.*
+     & dx2(1))
+                   w2xx = (u2(j1-1,j2,j3,hz)-2.*u2(j1,j2,j3,hz)+u2(j1+
+     & 1,j2,j3,hz))/(dx2(0)**2)
+                   w2yy = (u2(j1,j2-1,j3,hz)-2.*u2(j1,j2,j3,hz)+u2(j1,
+     & j2+1,j3,hz))/(dx2(1)**2)
+                 w2Lap = w2xx+ w2yy
+                f(0) = (an1*w1x+an2*w1y)/eps1 -(an1*w2x+an2*w2y)/eps2
+                f(1) = w1Lap/eps1 - w2Lap/eps2
+                if( twilightZone.eq.1 )then
+                  call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,
+     & i3,1),0.,t, hz, wex  )
+                  call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,
+     & i3,1),0.,t, hz, wey  )
+                  call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,
+     & i3,1),0.,t, hz, wexx )
+                  call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,
+     & i3,1),0.,t, hz, weyy )
+                  weLap = wexx + weyy
+                  f(0) = f(0) - (an1*wex+an2*wey)*(1./eps1 - 1./eps2)
+                  f(1) = f(1) - ( weLap )*(1./eps1 - 1./eps2)
+                end if
+               ! a2(0,0)=-is*(an1*rsxy1(i1,i2,i3,axis1,0)+an2*rsxy1(i1,i2,i3,axis1,1))/(2.*dr1(axis1)*eps1)
+               ! a2(0,1)= js*(an1*rsxy2(j1,j2,j3,axis2,0)+an2*rsxy2(j1,j2,j3,axis2,1))/(2.*dr2(axis2)*eps2)
+               a2(0,0)=-is*(1./(2.*dx1(axis1)*eps1)) ! coeff of w1(-1) in [w.n/eps]=0
+               a2(0,1)= js*(1./(2.*dx2(axis2)*eps2)) ! coeff of w2(-1) in [w.n/eps]=0
+               a2(1,0)= 1./(dx1(axis1)**2*eps1)    ! coeff of w1(-1) in [Lap(w)/eps ]=0
+               ! *wdh* Sept 15, 2017 a2(1,1)=-1./(dx2(axis2)**2*eps2)    ! coeff of w2(-1) in [Lap(w)/eps ]=0 
+               a2(1,1)= 1./(dx2(axis2)**2*eps2)    ! coeff of w2(-1) in [Lap(w)/eps ]=0
+               q(0) = u1(i1-is1,i2-is2,i3,hz)
+               q(1) = u2(j1-js1,j2-js2,j3,hz)
+               ! subtract off the contributions from the wrong values at the ghost points:
+               do n=0,1
+                 f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
+               end do
+               call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
+               job=0
+               call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
+               u1(i1-is1,i2-is2,i3,hz)=f(0)
+               u2(j1-js1,j2-js2,j3,hz)=f(1)
+               ! do this for now
+               !u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
+               !u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
+                end if
+                j1=j1+1
+               end do
+               j2=j2+1
+              end do
+          else if( useNonlinearModel.eq.0 )then
+            ! dispersive case
+            ! *TEMP* assignDispersiveInterfaceGhost22r()
+          else
+            ! nonlinear dispersive case
+            ! *TEMP* assignNonlinearInterfaceGhost22r()
+          end if
+            ! grid1: ns1a,ns1b, ...  are saved values of n1a,n1b,...
+            n1a=ns1a
+            n1b=ns1b
+            n2a=ns2a
+            n2b=ns2b
+            n3a=ns3a
+            n3b=ns3b
+            ! grid2
+            m1a=ms1a
+            m1b=ms1b
+            m2a=ms2a
+            m2b=ms2b
+            m3a=ms3a
+            m3b=ms3b
 
-           ! u2(j1-2*js1,j2-2*js2,j3,ex)=extrap4(u2,j1-js1,j2-js2,j3,ex,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,ey)=extrap4(u2,j1-js1,j2-js2,j3,ey,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,hz)=extrap4(u2,j1-js1,j2-js2,j3,hz,js1,js2,js3)
-            j1=j1+1
-           end do
-           j2=j2+1
-          end do
+          orderOfAccuracy=4 ! reset
+
+          ! This next perl command will reset the macro derivatives to be computed to order=4
+
 
          ! Macro to assign ghost values:
           ! ****************************************************
           ! ***********  2D, ORDER=4, RECTANGULAR **************
           ! ****************************************************
+          if( t.le.5*dt .or. debug.gt.3 )then
+            if( it.le.2 )then
+              write(*,'("macro: assignInterfaceGhost24r : it=",i6," t,
+     & dt=",2e10.2)') it,t,dt
+            end if
+          end if
           ! normal and tangent (for TZ forcing)
           an1=an1Cartesian
           an2=an2Cartesian
@@ -11435,31 +11951,43 @@
             !     & i1,i2-1,i3,kd)) )*dx122(1)
             !     u1xyy22r(i1,i2,i3,kd)=( u1yy22r(i1+1,i2,i3,kd)-u1yy22r(i1-1,i2,
             !     & i3,kd))/(2.*dx1(0))
-           a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*
-     & dx122(1)/(2.*dx1(0)))
-           a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*
-     & dx122(0)/(2.*dx1(1)))
+            ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+           a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) )
+           a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1) )
            a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )
            a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1))
-           a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*
-     & dx222(1)/(2.*dx2(0)))
-           a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*
-     & dx222(0)/(2.*dx2(1)))
-           a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2))
-           a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2))
+           a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) )
+           a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2) )
+           a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2) )
+           a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2) )
+         !-  a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))
+         !-  a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))
+         !-  a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )  
+         !-  a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1))
+         !-
+         !-  a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))
+         !-  a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))
+         !-  a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2))   
+         !-  a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2))
            ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
-           a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*
-     & dx122(0)/(2.*dx1(1)))/eps1
-           a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*
-     & dx122(1)/(2.*dx1(0)))/eps1
-           a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1))/eps1
-           a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1))/eps1
-           a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*
-     & dx222(0)/(2.*dx2(1)))/eps2
-           a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*
-     & dx222(1)/(2.*dx2(0)))/eps2
-           a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2))/eps2
-           a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2))/eps2
+          ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+           a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1) )/eps1
+           a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) )/eps1
+           a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1) )/eps1
+           a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1) )/eps1
+           a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2) )/eps2
+           a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) )/eps2
+           a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2) )/eps2
+           a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2) )/eps2
+         !-  a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))/eps1
+         !-  a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))/eps1
+         !-  a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1))/eps1
+         !-  a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1))/eps1   
+         !-
+         !-  a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))/eps2
+         !-  a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))/eps2
+         !-  a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2))/eps2
+         !-  a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2))/eps2   
             ! 6  [ Delta^2 u/eps ] = 0
             !     u1LapSq22r(i1,i2,i3,kd)= ( 6.*u1(i1,i2,i3,kd)- 4.*(u1(i1+1,i2,i3,
             !    & kd)+u1(i1-1,i2,i3,kd))+(u1(i1+2,i2,i3,kd)+u1(i1-2,i2,i3,kd)) )
@@ -11469,27 +11997,43 @@
             !    & +u1(i1,i2+1,i3,kd)+u1(i1,i2-1,i3,kd))+2.*(u1(i1+1,i2+1,i3,kd)+
             !    & u1(i1-1,i2+1,i3,kd)+u1(i1+1,i2-1,i3,kd)+u1(i1-1,i2-1,i3,kd)) )
             !    & /(dx1(0)**2*dx1(1)**2)
-            a8(6,0) = -(4./(dx1(axis1)**4) +4./(dx1(0)**2*dx1(1)**2) )
-     & /eps1
+          ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+            a8(6,0) = -( 4./(dx1(axis1)**4) )/eps1
             a8(6,1) = 0.
-            a8(6,4) =   1./(dx1(axis1)**4)/eps1
+            a8(6,4) =  ( 1./(dx1(axis1)**4) )/eps1
             a8(6,5) = 0.
-            a8(6,2) = (4./(dx2(axis2)**4) +4./(dx1(0)**2*dx1(1)**2) )
-     & /eps2
+            a8(6,2) =  ( 4./(dx2(axis2)**4) )/eps2
             a8(6,3) = 0.
-            a8(6,6) =  -1./(dx2(axis2)**4)/eps2
+            a8(6,6) =  (-1./(dx2(axis2)**4) )/eps2
             a8(6,7) = 0.
+         !-   a8(6,0) = -(4./(dx1(axis1)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps1
+         !-   a8(6,1) = 0.
+         !-   a8(6,4) =   1./(dx1(axis1)**4)/eps1
+         !-   a8(6,5) = 0.
+         !-
+         !-   a8(6,2) = (4./(dx2(axis2)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps2
+         !-   a8(6,3) = 0.
+         !-   a8(6,6) =  -1./(dx2(axis2)**4)/eps2
+         !-   a8(6,7) = 0.
             ! 7  [ Delta^2 v/eps^2 ] = 0 
+            ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
             a8(7,0) = 0.
-            a8(7,1) = -(4./(dx1(axis1)**4) +4./(dx2(0)**2*dx2(1)**2) )
-     & /eps1**2
+            a8(7,1) =  -(4./(dx1(axis1)**4) )/eps1**2
             a8(7,4) = 0.
-            a8(7,5) =   1./(dx1(axis1)**4)/eps1**2
+            a8(7,5) =   (1./(dx1(axis1)**4) )/eps1**2
             a8(7,2) = 0.
-            a8(7,3) =  (4./(dx2(axis2)**4) +4./(dx2(0)**2*dx2(1)**2) )
-     & /eps2**2
+            a8(7,3) =   (4./(dx2(axis2)**4) )/eps2**2
             a8(7,6) = 0.
-            a8(7,7) =  -1./(dx2(axis2)**4)/eps2**2
+            a8(7,7) =  (-1./(dx2(axis2)**4) )/eps2**2
+         !-   a8(7,0) = 0.
+         !-   a8(7,1) = -(4./(dx1(axis1)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps1**2
+         !-   a8(7,4) = 0.
+         !-   a8(7,5) =   1./(dx1(axis1)**4)/eps1**2
+         !-
+         !-   a8(7,2) = 0.
+         !-   a8(7,3) =  (4./(dx2(axis2)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps2**2
+         !-   a8(7,6) = 0.
+         !-   a8(7,7) =  -1./(dx2(axis2)**4)/eps2**2
             q(0) = u1(i1-is1,i2-is2,i3,ex)
             q(1) = u1(i1-is1,i2-is2,i3,ey)
             q(2) = u2(j1-js1,j2-js2,j3,ex)
@@ -11515,15 +12059,46 @@
             call dgesl( a8(0,0), numberOfEquations, numberOfEquations, 
      & ipvt(0), f(0), job)
             !write(debugFile,'(" --> 4th: i1,i2=",2i4," f(solve)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7)
-            if( .true. )then
-            u1(i1-is1,i2-is2,i3,ex)=f(0)
-            u1(i1-is1,i2-is2,i3,ey)=f(1)
-            u2(j1-js1,j2-js2,j3,ex)=f(2)
-            u2(j1-js1,j2-js2,j3,ey)=f(3)
-            u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
-            u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
-            u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
-            u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+            if( .true. .and. twilightZone.eq.1 )then
+              ! check errors
+              call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-
+     & is1,i2-is2,i3,1),0.,t, ex, evv(0) )
+              call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-
+     & is1,i2-is2,i3,1),0.,t, ey, evv(1) )
+              call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-
+     & js1,j2-js2,j3,1),0.,t, ex, evv(2) )
+              call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-
+     & js1,j2-js2,j3,1),0.,t, ey, evv(3) )
+              call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),
+     & xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ex, evv(4) )
+              call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),
+     & xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ey, evv(5) )
+              call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),
+     & xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ex, evv(6) )
+              call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),
+     & xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ey, evv(7) )
+              write(*,'("24r: i1,i2=",2i4," err= ",8e8.1)') i1,i2, (
+     & abs(evv(n)-f(n)),n=0,7)
+            end if
+            if( useJacobiUpdate.eq.0 )then
+              u1(i1-is1,i2-is2,i3,ex)=f(0)
+              u1(i1-is1,i2-is2,i3,ey)=f(1)
+              u2(j1-js1,j2-js2,j3,ex)=f(2)
+              u2(j1-js1,j2-js2,j3,ey)=f(3)
+              u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+              u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+              u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+              u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+            else
+              ! Jacobi-update
+              wk1(i1-is1,i2-is2,i3,ex)=f(0)
+              wk1(i1-is1,i2-is2,i3,ey)=f(1)
+              wk2(j1-js1,j2-js2,j3,ex)=f(2)
+              wk2(j1-js1,j2-js2,j3,ey)=f(3)
+              wk1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+              wk1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+              wk2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+              wk2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
             end if
            if( debug.gt.3 )then ! re-evaluate
              ! These derivatives are computed to 2nd-order accuracy
@@ -11867,19 +12442,19 @@
             job=0
             call dgesl( a4(0,0), numberOfEquations, numberOfEquations, 
      & ipvt(0), f(0), job)
-            if( .true. )then
-             u1(i1-is1,i2-is2,i3,hz)=f(0)
-             u2(j1-js1,j2-js2,j3,hz)=f(1)
-             u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
-             u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
+            if( useJacobiUpdate.eq.0 )then
+              u1(i1-  is1,i2-  is2,i3,hz)=f(0)
+              u2(j1-  js1,j2-  js2,j3,hz)=f(1)
+              u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+              u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
             else
-             ! do this for now
-             u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz)
-             u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
-             u1(i1-2*is1,i2-2*is2,i3,hz)=u2(j1+2*js1,j2+2*js2,j3,hz)
-             u2(j1-2*js1,j2-2*js2,j3,hz)=u1(i1+2*is1,i2+2*is2,i3,hz)
+              ! Jacobi update -- save answer in work space
+              wk1(i1-  is1,i2-  is2,i3,hz)=f(0)
+              wk2(j1-  js1,j2-  js2,j3,hz)=f(1)
+              wk1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+              wk2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
             end if
-            if( .false. .or. debug.gt.0 )then ! re-evaluate
+            if( .false. .and. debug.gt.0 )then ! re-evaluate
              call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-
      & is1,i2-is2,i3,1),0.,t, hz, we0  )
              call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(
@@ -12010,417 +12585,46 @@
              u1(i1-2*is1,i2-2*is2,i3,hz)=we1
              u2(j1-2*js1,j2-2*js2,j3,hz)=we3
             end if
-             end if
-             j1=j1+1
+              end if
+              j1=j1+1
+             end do
+             j2=j2+1
             end do
-            j2=j2+1
-           end do
+          ! =============== end loops =======================
+          if( useJacobiUpdate.ne.0 )then
+            ! Jacobi-update: now fill in values 
+             i3=n3a
+             j3=m3a
+             j2=m2a
+             do i2=n2a,n2b
+              j1=m1a
+              do i1=n1a,n1b
+               if( mask1(i1,i2,i3).gt.0 .and. mask2(j1,j2,j3).gt.0 )
+     & then
+              u1(i1-is1,i2-is2,i3,ex)=wk1(i1-is1,i2-is2,i3,ex)
+              u1(i1-is1,i2-is2,i3,ey)=wk1(i1-is1,i2-is2,i3,ey)
+              u2(j1-js1,j2-js2,j3,ex)=wk2(j1-js1,j2-js2,j3,ex)
+              u2(j1-js1,j2-js2,j3,ey)=wk2(j1-js1,j2-js2,j3,ey)
+              u1(i1-2*is1,i2-2*is2,i3,ex)=wk1(i1-2*is1,i2-2*is2,i3,ex)
+              u1(i1-2*is1,i2-2*is2,i3,ey)=wk1(i1-2*is1,i2-2*is2,i3,ey)
+              u2(j1-2*js1,j2-2*js2,j3,ex)=wk2(j1-2*js1,j2-2*js2,j3,ex)
+              u2(j1-2*js1,j2-2*js2,j3,ey)=wk2(j1-2*js1,j2-2*js2,j3,ey)
+              u1(i1-  is1,i2-  is2,i3,hz)=wk1(i1-  is1,i2-  is2,i3,hz)
+              u2(j1-  js1,j2-  js2,j3,hz)=wk2(j1-  js1,j2-  js2,j3,hz)
+              u1(i1-2*is1,i2-2*is2,i3,hz)=wk1(i1-2*is1,i2-2*is2,i3,hz)
+              u2(j1-2*js1,j2-2*js2,j3,hz)=wk2(j1-2*js1,j2-2*js2,j3,hz)
+               end if
+               j1=j1+1
+              end do
+              j2=j2+1
+             end do
+          end if
 
          ! fixup corner points 
-         if( .false. )then
-            ! **FINISH ME**
-            iv(2)=0
-            ksv(0)=0
-            ksv(1)=0
-            ksv(2)=0
-             do sidea=0,1 ! loop over adjacent sides
-               if( boundaryCondition1(sidea,axis1p1).gt.0 )then ! adjacent boundary is a physical BC or farfield BC
-                ! Set iv = corner point X
-                iv(axis1  )=gridIndexRange1(side1,axis1 )
-                iv(axis1p1)=gridIndexRange1(sidea,axis1p1)
-                ksv(axis1p1)=1-2*sidea  ! tangential direction to the interface
-                ii1=iv(0)
-                ii2=iv(1)
-                ii3=iv(2)
-                ks1=ksv(0)
-                ks2=ksv(1)
-                ks3=ksv(2)
-                if( debug.gt.1 )then
-                  write(debugFile,'("Interface:fixupEnds u1: side1,
-     & axis1=",2i3," axis1p1,sidea=",2i3)') side1,axis1,axis1p1,sidea
-                  write(debugFile,'("... iv=",3i3," ksv=",3i2," 
-     & ghost=",3i4)') ii1,ii2,ii3,ks1,ks2,ks3,ii1-ks1,ii2-ks2,ii3-ks3
-                end if
-                ! extrapolate value on extended boundary, point A or B, from points along the interface
-                ! extrapolateFields(ex,ey,hz,u1,ii1,ii2,ii3,ks1,ks2,ks3)
-                ! -------------------------------------------------------
-                ! -------------------- set div(E)=0 ---------------------
-                ! -------------------------------------------------------
-                 if( axis1.eq.0 )then
-                   ! set point B on extended material interface boundary
-                   if( orderOfAccuracy.eq.2 )then
-                     u1(ii1-ks1,ii2-ks2,ii3,ey)=u1(ii1+ks1,ii2+ks2,ii3,
-     & ey) + 2.*ksv(axis1p1)*dx1(axis1p1)*(u1(ii1+1,ii2,ii3,ex)-u1(
-     & ii1-1,ii2,ii3,ex))/(2.*dx1(0))
-                   else if( orderOfAccuracy.eq.4 )then
-                     ! Set first ghost value from div(E)=0
-                     ! from abc.bf line 1684: 
-                     u1(ii1,ii2-ks2,ii3,ey)=(-u1(ii1,ii2+2*ks2,ii3,ey)+
-     & 8.*u1(ii1,ii2+ks2,ii3,ey)+u1(ii1,ii2-2*ks2,ii3,ey))/8. + 1.5*
-     & ks2*dx1(axis1)*(8.*(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,ex))-
-     & (u1(ii1+2,ii2,ii3,ex)-u1(ii1-2,ii2,ii3,ex)))/(12.*dx1(0))
-                   end if
-                 else
-                   ! set point A on extended material interface boundary
-                   if( orderOfAccuracy.eq.2 )then
-                     u1(ii1-ks1,ii2-ks2,ii3,ex)=u1(ii1+ks1,ii2+ks2,ii3,
-     & ex) + 2.*ksv(axis1p1)*dx1(axis1p1)*(u1(ii1,ii2+1,ii3,ey)-u1(
-     & ii1,ii2-1,ii3,ey))/(2.*dx1(1))
-                   else if( orderOfAccuracy.eq.4 )then
-                     ! Set first ghost value from div(E)=0
-                     ! from abc.bf line 1684: 
-                     u1(ii1-ks1,ii2,ii3,ex)=(-u1(ii1+2*ks1,ii2,ii3,ex)+
-     & 8.*u1(ii1+ks1,ii2,ii3,ex)+u1(ii1-2*ks1,ii2,ii3,ex))/8. + 1.5*
-     & ks1*dx1(axis1)*(8.*(u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))-
-     & (u1(ii1,ii2+2,ii3,ey)-u1(ii1,ii2-2,ii3,ey)))/(12.*dx1(1))
-                   else
-                     stop 4432
-                   end if
-                 end if
-                ! extrapolate corner point C along the diagonal
-                ksv(axis1)=1-2*side1
-                  if( orderOfAccuracy.eq.2 )then
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(3.*u1(
-     & ii1,ii2,ii3,ex)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex))
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(3.*u1(
-     & ii1,ii2,ii3,ey)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey))
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(3.*u1(
-     & ii1,ii2,ii3,hz)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz))
-                  else
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(5.*u1(
-     & ii1,ii2,ii3,ex)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ex)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ex))
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(5.*u1(
-     & ii1,ii2,ii3,ey)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ey)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ey))
-                     u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(5.*u1(
-     & ii1,ii2,ii3,hz)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),hz)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),hz))
-                  end if
-                if( orderOfAccuracy.eq.4 )then
-                  ! extrapolate extra corner points E-F-G
-                    if( orderOfAccuracy.eq.2 )then
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(
-     & 3.*u1(ii1-ksv(0),ii2,ii3,ex)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),ex)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),ex))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(
-     & 3.*u1(ii1-ksv(0),ii2,ii3,ey)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),ey)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),ey))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(
-     & 3.*u1(ii1-ksv(0),ii2,ii3,hz)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),hz)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),hz))
-                    else
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(
-     & 5.*u1(ii1-ksv(0),ii2,ii3,ex)-10.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ex)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),ex)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),ex)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ex))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(
-     & 5.*u1(ii1-ksv(0),ii2,ii3,ey)-10.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ey)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),ey)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),ey)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ey))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(
-     & 5.*u1(ii1-ksv(0),ii2,ii3,hz)-10.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),hz)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),hz)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),hz)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                    if( orderOfAccuracy.eq.2 )then
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)=(
-     & 3.*u1(ii1,ii2-ksv(1),ii3,ex)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),ex)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),ex))
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)=(
-     & 3.*u1(ii1,ii2-ksv(1),ii3,ey)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),ey)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),ey))
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)=(
-     & 3.*u1(ii1,ii2-ksv(1),ii3,hz)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),hz)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),hz))
-                    else
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)=(
-     & 5.*u1(ii1,ii2-ksv(1),ii3,ex)-10.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ex)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),ex)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),ex)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)=(
-     & 5.*u1(ii1,ii2-ksv(1),ii3,ey)-10.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ey)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),ey)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),ey)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                       u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)=(
-     & 5.*u1(ii1,ii2-ksv(1),ii3,hz)-10.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),hz)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),hz)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),hz)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                    if( orderOfAccuracy.eq.2 )then
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ex)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ey)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,hz)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz))
-                    else
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ex)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ex)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ey)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ey)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                       u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,hz)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),hz)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                end if
-                if( debug.gt.1 )then
-                  if( orderOfAccuracy.eq.2 )then
-                    dive=(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,ex))/(
-     & 2.*dx1(0)) + (u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))/(2.*
-     & dx1(1))
-                  else
-                    dive=(8.*(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,ex)
-     & )-(u1(ii1+2,ii2,ii3,ex)-u1(ii1-2,ii2,ii3,ex)))/(12.*dx1(0)) + (
-     & 8.*(u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))-(u1(ii1,ii2+2,
-     & ii3,ey)-u1(ii1,ii2-2,ii3,ey)))/(12.*dx1(1))
-                  end if
-                  write(debugFile,'("... after: div(E)=",e10.2)') dive
-                end if
-                ksv(axis1p1)=0 ! reset
-                ksv(axis1)=0 ! reset
-               end if
-             end do ! end sidea
-            ! **FINISH ME**
-            iv(2)=0
-            ksv(0)=0
-            ksv(1)=0
-            ksv(2)=0
-             do sidea=0,1 ! loop over adjacent sides
-               if( boundaryCondition2(sidea,axis2p1).gt.0 )then ! adjacent boundary is a physical BC or farfield BC
-                ! Set iv = corner point X
-                iv(axis2  )=gridIndexRange2(side2,axis2 )
-                iv(axis2p1)=gridIndexRange2(sidea,axis2p1)
-                ksv(axis2p1)=1-2*sidea  ! tangential direction to the interface
-                ii1=iv(0)
-                ii2=iv(1)
-                ii3=iv(2)
-                ks1=ksv(0)
-                ks2=ksv(1)
-                ks3=ksv(2)
-                if( debug.gt.1 )then
-                  write(debugFile,'("Interface:fixupEnds u2: side2,
-     & axis2=",2i3," axis2p1,sidea=",2i3)') side2,axis2,axis2p1,sidea
-                  write(debugFile,'("... iv=",3i3," ksv=",3i2," 
-     & ghost=",3i4)') ii1,ii2,ii3,ks1,ks2,ks3,ii1-ks1,ii2-ks2,ii3-ks3
-                end if
-                ! extrapolate value on extended boundary, point A or B, from points along the interface
-                ! extrapolateFields(ex,ey,hz,u2,ii1,ii2,ii3,ks1,ks2,ks3)
-                ! -------------------------------------------------------
-                ! -------------------- set div(E)=0 ---------------------
-                ! -------------------------------------------------------
-                 if( axis2.eq.0 )then
-                   ! set point B on extended material interface boundary
-                   if( orderOfAccuracy.eq.2 )then
-                     u2(ii1-ks1,ii2-ks2,ii3,ey)=u2(ii1+ks1,ii2+ks2,ii3,
-     & ey) + 2.*ksv(axis2p1)*dx2(axis2p1)*(u2(ii1+1,ii2,ii3,ex)-u2(
-     & ii1-1,ii2,ii3,ex))/(2.*dx2(0))
-                   else if( orderOfAccuracy.eq.4 )then
-                     ! Set first ghost value from div(E)=0
-                     ! from abc.bf line 1684: 
-                     u2(ii1,ii2-ks2,ii3,ey)=(-u2(ii1,ii2+2*ks2,ii3,ey)+
-     & 8.*u2(ii1,ii2+ks2,ii3,ey)+u2(ii1,ii2-2*ks2,ii3,ey))/8. + 1.5*
-     & ks2*dx2(axis2)*(8.*(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,ex))-
-     & (u2(ii1+2,ii2,ii3,ex)-u2(ii1-2,ii2,ii3,ex)))/(12.*dx2(0))
-                   end if
-                 else
-                   ! set point A on extended material interface boundary
-                   if( orderOfAccuracy.eq.2 )then
-                     u2(ii1-ks1,ii2-ks2,ii3,ex)=u2(ii1+ks1,ii2+ks2,ii3,
-     & ex) + 2.*ksv(axis2p1)*dx2(axis2p1)*(u2(ii1,ii2+1,ii3,ey)-u2(
-     & ii1,ii2-1,ii3,ey))/(2.*dx2(1))
-                   else if( orderOfAccuracy.eq.4 )then
-                     ! Set first ghost value from div(E)=0
-                     ! from abc.bf line 1684: 
-                     u2(ii1-ks1,ii2,ii3,ex)=(-u2(ii1+2*ks1,ii2,ii3,ex)+
-     & 8.*u2(ii1+ks1,ii2,ii3,ex)+u2(ii1-2*ks1,ii2,ii3,ex))/8. + 1.5*
-     & ks1*dx2(axis2)*(8.*(u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))-
-     & (u2(ii1,ii2+2,ii3,ey)-u2(ii1,ii2-2,ii3,ey)))/(12.*dx2(1))
-                   else
-                     stop 4432
-                   end if
-                 end if
-                ! extrapolate corner point C along the diagonal
-                ksv(axis2)=1-2*side2
-                  if( orderOfAccuracy.eq.2 )then
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(3.*u2(
-     & ii1,ii2,ii3,ex)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex))
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(3.*u2(
-     & ii1,ii2,ii3,ey)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey))
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(3.*u2(
-     & ii1,ii2,ii3,hz)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz))
-                  else
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(5.*u2(
-     & ii1,ii2,ii3,ex)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ex)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ex))
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(5.*u2(
-     & ii1,ii2,ii3,ey)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ey)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ey))
-                     u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(5.*u2(
-     & ii1,ii2,ii3,hz)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),hz)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),hz))
-                  end if
-                if( orderOfAccuracy.eq.4 )then
-                  ! extrapolate extra corner points E-F-G
-                    if( orderOfAccuracy.eq.2 )then
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(
-     & 3.*u2(ii1-ksv(0),ii2,ii3,ex)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),ex)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),ex))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(
-     & 3.*u2(ii1-ksv(0),ii2,ii3,ey)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),ey)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),ey))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(
-     & 3.*u2(ii1-ksv(0),ii2,ii3,hz)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(1)
-     & ,ii3+ksv(2),hz)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(
-     & 2),hz))
-                    else
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(
-     & 5.*u2(ii1-ksv(0),ii2,ii3,ex)-10.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ex)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),ex)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),ex)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ex))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(
-     & 5.*u2(ii1-ksv(0),ii2,ii3,ey)-10.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ey)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),ey)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),ey)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ey))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(
-     & 5.*u2(ii1-ksv(0),ii2,ii3,hz)-10.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),hz)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+
-     & 2*ksv(2),hz)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*ksv(
-     & 2),hz)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                    if( orderOfAccuracy.eq.2 )then
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)=(
-     & 3.*u2(ii1,ii2-ksv(1),ii3,ex)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),ex)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),ex))
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)=(
-     & 3.*u2(ii1,ii2-ksv(1),ii3,ey)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),ey)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),ey))
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)=(
-     & 3.*u2(ii1,ii2-ksv(1),ii3,hz)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(1)
-     & ,ii3+ksv(2),hz)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(
-     & 2),hz))
-                    else
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)=(
-     & 5.*u2(ii1,ii2-ksv(1),ii3,ex)-10.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ex)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),ex)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),ex)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)=(
-     & 5.*u2(ii1,ii2-ksv(1),ii3,ey)-10.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ey)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),ey)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),ey)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                       u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)=(
-     & 5.*u2(ii1,ii2-ksv(1),ii3,hz)-10.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),hz)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+
-     & 2*ksv(2),hz)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(
-     & 2),hz)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                    if( orderOfAccuracy.eq.2 )then
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ex)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ey)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,hz)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz))
-                    else
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ex)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ex)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ey)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ey)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                       u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,hz)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),hz)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                    end if
-                end if
-                if( debug.gt.1 )then
-                  if( orderOfAccuracy.eq.2 )then
-                    dive=(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,ex))/(
-     & 2.*dx2(0)) + (u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))/(2.*
-     & dx2(1))
-                  else
-                    dive=(8.*(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,ex)
-     & )-(u2(ii1+2,ii2,ii3,ex)-u2(ii1-2,ii2,ii3,ex)))/(12.*dx2(0)) + (
-     & 8.*(u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))-(u2(ii1,ii2+2,
-     & ii3,ey)-u2(ii1,ii2-2,ii3,ey)))/(12.*dx2(1))
-                  end if
-                  write(debugFile,'("... after: div(E)=",e10.2)') dive
-                end if
-                ksv(axis2p1)=0 ! reset
-                ksv(axis2)=0 ! reset
-               end if
-             end do ! end sidea
-         end if
+         ! if( .false. )then
+         !   fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+         !   fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+         ! end if
 
          ! periodic update
          if( parallel.eq.0 )then
@@ -13050,7 +13254,7 @@
               end do
             end do
            end if
-           if (nonlinearModel .ne. noNonlinearModel) then
+           if (nonlinearModel1 .ne. noNonlinearModel) then
              do na = 0,numberOfAtomicLevels1-1
                q1(i1  -is1,i2  -is2,i3,na)=(5.*q1(i1,i2,i3,na)-10.*q1(
      & i1+is1,i2+is2,i3+is3,na)+10.*q1(i1+2*is1,i2+2*is2,i3+2*is3,na)-
@@ -13061,6 +13265,8 @@
      & is2+2*is2,i3+2*is3,na)-5.*q1(i1-is1+3*is1,i2-is2+3*is2,i3+3*
      & is3,na)+q1(i1-is1+4*is1,i2-is2+4*is2,i3+4*is3,na))
              enddo
+           end if
+           if (nonlinearModel2 .ne. noNonlinearModel) then
              do na = 0,numberOfAtomicLevels2-1
                q2(j1  -js1,j2  -js2,j3,na)=(5.*q2(j1,j2,j3,na)-10.*q2(
      & j1+js1,j2+js2,j3+js3,na)+10.*q2(j1+2*js1,j2+2*js2,j3+2*js3,na)-
@@ -13147,7 +13353,7 @@
               end do
             end do
            end if
-           if (nonlinearModel .ne. noNonlinearModel) then
+           if (nonlinearModel1 .ne. noNonlinearModel) then
              do na = 0,numberOfAtomicLevels1-1
                q1(i1  -is1,i2  -is2,i3,na)=(4.*q1(i1,i2,i3,na)-6.*q1(
      & i1+is1,i2+is2,i3+is3,na)+4.*q1(i1+2*is1,i2+2*is2,i3+2*is3,na)-
@@ -13157,6 +13363,8 @@
      & is2+2*is2,i3+2*is3,na)-q1(i1-is1+3*is1,i2-is2+3*is2,i3+3*is3,
      & na))
              enddo
+           end if
+           if (nonlinearModel2 .ne. noNonlinearModel) then
              do na = 0,numberOfAtomicLevels2-1
                q2(j1  -js1,j2  -js2,j3,na)=(4.*q2(j1,j2,j3,na)-6.*q2(
      & j1+js1,j2+js2,j3+js3,na)+4.*q2(j1+2*js1,j2+2*js2,j3+2*js3,na)-
@@ -63328,428 +63536,10 @@
           end if
 
           ! fixup corner points 
-          if( .false. )then
-             ! **FINISH ME**
-             iv(2)=0
-             ksv(0)=0
-             ksv(1)=0
-             ksv(2)=0
-              do sidea=0,1 ! loop over adjacent sides
-                if( boundaryCondition1(sidea,axis1p1).gt.0 )then ! adjacent boundary is a physical BC or farfield BC
-                 ! Set iv = corner point X
-                 iv(axis1  )=gridIndexRange1(side1,axis1 )
-                 iv(axis1p1)=gridIndexRange1(sidea,axis1p1)
-                 ksv(axis1p1)=1-2*sidea  ! tangential direction to the interface
-                 ii1=iv(0)
-                 ii2=iv(1)
-                 ii3=iv(2)
-                 ks1=ksv(0)
-                 ks2=ksv(1)
-                 ks3=ksv(2)
-                 if( debug.gt.1 )then
-                   write(debugFile,'("Interface:fixupEnds u1: side1,
-     & axis1=",2i3," axis1p1,sidea=",2i3)') side1,axis1,axis1p1,sidea
-                   write(debugFile,'("... iv=",3i3," ksv=",3i2," 
-     & ghost=",3i4)') ii1,ii2,ii3,ks1,ks2,ks3,ii1-ks1,ii2-ks2,ii3-ks3
-                 end if
-                 ! extrapolate value on extended boundary, point A or B, from points along the interface
-                 ! extrapolateFields(ex,ey,hz,u1,ii1,ii2,ii3,ks1,ks2,ks3)
-                 ! -------------------------------------------------------
-                 ! -------------------- set div(E)=0 ---------------------
-                 ! -------------------------------------------------------
-                  ! **FINISH ME**
-                  dx1(0)=dr1(0)
-                  dx1(1)=dr1(1)
-                  if( axis1.eq.0 )then
-                    ! set point B on extended material interface boundary
-                    if( orderOfAccuracy.eq.2 )then
-                      u1(ii1-ks1,ii2-ks2,ii3,ey)=u1(ii1+ks1,ii2+ks2,
-     & ii3,ey) + 2.*ksv(axis1p1)*dx1(axis1p1)*(u1(ii1+1,ii2,ii3,ex)-
-     & u1(ii1-1,ii2,ii3,ex))/(2.*dx1(0))
-                    else if( orderOfAccuracy.eq.4 )then
-                      ! Set first ghost value from div(E)=0
-                      ! from abc.bf line 1684: 
-                      u1(ii1,ii2-ks2,ii3,ey)=(-u1(ii1,ii2+2*ks2,ii3,ey)
-     & +8.*u1(ii1,ii2+ks2,ii3,ey)+u1(ii1,ii2-2*ks2,ii3,ey))/8. + 1.5*
-     & ks2*dx1(axis1)*(8.*(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,ex))-
-     & (u1(ii1+2,ii2,ii3,ex)-u1(ii1-2,ii2,ii3,ex)))/(12.*dx1(0))
-                    end if
-                  else
-                    ! set point A on extended material interface boundary
-                    if( orderOfAccuracy.eq.2 )then
-                      u1(ii1-ks1,ii2-ks2,ii3,ex)=u1(ii1+ks1,ii2+ks2,
-     & ii3,ex) + 2.*ksv(axis1p1)*dx1(axis1p1)*(u1(ii1,ii2+1,ii3,ey)-
-     & u1(ii1,ii2-1,ii3,ey))/(2.*dx1(1))
-                    else if( orderOfAccuracy.eq.4 )then
-                      ! Set first ghost value from div(E)=0
-                      ! from abc.bf line 1684: 
-                      u1(ii1-ks1,ii2,ii3,ex)=(-u1(ii1+2*ks1,ii2,ii3,ex)
-     & +8.*u1(ii1+ks1,ii2,ii3,ex)+u1(ii1-2*ks1,ii2,ii3,ex))/8. + 1.5*
-     & ks1*dx1(axis1)*(8.*(u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))-
-     & (u1(ii1,ii2+2,ii3,ey)-u1(ii1,ii2-2,ii3,ey)))/(12.*dx1(1))
-                    else
-                      stop 4432
-                    end if
-                  end if
-                 ! extrapolate corner point C along the diagonal
-                 ksv(axis1)=1-2*side1
-                   if( orderOfAccuracy.eq.2 )then
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(3.*u1(
-     & ii1,ii2,ii3,ex)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex))
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(3.*u1(
-     & ii1,ii2,ii3,ey)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey))
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(3.*u1(
-     & ii1,ii2,ii3,hz)-3.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+u1(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz))
-                   else
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(5.*u1(
-     & ii1,ii2,ii3,ex)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ex)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ex))
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(5.*u1(
-     & ii1,ii2,ii3,ey)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ey)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ey))
-                      u1(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(5.*u1(
-     & ii1,ii2,ii3,hz)-10.*u1(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+
-     & 10.*u1(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz)-5.*u1(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),hz)+u1(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),hz))
-                   end if
-                 if( orderOfAccuracy.eq.4 )then
-                   ! extrapolate extra corner points E-F-G
-                     if( orderOfAccuracy.eq.2 )then
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)
-     & =(3.*u1(ii1-ksv(0),ii2,ii3,ex)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ex)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),ex))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)
-     & =(3.*u1(ii1-ksv(0),ii2,ii3,ey)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ey)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),ey))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)
-     & =(3.*u1(ii1-ksv(0),ii2,ii3,hz)-3.*u1(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),hz)+u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),hz))
-                     else
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)
-     & =(5.*u1(ii1-ksv(0),ii2,ii3,ex)-10.*u1(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),ex)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),ex)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),ex)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ex)
-     & )
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)
-     & =(5.*u1(ii1-ksv(0),ii2,ii3,ey)-10.*u1(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),ey)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),ey)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),ey)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ey)
-     & )
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)
-     & =(5.*u1(ii1-ksv(0),ii2,ii3,hz)-10.*u1(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),hz)+10.*u1(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),hz)-5.*u1(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),hz)+u1(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),hz)
-     & )
-                     end if
-                     if( orderOfAccuracy.eq.2 )then
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)
-     & =(3.*u1(ii1,ii2-ksv(1),ii3,ex)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ex)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),ex))
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)
-     & =(3.*u1(ii1,ii2-ksv(1),ii3,ey)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ey)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),ey))
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)
-     & =(3.*u1(ii1,ii2-ksv(1),ii3,hz)-3.*u1(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),hz)+u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),hz))
-                     else
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)
-     & =(5.*u1(ii1,ii2-ksv(1),ii3,ex)-10.*u1(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),ex)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),ex)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),ex)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex)
-     & )
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)
-     & =(5.*u1(ii1,ii2-ksv(1),ii3,ey)-10.*u1(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),ey)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),ey)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),ey)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey)
-     & )
-                        u1(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)
-     & =(5.*u1(ii1,ii2-ksv(1),ii3,hz)-10.*u1(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),hz)+10.*u1(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),hz)-5.*u1(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),hz)+u1(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz)
-     & )
-                     end if
-                     if( orderOfAccuracy.eq.2 )then
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ex)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ey)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(3.*u1(ii1-ksv(0),ii2-ksv(1),ii3,hz)-3.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+u1(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz))
-                     else
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ex)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ex)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,ey)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ey)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                        u1(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(5.*u1(ii1-ksv(0),ii2-ksv(1),ii3,hz)-10.*u1(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+10.*u1(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz)-5.*u1(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),hz)+u1(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                     end if
-                 end if
-                 if( debug.gt.1 )then
-                   if( orderOfAccuracy.eq.2 )then
-                     dive=(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,ex))/(
-     & 2.*dx1(0)) + (u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))/(2.*
-     & dx1(1))
-                   else
-                     dive=(8.*(u1(ii1+1,ii2,ii3,ex)-u1(ii1-1,ii2,ii3,
-     & ex))-(u1(ii1+2,ii2,ii3,ex)-u1(ii1-2,ii2,ii3,ex)))/(12.*dx1(0)) 
-     & + (8.*(u1(ii1,ii2+1,ii3,ey)-u1(ii1,ii2-1,ii3,ey))-(u1(ii1,ii2+
-     & 2,ii3,ey)-u1(ii1,ii2-2,ii3,ey)))/(12.*dx1(1))
-                   end if
-                   write(debugFile,'("... after: div(E)=",e10.2)') dive
-                 end if
-                 ksv(axis1p1)=0 ! reset
-                 ksv(axis1)=0 ! reset
-                end if
-              end do ! end sidea
-             ! **FINISH ME**
-             iv(2)=0
-             ksv(0)=0
-             ksv(1)=0
-             ksv(2)=0
-              do sidea=0,1 ! loop over adjacent sides
-                if( boundaryCondition2(sidea,axis2p1).gt.0 )then ! adjacent boundary is a physical BC or farfield BC
-                 ! Set iv = corner point X
-                 iv(axis2  )=gridIndexRange2(side2,axis2 )
-                 iv(axis2p1)=gridIndexRange2(sidea,axis2p1)
-                 ksv(axis2p1)=1-2*sidea  ! tangential direction to the interface
-                 ii1=iv(0)
-                 ii2=iv(1)
-                 ii3=iv(2)
-                 ks1=ksv(0)
-                 ks2=ksv(1)
-                 ks3=ksv(2)
-                 if( debug.gt.1 )then
-                   write(debugFile,'("Interface:fixupEnds u2: side2,
-     & axis2=",2i3," axis2p1,sidea=",2i3)') side2,axis2,axis2p1,sidea
-                   write(debugFile,'("... iv=",3i3," ksv=",3i2," 
-     & ghost=",3i4)') ii1,ii2,ii3,ks1,ks2,ks3,ii1-ks1,ii2-ks2,ii3-ks3
-                 end if
-                 ! extrapolate value on extended boundary, point A or B, from points along the interface
-                 ! extrapolateFields(ex,ey,hz,u2,ii1,ii2,ii3,ks1,ks2,ks3)
-                 ! -------------------------------------------------------
-                 ! -------------------- set div(E)=0 ---------------------
-                 ! -------------------------------------------------------
-                  ! **FINISH ME**
-                  dx2(0)=dr2(0)
-                  dx2(1)=dr2(1)
-                  if( axis2.eq.0 )then
-                    ! set point B on extended material interface boundary
-                    if( orderOfAccuracy.eq.2 )then
-                      u2(ii1-ks1,ii2-ks2,ii3,ey)=u2(ii1+ks1,ii2+ks2,
-     & ii3,ey) + 2.*ksv(axis2p1)*dx2(axis2p1)*(u2(ii1+1,ii2,ii3,ex)-
-     & u2(ii1-1,ii2,ii3,ex))/(2.*dx2(0))
-                    else if( orderOfAccuracy.eq.4 )then
-                      ! Set first ghost value from div(E)=0
-                      ! from abc.bf line 1684: 
-                      u2(ii1,ii2-ks2,ii3,ey)=(-u2(ii1,ii2+2*ks2,ii3,ey)
-     & +8.*u2(ii1,ii2+ks2,ii3,ey)+u2(ii1,ii2-2*ks2,ii3,ey))/8. + 1.5*
-     & ks2*dx2(axis2)*(8.*(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,ex))-
-     & (u2(ii1+2,ii2,ii3,ex)-u2(ii1-2,ii2,ii3,ex)))/(12.*dx2(0))
-                    end if
-                  else
-                    ! set point A on extended material interface boundary
-                    if( orderOfAccuracy.eq.2 )then
-                      u2(ii1-ks1,ii2-ks2,ii3,ex)=u2(ii1+ks1,ii2+ks2,
-     & ii3,ex) + 2.*ksv(axis2p1)*dx2(axis2p1)*(u2(ii1,ii2+1,ii3,ey)-
-     & u2(ii1,ii2-1,ii3,ey))/(2.*dx2(1))
-                    else if( orderOfAccuracy.eq.4 )then
-                      ! Set first ghost value from div(E)=0
-                      ! from abc.bf line 1684: 
-                      u2(ii1-ks1,ii2,ii3,ex)=(-u2(ii1+2*ks1,ii2,ii3,ex)
-     & +8.*u2(ii1+ks1,ii2,ii3,ex)+u2(ii1-2*ks1,ii2,ii3,ex))/8. + 1.5*
-     & ks1*dx2(axis2)*(8.*(u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))-
-     & (u2(ii1,ii2+2,ii3,ey)-u2(ii1,ii2-2,ii3,ey)))/(12.*dx2(1))
-                    else
-                      stop 4432
-                    end if
-                  end if
-                 ! extrapolate corner point C along the diagonal
-                 ksv(axis2)=1-2*side2
-                   if( orderOfAccuracy.eq.2 )then
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(3.*u2(
-     & ii1,ii2,ii3,ex)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex))
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(3.*u2(
-     & ii1,ii2,ii3,ey)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey))
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(3.*u2(
-     & ii1,ii2,ii3,hz)-3.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+u2(
-     & ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz))
-                   else
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)=(5.*u2(
-     & ii1,ii2,ii3,ex)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ex)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ex)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ex)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ex))
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)=(5.*u2(
-     & ii1,ii2,ii3,ey)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),ey)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),ey)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),ey)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),ey))
-                      u2(ii1-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)=(5.*u2(
-     & ii1,ii2,ii3,hz)-10.*u2(ii1+ksv(0),ii2+ksv(1),ii3+ksv(2),hz)+
-     & 10.*u2(ii1+2*ksv(0),ii2+2*ksv(1),ii3+2*ksv(2),hz)-5.*u2(ii1+3*
-     & ksv(0),ii2+3*ksv(1),ii3+3*ksv(2),hz)+u2(ii1+4*ksv(0),ii2+4*ksv(
-     & 1),ii3+4*ksv(2),hz))
-                   end if
-                 if( orderOfAccuracy.eq.4 )then
-                   ! extrapolate extra corner points E-F-G
-                     if( orderOfAccuracy.eq.2 )then
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)
-     & =(3.*u2(ii1-ksv(0),ii2,ii3,ex)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ex)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),ex))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)
-     & =(3.*u2(ii1-ksv(0),ii2,ii3,ey)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),ey)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),ey))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)
-     & =(3.*u2(ii1-ksv(0),ii2,ii3,hz)-3.*u2(ii1-ksv(0)+ksv(0),ii2+ksv(
-     & 1),ii3+ksv(2),hz)+u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),ii3+2*
-     & ksv(2),hz))
-                     else
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ex)
-     & =(5.*u2(ii1-ksv(0),ii2,ii3,ex)-10.*u2(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),ex)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),ex)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),ex)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ex)
-     & )
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),ey)
-     & =(5.*u2(ii1-ksv(0),ii2,ii3,ey)-10.*u2(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),ey)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),ey)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),ey)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),ey)
-     & )
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1),ii3-ksv(2),hz)
-     & =(5.*u2(ii1-ksv(0),ii2,ii3,hz)-10.*u2(ii1-ksv(0)+ksv(0),ii2+
-     & ksv(1),ii3+ksv(2),hz)+10.*u2(ii1-ksv(0)+2*ksv(0),ii2+2*ksv(1),
-     & ii3+2*ksv(2),hz)-5.*u2(ii1-ksv(0)+3*ksv(0),ii2+3*ksv(1),ii3+3*
-     & ksv(2),hz)+u2(ii1-ksv(0)+4*ksv(0),ii2+4*ksv(1),ii3+4*ksv(2),hz)
-     & )
-                     end if
-                     if( orderOfAccuracy.eq.2 )then
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)
-     & =(3.*u2(ii1,ii2-ksv(1),ii3,ex)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ex)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),ex))
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)
-     & =(3.*u2(ii1,ii2-ksv(1),ii3,ey)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),ey)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),ey))
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)
-     & =(3.*u2(ii1,ii2-ksv(1),ii3,hz)-3.*u2(ii1+ksv(0),ii2-ksv(1)+ksv(
-     & 1),ii3+ksv(2),hz)+u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*
-     & ksv(2),hz))
-                     else
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ex)
-     & =(5.*u2(ii1,ii2-ksv(1),ii3,ex)-10.*u2(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),ex)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),ex)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),ex)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex)
-     & )
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),ey)
-     & =(5.*u2(ii1,ii2-ksv(1),ii3,ey)-10.*u2(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),ey)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),ey)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),ey)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey)
-     & )
-                        u2(ii1-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(2),hz)
-     & =(5.*u2(ii1,ii2-ksv(1),ii3,hz)-10.*u2(ii1+ksv(0),ii2-ksv(1)+
-     & ksv(1),ii3+ksv(2),hz)+10.*u2(ii1+2*ksv(0),ii2-ksv(1)+2*ksv(1),
-     & ii3+2*ksv(2),hz)-5.*u2(ii1+3*ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*
-     & ksv(2),hz)+u2(ii1+4*ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz)
-     & )
-                     end if
-                     if( orderOfAccuracy.eq.2 )then
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ex)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ey)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(3.*u2(ii1-ksv(0),ii2-ksv(1),ii3,hz)-3.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+u2(ii1-ksv(0)+2*ksv(0),
-     & ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz))
-                     else
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ex)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ex)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ex)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ex)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ex)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ex))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),ey)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,ey)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),ey)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),ey)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),ey)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),ey))
-                        u2(ii1-ksv(0)-ksv(0),ii2-ksv(1)-ksv(1),ii3-ksv(
-     & 2),hz)=(5.*u2(ii1-ksv(0),ii2-ksv(1),ii3,hz)-10.*u2(ii1-ksv(0)+
-     & ksv(0),ii2-ksv(1)+ksv(1),ii3+ksv(2),hz)+10.*u2(ii1-ksv(0)+2*
-     & ksv(0),ii2-ksv(1)+2*ksv(1),ii3+2*ksv(2),hz)-5.*u2(ii1-ksv(0)+3*
-     & ksv(0),ii2-ksv(1)+3*ksv(1),ii3+3*ksv(2),hz)+u2(ii1-ksv(0)+4*
-     & ksv(0),ii2-ksv(1)+4*ksv(1),ii3+4*ksv(2),hz))
-                     end if
-                 end if
-                 if( debug.gt.1 )then
-                   if( orderOfAccuracy.eq.2 )then
-                     dive=(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,ex))/(
-     & 2.*dx2(0)) + (u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))/(2.*
-     & dx2(1))
-                   else
-                     dive=(8.*(u2(ii1+1,ii2,ii3,ex)-u2(ii1-1,ii2,ii3,
-     & ex))-(u2(ii1+2,ii2,ii3,ex)-u2(ii1-2,ii2,ii3,ex)))/(12.*dx2(0)) 
-     & + (8.*(u2(ii1,ii2+1,ii3,ey)-u2(ii1,ii2-1,ii3,ey))-(u2(ii1,ii2+
-     & 2,ii3,ey)-u2(ii1,ii2-2,ii3,ey)))/(12.*dx2(1))
-                   end if
-                   write(debugFile,'("... after: div(E)=",e10.2)') dive
-                 end if
-                 ksv(axis2p1)=0 ! reset
-                 ksv(axis2)=0 ! reset
-                end if
-              end do ! end sidea
-          end if
+          ! if( .false. )then
+          !   fixupInterfaceEndValues(2,curvilinear,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+          !   fixupInterfaceEndValues(2,curvilinear,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+          ! end if
 
           if( parallel.eq.0 )then
            axisp1=mod(axis1+1,nd)

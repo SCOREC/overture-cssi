@@ -1864,6 +1864,17 @@ assignInitialConditions(int current, real t, real dt )
         qLocal.reference(qLoc);
         qmLocal.reference(qmLoc);
 
+	getIndex(mg.dimension(),I1,I2,I3);
+        int includeGhost=1;
+        bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
+        if( ok )
+        {
+          // --- default initial condition for population densities is N0 = 1 ---
+          qLoc(I1,I2,I3,0)  = 1.;
+          qmLoc(I1,I2,I3,0) = 1.;
+        }
+
+
       }
 
       

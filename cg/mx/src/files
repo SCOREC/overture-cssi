@@ -84,11 +84,28 @@ FSRCO += advSOSUP.f \
 FSRCO +=  bcOptMaxwell.f bcOptMaxwell2dOrder2.f bcOptMaxwell3dOrder2.f \
           bcOptMaxwell2dOrder4.f bcOptMaxwell3dOrder4.f cornersMxOrder2.f cornersMxOrder4.f evalDispersionRelation.f
 
-FSRCO +=interface3d.f interface3dOrder4.f
+# Replaced interface3d.f by interfaceOpt.f90 *wdh* Jan 26, 2021
+FSRCO +=interface3d.f 
+# Replaced interface3d.f by interfaceOpt3dOrder4.f90 *wdh* Jan 31, 2021
+FSRCO += interface3dOrder4.f
 
 # New interface routine -- testing for now
 #   FINISH ME 
-FNSRCO +=interfaceOpt.f90 
+FNSRCO +=interfaceOpt.f90 \
+         interfaceMx2dOrder2r.f90 interfaceMx2dOrder2c.f90 interfaceMx2dOrder4r.f90 interfaceMx2dOrder4c.f90 \
+         interfaceMx3dOrder2c.f90 
+
+# GDM versions 
+FNSRCO += interfaceMxGDM2dOrder2r.f90 interfaceMxGDM2dOrder2c.f90 interfaceMxGDM2dOrder4r.f90 interfaceMxGDM2dOrder4c.f90 \
+          interfaceMxGDM3dOrder2c.f90  
+
+# MLA versions 
+FNSRCO += interfaceMxMLA2dOrder2r.f90 interfaceMxMLA2dOrder2c.f90 interfaceMxMLA2dOrder4r.f90 interfaceMxMLA2dOrder4c.f90 \
+          interfaceMxMLA3dOrder2c.f90 
+
+# 3D order=4 versions 
+FNSRCO +=interfaceOpt3dOrder4.f90  interfaceMx3dOrder4c.f90 interfaceMxGDM3dOrder4c.f90 interfaceMxMLA3dOrder4c.f90 
+
 
 # misc. fortran files
 FSRCO += abc.f pml.f dsimv.f lscoeff.f interfaceNew.f interfaceDerivatives.f \
@@ -224,6 +241,8 @@ src/advMxUp3dOrder2c.f : src/advMxUp.f
 src/advMxUp2dOrder4c.f : src/advMxUp.f
 src/advMxUp3dOrder4c.f : src/advMxUp.f
 
+
+
 # -------------- BA Maxwell ------------
 src/advBA.f: src/advBA.bf 
 	      @cd src; $(BPP) -clean -quiet -I$(Overture)/include advBA.bf
@@ -320,18 +339,53 @@ src/bcAdjacent.f: src/bcAdjacent.bf src/bcDefineFortranInclude.h
 src/interface.f: src/interface.bf src/bcDefineFortranInclude.h 
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface.bf
 
-# -- *start* on new interface routine that generates multiple files
-#   FINISH ME 
-src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+#
+# -- *NEW* interface routine that generates multiple files, *wdh*  Jan 2021 
+# 
+src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h  src/dispersiveInterfaceMacros2d.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt.bf90
 
+src/interfaceOpt3dOrder4.f90: src/interfaceOpt3dOrder4.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt3dOrder4.bf90
+
+# ------------ new interface files -------
+src/interfaceMx2dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMx2dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMx2dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMx2dOrder4c.f90 : src/interfaceOpt.f90
+src/interfaceMx3dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMx3dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMx3dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMx3dOrder4c.f90 : src/interfaceOpt.f90
 
 
-src/interface3d.f: src/interface3d.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h  
-		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3d.bf
+# --- GDM interface files 
+src/interfaceMxGDM2dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM2dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM2dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM2dOrder4c.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM3dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM3dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM3dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMxGDM3dOrder4c.f90 : src/interfaceOpt.f90
 
-src/interface3dOrder4.f: src/interface3dOrder4.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceMacros3d.h
-		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3dOrder4.bf
+
+# --- MLA interface files 
+src/interfaceMxMLA2dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA2dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA2dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA2dOrder4c.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA3dOrder2r.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA3dOrder2c.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA3dOrder4r.f90 : src/interfaceOpt.f90
+src/interfaceMxMLA3dOrder4c.f90 : src/interfaceOpt.f90
+
+ 
+# TURN-OFF: replaced
+## src/interface3d.f: src/interface3d.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h; @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3d.bf
+
+# TURN-OFF: replaced
+## src/interface3dOrder4.f: src/interface3dOrder4.bf src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceMacros3d.h;  @cd src; $(BPP) -clean -quiet -I$(Overture)/include interface3dOrder4.bf
 
 # this next file creates the files evaluateJacobianDerivativesOrder6.h, evaluateCoefficientsOrder6.h and
 src/interfaceMacros.f: src/interfaceMacros.bf; 

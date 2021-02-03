@@ -1,3 +1,10 @@
+#
+#  Regression tests for cgmx 
+# 
+# Example: To run one check:
+#    check.p twoSquaresInterfaceGDM22r
+#    check.p twoBoxesInterface32r
+#
 # Here is the executable:
 CGBUILDPREFIX/mx/bin/cgmx
 # here is the name of the check file
@@ -9,8 +16,10 @@ cictz   # cic, TZ, fourth-order
 cic.planeWaveBC
 boxtz
 cyleigen
-curvedInterface     # two materials - dielectric cylinder
-twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4 -eps2=.25 -tf=.2 -tp=.1 -ic=tz -bc=d -diss=0. -left=leftBox -right=rightBox -debug=1 -degreex=4 -degreet=4 -go=go
+#
+curvedInterface     # two materials - dielectric cylinder: 
+# 
+### twoBoxInterface.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4 -eps2=.25 -tf=.2 -tp=.1 -ic=tz -bc=d -diss=0. -left=leftBox -right=rightBox -debug=1 -degreex=4 -degreet=4 -go=go
 #
 # dielectric sphere tests:
 #
@@ -69,3 +78,86 @@ baPlaneWaveGDM.check ../runs/planeWave/planeWave.cmd -g=square20.order4.ng3 -kx=
 baScatTwoMat.check ../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/materials/baIsoEps2.txt -matFile2=../runs/materials/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go
 # 
 baScatTwoMatBox.check ../runs/ba/baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/materials/baIsoEps2.txt -matFile2=../runs/materials/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go
+#
+#
+# --------------- 2D INTERFACES -------------------
+#
+# 2D, Order 2, rectangular
+twoSquaresInterface22r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order2 -eps2=2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 2D, Order 2, curvilinear
+twoSquaresInterface22c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order2 -eps2=3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 2D, Order 2, curvilinear, PMI solution
+twoSquaresInterfacePMI22c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order2 -eps2=3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -eps2=3 -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# 2D, Order 4, rectangular
+twoSquaresInterface24r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order4.ng3 -eps2=4 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+#
+# 2D, Order 4, curvilinear
+twoSquaresInterface24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order4.ng3 -eps2=2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+# 
+# 2D, Order 4, curvilinear, PMI solution 
+twoSquaresInterfacePMI24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -eps2=3 -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# -------------- 2D GDM  INTERFACES ------------------
+#
+# 2D, Order 2, rectangular, GDM 
+twoSquaresInterfaceGDM22r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -modeGDM=-1 -go=go
+#
+# 2D, Order 2, curvilinear, GDM 
+twoSquaresInterfaceGDM22c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -modeGDM=-1 -go=go
+#
+# 2D, Order 2, curvilinear, GDM, PMI solution  
+twoSquaresInterfaceGDMPMI22c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -modeGDM=-1 -go=go
+#
+# 2D, Order 4, rectangular, GDM 
+twoSquaresInterfaceGDM24r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -modeGDM=-1 -go=go
+#
+# 2D, Order 4, curvilinear, GDM 
+twoSquaresInterfaceGDM24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -modeGDM=-1 -go=go
+#
+# 2D, Order 4, curvilinear, GDM, PMI solution 
+twoSquaresInterfaceGDMPMI24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# --------------------------------------------------
+# --------------- 3D  INTERFACES -------------------
+# --------------------------------------------------
+#
+# 3D, Order 2, rectangular
+twoBoxesInterface32r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order2 -eps2=2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 3D, Order 2, curvilinear
+twoBoxesInterface32c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order2 -eps2=2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 3D, Order 2, curvilinear, PMI solution
+twoBoxesInterfacePMI22c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order2 -eps2=3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -eps2=3 -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# 3D, Order 4, rectangular
+twoBoxesInterface34r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4.ng3 -eps2=4 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+#
+# 3D, Order 4, curvilinear
+twoBoxesInterface34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order4.ng3 -eps2=2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+# 
+# 3D, Order 4, curvilinear, PMI solution 
+twoBoxesInterfacePMI34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -eps2=3 -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# -------------- 3D GDM  INTERFACES ------------------
+#
+# 3D, Order 2, rectangular, GDM 
+twoBoxesInterfaceGDM32r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -modeGDM=-1 -go=go
+#
+# 3D, Order 2, curvilinear, GDM 
+twoBoxesInterfaceGDM32c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -modeGDM=-1 -go=go
+#
+# 3D, Order 2, curvilinear, GDM, PMI solution  
+twoBoxesInterfaceGDMPMI32c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -modeGDM=-1 -go=go
+#
+# 3D, Order 4, rectangular, GDM 
+twoBoxesInterfaceGDM34r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -modeGDM=-1 -go=go
+#
+# 3D, Order 4, curvilinear, GDM 
+twoBoxesInterfaceGDM34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -modeGDM=-1 -go=go
+#
+# 3D, Order 4, curvilinear, GDM, PMI solution 
+twoBoxesInterfaceGDMPMI34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go

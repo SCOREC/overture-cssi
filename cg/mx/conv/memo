@@ -1,6 +1,662 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
 ***************************
+******* Wed Feb 3, 2021
+
+
+++++++++++ Clean up interface routines ++++++++++
+
+$$$$$$$$$$$$$$$$$$$$$$ NON-GDM $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+34c
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonBoxesInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=-1 -ng=3
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonBoxesInterface2 &     1 & 4.87e-02 &      & 2.12e-01 &      & 3.89e-03 &      & 2.12e-01 &      & 1.23e-01 &      
+twoNonBoxesInterface4 &     2 & 3.16e-03 & 15.41 & 1.38e-02 & 15.36 & 3.17e-04 & 12.27 & 1.38e-02 & 15.36 & 8.36e-03 & 14.71 
+twoNonBoxesInterface8 &     4 & 1.58e-04 & 20.00 & 6.88e-04 & 20.06 & 2.29e-05 & 13.84 & 6.88e-04 & 20.06 & 4.47e-04 & 18.70 
+Convergence rates: c0=4.13 c1=4.13 c2=3.70 c3=4.13 c4=4.05
+
+
+
+32c
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonBoxesInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=-1 -ng=3
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonBoxesInterface2 &     1 & 2.01e-01 &      & 6.47e-01 &      & 2.42e-02 &      & 6.47e-01 &      & 4.25e-01 &      
+twoNonBoxesInterface4 &     2 & 4.66e-02 &  4.31 & 2.03e-01 &  3.19 & 5.43e-03 &  4.46 & 2.03e-01 &  3.19 & 1.08e-01 &  3.94 
+twoNonBoxesInterface8 &     4 & 1.02e-02 &  4.57 & 4.45e-02 &  4.56 & 1.24e-03 &  4.38 & 4.45e-02 &  4.56 & 2.61e-02 &  4.14 
+Convergence rates: c0=2.15 c1=1.93 c2=2.14 c3=1.93 c4=2.01
+
+23r  --> no special version
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoBoxesInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=-1 -ng=3
+
+
+
+42c
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 4.52e-02 &      & 1.97e-01 &      & 4.04e-01 &      & 1.97e-01 &      & 1.18e-01 &      
+twoNonSquaresInterface4 &     2 & 2.75e-03 & 16.44 & 1.20e-02 & 16.42 & 2.46e-02 & 16.42 & 1.20e-02 & 16.42 & 7.59e-03 & 15.55 
+twoNonSquaresInterface8 &     4 & 1.38e-04 & 19.93 & 6.02e-04 & 19.93 & 1.24e-03 & 19.84 & 6.02e-04 & 19.93 & 4.00e-04 & 18.98 
+twoNonSquaresInterface16 &     8 & 7.67e-06 & 17.99 & 3.34e-05 & 18.02 & 6.86e-05 & 18.08 & 3.34e-05 & 18.02 & 2.60e-05 & 15.38 
+Convergence rates: c0=4.19 c1=4.19 c2=4.19 c3=4.19 c4=4.07 
+
+
+42r
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.52e-02 &      & 1.97e-01 &      & 4.04e-01 &      & 1.97e-01 &      & 1.18e-01 &      
+twoSquaresInterface4 &     2 & 2.75e-03 & 16.44 & 1.20e-02 & 16.42 & 3.55e-02 & 11.38 & 1.20e-02 & 16.42 & 7.59e-03 & 15.55 
+twoSquaresInterface8 &     4 & 1.38e-04 & 19.93 & 6.02e-04 & 19.93 & 2.25e-03 & 15.78 & 6.02e-04 & 19.93 & 4.00e-04 & 18.98 
+twoSquaresInterface16 &     8 & 7.67e-06 & 17.99 & 3.34e-05 & 18.02 & 1.45e-04 & 15.52 & 3.34e-05 & 18.02 & 2.60e-05 & 15.38 
+Convergence rates: c0=4.19 c1=4.19 c2=3.83 c3=4.19 c4=4.07
+
+
+
+22c
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.83e-01 &      & 6.49e-01 &      & 1.33e+00 &      & 6.49e-01 &      & 4.48e-01 &      
+twoNonSquaresInterface4 &     2 & 4.18e-02 &  4.38 & 1.82e-01 &  3.57 & 3.74e-01 &  3.56 & 1.82e-01 &  3.57 & 1.03e-01 &  4.35 
+twoNonSquaresInterface8 &     4 & 8.97e-03 &  4.66 & 3.91e-02 &  4.65 & 8.02e-02 &  4.66 & 3.91e-02 &  4.65 & 2.34e-02 &  4.40 
+twoNonSquaresInterface16 &     8 & 2.01e-03 &  4.46 & 8.75e-03 &  4.47 & 1.80e-02 &  4.46 & 8.75e-03 &  4.47 & 6.37e-03 &  3.67 
+Convergence rates: c0=2.17 c1=2.09 c2=2.08 c3=2.09 c4=2.05 
+
+22r
+conv.p interface.conv -dm=none -matFile1=baIsoEps1.txt -matFile2=baIsoEps4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.83e-01 &      & 6.49e-01 &      & 7.72e+00 &      & 6.49e-01 &      & 4.48e-01 &      
+twoSquaresInterface4 &     2 & 4.18e-02 &  4.38 & 1.82e-01 &  3.57 & 5.62e+00 &  1.37 & 1.82e-01 &  3.57 & 1.03e-01 &  4.35 
+twoSquaresInterface8 &     4 & 8.97e-03 &  4.66 & 3.91e-02 &  4.65 & 5.04e+00 &  1.12 & 3.91e-02 &  4.65 & 2.34e-02 &  4.40 
+twoSquaresInterface16 &     8 & 2.01e-03 &  4.46 & 8.75e-03 &  4.47 & 4.87e+00 &  1.03 & 8.75e-03 &  4.47 & 6.37e-03 &  3.67 
+Convergence rates: c0=2.17 c1=2.09 c2=0.22 c3=2.09 c4=2.05
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$ GDM $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+
+GDM 34c: (no special 34r version)
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoBoxesInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+  twoBoxesInterface2 &     1 & 5.67e-02 &      & 2.48e-01 &      & 3.78e-03 &      & 2.48e-01 &      & 1.91e-03 &      & 1.35e-01 &      
+  twoBoxesInterface4 &     2 & 3.63e-03 & 15.62 & 1.58e-02 & 15.70 & 3.09e-04 & 12.23 & 1.58e-02 & 15.70 & 1.19e-04 & 16.05 & 1.11e-02 & 12.16 
+  twoBoxesInterface8 &     4 & 1.66e-04 & 21.87 & 7.24e-04 & 21.82 & 1.94e-05 & 15.93 & 7.24e-04 & 21.82 & 5.82e-06 & 20.45 & 5.18e-04 & 21.43 
+Convergence rates: c0=4.21 c1=4.21 c2=3.80 c3=4.21 c4=4.18 c5=4.01 
+
+
+
+GDM 32c: (No special 32r version )
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoBoxesInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+  twoBoxesInterface2 &     1 & 1.79e-01 &      & 7.83e-01 &      & 2.18e-02 &      & 7.83e-01 &      & 8.54e-03 &      & 4.37e-01 &      
+  twoBoxesInterface4 &     2 & 5.45e-02 &  3.28 & 2.38e-01 &  3.29 & 4.03e-03 &  5.41 & 2.38e-01 &  3.29 & 2.07e-03 &  4.13 & 1.67e-01 &  2.62 
+  twoBoxesInterface8 &     4 & 1.09e-02 &  5.00 & 4.75e-02 &  5.01 & 9.47e-04 &  4.26 & 4.75e-02 &  5.01 & 4.04e-04 &  5.12 & 3.51e-02 &  4.76 
+Convergence rates: c0=2.02 c1=2.02 c2=2.26 c3=2.02 c4=2.20 c5=1.82 
+
+
+
+
+GDM 24r: 
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.54e-02 &      & 1.98e-01 &      & 1.36e+00 &      & 1.98e-01 &      & 1.83e-03 &      & 1.22e-01 &      
+twoSquaresInterface4 &     2 & 2.76e-03 & 16.45 & 1.21e-02 & 16.36 & 1.23e+00 &  1.11 & 1.21e-02 & 16.36 & 1.23e-04 & 14.88 & 7.63e-03 & 15.99 
+twoSquaresInterface8 &     4 & 1.39e-04 & 19.86 & 6.08e-04 & 19.90 & 1.14e+00 &  1.08 & 6.08e-04 & 19.90 & 6.65e-06 & 18.50 & 4.03e-04 & 18.93 
+twoSquaresInterface16 &     8 & 7.76e-06 & 17.91 & 3.39e-05 & 17.94 & 1.37e+00 &  0.83 & 3.39e-05 & 17.94 & 4.52e-07 & 14.71 & 2.54e-05 & 15.87 
+twoSquaresInterface32 &    16 & 4.60e-07 & 16.87 & 2.01e-06 & 16.87 & 1.03e+00 &  1.33 & 2.01e-06 & 16.87 & 4.67e-08 &  9.68 & 1.82e-06 & 13.96 
+Convergence rates: c0=4.17 c1=4.17 c2=0.06 c3=4.17 c4=3.86 c5=4.03
+
+
+GDM 24r - TRIG TZ - OK 
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -tz=trig -ic=tz -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3  
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.24e-04 &      & 2.57e-04 &      & 1.99e+00 &      & 2.57e-04 &      & 2.34e-05 &      & 7.44e-04 &      
+twoSquaresInterface4 &     2 & 4.18e-06 & 29.67 & 1.58e-05 & 16.27 & 2.00e+00 &  0.99 & 1.58e-05 & 16.27 & 1.56e-06 & 15.00 & 3.98e-05 & 18.69 
+twoSquaresInterface8 &     4 & 1.53e-07 & 27.32 & 9.71e-07 & 16.27 & 2.03e+00 &  0.99 & 9.71e-07 & 16.27 & 1.01e-07 & 15.45 & 2.19e-06 & 18.17 
+Convergence rates: c0=4.83 c1=4.02 c2=-0.01 c3=4.02 c4=3.93 c5=4.20
+
+
+GDM 24r - POLY TZ  
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -tz=poly -ic=tz -degreex=4 -degreet=4 -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.72e-09 &      & 4.09e-09 &      & 1.09e+00 &      & 4.09e-09 &      & 6.65e-09 &      & 3.99e-09 &      
+twoSquaresInterface4 &     2 & 2.37e-10 & 11.48 & 3.39e-10 & 12.06 & 1.34e+00 &  0.81 & 3.39e-10 & 12.06 & 6.96e-10 &  9.55 & 4.42e-10 &  9.03 
+twoSquaresInterface8 &     4 & 1.79e-11 & 13.24 & 2.49e-11 & 13.61 & 1.58e+00 &  0.85 & 2.49e-11 & 13.61 & 5.79e-11 & 12.02 & 4.10e-11 & 10.78 
+Convergence rates: c0=3.62 c1=3.68 c2=-0.27 c3=3.68 c4=3.42 c5=3.30 
+
+
+
+GDM 24c: 
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 4.54e-02 &      & 1.98e-01 &      & 1.36e+00 &      & 1.98e-01 &      & 2.51e-03 &      & 1.20e-01 &      
+twoNonSquaresInterface4 &     2 & 2.76e-03 & 16.45 & 1.21e-02 & 16.36 & 1.23e+00 &  1.11 & 1.21e-02 & 16.36 & 1.43e-04 & 17.55 & 7.63e-03 & 15.73 
+twoNonSquaresInterface8 &     4 & 1.39e-04 & 19.86 & 6.08e-04 & 19.90 & 1.14e+00 &  1.08 & 6.08e-04 & 19.90 & 7.61e-06 & 18.79 & 4.03e-04 & 18.93 
+twoNonSquaresInterface16 &     8 & 7.76e-06 & 17.91 & 3.39e-05 & 17.94 & 1.37e+00 &  0.83 & 3.39e-05 & 17.94 & 4.38e-07 & 17.37 & 2.54e-05 & 15.87 
+twoNonSquaresInterface32 &    16 & 4.60e-07 & 16.87 & 2.01e-06 & 16.87 & 1.03e+00 &  1.33 & 2.01e-06 & 16.87 & 2.67e-08 & 16.40 & 1.82e-06 & 13.96 
+Convergence rates: c0=4.17 c1=4.17 c2=0.06 c3=4.17 c4=4.14 c5=4.02
+
+
+GDM 24c - TRIG TZ - OK 
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -tz=trig -ic=tz -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3  
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.35e-04 &      & 2.22e-04 &      & 1.99e+00 &      & 2.22e-04 &      & 1.83e-05 &      & 5.98e-04 &      
+twoNonSquaresInterface4 &     2 & 6.19e-06 & 21.81 & 1.34e-05 & 16.57 & 2.00e+00 &  0.99 & 1.34e-05 & 16.57 & 1.28e-06 & 14.30 & 3.39e-05 & 17.64 
+twoNonSquaresInterface8 &     4 & 3.39e-07 & 18.26 & 8.07e-07 & 16.60 & 2.03e+00 &  0.99 & 8.07e-07 & 16.60 & 8.63e-08 & 14.83 & 1.76e-06 & 19.26 
+twoNonSquaresInterface16 &     8 & 2.06e-08 & 16.46 & 5.18e-08 & 15.58 & 1.34e+00 &  1.51 & 5.18e-08 & 15.58 & 5.53e-09 & 15.61 & 1.12e-07 & 15.71 
+Convergence rates: c0=4.22 c1=4.02 c2=0.17 c3=4.02 c4=3.90 c5=4.14
+
+
+GDM 24c - POLY TZ   ** BROKEN ? **
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -tz=poly -ic=tz -degreex=4 -degreet=4 -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=3  
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 8.94e-09 &      & 1.50e-09 &      & 1.09e+00 &      & 8.94e-09 &      & 6.65e-09 &      & 5.25e-09 &      
+twoNonSquaresInterface4 &     2 & 1.32e-09 &  6.77 & 1.86e-10 &  8.06 & 1.34e+00 &  0.81 & 1.32e-09 &  6.77 & 6.96e-10 &  9.55 & 7.60e-10 &  6.91 
+twoNonSquaresInterface8 &     4 & 1.81e-10 &  7.29 & 4.32e-11 &  4.31 & 1.58e+00 &  0.85 & 1.81e-10 &  7.29 & 5.79e-11 & 12.02 & 1.10e-10 &  6.91 
+Convergence rates: c0=2.81 c1=2.56 c2=-0.27 c3=2.81 c4=3.42 c5=2.79
+
+
+
+
+GDM 24r: 
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+***************************
+******* Tues Feb 2, 2021
+
+Simple GDM materials
+
+
+---------------------------
+Very simple GDM - a0=a1=0  *NOTE* USE modeGDM=-1   (modeGDM=1 is a bad solution)
+conv.p interface.conv -dm=gdm -matFile1=baMatNoGDM1.txt -matFile2=baMatNoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 4.52e-02 &      & 1.97e-01 &      & 1.34e+00 &      & 1.97e-01 &      & 0.00e+00 &      & 1.15e-01 &      
+twoNonSquaresInterface4 &     2 & 2.75e-03 & 16.44 & 1.20e-02 & 16.42 & 1.21e+00 &  1.11 & 1.20e-02 & 16.42 & 0.00e+00 &  0.00 & 7.58e-03 & 15.17 
+twoNonSquaresInterface8 &     4 & 1.38e-04 & 19.93 & 6.02e-04 & 19.93 & 1.12e+00 &  1.08 & 6.02e-04 & 19.93 & 0.00e+00 &  0.00 & 4.00e-04 & 18.95 
+twoNonSquaresInterface16 &     8 & 7.67e-06 & 17.99 & 3.34e-05 & 18.02 & 1.37e+00 &  0.82 & 3.34e-05 & 18.02 & 0.00e+00 &  0.00 & 2.60e-05 & 15.38 
+Convergence rates: c0=4.19 c1=4.19 c2=0.00 c3=4.19 c4=-nan c5=4.06 
+
+
+
+-----------------------------------------------
+CURVILINEAR - use modeGDM=-1
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=4
+
+--- J4 [ Delta(div(E)) * c^2/mu ] = 0 
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 4.54e-02 &      & 1.98e-01 &      & 1.36e+00 &      & 1.98e-01 &      & 5.75e-03 &      & 1.19e-01 &      
+twoNonSquaresInterface4 &     2 & 2.76e-03 & 16.45 & 1.21e-02 & 16.36 & 1.23e+00 &  1.11 & 1.21e-02 & 16.36 & 3.70e-04 & 15.54 & 7.62e-03 & 15.62 
+twoNonSquaresInterface8 &     4 & 1.39e-04 & 19.86 & 6.08e-04 & 19.90 & 1.14e+00 &  1.08 & 6.08e-04 & 19.90 & 2.19e-05 & 16.89 & 4.03e-04 & 18.91 
+twoNonSquaresInterface16 &     8 & 7.76e-06 & 17.91 & 3.39e-05 & 17.94 & 1.37e+00 &  0.83 & 3.39e-05 & 17.94 & 1.32e-06 & 16.59 & 2.54e-05 & 15.87 
+Convergence rates: c0=4.19 c1=4.19 c2=0.01 c3=4.19 c4=4.03 c5=4.08
+
+
+--- J4b  (uxxx - vyyy )  **trouble**
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 5.20e-02 &      & 1.98e-01 &      & 1.36e+00 &      & 1.98e-01 &      & 5.75e-03 &      & 1.19e-01 &      
+twoNonSquaresInterface4 &     2 & 3.10e-03 & 16.77 & 1.21e-02 & 16.36 & 1.23e+00 &  1.11 & 1.21e-02 & 16.36 & 3.68e-04 & 15.62 & 7.62e-03 & 15.62 
+twoNonSquaresInterface8 &     4 & 1.84e-04 & 16.85 & 6.08e-04 & 19.90 & 1.14e+00 &  1.08 & 6.08e-04 & 19.90 & 2.18e-05 & 16.88 & 4.03e-04 & 18.91 
+twoNonSquaresInterface16 &     8 & 1.35e-05 & 13.63 & 3.39e-05 & 17.94 & 1.37e+00 &  0.83 & 3.39e-05 & 17.94 & 1.31e-06 & 16.64 & 2.54e-05 & 15.87 
+twoNonSquaresInterface32 &    16 & 1.43e-06 &  9.44 & 2.01e-06 & 16.87 & 1.03e+00 &  1.33 & 2.01e-06 & 16.87 & 8.12e-08 & 16.13 & 1.82e-06 & 13.96
+
+
+--- J4a   ( uxxx + vxxy )
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 7.63e-02 &      & 1.98e-01 &      & 1.36e+00 &      & 1.98e-01 &      & 5.79e-03 &      & 1.19e-01 &      
+twoNonSquaresInterface4 &     2 & 5.32e-03 & 14.34 & 1.21e-02 & 16.36 & 1.23e+00 &  1.11 & 1.21e-02 & 16.36 & 3.73e-04 & 15.52 & 7.62e-03 & 15.62 
+twoNonSquaresInterface8 &     4 & 3.22e-04 & 16.52 & 6.08e-04 & 19.90 & 1.14e+00 &  1.08 & 6.08e-04 & 19.90 & 2.19e-05 & 17.03 & 4.03e-04 & 18.91 
+twoNonSquaresInterface16 &     8 & 1.98e-05 & 16.26 & 3.39e-05 & 17.94 & 1.37e+00 &  0.83 & 3.39e-05 & 17.94 & 1.30e-06 & 16.85 & 2.54e-05 & 15.87 
+Convergence rates: c0=3.98 c1=4.19 c2=0.01 c3=4.19 c4=4.05 c5=4.08 
+
+
+
+
+-----------------------------------------------
+CURVILINEAR ***modeHDM=1 --> FUNNY SOLUTION - NOT Div(E)=0 ??
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=4
+
+
+
+USE SOA residual: *broken*
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.04e-02 &      & 1.27e-02 &      & 7.66e+00 &      & 1.27e-02 &      & 8.74e-04 &      & 1.66e-02 &      
+twoNonSquaresInterface4 &     2 & 5.52e-04 & 18.84 & 7.07e-04 & 17.96 & 7.57e+00 &  1.01 & 7.07e-04 & 17.96 & 4.49e-05 & 19.47 & 1.06e-03 & 15.66 
+twoNonSquaresInterface8 &     4 & 5.01e-05 & 11.02 & 4.62e-05 & 15.30 & 7.46e+00 &  1.01 & 5.01e-05 & 14.11 & 3.37e-06 & 13.32 & 8.69e-05 & 12.20 
+twoNonSquaresInterface16 &     8 & 5.98e-06 &  8.38 & 4.96e-06 &  9.31 & 1.55e+01 &  0.48 & 5.98e-06 &  8.38 & 3.91e-07 &  8.62 & 1.06e-05 &  8.20 
+Convergence rates: c0=3.58 c1=3.79 c2=-0.30 c3=3.70 c4=3.71 c5=3.54 
+
+
+
+Jump J5a: OK 
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.13e-02 &      & 2.01e-02 &      & 7.66e+00 &      & 2.01e-02 &      & 1.04e-03 &      & 1.44e-02 &      
+twoNonSquaresInterface4 &     2 & 5.54e-04 & 20.40 & 9.47e-04 & 21.22 & 7.57e+00 &  1.01 & 9.47e-04 & 21.22 & 5.10e-05 & 20.39 & 1.02e-03 & 14.12 
+twoNonSquaresInterface8 &     4 & 3.13e-05 & 17.70 & 5.08e-05 & 18.64 & 7.46e+00 &  1.01 & 5.08e-05 & 18.64 & 2.78e-06 & 18.35 & 6.88e-05 & 14.83 
+twoNonSquaresInterface16 &     8 & 1.88e-06 & 16.65 & 2.98e-06 & 17.05 & 1.55e+01 &  0.48 & 2.98e-06 & 17.05 & 1.66e-07 & 16.75 & 4.66e-06 & 14.76 
+twoNonSquaresInterface32 &    16 & 1.17e-07 & 16.07 & 1.83e-07 & 16.28 & 7.32e+00 &  2.12 & 1.83e-07 & 16.28 & 1.03e-08 & 16.12 & 3.22e-07 & 14.47 
+Convergence rates: c0=4.13 c1=4.18 c2=-0.09 c3=4.18 c4=4.15 c5=3.87 
+
+
+
+
+JUMP 4a: use div *broken* --> TURN OFF
+
+
+JUMP 4: add factors of c^2/mu:
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.10e-02 &      & 9.43e-03 &      & 7.66e+00 &      & 1.10e-02 &      & 9.02e-04 &      & 1.15e-02 &      
+twoNonSquaresInterface4 &     2 & 5.41e-04 & 20.33 & 5.63e-04 & 16.75 & 7.57e+00 &  1.01 & 5.63e-04 & 19.54 & 4.15e-05 & 21.73 & 7.27e-04 & 15.82 
+twoNonSquaresInterface8 &     4 & 3.05e-05 & 17.74 & 3.41e-05 & 16.51 & 7.46e+00 &  1.01 & 3.41e-05 & 16.51 & 2.29e-06 & 18.12 & 4.98e-05 & 14.60 
+twoNonSquaresInterface16 &     8 & 1.83e-06 & 16.67 & 2.10e-06 & 16.24 & 1.55e+01 &  0.48 & 2.10e-06 & 16.24 & 1.38e-07 & 16.59 & 3.50e-06 & 14.23 
+Convergence rates: c0=4.18 c1=4.04 c2=-0.30 c3=4.11 c4=4.22 c5=3.89 
+
+
+START:
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 1.42e-03 &      & 8.47e-03 &      & 7.66e+00 &      & 8.47e-03 &      & 5.68e-04 &      & 6.76e-03 &      
+twoNonSquaresInterface4 &     2 & 2.10e-04 &  6.76 & 5.29e-04 & 16.01 & 7.57e+00 &  1.01 & 5.29e-04 & 16.01 & 3.22e-05 & 17.64 & 5.13e-04 & 13.18 
+twoNonSquaresInterface8 &     4 & 1.66e-05 & 12.65 & 3.23e-05 & 16.38 & 7.46e+00 &  1.01 & 3.23e-05 & 16.38 & 1.91e-06 & 16.86 & 3.81e-05 & 13.46 
+
+twoNonSquaresInterface16 &     8 & 1.08e-06 & 15.37 & 1.98e-06 & 16.31 & 1.55e+01 &  0.48 & 1.98e-06 & 16.31 & 1.18e-07 & 16.19 & 2.72e-06 & 14.01 
+twoNonSquaresInterface32 &    16 & 6.84e-08 & 15.79 & 1.24e-07 & 15.97 & 7.32e+00 &  2.12 & 1.24e-07 & 15.97 & 7.38e-09 & 15.99 & 1.95e-07 & 13.95 
+Convergence rates: c0=3.63 c1=4.02 c2=-0.09 c3=4.02 c4=4.06 c5=3.77 
+
+
+
+conv.p interface.conv -dm=gdm -matFile1=baIsoGDM1.txt -matFile2=baIsoGDM4.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+***************************
+******* Mon Feb 1, 2021
+
+**NEW GDM WITH SOA FIX **
+
+2D ORDER=4
+conv.p interface.conv -kx=2 -ky=1 -kz=0 -ic=pmic -eps1=1 -eps2=2. -dm=gdm -npv=1 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1 -a02=2 -a12=.05 -b02=2 -b12=.1   -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoSquaresInterface -tf=.5 -tp=.1 -order=4 -useSosupDissipation=1 -ng=3
+
+twoSquaresInterface2 &     1 & 4.91e-03 &      & 9.85e-03 &      & 1.53e+00 &      & 9.85e-03 &      & 6.88e-05 &      & 8.27e-03 &      
+twoSquaresInterface4 &     2 & 1.94e-04 & 25.31 & 3.89e-04 & 25.32 & 1.53e+00 &  1.00 & 3.89e-04 & 25.32 & 3.10e-06 & 22.19 & 4.06e-04 & 20.37 
+twoSquaresInterface8 &     4 & 1.33e-05 & 14.59 & 1.68e-05 & 23.15 & 3.44e+00 &  0.44 & 1.68e-05 & 23.15 & 5.70e-07 &  5.44 & 1.96e-05 & 20.71 
+twoSquaresInterface16 &     8 & 2.66e-06 &  5.00 & 9.03e-07 & 18.60 & 2.03e+01 &  0.17 & 2.66e-06 &  6.32 & 1.56e-07 &  3.65 & 2.44e-06 &  8.03 
+Convergence rates: c0=3.64 c1=4.48 c2=-1.24 c3=4.01 c4=2.88 c5=3.96
+
+2D ORDER=2 
+conv.p interface.conv -kx=2 -ky=1 -kz=0 -ic=pmic -eps1=1 -eps2=2. -dm=gdm -npv=1 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1 -a02=2 -a12=.05 -b02=2 -b12=.1   -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoSquaresInterface -tf=.5 -tp=.1 -order=2 -useSosupDissipation=1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 9.94e-02 &      & 1.99e-01 &      & 1.36e+00 &      & 1.99e-01 &      & 1.61e-03 &      & 1.41e-01 &      
+twoSquaresInterface4 &     2 & 1.65e-02 &  6.02 & 3.31e-02 &  6.01 & 1.43e+00 &  0.95 & 3.31e-02 &  6.01 & 3.51e-04 &  4.59 & 2.67e-02 &  5.28 
+twoSquaresInterface8 &     4 & 2.72e-03 &  6.07 & 5.46e-03 &  6.06 & 1.44e+00 &  0.99 & 5.46e-03 &  6.06 & 7.98e-05 &  4.40 & 4.84e-03 &  5.52 
+twoSquaresInterface16 &     8 & 5.73e-04 &  4.75 & 1.15e-03 &  4.75 & 1.45e+00 &  0.99 & 1.15e-03 &  4.75 & 1.86e-05 &  4.29 & 1.06e-03 &  4.57 
+twoSquaresInterface32 &    16 & 1.27e-04 &  4.51 & 2.55e-04 &  4.51 & 1.45e+00 &  1.00 & 2.55e-04 &  4.51 & 4.48e-06 &  4.15 & 2.46e-04 &  4.31 
+Convergence rates: c0=2.41 c1=2.41 c2=-0.02 c3=2.41 c4=2.12 c5=2.30 
+
+
+3D ORDER=4
+conv.p interface.conv -kx=2 -ky=1 -kz=0 -ic=pmic -eps1=1 -eps2=2. -dm=gdm -npv=1 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1 -a02=2 -a12=.05 -b02=2 -b12=.1   -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoBoxesInterface -tf=.5 -tp=.1 -order=4 -useSosupDissipation=1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+  twoBoxesInterface2 &     1 & 7.79e-03 &      & 1.56e-02 &      & 9.72e-06 &      & 1.56e-02 &      & 5.17e-05 &      & 1.23e-02 &      
+  twoBoxesInterface4 &     2 & 3.31e-04 & 23.53 & 6.64e-04 & 23.49 & 3.67e-07 & 26.49 & 6.64e-04 & 23.49 & 2.20e-06 & 23.50 & 5.41e-04 & 22.74 
+  twoBoxesInterface8 &     4 & 1.45e-05 & 22.83 & 2.91e-05 & 22.82 & 1.37e-08 & 26.79 & 2.91e-05 & 22.82 & 1.06e-07 & 20.75 & 2.73e-05 & 19.82 
+Convergence rates: c0=4.53 c1=4.53 c2=4.74 c3=4.53 c4=4.46 c5=4.41
+
+
+
+3D ORDER=2
+conv.p interface.conv -kx=2 -ky=1 -kz=0 -ic=pmic -eps1=1 -eps2=2. -dm=gdm -npv=1 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1 -a02=2 -a12=.05 -b02=2 -b12=.1   -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoBoxesInterface -tf=.5 -tp=.1 -order=2 -useSosupDissipation=1 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+  twoBoxesInterface2 &     1 & 1.49e-01 &      & 3.00e-01 &      & 5.84e-05 &      & 3.00e-01 &      & 1.23e-03 &      & 2.05e-01 &      
+  twoBoxesInterface4 &     2 & 2.87e-02 &  5.19 & 5.76e-02 &  5.21 & 9.13e-06 &  6.40 & 5.76e-02 &  5.21 & 2.31e-04 &  5.32 & 4.15e-02 &  4.94 
+  twoBoxesInterface8 &     4 & 5.03e-03 &  5.71 & 1.01e-02 &  5.70 & 2.97e-06 &  3.07 & 1.01e-02 &  5.70 & 5.38e-05 &  4.29 & 7.62e-03 &  5.45 
+
+
+ORDER=4 **TROUBLE*** THIS IS A LOUSY SOLUTION !!!!
+conv.p interface.conv -dm=gdm -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.09e-01 &      & 2.53e-02 &      & 1.70e+02 &      & 1.09e-01 &      & 5.24e-03 &      & 1.01e-04 &      
+twoSquaresInterface4 &     2 & 2.97e-02 &  3.67 & 6.93e-03 &  3.65 & 3.91e+02 &  0.43 & 2.97e-02 &  3.67 & 1.51e-03 &  3.47 & 2.78e-05 &  3.63 
+twoSquaresInterface8 &     4 & 7.76e-03 &  3.83 & 1.81e-03 &  3.83 & 2.14e+02 &  1.83 & 7.76e-03 &  3.83 & 4.01e-04 &  3.77 & 8.76e-06 &  3.17 
+Convergence rates: c0=1.91 c1=1.90 c2=-0.17 c3=1.91 c4=1.85 c5=1.76 
+
+
+
+ORDER=4: TRIG: 
+conv.p interface.conv -dm=gdm -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt kx==1 -ky=.5 -tz=trig -ic=tz -bc=d -cg=twoSquaresInterface -order=4  -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 8.99e-05 &      & 1.40e-04 &      & 2.00e+00 &      & 1.40e-04 &      & 1.36e-05 &      & 2.72e-04 &      
+twoSquaresInterface4 &     2 & 3.23e-06 & 27.83 & 6.47e-06 & 21.64 & 1.15e+00 &  1.74 & 6.47e-06 & 21.64 & 1.57e-06 &  8.66 & 1.34e-05 & 20.30 
+twoSquaresInterface8 &     4 & 1.23e-07 & 26.26 & 3.50e-07 & 18.49 & 2.00e+00 &  0.57 & 3.50e-07 & 18.49 & 1.41e-07 & 11.13 & 7.34e-07 & 18.26 
+Convergence rates: c0=4.76 c1=4.32 c2=0.00 c3=4.32 c4=3.30 c5=4.27
+
+
+ORDER=4: POLY: 
+conv.p interface.conv -dm=gdm -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -degreex=4 -degreet=4 -tz=poly -ic=tz -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=3
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 1.08e-09 &      & 7.54e-09 &      & 1.37e+00 &      & 7.54e-09 &      & 9.69e-09 &      & 6.88e-09 &      
+twoSquaresInterface4 &     2 & 1.48e-10 &  7.30 & 7.03e-10 & 10.73 & 4.05e+00 &  0.34 & 7.03e-10 & 10.73 & 1.23e-09 &  7.88 & 1.11e-09 &  6.20 
+twoSquaresInterface8 &     4 & 1.42e-11 & 10.42 & 5.60e-11 & 12.55 & 1.87e+00 &  2.17 & 5.60e-11 & 12.55 & 1.15e-10 & 10.70 & 1.48e-10 &  7.50 
+Convergence rates: c0=3.12 c1=3.54 c2=-0.22 c3=3.54 c4=3.20 c5=2.77 
+
+
+GDM with mat files
+conv.p interface.conv -dm=gdm -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+
+ORDER=2:
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.08e+00 &      & 2.89e+00 &      & 1.66e+02 &      & 3.08e+00 &      & 1.03e-01 &      & 2.61e-02 &      
+twoSquaresInterface4 &     2 & 8.00e-01 &  3.85 & 7.52e-01 &  3.84 & 3.65e+02 &  0.45 & 8.00e-01 &  3.85 & 3.48e-02 &  2.96 & 6.27e-03 &  4.16 
+twoSquaresInterface8 &     4 & 2.02e-01 &  3.96 & 1.91e-01 &  3.94 & 2.14e+02 &  1.71 & 2.02e-01 &  3.96 & 9.75e-03 &  3.57 & 1.55e-03 &  4.05 
+twoSquaresInterface16 &     8 & 5.08e-02 &  3.98 & 4.79e-02 &  3.99 & 2.33e+02 &  0.92 & 5.08e-02 &  3.98 & 2.57e-03 &  3.79 & 3.85e-04 &  4.03 
+twoSquaresInterface32 &    16 & 1.28e-02 &  3.97 & 1.20e-02 &  3.99 & 2.43e+02 &  0.96 & 1.28e-02 &  3.97 & 6.57e-04 &  3.91 & 9.59e-05 &  4.01 
+Convergence rates: c0=1.98 c1=1.98 c2=-0.05 c3=1.98 c4=1.83 c5=2.02 
+
+
+
+***************************
+******* Sun Jan 30, 2021
+
+Start on CURVLINEAR
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=1 -ng=5
+
+BEFORE FIX: 
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 3.12e-03 &      & 4.24e-03 &      & 5.51e-03 &      & 4.24e-03 &      & 4.14e-03 &      
+twoNonSquaresInterface4 &     2 & 1.24e-04 & 25.16 & 1.98e-04 & 21.41 & 2.58e-04 & 21.36 & 1.98e-04 & 21.41 & 2.58e-04 & 16.05 
+twoNonSquaresInterface8 &     4 & 9.52e-06 & 13.03 & 1.22e-05 & 16.23 & 1.36e-05 & 18.97 & 1.22e-05 & 16.23 & 1.69e-05 & 15.27 
+twoNonSquaresInterface16 &     8 & 9.42e-07 & 10.11 & 1.01e-06 & 12.08 & 8.29e-07 & 16.41 & 1.01e-06 & 12.08 & 1.63e-06 & 10.37 
+twoNonSquaresInterface32 &    16 & 1.32e-07 &  7.14 & 1.02e-07 &  9.90 & 5.18e-08 & 16.00 & 1.32e-07 &  7.65 & 1.75e-07 &  9.31 
+Convergence rates: c0=3.61 c1=3.83 c2=4.17 c3=3.76 c4=3.64 
+
+
+
+ORDER=2 
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoNonSquaresInterface -order=2 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=1 -ng=5
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoNonSquaresInterface2 &     1 & 7.01e-02 &      & 8.74e-02 &      & 1.11e-01 &      & 8.74e-02 &      & 7.71e-02 &      
+twoNonSquaresInterface4 &     2 & 1.24e-02 &  5.65 & 1.54e-02 &  5.68 & 2.08e-02 &  5.34 & 1.54e-02 &  5.68 & 1.54e-02 &  5.01 
+twoNonSquaresInterface8 &     4 & 2.36e-03 &  5.25 & 2.90e-03 &  5.31 & 4.42e-03 &  4.71 & 2.90e-03 &  5.31 & 4.27e-03 &  3.61 
+twoNonSquaresInterface16 &     8 & 5.10e-04 &  4.63 & 6.71e-04 &  4.32 & 1.08e-03 &  4.09 & 6.71e-04 &  4.32 & 1.21e-03 &  3.53 
+twoNonSquaresInterface32 &    16 & 1.19e-04 &  4.29 & 1.66e-04 &  4.04 & 2.69e-04 &  4.01 & 1.66e-04 &  4.04 & 3.44e-04 &  3.52 
+twoNonSquaresInterface64 &    32 & 2.87e-05 &  4.15 & 4.13e-05 &  4.02 & 6.73e-05 &  4.00 & 4.13e-05 &  4.02 & 9.73e-05 &  3.54 
+Convergence rates: c0=2.25 c1=2.20 c2=2.12 c3=2.20 c4=1.90 
+
+
+
+
+
+REVISIT ORDER=4 INTERFACE --> FIXED BUGS
+
+order=4 rectangular:
+
+Hz is broken ... fixed 
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.5 -modeGDM=1 -ng=5
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.34e-03 &      & 4.32e-03 &      & 1.93e-02 &      & 4.32e-03 &      & 4.18e-03 &      
+twoSquaresInterface4 &     2 & 1.50e-04 & 22.27 & 1.90e-04 & 22.74 & 1.43e-03 & 13.50 & 1.90e-04 & 22.74 & 2.58e-04 & 16.20 
+twoSquaresInterface8 &     4 & 7.32e-06 & 20.49 & 9.18e-06 & 20.70 & 9.24e-05 & 15.48 & 9.18e-06 & 20.70 & 1.73e-05 & 14.91 
+twoSquaresInterface16 &     8 & 4.02e-07 & 18.21 & 5.43e-07 & 16.91 & 5.74e-06 & 16.10 & 5.43e-07 & 16.91 & 1.22e-06 & 14.18 
+twoSquaresInterface32 &    16 & 2.36e-08 & 17.03 & 3.37e-08 & 16.11 & 3.55e-07 & 16.17 & 3.37e-08 & 16.11 & 8.60e-08 & 14.19 
+twoSquaresInterface64 &    32 & 1.43e-09 & 16.50 & 2.10e-09 & 16.05 & 2.20e-08 & 16.14 & 2.10e-09 & 16.05 & 6.03e-09 & 14.26 
+twoSquaresInterface128 &    64 & 8.76e-11 & 16.32 & 1.31e-10 & 16.03 & 1.37e-09 & 16.06 & 1.31e-10 & 16.03 & 4.21e-10 & 14.32 
+Convergence rates: c0=4.19 c1=4.14 c2=3.97 c3=4.14 c4=3.86
+
+
+
+
+EXACT degree=[4,4]
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -degreex=4 -degreet=4 -tz=poly -ic=tz -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=0 -tf=.5 -tp=.1 -modeGDM=1 -ng=2
+
+
+***************************
+******* Wed Jan 27, 2021
+
+REVISIT ORDER=4 INTERFACE
+
+
+++++++++++++++ ALTERED JUMP CONDITIONS ++++++
+
+TRY TRIG:
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -tz=trig -ic=tz -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1 -tf=.5 -tp=.1 -modeGDM=1 -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.46e-05 &      & 1.33e-04 &      & 0.00e+00 &      & 1.33e-04 &      & 3.23e-04 &      
+twoSquaresInterface4 &     2 & 2.03e-06 & 31.82 & 8.71e-06 & 15.27 & 0.00e+00 &  0.00 & 8.71e-06 & 15.27 & 1.83e-05 & 17.65 
+twoSquaresInterface8 &     4 & 7.24e-08 & 28.04 & 5.63e-07 & 15.47 & 0.00e+00 &  0.00 & 5.63e-07 & 15.47 & 1.12e-06 & 16.34 
+twoSquaresInterface16 &     8 & 4.70e-09 & 15.40 & 3.53e-08 & 15.95 & 0.00e+00 &  0.00 & 3.53e-08 & 15.95 & 6.56e-08 & 17.07 
+twoSquaresInterface32 &    16 & 2.87e-10 & 16.38 & 2.23e-09 & 15.83 & 0.00e+00 &  0.00 & 2.23e-09 & 15.83 & 4.02e-09 & 16.32 
+twoSquaresInterface64 &    32 & 1.84e-11 & 15.60 & 1.40e-10 & 15.93 & 0.00e+00 &  0.00 & 1.40e-10 & 15.93 & 2.53e-10 & 15.89 
+Convergence rates: c0=4.32 c1=3.97 c2=-nan c3=3.97 c4=4.06
+
+
+TRY POLY: NOT-EXACT  ?? ***TROUBLE AT TOP *** !
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -degreex=4 -degreet=4 -tz=poly -ic=tz -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=0 -tf=.5 -tp=.1 -modeGDM=1 -ng=2
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.22e-04 &      & 2.25e-05 &      & 0.00e+00 &      & 2.22e-04 &      & 5.96e-05 &      
+twoSquaresInterface4 &     2 & 5.80e-05 &  3.83 & 5.62e-06 &  4.00 & 0.00e+00 &  0.00 & 5.80e-05 &  3.83 & 2.04e-05 &  2.92 
+Convergence rates: c0=1.94 c1=2.00 c2=-nan c3=1.94 c4=1.55 
+
+
+
+Altered Jump with SOA residuals * MAYBE WORKS*
+conv.p interface.conv -dm=none -eps1=2 -eps2=2 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1 -tf=.5 -tp=.1 -modeGDM=1 -ng=6
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.32e-03 &      & 4.31e-03 &      & 0.00e+00 &      & 4.31e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.52e-04 & 21.84 & 1.93e-04 & 22.33 & 0.00e+00 &  0.00 & 1.93e-04 & 22.33 & 2.80e-04 & 15.36 
+twoSquaresInterface8 &     4 & 7.40e-06 & 20.54 & 9.29e-06 & 20.78 & 0.00e+00 &  0.00 & 9.29e-06 & 20.78 & 5.91e-05 &  4.74 
+twoSquaresInterface16 &     8 & 4.09e-07 & 18.09 & 5.54e-07 & 16.77 & 0.00e+00 &  0.00 & 5.54e-07 & 16.77 & 1.44e-05 &  4.10 
+twoSquaresInterface32 &    16 & 2.38e-08 & 17.18 & 3.39e-08 & 16.34 & 0.00e+00 &  0.00 & 3.39e-08 & 16.34 & 3.59e-06 &  4.01 
+Convergence rates: c0=4.27 c1=4.24 c2=-nan c3=4.24 c4=2.47 
+
+
+
+Altered Jump but still high-order residuals 
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+twoSquaresInterface2 &     1 & 5.97e-03 &      & 4.46e-03 &      & 0.00e+00 &      & 5.97e-03 &      & 5.98e-03 &      
+twoSquaresInterface4 &     2 & 6.39e-04 &  9.34 & 2.62e-04 & 17.02 & 0.00e+00 &  0.00 & 6.39e-04 &  9.34 & 5.66e-04 & 10.57 
+twoSquaresInterface8 &     4 & 4.81e-05 & 13.28 & 1.49e-05 & 17.58 & 0.00e+00 &  0.00 & 4.81e-05 & 13.28 & 4.56e-05 & 12.41 
+twoSquaresInterface16 &     8 & 3.15e-06 & 15.27 & 8.70e-07 & 17.13 & 0.00e+00 &  0.00 & 3.15e-06 & 15.27 & 3.49e-06 & 13.07 
+twoSquaresInterface32 &    16 & 2.02e-07 & 15.59 & 5.21e-08 & 16.70 & 0.00e+00 &  0.00 & 2.02e-07 & 15.59 & 2.66e-07 & 13.12 
+Convergence rates: c0=3.74 c1=4.10 c2=-nan c3=3.74 c4=3.63 
+
+++++++++++ USE new interfaceOpt:  ++++++++++
+
+CHECK TALL - CELL
+TCR4=BAD cfl=.9, cfl=.5 OK !!
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterfaceTCR4 -order=4 -useSosupDissipation=1  -tf=2 -tp=.1 -modeGDM=1 -ng=4 -cfl=.5
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceTCR42 &     1 & 1.69e-02 &      & 1.94e-02 &      & 0.00e+00 &      & 1.94e-02 &      & 2.10e-02 &      
+twoSquaresInterfaceTCR44 &     2 & 8.52e-04 & 19.84 & 9.65e-04 & 20.10 & 0.00e+00 &  0.00 & 9.65e-04 & 20.10 & 8.52e-04 & 24.65 
+twoSquaresInterfaceTCR48 &     4 & 4.70e-05 & 18.13 & 5.43e-05 & 17.77 & 0.00e+00 &  0.00 & 5.43e-05 & 17.77 & 4.64e-05 & 18.36 
+twoSquaresInterfaceTCR416 &     8 & 2.79e-06 & 16.85 & 3.29e-06 & 16.50 & 0.00e+00 &  0.00 & 3.29e-06 & 16.50 & 2.83e-06 & 16.40 
+Convergence rates: c0=4.19 c1=4.17 c2=-nan c3=4.17 c4=4.28
+
+
+
+TCR2= OK
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterfaceTCR2 -order=4 -useSosupDissipation=1  -tf=2 -tp=.1 -modeGDM=1 -ng=4
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterfaceTCR22 &     1 & 1.65e-02 &      & 1.92e-02 &      & 0.00e+00 &      & 1.92e-02 &      & 1.49e-02 &      
+twoSquaresInterfaceTCR24 &     2 & 8.02e-04 & 20.57 & 9.05e-04 & 21.22 & 0.00e+00 &  0.00 & 9.05e-04 & 21.22 & 7.43e-04 & 20.05 
+twoSquaresInterfaceTCR28 &     4 & 4.28e-05 & 18.74 & 4.92e-05 & 18.39 & 0.00e+00 &  0.00 & 4.92e-05 & 18.39 & 4.23e-05 & 17.57 
+twoSquaresInterfaceTCR216 &     8 & 2.50e-06 & 17.12 & 2.95e-06 & 16.68 & 0.00e+00 &  0.00 & 2.95e-06 & 16.68 & 2.57e-06 & 16.46 
+Convergence rates: c0=4.23 c1=4.22 c2=-nan c3=4.22 c4=4.16 
+
+
+
+
+2d Order4 Rectangular -- original version (High-order jumps for SOA)
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.41e-03 &      & 4.03e-03 &      & 0.00e+00 &      & 4.03e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.39e-04 & 17.34 & 1.73e-04 & 23.29 & 0.00e+00 &  0.00 & 1.73e-04 & 23.29 & 2.63e-04 & 16.35 
+twoSquaresInterface8 &     4 & 7.31e-06 & 19.02 & 8.28e-06 & 20.89 & 0.00e+00 &  0.00 & 8.28e-06 & 20.89 & 1.64e-05 & 16.04 
+twoSquaresInterface16 &     8 & 4.07e-07 & 17.96 & 4.97e-07 & 16.66 & 0.00e+00 &  0.00 & 4.97e-07 & 16.66 & 1.13e-06 & 14.51 
+twoSquaresInterface32 &    16 & 2.35e-08 & 17.32 & 3.02e-08 & 16.46 & 0.00e+00 &  0.00 & 3.02e-08 & 16.46 & 7.74e-08 & 14.60 
+twoSquaresInterface64 &    32 & 1.40e-09 & 16.79 & 1.87e-09 & 16.15 & 0.00e+00 &  0.00 & 1.87e-09 & 16.15 & 5.33e-09 & 14.52 
+Convergence rates: c0=4.15 c1=4.19 c2=-nan c3=4.19 c4=3.92
+
+
+***************************
+******* Sat Jan 16, 2021
+
+
+START ON FIXING INTERFACE - SOA update for FOA scheme
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+FIX MADE TO interface3d.bf --> ds0 = dsBig was missing --> NO, WAS OK 
+
+
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+TURN OFF PROJECTION
+
+
+
+
+avoidCrossTerms=1 AND USE 2nd-order residuals for SOA update
+**BAD***
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.12e-03 &      & 4.19e-03 &      & 5.69e-03 &      & 4.19e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.25e-04 & 24.96 & 2.02e-04 & 20.74 & 2.66e-04 & 21.39 & 2.02e-04 & 20.74 & 2.83e-04 & 15.19 
+twoSquaresInterface8 &     4 & 9.56e-06 & 13.08 & 1.23e-05 & 16.42 & 1.40e-05 & 19.00 & 1.23e-05 & 16.42 & 4.49e-05 &  6.30 
+twoSquaresInterface16 &     8 & 9.40e-07 & 10.17 & 1.02e-06 & 12.06 & 8.50e-07 & 16.47 & 1.02e-06 & 12.06 & 1.07e-05 &  4.20 
+twoSquaresInterface32 &    16 & 1.31e-07 &  7.18 & 1.02e-07 & 10.00 & 5.24e-08 & 16.22 & 1.31e-07 &  7.79 & 2.66e-06 &  4.02 
+Convergence rates: c0=3.61 c1=3.83 c2=4.17 c3=3.76 c4=2.60 
+
+
+
+
+
+
+avoidCrossTerms=1 (but still use high-order SOA residuals) ... this change was not really needed, already being done
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.41e-03 &      & 4.03e-03 &      & 5.72e-03 &      & 4.03e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.39e-04 & 17.34 & 1.73e-04 & 23.29 & 2.62e-04 & 21.83 & 1.73e-04 & 23.29 & 2.63e-04 & 16.35 
+twoSquaresInterface8 &     4 & 7.31e-06 & 19.02 & 8.28e-06 & 20.89 & 1.39e-05 & 18.85 & 8.28e-06 & 20.89 & 1.64e-05 & 16.04 
+twoSquaresInterface16 &     8 & 4.07e-07 & 17.96 & 4.97e-07 & 16.66 & 8.50e-07 & 16.35 & 4.97e-07 & 16.66 & 1.13e-06 & 14.51 
+Convergence rates: c0=4.18 c1=4.33 c2=4.24 c3=4.33 c4=3.97 
+
+
+
+
+**OLD RUN***
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+
+-----> REAL ORDER=2 stage 1 interface --> accuracy degrades WHY?
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.07e-03 &      & 1.29e-02 &      & 2.40e-02 &      & 1.29e-02 &      & 1.42e-02 &      
+twoSquaresInterface4 &     2 & 2.17e-04 & 23.36 & 5.53e-04 & 23.33 & 1.03e-03 & 23.30 & 5.53e-04 & 23.33 & 7.66e-04 & 18.54 
+twoSquaresInterface8 &     4 & 1.01e-05 & 21.49 & 2.58e-05 & 21.43 & 4.81e-05 & 21.41 & 2.58e-05 & 21.43 & 4.69e-05 & 16.33 
+twoSquaresInterface16 &     8 & 9.74e-07 & 10.37 & 1.48e-06 & 17.43 & 2.75e-06 & 17.49 & 1.48e-06 & 17.43 & 7.29e-06 &  6.43 
+twoSquaresInterface32 &    16 & 1.12e-07 &  8.70 & 9.21e-08 & 16.07 & 1.71e-07 & 16.08 & 1.12e-07 & 13.21 & 1.49e-06 &  4.89 
+twoSquaresInterface64 &    32 & 1.34e-08 &  8.36 & 6.56e-09 & 14.04 & 1.12e-08 & 15.27 & 1.34e-08 &  8.36 & 3.63e-07 &  4.10 
+Convergence rates: c0=3.68 c1=4.18 c2=4.20 c3=4.01 c4=3.03 
+
+
+---> ORDER=4 RESIDUALS FOR SOA STAGE:
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.41e-03 &      & 4.03e-03 &      & 5.72e-03 &      & 4.03e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.39e-04 & 17.34 & 1.73e-04 & 23.29 & 2.62e-04 & 21.83 & 1.73e-04 & 23.29 & 2.63e-04 & 16.35 
+twoSquaresInterface8 &     4 & 7.31e-06 & 19.02 & 8.28e-06 & 20.89 & 1.39e-05 & 18.85 & 8.28e-06 & 20.89 & 1.64e-05 & 16.04 
+twoSquaresInterface16 &     8 & 4.07e-07 & 17.96 & 4.97e-07 & 16.66 & 8.50e-07 & 16.35 & 4.97e-07 & 16.66 & 1.13e-06 & 14.51 
+twoSquaresInterface32 &    16 & 2.35e-08 & 17.32 & 3.02e-08 & 16.46 & 5.24e-08 & 16.22 & 3.02e-08 & 16.46 & 7.74e-08 & 14.60 
+Convergence rates: c0=4.17 c1=4.25 c2=4.17 c3=4.25 c4=3.94 
+
+
+
+
+
+GDM with mat files
+conv.p interface.conv -dm=gdm -matFile1=baMatGDM1.txt -matFile2=baMatGDM2.txt -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 6.07e-03 &      & 7.20e-03 &      & 1.70e+02 &      & 7.20e-03 &      & 4.61e-04 &      & 5.28e-05 &      
+twoSquaresInterface4 &     2 & 3.81e-04 & 15.93 & 3.58e-04 & 20.11 & 3.91e+02 &  0.43 & 3.81e-04 & 18.90 & 2.09e-05 & 22.06 & 3.52e-06 & 15.00 
+twoSquaresInterface8 &     4 & 2.33e-05 & 16.35 & 2.20e-05 & 16.27 & 2.14e+02 &  1.83 & 2.33e-05 & 16.35 & 1.14e-06 & 18.33 & 2.24e-07 & 15.71 
+twoSquaresInterface16 &     8 & 1.47e-06 & 15.85 & 1.39e-06 & 15.83 & 2.26e+02 &  0.95 & 1.47e-06 & 15.85 & 7.54e-08 & 15.12 & 1.40e-08 & 16.00 
+twoSquaresInterface32 &    16 & 9.26e-08 & 15.87 & 8.72e-08 & 15.94 & 2.36e+02 &  0.96 & 9.26e-08 & 15.87 & 5.03e-09 & 14.99 & 8.77e-10 & 15.96 
+Convergence rates: c0=4.00 c1=4.07 c2=-0.02 c3=4.05 c4=4.11 c5=3.97 
+
+
+
+
+PMI : NO-GDM 
+conv.p interface.conv -dm=none -eps1=2 -eps2=3 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=1 -ng=5
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.41e-03 &      & 4.03e-03 &      & 5.72e-03 &      & 4.03e-03 &      & 4.30e-03 &      
+twoSquaresInterface4 &     2 & 1.39e-04 & 17.34 & 1.73e-04 & 23.29 & 2.62e-04 & 21.83 & 1.73e-04 & 23.29 & 2.63e-04 & 16.35 
+twoSquaresInterface8 &     4 & 7.31e-06 & 19.02 & 8.28e-06 & 20.89 & 1.39e-05 & 18.85 & 8.28e-06 & 20.89 & 1.64e-05 & 16.04 
+twoSquaresInterface16 &     8 & 4.07e-07 & 17.96 & 4.97e-07 & 16.66 & 8.50e-07 & 16.35 & 4.97e-07 & 16.66 & 1.13e-06 & 14.51 
+twoSquaresInterface32 &    16 & 2.35e-08 & 17.32 & 3.02e-08 & 16.46 & 5.24e-08 & 16.22 & 3.02e-08 & 16.46 & 7.74e-08 & 14.60 
+Convergence rates: c0=4.17 c1=4.25 c2=4.17 c3=4.25 c4=3.94 
+
+
+
+
+
+**** NO GDM TRIG 
+conv.p interface.conv -dm=none -npv=1 1 -degreex=4 -degreet=4 -tz=trig -ic=tz -eps1=1 -eps2=2 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=4
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 3.51e-05 &      & 2.49e-05 &      & 4.98e-05 &      & 3.51e-05 &      & 1.81e-04 &      
+twoSquaresInterface4 &     2 & 1.25e-06 & 28.08 & 7.90e-07 & 31.52 & 1.58e-06 & 31.52 & 1.25e-06 & 28.08 & 5.68e-06 & 31.87 
+twoSquaresInterface8 &     4 & 3.40e-08 & 36.76 & 1.77e-08 & 44.63 & 3.53e-08 & 44.76 & 3.40e-08 & 36.76 & 2.03e-07 & 27.98 
+twoSquaresInterface16 &     8 & 1.60e-09 & 21.25 & 1.10e-09 & 16.09 & 2.20e-09 & 16.05 & 1.60e-09 & 21.25 & 7.60e-09 & 26.71 
+Convergence rates: c0=4.85 c1=4.89 c2=4.89 c3=4.85 c4=4.84 
+
+
+
+**** NO GDM 
+conv.p interface.conv -dm=none -npv=1 1 -degreex=4 -degreet=4 -tz=poly -ic=tz -eps1=1 -eps2=2 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
+
+                grid  & N &  $E_x$ & r &  $E_y$   & r & $H_z$  & r &  $\Ev$ & r & $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 4.44e-15 &      & 3.55e-15 &      & 2.44e-15 &      & 4.44e-15 &      & 5.48e-15 &      
+twoSquaresInterface4 &     2 & 7.11e-15 &  0.62 & 4.00e-15 &  0.89 & 3.55e-15 &  0.69 & 7.11e-15 &  0.62 & 2.53e-14 &  0.22 
+Convergence rates: c0=-0.68 c1=-0.17 c2=-0.54 c3=-0.68 c4=-2.21 
+
+
+GDM **BROKEN CMD FILE I THINK 
+conv.p interface.conv -dm=gdm -npv=1 1 -degreex=4 -degreet=2 -tz=poly -ic=tz -eps1=1 -eps2=2 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
+
+
+****OLD
+FD44 - POLY  EXACT degree = [4,4]
+conv.p interface.conv -dm=gdm -npv=1 1 -degreex=4 -degreet=4 -tz=poly -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
+
+convRate: numberOfComponents=6 (from header)
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 2.71e-14 &      & 1.04e-14 &      & 2.26e-01 &      & 2.71e-14 &      & 2.13e-14 &      & 5.11e-14 &      
+twoSquaresInterface4 &     2 & 4.49e-14 &  0.60 & 1.95e-14 &  0.53 & 2.48e-01 &  0.91 & 4.49e-14 &  0.60 & 8.93e-14 &  0.24 & 1.08e-13 &  0.47 
+Convergence rates: c0=-0.73 c1=-0.91 c2=-0.13 c3=-0.73 c4=-2.07 c5=-1.08 
+
+
+
+***************************
 ******* Jan 8, 2021
 
 TEST NEW VERSION OF QING'S MULA SCHEME
@@ -43,7 +699,7 @@ conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat3.txt -matFile2=mlaMat3.tx
 
 
 FD44 - TRIG 
-conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
+conv.p interface.conv -dm=gdm -npv=1 1 -kx=1 -ky=1 -tz=trig -ic=tz -eps1=1 -eps2=2 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=3
 
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
 twoSquaresInterface2 &     1 & 2.30e-05 &      & 2.35e-05 &      & 1.31e+00 &      & 2.35e-05 &      & 7.34e-06 &      & 2.48e-04 &      
@@ -53,7 +709,7 @@ Convergence rates: c0=4.12 c1=5.19 c2=-0.00 c3=4.14 c4=3.94 c5=4.01
 
 
 FD44 - POLY  EXACT degree = [4,4]
-conv.p interface.conv -dm=gdm -npv=1 1 -degreex=4 -degreet=4 -tz=poly -ic=tz -eps1=1 -eps2=2. -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
+conv.p interface.conv -dm=gdm -npv=1 1 -degreex=4 -degreet=4 -tz=poly -ic=tz -eps1=1 -eps2=2 -bc=d -cg=twoSquaresInterface -tf=.3 -tp=.1 -order=4  -useSosupDissipation=0 -ng=2
 
 convRate: numberOfComponents=6 (from header)
                 grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 

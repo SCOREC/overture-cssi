@@ -2256,7 +2256,7 @@ end if
 ! *********************************************************************
 ! ********** MACROS FOR DISPERSIVE INTERFACE CONDITIONS ***************
 ! *********************************************************************
-#Include "dispersiveInterfaceMacros.h"
+!! #Include "dispersiveInterfaceMacros.h"
 
 ! -------------------------------------------------------------------------------
 ! Macro: Evaluate the TZ forcings GDM FOURTH-ORDER 3D
@@ -4972,7 +4972,8 @@ end do
           err2Old=1. 
           do it=1,nit ! *** begin iteration ****
  
-            assignInterfaceGhost3dOrder4Old()
+            stop 4444
+            !! assignInterfaceGhost3dOrder4Old()
  
             if( it.eq.1 )then
               errRatio=1.
@@ -5075,14 +5076,14 @@ end do
 
            ! in parallel we add extra points in the tangential direction on parallel boundaries
            ! (otherwise we would use extrapolated values which is probably ok) 
-           setIndexBoundsExtraGhost()
+           !TEMP setIndexBoundsExtraGhost()
 
            if( dispersive.eq.0 )then
              assignInterfaceGhost23c()
            else
              assignDispersiveInterfaceGhost23c()
            end if
-           resetIndexBounds()         
+           !TEMP resetIndexBounds()         
 
 
            orderOfAccuracy=4 ! reset 

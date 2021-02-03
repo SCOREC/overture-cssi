@@ -30,6 +30,10 @@
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,2,1,2)
 
+ ! q1 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,4,1,2)
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,2,1,2)
+
  ! We need up to 2 derivatives of p1 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p1,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(p1n,dr1,dx1,3,4,1,2)
@@ -41,9 +45,13 @@
  defineParametricDerivativeMacros(u2,dr2,dx2,3,2,1,4)
  defineParametricDerivativeMacros(u2,dr2,dx2,3,4,1,2)
 
- ! We need up to 2 derivatives of u1n to order 2-- do order 4 for TZ
+ ! We need up to 2 derivatives of u2n to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,4,1,2)
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,2,1,2)
+
+ ! q2 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,4,1,2)
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,2,1,2)
 
  ! We need up to 2 derivatives of p2 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p2,dr1,dx1,3,4,1,2)
@@ -456,7 +464,7 @@ end do
 
 
 ! ********************************************************************************
-!       INTERFACE MACROS (used in interface3d.bf and interface3dOrder4.bf)
+!       INTERFACE MACROS (used in interfaceOpt.bf90 and interface3dOrder4.bf)
 ! ********************************************************************************
 #Include "interfaceMacros.h"
 
@@ -602,6 +610,53 @@ if( parallel.eq.0 )then
  end if
 end if
 #endMacro
+
+
+! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#beginMacro getOp2d2r(DERIV, u,i1,i2,i3,uc,uu,aj,ud )
+
+ #If $GRIDTYPE eq "curvilinear" 
+  #peval getDuD ## DERIV ## 2(uu,aj,ud)  ! Note: The perl variables are evaluated when the macro is USED. 
+ #Else
+  #peval ud = u ## DERIV ## 2(i1,i2,i3,uc)
+ #End
+
+#endMacro
+
+! ******************************************************************************
+!   This next macro is called by other macros to evaluate the first and second derivatives
+!   This macro assumes that opEvalJacobianDerivatives has been called
+! ******************************************************************************
+#beginMacro evalSecondDerivs2d2r(rsxy1,aj1,u1,i1,i2,i3,ex,uu1,uu)
+ opEvalParametricDerivative(u1,i1,i2,i3,ex,uu1,2)    ! computes uu1r, uu1s 
+ getOp2d2r(x ,u1,i1,i2,i3,ex,uu1,aj1,uu ## x)            ! u1.x
+ getOp2d2r(y ,u1,i1,i2,i3,ex,uu1,aj1,uu ## y)            ! u1.y
+ getOp2d2r(xx,u1,i1,i2,i3,ex,uu1,aj1,uu ## xx)
+ getOp2d2r(yy,u1,i1,i2,i3,ex,uu1,aj1,uu ## yy)
+ uu ## Lap = uu ## xx+ uu ## yy
+#endMacro 
+
+
+! *********************************************************************************
+!   Evaluate derivatives for the 2nd-order 2D interface equations
+! *********************************************************************************
+#beginMacro evalInterfaceDerivatives2d2r()
+ ! NOTE: the jacobian derivatives can be computed once for all components
+ opEvalJacobianDerivatives(rsxy1,i1,i2,i3,aj1,1)
+ evalSecondDerivs2d2r(rsxy1,aj1,u1,i1,i2,i3,ex,uu1,u1)
+ evalSecondDerivs2d2r(rsxy1,aj1,u1,i1,i2,i3,ey,vv1,v1)
+
+ ! NOTE: the jacobian derivatives can be computed once for all components
+ opEvalJacobianDerivatives(rsxy2,j1,j2,j3,aj2,1)
+ evalSecondDerivs2d2r(rsxy2,aj2,u2,j1,j2,j3,ex,uu2,u2)
+ evalSecondDerivs2d2r(rsxy2,aj2,u2,j1,j2,j3,ey,vv2,v2)
+#endMacro
+
+
+! $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
 
 
 ! ******************************************************************************
@@ -753,290 +808,32 @@ end if
 ! *********************************************************************
 #Include "dispersiveInterfaceMacros.h"
 
+#Include "dispersiveInterfaceMacros2d.h"
+
 ! *********************************************************************
 ! ********** MACROS FOR NONLINEAR INTERFACE CONDITIONS ****************
 ! *********************************************************************
 #Include "nonlinearInterfaceMacros.h"
 
-
-! --------------------------------------------------------------------
-! Macro: Assign  DISPERSIVE interface ghost values, DIM=2, ORDER=2, GRID=Curvilinear
-! 
-! Here are the jump conditions (See notes in DMX_ADE)
-!   [ u.x + v.y ] = 0
-!   [ (1/mu)* tv,.( curl(E) ) ]
-!   [ tv.( c^2*Delta(E) -alphaP*P_tt) ] = 0  --> [ tv.( beta*c^2*Delta(E) - alphaP* F) ]=0 
-!   [ (1/mu)* nv.( Delta(E) ) ]=0
-! 
-! -------------------------------------------------------------------------------------------
-#beginMacro assignDispersiveInterfaceGhost22cNew()
-
-  ! ****************************************************
-  ! ***********  2D, ORDER=2, CURVILINEAR **************
-  ! ****************************************************
-
-INFO("22c-GDM")
-
-! --- initialize some forcing functions ---
-do n=0,nd-1
-  fev1(n)=0.
-  fev2(n)=0.
-  do jv=0,numberOfPolarizationVectors1-1
-    fpv1(n,jv)=0.
-  end do
-  do jv=0,numberOfPolarizationVectors2-1
-    fpv2(n,jv)=0.
-  end do
-end do
-
-! ----------------- START LOOP OVER INTERFACE -------------------------
-beginLoopsMask2d()
-
-  ! here is the normal (assumed to be the same on both sides)
-  an1=rsxy1(i1,i2,i3,axis1,0)   ! normal (an1,an2)
-  an2=rsxy1(i1,i2,i3,axis1,1)
-  aNorm=max(epsx,sqrt(an1**2+an2**2))
-  an1=an1/aNorm
-  an2=an2/aNorm
-  tau1=-an2
-  tau2= an1
-
-  ! first evaluate the equations we want to solve with the wrong values at the ghost points:
-  evalInterfaceDerivatives2d()
-  ! if( .true. .or. debug.gt.4 )then 
-  !    write(*,'(" START  (i1,i2)=",2i3," v=Ey(-1:1,-1:1)",9e14.6)') i1,i2, ((u1(i1+k1,i2+k2,i3,ey),k1=-1,1),k2=-1,1)
-  !    write(*,'(" START    mu1,mu2=",2e10.2," v1y,u1x,v2y,u2x=",4e10.2)') mu1,mu2,v1y,u1x,v2y,u2x
-  !  end if
-
-  ! Evaluate TZ forcing for dispersive equations in 2D 
-  getDispersiveTZForcing(fpv1,fpv2,fev1,fev2)
-
-  ! eval dispersive forcings for domain 1
-  getDispersiveForcingOrder2(i1,i2,i3, fp1, fpv1,fev1,p1,p1n,p1m, u1,u1n,u1m, dispersionModel1,numberOfPolarizationVectors1,alphaP1,beta1,a0v1,a1v1,b0v1,b1v1)
-
-  ! eval dispersive forcings for domain 2
-  getDispersiveForcingOrder2(j1,j2,j3, fp2, fpv2,fev2,p2,p2n,p2m, u2,u2n,u2m, dispersionModel2,numberOfPolarizationVectors2,alphaP2,beta2,a0v2,a1v2,b0v2,b1v2)
-
-  ! Evaulate RHS, f(n),n=0,1,2,3 using current ghost values: 
-  eval2dJumpDispersiveOrder2()
-
-  ! write(debugFile,'(" --> order2-curv: i1,i2=",2i4," f(start)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
-  ! write(debugFile,'(" --> u1(ghost),u1=",4f8.3)') u1(i1-is1,i2-is2,i3,ex),u1(i1,i2,i3,ex)
-  ! write(debugFile,'(" --> u2(ghost),u2=",4f8.3)') u2(j1-js1,j2-js2,j3,ex),u2(j1,j2,j3,ex)
-  ! '
-
-  ! here is the matrix of coefficients for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
-  ! Solve:
-  !     
-  !       A [ U ] = A [ U(old) ] - [ f ]
-  ! ---- EQUATION 0 ----- 
-  a4(0,0) = -is*rsxy1(i1,i2,i3,axis1,0)/(2.*dr1(axis1))    ! coeff of u1(-1) from [u.x+v.y] 
-  a4(0,1) = -is*rsxy1(i1,i2,i3,axis1,1)/(2.*dr1(axis1))    ! coeff of v1(-1) from [u.x+v.y] 
-  a4(0,2) =  js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2))    ! coeff of u2(-1) from [u.x+v.y] 
-  a4(0,3) =  js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2))    ! coeff of v2(-1) from [u.x+v.y] 
-
-  ! ---- EQUATION 2 ----- 
-  a4(2,0) =  is*rsxy1(i1,i2,i3,axis1,1)/(2.*dr1(axis1))/mu1   ! coeff of u1(-1) from [(v.x - u.y)/mu] 
-  a4(2,1) = -is*rsxy1(i1,i2,i3,axis1,0)/(2.*dr1(axis1))/mu1   ! coeff of v1(-1) from [(v.x - u.y)/mu] 
-
-  a4(2,2) = -js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2))/mu2   ! coeff of u2(-1) from [(v.x - u.y)/mu] 
-  a4(2,3) =  js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2))/mu2   ! coeff of v2(-1) from [(v.x - u.y)/mu] 
-
-
-  ! coeff of u(-1) from lap = u.xx + u.yy
-  rxx1(0,0,0)=aj1rxx
-  rxx1(1,0,0)=aj1sxx
-  rxx1(0,1,1)=aj1ryy
-  rxx1(1,1,1)=aj1syy
-
-  rxx2(0,0,0)=aj2rxx
-  rxx2(1,0,0)=aj2sxx
-  rxx2(0,1,1)=aj2ryy
-  rxx2(1,1,1)=aj2syy
-
-  ! clap1=(rsxy1(i1,i2,i3,axis1,0)**2+rsxy1(i1,i2,i3,axis1,1)**2)/(dr1(axis1)**2) \
-  !           -is*(rsxy1x22(i1,i2,i3,axis1,0)+rsxy1y22(i1,i2,i3,axis1,1))/(2.*dr1(axis1))
-  ! clap2=(rsxy2(j1,j2,j3,axis2,0)**2+rsxy2(j1,j2,j3,axis2,1)**2)/(dr2(axis2)**2) \
-  !             -js*(rsxy2x22(j1,j2,j3,axis2,0)+rsxy2y22(j1,j2,j3,axis2,1))/(2.*dr2(axis2)) 
-  clap1=(rsxy1(i1,i2,i3,axis1,0)**2+rsxy1(i1,i2,i3,axis1,1)**2)/(dr1(axis1)**2) \
-            -is*(rxx1(axis1,0,0)+rxx1(axis1,1,1))/(2.*dr1(axis1))
-  clap2=(rsxy2(j1,j2,j3,axis2,0)**2+rsxy2(j1,j2,j3,axis2,1)**2)/(dr2(axis2)**2) \
-            -js*(rxx2(axis2,0,0)+rxx2(axis2,1,1))/(2.*dr2(axis2)) 
-
-  ! ---- EQUATION 1 ----- 
-  !   [ n.(uv.xx + u.yy)/mu ] = 0
-  a4(1,0) = an1*clap1/mu1
-  a4(1,1) = an2*clap1/mu1
-  a4(1,2) =-an1*clap2/mu2
-  a4(1,3) =-an2*clap2/mu2
-
-  ! ---- EQUATION 3 ----- 
-  !   [ tau.(uv.xx+uv.yy)*beta/(eps*mu) + ... ] = 0
-  a4(3,0) = tau1*clap1*beta1/epsmu1
-  a4(3,1) = tau2*clap1*beta1/epsmu1
-  a4(3,2) =-tau1*clap2*beta2/epsmu2
-  a4(3,3) =-tau2*clap2*beta2/epsmu2
-    
-
-   if( .false. .or. debug.gt.4 )then 
-     write(*,'("BEFORE: --> i1,i2=",2i4," j1,j2=",2i4," f()=",4e10.2)') i1,i2,j1,j2,f(0),f(1),f(2),f(3)
-     write(*,'("     beta1,beta2=",2e10.2," fp1=",2e10.2," fp2=",2e10.2)') beta1,beta2,fp1(0),fp1(1),fp2(0),fp2(1)
-     write(*,'("     mu1,mu2=",2e10.2," v1y,u1x,v2y,u2x=",4e10.2)') mu1,mu2,v1y,u1x,v2y,u2x
-   end if
-
-  q(0) = u1(i1-is1,i2-is2,i3,ex)
-  q(1) = u1(i1-is1,i2-is2,i3,ey)
-  q(2) = u2(j1-js1,j2-js2,j3,ex)
-  q(3) = u2(j1-js1,j2-js2,j3,ey)
-
-  ! --- check matrix coefficients by delta function approach ----
-  if( checkCoeff.eq.1 )then
-    numberOfEquations=4
-    checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4,evalDispersiveInterfaceEquations22c )
-  end if
-
-  ! --- Make a copy of a4 for testing the save stencil coefficients below ---
-  if( saveStencilCoeff.eq.1 )then
-    numberOfEquations=4
-    do n2=0,numberOfEquations-1
-      do n1=0,numberOfEquations-1
-        a4Save(n1,n2)=a4(n1,n2)
-      end do
-    end do
-  end if
-
-  ! write(debugFile,'(" --> xy1=",4f8.3)') xy1(i1,i2,i3,0),xy1(i1,i2,i3,1)
-  ! write(debugFile,'(" --> rsxy1=",4f8.3)') rsxy1(i1,i2,i3,0,0),rsxy1(i1,i2,i3,1,0),rsxy1(i1,i2,i3,0,1),rsxy1(i1,i2,i3,1,1)
-  ! write(debugFile,'(" --> rsxy2=",4f8.3)') rsxy2(j1,j2,j3,0,0),rsxy2(j1,j2,j3,1,0),rsxy2(j1,j2,j3,0,1),rsxy2(j1,j2,j3,1,1)
-
-  ! write(debugFile,'(" --> rxx1=",2f8.3)') rxx1(axis1,0,0),rxx1(axis1,1,1)
-  ! write(debugFile,'(" --> rxx2=",2f8.3)') rxx2(axis2,0,0),rxx2(axis1,1,1)
-
-  ! write(debugFile,'(" --> a4(0,.)=",4f8.3)') a4(0,0),a4(0,1),a4(0,2),a4(0,3)
-  ! write(debugFile,'(" --> a4(1,.)=",4f8.3)') a4(1,0),a4(1,1),a4(1,2),a4(1,3)
-  ! write(debugFile,'(" --> a4(2,.)=",4f8.3)') a4(2,0),a4(2,1),a4(2,2),a4(2,3)
-  ! write(debugFile,'(" --> a4(3,.)=",4f8.3)') a4(3,0),a4(3,1),a4(3,2),a4(3,3)
-  ! write(debugFile,'(" --> an1,an2=",2f8.3)') an1,an2
-  ! write(debugFile,'(" --> clap1,clap2=",2f8.3)') clap1,clap2
-  ! subtract off the contributions from the wrong values at the ghost points:
-  do n=0,3
-    f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)*q(3)) - f(n)
-  end do
-  ! write(debugFile,'(" --> order2-curv: i1,i2=",2i4," f(subtract)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
-  ! solve A Q = F
-  ! factor the matrix
-  numberOfEquations=4
-  call dgeco( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
-  ! solve
-  ! write(debugFile,'(" --> order2-curv: i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
-  job=0
-  call dgesl( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
-  ! write(debugFile,'(" --> order2-curv: i1,i2=",2i4," f(solve)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
-
-  u1(i1-is1,i2-is2,i3,ex)=f(0)
-  u1(i1-is1,i2-is2,i3,ey)=f(1)
-  u2(j1-js1,j2-js2,j3,ex)=f(2)
-  u2(j1-js1,j2-js2,j3,ey)=f(3)
-
-
-  ! --- save stencil coefficients by delta function approach ----
-  if( saveStencilCoeff.eq.1 )then
-    
-
-    numberOfEquations=4
-
-    ! save the current solution for testing
-    do n1=0,numberOfEquations-1
-      uev(n1)=f(n1)
-    end do
-    
-    saveStencilCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,maxStencilSize2dOrder2,a4Save,a4s,a4s1,a4s2,evalDispersiveInterfaceEquations22c )
-
-    ! --- check stencil coefficients after stage I ----
-
-    checkStencilCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4s,a4s1,a4s2 )
-
-    ! --- compute actual stencil coefficients ----
-    computeStencilCoefficients( numberOfEquations,maxStencilSize2dOrder2,a4s,a4s1,a4s2,a4sf )
-
-    ! Evaluate the stencil and check the error 
-    checkStencil(i1,i2,i3, j1,j2,j3, numberOfEquations,a4Save,a4s,a4s1,a4s2,a4sf,uev )
-
-  end if
-    
-
-
-  if( .false. .or. debug.gt.3 )then ! re-evaluate
-    evalInterfaceDerivatives2d()
-    eval2dJumpDispersiveOrder2()
-    !write(debugFile,'(" --> order2-curv: xy1(ghost)=",2e11.3)') xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1)
-    !write(debugFile,'(" --> order2-curv: xy2(ghost)=",2e11.3)') xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1)
-
-    write(*,'("AFTER: --> i1,i2=",2i4," j1,j2=",2i4," f(re-eval)=",4e10.2)') i1,i2,j1,j2,f(0),f(1),f(2),f(3)
-
-    if( twilightZone.eq.1 )then
-      ! check errors in the ghost 
-        k1=i1-is1
-        k2=i2-is2
-        k3=i3
-        do n=0,nd-1
-          call ogderiv(ep, 0,0,0,0, xy1(k1,k2,k3,0),xy1(k1,k2,k3,1),0.,t,ex+n, es(n)   ) 
-        end do
-        f(0) =  u1(i1-is1,i2-is2,i3,ex) -es(0)
-        f(1) =  u1(i1-is1,i2-is2,i3,ey) -es(1)
-        k1=j1-js1
-        k2=j2-js2
-        k3=j3
-        do n=0,nd-1
-          call ogderiv(ep, 0,0,0,0, xy2(k1,k2,k3,0),xy2(k1,k2,k3,1),0.,t,ex+n, est(n)   ) 
-        end do
-        f(2) =  u2(j1-js1,j2-js2,j3,ex) -est(0)
-        f(3) =  u2(j1-js1,j2-js2,j3,ey) -est(1)
-        write(*,'(" ghost err =",4e10.2)') f(0),f(1),f(2),f(3) 
-
-    end if
-
-  end if
-
-  ! -- Hz has already been filled in by extrapolation ----
-
-endLoopsMask2d()
-
- if( checkCoeff.eq.1 )then
-   write(*,'("+++++ iGDM22c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
- end if
-
-  if( saveStencilCoeff.eq.1 )then
-    write(*,'("+++++ i22c: save stencil: max(diff) = ",1pe8.2," (ghost stencil)")') coeffDiff
-    write(*,'("+++++ i22c: save stencil: max stencil res = ",1pe8.2," (stage I)")') maxStencilRes
-    write(*,'("+++++ i22c: save stencil: max stencil err = ",1pe8.2," (stage II)")') maxStencilErr
-  end if
-
-#endMacro
-
-
-
-
-
-
-
-
 ! ----------------------------------------------------------------------------
 !  MACRO: Eval jump conditions for Hz, 2D, 2nd-order
+!  [ w.n/eps] = 0
+!  [ Lap(w)*c^2] = 0
 ! ----------------------------------------------------------------------------
 #beginMacro evalMagneticField2dJumpOrder2()
+
  f(0) = (an1*w1x+an2*w1y)/eps1 -\
         (an1*w2x+an2*w2y)/eps2
- f(1) = w1Lap/eps1 - w2Lap/eps2
- if( twilightZone.eq.1 )then
+ f(1) = w1Lap*c1**2 - w2Lap*c2**2
 
+ if( twilightZone.eq.1 )then
    call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, hz, wex  )
    call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, hz, wey  )
    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, hz, wexx )
    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, hz, weyy )
    weLap = wexx + weyy
-   f(0) = f(0) - (an1*wex+an2*wey)*(1./eps1 - 1./eps2)
-   f(1) = f(1) - ( weLap )*(1./eps1 - 1./eps2)
+   f(0) = f(0) - (an1*wex+an2*wey)*( 1./eps1 - 1./eps2 )
+   f(1) = f(1) - ( weLap )*( c1**2 - c2**2 )
  end if
 #endMacro
 
@@ -1046,199 +843,318 @@ endLoopsMask2d()
 ! Macro: Assign interface ghost values, DIM=2, ORDER=2, GRID=Rectangular
 ! 
 ! Here are the jump conditions
-!   [ u.x + v.y +w.z ] = 0
-!   [ u.xx + u.yy +u.zz ] = 0
+!   [ u.x + v.y  ] = 0
+!   [ (Delta u)/mu ] = 0
 ! 
-!   [ tau1.(w.y-v.z, u.z-w.x, v.x-u.y)/mu] = 0 
-!   [ (v.xx+v.yy+v.zz)/eps ] = 0
+!   [ (v.x-u.y)/mu] = 0 
+!   [ (Delta v)*c^2 ] = 0
 ! 
-!   [ tau2.(w.y-v.z, u.z-w.x, v.x-u.y)/mu] = 0 
-!   [ (w.xx+w.yy+w.zz)/eps ] = 0
+!  H_OPTION : NO_MAG_FIELD - do not solve for Hz 
 ! ---------------------------------------------------------------------
-#beginMacro assignInterfaceGhost22r()
+#beginMacro assignInterfaceGhost22r( H_OPTION )
 
  ! ****************************************************
  ! ***********  2D, ORDER=2, RECTANGULAR **************
  ! ****************************************************
 
-beginLoopsMask2d()
- ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+ if( t.le.5*dt .or. debug.gt.3 )then
 
+   write(*,'("macro: assignInterfaceGhost22r : t,dt=",2e10.2)') t,dt
+
+ end if
+
+ ! --- FORM the matrix of coefficients for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
+ ! Solve:
+ !     
+ !       A [ U ] = A [ U(old) ] - [ f ]
+
+ ! Eqn 0: [ u.x + v.y ]  = 0 
+ ! Eqn 2: [  (v.x - u.y)/mu ] = 0 
+
+ if( axis1.eq.0 )then    
+   a4(0,0) = -is1/(2.*dx1(0))         ! coeff of u1(-1) from [u.x+v.y] 
+   a4(0,1) = 0.                       ! coeff of v1(-1) from [u.x+v.y] 
+ 
+   a4(2,0) = 0.
+   a4(2,1) = -is1/(2.*dx1(0)) /mu1    ! coeff of v1(-1) from [(v.x - u.y)/mu1] 
+ else 
+   a4(0,0) = 0.                 
+   a4(0,1) = -is2/(2.*dx1(1))         ! coeff of v1(-1) from [u.x+v.y] 
+
+   a4(2,0) =  is2/(2.*dx1(1)) /mu1    ! coeff of u1(-1) from [v.x - u.y] 
+   a4(2,1) = 0.
+ end if
+
+ if( axis2.eq.0 )then
+   a4(0,2) = js1/(2.*dx2(0))         ! coeff of u2(-1) from [u.x+v.y] 
+   a4(0,3) = 0. 
+ 
+   a4(2,2) = 0.
+   a4(2,3) = js1/(2.*dx2(0)) /mu2    ! coeff of v2(-1) from [(v.x - u.y)/mu]
+ else
+   a4(0,2) = 0. 
+   a4(0,3) = js2/(2.*dx2(1))         ! coeff of v2(-1) from [u.x+v.y] 
+
+   a4(2,2) =-js2/(2.*dx2(1)) /mu2    ! coeff of u2(-1) from [(v.x - u.y)/mu] 
+   a4(2,3) = 0.
+ end if
+
+ ! [ Delta(u) / mu] = 0 
+ ! equation 1:
+ if( setDivergenceAtInterfaces.eq.0 )then
+   a4(1,0) = ( 1./(dx1(axis1)**2) )/mu1  ! coeff of u1(-1) from [(u.xx + u.yy)/mu]
+   a4(1,1) = 0. 
+   a4(1,2) =-( 1./(dx2(axis2)**2) )/mu2  ! coeff of u2(-1) from [(u.xx + u.yy)/mu]
+   a4(1,3) = 0. 
+ else
+   ! u1x+v1y=0
+   if( axis1.eq.0 )then
+     a4(1,0) = -is1/(2.*dx1(0))    ! coeff of u1(-1) from [u.x+v.y] 
+     a4(1,1) = 0.                  ! coeff of v1(-1) from [u.x+v.y] 
+   else 
+     a4(1,0) = 0.                 
+     a4(1,1) = -is2/(2.*dx1(1))    ! coeff of v1(-1) from [u.x+v.y] 
+   end if
+   a4(1,2) = 0.
+   a4(1,3) = 0.
+ end if 
+   
+ ! [ Delta(v) * c^2 ] = 0 
+ ! equation 3: 
+ a4(3,0) = 0.                      
+ a4(3,1) = c1**2/(dx1(axis1)**2)  ! coeff of v1(-1) from [ c^2 (v.xx+v.yy) ]
+ a4(3,2) = 0. 
+ a4(3,3) =-c2**2/(dx2(axis2)**2) ! coeff of v2(-1) from [ c^2 (v.xx+v.yy) ]
+     
+
+ if( debug>0 )then
+   write(*,*) "22r: Matrix a4"
+   do n=0,3
+     write(*,'(4(1pe10.2))') (a4(n,nn),nn=0,3)
+   end do 
+ end if 
+
+ do m2=0,3
+   do m1=0,3
+     a4f(m1,m2)=a4(m1,m2)  ! holds factored version
+   end do
+ end do
+ ! factor the matrix
+ ! numberOfEquations=4
+ call dgeco( a4f(0,0), 4, 4, ipivot4(0),rcond,work(0))
+ ! write(debugFile,'(" --> a4: rcond=",e10.2)') rcond
+
+
+ ! -- Form matrix for hz ----
+ ! -- Form matrix for hz ----
+ a2h(0,0)=-is*(1./(2.*dx1(axis1)*eps1)) ! coeff of w1(-1) in [w.n/eps]=0 
+ a2h(0,1)= js*(1./(2.*dx2(axis2)*eps2)) ! coeff of w2(-1) in [w.n/eps]=0 
+ a2h(1,0)=   1./(dx1(axis1)**2 *c1**2)    ! coeff of w1(-1) in [Lap(w)/eps ]=0 
+ a2h(1,1)=  -1./(dx2(axis2)**2 *c2**2)    ! coeff of w2(-1) in [Lap(w)/eps ]=0 
+ do m2=0,1
+   do m1=0,1
+     a2hf(m1,m2)=a2h(m1,m2)  ! holds factored version
+   end do
+ end do
+
+ if( debug>7 )then
+   write(*,*) "22r: Matrix a2h for Hz"
+   do n=0,1
+     write(*,'(2(1pe10.2))') (a2h(n,nn),nn=0,1)
+   end do 
+ end if 
+
+ call dgeco( a2hf(0,0), 2, 2, ipivot2h(0),rcond,work(0))
+ !  write(*,'("a2h: factored:  rcond=",e10.2)') rcond 
+
+
+
+   
+beginLoopsMask2d()
+
+  ! --- first evaluate the equations we want to solve with the wrong values at the ghost points: ----
   evalInterfaceDerivatives2d()
  
+  ! [ u.x + v.y ]  = 0 
   f(0)=(u1x+v1y) - \
        (u2x+v2y)
 
-  if( setDivergenceAtInterfaces.eq.0 )then
-    f(1)=(u1xx+u1yy) - \
-         (u2xx+u2yy)
-  else
-    ! set div(E)=0 at both intefaces 
-    f(1)=(u1x+v1y)
-  end if
+  ! [ Delta(u) / mu] = 0 
+  f(1)=(u1xx+u1yy)/mu1 - \
+       (u2xx+u2yy)/mu2
 
+  ! [  (v.x - u.y)/mu ] = 0 
   f(2)=(v1x-u1y)/mu1 - \
        (v2x-u2y)/mu2
   
-  f(3)=(v1xx+v1yy)/epsmu1 - \
-       (v2xx+v2yy)/epsmu2
+  ! [ Delta(v) * c^2 ] = 0 
+  f(3)=(v1xx+v1yy)*c1**2 - \
+       (v2xx+v2yy)*c2**2
+
+  if( twilightZone.eq.1 )then
+
+    call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uex  )
+    call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uey  )
+
+    call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vex  )
+    call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vey  )
+
+    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
+    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
+
+    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
+    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyy )
+ 
+    ueLap = uexx + ueyy
+    veLap = vexx + veyy
+ 
+    f(1) = f(1) - ( ueLap     )*(1./mu1 - 1./mu2)
+
+    f(2) = f(2) - ( vex - uey )*(1./mu1 - 1./mu2)
+
+    f(3) = f(3) - ( veLap )*(c1**2 - c2**2)
+
+  end if
 
   ! write(debugFile,'(" --> i1,i2=",2i4," f(start)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
 
-   ! here is the matrix of coefficients for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
-   ! Solve:
-   !     
-   !       A [ U ] = A [ U(old) ] - [ f ]
-   if( axis1.eq.0 )then
-     a4(0,0) = -is1/(2.*dx1(0))    ! coeff of u1(-1) from [u.x+v.y] 
-     a4(0,1) = 0.                  ! coeff of v1(-1) from [u.x+v.y] 
+  q(0) = u1(i1-is1,i2-is2,i3,ex)
+  q(1) = u1(i1-is1,i2-is2,i3,ey)
+  q(2) = u2(j1-js1,j2-js2,j3,ex)
+  q(3) = u2(j1-js1,j2-js2,j3,ey)
+
+  ! subtract off the contributions from the wrong values at the ghost points:
+  do n=0,3
+    f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)*q(3)) - f(n)
+  end do
+
+  ! write(debugFile,'(" --> i1,i2=",2i4," f(subtract)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+  if( debug>0 .and. twilightZone.eq.1 )then
+     write(*,'("   22r --> i1,i2=",2i4," RHS f=",4f12.7)') i1,i2,f(0),f(1),f(2),f(3)
+     write(*,'("                             q=",4f12.7)') q(0),q(1),q(2),q(3)
+   end if
+
+
+  ! solve A Q = F
+  job=0
+  call dgesl( a4f(0,0), 4, 4, ipivot4(0), f(0), job)
+  ! write(debugFile,'(" --> i1,i2=",2i4," f(solve)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+
+  u1(i1-is1,i2-is2,i3,ex)=f(0)
+  u1(i1-is1,i2-is2,i3,ey)=f(1)
+  u2(j1-js1,j2-js2,j3,ex)=f(2)
+  u2(j1-js1,j2-js2,j3,ey)=f(3)
+
+  if( debug>0 .and. twilightZone.eq.1 )then
+    ! check errors
+    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, evv(0) )
+    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, evv(1) )
+  
+    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ex, evv(2) )
+    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ey, evv(3) )
+  
+    maxErr=0.
+    do n=0,3
+      maxErr =max(maxErr,abs(evv(n)-f(n)))
+    end do
+    write(*,'("22r: i1,i2,i3=",3i4," t=",e9.3)') i1,i2,i3,t 
+    write(*,'("     true= ",4(1pe10.2))') (evv(n),n=0,3)
+    write(*,'("      err= ",4(1pe8.1)," -> maxErr=",e8.1)') (abs(evv(n)-f(n)),n=0,3),maxErr
+  
+  
+  end if
+
    
-     a4(2,0) = 0.
-     a4(2,1) = -is1/(2.*dx1(0))    ! coeff of v1(-1) from [v.x - u.y] 
-   else 
-     a4(0,0) = 0.                 
-     a4(0,1) = -is2/(2.*dx1(1))    ! coeff of v1(-1) from [u.x+v.y] 
-
-     a4(2,0) =  is2/(2.*dx1(1))    ! coeff of u1(-1) from [v.x - u.y] 
-     a4(2,1) = 0.
-   end if
-   if( axis2.eq.0 )then
-     a4(0,2) = js1/(2.*dx2(0))    ! coeff of u2(-1) from [u.x+v.y] 
-     a4(0,3) = 0. 
-   
-     a4(2,2) = 0.
-     a4(2,3) = js1/(2.*dx2(0))    ! coeff of v2(-1) from [v.x - u.y]
-   else
-     a4(0,2) = 0. 
-     a4(0,3) = js2/(2.*dx2(1))    ! coeff of v2(-1) from [u.x+v.y] 
-
-     a4(2,2) =-js2/(2.*dx2(1))    ! coeff of u2(-1) from [v.x - u.y] 
-     a4(2,3) = 0.
-   end if
-
-   ! equation 1:
-   if( setDivergenceAtInterfaces.eq.0 )then
-     a4(1,0) = 1./(dx1(axis1)**2)   ! coeff of u1(-1) from [u.xx + u.yy]
-     a4(1,1) = 0. 
-     a4(1,2) =-1./(dx2(axis2)**2)   ! coeff of u2(-1) from [u.xx + u.yy]
-     a4(1,3) = 0. 
-   else
-     ! u1x+v1y=0
-     if( axis1.eq.0 )then
-       a4(1,0) = -is1/(2.*dx1(0))    ! coeff of u1(-1) from [u.x+v.y] 
-       a4(1,1) = 0.                  ! coeff of v1(-1) from [u.x+v.y] 
-     else 
-       a4(1,0) = 0.                 
-       a4(1,1) = -is2/(2.*dx1(1))    ! coeff of v1(-1) from [u.x+v.y] 
-     end if
-     a4(1,2) = 0.
-     a4(1,3) = 0.
-   end if 
-     
-   ! equation 3: 
-   a4(3,0) = 0.                      
-   a4(3,1) = 1./(dx1(axis1)**2)/eps1 ! coeff of v1(-1) from [(v.xx+v.yy)/eps]
-   a4(3,2) = 0. 
-   a4(3,3) =-1./(dx2(axis2)**2)/eps2 ! coeff of v2(-1) from [(v.xx+v.yy)/eps]
-     
-
-   q(0) = u1(i1-is1,i2-is2,i3,ex)
-   q(1) = u1(i1-is1,i2-is2,i3,ey)
-   q(2) = u2(j1-js1,j2-js2,j3,ex)
-   q(3) = u2(j1-js1,j2-js2,j3,ey)
-
-   ! subtract off the contributions from the wrong values at the ghost points:
-   do n=0,3
-     f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)*q(3)) - f(n)
-   end do
-   ! write(debugFile,'(" --> i1,i2=",2i4," f(subtract)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
-   ! solve A Q = F
-   ! factor the matrix
-   numberOfEquations=4
-   call dgeco( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
-   ! solve
-   ! write(debugFile,'(" --> i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
-   job=0
-   call dgesl( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
-   ! write(debugFile,'(" --> i1,i2=",2i4," f(solve)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
-
-   u1(i1-is1,i2-is2,i3,ex)=f(0)
-   u1(i1-is1,i2-is2,i3,ey)=f(1)
-   u2(j1-js1,j2-js2,j3,ex)=f(2)
-   u2(j1-js1,j2-js2,j3,ey)=f(3)
-
-   if( debug.gt.2 )then ! re-evaluate
-    evalInterfaceDerivatives2d()
-    f(0)=(u1x+v1y) - \
-         (u2x+v2y)
-    if( setDivergenceAtInterfaces.eq.0 )then
-      f(1)=(u1xx+u1yy) - \
-           (u2xx+u2yy)
-    else
-      f(1)=(u1x+v1y)
-    end if
-    f(2)=(v1x-u1y)/mu1 - \
-         (v2x-u2y)/mu2
-    f(3)=(v1xx+v1yy)/epsmu1 - \
-         (v2xx+v2yy)/epsmu2
-    write(debugFile,'("i3d: --> i1,i2=",2i4," f(re-eval)=",4e10.2)') i1,i2,f(0),f(1),f(2),f(3)
-   end if
+  !-   if( debug.gt.2 )then ! re-evaluate
+  !-    evalInterfaceDerivatives2d()
+  !-    f(0)=(u1x+v1y) - \
+  !-         (u2x+v2y)
+  !-    if( setDivergenceAtInterfaces.eq.0 )then
+  !-      f(1)=(u1xx+u1yy) - \
+  !-           (u2xx+u2yy)
+  !-    else
+  !-      f(1)=(u1x+v1y)
+  !-    end if
+  !-    f(2)=(v1x-u1y)/mu1 - \
+  !-         (v2x-u2y)/mu2
+  !-    f(3)=(v1xx+v1yy)/epsmu1 - \
+  !-         (v2xx+v2yy)/epsmu2
+  !-    write(debugFile,'("i3d: --> i1,i2=",2i4," f(re-eval)=",4e10.2)') i1,i2,f(0),f(1),f(2),f(3)
+  !-   end if
 
 
-   ! -------------------------------------------------------
-   ! solve for Hz         *fixed* *wdh* June 24, 2016
-   !  [ w.n/eps] = 0
-   !  [ Lap(w)/eps] = 0
-
-   evalMagneticFieldInterfaceDerivatives2d()
-   evalMagneticField2dJumpOrder2()
+ #If #H_OPTION ne "NO_MAG_FIELD" 
+    ! -------------------------------------------------------
+    ! solve for Hz       
+    !  [ w.n/eps] = 0
+    !  [ Lap(w)*c^2] = 0
  
-   ! a2(0,0)=-is*(an1*rsxy1(i1,i2,i3,axis1,0)+an2*rsxy1(i1,i2,i3,axis1,1))/(2.*dr1(axis1)*eps1)
-   ! a2(0,1)= js*(an1*rsxy2(j1,j2,j3,axis2,0)+an2*rsxy2(j1,j2,j3,axis2,1))/(2.*dr2(axis2)*eps2)
-
-   a2(0,0)=-is*(1./(2.*dx1(axis1)*eps1)) ! coeff of w1(-1) in [w.n/eps]=0 
-   a2(0,1)= js*(1./(2.*dx2(axis2)*eps2)) ! coeff of w2(-1) in [w.n/eps]=0 
-
+    evalMagneticFieldInterfaceDerivatives2d()
+    evalMagneticField2dJumpOrder2()
+  
+  
+    q(0) = u1(i1-is1,i2-is2,i3,hz)
+    q(1) = u2(j1-js1,j2-js2,j3,hz)
+  
  
-   a2(1,0)= 1./(dx1(axis1)**2*eps1)    ! coeff of w1(-1) in [Lap(w)/eps ]=0 
-   ! *wdh* Sept 15, 2017 a2(1,1)=-1./(dx2(axis2)**2*eps2)    ! coeff of w2(-1) in [Lap(w)/eps ]=0 
-   a2(1,1)= 1./(dx2(axis2)**2*eps2)    ! coeff of w2(-1) in [Lap(w)/eps ]=0 
+    ! subtract off the contributions from the wrong values at the ghost points:
+    do n=0,1
+      f(n) = (a2h(n,0)*q(0)+a2h(n,1)*q(1)) - f(n)
+    end do
+  
+    !- if( debug>7 .and. twilightZone.eq.1 )then
+    !-   write(*,'("22r: i1,i2,i3=",3i4," t=",e9.3)') i1,i2,i3,t 
+    !-   write(*,'("  hz-RHS= ",4(1pe10.2))') (f(n),n=0,1)
+    !- end if 
  
-   q(0) = u1(i1-is1,i2-is2,i3,hz)
-   q(1) = u2(j1-js1,j2-js2,j3,hz)
+    job=0
+    call dgesl( a2hf(0,0), 2, 2, ipivot2h(0), f(0), job)
+  
+    u1(i1-is1,i2-is2,i3,hz)=f(0)
+    u2(j1-js1,j2-js2,j3,hz)=f(1)
  
-   ! subtract off the contributions from the wrong values at the ghost points:
-   do n=0,1
-     f(n) = (a2(n,0)*q(0)+a2(n,1)*q(1)) - f(n)
-   end do
- 
-   call dgeco( a2(0,0), 2, 2, ipvt(0),rcond,work(0))
-   job=0
-   call dgesl( a2(0,0), 2, 2, ipvt(0), f(0), job)
- 
-   u1(i1-is1,i2-is2,i3,hz)=f(0)
-   u2(j1-js1,j2-js2,j3,hz)=f(1)
-
-   ! do this for now
-   !u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-   !u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
+   !-  if( debug>0 .and. twilightZone.eq.1 )then
+   !-    ! check errors
+   !-    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, hz, evv(0) )
+   !-    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, hz, evv(1) )
+   !-  
+   !-    maxErr=0.
+   !-    do n=0,1
+   !-      maxErr =max(maxErr,abs(evv(n)-f(n)))
+   !-    end do
+   !-    ! write(*,'("22r: i1,i2,i3=",3i4," t=",e9.3)') i1,i2,i3,t 
+   !-    write(*,'("  hz-true= ",4(1pe10.2))') (evv(n),n=0,1)
+   !-    write(*,'("  hz- err= ",4(1pe8.1)," -> maxErr=",e8.1)') (abs(evv(n)-f(n)),n=0,1),maxErr
+   !-  
+   !-  
+   !-  end if
+ #End 
 
  endLoopsMask2d()
 #endMacro
 
 ! --------------------------------------------------------------------------------------------
-! Macro: 
+! Macro: Evaluate jump conditions - order 2
 ! --------------------------------------------------------------------------------------------
 #beginMacro eval2dJumpOrder2()
- f(0)=(u1x+v1y) - \
-      (u2x+v2y)
- f(1)=( an1*u1Lap +an2*v1Lap )- \
-      ( an1*u2Lap +an2*v2Lap )
- f(2)=(v1x-u1y) - \
-      (v2x-u2y)
- f(3)=( tau1*u1Lap +tau2*v1Lap )/eps1 - \
-      ( tau1*u2Lap +tau2*v2Lap )/eps2
+
+ f(0)=( u1x+v1y ) - \
+      ( u2x+v2y )
+
+ f(1)=( an1*u1Lap +an2*v1Lap )/mu1 - \
+      ( an1*u2Lap +an2*v2Lap )/mu2
+
+ f(2)=( v1x-u1y )/mu1 - \
+      ( v2x-u2y )/mu2
+
+ f(3)=( tau1*u1Lap +tau2*v1Lap )*c1**2 - \
+      ( tau1*u2Lap +tau2*v2Lap )*c2**2
+
  if( twilightZone.eq.1 )then
+
+   call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uey )
+   call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vex )
+
    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
@@ -1246,7 +1162,12 @@ beginLoopsMask2d()
 
    ueLap = uexx + ueyy
    veLap = vexx + veyy
-   f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*(1./eps1-1./eps2)
+
+   f(1) = f(1) - ( an1*ueLap + an2*veLap )*( 1./mu1 - 1./mu2 )
+
+   f(2) = f(2) - ( vex - uey )*( 1./mu1 - 1./mu2 )
+
+   f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*( c1**2 - c2**2 )
 
    ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
 
@@ -1275,18 +1196,18 @@ beginLoopsMask2d()
 ! 
 !   [ tau2.(w.y-v.z, u.z-w.x, v.x-u.y)/mu] = 0 
 !   [ (w.xx+w.yy+w.zz)/eps ] = 0
+!  H_OPTION : NO_MAG_FIELD - do not solve for Hz 
 ! ---------------------------------------------------------------------
-#beginMacro assignInterfaceGhost22c()
+#beginMacro assignInterfaceGhost22c( H_OPTION )
 
   ! ****************************************************
   ! ***********  2D, ORDER=2, CURVILINEAR **************
   ! ****************************************************
-  write(*,'(" **** ASSIGN INTERFACE GHOST 22c ** ")') 
 
-  ! ***** fix these for [mu] != 0 ****
-  if( mu1.ne.mu2 )then
-    stop 9923
+  if( t.le.5*dt .or. debug.gt.3 )then
+   write(*,'("macro: assignInterfaceGhost22c : t,dt=",2e10.2)') t,dt
   end if
+
   beginLoopsMask2d()
 
     ! here is the normal (assumed to be the same on both sides)
@@ -1299,7 +1220,6 @@ beginLoopsMask2d()
     tau2= an1
 
     ! first evaluate the equations we want to solve with the wrong values at the ghost points:
-
 
     evalInterfaceDerivatives2d()
     eval2dJumpOrder2()
@@ -1318,11 +1238,11 @@ beginLoopsMask2d()
     a4(0,2) =  js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2))    ! coeff of u2(-1) from [u.x+v.y] 
     a4(0,3) =  js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2))    ! coeff of v2(-1) from [u.x+v.y] 
 
-    a4(2,0) =  is*rsxy1(i1,i2,i3,axis1,1)/(2.*dr1(axis1))   ! coeff of u1(-1) from [v.x - u.y] 
-    a4(2,1) = -is*rsxy1(i1,i2,i3,axis1,0)/(2.*dr1(axis1))   ! coeff of v1(-1) from [v.x - u.y] 
+    a4(2,0) =  is*rsxy1(i1,i2,i3,axis1,1)/(2.*dr1(axis1)) /mu1  ! coeff of u1(-1) from [(v.x - u.y)/mu] 
+    a4(2,1) = -is*rsxy1(i1,i2,i3,axis1,0)/(2.*dr1(axis1)) /mu1  ! coeff of v1(-1) from [(v.x - u.y)/mu] 
 
-    a4(2,2) = -js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2))   ! coeff of u2(-1) from [v.x - u.y] 
-    a4(2,3) =  js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2))   ! coeff of v2(-1) from [v.x - u.y] 
+    a4(2,2) = -js*rsxy2(j1,j2,j3,axis2,1)/(2.*dr2(axis2)) /mu2  ! coeff of u2(-1) from [(v.x - u.y)/mu] 
+    a4(2,3) =  js*rsxy2(j1,j2,j3,axis2,0)/(2.*dr2(axis2)) /mu2  ! coeff of v2(-1) from [(v.x - u.y)/mu] 
 
 
     ! coeff of u(-1) from lap = u.xx + u.yy
@@ -1345,16 +1265,16 @@ beginLoopsMask2d()
     clap2=(rsxy2(j1,j2,j3,axis2,0)**2+rsxy2(j1,j2,j3,axis2,1)**2)/(dr2(axis2)**2) \
               -js*(rxx2(axis2,0,0)+rxx2(axis2,1,1))/(2.*dr2(axis2)) 
 
-    !   [ n.(uv.xx + u.yy) ] = 0
-    a4(1,0) = an1*clap1
-    a4(1,1) = an2*clap1
-    a4(1,2) =-an1*clap2
-    a4(1,3) =-an2*clap2
-    !   [ tau.(uv.xx+uv.yy)/eps ] = 0
-    a4(3,0) = tau1*clap1/eps1
-    a4(3,1) = tau2*clap1/eps1
-    a4(3,2) =-tau1*clap2/eps2
-    a4(3,3) =-tau2*clap2/eps2
+    !   [ n.(uv.xx + u.yy)/mu ] = 0
+    a4(1,0) = an1*clap1/mu1
+    a4(1,1) = an2*clap1/mu1
+    a4(1,2) =-an1*clap2/mu2
+    a4(1,3) =-an2*clap2/mu2
+    !   [ tau.(uv.xx+uv.yy) * c^2 ] = 0
+    a4(3,0) = tau1*clap1 *c1**2
+    a4(3,1) = tau2*clap1 *c1**2
+    a4(3,2) =-tau1*clap2 *c2**2
+    a4(3,3) =-tau2*clap2 *c2**2
       
 
     q(0) = u1(i1-is1,i2-is2,i3,ex)
@@ -1364,21 +1284,11 @@ beginLoopsMask2d()
 
 
     ! --- check matrix coefficients by delta function approach ----
-    if( checkCoeff.eq.1 )then
-      numberOfEquations=4
-      checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4,evalInterfaceEquations22c )
-    end if
-
-
-    ! --- Make a copy of a4 for testing the save stencil coefficients below ---
-    if( saveStencilCoeff.eq.1 )then
-      numberOfEquations=4
-      do n2=0,numberOfEquations-1
-        do n1=0,numberOfEquations-1
-          a4Save(n1,n2)=a4(n1,n2)
-        end do
-      end do
-    end if
+    ! comment out to speed up compilation 
+    !- if( checkCoeff.eq.1 )then
+    !-   numberOfEquations=4
+    !-   checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4,evalInterfaceEquations22c )
+    !- end if
 
 
 
@@ -1416,58 +1326,25 @@ beginLoopsMask2d()
     u2(j1-js1,j2-js2,j3,ex)=f(2)
     u2(j1-js1,j2-js2,j3,ey)=f(3)
 
-
-
-    ! --- save stencil coefficients by delta function approach ----
-    if( saveStencilCoeff.eq.1 )then
-      
-
-      numberOfEquations=4
-
-      ! save the current solution for testing
-      do n1=0,numberOfEquations-1
-        uev(n1)=f(n1)
-      end do
-      
-      saveStencilCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,maxStencilSize2dOrder2,a4Save,a4s,a4s1,a4s2,evalInterfaceEquations22c )
-
-      ! --- check stencil coefficients after stage I ----
-  
-      checkStencilCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a4s,a4s1,a4s2 )
-  
-      ! --- compute actual stencil coefficients ----
-      computeStencilCoefficients( numberOfEquations,maxStencilSize2dOrder2,a4s,a4s1,a4s2,a4sf )
-
-      ! Evaluate the stencil and check the error 
-      checkStencil(i1,i2,i3, j1,j2,j3, numberOfEquations,a4Save,a4s,a4s1,a4s2,a4sf,uev )
-
-    end if
-    
-    if( saveCoeff.eq.1 )then
-      ! Macro from interfaceMacros.h : 
-      saveCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,am,evalInterfaceEquations22c )
-    end if
-
-
-    if( debug.gt.3 )then ! re-evaluate
-      evalInterfaceDerivatives2d()
-      eval2dJumpOrder2()
-      !write(debugFile,'(" --> order2-curv: xy1(ghost)=",2e11.3)') xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1)
-      !write(debugFile,'(" --> order2-curv: xy2(ghost)=",2e11.3)') xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1)
-      if( twilightZone.eq.1 )then
-        call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, uex  )
-        call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, uey  )
-       write(debugFile,'(" --> order2-curv: i1,i2=",2i4," u1=",2e11.3," err=",2e11.3)') i1,i2,u1(i1-is1,i2-is2,i3,ex),u1(i1-is1,i2-is2,i3,ey),u1(i1-is1,i2-is2,i3,ex)-uex,u1(i1-is1,i2-is2,i3,ey)-uey
-        ! '
-      else
-       write(debugFile,'(" --> order2-curv: i1,i2=",2i4," u1=",2e11.3)') i1,i2,u1(i1-is1,i2-is2,i3,ex),u1(i1-is1,i2-is2,i3,ey)
-        ! '
-      end if
-      write(debugFile,'(" --> order2-curv: j1,j2=",2i4," u2=",2e11.3)') j1,j2,u2(j1-js1,j2-js2,j3,ex),u2(j1-js1,j2-js2,j3,ey)
-        ! '
-      write(debugFile,'(" --> order2-curv: i1,i2=",2i4," f(re-eval)=",4e10.2)') i1,i2,f(0),f(1),f(2),f(3)
-        ! '
-    end if
+  !-    if( debug.gt.3 )then ! re-evaluate
+  !-      evalInterfaceDerivatives2d()
+  !-      eval2dJumpOrder2()
+  !-      !write(debugFile,'(" --> order2-curv: xy1(ghost)=",2e11.3)') xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1)
+  !-      !write(debugFile,'(" --> order2-curv: xy2(ghost)=",2e11.3)') xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1)
+  !-      if( twilightZone.eq.1 )then
+  !-        call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, uex  )
+  !-        call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, uey  )
+  !-       write(debugFile,'(" --> order2-curv: i1,i2=",2i4," u1=",2e11.3," err=",2e11.3)') i1,i2,u1(i1-is1,i2-is2,i3,ex),u1(i1-is1,i2-is2,i3,ey),u1(i1-is1,i2-is2,i3,ex)-uex,u1(i1-is1,i2-is2,i3,ey)-uey
+  !-        ! '
+  !-      else
+  !-       write(debugFile,'(" --> order2-curv: i1,i2=",2i4," u1=",2e11.3)') i1,i2,u1(i1-is1,i2-is2,i3,ex),u1(i1-is1,i2-is2,i3,ey)
+  !-        ! '
+  !-      end if
+  !-      write(debugFile,'(" --> order2-curv: j1,j2=",2i4," u2=",2e11.3)') j1,j2,u2(j1-js1,j2-js2,j3,ex),u2(j1-js1,j2-js2,j3,ey)
+  !-        ! '
+  !-      write(debugFile,'(" --> order2-curv: i1,i2=",2i4," f(re-eval)=",4e10.2)') i1,i2,f(0),f(1),f(2),f(3)
+  !-        ! '
+  !-    end if
 
     ! solve for Hz
     !  [ w.n/eps] = 0
@@ -1497,26 +1374,18 @@ beginLoopsMask2d()
     u1(i1-is1,i2-is2,i3,hz)=f(0)
     u2(j1-js1,j2-js2,j3,hz)=f(1)
 
-    ! u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-    ! u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
-
-    if( debug.gt.3 )then ! re-evaluate
-
-      evalMagneticFieldInterfaceDerivatives2d()
-      evalMagneticField2dJumpOrder2()
-
-      write(debugFile,'(" --> order2-curv: i1,i2=",2i4," hz-f(re-eval)=",4e10.2)') i1,i2,f(0),f(1)
-        ! '
-    end if
+  !-    if( debug.gt.3 )then ! re-evaluate
+  !-
+  !-      evalMagneticFieldInterfaceDerivatives2d()
+  !-      evalMagneticField2dJumpOrder2()
+  !-
+  !-      write(debugFile,'(" --> order2-curv: i1,i2=",2i4," hz-f(re-eval)=",4e10.2)') i1,i2,f(0),f(1)
+  !-        ! '
+  !-    end if
 
   endLoopsMask2d()
   if( checkCoeff.eq.1 )then
     write(*,'("+++++ i22c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
-  end if
-  if( saveStencilCoeff.eq.1 )then
-    write(*,'("+++++ i22c: save stencil: max(diff) = ",1pe8.2," (ghost stencil)")') coeffDiff
-    write(*,'("+++++ i22c: save stencil: max stencil res = ",1pe8.2," (stage I)")') maxStencilRes
-    write(*,'("+++++ i22c: save stencil: max stencil err = ",1pe8.2," (stage II)")') maxStencilErr
   end if
 
 #endMacro
@@ -1561,55 +1430,64 @@ beginLoopsMask2d()
 #endMacro
 
 
-! --------------------------------------------------------------------------
-! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Rectangular
-! 
-! --------------------------------------------------------------------------
-#beginMacro assignInterfaceGhost24r()
- ! ****************************************************
- ! ***********  2D, ORDER=4, RECTANGULAR **************
- ! ****************************************************
-
- ! normal and tangent (for TZ forcing)
- an1=an1Cartesian
- an2=an2Cartesian
- tau1=-an2
- tau2= an1
-
- beginLoopsMask2d() ! =============== start loops =======================
+!-------------------------------------------------------------------------
+#beginMacro getJumpOrder4Macro()
 
    ! first evaluate the equations we want to solve with the wrong values at the ghost points:
    ! evalDerivs2dOrder4()
    evalDerivs2dOrder4()
+
+   ! New form of jump conditions: *wdh* Jan 27, 2021 
    f(0)=(u1x+v1y) - \
         (u2x+v2y)
-   f(1)=(u1Lap) - \
-        (u2Lap)
-   f(2)=(v1x-u1y) - \
-        (v2x-u2y)
-   f(3)=(v1Lap)/eps1 - \
-        (v2Lap)/eps2
-   ! These next we can do to 2nd order -- these need a value on the first ghost line --
-   f(4)=(u1xxx+u1xyy+v1xxy+v1yyy) - \
-        (u2xxx+u2xyy+v2xxy+v2yyy)
-   f(5)=((v1xxx+v1xyy)-(u1xxy+u1yyy))/eps1 - \
-        ((v2xxx+v2xyy)-(u2xxy+u2yyy))/eps2
-   f(6)=(u1LapSq)/eps1 - \
-        (u2LapSq)/eps2
-   f(7)=(v1LapSq)/eps1**2 - \
-        (v2LapSq)/eps2**2
+
+   f(1)=(u1Lap)/mu1 - \
+        (u2Lap)/mu2
+
+   f(2)=(v1x-u1y)/mu1 - \
+        (v2x-u2y)/mu2
+
+   !  J3:  [ c^2 Delta v] 
+   f(3)=(v1Lap)*c1**2 - \
+        (v2Lap)*c2**2
+
+   ! J4: [ (u.x + v.y).xx ] -> [ (c^2/mu) ( u.xxx - v.yyy) ] 
+   f(4)=(u1xxx - v1yyy)*c1**2/mu1 - \
+        (u2xxx - v2yyy)*c2**2/mu2
+
+   ! J5: Convert u.xxy -> -v.xyy
+   !    [ (c^2/mu) Delta( v.x - u.y) ] 
+   f(5)=( v1xxx + 2.*v1xyy - u1yyy )*c1**2/mu1 - \
+        ( v2xxx + 2.*v2xyy - u2yyy )*c2**2/mu2
+
+   ! [ c^2/mu Delta(u) ]=0
+   f(6)=(u1LapSq) * c1**2/mu1 - \
+        (u2LapSq) * c2**2/mu2
+
+   ! [ c^4 Delta(v) ]=0
+   f(7)=(v1LapSq)*c1**4 - \
+        (v2LapSq)*c2**4
    
    if( twilightZone.eq.1 )then
+     call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uex  )
+     call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uey  )
+
+     call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vex  )
+     call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vey  )
+
      call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
      call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
+
      call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
      call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyy )
   
+     call ogderiv(ep, 0,3,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexxx )
      call ogderiv(ep, 0,2,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexxy )
      call ogderiv(ep, 0,0,3,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyyy )
   
      call ogderiv(ep, 0,3,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexxx )
      call ogderiv(ep, 0,1,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexyy )
+     call ogderiv(ep, 0,0,3,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyyy )
   
      call ogderiv(ep, 0,4,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexxxx )
      call ogderiv(ep, 0,2,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexxyy )
@@ -1624,23 +1502,54 @@ beginLoopsMask2d()
      ueLapSq = uexxxx + 2.*uexxyy + ueyyyy
      veLapSq = vexxxx + 2.*vexxyy + veyyyy
   
-     f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*(1./eps1-1./eps2)
-     f(5) = f(5) - ((vexxx+vexyy)-(uexxy+ueyyy))*(1./eps1-1./eps2)
-     f(6) = f(6) - (an1*ueLapSq+an2*veLapSq)*(1./eps1-1./eps2)
-     f(7) = f(7) - (tau1*ueLapSq+tau2*veLapSq)*(1./eps1**2 - 1./eps2**2)
+     ! New form of jump conditions: *wdh* Jan 27, 2021 
+
+     f(1) = f(1) - ( ueLap )*(1./mu1 - 1./mu2)
+     f(2) = f(2) - ( vex - uey  )*(1./mu1 - 1./mu2)
+     !  J3:  [ c^2 Delta v] 
+     f(3) = f(3) - ( veLap )*(c1**2 - c2**2)
+     ! J4: [ (u.x + v.y).xx ] -> [ c^2( u.xxx - v.yyy) ] 
+     f(4) = f(4) - ( uexxx - veyyy )*(c1**2/mu1 - c2**2/mu2)
+     ! J5   [ (c^2/mu) Delta( v.x - u.y) ] 
+     f(5) = f(5) - ( vexxx + 2.*vexyy - ueyyy )*(c1**2/mu1 - c2**2/mu2)
+     f(6) = f(6) - ( ueLapSq )*(c1**2/mu1 - c2**2/mu2)
+     f(7) = f(7) - ( veLapSq )*(c1**4 - c2**4)
+
    end if
 
-   !      write(debugFile,'(" --> 4th: j1,j2=",2i4," u1xx,u1yy,u2xx,u2yy=",4e10.2)') j1,j2,u1xx42r(i1,i2,i3,ex),\
-   !          u1yy42r(i1,i2,i3,ex),u2xx42r(j1,j2,j3,ex),u2yy42r(j1,j2,j3,ex)
-   !      write(debugFile,'(" --> 4th: i1,i2=",2i4," f(start)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7)
+#endMacro 
+!-------------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Rectangular
+! 
+! --------------------------------------------------------------------------
+#beginMacro assignInterfaceGhost24r()
+ ! ****************************************************
+ ! ***********  2D, ORDER=4, RECTANGULAR **************
+ ! ****************************************************
+
+ if( t.le.5*dt .or. debug.gt.3 )then
+   if( it.le.2 )then
+     write(*,'("macro: assignInterfaceGhost24r : it=",i6," t,dt=",2e10.2)') it,t,dt
+   end if
+ end if
+
+ ! normal and tangent (for TZ forcing)
+ an1=an1Cartesian
+ an2=an2Cartesian
+ tau1=-an2
+ tau2= an1
 
    ! here is the matrix of coefficients for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
    ! Solve:
    !     
    !       A [ U ] = A [ U(old) ] - [ f ]
-   !      u1x43r(i1,i2,i3,kd)=(8.*(u1(i1+1,i2,i3,kd)-u1(i1-1,i2,i3,kd))-(
-   !     & u1(i1+2,i2,i3,kd)-u1(i1-2,i2,i3,kd)))*dx141(0)
+   !
 
+
+   ! ORDER:  u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)
 
    ! 0  [ u.x + v.y ] = 0
    a8(0,0) = -is*8.*rx1*dx141(axis1)     ! coeff of u1(-1) from [u.x+v.y] 
@@ -1653,105 +1562,195 @@ beginLoopsMask2d()
    a8(0,6) = -js*   rx2*dx241(axis2) 
    a8(0,7) = -js*   ry2*dx241(axis2) 
 
-   ! 1  [ u.xx + u.yy ] = 0
-   !      u1xx43r(i1,i2,i3,kd)=( -30.*u1(i1,i2,i3,kd)+16.*(u1(i1+1,i2,i3,
-   !     & kd)+u1(i1-1,i2,i3,kd))-(u1(i1+2,i2,i3,kd)+u1(i1-2,i2,i3,kd)) )*
-   !     & dx142(0)
-   
-   a8(1,0) = 16.*dx142(axis1)         ! coeff of u1(-1) from [u.xx + u.yy]
+   ! 1  [ (u.xx + u.yy)/mu ] = 0
+   a8(1,0) = 16.*dx142(axis1)/mu1         ! coeff of u1(-1) from [u.xx + u.yy]
    a8(1,1) = 0. 
-   a8(1,4) =    -dx142(axis1)         ! coeff of u1(-2) from [u.xx + u.yy]
+   a8(1,4) =    -dx142(axis1)/mu1         ! coeff of u1(-2) from [u.xx + u.yy]
    a8(1,5) = 0. 
 
-   a8(1,2) =-16.*dx242(axis2)         ! coeff of u2(-1) from [u.xx + u.yy]
+   a8(1,2) =-16.*dx242(axis2)/mu2         ! coeff of u2(-1) from [u.xx + u.yy]
    a8(1,3) = 0. 
-   a8(1,6) =     dx242(axis2)         ! coeff of u2(-2) from [u.xx + u.yy]
+   a8(1,6) =     dx242(axis2)/mu2         ! coeff of u2(-2) from [u.xx + u.yy]
    a8(1,7) = 0. 
 
 
-   ! 2  [ v.x - u.y ] =0 
-   a8(2,0) =  is*8.*ry1*dx141(axis1)
-   a8(2,1) = -is*8.*rx1*dx141(axis1)    ! coeff of v1(-1) from [v.x - u.y] 
-   a8(2,4) = -is*   ry1*dx141(axis1)
-   a8(2,5) =  is*   rx1*dx141(axis1)
+   ! 2  [ (v.x - u.y)/mu ] =0 
+   a8(2,0) =  is*8.*ry1*dx141(axis1)/mu1 
+   a8(2,1) = -is*8.*rx1*dx141(axis1)/mu1     ! coeff of v1(-1) from [v.x - u.y] 
+   a8(2,4) = -is*   ry1*dx141(axis1)/mu1 
+   a8(2,5) =  is*   rx1*dx141(axis1)/mu1 
 
-   a8(2,2) = -js*8.*ry2*dx241(axis2)
-   a8(2,3) =  js*8.*rx2*dx241(axis2)
-   a8(2,6) =  js*   ry2*dx241(axis2)
-   a8(2,7) = -js*   rx2*dx241(axis2)
+   a8(2,2) = -js*8.*ry2*dx241(axis2)/mu2
+   a8(2,3) =  js*8.*rx2*dx241(axis2)/mu2
+   a8(2,6) =  js*   ry2*dx241(axis2)/mu2
+   a8(2,7) = -js*   rx2*dx241(axis2)/mu2
 
-   ! 3  [ (v.xx+v.yy)/eps ] = 0
+   ! 3  [ (v.xx+v.yy)*c^2 ] = 0
+   dxx1by12i = 1./(12.*dx1(axis1)**2);
+   dxx2by12i = 1./(12.*dx2(axis2)**2);
+
    a8(3,0) = 0.                      
-   a8(3,1) = 16.*dx142(axis1)/eps1 ! coeff of v1(-1) from [(v.xx+v.yy)/eps]
-   a8(3,4) = 0.                      
-   a8(3,5) =    -dx142(axis1)/eps1 ! coeff of v1(-2) from [(v.xx+v.yy)/eps]
-
+   a8(3,1) = 16.*dxx1by12i *c1**2 ! coeff of v1(-1) from [(v.xx+v.yy)/eps]
    a8(3,2) = 0. 
-   a8(3,3) =-16.*dx242(axis2)/eps2 ! coeff of v2(-1) from [(v.xx+v.yy)/eps]
+   a8(3,3) =-16.*dxx2by12i *c2**2 ! coeff of v2(-1) from [(v.xx+v.yy)/eps]
+   a8(3,4) = 0.                      
+   a8(3,5) =    -dxx1by12i *c1**2 ! coeff of v1(-2) from [(v.xx+v.yy)/eps]
    a8(3,6) = 0. 
-   a8(3,7) =     dx242(axis2)/eps2 ! coeff of v2(-2) from [(v.xx+v.yy)/eps]
+   a8(3,7) =     dxx2by12i *c2**2 ! coeff of v2(-2) from [(v.xx+v.yy)/eps]
 
    ! 4  [ (u.xx+u.yy).x + (v.xx+v.yy).y ] = 0
-   !     u1xxx22r(i1,i2,i3,kd)=(-2.*(u1(i1+1,i2,i3,kd)-u1(i1-1,i2,i3,kd))+
-   !    & (u1(i1+2,i2,i3,kd)-u1(i1-2,i2,i3,kd)) )*dx122(0)*dx112(0)
-   !    u1xxy22r(i1,i2,i3,kd)=( u1xx22r(i1,i2+1,i3,kd)-u1xx22r(i1,i2-1,
-   !     & i3,kd))/(2.*dx1(1))
-   !      u1yy23r(i1,i2,i3,kd)=(-2.*u1(i1,i2,i3,kd)+(u1(i1,i2+1,i3,kd)+u1(
-   !     & i1,i2-1,i3,kd)) )*dx122(1)
-   !     u1xyy22r(i1,i2,i3,kd)=( u1yy22r(i1+1,i2,i3,kd)-u1yy22r(i1-1,i2,
-   !     & i3,kd))/(2.*dx1(0))
-  a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))
-  a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))
-  a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )  
-  a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1))
+   ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+   ! New: 
+   !  [ c^2( u.xxx - v.yyy )] = 0 
 
-  a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))
-  a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))
-  a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2))   
-  a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2))
+   dxxx1by2i = 1./(dx1(axis1)**3*2); 
+   dxxx2by2i = 1./(dx2(axis2)**3*2); 
+   ! Order u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2), 
+   a8(4,0)= ( is*rx1 *2.*dxxx1by2i )*c1**2/mu1 
+   a8(4,1)= 0.
+   a8(4,2)=-( js*rx2* 2.*dxxx2by2i )*c2**2/mu2 
+   a8(4,3)= 0.
+   a8(4,4)= (-is*rx1    *dxxx1by2i )*c1**2/mu1 
+   a8(4,5)= 0.
+   a8(4,6)=-(-js*rx2    *dxxx2by2i )*c2**2/mu2    
+   a8(4,7)= 0.
+ 
+   !-    a8(4,0)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) )*c1**2 
+   !-    a8(4,1)= ( is*ry1*2.*dx122(axis1)*dx112(axis1) )*c1**2
+   !-    a8(4,2)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) )*c2**2 
+   !-    a8(4,3)=-( js*ry2*2.*dx222(axis2)*dx212(axis2) )*c2**2
+   !-    a8(4,4)= (-is*rx1   *dx122(axis1)*dx112(axis1) )*c1**2  
+   !-    a8(4,5)= (-is*ry1   *dx122(axis1)*dx112(axis1) )*c1**2
+   !-    a8(4,6)=-(-js*rx2   *dx222(axis2)*dx212(axis2) )*c2**2   
+   !-    a8(4,7)=-(-js*ry2   *dx222(axis2)*dx212(axis2) )*c2**2
+ 
+   ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
+ 
+  ! use u.xxy -> -v.xyy
+  ! 5a [ ( v.xxx + 2*v.xyy - u.yyy ) * c^2/mu ] = 0
+  ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+   a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1) ) * c1**2/mu1
+   a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1) ) * c1**2/mu1
+   a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1) ) * c1**2/mu1
+   a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1) ) * c1**2/mu1
+ 
+   a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2) ) * c2**2/mu2 
+   a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2) ) * c2**2/mu2
+   a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2) ) * c2**2/mu2
+   a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2) ) * c2**2/mu2
 
-  ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
+   ! 6  [ Delta^2 u * c^2/mu ] = 0
 
-  a8(5,0)=-( is*ry1*2.*dx122(axis1)*dx112(axis1)+is*ry1*2.*dx122(0)/(2.*dx1(1)))/eps1
-  a8(5,1)= ( is*rx1*2.*dx122(axis1)*dx112(axis1)+is*rx1*2.*dx122(1)/(2.*dx1(0)))/eps1
-  a8(5,4)=-(-is*ry1   *dx122(axis1)*dx112(axis1))/eps1
-  a8(5,5)= (-is*rx1   *dx122(axis1)*dx112(axis1))/eps1   
-
-  a8(5,2)= ( js*ry2*2.*dx222(axis2)*dx212(axis2)+js*ry2*2.*dx222(0)/(2.*dx2(1)))/eps2
-  a8(5,3)=-( js*rx2*2.*dx222(axis2)*dx212(axis2)+js*rx2*2.*dx222(1)/(2.*dx2(0)))/eps2
-  a8(5,6)= (-js*ry2   *dx222(axis2)*dx212(axis2))/eps2
-  a8(5,7)=-(-js*rx2   *dx222(axis2)*dx212(axis2))/eps2   
-
-   ! 6  [ Delta^2 u/eps ] = 0
-   !     u1LapSq22r(i1,i2,i3,kd)= ( 6.*u1(i1,i2,i3,kd)- 4.*(u1(i1+1,i2,i3,
-   !    & kd)+u1(i1-1,i2,i3,kd))+(u1(i1+2,i2,i3,kd)+u1(i1-2,i2,i3,kd)) )
-   !    & /(dx1(0)**4)+( 6.*u1(i1,i2,i3,kd)-4.*(u1(i1,i2+1,i3,kd)+u1(i1,
-   !    & i2-1,i3,kd)) +(u1(i1,i2+2,i3,kd)+u1(i1,i2-2,i3,kd)) )/(dx1(1)**
-   !    & 4)+( 8.*u1(i1,i2,i3,kd)-4.*(u1(i1+1,i2,i3,kd)+u1(i1-1,i2,i3,kd)
-   !    & +u1(i1,i2+1,i3,kd)+u1(i1,i2-1,i3,kd))+2.*(u1(i1+1,i2+1,i3,kd)+
-   !    & u1(i1-1,i2+1,i3,kd)+u1(i1+1,i2-1,i3,kd)+u1(i1-1,i2-1,i3,kd)) )
-   !    & /(dx1(0)**2*dx1(1)**2)
-
-   a8(6,0) = -(4./(dx1(axis1)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps1
+   ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
+   a8(6,0) = -( 4./(dx1(axis1)**4) ) * c1**2/mu1
    a8(6,1) = 0.
-   a8(6,4) =   1./(dx1(axis1)**4)/eps1
+   a8(6,4) =  ( 1./(dx1(axis1)**4) ) * c1**2/mu1
    a8(6,5) = 0.
 
-   a8(6,2) = (4./(dx2(axis2)**4) +4./(dx1(0)**2*dx1(1)**2) )/eps2
+   a8(6,2) =  ( 4./(dx2(axis2)**4) ) * c2**2/mu2
    a8(6,3) = 0.
-   a8(6,6) =  -1./(dx2(axis2)**4)/eps2
+   a8(6,6) =  (-1./(dx2(axis2)**4) ) * c2**2/mu2
    a8(6,7) = 0.
 
-   ! 7  [ Delta^2 v/eps^2 ] = 0 
+   ! 7  [ (Delta^2 v) * c^4 ] = 0 
+   ! *wdh*  Jan 18, 2021 -- remove cross-derivative terms 
    a8(7,0) = 0.
-   a8(7,1) = -(4./(dx1(axis1)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps1**2
+   a8(7,1) =  -(4./(dx1(axis1)**4) ) * c1**4 
    a8(7,4) = 0.
-   a8(7,5) =   1./(dx1(axis1)**4)/eps1**2
+   a8(7,5) =   (1./(dx1(axis1)**4) ) * c1**4 
 
    a8(7,2) = 0.
-   a8(7,3) =  (4./(dx2(axis2)**4) +4./(dx2(0)**2*dx2(1)**2) )/eps2**2
+   a8(7,3) =   (4./(dx2(axis2)**4) ) * c2**4 
    a8(7,6) = 0.
-   a8(7,7) =  -1./(dx2(axis2)**4)/eps2**2
+   a8(7,7) =  (-1./(dx2(axis2)**4) ) * c2**4 
+
+
+   if( debug>0)then
+     write(*,*) "42r: Matrix a8"
+     do n=0,7
+       write(*,'(8(1pe10.2))') (a8(n,nn),nn=0,7)
+     end do 
+   end if 
+
+ do m2=0,7
+   do m1=0,7
+     a8f(m1,m2)=a8(m1,m2)  ! holds factored version
+   end do
+ end do
+
+ ! factor the matrix
+ numberOfEquations=8
+ call dgeco( a8f(0,0), 8, 8, ipivot8(0),rcond,work(0))
+
+ !write(debugFile,'(" --> 24r: 4th-order rect.: rcond=",e10.2)') rcond
+
+
+  ! ------------------------------------------
+  ! ---- form the matrix for computing Hz ----
+  ! ------------------------------------------
+
+  ! 1: [ w.n/eps ] = 0
+  a0 = dx141(axis1)/eps1
+  b0 = dx241(axis2)/eps2
+  a4h(0,0) = -is*8.*a0
+  a4h(0,2) =  is*   a0
+  a4h(0,1) =  js*8.*b0
+  a4h(0,3) = -js*   b0
+
+  ! 2: [ lap(w)/eps ] = 0 
+  aLap0=16.*dx142(axis1)  ! coeff of w1(-1) 
+  aLap1=-1.*dx142(axis1)  ! coeff of w1(-2)
+  bLap0=16.*dx242(axis2)  ! coeff of w2(-1) 
+  bLap1=-1.*dx242(axis2)  ! coeff of w2(-1) 
+
+  a4h(1,0) = aLap0/eps1    ! coeff of w1(-1) 
+  a4h(1,2) = aLap1/eps1    ! coeff of w1(-2)
+  a4h(1,1) =-bLap0/eps2    ! coeff of w2(-1) 
+  a4h(1,3) =-bLap1/eps2    ! coeff of w2(-1) 
+
+  ! 3:  [ (an1*(w.xx+w.yy).x + an2.(w.xx+w.yy).y)/eps**2 ] = 0
+  !  a4h(2,0)= (an1*aLapX0+an2*bLapY0)/eps1**2  ! coeff of w1(-1) 
+  !  a4h(2,1)=-(an1*cLapX0+an2*dLapY0)/eps2**2  ! coeff of w2(-1)
+  !  a4h(2,2)= (an1*aLapX1+an2*bLapY1)/eps1**2  ! coeff of w1(-2)
+  !  a4h(2,3)=-(an1*cLapX1+an2*dLapY1)/eps2**2  ! coeff of w2(-2)
+  a4h(2,0)=  is*(  1./(dx1(axis1)**3) +1./(dx1(axis1)*dx1(axis1p1)**2) )/eps1**2  ! coeff of w1(-1) aLapX0
+  a4h(2,2)=  is*( -.5/(dx1(axis1)**3)                                  )/eps1**2  ! coeff of w1(-2) aLapX1
+
+  a4h(2,1)= -js*(  1./(dx2(axis2)**3) +1./(dx2(axis2)*dx2(axis2p1)**2) )/eps2**2  ! coeff of w2(-1) cLapX0 
+  a4h(2,3)= -js*( -.5/(dx2(axis2)**3)                                  )/eps2**2  ! coeff of w2(-2) cLapX1
+
+  ! 4 [ lapSq(w)/eps**2 ] = 0   [ w_xxxx + 2 * w_xxyy + w_yyyy ]
+  aLapSq0= ( -4./(dx1(axis1)**4) -4./(dx1(axis1)**2 * dx1(axis1p1)**2 ) )
+  aLapSq1= (  1./(dx1(axis1)**4) )
+  bLapSq0= ( -4./(dx2(axis2)**4) -4./(dx2(axis2)**2 * dx2(axis2p1)**2 ) )
+  bLapSq1= (  1./(dx2(axis2)**4) )
+  a4h(3,0) = aLapSq0/eps1**2
+  a4h(3,2) = aLapSq1/eps1**2
+  a4h(3,1) =-bLapSq0/eps2**2
+  a4h(3,3) =-bLapSq1/eps2**2
+
+  do m2=0,3
+    do m1=0,3
+      a4hf(m1,m2)=a4h(m1,m2)  ! holds factored version
+    end do
+  end do
+
+  ! write(*,'(" a4h=",4(e9.2,1x))') ((a4h(i,j),j=0,3),i=0,3)
+
+  ! factor the matrix
+  call dgeco( a4hf(0,0), 4, 4, ipivot4h(0),rcond,work(0))
+  ! write(*,'("rcond=",e12.4)') rcond
+   
+
+ beginLoopsMask2d() ! =============== start loops =======================
+
+   ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+   getJumpOrder4Macro()
+
+   !      write(debugFile,'(" --> 4th: j1,j2=",2i4," u1xx,u1yy,u2xx,u2yy=",4e10.2)') j1,j2,u1xx42r(i1,i2,i3,ex),\
+   !          u1yy42r(i1,i2,i3,ex),u2xx42r(j1,j2,j3,ex),u2yy42r(j1,j2,j3,ex)
+   !      write(debugFile,'(" --> 4th: i1,i2=",2i4," f(start)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7)
+
 
    q(0) = u1(i1-is1,i2-is2,i3,ex)
    q(1) = u1(i1-is1,i2-is2,i3,ey)
@@ -1765,58 +1764,115 @@ beginLoopsMask2d()
 
    !      write(debugFile,'(" --> 4th: i1,i2=",2i4," q=",8e10.2)') i1,i2,q(0),q(1),q(2),q(3),q(4),q(5),q(6),q(7)
 
+   if( debug.gt.0 )then
+     write(*,'(" -->    24r: i1,i2=",2i4," RHS(A)=",8(1pe12.4))') i1,i2,(f(n),n=0,7)
+   end if
+
    ! subtract off the contributions from the initial (wrong) values at the ghost points:
    do n=0,7
      f(n) = (a8(n,0)*q(0)+a8(n,1)*q(1)+a8(n,2)*q(2)+a8(n,3)*q(3)+\
              a8(n,4)*q(4)+a8(n,5)*q(5)+a8(n,6)*q(6)+a8(n,7)*q(7)) - f(n)
    end do
 
+   ! if( .true. )then
+   !    write(*,'("24r: i1,i2=",2i4," RHS f= ",8(1pe10.2))') i1,i2, (f(n),n=0,7)
+   ! end if
+   
    ! solve A Q = F
-   ! factor the matrix
-   numberOfEquations=8
-   call dgeco( a8(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
-   ! solve
-   !write(debugFile,'(" --> 4th: i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
+
    job=0
-   call dgesl( a8(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
+   ! numberOfEquations=8
+   call dgesl( a8f(0,0), 8, 8, ipivot8(0), f(0), job)
 
    !write(debugFile,'(" --> 4th: i1,i2=",2i4," f(solve)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7)
 
-   if( .true. )then
-   u1(i1-is1,i2-is2,i3,ex)=f(0)
-   u1(i1-is1,i2-is2,i3,ey)=f(1)
-   u2(j1-js1,j2-js2,j3,ex)=f(2)
-   u2(j1-js1,j2-js2,j3,ey)=f(3)
+  if( debug>0 .and. twilightZone.eq.1 )then
+    ! check errors
+    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, evv(0) )
+    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, evv(1) )
+  
+    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ex, evv(2) )
+    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ey, evv(3) )
+  
+    call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ex, evv(4) )
+    call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, ey, evv(5) )
+  
+    call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ex, evv(6) )
+    call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, ey, evv(7) )
+  
+    write(*,'("24r: Errors in u1(-1), v1(-1), u2(-1), v2(-1), u1(-2), v1(-2), u2(-2), v2(-2)")') 
+  
+    maxErr=0.
+    do n=0,7
+      maxErr =max(maxErr,abs(evv(n)-f(n)))
+    end do
+    write(*,'("24r: i1,i2=",2i4," err= ",8e8.1," -> maxErr=",e8.1)') i1,i2, (abs(evv(n)-f(n)),n=0,7),maxErr
+  
+  
+  end if
 
-   u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
-   u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
-   u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
-   u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+
+   
+   if( useJacobiUpdate.eq.0 )then
+     u1(i1-is1,i2-is2,i3,ex)=f(0)
+     u1(i1-is1,i2-is2,i3,ey)=f(1)
+     u2(j1-js1,j2-js2,j3,ex)=f(2)
+     u2(j1-js1,j2-js2,j3,ey)=f(3)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
+   else
+     ! Jacobi-update
+     wk1(i1-is1,i2-is2,i3,ex)    =f(0)
+     wk1(i1-is1,i2-is2,i3,ey)    =f(1)
+     wk2(j1-js1,j2-js2,j3,ex)    =f(2)
+     wk2(j1-js1,j2-js2,j3,ey)    =f(3)
+
+     wk1(i1-2*is1,i2-2*is2,i3,ex)=f(4)
+     wk1(i1-2*is1,i2-2*is2,i3,ey)=f(5)
+     wk2(j1-2*js1,j2-2*js2,j3,ex)=f(6)
+     wk2(j1-2*js1,j2-2*js2,j3,ey)=f(7)
    end if
 
-  if( debug.gt.3 )then ! re-evaluate
-   evalDerivs2dOrder4()
-   f(0)=(u1x+v1y) - \
-        (u2x+v2y)
-   f(1)=(u1Lap) - \
-        (u2Lap)
-   f(2)=(v1x-u1y) - \
-        (v2x-u2y)
-   f(3)=(v1Lap)/eps1 - \
-        (v2Lap)/eps2
-   ! These next we can do to 2nd order -- these need a value on the first ghost line --
-   f(4)=(u1xxx+u1xyy+v1xxy+v1yyy) - \
-        (u2xxx+u2xyy+v2xxy+v2yyy)
-   f(5)=((v1xxx+v1xyy)-(u1xxy+u1yyy))/eps1 - \
-        ((v2xxx+v2xyy)-(u2xxy+u2yyy))/eps2
-   f(6)=(u1LapSq)/eps1 - \
-        (u2LapSq)/eps2
-   f(7)=(v1LapSq)/eps1**2 - \
-        (v2LapSq)/eps2**2
 
-   write(debugFile,'(" --> 4th: i1,i2=",2i4," f(re-eval)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7) 
-   ! '
-  end if
+ !-  if( .false. .or. debug.gt.3 )then ! re-evaluate
+ !-
+ !-    ! This is still not correct since the cross terms should use the SOA values
+ !-
+ !-    if( useJacobiUpdate.eq.1 )then
+ !-     ! Temporarily assign to check residuals 
+ !-     u1(i1-is1,i2-is2,i3,ex)     = wk1(i1-is1,i2-is2,i3,ex)    
+ !-     u1(i1-is1,i2-is2,i3,ey)     = wk1(i1-is1,i2-is2,i3,ey)    
+ !-     u2(j1-js1,j2-js2,j3,ex)     = wk2(j1-js1,j2-js2,j3,ex)    
+ !-     u2(j1-js1,j2-js2,j3,ey)     = wk2(j1-js1,j2-js2,j3,ey)    
+ !-                                                               
+ !-     u1(i1-2*is1,i2-2*is2,i3,ex) = wk1(i1-2*is1,i2-2*is2,i3,ex)
+ !-     u1(i1-2*is1,i2-2*is2,i3,ey) = wk1(i1-2*is1,i2-2*is2,i3,ey)
+ !-     u2(j1-2*js1,j2-2*js2,j3,ex) = wk2(j1-2*js1,j2-2*js2,j3,ex)
+ !-     u2(j1-2*js1,j2-2*js2,j3,ey) = wk2(j1-2*js1,j2-2*js2,j3,ey)
+ !-   end if
+ !-   
+ !-     getJumpOrder4Macro()
+ !-
+ !-   if( useJacobiUpdate.eq.1 )then
+ !-     ! reset for jacobi update
+ !-     wk1(i1-is1,i2-is2,i3,ex)     = u1(i1-is1,i2-is2,i3,ex)         
+ !-     wk1(i1-is1,i2-is2,i3,ey)     = u1(i1-is1,i2-is2,i3,ey)      
+ !-     wk2(j1-js1,j2-js2,j3,ex)     = u2(j1-js1,j2-js2,j3,ex)      
+ !-     wk2(j1-js1,j2-js2,j3,ey)     = u2(j1-js1,j2-js2,j3,ey)      
+ !-                                                                 
+ !-     wk1(i1-2*is1,i2-2*is2,i3,ex) = u1(i1-2*is1,i2-2*is2,i3,ex)  
+ !-     wk1(i1-2*is1,i2-2*is2,i3,ey) = u1(i1-2*is1,i2-2*is2,i3,ey)  
+ !-     wk2(j1-2*js1,j2-2*js2,j3,ex) = u2(j1-2*js1,j2-2*js2,j3,ex)  
+ !-     wk2(j1-2*js1,j2-2*js2,j3,ey) = u2(j1-2*js1,j2-2*js2,j3,ey)  
+ !-   end if 
+ !-
+ !-   write(*,'(" 42r: residuals: i1,i2=",2i4," res=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7) 
+ !-   ! write(debugFile,'(" --> 4th: i1,i2=",2i4," f(re-eval)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7) 
+ !-   ! '
+ !-  end if
 
    ! -------------------------------------------------------
    ! solve for Hz         *fixed* *wdh* June 24, 2016
@@ -1829,15 +1885,17 @@ beginLoopsMask2d()
    evalMagneticDerivs2dOrder4()
    evalMagneticField2dJumpOrder4()
 
+
+
    ! form the matrix for computing Hz
 
    ! 1: [ w.n/eps ] = 0
    a0 = dx141(axis1)/eps1
    b0 = dx241(axis2)/eps2
-   a4(0,0) = -is*8.*a0
-   a4(0,2) =  is*   a0
-   a4(0,1) =  js*8.*b0
-   a4(0,3) = -js*   b0
+   a4h(0,0) = -is*8.*a0
+   a4h(0,2) =  is*   a0
+   a4h(0,1) =  js*8.*b0
+   a4h(0,3) = -js*   b0
 
    ! 2: [ lap(w)/eps ] = 0 
    aLap0=16.*dx142(axis1)  ! coeff of w1(-1) 
@@ -1845,31 +1903,31 @@ beginLoopsMask2d()
    bLap0=16.*dx242(axis2)  ! coeff of w2(-1) 
    bLap1=-1.*dx242(axis2)  ! coeff of w2(-1) 
 
-   a4(1,0) = aLap0/eps1    ! coeff of w1(-1) 
-   a4(1,2) = aLap1/eps1    ! coeff of w1(-2)
-   a4(1,1) =-bLap0/eps2    ! coeff of w2(-1) 
-   a4(1,3) =-bLap1/eps2    ! coeff of w2(-1) 
+   a4h(1,0) = aLap0/eps1    ! coeff of w1(-1) 
+   a4h(1,2) = aLap1/eps1    ! coeff of w1(-2)
+   a4h(1,1) =-bLap0/eps2    ! coeff of w2(-1) 
+   a4h(1,3) =-bLap1/eps2    ! coeff of w2(-1) 
 
    ! 3:  [ (an1*(w.xx+w.yy).x + an2.(w.xx+w.yy).y)/eps**2 ] = 0
-   !  a4(2,0)= (an1*aLapX0+an2*bLapY0)/eps1**2  ! coeff of w1(-1) 
-   !  a4(2,1)=-(an1*cLapX0+an2*dLapY0)/eps2**2  ! coeff of w2(-1)
-   !  a4(2,2)= (an1*aLapX1+an2*bLapY1)/eps1**2  ! coeff of w1(-2)
-   !  a4(2,3)=-(an1*cLapX1+an2*dLapY1)/eps2**2  ! coeff of w2(-2)
-   a4(2,0)=  is*(  1./(dx1(axis1)**3) +1./(dx1(axis1)*dx1(axis1p1)**2) )/eps1**2  ! coeff of w1(-1) aLapX0
-   a4(2,2)=  is*( -.5/(dx1(axis1)**3)                                  )/eps1**2  ! coeff of w1(-2) aLapX1
+   !  a4h(2,0)= (an1*aLapX0+an2*bLapY0)/eps1**2  ! coeff of w1(-1) 
+   !  a4h(2,1)=-(an1*cLapX0+an2*dLapY0)/eps2**2  ! coeff of w2(-1)
+   !  a4h(2,2)= (an1*aLapX1+an2*bLapY1)/eps1**2  ! coeff of w1(-2)
+   !  a4h(2,3)=-(an1*cLapX1+an2*dLapY1)/eps2**2  ! coeff of w2(-2)
+   a4h(2,0)=  is*(  1./(dx1(axis1)**3) +1./(dx1(axis1)*dx1(axis1p1)**2) )/eps1**2  ! coeff of w1(-1) aLapX0
+   a4h(2,2)=  is*( -.5/(dx1(axis1)**3)                                  )/eps1**2  ! coeff of w1(-2) aLapX1
 
-   a4(2,1)= -js*(  1./(dx2(axis2)**3) +1./(dx2(axis2)*dx2(axis2p1)**2) )/eps2**2  ! coeff of w2(-1) cLapX0 
-   a4(2,3)= -js*( -.5/(dx2(axis2)**3)                                  )/eps2**2  ! coeff of w2(-2) cLapX1
+   a4h(2,1)= -js*(  1./(dx2(axis2)**3) +1./(dx2(axis2)*dx2(axis2p1)**2) )/eps2**2  ! coeff of w2(-1) cLapX0 
+   a4h(2,3)= -js*( -.5/(dx2(axis2)**3)                                  )/eps2**2  ! coeff of w2(-2) cLapX1
 
    ! 4 [ lapSq(w)/eps**2 ] = 0   [ w_xxxx + 2 * w_xxyy + w_yyyy ]
    aLapSq0= ( -4./(dx1(axis1)**4) -4./(dx1(axis1)**2 * dx1(axis1p1)**2 ) )
    aLapSq1= (  1./(dx1(axis1)**4) )
    bLapSq0= ( -4./(dx2(axis2)**4) -4./(dx2(axis2)**2 * dx2(axis2p1)**2 ) )
    bLapSq1= (  1./(dx2(axis2)**4) )
-   a4(3,0) = aLapSq0/eps1**2
-   a4(3,2) = aLapSq1/eps1**2
-   a4(3,1) =-bLapSq0/eps2**2
-   a4(3,3) =-bLapSq1/eps2**2
+   a4h(3,0) = aLapSq0/eps1**2
+   a4h(3,2) = aLapSq1/eps1**2
+   a4h(3,1) =-bLapSq0/eps2**2
+   a4h(3,3) =-bLapSq1/eps2**2
 
    q(0) = u1(i1-is1,i2-is2,i3,hz)
    q(1) = u2(j1-js1,j2-js2,j3,hz)
@@ -1878,59 +1936,117 @@ beginLoopsMask2d()
 
    ! subtract off the contributions from the wrong values at the ghost points:
    do n=0,3
-     f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)*q(3)) - f(n)
+     f(n) = (a4h(n,0)*q(0)+a4h(n,1)*q(1)+a4h(n,2)*q(2)+a4h(n,3)*q(3)) - f(n)
    end do
 
-   ! write(*,'(" a4=",4(e9.2,1x))') ((a4(i,j),j=0,3),i=0,3)
+   ! write(*,'(" a4h=",4(e9.2,1x))') ((a4h(i,j),j=0,3),i=0,3)
 
    ! factor the matrix
-   numberOfEquations=4
-   call dgeco( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0),rcond,work(0))
+   ! numberOfEquations=4
+   call dgeco( a4h(0,0), 4, 4, ipivot4h(0),rcond,work(0))
 
    ! write(*,'("rcond=",e12.4)') rcond
 
    ! solve
    job=0
-   call dgesl( a4(0,0), numberOfEquations, numberOfEquations, ipvt(0), f(0), job)
+   call dgesl( a4h(0,0), 4, 4, ipivot4h(0), f(0), job)
 
-   if( .true. )then
-    u1(i1-is1,i2-is2,i3,hz)=f(0)
-    u2(j1-js1,j2-js2,j3,hz)=f(1)
-    u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
-    u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
+   if( useJacobiUpdate.eq.0 )then
+     u1(i1-  is1,i2-  is2,i3,hz)=f(0)
+     u2(j1-  js1,j2-  js2,j3,hz)=f(1)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
    else
-    ! do this for now
-    u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-    u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
-    u1(i1-2*is1,i2-2*is2,i3,hz)=u2(j1+2*js1,j2+2*js2,j3,hz) 
-    u2(j1-2*js1,j2-2*js2,j3,hz)=u1(i1+2*is1,i2+2*is2,i3,hz)
-   end if
-
-   if( .false. .or. debug.gt.0 )then ! re-evaluate
-
-    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, hz, we0  )
-    call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, hz, we1  )
-    write(*,'(" w1(-1),w1(-2)=",2e11.3," err=",2e11.3)') f(0),f(2),f(0)-we0,f(2)-we1
-
-    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, hz, we2  )
-    call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, hz, we3  )
-    write(*,'(" w2(-1),w2(-2)=",2e11.3," err=",2e11.3)') f(1),f(3),f(1)-we2,f(3)-we3
-
-    evalMagneticDerivs2dOrder4()
-    evalMagneticField2dJumpOrder4()
-
-    write(*,'(" --> 4r th: i1,i2=",2i4," hz-f(re-eval)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3)
-      ! '
-
-    u1(i1-is1,i2-is2,i3,hz)=we0
-    u2(j1-js1,j2-js2,j3,hz)=we2
-    u1(i1-2*is1,i2-2*is2,i3,hz)=we1
-    u2(j1-2*js1,j2-2*js2,j3,hz)=we3
-
+     ! Jacobi update -- save answer in work space
+     wk1(i1-  is1,i2-  is2,i3,hz)=f(0)
+     wk2(j1-  js1,j2-  js2,j3,hz)=f(1)
+     wk1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+     wk2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
    end if
 
 
- endLoopsMask2d()
+
+!-
+!-
+!-
+!-   q(0) = u1(i1-is1,i2-is2,i3,hz)
+!-   q(1) = u2(j1-js1,j2-js2,j3,hz)
+!-   q(2) = u1(i1-2*is1,i2-2*is2,i3,hz)
+!-   q(3) = u2(j1-2*js1,j2-2*js2,j3,hz)
+!-
+!-   ! subtract off the contributions from the wrong values at the ghost points:
+!-   do n=0,3
+!-     f(n) = (a4h(n,0)*q(0)+a4h(n,1)*q(1)+a4h(n,2)*q(2)+a4h(n,3)*q(3)) - f(n)
+!-   end do
+!-
+!-   ! ---- solve  ----
+!-   job=0
+!-   numberOfEquations=4
+!-   call dgesl( a4hf(0,0), numberOfEquations, numberOfEquations, ipivot4h(0), f(0), job)
+!-
+!-   if( useJacobiUpdate.eq.0 )then
+!-     u1(i1-  is1,i2-  is2,i3,hz)=f(0)
+!-     u2(j1-  js1,j2-  js2,j3,hz)=f(1)
+!-     u1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+!-     u2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
+!-   else
+!-     ! Jacobi update -- save answer in work space
+!-     wk1(i1-  is1,i2-  is2,i3,hz)=f(0)
+!-     wk2(j1-  js1,j2-  js2,j3,hz)=f(1)
+!-     wk1(i1-2*is1,i2-2*is2,i3,hz)=f(2)
+!-     wk2(j1-2*js1,j2-2*js2,j3,hz)=f(3)
+!-   end if
+
+   !-   if( .false. .and. debug.gt.0 )then ! re-evaluate
+   !-
+   !-    call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, hz, we0  )
+   !-    call ogderiv(ep, 0,0,0,0, xy1(i1-2*is1,i2-2*is2,i3,0),xy1(i1-2*is1,i2-2*is2,i3,1),0.,t, hz, we1  )
+   !-    write(*,'(" w1(-1),w1(-2)=",2e11.3," err=",2e11.3)') f(0),f(2),f(0)-we0,f(2)-we1
+   !-
+   !-    call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, hz, we2  )
+   !-    call ogderiv(ep, 0,0,0,0, xy2(j1-2*js1,j2-2*js2,j3,0),xy2(j1-2*js1,j2-2*js2,j3,1),0.,t, hz, we3  )
+   !-    write(*,'(" w2(-1),w2(-2)=",2e11.3," err=",2e11.3)') f(1),f(3),f(1)-we2,f(3)-we3
+   !-
+   !-    evalMagneticDerivs2dOrder4()
+   !-    evalMagneticField2dJumpOrder4()
+   !-
+   !-    write(*,'(" --> 4r th: i1,i2=",2i4," hz-f(re-eval)=",8e10.2)') i1,i2,f(0),f(1),f(2),f(3)
+   !-      ! '
+   !-
+   !-    u1(i1-is1,i2-is2,i3,hz)=we0
+   !-    u2(j1-js1,j2-js2,j3,hz)=we2
+   !-    u1(i1-2*is1,i2-2*is2,i3,hz)=we1
+   !-    u2(j1-2*js1,j2-2*js2,j3,hz)=we3
+   !-
+   !-   end if
+
+
+  endLoopsMask2d()
+ ! =============== end loops =======================
+      
+
+ if( useJacobiUpdate.ne.0 )then
+   ! Jacobi-update: now fill in values 
+   beginLoopsMask2d() 
+     u1(i1-is1,i2-is2,i3,ex)=wk1(i1-is1,i2-is2,i3,ex)
+     u1(i1-is1,i2-is2,i3,ey)=wk1(i1-is1,i2-is2,i3,ey)
+     u2(j1-js1,j2-js2,j3,ex)=wk2(j1-js1,j2-js2,j3,ex)
+     u2(j1-js1,j2-js2,j3,ey)=wk2(j1-js1,j2-js2,j3,ey)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=wk1(i1-2*is1,i2-2*is2,i3,ex)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=wk1(i1-2*is1,i2-2*is2,i3,ey)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=wk2(j1-2*js1,j2-2*js2,j3,ex)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=wk2(j1-2*js1,j2-2*js2,j3,ey)
+
+     u1(i1-  is1,i2-  is2,i3,hz)=wk1(i1-  is1,i2-  is2,i3,hz)
+     u2(j1-  js1,j2-  js2,j3,hz)=wk2(j1-  js1,j2-  js2,j3,hz)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=wk1(i1-2*is1,i2-2*is2,i3,hz)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=wk2(j1-2*js1,j2-2*js2,j3,hz)
+   endLoopsMask2d()
+ end if
+
+
+   
 #endMacro
 
 ! --------------------------------------------------------------------------
@@ -2034,11 +2150,10 @@ beginLoopsMask2d()
  ! ***********  2D, ORDER=4, CURVILINEAR **************
  ! ****************************************************
 
- if( t.le.5*dt .or. debug.gt.3 )then
-   if( it.le.2 )then
-     write(*,'("macro: assignInterfaceGhost24c : it=",i6," t,dt=",2e10.2)') it,t,dt
-   end if
+ if( .true. .or. t.le.5*dt .or. debug.gt.3 )then
+   write(*,'("macro: assignInterfaceGhost24c : t,dt=",2e10.2)') t,dt
  end if
+
 
  err=0.
  nn=-1 ! counts points on the interface
@@ -2338,14 +2453,15 @@ beginLoopsMask2d()
        numberOfEquations=8
 
        ! --- check matrix coefficients by delta function approach ----
-       if( checkCoeff.eq.1 )then
-        do n2=0,7
-        do n1=0,7
-          a8(n1,n2)=aa8(n1,n2,0,nn)
-        end do
-        end do                
-        checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a8,evalInterfaceEquations24c )
-       end if
+       !- comment out to speed up compilation 
+       !- if( checkCoeff.eq.1 )then
+       !-  do n2=0,7
+       !-  do n1=0,7
+       !-    a8(n1,n2)=aa8(n1,n2,0,nn)
+       !-  end do
+       !-  end do                
+       !-  checkCoefficients(i1,i2,i3, j1,j2,j3,numberOfEquations,a8,evalInterfaceEquations24c )
+       !- end if
 
        if( saveCoeff.eq.1 )then
         ! Macro from interfaceMacros.h : 
@@ -2591,6 +2707,21 @@ beginLoopsMask2d()
         end do
       end do
      end if
+
+    if (nonlinearModel1 .ne. noNonlinearModel) then
+
+      do na = 0,numberOfAtomicLevels1-1
+        q1(i1  -is1,i2  -is2,i3,na)=extrap3(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+        q1(i1-2*is1,i2-2*is2,i3,na)=extrap3(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+      enddo
+    end if
+    
+    if (nonlinearModel2 .ne. noNonlinearModel) then
+      do na = 0,numberOfAtomicLevels2-1
+        q2(j1  -js1,j2  -js2,j3,na)=extrap3(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+        q2(j1-2*js1,j2-2*js2,j3,na)=extrap3(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+      enddo
+    endif
    endLoops2d()
 
   end if
@@ -2657,6 +2788,20 @@ if( .true. )then
    end do
   end if
 
+  if (nonlinearModel1 .ne. noNonlinearModel) then
+    do na = 0,numberOfAtomicLevels1-1
+      q1(i1  -is1,i2  -is2,i3,na)=extrap5(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+      q1(i1-2*is1,i2-2*is2,i3,na)=extrap5(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+    enddo
+  end if
+  
+  if (nonlinearModel2 .ne. noNonlinearModel) then
+    do na = 0,numberOfAtomicLevels2-1
+      q2(j1  -js1,j2  -js2,j3,na)=extrap5(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+      q2(j1-2*js1,j2-2*js2,j3,na)=extrap5(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+    enddo
+  endif
+
  endLoops2d()
 else
 
@@ -2697,6 +2842,20 @@ else
      end do
    end do
   end if
+
+  if (nonlinearModel1 .ne. noNonlinearModel) then
+    do na = 0,numberOfAtomicLevels1-1
+      q1(i1  -is1,i2  -is2,i3,na)=extrap4(q1,i1    ,i2    ,i3,na,is1,is2,is3)
+      q1(i1-2*is1,i2-2*is2,i3,na)=extrap4(q1,i1-is1,i2-is2,i3,na,is1,is2,is3)
+    enddo
+  end if
+  
+  if (nonlinearModel2 .ne. noNonlinearModel) then
+    do na = 0,numberOfAtomicLevels2-1
+      q2(j1  -js1,j2  -js2,j3,na)=extrap4(q2,j1    ,j2    ,j3,na,js1,js2,js3)
+      q2(j1-2*js1,j2-2*js2,j3,na)=extrap4(q2,j1-js1,j2-js2,j3,na,js1,js2,js3)
+    enddo
+  endif
 
  endLoops2d()
 end if
@@ -2743,8 +2902,6 @@ end if
 ! resetIndexBounds()  
 #Include "interfaceMacros3d.h"
 
-#Include "saveStencilMacros.h"
-
 
 ! ==============================================================================
 ! Macro: get index bounds that include ghost points 
@@ -2787,8 +2944,693 @@ end if
 
 #endMacro          
 
+!================================================================================================
+! Macro  2D ORDER=2 RECTANGULAR
+!================================================================================================
+#beginMacro assignInterfaceMacro22r(MODEL)
 
-      subroutine interfaceOpt( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+#perl $DIM=2; $GRIDTYPE="rectangular"; $ORDER=2;
+
+  if( .false. .and. useForcing.ne.0 )then 
+    ! finish me 
+    stop 7715
+  end if
+
+  !-  ! just copy values from ghost points for now
+  !-  beginLoopsMask2d()
+  !-    u1(i1-is1,i2-is2,i3,ex)=u2(j1+js1,j2+js2,j3,ex)
+  !-    u1(i1-is1,i2-is2,i3,ey)=u2(j1+js1,j2+js2,j3,ey)
+  !-    u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
+  !-  endLoopsMask2d()
+
+  ! ---- first satisfy the jump conditions on the boundary --------
+  !    [ eps n.u ] = 0
+  !    [ tau.u ] = 0
+  if( assignInterfaceValues.eq.1 )then
+      boundaryJumpConditions(2,rectangular)
+  end if
+
+  ! initialization step: assign first ghost line by extrapolation
+
+  ! NOTE: assign ghost points outside the ends (for periodic only??)
+
+  ! ***WHY IS THIS HERE AND WHY ISN'T U2 SET TOO? *************************************
+
+  ! ----- assign ghost using jump conditions -----
+  if( assignInterfaceGhostValues.eq.1 )then
+
+    ! initialization step: assign first ghost line by extrapolation
+    extrapolateGhost2dOrder2()
+
+    ! Macro to assign ghost values:
+    if( dispersive.eq.0 )then
+      #If #MODEL eq "none"
+       assignInterfaceGhost22r()
+      #End
+    else if( useNonlinearModel.eq.0 )then
+      ! dispersive case
+      #If #MODEL eq "gdm"
+       assignDispersiveInterfaceGhost22r()
+      #End 
+   else
+      ! nonlinear dispersive case
+      #If #MODEL eq "mla"
+       assignNonlinearInterfaceGhost22r()
+      #End 
+    end if    
+
+    ! fixup values on ends *wdh* June 22, 2016
+    if( .false. )then
+      fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+      fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+    end if
+
+    ! opt periodic update
+    periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
+    periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
+  end if
+#endMacro
+
+        
+!================================================================================================
+! Macro  2D ORDER=2 CURVILINEAR
+!================================================================================================
+#beginMacro assignInterfaceMacro22c(MODEL)
+
+#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2; 
+
+  ! ---- first satisfy the jump conditions on the boundary --------
+  !    [ eps n.u ] = 0
+  !    [ tau.u ] = 0
+
+  if( assignInterfaceValues.eq.1 )then
+    boundaryJumpConditions(2,curvilinear)
+  end if
+
+ ! ----- assign ghost using jump conditions -----
+ if( assignInterfaceGhostValues.eq.1 )then
+
+  ! initialization step: assign first ghost line by extrapolation
+  extrapolateGhost2dOrder2()
+
+  ! Macro to assign ghost values:
+  if( dispersive.eq.0 )then
+    #If #MODEL eq "none"
+      assignInterfaceGhost22c()
+    #End
+  else if( useNonlinearModel.eq.0 )then
+    ! dispersive case
+    #If #MODEL eq "gdm"
+      assignDispersiveInterfaceGhost22c()
+    #End 
+  else
+    ! nonlinear model
+    #If #MODEL eq "mla"
+      assignNonlinearInterfaceGhost22c()
+    #End 
+  end if
+
+  ! now make sure that div(u)=0 etc.
+  !2          if( .false. )then
+  !2         beginLoops2d() ! =============== start loops =======================
+  !2
+  !2           ! 0  [ u.x + v.y ] = 0
+  !2           ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+  !2           divu=u1x22(i1,i2,i3,ex)+u1y22(i1,i2,i3,ey)
+  !2           a0=-is*rsxy1(i1,i2,i3,axis1,0)*dr112(axis1)
+  !2           a1=-is*rsxy1(i1,i2,i3,axis1,1)*dr112(axis1)
+  !2           aNormSq=a0**2+a1**2
+  !2           ! now project:  a.uNew = a.uOld - div  ->  (div-a.uOld)+a.uNew = div(uNew) = 0
+  !2           u1(i1-is1,i2-is2,i3,ex)=u1(i1-is1,i2-is2,i3,ex)-divu*a0/aNormSq
+  !2           u1(i1-is1,i2-is2,i3,ey)=u1(i1-is1,i2-is2,i3,ey)-divu*a1/aNormSq
+  !2
+  !2           divu=u2x22(j1,j2,j3,ex)+u2y22(j1,j2,j3,ey)
+  !2           a0=-js*rsxy2(j1,j2,j3,axis2,0)*dr212(axis2) 
+  !2           a1=-js*rsxy2(j1,j2,j3,axis2,1)*dr212(axis2) 
+  !2           aNormSq=a0**2+a1**2
+  !2
+  !2           u2(j1-js1,j2-js2,j3,ex)=u2(j1-js1,j2-js2,j3,ex)-divu*a0/aNormSq
+  !2           u2(j1-js1,j2-js2,j3,ey)=u2(j1-js1,j2-js2,j3,ey)-divu*a1/aNormSq
+  !2
+  !2           if( debug.gt.0 )then
+  !2             write(debugFile,'(" --> 2cth: eval div1,div2=",2e10.2)') u1x22(i1,i2,i3,ex)+u1y22(i1,i2,i3,ey),u2x22(j1,j2,j3,ex)+u2y22(j1,j2,j3,ey)
+  !2           end if
+  !2         endLoops2d()
+  !2          end if
+
+  ! periodic update **** THIS WON T WORK IN PARALLEL
+  periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
+  periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
+
+ end if ! end assignInterfaceGhostValues
+
+else if( .false. .and. orderOfAccuracy.eq.4 )then
+
+  ! for testing -- just assign from the other ghost points
+
+  beginLoops2d()
+    u1(i1-is1,i2-is2,i3,ex)=u2(j1+js1,j2+js2,j3,ex)
+    u1(i1-is1,i2-is2,i3,ey)=u2(j1+js1,j2+js2,j3,ey)
+    u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
+
+    u2(j1-js1,j2-js2,j3,ex)=u1(i1+is1,i2+is2,i3,ex)
+    u2(j1-js1,j2-js2,j3,ey)=u1(i1+is1,i2+is2,i3,ey)
+    u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
+
+    u1(i1-2*is1,i2-2*is2,i3,ex)=u2(j1+2*js1,j2+2*js2,j3,ex)
+    u1(i1-2*is1,i2-2*is2,i3,ey)=u2(j1+2*js1,j2+2*js2,j3,ey)
+    u1(i1-2*is1,i2-2*is2,i3,hz)=u2(j1+2*js1,j2+2*js2,j3,hz) 
+
+    u2(j1-2*js1,j2-2*js2,j3,ex)=u1(i1+2*is1,i2+2*is2,i3,ex)
+    u2(j1-2*js1,j2-2*js2,j3,ey)=u1(i1+2*is1,i2+2*is2,i3,ey)
+    u2(j1-2*js1,j2-2*js2,j3,hz)=u1(i1+2*is1,i2+2*is2,i3,hz)
+
+  endLoops2d()
+#endMacro
+
+         
+!================================================================================================
+! Macro  2D ORDER=4 RECTANGULAR
+!================================================================================================
+#beginMacro assignInterfaceMacro24r(MODEL)
+         
+#perl $DIM=2; $GRIDTYPE="rectangular"; $ORDER=4;
+  
+  ! --------------- 4th Order Rectangular ---------------
+
+
+  !- ! **TEMP**
+  !- alphaP1=0.
+  !- alphaP2=0.
+  !-write(*,'(" ***TEMP Setting alphaP1=alphaP2=0")') 
+
+
+  ! if( useForcing.ne.0 )then 
+  !   ! finish me 
+  !   stop 7716
+  ! end if
+  ! ***** fix these for [mu] != 0 ****
+  if( mu1.ne.mu2 )then
+    stop 9924
+  end if
+
+
+  ! ---- first satisfy the jump conditions on the boundary --------
+  !    [ eps n.u ] = 0
+  !    [ tau.u ] = 0
+  if( assignInterfaceValues.eq.1 )then
+    boundaryJumpConditions(2,rectangular)
+  end if
+
+  ! here are the real jump conditions for the ghost points
+  ! 0  [ u.x + v.y ] = 0
+  ! 1  [ u.xx + u.yy ] = 0
+  ! 2  [ v.x - u.y ] =0 
+  ! 3  [ (v.xx+v.yy)/eps ] = 0
+  ! 4  [ (u.xx+u.yy).x + (v.xx+v.yy).y ] = 0  OR [ (u.xx).x + (v.xx).y ] = 0 OR  [ (u.yy).x + (v.yy).y ] = 0 
+  ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
+  ! 6  [ Delta^2 u/eps ] = 0
+  ! 7  [ Delta^2 v/eps^2 ] = 0 
+
+
+  ! ----- assign ghost using jump conditions -----
+  if( assignInterfaceGhostValues.eq.1 )then
+ 
+    ! initialization step: assign two ghost lines by extrapolation
+    extrapolateGhost2dOrder4()
+ 
+    orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+ 
+    if( t.lt. 3.*dt .and. debug.gt.0 )then
+      ! This next perl command will cause macro derivatives to be computed to order=2
+#perl $ORDER=2;
+       write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER RECTANGUAR INTERFACE (residuals Order=2)****")')
+    end if 
+
+
+    ! in parallel we add extra points in the tangential direction on parallel boundaries
+    ! (otherwise we would use extrapolated values which is probably ok) 
+    setIndexBoundsExtraGhost()
+
+   ! Macro to assign ghost values:
+   if( dispersive.eq.0 )then
+     #If #MODEL eq "none"
+       assignInterfaceGhost22r( NO_MAG_FIELD )
+     #End 
+   else if( useNonlinearModel.eq.0 )then
+     ! dispersive case
+     #If #MODEL eq "gdm"
+       assignDispersiveInterfaceGhost22r( NO_MAG_FIELD )
+     #End 
+   else
+     ! nonlinear dispersive case
+     #If #MODEL eq "mla"
+       assignNonlinearInterfaceGhost22r()
+     #End 
+   end if    
+   resetIndexBounds()         
+ 
+   orderOfAccuracy=4 ! reset 
+ 
+    ! This next perl command will reset the macro derivatives to be computed to order=4
+#perl $ORDER=4;
+
+ 
+   ! Macro to assign ghost values:
+   if( dispersive.eq.0 )then
+     #If #MODEL eq "none"
+       assignInterfaceGhost24r()
+     #End
+   else if( useNonlinearModel.eq.0 )then
+     ! dispersive case
+     #If #MODEL eq "gdm"
+       ! *new* Feb 1, 2021
+       assignDispersiveInterfaceGhost24r()
+     #End 
+   else
+     ! nonlinear dispersive case
+     #If #MODEL eq "mla"
+       write(*,*) "Finish assignNonlinearInterfaceGhost24r()"
+       stop 2222
+     #End 
+   end if    
+   
+   ! fixup corner points 
+   ! if( .false. )then
+   !   fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+   !   fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+   ! end if
+ 
+   ! periodic update
+   periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
+   periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
+
+ end if ! assign ghost
+
+#endMacro 
+
+
+
+!================================================================================================
+! Macro  2D ORDER=4 CURVILINEAR
+!================================================================================================
+#beginMacro assignInterfaceMacro24c(MODEL)
+
+
+#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
+  
+  ! --------------- 4th Order Curvilinear ---------------
+
+  ! ***** fix these for [mu] != 0 ****
+  if( mu1.ne.mu2 )then
+    stop 9925
+  end if
+
+  ! write(*,'("START: p1=",(15(e10.2,1x)))') (((p1(i1,i2,i3,0),i1=nd1a,nd1b),i2=nd2a,nd2b),i3=nd3a,nd3b)
+
+  ! ---- first satisfy the jump conditions on the boundary --------
+  !    [ eps n.u ] = 0
+  !    [ tau.u ] = 0
+  !    [ w ] = 0 
+  if( assignInterfaceValues.eq.1 )then
+    boundaryJumpConditions(2,curvilinear)
+  end if
+
+
+ ! ----- assign ghost using jump conditions -----
+ if( assignInterfaceGhostValues.eq.1 )then
+
+  ! here are the real jump conditions for the ghost points
+  ! 0  [ u.x + v.y ] = 0
+  ! 1  [ n.(uv.xx + uv.yy) ] = 0
+  ! 2  [ v.x - u.y ] =0 
+  ! 3  [ tau.(v.xx+v.yy)/eps ] = 0
+  ! 4  [ (u.xx+u.yy).x + (v.xx+v.yy).y ] = 0  OR [ (u.xx).x + (v.xx).y ] = 0 OR  [ (u.yy).x + (v.yy).y ] = 0 
+  ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
+  ! 6  [ n.Delta^2 uv/eps ] = 0
+  ! 7  [ tau.Delta^2 uv/eps^2 ] = 0 
+
+
+
+  ! initialization step: assign first ghost line by extrapolation
+  ! NOTE: assign ghost points outside the ends
+
+  
+  extrapolateGhost2dOrder4()
+
+  if( avoidInterfaceIterations.eq.1 )then
+
+    ! ---- STAGE I: assign first ghost to 2nd-order accuracy -----
+
+    ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
+    ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
+    !!  perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2;
+
+
+    if( t.lt. 3.*dt .and. debug.gt.0 )then
+      write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER CURV INTERFACE (residual order=4)****")')
+
+     ! Use 4th-order accurate residuals in SOA update, otheriwse accuracy degrades to 3rd order for PMIC
+     ! perl $ORDER=2; 
+     ! write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER CURV INTERFACE (residual order=2)****")')
+
+    end if 
+    orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
+
+    ! in parallel we add extra points in the tangential direction on parallel boundaries
+    ! (otherwise we would use extrapolated values which is probably ok) 
+
+    setIndexBoundsExtraGhost()  
+    if( dispersive.eq.0 )then
+      #If #MODEL eq "none"
+        assignInterfaceGhost22c( NO_MAG_FIELD )
+      #End 
+    else if( useNonlinearModel.eq.0 )then
+      ! dispersive case
+      #If #MODEL eq "gdm"
+        assignDispersiveInterfaceGhost22c()
+      #End 
+    else
+      ! nonlinear dispersive case
+      #If #MODEL eq "mla"
+        assignNonlinearInterfaceGhost22c()
+      #End 
+    end if
+    resetIndexBounds()         
+
+    orderOfAccuracy=4 ! reset 
+  end if
+
+#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
+
+  if( debug.gt.3 )then
+
+    ! macro to get bounds including ghost points: ng1a,ng1b,... mg1a,mg1b, 
+    setIndexBoundsExtraGhost()
+    getGhostBounds( numGhost )
+    resetIndexBounds()         
+
+    nd4a=0
+    nd4b=0
+    n4a=0
+    n4b=0
+    write(label,'("mask1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    pdiff = checkParallelFortranArrayInt(label, \
+                  nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                  ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                  mask1, \
+                  len(label) )
+
+    write(label,'("mask2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    md4a=0
+    md4b=0
+    m4a=0
+    m4b=0
+    pdiff = checkParallelFortranArrayInt(label, \
+                  md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                  mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                  mask2, \
+                  len(label) )
+
+    nd4a=0
+    nd4b=2*nd-1
+    n4a=0
+    n4b=2*nd-1
+    write(label,'("rsxy1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    pdiff = checkParallelFortranArrayReal(label, \
+                  nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                  ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                  rsxy1, \
+                  len(label) )
+
+    write(label,'("rsxy2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    md4a=0
+    md4b=2*nd-1
+    m4a=0
+    m4b=2*nd-1
+    pdiff = checkParallelFortranArrayReal(label, \
+                  md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                  mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                  rsxy2, \
+                  len(label) )
+
+
+    write(label,'("u1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    ! fix me: -- use number of components 
+    nd4a=0
+    nd4b=2
+    n4a=0
+    n4b=2
+    pdiff = checkParallelFortranArrayReal(label, \
+                  nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
+                  ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
+                  u1, \
+                  len(label) )
+
+
+    write(label,'("u2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
+    ! fix me: 
+    md4a=0
+    md4b=2
+    m4a=0
+    m4b=2
+    pdiff = checkParallelFortranArrayReal(label, \
+                  md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
+                  mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
+                  u2, \
+                  len(label) )
+
+  end if
+
+  ! Assign polarization vectors on ghost lines
+  ! if( .false. )then
+  !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+  !   assignPolarizationOnGhostOrder4()
+  ! end if
+  ! if( .false. )then 
+  !   ! Smooth P on the interface (for dispersive)
+  !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
+  !   ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
+  !   smoothInterfaceP()
+  ! end if
+
+  ! write(debugFile,'(">>> interface: order=4 initialized=",i4)') initialized
+
+  ! *********************************************************
+  ! **************** begin interface iteration **************
+
+  ! ---- STAGE II: assign two ghost to 4th-order accuracy -----
+
+  errOld=1.
+  ratioAve=0.
+  do it=1,nit 
+
+   ! Macro to assign ghost values:
+   if( dispersive.eq.0 )then
+     #If #MODEL eq "none"
+       assignInterfaceGhost24c()
+     #End
+   else if (useNonlinearModel.eq.0) then
+     ! dispersive case
+     #If #MODEL eq "gdm"
+       assignDispersiveInterfaceGhost24c()
+     #End
+   else
+     ! nonlinear dispersive case
+     #If #MODEL eq "mla"
+       assignNonlinearInterfaceGhost24c()
+     #End
+   end if    
+
+   ! fixup corner points 
+   ! if( .false. )then
+   !   fixupInterfaceEndValues(2,curvilinear,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
+   !   fixupInterfaceEndValues(2,curvilinear,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
+   ! end if
+
+   periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
+   periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
+
+   if( it.eq.1 )then
+     errRatio=1.
+   else
+     errRatio=err/errOld
+     ratioAve=ratioAve+errRatio
+   end if 
+   errOld=err
+
+   if( (t.le.5*dt .and. debug.gt.0 ) .or. debug.gt.3 )then
+    if( it.eq.1 )then
+      write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2,"           (omega=",f4.2,")")') t,grid1,grid2,it,err,omega
+    else
+      write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
+    end if
+   end if
+
+   if( debug.gt.0 )then 
+     write(debugFile,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
+   end if
+
+   if( it.eq.1 )then
+     checkCoeff=0 ! turn off check coeff after 1 iteration
+  end if
+  
+   numberOfIterations=it
+   if( err.lt.absoluteErrorTolerance )then
+     exit
+   end if
+
+  end do 
+
+  ipar(43)= numberOfIterations  ! returned value 
+  rpar(22)=ratioAve/(numberOfIterations-1)
+  rpar(23) = err !  maxFinalResidual : return value 
+
+  ! ***************** end interface iteration ****************
+  ! **********************************************************
+
+
+  ! now make sure that div(u)=0 etc.
+  if( .false. )then
+!*         beginLoops2d() ! =============== start loops =======================
+
+    ! 0  [ u.x + v.y ] = 0
+!           a8(0,0) = -is*8.*rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)     ! coeff of u1(-1) from [u.x+v.y] 
+!           a8(0,1) = -is*8.*rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)     ! coeff of v1(-1) from [u.x+v.y] 
+!           a8(0,4) =  is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)     ! u1(-2)
+!           a8(0,5) =  is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)     ! v1(-2) 
+
+!           a8(0,2) =  js*8.*rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)     ! coeff of u2(-1) from [u.x+v.y] 
+!           a8(0,3) =  js*8.*rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
+!           a8(0,6) = -js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
+!           a8(0,7) = -js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2) 
+
+    ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+!*           divu=u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey)
+!*           a0=is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)
+!*           a1=is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)
+!*           aNormSq=a0**2+a1**2
+!*           ! now project:  a.uNew = a.uOld - div  ->  (div-a.uOld)+a.uNew = div(uNew) = 0
+!*           u1(i1-2*is1,i2-2*is2,i3,ex)=u1(i1-2*is1,i2-2*is2,i3,ex)-divu*a0/aNormSq
+!*           u1(i1-2*is1,i2-2*is2,i3,ey)=u1(i1-2*is1,i2-2*is2,i3,ey)-divu*a1/aNormSq
+!*
+!*           divu=u2x42(j1,j2,j3,ex)+u2y42(j1,j2,j3,ey)
+!*           a0=js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
+!*           a1=js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2) 
+!*           aNormSq=a0**2+a1**2
+!*
+!*           u2(j1-2*js1,j2-2*js2,j3,ex)=u2(j1-2*js1,j2-2*js2,j3,ex)-divu*a0/aNormSq
+!*           u2(j1-2*js1,j2-2*js2,j3,ey)=u2(j1-2*js1,j2-2*js2,j3,ey)-divu*a1/aNormSq
+!*
+!*           if( debug.gt.0 )then
+!*             divu=u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey)
+!*              write(debugFile,'(" --> 4cth: eval div1,div2=",2e10.2)') u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey),u2x42(j1,j2,j3,ex)+u2y42(j1,j2,j3,ey)
+!*           end if
+!*         endLoops2d()
+
+
+ end if ! ----- end assign ghost using jump conditions -----
+
+
+end if
+#endMacro
+
+
+!================================================================================================
+! Macro  3D ORDER=2 CURVILINEAR
+!================================================================================================
+#beginMacro assignInterfaceMacro32c(MODEL)
+
+ if( solveForH .ne.0 )then
+   stop 3017
+ end if
+
+#perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2; 
+
+ if( .false. )then
+   beginGhostLoops3d()
+    write(debugFile,'(" -->START v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
+    ! '
+   endLoops3d()
+ end if
+
+  ! ---- first satisfy the jump conditions on the boundary --------
+  !    [ eps n.u ] = 0
+  !    [ tau.u ] = 0
+  if( assignInterfaceValues.eq.1 )then
+    boundaryJumpConditions(3,curvilinear)
+  end if
+
+ if( .false. )then
+   beginGhostLoops3d()
+    write(debugFile,'(" -->JUMP v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
+    ! '
+   endLoops3d()
+ end if
+
+ ! ----- assign ghost using jump conditions -----
+ if( assignInterfaceGhostValues.eq.1 )then
+
+  ! initialization step: assign first ghost line by extrapolation
+  ! NOTE: assign ghost points outside the ends
+  if( .true. )then
+    extrapolateGhost3dOrder2()
+  end if
+
+  if( .false. )then
+   ! just copy values from ghost points for now -- this will be the true soln if eps1=eps2 and grids match
+   beginLoops3d()
+    u1(i1-is1,i2-is2,i3-is3,ex)=u2(j1+js1,j2+js2,j3+js3,ex)
+    u1(i1-is1,i2-is2,i3-is3,ey)=u2(j1+js1,j2+js2,j3+js3,ey)
+    u1(i1-is1,i2-is2,i3-is3,ez)=u2(j1+js1,j2+js2,j3+js3,ez) 
+    u2(j1-js1,j2-js2,j3-js3,ex)=u1(i1+is1,i2+is2,i3+is3,ex)
+    u2(j1-js1,j2-js2,j3-js3,ey)=u1(i1+is1,i2+is2,i3+is3,ey)
+    u2(j1-js1,j2-js2,j3-js3,ez)=u1(i1+is1,i2+is2,i3+is3,ez)
+   endLoops3d()
+  end if
+
+ if( .false. )then
+   beginGhostLoops3d()
+    write(debugFile,'(" -->EXTRAP v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
+    ! '
+   endLoops3d()
+ end if
+
+
+   ! Macro to assign ghost values:
+   if( dispersive.eq.0 )then
+     #If #MODEL eq "none"
+       assignInterfaceGhost23c()
+     #End 
+   else if( useNonlinearModel.eq.0 )then
+     ! dispersive case
+     #If #MODEL eq "gdm"
+       assignDispersiveInterfaceGhost23c()
+     #End 
+   else
+     ! nonlinear model
+     #If #MODEL eq "mla"
+       assignNonlinearInterfaceGhost23c()
+     #End 
+   end if    
+
+
+  ! periodic update
+  periodicUpdate3d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
+  periodicUpdate3d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
+
+ end if ! end assignInterfaceGhostValues
+#endMacro
+
+
+! ====================================================================================================
+!   Main macro to generate separate interface files
+!   NAME: name of subroutine
+!   DIM,ORDER,GRIDTYPE : number of dimensions, order of accuracy, grid-type
+!   MODEL: none, gdm, mla
+! ====================================================================================================
+#beginMacro INTERFACE(NAME,DIM,ORDER,GRIDTYPE,MODEL)
+subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
                                gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, \
                                md1a,md1b,md2a,md2b,md3a,md3b,\
                                gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, \
@@ -2815,7 +3657,7 @@ end if
 !  ipvt2,ipvt4,ipvt8: integer work space arrays that must be saved from call to call
 ! ===================================================================================
 
-      implicit none
+implicit none
 
       integer nd, \
               nd1a,nd1b,nd2a,nd2b,nd3a,nd3b, \
@@ -2881,6 +3723,8 @@ end if
       real dx1(0:2),dr1(0:2),dx2(0:2),dr2(0:2)
       real dr1a(0:2), dr2a(0:2)
 
+      real dxxx1by2i, dxxx2by2i, dxx1by12i, dxx2by12i
+
       real t,ep,dt,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,eta1,eta2,eta1i,eta2i
       real cSq1,cSq2,dtSq
       real absoluteErrorTolerance,relativeErrorTolerance,omega
@@ -2933,7 +3777,11 @@ end if
 
       integer numberOfEquations,job
       real a2(0:1,0:1),a4(0:3,0:3),a6(0:5,0:5),a8(0:7,0:7),a12(0:11,0:11),q(0:11),qOld(0:11),f(0:11),rcond,work(0:11)
-      integer ipvt(0:11)
+      real a2f(0:1,0:1), a4f(0:3,0:3), a8f(0:7,0:7)
+      integer ipvt(0:11), ipivot2(0:1), ipivot4(0:3), ipivot8(0:7)
+      real a2h(0:1,0:1), a2hf(0:1,0:1), a4h(0:3,0:3), a4hf(0:3,0:3)
+      integer ipivot2h(0:1), ipivot4h(0:3)
+      logical first
 
       real err,errOld,errRatio,ratioAve
       integer debugFile,myid,parallel
@@ -2986,7 +3834,7 @@ end if
 
       ! these are for the exact solution from TZ flow: 
       real ue,ve,we, we0,we1,we2,we3
-      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez
+      real uex,uey,uez, vex,vey,vez, wex,wey,wez, hex,hey,hez, evv(0:11), errv(0:11), maxErr
       real uexx,ueyy,uezz, vexx,veyy,vezz, wexx,weyy,wezz
       real ueLap, veLap, weLap
       real curlEex,curlEey,curlEez,nDotCurlEe,nDotLapEe
@@ -3018,7 +3866,7 @@ end if
 
       ! Nonlinear models
       #Include "nonlinearModelsFortranInclude.h"
-      integer nonlinearModel
+      ! integer nonlinearModel
 
       
       ! forcing options
@@ -3096,8 +3944,9 @@ end if
       real curl2um1,curl2vm1,curl2um2,curl2vm2
 
 
-      real evn,pvn
-      real alpha,d4,LP,LPm
+      real evn,pvn,evec(0:2),pvec(0:2,0:maxNumberOfPolarizationVectors-1)
+      real ptv(0:2,0:maxNumberOfPolarizationVectors-1),pttv(0:2,0:maxNumberOfPolarizationVectors-1),ptttv(0:2,0:maxNumberOfPolarizationVectors-1),pttttv(0:2,0:maxNumberOfPolarizationVectors-1)
+      real alpha,d4,LPn,LP,LPm
       real LE(0:2)
       real LE1(0:2),LE1m(0:2),LLE1(0:2), LEx1(0:2),LEy1(0:2)
       real LE2(0:2),LE2m(0:2),LLE2(0:2), LEx2(0:2),LEy2(0:2) 
@@ -3111,10 +3960,13 @@ end if
       real fPtt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt2(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL1(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx1(0:2,0:maxNumberOfPolarizationVectors-1),pevtty1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx2(0:2,0:maxNumberOfPolarizationVectors-1),pevtty2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttSum1(0:2),pevttxSum1(0:2),pevttySum1(0:2)
       real pevttSum2(0:2),pevttxSum2(0:2),pevttySum2(0:2)
+      real pevttt1(0:2,0:maxNumberOfPolarizationVectors-1),pevttt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtttt1(0:2,0:maxNumberOfPolarizationVectors-1),pevtttt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttLSum1(0:2),pevttLSum2(0:2),pevttttSum1(0:2),pevttttSum2(0:2)
 
@@ -3146,39 +3998,24 @@ end if
       real f0(0:11),delta
 
       ! for saving coefficients
-      real am(0:12,0:500)
+      real am(12,500)
       integer ieqn,ja
       integer i1a,i1b,i1c,i2a,i2b,i2c,i3a,i3b,i3c
       integer j1a,j1b,j1c,j2a,j2b,j2c,j3a,j3b,j3c
 
-      ! for saving the stencil
-      ! max number of unknowns :  3 (bndry + 2 ghost) X 2 sides X 3 components = 18 
-      ! 
-      integer saveStencilCoeff, numCol, nrhs, info 
-      real maxStencilDiff,maxStencilRes,maxStencilErr
-      real as(0:17,0:17), res(0:17)
-      integer maxStencilSize1
-      parameter( maxStencilSize1=3*5*5*3 )
-      real as1(0:17,0:maxStencilSize1), as2(0:17,0:maxStencilSize1)
-
-      integer maxStencilSize2dOrder2
-      parameter( maxStencilSize2dOrder2=2*3*2 )
-      real a4Save(0:3,0:3), a4s(0:3,0:3), a4s1(0:3,0:maxStencilSize2dOrder2-1), a4s2(0:3,0:maxStencilSize2dOrder2-1)
-      real a4sf(0:3,0:3), uev(0:100)
 
       ! ----- multilevel atomic model -----
       integer useNonlinearModel
       integer nonlinearModel1,numberOfAtomicLevels1,maxPar1,numPolar1
       integer nonlinearModel2,numberOfAtomicLevels2,maxPar2,numPolar2
       integer na,nce
-      real q0,q0t,q0tt
+      real q0,q0t,q0tt,q0ttt,q0tttt,q0xx,q0yy,q0x,q0y
       real pnec1,prc1,peptc1
       real pnec2,prc2,peptc2
       integer maxPar
       parameter( maxPar=20 )
       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
-
       real fnv(0:maxPar-1),fnv1(0:maxPar-1),fnv2(0:maxPar-1)
       real fntv(0:maxPar-1),fntv1(0:maxPar-1),fntv2(0:maxPar-1)
       real fnttv(0:maxPar-1),fnttv1(0:maxPar-1),fnttv2(0:maxPar-1)
@@ -3192,13 +4029,12 @@ end if
       real qvx,qvy,qvLap
 
       real evx0,evy0,pv0,ev0,evLap
-
+      
       real checkParallelFortranArrayReal, checkParallelFortranArrayInt, pdiff
       integer numParallelGhost
       integer nd4a,nd4b,n4a,n4b
       integer md4a,md4b,m4a,m4b
       character*180 label
-
 
 
 !     --- start statement function ----
@@ -3408,16 +4244,12 @@ end if
       end if
 
 
-      saveStencilCoeff=1  ! save the stencil coefficinents
-
       checkCoeff=0 ! 0 ! 1  ! if non-zero then check coefficients in interface equations using delta approach
       if( t.gt.1.5*dt )then
          checkCoeff=0    ! turn off for t>0 
       end if 
       coeffDiff=0.
- ! *WDH* 
       saveCoeff=0  ! 1 : save coefficients in the interface equations to a file
-
       coeffFile=20  ! file for saving coefficients
       ieqn=-1      ! counts equations
       if( saveCoeff.eq.1 .and. initialized.eq.0 .and. assignInterfaceGhostValues.eq.1 )then
@@ -3445,9 +4277,9 @@ end if
       end if
 
       if( t.le. 1.5*dt .and. debug.gt.0 )then
-        write(*,'(" +++++++++cgmx INTERFACEOPT t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
+        write(*,'(" +++++++++cgmx interface3d t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
            ! '
-        write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2," saveCoeff=",i2)') nd,gridType,orderOfAccuracy,debug,ex,saveCoeff
+        write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
         write(*,'("  ... assignInterface=",i2," assignGhost=",i2)') assignInterfaceValues,assignInterfaceGhostValues
         write(*,'("  ... useJacobiUpdate=",i2," numParallelGhost=",i2)') useJacobiUpdate,numParallelGhost
         write(*,'("  ... setDivergenceAtInterfaces=",i2)') setDivergenceAtInterfaces
@@ -3670,616 +4502,123 @@ end if
        end if
       end if
 
-
-      coeffDiff=0.; maxStencilRes=0.; maxStencilErr=0.; 
-
-
       if( nd.eq.2 .and. orderOfAccuracy.eq.2 .and. gridType.eq.rectangular )then
  
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #If #GRIDTYPE eq "rectangular"
+        #If #DIM eq "2"
+        #If #ORDER eq "2"
+        
          ! ************************************
          ! ***** 2d rectangular 2nd-order *****
          ! ************************************
 
-#perl $DIM=2; $GRIDTYPE="rectangular"; $ORDER=2;
-
-        if( .false. .and. useForcing.ne.0 )then 
-          ! finish me 
-          stop 7715
-        end if
+         assignInterfaceMacro22r(MODEL)
 
 
-        !-  ! just copy values from ghost points for now
-        !-  beginLoopsMask2d()
-        !-    u1(i1-is1,i2-is2,i3,ex)=u2(j1+js1,j2+js2,j3,ex)
-        !-    u1(i1-is1,i2-is2,i3,ey)=u2(j1+js1,j2+js2,j3,ey)
-        !-    u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-        !-  endLoopsMask2d()
-
-        ! ---- first satisfy the jump conditions on the boundary --------
-        !    [ eps n.u ] = 0
-        !    [ tau.u ] = 0
-        if( assignInterfaceValues.eq.1 )then
-            boundaryJumpConditions(2,rectangular)
-        end if
-
-        ! initialization step: assign first ghost line by extrapolation
-
-        ! NOTE: assign ghost points outside the ends (for periodic only??)
-
-        ! ***WHY IS THIS HERE AND WHY ISN'T U2 SET TOO? *************************************
-
-        ! ----- assign ghost using jump conditions -----
-        if( assignInterfaceGhostValues.eq.1 )then
-
-          ! initialization step: assign first ghost line by extrapolation
-          extrapolateGhost2dOrder2()
-  
-          ! Macro to assign ghost values:
-          if( dispersive.eq.0 )then
-            assignInterfaceGhost22r()
-          else
-            ! dispersive case
-            assignDispersiveInterfaceGhost22r()
-          end if    
-
-          ! fixup values on ends *wdh* June 22, 2016
-          if( .false. )then
-            fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
-            fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
-          end if
-
-          ! opt periodic update
-          periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
-          periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
-        end if
+        #End
+        #End
+        #End
+        ! End rectangular, 2D, order 2
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
        else if( nd.eq.2 .and. orderOfAccuracy.eq.2 .and. gridType.eq.curvilinear )then
+
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #If #GRIDTYPE eq "curvilinear"
+        #If #DIM eq "2"
+        #If #ORDER eq "2"
 
          ! *******************************
          ! ***** 2d curvilinear case *****
          ! *******************************
 
+         assignInterfaceMacro22c(MODEL)
 
-#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2; 
-
-
-         ! ---- first satisfy the jump conditions on the boundary --------
-         !    [ eps n.u ] = 0
-         !    [ tau.u ] = 0
-
-         if( assignInterfaceValues.eq.1 )then
-           boundaryJumpConditions(2,curvilinear)
-         end if
-
-        ! ----- assign ghost using jump conditions -----
-        if( assignInterfaceGhostValues.eq.1 )then
-
-         ! initialization step: assign first ghost line by extrapolation
-         extrapolateGhost2dOrder2()
-
-         ! Macro to assign ghost values:
-         if( dispersive.eq.0 )then
-           assignInterfaceGhost22c()
-         else if( useNonlinearModel.eq.0 )then
-           assignDispersiveInterfaceGhost22cNew()
-         else
-           ! START ON NONLINEAR MODEL
-           assignNonlinearInterfaceGhost22c()
-         end if
-
-         ! now make sure that div(u)=0 etc.
-         !2          if( .false. )then
-         !2         beginLoops2d() ! =============== start loops =======================
-         !2
-         !2           ! 0  [ u.x + v.y ] = 0
-         !2           ! first evaluate the equations we want to solve with the wrong values at the ghost points:
-         !2           divu=u1x22(i1,i2,i3,ex)+u1y22(i1,i2,i3,ey)
-         !2           a0=-is*rsxy1(i1,i2,i3,axis1,0)*dr112(axis1)
-         !2           a1=-is*rsxy1(i1,i2,i3,axis1,1)*dr112(axis1)
-         !2           aNormSq=a0**2+a1**2
-         !2           ! now project:  a.uNew = a.uOld - div  ->  (div-a.uOld)+a.uNew = div(uNew) = 0
-         !2           u1(i1-is1,i2-is2,i3,ex)=u1(i1-is1,i2-is2,i3,ex)-divu*a0/aNormSq
-         !2           u1(i1-is1,i2-is2,i3,ey)=u1(i1-is1,i2-is2,i3,ey)-divu*a1/aNormSq
-         !2
-         !2           divu=u2x22(j1,j2,j3,ex)+u2y22(j1,j2,j3,ey)
-         !2           a0=-js*rsxy2(j1,j2,j3,axis2,0)*dr212(axis2) 
-         !2           a1=-js*rsxy2(j1,j2,j3,axis2,1)*dr212(axis2) 
-         !2           aNormSq=a0**2+a1**2
-         !2
-         !2           u2(j1-js1,j2-js2,j3,ex)=u2(j1-js1,j2-js2,j3,ex)-divu*a0/aNormSq
-         !2           u2(j1-js1,j2-js2,j3,ey)=u2(j1-js1,j2-js2,j3,ey)-divu*a1/aNormSq
-         !2
-         !2           if( debug.gt.0 )then
-         !2             write(debugFile,'(" --> 2cth: eval div1,div2=",2e10.2)') u1x22(i1,i2,i3,ex)+u1y22(i1,i2,i3,ey),u2x22(j1,j2,j3,ex)+u2y22(j1,j2,j3,ey)
-         !2           end if
-         !2         endLoops2d()
-         !2          end if
-
-         ! periodic update **** THIS WON T WORK IN PARALLEL
-         periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
-         periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
-
-        end if ! end assignInterfaceGhostValues
-
-       else if( .false. .and. orderOfAccuracy.eq.4 )then
-
-         ! for testing -- just assign from the other ghost points
-
-         beginLoops2d()
-           u1(i1-is1,i2-is2,i3,ex)=u2(j1+js1,j2+js2,j3,ex)
-           u1(i1-is1,i2-is2,i3,ey)=u2(j1+js1,j2+js2,j3,ey)
-           u1(i1-is1,i2-is2,i3,hz)=u2(j1+js1,j2+js2,j3,hz) 
-
-           u2(j1-js1,j2-js2,j3,ex)=u1(i1+is1,i2+is2,i3,ex)
-           u2(j1-js1,j2-js2,j3,ey)=u1(i1+is1,i2+is2,i3,ey)
-           u2(j1-js1,j2-js2,j3,hz)=u1(i1+is1,i2+is2,i3,hz)
-
-           u1(i1-2*is1,i2-2*is2,i3,ex)=u2(j1+2*js1,j2+2*js2,j3,ex)
-           u1(i1-2*is1,i2-2*is2,i3,ey)=u2(j1+2*js1,j2+2*js2,j3,ey)
-           u1(i1-2*is1,i2-2*is2,i3,hz)=u2(j1+2*js1,j2+2*js2,j3,hz) 
-
-           u2(j1-2*js1,j2-2*js2,j3,ex)=u1(i1+2*is1,i2+2*is2,i3,ex)
-           u2(j1-2*js1,j2-2*js2,j3,ey)=u1(i1+2*is1,i2+2*is2,i3,ey)
-           u2(j1-2*js1,j2-2*js2,j3,hz)=u1(i1+2*is1,i2+2*is2,i3,hz)
-
-         endLoops2d()
+         
+        #End
+        #End
+        #End
+        ! End curvilinear, 2D, order 2
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
        else if( nd.eq.2 .and. orderOfAccuracy.eq.4 .and. gridType.eq.rectangular )then
-#perl $DIM=2; $GRIDTYPE="rectangular"; $ORDER=4;
-  
-         ! --------------- 4th Order Rectangular ---------------
 
-         ! WARNING: The 4th order interface equations couple ghost values along the
-         ! interface -- do NOT use this version since it is not stable without iterations
-         ! We need to add itertions to this version but then the curvlinear version is
-         ! almost as efficient since the equations are saved. *wdh* June 25, 2016
-
-         if( .true. )then
-           write(*,'("interface3d.bf: ERROR: do NOT USE THIS option: ORDER=4 RECTANGULAR")')
-           write(*,'("interface3d.bf: USE CURVILINEAR VERSION INSTEAD SINCE ITERATIONS ARE REQUIRED")')
-           stop 6543
-         end if
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #If #GRIDTYPE eq "rectangular"
+        #If #DIM eq "2"
+        #If #ORDER eq "4"
 
 
-         ! if( useForcing.ne.0 )then 
-         !   ! finish me 
-         !   stop 7716
-         ! end if
-         ! ***** fix these for [mu] != 0 ****
-         if( mu1.ne.mu2 )then
-           stop 9924
-         end if
+         ! ************************************
+         ! ***** 2d rectangular 4th-order *****
+         ! ************************************
 
+         assignInterfaceMacro24r(MODEL)
 
-         ! ---- first satisfy the jump conditions on the boundary --------
-         !    [ eps n.u ] = 0
-         !    [ tau.u ] = 0
-         if( assignInterfaceValues.eq.1 )then
-           boundaryJumpConditions(2,rectangular)
-         end if
+       
 
-         ! here are the real jump conditions for the ghost points
-         ! 0  [ u.x + v.y ] = 0
-         ! 1  [ u.xx + u.yy ] = 0
-         ! 2  [ v.x - u.y ] =0 
-         ! 3  [ (v.xx+v.yy)/eps ] = 0
-         ! 4  [ (u.xx+u.yy).x + (v.xx+v.yy).y ] = 0  OR [ (u.xx).x + (v.xx).y ] = 0 OR  [ (u.yy).x + (v.yy).y ] = 0 
-         ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
-         ! 6  [ Delta^2 u/eps ] = 0
-         ! 7  [ Delta^2 v/eps^2 ] = 0 
+        #End
+        #End
+        #End
+        ! End rectangular, 2D, order 4
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-        ! ----- assign ghost using jump conditions -----
-        if( assignInterfaceGhostValues.eq.1 )then
-
-         ! initialization step: assign first ghost line by extrapolation
-         ! NOTE: assign ghost points outside the ends
-         beginGhostLoops2d()
-           ! extrap to order 5 so exact for degree 4 *wdh* 2015/06/29
-           u1(i1-is1,i2-is2,i3,ex)=extrap5(u1,i1,i2,i3,ex,is1,is2,is3)
-           u1(i1-is1,i2-is2,i3,ey)=extrap5(u1,i1,i2,i3,ey,is1,is2,is3)
-           u1(i1-is1,i2-is2,i3,hz)=extrap5(u1,i1,i2,i3,hz,is1,is2,is3)
-
-           u2(j1-js1,j2-js2,j3,ex)=extrap5(u2,j1,j2,j3,ex,js1,js2,js3)
-           u2(j1-js1,j2-js2,j3,ey)=extrap5(u2,j1,j2,j3,ey,js1,js2,js3)
-           u2(j1-js1,j2-js2,j3,hz)=extrap5(u2,j1,j2,j3,hz,js1,js2,js3)
-
-           ! u1(i1-is1,i2-is2,i3,ex)=extrap4(u1,i1,i2,i3,ex,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,ey)=extrap4(u1,i1,i2,i3,ey,is1,is2,is3)
-           ! u1(i1-is1,i2-is2,i3,hz)=extrap4(u1,i1,i2,i3,hz,is1,is2,is3)
-
-           ! u2(j1-js1,j2-js2,j3,ex)=extrap4(u2,j1,j2,j3,ex,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,ey)=extrap4(u2,j1,j2,j3,ey,js1,js2,js3)
-           ! u2(j1-js1,j2-js2,j3,hz)=extrap4(u2,j1,j2,j3,hz,js1,js2,js3)
-
-           ! --- also extrap 2nd line for now
-           ! u1(i1-2*is1,i2-2*is2,i3,ex)=extrap4(u1,i1-is1,i2-is2,i3,ex,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,ey)=extrap4(u1,i1-is1,i2-is2,i3,ey,is1,is2,is3)
-           ! u1(i1-2*is1,i2-2*is2,i3,hz)=extrap4(u1,i1-is1,i2-is2,i3,hz,is1,is2,is3)
-
-           ! u2(j1-2*js1,j2-2*js2,j3,ex)=extrap4(u2,j1-js1,j2-js2,j3,ex,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,ey)=extrap4(u2,j1-js1,j2-js2,j3,ey,js1,js2,js3)
-           ! u2(j1-2*js1,j2-2*js2,j3,hz)=extrap4(u2,j1-js1,j2-js2,j3,hz,js1,js2,js3)
-         endLoops2d()
-
-         ! Macro to assign ghost values:
-!temp           assignInterfaceGhost24r()
-         
-         ! fixup corner points 
-         if( .false. )then
-           fixupInterfaceEndValues(2,rectangular,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
-           fixupInterfaceEndValues(2,rectangular,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
-         end if
-
-         ! periodic update
-         periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
-         periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
-
-        end if ! assign ghost
 
        else if( nd.eq.2 .and. orderOfAccuracy.eq.4 .and. gridType.eq.curvilinear )then
-#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
-  
-         ! --------------- 4th Order Curvilinear ---------------
 
-         ! ***** fix these for [mu] != 0 ****
-         if( mu1.ne.mu2 )then
-           stop 9925
-         end if
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #If #GRIDTYPE eq "curvilinear"
+        #If #DIM eq "2"
+        #If #ORDER eq "4"
+        
 
-         ! write(*,'("START: p1=",(15(e10.2,1x)))') (((p1(i1,i2,i3,0),i1=nd1a,nd1b),i2=nd2a,nd2b),i3=nd3a,nd3b)
+         ! ************************************
+         ! ***** 2d rectangular 4th-order *****
+         ! ************************************
 
-         ! ---- first satisfy the jump conditions on the boundary --------
-         !    [ eps n.u ] = 0
-         !    [ tau.u ] = 0
-         !    [ w ] = 0 
-         if( assignInterfaceValues.eq.1 )then
-           boundaryJumpConditions(2,curvilinear)
-         end if
+         assignInterfaceMacro24c(MODEL)
 
+        #End
+        #End
+        #End
+        ! End curvilinear, 2D, order 4
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        ! ----- assign ghost using jump conditions -----
-        if( assignInterfaceGhostValues.eq.1 )then
-
-         ! here are the real jump conditions for the ghost points
-         ! 0  [ u.x + v.y ] = 0
-         ! 1  [ n.(uv.xx + uv.yy) ] = 0
-         ! 2  [ v.x - u.y ] =0 
-         ! 3  [ tau.(v.xx+v.yy)/eps ] = 0
-         ! 4  [ (u.xx+u.yy).x + (v.xx+v.yy).y ] = 0  OR [ (u.xx).x + (v.xx).y ] = 0 OR  [ (u.yy).x + (v.yy).y ] = 0 
-         ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
-         ! 6  [ n.Delta^2 uv/eps ] = 0
-         ! 7  [ tau.Delta^2 uv/eps^2 ] = 0 
-
-
-
-         ! initialization step: assign first ghost line by extrapolation
-         ! NOTE: assign ghost points outside the ends
-         extrapolateGhost2dOrder4()
-
-         if( avoidInterfaceIterations.eq.1 )then
-
-           ! ---- STAGE I: assign first ghost to 2nd-order accuracy -----
-
-           ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
-           ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
-           !!  perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=2;
-
-           ! Turn this on -- November 22, 2020 
-           ! Nov. 22, 2020: Accuracy degrades to 3rd order for PMIC
-           ! perl $ORDER=2; 
-           if( t.lt. 3.*dt .and. debug.gt.0 )then
-             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER INTERFACE ****")')
-           end if 
-           orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
-
-           ! in parallel we add extra points in the tangential direction on parallel boundaries
-           ! (otherwise we would use extrapolated values which is probably ok) 
-           setIndexBoundsExtraGhost()
-           if( dispersive.eq.0 )then
-!temp             assignInterfaceGhost22c()
-           else
-!temp             assignDispersiveInterfaceGhost22c()
-           end if
-           resetIndexBounds()         
-
-           orderOfAccuracy=4 ! reset 
-         end if
-
-#perl $DIM=2; $GRIDTYPE="curvilinear"; $ORDER=4;
-
-         if( debug.gt.3 )then
-
-           ! macro to get bounds including ghost points: ng1a,ng1b,... mg1a,mg1b, 
-           setIndexBoundsExtraGhost()
-           getGhostBounds( numGhost )
-           resetIndexBounds()         
-
-           nd4a=0
-           nd4b=0
-           n4a=0
-           n4b=0
-           write(label,'("mask1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           pdiff = checkParallelFortranArrayInt(label, \
-                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
-                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
-                         mask1, \
-                         len(label) )
-
-           write(label,'("mask2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           md4a=0
-           md4b=0
-           m4a=0
-           m4b=0
-           pdiff = checkParallelFortranArrayInt(label, \
-                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
-                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
-                         mask2, \
-                         len(label) )
-
-           nd4a=0
-           nd4b=2*nd-1
-           n4a=0
-           n4b=2*nd-1
-           write(label,'("rsxy1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           pdiff = checkParallelFortranArrayReal(label, \
-                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
-                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
-                         rsxy1, \
-                         len(label) )
-
-           write(label,'("rsxy2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           md4a=0
-           md4b=2*nd-1
-           m4a=0
-           m4b=2*nd-1
-           pdiff = checkParallelFortranArrayReal(label, \
-                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
-                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
-                         rsxy2, \
-                         len(label) )
-
-
-           write(label,'("u1 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           ! fix me: -- use number of components 
-           nd4a=0
-           nd4b=2
-           n4a=0
-           n4b=2
-           pdiff = checkParallelFortranArrayReal(label, \
-                         nd1a, nd1b, nd2a, nd2b, nd3a, nd3b, nd4a, nd4b, \
-                         ng1a, ng1b, ng2a, ng2b, ng3a, ng3b, n4a, n4b,\
-                         u1, \
-                         len(label) )
-
-
-           write(label,'("u2 : interface3d.f After stage 1 (order=2 update) t=",e10.2)') t 
-           ! fix me: 
-           md4a=0
-           md4b=2
-           m4a=0
-           m4b=2
-           pdiff = checkParallelFortranArrayReal(label, \
-                         md1a, md1b, md2a, md2b, md3a, md3b, md4a, md4b, \
-                         mg1a, mg1b, mg2a, mg2b, mg3a, mg3b, m4a, m4b,\
-                         u2, \
-                         len(label) )
-
-         end if
-
-         ! Assign polarization vectors on ghost lines
-         ! if( .false. )then
-         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-         !   assignPolarizationOnGhostOrder4()
-         ! end if
-         ! if( .false. )then 
-         !   ! Smooth P on the interface (for dispersive)
-         !   ! THIS IS NOT USED CURRENTLY -- was created to fix a bug that was caused by a wrong alphaP
-         !   ! *wd* tested for dielectric cyl -- improves P but not really enough ***Aug 7, 2019 ***
-         !   smoothInterfaceP()
-         ! end if
-
-         ! write(debugFile,'(">>> interface: order=4 initialized=",i4)') initialized
-
-         ! *********************************************************
-         ! **************** begin interface iteration **************
-
-         ! ---- STAGE II: assign two ghost to 4th-order accuracy -----
-
-         errOld=1.
-         ratioAve=0.
-         do it=1,nit 
-
-          ! Macro to assign ghost values:
-          if( dispersive.eq.0 )then
-!temp              assignInterfaceGhost24c()
-          else
-            ! dispersive case
-!temp            assignDispersiveInterfaceGhost24c()
-          end if    
-
-          ! fixup corner points 
-          if( .false. )then
-            fixupInterfaceEndValues(2,curvilinear,u1,side1,axis1,axis1p1,axis1p2,boundaryCondition1,gridIndexRange1,dx1,dr1)
-            fixupInterfaceEndValues(2,curvilinear,u2,side2,axis2,axis2p1,axis2p2,boundaryCondition2,gridIndexRange2,dx2,dr2)
-          end if
-
-          periodicUpdate2d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
-          periodicUpdate2d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
-
-          if( it.eq.1 )then
-            errRatio=1.
-          else
-            errRatio=err/errOld
-            ratioAve=ratioAve+errRatio
-          end if 
-          errOld=err
-
-          if( (t.le.5*dt .and. debug.gt.0 ) .or. debug.gt.3 )then
-           if( it.eq.1 )then
-             write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2,"           (omega=",f4.2,")")') t,grid1,grid2,it,err,omega
-           else
-             write(*,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
-           end if
-          end if
-
-          if( debug.gt.0 )then 
-            write(debugFile,'("interface2d : t=",e10.3," (grid1,grid2)=(",i3,",",i3,"), it=",i3,", err=",e10.2," rate=",f5.2," (omega=",f4.2,")")') t,grid1,grid2,it,err,errRatio,omega
-          end if
-
-          if( it.eq.1 )then
-            checkCoeff=0 ! turn off check coeff after 1 iteration
-         end if
          
-          numberOfIterations=it
-          if( err.lt.absoluteErrorTolerance )then
-            exit
-          end if
-
-         end do 
-
-         ipar(43)= numberOfIterations  ! returned value 
-         rpar(22)=ratioAve/(numberOfIterations-1)
-         rpar(23) = err !  maxFinalResidual : return value 
-
-         ! ***************** end interface iteration ****************
-         ! **********************************************************
-
-
-         ! now make sure that div(u)=0 etc.
-         if( .false. )then
-!*         beginLoops2d() ! =============== start loops =======================
-
-           ! 0  [ u.x + v.y ] = 0
-!           a8(0,0) = -is*8.*rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)     ! coeff of u1(-1) from [u.x+v.y] 
-!           a8(0,1) = -is*8.*rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)     ! coeff of v1(-1) from [u.x+v.y] 
-!           a8(0,4) =  is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)     ! u1(-2)
-!           a8(0,5) =  is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)     ! v1(-2) 
-
-!           a8(0,2) =  js*8.*rsxy2(j1,j2,j3,axis2,0)*dr214(axis2)     ! coeff of u2(-1) from [u.x+v.y] 
-!           a8(0,3) =  js*8.*rsxy2(j1,j2,j3,axis2,1)*dr214(axis2)  
-!           a8(0,6) = -js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
-!           a8(0,7) = -js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2) 
-
-           ! first evaluate the equations we want to solve with the wrong values at the ghost points:
-!*           divu=u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey)
-!*           a0=is*   rsxy1(i1,i2,i3,axis1,0)*dr114(axis1)
-!*           a1=is*   rsxy1(i1,i2,i3,axis1,1)*dr114(axis1)
-!*           aNormSq=a0**2+a1**2
-!*           ! now project:  a.uNew = a.uOld - div  ->  (div-a.uOld)+a.uNew = div(uNew) = 0
-!*           u1(i1-2*is1,i2-2*is2,i3,ex)=u1(i1-2*is1,i2-2*is2,i3,ex)-divu*a0/aNormSq
-!*           u1(i1-2*is1,i2-2*is2,i3,ey)=u1(i1-2*is1,i2-2*is2,i3,ey)-divu*a1/aNormSq
-!*
-!*           divu=u2x42(j1,j2,j3,ex)+u2y42(j1,j2,j3,ey)
-!*           a0=js*   rsxy2(j1,j2,j3,axis2,0)*dr214(axis2) 
-!*           a1=js*   rsxy2(j1,j2,j3,axis2,1)*dr214(axis2) 
-!*           aNormSq=a0**2+a1**2
-!*
-!*           u2(j1-2*js1,j2-2*js2,j3,ex)=u2(j1-2*js1,j2-2*js2,j3,ex)-divu*a0/aNormSq
-!*           u2(j1-2*js1,j2-2*js2,j3,ey)=u2(j1-2*js1,j2-2*js2,j3,ey)-divu*a1/aNormSq
-!*
-!*           if( debug.gt.0 )then
-!*             divu=u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey)
-!*              write(debugFile,'(" --> 4cth: eval div1,div2=",2e10.2)') u1x42(i1,i2,i3,ex)+u1y42(i1,i2,i3,ey),u2x42(j1,j2,j3,ex)+u2y42(j1,j2,j3,ey)
-!*           end if
-!*         endLoops2d()
-
-
-        end if ! ----- end assign ghost using jump conditions -----
-
-
-       end if
-
-
-
        else if( nd.eq.3 .and. orderOfAccuracy.eq.2 .and. gridType.eq.curvilinear )then
 
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #If #GRIDTYPE eq "curvilinear"
+        #If #DIM eq "3"
+        #If #ORDER eq "2"
+        
+         
          ! ***********************************************
          ! ***** 3D curvilinear case -- second-order *****
          ! ***********************************************
 
-        if( solveForH .ne.0 )then
-          stop 3017
-        end if
+         assignInterfaceMacro32c(MODEL)
+        
 
-#perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2; 
+        #End
+        #End
+        #End
+        ! End rectangular, 3D, order 2
+        ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        if( .false. )then
-          beginGhostLoops3d()
-           write(debugFile,'(" -->START v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
-           ! '
-          endLoops3d()
-        end if
-
-         ! ---- first satisfy the jump conditions on the boundary --------
-         !    [ eps n.u ] = 0
-         !    [ tau.u ] = 0
-         if( assignInterfaceValues.eq.1 )then
-           boundaryJumpConditions(3,curvilinear)
-         end if
-
-        if( .false. )then
-          beginGhostLoops3d()
-           write(debugFile,'(" -->JUMP v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
-           ! '
-          endLoops3d()
-        end if
-
-        ! ----- assign ghost using jump conditions -----
-        if( assignInterfaceGhostValues.eq.1 )then
-
-         ! initialization step: assign first ghost line by extrapolation
-         ! NOTE: assign ghost points outside the ends
-         if( .true. )then
-           extrapolateGhost3dOrder2()
-         end if
-
-         if( .false. )then
-          ! just copy values from ghost points for now -- this will be the true soln if eps1=eps2 and grids match
-          beginLoops3d()
-           u1(i1-is1,i2-is2,i3-is3,ex)=u2(j1+js1,j2+js2,j3+js3,ex)
-           u1(i1-is1,i2-is2,i3-is3,ey)=u2(j1+js1,j2+js2,j3+js3,ey)
-           u1(i1-is1,i2-is2,i3-is3,ez)=u2(j1+js1,j2+js2,j3+js3,ez) 
-           u2(j1-js1,j2-js2,j3-js3,ex)=u1(i1+is1,i2+is2,i3+is3,ex)
-           u2(j1-js1,j2-js2,j3-js3,ey)=u1(i1+is1,i2+is2,i3+is3,ey)
-           u2(j1-js1,j2-js2,j3-js3,ez)=u1(i1+is1,i2+is2,i3+is3,ez)
-          endLoops3d()
-         end if
-
-        if( .false. )then
-          beginGhostLoops3d()
-           write(debugFile,'(" -->EXTRAP v1(",i2,":",i2,",",i2,",",i2,") =",3f9.4)') i1-1,i1+1,i2,i3,u1(i1-1,i2,i3,ey),u1(i1,i2,i3,ey),u1(i1+1,i2,i3,ey)
-           ! '
-          endLoops3d()
-        end if
-
-
-          ! Macro to assign ghost values:
-          if( dispersive.eq.0 )then
-!temp            assignInterfaceGhost23c()
-          else
-            ! dispersive case
-!temp             assignDispersiveInterfaceGhost23c()
-          end if    
-
-
-         ! periodic update
-         periodicUpdate3d(u1,boundaryCondition1,gridIndexRange1,side1,axis1)
-         periodicUpdate3d(u2,boundaryCondition2,gridIndexRange2,side2,axis2)
-
-        end if ! end assignInterfaceGhostValues
 
        else if( nd.eq.3 .and. orderOfAccuracy.eq.4 .and. gridType.eq.curvilinear )then
 
-         ! this 3d 4th-order version is in interface3dOrder4.bf:
-
-         call mxInterface3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
-                               gridIndexRange1, u1,u1n,u1m,wk1, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
-                               md1a,md1b,md2a,md2b,md3a,md3b,\
-                               gridIndexRange2, u2,u2n,u2m,wk2, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
-                               ipar, rpar, \
-                               aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
-                               ierr )
+         ! called elsewhere 
+         stop 4562
+     !-         call interfaceOpt3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+     !-                               gridIndexRange1, u1,u1n,u1m,wk1, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
+     !-                               md1a,md1b,md2a,md2b,md3a,md3b,\
+     !-                               gridIndexRange2, u2,u2n,u2m,wk2, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
+     !-                               ipar, rpar, \
+     !-                               aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
+     !-                               ierr )
 
        else
          if( nd.eq.3 .and. gridType.eq.rectangular )then
@@ -4293,3 +4632,184 @@ end if
 
       return
       end
+#endMacro
+! ================================= end interface macro ====================================      
+
+
+
+
+
+#beginMacro buildFile(NAME,DIM,ORDER,GRIDTYPE,MODEL)
+#beginFile NAME.f90
+ INTERFACE(NAME,DIM,ORDER,GRIDTYPE,MODEL)
+#endFile
+#endMacro
+
+! ***************************************************************************************************
+! **************************  Build different interface files ****************************************
+! ***************************************************************************************************
+
+!** Note: comment out these next lines to avoid compiling files while developing one version 
+
+buildFile(interfaceMx2dOrder2r,2,2,rectangular,none)
+buildFile(interfaceMx2dOrder2c,2,2,curvilinear,none)
+buildFile(interfaceMx2dOrder4r,2,4,rectangular,none)
+buildFile(interfaceMx2dOrder4c,2,4,curvilinear,none)
+buildFile(interfaceMx3dOrder2c,3,2,curvilinear,none)
+!- 
+!- 
+!- ! --- GDM versions ---
+buildFile(interfaceMxGDM2dOrder2r,2,2,rectangular,gdm)
+buildFile(interfaceMxGDM2dOrder2c,2,2,curvilinear,gdm)
+buildFile(interfaceMxGDM2dOrder4r,2,4,rectangular,gdm)
+buildFile(interfaceMxGDM2dOrder4c,2,4,curvilinear,gdm)
+buildFile(interfaceMxGDM3dOrder2c,3,2,curvilinear,gdm)
+!- 
+!- ! --- MLA versions ---
+buildFile(interfaceMxMLA2dOrder2r,2,2,rectangular,mla)
+buildFile(interfaceMxMLA2dOrder2c,2,2,curvilinear,mla)
+buildFile(interfaceMxMLA2dOrder4r,2,4,rectangular,mla)
+buildFile(interfaceMxMLA2dOrder4c,2,4,curvilinear,mla)
+buildFile(interfaceMxMLA3dOrder2c,3,2,curvilinear,mla)
+
+
+! -----------------------------------------------------------------------------------------------
+! Macro to call a given interface routine.
+!  Do this since the arguments lists are the same for all cases
+! -----------------------------------------------------------------------------------------------
+#beginMacro callRoutine( NAME )
+  call NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+             gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, \
+             md1a,md1b,md2a,md2b,md3a,md3b,\
+             gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, \
+             ipar, rpar, \
+             aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
+             ierr )
+#endMacro
+                           
+! -----------------------------------------------------------------------------------------------
+! Macro to call the approrpiate interface routine.
+! -----------------------------------------------------------------------------------------------
+#beginMacro callInterfaceRoutine( SUFFIX )
+  if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
+
+    callRoutine( interfaceMx ## SUFFIX )
+
+  else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+
+    ! -- GDM ---
+    callRoutine( interfaceMxGDM ## SUFFIX )
+
+  else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
+
+    ! --- MLA ---
+    callRoutine( interfaceMxMLA ## SUFFIX )
+
+  else 
+    stop 9876
+
+  end if                  
+#endMacro 
+
+    
+! ==============================================================================================================
+!  This subroutine calls the appropriate interface routine
+! ==============================================================================================================
+  subroutine interfaceOpt( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+                               gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, \
+                               md1a,md1b,md2a,md2b,md3a,md3b,\
+                               gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, \
+                               ipar, rpar, \
+                               aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
+                               ierr )
+
+  implicit real (a-h,o-z)
+
+  integer gridType,orderOfAccuracy
+  integer ipar(0:*)
+
+  integer rectangular,curvilinear
+  parameter(\
+    rectangular=0,\
+    curvilinear=1)
+
+  ! Dispersion models
+  integer noDispersion,drude,gdm
+  parameter( noDispersion=0, drude=1, gdm=2 )
+  integer dispersionModel1, dispersionModel2
+
+  ! Nonlinear models
+  #Include "nonlinearModelsFortranInclude.h"
+  integer nonlinearModel1, nonlinearModel2
+  
+
+  gridType             =ipar(18)
+  orderOfAccuracy      =ipar(19)
+
+  dispersionModel1    = ipar(44)
+  dispersionModel2    = ipar(45)
+
+  nonlinearModel1     = ipar(49)
+  nonlinearModel2     = ipar(50)
+  
+
+  if( nd.eq.2. .and. orderOfAccuracy.eq.2 .and. gridType.eq.rectangular )then
+
+    callInterfaceRoutine( 2dOrder2r )
+
+  else if( nd.eq.2. .and. orderOfAccuracy.eq.2 .and. gridType.eq.curvilinear )then
+
+    callInterfaceRoutine( 2dOrder2c )
+
+  else if( nd.eq.2. .and. orderOfAccuracy.eq.4 .and. gridType.eq.rectangular )then
+
+    callInterfaceRoutine( 2dOrder4r )
+
+  else if( nd.eq.2. .and. orderOfAccuracy.eq.4 .and. gridType.eq.curvilinear )then
+
+    callInterfaceRoutine( 2dOrder4c )
+
+  else if( nd.eq.3. .and. orderOfAccuracy.eq.2 .and. gridType.eq.curvilinear )then
+
+    callInterfaceRoutine( 3dOrder2c )
+
+  else if( nd.eq.3 .and. orderOfAccuracy.eq.4 .and. gridType.eq.curvilinear )then
+
+    ! this 3d 4th-order version is in interface3dOrder4.bf:
+
+    ! OLD: mxInterface3dOrder4 NOTE: NOT q1,q2, ...
+    !-     call mxInterface3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+    !-                           gridIndexRange1, u1,u1n,u1m,wk1, mask1,rsxy1, xy1, p1,p1n,p1m, boundaryCondition1, \
+    !-                           md1a,md1b,md2a,md2b,md3a,md3b,\
+    !-                           gridIndexRange2, u2,u2n,u2m,wk2, mask2,rsxy2, xy2, p2,p2n,p2m, boundaryCondition2, \
+    !-                           ipar, rpar, \
+    !-                           aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
+    !-                           ierr )
+
+    ! NEW: interfaceOpt3dOrder4
+    ! write(*,'(" ipar(18)=",i4)') ipar(18)
+    call interfaceOpt3dOrder4( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
+                          gridIndexRange1, u1,u1n,u1m,wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, \
+                          md1a,md1b,md2a,md2b,md3a,md3b,\
+                          gridIndexRange2, u2,u2n,u2m,wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, \
+                          ipar, rpar, \
+                          aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, \
+                          ierr )
+
+  else
+
+    if( nd.eq.3 .and. gridType.eq.rectangular )then
+      write(*,'("interfaceOpt: ERROR: 3d rectangular not implemented for interfaces")') 
+    else 
+      write(*,'("interfaceOpt: ERROR: unknown options nd,order,gridType=",3i3)') nd,orderOfAccuracy,gridType
+    end if
+    stop 3214
+
+
+  end if
+
+
+
+
+  return
+  end                          

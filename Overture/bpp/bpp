@@ -133,10 +133,14 @@ sub printouti # ($a,$b,...)
 # output a line to the file with indentation
 # add indentation
 {
-  if( $fortran ==0 || $splitFortranLines == 0 )
+  if( $fortran ==0 )
   {
-
     print OUTFILE $indent, @_;
+  }
+  elsif( $fortran ==1 && $splitFortranLines == 0 )
+  {
+    # this is likely f90 
+    print OUTFILE @_;
   }
   else
   {
