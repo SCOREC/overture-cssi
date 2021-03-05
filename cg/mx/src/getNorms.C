@@ -3,6 +3,7 @@
 #include "DispersiveMaterialParameters.h"
 #include "display.h"
 #include "gridFunctionNorms.h"
+#include "ParallelUtility.h"
 
 // =================================================================================================================
 /// \brief Compute solution norms.
@@ -83,7 +84,7 @@ getNorms( int current, real t, real dt, bool getErrorNorms /* = true */ )
         { // norm==0 : max-norm, otherwise Lp-norm with p=norm
             int pNorm = norm==0 ? INT_MAX : norm;
 
-            if( norm!=0 || !getErrorNorms ) // max-norm values are already computed in get errors -- skip fopr now 
+            if( norm!=0 || !getErrorNorms ) // max-norm values are already computed in get errors -- skip for now 
             {
 	// compute the Lp norm
       	maximumError=0.;
@@ -114,33 +115,97 @@ getNorms( int current, real t, real dt, bool getErrorNorms /* = true */ )
             // ---- fix me for multiple material domains ---
           	    int domain=0, grid=0;
           	    assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
+                        MappedGrid & mg = cg[grid];
+                        
+          	    const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p,p.t]
 
-          	    const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+                        if( true )
+                        {
+                            realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
 
-          	    realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-          	    assert( ppv!=NULL );
-	    // get Pv error grid function
-          	    realCompositeGridFunction *pepv=NULL;
-          	    if( getErrorNorms )
-          	    {
-            	      pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-            	      assert( pepv!=NULL );
-          	    }
+
+              // printF("getNorms: numberOfPolarizationVectors=%d, p.getLength(3)=%d\n",numberOfPolarizationVectors,p.getLength(3));
+                            
+              // assert( numberOfPolarizationVectors==p.getLength(3));
+                            
+              // Fix: there is only a max and l2 norm for mappedGridFunctions,also no support for taking norms over multiple Pv 
+              // polarizationNorm(domain) = maxNorm( p,Pv,maskOption,checkErrorsAtGhostPoints);              
+
+                            Index I1,I2,I3;
+                            getIndex(mg.gridIndexRange(),I1,I2,I3);
+
+                            OV_GET_SERIAL_ARRAY(real,p,pLocal);
+                            int includeGhost=0;
+                            bool ok = ParallelUtility::getLocalArrayBounds(p,pLocal,I1,I2,I3,includeGhost);             
+                            if( ok )
+                            {
+                                for( int pc=0; pc<numberOfPolarizationVectors; pc+=2 ) // Note : check every 2nd component since we store [p,p.t]
+                                {
+                                    polarizationNorm(domain) = max( polarizationNorm(domain), max(fabs(pLocal(I1,I2,I3,pc))) );
+                                }
+                            }
+                            polarizationNorm(domain) = ParallelUtility::getMaxValue( polarizationNorm(domain) );
+
+                            maxErrPolarization(domain) = 0.;
+                            if( getErrorNorms )
+                            {
+                // *wdh* added Mar 3, 2021 *check me*
+                                bool getErrorGridFunction=true;
+                                realMappedGridFunction & pErr = getDispersionModelMappedGridFunction( grid,current,getErrorGridFunction );
+                                OV_GET_SERIAL_ARRAY(real,pErr,pErrLocal);
+                                bool ok = ParallelUtility::getLocalArrayBounds(pErr,pErrLocal,I1,I2,I3,includeGhost);             
+                                if( ok )
+                                {
+                                    for( int pc=0; pc<numberOfPolarizationVectors; pc+=2 ) // Note : check every 2nd component since we store [p,p.t]
+                                    {
+                                        maxErrPolarization(domain) = max( maxErrPolarization(domain), max(fabs(pErrLocal(I1,I2,I3,pc))) );
+                                    }
+                                }
+                                maxErrPolarization(domain) = ParallelUtility::getMaxValue( maxErrPolarization(domain) );
+
+                            }
+                            printF("getNorms: norm(p)=%8.2e (mappedGridFunction)\n",polarizationNorm(domain));
+                              
+                        }
+                        else 
+                        {
+              // *** FIX ME ****
+
+                            realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+              // assert( ppv!=NULL );
+                            if( ppv==NULL )
+                            {
+                                printF("getNorms:ERROR: method=bamx and dispersion is on : expecting to find polarization vectors,\n");
+                                printF("                but they have not been created. Maybe all materials are non-dispersive?\n");
+                                OV_ABORT("error");
+                            }
+                        
+              // get Pv error grid function
+                            realCompositeGridFunction *pepv=NULL;
+                            if( getErrorNorms )
+                            {
+                                pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+                                assert( pepv!=NULL );
+                            }
           	    
-          	    if( getErrorNorms ) maxErrPolarization(domain)=0.;
-          	    polarizationNorm(domain)=0.;
-          	    for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
-          	    {
-            	      if( getErrorNorms )
-            	      {
-              	        const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-              	        maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-            	      }
+                            if( getErrorNorms ) maxErrPolarization(domain)=0.;
+                            polarizationNorm(domain)=0.;
+                            for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
+                            {
+                                if( getErrorNorms )
+                                {
+                                    const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+                                    maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+                                }
           	    
-            	      const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
-            	      polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
-          	    }
-          	    
+                                const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+
+                // printF("getNorms: pc=%d: pNorm=%8.2e\n",pc,pNorm);
+                            
+                                polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+                            }
+                        }
+                        
         	  }
         	  else 
         	  {
@@ -193,13 +258,15 @@ getNorms( int current, real t, real dt, bool getErrorNorms /* = true */ )
             else
       	normName="max";
 
+            const bool printErrors = radiusForCheckingErrors>0 && radiusForCheckingErrors<10.;
+
             for( int fileio=0; fileio<2; fileio++ )
             {
       	FILE *output = fileio==0 ? logFile : stdout;
 
       	if( getErrorNorms )
       	{
-        	  if( radiusForCheckingErrors>0 && radiusForCheckingErrors<10. )
+        	  if( printErrors )
           	    fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
                 		    t,dt,radiusForCheckingErrors,(const char*)normName);
         	  else
@@ -210,16 +277,28 @@ getNorms( int current, real t, real dt, bool getErrorNorms /* = true */ )
       	}
       	else
       	{
-          	    fPrintF(output,"                t=%8.2e dt=%7.1e %s ",
-                		    t,dt,(const char*)normName);
+                    fPrintF(output,"               t=%8.2e dt=%7.1e",t,dt);
       	}
-
-      	fPrintF(output,"], %s (u):[",(const char*)normName);
+                if( printErrors )
+                    fPrintF(output,"], %s(u):[",(const char*)normName);
+                else
+                    fPrintF(output," %s(u):[",(const char*)normName);
 
       	for( int c=C.getBase(); c<=C.getBound(); c++ )
         	  fPrintF(output,"%8.2e,",solutionNorm(c));
 
       	fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
+
+                if( dispersionModel != noDispersion )
+                {
+                    fPrintF(output,"                                     max(P):[%8.2e",polarizationNorm(0));
+                    for( int domain=1; domain<cg.numberOfDomains(); domain++ )
+                    {
+                        fPrintF(output,",%8.2e",polarizationNorm(domain));
+                    }
+                    fPrintF(output,"] (by domain)\n");
+                }        
+
             }
 
         } // end for norm 

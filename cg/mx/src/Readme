@@ -65,6 +65,7 @@ solve.C:
  - computeNumberOfStepsAndAdjustTheTimeStep(const real & t, ... )
  - outputResultsAfterEachTimeStep( int current, real t, real dt, int stepNumber )
  - outputResults( int current, real t, real dt )
+    -> save checkFile
  - solve(GL_GraphicsInterface &gi )
 
 

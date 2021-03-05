@@ -155,6 +155,10 @@ DispersiveMaterialParameters()
   dbase.put<real>("omegaMax")=1.;
 
   dbase.put<DispersionRelationOptionEnum>("dispersionRelationComputeOption")=computeComplexFrequency;
+
+  dbase.put<bool>("normalizedUnits")=true;      // if true, do not scale GDM parameters by omegaScale
+
+
 }
 
 // ============================================================================
@@ -197,6 +201,8 @@ DispersiveMaterialParameters(const DispersiveMaterialParameters& x)
     dbase.put<RealArray>("bianisotropicParameters") = x.dbase.get<RealArray>("bianisotropicParameters");
   }
   
+  if( !dbase.has_key("normalizedUnits") ) dbase.put<bool>("normalizedUnits");
+  dbase.get<bool>("normalizedUnits")  = x.dbase.get<bool>("normalizedUnits");
 
 
 }
@@ -283,6 +289,10 @@ operator =( const DispersiveMaterialParameters & x )
   dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption") =
              x.dbase.get<DispersionRelationOptionEnum>("dispersionRelationComputeOption");
 
+  if( !dbase.has_key("normalizedUnits") ) dbase.put<bool>("normalizedUnits");
+  dbase.get<bool>("normalizedUnits")  = x.dbase.get<bool>("normalizedUnits");
+
+
   return *this;
 }
 
@@ -368,6 +378,14 @@ display( FILE *file /* = stdout */, const aString & label /* = nullString */   )
   const real L0 = dbase.get<real>("lengthScale"); 
   const real & omegaScale = dbase.get<real>("omegaScale");
 
+  const real T0 = L0/V0;
+  const real Omega0 = 1./T0;
+  const real wScale = omegaScale/Omega0;
+  
+  // normalizedUnits : if true, do not scale GDM parameters by wScale = omegaScale/Omega0
+  const bool & normalizedUnits = dbase.get<bool>("normalizedUnits");  
+
+
   fPrintF(file,"Label=%s\n",(const char*)label);
   fPrintF(file,"----------------------------------------------------------------------------\n");
   fPrintF(file,"-------------------- Dispersive Material Parameters ------------------------\n");
@@ -378,7 +396,15 @@ display( FILE *file /* = stdout */, const aString & label /* = nullString */   )
   fPrintF(file," isDispersive=%s.\n",(isDispersive ? "yes" : "no"));
   fPrintF(file," dispersionRelationComputeOption=%s.\n",
 	     (dispersionRelationComputeOption==computeComplexFrequency ? "computeComplexFrequency" : "computeComplexWaveNumber"));
-  fPrintF(file," Length-scale L0=%9.3e, velocity-scale V0=%9.3e, omegaScale=%9.3e \n",L0,V0,omegaScale);
+  fPrintF(file," Length-scale L0=%9.3e, velocity-scale V0=%9.3e, Omega0=V0/L0=%9.3e, omegaScale=%9.3e \n",
+                L0,V0,Omega0,omegaScale);
+  if( isDispersive )
+  {
+    if( normalizedUnits )
+      fPrintF(file," normalizedUnits=true : GDM parameters are NOT scaled by omegaScale/Omega0=%g\n",wScale);
+    else
+      fPrintF(file," normalizedUnits=false : GDM parameters ARE scaled by omegaScale/Omega0=%g.\n",wScale);
+  }
   
   if( materialType==isotropic )
   {
@@ -398,7 +424,19 @@ display( FILE *file /* = stdout */, const aString & label /* = nullString */   )
   {
     RealArray & K0 = dbase.get<RealArray>("K0");
     // ::display(K0,"K0",file);
-          
+    for( int k1=0; k1<6; k1++ )
+    {
+      if( k1==2 )
+        fPrintF(file,"K0 = [");
+      else
+        fPrintF(file,"     [");
+      for( int k2=0; k2<6; k2++ )
+      {
+        fPrintF(file,"%9.3e ",K0(k1,k2));
+      }
+      fPrintF(file,"]\n");
+    }
+    
     // bianisotropicParameters(4,Np,6,6) 
     RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
     IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
@@ -1197,12 +1235,15 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
   real L0 = dbase.get<real>("lengthScale"); 
   real T0 = L0/V0;  // time scale 
   
-  bool normalizedUnits=false;  // if true, do not scale GMD parameters by wSacel
-
   // real Omega0 = 2.*Pi/T0;       // angular frequency scale : omega = c0*k = c0*(2*pi)/lambda = 2*pi * c0/L0 
   real Omega0 = 1./T0;             // angular frequency scales by this if we scale x/L0 and t/T0 
 
   real wScale=1.; // Frequency scale -- set below 
+
+  // if true, do not scale GDM parameters by wScale = omegaScale/Omega0
+  bool & normalizedUnits = dbase.get<bool>("normalizedUnits");  
+  normalizedUnits=false;
+
 
   int currentBestNp=-1;
   
@@ -1603,8 +1644,71 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	}
 
 
-	else if( ( true || materialType == bianisotropic)  && (len=aline.matches("bianistropicK0"))   )	
+	else if( len=aline.matches("bianisotropicK0")   )	
 	{
+	  // ---- BI-ANISOTROPIC MATERIAL MATRIX K0 ---
+	  //   bianisotropicK0=[...]; 
+	  // K0 matrix
+
+          parametersSet=true;
+          
+          if( ! dbase.has_key("K0") )
+	    dbase.put<RealArray>("K0");
+
+	  RealArray & K0 = dbase.get<RealArray>("K0");
+	  K0.redim(6,6);
+	
+	  printF("Reading the bianisotropic K0 matrix\n");
+	
+	  // --- NOTE: there are too many input parameters for sScanF to read 36 values at once
+	  //     so read one value at a time ...
+	  int length=aline.length();
+	  int ia=len+2;  // parameters start here
+	  for( int k2=0; k2<6; k2++ )
+	  {
+	    for( int k1=0; k1<6; k1++ )
+	    {
+	      int ie=ia+1;  // ie = end of number 
+	      while( ie<length && aline[ie] != ',' && aline[ie] != ']' )
+	      {
+		// printF(" aline[%d]=%c\n",ie,aline[ie]);
+		ie++;
+	      }
+	      sScanF(aline(ia,ie-1),"%e",&K0(k1,k2));
+
+	      // printF("K0(%i,%i)=%g\n",k1,k2,K0(k1,k2));
+	      ia=ie+1;	
+	      if( ia>=length )
+	      {
+		printF("ERROR reading K0 from string=[%s]\n",(const char*)aline);
+		break;
+	      }
+    
+	    }
+	    if( ia>=length )
+	      break;
+	  }
+	
+          if( materialType == isotropic )
+	  {
+            // Isotropic material: 
+	    epsInf= K0(0,0);
+            muInf = K0(3,3);
+	    alphaP=1./epsInf;
+
+            printF("DMP:readFromFile: Setting isotropic epsInf = K0(0,0) = %g, muInf = K0(3,3) = %g \n",epsInf,muInf);
+   
+	  }
+	  
+          if( myid==0 && false  )
+            ::display(K0,"K0");
+	}
+      
+	else if( len=aline.matches("bianistropicK0")  )	
+	{
+          // **** OLD VERSION FOR BACKWARD COMPAT -- bianistropic is SPELLED WRONG !! ****
+
+
 	  // ---- BI-ANISTROPIC MATERIAL MATRIX K0 ---
 	  //   bianistropicK0=[...]; 
 	  // K0 matrix
@@ -1663,8 +1767,114 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
             ::display(K0,"K0");
 	}
       
-	else if( (true || materialType == bianisotropic) && (len=aline.matches("bianistropicPars")) )	
+
+	else if( len=aline.matches("bianisotropicPars") )	
 	{
+	  // ---- BI-ANISOTROPIC MATERIAL GDM COEFFICIENTS ---
+
+	  // Entry form: 
+	  // "bianisotropicPars[1-6][1-6]GDM[1-]=["
+
+	  isDispersive=true;
+	  
+	  // bianisotropicParameters(4,Np,6,6) 
+          if( ! dbase.has_key("bianisotropicParameters") )
+	  {
+	    dbase.put<RealArray>("bianisotropicParameters");
+            RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+	    bianisotropicParameters.redim(4,NpMax,6,6);
+            bianisotropicParameters=0.;
+
+	    dbase.put<IntegerArray>("NpBA");
+  	    IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+            NpBA.redim(6,6); NpBA=0;
+
+	  }
+
+	  RealArray & bianisotropicParameters = dbase.get<RealArray>("bianisotropicParameters");
+	  IntegerArray & NpBA = dbase.get<IntegerArray>("NpBA");
+
+	  // GDM parameters
+	  if( normalizedUnits )
+	     wScale=1.;
+	   
+	  int k1=1,k2=1;
+	  sScanF(aline(len  ,len  ),"%i1",&k1);
+	  sScanF(aline(len+1,len+1),"%i1",&k2);
+
+	  assert( k1>=1 && k1<=6 );
+	  assert( k2>=1 && k2<=6 );
+	  int Np; 
+	  // printf("aline(len+5,len+5)=[%s]\n",(const char*)aline(len+5,len+5));
+	
+	  sScanF(aline(len+5,len+5),"%i1",&Np);
+
+	  if( true )
+	    printF("Reading GDM parameters for material matrix K%d%d, Np=%d, numberOfPolarizationVectorsRequested=%d.\n",
+		   k1,k2,Np,numberOfPolarizationVectorsRequested);
+
+	  // --- Read the GDM data ----
+	  if( Np <= numberOfPolarizationVectorsRequested )
+	  {
+	  
+	    printF("Reading GDM parameters for material matrix K%d%d, Np=%d (scaling factor wScale=%g).\n",k1,k2,Np,wScale);
+	
+	    int ia=len+8;  // parameters start here
+	    if( Np==1 )
+	      sScanF(aline(ia,aline.length()-1),"%e %e %e %e",&a0v(0),&a1v(0),&b0v(0),&b1v(0));
+	    else if( Np==2 )
+	      sScanF(aline(ia,aline.length()-1),"%e %e %e %e %e %e %e %e",
+		     &a0v(0),&a1v(0),&b0v(0),&b1v(0),
+		     &a0v(1),&a1v(1),&b0v(1),&b1v(1));
+	    else if( Np==3 )
+	      sScanF(aline(ia,aline.length()-1),"%e %e %e %e %e %e %e %e %e %e %e %e",
+		     &a0v(0),&a1v(0),&b0v(0),&b1v(0),
+		     &a0v(1),&a1v(1),&b0v(1),&b1v(1),
+		     &a0v(2),&a1v(2),&b0v(2),&b1v(2));
+	    else if( Np==4 )
+	      sScanF(aline(ia,aline.length()-1),"%e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e",
+		     &a0v(0),&a1v(0),&b0v(0),&b1v(0),
+		     &a0v(1),&a1v(1),&b0v(1),&b1v(1),
+		     &a0v(2),&a1v(2),&b0v(2),&b1v(2),
+		     &a0v(3),&a1v(3),&b0v(3),&b1v(3));
+	    else if( Np==5 )
+	      sScanF(aline(ia,aline.length()-1),"%e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e",
+		     &a0v(0),&a1v(0),&b0v(0),&b1v(0),
+		     &a0v(1),&a1v(1),&b0v(1),&b1v(1),
+		     &a0v(2),&a1v(2),&b0v(2),&b1v(2),
+		     &a0v(3),&a1v(3),&b0v(3),&b1v(3),
+		     &a0v(4),&a1v(4),&b0v(4),&b1v(4));
+	    else
+	    {
+	      printF("DispersiveMaterialParameters:readFromFile:WARNING: finish me for -- Np=%d",Np);
+	    }
+	    NpBA(k1-1,k2-1)=Np;
+	
+	    // printF("k1=%d, k2=%d, Np=%d\n",k1,k2,Np);
+	    for( int j=0; j<Np; j++ )
+	    {
+	      assert( j<bianisotropicParameters.getLength(1) );
+	  
+	      bianisotropicParameters(0,j,k1-1,k2-1) = a0v(j)*(wScale*wScale);
+	      bianisotropicParameters(1,j,k1-1,k2-1) = a1v(j)*(wScale       );
+	      bianisotropicParameters(2,j,k1-1,k2-1) = b0v(j)*(wScale*wScale);
+	      bianisotropicParameters(3,j,k1-1,k2-1) = b1v(j)*(wScale       );
+	  
+	      printF("j=%d: [a0,a1,b0,b1]=[%g,%g,%g,%g] -> scaled =[%g,%g,%g,%g]\n",
+		     j,a0v(j),a1v(j),b0v(j),b1v(j),a0v(j)*(wScale*wScale),a1v(j)*wScale,b0v(j)*(wScale*wScale),b1v(j)*wScale);
+	    }
+	
+
+	    
+	  } // end if Np <= 
+	
+
+	}  // end if( len=aline.matches("bianisotropicPars") )
+
+	else if( len=aline.matches("bianistropicPars") )	
+	{
+          // **** OLD VERSION FOR BACKWARD COMPAT -- bianistropic is SPELLED WRONG !! ****
+
 	  // ---- BI-ANISTROPIC MATERIAL GDM COEFFICIENTS ---
 
 	  // Entry form: 
@@ -1764,7 +1974,8 @@ readFromFile( const aString & fileName, int numberOfPolarizationVectorsRequested
 	  } // end if Np <= 
 	
 
-	}
+	}  // end if( len=aline.matches("bianistropicPars") )
+
 
 
 	else

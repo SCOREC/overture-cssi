@@ -18,6 +18,8 @@
 #include "Maxwell.h"
 #include "ParallelUtility.h"
 
+#include "CgSolverUtil.h"
+
 int 
 getLineFromFile( FILE *file, char s[], int lim);
 
@@ -84,7 +86,7 @@ main(int argc, char *argv[])
     for( int i=1; i<argc; i++ )
     {
       line=argv[i];
-      // printF(" parse input: argv[%i]=%s\n",i,argv[i]);
+      printF(" parse input: argv[%i]=%s\n",i,argv[i]);
       
       if( line=="noplot" )
       {
@@ -319,6 +321,17 @@ main(int argc, char *argv[])
   GL_GraphicsInterface & gi = (GL_GraphicsInterface &)
                      (*Overture::getGraphicsInterface("Maxwell's Equation",plotOption,argc,argv));
 
+  // Fro cginsMain.C -- not currently needed
+  // char *cgenv = getenv("CG");
+  // if( false && cgenv )
+  // {
+  //   aString cmd = aString("use lib \""+aString(cgenv)+"/common/src\"; use CgUtilities;");
+  //   gi.parseAnswer(cmd);
+  //   cmd = aString("use lib \""+aString(cgenv)+"/ins/src\"; use CgINS;");
+  //   ps.parseAnswer(cmd);
+  // }
+
+  
   PlotStuffParameters psp;
   // By default start saving the command file called "ogen.cmd"
   aString logFile="cgmx.cmd";
@@ -328,73 +341,75 @@ main(int argc, char *argv[])
   if( commandFileName!="" )
     gi.readCommandFile(commandFileName);
 
-  
-  #ifdef USE_PPP
-    // On Parallel machines always add at least this many ghost lines on local arrays
-    printF("cgmx: Seting numberOfParallelGhost=%d\n",numberOfParallelGhost);
-    MappedGrid::setMinimumNumberOfDistributedGhostLines(numberOfParallelGhost);
-  #endif
- 
-  if( solver.gridType==Maxwell::unknown )
+  bool useNewWay=true;
+  if( useNewWay ) 
   {
-    aString name;
-    gi.inputString(name,"Enter the name of the grid file or one of -sq, -sine, -chevron etc.");
-    if( name=="-sqtri" )
+     solver.gridType=Maxwell::compositeGrid;
+  }
+  else
+  {
+    // TURN THIS OFF -- NON-COMPOSITE GRIDS NO LONGER SUPPORTED  *wdh* Feb 2021
+    if( solver.gridType==Maxwell::unknown )
     {
-      solver.gridType=Maxwell::squareByTriangles;
-      solver.elementType=Maxwell::triangles;
-      printF(" Setting gridType=squareByTriangles\n");
-    }
-    else if( name=="-sq" )
-    {
-      solver.gridType=Maxwell::square;
-      printF(" Setting gridType=square\n");
-    }
-    else if( name=="-rot" )
-    {
-      solver.gridType=Maxwell::rotatedSquare;
-      printF(" Setting gridType=rotatedSquare\n");
-    }
-    else if( name=="-sinetri" )
-    {
-      solver.gridType=Maxwell::sineByTriangles;
-      solver.elementType=Maxwell::triangles;
-      printF(" Setting gridType=sineByTriangles\n");
-    }
-    else if( name=="-sinequad" )
-    {
-      solver.gridType=Maxwell::sineSquare;
-      solver.elementType=Maxwell::quadrilaterals;
-      printF(" Setting gridType=sineSquare, elementType=quadrilaterals.\n");
-    }
-    else if( name=="-sine" )
-    {
-      solver.gridType=Maxwell::sineSquare;
-      printF(" Setting gridType=sineSquare\n");
-    }
-    else if( name=="-chevron" )
-    {
-      solver.gridType=Maxwell::chevron;
-      printF(" Setting gridType=chevron\n");
-    }
-    else if( name=="-box" )
+      aString name;
+      gi.inputString(name,"Enter the name of the grid file or one of -sq, -sine, -chevron etc.");
+      if( name=="-sqtri" )
+      {
+        solver.gridType=Maxwell::squareByTriangles;
+        solver.elementType=Maxwell::triangles;
+        printF(" Setting gridType=squareByTriangles\n");
+      }
+      else if( name=="-sq" )
+      {
+        solver.gridType=Maxwell::square;
+        printF(" Setting gridType=square\n");
+      }
+      else if( name=="-rot" )
+      {
+        solver.gridType=Maxwell::rotatedSquare;
+        printF(" Setting gridType=rotatedSquare\n");
+      }
+      else if( name=="-sinetri" )
+      {
+        solver.gridType=Maxwell::sineByTriangles;
+        solver.elementType=Maxwell::triangles;
+        printF(" Setting gridType=sineByTriangles\n");
+      }
+      else if( name=="-sinequad" )
+      {
+        solver.gridType=Maxwell::sineSquare;
+        solver.elementType=Maxwell::quadrilaterals;
+        printF(" Setting gridType=sineSquare, elementType=quadrilaterals.\n");
+      }
+      else if( name=="-sine" )
+      {
+        solver.gridType=Maxwell::sineSquare;
+        printF(" Setting gridType=sineSquare\n");
+      }
+      else if( name=="-chevron" )
+      {
+        solver.gridType=Maxwell::chevron;
+        printF(" Setting gridType=chevron\n");
+      }
+      else if( name=="-box" )
       {
 	solver.gridType=Maxwell::box;
 	printf(" Setting gridType=box\n");
       }
-    else if( name=="-chevbox" )
+      else if( name=="-chevbox" )
       {
 	solver.gridType=Maxwell::chevbox;
 	printf(" Setting gridType=chevbox\n");
       }
-    else
-    {
-      solver.nameOfGridFile=name;
-      solver.gridType=Maxwell::compositeGrid;
-    }
+      else
+      {
+        solver.nameOfGridFile=name;
+        solver.gridType=Maxwell::compositeGrid;
+      }
     
+    }
   }
-
+  
   // *wdh* 090427 -- read in the ComppositeGrid here to be consistent with other cg solvers
   if( solver.gridType==Maxwell::compositeGrid )
   {
@@ -405,13 +420,32 @@ main(int argc, char *argv[])
     
     solver.cgp=new CompositeGrid;
     CompositeGrid & cg = *solver.cgp;
-    getFromADataBase(cg,solver.nameOfGridFile); // read in the grid with the default loadBalancer
 
-    if( Communication_Manager::Number_Of_Processors >1 )
-    { // display the parallel distribution
-      cg.displayDistribution("cgmx: after getFromADataBase",stdout);
+    if( useNewWay )
+    {
+      // Use this to optinally build a grid on the fly:   wdh Feb 7, 2021
+
+      bool loadBalance=false;  // *fix me*
+      
+      solver.nameOfGridFile = readOrBuildTheGrid(gi, cg, loadBalance, numberOfParallelGhost);      
     }
-
+    else
+    {
+      #ifdef USE_PPP
+        // On Parallel machines always add at least this many ghost lines on local arrays
+        printF("cgmx: Seting numberOfParallelGhost=%d\n",numberOfParallelGhost);
+        MappedGrid::setMinimumNumberOfDistributedGhostLines(numberOfParallelGhost);
+      #endif
+   
+      getFromADataBase(cg,solver.nameOfGridFile); // read in the grid with the default loadBalancer
+  
+      if( Communication_Manager::Number_Of_Processors >1 )
+      { // display the parallel distribution
+        cg.displayDistribution("cgmx: after getFromADataBase",stdout);
+      }
+    }
+    
+  
   }
 
 

@@ -1,4 +1,5 @@
 #
+echo to terminal 0
 #   plotStuff plotGrid.cmd -show=blockGride2.order4.ng3.hdf -name=blockGrid
 #
 #   plotStuff plotGrid.cmd -show=ellipticalDiskGride8.order2.hdf -name=ellipticalDiskGrid8
@@ -27,12 +28,23 @@
 #
 #   plotStuff plotGrid.cmd -show=ellipticalGridL4Angle30e4.order2 -name=ellipticalGridL4Angle30
 #
-$show="ellipticalDiskGride8.order2.hdf";
+#   plotStuff plotGrid.cmd -show=twoDiskGridnpe2.order2 -name=twoDiskGrid
+#   plotStuff plotGrid.cmd -show=fourDiskGridnpe2.order2 -name=fourDiskGrid
+#   plotStuff plotGrid.cmd -show=16DiskGridnpe2.order2 -name=16DiskGrid -opt="colour grid lines by domain"
+#   plotStuff plotGrid.cmd -show=64DiskGridnpe2.order2 -name=64DiskGrid -opt="colour grid lines by domain"
+#   plotStuff plotGrid.cmd -show=256DiskGridnpe2.order2 -name=256DiskGrid -opt="colour grid lines by domain"
+#   plotStuff plotGrid.cmd -show=1024DiskGridnpe2.order2 -name=1024DiskGrid -opt="colour grid lines by domain"
+#
+#  plotStuff plotGrid.cmd -show=solidEllipsoid546Gridi4.order2.hdf -name="solidEllipsoid546"
+#
+echo to terminal 1
+$show="ellipticalDiskGride8.order2.hdf"; $opt="#"; 
 # get command line arguments
-GetOptions( "show=s"=>\$show, "name=s"=>\$name );
+GetOptions( "show=s"=>\$show, "name=s"=>\$name, "opt=s"=>\$opt );
 #
 $show
 #
+
   # waveyDisk 
   hardcopy vertical resolution:0 2048
   hardcopy horizontal resolution:0 2048  
@@ -40,6 +52,9 @@ $show
   DISPLAY SQUARES:0 0
   DISPLAY AXES:0 0
   bigger:0
+  #
+  $opt
+  #
   coarsening factor 1
   plot
   $plotName = $name . ".ps"; 

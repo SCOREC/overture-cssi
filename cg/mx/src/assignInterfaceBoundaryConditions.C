@@ -111,7 +111,7 @@ real checkParallelFortranArrayInt(char *label_,
 }
 
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
+#define FOR_3D(i1,i2,i3,I1,I2,I3) int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(int i3=I3Base; i3<=I3Bound; i3++) for(int i2=I2Base; i2<=I2Bound; i2++) for(int i1=I1Base; i1<=I1Bound; i1++)
 
 #define FOR_3(i1,i2,i3,I1,I2,I3) I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); for(i3=I3Base; i3<=I3Bound; i3++) for(i2=I2Base; i2<=I2Bound; i2++) for(i1=I1Base; i1<=I1Bound; i1++)
 
@@ -516,6 +516,186 @@ initializeInterfaces()
               		  
     }
     
+
+  // ----- check for tall cells at interface -- these may cause instabilities for order=4 ----
+  // *wdh* March 3, 2021
+  //              |
+  //              +---------+---
+  //            /\|         |
+  //     t-dist   | n-dist  |        tall-cell-ratio = n-dist/t-dist 
+  //            \/+<------->+---
+  //              |         |
+  //              |         |
+  //              +---------+---
+  //              |         |
+  //              |         |
+  //              +---------+---
+  //              |
+  //              ^
+  //           interface
+  // 
+    bool checkForTallCells = orderOfAccuracyInSpace>=4;
+    if( checkForTallCells )
+    {
+        printF("--- CHECK FOR TALL CELLS AT THE INTERFACE--- \n");
+
+    // check for cells with normal-dist/tangential-dist > tallCellRatioBound
+        const real & tallCellRatioBound = dbase.get<real>("tallCellRatioBound");
+        
+        real maxTallCellRatio=0.;     // worst tall-cell ratio
+        int numTallTotal     =0;      // counts total number of tall cells exceeding bound
+        int numPointsTotal   =0;      // total interface cells checked
+        
+        for( int inter=0; inter < interfaceInfo.size(); inter++ )
+        {
+            InterfaceInfo & interface = interfaceInfo[inter]; 
+            for( int iside=0; iside<=1; iside++ )// two sides of the interface
+            {
+                int grid, side, dir;
+                if( iside==0 )
+                {
+                    grid=interface.grid1, side=interface.side1, dir=interface.dir1;
+                }
+                else
+                {
+                    grid=interface.grid2, side=interface.side2, dir=interface.dir2;
+                }
+                MappedGrid & mg = cg[grid];
+        
+                intArray & mask = mg.mask();
+                OV_GET_SERIAL_ARRAY(int,mask,maskLocal);
+
+                mg.update( MappedGrid::THEvertex );  // *** FIX ME ***
+
+                OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+            
+                const int extra=0; 
+                getBoundaryIndex(mg.gridIndexRange(),side,dir,I1,I2,I3,extra);
+
+                int includeGhost=0;
+                bool ok1 = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
+                if( ok1  )
+                {
+                    int isv[3], &is1 = isv[0], &is2=isv[1], &is3=isv[2]; // normal index shift
+                    isv[0]=0; isv[1]=0; isv[2]=0;
+                    isv[dir]= 1-2*side;
+
+                    int dirp1 = (dir+1) % numberOfDimensions;
+                    int itv[3], &it1 = itv[0], &it2=itv[1], &it3=itv[2]; // tangential index shift
+                    itv[0]=0; itv[1]=0; itv[2]=0;
+                    itv[dirp1]= 1;
+
+                
+                    real tallCellRatio=0.;  // worst TCR on this grid 
+                    int numTall=0;          // counts tall cells on this grid exceeding bound
+                    int numPoints=0;        // counts total points checked on this grid 
+                    if( numberOfDimensions==2 )
+                    {
+            // tallCellRatio = normal-dist / tangential-dist 
+                        FOR_3D(i1,i2,i3,I1,I2,I3) 
+                        {
+                            if( mask(i1,i2,i3)>0 )
+                            {
+                // distance "normal" to the boundary for this point
+                                real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
+                                                                      SQR( xLocal(i1+is1,i2+is2,i3+is3,1) - xLocal(i1,i2,i3,1) )  );
+                // tangential distance 
+                                real tDist = sqrt( SQR( xLocal(i1+it1,i2+it2,i3+it3,0) - xLocal(i1,i2,i3,0) ) +
+                                                                      SQR( xLocal(i1+it1,i2+it2,i3+it3,1) - xLocal(i1,i2,i3,1) )  );
+                                tDist = max( tDist, REAL_MIN*1000.); // avoid division by zero
+
+                                numPoints++;
+                                real cellAspectRatio = nDist/tDist;
+                                if( cellAspectRatio > tallCellRatioBound )
+                                    numTall++;
+                                tallCellRatio = max( tallCellRatio, cellAspectRatio );
+                            }
+                        }
+                    
+                    }
+                    else if( numberOfDimensions==3 )
+                    {
+                        int dirp2 = (dir+2) % numberOfDimensions;
+                        int irv[3], &ir1 = irv[0], &ir2=irv[1], &ir3=irv[2]; // tangential index shift
+                        irv[0]=0; irv[1]=0; irv[2]=0;
+                        irv[dirp2]= 1;
+
+                        FOR_3D(i1,i2,i3,I1,I2,I3) 
+                        {
+                            if( mask(i1,i2,i3)>0 )
+                            {
+                // distance "normal" to the boundary for this point
+                                real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
+                                                                      SQR( xLocal(i1+is1,i2+is2,i3+is3,1) - xLocal(i1,i2,i3,1) ) +
+                                                                      SQR( xLocal(i1+is1,i2+is2,i3+is3,2) - xLocal(i1,i2,i3,2) )  );
+
+                // tangential distances
+                                real tDist1 = sqrt( SQR( xLocal(i1+it1,i2+it2,i3+it3,0) - xLocal(i1,i2,i3,0) ) +
+                                                                        SQR( xLocal(i1+it1,i2+it2,i3+it3,1) - xLocal(i1,i2,i3,1) ) +
+                                                                        SQR( xLocal(i1+it1,i2+it2,i3+it3,2) - xLocal(i1,i2,i3,2) )  );
+
+                                real tDist2 = sqrt( SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,0) - xLocal(i1,i2,i3,0) ) +
+                                                                        SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,1) - xLocal(i1,i2,i3,1) ) +
+                                                                        SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,2) - xLocal(i1,i2,i3,2) )  );
+                                real tDist = max( min(tDist1,tDist2), REAL_MIN*1000.);
+
+                                numPoints++;                
+                                real cellAspectRatio = nDist/tDist;
+                                if( cellAspectRatio > tallCellRatioBound )
+                                    numTall++;
+
+                                tallCellRatio = max( tallCellRatio, cellAspectRatio );
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        OV_ABORT("numberOfDimensions!?");
+                    }
+                    numTall       = ParallelUtility::getSum( numTall );
+                    numPoints     = ParallelUtility::getSum( numPoints );
+                    tallCellRatio = ParallelUtility::getMaxValue( tallCellRatio );
+
+                    numTallTotal   += numTall;
+                    numPointsTotal += numPoints;
+                    maxTallCellRatio = max( maxTallCellRatio, tallCellRatio );
+
+                    
+                    real fractionBad = numTall/max(1.,numPoints);
+                    printF(" grid=%3d (side,dir)=(%d,%d) worst tallCellRatio=%9.3e, num bad=%5d (%5.1f %% of cells exceed ratio %4.2f) (name=%s)\n",
+                                  grid,side,dir,tallCellRatio,numTall,fractionBad*100,tallCellRatioBound, (const char*)mg.getName());
+                }
+                
+            } // end for iside 
+        } // for end interface
+
+        real fractionBad = numTallTotal/max(1.,numPointsTotal);
+        printF(" Maximum tall cell ratio=%8.2e (tallCellRatioBound=%g), total bad cells=%6d (%5.1f %% of %d points).\n",
+                      maxTallCellRatio,tallCellRatioBound,numTallTotal, 100.*fractionBad,numPointsTotal);
+
+        if( maxTallCellRatio > tallCellRatioBound )
+        {
+            printF("\n");
+            printF("ERROR: There are some cells at the interface that are too `tall' in the normal direction.\n");
+            printF("This may cause instablilities for the fourth-order scheme.\n");
+            printF("You should add more grid lines in the normal direction to the offending grids.\n");
+            printF("Otherwise, increase the tallCellRatioBound if you want to run anyway at your own risk!\n\n");
+            OV_ABORT("checkForTallCells:ERROR");
+        }
+        else
+        {
+            printF("\n >>> No tall cells exceeding the ratio %4.2f were found. <<<< \n\n",tallCellRatioBound);
+        }
+        
+
+    } // end checkForTallCells
+    
+    
+
+
+
+
     timing(timeForInterfaceBC)+=getCPU()-time0;
 }
 

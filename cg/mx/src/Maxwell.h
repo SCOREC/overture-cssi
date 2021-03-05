@@ -363,6 +363,8 @@ class Maxwell
   int outputUserDefinedProbes( int current, real t, real dt, int stepNumber );
 
   int plot(int current, real t, real dt );
+
+  int plotMaterials();
   
   int printMemoryUsage(FILE *file = stdout );
 

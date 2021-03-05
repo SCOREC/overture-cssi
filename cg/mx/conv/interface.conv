@@ -100,54 +100,63 @@ $caseName .= $normName . "Norm";
 $outputFile="$name$method$cg$extraLabel" . "Order$order" . $normName . "NormConvTable.tex"; 
 if( $method eq "bamx" ){ $outputFile="$name$method$cg$extraLabel" . "$ts" . "Order$order" . $normName . "NormConvTable.tex"; }
 #
-$numberOfComponents=5;
-if( $method eq "sosup" ){ $numberOfComponents=8; }
-# define the table heading and caption
-if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #
-if( $numberOfComponents eq 8  && $numberOfDimensions eq 2 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$   \&  \$\\Ev\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+# -------- Define the table column labels  ----
+#      These are usually common between different cases
+Include columnLabels.h
 #
-if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$    \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+# old: 
+#- $numberOfComponents=5;
+#- if( $method eq "sosup" ){ $numberOfComponents=8; }
+#- # define the table heading and caption
+#- if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
+#-   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #
+#- if( $numberOfComponents eq 8  && $numberOfDimensions eq 2 )\
+#-   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$   \&  \$\\Ev\$ \&  \$Ex_t\$ \&  \$Ey_t\$ \& \$Hz_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #
+#- if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 )\
+#-   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$    \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #
+#- if( $numberOfComponents eq 8  && $numberOfDimensions eq 3 )\
+#-   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&    \&   \$\\Ev\$ \$Ex_t\$ \&  \$Ey_t\$ \& \$Ez_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #  -- Dispersive model 2D ---
+#- if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 && $dm ne "none" )\
+#-   { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$H_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #  -- Dispersive model 3D ---
+#- if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
+#-   { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#- #
+#- # 
+#- # BA-MAXWELL
+#- if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "none" )\
+#-   { $title= "grid  \& N \&b/  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$H_x\$ \&  \$H_y\$ \& \$H_z\$  \&   \$\\Ev\$ \&   \$\\Hv\$  \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=9; }
+#- #
+#- if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "gdm" )\
+#-   { $title= "grid  \& N \&  \$E_x\$   \&  \$E_y\$     \& \$E_z\$    \&  \$H_x\$    \&  \$H_y\$    \& \$H_z\$   \&   \$\\Ev\$   \&   \$\\Hv\$   \&  \$\\Pv\$   \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=10; }
+#- #
+#- # BA-MAXWELL -- only display vector errors 
+#- if( $method eq "bamx" && $solveForAllFields eq 1 &&  $dm eq "none" && $saveVectorErrors eq 1 )\
+#-   { $title= "grid  \& N \&    \$\\Ev\$ \&   \$\\Hv\$ "; $numberOfComponents=9;  \
+#- foreach $i (0,1,2,3,4,5,8) { $ignoreComponent[$i]=1; }\
+#- }
+#- # BA-GDM save all errors 
+#- if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" )\
+#-   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$     \& \$E_z\$     \&  \$H_x\$       \&  \$H_y\$      \& \$H_z\$      \&   \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9; \
+#-  } \
+#-   }
+#- # BA-GDM : Save vector errors only 
+#- if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorErrors eq 1 )\
+#-   { $title= "grid  \& N \&  \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9;  \
+#-   foreach $i (0,1,2,3,4,5) { $ignoreComponent[$i]=1; } \
+#-   }
+#- # 
+#- $labelMethod=$method;
+#- if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
+#- if( $method eq "bamx" ){ $labelMethod="BAMX$order"; }
 #
-if( $numberOfComponents eq 8  && $numberOfDimensions eq 3 )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&    \&   \$\\Ev\$ \$Ex_t\$ \&  \$Ey_t\$ \& \$Ez_t\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
-#  -- Dispersive model 2D ---
-if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 && $dm ne "none" )\
-  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$H_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
-#  -- Dispersive model 3D ---
-if( $numberOfComponents eq 5 && $numberOfDimensions eq 3 && $dm ne "none" )\
-  { $numberOfComponents=6; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+#  ---- caption -----
 #
-# 
-# BA-MAXWELL
-if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "none" )\
-  { $title= "grid  \& N \&b/  \$E_x\$ \&  \$E_y\$ \& \$E_z\$ \&  \$H_x\$ \&  \$H_y\$ \& \$H_z\$  \&   \$\\Ev\$ \&   \$\\Hv\$  \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=9; }
-#
-if( $method eq "bamx" && $solveForAllFields eq 1  &&  $dm eq "gdm" )\
-  { $title= "grid  \& N \&  \$E_x\$   \&  \$E_y\$     \& \$E_z\$    \&  \$H_x\$    \&  \$H_y\$    \& \$H_z\$   \&   \$\\Ev\$   \&   \$\\Hv\$   \&  \$\\Pv\$   \&  \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; $numberOfComponents=10; }
-#
-# BA-MAXWELL -- only display vector errors 
-if( $method eq "bamx" && $solveForAllFields eq 1 &&  $dm eq "none" && $saveVectorErrors eq 1 )\
-  { $title= "grid  \& N \&    \$\\Ev\$ \&   \$\\Hv\$ "; $numberOfComponents=9;  \
-foreach $i (0,1,2,3,4,5,8) { $ignoreComponent[$i]=1; }\
-}
-# BA-GDM save all errors 
-if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" )\
-  { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$     \& \$E_z\$     \&  \$H_x\$       \&  \$H_y\$      \& \$H_z\$      \&   \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9; \
- } \
-  }
-# BA-GDM : Save vector errors only 
-if( $method eq "bamx" && $solveForAllFields eq 1 && $dm eq "gdm" && $saveVectorErrors eq 1 )\
-  { $title= "grid  \& N \&  \$\\Ev\$    \&   \$\\Hv\$    \&  \$\\Pv\$"; $numberOfComponents=9;  \
-  foreach $i (0,1,2,3,4,5) { $ignoreComponent[$i]=1; } \
-  }
-# 
-$labelMethod=$method;
-if( $method eq "NFDTD" ){ $labelMethod="CGFD$order"; }
-if( $method eq "bamx" ){ $labelMethod="BAMX$order"; }
 if( $method eq "NFDTD" ){ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, dissOrder=\$$dissOrder\$,  useSosupDissipation=$useSosupDissipation, interfaceIts=$interfaceIts, tz=$tz, degreex=$degreex degreet=$degreet kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, eps1=$eps1, eps2=$eps2, alphaP=$alphaP[0],$alphaP[1], npv=$npv[0],$npv[1], modeGDM=$modeGDM, a01=($a01[0],$a01[1],$a01[2]), a11=($a11[0],$a11[1],$a11[2]), b01=($b01[0],$b01[1],$b01[2]), b11=($b11[0],$b11[1],$b11[2]), a02=($a02[0],$a02[1],$a02[2]), a12=($a12[0],$a12[1],$a12[2]), b02=($b02[0],$b02[1],$b02[2]), b12=($b12[0],$b12[1],$b12[2]) matFile1=$matFile1 matFile2=$mathFile2 nm=$nm $date}\\label\{table:$name" . $method . "Order$order$normName}"; }
 #
 if( $method eq "bamx" ){ $caption= "\\caption\{Cgmx, $name, method=$labelMethod, ts=$ts, $normName norm, order=\$$order\$, \$t=$tf\$, cfl=\$$cfl\$, diss=\$$diss\$, tz=$tz, kx=$kx, ky=$ky, kz=$kz ic=$ic, bc=$bc, dm=$dm, modeGDM=$modeGDM, matFile=$matFile, matFile2=$matFile2, dispersionOption=$dispersionOption, xa=$xa xb=$xb ya=$ya yb=$yb za=$za zb=$zb $date}\\label\{table:$name" . $method . "Order$order$normName}"; }

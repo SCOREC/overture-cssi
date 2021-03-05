@@ -1,5 +1,9 @@
+***************************
+******* Fri Feb 26, 2021
 
+save errors in nonlinear vars to check file
 
+cgmx -noplot tz -g=nonSquare8.order2 -tz=trig -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
 
 ***************************
 ******* Tues Jan 5, 2021

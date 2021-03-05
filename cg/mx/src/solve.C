@@ -290,7 +290,16 @@ outputResults( int current, real t, real dt )
     numberToOutput += 1;
   }
   
-
+  // --- For nonlinear models keep track of the maxium errors in the nonlinear variables per domain -- 
+  RealArray & nonlinearNorm   =  dbase.get<RealArray>("nonlinearNorm");
+  RealArray & maxErrNonlinear =  dbase.get<RealArray>("maxErrNonlinear");
+  if( nonlinearModel != noNonlinearModel )
+  {
+    // output errors in nonlinear variables too: (max value over all domains and all components)
+    numberToOutput += 1;
+  }
+  
+  
   if( false )
     printF("\n ***** outputResults: numberOfErrorComponents=%d, maximumError.getLength(0)=%i numberOfComponents=%i numberToOutput=%i\n",
            numberOfErrorComponents,maximumError.getLength(0),numberOfComponents,numberToOutput);
@@ -323,14 +332,21 @@ outputResults( int current, real t, real dt )
     }
   
     if( dispersionModel != noDispersion )
-    {
-      // output errors in P too: (max value over all domains and all components)
+    { // output errors in P too: (max value over all domains and all components)
       c=numberOfErrorComponents;
       err = max(maxErrPolarization);
       uc  = max(polarizationNorm);
       fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
     }
 
+    if( nonlinearModel != noNonlinearModel )
+    { // output errors in N too: (max value over all domains and all components)
+      c=numberOfErrorComponents+1;
+      err = max(maxErrNonlinear);
+      uc  = max(nonlinearNorm);
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    }
+    
     c=numberToOutput-1;
     err=divEMax/max(REAL_MIN*100.,gradEMax);
     uc=gradEMax;
@@ -374,10 +390,18 @@ outputResults( int current, real t, real dt )
   
     if( dispersionModel != noDispersion )
     {
-      // output errors in P too: (max value over all domains and all components)
+      // output |P|: (max value over all domains and all components)
       c++;
       err = 0.;
       uc  = max(polarizationNorm);
+      fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
+    }
+    if( nonlinearModel != noNonlinearModel )
+    {
+      // output |N|: (max value over all domains and all components)
+      c++;
+      err = 0.;
+      uc  = max(nonlinearNorm);
       fPrintF(checkFile,"%i %9.2e %10.3e  ",c,err,uc);
     }
 

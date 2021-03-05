@@ -1032,6 +1032,9 @@
 
 !** Note: comment out these next lines to avoid compiling files while developing one version 
 
+!-buildFile(interfaceMx3dOrder4c,3,4,curvlinear,none)
+!-buildFile(interfaceMxGDM3dOrder4c,3,4,curvlinear,gdm)
+!-buildFile(interfaceMxMLA3dOrder4c,3,4,curvlinear,mla)
 
 ! -----------------------------------------------------------------------------------------------
 ! Macro to call a given interface routine.

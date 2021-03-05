@@ -23,8 +23,10 @@
 #   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p2 -eMax=.9 -solution=13
 #   plotStuff plotSolution.cmd -show=baBoxCylArrayG128.show -name=baBoxCylArrayG128t1p5 -eMax=.9 -solution=16
 #
+#   plotStuff plotSolution.cmd -show=fourDiskEps4BAH -name=fourDiskEps4BAHSolution -field=Ey -solution=4
+#   plotStuff plotSolution.cmd -show=16DiskSlabsEps4Eps8Eps6Eps3 -name=16DiskSlabsEps4Eps8Eps6Eps3 -field=Ey -solution=9
 # 
-$show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $eMin=0; $eMax=0; 
+$show="baMatIntGDM.show.hdf"; $solution="-1"; $name="plot"; $field="eFieldNorm"; $eMin=0; $eMax=0; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 # get command line arguments
 GetOptions( "show=s"=>\$show, "name=s"=>\$name, "solution=i"=>\$solution,"tSave=f"=>\$tSave,\
@@ -37,7 +39,7 @@ derived types
   E field norm
 exit
 contour
-  plot:eFieldNorm
+  plot:$field
   plot contour lines (toggle)
   # set view:0 0.0694864 -0.0362538 0 2.34381 1 0 0 0 1 0 0 0 1
   coarsening factor 1 (<0 : adaptive)
@@ -49,11 +51,15 @@ exit
 solution: $solution
 pause
 DISPLAY AXES:0 0
+# ---
+DISPLAY LABELS:0 0
+DISPLAY COLOUR BAR:0 0
+# --
 hardcopy vertical resolution:0 2048
 hardcopy horizontal resolution:0 2048
 line width scale factor:0 4
 plot 
-$plotName = $name . "EfieldNorm.ps"; 
+$plotName = $name . $field . ".ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
 

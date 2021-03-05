@@ -23,6 +23,8 @@ readOrBuildTheGrid(GenericGraphicsInterface &ps, CompositeGrid &cg, bool loadBal
   aString nameOfOGFile;
   ps.inputString(nameOfOGFile,"Enter the name of an (old) overlapping grid file or type 'ogen' to generate a grid:");
 
+  printF("\n+++++ readOrBuildTheGrid: nameOfOGFile=%s\n",(const char*)nameOfOGFile);
+
   // create and read in a CompositeGrid
   #ifdef USE_PPP
     // On Parallel machines always add at least this many ghost lines on local arrays
@@ -58,7 +60,7 @@ readOrBuildTheGrid(GenericGraphicsInterface &ps, CompositeGrid &cg, bool loadBal
   }
   else
   {
-    printF("Calling ogen to generate the grid...\n");
+    printF("readOrBuildTheGrid:Calling ogen to generate the grid...\n");
     // create more mappings and/or make an overlapping grid
     ogen( mappingInfo,ps,"--", &cg);
   }

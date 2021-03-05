@@ -9,6 +9,9 @@ using std::cout;
 using std::endl;
 #endif
 
+extern int colourTable[256][3];
+
+
 // scale factors for plotting to change the aspect ratio
 GUITypes::real GraphicsParameters::xScaleFactor=1., 
                GraphicsParameters::yScaleFactor=1., 
@@ -719,6 +722,65 @@ get(const Sizes & option, real & value) const
   value=size(option);
   return value;
 }
+
+
+// ================================================================================
+/// \brief Get the current colour table rgb values: ct(0:2,0:255)
+///   ct(0:2,i) = [r,g,b],  0<= r,g,b <= 1
+// ================================================================================
+int GraphicsParameters:: 
+getColourTable( RealArray & ct )
+{
+  
+  ct.redim(3,256);
+  for( int j=0; j<256; j++ )
+  {
+    for( int i=0; i<3; i++ )
+    {
+      ct(i,j) = ::colourTable[j][i]/255.;
+    }
+  }
+  return 0;
+}
+
+// ================================================================================
+/// \brief Set the current colour table rgb values: ct(0:2,0:255)
+///   ct(0:2,i) = [r,g,b],  0<= r,g,b <= 1
+// ================================================================================
+int GraphicsParameters:: 
+setColourTable( const RealArray & ct )
+{
+  for( int j=0; j<256; j++ )
+  {
+    for( int i=0; i<3; i++ )
+    {
+      ::colourTable[j][i] = min(255,max(0, int( ct(i,j)*255+.5) ));
+    }
+  }
+  return 0;
+}
+
+
+// ================================================================================
+// Change the value of the colour table at index
+//    rgb[3] : rgb values in the range [0,1]
+// ================================================================================
+int GraphicsParameters:: 
+setColourTableValue( int index, real rgb[3] )
+{
+  if( index>=0 && index<=255 )
+  {
+    for( int i=0; i<3; i++ )
+      ::colourTable[index][i] = min(255,max(0, int( rgb[i]*255+.5) ));
+  }
+  else
+  {
+    printF("GraphicsParameters::setColourTableValue:ERROR: invalid index=%d, Should be between [0,255]\n",index);
+    return 1;
+  }
+  return 0;
+}
+
 
 
 

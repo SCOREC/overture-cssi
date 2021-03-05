@@ -531,6 +531,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 		      "set plot bounds",
 		      "reset plot bounds",
   		      "change colour bar",
+                      "set colour table values",
                       ">colour table choices",
                         "rainbow",
                         "gray",
@@ -1598,6 +1599,23 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
     {
       plotObject=true;
     }
+    else if( answer=="set colour table values" )
+    {
+      printF("INFO: There are 256 colour table rgb values in the range [0,1].\n"
+             " rgb(0:2,0:255) = rgb(0:2,index)\n");
+      real rgb[3]={0.,0.,0.}; // 
+      for( ;; )
+      {
+        gi.inputString(answer2,"Enter index, r,g,b  (enter index<0 or index>255 to finish)"); 
+        int index=-1;
+        sScanF(answer2,"%i %e %e %e",&index,&rgb[0],&rgb[1],&rgb[2]);
+        if( index<0 || index>255 ) break;
+        printf("Set colour table: index=%d, [r,g,b]=[%g,%g,%g]\n",index,rgb[0],rgb[1],rgb[2]);
+        psp.setColourTableValue( index,rgb );
+      }
+      
+    }
+
     else if( answer=="rainbow" || answer=="gray" || answer=="red" || answer=="green" || answer=="blue" ||
              answer=="user defined" )
     {

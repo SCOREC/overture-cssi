@@ -27,9 +27,13 @@ $numGhost=-1;  # if this value is set, then use this number of ghost points
 $extraLines=0; 
 # 
 # get command line arguments
-GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
+# Getopt::Long::Configure("prefix_pattern=(--rectangleArg|--|-)");
+GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,\
+            "ya=f"=>\$ya,"yb=f"=>\$yb,"ybx=f"=>\$ybx,\
             "periodic=s"=>\$periodic,"name=s"=>\$name,"prefix=s"=>\$prefix,"numGhost=i"=> \$numGhost, \
 	    "extraLines=i"=> \$extraLines,"Nx=i"=>\$Nx,"adjustCC=i"=>\$adjustCC );
+# printf("rectangleArg: factor=$factor xa=$xa xb=$xb ya=$ya yb=$yb ybx=$ybx\n");
+# pause
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\

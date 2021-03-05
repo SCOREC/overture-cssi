@@ -668,7 +668,9 @@
 
  if( method.eq.bamx )then
    if( numberOfMaterialRegions.gt.maxRegions )then
-      stop 1002
+     write(*,*) 'getDiv: Error: numberOfMaterialRegions=',numberOfMaterialRegions,' is bigger than maxRegions=',maxRegions
+     write(*,*) 'FIX ME BILL!'
+     stop 1002
    end if
    ! 3x3 Material matrix for TEz polarization
    ! We use ex=0,ey=1 and hz=5 entries in K0i(0:5,0:5) 

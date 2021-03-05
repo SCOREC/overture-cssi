@@ -228,8 +228,7 @@
 realCompositeGridFunction& Maxwell::
 getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
 {
-  // if( true ) return gf[current].u; // test 
-    
+
     assert( cgp!=NULL );
     CompositeGrid & cg = *cgp;
     const int numberOfDimensions = cg.numberOfDimensions();
@@ -855,9 +854,10 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
                         }
                     }
                 }
-                else if( false ) // FINISH ME *********************************************************************
+                else if( method==bamx ) 
                 {
           // ------ BA MAXWELL -----
+          // printF("BAMX: Evaluate [Px,Py,Pz] [Mx,My,Mz] for plotting\n");
                     realMappedGridFunction & p = getDispersionModelMappedGridFunction( grid,current );
                     OV_GET_SERIAL_ARRAY(real,p,pLocal);
                     bool ok = ParallelUtility::getLocalArrayBounds(p,pLocal,I1,I2,I3,includeGhost); 
@@ -878,20 +878,31 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
                     if( ok )
                     {
                         std::vector<DispersiveMaterialParameters> & dmpVector = 
-                            dbase.get<std::vector<DispersiveMaterialParameters> >("dispersiveMaterialParameters");
+                            dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+            // printF("numberOfMaterialRegions=%d, dmpVector.size()=%d\n",numberOfMaterialRegions,dmpVector.size());
+                        assert( numberOfMaterialRegions==dmpVector.size() );
                         if( numberOfMaterialRegions>1 )
                         {
               // assert( pBodyMask!=NULL );
               // const IntegerArray & matMask = *pBodyMask;  // material index 
                             intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
                             OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
+              // ------ make an array of Np(6,6) for the different materials ----
+                            IntegerArray Npa(6,6,numberOfMaterialRegions);
+                            Range M6=6;
+                            for( int mr=0; mr<numberOfMaterialRegions; mr++ )
+                            {
+                                DispersiveMaterialParameters & dmp = dmpVector[mr];             
+                                const IntegerArray & Np = dmp.getBianisotropicNp();
+                // ::display(Np,"Np","%3i ");
+                                Npa(M6,M6,mr) = Np(M6,M6);
+                            }
                             int i1,i2,i3;
                             FOR_3D(i1,i2,i3,I1,I2,I3)
                             {
                                 const int mr = matMask(i1,i2,i3);
                                 assert( mr>=0 && mr<numberOfMaterialRegions );
                                 DispersiveMaterialParameters & dmp = dmpVector[mr]; 
-                                const IntegerArray & Np = dmp.getBianisotropicNp();  // We could speed this up by creating Npv(k1,k2,mr) 
                                 int pc=0;
                                 for( int k1=0; k1<6; k1++ )
                                 {
@@ -901,7 +912,7 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
                                         vLocal(i1,i2,i3,nPolarizationErr+ec)=0.;
                                     for( int k2=0; k2<6; k2++ )
                                     {
-                                        for( int n=0; n<Np(k1,k2); n++ )
+                                        for( int n=0; n<Npa(k1,k2,mr); n++ )
                                         {
                                             vLocal(i1,i2,i3,nPolarization+ec) += pLocal(i1,i2,i3,pc);
                                             if( plotPolarizationErrors )

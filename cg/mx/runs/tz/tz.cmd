@@ -92,7 +92,7 @@ $eps=1.; $mu=1.;
 $npv=1; $alphaP=1.; $modeGDM=-1; 
 @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below
 #
-$nm="#"; # nonlinear model 
+$nm="none"; # nonlinear model 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,"diss=f"=>\$diss,\
  "tp=f"=>\$tPlot, "tz=s"=>\$tz, "show=s"=>\$show,"order=i"=>\$order,"debug=i"=>\$debug,"dissOrder=i"=>\$dissOrder, \

@@ -281,6 +281,10 @@ get(const GraphicsOptions & option, RealArray & values) const;
 GUITypes::real &         
 get(const Sizes & option, GUITypes::real & value) const;  
 
+// get the current colour table 
+int
+getColourTable( RealArray & ct );
+
 // use these set functions to set a value for a GraphicsOptions parameter
 int 
 set(const GraphicsOptions & option, const aString & label);
@@ -297,6 +301,14 @@ set(const Sizes & option, GUITypes::real value);  // set a size
 
 int 
 setColourTable(ColourTableFunctionPointer ctf); // provide a function to use for a colour table
+
+// Change the value of the colour table 
+int
+setColourTableValue( int index, real rgb[3] );
+
+// get the current colour table 
+int
+setColourTable( const RealArray & ct );
 
 int
 setMinAndMaxContourLevels( const real minValue, const real maxValue, const int component=0 );

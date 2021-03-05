@@ -1645,6 +1645,8 @@
                 ! dispersive case
              else
                 ! nonlinear dispersive case
+                  write(*,*) 'ERROR: inavlid value for none for nonlinear case'
+                  stop 5555 
               end if    
               ! fixup values on ends *wdh* June 22, 2016
               if( .false. )then

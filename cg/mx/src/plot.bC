@@ -11,20 +11,21 @@
 #include "display.h"
 #include "DispersiveMaterialParameters.h"
 #include "BodyForce.h"
+#include "xColours.h"
 
 #define FOR_3D(i1,i2,i3,I1,I2,I3) \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)
 
 #define FOR_3(i1,i2,i3,I1,I2,I3) \
 I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase();  \
 I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++) \
-for(i2=I2Base; i2<=I2Bound; i2++) \
-for(i1=I1Base; i1<=I1Bound; i1++)
+for(int i3=I3Base; i3<=I3Bound; i3++) \
+for(int i2=I2Base; i2<=I2Bound; i2++) \
+for(int i1=I1Base; i1<=I1Bound; i1++)
 
 // Define macros for forcing functions:
 #Include "forcing.h"
@@ -894,13 +895,18 @@ buildRunTimeDialog()
                       "plot options...",
                       "parameters...",
                       "plot distribution",
-                      // "plot P...",
+                      "plot materials",
+                      "plot P...",
                       // "plot N...",
                       // "change the grid...",
                       // "show file options...","file output...",
                       // "pde parameters...",
                       ""};
-    numberOfPushButtons=11;  // number of entries in cmds
+
+    numberOfPushButtons=0;
+    while( cmds[numberOfPushButtons] != "" ) numberOfPushButtons++;
+    // numberOfPushButtons=11;  // number of entries in cmds
+
     int numRows=(numberOfPushButtons+1)/2;
     dialog.setPushButtons( cmds, cmds, numRows ); 
 
@@ -1076,6 +1082,20 @@ getTimeSteppingLabel( real dt, aString & label ) const
     label+="TS=??, ";
 
   // -- label for dispersion model ---
+  if( nonlinearModel!=noNonlinearModel )
+  {
+    const aString & nonlinearModelName=dbase.get<aString>("nonlinearModelName");
+    if( nonlinearModelName == "multilevelAtomic" )
+    {
+      label += " MLA";
+    }
+    else
+    {
+      printF("getTimeSteppingLabel:ERROR: unknown nonlinearModelName=[%s]\n",(const char*)nonlinearModelName);
+    }
+    
+  }
+  
   if( dispersionModel!=noDispersion )
   {
     aString & dispersionModelName=dbase.get<aString>("dispersionModelName");
@@ -1127,6 +1147,250 @@ getTimeSteppingLabel( real dt, aString & label ) const
   
 }
 
+// ========================================================================================
+/// \brief plot grids coloured by material type
+// ========================================================================================
+int Maxwell::
+plotMaterials( )
+{
+
+  GenericGraphicsInterface *& pps = gip; 
+  if( pps==NULL )
+    return 0;
+  GenericGraphicsInterface & ps = *pps;
+  
+  assert( cgp!=NULL );
+  CompositeGrid & cg = *cgp;
+  PlotStuffParameters psp;
+
+
+  if( method==bamx )
+  {
+
+    // 
+    // ---- for BAMX we plot the material regions as contours based on the material index 0,1,2,3,... ----
+    // 
+    if( numberOfMaterialRegions>1 )
+    {
+      printF("plotMaterials: numberOfMaterialRegions=%d. Regions are plotted as contours by material index: 0,1,2,3...\n",
+             numberOfMaterialRegions);
+
+
+      // --- we need to save the materialMask as a REAL grid function so we can plot contours ---
+      realGridCollectionFunction matMaskReal(cg);
+
+      // ---- Here is a material mask ----
+      intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
+
+      // real materialScaleFactor=255/max(1,numberOfMaterialRegions); // scale by 255 = number of colour names 
+
+      Index I1,I2,I3;
+      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+      {
+
+        OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMaskLocal);
+        OV_GET_SERIAL_ARRAY(real,matMaskReal[grid],matMaskRealLocal);
+
+        MappedGrid & mg = cg[grid];
+        getIndex(mg.dimension(),I1,I2,I3);
+        bool ok=ParallelUtility::getLocalArrayBounds(matMaskReal[grid],matMaskRealLocal,I1,I2,I3);
+        if( ok )
+        {
+          // we need to loop to assign values since we cannot set realArray = intArray
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            matMaskRealLocal(i1,i2,i3) = matMaskLocal(i1,i2,i3);
+          }
+        }
+      }
+	      
+      // change the default colour table
+      RealArray ctSave(3,256);
+      psp.getColourTable( ctSave );  // save current "rainbow" colour table 
+
+      RealArray ct(3,256);  // holds new colour table 
+      ct=ctSave;            // set default to rainbow 
+
+      IntegerArray numberList(numberOfMaterialRegions); // for coloured "squares" list of numbers used 
+      numberList=0;
+
+      // --- We can colour materials using the same colours used to colour grids ----
+      // Otherwise colour using the rainbow colour table 
+
+      // If there are too many materials we should probably plot using the rainbow
+      bool colourMaterialsUsingGridColours = true; // *** make this an option ***
+
+      if( colourMaterialsUsingGridColours )
+      {
+        // -- set colours to match coloured "squares" used when plotting grids
+        
+
+        std::vector<DispersiveMaterialParameters> & dmpVector = 
+          dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+ 
+        aString matColourName;
+        real rgb[3];
+        for( int m=0; m<numberOfMaterialRegions; m++ )
+        {
+           aString materialName = dmpVector[m].getMaterialName();           
+
+           matColourName = ps.getColourName( m );
+           getXColour( matColourName, rgb);
+ 
+           printF("material %s: index=%4d, colour=%s.\n",(const char*)materialName,m,(const char*)matColourName);
+           // printF("material index=%4d, colour=%s.\n",m,(const char*)matColourName);
+
+           ct(0,m)=rgb[0];  ct(1,m)=rgb[1]; ct(2,m)=rgb[2];
+           numberList(m)=m;
+        }
+
+        // -- set contour bounds to be [0,255] ----
+        IntegerArray & minAndMaxContourLevelsSpecified  = psp.minAndMaxContourLevelsSpecified;
+        RealArray & minAndMaxContourLevels = psp.minAndMaxContourLevels;
+
+        if( minAndMaxContourLevelsSpecified.getLength(0)<1 )
+        {
+          minAndMaxContourLevelsSpecified.redim(1);
+          minAndMaxContourLevels.redim(2,1);
+        }
+        
+        minAndMaxContourLevelsSpecified=true;   // give values to new entries
+        minAndMaxContourLevels(0,0)=0; 
+        minAndMaxContourLevels(1,0)=255; 
+
+        psp.set(GI_PLOT_COLOUR_BAR,false);
+
+      }
+
+      
+      psp.setColourTable( ct );
+
+      ps.erase();
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+      psp.set(GI_TOP_LABEL,"BA materials");
+
+      const bool plotOnThisProcessor = Communication_Manager::localProcessNumber()==ps.getProcessorForGraphics();
+      if( colourMaterialsUsingGridColours && plotOnThisProcessor )
+      {  // draw coloured "squares" to associate a colour with a material index
+         // 0 = blue
+         // 1 = green ...
+         ps.drawColouredSquares(numberList,psp);
+      }        
+
+      PlotIt::contour(ps,matMaskReal,psp);
+      psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+
+      // reset
+      psp.setColourTable( ctSave );
+    }
+    else
+    {
+      printF("plotMaterials:There is only one material region. Nothing plotted.\n");
+    }
+
+    
+    return 0;
+  }
+  
+  // Colour grid lines and boundaries by the material
+  psp.set(GI_GRID_LINE_COLOUR_OPTION,GraphicsParameters::colourByIndex);
+  psp.set(GI_BOUNDARY_COLOUR_OPTION ,GraphicsParameters::colourByIndex); 
+
+  // const int numMaterialColours=7;
+  // int matColour[numMaterialColours];
+  // matColour[0]=getXColour("BLUE");
+  // matColour[1]=getXColour("RED");
+  // matColour[2]=getXColour("GREEN");
+  // matColour[3]=getXColour("NAVYBLUE");
+  // matColour[4]=getXColour("ORANGE");
+  // matColour[5]=getXColour("DARKGREEN");
+  // matColour[6]=getXColour("LIGHTBLUE");
+
+  // aString pickColour;
+  // pickColour="NAVYBLUE";
+  // int pickColourIndex=getXColour(pickColour);
+
+  if( psp.gridColours.getLength(0)<cg.numberOfComponentGrids() )
+  {
+    psp.gridColours.resize(cg.numberOfComponentGrids(),8);
+  }
+  Range all;
+  int numberOfMaterials=0; // counts distinct materials
+  IntegerArray matNumber(cg.numberOfComponentGrids());  // material number for a grid 
+  matNumber=0;
+  int matColourIndex=0;  // current colour index 
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+
+    //  dispersionModel!=noDispersion; 
+    if( method!=bamx )
+    {
+      // --- Isotropic Maxwell  ----
+
+      const int domain = cg.domainNumber(grid);
+      const DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+      aString materialName = dmp.getMaterialName();
+
+      // printF("grid=%d, domain=%d:  materialName =%s\n",grid,domain,(const char*)materialName);
+
+      // Check to see if the material name has already appeared in a previous grid
+      bool matFound=false;
+      for( int g=0; g<grid; g++ )
+      {
+        if( getDomainDispersiveMaterialParameters(cg.domainNumber(g)).getMaterialName() == materialName )
+        {
+          matNumber(grid) = matNumber(g);
+          matFound=true;
+          break;
+        }
+      }
+      if( !matFound )
+      {
+        // new material found 
+        matNumber(grid)=numberOfMaterials;
+        numberOfMaterials++;
+      }
+
+
+      // -- Use colours from coloured "squares" used when plotting the grid ---
+      aString matColourName = ps.getColourName( matNumber(grid) );
+      matColourIndex = getXColour(matColourName);
+
+      // if( false && matNumber(grid) < numMaterialColours )
+      // {
+      //   // use predefined colours to start
+      //   matColourIndex = matColour[ ( matNumber(grid) % numMaterialColours) ];
+      // }
+      // else
+      // {
+      //   // cycle through some X-colours
+      //   const int numXColoursToUse=64;
+      //   matColourIndex = matNumber(grid) % numXColoursToUse;
+      // }
+      
+
+      if( !matFound )
+      {
+        // aString matColourName = getXColour( matColourIndex );
+        printF("material %s: index=%4d, colour=%s.\n",(const char*)materialName,matColourIndex,(const char*)matColourName);
+      }
+      
+      psp.gridColours(grid,all)= matColourIndex; // gridColour[ ( matNumber(grid) % numMaterialColours) ];
+      
+    }
+    else
+    {
+      printF("plotMaterials: finish me for the bamx solver\n");
+    }
+    
+  }
+  printF("plotMaterials: There are %d distinct materials.\n",numberOfMaterials);
+  
+  psp.set(GI_TOP_LABEL,"Materials");
+  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+  PlotIt::plot( ps, cg,psp );
+  return 0;
+}
 
 
 int Maxwell::
@@ -1431,6 +1695,13 @@ plot( int current, real t, real dt )
         {
           ps.erase();
           PlotIt::plotParallelGridDistribution(cg,ps,psp );
+        }
+        
+        else if( answer=="plot materials" )
+        {
+          // plot grids coloured by material
+          ps.erase();
+          plotMaterials();
         }
         
 

@@ -1973,7 +1973,7 @@
                   ! ****************************************************
                   ! ***********  2D, ORDER=4, CURVILINEAR **************
                   ! ****************************************************
-                  if( .true. .or. t.le.5*dt .or. debug.gt.3 )then
+                  if( t.le.5*dt .or. debug.gt.3 )then
                     write(*,'("macro: assignInterfaceGhost24c : t,dt=",2e10.2)') t,dt
                   end if
                   err=0.

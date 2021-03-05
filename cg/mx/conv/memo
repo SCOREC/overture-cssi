@@ -1,5 +1,57 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
+
+***************************
+******* Thurs Mar 4, 2021
+
+WDH -- START ON RESULTS FOR MBE PAPER
+
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -tf=.1 -tp=.1 -modeGDM=1 -ng=3
+
+
+
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=2 -tf=.1 -tp=.1 -modeGDM=1 -ng=3
+
+% EXTRACT SOME COMPONENTS FROM THE TABLE
+processCheckFiles.p -file=./interfaceNFDTDtwoSquaresInterfaceOrder2Mode1maxNorm.twoSquaresInterface.master.check -useGridNames=0 -c=3,4,5
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 7.68e-04 &       & 5.64e-04 &       & 1.91e-01 &       & 7.68e-04 &       & 9.48e-04 &       & 1.37e-03 &       & 3.09e-03 &       
+twoSquaresInterface4 &     2 & 1.42e-04 &  5.41 & 8.21e-05 &  6.87 & 1.83e-01 &  1.04 & 1.42e-04 &  5.41 & 3.07e-04 &  3.09 & 6.08e-04 &  2.25 & 1.68e-03 &  1.84 
+twoSquaresInterface8 &     4 & 2.91e-05 &  4.88 & 1.56e-05 &  5.26 & 1.91e-01 &  0.96 & 2.91e-05 &  4.88 & 8.79e-05 &  3.49 & 2.12e-04 &  2.87 & 9.66e-04 &  1.74 
+Convergence rates: c0=2.36 c1=2.59 c2=0.00 c3=2.36 c4=1.72 c5=1.35 c6=0.84 
+
+
+
+
+
+***************************
+******* Fri Feb 26, 2021
+
+SAVE ERRORS IN NONLINEAR VARIABLES TO CHECK FILE
+
+
+
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=2 -tf=.1 -tp=.1 -modeGDM=1 -ng=3
+
+
+
+TRIG
+conv.p exact.conv -option=tz -tz=trig -cg=square -nm=mla -dm=gdm -matFile=mlaMat1.txt -tf=.1 -tp=.1 -order=2 -npv=2 -ng=2
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   square8 &     1 & 4.95e-05 &       & 5.04e-05 &       & 9.23e-03 &       & 5.04e-05 &       & 1.00e-05 &       & 1.01e-04 &       & 9.72e-07 &       
+  square16 &     2 & 1.08e-05 &  4.58 & 1.09e-05 &  4.62 & 1.23e-02 &  0.75 & 1.09e-05 &  4.62 & 3.94e-06 &  2.54 & 2.56e-05 &  3.95 & 1.62e-07 &  6.00 
+  square32 &     4 & 2.34e-06 &  4.62 & 2.41e-06 &  4.52 & 1.23e-02 &  1.00 & 2.41e-06 &  4.52 & 8.27e-07 &  4.76 & 3.04e-06 &  8.42 & 8.14e-08 &  1.99 
+Convergence rates: c0=2.20 c1=2.19 c2=-0.21 c3=2.19 c4=1.80 c5=2.53 c6=1.79
+
+
+
+POLY
+conv.p exact.conv -option=tz -cg=square  -nm=mla  -dm=gdm -matFile=mlaMat1.txt -tf=.1 -tp=.1 -order=2 -npv=2 -ng=2
+
+
+
 ***************************
 ******* Wed Feb 3, 2021
 

@@ -676,6 +676,60 @@ readCommandFile(const aString & commandFileName /* =nullString */ )
     if( !readFile )
     {
       readFile=fopen((readFileName+".cmd").c_str(),"r" );
+
+      // -- Look in some other common places -- added wdh, Feb 2021
+      if(  !readFile )
+      {
+        int printInfo=true;
+        
+        aString dirs,dir, name, cmdFileName;
+        char *env;
+        env=getenv("OvertureGridDirectories");
+        if( env!=NULL )
+          dirs=env;
+        if( dirs!="" && printInfo>0 )
+          printF("readCommandFile: Searching for the command file in locations specified "
+                 "by the `OvertureGridDirectories' environment variable\n");      
+
+        cmdFileName = readFileName;
+        int len = cmdFileName.length();
+        // printF(" cmdFileName(len-4,len-1)=[%s]\n",(const char*) cmdFileName(len-4,len-1));
+        if( cmdFileName(len-4,len-1) != ".cmd" )
+        { // add .cmd to the name if it is not there
+          cmdFileName = cmdFileName + ".cmd";
+        }
+        const int maxSearches=100;
+        for( int m=0; m<maxSearches; m++ )
+        {
+          if( dirs=="" )
+            break;
+          int length=dirs.length();
+          int i=0;
+          while( i<length && dirs[i]!=':' ) i++;
+          dir=dirs(0,i-1);
+
+          name = dir + "/" + cmdFileName;
+          if( printInfo>0 ) printF("Look for %s ... ",(const char*)name);
+          readFile=fopen( name.c_str(),"r" );
+          if( readFile )
+          {
+            if( printInfo>0 ) printF("found!\n",(const char*)name);
+            readFileName = name;
+            break;
+          }
+          else
+          {
+            if( printInfo>0 ) printF("not found.\n",(const char*)name);
+          }
+           
+          if( i<length )
+            dirs=dirs(i+1,length-1);
+          else
+            break;
+        }
+
+      } // end search common directories 
+
       if( !readFile )
 	cout << "ERROR:unable to open file [" << readFileName << "] or [" << readFileName+".cmd" << "]\n";
     }

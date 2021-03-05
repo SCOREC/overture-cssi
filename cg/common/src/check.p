@@ -287,7 +287,7 @@ foreach $cmdCommand ( @cmdFiles )
 
 	if( $diff!=0 )
 	{
-	  if( $verbose ){ printf("++++ The check files do not agree +++++\n"); }
+	  if( $verbose ){ printf("++++ The check files for \"$checkFilePrefix\" do not agree +++++\n"); }
 	  $numberOfErrors++;
 	}
 	else
@@ -303,7 +303,7 @@ foreach $cmdCommand ( @cmdFiles )
     }
     else
     {
-      if( $verbose ){ printf(" *** There was an error running $program and generating $checkFilePrefix ****\n"); }
+      if( $verbose ){ printf("\n *** ERROR : There was an error running $program and generating $checkFilePrefix ****\n\n"); }
       $numberOfErrors++;
     }
   }

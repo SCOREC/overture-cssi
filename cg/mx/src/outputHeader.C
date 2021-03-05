@@ -313,6 +313,9 @@ outputHeader()
       std::vector<DispersiveMaterialParameters> & dmpVector = 
         dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
+      fPrintF(file," dmpVector.size() = %i.\n",dmpVector.size());
+      assert( dmpVector.size() == numberOfMaterialRegions );
+      
       for( int mr=0; mr<numberOfMaterialRegions; mr++ )
       {
 	DispersiveMaterialParameters & dmp = dmpVector[mr]; 

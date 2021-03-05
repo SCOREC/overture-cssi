@@ -127,6 +127,10 @@ Maxwell:: Maxwell()
   // useJacobiInterfaceUpdate = 1 : use a Jacobi like update for assigning ghost at intefaces
   if( !dbase.has_key("useJacobiInterfaceUpdate") ) dbase.put<int>("useJacobiInterfaceUpdate")=1; 
   
+  // We check for tall cells at interfaces and stop if the tall-cell-ration exceeds this:
+  dbase.put<real>("tallCellRatioBound") = 1.25;
+  
+
 
   frequency=5.;
   checkErrors=true;
@@ -1595,7 +1599,10 @@ buildInterfaceOptionsDialog(DialogData & dialog )
   
   textCommands[nt] = "interface equations option";  
   textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%i",interfaceEquationsOption); nt++; 
-  
+
+  const real & tallCellRatioBound = dbase.get<real>("tallCellRatioBound");
+  textCommands[nt] = "tallCellRatioBound";  
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",tallCellRatioBound); nt++; 
 
   // null strings terminal list
   assert( nt<numberOfTextStrings );
@@ -2284,7 +2291,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   int & setDivergenceAtInterfaces = dbase.get<int>("setDivergenceAtInterfaces");
   int & useImpedanceInterfaceProjection = dbase.get<int>("useImpedanceInterfaceProjection");
   int & useJacobiInterfaceUpdate = dbase.get<int>("useJacobiInterfaceUpdate");
-  
+  real & tallCellRatioBound = dbase.get<real>("tallCellRatioBound");
+
   BoundaryForcingEnum & boundaryForcingOption =dbase.get<BoundaryForcingEnum>("boundaryForcingOption");
   bool & solveForScatteredField = dbase.get<bool>("solveForScatteredField");
   ChirpedArrayType & cpw = dbase.get<ChirpedArrayType>("chirpedParameters");
@@ -3272,6 +3280,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( interfaceOptionsDialog.getTextValue(answer,"interface option","%i",
 						    materialInterfaceOption) ){}// 
 
+    else if( interfaceOptionsDialog.getTextValue(answer,"tallCellRatioBound","%e",
+						    tallCellRatioBound) ){}// 
+
     else if( timeSteppingOptionsDialog.getTextValue(answer,"projection frequency","%i",
 						    frequencyToProjectFields) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"consecutive projection steps","%i",
@@ -3503,10 +3514,21 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 	  }
 	  if( !found )
 	  {
-	    printF("ERROR looking for the grid named [%s]\n",(const char*)gridName);
+	    printF("ERROR looking for the grid or domain named [%s]\n",(const char*)gridName);
             // This is a real error only if there are multiple domains *wdh* June 20, 2016
             if( cg.numberOfDomains()>1 )
 	    {
+              printF("Available grid names:\n");
+              for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+              {
+                printF(" grid=%d: name=[%s]\n",grid,(const char*)cg[grid].getName());
+              }
+              printF("Available domain names:\n");
+              for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+              {
+                printF(" domain=%d: name=[%s]\n",domain,(const char*)cg.getDomainName(domain));
+              }
+              
 	      gi.stopReadingCommandFile();
             }
 	    

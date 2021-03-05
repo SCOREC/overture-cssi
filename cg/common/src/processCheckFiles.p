@@ -129,10 +129,11 @@ while( <FILE> )
       }
 
 
-      if(  $line =~ /^\\caption/ ){ next; } # skip later lines beginning with \caption 
-      if(  $line =~ /^[ \t]*$/ ){ next; } # skip blank lines
+      if( $line =~ /^\\caption/ ){ next; } # skip later lines beginning with \caption 
+      if( $line =~ /^[ \t]*$/ ){ next; } # skip blank lines
 
-      if(  $line =~ /^\%/ ){ next; } # skip comments 
+      if( $line =~ /^\%/ ){ next; } # skip comments 
+      if( $line =~ /^\#/ ){ next; } # skip comments 
       if( $line =~ /^<<end/ ){ last; } # finish
 
       # ---- This line must have results ----
@@ -140,7 +141,11 @@ while( <FILE> )
       # NOTE: --- for now we keep reading results until the last set ----
 
       @tokens =  split(' ',$line); 
-
+      # printf("line=[$line]\n");
+      # printf("tokens[0]=$tokens[0]\n");
+      # printf("tokens[1]=$tokens[1]\n");
+      # printf("tokens[2]=$tokens[2]\n");
+      # printf("tokens[3]=$tokens[3]\n");
 
       $time[$count]=$tokens[0];
       $nc =$tokens[1];

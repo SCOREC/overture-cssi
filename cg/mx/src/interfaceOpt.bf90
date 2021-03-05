@@ -2150,7 +2150,7 @@ beginLoopsMask2d()
  ! ***********  2D, ORDER=4, CURVILINEAR **************
  ! ****************************************************
 
- if( .true. .or. t.le.5*dt .or. debug.gt.3 )then
+ if( t.le.5*dt .or. debug.gt.3 )then
    write(*,'("macro: assignInterfaceGhost24c : t,dt=",2e10.2)') t,dt
  end if
 
@@ -2996,6 +2996,9 @@ end if
       ! nonlinear dispersive case
       #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost22r()
+      #Else
+        write(*,*) 'ERROR: inavlid value for MODEL for nonlinear case'
+        stop 5555 
       #End 
     end if    
 
@@ -4657,7 +4660,6 @@ buildFile(interfaceMx2dOrder4r,2,4,rectangular,none)
 buildFile(interfaceMx2dOrder4c,2,4,curvilinear,none)
 buildFile(interfaceMx3dOrder2c,3,2,curvilinear,none)
 !- 
-!- 
 !- ! --- GDM versions ---
 buildFile(interfaceMxGDM2dOrder2r,2,2,rectangular,gdm)
 buildFile(interfaceMxGDM2dOrder2c,2,2,curvilinear,gdm)
@@ -4695,15 +4697,15 @@ buildFile(interfaceMxMLA3dOrder2c,3,2,curvilinear,mla)
 
     callRoutine( interfaceMx ## SUFFIX )
 
-  else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-
-    ! -- GDM ---
-    callRoutine( interfaceMxGDM ## SUFFIX )
-
   else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
 
     ! --- MLA ---
     callRoutine( interfaceMxMLA ## SUFFIX )
+
+  else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+
+    ! -- GDM ---
+    callRoutine( interfaceMxGDM ## SUFFIX )
 
   else 
     stop 9876

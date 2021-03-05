@@ -2,6 +2,257 @@
 WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=sice4.order4.hdf
 -m=1 -n=1 -tp=.5 -tf=2 -go=go
 
+*****************************************
+******* Wed Mar 3, 2021
+
+
+FIX errors in check
+
+running:  /home/henshw/cg.g/mx/bin/cgmx noplot ./../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/materials/baIsoEps2.txt -matFile2=../runs/materials/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go >! baScatTwoMat.out
+checkCheckFiles: files do not agree, maxDiff=1.000000e+00, file1=mx.check, file2=baScatTwoMat.check
+ Component 8: norms:  0.0000e+00 (file1) and 1.0000e+00 (file2) differ by 1.00e+00.
+
+
+*****************************************
+******* Tues Mar 2, 2021
+
+Fix colours of materials when plotting
+
+16 x 16 
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-14 -xb=14 -ya=-12.0 -yb=12.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=16 -nyBox=16 -nzBox=1 -xc=-11.75 -yc=-12.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk256Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-13 -xLeftProbe=-13 -xRightProbe=13 -probeFileName=junk -go=og
+
+
+4x4 -- NEW way
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-5 -xb=5 -ya=-3.0 -yb=3.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=4 -nyBox=4 -nzBox=1 -xc=-2.75 -yc=-3.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk16Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-4 -xLeftProbe=-4 -xRightProbe=4 -probeFileName=junk -go=og
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk4Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=junk -go=og
+
+*****************************************
+******* Mon Mar 1, 2021
+
+SWITCH TO materialFile to hold list of materials
+
+
++++ PLOT MATERIALS FOR BAMX
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-8 -xb=8 -ya=-6.0 -yb=6.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=8 -nyBox=8 -nzBox=1 -xc=-5.75 -yc=-6.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk64Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-7 -xLeftProbe=-7 -xRightProbe=7 -probeFileName=junk -go=og
+
+
+
++++++++ 64 "disks"
+
+runScat.p -case=64DiskEps4Eps8Eps3Eps6BAH -tf=.2 -xGaussianPlaneWaveStartPoint=7 -xProbe=6.5 -direction=1 -polarization=1 -resStart=3 -numResolutions=3 -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-8 -xb=8 -ya=-6.0 -yb=6.0 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=64 -nxBox=8 -nyBox=8 -nzBox=1 -xc=-5.75 -yc=-6.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk64Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go"
+
+
+
+
+disk64Materials.h : holds background material TOO!
+
+16x16
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-14 -xb=14 -ya=-12.0 -yb=12.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=16 -nyBox=16 -nzBox=1 -xc=-11.75 -yc=-12.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk256Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-13 -xLeftProbe=-13 -xRightProbe=13 -probeFileName=junk -go=og
+
+
+8x8 
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-8 -xb=8 -ya=-6.0 -yb=6.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=8 -nyBox=8 -nzBox=1 -xc=-5.75 -yc=-6.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk64Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-7 -xLeftProbe=-7 -xRightProbe=7 -probeFileName=junk -go=og
+
+
+4x4 -- NEW way
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-5 -xb=5 -ya=-3.0 -yb=3.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=4 -nyBox=4 -nzBox=1 -xc=-2.75 -yc=-3.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk16Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-4 -xLeftProbe=-4 -xRightProbe=4 -probeFileName=junk -go=og
+
+
+2x2 -- NEW
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk4Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=junk -go=og
+
+
+
+2x2 -- OLD WAY
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=junk -go=og
+
+
+*****************************************
+******* Wed/Thurs Feb 24/25, 2021
+
+>> maxwellGarnett
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=3, p=1 epsMG=1.40255
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=3, p=2 epsMG=1.40255
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=3, p=3 epsMG=1.67021
+
+>> maxwellGarnett
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=6, p=1 epsMG=1.62936
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=6, p=2 epsMG=1.62936
+Maxwell-Garnett: ellipsoids: r=0.4, W=1, H=1.5, f=0.335103 (vol frac), epsh=1, epsi=6, p=3 epsMG=2.67552
+
+
+
++++++++ 16 DISKS BA
+
+   4 sets of [4,8,8,4] and [6,3,3,6]
+
+             3   6  | 8   4
+             6   3  | 4   8
+             --------------
+             8   4  | 3   6
+             4   8  | 6   3
+
+
+Runs for plots:
+
+
+FIX PROBE LOCATION 
+runScat.p -case=16DiskEps4Eps8Eps3Eps6BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-5 -xb=5 -ya=-3.0 -yb=3.0 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=4 -nyBox=4 -nzBox=1 -xc=-2.75 -yc=-3.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps6BAH.txt diskEps3BAH.txt diskEps8BAH.txt  diskEps4BAH.txt  diskEps3BAH.txt  diskEps6BAH.txt diskEps6BAH.txt diskEps3BAH.txt diskEps4BAH.txt diskEps8BAH.txt diskEps3BAH.txt  diskEps6BAH.txt  diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=.2 -xGaussianPlaneWaveStartPoint=4 -xProbe=3.5 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+4x4 -- RUN for PLOTS
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-5 -xb=5 -ya=-3.0 -yb=3.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=4 -nyBox=4 -nzBox=1 -xc=-2.75 -yc=-3.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps6BAH.txt diskEps3BAH.txt diskEps8BAH.txt  diskEps4BAH.txt  diskEps3BAH.txt  diskEps6BAH.txt diskEps6BAH.txt diskEps3BAH.txt diskEps4BAH.txt diskEps8BAH.txt diskEps3BAH.txt  diskEps6BAH.txt  diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=5 -diss=1 -kx=1 -ay=1 -az=0 -x0=-4 -xLeftProbe=-4 -xRightProbe=4 -probeFileName=junk -show=16DiskSlabsEps4Eps8Eps6Eps3.show  -go=go > 16DiskSlabsEps4Eps8Eps6Eps3.out
+
+2x2
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=2 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=junk -go=og 
+
+
+ogen -noplot rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3
+
+*****************************************
+******* Sun Feb 21, 2021
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=2 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=FourDiskEps4BAHPolar1Dir1G8 -go=go >! runScatFourDiskEps4BAHPolar1Dir1G8.out
+
+
+*****************************************
+******* Sat Feb 20, 2021
+
+FOUR DISKS -- EPS=4 and EPS=8
+         (3)   eps=8  (4)  eps=4
+         (1)   eps=4  (2)  eps=8
+
+
+FOUR BAH "DISKS"
+NOTE: changes made to boxRegionArray.h to look for duplicate materials for re-use
+
+runScat.p -case=FourDiskEps4BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps8BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=2 -xProbe=1 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps8BAH.txt diskEps8BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.2 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-2 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=FourDiskEps4BAHPolar1Dir1G8 -go=og
+
+
+
+*****************************************
+******* Fri Feb 19, 2021
+
+FOUR BAH GDM DISKS 
+
+runScat.p -case=FourDiskEps4GDMfp1BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=gdm -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4GDMfp1BAH.txt diskEps4GDMfp1BAH.txt diskEps4GDMfp1BAH.txt  diskEps4GDMfp1BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=2 -xProbe=1 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+*****************************************
+******* Thurs Feb 18, 2021
+
+HOMOGENIZED GDM DISK: diskEps4GDMfp1BAH.txt
+
+
+TWO DISKS:
+
+
+runScat.p -case=TwoDiskEps4GDMfp1BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=gdm -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4GDMfp1BAH.txt diskEps4GDMfp1BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=1.5 -xProbe=1 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+
+/home/henshw/cg.g/mx/bin/cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=gdm -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4GDMfp1BAH.txt diskEps4GDMfp1BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-1.5 -xLeftProbe=-1 -xRightProbe=1 -probeFileName=TwoDiskEps4GDMfp1BAHPolar1Dir1G8 -go=og
+
+
+*****************************************
+******* Tues Feb 16, 2021
+
+Run for plot --
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt  diskEps4BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=10 -diss=1 -show=fourDiskEps4BAH.show -go=go >! fourDiskEps4BAH.show
+
+
+FOUR BAH "DISKS"
+
+runScat.p -case=FourDiskEps4BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt diskEps4BAH.txt  diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=2 -xProbe=1 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2.75 -xb=2.75 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-1.25 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt  diskEps4BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -x0=-2 -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=50 -diss=1 -go=og
+
+*****************************************
+******* Mon Feb 15, 2021
+
+
+runScat.p -case=TwoDiskEps4BAH -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -xLeftProbe=-XPROBE -xRightProbe=XPROBE -probeFileName=PROBEFILENAME -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=1.5 -xProbe=1 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+
+*****************************************
+******* Sun Feb 14, 2021
+
+**NEW WAY: supply mostly full cgmx command to runScat.p
+NOTE: TFINAL, FACTOR, AX, AY, AZ and XO are replaced in runScat.p 
+
+NOTE: diskEps4BAH.txt - holds Maxwell-Garnett values for a disk of eps=4
+
+runScat.p -case=TwoDiskEps4BAH TwoSlab2dBAEps2Eps4 -cgmxCmd="baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=FACTOR -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=TFINAL -tf=TFINAL -diss=1 -kx=KX -ay=AY -az=AZ X0 -go=go" -tf=2 -xGaussianPlaneWaveStartPoint=1.5 -direction=1 -polarization=1 -resStart=3 -numResolutions=3
+
+
+NOTE: beta=50 is the default in dielectricBodies.cmd 
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4BAH.txt diskEps4BAH.txt -ts=rk4 -ic=gp -x0=-1.5 -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.5 -tf=50 -diss=1 -go=og
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=baIsoEps4.txt baIsoEps4.txt -ts=rk4 -ic=gp -x0=-1.5 -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=5 -diss=1 -go=og
+
+*****************************************
+******* Sat Feb 13, 2021
+
+START ON COMPARING TWO DISKS EPS=4: r=.4, H=1.5, L=1 
+
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=baIsoEps4.txt baIsoEps4.txt -ts=rk4 -ic=gp -x0=-1.25 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1 -go=og
+
+
+*****************************************
+******* Wed Feb 9, 2021
+
+TEST CASE -- compare to homogenized twoDisk scattering
+
+disks: radius=.3 --> homogenized to width=.6 or .8 or 1 ??
+disks: separated by dist=1 
+
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-1 -xb=1 -ya=-1 -yb=1 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.4 -yc=-.9 -xWidth=.8 -yWidth=.8 -xSep=.2 -ySep=.2 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=baIsoEps2.txt baIsoEps4.txt -ts=rk4 -ic=gp -x0=-.75 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1 -go=og
+
+*****************************************
+******* Sun Feb 7, 2021
+
+*** CHANGED nx, ny,nz to nxBoxm nyBox, nzBox 
+
+
+>>>> BUILD GRID ON THE FLY
+
+NOTE: -matFile=background material
+cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -factor=8 -order=4 -numGhost=3 -ya=0 -method=bamx -numMatRegions=5 -nxBox=2 -nyBox=2 -nzBox=1 -xc=-.25 -yc=.25 -xWidth=.5 -yWidth=.25 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=baIsoEps2.txt baIsoEps3.txt baIsoEps4.txt baIsoEps5.txt baIsoEps4.txt baIsoEps2.txt -ts=rk4 -ic=gp -x0=-.75 -beta=200 -solveForAllFields=1 -tp=.1 -tf=5 -diss=1 -go=og
+
+ -matFile2=baIsoEps4.txt -matFile3=twoSlabEps16Eps4BAHSlice1.txt -matFile4=twoSlabEps16Eps4BAHSlice2.txt
+ 
+
+cgmx -noplot ba.cmd -g=ogen -gf=mySquare.cmd --N=64 --Order=4  -method=bamx -numMatRegions=5 -nx=2 -ny=2 -nz=1 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -matFile3=twoSlabEps16Eps4BAHSlice1.txt -matFile4=twoSlabEps16Eps4BAHSlice2.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=1 -diss=0 -go=og
+
+
+cgmx -noplot ba.cmd -g=ogen -gf=square.cmd --N=64  -method=bamx -numMatRegions=5 -nx=2 -ny=2 -nz=1 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -matFile3=twoSlabEps16Eps4BAHSlice1.txt -matFile4=twoSlabEps16Eps4BAHSlice2.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -go=og
+
+
+
+
+
+
+TEST NEW mat file format and files from slicing
+
+ -matFile1=twoSlabEps16Eps4BAHSlice1.txt -matFile2=twoSlabEps16Eps4BAHSlice2.txt
+
+
+turn box region array into two slabs: **FINISH ME 
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=3 -nx=2 -ny=1 -nz=1 -xc=.25 -yc=-.1 -xWidth=.25 -yWidth=1.2 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=twoSlabEps16Eps4BAHSlice1.txt -matFile3=twoSlabEps16Eps4BAHSlice2.txt -matFile4=twoSlabEps16Eps4BAHSlice2.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -go=og
+
+
+
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -dm=gdm -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=twoSlabEps16Eps4BAHSlice1.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -go=og
+
+
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=5 -nx=2 -ny=2 -nz=1 -dm=none -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -matFile3=twoSlabEps16Eps4BAHSlice1.txt -matFile4=twoSlabEps16Eps4BAHSlice2.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.1 -tf=1 -diss=1 -go=og
+
+
+
+
 
 
 *****************************************
@@ -40,7 +291,7 @@ cgmx -noplot baScat.cmd -g=square256.order4.ng3 -method=bamx -numMatRegions=10 -
 
 cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=10 -nx=3 -ny=3 -nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.0 -beta=200 -solveForAllFields=1 -tp=.2 -tf=1 -diss=1 -go=og
 
-cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=5 -nx=2 $ny=2 $nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og
+cgmx -noplot baScat.cmd -g=square128.order4.ng3 -method=bamx -numMatRegions=5 -nx=2 -ny=2 -nz=1 -regionFile=boxRegionArray.h -matFile=baIsoEps2.txt -matFile2=baIsoEps4.txt -ts=rk4 -ic=gp -x0=.2 -beta=200 -solveForAllFields=1 -tp=.5 -tf=1 -diss=1 -go=og
 
 
 

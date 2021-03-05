@@ -48,9 +48,10 @@ $ts="bamx"; $matFile="";  $numMatRegions=1; $matFile2="";  $matFile3=""; $matFil
 $solveForAllFields=0; $regionFile="boxRegion.h"; 
 $show=" "; $backGround="backGround"; $compareToShowFile=""; $flushFrequency=10; 
 $interfaceEquationOption=1; $interfaceIterations=10;  $interfaceOmega=.5; $useNewInterface=1; 
-$grid="afm2.order4.hdf";
+$grid="square32.order2";
+$gridCmd="rectangeArg.cmd"; # comannd file for building a grid inline with ogen
 $cons=1; $go="halt"; 
-$xa=-100.; $xb=-1.5; $ya=-100.; $yb=100.; $za=-100.; $zb=100.;  # initial condition bounding box
+$bbxa=-100.; $bbxb=-1.5; $bbya=-100.; $bbyb=100.; $zabb=-100.; $zbbb=100.;  # initial condition bounding box
 $leftBC="rbc"; $bcBody=""; $bc1=""; $bc2=""; $bc3=""; $bc4=""; $bc5=""; $bc6=""; 
 $probeFileName="";
 $xLeftProbe=-1.5; $xRightProbe=1.5; $yLeftProbe=0; $yRightProbe=0; $probeFrequency=1; 
@@ -69,16 +70,23 @@ $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1;
 @a02 = (); @a12=(); @b02=(); @b12=(); # for a second GDM domain 
 $dmFile=""; # "SilverJCDispersionFits.txt"; 
 # -- new: boxRegionArray.h defines regions
-$nx=2; $ny=2; $nz=1;
+$nxBox=2; $nyBox=2; $nzBox=1;
 $xWidth=.25; $yWidth=.25; $zWidth=.25; # width of boxes 
+$xSep=.25; $ySep=.25; $zSep=.25;       # separation between the boxes
 $xc=.125; $yc=.125; $zc=.125;  # lower left corner of the boxes
+@matFileArray = (); # holds list of materials for boxes
+$materialFile = ""; # defines materials in a file *new way* March 1, 2021
 # ----------------------------- get command line arguments ---------------------------------------
-GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
+#
+#  NOTE: To pass -ya and -yb to ogen cmd files do NOT include -yabb and -ybbb in this list (?!)
+GetOptions( "g=s"=>\$grid,"gridCmd=s"=>\$gridCmd,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot, \
+ "show=s"=>\$show,"debug=i"=>\$debug,"matFileArray=s{1,}"=>\@matFileArray, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
    "plotIntensity=i"=>\$plotIntensity,"ax=f"=>\$ax,"ay=f"=>\$ay,"az=f"=>\$az,"intensityOption=i"=>\$intensityOption,\
   "dtMax=f"=>\$dtMax,"kx=f"=>\$kx,"ky=f"=>\$ky,"kz=f"=>\$kz, "numBlocks=i"=>\$numBlocks,\
    "ii=i"=>\$interfaceIterations,"varDiss=i"=>\$varDiss ,"varDissSmooths=i"=>\$varDissSmooths,\
-   "xb=f"=>\$xb,"yb=f"=>\$yb,"cons=i"=>\$cons,"compareToShowFile=s"=>\$compareToShowFile,\
+   "cons=i"=>\$cons,"compareToShowFile=s"=>\$compareToShowFile,\
+   "bbxa=f"=>\$bbxa,"bbxb=f"=>\$bbxb,"bbya=f"=>\$bbya,"bbyb=f"=>\$bbyb,"zabb=f"=>\$zabb,"zbbb=f"=>\$zbbb, \
    "probeFileName=s"=>\$probeFileName,"xLeftProbe=f"=>\$xLeftProbe,"xRightProbe=f"=>\$xRightProbe,\
    "yLeftProbe=f"=>\$yLeftProbe,"yRightProbe=f"=>\$yRightProbe,"flushFrequency=f"=>\$flushFrequency,\
    "checkErrors=i"=>\$checkErrors,"sidebc=s"=>\$sidebc,"dissOrder=i"=>\$dissOrder,"method=s"=>\$method,\
@@ -97,9 +105,17 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "solveForAllFields=i"=>\$solveForAllFields,"regionFile=s"=>\$regionFile,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
   "radius=f"=>\$radius,"ae=f"=>\$ae,"be=f"=>\$be,"ce=f"=>\$ce,"useSuperGrid=i"=>\$useSuperGrid,\
   "superGridWidth=f"=>\$superGridWidth,"intProbeName=s"=>\$intProbeName,"amp=f"=>\$amp,"omega=f"=>\$omega,\
-  "rampTime=f"=>\$rampTime,"nx=i"=>\$nx,"ny=i"=>\$ny,"nz=i"=>\$nz,\
-  "xWidth=f"=>\$xWidth,"yWidth=f"=>\$yWidth,"zWidth=f"=>\$zWidth,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc );
+  "rampTime=f"=>\$rampTime,"nxBox=i"=>\$nxBox,"nyBox=i"=>\$nyBox,"nzBox=i"=>\$nzBox,\
+  "xWidth=f"=>\$xWidth,"yWidth=f"=>\$yWidth,"zWidth=f"=>\$zWidth,"xc=f"=>\$xc,"yc=f"=>\$yc,"zc=f"=>\$zc,\
+  "xSep=f"=>\$xSep,"ySep=f"=>\$ySep,"zSep=f"=>\$zSep,"materialFile=s"=>\$materialFile );
 # -------------------------------------------------------------------------------------------------
+# GetOptions( "yb=f"=>\$yb ); 
+# printf(" baScat: ya=$ya yb=$yb\n");
+# pause
+#printf(" num mats = $#matFileArray+1\n");
+#printf(" matFileArray[0]=$matFileArray[0]\n");
+#printf(" matFileArray[1]=$matFileArray[1]\n");
+#pause
 #
 if( $ts eq "me" ){ $ts="modifiedEquationTimeStepping"; }
 if( $rbc eq "c" || $rbc eq "char" ){ $rbc="characteristic"; }
@@ -136,8 +152,12 @@ if( $a02[0] eq "" ){ @a02=(1,0,0,0); }
 if( $a12[0] eq "" ){ @a12=(0,0,0,0); }
 if( $b02[0] eq "" ){ @b02=(0,0,0,0); }
 if( $b12[0] eq "" ){ @b12=(0,0,0,0); }
+#
+# If $grid="ogen" then we build a grid on the fly
+$grid = ($grid eq "ogen") ? "ogen\n read command file\n $gridCmd" : $grid;
 # 
 $grid
+# pause
 #
 $method
 # time-stepping method
@@ -150,6 +170,8 @@ $dm
 #
 use super-grid absorbing layers $useSuperGrid 
 super-grid width $superGridWidth
+# printf("useSuperGrid = $useSuperGrid\n");
+# pause
 # 
 #-# Drude params 1 1 all (gamma,omegap,domain-name)
 #-if( $numBlocks eq 0 ){ $cmd="GDM params $a0 $a1 $b0 $b1 innerDomain (a0,a1,b0,b1,domain-name)\n"; }\
@@ -169,11 +191,11 @@ $cmd
 if( $checkErrors && $ic eq "pw" ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }
 $known
 $kxa= abs($kx);
-if( $kxa > 1. ){ $xb = int( $xb*$kxa +.5 )/$kxa; }  # we need to clip the plane wave on a period
-if( $kx < 0 ){ $xa=$xb; $xb=100.; }
-if( $leftBC eq "rbc" && $ic ne "gp" && $ic ne "gpw" ){ $cmd="initial condition bounding box $xa $xb $ya $yb $za $zb"; }else{ $cmd="#"; }
+if( $kxa > 1. ){ $bbxb = int( $bbxb*$kxa +.5 )/$kxa; }  # we need to clip the plane wave on a period
+if( $kx < 0 ){ $bbxa=$bbxb; $bbxb=100.; }
+if( $leftBC eq "rbc" && $ic ne "gp" && $ic ne "gpw" ){ $cmd="initial condition bounding box $bbxa $bbxb $bbya $bbyb $zabb $zbbb"; }else{ $cmd="#"; }
 $cmd
-# initial condition bounding box $xa $xb $ya $yb $za $zb
+# initial condition bounding box $bbxa $bbxb $bbya $bbyb $zabb $zbbb
 #  damp initial conditions at face (side,axis)=(0,1) of the box
 bounding box decay face 1 0 
 $betaBB=5.; # exponent in tanh function for smooth transition to zero outside the bounding box
@@ -240,8 +262,15 @@ GDM domain name: all
 number of polarization vectors: $npv[0]
 # -- specify material regions or material file
 $cmd="#"; 
-if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
+if( $materialFile ne "" ){ $cmd="include $materialFile"; }   # use materialFile values if provided 
 $cmd
+# printf(" dmfile[0]=$dmFile[0]\n");
+# pause
+#
+if( $matFile ne "" ){ $cmd="material file: $matFile"; }else{ $cmd="#"; }
+if( $materialFile ne "" ){ $cmd="material file: $dmFile[0]"; }   # use materialFile values if provided 
+$cmd
+#
 #
 $cmd="#"; 
 if( $numMatRegions>1 ){\

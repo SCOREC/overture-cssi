@@ -96,11 +96,46 @@ while( <FILE> )
 
   $line=$_;
 
-  # printf("conv.p: Input: line=[$line]\n");
-
   chop($line);
+  if( $debug > 0 ){ printf("conv.p: Input: line=[$line]\n"); }
 
   $line =~ s/\#.*//;   # remove comments on the end of lines
+
+  # Title can be found in an include file
+  if( $line =~ /^Include/ )
+  {
+    # --- Process Include file ----
+    $includeFile = $line;
+    $includeFile =~ s/^Include //; 
+    printf("conv.p: Include filefound, name=[$includeFile]\n");
+    open(IFILE,"$convDir/$includeFile") || die print "unable to open $convDir/$includeFile\n";
+    while( <IFILE> )
+    {
+      # concatenate continuation lines: 
+      while( /\\$/ )
+      {
+        # printf("***** continuation line found\n");
+        $cc = <IFILE>;
+        $cc =~ s/^[ ]*//; # remove leading blanks
+        chop($_); chop($_);
+        $_ = $_ . $cc;
+      }
+    
+      if( /^\#/ ){ next; }  # skip comments
+      $line=$_;
+      chop($line);
+      if( $debug > 0 ){ printf("conv.p: Input from include: line=[$line]\n"); }
+      if( $line =~ /;/ )
+      {  
+        if( $debug > 0 ){ printf(" send to the perl parser: line=[$line]\n"); }
+        eval($line);
+      }
+
+    }
+    close(IFILE);  
+    next;   
+  }
+
 
   # eval the command in the file. 
   if( $line =~ /;/ )

@@ -138,7 +138,33 @@ shortSolidDiskGrid:
 	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=32 -numGhost=3
 	$(ogen) -noplot io -prefix=shortSolidDiskGrid -order=4 -interp=e -xa=-0.75 -xb=0.75 -ya=-.75 -yb=.75 -outerBC=yPeriodic -factor=64 -numGhost=3
 
+# Two disks in a vertical configuration
+twoDiskGrid:
+	$(ogen) -noplot diskArrayGrid -prefix=twoDiskGrid -xa=-.75 -xb=.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=2 -dist=1.5 -order=2 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=twoDiskGrid -xa=-.75 -xb=.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=2 -dist=1.5 -order=2 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=twoDiskGrid -xa=-.75 -xb=.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=2 -dist=1.5 -order=4 -periodic=np -numGhost=3 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=twoDiskGrid -xa=-.75 -xb=.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=2 -dist=1.5 -order=4 -periodic=np -numGhost=3 -factor=4
 
+# Four disks in a 2 x 2 configuration
+fourDiskGrid:
+	$(ogen) -noplot diskArrayGrid -prefix=fourDiskGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=fourDiskGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=fourDiskGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=fourDiskGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=4
+
+# 16 disks:
+16DiskGrid:
+	$(ogen) -noplot diskArrayGrid -prefix=16DiskGrid -xa=-3.25 -xb=3.25 -ya=-3.0 -yb=3.0 -nCylx=4 -nCyly=4 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=16DiskGrid -xa=-3.25 -xb=3.25 -ya=-3.0 -yb=3.0 -nCylx=4 -nCyly=4 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=16DiskGrid -xa=-3.25 -xb=3.25 -ya=-3.0 -yb=3.0 -nCylx=4 -nCyly=4 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=16DiskGrid -xa=-3.25 -xb=3.25 -ya=-3.0 -yb=3.0 -nCylx=4 -nCyly=4 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=4
+
+# 64 disks:
+64DiskGrid:
+	$(ogen) -noplot diskArrayGrid -prefix=64DiskGrid -xa=-6.25 -xb=6.25 -ya=-6.0 -yb=6.0 -nCylx=8 -nCyly=8 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=64DiskGrid -xa=-6.25 -xb=6.25 -ya=-6.0 -yb=6.0 -nCylx=8 -nCyly=8 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=64DiskGrid -xa=-6.25 -xb=6.25 -ya=-6.0 -yb=6.0 -nCylx=8 -nCyly=8 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=64DiskGrid -xa=-6.25 -xb=6.25 -ya=-6.0 -yb=6.0 -nCylx=8 -nCyly=8 -deltaX=1.5 -deltaY=1.5 -order=4 -periodic=np -numGhost=3 -factor=4
 
 
 ellipse:
@@ -243,9 +269,11 @@ sphere:
 pillbox:
 	$(ogen) -noplot solidPillBoxGrid.cmd -interp=e -factor=4 
 
-
-ellipsoidGrids:
-	$(ogen) -noplot solidEllipsoidInABoxGrid -order=2 -per=npp -a=.375 -b=.4 -c=.5 -factor=4
+# NOTE: USE -overlapOption=maximize to avoid trouble with matching at interface: 
+# ellipsoid543: a=.5, b=.4, c=.3
+ellipsoid543Grid:
+	$(ogen) -noplot solidEllipsoidInABoxGrid -prefix=solidEllipsoid543Grid -overlapOption=maximize -order=2 -per=npp -a=.5 -b=.4 -c=.3 -factor=4
+	$(ogen) -noplot solidEllipsoidInABoxGrid -prefix=solidEllipsoid543Grid -overlapOption=maximize -order=2 -per=npp -a=.5 -b=.4 -c=.3 -factor=8
 
 
 

@@ -1323,7 +1323,6 @@
 !** Note: comment out these next lines to avoid compiling files while developing one version 
 
 !- 
-!- 
 !- ! --- GDM versions ---
 !- 
 !- ! --- MLA versions ---
@@ -1377,12 +1376,12 @@
 
       if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
           call interfaceMx2dOrder2r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
-      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-        ! -- GDM ---
-          call interfaceMxGDM2dOrder2r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
         ! --- MLA ---
           call interfaceMxMLA2dOrder2r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
+      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+        ! -- GDM ---
+          call interfaceMxGDM2dOrder2r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else 
         stop 9876
       end if                  
@@ -1391,12 +1390,12 @@
 
       if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
           call interfaceMx2dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
-      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-        ! -- GDM ---
-          call interfaceMxGDM2dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
         ! --- MLA ---
           call interfaceMxMLA2dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
+      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+        ! -- GDM ---
+          call interfaceMxGDM2dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else 
         stop 9876
       end if                  
@@ -1405,12 +1404,12 @@
 
       if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
           call interfaceMx2dOrder4r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
-      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-        ! -- GDM ---
-          call interfaceMxGDM2dOrder4r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
         ! --- MLA ---
           call interfaceMxMLA2dOrder4r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
+      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+        ! -- GDM ---
+          call interfaceMxGDM2dOrder4r( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else 
         stop 9876
       end if                  
@@ -1419,12 +1418,12 @@
 
       if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
           call interfaceMx2dOrder4c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
-      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-        ! -- GDM ---
-          call interfaceMxGDM2dOrder4c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
         ! --- MLA ---
           call interfaceMxMLA2dOrder4c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
+      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+        ! -- GDM ---
+          call interfaceMxGDM2dOrder4c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else 
         stop 9876
       end if                  
@@ -1433,12 +1432,12 @@
 
       if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
           call interfaceMx3dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
-      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-        ! -- GDM ---
-          call interfaceMxGDM3dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
         ! --- MLA ---
           call interfaceMxMLA3dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
+      else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+        ! -- GDM ---
+          call interfaceMxGDM3dOrder2c( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,gridIndexRange1, u1,u1n,u1m, wk1, mask1,rsxy1, xy1, p1,p1n,p1m, q1,q1n,q1m, boundaryCondition1, md1a,md1b,md2a,md2b,md3a,md3b,gridIndexRange2, u2,u2n,u2m, wk2, mask2,rsxy2, xy2, p2,p2n,p2m, q2,q2n,q2m, boundaryCondition2, ipar, rpar, aa2,aa4,aa8, ipvt2,ipvt4,ipvt8, ierr )
       else 
         stop 9876
       end if                  

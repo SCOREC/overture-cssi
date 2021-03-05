@@ -2217,18 +2217,20 @@ getErrors( int current, real t, real dt )
 	
 
 	}
-      
+
 	aString normName;
 	if( pNorm<1000 )
 	  sPrintF(normName,"l%i",pNorm);
 	else
 	  normName="max";
-
+        
+        const bool printErrors = radiusForCheckingErrors>0 && radiusForCheckingErrors<10.;
+        
 	for( int fileio=0; fileio<2; fileio++ )
 	{
 	  FILE *output = fileio==0 ? logFile : stdout;
 
-	  if( radiusForCheckingErrors>0 && radiusForCheckingErrors<10. )
+	  if( printErrors )
 	    fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
 		    t,dt,radiusForCheckingErrors,(const char*)normName);
 	  else
@@ -2237,13 +2239,27 @@ getErrors( int current, real t, real dt )
 	  for( int c=C.getBase(); c<=C.getBound(); c++ )
 	    fPrintF(output,"%8.2e,",maximumError(c));
 	  // fPrintF(output,"%10.4e,",maximumError(c));
-
-	  fPrintF(output,"], %s (u):[",(const char*)normName);
+          if( printErrors )
+  	    fPrintF(output,"], %s (u):[",(const char*)normName);
+          else
+  	    fPrintF(output," %s (u):[",(const char*)normName);
 
 	  for( int c=C.getBase(); c<=C.getBound(); c++ )
 	    fPrintF(output,"%8.2e,",solutionNorm(c));
 
 	  fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
+
+          if( dispersionModel != noDispersion )
+          {
+            fPrintF(output," P-norm by domain: [%8.2e",polarizationNorm(0));
+            for( int domain=1; domain<cg.numberOfDomains(); domain++ )
+            {
+              fPrintF(output,",%8.2e",polarizationNorm(domain));
+            }
+            fPrintF(output,"]\n");
+          }
+        
+          
 	}
       } // end for norm 
     }

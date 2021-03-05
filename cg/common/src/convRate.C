@@ -242,8 +242,8 @@ main(int argc, char *argv[])
             //    e(coarse)/e(fine)  
 	    if( grid==0 )
 	    {
-              fprintf(outputFile,"&      ");  // no factor for first entry
-              fprintf(stdout    ,"&      ");  // no factor for first entry
+              fprintf(outputFile,"&       ");  // no factor for first entry
+              fprintf(stdout    ,"&       ");  // no factor for first entry
 	    }
 	    else
 	    {

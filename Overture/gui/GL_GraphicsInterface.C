@@ -4692,7 +4692,7 @@ drawColouredSquares(const IntegerArray & numberList,   // AP changed to a refere
 #endif
   if( maxNum>1000 )
   {
-    cout << "GL_GraphicsInterface::drawColouredSquares: ERROR? max(numberList>1000, setting=1000 \n";
+    cout << "GL_GraphicsInterface::drawColouredSquares: ERROR? max(numberList)>1000, setting=1000 \n";
     maxNum=1000;
   }
 // translate in the display function instead!

@@ -100,7 +100,8 @@ $alphaP = ();
 @a02 = (); @a12=(); @b02=(); @b12=(); 
 $dmFile=""; # "SilverJCDispersionFits.txt"; 
 $lengthScale=1.e-7; # length-scale = 100 nm 
-$sphereRadius=1.; 
+$sphereRadius=1.;
+$tallCellRatioBound=1.25; 
 #
 $stageOption ="default";
 $useSosupDissipation=0; $sosupParameter=1.;  $sosupDissipationOption=1; $sosupDissipationFrequency=1;
@@ -125,7 +126,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"dissc=f"=>\$dissc,"
   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
    "dmFile=s"=>\$dmFile,"ii=i"=>\$interfaceIterations,"sphereRadius=f"=>\$sphereRadius,"ts=s"=>\$ts,\
    "matFile=s"=>\$matFile,"matFile2=s"=>\$matFile2,"solveForAllFields=i"=>\$solveForAllFields, "drOption=s"=>\$drOption,\
-   "numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile );
+   "numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,"tallCellRatioBound=f"=>\$tallCellRatioBound );
 # -------------------------------------------------------------------------------------------------
 if( $method eq "bamx" ){ $numMatRegions=2; }
 if( $method eq "bamx" && $cyl eq 0  ){ $solveForAllFields=1; $regionFile="sphereRegion.h"; $radius=1.; $ae=$radius; $be=$radius; $ce=$radius; }
@@ -261,6 +262,7 @@ scattering radius $rad
 kx,ky,kz $kx $ky $kz
 # 
 use new interface routines $useNewInterface
+tallCellRatioBound $tallCellRatioBound
 #
 bc: all=dirichlet
 # --

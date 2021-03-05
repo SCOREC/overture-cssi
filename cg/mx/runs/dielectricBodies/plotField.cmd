@@ -81,13 +81,19 @@ echo to terminal 0
 # L10 PML41  compared to long G8
 #  plotStuff plotField.cmd -show=ellL10G4PML41Order2vL20G8.show -name=ellL10pml41Order2 -tSave=10 -numPerTime=20 -numToSave=6 -field="Ey error"
 #
-#  plotStuff plotField.cmd -show=blockMatIsoGDM2G8.show -name=blockMatIsoGDM2G8 -solution=5
+#  plotStuff plotField.cmd -show=blockMatIsoGDM2G8.show -name=blockMatIsoGDM2G8Ey -solution=5
+# 
+#  plotStuff plotField.cmd -show=fourDiskEps4.show -name=fourDiskEps4SolutionEyt1p5 -solution=4
+#
+#  plotStuff plotField.cmd -show=16DisksEps4Eps8Eps6Eps3.show -name=16DisksEps4Eps8Eps6Eps3 -solution=8 -cmin=-.3 -cmax=.5
 #
 $show="ellipseG8.hdf"; $solution="-1"; $name="plot"; $field="Ey"; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
+$cmin=1; $cmax=-1; # min and max contour levels if cmax>cmin 
 # get command line arguments
 GetOptions( "show=s"=>\$show, "name=s"=>\$name, "solution=i"=>\$solution,"tSave=f"=>\$tSave,\
-      "numPerTime=i"=>\$numPerTime, "numToSave=i"=>\$numToSave,"field=s"=>\$field );
+      "numPerTime=i"=>\$numPerTime, "numToSave=i"=>\$numToSave,"field=s"=>\$field,\
+      "cmin=f"=>\$cmin,"cmax=f"=>\$cmax );
 #
 $show
 #
@@ -96,6 +102,8 @@ plot:$field
 contour
   plot contour lines (toggle)
   coarsening factor 1 (<0 : adaptive)
+  if( $cmin<$cmax ){ $cmd="min max $cmin $cmax"; }else{ $cmd="#"; }
+  $cmd
   # min max -1 1
  vertical scale factor 0.
 exit
@@ -105,9 +113,16 @@ hardcopy vertical resolution:0 2048
 hardcopy horizontal resolution:0 2048
 line width scale factor:0 3
 DISPLAY AXES:0 0
+DISPLAY LABELS:0 0
+DISPLAY COLOUR BAR:0 0
 #
 #
 solution: $solution
+$plotName = $name . ".ps";
+hardcopy file name:0 $plotName
+hardcopy save:0
+
+
 #
 contour
   plot contour lines (toggle)
