@@ -1073,12 +1073,12 @@ else if( updateSolution.eq.1 )then
           fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
         enddo
       end do
-    else
+    end if
+  else
       fe = 0.
       do iv=0,numberOfPolarizationVectors-1
         fpv(iv)=0.
       end do
-    end if
   end if
 #endMacro
 
@@ -1245,7 +1245,8 @@ else if( updateSolution.eq.1 )then
                                 - pnec(iv,na)*q0*e0tt
         enddo
       end do
-    else
+    end if
+  else
       fe = 0.
       lapfe = 0.
       fet  = 0.
@@ -1256,7 +1257,6 @@ else if( updateSolution.eq.1 )then
         fpttv(iv)=0.
         lapfpv(iv)=0.
       end do
-    end if
   end if
 #endMacro
 
@@ -1327,12 +1327,11 @@ else if( updateSolution.eq.1 )then
           fntv(na) = fntv(na) - peptc(na,iv)*e0t*p0t - peptc(na,iv)*e0*p0tt
         enddo
       enddo
-   
-   ! no forcing
-    else
+    end if
+  ! no forcing
+  else
       fnv(na)  = 0.
       fntv(na) = 0.
-    end if
   end if
 #endMacro
 
@@ -1431,13 +1430,14 @@ else if( updateSolution.eq.1 )then
         enddo
       enddo
    
-   ! no forcing
-    else
+   
+    end if
+  ! no forcing
+  else
       fnv(na)    = 0.
       fntv(na)   = 0.
       fnttv(na)  = 0.
       fntttv(na) = 0.
-    end if
   end if
 #endMacro
 

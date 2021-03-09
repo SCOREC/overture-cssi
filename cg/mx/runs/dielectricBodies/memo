@@ -1,10 +1,41 @@
 *****************************************
+******* Tues Mar 9, 2021
+
+---MULA RUNS FROM QING ---
+
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1  -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot dielectricBodies -g=shortSolidDiskGridYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-0.25 -xRightProbe=0.25 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot multiBodies -g=fourDiskGridnpe2.order4.ng3 -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot dielectricBodies -g=crossGride16.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+
+*****************************************
 ******* Wed Feb 9, 2021
 
 **NEW** mx/runs/common 
 **NEW** mxScript.cmd          <--- make this into a MASTER SCRIPT 
 **NEW**  getCommonOptions.h   <--- 
 **NEW**  setCommonOptions.h   <--- 
+
+
+*****************************************
+******* Tues Mar 8, 2021
+
+MULA RUNS FROM Qing: 
+
+
+cgmx -noplot dielectricBodies -g=diskInBoxYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1  -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot dielectricBodies -g=shortSolidDiskGridYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-0.25 -xRightProbe=0.25 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot multiBodies -g=fourDiskGridnpe2.order4.ng3 -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+cgmx -noplot dielectricBodies -g=crossGride16.order4.ng3.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+
 
 *****************************************
 ******* Thurs Mar 4, 2021

@@ -1,0 +1,36 @@
+# multilevelAtomic Material
+#
+name="mlaMat1";
+materialType="isotropic";
+dispersiveModel="GDM";
+nonlinearModel="multilevelAtomic";
+#
+units="MKS";
+omegaScale=299792458e+7;
+# 
+bianistropicK0=[2.,0.,0.,0.,0.,0., \
+                0.,1.,0.,0.,0.,0., \
+                0.,0.,1.,0.,0.,0., \
+                0.,0.,0.,1.,0.,0., \
+                0.,0.,0.,0.,1.,0., \
+                0.,0.,0.,0.,0.,1., ];
+# a0,a1,b0,b1 
+bianistropicPars11GDM2=[1.,0.,769.2308,64.0180, 1.,0.,710.8037,152.1820];		
+#bianistropicPars22GDM2=[1.,0.,1.,0.1, 1.,0.,1.,0.1];		
+#bianistropicPars33GDM2=[1.,0.,1.,0.1, 1.,0.,1.,0.1];		
+#
+numberOfPolarizationVectors=2;
+numberOfAtomicLevels=4;
+# polarizationNECoefficients[numberOfPolarizationVectors numberOfAtomicLevels]
+polarizationNECoefficients=[2.3418,    0.0,     0.0,  -2.3418, \
+                               0.0, 11.666,  -11.666,     0.0, ];
+# populationRelaxationCoefficients[numberOfAtomicLevels numberOfAtomicLevels]
+populationRelaxationCoefficients=[ 0.0,   0.0010542,            0.0,   0.000000012723, \
+                                  0.0,  -0.0010542,   0.0000014641,         0.0, \
+                                  0.0,         0.0,  -0.0000014641,   0.0012299, \
+                                  0.0,         0.0,            0.0,  -0.0012299, ];
+# populationRelaxationCoefficients[numberOfAtomicLevels numberOfPolarizationVectors]
+populationEPtCoefficients=[  -1801.421965974931,     0.0, \
+                                 0.0, -1873.997239424281, \
+                                 0.0,  1873.997239424281, \
+                              1801.421965974931,     0.0 ];

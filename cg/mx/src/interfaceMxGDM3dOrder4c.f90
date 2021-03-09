@@ -56,7 +56,7 @@
        integer side1,axis1,grid1,side2,axis2,grid2,gridType,orderOfAccuracy,orderOfExtrapolation,useForcing,ex,ey,ez,hx,hy,hz,useWhereMask,debug,solveForE,solveForH,axis1p1,axis1p2,axis2p1,axis2p2,nn,n1,n2,twilightZone
        real dx1(0:2),dr1(0:2),dx2(0:2),dr2(0:2)
        real dr1a(0:2),dr2a(0:2)
-       real t,ep,dt,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,omega
+       real t,ep,dt,dtsq,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,omega
        integer axisp1,axisp2,i1,i2,i3,is1,is2,is3,j1,j2,j3,js1,js2,js3,ks1,ks2,ks3,is,js,it,nit,k1,k2,k3
        integer interfaceOption,interfaceEquationsOption,initialized,forcingOption,numberOfIterations
        integer assignInterfaceValues,assignInterfaceGhostValues,setDivergenceAtInterfaces
@@ -95,6 +95,8 @@
        ! for new evaluation method:
        real u1x,u1y,u1z,u1xx,u1xy,u1yy,u1xz,u1yz,u1zz
        real u2x,u2y,u2z,u2xx,u2xy,u2yy,u2xz,u2yz,u2zz
+       real e1x,e1y,e1z,e1xx,e1xy,e1yy,e1xz,e1yz,e1zz,e1Lap
+       real e2x,e2y,e2z,e2xx,e2xy,e2yy,e2xz,e2yz,e2zz,e2Lap
        real v1x,v1y,v1z,v1xx,v1xy,v1yy,v1xz,v1yz,v1zz
        real v2x,v2y,v2z,v2xx,v2xy,v2yy,v2xz,v2yz,v2zz
        real w1x,w1y,w1z,w1xx,w1xy,w1yy,w1xz,w1yz,w1zz
@@ -155,7 +157,7 @@
        real uexxxx,uexxyy,ueyyyy,uexxzz,ueyyzz,uezzzz,ueLapSq
        real vexxxx,vexxyy,veyyyy,vexxzz,veyyzz,vezzzz,veLapSq
        real wexxxx,wexxyy,weyyyy,wexxzz,weyyzz,wezzzz,weLapSq
-       real weLaSqp,curlLapEex,curlLapEey,curlLapEez,nDotLapSq
+       real weLaSqp,curlLapEex,curlLapEey,curlLapEez,nDotLapSq,divLapEe
        real nDotUm,nDotUp,nDotU0
        integer kd1,kd2,kd3,kd4,kd5
        real bigValue
@@ -172,6 +174,10 @@
        ! Dispersion models
        integer noDispersion,drude,gdm
        parameter( noDispersion=0, drude=1, gdm=2 )
+       ! Nonlinear models
+       integer noNonlinearModel,multilevelAtomic
+       parameter( noNonlinearModel=0, multilevelAtomic=1 )
+       ! integer nonlinearModel
        ! forcing options
       ! forcingOptions -- these should match ForcingEnum in Maxwell.h 
       integer noForcing,magneticSinusoidalPointSource,gaussianSource,twilightZoneForcing,	gaussianChargeSource, userDefinedForcingOption
@@ -242,8 +248,9 @@
        real nDotPevttLSum2,nDotPevttttSum2
        integer ismooth,nsmooth
        real eqnCoeff
-       real evn,pvn
-       real alpha,d4,LP,LPm
+       real evn,pvn,evec(0:2),pvec(0:2,0:maxNumberOfPolarizationVectors-1)
+       real ptv(0:2,0:maxNumberOfPolarizationVectors-1),pttv(0:2,0:maxNumberOfPolarizationVectors-1),ptttv(0:2,0:maxNumberOfPolarizationVectors-1),pttttv(0:2,0:maxNumberOfPolarizationVectors-1)
+       real alpha,d4,LPn,LP,LPm
        real LE(0:2)
        real LE1(0:2),LE1m(0:2),LLE1(0:2), LEx1(0:2),LEy1(0:2),LEz1(0:2)
        real LE2(0:2),LE2m(0:2),LLE2(0:2), LEx2(0:2),LEy2(0:2),LEz2(0:2) 
@@ -255,6 +262,8 @@
        real fPtt2(0:2,0:maxNumberOfPolarizationVectors-1)
        real pevtt1(0:2,0:maxNumberOfPolarizationVectors-1)
        real pevtt2(0:2,0:maxNumberOfPolarizationVectors-1)
+       real pevttL1(0:2,0:maxNumberOfPolarizationVectors-1)
+       real pevttL2(0:2,0:maxNumberOfPolarizationVectors-1)
        real pevttx1(0:2,0:maxNumberOfPolarizationVectors-1),pevtty1(0:2,0:maxNumberOfPolarizationVectors-1),pevttz1(0:2,0:maxNumberOfPolarizationVectors-1)
        real pevttx2(0:2,0:maxNumberOfPolarizationVectors-1),pevtty2(0:2,0:maxNumberOfPolarizationVectors-1),pevttz2(0:2,0:maxNumberOfPolarizationVectors-1)
        real pevttSum1(0:2),pevttxSum1(0:2),pevttySum1(0:2),pevttzSum1(0:2)
@@ -299,6 +308,27 @@
        real f0(0:11),delta
        ! ----- multilevel atomic model -----
        integer useNonlinearModel
+       integer nonlinearModel1,numberOfAtomicLevels1,maxPar1,numPolar1
+       integer nonlinearModel2,numberOfAtomicLevels2,maxPar2,numPolar2
+       integer na,nce
+       real q0,q0t,q0tt,q0ttt,q0tttt,q0xx,q0yy,q0zz,q0x,q0y,q0z
+       real pnec1,prc1,peptc1
+       real pnec2,prc2,peptc2
+       integer maxPar
+       parameter( maxPar=20 )
+       real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
+       real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
+       real fnv(0:maxPar-1),fnv1(0:maxPar-1),fnv2(0:maxPar-1)
+       real fntv(0:maxPar-1),fntv1(0:maxPar-1),fntv2(0:maxPar-1)
+       real fnttv(0:maxPar-1),fnttv1(0:maxPar-1),fnttv2(0:maxPar-1)
+       real fntttv(0:maxPar-1),fntttv1(0:maxPar-1),fntttv2(0:maxPar-1)
+       real qv(0:maxPar-1),qvn(0:maxPar-1),qvm(0:maxPar-1)
+       real qt(0:maxPar-1),qtt(0:maxPar-1),qttt(0:maxPar-1),qtttt(0:maxPar-1)
+       real qex(0:maxPar-1),qey(0:maxPar-1),qez(0:maxPar-1),qeLap(0:maxPar-1)
+       real q1x,q1y,q1z,q1Lap,q1xx,q1yy,q1zz,q1xy,q1xz,q1yz
+       real q2x,q2y,q2z,q2Lap,q2xx,q2yy,q2zz,q2xy,q2xz,q2yz
+       real qvx,qvy,qvz,qvLap
+       real evx0,evy0,evz0,pv0,ev0,evLap
        integer internalGhostBC,numGhost2,numParallelGhost
        !...................start statement functions
        ! .......statement functions for GDM parameters
@@ -310,10 +340,24 @@
        a1v2(jv) = gdmPar2(1,jv)
        b0v2(jv) = gdmPar2(2,jv)
        b1v2(jv) = gdmPar2(3,jv)
+       ! ..... statement functions for multilevel atomic model
+       ! pnec  = polarizationNECoefficients
+       ! prc   = populationRelaxationCoefficients
+       ! peptc = populationEPtCoefficients
+       pnec1(m1,m2)  = nlPar1(m1,m2,0)
+       prc1(m1,m2)   = nlPar1(m1,m2,1)
+       peptc1(m1,m2) = nlPar1(m1,m2,2)
+       pnec2(m1,m2)  = nlPar2(m1,m2,0)
+       prc2(m1,m2)   = nlPar2(m1,m2,1)
+       peptc2(m1,m2) = nlPar2(m1,m2,2)
        integer kd,m,n
        real t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257,t258,t259,t260,t261,t262,t263,t264,t265,t266,t267,t268,t269,t270,t271,t272,t273,t274,t275,t276,t277,t278,t279,t280,t281,t282,t283,t284,t285,t286,t287,t288,t289,t290,t291,t292,t293,t294,t295,t296,t297,t298,t299,t300,t301,t302,t303,t304,t305,t306,t307,t308,t309,t310,t311,t312,t313,t314,t315,t316,t317,t318,t319,t320,t321,t322,t323,t324,t325,t326,t327,t328,t329,t330,t331,t332,t333,t334,t335,t336,t337,t338,t339,t340,t341,t342,t343,t344,t345,t346,t347,t348,t349,t350,t351,t352,t353,t354,t355,t356,t357,t358,t359,t360,t361,t362,t363,t364,t365,t366,t367,t368,t369,t370,t371,t372,t373,t374,t375,t376,t377,t378,t379,t380,t381,t382,t383,t384,t385,t386,t387,t388,t389,t390,t391,t392,t393,t394,t395,t396,t397,t398,t399,t400,t401,t402,t403,t404,t405,t406,t407,t408,t409,t410,t411,t412,t413,t414,t415,t416,t417,t418,t419,t420,t421,t422,t423,t424,t425,t426,t427,t428,t429,t430,t431,t432,t433,t434,t435,t436,t437,t438,t439,t440,t441,t442,t443,t444,t445,t446,t447,t448,t449,t450,t451,t452,t453,t454,t455,t456,t457,t458,t459,t460,t461,t462,t463,t464,t465,t466,t467,t468,t469,t470,t471,t472,t473,t474,t475,t476,t477,t478,t479,t480,t481,t482,t483,t484,t485,t486,t487,t488,t489,t490,t491,t492,t493,t494,t495,t496,t497,t498,t499,t500,t501,t502,t503,t504,t505,t506,t507,t508,t509,t510,t511,t512,t513,t514,t515,t516,t517,t518,t519,t520,t521,t522,t523,t524,t525,t526,t527,t528,t529,t530,t531,t532,t533,t534,t535,t536,t537,t538,t539,t540,t541,t542,t543,t544,t545,t546,t547,t548,t549,t550,t551,t552,t553,t554,t555,t556,t557,t558,t559,t560,t561,t562,t563,t564,t565,t566,t567,t568,t569,t570,t571,t572,t573,t574,t575,t576,t577,t578,t579,t580,t581,t582,t583,t584,t585,t586,t587,t588,t589,t590,t591,t592,t593,t594,t595,t596,t597,t598,t599,t600,t601,t602,t603,t604,t605,t606,t607,t608,t609,t610,t611,t612,t613,t614,t615,t616,t617,t618,t619,t620,t621,t622,t623,t624,t625,t626,t627,t628,t629,t630,t631,t632,t633,t634,t635,t636,t637,t638,t639,t640,t641,t642,t643,t644,t645,t646,t647,t648,t649,t650,t651,t652,t653,t654,t655,t656,t657,t658,t659,t660,t661,t662,t663,t664,t665,t666,t667,t668,t669,t670,t671,t672,t673,t674,t675,t676,t677,t678,t679,t680,t681,t682,t683,t684,t685,t686,t687,t688,t689,t690,t691,t692,t693,t694,t695,t696,t697,t698,t699,t700,t701,t702,t703,t704,t705,t706,t707,t708,t709,t710,t711,t712,t713,t714,t715,t716,t717,t718,t719,t720,t721,t722,t723,t724,t725,t726,t727,t728,t729,t730,t731,t732,t733,t734,t735,t736,t737,t738,t739,t740,t741,t742,t743,t744,t745,t746,t747,t748,t749,t750,t751,t752,t753,t754,t755,t756,t757,t758,t759,t760,t761,t762,t763,t764,t765,t766,t767,t768,t769,t770,t771,t772,t773,t774,t775,t776,t777,t778,t779,t780,t781,t782,t783,t784,t785,t786,t787,t788,t789,t790,t791,t792,t793,t794,t795,t796,t797,t798,t799,t800,t801,t802,t803,t804,t805,t806,t807,t808,t809,t810,t811,t812,t813,t814,t815,t816,t817,t818,t819,t820,t821,t822,t823,t824,t825,t826,t827,t828,t829,t830,t831,t832,t833,t834,t835,t836,t837,t838,t839,t840,t841,t842,t843,t844,t845,t846,t847,t848,t849,t850,t851,t852,t853,t854,t855,t856,t857,t858,t859,t860,t861,t862,t863,t864,t865,t866,t867,t868,t869,t870,t871,t872,t873,t874,t875,t876,t877,t878,t879,t880,t881,t882,t883,t884,t885,t886,t887,t888,t889,t890,t891,t892,t893,t894,t895,t896,t897,t898,t899,t900,t901,t902,t903,t904,t905,t906,t907,t908,t909,t910,t911,t912,t913,t914,t915,t916,t917,t918,t919,t920,t921,t922,t923,t924,t925,t926,t927,t928,t929,t930,t931,t932,t933,t934,t935,t936,t937,t938,t939,t940,t941,t942,t943,t944,t945,t946,t947,t948,t949,t950,t951,t952,t953,t954,t955,t956,t957,t958,t959,t960,t961,t962,t963,t964,t965,t966,t967,t968,t969,t970,t971,t972,t973,t974,t975,t976,t977,t978,t979,t980,t981,t982,t983,t984,t985,t986,t987,t988,t989,t990,t991,t992,t993,t994,t995,t996,t997,t998,t999,t1000,t1001,t1002,t1003,t1004,t1005,t1006,t1007,t1008,t1009,t1010,t1011,t1012,t1013,t1014,t1015,t1016,t1017,t1018,t1019,t1020,t1021,t1022,t1023,t1024,t1025,t1026,t1027,t1028,t1029,t1030,t1031,t1032,t1033,t1034,t1035,t1036,t1037,t1038,t1039,t1040,t1041,t1042,t1043,t1044,t1045,t1046,t1047,t1048,t1049,t1050,t1051,t1052,t1053,t1054,t1055,t1056,t1057,t1058,t1059,t1060,t1061,t1062,t1063,t1064,t1065,t1066,t1067,t1068,t1069,t1070,t1071,t1072,t1073,t1074,t1075,t1076,t1077,t1078,t1079,t1080,t1081,t1082,t1083,t1084,t1085,t1086,t1087,t1088,t1089,t1090,t1091,t1092,t1093,t1094,t1095,t1096,t1097,t1098,t1099,t1100,t1101,t1102,t1103,t1104,t1105,t1106,t1107,t1108,t1109,t1110,t1111,t1112,t1113,t1114,t1115,t1116,t1117,t1118,t1119,t1120,t1121,t1122,t1123,t1124,t1125,t1126,t1127,t1128,t1129,t1130,t1131,t1132,t1133,t1134,t1135,t1136,t1137,t1138,t1139,t1140,t1141,t1142,t1143,t1144,t1145,t1146,t1147,t1148,t1149,t1150,t1151,t1152,t1153,t1154,t1155,t1156,t1157,t1158,t1159,t1160,t1161,t1162,t1163,t1164,t1165,t1166,t1167,t1168,t1169,t1170,t1171,t1172,t1173,t1174,t1175,t1176,t1177,t1178,t1179,t1180,t1181,t1182,t1183,t1184,t1185,t1186,t1187,t1188,t1189,t1190,t1191,t1192,t1193,t1194,t1195,t1196,t1197,t1198,t1199,t1200,t1201,t1202,t1203,t1204,t1205,t1206,t1207,t1208,t1209,t1210,t1211,t1212,t1213,t1214,t1215,t1216,t1217,t1218,t1219,t1220,t1221,t1222,t1223,t1224,t1225,t1226,t1227,t1228,t1229,t1230,t1231,t1232,t1233,t1234,t1235,t1236,t1237,t1238,t1239,t1240,t1241,t1242,t1243,t1244,t1245,t1246,t1247,t1248,t1249,t1250,t1251,t1252,t1253,t1254,t1255,t1256,t1257,t1258,t1259,t1260,t1261,t1262,t1263,t1264,t1265,t1266,t1267,t1268,t1269,t1270,t1271,t1272,t1273,t1274,t1275,t1276,t1277,t1278,t1279,t1280,t1281,t1282,t1283,t1284,t1285,t1286,t1287,t1288,t1289,t1290,t1291,t1292,t1293,t1294,t1295,t1296,t1297,t1298,t1299,t1300,t1301,t1302,t1303,t1304,t1305,t1306,t1307,t1308,t1309,t1310,t1311,t1312,t1313,t1314,t1315,t1316,t1317,t1318,t1319,t1320,t1321,t1322,t1323,t1324,t1325,t1326,t1327,t1328,t1329,t1330,t1331,t1332,t1333,t1334,t1335,t1336,t1337,t1338,t1339,t1340,t1341,t1342,t1343,t1344,t1345,t1346,t1347,t1348,t1349,t1350,t1351,t1352,t1353,t1354,t1355,t1356,t1357,t1358,t1359,t1360,t1361,t1362,t1363,t1364,t1365,t1366,t1367,t1368,t1369,t1370,t1371,t1372,t1373,t1374,t1375,t1376,t1377,t1378,t1379,t1380,t1381,t1382,t1383,t1384,t1385,t1386,t1387,t1388,t1389,t1390,t1391,t1392,t1393,t1394,t1395,t1396,t1397,t1398,t1399,t1400,t1401,t1402,t1403,t1404,t1405,t1406,t1407,t1408,t1409,t1410,t1411,t1412,t1413,t1414,t1415,t1416,t1417,t1418,t1419,t1420,t1421,t1422,t1423,t1424,t1425,t1426,t1427,t1428,t1429,t1430,t1431,t1432,t1433,t1434,t1435,t1436,t1437,t1438,t1439,t1440,t1441,t1442,t1443,t1444,t1445,t1446,t1447,t1448,t1449,t1450,t1451,t1452,t1453,t1454,t1455,t1456,t1457,t1458,t1459,t1460,t1461,t1462,t1463,t1464,t1465,t1466,t1467,t1468,t1469,t1470,t1471,t1472,t1473,t1474,t1475,t1476,t1477,t1478,t1479,t1480,t1481,t1482,t1483,t1484,t1485,t1486,t1487,t1488,t1489,t1490,t1491,t1492,t1493,t1494,t1495,t1496,t1497,t1498,t1499,t1500,t1501,t1502,t1503,t1504,t1505,t1506,t1507,t1508,t1509,t1510,t1511,t1512,t1513,t1514,t1515,t1516,t1517,t1518,t1519,t1520,t1521,t1522,t1523,t1524,t1525,t1526,t1527,t1528,t1529,t1530,t1531,t1532,t1533,t1534,t1535,t1536,t1537,t1538,t1539,t1540,t1541,t1542,t1543,t1544,t1545,t1546,t1547,t1548,t1549,t1550,t1551,t1552,t1553,t1554,t1555,t1556,t1557,t1558,t1559,t1560,t1561,t1562,t1563,t1564,t1565,t1566,t1567,t1568,t1569,t1570,t1571,t1572,t1573,t1574,t1575,t1576,t1577,t1578,t1579,t1580,t1581,t1582,t1583,t1584,t1585,t1586,t1587,t1588,t1589,t1590,t1591,t1592,t1593,t1594,t1595,t1596,t1597,t1598,t1599,t1600,t1601,t1602,t1603,t1604,t1605,t1606,t1607,t1608,t1609,t1610,t1611,t1612,t1613,t1614,t1615,t1616,t1617,t1618,t1619,t1620,t1621,t1622,t1623,t1624,t1625,t1626,t1627,t1628,t1629,t1630,t1631,t1632,t1633,t1634,t1635,t1636,t1637,t1638,t1639,t1640,t1641,t1642,t1643,t1644,t1645,t1646,t1647,t1648,t1649,t1650,t1651,t1652,t1653,t1654,t1655,t1656,t1657,t1658,t1659,t1660,t1661,t1662,t1663,t1664,t1665,t1666,t1667,t1668,t1669,t1670,t1671,t1672,t1673,t1674,t1675,t1676,t1677,t1678,t1679,t1680,t1681,t1682,t1683,t1684,t1685,t1686,t1687,t1688,t1689,t1690,t1691,t1692,t1693,t1694,t1695,t1696,t1697,t1698,t1699,t1700,t1701,t1702,t1703,t1704,t1705,t1706,t1707,t1708,t1709,t1710,t1711,t1712,t1713,t1714,t1715,t1716,t1717,t1718,t1719,t1720,t1721,t1722,t1723,t1724,t1725,t1726,t1727,t1728,t1729,t1730,t1731,t1732,t1733,t1734,t1735,t1736,t1737,t1738,t1739,t1740,t1741,t1742,t1743,t1744,t1745,t1746,t1747,t1748,t1749,t1750,t1751,t1752,t1753,t1754,t1755,t1756,t1757,t1758,t1759,t1760,t1761,t1762,t1763,t1764,t1765,t1766,t1767,t1768,t1769,t1770,t1771,t1772,t1773,t1774,t1775,t1776,t1777,t1778,t1779,t1780,t1781,t1782,t1783,t1784,t1785,t1786,t1787,t1788,t1789,t1790,t1791,t1792,t1793,t1794,t1795,t1796,t1797,t1798,t1799,t1800,t1801,t1802,t1803,t1804,t1805,t1806,t1807,t1808,t1809,t1810,t1811,t1812,t1813,t1814,t1815,t1816,t1817,t1818,t1819,t1820,t1821,t1822,t1823,t1824,t1825,t1826,t1827,t1828,t1829,t1830,t1831,t1832,t1833,t1834,t1835,t1836,t1837,t1838,t1839,t1840,t1841,t1842,t1843,t1844,t1845,t1846,t1847,t1848,t1849,t1850,t1851,t1852,t1853,t1854,t1855,t1856,t1857,t1858,t1859,t1860,t1861,t1862,t1863,t1864,t1865,t1866,t1867,t1868,t1869,t1870,t1871,t1872,t1873,t1874,t1875,t1876,t1877,t1878,t1879,t1880,t1881,t1882,t1883,t1884,t1885,t1886,t1887,t1888,t1889,t1890,t1891,t1892,t1893,t1894,t1895,t1896,t1897,t1898,t1899,t1900,t1901,t1902,t1903,t1904,t1905,t1906,t1907,t1908,t1909,t1910,t1911,t1912,t1913,t1914,t1915,t1916,t1917,t1918,t1919,t1920,t1921,t1922,t1923,t1924,t1925,t1926,t1927,t1928,t1929,t1930,t1931,t1932,t1933,t1934,t1935,t1936,t1937,t1938,t1939,t1940,t1941,t1942,t1943,t1944,t1945,t1946,t1947,t1948,t1949,t1950,t1951,t1952,t1953,t1954,t1955,t1956,t1957,t1958,t1959,t1960,t1961,t1962,t1963,t1964,t1965,t1966,t1967,t1968,t1969,t1970,t1971,t1972,t1973,t1974,t1975,t1976,t1977,t1978,t1979,t1980,t1981,t1982,t1983,t1984,t1985,t1986,t1987,t1988,t1989,t1990,t1991,t1992,t1993,t1994,t1995,t1996,t1997,t1998,t1999,t2000,t2001,t2002,t2003,t2004,t2005,t2006,t2007,t2008,t2009,t2010,t2011,t2012,t2013,t2014,t2015,t2016,t2017,t2018,t2019,t2020,t2021,t2022,t2023,t2024,t2025,t2026,t2027,t2028,t2029,t2030,t2031,t2032,t2033,t2034,t2035,t2036,t2037,t2038,t2039,t2040,t2041,t2042,t2043,t2044,t2045,t2046,t2047,t2048,t2049,t2050,t2051,t2052,t2053,t2054,t2055,t2056,t2057,t2058,t2059,t2060,t2061,t2062,t2063,t2064,t2065,t2066,t2067,t2068,t2069,t2070,t2071,t2072,t2073,t2074,t2075,t2076,t2077,t2078,t2079,t2080,t2081,t2082,t2083,t2084,t2085,t2086,t2087,t2088,t2089,t2090,t2091,t2092,t2093,t2094,t2095,t2096,t2097,t2098,t2099,t2100,t2101,t2102,t2103,t2104,t2105,t2106,t2107,t2108,t2109,t2110,t2111,t2112,t2113,t2114,t2115,t2116,t2117,t2118,t2119,t2120,t2121,t2122,t2123,t2124,t2125,t2126,t2127,t2128,t2129,t2130,t2131,t2132,t2133,t2134,t2135,t2136,t2137,t2138,t2139,t2140,t2141,t2142,t2143,t2144,t2145,t2146,t2147,t2148,t2149,t2150,t2151,t2152,t2153,t2154,t2155,t2156,t2157,t2158,t2159,t2160,t2161,t2162,t2163,t2164,t2165,t2166,t2167,t2168,t2169,t2170,t2171,t2172,t2173,t2174,t2175,t2176,t2177,t2178,t2179,t2180,t2181,t2182,t2183,t2184,t2185,t2186,t2187,t2188,t2189,t2190,t2191,t2192,t2193,t2194,t2195,t2196,t2197,t2198,t2199,t2200,t2201,t2202,t2203,t2204,t2205,t2206,t2207,t2208,t2209,t2210,t2211,t2212,t2213,t2214,t2215,t2216,t2217,t2218,t2219,t2220,t2221,t2222,t2223,t2224,t2225,t2226,t2227,t2228,t2229,t2230,t2231,t2232,t2233,t2234,t2235,t2236,t2237,t2238,t2239,t2240,t2241,t2242,t2243,t2244,t2245,t2246,t2247,t2248,t2249,t2250,t2251,t2252,t2253,t2254,t2255,t2256,t2257,t2258,t2259,t2260,t2261,t2262,t2263,t2264,t2265,t2266,t2267,t2268,t2269,t2270,t2271,t2272,t2273,t2274,t2275,t2276,t2277,t2278,t2279,t2280,t2281,t2282,t2283,t2284,t2285,t2286,t2287,t2288,t2289,t2290,t2291,t2292,t2293,t2294,t2295,t2296,t2297,t2298,t2299,t2300,t2301,t2302,t2303,t2304,t2305,t2306,t2307,t2308,t2309,t2310,t2311,t2312,t2313,t2314,t2315,t2316,t2317,t2318,t2319,t2320,t2321,t2322,t2323,t2324,t2325,t2326,t2327,t2328,t2329,t2330,t2331,t2332,t2333,t2334,t2335,t2336,t2337,t2338,t2339,t2340,t2341,t2342,t2343,t2344,t2345,t2346,t2347,t2348,t2349,t2350,t2351,t2352,t2353,t2354,t2355,t2356,t2357,t2358,t2359,t2360,t2361,t2362,t2363,t2364,t2365,t2366,t2367,t2368,t2369,t2370,t2371,t2372,t2373,t2374,t2375,t2376,t2377,t2378,t2379,t2380,t2381,t2382,t2383,t2384,t2385,t2386,t2387,t2388,t2389,t2390,t2391,t2392,t2393,t2394,t2395,t2396,t2397,t2398,t2399,t2400,t2401,t2402,t2403,t2404,t2405,t2406,t2407,t2408,t2409,t2410,t2411,t2412,t2413,t2414,t2415,t2416,t2417,t2418,t2419,t2420,t2421,t2422,t2423,t2424,t2425,t2426,t2427,t2428,t2429,t2430,t2431,t2432,t2433,t2434,t2435,t2436,t2437,t2438,t2439,t2440,t2441,t2442,t2443,t2444,t2445,t2446,t2447,t2448,t2449,t2450,t2451,t2452,t2453,t2454,t2455,t2456,t2457,t2458,t2459,t2460,t2461,t2462,t2463,t2464,t2465,t2466,t2467,t2468,t2469,t2470,t2471,t2472,t2473,t2474,t2475,t2476,t2477,t2478,t2479,t2480,t2481,t2482,t2483,t2484,t2485,t2486,t2487,t2488,t2489,t2490,t2491,t2492,t2493,t2494,t2495,t2496,t2497,t2498,t2499,t2500,t2501,t2502,t2503,t2504,t2505,t2506,t2507,t2508,t2509,t2510,t2511,t2512,t2513,t2514,t2515,t2516,t2517,t2518,t2519,t2520,t2521,t2522,t2523,t2524,t2525,t2526,t2527,t2528,t2529,t2530,t2531,t2532,t2533,t2534,t2535,t2536,t2537,t2538,t2539,t2540,t2541,t2542,t2543,t2544,t2545,t2546,t2547,t2548,t2549,t2550,t2551,t2552,t2553,t2554,t2555,t2556,t2557,t2558,t2559,t2560,t2561,t2562,t2563,t2564,t2565,t2566,t2567,t2568,t2569,t2570,t2571,t2572,t2573,t2574,t2575,t2576,t2577,t2578,t2579,t2580,t2581,t2582,t2583,t2584,t2585,t2586,t2587,t2588,t2589,t2590,t2591,t2592,t2593,t2594,t2595,t2596,t2597,t2598,t2599,t2600,t2601,t2602,t2603,t2604,t2605,t2606,t2607,t2608,t2609,t2610,t2611,t2612,t2613,t2614,t2615,t2616,t2617,t2618,t2619,t2620,t2621,t2622,t2623,t2624,t2625,t2626,t2627,t2628,t2629,t2630,t2631,t2632,t2633,t2634,t2635,t2636,t2637,t2638,t2639,t2640,t2641,t2642,t2643,t2644,t2645,t2646,t2647,t2648,t2649,t2650,t2651,t2652,t2653,t2654,t2655,t2656,t2657,t2658,t2659,t2660,t2661,t2662,t2663,t2664,t2665,t2666,t2667,t2668,t2669,t2670,t2671,t2672,t2673,t2674,t2675,t2676,t2677,t2678,t2679,t2680,t2681,t2682,t2683,t2684,t2685,t2686,t2687,t2688,t2689,t2690,t2691,t2692,t2693,t2694,t2695,t2696,t2697,t2698,t2699,t2700,t2701,t2702,t2703,t2704,t2705,t2706,t2707,t2708,t2709,t2710,t2711,t2712,t2713,t2714,t2715,t2716,t2717,t2718,t2719,t2720,t2721,t2722,t2723,t2724,t2725,t2726,t2727,t2728,t2729,t2730,t2731,t2732,t2733,t2734,t2735,t2736,t2737,t2738,t2739,t2740,t2741,t2742,t2743,t2744,t2745,t2746,t2747,t2748,t2749,t2750,t2751,t2752,t2753,t2754,t2755,t2756,t2757,t2758,t2759,t2760,t2761,t2762,t2763,t2764,t2765,t2766,t2767,t2768,t2769,t2770,t2771,t2772,t2773,t2774,t2775,t2776,t2777,t2778,t2779,t2780,t2781,t2782,t2783,t2784,t2785,t2786,t2787,t2788,t2789,t2790,t2791,t2792,t2793,t2794,t2795,t2796,t2797,t2798,t2799,t2800,t2801,t2802,t2803,t2804,t2805,t2806,t2807,t2808,t2809,t2810,t2811,t2812,t2813,t2814,t2815,t2816,t2817,t2818,t2819,t2820,t2821,t2822,t2823,t2824,t2825,t2826,t2827,t2828,t2829,t2830,t2831,t2832,t2833,t2834,t2835,t2836,t2837,t2838,t2839,t2840,t2841,t2842,t2843,t2844,t2845,t2846,t2847,t2848,t2849,t2850,t2851,t2852,t2853,t2854,t2855,t2856,t2857,t2858,t2859,t2860,t2861,t2862,t2863,t2864,t2865,t2866,t2867,t2868,t2869,t2870,t2871,t2872,t2873,t2874,t2875,t2876,t2877,t2878,t2879,t2880,t2881,t2882,t2883,t2884,t2885,t2886,t2887,t2888,t2889,t2890,t2891,t2892,t2893,t2894,t2895,t2896,t2897,t2898,t2899,t2900,t2901,t2902,t2903,t2904,t2905,t2906,t2907,t2908,t2909,t2910,t2911,t2912,t2913,t2914,t2915,t2916,t2917,t2918,t2919,t2920,t2921,t2922,t2923,t2924,t2925,t2926,t2927,t2928,t2929,t2930,t2931,t2932,t2933,t2934,t2935,t2936,t2937,t2938,t2939,t2940,t2941,t2942,t2943,t2944,t2945,t2946,t2947,t2948,t2949,t2950,t2951,t2952,t2953,t2954,t2955,t2956,t2957,t2958,t2959,t2960,t2961,t2962,t2963,t2964,t2965,t2966,t2967,t2968,t2969,t2970,t2971,t2972,t2973,t2974,t2975,t2976,t2977,t2978,t2979,t2980,t2981,t2982,t2983,t2984,t2985,t2986,t2987,t2988,t2989,t2990,t2991,t2992,t2993,t2994,t2995,t2996,t2997,t2998,t2999,t3000
        real uu1,uu1r,uu1s,uu1t,uu1rr,uu1rs,uu1ss,uu1rt,uu1st,uu1tt,uu1rrr,uu1rrs,uu1rss,uu1sss,uu1rrt,uu1rst,uu1sst,uu1rtt,uu1stt,uu1ttt,uu1rrrr,uu1rrrs,uu1rrss,uu1rsss,uu1ssss,uu1rrrt,uu1rrst,uu1rsst,uu1ssst,uu1rrtt,uu1rstt,uu1sstt,uu1rttt,uu1sttt,uu1tttt,uu1rrrrr,uu1rrrrs,uu1rrrss,uu1rrsss,uu1rssss,uu1sssss,uu1rrrrt,uu1rrrst,uu1rrsst,uu1rssst,uu1sssst,uu1rrrtt,uu1rrstt,uu1rsstt,uu1ssstt,uu1rrttt,uu1rsttt,uu1ssttt,uu1rtttt,uu1stttt,uu1ttttt,uu1rrrrrr,uu1rrrrrs,uu1rrrrss,uu1rrrsss,uu1rrssss,uu1rsssss,uu1ssssss,uu1rrrrrt,uu1rrrrst,uu1rrrsst,uu1rrssst,uu1rsssst,uu1ssssst,uu1rrrrtt,uu1rrrstt,uu1rrsstt,uu1rssstt,uu1sssstt,uu1rrrttt,uu1rrsttt,uu1rssttt,uu1sssttt,uu1rrtttt,uu1rstttt,uu1sstttt,uu1rttttt,uu1sttttt,uu1tttttt
        real uu2,uu2r,uu2s,uu2t,uu2rr,uu2rs,uu2ss,uu2rt,uu2st,uu2tt,uu2rrr,uu2rrs,uu2rss,uu2sss,uu2rrt,uu2rst,uu2sst,uu2rtt,uu2stt,uu2ttt,uu2rrrr,uu2rrrs,uu2rrss,uu2rsss,uu2ssss,uu2rrrt,uu2rrst,uu2rsst,uu2ssst,uu2rrtt,uu2rstt,uu2sstt,uu2rttt,uu2sttt,uu2tttt,uu2rrrrr,uu2rrrrs,uu2rrrss,uu2rrsss,uu2rssss,uu2sssss,uu2rrrrt,uu2rrrst,uu2rrsst,uu2rssst,uu2sssst,uu2rrrtt,uu2rrstt,uu2rsstt,uu2ssstt,uu2rrttt,uu2rsttt,uu2ssttt,uu2rtttt,uu2stttt,uu2ttttt,uu2rrrrrr,uu2rrrrrs,uu2rrrrss,uu2rrrsss,uu2rrssss,uu2rsssss,uu2ssssss,uu2rrrrrt,uu2rrrrst,uu2rrrsst,uu2rrssst,uu2rsssst,uu2ssssst,uu2rrrrtt,uu2rrrstt,uu2rrsstt,uu2rssstt,uu2sssstt,uu2rrrttt,uu2rrsttt,uu2rssttt,uu2sssttt,uu2rrtttt,uu2rstttt,uu2sstttt,uu2rttttt,uu2sttttt,uu2tttttt
+       real pp1,pp1r,pp1s,pp1t,pp1rr,pp1rs,pp1ss,pp1rt,pp1st,pp1tt,pp1rrr,pp1rrs,pp1rss,pp1sss,pp1rrt,pp1rst,pp1sst,pp1rtt,pp1stt,pp1ttt,pp1rrrr,pp1rrrs,pp1rrss,pp1rsss,pp1ssss,pp1rrrt,pp1rrst,pp1rsst,pp1ssst,pp1rrtt,pp1rstt,pp1sstt,pp1rttt,pp1sttt,pp1tttt,pp1rrrrr,pp1rrrrs,pp1rrrss,pp1rrsss,pp1rssss,pp1sssss,pp1rrrrt,pp1rrrst,pp1rrsst,pp1rssst,pp1sssst,pp1rrrtt,pp1rrstt,pp1rsstt,pp1ssstt,pp1rrttt,pp1rsttt,pp1ssttt,pp1rtttt,pp1stttt,pp1ttttt,pp1rrrrrr,pp1rrrrrs,pp1rrrrss,pp1rrrsss,pp1rrssss,pp1rsssss,pp1ssssss,pp1rrrrrt,pp1rrrrst,pp1rrrsst,pp1rrssst,pp1rsssst,pp1ssssst,pp1rrrrtt,pp1rrrstt,pp1rrsstt,pp1rssstt,pp1sssstt,pp1rrrttt,pp1rrsttt,pp1rssttt,pp1sssttt,pp1rrtttt,pp1rstttt,pp1sstttt,pp1rttttt,pp1sttttt,pp1tttttt
+       real pp2,pp2r,pp2s,pp2t,pp2rr,pp2rs,pp2ss,pp2rt,pp2st,pp2tt,pp2rrr,pp2rrs,pp2rss,pp2sss,pp2rrt,pp2rst,pp2sst,pp2rtt,pp2stt,pp2ttt,pp2rrrr,pp2rrrs,pp2rrss,pp2rsss,pp2ssss,pp2rrrt,pp2rrst,pp2rsst,pp2ssst,pp2rrtt,pp2rstt,pp2sstt,pp2rttt,pp2sttt,pp2tttt,pp2rrrrr,pp2rrrrs,pp2rrrss,pp2rrsss,pp2rssss,pp2sssss,pp2rrrrt,pp2rrrst,pp2rrsst,pp2rssst,pp2sssst,pp2rrrtt,pp2rrstt,pp2rsstt,pp2ssstt,pp2rrttt,pp2rsttt,pp2ssttt,pp2rtttt,pp2stttt,pp2ttttt,pp2rrrrrr,pp2rrrrrs,pp2rrrrss,pp2rrrsss,pp2rrssss,pp2rsssss,pp2ssssss,pp2rrrrrt,pp2rrrrst,pp2rrrsst,pp2rrssst,pp2rsssst,pp2ssssst,pp2rrrrtt,pp2rrrstt,pp2rrsstt,pp2rssstt,pp2sssstt,pp2rrrttt,pp2rrsttt,pp2rssttt,pp2sssttt,pp2rrtttt,pp2rstttt,pp2sstttt,pp2rttttt,pp2sttttt,pp2tttttt
+       real qq1,qq1r,qq1s,qq1t,qq1rr,qq1rs,qq1ss,qq1rt,qq1st,qq1tt,qq1rrr,qq1rrs,qq1rss,qq1sss,qq1rrt,qq1rst,qq1sst,qq1rtt,qq1stt,qq1ttt,qq1rrrr,qq1rrrs,qq1rrss,qq1rsss,qq1ssss,qq1rrrt,qq1rrst,qq1rsst,qq1ssst,qq1rrtt,qq1rstt,qq1sstt,qq1rttt,qq1sttt,qq1tttt,qq1rrrrr,qq1rrrrs,qq1rrrss,qq1rrsss,qq1rssss,qq1sssss,qq1rrrrt,qq1rrrst,qq1rrsst,qq1rssst,qq1sssst,qq1rrrtt,qq1rrstt,qq1rsstt,qq1ssstt,qq1rrttt,qq1rsttt,qq1ssttt,qq1rtttt,qq1stttt,qq1ttttt,qq1rrrrrr,qq1rrrrrs,qq1rrrrss,qq1rrrsss,qq1rrssss,qq1rsssss,qq1ssssss,qq1rrrrrt,qq1rrrrst,qq1rrrsst,qq1rrssst,qq1rsssst,qq1ssssst,qq1rrrrtt,qq1rrrstt,qq1rrsstt,qq1rssstt,qq1sssstt,qq1rrrttt,qq1rrsttt,qq1rssttt,qq1sssttt,qq1rrtttt,qq1rstttt,qq1sstttt,qq1rttttt,qq1sttttt,qq1tttttt
+       real qq2,qq2r,qq2s,qq2t,qq2rr,qq2rs,qq2ss,qq2rt,qq2st,qq2tt,qq2rrr,qq2rrs,qq2rss,qq2sss,qq2rrt,qq2rst,qq2sst,qq2rtt,qq2stt,qq2ttt,qq2rrrr,qq2rrrs,qq2rrss,qq2rsss,qq2ssss,qq2rrrt,qq2rrst,qq2rsst,qq2ssst,qq2rrtt,qq2rstt,qq2sstt,qq2rttt,qq2sttt,qq2tttt,qq2rrrrr,qq2rrrrs,qq2rrrss,qq2rrsss,qq2rssss,qq2sssss,qq2rrrrt,qq2rrrst,qq2rrsst,qq2rssst,qq2sssst,qq2rrrtt,qq2rrstt,qq2rsstt,qq2ssstt,qq2rrttt,qq2rsttt,qq2ssttt,qq2rtttt,qq2stttt,qq2ttttt,qq2rrrrrr,qq2rrrrrs,qq2rrrrss,qq2rrrsss,qq2rrssss,qq2rsssss,qq2ssssss,qq2rrrrrt,qq2rrrrst,qq2rrrsst,qq2rrssst,qq2rsssst,qq2ssssst,qq2rrrrtt,qq2rrrstt,qq2rrsstt,qq2rssstt,qq2sssstt,qq2rrrttt,qq2rrsttt,qq2rssttt,qq2sssttt,qq2rrtttt,qq2rstttt,qq2sstttt,qq2rttttt,qq2sttttt,qq2tttttt
        real vv1,vv1r,vv1s,vv1t,vv1rr,vv1rs,vv1ss,vv1rt,vv1st,vv1tt,vv1rrr,vv1rrs,vv1rss,vv1sss,vv1rrt,vv1rst,vv1sst,vv1rtt,vv1stt,vv1ttt,vv1rrrr,vv1rrrs,vv1rrss,vv1rsss,vv1ssss,vv1rrrt,vv1rrst,vv1rsst,vv1ssst,vv1rrtt,vv1rstt,vv1sstt,vv1rttt,vv1sttt,vv1tttt,vv1rrrrr,vv1rrrrs,vv1rrrss,vv1rrsss,vv1rssss,vv1sssss,vv1rrrrt,vv1rrrst,vv1rrsst,vv1rssst,vv1sssst,vv1rrrtt,vv1rrstt,vv1rsstt,vv1ssstt,vv1rrttt,vv1rsttt,vv1ssttt,vv1rtttt,vv1stttt,vv1ttttt,vv1rrrrrr,vv1rrrrrs,vv1rrrrss,vv1rrrsss,vv1rrssss,vv1rsssss,vv1ssssss,vv1rrrrrt,vv1rrrrst,vv1rrrsst,vv1rrssst,vv1rsssst,vv1ssssst,vv1rrrrtt,vv1rrrstt,vv1rrsstt,vv1rssstt,vv1sssstt,vv1rrrttt,vv1rrsttt,vv1rssttt,vv1sssttt,vv1rrtttt,vv1rstttt,vv1sstttt,vv1rttttt,vv1sttttt,vv1tttttt
        real vv2,vv2r,vv2s,vv2t,vv2rr,vv2rs,vv2ss,vv2rt,vv2st,vv2tt,vv2rrr,vv2rrs,vv2rss,vv2sss,vv2rrt,vv2rst,vv2sst,vv2rtt,vv2stt,vv2ttt,vv2rrrr,vv2rrrs,vv2rrss,vv2rsss,vv2ssss,vv2rrrt,vv2rrst,vv2rsst,vv2ssst,vv2rrtt,vv2rstt,vv2sstt,vv2rttt,vv2sttt,vv2tttt,vv2rrrrr,vv2rrrrs,vv2rrrss,vv2rrsss,vv2rssss,vv2sssss,vv2rrrrt,vv2rrrst,vv2rrsst,vv2rssst,vv2sssst,vv2rrrtt,vv2rrstt,vv2rsstt,vv2ssstt,vv2rrttt,vv2rsttt,vv2ssttt,vv2rtttt,vv2stttt,vv2ttttt,vv2rrrrrr,vv2rrrrrs,vv2rrrrss,vv2rrrsss,vv2rrssss,vv2rsssss,vv2ssssss,vv2rrrrrt,vv2rrrrst,vv2rrrsst,vv2rrssst,vv2rsssst,vv2ssssst,vv2rrrrtt,vv2rrrstt,vv2rrsstt,vv2rssstt,vv2sssstt,vv2rrrttt,vv2rrsttt,vv2rssttt,vv2sssttt,vv2rrtttt,vv2rstttt,vv2sstttt,vv2rttttt,vv2sttttt,vv2tttttt
        real ww1,ww1r,ww1s,ww1t,ww1rr,ww1rs,ww1ss,ww1rt,ww1st,ww1tt,ww1rrr,ww1rrs,ww1rss,ww1sss,ww1rrt,ww1rst,ww1sst,ww1rtt,ww1stt,ww1ttt,ww1rrrr,ww1rrrs,ww1rrss,ww1rsss,ww1ssss,ww1rrrt,ww1rrst,ww1rsst,ww1ssst,ww1rrtt,ww1rstt,ww1sstt,ww1rttt,ww1sttt,ww1tttt,ww1rrrrr,ww1rrrrs,ww1rrrss,ww1rrsss,ww1rssss,ww1sssss,ww1rrrrt,ww1rrrst,ww1rrsst,ww1rssst,ww1sssst,ww1rrrtt,ww1rrstt,ww1rsstt,ww1ssstt,ww1rrttt,ww1rsttt,ww1ssttt,ww1rtttt,ww1stttt,ww1ttttt,ww1rrrrrr,ww1rrrrrs,ww1rrrrss,ww1rrrsss,ww1rrssss,ww1rsssss,ww1ssssss,ww1rrrrrt,ww1rrrrst,ww1rrrsst,ww1rrssst,ww1rsssst,ww1ssssst,ww1rrrrtt,ww1rrrstt,ww1rrsstt,ww1rssstt,ww1sssstt,ww1rrrttt,ww1rrsttt,ww1rssttt,ww1sssttt,ww1rrtttt,ww1rstttt,ww1sstttt,ww1rttttt,ww1sttttt,ww1tttttt
@@ -406,8 +450,8 @@
        pxc                 = ipar(46)
        knownSolutionOption = ipar(47)
        useJacobiUpdate     = ipar(48)      
-       ! nonlinearModel1     = ipar(49)
-       ! nonlinearModel2     = ipar(50)
+       nonlinearModel1     = ipar(49)
+       nonlinearModel2     = ipar(50)
        numParallelGhost    = ipar(51)
        internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
        ! numberOfInterfaceIterationsUsed = ipar(43)  ! returned value 
@@ -473,6 +517,7 @@
        ! *wdh* Sept 5, 2016 absoluteErrorTolerance=1.e-10  ! fix me -- need a relative tol
        relativeErrorTolerance = rpar(24)
        absoluteErrorTolerance = rpar(25)
+       dtSq=dt**2
        debugFile=10
        if(  t.le. 1.5*dt .and. debug>0 )then
          write(*,'(" +++++++++cgmx interface3dOrder4 t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
@@ -507,6 +552,7 @@
          end if
        else
          numberOfPolarizationVectors1=0
+         alphaP1 = 0.
        end if
        if( dispersionModel2.ne.noDispersion )then
          dispersive=dispersive+1
@@ -525,7 +571,57 @@
          ! stop 1111
        else
          numberOfPolarizationVectors2=0
+         alphaP2 = 0.
        end if
+       useNonlinearModel=0
+       if( nonlinearModel1 .ne. noNonlinearModel )then
+         write(*,'("--interface3d-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
+         useNonlinearModel=1
+         call getMultilevelAtomicParameters( grid1, nlPar1, maxPar, maxPar, numPolar1, numberOfAtomicLevels1 )
+         if( numPolar1.ne.numberOfPolarizationVectors1 )then
+           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors1 does not match numPolar1 from nonlinear model!!")')
+           stop 8888
+         end if
+         write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
+         write(*,'("polarizationNECoefficients1:")')
+         do m1=0,numberOfPolarizationVectors1-1
+           write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+         end do 
+         write(*,'("populationRelaxationCoefficients1:")')
+         do m1=0,numberOfAtomicLevels1-1
+           write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+         end do 
+         write(*,'("populationEPtCoefficients1:")')
+         do m1=0,numberOfAtomicLevels1-1
+           write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
+         end do 
+       else
+         numberOfAtomicLevels1=0
+       end if 
+       if( nonlinearModel2 .ne. noNonlinearModel )then
+         useNonlinearModel=1
+         write(*,'("--interface3d-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
+         call getMultilevelAtomicParameters( grid2, nlPar2, maxPar, maxPar, numPolar2, numberOfAtomicLevels2 )
+         if( numPolar2.ne.numberOfPolarizationVectors2 )then
+           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors2 does not match numPolar2 from nonlinear model!!")')
+           stop 9999
+         end if
+         write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
+         write(*,'("polarizationNECoefficients2:")')
+         do m1=0,numberOfPolarizationVectors2-1
+           write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+         end do 
+         write(*,'("populationRelaxationCoefficients2:")')
+         do m1=0,numberOfAtomicLevels2-1
+           write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+         end do 
+         write(*,'("populationEPtCoefficients2:")')
+         do m1=0,numberOfAtomicLevels2-1
+           write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
+         end do 
+       else
+         numberOfAtomicLevels2 = 0
+       end if 
              do kd=0,nd-1
               dx112(kd) = 1./(2.*dx1(kd))
               dx122(kd) = 1./(dx1(kd)**2)

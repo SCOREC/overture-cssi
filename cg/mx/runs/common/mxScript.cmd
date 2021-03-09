@@ -5,18 +5,26 @@ echo to terminal 1
 #
 # Usage:
 #   
-#  cgmx [-noplot] mxScript -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> ...
-#                 -plotIntensity=[0|1] -diss=<>  -filter=[0|1] -debug=<num> -cons=[0/1] -varDiss=<0|1> ...
-#                 -rbc=[abcEM2|rbcNonLocal|abcPML] -leftBC=[rbc|planeWave] -method=[fd|Yee|sosup] 
-#                 -probeFileName=<s> -xLeftProbe=<f> -xRightProbe=<f> ...
-#                 -useSosupDissipation=[0|1] -dm=[none|gdm] 
+#  cgmx [-noplot] mxScript OPTIONS 
 #
-# Arguments:
-#  -kx= -ky= -kz= : integer wave number of the incident wave
-#  -dm : dispersion model
-#  -ic : initial condition, pw=plane-wave, gp=Gaussian-pulse
-# 
-# Examples: 
+# OPTIONS:
+#   -g=<name>
+#   -method=[fd|Yee|sosup] 
+#   -ic : initial condition, pw=plane-wave, gp=Gaussian-pulse
+#   -dm=[none|gdm] : dispersion model
+#   -tf=<tFinal> : final time 
+#   -tp=<tPlot>  : plot times 
+#   -kx=<num> -ky=<num> -kz=<num> : wave number used in incident field and for other purposes
+#   -bcCmds="b1" "b2" "bc2" ...   : array of bc commands
+#   -plotIntensity=[0|1]
+#   -diss=<>  -filter=[0|1]
+#   -debug=<num> -cons=[0/1]
+#   -varDiss=<0|1> ...
+#   -rbc=[abcEM2|rbcNonLocal|abcPML]
+#   -leftBC=[rbc|planeWave]
+#   -probeFileName=<s> -xLeftProbe=<f> -xRightProbe=<f> ...
+#   -useSosupDissipation=[0|1]
+#
 #
 #================================================================================================
 # 
@@ -26,6 +34,7 @@ $leftBC="rbc"; $bcBody="";
 #
 # ---- specify materials in a file: -----
 # 
+$materialFile="diskMaterials.h";
 $materialFile="diskMaterials.h";
 # number of bodies to set materials for:
 $numBodies=1;               
@@ -74,6 +83,8 @@ use new interface routines $useNewInterface
 #
 kx,ky,kz $kx $ky $kz
 #
+# ------- boundary conditions ----
+#
 # bc: all=dirichlet
 # bc: all=perfectElectricalConductor
 if( $rbc eq "pec" ){ $rbc="perfectElectricalConductor"; }
@@ -82,6 +93,12 @@ bc: all=$rbc
 if( $leftBC eq "planeWave" ){ $cmd="bc: $backGround(0,0)=planeWaveBoundaryCondition"; }else{ $cmd="#"; }
 $cmd 
 if( $bcBody eq "pec" ){ $cmd="bc: annulus=perfectElectricalConductor"; }else{ $cmd="#"; }
+$cmd
+#
+# User supplied BCs (array of string commands)
+$cmd="#"; for( $i=0; $i<= $#bcCmds; $i++ ){ $cmd .= "\n" . $bcCmds[$i]; } 
+# printf("cmd=$cmd\n");
+# pause
 $cmd
 # 
 # -- we need to subtract out the incident field on the "inflow" boundary before
@@ -93,7 +110,9 @@ adjust boundaries for incident field $adjustFields $backGround
 #
 # specify material properties for domains a file  (wdh: Feb 9, 2021)
 # 
-include $materialFile
+if( $materialFile ne "none" ){ $cmd="include $materialFile"; }else{ $cmd="#"; }
+$cmd
+#
 # printf("materialFile=$materialFile\n");
 # pause
 # over-ride default materials with command line arguments:
@@ -125,29 +144,38 @@ include setCommonOptions.h
 #
 # --- Probes ---
 #
-# output probes every time step: 
+# output probes every this many time steps: 
 probe frequency $probeFrequency
 #
+# ---- Optionally create left and right point probes ----
+#
+$leftProbeFileName="left$probeFileName.dat"; 
 # 
-# Point probe: 
-create a probe...
-  $leftProbeFileName="left$probeFileName.dat"; 
-  file name $leftProbeFileName
-  probe name leftProbe
-  nearest grid point to $xLeftProbe $yLeftProbe 0
-exit
-create a probe...
-  $rightProbeFileName="right$probeFileName.dat"; 
-  file name $rightProbeFileName
-  probe name rightProbe
-  nearest grid point to $xRightProbe $yRightProbe 0
-exit
+if( $probeFileName ne "" && $probeFileName ne "none" ){ \
+$cmd = "create a probe...\n" . \
+       "  file name $leftProbeFileName\n" .  \
+       "  probe name leftProbe\n" .  \
+       "  nearest grid point to $xLeftProbe $yLeftProbe 0\n" . \
+       "exit"; \
+   }else{ $cmd="#"; }
+$cmd
+#
+$rightProbeFileName="right$probeFileName.dat"; 
+if( $probeFileName ne "" && $probeFileName ne "none" ){ \
+$cmd = "create a probe...\n" . \
+       "  file name $rightProbeFileName\n" . \
+       "  probe name rightProbe\n" . \
+       "  nearest grid point to $xRightProbe $yRightProbe 0\n" . \
+       "exit"; \
+   }else{ $cmd="#"; }
+$cmd
+#
 # -- surface integral probe, "average" option means scale by surface area  --
-if( $probeFileName ne "" ){ $intProbeName = "integralLeft$probeFileName"; }
+if( $probeFileName ne ""  && $probeFileName ne "none" ){ $intProbeName = "integralLeft$probeFileName"; }
 if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n  grid coordinate plane 0 $xLeftProbe $yLeftProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
 $cmd 
 # 
-if( $probeFileName ne "" ){ $intProbeName = "integralRight$probeFileName"; }
+if( $probeFileName ne ""  && $probeFileName ne "none" ){ $intProbeName = "integralRight$probeFileName"; }
 if( $intProbeName ne "" ){ $cmd="create a probe...\n   probe name $intProbeName\n  file name  $intProbeName.dat\n coordinate plane probe \n integral\n average\n grid coordinate plane 0 $xRightProbe $yRightProbe 0 (axis, x,y,z)\n all components\n exit"; }else{ $cmd="#"; }
 $cmd 
 #

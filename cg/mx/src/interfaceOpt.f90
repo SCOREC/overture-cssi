@@ -906,7 +906,7 @@
 !         -*- mode: F90 -*-
 ! *********************************************************************
 ! ********** MACROS FOR NONLINEAR INTERFACE CONDITIONS ***************
-!    This file is included into interface3d.bf 
+!    This file is included into interfaceOpt.bf90 
 ! *********************************************************************
 
 !  +++++++ THIS FILE STARTED AS A COPY of dispersiveInterfaceMacros ++++++++
@@ -1119,6 +1119,18 @@
 ! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Curvilinear
 !         NONLINEAR DISPERSIVE CASE -- MLA 
 ! --------------------------------------------------------------------------
+!         -*- mode: F90 -*-
+! *********************************************************************
+! ********* MACROS FOR 2D Nonlinear DISPERSIVE INTERFACE CONDITIONS *************
+!    This file is included into interfaceOpt.bf90
+! *********************************************************************
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Rectangular 
+!        NONLINEAR DISPERSIVE CASE -- MLA
+!
+! *new* Feb 05, 2021
+! --------------------------------------------------------------------------
 
 ! ----------------------------------------------------------------------------
 !  MACRO: Eval jump conditions for Hz, 2D, 2nd-order
@@ -1322,10 +1334,11 @@
 
 !** Note: comment out these next lines to avoid compiling files while developing one version 
 
-!- 
-!- ! --- GDM versions ---
-!- 
-!- ! --- MLA versions ---
+
+
+! --- GDM versions ---
+
+! --- MLA versions ---
 
 
 ! -----------------------------------------------------------------------------------------------

@@ -6356,12 +6356,12 @@ c===============================================================================
                                  fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
                                enddo
                              end do
-                           else
+                           end if
+                         else
                              fe = 0.
                              do iv=0,numberOfPolarizationVectors-1
                                fpv(iv)=0.
                              end do
-                           end if
                          end if
                      end if
                      ! ping old values
@@ -6512,13 +6512,13 @@ c===============================================================================
      & p0ttt - peptc(na,iv)*e0*p0tttt
                              enddo
                            enddo
-                        ! no forcing
-                         else
+                         end if
+                       ! no forcing
+                       else
                            fnv(na)    = 0.
                            fntv(na)   = 0.
                            fnttv(na)  = 0.
                            fntttv(na) = 0.
-                         end if
                        end if
                    enddo
                    ! N_t
@@ -6802,7 +6802,8 @@ c===============================================================================
      & q0tt*e0 - 2.*pnec(iv,na)*q0t*e0t - pnec(iv,na)*q0*e0tt
                                  enddo
                                end do
-                             else
+                             end if
+                           else
                                fe = 0.
                                lapfe = 0.
                                fet  = 0.
@@ -6813,7 +6814,6 @@ c===============================================================================
                                  fpttv(iv)=0.
                                  lapfpv(iv)=0.
                                end do
-                             end if
                            end if
                      end if
                      ! ping the current indexed values of E and P

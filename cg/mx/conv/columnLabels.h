@@ -30,7 +30,7 @@ if( $numberOfDimensions eq 2 && $nm ne "none" )\
   { $numberOfComponents=7; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$H_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$  \&   \$|\\Qv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #  -- Nonlinear model 3D ---
 if( $numberOfDimensions eq 3 && $nm ne "none" )\
-  { $numberOfComponents=8; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$  \&    \$|\\Qv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
+  { $numberOfComponents=7; $title= "grid  \&  N  \&    \$E_x\$   \&    \$E_y\$    \&    \$E_z\$    \&   \$\\Ev\$   \&    \$|\\Pv|\$  \&    \$|\\Qv|\$   \&    \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #   
 #
 #    ----------- BA-MAXWELL TITLE ------

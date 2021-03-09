@@ -1,6 +1,6 @@
 ! This file automatically generated from interfaceNew.bf with bpp.
 c *******************************************************************************
-c   Interface boundary conditions **new version**
+c   ---- Interface boundary conditions **new version**
 c
 c    This file calls functions from interfaceDerivatives.bf
 c

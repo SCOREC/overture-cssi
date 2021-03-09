@@ -71,8 +71,8 @@ $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1;
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); # for a second GDM domain 
 $dmFile=""; # old way
-$matFile=""; # "SilverJCDispersionFits.txt";
-$innerDomain = "innerDomain"; 
+$matFile=""; # "SilverJCDispersionFits.txt"; 
+$nm="#"; # nonlinear model
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"show=s"=>\$show,"debug=i"=>\$debug, \
  "cfl=f"=>\$cfl, "bg=s"=>\$backGround,"bcn=s"=>\$bcn,"go=s"=>\$go,"noplot=s"=>\$noplot,\
@@ -92,11 +92,13 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s"=>\$dmFile,"matFile=s"=>\$matFile,"probeFrequency=i"=>\$probeFrequency,"innerDomain=s"=>\$innerDomain );
+  "dmFile=s"=>\$dmFile,"matFile=s"=>\$matFile,"probeFrequency=i"=>\$probeFrequency,"nm=s"=>\$nm );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }
 if( $dm eq "gdm" ){ $dm="GDM"; $cons=0; } # Turn off conservative for GDM
+if( $nm eq "none" ){ $nm="#"; }
+if( $nm eq "mla" ){ $nm="multilevelAtomic"; }
 #
 if( $dmFile ne "" ){ $matFile=$dmFile; } # for backward compat
 #
@@ -126,6 +128,8 @@ $grid
 $method
 # dispersion model:
 $dm
+#  --- nonlinear model ----
+$nm
 # 
 #-# Drude params 1 1 all (gamma,omegap,domain-name)
 #-if( $numBlocks eq 0 ){ $cmd="GDM params $a0 $a1 $b0 $b1 innerDomain (a0,a1,b0,b1,domain-name)\n"; }\
@@ -268,6 +272,7 @@ cfl $cfl
 plot divergence 0
 plot errors $checkErrors
 check errors $checkErrors
+plot nonlinear components 1
 plot polarization components $plotPolarizationComponents
 plot intensity $plotIntensity
 intensity option $intensityOption

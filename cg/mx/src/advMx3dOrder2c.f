@@ -6094,12 +6094,12 @@ c===============================================================================
                                 fpv(iv) = fpv(iv) - pnec(iv,na)*q0*e0
                               enddo
                             end do
-                          else
+                          end if
+                        else
                             fe = 0.
                             do iv=0,numberOfPolarizationVectors-1
                               fpv(iv)=0.
                             end do
-                          end if
                         end if
                     end if
                     ! ping old values
@@ -6210,11 +6210,11 @@ c===============================================================================
      & p0t - peptc(na,iv)*e0*p0tt
                             enddo
                           enddo
-                       ! no forcing
-                        else
+                        end if
+                      ! no forcing
+                      else
                           fnv(na)  = 0.
                           fntv(na) = 0.
-                        end if
                       end if
                   enddo
                   ! N_t

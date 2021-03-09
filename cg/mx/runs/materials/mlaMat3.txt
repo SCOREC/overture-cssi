@@ -22,8 +22,8 @@ bianistropicPars33GDM1=[1.,0.,1.,0.];
 numberOfPolarizationVectors=1;
 numberOfAtomicLevels=1;
 # polarizationNECoefficients[numberOfPolarizationVectors numberOfAtomicLevels]
-polarizationNECoefficients=[1.];
+polarizationNECoefficients=[10.];
 # populationRelaxationCoefficients[numberOfAtomicLevels numberOfAtomicLevels]
-populationRelaxationCoefficients=[ 1.0];
+populationRelaxationCoefficients=[ 0.01];
 # populationRelaxationCoefficients[numberOfAtomicLevels numberOfPolarizationVectors]
-populationEPtCoefficients=[  -0.1 ];
+populationEPtCoefficients=[  1.0 ];

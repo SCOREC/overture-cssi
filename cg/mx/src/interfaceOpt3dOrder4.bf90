@@ -41,6 +41,10 @@
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(u1n,dr1,dx1,3,2,1,2)
 
+ ! q1 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,4,1,2)
+ defineParametricDerivativeMacros(q1,dr1,dx1,3,2,1,2)
+
  ! We need up to 2 derivatives of p1 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p1,dr1,dx1,3,4,1,2)
  defineParametricDerivativeMacros(p1n,dr1,dx1,3,4,1,2)
@@ -55,6 +59,10 @@
  ! We need up to 2 derivatives of u1n to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,4,1,2)
  defineParametricDerivativeMacros(u2n,dr2,dx2,3,2,1,2)
+
+ ! q2 for nonlinear dispersive MLA
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,4,1,2)
+ defineParametricDerivativeMacros(q2,dr2,dx2,3,2,1,2)
 
  ! We need up to 2 derivatives of p2 to order 2-- do order 4 for TZ
  defineParametricDerivativeMacros(p2,dr1,dx1,3,4,1,2)
@@ -293,6 +301,12 @@ end do
 !       INTERFACE MACROS (used in interface3d.bf and interface3dOrder4.bf)
 ! ********************************************************************************
 #Include "interfaceMacros.h"
+
+! *******************************************************************************
+! ********** MACROS FOR NONLINEAR DISPERSIVE INTERFACE CONDITIONS ***************
+! *******************************************************************************
+#Include "nonlinearInterfaceMacros.h"
+#Include "nonlinearInterfaceMacros34c.h"
 
 
 ! ------------------ OLD ------------------------------
@@ -4009,8 +4023,7 @@ end do
            else
              ! nonlinear model
              #If #MODEL eq "mla"
-               stop 7777
-               !! assignNonlinearInterfaceGhost23c()
+               assignNonlinearInterfaceGhost23c()
              #End 
            end if
            resetIndexBounds()         
@@ -4054,8 +4067,7 @@ end do
             else
               ! nonlinear model
               #If #MODEL eq "mla"
-                stop 777
-                ! assignNonlinearInterfaceGhost3dOrder4()
+                assignNonlinearInterfaceGhost3dOrder4()
               #End 
             end if            
  
@@ -4194,7 +4206,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       real dx1(0:2),dr1(0:2),dx2(0:2),dr2(0:2)
       real dr1a(0:2),dr2a(0:2)
       
-      real t,ep,dt,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,omega
+      real t,ep,dt,dtsq,eps1,mu1,c1,eps2,mu2,c2,epsmu1,epsmu2,omega
       integer axisp1,axisp2,i1,i2,i3,is1,is2,is3,j1,j2,j3,js1,js2,js3,ks1,ks2,ks3,is,js,it,nit,k1,k2,k3
       integer interfaceOption,interfaceEquationsOption,initialized,forcingOption,numberOfIterations
 
@@ -4247,6 +4259,9 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       ! for new evaluation method:
       real u1x,u1y,u1z,u1xx,u1xy,u1yy,u1xz,u1yz,u1zz
       real u2x,u2y,u2z,u2xx,u2xy,u2yy,u2xz,u2yz,u2zz
+
+      real e1x,e1y,e1z,e1xx,e1xy,e1yy,e1xz,e1yz,e1zz,e1Lap
+      real e2x,e2y,e2z,e2xx,e2xy,e2yy,e2xz,e2yz,e2zz,e2Lap
 
       real v1x,v1y,v1z,v1xx,v1xy,v1yy,v1xz,v1yz,v1zz
       real v2x,v2y,v2z,v2xx,v2xy,v2yy,v2xz,v2yz,v2zz
@@ -4325,7 +4340,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       real vexxxx,vexxyy,veyyyy,vexxzz,veyyzz,vezzzz,veLapSq
       real wexxxx,wexxyy,weyyyy,wexxzz,weyyzz,wezzzz,weLapSq
 
-      real weLaSqp,curlLapEex,curlLapEey,curlLapEez,nDotLapSq
+      real weLaSqp,curlLapEex,curlLapEey,curlLapEez,nDotLapSq,divLapEe
 
 
       real nDotUm,nDotUp,nDotU0
@@ -4348,6 +4363,10 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       ! Dispersion models
       integer noDispersion,drude,gdm
       parameter( noDispersion=0, drude=1, gdm=2 )
+
+      ! Nonlinear models
+      #Include "nonlinearModelsFortranInclude.h"
+      ! integer nonlinearModel
 
       ! forcing options
       #Include "forcingDefineFortranInclude.h"
@@ -4426,8 +4445,9 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       integer ismooth,nsmooth
       real eqnCoeff
 
-      real evn,pvn
-      real alpha,d4,LP,LPm
+      real evn,pvn,evec(0:2),pvec(0:2,0:maxNumberOfPolarizationVectors-1)
+      real ptv(0:2,0:maxNumberOfPolarizationVectors-1),pttv(0:2,0:maxNumberOfPolarizationVectors-1),ptttv(0:2,0:maxNumberOfPolarizationVectors-1),pttttv(0:2,0:maxNumberOfPolarizationVectors-1)
+      real alpha,d4,LPn,LP,LPm
       real LE(0:2)
       real LE1(0:2),LE1m(0:2),LLE1(0:2), LEx1(0:2),LEy1(0:2),LEz1(0:2)
       real LE2(0:2),LE2m(0:2),LLE2(0:2), LEx2(0:2),LEy2(0:2),LEz2(0:2) 
@@ -4441,6 +4461,8 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       real fPtt2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevtt2(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL1(0:2,0:maxNumberOfPolarizationVectors-1)
+      real pevttL2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx1(0:2,0:maxNumberOfPolarizationVectors-1),pevtty1(0:2,0:maxNumberOfPolarizationVectors-1),pevttz1(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttx2(0:2,0:maxNumberOfPolarizationVectors-1),pevtty2(0:2,0:maxNumberOfPolarizationVectors-1),pevttz2(0:2,0:maxNumberOfPolarizationVectors-1)
       real pevttSum1(0:2),pevttxSum1(0:2),pevttySum1(0:2),pevttzSum1(0:2)
@@ -4496,6 +4518,30 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
 
       ! ----- multilevel atomic model -----
       integer useNonlinearModel
+      integer nonlinearModel1,numberOfAtomicLevels1,maxPar1,numPolar1
+      integer nonlinearModel2,numberOfAtomicLevels2,maxPar2,numPolar2
+      integer na,nce
+      real q0,q0t,q0tt,q0ttt,q0tttt,q0xx,q0yy,q0zz,q0x,q0y,q0z
+      real pnec1,prc1,peptc1
+      real pnec2,prc2,peptc2
+
+      integer maxPar
+      parameter( maxPar=20 )
+      real nlPar1(0:maxPar-1,0:maxPar-1,0:2)
+      real nlPar2(0:maxPar-1,0:maxPar-1,0:2)
+      real fnv(0:maxPar-1),fnv1(0:maxPar-1),fnv2(0:maxPar-1)
+      real fntv(0:maxPar-1),fntv1(0:maxPar-1),fntv2(0:maxPar-1)
+      real fnttv(0:maxPar-1),fnttv1(0:maxPar-1),fnttv2(0:maxPar-1)
+      real fntttv(0:maxPar-1),fntttv1(0:maxPar-1),fntttv2(0:maxPar-1)
+      real qv(0:maxPar-1),qvn(0:maxPar-1),qvm(0:maxPar-1)
+      real qt(0:maxPar-1),qtt(0:maxPar-1),qttt(0:maxPar-1),qtttt(0:maxPar-1)
+      real qex(0:maxPar-1),qey(0:maxPar-1),qez(0:maxPar-1),qeLap(0:maxPar-1)
+
+      real q1x,q1y,q1z,q1Lap,q1xx,q1yy,q1zz,q1xy,q1xz,q1yz
+      real q2x,q2y,q2z,q2Lap,q2xx,q2yy,q2zz,q2xy,q2xz,q2yz
+      real qvx,qvy,qvz,qvLap
+
+      real evx0,evy0,evz0,pv0,ev0,evLap
 
 
       integer internalGhostBC,numGhost2,numParallelGhost
@@ -4512,11 +4558,28 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       a1v2(jv) = gdmPar2(1,jv)
       b0v2(jv) = gdmPar2(2,jv)
       b1v2(jv) = gdmPar2(3,jv)
+
+      ! ..... statement functions for multilevel atomic model
+      ! pnec  = polarizationNECoefficients
+      ! prc   = populationRelaxationCoefficients
+      ! peptc = populationEPtCoefficients
+      pnec1(m1,m2)  = nlPar1(m1,m2,0)
+      prc1(m1,m2)   = nlPar1(m1,m2,1)
+      peptc1(m1,m2) = nlPar1(m1,m2,2)
+
+      pnec2(m1,m2)  = nlPar2(m1,m2,0)
+      prc2(m1,m2)   = nlPar2(m1,m2,1)
+      peptc2(m1,m2) = nlPar2(m1,m2,2)
+
       integer kd,m,n
 
       declareTemporaryVariables(2,2)
       declareParametricDerivativeVariables(uu1,3)   ! declare temp variables uu, uur, uus, ...
       declareParametricDerivativeVariables(uu2,3) 
+      declareParametricDerivativeVariables(pp1,3) 
+      declareParametricDerivativeVariables(pp2,3) 
+      declareParametricDerivativeVariables(qq1,3) 
+      declareParametricDerivativeVariables(qq2,3)
       declareParametricDerivativeVariables(vv1,3)   ! declare temp variables uu, uur, uus, ...
       declareParametricDerivativeVariables(vv2,3) 
       declareParametricDerivativeVariables(ww1,3)   ! declare temp variables uu, uur, uus, ...
@@ -4583,8 +4646,8 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       knownSolutionOption = ipar(47)
       useJacobiUpdate     = ipar(48)      
 
-      ! nonlinearModel1     = ipar(49)
-      ! nonlinearModel2     = ipar(50)
+      nonlinearModel1     = ipar(49)
+      nonlinearModel2     = ipar(50)
 
       numParallelGhost    = ipar(51)
       internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
@@ -4668,6 +4731,8 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       relativeErrorTolerance = rpar(24)
       absoluteErrorTolerance = rpar(25)
 
+      dtSq=dt**2
+
       debugFile=10
 
       if(  t.le. 1.5*dt .and. debug>0 )then
@@ -4710,6 +4775,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
         end if
       else
         numberOfPolarizationVectors1=0
+        alphaP1 = 0.
       end if
 
       if( dispersionModel2.ne.noDispersion )then
@@ -4732,8 +4798,66 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
         ! stop 1111
       else
         numberOfPolarizationVectors2=0
+        alphaP2 = 0.
       end if
 
+      useNonlinearModel=0
+      
+      if( nonlinearModel1 .ne. noNonlinearModel )then
+        write(*,'("--interface3d-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
+        useNonlinearModel=1
+        call getMultilevelAtomicParameters( grid1, nlPar1, maxPar, maxPar, numPolar1, numberOfAtomicLevels1 )
+        if( numPolar1.ne.numberOfPolarizationVectors1 )then
+          write(*,'(" interface3d:ERROR: numberOfPolarizationVectors1 does not match numPolar1 from nonlinear model!!")')
+          stop 8888
+        end if
+     
+        write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
+        write(*,'("polarizationNECoefficients1:")')
+        do m1=0,numberOfPolarizationVectors1-1
+          write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+        end do 
+     
+        write(*,'("populationRelaxationCoefficients1:")')
+        do m1=0,numberOfAtomicLevels1-1
+          write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+        end do 
+     
+        write(*,'("populationEPtCoefficients1:")')
+        do m1=0,numberOfAtomicLevels1-1
+          write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
+        end do 
+      else
+        numberOfAtomicLevels1=0
+      end if 
+
+      if( nonlinearModel2 .ne. noNonlinearModel )then
+        useNonlinearModel=1
+        write(*,'("--interface3d-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
+        call getMultilevelAtomicParameters( grid2, nlPar2, maxPar, maxPar, numPolar2, numberOfAtomicLevels2 )
+        if( numPolar2.ne.numberOfPolarizationVectors2 )then
+          write(*,'(" interface3d:ERROR: numberOfPolarizationVectors2 does not match numPolar2 from nonlinear model!!")')
+          stop 9999
+        end if
+     
+        write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
+        write(*,'("polarizationNECoefficients2:")')
+        do m1=0,numberOfPolarizationVectors2-1
+          write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+        end do 
+     
+        write(*,'("populationRelaxationCoefficients2:")')
+        do m1=0,numberOfAtomicLevels2-1
+          write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+        end do 
+     
+        write(*,'("populationEPtCoefficients2:")')
+        do m1=0,numberOfAtomicLevels2-1
+          write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
+        end do 
+      else
+        numberOfAtomicLevels2 = 0
+      end if 
 
 
       initializeInterfaceVariablesMacro(interface3dOrder4)
@@ -4973,9 +5097,9 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
 
 !** Note: comment out these next lines to avoid compiling files while developing one version 
 
-!-buildFile(interfaceMx3dOrder4c,3,4,curvlinear,none)
-!-buildFile(interfaceMxGDM3dOrder4c,3,4,curvlinear,gdm)
-!-buildFile(interfaceMxMLA3dOrder4c,3,4,curvlinear,mla)
+buildFile(interfaceMx3dOrder4c,3,4,curvlinear,none)
+buildFile(interfaceMxGDM3dOrder4c,3,4,curvlinear,gdm)
+buildFile(interfaceMxMLA3dOrder4c,3,4,curvlinear,mla)
 
 ! -----------------------------------------------------------------------------------------------
 ! Macro to call a given interface routine.
@@ -4992,22 +5116,22 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
 #endMacro
                            
 ! -----------------------------------------------------------------------------------------------
-! Macro to call the approrpriate interface routine.
+! Macro to call the appropriate interface routine.
 ! -----------------------------------------------------------------------------------------------
 #beginMacro callInterfaceRoutine( SUFFIX )
   if( dispersionModel1.eq.noDispersion .and. dispersionModel2.eq.noDispersion )then
 
     callRoutine( interfaceMx ## SUFFIX )
 
-  else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
-
-    ! -- GDM ---
-    callRoutine( interfaceMxGDM ## SUFFIX )
-
   else if( nonlinearModel1 .ne. noNonlinearModel .or. nonlinearModel2 .ne. noNonlinearModel )then
 
     ! --- MLA ---
     callRoutine( interfaceMxMLA ## SUFFIX )
+
+  else if( dispersionModel1.ne.noDispersion .or. dispersionModel2.ne.noDispersion )then
+
+    ! -- GDM ---
+    callRoutine( interfaceMxGDM ## SUFFIX )
 
   else 
     stop 9876

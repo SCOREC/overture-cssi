@@ -1,5 +1,5 @@
 #  
-#  Cgmx files
+#  Cgmx files to compile
 #   Use:  setenv COMPILE [dbg/opt/optdbg]
 #
 
@@ -342,10 +342,10 @@ src/interface.f: src/interface.bf src/bcDefineFortranInclude.h
 #
 # -- *NEW* interface routine that generates multiple files, *wdh*  Jan 2021 
 # 
-src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h  src/dispersiveInterfaceMacros2d.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h  src/dispersiveInterfaceMacros2d.h src/nonlinearInterfaceMacros24r.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt.bf90
 
-src/interfaceOpt3dOrder4.f90: src/interfaceOpt3dOrder4.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+src/interfaceOpt3dOrder4.f90: src/interfaceOpt3dOrder4.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/nonlinearInterfaceMacros34c.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt3dOrder4.bf90
 
 # ------------ new interface files -------

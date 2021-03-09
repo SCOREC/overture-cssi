@@ -814,6 +814,7 @@ end if
 ! ********** MACROS FOR NONLINEAR INTERFACE CONDITIONS ****************
 ! *********************************************************************
 #Include "nonlinearInterfaceMacros.h"
+#Include "nonlinearInterfaceMacros24r.h"
 
 ! ----------------------------------------------------------------------------
 !  MACRO: Eval jump conditions for Hz, 2D, 2nd-order
@@ -2447,8 +2448,16 @@ beginLoopsMask2d()
        do n2=0,7
        do n1=0,7
          aa8(n1,n2,1,nn)=aa8(n1,n2,0,nn)
+         ! a8(n1,n2)=aa8(n1,n2,0,nn)
        end do
        end do
+
+       ! if( debug>7 .and. i2.le.0 )then
+         ! write(*,*) "+++++++++++++++++none24c: Matrix aa8"
+         ! do n1=0,7
+         !   write(*,'(8(1pe10.2))') (a8(n1,n2),n2=0,7)
+         ! end do 
+       ! end if
 
        numberOfEquations=8
 
@@ -3213,8 +3222,7 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
    else
      ! nonlinear dispersive case
      #If #MODEL eq "mla"
-       write(*,*) "Finish assignNonlinearInterfaceGhost24r()"
-       stop 2222
+       assignNonlinearInterfaceGhost24r()
      #End 
    end if    
    
@@ -3793,6 +3801,9 @@ implicit none
       ! for new evaluation method:
       real u1x,u1y,u1z,u1xx,u1xy,u1yy,u1xz,u1yz,u1zz
       real u2x,u2y,u2z,u2xx,u2xy,u2yy,u2xz,u2yz,u2zz
+      real e1x,e1y,e1z,e1xx,e1xy,e1yy,e1xz,e1yz,e1zz,e1Lap
+      real e2x,e2y,e2z,e2xx,e2xy,e2yy,e2xz,e2yz,e2zz,e2Lap
+
 
       real v1x,v1y,v1z,v1xx,v1xy,v1yy,v1xz,v1yz,v1zz
       real v2x,v2y,v2z,v2xx,v2xy,v2yy,v2xz,v2yz,v2zz
@@ -3974,6 +3985,8 @@ implicit none
       real pevttLSum1(0:2),pevttLSum2(0:2),pevttttSum1(0:2),pevttttSum2(0:2)
 
       real petttSum
+      real nDotPevttSum1, nDotPevttSum2
+      real x1,y1,z1
 
       real esttt(0:2),estxx(0:2),estyy(0:2),esttxx(0:2),esttyy(0:2),esxxxx(0:2),esxxyy(0:2),esyyyy(0:2)
       real esttx(0:2),estty(0:2),esxxx(0:2),esxyy(0:2),esxxy(0:2),esyyy(0:2),esx(0:2),esy(0:2),estx(0:2),esty(0:2)
@@ -4094,7 +4107,11 @@ implicit none
 
       declareTemporaryVariables(2,2)
       declareParametricDerivativeVariables(uu1,3) 
-      declareParametricDerivativeVariables(uu2,3) 
+      declareParametricDerivativeVariables(uu2,3)
+      declareParametricDerivativeVariables(pp1,3) 
+      declareParametricDerivativeVariables(pp2,3) 
+      declareParametricDerivativeVariables(qq1,3) 
+      declareParametricDerivativeVariables(qq2,3) 
       declareParametricDerivativeVariables(vv1,3)   ! declare temp variables uu, uur, uus, ...
       declareParametricDerivativeVariables(vv2,3) 
       declareParametricDerivativeVariables(ww1,3)   ! declare temp variables uu, uur, uus, ...
@@ -4363,6 +4380,7 @@ implicit none
         end if
       else
         numberOfPolarizationVectors1=0
+        alphaP1 = 0.
       end if
 
       if( dispersionModel2.ne.noDispersion )then
@@ -4385,6 +4403,7 @@ implicit none
         ! stop 1111
       else
         numberOfPolarizationVectors2=0
+        alphaP2 = 0.
       end if
 
       useNonlinearModel=0
@@ -4413,6 +4432,8 @@ implicit none
         do m1=0,numberOfAtomicLevels1-1
           write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
         end do 
+      else
+        numberOfAtomicLevels1=0
       end if 
 
       if( nonlinearModel2 .ne. noNonlinearModel )then
@@ -4439,6 +4460,8 @@ implicit none
         do m1=0,numberOfAtomicLevels2-1
           write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
         end do 
+      else
+        numberOfAtomicLevels2 = 0
       end if 
 
 
@@ -4659,15 +4682,16 @@ buildFile(interfaceMx2dOrder2c,2,2,curvilinear,none)
 buildFile(interfaceMx2dOrder4r,2,4,rectangular,none)
 buildFile(interfaceMx2dOrder4c,2,4,curvilinear,none)
 buildFile(interfaceMx3dOrder2c,3,2,curvilinear,none)
-!- 
-!- ! --- GDM versions ---
+
+
+! --- GDM versions ---
 buildFile(interfaceMxGDM2dOrder2r,2,2,rectangular,gdm)
 buildFile(interfaceMxGDM2dOrder2c,2,2,curvilinear,gdm)
 buildFile(interfaceMxGDM2dOrder4r,2,4,rectangular,gdm)
 buildFile(interfaceMxGDM2dOrder4c,2,4,curvilinear,gdm)
 buildFile(interfaceMxGDM3dOrder2c,3,2,curvilinear,gdm)
-!- 
-!- ! --- MLA versions ---
+
+! --- MLA versions ---
 buildFile(interfaceMxMLA2dOrder2r,2,2,rectangular,mla)
 buildFile(interfaceMxMLA2dOrder2c,2,2,curvilinear,mla)
 buildFile(interfaceMxMLA2dOrder4r,2,4,rectangular,mla)

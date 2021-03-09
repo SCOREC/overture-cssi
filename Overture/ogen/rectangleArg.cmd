@@ -21,14 +21,14 @@
 $prefix="rectangle"; $xa=-1.; $xb=1.; $ya=-1.; $yb=1.;
 $Nx=-1; # if set, use this many grid points in x 
 $adjustCC=0; # apply cell-=centered adjustment for painted interface 
-$order=2; $factor=1; # default values
+$order=2; $factor=1; $ds0=.1; # default values
 $orderOfAccuracy = "second order"; $ng=2;  $periodic=""; $name=""; 
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 $extraLines=0; 
 # 
 # get command line arguments
 # Getopt::Long::Configure("prefix_pattern=(--rectangleArg|--|-)");
-GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,\
+GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ds0=f"=>\$ds0,\
             "ya=f"=>\$ya,"yb=f"=>\$yb,"ybx=f"=>\$ybx,\
             "periodic=s"=>\$periodic,"name=s"=>\$name,"prefix=s"=>\$prefix,"numGhost=i"=> \$numGhost, \
 	    "extraLines=i"=> \$extraLines,"Nx=i"=>\$Nx,"adjustCC=i"=>\$adjustCC );
@@ -49,7 +49,7 @@ if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
 if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; }
 if( $name eq "" ){$name = $prefix . $factor . $suffix . ".hdf";}
 # 
-$ds=.1/$factor;
+$ds=$ds0/$factor;
 # 
 create mappings
 #

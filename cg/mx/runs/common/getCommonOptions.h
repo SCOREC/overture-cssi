@@ -79,6 +79,11 @@ if( $sosupDissipationOption eq ""    ){ $sosupDissipationOption=1; }
 if( $sosupDissipationFrequency eq "" ){ $sosupDissipationFrequency=1; }
 if( $selectiveDissipation eq ""      ){ $selectiveDissipation=0; }
 #
+#  ----- boundary conditions ------
+#
+# bcCmds = array of user supplied BC commands
+@bcCmds = ();
+#
 # --- radiation boundary conditions ---
 #  -rbc=[abcEM2|rbcNonLocal|abcPML] 
 if( $rbc          eq "" ){ $rbc="abcEM2"; }
@@ -88,7 +93,7 @@ if( $pmlStrength  eq "" ){ $pmlStrength=50.; }
 #
 #  ----- probes ---------
 if( $probeFrequency    eq "" ){ $probeFrequency=1; }
-if( $probeFileName     eq "" ){ $probeFileName="probeFile"; }
+if( $probeFileName     eq "" ){ $probeFileName=""; }
 if( $xLeftProbe        eq "" ){ $xLeftProbe=-1.5; }
 if( $xRightProbe       eq "" ){ $xRightProbe=1.5; }
 if( $yLeftProbe        eq "" ){ $yLeftProbe=0; }
@@ -131,7 +136,8 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
   "probeFrequency=i"=>\$probeFrequency,\
-  "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray );
+  "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray,\
+  "bcCmds=s{1,}"=>\@bcCmds );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }

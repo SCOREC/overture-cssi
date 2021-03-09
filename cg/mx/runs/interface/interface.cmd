@@ -97,7 +97,8 @@ $tz = "#"; $go="halt";
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); 
-$nm="#"; # nonlinear model 
+$nm="#"; # nonlinear model
+$leftDomain="leftDomain"; $rightDomain="rightDomain"; 
 # ----------------------------- get command line arguments ---------------------------------------
 #  -- first get any commonly used options: (requires the env variable CG to be set)
 # $getCommonOptions = "$ENV{'CG'}/mp/cmd/getCommonOptions.h";
@@ -119,7 +120,7 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
 	   "matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
 	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm,\
-           "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate );
+           "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate,"leftDomain=s"=>\$leftDomain,"rightDomain=s"=>\$rightDomain );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -226,14 +227,14 @@ if( $method eq "Yee" ){ $cmds = "define embedded bodies\n plane material interfa
 $cmds 
 $cmd="#";
 if( $method ne "Yee" ){ $cmd = \
-  "coefficients $eps1 1. leftDomain (eps,mu,grid-name)\n" . \
-  "coefficients $eps2 1. rightDomain (eps,mu,grid-name)\n"; }
+  "coefficients $eps1 1. $leftDomain (eps,mu,grid-name)\n" . \
+  "coefficients $eps2 1. $rightDomain (eps,mu,grid-name)\n"; }
 $cmd 
 #
 GDM mode: $modeGDM
 $domain="all"; 
 # ------------ Set GDM parameters on the left domain -----------
-GDM domain name: leftDomain
+GDM domain name: $leftDomain
   number of polarization vectors: $npv[0]
   GDM alphaP: $alphaP[0]
 $cmd="#"; 
@@ -254,7 +255,7 @@ if( $matFile1 ne "" ){ $cmd="material file: $matFile1"; } # new way , over-ride 
 #
 $cmd
 # ------------ Set GDM parameters on the right domain -----------
-GDM domain name: rightDomain
+GDM domain name: $rightDomain
   number of polarization vectors: $npv[1]
   GDM alphaP: $alphaP[1]
 $cmd="#"; 
