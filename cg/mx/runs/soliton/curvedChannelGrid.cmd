@@ -1,17 +1,23 @@
 #
-# Grid for a curved channel
+# Grid for a thin curved channel
 #
 #
-# usage: ogen [noplot] rectangleArg -factor=<num> -order=[2/4/6/8] -xa= -xb= -ya= -yb= -prefix=<> -name=<> -periodic=[p|np|pn]
+# usage: ogen [-noplot] curvedChannelGrid -factor=<num> -order=[2/4/6/8] -xStart= -xEnd= -amp= -freq= ...
+#                                         -nDist= -prefix=<> -name=<> -periodic=[p|np|pn]
 # 
 # examples:
 #    ogen -noplot curvedChannelGrid -order=2 -factor=2
 #    ogen -noplot curvedChannelGrid -order=2 -factor=4
 #
 #
-$prefix="curvedChannel"; $xa=-1.; $xb=1.; $ya=-1.; $yb=1.;
-$Nx=-1; # if set, use this many grid points in x 
-$adjustCC=0; # apply cell-=centered adjustment for painted interface 
+$prefix="curvedChannel";
+$xStart=0.; $xEnd=200;
+$nDist=.1;  # width of channel 
+$amp = .2; $freq=2.;
+#
+# $xa=-1.; $xb=1.; $ya=-1.; $yb=1.;
+##$Nx=-1; # if set, use this many grid points in x 
+##$adjustCC=0; # apply cell-=centered adjustment for painted interface 
 $order=2; $factor=1; $ds0=.1; # default values
 $orderOfAccuracy = "second order"; $ng=2;  $periodic=""; $name=""; 
 $numGhost=-1;  # if this value is set, then use this number of ghost points
@@ -19,8 +25,8 @@ $extraLines=0;
 # 
 # get command line arguments
 # Getopt::Long::Configure("prefix_pattern=(--rectangleArg|--|-)");
-GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xa=f"=>\$xa,"xb=f"=>\$xb,"ds0=f"=>\$ds0,\
-            "ya=f"=>\$ya,"yb=f"=>\$yb,"ybx=f"=>\$ybx,\
+GetOptions( "order=i"=>\$order,"factor=f"=>\$factor,"xStart=f"=>\$xStart,"xEnd=f"=>\$xEnd,\
+            "ds0=f"=>\$ds0,"amp=f"=>\$amp,"freq=f"=>\$freq,"nDist=f"=>\$nDist,\
             "periodic=s"=>\$periodic,"name=s"=>\$name,"prefix=s"=>\$prefix,"numGhost=i"=> \$numGhost, \
 	    "extraLines=i"=> \$extraLines,"Nx=i"=>\$Nx,"adjustCC=i"=>\$adjustCC );
 # printf("rectangleArg: factor=$factor xa=$xa xb=$xb ya=$ya yb=$yb ybx=$ybx\n");
@@ -51,7 +57,6 @@ include curvedChannel.h
  mapping from normals
   extend normals from which mapping?
   curvedChannelCurve
-  $nDist=.1; 
   normal distance
     $nDist
   lines

@@ -1,0 +1,19 @@
+# BA material file : eps=4
+#   GDM material  -- resonance near f=.1
+name="baIsoEps4GDMfp1";
+materialType="bianisotropic";
+dispersiveModel="GDM";
+units="normalized";
+omegaScale=299792458e+7;
+#
+bianistropicK0=[4.,0.,0.,0.,0.,0., \
+                0.,4.,0.,0.,0.,0., \
+                0.,0.,4.,0.,0.,0., \
+                0.,0.,0.,1.,0.,0., \
+                0.,0.,0.,0.,1.,0., \
+                0.,0.,0.,0.,0.,1., ];
+# epsGDMPars1=[epsInf,a0,a1,b0,b1, a0,a1,b0,b1, ...] 
+# freq=0.25 : b0 = (.25*2*pi)^2 = 2.467401100272339
+# freq=0.1  : b0 = (0.1*2*pi)^2 = 0.394784176043574
+bianistropicPars11GDM1=[1.,0.,0.394784176043574,0.05];		
+bianistropicPars22GDM1=[1.,0.,0.394784176043574,0.05];

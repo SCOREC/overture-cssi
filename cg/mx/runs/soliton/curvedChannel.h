@@ -1,10 +1,12 @@
 #
 #  ----- Define a center-curve for the curved channel ------
-#
+#       
+# Parameters:
+#   $xStart, $xEnd : start and end positions in x 
+#   $amp           : y = $amp*sin( 2*pi*$freq* s )
 $cmd="#";  $ns=100;  $arcLength=0.; $degree=3;
-$xStart=0.; $xEnd=20; # Start and end positions in x
-$amp = .2; $pi=4.*atan2(1.,1.);
-$freq=2.;
+# Start and end positions in x
+$pi=4.*atan2(1.,1.);
 #  
 for( $i=0; $i<$ns; $i++ )\
 { $s=($i)/($ns-1);                 \

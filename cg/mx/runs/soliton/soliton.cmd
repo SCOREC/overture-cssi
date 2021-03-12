@@ -136,6 +136,10 @@ plane wave coefficients $ax $ay $az $epsPW $muPW
 if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
 if( $ic eq "slabs" ){ $cmd="user defined known solution\n  slabs\n  oneSlabIsoEps2\n done\n userDefinedKnownSolutionInitialCondition"; }
 if( $ic eq "pulse" ){ $cmd="user defined known solution\n nonlinear pulse\n soliton\n done\n userDefinedKnownSolutionInitialCondition"; }
+# Numerical soliton from 1D code: 
+if( $ic eq "soliton" ){ $cmd="user defined known solution\n nonlinear pulse\n soliton\n done\n userDefinedKnownSolutionInitialCondition"; }
+# asymptotic soliton solution: 
+if( $ic eq "asymptoticSoliton" ){ $cmd="user defined known solution\n nonlinear pulse\n asymptoticSoliton\n done\n userDefinedKnownSolutionInitialCondition"; }
 # Execute the initial condition commands: 
 $cmd
 # 
@@ -153,6 +157,11 @@ use new interface routines $useNewInterface
 kx,ky,kz $kx $ky $kz
 #
 bc: all=dirichlet
+# TEST: 
+bc: rectangle(0,1)=perfectElectricalConductor
+bc: rectangle(1,1)=perfectElectricalConductor
+bc: curvedChannel(0,1)=perfectElectricalConductor
+bc: curvedChannel(1,1)=perfectElectricalConductor
 # bc: all=perfectElectricalConductor
 # bc: all=$rbc
 #
@@ -294,6 +303,8 @@ if( $az==0 ){ $cmd="plot:Ey"; }else{ $cmd="plot:Ez"; }
 $cmd 
 contour
   plot contour lines (toggle)
+  vertical scale factor 0.1
+  do not keep aspect ratio  
   # vertical scale factor 0.2
   # min max -1.1 1.1
   # plot a contour plane in 3d 

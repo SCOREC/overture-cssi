@@ -47,6 +47,9 @@ int initialize( CompositeGrid & cg, int numberOfDomains,
 		std::vector<DispersiveMaterialParameters> & dispersiveMaterialParameters,
 		const real & omega, const RealArray & kvI, const RealArray & asymParams, const int solveForAllFields );
 
+// set the case name which defines the solution
+int setCase( const aString & caseName );
+
 private:
 
   // The database is a place to store parameters

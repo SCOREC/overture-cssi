@@ -93,7 +93,7 @@ $pmic = "planeMaterialInterfaceInitialCondition";
 $bc = "perfectElectricalConductor";
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
 @interfaceNormal = (); @interfacePoint = ();
-$tz = "#"; $go="halt";
+$tz = "#"; $go="halt"; $fx=2; $fy=$fx; $fz=$fx; $ft=$fx;
 $dm="none"; $alphaP = (); @npv=();  $modeGDM=-1; 
 @a01 = (); @a11=(); @b01=(); @b11=(); # these must be null for GetOptions to work, defaults are given below
 @a02 = (); @a12=(); @b02=(); @b12=(); 
@@ -120,7 +120,8 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
 	   "x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
 	   "matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
 	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm,\
-           "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate,"leftDomain=s"=>\$leftDomain,"rightDomain=s"=>\$rightDomain );
+           "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate,"leftDomain=s"=>\$leftDomain,"rightDomain=s"=>\$rightDomain,\
+           "fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -287,6 +288,7 @@ $ic
 $tz 
 ** trigonometric
  degreeSpace, degreeTime  $degreex $degreet
+ TZ omega: $fx $fy $fz $ft (fx,fy,fz,ft) 
 #
 # bc: Annulus=perfectElectricalConductor
 tFinal $tFinal

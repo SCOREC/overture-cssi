@@ -57,6 +57,9 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 // Gaussian pulse initial conditions:
 #Include "gaussianPulse.h"
 
+// Gaussian plane wave macros
+#Include "gaussianPlaneWaveMacros.h"  
+
 // Polynomial TZ functions
 #Include "polynomialTZ.h"
 
@@ -1466,7 +1469,7 @@ initializePlaneMaterialInterface()
 
 
 // =============== Macro: GAUSSIAN PLANE WAVE ==================
-#beginMacro setGaussianPlaneWaveInitialConditions()
+#beginMacro setGaussianPlaneWaveInitialConditionsOLD()
 {
   // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
   if( debug & 2 )
@@ -1589,6 +1592,7 @@ initializePlaneMaterialInterface()
 }
 
 #endMacro
+
 
 
 // ===========================================================================================

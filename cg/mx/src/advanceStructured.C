@@ -120,10 +120,12 @@ void getMultilevelAtomicParameters( int & grid,
     
     RealArray multilevelAtomicParams;
     dmp.getNonlinearParameters( numberOfAtomicLevels, multilevelAtomicParams );
-
-    printF("getMultilevelAtomicParameters: grid=%d, nd1=%d, nd2=%d, numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
-       	 grid,nd1,nd2,numberOfPolarizationVectors,numberOfAtomicLevels);
-
+    if( false )
+    {
+        printF("getMultilevelAtomicParameters: grid=%d, nd1=%d, nd2=%d, numberOfPolarizationVectors=%d, numberOfAtomicLevels=%d\n",
+                      grid,nd1,nd2,numberOfPolarizationVectors,numberOfAtomicLevels);
+    }
+    
     const int numberOfCoefficientTensors=3;
 
   // Pv_{m1,tt} + b_{1,m1} Pv_{m1,t}  + b_{0,m1} Pv_{m1}  = a_{m1,m2} N_{m2} Ev 

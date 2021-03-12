@@ -1,0 +1,6 @@
+# Define a spherical or ellipsoidal material region for the BA MX solver
+forcing options...
+define material region...
+material file: $matFile2
+ellipsoid: $xc $yc $zc $ae $be $ce (x0,y0,z0, a,b,c)
+continue

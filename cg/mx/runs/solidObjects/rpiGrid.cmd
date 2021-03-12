@@ -86,9 +86,9 @@ $cx=2; $cy=$edgeWidth;
 if( $direction eq "vertical" ){ $cx=0.; $cy=3.25; } 
 $coreRadius=.25; $xCore=.5*$middleWidth; $yCore=0.; # offset core from center
 # --- define curve ---
-include solidRBeamCurve.h
+include $ENV{CG}/mx/runs/solidObjects/solidRBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mx/runs/solidObjects/solidBodyGrids.h
 #
 #   ---- P-Beam ----
 #
@@ -99,9 +99,9 @@ $cx=4.25; $cy=$edgeWidth;
 if( $direction eq "vertical" ){ $cx=0.; $cy=0.5; } 
 $coreRadius=.25; $xCore=.5*$middleWidth; $yCore=0.; # offset core from center
 # --- define curve ---
-include solidPBeamCurve.h
+include $ENV{CG}/mx/runs/solidObjects/solidPBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mx/runs/solidObjects/solidBodyGrids.h
 #
 #   ---- I-Beam ----
 #
@@ -113,9 +113,9 @@ $cx=6.5; $cy=0;
 if( $direction eq "vertical" ){ $cx=0.; $cy=-2.75; } 
 $coreRadius=.15; $xCore=0; $yCore=.5*$centerHeight+.25*$edgeHeight; # offset core from center
 # --- define curve ---
-include solidIBeamCurve.h
+include $ENV{CG}/mx/runs/solidObjects/solidIBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mx/runs/solidObjects/solidBodyGrids.h
 # 
 exit 
 #

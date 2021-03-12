@@ -231,6 +231,14 @@ void exmax(double&Ez,double&Bx,double&By,const int &nsources,const double&xs,con
 // GRIDTYPE: curvilinear or rectangular
 // ==============================================================
 
+// Gaussian plane wave macros
+
+
+
+
+
+
+
 // Polynomial TZ functions
 
 // ===============================================================================================
@@ -713,6 +721,7 @@ initializePlaneMaterialInterface()
 
 
 // =============== Macro: GAUSSIAN PLANE WAVE ==================
+
 
 
 // ===========================================================================================
@@ -1884,6 +1893,12 @@ assignInitialConditions(int current, real t, real dt )
             ft = omega[3];
             if( numberOfDimensions==2  )
             {   
+                if( omega[0] != omega[1] ) 
+                {
+                    printF("Cgmx:Trig TZ: invalid values for omega: omega[0]=%9.3e, omega[1]=%9.3e \n",omega[0],omega[1]);
+                    printF("Expecting omega[0]==omega[1] (for divergence free field) \n");
+                    OV_ABORT("Invalid values for omega[0..1]");
+                }
                 const int uc=ex, vc=ey, wc=hz;
                 if( solveForAllFields )
                 {
@@ -1977,9 +1992,9 @@ assignInitialConditions(int current, real t, real dt )
                     {
                         printF("Cgmx: invalid values for omega: omega[0]=%9.3e, omega[1]=%9.3e, omega[2]=%9.3e\n",
                        	     omega[0],omega[1],omega[2]);
-                        printF("Expecting all equal values or omega[0]==omega[2] && omega[1]==0 \n"
-                                      " or omega[0]==omega[1] && omega[2]==0 (for divergence free field\n");
-                        Overture::abort("Invalid values for omega[0..2]");
+                        printF("Expecting all equal values for omega[0]==omega[2] && omega[1]==0 \n"
+                                      " or omega[0]==omega[1] && omega[2]==0 (for divergence free field)\n");
+                        OV_ABORT("Invalid values for omega[0..2]");
                     }
                 }
                 if( solveForMagneticField )
@@ -3884,66 +3899,42 @@ assignInitialConditions(int current, real t, real dt )
           // =============== GAUSSIAN PLANE WAVE ==================
 
                     {
+            // =============== Macro: GAUSSIAN PLANE WAVE INITIAL CONDITIONS ==================
+                        real k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+                        k0GaussianPlaneWave *= twoPi;  // scale by 2*pi
             // (Hz).t = (1/mu) *[ (Ex).y - (Ey).x ]
                         if( debug & 2 )
-                            printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e)\n",
-                                                    kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave);
+                            printF("Setting initial condition to be a Gaussian plane wave, kx,ky,kz=%e %e %e, (x0,y0,z0)=(%e,%e,%e) k0=%g\n",
+                                                    kx,ky,kz,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave);
                         realSerialArray xei,xhi;
                         if( numberOfDimensions==2 && !solveForAllFields )
                         {
-                            if( true )
+              // *new* way June 16 -- use pwc[]
+                            xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) -cc*tE;
+                            RealArray gpw(I1,I2,I3);
+                            if( k0GaussianPlaneWave != 0. )
                             {
-                // *new* way June 16 -- use pwc[]
-                                xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) -cc*tE;
-                                RealArray gpw(I1,I2,I3);
-                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
-                                uLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
-                                uLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
-                                uLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
-                                if( method==nfdtd  || method==bamx )
-                                {
-          	// Set values at previous time 
-                          	xei+=cc*dt;
-                          	gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
-                          	umLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
-                          	umLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
-                          	umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
-                                }
-                                if( saveExtraForcingLevels )
-                                {
-                          	OV_ABORT("finish me: Gaussian Plane Wave: saveExtraForcingLevels");
-                                }
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei))) * cos( k0GaussianPlaneWave*xei );
                             }
                             else
                             {
-                // **old way**
-                                xei=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*tE;
-                                xhi=kx*(xh-x0GaussianPlaneWave)+ky*(yh-y0GaussianPlaneWave) -cc*tH;
-                                uh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
-                                ue(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);
-                                ue(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);
-                                xhi+=cc*dt;
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                            }
+                            uLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                            uLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                            uLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                            if( method==nfdtd  || method==bamx )
+                            {
+                // Set values at previous time 
                                 xei+=cc*dt;
-                                umh(Ih1,Ih2,Ih3,hz)=hzGaussianPulse(xhi);
-                                ume(Ie1,Ie2,Ie3,ex)=exGaussianPulse(xei);
-                                ume(Ie1,Ie2,Ie3,ey)=eyGaussianPulse(xei);
-                                if( saveExtraForcingLevels )
-                                {
-          	// we need to save the "RHS" at some previous times.
-                          	for( int m=0; m<numberOfFunctions; m++ )
-                          	{
-                                        #ifdef USE_PPP
-                              	    realSerialArray fnLocal; getLocalArrayWithGhostBoundaries(FN(m),fnLocal);
-                              	    OV_ABORT("finish me for parallel");
-                                        #else
-                                      	    realSerialArray & fnLocal = FN(m);
-                                        #endif
-                            	  xhi=kx*(xe-x0GaussianPlaneWave)+ky*(ye-y0GaussianPlaneWave) -cc*(t-dt*(m+1));
-                            	  fnLocal(I1,I2,I3,hz)=hzLaplacianGaussianPulse(xhi);
-                            	  fnLocal(I1,I2,I3,ex)=fnLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
-                            	  fnLocal(I1,I2,I3,ey)=fnLocal(I1,I2,I3,hz)*( kx/(eps*cc));
-                          	}
-                                }
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                                umLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
+                                umLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
+                                umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                            }
+                            if( saveExtraForcingLevels )
+                            {
+                                OV_ABORT("finish me: Gaussian Plane Wave: saveExtraForcingLevels");
                             }
                         }
                         else 
@@ -3955,7 +3946,14 @@ assignInitialConditions(int current, real t, real dt )
                             else 
                                 xei=kx*(xe-x0GaussianPlaneWave) + ky*(ye-y0GaussianPlaneWave) + kz*(ze-z0GaussianPlaneWave)  -cc*tE;
                             RealArray gpw(I1,I2,I3);
-                            gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                            if( k0GaussianPlaneWave != 0. )
+                            {
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei))) * cos( k0GaussianPlaneWave*xei );
+                            }
+                            else
+                            {
+                                gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                            }
                             uLocal(Ie1,Ie2,Ie3,ex)=gpw(Ie1,Ie2,Ie3) * pwc[0];
                             uLocal(Ie1,Ie2,Ie3,ey)=gpw(Ie1,Ie2,Ie3) * pwc[1];
                             uLocal(Ie1,Ie2,Ie3,ez)=gpw(Ie1,Ie2,Ie3) * pwc[2];
@@ -3975,9 +3973,9 @@ assignInitialConditions(int current, real t, real dt )
                                 umLocal(Ie1,Ie2,Ie3,ez)=gpw(Ie1,Ie2,Ie3) * pwc[2];
                                 if( solveForAllFields )
                                 {
-                          	umLocal(Ie1,Ie2,Ie3,hx)=gpw(Ie1,Ie2,Ie3) * pwc[3];
-                          	umLocal(Ie1,Ie2,Ie3,hy)=gpw(Ie1,Ie2,Ie3) * pwc[4];
-                          	umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
+                                    umLocal(Ie1,Ie2,Ie3,hx)=gpw(Ie1,Ie2,Ie3) * pwc[3];
+                                    umLocal(Ie1,Ie2,Ie3,hy)=gpw(Ie1,Ie2,Ie3) * pwc[4];
+                                    umLocal(Ie1,Ie2,Ie3,hz)=gpw(Ie1,Ie2,Ie3) * pwc[5];
                                 }
                             }
                         }

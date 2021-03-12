@@ -1,4 +1,46 @@
 *************************************************
+********* Wed March 10, 2021
+
+CAN WE ASSIGN PEC BC's ON TOP AND BOTTOM?
+
+CURVED CHANNEL
+LONGER CHANNEGL L=200: 
+ogen -noplot curvedChannelGrid -xEnd=400 -amp=10 -order=2 -factor=4
+
+USE 
+
+cgmx -noplot soliton -g=curvedChannel4.order2 -tf=600 -tp=10 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=asymptoticSoliton -flushFrequency=10 -show=curvedChannelSoliton.show -go=go > curvedChannelSoliton.out
+
+
+cgmx -noplot soliton -g=curvedChannel4.order2 -tf=400 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=asymptoticSoliton -go=og
+
+
+
+
+cgmx -noplot soliton -g=thinRectangle1np.order2 -tf=400 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=asymptoticSoliton -go=og
+
+cgmx -noplot soliton -g=thinRectangle1.order2 -tf=400 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=soliton -go=og
+
+
+CHECK NEW ASYMPTOTIC EXACT SOLUTION
+
+USE PERIODIC BC'S in y 
+ogen -noplot rectangleArg -prefix=thinRectangle -order=2 -xa=0 -xb=400 -ya=0.0 -yb=.5 -periodic=np -factor=1
+
+
+
+cgmx -noplot soliton -g=thinRectangle1np.order2 -tf=400 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=asymptoticSoliton -go=og 
+
+cgmx -noplot soliton -g=thinRectangle1np.order2 -tf=400 -tp=1 -bc=d -diss=0 -method=fd -dm=gdm -npv=1 -nm=mla -matFile1=mlaSolitonMat3.txt -ic=soliton -go=og
+
+--getErrors: t=1.000e+00 domain=0 (domain0) numPolarizationVectors=1 P-norm=9.900e-02 max-err = 6.245e-16
+--getErrors: t=1.000e+00 domain=0 (domain0) numberOfAtomicLevels=1   Q-norm=1.004e+00 max-err = 6.384e-16
+>>> t=1.00e+00 dt=6.2e-02 max errors:[0.00e+00,8.88e-16,0.00e+00, max(u):[0.00e+00,1.96e+00,0.00e+00,] (16 steps)
+                                     max(P):[9.90e-02] (by domain)
+
+
+
+*************************************************
 ********* Tues March 9, 2021
 
 ERRORS COMPARED TO 1D CODE: 

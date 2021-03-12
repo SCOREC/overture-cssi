@@ -49,11 +49,13 @@ $grid
 $method
 # dispersion model:
 $dm
+# nonlinear model:
+$nm
 # 
 # planeWaveInitialCondition
 if( $leftBC eq "rbc" ){ $cmd = "planeWaveInitialCondition"; }else{ $cmd="zeroInitialCondition"; }
-if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 (beta,x0,y0,z0)\n gaussianPlaneWave"; }
-if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 (beta,x0,y0,z0)"; }
+if( $ic eq "gp" ){ $cmd="Gaussian plane wave: $beta $x0 $y0 0 $k0 (beta,x0,y0,z0,k0)\n gaussianPlaneWave"; }
+if( $ic eq "gpw" ){ $cmd="gaussianPlaneWave\n Gaussian plane wave: $beta $x0 0 0 $k0 (beta,x0,y0,z0,k0)"; }
 $cmd 
 # 
 if( $checkErrors ){ $known="planeWaveKnownSolution"; }else{ $known="#"; }

@@ -5,6 +5,9 @@
 ! Here are macros that define the planeWave solution
 #Include "planeWave.h"
 
+! Gaussian plane wave
+#Include "gaussianPlaneWaveMacros.h"
+
 #beginMacro beginLoops()
 do i3=n3a,n3b
 do i2=n2a,n2b
@@ -110,7 +113,7 @@ end do
 ! Macro:
 !   Define a Gaussian Plane Wave incident field in 2D   
 !===============================================================================================
-#beginMacro getGaussianPlaneWave(OP, u,t,x,y)
+#beginMacro getGaussianPlaneWaveOLD(OP, u,t,x,y)
   xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
   expxi = amp*exp(-betaGP*xi*xi )
   if( solveForAllFields.eq.0 )then
@@ -145,7 +148,7 @@ end do
 !   Define a Gaussian Plane Wave incident field in 3D   
 !   Changed: May 16, 2020 -- use pwc() coefficients 
 !===============================================================================================
-#beginMacro getGaussianPlaneWave3d(OP, u,t,x,y,z)
+#beginMacro getGaussianPlaneWave3dOLD(OP, u,t,x,y,z)
   xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*(t)
   expxi = amp*exp(-betaGP*xi*xi )
 
@@ -160,6 +163,7 @@ end do
   end if
 
 #endMacro 
+
 
 ! ===================================================================================
 ! --- Subtract/add the incident wave, before/after applying the non-reflecting BC ---
@@ -379,7 +383,7 @@ end do
       parameter( planeWaveIncidentField=0, gaussianPlaneWaveIncidentField=1 )
       integer incidentFieldType
 
-      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi
+      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi,k0GaussianPlaneWave,pi
 
       ! boundary conditions parameters
       #Include "bcDefineFortranInclude.h"
@@ -515,13 +519,18 @@ end do
         y0GP  =rpar(51)
         z0GP  =rpar(52)
         betaGP=rpar(53)
+        k0GaussianPlaneWave = rpar(54)
         if( t.le.2*dt .and. debug.gt.1 )then
           write(*,'(" adjustForIncident: incidentFieldType=gaussianPlaneWaveIncidentField")') 
-          write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+          write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,") beta,k0=",2e10.2)') x0GP,y0GP,z0GP,betaGP,k0GaussianPlaneWave
           write(*,'(" n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') n1a,n1b,n2a,n2b,n3a,n3b
           write(*,'(" solveForAllFields=",i2," adjustForBoundingBox=",l2)') solveForAllFields,adjustForBoundingBox
           write(*,'(" adjustForIncident: icbb=[",e8.2,",",e8.2,"][",e8.2,",",e8.2,"][",e8.2,",",e8.2,"]")') icBoundingBox(0,0),icBoundingBox(1,0),icBoundingBox(0,1),icBoundingBox(1,1),icBoundingBox(0,2),icBoundingBox(1,2)
         end if
+
+        pi = 4.*atan2(1.,1.);
+        k0GaussianPlaneWave = k0GaussianPlaneWave*2.*pi  ! scale by 2*pi
+
       end if
 
       if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then

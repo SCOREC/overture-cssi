@@ -1,5 +1,118 @@
 *****************************************
+******* Thurs Mar 11, 2021
+
+ADD MODULATED GAUSSIAN PLANE WAVE
+k0 = modulation wave number 
+
+
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe4.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -k0=6 -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -go=og
+
+
+
+CONTINUE SELF CONVERGENCE -- SINGLE DISK
+
+FIXED WIDTH GRIDS
+
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -periodic=np -factor=2
+
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=2
+
+*****************************************
+******* Wed Mar 10, 2021
+
+START SELF CONVERGENCE -- SINGLE DISK
+
+comp compDiskMLA.cmd -solution=5
+
+% -------------- max norm results -------------
+\begin{table}[hbt]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+% \newcommand{\errFormat}[1]{#1}} % use this command to set the format of the error label.
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|} \hline 
+   show file         & \errFormat{Ev} &  r   & \errFormat{Pv} &  r   & \errFormat{Nv} &  r  \\ \hline
+ oneDiskMLAG2.show & \num{2.1}{-2} &      & \num{1.1}{-5} &      & \num{5.4}{-3} &      \\ \hline
+ oneDiskMLAG4.show & \num{4.7}{-3} &  4.5 & \num{2.4}{-6} &  4.7 & \num{1.6}{-3} &  3.4 \\ \hline
+ oneDiskMLAG8.show & \num{1.0}{-3} &  4.5 & \num{5.1}{-7} &  4.7 & \num{4.7}{-4} &  3.4 \\ \hline
+                      &     2.17      &      &     2.22      &      &     1.76      &     \\ \hline
+\end{tabular}
+\caption{comp. Max-norm self convergence results, t=2.000000e+00, Wed Mar 10 18:07:01 2021. }
+\end{center}
+\end{table}
+
+
+
+ONE DISK
+>>>> Order=4 
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=8
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=4
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=2
+
+G8
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe8.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G8.show -go=go > oneDiskMLAO4G8.out
+
+G4
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe4.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G4.show -go=go > oneDiskMLAO4G4.out
+
+
+G2
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe2.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G2.show -go=go > oneDiskMLAO4G2.out
+
+
+>>>>>>>> Order=2
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=8
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=4
+ogen -noplot diskArrayGrid -prefix=oneDiskMLAGrid -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=2
+
+
+G8
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe8.order2 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAG8.show -go=go > oneDiskMLAG8.out
+
+
+G4
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe4.order2 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAG4.show -go=go > oneDiskMLAG4.out
+
+
+G2
+$cgmx -noplot mxScript -g=oneDiskMLAGridnpe2.order2 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAG2.show -go=go > oneDiskMLAG2.out
+
+
+
+=================  TEST RPI GRIDS  -- OK
+
+O4 
+$cgmx -noplot mxScript -g=rpiGride8.order4.ng3 -dm=gdm -nm=mla -numBodies=3 -materialFile=rpiMlaMaterials.h -tf=4 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2.0 -rbc=rbcNonLocal -background=backGround -debug=0 -show=rpiMLAO4.show -go=go >! rpiMLAO4.out
+
+O2: 
+$cgmx -noplot mxScript -g=rpiGride4.order2 -dm=gdm -nm=mla -numBodies=3 -materialFile=rpiMlaMaterials.h -tf=4 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2.0 -rbc=rbcNonLocal -background=backGround -debug=0 -show=rpiMLA.show -go=go >! rpiMLA.out
+
+
+
+
+
+*****************************************
 ******* Tues Mar 9, 2021
+
+TRY MXSCRIPT WITH MULA
+
+PUT disks closer together
+
+64 disks: 
+ogen -noplot diskArrayGrid -prefix=64DiskMLAGrid -xa=-6.25 -xb=6.25 -ya=-6 -yb=6 -rad=.5 -nCylx=8 -nCyly=8 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=2
+
+64 disks : 4-level MLA: 
+$cgmx -noplot mxScript -g=64DiskMLAGridnpe2.order4.ng3 -dm=gdm -nm=mla -numBodies=64 -materialFile=disk64MlaMaterials.h -tf=10 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-6 -rbc=rbcNonLocal -background=backGround -debug=0 -flushFrequency=2 -show=64DiskMLA.show -go=go >! 64DiskMLA.out
+
+ogen -noplot diskArrayGrid -prefix=fourDiskMLAGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -rad=.5 -nCylx=2 -nCyly=2 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=2
+
+4-level MLA: 
+$cgmx -noplot mxScript -g=fourDiskMLAGridnpe2.order4.ng3.hdf -dm=gdm -nm=mla -numBodies=4 -materialFile=disk4MlaMaterials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.75 -rbc=rbcNonLocal -background=backGround -debug=0 -show=fourDiskMLA.show -go=go >! fourDiskMLA.out 
+
+
+
+
+try this: 
+cgmx -noplot multiBodies -g=fourDiskGridnpe2.order4.ng3 -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-1 -xRightProbe=1 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -dm=gdm -nm=mla -go=og 
 
 ---MULA RUNS FROM QING ---
 

@@ -22,9 +22,21 @@ fy = numberOfDimensions>1 ? omega[1] : 0.;
 fz = numberOfDimensions>2 ? omega[2] : 0.;
 ft = omega[3];
 
+
+
 if( numberOfDimensions==2  )
 {   
+
+  if( omega[0] != omega[1] ) 
+  {
+    printF("Cgmx:Trig TZ: invalid values for omega: omega[0]=%9.3e, omega[1]=%9.3e \n",omega[0],omega[1]);
+    printF("Expecting omega[0]==omega[1] (for divergence free field) \n");
+
+    OV_ABORT("Invalid values for omega[0..1]");
+  }
+
   const int uc=ex, vc=ey, wc=hz;
+
 
   if( solveForAllFields )
   {
@@ -145,9 +157,9 @@ else if( numberOfDimensions==3 )
     {
       printF("Cgmx: invalid values for omega: omega[0]=%9.3e, omega[1]=%9.3e, omega[2]=%9.3e\n",
 	     omega[0],omega[1],omega[2]);
-      printF("Expecting all equal values or omega[0]==omega[2] && omega[1]==0 \n"
-             " or omega[0]==omega[1] && omega[2]==0 (for divergence free field\n");
-      Overture::abort("Invalid values for omega[0..2]");
+      printF("Expecting all equal values for omega[0]==omega[2] && omega[1]==0 \n"
+             " or omega[0]==omega[1] && omega[2]==0 (for divergence free field)\n");
+      OV_ABORT("Invalid values for omega[0..2]");
     }
   }
   

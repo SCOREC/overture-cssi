@@ -659,50 +659,54 @@
        end if
        useNonlinearModel=0
        if( nonlinearModel1 .ne. noNonlinearModel )then
-         write(*,'("--interface3d-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
          useNonlinearModel=1
          call getMultilevelAtomicParameters( grid1, nlPar1, maxPar, maxPar, numPolar1, numberOfAtomicLevels1 )
          if( numPolar1.ne.numberOfPolarizationVectors1 )then
-           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors1 does not match numPolar1 from nonlinear model!!")')
+           write(*,'(" interfaceOpt:ERROR: numberOfPolarizationVectors1 does not match numPolar1 from nonlinear model!!")')
            stop 8888
          end if
-         write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
-         write(*,'("polarizationNECoefficients1:")')
-         do m1=0,numberOfPolarizationVectors1-1
-           write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
-         end do 
-         write(*,'("populationRelaxationCoefficients1:")')
-         do m1=0,numberOfAtomicLevels1-1
-           write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
-         end do 
-         write(*,'("populationEPtCoefficients1:")')
-         do m1=0,numberOfAtomicLevels1-1
-           write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
-         end do 
+         if( t.le. 1.5*dt .and. debug.gt.0 )then
+           write(*,'("--interfaceOpt-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
+           write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
+           write(*,'("polarizationNECoefficients1:")')
+           do m1=0,numberOfPolarizationVectors1-1
+             write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+           end do 
+           write(*,'("populationRelaxationCoefficients1:")')
+           do m1=0,numberOfAtomicLevels1-1
+             write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+           end do 
+           write(*,'("populationEPtCoefficients1:")')
+           do m1=0,numberOfAtomicLevels1-1
+             write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
+           end do 
+         end if
        else
          numberOfAtomicLevels1=0
        end if 
        if( nonlinearModel2 .ne. noNonlinearModel )then
          useNonlinearModel=1
-         write(*,'("--interface3d-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
          call getMultilevelAtomicParameters( grid2, nlPar2, maxPar, maxPar, numPolar2, numberOfAtomicLevels2 )
          if( numPolar2.ne.numberOfPolarizationVectors2 )then
-           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors2 does not match numPolar2 from nonlinear model!!")')
+           write(*,'(" interfaceOpt:ERROR: numberOfPolarizationVectors2 does not match numPolar2 from nonlinear model!!")')
            stop 9999
          end if
-         write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
-         write(*,'("polarizationNECoefficients2:")')
-         do m1=0,numberOfPolarizationVectors2-1
-           write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
-         end do 
-         write(*,'("populationRelaxationCoefficients2:")')
-         do m1=0,numberOfAtomicLevels2-1
-           write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
-         end do 
-         write(*,'("populationEPtCoefficients2:")')
-         do m1=0,numberOfAtomicLevels2-1
-           write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
-         end do 
+         if( t.le. 1.5*dt .and. debug.gt.0 )then
+           write(*,'("--interfaceOpt-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
+           write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
+           write(*,'("polarizationNECoefficients2:")')
+           do m1=0,numberOfPolarizationVectors2-1
+             write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+           end do 
+           write(*,'("populationRelaxationCoefficients2:")')
+           do m1=0,numberOfAtomicLevels2-1
+             write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+           end do 
+           write(*,'("populationEPtCoefficients2:")')
+           do m1=0,numberOfAtomicLevels2-1
+             write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
+           end do 
+         end if
        else
          numberOfAtomicLevels2 = 0
        end if 

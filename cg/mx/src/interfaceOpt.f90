@@ -1,6 +1,7 @@
 ! This file automatically generated from interfaceOpt.bf90 with bpp.
 ! *******************************************************************************
-!   Interface boundary conditions
+!   -- Interface boundary conditions --
+!
 ! *******************************************************************************
 
 ! These next include files will define the macros that will define the difference approximations

@@ -2675,6 +2675,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     rpar[51]=y0GaussianPlaneWave;
                     rpar[52]=z0GaussianPlaneWave;
                     rpar[53]=betaGaussianPlaneWave;
+                    const real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+                    rpar[54]=k0GaussianPlaneWave;
                 }
         // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
             #ifdef USE_PPP 
@@ -3260,6 +3262,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         rpar[51]=y0GaussianPlaneWave;
                         rpar[52]=z0GaussianPlaneWave;
                         rpar[53]=betaGaussianPlaneWave;
+                        const real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+                        rpar[54]=k0GaussianPlaneWave;
                     }
           // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
                 #ifdef USE_PPP 
@@ -3849,6 +3853,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         rpar[51]=y0GaussianPlaneWave;
                         rpar[52]=z0GaussianPlaneWave;
                         rpar[53]=betaGaussianPlaneWave;
+                        const real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+                        rpar[54]=k0GaussianPlaneWave;
                     }
           // fprintf(pDebugFile,"**** pu= %i, %i...\n",&u,pu);
                 #ifdef USE_PPP 

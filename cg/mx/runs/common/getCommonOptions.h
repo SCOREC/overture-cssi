@@ -11,6 +11,8 @@ if( $dm              eq "" ){ $dm="none"; }
 #    Nonlinear model:  -nm=[none|mla]
 #       mla = multi-level atomic model 
 if( $nm              eq "" ){ $nm="none"; }
+if( $plotNonlinearComponents eq "" ){ $plotNonlinearComponents=1; }
+# 
 if( $tFinal          eq "" ){ $tFinal=5; }
 if( $tPlot           eq "" ){ $tPlot=.1; }
 if( $cfl             eq "" ){ $cfl=.9; }
@@ -50,11 +52,12 @@ if( $ay              eq "" ){ $ay=0.;  }
 if( $az              eq "" ){ $az=0.; }
 #
 #  ----- Gaussian plane wave parameters --------
-#    [x0,y0,z0] beta : for Gaussian plane wave IC
+#    [x0,y0,z0], beta, k0 : for Gaussian plane wave
 if( $x0              eq "" ){ $x0=.5; }
-if( $y0              eq "" ){$y0=0; }
+if( $y0              eq "" ){ $y0=0; }
 if( $z0              eq "" ){ $z0=0; }
 if( $beta            eq "" ){ $beta=50; }
+if( $k0              eq "" ){ $k0=0; }
 #
 # ----- show file parameters ----
 if( $show              eq "" ){ $show=" "; }
@@ -134,14 +137,16 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "a02=f{1,}"=>\@a02,"a12=f{1,}"=>\@a12,"b02=f{1,}"=>\@b02,"b12=f{1,}"=>\@b12,\
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
-  "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
+  "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,"k0=f"=>\$k0,\
   "probeFrequency=i"=>\$probeFrequency,\
   "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray,\
-  "bcCmds=s{1,}"=>\@bcCmds );
+            "bcCmds=s{1,}"=>\@bcCmds,"nm=s"=>\$nm,"plotNonlinearComponents=f"=>\$plotNonlinearComponents );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq "gdm" ){ $dm="GDM"; $cons=0; } # Turn off conservative for GDM
+if( $nm eq "none" ){ $nm="#"; }
+if( $nm eq "mla" ){ $nm="multilevelAtomic"; }
 #
 if( $method eq "sosup" ){ $diss=0.; }
 if( $method eq "fd" ){ $method="nfdtd"; }

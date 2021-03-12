@@ -48,6 +48,9 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 // Macros for dispersive waves
 #Include "dispersionMacros.h"
 
+// Gaussian plane wave
+#Include "gaussianPlaneWaveMacros.h"
+
 // -------------------------------------------------------------------------------------------------------------
 //! local function to compute errors for the staggered grid DSI schemes
 // -------------------------------------------------------------------------------------------------------------
@@ -690,10 +693,11 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
 
 #endMacro
 
+
 // =============================================================================================
 // MACRO: Get errors for a Gaussian plane wave
 // =============================================================================================
-#beginMacro getErrorsGaussianPlaneWave()
+#beginMacro getErrorsGaussianPlaneWaveOLD()
 {
       
   printF("GET ERRORS for GaussianPlaneWave solveForAllFields=%d, t=%9.3e\n",solveForAllFields,tE);

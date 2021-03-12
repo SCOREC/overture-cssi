@@ -242,6 +242,14 @@ extern "C"
 //------------------------------------------------------------------------------------
 
 
+// Gaussian plane wave
+
+
+
+
+
+
+
 // -------------------------------------------------------------------------------------------------------------
 //! local function to compute errors for the staggered grid DSI schemes
 // -------------------------------------------------------------------------------------------------------------
@@ -384,6 +392,7 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
 // =============================================================================================
 // MACRO: Get errors for Rod Sterling
 // =============================================================================================
+
 
 // =============================================================================================
 // MACRO: Get errors for a Gaussian plane wave
@@ -1747,39 +1756,32 @@ getErrors( int current, real t, real dt )
         {
       // ********** Gaussian plane wave **********
             {
+        // =============================================================================================
+        // MACRO: Get errors for a Gaussian plane wave
+        // =============================================================================================
                 printF("GET ERRORS for GaussianPlaneWave solveForAllFields=%d, t=%9.3e\n",solveForAllFields,tE);
+                real k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+                k0GaussianPlaneWave *= twoPi;  // scale by 2*pi
                 if( numberOfDimensions==2 && !solveForAllFields )
                 {
-                    if( true )
+          // ** new way June 16, 2020 -- use plane-wave-coefficients to scale
+                    OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                    realSerialArray xei(Ie1,Ie2,Ie3);
+                    xei= ( kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
+                                  ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
+                                  -cc*tE );
+                    RealArray gpw(Ie1,Ie2,Ie3);
+                    if( k0GaussianPlaneWave!=0. )
                     {
-            // ** new way June 16, 2020 -- use plane-wave-coefficients to scale
-                        OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
-                        realSerialArray xei(Ie1,Ie2,Ie3);
-                        xei= ( kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
-                       	     ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
-                       	     -cc*tE );
-                        RealArray gpw(Ie1,Ie2,Ie3);
-                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
-                        errLocal(Ie1,Ie2,Ie3,ex) = uLocal(Ie1,Ie2,Ie3,ex) - gpw(Ie1,Ie2,Ie3) * pwc[0];
-                        errLocal(Ie1,Ie2,Ie3,ey) = uLocal(Ie1,Ie2,Ie3,ey) - gpw(Ie1,Ie2,Ie3) * pwc[1];
-                        errLocal(Ie1,Ie2,Ie3,hz) = uLocal(Ie1,Ie2,Ie3,hz) - gpw(Ie1,Ie2,Ie3) * pwc[5];
+                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei))) * cos( k0GaussianPlaneWave*xei );
                     }
                     else
                     {
-                        realSerialArray xei(Ie1,Ie2,Ie3),xhi(Ih1,Ih2,Ih3);
-            //xi=kx*(x-x0GaussianPlaneWave)+ky*(y-y0GaussianPlaneWave) -cc*t;
-                        xei=kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave)+ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) -cc*tE;
-                        xhi=kx*(xh(Ih1,Ih2,Ih3)-x0GaussianPlaneWave)+ky*(yh(Ih1,Ih2,Ih3)-y0GaussianPlaneWave) -cc*tH;
-      //             err(I1,I2,I3,hz)=hzGaussianPulse(xi);  // save Hz here temporarily
-      //             err(I1,I2,I3,ex)=u(I1,I2,I3,ex)-err(I1,I2,I3,hz)*(-ky/(eps*cc));
-      //             err(I1,I2,I3,ey)=u(I1,I2,I3,ey)-err(I1,I2,I3,hz)*( kx/(eps*cc));
-      // 	    err(I1,I2,I3,hz)-=u(I1,I2,I3,hz);
-                        realSerialArray hzei(Ie1,Ie2,Ie3);
-                        hzei = hzGaussianPulse(xei);
-                        erre(Ie1,Ie2,Ie3,ex)=ue(Ie1,Ie2,Ie3,ex)-hzei(Ie1,Ie2,Ie3)*(-ky/(eps*cc));
-                        erre(Ie1,Ie2,Ie3,ey)=ue(Ie1,Ie2,Ie3,ey)-hzei(Ie1,Ie2,Ie3)*( kx/(eps*cc));
-                        errh(Ih1,Ih2,Ih3,hz)=uh(Ih1,Ih2,Ih3,hz) - hzGaussianPulse(xhi(Ih1,Ih2,Ih3));
+                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
                     }
+                    errLocal(Ie1,Ie2,Ie3,ex) = uLocal(Ie1,Ie2,Ie3,ex) - gpw(Ie1,Ie2,Ie3) * pwc[0];
+                    errLocal(Ie1,Ie2,Ie3,ey) = uLocal(Ie1,Ie2,Ie3,ey) - gpw(Ie1,Ie2,Ie3) * pwc[1];
+                    errLocal(Ie1,Ie2,Ie3,hz) = uLocal(Ie1,Ie2,Ie3,hz) - gpw(Ie1,Ie2,Ie3) * pwc[5];
                 }
                 else
                 {
@@ -1788,15 +1790,22 @@ getErrors( int current, real t, real dt )
                     realSerialArray xei(Ie1,Ie2,Ie3);
                     if( numberOfDimensions==2 )
                         xei=  kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
-                      	    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
+                                    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) 
                                     -cc*tE;
                     else
                         xei=  kx*(xe(Ie1,Ie2,Ie3)-x0GaussianPlaneWave) +
-                      	    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) +
-                      	    kz*(ze(Ie1,Ie2,Ie3)-z0GaussianPlaneWave)
+                                    ky*(ye(Ie1,Ie2,Ie3)-y0GaussianPlaneWave) +
+                                    kz*(ze(Ie1,Ie2,Ie3)-z0GaussianPlaneWave)
                                     -cc*tE;
                     RealArray gpw(Ie1,Ie2,Ie3);
-                    gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                    if( k0GaussianPlaneWave!=0. )
+                    {
+                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei))) * cos( k0GaussianPlaneWave*xei );
+                    }
+                    else
+                    {
+                        gpw(Ie1,Ie2,Ie3) = exp(-betaGaussianPlaneWave*((xei)*(xei)));
+                    }
                     errLocal(Ie1,Ie2,Ie3,ex) = uLocal(Ie1,Ie2,Ie3,ex) - gpw(Ie1,Ie2,Ie3) * pwc[0];
                     errLocal(Ie1,Ie2,Ie3,ey) = uLocal(Ie1,Ie2,Ie3,ey) - gpw(Ie1,Ie2,Ie3) * pwc[1];
                     errLocal(Ie1,Ie2,Ie3,ez) = uLocal(Ie1,Ie2,Ie3,ez) - gpw(Ie1,Ie2,Ie3) * pwc[2];

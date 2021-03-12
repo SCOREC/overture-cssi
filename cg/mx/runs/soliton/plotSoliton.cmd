@@ -6,7 +6,10 @@
 # plotStuff plotSoliton.cmd -show=solitonO4 -name=solitonO4 -solution=21
 #
 # fine grid:
-# plotStuff plotSoliton.cmd -show=solitonO4G4 -name=solitonO4G4t200 -solution=21
+# plotStuff plotSoliton.cmd -show=solitonO4G4 -name=solitonO4G4 -solution=21
+#
+# Curved channel:
+#  plotStuff plotSoliton.cmd -show=curvedChannelSoliton -name=curvedChannelSoliton -solution=61
 #
 $show="solitonO4.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $emin=0; $emax=-1; $tPlot=10;
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
@@ -20,20 +23,24 @@ derived types
   E field norm
 exit
 solution: $solution
+#
 contour
   plot:eFieldNorm
   plot contour lines (toggle)
 #
-  line plots
-    specify lines
-      1 4001
-      0. .1 400 .1
+  line plots 
+    specify a boundary
+      4001 0 0 1
+#    specify lines
+#      1 4001
+#      0. .1 400 .1
     Ey
     add Py
     add N0
     add eFieldNorm
+pause    
     # x0 holds the x values 
-    add x0    
+    add x0
 #       
     save results to a matlab file
       $time = ($solution-1)*$tPlot;; 

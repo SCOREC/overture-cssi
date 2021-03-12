@@ -122,6 +122,11 @@ outputHeader()
     fPrintF(file," plane wave solution: (kx,ky,kz)=(%8.2e,%8.2e,%8.2e), omega=%8.2e \n"
                  "     E: a=(%12.6e,%12.6e,%12.6e), H: b=(%12.6e,%12.6e,%12.6e)\n",
                    kx,ky,kz,omegaTimeHarmonic,pwc[0],pwc[1],pwc[2],pwc[3],pwc[4],pwc[5]);
+
+    const real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+    fPrintF(file," GaussianPlaneWave : beta=%g, [x0,y0,z0]=[%g,%g,%g] k0=%g\n",betaGaussianPlaneWave,
+        x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave);
+
     if( forcingOption==twilightZoneForcing )
       fPrintF(file," Twilightzone flow is on.");
     if( forcingOption==twilightZoneForcing && twilightZoneOption==polynomialTwilightZone )

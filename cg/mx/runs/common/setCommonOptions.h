@@ -47,6 +47,7 @@ check errors $checkErrors
 plot polarization components $plotPolarizationComponents
 plot intensity $plotIntensity
 intensity option $intensityOption
+plot nonlinear components $plotNonlinearComponents
 $intensityAveragingInterval=1.;
 intensity averaging interval $intensityAveragingInterval
 #

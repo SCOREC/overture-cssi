@@ -1,4 +1,26 @@
 ***************************************************
+******* Fri March 12, 2021
+
+VARY TRIG FREQ
+cgmx -noplot interface.cmd -g=twoSquaresInterfacee8.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.1 -ic=tz -tz=trig -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -show=twoSquaresInterfaceG8.show -go=go > twoSquaresInterfaceG8.out
+
+
+
+***************************************************
+******* Thurs March 11, 2021
+
+
+RUN FOR PLOTS:
+
+
+3D
+cgmx -noplot interface.cmd -g=twoBoxesInterfacee4.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -show=twoBoxesInterfaceG4.show -go=go > twoBoxesInterfaceG4.out
+
+2D
+cgmx -noplot interface.cmd -g=twoSquaresInterfacee8.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -show=twoSquaresInterfaceG8.show -go=og 
+
+
+***************************************************
 ******* Wed Feb 3, 2021
 
 CLEAN UP interface routines 

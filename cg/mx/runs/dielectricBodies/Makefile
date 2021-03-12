@@ -23,6 +23,35 @@ grids2d: disk ellipse rod cross rectangle dielectricBlockGrid2d multiblock
 grids3d: sphere pillbox
 
 
+# one disk for MLA self convergence
+oneDiskGrids:
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=8
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=16
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=8
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=16
+
+# make -j6 oneDiskRuns 
+oneDiskRuns: oneDiskRunsG2O2 oneDiskRunsG4O2 oneDiskRunsG8O2 oneDiskRunsG2O4 oneDiskRunsG4O4 oneDiskRunsG8O4
+
+oneDiskRunsG2O2:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe2.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G2.show -go=go > oneDiskMLAO4G2.out
+oneDiskRunsG4O2:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe4.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G4.show -go=go > oneDiskMLAO4G4.out
+oneDiskRunsG8O2:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe8.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G8.show -go=go > oneDiskMLAO4G8.out
+
+oneDiskRunsG2O4:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe2.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G2.show -go=go > oneDiskMLAO4G2.out
+oneDiskRunsG4O4:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe4.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G4.show -go=go > oneDiskMLAO4G4.out
+oneDiskRunsG8O4:
+	$(cgmx) -noplot mxScript -g=oneDiskMLAGridFixednpe8.order4.ng3 -dm=gdm -nm=mla -numBodies=1 -materialFile=disk4MlaMaterials.h -tf=2 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -debug=0 -show=oneDiskMLAO4G8.show -go=go > oneDiskMLAO4G8.out
+
+
 # Make a 2D rectangular region with no body (extra ghost needed for sosup)
 rectangle:
 	 $(ogen) -noplot rectangleArg -prefix=rect -order=2 -xa=-2 -xb=2 -ya=-.75 -yb=.75 -periodic=np -factor=4
@@ -275,6 +304,10 @@ ellipsoid543Grid:
 	$(ogen) -noplot solidEllipsoidInABoxGrid -prefix=solidEllipsoid543Grid -overlapOption=maximize -order=2 -per=npp -a=.5 -b=.4 -c=.3 -factor=4
 	$(ogen) -noplot solidEllipsoidInABoxGrid -prefix=solidEllipsoid543Grid -overlapOption=maximize -order=2 -per=npp -a=.5 -b=.4 -c=.3 -factor=8
 
+# to avoid negative volumes at order=4, start at factor=8 *fix me*
+rpiGrids:
+	$(ogen) -noplot rpiGrid -direction=vertical -interp=e -order=2 -factor=4
+	$(ogen) -noplot rpiGrid -direction=vertical -interp=e -numGhost=3 -order=4 -factor=8
 
 
 # Probe runs

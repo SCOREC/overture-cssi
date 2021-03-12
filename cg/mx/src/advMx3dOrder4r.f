@@ -5590,28 +5590,30 @@ c===============================================================================
          end if
         end if
         if( nonlinearModel .ne. noNonlinearModel )then
-          write(*,'("--advOptNew-- nonlinearModel =",i4,"(
-     & 1=multilevelAtomic)")') nonlinearModel
           call getMultilevelAtomicParameters( grid, nlPar, maxPar, 
      & maxPar, numberOfPolarizationVectors, numberOfAtomicLevels )
-          write(*,'("multilevelAtomic: numberOfPolarizationVectors =",
-     & i4,"  numberOfAtomicLevels =",i4)') 
+          if( t.le. 1.5*dt .and. debug.gt.0 )then
+            write(*,'("--advOptNew-- nonlinearModel =",i4,"(
+     & 1=multilevelAtomic)")') nonlinearModel
+            write(*,'("multilevelAtomic: numberOfPolarizationVectors 
+     & =",i4,"  numberOfAtomicLevels =",i4)') 
      & numberOfPolarizationVectors, numberOfAtomicLevels
-          write(*,'("polarizationNECoefficients:")')
-          do m1=0,numberOfPolarizationVectors-1
-            write(*,'( 10(e12.3,1x) )') (pnec(m1,m2),m2=0,
+            write(*,'("polarizationNECoefficients:")')
+            do m1=0,numberOfPolarizationVectors-1
+              write(*,'( 10(e12.3,1x) )') (pnec(m1,m2),m2=0,
      & numberOfAtomicLevels-1)
-          end do
-          write(*,'("populationRelaxationCoefficients:")')
-          do m1=0,numberOfAtomicLevels-1
-            write(*,'( 10(e12.3,1x) )') (prc(m1,m2),m2=0,
+            end do
+            write(*,'("populationRelaxationCoefficients:")')
+            do m1=0,numberOfAtomicLevels-1
+              write(*,'( 10(e12.3,1x) )') (prc(m1,m2),m2=0,
      & numberOfAtomicLevels-1)
-          end do
-          write(*,'("populationEPtCoefficients:")')
-          do m1=0,numberOfAtomicLevels-1
-            write(*,'( 10(e12.3,1x) )') (peptc(m1,m2),m2=0,
+            end do
+            write(*,'("populationEPtCoefficients:")')
+            do m1=0,numberOfAtomicLevels-1
+              write(*,'( 10(e12.3,1x) )') (peptc(m1,m2),m2=0,
      & numberOfPolarizationVectors-1)
-          end do
+            end do
+          end if
         end if
         if( useSosupDissipation.ne.0 )then
          ! Coefficients in the sosup dissipation from Jordan Angel

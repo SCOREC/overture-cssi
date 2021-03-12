@@ -273,6 +273,7 @@ Maxwell:: Maxwell()
   x0GaussianPlaneWave=.5;
   y0GaussianPlaneWave=0.;
   z0GaussianPlaneWave=0.;
+  parameters.dbase.put<real>("k0GaussianPlaneWave")=0.;  // for modulated Gaussian plane wave
 
   gaussianSourceParameters[0]=100.; // beta
   gaussianSourceParameters[1]=5.;   // omega 
@@ -1746,6 +1747,8 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
 // ==========================================================================================
 {
 
+  const real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+
   dialog.setOptionMenuColumns(1);
 
   aString initialConditionOptionCommands[] = {"defaultInitialCondition", 
@@ -1800,8 +1803,8 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
   textCommands[nt] = "frequency";  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g",frequency); nt++; 
 
   textCommands[nt] = "Gaussian plane wave:";
-  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g %g %g %g (beta,x0,y0,z0)",
-                   betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave); nt++; 
+  textLabels[nt]=textCommands[nt]; sPrintF(textStrings[nt], "%g %g %g %g %g (beta,x0,y0,z0,k0)",
+                   betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave); nt++; 
 
   RealArray & icBox = initialConditionBoundingBox;
   textCommands[nt] = "initial condition bounding box";  
@@ -3371,10 +3374,11 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     }
     else if( len=answer.matches("Gaussian plane wave:") )
     {
-      sScanF(&answer[len],"%e %e %e %e %e",&betaGaussianPlaneWave,&x0GaussianPlaneWave,&y0GaussianPlaneWave,&z0GaussianPlaneWave);
+      real & k0GaussianPlaneWave = parameters.dbase.get<real>("k0GaussianPlaneWave");
+      sScanF(&answer[len],"%e %e %e %e %e",&betaGaussianPlaneWave,&x0GaussianPlaneWave,&y0GaussianPlaneWave,&z0GaussianPlaneWave,&k0GaussianPlaneWave);
       
-      initialConditionsOptionsDialog.setTextLabel("Gaussian plane wave:",sPrintF(line,"%g %g %g %g (beta,x0,y0,z0)",
-								       betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave));
+      initialConditionsOptionsDialog.setTextLabel("Gaussian plane wave:",sPrintF(line,"%g %g %g %g %g (beta,x0,y0,z0,k0)",
+	         betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave));
   
     }
     else if( len=answer.matches("Gaussian source:") )

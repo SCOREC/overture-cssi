@@ -37,6 +37,9 @@ echo to terminal 0
 #
 #  plotStuff plotGrid.cmd -show=solidEllipsoid546Gridi4.order2.hdf -name="solidEllipsoid546"
 #
+#  plotStuff plotGrid.cmd -show=oneDiskMLAGridFixednpe2.order2.hdf -name=oneDiskMLAGridG2
+#  plotStuff plotGrid.cmd -show=rpiGride4.order2.hdf -name=rpiGridG4
+#
 echo to terminal 1
 $show="ellipticalDiskGride8.order2.hdf"; $opt="#"; 
 # get command line arguments
@@ -44,8 +47,6 @@ GetOptions( "show=s"=>\$show, "name=s"=>\$name, "opt=s"=>\$opt );
 #
 $show
 #
-
-  # waveyDisk 
   hardcopy vertical resolution:0 2048
   hardcopy horizontal resolution:0 2048  
   line width scale factor:0 3

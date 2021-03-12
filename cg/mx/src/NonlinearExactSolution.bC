@@ -15,7 +15,7 @@
 extern "C"
 {
 
-void mbe1d(double & epsilon, double & dt, double & xa, double &xb, int &n, double &tfinal, double &un);
+void mbe1d(real & epsilon, real & dt, real & xa, real &xb, int &n, real &tfinal, real &un);
 
 }
 
@@ -36,22 +36,14 @@ NonlinearExactSolution( )
 {
 
   dbase.put<int>("initialized")=0;
+  dbase.put<aString>("caseName");
+  // caseName:
+  //     soliton : 1D soliton-like defined by the solution to a 1D fortran code
+  //     asymptoticSoliton : asymptotic formula for a soliton
+  aString & caseName = dbase.get<aString>("caseName");
+  caseName = "soliton";
 
-
-  // dbase.put<int>("numberOfDimensions")=2;
-  // dbase.put<int>("numberOfDomains")=3;
-  // dbase.put<int>("numScatteringCoeff")=-1;
-  // dbase.put<int>("solveForAllFields")=0;
-
-
-  // dbase.put<int>("scatteringCase")=0;   // There are four scattering cases, 2 polarizations, forward/backward 
-
-  // dbase.put<std::complex<LocalReal>* >("Vvc")=NULL;   
-  // dbase.put<std::complex<LocalReal>* >("kvc")=NULL;   
-  // dbase.put<std::complex<LocalReal>* >("rtc")=NULL;   
-  // dbase.put<std::complex<LocalReal> >("s");   
-
-
+  
 }
 
 
@@ -73,6 +65,18 @@ NonlinearExactSolution::
 
 }
 
+//=========================================================================
+/// \brief set the case name which defines the solution
+/// caseName:
+///     soliton : 1D soliton-like defined by the solution to a 1D fortran code
+///     asymptoticSoliton : asymptotic formula for a soliton
+//=========================================================================
+int NonlinearExactSolution::setCase( const aString & caseName )
+{ 
+  dbase.get<aString>("caseName") = caseName;
+  
+  return 0;
+}
 
 // ------------------ Here is how to call Fortran routines -------
 //- 
@@ -126,16 +130,24 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     return 0;
   }
 
+  const aString & caseName = dbase.get<aString>("caseName");
+  if( caseName != "soliton" && caseName !="asymptoticSoliton" )
+  {
+    printF("NonlinearExactSolution::initialize:ERROR: Unknown caseName=[%s]\n",(const char*)caseName);
+    printF(" Valid caseNames are `soliton' and 'asymptoticSoliton'\n");
+    OV_ABORT("error");
+  }
+
   // initialize
   if( numberOfDomains==1 )
   {
     // ---- 1 domain problem
     // parameters for asymptotic solutions
-    const double eps = 0.01;
-    const double U = 1./2;
-    const double eta = 1.;
-    const double x0 = 0.;
-    double epsHat = eps/2.*sqrt(eta/(U-U*U));
+    const real eps = 0.01;
+    const real U = 1./2;
+    const real eta = 1.;
+    const real x0 = 0.;
+    real epsHat = eps/2.*sqrt(eta/(U-U*U));
 
     // parameters for asymptotic solutions
     asymParams(0) = U;
@@ -143,7 +155,7 @@ initialize( CompositeGrid & cg, int numberOfDomains,
     asymParams(2) = epsHat;
     asymParams(3) = 2.*sqrt(eta*U/(1.-U)); // coefficients for the asymptotic solution of E
 
-    printF("Nonlinear MLA Exact Solution: initialize for one domain\n");
+    printF("Nonlinear MLA Exact Solution: initialize for one domain. caseName=%s\n",(const char*)caseName);
   }
   else
   {
@@ -186,9 +198,14 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
   const int & numberOfDomains = cg.numberOfDomains();
   const int myDomain = cg.domainNumber(grid);
 
-
+  const aString & caseName = dbase.get<aString>("caseName");
   if( t <= 0. )
-    printF("--NonlinearExactSolution--  eval on grid=%i, domain=%i, at t=%9.3e (numberOfDomains=%d) \n",grid,myDomain,t,numberOfDomains);
+  {
+    printF("--NonlinearExactSolution--  eval %s on grid=%i, domain=%i, at t=%9.3e (numberOfDomains=%d) \n",
+         (const char*)caseName,grid,myDomain,t,numberOfDomains);
+  }
+
+  // const real & dt= deltaT;
 
   MappedGrid & mg = cg[grid];
   const int numberOfDimensions = cg.numberOfDimensions();
@@ -196,7 +213,7 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
   
   std::vector<DispersiveMaterialParameters> & dmpVector = *dbase.get<std::vector<DispersiveMaterialParameters>* >("pDispersiveMaterialParameters");
 
-//    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+  //    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
   DispersiveMaterialParameters & dmp    = dmpVector[myDomain];
   const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
@@ -239,12 +256,12 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
     {
       iv0[dir]=mg.gridIndexRange(0,dir);
       if( mg.isAllCellCentered() )
-    xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+        xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
     }
   }
   // This macro defines the grid points for rectangular grids:
-#undef XC
-#define XC(iv,axis) (xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]))
+  #undef XC
+  #define XC(iv,axis) (xab[0][axis]+dvx[axis]*(iv[axis]-iv0[axis]))
 
   
   // -- Store components here: 
@@ -272,122 +289,225 @@ eval(real dt, real t, CompositeGrid & cg, int grid,
     qLocal.reference(qLoc);
   }
   
-  const IntegerArray &gid=mg.gridIndexRange();
-  int n=gid(1,0)-gid(0,0);
-
-  // ::display(gid,"gid");
-  // get 
-  // realArray un;
-  const int size = n+3; // index goes from -1 to n+1
-  const int base = -1;
-  const int bound = n+1;
-
-  double *pun = new double[3*size]; // hardcoded 3 variables [E,P,D]; see mbe1d.f90 for details.
-  #define un(i,j) pun[(i-base)+(size)*(j)] //
-
-  // real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
-  // mg.getRectangularGridParameters( dvx, xab );
-
-  real xa = xab[0][0];
-  real xb = xab[1][0];
- 
-  // Call a Fortran subroutine
-  real epsilon=sqrt(multilevelAtomicParams(0,0,0));
-  mbe1d(epsilon,dt,xa,xb,n,t,un(base,0));
-  // ::display(multilevelAtomicParams,"params");
-  cout << "At time (NES): " << t << endl;
-  cout << "Time step (NES): " << dt << endl;
-  cout << "Bounds in x are (NES): " << I1.getBase() << " "<<  I1.getBound() << " " << n <<" " << gid(1,0) << " " << gid(0,0) << endl;
-  // cout << "Bounds in (x,y,z) are (NES): " << I1a.getBase() << " "<<  I1a.getBound() << " " << I2a.getBase() << " "<<  I2a.getBound() << " " << I3a.getBase() << " "<<  I3a.getBound() << endl;
-
-
-  realArray v(I1,3);
-  v = 0.;
-  for (int i = I1.getBase(); i<=I1.getBound(); i++){
-    for (int j=0;j<3;j++){
-        v(i,j) = un(i,j);
-    }
-  }
-
-  // ::display(v,"v");
-
-  real x0[3]={0.,0.,0.};   //     
-  real x,y,z=0.;
-
-  // ::display(pLocal,"pLocal");
-  if (numberOfPolarizationVectors*numberOfDimensions > pLocal.getLength(3)){
-    printF("Error: too many polarization vectors");
-    OV_ABORT("Error");
-  }
-
-  if( numberOfTimeDerivatives==0 )
+  if( caseName == "asymptoticSoliton" )
   {
-    FOR_3D(i1,i2,i3,I1,I2,I3)
+    // ---- Asymptotic Solution ----
+
+    // parameters for asymptotic solutions -- **FIX ME**
+    const real eps = 0.01;
+    const real U = 0.5;
+    const real eta = 1.;
+    const real x0 = 0.;
+    // const real epsHat = eps/2.*sqrt(eta/(U-U*U));
+    // const real epsHat =.1;  // **** FIX ME ***
+    const real epsHat = sqrt(multilevelAtomicParams(0,0,0));
+    real x,y,z=0.;
+    if( t<1.5*dt )
     {
-      if( !isRectangular )
-      {
-        x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
-        y= xLocal(i1,i2,i3,1)-x0[1];
-        if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2)-x0[2];
-      }
-      else
-      {
-        x=XC(iv,0)-x0[0];
-        y=XC(iv,1)-x0[1];
-        if( numberOfDimensions==3 ) z=XC(iv,2)-x0[2];
-      }
+      printF("NES: asymptoticSoliton: U=%g (envelope speed), eta=%g, x0=%g, epsHat=%g\n",U,eta,x0,epsHat);
+    }
+    // real epsilon=sqrt(multilevelAtomicParams(0,0,0));
+    // printF("asymptoticSoliton: epsHat=%g, epsilon=%g\n ",epsHat,epsilon);
+    // OV_ABORT("NonlinearExactSolution::finish me");
 
- 
-      if( numberOfDimensions==2 )
+    if( numberOfTimeDerivatives==0 )
+    {
+      FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-        uLocal(i1,i2,i3,ex) = 0.;
-        uLocal(i1,i2,i3,ey) = v(i1,0);
-        uLocal(i1,i2,i3,hz) = 0.;
-      }
-      else if( numberOfDimensions==3 )
-      {
-        uLocal(i1,i2,i3,ex) = 0.;
-        uLocal(i1,i2,i3,ey) = v(i1,0);
-        uLocal(i1,i2,i3,ez) = 0.;
-      }
-
-
-
-      // --- assign polarization vectors ---
-      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-      {
-        const int pc= iv*numberOfDimensions;
-        pLocal(i1,i2,i3,pc  ) = 0.;
-        pLocal(i1,i2,i3,pc+1) = v(i1,1);
-
-        if( numberOfDimensions==3 )
+        if( !isRectangular )
         {
-          pLocal(i1,i2,i3,pc+2) = 0.;
+          x= xLocal(i1,i2,i3,0);  
+          y= xLocal(i1,i2,i3,1);
+          if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2);
         }
+        else
+        {
+          x=XC(iv,0);
+          y=XC(iv,1);
+          if( numberOfDimensions==3 ) z=XC(iv,2);
+        }
+
+        // x0=0; U=0.5; eta=1.; 
+        // epsHat=.1; % check -- sqrt(polarizationNECoefficients=[0.01])
+        
+        // E = @(x,t) ampE*sech( epsHat*(x-x0-U*t)).*sin(x-t);
+        // P = @(x,t) 2*epsHat*tanh( epsHat*(x-x0-U*t) ).*sech( epsHat*(x-x0-U*t) ).*cos(x-t);
+        // D = @(x,t) 1 - 2*sech( epsHat*(x-x0-U*t) ).^2;
+
+        const real ampE = 2.*sqrt( eta*U/(1-U) );
+        const real seche = 1./cosh( epsHat*(x-x0-U*t) );
+        if( numberOfDimensions==2 )
+        {
+          uLocal(i1,i2,i3,ex) = 0.;
+          uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-t);
+          uLocal(i1,i2,i3,hz) = 0.;
+        }
+        else if( numberOfDimensions==3 )
+        {
+          uLocal(i1,i2,i3,ex) = 0.;
+          uLocal(i1,i2,i3,ey) = ampE*seche*sin(x-t);
+          uLocal(i1,i2,i3,ez) = 0.;
+        }
+
+
+
+        // --- assign polarization vectors ---
+        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+        {
+          const int pc= iv*numberOfDimensions;
+          pLocal(i1,i2,i3,pc  ) = 0.;
+          pLocal(i1,i2,i3,pc+1) = 2*epsHat*tanh( epsHat*(x-x0-U*t) )*seche*cos(x-t);
+
+          if( numberOfDimensions==3 )
+          {
+            pLocal(i1,i2,i3,pc+2) = 0.;
+          }
+        
+        }
+        // -- assign population densities ----
+        for( int na=0; na<numberOfAtomicLevels; na++ )
+        {
+          qLocal(i1,i2,i3,na) = 1. - 2.*SQR(seche);
+        }
+
+
+      }  // end for i1,i2,i3
+
+
+    }
+    else
+    {
+      OV_ABORT("NonlinearExactSolution::ERROR: numberOfTimeDerivatives != 0 ");
       
-      }
-      // -- assign population densities ----
-      for( int na=0; na<numberOfAtomicLevels; na++ )
-      {
-        qLocal(i1,i2,i3,na) = v(i1,2);
-      }
-
-
-    }  // end for i1,i2,i3
-
-
+    } // end if number of time derivatives 
   }
-  else
+  else if( caseName == "soliton")
   {
-    OV_ABORT("NonlinearExactSolution::ERROR: numberOfTimeDerivatives != 0 ");
-    
-  } // end if number of time derivatives 
-    
+    //  =============== Soliton-like solution defined by the numerical solution of a 1D problem ====
   
 
-  return 0;
 
+    const IntegerArray &gid=mg.gridIndexRange();
+    int n=gid(1,0)-gid(0,0);
+
+    // ::display(gid,"gid");
+    // get 
+    // realArray un;
+    const int size = n+3; // index goes from -1 to n+1
+    const int base = -1;
+    const int bound = n+1;
+
+    real *pun = new real[3*size]; // hardcoded 3 variables [E,P,D]; see mbe1d.f90 for details.
+    #define un(i,j) pun[(i-base)+(size)*(j)] //
+
+    // real dvx[3]={1.,1.,1.}, xab[2][3]={{0.,0.,0.},{0.,0.,0.}};
+    // mg.getRectangularGridParameters( dvx, xab );
+
+    real xa = xab[0][0];
+    real xb = xab[1][0];
+   
+    // Call a Fortran subroutine
+    real epsilon=sqrt(multilevelAtomicParams(0,0,0));
+    mbe1d(epsilon,dt,xa,xb,n,t,un(base,0));
+    // ::display(multilevelAtomicParams,"params");
+    cout << "At time (NES): " << t << endl;
+    cout << "Time step (NES): " << dt << endl;
+    cout << "Bounds in x are (NES): " << I1.getBase() << " "<<  I1.getBound() << " " << n <<" " << gid(1,0) << " " << gid(0,0) << endl;
+    // cout << "Bounds in (x,y,z) are (NES): " << I1a.getBase() << " "<<  I1a.getBound() << " " << I2a.getBase() << " "<<  I2a.getBound() << " " << I3a.getBase() << " "<<  I3a.getBound() << endl;
+
+
+    realArray v(I1,3);
+    v = 0.;
+    for (int i = I1.getBase(); i<=I1.getBound(); i++){
+      for (int j=0;j<3;j++){
+          v(i,j) = un(i,j);
+      }
+    }
+
+    // ::display(v,"v");
+
+    real x0[3]={0.,0.,0.};   //     
+    real x,y,z=0.;
+
+    // ::display(pLocal,"pLocal");
+    if (numberOfPolarizationVectors*numberOfDimensions > pLocal.getLength(3)){
+      printF("Error: too many polarization vectors");
+      OV_ABORT("Error");
+    }
+
+    if( numberOfTimeDerivatives==0 )
+    {
+      FOR_3D(i1,i2,i3,I1,I2,I3)
+      {
+        if( !isRectangular )
+        {
+          x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+          y= xLocal(i1,i2,i3,1)-x0[1];
+          if( numberOfDimensions==3 ) z= xLocal(i1,i2,i3,2)-x0[2];
+        }
+        else
+        {
+          x=XC(iv,0)-x0[0];
+          y=XC(iv,1)-x0[1];
+          if( numberOfDimensions==3 ) z=XC(iv,2)-x0[2];
+        }
+
+   
+        if( numberOfDimensions==2 )
+        {
+          uLocal(i1,i2,i3,ex) = 0.;
+          uLocal(i1,i2,i3,ey) = v(i1,0);
+          uLocal(i1,i2,i3,hz) = 0.;
+        }
+        else if( numberOfDimensions==3 )
+        {
+          uLocal(i1,i2,i3,ex) = 0.;
+          uLocal(i1,i2,i3,ey) = v(i1,0);
+          uLocal(i1,i2,i3,ez) = 0.;
+        }
+
+
+
+        // --- assign polarization vectors ---
+        for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+        {
+          const int pc= iv*numberOfDimensions;
+          pLocal(i1,i2,i3,pc  ) = 0.;
+          pLocal(i1,i2,i3,pc+1) = v(i1,1);
+
+          if( numberOfDimensions==3 )
+          {
+            pLocal(i1,i2,i3,pc+2) = 0.;
+          }
+        
+        }
+        // -- assign population densities ----
+        for( int na=0; na<numberOfAtomicLevels; na++ )
+        {
+          qLocal(i1,i2,i3,na) = v(i1,2);
+        }
+
+
+      }  // end for i1,i2,i3
+
+
+    }
+    else
+    {
+      OV_ABORT("NonlinearExactSolution::ERROR: numberOfTimeDerivatives != 0 ");
+      
+    } // end if number of time derivatives 
+      
+  }
+  else
+  { 
+    OV_ABORT("ERROR: unknown caseName");
+
+  }
+  return 0;
 }
+
+
 
 
 

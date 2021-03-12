@@ -123,6 +123,14 @@
 !  ubc(.)  (output) : ubc(ex), etc. 
 ! --------------------------------------------------------------------
 
+! Gaussian plane wave
+
+
+
+
+
+
+
 
 
 
@@ -144,6 +152,7 @@
 !   Define a Gaussian Plane Wave incident field in 3D   
 !   Changed: May 16, 2020 -- use pwc() coefficients 
 !===============================================================================================
+
 
 ! ===================================================================================
 ! --- Subtract/add the incident wave, before/after applying the non-reflecting BC ---
@@ -229,7 +238,8 @@
      & gaussianPlaneWaveIncidentField=1 )
       integer incidentFieldType
 
-      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi
+      real xi,x0GP,y0GP,z0GP,uex,uey,uez,uhz,betaGP,expxi,
+     & k0GaussianPlaneWave,pi
 
       ! boundary conditions parameters
 ! define BC parameters for fortran routines
@@ -373,11 +383,13 @@
         y0GP  =rpar(51)
         z0GP  =rpar(52)
         betaGP=rpar(53)
+        k0GaussianPlaneWave = rpar(54)
         if( t.le.2*dt .and. debug.gt.1 )then
           write(*,'(" adjustForIncident: 
      & incidentFieldType=gaussianPlaneWaveIncidentField")')
           write(*,'("    GPW: (x0,y0,z0)=(",e10.2,",",e10.2,",",e10.2,
-     & ") beta=",e10.2)') x0GP,y0GP,z0GP,betaGP
+     & ") beta,k0=",2e10.2)') x0GP,y0GP,z0GP,betaGP,
+     & k0GaussianPlaneWave
           write(*,'(" n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') n1a,n1b,n2a,n2b,
      & n3a,n3b
           write(*,'(" solveForAllFields=",i2," adjustForBoundingBox=",
@@ -387,6 +399,10 @@
      & icBoundingBox(1,0),icBoundingBox(0,1),icBoundingBox(1,1),
      & icBoundingBox(0,2),icBoundingBox(1,2)
         end if
+
+        pi = 4.*atan2(1.,1.);
+        k0GaussianPlaneWave = k0GaussianPlaneWave*2.*pi  ! scale by 2*pi
+
       end if
 
       if( abs(pwc(0))+abs(pwc(1))+abs(pwc(2)) .eq. 0. )then
@@ -533,8 +549,13 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
@@ -555,8 +576,13 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
@@ -578,8 +604,13 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 2D   
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        if( solveForAllFields.eq.0 )then
                          ! *new* way June 16, 2020 *wdh*
                          um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
@@ -671,9 +702,15 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
                      u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
@@ -682,9 +719,15 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
                      un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
                      un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
@@ -694,9 +737,15 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 3D   
+                       !   Changed: May 16, 2020 -- use pwc() coefficients 
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(0)
                        um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(1)
                        um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(2)
@@ -836,8 +885,13 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
@@ -858,8 +912,13 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
@@ -881,8 +940,13 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 2D   
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        if( solveForAllFields.eq.0 )then
                          ! *new* way June 16, 2020 *wdh*
                          um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(
@@ -963,9 +1027,15 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      u(i1,i2,i3,ex) = u(i1,i2,i3,ex) - expxi*pwc(0)
                      u(i1,i2,i3,ey) = u(i1,i2,i3,ey) - expxi*pwc(1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) - expxi*pwc(2)
@@ -974,9 +1044,15 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) - expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      un(i1,i2,i3,ex) = un(i1,i2,i3,ex) - expxi*pwc(0)
                      un(i1,i2,i3,ey) = un(i1,i2,i3,ey) - expxi*pwc(1)
                      un(i1,i2,i3,ez) = un(i1,i2,i3,ez) - expxi*pwc(2)
@@ -986,9 +1062,15 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) - expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 3D   
+                       !   Changed: May 16, 2020 -- use pwc() coefficients 
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        um(i1,i2,i3,ex) = um(i1,i2,i3,ex) - expxi*pwc(0)
                        um(i1,i2,i3,ey) = um(i1,i2,i3,ey) - expxi*pwc(1)
                        um(i1,i2,i3,ez) = um(i1,i2,i3,ez) - expxi*pwc(2)
@@ -1143,8 +1225,13 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
@@ -1165,8 +1252,13 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
@@ -1188,8 +1280,13 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 2D   
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        if( solveForAllFields.eq.0 )then
                          ! *new* way June 16, 2020 *wdh*
                          um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
@@ -1281,9 +1378,15 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
                      u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
@@ -1292,9 +1395,15 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
                      un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
                      un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
@@ -1304,9 +1413,15 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 3D   
+                       !   Changed: May 16, 2020 -- use pwc() coefficients 
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(0)
                        um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(1)
                        um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(2)
@@ -1446,8 +1561,13 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- plane wave incident field ---
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
@@ -1468,8 +1588,13 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 2D   
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      if( solveForAllFields.eq.0 )then
                        ! *new* way June 16, 2020 *wdh*
                        un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
@@ -1491,8 +1616,13 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 2D   
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) - cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        if( solveForAllFields.eq.0 )then
                          ! *new* way June 16, 2020 *wdh*
                          um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(
@@ -1573,9 +1703,15 @@
                  else if( incidentFieldType .eq. 
      & gaussianPlaneWaveIncidentField )then
                    ! --- Gaussian plane wave incident field ---  *wdh* Aug 18, 2019
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t-dt)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      u(i1,i2,i3,ex) = u(i1,i2,i3,ex) + expxi*pwc(0)
                      u(i1,i2,i3,ey) = u(i1,i2,i3,ey) + expxi*pwc(1)
                      u(i1,i2,i3,ez) = u(i1,i2,i3,ez) + expxi*pwc(2)
@@ -1584,9 +1720,15 @@
                        u(i1,i2,i3,hy) = u(i1,i2,i3,hy) + expxi*pwc(4)
                        u(i1,i2,i3,hz) = u(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
+                     !===============================================================================================
+                     ! Macro:
+                     !   Define a Gaussian Plane Wave incident field in 3D   
+                     !   Changed: May 16, 2020 -- use pwc() coefficients 
+                     !===============================================================================================
                      xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - cc*
      & (t)
-                     expxi = amp*exp(-betaGP*xi*xi )
+                     expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                      un(i1,i2,i3,ex) = un(i1,i2,i3,ex) + expxi*pwc(0)
                      un(i1,i2,i3,ey) = un(i1,i2,i3,ey) + expxi*pwc(1)
                      un(i1,i2,i3,ez) = un(i1,i2,i3,ez) + expxi*pwc(2)
@@ -1596,9 +1738,15 @@
                        un(i1,i2,i3,hz) = un(i1,i2,i3,hz) + expxi*pwc(5)
                      end if
                    if( adjustThreeLevels.eq.1 )then
+                       !===============================================================================================
+                       ! Macro:
+                       !   Define a Gaussian Plane Wave incident field in 3D   
+                       !   Changed: May 16, 2020 -- use pwc() coefficients 
+                       !===============================================================================================
                        xi = kx*(x-x0GP) + ky*(y-y0GP) + kz*(y-z0GP) - 
      & cc*(t-2.*dt)
-                       expxi = amp*exp(-betaGP*xi*xi )
+                       expxi = amp*exp(-betaGP*xi*xi ) * cos( 
+     & k0GaussianPlaneWave*xi )
                        um(i1,i2,i3,ex) = um(i1,i2,i3,ex) + expxi*pwc(0)
                        um(i1,i2,i3,ey) = um(i1,i2,i3,ey) + expxi*pwc(1)
                        um(i1,i2,i3,ez) = um(i1,i2,i3,ez) + expxi*pwc(2)

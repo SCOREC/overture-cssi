@@ -718,13 +718,16 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
   else if( userKnownSolution=="nonlinearPulse" )
   {
     // ======= NONLINEAR PULSE EXACT SOLUTION ===============
-    printF("UDKS: nonlinearPulse: t=%9.3e.\n",t);
+    if( t<2.*dt)
+      printF("UDKS: nonlinearPulse: t=%9.3e.\n",t);
 
 
     if( !dbase.has_key("nonlinearExactSolution") )
     {
       // -- first time through: create class and initialize
       NonlinearExactSolution & nes = dbase.put<NonlinearExactSolution>("nonlinearExactSolution");
+      const aString & caseName = dbase.get<aString>("caseName");
+      nes.setCase( caseName );
 
       int numberOfDomains=cg.numberOfComponentGrids();
       if( !parameters.dbase.has_key("materialRegionParameters") )
@@ -947,10 +950,14 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       
       printF("Choose the case:\n"
 	     " Available caseNames:\n"
-	     "  (1) soliton \n"
+	     "    soliton \n",
+             "    asymptoticSoliton"
 	);
       gi.inputString(caseName,"Enter the caseName");
-      
+      if( caseName == "asymptotic soliton" )
+      {
+        caseName = "asymptoticSoliton";
+      }
     }
     
     else

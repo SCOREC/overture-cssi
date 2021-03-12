@@ -152,16 +152,16 @@ endif
 FNSRCO += mbe1d.f90 
 
 # files that depend on bpp include files
-forcing.C : forcing.h annulusEigenFunction.h planeMaterialInterface.h
-plot.C : forcing.h
+forcing.C : src/forcing.h src/annulusEigenFunction.h src/planeMaterialInterface.h
+plot.C : src/forcing.h
 
-src/getInitialConditions.C : src/getInitialConditions.bC forcing.h annulusEigenFunction.h boxEigenFunction.h gaussianPulse.h polynomialTZ.h trigonometricTZ.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
+src/getInitialConditions.C : src/getInitialConditions.bC src/forcing.h src/annulusEigenFunction.h src/boxEigenFunction.h src/gaussianPulse.h src/polynomialTZ.h src/trigonometricTZ.h src/planeMaterialInterface.h src/dispersionMacros.h src/gaussianPlaneWaveMacros.h; $(BPP) -quiet -clean $<
 
-src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC forcing.h planeMaterialInterface.h annulusEigenFunction.h dispersionMacros.h; $(BPP) -quiet -clean $<
+src/assignBoundaryConditions.C : src/assignBoundaryConditions.bC src/forcing.h src/planeMaterialInterface.h src/annulusEigenFunction.h dispersionMacros.h gaussianPlaneWaveMacros.h; $(BPP) -quiet -clean $<
 
-src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.bC getLocalInterfaceArraysMacro.h ; $(BPP) -quiet -clean -I$(Overture)/include $<
+src/assignInterfaceBoundaryConditions.C : src/assignInterfaceBoundaryConditions.bC src/getLocalInterfaceArraysMacro.h ; $(BPP) -quiet -clean -I$(Overture)/include $<
 
-src/getErrors.C : src/getErrors.bC forcing.h annulusEigenFunction.h boxEigenFunction.h planeMaterialInterface.h dispersionMacros.h; $(BPP) -quiet -clean $<
+src/getErrors.C : src/getErrors.bC src/forcing.h src/annulusEigenFunction.h src/boxEigenFunction.h src/planeMaterialInterface.h src/dispersionMacros.h src/gaussianPlaneWaveMacros.h; $(BPP) -quiet -clean $<
 
 src/getAugmentedSolution.C : src/getAugmentedSolution.bC; $(BPP) -quiet -clean $<
 
@@ -195,7 +195,7 @@ src/advanceStructured.C : src/advanceStructured.bC;  $(BPP) -quiet -clean -I$(Ov
 
 src/advanceBAMX.C : src/advanceBAMX.bC;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
-src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC dispersivePlaneWaveInterface.h dispersivePlaneWaveInterface3d.h;  $(BPP) -quiet -clean -I$(Overture)/include $<
+src/userDefinedKnownSolution.C : src/userDefinedKnownSolution.bC src/dispersivePlaneWaveInterface.h src/dispersivePlaneWaveInterface3d.h;  $(BPP) -quiet -clean -I$(Overture)/include $<
 
 # we need to add these explicitly since the implicit rule for %.bf doesn't work for some reason (?)
 # we need to do it this way so that all the files created with bpp are put in the src directory: 
@@ -421,7 +421,7 @@ src/radEval.f: src/radEval.bf
 src/evalRadKernel.f: src/evalRadKernel.bf
 	       @cd src; $(BPP) -clean -quiet -I$(Overture)/include evalRadKernel.bf
 
-src/nrbcUtil.f: src/nrbcUtil.bf 
+src/nrbcUtil.f: src/nrbcUtil.bf  src/planeWave.h src/gaussianPlaneWaveMacros.h
 	   @cd src; $(BPP) -clean -quiet -I$(Overture)/include nrbcUtil.bf
 
 #$(OBJ)/duWaveGen2d6rc.o: duWaveGen2d6rc.f sixthOrderRectangular2D.h
