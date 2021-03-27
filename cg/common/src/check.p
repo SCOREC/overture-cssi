@@ -124,7 +124,7 @@ if( $parallel eq "" || !( -e "parallel_tests.pm") )
         if( ( $testName ne "all" ) && $line =~ /^$testName/ )
         {
           print "***check.p: run this test: $line\n";
-	  $testName=$line;
+          $testName=$line;
           last;
         }
       }
@@ -173,19 +173,19 @@ if( !( -e $checkCheckFiles ) )
       $checkCheckFiles = "$CGBUILDPREFIX/common/bin/checkCheckFiles";
       if ( !( -e $checkCheckFiles ) )
       {
-	  print "Making checkCheckFiles\n";
-	  $rt = system "make checkCheckFiles";
-	  if( $rt != 0 )
-	  {
-	      print "Error making checkCheckFiles \n";
-	      exit;
-	  }
-	  $checkCheckFiles = "./checkCheckFiles";
-	  if( !( -e $checkCheckFiles ) )
-	  {
-	      printf("ERROR: unable to find or make the program checkCheckFiles. Maybe you need to make it.\n");
-	      exit 1;
-	  }
+          print "Making checkCheckFiles\n";
+          $rt = system "make checkCheckFiles";
+          if( $rt != 0 )
+          {
+              print "Error making checkCheckFiles \n";
+              exit;
+          }
+          $checkCheckFiles = "./checkCheckFiles";
+          if( !( -e $checkCheckFiles ) )
+          {
+              printf("ERROR: unable to find or make the program checkCheckFiles. Maybe you need to make it.\n");
+              exit 1;
+          }
       }
   }
 }
@@ -285,20 +285,20 @@ foreach $cmdCommand ( @cmdFiles )
 
         $diff = system "$checkCheckFiles $checkFile $checkFileName -tol=$tol $pipeOutput";
 
-	if( $diff!=0 )
-	{
-	  if( $verbose ){ printf("++++ The check files for \"$checkFilePrefix\" do not agree +++++\n"); }
-	  $numberOfErrors++;
-	}
-	else
-	{
-	  if( $verbose ){ printf("      ... \"$checkFilePrefix\" appears to be correct\n"); }
-	}
+        if( $diff!=0 )
+        {
+          if( $verbose ){ printf("\n\n ++++ The check files for \"$checkFilePrefix\" do not agree +++++\n\n"); }
+          $numberOfErrors++;
+        }
+        else
+        {
+          if( $verbose ){ printf("      ... \"$checkFilePrefix\" appears to be correct\n"); }
+        }
       }
       else
       {
- 	system "cp $checkFile $checkFileName";
-	if( $verbose ){ printf("      ...creating file $checkFileName \n"); }
+        system "cp $checkFile $checkFileName";
+        if( $verbose ){ printf("      ...creating file $checkFileName \n"); }
       }
     }
     else
