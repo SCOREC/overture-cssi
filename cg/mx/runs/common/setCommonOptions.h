@@ -6,6 +6,7 @@ interface BC iterations $interfaceIterations
 # interfaceEquationsOption=0 : use extrap for 2nd ghost, 1=use eqns
 interface equations option $interfaceEquationOption
 omega for interface iterations $interfaceOmega
+tallCellRatioBound $tallCellRatioBound
 #
 tFinal $tFinal
 tPlot  $tPlot
@@ -33,6 +34,7 @@ show file options...
   MXSF:frequency to flush $flushFrequency 
 exit
 #**********************************
+max iterations for interpolation $maxIterationsForImplicitInterpolation
 #
 use variable dissipation $varDiss
 number of variable dissipation smooths $varDissSmooths
@@ -55,3 +57,5 @@ intensity averaging interval $intensityAveragingInterval
 if( $compareToShowFile ne "" ){ $cmd ="compare to show file 1\n reference show file: $compareToShowFile\n plot errors 1\n check errors 1"; }else{ $cmd="#"; }
 $cmd 
 #
+
+

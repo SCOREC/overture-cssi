@@ -219,6 +219,80 @@ if( method==sosup )
 
 }
 
+int lastTZComponent = hz+1;  // keep track of the last TZ component assigned above so we can fill in MLA components
+if( dispersionModel != noDispersion )
+{
+  // -- dispersion components:  
+  int numberOfPolarizationComponents=maxNumberOfPolarizationVectors;  // ** CHECK ME ***
+  
+  lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+  if( method==bamx )
+    lastTZComponent += numberOfPolarizationComponents*numberOfDimensions;
+
+  
+  if( method==nfdtd )
+  {
+     printF("\n >>>> set TRIG TZ for P maxNumberOfPolarizationVectors=%i <<<<\n\n",maxNumberOfPolarizationVectors);
+
+    for( int iv=0; iv<maxNumberOfPolarizationVectors; iv++ )
+    {
+      const int pc= iv*numberOfDimensions;
+      // Note: Corner extrapolation may assume that div(E)=0 
+      for( int dir=0; dir<numberOfDimensions; dir++ )
+      {
+        int ptz = pxc + pc + dir;
+        amplitude(ptz)= 1 + 1./(2.+iv);
+        // make P be divergence free like E
+        gx(ptz) = gx(ex+dir);
+        gy(ptz) = gy(ex+dir);
+        ft(ptz) = omega[3]*( 1. + 1./(3. + iv) );
+      }
+    }
+  }
+  else if( method==bamx )
+  {
+     printF("\n >>>> set TRIG TZ for P BAMX  <<<<\n\n");
+     // BA Maxwell -- assign polarization components
+  
+    const int numPolarizationTerms = 2*maxNumberOfPolarizationComponents;  // note "2*" we save p and p.t 
+    for( int m=0; m<numPolarizationTerms; m++ )
+    {
+      int pc = hz+m+1; // polarization component index in TZ functions
+      amplitude(pc) = 1./( 1 + 2.*pc/numPolarizationTerms );
+      fx(pc) = omega[0]*( (m+1.)/(m+3.) );
+      fy(pc) = omega[1]*( (m+2.)/(m+3.) );
+      gx(pc) = 0.5/omega[0]*( 2*(m-2.)/(m+4.) );
+      gy(pc) = .25/omega[1]*(   (m-2.)/(m+4.) );
+      ft(pc) = omega[3]*( 1. + (1.+m)/(3. + m) );
+        
+    }
+  }
+ 
+}
+
+if( dispersionModel != noDispersion &&  nonlinearModel==multilevelAtomic )
+{
+  // Nonlinear model : multilevelAtomic 
+  printF("\n >>> INIT TRIG TZ: Fill in nonlinear TZ variables starting at lastTZComponent=%d <<<\n",lastTZComponent);
+
+
+  const int & maxNumberOfNonlinearVectors = parameters.dbase.get<int>("maxNumberOfNonlinearVectors");
+  for( int m=0; m<maxNumberOfNonlinearVectors; m++ )
+  {
+    int na = lastTZComponent+m; 
+    amplitude(na) = (1.+m)/( 2.+m );
+    fx(na) = omega[0]*( 1 + (1.0*m/maxNumberOfNonlinearVectors) );
+    fy(na) = omega[1]*( 1 + (0.5*m/maxNumberOfNonlinearVectors) );;
+    gx(na) = (1./omega[0])*( (m-1.)/maxNumberOfNonlinearVectors );
+    gy(na) = (1./omega[1])*( (m-2.)/maxNumberOfNonlinearVectors );
+    cc(na) = 1./(2.+m);
+    
+  }
+   
+  
+  
+}
+
 
 tz = new OGTrigFunction(fx,fy,fz,ft);
     

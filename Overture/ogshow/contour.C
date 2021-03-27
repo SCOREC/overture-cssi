@@ -877,7 +877,8 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
   // set the grid coarsening factor: for very fine grids we do not plot at the highest resolution
   if( psp.computeCoarseningFactor )
   {
-    const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+    // const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+    const int maxPlotablePoints=5000000; // maximum number of points we plot at the highest resolution *wdh* increased March 19, 2021
 
     int numberOfGridPoints=0;
     Index I1,I2,I3;

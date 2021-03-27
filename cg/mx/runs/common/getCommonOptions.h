@@ -6,6 +6,8 @@ if( $method          eq "" ){ $method="fd"; }
 if( $grid            eq "" ){ $grid="square20.order2.hdf"; }
 #     -go=[run/halt/og]
 if( $go              eq "" ){ $go="go"; }
+# User supplied extra commands in an include file to execute at the end of the script (before -go) (e.g. for plotting)
+if( $extraCommandsEnd eq "" ){ $extraCommandsEnd=""; }
 #    Dispersive model: -dm=[none|gdm]
 if( $dm              eq "" ){ $dm="none"; }
 #    Nonlinear model:  -nm=[none|mla]
@@ -29,6 +31,8 @@ if( $varDissSmooths  eq "" ){$varDissSmooths=20; }
 if( $cons            eq "" ){ $cons=0; }
 if( $debug           eq "" ){ $debug=0; }
 if( $checkErrors     eq "" ){ $checkErrors=0; }
+if( $maxIterationsForImplicitInterpolation eq "" ){ $maxIterationsForImplicitInterpolation=10; }
+#
 #  ------ initial conditions ----
 #   -ic=[pw|gp|zeroInitialCondition]
 #      pw : plane wave
@@ -69,6 +73,7 @@ if( $interfaceEquationOption eq "" ){ $interfaceEquationOption=1; }
 if( $interfaceIterations     eq "" ){ $interfaceIterations=10; }
 if( $interfaceOmega          eq "" ){ $interfaceOmega=.5; }
 if( $useNewInterface         eq "" ){ $useNewInterface=1; }
+if( $tallCellRatioBound      eq "" ){ $tallCellRatioBound=1.25; }
 #
 # ---- plotting options ------
 if( $plotPolarizationComponents eq "" ){ $plotPolarizationComponents=1; }
@@ -140,7 +145,9 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,"k0=f"=>\$k0,\
   "probeFrequency=i"=>\$probeFrequency,\
   "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray,\
-            "bcCmds=s{1,}"=>\@bcCmds,"nm=s"=>\$nm,"plotNonlinearComponents=f"=>\$plotNonlinearComponents );
+  "bcCmds=s{1,}"=>\@bcCmds,"nm=s"=>\$nm,"plotNonlinearComponents=f"=>\$plotNonlinearComponents,\
+  "tallCellRatioBound=f"=>\$tallCellRatioBound,"extraCommandsEnd=s"=>\$extraCommandsEnd, \
+  "maxIterationsForImplicitInterpolation=i"=>\$maxIterationsForImplicitInterpolation );
 # -------------------------------------------------------------------------------------------------
 #
 if( $dm eq "none" ){ $dm="no dispersion"; }

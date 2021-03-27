@@ -1,7 +1,7 @@
 # C++ source files:
 SRC_FILES += Cgsm.C setup.C plot.C solve.C advance.C forcing.C getErrors.C  \
              assignInitialConditions.C assignBoundaryConditions.C divergence.C \
-             saveShow.C variableDissipation.C getEnergy.C InterfaceInfo.C SmParameters.C \
+             saveShow.C variableDissipation.C getEnergy.C SmParameters.C \
              setupPde.C getTimeStep.C getInitialConditions.C userDefinedBoundaryValues.C \
              advanceSteps.C assignGaussianPulseInitialConditions.C \
              assignTwilightZoneInitialConditions.C assignParabolicInitialConditions.C \

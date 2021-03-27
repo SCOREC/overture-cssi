@@ -10,9 +10,15 @@
 # $nr=3+ $nrExtra +$order;
 # $radiusDir = 1 or -1 
 # -----------------------------------------------------------------
+  # radial distance: (*wdh* Mar 13, 2021)
+if( $rDist eq "" ){ $rDist= ($nr-$nrExtra-1)*$ds; }
+# $rDist= ($nr-$nrExtra-1)*$ds;
+#
 Sphere
-  if( $radiusDir > 0 ){ $innerRad=$sphereRadius; $outerRad=$innerRad+ ($nr-$nrExtra-1)*$ds;} #
-  if( $radiusDir < 0 ){ $outerRad=$sphereRadius; $innerRad = $outerRad - ($nr-$nrExtra-1)*$ds;} #
+  if( $radiusDir > 0 ){ $innerRad=$sphereRadius; $outerRad = $innerRad + $rDist; } #
+  if( $radiusDir < 0 ){ $outerRad=$sphereRadius; $innerRad = $outerRad - $rDist; } #
+#  if( $radiusDir > 0 ){ $innerRad=$sphereRadius; $outerRad=$innerRad+ ($nr-$nrExtra-1)*$ds;} #
+#  if( $radiusDir < 0 ){ $outerRad=$sphereRadius; $innerRad = $outerRad - ($nr-$nrExtra-1)*$ds;} #
   inner and outer radii
     $innerRad $outerRad
   centre for sphere

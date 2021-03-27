@@ -43,9 +43,12 @@ main(int argc, char *argv[])
   Overture::turnOnMemoryChecking(true);
 
   printF("Usage: `cgmx [options] [file.cmd]' \n"
-         "    Options: \n"
-         "          -noplot:   run without graphics \n" 
-         "          file.cmd: read this command file \n");
+         " Options: \n"
+         "   -noplot:   run without graphics  \n" 
+         "   file.cmd: read this command file \n"
+         "   -grid=<s> : composite grid file  \n"
+         "   -numParallelGhost=<i>            \n"
+                  );
 
 // -- these command line arguments are deprecated
 //   printF("Usage: `mx [options] [file.cmd]' \n"
@@ -80,6 +83,7 @@ main(int argc, char *argv[])
   aString line;
   int len=0;
   int & numberOfParallelGhost= solver.dbase.get<int>("numberOfParallelGhost");
+  numberOfParallelGhost=-1;  
   
   if( argc > 1 )
   { // look at arguments for "noplot" or some other name
@@ -95,217 +99,217 @@ main(int argc, char *argv[])
       else if( (len=line.matches("-numberOfParallelGhost=")) )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( (len=line.matches("-numParallelGhost=")) )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("cgmx: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
 
       else if( len=line.matches("-nx=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&solver.nx[0]);
+        sScanF(line(len,line.length()-1),"%i",&solver.nx[0]);
         printF(" Setting nx AND ny AND nz =%i\n",solver.nx[0]);
         solver.nx[1]=solver.nx[2]=solver.nx[0];
       }
       else if( len=line.matches("-ny=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&solver.nx[1]);
+        sScanF(line(len,line.length()-1),"%i",&solver.nx[1]);
         printF(" Setting ny=%i\n",solver.nx[1]);
       }
       else if( len=line.matches("-nz=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&solver.nx[2]);
+        sScanF(line(len,line.length()-1),"%i",&solver.nx[2]);
         printF(" Setting nz=%i\n",solver.nx[2]);
       }
       else if( len=line.matches("-size=") )
       {
-	real size;
-	sScanF(&line[len],"%e",&size);
-	solver.xab[0][0]=-size;
-	solver.xab[1][0]= size;
-	solver.xab[0][1]=-size;
-	solver.xab[1][1]= size;
-	solver.xab[0][2]=-size;
-	solver.xab[1][2]= size;
+        real size;
+        sScanF(&line[len],"%e",&size);
+        solver.xab[0][0]=-size;
+        solver.xab[1][0]= size;
+        solver.xab[0][1]=-size;
+        solver.xab[1][1]= size;
+        solver.xab[0][2]=-size;
+        solver.xab[1][2]= size;
       }
       else if( len=line.matches("-bc=") )
       {
-	aString bcName=line(len,line.length()-1);
+        aString bcName=line(len,line.length()-1);
         printF(" Setting bcOption=%s\n",(const char*)bcName);
         if( bcName=="periodic" )
-	{
+        {
           solver.bcOption=Maxwell::useAllPeriodicBoundaryConditions;
-	}
-	else if ( bcName=="dirichlet" ) 
-	{
+        }
+        else if ( bcName=="dirichlet" ) 
+        {
           solver.bcOption=Maxwell::useAllDirichletBoundaryConditions;
-	}
-	else if( bcName=="pec" )
-	{
+        }
+        else if( bcName=="pec" )
+        {
           solver.bcOption=Maxwell::useAllPerfectElectricalConductorBoundaryConditions;
-	}
-	else if( bcName=="general" )
-	{
+        }
+        else if( bcName=="general" )
+        {
           solver.bcOption=Maxwell::useGeneralBoundaryConditions;
-	}
+        }
         else
-	{
-	  // printF("**ERROR** unknown bc option\n");
-	}
+        {
+          // printF("**ERROR** unknown bc option\n");
+        }
       }
       else if( len=line.matches("-noplot") )
       {
-	plotOption=false;
+        plotOption=false;
         printF(" Setting plotOption=false\n");
       }
       else if( len=line.matches("-tri") )
       {
-	solver.elementType=Maxwell::triangles;
+        solver.elementType=Maxwell::triangles;
         printF(" Setting elementType=triangles\n");
       }
       else if(len=line.matches("-uns") )
       {
-	solver.elementType=Maxwell::defaultUnstructured;
+        solver.elementType=Maxwell::defaultUnstructured;
         printF(" Setting elementType=defaultUnstructured\n");
       }
       else if( len=line.matches("-quad") )
       {
-	solver.elementType=Maxwell::quadrilaterals;
+        solver.elementType=Maxwell::quadrilaterals;
         printF(" Setting elementType=quadrilaterals\n");
       }
       else if( len=line.matches("-rot") )
       {
-	solver.gridType=Maxwell::rotatedSquare;
+        solver.gridType=Maxwell::rotatedSquare;
         printF(" Setting gridType=rotatedSquare\n");
       }
       else if( len=line.matches("-sinetri") )
       {
-	solver.gridType=Maxwell::sineByTriangles;
+        solver.gridType=Maxwell::sineByTriangles;
         solver.elementType=Maxwell::triangles;
         printF(" Setting gridType=sineByTriangles, elementType=triangles;\n");
       }
       else if( len=line.matches("-sine") )
       {
-	solver.gridType=Maxwell::sineSquare;
+        solver.gridType=Maxwell::sineSquare;
         printF(" Setting gridType=sineSquare\n");
       }
       else if( len=line.matches("-chevron") )
       {
-	solver.gridType=Maxwell::chevron;
+        solver.gridType=Maxwell::chevron;
         printF(" Setting gridType=chevron\n");
       }
       else if ( ( len=line.matches("-chevf=") ) )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.chevronFrequency);
-	printf(" Setting chevronFrequency=%e\n",solver.chevronFrequency);
+        sScanF(line(len,line.length()-1),"%e",&solver.chevronFrequency);
+        printf(" Setting chevronFrequency=%e\n",solver.chevronFrequency);
       }
       else if ( ( len=line.matches("-cheva=") ) )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.chevronAmplitude);
-	printf(" Setting chevronAmplitude=%e\n",solver.chevronAmplitude);
+        sScanF(line(len,line.length()-1),"%e",&solver.chevronAmplitude);
+        printf(" Setting chevronAmplitude=%e\n",solver.chevronAmplitude);
       }
       else if( len=line.matches("-box") )
-	{
-	  solver.gridType=Maxwell::box;
-	  printF(" Setting gridType=box\n");
-	}
+        {
+          solver.gridType=Maxwell::box;
+          printF(" Setting gridType=box\n");
+        }
       else if( len=line.matches("-chevbox") )
-	{
-	  solver.gridType=Maxwell::chevbox;
-	  printF(" Setting gridType=chevbox\n");
-	}
+        {
+          solver.gridType=Maxwell::chevbox;
+          printF(" Setting gridType=chevbox\n");
+        }
       else if( len=line.matches("-sqtri") )
       {
-	solver.gridType=Maxwell::squareByTriangles;
+        solver.gridType=Maxwell::squareByTriangles;
         solver.elementType=Maxwell::triangles;
         printF(" Setting gridType=squareByTriangles\n");
       }
       else if( len=line.matches("-sqquad") )
       {
-	solver.gridType=Maxwell::squareByQuads;
+        solver.gridType=Maxwell::squareByQuads;
         solver.elementType=Maxwell::quadrilaterals;
         printF(" Setting gridType=squareByQuads\n");
       }
       else if( len=line.matches("-skewedSquare") )
       {
-	solver.gridType=Maxwell::skewedSquare;
+        solver.gridType=Maxwell::skewedSquare;
         printF(" Setting gridType=skewedSquare\n");
       }      
       else if( len=line.matches("-annulus") )
       {
-	solver.gridType=Maxwell::annulus;
+        solver.gridType=Maxwell::annulus;
         printF(" Setting gridType=annulus\n");
       }      
       else if( len=line.matches("-perturbedSquare") )
       {
-	solver.gridType=Maxwell::perturbedSquare;
+        solver.gridType=Maxwell::perturbedSquare;
         printF(" Setting gridType=perturbedSquare\n");
       }
       else if( len=line.matches("-perturbedBox") )
       {
-	solver.gridType=Maxwell::perturbedBox;
+        solver.gridType=Maxwell::perturbedBox;
         printF(" Setting gridType=perturbedBox\n");
       }
       else if( len=line.matches("-tFinal=") )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.tFinal);
+        sScanF(line(len,line.length()-1),"%e",&solver.tFinal);
         printF(" Setting tFinal=%e\n",solver.tFinal);
       }
       else if( len=line.matches("-tPlot=") )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.tPlot);
+        sScanF(line(len,line.length()-1),"%e",&solver.tPlot);
         printF(" Setting tPlot=%e\n",solver.tPlot);
       }
       else if( len=line.matches("-cfl=") )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.cfl);
+        sScanF(line(len,line.length()-1),"%e",&solver.cfl);
         printF(" Setting cfl=%e\n",solver.cfl);
       }
       else if( len=line.matches("-ad=") )
       {
-	sScanF(line(len,line.length()-1),"%e",&solver.artificialDissipation);
+        sScanF(line(len,line.length()-1),"%e",&solver.artificialDissipation);
         printF(" Setting artificialDissipation=%e\n",solver.artificialDissipation);
       }
       else if( len=line.matches("-new") )
       {
-	solver.method=Maxwell::dsiNew;
+        solver.method=Maxwell::dsiNew;
         printF(" Setting method=dsiNew\n");
       }
       else if( len=line.matches("-dsimv") )
       {
-	solver.method=Maxwell::dsiMatVec;
+        solver.method=Maxwell::dsiMatVec;
         printF(" Setting method=DSI-MatVec\n");
       }
       else if( len=line.matches("-dsi") )
       {
-	solver.method=Maxwell::dsi;
+        solver.method=Maxwell::dsi;
         printF(" Setting method=dsi\n");
       }
       else if( len=line.matches("-nfdtd") )
       {
-	solver.method=Maxwell::nfdtd;
+        solver.method=Maxwell::nfdtd;
         printF(" Setting method=nfdtd\n");
       }
       else if( len=line.matches("-ox=") )
       {
-	sScanF(&line[len],"%i",&solver.orderOfAccuracyInSpace);
+        sScanF(&line[len],"%i",&solver.orderOfAccuracyInSpace);
         printF(" Setting order of accuracy in space =%i\n",solver.orderOfAccuracyInSpace);
       }
       else if( len=line.matches("-ot=") )
       {
-	sScanF(&line[len],"%i",&solver.orderOfAccuracyInTime);
+        sScanF(&line[len],"%i",&solver.orderOfAccuracyInTime);
         printF(" Setting order of accuracy in time =%i\n",solver.orderOfAccuracyInTime);
       }
       else if( len=line.matches("-sq") )
-	{
-	  solver.gridType=Maxwell::square;
-	  printF(" Setting gridType=square\n");
-	}
+        {
+          solver.gridType=Maxwell::square;
+          printF(" Setting gridType=square\n");
+        }
       else if( len=line.matches("-grid=") )
       {
-	solver.nameOfGridFile=line(len,line.length()-1);
+        solver.nameOfGridFile=line(len,line.length()-1);
         solver.gridType=Maxwell::compositeGrid;
         printF(" Setting gridType=compositeGrid\n");
       }
@@ -318,6 +322,20 @@ main(int argc, char *argv[])
     }
   }
 
+  // Guess number of parallel ghost based on grid name if not set
+  if( numberOfParallelGhost < 0 )
+  {
+    if( solver.nameOfGridFile.find("order4") )  // looke for "order4" in the grid name
+    {
+      numberOfParallelGhost=3;
+    }
+    else
+    {
+      numberOfParallelGhost=2;
+    }
+    printF("CgMx: Setting numberOfParallelGhost=%d. Use -numParallelGhost=<i> to over-ride this default.\n",
+          numberOfParallelGhost); 
+  }
   GL_GraphicsInterface & gi = (GL_GraphicsInterface &)
                      (*Overture::getGraphicsInterface("Maxwell's Equation",plotOption,argc,argv));
 
@@ -393,13 +411,13 @@ main(int argc, char *argv[])
       }
       else if( name=="-box" )
       {
-	solver.gridType=Maxwell::box;
-	printf(" Setting gridType=box\n");
+        solver.gridType=Maxwell::box;
+        printf(" Setting gridType=box\n");
       }
       else if( name=="-chevbox" )
       {
-	solver.gridType=Maxwell::chevbox;
-	printf(" Setting gridType=chevbox\n");
+        solver.gridType=Maxwell::chevbox;
+        printf(" Setting gridType=chevbox\n");
       }
       else
       {

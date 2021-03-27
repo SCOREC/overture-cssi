@@ -14,6 +14,7 @@
 #include "DispersiveMaterialParameters.h"
 #include "CheckParallel.h"
 #include "InterfaceMaxwell.h"
+#include "GridStatistics.h"
 
 #define interfaceMaxwell EXTERN_C_NAME(interfacemaxwell)
 #define newInterfaceMaxwell EXTERN_C_NAME(newinterfacemaxwell)
@@ -27,41 +28,41 @@ extern "C"
 {
 void interfaceMaxwell( const int&nd, 
                        const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-		       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
+                       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
                        const int&boundaryCondition1, 
-		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
-		       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
+                       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
                        const int&boundaryCondition2,
-		       const int&ipar, const real&rpar, 
+                       const int&ipar, const real&rpar, 
                        real&aa2, real&aa4, real&aa8, 
                        int&ipvt2, int&ipvt4, int&ipvt8,
                        int&ierr );
 
 void newInterfaceMaxwell( const int&nd, 
                        const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-		       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
+                       const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
                        const int&boundaryCondition1, 
-		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
-		       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
+                       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                       const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
                        const int&boundaryCondition2,
-		       const int&ipar, const real&rpar, int&ierr );
+                       const int&ipar, const real&rpar, int&ierr );
 
 void interface3dMaxwell( const int&nd, 
                        const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-		       const int&gridIndexRange1, 
+                       const int&gridIndexRange1, 
                        real&u1, const real&u1n, const real&u1m, real& v1, 
                        const int&mask1,const real&rsxy1, const real&xy1, 
                        real&p1, const real&p1n, const real&p1m, 
                        real&q1, const real&q1n, const real&q1m, 
                        const int&boundaryCondition1, 
-		       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                       const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
                        const int&gridIndexRange2, 
                        real&u2, const real&u2n, const real&u2m, real & v2,
                        const int&mask2,const real&rsxy2, const real&xy2, 
                        real&p2, const real&p2n, const real&p2m,  
                        real&q2, const real&q2n, const real&q2m,  
                        const int&boundaryCondition2,
-		       const int&ipar, const real&rpar, 
+                       const int&ipar, const real&rpar, 
                        real&aa2, real&aa4, real&aa8, 
                        int&ipvt2, int&ipvt4, int&ipvt8,
                        int&ierr );
@@ -205,116 +206,116 @@ initializeInterfaces()
     {
       for( int side1=0; side1<=1; side1++ )
       {
-	if( bc1(side1,dir1)==interfaceBoundaryCondition && matched(side1,dir1,grid1)==0 )
-	{
+        if( bc1(side1,dir1)==interfaceBoundaryCondition && matched(side1,dir1,grid1)==0 )
+        {
           bool interfaceFound=false;
           for( int grid2=grid1+1; grid2<cg.numberOfComponentGrids(); grid2++ ) // only check higher numbered grids
-	  {
+          {
             // When there are multiple domains, matching interfaces grids should not be in the same domain:
-	    if( cg.numberOfDomains()>1 && cg.domainNumber(grid1)==cg.domainNumber(grid2) )
-	      continue;
+            if( cg.numberOfDomains()>1 && cg.domainNumber(grid1)==cg.domainNumber(grid2) )
+              continue;
 
-	    MappedGrid & mg2 = cg[grid2];
-	    const IntegerArray & bc2 = mg2.boundaryCondition();
+            MappedGrid & mg2 = cg[grid2];
+            const IntegerArray & bc2 = mg2.boundaryCondition();
             const IntegerArray & share2 = mg2.sharedBoundaryFlag();
 
-	    for( int dir2=0; dir2<mg2.numberOfDimensions(); dir2++ )
-	    {
-	      for( int side2=0; side2<=1; side2++ )
-	      {
-		if( bc2(side2,dir2)==interfaceBoundaryCondition &&
+            for( int dir2=0; dir2<mg2.numberOfDimensions(); dir2++ )
+            {
+              for( int side2=0; side2<=1; side2++ )
+              {
+                if( bc2(side2,dir2)==interfaceBoundaryCondition &&
                     share1(side1,dir1)==share2(side2,dir2) && 
                     matched(side2,dir2,grid2)==0 && 
                     matched(side1,dir1,grid1)==0 )  
-		{
+                {
                   // ********************************************
-		  // **** potential interface found *************
+                  // **** potential interface found *************
                   // ********************************************
 
                   // ---- Check that the interfaces are close in space ---- *wdh* 2017/05/06 
-		  Mapping & map1 = mg1.mapping().getMapping();
-		  Mapping & map2 = mg2.mapping().getMapping();
-		  
-		  RealArray r1(1,3), x1(1,3), r2(1,3), x2(1,3); x1=0.; x2=0.;
-		  r1=.5; r1(0,dir1)=side1;  // r-coords for a point on the middle of the face of grid1
+                  Mapping & map1 = mg1.mapping().getMapping();
+                  Mapping & map2 = mg2.mapping().getMapping();
+                  
+                  RealArray r1(1,3), x1(1,3), r2(1,3), x2(1,3); x1=0.; x2=0.;
+                  r1=.5; r1(0,dir1)=side1;  // r-coords for a point on the middle of the face of grid1
                   map1.mapS(r1,x1);           // x coords on grid 1
-		  r2=-1.;
-		  map2.inverseMapS(x1,r2);    // r-coords on grid 2
-		  map2.mapS(r2,x2);           // x-coords on grid 2
-		  real rDist=fabs( r2(0,dir2)-side2 );
-		  real xDist=fabs( x1(0,0)-x2(0,0) ) + fabs( x1(0,1)-x2(0,1) ) + fabs( x1(0,2)-x2(0,2) );
+                  r2=-1.;
+                  map2.inverseMapS(x1,r2);    // r-coords on grid 2
+                  map2.mapS(r2,x2);           // x-coords on grid 2
+                  real rDist=fabs( r2(0,dir2)-side2 );
+                  real xDist=fabs( x1(0,0)-x2(0,0) ) + fabs( x1(0,1)-x2(0,1) ) + fabs( x1(0,2)-x2(0,2) );
                   const RealArray & bb = map1.getBoundingBox();
                   real xNorm = fabs(bb(1,0)-bb(0,0)) + fabs(bb(1,1)-bb(0,1));
-		  if( numberOfDimensions==3 ) xNorm +=  fabs(bb(1,2)-bb(0,2));
+                  if( numberOfDimensions==3 ) xNorm +=  fabs(bb(1,2)-bb(0,2));
 
                   xDist /=max(REAL_MIN*100,xNorm);  // normalize x-distance 
-		  
+                  
 
                   printF("--MX-- POTENTIAL Interface: %s=(grid1,side,dir1)=(%i,%i,%i) "
                          "AND %s=(grid2,side2,dir2)=(%i,%i,%i) share=%i\n",
-			 (const char*)mg1.getName(),grid1,side1,dir1,
+                         (const char*)mg1.getName(),grid1,side1,dir1,
                          (const char*)mg2.getName(),grid2,side2,dir2,share1(side1,dir1));
-		  printF(" grid1: r1=[%8.2e,%8.2e,%8.2e] x1=[%8.2e,%8.2e,%8.2e]\n"
-		         " grid2: r2=[%8.2e,%8.2e,%8.2e] x2=[%8.2e,%8.2e,%8.2e] .. rDist=%8.2e xDist=%8.2e, xNorm=%8.2e\n",
-			 r1(0,0),r1(0,1),r1(0,2), x1(0,0),x1(0,1),x1(0,2), 
-			 r2(0,0),r2(0,1),r2(0,2), x2(0,0),x2(0,1),x2(0,2), rDist, xDist, xNorm);
+                  printF(" grid1: r1=[%8.2e,%8.2e,%8.2e] x1=[%8.2e,%8.2e,%8.2e]\n"
+                         " grid2: r2=[%8.2e,%8.2e,%8.2e] x2=[%8.2e,%8.2e,%8.2e] .. rDist=%8.2e xDist=%8.2e, xNorm=%8.2e\n",
+                         r1(0,0),r1(0,1),r1(0,2), x1(0,0),x1(0,1),x1(0,2), 
+                         r2(0,0),r2(0,1),r2(0,2), x2(0,0),x2(0,1),x2(0,2), rDist, xDist, xNorm);
 
                   // --- tolerances for surfaces to match ---
-		  const real rTol=1.e-2;
-		  const real xTol=1.e-5;
-		   
-		  if( rDist<rTol && xDist < xTol )
-		  {
-		    if( interfaceFound )
-		    {
-		      // -- ERROR a previous matching interface has already been found! ---
+                  const real rTol=1.e-2;
+                  const real xTol=1.e-5;
+                   
+                  if( rDist<rTol && xDist < xTol )
+                  {
+                    if( interfaceFound )
+                    {
+                      // -- ERROR a previous matching interface has already been found! ---
 
-		      printF("initializeInterfaces:ERROR: A second valid interface match has been found:\n"
-			     " (grid1,side1,dir1,share1)=(%i,%i,%i,%i) also matches"
-			     " (grid2,side2,dir2,share2)=(%i,%i,%i,%i).\n"
-			     " Matching interface grids should be marked with distinct share values.\n",
-			     grid1,side1,dir1,share1(side1,dir1), grid2,side2,dir2,share2(side2,dir2));
-		      OV_ABORT("error");
-		    }
+                      printF("initializeInterfaces:ERROR: A second valid interface match has been found:\n"
+                             " (grid1,side1,dir1,share1)=(%i,%i,%i,%i) also matches"
+                             " (grid2,side2,dir2,share2)=(%i,%i,%i,%i).\n"
+                             " Matching interface grids should be marked with distinct share values.\n",
+                             grid1,side1,dir1,share1(side1,dir1), grid2,side2,dir2,share2(side2,dir2));
+                      OV_ABORT("error");
+                    }
 
-		    // ---- ADD an interface to the list ----
-		    interfaceFound=true;
-		    matched(side1,dir1,grid1)=1; // indicates these faces have been matched
-		    matched(side2,dir2,grid2)=1;
-		    
-		    printF("--MX-- Interface found: %s=(grid1,side,dir1)=(%i,%i,%i) matches "
+                    // ---- ADD an interface to the list ----
+                    interfaceFound=true;
+                    matched(side1,dir1,grid1)=1; // indicates these faces have been matched
+                    matched(side2,dir2,grid2)=1;
+                    
+                    printF("--MX-- Interface found: %s=(grid1,side,dir1)=(%i,%i,%i) matches "
                            "%s=(grid2,side2,dir2)=(%i,%i,%i) share=%i\n",
-			   (const char*)mg1.getName(),grid1,side1,dir1,
+                           (const char*)mg1.getName(),grid1,side1,dir1,
                            (const char*)mg2.getName(),grid2,side2,dir2,share1(side1,dir1));
 
                     // printF("interfaceInfo.size() = %d\n",interfaceInfo.size());
                     // int interfaceInfoSize=interfaceInfo.size();
-		    // interfaceInfo.resize(interfaceInfoSize+1);
-		    // interfaceInfo[interfaceInfoSize]=InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2);
-		    
-		    interfaceInfo.push_back(InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2));   
+                    // interfaceInfo.resize(interfaceInfoSize+1);
+                    // interfaceInfo[interfaceInfoSize]=InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2);
+                    
+                    interfaceInfo.push_back(InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2));   
 
                     // InterfaceInfo & info12 = *(new InterfaceInfo(grid1,side1,dir1, grid2,side2,dir2));
-		    // interfaceInfo.push_back(info12);
-		  
-		    // ***** Check that the valid points match on the interface ******
-		    //   *wdh* 2015/08/11
-		    const intArray & mask1 = mg1.mask();
-		    const intArray & mask2 = mg2.mask();
-		    OV_GET_SERIAL_ARRAY_CONST(int,mask1,mask1Local);
-		    OV_GET_SERIAL_ARRAY_CONST(int,mask2,mask2Local);
+                    // interfaceInfo.push_back(info12);
+                  
+                    // ***** Check that the valid points match on the interface ******
+                    //   *wdh* 2015/08/11
+                    const intArray & mask1 = mg1.mask();
+                    const intArray & mask2 = mg2.mask();
+                    OV_GET_SERIAL_ARRAY_CONST(int,mask1,mask1Local);
+                    OV_GET_SERIAL_ARRAY_CONST(int,mask2,mask2Local);
                     // *wdh* Nov 29, 2020
-		    // getBoundaryIndex(mg1.dimension(),side1,dir1,I1,I2,I3);
-		    // getBoundaryIndex(mg2.dimension(),side2,dir2,J1,J2,J3);
+                    // getBoundaryIndex(mg1.dimension(),side1,dir1,I1,I2,I3);
+                    // getBoundaryIndex(mg2.dimension(),side2,dir2,J1,J2,J3);
                     // Fixed: check boundary points *wdh* Nov 29, 2020
-		    getBoundaryIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3);
-		    getBoundaryIndex(mg2.gridIndexRange(),side2,dir2,J1,J2,J3);
+                    getBoundaryIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3);
+                    getBoundaryIndex(mg2.gridIndexRange(),side2,dir2,J1,J2,J3);
 
                     if( debug & 8 )
                     {
- 		      fprintf(debugFile,"--MX-- Interface found: %s=(grid1,side,dir1)=(%i,%i,%i) matches "
+                      fprintf(debugFile,"--MX-- Interface found: %s=(grid1,side,dir1)=(%i,%i,%i) matches "
                            "%s=(grid2,side2,dir2)=(%i,%i,%i) share=%i\n",
-			   (const char*)mg1.getName(),grid1,side1,dir1,
+                           (const char*)mg1.getName(),grid1,side1,dir1,
                            (const char*)mg2.getName(),grid2,side2,dir2,share1(side1,dir1));
 
                       displayMask(mask1,"mask1",debugFile);
@@ -323,7 +324,7 @@ initializeInterfaces()
                       fflush(debugFile);
                     }
 
-		    if( true)
+                    if( true)
                     {
                       // -- Check that interfaces have the same number of grid points -- 
                       const int d1=cg.domainNumber(grid1), d2=cg.domainNumber(grid2);
@@ -364,9 +365,9 @@ initializeInterfaces()
 
                     }
 
-		    int includeGhost=1;
-		    bool ok1 = ParallelUtility::getLocalArrayBounds(mask1,mask1Local,I1,I2,I3,includeGhost);
-		    bool ok2 = ParallelUtility::getLocalArrayBounds(mask2,mask2Local,J1,J2,J3,includeGhost);
+                    int includeGhost=1;
+                    bool ok1 = ParallelUtility::getLocalArrayBounds(mask1,mask1Local,I1,I2,I3,includeGhost);
+                    bool ok2 = ParallelUtility::getLocalArrayBounds(mask2,mask2Local,J1,J2,J3,includeGhost);
 
                     // This next check does not always work in parallel -- fix me -- could add check when we create 
                     // copies of the mask array *fix me*
@@ -375,20 +376,20 @@ initializeInterfaces()
                         I2.getLength()==J2.getLength() &&
                         I3.getLength()==J3.getLength() 
                       )
-		    {
+                    {
                       // ---- The check for parallel is now done in getLocalInterfaceArrays macro ---
                       
-		      // int maskDiff = max(abs(mask1Local(I1,I2,I3)-mask2Local(J1,J2,J3)));
+                      // int maskDiff = max(abs(mask1Local(I1,I2,I3)-mask2Local(J1,J2,J3)));
 
                       // Check that both masks are discretization points (ignore isNeeded etc.) *wdh* Nov 29, 2020
-		      int maskDiff = max( (mask1Local(I1,I2,I3) & MappedGrid::ISdiscretizationPoint) -
+                      int maskDiff = max( (mask1Local(I1,I2,I3) & MappedGrid::ISdiscretizationPoint) -
                                           (mask2Local(J1,J2,J3) & MappedGrid::ISdiscretizationPoint) );
 
-		      if( maskDiff > 0 )
-		      {
-			printF("       ERROR: the mask arrays do not match on the interface. This is currently required.\n");
-			printF("       Try re-generating the grid with more lines in the normal direction, this sometimes fixes this problem.\n");
-			printF("       See debug file for more info if debug &2 \n");
+                      if( maskDiff > 0 )
+                      {
+                        printF("       ERROR: the mask arrays do not match on the interface. This is currently required.\n");
+                        printF("       Try re-generating the grid with more lines in the normal direction, this sometimes fixes this problem.\n");
+                        printF("       See debug file for more info if debug &2 \n");
                         if( debug & 2 )
                         {
                           displayMask(mask1Local(I1,I2,I3),"mask1Local(I1,I2,I3)",pDebugFile);
@@ -405,11 +406,11 @@ initializeInterfaces()
 
                           fprintf(pDebugFile,"       INFO: interface grid points match: mask arrays agree on the interface.\n\n");
                         }
-			OV_ABORT("ERROR");
-		      }
-		      else
-		      {
-			printF("       INFO: interface grid points match: mask arrays agree on the interface.\n\n");
+                        OV_ABORT("ERROR");
+                      }
+                      else
+                      {
+                        printF("       INFO: interface grid points match: mask arrays agree on the interface.\n\n");
                         if( debug & 2 )
                         {
                           displayMask(mask1Local(I1,I2,I3),"mask1Local(I1,I2,I3)",pDebugFile);
@@ -418,34 +419,34 @@ initializeInterfaces()
                           fprintf(pDebugFile,"       INFO: interface grid points match: mask arrays agree on the interface.\n\n");
                         }
                         
-		      }
-		    }
-		  } // end if rDist < rTol and xDist < xTol 
-		  
-		}
-	      }
-	    }
-	  } // end for grid 2
+                      }
+                    }
+                  } // end if rDist < rTol and xDist < xTol 
+                  
+                }
+              }
+            }
+          } // end for grid 2
           if( !interfaceFound )
-	  { // if no interface was found, check that we haven't found a match already: 
-	    for( int inter=0; inter < interfaceInfo.size(); inter++ )
-	    {
-	      InterfaceInfo & interface = interfaceInfo[inter]; 
-	      if( (grid1==interface.grid1 && side1==interface.side1 && dir1==interface.dir1) ||
-	          (grid1==interface.grid2 && side1==interface.side2 && dir1==interface.dir2) )
-	      {
-		interfaceFound=true;
-		break;
-	      }
-	    }
-	    if( !interfaceFound )
-	    {
-	      printF("initializeInterfaces:ERROR: No matching interface found for (grid1,side,dir1)=(%i,%i,%i).\n",
-		     grid1,side1,dir1);
-	      OV_ABORT("error");
-	    }
-	  }
-	}
+          { // if no interface was found, check that we haven't found a match already: 
+            for( int inter=0; inter < interfaceInfo.size(); inter++ )
+            {
+              InterfaceInfo & interface = interfaceInfo[inter]; 
+              if( (grid1==interface.grid1 && side1==interface.side1 && dir1==interface.dir1) ||
+                  (grid1==interface.grid2 && side1==interface.side2 && dir1==interface.dir2) )
+              {
+                interfaceFound=true;
+                break;
+              }
+            }
+            if( !interfaceFound )
+            {
+              printF("initializeInterfaces:ERROR: No matching interface found for (grid1,side,dir1)=(%i,%i,%i).\n",
+                     grid1,side1,dir1);
+              OV_ABORT("error");
+            }
+          }
+        }
       }
     }
   }
@@ -491,11 +492,11 @@ initializeInterfaces()
 //              " grid1=%i (side1,dir1)=(%i,%i) mask1Local=[%i,%i][%i,%i][%i,%i]\n"
 //              " grid2=%i (side2,dir2)=(%i,%i) mask2Local=[%i,%i][%i,%i][%i,%i]\n",
 //              myid,grid1,side1,dir1,mask1Local.getBase(0),mask1Local.getBound(0),
-// 	     mask1Local.getBase(1),mask1Local.getBound(1),
-// 	     mask1Local.getBase(2),mask1Local.getBound(2),
-// 	     grid2,side2,dir2,mask2Local.getBase(0),mask2Local.getBound(0),
-// 	     mask2Local.getBase(1),mask2Local.getBound(1),
-// 	     mask2Local.getBase(2),mask2Local.getBound(2));
+//           mask1Local.getBase(1),mask1Local.getBound(1),
+//           mask1Local.getBase(2),mask1Local.getBound(2),
+//           grid2,side2,dir2,mask2Local.getBase(0),mask2Local.getBound(0),
+//           mask2Local.getBase(1),mask2Local.getBound(1),
+//           mask2Local.getBase(2),mask2Local.getBound(2));
 //       Overture::abort("error");
 //     }
     
@@ -524,17 +525,17 @@ initializeInterfaces()
     {
       if( !( mg1.numberOfDimensions()==3 ) )  // new 3D doesn't use work-space yet
       {
-	nrwk= 4*4*2*ndf;        // a4, matrix at each point is (4,4), we need 2 copies
-	niwk=  4*ndf;            // ipvt
+        nrwk= 4*4*2*ndf;        // a4, matrix at each point is (4,4), we need 2 copies
+        niwk=  4*ndf;            // ipvt
       }
     }
     else if( bcOrderOfAccuracy==4 )
     {
                     
       nrwk= (8*8*2*ndf +       // a8, matrix at each point is (8,8), we need 2 copies
-	     4*4*2*ndf );      // a4 (for Hz)
+             4*4*2*ndf );      // a4 (for Hz)
       niwk=  8*ndf + 4*ndf;    // ipvt8, ipvt4
-		    
+                    
     }
     else
     {
@@ -546,7 +547,7 @@ initializeInterfaces()
 
     if( false )
       printF("**** Maxwell::initializeInterfaces: interface %i allocate rwk[%i], iwk[%i] ****\n",inter,nrwk,niwk);
-		  
+                  
   }
   
 
@@ -570,6 +571,15 @@ initializeInterfaces()
   bool checkForTallCells = orderOfAccuracyInSpace>=4;
   if( checkForTallCells )
   {
+    
+     // check for cells with normal-dist/tangential-dist > tallCellRatioBound
+     const real & tallCellRatioBound = dbase.get<real>("tallCellRatioBound");
+     GridStatistics::checkForTallCells( cg,interfaceInfo,tallCellRatioBound );
+
+  }
+  else if( false && checkForTallCells )
+  {
+    // OLD WAY 
     printF("--- CHECK FOR TALL CELLS AT THE INTERFACE--- \n");
 
     // check for cells with normal-dist/tangential-dist > tallCellRatioBound
@@ -627,7 +637,7 @@ initializeInterfaces()
             // tallCellRatio = normal-dist / tangential-dist 
             FOR_3D(i1,i2,i3,I1,I2,I3) 
             {
-              if( mask(i1,i2,i3)>0 )
+              if( maskLocal(i1,i2,i3)>0 )
               {
                 // distance "normal" to the boundary for this point
                 real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
@@ -655,7 +665,7 @@ initializeInterfaces()
 
             FOR_3D(i1,i2,i3,I1,I2,I3) 
             {
-              if( mask(i1,i2,i3)>0 )
+              if( maskLocal(i1,i2,i3)>0 )
               {
                 // distance "normal" to the boundary for this point
                 real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
@@ -802,9 +812,10 @@ initializeInterfaces()
     nonlinearModel1,      // ipar[49]
     nonlinearModel2,      // ipar[50]
     numParallelGhost,     // ipar[51]
-    internalGhostBC       // ipar[52]
+    internalGhostBC,       // ipar[52]
+    useUnifiedInterfaceMacros // ipar[53]
   };
-		  
+                  
 const real & rtolForInterfaceIterations = dbase.get<real>("rtolForInterfaceIterations");
 const real & atolForInterfaceIterations = dbase.get<real>("atolForInterfaceIterations");
 
@@ -868,7 +879,7 @@ if( bcOrderOfAccuracy==2 )
     pa2=0; 
     pa4=pa2 + 2*2*2*ndf;
     pa8=0;  // not used
-	
+        
     pipvt2=0;
     pipvt4=pipvt2 + 2*ndf; 
     pipvt8=0;
@@ -879,11 +890,11 @@ else if( bcOrderOfAccuracy==4 )
   pa2=0; // not used
   pa4=0;
   pa8=pa4+4*4*2*ndf;
-	
+        
   pipvt2=0;
   pipvt4=0;
   pipvt8=pipvt4+4*ndf;
-	
+        
 }
 
 if( mg1.numberOfDimensions()==2 && !useNewInterfaceRoutines )
@@ -891,46 +902,46 @@ if( mg1.numberOfDimensions()==2 && !useNewInterfaceRoutines )
   // OLD interface routines
   interfaceMaxwell( mg1.numberOfDimensions(), 
                     #If #OPTION eq "parallel2"
-		      u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
-		      u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
-		      u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
-		      // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
+                      u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
+                      u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
+                      u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
+                      // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
                       // mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *mask2p,*prsxy2, *pxy2, bc2Local(0,0),
                       // fixed version: but note bc2Local 
                       mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *pmask1b,*prsxy1b, *pxy1b, bc2Local(0,0),
                     #Else
-		      u1Local.getBase(0),u1Local.getBound(0),
-		      u1Local.getBase(1),u1Local.getBound(1),
-		      u1Local.getBase(2),u1Local.getBound(2),
-		      mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
+                      u1Local.getBase(0),u1Local.getBound(0),
+                      u1Local.getBase(1),u1Local.getBound(1),
+                      u1Local.getBase(2),u1Local.getBound(2),
+                      mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
                     #End
                     #If #OPTION eq "parallel1"
-		      u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
-		      u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
-		      u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
-		      // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
-		      // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
+                      u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
+                      u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
+                      u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
+                      // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
+                      // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0), 
                       // fixed version: but note bc1Local 
                       mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *pmask2b,*prsxy2b,*pxy2b, bc1Local(0,0),
                     #Else
-		      u2Local.getBase(0),u2Local.getBound(0),
-		      u2Local.getBase(1),u2Local.getBound(1),
-		      u2Local.getBase(2),u2Local.getBound(2),
-		      mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2Local(0,0), 
+                      u2Local.getBase(0),u2Local.getBound(0),
+                      u2Local.getBase(1),u2Local.getBound(1),
+                      u2Local.getBase(2),u2Local.getBound(2),
+                      mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2Local(0,0), 
                     #End
-		    ipar[0], rpar[0], 
-		    rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
-		    ierr );
+                    ipar[0], rpar[0], 
+                    rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
+                    ierr );
 }
 else
 {
   // new interface routines -- 2D versions are done here too
   interface3dMaxwell( mg1.numberOfDimensions(), 
                       #If #OPTION eq "parallel2"
-		        u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
-		        u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
-		        u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
-		        // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
+                        u1CopyLocal.getBase(0),u1CopyLocal.getBound(0),
+                        u1CopyLocal.getBase(1),u1CopyLocal.getBound(1),
+                        u1CopyLocal.getBase(2),u1CopyLocal.getBound(2),
+                        // note: use grid2 mesh data here  ASSUMES GRIDS MATCH *FIX ME*
                         // mg2.gridIndexRange(0,0), *u1CopyLocal.getDataPointer(), *mask2p,*prsxy2, *pxy2, bc2Local(0,0),
                         // fixed version: but note bc2Local 
                         mg2.gridIndexRange(0,0), 
@@ -940,16 +951,14 @@ else
                         *u1mp, *v1bp, 
                         *pmask1b,*prsxy1b,*pxy1b, 
                         // *p1ptr,*p1nptr,
-                        *p1CopyLocal.getDataPointer(),
-                        *p1nCopyLocal.getDataPointer(),
-                        *p1mptr,   
-                        *q1ptr,*q1nptr,*q1mptr,   
+                        *p1CopyLocal.getDataPointer(), *p1nCopyLocal.getDataPointer(), *p1mptr,   
+                        *q1CopyLocal.getDataPointer(), *q1nCopyLocal.getDataPointer(), *q1mptr,   
                         bc2Local(0,0),
                       #Else
                         // --- serial case ---
-		        u1Local.getBase(0),u1Local.getBound(0),
-		        u1Local.getBase(1),u1Local.getBound(1),
-		        u1Local.getBase(2),u1Local.getBound(2),
+                        u1Local.getBase(0),u1Local.getBound(0),
+                        u1Local.getBase(1),u1Local.getBound(1),
+                        u1Local.getBase(2),u1Local.getBound(2),
                         mg1.gridIndexRange(0,0), 
                         *u1p, *u1np, *u1mp, *v1p,
                         *mask1p,*prsxy1, *pxy1, 
@@ -958,11 +967,11 @@ else
                         bc1Local(0,0), 
                       #End
                       #If #OPTION eq "parallel1"
-		        u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
-		        u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
-		        u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
-		        // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
-		        // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0),
+                        u2CopyLocal.getBase(0),u2CopyLocal.getBound(0),
+                        u2CopyLocal.getBase(1),u2CopyLocal.getBound(1),
+                        u2CopyLocal.getBase(2),u2CopyLocal.getBound(2),
+                        // note: use grid1 mesh data here ASSUMES GRIDS MATCH *FIX ME*
+                        // mg1.gridIndexRange(0,0), *u2CopyLocal.getDataPointer(), *mask1p,*prsxy1, *pxy1, bc1Local(0,0),
                         // fixed version: but note bc1Local 
                         mg1.gridIndexRange(0,0), 
                         *u2CopyLocal.getDataPointer(),
@@ -971,16 +980,14 @@ else
                         *u2mp, *v2bp,
                         *pmask2b,*prsxy2b,*pxy2b, 
                         // *p2ptr,*p2nptr,
-                        *p2CopyLocal.getDataPointer(),
-                        *p2nCopyLocal.getDataPointer(),
-                        *p2mptr, 
-                        *q2ptr,*q2nptr,*q2mptr, 
+                        *p2CopyLocal.getDataPointer(), *p2nCopyLocal.getDataPointer(), *p2mptr, 
+                        *q2CopyLocal.getDataPointer(), *q2nCopyLocal.getDataPointer(), *q2mptr, 
                         bc1Local(0,0),
                       #Else
                         // --- serial case ---
-		        u2Local.getBase(0),u2Local.getBound(0),
-		        u2Local.getBase(1),u2Local.getBound(1),
-		        u2Local.getBase(2),u2Local.getBound(2),
+                        u2Local.getBase(0),u2Local.getBound(0),
+                        u2Local.getBase(1),u2Local.getBound(1),
+                        u2Local.getBase(2),u2Local.getBound(2),
                         mg2.gridIndexRange(0,0), 
                         *u2p, *u2np, *u2mp, *v2p,
                         *mask2p,*prsxy2, *pxy2, 
@@ -988,9 +995,9 @@ else
                         *q2ptr,*q2nptr,*q2mptr, 
                         bc2Local(0,0), 
                       #End
-		      ipar[0], rpar[0], 
-		      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
-		      ierr );
+                      ipar[0], rpar[0], 
+                      rwk[pa2],rwk[pa4],rwk[pa8], iwk[pipvt2],iwk[pipvt4],iwk[pipvt8],
+                      ierr );
    
 
 }
@@ -1047,7 +1054,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
     }
     
   }
-		    
+                    
 
 //FILE *debugFile2 = debugFile;
 
@@ -1129,25 +1136,25 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       int dir2p = (dir2+dir) % mg2.numberOfDimensions();
       if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
       {
-	printF("Cgmx::applyInterfaceBC:ERROR: The number of grid points on the two interfaces do not match\n"
-	       " (grid1,side1,dir1,bc1)=(%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
-	       " (grid2,side2,dir2,bc2)=(%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
-	       grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
-	       I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
-	       grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
-	       J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
-	printF("grid names are %s and %s\n",(const char*)mg1.getName(),(const char*)mg2.getName());
-	OV_ABORT("error"); // this prints the file and line number and calls Overture::abort. 
+        printF("Cgmx::applyInterfaceBC:ERROR: The number of grid points on the two interfaces do not match\n"
+               " (grid1,side1,dir1,bc1)=(%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
+               " (grid2,side2,dir2,bc2)=(%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+               grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+               I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
+               grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
+               J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
+        printF("grid names are %s and %s\n",(const char*)mg1.getName(),(const char*)mg2.getName());
+        OV_ABORT("error"); // this prints the file and line number and calls Overture::abort. 
       }
 
       // We need to interpolate the grid function if an interface has interpolation points on it:
       if( bc1(0,dir1p)==0 || bc1(1,dir1p)==0 )
       {
-	interpolateThisDomain=true;
+        interpolateThisDomain=true;
       }
       if( bc2(0,dir2p)==0 || bc2(1,dir2p)==0 )
       {
-	interpolateThisDomain=true;
+        interpolateThisDomain=true;
       }
     } // end for dir 
   
@@ -1181,16 +1188,16 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
 
       if( numberOfDimensions==3 && interfaceEquationsOption==0 && ( !isRectangular1 || !isRectangular2) )
       {
-	printF("--MX--assignInterface:WARNING: interfaceEquationsOption=0 is NOT recommended"
+        printF("--MX--assignInterface:WARNING: interfaceEquationsOption=0 is NOT recommended"
                " for order=4 in 3D (curvilinear)!! Use new routines: interfaceEquationsOption=1.\n");
         if( numberOfIterationsForInterfaceBC !=1 ) 
-	{
-	  printF("--MX--assignInterface: ERROR numberOfIterationsForInterfaceBC=%i should be 1"
-		 " for interfaceEquationsOption=0 (3D, order=4)\n",numberOfIterationsForInterfaceBC);
+        {
+          printF("--MX--assignInterface: ERROR numberOfIterationsForInterfaceBC=%i should be 1"
+                 " for interfaceEquationsOption=0 (3D, order=4)\n",numberOfIterationsForInterfaceBC);
           printf("This is a fatal error to make sure that you really wanted to use interfaceEquationsOption=0 \n");
-	  OV_ABORT("error");
-	}
-	
+          OV_ABORT("error");
+        }
+        
       }
 
       // WARNING: Do not use the fourth-order rectangular grid interface conditions in interface3d.bf 
@@ -1231,7 +1238,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       mg1.update(MappedGrid::THEinverseVertexDerivative);
       mg2.update(MappedGrid::THEinverseVertexDerivative);
     }
-		  
+                  
     assert(isRectangular1==isRectangular2);
 
     const bool centerNeeded = forcingOption==twilightZoneForcing;  // we need the grid points 
@@ -1350,6 +1357,11 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       q2mptr=q2mLocal.getDataPointer();
     }
 
+    realArray & q1  = dmp1.isNonlinearMaterial() ? getNonlinearModelMappedGridFunction( grid1,next )    : u1;
+    realArray & q1n = dmp1.isNonlinearMaterial() ? getNonlinearModelMappedGridFunction( grid1,current ) : u1n;
+    
+    realArray & q2  = dmp2.isNonlinearMaterial() ? getNonlinearModelMappedGridFunction( grid2,next )    : u2;
+    realArray & q2n = dmp2.isNonlinearMaterial() ? getNonlinearModelMappedGridFunction( grid2,current ) : u2n;
 
     // ----------- PARALLEL COPY ---------
     //  Determine the local arrays that hold in the interface values.
@@ -1371,12 +1383,12 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
 
 
     int n1a=I1.getBase(),n1b=I1.getBound(),
-      n2a=I2.getBase(),n2b=I2.getBound(),
-      n3a=I3.getBase(),n3b=I3.getBound();
+        n2a=I2.getBase(),n2b=I2.getBound(),
+        n3a=I3.getBase(),n3b=I3.getBound();
 
     int m1a=J1.getBase(),m1b=J1.getBound(),
-      m2a=J2.getBase(),m2b=J2.getBound(),
-      m3a=J3.getBase(),m3b=J3.getBound();
+        m2a=J2.getBase(),m2b=J2.getBound(),
+        m3a=J3.getBase(),m3b=J3.getBound();
 
 
     real temp;
@@ -1416,6 +1428,9 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
      real *pxy1b = !centerNeeded ? ptemp : interface.pxy1->getDataPointer();
      real *pxy2b = !centerNeeded ? ptemp : interface.pxy2->getDataPointer();
     #endif
+
+    // Use unified interface macros from QX -- March 2021
+    const int & useUnifiedInterfaceMacros = dbase.get<int>("useUnifiedInterfaceMacros");
 
      // We need some temp space for jacobi updates
     const int & useJacobiInterfaceUpdate = dbase.get<int>("useJacobiInterfaceUpdate");
@@ -1459,36 +1474,36 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
         assert( dir1==dir2 );
         // In parallel we solve the equations in serial on both sides of the interface
         if( ok1 )
-	{
+        {
           orderOfExtrapolation=extrapolationWidth1+1;
-	  assignOptInterface(parallel1,ex,ey,ez,hx,hy,hz);
-	  if( method==sosup )
-	  { // for sosup we assign E.t
-	    assignOptInterface(parallel1,ext,eyt,ezt,hxt,hyt,hzt);
-	  }
-	  if( debug & 16 )
+          assignOptInterface(parallel1,ex,ey,ez,hx,hy,hz);
+          if( method==sosup )
+          { // for sosup we assign E.t
+            assignOptInterface(parallel1,ext,eyt,ezt,hxt,hyt,hzt);
+          }
+          if( debug & 16 )
             ::display(u1Local,sPrintF("u1Local after assignOptInterface t=%8.2e",t),pDebugFile,"%5.2f ");
-	}
-	if( ok2 )
-	{
+        }
+        if( ok2 )
+        {
           orderOfExtrapolation=extrapolationWidth2+1;
-	  assignOptInterface(parallel2,ex,ey,ez,hx,hy,hz);
-	  if( method==sosup )
-	  { // for sosup we assign E.t
-	    assignOptInterface(parallel2,ext,eyt,ezt,hxt,hyt,hzt);
-	  }
-	  if( debug & 16 )
+          assignOptInterface(parallel2,ex,ey,ez,hx,hy,hz);
+          if( method==sosup )
+          { // for sosup we assign E.t
+            assignOptInterface(parallel2,ext,eyt,ezt,hxt,hyt,hzt);
+          }
+          if( debug & 16 )
             ::display(u1Local,sPrintF("u2Local after assignOptInterface t=%8.2e",t),pDebugFile,"%5.2f ");
-	}
+        }
       #else
         // serial
         assignOptInterface(serial,ex,ey,ez,hx,hy,hz);
         if( method==sosup )
-	{ // for sosup we assign E.t
+        { // for sosup we assign E.t
           // printF("Assign interface values for sosup: E.t at t=%9.3e\n",t);
           assignOptInterface(serial,ext,eyt,ezt,hxt,hyt,hzt);
-	}
-	
+        }
+        
       #endif
 
       
@@ -1505,18 +1520,18 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       assignOptParameters(serial,ex,ey,ez,hx,hy,hz);
 
       newInterfaceMaxwell( mg1.numberOfDimensions(), 
-			   u1Local.getBase(0),u1Local.getBound(0),
-			   u1Local.getBase(1),u1Local.getBound(1),
-			   u1Local.getBase(2),u1Local.getBound(2),
-			   mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1(0,0), 
-			   u2Local.getBase(0),u2Local.getBound(0),
-			   u2Local.getBase(1),u2Local.getBound(1),
-			   u2Local.getBase(2),u2Local.getBound(2),
-			   mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2(0,0), 
-			   ipar[0], rpar[0], ierr );
+                           u1Local.getBase(0),u1Local.getBound(0),
+                           u1Local.getBase(1),u1Local.getBound(1),
+                           u1Local.getBase(2),u1Local.getBound(2),
+                           mg1.gridIndexRange(0,0), *u1p, *mask1p,*prsxy1, *pxy1, bc1(0,0), 
+                           u2Local.getBase(0),u2Local.getBound(0),
+                           u2Local.getBase(1),u2Local.getBound(1),
+                           u2Local.getBase(2),u2Local.getBound(2),
+                           mg2.gridIndexRange(0,0), *u2p, *mask2p,*prsxy2, *pxy2, bc2(0,0), 
+                           ipar[0], rpar[0], ierr );
 
     }
-		  
+                  
     // wait to set initialized=true until ghost values have been assigned the first time : 
     if( assignInterfaceGhostValues )
       interface.initialized=true;
@@ -1553,52 +1568,52 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
           realSerialArray & x1Local = x1;
           realSerialArray & x2Local = x2;
         #endif
-		    
-	OGFunction & e = *tz;
+                    
+        OGFunction & e = *tz;
         Range E(ex,ex+numberOfDimensions-1);
-	int isRectangular=0;
-	getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3);
+        int isRectangular=0;
+        getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3);
 
-	int includeGhost=0; 
-	bool ok = ParallelUtility::getLocalArrayBounds(u1,u1Local,I1,I2,I3,includeGhost);
-	if( ok )
-	{
-	  realSerialArray err(I1,I2,I3,E);
-	  realSerialArray ue(I1,I2,I3,E);
-		  
-	  // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
+        int includeGhost=0; 
+        bool ok = ParallelUtility::getLocalArrayBounds(u1,u1Local,I1,I2,I3,includeGhost);
+        if( ok )
+        {
+          realSerialArray err(I1,I2,I3,E);
+          realSerialArray ue(I1,I2,I3,E);
+                  
+          // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
 
 
-	  e.gd( ue  ,x1Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
-	  err=u1Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
-	  ::display(u1Local(I1,I2,I3,E),sPrintF("u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
-	  ::display(err,sPrintF("err in u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
+          e.gd( ue  ,x1Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
+          err=u1Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
+          ::display(u1Local(I1,I2,I3,E),sPrintF("u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
+          ::display(err,sPrintF("err in u1 (ghost) (grid1=%i) after interface, t=%e",grid1,t),pDebugFile,"%8.1e ");
 
-	  // getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3,-1);
-	  // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
-	  // ::display(err,sPrintF("err in u1 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
-	}
-	
+          // getGhostIndex(mg1.gridIndexRange(),side1,dir1,I1,I2,I3,-1);
+          // err=u1(I1,I2,I3,ex)-e(mg1,I1,I2,I3,ex,t);
+          // ::display(err,sPrintF("err in u1 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
+        }
+        
 
-	getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3);
-	ok = ParallelUtility::getLocalArrayBounds(u2,u2Local,I1,I2,I3,includeGhost);
-	if( ok )
-	{
-	  realSerialArray err(I1,I2,I3,E);
-	  realSerialArray ue(I1,I2,I3,E);
+        getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3);
+        ok = ParallelUtility::getLocalArrayBounds(u2,u2Local,I1,I2,I3,includeGhost);
+        if( ok )
+        {
+          realSerialArray err(I1,I2,I3,E);
+          realSerialArray ue(I1,I2,I3,E);
          
-	  e.gd( ue  ,x2Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
-	  err=u2Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
-	  ::display(u2Local(I1,I2,I3,E),sPrintF("u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
-	  ::display(err,sPrintF("err in u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
+          e.gd( ue  ,x2Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,E,t);
+          err=u2Local(I1,I2,I3,E)-ue(I1,I2,I3,E);
+          ::display(u2Local(I1,I2,I3,E),sPrintF("u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
+          ::display(err,sPrintF("err in u2 (ghost) (grid2=%i) after interface, t=%e",grid2,t),pDebugFile,"%8.1e ");
 
-	  // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
-	  // ::display(err,sPrintF("err in u2 (ex,ghost) after interface, t=%e",t),pDebugFile,"%8.1e ");
-	  // getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3,-1);
-	  // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
-	  // ::display(err,sPrintF("err in u2 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
-	}
-	
+          // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
+          // ::display(err,sPrintF("err in u2 (ex,ghost) after interface, t=%e",t),pDebugFile,"%8.1e ");
+          // getGhostIndex(mg2.gridIndexRange(),side2,dir2,I1,I2,I3,-1);
+          // err=u2(I1,I2,I3,ex)-e(mg2,I1,I2,I3,ex,t);
+          // ::display(err,sPrintF("err in u2 (ex,line 1) after interface, t=%e",t),pDebugFile,"%8.1e ");
+        }
+        
       }
     }
     
@@ -1655,28 +1670,28 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
       bool hasInterface=false;
       for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
       {
-	extrapParams.ghostLineToAssign=ghost;
-	if( (t <= 2.*dt && debug>0 ) || debug & 4 )
+        extrapParams.ghostLineToAssign=ghost;
+        if( (t <= 2.*dt && debug>0 ) || debug & 4 )
         {
-	  printF("assignInterface: assignInterfaceValues=%i assignInterfaceGhostValues=%i\n",
+          printF("assignInterface: assignInterfaceValues=%i assignInterfaceGhostValues=%i\n",
                  (int)assignInterfaceValues, (int)assignInterfaceGhostValues);
         }
         
-	for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	  for( int side=0; side<=1; side++ )
-	  {
-	    const int bc = mg.boundaryCondition(side,axis);
-	    if( bc==interfaceBoundaryCondition )
-	    {
+        for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+          for( int side=0; side<=1; side++ )
+          {
+            const int bc = mg.boundaryCondition(side,axis);
+            if( bc==interfaceBoundaryCondition )
+            {
               if( (t <= 2.*dt && debug>0) || debug & 4 )
               {
                 printF("assignInterface: sosup: grid=%i extrap ghost-line %i to order %i\n",
                        grid,extrapParams.ghostLineToAssign,extrapParams.orderOfExtrapolation);
               }
-	      hasInterface=true;
-	      u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
-	    }
-	  }
+              hasInterface=true;
+              u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
+            }
+          }
       }
 
       if( hasInterface && ( true || 
@@ -1694,7 +1709,7 @@ assignInterfaceBoundaryConditions( int current, real t, real dt,
   {
     if( true || debug & 8 )
       printF("\n ++++++++++  Cgmx:assignInterfaceBoundaryConditions: Interpolate after assigning the "
-	     "interface values next=%i t=%9.3e +++++++++++++++\n",next,t);
+             "interface values next=%i t=%9.3e +++++++++++++++\n",next,t);
     cgfields[next].interpolate();
   }
 

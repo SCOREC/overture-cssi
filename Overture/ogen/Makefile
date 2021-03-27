@@ -141,6 +141,8 @@ improveQuality.o: improveQuality.C; $(CC) $(CCFLAGSOGEN) -c improveQuality.C
 cutHoles.o: cutHoles.C; $(CC) $(CCFLAGSOGEN) -c cutHoles.C
 updateRefinement.o: updateRefinement.C; $(CC) $(CCFLAGSG) -c updateRefinement.C
 updateRefinementNew.o: updateRefinementNew.C; $(CC) $(CCFLAGSG) -c updateRefinementNew.C
+matchInterfaces.o: matchInterfaces.C; $(CC) $(CCFLAGSG) -c matchInterfaces.C	
+InterfaceInfo.o: InterfaceInfo.C; $(CC) $(CCFLAGSG) -c InterfaceInfo.C	
 
 hypgenFiles = ../mapping/HyperbolicSurfaceMapping.o ../mapping/hyper.o ../mapping/hypgen.o ../mapping/hypgen2.o \
               ../mapping/surgrd.o ../mapping/cmpltm.o
@@ -163,7 +165,7 @@ ogen=    ogenDriver.o $(ogenFiles) TridiagonalSolver.o TridiagonalFactor.o
 ogen=    ogenDriver.o $(ogenFiles) GridStretcher.o generateParallel.o DataPointMapping.o ../hype/update.o
 ogen=    ogenDriver.o $(ogenFiles) ../hype/update.o
 ogen=    ogenDriver.o $(ogenFiles) ../mapping/MatrixTransform.o ../mapping/Mapping.o
-ogen=    ogenDriver.o $(ogenFiles) 
+ogen=    ogenDriver.o $(ogenFiles) matchInterfaces.o InterfaceInfo.o
 ogen: $(ogen) ; $(CC) $(CCFLAGS) -o $@ $(ogen) $(PETSC_LIBS) $(CLIBS) $(FLIBS) $(FORTRAN_LIBS_FORT77) $(GLIBS)  
 
 # **************************************************************************************

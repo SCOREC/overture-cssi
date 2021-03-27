@@ -33,7 +33,8 @@ GridGenerator1_date: $(Objects)
 # Always compile these files optimised
 filesOpt = boundaryAdjustment.C Regrid.C ErrorEstimator.C classify.C cutHoles.C updateRefinement.C \
            cutHolesNew.C markPointsNeeded.C CanInterpolate.C computeOverlap.C checkOverlap.C movingUpdate.C \
-           lastChance.C  adjustBoundary.C interpolatePoints.C cutHolesNewer.C explicitHoleCutting.C 
+           lastChance.C  adjustBoundary.C interpolatePoints.C cutHolesNewer.C explicitHoleCutting.C \
+           InterfaceInfo.C matchInterfaces.C
 
 GridGenerator2_date: $(filesOpt:.C=.o)
 	  touch $@
@@ -55,6 +56,8 @@ movingUpdate.o       : ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
 lastChance.o         : ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
 adjustBoundary.o     : ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
 explicitHoleCutting.o: ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
+InterfaceInfo.o      : ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
+matchInterfaces.o    : ${@:.o=.C}; $(CC) $(CCFLAGSO) -c ${@:.o=.C}
 
 # Always compile these next files optimized
 fortran_files = interpFineFromCoarse.f interpCoarseFromFine.f

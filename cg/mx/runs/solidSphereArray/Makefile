@@ -26,5 +26,19 @@ cgmx = $(CGBUILDPREFIX)/mx/bin/cgmx
 
 
 
+# Ellipsoid grids:
+ellipsoidGrid1:
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -factor=4 -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=4 -per=npp -factor=4 -rFactor=.7 -nrExtra=4 -orthographicPatchParameter=.7 -interp=e
+
+ellipsoidGrid4:
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=fourSolidEllipsoidsGrid -configFile=solidEllipsoidArrayConfig4.h -order=2 -per=npp -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=4
+
+ellipsoidGrid8:
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=eightSolidEllipsoidsGrid -configFile=solidEllipsoidArrayConfig8.h -order=4 -per=npp -rFactor=.65 -nrExtra=4 -orthographicPatchParameter=.6 -factor=4 -matchGridsAtInterfaces=1 -interp=i -numGhost=3
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=eightSolidEllipsoidsGrid -configFile=solidEllipsoidArrayConfig8.h -order=2 -per=npp -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=4
+
+ellipsoidGrid32:
+	$(ogen) -noplot solidEllipsoidArrayGrid -prefix=36SolidEllipsoidsGrid -nsx=3 -nsy=3 -nsz=4 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=4
 
 

@@ -44,8 +44,10 @@ $deltaRadius0=.25; # do not make larger than .3 or troubles with cgmx
 $suffix=""; 
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 # maximize overlap so the mask matches on the interface -- need to fix ogen to do this automatically
-$overlapOption="maximize"; # "default"; 
+$overlapOption="default"; # "maximize"; # "default"; 
 $prefix="solidEllipsoidArrayGrid";
+$matchGridsAtInterfaces=1; 
+$rFactor=.75; # to make radial grids a bit narrower
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=i"=>\$factor,"nrExtra=i"=>\$nrExtra,"nrMin=i"=>\$nrMin,\
@@ -53,10 +55,11 @@ GetOptions( "order=i"=>\$order,"factor=i"=>\$factor,"nrExtra=i"=>\$nrExtra,"nrMi
             "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb,"ml=i"=>\$ml,\
             "stretchFactor=f"=>\$stretchFactor,"box=f"=>\$box,"suffix=s"=>\$suffix,"numGhost=i"=>\$numGhost,\
             "prefix=s"=> \$prefix,"a=f"=>\$a,"b=f"=>\$b,"c=f"=>\$c,"per=s"=>\$per,"ds0=f"=>\$ds0,\
-	    "orthographicPatchParameter=f"=>\$orthographicPatchParameter,"angle1=f"=>\$angle1,"angle2=f"=>\$angle2, \
+	          "orthographicPatchParameter=f"=>\$orthographicPatchParameter,"angle1=f"=>\$angle1,"angle2=f"=>\$angle2, \
             "rotationAxis1=i"=>\$rotationAxis1,"rotationAxis2=i"=>\$rotationAxis2,\
             "xShift=f"=>\$xShift,"yShift=f"=>\$yShift,"zShift=f"=>\$zShift,"configFile=s"=>\$configFile,\
-            "overlapOption=s"=>\$overlapOption,"nsx=i"=>\$nsx,"nsy=i"=>\$nsy,"nsz=i"=>\$nsz );
+            "overlapOption=s"=>\$overlapOption,"nsx=i"=>\$nsx,"nsy=i"=>\$nsy,"nsz=i"=>\$nsz,\
+            "matchGridsAtInterfaces=i"=>\$matchGridsAtInterfaces,"rFactor=f"=>\$rFactor );
 # 
 if( $box ne 0 ){ $xa=-$box; $xb=$box; $ya=-$box; $yb=$box; $za=-$box; $zb=$box; }
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -273,6 +276,8 @@ generate an overlapping grid
       all
       $ng $ng $ng $ng $ng $ng 
     # 
+    # match masks at interfaces:
+    match grids across interfaces $matchGridsAtInterfaces
     # Maximum overlap to ensure the mask's match at the interface *fix me*
     if( $overlapOption eq "maximize" ){ $cmd="maximize overlap"; }else{ $cmd="#"; }
       $cmd 
@@ -280,6 +285,8 @@ generate an overlapping grid
 #
 echo to terminal 1
   compute overlap
+  check interfaces match
+  check for tall cells at interfaces
  #  change the plot
  #    toggle grid 0 0
     # open graphics

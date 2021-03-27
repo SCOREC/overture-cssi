@@ -817,6 +817,12 @@ end if
 #Include "nonlinearInterfaceMacros.h"
 #Include "nonlinearInterfaceMacros24r.h"
 
+! *********************************************************************
+! ********** MACROS FOR Unified INTERFACE CONDITIONS ****************
+! *********************************************************************
+#Include "unifiedInterfaceMacros.h"
+! #Include "nonlinearInterfaceMacros24r.h"
+
 ! ----------------------------------------------------------------------------
 !  MACRO: Eval jump conditions for Hz, 2D, 2nd-order
 !  [ w.n/eps] = 0
@@ -2063,8 +2069,10 @@ beginLoopsMask2d()
       (v2x-u2y)
  f(3)=(tau1*u1Lap+tau2*v1Lap)/eps1 - \
       (tau1*u2Lap+tau2*v2Lap)/eps2
- f(4)=(u1xxx+u1xyy+v1xxy+v1yyy) - \
-      (u2xxx+u2xyy+v2xxy+v2yyy)
+ ! f(4)=(u1xxx+u1xyy+v1xxy+v1yyy) - \
+ !      (u2xxx+u2xyy+v2xxy+v2yyy)
+ f(4)=(u1xxx+u1xyy+v1xxy+v1yyy)*c1**2- \
+       (u2xxx+u2xyy+v2xxy+v2yyy)*c2**2
  f(5)=((v1xxx+v1xyy)-(u1xxy+u1yyy))/eps1 - \
       ((v2xxx+v2xyy)-(u2xxy+u2yyy))/eps2
  if( setDivergenceAtInterfaces.eq.0 )then
@@ -2102,6 +2110,7 @@ beginLoopsMask2d()
    veLapSq = vexxxx + 2.*vexxyy + veyyyy
 
    f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*(1./eps1-1./eps2)
+   f(4) = f(4) - ( uexxx+uexyy+vexxy+veyyy )*(c1**2 - c2**2)
    f(5) = f(5) - ((vexxx+vexyy)-(uexxy+ueyyy))*(1./eps1-1./eps2)
    if( setDivergenceAtInterfaces.eq.0 )then
      f(6) = f(6) - (an1*ueLapSq+an2*veLapSq)*(1./eps1-1./eps2)
@@ -2347,15 +2356,15 @@ beginLoopsMask2d()
         ! '
       end if
 
-      aa8(4,0,0,nn)= aLapX0
-      aa8(4,1,0,nn)= bLapY0
-      aa8(4,4,0,nn)= aLapX1
-      aa8(4,5,0,nn)= bLapY1
+      aa8(4,0,0,nn)= aLapX0*c1**2
+      aa8(4,1,0,nn)= bLapY0*c1**2
+      aa8(4,4,0,nn)= aLapX1*c1**2
+      aa8(4,5,0,nn)= bLapY1*c1**2
 
-      aa8(4,2,0,nn)=-cLapX0
-      aa8(4,3,0,nn)=-dLapY0
-      aa8(4,6,0,nn)=-cLapX1
-      aa8(4,7,0,nn)=-dLapY1
+      aa8(4,2,0,nn)=-cLapX0*c2**2
+      aa8(4,3,0,nn)=-dLapY0*c2**2
+      aa8(4,6,0,nn)=-cLapX1*c2**2
+      aa8(4,7,0,nn)=-dLapY1*c2**2
 
       ! 5  [ {(Delta v).x - (Delta u).y}/eps ] =0  -> [ {(v.xxx+v.xyy)-(u.xxy+u.yyy)}/eps ] = 0
 
@@ -2997,12 +3006,17 @@ end if
       #If #MODEL eq "none"
        assignInterfaceGhost22r()
       #End
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost22r()
+
     else if( useNonlinearModel.eq.0 )then
       ! dispersive case
       #If #MODEL eq "gdm"
        assignDispersiveInterfaceGhost22r()
       #End 
-   else
+    else
       ! nonlinear dispersive case
       #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost22r()
@@ -3010,6 +3024,7 @@ end if
         write(*,*) 'ERROR: inavlid value for MODEL for nonlinear case'
         stop 5555 
       #End 
+     
     end if    
 
     ! fixup values on ends *wdh* June 22, 2016
@@ -3051,6 +3066,10 @@ end if
     #If #MODEL eq "none"
       assignInterfaceGhost22c()
     #End
+  else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost22c()
+
   else if( useNonlinearModel.eq.0 )then
     ! dispersive case
     #If #MODEL eq "gdm"
@@ -3061,6 +3080,7 @@ end if
     #If #MODEL eq "mla"
       assignNonlinearInterfaceGhost22c()
     #End 
+    
   end if
 
   ! now make sure that div(u)=0 etc.
@@ -3189,7 +3209,12 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
    if( dispersive.eq.0 )then
      #If #MODEL eq "none"
        assignInterfaceGhost22r( NO_MAG_FIELD )
-     #End 
+     #End
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost22r()
+
    else if( useNonlinearModel.eq.0 )then
      ! dispersive case
      #If #MODEL eq "gdm"
@@ -3200,6 +3225,7 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
      #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost22r()
      #End 
+     
    end if    
    resetIndexBounds()         
  
@@ -3214,6 +3240,11 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
      #If #MODEL eq "none"
        assignInterfaceGhost24r()
      #End
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost24r()  
+
    else if( useNonlinearModel.eq.0 )then
      ! dispersive case
      #If #MODEL eq "gdm"
@@ -3225,7 +3256,8 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
      #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost24r()
      #End 
-   end if    
+     
+   end if  
    
    ! fixup corner points 
    ! if( .false. )then
@@ -3300,10 +3332,10 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
 
 
     if( t.lt. 3.*dt .and. debug.gt.0 )then
-      write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER CURV INTERFACE (residual order=4)****")')
+     write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER CURV INTERFACE (residual order=4)****")')
 
      ! Use 4th-order accurate residuals in SOA update, otheriwse accuracy degrades to 3rd order for PMIC
-     ! perl $ORDER=2; 
+     ! #perl $ORDER=2; 
      ! write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER FOR 4TH ORDER CURV INTERFACE (residual order=2)****")')
 
     end if 
@@ -3317,6 +3349,11 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
       #If #MODEL eq "none"
         assignInterfaceGhost22c( NO_MAG_FIELD )
       #End 
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost22c()
+
     else if( useNonlinearModel.eq.0 )then
       ! dispersive case
       #If #MODEL eq "gdm"
@@ -3327,6 +3364,7 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
       #If #MODEL eq "mla"
         assignNonlinearInterfaceGhost22c()
       #End 
+      
     end if
     resetIndexBounds()         
 
@@ -3442,6 +3480,11 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
      #If #MODEL eq "none"
        assignInterfaceGhost24c()
      #End
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost24c()
+
    else if (useNonlinearModel.eq.0) then
      ! dispersive case
      #If #MODEL eq "gdm"
@@ -3452,6 +3495,7 @@ else if( .false. .and. orderOfAccuracy.eq.4 )then
      #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost24c()
      #End
+     
    end if    
 
    ! fixup corner points 
@@ -3614,6 +3658,11 @@ end if
      #If #MODEL eq "none"
        assignInterfaceGhost23c()
      #End 
+
+   else if( useUnifiedInterfaceMacros.eq.1 ) then
+    ! Use Qing's unified interface macros
+    assignUnifiedInterfaceGhost23c() 
+
    else if( useNonlinearModel.eq.0 )then
      ! dispersive case
      #If #MODEL eq "gdm"
@@ -3624,7 +3673,8 @@ end if
      #If #MODEL eq "mla"
        assignNonlinearInterfaceGhost23c()
      #End 
-   end if    
+     
+   end if   
 
 
   ! periodic update
@@ -3891,7 +3941,7 @@ implicit none
       #Include "knownSolutionFortranInclude.h"
       integer knownSolutionOption
 
-      integer useJacobiUpdate
+      integer useJacobiUpdate, useUnifiedInterfaceMacros
       integer dispersionModel1, dispersionModel2, dispersive, jv, pxc
       integer gdmParOption
       integer maxNumberOfParameters,maxNumberOfPolarizationVectors,maxPolarizationComponents
@@ -4186,6 +4236,7 @@ implicit none
       numParallelGhost    = ipar(51)
 
       internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
+      useUnifiedInterfaceMacros = ipar(53)
 
       dx1(0)                =rpar(0)
       dx1(1)                =rpar(1)
@@ -4306,7 +4357,7 @@ implicit none
         write(*,'("  ... setDivergenceAtInterfaces=",i2)') setDivergenceAtInterfaces
         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
         write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
-        write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
+        write(*,'("  ... useUnifiedInterfaceMacros=",i2)') useUnifiedInterfaceMacros
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
         write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,1),i2=0,nd-1)
         write(*,'("  ... bc2=",6i6)') ((boundaryCondition2(i1,i2),i1=0,1),i2=0,nd-1)

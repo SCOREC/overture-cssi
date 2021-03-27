@@ -2529,7 +2529,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             if( ok && useOpt )
             {
         // use optimised boundary conditions
-                int ipar[40];
+                int ipar[60];
                 real rpar[60];
                 int gridType = isRectangular ? 0 : 1;
                 int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
@@ -2800,6 +2800,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 ipar[26]=numberLinesForPML;
                 ipar[27]=adjustThreeLevels;
                 ipar[28]=method;
+                ipar[39]=myid; // *wdh* March 20, 2021
                 ipar[38]=solveForAllFields;
                 if( adjustFarFieldBoundariesForIncidentField(grid) )
                 {
@@ -3122,7 +3123,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 if( ok && useOpt )
                 {
           // use optimised boundary conditions
-                    int ipar[40];
+                    int ipar[60];
                     real rpar[60];
                     int gridType = isRectangular ? 0 : 1;
                     int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
@@ -3387,6 +3388,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
                     ipar[28]=method;
+                    ipar[39]=myid; // *wdh* March 20, 2021
                     ipar[38]=solveForAllFields;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {
@@ -3710,7 +3712,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 if( ok && useOpt )
                 {
           // use optimised boundary conditions
-                    int ipar[40];
+                    int ipar[60];
                     real rpar[60];
                     int gridType = isRectangular ? 0 : 1;
                     int orderOfExtrapolation=orderOfAccuracyInSpace+1;  // not used
@@ -3978,6 +3980,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
                     ipar[28]=method;
+                    ipar[39]=myid; // *wdh* March 20, 2021
                     ipar[38]=solveForAllFields;
                     if( adjustFarFieldBoundariesForIncidentField(grid) )
                     {

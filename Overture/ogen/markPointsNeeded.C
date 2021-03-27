@@ -1,4 +1,8 @@
 // This file automatically generated from markPointsNeeded.bC with bpp.
+// =======================================================================================================
+// Files:
+//   markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const int & lowerOrUpper /* =-1 */ )
+// =======================================================================================================
 #include "Ogen.h"
 #include "Overture.h"
 #include "display.h"
@@ -50,7 +54,7 @@ static const int ISneededPoint = CompositeGrid::ISreservedBit2;  // from Cgsh.h
 //  }
 // //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
 // //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-// //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
+// //   grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
 
 //  donorInfo(i,0)=donorProcessor;
 //  donorInfo(i,1)=donor;
@@ -60,7 +64,7 @@ static const int ISneededPoint = CompositeGrid::ISreservedBit2;  // from Cgsh.h
 //  // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
 //  numToSend[donorProcessor]++; 
 //  i++;
-// #endMacro	  
+// #endMacro      
 
 static int numberOfIncreasingDonorMessage=0;
 
@@ -210,365 +214,365 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
         {
             if( MASK(i1,i2,i3) & MappedGrid::ISinterpolationPoint  ) 
             {
-      	const int donor=INVERSEGRID(i1,i2,i3);
-      	if( donor==grid && allowHangingInterpolation )
-        	  continue;
-        	  
-      	assert( donor>=0 && donor<numberOfBaseGrids ); // && donor!=grid );
+                const int donor=INVERSEGRID(i1,i2,i3);
+                if( donor==grid && allowHangingInterpolation )
+                    continue;
+                    
+                assert( donor>=0 && donor<numberOfBaseGrids ); // && donor!=grid );
 
-      	if( (lowerOrUpper==-1 && donor<=grid) || (lowerOrUpper==+1 && donor>=grid) ) // ******* move this up ******
-      	{
-        	  int m=MASK(i1,i2,i3);
-        	  if( m & ISneededPoint  ||                  // a needed point
-            	      isNeededForDiscretization(c,iv) )      // or it is needed for discretisation...
-        	  {
+                if( (lowerOrUpper==-1 && donor<=grid) || (lowerOrUpper==+1 && donor>=grid) ) // ******* move this up ******
+                {
+                    int m=MASK(i1,i2,i3);
+                    if( m & ISneededPoint  ||                  // a needed point
+                            isNeededForDiscretization(c,iv) )      // or it is needed for discretisation...
+                    {
 
-	    // mark the interpolee points as needed
+            // mark the interpolee points as needed
 
-          	    real ov = interpolationOverlap(axis1,grid,donor,l);  // *wdh 00015
-          	    const bool explicitInterp = !cg.interpolationIsImplicit(grid,donor,l);
+                        real ov = interpolationOverlap(axis1,grid,donor,l);  // *wdh 00015
+                        const bool explicitInterp = !cg.interpolationIsImplicit(grid,donor,l);
 
-          	    if( m & MappedGrid::USESbackupRules )
-          	    {
-            	      const int backup=backupValues[grid](i1,i2,i3);
-            	      if( backup<0 )
-            		ov-=1.;  // implicit interpolation
-            	      else
-            		ov-=.5;  // lower order interpolation ** may not be right if order reduced by more than 1??
-          	    }
-            	      
-          	    real oneSidedShift = 2.*ov+1.;
-          	    if( explicitInterp )
-          	    { // for explicit interp, ov is increased by 1 in both directions -- for one sided we only
-	      // need to increase by 1 total:
-            	      oneSidedShift = 2.*ov; // *wdh* 040718 I think this is correct (cf cicbug.cmd)
-          	    }
+                        if( m & MappedGrid::USESbackupRules )
+                        {
+                            const int backup=backupValues[grid](i1,i2,i3);
+                            if( backup<0 )
+                                ov-=1.;  // implicit interpolation
+                            else
+                                ov-=.5;  // lower order interpolation ** may not be right if order reduced by more than 1??
+                        }
+                            
+                        real oneSidedShift = 2.*ov+1.;
+                        if( explicitInterp )
+                        { // for explicit interp, ov is increased by 1 in both directions -- for one sided we only
+              // need to increase by 1 total:
+                            oneSidedShift = 2.*ov; // *wdh* 040718 I think this is correct (cf cicbug.cmd)
+                        }
 
-          	    MappedGrid & g2=cg[donor];
+                        MappedGrid & g2=cg[donor];
             //  iab(0:1,0:2) : donor stencil
             //  jab(0:1,0:2) : donor stencil that crosses periodic boundaries
-          	    for( axis=0; axis<3; axis++ )
-          	    {
-            	      if( axis<cg.numberOfDimensions() )
-            	      {
-            		rv[axis] = rI(i1,i2,i3,axis)/g2.gridSpacing(axis) + g2.indexRange(0,axis);
-            		iab(0,axis)=Integer(floor(rv[axis]-ov - (g2.isCellCentered(axis) ? .5 : 0. )));
-            		iab(1,axis)=Integer(floor(rv[axis]+ov + (g2.isCellCentered(axis) ? .5 : 1. )));
-            		if( !g2.isPeriodic(axis) )
-            		{
-              		  if( iab(0,axis) < g2.extendedIndexRange(0,axis) )
-              		  {
-                		    if( g2.boundaryCondition(Start,axis)>0 ) 
-                		    {
-		      // Point is close to a BC side. One-sided interpolation used.
-                  		      iab(0,axis) = g2.extendedIndexRange(0,axis);
-                  		      iab(1,axis) = min(g2.extendedIndexRange(1,axis),   // *wdh* added min 040327
-                              					Integer(floor(iab(0,axis) + oneSidedShift )));
-                		    } // end if
-                		    else
-                		    {
-                  		      printF("Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
-                       			     "  interpolee location is invalid. (will shift to boundary)\n"
-                       			     "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i < g2.extendedIndexRange=%i\n",
-                       			     grid,donor,i1,i2,i3,g2.boundaryCondition(Start,axis),
+                        for( axis=0; axis<3; axis++ )
+                        {
+                            if( axis<cg.numberOfDimensions() )
+                            {
+                                rv[axis] = rI(i1,i2,i3,axis)/g2.gridSpacing(axis) + g2.indexRange(0,axis);
+                                iab(0,axis)=Integer(floor(rv[axis]-ov - (g2.isCellCentered(axis) ? .5 : 0. )));
+                                iab(1,axis)=Integer(floor(rv[axis]+ov + (g2.isCellCentered(axis) ? .5 : 1. )));
+                                if( !g2.isPeriodic(axis) )
+                                {
+                                    if( iab(0,axis) < g2.extendedIndexRange(0,axis) )
+                                    {
+                                        if( g2.boundaryCondition(Start,axis)>0 ) 
+                                        {
+                      // Point is close to a BC side. One-sided interpolation used.
+                                            iab(0,axis) = g2.extendedIndexRange(0,axis);
+                                            iab(1,axis) = min(g2.extendedIndexRange(1,axis),   // *wdh* added min 040327
+                                                                                Integer(floor(iab(0,axis) + oneSidedShift )));
+                                        } // end if
+                                        else
+                                        {
+                                            printF("Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
+                                                          "  interpolee location is invalid. (will shift to boundary)\n"
+                                                          "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i < g2.extendedIndexRange=%i\n",
+                                                          grid,donor,i1,i2,i3,g2.boundaryCondition(Start,axis),
                                                           ov,interpolationOverlap(axis1,grid,donor,l),
-                       			     axis,rI(i1,i2,i3,axis),rv[axis],iab(0,axis),g2.extendedIndexRange(0,axis));
-                  		      fprintf(plogFile,"Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
-                       			     "  interpolee location is invalid. (will shift to boundary)\n"
-                       			     "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r=%8.2e -> iab=%i < g2.extendedIndexRange=%i\n",
-                       			     grid,donor,i1,i2,i3,g2.boundaryCondition(Start,axis),
+                                                          axis,rI(i1,i2,i3,axis),rv[axis],iab(0,axis),g2.extendedIndexRange(0,axis));
+                                            fprintf(plogFile,"Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
+                                                          "  interpolee location is invalid. (will shift to boundary)\n"
+                                                          "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r=%8.2e -> iab=%i < g2.extendedIndexRange=%i\n",
+                                                          grid,donor,i1,i2,i3,g2.boundaryCondition(Start,axis),
                                                           ov,interpolationOverlap(axis1,grid,donor,l),
-                       			     axis,rI(i1,i2,i3,axis),rv[axis],iab(0,axis),g2.extendedIndexRange(0,axis));
-                  		      iab(0,axis) = g2.extendedIndexRange(0,axis);
-                  		      iab(1,axis) =  min(g2.extendedIndexRange(1,axis),   // *wdh* added min 040327
-                               					 Integer(floor(iab(0,axis) + oneSidedShift )));
-                		    }
-              		  }
-              		  if( iab(1,axis) > g2.extendedIndexRange(1,axis) )
-              		  {
-                		    if( g2.boundaryCondition(End,axis)>0 ) 
-                		    {
-		      // Point is close to a BC side. One-sided interpolation used.
-                  		      iab(1,axis) = g2.extendedIndexRange(1,axis);
-                  		      iab(0,axis) = max(g2.extendedIndexRange(0,axis),   // *wdh* added max 040327
-                              					Integer(floor(iab(1,axis) - oneSidedShift )));
-                		    } // end if
-                		    else
-                		    {
-                  		      iab(1,axis) = g2.extendedIndexRange(1,axis);
-                  		      iab(0,axis) = max(g2.extendedIndexRange(0,axis),   // *wdh* added max 040327
-                              					Integer(floor(iab(1,axis) - oneSidedShift )));
+                                                          axis,rI(i1,i2,i3,axis),rv[axis],iab(0,axis),g2.extendedIndexRange(0,axis));
+                                            iab(0,axis) = g2.extendedIndexRange(0,axis);
+                                            iab(1,axis) =  min(g2.extendedIndexRange(1,axis),   // *wdh* added min 040327
+                                                                                  Integer(floor(iab(0,axis) + oneSidedShift )));
+                                        }
+                                    }
+                                    if( iab(1,axis) > g2.extendedIndexRange(1,axis) )
+                                    {
+                                        if( g2.boundaryCondition(End,axis)>0 ) 
+                                        {
+                      // Point is close to a BC side. One-sided interpolation used.
+                                            iab(1,axis) = g2.extendedIndexRange(1,axis);
+                                            iab(0,axis) = max(g2.extendedIndexRange(0,axis),   // *wdh* added max 040327
+                                                                                Integer(floor(iab(1,axis) - oneSidedShift )));
+                                        } // end if
+                                        else
+                                        {
+                                            iab(1,axis) = g2.extendedIndexRange(1,axis);
+                                            iab(0,axis) = max(g2.extendedIndexRange(0,axis),   // *wdh* added max 040327
+                                                                                Integer(floor(iab(1,axis) - oneSidedShift )));
 
-                  		      printF("Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
-                       			     "  interpolee location is invalid. (will shift to boundary)\n"
-                       			     "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i > g2.extendedIndexRange=%i"
+                                            printF("Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
+                                                          "  interpolee location is invalid. (will shift to boundary)\n"
+                                                          "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i > g2.extendedIndexRange=%i"
                                                           " new bounds=[%i,%i]\n",
-                       			     grid,donor,i1,i2,i3,g2.boundaryCondition(End,axis),
+                                                          grid,donor,i1,i2,i3,g2.boundaryCondition(End,axis),
                                                           ov,interpolationOverlap(axis1,grid,donor,l),
-                       			     axis,rI(i1,i2,i3,axis),rv[axis],iab(1,axis),g2.extendedIndexRange(1,axis),
+                                                          axis,rI(i1,i2,i3,axis),rv[axis],iab(1,axis),g2.extendedIndexRange(1,axis),
                                                           iab(0,axis),iab(1,axis));
-                  		      fprintf(plogFile,"Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
-                       			     "  interpolee location is invalid. (will shift to boundary)\n"
-                       			     "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i > g2.extendedIndexRange=%i"
+                                            fprintf(plogFile,"Ogen:markPtsNeeded:WARNING:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), g2.bc=%i"
+                                                          "  interpolee location is invalid. (will shift to boundary)\n"
+                                                          "  ov=%8.2e (orig=%8.2e) rI(%i)=%8.2e, r/dr=%8.2e -> iab=%i > g2.extendedIndexRange=%i"
                                                           " new bounds=[%i,%i]\n",
-                       			     grid,donor,i1,i2,i3,g2.boundaryCondition(End,axis),
+                                                          grid,donor,i1,i2,i3,g2.boundaryCondition(End,axis),
                                                           ov,interpolationOverlap(axis1,grid,donor,l),
-                       			     axis,rI(i1,i2,i3,axis),rv[axis],iab(1,axis),g2.extendedIndexRange(1,axis),
+                                                          axis,rI(i1,i2,i3,axis),rv[axis],iab(1,axis),g2.extendedIndexRange(1,axis),
                                                           iab(0,axis),iab(1,axis));
-                		    }
-              		  }
-                		    
-              		  jab(0,axis)=iab(0,axis);
-              		  jab(1,axis)=iab(1,axis);
-              		  
-            		} // end if  !g2.isPeriodic(axis)
-            		else
-            		{ // periodic: 
-              		  jab(0,axis)=max(iab(0,axis),g2.extendedIndexRange(0,axis));
-              		  jab(1,axis)=min(iab(1,axis),g2.extendedIndexRange(1,axis));
-            		}
-            	      }
-            	      else 
-            	      { // axis >= numberOfDimensions: 
-            		iab(0,axis) = jab(0,axis)=g2.extendedIndexRange(0,axis);
-            		iab(1,axis) = jab(1,axis)=g2.extendedIndexRange(1,axis);
-            	      } // end if, end for_1
-          	    }
+                                        }
+                                    }
+                                        
+                                    jab(0,axis)=iab(0,axis);
+                                    jab(1,axis)=iab(1,axis);
+                                    
+                                } // end if  !g2.isPeriodic(axis)
+                                else
+                                { // periodic: 
+                                    jab(0,axis)=max(iab(0,axis),g2.extendedIndexRange(0,axis));
+                                    jab(1,axis)=min(iab(1,axis),g2.extendedIndexRange(1,axis));
+                                }
+                            }
+                            else 
+                            { // axis >= numberOfDimensions: 
+                                iab(0,axis) = jab(0,axis)=g2.extendedIndexRange(0,axis);
+                                iab(1,axis) = jab(1,axis)=g2.extendedIndexRange(1,axis);
+                            } // end if, end for_1
+                        }
 
                         if( debug & 8 )
-          	    {
-            	      fprintf(plogFile,"Ogen:markPtsNeeded:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), "
+                        {
+                            fprintf(plogFile,"Ogen:markPtsNeeded:grid=%i, donor=%i, (i1,i2,i3)=(%i,%i,%i), "
                                             "r=[%6.3f,%6.3f,%6.3f], iab=[%i,%i][%i,%i][%i,%i]\n",
-                  		      grid,donor,i1,i2,i3,rv[0],rv[1],rv[2],iab(0,0),iab(1,0),iab(0,1),iab(1,1),iab(0,2),iab(1,2));
-          	    }
-          	    
+                                            grid,donor,i1,i2,i3,rv[0],rv[1],rv[2],iab(0,0),iab(1,0),iab(0,1),iab(1,1),iab(0,2),iab(1,2));
+                        }
+                        
 
 
 
-	    // Mark interpolee points on donor as needed for interpolation.
-	    // note that iab could go outside the extendedIndexRange on periodic edges so we need jab.
+            // Mark interpolee points on donor as needed for interpolation.
+            // note that iab could go outside the extendedIndexRange on periodic edges so we need jab.
 
 //            if( jab(0,axis1)<g2.extendedIndexRange(0,axis1) )  // for debugging
-//  	  {
-//  	    printf("markPointsNeededForInterpolation:ERROR: jab(0,0)=%i but g2.extendedIndexRange(0,0)=%i\n"
+//        {
+//          printf("markPointsNeededForInterpolation:ERROR: jab(0,0)=%i but g2.extendedIndexRange(0,0)=%i\n"
 //                     " g2.isPeriodic(0)=%i g2.boundaryCondition(Start,0)=%i \n",
 //                     jab(0,0),g2.extendedIndexRange(0,0),g2.isPeriodic(0),g2.boundaryCondition(Start,0));
-//  	  }
+//        }
 
 
-          	    const intArray & donorMask = cg[donor].mask();
+                        const intArray & donorMask = cg[donor].mask();
 
-// 	    if( false )
-// 	    {
-            	      
-// 	      for( int axis=0; axis<numberOfDimensions; axis++ )
-// 	      { // index = index of closest grid point on the donor grid
-// 		// index[axis] = int( rv[axis]/g2.gridSpacing(axis)+g2.gridIndexRange(0,axis) +.5 );
-// 		index[axis] = (jab(0,axis)+jab(1,axis))/2;
-// 	      }
+//          if( false )
+//          {
+                            
+//            for( int axis=0; axis<numberOfDimensions; axis++ )
+//            { // index = index of closest grid point on the donor grid
+//              // index[axis] = int( rv[axis]/g2.gridSpacing(axis)+g2.gridIndexRange(0,axis) +.5 );
+//              index[axis] = (jab(0,axis)+jab(1,axis))/2;
+//            }
 
-// 	      fillDonorData(index,pjab);  // macro
-// 	    }
+//            fillDonorData(index,pjab);  // macro
+//          }
 
-          // 	    fillDonorDataMP(jab,pjab); // macro 
-          // We will check the donorMask on the following processor:
-          // getDonorProcessor( 0,0,0,donorProc );
-                      ivd[0]=iab(0,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
-                      donorProc(0,0,0) = donorMask.Array_Descriptor.findProcNum( ivd );
-          // getDonorProcessor( 1,1,1,donorProc );
-                      ivd[0]=iab(1,0), ivd[1]=iab(1,1), ivd[2]=iab(1,2); 
-                      donorProc(1,1,1) = donorMask.Array_Descriptor.findProcNum( ivd );
-                    if( donorProc(0,0,0)==donorProc(1,1,1) )
-                    {
-            // donor cell lives on 1 processor only 
-            // fillDonorDataProc(donorProc(0,0,0),pjab);
-                          int donorProcessor = donorProc(0,0,0);
-                          if( i>=maxNumToSend )
-                          {
-                              if( numberOfIncreasingDonorMessage<2 )
+            // fillDonorDataMP(jab,pjab); // macro 
+            // We will check the donorMask on the following processor:
+            // getDonorProcessor( 0,0,0,donorProc );
+                          ivd[0]=iab(0,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
+                          donorProc(0,0,0) = donorMask.Array_Descriptor.findProcNum( ivd );
+            // getDonorProcessor( 1,1,1,donorProc );
+                          ivd[0]=iab(1,0), ivd[1]=iab(1,1), ivd[2]=iab(1,2); 
+                          donorProc(1,1,1) = donorMask.Array_Descriptor.findProcNum( ivd );
+                        if( donorProc(0,0,0)==donorProc(1,1,1) )
+                        {
+              // donor cell lives on 1 processor only 
+              // fillDonorDataProc(donorProc(0,0,0),pjab);
+                              int donorProcessor = donorProc(0,0,0);
+                              if( i>=maxNumToSend )
                               {
-                                  numberOfIncreasingDonorMessage++;
-                                  printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
-                              }
-                              else if( numberOfIncreasingDonorMessage==2 )
-                              {
-                                  numberOfIncreasingDonorMessage++;
-                                  printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
-                              }
-                              maxNumToSend=maxNumToSend*2;
-                              donorInfo.resize(maxNumToSend,numDonorData);
-                          }
-            //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
-            //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-            //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
-             // we could check for duplicate donor data which might occur if one grid is much finer than the other
-                          donorInfo(i,0)=donorProcessor;
-                          donorInfo(i,1)=donor;
-                          for( int n=0; n<nd2; n++ )
-                              donorInfo(i,2+n)=pjab[n];
-             // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
-                          numToSend[donorProcessor]++; 
-                          i++;
-                    }
-                    else
-                    {
-          //   printf(" markPointsNeeded: myid=%i : donor stencil spans processors, grid=%i, donor=%i pt i=%i\n",myid,
-          // 	 grid,donor,i);
-            // getDonorProcessor( 1,0,0,donorProc );
-                          ivd[0]=iab(1,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
-                          donorProc(1,0,0) = donorMask.Array_Descriptor.findProcNum( ivd );
-            // we could avoid the next call in 2d in some cases. Do this for now 
-            // getDonorProcessor( 0,1,0,donorProc );
-                          ivd[0]=iab(0,0), ivd[1]=iab(1,1), ivd[2]=iab(0,2); 
-                          donorProc(0,1,0) = donorMask.Array_Descriptor.findProcNum( ivd );
-                        if( numberOfDimensions==2 )
-                        {  
-                            donorProc(1,1,0)=donorProc(1,1,1);
-                            int s1b = donorProc(0,0,0)==donorProc(1,0,0) ? 0 : 1;
-                            int s2b = donorProc(0,0,0)==donorProc(0,1,0) ? 0 : 1;
-                            for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
-                            { // we fill 1, 2, or 4 times
-                // --- double check that we have the correct donorProc --
-                                if( true )
-                                {
-                // 	getDonorProcessor( s1,s2,0,dp );
-                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(0,2); 
-                                  dp(s1,s2,0) = donorMask.Array_Descriptor.findProcNum( ivd );
-                          	assert( dp(s1,s2,0)==donorProc(s1,s2,0) );
-                                }
-                // fillDonorDataProc(donorProc(s1,s2,0),pjab);
-                                  int donorProcessor = donorProc(s1,s2,0);
-                                  if( i>=maxNumToSend )
+                                  if( numberOfIncreasingDonorMessage<2 )
                                   {
-                                      if( numberOfIncreasingDonorMessage<2 )
-                                      {
-                                          numberOfIncreasingDonorMessage++;
-                                          printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
-                                      }
-                                      else if( numberOfIncreasingDonorMessage==2 )
-                                      {
-                                          numberOfIncreasingDonorMessage++;
-                                          printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
-                                      }
-                                      maxNumToSend=maxNumToSend*2;
-                                      donorInfo.resize(maxNumToSend,numDonorData);
+                                      numberOfIncreasingDonorMessage++;
+                                      printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
                                   }
-                //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
-                //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-                //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
-                 // we could check for duplicate donor data which might occur if one grid is much finer than the other
-                                  donorInfo(i,0)=donorProcessor;
-                                  donorInfo(i,1)=donor;
-                                  for( int n=0; n<nd2; n++ )
-                                      donorInfo(i,2+n)=pjab[n];
-                 // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
-                                  numToSend[donorProcessor]++; 
-                                  i++;
-                            }
+                                  else if( numberOfIncreasingDonorMessage==2 )
+                                  {
+                                      numberOfIncreasingDonorMessage++;
+                                      printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
+                                  }
+                                  maxNumToSend=maxNumToSend*2;
+                                  donorInfo.resize(maxNumToSend,numDonorData);
+                              }
+              //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
+              //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
+              //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
+               // we could check for duplicate donor data which might occur if one grid is much finer than the other
+                              donorInfo(i,0)=donorProcessor;
+                              donorInfo(i,1)=donor;
+                              for( int n=0; n<nd2; n++ )
+                                  donorInfo(i,2+n)=pjab[n];
+               // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
+                              numToSend[donorProcessor]++; 
+                              i++;
                         }
                         else
                         {
-              // getDonorProcessor( 0,0,1,donorProc );
-                              ivd[0]=iab(0,0), ivd[1]=iab(0,1), ivd[2]=iab(1,2); 
-                              donorProc(0,0,1) = donorMask.Array_Descriptor.findProcNum( ivd );
-                            donorProc(1,1,0)= donorProc(0,0,0)==donorProc(1,0,0) ? donorProc(0,1,0) : donorProc(1,0,0);
-                            donorProc(1,0,1)= donorProc(0,0,0)==donorProc(1,0,0) ? donorProc(0,0,1) : donorProc(1,0,0);
-                            donorProc(0,1,1)= donorProc(0,0,0)==donorProc(0,1,0) ? donorProc(0,0,1) : donorProc(0,1,0);
-                            const int s1b = donorProc(0,0,0)==donorProc(1,0,0) ? 0 : 1;
-                            const int s2b = donorProc(0,0,0)==donorProc(0,1,0) ? 0 : 1;
-                            const int s3b = donorProc(0,0,0)==donorProc(0,0,1) ? 0 : 1;
-                            for( int s3=0; s3<=s3b; s3++ )for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
-                            {
-                                if( s1+s2+s3 == 2 )
-                                {
-                // 	getDonorProcessor( s1,s2,s3,donorProc );
-                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
-                                  donorProc(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
+            //   printf(" markPointsNeeded: myid=%i : donor stencil spans processors, grid=%i, donor=%i pt i=%i\n",myid,
+            //       grid,donor,i);
+              // getDonorProcessor( 1,0,0,donorProc );
+                              ivd[0]=iab(1,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
+                              donorProc(1,0,0) = donorMask.Array_Descriptor.findProcNum( ivd );
+              // we could avoid the next call in 2d in some cases. Do this for now 
+              // getDonorProcessor( 0,1,0,donorProc );
+                              ivd[0]=iab(0,0), ivd[1]=iab(1,1), ivd[2]=iab(0,2); 
+                              donorProc(0,1,0) = donorMask.Array_Descriptor.findProcNum( ivd );
+                            if( numberOfDimensions==2 )
+                            {  
+                                donorProc(1,1,0)=donorProc(1,1,1);
+                                int s1b = donorProc(0,0,0)==donorProc(1,0,0) ? 0 : 1;
+                                int s2b = donorProc(0,0,0)==donorProc(0,1,0) ? 0 : 1;
+                                for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
+                                { // we fill 1, 2, or 4 times
+                  // --- double check that we have the correct donorProc --
+                                    if( true )
+                                    {
+                    // getDonorProcessor( s1,s2,0,dp );
+                                          ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(0,2); 
+                                          dp(s1,s2,0) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                        assert( dp(s1,s2,0)==donorProc(s1,s2,0) );
+                                    }
+                  // fillDonorDataProc(donorProc(s1,s2,0),pjab);
+                                      int donorProcessor = donorProc(s1,s2,0);
+                                      if( i>=maxNumToSend )
+                                      {
+                                          if( numberOfIncreasingDonorMessage<2 )
+                                          {
+                                              numberOfIncreasingDonorMessage++;
+                                              printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
+                                          }
+                                          else if( numberOfIncreasingDonorMessage==2 )
+                                          {
+                                              numberOfIncreasingDonorMessage++;
+                                              printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
+                                          }
+                                          maxNumToSend=maxNumToSend*2;
+                                          donorInfo.resize(maxNumToSend,numDonorData);
+                                      }
+                  //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
+                  //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
+                  //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
+                   // we could check for duplicate donor data which might occur if one grid is much finer than the other
+                                      donorInfo(i,0)=donorProcessor;
+                                      donorInfo(i,1)=donor;
+                                      for( int n=0; n<nd2; n++ )
+                                          donorInfo(i,2+n)=pjab[n];
+                   // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
+                                      numToSend[donorProcessor]++; 
+                                      i++;
                                 }
                             }
-                            for( int s3=0; s3<=s3b; s3++ )for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
-                            { // we fill 1, 2, 4 or 8 times
-                // --- double check that we have the correct donorProc --
-                                if( true )
+                            else
+                            {
+                // getDonorProcessor( 0,0,1,donorProc );
+                                  ivd[0]=iab(0,0), ivd[1]=iab(0,1), ivd[2]=iab(1,2); 
+                                  donorProc(0,0,1) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                donorProc(1,1,0)= donorProc(0,0,0)==donorProc(1,0,0) ? donorProc(0,1,0) : donorProc(1,0,0);
+                                donorProc(1,0,1)= donorProc(0,0,0)==donorProc(1,0,0) ? donorProc(0,0,1) : donorProc(1,0,0);
+                                donorProc(0,1,1)= donorProc(0,0,0)==donorProc(0,1,0) ? donorProc(0,0,1) : donorProc(0,1,0);
+                                const int s1b = donorProc(0,0,0)==donorProc(1,0,0) ? 0 : 1;
+                                const int s2b = donorProc(0,0,0)==donorProc(0,1,0) ? 0 : 1;
+                                const int s3b = donorProc(0,0,0)==donorProc(0,0,1) ? 0 : 1;
+                                for( int s3=0; s3<=s3b; s3++ )for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
                                 {
-                // 	getDonorProcessor( s1,s2,s3,dp );
-                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
-                                  dp(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
-                          	assert( dp(s1,s2,s3)==donorProc(s1,s2,s3) );
+                                    if( s1+s2+s3 == 2 )
+                                    {
+                    // getDonorProcessor( s1,s2,s3,donorProc );
+                                          ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
+                                          donorProc(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                    }
                                 }
-                // fillDonorDataProc(donorProc(s1,s2,s3),pjab);
-                                  int donorProcessor = donorProc(s1,s2,s3);
-                                  if( i>=maxNumToSend )
-                                  {
-                                      if( numberOfIncreasingDonorMessage<2 )
+                                for( int s3=0; s3<=s3b; s3++ )for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
+                                { // we fill 1, 2, 4 or 8 times
+                  // --- double check that we have the correct donorProc --
+                                    if( true )
+                                    {
+                    // getDonorProcessor( s1,s2,s3,dp );
+                                          ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
+                                          dp(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                        assert( dp(s1,s2,s3)==donorProc(s1,s2,s3) );
+                                    }
+                  // fillDonorDataProc(donorProc(s1,s2,s3),pjab);
+                                      int donorProcessor = donorProc(s1,s2,s3);
+                                      if( i>=maxNumToSend )
                                       {
-                                          numberOfIncreasingDonorMessage++;
-                                          printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
+                                          if( numberOfIncreasingDonorMessage<2 )
+                                          {
+                                              numberOfIncreasingDonorMessage++;
+                                              printf("markNeeded:WARNING: Increasing donorInfo size for grid=%i maxNumToSend=%i\n",grid,maxNumToSend);
+                                          }
+                                          else if( numberOfIncreasingDonorMessage==2 )
+                                          {
+                                              numberOfIncreasingDonorMessage++;
+                                              printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
+                                          }
+                                          maxNumToSend=maxNumToSend*2;
+                                          donorInfo.resize(maxNumToSend,numDonorData);
                                       }
-                                      else if( numberOfIncreasingDonorMessage==2 )
-                                      {
-                                          numberOfIncreasingDonorMessage++;
-                                          printf("markNeeded:INFO: Too many: Increasing donorInfo size messages, I will not print anymore\n");
-                                      }
-                                      maxNumToSend=maxNumToSend*2;
-                                      donorInfo.resize(maxNumToSend,numDonorData);
-                                  }
-                //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
-                //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-                //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
-                 // we could check for duplicate donor data which might occur if one grid is much finer than the other
-                                  donorInfo(i,0)=donorProcessor;
-                                  donorInfo(i,1)=donor;
-                                  for( int n=0; n<nd2; n++ )
-                                      donorInfo(i,2+n)=pjab[n];
-                 // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
-                                  numToSend[donorProcessor]++; 
-                                  i++;
+                  //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
+                  //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
+                  //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],pjab[0],pjab[1],pjab[2],pjab[3]);
+                   // we could check for duplicate donor data which might occur if one grid is much finer than the other
+                                      donorInfo(i,0)=donorProcessor;
+                                      donorInfo(i,1)=donor;
+                                      for( int n=0; n<nd2; n++ )
+                                          donorInfo(i,2+n)=pjab[n];
+                   // numDonor(donorGrid,donorProcessor)++; // use a sparse array here
+                                      numToSend[donorProcessor]++; 
+                                      i++;
+                                }
                             }
                         }
-                    }
-          	    
+                        
 
-	    // we need to mark the periodic images that lie inside the grid
+            // we need to mark the periodic images that lie inside the grid
             // (mark pts across processor boundaries ? <- may not be necessary since these may not be checked ?)
 
-          	    if( g2.isPeriodic(axis1) || g2.isPeriodic(axis2) || (cg.numberOfDimensions()>2 && g2.isPeriodic(axis3)) )
-          	    {
-            	      bool needToMark=false;
-            	      for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
-            	      {
-            		if( g2.isPeriodic(axis) )
-            		{
-              		  if( iab(0,axis)<g2.indexRange(Start,axis) )
-              		  {
-                		    needToMark=true;
-                		    const int ndr =g2.gridIndexRange(End,axis)-g2.gridIndexRange(Start,axis); 
-                		    iab(0,axis)+=ndr;
-                		    iab(1,axis)=min(iab(1,axis)+ndr,g2.dimension(End,axis));
-              		  }
-              		  else if( iab(1,axis)>g2.indexRange(End,axis) )
-              		  {
-                		    needToMark=true;
-                		    const int ndr =g2.gridIndexRange(End,axis)-g2.gridIndexRange(Start,axis); 
-                		    iab(0,axis)=max(iab(0,axis)-ndr,g2.dimension(Start,axis));
-                		    iab(1,axis)-=ndr;
-              		  }
-            		}
-            	      }
-            	      if( needToMark )
-            	      {
+                        if( g2.isPeriodic(axis1) || g2.isPeriodic(axis2) || (cg.numberOfDimensions()>2 && g2.isPeriodic(axis3)) )
+                        {
+                            bool needToMark=false;
+                            for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+                            {
+                                if( g2.isPeriodic(axis) )
+                                {
+                                    if( iab(0,axis)<g2.indexRange(Start,axis) )
+                                    {
+                                        needToMark=true;
+                                        const int ndr =g2.gridIndexRange(End,axis)-g2.gridIndexRange(Start,axis); 
+                                        iab(0,axis)+=ndr;
+                                        iab(1,axis)=min(iab(1,axis)+ndr,g2.dimension(End,axis));
+                                    }
+                                    else if( iab(1,axis)>g2.indexRange(End,axis) )
+                                    {
+                                        needToMark=true;
+                                        const int ndr =g2.gridIndexRange(End,axis)-g2.gridIndexRange(Start,axis); 
+                                        iab(0,axis)=max(iab(0,axis)-ndr,g2.dimension(Start,axis));
+                                        iab(1,axis)-=ndr;
+                                    }
+                                }
+                            }
+                            if( needToMark )
+                            {
                 // mark periodic images as needed
-// 		if( false )
-// 		{
-// 		  for( int axis=0; axis<numberOfDimensions; axis++ )
-// 		  { // index = index of closest grid point on the donor grid
-// 		    index[axis] = (iab(0,axis)+iab(1,axis))/2;
-// 		  }
+//              if( false )
+//              {
+//                for( int axis=0; axis<numberOfDimensions; axis++ )
+//                { // index = index of closest grid point on the donor grid
+//                  index[axis] = (iab(0,axis)+iab(1,axis))/2;
+//                }
 
-// 		  fillDonorData(index,piab);  // macro
-// 		}
+//                fillDonorData(index,piab);  // macro
+//              }
 
-                // 	        fillDonorDataMP(iab,piab); // macro 
+                // fillDonorDataMP(iab,piab); // macro 
                 // We will check the donorMask on the following processor:
                 // getDonorProcessor( 0,0,0,donorProc );
                                   ivd[0]=iab(0,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
@@ -598,7 +602,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                       }
                   //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
                   //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-                  //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
+                  //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
                    // we could check for duplicate donor data which might occur if one grid is much finer than the other
                                       donorInfo(i,0)=donorProcessor;
                                       donorInfo(i,1)=donor;
@@ -611,7 +615,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                 else
                                 {
                 //   printf(" markPointsNeeded: myid=%i : donor stencil spans processors, grid=%i, donor=%i pt i=%i\n",myid,
-                // 	 grid,donor,i);
+                //       grid,donor,i);
                   // getDonorProcessor( 1,0,0,donorProc );
                                       ivd[0]=iab(1,0), ivd[1]=iab(0,1), ivd[2]=iab(0,2); 
                                       donorProc(1,0,0) = donorMask.Array_Descriptor.findProcNum( ivd );
@@ -629,10 +633,10 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                       // --- double check that we have the correct donorProc --
                                             if( true )
                                             {
-                      // 	getDonorProcessor( s1,s2,0,dp );
-                                              ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(0,2); 
-                                              dp(s1,s2,0) = donorMask.Array_Descriptor.findProcNum( ivd );
-                                      	assert( dp(s1,s2,0)==donorProc(s1,s2,0) );
+                        // getDonorProcessor( s1,s2,0,dp );
+                                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(0,2); 
+                                                  dp(s1,s2,0) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                                assert( dp(s1,s2,0)==donorProc(s1,s2,0) );
                                             }
                       // fillDonorDataProc(donorProc(s1,s2,0),piab);
                                               int donorProcessor = donorProc(s1,s2,0);
@@ -653,7 +657,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                               }
                       //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
                       //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-                      //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
+                      //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
                        // we could check for duplicate donor data which might occur if one grid is much finer than the other
                                               donorInfo(i,0)=donorProcessor;
                                               donorInfo(i,1)=donor;
@@ -679,9 +683,9 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                         {
                                             if( s1+s2+s3 == 2 )
                                             {
-                      // 	getDonorProcessor( s1,s2,s3,donorProc );
-                                              ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
-                                              donorProc(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
+                        // getDonorProcessor( s1,s2,s3,donorProc );
+                                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
+                                                  donorProc(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
                                             }
                                         }
                                         for( int s3=0; s3<=s3b; s3++ )for( int s2=0; s2<=s2b; s2++ )for( int s1=0; s1<=s1b; s1++ )
@@ -689,10 +693,10 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                       // --- double check that we have the correct donorProc --
                                             if( true )
                                             {
-                      // 	getDonorProcessor( s1,s2,s3,dp );
-                                              ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
-                                              dp(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
-                                      	assert( dp(s1,s2,s3)==donorProc(s1,s2,s3) );
+                        // getDonorProcessor( s1,s2,s3,dp );
+                                                  ivd[0]=iab(s1,0), ivd[1]=iab(s2,1), ivd[2]=iab(s3,2); 
+                                                  dp(s1,s2,s3) = donorMask.Array_Descriptor.findProcNum( ivd );
+                                                assert( dp(s1,s2,s3)==donorProc(s1,s2,s3) );
                                             }
                       // fillDonorDataProc(donorProc(s1,s2,s3),piab);
                                               int donorProcessor = donorProc(s1,s2,s3);
@@ -713,7 +717,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                               }
                       //  printf("markNeeded:Send: grid=%i donor=%i myid=%i donorProcessor=%i i=%i numToSend[dp]=%i "
                       //         "[i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]\n",
-                      //	grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
+                      //      grid,donor,myid,donorProcessor,i,numToSend[donorProcessor],piab[0],piab[1],piab[2],piab[3]);
                        // we could check for duplicate donor data which might occur if one grid is much finer than the other
                                               donorInfo(i,0)=donorProcessor;
                                               donorInfo(i,1)=donor;
@@ -726,11 +730,11 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
                                     }
                                 }
 
-            	      }
-          	    }
+                            }
+                        }
 
-        	  } // end if "needed"
-      	} // end if lowerOrUpper...
+                    } // end if "needed"
+                } // end if lowerOrUpper...
             } // end if MASK ...
         } // end FOR_3D
     } // end if ok 
@@ -858,12 +862,12 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
       // if( i1a>i1b || i1a<donorMask.getBase(0) || i1b>donorMask.getBound(0) )
             if( i1a>i1b || i2a>i2b )
             {
-      	printf("markNeeded:ERROR: grid=%i donor=%i myid=%i p=%i np=%i i=%i [i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]"
+                printf("markNeeded:ERROR: grid=%i donor=%i myid=%i p=%i np=%i i=%i [i1a,i1b][i2a,i2b]=[%i,%i][%i,%i]"
                               " i1a>i1b OR i2a>i2b! donorMask=[%i,%i][%i,%i]\n",
-             	       grid,donor,myid,p,np,i,i1a,i1b,i2a,i2b,donorMask.getBase(0),donorMask.getBound(0),
+                              grid,donor,myid,p,np,i,i1a,i1b,i2a,i2b,donorMask.getBase(0),donorMask.getBound(0),
                               donorMask.getBase(1),donorMask.getBound(1));
-      	validReceive=0;
-      	break;
+                validReceive=0;
+                break;
             }
             i1a=max(i1a,donorMask.getBase(0));  i1b=min(i1b,donorMask.getBound(0));
             i2a=max(i2a,donorMask.getBase(1));  i2b=min(i2b,donorMask.getBound(1));
@@ -875,7 +879,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
         // assert( i3a<=i3b && i3a>=donorMask.getBase(2) && i3b<=donorMask.getBound(2) );
                 assert( i3a<=i3b );
 
-      	i3a=max(i3a,donorMask.getBase(2));  i3b=min(i3b,donorMask.getBound(2));
+                i3a=max(i3a,donorMask.getBase(2));  i3b=min(i3b,donorMask.getBound(2));
 
             }//
             for( int i3=i3a; i3<=i3b; i3++ )
@@ -884,7 +888,7 @@ markPointsNeededForInterpolationNew( CompositeGrid & cg, const int & grid, const
             {
         // if( true || debug & 4 )
         //   printf("markNeeded: myid=%i: grid=%i donor=%i mark pt (%i,%i,%i) as needed\n",myid,grid,donor,i1,i2,i3);
-      	
+                
                 donorMask(i1,i2,i3) |= ISneededPoint;
             }
         }

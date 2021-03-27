@@ -191,7 +191,7 @@
 
       parameter( noKnownSolution=0,twilightZoneKnownSolution=1,planeWaveKnownSolution=2,gaussianPlaneWaveKnownSolution=3,gaussianIntegralKnownSolution=4,planeMaterialInterfaceKnownSolution=5,scatteringFromADiskKnownSolution=6,scatteringFromADielectricDiskKnownSolution=7,scatteringFromASphereKnownSolution=8,scatteringFromADielectricSphereKnownSolution=9,squareEigenfunctionKnownSolution=10,annulusEigenfunctionKnownSolution=11,eigenfunctionsOfASphereKnownSolution=12,userDefinedKnownSolution=13 )   
        integer knownSolutionOption
-       integer useJacobiUpdate
+       integer useJacobiUpdate, useUnifiedInterfaceMacros
        integer dispersionModel1, dispersionModel2, dispersive, jv, pxc
        integer gdmParOption
        integer maxNumberOfParameters,maxNumberOfPolarizationVectors,maxPolarizationComponents
@@ -474,6 +474,7 @@
        nonlinearModel2     = ipar(50)
        numParallelGhost    = ipar(51)
        internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
+       useUnifiedInterfaceMacros = ipar(53)
        dx1(0)                =rpar(0)
        dx1(1)                =rpar(1)
        dx1(2)                =rpar(2)
@@ -574,7 +575,7 @@
          write(*,'("  ... setDivergenceAtInterfaces=",i2)') setDivergenceAtInterfaces
          write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
          write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
-         write(*,'("  ... useImpedanceInterfaceProjection=",i2)') useImpedanceInterfaceProjection
+         write(*,'("  ... useUnifiedInterfaceMacros=",i2)') useUnifiedInterfaceMacros
          write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
          write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,1),i2=0,nd-1)
          write(*,'("  ... bc2=",6i6)') ((boundaryCondition2(i1,i2),i1=0,1),i2=0,nd-1)
@@ -1400,9 +1401,719 @@
                 end if
               ! Macro to assign ghost values:
               if( dispersive.eq.0 )then
+             else if( useUnifiedInterfaceMacros.eq.1 ) then
+              ! Use Qing's unified interface macros
+               ! ****************************************************
+               ! ***********  2D, ORDER=2, RECTANGULAR **************
+               ! ****************************************************
+              if( t.le.3.*dt .and. debug.gt.0 )then
+                write(*,'("Interface>>>","22rectangle-unified-dispersive")')
+              end if
+              ! For rectangular, both sides must axis axis1==axis2: 
+              if( axis1.ne.axis2 )then
+                stop 8826
+              end if
+              ! normal and tangent (for TZ forcing)
+              an1=an1Cartesian
+              an2=an2Cartesian
+              tau1=-an2
+              tau2= an1
+              ! make sure the normal and tangent are set
+              if( abs( an1**2 + an2**2 -1. )>1.e-10 .or. abs( tau1**2 + tau2**2 -1. )>1.e-10 )then
+                write(*,'("gdm22r - ERROR: incorrect an1,an2, tau1,tau2=",4(1pe9.2))') an1,an2,tau1,tau2
+                stop 6666
+              end if
+              if( abs(abs(an1)-1.) > 1.e-10 )then
+                write(*,'("gdm22r - ERROR: only implemented for an1=1, an2=0:  an1,an2, tau1,tau2=",4(1pe9.2))') an1,an2,tau1,tau2
+                stop 6667 
+              end if 
+              ! 
+              ! Solve for the unknowns u1(-1),v1(-1),u2(-1),v2(-1)
+              !     
+              !       A [ U ] = A [ U(old) ] - [ f ]
+              !
+              !               [ u1(-1) ]
+              !       [ U ] = [ v1(-1) ]
+              !               [ u2(-1) ]
+              !               [ v2(-1) ]
+              !             
+              ! --- initialize some forcing functions ---
+              ! forcing functions for E and P
+              do n=0,nd-1
+                fev1(n)=0.
+                fev2(n)=0.
+                if (dispersionModel1 .ne. noDispersion) then
+                  do jv=0,numberOfPolarizationVectors1-1
+                    fpv1(n,jv)=0.
+                  end do
+                endif
+                if (dispersionModel2 .ne. noDispersion) then
+                  do jv=0,numberOfPolarizationVectors2-1
+                    fpv2(n,jv)=0.
+                  end do
+                endif
+              end do
+              ! forcing functions for N
+              if (nonlinearModel1 .ne. noNonlinearModel) then
+                do jv = 0,numberOfAtomicLevels1-1
+                    fnv1(jv) = 0.
+                    fntv1(jv) = 0.
+                enddo
+              endif
+              if (nonlinearModel2 .ne. noNonlinearModel) then
+                do jv = 0,numberOfAtomicLevels2-1
+                    fnv2(jv) = 0.
+                    fntv2(jv) = 0.
+                enddo
+              endif
+              ! print *, "-----------Now using unified (RECTANGULAR)---------------"
+              ! ----------------- START LOOP OVER INTERFACE -------------------------
+               i3=n3a
+               j3=m3a
+               j2=m2a
+               do i2=n2a,n2b
+                j1=m1a
+                do i1=n1a,n1b
+                 if( mask1(i1,i2,i3).gt.0 .and. mask2(j1,j2,j3).gt.0 )then
+                ! first evaluate the equations we want to solve with the wrong values at the ghost points:
+                 ! NOTE: the jacobian derivatives can be computed once for all components
+                   uu1=u1(i1,i2,i3,ex) ! in the rectangular case just eval the solution
+                    u1x = (-u1(i1-1,i2,i3,ex)+u1(i1+1,i2,i3,ex))/(2.*dx1(0))
+                    u1y = (-u1(i1,i2-1,i3,ex)+u1(i1,i2+1,i3,ex))/(2.*dx1(1))
+                    u1xx = (u1(i1-1,i2,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1+1,i2,i3,ex))/(dx1(0)**2)
+                    u1yy = (u1(i1,i2-1,i3,ex)-2.*u1(i1,i2,i3,ex)+u1(i1,i2+1,i3,ex))/(dx1(1)**2)
+                  u1Lap = u1xx+ u1yy
+                   vv1=u1(i1,i2,i3,ey) ! in the rectangular case just eval the solution
+                    v1x = (-u1(i1-1,i2,i3,ey)+u1(i1+1,i2,i3,ey))/(2.*dx1(0))
+                    v1y = (-u1(i1,i2-1,i3,ey)+u1(i1,i2+1,i3,ey))/(2.*dx1(1))
+                    v1xx = (u1(i1-1,i2,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1+1,i2,i3,ey))/(dx1(0)**2)
+                    v1yy = (u1(i1,i2-1,i3,ey)-2.*u1(i1,i2,i3,ey)+u1(i1,i2+1,i3,ey))/(dx1(1)**2)
+                  v1Lap = v1xx+ v1yy
+                 ! NOTE: the jacobian derivatives can be computed once for all components
+                   uu2=u2(j1,j2,j3,ex) ! in the rectangular case just eval the solution
+                    u2x = (-u2(j1-1,j2,j3,ex)+u2(j1+1,j2,j3,ex))/(2.*dx2(0))
+                    u2y = (-u2(j1,j2-1,j3,ex)+u2(j1,j2+1,j3,ex))/(2.*dx2(1))
+                    u2xx = (u2(j1-1,j2,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1+1,j2,j3,ex))/(dx2(0)**2)
+                    u2yy = (u2(j1,j2-1,j3,ex)-2.*u2(j1,j2,j3,ex)+u2(j1,j2+1,j3,ex))/(dx2(1)**2)
+                  u2Lap = u2xx+ u2yy
+                   vv2=u2(j1,j2,j3,ey) ! in the rectangular case just eval the solution
+                    v2x = (-u2(j1-1,j2,j3,ey)+u2(j1+1,j2,j3,ey))/(2.*dx2(0))
+                    v2y = (-u2(j1,j2-1,j3,ey)+u2(j1,j2+1,j3,ey))/(2.*dx2(1))
+                    v2xx = (u2(j1-1,j2,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1+1,j2,j3,ey))/(dx2(0)**2)
+                    v2yy = (u2(j1,j2-1,j3,ey)-2.*u2(j1,j2,j3,ey)+u2(j1,j2+1,j3,ey))/(dx2(1)**2)
+                  v2Lap = v2xx+ v2yy
+                ! Evaluate TZ forcing for dispersive equations in 2D 
+                  if( twilightZone.eq.1 )then
+                      !------------------------
+                      ! nonlinear MLA
+                      !------------------------
+                      if( dispersionModel1.ne.noDispersion .and. nonlinearModel1 .ne. noNonlinearModel) then
+                        !-----------------------
+                        ! dimension loops for E and P
+                        !-----------------------
+                        ! t is at new time now
+                        nce = pxc+nd*numberOfPolarizationVectors1
+                        do n=0,nd-1
+                          fpSum1(n)=0.
+                          pettSum1(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esyy(n) )
+                          do jv=0,numberOfPolarizationVectors1-1
+                            ! The TZ component is offset by pxc
+                            pc = pxc + jv*nd
+                            call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pe(n)   )
+                            call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pet(n)  )
+                            call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pett(n) )
+                            ! Normal TZ forcing for P_{n,jv} equation: 
+                            ! fpv1(n,jv) = pett(n) + b1v1(jv)*pet(n) + b0v1(jv)*pe(n) - a0v1(jv)*es(n) - a1v1(jv)*est(n)
+                            ! left hand side of gdm equations
+                            fpv1(n,jv) = pett(n) + b1v1(jv)*pet(n) + b0v1(jv)*pe(n)
+                            do na = 0,numberOfAtomicLevels1-1
+                              call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, nce+na, q0  )
+                              fpv1(n,jv) = fpv1(n,jv) - pnec1(jv,na)*q0*es(n) ! adding \Delta N*E
+                              ! print *, 'pnec1',pnec1(jv,na)
+                            enddo
+                            ! Keep sum: 
+                            fpSum1(n)  = fpSum1(n)  + fpv1(n,jv)
+                            pettSum1(n) = pettSum1(n) + pett(n) 
+                          end do 
+                          ! TZ forcing for E_{n} equation:
+                          ! E_tt - c1^2 Delta E + alphaP1*Ptt  = 
+                          fev1(n) = estt(n) - c1**2*( esxx(n) + esyy(n) ) + alphaP1*pettSum1(n)
+                        end do
+                        !--------------------------------
+                        ! outside of dimension loop for N
+                        !--------------------------------
+                        do na=0,numberOfAtomicLevels1-1
+                          ! na-th level
+                          call ogderiv(ep, 1,0,0,0,xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, nce+na, q0t )
+                          call ogderiv(ep, 2,0,0,0,xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, nce+na, q0tt)
+                          ! initialize
+                          fnv1(na)  = q0t ! forcing for \partial_tN_\ell = alpha_{\ell,k}N_k+\beta_{\ell,m}E\cdot\partial_tP_k
+                          fntv1(na) = q0tt ! next derivative
+                          ! relaxation (alpha_{\ell,m})
+                          do jv=0,numberOfAtomicLevels1-1
+                            call ogderiv(ep, 0,0,0,0,xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, nce+jv, q0  )
+                            call ogderiv(ep, 1,0,0,0,xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, nce+jv, q0t )
+                            fnv1(na)  = fnv1(na)  - prc1(na,jv)*q0
+                            fntv1(na) = fntv1(na) - prc1(na,jv)*q0t
+                          enddo
+                          ! dot product (\beta_{\ell,k})
+                          do n=0,nd-1 ! loop over dim
+                            ! corresponding polarization vector
+                            do jv=0,numberOfPolarizationVectors1-1  
+                              pc = pxc + jv*nd
+                              call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pet(n)  )
+                              call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pett(n) )
+                              fnv1(na)  = fnv1(na) - peptc1(na,jv)*es(n)*pet(n)
+                              fntv1(na) = fntv1(na) - peptc1(na,jv)*est(n)*pet(n) - peptc1(na,jv)*es(n)*pett(n)
+                            enddo
+                          enddo
+                        enddo
+                      !------------------------
+                      ! GDM
+                      !------------------------
+                      elseif (dispersionModel1.ne.noDispersion .and. nonlinearModel1.eq.noNonlinearModel) then
+                        do n=0,nd-1
+                          fpSum1(n)=0.
+                          pettSum1(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esyy(n) )
+                          do jv=0,numberOfPolarizationVectors1-1
+                            ! The TZ component is offset by pxc
+                            pc = pxc + jv*nd
+                            call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pe(n)   )
+                            call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pet(n)  )
+                            call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pc+n, pett(n) )
+                            ! Normal TZ forcing for P_{n,jv} equation: 
+                            fpv1(n,jv) = pett(n) + b1v1(jv)*pet(n) + b0v1(jv)*pe(n) - a0v1(jv)*es(n) - a1v1(jv)*est(n)
+                            ! Keep sum: 
+                            fpSum1(n)  = fpSum1(n)  + fpv1(n,jv)
+                            pettSum1(n) = pettSum1(n) + pett(n) 
+                          end do 
+                          ! TZ forcing for E_{n} equation:
+                          ! E_tt - c1^2 Delta E + alphaP1*Ptt  = 
+                          fev1(n) = estt(n) - c1**2*( esxx(n) + esyy(n) ) + alphaP1*pettSum1(n)
+                        end do
+                      !------------------------
+                      ! no dispersion
+                      !------------------------
+                      elseif (dispersionModel1.eq.noDispersion .and. nonlinearModel1.eq.noNonlinearModel) then
+                        do n=0,nd-1
+                          fpSum1(n)=0.
+                          pettSum1(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,ex+n, esyy(n) )
+                          fev1(n) = estt(n) - c1**2*( esxx(n) + esyy(n) )
+                        end do
+                      end if
+                      !------------------------
+                      ! nonlinear MLA
+                      !------------------------
+                      if( dispersionModel2.ne.noDispersion .and. nonlinearModel2 .ne. noNonlinearModel) then
+                        !-----------------------
+                        ! dimension loops for E and P
+                        !-----------------------
+                        ! t is at new time now
+                        nce = pxc+nd*numberOfPolarizationVectors2
+                        do n=0,nd-1
+                          fpSum2(n)=0.
+                          pettSum2(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esyy(n) )
+                          do jv=0,numberOfPolarizationVectors2-1
+                            ! The TZ component is offset by pxc
+                            pc = pxc + jv*nd
+                            call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pe(n)   )
+                            call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pet(n)  )
+                            call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pett(n) )
+                            ! Normal TZ forcing for P_{n,jv} equation: 
+                            ! fpv2(n,jv) = pett(n) + b1v2(jv)*pet(n) + b0v2(jv)*pe(n) - a0v2(jv)*es(n) - a1v2(jv)*est(n)
+                            ! left hand side of gdm equations
+                            fpv2(n,jv) = pett(n) + b1v2(jv)*pet(n) + b0v2(jv)*pe(n)
+                            do na = 0,numberOfAtomicLevels2-1
+                              call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t, nce+na, q0  )
+                              fpv2(n,jv) = fpv2(n,jv) - pnec2(jv,na)*q0*es(n) ! adding \Delta N*E
+                              ! print *, 'pnec2',pnec2(jv,na)
+                            enddo
+                            ! Keep sum: 
+                            fpSum2(n)  = fpSum2(n)  + fpv2(n,jv)
+                            pettSum2(n) = pettSum2(n) + pett(n) 
+                          end do 
+                          ! TZ forcing for E_{n} equation:
+                          ! E_tt - c2^2 Delta E + alphaP2*Ptt  = 
+                          fev2(n) = estt(n) - c2**2*( esxx(n) + esyy(n) ) + alphaP2*pettSum2(n)
+                        end do
+                        !--------------------------------
+                        ! outside of dimension loop for N
+                        !--------------------------------
+                        do na=0,numberOfAtomicLevels2-1
+                          ! na-th level
+                          call ogderiv(ep, 1,0,0,0,xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t, nce+na, q0t )
+                          call ogderiv(ep, 2,0,0,0,xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t, nce+na, q0tt)
+                          ! initialize
+                          fnv2(na)  = q0t ! forcing for \partial_tN_\ell = alpha_{\ell,k}N_k+\beta_{\ell,m}E\cdot\partial_tP_k
+                          fntv2(na) = q0tt ! next derivative
+                          ! relaxation (alpha_{\ell,m})
+                          do jv=0,numberOfAtomicLevels2-1
+                            call ogderiv(ep, 0,0,0,0,xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t, nce+jv, q0  )
+                            call ogderiv(ep, 1,0,0,0,xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t, nce+jv, q0t )
+                            fnv2(na)  = fnv2(na)  - prc2(na,jv)*q0
+                            fntv2(na) = fntv2(na) - prc2(na,jv)*q0t
+                          enddo
+                          ! dot product (\beta_{\ell,k})
+                          do n=0,nd-1 ! loop over dim
+                            ! corresponding polarization vector
+                            do jv=0,numberOfPolarizationVectors2-1  
+                              pc = pxc + jv*nd
+                              call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pet(n)  )
+                              call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pett(n) )
+                              fnv2(na)  = fnv2(na) - peptc2(na,jv)*es(n)*pet(n)
+                              fntv2(na) = fntv2(na) - peptc2(na,jv)*est(n)*pet(n) - peptc2(na,jv)*es(n)*pett(n)
+                            enddo
+                          enddo
+                        enddo
+                      !------------------------
+                      ! GDM
+                      !------------------------
+                      elseif (dispersionModel2.ne.noDispersion .and. nonlinearModel2.eq.noNonlinearModel) then
+                        do n=0,nd-1
+                          fpSum2(n)=0.
+                          pettSum2(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esyy(n) )
+                          do jv=0,numberOfPolarizationVectors2-1
+                            ! The TZ component is offset by pxc
+                            pc = pxc + jv*nd
+                            call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pe(n)   )
+                            call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pet(n)  )
+                            call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pc+n, pett(n) )
+                            ! Normal TZ forcing for P_{n,jv} equation: 
+                            fpv2(n,jv) = pett(n) + b1v2(jv)*pet(n) + b0v2(jv)*pe(n) - a0v2(jv)*es(n) - a1v2(jv)*est(n)
+                            ! Keep sum: 
+                            fpSum2(n)  = fpSum2(n)  + fpv2(n,jv)
+                            pettSum2(n) = pettSum2(n) + pett(n) 
+                          end do 
+                          ! TZ forcing for E_{n} equation:
+                          ! E_tt - c2^2 Delta E + alphaP2*Ptt  = 
+                          fev2(n) = estt(n) - c2**2*( esxx(n) + esyy(n) ) + alphaP2*pettSum2(n)
+                        end do
+                      !------------------------
+                      ! no dispersion
+                      !------------------------
+                      elseif (dispersionModel2.eq.noDispersion .and. nonlinearModel2.eq.noNonlinearModel) then
+                        do n=0,nd-1
+                          fpSum2(n)=0.
+                          pettSum2(n)=0.
+                          call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, es(n)   ) 
+                          call ogderiv(ep, 1,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, est(n)  )
+                          call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, estt(n) )
+                          call ogderiv(ep, 0,2,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esxx(n) )
+                          call ogderiv(ep, 0,0,2,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,ex+n, esyy(n) )
+                          fev2(n) = estt(n) - c2**2*( esxx(n) + esyy(n) )
+                        end do
+                      end if
+                  end if
+                ! eval dispersive forcings for domain 1
+                  ! no dispersion
+                  do n=0,nd-1
+                    fp1(n)=0.
+                  end do
+                  !------------------------
+                  ! nonlinear MLA
+                  !------------------------
+                  if( dispersionModel1.ne.noDispersion .and. nonlinearModel1.ne.noNonlinearModel) then
+                    nce = pxc+nd*numberOfPolarizationVectors1
+                    do n=0,nd-1
+                      do jv=0,numberOfPolarizationVectors1-1
+                        pc = n + jv*nd 
+                        ec = ex +n
+                        ! in time order: p1m,p1n,p1
+                        ! pvm   =  p1(i1,i2,i3,pc) ! this one needs to be replaced due to rank difference
+                        ! pv  =  p1n(i1,i2,i3,pc)
+                        ! evm    =  u1(i1,i2,i3,ec)
+                        ! ev   =  u1n(i1,i2,i3,ec)
+                        pvn = 2.*p1(i1,i2,i3,pc)-p1n(i1,i2,i3,pc) + 0.5*dt*b1v1(jv)*p1n(i1,i2,i3,pc) - dtsq*b0v1(jv)*p1(i1,i2,i3,pc) + dtsq*fpv1(n,jv)
+                        do na = 0,numberOfAtomicLevels1-1 ! \Delta N^n*E^n
+                          pvn = pvn + dtsq*pnec1(jv,na)*q1(i1,i2,i3,na)*u1(i1,i2,i3,ec)
+                        enddo
+                        pvn= pvn/( 1.+.5*dt*b1v1(jv) )
+                        ! #If "p1" eq "p1"
+                        ! call ogderiv(ep, 0,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t+dt,pxc+jv*nd+n, pe(n)   )
+                        ! #Else
+                        ! call ogderiv(ep, 0,0,0,0, xy2(i1,i2,i3,0),xy2(i1,i2,i3,1),0.,t+dt,pxc+jv*nd+n, pe(n)   )
+                        ! #End
+                        ! print *, '+++++++pvn',pvn,'exact',pe(n),'diff',pvn-pe(n)
+                        ! marching from t^{n+1} to t^{n+2}
+                        ! #If "p1" eq "p1"
+                        ! call ogderiv(ep, 2,0,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t,pxc+jv*nd+n, pett(n)   )
+                        ! #Else
+                        ! call ogderiv(ep, 2,0,0,0, xy2(i1,i2,i3,0),xy2(i1,i2,i3,1),0.,t,pxc+jv*nd+n, pett(n)   )
+                        ! #End
+                        fp1(n) = fp1(n) + (pvn-2.*p1(i1,i2,i3,pc)+p1n(i1,i2,i3,pc))/dtsq
+                        ! fp1(n) = fp1(n) + pett(n)
+                        ! print *, '------pvtt',(pvn-2.*p1(i1,i2,i3,pc)+p1n(i1,i2,i3,pc))/dtsq,'exact',pett(n),'diff',(pvn-2.*p1(i1,i2,i3,pc)+p1n(i1,i2,i3,pc))/dtsq-pett(n)
+                        ! print*,'dtsq',dtsq,'diff1',pvn-2.*p1(i1,i2,i3,pc)+p1n(i1,i2,i3,pc),'diff2',p1(i1,i2,i3,pc)-2.*p1n(i1,i2,i3,pc)+p1m(i1,i2,i3,pc)
+                        ! write(*,'(" numberOfAtomicLevels1=",i3)') numberOfAtomicLevels1
+                        ! write(*,'(" i1,i2,i3=",3i3)') i1,i2,i3
+                        ! na=numberOfAtomicLevels1-1
+                        ! write(*,'(" q1,q1n,q1m=",3e12.2)') q1(i1,i2,i3,na),q1n(i1,i2,i3,na),q1m(i1,i2,i3,na)
+                        ! write(*,'(" pc=",i3," pvn,p1,p1n,p1m=",4e12.2)') pc, pvn,p1(i1,i2,i3,pc),p1n(i1,i2,i3,pc),p1m(i1,i2,i3,pc)
+                        ! ! write(*,'(" dt=",e12.2," pv,pvt,pvtt, ev,evt,evtt=",6e12.2)') dt,pv,pvt,pvtt, ev,evt,evtt
+                        ! ! write(*,'(" jv=",i2," a0,a1,b0,b1=",4e12.2," Bk,Ck=",2e12.2)') jv,a0v1(jv),a1v1(jv),b0v1(jv),b1v1(jv),Bk,Ck
+                        ! write(*,'(" n=",i2," fev1(n)=",e12.2," fp1(n)=",e12.2," fpv1(n,jv)=",e12.2)') n,fev1(n),fp1(n),fpv1(n,jv)
+                      end do
+                    end do
+                    beta1 = 1.
+                  !-------------------
+                  ! GDM
+                  !-------------------
+                  elseif (dispersionModel1.ne.noDispersion .and. nonlinearModel1.eq.noNonlinearModel) then
+                    Csum=0.
+                    do jv=0,numberOfPolarizationVectors1-1
+                      a0=a0v1(jv)
+                      a1=a1v1(jv)
+                      b0=b0v1(jv)
+                      b1=b1v1(jv)
+                      alpha=alphaP1
+                      !  Second-order coefficients: 
+                      !  Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+      ! File created by Dropbox/GDM/maple/interface.maple
+      d1=2.+(a1*alpha+b1)*dt
+
+      ! --------------- Here is Et to second-order ------------
+
+      ! Et = -1/2/dt*(2*a0*alpha*dt^2-2*b1*dt-4)/d1*E-1/2/dt*(2*b1*dt+4)/d1*Em-1/2/dt*(-b1*dt^3-2*dt^2)/d1*LE-1/2/dt*(-2*alpha*b0*dt^2-2*alpha*b1*dt)/d1*P-alpha*b1/d1*Pm-1/2/dt*(-b1*dt^3-2*dt^2)/d1*fE-dt*alpha*fP/d1
+      ! Et = c2EtLE*LE + c2EtE*E + c2EtEm*Em + c2EtP*P + c2EtPm*Pm + c2EtfE*fE + c2EtfP*fP
+      !   LE = c^2Delta(E) 
+      c2EtLE=(.5*b1*dt**2+1.0*dt)/d1
+      c2EtE=(-a0*alpha*dt**2+b1*dt+2.)/dt/d1
+      c2EtEm=(-b1*dt-2.)/dt/d1
+      c2EtP=alpha*(b0*dt+b1)/d1
+      c2EtPm=-1.*alpha*b1/d1
+      c2EtfE=(.5*b1*dt**2+1.0*dt)/d1
+      c2EtfP=-1.*dt*alpha/d1
+      ! --------------- Here is Pt to second-order ------------
+
+      ! Pt = 1/2*(2*a0*dt^2+2*a1*dt)/dt/d1*E-a1/d1*Em+1/2*a1*dt^2/d1*LE+1/2*(2*a1*alpha*dt-2*b0*dt^2+4)/dt/d1*P+1/2*(-2*a1*alpha*dt-4)/dt/d1*Pm+1/2*a1*dt^2/d1*fE+fP*dt/d1
+      ! Pt = c2PtLE*LE + c2PtE*E + c2PtEm*Em + c2PtP*P + c2PtPm*Pm + c2PtfE*fE + c2PtfP*fP
+      !   LE = c^2Delta(E) 
+      c2PtLE=.5*a1*dt**2/d1
+      c2PtE=(1.*a0*dt+1.*a1)/d1
+      c2PtEm=-1.*a1/d1
+      c2PtP=(alpha*a1*dt-b0*dt**2+2.)/dt/d1
+      c2PtPm=(-alpha*a1*dt-2.)/dt/d1
+      c2PtfE=.5*a1*dt**2/d1
+      c2PtfP=1.*dt/d1
+      ! --------------- Here is Ptt to second-order ------------
+
+      ! Ptt = a1*dt/d1*LE+((-a0*a1*alpha-a0*b1)*dt^2+d1*a0*dt+2*a1)/dt/d1*E-2*a1/dt/d1*Em+((a1*alpha*b0+b0*b1)*dt^2-d1*b0*dt-2*b1)/dt/d1*P+2*b1/dt/d1*Pm+a1*dt/d1*fE+((-a1*alpha-b1)*dt^2+dt*d1)/dt/d1*fP
+      ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+      c2PttLE=1.*a1*dt/d1
+      c2PttE=((-1.*a1*alpha-1.*b1)*a0*dt**2+d1*a0*dt+2.*a1)/dt/d1
+      c2PttEm=-2.*a1/dt/d1
+      c2PttP=(b0*(a1*alpha+b1)*dt**2-1.*d1*b0*dt-2.*b1)/dt/d1
+      c2PttPm=2.*b1/dt/d1
+      c2PttfE=1.*a1*dt/d1
+      c2PttfP=(1.*d1+(-1.*a1*alpha-1.*b1)*dt)/d1
+                      Csum = Csum + c2PttLE
+                      ! Bk = 1 + .5*dt*( b1v1(jv) + alphaP1*a1v1(jv) )
+                      ! Ck = (1./Bk)*a1v1(jv)*dt*.5
+                      ! Csum = Csum + Ck 
+                      do n=0,nd-1
+                        pc = n + jv*nd 
+                        ec = ex +n
+                        ! P at new time t+dt
+                        ! Pt, Ptt at time t
+                        pv   =  p1(i1,i2,i3,pc)
+                        pvn  =  p1n(i1,i2,i3,pc)
+                        ev    =  u1(i1,i2,i3,ec)
+                        evn   =  u1n(i1,i2,i3,ec)
+                        ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+                        ! Levae off term: c2PttLE*LE(n)
+                        fp1(n) = fp1(n) + c2PttE*ev + c2PttEm*evn + c2PttP*pv + c2PttPm*pvn + c2PttfE*fev1(n) + c2PttfP*fpv1(n,jv)
+                        ! write(*,'(" i1,i2,i3=",3i3)') i1,i2,i3
+                        ! write(*,'(" pc=",i3," p1,p1n,p1m=",3e12.2)') pc, p1(i1,i2,i3,pc),p1n(i1,i2,i3,pc),p1m(i1,i2,i3,pc)
+                        ! write(*,'(" dt=",e12.2," pv,pvt,pvtt, ev,evt,evtt=",6e12.2)') dt,pv,pvt,pvtt, ev,evt,evtt
+                        ! write(*,'(" jv=",i2," a0,a1,b0,b1=",4e12.2," Bk,Ck=",2e12.2)') jv,a0v1(jv),a1v1(jv),b0v1(jv),b1v1(jv),Bk,Ck
+                        ! write(*,'(" n=",i2," fev1(n)=",e12.2," fp1(n)=",e12.2," fpv1(n,jv)=",e12.2)') n,fev1(n),fp1(n),fpv1(n,jv)
+                      end do
+                    end do
+                    ! we could precompute D
+                    beta1 = 1. -alphaP1*Csum
+                  else
+                    beta1 = 1.
+                  end if
+                ! eval dispersive forcings for domain 2
+                  ! no dispersion
+                  do n=0,nd-1
+                    fp2(n)=0.
+                  end do
+                  !------------------------
+                  ! nonlinear MLA
+                  !------------------------
+                  if( dispersionModel2.ne.noDispersion .and. nonlinearModel2.ne.noNonlinearModel) then
+                    nce = pxc+nd*numberOfPolarizationVectors2
+                    do n=0,nd-1
+                      do jv=0,numberOfPolarizationVectors2-1
+                        pc = n + jv*nd 
+                        ec = ex +n
+                        ! in time order: p2m,p2n,p2
+                        ! pvm   =  p2(j1,j2,j3,pc) ! this one needs to be replaced due to rank difference
+                        ! pv  =  p2n(j1,j2,j3,pc)
+                        ! evm    =  u2(j1,j2,j3,ec)
+                        ! ev   =  u2n(j1,j2,j3,ec)
+                        pvn = 2.*p2(j1,j2,j3,pc)-p2n(j1,j2,j3,pc) + 0.5*dt*b1v2(jv)*p2n(j1,j2,j3,pc) - dtsq*b0v2(jv)*p2(j1,j2,j3,pc) + dtsq*fpv2(n,jv)
+                        do na = 0,numberOfAtomicLevels2-1 ! \Delta N^n*E^n
+                          pvn = pvn + dtsq*pnec2(jv,na)*q2(j1,j2,j3,na)*u2(j1,j2,j3,ec)
+                        enddo
+                        pvn= pvn/( 1.+.5*dt*b1v2(jv) )
+                        ! #If "p2" eq "p1"
+                        ! call ogderiv(ep, 0,0,0,0, xy1(j1,j2,j3,0),xy1(j1,j2,j3,1),0.,t+dt,pxc+jv*nd+n, pe(n)   )
+                        ! #Else
+                        ! call ogderiv(ep, 0,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t+dt,pxc+jv*nd+n, pe(n)   )
+                        ! #End
+                        ! print *, '+++++++pvn',pvn,'exact',pe(n),'diff',pvn-pe(n)
+                        ! marching from t^{n+1} to t^{n+2}
+                        ! #If "p2" eq "p1"
+                        ! call ogderiv(ep, 2,0,0,0, xy1(j1,j2,j3,0),xy1(j1,j2,j3,1),0.,t,pxc+jv*nd+n, pett(n)   )
+                        ! #Else
+                        ! call ogderiv(ep, 2,0,0,0, xy2(j1,j2,j3,0),xy2(j1,j2,j3,1),0.,t,pxc+jv*nd+n, pett(n)   )
+                        ! #End
+                        fp2(n) = fp2(n) + (pvn-2.*p2(j1,j2,j3,pc)+p2n(j1,j2,j3,pc))/dtsq
+                        ! fp2(n) = fp2(n) + pett(n)
+                        ! print *, '------pvtt',(pvn-2.*p2(j1,j2,j3,pc)+p2n(j1,j2,j3,pc))/dtsq,'exact',pett(n),'diff',(pvn-2.*p2(j1,j2,j3,pc)+p2n(j1,j2,j3,pc))/dtsq-pett(n)
+                        ! print*,'dtsq',dtsq,'diff1',pvn-2.*p2(j1,j2,j3,pc)+p2n(j1,j2,j3,pc),'diff2',p2(j1,j2,j3,pc)-2.*p2n(j1,j2,j3,pc)+p2m(j1,j2,j3,pc)
+                        ! write(*,'(" numberOfAtomicLevels2=",i3)') numberOfAtomicLevels2
+                        ! write(*,'(" j1,j2,j3=",3i3)') j1,j2,j3
+                        ! na=numberOfAtomicLevels2-1
+                        ! write(*,'(" q2,q2n,q2m=",3e12.2)') q2(j1,j2,j3,na),q2n(j1,j2,j3,na),q2m(j1,j2,j3,na)
+                        ! write(*,'(" pc=",i3," pvn,p2,p2n,p2m=",4e12.2)') pc, pvn,p2(j1,j2,j3,pc),p2n(j1,j2,j3,pc),p2m(j1,j2,j3,pc)
+                        ! ! write(*,'(" dt=",e12.2," pv,pvt,pvtt, ev,evt,evtt=",6e12.2)') dt,pv,pvt,pvtt, ev,evt,evtt
+                        ! ! write(*,'(" jv=",i2," a0,a1,b0,b1=",4e12.2," Bk,Ck=",2e12.2)') jv,a0v2(jv),a1v2(jv),b0v2(jv),b1v2(jv),Bk,Ck
+                        ! write(*,'(" n=",i2," fev2(n)=",e12.2," fp2(n)=",e12.2," fpv2(n,jv)=",e12.2)') n,fev2(n),fp2(n),fpv2(n,jv)
+                      end do
+                    end do
+                    beta2 = 1.
+                  !-------------------
+                  ! GDM
+                  !-------------------
+                  elseif (dispersionModel2.ne.noDispersion .and. nonlinearModel2.eq.noNonlinearModel) then
+                    Csum=0.
+                    do jv=0,numberOfPolarizationVectors2-1
+                      a0=a0v2(jv)
+                      a1=a1v2(jv)
+                      b0=b0v2(jv)
+                      b1=b1v2(jv)
+                      alpha=alphaP2
+                      !  Second-order coefficients: 
+                      !  Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+      ! File created by Dropbox/GDM/maple/interface.maple
+      d1=2.+(a1*alpha+b1)*dt
+
+      ! --------------- Here is Et to second-order ------------
+
+      ! Et = -1/2/dt*(2*a0*alpha*dt^2-2*b1*dt-4)/d1*E-1/2/dt*(2*b1*dt+4)/d1*Em-1/2/dt*(-b1*dt^3-2*dt^2)/d1*LE-1/2/dt*(-2*alpha*b0*dt^2-2*alpha*b1*dt)/d1*P-alpha*b1/d1*Pm-1/2/dt*(-b1*dt^3-2*dt^2)/d1*fE-dt*alpha*fP/d1
+      ! Et = c2EtLE*LE + c2EtE*E + c2EtEm*Em + c2EtP*P + c2EtPm*Pm + c2EtfE*fE + c2EtfP*fP
+      !   LE = c^2Delta(E) 
+      c2EtLE=(.5*b1*dt**2+1.0*dt)/d1
+      c2EtE=(-a0*alpha*dt**2+b1*dt+2.)/dt/d1
+      c2EtEm=(-b1*dt-2.)/dt/d1
+      c2EtP=alpha*(b0*dt+b1)/d1
+      c2EtPm=-1.*alpha*b1/d1
+      c2EtfE=(.5*b1*dt**2+1.0*dt)/d1
+      c2EtfP=-1.*dt*alpha/d1
+      ! --------------- Here is Pt to second-order ------------
+
+      ! Pt = 1/2*(2*a0*dt^2+2*a1*dt)/dt/d1*E-a1/d1*Em+1/2*a1*dt^2/d1*LE+1/2*(2*a1*alpha*dt-2*b0*dt^2+4)/dt/d1*P+1/2*(-2*a1*alpha*dt-4)/dt/d1*Pm+1/2*a1*dt^2/d1*fE+fP*dt/d1
+      ! Pt = c2PtLE*LE + c2PtE*E + c2PtEm*Em + c2PtP*P + c2PtPm*Pm + c2PtfE*fE + c2PtfP*fP
+      !   LE = c^2Delta(E) 
+      c2PtLE=.5*a1*dt**2/d1
+      c2PtE=(1.*a0*dt+1.*a1)/d1
+      c2PtEm=-1.*a1/d1
+      c2PtP=(alpha*a1*dt-b0*dt**2+2.)/dt/d1
+      c2PtPm=(-alpha*a1*dt-2.)/dt/d1
+      c2PtfE=.5*a1*dt**2/d1
+      c2PtfP=1.*dt/d1
+      ! --------------- Here is Ptt to second-order ------------
+
+      ! Ptt = a1*dt/d1*LE+((-a0*a1*alpha-a0*b1)*dt^2+d1*a0*dt+2*a1)/dt/d1*E-2*a1/dt/d1*Em+((a1*alpha*b0+b0*b1)*dt^2-d1*b0*dt-2*b1)/dt/d1*P+2*b1/dt/d1*Pm+a1*dt/d1*fE+((-a1*alpha-b1)*dt^2+dt*d1)/dt/d1*fP
+      ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+      c2PttLE=1.*a1*dt/d1
+      c2PttE=((-1.*a1*alpha-1.*b1)*a0*dt**2+d1*a0*dt+2.*a1)/dt/d1
+      c2PttEm=-2.*a1/dt/d1
+      c2PttP=(b0*(a1*alpha+b1)*dt**2-1.*d1*b0*dt-2.*b1)/dt/d1
+      c2PttPm=2.*b1/dt/d1
+      c2PttfE=1.*a1*dt/d1
+      c2PttfP=(1.*d1+(-1.*a1*alpha-1.*b1)*dt)/d1
+                      Csum = Csum + c2PttLE
+                      ! Bk = 1 + .5*dt*( b1v2(jv) + alphaP2*a1v2(jv) )
+                      ! Ck = (1./Bk)*a1v2(jv)*dt*.5
+                      ! Csum = Csum + Ck 
+                      do n=0,nd-1
+                        pc = n + jv*nd 
+                        ec = ex +n
+                        ! P at new time t+dt
+                        ! Pt, Ptt at time t
+                        pv   =  p2(j1,j2,j3,pc)
+                        pvn  =  p2n(j1,j2,j3,pc)
+                        ev    =  u2(j1,j2,j3,ec)
+                        evn   =  u2n(j1,j2,j3,ec)
+                        ! Ptt = c2PttLE*LE + c2PttE*E + c2PttEm*Em + c2PttP*P + c2PttPm*Pm + c2PttfE*fE + c2PttfP*fP
+                        ! Levae off term: c2PttLE*LE(n)
+                        fp2(n) = fp2(n) + c2PttE*ev + c2PttEm*evn + c2PttP*pv + c2PttPm*pvn + c2PttfE*fev2(n) + c2PttfP*fpv2(n,jv)
+                        ! write(*,'(" j1,j2,j3=",3i3)') j1,j2,j3
+                        ! write(*,'(" pc=",i3," p2,p2n,p2m=",3e12.2)') pc, p2(j1,j2,j3,pc),p2n(j1,j2,j3,pc),p2m(j1,j2,j3,pc)
+                        ! write(*,'(" dt=",e12.2," pv,pvt,pvtt, ev,evt,evtt=",6e12.2)') dt,pv,pvt,pvtt, ev,evt,evtt
+                        ! write(*,'(" jv=",i2," a0,a1,b0,b1=",4e12.2," Bk,Ck=",2e12.2)') jv,a0v2(jv),a1v2(jv),b0v2(jv),b1v2(jv),Bk,Ck
+                        ! write(*,'(" n=",i2," fev2(n)=",e12.2," fp2(n)=",e12.2," fpv2(n,jv)=",e12.2)') n,fev2(n),fp2(n),fpv2(n,jv)
+                      end do
+                    end do
+                    ! we could precompute D
+                    beta2 = 1. -alphaP2*Csum
+                  else
+                    beta2 = 1.
+                  end if
+                 f(0)=(u1x+v1y) - (u2x+v2y)
+                 f(1)=( an1*u1Lap +an2*v1Lap )/mu1 - ( an1*u2Lap +an2*v2Lap )/mu2 
+                 f(2)=(v1x-u1y)/mu1 - (v2x-u2y)/mu2
+                 f(3)=( ( tau1*u1Lap +tau2*v1Lap )*beta1/epsmu1 - alphaP1*(tau1*fp1(0)+tau2*fp1(1)) ) - ( ( tau1*u2Lap +tau2*v2Lap )*beta2/epsmu2 - alphaP2*(tau1*fp2(0)+tau2*fp2(1)) )
+                 if( twilightZone.eq.1 )then
+                    ! For now we assume mu1=mu2 and TZ solutions are the same on both sides.
+                    ! call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uex  )
+                    call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uey  )
+                    call ogderiv(ep, 0,1,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vex  )
+                    ! call ogderiv(ep, 0,0,1,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vey  )
+                    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
+                    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
+                    call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
+                    call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyy )
+                    ueLap = uexx + ueyy
+                    veLap = vexx + veyy
+                    f(1) = f(1) - ( ueLap      )*(1./mu1 - 1./mu2)
+                    f(2) = f(2) - ( vex - uey  )*(1./mu1 - 1./mu2)
+                    ! f(3) = [ tv.E.tt] = [ tv.( c^2*Delta(E) - alphaP*P.tt + fev) ] 
+                    !      = [ tv.( c^2*Delta(E) - alphaP*P.tt] + [ tv.fev ]
+                    ! -- add on the jump in the forcing ---
+                    f(3) = f(3) + ( tau1*(fev1(0)-fev2(0)) + tau2*(fev1(1)-fev2(1)) )
+                   ! For now we assume mu1=mu2 and TZ solutions are the same on both sides.
+                   ! f(3) = [ tv.E.tt] = [ tv.( c^2*Delta(E) - alphaP*P.tt + fev) ] 
+                   !      = [ tv.( c^2*Delta(E) - alphaP*P.tt] + [ tv.fev ]
+                   ! -- add on the jump in the forcing ---
+                   ! f(3) = f(3) + ( tau1*(fev1(0)-fev2(0)) + tau2*(fev1(1)-fev2(1)) )
+                  !-    ! f(3) = [ tv.( c^2*Delta(E) - alphaP*P.tt ] - [ tv.( c^2*Delta(E^e) - alphaP*(P^e).tt ] =0 
+                  !     call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, uexx )
+                  !     call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ex, ueyy )
+                  !     call ogderiv(ep, 0,2,0,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, vexx )
+                  !     call ogderiv(ep, 0,0,2,0, xy1(i1,i2,i3,0),xy1(i1,i2,i3,1),0.,t, ey, veyy )
+                  !     ueLap = uexx + ueyy
+                  !     veLap = vexx + veyy
+                  !     f(3) = f(3) - ( tau1*ueLap +tau2*veLap )*(beta1/epsmu1-beta2/epsmu2)
+                  !     f(3) = f(3) +  alphaP1*( tau1*pettSum1(0) + tau2*pettSum1(1) ) - !                    alphaP2*( tau1*pettSum2(0) + tau2*pettSum2(1) )
+                  ! !-    end if 
+                   ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
+                   ! write(debugFile,'(" u1Lap,ueLap=",2e10.2," v1Lap,veLap=",2e10.2)') u1Lap,ueLap,v1Lap,veLap
+                 end if
+                if( axis1.eq.0 .and. axis2.eq.0 )then
+                  ! Interface equations for a boundary at x = 0 or x=1
+                  ! ---- EQUATION 0 -----
+                  a4(0,0) = -is1/(2.*dx1(axis1))    ! coeff of u1(-1) from [u.x+v.y] 
+                  a4(0,1) = 0.                      ! coeff of v1(-1) from [u.x+v.y] 
+                  a4(0,2) =  js1/(2.*dx2(axis2))    ! coeff of u2(-1) from [u.x+v.y] 
+                  a4(0,3) = 0.                      ! coeff of v2(-1) from [u.x+v.y]
+                  ! ---- EQUATION 1 -----    
+                  a4(1,0) = 1./(dx1(axis1)**2)/mu1   ! coeff of u1(-1) from [(u.xx + u.yy)/mu]
+                  a4(1,1) = 0. 
+                  a4(1,2) =-1./(dx2(axis2)**2)/mu2   ! coeff of u2(-1) from [(u.xx + u.yy)/mu]
+                  a4(1,3) = 0. 
+                  ! ---- EQUATION 2 -----
+                  a4(2,0) = 0.
+                  a4(2,1) = -is1/(2.*dx1(axis1))/mu1    ! coeff of v1(-1) from [(v.x - u.y)/mu] 
+                  a4(2,2) = 0.
+                  a4(2,3) =  js1/(2.*dx2(axis2))/mu2    ! coeff of v2(-1) from [(v.x - u.y)/mu]
+                  ! ---- EQUATION 3 -----    
+                  ! The coefficient of Delta(E) in this equation is altered due to Ptt term 
+                  ! write(*,'(" beta1,beta2=",2e10.2," fp1,fp2=",2e10.2)') beta1,beta2,fp1(1),fp2(1)
+                  a4(3,0) = 0.                      
+                  a4(3,1) = (beta1/epsmu1)/(dx1(axis1)**2) ! coeff of v1(-1) from [beta*c^2*(v.xx+v.yy)]
+                  a4(3,2) = 0. 
+                  a4(3,3) =-(beta2/epsmu2)/(dx2(axis2)**2) ! coeff of v2(-1) from [beta*c^2*(v.xx+v.yy)]
+                else
+                  write(*,*) 'gdm22r finish me for axis1.ne.0 or axis2.ne.0 ...'
+                  stop 767
+                end if
+                 if( debug>7 .and. i2.le.0 )then
+                   write(*,*) "gdm22r: Matrix a4"
+                   do n=0,3
+                     write(*,'(4(1pe10.2))') (a4(n,nn),nn=0,3)
+                   end do 
+                 end if 
+                 q(0) = u1(i1-is1,i2-is2,i3,ex)
+                 q(1) = u1(i1-is1,i2-is2,i3,ey)
+                 q(2) = u2(j1-js1,j2-js2,j3,ex)
+                 q(3) = u2(j1-js1,j2-js2,j3,ey)
+                 ! subtract off the contributions from the wrong values at the ghost points:
+                 do n=0,3
+                   f(n) = (a4(n,0)*q(0)+a4(n,1)*q(1)+a4(n,2)*q(2)+a4(n,3)*q(3)) - f(n)
+                 end do
+                 if( debug>0 .and. twilightZone.eq.1 )then
+                    write(*,'(" unified22r --> i1,i2=",2i4," RHS f=",4f12.7)') i1,i2,f(0),f(1),f(2),f(3)
+                    write(*,'("                              q=",4f12.7)') q(0),q(1),q(2),q(3)
+                  end if
+                 ! solve A Q = F
+                 ! factor the matrix
+                 ! numberOfEquations=4
+                 call dgeco( a4(0,0), 4, 4, ipvt(0),rcond,work(0))
+                 ! solve
+                 ! write(debugFile,'(" --> i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
+                 job=0
+                 call dgesl( a4(0,0), 4, 4, ipvt(0), f(0), job)
+                 ! write(debugFile,'(" --> i1,i2=",2i4," f(solve)=",4f8.3)') i1,i2,f(0),f(1),f(2),f(3)
+                 u1(i1-is1,i2-is2,i3,ex)=f(0)
+                 u1(i1-is1,i2-is2,i3,ey)=f(1)
+                 u2(j1-js1,j2-js2,j3,ex)=f(2)
+                 u2(j1-js1,j2-js2,j3,ey)=f(3)
+                if( debug>7 .and. twilightZone.eq.1 )then
+                  ! check errors
+                  call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ex, evv(0) )
+                  call ogderiv(ep, 0,0,0,0, xy1(i1-is1,i2-is2,i3,0),xy1(i1-is1,i2-is2,i3,1),0.,t, ey, evv(1) )
+                  call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ex, evv(2) )
+                  call ogderiv(ep, 0,0,0,0, xy2(j1-js1,j2-js2,j3,0),xy2(j1-js1,j2-js2,j3,1),0.,t, ey, evv(3) )
+                  maxErr=0.
+                  do n=0,3
+                    maxErr =max(maxErr,abs(evv(n)-f(n)))
+                  end do
+                  write(*,'("gdm22r: i1,i2,i3=",3i4," t=",e9.3)') i1,i2,i3,t 
+                  write(*,'("     true= ",4(1pe10.2))') (evv(n),n=0,3)
+                  write(*,'("      err= ",4(1pe8.1)," -> maxErr=",e8.1)') (abs(evv(n)-f(n)),n=0,3),maxErr
+                end if
+                 ! -------------------------------------------------------
+                 ! No need to solve for Hz as it is just an ODE
+                 ! -------------------------------------------------------
+                  end if
+                  j1=j1+1
+                 end do
+                 j2=j2+1
+                end do
+               ! stop 7777
               else if( useNonlinearModel.eq.0 )then
                 ! dispersive case
-             else
+              else
                 ! nonlinear dispersive case
                   ! ****************************************************
                   ! ***********  2D, ORDER=2, RECTANGULAR **************

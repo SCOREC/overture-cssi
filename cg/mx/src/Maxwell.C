@@ -43,9 +43,9 @@ bcName[numberOfBCNames]={
 // =====================================================================================
 // Maxwell:: 
 // Maxwell(CompositeGrid & cg_, 
-// 	GenericGraphicsInterface *ps /* =NULL */, 
-// 	Ogshow *show /* =NULL */ , 
-// 	const int & plotOption_ /* =1 */) 
+//      GenericGraphicsInterface *ps /* =NULL */, 
+//      Ogshow *show /* =NULL */ , 
+//      const int & plotOption_ /* =1 */) 
 //   : DomainSolver(*(new MxParameters),cg_,ps,show,plotOption_)
 
 Maxwell:: Maxwell()
@@ -126,6 +126,9 @@ Maxwell:: Maxwell()
   
   // useJacobiInterfaceUpdate = 1 : use a Jacobi like update for assigning ghost at intefaces
   if( !dbase.has_key("useJacobiInterfaceUpdate") ) dbase.put<int>("useJacobiInterfaceUpdate")=1; 
+
+  // useUnifiedInterfaceMacros = 1 : use new unified interface macros from Qing Xia, March 2021
+  if( !dbase.has_key("useUnifiedInterfaceMacros") ) dbase.put<int>("useUnifiedInterfaceMacros")=1; 
   
   // We check for tall cells at interfaces and stop if the tall-cell-ration exceeds this:
   dbase.put<real>("tallCellRatioBound") = 1.25;
@@ -791,11 +794,11 @@ vertexArrayIsNeeded( int grid ) const
     {
       for( int side=0; side<=1; side++ )
       {
-	if( mg.boundaryCondition(side,axis)==perfectElectricalConductor )
-	{
-	  vertexNeededForBoundaryForcing=true;
-	  break;
-	}
+        if( mg.boundaryCondition(side,axis)==perfectElectricalConductor )
+        {
+          vertexNeededForBoundaryForcing=true;
+          break;
+        }
       }
     }
   }
@@ -805,7 +808,7 @@ vertexArrayIsNeeded( int grid ) const
                            vertexNeededForBoundaryForcing ||  // **************** fix this 
                            initialConditionOption==gaussianPlaneWave || 
                            (initialConditionOption==planeWaveInitialCondition 
-			      && method!=nfdtd  && method!=sosup  && method!=bamx  ) ||  // for ABC + incident field fix 
+                              && method!=nfdtd  && method!=sosup  && method!=bamx  ) ||  // for ABC + incident field fix 
                            (initialConditionOption==planeWaveInitialCondition && checkErrors ) || // *wdh* 2017/01/07
                            initialConditionOption==planeMaterialInterfaceInitialCondition ||
                            initialConditionOption==annulusEigenfunctionInitialCondition  ||
@@ -819,17 +822,17 @@ vertexArrayIsNeeded( int grid ) const
 
   // from forcing: 
   const bool buildCenter = !( isRectangular &&
-			      ( 
+                              ( 
                                 initialConditionOption==zeroInitialCondition ||  // *wdh* Aug 11, 2016
                                 initialConditionOption==squareEigenfunctionInitialCondition ||
-				initialConditionOption==gaussianPulseInitialCondition ||
-				(forcingOption==gaussianChargeSource && initialConditionOption==defaultInitialCondition)
-				|| initialConditionOption==userDefinedKnownSolutionInitialCondition 
-				|| initialConditionOption==userDefinedInitialConditionsOption
+                                initialConditionOption==gaussianPulseInitialCondition ||
+                                (forcingOption==gaussianChargeSource && initialConditionOption==defaultInitialCondition)
+                                || initialConditionOption==userDefinedKnownSolutionInitialCondition 
+                                || initialConditionOption==userDefinedInitialConditionsOption
                                 || initialConditionOption==planeWaveInitialCondition 
-				// || initialConditionOption==planeMaterialInterfaceInitialCondition
-				// ||  initialConditionOption==annulusEigenfunctionInitialCondition
-				) 
+                                // || initialConditionOption==planeMaterialInterfaceInitialCondition
+                                // ||  initialConditionOption==annulusEigenfunctionInitialCondition
+                                ) 
     ); // fix this 
 
   return centerNeeded || buildCenter;
@@ -850,8 +853,8 @@ usingPMLBoundaryConditions() const
   {
     const IntegerArray & bc = cg[grid].boundaryCondition();
     if( bc(0,0)==abcPML || bc(1,0)==abcPML ||
-	bc(0,1)==abcPML || bc(1,1)==abcPML ||
-	bc(0,2)==abcPML || bc(1,2)==abcPML )
+        bc(0,1)==abcPML || bc(1,1)==abcPML ||
+        bc(0,2)==abcPML || bc(1,2)==abcPML )
     {
       return true;
     }
@@ -880,23 +883,23 @@ initializeRadiationBoundaryConditions()
     {
       const IntegerArray & bc = cg[grid].boundaryCondition();
       for( axis=0; axis<mg.numberOfDimensions(); axis++ )
-	for( side=0; side<=1; side++ )
-	{
-	  if( bc(side,axis)==rbcNonLocal )
-	  {
+        for( side=0; side<=1; side++ )
+        {
+          if( bc(side,axis)==rbcNonLocal )
+          {
             radbcGrid[numberOfNonLocal]=grid;
-	    radbcSide[numberOfNonLocal]=side;
-	    radbcAxis[numberOfNonLocal]=axis;
-	    
-	    numberOfNonLocal++;
+            radbcSide[numberOfNonLocal]=side;
+            radbcAxis[numberOfNonLocal]=axis;
+            
+            numberOfNonLocal++;
             if( numberOfNonLocal>2 )
-	    {
-	      printF("Maxwell::initializeRadiationBoundaryConditions:ERROR: there are too many sides with\n"
+            {
+              printF("Maxwell::initializeRadiationBoundaryConditions:ERROR: there are too many sides with\n"
                      "  radiation boundary conditions -- there should be at most 2\n");
-	      OV_ABORT("error");
-	    }
-	  }
-	}
+              OV_ABORT("error");
+            }
+          }
+        }
     }
   }
   if( numberOfNonLocal>0 )
@@ -915,20 +918,20 @@ initializeRadiationBoundaryConditions()
       int nc1=0, nc2=0;      // component range
       if( cg.numberOfDimensions()==2 )
       {
-	nc1=ex; nc2=hz;
+        nc1=ex; nc2=hz;
       }
       else
       {
-	nc1=ex; nc2=ez;
+        nc1=ex; nc2=ez;
       }
       if( method==bamx )
       {
         const int & solveForAllFields = dbase.get<int>("solveForAllFields");
 
-	if( cg.numberOfDimensions()==3 || solveForAllFields )
-	{
-	  nc1=ex; nc2=hz;
-	}
+        if( cg.numberOfDimensions()==3 || solveForAllFields )
+        {
+          nc1=ex; nc2=hz;
+        }
       }
 
       int grid = radbcGrid[i];
@@ -1048,7 +1051,7 @@ printMemoryUsage(FILE *file /* = stdout */)
 
     if ( Ecoeff.size() )
       for( int i=0; i<numberOfTimeLevels; i++ )
-	memory[memoryForGridFunctions]+=fields[i+1].sizeOf();
+        memory[memoryForGridFunctions]+=fields[i+1].sizeOf();
       
     fieldsSize=memory[memoryForGridFunctions];
   }
@@ -1068,11 +1071,11 @@ printMemoryUsage(FILE *file /* = stdout */)
   if ( Ecoeff.size() )
   {
     memory[memoryForDSIArrays] += sizeof(real)*( Ecoeff.size() + Hcoeff.size() +
-						 Dcoeff.size() );
+                                                 Dcoeff.size() );
 
     memory[memoryForDSIArrays] += sizeof(int)*( Eindex.size() + Eoffset.size() +
-						Hindex.size() + Hoffset.size() +
-						Dindex.size() + Doffset.size() );
+                                                Hindex.size() + Hoffset.size() +
+                                                Dindex.size() + Doffset.size() );
 
     memory[memoryForDSIArrays] += 5*sizeof(ArraySimple<real>);
     memory[memoryForDSIArrays] += 10*sizeof(ArraySimple<int>);
@@ -1086,20 +1089,20 @@ printMemoryUsage(FILE *file /* = stdout */)
       memory[memoryForDSIArrays] += REindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
       memory[memoryForDSIArrays] += SEindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
       for ( int i=0; i<REcoeff.size(); i++ )
-	memory[memoryForDSIArrays] += REcoeff[i].size()*sizeof(real) + REindex[i].size()*sizeof(int);
+        memory[memoryForDSIArrays] += REcoeff[i].size()*sizeof(real) + REindex[i].size()*sizeof(int);
       for ( int i=0; i<SEindex.size(); i++ )
-	memory[memoryForDSIArrays] += SEindex[i].size()*sizeof(int);
+        memory[memoryForDSIArrays] += SEindex[i].size()*sizeof(int);
 
 
       if ( RHcoeff.size() )
       {
-	memory[memoryForDSIArrays] += RHcoeff.size()*sizeof(ArraySimple<real>) + sizeof(ArraySimple<ArraySimple<real> >);
-	memory[memoryForDSIArrays] += RHindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
-	memory[memoryForDSIArrays] += SHindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
-	for ( int i=0; i<RHcoeff.size(); i++ )
-	  memory[memoryForDSIArrays] += RHcoeff[i].size()*sizeof(real) + RHindex[i].size()*sizeof(int);
-	for ( int i=0; i<SHindex.size(); i++ )
-	  memory[memoryForDSIArrays] += SHindex[i].size()*sizeof(int);
+        memory[memoryForDSIArrays] += RHcoeff.size()*sizeof(ArraySimple<real>) + sizeof(ArraySimple<ArraySimple<real> >);
+        memory[memoryForDSIArrays] += RHindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
+        memory[memoryForDSIArrays] += SHindex.size()*sizeof(ArraySimple<int>) + sizeof(ArraySimple<ArraySimple<int> >);
+        for ( int i=0; i<RHcoeff.size(); i++ )
+          memory[memoryForDSIArrays] += RHcoeff[i].size()*sizeof(real) + RHindex[i].size()*sizeof(int);
+        for ( int i=0; i<SHindex.size(); i++ )
+          memory[memoryForDSIArrays] += SHindex[i].size()*sizeof(int);
       }
     }
 
@@ -1162,25 +1165,25 @@ printMemoryUsage(FILE *file /* = stdout */)
 
   const real megaByte=1024.*1024;
   if( debugs ) fPrintF(file," size of: cgfields=%9.2f, fields=%9.2f, fn=%9.2f, cgdiss=%9.2f, err=%9.2f, dsi=%9.2f (MB)\n",
-		      cgfieldsSize/megaByte,fieldsSize/megaByte,fnSize/megaByte,cgdissSize/megaByte,errSize/megaByte,memory[memoryForDSIArrays]/megaByte);
+                      cgfieldsSize/megaByte,fieldsSize/megaByte,fnSize/megaByte,cgdissSize/megaByte,errSize/megaByte,memory[memoryForDSIArrays]/megaByte);
 
   memory[memoryTotal]=0.;
   for( i=0; i<numberOfMemoryItems-1; i++ )
     memory[memoryTotal]+=memory[i];
 
   const int numberOfComponents=cgfields!=NULL ? cgfields[0][0].getLength(3) : (dsi_cgfieldsH ? 
-									       dsi_cgfieldsH[0][0].getLength(3)+
-									       dsi_cgfieldsE0[0][0].getLength(3) : 
-									       fields[0].getLength(3));
+                                                                               dsi_cgfieldsH[0][0].getLength(3)+
+                                                                               dsi_cgfieldsE0[0][0].getLength(3) : 
+                                                                               fields[0].getLength(3));
 
   if( Communication_Manager::My_Process_Number<=0 )
   {
     for( i=0; i<numberOfMemoryItems; i++ )
     {
       fPrintF(file," %s%s%9.2f  %9.2f    %9.2f       %5.1f%%  \n",
-	      (const char*)memoryName[i],(const char*)dots(0,max(0,nSpace-memoryName[i].length())),
-	      memory[i]/megaByte,memory[i]/sizeof(real)/numberOfGridPoints,
-	      memory[i]/sizeof(real)/numberOfGridPoints/numberOfComponents, 100.*memory[i]/memory[memoryTotal]);
+              (const char*)memoryName[i],(const char*)dots(0,max(0,nSpace-memoryName[i].length())),
+              memory[i]/megaByte,memory[i]/sizeof(real)/numberOfGridPoints,
+              memory[i]/sizeof(real)/numberOfGridPoints/numberOfComponents, 100.*memory[i]/memory[memoryTotal]);
     }
 //    fPrintF(file,"\n **Bytes per grid point = %9.3e/%i = %9.3e\n",
 //                     memory[memoryTotal],numberOfGridPoints,memory[memoryTotal]/numberOfGridPoints);
@@ -1192,7 +1195,7 @@ printMemoryUsage(FILE *file /* = stdout */)
     {
       fPrintF(file,"\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	cg[grid].displayComputedGeometry(file);
+        cg[grid].displayComputedGeometry(file);
       fPrintF(file," +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
     }
     
@@ -1313,10 +1316,10 @@ printStatistics(FILE *file /* = stdout */)
             "              ---------Maxwell Summary------- \n"
             "                       %s" 
             "               Grid:   %s \n" 
-	    "  ==== final time=%9.2e, numberOfStepsTaken =%9i, grids=%i, gridpts =%g, interp pts=%i, processors=%i ==== \n"
-	    "  ==== memory per-proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb)\n"
-	    "   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %%     [max-s/proc] [min-s/proc]\n",
-	    dateString,(const char*)nameOfGridFile,
+            "  ==== final time=%9.2e, numberOfStepsTaken =%9i, grids=%i, gridpts =%g, interp pts=%i, processors=%i ==== \n"
+            "  ==== memory per-proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb)\n"
+            "   Timings:         (ave-sec/proc:)   seconds    sec/step   sec/step/pt     %%     [max-s/proc] [min-s/proc]\n",
+            dateString,(const char*)nameOfGridFile,
             tFinal,numberOfStepsTaken,cg.numberOfComponentGrids(),numberOfGridPoints,numberOfInterpolationPoints,
             np,minMem,aveMem,maxMem,maxMemRecorded,totalMem);
     
@@ -1328,10 +1331,10 @@ printStatistics(FILE *file /* = stdout */)
     for( i=0; i<maximumNumberOfTimings; i++ )
     {
       if( timingName[i]!="" && timing(i)>0. )    
-	fPrintF(output,"%s%s%10.2e  %10.2e  %10.2e   %7.3f  %10.3e  %10.3e\n",(const char*)timingName[i],
-		(const char*)dots(0,max(0,nSpace-timingName[i].length())),
-		aveTiming(i),aveTiming(i)/numberOfStepsTaken,aveTiming(i)/numberOfStepsTaken/numberOfGridPoints,
-		100.*aveTiming(i)/aveTiming(0),maxTiming(i),minTiming(i));
+        fPrintF(output,"%s%s%10.2e  %10.2e  %10.2e   %7.3f  %10.3e  %10.3e\n",(const char*)timingName[i],
+                (const char*)dots(0,max(0,nSpace-timingName[i].length())),
+                aveTiming(i),aveTiming(i)/numberOfStepsTaken,aveTiming(i)/numberOfStepsTaken/numberOfGridPoints,
+                100.*aveTiming(i)/aveTiming(0),maxTiming(i),minTiming(i));
       
     }
   
@@ -1341,17 +1344,17 @@ printStatistics(FILE *file /* = stdout */)
     {
       for( int inter=0; inter < interfaceInfo.size(); inter++ )
       {
-	InterfaceInfo & interface = interfaceInfo[inter]; 
+        InterfaceInfo & interface = interfaceInfo[inter]; 
 
-	const int & totalInterfaceIterations = interface.totalInterfaceIterations;
-	const real & averageInterfaceConvergenceRate = interface.averageInterfaceConvergenceRate;
+        const int & totalInterfaceIterations = interface.totalInterfaceIterations;
+        const real & averageInterfaceConvergenceRate = interface.averageInterfaceConvergenceRate;
         const real & maxFinalResidual =  interface.maxFinalResidual;
         const real & averageFinalResidual = interface.averageFinalResidual;
 
-	fPrintF(output," Interface %i (grid1,grid2)=(%i,%i) : ave-iterations/step =%4.1f, ave-CR-per-it=%5.2f,"
+        fPrintF(output," Interface %i (grid1,grid2)=(%i,%i) : ave-iterations/step =%4.1f, ave-CR-per-it=%5.2f,"
                 " residual (max,ave)=(%8.2e,%8.2e)\n",
-		inter,interface.grid1,interface.grid2,real(totalInterfaceIterations)/numberOfStepsTaken,
-		averageInterfaceConvergenceRate/numberOfStepsTaken,maxFinalResidual,
+                inter,interface.grid1,interface.grid2,real(totalInterfaceIterations)/numberOfStepsTaken,
+                averageInterfaceConvergenceRate/numberOfStepsTaken,maxFinalResidual,
                 averageFinalResidual/numberOfStepsTaken);
       }
     }
@@ -1366,22 +1369,22 @@ printStatistics(FILE *file /* = stdout */)
       // Output results as a LaTeX table
       fPrintF(output,"\n\n%% ------------ Table for LaTeX -------------------------------\n");
       fPrintF(output,
-	      "\\begin{table}[hbt]\n"
-	      "\\begin{center}\\footnotesize\n"
-	      "\\begin{tabular}{|l|r|r|r|r|} \\hline\n"
-	      "  Timings:   &  seconds &    sec/step  &  sec/step/pt &  \\%%    \\\\ \\hline\n");
+              "\\begin{table}[hbt]\n"
+              "\\begin{center}\\footnotesize\n"
+              "\\begin{tabular}{|l|r|r|r|r|} \\hline\n"
+              "  Timings:   &  seconds &    sec/step  &  sec/step/pt &  \\%%    \\\\ \\hline\n");
       for( i=0; i<maximumNumberOfTimings; i++ )
       {
         aString name=timingName[i];
-	int len=name.length();
-	for( int j=0; j<len; j++)
-	{
-	  if( name[j]==' ' ) name[j]='~';   // replace indentation space with ~
-	}
-	if( timingName[i]!="" && timing(i)>0. )    
-	  fPrintF(output,"%s\\dotfill & %10.2e & %10.2e & %10.2e & %7.3f \\\\ \n",(const char*)name,
-		  timing(i),timing(i)/numberOfStepsTaken,timing(i)/numberOfStepsTaken/numberOfGridPoints,
-		  100.*timing(i)/timing(0));
+        int len=name.length();
+        for( int j=0; j<len; j++)
+        {
+          if( name[j]==' ' ) name[j]='~';   // replace indentation space with ~
+        }
+        if( timingName[i]!="" && timing(i)>0. )    
+          fPrintF(output,"%s\\dotfill & %10.2e & %10.2e & %10.2e & %7.3f \\\\ \n",(const char*)name,
+                  timing(i),timing(i)/numberOfStepsTaken,timing(i)/numberOfStepsTaken/numberOfGridPoints,
+                  100.*timing(i)/timing(0));
       
       }     
       fPrintF(output,
@@ -1391,7 +1394,7 @@ printStatistics(FILE *file /* = stdout */)
               "\\caption{grid=%s, %g grid points, %i interp points, %i steps taken, %i processors.}\n"
               "\\label{tab:%s}\n"
               "\\end{table}\n", (const char*)nameOfGridFile,numberOfGridPoints,numberOfInterpolationPoints,
-	      numberOfStepsTaken,Communication_Manager::numberOfProcessors(),(const char*)nameOfGridFile );
+              numberOfStepsTaken,Communication_Manager::numberOfProcessors(),(const char*)nameOfGridFile );
     }
     
     
@@ -1407,38 +1410,38 @@ printStatistics(FILE *file /* = stdout */)
       FILE *output = fileio==0 ? logFile : file;
       fflush(output);
       fPrintF(output,"\n"
-	      " ------- Summary: Timings per processor -----------\n"
-	      "   p   ");
+              " ------- Summary: Timings per processor -----------\n"
+              "   p   ");
       for( int i=0; i<maximumNumberOfTimings; i++ )
       { // output a short-form name (7 chars)
-	if( timingName[i]!="" && maxTiming(i)!=0. )  
-	{
+        if( timingName[i]!="" && maxTiming(i)!=0. )  
+        {
           aString shortName="       ";
           int m=0;
-	  for( int s=0; m<7 && s<timingName[i].length(); s++ ) 
-	  { // strip off blanks
-	    if( timingName[i][s]!=' ' ) {shortName[m]=timingName[i][s]; m++;} //
-	  }
+          for( int s=0; m<7 && s<timingName[i].length(); s++ ) 
+          { // strip off blanks
+            if( timingName[i][s]!=' ' ) {shortName[m]=timingName[i][s]; m++;} //
+          }
           fPrintF(output,"%7.7s ",(const char*)shortName);
-	}
+        }
       }
       fPrintF(output,"\n");
       fflush(output);
       RealArray timingLocal(timing.dimension(0));
       for( int p=0; p<np; p++ )
       {
-	// Note -- it did not work very well to have processor p try to write results, so instead
+        // Note -- it did not work very well to have processor p try to write results, so instead
         // we copy results to processor 0 to print 
         timingLocal=timing;
         broadCast(timingLocal,p);  // send timing info from processor p   -- don't need a broad cast here **fix**
-	fPrintF(output,"%4i : ",p);
-	for( int i=0; i<maximumNumberOfTimings; i++ )
-	{
-	  if( timingName[i]!="" && maxTiming(i)!=0. )    
-	    fPrintF(output,"%7.1e ",timingLocal(i));
-	}
-	fflush(output);
-	fPrintF(output,"\n");
+        fPrintF(output,"%4i : ",p);
+        for( int i=0; i<maximumNumberOfTimings; i++ )
+        {
+          if( timingName[i]!="" && maxTiming(i)!=0. )    
+            fPrintF(output,"%7.1e ",timingLocal(i));
+        }
+        fflush(output);
+        fPrintF(output,"\n");
       }
       fPrintF(output,"\n");
       fflush(output);
@@ -1471,7 +1474,7 @@ buildDissipationParametersDialog(DialogData & dialog )
                           "apply filter",
                           "use sosup dissipation",
                           "use super-grid absorbing layers",
- 			  ""};
+                          ""};
   int tbState[20];
   tbState[0] = useVariableDissipation;
   tbState[1] = applyFilter;
@@ -1566,11 +1569,13 @@ buildInterfaceOptionsDialog(DialogData & dialog )
                           "use new interface routines",
                           "use impedance interface projection",
                           "use jacobi interface update",
- 			  ""};
+                          "use unified interface macros",
+                          ""};
   int tbState[20];
   tbState[0] = useNewInterfaceRoutines; 
   tbState[1] = dbase.get<int>("useImpedanceInterfaceProjection");
   tbState[2] = dbase.get<int>("useJacobiInterfaceUpdate");
+  tbState[3] = dbase.get<int>("useUnifiedInterfaceMacros");
 
   int numColumns=1;
   dialog.setToggleButtons(tbCommands, tbCommands, tbState, numColumns); 
@@ -1640,11 +1645,11 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
   dialog.addOptionMenu("nonlinear model:", nonlinearModelCommands, nonlinearModelCommands, (int)nonlinearModel );
 
   aString timeSteppingMethodCommands[] = {"defaultTimeStepping", 
-					  "adamsBashforthSymmetricThirdOrder",
-					  "rungeKutta",
-					  "stoermerTimeStepping",
-					  "modifiedEquationTimeStepping",
-					  "" };
+                                          "adamsBashforthSymmetricThirdOrder",
+                                          "rungeKutta",
+                                          "stoermerTimeStepping",
+                                          "modifiedEquationTimeStepping",
+                                          "" };
 
   dialog.addOptionMenu("time stepping:", timeSteppingMethodCommands, timeSteppingMethodCommands, 
                        (int)timeSteppingMethod );
@@ -1654,7 +1659,7 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
                                   "selective dissipation...",
                                   "dissipation parameters...",
                                   "interface options...",
-				  ""};
+                                  ""};
 
   int numRows=3;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
@@ -1671,7 +1676,7 @@ buildTimeSteppingOptionsDialog(DialogData & dialog )
                           "use new forcing method",
                           "set divergence at interfaces",
                           "solve for all fields",
- 			  ""};
+                          ""};
   int tbState[20];
   tbState[0] = useConservative;
   tbState[1] = solveForElectricField;
@@ -1752,11 +1757,11 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
   dialog.setOptionMenuColumns(1);
 
   aString initialConditionOptionCommands[] = {"defaultInitialCondition", 
-					      "planeWaveInitialCondition",
-					      "gaussianPlaneWave",
+                                              "planeWaveInitialCondition",
+                                              "gaussianPlaneWave",
                                               "gaussianPulseInitialCondition",
-					      "squareEigenfunctionInitialCondition",  
-					      "annulusEigenfunctionInitialCondition",
+                                              "squareEigenfunctionInitialCondition",  
+                                              "annulusEigenfunctionInitialCondition",
                                               "zeroInitialCondition",
                                               "planeWaveScatteredFieldInitialCondition",
                                               "planeMaterialInterfaceInitialCondition",
@@ -1764,7 +1769,7 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
                                               "twilightZoneInitialCondition",
                                               "userDefinedInitialConditions",
                                               "userDefinedKnownSolutionInitialCondition",
-					      "" };
+                                              "" };
 
   dialog.addOptionMenu("initial conditions:", initialConditionOptionCommands, initialConditionOptionCommands, 
                             (int)initialConditionOption );
@@ -1774,13 +1779,13 @@ buildInitialConditionsOptionsDialog(DialogData & dialog )
 
   aString dispersionRelationCommands[] = {"computeFrequency",
                                           "computeWaveNumber",
-			                  "" };
+                                          "" };
 
   dialog.addOptionMenu("dispersion relation:", dispersionRelationCommands, dispersionRelationCommands, 
                             (int)dispersionRelationComputeOption );
 
   aString tbCommands[] = {"smooth bounding box",
- 			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = dbase.get<int>("smoothBoundingBox");
   int numColumns=2;
@@ -1846,7 +1851,7 @@ buildForcingOptionsDialog(DialogData & dialog )
   aString pushButtonCommands[] = {"set pml error checking offset",
                                   "define embedded bodies",
                                   "define material region...",
-				  ""};
+                                  ""};
   int numRows=2;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
@@ -1865,17 +1870,17 @@ buildForcingOptionsDialog(DialogData & dialog )
   dialog.addOptionMenu("forcing:", forcingOptionCommands, forcingOptionCommands, (int)forcingOption );
 
   aString boundaryForcingOptionCommands[] = {"noBoundaryForcing", 
-					     "planeWaveBoundaryForcing",
-					     "chirpedPlaneWaveBoundaryForcing",
-					     "" };
+                                             "planeWaveBoundaryForcing",
+                                             "chirpedPlaneWaveBoundaryForcing",
+                                             "" };
 
   dialog.addOptionMenu("boundary forcing:", boundaryForcingOptionCommands, boundaryForcingOptionCommands, 
                        (int)boundaryForcingOption );
 
   aString twilightZoneOptionCommands[] = {"polynomial", 
-					  "trigonometric",
-					  "pulse",
-					  "" };
+                                          "trigonometric",
+                                          "pulse",
+                                          "" };
 
   dialog.addOptionMenu("TZ option:", twilightZoneOptionCommands, twilightZoneOptionCommands, 
                        (int)twilightZoneOption );
@@ -1883,27 +1888,27 @@ buildForcingOptionsDialog(DialogData & dialog )
 
   aString knownSolutionOptionCommands[] = {"noKnownSolution",
                                            "twilightZoneKnownSolution",
-					   "planeWaveKnownSolution",
+                                           "planeWaveKnownSolution",
                                            "gaussianPlaneWaveKnownSolution",
                                            "gaussianIntegralKnownSolution",
                                            "planeMaterialInterfaceKnownSolution",
-					   "scatteringFromADiskKnownSolution",
-					   "scatteringFromADielectricDiskKnownSolution",
-					   "scatteringFromASphereKnownSolution",
+                                           "scatteringFromADiskKnownSolution",
+                                           "scatteringFromADielectricDiskKnownSolution",
+                                           "scatteringFromASphereKnownSolution",
                                            "scatteringFromADielectricSphereKnownSolution",
-					   "squareEigenfunctionKnownSolution",
-					   "annulusEigenfunctionKnownSolution",
-					   "eigenfunctionsOfACylinderKnownSolution",
-					   "eigenfunctionsOfASphereKnownSolution ",   // not implemented yet 
+                                           "squareEigenfunctionKnownSolution",
+                                           "annulusEigenfunctionKnownSolution",
+                                           "eigenfunctionsOfACylinderKnownSolution",
+                                           "eigenfunctionsOfASphereKnownSolution ",   // not implemented yet 
                                            "user defined known solution",
-					   "" };
+                                           "" };
 
   dialog.addOptionMenu("known solution:", knownSolutionOptionCommands, knownSolutionOptionCommands, 
                             (int)knownSolutionOption );
 
   aString tbCommands[] = {"use twilightZone materials",
-			  "use parallel radiation boundary condition",
- 			  ""};
+                          "use parallel radiation boundary condition",
+                          ""};
   int tbState[10];
   tbState[0] = useTwilightZoneMaterials;
   int numColumns=2;
@@ -1930,19 +1935,19 @@ buildForcingOptionsDialog(DialogData & dialog )
   textCommands[nt] = "Gaussian source:";
   textLabels[nt]=textCommands[nt]; 
   sPrintF(textStrings[nt], "%g %g %g %g %g %g %g (beta,omega,x0,y0,z0,amp,rampTime)",
-	  gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],gaussianSourceParameters[3],
-	  gaussianSourceParameters[4],gaussianSourceParameters[5],gaussianSourceParameters[6]); nt++;
+          gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],gaussianSourceParameters[3],
+          gaussianSourceParameters[4],gaussianSourceParameters[5],gaussianSourceParameters[6]); nt++;
 
   textCommands[nt] = "Gaussian pulse:";
   textLabels[nt]=textCommands[nt]; 
   sPrintF(textStrings[nt], "%g %g %g %g %g %g (beta,scale,exponent,x0,y0,z0)",
-	  gaussianPulseParameters[0][0],gaussianPulseParameters[0][1],gaussianPulseParameters[0][2],
+          gaussianPulseParameters[0][0],gaussianPulseParameters[0][1],gaussianPulseParameters[0][2],
           gaussianPulseParameters[0][3],gaussianPulseParameters[0][4],gaussianPulseParameters[0][5]); nt++;
 
   textCommands[nt] = "Gaussian charge source:";
   textLabels[nt]=textCommands[nt]; 
   sPrintF(textStrings[nt], "%g %g %g %g %g %g %g %g %g (amp,beta,p,x0,y0,z0,v0,v1,v2)",
-	  gaussianChargeSourceParameters[0][0],gaussianChargeSourceParameters[0][1],
+          gaussianChargeSourceParameters[0][0],gaussianChargeSourceParameters[0][1],
           gaussianChargeSourceParameters[0][2],gaussianChargeSourceParameters[0][3],
           gaussianChargeSourceParameters[0][4],gaussianChargeSourceParameters[0][5],
           gaussianChargeSourceParameters[0][6],gaussianChargeSourceParameters[0][7],
@@ -2021,8 +2026,8 @@ buildPlotOptionsDialog(DialogData & dialog )
                           "compare to show file",
                           "compute energy",
                           "plot rho",
-			  "plot dsi vertex max",
- 			  ""};
+                          "plot dsi vertex max",
+                          ""};
   int tbState[20];
   tbState[0] = plotErrors;
   tbState[1] = plotDivergence;
@@ -2094,21 +2099,21 @@ buildInputOutputOptionsDialog(DialogData & dialog )
   const int & probeFileFrequency = parameters.dbase.get<int>("probeFileFrequency");
 
   aString gridTypeCommands[] = {"square", 
-				"rotatedSquare", 
-				"sineSquare",
-				"skewedSquare", 
-				"chevron", 
-				"squareByTriangles", 
-				"squareByQuads", 
-				"sineByTriangles", 
-				"annulus", 
-				"box",
-				"chevbox",
-				"perturbedSquare",     //  square with random perturbations
-				"perturbedBox",        //  box with random perturbations
-				"compositeGrid", 
-				"grid", 
-				"" };
+                                "rotatedSquare", 
+                                "sineSquare",
+                                "skewedSquare", 
+                                "chevron", 
+                                "squareByTriangles", 
+                                "squareByQuads", 
+                                "sineByTriangles", 
+                                "annulus", 
+                                "box",
+                                "chevbox",
+                                "perturbedSquare",     //  square with random perturbations
+                                "perturbedBox",        //  box with random perturbations
+                                "compositeGrid", 
+                                "grid", 
+                                "" };
   dialog.addOptionMenu("grid:", gridTypeCommands, gridTypeCommands, (int)gridType );
 
   aString elementTypeCommands[] = {"structured", "triangles", "quadrilaterals", "" };
@@ -2120,7 +2125,7 @@ buildInputOutputOptionsDialog(DialogData & dialog )
                                   "create user defined probe...",
                                   // old: "specify probes",
                                   "show file options...",
-				  ""};
+                                  ""};
   int numRows=3;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
@@ -2169,7 +2174,7 @@ buildPdeParametersDialog(DialogData & dialog )
 
   // ************** PUSH BUTTONS *****************
   aString pushButtonCommands[] = {"dispersion parameters...",
- 	    		          ""};
+                                  ""};
   int numRows=1;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
@@ -2224,7 +2229,7 @@ buildDispersionParametersDialog(DialogData & dialog )
 {
 
   aString cmds[] = {"edit material",
-		    ""};
+                    ""};
 
   int numberOfPushButtons=0;  // number of entries in cmds
   while( cmds[numberOfPushButtons]!="" ){numberOfPushButtons++;}; // 
@@ -2291,10 +2296,11 @@ interactiveUpdate(GL_GraphicsInterface &gi )
   CompositeGrid & cg= *cgp;
   const int numberOfComponentGrids = cg.numberOfComponentGrids();
 
-  int & setDivergenceAtInterfaces = dbase.get<int>("setDivergenceAtInterfaces");
+  int & setDivergenceAtInterfaces       = dbase.get<int>("setDivergenceAtInterfaces");
   int & useImpedanceInterfaceProjection = dbase.get<int>("useImpedanceInterfaceProjection");
-  int & useJacobiInterfaceUpdate = dbase.get<int>("useJacobiInterfaceUpdate");
-  real & tallCellRatioBound = dbase.get<real>("tallCellRatioBound");
+  int & useJacobiInterfaceUpdate        = dbase.get<int>("useJacobiInterfaceUpdate");
+  int & useUnifiedInterfaceMacros       = dbase.get<int>("useUnifiedInterfaceMacros");
+  real & tallCellRatioBound             = dbase.get<real>("tallCellRatioBound");
 
   BoundaryForcingEnum & boundaryForcingOption =dbase.get<BoundaryForcingEnum>("boundaryForcingOption");
   bool & solveForScatteredField = dbase.get<bool>("solveForScatteredField");
@@ -2352,7 +2358,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
                                   "plot options...",
                                   "input-output options...",
                                   "pde parameters...",
-				  ""};
+                                  ""};
   int numRows=3;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
@@ -2446,7 +2452,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       for( int side=0; side<=1; side++ )  
       {
-	originalBoundaryCondition(side,axis,grid)=cg[grid].boundaryCondition(side,axis);
+        originalBoundaryCondition(side,axis,grid)=cg[grid].boundaryCondition(side,axis);
       }
     }
   }
@@ -2551,10 +2557,10 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="compositeGrid" )
     {
       gridType=(answer=="square" ? square : answer=="rotatedSquare" ? rotatedSquare : 
-		answer=="sineSquare" ? sineSquare : answer=="skewedSquare" ? skewedSquare : 
-		answer=="chevron" ? chevron : answer=="squareByTriangles" ? squareByTriangles :
-		answer=="squareByQuads" ? squareByQuads : answer=="sineByTriangles" ? sineByTriangles :
-		answer=="annulus" ? annulus : answer=="chevbox" ? chevbox : answer=="grid" ? compositeGrid:
+                answer=="sineSquare" ? sineSquare : answer=="skewedSquare" ? skewedSquare : 
+                answer=="chevron" ? chevron : answer=="squareByTriangles" ? squareByTriangles :
+                answer=="squareByQuads" ? squareByQuads : answer=="sineByTriangles" ? sineByTriangles :
+                answer=="annulus" ? annulus : answer=="chevbox" ? chevbox : answer=="grid" ? compositeGrid:
                 compositeGrid);
       inputOutputOptionsDialog.getOptionMenu("grid:").setCurrentChoice((int)gridType);
     }
@@ -2585,18 +2591,18 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       method= (answer=="default" ? defaultMethod :  
                (answer=="Yee" || answer=="yee" )    ? yee : 
                answer=="DSI"                        ? dsi :
-	       answer=="new DSI"                    ? dsiNew : 
+               answer=="new DSI"                    ? dsiNew : 
                answer=="DSI-MatVec"                 ? dsiMatVec : 
                (answer=="NFDTD" || answer=="nfdtd") ? nfdtd : 
                (answer=="SOSUP" || answer=="sosup") ? sosup :
                (answer=="BAMX" || answer=="bamx")   ? bamx :
-	       defaultMethod);
+               defaultMethod);
 
       timeSteppingOptionsDialog.getOptionMenu("method:").setCurrentChoice((int)method);
       if( timeSteppingMethod==defaultTimeStepping && (method==nfdtd || method==sosup  || method==bamx ) )
       {
         timeSteppingMethod=modifiedEquationTimeStepping;
-	timeSteppingOptionsDialog.getOptionMenu("time stepping:").setCurrentChoice((int)timeSteppingMethod);
+        timeSteppingOptionsDialog.getOptionMenu("time stepping:").setCurrentChoice((int)timeSteppingMethod);
       }
     }
     else if( answer=="no dispersion" ||
@@ -2607,22 +2613,22 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
       if( answer=="Drude" )
       {
-	dispersionModel=drude;
-	dispersionModelName="Drude";
+        dispersionModel=drude;
+        dispersionModelName="Drude";
       }
       else if( answer=="GDM" )
       {
-	dispersionModel=GDM;
-	dispersionModelName="GDM";
+        dispersionModel=GDM;
+        dispersionModelName="GDM";
       }
       else if( answer=="no dispersion" )
       {
-	dispersionModel=noDispersion;
-	dispersionModelName="none";
+        dispersionModel=noDispersion;
+        dispersionModelName="none";
       }
       else
       {
-	OV_ABORT("ERROR: unknown dispersion model: this should not happen!");
+        OV_ABORT("ERROR: unknown dispersion model: this should not happen!");
       }
       printF("Setting dispersion model=[%s]\n",(const char*)dispersionModelName);
       timeSteppingOptionsDialog.getOptionMenu("dispersion model:").setCurrentChoice((int)dispersionModel);
@@ -2630,23 +2636,23 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       
     }
     else if( answer=="no nonlinear model" ||
-	     answer=="multilevelAtomic" )
+             answer=="multilevelAtomic" )
     {
       // ------------- CHOOSE A NONLINEAR MODELS -----------
       aString & nonlinearModelName=dbase.get<aString>("nonlinearModelName");
       if( answer=="no nonlinear model" )
       {
         nonlinearModel=noNonlinearModel;
-	nonlinearModelName="none";
+        nonlinearModelName="none";
       }
       else if(  answer=="multilevelAtomic" )
       {
         nonlinearModel=multilevelAtomic;
-	nonlinearModelName="multilevelAtomic";
+        nonlinearModelName="multilevelAtomic";
       }
       else
       {
-	OV_ABORT("ERROR: unknown nonlinear model: this should not happen!");
+        OV_ABORT("ERROR: unknown nonlinear model: this should not happen!");
       }
       printF("Setting nonlinear model=[%s]\n",(const char*)nonlinearModelName);
       timeSteppingOptionsDialog.getOptionMenu("nonlinear model:").setCurrentChoice((int)nonlinearModel);
@@ -2654,19 +2660,19 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     
 
     else if( answer=="computeFrequency" ||
-	     answer=="computeWaveNumber" )
+             answer=="computeWaveNumber" )
     {
       DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
-	dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+        dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
 
       if( answer=="computeFrequency" )
       {
-	dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexFrequency;
+        dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexFrequency;
         printF("Compute the (complex) frequency from the dispersion relation.\n");
       }
       else
       {
-	dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexWaveNumber;
+        dispersionRelationComputeOption=DispersiveMaterialParameters::computeComplexWaveNumber;
         printF("Compute the (complex) wave number from the dispersion relation.\n");
       }
       
@@ -2676,8 +2682,8 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="planeWaveInitialCondition" ||
              answer=="gaussianPlaneWave" ||
              answer=="gaussianPulseInitialCondition" ||
-	     answer=="squareEigenfunctionInitialCondition" ||  
-	     answer=="annulusEigenfunctionInitialCondition" ||
+             answer=="squareEigenfunctionInitialCondition" ||  
+             answer=="annulusEigenfunctionInitialCondition" ||
              answer=="zeroInitialCondition" ||
              answer=="planeWaveScatteredFieldInitialCondition" ||
              answer=="planeMaterialInterfaceInitialCondition" ||
@@ -2687,29 +2693,29 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="userDefinedKnownSolutionInitialCondition" )
     {
       initialConditionOption=
-	(answer=="planeWaveInitialCondition" ? planeWaveInitialCondition :
-	 answer=="gaussianPlaneWave"         ? gaussianPlaneWave : 
-	 answer=="gaussianPulseInitialCondition" ? gaussianPulseInitialCondition :
-	 answer=="squareEigenfunctionInitialCondition" ? squareEigenfunctionInitialCondition :
-	 answer=="annulusEigenfunctionInitialCondition" ? annulusEigenfunctionInitialCondition :
-	 answer=="planeWaveScatteredFieldInitialCondition" ? planeWaveScatteredFieldInitialCondition :
-	 answer=="zeroInitialCondition" ?  zeroInitialCondition :
+        (answer=="planeWaveInitialCondition" ? planeWaveInitialCondition :
+         answer=="gaussianPlaneWave"         ? gaussianPlaneWave : 
+         answer=="gaussianPulseInitialCondition" ? gaussianPulseInitialCondition :
+         answer=="squareEigenfunctionInitialCondition" ? squareEigenfunctionInitialCondition :
+         answer=="annulusEigenfunctionInitialCondition" ? annulusEigenfunctionInitialCondition :
+         answer=="planeWaveScatteredFieldInitialCondition" ? planeWaveScatteredFieldInitialCondition :
+         answer=="zeroInitialCondition" ?  zeroInitialCondition :
          answer=="planeMaterialInterfaceInitialCondition" ? planeMaterialInterfaceInitialCondition :
          answer=="gaussianIntegralInitialCondition" ? gaussianIntegralInitialCondition :
          answer=="twilightZoneInitialCondition" ? twilightZoneInitialCondition :
          answer=="userDefinedInitialConditions" ? userDefinedInitialConditionsOption :
          answer=="userDefinedKnownSolutionInitialCondition" ? userDefinedKnownSolutionInitialCondition :
-	 defaultInitialCondition);
+         defaultInitialCondition);
 
       if( initialConditionOption==userDefinedInitialConditionsOption )
       {
-	setupUserDefinedInitialConditions();
-	forcingOption=noForcing;
+        setupUserDefinedInitialConditions();
+        forcingOption=noForcing;
       }
       else if( initialConditionOption==planeWaveInitialCondition )
       {
         // By default adjust the far-field BC's on all grids for a plane wave initial condition
-	adjustFarFieldBoundariesForIncidentField=1;
+        adjustFarFieldBoundariesForIncidentField=1;
       }
       else if( initialConditionOption==gaussianPlaneWave )
       {
@@ -2721,47 +2727,47 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       }
       else if( initialConditionOption==planeMaterialInterfaceInitialCondition )
       {
-	knownSolutionOption=planeMaterialInterfaceKnownSolution;
+        knownSolutionOption=planeMaterialInterfaceKnownSolution;
       }
       else if( initialConditionOption==squareEigenfunctionInitialCondition )
       {
-	gi.inputString(line,"Enter the frequencies and offset: omegax,omegay,omegaz, x0,y0,z0");
-	sScanF(line,"%e %e %e %e %e %e ",&initialConditionParameters[0],&initialConditionParameters[1],
-	       &initialConditionParameters[2],&initialConditionParameters[3],&initialConditionParameters[4],
+        gi.inputString(line,"Enter the frequencies and offset: omegax,omegay,omegaz, x0,y0,z0");
+        sScanF(line,"%e %e %e %e %e %e ",&initialConditionParameters[0],&initialConditionParameters[1],
+               &initialConditionParameters[2],&initialConditionParameters[3],&initialConditionParameters[4],
                &initialConditionParameters[5]);
         printF("Using omegax=%f ,omegay=%f ,omegaz=%f, (x0,y0,z0)=(%g,%g,%g)\n",
                initialConditionParameters[0],initialConditionParameters[1],initialConditionParameters[2],
                initialConditionParameters[3],initialConditionParameters[4],initialConditionParameters[5]);
 
-	forcingOption=noForcing;
+        forcingOption=noForcing;
 
-	knownSolutionOption=squareEigenfunctionKnownSolution;
+        knownSolutionOption=squareEigenfunctionKnownSolution;
       }
       else if( initialConditionOption==annulusEigenfunctionInitialCondition )
       {
         knownSolutionOption=annulusEigenfunctionKnownSolution;
-	
+        
         if( cg.numberOfDimensions()==2 )
-	{
-	  gi.inputString(line,"Enter the m,n (n-> Jn, cos(n*theta), m=radial");
-	  sScanF(line,"%e %e",&initialConditionParameters[0],&initialConditionParameters[1]);
-	  printF("Using m=%i , n=%i\n",int(initialConditionParameters[0]+.5),int(initialConditionParameters[1]+.5));
-	}
-	else
-	{
-	  gi.inputString(line,"Enter the m,n,k (n-> Jn, cos(n*theta), m=radial, k=axial (k>=1)");
-	  sScanF(line,"%e %e %e",&initialConditionParameters[0],&initialConditionParameters[1],
-		 &initialConditionParameters[2]);
-	  printF("Using m=%i , n=%i, k=%i\n",int(initialConditionParameters[0]+.5),
-		 int(initialConditionParameters[1]+.5),
-		 int(initialConditionParameters[2]+.5));
-	}
-	
-	forcingOption=noForcing;
+        {
+          gi.inputString(line,"Enter the m,n (n-> Jn, cos(n*theta), m=radial");
+          sScanF(line,"%e %e",&initialConditionParameters[0],&initialConditionParameters[1]);
+          printF("Using m=%i , n=%i\n",int(initialConditionParameters[0]+.5),int(initialConditionParameters[1]+.5));
+        }
+        else
+        {
+          gi.inputString(line,"Enter the m,n,k (n-> Jn, cos(n*theta), m=radial, k=axial (k>=1)");
+          sScanF(line,"%e %e %e",&initialConditionParameters[0],&initialConditionParameters[1],
+                 &initialConditionParameters[2]);
+          printF("Using m=%i , n=%i, k=%i\n",int(initialConditionParameters[0]+.5),
+                 int(initialConditionParameters[1]+.5),
+                 int(initialConditionParameters[2]+.5));
+        }
+        
+        forcingOption=noForcing;
       }
       else if( initialConditionOption==userDefinedKnownSolutionInitialCondition )
       {
-	// knownSolutionOption=userDefinedKnownSolution;
+        // knownSolutionOption=userDefinedKnownSolution;
       }
       
       
@@ -2778,17 +2784,17 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="userDefinedForcing" )
     {
       forcingOption=(answer=="magneticSinusoidalPointSource" ? magneticSinusoidalPointSource :
-		     answer=="gaussianSource"                ? gaussianSource : 
+                     answer=="gaussianSource"                ? gaussianSource : 
                      answer=="twilightZone"                  ? twilightZoneForcing :
-		     //  answer=="planeWaveBoundaryForcing"      ? planeWaveBoundaryForcing :
+                     //  answer=="planeWaveBoundaryForcing"      ? planeWaveBoundaryForcing :
                      answer=="gaussianChargeSource"          ? gaussianChargeSource :
                      answer=="userDefinedForcing"            ? userDefinedForcingOption :
-		     noForcing);
+                     noForcing);
 
       if( forcingOption==twilightZoneForcing )
       {
-	knownSolutionOption=twilightZoneKnownSolution;
-	forcingOptionsDialog.getOptionMenu("known solution:").setCurrentChoice((int)knownSolutionOption);
+        knownSolutionOption=twilightZoneKnownSolution;
+        forcingOptionsDialog.getOptionMenu("known solution:").setCurrentChoice((int)knownSolutionOption);
       }
       
       if( forcingOption==magneticSinusoidalPointSource ||
@@ -2811,28 +2817,28 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="chirpedPlaneWaveBoundaryForcing" )
     {
       boundaryForcingOption=(answer=="noBoundaryForcing" ? noBoundaryForcing :
-			     answer=="planeWaveBoundaryForcing"      ? planeWaveBoundaryForcing :
-			     answer=="chirpedPlaneWaveBoundaryForcing"      ? chirpedPlaneWaveBoundaryForcing :
-			     noBoundaryForcing);
+                             answer=="planeWaveBoundaryForcing"      ? planeWaveBoundaryForcing :
+                             answer=="chirpedPlaneWaveBoundaryForcing"      ? chirpedPlaneWaveBoundaryForcing :
+                             noBoundaryForcing);
 
       if( boundaryForcingOption==noBoundaryForcing )
       {
-	printF("boundaryForcingOption=noBoundaryForcing, do not solve directly for the scattered field\n");
-	solveForScatteredField=false;
+        printF("boundaryForcingOption=noBoundaryForcing, do not solve directly for the scattered field\n");
+        solveForScatteredField=false;
       }
       else if( boundaryForcingOption==planeWaveBoundaryForcing )
       {
-	printF("boundaryForcingOption=planeWaveBoundaryForcing: solve directly for the scattered field\n");
-	solveForScatteredField=true;
+        printF("boundaryForcingOption=planeWaveBoundaryForcing: solve directly for the scattered field\n");
+        solveForScatteredField=true;
       }
       else if( boundaryForcingOption==chirpedPlaneWaveBoundaryForcing )
       {
-	printF("boundaryForcingOption=chirpedPlaneWaveBoundaryForcing: solve directly for the scattered field\n");
-	solveForScatteredField=true;
+        printF("boundaryForcingOption=chirpedPlaneWaveBoundaryForcing: solve directly for the scattered field\n");
+        solveForScatteredField=true;
       }
       else
       {
-	OV_ABORT("error -- this should not happen");
+        OV_ABORT("error -- this should not happen");
       }
 
       forcingOptionsDialog.getOptionMenu("boundary forcing:").setCurrentChoice((int)boundaryForcingOption);
@@ -2840,35 +2846,35 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
     else if( answer=="noKnownSolution" ||
              answer=="twilightZoneKnownSolution" ||
-	     answer=="planeWaveKnownSolution" ||
+             answer=="planeWaveKnownSolution" ||
              answer=="gaussianPlaneWaveKnownSolution" ||
              answer=="gaussianIntegralKnownSolution" ||
              answer=="planeMaterialInterfaceKnownSolution" ||
-	     answer=="scatteringFromADiskKnownSolution" ||
-	     answer=="scatteringFromADielectricDiskKnownSolution" ||
-	     answer=="scatteringFromASphereKnownSolution" ||
-	     answer=="scatteringFromADielectricSphereKnownSolution" ||
-	     answer=="squareEigenfunctionKnownSolution" ||
-	     answer=="annulusEigenfunctionKnownSolution" ||
-	     answer=="eigenfunctionsOfASphereKnownSolution " ||
+             answer=="scatteringFromADiskKnownSolution" ||
+             answer=="scatteringFromADielectricDiskKnownSolution" ||
+             answer=="scatteringFromASphereKnownSolution" ||
+             answer=="scatteringFromADielectricSphereKnownSolution" ||
+             answer=="squareEigenfunctionKnownSolution" ||
+             answer=="annulusEigenfunctionKnownSolution" ||
+             answer=="eigenfunctionsOfASphereKnownSolution " ||
              answer=="user defined known solution" )
     {
       knownSolutionOption = 
-	(answer=="noKnownSolution" ? noKnownSolution :
+        (answer=="noKnownSolution" ? noKnownSolution :
          answer=="twilightZoneKnownSolution" ? twilightZoneKnownSolution : 
-	 answer=="planeWaveKnownSolution" ? planeWaveKnownSolution :
+         answer=="planeWaveKnownSolution" ? planeWaveKnownSolution :
          answer=="gaussianPlaneWaveKnownSolution" ? gaussianPlaneWaveKnownSolution :
          answer=="gaussianIntegralKnownSolution" ? gaussianIntegralKnownSolution :
          answer=="planeMaterialInterfaceKnownSolution" ? planeMaterialInterfaceKnownSolution :
-	 answer=="scatteringFromADiskKnownSolution" ? scatteringFromADiskKnownSolution :
-	 answer=="scatteringFromADielectricDiskKnownSolution" ? scatteringFromADielectricDiskKnownSolution :
-	 answer=="scatteringFromASphereKnownSolution" ? scatteringFromASphereKnownSolution :
-	 answer=="scatteringFromADielectricSphereKnownSolution" ? scatteringFromADielectricSphereKnownSolution :
-	 answer=="squareEigenfunctionKnownSolution" ? squareEigenfunctionKnownSolution :
-	 answer=="annulusEigenfunctionKnownSolution" ? annulusEigenfunctionKnownSolution :
-	 answer=="eigenfunctionsOfASphereKnownSolution " ? eigenfunctionsOfASphereKnownSolution : 
+         answer=="scatteringFromADiskKnownSolution" ? scatteringFromADiskKnownSolution :
+         answer=="scatteringFromADielectricDiskKnownSolution" ? scatteringFromADielectricDiskKnownSolution :
+         answer=="scatteringFromASphereKnownSolution" ? scatteringFromASphereKnownSolution :
+         answer=="scatteringFromADielectricSphereKnownSolution" ? scatteringFromADielectricSphereKnownSolution :
+         answer=="squareEigenfunctionKnownSolution" ? squareEigenfunctionKnownSolution :
+         answer=="annulusEigenfunctionKnownSolution" ? annulusEigenfunctionKnownSolution :
+         answer=="eigenfunctionsOfASphereKnownSolution " ? eigenfunctionsOfASphereKnownSolution : 
          answer=="user defined known solution" ? userDefinedKnownSolution : 
-	 noKnownSolution );
+         noKnownSolution );
 
       aString & knownSolutionName=dbase.get<aString>("knownSolutionName");
       knownSolutionName=answer;
@@ -2878,24 +2884,24 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       if( knownSolutionOption==userDefinedKnownSolution )
       {
         // -- choose the user defined known solution ---
-	updateUserDefinedKnownSolution(gi,cg);
+        updateUserDefinedKnownSolution(gi,cg);
       }
       
 
     }
     else if( answer=="defaultTimeStepping" ||
-	     answer=="adamsBashforthSymmetricThirdOrder" ||
-	     answer=="rungeKutta" ||
-	     answer=="rungeKuttaFourthOrder" ||  // backward compat 
-	     answer=="stoermerTimeStepping" ||
-	     answer=="modifiedEquationTimeStepping" )
+             answer=="adamsBashforthSymmetricThirdOrder" ||
+             answer=="rungeKutta" ||
+             answer=="rungeKuttaFourthOrder" ||  // backward compat 
+             answer=="stoermerTimeStepping" ||
+             answer=="modifiedEquationTimeStepping" )
     {
       timeSteppingMethod = answer=="defaultTimeStepping"  ? defaultTimeStepping :
-	answer=="adamsBashforthSymmetricThirdOrder" ? adamsBashforthSymmetricThirdOrder : 
-	answer=="rungeKutta" ? rungeKutta :
-	answer=="rungeKuttaFourthOrder" ? rungeKutta :
-	answer=="stoermerTimeStepping" ? stoermerTimeStepping : 
-	answer=="modifiedEquationTimeStepping" ? modifiedEquationTimeStepping : defaultTimeStepping;
+        answer=="adamsBashforthSymmetricThirdOrder" ? adamsBashforthSymmetricThirdOrder : 
+        answer=="rungeKutta" ? rungeKutta :
+        answer=="rungeKuttaFourthOrder" ? rungeKutta :
+        answer=="stoermerTimeStepping" ? stoermerTimeStepping : 
+        answer=="modifiedEquationTimeStepping" ? modifiedEquationTimeStepping : defaultTimeStepping;
 
       timeSteppingOptionsDialog.getOptionMenu("time stepping:").setCurrentChoice((int)timeSteppingMethod);
     }
@@ -2904,7 +2910,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
              answer=="pulse" )
     {
       twilightZoneOption= answer=="polynomial" ? polynomialTwilightZone :
-	answer=="trigonometric" ? trigonometricTwilightZone : pulseTwilightZone;
+        answer=="trigonometric" ? trigonometricTwilightZone : pulseTwilightZone;
       forcingOptionsDialog.getOptionMenu("TZ option:").setCurrentChoice((int)twilightZoneOption);
     }
     else if( len=answer.matches("nx,ny") )
@@ -2922,18 +2928,18 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       if( method!=yee )
       {
-	printF("ERROR: 'define embedded bodies' is currently only valid for the Yee method.\n");
+        printF("ERROR: 'define embedded bodies' is currently only valid for the Yee method.\n");
       }
       else
       {
-	defineRegionsAndBodies();
+        defineRegionsAndBodies();
       }
     }
     else if( answer=="define material region..." )
     {
       if( method!=bamx )
       {
-	printF("ERROR: 'define material region' is currently only valid for the BAMX method.\n");
+        printF("ERROR: 'define material region' is currently only valid for the BAMX method.\n");
       }
       else
       {
@@ -2946,12 +2952,12 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       sScanF(answer(len,answer.length()-1),"%i %e %i ",&numberLinesForPML,&pmlLayerStrength,&pmlPower);
       forcingOptionsDialog.setTextLabel("pml width,strength,power",sPrintF(line, "%i %4.1f %i",numberLinesForPML,
-									   pmlLayerStrength,pmlPower));
+                                                                           pmlLayerStrength,pmlPower));
     }
     else if( len=answer.matches("kx,ky,kz") )
     {
       printF(" kx,ky,kz are used to define the plane wave and other true solutions.\n");
-	  
+          
       sScanF(answer(len,answer.length()-1),"%e %e %e",&kx,&ky,&kz);
       initialConditionsOptionsDialog.setTextLabel("kx,ky,kz",sPrintF(line, "%g,%g,%g",kx,ky,kz));
     }
@@ -2980,29 +2986,29 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       sScanF(answer(len,answer.length()-1),"%i %i %i %i",&degreeSpaceX,&degreeSpaceY,&degreeSpaceZ);
       forcingOptionsDialog.setTextLabel("degreeSpaceX, degreeSpaceY, degreeSpaceZ",sPrintF(line,"%i, %i %i",
-											   degreeSpaceX,degreeSpaceY,degreeSpaceZ));
+                                                                                           degreeSpaceX,degreeSpaceY,degreeSpaceZ));
     }
     else if( len=answer.matches("material interface normal") )
     {
       sScanF(answer(len,answer.length()-1),"%e %e %e ",&normalPlaneMaterialInterface[0], 
-	     &normalPlaneMaterialInterface[1],&normalPlaneMaterialInterface[2]);
+             &normalPlaneMaterialInterface[1],&normalPlaneMaterialInterface[2]);
       // Normalize the normal
       printF("INFO: material interface normal is being normalized.\n");
       real norm = max(REAL_MIN*100,sqrt( SQR(normalPlaneMaterialInterface[0])+SQR(normalPlaneMaterialInterface[1])+SQR(normalPlaneMaterialInterface[2]) ));
       for( int axis=0; axis<3; axis++ ) { normalPlaneMaterialInterface[axis]=  normalPlaneMaterialInterface[axis]/norm; } //
       forcingOptionsDialog.setTextLabel("material interface normal",
                                         sPrintF("%5.3f %5.3f %5.3f",
-						normalPlaneMaterialInterface[0], normalPlaneMaterialInterface[1],
-						normalPlaneMaterialInterface[2]));
+                                                normalPlaneMaterialInterface[0], normalPlaneMaterialInterface[1],
+                                                normalPlaneMaterialInterface[2]));
     }
     else if( len=answer.matches("material interface point") )
     {
       sScanF(answer(len,answer.length()-1),"%e %e %e ",&x0PlaneMaterialInterface[0], 
-	     &x0PlaneMaterialInterface[1],&x0PlaneMaterialInterface[2]);
+             &x0PlaneMaterialInterface[1],&x0PlaneMaterialInterface[2]);
       forcingOptionsDialog.setTextLabel("material interface point",
                                         sPrintF("%5.3f %5.3f %5.3f",
-						x0PlaneMaterialInterface[0], x0PlaneMaterialInterface[1],
-						x0PlaneMaterialInterface[2]));
+                                                x0PlaneMaterialInterface[0], x0PlaneMaterialInterface[1],
+                                                x0PlaneMaterialInterface[2]));
     }
 
     else if( len=answer.matches("chirp parameters") )
@@ -3025,7 +3031,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF(" Setting [ta,tb]=[%g,%g] alpha=%g, beta=%g, amp=g, [x0,y0,z0]=[%g,%g,%g]\n",
                 cpw(0),cpw(1),cpw(2),cpw(3),cpw(4),cpw(5),cpw(6),cpw(7));
       forcingOptionsDialog.setTextLabel("chirp parameters",sPrintF("%g, %g, %g, %g, %g, %g, %g, %g (ta,tb,alpha,beta,amp)",
-								   cpw(0),cpw(1),cpw(2),cpw(3),cpw(4),cpw(5),cpw(6),cpw(7)));
+                                                                   cpw(0),cpw(1),cpw(2),cpw(3),cpw(4),cpw(5),cpw(6),cpw(7)));
     }
     
     else if( len=answer.matches("initial condition bounding box") )
@@ -3033,13 +3039,13 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       RealArray & icBox = initialConditionBoundingBox;
       
       sScanF(answer(len,answer.length()-1),"%e %e %e %e %e %e ",&icBox(0,0),&icBox(1,0),
-	     &icBox(0,1),&icBox(1,1),
-	     &icBox(0,2),&icBox(1,2));
+             &icBox(0,1),&icBox(1,1),
+             &icBox(0,2),&icBox(1,2));
       initialConditionsOptionsDialog.setTextLabel("initial condition bounding box",
                                         sPrintF("%8.2e,%8.2e, %8.2e,%8.2e, %8.2e,%8.2e (xa,xb,ya,yb...)",
-						icBox(0,0),icBox(1,0),
-						icBox(0,1),icBox(1,1),
-						icBox(0,2),icBox(1,2)));
+                                                icBox(0,0),icBox(1,0),
+                                                icBox(0,1),icBox(1,1),
+                                                icBox(0,2),icBox(1,2)));
     }
     else if( initialConditionsOptionsDialog.getToggleValue(answer,"smooth bounding box",smoothBoundingBox) ){}
 
@@ -3048,9 +3054,9 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       sScanF(answer(len,answer.length()-1),"%i %i",&boundingBoxDecaySide,&boundingBoxDecayAxis);
       printF("Setting bounding box decay (side,axis)=(%i,%i)\n"
              "  The initial conditions will be ramped to zero along this face of the bounding box\n",
-	     boundingBoxDecaySide,boundingBoxDecayAxis);
+             boundingBoxDecaySide,boundingBoxDecayAxis);
       initialConditionsOptionsDialog.setTextLabel("bounding box decay face",
-				    sPrintF("%i, %i (side,axis)",boundingBoxDecaySide,boundingBoxDecayAxis));
+                                    sPrintF("%i, %i (side,axis)",boundingBoxDecaySide,boundingBoxDecayAxis));
     }
       
     else if( initialConditionsOptionsDialog.getTextValue(answer,"bounding box decay exponent","%f",boundingBoxDecayExponent) ){}//
@@ -3067,30 +3073,30 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       
       if( gridName=="all" )
       {
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
           printF("adjust boundaries for incident field is %s for grid %s\n",(trueOrFalse ? "true" : "false"),(const char*)cg[grid].getName());
-	  adjustFarFieldBoundariesForIncidentField(grid)=trueOrFalse;
-	}
+          adjustFarFieldBoundariesForIncidentField(grid)=trueOrFalse;
+        }
       }
       else
       {
         bool found=false;
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  if( cg[grid].getName().matches(gridName) )
-	  {
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          if( cg[grid].getName().matches(gridName) )
+          {
             printF("adjust boundaries for incident field is %s for grid %s\n",(trueOrFalse ? "true" : "false"),(const char*)gridName);
-	    adjustFarFieldBoundariesForIncidentField(grid)=trueOrFalse;
-	    found=true;
-	    break;
-	  }
-	}
+            adjustFarFieldBoundariesForIncidentField(grid)=trueOrFalse;
+            found=true;
+            break;
+          }
+        }
         if( !found )
-	{
-	  printF("WARNING:adjust boundaries for incident field :  No match for grid-name [%s*]\n",(const char*)gridName);
-	  continue;
-	}
+        {
+          printF("WARNING:adjust boundaries for incident field :  No match for grid-name [%s*]\n",(const char*)gridName);
+          continue;
+        }
       }      
     }
     
@@ -3146,13 +3152,13 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"solve for magnetic field",solveForMagneticField) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project fields",projectFields) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project initial conditions",
-						      projectInitialConditions) ){}//
+                                                      projectInitialConditions) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"project interpolation points",
-						      projectInterpolation) ){}//
+                                                      projectInterpolation) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use charge density",useChargeDensity) ){}//
     else if( interfaceOptionsDialog.getToggleValue(answer,"use new interface routines",useNewInterfaceRoutines) ){}//
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"set divergence at interfaces",
-						      setDivergenceAtInterfaces) )
+                                                      setDivergenceAtInterfaces) )
     {
       printF("setDivergenceAtInterfaces=%i : 0= set [div(E)]=0,  1=set div(E)=0 at interfaces\n",
               setDivergenceAtInterfaces);
@@ -3165,7 +3171,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
 
 
     else if( interfaceOptionsDialog.getToggleValue(answer,"use impedance interface projection",
-						      useImpedanceInterfaceProjection) )
+                                                      useImpedanceInterfaceProjection) )
     {
       printF("useImpedanceInterfaceProjection=%i : 0=ad-hoc (old),  1=use impedance (new).\n",
               useImpedanceInterfaceProjection);
@@ -3175,13 +3181,18 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF("useJacobiInterfaceUpdate=%i : 0=use Gauss-Seidel like, 1=use Jacobi-like, update for interface ghost points.\n",
               useJacobiInterfaceUpdate);
     }
+    else if( interfaceOptionsDialog.getToggleValue(answer,"use unified interface macros",useUnifiedInterfaceMacros) )
+    {
+      printF("useUnifiedInterfaceMacros=%i : 1=use new unified interface macros.\n",useUnifiedInterfaceMacros);             
+    }
+
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use divergence cleaning",useDivergenceCleaning) ){}//
 
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use conservative divergence",
-						      useConservativeDivergence) ){}//
+                                                      useConservativeDivergence) ){}//
 
     else if( timeSteppingOptionsDialog.getToggleValue(answer,"use new forcing method",
-						      dbase.get<bool>("useNewForcingMethod")) ){}//
+                                                      dbase.get<bool>("useNewForcingMethod")) ){}//
 
 
     else if( dissipationParametersDialog.getToggleValue(answer,"use variable dissipation",useVariableDissipation) ){}//
@@ -3203,14 +3214,14 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       if( useSosupDissipation )
       {
-	printF("Use SOSUP style (wide-stencil) dissipation with the FD scheme. Setting normal dissipation=0.\n");
-	artificialDissipation=0.;  
-	if( artificialDissipationCurvilinear >0. ) artificialDissipationCurvilinear=0.;
-	dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
+        printF("Use SOSUP style (wide-stencil) dissipation with the FD scheme. Setting normal dissipation=0.\n");
+        artificialDissipation=0.;  
+        if( artificialDissipationCurvilinear >0. ) artificialDissipationCurvilinear=0.;
+        dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
       }
       else
       {
-	printF("Do NOT use SOSUP style (wide-stencil) dissipation with the FD scheme.\n");
+        printF("Do NOT use SOSUP style (wide-stencil) dissipation with the FD scheme.\n");
       }
       
     }
@@ -3234,7 +3245,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       printF("Setting orderOfRungeKutta=%d\n",orderOfRungeKutta);
 
       if( timeSteppingMethod==rungeKutta )
-	orderOfAccuracyInTime=orderOfRungeKutta;
+        orderOfAccuracyInTime=orderOfRungeKutta;
       
       if( orderOfRungeKutta<1 || orderOfRungeKutta>4 )
       {
@@ -3252,63 +3263,64 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       if( useSosupDissipation )
       {
-	printF("INFO: using SOSUP style (wide-stencil) dissipation with the FD scheme."
+        printF("INFO: using SOSUP style (wide-stencil) dissipation with the FD scheme."
                " Setting normal dissipation=0.\n");
-	artificialDissipation=0.;  
-	dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
+        artificialDissipation=0.;  
+        dissipationParametersDialog.setTextLabel("dissipation",sPrintF("%g",artificialDissipation));
       }
       
     }
     
 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"max iterations for interpolation","%i",
-						    maximumNumberOfIterationsForImplicitInterpolation) )
+                                                    maximumNumberOfIterationsForImplicitInterpolation) )
     {
+      printF("Setting maximumNumberOfIterationsForImplicitInterpolation=%d\n",maximumNumberOfIterationsForImplicitInterpolation);
       cg.getInterpolant()->setMaximumNumberOfIterations(maximumNumberOfIterationsForImplicitInterpolation);
     }
     else if( interfaceOptionsDialog.getTextValue(answer,"interface BC iterations","%i",
-						    numberOfIterationsForInterfaceBC) ){}// 
+                                                    numberOfIterationsForInterfaceBC) ){}// 
 
     else if( interfaceOptionsDialog.getTextValue(answer,"omega for interface iterations","%e",
-						    omegaForInterfaceIteration) ){}// 
+                                                    omegaForInterfaceIteration) ){}// 
 
     else if( interfaceOptionsDialog.getTextValue(answer,"relative tol for interface iterations","%e",
-						    rtolForInterfaceIterations) ){}// 
+                                                    rtolForInterfaceIterations) ){}// 
 
     else if( interfaceOptionsDialog.getTextValue(answer,"absolute tol for interface iterations","%e",
-						    atolForInterfaceIterations) ){}// 
+                                                    atolForInterfaceIterations) ){}// 
 
     else if( interfaceOptionsDialog.getTextValue(answer,"interface equations option","%i",
-						    interfaceEquationsOption) ){}// 
+                                                    interfaceEquationsOption) ){}// 
     else if( interfaceOptionsDialog.getTextValue(answer,"interface option","%i",
-						    materialInterfaceOption) ){}// 
+                                                    materialInterfaceOption) ){}// 
 
     else if( interfaceOptionsDialog.getTextValue(answer,"tallCellRatioBound","%e",
-						    tallCellRatioBound) ){}// 
+                                                    tallCellRatioBound) ){}// 
 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"projection frequency","%i",
-						    frequencyToProjectFields) ){}// 
+                                                    frequencyToProjectFields) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"consecutive projection steps","%i",
-						    numberOfConsecutiveStepsToProject) ){}// 
+                                                    numberOfConsecutiveStepsToProject) ){}// 
     else if( timeSteppingOptionsDialog.getTextValue(answer,"initial projection steps","%i",
-						    numberOfInitialProjectionSteps) ){}// 
+                                                    numberOfInitialProjectionSteps) ){}// 
     else if( dissipationParametersDialog.getTextValue(answer,"number of divergence smooths","%i",
-						    numberOfDivergenceSmooths) ){}// 
+                                                    numberOfDivergenceSmooths) ){}// 
     else if( dissipationParametersDialog.getTextValue(answer,"div cleaning coefficient","%e",
-						    divergenceCleaningCoefficient) ){}// 
+                                                    divergenceCleaningCoefficient) ){}// 
     else if( dissipationParametersDialog.getTextValue(answer,"sosup parameter","%e",
-						    sosupParameter) ){}// 
+                                                    sosupParameter) ){}// 
     else if( dissipationParametersDialog.getTextValue(answer,"sosup dissipation option","%i",
-						    sosupDissipationOption) )
+                                                    sosupDissipationOption) )
     {
       printF(" sosupDissipationOption=%i: 0=apply sosup dissipation with update, 1=apply in separate stage\n",
-	     sosupDissipationOption);
+             sosupDissipationOption);
     }
     else if( dissipationParametersDialog.getTextValue(answer,"sosup dissipation frequency","%i",
-						    sosupDissipationFrequency) )
+                                                    sosupDissipationFrequency) )
     {
       printF(" sosupDissipationFrequency=%i: apply sosup dissipation every this many steps.\n",
-	     sosupDissipationFrequency);
+             sosupDissipationFrequency);
     }
 
     else if( dissipationParametersDialog.getTextValue(answer,"super-grid width","%e",superGridWidth) )
@@ -3320,7 +3332,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     { // Specify parameters for the Elliptic solver used to project the fields, div(eps*E)=rho
       if( poisson==NULL )
       {
-	poisson = new Oges();
+        poisson = new Oges();
       }
       assert( cgp!=NULL );
       poisson->parameters.update(gi,*cgp);
@@ -3378,35 +3390,35 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       sScanF(&answer[len],"%e %e %e %e %e",&betaGaussianPlaneWave,&x0GaussianPlaneWave,&y0GaussianPlaneWave,&z0GaussianPlaneWave,&k0GaussianPlaneWave);
       
       initialConditionsOptionsDialog.setTextLabel("Gaussian plane wave:",sPrintF(line,"%g %g %g %g %g (beta,x0,y0,z0,k0)",
-	         betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave));
+                 betaGaussianPlaneWave,x0GaussianPlaneWave,y0GaussianPlaneWave,z0GaussianPlaneWave,k0GaussianPlaneWave));
   
     }
     else if( len=answer.matches("Gaussian source:") )
     {
       sScanF(&answer[len],"%e %e %e %e %e %e %e",&gaussianSourceParameters[0],&gaussianSourceParameters[1],
              &gaussianSourceParameters[2],&gaussianSourceParameters[3],&gaussianSourceParameters[4],
-	     &gaussianSourceParameters[5],&gaussianSourceParameters[6]);  // two more added -- July 4, 2020 *wdh*
+             &gaussianSourceParameters[5],&gaussianSourceParameters[6]);  // two more added -- July 4, 2020 *wdh*
       
       forcingOptionsDialog.setTextLabel("Gaussian source:",sPrintF(line,"%g %g %g %g %g %g %g (beta,omega,x0,y0,z0,amp,RampTime)",
-								   gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],
-								   gaussianSourceParameters[3],gaussianSourceParameters[4],
-								   gaussianSourceParameters[5],gaussianSourceParameters[6]));  
+                                                                   gaussianSourceParameters[0],gaussianSourceParameters[1],gaussianSourceParameters[2],
+                                                                   gaussianSourceParameters[3],gaussianSourceParameters[4],
+                                                                   gaussianSourceParameters[5],gaussianSourceParameters[6]));  
     }
     else if( len=answer.matches("Gaussian pulse:") )
     {
       if( numberOfGaussianPulses>=maxNumberOfGaussianPulses )
       {
-	printf(" ERROR: there are too many Gaussian pulses. At most %i are allowed\n",maxNumberOfGaussianPulses);
-	continue;
+        printf(" ERROR: there are too many Gaussian pulses. At most %i are allowed\n",maxNumberOfGaussianPulses);
+        continue;
       }
       real *gpp = gaussianPulseParameters[numberOfGaussianPulses];
       sScanF(&answer[len],"%e %e %e %e %e %e",&gpp[0],&gpp[1],&gpp[2],&gpp[3],&gpp[4],&gpp[5]);
       
       forcingOptionsDialog.setTextLabel("Gaussian pulse:",sPrintF(line,"%g %g %g %g %g %g (beta,scale,exponent,x0,y0,z0)",
-								  gpp[0],gpp[1],gpp[2],gpp[3],gpp[4],gpp[5]));  
+                                                                  gpp[0],gpp[1],gpp[2],gpp[3],gpp[4],gpp[5]));  
 
       printF(" Setting pulse %i parameters:  beta=%g scale=%g exponent=%g x0=%g y0=%g z0=%g\n",
-	     numberOfGaussianPulses,gpp[0],gpp[1],gpp[2],gpp[3],gpp[4],gpp[5]);
+             numberOfGaussianPulses,gpp[0],gpp[1],gpp[2],gpp[3],gpp[4],gpp[5]);
       numberOfGaussianPulses++;
 
     }
@@ -3414,21 +3426,21 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       if( numberOfGaussianChargeSources>=maxNumberOfGaussianChargeSources )
       {
-	printf(" ERROR: there are too many Gaussian charge sources. At most %i are allowed\n",
-	       maxNumberOfGaussianChargeSources);
-	continue;
+        printf(" ERROR: there are too many Gaussian charge sources. At most %i are allowed\n",
+               maxNumberOfGaussianChargeSources);
+        continue;
       }
       real *gcs = gaussianChargeSourceParameters[numberOfGaussianChargeSources];
       sScanF(&answer[len],"%e %e %e %e %e %e %e %e %e",&gcs[0],&gcs[1],&gcs[2],&gcs[3],&gcs[4],&gcs[5],
-	     &gcs[6],&gcs[7],&gcs[8]);
+             &gcs[6],&gcs[7],&gcs[8]);
       
       printF(" Setting charge source %i parameters:  amplitude=%g beta=%g p=%g x0=%g x1=%g x2=%g v0=%g v1=%g v2=%g\n",
-	     numberOfGaussianChargeSources,gcs[0],gcs[1],gcs[2],gcs[3],gcs[4],gcs[5],gcs[6],gcs[7],gcs[8]);
+             numberOfGaussianChargeSources,gcs[0],gcs[1],gcs[2],gcs[3],gcs[4],gcs[5],gcs[6],gcs[7],gcs[8]);
       numberOfGaussianChargeSources++;
 
       forcingOptionsDialog.setTextLabel("Gaussian charge source:",
-					sPrintF(line,"%g %g %g %g %g %g %g %g  (amp,beta,p,x0,y0,z0,v0,v1,v2)",
-						gcs[0],gcs[1],gcs[2],gcs[3],gcs[4],gcs[5],gcs[6],gcs[7],gcs[8])); 
+                                        sPrintF(line,"%g %g %g %g %g %g %g %g  (amp,beta,p,x0,y0,z0,v0,v1,v2)",
+                                                gcs[0],gcs[1],gcs[2],gcs[3],gcs[4],gcs[5],gcs[6],gcs[7],gcs[8])); 
     }
     else if( len=answer.matches("TZ omega:") )
     {
@@ -3454,74 +3466,74 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       bool found=false;
       if( gridsToCheck.size()==0 )
       {
-	for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-	{
-	  if( cg.getDomainName(domain)==gridName )
-	  {
-	    printF("--MX-- setting material properties for domain=[%s].\n",(const char*)gridName);
-	    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	    {
-	      if( cg.domainNumber(grid)==domain )
-	      {
-		gridsToCheck.push_back(grid);  // this grid lies in the specified domain
-	      }
-	    }
-	    found=true;
-	    break;
-	  }
-	}
+        for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+        {
+          if( cg.getDomainName(domain)==gridName )
+          {
+            printF("--MX-- setting material properties for domain=[%s].\n",(const char*)gridName);
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+            {
+              if( cg.domainNumber(grid)==domain )
+              {
+                gridsToCheck.push_back(grid);  // this grid lies in the specified domain
+              }
+            }
+            found=true;
+            break;
+          }
+        }
       }
 
       if( !found )
       {
-	if( gridName=="all" )
-	{
-	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    gridsToCheck.push_back(grid);
-	  }
-	}
-	else if( gridName[gridName.length()-1]=='*' )
-	{
-	  // wild card: final char is a '*'
-	  printF(" INFO: looking for a wild card match since the final character is a '*' ...\n");
-	  gridName=gridName(0,gridName.length()-2); // remove trailing '*'
-	
-	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    // printF(" Check [%s] matches [%s] \n",(const char*)gridName,(const char*)cg[grid].getName());
-	    if( cg[grid].getName().matches(gridName) )
-	    {
-	      gridsToCheck.push_back(grid);
-	      printF(" -- (wild card match) Set coefficients for grid=%i (%s) to eps=%8.2e mu=%8.2e\n",grid,
-		     (const char*)cg[grid].getName(),eps,mu);
-	    
-	      found=true;
-	    }
-	  }
-	  if( !found )
-	  {
-	    printF("WARNING: No match for the wildcard name [%s*]\n",(const char*)gridName);
-	    continue;
-	  }
-	}
-	else
-	{
-	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    if( cg[grid].getName()==gridName )
-	    {
-	      gridsToCheck.push_back(grid);
-	      found=true;
-	      break;
-	    }
-	  }
-	  if( !found )
-	  {
-	    printF("ERROR looking for the grid or domain named [%s]\n",(const char*)gridName);
+        if( gridName=="all" )
+        {
+          for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          {
+            gridsToCheck.push_back(grid);
+          }
+        }
+        else if( gridName[gridName.length()-1]=='*' )
+        {
+          // wild card: final char is a '*'
+          printF(" INFO: looking for a wild card match since the final character is a '*' ...\n");
+          gridName=gridName(0,gridName.length()-2); // remove trailing '*'
+        
+          for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          {
+            // printF(" Check [%s] matches [%s] \n",(const char*)gridName,(const char*)cg[grid].getName());
+            if( cg[grid].getName().matches(gridName) )
+            {
+              gridsToCheck.push_back(grid);
+              printF(" -- (wild card match) Set coefficients for grid=%i (%s) to eps=%8.2e mu=%8.2e\n",grid,
+                     (const char*)cg[grid].getName(),eps,mu);
+            
+              found=true;
+            }
+          }
+          if( !found )
+          {
+            printF("WARNING: No match for the wildcard name [%s*]\n",(const char*)gridName);
+            continue;
+          }
+        }
+        else
+        {
+          for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          {
+            if( cg[grid].getName()==gridName )
+            {
+              gridsToCheck.push_back(grid);
+              found=true;
+              break;
+            }
+          }
+          if( !found )
+          {
+            printF("ERROR looking for the grid or domain named [%s]\n",(const char*)gridName);
             // This is a real error only if there are multiple domains *wdh* June 20, 2016
             if( cg.numberOfDomains()>1 )
-	    {
+            {
               printF("Available grid names:\n");
               for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
               {
@@ -3533,12 +3545,12 @@ interactiveUpdate(GL_GraphicsInterface &gi )
                 printF(" domain=%d: name=[%s]\n",domain,(const char*)cg.getDomainName(domain));
               }
               
-	      gi.stopReadingCommandFile();
+              gi.stopReadingCommandFile();
             }
-	    
-	    continue;
-	  }
-	}
+            
+            continue;
+          }
+        }
       } // end if !found
       
 
@@ -3552,32 +3564,32 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       for( int g=0; g<gridsToCheck.size(); g++ )
       {
         int grid=gridsToCheck[g];
-	
-	// MappedGrid & mg = cg[grid];
-	// const IntegerArray & bc = mg.boundaryCondition();
-	// const IntegerArray & share = mg.sharedBoundaryFlag();
-	// for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
-	// {
-	//   for( int side=0; side<=1; side++ )
-	//   {
-	//     if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
-	//     {
-	//       bc(side,axis)=interfaceBoundaryCondition;
+        
+        // MappedGrid & mg = cg[grid];
+        // const IntegerArray & bc = mg.boundaryCondition();
+        // const IntegerArray & share = mg.sharedBoundaryFlag();
+        // for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
+        // {
+        //   for( int side=0; side<=1; side++ )
+        //   {
+        //     if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
+        //     {
+        //       bc(side,axis)=interfaceBoundaryCondition;
 
-	//       printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
-		
-	//     }
-	//   }
-	// }
-	
-	epsGrid(grid)=eps;
-	muGrid(grid)=mu;
-	cGrid(grid)=1./sqrt(eps*mu);
+        //       printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition\n",side,axis,grid);
+                
+        //     }
+        //   }
+        // }
+        
+        epsGrid(grid)=eps;
+        muGrid(grid)=mu;
+        cGrid(grid)=1./sqrt(eps*mu);
 
       }
 
       pdeParametersDialog.setTextLabel("coefficients",sPrintF(textStrings[nt], "%g %g %s (eps,mu,grid-name)",
-							      eps,mu,"all"));
+                                                              eps,mu,"all"));
 
     }
     else if( pdeParametersDialog.getTextValue(answer,"length scale:","e",lengthScale) )
@@ -3754,18 +3766,18 @@ interactiveUpdate(GL_GraphicsInterface &gi )
             dmp.numberOfPolarizationVectors=1; // Do this for now 
             dmp.setParameters( a0,a1,b0,b1 );
 
-	    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	    {
-	      if( cg.domainNumber(grid)==domain )
-	      {
-		real alphaP=1./epsGrid(grid);
-		dmp.setEpsInf(epsGrid(grid));
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+            {
+              if( cg.domainNumber(grid)==domain )
+              {
+                real alphaP=1./epsGrid(grid);
+                dmp.setEpsInf(epsGrid(grid));
                 dmp.setMuInf(muGrid(grid));
-		dmp.setParameter( alphaP );
-		break;
-	      }
+                dmp.setParameter( alphaP );
+                break;
+              }
         
-	    }
+            }
           
             // old way: 
             dmp.gamma=gamma;
@@ -3775,7 +3787,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       } // END OLD
       
       pdeParametersDialog.setTextLabel("Drude params",sPrintF(textStrings[nt], "%g %g %s (gamma,omegap,domain-name)",
-							      gamma,omegap,"all"));
+                                                              gamma,omegap,"all"));
 
     }
 
@@ -3788,7 +3800,7 @@ interactiveUpdate(GL_GraphicsInterface &gi )
     {
       if( show!=NULL )
       {
-	printF("WARNING: The option 'maximum number of parallel sub-files' will only apply to a show file\n"
+        printF("WARNING: The option 'maximum number of parallel sub-files' will only apply to a show file\n"
                "         that is subsequently opened, not to an already opened show file.\n");
       }
       const int np = Communication_Manager::numberOfProcessors();
@@ -3829,150 +3841,150 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       numberOfProbes/=3;
       if( numberOfProbes>0 )
       {
-	probes.redim(3,numberOfProbes);
+        probes.redim(3,numberOfProbes);
         probeGridLocation.redim(4,numberOfProbes);
 
-	// *** find closest grid and grid point to save in probes ****
+        // *** find closest grid and grid point to save in probes ****
 
-	RealArray positionToInterpolate(numberOfProbes,3);
-	IntegerArray indexValues, interpoleeGrid;
+        RealArray positionToInterpolate(numberOfProbes,3);
+        IntegerArray indexValues, interpoleeGrid;
         int i,j;
-	for( i=0,j=0; i<numberOfProbes; i++ )
-	{
+        for( i=0,j=0; i<numberOfProbes; i++ )
+        {
 
-	  positionToInterpolate(i,0)=values(j); j++;
-	  positionToInterpolate(i,1)=values(j); j++;
-	  positionToInterpolate(i,2)=values(j); j++;
-	}
-	
+          positionToInterpolate(i,0)=values(j); j++;
+          positionToInterpolate(i,1)=values(j); j++;
+          positionToInterpolate(i,2)=values(j); j++;
+        }
+        
 
         if( false )
-	{
+        {
           // ***fix**** this requires the center array I think
-    	  InterpolatePoints interp;
-	  interp.buildInterpolationInfo(positionToInterpolate,cg );
+          InterpolatePoints interp;
+          interp.buildInterpolationInfo(positionToInterpolate,cg );
           interp.getInterpolationInfo(cg, indexValues, interpoleeGrid);
-	}
-	else
-	{
+        }
+        else
+        {
           // locate the nearest grid point
           
-	  const int numberOfDimensions = cg.numberOfDimensions();
+          const int numberOfDimensions = cg.numberOfDimensions();
           Range I=numberOfProbes;
           realArray r(I,numberOfDimensions), x(I,numberOfDimensions);
-	  int axis;
-	  for( i=0; i<numberOfProbes; i++ )
-	  {
+          int axis;
+          for( i=0; i<numberOfProbes; i++ )
+          {
             for( axis=0; axis<numberOfDimensions; axis++ )
-	    {
-	      x(i,axis)=positionToInterpolate(i,axis);
-	    }
-	  }
-	  
+            {
+              x(i,axis)=positionToInterpolate(i,axis);
+            }
+          }
+          
           indexValues.redim(I,numberOfDimensions);
-	  interpoleeGrid.redim(I);
-	  interpoleeGrid=-1;
+          interpoleeGrid.redim(I);
+          interpoleeGrid=-1;
 
-	  int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
-	  int numFound=0;
+          int iv[3], &i1=iv[0], &i2=iv[1], &i3=iv[2];
+          int numFound=0;
           for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  {
-	    MappedGrid & mg = cg[grid];
+          {
+            MappedGrid & mg = cg[grid];
             mg.update(MappedGrid::THEmask);
-	    Mapping & map = mg.mapping().getMapping();
-	    const intArray & mask = mg.mask();
-	    i3=mg.gridIndexRange(0,2);
+            Mapping & map = mg.mapping().getMapping();
+            const intArray & mask = mg.mask();
+            i3=mg.gridIndexRange(0,2);
 
-	    if ( mg.getGridType()==MappedGrid::structuredGrid )
-	    {
-	      r=-1.;
-	      map.inverseMap(x,r);
-	      for( i=0; i<numberOfProbes; i++ )
-	      {
-		if( interpoleeGrid(i)<0 ) // this point not yet found
-		{
-		  bool ok=true;
-		  for( axis=0; axis<numberOfDimensions; axis++ )
-		  {
-		    // closest point:
-		    iv[axis] = int( r(i,axis)/mg.gridSpacing(axis)+ mg.gridIndexRange(0,axis) +.5);
-		    if( iv[axis]< mg.gridIndexRange(0,axis) ||
-			iv[axis]> mg.gridIndexRange(1,axis) )
-		    {
-		      ok=false;
-		      break;
-		    }
-		  }
+            if ( mg.getGridType()==MappedGrid::structuredGrid )
+            {
+              r=-1.;
+              map.inverseMap(x,r);
+              for( i=0; i<numberOfProbes; i++ )
+              {
+                if( interpoleeGrid(i)<0 ) // this point not yet found
+                {
+                  bool ok=true;
+                  for( axis=0; axis<numberOfDimensions; axis++ )
+                  {
+                    // closest point:
+                    iv[axis] = int( r(i,axis)/mg.gridSpacing(axis)+ mg.gridIndexRange(0,axis) +.5);
+                    if( iv[axis]< mg.gridIndexRange(0,axis) ||
+                        iv[axis]> mg.gridIndexRange(1,axis) )
+                    {
+                      ok=false;
+                      break;
+                    }
+                  }
 #ifndef USE_PPP
-		  if( ok && mask(i1,i2,i3)>0 ) // *** fix this -- P++ problem --
+                  if( ok && mask(i1,i2,i3)>0 ) // *** fix this -- P++ problem --
 #else
-		    if( ok ) 
+                    if( ok ) 
 #endif
-		    {
-		      for( axis=0; axis<numberOfDimensions; axis++ )
-			indexValues(i,axis)=iv[axis];
-		      interpoleeGrid(i)=grid;
-		      numFound++;
-		    }
-		}
-		
-	      } // end for i
-	    }
-	    else
-	    {
-	      for( i=0; i<numberOfProbes; i++ )
-	      {
-		real xx[3];
-		xx[2] = 0.;
-		for ( int a=0; a<mg.numberOfDimensions(); a++ )
-		  xx[a] = x(i,a);
+                    {
+                      for( axis=0; axis<numberOfDimensions; axis++ )
+                        indexValues(i,axis)=iv[axis];
+                      interpoleeGrid(i)=grid;
+                      numFound++;
+                    }
+                }
+                
+              } // end for i
+            }
+            else
+            {
+              for( i=0; i<numberOfProbes; i++ )
+              {
+                real xx[3];
+                xx[2] = 0.;
+                for ( int a=0; a<mg.numberOfDimensions(); a++ )
+                  xx[a] = x(i,a);
 
-		UnstructuredMapping & umap = (UnstructuredMapping &)mg.mapping().getMapping();
-		    
-		int ent = umap.findClosestEntity(UnstructuredMapping::Face, xx[0],xx[1],xx[2]);
-		assert(ent!=-1);
+                UnstructuredMapping & umap = (UnstructuredMapping &)mg.mapping().getMapping();
+                    
+                int ent = umap.findClosestEntity(UnstructuredMapping::Face, xx[0],xx[1],xx[2]);
+                assert(ent!=-1);
 
-		interpoleeGrid(i) = grid;
-		indexValues(i,0) = ent;
-		for ( int a=1; a<mg.numberOfDimensions(); a++ )
-		  indexValues(i,a) = 0;
-		numFound++;
-	      }
-	    }
+                interpoleeGrid(i) = grid;
+                indexValues(i,0) = ent;
+                for ( int a=1; a<mg.numberOfDimensions(); a++ )
+                  indexValues(i,a) = 0;
+                numFound++;
+              }
+            }
 
             if( numFound==numberOfProbes ) break;
-	  } // end for grid
-	}
-	
-	
+          } // end for grid
+        }
+        
+        
         for( i=0,j=0; i<numberOfProbes; i++ )
-	{
-	  probes(0,i)=values(j); j++;
-	  probes(1,i)=values(j); j++;
-	  probes(2,i)=values(j); j++;
+        {
+          probes(0,i)=values(j); j++;
+          probes(1,i)=values(j); j++;
+          probes(2,i)=values(j); j++;
           probeGridLocation(0,i)=indexValues(i,0);
           probeGridLocation(1,i)=indexValues(i,1);
           if( cg.numberOfDimensions()==3 )
             probeGridLocation(2,i)=indexValues(i,2);
           else
             probeGridLocation(2,i)=0;
-	  
+          
           probeGridLocation(3,i)=interpoleeGrid(i);
           if( interpoleeGrid(i)<0 )
-	  {
-	    printF(" probe: error location probe %i: x=(%9.3e,%9.3e,%9.3e)\n",i,
-		   probes(0,i),probes(1,i),probes(2,i));
-	    Overture::abort();
-	  }
+          {
+            printF(" probe: error location probe %i: x=(%9.3e,%9.3e,%9.3e)\n",i,
+                   probes(0,i),probes(1,i),probes(2,i));
+            Overture::abort();
+          }
 
           printF(" probe %i: x=(%9.3e,%9.3e,%9.3e), closest grid=%i, pt i=(%i,%i,%i)\n",i,
                  probes(0,i),probes(1,i),probes(2,i),
                  probeGridLocation(3,i),probeGridLocation(0,i),probeGridLocation(1,i),probeGridLocation(2,i)   );
-	}
+        }
       }
       else
       {
-	printf("INFO: No probes were specified\n");
+        printf("INFO: No probes were specified\n");
       }
     }
     else
@@ -4001,16 +4013,16 @@ interactiveUpdate(GL_GraphicsInterface &gi )
       const IntegerArray & share = mg.sharedBoundaryFlag();
       for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
-	  {
-	    bc(side,axis)=interfaceBoundaryCondition;
-	    printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition since share(%i,%i)=%d is >=100 \n",
-		   side,axis,grid,side,axis,share(side,axis));
-		
-	  }
-	}
+        for( int side=0; side<=1; side++ )
+        {
+          if( share(side,axis)>=100 ) // **** for now -- material interfaces have share > 100
+          {
+            bc(side,axis)=interfaceBoundaryCondition;
+            printF(" ++++ setting bc(%i,%i) on grid=%i = interfaceBoundaryCondition since share(%i,%i)=%d is >=100 \n",
+                   side,axis,grid,side,axis,share(side,axis));
+                
+          }
+        }
       }
     }
   }
@@ -4163,27 +4175,27 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
       int numRead=sscanf(answer(mark+1,length-1),"(%i,%i)",&side,&axis);
       if( numRead==2 )
       {
-	if( side>=0 && side<=1 && axis>=0 && axis<=cg.numberOfDimensions()-1 )
-	{
-	  S=Range(side,side);
-	  A=Range(axis,axis);
-	  for( i=mark+1; i<length; i++ )
-	  {
-	    if( answer[i]=='=' )
-	    {
-	      mark=i-1;
-	      break;
-	    }
-	  }
-	}
-	else
-	{
-	  printF("invalid values for side=%i or axis=%i, 0<=side<=1, 0<=axis<=%i \n",side,axis,
-		 cg.numberOfDimensions()-1);
+        if( side>=0 && side<=1 && axis>=0 && axis<=cg.numberOfDimensions()-1 )
+        {
+          S=Range(side,side);
+          A=Range(axis,axis);
+          for( i=mark+1; i<length; i++ )
+          {
+            if( answer[i]=='=' )
+            {
+              mark=i-1;
+              break;
+            }
+          }
+        }
+        else
+        {
+          printF("invalid values for side=%i or axis=%i, 0<=side<=1, 0<=axis<=%i \n",side,axis,
+                 cg.numberOfDimensions()-1);
 
-	  gi.stopReadingCommandFile();
-	  return 1;
-	}
+          gi.stopReadingCommandFile();
+          return 1;
+        }
       }
     }
     else
@@ -4203,8 +4215,8 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
     {
       if( answer[i]==' ' || answer[i]==',' )
       {
-	endOfName=i-1;
-	break;
+        endOfName=i-1;
+        break;
       }
     }
 
@@ -4233,11 +4245,11 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
     { // search for the name of the grid
       for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	if( gridName==cg[grid].getName() )
-	{
-	  G=Range(grid,grid);
-	  break;
-	}
+        if( gridName==cg[grid].getName() )
+        {
+          G=Range(grid,grid);
+          break;
+        }
       }
     }
     if( G.getBase()==-1  )
@@ -4251,8 +4263,8 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
     {
       if( nameOfBC==bcName[i] )
       {
-	bc=i;
-	break;
+        bc=i;
+        break;
       }
     }
 
@@ -4262,7 +4274,7 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
 
       if( bc==periodic )
       {
-	bcOption=useAllPeriodicBoundaryConditions;
+        bcOption=useAllPeriodicBoundaryConditions;
       }
       
     }
@@ -4270,12 +4282,12 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
     {
       for( int axis=A.getBase(); axis<=A.getBound(); axis++ )
       {
-	for( int side=S.getBase(); side<=S.getBound(); side++ )
-	{
-	  if( cg[grid].boundaryCondition(side,axis) > 0 && 
-	      (changeBoundaryConditionNumber==-1 || 
-	       originalBoundaryCondition(side,axis,grid)==changeBoundaryConditionNumber) )
-	  {
+        for( int side=S.getBase(); side<=S.getBound(); side++ )
+        {
+          if( cg[grid].boundaryCondition(side,axis) > 0 && 
+              (changeBoundaryConditionNumber==-1 || 
+               originalBoundaryCondition(side,axis,grid)==changeBoundaryConditionNumber) )
+          {
             if( gridHasMaterialInterfaces && cg[grid].boundaryCondition(side,axis)==interfaceBoundaryCondition 
                 && cg[grid].sharedBoundaryFlag(side,axis)>=100 ) // *wdh* Aug 8, 2018 
             {
@@ -4288,7 +4300,7 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
               if( bc>0 ) // *wdh* Jan 19, 2019
               {
                 printF("Setting grid=%i (side,axis)=(%i,%i) to bc=%i\n",grid,side,axis,bc);
-	    
+            
                 cg[grid].setBoundaryCondition(side,axis,bc);
                 // set underlying mapping too (for moving grids)
                 cg[grid].mapping().getMapping().setBoundaryCondition(side,axis,bc);
@@ -4302,9 +4314,9 @@ setBoundaryCondition( aString & answer, GL_GraphicsInterface & gi, IntegerArray 
               
             }
 
-	    
-	  }
-	}
+            
+          }
+        }
       }
     }
   }
@@ -4729,7 +4741,7 @@ editDispersionParameters( const aString & domainName )
 //====================================================================================
 int Maxwell::
 readDispersionParameters( const aString & domainName, const aString & materialFile,
-			 int numberOfPolarizationVectors, int modeGDM )
+                         int numberOfPolarizationVectors, int modeGDM )
 {
   if( false &&  // May 13, 2020 -- allow material file to set non-dispersive materials too
      dispersionModel==noDispersion && method!=bamx )
@@ -4790,7 +4802,7 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
       }
       
       printF(" Read dispersive material parameters for domain=[%s] from file=[%s]\n",
-	     (const char*)cg.getDomainName(domain),(const char*)materialFile);
+             (const char*)cg.getDomainName(domain),(const char*)materialFile);
 
       // we could read once and copy parameters -- do this for now
       dmp.readFromFile( materialFile,numberOfPolarizationVectors );
@@ -4822,20 +4834,20 @@ readDispersionParameters( const aString & domainName, const aString & materialFi
       
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	if( cg.domainNumber(grid)==domain )
-	{
-	  printF(" Maxwell: grid=%i: setting epsInf=%g, muInf=%g \n",grid, epsInf,muInf);
+        if( cg.domainNumber(grid)==domain )
+        {
+          printF(" Maxwell: grid=%i: setting epsInf=%g, muInf=%g \n",grid, epsInf,muInf);
 
-	  epsGrid(grid)=epsInf;
-	  muGrid(grid) =muInf;
+          epsGrid(grid)=epsInf;
+          muGrid(grid) =muInf;
           cGrid(grid)=1./sqrt(epsInf*muInf);
-	}
-	  
+        }
+          
       }
       if( fabs(max(epsGrid)-min(epsGrid))==0. && fabs(max(muGrid)-min(muGrid))==0. )
       {
-	eps=epsGrid(0);
-	mu=muGrid(0);
+        eps=epsGrid(0);
+        mu=muGrid(0);
       }
       
     }
@@ -4911,7 +4923,7 @@ writeDispersionParameters( const aString & domainName, const aString & materialF
       
 
       printF(" Save dispersive material parameters for domain=[%s] to file=[%s]\n",
-	     (const char*)cg.getDomainName(domain),(const char*)matFile);
+             (const char*)cg.getDomainName(domain),(const char*)matFile);
 
       dmp.writeToFile( matFile );
 
@@ -5038,7 +5050,7 @@ setupSelectiveDissipation( CompositeGrid & cg, GL_GraphicsInterface &gi )
   aString pushButtonCommands[] = {"choose automatically",
                                   "turn off rectangular",
                                   "turn off by name",
-				  ""};
+                                  ""};
   int numRows=3;
   dialog.setPushButtons(pushButtonCommands,  pushButtonCommands, numRows ); 
 
@@ -5125,7 +5137,7 @@ Maxwell::getDispersionModelMappedGridFunction( const int grid, const int timeLev
   const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;   
 
   const IntegerArray & totalNumberOfPolarizationComponents =
-	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
 
   const bool isDispersive = dmp.isDispersiveMaterial() ||  (method==bamx && totalNumberOfPolarizationComponents(grid)>0);
   if( isDispersive )
@@ -5190,7 +5202,7 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
   const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;   
 
   const IntegerArray & totalNumberOfPolarizationComponents =
-	parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
+        parameters.dbase.get<IntegerArray>("totalNumberOfPolarizationComponents");
 
   const int grid=0;  // for BMAX -- fix me 
   const bool isDispersive = dmp.isDispersiveMaterial() ||  (method==bamx && totalNumberOfPolarizationComponents(grid)>0);
@@ -5227,39 +5239,39 @@ Maxwell::getDispersionModelCompositeGridFunction( const int domain, const int ti
         
         CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
         Range all;
-	if( method==nfdtd )
-	{
-	  cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfPolarizationVectors*numberOfDimensions);
-	  cgfErr=0.;
-	  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-	  {
-	    int pc = iv*numberOfDimensions;
-	    cgfErr.setName(sPrintF("Px%ierr",iv),pc);   pc++;
-	    cgfErr.setName(sPrintF("Py%ierr",iv),pc);   pc++;
-	    if( numberOfDimensions==3 )
-	    {
-	      cgfErr.setName(sPrintF("Pz%ierr",iv),pc);  pc++;
-	    }
-	  }
-	}
-	else if( method==bamx )
-	{
-	  const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-	  cgfErr.updateToMatchGrid( cgd,all,all,all,maxNumberOfPolarizationComponents*2);
-	  cgfErr=0.;
+        if( method==nfdtd )
+        {
+          cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfPolarizationVectors*numberOfDimensions);
+          cgfErr=0.;
+          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+          {
+            int pc = iv*numberOfDimensions;
+            cgfErr.setName(sPrintF("Px%ierr",iv),pc);   pc++;
+            cgfErr.setName(sPrintF("Py%ierr",iv),pc);   pc++;
+            if( numberOfDimensions==3 )
+            {
+              cgfErr.setName(sPrintF("Pz%ierr",iv),pc);  pc++;
+            }
+          }
+        }
+        else if( method==bamx )
+        {
+          const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
+          cgfErr.updateToMatchGrid( cgd,all,all,all,maxNumberOfPolarizationComponents*2);
+          cgfErr=0.;
           for( int m=0; m<maxNumberOfPolarizationComponents; m++ )
-	  {
+          {
              cgfErr.setName(sPrintF("P%ierr",m),2*m  );
              cgfErr.setName(sPrintF("Q%ierr",m),2*m+1);
-	  }
-	  
-	  
-	}
-	else
-	{
-	  OV_ABORT("error");
-	}
-	
+          }
+          
+          
+        }
+        else
+        {
+          OV_ABORT("error");
+        }
+        
       }
       
       
@@ -5390,25 +5402,25 @@ Maxwell::getNonlinearModelCompositeGridFunction( const int domain, const int tim
         
         CompositeGrid & cgd = cg.domain[domain]; // Here is the CompositeGrid for just this domain
         Range all;
-	if( method==nfdtd )
-	{
+        if( method==nfdtd )
+        {
           const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
-	  assert( numberOfAtomicLevels>0 );
-	  
-	  cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfAtomicLevels);
-	  cgfErr=0.;
-	  for( int iv=0; iv<numberOfAtomicLevels; iv++ )
-	    cgfErr.setName(sPrintF("N%ierr",iv),iv);
-	}
-	else if( method==bamx )
-	{
-	  OV_ABORT("error");
-	}
-	else
-	{
-	  OV_ABORT("error");
-	}
-	
+          assert( numberOfAtomicLevels>0 );
+          
+          cgfErr.updateToMatchGrid( cgd,all,all,all,numberOfAtomicLevels);
+          cgfErr=0.;
+          for( int iv=0; iv<numberOfAtomicLevels; iv++ )
+            cgfErr.setName(sPrintF("N%ierr",iv),iv);
+        }
+        else if( method==bamx )
+        {
+          OV_ABORT("error");
+        }
+        else
+        {
+          OV_ABORT("error");
+        }
+        
       }
       
       return &cgfErr;

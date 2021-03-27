@@ -600,7 +600,7 @@ bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
 if( ok && useOpt )
 {
   // use optimised boundary conditions
-  int ipar[40];
+  int ipar[60];
   real rpar[60];
 
   int gridType = isRectangular ? 0 : 1;
@@ -976,6 +976,8 @@ int polarizationOption=0;
   ipar[26]=numberLinesForPML;
   ipar[27]=adjustThreeLevels;
   ipar[28]=method;
+
+  ipar[39]=myid; // *wdh* March 20, 2021
 
   ipar[38]=solveForAllFields;
    

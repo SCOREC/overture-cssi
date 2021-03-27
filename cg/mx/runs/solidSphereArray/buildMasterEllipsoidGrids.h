@@ -13,15 +13,14 @@ printf("buildMasterEllipsoidGrids: masterCount=$masterCount (a,b,c)=($a,$b,$c)\n
 include $ENV{CG}/mx/runs/solidSphereArray/ellipsoidSurfacePatch.h
 #
 #
-$rFactor=.75; 
-$rDist = $rFactor*($nr-1)*$ds; 	# note $rFactor -- to make radial spacing a bit smaller 
+## $rDist = $rFactor*($nr-1)*$ds; 	# note $rFactor -- to make radial spacing a bit smaller 
 #
 #    ---- Construct INNER hyperbolic grids for the ellipsoid body and two patches on the poles ----
 #
 $nrSave=$nr;
 $nr = $nrMin + ($order-2);
 if( $interp eq "e" ){ $nr = $nrMin + $order +$nrExtra; }
-$rDist = $rFactor*($nr-1)*$ds; 	# note $rFactor -- to make radial spacing a bit smaller 
+$rDist = .9*$rFactor*($nr-1)*$ds; 	# note $rFactor -- to make radial spacing a bit smaller 
 $directionToMarch="backward"; 
 #
 $ellipsoidBodyName     ="ellipsoidInnerMaster$masterCount";

@@ -45,6 +45,7 @@ $suffix="";
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 $prefix="solidEllipsoidInABoxGrid";
 $overlapOption="default"; 
+$matchGridsAtInterfaces=1; 
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"nrExtra=i"=>\$nrExtra,"nrMin=i"=>\$nrMin,\
@@ -54,7 +55,8 @@ GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"nrExtra=i"=>\$nrExtra,"nrM
             "prefix=s"=> \$prefix,"a=f"=>\$a,"b=f"=>\$b,"c=f"=>\$c,"per=s"=>\$per,"ds0=f"=>\$ds0,\
 	    "orthographicPatchParameter=f"=>\$orthographicPatchParameter,"angle1=f"=>\$angle1,"angle2=f"=>\$angle2, \
             "rotationAxis1=i"=>\$rotationAxis1,"rotationAxis2=i"=>\$rotationAxis2,"rFactor=f"=>\$rFactor,\
-            "xShift=f"=>\$xShift,"yShift=f"=>\$yShift,"zShift=f"=>\$zShift,"overlapOption=s"=>\$overlapOption );
+            "xShift=f"=>\$xShift,"yShift=f"=>\$yShift,"zShift=f"=>\$zShift,"overlapOption=s"=>\$overlapOption,\
+            "matchGridsAtInterfaces=i"=>\$matchGridsAtInterfaces );
 # 
 if( $box ne 0 ){ $xa=-$box; $xb=$box; $ya=-$box; $yb=$box; $za=-$box; $zb=$box; }
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
@@ -247,6 +249,8 @@ generate an overlapping grid
        southPoleInnerGrid
        northPoleInnerGrid 
       done
+   # match masks at interfaces:
+   match grids across interfaces $matchGridsAtInterfaces
    interpolation type
       $interpType
     order of accuracy 
@@ -260,14 +264,17 @@ generate an overlapping grid
     if( $overlapOption eq "maximize" ){ $cmd="maximize overlap"; }else{ $cmd="#"; }
       $cmd 
   exit
-#
+  #
   # open graphics  
-#
+  #
   compute overlap
- #  change the plot
- #    toggle grid 0 0
+  #
+  check interfaces match
+  check for tall cells at interfaces
+  #  change the plot
+  #    toggle grid 0 0
     # open graphics
- #    pause
+  #    pause
   # exit
 #
 exit

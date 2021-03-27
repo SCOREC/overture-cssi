@@ -19,8 +19,8 @@ $southPoleSurface         = "southPoleSurface$masterCount";
     surface or volume (toggle)
     # 
     # remove singularities:
-    $baseAxialOffset=.02;
-    # $baseAxialOffset=.015;
+    # $baseAxialOffset=.02;
+    $baseAxialOffset=.025; # March 19, 2021
     $deltaAxial=$baseAxialOffset*($factor**.5);  # Dec 12, 2020  -- try this to decrease small cells near poles
     $axialStart=$deltaAxial; $axialEnd=1.0-$deltaAxial;
     ##    $axialStart=.025; $axialEnd=.975;

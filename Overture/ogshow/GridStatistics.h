@@ -3,6 +3,9 @@
 
 #include "CompositeGrid.h"
 
+// forward declaration:
+class InterfaceInfo;
+
 /// =========================================================================================================
 /// This class can be use to compute and output grid statstics such as cell volumes, areas, arclengths as well as 
 /// numbers of grid points, boundary conditions etc.
@@ -26,6 +29,10 @@ checkForNegativeVolumes(GridCollection & gc, int numberOfGhost=0, FILE *file=std
 static int
 checkForNegativeVolumes(MappedGrid & mg, int numberOfGhost=0, FILE *file=stdout, int grid=0, 
                         bool checkActivePoints=true, bool printNegativeVolumes=true );
+
+// check for tall cells at interfaces
+static real
+checkForTallCells( CompositeGrid & cg, std::vector<InterfaceInfo> & interfaceInfo, real tallCellRatioBound=-1 );
 
 static void 
 getGridSpacing(MappedGrid & mg, real dsMin[3], real dsAve[3], real dsMax[3], MaskOptionEnum maskOption=ignoreMask );

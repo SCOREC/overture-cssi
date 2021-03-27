@@ -1988,7 +1988,8 @@ plotGrid(GenericGraphicsInterface &gi, GridCollection & gc,
   // ---------------------------------------------------------------------------------------------
   // set the grid coarsening factor: for very fine grids we do not plot at the highest resolution
   // For 3D grids we only plot grids on the boundaries.
-  const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+  // const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+  const int maxPlotablePoints=5000000; // maximum number of points we plot at the highest resolution *wdh* increased March 19, 2021
   int numberOfGridPoints=0;
   int numberOfBoundaryPoints=0;
   Index I1,I2,I3;

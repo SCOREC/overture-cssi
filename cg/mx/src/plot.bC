@@ -44,7 +44,7 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
   assert( Ru.getLength()==Rv.getLength() );
 
   UnstructuredMapping & map = (UnstructuredMapping &) mg.mapping().getMapping();
-	    
+            
   const realArray & x = map.getNodes();
   const int numberOfNodes = map.getNumberOfNodes();
   const int numberOfElements = map.getNumberOfElements();
@@ -85,29 +85,29 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
     int e=*citer;
     viter_end = map.adjacency_end(citer, UnstructuredMapping::Vertex);
     for ( viter=map.adjacency_begin(citer,UnstructuredMapping::Vertex);
-	  viter!=viter_end; viter++ )
+          viter!=viter_end; viter++ )
     {
       int nn = *viter;
       for( c=0; c<numberOfComponents; c++ )
-	if ( plotDSIMaxVertVals )
-	{
-	  if ( fabs(uu(e,0,0,c+cu0)) > fabs(vv(nn,0,0,c+cv0)) )
-	    vv(nn,0,0,c+cv0) = uu(e,0,0,c+cu0);
-	}
-	else
-	  vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
+        if ( plotDSIMaxVertVals )
+        {
+          if ( fabs(uu(e,0,0,c+cu0)) > fabs(vv(nn,0,0,c+cv0)) )
+            vv(nn,0,0,c+cv0) = uu(e,0,0,c+cu0);
+        }
+        else
+          vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
       numPerNode(nn)+=1;
     }
 
     if ( !citer.isGhost() )
     {
-	  
+          
       minEx = min(minEx, uu(e,0,0,0));
       maxEx = max(maxEx, uu(e,0,0,0));
       if ( numberOfComponents==2 )
       {
-	minEy = min(minEy, uu(e,0,0,1));
-	maxEy = max(maxEy, uu(e,0,0,1));
+        minEy = min(minEy, uu(e,0,0,1));
+        maxEy = max(maxEy, uu(e,0,0,1));
       }
 
     }
@@ -131,23 +131,23 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 //     // *** this computation should be done once in the calling function ****  fix this ****
 
 //     // printF(" **** convertToVertexCentered: cell centred grid function found! ****\n");
-	
+        
 //     // grid function is cell centered!
 //     // For now make a node centered values for plotting by averaging.
 
 //     IntegerArray numElementPerNode(numberOfNodes);
 //     numElementPerNode=0;
-	
+        
 // //     int e;
 // //     for( e=0; e<numberOfElements; e++ )
 // //     {
 // //       int numNodes = map.getNumberOfNodesThisElement(e);
 // //       for( int n=0; n<numNodes; n++ )
 // //       {
-// // 	int nn=element(e,n);
+// //   int nn=element(e,n);
 // //         for( c=0; c<numberOfComponents; c++ )
-// //   	  vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
-// // 	numElementPerNode(nn)+=1;
+// //             vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
+// //   numElementPerNode(nn)+=1;
 // //       }
 // //     }
 
@@ -156,15 +156,15 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 //     eiter_end = map.end(UnstructuredMapping::Face);
 //     for ( eiter=map.begin(UnstructuredMapping::Face); eiter!=eiter_end; eiter++ )
 //       {
-// 	int e = *eiter;
-// 	vert_end = map.adjacency_end(eiter,UnstructuredMapping::Vertex);
-// 	for ( vert=map.adjacency_begin(eiter,UnstructuredMapping::Vertex); vert!=vert_end; vert++ )
-// 	  {
-// 	    int nn = *vert;
-// 	    for( c=0; c<numberOfComponents; c++ )
-// 	      vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
-// 	    numElementPerNode(nn)+=1;
-// 	  }
+//      int e = *eiter;
+//      vert_end = map.adjacency_end(eiter,UnstructuredMapping::Vertex);
+//      for ( vert=map.adjacency_begin(eiter,UnstructuredMapping::Vertex); vert!=vert_end; vert++ )
+//        {
+//          int nn = *vert;
+//          for( c=0; c<numberOfComponents; c++ )
+//            vv(nn,0,0,c+cv0)+=uu(e,0,0,c+cu0);
+//          numElementPerNode(nn)+=1;
+//        }
 //       }
 
 //     for( int n=0; n<numberOfNodes; n++ )
@@ -177,16 +177,16 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 //   else if( u.getGridFunctionType()==GridFunctionParameters::faceCenteredAll )
 //   {
 //     // printF(" **** convertToVertexCentered: FACE centred grid function found! ****\n");
-	
+        
 //     // grid function is cell centered!
 //     // For now make a node centered values for plotting by averaging.
-	
+        
 //     IntegerArray numFacePerNode(numberOfNodes);
 //     numFacePerNode=0;
-	
+        
 //     const int numberOfFaces=map.getNumberOfFaces();
 //     const intArray & faces = map.getFaces();
-	
+        
 //     // **** this average will not work very well at boundaries *****
 
 //     int f;
@@ -196,16 +196,16 @@ convertToVertexCentered( const realMappedGridFunction & u, const Range & Ru,
 //       assert( numNodes==2 );
 //       for( int n=0; n<numNodes; n++ )
 //       {
-// 	int nn=faces(f,n);
+//      int nn=faces(f,n);
 //         for( c=0; c<numberOfComponents; c++ )
-//   	  vv(nn,0,0,c+cv0)+=uu(f,0,0,c+cu0);
-// 	numFacePerNode(nn)+=1;
+//        vv(nn,0,0,c+cv0)+=uu(f,0,0,c+cu0);
+//      numFacePerNode(nn)+=1;
 //       }
 //     }
 //     for( int n=0; n<numberOfNodes; n++ )
 //     {
 //       for( c=0; c<numberOfComponents; c++ )
-// 	vv(n,0,0,c+cv0)/=numFacePerNode(n);
+//      vv(n,0,0,c+cv0)/=numFacePerNode(n);
 //     }
 //   }
 //   else
@@ -244,7 +244,7 @@ plotPolarization( int current, real t, real dt )
   PlotStuffParameters pspPolarization;  // separate for P
    
   const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-	   
+           
   aString domainName="all";
   int gdmEquation=0;
   int pvComponent=0;
@@ -259,9 +259,9 @@ plotPolarization( int current, real t, real dt )
   if( method==nfdtd )
   {
     aString optionMenuCommands[] = {"Px",
-				    "Py",
-				    "Pz",
-				    ""};
+                                    "Py",
+                                    "Pz",
+                                    ""};
 
     if( numberOfDimensions==2 )
       optionMenuCommands[2]="";  // No Pz
@@ -292,7 +292,7 @@ plotPolarization( int current, real t, real dt )
   dialog.setPushButtons( pushButtonCommands, pushButtonCommands, numRows ); 
 
   aString tbCommands[] = {"plot errors",
- 			  ""};
+                          ""};
   int tbState[10];
 
   tbState[0] = plotErrors;
@@ -445,123 +445,123 @@ plotPolarization( int current, real t, real dt )
         }
         real pMin=REAL_MAX, pMax=-pMin; // keep track of min and max over all domains 
         
-	if( method==nfdtd )
-	{
-	  for( int domain=domainStart; domain<=domainEnd; domain++ )
-	  {
+        if( method==nfdtd )
+        {
+          for( int domain=domainStart; domain<=domainEnd; domain++ )
+          {
 
-	    DispersiveMaterialParameters & dmp = dmpVector[domain];
-	    if( dmp.numberOfPolarizationVectors>0 )
-	    {
-	      const int component = pvComponent + numberOfDimensions*gdmEquation;
-	      if( gdmEquation <  dmp.numberOfPolarizationVectors )
-	      {
-		pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
+            DispersiveMaterialParameters & dmp = dmpVector[domain];
+            if( dmp.numberOfPolarizationVectors>0 )
+            {
+              const int component = pvComponent + numberOfDimensions*gdmEquation;
+              if( gdmEquation <  dmp.numberOfPolarizationVectors )
+              {
+                pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
 
-		realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
-		if( !plotErrors )
-		{
-		  real uMin,uMax;
-		  PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
+                realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
+                if( !plotErrors )
+                {
+                  real uMin,uMax;
+                  PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
                 
-		  pMin=min(pMin,uMin);
-		  pMax=max(pMax,uMax);
+                  pMin=min(pMin,uMin);
+                  pMax=max(pMax,uMax);
 
-		  printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                  printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-		  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
-		  PlotIt::contour(gi,pv,pspPolarization);
-		}
-		else
-		{
-		  // --- Plot the errors in P ----
-		  bool getErrorGridFunction=true;
-		  realCompositeGridFunction & pvErr = 
-		    *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
+                  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+                  PlotIt::contour(gi,pv,pspPolarization);
+                }
+                else
+                {
+                  // --- Plot the errors in P ----
+                  bool getErrorGridFunction=true;
+                  realCompositeGridFunction & pvErr = 
+                    *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
 
-		  real uMin,uMax;
-		  PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
+                  real uMin,uMax;
+                  PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
                 
-		  pMin=min(pMin,uMin);
-		  pMax=max(pMax,uMax);
+                  pMin=min(pMin,uMin);
+                  pMax=max(pMax,uMax);
 
-		  printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                  printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-		  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+                  pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
 
-		  PlotIt::contour(gi,pvErr,pspPolarization);
+                  PlotIt::contour(gi,pvErr,pspPolarization);
 
-		  /* -- we could eval on demand 
-		     CompositeGrid & cgd = cg.domain(domain);
-		     Range Npv=dmp.numberOfPolarizationVectors;
-		     realCompositeGridFunction pvErr(cgd,all,all,all,Npv);
+                  /* -- we could eval on demand 
+                     CompositeGrid & cgd = cg.domain(domain);
+                     Range Npv=dmp.numberOfPolarizationVectors;
+                     realCompositeGridFunction pvErr(cgd,all,all,all,Npv);
                 
-		     getPolarizationError( domain, current, pvErr );
-		  */ 
-		  // printF("plotPolarization: FINISH ME -- plot errors\n");
+                     getPolarizationError( domain, current, pvErr );
+                  */ 
+                  // printF("plotPolarization: FINISH ME -- plot errors\n");
 
-		}
+                }
               
-	      }
-	      else
-	      {
-		printF("plotPolarization:INFO: Not plotting P vector in domain=%i since gdmEquation=%i but "
-		       "numberOfPolarizationVectors=%i.\n",
-		       domain,gdmEquation,dmp.numberOfPolarizationVectors);
-	      }
+              }
+              else
+              {
+                printF("plotPolarization:INFO: Not plotting P vector in domain=%i since gdmEquation=%i but "
+                       "numberOfPolarizationVectors=%i.\n",
+                       domain,gdmEquation,dmp.numberOfPolarizationVectors);
+              }
             
-	    }
-	  }
-	}
-	else if( method==bamx )
-	{
+            }
+          }
+        }
+        else if( method==bamx )
+        {
           // BAMX ---- polarization components ---
           int grid=0, domain=0;
-	  
+          
           realCompositeGridFunction & pv = *getDispersionModelCompositeGridFunction( domain,current );
 
-	  const int component = pvComponent;
+          const int component = pvComponent;
           pspPolarization.set(GI_COMPONENT_FOR_CONTOURS,component);
 
-	  if( !plotErrors )
-	  {
-	    real uMin,uMax;
-	    PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
+          if( !plotErrors )
+          {
+            real uMin,uMax;
+            PlotIt::getBounds(pv,uMin,uMax,pspPolarization,Range(component,component));
                 
-	    pMin=min(pMin,uMin);
-	    pMax=max(pMax,uMax);
+            pMin=min(pMin,uMin);
+            pMax=max(pMax,uMax);
 
-	    printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+            printF("--MX--plot: domain=%i: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-	    pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
-	    PlotIt::contour(gi,pv,pspPolarization);
-	  }
-	  else
-	  {
-	    // --- Plot the errors in P ----
-	    bool getErrorGridFunction=true;
-	    realCompositeGridFunction & pvErr = 
-	      *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
+            pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+            PlotIt::contour(gi,pv,pspPolarization);
+          }
+          else
+          {
+            // --- Plot the errors in P ----
+            bool getErrorGridFunction=true;
+            realCompositeGridFunction & pvErr = 
+              *getDispersionModelCompositeGridFunction( domain,current,getErrorGridFunction );
 
-	    real uMin,uMax;
-	    PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
+            real uMin,uMax;
+            PlotIt::getBounds(pvErr,uMin,uMax,pspPolarization,Range(component,component));
                 
-	    pMin=min(pMin,uMin);
-	    pMax=max(pMax,uMax);
+            pMin=min(pMin,uMin);
+            pMax=max(pMax,uMax);
 
-	    printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+            printF("--MX--plot: domain=%i: Error: (uMin,uMax=(%g,%g) (pMin,pMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-	    pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
+            pspPolarization.setMinAndMaxContourLevels( pMin,pMax,component);
 
-	    PlotIt::contour(gi,pvErr,pspPolarization);
+            PlotIt::contour(gi,pvErr,pspPolarization);
 
-	  }
+          }
 
 
-	}
-	
-	pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-	
+        }
+        
+        pspPolarization.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+        
       }
   
     } // end if plotObject 
@@ -606,7 +606,7 @@ plotNonlinearVariables( int current, real t, real dt )
   PlotStuffParameters pspNonlinear;  // separate for P
    
   // const int & maxNumberOfPolarizationComponents = parameters.dbase.get<int>("maxNumberOfPolarizationComponents");
-	   
+           
   aString domainName="all";
   int nlComponent=0;
   bool plotErrors=false;
@@ -621,9 +621,9 @@ plotNonlinearVariables( int current, real t, real dt )
   // if( method==nfdtd )
   // {
   //   aString optionMenuCommands[] = {"Px",
-  // 				    "Py",
-  // 				    "Pz",
-  // 				    ""};
+  //                                "Py",
+  //                                "Pz",
+  //                                ""};
 
   //   if( numberOfDimensions==2 )
   //     optionMenuCommands[2]="";  // No Pz
@@ -654,7 +654,7 @@ plotNonlinearVariables( int current, real t, real dt )
   dialog.setPushButtons( pushButtonCommands, pushButtonCommands, numRows ); 
 
   aString tbCommands[] = {"plot errors",
- 			  ""};
+                          ""};
   int tbState[10];
 
   tbState[0] = plotErrors;
@@ -700,7 +700,7 @@ plotNonlinearVariables( int current, real t, real dt )
   if(  maxAtomicLevels==0 )
   {
     printF("plotN: WARNING maxAtomicLevels=0 : there are no nonlinear variables to plot! nonLinearModel=%d\n",
-	   nonlinearModel);
+           nonlinearModel);
   }
   
 
@@ -727,7 +727,7 @@ plotNonlinearVariables( int current, real t, real dt )
     else if( dialog.getTextValue(answer,"component:","%i",nlComponent) )
     {
       if( nlComponent>=maxAtomicLevels )
-	printF("plotNonlinearVariables:ERROR: nlComponent=%d is too big, >= maxAtomicLevels=%d\n",nlComponent,maxAtomicLevels);
+        printF("plotNonlinearVariables:ERROR: nlComponent=%d is too big, >= maxAtomicLevels=%d\n",nlComponent,maxAtomicLevels);
 
        nlComponent=max(0,min(maxAtomicLevels-1,nlComponent));
       
@@ -794,64 +794,64 @@ plotNonlinearVariables( int current, real t, real dt )
         gi.erase();
         if( answer!="contour" )
           pspNonlinear.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
-	else
+        else
           pspNonlinear.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-	
+        
         real pMin=REAL_MAX, pMax=-pMin; // keep track of min and max over all domains 
         
-	for( int domain=domainStart; domain<=domainEnd; domain++ )
-	{
+        for( int domain=domainStart; domain<=domainEnd; domain++ )
+        {
 
-	  DispersiveMaterialParameters & dmp = dmpVector[domain];
-	  if( dmp.getNumberOfAtomicLevels()>0 )
-	  {
-	    const int component = nlComponent;
-	    if( component < dmp.getNumberOfAtomicLevels() )
-	    {
-	      pspNonlinear.set(GI_COMPONENT_FOR_CONTOURS,component);
+          DispersiveMaterialParameters & dmp = dmpVector[domain];
+          if( dmp.getNumberOfAtomicLevels()>0 )
+          {
+            const int component = nlComponent;
+            if( component < dmp.getNumberOfAtomicLevels() )
+            {
+              pspNonlinear.set(GI_COMPONENT_FOR_CONTOURS,component);
 
-	      realCompositeGridFunction & nlgf = *getNonlinearModelCompositeGridFunction( domain,current );
-	      if( !plotErrors )
-	      {
-		real uMin,uMax;
-		PlotIt::getBounds(nlgf,uMin,uMax,pspNonlinear,Range(component,component));
+              realCompositeGridFunction & nlgf = *getNonlinearModelCompositeGridFunction( domain,current );
+              if( !plotErrors )
+              {
+                real uMin,uMax;
+                PlotIt::getBounds(nlgf,uMin,uMax,pspNonlinear,Range(component,component));
                 
-		pMin=min(pMin,uMin);
-		pMax=max(pMax,uMax);
+                pMin=min(pMin,uMin);
+                pMax=max(pMax,uMax);
 
-		printF("--MX--plot: domain=%i: this domain : (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                printF("--MX--plot: domain=%i: this domain : (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-		pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
-		PlotIt::contour(gi,nlgf,pspNonlinear);
-	      }
-	      else
-	      {
-		// --- Plot the errors in the nonlinear variables if available  ----
-		bool getErrorGridFunction=true;
-		realCompositeGridFunction & nlgfErr = *getNonlinearModelCompositeGridFunction( domain,current,getErrorGridFunction );
+                pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
+                PlotIt::contour(gi,nlgf,pspNonlinear);
+              }
+              else
+              {
+                // --- Plot the errors in the nonlinear variables if available  ----
+                bool getErrorGridFunction=true;
+                realCompositeGridFunction & nlgfErr = *getNonlinearModelCompositeGridFunction( domain,current,getErrorGridFunction );
 
-		real uMin,uMax;
-		PlotIt::getBounds(nlgfErr,uMin,uMax,pspNonlinear,Range(component,component));
+                real uMin,uMax;
+                PlotIt::getBounds(nlgfErr,uMin,uMax,pspNonlinear,Range(component,component));
                 
-		pMin=min(pMin,uMin);
-		pMax=max(pMax,uMax);
+                pMin=min(pMin,uMin);
+                pMax=max(pMax,uMax);
 
-		printF("--MX--plot: domain=%i: Error: this domain (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
+                printF("--MX--plot: domain=%i: Error: this domain (uMin,uMax=(%g,%g), all=(uMin,uMax=(%g,%g)\n",domain,uMin,uMax,pMin,pMax);
                 
-		pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
+                pspNonlinear.setMinAndMaxContourLevels( pMin,pMax,component);
 
-		PlotIt::contour(gi,nlgfErr,pspNonlinear);
+                PlotIt::contour(gi,nlgfErr,pspNonlinear);
 
-	      }
+              }
               
-	    }
-	    else
-	    {
-	      printF("plotNonlinearVariables:INFO: Not plotting N in domain=%i since component=%i but "
-		     "numberOfAtomicLevels=%i.\n",   domain,nlComponent,dmp.getNumberOfAtomicLevels());
-	    }
-	  } // end if numberOfAtomicLevels > 0
-	}  // end for domain 
+            }
+            else
+            {
+              printF("plotNonlinearVariables:INFO: Not plotting N in domain=%i since component=%i but "
+                     "numberOfAtomicLevels=%i.\n",   domain,nlComponent,dmp.getNumberOfAtomicLevels());
+            }
+          } // end if numberOfAtomicLevels > 0
+        }  // end for domain 
       }
       
   
@@ -933,7 +933,7 @@ buildRunTimeDialog()
     delete [] label;
 
 //     aString tbCommands[] = {"project fields",
-// 			    ""};
+//                          ""};
 //     int tbState[10];
 //     tbState[0] = projectFields; 
 //     int numColumns=1;
@@ -1019,7 +1019,7 @@ buildParametersDialog(DialogData & dialog )
   dialog.setOptionMenuColumns(1);
 
   aString tbCommands[] = {"project fields",
- 			  ""};
+                          ""};
   int tbState[15];
   tbState[0] = projectFields;
 
@@ -1117,7 +1117,7 @@ getTimeSteppingLabel( real dt, aString & label ) const
   
   // if( twilightZoneOption==polynomialTwilightZone )
   //   label+=sPrintF(buff," order(X,T)=(%i,%i)",
-  // 		   orderOfAccuracyInSpace,orderOfAccuracyInTime);
+  //               orderOfAccuracyInSpace,orderOfAccuracyInTime);
 
   if( method==nfdtd  )
   {
@@ -1203,7 +1203,7 @@ plotMaterials( )
           }
         }
       }
-	      
+              
       // change the default colour table
       RealArray ctSave(3,256);
       psp.getColourTable( ctSave );  // save current "rainbow" colour table 
@@ -1457,13 +1457,13 @@ plot( int current, real t, real dt )
   //     getMaxDivergence( current,t );
 
   //   printF(">>> Cgmx:%s: t=%6.2e, %s |div(E)|=%8.2e, |div(E)|/|grad(E)|=%8.2e, |grad(E)|=%8.2e (%i steps)\n",
-  // 	   (const char *)methodName,t,(const char*)label,
-  // 	   divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax,numberOfStepsTaken);
+  //       (const char *)methodName,t,(const char*)label,
+  //       divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax,numberOfStepsTaken);
   //   if( solveForMagneticField && cg.numberOfDimensions()==3 )
   //   {
   //     printF("                                                              "
   //            "|div(H)|=%8.2e, |div(H)|/|grad(H)|=%8.2e, |grad(H)|=%8.2e (%i steps)\n",
-  // 	     divHMax,divHMax/max(REAL_MIN*100.,gradHMax),gradHMax,numberOfStepsTaken);
+  //         divHMax,divHMax/max(REAL_MIN*100.,gradHMax),gradHMax,numberOfStepsTaken);
   //   }
     
   //   outputResults(current,t,dt);
@@ -1530,13 +1530,13 @@ plot( int current, real t, real dt )
   {
 
     // printF(">>> Cgmx:%s: t=%6.2e, %s |div(E)|=%8.2e, |div(E)|/|grad(E)|=%8.2e, |grad(E)|=%8.2e (%i steps)\n",
-    // 	   (const char *)methodName,t,(const char*)label,
-    // 	   divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax,numberOfStepsTaken);
+    //     (const char *)methodName,t,(const char*)label,
+    //     divEMax,divEMax/max(REAL_MIN*100.,gradEMax),gradEMax,numberOfStepsTaken);
     // if( solveForMagneticField && cg.numberOfDimensions()==3 )
     // {
     //   printF("                                                              "
     //          "|div(H)|=%8.2e, |div(H)|/|grad(H)|=%8.2e, |grad(H)|=%8.2e (%i steps)\n",
-    // 	     divHMax,divHMax/max(REAL_MIN*100.,gradHMax),gradHMax,numberOfStepsTaken);
+    //       divHMax,divHMax/max(REAL_MIN*100.,gradHMax),gradHMax,numberOfStepsTaken);
     // }
     // outputResults(current,t,dt);
     
@@ -1586,7 +1586,7 @@ plot( int current, real t, real dt )
       
       if( answer=="break" )
       {
-	programHalted=true;
+        programHalted=true;
 
       }
     }
@@ -1599,13 +1599,13 @@ plot( int current, real t, real dt )
     //   if( ps.isGraphicsWindowOpen() && 
     //       !ps.readingFromCommandFile() )  // for now we cannot check if we are reading from a command file
     //   {
-    // 	// ps.outputString(sPrintF(buff,"Check for break at t=%e\n",t));
-    // 	answer="";
-    // 	int menuItem = ps.getAnswerNoBlock(answer,"monitor>");
-    // 	if( answer=="break" )
-    // 	{
-    // 	  programHalted=true;
-    // 	}
+    //  // ps.outputString(sPrintF(buff,"Check for break at t=%e\n",t));
+    //  answer="";
+    //  int menuItem = ps.getAnswerNoBlock(answer,"monitor>");
+    //  if( answer=="break" )
+    //  {
+    //    programHalted=true;
+    //  }
     //   }
       
     // }
@@ -1614,7 +1614,7 @@ plot( int current, real t, real dt )
     {
       if( plotOptions & 1 )
       {
-	setSensitivity( dialog,true );
+        setSensitivity( dialog,true );
       }
       
       plotOptions=1; // reset movie mode if set.
@@ -1629,59 +1629,59 @@ plot( int current, real t, real dt )
       bool replot=false;
       for(;;)
       {
-	// int menuItem = ps.getMenuItem(menu,answer,"choose an option");
+        // int menuItem = ps.getMenuItem(menu,answer,"choose an option");
         real timew=getCPU();
-	int menuItem = ps.getAnswer(answer,"");
+        int menuItem = ps.getAnswer(answer,"");
         timing(timeForWaiting)+=getCPU()-timew;
 
-	if( answer=="contour" )
-	{
+        if( answer=="contour" )
+        {
           if(plotChoices & 2 )
             ps.erase();
-	  
+          
           PlotIt::contour(ps,u,psp);
-	  if( psp.getObjectWasPlotted() ) 
-	    plotChoices |= 2;
+          if( psp.getObjectWasPlotted() ) 
+            plotChoices |= 2;
           else
             plotChoices &= ~2;
 
           replot=true;
-	}
+        }
 
-// 	else if( menuItem > chooseAComponentMenuItem && 
+//      else if( menuItem > chooseAComponentMenuItem && 
 //                  menuItem <= chooseAComponentMenuItem+numberOfComponents )
-// 	{
+//      {
 //           // plot a new component
-// 	  int component=menuItem-chooseAComponentMenuItem-1;
+//        int component=menuItem-chooseAComponentMenuItem-1;
 //           if( plotChoices & 2 )
-// 	  {
+//        {
 //             ps.erase();
-// 	    psp.set(GI_COMPONENT_FOR_CONTOURS,component);
-// 	    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+//          psp.set(GI_COMPONENT_FOR_CONTOURS,component);
+//          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
 
-// 	    if( plotChoices & 1 )
-// 	      PlotIt::plot(ps,mg,psp);
+//          if( plotChoices & 1 )
+//            PlotIt::plot(ps,mg,psp);
 
-// 	    PlotIt::contour(ps,u,psp);
+//          PlotIt::contour(ps,u,psp);
 
-// 	    if( plotChoices & 4 )
-// 	      PlotIt::streamLines(ps,u,psp);
+//          if( plotChoices & 4 )
+//            PlotIt::streamLines(ps,u,psp);
 
-// 	    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
-// 	  }
-// 	}
+//          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
+//        }
+//      }
         else if( answer=="grid" )
-	{
+        {
           if( mgp!=NULL )
             PlotIt::plot(ps,*mgp,psp);
           else
             PlotIt::plot(ps,*cgp,psp);
 
-	  if( psp.getObjectWasPlotted() ) 
-	    plotChoices |= 1;
+          if( psp.getObjectWasPlotted() ) 
+            plotChoices |= 1;
           else
             plotChoices &= ~1;
-	}
+        }
         else if( answer=="plot P..." )
         {
           plotPolarization( current,t,dt );
@@ -1705,117 +1705,117 @@ plot( int current, real t, real dt )
         }
         
 
-	else if( answer=="E field lines" )
-	{
+        else if( answer=="E field lines" )
+        {
           int uc,vc;
           if( ( mgp!=NULL && mgp->isRectangular() && method==defaultMethod) || method==yee )
-	  {
-	    uc=ex; vc=ey;
-	  }
-	  else
-	  {
-	    uc=ex10, vc=ey10;
-	  }
-	  psp.set(GI_U_COMPONENT_FOR_STREAM_LINES,uc);
-	  psp.set(GI_V_COMPONENT_FOR_STREAM_LINES,vc);
+          {
+            uc=ex; vc=ey;
+          }
+          else
+          {
+            uc=ex10, vc=ey10;
+          }
+          psp.set(GI_U_COMPONENT_FOR_STREAM_LINES,uc);
+          psp.set(GI_V_COMPONENT_FOR_STREAM_LINES,vc);
           PlotIt::streamLines(ps,u,psp);
 
-	  if( psp.getObjectWasPlotted() ) 
-	    plotChoices |= 4;
+          if( psp.getObjectWasPlotted() ) 
+            plotChoices |= 4;
           else
             plotChoices &= ~4;
-	}
-	else if( answer=="erase" )
-	{
+        }
+        else if( answer=="erase" )
+        {
           ps.erase();
-	  plotChoices=0;
-	}
-	else if( answer=="plot options..." )
-	{
-	  plotOptionsDialog.showSibling();
-	}
-	else if( answer=="close plot options" )
-	{
-	  plotOptionsDialog.hideSibling();
-	}
-	else if( answer=="parameters..." )
-	{
-	  parametersDialog.showSibling();
-	}
-	else if( answer=="close parameters" )
-	{
-	  parametersDialog.hideSibling();
-	}
+          plotChoices=0;
+        }
+        else if( answer=="plot options..." )
+        {
+          plotOptionsDialog.showSibling();
+        }
+        else if( answer=="close plot options" )
+        {
+          plotOptionsDialog.hideSibling();
+        }
+        else if( answer=="parameters..." )
+        {
+          parametersDialog.showSibling();
+        }
+        else if( answer=="close parameters" )
+        {
+          parametersDialog.hideSibling();
+        }
         
 //         else if( answer=="save a restart file" )
-// 	{
-// 	  ps.inputFileName(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
-// 					  (const char *)restartFileName));
-// 	  if( answer!="" )
-// 	    restartFileName=answer;
+//      {
+//        ps.inputFileName(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
+//                                        (const char *)restartFileName));
+//        if( answer!="" )
+//          restartFileName=answer;
 
-// 	  saveRestartFile(solution,restartFileName);
-// 	}
+//        saveRestartFile(solution,restartFileName);
+//      }
 //         else if( answer=="save restart file" ) // new way, do not prompt for restart file name
-// 	{
-// 	  saveRestartFile(solution,restartFileName);
-// 	}
+//      {
+//        saveRestartFile(solution,restartFileName);
+//      }
 //         else if( answer=="output to a file" )
-// 	{
-// 	  FileOutput fileOutput;
-// 	  fileOutput.update(u,ps);
-// 	}
-// 	else if( answer=="output periodically to a file" || answer=="output periodically to a file..." )
-// 	{
+//      {
+//        FileOutput fileOutput;
+//        fileOutput.update(u,ps);
+//      }
+//      else if( answer=="output periodically to a file" || answer=="output periodically to a file..." )
+//      {
 //           if( numberOfOutputFiles>=maximumNumberOfOutputFiles )
-// 	  {
-// 	    printF("ERROR: too many files open\n");
-// 	    continue;
-// 	  }
+//        {
+//          printF("ERROR: too many files open\n");
+//          continue;
+//        }
 //           fileOutputFrequency[numberOfOutputFiles]=1;
 //           ps.inputString(answer,"Save to the file every how many steps? (default=1)");
 //           sScanF(answer,"%i",&fileOutputFrequency[numberOfOutputFiles]);
-	  
+          
 //           FileOutput & fileOutput = * new FileOutput;
-// 	  outputFile[numberOfOutputFiles] = &fileOutput;
-// 	  numberOfOutputFiles++;
+//        outputFile[numberOfOutputFiles] = &fileOutput;
+//        numberOfOutputFiles++;
           
 //           fileOutput.update(u,ps);
 
-	  
-// 	}
-// 	else if( answer=="close an output file" )
-// 	{
+          
+//      }
+//      else if( answer=="close an output file" )
+//      {
 //           aString *fileMenu = new aString [numberOfOutputFiles+2];
 //           int n;
-// 	  for( n=0; n<numberOfOutputFiles; n++ )
-// 	  {
-// 	    fileMenu[n]=outputFile[n]->getFileName();
-// 	  }
+//        for( n=0; n<numberOfOutputFiles; n++ )
+//        {
+//          fileMenu[n]=outputFile[n]->getFileName();
+//        }
 //           fileMenu[parameters.numberOfOutputFiles]="none";
 //           fileMenu[parameters.numberOfOutputFiles+1]="";
-// 	  int fileChosen = ps.getMenuItem(fileMenu,answer,"Choose a file to close");
-// 	  if( fileChosen>=0 && fileChosen<parameters.numberOfOutputFiles )
-// 	  {
+//        int fileChosen = ps.getMenuItem(fileMenu,answer,"Choose a file to close");
+//        if( fileChosen>=0 && fileChosen<parameters.numberOfOutputFiles )
+//        {
 //             printF("close file %s\n",(const char*)fileMenu[fileChosen]);
-// 	    delete parameters.outputFile[fileChosen];
+//          delete parameters.outputFile[fileChosen];
 //             parameters.numberOfOutputFiles--;
-// 	    for( n=fileChosen; n<parameters.numberOfOutputFiles; n++ )
-// 	      parameters.outputFile[n]=parameters.outputFile[n+1];
-// 	    parameters.outputFile[parameters.numberOfOutputFiles]=NULL;
-// 	  }
-// 	}
-	else if( answer=="continue" )
-	{
+//          for( n=fileChosen; n<parameters.numberOfOutputFiles; n++ )
+//            parameters.outputFile[n]=parameters.outputFile[n+1];
+//          parameters.outputFile[parameters.numberOfOutputFiles]=NULL;
+//        }
+//      }
+        else if( answer=="continue" )
+        {
           if( t >= tFinal-dt/10. )
-	  {
-	    printF("WARNING: t=tFinal. Choose `finish' if you really want to end\n");
-	  }
-	  else
+          {
+            printF("WARNING: t=tFinal. Choose `finish' if you really want to end\n");
+          }
+          else
             break;
- 	}
-	else if( answer=="movie mode" )
-	{
+        }
+        else if( answer=="movie mode" )
+        {
           plotOptions=3;  // don't wait
           if( ! ps.isGraphicsWindowOpen() )
           {
@@ -1823,44 +1823,44 @@ plot( int current, real t, real dt )
           }
           
 
-  	  setSensitivity( dialog,false );
+          setSensitivity( dialog,false );
           break;
- 	}
+        }
         else if( answer=="movie and save" )
-	{
-	  ps.inputString(answer,"Enter basic name for the ppm files (default=plot)");
-	  if( answer !="" && answer!=" ")
-	    movieFileName=answer;
+        {
+          ps.inputString(answer,"Enter basic name for the ppm files (default=plot)");
+          if( answer !="" && answer!=" ")
+            movieFileName=answer;
           else
-	    movieFileName="plot";
+            movieFileName="plot";
           ps.outputString(sPrintF(buff,"pictures will be named %s0.ppm, %s1.ppm, ...",
             (const char*)movieFileName,(const char*)movieFileName));
-	  movieFrame=0;
+          movieFrame=0;
           plotOptions=3;  // don't wait
 
-  	  setSensitivity( dialog,false );
+          setSensitivity( dialog,false );
           break;
-	}
+        }
 //         else if( answer=="show file options" || answer=="show file options..." )
-// 	{
+//      {
 //            updateShowFile();
-// 	}
-	else if( answer=="finish" )
-	{
+//      }
+        else if( answer=="finish" )
+        {
           tFinal=t;
           returnValue=1;
           break;
- 	}
-	else if( plotOptionsDialog.getToggleValue(answer,"plot energy density",plotEnergyDensity) ){replot=true;}//
+        }
+        else if( plotOptionsDialog.getToggleValue(answer,"plot energy density",plotEnergyDensity) ){replot=true;}//
         else if( plotOptionsDialog.getToggleValue(answer,"plot intensity",plotIntensity) ){}//
         else if( plotOptionsDialog.getToggleValue(answer,"plot harmonic E field",plotHarmonicElectricFieldComponents) ){}//
-	else if( plotOptionsDialog.getToggleValue(answer,"plot errors",plotErrors) ){replot=true;}//
-	else if( plotOptionsDialog.getToggleValue(answer,"plot scattered field",plotScatteredField) )
+        else if( plotOptionsDialog.getToggleValue(answer,"plot errors",plotErrors) ){replot=true;}//
+        else if( plotOptionsDialog.getToggleValue(answer,"plot scattered field",plotScatteredField) )
         { printF("plotScatteredField=%i\n",(int)plotScatteredField);
           replot=true; 
         }
    
-	else if( plotOptionsDialog.getToggleValue(answer,"plot total field",plotTotalField) )
+        else if( plotOptionsDialog.getToggleValue(answer,"plot total field",plotTotalField) )
         { printF("plotTotalField=%i\n",(int)plotTotalField);
           replot=true; 
         }
@@ -1873,37 +1873,37 @@ plot( int current, real t, real dt )
     
         else if( plotOptionsDialog.getToggleValue(answer,"plot nonlinear components",plotNonlinearComponents) ){}//
 
-	else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){replot=true;}//
-	else if( plotOptionsDialog.getToggleValue(answer,"plot divergence",plotDivergence) ){replot=true;}//
-	else if( plotOptionsDialog.getToggleValue(answer,"check errors",checkErrors) ){replot=true;}//
+        else if( plotOptionsDialog.getToggleValue(answer,"plot dissipation",plotDissipation) ){replot=true;}//
+        else if( plotOptionsDialog.getToggleValue(answer,"plot divergence",plotDivergence) ){replot=true;}//
+        else if( plotOptionsDialog.getToggleValue(answer,"check errors",checkErrors) ){replot=true;}//
         else if( plotOptionsDialog.getToggleValue(answer,"compute energy",computeEnergy) ){}//
-	else if( plotOptionsDialog.getToggleValue(answer,"plot dsi vertex max",plotDSIMaxVertVals) ){replot=true;}//
-	else if( plotOptionsDialog.getToggleValue(answer,"compare to show file",compareToReferenceShowFile) )
+        else if( plotOptionsDialog.getToggleValue(answer,"plot dsi vertex max",plotDSIMaxVertVals) ){replot=true;}//
+        else if( plotOptionsDialog.getToggleValue(answer,"compare to show file",compareToReferenceShowFile) )
          {replot=true;}//
 
-	else if( dialog.getTextValue(answer,"cfl","%g",cfl) ){}//
-	else if( dialog.getTextValue(answer,"final time","%g",tFinal) ){}//
-	else if( dialog.getTextValue(answer,"times to plot","%g",tPlot) ){}//
+        else if( dialog.getTextValue(answer,"cfl","%g",cfl) ){}//
+        else if( dialog.getTextValue(answer,"final time","%g",tFinal) ){}//
+        else if( dialog.getTextValue(answer,"times to plot","%g",tPlot) ){}//
         else if( dialog.getTextValue(answer,"debug","%i",debug) ){}//
         else if( dialog.getTextValue(answer,"radius for checking errors","%f",radiusForCheckingErrors) )
         {
           getErrors( current,t,dt );
           replot=true;
-	}
-	else if( plotOptionsDialog.getTextValue(answer,"pml error offset","%i",pmlErrorOffset) )
-	{
+        }
+        else if( plotOptionsDialog.getTextValue(answer,"pml error offset","%i",pmlErrorOffset) )
+        {
           getErrors( current,t,dt );
           replot=true;
-	}
-	else if( plotOptionsDialog.getTextValue(answer,"absorbing layer error offset","%i",absorbingLayerErrorOffset) )
-	{
-	  printF("Setting absorbingLayerErrorOffset=%d\n",absorbingLayerErrorOffset);
-	  if( useSuperGrid )
-	  {
-	    getErrors( current,t,dt );
-	    replot=true;
-	  }
-	}
+        }
+        else if( plotOptionsDialog.getTextValue(answer,"absorbing layer error offset","%i",absorbingLayerErrorOffset) )
+        {
+          printF("Setting absorbingLayerErrorOffset=%d\n",absorbingLayerErrorOffset);
+          if( useSuperGrid )
+          {
+            getErrors( current,t,dt );
+            replot=true;
+          }
+        }
 
         else if( parametersDialog.getToggleValue(answer,"project fields",projectFields) ){}//
         else if( parametersDialog.getTextValue(answer,"projection frequency","%i",frequencyToProjectFields) ){}// 
@@ -1914,24 +1914,24 @@ plot( int current, real t, real dt )
         else if( parametersDialog.getTextValue(answer,"dissipation (curvilinear)","%g",artificialDissipationCurvilinear) ){}//
         else if( parametersDialog.getTextValue(answer,"dissipation","%g",artificialDissipation) ){}//
 
-	else if( len=answer.matches("plot:") )
-	{
+        else if( len=answer.matches("plot:") )
+        {
           // plot a new component
           aString name = answer(len,answer.length()-1);
           int component=-1;
-	  for( int n=0; n<numberOfComponents; n++ )
-	  {
-	    if( name==u.getName(n) )
-	    {
-	      component=n;
-	      break;
-	    }
-	  }
+          for( int n=0; n<numberOfComponents; n++ )
+          {
+            if( name==u.getName(n) )
+            {
+              component=n;
+              break;
+            }
+          }
           if( component==-1 )
-	  {
+          {
             printF("ERROR: unknown component name =[%s]\n",(const char*)name);
-	    component=0;
-	  }
+            component=0;
+          }
 
           ps.erase();
 
@@ -1945,57 +1945,57 @@ plot( int current, real t, real dt )
 
           dialog.getOptionMenu(0).setCurrentChoice(component);
           if( plotChoices & 2 )
-	  {
-	    psp.set(GI_COMPONENT_FOR_CONTOURS,component);
-	    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
+          {
+            psp.set(GI_COMPONENT_FOR_CONTOURS,component);
+            psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,TRUE);
 
-	    if( plotChoices & 1 )
-	    {
-	      if( mgp!=NULL )
-	        PlotIt::plot(ps,*mgp,psp);
+            if( plotChoices & 1 )
+            {
+              if( mgp!=NULL )
+                PlotIt::plot(ps,*mgp,psp);
               else
-	        PlotIt::plot(ps,*cgp,psp);
-	    }
-	    PlotIt::contour(ps,u,psp);
+                PlotIt::plot(ps,*cgp,psp);
+            }
+            PlotIt::contour(ps,u,psp);
 
-	    if( plotChoices & 4 )
-	      PlotIt::streamLines(ps,u,psp);
+            if( plotChoices & 4 )
+              PlotIt::streamLines(ps,u,psp);
 
-	    psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
-	  }
-	}
-// 	else if( answer=="file output..." )
-// 	{
+            psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,FALSE);
+          }
+        }
+//      else if( answer=="file output..." )
+//      {
 //           fileOutputDialog.showSibling();
-// 	}
+//      }
 //         else if( answer=="close file output dialog" )
-// 	{
+//      {
 //           fileOutputDialog.hideSibling();
-// 	}
-// 	else if( answer=="pde parameters..." )
-// 	{
-// 	  pdeDialog.showSibling();
-// 	}
-// 	else if( answer=="close pde options" )
-// 	{
-// 	  pdeDialog.hideSibling();  // pop timeStepping
-// 	}
-// 	else if( parameters.setPdeParameters(answer,&pdeDialog)==0 )
-// 	{
-// 	  printF("Answer was found in setPdeParameters\n");
-// 	}
+//      }
+//      else if( answer=="pde parameters..." )
+//      {
+//        pdeDialog.showSibling();
+//      }
+//      else if( answer=="close pde options" )
+//      {
+//        pdeDialog.hideSibling();  // pop timeStepping
+//      }
+//      else if( parameters.setPdeParameters(answer,&pdeDialog)==0 )
+//      {
+//        printF("Answer was found in setPdeParameters\n");
+//      }
         else if( answer=="break" )
-	{
-	}
+        {
+        }
         else
-	{
-	  cout << "Unknown response: " << answer << endl;
-	}
-	if( replot )
-	{
-	  replot=false;
+        {
+          cout << "Unknown response: " << answer << endl;
+        }
+        if( replot )
+        {
+          replot=false;
           getAugmentedSolution(current,v,t);
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
           ps.erase();
 
 
@@ -2008,19 +2008,19 @@ plot( int current, real t, real dt )
             BodyForce::plotForcingRegions(ps, parameters.dbase, *cgp, psp); 
           }
 
-	  if( plotChoices & 1 )
-	  {
-	    if( mgp!=NULL )
-	      PlotIt::plot(ps,*mgp,psp);
-	    else
-	      PlotIt::plot(ps,*cgp,psp);
-	  }
-	  if( plotChoices & 2 )
-	    PlotIt::contour(ps,u,psp);
-	  if( plotChoices & 4 )
-	    PlotIt::streamLines(ps,u,psp);
+          if( plotChoices & 1 )
+          {
+            if( mgp!=NULL )
+              PlotIt::plot(ps,*mgp,psp);
+            else
+              PlotIt::plot(ps,*cgp,psp);
+          }
+          if( plotChoices & 2 )
+            PlotIt::contour(ps,u,psp);
+          if( plotChoices & 4 )
+            PlotIt::streamLines(ps,u,psp);
   
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
         }//
       }
     }

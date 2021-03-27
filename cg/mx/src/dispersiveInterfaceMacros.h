@@ -2758,7 +2758,7 @@ end do
        call dgeco( aa8(0,0,0,nn), numberOfEquations, numberOfEquations, ipvt8(0,nn),rcond,work(0))
 
        if( debug.gt.3 ) write(debugFile,'(" --> 4cth: i1,i2=",2i4," rcond=",e10.2)') i1,i2,rcond
-       ! '
+       
      end if
 
 
@@ -2781,23 +2781,47 @@ end do
                aa8(n,4,1,nn)*q(4)+aa8(n,5,1,nn)*q(5)+aa8(n,6,1,nn)*q(6)+aa8(n,7,1,nn)*q(7)) - f(n)
      end do
 
-                          ! '
+                        
 
      ! solve A Q = F
      job=0
      numberOfEquations=8
      call dgesl( aa8(0,0,0,nn), numberOfEquations, numberOfEquations, ipvt8(0,nn), f(0), job)
 
+     ! added March 26, 2021 *wdh*
+     if( useJacobiUpdate.eq.0 )then
+       u1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
+       u1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
+       u2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
+       u2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
 
-     u1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
-     u1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
-     u2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
-     u2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
+       u1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
+       u1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
+       u2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
+       u2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+     else
+       ! Jacobi-update
+       wk1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
+       wk1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
+       wk2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
+       wk2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
 
-     u1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
-     u1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
-     u2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
-     u2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+       wk1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
+       wk1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
+       wk2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
+       wk2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
+     end if
+
+
+     ! u1(i1-is1,i2-is2,i3,ex)=(1.-omega)*u1(i1-is1,i2-is2,i3,ex) + omega*f(0)
+     ! u1(i1-is1,i2-is2,i3,ey)=(1.-omega)*u1(i1-is1,i2-is2,i3,ey) + omega*f(1)
+     ! u2(j1-js1,j2-js2,j3,ex)=(1.-omega)*u2(j1-js1,j2-js2,j3,ex) + omega*f(2)
+     ! u2(j1-js1,j2-js2,j3,ey)=(1.-omega)*u2(j1-js1,j2-js2,j3,ey) + omega*f(3)
+
+     ! u1(i1-2*is1,i2-2*is2,i3,ex)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ex) + omega*f(4)
+     ! u1(i1-2*is1,i2-2*is2,i3,ey)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,ey) + omega*f(5)
+     ! u2(j1-2*js1,j2-2*js2,j3,ex)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ex) + omega*f(6)
+     ! u2(j1-2*js1,j2-2*js2,j3,ey)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,ey) + omega*f(7)
 
      ! compute the maximum change in the solution for this iteration
      do n=0,7
@@ -2808,7 +2832,7 @@ end do
       write(debugFile,'(" --> 4cth: i1,i2=",2i4," f(solve)=",8e10.2)') i1,i2,(f(n),n=0,7)
       write(debugFile,'(" --> 4cth: i1,i2=",2i4,"      f-q=",8e10.2,"  err=",e10.2)') i1,i2,(f(n)-q(n),n=0,7),err
      end if
-     ! '
+     
 
 
     if( .false. .and. knownSolutionOption.eq.userDefinedKnownSolution )then
@@ -2903,10 +2927,24 @@ end do
      job=0
      call dgesl( aa4(0,0,0,nn), numberOfEquations, numberOfEquations, ipvt4(0,nn), f(0), job)
 
-     u1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
-     u2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
-     u1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
-     u2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     ! added March 26, 2021  *wdh* 
+     if( useJacobiUpdate.eq.0 )then
+       u1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
+       u2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
+       u1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
+       u2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     else
+       ! Jacobi update -- save answer in work space
+       wk1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
+       wk2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
+       wk1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
+       wk2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
+     end if
+
+     ! u1(i1-  is1,i2-  is2,i3,hz)=(1.-omega)*u1(i1-  is1,i2-  is2,i3,hz) + omega*f(0)
+     ! u2(j1-  js1,j2-  js2,j3,hz)=(1.-omega)*u2(j1-  js1,j2-  js2,j3,hz) + omega*f(1)
+     ! u1(i1-2*is1,i2-2*is2,i3,hz)=(1.-omega)*u1(i1-2*is1,i2-2*is2,i3,hz) + omega*f(2)
+     ! u2(j1-2*js1,j2-2*js2,j3,hz)=(1.-omega)*u2(j1-2*js1,j2-2*js2,j3,hz) + omega*f(3)
 
     ! compute the maximum change in the solution for this iteration
     if( .false. )then
@@ -2938,6 +2976,26 @@ end do
       
  if( checkCoeff.eq.1 )then
    write(*,'("+++++ iGDM24c: check coeff in interface: max(diff) = ",1pe8.2)') coeffDiff
+ end if
+
+ if( useJacobiUpdate.ne.0 )then
+   ! Jacobi-update: now fill in values 
+   beginLoopsMask2d() 
+     u1(i1-is1,i2-is2,i3,ex)=wk1(i1-is1,i2-is2,i3,ex)
+     u1(i1-is1,i2-is2,i3,ey)=wk1(i1-is1,i2-is2,i3,ey)
+     u2(j1-js1,j2-js2,j3,ex)=wk2(j1-js1,j2-js2,j3,ex)
+     u2(j1-js1,j2-js2,j3,ey)=wk2(j1-js1,j2-js2,j3,ey)
+
+     u1(i1-2*is1,i2-2*is2,i3,ex)=wk1(i1-2*is1,i2-2*is2,i3,ex)
+     u1(i1-2*is1,i2-2*is2,i3,ey)=wk1(i1-2*is1,i2-2*is2,i3,ey)
+     u2(j1-2*js1,j2-2*js2,j3,ex)=wk2(j1-2*js1,j2-2*js2,j3,ex)
+     u2(j1-2*js1,j2-2*js2,j3,ey)=wk2(j1-2*js1,j2-2*js2,j3,ey)
+
+     u1(i1-  is1,i2-  is2,i3,hz)=wk1(i1-  is1,i2-  is2,i3,hz)
+     u2(j1-  js1,j2-  js2,j3,hz)=wk2(j1-  js1,j2-  js2,j3,hz)
+     u1(i1-2*is1,i2-2*is2,i3,hz)=wk1(i1-2*is1,i2-2*is2,i3,hz)
+     u2(j1-2*js1,j2-2*js2,j3,hz)=wk2(j1-2*js1,j2-2*js2,j3,hz)
+   endLoopsMask2d()
  end if
 
 #endMacro

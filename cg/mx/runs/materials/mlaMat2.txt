@@ -1,6 +1,7 @@
+#
 # multilevelAtomic Material -- test material 2
 #
-name="mlaMat1";
+name="mlaMat2";
 materialType="isotropic";
 dispersiveModel="GDM";
 nonlinearModel="multilevelAtomic";

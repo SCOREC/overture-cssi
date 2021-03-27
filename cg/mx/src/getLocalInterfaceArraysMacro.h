@@ -394,6 +394,7 @@
   realArray u2nCopy; realSerialArray u2nCopyLocal;  
   realArray p2Copy;  realSerialArray p2CopyLocal;  
   realArray p2nCopy; realSerialArray p2nCopyLocal;  
+
   if( isDispersive )
   {
     copyLocalInterfaceArrayMacro(u2nCopy,u2nCopyLocal,u2n,u1n,Iv2,Iv1);
@@ -407,12 +408,20 @@
     //   u1n, u2n : solution at current time (we are assign interface values at the "next" time
     //   p1,p1n, p2,p2n
 
-    copyLocalInterfaceArrayMacro(p2Copy,p2CopyLocal,p2,p1,Iv2,Iv1);
+    copyLocalInterfaceArrayMacro(p2Copy, p2CopyLocal, p2, p1, Iv2,Iv1);
     copyLocalInterfaceArrayMacro(p2nCopy,p2nCopyLocal,p2n,p1n,Iv2,Iv1);
       
   }
 
-
+  // --- nonlinear variables ----
+  realArray q2Copy;  realSerialArray q2CopyLocal;  
+  realArray q2nCopy; realSerialArray q2nCopyLocal;  
+  // Is this right? 
+  if( isDispersive && dmp2.isNonlinearMaterial() )
+  {
+    copyLocalInterfaceArrayMacro(q2Copy, q2CopyLocal, q2, q1, Iv2,Iv1);
+    copyLocalInterfaceArrayMacro(q2nCopy,q2nCopyLocal,q2n,q1n,Iv2,Iv1);
+  }
 
   // ----
   width[side1]  =halfWidth;     // copy this many ghost pts
@@ -469,12 +478,20 @@
     //   u1n, u2n : solution at current time (we are assign interface values at the "next" time
     //   p1,p1n, p2,p2n
 
-    copyLocalInterfaceArrayMacro(p1Copy,p1CopyLocal,p1,p2,Iv1,Iv2);
+    copyLocalInterfaceArrayMacro(p1Copy, p1CopyLocal, p1, p2, Iv1,Iv2);
     copyLocalInterfaceArrayMacro(p1nCopy,p1nCopyLocal,p1n,p2n,Iv1,Iv2);
       
   }
 
-
+  // --- nonlinear variables ----
+  realArray q1Copy;  realSerialArray q1CopyLocal;  
+  realArray q1nCopy; realSerialArray q1nCopyLocal; 
+  // Is this right? 
+  if( isDispersive && dmp1.isNonlinearMaterial() )
+  {
+    copyLocalInterfaceArrayMacro(q1Copy, q1CopyLocal, q1, q2, Iv1,Iv2);
+    copyLocalInterfaceArrayMacro(q1nCopy,q1nCopyLocal,q1n,q2n,Iv1,Iv2);
+  }
 
 	
   int includeGhost=0;  // do NOT include parallel ghost since we can't apply the stencil there

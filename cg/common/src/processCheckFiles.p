@@ -19,13 +19,14 @@ if ($numberOfParameters eq 0)
   printf("This perl script will process check files and compute convergence tables        \n");
   printf("  Usage: \n");
   printf("    processCheckFiles.p  -file=<master-check-file> -c=<list of components> ...  \n");
-  printf("      -useGridNames=[0|1] -table=[0|1]                                          \n");
+  printf("      -useGridNames=[0|1] -table=[0|1] -startingGridResolution=[]                  \n");
   printf("  where \n");
   printf("  -file:  master-check-file = the name of a master checkfile created by conv.p that \n");
   printf("      conatins check file resuts from a sequence of runs on increasing resolution\n");
   printf("  -c : comma separated list of components to output in tables, e.g. -c=0,2 or -c=3,4,6 \n");
   printf("  -useGridNames : 1=use grid names in table, 0=use grid-spacing\n"); 
   printf("  -table : 1=include \\begin{table} in LaTeX table\n"); 
+  printf("  -startingGridResolution : default =10, starting grid resolution\n"); 
   printf("==============================================================================\n\n");
   exit;
   
@@ -33,7 +34,9 @@ if ($numberOfParameters eq 0)
 
 $file=""; 
 $useGridNames=1; 
-$table=1; 
+$table=1;
+$startingGridResolution=10;
+
 foreach $arg ( @ARGV )
 {
   if( $arg =~ /-file=(.*)/ )
@@ -59,6 +62,11 @@ foreach $arg ( @ARGV )
   {
     $table=$1;
     printf("table=$table : 1=include \\begin{table} in LaTeX table.\n");
+  }
+  elsif( $arg =~ /-startingGridResolution=(.*)/ )
+  {
+    $startingGridResolution=$1;
+    printf("startingGridResolution=$startingGridResolution : starting h in table is 1/$startingGridResolution.\n");
   }
 }
 
@@ -296,7 +304,7 @@ for( $io=0; $io<2; $io++ )
     if( $useGridNames eq "1" ){ 
       print $lfile "  $grid[$j] &   $resolution[$j] "; }
     else{
-      $numPoints = 10*$resolution[$j]; # inverse grid-spacing -- do this for now 
+      $numPoints = $startingGridResolution*$resolution[$j]; # inverse grid-spacing -- do this for now 
       print $lfile "  1/$numPoints  "; }
 
     for( $ii=0; $ii<$numberOfComponentsToOutput; $ii++ )

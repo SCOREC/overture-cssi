@@ -34,8 +34,8 @@ cp {boundaryAdjustment,improveQuality,movingUpdate,cutHolesNew,lastChance,markPo
 cp {updateRefinement,updateRefinementNew,updateRefinementNewer,updateRefineFillInterp}.C      $Overture/GridGenerator
 cp {updateRefineFillInterpNew,adjustBoundary,getHoleWidth,movingUpdateNew,cutHolesNewer}.C    $Overture/GridGenerator
 cp {ExplicitHoleCutter,explicitHoleCutting}.C                                                 $Overture/GridGenerator
-cp {interpolatePoints}.C                                                                      $Overture/GridGenerator
-cp {Ogen.h,UpdateRefinementData.h,ExplicitHoleCutter.h}                                       $OvertureInclude
+cp {interpolatePoints,InterfaceInfo,matchInterfaces}.C                                        $Overture/GridGenerator
+cp {Ogen.h,UpdateRefinementData.h,ExplicitHoleCutter.h,InterfaceInfo.h}                       $OvertureInclude
 
 # .bC files
 cp {cutHolesNew,cutHolesNewer,lastChance,markPointsNeeded}.bC $Overture/GridGenerator 

@@ -2,6 +2,7 @@
 #   Define the table column labels for regression tests by conv.p
 #      These are usually common between different cases
 #
+$numberOfComponents=5;
 if( $numberOfComponents eq 5 && $numberOfDimensions eq 2 )\
   { $title= "grid  \& N \&  \$E_x\$ \&  \$E_y\$   \& \$H_z\$  \&  \$\\Ev\$ \& \$\\grad\\cdot\\Ev\/\\grad\\Ev\$"; }
 #

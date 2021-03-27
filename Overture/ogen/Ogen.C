@@ -28,7 +28,9 @@ Ogen::
     fclose(checkFile);
 }
 
-
+// =========================================================================================================
+/// \brief Initialize the Ogen object
+// =========================================================================================================
 int Ogen::
 initialize()
 {
@@ -49,8 +51,8 @@ initialize()
     plogFile = fopen(sPrintF("ogenNP%i.p%i.log",np,myid),"w" ); 
     fprintf(plogFile,
             " ********************************************************************************** \n"
-	    " ************** Ogen log file, processor=%i, number of processors=%i *************** \n"
-	    " ********************************************************************************** \n\n",
+            " ************** Ogen log file, processor=%i, number of processors=%i *************** \n"
+            " ********************************************************************************** \n\n",
                                  myid,np);
   #else
     logFile = fopen("ogen.log","w" ); 
@@ -61,9 +63,9 @@ initialize()
 
 
   fPrintF(logFile,
-	  " ********************************************* \n"
-	  " ************** Ogen log file **************** \n"
-	  " ********************************************* \n\n");
+          " ********************************************* \n"
+          " ************** Ogen log file **************** \n"
+          " ********************************************* \n\n");
   
   checkFile=NULL;
   if( myid==0 )
@@ -141,6 +143,10 @@ initialize()
   // Here is the default number of ghost lines to use when building grids. *wdh* 070401 -- changed to 2 
   defaultNumberOfGhostPoints=2;
 
+  // If matchGridsAcrossInterfaces then we match the masks at interfaces (required by some interface approximations)
+  // *new* March 2021
+  dbase.put<int>("matchGridsAcrossInterfaces")=0;
+
   totalTime=0.;
   timeUpdateGeometry=0.;
   timeInterpolateBoundaries=0.;
@@ -174,7 +180,7 @@ initialize()
   
 void Ogen::
 getSharedBoundaryTolerances( CompositeGrid & cg, int grid1, int side1, int dir1, int grid2, int side2, int  dir2,
-			     real & rTol, real & xTol, real & nTol ) const
+                             real & rTol, real & xTol, real & nTol ) const
 // ==============================================================================================================
 // Return the tolerances for determining which points interpolate on shared boundaries.
 //
@@ -186,8 +192,8 @@ getSharedBoundaryTolerances( CompositeGrid & cg, int grid1, int side1, int dir1,
   for( n=0; n<numberOfManualSharedBoundaries; n++ )
   {
     if( manualSharedBoundary(n,0)==grid1 && manualSharedBoundary(n,3)==grid2 &&
-	manualSharedBoundary(n,1)==side1 && manualSharedBoundary(n,2)==dir1 &&
-	manualSharedBoundary(n,4)==side2 && manualSharedBoundary(n,5)==dir2   )
+        manualSharedBoundary(n,1)==side1 && manualSharedBoundary(n,2)==dir1 &&
+        manualSharedBoundary(n,4)==side2 && manualSharedBoundary(n,5)==dir2   )
     {
       rTol=manualSharedBoundaryValue(n,0);
       xTol=manualSharedBoundaryValue(n,1);
@@ -200,8 +206,8 @@ getSharedBoundaryTolerances( CompositeGrid & cg, int grid1, int side1, int dir1,
   for( n=0; n<numberOfSharedBoundaryTolerances; n++ )
   {
     if( sharedBoundaryTolerances(n,0)==grid1 && sharedBoundaryTolerances(n,3)==grid2 &&
-	sharedBoundaryTolerances(n,1)==side1 && sharedBoundaryTolerances(n,2)==dir1 &&
-	sharedBoundaryTolerances(n,4)==side2 && sharedBoundaryTolerances(n,5)==dir2   )
+        sharedBoundaryTolerances(n,1)==side1 && sharedBoundaryTolerances(n,2)==dir1 &&
+        sharedBoundaryTolerances(n,4)==side2 && sharedBoundaryTolerances(n,5)==dir2   )
     {
       rTol=sharedBoundaryTolerancesValue(n,0);
       xTol=sharedBoundaryTolerancesValue(n,1);
@@ -288,7 +294,7 @@ set(const OgenParameterEnum option, const int value)
     {
       qualityBound=2.;
       printf("Ogen:set:ERROR: invalide value for THEqualityBound=%i, setting to the default value=%e\n",
-	     value,qualityBound);
+             value,qualityBound);
     }
     break;
   case THEcomputeGeometryForMovingGrids:
@@ -328,7 +334,7 @@ set(const OgenParameterEnum option, const real value)
     {
       qualityBound=2.;
       printf("Ogen:set:ERROR: invalide value for THEqualityBound=%e, setting to the default value=%e\n",
-	     value,qualityBound);
+             value,qualityBound);
     }
     break;
   case THEmaximumAngleDifferenceForNormalsOnSharedBoundaries:

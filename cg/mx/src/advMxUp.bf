@@ -2335,6 +2335,11 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
  fnext = mod(fcur+1                         ,max(1,numberOfForcingFunctions))
  
 
+ if( updateSolution.eq.0 )then
+   ! Do not add forcing if we do not update the solution *wdh* March 14, 2021
+   addForcing=0
+ end if
+ 
  ! addDissipation=.true. if we add the dissipation in the dis(i1,i2,i3,c) array
  !  if combineDissipationWithAdvance.ne.0 we compute the dissipation on the fly in the time step
  !  rather than pre-computing it in diss(i1,i2,i3,c)
@@ -2405,13 +2410,14 @@ f3dcme44(i1,i2,i3,n) = fa(i1,i2,i3,n,fcur)+cdtSqBy12*ffLaplacian23(i1,i2,i3,n) \
     write(*,'("advMxUp: updateDissipation=",i2)') updateDissipation
     write(*,'("advMxUp: updateSolution=",i2)') updateSolution
     write(*,'("advMxUp: useNewForcingMethod=",i2)') useNewForcingMethod
+    write(*,'("advMxUp: addForcing=",i2)') addForcing
     write(*,'("advMxUp: computeUt=",i2," gridType=",i2," order=",i2)') computeUt,gridType,orderOfAccuracy
   end if
+  
   ! Coefficients of the sosup dissipation with Cartesian grids:
   cdSosupx= adSosup/dx(0)
   cdSosupy= adSosup/dx(1)
   cdSosupz= adSosup/dx(2)
-
 
  end if
 

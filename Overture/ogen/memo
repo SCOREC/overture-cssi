@@ -1,3 +1,62 @@
+REMEMBER TO UNALIAS OGEN
+alias ogen $ov/ogen/ogen
+
+*************************************
+******* Tues March 16, 2021
+
+CONTINUE ON MATCHING INTERFACES
+
+SOLID SPHERE:
+interfaces fail to match with no corrections:
+ogen -noplot solidSphereInABox -order=4 -factor=2 -interp=e
+
+
+SPLIT DISK:
+interfaces fail to match with no corrections:
+ogen -noplot splitDiskInABoxGrid -factor1 -order=2 -interp=e
+
+
+
+
+*************************************
+******* Tues March 16, 2021
+
+START ON MATCHING INTERFACES
+
+
+ogen -noplot splitDiskInABoxGrid -factor1 -order=2 -interp=e
+
+
+
+ ++++++++++  matchInterfaceMasks....
+
+ --matchInterfaceMasks: Interface : outerAnnulus1=(grid1,side,dir1)=(1,0,1) matches innerAnnulus1=(grid2,side2,dir2)=(4,1,1) share=100
+-- mask: 1=interior, 2=ghost, -2,3=interiorBoundaryPoint, 4=hidden by refinement, <0 =interp, -2=backup-interp, -5,5=needed, 6=unknown --
+mask1Local(I1,I2,I3)
+    (0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26) (27) (28) (29) (30) (31) (32) (33) (34) (35) (36) (37) 
+(0)  -1 -1 -1 -1 -1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 -1 -1 -1 -1 -1
+-- mask: 1=interior, 2=ghost, -2,3=interiorBoundaryPoint, 4=hidden by refinement, <0 =interp, -2=backup-interp, -5,5=needed, 6=unknown --
+mask2Local(J1,J2,J3)
+    (0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26) (27) (28) (29) (30) (31) (32) (33) (34) (35) (36) (37) 
+(6)  -1 -1 -1 -1 -1 -1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 -1 -1 -1 -1 -1 -1
+
+ --matchInterfaceMasks: Interface : outerAnnulus2=(grid1,side,dir1)=(2,0,1) matches innerAnnulus2=(grid2,side2,dir2)=(5,1,1) share=100
+-- mask: 1=interior, 2=ghost, -2,3=interiorBoundaryPoint, 4=hidden by refinement, <0 =interp, -2=backup-interp, -5,5=needed, 6=unknown --
+mask1Local(I1,I2,I3)
+    (0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26) (27) (28) (29) (30) (31) (32) (33) (34) (35) (36) (37) 
+(0)  -5 -5 -5 -5 -5 -5  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 -5 -5 -5 -5 -5 -5
+-- mask: 1=interior, 2=ghost, -2,3=interiorBoundaryPoint, 4=hidden by refinement, <0 =interp, -2=backup-interp, -5,5=needed, 6=unknown --
+mask2Local(J1,J2,J3)
+    (0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26) (27) (28) (29) (30) (31) (32) (33) (34) (35) (36) (37) 
+(6)  -5 -5 -5 -5 -5 -1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 -1 -5 -5 -5 -5 -5
+ time to remove redundant points..........................1.024000e-03 (total=1.988500e-02)
+
+
+
+
+
+==============================================
+
 mpiexec -n 3 ./ogen -noplot iceCircle
 
 mpiexec -n 3 xterm -e gdb --args ./ogen -noplot iceCircle
@@ -8,3 +67,147 @@ mpiexec -n 1 xterm -e gdb --args ./ogen -noplot iceCircle : -n 2 ./ogen -noplot 
 
 # Two xterms with gdb 
 mpiexec -n 2 xterm -e gdb --args ./ogen -noplot iceCircle : -n 1 ./ogen -noplot iceCircle
+
+
+*********************************************
+*************** Aug 16-18, 2019
+
+MOVED FILES TO mx/runs/solidSphereArray
+
+
+START ON SOLID SPHERE ARRAY
+
+#   2 x 2 x 2 = 8 spheres: 
+ ogen -noplot solidSphereArrayGrid -nsx=2 -nsy=2 -nsz=2 -order=2 -factor=1 -go=og  
+# 
+#  3 x 3 x 3 = 27 spheres:
+
+ogen -noplot solidSphereArrayGrid -xa=-5 -nsx=3 -nsy=3 -nsz=3 -order=2 -factor=1 -go=og  
+
+ 4 x 4 x 4 
+ogen -noplot solidSphereArrayGrid -xa=-5.6 -xb=5 -ya=-5 -yb=5 -za=-5 -zb=5 -nsx=4 -nsy=4 -nsz=4 -order=2 -factor=1 -go=og  
+
+
+
+ogen -noplot solidSphereArrayGrid -order=2 -factor=1 -go=og
+
+OK
+ogen -noplot solidSphereArrayGrid -order=4 -factor=2 -interp=e -go=og  
+
+
+
+************************
+***** FebMay 11, 2018
+
+  CHECK DEFORMING GRIDS -- checkDeform.C
+
+--> use a Spline
+checkDeform -useNurbs=0
+
+
+
+************************
+***** Feb 19, 2018
+
+Test rotated data-point mappings
+
+OK: 
+ogen twoRotatedNonSquares -order=2 -interp=e -per=1 -factor=1
+
+
+
+************************
+***** Feb 18, 2018
+
+**FIXES made for derivatve-periodic grids an hype
+
+TEST rotated periodic squares
+
+LOOKS OK: 
+ogen twoRotatedSquares -order=2 -interp=e -per=1 -factor=2 
+
+
+
+ROTATED -- Trouble
+ogen elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+
+NO ROTATION -- look OK
+ogen elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+
+************************
+***** Feb 16-17, 2018
+
+ogen elasticPistonGridRotated -factor=1 -per=1 -thetad=30
+
+
+
+--> FIXED (?) PERIOIDIC SHIFT FOR GENERAL period vector
+
+Test two squares
+
+ogen twoSquares -order=2 -interp=e -per=1 -factor=2 
+
+
+FIRST GENERATED A TEST OF A ROTATED PERIODIC PROBLEM
+
+
+
+TEST rotated periodic squares
+
+ogen twoRotatedSquares -order=2 -interp=e -per=1 -factor=2 
+
+
+
+
+Previously I had fixed a bug for 3D periodic grids ( in runs/ins/freeSurface3d)
+
+
+FIXED BUGS: cutHoles.bC and Mapping.C
+
+ogen -noplot freeSurfaceGrid3dNew -interp=e -factor=1 -bc=p
+
+
+
+***********************************
+******* July 22, 2016
+
+improveQuality: 
+
+WHY ARE SOME PTS NOT MOVED
+ogen fallingBodyGrid -cy=.6 -addBottomRefinement=0 -addTopRefinement=1 -prefix=risingBodyGrid -interp=e -order=2  -improveQuality=1 -factor=4
+
+Trouble: INTERP=I -- pts not removed?
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=i -order=2 -factor=4 -improveQuality=1
+
+BROKEN: --OK bad points removed later
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=4 -improveQuality=1
+
+***********************************
+******* July 20,21, 2016
+
+*BUG* found -- areas not computed properly
+
+BROKEN: 
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=4 -improveQuality=1
+
+
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=8 -improveQuality=1
+
+ogen -noplot fallingBodyGrid -cy=-.72 -interp=e -order=2 -factor=8 -improveQuality=1
+
+
+***********************************
+******* July 19, 2016
+
+REVISIT IMPROVE QUALITY
+
+IQ -- OK but not very good
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=4 -improveQuality=1 >! junk.out
+
+
+BUG HERE: 
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=4 -improveQuality=1
+
+
+OK: NO-IQ
+ogen -noplot fallingBodyGrid -cy=-.7 -interp=e -order=2 -factor=4 -improveQuality=0

@@ -1,5 +1,7 @@
 common = ../../common
 
+
+
 # The convergence rate script is called conv.p
 all:  
 	ln -sf $(common)/src/conv.p .
@@ -7,6 +9,7 @@ all:
 cgmx:
 	@cd ..;      $(MAKE) -$(MAKEFLAGS) cgmx
 
+ogen = $(Overture)/bin/ogen
 
 # directory to store interface tables:
 interfaceTables = ./interfaceTables
@@ -220,3 +223,61 @@ baSphereOrder4:
 	conv.p dielectric.conv -cyl=0 -kx=1 -tf=.6 -tp=.6 -order=4 -name="cboxe" -method=bamx -ts=rk4 -matFile=baAir.txt -matFile2=baIsoEps0p25.txt -errorNorm=1 -prefix="WithDiss" -diss=1 -saveVectorErrors=1 -solveForAllFields=1 -alwaysCompute=0 -ng=4
 	cp dielectricSphereWithDissbaAirbaIsoEps0p25Order4NormConvTable.tex $(bamxp)/tables
 	cp dielectricSphereWithDissbamxOrder4L1Norm.m $(bamxp)/matlab
+
+
+# ------------------------ MLA INTERFACE -----------------
+
+interfaceMLA: interfaceMLA2d interfaceMLA3d copyInterfaceMLA
+
+interfaceMLA2d:
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+	processCheckFiles.p -file=./interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm.twoSquaresInterface.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+	processCheckFiles.p -file=./interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm.twoSquaresInterface.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+interfaceMLA3d:
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoNonBoxesInterface -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+	processCheckFiles.p -file=./interfaceNFDTDtwoNonBoxesInterfaceOrder2MLAmaxNorm.twoNonBoxesInterface.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoNonBoxesInterface -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+	processCheckFiles.p -file=./interfaceNFDTDtwoNonBoxesInterfaceOrder4MLAmaxNorm.twoNonBoxesInterface.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+# Copy files to Maxwell-Block paper
+mbe = ~/Dropbox/DARPA/RPI/Maxwell-Bloch/papers/mbe
+copyInterfaceMLA:
+	cp interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm.twoSquaresInterface.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm.m $(mbe)/codes
+	cp interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm.twoSquaresInterface.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm.m $(mbe)/codes
+	cp interfaceNFDTDtwoNonBoxesInterfaceOrder2MLAmaxNorm.twoNonBoxesInterface.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDtwoNonBoxesInterfaceOrder2MLAmaxNorm.m $(mbe)/codes
+	cp interfaceNFDTDtwoNonBoxesInterfaceOrder4MLAmaxNorm.twoNonBoxesInterface.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDtwoNonBoxesInterfaceOrder4MLAmaxNorm.m $(mbe)/codes
+
+# ------------------------ CURVED MLA INTERFACE -----------------
+
+# one disk for MLA self convergence
+oneDiskGrids:
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -factor=1
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -factor=8
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=2 -factor=16
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -factor=1
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -factor=2
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -factor=4
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -factor=8
+	$(ogen) -noplot diskArrayGrid -prefix=oneDiskMLAGrid -deltaRadius=.1 -xa=-1.0 -xb=1.0 -ya=-1.0 -yb=1.0 -rad=.5 -nCylx=1 -nCyly=1 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -factor=16
+
+# one-disk MLA (trig)
+oneDiskMLA:
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=oneDiskMLAGridFixed -leftDomain=outerDomain -rightDomain=innerDomain1 -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=3
+	processCheckFiles.p -file=./interfaceNFDTDoneDiskMLAGridFixedOrder2MLAmaxNorm.oneDiskMLAGridFixed.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+	conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=oneDiskMLAGridFixed -leftDomain=outerDomain -rightDomain=innerDomain1 -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=3
+	processCheckFiles.p -file=./interfaceNFDTDoneDiskMLAGridFixedOrder4MLAmaxNorm.oneDiskMLAGridFixed.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+
+copyOneDiskMLA:
+	cp interfaceNFDTDoneDiskMLAGridFixedOrder2MLAmaxNorm.oneDiskMLAGridFixed.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDoneDiskMLAGridFixedOrder2MLAmaxNorm.m $(mbe)/codes
+	cp interfaceNFDTDoneDiskMLAGridFixedOrder4MLAmaxNorm.oneDiskMLAGridFixed.master.ConvTable.tex $(mbe)/tables
+	cp interfaceNFDTDoneDiskMLAGridFixedOrder4MLAmaxNorm.m $(mbe)/codes

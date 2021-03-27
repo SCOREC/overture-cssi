@@ -9,44 +9,47 @@
 #  -outerBC : 
 # 
 # examples:
-#     ogen noplot solidSphereInABox -order=2 -factor=1 
+#     ogen -noplot solidSphereInABox -order=2 -factor=1 
 # --implicit:
-#     ogen noplot solidSphereInABox -order=4 -factor=1 
-#     ogen noplot solidSphereInABox -order=4 -factor=2 
-#     ogen noplot solidSphereInABox -order=4 -factor=4 
-#     ogen noplot solidSphereInABox -order=4 -factor=8 -nrMin=11 
-#     ogen noplot solidSphereInABox -order=4 -factor=16
+#     ogen -noplot solidSphereInABox -order=4 -factor=1 
+#     ogen -noplot solidSphereInABox -order=4 -factor=2 
+#     ogen -noplot solidSphereInABox -order=4 -factor=4 
+#     ogen -noplot solidSphereInABox -order=4 -factor=8 -nrMin=11 
+#     ogen -noplot solidSphereInABox -order=4 -factor=16
 # 
-#     ogen noplot solidSphereInABox -order=2 -interp=e -factor=1 
-#     ogen noplot solidSphereInABox -order=2 -interp=e -factor=2 
-#     ogen noplot solidSphereInABox -order=2 -interp=e -factor=4 
-#     ogen noplot solidSphereInABox -order=2 -interp=e -factor=8 
+#     ogen -noplot solidSphereInABox -order=2 -interp=e -factor=1 
+#     ogen -noplot solidSphereInABox -order=2 -interp=e -factor=2 
+#     ogen -noplot solidSphereInABox -order=2 -interp=e -factor=4 
+#     ogen -noplot solidSphereInABox -order=2 -interp=e -factor=8 
 # 
-#     ogen noplot solidSphereInABox -order=2 -interp=e -factor=4 -nrMin=15 -name="solidSphereInABoxe4nrMin15.order2.hdf"
+#     ogen -noplot solidSphereInABox -order=2 -interp=e -factor=4 -nrMin=15 -name="solidSphereInABoxe4nrMin15.order2.hdf"
 # 
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=2 
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=4 
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=8
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=16
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=2 
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=4 
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=8
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=16
 # 
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=2 -nrMin=11 -name="solidSphereInABoxe2nrMin11.order4.hdf"
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=4 -nrMin=15 -name="solidSphereInABoxe4nrMin15.order4.hdf"
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=8 -nrMin=15 -name="solidSphereInABoxe8nrMin15.order4.hdf"
-#     ogen noplot solidSphereInABox -order=4 -interp=e -factor=8 -nrMin=11 -name="solidSphereInABoxe8nrMin11.order4.hdf"
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=2 -nrMin=11 -name="solidSphereInABoxe2nrMin11.order4.hdf"
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=4 -nrMin=15 -name="solidSphereInABoxe4nrMin15.order4.hdf"
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=8 -nrMin=15 -name="solidSphereInABoxe8nrMin15.order4.hdf"
+#     ogen -noplot solidSphereInABox -order=4 -interp=e -factor=8 -nrMin=11 -name="solidSphereInABoxe8nrMin11.order4.hdf"
 # 
 $prefix="solidSphereInABox";
-$xa=-2.; $xb=2.; $ya=-2.; $yb=2.; $za=-2.; $zb=2.; $nrMin=3; $nrExtra=0; $rgd="var"; $name=""; 
+$xa=-2.; $xb=2.; $ya=-2.; $yb=2.; $za=-2.; $zb=2.; $nrMin=3;
+$nrExtra=2; # changed to 2 *wdh* Mar 13, 2021 to account for $rFactor
+$rgd="var"; $name=""; 
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids"; $dse=0.; 
 $deltaRadius0=.3; # do not make larger than .3 or troubles with cgmx
 $numGhost=-1;  # if this value is set, then use this number of ghost points
 $outerBC="dirichlet"; 
+$rFactor=.8;   # Scale radial distance by this amount to make radial spacing smaller *wdh* Mar 13, 2021
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=i"=> \$factor,"nrExtra=i"=>\$nrExtra,"nrMin=i"=>\$nrMin,\
             "xa=f"=>\$xa,"xb=f"=>\$xb,"ya=f"=>\$ya,"yb=f"=>\$yb,"za=f"=>\$za,"zb=f"=>\$zb,\
             "interp=s"=> \$interp,"rgd=s"=> \$rgd,"deltaRadius0=f"=>\$deltaRadius0,"name=s"=>\$name,\
-            "numGhost=i"=>\$numGhost,"outerBC=s"=>\$outerBC,"prefix=s"=>\$prefix );
+            "numGhost=i"=>\$numGhost,"outerBC=s"=>\$outerBC,"prefix=s"=>\$prefix,"rFactor=f"=>\$rFactor );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
@@ -76,7 +79,8 @@ minimum number of distributed ghost lines
 create mappings
 $pi=4.*atan2(1.,1.);
 # number of points to use in the radial direction : $nrExtra is used for stretching 
-$nr=$nrMin + $order; if( $interp eq "e" ){ $nr=$nr+$order+$nrExtra; } 
+$nr=$nrMin + $order;
+if( $interp eq "e" ){ $nr=$nr+$order+$nrExtra; } 
 # fixed radial distance
 if( $rgd eq "fixed" ){ $nr = $nr*($factor-1); }
 #
@@ -87,7 +91,9 @@ $sphereShare=100;
 $sphereRadius=1.; $radiusDir=1; 
 $xSphere=0.; $ySphere=0.; $zSphere=0.; 
 $gridNames="*"; 
-# 
+#
+$rDist = $rFactor*($nr-1)*$ds; 	# note $rFactor -- to make radial spacing a bit smaller
+#
 include $ENV{Overture}/sampleGrids/solidSphereInABox.h
 #
 # Here is the box
@@ -152,24 +158,27 @@ generate an overlapping grid
 # 
   change parameters
     specify a domain
- # domain name:
+      # domain name:
       outerDomain 
- # grids in the domain:
+       # grids in the domain:
        outerBox
        outerSphere
        outerSouthPole
        outerNorthPole
       done
     specify a domain
- # domain name:
+      # domain name:
       innerDomain 
- # grids in the domain:
+       # grids in the domain:
        innerBox
        innerSphere
        innerSouthPole
        innerNorthPole
       done
-# 
+      #
+    # match masks at interfaces:
+    match grids across interfaces 1
+    # 
     interpolation type
       $interpType
     order of accuracy 
@@ -180,6 +189,9 @@ generate an overlapping grid
   exit
 #
   compute overlap
+  check interfaces match
+  check for tall cells at interfaces
+  # open graphics
 #
 exit
 # save an overlapping grid

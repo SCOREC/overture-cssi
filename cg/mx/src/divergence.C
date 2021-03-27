@@ -913,7 +913,7 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                     numberOfMaterialRegions, // = ipar(13)
                     debug               // =ipar(14)
                 };
-                real rpar[11]= {
+                real rpar[]= {
                     dx[0], // =rpar(0)
                     dx[1], // =rpar(1)
                     dx[2], // =rpar(2)
@@ -924,7 +924,8 @@ getMaxDivergence( const int current, real t, realCompositeGridFunction *pdiv /* 
                     divDmax,           // =rpar(7) : max(div(D)) returned here 
                     gradDmax,          // =rpar(8) : max(grad(D)) returned here 
                     divBmax,           // =rpar(9) : max(div(B)) returned here 
-                    gradBmax           // =rpar(10): max(grad(B)) returned here 
+                    gradBmax,          // =rpar(10): max(grad(B)) returned here 
+                    deltaT       
                 };
                 bool outputDiv=false;
                 if( outputDiv )

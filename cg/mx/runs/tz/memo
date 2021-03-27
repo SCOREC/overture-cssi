@@ -1,4 +1,37 @@
 ***************************
+******* Thurs May 18, 2021
+
+START ON PARALLEL MULA
+
+
+Order=4 -- looks OK
+mpirun -np 1 $cgmx -noplot tz -g=nonSquare16.order4 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+
+EXACT np=1,2 
+mpirun -np 1 $cgmx -noplot tz -g=nonSquare16.order2 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat1.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+MLAMAT2: 
+mpirun -np 2 $cgmx -noplot tz -g=nonSquare16.order2 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat2.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+MLAMAT3: 
+mpirun -np 2 $cgmx -noplot tz -g=nonSquare16.order2 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat3.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+mpirun -np 2 $cgmx -noplot tz -g=square16.order2 -tz=poly -degreex=2 -degreet=2 -dm=gdm -nm=mla -npv=2 -matFile=mlaMat3.txt -diss=0 -method=nfdtd -bc=d -tp=.05 -tf=1 -go=og
+
+-np=4:
+>>> Cgmx:FD: t=1.50e-01 dt=2.5e-02 TS=ME MLA GDM |div(E)|/|grad(E)|=1.61e-12 (=6.98e-12/4.33e+00) 6 steps mem=63.6(Mb) cpu=1.39e+01(s)
+--getErrors: t=1.500e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=2.165e+00 max-err = 4.268e-12
+--getErrors: t=1.500e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=1.156e+00 max-err = 4.222e-10
+>>> t=1.50e-01 dt=2.5e-02 max errors:[6.62e-13,3.45e-13,9.88e-02, max(u):[4.33e+00,2.17e+00,1.62e+00,] (6 steps)
+                                     max(P):[2.16e+00] (by domain)
+-np=1:
+--getErrors: t=1.500e-01 domain=0 (domain0) numPolarizationVectors=2 P-norm=2.165e+00 max-err = 4.268e-12
+--getErrors: t=1.500e-01 domain=0 (domain0) numberOfAtomicLevels=4   Q-norm=1.156e+00 max-err = 4.222e-10
+>>> t=1.50e-01 dt=2.5e-02 max errors:[6.62e-13,3.45e-13,9.88e-02, max(u):[4.33e+00,2.17e+00,1.62e+00,] (6 steps)
+                                     max(P):[2.16e+00] (by domain)
+
+
+***************************
 ******* Fri Feb 26, 2021
 
 save errors in nonlinear vars to check file

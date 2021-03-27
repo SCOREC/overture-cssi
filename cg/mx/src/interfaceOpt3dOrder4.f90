@@ -1046,6 +1046,257 @@
 
 
 
+!         -*- mode: F90 -*-
+! *********************************************************************
+! ********** MACROS FOR GENERAL INTERFACE CONDITIONS ***************
+!    This file is included into interfaceOpt.bf90 
+! *********************************************************************
+
+!  +++++++ THIS FILE STARTED AS A COPY of nonlinearInterfaceMacros ++++++++
+!    BE SURE TO RE-NAME MACROS AS WHEN THEY ARE CHANGED 
+
+
+! -------------------------------------------------------------------------
+! 
+! Macro: Evaluate DISPERSIVE forcing terms, 2nd-order accuracy 
+!   This macro can be used to eval values in either domain 1 or domain 2
+!
+! Input:
+!   fev(n) : forcing on E equation: E_{tt} = c^2 Delta(E) + ... + fev
+!   fpv(n,jv) : forcing on equation for P_{n,jv} 
+! Output
+!   fp(n) : This is the value of P.tt without the term involving L(E) = c^2*Delta(E)
+!   beta = 1 - alphaP*Sum_k{ C_k }
+! ------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Eval twilight-zone forcing for Maxwell-Bloch equations
+! Output
+!  fpv(n,jv) : RHS To Pv_{n,jv} equation s
+!  fev(n)    : RHS to E_{n} equation
+!  fnv(n)    : RHS to N_{l} equations
+!-------------------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Evaluate TZ forcing for dispersive equations in 2D 
+!
+! Output
+!    fpv1(n,jv) : RHS To Pv_{n,jv} equation on domain 1
+!    fpv2(n,jv) : RHS To Pv_{n,jv} equation on domain 2
+!    fev1(n)    : RHS to E_{n} equation on domain 1
+!    fev2(n)    : RHS to E_{n} equation on domain 2
+!-------------------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Eval twilight-zone forcing for GDM equations THREE-D
+! Output
+!  fpv(n,jv) : RHS To Pv_{n,jv} equation 
+!  fev(n)    : RHS to E_{n} equation
+!-------------------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Evaluate TZ forcing for dispersive equations in 3D 
+!
+! Output
+!    fpv1(n,jv) : RHS To Pv_{n,jv} equation on domain 1
+!    fpv2(n,jv) : RHS To Pv_{n,jv} equation on domain 2
+!    fev1(n)    : RHS to E_{n} equation on domain 1
+!    fev2(n)    : RHS to E_{n} equation on domain 2
+!-------------------------------------------------------------------------------------------
+
+! ---------------------------------------------------------------------------------------
+! Macro: Assign nonlinear DISPERSIVE interface ghost values, DIM=2, ORDER=2, GRID=Rectangular
+! 
+! Here are the jump conditions (See notes in DMX_ADE)
+!   [ u.x + v.y ] = 0
+!   [ (1/mu)* tv,.( curl(E) ) ]
+!   [ tv.( c^2*Delta(E) -alphaP*P_tt) ] = 0  --> [ tv.( beta*c^2*Delta(E) - alphaP* F) ]=0 
+!   [ (1/mu)* nv.( Delta(E) ) ]=0
+! 
+! -------------------------------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------------------------------
+! Macro:  Evaluate the RHS to the jump conditions: 2D, Order=2, nonlinear Dispersive
+!
+! --------------------------------------------------------------------------------------------
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------
+! Macro: Assign NONLINEAR interface ghost values, DIM=2, ORDER=2, GRID=Curvilinear
+! 
+! Here are the jump conditions (See notes in DMX_ADE)
+!   [ u.x + v.y ] = 0
+!   [ (1/mu)* tv,.( curl(E) ) ]
+!   [ tv.( c^2*Delta(E) -alphaP*P_tt) ] = 0  --> [ tv.( beta*c^2*Delta(E) - alphaP* F) ]=0 
+!   [ (1/mu)* nv.( Delta(E) ) ]=0
+! 
+! -------------------------------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------------------------------
+! Macro:  Evaluate the RHS to the jump conditions: 2D, Order=2, Dispersive
+!
+! Here are the jump conditions (See notes in DMX_ADE)
+!   (1) [ div(E) ] = 0
+!   (2) [ (1/mu)* nv.( Delta(E) ) ]=0
+!   (3) [ (1/mu)* tv.( curl(E) ) ]=0               -->   [ (1/mu)* \nv\times( curl(E) ) ]=0
+!   (4) [ tv.(c^2*Delta(E) -alphaP*P_tt) ] = 0    -->   [ \nv X ( c^2*Delta(E) -alphaP*P_tt) ] = 0 
+! 
+! These 6 equations can be written as 
+!   [ div(E) n + (I- n n^T)( curl(E)/mu ) ] =0                                 (3 eqns)
+!   [ (1/mu) n n^T Delta(E) + (I-n n^T) ( c^2*Delta(E) -alphaP*P_tt ) ] = 0    (3 eqns)
+!
+! --------------------------------------------------------------------------------------------
+
+
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=3, ORDER=2, GRID=Curvilinear
+! 
+!                  Nonlinear DISPERSIVE CASE
+!
+! Here are the jump conditions (See notes in DMX_ADE)
+!   (1) [ div(E) ] = 0
+!   (2) [ (1/mu)* nv.( Delta(E) ) ]=0
+!   (3) [ (1/mu)* tv.( curl(E) ) ]=0               -->   [ (1/mu)* \nv\times( curl(E) ) ]=0
+!   (4) [ tv.(c^2*Delta(E) -alphaP*P_tt) ] = 0    -->   [ \nv X ( c^2*Delta(E) -alphaP*P_tt) ] = 0 
+! 
+! These 6 equations can be written as 
+!   [ div(E) n + (I- n n^T)( curl(E)/mu ) ] =0                                 (3 eqns)
+!   [ (1/mu) n n^T Delta(E) + (I-n n^T) ( c^2*Delta(E) -alphaP*P_tt ) ] = 0    (3 eqns)
+!
+! An approximation to P_tt takes the form 
+!   P_tt = K Delta(E) + G(E,P)
+! --------------------------------------------------------------------------
+
+
+
+! -------------------------------------------------------------------------
+! Macro: Evaluate DISPERSIVE forcing terms, FOURTH-ORDER
+!   This macro can be used to eval values in either domain 1 or domain 2
+!   At this point, the first ghost lines are filled with second order accurate E (only) field
+! Input:
+!   FACE : LEFT or : RIGHT
+!   fev(n) : forcing on E equation: E_{tt} = c^2 Delta(E) + ... + fev
+!   fpv(n,jv) : forcing on equation for P_{n,jv} 
+! Output: dispersive forcings
+! ------------------------------------------------------------------------
+
+
+! -------------------------------------------------------------------------------
+! Macro: Evaluate the TZ forcings Unified Dispersive for FOURTH-ORDER codes
+! -------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Evaluate TZ forcing for dispersive equations (4th order)
+!
+! Output
+!    fpv1(n,jv) : RHS To Pv_{n,jv} equation on domain 1
+!    fpv2(n,jv) : RHS To Pv_{n,jv} equation on domain 2
+!    fev1(n)    : RHS to E_{n} equation on domain 1
+!    fev2(n)    : RHS to E_{n} equation on domain 2
+!-------------------------------------------------------------------------------------------
+
+! --------------------------------------------------------------------------
+! Macro: Evaluate the GDM jump conditions in 2D, order=4
+! --------------------------------------------------------------------------
+
+
+
+
+! =============================================================================================
+!   Evaluate the jump conditions for the nonlinear interface equations
+! =============================================================================================
+
+! ----------------------------------------------------------------------------------
+!  Macro:
+!    Evaluate the interface equations for checking the coefficients
+! ----------------------------------------------------------------------------------
+
+! macro for dispersive forcing
+
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Curvilinear
+! --------------------------------------------------------------------------
+
+
+
+! 24r
+
+! --------------------------------------------------------------------------
+! Macro: Assign interface ghost values, DIM=2, ORDER=4, GRID=Rectangular 
+! *new* Mar 18, 2021
+! --------------------------------------------------------------------------
+! included in interfaceOpt3dOrder4.bf90
+
+! -------------------------------------------------------------------------
+! Macro: Evaluate DISPERSIVE forcing terms, FOURTH-ORDER AND 3D
+!   This macro can be usedto eval values in either domain 1 or domain 2
+!
+! Input:
+!   FACE : LEFT or : RIGHT
+!   fev(n) : forcing on E equation: E_{tt} = c^2 Delta(E) + ... + fev
+!   fpv(n,jv) : forcing on equation for P_{n,jv} 
+! Output
+!   fp(n) : 
+!   c2PttLEsum   : coeff of L(E) in P.tt     (second-order)
+!   c4PttLEsum   : coeff of L(E) in P.tt     (fourth-order)
+!   c4PttLLEsum  : coeff of L*L(E) in P.tt 
+! ------------------------------------------------------------------------
+
+! -------------------------------------------------------------------------------
+! Macro: Evaluate the TZ forcings GDM FOURTH-ORDER 3D
+! -------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------
+! Macro: Evaluate TZ forcing for dispersive equations in 3D 
+!
+! Output
+!    fpv1(n,jv) : RHS To Pv_{n,jv} equation on domain 1
+!    fpv2(n,jv) : RHS To Pv_{n,jv} equation on domain 2
+!    fev1(n)    : RHS to E_{n} equation on domain 1
+!    fev2(n)    : RHS to E_{n} equation on domain 2
+!-------------------------------------------------------------------------------------------
+
+! --------------------------------------------------------------------------
+! Macro: Evaluate the MLA jump conditions in 3D, order=4
+! --------------------------------------------------------------------------
+
+
+! ==========================================================================================
+!   Evaluate the jump conditions (including compatibility) for the MLA interface equations 
+! ==========================================================================================
+
+ ! ==========================================================================================
+!         Fill in FIRST SET of 6 interface equations -- GDM/MLA -- .
+! 
+! Input:
+!  e0,e1,e2,e3,e4,e5 : equation numbers (0,1,2,3,4,5) or (6,7,8,9,10,11)
+! ==========================================================================================
+
+
+! ==========================================================================================
+!         Fill in SECOND SET of 6 interface equations -- GDM/MLA -- .
+! 
+! Input:
+!  e0,e1,e2,e3,e4,e5 : equation numbers  (6,7,8,9,10,11)
+! ==========================================================================================
+
+
+
 
 ! ------------------ OLD ------------------------------
 ! This macro will assign the jump conditions on the boundary

@@ -268,7 +268,8 @@ contourOpt2d(GenericGraphicsInterface &gi,
     }
     
     bool adaptForColour = gi.gridCoarseningFactor<0; // plot at finer resolution where the colour changes
-    const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+    // const int maxPlotablePoints=500000; // maximum number of points we plot at the highest resolution
+    const int maxPlotablePoints=5000000; // maximum number of points we plot at the highest resolution *wdh* increased March 19, 2021
     const int maxAdaptiveColourPoints=maxPlotablePoints*2; // turn off adaptive colouring if this many cells plotted
     int numberOfCellsPlotted=0;
 

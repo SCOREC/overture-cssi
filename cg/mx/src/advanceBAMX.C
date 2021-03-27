@@ -1294,7 +1294,8 @@ advanceBAMX(  int numberOfStepsTaken, int current, real t, real dt )
                             if( dmp.numberOfPolarizationVectors>0 )
                             {
                                 domainInterpolant[domain] = new Interpolant(cg.domain[domain]);
-                                domainInterpolant[domain]-> incrementReferenceCount();
+                                domainInterpolant[domain]->incrementReferenceCount();
+                                domainInterpolant[domain]->setMaximumNumberOfIterations(maximumNumberOfIterationsForImplicitInterpolation);
                             }
                         }
                         

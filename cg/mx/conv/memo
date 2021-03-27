@@ -1,6 +1,295 @@
 ***NOTE**** March 4, 2018 -- ADDED VECTOR E ERROR TO CHECK FILES!!!
 
 
+***************************************************
+******* Sat March 27, 2021
+
+MORE TESTS of the unified interface macros  -- revert to fourh-order update
+
+
+
+
+==== NEW:
+
+
+conv.p dielectric.conv -tp=.1 -tf=.5 -order=2 -name="solidSphereInABoxe" -kx=1 -ky=0 -eps1=2 -eps2=1 -dm=gdm -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -cfl=.9  -useSosupDissipation=1 -ng=3
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+ solidSphereInABoxe2 &     2 & 6.01e-03 &       & 1.22e-02 &       & 1.28e-03 &       & 1.22e-02 &       & 8.06e-04 &       & 4.85e-03 &       
+ solidSphereInABoxe4 &     4 & 3.07e-04 & 19.58 & 3.22e-04 & 37.89 & 6.13e-05 & 20.88 & 3.22e-04 & 37.89 & 4.49e-05 & 17.95 & 1.77e-04 & 27.40 
+ solidSphereInABoxe8 &     8 & 1.24e-05 & 24.76 & 8.59e-06 & 37.49 & 2.27e-06 & 27.00 & 1.24e-05 & 25.97 & 2.67e-06 & 16.82 & 1.12e-05 & 15.80 
+Convergence rates: c0=4.46 c1=5.24 c2=4.57 c3=4.97 c4=4.12 c5=4.38 
+
+
+
+conv.p dielectric.conv -tp=.1 -tf=.5 -order=4 -name="solidSphereInABoxe" -kx=1 -ky=0 -eps1=2 -eps2=1 -dm=gdm -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -cfl=.9  -useSosupDissipation=1 -ng=3
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+ solidSphereInABoxe2 &     2 & 1.28e-01 &       & 1.39e-01 &       & 2.64e-02 &       & 1.39e-01 &       & 1.34e-02 &       & 3.11e-02 &       
+ solidSphereInABoxe4 &     4 & 1.93e-02 &  6.63 & 1.42e-02 &  9.79 & 3.70e-03 &  7.14 & 1.93e-02 &  7.20 & 2.32e-03 &  5.78 & 6.27e-03 &  4.96 
+ solidSphereInABoxe8 &     8 & 2.34e-03 &  8.25 & 2.31e-03 &  6.15 & 6.61e-04 &  5.60 & 2.34e-03 &  8.25 & 4.32e-04 &  5.37 & 1.58e-03 &  3.97 
+Convergence rates: c0=2.89 c1=2.96 c2=2.66 c3=2.95 c4=2.48 c5=2.15 
+
+
+
+===== OLD:
+
+NR MODE: Order=2
+conv.p dielectric.conv -tp=.1 -tf=.5 -order=2 -name="solidSphereInABoxe" -kx=1 -ky=0 -eps1=2 -eps2=1 -dm=gdm -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -cfl=.9  -useSosupDissipation=1 -ng=3
+
+conv.p dielectric.conv -tp=.1 -tf=.5 -order=4 -name="solidSphereInABoxe" -kx=1 -ky=0 -eps1=2 -eps2=1 -dm=gdm -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -cfl=.9  -useSosupDissipation=1 -ng=3
+
+NR-ORDER4
+               grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+ solidSphereInABoxe2 &     2 & 5.98e-03 &      & 1.31e-02 &      & 1.28e-03 &      & 1.31e-02 &      & 7.70e-04 &      & 5.22e-03 &      
+ solidSphereInABoxe4 &     4 & 3.24e-04 & 18.5 & 3.91e-04 & 33.5 & 6.67e-05 & 19.2 & 3.91e-04 & 33.5 & 4.12e-05 & 18.7 & 2.41e-04 & 21.7 
+ solidSphereInABoxe8 &     8 & 1.36e-05 & 23.8 & 1.16e-05 & 33.7 & 2.71e-06 & 24.6 & 1.36e-05 & 28.8 & 2.28e-06 & 18.1 & 1.08e-05 & 22.3 
+Convergence rates: c0=4.39 c1=5.07 c2=4.44 c3=4.96 c4=4.20 c5=4.46 
+
+ ****Output written to ./dielectricSphereGDMNp1Np2Order4maxNormConvTable.tex *****
+Saving the results file as ./results.dielectricSphereNFDTDOrder4GDMNp1Np2maxNorm
+Matlab results written to file [./dielectricSphereNFDTDOrder4GDMNp1Np2maxNorm.m].
+
+
+NR-ORDER2
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+ solidSphereInABoxe2 &     2 & 1.28e-01 &      & 1.39e-01 &      & 2.64e-02 &      & 1.39e-01 &      & 1.34e-02 &      & 3.11e-02 &      
+ solidSphereInABoxe4 &     4 & 1.93e-02 &  6.6 & 1.42e-02 &  9.8 & 3.70e-03 &  7.1 & 1.93e-02 &  7.2 & 2.32e-03 &  5.8 & 6.27e-03 &  5.0 
+ solidSphereInABoxe8 &     8 & 3.16e-03 &  6.1 & 2.15e-03 &  6.6 & 6.75e-04 &  5.5 & 3.16e-03 &  6.1 & 4.47e-04 &  5.2 & 1.56e-03 &  4.0 
+Convergence rates: c0=2.67 c1=3.01 c2=2.64 c3=2.73 c4=2.45 c5=2.16 
+
+
+
+***************************************************
+******* Fri March 26, 2021
+
+TEST Qing's unified interface macros and second-order update 
+
+
+============================= MLA =========================================
+
+ORDER=4
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -tf=.3 -tp=.3 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.16e-05 &       & 1.12e-04 &       & 3.09e-01 &       & 1.12e-04 &       & 1.60e-04 &       & 3.80e-04 &       & 1.28e-03 &       
+twoSquaresInterface4 &     2 & 3.05e-06 & 16.92 & 7.24e-06 & 15.47 & 1.30e+00 &  0.24 & 7.24e-06 & 15.47 & 9.03e-06 & 17.72 & 2.39e-05 & 15.90 & 1.38e-04 &  9.28 
+twoSquaresInterface8 &     4 & 2.12e-07 & 14.39 & 4.64e-07 & 15.60 & 1.31e+00 &  0.99 & 4.64e-07 & 15.60 & 6.18e-07 & 14.61 & 1.72e-06 & 13.90 & 1.69e-05 &  8.17 
+twoSquaresInterface16 &     8 & 1.31e-08 & 16.18 & 2.93e-08 & 15.84 & 1.31e+00 &  1.00 & 2.93e-08 & 15.84 & 3.75e-08 & 16.48 & 1.08e-07 & 15.93 & 1.97e-06 &  8.58 
+Convergence rates: c0=3.97 c1=3.97 c2=-0.63 c3=3.97 c4=4.00 c5=3.91 c6=3.11 
+
+
+============================= GDM =========================================
+
+
+***REVERT**** TO FOURTH-ORDER RESIDUALS FOR SECOND-ORDER UPDATE
+
+USE unifiedInterfaceMacros:
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.45e-03 &       & 4.18e-03 &       & 3.75e+00 &       & 4.18e-03 &       & 3.77e-05 &       & 1.85e-03 &       
+   innerOuterFixede4 &     4 & 1.38e-04 & 17.75 & 2.58e-04 & 16.20 & 2.06e+00 &  1.82 & 2.58e-04 & 16.20 & 2.49e-06 & 15.14 & 9.30e-05 & 19.89 
+   innerOuterFixede8 &     8 & 8.86e-06 & 15.58 & 1.48e-05 & 17.43 & 2.17e+00 &  0.95 & 1.48e-05 & 17.43 & 1.70e-07 & 14.65 & 6.06e-06 & 15.35 
+  innerOuterFixede16 &    16 & 5.49e-07 & 16.14 & 8.95e-07 & 16.54 & 3.78e+00 &  0.57 & 8.95e-07 & 16.54 & 1.12e-08 & 15.18 & 3.85e-07 & 15.74 
+Convergence rates: c0=4.03 c1=4.07 c2=-0.01 c3=4.07 c4=3.90 c5=4.06 
+
+
+
+---- DIELECTRIC DISK 2D
+
+ADD JACOBI UPDATE TO GDM 24c --> No difference
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.5 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -modeGDM=-1 -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -diss=0 -useSosupDissipation=1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.55e-03 &       & 4.15e-03 &       & 3.75e+00 &       & 4.15e-03 &       & 3.66e-05 &       & 1.80e-03 &       
+   innerOuterFixede4 &     4 & 1.35e-04 & 18.89 & 2.62e-04 & 15.84 & 2.06e+00 &  1.82 & 2.62e-04 & 15.84 & 2.42e-06 & 15.12 & 9.18e-05 & 19.61 
+   innerOuterFixede8 &     8 & 1.32e-05 & 10.23 & 1.60e-05 & 16.38 & 2.17e+00 &  0.95 & 1.60e-05 & 16.38 & 2.46e-07 &  9.84 & 8.16e-06 & 11.25 
+  innerOuterFixede16 &    16 & 1.53e-06 &  8.63 & 1.33e-06 & 12.03 & 3.78e+00 &  0.57 & 1.53e-06 & 10.46 & 3.32e-08 &  7.41 & 9.23e-07 &  8.84 
+Convergence rates: c0=3.55 c1=3.89 c2=-0.01 c3=3.82 c4=3.36 c5=3.63 
+
+
+
+
+**TROUBLE**
+conv.p dielectric.conv -cyl=1 -kx=3 -tf=.5 -tp=.1 -order=4 -name="innerOuterFixede" -dm=gdm -modeGDM=-1 -npv=1 2  -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09  -diss=0 -useSosupDissipation=1 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.55e-03 &       & 4.15e-03 &       & 3.75e+00 &       & 4.15e-03 &       & 3.66e-05 &       & 1.80e-03 &       
+   innerOuterFixede4 &     4 & 1.35e-04 & 18.89 & 2.62e-04 & 15.84 & 2.06e+00 &  1.82 & 2.62e-04 & 15.84 & 2.42e-06 & 15.12 & 9.18e-05 & 19.61 
+   innerOuterFixede8 &     8 & 1.32e-05 & 10.23 & 1.60e-05 & 16.38 & 2.17e+00 &  0.95 & 1.60e-05 & 16.38 & 2.46e-07 &  9.84 & 8.16e-06 & 11.25 
+  innerOuterFixede16 &    16 & 1.53e-06 &  8.63 & 1.33e-06 & 12.03 & 3.78e+00 &  0.57 & 1.53e-06 & 10.46 & 3.32e-08 &  7.41 & 9.23e-07 &  8.84 
+Convergence rates: c0=3.55 c1=3.89 c2=-0.01 c3=3.82 c4=3.36 c5=3.63 
+
+OLD RESULTS CGMX AND FOURTH-ORDER RESIDUALS 
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+   innerOuterFixede2 &     2 & 2.66e-03 &       & 4.15e-03 &       & 3.75e+00 &       & 4.15e-03 &       & 3.81e-05 &       & 1.91e-03 &       
+   innerOuterFixede4 &     4 & 1.54e-04 & 17.27 & 2.55e-04 & 16.27 & 2.06e+00 &  1.82 & 2.55e-04 & 16.27 & 2.55e-06 & 14.94 & 9.59e-05 & 19.92 
+   innerOuterFixede8 &     8 & 1.01e-05 & 15.25 & 1.48e-05 & 17.23 & 2.17e+00 &  0.95 & 1.48e-05 & 17.23 & 1.81e-07 & 14.09 & 6.31e-06 & 15.20 
+  innerOuterFixede16 &    16 & 6.38e-07 & 15.83 & 9.04e-07 & 16.37 & 3.78e+00 &  0.57 & 9.04e-07 & 16.37 & 1.20e-08 & 15.08 & 3.85e-07 & 16.39 
+Convergence rates: c0=4.00 c1=4.06 c2=-0.01 c3=4.06 c4=3.87 c5=4.08 
+
+
+---- PLANAR INTERFACE
+
+conv.p interface.conv -kx=2 -ky=1 -kz=.5 -ic=pmic -eps1=1 -eps2=2. -dm=gdm -npv=2 1 -a01=1 1.5 -a11=.1 .125 -b01=1 1.5 -b11=.2 .1 -a02=2 -a12=.05 -b02=2 -b12=.1 -ic=pmic -interfaceNormal=1 0 0 -interfacePoint=0 .0 0 -bc=d -cg=twoBoxesInterface -tf=.5 -tp=.1 -order=4 -useSosupDissipation=1 -modeGDM=-1 -ng=4
+
+
+// make interfaceGDM2dOrder4
+conv.p interface.conv -dm=gdm -eps1=2. -eps2=3. -npv=3 2 -a01=1 1.5 2. -a11=.1 .07 .05 -b01=1 1.5 2.  -b11=.2 .1 .05 -a02=1.2 1.4 -a12=.1 .15 -b02=.8 1.2 -b12=.05 .09 -kx=2 -ky=1 -ic=pmic -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1  -tf=.5 -tp=.1 -modeGDM=-1 -ng=5
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.21e-03 &       & 1.05e-02 &       & 1.51e+00 &       & 1.05e-02 &       & 8.53e-05 &       & 8.45e-03 &       
+twoSquaresInterface4 &     2 & 2.06e-04 & 25.29 & 4.15e-04 & 25.30 & 1.51e+00 &  1.00 & 4.15e-04 & 25.30 & 4.20e-06 & 20.31 & 4.15e-04 & 20.36 
+twoSquaresInterface8 &     4 & 8.86e-06 & 23.25 & 1.79e-05 & 23.18 & 3.48e+00 &  0.43 & 1.79e-05 & 23.18 & 2.21e-07 & 19.00 & 2.00e-05 & 20.75 
+twoSquaresInterface16 &     8 & 4.79e-07 & 18.50 & 9.64e-07 & 18.57 & 2.03e+01 &  0.17 & 9.64e-07 & 18.57 & 1.29e-08 & 17.13 & 1.15e-06 & 17.39 
+twoSquaresInterface32 &    16 & 2.70e-08 & 17.74 & 5.44e-08 & 17.72 & 2.84e+04 &  0.00 & 5.44e-08 & 17.72 & 9.50e-10 & 13.58 & 6.85e-08 & 16.79 
+Convergence rates: c0=4.39 c1=4.39 c2=-3.21 c3=4.39 c4=4.13 c5=4.23 
+
+
+
+***************************************************
+******* Thurs March 18, 2021
+
+
+MLA SIB Order=4
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=solidSphereInASmallBox -leftDomain=outerDomain -rightDomain=innerDomain -order=4 -useSosupDissipation=1 -tf=.01 -tp=.01 -ng=3
+
+processCheckFiles.p -file=interfaceNFDTDsolidSphereInASmallBoxOrder4MLAmaxNorm.solidSphereInASmallBox.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+cp interfaceNFDTDsolidSphereInASmallBoxOrder4MLAmaxNorm.solidSphereInASmallBox.master.ConvTable.tex $mbe/tables/
+cp interfaceNFDTDsolidSphereInASmallBoxOrder4MLAmaxNorm.m $mbe/codes
+
+\begin{tabular}{|c|c|c|c|c|c|c|} \hline 
+  \multicolumn{7}{|c|}{\convTitle} \\ \hline 
+\strutt$h_j$&     \erruC     &  r   &     \erruD     &  r   &     \erruE     &  r    \\[3pt] \hline 
+  1/20   & \num{1.7}{-2} &      & \num{2.1}{-2} &      & \num{6.2}{-2} &     \\ \hline
+  1/40   & \num{3.2}{-4} & 51.4  & \num{3.8}{-4} & 56.0  & \num{1.7}{-3} & 36.4 \\ \hline
+  1/80   & \num{8.3}{-6} & 38.4  & \num{7.6}{-6} & 49.9  & \num{3.4}{-5} & 50.1 \\ \hline
+  rate   &    5.47       &      &    5.72       &      &    5.42       &      \\ \hline
+\end{tabular}
+
+
+***************************************************
+******* Wed March 17, 2021
+
+REVISIT solid sphere in box with fixes for matching grids on interfaces
+
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=solidSphereInASmallBox -leftDomain=outerDomain -rightDomain=innerDomain -order=4 -useSosupDissipation=1 -tf=.01 -tp=.01 -ng=3
+
+ORDER=4
+ogen -noplot solidSphereInABox -prefix=solidSphereInASmallBox -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -order=4 -numGhost=3 -interp=e -nrExtra=3 -factor=8
+ogen -noplot solidSphereInABox -prefix=solidSphereInASmallBox -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -order=4 -numGhost=3 -interp=e -nrExtra=3 -factor=4
+ogen -noplot solidSphereInABox -prefix=solidSphereInASmallBox -xa=-1.5 -xb=1.5 -ya=-1.5 -yb=1.5 -za=-1.5 -zb=1.5 -order=4 -numGhost=3 -interp=e -nrExtra=3 -factor=2
+
+
+***************************************************
+******* Sat March 13, 2021
+
+
+==== START SOLID SPHERE IN A BOX
+
+ORDER=4 TALL CELLS!
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=solidSphereInASmallBox -leftDomain=outerDomain -rightDomain=innerDomain -order=4 -useSosupDissipation=1 -tf=.1 -tp=.1 -ng=3
+
+
+TURN OFF SOSUP FOR NOW -- seg -fault in up scheme !?
+ORDER=2
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=solidSphereInASmallBox -leftDomain=outerDomain -rightDomain=innerDomain -order=2 -useSosupDissipation=0 -tf=.1 -tp=.1 -ng=3
+
+processCheckFiles.p -file=interfaceNFDTDsolidSphereInASmallBoxOrder2MLAmaxNorm.solidSphereInASmallBox.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+
+===== CURVED INTERFACE TEST TRIG WITH oneDiskMLA GRID 
+
+DO NOT USE PERIODIC BC'S AS TRIG TZ HAS FUNNY PERIODICITY
+
+
+ORDER=4 
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=oneDiskMLAGridFixed -leftDomain=outerDomain -rightDomain=innerDomain1 -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=3
+
+ORDER=2
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=oneDiskMLAGridFixed -leftDomain=outerDomain -rightDomain=innerDomain1 -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=3
+
+
+
+
+processCheckFiles.p -file=./interfaceNFDTDoneDiskMLAGridFixednpOrder2MLAmaxNorm.oneDiskMLAGridFixednp.master.check -useGridNames=0 -c=3,4,5 -startingGridResolution=20
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+oneDiskMLAGridFixednp2 &     1 & 6.81e-04 &       & 4.81e-04 &       & 1.31e+00 &       & 6.81e-04 &       & 2.11e-03 &       & 3.09e-01 &       & 2.91e-03 &       
+oneDiskMLAGridFixednp4 &     2 & 1.67e-04 &  4.08 & 1.15e-04 &  4.18 & 1.33e+00 &  0.98 & 1.67e-04 &  4.08 & 5.12e-04 &  4.12 & 3.09e-01 &  1.00 & 6.83e-04 &  4.26 
+oneDiskMLAGridFixednp8 &     4 & 4.14e-05 &  4.03 & 2.77e-05 &  4.15 & 1.35e+00 &  0.99 & 4.14e-05 &  4.03 & 1.28e-04 &  4.00 & 3.08e-01 &  1.00 & 1.75e-04 &  3.90 
+Convergence rates: c0=2.02 c1=2.06 c2=-0.02 c3=2.02 c4=2.02 c5=0.00 c6=2.03 
+ ****Output written to ./interfaceNFDTDoneDiskMLAGridFixednpMLAOrder2maxNormConvTable.tex *****
+Saving the results file as ./results.interfaceNFDTDoneDiskMLAGridFixednpOrder2MLAmaxNorm
+Matlab results written to file [./interfaceNFDTDoneDiskMLAGridFixednpOrder2MLAmaxNorm.m].
+To compute a new table run [processCheckFiles.p -file=./interfaceNFDTDoneDiskMLAGridFixednpOrder2MLAmaxNorm.oneDiskMLAGridFixednp.master.check]
+
+
+**OLD**
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=innerOuterFixed -leftDomain=outerDomain -rightDomain=innerDomain -order=4 -useSosupDissipation=1 -tf=.1 -tp=.1 -ng=3
+
+
+***************************************************
+******* Fri March 12, 2021
+
+REDEFINE TRIG SOLUTIONS
+
+>>>>>>>>>> ADDED TO MAKEFILE : TYPE
+    make interfaceMLA
+
+
+3D ORDER=4
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoBoxesInterface -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $E_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &    $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+  twoBoxesInterface2 &     1 & 6.84e-05 &       & 9.82e-05 &       & 9.71e-05 &       & 9.82e-05 &       & 5.89e-05 &       & 2.58e-04 &       & 4.77e-04 &       
+  twoBoxesInterface4 &     2 & 3.26e-06 & 20.98 & 6.56e-06 & 14.97 & 6.16e-06 & 15.76 & 6.56e-06 & 14.97 & 4.26e-06 & 13.83 & 1.62e-05 & 15.93 & 3.81e-05 & 12.52 
+Convergence rates: c0=4.39 c1=3.90 c2=3.98 c3=3.90 c4=3.79 c5=3.99 c6=3.65 
+
+ ****Output written to ./interfaceNFDTDtwoBoxesInterfaceMLAOrder4maxNormConvTable.tex *****
+Saving the results file as ./results.interfaceNFDTDtwoBoxesInterfaceOrder4MLAmaxNorm
+Matlab results written to file [./interfaceNFDTDtwoBoxesInterfaceOrder4MLAmaxNorm.m].
+To compute a new table run [processCheckFiles.p -file=./interfaceNFDTDtwoBoxesInterfaceOrder4MLAmaxNorm.twoBoxesInterface.master.check]
+
+
+3D ORDER=2
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoBoxedInterface -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceMLAOrder4maxNormConvTable.tex *****
+Saving the results file as ./results.interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm
+Matlab results written to file [./interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm.m].
+To compute a new table run [processCheckFiles.p -file=./interfaceNFDTDtwoSquaresInterfaceOrder4MLAmaxNorm.twoSquaresInterface.master.check]
+
+
+2D ORDER=4
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=4 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 5.82e-05 &       & 1.19e-04 &       & 3.65e-01 &       & 1.19e-04 &       & 1.60e-04 &       & 3.64e-04 &       & 1.33e-03 &       
+twoSquaresInterface4 &     2 & 3.27e-06 & 17.80 & 7.05e-06 & 16.88 & 1.30e+00 &  0.28 & 7.05e-06 & 16.88 & 9.03e-06 & 17.72 & 2.34e-05 & 15.56 & 1.37e-04 &  9.71 
+twoSquaresInterface8 &     4 & 2.19e-07 & 14.93 & 4.58e-07 & 15.39 & 1.33e+00 &  0.98 & 4.58e-07 & 15.39 & 6.18e-07 & 14.61 & 1.71e-06 & 13.68 & 1.69e-05 &  8.11 
+twoSquaresInterface16 &     8 & 1.33e-08 & 16.47 & 2.92e-08 & 15.68 & 1.35e+00 &  0.99 & 2.92e-08 & 15.68 & 3.75e-08 & 16.48 & 1.07e-07 & 15.98 & 1.98e-06 &  8.54 
+Convergence rates: c0=4.02 c1=3.99 c2=-0.57 c3=3.99 c4=4.00 c5=3.90 c6=3.12
+
+
+2D ORDER=2
+conv.p interface.conv -dm=gdm -nm=mla -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -ic=tz -tz=trig -bc=d -cg=twoSquaresInterface -order=2 -useSosupDissipation=1 -tf=.3 -tp=.3 -ng=4
+
+                grid  &  N  &    $E_x$   & r &    $E_y$    & r &    $H_z$    & r &   $\Ev$   & r &    $|\Pv|$  & r &   $|\Qv|$   & r &    $\grad\cdot\Ev/\grad\Ev$& r 
+twoSquaresInterface2 &     1 & 9.91e-03 &       & 3.10e-03 &       & 4.32e-01 &       & 9.91e-03 &       & 3.72e-02 &       & 5.60e-02 &       & 1.81e-01 &       
+twoSquaresInterface4 &     2 & 2.32e-03 &  4.27 & 9.91e-04 &  3.13 & 1.30e+00 &  0.33 & 2.32e-03 &  4.27 & 8.32e-03 &  4.47 & 1.43e-02 &  3.92 & 8.16e-02 &  2.22 
+twoSquaresInterface8 &     4 & 5.69e-04 &  4.08 & 2.62e-04 &  3.78 & 1.31e+00 &  0.99 & 5.69e-04 &  4.08 & 2.11e-03 &  3.94 & 3.90e-03 &  3.67 & 4.25e-02 &  1.92 
+twoSquaresInterface16 &     8 & 1.38e-04 &  4.12 & 6.39e-05 &  4.10 & 1.33e+00 &  0.98 & 1.38e-04 &  4.12 & 5.13e-04 &  4.11 & 9.80e-04 &  3.98 & 2.09e-02 &  2.03 
+Convergence rates: c0=2.05 c1=1.87 c2=-0.49 c3=2.05 c4=2.05 c5=1.94 c6=1.03
+
+ ****Output written to ./interfaceNFDTDtwoSquaresInterfaceMLAOrder2maxNormConvTable.tex *****
+Saving the results file as ./results.interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm
+Matlab results written to file [./interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm.m].
+To compute a new table run [processCheckFiles.p -file=./interfaceNFDTDtwoSquaresInterfaceOrder2MLAmaxNorm.twoSquaresInterface.master.check]
+
+
 ***************************
 ******* Tues Mar 9, 2021
 

@@ -123,6 +123,20 @@ twoSquaresInterfaceGDM24c.check ../runs/interface/interface.cmd -g=twoNonSquares
 # 2D, Order 4, curvilinear, GDM, PMI solution 
 twoSquaresInterfaceGDMPMI24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
 #
+# -------------- 2D MLA  INTERFACES ------------------
+#
+# 2D, Order 2, rectangular, MLA
+twoSquaresInterfaceMLA22r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla  -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 2D, Order 2, curvilinear, MLA 
+twoSquaresInterfaceMLA22c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla  -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 2D, Order 4, rectangular, MLA 
+twoSquaresInterfaceMLA24r.check ../runs/interface/interface.cmd -g=twoSquaresInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+#
+# 2D, Order 4, curvilinear, MLA 
+twoSquaresInterfaceMLA24c.check ../runs/interface/interface.cmd -g=twoNonSquaresInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+#
 # --------------------------------------------------
 # --------------- 3D  INTERFACES -------------------
 # --------------------------------------------------
@@ -164,3 +178,17 @@ twoBoxesInterfaceGDM34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInte
 #
 # 3D, Order 4, curvilinear, GDM, PMI solution 
 twoBoxesInterfaceGDMPMI34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee2.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm  -matFile1=../runs/materials/baIsoGDM1.txt -matFile2=../runs/materials/baIsoGDM4.txt -ic=pmic -modeGDM=-1 -kx=1 -ky=.5 -go=go
+#
+# -------------- 3D MLA  INTERFACES ------------------
+#
+# 3D, Order 2, rectangular, MLA 
+twoBoxesInterfaceMLA32r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 3D, Order 2, curvilinear, MLA 
+twoBoxesInterfaceMLA32c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order2 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=2 -degreet=2 -go=go
+#
+# 3D, Order 4, rectangular, MLA 
+twoBoxesInterfaceMLA34r.check ../runs/interface/interface.cmd -g=twoBoxesInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go
+#
+# 3D, Order 4, curvilinear, MLA 
+twoBoxesInterfaceMLA34c.check ../runs/interface/interface.cmd -g=twoNonBoxesInterfacee1.order4.ng3 -tf=.2 -tp=.2 -bc=d -useSosupDissipation=1 -debug=0 -dm=gdm -nm=mla -matFile1=../runs/materials/mlaMat2.txt -matFile2=../runs/materials/mlaMat3.txt -tz=poly -ic=tz -degreex=4 -degreet=4 -go=go

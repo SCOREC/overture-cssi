@@ -1,5 +1,6 @@
 #include "GridStatistics.h"
 #include "ParallelUtility.h"
+#include "InterfaceInfo.h"
 
 
 // Declare and define base and bounds, perform loop
@@ -27,9 +28,9 @@ tetVolume6(real *p1, real*p2, real *p3, real *p4 )
 /// 6 vol = (p4-p1) . ( (p2-p1)x(p3-p1) )
 {
   return  ( (p4[0]-p1[0])*( (p2[1]-p1[1])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[1]-p1[1]) ) -
-	    (p4[1]-p1[1])*( (p2[0]-p1[0])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[0]-p1[0]) ) +
-	    (p4[2]-p1[2])*( (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0]) ) ) ;
-	  
+            (p4[1]-p1[1])*( (p2[0]-p1[0])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[0]-p1[0]) ) +
+            (p4[2]-p1[2])*( (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0]) ) ) ;
+          
 }
 
 
@@ -42,10 +43,10 @@ hexVolume( real *v000, real *v100, real *v010, real *v110, real *v001, real *v10
 // =====================================================================================================
 {
   return (tetVolume6(v000,v100,v010, v001)+
-	  tetVolume6(v110,v010,v100, v111)+
-	  tetVolume6(v101,v001,v111, v100)+
-	  tetVolume6(v011,v111,v001, v010)+
-	  tetVolume6(v100,v010,v001, v111))/6.;
+          tetVolume6(v110,v010,v100, v111)+
+          tetVolume6(v101,v001,v111, v100)+
+          tetVolume6(v011,v111,v001, v010)+
+          tetVolume6(v100,v010,v001, v111))/6.;
 }
 
 void GridStatistics::
@@ -61,15 +62,15 @@ getNegativeVolumes( MappedGrid & mg, int & numberOfNegativeVolumes, IntegerArray
 // =========================================================================================================
 {
   computeNegativeVolumes(mg,numberOfGhost,stdout,grid,checkActivePoints,
-			 printNegativeVolumes,
-			 numberOfNegativeVolumes,
-			 &negativeVolumeList);
+                         printNegativeVolumes,
+                         numberOfNegativeVolumes,
+                         &negativeVolumeList);
 }
 
 
 int GridStatistics::
 checkForNegativeVolumes(GridCollection & gc, int numberOfGhost /* =0 */, FILE *file /* =stdout */,
-			bool checkActivePoints /* =true */, bool printNegativeVolumes /* =true */ )
+                        bool checkActivePoints /* =true */, bool printNegativeVolumes /* =true */ )
 // ================================================================================
 /// \brief Check a grid for negative volumes and return the number of negative volumes found
 /// \param numberOfGhost (input) : include this many ghost points.
@@ -88,7 +89,7 @@ checkForNegativeVolumes(GridCollection & gc, int numberOfGhost /* =0 */, FILE *f
   for( int grid=0; grid<gc.numberOfComponentGrids(); grid++ )
   {
     numberOfNegativeVolumes += computeNegativeVolumes(gc[grid],numberOfGhost,file,grid,checkActivePoints,
-						      printNegativeVolumes,negativeVolumeCount );
+                                                      printNegativeVolumes,negativeVolumeCount );
   }
 
   return numberOfNegativeVolumes;
@@ -97,7 +98,7 @@ checkForNegativeVolumes(GridCollection & gc, int numberOfGhost /* =0 */, FILE *f
 
 int GridStatistics::
 checkForNegativeVolumes(MappedGrid & mg, int numberOfGhost /* =0 */, FILE *file /* =stdout */, int grid /* =0 */,
-			bool checkActivePoints /* =true */, bool printNegativeVolumes /* =true */ )
+                        bool checkActivePoints /* =true */, bool printNegativeVolumes /* =true */ )
 // ================================================================================
 //
 /// \brief Check a grid for negative volumes and return the number of negative volumes found
@@ -114,13 +115,13 @@ checkForNegativeVolumes(MappedGrid & mg, int numberOfGhost /* =0 */, FILE *file 
 {
   int negativeVolumeCount=0;
   return computeNegativeVolumes(mg,numberOfGhost,file,grid,checkActivePoints,
-				printNegativeVolumes,negativeVolumeCount );
+                                printNegativeVolumes,negativeVolumeCount );
 }
 
 
 int GridStatistics::
 computeNegativeVolumes(MappedGrid & mg, int numberOfGhost, FILE *file, int grid,
-		       bool checkActivePoints, bool printNegativeVolumes,
+                       bool checkActivePoints, bool printNegativeVolumes,
                        int & negativeVolumeCount, IntegerArray *negativeVolumeList /* = NULL */ )
 // ================================================================================
 /// \brief (private) Check a grid for negative volumes and return the number of negative volumes found. 
@@ -193,156 +194,156 @@ computeNegativeVolumes(MappedGrid & mg, int numberOfGhost, FILE *file, int grid,
       if( domainDimension==2 && rangeDimension==2 )
       {
         if( ok )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    if( !checkActivePoints || maskLocal(i1,i2,i3)!=0 )
-	    {
-	      // area of a polygon = (1/2) sum{ x_i y_{i+1} - x_{i+1} y_i
-	      real vol = ( x(i1  ,i2  ,i3,0)*x(i1+1,i2  ,i3,1)-x(i1+1,i2  ,i3,0)*x(i1  ,i2  ,i3,1) +  // (i1,i2)
-			   x(i1+1,i2  ,i3,0)*x(i1+1,i2+1,i3,1)-x(i1+1,i2+1,i3,0)*x(i1+1,i2  ,i3,1) + 
-			   x(i1+1,i2+1,i3,0)*x(i1  ,i2+1,i3,1)-x(i1  ,i2+1,i3,0)*x(i1+1,i2+1,i3,1) + 
-			   x(i1  ,i2+1,i3,0)*x(i1  ,i2  ,i3,1)-x(i1  ,i2  ,i3,0)*x(i1  ,i2+1,i3,1) );
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            if( !checkActivePoints || maskLocal(i1,i2,i3)!=0 )
+            {
+              // area of a polygon = (1/2) sum{ x_i y_{i+1} - x_{i+1} y_i
+              real vol = ( x(i1  ,i2  ,i3,0)*x(i1+1,i2  ,i3,1)-x(i1+1,i2  ,i3,0)*x(i1  ,i2  ,i3,1) +  // (i1,i2)
+                           x(i1+1,i2  ,i3,0)*x(i1+1,i2+1,i3,1)-x(i1+1,i2+1,i3,0)*x(i1+1,i2  ,i3,1) + 
+                           x(i1+1,i2+1,i3,0)*x(i1  ,i2+1,i3,1)-x(i1  ,i2+1,i3,0)*x(i1+1,i2+1,i3,1) + 
+                           x(i1  ,i2+1,i3,0)*x(i1  ,i2  ,i3,1)-x(i1  ,i2  ,i3,0)*x(i1  ,i2+1,i3,1) );
     
-	      vol*=.5*orientation;
-	      volMin=min(volMin,vol);
-	      volMax=max(volMax,vol);
-	      volAve+=vol;
-	      numberOfVolumes++;
+              vol*=.5*orientation;
+              volMin=min(volMin,vol);
+              volMax=max(volMax,vol);
+              volAve+=vol;
+              numberOfVolumes++;
 
-	      numberOfGridPoints++;
-	      if( vol<=0. ) 
-	      {
+              numberOfGridPoints++;
+              if( vol<=0. ) 
+              {
                 numberOfNegativeVolumes++;
-		if( saveNegativeVolumes )
-		{
+                if( saveNegativeVolumes )
+                {
                   IntegerArray & list = *negativeVolumeList;
-		  if( list.getLength(1)<=negativeVolumeCount )
-		  { // allocate more space to hold the negative volumes 
-		    list.resize(4,list.getLength(1)+1000);
-		  }
-		  list(0,negativeVolumeCount)=i1;
-		  list(1,negativeVolumeCount)=i2;
-		  list(2,negativeVolumeCount)=i3;
-		  list(3,negativeVolumeCount)=grid;
-		  
-		  negativeVolumeCount++;
-		}
-		
-		if( printNegativeVolumes )
-		{
-		  bool ghost = i1<gid(0,0) || i1>gid(1,0) || i2<gid(0,1) || i2>gid(1,1);
-		  fprintf(file," negative volume: grid=%i (i1,i2)=(%i,%i) mask=%i %sx=(%9.2e,%9.2e) vol=%9.2e.\n",
-			  grid,i1,i2,(maskLocal(i1,i2,i3)>0 ? 1: maskLocal(i1,i2,i3)<0 ? -1 : 0),
+                  if( list.getLength(1)<=negativeVolumeCount )
+                  { // allocate more space to hold the negative volumes 
+                    list.resize(4,list.getLength(1)+1000);
+                  }
+                  list(0,negativeVolumeCount)=i1;
+                  list(1,negativeVolumeCount)=i2;
+                  list(2,negativeVolumeCount)=i3;
+                  list(3,negativeVolumeCount)=grid;
+                  
+                  negativeVolumeCount++;
+                }
+                
+                if( printNegativeVolumes )
+                {
+                  bool ghost = i1<gid(0,0) || i1>gid(1,0) || i2<gid(0,1) || i2>gid(1,1);
+                  fprintf(file," negative volume: grid=%i (i1,i2)=(%i,%i) mask=%i %sx=(%9.2e,%9.2e) vol=%9.2e.\n",
+                          grid,i1,i2,(maskLocal(i1,i2,i3)>0 ? 1: maskLocal(i1,i2,i3)<0 ? -1 : 0),
                           (ghost ? "ghost " : " "),
-			  x(i1,i2,i3,0),x(i1,i2,i3,1),vol);
-		}
-	      }
-	      
-	    }
-	  }
-	}
-	volMin=ParallelUtility::getMinValue(volMin);
-	volMax=ParallelUtility::getMaxValue(volMax);
+                          x(i1,i2,i3,0),x(i1,i2,i3,1),vol);
+                }
+              }
+              
+            }
+          }
+        }
+        volMin=ParallelUtility::getMinValue(volMin);
+        volMax=ParallelUtility::getMaxValue(volMax);
         volAve=ParallelUtility::getSum(volAve);
         numberOfGridPoints=ParallelUtility::getSum(numberOfGridPoints);
-	
-	volAve/=max(1,numberOfGridPoints);
+        
+        volAve/=max(1,numberOfGridPoints);
     
       }
       else if( domainDimension==2 && rangeDimension==3 )
       {
-	printF("printGridStatistics: not implemented yet for surface grids.\n");
+        printF("printGridStatistics: not implemented yet for surface grids.\n");
       }
       else if( domainDimension==3 )
       {
-	// ************ 3D ***********************
+        // ************ 3D ***********************
 
-	real v[2][2][2][3];
-	if( ok )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    if( !checkActivePoints || maskLocal(i1,i2,i3)!=0 )
-	    {
-	      
-	      for( int axis=0; axis<3; axis++ )
-	      {
-		v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-		v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
-		v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
-		v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
-		v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-		v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
-		v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
-		v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
-	      }
+        real v[2][2][2][3];
+        if( ok )
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            if( !checkActivePoints || maskLocal(i1,i2,i3)!=0 )
+            {
+              
+              for( int axis=0; axis<3; axis++ )
+              {
+                v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+                v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
+                v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
+                v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
+                v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+                v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
+                v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
+                v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
+              }
 
-	      real vol=hexVolume(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
-				 v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1])*orientation;
+              real vol=hexVolume(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
+                                 v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1])*orientation;
       
-	      volMin=min(volMin,vol);
-	      volMax=max(volMax,vol);
-	      volAve+=vol;
-	      numberOfVolumes++;
-	  
-	      numberOfGridPoints++;
-	      if( vol<=0. )
-	      {
-		numberOfNegativeVolumes++;
-		if( saveNegativeVolumes )
-		{
+              volMin=min(volMin,vol);
+              volMax=max(volMax,vol);
+              volAve+=vol;
+              numberOfVolumes++;
+          
+              numberOfGridPoints++;
+              if( vol<=0. )
+              {
+                numberOfNegativeVolumes++;
+                if( saveNegativeVolumes )
+                {
                   IntegerArray & list = *negativeVolumeList;
-		  if( list.getLength(1)<=negativeVolumeCount )
-		  { // allocate more space to hole the negative volumes 
-		    list.resize(4,list.getLength(1)+1000);
-		  }
-		  list(0,negativeVolumeCount)=i1;
-		  list(1,negativeVolumeCount)=i2;
-		  list(2,negativeVolumeCount)=i3;
-		  list(3,negativeVolumeCount)=grid;
-		  
-		  negativeVolumeCount++;
-		}
-		if( printNegativeVolumes )
-		{
-		  bool ghost = i1<gid(0,0) || i1>gid(1,0) || i2<gid(0,1) || i2>gid(1,1) || i3<gid(0,2) || i3>gid(1,2);
+                  if( list.getLength(1)<=negativeVolumeCount )
+                  { // allocate more space to hole the negative volumes 
+                    list.resize(4,list.getLength(1)+1000);
+                  }
+                  list(0,negativeVolumeCount)=i1;
+                  list(1,negativeVolumeCount)=i2;
+                  list(2,negativeVolumeCount)=i3;
+                  list(3,negativeVolumeCount)=grid;
+                  
+                  negativeVolumeCount++;
+                }
+                if( printNegativeVolumes )
+                {
+                  bool ghost = i1<gid(0,0) || i1>gid(1,0) || i2<gid(0,1) || i2>gid(1,1) || i3<gid(0,2) || i3>gid(1,2);
 
-		  fprintf(file," negative volume: grid=%i (i1,i2,i3)=(%i,%i,%i) mask=%i %sx=(%9.2e,%9.2e,%9.2e) vol=%9.2e.\n",
-			  grid,i1,i2,i3,(maskLocal(i1,i2,i3)>0 ? 1: maskLocal(i1,i2,i3)<0 ? -1 : 0),
+                  fprintf(file," negative volume: grid=%i (i1,i2,i3)=(%i,%i,%i) mask=%i %sx=(%9.2e,%9.2e,%9.2e) vol=%9.2e.\n",
+                          grid,i1,i2,i3,(maskLocal(i1,i2,i3)>0 ? 1: maskLocal(i1,i2,i3)<0 ? -1 : 0),
                           (ghost ? "ghost " : " "),
-			  x(i1,i2,i3,0),x(i1,i2,i3,1),x(i1,i2,i3,2),vol);
-		}
-	      }
-	      
-	      
-	    }
-	  }
-	}
-	
-	volMin=ParallelUtility::getMinValue(volMin);
-	volMax=ParallelUtility::getMaxValue(volMax);
+                          x(i1,i2,i3,0),x(i1,i2,i3,1),x(i1,i2,i3,2),vol);
+                }
+              }
+              
+              
+            }
+          }
+        }
+        
+        volMin=ParallelUtility::getMinValue(volMin);
+        volMax=ParallelUtility::getMaxValue(volMax);
         volAve=ParallelUtility::getSum(volAve);
         numberOfGridPoints=ParallelUtility::getSum(numberOfGridPoints);
-	volAve/=max(1,numberOfGridPoints);
+        volAve/=max(1,numberOfGridPoints);
 
       }
     
       if( file!=NULL )
       {
-	// -- output some results --
-	if( numberOfNegativeVolumes==0 )
-	  fPrintF(file," grid %i, name=%s. (curvilinear) has NO negative volumes, %i grid-pts"
+        // -- output some results --
+        if( numberOfNegativeVolumes==0 )
+          fPrintF(file," grid %i, name=%s. (curvilinear) has NO negative volumes, %i grid-pts"
                " (including %s, %i ghost pts)\n"
-		  ,grid,(const char*)mg.getName(),numberOfGridPoints,
-		  (checkActivePoints ? "active points only" : "all points"),numberOfGhost);
-	else
-	  fPrintF(file,
-		  "ERROR: grid %i, name=%s. (curvilinear) has %i negative volumes, %i grid-pts"
+                  ,grid,(const char*)mg.getName(),numberOfGridPoints,
+                  (checkActivePoints ? "active points only" : "all points"),numberOfGhost);
+        else
+          fPrintF(file,
+                  "ERROR: grid %i, name=%s. (curvilinear) has %i negative volumes, %i grid-pts"
                   " (including %s, %i ghost pts)\n"
-		  "     : cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
-		  ,grid,(const char*)mg.getName(),numberOfNegativeVolumes,
-		  numberOfGridPoints,(checkActivePoints ? "active points only" : "all points"),numberOfGhost,
+                  "     : cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
+                  ,grid,(const char*)mg.getName(),numberOfNegativeVolumes,
+                  numberOfGridPoints,(checkActivePoints ? "active points only" : "all points"),numberOfGhost,
                   volMin,volAve,volMax);
       }
     } // end if !rectangular
@@ -433,12 +434,12 @@ printGridStatistics(GridCollection & gc, FILE *file /* =stdout */ )
   fPrintF(file,"\n"
           " ******************Grid Statistics Summary****************************\n"
           "   number of grids =%i, numberOfDomains=%i, \n"
-	  "   Total number of grid points %i (gridIndexRange), %i (dimension) <<<\n"
+          "   Total number of grid points %i (gridIndexRange), %i (dimension) <<<\n"
           "   Total number of interpolation points %i \n"
           "   cell volumes: [%8.2e,%8.2e,%8.2e]  [min,ave,max] \n"
           " *********************************************************************\n"
           ,gc.numberOfComponentGrids(),gc.numberOfDomains(),
-	  totalNumberOfGridIndexRangePoints,totalNumberOfGridPoints,totalNumberOfInterpolationPoints,
+          totalNumberOfGridIndexRangePoints,totalNumberOfGridPoints,totalNumberOfInterpolationPoints,
            volMin,volAve,volMax);
 }
 
@@ -519,136 +520,136 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
       if( domainDimension==2 && rangeDimension==2 )
       {
         if( ok )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    // area of a polygon = (1/2) sum{ x_i y_{i+1} - x_{i+1} y_i
-	    real vol = ( x(i1  ,i2  ,i3,0)*x(i1+1,i2  ,i3,1)-x(i1+1,i2  ,i3,0)*x(i1  ,i2  ,i3,1) +  // (i1,i2)
-			 x(i1+1,i2  ,i3,0)*x(i1+1,i2+1,i3,1)-x(i1+1,i2+1,i3,0)*x(i1+1,i2  ,i3,1) + 
-			 x(i1+1,i2+1,i3,0)*x(i1  ,i2+1,i3,1)-x(i1  ,i2+1,i3,0)*x(i1+1,i2+1,i3,1) + 
-			 x(i1  ,i2+1,i3,0)*x(i1  ,i2  ,i3,1)-x(i1  ,i2  ,i3,0)*x(i1  ,i2+1,i3,1) );
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            // area of a polygon = (1/2) sum{ x_i y_{i+1} - x_{i+1} y_i
+            real vol = ( x(i1  ,i2  ,i3,0)*x(i1+1,i2  ,i3,1)-x(i1+1,i2  ,i3,0)*x(i1  ,i2  ,i3,1) +  // (i1,i2)
+                         x(i1+1,i2  ,i3,0)*x(i1+1,i2+1,i3,1)-x(i1+1,i2+1,i3,0)*x(i1+1,i2  ,i3,1) + 
+                         x(i1+1,i2+1,i3,0)*x(i1  ,i2+1,i3,1)-x(i1  ,i2+1,i3,0)*x(i1+1,i2+1,i3,1) + 
+                         x(i1  ,i2+1,i3,0)*x(i1  ,i2  ,i3,1)-x(i1  ,i2  ,i3,0)*x(i1  ,i2+1,i3,1) );
     
-	    vol*=.5*orientation;
-	    volMin=min(volMin,vol);
-	    volMax=max(volMax,vol);
-	    volAve+=vol;
-	    numberOfVolumes++;
+            vol*=.5*orientation;
+            volMin=min(volMin,vol);
+            volMax=max(volMax,vol);
+            volAve+=vol;
+            numberOfVolumes++;
 
-	    numberOfGridPoints++;
-	    if( vol<=0. ) numberOfNegativeVolumes++;
+            numberOfGridPoints++;
+            if( vol<=0. ) numberOfNegativeVolumes++;
       
-	  }
-	}
-	volMin=ParallelUtility::getMinValue(volMin);
-	volMax=ParallelUtility::getMaxValue(volMax);
+          }
+        }
+        volMin=ParallelUtility::getMinValue(volMin);
+        volMax=ParallelUtility::getMaxValue(volMax);
         volAve=ParallelUtility::getSum(volAve);
         numberOfGridPoints=ParallelUtility::getSum(numberOfGridPoints);
-	
-	volAve/=max(1,numberOfGridPoints);
+        
+        volAve/=max(1,numberOfGridPoints);
     
       }
       else if( domainDimension==2 && rangeDimension==3 )
       {
-	printF("printGridStatistics: not implemented yet for surface grids.\n");
+        printF("printGridStatistics: not implemented yet for surface grids.\n");
       }
       else if( domainDimension==3 )
       {
-	// ************ 3D ***********************
+        // ************ 3D ***********************
 
-	real v[2][2][2][3];
-	if( ok )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	  {
-	    for( int axis=0; axis<3; axis++ )
-	    {
-	      v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-	      v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
-	      v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
-	      v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
-	      v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-	      v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
-	      v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
-	      v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
-	    }
+        real v[2][2][2][3];
+        if( ok )
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+          {
+            for( int axis=0; axis<3; axis++ )
+            {
+              v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+              v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
+              v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
+              v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
+              v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+              v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
+              v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
+              v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
+            }
 
-	    real vol=hexVolume(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
-			       v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1])*orientation;
+            real vol=hexVolume(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
+                               v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1])*orientation;
       
-	    volMin=min(volMin,vol);
-	    volMax=max(volMax,vol);
-	    volAve+=vol;
-	    numberOfVolumes++;
-	  
-	    numberOfGridPoints++;
-	    if( vol<=0. ) numberOfNegativeVolumes++;
+            volMin=min(volMin,vol);
+            volMax=max(volMax,vol);
+            volAve+=vol;
+            numberOfVolumes++;
+          
+            numberOfGridPoints++;
+            if( vol<=0. ) numberOfNegativeVolumes++;
       
-	  }
-	}
-	
-	volMin=ParallelUtility::getMinValue(volMin);
-	volMax=ParallelUtility::getMaxValue(volMax);
+          }
+        }
+        
+        volMin=ParallelUtility::getMinValue(volMin);
+        volMax=ParallelUtility::getMaxValue(volMax);
         volAve=ParallelUtility::getSum(volAve);
         numberOfGridPoints=ParallelUtility::getSum(numberOfGridPoints);
-	volAve/=max(1,numberOfGridPoints);
+        volAve/=max(1,numberOfGridPoints);
 
       }
     
       if( domainDimension==3 )
       {
-	fPrintF(file,
-		" -----------------------------------------------------------------------\n"
-		"      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
-		" grid lines  : [%i:%i,%i:%i,%i:%i], total points = %i\n"
+        fPrintF(file,
+                " -----------------------------------------------------------------------\n"
+                "      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
+                " grid lines  : [%i:%i,%i:%i,%i:%i], total points = %i\n"
                 " ghost points: [%i:%i,%i:%i,%i:%i]\n"
-		" cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
-		" grid spacing: [%8.2e,%8.2e,%8.2e] [min,ave,max] (r1) \n"
-		"             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r2) \n"
-		"             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r3) \n"
-		" number of negative volumes = %i \n"
-		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
-		gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-		numberOfGridPoints,
+                " cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
+                " grid spacing: [%8.2e,%8.2e,%8.2e] [min,ave,max] (r1) \n"
+                "             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r2) \n"
+                "             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r3) \n"
+                " number of negative volumes = %i \n"
+                ,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
+                gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                numberOfGridPoints,
                 mg.numberOfGhostPoints(0,0),mg.numberOfGhostPoints(1,0),
                 mg.numberOfGhostPoints(0,1),mg.numberOfGhostPoints(1,1),
                 mg.numberOfGhostPoints(0,2),mg.numberOfGhostPoints(1,2),
-		volMin,volAve,volMax,
-		dsMin[0],dsAve[0],dsMax[0],
-		dsMin[1],dsAve[1],dsMax[1],
-		dsMin[2],dsAve[2],dsMax[2],
+                volMin,volAve,volMax,
+                dsMin[0],dsAve[0],dsMax[0],
+                dsMin[1],dsAve[1],dsMax[1],
+                dsMin[2],dsAve[2],dsMax[2],
                 numberOfNegativeVolumes);
       }
       else
       {
-	fPrintF(file,
-		" -----------------------------------------------------------------------\n"
-		"      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
-		" grid lines  : [%i:%i,%i:%i], total points = %i\n"
+        fPrintF(file,
+                " -----------------------------------------------------------------------\n"
+                "      Grid Statistics for grid %i, name=%s. (curvilinear) (mapping=%s)\n"
+                " grid lines  : [%i:%i,%i:%i], total points = %i\n"
                 " ghost points: [%i:%i,%i:%i]\n"
-		" cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
-		" grid spacing: [%8.2e,%8.2e,%8.2e] [min,ave,max] (r1) \n"
-		"             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r2) \n"
-		" number of negative volumes = %i \n"
-		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
-		gid(0,0),gid(1,0),gid(0,1),gid(1,1),
-		numberOfGridPoints,
+                " cell volumes: [%8.2e,%8.2e,%8.2e] [min,ave,max] \n"
+                " grid spacing: [%8.2e,%8.2e,%8.2e] [min,ave,max] (r1) \n"
+                "             : [%8.2e,%8.2e,%8.2e] [min,ave,max] (r2) \n"
+                " number of negative volumes = %i \n"
+                ,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
+                gid(0,0),gid(1,0),gid(0,1),gid(1,1),
+                numberOfGridPoints,
                 mg.numberOfGhostPoints(0,0),mg.numberOfGhostPoints(1,0),
                 mg.numberOfGhostPoints(0,1),mg.numberOfGhostPoints(1,1),
-		volMin,volAve,volMax,
-		dsMin[0],dsAve[0],dsMax[0],
-		dsMin[1],dsAve[1],dsMax[1],
-		numberOfNegativeVolumes);
+                volMin,volAve,volMax,
+                dsMin[0],dsAve[0],dsMax[0],
+                dsMin[1],dsAve[1],dsMax[1],
+                numberOfNegativeVolumes);
       }
       if( rangeDimension==2 )
       {
-	fPrintF(file,
-		" bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n",
-		bc(0,0),bc(1,0),bc(0,1),bc(1,1),share(0,0),share(1,0),share(0,1),share(1,1),
+        fPrintF(file,
+                " bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n",
+                bc(0,0),bc(1,0),bc(0,1),bc(1,1),share(0,0),share(1,0),share(0,1),share(1,1),
                 isPeriodic(0),isPeriodic(1),dw(0) );
       }
       else if( rangeDimension==3 )
       {
-	fPrintF(file,
+        fPrintF(file,
                 " bc = [%i,%i, %i,%i, %i,%i] share=[%i,%i, %i,%i, %i,%i] isPeriodic=[%i,%i,%i] dw=%i\n",
                 bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
                 share(0,0),share(1,0),share(0,1),share(1,1),share(0,2),share(1,2),
@@ -667,51 +668,51 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
       volMin=volAve=volMax=dx[0]*dx[1]*dx[2];
       
       if( domainDimension==1 )
-	numberOfVolumes=(gid(1,0)-gid(0,0));
+        numberOfVolumes=(gid(1,0)-gid(0,0));
       else if( domainDimension==2 )
-	numberOfVolumes=(gid(1,0)-gid(0,0))*(gid(1,1)-gid(0,1));
+        numberOfVolumes=(gid(1,0)-gid(0,0))*(gid(1,1)-gid(0,1));
       else
-	numberOfVolumes=(gid(1,0)-gid(0,0))*(gid(1,1)-gid(0,1))*(gid(1,2)-gid(0,2));
+        numberOfVolumes=(gid(1,0)-gid(0,0))*(gid(1,1)-gid(0,1))*(gid(1,2)-gid(0,2));
 
       if( domainDimension==3 )
       {
-	fPrintF(file,
-		" -----------------------------------------------------------------------\n"
-		"         Grid Statistics for grid %i, name=%s. (rectangular) (mapping=%s)\n"
-		" grid lines  : [%i:%i,%i:%i,%i:%i], total points = %i\n"
+        fPrintF(file,
+                " -----------------------------------------------------------------------\n"
+                "         Grid Statistics for grid %i, name=%s. (rectangular) (mapping=%s)\n"
+                " grid lines  : [%i:%i,%i:%i,%i:%i], total points = %i\n"
                 " ghost points: [%i:%i,%i:%i,%i:%i]\n"
-		" cell volume : %8.2e \n"
-		" grid spacing: [%8.2e,%8.2e,%8.2e] [dx,dy,dz]\n"
+                " cell volume : %8.2e \n"
+                " grid spacing: [%8.2e,%8.2e,%8.2e] [dx,dy,dz]\n"
                 " bc = [%i,%i, %i,%i, %i,%i] share=[%i,%i, %i,%i, %i,%i] isPeriodic=[%i,%i,%i] dw=%i\n"
-		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
-		gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-		numberOfGridPoints,
+                ,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
+                gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                numberOfGridPoints,
                 mg.numberOfGhostPoints(0,0),mg.numberOfGhostPoints(1,0),
                 mg.numberOfGhostPoints(0,1),mg.numberOfGhostPoints(1,1),
                 mg.numberOfGhostPoints(0,2),mg.numberOfGhostPoints(1,2),
-		volMin,
-		dx[0],dx[1],dx[2],
+                volMin,
+                dx[0],dx[1],dx[2],
                 bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
                 share(0,0),share(1,0),share(0,1),share(1,1),share(0,2),share(1,2),
                 isPeriodic(0),isPeriodic(1),isPeriodic(2), dw(0));
       }
       else
       {
-	fPrintF(file,
-		" -----------------------------------------------------------------------\n"
-		"         Grid Statistics for grid %i, name=%s. (rectangular) (mapping=%s)\n"
-		" grid lines  : [%i:%i,%i:%i], total points = %i\n"
+        fPrintF(file,
+                " -----------------------------------------------------------------------\n"
+                "         Grid Statistics for grid %i, name=%s. (rectangular) (mapping=%s)\n"
+                " grid lines  : [%i:%i,%i:%i], total points = %i\n"
                 " ghost points: [%i:%i,%i:%i]\n"
-		" cell volume : %8.2e \n"
-		" grid spacing: [%8.2e,%8.2e] [dx,dy]\n"
+                " cell volume : %8.2e \n"
+                " grid spacing: [%8.2e,%8.2e] [dx,dy]\n"
                 " bc = [%i,%i, %i,%i] share=[%i,%i, %i,%i] isPeriodic=[%i,%i] dw=%i\n"
-		,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
-		gid(0,0),gid(1,0),gid(0,1),gid(1,1),
-		numberOfGridPoints,
+                ,grid,(const char*)mg.getName(),(const char*)mg.mapping().getClassName(),
+                gid(0,0),gid(1,0),gid(0,1),gid(1,1),
+                numberOfGridPoints,
                 mg.numberOfGhostPoints(0,0),mg.numberOfGhostPoints(1,0),
                 mg.numberOfGhostPoints(0,1),mg.numberOfGhostPoints(1,1),
-		volMin,
-		dx[0],dx[1],
+                volMin,
+                dx[0],dx[1],
                 bc(0,0),bc(1,0),bc(0,1),bc(1,1),share(0,0),share(1,0),share(0,1),share(1,1),
                 isPeriodic(0),isPeriodic(1), dw(0));
       }
@@ -741,7 +742,7 @@ printGridStatistics(MappedGrid & mg, FILE *file /* =stdout */,
   else // unstructured grid
   {
     fPrintF(file,
-	    " -----------------------------------------------------------------------\n"
+            " -----------------------------------------------------------------------\n"
             "         Grid Statistics for grid %i, name=%s. (unstructured) \n"
             "            Not implemented yet. \n"
             " -----------------------------------------------------------------------\n"
@@ -857,7 +858,7 @@ getGridSpacing(MappedGrid & mg, real dsMin[3], real dsAve[3], real dsMax[3],
       int I1Bound=I1.getBound(), I2Bound=I2.getBound(), I3Bound=I3.getBound();
       if( !ok )
       { // there are no points on this processor
-	I1Bound=I1Base-1; I2Bound=I2Base-1; I3Bound=I3Base-1;
+        I1Bound=I1Base-1; I2Bound=I2Base-1; I3Bound=I3Base-1;
       }
 
       const real *vertexp = vertex.Array_Descriptor.Array_View_Pointer3;
@@ -870,111 +871,111 @@ getGridSpacing(MappedGrid & mg, real dsMin[3], real dsAve[3], real dsMax[3],
       int i1,i2,i3;
       if( domainDimension==2 && rangeDimension==2 )
       {
-	// compute first grid line spacing
-	i3=gid(0,2);
-	int numDs=0;
-	for( i2=I2Base; i2<=I2Bound; i2++ )
-	for( i1=I1Base; i1< I1Bound; i1++ )
-	{
-	  real ds= sqrt( SQR(x(i1+1,i2,i3,0)-x(i1,i2,i3,0))+
-			 SQR(x(i1+1,i2,i3,1)-x(i1,i2,i3,1)) );
-	  dsMin[0]=min(dsMin[0],ds);
-	  dsMax[0]=max(dsMax[0],ds);
-	  dsAve[0]+=ds;
-	  numDs++;
-	}
+        // compute first grid line spacing
+        i3=gid(0,2);
+        int numDs=0;
+        for( i2=I2Base; i2<=I2Bound; i2++ )
+        for( i1=I1Base; i1< I1Bound; i1++ )
+        {
+          real ds= sqrt( SQR(x(i1+1,i2,i3,0)-x(i1,i2,i3,0))+
+                         SQR(x(i1+1,i2,i3,1)-x(i1,i2,i3,1)) );
+          dsMin[0]=min(dsMin[0],ds);
+          dsMax[0]=max(dsMax[0],ds);
+          dsAve[0]+=ds;
+          numDs++;
+        }
         dsMin[0]=ParallelUtility::getMinValue(dsMin[0]);
         dsMax[0]=ParallelUtility::getMaxValue(dsMax[0]);
 
         numDs=ParallelUtility::getSum(numDs);
-	dsAve[0]=ParallelUtility::getSum(dsAve[0]);
-	dsAve[0]/=max(1,numDs);
+        dsAve[0]=ParallelUtility::getSum(dsAve[0]);
+        dsAve[0]/=max(1,numDs);
 
-	numDs=0;
-	for( i2=I2Base; i2< I2Bound; i2++ )
-	for( i1=I1Base; i1<=I1Bound; i1++ )
-	{
-	  real ds= sqrt( SQR(x(i1,i2+1,i3,0)-x(i1,i2,i3,0))+
-			 SQR(x(i1,i2+1,i3,1)-x(i1,i2,i3,1)) );
-	  dsMin[1]=min(dsMin[1],ds);
-	  dsMax[1]=max(dsMax[1],ds);
-	  dsAve[1]+=ds;
-	  numDs++;
-	}
+        numDs=0;
+        for( i2=I2Base; i2< I2Bound; i2++ )
+        for( i1=I1Base; i1<=I1Bound; i1++ )
+        {
+          real ds= sqrt( SQR(x(i1,i2+1,i3,0)-x(i1,i2,i3,0))+
+                         SQR(x(i1,i2+1,i3,1)-x(i1,i2,i3,1)) );
+          dsMin[1]=min(dsMin[1],ds);
+          dsMax[1]=max(dsMax[1],ds);
+          dsAve[1]+=ds;
+          numDs++;
+        }
         dsMin[1]=ParallelUtility::getMinValue(dsMin[1]);
         dsMax[1]=ParallelUtility::getMaxValue(dsMax[1]);
         numDs=ParallelUtility::getSum(numDs);
-	dsAve[1]=ParallelUtility::getSum(dsAve[1]);
-	dsAve[1]/=max(1,numDs);
+        dsAve[1]=ParallelUtility::getSum(dsAve[1]);
+        dsAve[1]/=max(1,numDs);
     
         dsMin[2]=dsMax[2]=dsAve[2]=1.;
-	
+        
       }
       else if( domainDimension==2 && rangeDimension==3 )
       {
-	printF("GridStatistics::getGridSpacing: not implemented yet for surface grids.\n");
+        printF("GridStatistics::getGridSpacing: not implemented yet for surface grids.\n");
       }
       else if( domainDimension==3 )
       {
-	// ************ 3D ***********************
+        // ************ 3D ***********************
 
-	int numDs;
+        int numDs;
         numDs=0;
-	for( i3=I3Base; i3<=I3Bound; i3++ ) 
-	for( i2=I2Base; i2<=I2Bound; i2++ ) 
+        for( i3=I3Base; i3<=I3Bound; i3++ ) 
+        for( i2=I2Base; i2<=I2Bound; i2++ ) 
         for( i1=I1Base; i1< I1Bound; i1++ )
-	{
-	  real ds= sqrt( SQR(x(i1+1,i2,i3,0)-x(i1,i2,i3,0))+
-			 SQR(x(i1+1,i2,i3,1)-x(i1,i2,i3,1))+
-			 SQR(x(i1+1,i2,i3,2)-x(i1,i2,i3,2)) );
-	  dsMin[0]=min(dsMin[0],ds);
-	  dsMax[0]=max(dsMax[0],ds);
-	  dsAve[0]+=ds;
-	  numDs++;
-	}
+        {
+          real ds= sqrt( SQR(x(i1+1,i2,i3,0)-x(i1,i2,i3,0))+
+                         SQR(x(i1+1,i2,i3,1)-x(i1,i2,i3,1))+
+                         SQR(x(i1+1,i2,i3,2)-x(i1,i2,i3,2)) );
+          dsMin[0]=min(dsMin[0],ds);
+          dsMax[0]=max(dsMax[0],ds);
+          dsAve[0]+=ds;
+          numDs++;
+        }
         dsMin[0]=ParallelUtility::getMinValue(dsMin[0]);
         dsMax[0]=ParallelUtility::getMaxValue(dsMax[0]);
         numDs=ParallelUtility::getSum(numDs);
-	dsAve[0]=ParallelUtility::getSum(dsAve[0]);
-	dsAve[0]/=max(1,numDs);
+        dsAve[0]=ParallelUtility::getSum(dsAve[0]);
+        dsAve[0]/=max(1,numDs);
 
         numDs=0;
-	for( i3=I3Base; i3<=I3Bound; i3++ ) 
-	for( i2=I2Base; i2< I2Bound; i2++ ) 
+        for( i3=I3Base; i3<=I3Bound; i3++ ) 
+        for( i2=I2Base; i2< I2Bound; i2++ ) 
         for( i1=I1Base; i1<=I1Bound; i1++ )
-	{
-	  real ds= sqrt( SQR(x(i1,i2+1,i3,0)-x(i1,i2,i3,0))+
-			 SQR(x(i1,i2+1,i3,1)-x(i1,i2,i3,1))+
-			 SQR(x(i1,i2+1,i3,2)-x(i1,i2,i3,2)) );
-	  dsMin[1]=min(dsMin[1],ds);
-	  dsMax[1]=max(dsMax[1],ds);
-	  dsAve[1]+=ds;
-	  numDs++;
-	}
+        {
+          real ds= sqrt( SQR(x(i1,i2+1,i3,0)-x(i1,i2,i3,0))+
+                         SQR(x(i1,i2+1,i3,1)-x(i1,i2,i3,1))+
+                         SQR(x(i1,i2+1,i3,2)-x(i1,i2,i3,2)) );
+          dsMin[1]=min(dsMin[1],ds);
+          dsMax[1]=max(dsMax[1],ds);
+          dsAve[1]+=ds;
+          numDs++;
+        }
         dsMin[1]=ParallelUtility::getMinValue(dsMin[1]);
         dsMax[1]=ParallelUtility::getMaxValue(dsMax[1]);
         numDs=ParallelUtility::getSum(numDs);
-	dsAve[1]=ParallelUtility::getSum(dsAve[1]);
-	dsAve[1]/=max(1,numDs);
+        dsAve[1]=ParallelUtility::getSum(dsAve[1]);
+        dsAve[1]/=max(1,numDs);
 
         numDs=0;
-	for( i3=I3Base; i3< I3Bound; i3++ ) 
-	for( i2=I2Base; i2<=I2Bound; i2++ ) 
+        for( i3=I3Base; i3< I3Bound; i3++ ) 
+        for( i2=I2Base; i2<=I2Bound; i2++ ) 
         for( i1=I1Base; i1<=I1Bound; i1++ )
-	{
-	  real ds= sqrt( SQR(x(i1,i2,i3+1,0)-x(i1,i2,i3,0))+
-			 SQR(x(i1,i2,i3+1,1)-x(i1,i2,i3,1))+
-			 SQR(x(i1,i2,i3+1,2)-x(i1,i2,i3,2)) );
-	  dsMin[2]=min(dsMin[2],ds);
-	  dsMax[2]=max(dsMax[2],ds);
-	  dsAve[2]+=ds;
-	  numDs++;
-	}
+        {
+          real ds= sqrt( SQR(x(i1,i2,i3+1,0)-x(i1,i2,i3,0))+
+                         SQR(x(i1,i2,i3+1,1)-x(i1,i2,i3,1))+
+                         SQR(x(i1,i2,i3+1,2)-x(i1,i2,i3,2)) );
+          dsMin[2]=min(dsMin[2],ds);
+          dsMax[2]=max(dsMax[2],ds);
+          dsAve[2]+=ds;
+          numDs++;
+        }
         dsMin[2]=ParallelUtility::getMinValue(dsMin[2]);
         dsMax[2]=ParallelUtility::getMaxValue(dsMax[2]);
         numDs=ParallelUtility::getSum(numDs);
-	dsAve[2]=ParallelUtility::getSum(dsAve[2]);
-	dsAve[2]/=max(1,numDs);
+        dsAve[2]=ParallelUtility::getSum(dsAve[2]);
+        dsAve[2]/=max(1,numDs);
       }
     
     } 
@@ -985,7 +986,7 @@ getGridSpacing(MappedGrid & mg, real dsMin[3], real dsAve[3], real dsMax[3],
 
       for( axis=0; axis<domainDimension; axis++ )
       {
-	dsMin[axis]=dsMax[axis]=dsAve[axis]=dx[axis];
+        dsMin[axis]=dsMax[axis]=dsAve[axis]=dx[axis];
       }
       
     }
@@ -1001,5 +1002,197 @@ getGridSpacing(MappedGrid & mg, real dsMin[3], real dsAve[3], real dsMax[3],
 
   }
   
+}
+
+// ====================================================================================================================
+/// \brief Check for "tall" cells at interfaces, cells that are taller in the normal direction. This may
+///   cause instabilities for some PDE solvers.
+/// \param interfaceInfo (input) : list of interfaces to check
+/// \param tallCellRatioBound (input) : print an error message if the tall-cell ratio exceeds this value (default =1.3)
+// ======================================================================================================================
+real GridStatistics::
+checkForTallCells( CompositeGrid & cg, std::vector<InterfaceInfo> & interfaceInfo, real tallCellRatioBound /* =-1 */ )
+{
+  if( interfaceInfo.size()==0 ) return 1.;
+
+  if( tallCellRatioBound<0 )
+      tallCellRatioBound=1.3;   // default worst case allowed
+
+  // ----- check for tall cells at interface -- these may cause instabilities for order=4 ----
+  // *wdh* March 3, 2021
+  //              |
+  //              +---------+---
+  //            /\|         |
+  //     t-dist   | n-dist  |        tall-cell-ratio = n-dist/t-dist 
+  //            \/+<------->+---
+  //              |         |
+  //              |         |
+  //              +---------+---
+  //              |         |
+  //              |         |
+  //              +---------+---
+  //              |
+  //              ^
+  //           interface
+  // 
+  
+  printF("--- GridStatistics::checkForTallCells: CHECK FOR TALL CELLS AT THE INTERFACE--- \n");
+
+  // ---- check for cells with normal-dist/tangential-dist > tallCellRatioBound ----
+      
+  real maxTallCellRatio=0.;     // worst tall-cell ratio
+  int numTallTotal     =0;      // counts total number of tall cells exceeding bound
+  int numPointsTotal   =0;      // total interface cells checked
+  
+  const int numberOfDimensions = cg.numberOfDimensions();
+  Index I1,I2,I3;
+  int i1,i2,i3;
+  for( int inter=0; inter < interfaceInfo.size(); inter++ )
+  {
+    InterfaceInfo & interface = interfaceInfo[inter]; 
+    for( int iside=0; iside<=1; iside++ )// two sides of the interface
+    {
+      int grid, side, dir;
+      if( iside==0 )
+      {
+        grid=interface.grid1, side=interface.side1, dir=interface.dir1;
+      }
+      else
+      {
+        grid=interface.grid2, side=interface.side2, dir=interface.dir2;
+      }
+      MappedGrid & mg = cg[grid];
+  
+      intArray & mask = mg.mask();
+      OV_GET_SERIAL_ARRAY(int,mask,maskLocal);
+
+      mg.update( MappedGrid::THEvertex );  // *** FIX ME **********************************
+
+      OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
+    
+      const int extra=0; 
+      getBoundaryIndex(mg.gridIndexRange(),side,dir,I1,I2,I3,extra);
+
+      real tallCellRatio=0.;  // worst TCR on this grid 
+      int numTall=0;          // counts tall cells on this grid exceeding bound
+      int numPoints=0;        // counts total points checked on this grid 
+
+      int includeGhost=0;
+      bool ok1 = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3,includeGhost);
+      if( ok1  )
+      {
+        int isv[3], &is1 = isv[0], &is2=isv[1], &is3=isv[2]; // normal index shift
+        isv[0]=0; isv[1]=0; isv[2]=0;
+        isv[dir]= 1-2*side;
+
+        int dirp1 = (dir+1) % numberOfDimensions;
+        int itv[3], &it1 = itv[0], &it2=itv[1], &it3=itv[2]; // tangential index shift
+        itv[0]=0; itv[1]=0; itv[2]=0;
+        itv[dirp1]= 1;
+      
+
+        if( numberOfDimensions==2 )
+        {
+          // tallCellRatio = normal-dist / tangential-dist 
+          FOR_3D(i1,i2,i3,I1,I2,I3) 
+          {
+            if( maskLocal(i1,i2,i3)>0 )
+            {
+              // distance "normal" to the boundary for this point
+              real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
+                                 SQR( xLocal(i1+is1,i2+is2,i3+is3,1) - xLocal(i1,i2,i3,1) )  );
+              // tangential distance 
+              real tDist = sqrt( SQR( xLocal(i1+it1,i2+it2,i3+it3,0) - xLocal(i1,i2,i3,0) ) +
+                                 SQR( xLocal(i1+it1,i2+it2,i3+it3,1) - xLocal(i1,i2,i3,1) )  );
+              tDist = max( tDist, REAL_MIN*1000.); // avoid division by zero
+
+              numPoints++;
+              real cellAspectRatio = nDist/tDist;
+              if( cellAspectRatio > tallCellRatioBound )
+                numTall++;
+              tallCellRatio = max( tallCellRatio, cellAspectRatio );
+            }
+          }
+        
+        }
+        else if( numberOfDimensions==3 )
+        {
+          int dirp2 = (dir+2) % numberOfDimensions;
+          int irv[3], &ir1 = irv[0], &ir2=irv[1], &ir3=irv[2]; // tangential index shift
+          irv[0]=0; irv[1]=0; irv[2]=0;
+          irv[dirp2]= 1;
+
+          FOR_3D(i1,i2,i3,I1,I2,I3) 
+          {
+            if( maskLocal(i1,i2,i3)>0 )
+            {
+              // distance "normal" to the boundary for this point
+              real nDist = sqrt( SQR( xLocal(i1+is1,i2+is2,i3+is3,0) - xLocal(i1,i2,i3,0) ) +
+                                 SQR( xLocal(i1+is1,i2+is2,i3+is3,1) - xLocal(i1,i2,i3,1) ) +
+                                 SQR( xLocal(i1+is1,i2+is2,i3+is3,2) - xLocal(i1,i2,i3,2) )  );
+
+              // tangential distances
+              real tDist1 = sqrt( SQR( xLocal(i1+it1,i2+it2,i3+it3,0) - xLocal(i1,i2,i3,0) ) +
+                                  SQR( xLocal(i1+it1,i2+it2,i3+it3,1) - xLocal(i1,i2,i3,1) ) +
+                                  SQR( xLocal(i1+it1,i2+it2,i3+it3,2) - xLocal(i1,i2,i3,2) )  );
+
+              real tDist2 = sqrt( SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,0) - xLocal(i1,i2,i3,0) ) +
+                                  SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,1) - xLocal(i1,i2,i3,1) ) +
+                                  SQR( xLocal(i1+ir1,i2+ir2,i3+ir3,2) - xLocal(i1,i2,i3,2) )  );
+              real tDist = max( min(tDist1,tDist2), REAL_MIN*1000.);
+
+              numPoints++;                
+              real cellAspectRatio = nDist/tDist;
+              if( cellAspectRatio > tallCellRatioBound )
+                numTall++;
+
+              tallCellRatio = max( tallCellRatio, cellAspectRatio );
+            }
+          }
+
+        }
+        else
+        {
+          OV_ABORT("numberOfDimensions!?");
+        }
+      } // end if ok
+
+      numTall       = ParallelUtility::getSum( numTall );
+      numPoints     = ParallelUtility::getSum( numPoints );
+      tallCellRatio = ParallelUtility::getMaxValue( tallCellRatio );
+
+      numTallTotal   += numTall;
+      numPointsTotal += numPoints;
+      maxTallCellRatio = max( maxTallCellRatio, tallCellRatio );
+
+        
+      real fractionBad = numTall/max(1.,numPoints);
+      printF(" grid=%3d (side,dir)=(%d,%d) worst tallCellRatio=%9.3e, num bad=%5d (%5.1f %% of cells exceed ratio %4.2f) (name=%s)\n",
+               grid,side,dir,tallCellRatio,numTall,fractionBad*100,tallCellRatioBound, (const char*)mg.getName());
+      
+    } // end for iside 
+  } // for end interface
+
+  real fractionBad = numTallTotal/max(1.,numPointsTotal);
+  printF(" Maximum tall cell ratio=%8.2e (tallCellRatioBound=%g), total bad cells=%6d (%5.1f %% of %d points).\n",
+         maxTallCellRatio,tallCellRatioBound,numTallTotal, 100.*fractionBad,numPointsTotal);
+
+  if( maxTallCellRatio > tallCellRatioBound )
+  {
+    printF("\n");
+    printF("ERROR: There are some cells at the interface that are too `tall' in the normal direction.\n");
+    printF("This may cause instablilities for some PDE solvers (e.g. The current fourth-order accurate scheme in CgMx).\n");
+    printF("You should add more grid lines in the normal direction to the offending grids.\n");
+    // printF("Otherwise, increase the tallCellRatioBound if you want to run anyway at your own risk!\n\n");
+    // OV_ABORT("checkForTallCells:ERROR");
+  }
+  else
+  {
+    printF("\n >>> No tall cells exceeding the ratio %4.2f were found. <<<< \n\n",tallCellRatioBound);
+  }
+  
+
+
+  return maxTallCellRatio;
 }
 

@@ -101,9 +101,9 @@ void getGDMParameters( int & grid, real & alphaP, real *gdmPar,
 //       
 // ===========================================================================================
 void getMultilevelAtomicParameters( int & grid,
-                            				    real *pnlPar, int & nd1, int & nd2, 
-                            				    int & numberOfPolarizationVectors,
-                            				    int & numberOfAtomicLevels )
+                                                                        real *pnlPar, int & nd1, int & nd2, 
+                                                                        int & numberOfPolarizationVectors,
+                                                                        int & numberOfAtomicLevels )
 {
 #define nlPar(m1,m2,iv) pnlPar[(m1)+nd1*( (m2) + nd2*( iv ) )]
 
@@ -504,7 +504,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                     assert( forcingArray !=NULL );
                     const int fNext = (fCurrent+1) % numberOfForcingFunctions;
                     printF("--MX-ADVS-- evaluate external forcing: t=%9.3e, fCurrent=%i, fNext=%i, (%i)\n",t,
-                     	   fCurrent,fNext,numberOfForcingFunctions);
+                                  fCurrent,fNext,numberOfForcingFunctions);
                     realArray & fa = forcingArray[grid];
                     realArray & fb = f;  // we re-use f here for work-space 
                     OV_GET_SERIAL_ARRAY(real,fa,faLocal);
@@ -526,30 +526,30 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                     {
                         if( timeSteppingMethod == modifiedEquationTimeStepping && orderOfAccuracyInTime>=4 )
                         {
-      	// Compute the square of the spatial operator
-                  	assert( numberOfFunctions>=1 && fn!=NULL );
-                  	const int m0=currentFn;
-                  	realArray & lapSq = FN(m0);  
-                  	Index J1,J2,J3;
-                  	const int extra=1; // orderOfAccuracyInSpace/2-1;
-                  	getIndex(mg.gridIndexRange(),J1,J2,J3,extra);
+              // Compute the square of the spatial operator
+                            assert( numberOfFunctions>=1 && fn!=NULL );
+                            const int m0=currentFn;
+                            realArray & lapSq = FN(m0);  
+                            Index J1,J2,J3;
+                            const int extra=1; // orderOfAccuracyInSpace/2-1;
+                            getIndex(mg.gridIndexRange(),J1,J2,J3,extra);
                             assert( orderOfAccuracyInSpace>=4 ); // *wdh* Feb 25, 2020
-                  	mgop.setOrderOfAccuracy(orderOfAccuracyInSpace-2);
-                  	mgop.derivative(MappedGridOperators::laplacianOperator,u,f,J1,J2,J3,C);  // *** use f as a temporary
+                            mgop.setOrderOfAccuracy(orderOfAccuracyInSpace-2);
+                            mgop.derivative(MappedGridOperators::laplacianOperator,u,f,J1,J2,J3,C);  // *** use f as a temporary
                             #ifdef USE_PPP
-                        	  f.updateGhostBoundaries();
+                                f.updateGhostBoundaries();
                             #endif
-      	// display(f,sPrintF("f=lap(order=2) t=%e processor=%i",t,myid),debugFile,"%6.2f ");
-                  	mgop.derivative(MappedGridOperators::laplacianOperator,f,lapSq,I1,I2,I3,C);
-                  	mgop.setOrderOfAccuracy(orderOfAccuracyInSpace);
-                  	lapSq(I1,I2,I3,C)*=csq*csq;
-      	// display(lapSq,sPrintF("lapSq t=%e processor=%i",t,myid),debugFile,"%6.2f ");
-      	// printF(" max(fabs(lapSq))=%8.2e min=%8.2e\n",max(fabs(lapSq(I1,I2,I3,C))),min(fabs(lapSq(I1,I2,I3,C))));
+              // display(f,sPrintF("f=lap(order=2) t=%e processor=%i",t,myid),debugFile,"%6.2f ");
+                            mgop.derivative(MappedGridOperators::laplacianOperator,f,lapSq,I1,I2,I3,C);
+                            mgop.setOrderOfAccuracy(orderOfAccuracyInSpace);
+                            lapSq(I1,I2,I3,C)*=csq*csq;
+              // display(lapSq,sPrintF("lapSq t=%e processor=%i",t,myid),debugFile,"%6.2f ");
+              // printF(" max(fabs(lapSq))=%8.2e min=%8.2e\n",max(fabs(lapSq(I1,I2,I3,C))),min(fabs(lapSq(I1,I2,I3,C))));
                         }
             // compute laplacian for curvilinear grids
                         if( t<3.*dt && debug & 4 )
                         {
-                  	printF("--MX-- advStr: compute laplacian for curvilinear grids useConservative=%i\n",(int)useConservative);
+                            printF("--MX-- advStr: compute laplacian for curvilinear grids useConservative=%i\n",(int)useConservative);
                         }
                         mgop.derivative(MappedGridOperators::laplacianOperator,u,f,I1,I2,I3,C);
             // * mgop.derivative(MappedGridOperators::laplacianOperator,u,f,I1,I2,I3);
@@ -641,37 +641,37 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 int gridType = isRectangular? 0 : 1;
                 int option=(isRectangular || useCurvilinearOpt) ? 0 : 1;   // 0=Maxwell+AD, 1=AD
                 int ipar[]={option,
-                        	      gridType,
-                        	      orderOfAccuracyInSpace,
-                        	      orderOfAccuracyInTime,
-                        	      (int)addForcing,
-                        	      orderOfArtificialDissipation,
-                        	      ex,ey,ez,hx,hy,hz,
-                        	      int(solveForElectricField),
-                        	      int(solveForMagneticField),
-                        	      useWhereMask,
-                        	      (int)timeSteppingMethod,
-                        	      (int)useVariableDissipation,
-                        	      (int)useCurvilinearOptNew,
-                        	      (int)useConservative,
-                        	      combineDissipationWithAdvance,
-                        	      (int)useDivergenceCleaning, 
-                        	      (int)useNewForcingMethod,
-                        	      numberOfForcingFunctions,
-                        	      fCurrent,
-                        	      localDispersionModel,
-                        	      pxc,pyc,pzc, 
+                                        gridType,
+                                        orderOfAccuracyInSpace,
+                                        orderOfAccuracyInTime,
+                                        (int)addForcing,
+                                        orderOfArtificialDissipation,
+                                        ex,ey,ez,hx,hy,hz,
+                                        int(solveForElectricField),
+                                        int(solveForMagneticField),
+                                        useWhereMask,
+                                        (int)timeSteppingMethod,
+                                        (int)useVariableDissipation,
+                                        (int)useCurvilinearOptNew,
+                                        (int)useConservative,
+                                        combineDissipationWithAdvance,
+                                        (int)useDivergenceCleaning, 
+                                        (int)useNewForcingMethod,
+                                        numberOfForcingFunctions,
+                                        fCurrent,
+                                        localDispersionModel,
+                                        pxc,pyc,pzc, 
                                         numberOfPolarizationVectors,  // ipar[28]
                                         grid,                         // ipar[29]
                                         nonlinearModel,               // ipar[30]
-                        	      debug,                        // ipar[31]
+                                        debug,                        // ipar[31]
                                         0,0,  // for future use
                     // qxc,qyc,qzc, 
                     // rxc,ryc,rzc,
-                        	      useSosupDissipation,
-                        	      sosupDissipationOption,
-                        	      updateInterior,
-                        	      addDissipation,
+                                        useSosupDissipation,
+                                        sosupDissipationOption,
+                                        updateInterior,
+                                        addDissipation,
                                         computeUt,
                                         (int)forcingOption
                                       };  //
@@ -773,17 +773,17 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                         OV_GET_SERIAL_ARRAY(real,FN(m2),f2Local); ut3ptr=f2Local.getDataPointer();
                         if( orderOfAccuracyInTime>=6 && timeSteppingMethod==stoermerTimeStepping )
                         {
-                  	assert( numberOfFunctions>=5 );
-                  	const int m3=(m2+1)%numberOfFunctions, m4=(m3+1)%numberOfFunctions;
-                  	OV_GET_SERIAL_ARRAY(real,FN(m3),f3Local); ut4ptr=f3Local.getDataPointer();
-                  	OV_GET_SERIAL_ARRAY(real,FN(m4),f4Local); ut5ptr=f4Local.getDataPointer();
-                  	if( orderOfAccuracyInTime>=8 && timeSteppingMethod==stoermerTimeStepping )
-                  	{
-                    	  assert( numberOfFunctions>=7 );
-                    	  const int m5=(m4+1)%numberOfFunctions, m6=(m5+1)%numberOfFunctions;
-                    	  OV_GET_SERIAL_ARRAY(real,FN(m5),f5Local); ut6ptr=f5Local.getDataPointer();
-                    	  OV_GET_SERIAL_ARRAY(real,FN(m6),f6Local); ut7ptr=f6Local.getDataPointer();
-                  	}
+                            assert( numberOfFunctions>=5 );
+                            const int m3=(m2+1)%numberOfFunctions, m4=(m3+1)%numberOfFunctions;
+                            OV_GET_SERIAL_ARRAY(real,FN(m3),f3Local); ut4ptr=f3Local.getDataPointer();
+                            OV_GET_SERIAL_ARRAY(real,FN(m4),f4Local); ut5ptr=f4Local.getDataPointer();
+                            if( orderOfAccuracyInTime>=8 && timeSteppingMethod==stoermerTimeStepping )
+                            {
+                                assert( numberOfFunctions>=7 );
+                                const int m5=(m4+1)%numberOfFunctions, m6=(m5+1)%numberOfFunctions;
+                                OV_GET_SERIAL_ARRAY(real,FN(m5),f5Local); ut6ptr=f5Local.getDataPointer();
+                                OV_GET_SERIAL_ARRAY(real,FN(m6),f6Local); ut7ptr=f6Local.getDataPointer();
+                            }
                         }
                     }
                 }
@@ -842,17 +842,17 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                         assert( umptr!=unptr );
                     }
                     advMaxwell(mg.numberOfDimensions(),
-                         	       I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-                         	       uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-                         	       uLocal.getBase(2),uLocal.getBound(2),
-                         	       uLocal.getBase(3),uLocal.getBound(3),
-                         	       *maskptr,*xyptr, *rxptr,  
-                         	       *umptr,*uptr,*unptr, *fptr,
-                         	       *faptr,  // forcing at multiple time levels 
-                         	       *ut1ptr, // holds v for dissipation 
-                         	       *ut2ptr,*ut3ptr,*ut4ptr,  // hold pm,p,pn for polarizations
-                         	       *ut5ptr,*ut6ptr,*ut7ptr,  // hold qm,q,qn for nonlinear models  
-                         	       mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
+                                          I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+                                          uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+                                          uLocal.getBase(2),uLocal.getBound(2),
+                                          uLocal.getBase(3),uLocal.getBound(3),
+                                          *maskptr,*xyptr, *rxptr,  
+                                          *umptr,*uptr,*unptr, *fptr,
+                                          *faptr,  // forcing at multiple time levels 
+                                          *ut1ptr, // holds v for dissipation 
+                                          *ut2ptr,*ut3ptr,*ut4ptr,  // hold pm,p,pn for polarizations
+                                          *ut5ptr,*ut6ptr,*ut7ptr,  // hold qm,q,qn for nonlinear models  
+                                          mg.boundaryCondition(0,0), *pdis, *pVarDis, ipar[0], rpar[0], ierr );
                 }
                 timeAdv=getCPU()-timeAdv;
                 timing(timeForAdvOpt)+=timeAdv;
@@ -863,7 +863,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 if( debug & 8 )
                 {
                     display(unLocal,sPrintF("unLocal after advMaxwell, processor=%i before BC's t=%8.2e",
-                                  			    Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
+                                                                    Communication_Manager::My_Process_Number,t),pDebugFile,"%8.2e ");
                     display(un,sPrintF("un after advMaxwell, before BC's t=%8.2e",t),debugFile,"%8.2e ");
                 }
       //        printF(" p=%i time for advMaxwell=%e I1,I2,I3=[%i,%i][%i,%i][%i,%i]\n",Communication_Manager::My_Process_Number,timeAdv,
@@ -959,7 +959,8 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                             if( dmp.numberOfPolarizationVectors>0 )
                             {
                                 domainInterpolant[domain] = new Interpolant(cg.domain[domain]);
-                                domainInterpolant[domain]-> incrementReferenceCount();
+                                domainInterpolant[domain]->incrementReferenceCount();
+                                domainInterpolant[domain]->setMaximumNumberOfIterations(maximumNumberOfIterationsForImplicitInterpolation);
                             }
                         }
                         
@@ -1277,28 +1278,28 @@ computeDissipation( int current, real t, real dt )
         {
             for( int c=C.getBase(); c<=C.getBound(); c++ )
             {
-      	if( orderOfArtificialDissipation==4 )
-      	{
-        	  if( numberOfDimensions==2 )
-        	  {
-          	    d(I1,I2,I3,c)=(adc*dt)*FD4_2D(d,I1,I2,I3,c);
-//	    d(I1,I2,I3,c)=(cd(I1,I2,I3,c)*dt)*FD4_2D(d,I1,I2,I3,c);
+                if( orderOfArtificialDissipation==4 )
+                {
+                    if( numberOfDimensions==2 )
+                    {
+                        d(I1,I2,I3,c)=(adc*dt)*FD4_2D(d,I1,I2,I3,c);
+//          d(I1,I2,I3,c)=(cd(I1,I2,I3,c)*dt)*FD4_2D(d,I1,I2,I3,c);
 
-        	  }
-        	  else
-          	    d(I1,I2,I3,c)=(adc*dt)*FD4_3D(d,I1,I2,I3,c);
-      	}
-      	else if( orderOfArtificialDissipation==8 )
-      	{
-        	  if( numberOfDimensions==2 )
-          	    d(I1,I2,I3,c)=FD4_2D(d,I1,I2,I3,c);
-        	  else
-          	    d(I1,I2,I3,c)=FD4_3D(d,I1,I2,I3,c);
-      	}
-      	else
-      	{
-        	  Overture::abort();
-      	}
+                    }
+                    else
+                        d(I1,I2,I3,c)=(adc*dt)*FD4_3D(d,I1,I2,I3,c);
+                }
+                else if( orderOfArtificialDissipation==8 )
+                {
+                    if( numberOfDimensions==2 )
+                        d(I1,I2,I3,c)=FD4_2D(d,I1,I2,I3,c);
+                    else
+                        d(I1,I2,I3,c)=FD4_3D(d,I1,I2,I3,c);
+                }
+                else
+                {
+                    Overture::abort();
+                }
             }
             
         }
@@ -1357,14 +1358,14 @@ computeDissipation( int current, real t, real dt )
             const intArray & mask = mg.mask();
             where( mask(I1,I2,I3)>0 )
             {
-      	for( int c=C.getBase(); c<=C.getBound(); c++ )
-      	{
+                for( int c=C.getBase(); c<=C.getBound(); c++ )
+                {
           // NOTE: minus sign since FD4 is minus the 4th difference
-        	  if( numberOfDimensions==2 )
-          	    d(I1,I2,I3,c)=(-adc*dt)*FD4_2D(d,I1,I2,I3,c);
-        	  else
-          	    d(I1,I2,I3,c)=(-adc*dt)*FD4_3D(d,I1,I2,I3,c);
-      	}
+                    if( numberOfDimensions==2 )
+                        d(I1,I2,I3,c)=(-adc*dt)*FD4_2D(d,I1,I2,I3,c);
+                    else
+                        d(I1,I2,I3,c)=(-adc*dt)*FD4_3D(d,I1,I2,I3,c);
+                }
             }
             
         }
@@ -1518,34 +1519,34 @@ addFilter( int current, real t, real dt )
 
             if( useOpt )
             {
-      	ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( fieldCurrent,gidLocal,dimLocal,bcLocal );
-      	mxFilter( numberOfDimensions,
-                   		       uLocal.getBase(0),uLocal.getBound(0),
-                   		       uLocal.getBase(1),uLocal.getBound(1),
-                   		       uLocal.getBase(2),uLocal.getBound(2),
-                   		       gidLocal(0,0),*uLocal.getDataPointer(),*dLocal.getDataPointer(),*maskLocal.getDataPointer(),
-                   		       bcLocal(0,0), ipar[0],rpar[0],ierr );
+                ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( fieldCurrent,gidLocal,dimLocal,bcLocal );
+                mxFilter( numberOfDimensions,
+                                              uLocal.getBase(0),uLocal.getBound(0),
+                                              uLocal.getBase(1),uLocal.getBound(1),
+                                              uLocal.getBase(2),uLocal.getBound(2),
+                                              gidLocal(0,0),*uLocal.getDataPointer(),*dLocal.getDataPointer(),*maskLocal.getDataPointer(),
+                                              bcLocal(0,0), ipar[0],rpar[0],ierr );
 
             }
             else
             {
-      	getIndex(mg.gridIndexRange(),I1,I2,I3);
-      	where( mask(I1,I2,I3)>0 )
-      	{
-        	  for( int n=C.getBase(); n<=C.getBound(); n++ )
-        	  {
-          	    if( numberOfDimensions==2 )
-          	    {
-            	      d(I1,I2,I3,n)=FD4A_2D(u,I1,I2,I3,n);
-	      // d(I1,I2,I3,n)=FD4V_2D(u,I1,I2,I3,n);
-          	    }
-          	    else
-          	    {
-            	      d(I1,I2,I3,n)=FD4A_3D(u,I1,I2,I3,n);
-          	    }
-        	  }
+                getIndex(mg.gridIndexRange(),I1,I2,I3);
+                where( mask(I1,I2,I3)>0 )
+                {
+                    for( int n=C.getBase(); n<=C.getBound(); n++ )
+                    {
+                        if( numberOfDimensions==2 )
+                        {
+                            d(I1,I2,I3,n)=FD4A_2D(u,I1,I2,I3,n);
+              // d(I1,I2,I3,n)=FD4V_2D(u,I1,I2,I3,n);
+                        }
+                        else
+                        {
+                            d(I1,I2,I3,n)=FD4A_3D(u,I1,I2,I3,n);
+                        }
+                    }
             
-      	}
+                }
             }
         
             cgdiss[grid].periodicUpdate();  
@@ -1608,25 +1609,25 @@ addFilter( int current, real t, real dt )
 
             if( orderOfFilter==8 )
             {
-	// Diss =[ (D+xD-x)^2 + (D+yD-y)^2 +(D+zD-z)^2 ]^2 
-	//  (D+D-)^2 (-1)^i = 16 * (-1)^i 
-      	ad =  -filterCoefficient/SQR(16.*numberOfDimensions); 
+        // Diss =[ (D+xD-x)^2 + (D+yD-y)^2 +(D+zD-z)^2 ]^2 
+        //  (D+D-)^2 (-1)^i = 16 * (-1)^i 
+                ad =  -filterCoefficient/SQR(16.*numberOfDimensions); 
             }
             else if( orderOfFilter==4 )
             {
-	// Diss =[ (D+xD-x) + (D+yD-y) +(D+zD-z) ]^2 
-	//  (D+D-) (-1)^i = 4 * (-1)^i 
-      	ad =  -filterCoefficient/SQR(4.*numberOfDimensions); 
+        // Diss =[ (D+xD-x) + (D+yD-y) +(D+zD-z) ]^2 
+        //  (D+D-) (-1)^i = 4 * (-1)^i 
+                ad =  -filterCoefficient/SQR(4.*numberOfDimensions); 
             }
             else
             {
-      	OV_ABORT("Error : finish me");
+                OV_ABORT("Error : finish me");
             }
         
 
 
             if( t<dt )
-      	printF("addFilter: it=%i : grid=%i dt=%9.3e ad=%8.2e ad/dt=%8.2e \n",it,grid,dt,ad,ad/dt );
+                printF("addFilter: it=%i : grid=%i dt=%9.3e ad=%8.2e ad/dt=%8.2e \n",it,grid,dt,ad,ad/dt );
       //  printF(" grid=%i dt=%9.3e drAve=%8.2e ad8=%8.2e ad8/dt=%8.2e \n",grid,dt,drAve,ad8,ad8/dt );
 
       // ::display(d," d ","%6.2f ");
@@ -1644,59 +1645,59 @@ addFilter( int current, real t, real dt )
         
             if( useOpt )
             {
-      	ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( fieldCurrent,gidLocal,dimLocal,bcLocal );
-      	option =1;  // stage II
-      	ipar[0] = option;
-      	rpar[0] = ad;  // coefficient of the dissipation
-      	mxFilter( numberOfDimensions,
-                   		       uLocal.getBase(0),uLocal.getBound(0),
-                   		       uLocal.getBase(1),uLocal.getBound(1),
-                   		       uLocal.getBase(2),uLocal.getBound(2),
-                   		       gidLocal(0,0),*uLocal.getDataPointer(),*dLocal.getDataPointer(),*maskLocal.getDataPointer(),
-                   		       bcLocal(0,0), ipar[0],rpar[0],ierr );
+                ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( fieldCurrent,gidLocal,dimLocal,bcLocal );
+                option =1;  // stage II
+                ipar[0] = option;
+                rpar[0] = ad;  // coefficient of the dissipation
+                mxFilter( numberOfDimensions,
+                                              uLocal.getBase(0),uLocal.getBound(0),
+                                              uLocal.getBase(1),uLocal.getBound(1),
+                                              uLocal.getBase(2),uLocal.getBound(2),
+                                              gidLocal(0,0),*uLocal.getDataPointer(),*dLocal.getDataPointer(),*maskLocal.getDataPointer(),
+                                              bcLocal(0,0), ipar[0],rpar[0],ierr );
 
             }
             else
             {
-      	int extra=0;
-      	getIndex(mg.gridIndexRange(),I1,I2,I3,extra);
+                int extra=0;
+                getIndex(mg.gridIndexRange(),I1,I2,I3,extra);
 
-      	where( mask(I1,I2,I3)>0 )
-      	{
-        	  for( int n=C.getBase(); n<=C.getBound(); n++ )
-        	  {
-          	    if( numberOfDimensions==2 )
-          	    {
-            	      if( orderOfFilter==8 )
-            	      {
-            		u(I1,I2,I3,n) +=  ad * FD4A_2D(d,I1,I2,I3,n);
+                where( mask(I1,I2,I3)>0 )
+                {
+                    for( int n=C.getBase(); n<=C.getBound(); n++ )
+                    {
+                        if( numberOfDimensions==2 )
+                        {
+                            if( orderOfFilter==8 )
+                            {
+                                u(I1,I2,I3,n) +=  ad * FD4A_2D(d,I1,I2,I3,n);
 
-		// implicit diagonal term:
-		// u(I1,I2,I3,n) = (u(I1,I2,I3,n) + ad8 * FD4A_2D(d,I1,I2,I3,n) - ad8d*u(I1,I2,I3,n))/( 1.-ad8d );
+                // implicit diagonal term:
+                // u(I1,I2,I3,n) = (u(I1,I2,I3,n) + ad8 * FD4A_2D(d,I1,I2,I3,n) - ad8d*u(I1,I2,I3,n))/( 1.-ad8d );
 
-		// u(I1,I2,I3,n) +=  ad8 * FD4V_2D(d,I1,I2,I3,n);
-		// u(I1,I2,I3,n) +=  ad4 * d(I1,I2,I3,n);
-            	      }
-            	      else 
-            	      {
-            		OV_ABORT("Error : finish me");
-            	      }
-      	
-          	    }
-          	    else
-          	    {
-            	      if( orderOfFilter==8 )
-            	      {
-            		u(I1,I2,I3,n) +=  ad * FD4A_3D(d,I1,I2,I3,n);
-            	      }
-            	      else
-            	      {
-            		OV_ABORT("Error : finish me");
-            	      }
-       	 
-          	    }
-        	  }
-      	}
+                // u(I1,I2,I3,n) +=  ad8 * FD4V_2D(d,I1,I2,I3,n);
+                // u(I1,I2,I3,n) +=  ad4 * d(I1,I2,I3,n);
+                            }
+                            else 
+                            {
+                                OV_ABORT("Error : finish me");
+                            }
+                
+                        }
+                        else
+                        {
+                            if( orderOfFilter==8 )
+                            {
+                                u(I1,I2,I3,n) +=  ad * FD4A_3D(d,I1,I2,I3,n);
+                            }
+                            else
+                            {
+                                OV_ABORT("Error : finish me");
+                            }
+                  
+                        }
+                    }
+                }
             }
         
             fieldCurrent.periodicUpdate();  

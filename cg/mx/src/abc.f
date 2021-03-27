@@ -290,7 +290,7 @@ c To include derivatives of rx use OPTION=RX
 
       integer side,axis,gridType,orderOfAccuracy,orderOfExtrapolation,
      & useForcing,ex,ey,ez,hx,hy,hz,useWhereMask,grid,debug,side1,
-     & side2,side3,forcingOption
+     & side2,side3,forcingOption,myid
       real dx(0:2),dr(0:2),t,ep,dt,c
       real dxa,dya,dza
       integer axisp1,axisp2,i1,i2,i3,is1,is2,is3,js1,js2,js3,ks1,ks2,
@@ -2309,6 +2309,7 @@ c===============================================================================
       debug                =ipar(20)
       forcingOption        =ipar(21)
       method               =ipar(28)
+      myid                 =ipar(39)
 
       dx(0)                =rpar(0)
       dx(1)                =rpar(1)
@@ -2367,8 +2368,8 @@ c===============================================================================
       end if
 
       if( t.le.1.5*dt )then
-        write(*,'("abcMaxwell: order=",i2,"gridType=",i2," t=",e9.2", 
-     & dt=",e9.2)') orderOfAccuracy,gridType,t,dt
+        write(*,'("abcMaxwell: grid=",i4," order=",i2," gridType=",i2,
+     & " t=",e9.2", dt=",e9.2)') grid,orderOfAccuracy,gridType,t,dt
         write(*,'("abcMaxwell: useForcing=",i2," forcingOption=",i2)') 
      & useForcing,forcingOption
         write(*,'("abcMaxwell: method=",i2," (5=nfdtd,7=bamx)")') 

@@ -255,8 +255,8 @@ extern "C"
 // -------------------------------------------------------------------------------------------------------------
 void
 computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, realArray &ue, realArray &uep,
-              		  realArray &errh, realArray &erre, 
-              		  RealArray &solutionNorm, RealArray &maximumError )
+                                    realArray &errh, realArray &erre, 
+                                    RealArray &solutionNorm, RealArray &maximumError )
 {
     bool skipGhosts = true;
     ArraySimpleFixed<int,6,1,1,1> ml;
@@ -280,24 +280,24 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
         UnstructuredMappingIterator iter,iter_end;
         iter_end = umap.end( UnstructuredMapping::Edge, skipGhosts ); // true means skip ghosts
         for ( iter = umap.begin( UnstructuredMapping::Edge, skipGhosts );
-        	  iter!=iter_end;
-        	  iter++ )
+                    iter!=iter_end;
+                    iter++ )
         {
             assert(!umap.isGhost(UnstructuredMapping::Edge, *iter));
             int e = *iter;
-      //	  if ( !umap.hasTag(UnstructuredMapping::Edge, e, "__bcnum ") )
+      //          if ( !umap.hasTag(UnstructuredMapping::Edge, e, "__bcnum ") )
         {
             for ( int c=0; c<ue.getLength(3); c++ )
             {
-      	solutionNorm(c) = max(solutionNorm(c), fabs(ue(e,0,0,c)));
-      	if ( maximumError(c)<fabs(erre(e,0,0,c)) )
-        	  ml[c] = e;
-      	maximumError(c) = max(maximumError(c), fabs(erre(e,0,0,c)));
-      	l2e_err += erre(e,0,0,c)*erre(e,0,0,c);
+                solutionNorm(c) = max(solutionNorm(c), fabs(ue(e,0,0,c)));
+                if ( maximumError(c)<fabs(erre(e,0,0,c)) )
+                    ml[c] = e;
+                maximumError(c) = max(maximumError(c), fabs(erre(e,0,0,c)));
+                l2e_err += erre(e,0,0,c)*erre(e,0,0,c);
             }
             nE++;
         }
-    //	  cout<<.5*(verts(edges(*iter,0),0)+verts(edges(*iter,1),0))<<"  "<<.5*(verts(edges(*iter,0),1)+verts(edges(*iter,1),1))<<"  "<<erre(*iter,0,0,0)<<endl;
+    //    cout<<.5*(verts(edges(*iter,0),0)+verts(edges(*iter,1),0))<<"  "<<.5*(verts(edges(*iter,0),1)+verts(edges(*iter,1),1))<<"  "<<erre(*iter,0,0,0)<<endl;
         }
             
         l2e_err /= real(nE);
@@ -305,20 +305,20 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
         int off = ue.getLength(3);
         iter_end = umap.end( UnstructuredMapping::Face, skipGhosts ); // true means skip ghosts
         for ( iter = umap.begin( UnstructuredMapping::Face, skipGhosts );
-        	  iter!=iter_end;
-        	  iter++ )
+                    iter!=iter_end;
+                    iter++ )
         {
             int f = *iter;
             assert(!umap.isGhost(UnstructuredMapping::Face, *iter));
-      //	  if ( !umap.hasTag(UnstructuredMapping::Face, f, "__bcnum ") )
+      //          if ( !umap.hasTag(UnstructuredMapping::Face, f, "__bcnum ") )
         {
             for ( int c=0; c<uh.getLength(3); c++ )
             {
-      	solutionNorm(off+c) = max(solutionNorm(off+c), fabs(uh(f,0,0,c)));
-      	if ( maximumError(off+c)<fabs(errh(f,0,0,c)) )
-        	  ml[off+c] = f;
-      	maximumError(off+c) = max(maximumError(off+c), fabs(errh(f,0,0,c)));
-      	l2h_err += errh(f,0,0,c)*errh(f,0,0,c);
+                solutionNorm(off+c) = max(solutionNorm(off+c), fabs(uh(f,0,0,c)));
+                if ( maximumError(off+c)<fabs(errh(f,0,0,c)) )
+                    ml[off+c] = f;
+                maximumError(off+c) = max(maximumError(off+c), fabs(errh(f,0,0,c)));
+                l2h_err += errh(f,0,0,c)*errh(f,0,0,c);
             }
             nH++;
         }
@@ -332,21 +332,21 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
         {
             if ( !(iter.isGhost() || iter.isBC()) )
             {
-      	real divE = 0;
-      	UnstructuredMappingAdjacencyIterator aiter,aiter_end;
-      	aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Edge);
-      	for ( aiter=umap.adjacency_begin(iter, UnstructuredMapping::Edge); aiter!=aiter_end; aiter++ )
-      	{
-        	  divE += aiter.orientation()*uep(*aiter,0,0);
-        	  if ( aiter.isBC() || aiter.isGhost() )
-        	  {
-          	    divE = 0;
-          	    break;
-        	  }
-      	}
-      	maxDivE = max(maxDivE,fabs(divE));
+                real divE = 0;
+                UnstructuredMappingAdjacencyIterator aiter,aiter_end;
+                aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Edge);
+                for ( aiter=umap.adjacency_begin(iter, UnstructuredMapping::Edge); aiter!=aiter_end; aiter++ )
+                {
+                    divE += aiter.orientation()*uep(*aiter,0,0);
+                    if ( aiter.isBC() || aiter.isGhost() )
+                    {
+                        divE = 0;
+                        break;
+                    }
+                }
+                maxDivE = max(maxDivE,fabs(divE));
             }
-        	  
+                    
         }
 
         if (rDim==3)
@@ -354,23 +354,23 @@ computeDSIErrors( Maxwell &mx, MappedGrid &mg, realArray &uh, realArray &uhp, re
             iter_end = umap.end(UnstructuredMapping::Region);
             for ( iter=umap.begin(UnstructuredMapping::Region); iter!=iter_end; iter++ )
             {
-      	if ( !(iter.isGhost() || iter.isBC()) )
-      	{
-        	  real divH = 0;
-        	  UnstructuredMappingAdjacencyIterator aiter,aiter_end;
-        	  aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Face);
-        	  for ( aiter=umap.adjacency_begin(iter, UnstructuredMapping::Face); aiter!=aiter_end; aiter++ )
-        	  {
-          	    divH += aiter.orientation()*uhp(*aiter,0,0);
-          	    if ( aiter.isBC() || aiter.isGhost() )
-          	    {
-            	      divH = 0;
-            	      break;
-          	    }
-        	  }
-        	  maxDivH = max(maxDivH,fabs(divH));
-      	}
-            	      
+                if ( !(iter.isGhost() || iter.isBC()) )
+                {
+                    real divH = 0;
+                    UnstructuredMappingAdjacencyIterator aiter,aiter_end;
+                    aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Face);
+                    for ( aiter=umap.adjacency_begin(iter, UnstructuredMapping::Face); aiter!=aiter_end; aiter++ )
+                    {
+                        divH += aiter.orientation()*uhp(*aiter,0,0);
+                        if ( aiter.isBC() || aiter.isGhost() )
+                        {
+                            divH = 0;
+                            break;
+                        }
+                    }
+                    maxDivH = max(maxDivH,fabs(divH));
+                }
+                            
             }
         }
 
@@ -530,10 +530,10 @@ getErrors( int current, real t, real dt )
             {
                 referenceShowFileReader = new ShowFileReader(nameOfReferenceShowFile);
             }
-          	    
+                        
             CompositeGrid cgRef;
             realCompositeGridFunction uRef;
-          	    
+                        
             int solutionNumber = 1 + int( t/tPlot + .5); // fix this ******************************
             printF(" **** compareToReferenceShowFile: t=%f solutionNumber=%i\n",t,solutionNumber);
         
@@ -1301,38 +1301,38 @@ getErrors( int current, real t, real dt )
             //   !solveForAllFields ?  DispersiveMaterialParameters::ExEyHzPolarization :
             //   DispersiveMaterialParameters::noPolarization;
             // DispersiveMaterialParameters::DispersionRelationOptionEnum & dispersionRelationComputeOption=
-            // 	dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
+            //        dbase.get<DispersiveMaterialParameters::DispersionRelationOptionEnum>("dispersionRelationComputeOption");
             // dmp.setDispersionRelationComputeOption( dispersionRelationComputeOption );
             // real kr=1., ki=0.;
             // if( dispersionRelationComputeOption==DispersiveMaterialParameters::computeComplexFrequency )
             // {
-            // 	dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
+            //        dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
             // }
             // else
             // {
-            // 	// compute the complex wave number given s 
-            // 	sr = 0.; si= twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now *MUST MATCH OTHERS
-            // 	kr = sr; ki= si;
-            // 	dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
-            // 	printF(" Using k = %e + %e I\n",kr,ki);
+            //        // compute the complex wave number given s 
+            //        sr = 0.; si= twoPi*sqrt( kx*kx + ky*ky + kz*kz ); // Choose s : do this for now *MUST MATCH OTHERS
+            //        kr = sr; ki= si;
+            //        dmp.getBianisotropicPlaneWaveSolution( kv, kr,ki,evr,evi,chi,polarization );
+            //        printF(" Using k = %e + %e I\n",kr,ki);
             // }
             // // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
             // printF("BA plane wave: getErrors: s=%9.3e + %9.3e I, k=%9.3e + %9.3e I, evr=[%g,%g,%g,%g,%g,%g]\n",
-            // 	     sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+            //             sr,si,kr,ki,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
                         if( !solveForAllFields )
                         {
-      	// TEz mode: 
-                  	evr[2]=evr[5]; evi[2]=evi[5];
+              // TEz mode: 
+                            evr[2]=evr[5]; evi[2]=evi[5];
                         }
             // const real expt  =exp(sr*tE);  
                         RealArray kDotx(I1,I2,I3);
                         kDotx =  kv[0]*xe +kv[1]*ye;
                         for( int m=ex; m<=hz; m++ )
                         {
-                  	errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
-                                       	                     (sin( kr*kDotx + si*t )*evr[m] +
-                                    			      cos( kr*kDotx + si*t )*evi[m]) *exp( sr*t - ki*kDotx);  // ** could optimize **
-      	// errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye - omega*t )*ev[m];
+                            errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
+                                                                      (sin( kr*kDotx + si*t )*evr[m] +
+                                                                        cos( kr*kDotx + si*t )*evi[m]) *exp( sr*t - ki*kDotx);  // ** could optimize **
+              // errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye - omega*t )*ev[m];
                         }
                         if( dmp.isDispersiveMaterial() )
                         {
@@ -1343,7 +1343,7 @@ getErrors( int current, real t, real dt )
                                                                                     ( sin( kr*kDotx + si*t )*chi(m,0) +
                                                                                         cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx); // ** could optimize **
                             }
-      	// printF("\n @@@@ getErr: BAMX plane wave: saved polarization errors at t=%8.2e, numPolarizationTerms=%d\n",t,numPolarizationTerms);
+              // printF("\n @@@@ getErr: BAMX plane wave: saved polarization errors at t=%8.2e, numPolarizationTerms=%d\n",t,numPolarizationTerms);
                         }
                     }
                     else if( localDispersionModel == noDispersion )
@@ -1461,16 +1461,16 @@ getErrors( int current, real t, real dt )
             // RealArray chi;
             // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi );
             // printF("BA plane wave: getErrors: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g]\n",
-            // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+            //             sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
             // const real expt  =exp(sr*tE);  
                         RealArray kDotx(I1,I2,I3);
                         kDotx =  kv[0]*xe + kv[1]*ye + kv[2]*ze;
                         for( int m=ex; m<=hz; m++ )
                         {
-                  	errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
-                                       	                     (sin( kr*kDotx + si*t )*evr[m] +
-                                    			      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx); 
-      	// errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye +kv[2]*ze - omega*tE )*ev[m];
+                            errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) -
+                                                                      (sin( kr*kDotx + si*t )*evr[m] +
+                                                                        cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx); 
+              // errLocal(I1,I2,I3,m) = uLocal(I1,I2,I3,m) - sin( kv[0]*xe +kv[1]*ye +kv[2]*ze - omega*tE )*ev[m];
                         }
                         if( dmp.isDispersiveMaterial() )
                         {
@@ -1538,7 +1538,7 @@ getErrors( int current, real t, real dt )
                     }
                 }
             }
-          	    
+                        
         }
         else if( knownSolutionOption==twilightZoneKnownSolution )
         {
@@ -1618,9 +1618,9 @@ getErrors( int current, real t, real dt )
                             }
               // --- nonlinear model variables ---
                             for( int na=0; na<numberOfAtomicLevels; na++ )
-                  	{
+                            {
                                 errNonlinear(i1,i2,i3,na) = qLocal(i1,i2,i3,na) - e(x0,y0,0.,nce+na,tE);
-                  	}
+                            }
                         }
                     }
                     else if( localDispersionModel != noDispersion && method==bamx )
@@ -1720,9 +1720,9 @@ getErrors( int current, real t, real dt )
                             }
               // --- nonlinear model variables ---
                             for( int na=0; na<numberOfAtomicLevels; na++ )
-                  	{
+                            {
                                 errNonlinear(i1,i2,i3,na) = qLocal(i1,i2,i3,na) -e(x0,y0,z0,nce+na,tE);
-                  	}
+                            }
                         }
                     } 
                     else if( localDispersionModel != noDispersion && method==bamx )
@@ -1748,6 +1748,16 @@ getErrors( int current, real t, real dt )
                 {
                     display(erre(J1,J2,J3),sPrintF("getErrors: errE on grid %i at t=%e",grid,t),pDebugFile,"%9.2e "); 
                     display(errh(J1,J2,J3),sPrintF("getErrors: errH on grid %i at t=%e",grid,t),pDebugFile,"%9.2e "); 
+                    if( localDispersionModel != noDispersion  && method==nfdtd )
+                    {
+                        Range all;
+                        display(errPolarization(I1,I2,I3,all),sPrintF("getErrors: errP on grid %i at t=%e",grid,t),pDebugFile,"%9.2e "); 
+                        if( numberOfAtomicLevels>0 )
+                        {
+                            Range Na = numberOfAtomicLevels;
+                            display(errNonlinear(I1,I2,I3,Na),sPrintF("getErrors: errN on grid %i at t=%e",grid,t),pDebugFile,"%9.2e "); 
+                        }
+                    }
                 }
             }
         
@@ -1967,45 +1977,45 @@ getErrors( int current, real t, real dt )
                         Index J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
                         if( solveForAllFields )
                         {
-                  	OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
-                  	FOR_3D(i1,i2,i3,J1,J2,J3)
-                  	{
-                    	  real xde=X0(i1,i2,i3)-x0;
-                    	  real yde=X1(i1,i2,i3)-y0;
-      	  // TEZ mode 
-                    	  errLocal(i1,i2,i3,ex) = uLocal(i1,i2,i3,ex) - cos(fx*xde)*sin(fy*yde)*phiEx;  
-                    	  errLocal(i1,i2,i3,ey) = uLocal(i1,i2,i3,ey) - sin(fx*xde)*cos(fy*yde)*phiEy;  
-                    	  errLocal(i1,i2,i3,hz) = uLocal(i1,i2,i3,hz) - cos(fx*xde)*cos(fy*yde)*phiHz;
-      	  // TMZ mode:  (independent from TEz -- could have a different amplitude)
-                    	  errLocal(i1,i2,i3,hx) = uLocal(i1,i2,i3,hx) - sin(fx*xde)*cos(fy*yde)*phiHx;  
-                    	  errLocal(i1,i2,i3,hy) = uLocal(i1,i2,i3,hy) - cos(fx*xde)*sin(fy*yde)*phiHy;  
-                    	  errLocal(i1,i2,i3,ez) = uLocal(i1,i2,i3,ez) - sin(fx*xde)*sin(fy*yde)*phiEz;
-                  	}
+                            OV_GET_SERIAL_ARRAY(real,(*cgerrp)[grid],errLocal);
+                            FOR_3D(i1,i2,i3,J1,J2,J3)
+                            {
+                                real xde=X0(i1,i2,i3)-x0;
+                                real yde=X1(i1,i2,i3)-y0;
+                // TEZ mode 
+                                errLocal(i1,i2,i3,ex) = uLocal(i1,i2,i3,ex) - cos(fx*xde)*sin(fy*yde)*phiEx;  
+                                errLocal(i1,i2,i3,ey) = uLocal(i1,i2,i3,ey) - sin(fx*xde)*cos(fy*yde)*phiEy;  
+                                errLocal(i1,i2,i3,hz) = uLocal(i1,i2,i3,hz) - cos(fx*xde)*cos(fy*yde)*phiHz;
+                // TMZ mode:  (independent from TEz -- could have a different amplitude)
+                                errLocal(i1,i2,i3,hx) = uLocal(i1,i2,i3,hx) - sin(fx*xde)*cos(fy*yde)*phiHx;  
+                                errLocal(i1,i2,i3,hy) = uLocal(i1,i2,i3,hy) - cos(fx*xde)*sin(fy*yde)*phiHy;  
+                                errLocal(i1,i2,i3,ez) = uLocal(i1,i2,i3,ez) - sin(fx*xde)*sin(fy*yde)*phiEz;
+                            }
                         }
                         else
                         {
-                  	J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
-                  	J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
-                  	J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
-                  	FOR_3D(i1,i2,i3,J1,J2,J3)
-                  	{
-                    	  xd=X0(i1,i2,i3)-x0;
-                    	  yd=X1(i1,i2,i3)-y0;
-                    	  ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*phiHz;
-      	  // ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
-                  	}
-                  	J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
-                  	J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
-                  	J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
-                  	FOR_3(i1,i2,i3,J1,J2,J3)
-                  	{
-                    	  xd=X0(i1,i2,i3)-x0;
-                    	  yd=X1(i1,i2,i3)-y0;
-                    	  ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*phiEx;  // Ex.t = Hz.y
-                    	  ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*phiEy;  // Ey.t = - Hz.x
-      	  // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
-      	  // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
-                  	}
+                            J1 = Range(max(Ih1.getBase(),uhl.getBase(0)),min(Ih1.getBound(),uhl.getBound(0)));
+                            J2 = Range(max(Ih2.getBase(),uhl.getBase(1)),min(Ih2.getBound(),uhl.getBound(1)));
+                            J3 = Range(max(Ih3.getBase(),uhl.getBase(2)),min(Ih3.getBound(),uhl.getBound(2)));
+                            FOR_3D(i1,i2,i3,J1,J2,J3)
+                            {
+                                xd=X0(i1,i2,i3)-x0;
+                                yd=X1(i1,i2,i3)-y0;
+                                ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*phiHz;
+                // ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3) - cos(fx*xd)*cos(fy*yd)*cos(omega*tH);
+                            }
+                            J1 = Range(max(Ie1.getBase(),uel.getBase(0)),min(Ie1.getBound(),uel.getBound(0)));
+                            J2 = Range(max(Ie2.getBase(),uel.getBase(1)),min(Ie2.getBound(),uel.getBound(1)));
+                            J3 = Range(max(Ie3.getBase(),uel.getBase(2)),min(Ie3.getBound(),uel.getBound(2)));
+                            FOR_3(i1,i2,i3,J1,J2,J3)
+                            {
+                                xd=X0(i1,i2,i3)-x0;
+                                yd=X1(i1,i2,i3)-y0;
+                                ERREX(i1,i2,i3)=UEX(i1,i2,i3) - cos(fx*xd)*sin(fy*yd)*phiEx;  // Ex.t = Hz.y
+                                ERREY(i1,i2,i3)=UEY(i1,i2,i3) - sin(fx*xd)*cos(fy*yd)*phiEy;  // Ey.t = - Hz.x
+                // ERREX(i1,i2,i3)=UEX(i1,i2,i3) - (-fy/omega)*cos(fx*xd)*sin(fy*yd)*sin(omega*tE);  // Ex.t = Hz.y
+                // ERREY(i1,i2,i3)=UEY(i1,i2,i3) - ( fx/omega)*sin(fx*xd)*cos(fy*yd)*sin(omega*tE);  // Ey.t = - Hz.x
+                            }
                         }
                         if( localDispersionModel!=noDispersion )
                         {
@@ -2560,160 +2570,160 @@ getErrors( int current, real t, real dt )
             { 
                 realSerialArray errLocal; getLocalArrayWithGhostBoundaries((*cgerrp)[grid],errLocal);
 
-	// adjust array dimensions for local arrays
-      	Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
-      	Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
-      	Index J3 = Range(max(I3.getBase(),uel.getBase(2)),min(I3.getBound(),uel.getBound(2)));
+        // adjust array dimensions for local arrays
+                Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
+                Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
+                Index J3 = Range(max(I3.getBase(),uel.getBase(2)),min(I3.getBound(),uel.getBound(2)));
 
-      // ------------ macro for the plane material interface -------------------------
-      // error: initialCondition, error, boundaryCondition
-      // -----------------------------------------------------------------------------
-            int i1,i2,i3;
-            real tm=t-dt,x,y,z;
-            const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
-        // NOTE: dispersion version is a user defined known solution
-                if( dispersionModel != noDispersion )
-                {
-                    printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
-                    OV_ABORT("error");
-                }
-                if( method==bamx )
-                {
-          // =================== BA MAXWELL ======================
-                    if( numberOfDimensions==2 )
+        // ------------ macro for the plane material interface -------------------------
+        // error: initialCondition, error, boundaryCondition
+        // -----------------------------------------------------------------------------
+                int i1,i2,i3;
+                real tm=t-dt,x,y,z;
+                const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
+          // NOTE: dispersion version is a user defined known solution
+                    if( dispersionModel != noDispersion )
                     {
-                        assert( !solveForAllFields );  // finish me 
-                        z=0.;
-                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
+                        OV_ABORT("error");
+                    }
+                    if( method==bamx )
+                    {
+            // =================== BA MAXWELL ======================
+                        if( numberOfDimensions==2 )
                         {
-                  	x = XEP(i1,i2,i3,0);
-                  	y = XEP(i1,i2,i3,1);
-                            real u1,u2,u3;
-                            if( x < 0. ) // **fix me**
-                  	{
-                    	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                    	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                    	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                  	}
-                  	else
-                  	{
-                                u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                  	}
-                                ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
-                                ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
-                                ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+                            assert( !solveForAllFields );  // finish me 
+                            z=0.;
+                            FOR_3D(i1,i2,i3,J1,J2,J3)
+                            {
+                      	x = XEP(i1,i2,i3,0);
+                      	y = XEP(i1,i2,i3,1);
+                                real u1,u2,u3;
+                                if( x < 0. ) // **fix me**
+                      	{
+                        	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                        	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                        	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                      	}
+                      	else
+                      	{
+                                    u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                    u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                    u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                      	}
+                                    ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                                    ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                                    ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+                            }
+                        }
+                        else
+                        {
+                            OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
                         }
                     }
-                    else
+          // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
+                    else if( numberOfDimensions==2 )
                     {
-                        OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+                      z=0.;
+                      if( grid < numberOfComponentGrids/2 )
+                      { // incident plus reflected wave.
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            x = XEP(i1,i2,i3,0);
+                            y = XEP(i1,i2,i3,1);
+                            real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            real u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                              ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                              ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                              ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+                              if( method==sosup )
+                              {
+                       	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,hzt) = uLocal(i1,i2,i3,hzt)-pmct*(pmc[10]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                              } 
+                        }
+                      }
+                      else
+                      {
+            // transmitted wave
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            x = XEP(i1,i2,i3,0);
+                            y = XEP(i1,i2,i3,1);
+                            real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                            real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                            real u3 = (pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                              ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                              ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                              ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
+                              if( method==sosup )
+                              {
+                       	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-(pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-(pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,hzt) = uLocal(i1,i2,i3,hzt)-(pmct*pmc[17]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                              }       
+                        }
+                      }
                     }
-                }
-        // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-                else if( numberOfDimensions==2 )
-                {
-                  z=0.;
-                  if( grid < numberOfComponentGrids/2 )
-                  { // incident plus reflected wave.
-                    FOR_3D(i1,i2,i3,J1,J2,J3)
+                    else // --- 3D -- 
                     {
-                        x = XEP(i1,i2,i3,0);
-                        y = XEP(i1,i2,i3,1);
-                        real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                        real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                        real u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                          ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
-                          ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
-                          ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
-                          if( method==sosup )
-                          {
-                   	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,hzt) = uLocal(i1,i2,i3,hzt)-pmct*(pmc[10]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                          } 
+                      if( grid < numberOfComponentGrids/2 )
+                      { // incident plus reflected wave.
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            x = XEP(i1,i2,i3,0);
+                            y = XEP(i1,i2,i3,1);
+                            z = XEP(i1,i2,i3,2);
+                            real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                            real u3 = (pmc[4]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                              ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                              ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                              ERREZ(i1,i2,i3)=UEZ(i1,i2,i3)-u3;
+                              if( method==sosup )
+                              {
+                       	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt)-pmct*(pmc[4]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                              } 
+                        }
+                      }
+                      else
+                      {
+            // transmitted wave
+                        FOR_3D(i1,i2,i3,J1,J2,J3)
+                        {
+                            x = XEP(i1,i2,i3,0);
+                            y = XEP(i1,i2,i3,1);
+                            z = XEP(i1,i2,i3,2);
+                            real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                            real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                            real u3 = (pmc[14]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                              ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
+                              ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
+                              ERREZ(i1,i2,i3)=UEZ(i1,i2,i3)-u3;
+                              if( method==sosup )
+                              {
+                       	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-(pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-(pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                       	 errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt)-(pmct*pmc[14]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                              } 
+                        }
+                      }
                     }
-                  }
-                  else
-                  {
-          // transmitted wave
-                    FOR_3D(i1,i2,i3,J1,J2,J3)
-                    {
-                        x = XEP(i1,i2,i3,0);
-                        y = XEP(i1,i2,i3,1);
-                        real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                        real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                        real u3 = (pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                          ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
-                          ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
-                          ERRHZ(i1,i2,i3)=UHZ(i1,i2,i3)-u3;
-                          if( method==sosup )
-                          {
-                   	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-(pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-(pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,hzt) = uLocal(i1,i2,i3,hzt)-(pmct*pmc[17]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                          }       
-                    }
-                  }
-                }
-                else // --- 3D -- 
-                {
-                  if( grid < numberOfComponentGrids/2 )
-                  { // incident plus reflected wave.
-                    FOR_3D(i1,i2,i3,J1,J2,J3)
-                    {
-                        x = XEP(i1,i2,i3,0);
-                        y = XEP(i1,i2,i3,1);
-                        z = XEP(i1,i2,i3,2);
-                        real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                        real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                        real u3 = (pmc[4]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                          ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
-                          ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
-                          ERREZ(i1,i2,i3)=UEZ(i1,i2,i3)-u3;
-                          if( method==sosup )
-                          {
-                   	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt)-pmct*(pmc[4]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                          } 
-                    }
-                  }
-                  else
-                  {
-          // transmitted wave
-                    FOR_3D(i1,i2,i3,J1,J2,J3)
-                    {
-                        x = XEP(i1,i2,i3,0);
-                        y = XEP(i1,i2,i3,1);
-                        z = XEP(i1,i2,i3,2);
-                        real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                        real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                        real u3 = (pmc[14]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                          ERREX(i1,i2,i3)=UEX(i1,i2,i3)-u1;
-                          ERREY(i1,i2,i3)=UEY(i1,i2,i3)-u2;
-                          ERREZ(i1,i2,i3)=UEZ(i1,i2,i3)-u3;
-                          if( method==sosup )
-                          {
-                   	 errLocal(i1,i2,i3,ext) = uLocal(i1,i2,i3,ext)-(pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,eyt) = uLocal(i1,i2,i3,eyt)-(pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                   	 errLocal(i1,i2,i3,ezt) = uLocal(i1,i2,i3,ezt)-(pmct*pmc[14]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                          } 
-                    }
-                  }
-                }
             }
             else
             {
-      	printF("MX:getErrors: ERROR: initialConditionOption==planeMaterialInterfaceInitialCondition but method=%i\n",
-             	       (int)method);
-      	OV_ABORT("ERROR");
+                printF("MX:getErrors: ERROR: initialConditionOption==planeMaterialInterfaceInitialCondition but method=%i\n",
+                              (int)method);
+                OV_ABORT("ERROR");
             }
         }
         else if( knownSolutionOption==gaussianIntegralKnownSolution )
         {
-          	    
+                        
       // adjust array dimensions for local arrays
             Index J1 = Range(max(I1.getBase(),uel.getBase(0)),min(I1.getBound(),uel.getBound(0)));
             Index J2 = Range(max(I2.getBase(),uel.getBase(1)),min(I2.getBound(),uel.getBound(1)));
@@ -2743,7 +2753,7 @@ getErrors( int current, real t, real dt )
                 }
             }
 
-          	    
+                        
         }
         else if( compareToReferenceShowFile )
         {
@@ -2754,13 +2764,13 @@ getErrors( int current, real t, real dt )
 
             assert( uReference!=NULL );
             OV_GET_SERIAL_ARRAY(real,(*uReference)[grid],urLocal);
-          	    
+                        
       //            err(I1,I2,I3,C)=fabs(u(I1,I2,I3,C)-ur(I1,I2,I3,C));
 
             if( solveForMagneticField )
             {
-      	Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
-      	errh(Ih1,Ih2,Ih3,Ch)=uh(Ih1,Ih2,Ih3,Ch)-urLocal(Ih1,Ih2,Ih3,Ch);
+                Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
+                errh(Ih1,Ih2,Ih3,Ch)=uh(Ih1,Ih2,Ih3,Ch)-urLocal(Ih1,Ih2,Ih3,Ch);
             }
             
             Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
@@ -2947,7 +2957,7 @@ getErrors( int current, real t, real dt )
             // -- dispersion model components --
                         if( localDispersionModel!=noDispersion )
                         {
-                  	if( method==bamx ) OV_ABORT("finish me");
+                            if( method==bamx ) OV_ABORT("finish me");
                             FOR_3D(i1,i2,i3,J1,J2,J3)
                             {
                                 for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -2991,7 +3001,7 @@ getErrors( int current, real t, real dt )
             // -- dispersion model components --
                         if( localDispersionModel!=noDispersion )
                         {
-                  	if( method==bamx ) OV_ABORT("finish me");
+                            if( method==bamx ) OV_ABORT("finish me");
                             FOR_3D(i1,i2,i3,J1,J2,J3)
                             {
                                 for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -3043,27 +3053,27 @@ getErrors( int current, real t, real dt )
 
             if( method==nfdtd && numberOfPolarizationVectors>0 )
             {
-        	  Range Pc = numberOfPolarizationVectors*numberOfDimensions;
-        	  errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+                    Range Pc = numberOfPolarizationVectors*numberOfDimensions;
+                    errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
 
-        	  if( numberOfAtomicLevels>0 )
-        	  {
-          	    Range Na=numberOfAtomicLevels;
-          	    errNonlinear(I1,I2,I3,Na) -= qLocal(I1,I2,I3,Na);  // **check me**
-        	  }
-        	  
+                    if( numberOfAtomicLevels>0 )
+                    {
+                        Range Na=numberOfAtomicLevels;
+                        errNonlinear(I1,I2,I3,Na) -= qLocal(I1,I2,I3,Na);  // **check me**
+                    }
+                    
             }
             if( method==bamx )
             {
                 const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
-      	if(  numPolarizationTerms>0 )     
-      	{
-        	  Range Pc = numPolarizationTerms;
-        	  errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
+                if(  numPolarizationTerms>0 )     
+                {
+                    Range Pc = numPolarizationTerms;
+                    errPolarization(I1,I2,I3,Pc) -= pLocal(I1,I2,I3,Pc);
 
-	  // printF("\n @@@@@@@ getErr: save BAMX polarization errors, numberOfPolarizationVectors=%d, t=%8.2e @@@@@@@@ \n\n",
-	  // 	 numberOfPolarizationVectors,t);
-      	}
+          // printF("\n @@@@@@@ getErr: save BAMX polarization errors, numberOfPolarizationVectors=%d, t=%8.2e @@@@@@@@ \n\n",
+          //     numberOfPolarizationVectors,t);
+                }
             }
             
         }
@@ -3085,7 +3095,7 @@ getErrors( int current, real t, real dt )
         getIndex(mg.gridIndexRange(),I1,I2,I3);
         RealArray errMax(C);
         errMax=0.;  // max error on this grid
-      	
+                
         if ( method==dsiMatVec && !energyOnly )
         { // punt here and use a special function that knows how to exclude uns. ghost points
 #ifdef USE_PPP
@@ -3100,77 +3110,77 @@ getErrors( int current, real t, real dt )
             Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
             if( true )
             {
-      	const int ng=orderOfAccuracyInSpace/2;
-      	const int ng3 = mg.numberOfDimensions()==2 ? 0 : ng;
+                const int ng=orderOfAccuracyInSpace/2;
+                const int ng3 = mg.numberOfDimensions()==2 ? 0 : ng;
   
-      	Index J1 = Range(max(I1.getBase(),uel.getBase(0)+ng ),min(I1.getBound(),uel.getBound(0)-ng ));
-      	Index J2 = Range(max(I2.getBase(),uel.getBase(1)+ng ),min(I2.getBound(),uel.getBound(1)-ng ));
-      	Index J3 = Range(max(I3.getBase(),uel.getBase(2)+ng3),min(I3.getBound(),uel.getBound(2)-ng3));
+                Index J1 = Range(max(I1.getBase(),uel.getBase(0)+ng ),min(I1.getBound(),uel.getBound(0)-ng ));
+                Index J2 = Range(max(I2.getBase(),uel.getBase(1)+ng ),min(I2.getBound(),uel.getBound(1)-ng ));
+                Index J3 = Range(max(I3.getBase(),uel.getBase(2)+ng3),min(I3.getBound(),uel.getBound(2)-ng3));
 
-      	int i1,i2,i3;
-      	FOR_3D(i1,i2,i3,J1,J2,J3)
-      	{
-        	  if( MASK(i1,i2,i3)!=0 )
-        	  {
-          	    for( int c=C.getBase(); c<=C.getBound(); c++ )
-          	    {
+                int i1,i2,i3;
+                FOR_3D(i1,i2,i3,J1,J2,J3)
+                {
+                    if( MASK(i1,i2,i3)!=0 )
+                    {
+                        for( int c=C.getBase(); c<=C.getBound(); c++ )
+                        {
 #undef ERR
 #define ERR(i0,i1,i2,i3) errep[i0+ueDim0*(i1+ueDim1*(i2+ueDim2*(i3)))]
 #undef U
 #define U(i0,i1,i2,i3) uep[i0+ueDim0*(i1+ueDim1*(i2+ueDim2*(i3)))]
 
-            	      errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
-            	      solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
+                            errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
+                            solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
 #undef ERR
-#undef U	    
-          	    }
+#undef U            
+                        }
 
-          	    if( method==nfdtd )
-          	    {
-            	      for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-            	      {
-            		const int pc= iv*numberOfDimensions;
-            		for( int dir=0; dir<numberOfDimensions; dir++ )
-            		{
-              		  maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
-              		  polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
-            		}
-            	      }
-          	    }
-          	    else if( method==bamx )
-          	    {
+                        if( method==nfdtd )
+                        {
+                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                            {
+                                const int pc= iv*numberOfDimensions;
+                                for( int dir=0; dir<numberOfDimensions; dir++ )
+                                {
+                                    maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
+                                    polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
+                                }
+                            }
+                        }
+                        else if( method==bamx )
+                        {
                             const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
-            	      for( int m=0; m<numPolarizationTerms; m++ )
-            	      {
-            		const int pc= hz + m + 1;  // TZ solution sits here 
+                            for( int m=0; m<numPolarizationTerms; m++ )
+                            {
+                                const int pc= hz + m + 1;  // TZ solution sits here 
                                 real maxErrP = fabs(errPolarization(i1,i2,i3,m));
-		// printF("t=%8.2e: (i1,i2)=(%d,%d) max-err P[%d] =%9.2e\n",t,i1,i2,m,maxErrP);
-            		
-            		maxErrPolarization(domain) = max(maxErrPolarization(domain),maxErrP);
-            		polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,m))); 
-            	      }
-          	    }
+                // printF("t=%8.2e: (i1,i2)=(%d,%d) max-err P[%d] =%9.2e\n",t,i1,i2,m,maxErrP);
+                                
+                                maxErrPolarization(domain) = max(maxErrPolarization(domain),maxErrP);
+                                polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,m))); 
+                            }
+                        }
 
             // --- nonlinear variables ---
                         for( int na=0; na<numberOfAtomicLevels; na++ )
-          	    {
-            	      maxErrNonlinear(domain) = max(maxErrNonlinear(domain),fabs(errNonlinear(i1,i2,i3,na)));
-            	      nonlinearNorm(domain)   = max(nonlinearNorm(domain),fabs(qLocal(i1,i2,i3,na))); 
-          	    }
-          	    
-          	    
+                        {
+                            maxErrNonlinear(domain) = max(maxErrNonlinear(domain),fabs(errNonlinear(i1,i2,i3,na)));
+                            nonlinearNorm(domain)   = max(nonlinearNorm(domain),fabs(qLocal(i1,i2,i3,na))); 
+                        }
+                        
+                        
                     }
           // ::display(pLocal,"pLocal","%8.1e ");
                 
           // printF(">> getErr >>> maxErrPolarization(domain=%i)=%e solutionNorm=%e\n",domain,maxErrPolarization(domain),
           //                solutionNorm(epc));
                 
-          	    
+                        
                 } // end for_3d
 
-      	if( false && method==bamx )
-        	  printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d (total, P and Q), maxErrPolarization(domain)=%9.3e\n",
-             		 numberOfPolarizationVectors,maxErrPolarization(domain));
+                if( false && method==bamx )
+                    printF("getERR: BAMX: getErrTZ, numberOfPolarizationVectors=%d (total, P and Q), maxErrPolarization(domain)=%9.3e\n",
+                                  numberOfPolarizationVectors,maxErrPolarization(domain));
 
                 if( debug & 2 )
                 {
@@ -3181,9 +3191,9 @@ getErrors( int current, real t, real dt )
                 }
                 for( int c=C.getBase(); c<=C.getBound(); c++ )
                 {
-// 	  errMax(c)=getMaxValue(errMax(c));
-// 	  solutionNorm(c)=getMaxValue(solutionNorm(c));
-            	      
+//        errMax(c)=getMaxValue(errMax(c));
+//        solutionNorm(c)=getMaxValue(solutionNorm(c));
+                            
                     maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
                 }
                 
@@ -3191,7 +3201,7 @@ getErrors( int current, real t, real dt )
             else // check inside radius
             {
         // printF(" Check errors within the sphere of radius %10.2e\n",radiusForCheckingErrors);
-        	  
+                    
         // new way
                 const int ng=orderOfAccuracyInSpace/2;
                 const int ng3 = mg.numberOfDimensions()==2 ? 0 : ng;
@@ -3202,11 +3212,11 @@ getErrors( int current, real t, real dt )
 
                 Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
                 Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
-          	    
+                        
                 if ( method==nfdtd  || method==bamx )
                 {
                     const real radiusForCheckingErrorsSquared=SQR(radiusForCheckingErrors);
-            		
+                                
                     real radius;
                     int i1,i2,i3;
 #undef ERR
@@ -3220,33 +3230,33 @@ getErrors( int current, real t, real dt )
                         {
                             radius = SQR(X0(i1,i2,i3))+SQR(X1(i1,i2,i3));
                             if( numberOfDimensions==3 ) radius+=SQR(X2(i1,i2,i3));
-                  			
+                                                
                             if( radius<radiusForCheckingErrorsSquared && MASK(i1,i2,i3)!=0 )
                             {
                                 for( int c=C.getBase(); c<=C.getBound(); c++ )
                                 {
                                     errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
                                     solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
-                        				
+                                                                
                                 }
                                 if( method==nfdtd )
-            		{
-              		  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-              		  {
-                		    const int pc= iv*numberOfDimensions;
-                		    for( int dir=0; dir<numberOfDimensions; dir++ )
-                		    {
-                  		      maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
-                  		      polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
-                		    }
+                                {
+                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                    {
+                                        const int pc= iv*numberOfDimensions;
+                                        for( int dir=0; dir<numberOfDimensions; dir++ )
+                                        {
+                                            maxErrPolarization(domain) = max(maxErrPolarization(domain),fabs(errPolarization(i1,i2,i3,pc+dir)));
+                                            polarizationNorm(domain)=max(polarizationNorm(domain),fabs(pLocal(i1,i2,i3,pc+dir))); 
+                                        }
                                 
-              		  }
-            		}
-            		else
-            		{
+                                    }
+                                }
+                                else
+                                {
                                     OV_ABORT("finish me");
-            		}
-            		
+                                }
+                                
                             }
                             else
                             {
@@ -3268,14 +3278,14 @@ getErrors( int current, real t, real dt )
                         {
                             radius = SQR(X(i1,i2,i3,0))+SQR(X(i1,i2,i3,1));
                             if( numberOfDimensions==3 ) radius+=SQR(X(i1,i2,i3,2));
-                  			
+                                                
                             if( radius<radiusForCheckingErrorsSquared && MASK(i1,i2,i3)!=0 )
                             {
                                 for( int c=C.getBase(); c<=C.getBound(); c++ )
                                 {
                                     errMax(c)=max(errMax(c),fabs(ERR(i1,i2,i3,c)));           // this is the max err on this grid
                                     solutionNorm(c)=max(solutionNorm(c),fabs(U(i1,i2,i3,c)));
-                        				
+                                                                
                                 }
 
                                 for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
@@ -3301,29 +3311,29 @@ getErrors( int current, real t, real dt )
                                         errPolarization(i1,i2,i3,pc+dir)=0.;
                                 }
                             }
-                  			
+                                                
                         }
                     }
                 }
                 
 #undef ERR
-#undef U		
-      	if( debug & 2 )
-      	{
-        	  fprintf(pDebugFile," *** Max errors on this processor for grid %i at t=%8.2e: ",grid,t);
-        	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-          	    fprintf(pDebugFile,"%10.4e,",errMax(c));
+#undef U                
+                if( debug & 2 )
+                {
+                    fprintf(pDebugFile," *** Max errors on this processor for grid %i at t=%8.2e: ",grid,t);
+                    for( int c=C.getBase(); c<=C.getBound(); c++ )
+                        fprintf(pDebugFile,"%10.4e,",errMax(c));
                     fprintf(pDebugFile,"\n");
-      	}
-      	
-      	
-        	for( int c=C.getBase(); c<=C.getBound(); c++ )
-        	{
-// 	  errMax(c)=getMaxValue(errMax(c));
-// 	  solutionNorm(c)=getMaxValue(solutionNorm(c));
-                		    
-          	  maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
-        	}
+                }
+                
+                
+                for( int c=C.getBase(); c<=C.getBound(); c++ )
+                {
+//        errMax(c)=getMaxValue(errMax(c));
+//        solutionNorm(c)=getMaxValue(solutionNorm(c));
+                                        
+                    maximumError(c)=max(maximumError(c),errMax(c));  // max error over all grids
+                }
             }
         
         } // end else if inside radius
@@ -3334,7 +3344,7 @@ getErrors( int current, real t, real dt )
 #endif
         if( computeErrorsAtGhost && !usePML && (method==nfdtd || method==sosup || method==bamx ) )
         {
-            	      
+                            
       // compute error including ghost points
       // *** this is wrong ==> only check ghost points where mask on boundary !=0 
             realMappedGridFunction & err = mgp==NULL ? (*cgerrp)[grid] : *errp;
@@ -3342,57 +3352,59 @@ getErrors( int current, real t, real dt )
                 realSerialArray errLocal;  getLocalArrayWithGhostBoundaries(err,errLocal);
             #else
                 const realSerialArray & errLocal  =  err;
-            #endif	    
+            #endif        
             
-            	      
+                            
             RealArray ghostError(C,Range(1,numberOfGhost));
             ghostError=0.;
             int c,ghost;
             Index Ig1,Ig2,Ig3;
             for( int axis=0; axis<mg.numberOfDimensions(); axis++)
             {
-      	for( int side=0; side<=1; side++ )
-      	{
-        	  getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+                for( int side=0; side<=1; side++ )
+                {
+                    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
                     bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,I1,I2,I3);
                     if( !ok ) continue;
-        	  for( ghost=1; ghost<=numberOfGhost; ghost++ )
-        	  {
-          	    getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,ghost);
-          	    bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,Ig1,Ig2,Ig3);
-          	    if( !ok ) continue;
+                    for( ghost=1; ghost<=numberOfGhost; ghost++ )
+                    {
+                        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,ghost);
+                        bool ok = ParallelUtility::getLocalArrayBounds(mask,maskLocal,Ig1,Ig2,Ig3);
+                        if( !ok ) continue;
 
-          	    Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
-          	    Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
-                  			
-          	    where( maskLocal(I1,I2,I3)!=0 && maskLocal(Ig1,Ig2,Ig3)!=0 )
-          	    {
-            	      for( c=C.getBase(); c<=C.getBound(); c++ )
-            		ghostError(c,ghost)=max(ghostError(c,ghost),max(fabs(errLocal(Ig1,Ig2,Ig3,c))));
-                      			    
-            	      for( c=C.getBase(); c<=C.getBound(); c++ )
-            	      {
-            		if( max(fabs(errLocal(Ig1,Ig2,Ig3,c)))>1.e+1 )
-            		{
-              		  fprintf(pDebugFile," *** grid=%i side,axis=%i,%i ghost=%i c=%i ****\n",grid,side,axis,ghost,c);
-              		  display(errLocal(Ig1,Ig2,Ig3,c),"ERROR on the ghost line",pDebugFile);
-            		}
-            	      }
-                      			    
-          	    }
-        	  }
-      	}
+                        Index Ch = cg.numberOfDimensions()==2 ? Range(hz,hz) : Range(hx,hz);
+                        Index Ce = cg.numberOfDimensions()==2 ? Range(ex,ey) : Range(ex,ez);
+                                                
+                        where( maskLocal(I1,I2,I3)!=0 && maskLocal(Ig1,Ig2,Ig3)!=0 )
+                        {
+                            for( c=C.getBase(); c<=C.getBound(); c++ )
+                                ghostError(c,ghost)=max(ghostError(c,ghost),max(fabs(errLocal(Ig1,Ig2,Ig3,c))));
+                            if( debug & 4 )
+                            {
+                                for( c=C.getBase(); c<=C.getBound(); c++ )
+                                {
+                                    if( max(fabs(errLocal(Ig1,Ig2,Ig3,c)))>1.e+1 )
+                                    {
+                                        fprintf(pDebugFile," *** grid=%i side,axis=%i,%i ghost=%i c=%i ****\n",grid,side,axis,ghost,c);
+                                        display(errLocal(Ig1,Ig2,Ig3,c),"ERROR on the ghost line",pDebugFile);
+                                    }
+                                }
+                            }
+                            
+                        }
+                    }
+                }
             }
 
             if( debug & 2 )
             {
-      	for( ghost=1; ghost<=numberOfGhost; ghost++ )
-      	{
-        	  fprintf(pDebugFile," t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
-        	  for( c=C.getBase(); c<=C.getBound(); c++ )
-          	    fprintf(pDebugFile,"%8.2e, ",ghostError(c,ghost));
-        	  fprintf(pDebugFile,"\n");
-      	}
+                for( ghost=1; ghost<=numberOfGhost; ghost++ )
+                {
+                    fprintf(pDebugFile," t=%9.3e: grid=%i: Errors at ghost line %i: ",t,grid,ghost);
+                    for( c=C.getBase(); c<=C.getBound(); c++ )
+                        fprintf(pDebugFile,"%8.2e, ",ghostError(c,ghost));
+                    fprintf(pDebugFile,"\n");
+                }
             }
             
         } // end if compute error at ghost
@@ -3456,11 +3468,11 @@ getErrors( int current, real t, real dt )
             DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
             int numberOfPolarizationVectors = 0;
             if( method==nfdtd )
-      	numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
+                numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;
             else if( method==bamx )
             {
-      	int grid=domain; // do this for now 
-      	numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+                int grid=domain; // do this for now 
+                numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
             }
             
       // printF("getErrors: domain=%d, numPolarizationVectors=%i\n",domain,numberOfPolarizationVectors);
@@ -3521,125 +3533,125 @@ getErrors( int current, real t, real dt )
 
             for( int norm=0; norm<numberOfNormsToPrint; norm++ )
             { // norm==0 : max-norm, otherwise Lp-norm with p=norm
-      	int pNorm = norm==0 ? INT_MAX : norm;
+                int pNorm = norm==0 ? INT_MAX : norm;
 
-      	if( norm!=0 ) // max-norm values are already computed -- we could avoid doing this above --
-      	{
-	  // compute the Lp norm
-        	  maximumError=0.;
-        	  const int maskOption=0;  // check points where mask != 0
-        	  const int checkErrorsAtGhostPoints=0;
-        	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-        	  {
-          	    if( pNorm<10000 )
-          	    {
-            	      maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,checkErrorsAtGhostPoints);
-            	      solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,checkErrorsAtGhostPoints);
-          	    }
-          	    else
-          	    { // assume this is the max-norm
-            	      maximumError(c)=maxNorm(cgerr,c,maskOption,checkErrorsAtGhostPoints);
-            	      solutionNorm(c)=maxNorm(cgu  ,c,maskOption,checkErrorsAtGhostPoints);
-          	    }
-        	  }
+                if( norm!=0 ) // max-norm values are already computed -- we could avoid doing this above --
+                {
+          // compute the Lp norm
+                    maximumError=0.;
+                    const int maskOption=0;  // check points where mask != 0
+                    const int checkErrorsAtGhostPoints=0;
+                    for( int c=C.getBase(); c<=C.getBound(); c++ )
+                    {
+                        if( pNorm<10000 )
+                        {
+                            maximumError(c)=lpNorm(pNorm,cgerr,c,maskOption,checkErrorsAtGhostPoints);
+                            solutionNorm(c)=lpNorm(pNorm,cgu  ,c,maskOption,checkErrorsAtGhostPoints);
+                        }
+                        else
+                        { // assume this is the max-norm
+                            maximumError(c)=maxNorm(cgerr,c,maskOption,checkErrorsAtGhostPoints);
+                            solutionNorm(c)=maxNorm(cgu  ,c,maskOption,checkErrorsAtGhostPoints);
+                        }
+                    }
 
-	  // ---- Compute Lp norm errors of polarization vectors ----
-        	  if( dispersionModel != noDispersion )
-        	  {
-          	    if( method==bamx )
-          	    {
-	      // ---- fix me for multiple material domains ---
-            	      int domain=0, grid=0;
-            	      assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
+          // ---- Compute Lp norm errors of polarization vectors ----
+                    if( dispersionModel != noDispersion )
+                    {
+                        if( method==bamx )
+                        {
+              // ---- fix me for multiple material domains ---
+                            int domain=0, grid=0;
+                            assert( cg.numberOfDomains()==1 && cg.numberOfComponentGrids()==1 );
 
-            	      const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
+                            const int numberOfPolarizationVectors = 2*totalNumberOfPolarizationComponents(grid); // Note "2*" : we store [p.p.t]
 
-            	      realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-            	      assert( ppv!=NULL );
-	      // get Pv error grid function
-            	      realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-            	      assert( pepv!=NULL );
+                            realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+                            assert( ppv!=NULL );
+              // get Pv error grid function
+                            realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+                            assert( pepv!=NULL );
                     
-            	      maxErrPolarization(domain)=0.;
-            	      polarizationNorm(domain)=0.;
-            	      for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
-            	      {
-            		const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-            		const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+                            maxErrPolarization(domain)=0.;
+                            polarizationNorm(domain)=0.;
+                            for( int pc=0; pc<numberOfPolarizationVectors; pc++ )
+                            {
+                                const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+                                const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
 
-            		maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-            		polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
-            	      }
-          	    
-          	    }
-          	    else 
-          	    {
+                                maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+                                polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+                            }
+                        
+                        }
+                        else 
+                        {
 
-            	      for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-            	      {
-            		DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-            		const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
-            		if( numberOfPolarizationVectors>0 )
-            		{
+                            for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+                            {
+                                DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+                                const int numberOfPolarizationVectors = dmp.numberOfPolarizationVectors;  
+                                if( numberOfPolarizationVectors>0 )
+                                {
                 
-              		  realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
-              		  assert( ppv!=NULL );
-		  // get Pv error grid function
-              		  realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
-              		  assert( pepv!=NULL );
+                                    realCompositeGridFunction *ppv = getDispersionModelCompositeGridFunction( domain,current );
+                                    assert( ppv!=NULL );
+                  // get Pv error grid function
+                                    realCompositeGridFunction *pepv = getDispersionModelCompositeGridFunction( domain,current,true);
+                                    assert( pepv!=NULL );
                     
-              		  maxErrPolarization(domain)=0.;
-              		  polarizationNorm(domain)=0.;
-              		  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-              		  {
-                		    for( int dir=0; dir<numberOfDimensions; dir++ )
-                		    {
-                  		      const int pc = dir+ iv*numberOfDimensions; // component 
-                  		      const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
-                  		      const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
+                                    maxErrPolarization(domain)=0.;
+                                    polarizationNorm(domain)=0.;
+                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                    {
+                                        for( int dir=0; dir<numberOfDimensions; dir++ )
+                                        {
+                                            const int pc = dir+ iv*numberOfDimensions; // component 
+                                            const real pErr =  lpNorm(pNorm,*pepv,pc,maskOption,checkErrorsAtGhostPoints);
+                                            const real pNorm = lpNorm(pNorm,*ppv ,pc,maskOption,checkErrorsAtGhostPoints);
 
-                  		      maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
-                  		      polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
-                		    }
-              		  }
-            		}
-            	      }
-          	    }
-        	  }
-      	
+                                            maxErrPolarization(domain) = max(maxErrPolarization(domain),pErr);
+                                            polarizationNorm(domain)   = max(polarizationNorm(domain)  ,pNorm);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                
 
-      	}
+                }
 
-      	aString normName;
-      	if( pNorm<1000 )
-        	  sPrintF(normName,"l%i",pNorm);
-      	else
-        	  normName="max";
+                aString normName;
+                if( pNorm<1000 )
+                    sPrintF(normName,"l%i",pNorm);
+                else
+                    normName="max";
                 
                 const bool printErrors = radiusForCheckingErrors>0 && radiusForCheckingErrors<10.;
                 
-      	for( int fileio=0; fileio<2; fileio++ )
-      	{
-        	  FILE *output = fileio==0 ? logFile : stdout;
+                for( int fileio=0; fileio<2; fileio++ )
+                {
+                    FILE *output = fileio==0 ? logFile : stdout;
 
-        	  if( printErrors )
-          	    fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
-                		    t,dt,radiusForCheckingErrors,(const char*)normName);
-        	  else
-          	    fPrintF(output,">>> t=%8.2e dt=%7.1e %s errors:[",t,dt,(const char*)normName);
-
-        	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-          	    fPrintF(output,"%8.2e,",maximumError(c));
-	  // fPrintF(output,"%10.4e,",maximumError(c));
                     if( printErrors )
-              	    fPrintF(output,"], %s (u):[",(const char*)normName);
+                        fPrintF(output,"                t=%8.2e dt=%7.1e %s errors(r=%3.2f):[",
+                                        t,dt,radiusForCheckingErrors,(const char*)normName);
                     else
-              	    fPrintF(output," %s (u):[",(const char*)normName);
+                        fPrintF(output,">>> t=%8.2e dt=%7.1e %s errors:[",t,dt,(const char*)normName);
 
-        	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-          	    fPrintF(output,"%8.2e,",solutionNorm(c));
+                    for( int c=C.getBase(); c<=C.getBound(); c++ )
+                        fPrintF(output,"%8.2e,",maximumError(c));
+          // fPrintF(output,"%10.4e,",maximumError(c));
+                    if( printErrors )
+                        fPrintF(output,"], %s (u):[",(const char*)normName);
+                    else
+                        fPrintF(output," %s (u):[",(const char*)normName);
 
-        	  fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
+                    for( int c=C.getBase(); c<=C.getBound(); c++ )
+                        fPrintF(output,"%8.2e,",solutionNorm(c));
+
+                    fPrintF(output,"] (%i steps)\n",numberOfStepsTaken);
 
                     if( dispersionModel != noDispersion )
                     {
@@ -3652,7 +3664,7 @@ getErrors( int current, real t, real dt )
                     }
                 
                     
-      	}
+                }
             } // end for norm 
         }
 

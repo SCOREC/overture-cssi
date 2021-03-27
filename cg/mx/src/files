@@ -11,7 +11,7 @@ SRC_FILES += Maxwell.C MxParameters.C userDefinedInitialConditions.C userDefined
      advance.C setup.C setupGridFunctions.C solve.C plot.C advanceUnstructured.C \
      advanceStructured.C assignBoundaryConditions.C  \
      updateShowFile.C saveShow.C variableDissipation.C  assignInterfaceBoundaryConditions.C \
-     DSICoeff.C checkGridFunction.C getEnergy.C InterfaceInfo.C project.C   \
+     DSICoeff.C checkGridFunction.C getEnergy.C project.C   \
      advanceFDTD.C defineRegionsAndBodies.C outputHeader.C advanceSOSUP.C \
      userDefinedKnownSolution.C assignUserDefinedKnownSolutionInitialConditions.C \
      printTimeStepInfo.C DispersiveMaterialParameters.C userDefinedProbe.C ReferenceSolution.C SphereExactSolutions.C \
@@ -85,9 +85,9 @@ FSRCO +=  bcOptMaxwell.f bcOptMaxwell2dOrder2.f bcOptMaxwell3dOrder2.f \
           bcOptMaxwell2dOrder4.f bcOptMaxwell3dOrder4.f cornersMxOrder2.f cornersMxOrder4.f evalDispersionRelation.f
 
 # Replaced interface3d.f by interfaceOpt.f90 *wdh* Jan 26, 2021
-FSRCO +=interface3d.f 
+# FSRCO +=interface3d.f 
 # Replaced interface3d.f by interfaceOpt3dOrder4.f90 *wdh* Jan 31, 2021
-FSRCO += interface3dOrder4.f
+# FSRCO += interface3dOrder4.f
 
 # New interface routine -- testing for now
 #   FINISH ME 
@@ -342,10 +342,10 @@ src/interface.f: src/interface.bf src/bcDefineFortranInclude.h
 #
 # -- *NEW* interface routine that generates multiple files, *wdh*  Jan 2021 
 # 
-src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h  src/dispersiveInterfaceMacros2d.h src/nonlinearInterfaceMacros24r.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+src/interfaceOpt.f90: src/interfaceOpt.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h  src/dispersiveInterfaceMacros2d.h src/nonlinearInterfaceMacros24r.h src/nonlinearInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h src/unifiedInterfaceMacros.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt.bf90
 
-src/interfaceOpt3dOrder4.f90: src/interfaceOpt3dOrder4.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/nonlinearInterfaceMacros34c.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
+src/interfaceOpt3dOrder4.f90: src/interfaceOpt3dOrder4.bf90 src/bcDefineFortranInclude.h src/interfaceMacros.h src/dispersiveInterfaceMacros.h src/nonlinearInterfaceMacros.h src/nonlinearInterfaceMacros34c.h src/unifiedInterfaceMacros.h src/interfaceAdeGdmOrder2.h src/interfaceAdeGdmOrder4.h src/interfaceMacros3d.h src/saveStencilMacros.h
 		 @cd src; $(BPP) -clean -quiet -I$(Overture)/include interfaceOpt3dOrder4.bf90
 
 # ------------ new interface files -------

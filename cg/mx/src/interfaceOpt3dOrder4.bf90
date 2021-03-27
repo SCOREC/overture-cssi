@@ -308,6 +308,9 @@ end do
 #Include "nonlinearInterfaceMacros.h"
 #Include "nonlinearInterfaceMacros34c.h"
 
+#Include "unifiedInterfaceMacros.h"
+#Include "unifiedInterfaceMacros34c.h"
+
 
 ! ------------------ OLD ------------------------------
 ! This macro will assign the jump conditions on the boundary
@@ -3993,16 +3996,17 @@ end do
          end if
  
  
-         ! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2; 
-
          if( avoidInterfaceIterations.eq.1 )then
+
            ! Note: checkCoeff fails below for 2nd-order coeff's (they are correct)
            ! Check coeff is OK if we set the next line, but then accuracy degrades to 2 !! why?
-           !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2;
+           !#perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=2;
 
            ! **TEST** assign ghost to 2nd-order first
            if( t .lt. 3.*dt .and. debug.gt.0 )then
-             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER ****")')
+             ! write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER (2nd-order residuals) ****")')
+             
+             write(*,'(" **** STAGE I: ASSIGN GHOST TO 2ND ORDER (4th-order residuals) ****")')
            end if
 
            orderOfAccuracy=2 ! temporarily set (for checkCoeff only?)
@@ -4015,6 +4019,11 @@ end do
              #If #MODEL eq "none"
                assignInterfaceGhost23c()
              #End 
+
+           else if( useUnifiedInterfaceMacros.eq.1 ) then
+             ! Use Qing's unified interface macros
+             assignUnifiedInterfaceGhost23c()
+
            else if( useNonlinearModel.eq.0 )then
              ! dispersive case
              #If #MODEL eq "gdm"
@@ -4025,12 +4034,13 @@ end do
              #If #MODEL eq "mla"
                assignNonlinearInterfaceGhost23c()
              #End 
+             
            end if
            resetIndexBounds()         
 
 
            orderOfAccuracy=4 ! reset 
-           !! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
+#perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
          end if
          ! perl $DIM=3; $GRIDTYPE="curvilinear"; $ORDER=4; 
 
@@ -4059,6 +4069,11 @@ end do
               #If #MODEL eq "none"
                 assignInterfaceGhost3dOrder4()
               #End 
+
+            else if( useUnifiedInterfaceMacros.eq.1 ) then
+              ! Use Qing's unified interface macros
+               assignUnifiedInterfaceGhost3dOrder4()
+
             else if( useNonlinearModel.eq.0 )then
               ! dispersive case
               #If #MODEL eq "gdm"
@@ -4069,7 +4084,8 @@ end do
               #If #MODEL eq "mla"
                 assignNonlinearInterfaceGhost3dOrder4()
               #End 
-            end if            
+              
+            end if           
  
             if( it.eq.1 )then
               errRatio=1.
@@ -4375,7 +4391,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       #Include "knownSolutionFortranInclude.h"
       integer knownSolutionOption
 
-      integer useJacobiUpdate
+      integer useJacobiUpdate, useUnifiedInterfaceMacros
       integer dispersionModel1, dispersionModel2, dispersive, jv, pxc
       integer gdmParOption
       integer maxNumberOfParameters,maxNumberOfPolarizationVectors,maxPolarizationComponents
@@ -4651,6 +4667,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
 
       numParallelGhost    = ipar(51)
       internalGhostBC     = ipar(52)  ! bc value for internal parallel boundaries 
+      useUnifiedInterfaceMacros = ipar(53)
 
       ! numberOfInterfaceIterationsUsed = ipar(43)  ! returned value 
      
@@ -4735,7 +4752,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
 
       debugFile=10
 
-      if(  t.le. 1.5*dt .and. debug>0 )then
+      if(  t.le. 1.5*dt .and. debug>0 .and. myid.eq.0 )then
         write(*,'(" +++++++++cgmx interface3dOrder4 t=",e9.2," dt=",e9.2," nit=",i3," ++++++++")') t,dt,nit
            ! '
         write(*,'("  ... nd=",i2," gridType=",i2," order=",i2," debug=",i3,", ex=",i2)') nd,gridType,orderOfAccuracy,debug,ex
@@ -4743,7 +4760,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
         write(*,'("  ... useJacobiUpdate=",i2," numParallelGhost=",i2)') useJacobiUpdate,numParallelGhost
         write(*,'("  ... useImpedanceInterfaceProjection=",i2," useJacobiUpdate=",i2)') useImpedanceInterfaceProjection,useJacobiUpdate
         write(*,'("  ... avoidInterfaceIterations=",i2)') avoidInterfaceIterations
-        write(*,'("  ... interfaceOption=",i2)') interfaceOption
+        write(*,'("  ... interfaceOption=",i2," useUnifiedInterfaceMacros=",i2)') interfaceOption,useUnifiedInterfaceMacros
         write(*,'("  ... interface its (4th-order) relativeTol=",e12.3," absoluteTol=",e12.3)') relativeErrorTolerance,absoluteErrorTolerance
         write(*,'("  ... eps1,mu1=",2(1pe10.2)," eps2,mu2=",2(1pe10.2))') eps1,mu1,eps2,mu2
         write(*,'("  ... bc1=",6i6)') ((boundaryCondition1(i1,i2),i1=0,1),i2=0,nd-1)
@@ -4765,7 +4782,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid1,alphaP1,gdmPar1,numberOfPolarizationVectors1, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
 
-        if( t.le. 1.5*dt .and. debug.gt.0 )then
+        if( t.le. 1.5*dt .and. debug.gt.0 .and. myid.eq.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d4-- dispersionModel1=",i4," grid1=",i4," pxc=",i4)') dispersionModel1,grid1,pxc
           write(*,'("--interface3d4-- GDM: numberOfPolarizationVectors1=",i4," alphaP1=",e8.2)') numberOfPolarizationVectors1,alphaP1
@@ -4784,7 +4801,7 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
         ! get the gdm parameters
         !   gdmPar(0:3,jv) = (a0,a1,b0,b1) 
         call getGDMParameters( grid2,alphaP2,gdmPar2,numberOfPolarizationVectors2, maxNumberOfParameters,maxNumberOfPolarizationVectors,gdmParOption )
-        if( t.le. 1.5*dt .and. debug.gt.0 )then
+        if( t.le. 1.5*dt .and. debug.gt.0 .and. myid.eq.0 )then
           ! ---- Dispersive Maxwell ----
           write(*,'("--interface3d4-- dispersionModel2=",i4," grid2=",i4)') dispersionModel2,grid2
           write(*,'("--interface3d4-- GDM: numberOfPolarizationVectors2=",i4," alphaP2=",e8.2)') numberOfPolarizationVectors2,alphaP2
@@ -4804,57 +4821,63 @@ subroutine NAME( nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,\
       useNonlinearModel=0
       
       if( nonlinearModel1 .ne. noNonlinearModel )then
-        write(*,'("--interface3d-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
+ 
         useNonlinearModel=1
         call getMultilevelAtomicParameters( grid1, nlPar1, maxPar, maxPar, numPolar1, numberOfAtomicLevels1 )
         if( numPolar1.ne.numberOfPolarizationVectors1 )then
           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors1 does not match numPolar1 from nonlinear model!!")')
           stop 8888
         end if
-     
-        write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
-        write(*,'("polarizationNECoefficients1:")')
-        do m1=0,numberOfPolarizationVectors1-1
-          write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
-        end do 
-     
-        write(*,'("populationRelaxationCoefficients1:")')
-        do m1=0,numberOfAtomicLevels1-1
-          write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
-        end do 
-     
-        write(*,'("populationEPtCoefficients1:")')
-        do m1=0,numberOfAtomicLevels1-1
-          write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
-        end do 
+
+        if( t.le. 1.5*dt .and. debug.gt.0 .and. myid.eq.0 )then
+          write(*,'("--interface3d-- nonlinearModel1=",i4," (1=multilevelAtomic)")') nonlinearModel1
+          write(*,'("multilevelAtomic: numberOfPolarizationVectors1=",i4,"  numberOfAtomicLevels1=",i4)') numberOfPolarizationVectors1, numberOfAtomicLevels1
+          write(*,'("polarizationNECoefficients1:")')
+          do m1=0,numberOfPolarizationVectors1-1
+            write(*,'( 10(e12.3,1x) )') (pnec1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+          end do 
+       
+          write(*,'("populationRelaxationCoefficients1:")')
+          do m1=0,numberOfAtomicLevels1-1
+            write(*,'( 10(e12.3,1x) )') (prc1(m1,m2),m2=0,numberOfAtomicLevels1-1)
+          end do 
+       
+          write(*,'("populationEPtCoefficients1:")')
+          do m1=0,numberOfAtomicLevels1-1
+            write(*,'( 10(e12.3,1x) )') (peptc1(m1,m2),m2=0,numberOfPolarizationVectors1-1)
+          end do 
+        end if
       else
         numberOfAtomicLevels1=0
       end if 
 
       if( nonlinearModel2 .ne. noNonlinearModel )then
         useNonlinearModel=1
-        write(*,'("--interface3d-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
+        
         call getMultilevelAtomicParameters( grid2, nlPar2, maxPar, maxPar, numPolar2, numberOfAtomicLevels2 )
         if( numPolar2.ne.numberOfPolarizationVectors2 )then
           write(*,'(" interface3d:ERROR: numberOfPolarizationVectors2 does not match numPolar2 from nonlinear model!!")')
           stop 9999
         end if
      
-        write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
-        write(*,'("polarizationNECoefficients2:")')
-        do m1=0,numberOfPolarizationVectors2-1
-          write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
-        end do 
-     
-        write(*,'("populationRelaxationCoefficients2:")')
-        do m1=0,numberOfAtomicLevels2-1
-          write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
-        end do 
-     
-        write(*,'("populationEPtCoefficients2:")')
-        do m1=0,numberOfAtomicLevels2-1
-          write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
-        end do 
+        if( t.le. 1.5*dt .and. debug.gt.0 )then
+          write(*,'("--interface3d-- nonlinearModel2=",i4," (1=multilevelAtomic)")') nonlinearModel2
+          write(*,'("multilevelAtomic: numberOfPolarizationVectors2=",i4,"  numberOfAtomicLevels2=",i4)') numberOfPolarizationVectors2, numberOfAtomicLevels2
+          write(*,'("polarizationNECoefficients2:")')
+          do m1=0,numberOfPolarizationVectors2-1
+            write(*,'( 10(e12.3,1x) )') (pnec2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+          end do 
+       
+          write(*,'("populationRelaxationCoefficients2:")')
+          do m1=0,numberOfAtomicLevels2-1
+            write(*,'( 10(e12.3,1x) )') (prc2(m1,m2),m2=0,numberOfAtomicLevels2-1)
+          end do 
+       
+          write(*,'("populationEPtCoefficients2:")')
+          do m1=0,numberOfAtomicLevels2-1
+            write(*,'( 10(e12.3,1x) )') (peptc2(m1,m2),m2=0,numberOfPolarizationVectors2-1)
+          end do 
+        end if
       else
         numberOfAtomicLevels2 = 0
       end if 

@@ -1,5 +1,91 @@
+***************************
+******* Thurs May 18, 2021
+
+START ON PARALLEL MULA
+
+"BUG" FIXED --> N not being passed properly to interface routines in parallel.
+
+
+SOLID-SPHERE-IN-A-BOX 
+
+mpirun -np 2 $cgmx -noplot /home/henshw/overtureFramework/cg/mx/runs/interface/interface.cmd -g=solidSphereInABoxe2.order2 -diss=0 -dissOrder=-1 -dm=gdm -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.1 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1  -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -degreex=2 -degreet=2 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=outerDomain -rightDomain=innerDomain -go=go
+
++++ np=2
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numPolarizationVectors=2 P-norm=9.993e-01 max-err = 5.416e-02
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=9.953e-01 max-err = 1.818e-02
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numberOfAtomicLevels=4   Q-norm=8.997e-01 max-err = 1.088e-01
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numberOfAtomicLevels=1   Q-norm=9.372e-01 max-err = 1.824e-02
+>>> t=1.00e-01 dt=3.3e-02 max errors:[5.19e-02,2.57e-02,2.29e-02, max(u):[8.11e-01,4.06e-01,4.06e-01,] (3 steps)
+                                     max(P):[9.99e-01,9.95e-01] (by domain)
+
+
++++  -np=4
+>>> Cgmx:FD: t=1.00e-01 dt=3.3e-02 TS=ME MLA GDM |div(E)|/|grad(E)|=1.03e-01 (=5.28e-01/5.13e+00) 3 steps mem=257(Mb) cpu=2.27e+01(s)
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numPolarizationVectors=2 P-norm=9.993e-01 max-err = 5.416e-02
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=9.953e-01 max-err = 1.818e-02
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numberOfAtomicLevels=4   Q-norm=8.997e-01 max-err = 1.088e-01
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numberOfAtomicLevels=1   Q-norm=9.372e-01 max-err = 1.824e-02
+>>> t=1.00e-01 dt=3.3e-02 max errors:[5.19e-02,2.57e-02,2.29e-02, max(u):[8.11e-01,4.06e-01,4.06e-01,] (3 steps)
+
++++ -np=8 
+>>> Cgmx:FD: t=1.00e-01 dt=3.3e-02 TS=ME MLA GDM |div(E)|/|grad(E)|=1.03e-01 (=5.28e-01/5.13e+00) 3 steps mem=187(Mb) cpu=1.23e+01(s)
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numPolarizationVectors=2 P-norm=9.993e-01 max-err = 5.416e-02
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numPolarizationVectors=1 P-norm=9.953e-01 max-err = 1.818e-02
+--getErrors: t=1.000e-01 domain=0 (outerDomain) numberOfAtomicLevels=4   Q-norm=8.997e-01 max-err = 1.088e-01
+--getErrors: t=1.000e-01 domain=1 (innerDomain) numberOfAtomicLevels=1   Q-norm=9.372e-01 max-err = 1.824e-02
+>>> t=1.00e-01 dt=3.3e-02 max errors:[5.19e-02,2.57e-02,2.29e-02, max(u):[8.11e-01,4.06e-01,4.06e-01,] (3 steps)
+                                     max(P):[9.99e-01,9.95e-01] (by domain)
+
+
+coarse grid for debugging
+mpirun -np 1 $cgmx -noplot interface.cmd -g=twoSquaresInterfacee1.order2 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.01 -tp=.01 -ic=tz -tz=poly -degreex=2 -degreet=2 -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -debug=7 -go=go
+
+
+ORDER=4 --> FIX CHECK FOR TALL CELLS for PARALLEL ... fixed
+mpirun -np 1 $cgmx -noplot interface.cmd -numberOfParallelGhost=3 -g=twoSquaresInterfacee4.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.01 -ic=tz -tz=poly -degreex=2 -degreet=2 -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -go=og
+
+
+OK now:
+mpirun -np 1 $cgmx -noplot interface.cmd -g=twoSquaresInterfacee4.order2 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.01 -ic=tz -tz=poly -degreex=2 -degreet=2 -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -go=og
+
+NO sosup: still trouble
+mpirun -np 1 $cgmx -noplot interface.cmd -g=twoSquaresInterfacee4.order2 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.01 -ic=tz -tz=poly -degreex=2 -degreet=2 -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=0 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -go=og
+
+valgrind $cgmx -noplot interface.cmd -g=twoSquaresInterfacee4.order2 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.03 -tp=.01 -ic=tz -tz=poly -degreex=2 -degreet=2 -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -go=go
+
+***************************************************
+******* Sun March 14, 2021
+
+BUG FIXED --> do not add forcing in advMxUp.bf if we do not update the solution.
+
+SOLID-SPHERE-IN-A-BOX -- seg fault with SOSUP :  .. OK now
+
+cgmx -noplot /home/henshw/overtureFramework/cg/mx/runs/interface/interface.cmd -g=solidSphereInABoxe2.order2 -diss=0 -dissOrder=-1 -dm=gdm -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.1 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1  -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -degreex=2 -degreet=2 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=outerDomain -rightDomain=innerDomain -go=go
+
+
+
+
+***************************************************
+******* Sat March 13, 2021
+
+SOLID-SPHERE-IN-A-BOX -- seg fault with SOSUP : 
+
+cgmx -noplot /home/henshw/overtureFramework/cg/mx/runs/interface/interface.cmd -g=solidSphereInABoxe2.order2 -diss=0 -dissOrder=-1 -dm=gdm -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=.1 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1  -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -degreex=2 -degreet=2 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=outerDomain -rightDomain=innerDomain -go=go
+
+
+RUN FOR PLOTS 
+
+cgmx -noplot interface.cmd -g=oneDiskMLAGridFixede4.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1.0 -tp=.1 -ic=tz -tz=trig -bc=d -alphaP=-1 -1 -npv=0 0 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -degreex=2 -degreet=2 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=outerDomain -rightDomain=innerDomain1 -flushFrequency=1 -show=oneDiskMLA.show -go=go > oneDiskMLA.out
+
+
+
 ***************************************************
 ******* Fri March 12, 2021
+
+REDEFINE TRIG SOLUTIONS 
+cgmx -noplot interface.cmd -g=twoSquaresInterfacee4.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.1 -ic=tz -tz=trig -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -go=og
+
+
 
 VARY TRIG FREQ
 cgmx -noplot interface.cmd -g=twoSquaresInterfacee8.order4.ng3 -diss=0 -dissOrder=-1 -dm=gdm  -eps1=1 -eps2=1 -cfl=0.9 -method=NFDTD -errorNorm=0 -tf=1 -tp=.1 -ic=tz -tz=trig -fx=3 -fy=3 -fz=3  -bc=d -alphaP=-1 -1 -npv=0 0 -modeGDM=-1 -matFile1=mlaMat2.txt -matFile2=mlaMat3.txt -nm=mla -kx=1 -ky=0 -kz=0 -useSosupDissipation=1 -cons=0 -checkErrors=1 -leftDomain=leftDomain -rightDomain=rightDomain -show=twoSquaresInterfaceG8.show -go=go > twoSquaresInterfaceG8.out

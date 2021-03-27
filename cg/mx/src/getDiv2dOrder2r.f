@@ -1161,6 +1161,7 @@ c===============================================================================
        gradDmax= rpar(8)  ! max(grad(D)) returned here
        divBmax = rpar(9)  ! max(div(B)) returned here
        gradBmax= rpar(10) ! max(grad(B)) returned here
+       dt      = rpar(11) ! added March 26, 2021 -- was missing
        saveDivergence     =ipar(0)
        method             =ipar(1)
        gridType           =ipar(2)

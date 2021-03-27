@@ -20,6 +20,7 @@ derived types
 exit
 contour
   plot:eFieldNorm
+  
   plot contour lines (toggle)
   # set view:0 0.0694864 -0.0362538 0 2.34381 1 0 0 0 1 0 0 0 1
   coarsening factor 1 (<0 : adaptive)

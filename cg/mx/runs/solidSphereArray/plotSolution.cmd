@@ -5,6 +5,11 @@
 #   plotStuff plotSolution.cmd -show=36SolidEllipsoids.show -name=36SolidEllipsoids -solution=7 -y1=-1.3 -y2=1.3 -z1=-1.95 
 #   plotStuff plotSolution.cmd -show=125SolidEllipsoids.show -name=125SolidEllipsoids -solution=9 -y1=-1.3 -y2=1.3 -z1=-1.95 -eMax=.5 -view=2
 #
+# MLA: 
+#   plotStuff plotSolution.cmd -show=fourMlaEllipsoids.show -name=fourSolidMlaEllipsoids -solution=5
+#   plotStuff plotSolution.cmd -show=eightMlaEllipsoids.show -name=eightSolidMlaEllipsoids -solution=6
+#   plotStuff plotSolution.cmd -show=36MlaEllipsoids.show -name=36SolidMlaEllipsoids -solution=6 -y1=-1.3 -y2=1.3 -z1=-1.95 
+#
 $show="fourSolidEllipsoids.hdf"; $solution="-1"; $name="fourSolidEllipsoids"; $field="Ey"; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 $y1=-.65; $y2=.65; $z1=-.65; $eMax=""; $view=1;
@@ -52,13 +57,26 @@ hardcopy vertical resolution:0 2048
 hardcopy horizontal resolution:0 2048
 # line width scale factor:0 2
 # make lines faint 
-line width scale factor:0 1
+line width scale factor:0 3
 Foreground colour:0 white
 plot 
 #
 $plotName = $name . "EfieldNorm.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
+pause
+#
+plot:Py
+$plotName = $name . "Py.ps"; 
+hardcopy file name:0 $plotName
+hardcopy save:0
+pause
+#
+plot:N3
+$plotName = $name . "N3.ps"; 
+hardcopy file name:0 $plotName
+hardcopy save:0
+
 
 
   plot contour lines (toggle)

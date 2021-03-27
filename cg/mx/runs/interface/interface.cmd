@@ -80,7 +80,7 @@
 $kx=2; $ky=0; $kz=0; $left="leftSquare*"; $right="rightSquare*"; $degreex=2; $degreet=2; $method="NFDTD";
 $tFinal=5.; $tPlot=.2; $cfl=.9; $show=" "; $interfaceIts=3; $debug=0; $diss=.1; $dissOrder=-1;
 $useNewInterface=1; $errorNorm=0; $interfaceEquationOption=1; $interfaceOmega=.5; $setDivergenceAtInterfaces=0; 
-$useImpedanceInterfaceProjection=1; $cons=0; 
+$useImpedanceInterfaceProjection=1; $cons=0; $flushFrequency=10; 
 $useSosupDissipation=0; $sosupParameter=1.; $useJacobiInterfaceUpdate=1;
 $ts="me"; $matFile=""; $solveForAllFields=0;  $numMatRegions=1; $regionFile="";
 $matFile1=""; $matFile2=""; 
@@ -121,7 +121,7 @@ GetOptions("bc=s"=>\$bc,"cfl=f"=>\$cfl,"debug=i"=>\$debug,"diss=f"=>\$diss,"eps1
 	   "matFile1=s"=>\$matFile1,"matFile2=s"=>\$matFile2,"numMatRegions=i"=>\$numMatRegions,"regionFile=s"=>\$regionFile,\
 	   "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"nm=s"=>\$nm,\
            "useJacobiInterfaceUpdate=i"=>\$useJacobiInterfaceUpdate,"leftDomain=s"=>\$leftDomain,"rightDomain=s"=>\$rightDomain,\
-           "fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft );
+           "fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,"flushFrequency=i"=>\$flushFrequency );
 # -------------------------------------------------------------------------------------------------
 if( $go eq "halt" ){ $go = "break"; }
 if( $go eq "og" ){ $go = "open graphics"; }
@@ -315,7 +315,7 @@ show file options...
 MXSF:open
   $show
 # MXSF:frequency to save 1
-# MXSF:frequency to flush 10
+MXSF:frequency to flush $flushFrequency
 exit
 #**********************************
 continue

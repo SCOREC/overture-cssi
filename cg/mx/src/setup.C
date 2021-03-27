@@ -882,13 +882,15 @@ setupGrids()
 
     pinterpolant = new Interpolant(cg);
     pinterpolant->incrementReferenceCount();
-#ifdef USE_PPP
-    if( !pinterpolant->interpolationIsExplicit() )
-    {
-      printF("*** ERROR: The parallel composite grid interpolator needs explicit interpolation ****\n");
-      Overture::abort();
-    }
-#endif
+
+    // we allow implicit interpolation in parallel now *wdh* March 20, 2021
+// #ifdef USE_PPP
+//     if( !pinterpolant->interpolationIsExplicit() )
+//     {
+//       printF("*** ERROR: The parallel composite grid interpolator needs explicit interpolation ****\n");
+//       Overture::abort();
+//     }
+// #endif
 
     //kkc can now use dsi, this would override the command line spec    method=nfdtd;
     
