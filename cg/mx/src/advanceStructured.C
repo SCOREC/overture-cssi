@@ -638,6 +638,8 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                 const int useWhereMask = numberOfComponentGrids>1;
        // const bool updateSolution = updateInterior;
        // const bool updateDissipation = addDissipation;
+        // *wdh* March 29, 2021: We can now combine linear and nonlinear materials
+                const int nonlinearModelLocal = nonlinearModel && dmp.isNonlinearMaterial();
                 int gridType = isRectangular? 0 : 1;
                 int option=(isRectangular || useCurvilinearOpt) ? 0 : 1;   // 0=Maxwell+AD, 1=AD
                 int ipar[]={option,
@@ -663,7 +665,7 @@ advanceNFDTD(  int numberOfStepsTaken, int current, real t, real dt )
                                         pxc,pyc,pzc, 
                                         numberOfPolarizationVectors,  // ipar[28]
                                         grid,                         // ipar[29]
-                                        nonlinearModel,               // ipar[30]
+                                        nonlinearModelLocal,               // ipar[30] *fix me*
                                         debug,                        // ipar[31]
                                         0,0,  // for future use
                     // qxc,qyc,qzc, 

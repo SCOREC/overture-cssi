@@ -38,12 +38,13 @@ $leftBC="rbc"; $bcBody="";
 $materialFile="diskMaterials.h";
 $materialFile="diskMaterials.h";
 # number of bodies to set materials for:
-$numBodies=1;               
+$numBodies=1; 
 #
 # --------------------------------------------------
 # ------- get common command line arguments --------
 include getCommonOptions.h
 # --------------------------------------------------
+include $extraCommandsStart
 # 
 $grid
 #

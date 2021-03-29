@@ -1,4 +1,35 @@
 *****************************************
+******* Sun/Mon March 28/29, 2021
+
+ADD A LAYER TO THE DISK AS A MLA-GDM example
+
+ONE DISK TWO LAYERS
+ogen -noplot layeredDiskArrayGrid -prefix=oneDiskTwoLayersGrid -numLayers=2 -layerWidth=.1 .1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+
+MLA:
+cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe2.order2 -dm=gdm -nm=mla -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -go=og
+
+cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe2.order2 -dm=none -nm=none -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -go=og
+
+
+
+
+FOUR-DISKS ONE-LAYER
+cgmx -noplot mxScript -g=fourDisksOneLayerGridnpe4.order2 -dm=none -nm=none -numBodies=8 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.75 -rbc=rbcNonLocal -background=backGround  -extraCommands=plotEy.h -debug=0 -go=og
+
+
+ONE-DISK ONE LAYER
+cgmx -noplot mxScript -g=oneDiskOneLayerGridnpe4.order2 -dm=none -nm=none -numBodies=2 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -extraCommands=plotEy.h -debug=0 -go=og
+
+
+FOUR LAYERED DISKS
+ogen -noplot layeredDiskArrayGrid -prefix=fourDisksOneLayerGrid -layerWidth=.1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=2 -nCyly=2 -deltaX=1.25 -deltaY=1.25 -order=2 -periodic=np -factor=2
+
+ONE LAYERED DISK
+ogen -noplot layeredDiskArrayGrid -prefix=oneDiskOneLayerGrid -layerWidth=.1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+
+
+*****************************************
 ******* Fri Mar 19, 2021
 
 TEST PARALLEL MULA

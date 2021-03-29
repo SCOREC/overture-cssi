@@ -6,6 +6,8 @@ if( $method          eq "" ){ $method="fd"; }
 if( $grid            eq "" ){ $grid="square20.order2.hdf"; }
 #     -go=[run/halt/og]
 if( $go              eq "" ){ $go="go"; }
+# User supplied extra commands in an include file to execute at the start the script 
+if( $extraCommandsStart eq "" ){ $extraCommandsStart=""; }
 # User supplied extra commands in an include file to execute at the end of the script (before -go) (e.g. for plotting)
 if( $extraCommandsEnd eq "" ){ $extraCommandsEnd=""; }
 #    Dispersive model: -dm=[none|gdm]
@@ -146,7 +148,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "probeFrequency=i"=>\$probeFrequency,\
   "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray,\
   "bcCmds=s{1,}"=>\@bcCmds,"nm=s"=>\$nm,"plotNonlinearComponents=f"=>\$plotNonlinearComponents,\
-  "tallCellRatioBound=f"=>\$tallCellRatioBound,"extraCommandsEnd=s"=>\$extraCommandsEnd, \
+  "tallCellRatioBound=f"=>\$tallCellRatioBound,"extraCommandsStart=s"=>\$extraCommandsStart,"extraCommandsEnd=s"=>\$extraCommandsEnd, \
   "maxIterationsForImplicitInterpolation=i"=>\$maxIterationsForImplicitInterpolation );
 # -------------------------------------------------------------------------------------------------
 #
