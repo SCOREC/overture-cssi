@@ -127,22 +127,22 @@ main(int argc, char *argv[])
         continue; // these commands are processed by getGraphicsInterface below 
       else if( line=="memory" )
       {
-	reportMemory=true;
+        reportMemory=true;
         Diagnostic_Manager::setTrackArrayData(TRUE);
       }
       else if( line=="loadBalance" || line=="-loadBalance" )
       {
-	loadBalance=true;
+        loadBalance=true;
       }
       else if( len=line.matches("-numberOfParallelGhost=") )
       {
-	sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
+        sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
         if( numberOfParallelGhost<0 || numberOfParallelGhost>10 )
-	{
-	  printF("ERROR: numberOfParallelGhost=%i is no valid!\n",numberOfParallelGhost);
-	  OV_ABORT("error");
-	}
-	printF("Setting numberOfParallelGhost=%i\n",numberOfParallelGhost);
+        {
+          printF("ERROR: numberOfParallelGhost=%i is no valid!\n",numberOfParallelGhost);
+          OV_ABORT("error");
+        }
+        printF("Setting numberOfParallelGhost=%i\n",numberOfParallelGhost);
       }
       else if( line=="release" )
       {
@@ -161,13 +161,13 @@ main(int argc, char *argv[])
   else
   {
     printF("Usage: `cgmp [options][file.cmd]' \n"
-	   "     options:                            \n" 
-	   "          noplot:   run without graphics \n" 
-	   "          nopause: do not pause \n" 
-	   "          abortOnEnd: abort if command file ends \n" 
-	   "          memory:   run with A++ memory tracking\n" 
-	   "          release:  run with A++ smart release of memeory\n"
-	   "     file.cmd: read this command file \n");
+           "     options:                            \n" 
+           "          noplot:   run without graphics \n" 
+           "          nopause: do not pause \n" 
+           "          abortOnEnd: abort if command file ends \n" 
+           "          memory:   run with A++ memory tracking\n" 
+           "          release:  run with A++ smart release of memeory\n"
+           "     file.cmd: read this command file \n");
     
   }
 

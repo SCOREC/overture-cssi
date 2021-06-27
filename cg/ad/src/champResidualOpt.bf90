@@ -1,0 +1,927 @@
+!
+! Optimized routines for evaluating the residual in the CHAMP conditions
+!
+! These next include files will define the macros that will define the difference approximations
+! The actual macro is called below
+#Include "defineDiffOrder2f.h"
+#Include "defineDiffOrder4f.h"
+
+
+! ======================================================================================
+!   Evaluate the TZ exact solution in 2D
+! ======================================================================================
+#beginMacro OGDERIV2D( ntd,nxd,nyd,nzd,i1,i2,i3,t, n,val)
+  call ogDeriv(ep, ntd,nxd,nyd,nzd, xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t, n,val )
+#endMacro
+
+! ======================================================================================
+!   Evaluate the TZ exact solution in 3D
+! ======================================================================================
+#beginMacro OGDERIV3D( ntd,nxd,nyd,nzd,i1,i2,i3,t, n,val)
+  call ogDeriv(ep, ntd,nxd,nyd,nzd, xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t, n,val )
+#endMacro
+
+  
+
+! ---------------------------------------------------------------------------
+! Macro : beginLoopsMask
+! ---------------------------------------------------------------------------
+#beginMacro beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+  do i3=n3a,n3b
+  do i2=n2a,n2b
+  do i1=n1a,n1b
+    if( mask(i1,i2,i3).gt.0 )then
+#endMacro
+
+! ---------------------------------------------------------------------------
+! Macro : endLoopsMask
+! ---------------------------------------------------------------------------
+#beginMacro endLoopsMask()
+    end if
+  end do
+  end do
+  end do
+#endMacro
+
+! ---------------------------------------------------------------------------
+! Macro : beginLoops
+! ---------------------------------------------------------------------------
+#beginMacro beginLoops(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+  do i3=n3a,n3b
+  do i2=n2a,n2b
+  do i1=n1a,n1b
+#endMacro
+
+! ---------------------------------------------------------------------------
+! Macro : endLoopsMask
+! ---------------------------------------------------------------------------
+#beginMacro endLoops()
+  end do
+  end do
+  end do
+#endMacro
+
+#beginMacro beginLoops3d()
+ do i3=n3a,n3b
+ do i2=n2a,n2b
+ do i1=n1a,n1b
+#endMacro
+
+#beginMacro endLoops3d()
+ end do
+ end do
+ end do
+#endMacro  
+
+#defineMacro extrap2(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (2.*uu(k1,k2,k3,kc)-uu(k1+ks1,k2+ks2,k3+ks3,kc))
+
+#defineMacro extrap3(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (3.*uu(k1,k2,k3,kc)-3.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +   uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc))
+
+#defineMacro extrap4(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (4.*uu(k1,k2,k3,kc)-6.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +4.*uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc)-uu(k1+3*ks1,k2+3*ks2,k3+3*ks3,kc))
+
+#defineMacro extrap5(uu,k1,k2,k3,kc,ks1,ks2,ks3) \
+            (5.*uu(k1,k2,k3,kc)-10.*uu(k1+ks1,k2+ks2,k3+ks3,kc)\
+            +10.*uu(k1+2*ks1,k2+2*ks2,k3+2*ks3,kc)-5.*uu(k1+3*ks1,k2+3*ks2,k3+3*ks3,kc)\
+            +uu(k1+4*ks1,k2+4*ks2,k3+4*ks3,kc))
+
+
+! ************************************************************************************************
+!  This macro is used for looping over the faces of a grid to assign booundary conditions
+!
+! extra: extra points to assign
+!          Case 1: extra=numberOfGhostPoints -- for assigning extended boundaries
+!          Case 2: extra=-1 -- for assigning ghost points but not including extended boundaries
+! numberOfGhostPoints : number of ghost points (1 for 2nd order, 2 for fourth-order ...)
+!
+!
+! Output:
+!  n1a,n1b,n2a,n2b,n3a,n3b : from gridIndexRange
+!  nn1a,nn1b,nn2a,nn2b,nn3a,nn3b : includes "extra" points
+! 
+! ***********************************************************************************************
+#beginMacro beginLoopOverSides(extra,numberOfGhostPoints)
+ extra1a=extra
+ extra1b=extra
+ extra2a=extra
+ extra2b=extra
+ if( nd.eq.3 )then
+   extra3a=extra
+   extra3b=extra
+ else
+   extra3a=0
+   extra3b=0
+ end if
+ if( boundaryCondition(0,0).lt.0 )then
+   extra1a=max(0,extra1a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+ else if( boundaryCondition(0,0).eq.0 )then
+   extra1a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+ end if
+ ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+ if( boundaryCondition(1,0).lt.0 )then
+   extra1b=max(0,extra1b) ! over-ride extra=-1 : assign ends in periodic directions
+ else if( boundaryCondition(1,0).eq.0 )then
+   extra1b=numberOfGhostPoints
+ end if
+
+ if( boundaryCondition(0,1).lt.0 )then
+   extra2a=max(0,extra2a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+ else if( boundaryCondition(0,1).eq.0 )then
+   extra2a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+ end if
+ ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+ if( boundaryCondition(1,1).lt.0 )then
+   extra2b=max(0,extra2b) ! over-ride extra=-1 : assign ends in periodic directions
+ else if( boundaryCondition(1,1).eq.0 )then
+   extra2b=numberOfGhostPoints
+ end if
+
+ if(  nd.eq.3 )then
+  if( boundaryCondition(0,2).lt.0 )then
+    extra3a=max(0,extra3a) ! over-ride extra=-1 : assign ends in periodic directions (or internal parallel boundaries)
+  else if( boundaryCondition(0,2).eq.0 )then
+    extra3a=numberOfGhostPoints  ! include interpolation points since we assign ghost points outside these
+  end if
+  ! **NOTE** the bc on the right may be negative even it is not on the left (for parallel)
+  if( boundaryCondition(1,2).lt.0 )then
+    extra3b=max(0,extra3b) ! over-ride extra=-1 : assign ends in periodic directions
+  else if( boundaryCondition(1,2).eq.0 )then
+    extra3b=numberOfGhostPoints
+  end if
+ end if
+
+ do axis=0,nd-1
+ do side=0,1
+
+   if( boundaryCondition(side,axis).gt.0 )then
+
+     ! write(*,'(" bcOpt: side,axis,bc=",3i2)') side,axis,boundaryCondition(side,axis)
+
+     n1a=gridIndexRange(0,0)
+     n1b=gridIndexRange(1,0)
+     n2a=gridIndexRange(0,1)
+     n2b=gridIndexRange(1,1)
+     n3a=gridIndexRange(0,2)
+     n3b=gridIndexRange(1,2)
+     if( axis.eq.0 )then
+       n1a=gridIndexRange(side,axis)
+       n1b=gridIndexRange(side,axis)
+     else if( axis.eq.1 )then
+       n2a=gridIndexRange(side,axis)
+       n2b=gridIndexRange(side,axis)
+     else
+       n3a=gridIndexRange(side,axis)
+       n3b=gridIndexRange(side,axis)
+     end if
+
+
+     nn1a=gridIndexRange(0,0)-extra1a
+     nn1b=gridIndexRange(1,0)+extra1b
+     nn2a=gridIndexRange(0,1)-extra2a
+     nn2b=gridIndexRange(1,1)+extra2b
+     nn3a=gridIndexRange(0,2)-extra3a
+     nn3b=gridIndexRange(1,2)+extra3b
+     if( axis.eq.0 )then
+       nn1a=gridIndexRange(side,axis)
+       nn1b=gridIndexRange(side,axis)
+     else if( axis.eq.1 )then
+       nn2a=gridIndexRange(side,axis)
+       nn2b=gridIndexRange(side,axis)
+     else
+       nn3a=gridIndexRange(side,axis)
+       nn3b=gridIndexRange(side,axis)
+     end if
+
+     is=1-2*side
+
+     is1=0
+     is2=0
+     is3=0
+     if( axis.eq.0 )then
+       is1=1-2*side
+     else if( axis.eq.1 )then
+       is2=1-2*side
+     else if( axis.eq.2 )then
+       is3=1-2*side
+     else
+       stop 5
+     end if
+     
+     axisp1=mod(axis+1,nd)
+     axisp2=mod(axis+2,nd)
+     
+     i3=n3a
+
+     if( debug.gt.7 )then
+       write(*,'(" champ: grid,side,axis=",3i3,", \
+         loop bounds: n1a,n1b,n2a,n2b,n3a,n3b=",6i3)') grid,side,axis,\
+         n1a,n1b,n2a,n2b,n3a,n3b
+
+     end if
+   end if ! if bc>0 
+
+
+#endMacro
+
+#beginMacro endLoopOverSides()
+ end do ! end side
+ end do ! end axis
+#endMacro
+
+
+#beginMacro getNormal2d(i1,i2,i3,axis)
+ an1 = rsxy(i1,i2,i3,axis,0)
+ an2 = rsxy(i1,i2,i3,axis,1)
+ aNormi = -is/max(epsx,sqrt(an1**2 + an2**2))
+ an1=an1*aNormi
+ an2=an2*aNormi
+#endMacro
+
+#beginMacro getNormal3d(i1,i2,i3,axis)
+ an1 = rsxy(i1,i2,i3,axis,0)
+ an2 = rsxy(i1,i2,i3,axis,1)
+ an3 = rsxy(i1,i2,i3,axis,2)
+ aNormi = -is/max(epsx,sqrt(an1**2 + an2**2+ an3**2))
+ an1=an1*aNormi
+ an2=an2*aNormi
+ an3=an3*aNormi
+#endMacro
+
+! =========================================================================
+! Compute the normal on a curvilinear grid.
+!
+! Assumes is=1-2*side is defined. 
+! =========================================================================
+#beginMacro getNormal(j1,j2,j3)
+    an1 = rsxy(j1,j2,j3,axis,0)
+    an2 = rsxy(j1,j2,j3,axis,1)
+    if( nd.eq.2 )then
+     aNormi = (-is)/sqrt(an1**2+an2**2)
+     an1=an1*aNormi
+     an2=an2*aNormi
+    else
+     an3 = rsxy(j1,j2,j3,axis,2)
+     aNormi = (-is)/sqrt(an1**2+an2**2+an3**2)
+     an1=an1*aNormi
+     an2=an2*aNormi
+     an3=an3*aNormi
+    end if
+#endMacro
+
+
+
+! ===========================================================================================
+! Macro: Output some debug info for the first few time-steps 
+! ===========================================================================================
+#beginMacro INFO(string)
+if( t.le.3.*dt )then
+  write(*,'("champ>>>",string)')
+end if
+#endMacro
+
+  
+! =========================================================================================
+! Macro: Evaluate the residual (or RHS) in the CHAMP interface conditions
+!
+!   OPTION: RESIDUAL or RHS
+!   DIM : dimension : 2 or 3
+!   ORDER : 2 or 4   
+!   GRIDTYPE : rectangular or curvilinear
+! ========================================================================================
+#beginMacro evalChampConditions(OPTION,DIM,ORDER,GRIDTYPE)
+
+  if( debug.gt.3 .and. t.lt.2*dt )then
+    write(*,'("NAME: eval champ OPTION for dim=DIM order=ORDER grid=GRIDTYPE... t=",e10.2)') t
+  end if
+
+  ! --- get loop bounds -----
+  n1a=gridIndexRange(0,0)
+  n1b=gridIndexRange(1,0)
+  n2a=gridIndexRange(0,1)
+  n2b=gridIndexRange(1,1)
+  n3a=gridIndexRange(0,2)
+  n3b=gridIndexRange(1,2)
+  if( axis.eq.0 )then
+    n1a=gridIndexRange(side,axis)
+    n1b=gridIndexRange(side,axis)
+  else if( axis.eq.1 )then
+    n2a=gridIndexRange(side,axis)
+    n2b=gridIndexRange(side,axis)
+  else
+    n3a=gridIndexRange(side,axis)
+    n3b=gridIndexRange(side,axis)
+  end if
+
+  ! --- Define some inline macros: 
+  #If #ORDER eq "2"
+    #If #GRIDTYPE eq "rectangular"
+      #defineMacro UX(i1,i2,i3,i4)  ux22r(i1,i2,i3,i4)
+      #defineMacro UY(i1,i2,i3,i4)  uy22r(i1,i2,i3,i4)
+      #defineMacro UZ(i1,i2,i3,i4)  uz23r(i1,i2,i3,i4)      
+      #defineMacro UXX(i1,i2,i3,i4) uxx22r(i1,i2,i3,i4)
+      #defineMacro UYY(i1,i2,i3,i4) uyy22r(i1,i2,i3,i4)
+      #defineMacro UZZ(i1,i2,i3,i4) uzz23r(i1,i2,i3,i4)              
+    #Else
+      #defineMacro UX(i1,i2,i3,i4)  ux22(i1,i2,i3,i4)
+      #defineMacro UY(i1,i2,i3,i4)  uy22(i1,i2,i3,i4)
+      #defineMacro UZ(i1,i2,i3,i4)  uz23(i1,i2,i3,i4)      
+      #defineMacro UXX(i1,i2,i3,i4) uxx22(i1,i2,i3,i4)
+      #defineMacro UYY(i1,i2,i3,i4) uyy22(i1,i2,i3,i4)
+      #defineMacro UZZ(i1,i2,i3,i4) uzz23(i1,i2,i3,i4)      
+    #End
+  #Elif #ORDER eq "4" 
+    stop 4444
+  #Else
+    stop 7777
+  #End
+
+  is=1-2*side
+
+  is1=0
+  is2=0
+  is3=0
+  if( axis.eq.0 )then
+    is1=1-2*side
+  else if( axis.eq.1 )then
+    is2=1-2*side
+  else if( axis.eq.2 )then
+    is3=1-2*side
+  else
+    stop 5
+  end if
+  
+  axisp1=mod(axis+1,nd)
+  axisp2=mod(axis+2,nd)
+  
+  i3=n3a
+
+  #If #GRIDTYPE eq "rectangular"
+    ! compute the outward normal (an1,an2,an3) for rectangular (constant)
+    an1 = 0.
+    an2 = 0.
+    an3 = 0.
+    if( axis.eq.0 )then
+     an1=-is
+    else if( axis.eq.1 )then
+     an2=-is
+    else
+     an3=-is
+    end if
+    ! dxn=dx(axis)
+  #End
+
+  #If #OPTION eq "RHS"
+    ! RHS =  Sl*T(h) +    D_n T(h) 
+    !     =  a0*T(h) + a1*D_n T(h) 
+    a0 = Sl
+    a1 = -1.0  ! flip sign of normal 
+  #Else
+    !  [ theta*D_x + h*L[beta] ] + Sl*[ I + theta*h*D_x + (h^2)/2 *L[beta] ] 
+    !     L[beta] = beta*D_xx + (beta-1)*D_yy        
+    ! LHS = a0*T + a1*D_n T + a2*T_xx + a3*T_yy 
+    ! ** check signs **************************
+    a0 = Sl
+    a1 = theta + Sl*dx(axis)*theta 
+    ! ONLY VALID FOR CARTESIAN : axis==0 
+    a2 = dx(axis)*( beta      ) + Sl*( .5*dx(axis)**2*beta      )
+    a3 = dx(axis)*( (beta-1.) ) + Sl*( .5*dx(axis)**2*(beta-1.) )
+    a4 = a3
+  #End 
+
+  ff = 0. ! default forcing 
+  maxRes = 0.
+  l2Res  = 0.
+  count  = 0  ! counts points in l2 norm
+
+  ! ---------------- START LOOP OVER FACE -----------------------
+  beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)    
+
+    #If #OPTION eq "RHS"
+      ! (j1,j2,j3) = first line INSIDE
+      j1=i1+is1
+      j2=i2+is2
+      j3=i3+is3
+    #Else
+      res = f(i1,i2,i3,0)
+    #End
+
+    #If #GRIDTYPE eq "curvilinear"
+      ! compute the outward normal (an1,an2,an3)
+      #If #DIM eq "2"
+        getNormal2d(i1,i2,i3,axis)
+      #Else
+        getNormal3d(i1,i2,i3,axis)
+      #End
+    #End
+
+    if( twilightZone .eq.1 )then
+      ! --- add TZ forcing -----
+      #If #DIM eq "2"
+        ! ------ 2D ------
+        call ogDeriv(ep,0,0,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,tc,te )
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,tc,tex)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,tc,tey)
+        #If #OPTION eq "RHS"
+          ff = -( a0*te + a1*( an1*tex + an2*tey ) )
+        #Else
+          call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,tc,texx)
+          call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),0.,t,tc,teyy)
+
+          ff = -( a0*te + a1*( an1*tex + an2*tey ) + a2*texx + a3*teyy )
+        #End 
+      #Else
+        ! ----- 3D -------
+        call ogDeriv(ep,0,0,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,te )
+        call ogDeriv(ep,0,1,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,tex)
+        call ogDeriv(ep,0,0,1,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,tey)
+        call ogDeriv(ep,0,0,0,1,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,tez)
+
+        #If #OPTION eq "RHS"              
+          ff = -( a0*te + a1*( an1*tex + an2*tey + an3*tez ) )
+        #Else
+          call ogDeriv(ep,0,2,0,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,texx)
+          call ogDeriv(ep,0,0,2,0,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,teyy)
+          call ogDeriv(ep,0,0,0,2,xy(i1,i2,i3,0),xy(i1,i2,i3,1),xy(i1,i2,i3,2),t,tc,tezz)                
+
+          ff = -( a0*te + a1*( an1*tex + an2*tey +an3*tez ) + a2*texx + a3*teyy + a4*tezz )            
+
+        #End
+      #End           
+
+    end if
+
+    #If #ORDER eq "2"
+      #If #DIM eq "2"
+       ! ---- 2D -----  
+
+        #If #OPTION eq "RHS"
+
+          ! ----- Eval RHS at first line INSIDE : (j1,j2,j3) ----
+          f(i1,i2,i3,0) = a0*u(j1,j2,j3,tc) + a1*( an1*UX(j1,j2,j3,tc) + an2*UY(j1,j2,j3,tc) ) + ff 
+
+        #Elif #OPTION eq "RESIDUAL"
+          ! ----- Eval Residual -------
+          !  [ theta*D_x + h*L[beta] ] + Sl*[ I + theta*h*D_x + (h^2)/2 *L[beta] ] - f(i1,i2,i3)
+          !  L[beta] = beta*D_xx + (beta-1)*D_yy
+
+          res = a0*u(i1,i2,i3,tc) + a1*( an1*UX(i1,i2,i3,tc) + an2*UY(i1,i2,i3,tc) ) + a2*UXX(i1,i2,i3,tc) + a3*UYY(i1,i2,i3,tc) + ff - f(i1,i2,i3,0)
+
+          ! write(*,'("i1,i2,i3=",3i4," res=",e10.2," u=",e10.2)') i1,i2,i3,res,u(i1,i2,i3,tc)
+
+        #Else
+          ! -- UNKNOWN OPTION !
+          stop 7189
+        #End
+
+      #Else
+        ! ---- 3D -----
+        #If #OPTION eq "RHS"
+          ! ----- Eval RHS at first line INSIDE : (j1,j2,j3) ----
+          f(i1,i2,i3,0) = a0*u(j1,j2,j3,tc) + a1*( an1*UX(j1,j2,j3,tc) + an2*UY(j1,j2,j3,tc) + an3*UZ(j1,j2,j3,tc) ) + ff 
+        #Elif #OPTION eq "RESIDUAL"
+          ! ----- Eval Residual -------
+          !  [ theta*D_x + h*L[beta] ] + Sl*[ I + theta*h*D_x + (h^2)/2 *L[beta] ] 
+          !  L[beta] = beta*D_xx + (beta-1)*D_yy
+          res = a0*u(i1,i2,i3,tc) + a1*( an1*UX(i1,i2,i3,tc) + an2*UY(i1,i2,i3,tc)  + an3*UZ(i1,i2,i3,tc) ) \
+                + a2*UXX(i1,i2,i3,tc) + a3*UYY(i1,i2,i3,tc) + a4*UZZ(i1,i2,i3,tc) + ff - f(i1,i2,i3,0)
+        #Else
+          stop 7189
+        #End
+      #End
+
+    #Else
+      ! --- order=4 ----
+       stop 3333
+    #End
+    #If #OPTION eq "RESIDUAL"
+       res = abs(res)
+       maxRes = max(maxRes,res)
+       l2res = l2res + res**2
+       count = count +1 
+    #End
+
+
+  endLoopsMask()
+  ! ---------------- END LOOP OVER FACE -----------------------
+  
+  #If #OPTION eq "RESIDUAL"
+    l2res = sqrt( l2res )/max(1.0,count)
+  #End
+#endMacro
+
+! Arguments to champ subroutine
+#defineMacro MYARGS() nd,nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,\
+                         md1a,md1b,md2a,md2b,md3a,md3b,md4a,md4b, \
+                         ld1a,ld1b,ld2a,ld2b,ld3a,ld3b,ld4a,ld4b, \
+                 gridIndexRange, dimRange, isPeriodic, boundaryCondition, mask,xy,rsxy,  \
+                 u, f, coeff, ipar, rpar, ierr
+
+! **********************************************************************************
+! Macro EVAL_CHAMP 
+! 
+!            **** NOT USED ANYMORE*****
+!
+!  NAME: name of the subroutine
+!  DIM : 2 or 3
+!  ORDER : 2 ,4, 6 or 8
+!  GRIDTYPE : rectangular, curvilinear
+! **********************************************************************************
+#beginMacro EVAL_CHAMP(NAME,DIM,ORDER,GRIDTYPE)
+ subroutine NAME( MYARGS() )
+!=====================================================================================================
+!   Evaluate the CHAMP conditions (left-hand-side or right-hand-side)
+!
+!   The 2nd-order accurate CHAMP conditions are of the form
+!
+!   [ a0*I + a1*D_n + a2*D_xx + a3*D_yy ] T_l(0) = [ b0*I + b1*D_n ] T_r(h)
+! where
+!     T_l : T on left side.
+!     T_r : T on the right side.
+!
+! nd : number of space dimensions
+! u  : current solution
+! f  : return answer here 
+! option = ipar(0) :
+!       option = 0 : eval the RESIDUAL in the CHAMP conditions (in which case f holds the RHS).
+!       option = 1 : eval the RHS of the CHAMP conditions.
+!
+!====================================================================================================
+ implicit none
+ integer nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b, ierr
+ integer md1a,md1b,md2a,md2b,md3a,md3b,md4a,md4b
+ integer ld1a,ld1b,ld2a,ld2b,ld3a,ld3b,ld4a,ld4b
+ real u(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+ real f(md1a:md1b,md2a:md2b,md3a:md3b,md4a:md4b)
+ real coeff(ld1a:ld1b,ld2a:ld2b,ld3a:ld3b,ld4a:ld4b)
+
+ real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1) 
+
+ real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
+
+ integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+
+ integer gridIndexRange(0:1,0:2),boundaryCondition(0:1,0:2), dimRange(0:1,0:2), isPeriodic(0:*)
+
+ integer ipar(0:*)
+ real rpar(0:*)
+      
+!     ---- local variables -----
+
+ integer i1,i2,i3,n,gridType,orderOfAccuracy,dir,grid,myid
+ integer option,debug,twilightZone
+
+ real a0,a1,a2,a3,a4,a5,a6
+ real an1,an2,an3,aNormi,dt,dy,dz,t
+ real dx(0:2),dr(0:2)
+
+ ! real dx2i,dy2i,dz2i,dxsqi,dysqi,dzsqi,dxi,dyi,dzi
+ ! real dx12i,dy12i,dz12i,dxsq12i,dysq12i,dzsq12i,dxy4i,dxz4i,dyz4,time0,time1
+
+ ! real dxi4,dyi4,dzi4,dxdyi2,dxdzi2,dydzi2
+
+ real Sl, theta, beta, REAL_MIN, epsx, res, maxRes, l2Res, count
+ ! real Ktc1,Dc1, Ktc2, Dc2, Sl, Sr, theta, beta, REAL_MIN, epsx, res, maxRes, l2Res, count
+ real ff,te,tex,tey,tez,texx,teyy,tezz
+
+ integer heatFluxInterface,tc
+ parameter( heatFluxInterface=10 ) ! ***** FIX ME ****
+
+ integer side,axis,axisp1,axisp2,is1,is2,is3,j1,j2,j3,js1,js2,js3,k1,k2,k3,ks1,ks2,ks3,is,js
+ integer numGhost,numberOfGhostPoints
+ integer side1,side2,side3
+ integer n1a,n1b,n2a,n2b,n3a,n3b
+ integer nn1a,nn1b,nn2a,nn2b,nn3a,nn3b
+ integer extra1a,extra1b,extra2a,extra2b,extra3a,extra3b
+
+
+ integer rectangular,curvilinear
+ parameter( rectangular=0, curvilinear=1 )
+
+
+!...........start statement function
+ integer kd,m
+ real rx,ry,rz,sx,sy,sz,tx,ty,tz
+
+  declareDifferenceOrder2(u,RX)
+  ! declareDifferenceOrder2(un,none)
+  ! declareDifferenceOrder2(v,none)
+
+  declareDifferenceOrder4(u,RX)
+  ! declareDifferenceOrder4(un,none)
+
+ 
+ real ep 
+ ! real fv(0:1) , ev(0:1), evtt(0:1), evxx(0:1), evyy(0:1), evzz(0:1)
+ ! real evxxxx(0:1), evxxyy(0:1), evyyyy(0:1), evtttt(0:1)
+ ! real omega, coswt
+ 
+ ! **** FIX ME ***
+ integer forcingOption
+ integer noForcing,twilightZoneForcing,userForcing,helmholtzForcing
+ parameter(noForcing           =0,\
+           twilightZoneForcing =1,\
+           userForcing         =2,\
+           helmholtzForcing    =3 )
+
+           
+! real unxx22r,unyy22r,unxy22r,unx22r
+
+!.......statement functions for jacobian
+ rx(i1,i2,i3)=rsxy(i1,i2,i3,0,0)
+ ry(i1,i2,i3)=rsxy(i1,i2,i3,0,1)
+ rz(i1,i2,i3)=rsxy(i1,i2,i3,0,2)
+ sx(i1,i2,i3)=rsxy(i1,i2,i3,1,0)
+ sy(i1,i2,i3)=rsxy(i1,i2,i3,1,1)
+ sz(i1,i2,i3)=rsxy(i1,i2,i3,1,2)
+ tx(i1,i2,i3)=rsxy(i1,i2,i3,2,0)
+ ty(i1,i2,i3)=rsxy(i1,i2,i3,2,1)
+ tz(i1,i2,i3)=rsxy(i1,i2,i3,2,2)
+
+!     The next macro will define the difference approximation statement functions
+ defineDifferenceOrder2Components1(u,RX)
+ defineDifferenceOrder4Components1(u,RX)
+
+ ! defineDifferenceOrder2Components1(un,none)
+ ! defineDifferenceOrder4Components1(un,none)
+
+
+!...........end   statement functions
+
+
+ write(*,*) 'Inside NAME...'
+
+ t        = rpar( 0)
+ dt       = rpar( 1)
+ dx(0)    = rpar( 2)
+ dx(1)    = rpar( 3)
+ dx(2)    = rpar( 4)
+ dr(0)    = rpar( 5)
+ dr(1)    = rpar( 6)
+ dr(2)    = rpar( 7)
+ ep       = rpar( 8)  ! for TZ
+ theta    = rpar( 9)  ! ratio of thermal conductivities 
+ beta     = rpar(10)  ! ratio od thermal diffusivities 
+ Sl       = rpar(11)  ! Optimized Schwartz parameter for the current side
+ REAL_MIN = rpar(12)
+ maxRes   = rpar(13)  ! ... returned
+ l2Res    = rpar(14)  ! ... returned
+ 
+ ! Ktc1  = rpar( 9)  ! Koefficient of thermal conductivity 
+ ! Dc1   = rpar(10)  ! Coefficent of thermal diffusion
+ ! Ktc2  = rpar(11)
+ ! Dc2   = rpar(12)
+ ! Ktc1  = rpar( 9)  ! Koefficient of thermal conductivity 
+ ! Dc1   = rpar(10)  ! Coefficent of thermal diffusion
+
+ dy=dx(1)  ! Are these needed?
+ dz=dx(2)
+
+ option             = ipar( 0)
+ side               = ipar( 1)
+ axis               = ipar( 2)
+ grid               = ipar( 3)
+ gridType           = ipar( 4)
+ orderOfAccuracy    = ipar( 5)
+ twilightZone       = ipar( 6)
+ tc                 = ipar( 7)
+ debug              = ipar( 8)
+ myid               = ipar( 9)
+
+
+
+ epsx=REAL_MIN*100.
+
+ ! ARE THESE NEEDED?
+ ! dxsqi=1./(dx(0)**2)
+ ! dysqi=1./(dy**2)
+ ! dzsqi=1./(dz**2)
+
+ ! dxsq12i=1./(12.*dx(0)**2)
+ ! dysq12i=1./(12.*dy**2)
+ ! dzsq12i=1./(12.*dz**2)
+
+ ! dxi4=1./(dx(0)**4)
+ ! dyi4=1./(dy**4)
+ ! dxdyi2=1./(dx(0)*dx(0)*dy*dy)
+
+ ! dzi4=1./(dz**4)
+ ! dxdzi2=1./(dx(0)*dx(0)*dz*dz)
+ ! dydzi2=1./(dy*dy*dz*dz)
+
+ 
+ if( debug.gt.7 .or. t.le.dt )then
+   write(*,'("NAME: option=",i4," grid=",i4," side,axis=",2i3, " gridType=",i3 )') option,grid,side,axis,gridType
+   write(*,'("NAME: tc=",i3, " orderOfAccuracy=",i2 )') tc,orderOfAccuracy
+   write(*,'("NAME: twilightZone=",i2)') twilightZone
+   write(*,'("NAME: t,dt=",4e10.2)') t,dt 
+   write(*,'("NAME:  theta,beta=",2e10.2)') theta,beta
+   ! write(*,'("NAME:  Ktc2,Dc2=",2e10.2)') Ktc2,Dc2
+ end if
+
+
+ ! if( boundaryCondition(side,axis).ne.heatFluxInterface )then
+ !   write(*,'("NAME: ERROR: boundaryCondition is NOT heatFluxInterface !")')
+ !   stop 1221
+ ! end if
+
+ if( option.eq.0 )then
+  ! --- evaluate the residual ---
+   evalChampConditions(RESIDUAL,DIM,ORDER,GRIDTYPE)
+   rpar(13) = maxRes  ! ... returned
+   rpar(14) = l2Res   ! ... returned
+
+   write(*,'("NAME: maxRes=",e10.2," l2Res=",e10.2)') maxRes,l2Res
+ else
+   evalChampConditions(RHS,DIM,ORDER,GRIDTYPE)
+ end if
+
+
+
+ return
+ end
+
+#endMacro
+
+
+ 
+#beginMacro buildFile(NAME,DIM,ORDER,GRIDTYPE)
+#beginFile NAME.f90
+ EVAL_CHAMP(NAME,DIM,ORDER,GRIDTYPE)
+#endFile
+#endMacro
+
+! THESE ARE NO LONGER USED
+!     ! NOTE: For now 3D versions are just null versions below 
+
+!     buildFile(champResidual2dOrder2r,2,2,rectangular)
+!     buildFile(champResidual3dOrder2r,3,2,rectangular)
+! !
+!     buildFile(champResidual2dOrder2c,2,2,curvilinear)
+!     buildFile(champResidual3dOrder2c,3,2,curvilinear)
+! !
+!*      buildFile(champ2dOrder4r,2,4,rectangular)
+!--      buildFile(champ3dOrder4r,3,4,rectangular)
+!
+!*      buildFile(champ2dOrder4c,2,4,curvilinear)
+!--      buildFile(champ3dOrder4c,3,4,curvilinear)
+!
+!      buildFile(advMx2dOrder6r,2,6,rectangular)
+!      buildFile(advMx3dOrder6r,3,6,rectangular)
+!
+!       ! build these for testing symmetric operators -- BC's not implemented yet
+!      buildFile(advMx2dOrder6c,2,6,curvilinear)
+!      buildFile(advMx3dOrder6c,3,6,curvilinear)
+!
+!      buildFile(advMx2dOrder8r,2,8,rectangular)
+!      buildFile(advMx3dOrder8r,3,8,rectangular)
+!
+!       ! build these for testing symmetric operators -- BC's not implemented yet
+!      buildFile(advMx2dOrder8c,2,8,curvilinear)
+!      buildFile(advMx3dOrder8c,3,8,curvilinear)
+
+
+
+subroutine champResidualOpt( MYARGS() )
+!======================================================================
+!   Evaluate the RESIDUAL in the CHAMP interface conditions.
+!     MAIN ROUTINE THAT CALLS THE APPROPRIATE SPECIALIZED VERSION
+!======================================================================
+  implicit none
+  integer nd, nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,nd4a,nd4b,ierr
+  integer md1a,md1b,md2a,md2b,md3a,md3b,md4a,md4b
+  integer ld1a,ld1b,ld2a,ld2b,ld3a,ld3b,ld4a,ld4b
+
+
+  real u(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,nd4a:nd4b)
+  real f(md1a:md1b,md2a:md2b,md3a:md3b,md4a:md4b)
+  real coeff(ld1a:ld1b,ld2a:ld2b,ld3a:ld3b,ld4a:ld4b)
+
+  real xy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1)
+  real rsxy(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b,0:nd-1,0:nd-1)
+
+  integer mask(nd1a:nd1b,nd2a:nd2b,nd3a:nd3b)
+  integer gridIndexRange(0:1,0:2),boundaryCondition(0:1,0:2), dimRange(0:1,0:2), isPeriodic(0:*)
+
+  integer ipar(0:*)
+  real rpar(0:*)
+  
+  !     ---- local variables -----
+
+  integer option,side,axis,grid,tc,debug,myid,orderOfAccuracy,gridType
+  integer n1a,n1b,n2a,n2b,n3a,n3b
+  integer i1,i2,i3,m1,m2,m3,m
+  real res,maxRes,l2Res,count
+
+  integer rectangular,curvilinear
+  parameter( rectangular=0, curvilinear=1 )
+
+  write(*,*) 'Inside champResidualOpt... '
+
+   option             = ipar( 0)
+   side               = ipar( 1)
+   axis               = ipar( 2)
+   grid               = ipar( 3)
+   gridType           = ipar( 4)
+   orderOfAccuracy    = ipar( 5)
+   ! twilightZone       = ipar( 6)
+   tc                 = ipar( 7)
+   debug              = ipar( 8)
+   myid               = ipar( 9)
+
+  maxRes   = rpar(13)  ! ... returned
+  l2Res    = rpar(14)  ! ... returned
+
+  ! --- get loop bounds -----
+  n1a=gridIndexRange(0,0)
+  n1b=gridIndexRange(1,0)
+  n2a=gridIndexRange(0,1)
+  n2b=gridIndexRange(1,1)
+  n3a=gridIndexRange(0,2)
+  n3b=gridIndexRange(1,2)
+  if( axis.eq.0 )then
+    n1a=gridIndexRange(side,axis)
+    n1b=gridIndexRange(side,axis)
+  else if( axis.eq.1 )then
+    n2a=gridIndexRange(side,axis)
+    n2b=gridIndexRange(side,axis)
+  else
+    n3a=gridIndexRange(side,axis)
+    n3b=gridIndexRange(side,axis)
+  end if
+   
+  ! ---------------- START LOOP OVER FACE -----------------------
+  ! if( .true. )then
+  ! -- compute the residual using the stencil in the coefficient matrix ---
+  maxRes=0.
+  l2Res=0.
+  count=0.
+  if( nd.eq.2 .and. orderOfAccuracy.eq.2 )then
+    !  ------------ 2D ORDER=2 ----------------
+
+    beginLoopsMask(i1,i2,i3,n1a,n1b,n2a,n2b,n3a,n3b)
+
+      res = -f(i1,i2,i3,0)
+      do m2=-1,1
+        do m1=-1,1
+          m = (m1+1)+3*(m2+1)
+          res = res + coeff(m,i1,i2,i3)*u(i1+m1,i2+m2,i3,tc)
+        end do 
+      end do
+
+      res = abs(res)
+      maxRes = max(maxRes,res)
+      l2res = l2res + res**2
+      count = count +1 
+
+    endLoopsMask()
+  else
+    stop 9876
+  end if
+
+  l2res = sqrt( l2res )/max(1.0,count)
+  rpar(13) = maxRes  ! ... returned
+  rpar(14) = l2Res   ! ... returned
+
+  ! else
+  !   ! --- OlD WAY ----
+
+  !   if( orderOfAccuracy.eq.2 )then
+
+  !     if( nd.eq.2 .and. gridType.eq.rectangular ) then
+  !       call champResidual2dOrder2r( MYARGS() )
+  !     else if( nd.eq.2 .and. gridType.eq.curvilinear ) then
+  !       call champResidual2dOrder2c( MYARGS() )
+  !     else if( nd.eq.3 .and. gridType.eq.rectangular ) then
+  !       call champResidual3dOrder2r( MYARGS() )
+  !     else if( nd.eq.3 .and. gridType.eq.curvilinear ) then
+  !       call champResidual3dOrder2c( MYARGS() )
+  !     else
+  !       stop 2271
+  !     end if
+
+  !   else if( orderOfAccuracy.eq.4 ) then
+  !     write(*,'(" champResidualOpt:ERROR: un-implemented order of accuracy =",i6)') orderOfAccuracy
+  !     stop 4444
+
+  !   else
+  !     write(*,'(" champResidualOpt:ERROR: un-implemented order of accuracy =",i6)') orderOfAccuracy
+  !       ! '
+  !     stop 11122
+  !   end if
+
+  ! end if ! old way 
+
+  return
+end
+
+
+
+
+
+
+
+

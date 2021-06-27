@@ -1,6 +1,7 @@
 #================================================================================================
 #  cgmx example:  plane wave moving through a domain
 #
+echo to terminal 0
 # Usage:
 #   
 #  cgmx [-noplot] planeWave  -g=<name> -tf=<tFinal> -tp=<tPlot> -kx=<num> -ky=<num> -kz=<num> -show=<name> ...
@@ -19,7 +20,6 @@
 #  -dm : dispersion model
 #  -a0 : array values can be specified as -a0= 1 1.5 3.   (assign 3 array values)
 #
-echo to terminal 0
 # Examples: 
 #   cgmx planeWave -g=square10 -kx=1 -go=halt
 #   cgmx planeWave -g=box10 -kx=1 -go=halt

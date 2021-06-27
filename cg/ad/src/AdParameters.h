@@ -27,15 +27,15 @@ displayPdeParameters(FILE *file = stdout );
 
 virtual int 
 setDefaultDataForABoundaryCondition(const int & side,
-				    const int & axis,
-				    const int & grid,
-				    CompositeGrid & cg);
+                                    const int & axis,
+                                    const int & grid,
+                                    CompositeGrid & cg);
 virtual int
 saveParametersToShowFile();
 
 virtual int
 setParameters(const int & numberOfDimensions0=2, 
-	      const aString & reactionName =nullString);
+              const aString & reactionName =nullString);
 virtual int 
 setPdeParameters(CompositeGrid & cg, const aString & command = nullString,
                  DialogData *interface =NULL );
@@ -46,15 +46,22 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice,
                         const int & degreeTime =1 );
 
 virtual int 
+updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg);
+
+virtual int 
 updateUserDefinedCoefficients(GenericGraphicsInterface & gi);
 
 virtual
+int getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
+                                const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives = 0 );
+
+virtual
 int userDefinedDeformingSurface( DeformingBodyMotion & deformingBody,
-				 real t1, real t2, real t3, 
-				 GridFunction & cgf1,
-				 GridFunction & cgf2,
-				 GridFunction & cgf3,
-				 int option );
+                                 real t1, real t2, real t3, 
+                                 GridFunction & cgf1,
+                                 GridFunction & cgf2,
+                                 GridFunction & cgf3,
+                                 int option );
 
 virtual
 void userDefinedDeformingSurfaceCleanup( DeformingBodyMotion & deformingBody );

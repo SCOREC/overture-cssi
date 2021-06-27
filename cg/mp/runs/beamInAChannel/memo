@@ -1,3 +1,25 @@
+************************************
+***** March 30, 2021
+
+REVISIT compressible + NEO solid-beam
+
+#  Thinner beam: 
+ogen -noplot solidBeamInAChannelGrid -interp=e -sharpness=50 -tStretch=1.5 -beamThickness=.1 -prefix=thinSolidBeamInAChannelGrid -factor=16 
+ogen -noplot solidBeamInAChannelGrid -interp=e -sharpness=50 -tStretch=1.5 -beamThickness=.1 -prefix=thinSolidBeamInAChannelGrid -factor=32
+ogen -noplot solidBeamInAChannelGrid -interp=e -sharpness=50 -tStretch=1.5 -beamThickness=.1 -prefix=thinSolidBeamInAChannelGrid -factor=64
+
+***BROKEN****
+--SM-- get interface traction: WARNING: Not implemented for a nonlinear solid
+Error occured in file src/interface.C, function interfaceRightHandSide, line 1054.
+
+
+G16 rhos=1 -godunovOrder=1 beamInAChannel5/ 
+nohup $cgmp -noplot solidBeamInAChannel -method=cns -cnsVariation=godunov -smVariation=g  -g=thinSolidBeamInAChannelGride16.order2 -scf=1. -tp=.1 -tf=20. -nc=1 -d1="fluidDomain" -d2="solidDomain" -fic=shock -pOffset=.71440 -rhoSolid=1. -lambdaSolid=10. -muSolid=10. -diss=4. -relaxAlpha=1. -relaxDelta=1. -tangentialDissipationSolid=1. -godunovOrder=1  -cnsGodunovOrder=2 -debug=1 -xShock=-50. -shockSpeed=1.1 -rampedInflow=1 -flushFrequency=4 -godunovType=4 -pi=1 -piGhostOption=3 -multiDomainAlgorithm=1  -cfl=.8 -show=sbicNeoThin16s1ramped.show -go=go >! sbicNeoThin16s1ramped.out &
+
+
+
+
+
 **************************
 *** July 31, 2015
 

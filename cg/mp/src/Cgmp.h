@@ -153,6 +153,9 @@ advance(real &tFinal);
 virtual int
 solve();
 
+virtual void 
+writeParameterSummary( FILE * file );
+
 // std::vector<DomainSolver*> domainSolver;  // holds PDE solvers for each domain : now in base class
 
 Interpolant *interpolant;

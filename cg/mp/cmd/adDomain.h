@@ -20,6 +20,8 @@
 #   $vxPulse,$vyPulse,$vzPulse : velocity of the TZ pulse 
 #   $pulsevxPulse,$vyPulse,$vzPulse : velocity of the TZ pulse 
 #   $pulseAmplitude $pulseExponent $pulsePower : TZ pulse parameters
+#   useChamp : 1=use CHAMP interface conditions
+#   $assignKnown : 1 = assign dirichlet BCs using known solution
 #
 if( $tz eq "" ){ $tz="turn off twilight zone"; }
 #
@@ -48,6 +50,8 @@ if( $vzPulse eq "" ){ $vzPulse=0.; }
 if( $pulseAmplitude eq "" ){ $pulseAmplitude=1.; }
 if( $pulseExponent eq "" ){ $pulseExponent=40.; }
 if( $pulsePower eq "" ){ $pulsePower=1; }
+if( $useChamp eq "" ){ $useChamp=0; }
+if( $assignKnown eq "" ){ $assignKnown=0; }
 # ------- start new domain ----------
 #  Cgad solid
 setup $domainName
@@ -67,6 +71,7 @@ setup $domainName
     a 0. 
     b 0. 
     c 0. 
+    assign known solution at boundaries $assignKnown
   done
   $setAxi = $axisymmetric ? "turn on axisymmetric flow" : "*";
   $setAxi
@@ -92,7 +97,12 @@ setup $domainName
 # 
   boundary conditions
    $bc 
-    done
+  done
+  #
+  boundary conditions...
+    # turn on CHAMP CHT interface codnitions: 
+    apply champ interface conditions $useChamp
+  done
 #
   $tz
   degree in space $degreeSpace
@@ -104,7 +114,7 @@ setup $domainName
   OBTZ:pulse amplitude, exponent, power $pulseAmplitude $pulseExponent $pulsePower
 # 
   initial conditions
-  if( $tz eq "turn off twilight zone" && $ic eq "" ){ $ic="uniform flow\n" . "T=$T0"; }elsif( $ic eq "" ){ $ic="*";}
+  if( $tz eq "turn off twilight zone" && $ic eq "" ){ $ic="uniform flow\n" . "T=$T0"; }elsif( $ic eq "" ){ $ic="#";}
     $ic
   continue
 #****  Here we optionally turn on AMR *******

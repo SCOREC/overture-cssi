@@ -9,6 +9,7 @@ all: $(all);
 user: CgadUsersGuide
 CgadUsersGuide: CgadUsersGuide.tex 
 	pdflatex CgadUsersGuide
+	bibtex CgadUsersGuide
 
 
 ref: CgadReferenceGuide

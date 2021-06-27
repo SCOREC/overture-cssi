@@ -1,0 +1,26 @@
+% ------------------------------------------------------------------------------------
+\subsection{Eigenfunctions of the heat equation on a disk}  \label{sec:diskEig}
+
+
+The eigenfunctions for the heat equation on the disk of radius $r=a$ take the form
+\ba
+   & u(\xv,t) = a \, e^{- \kappa \lambda^2 t} \, J_n(\lambda r) \, \sin( m\theta)  ,\\
+\ea
+where $\lambda = \lambda_{m,n}$ is the m'th root of 
+\bat
+  &  J_n(\lambda a) = 0 ,   \qquad&& \text{for Dirichlet BC at $r=a$} , \\
+  &  J_n'(\lambda a) = 0 ,  \qquad&& \text{for Neumann BC at $r=a$} , 
+\eat
+
+Here are some results from grid convergence studies. See {\tt cg/ad/conv/Makefile} for commands to generate these tables.
+
+\mni \textbf{CN+FD2}:
+\input tables/diskEigenIMSicDirichletOrder2MaxNormConvTable.tex
+
+\mni \textbf{BDF2+FD2}:
+\input tables/diskEigenBDF2SicDirichletOrder2MaxNormConvTable.tex
+
+\mni \textbf{BDF4+FD4}:
+\input tables/diskEigenBDF4SicDirichletOrder4MaxNormConvTable.tex
+
+

@@ -98,11 +98,11 @@ gradCoefficients(const GridFunctionParameters & gfType,
 //---------------------------------------------------------------------------------------
 realMappedGridFunction MappedGridOperators::
 xiCoefficients(const derivativeTypes & derivativeType0, 
-	       const Index & I1_, 
-	       const Index & I2_, 
-	       const Index & I3_,
-	       const Index & E,
-	       const Index & C )
+               const Index & I1_, 
+               const Index & I2_, 
+               const Index & I3_,
+               const Index & E,
+               const Index & C )
 {
   // real time = getCPU();
   
@@ -158,59 +158,59 @@ xiCoefficients(const derivativeTypes & derivativeType0,
 
 void 
 divScalarGradFDerivCoefficients(RealDistributedArray & derivative,
-				const realMappedGridFunction & s,
-				const Index & I1,
-				const Index & I2,
-				const Index & I3,
-				const Index & E,
-				const Index & C,
-				MappedGridOperators & mgop );
+                                const realMappedGridFunction & s,
+                                const Index & I1,
+                                const Index & I2,
+                                const Index & I3,
+                                const Index & E,
+                                const Index & C,
+                                MappedGridOperators & mgop );
 
 void 
 derivativeScalarDerivativeFDerivCoefficients(RealDistributedArray & derivative,
-					     const realMappedGridFunction & s,
-					     const int & direction1,
-					     const int & direction2,
-					     const Index & I1,
-					     const Index & I2,
-					     const Index & I3,
-					     const Index & E,
-					     const Index & C,
-					     MappedGridOperators & mgop );
+                                             const realMappedGridFunction & s,
+                                             const int & direction1,
+                                             const int & direction2,
+                                             const Index & I1,
+                                             const Index & I2,
+                                             const Index & I3,
+                                             const Index & E,
+                                             const Index & C,
+                                             MappedGridOperators & mgop );
 
 void 
 scalarGradFDerivCoefficients(RealDistributedArray & derivative,
-				const realMappedGridFunction & s,
-				const Index & I1,
-				const Index & I2,
-				const Index & I3,
-				const Index & E,
-				const Index & C,
-				MappedGridOperators & mgop );
+                                const realMappedGridFunction & s,
+                                const Index & I1,
+                                const Index & I2,
+                                const Index & I3,
+                                const Index & E,
+                                const Index & C,
+                                MappedGridOperators & mgop );
 
 void 
 divVectorScalarFDerivCoefficients(RealDistributedArray & derivative,
-				  const realMappedGridFunction & s,
-				  const Index & I1,
-				  const Index & I2,
-				  const Index & I3,
-				  const Index & E,
-				  const Index & C,
-				  MappedGridOperators & mgop );
+                                  const realMappedGridFunction & s,
+                                  const Index & I1,
+                                  const Index & I2,
+                                  const Index & I3,
+                                  const Index & E,
+                                  const Index & C,
+                                  MappedGridOperators & mgop );
 
 
 
 //\begin{>>MappedGridOperatorsInclude.tex}{\subsubsection{divScalarGradCoefficients}}
 realMappedGridFunction MappedGridOperators::
 divScalarGradCoefficients(const realMappedGridFunction & scalar,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 //=======================================================================================
 // /Description:
 //   Form the coefficient matrix for the operator $\grad\cdot(\rm{scalar}\grad )$.
@@ -228,11 +228,11 @@ divScalarGradCoefficients(const realMappedGridFunction & scalar,
       result+=multiply(x(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),xCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_));
     else if( numberOfDimensions==2 )
       result+=multiply(x(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),xCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_))
-	+multiply(y(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),yCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_));
+        +multiply(y(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),yCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_));
     else
       result+=multiply(x(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),xCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_))
-	+multiply(y(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),yCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_))
-	+multiply(z(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),zCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_));
+        +multiply(y(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),yCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_))
+        +multiply(z(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_),zCoefficients(I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_));
     return result;
   }
   else
@@ -276,16 +276,16 @@ divScalarGradCoefficients(const realMappedGridFunction & scalar,
 }
 
 realMappedGridFunction MappedGridOperators::
-divScalarGradCoefficients(const GridFunctionParameters & gfType,			
-			  const realMappedGridFunction & scalar,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+divScalarGradCoefficients(const GridFunctionParameters & gfType,                        
+                          const realMappedGridFunction & scalar,
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 {
   return divScalarGradCoefficients(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_);
 }
@@ -294,16 +294,16 @@ divScalarGradCoefficients(const GridFunctionParameters & gfType,
 //\begin{>>MappedGridOperatorsInclude.tex}{\subsubsection{derivativeScalarDerivativeCoefficients}}
 realMappedGridFunction MappedGridOperators::
 derivativeScalarDerivativeCoefficients(const realMappedGridFunction & scalar,
-			    const int & direction1,
-			    const int & direction2,
-			  const Index & I1 /* = nullIndex */,
-			  const Index & I2 /* = nullIndex */,
-			  const Index & I3 /* = nullIndex */,
-			  const Index & I4 /* = nullIndex */,
-			  const Index & I5 /* = nullIndex */,
-			  const Index & I6 /* = nullIndex */,
-			  const Index & I7 /* = nullIndex */,
-			  const Index & I8 /* = nullIndex */ )
+                            const int & direction1,
+                            const int & direction2,
+                          const Index & I1 /* = nullIndex */,
+                          const Index & I2 /* = nullIndex */,
+                          const Index & I3 /* = nullIndex */,
+                          const Index & I4 /* = nullIndex */,
+                          const Index & I5 /* = nullIndex */,
+                          const Index & I6 /* = nullIndex */,
+                          const Index & I7 /* = nullIndex */,
+                          const Index & I8 /* = nullIndex */ )
 //=======================================================================================
 // /Description:
 //   Form the coefficient matrix for the operator
@@ -406,23 +406,23 @@ derivativeScalarDerivativeCoefficients(const realMappedGridFunction & scalar,
     {
       MappedGridOperators::derivativeTypes derivType;
       if( direction1==0 && direction2==0 )
-	derivType= MappedGridOperators::xDerivativeScalarXDerivative;
+        derivType= MappedGridOperators::xDerivativeScalarXDerivative;
       else if( direction1==0 && direction2==1 )
-	derivType= MappedGridOperators::xDerivativeScalarYDerivative;
+        derivType= MappedGridOperators::xDerivativeScalarYDerivative;
       else if( direction1==1 && direction2==1 )
-	derivType= MappedGridOperators::yDerivativeScalarYDerivative;
+        derivType= MappedGridOperators::yDerivativeScalarYDerivative;
       else if( direction1==1 && direction2==0 )
-	derivType= MappedGridOperators::yDerivativeScalarXDerivative;
+        derivType= MappedGridOperators::yDerivativeScalarXDerivative;
       else if( direction1==0 && direction2==2 )
-	derivType= MappedGridOperators::xDerivativeScalarZDerivative;
+        derivType= MappedGridOperators::xDerivativeScalarZDerivative;
       else if( direction1==1 && direction2==2 )
-	derivType= MappedGridOperators::yDerivativeScalarZDerivative;
+        derivType= MappedGridOperators::yDerivativeScalarZDerivative;
       else if( direction1==2 && direction2==2 )
-	derivType= MappedGridOperators::zDerivativeScalarZDerivative;
+        derivType= MappedGridOperators::zDerivativeScalarZDerivative;
       else if( direction1==2 && direction2==0 )
-	derivType= MappedGridOperators::zDerivativeScalarXDerivative;
+        derivType= MappedGridOperators::zDerivativeScalarXDerivative;
       else if( direction1==2 && direction2==1 )
-	derivType= MappedGridOperators::zDerivativeScalarYDerivative;
+        derivType= MappedGridOperators::zDerivativeScalarYDerivative;
 
       coefficients(derivType,uX,scalar,R1,R2,R3,R4,R5);
     }
@@ -438,18 +438,18 @@ derivativeScalarDerivativeCoefficients(const realMappedGridFunction & scalar,
 }
 
 realMappedGridFunction MappedGridOperators::
-derivativeScalarDerivativeCoefficients(const GridFunctionParameters & gfType,			
-			  const realMappedGridFunction & scalar,
-			    const int & direction1,
-			    const int & direction2,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+derivativeScalarDerivativeCoefficients(const GridFunctionParameters & gfType,                   
+                          const realMappedGridFunction & scalar,
+                            const int & direction1,
+                            const int & direction2,
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 {
   return derivativeScalarDerivativeCoefficients(scalar,direction1,direction2,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_);
 }
@@ -459,14 +459,14 @@ derivativeScalarDerivativeCoefficients(const GridFunctionParameters & gfType,
 //\begin{>>MappedGridOperatorsInclude.tex}{\subsubsection{scalarGradCoefficients}}
 realMappedGridFunction MappedGridOperators::
 scalarGradCoefficients(const realMappedGridFunction & scalar,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 //=======================================================================================
 // /Description:
 //   Form the coefficient matrix for the operator $\rm{scalar}\grad$.
@@ -519,16 +519,16 @@ scalarGradCoefficients(const realMappedGridFunction & scalar,
 }
 
 realMappedGridFunction MappedGridOperators::
-scalarGradCoefficients(const GridFunctionParameters & gfType,			
-			  const realMappedGridFunction & scalar,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+scalarGradCoefficients(const GridFunctionParameters & gfType,                   
+                          const realMappedGridFunction & scalar,
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 {
   return scalarGradCoefficients(scalar,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_);
 }
@@ -537,17 +537,17 @@ scalarGradCoefficients(const GridFunctionParameters & gfType,
 
 // scalar times identityCoefficients
 realMappedGridFunction MappedGridOperators::
-scalarCoefficients(				
-		   const realMappedGridFunction & s,
-		   const Index & I1_,
-		   const Index & I2_,
-		   const Index & I3_,
-		   const Index & I4_,
-		   const Index & I5_,
-		   const Index & I6_,
-		   const Index & I7_,
-		   const Index & I8_
-		   )
+scalarCoefficients(                             
+                   const realMappedGridFunction & s,
+                   const Index & I1_,
+                   const Index & I2_,
+                   const Index & I3_,
+                   const Index & I4_,
+                   const Index & I5_,
+                   const Index & I6_,
+                   const Index & I7_,
+                   const Index & I8_
+                   )
 {
   cout << "MappedGridOperators::scalarCoefficients not implemented\n";
   if( &s )
@@ -571,14 +571,14 @@ scalarCoefficients( const RealDistributedArray & s )
 //\begin{>>MappedGridOperatorsInclude.tex}{\subsubsection{divVectorScalarCoefficients}}
 realMappedGridFunction MappedGridOperators::
 divVectorScalarCoefficients(const realMappedGridFunction & s,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 //=======================================================================================
 // /Description:
 //   Form the coefficient matrix for the operator $\grad\cdot(\Sv)$.
@@ -639,16 +639,16 @@ divVectorScalarCoefficients(const realMappedGridFunction & s,
 }
 
 realMappedGridFunction MappedGridOperators::
-divVectorScalarCoefficients(const GridFunctionParameters & gfType,			
-			  const realMappedGridFunction & s,
-			  const Index & I1_ /* = nullIndex */,
-			  const Index & I2_ /* = nullIndex */,
-			  const Index & I3_ /* = nullIndex */,
-			  const Index & I4_ /* = nullIndex */,
-			  const Index & I5_ /* = nullIndex */,
-			  const Index & I6_ /* = nullIndex */,
-			  const Index & I7_ /* = nullIndex */,
-			  const Index & I8_ /* = nullIndex */ )
+divVectorScalarCoefficients(const GridFunctionParameters & gfType,                      
+                          const realMappedGridFunction & s,
+                          const Index & I1_ /* = nullIndex */,
+                          const Index & I2_ /* = nullIndex */,
+                          const Index & I3_ /* = nullIndex */,
+                          const Index & I4_ /* = nullIndex */,
+                          const Index & I5_ /* = nullIndex */,
+                          const Index & I6_ /* = nullIndex */,
+                          const Index & I7_ /* = nullIndex */,
+                          const Index & I8_ /* = nullIndex */ )
 {
   return divVectorScalarCoefficients(s,I1_,I2_,I3_,I4_,I5_,I6_,I7_,I8_);
 }
@@ -663,7 +663,7 @@ extern "C"
 
   void laplacianCoeff( const int &nd,  const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
                        const int &nd3a, const int &nd3b,
-		       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
+                       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
                        const int &ndc, const int &nc,  const int &ns,
                        const int &ea,const int &eb, const int &ca,const int &cb,
                        const real & d22, const real & d12, const real & h22, const real & rsxy,
@@ -671,7 +671,7 @@ extern "C"
 
   void laplacianCoeff4( const int &nd,  const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
                        const int &nd3a, const int &nd3b,
-		       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
+                       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
                        const int &ndc, const int &nc,  const int &ns,
                        const int &ea,const int &eb, const int &ca,const int &cb,
                        const real & d24, const real & d14, const real & h42, const real & rsxy,
@@ -679,7 +679,7 @@ extern "C"
 
   void identityCoeff( const int &nd,  const int & nd1a, const int &nd1b, const int &nd2a, const int &nd2b,
                        const int &nd3a, const int &nd3b,
-		       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
+                       const int &n1a, const int &n1b,const int &n2a,const int &n2b,const int &n3a,const int &n3b, 
                        const int &ndc, const int &nc, const int &ns, 
                        const int &ea,const int &eb, const int &ca,const int &cb,
                        real & coeff );
@@ -694,7 +694,7 @@ extern "C"
      const real &rsxy, const real &jacobian, real &coeff, const real &s, 
      const int &ndw, real &w, 
      const int &derivative, const int &derivType, const int &gridType, const int &order, const int &averagingType, 
-		      const int &dir1, const int &dir2, int &ierr  );
+                      const int &dir1, const int &dir2, int &ierr  );
 
 }
 
@@ -709,12 +709,12 @@ extern "C"
  */
 int MappedGridOperators::
 coefficients(const derivativeTypes & derivativeType_,
-	     realMappedGridFunction & coeff, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-	     const Index & C /* = nullIndex */ )
+             realMappedGridFunction & coeff, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+             const Index & C /* = nullIndex */ )
 {
   return coefficients(derivativeType_,coeff,coeff,I1,I2,I3,E,C);
 }
@@ -723,13 +723,13 @@ coefficients(const derivativeTypes & derivativeType_,
 //! This more general version takes a scalar too.
 int MappedGridOperators::
 coefficients(const derivativeTypes & derivativeType_,
-	     realMappedGridFunction & coeff, 
-	     const realMappedGridFunction & scalar, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-	     const Index & C /* = nullIndex */ )
+             realMappedGridFunction & coeff, 
+             const realMappedGridFunction & scalar, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+             const Index & C /* = nullIndex */ )
 {
   return assignCoefficients(derivativeType_,coeff,scalar,I1,I2,I3,E,C);
 }
@@ -738,12 +738,12 @@ coefficients(const derivativeTypes & derivativeType_,
 //! Fill the coefficients into an array.
 int MappedGridOperators::
 assignCoefficients(const derivativeTypes & derivativeType_,
-	     realArray & coeff0, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-	     const Index & C /* = nullIndex */ )
+             realArray & coeff0, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+             const Index & C /* = nullIndex */ )
 {
   realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff0,coeffLocal);
   return assignCoefficientsInternal(derivativeType_,coeffLocal,coeffLocal,I1,I2,I3,E,C);
@@ -751,13 +751,13 @@ assignCoefficients(const derivativeTypes & derivativeType_,
 
 int MappedGridOperators::
 assignCoefficients(const derivativeTypes & derivativeType_,
-	     realArray & coeff0, 
-	     const realArray & scalar0, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-		   const Index & C /* = nullIndex */ )
+             realArray & coeff0, 
+             const realArray & scalar0, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+                   const Index & C /* = nullIndex */ )
 {
   realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff0,coeffLocal);
   realSerialArray scalarLocal; getLocalArrayWithGhostBoundaries(scalar0,scalarLocal);
@@ -770,25 +770,25 @@ assignCoefficients(const derivativeTypes & derivativeType_,
 //! Fill the coefficients into an array.
 int MappedGridOperators::
 assignCoefficients(const derivativeTypes & derivativeType_,
-	     realSerialArray & coeff0, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-	     const Index & C /* = nullIndex */ )
+             realSerialArray & coeff0, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+             const Index & C /* = nullIndex */ )
 {
   return assignCoefficientsInternal(derivativeType_,coeff0,coeff0,I1,I2,I3,E,C);
 }
 
 int MappedGridOperators::
 assignCoefficients(const derivativeTypes & derivativeType_,
-	     realSerialArray & coeff0, 
-	     const realSerialArray & scalar0, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-		   const Index & C /* = nullIndex */ )
+             realSerialArray & coeff0, 
+             const realSerialArray & scalar0, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+                   const Index & C /* = nullIndex */ )
 {
   return assignCoefficientsInternal(derivativeType_,coeff0,scalar0,I1,I2,I3,E,C);
 
@@ -799,13 +799,13 @@ assignCoefficients(const derivativeTypes & derivativeType_,
 //! some operators.
 int MappedGridOperators::
 assignCoefficientsInternal(const derivativeTypes & derivativeType_,
-	     realSerialArray & coeff, 
-	     const realSerialArray & scalar, 
-	     const Index & I1 /* = nullIndex */, 
-	     const Index & I2 /* = nullIndex */, 
-	     const Index & I3 /* = nullIndex */, 
-	     const Index & E /* = nullIndex */,   
-	     const Index & C /* = nullIndex */ )
+             realSerialArray & coeff, 
+             const realSerialArray & scalar, 
+             const Index & I1 /* = nullIndex */, 
+             const Index & I2 /* = nullIndex */, 
+             const Index & I3 /* = nullIndex */, 
+             const Index & E /* = nullIndex */,   
+             const Index & C /* = nullIndex */ )
 {
 
   #ifdef USE_PPP
@@ -904,8 +904,8 @@ assignCoefficientsInternal(const derivativeTypes & derivativeType_,
     {
       if( derivativeType_>=xDerivativeScalarXDerivative && derivativeType_<=zDerivativeScalarZDerivative )
       {
-	dir1=(derivativeType_-xDerivativeScalarXDerivative)/3;
-	dir2=(derivativeType_-xDerivativeScalarXDerivative) % 3;
+        dir1=(derivativeType_-xDerivativeScalarXDerivative)/3;
+        dir2=(derivativeType_-xDerivativeScalarXDerivative) % 3;
       }
 
       if( !rectangular ) // *wdh* 021021
@@ -929,8 +929,8 @@ assignCoefficientsInternal(const derivativeTypes & derivativeType_,
       
       if( rectangular )
       {
-	if( derivative==0 || derivative==1 )
-	  ndw *= mappedGrid.numberOfDimensions();  // laplacian and divScalarGrad need more space.
+        if( derivative==0 || derivative==1 )
+          ndw *= mappedGrid.numberOfDimensions();  // laplacian and divScalarGrad need more space.
         else 
           ndw *=1;   // only 1 work space array needed for derivativeScalarDerivative if rectangular
       }
@@ -947,21 +947,21 @@ assignCoefficientsInternal(const derivativeTypes & derivativeType_,
     {
       real *w = new real [ndw];
       coeffOperator( mappedGrid.numberOfDimensions(), nd1a,nd1b,nd2a,nd2b,nd3a,nd3b,
-		   ndc1a,ndc1b,ndc2a,ndc2b,ndc3a,ndc3b, 
-		   nds1a,nds1b,nds2a,nds2b,nds3a,nds3b, 
-		   n1a,n1b,n2a,n2b,n3a,n3b, 
-		   ndc, nc,ns, ea,eb,ca,cb,
-		   dx[0], dr[0],
-		   *rsxy, *jacobian, *pcoeff, *s, 
-		   ndw,w[0],  
-		   derivativeType_, derivType, gridType, orderOfAccuracy, averagingType, 
- 		   dir1, dir2, ierr  );
+                   ndc1a,ndc1b,ndc2a,ndc2b,ndc3a,ndc3b, 
+                   nds1a,nds1b,nds2a,nds2b,nds3a,nds3b, 
+                   n1a,n1b,n2a,n2b,n3a,n3b, 
+                   ndc, nc,ns, ea,eb,ca,cb,
+                   dx[0], dr[0],
+                   *rsxy, *jacobian, *pcoeff, *s, 
+                   ndw,w[0],  
+                   derivativeType_, derivType, gridType, orderOfAccuracy, averagingType, 
+                   dir1, dir2, ierr  );
     
       delete [] w;
       if( ierr==2 )
       {
-	printf("MappedGridOperators::assignCoefficients:ERROR return from coeffOperator: not enough work space!\n");
-	Overture::abort("");
+        printf("MappedGridOperators::assignCoefficients:ERROR return from coeffOperator: not enough work space!\n");
+        Overture::abort("");
       }
     }
     
@@ -990,11 +990,11 @@ assignCoefficientsInternal(const derivativeTypes & derivativeType_,
 // *     {
 // *       for( int axis=0; axis<3; axis++ )
 // *       {
-// * 	h21(axis)=1./(2.*dx[axis]); 
-// * 	h22(axis)=1./SQR(dx[axis]);
+// *    h21(axis)=1./(2.*dx[axis]); 
+// *    h22(axis)=1./SQR(dx[axis]);
 // * 
-// * 	h41(axis)=1./(12.*dx[axis]);
-// * 	h42(axis)=1./(12.*SQR(dx[axis]));
+// *    h41(axis)=1./(12.*dx[axis]);
+// *    h42(axis)=1./(12.*SQR(dx[axis]));
 // *       }
 // *     }
 // * 
@@ -1004,25 +1004,25 @@ assignCoefficientsInternal(const derivativeTypes & derivativeType_,
 // *     case laplacianOperator:
 // *       if( orderOfAccuracy==2 )
 // *       {
-// * 	laplacianCoeff( mappedGrid.numberOfDimensions(), d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
-// * 			n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, d22(0), d12(0), h22(0),
-// * 			*rsxy, *getDataPointer(coeff), gridType, orderOfAccuracy );
+// *    laplacianCoeff( mappedGrid.numberOfDimensions(), d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
+// *                    n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, d22(0), d12(0), h22(0),
+// *                    *rsxy, *getDataPointer(coeff), gridType, orderOfAccuracy );
 // *       }
 // *       else
 // *       {
-// * 	laplacianCoeff4( mappedGrid.numberOfDimensions(), d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
-// * 			 n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, d24(0), d14(0), h42(0),
-// * 			 *rsxy, *getDataPointer(coeff), gridType, orderOfAccuracy );
+// *    laplacianCoeff4( mappedGrid.numberOfDimensions(), d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
+// *                     n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, d24(0), d14(0), h42(0),
+// *                     *rsxy, *getDataPointer(coeff), gridType, orderOfAccuracy );
 // *       }
 // *     
 // *       break;
 // *     case identityOperator:
 // *       identityCoeff( mappedGrid.numberOfDimensions(), d(0,0),d(1,0),d(0,1),d(1,1),d(0,2),d(1,2),
-// * 		     n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, *getDataPointer(coeff) );
+// *                 n1a,n1b,n2a,n2b,n3a,n3b, ndc, nc,ns, ea,eb,ca,cb, *getDataPointer(coeff) );
 // *       break;
 // *     default:
 // *       printf("MappedGridOperators::coefficients:ERROR: This operator not implemented yet. "
-// * 	     " derivativeType=%i\n",(int)derivativeType_);
+// *         " derivativeType=%i\n",(int)derivativeType_);
 // *       return 1;
 // *     }
   }

@@ -115,7 +115,7 @@ contour(GenericGraphicsInterface &gi, const realMappedGridFunction & u,
 //\begin{>>PlotItInclude.tex}{\subsection{Contour a CompositeGridFunction}} 
 void PlotIt::
 contour(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
-	GraphicsParameters & parameters /* = Overture::defaultGraphicsParameters() */)
+        GraphicsParameters & parameters /* = Overture::defaultGraphicsParameters() */)
 //================================================================================
 //
 // /Description:
@@ -179,8 +179,8 @@ contour(GenericGraphicsInterface &gi, const realGridCollectionFunction & u,
       const intSerialArray & processorSet = partition.getProcessorSet();
       if( processorSet.getLength(0)!=1 || processorSet(0)!=processorForGraphics )
       {
-	multiProcessorGrid=true;
-	break;
+        multiProcessorGrid=true;
+        break;
       }
     }
 
@@ -191,25 +191,25 @@ contour(GenericGraphicsInterface &gi, const realGridCollectionFunction & u,
     {
       if( u.getGridCollection()->getClassName()=="CompositeGrid" )
       {
-	CompositeGrid & cg = *new CompositeGrid();
-	realCompositeGridFunction & vcg = *new realCompositeGridFunction();
+        CompositeGrid & cg = *new CompositeGrid();
+        realCompositeGridFunction & vcg = *new realCompositeGridFunction();
 
-	ParallelGridUtility::redistribute( (realCompositeGridFunction &)u, cg,vcg,
-					   Range(processorForGraphics,processorForGraphics) );
+        ParallelGridUtility::redistribute( (realCompositeGridFunction &)u, cg,vcg,
+                                           Range(processorForGraphics,processorForGraphics) );
 
-	gcp=&cg;
-	vp=&vcg;
+        gcp=&cg;
+        vp=&vcg;
 
-	// *** do this for now until we fix -- I don't think this is needed 060227 ****
-	// cg.destroy(MappedGrid::THEvertex | MappedGrid::THEcenter); // do this for now *** need to fix redistr.
+        // *** do this for now until we fix -- I don't think this is needed 060227 ****
+        // cg.destroy(MappedGrid::THEvertex | MappedGrid::THEcenter); // do this for now *** need to fix redistr.
 
       }
       else
       {
-	gcp = new GridCollection();
-	vp  = new realGridCollectionFunction();
+        gcp = new GridCollection();
+        vp  = new realGridCollectionFunction();
 
-	ParallelGridUtility::redistribute( u, *gcp,*vp,Range(processorForGraphics,processorForGraphics) );
+        ParallelGridUtility::redistribute( u, *gcp,*vp,Range(processorForGraphics,processorForGraphics) );
 
       }
     }
@@ -278,7 +278,7 @@ contour(GenericGraphicsInterface &gi, const realGridCollectionFunction & u,
       }
       else
       {
-	contour3d(gi, v, parameters);
+        contour3d(gi, v, parameters);
       }
       
     }
@@ -288,7 +288,7 @@ contour(GenericGraphicsInterface &gi, const realGridCollectionFunction & u,
     }
     else
       cout << "PlotIt::contour:ERROR: do not know how to draw contours in " << 
-	gc.numberOfDimensions() << " dimension(s)\n";
+        gc.numberOfDimensions() << " dimension(s)\n";
 
     if( gridWasAdjusted )
     {
@@ -330,9 +330,9 @@ displayValuesAtAPoint(RealArray x0, realCompositeGridFunction & ucg, int numberO
 {
   GridCollection & gc = *ucg.getGridCollection();
   Range C(component,component);
-	    
+            
   RealArray uInterpolated(Range(0,0),numberOfComponents);
-	    
+            
 #ifndef USE_PPP
   InterpolatePoints interp;
   if( checkTheseGrids==NULL )
@@ -378,7 +378,7 @@ displayValuesAtAPoint(RealArray x0, realCompositeGridFunction & ucg, int numberO
            "not interpolate the point!\n");
     // OV_ABORT("ERROR");
   }
-	
+        
   interpolator.interpolatePoints(ucg,uInterpolated);
 
   IntegerArray indexValues(1,3),interpoleeGrid(1);
@@ -387,14 +387,14 @@ displayValuesAtAPoint(RealArray x0, realCompositeGridFunction & ucg, int numberO
 //  interpolator.getInterpolationInfo(cg,indexValues,interpoleeGrid);
   
 #endif
-	    
+            
   if( status(0)!=0  )
   {
     assert( interpoleeGrid(0)>=0 && interpoleeGrid(0)<ucg.numberOfGrids());
 
     printF("Point (%9.3e,%9.3e,%9.3e) : %s = %10.4e from grid %i (%s), (i1,i2,i3)=(%i,%i,%i)\n",
-	   x0(0,0),x0(0,1),x0(0,2),(const char*)ucg.getName(ucg.getComponentBase(0)+component),
-	   uInterpolated(0,component),interpoleeGrid(0),(const char*)gc[interpoleeGrid(0)].getName(),
+           x0(0,0),x0(0,1),x0(0,2),(const char*)ucg.getName(ucg.getComponentBase(0)+component),
+           uInterpolated(0,component),interpoleeGrid(0),(const char*)gc[interpoleeGrid(0)].getName(),
            indexValues(0,0),indexValues(0,1),indexValues(0,2));
 
     if( showNearbyValues>0 )
@@ -411,50 +411,50 @@ displayValuesAtAPoint(RealArray x0, realCompositeGridFunction & ucg, int numberO
       int maxDigits=max(max(abs(i1c-num),abs(i1c+num),abs(i2c-num),abs(i2c+num)),abs(i3c-num),abs(i3c+num));
       aString format;
       if( maxDigits<10 )
-	format=gc.numberOfDimensions()==2 ? "i2=%i i1=[%i,%i]: " : "i3=%i i2=%i i1=[%i,%i]: ";
+        format=gc.numberOfDimensions()==2 ? "i2=%i i1=[%i,%i]: " : "i3=%i i2=%i i1=[%i,%i]: ";
       else if( maxDigits<100 )
-	format=gc.numberOfDimensions()==2 ? "i2=%2i i1=[%2i,%2i]: " : "i3=%2i i2=%2i i1=[%2i,%2i]: ";
+        format=gc.numberOfDimensions()==2 ? "i2=%2i i1=[%2i,%2i]: " : "i3=%2i i2=%2i i1=[%2i,%2i]: ";
       else if( maxDigits<1000 )
-	format=gc.numberOfDimensions()==2 ? "i2=%3i i1=[%3i,%3i]: " : "i3=%3i i2=%3i i1=[%3i,%3i]: ";
+        format=gc.numberOfDimensions()==2 ? "i2=%3i i1=[%3i,%3i]: " : "i3=%3i i2=%3i i1=[%3i,%3i]: ";
       else if( maxDigits<10000 )
-	format=gc.numberOfDimensions()==2 ? "i2=%4i i1=[%4i,%4i]: " : "i3=%4i i2=%4i i1=[%4i,%4i]: ";
+        format=gc.numberOfDimensions()==2 ? "i2=%4i i1=[%4i,%4i]: " : "i3=%4i i2=%4i i1=[%4i,%4i]: ";
       else
-	format=gc.numberOfDimensions()==2 ? "i2=%i i1=[%i,%i]: " : "i3=%i i2=%i i1=[%i,%i]: ";
+        format=gc.numberOfDimensions()==2 ? "i2=%i i1=[%i,%i]: " : "i3=%i i2=%i i1=[%i,%i]: ";
       
       const char *iformat=(const char*)format;
       
       for( int i3=i3c-num3; i3<=i3c+num3; i3++ )
       {
-	if( i3<dimension(Start,axis3) || i3>dimension(End,axis3) )
-	  continue;		
-	for( int i2=i2c+num; i2>=i2c-num; i2-- )
-	{
-	  if( i2<dimension(Start,axis2) || i2>dimension(End,axis2) )
-	    continue;
+        if( i3<dimension(Start,axis3) || i3>dimension(End,axis3) )
+          continue;             
+        for( int i2=i2c+num; i2>=i2c-num; i2-- )
+        {
+          if( i2<dimension(Start,axis2) || i2>dimension(End,axis2) )
+            continue;
           if( gc.numberOfDimensions()==2 )
-  	    printf(iformat,i2,i1c-num,i1c+num);
+            printf(iformat,i2,i1c-num,i1c+num);
           else
-  	    printf(iformat,i3,i2,i1c-num,i1c+num);
-	  for( int i1=i1c-num; i1<=i1c+num; i1++ )
-	  {
-	    if( i1<dimension(Start,axis1) || i1>dimension(End,axis1) )
-	      printf("   outside  ");
-	    else if( maski(i1,i2,i3)!=0 || showUnusedValues!=0 )
-	      printf("%11.4e ",ui(i1,i2,i3,component));
-	    else
-	      printf("   mask=0   ");
-	  }
-	  printf("\n");
-	}
+            printf(iformat,i3,i2,i1c-num,i1c+num);
+          for( int i1=i1c-num; i1<=i1c+num; i1++ )
+          {
+            if( i1<dimension(Start,axis1) || i1>dimension(End,axis1) )
+              printf("   outside  ");
+            else if( maski(i1,i2,i3)!=0 || showUnusedValues!=0 )
+              printf("%11.4e ",ui(i1,i2,i3,component));
+            else
+              printf("   mask=0   ");
+          }
+          printf("\n");
+        }
         printf("\n");
       }
     }
-	      
+              
   }
   else
   {
     printf("Point (%9.3e,%9.3e,%9.3e) : %s : unable to interpolate at this point\n",
-	   x0(0,0),x0(0,1),x0(0,2),(const char*)ucg.getName(ucg.getComponentBase(0)+component));
+           x0(0,0),x0(0,1),x0(0,2),(const char*)ucg.getName(ucg.getComponentBase(0)+component));
   }
 }
 
@@ -507,8 +507,8 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 //                    "plot",
                     ">choose a component",
                     "<wire frame (toggle)",
-		    "user defined output",
-		    "print solution info",
+                    "user defined output",
+                    "print solution info",
 //                    "wire frame without hidden lines (toggle)",
                     "toggle grids on and off",
                     ">contour line options",
@@ -528,9 +528,9 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 //                        "plot colour bar (toggle)",
 //                        "plot labels (toggle)",
 //                      "plot ghost lines",
-		      "set plot bounds",
-		      "reset plot bounds",
-  		      "change colour bar",
+                      "set plot bounds",
+                      "reset plot bounds",
+                      "change colour bar",
                       "set colour table values",
                       ">colour table choices",
                         "rainbow",
@@ -540,10 +540,10 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
                         "blue",
                         "user defined",
                       "<set origin for axes",
-//		      "lighting (toggle)",
+//                    "lighting (toggle)",
 //                        "plot the axes (toggle)",
 //                        "plot the back ground grid (toggle)",
-		      "keep aspect ratio",
+                      "keep aspect ratio",
                       "do not keep aspect ratio",
                     "<plot the grid",
 //                    "erase",
@@ -552,18 +552,18 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
 //  // setup a user defined menu and some user defined buttons
 //    aString buttons[][2] = {{"plot contour lines (toggle)",        "Lines"}, 
-//  			 {"plot surface (toggle)",              "Surf"},
-//  			 {"wire frame (toggle)",                "WireFr"},
-//  //			 {"plot the axes (toggle)",             "Axes"}, 
-//  			 {"colour line contours (toggle)",      "ColLin"},
-//  //			 {"plot the back ground grid (toggle)", "BgGrid"}, 
-//  //			 {"plot labels (toggle)",               "Labels"},
-//  //			 {"plot colour bar (toggle)",           "ColBar"},
-//  			 {"plot boundaries (toggle)",           "Bndry"},
-//  			 {"plot",                               "Plot"},
-//  			 {"erase",                              "Erase"},
-//  			 {"exit this menu",                     "Exit"},
-//  			 {"",                                   ""}};
+//                       {"plot surface (toggle)",              "Surf"},
+//                       {"wire frame (toggle)",                "WireFr"},
+//  //                   {"plot the axes (toggle)",             "Axes"}, 
+//                       {"colour line contours (toggle)",      "ColLin"},
+//  //                   {"plot the back ground grid (toggle)", "BgGrid"}, 
+//  //                   {"plot labels (toggle)",               "Labels"},
+//  //                   {"plot colour bar (toggle)",           "ColBar"},
+//                       {"plot boundaries (toggle)",           "Bndry"},
+//                       {"plot",                               "Plot"},
+//                       {"erase",                              "Erase"},
+//                       {"exit this menu",                     "Exit"},
+//                       {"",                                   ""}};
   // aString pulldownMenu[] = {"set min and max", "number of contour levels", "" };
   // aString menuTitle = "Contour";
   
@@ -641,18 +641,18 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
 
     aString pbCommands[] = {"plot contour lines (toggle)",
-			    "plot surface (toggle)",
-			    "wire frame (toggle)",
-			    "colour line contours (toggle)",
-			    "plot boundaries (toggle)",
+                            "plot surface (toggle)",
+                            "wire frame (toggle)",
+                            "colour line contours (toggle)",
+                            "plot boundaries (toggle)",
                             "plot the grid",
-			    "plot",
+                            "plot",
                             "show all",
                             "reset min max",
-			    "erase",
-			    "erase and exit",
-			    "exit this menu",
-			    ""};
+                            "erase",
+                            "erase and exit",
+                            "exit this menu",
+                            ""};
     aString pbLabels[] = {"Lines",
                           "Surface",
                           "Wire frame",
@@ -665,7 +665,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
                           "Erase",
                           "Erase and Exit",
                           "Exit",
-			  ""};
+                          ""};
     int numRows=4;
     dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
 
@@ -765,7 +765,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
   real & minimumContourSpacing = psp.minimumContourSpacing;
   RealArray & contourLevels    = psp.contourLevels;
   bool & plotDashedLinesForNegativeContours = psp.plotDashedLinesForNegativeContours;
-  const	aString topLabel1 = psp.topLabel1; // save original topLabel1
+  const aString topLabel1 = psp.topLabel1; // save original topLabel1
 
   gi.setAxesOrigin(psp.axesOrigin(0), psp.axesOrigin(1), psp.axesOrigin(2));
 
@@ -815,16 +815,16 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
         // interp points on "grid" are plotted if plotInterpolationPoints==true and :
         gridOptions(grid)|=GraphicsParameters::plotInterpolation; 
 
-	if( psp.plotGridBlockBoundaries )
-	  gridOptions(grid)|=GraphicsParameters::plotBlockBoundaries;
-	if( psp.plotLinesOnGridBoundaries )
-	  gridOptions(grid)|=GraphicsParameters::plotBoundaryGridLines;
-	if( psp.plotShadedSurfaceGrids )
-	  gridOptions(grid)|=GraphicsParameters::plotShadedSurfaces;
-	if( psp.plotBackupInterpolationPoints )
-	  gridOptions(grid)|=GraphicsParameters::plotBackupInterpolation;
+        if( psp.plotGridBlockBoundaries )
+          gridOptions(grid)|=GraphicsParameters::plotBlockBoundaries;
+        if( psp.plotLinesOnGridBoundaries )
+          gridOptions(grid)|=GraphicsParameters::plotBoundaryGridLines;
+        if( psp.plotShadedSurfaceGrids )
+          gridOptions(grid)|=GraphicsParameters::plotShadedSurfaces;
+        if( psp.plotBackupInterpolationPoints )
+          gridOptions(grid)|=GraphicsParameters::plotBackupInterpolation;
         if( psp.plotInteriorBoundaryPoints )
-	  gridOptions(grid)|=GraphicsParameters::plotInteriorBoundary;
+          gridOptions(grid)|=GraphicsParameters::plotInteriorBoundary;
 
         gridOptions(grid)|=GraphicsParameters::plotInteriorGridLines;
       }
@@ -865,11 +865,11 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       boundaryConditionList(numberOfBoundaryConditions++)=gc[grid].boundaryCondition(side,axis);
       for( int i=0; i<numberOfBoundaryConditions-1; i++ ) // check if it is already in the list
       {
-	if(boundaryConditionList(i)==gc[grid].boundaryCondition()(side,axis) )
-	{
-	  numberOfBoundaryConditions--;  // remove from the list
-	  break;
-	}
+        if(boundaryConditionList(i)==gc[grid].boundaryCondition()(side,axis) )
+        {
+          numberOfBoundaryConditions--;  // remove from the list
+          break;
+        }
       }
     }
   }
@@ -893,10 +893,10 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
     {
       gi.gridCoarseningFactor=int(numberOfGridPoints/real(maxPlotablePoints)+.5);
       if( false )
-	printf("contour:INFO: Setting  gi.gridCoarseningFactor = %i since there are %i total grid points\n",
-	       gi.gridCoarseningFactor,  numberOfGridPoints);
+        printf("contour:INFO: Setting  gi.gridCoarseningFactor = %i since there are %i total grid points\n",
+               gi.gridCoarseningFactor,  numberOfGridPoints);
       if( !psp.plotObjectAndExit && gi.isGraphicsWindowOpen() )
-	dialog.setTextLabel("coarsening factor",sPrintF(answer,"%i (<0 : adaptive)",gi.gridCoarseningFactor));
+        dialog.setTextLabel("coarsening factor",sPrintF(answer,"%i (<0 : adaptive)",gi.gridCoarseningFactor));
     }
   }
   
@@ -987,17 +987,17 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
     else if(answer=="number of contour levels")
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the number of contour levels(>=2) (current=%i)",
-				     numberOfContourLevels));
+                                     numberOfContourLevels));
       if( answer2 !="" && answer2!=" ")
       {
-	for( int i=0; i<answer2.length() && i<80; i++)
-	  buff[i]=answer2[i];
-	sScanF(buff,"%i",&numberOfContourLevels);
+        for( int i=0; i<answer2.length() && i<80; i++)
+          buff[i]=answer2[i];
+        sScanF(buff,"%i",&numberOfContourLevels);
         if( numberOfContourLevels<2 )
-	{
-	  cout << "Error, number of contour levels must be greater than 1! \n";
-	  numberOfContourLevels=11;
-	}
+        {
+          cout << "Error, number of contour levels must be greater than 1! \n";
+          numberOfContourLevels=11;
+        }
       }
     }
     else if( (len=answer.matches("number of levels")) )  // new way
@@ -1006,14 +1006,14 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       dialog.setTextLabel("number of levels",sPrintF(answer,"%i",numberOfContourLevels));
       if( numberOfContourLevels<2 )
       {
-	cout << "Error, number of contour levels must be greater than 1! \n";
-	numberOfContourLevels=11;
+        cout << "Error, number of contour levels must be greater than 1! \n";
+        numberOfContourLevels=11;
       }
     }
     else if( answer=="vertical scale factor" )  // old way
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the contour surface vertical scale factor (current=%f)",
-				     contourSurfaceVerticalScaleFactor));
+                                     contourSurfaceVerticalScaleFactor));
       sScanF(answer2,"%e",&contourSurfaceVerticalScaleFactor); 
     }
     else if( (len=answer.matches("vertical scale factor")) )  // new way
@@ -1028,16 +1028,16 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       int c=-1;
       for( int n=0; n<numberOfComponents; n++ )
       {
-	if( name==uGCF.getName(n) )
-	{
-	  c=n;
-	  break;
-	}
+        if( name==uGCF.getName(n) )
+        {
+          c=n;
+          break;
+        }
       }
       if( c==-1 )
       {
-	printf("ERROR: unknown component name =[%s]\n",(const char*)name);
-	c=0;
+        printf("ERROR: unknown component name =[%s]\n",(const char*)name);
+        c=0;
       }
       component=c;
       recomputeVelocityMinMax=true;
@@ -1046,15 +1046,15 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       if( !minAndMaxContourLevelsSpecified(component) )
       {
         // recompute the plot bounds if the user has not explicitly set the min and max values.
-	getBounds(uGCF,uMin,uMax,parameters,Range(component,component));
-	recomputeVelocityMinMax=false;
-	dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
+        getBounds(uGCF,uMin,uMax,parameters,Range(component,component));
+        recomputeVelocityMinMax=false;
+        dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
       }
     }
     else if( answer=="lighting (toggle)" )
     {
       gi.outputString("This function is obsolete. Use the view characteristics dialog"
-		      " to turn on/off lighting.");
+                      " to turn on/off lighting.");
       continue;
     }
     else if(answer=="plot boundaries (toggle)")
@@ -1089,7 +1089,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
       dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
       printF("Resetting min and max to [%20.14e,%20.14e] for component%i (%s)\n",uMin,uMax,component,
-	     (const char*)uGCF.getName(component));
+             (const char*)uGCF.getName(component));
     }
     else if( (len=answer.matches("min max")) )
     {
@@ -1118,7 +1118,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       gi.inputString(answer2,sPrintF(buff,"Enter min, max contour values (current=%9.2e,%9.2e)",uMin,uMax));
       if( answer2 !="" && answer2!=" ")
       {
-	sScanF(answer2,"%e %e",&uMin,&uMax);
+        sScanF(answer2,"%e %e",&uMin,&uMax);
         printf("New values are min = %e, max = %e \n",uMin,uMax);
         printf("Note that these values will only be applied to the current component\n");
         minAndMaxContourLevelsSpecified(component)=true;
@@ -1133,48 +1133,48 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       gi.inputString(answer2,sPrintF(buff,"Enter the minimum contour spacing (current=%e)",minimumContourSpacing)); 
       if( answer2 !="" && answer2!=" ")
       {
-	sScanF(answer2,"%e ",&minimumContourSpacing);
+        sScanF(answer2,"%e ",&minimumContourSpacing);
         gi.outputString(sPrintF(buff,"New minimum contour spacing = %e\n",minimumContourSpacing));
       }
     }
     else if( answer=="specify contour levels" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter number of contour levels (current=%i)"
-				     "(0=reset)(enter to continue)",
-				     numberOfContourLevels)); 
+                                     "(0=reset)(enter to continue)",
+                                     numberOfContourLevels)); 
       if( answer2 !="" && answer2!=" ")
       {
         sscanf(answer2,"%i",&numberOfContourLevels);
         if( numberOfContourLevels>0 )
-	{
-	  contourLevelsSpecified=true;
-	  contourLevels.redim(numberOfContourLevels);
-	  for( int i=0; i<numberOfContourLevels; i++ )
-	  {
-	    gi.inputString(answer2,sPrintF(buff,"Enter contour level %i (levels should be increasing in value)",i));
-	    sScanF(answer2,"%e ",&contourLevels(i));
-	  }
-	}
-	else
-	{ 
+        {
+          contourLevelsSpecified=true;
+          contourLevels.redim(numberOfContourLevels);
+          for( int i=0; i<numberOfContourLevels; i++ )
+          {
+            gi.inputString(answer2,sPrintF(buff,"Enter contour level %i (levels should be increasing in value)",i));
+            sScanF(answer2,"%e ",&contourLevels(i));
+          }
+        }
+        else
+        { 
           contourLevels.redim(0);
-	  contourLevelsSpecified=false;
-	  numberOfContourLevels=11;
-	}
+          contourLevelsSpecified=false;
+          numberOfContourLevels=11;
+        }
       }
     }
     else if( answer=="set contour line width" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter contour line width (current=%e)",
-				     psp.size(GraphicsParameters::minorContourWidth)));
+                                     psp.size(GraphicsParameters::minorContourWidth)));
       if( answer2 !="" && answer2!=" ")
       {
         real newWidth;
-	sScanF(answer2,"%e ",&newWidth);
+        sScanF(answer2,"%e ",&newWidth);
         psp.set(GraphicsParameters::minorContourWidth,newWidth);
         psp.set(GraphicsParameters::majorContourWidth,newWidth*2.);
         gi.outputString(sPrintF(buff,"New contour line width = %e\n",
-				psp.size(GraphicsParameters::minorContourWidth)));
+                                psp.size(GraphicsParameters::minorContourWidth)));
       }
     }
     else if( answer=="dashed lines for negative contours (toggle)" )
@@ -1196,8 +1196,8 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       printF("contour:INFO:Setting adjustMappingForDisplacement=%i\n",(int)adjustMappingForDisplacement);
       if( adjustMappingForDisplacement && !adjustGridForDisplacementLocal )
       {
-	adjustGridForDisplacementLocal=true;
-	printF("contour:INFO:Also setting adjustGridForDisplacementLocal=true.\n");
+        adjustGridForDisplacementLocal=true;
+        printF("contour:INFO:Also setting adjustGridForDisplacementLocal=true.\n");
         dialog.setToggleState("adjust grid for displacement",true);
       }
       printF("contour:INFO:You must exit the contour plotter and re-enter to see the grid adjusted or not for the displacement\n");
@@ -1220,7 +1220,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       // the boundingbox is messed up (set for 1D) after this call
       if( computePlotBounds )
       {
-	computePlotBounds=false;
+        computePlotBounds=false;
         getPlotBounds(gc,psp,xBound);
       }
       
@@ -1240,26 +1240,26 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       aString *menu2 = new aString[numberOfGrids+2];
       for(;;)
       {
-	for( int grid=0; grid<numberOfGrids; grid++ )
-	{
-	  menu2[grid]=sPrintF(buff,"%i : %s is (%s)",grid,
-			      (const char*)gc[grid].mapping().getName(Mapping::mappingName),
-			      (gridsToPlot(grid) & GraphicsParameters::toggleContours ? "on" : "off"));
-	}
-	menu2[numberOfGrids]="exit this menu";
-	menu2[numberOfGrids+1]="";   // null string terminates the menu
+        for( int grid=0; grid<numberOfGrids; grid++ )
+        {
+          menu2[grid]=sPrintF(buff,"%i : %s is (%s)",grid,
+                              (const char*)gc[grid].mapping().getName(Mapping::mappingName),
+                              (gridsToPlot(grid) & GraphicsParameters::toggleContours ? "on" : "off"));
+        }
+        menu2[numberOfGrids]="exit this menu";
+        menu2[numberOfGrids+1]="";   // null string terminates the menu
         gi.getMenuItem(menu2,answer2);
         if( answer2=="exit this menu" )
           break;
-	else 
-	{
+        else 
+        {
           int gridToToggle = atoi(&answer2[0]);
           assert(gridToToggle>=0 && gridToToggle<numberOfGrids);
           gridsToPlot(gridToToggle)^=GraphicsParameters::toggleContours;
 
           // For picking values: 
-	  checkTheseGrids(gridToToggle)=gridsToPlot(gridToToggle) & GraphicsParameters::toggleContours;
-	}
+          checkTheseGrids(gridToToggle)=gridsToPlot(gridToToggle) & GraphicsParameters::toggleContours;
+        }
       }
       delete [] menu2;
     }
@@ -1270,7 +1270,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       gi.inputString(answer,"Enter plot bounds to use xa,xb, ya,yb, za,zb");
       sScanF(answer,"%e %e %e %e %e %e\n",&pb(0,0),&pb(1,0),&pb(0,1),&pb(1,1),&pb(0,2),&pb(1,2));
       printF(" Using plot bounds = [%9.3e,%9.3e][%9.3e,%9.3e][%9.3e,%9.3e]\n",
-	     pb(0,0),pb(1,0),pb(0,1),pb(1,1),pb(0,2),pb(1,2));
+             pb(0,0),pb(1,0),pb(0,1),pb(1,1),pb(0,2),pb(1,2));
 
       xBound=pb;  // *wdh* 101122
       computePlotBounds=false;
@@ -1289,9 +1289,9 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
       if( gridToToggle>=0 && gridToToggle<numberOfGrids )
       {
-	gridsToPlot(gridToToggle) ^=GraphicsParameters::toggleContours;
-	// For picking values: 
-	checkTheseGrids(grid)=gridsToPlot(gridToToggle) & GraphicsParameters::toggleContours;
+        gridsToPlot(gridToToggle) ^=GraphicsParameters::toggleContours;
+        // For picking values: 
+        checkTheseGrids(grid)=gridsToPlot(gridToToggle) & GraphicsParameters::toggleContours;
       }
     }
     else if( answer=="query values with mouse" )
@@ -1299,21 +1299,21 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       const bool & adjustMappingForDisplacement = psp.dbase.get<bool>("adjustMappingForDisplacement");
       if( parameters.adjustGridForDisplacement && !adjustMappingForDisplacement )
       {
-	printF("query values:ERROR: adjustGridForDisplacement=true but adjustMappingForDisplacement=false\n"
-	       " The query values will not be correct. You should choose option `adjust mapping for displacement'\n");
-	gi.stopReadingCommandFile();
+        printF("query values:ERROR: adjustGridForDisplacement=true but adjustMappingForDisplacement=false\n"
+               " The query values will not be correct. You should choose option `adjust mapping for displacement'\n");
+        gi.stopReadingCommandFile();
       }
 
       aString menu[]=
       {
-	"!pick points",
+        "!pick points",
         "show nearby values",
         "do not show nearby values",
         "show values at unused points",
         "do not show values at unused points",
         "enter a grid point",
-	"done",
-	""
+        "done",
+        ""
       };
       GUIState queryInterface;
       queryInterface.buildPopup(menu);
@@ -1324,91 +1324,91 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       for( ;; )
       {
     
-//	int numberSelected=getMenuItem(menu,answer,"select a point",selection,pickRegion);
-	gi.getAnswer(answer,"select a point", select);
-	if( answer=="done" || answer=="exit" )
-	  break;
+//      int numberSelected=getMenuItem(menu,answer,"select a point",selection,pickRegion);
+        gi.getAnswer(answer,"select a point", select);
+        if( answer=="done" || answer=="exit" )
+          break;
         else if( answer=="show nearby values" )
-	{
+        {
           gi.inputString(answer,sPrintF(buff,"Enter the number of values to show (current=%i)\n",showNearbyValues));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%i",&showNearbyValues);
-	  }
+          if( answer!="" )
+          {
+            sScanF(answer,"%i",&showNearbyValues);
+          }
           if(showNearbyValues>0 ) 
-      	    printf("show %i nearby values\n",showNearbyValues);
+            printf("show %i nearby values\n",showNearbyValues);
           else
-      	    printf("do NOT show nearby values\n");
-	}
+            printf("do NOT show nearby values\n");
+        }
         else if( answer=="do not show nearby values" )
-	{
+        {
           showNearbyValues=0;
-	}
+        }
         else if( answer=="show values at unused points" )
-	{
-	  showUnusedValues=1;
-	}
+        {
+          showUnusedValues=1;
+        }
         else if( answer=="do not show values at unused points" )
-	{
-	  showUnusedValues=0;
-	}
+        {
+          showUnusedValues=0;
+        }
         else if( answer=="enter a grid point" )
-	{
+        {
           int grid=0, i1=0, i2=0, i3=0;
           gi.inputString(answer,"Enter grid, i1,i2,i3 of the point to check");
           sScanF(answer,"%i %i %i %i",&grid,&i1,&i2,&i3);
-	  
+          
           if( grid>=0 && grid<gc.numberOfComponentGrids() )
-	  {
-	    realArray & uu = uGCF[grid];
-	    if( i1>=uu.getBase(0) && i1<=uu.getBound(0)  &&
+          {
+            realArray & uu = uGCF[grid];
+            if( i1>=uu.getBase(0) && i1<=uu.getBound(0)  &&
                 i1>=uu.getBase(0) && i1<=uu.getBound(0) && 
                 i1>=uu.getBase(0) && i1<=uu.getBound(0) )
-	    {
+            {
               int m = gc[grid].mask()(i1,i2,i3);
-	      printf(" grid=%i (i1,i2,i3)=(%i,%i,%i) mask=%i u=%14.8e\n",grid,i1,i2,i3,
+              printf(" grid=%i (i1,i2,i3)=(%i,%i,%i) mask=%i u=%14.8e\n",grid,i1,i2,i3,
                      (m==0 ? 0 : m>0 ? 1 : -1), uGCF[grid](i1,i2,i3,component));
-	      
-	    }
+              
+            }
             else
-	    {
+            {
               printf("ERROR: Invalid values for (i1,i2,i3)=(%i,%i,%i) \n",i1,i2,i3);
-	    }
-	  }
+            }
+          }
           else
-	  {
+          {
             printf("ERROR: invalid value for grid=%i\n",grid);
-	  }
-	}
-	else if (select.active && select.nSelect > 0)
-	{
+          }
+        }
+        else if (select.active && select.nSelect > 0)
+        {
           RealArray x0(1,3);
-	  x0(0,0) = select.x[0];
-	  x0(0,1) = select.x[1];
-	  x0(0,2) = select.x[2];
+          x0(0,0) = select.x[0];
+          x0(0,1) = select.x[1];
+          x0(0,2) = select.x[2];
           
-	  realCompositeGridFunction & ucg = (realCompositeGridFunction &)uGCF;
-	  displayValuesAtAPoint(x0,ucg,numberOfComponents,component,showNearbyValues,showUnusedValues,
+          realCompositeGridFunction & ucg = (realCompositeGridFunction &)uGCF;
+          displayValuesAtAPoint(x0,ucg,numberOfComponents,component,showNearbyValues,showUnusedValues,
                                 &checkTheseGrids);
 
 /* -----
           RealArray r(2,3),x0(2,3);
-	  
-	  r(0,0)=pickRegion(0,0); r(0,1)=pickRegion(0,1);
-	  r(1,0)=pickRegion(1,0); r(1,1)=pickRegion(1,1);
-	  
-	  if( numberSelected==0 )
-	    r(0,2)=r(1,2)=zBufferResolution*.5; // what should this be?
-	  else
-	    r(0,2)=r(1,2)=min(selection(nullRange,1)); // *** 3d
-	  pickToWorldCoordinates(r,x0);
-	  if( gc.numberOfDimensions()==2 )
-	    x0(0,2)=x0(1,2)=0.;
+          
+          r(0,0)=pickRegion(0,0); r(0,1)=pickRegion(0,1);
+          r(1,0)=pickRegion(1,0); r(1,1)=pickRegion(1,1);
+          
+          if( numberSelected==0 )
+            r(0,2)=r(1,2)=zBufferResolution*.5; // what should this be?
+          else
+            r(0,2)=r(1,2)=min(selection(nullRange,1)); // *** 3d
+          pickToWorldCoordinates(r,x0);
+          if( gc.numberOfDimensions()==2 )
+            x0(0,2)=x0(1,2)=0.;
       
-	  printf(" Box chosen: [%9.2e,%9.2e]x[%9.2e,%9.2e]\n",x0(0,0),x0(1,0),x0(0,1),x0(1,1));
+          printf(" Box chosen: [%9.2e,%9.2e]x[%9.2e,%9.2e]\n",x0(0,0),x0(1,0),x0(0,1),x0(1,1));
 ---- */
-	  
-	}
+          
+        }
       }
       gi.popGUI(); // restore the GUI
     }
@@ -1416,31 +1416,31 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
     else if( answer=="pick to query value" || answer=="pick to hide grids" || answer=="pick off" )
     {
       pickingOption= ( answer=="pick to query value" ? pickToQueryValue :
-	               answer=="pick to hide grids"  ? pickToHideGrids : pickingOff);
+                       answer=="pick to hide grids"  ? pickToHideGrids : pickingOff);
       
       dialog.getOptionMenu(1).setCurrentChoice((int)pickingOption);
     }
     else if( pickingOption==pickToHideGrids && 
-	     (select.active || select.nSelect || answer.matches("hide grid") ) )
+             (select.active || select.nSelect || answer.matches("hide grid") ) )
     {
       for( int grid=0; grid<numberOfGrids; grid++ )
       {
-	for( int i=0; i<select.nSelect; i++ )
-	{
-	  if( gc[grid].getGlobalID()==select.selection(i,0) )
-	  {
-	    printf("Hide grid %i (%s) \n",grid,(const char*)gc[grid].getName());
-	    gridsToPlot(grid)^=GraphicsParameters::toggleContours;
+        for( int i=0; i<select.nSelect; i++ )
+        {
+          if( gc[grid].getGlobalID()==select.selection(i,0) )
+          {
+            printf("Hide grid %i (%s) \n",grid,(const char*)gc[grid].getName());
+            gridsToPlot(grid)^=GraphicsParameters::toggleContours;
 
             int value=gridsToPlot(grid)&GraphicsParameters::toggleContours;
 
-	    // For picking values: 
-	    checkTheseGrids(grid)=gridsToPlot(grid) & GraphicsParameters::toggleContours;
+            // For picking values: 
+            checkTheseGrids(grid)=gridsToPlot(grid) & GraphicsParameters::toggleContours;
 
-	    gi.outputToCommandFile(sPrintF(answer,"toggle grid %i %i\n",grid,value));
-	    break;
-	  }
-	}
+            gi.outputToCommandFile(sPrintF(answer,"toggle grid %i %i\n",grid,value));
+            break;
+          }
+        }
       }
       
       plotObject = true;
@@ -1448,18 +1448,18 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       
     }
     else if( pickingOption==pickToQueryValue && 
-	     (select.active || select.nSelect || answer.matches("query value") ) )
+             (select.active || select.nSelect || answer.matches("query value") ) )
     {
       RealArray x0(1,3);
       if( (len=answer.matches("query value")) )
       {
-	sScanF(answer(len,answer.length()-1),"%e %e %e",&x0(0,0),&x0(0,1),&x0(0,2));
+        sScanF(answer(len,answer.length()-1),"%e %e %e",&x0(0,0),&x0(0,1),&x0(0,2));
       }
       else
       {
-	x0(0,0) = select.x[0];
-	x0(0,1) = select.x[1];
-	x0(0,2) = select.x[2];
+        x0(0,0) = select.x[0];
+        x0(0,1) = select.x[1];
+        x0(0,2) = select.x[2];
       }
       
       gi.outputToCommandFile(sPrintF(answer,"query value %e %e %e\n",x0(0,0),x0(0,1),x0(0,2)));
@@ -1470,13 +1470,13 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       
       displayValuesAtAPoint(x0,ucg,numberOfComponents,component,showNearbyValues,showUnusedValues,
                             &checkTheseGrids);
-            	  
+                  
     }
     else if( answer=="show all" )
     {
       for( int grid=0; grid<numberOfGrids; grid++ )
       {
-	gridsToPlot(grid) |= GraphicsParameters::toggleContours;
+        gridsToPlot(grid) |= GraphicsParameters::toggleContours;
       }
       checkTheseGrids = true;
       plotObject = true;
@@ -1508,8 +1508,8 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       real minu,maxu;
       for( int n=0; n<numberOfComponents; n++ )
       {
-	getBounds(uGCF,minu,maxu,parameters,Range(n,n));
-	printF("Component %i (%s) [min,max]=[%20.14e,%20.14e].\n",n,(const char*)uGCF.getName(n),minu,maxu);
+        getBounds(uGCF,minu,maxu,parameters,Range(n,n));
+        printF("Component %i (%s) [min,max]=[%20.14e,%20.14e].\n",n,(const char*)uGCF.getName(n),minu,maxu);
       }
     }
     else if( answer=="erase" )
@@ -1536,10 +1536,10 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
       if( answer2 !="" && answer2!=" ")
       {
-	real xo=GenericGraphicsInterface::defaultOrigin, 
-	  yo=GenericGraphicsInterface::defaultOrigin, zo=GenericGraphicsInterface::defaultOrigin;
-	sScanF(answer2,"%e %e %e", &xo, &yo, &zo);
-	gi.setAxesOrigin(xo, yo, zo);
+        real xo=GenericGraphicsInterface::defaultOrigin, 
+          yo=GenericGraphicsInterface::defaultOrigin, zo=GenericGraphicsInterface::defaultOrigin;
+        sScanF(answer2,"%e %e %e", &xo, &yo, &zo);
+        gi.setAxesOrigin(xo, yo, zo);
       }
     }
     else if( answer=="change colour bar" )
@@ -1552,7 +1552,7 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
              numberOfGhostLinesToPlot)); 
       if( answer2 !="" && answer2!=" ")
       {
-	sScanF(answer2,"%i ",&numberOfGhostLinesToPlot);
+        sScanF(answer2,"%i ",&numberOfGhostLinesToPlot);
         gi.outputString(sPrintF(buff,"Plot %i ghost lines\n",numberOfGhostLinesToPlot));
 
         // getPlotBounds(gc,psp,xBound);  // get new plot bounds
@@ -1567,9 +1567,9 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       if( !minAndMaxContourLevelsSpecified(component) )
       {
         // recompute the plot bounds if the user has not explicitly set the min and max values.
-	getBounds(uGCF,uMin,uMax,parameters,Range(component,component));
-	recomputeVelocityMinMax=false;
-	dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
+        getBounds(uGCF,uMin,uMax,parameters,Range(component,component));
+        recomputeVelocityMinMax=false;
+        dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
       }
       
     }
@@ -1654,15 +1654,15 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
     {
       if( updateGeometry )
       {
-	updateGeometry=false;
-	for( int grid=0; grid<gc.numberOfComponentGrids(); grid++ )
-	{
+        updateGeometry=false;
+        for( int grid=0; grid<gc.numberOfComponentGrids(); grid++ )
+        {
           MappedGrid & mg = (MappedGrid&) gc[grid]; // cast away const
-	  if( mg.isRectangular() )  
-	    mg.update(MappedGrid::THEmask ); 
-	  else
-	    mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEmask );
-	}
+          if( mg.isRectangular() )  
+            mg.update(MappedGrid::THEmask ); 
+          else
+            mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter | MappedGrid::THEmask );
+        }
       }
       if( computePlotBounds )
       {
@@ -1673,86 +1673,86 @@ contour2d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       gi.setAxesDimension(gc.numberOfDimensions());
       if( plotContours )
       {
- 	// ====== plot contours =========
-	if( plotOnThisProcessor )
-	{
-	  glDeleteLists(list,1);  // clear the plot
-	  glNewList(list,GL_COMPILE);
-	}
-	
+        // ====== plot contours =========
+        if( plotOnThisProcessor )
+        {
+          glDeleteLists(list,1);  // clear the plot
+          glNewList(list,GL_COMPILE);
+        }
+        
         contourOpt2d(gi,uGCF,psp,uMin,uMax,uRaise,recomputeVelocityMinMax,contourLevelsSpecified,xBound );
 
-	// set current min max of contour values
+        // set current min max of contour values
         if( !psp.plotObjectAndExit &&  plotOnThisProcessor )
           dialog.setTextLabel("min max",sPrintF(answer,"%g %g",uMin,uMax));
 
- 	// -------Now plot the boundaries.-------
-	if( plotGridBoundariesOnContourPlots )
- 	{
-   	  int colourOption = 0;
-	  int plotNonPhysicalBoundariesOld; psp.get(GI_PLOT_NON_PHYSICAL_BOUNDARIES,plotNonPhysicalBoundariesOld);
-	  psp.plotNonPhysicalBoundaries=false;
-	  plotGridBoundaries(gi, gc, boundaryConditionList, numberOfBoundaryConditions,
- 			     colourOption, uRaise, psp);
-	  psp.set(GI_PLOT_NON_PHYSICAL_BOUNDARIES,plotNonPhysicalBoundariesOld);
- 	}
-	
-	if( plotOnThisProcessor )
-	{
-	  glPopName();
-	  glEndList();
-	}
-	
+        // -------Now plot the boundaries.-------
+        if( plotGridBoundariesOnContourPlots )
+        {
+          int colourOption = 0;
+          int plotNonPhysicalBoundariesOld; psp.get(GI_PLOT_NON_PHYSICAL_BOUNDARIES,plotNonPhysicalBoundariesOld);
+          psp.plotNonPhysicalBoundaries=false;
+          plotGridBoundaries(gi, gc, boundaryConditionList, numberOfBoundaryConditions,
+                             colourOption, uRaise, psp);
+          psp.set(GI_PLOT_NON_PHYSICAL_BOUNDARIES,plotNonPhysicalBoundariesOld);
+        }
+        
+        if( plotOnThisProcessor )
+        {
+          glPopName();
+          glEndList();
+        }
+        
       }
 
       // -------- Draw the labels -----
       if( plotTitleLabels && plotOnThisProcessor )
       {
- 	// plot labels on top and bottom
- 	aString topLabel=psp.topLabel;       // remember original values
-	
+        // plot labels on top and bottom
+        aString topLabel=psp.topLabel;       // remember original values
+        
         if( psp.labelComponent )
-	{
-	  if( psp.topLabel!="" || uGCF.getName(component)!="" )
-	    psp.topLabel=psp.topLabel+" "+uGCF.getName(component);
-	}
-	
-	if( psp.labelMinMax )
-	{
-	  // label min max of components
+        {
+          if( psp.topLabel!="" || uGCF.getName(component)!="" )
+            psp.topLabel=psp.topLabel+" "+uGCF.getName(component);
+        }
+        
+        if( psp.labelMinMax )
+        {
+          // label min max of components
           aString label = uGCF.getName(component);
-	  
-	  if(  max(fabs(uMax),fabs(uMin)) < .01 )
-	    label += sPrintF(buff,"=[%8.2e,%8.2e]",uMin,uMax);
-	  else if( max(fabs(uMax),fabs(uMin)) < 10. )
-	    label += sPrintF(buff,"=[%6.3f,%6.3f]",uMin,uMax);
-	  else if( max(fabs(uMax),fabs(uMin)) < 100. )
-	    label += sPrintF(buff,"=[%6.2f,%6.2f]",uMin,uMax);
-	  else if( max(fabs(uMax),fabs(uMin)) < 1000. )
-	    label += sPrintF(buff,"=[%6.1f,%6.1f]",uMin,uMax);
-	  else 
-	    label += sPrintF(buff,"=[%8.2e,%8.2e]",uMin,uMax);
-	  
+          
+          if(  max(fabs(uMax),fabs(uMin)) < .01 )
+            label += sPrintF(buff,"=[%8.2e,%8.2e]",uMin,uMax);
+          else if( max(fabs(uMax),fabs(uMin)) < 10. )
+            label += sPrintF(buff,"=[%6.3f,%6.3f]",uMin,uMax);
+          else if( max(fabs(uMax),fabs(uMin)) < 100. )
+            label += sPrintF(buff,"=[%6.2f,%6.2f]",uMin,uMax);
+          else if( max(fabs(uMax),fabs(uMin)) < 1000. )
+            label += sPrintF(buff,"=[%6.1f,%6.1f]",uMin,uMax);
+          else 
+            label += sPrintF(buff,"=[%8.2e,%8.2e]",uMin,uMax);
+          
 //           printf(" contour: psp.topLabel1=%s (before) label=%s, psp.labelMinMax=%i\n",
 //                   (const char*)psp.topLabel1,(const char*)label,psp.labelMinMax);
-	  
+          
           if( psp.labelMinMax==1 )
             psp.topLabel1 = label;  // set label
           else
             psp.topLabel1 = topLabel1 + " " + label;  // add to the label
-	}
+        }
 
-	gi.plotLabels( psp );
+        gi.plotLabels( psp );
 
-	psp.topLabel=topLabel;  // reset
+        psp.topLabel=topLabel;  // reset
         // no: psp.topLabel1=topLabel1;
       }
       // ----------Draw the colour Bar-----------------
       if( plotColourBar && plotOnThisProcessor )
       {
-	
-	gi.displayColourBar(numberOfContourLevels,contourLevels,uMin,uMax,psp);
-	// drawColourBar(numberOfContourLevels,contourLevels,uMin,uMax,psp);
+        
+        gi.displayColourBar(numberOfContourLevels,contourLevels,uMin,uMax,psp);
+        // drawColourBar(numberOfContourLevels,contourLevels,uMin,uMax,psp);
       }
       
       gi.redraw();
@@ -1799,18 +1799,18 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
   char buff[80];
   aString answer,answer2;
   aString menu[]= { "!contour cuts",
-		    "specify lines",
-		    "specify a boundary",
-		    "build a curve",
-		    "choose a curve",
-		    "plot",
-		    "use normalized distance",
-		    "use actual distance",
+                    "specify lines",
+                    "specify a boundary",
+                    "build a curve",
+                    "choose a curve",
+                    "plot",
+                    "use normalized distance",
+                    "use actual distance",
                     "turn off grids for interpolation",
                     "set bogus value for points not interpolated",
                     "clip to boundary",
-		    "exit this menu",
-		    "" };
+                    "exit this menu",
+                    "" };
 
   bool plotObject=false;
   int & numberOfLines          = psp.numberOfLines;
@@ -1838,7 +1838,7 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
   if( parameters.adjustGridForDisplacement && !adjustMappingForDisplacement )
   {
     printF("contourCuts:ERROR: adjustGridForDisplacement=true but adjustMappingForDisplacement=false\n"
-	   " The line plots will not be correct. You should choose option `adjust mapping for displacement'\n");
+           " The line plots will not be correct. You should choose option `adjust mapping for displacement'\n");
     gi.stopReadingCommandFile();
   }
 
@@ -1873,38 +1873,38 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       gi.inputString(answer2,sPrintF(buff,"Enter number of lines and number of points per line (default=1,20)")); 
       if( answer2 !="" && answer2!=" ")
       {
-	sScanF(answer2,"%i %i",&numberOfLines, &numberOfPointsPerLine);
+        sScanF(answer2,"%i %i",&numberOfLines, &numberOfPointsPerLine);
       }
       numberOfPointsPerLine=max(2,numberOfPointsPerLine);
       if( numberOfLines>0)
       {
-	linePlotEndPoints.redim(2,3,numberOfLines);
+        linePlotEndPoints.redim(2,3,numberOfLines);
         lineInfo.redim(4,numberOfLines);
-	lineInfo=0;
+        lineInfo=0;
       }
       
       for( int i=0; i<numberOfLines; i++ )
       {
-	if( numberOfDimensions==2 )
-	{
-	  gi.inputString(answer2,sPrintF(buff,"Line %i: enter `x0,y0, x1,y1'",i)); 
-	  if( answer2 !="" && answer2!=" ")
-	  {
-	    sScanF(answer2,"%e %e %e %e",
-		   &linePlotEndPoints(Start,0,i),&linePlotEndPoints(Start,1,i), 
-		   &linePlotEndPoints(End  ,0,i),&linePlotEndPoints(End  ,1,i));
-	  }
-	}
-	else
-	{
-	  gi.inputString(answer2,sPrintF(buff,"Line %i: enter the endpoints (x0,y0,z0) and (x1,y1,z1) (6 values)")); 
-	  if( answer2 !="" && answer2!=" ")
-	  {
-	    sScanF(answer2,"%e %e %e %e %e %e",
-		   &linePlotEndPoints(Start,axis1,i),&linePlotEndPoints(Start,axis2,i),&linePlotEndPoints(Start,axis3,i), 
-		   &linePlotEndPoints(End  ,axis1,i),&linePlotEndPoints(End  ,axis2,i),&linePlotEndPoints(End  ,axis3,i));
-	  }
-	}
+        if( numberOfDimensions==2 )
+        {
+          gi.inputString(answer2,sPrintF(buff,"Line %i: enter `x0,y0, x1,y1'",i)); 
+          if( answer2 !="" && answer2!=" ")
+          {
+            sScanF(answer2,"%e %e %e %e",
+                   &linePlotEndPoints(Start,0,i),&linePlotEndPoints(Start,1,i), 
+                   &linePlotEndPoints(End  ,0,i),&linePlotEndPoints(End  ,1,i));
+          }
+        }
+        else
+        {
+          gi.inputString(answer2,sPrintF(buff,"Line %i: enter the endpoints (x0,y0,z0) and (x1,y1,z1) (6 values)")); 
+          if( answer2 !="" && answer2!=" ")
+          {
+            sScanF(answer2,"%e %e %e %e %e %e",
+                   &linePlotEndPoints(Start,axis1,i),&linePlotEndPoints(Start,axis2,i),&linePlotEndPoints(Start,axis3,i), 
+                   &linePlotEndPoints(End  ,axis1,i),&linePlotEndPoints(End  ,axis2,i),&linePlotEndPoints(End  ,axis3,i));
+          }
+        }
       }
       plotObject=true;
     }
@@ -1917,58 +1917,58 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       lineInfo.redim(5,1); lineInfo=0;
       if( numberOfDimensions==2 )
       {
-	gi.outputString("A line may be specified as the boundary of a grid\n"
-			"   Enter `numberOfPoints grid side axis'\n");
+        gi.outputString("A line may be specified as the boundary of a grid\n"
+                        "   Enter `numberOfPoints grid side axis'\n");
         for( int grid=0; grid<gc.numberOfBaseGrids(); grid++ )
-	{
+        {
           for( int axis=0; axis<numberOfDimensions; axis++ )
-	  {
-	    for( int side=0; side<=1; side++ )
-	    {
+          {
+            for( int side=0; side<=1; side++ )
+            {
               if( gc[grid].boundaryCondition(side,axis)>0 )
-		printf(" base grid %i (%s) bc(side=%i,axis=%i) = %i share=%i\n",
-		       grid,(const char*)gc[grid].getName(),side,axis,gc[grid].boundaryCondition(side,axis),
-		       gc[grid].sharedBoundaryFlag(side,axis));
-	    }
-	  }
-	}
+                printf(" base grid %i (%s) bc(side=%i,axis=%i) = %i share=%i\n",
+                       grid,(const char*)gc[grid].getName(),side,axis,gc[grid].boundaryCondition(side,axis),
+                       gc[grid].sharedBoundaryFlag(side,axis));
+            }
+          }
+        }
         for( ;; )
-	{
-	  gi.inputString(answer2,"Enter `numberOfPoints grid side axis'"); 
+        {
+          gi.inputString(answer2,"Enter `numberOfPoints grid side axis'"); 
 
-	  if( answer2!="" )
-	  {
-	    int grid=-1, side=-1, axis=-1;
-	    sScanF(answer2,"%i %i %i %i",&numberOfPointsPerLine,&grid,&side,&axis);
-	    if( grid>=0 && grid<gc.numberOfGrids() && side>=0 && side<=1 && axis>=0 && axis<gc.numberOfDimensions())
-	    {
-	      lineInfo(0,i)=1;    // this means the "line" is a boundary of a grid
-	      lineInfo(1,i)=grid;
-	      lineInfo(2,i)=side;
-	      lineInfo(3,i)=axis;
-	      printf("INFO:The chosen grid=%i (%s) side=%i axis=%i has bc=%i and share=%i\n",grid,
-		     (const char*)gc[grid].getName(),side,axis,gc[grid].boundaryCondition(side,axis),
-		     gc[grid].sharedBoundaryFlag(side,axis));
+          if( answer2!="" )
+          {
+            int grid=-1, side=-1, axis=-1;
+            sScanF(answer2,"%i %i %i %i",&numberOfPointsPerLine,&grid,&side,&axis);
+            if( grid>=0 && grid<gc.numberOfGrids() && side>=0 && side<=1 && axis>=0 && axis<gc.numberOfDimensions())
+            {
+              lineInfo(0,i)=1;    // this means the "line" is a boundary of a grid
+              lineInfo(1,i)=grid;
+              lineInfo(2,i)=side;
+              lineInfo(3,i)=axis;
+              printf("INFO:The chosen grid=%i (%s) side=%i axis=%i has bc=%i and share=%i\n",grid,
+                     (const char*)gc[grid].getName(),side,axis,gc[grid].boundaryCondition(side,axis),
+                     gc[grid].sharedBoundaryFlag(side,axis));
               break;
-	    }
-	    else
-	    {
-	      printf("ERROR: invalid values: grid=%i, side=%i axis=%i\n",grid,side,axis);
-	      gi.stopReadingCommandFile();
-	      i--;
-	      continue;
-	    }
-	  }
+            }
+            else
+            {
+              printf("ERROR: invalid values: grid=%i, side=%i axis=%i\n",grid,side,axis);
+              gi.stopReadingCommandFile();
+              i--;
+              continue;
+            }
+          }
           else
-	  {
+          {
             break;
-	  }
-	}
-	plotObject=true;
+          }
+        }
+        plotObject=true;
       }
       else
       {
-	gi.outputString("Sorry: this option is currently only implemented for 2D grids");
+        gi.outputString("Sorry: this option is currently only implemented for 2D grids");
       }
       
     }
@@ -1980,12 +1980,12 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
                       "to choose a line from a grid\n");
       if( mapInfoPointer==NULL )
       {
-	mapInfoPointer = new MappingInformation;  // this will never be deleted -- could add to OvertureInit
+        mapInfoPointer = new MappingInformation;  // this will never be deleted -- could add to OvertureInit
         // Add all Mapping's from the grids.
-	for( int grid=0; grid<gc.numberOfBaseGrids(); grid++ )
-	{
-	  mapInfoPointer->mappingList.addElement(gc[grid].mapping());
-	}
+        for( int grid=0; grid<gc.numberOfBaseGrids(); grid++ )
+        {
+          mapInfoPointer->mappingList.addElement(gc[grid].mapping());
+        }
       }
       MappingInformation & mapInfo = *mapInfoPointer;
       mapInfo.graphXInterface=&gi;
@@ -1998,12 +1998,12 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
     {
       if( mapInfoPointer==NULL || mapInfoPointer->mappingList.getLength()==0 )
       {
-	gi.outputString("You should first `build a curve' before you can choose a curve.");
+        gi.outputString("You should first `build a curve' before you can choose a curve.");
         continue;
       }
       MappingInformation & mapInfo = *mapInfoPointer;
       mapInfo.graphXInterface=&gi;
-	
+        
       numberOfLines=1;
       numberOfPointsPerLine=20;
       lineInfo.redim(5,1); lineInfo=0;
@@ -2011,7 +2011,7 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       gi.inputString(answer2,sPrintF(buff,"Enter the number of points per line (default=20)")); 
       if( answer2 !="" && answer2!=" ")
       {
-	sScanF(answer2,"%i",&numberOfPointsPerLine);
+        sScanF(answer2,"%i",&numberOfPointsPerLine);
       }
       //kkc 060811 anything less than 2 will use the curve's grid      
       numberOfPointsPerLine=max(1,numberOfPointsPerLine);
@@ -2025,34 +2025,34 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       int j=0;
       for( int i=0; i<num; i++ )
       {
-	MappingRC & map = mapInfo.mappingList[i];
-	if( map.getDomainDimension()==1 && map.getRangeDimension()==gc.numberOfDimensions() )
-	{
-	  subListNumbering(j)=i;
+        MappingRC & map = mapInfo.mappingList[i];
+        if( map.getDomainDimension()==1 && map.getRangeDimension()==gc.numberOfDimensions() )
+        {
+          subListNumbering(j)=i;
           menu2[j++]=map.getName(Mapping::mappingName);
-	}
+        }
       }
       menu2[j++]="none"; 
       menu2[j]="";   // null string terminates the menu
       for(;;)
       {
-	int mapNumber = gi.getMenuItem(menu2,answer2);
-	if( mapNumber<0 )
-	{
-	  printf("contour::ERROR: unknown mapping to use\n");
-	  gi.stopReadingCommandFile();
-	  break;
-	}
-	if( answer2=="none" )
-	{
-	  numberOfLines=0;
-	  break;
-	}
-	mapNumber=subListNumbering(mapNumber);  // map number in the original list
-	curveMapping=mapInfo.mappingList[mapNumber].mapPointer;
-	if ( numberOfPointsPerLine==1 ) numberOfPointsPerLine=curveMapping->getGridDimensions(0);
+        int mapNumber = gi.getMenuItem(menu2,answer2);
+        if( mapNumber<0 )
+        {
+          printf("contour::ERROR: unknown mapping to use\n");
+          gi.stopReadingCommandFile();
+          break;
+        }
+        if( answer2=="none" )
+        {
+          numberOfLines=0;
+          break;
+        }
+        mapNumber=subListNumbering(mapNumber);  // map number in the original list
+        curveMapping=mapInfo.mappingList[mapNumber].mapPointer;
+        if ( numberOfPointsPerLine==1 ) numberOfPointsPerLine=curveMapping->getGridDimensions(0);
         lineInfo(0,0)=2; // this means use curveMapping
-	plotObject=true;
+        plotObject=true;
         break;
       }
       delete [] menu2;
@@ -2085,24 +2085,24 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       for(;;)
       {
         int grid=-1;
-	gi.inputString(answer2,"Enter the grid to turn off (-1 to finish)");
-	sScanF(answer2,"%i",&grid);
-	if( grid>=0 && grid<gc.numberOfComponentGrids() )
-	{
+        gi.inputString(answer2,"Enter the grid to turn off (-1 to finish)");
+        sScanF(answer2,"%i",&grid);
+        if( grid>=0 && grid<gc.numberOfComponentGrids() )
+        {
           printF("Do not use grid %i (%s) for interpolation.\n",grid,(const char*)gc[grid].getName());
-	  checkTheseGrids(grid)=false;
-	}
-	else
-	{
+          checkTheseGrids(grid)=false;
+        }
+        else
+        {
           break;
-	}
+        }
       }
       
     }
     else if( answer=="plot" )
     {
       if( numberOfLines<=0 )
-	printf("PlotIt::contourCuts:INFO: You should `specify lines' before calling `plot'\n");
+        printf("PlotIt::contourCuts:INFO: You should `specify lines' before calling `plot'\n");
       else
         plotObject=true;
     }
@@ -2129,98 +2129,98 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       for( i=0; i<numberOfLines; i++ )
       {
         if( lineInfo(0,i)==0 )
-	{
-	  // this is a line in space
-	  for( int axis=0; axis<gc.numberOfDimensions(); axis++ )
-	    x(R,axis).seqAdd(linePlotEndPoints(Start,axis,i),
-			     (linePlotEndPoints(End,axis,i)-linePlotEndPoints(Start,axis,i))/(numberOfPointsPerLine-1.));
-	}
-	else if( lineInfo(0,i)==1 )
-	{
+        {
+          // this is a line in space
+          for( int axis=0; axis<gc.numberOfDimensions(); axis++ )
+            x(R,axis).seqAdd(linePlotEndPoints(Start,axis,i),
+                             (linePlotEndPoints(End,axis,i)-linePlotEndPoints(Start,axis,i))/(numberOfPointsPerLine-1.));
+        }
+        else if( lineInfo(0,i)==1 )
+        {
           // Choose the side of a grid
           // this is only for 2D for now
 
-	  int grid=lineInfo(1,i);
-	  int side=lineInfo(2,i);
-	  int axis=lineInfo(3,i);
+          int grid=lineInfo(1,i);
+          int side=lineInfo(2,i);
+          int axis=lineInfo(3,i);
          
           MappedGrid & mg = (MappedGrid&)gc[grid];
-	  RealArray r(numberOfPointsPerLine,numberOfDimensions);
+          RealArray r(numberOfPointsPerLine,numberOfDimensions);
           int axisp1 = (axis+1) % numberOfDimensions;
           real dr=1./max(1,numberOfPointsPerLine-1);
           r(R,axisp1).seqAdd(0.,dr);
-	  r(R,axis)=(real)side;
-  	  mg.mapping().mapS(r,x);
-	}
-	else if( lineInfo(0,i)==2 )
-	{
-	  // **** use a curve ****
+          r(R,axis)=(real)side;
+          mg.mapping().mapS(r,x);
+        }
+        else if( lineInfo(0,i)==2 )
+        {
+          // **** use a curve ****
           assert( curveMapping!=NULL );
-	  if ( numberOfPointsPerLine>1 ) 
-	  {
-	    RealArray r(numberOfPointsPerLine,1);
-	    real dr=1./max(1,numberOfPointsPerLine-1);
-	    r(R,0).seqAdd(0.,dr);
-	    curveMapping->mapS(r,x);
-	  }
-	  else // kkc 060811
-	  {
-	    x.redim(0);
-	    x = curveMapping->getGridSerial();
-	    x.resize(x.getLength(0),x.getLength(3));
-	  }
+          if ( numberOfPointsPerLine>1 ) 
+          {
+            RealArray r(numberOfPointsPerLine,1);
+            real dr=1./max(1,numberOfPointsPerLine-1);
+            r(R,0).seqAdd(0.,dr);
+            curveMapping->mapS(r,x);
+          }
+          else // kkc 060811
+          {
+            x.redim(0);
+            x = curveMapping->getGridSerial();
+            x.resize(x.getLength(0),x.getLength(3));
+          }
 
           printF("contour:INFO: curve extends from (xMin,yMin)=(%e,%e) to (xMax,yMax)=(%e,%e)\n",
-		 min(x(R,0)),min(x(R,1)),max(x(R,0)),max(x(R,1)));
-	}
-	else
-	{
-	  printF("ERROR: unknown value for lineInfo(0,%i)=%i\n",i,lineInfo(0,i));
-	  Overture::abort("ERROR");
-	}
-	
-	// interpolate u at these points
-	if( false &&  psp.adjustGridForDisplacement )
-	{
+                 min(x(R,0)),min(x(R,1)),max(x(R,0)),max(x(R,1)));
+        }
+        else
+        {
+          printF("ERROR: unknown value for lineInfo(0,%i)=%i\n",i,lineInfo(0,i));
+          Overture::abort("ERROR");
+        }
+        
+        // interpolate u at these points
+        if( false &&  psp.adjustGridForDisplacement )
+        {
           // Here is the old way that uses the grid points inly to invert --
           // This should work when the grid is adjusted for displacements
-     	  printf("PlotIt::contourCuts:INFO:Use OLD interpolatePoints to handle .adjustGridForDisplacement\n");
+          printf("PlotIt::contourCuts:INFO:Use OLD interpolatePoints to handle .adjustGridForDisplacement\n");
 
           #ifndef USE_PPP
-	  wasInterpolated.redim(R);
-	  interpolatePoints(x,u,uI,
-			    C,nullRange,
-			    nullRange,nullRange,nullRange,
+          wasInterpolated.redim(R);
+          interpolatePoints(x,u,uI,
+                            C,nullRange,
+                            nullRange,nullRange,nullRange,
                             Overture::nullIntegerDistributedArray(),
-			    Overture::nullIntegerDistributedArray(),
-			    wasInterpolated );
+                            Overture::nullIntegerDistributedArray(),
+                            wasInterpolated );
           #endif
         }
-	else 
-	{
-	  if( false )
-	  {
-	    interp.interpolatePoints(x, u, uI, C);
-	  }
-	  else
-	  { // Here we can specify which grids to use for interpolation:
-	    interp.buildInterpolationInfo(x,(CompositeGrid&)gc,NULL,&checkTheseGrids );
-	    interp.interpolatePoints(u,uI,C);
-	  }
-	
+        else 
+        {
+          if( false )
+          {
+            interp.interpolatePoints(x, u, uI, C);
+          }
+          else
+          { // Here we can specify which grids to use for interpolation:
+            interp.buildInterpolationInfo(x,(CompositeGrid&)gc,NULL,&checkTheseGrids );
+            interp.interpolatePoints(u,uI,C);
+          }
+        
 
-	  wasInterpolated=interp.getStatus();
-	  wasInterpolated=wasInterpolated>0; // ==int(InterpolatePoints::interpolated);
-	}
-	
+          wasInterpolated=interp.getStatus();
+          wasInterpolated=wasInterpolated>0; // ==int(InterpolatePoints::interpolated);
+        }
+        
 //          interpolatePoints(x, u, uI, C,  // uI has same components are u!
-//  			  nullRange,
-//  			  nullRange,
-//  			  nullRange,
-//  			  nullRange,
-//  			  Overture::nullIntegerDistributedArray(),
-//  			  Overture::nullIntegerDistributedArray(),
-//  			  wasInterpolated);
+//                        nullRange,
+//                        nullRange,
+//                        nullRange,
+//                        nullRange,
+//                        Overture::nullIntegerDistributedArray(),
+//                        Overture::nullIntegerDistributedArray(),
+//                        wasInterpolated);
 
         uInterpolated(R,C-C.getBase()+i*numberOfComponentsToPlot)=uI(R,C);
 
@@ -2228,41 +2228,41 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
         // Add the x-coordinates to the list of components that can be plotted
 
         const int m0 = i*numberOfComponentsToPlot+numberOfComponents;
-	for( int axis=0; axis<gc.numberOfDimensions(); axis++ )
-	{
-	  uInterpolated(R,m0+axis)=x(R,axis);
-	}
-	
+        for( int axis=0; axis<gc.numberOfDimensions(); axis++ )
+        {
+          uInterpolated(R,m0+axis)=x(R,axis);
+        }
+        
         // x.display("here is x");
-	// uInterpolated.display("uInterpolated");
-	
+        // uInterpolated.display("uInterpolated");
+        
         if( numberOfLines>1 || bogusValueIsSet )
-	{ 
+        { 
           // we do not mask out bad values if there are more than 1 line plotted --- put some
           // bogus values in
-	  for( int c=C.getBase(); c<=C.getBound(); c++ )
-	  {
-	    real uMin;
-	    if( bogusValueIsSet )
-	    {
-	      uMin=bogusValue;
-	    }
-	    else
-	    {
-	      where( wasInterpolated(R) )
-		uMin=min(uInterpolated(R,c+i*numberOfComponentsToPlot));
-	    }
-	    
-	    // printF("contourCuts: Setting bogus values to %e\n",uMin);
-	    // ::display(wasInterpolated,"wasInterpolated");
-	    
-	    where( !wasInterpolated(R) )
-	    {
-	      uInterpolated(R,c+i*numberOfComponentsToPlot)=uMin;
-	    }
+          for( int c=C.getBase(); c<=C.getBound(); c++ )
+          {
+            real uMin;
+            if( bogusValueIsSet )
+            {
+              uMin=bogusValue;
+            }
+            else
+            {
+              where( wasInterpolated(R) )
+                uMin=min(uInterpolated(R,c+i*numberOfComponentsToPlot));
+            }
+            
+            // printF("contourCuts: Setting bogus values to %e\n",uMin);
+            // ::display(wasInterpolated,"wasInterpolated");
+            
+            where( !wasInterpolated(R) )
+            {
+              uInterpolated(R,c+i*numberOfComponentsToPlot)=uMin;
+            }
             // ::display(uInterpolated(R,c+i*numberOfComponentsToPlot),"uInterpolated(R,c+i*numberOfComponentsToPlot)");
-	  }
-	}
+          }
+        }
       }
       
 
@@ -2272,34 +2272,34 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       real length=1.;
       if( lineInfo(0,0)==0 )
       {
-	if( numberOfLines==1 && !useNormalizedDistanceForContourCuts )
-	{
-	  Range Rx=gc.numberOfDimensions();
-	  length=sqrt(sum(SQR(linePlotEndPoints(End,Rx,0)-linePlotEndPoints(Start,Rx,0))));
-	  t.seqAdd(0.,length/(numberOfPointsPerLine-1));
-	}
-	t.seqAdd(0.,length/(numberOfPointsPerLine-1));
+        if( numberOfLines==1 && !useNormalizedDistanceForContourCuts )
+        {
+          Range Rx=gc.numberOfDimensions();
+          length=sqrt(sum(SQR(linePlotEndPoints(End,Rx,0)-linePlotEndPoints(Start,Rx,0))));
+          t.seqAdd(0.,length/(numberOfPointsPerLine-1));
+        }
+        t.seqAdd(0.,length/(numberOfPointsPerLine-1));
       }
       else
       {
         // use arclength for curves
         useNormalizedDistanceForContourCuts=false;
-	
+        
         t(0)=0;
-	if( gc.numberOfDimensions()==2 )
-	{
-	  for( int i=1; i<numberOfPointsPerLine; i++ )
-	    t(i)=t(i-1)+sqrt( SQR(x(i,0)-x(i-1,0))+
-			      SQR(x(i,1)-x(i-1,1)) );
-	}
-	else
-	{
-	  for( int i=1; i<numberOfPointsPerLine; i++ )
-	    t(i)=t(i-1)+sqrt( SQR(x(i,0)-x(i-1,0))+
-			      SQR(x(i,1)-x(i-1,1))+
-			      SQR(x(i,2)-x(i-1,2)) );
-	}
-	
+        if( gc.numberOfDimensions()==2 )
+        {
+          for( int i=1; i<numberOfPointsPerLine; i++ )
+            t(i)=t(i-1)+sqrt( SQR(x(i,0)-x(i-1,0))+
+                              SQR(x(i,1)-x(i-1,1)) );
+        }
+        else
+        {
+          for( int i=1; i<numberOfPointsPerLine; i++ )
+            t(i)=t(i-1)+sqrt( SQR(x(i,0)-x(i-1,0))+
+                              SQR(x(i,1)-x(i-1,1))+
+                              SQR(x(i,2)-x(i-1,2)) );
+        }
+        
       }
       
 
@@ -2326,76 +2326,76 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       Range I1(c.indexRange()(Start,axis1),c.indexRange()(End,axis1));
 #ifndef USE_PPP
       for( i=0; i<nv; i++ )
-	uu(I1,all,all,i)=uInterpolated(R,i);
+        uu(I1,all,all,i)=uInterpolated(R,i);
 #endif
 
       // set component names
       for(i=0; i<numberOfLines; i++ )
       {
-	for( int c=C.getBase(); c<=C.getBound(); c++ )
-	{
-	  if( numberOfLines==1 )
-	    uu.setName(u.getName(c),c);
-	  else
-	    uu.setName(sPrintF(buff,"%s_line_%i",(const char *)u.getName(c),i),c+i*numberOfComponentsToPlot);
-	  //kkc 060811 this breaks matlab output	    uu.setName(sPrintF(buff,"%s (line %i)",(const char *)u.getName(c),i),c+i*numberOfComponentsToPlot);
-	}
+        for( int c=C.getBase(); c<=C.getBound(); c++ )
+        {
+          if( numberOfLines==1 )
+            uu.setName(u.getName(c),c);
+          else
+            uu.setName(sPrintF(buff,"%s_line_%i",(const char *)u.getName(c),i),c+i*numberOfComponentsToPlot);
+          //kkc 060811 this breaks matlab output            uu.setName(sPrintF(buff,"%s (line %i)",(const char *)u.getName(c),i),c+i*numberOfComponentsToPlot);
+        }
         for( int axis=0; axis<gc.numberOfDimensions(); axis++ )
-	{ // Give names to the components that represent (x,y,z) along the curve
-	  int c=C.getBound()+axis+1;
-	  if( numberOfLines==1 )
-	    uu.setName(sPrintF(buff,"x%i",axis),c);
-	  else
-	    uu.setName(sPrintF(buff,"x%i_line_%i",axis,i),c+i*numberOfComponentsToPlot);
-	    //kkc 060811 this breaks matlab output	  uu.setName(sPrintF(buff,"x%i (line %i)",axis,i),c+i*numberOfComponentsToPlot);
-	}
-	
+        { // Give names to the components that represent (x,y,z) along the curve
+          int c=C.getBound()+axis+1;
+          if( numberOfLines==1 )
+            uu.setName(sPrintF(buff,"x%i",axis),c);
+          else
+            uu.setName(sPrintF(buff,"x%i_line_%i",axis,i),c+i*numberOfComponentsToPlot);
+            //kkc 060811 this breaks matlab output        uu.setName(sPrintF(buff,"x%i (line %i)",axis,i),c+i*numberOfComponentsToPlot);
+        }
+        
       }
       aString title[3];
       
       if( numberOfLines==1 )
       {
         if( gc.numberOfDimensions()>=2 )
-	{
+        {
           if( lineInfo(0,0)==0 )
-	  {
-	    title[0] = sPrintF(buff,"line: (%g,%g) to (%g,%g)", 
-			       linePlotEndPoints(Start,0,0),linePlotEndPoints(Start,1,0), 
-			       linePlotEndPoints(End  ,0,0),linePlotEndPoints(End  ,1,0));
-	  }
-	  else if( lineInfo(0,0)==1 )
-	  {
+          {
+            title[0] = sPrintF(buff,"line: (%g,%g) to (%g,%g)", 
+                               linePlotEndPoints(Start,0,0),linePlotEndPoints(Start,1,0), 
+                               linePlotEndPoints(End  ,0,0),linePlotEndPoints(End  ,1,0));
+          }
+          else if( lineInfo(0,0)==1 )
+          {
             int grid=lineInfo(1,0), side=lineInfo(2,0), axis=lineInfo(3,0);
-	    title[0] = sPrintF(buff,"line: grid %i (%s) (side,axis)=(%i,%i)", 
-			       grid,(const char*)gc[grid].getName(),side,axis);
-	  }
-	  else if( lineInfo(0,0)==2 )
-	  {
+            title[0] = sPrintF(buff,"line: grid %i (%s) (side,axis)=(%i,%i)", 
+                               grid,(const char*)gc[grid].getName(),side,axis);
+          }
+          else if( lineInfo(0,0)==2 )
+          {
             int grid=lineInfo(1,0), side=lineInfo(2,0), axis=lineInfo(3,0);
-	    title[0] = sPrintF(buff,"curve %s",(const char*)curveMapping->getName(Mapping::mappingName));
-	  }
-	  
-	}
+            title[0] = sPrintF(buff,"curve %s",(const char*)curveMapping->getName(Mapping::mappingName));
+          }
+          
+        }
         else
-  	  title[0] = sPrintF(buff,"line: (%g,%g,%g) to (%g,%g,%g)", 
-			  linePlotEndPoints(Start,0,0),linePlotEndPoints(Start,1,0),linePlotEndPoints(Start,2,0), 
-			  linePlotEndPoints(End  ,0,0),linePlotEndPoints(End  ,1,0),linePlotEndPoints(End  ,2,0));
+          title[0] = sPrintF(buff,"line: (%g,%g,%g) to (%g,%g,%g)", 
+                          linePlotEndPoints(Start,0,0),linePlotEndPoints(Start,1,0),linePlotEndPoints(Start,2,0), 
+                          linePlotEndPoints(End  ,0,0),linePlotEndPoints(End  ,1,0),linePlotEndPoints(End  ,2,0));
       }
       else
       {
         for( int i=0; i<min(3,numberOfLines); i++ )
-	{
-	  if( gc.numberOfDimensions()==2 )
-	  {
-	    title[i] = sPrintF(buff,"line %i: (%g,%g) to (%g,%g)",i,
-			       linePlotEndPoints(Start,0,i),linePlotEndPoints(Start,1,i), 
-			       linePlotEndPoints(End  ,0,i),linePlotEndPoints(End  ,1,i));
-	  }
-	  else
-	    title[i] = sPrintF(buff,"line %i: (%g,%g,%g) to (%g,%g,%g)",i,
-			    linePlotEndPoints(Start,0,i),linePlotEndPoints(Start,1,i),linePlotEndPoints(Start,2,i), 
-			    linePlotEndPoints(End  ,0,i),linePlotEndPoints(End  ,1,i),linePlotEndPoints(End  ,2,i));
-	}
+        {
+          if( gc.numberOfDimensions()==2 )
+          {
+            title[i] = sPrintF(buff,"line %i: (%g,%g) to (%g,%g)",i,
+                               linePlotEndPoints(Start,0,i),linePlotEndPoints(Start,1,i), 
+                               linePlotEndPoints(End  ,0,i),linePlotEndPoints(End  ,1,i));
+          }
+          else
+            title[i] = sPrintF(buff,"line %i: (%g,%g,%g) to (%g,%g,%g)",i,
+                            linePlotEndPoints(Start,0,i),linePlotEndPoints(Start,1,i),linePlotEndPoints(Start,2,i), 
+                            linePlotEndPoints(End  ,0,i),linePlotEndPoints(End  ,1,i),linePlotEndPoints(End  ,2,i));
+        }
       }
       
       aString topLabel1=psp.topLabel1, topLabel2=psp.topLabel2, topLabel3=psp.topLabel3;
@@ -2410,10 +2410,10 @@ contourCuts(GenericGraphicsInterface &gi, const realGridCollectionFunction & u, 
       // psp.set(GI_X_AXIS_LABEL,"normalized distance");
       if( numberOfLines==1 && !useNormalizedDistanceForContourCuts )
       {
-  	gi.setAxesLabels("distance");
+        gi.setAxesLabels("distance");
       }
       else
-	gi.setAxesLabels("normalized distance");
+        gi.setAxesLabels("normalized distance");
 
       //  We should not adjust for displacement 2 times for the same grid! *wdh* 2014/04/22
       const bool adjustGridForDisplacementSave = parameters.adjustGridForDisplacement;
@@ -2477,13 +2477,13 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
                     ">add a component",
                      "<set bounds",
                     "toggle grids on and off",
-		    "plot grid points (toggle)",
+                    "plot grid points (toggle)",
                     "plot line markers (toggle)",
                     "plot the grid",
                     "ghost lines",
-		    "save results to a matlab file",
-		    "save results to a text file",
-		    "user defined output",
+                    "save results to a matlab file",
+                    "save results to a text file",
+                    "user defined output",
                     " ",
 //                    "plot labels (toggle)",
 //                    "plot the axes (toggle)",
@@ -2652,12 +2652,12 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       // cout << "add a component, component = " << component << endl;
       for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
       {
-	if( component==componentsToPlot(n) )
-	{
+        if( component==componentsToPlot(n) )
+        {
           gi.outputString("contour1d: This component has already been plotted");
-	  component=-1;
+          component=-1;
           break;
-	}
+        }
       }
       if( component>=0 )
       {
@@ -2687,23 +2687,23 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       aString *menu2 = new aString[numberOfGrids+2];
       for(;;)
       {
-	for( int grid=0; grid<numberOfGrids; grid++ )
-	{
-	  menu2[grid]=sPrintF(buff,"%i : %s is (%s)",grid,
+        for( int grid=0; grid<numberOfGrids; grid++ )
+        {
+          menu2[grid]=sPrintF(buff,"%i : %s is (%s)",grid,
                                 (const char*)gc[grid].mapping().getName(Mapping::mappingName),
-				(gridsToPlot(grid) & GraphicsParameters::toggleContours ? "on" : "off"));
-	}
-	menu2[numberOfGrids]="exit this menu";
-	menu2[numberOfGrids+1]="";   // null string terminates the menu
+                                (gridsToPlot(grid) & GraphicsParameters::toggleContours ? "on" : "off"));
+        }
+        menu2[numberOfGrids]="exit this menu";
+        menu2[numberOfGrids+1]="";   // null string terminates the menu
         gi.getMenuItem(menu2,answer2);
         if( answer2=="exit this menu" )
           break;
-	else 
-	{
+        else 
+        {
           int gridToToggle = atoi(&answer2[0]);
           assert(gridToToggle>=0 && gridToToggle<numberOfGrids);
           gridsToPlot(gridToToggle)^=GraphicsParameters::toggleContours;
-	}
+        }
       }
       delete [] menu2;
     }
@@ -2753,8 +2753,8 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       plotObject=false;
       if( plotOnThisProcessor )
       {
-	glDeleteLists(list,1);
-	glDeleteLists(labelList,1);  
+        glDeleteLists(list,1);
+        glDeleteLists(labelList,1);  
       }
       gi.redraw();
       break;
@@ -2765,10 +2765,10 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
       if( answer2 !="" && answer2!=" ")
       {
-	real xo=GenericGraphicsInterface::defaultOrigin, 
-	  yo=GenericGraphicsInterface::defaultOrigin, zo=GenericGraphicsInterface::defaultOrigin;
-	sScanF(answer2,"%e %e %e",&xo, &yo, &zo);
-        gi.setAxesOrigin(xo, yo, zo);	
+        real xo=GenericGraphicsInterface::defaultOrigin, 
+          yo=GenericGraphicsInterface::defaultOrigin, zo=GenericGraphicsInterface::defaultOrigin;
+        sScanF(answer2,"%e %e %e",&xo, &yo, &zo);
+        gi.setAxesOrigin(xo, yo, zo);   
       }
     }
     else if( answer=="plot" )
@@ -2780,7 +2780,7 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       aString fileName="contour.m";
       gi.inputString(fileName,sPrintF(answer,"Enter the name of the matlab file (default=%s)\n",(const char*)fileName));
       if( fileName=="" )
-	fileName="contour.m";
+        fileName="contour.m";
 
       FILE *matlabFile = fopen((const char*)fileName,"w" ); 
 
@@ -2795,43 +2795,43 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
         real time=0.;
        
-	if(  psp.showFileParameters!=NULL )
-	{ // look for the time in the provided show file parameters
-	  ListOfShowFileParameters & sfp = *((ListOfShowFileParameters*)psp.showFileParameters);
-	  bool ok = sfp.getParameter("time",time);
-	  printf(" linePlot: psp.showFileParameters found, time found? ok=%i\n",ok);
-	}
-	else if( psp.showFileReader!=NULL )
-	{
-	  // Look for parameters in the show file
-	  // (These values are saved, for example, in OverBlown when the show file is written)
+        if(  psp.showFileParameters!=NULL )
+        { // look for the time in the provided show file parameters
+          ListOfShowFileParameters & sfp = *((ListOfShowFileParameters*)psp.showFileParameters);
+          bool ok = sfp.getParameter("time",time);
+          printf(" linePlot: psp.showFileParameters found, time found? ok=%i\n",ok);
+        }
+        else if( psp.showFileReader!=NULL )
+        {
+          // Look for parameters in the show file
+          // (These values are saved, for example, in OverBlown when the show file is written)
 
-	  ShowFileReader & showFileReader = *((ShowFileReader*)psp.showFileReader);
-// 	  bool found;
-// 	  found=showFileReader.getGeneralParameter("pde",pdeName);
-// 	  printf(" pdeName =%s (from ShowFile)\n",(const char*)pdeName);
+          ShowFileReader & showFileReader = *((ShowFileReader*)psp.showFileReader);
+//        bool found;
+//        found=showFileReader.getGeneralParameter("pde",pdeName);
+//        printf(" pdeName =%s (from ShowFile)\n",(const char*)pdeName);
       
-// 	  found=showFileReader.getGeneralParameter("densityComponent",rc);
-// 	  found=showFileReader.getGeneralParameter("uComponent",uc);
-// 	  found=showFileReader.getGeneralParameter("vComponent",vc);
-// 	  found=showFileReader.getGeneralParameter("wComponent",wc);
-// 	  found=showFileReader.getGeneralParameter("temperatureComponent",tc);
-// 	  found=showFileReader.getGeneralParameter("pressureComponent",pc);
+//        found=showFileReader.getGeneralParameter("densityComponent",rc);
+//        found=showFileReader.getGeneralParameter("uComponent",uc);
+//        found=showFileReader.getGeneralParameter("vComponent",vc);
+//        found=showFileReader.getGeneralParameter("wComponent",wc);
+//        found=showFileReader.getGeneralParameter("temperatureComponent",tc);
+//        found=showFileReader.getGeneralParameter("pressureComponent",pc);
 
-// 	  found=showFileReader.getGeneralParameter("numberOfSpecies",numberOfSpecies);
+//        found=showFileReader.getGeneralParameter("numberOfSpecies",numberOfSpecies);
 
-// 	  found=showFileReader.getGeneralParameter("reactionType",reactionName);
+//        found=showFileReader.getGeneralParameter("reactionType",reactionName);
 
-	  // get parameters from the current frame
-	  GenericDataBase *dbp= showFileReader.getFrame();
-	  assert( dbp!=NULL );
-	  GenericDataBase & db = *dbp;
-	  db.get(time,"time");
+          // get parameters from the current frame
+          GenericDataBase *dbp= showFileReader.getFrame();
+          assert( dbp!=NULL );
+          GenericDataBase & db = *dbp;
+          db.get(time,"time");
           real dt;
-	  db.get(dt,"dt");
-	  printf(" linePlot: time=%e, dt=%e (from ShowFile)\n",time,dt);
+          db.get(dt,"dt");
+          printf(" linePlot: time=%e, dt=%e (from ShowFile)\n",time,dt);
       
-	}
+        }
 
         fprintf(matlabFile,"time=%20.14e; \n",time);
 
@@ -2840,54 +2840,54 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       int grid;
       for( grid=0; grid<numberOfGrids; grid++ )
       {
-	realMappedGridFunction & u = uGCF[grid];
-	const RealDistributedArray & x = gc[grid].center();
+        realMappedGridFunction & u = uGCF[grid];
+        const RealDistributedArray & x = gc[grid].center();
         const IntegerDistributedArray & mask = gc[grid].mask();
         Index I1,I2,I3;
-	getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
+        getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
 
-	// ::display(x,"contour1d : Grid x for line plot");
+        // ::display(x,"contour1d : Grid x for line plot");
 
-	intArray cMask(I1);
+        intArray cMask(I1);
         // Watch out for no ghost points when plotting sequences mask(I1+1) is bad.
-	if( numberOfGrids>1 )
-	{
-	  cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && x(I1)>=xBound(Start,0) && x(I1)<=xBound(End,0);
-	  // on refinement grids do not plot cells with all corners hidden by refinement
-	  if( gc.numberOfRefinementLevels()>1 )
-	    cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
-			      (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
-	}
-	else
-	{
-	  cMask=1;
-	}
-	
+        if( numberOfGrids>1 )
+        {
+          cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && x(I1)>=xBound(Start,0) && x(I1)<=xBound(End,0);
+          // on refinement grids do not plot cells with all corners hidden by refinement
+          if( gc.numberOfRefinementLevels()>1 )
+            cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
+                              (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
+        }
+        else
+        {
+          cMask=1;
+        }
+        
         const int numPerLine=5;
-	fprintf(matlabFile,"x%i=[",grid);
-	int i1;
-	for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	{
-	  fprintf(matlabFile,"%17.10e ",x(i1,0,0,0));
+        fprintf(matlabFile,"x%i=[",grid);
+        int i1;
+        for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+        {
+          fprintf(matlabFile,"%17.10e ",x(i1,0,0,0));
           if( (i1 % numPerLine)==numPerLine-1 ) fprintf(matlabFile,"...\n");
-	}
-	fprintf(matlabFile,"];\n");
+        }
+        fprintf(matlabFile,"];\n");
 
-	for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
-	{
-	  component=componentsToPlot(n);
-	  fprintf(matlabFile,"%s%i=[",(const char*)uGCF.getName(component),grid);
+        for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
+        {
+          component=componentsToPlot(n);
+          fprintf(matlabFile,"%s%i=[",(const char*)uGCF.getName(component),grid);
 
-	  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  {
+          for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          {
             if( cMask(i1) )
-	      fprintf(matlabFile,"%17.10e ",u(i1,0,0,component));
+              fprintf(matlabFile,"%17.10e ",u(i1,0,0,component));
             else
               fprintf(matlabFile,"NaN ");  // mark unused point with NaN
             if( (i1 % numPerLine)==numPerLine-1 ) fprintf(matlabFile,"...\n");
-	  }
-	  fprintf(matlabFile,"];\n");
-	}
+          }
+          fprintf(matlabFile,"];\n");
+        }
       } // end for grid
       
       const int numberOfSymbols=11;
@@ -2898,30 +2898,30 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       int m=0;
       for( grid=0; grid<numberOfGrids; grid++ )
       {
-	for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++,m++ )
-	{
-	  component=componentsToPlot(n);
-	  fprintf(matlabFile,"x0,%s%i,'%s'",(const char*)uGCF.getName(component),grid,
-		  (const char*)symbol[(m%numberOfSymbols)]);
-	  if( grid<numberOfGrids && n<componentsToPlot.getBound(0) ) fprintf(matlabFile,",");
-	}
+        for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++,m++ )
+        {
+          component=componentsToPlot(n);
+          fprintf(matlabFile,"x0,%s%i,'%s'",(const char*)uGCF.getName(component),grid,
+                  (const char*)symbol[(m%numberOfSymbols)]);
+          if( grid<numberOfGrids && n<componentsToPlot.getBound(0) ) fprintf(matlabFile,",");
+        }
       }
       fprintf(matlabFile,");\n");
       fprintf(matlabFile,"%% legend(");
       for( grid=0; grid<numberOfGrids; grid++ )
       {
-	for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
-	{
-	  component=componentsToPlot(n);
+        for( int n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
+        {
+          component=componentsToPlot(n);
           if( numberOfGrids==1 )
-	    fprintf(matlabFile,"'%s'",(const char*)uGCF.getName(component));
-	  else
+            fprintf(matlabFile,"'%s'",(const char*)uGCF.getName(component));
+          else
            fprintf(matlabFile,"'%s (grid %i)'",(const char*)uGCF.getName(component),grid);
-	  if( grid<numberOfGrids && n<componentsToPlot.getBound(0) )
-	    fprintf(matlabFile,",");
-	  else
-	    fprintf(matlabFile,");\n");
-	}
+          if( grid<numberOfGrids && n<componentsToPlot.getBound(0) )
+            fprintf(matlabFile,",");
+          else
+            fprintf(matlabFile,");\n");
+        }
       }
 
       fclose(matlabFile);
@@ -2952,21 +2952,21 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       for( ;; )
       {
         gi.inputString(answer2,sPrintF(buff,"Enter component number and name (enter `done' to finish)")); 
-	if( answer2 == "done" ) break;
-	int component=-1; 
+        if( answer2 == "done" ) break;
+        int component=-1; 
         sScanF(answer2,"%i %s",&component,buff);
         if( component<0 || component>=numberOfComponents )
-	{
-	  printF("Invalid component number=%i! Wake up Don! Try again...\n");
-	}
-	else
-	{
-	  printf(" Will save component=%i, name=[%s]\n",component,buff);
-	  cc[numberOfComponentsToPlot]=component;
-	  cName[numberOfComponentsToPlot]=buff;
+        {
+          printF("Invalid component number=%i! Wake up Don! Try again...\n");
+        }
+        else
+        {
+          printf(" Will save component=%i, name=[%s]\n",component,buff);
+          cc[numberOfComponentsToPlot]=component;
+          cName[numberOfComponentsToPlot]=buff;
           printf(" Will save component=%i, name=[%s]\n",component,(const char*)cName[numberOfComponentsToPlot]);
-  	  numberOfComponentsToPlot++;
-	}
+          numberOfComponentsToPlot++;
+        }
       }
       if( numberOfComponentsToPlot==0 ) continue;
       
@@ -2978,41 +2978,41 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       int grid;
       for( grid=0; grid<numberOfGrids; grid++ )
       {
-	realMappedGridFunction & u = uGCF[grid];
-	const RealDistributedArray & x = gc[grid].center();
+        realMappedGridFunction & u = uGCF[grid];
+        const RealDistributedArray & x = gc[grid].center();
         const IntegerDistributedArray & mask = gc[grid].mask();
         Index I1,I2,I3;
-	getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
+        getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
 
-	fprintf(file,"%i %i\n",I1.getLength(),1);
+        fprintf(file,"%i %i\n",I1.getLength(),1);
 
-	for( int n=0; n<numberOfComponentsToPlot; n++ )
-	  fprintf(file,"%12s ",(const char*)cName[n]);
-//	  fprintf(file,"%12.0s ",(const char*)cName[n]);
-	fprintf(file,"\n");
-	
+        for( int n=0; n<numberOfComponentsToPlot; n++ )
+          fprintf(file,"%12s ",(const char*)cName[n]);
+//        fprintf(file,"%12.0s ",(const char*)cName[n]);
+        fprintf(file,"\n");
+        
         // *** finish me for parallel ***
 
-	intArray cMask(I1);
-	cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && x(I1)>=xBound(Start,0) && x(I1)<=xBound(End,0);
-	// on refinement grids do not plot cells with all corners hidden by refinement
-	if( gc.numberOfRefinementLevels()>1 )
-	  cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
-			    (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
+        intArray cMask(I1);
+        cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && x(I1)>=xBound(Start,0) && x(I1)<=xBound(End,0);
+        // on refinement grids do not plot cells with all corners hidden by refinement
+        if( gc.numberOfRefinementLevels()>1 )
+          cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
+                            (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
 
-	int i1;
-	for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	{
-	  fprintf(file,"%e ",x(i1,0,0,0));  // x holds the normalized distance
-	  for( int n=0; n<numberOfComponentsToPlot; n++ )
-	  {
-	    fprintf(file,"%e ",u(i1,0,0,cc[n]));
-	  }
-	  
-	  fprintf(file,"%i",(cMask(i1)? 0 : 1));
-	  fprintf(file,"\n");
-	}
-	
+        int i1;
+        for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+        {
+          fprintf(file,"%e ",x(i1,0,0,0));  // x holds the normalized distance
+          for( int n=0; n<numberOfComponentsToPlot; n++ )
+          {
+            fprintf(file,"%e ",u(i1,0,0,cc[n]));
+          }
+          
+          fprintf(file,"%i",(cMask(i1)? 0 : 1));
+          fprintf(file,"\n");
+        }
+        
       } // end for grid
       
       delete [] cc;
@@ -3055,28 +3055,28 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
       int n;
       if( userDefinedBounds == true )
       {
-	uMin = userMin;
-	uMax = userMax;
+        uMin = userMin;
+        uMax = userMax;
       }
       else
       {
-	for( n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
-	{
-	  component=componentsToPlot(n);
-	  real cMin,cMax;
-	  getBounds(uGCF,cMin,cMax,parameters,Range(component,component));
-	  uMin= n==componentsToPlot.getBase(0) ? cMin : min(uMin,cMin);
-	  uMax= n==componentsToPlot.getBase(0) ? cMax : max(uMax,cMax);
+        for( n=componentsToPlot.getBase(0); n<=componentsToPlot.getBound(0); n++ )
+        {
+          component=componentsToPlot(n);
+          real cMin,cMax;
+          getBounds(uGCF,cMin,cMax,parameters,Range(component,component));
+          uMin= n==componentsToPlot.getBase(0) ? cMin : min(uMin,cMin);
+          uMax= n==componentsToPlot.getBase(0) ? cMax : max(uMax,cMax);
 
 
-	}
+        }
       }
        
       real deltaU = uMax-uMin;
       if( deltaU==0. )
       {
-	uMax+=.5;
-	uMin-=.5;
+        uMax+=.5;
+        uMin-=.5;
       }
 
       // --- put u into the xBound array ----
@@ -3116,86 +3116,86 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
 
       for( int grid=0; grid<numberOfGrids; grid++ )
       {
-	if( !(gridsToPlot(grid)&GraphicsParameters::toggleContours) )
-	  continue;
+        if( !(gridsToPlot(grid)&GraphicsParameters::toggleContours) )
+          continue;
 
-	realMappedGridFunction & u = uGCF[grid];
-	const RealDistributedArray & coord = gc[grid].center();
+        realMappedGridFunction & u = uGCF[grid];
+        const RealDistributedArray & coord = gc[grid].center();
         const IntegerDistributedArray & mask = gc[grid].mask();
-	getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
+        getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
 
         I1=Range(gc[grid].dimension(Start,axis1),gc[grid].dimension(End,axis1)-1);  // *wdh* 020331
-	
-	i2 = I2.getBase();
-	i3 = I3.getBase();
+        
+        i2 = I2.getBase();
+        i3 = I3.getBase();
 
         for(n=componentsToPlot.getBase(0),m=0; n<=componentsToPlot.getBound(0); n++,m++ )
-	{
+        {
           component=componentsToPlot(n);
           if( colourLineContours )
             gi.setColour(lineColour[m%numberOfLineColours]);
           else
             gi.setColour(GenericGraphicsInterface::textColour);
 
-	  intArray cMask(I1);
-	  cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && coord(I1)>=xBound(Start,0) && coord(I1)<=xBound(End,0)
+          intArray cMask(I1);
+          cMask=mask(I1,I2,I3)!=0 && mask(I1+1,I2,I3)!=0 && coord(I1)>=xBound(Start,0) && coord(I1)<=xBound(End,0)
                                                          && coord(I1+1)>=xBound(Start,0) && coord(I1+1)<=xBound(End,0);
-	  // on refinement grids do not plot cells with all corners hidden by refinement
-	  if( gc.numberOfRefinementLevels()>1 )
-	    cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
-			      (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
+          // on refinement grids do not plot cells with all corners hidden by refinement
+          if( gc.numberOfRefinementLevels()>1 )
+            cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) ||
+                              (mask(I1+1,I2  ,I3) & isHiddenByRefinement) );
 
-	  glLineWidth(psp.size(GraphicsParameters::minorContourWidth)*psp.size(GraphicsParameters::lineWidth)*
-		      gi.getLineWidthScaleFactor());
-	  glBegin(GL_LINES); 
-	  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  {
-	    // if( mask(i1)!=0 && mask(i1+1)!=0 && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0) )
-	    if( cMask(i1) )
-	    { // the .sa function converts to standard arguments (component can be in any position)
-	      glVertex3f(coord(i1)  ,u.sa(  i1,i2,i3,component),1.e-3);
-	      glVertex3f(coord(i1+1),u.sa(i1+1,i2,i3,component),1.e-3);
-	    }
-	  }
-	  glEnd();
+          glLineWidth(psp.size(GraphicsParameters::minorContourWidth)*psp.size(GraphicsParameters::lineWidth)*
+                      gi.getLineWidthScaleFactor());
+          glBegin(GL_LINES); 
+          for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          {
+            // if( mask(i1)!=0 && mask(i1+1)!=0 && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0) )
+            if( cMask(i1) )
+            { // the .sa function converts to standard arguments (component can be in any position)
+              glVertex3f(coord(i1)  ,u.sa(  i1,i2,i3,component),1.e-3);
+              glVertex3f(coord(i1+1),u.sa(i1+1,i2,i3,component),1.e-3);
+            }
+          }
+          glEnd();
            // **** trouble with xLabel and aspect ratio
           if( plotLineMarkers && componentsToPlot.getLength(0)>1 )
-	  {
-	    // RealArray x(1,3),r(1,3);
+          {
+            // RealArray x(1,3),r(1,3);
             int skip = max(1,I1.length()/10);   // at most 10 markers on a line
-	    for( i1=I1.getBase(); i1<I1.getBound(); i1++ )
-	    {
-	      if( (i1 % skip) == 0 && mask(i1)!=0 && mask(i1+1)!=0 
-		  && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0)  )
-	      {
-		gi.xLabel(lineMarker[m%numberOfLineMarkers],coord(i1+1),u.sa(i1+1,i2,i3,component),.025,0,0.,psp);
-	      }
-	    }
-	  }
+            for( i1=I1.getBase(); i1<I1.getBound(); i1++ )
+            {
+              if( (i1 % skip) == 0 && mask(i1)!=0 && mask(i1+1)!=0 
+                  && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0)  )
+              {
+                gi.xLabel(lineMarker[m%numberOfLineMarkers],coord(i1+1),u.sa(i1+1,i2,i3,component),.025,0,0.,psp);
+              }
+            }
+          }
 
-	  if( plotGridPointsOnCurves )
-	  {
-	    // *** plot points on curves ****
-	    cMask=mask(I1,I2,I3)!=0 && coord(I1)>=xBound(Start,0) && coord(I1)<=xBound(End,0);
-	    // on refinement grids do not plot cells with all corners hidden by refinement
-	    if( gc.numberOfRefinementLevels()>1 )
-	      cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) );
+          if( plotGridPointsOnCurves )
+          {
+            // *** plot points on curves ****
+            cMask=mask(I1,I2,I3)!=0 && coord(I1)>=xBound(Start,0) && coord(I1)<=xBound(End,0);
+            // on refinement grids do not plot cells with all corners hidden by refinement
+            if( gc.numberOfRefinementLevels()>1 )
+              cMask=cMask && !( (mask(I1  ,I2  ,I3) & isHiddenByRefinement) );
 
             gi.setColour(GenericGraphicsInterface::textColour);
-	    glPointSize((1.+psp.size(GraphicsParameters::curveLineWidth))*psp.size(GraphicsParameters::lineWidth)*
-			gi.getLineWidthScaleFactor());   
-	    glBegin(GL_POINTS);  
-	    for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	    {
-	      // if( mask(i1)!=0 && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0) )
-	      if( cMask(i1) )
-		glVertex3f(coord(i1)  ,u.sa(  i1,i2,i3,component),1.e-3);
-	    }
-	    glEnd();
-	  }
+            glPointSize((1.+psp.size(GraphicsParameters::curveLineWidth))*psp.size(GraphicsParameters::lineWidth)*
+                        gi.getLineWidthScaleFactor());   
+            glBegin(GL_POINTS);  
+            for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+            {
+              // if( mask(i1)!=0 && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0) )
+              if( cMask(i1) )
+                glVertex3f(coord(i1)  ,u.sa(  i1,i2,i3,component),1.e-3);
+            }
+            glEnd();
+          }
 
 
-	}
+        }
       } // end for grid
       
       glLineWidth(psp.size(GraphicsParameters::lineWidth)*gi.getLineWidthScaleFactor()); // reset
@@ -3207,91 +3207,91 @@ contour1d(GenericGraphicsInterface &gi, const realGridCollectionFunction & uGCF,
      
       if( parameters.plotTitleLabels )
       {
-	aString nameLabel;
-	glNewList(labelList,GL_COMPILE);
-	for( n=componentsToPlot.getBase(0),m=0; n<=componentsToPlot.getBound(0); n++,m++ )
-	{
-	  component=componentsToPlot(n);
-	
-	  real size=.05;
-	  const int maxNumberOfFullSizeLabels=int(1./(size*1.2));
-	  if( (componentsToPlot.getBound(0)-componentsToPlot.getBase()) > maxNumberOfFullSizeLabels )
-	    size*= real(maxNumberOfFullSizeLabels)/(componentsToPlot.getBound(0)-componentsToPlot.getBase());
-	  
-	  real xpos=.95, ypos=.75-size*m*1.15;
-	  int centering=+1;
-	  aString labelColour;
-	  if( colourLineContours )
-	    labelColour=lineColour[m%numberOfLineColours];
+        aString nameLabel;
+        glNewList(labelList,GL_COMPILE);
+        for( n=componentsToPlot.getBase(0),m=0; n<=componentsToPlot.getBound(0); n++,m++ )
+        {
+          component=componentsToPlot(n);
+        
+          real size=.05;
+          const int maxNumberOfFullSizeLabels=int(1./(size*1.2));
+          if( (componentsToPlot.getBound(0)-componentsToPlot.getBase()) > maxNumberOfFullSizeLabels )
+            size*= real(maxNumberOfFullSizeLabels)/(componentsToPlot.getBound(0)-componentsToPlot.getBase());
+          
+          real xpos=.95, ypos=.75-size*m*1.15;
+          int centering=+1;
+          aString labelColour;
+          if( colourLineContours )
+            labelColour=lineColour[m%numberOfLineColours];
 
-	  aString nameLabel;
-	  if( plotLineMarkers )
-	    nameLabel=lineMarker[m%numberOfLineMarkers]+" : "+uGCF.getName(component);
-	  else
-	    nameLabel=uGCF.getName(component);
+          aString nameLabel;
+          if( plotLineMarkers )
+            nameLabel=lineMarker[m%numberOfLineMarkers]+" : "+uGCF.getName(component);
+          else
+            nameLabel=uGCF.getName(component);
 
-	  // printf(" gi.label=%s (x,y)=(%e,%e) \n",(const char*)nameLabel,xpos,ypos);
-	
-	  gi.label(nameLabel,xpos,ypos,size,centering,0,parameters,labelColour);   // plot the labels
+          // printf(" gi.label=%s (x,y)=(%e,%e) \n",(const char*)nameLabel,xpos,ypos);
+        
+          gi.label(nameLabel,xpos,ypos,size,centering,0,parameters,labelColour);   // plot the labels
 
-	  if( false && plotLineMarkers && componentsToPlot.getLength(0)>1 )
-	  {
-	    // **** this doesn't work *****
-	    RealArray x(1,3),r(1,3);
-	    for( int grid=0; grid<numberOfGrids; grid++ )
-	    {
-	      if( !(gridsToPlot(grid)&GraphicsParameters::toggleContours) )
-		continue;
+          if( false && plotLineMarkers && componentsToPlot.getLength(0)>1 )
+          {
+            // **** this doesn't work *****
+            RealArray x(1,3),r(1,3);
+            for( int grid=0; grid<numberOfGrids; grid++ )
+            {
+              if( !(gridsToPlot(grid)&GraphicsParameters::toggleContours) )
+                continue;
 
-	      realMappedGridFunction & u = uGCF[grid];
-	      const RealDistributedArray & coord = gc[grid].center();
-	      const IntegerDistributedArray & mask = gc[grid].mask();
-	      getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
+              realMappedGridFunction & u = uGCF[grid];
+              const RealDistributedArray & coord = gc[grid].center();
+              const IntegerDistributedArray & mask = gc[grid].mask();
+              getIndex(gc[grid].gridIndexRange(),I1,I2,I3);
 
-	      I1=Range(gc[grid].dimension(Start,axis1),gc[grid].dimension(End,axis1)-1); 
-	
-	      i2 = I2.getBase();
-	      i3 = I3.getBase();
-	      int skip = max(1,I1.length()/10);   // at most 10 markers on a line
-	      for( i1=I1.getBase(); i1<I1.getBound(); i1++ )
-	      {
-		if( (i1 % skip) == 0 && mask(i1)!=0 && mask(i1+1)!=0 
-		    && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0)  )
-		{
-		  x(0,0)=coord(i1+1);
-		  x(0,1)=u.sa(i1+1,i2,i3,component);
-		  x(0,2)=0.;
-		  gi.worldToNormalizedCoordinates(x,r);
-//    		printf("worldToNormalizedCoordinates: x=(%8.2e,%8.2e) r= (%8.2e,%8.2e)\n",
+              I1=Range(gc[grid].dimension(Start,axis1),gc[grid].dimension(End,axis1)-1); 
+        
+              i2 = I2.getBase();
+              i3 = I3.getBase();
+              int skip = max(1,I1.length()/10);   // at most 10 markers on a line
+              for( i1=I1.getBase(); i1<I1.getBound(); i1++ )
+              {
+                if( (i1 % skip) == 0 && mask(i1)!=0 && mask(i1+1)!=0 
+                    && coord(i1)>=xBound(Start,0) && coord(i1)<=xBound(End,0)  )
+                {
+                  x(0,0)=coord(i1+1);
+                  x(0,1)=u.sa(i1+1,i2,i3,component);
+                  x(0,2)=0.;
+                  gi.worldToNormalizedCoordinates(x,r);
+//              printf("worldToNormalizedCoordinates: x=(%8.2e,%8.2e) r= (%8.2e,%8.2e)\n",
 //                           x(0,0),x(0,1),r(0,0),r(0,1));
-		  gi.label(lineMarker[m%numberOfLineMarkers],r(0,0),r(0,1),.025,0);
-		}
-	      }
-	    }
-	  }
+                  gi.label(lineMarker[m%numberOfLineMarkers],r(0,0),r(0,1),.025,0);
+                }
+              }
+            }
+          }
 
-	}
-	glEndList();
+        }
+        glEndList();
 
-	if( !colourLineContours && plotLineMarkers )
-	{
-	  nameLabel="";
-	  for( n=componentsToPlot.getBase(0),m=0; n<=componentsToPlot.getBound(0); n++,m++ )
-	  {
+        if( !colourLineContours && plotLineMarkers )
+        {
+          nameLabel="";
+          for( n=componentsToPlot.getBase(0),m=0; n<=componentsToPlot.getBound(0); n++,m++ )
+          {
 
-	    component=componentsToPlot(n);
-	    nameLabel+=uGCF.getName(component);
-	    if( plotLineMarkers && componentsToPlot.getLength(0)>1 )
-	      nameLabel+=" ("+lineMarker[m%numberOfLineMarkers]+")";
-	    if( plotLineMarkers && n<componentsToPlot.getBound(0) )
-	      nameLabel+=",  ";
-	  }
-	  gi.setYAxisLabel(nameLabel);
-	}
-	else
-	{
-	  gi.setYAxisLabel();
-	}
+            component=componentsToPlot(n);
+            nameLabel+=uGCF.getName(component);
+            if( plotLineMarkers && componentsToPlot.getLength(0)>1 )
+              nameLabel+=" ("+lineMarker[m%numberOfLineMarkers]+")";
+            if( plotLineMarkers && n<componentsToPlot.getBound(0) )
+              nameLabel+=",  ";
+          }
+          gi.setYAxisLabel(nameLabel);
+        }
+        else
+        {
+          gi.setYAxisLabel();
+        }
       }
       
       gi.redraw();

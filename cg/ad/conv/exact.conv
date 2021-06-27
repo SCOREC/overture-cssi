@@ -1,0 +1,203 @@
+# FINISH ME -- taken from cgmx
+#
+# Measure convergence rates for cgad for some exact solutions
+#
+# Usage:
+#    conv.p exact.conv -known=[squareEigen|diskEigen|annulusEigen|planeInterfaceMode]
+#
+# Examples:
+#    conv.p exact.conv -known=squareEigen -cg=square -tf=.5 -tp=.1 -kappa=.1 -kx=2 -ky=2 -ng=2 
+#
+#
+$check="ad.check";
+#
+# --------options: 
+#   -order : 2 or 4 
+#   -interp = e or i if the grids were made with explicit or implicit interpolation
+#   -ng : number of grids to use (i.e. how many times is the grid refined)
+#   -errorNorm:  set to 1 or 2 to show L1 and L2 norm errors
+# 
+# Set default parameters: 
+$cg="square"; 
+$option="squareEigen"; 
+$cmdFile="../runs/exact/exact.cmd"; 
+$CGBUILDPREFIX=$ENV{CGBUILDPREFIX};
+$cgad = "$CGBUILDPREFIX/ad/bin/cgad";  # command for cgad
+$cmdDir="$ENV{CG}/ad/cmd";  
+$convDir = $CGBUILDPREFIX/conv; 
+$known="squareEigen"; 
+$tf=.5; $tp=.1; $order=2; $ng=3; $m=2; $n=2; $interp="i"; $cfl=.9; $bg="box";
+$dtMax=.1; 
+$kappa=.1; 
+$ts="pc2"; # time-stepping method 
+$bdfOrder=2; 
+$bc="d"; 
+# $ts="me"; $matFile=""; $solveForAllFields=0;
+# $ta=1.; $tb=1.5; # for chirp 
+$kx=1; $ky=1; $kz=1;
+# $npv=1; $modeGDM=-1; 
+# $alphaP=1.; # $a0=1.; $a1=0.; $b0=0.; $b1=1.;  # GDM parameters
+# @a0 = (); @a1=(); @b0=(); @b1=(); # these must be null for GetOptions to work, defaults are given below 
+# $dm="none"; # dispersive model
+# $diss=.0; $dissOrder=-1; $drOption="computeFrequency"; # dispersion relation option 
+$errorNorm=0; 
+$alwaysCompute=1; $saveVectorErrors=0; 
+$numberOfDimensions=2; $numberOfComponents=1; 
+$nm="none"; # nonlinear model
+$tz = "poly"; $degreex=2; $degreet=2; $fx=.5; $fy=$fx; $fz=$fx; $ft=$fx;
+#
+GetOptions( "name=s"=>\$name,"order=s"=>\$order,"ng=i"=>\$ng,"tf=f"=>\$tf,"interp=s"=>\$interp,"diss=f"=>\$diss,\
+            "fixed=s"=>\$fixed,"cfl=f"=>\$cfl,"alwaysCompute=i"=>\$alwaysCompute,"method=s"=>\$method,"tp=f"=>\$tp,\
+            "errorNorm=i"=>\$errorNorm,"m=i"=>\$m,"n=i"=>\$n,"bdfOrder=i"=>\$bdfOrder,"cg=s"=>\$cg,\
+            "radius=f"=>\$radius,"bg=s"=>\$bg,"option=s"=>\$option,"ta=f"=>\$ta,"tb=f"=>\$tb,"dm=s"=>\$dm,\
+            "alphaP=f"=>\$alphaP,"a0=f"=>\$a0,"a1=f"=>\$a1,"b0=f"=>\$b0,"b1=f"=>\$b1,"saveVectorErrors=i"=>\$saveVectorErrors,\
+            "kx=i"=>\$kx,"ky=i"=>\$ky,"kz=i"=>\$kz,"dtMax=f"=>\$dtMax,\
+            "a0=f{1,}"=>\@a0,"a1=f{1,}"=>\@a1,"b0=f{1,}"=>\@b0,"b1=f{1,}"=>\@b1,"cons=i"=>\$cons,\
+            "ts=s"=>\$ts,"solveForAllFields=i"=>\$solveForAllFields,"matFile=s"=>\$matFile, "drOption=s"=>\$drOption,\
+            "nm=s"=>\$nm,"tz=s"=>\$tz,"degreex=i"=>\$degreex, "degreet=i"=>\$degreet,\
+            "fx=f"=>\$fx,"fy=f"=>\$fy,"fz=f"=>\$fz,"ft=f"=>\$ft,"kappa=f"=>\$kappa,"known=s"=>\$known,"bc=s"=>\$bc );
+# ------------------------ planeWave ------------------------------------------
+$name=$known; 
+if( $errorNorm eq 0 ){ $normName = "Max"; }elsif( $errorNorm eq 1 ){ $normName = "L1";}\
+   elsif( $errorNorm eq 2 ){ $normName = "L2"; }else{ $normName="UnknownNorm"; }
+# if( $option eq "squareEigen" ){ $cmdFile="../runs/exact/exact.cmd";  }
+# if( $option eq "planeWave" ){ $cmdFile="../runs/planeWave/planeWave.cmd";  }
+if( $option eq "tz" ){ $cmdFile="../runs/tz/tz.cmd";  }
+if( $cg =~ /nonSquarenp/ ){ $bg="square"; }
+if( $cg =~ /nonSquare/ ){ $bg="square"; }
+if( $cg =~ /nonBoxnpp/ ){ $bg="box"; }
+if( $cg =~ /box*/ || $cg =~ /nonBox*/ || $cg =~ /unitBox*/ || $cg =~ /unitNonBox*/ || $cg =~ /refineBox*/ || $cg =~ /refineNonBox*/ ){ $numberOfDimensions=3; }
+#
+$method = $ts;
+if( $ts eq "bdf" ){ $method="bdf$bdfOrder"; }
+# Give defaults here for array arguments: 
+# if( $a0[0] eq "" ){ @a0=(1,0,0,0); }
+# if( $a1[0] eq "" ){ @a1=(0,0,0,0); }
+# if( $b0[0] eq "" ){ @b0=(0,0,0,0); }
+# if( $b1[0] eq "" ){ @b1=(1,0,0,0); }
+#
+$extraLabel = ""; # ucfirst($known);
+if( $bc eq "d" ){ $extraLabel .= "Dirichlet"; }elsif( $bc eq "n" ){ $extraLabel .= "Neumann"; }elsif( $bc eq "m" ){ $extraLabel .= "Mixed"; }
+# if( $nm ne "none" ){ $extraLabel .= "$nm"; }
+# if( $dm ne "none" && $method ne "bamx" && $nm eq "none" ){ $extraLabel .= "GDMNp$npv"; }
+#
+# $matFileName=$matFile;
+# $matFileName =~ s/\.txt//; 
+# if( $dm ne "none" && ($method eq "bamx")  ){ $extraLabel .= "GDM"; }
+# if( $method eq "bamx" ){ $extraLabel .= $matFileName; }
+# if( $modeGDM > 0 ){ $extraLabel .= "Mode$modeGDM"; }
+$outputFile=$name . uc($method) . ucfirst($cg) . $extraLabel . "Order$order" . $normName . "NormConvTable.tex"; 
+#
+$caseName="$name$method$cg\Order$order";
+# if( $nm ne "none" ){ $caseName.= $nm; }
+# if( $dm ne "none" && $nm eq "none" ){ $caseName.="GDM"; }
+# if( $npv > 1 && ($method ne "bamx") && $nm eq "none" ){ $caseName.="Np$npv"; }
+# if( $method eq "bamx" ){ $caseName .= $matFileName; }
+$caseName .= $normName . "Norm";
+#
+#
+# -------- Define the table column labels  ----
+#      These are usually common between different cases
+Include columnLabels.h
+#
+#  ---- caption -----
+#
+$caption= "\\caption\{Cgad, $name, method=$labelMethod, $normName norm, method=$method, known=$known, ts=$ts, order=\$$order\$, bdfOrder=$bdfOrder, dtMax=\$$dtMax\$, \$t=$tf\$, cfl=\$$cfl\$, kappa=\$$kappa\$, m=$m, n=$n kx=$kx, ky=$ky, kz=$kz,  tz=$tz degreex=$degreex degreet=$degreet fx=$fx fy=$fy fz=$fz -ft=$ft $date}\\label\{table:$name" . $method . "Order$order$normName}"; 
+#
+# 
+$options = "-ts=$ts -bdfOrder=$bdfOrder -cfl=$cfl -known=$known -errorNorm=$errorNorm -tf=$tf -tp=$tp -kappa=$kappa -bc=$bc -kx=$kx -ky=$ky -kz=$kz -m=$m -n=$n -checkErrors=1 -tz=$tz -degreex=$degreex -degreet=$degreet -fx=$fx -fy=$fy -fz=$fz -ft=$ft -go=go";
+#
+$suffix="";
+# if( ($method eq "sosup") && ($order eq 4) ){ $suffix=".ng3"; }
+# if( ($method eq "sosup") && ($order eq 6) ){ $suffix=".ng4"; }
+$grid1=$cg . "2";   $gName1 = $cg . "e2.order$order$suffix"; 
+$grid2=$cg . "4";   $gName2 = $cg . "e4.order$order$suffix"; 
+$grid3=$cg . "8";   $gName3 = $cg . "e8.order$order$suffix"; 
+$grid4=$cg . "16";  $gName4 = $cg . "e16.order$order$suffix"; 
+$grid5=$cg . "32";  $gName5 = $cg . "e32.order$order$suffix"; 
+$grid6=$cg . "64";  $gName6 = $cg . "e64.order$order$suffix"; 
+# Special cases; 
+if( $cg =~ /nonSquarenp/ ){\
+$grid1=$cg . "1";   $gName1 = "nonSquare8np.order$order$suffix"; \
+$grid2=$cg . "2";   $gName2 = "nonSquare16np.order$order$suffix"; \
+$grid3=$cg . "4";   $gName3 = "nonSquare32np.order$order$suffix"; \
+$grid4=$cg . "8";   $gName4 = "nonSquare64np.order$order$suffix"; \
+$grid5=$cg . "16";  $gName5 = "nonSquare128np.order$order$suffix";\
+$grid6=$cg . "32";  $gName6 = "nonSquare256np.order$order$suffix";\
+}
+if( $cg =~ /nonBoxnpp/ ){\
+$grid1=$cg . "1";   $gName1 = "nonBox2npp.order$order$suffix"; \
+$grid2=$cg . "2";   $gName2 = "nonBox4npp.order$order$suffix"; \
+$grid3=$cg . "4";   $gName3 = "nonBox8npp.order$order$suffix"; \
+$grid4=$cg . "8";   $gName4 = "nonBox16npp.order$order$suffix"; \
+$grid5=$cg . "16";  $gName5 = "nonBox32npp.order$order$suffix";\
+$grid6=$cg . "32";  $gName6 = "nonBox64npp.order$order$suffix";\
+}
+if( $cg =~ /box/ ){\
+$grid1=$cg . "1";   $gName1 = "box1.order$order$suffix"; \
+$grid2=$cg . "2";   $gName2 = "box2.order$order$suffix"; \
+$grid3=$cg . "4";   $gName3 = "box4.order$order$suffix"; \
+$grid4=$cg . "8";   $gName4 = "box8.order$order$suffix"; \
+$grid5=$cg . "16";  $gName5 = "box16.order$order$suffix";\
+$grid6=$cg . "32";  $gName6 = "box32.order$order$suffix";\
+}
+if( $cg =~ /boxp/ ){\
+$grid1=$cg . "1";   $gName1 = "box1p.order$order$suffix"; \
+$grid2=$cg . "2";   $gName2 = "box2p.order$order$suffix"; \
+$grid3=$cg . "4";   $gName3 = "box4p.order$order$suffix"; \
+$grid4=$cg . "8";   $gName4 = "box8p.order$order$suffix"; \
+$grid5=$cg . "16";  $gName5 = "box16p.order$order$suffix";\
+$grid6=$cg . "32";  $gName6 = "box32p.order$order$suffix";\
+}
+if( $cg =~ /square/ ){\
+$grid1=$cg . "8";   $gName1 = "square8.order$order$suffix"; \
+$grid2=$cg . "16";   $gName2 = "square16.order$order$suffix"; \
+$grid3=$cg . "32";   $gName3 = "square32.order$order$suffix"; \
+$grid4=$cg . "64";   $gName4 = "square64.order$order$suffix"; \
+$grid5=$cg . "128";  $gName5 = "square128.order$order$suffix";\
+$grid6=$cg . "256";  $gName6 = "square256.order$order$suffix";\
+}
+if( $cg =~ /squarep/ ){\
+$grid1=$cg . "8";   $gName1 = "square8p.order$order$suffix"; \
+$grid2=$cg . "16";   $gName2 = "square16p.order$order$suffix"; \
+$grid3=$cg . "32";   $gName3 = "square32p.order$order$suffix"; \
+$grid4=$cg . "64";   $gName4 = "square64p.order$order$suffix"; \
+$grid5=$cg . "128";  $gName5 = "square128p.order$order$suffix";\
+$grid6=$cg . "256";  $gName6 = "square256p.order$order$suffix";\
+}
+if( $cg =~ /nonSquare/ ){\
+$grid1=$cg . "8";   $gName1 = "nonSquare8.order$order$suffix"; \
+$grid2=$cg . "16";   $gName2 = "nonSquare16.order$order$suffix"; \
+$grid3=$cg . "32";   $gName3 = "nonSquare32.order$order$suffix"; \
+$grid4=$cg . "64";   $gName4 = "nonSquare64.order$order$suffix"; \
+$grid5=$cg . "128";  $gName5 = "nonSquare128.order$order$suffix";\
+$grid6=$cg . "256";  $gName6 = "nonSquare256.order$order$suffix";\
+}
+if( $cg =~ /nonSquarep/ ){\
+$grid1=$cg . "8";   $gName1 = "nonSquare8p.order$order$suffix"; \
+$grid2=$cg . "16";   $gName2 = "nonSquare16p.order$order$suffix"; \
+$grid3=$cg . "32";   $gName3 = "nonSquare32p.order$order$suffix"; \
+$grid4=$cg . "64";   $gName4 = "nonSquare64p.order$order$suffix"; \
+$grid5=$cg . "128";  $gName5 = "nonSquare128p.order$order$suffix";\
+$grid6=$cg . "256";  $gName6 = "nonSquare256p.order$order$suffix";\
+}
+if( $cg =~ /annulus/ ){\
+$grid1=$cg . "2";   $gName1 = "annulus2.order$order$suffix"; \
+$grid2=$cg . "4";   $gName2 = "annulus4.order$order$suffix"; \
+$grid3=$cg . "8";   $gName3 = "annulus8.order$order$suffix"; \
+$grid4=$cg . "16";  $gName4 = "annulus16.order$order$suffix"; \
+$grid5=$cg . "32";  $gName5 = "annulus32.order$order$suffix";\
+$grid6=$cg . "64";  $gName6 = "annulus64.order$order$suffix";\
+}
+# 
+# Set dtMax for implicit schemes: 
+$dtMax2=$dtMax/2; $dtMax3=$dtMax/4; $dtMax4=$dtMax/8; $dtMax5=$dtMax/16; $dtMax6=$dtMax/32;  
+if( $ng > 0 ){ $grid=$grid1; $res=1;  $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName1 $options -dtMax=$dtMax";  }
+if( $ng > 1 ){ $grid=$grid2; $res=2;  $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName2 $options -dtMax=$dtMax2";}
+if( $ng > 2 ){ $grid=$grid3; $res=4;  $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName3 $options -dtMax=$dtMax3";}
+if( $ng > 3 ){ $grid=$grid4; $res=8;  $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName4 $options -dtMax=$dtMax4";}
+if( $ng > 4 ){ $grid=$grid5; $res=16; $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName5 $options -dtMax=$dtMax5";}
+if( $ng > 5 ){ $grid=$grid6; $res=32; $cmd="$cgad -noplot $cmdDir/$cmdFile -g=$gName6 $options -dtMax=$dtMax6";}
+$closeFile="true";
+# -------------------------------------------------------------------------------
+exit

@@ -43,16 +43,16 @@ buildTemperatureBoundaryConditionsDialog(DialogData & dialog, BodyForceRegionPar
 
 
   aString temperatureEquationCommands[] = { "temperature BC is constant coefficients",
-					    "temperature BC is variable coefficients",
+                                            "temperature BC is variable coefficients",
                                             "define temperature time variation...",
-					    "" };
+                                            "" };
   dialog.addOptionMenu("Temperature BC:",temperatureEquationCommands, temperatureEquationCommands,temperatureBoundaryConditionCoefficientsOption);
 
 
 //   aString forcingProfilesCommands[] = { "uniform forcing profile",
-// 					"parabolic forcing profile",
+//                                      "parabolic forcing profile",
 //                                         "tanh forcing profile",
-// 					"" };
+//                                      "" };
 //   dialog.addOptionMenu("Profile:",forcingProfilesCommands, forcingProfilesCommands, 0 );
 
   // ----- Text strings ------
@@ -86,8 +86,8 @@ buildTemperatureBoundaryConditionsDialog(DialogData & dialog, BodyForceRegionPar
 //====================================================================
 int Parameters::
 getTemperatureBoundaryConditionsOption(const aString & answer,
-			  BodyForceRegionParameters & regionPar,
-			  DialogData & dialog )
+                          BodyForceRegionParameters & regionPar,
+                          DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = dbase.get<GraphicsParameters >("psp");
@@ -102,7 +102,7 @@ getTemperatureBoundaryConditionsOption(const aString & answer,
   }
 
   else if( answer=="temperature BC is constant coefficients" ||
-	   answer=="temperature BC is variable coefficients" )
+           answer=="temperature BC is variable coefficients" )
   {
     int & temperatureBoundaryConditionCoefficientsOption = regionPar.dbase.get<int>("temperatureBoundaryConditionCoefficientsOption");
     
@@ -164,7 +164,7 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
   Parameters & parameters = *this;
 
   printF("DefineVariableBoundaryValues: for (side,axis,grid)=(%i,%i,%i) gridName=%s\n",side,axis,grid,
-	 (const char*)cg[grid].getName());
+         (const char*)cg[grid].getName());
 
 
 
@@ -210,17 +210,17 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
 
   aString cmds[] = {"choose region...",
                     // "add variable inflow",
-		    // "add variable temperature",
-		    // "add variable heat flux",
+                    // "add variable temperature",
+                    // "add variable heat flux",
                     "forcing profiles...",
-		    "add velocity forcing",
+                    "add velocity forcing",
                     "add temperature forcing",
                     "temperature boundary conditions...",
                     "set temperature BC",
                     "define temperature time variation...",
                     "plot",
-		    "help",
-		    ""};
+                    "help",
+                    ""};
 
   int numberOfPushButtons=8;  // number of entries in cmds
   int numRows=numberOfPushButtons; // (numberOfPushButtons+1)/2;
@@ -297,7 +297,7 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
     else if( dialog.getTextValue(answer,"boundary forcing name:","%s",boundaryForcingName) )
     {
       printF("Setting the boundary forcing name=[%s], this will be the name of NEXT boundary forcing created.\n",
-	     (const char*)boundaryForcingName);
+             (const char*)boundaryForcingName);
     }
     else if( answer=="choose region..." )
     {
@@ -343,9 +343,9 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
     {
       // Make a new BodyForce and add it to the list:
       boundaryForcings.push_back(new BodyForce());
-	  
+          
       BodyForce & boundaryForce = *boundaryForcings[boundaryForcings.size()-1];
-	  
+          
       printF("Creating a boundary forcing with name=[%s]. (Note: you should choose the name before creation).\n",
              (const char*)boundaryForcingName);
       boundaryForce.dbase.get<aString >("bodyForcingName")=boundaryForcingName;
@@ -358,20 +358,20 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
       if( answer=="add velocity forcing" )
       {
         boundaryForce.dbase.get<aString >("forcingType")="variableInflow";
-	boundaryForce.dbase.get<bool >("forcingIsTimeDependent")=false; // this forcing does NOT depend on time
-	boundaryForce.dbase.get<bool >("forcingHasBeenAssigned")=false;
+        boundaryForce.dbase.get<bool >("forcingIsTimeDependent")=false; // this forcing does NOT depend on time
+        boundaryForce.dbase.get<bool >("forcingHasBeenAssigned")=false;
 
         boundaryForce.dbase.put<real[3]>("velocityForce");
         real *vf = boundaryForce.dbase.get<real[3]>("velocityForce");
-	for( int dir=0; dir<3; dir++ )
-	  vf[dir]=velocityForce[dir];
-	
+        for( int dir=0; dir<3; dir++ )
+          vf[dir]=velocityForce[dir];
+        
       }
       else if( answer=="add temperature forcing" )
       {
         boundaryForce.dbase.get<aString >("forcingType")="variableTemperature";
-	boundaryForce.dbase.get<bool >("forcingIsTimeDependent")=false; // this forcing does NOT depend on time
-	boundaryForce.dbase.get<bool >("forcingHasBeenAssigned")=false;
+        boundaryForce.dbase.get<bool >("forcingIsTimeDependent")=false; // this forcing does NOT depend on time
+        boundaryForce.dbase.get<bool >("forcingHasBeenAssigned")=false;
         boundaryForce.dbase.put<real >("temperatureForce",temperatureForce);
       }
       else
@@ -396,13 +396,13 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
       // We save the different BC coefficients in an array of BodyForce objects:
       if( !dbase.has_key("variableBCInfo") )
       {
-	dbase.put<std::vector<BodyForce> >("variableBCInfo");
+        dbase.put<std::vector<BodyForce> >("variableBCInfo");
       }
       std::vector<BodyForce> & variableBCInfo = dbase.get<std::vector<BodyForce> >("variableBCInfo");
 
       // Make a new BodyForce and add it to the list:
       variableBCInfo.push_back(BodyForce());
-	  
+          
       BodyForce & boundaryForce = variableBCInfo[variableBCInfo.size()-1];
 
       // Save (side,axis,grid) associated with this boundary forcing
@@ -420,7 +420,7 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
 
       std::vector<BoundaryData> & boundaryData = dbase.get<std::vector<BoundaryData> >("boundaryData");
       if( grid >= boundaryData.size() )
-	boundaryData.resize(grid+1,BoundaryData());
+        boundaryData.resize(grid+1,BoundaryData());
 
       BoundaryData & bd = boundaryData[grid];
       // Here is the array where we store the variable coefficients.
@@ -455,17 +455,17 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
       int iv0[3]={0,0,0}; //
       if( isRectangular )
       {
-	mg.getRectangularGridParameters( dvx, xab );
-	for( int dir=0; dir<numberOfDimensions; dir++ )
-	{
-	  iv0[dir]=mg.gridIndexRange(0,dir);
-	  if( mg.isAllCellCentered() )
-	    xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
-	}
+        mg.getRectangularGridParameters( dvx, xab );
+        for( int dir=0; dir<numberOfDimensions; dir++ )
+        {
+          iv0[dir]=mg.gridIndexRange(0,dir);
+          if( mg.isAllCellCentered() )
+            xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+        }
       }
       else
       { // for curvilinear grids we need the array of grid vertices
-	mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );  // make sure the vertex array has been created
+        mg.update(MappedGrid::THEvertex | MappedGrid::THEcenter );  // make sure the vertex array has been created
       }
   
       // This macro defines the grid points for rectangular grids:
@@ -485,56 +485,56 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
 #define mixedRHS(component,side,axis,grid)         bcData(component+numberOfComponents*(0),side,axis,grid)
 #define mixedCoeff(component,side,axis,grid)       bcData(component+numberOfComponents*(1),side,axis,grid)
 #define mixedNormalCoeff(component,side,axis,grid) bcData(component+numberOfComponents*(2),side,axis,grid)
-	if( ok && !varCoeffExists )
-	{
-	  // --- Initialize the variable coefficients to the current default values ---
-	  // The default coefficients appear in the bcData array ...
+        if( ok && !varCoeffExists )
+        {
+          // --- Initialize the variable coefficients to the current default values ---
+          // The default coefficients appear in the bcData array ...
       
           const int numberOfComponents = dbase.get<int >("numberOfComponents");
           const RealArray & bcData = dbase.get<RealArray>("bcData");
 
-	  const int tc=dbase.get<int >("tc");
-	  assert( tc>=0 );
-	  const real a0= mixedCoeff(tc,side,axis,grid);
-	  const real an= mixedNormalCoeff(tc,side,axis,grid);
+          const int tc=dbase.get<int >("tc");
+          assert( tc>=0 );
+          const real a0= mixedCoeff(tc,side,axis,grid);
+          const real an= mixedNormalCoeff(tc,side,axis,grid);
           
-	  if( true )
-	    printF("Default temperature BC is: a0=%g, an=%g for grid=%i (side,axis)=(%i,%i)\n",
-		   a0,an,grid,side,axis);
+          if( true )
+            printF("Default temperature BC is: a0=%g, an=%g for grid=%i (side,axis)=(%i,%i)\n",
+                   a0,an,grid,side,axis);
 
 
-	  varCoeff(I1,I2,I3,0)=a0;
-	  varCoeff(I1,I2,I3,1)=an;
+          varCoeff(I1,I2,I3,0)=a0;
+          varCoeff(I1,I2,I3,1)=an;
 
-	}
-	
-	const real & a0= temperatureMixedCoefficients[0];
-	const real & an= temperatureMixedCoefficients[1];
-	if( true )
-	  printF("Setting a local const. coeff. temperature BC : a0=%g, an=%g for grid=%i (side,axis)=(%i,%i)\n",
-		 a0,an,grid,side,axis);
+        }
+        
+        const real & a0= temperatureMixedCoefficients[0];
+        const real & an= temperatureMixedCoefficients[1];
+        if( true )
+          printF("Setting a local const. coeff. temperature BC : a0=%g, an=%g for grid=%i (side,axis)=(%i,%i)\n",
+                 a0,an,grid,side,axis);
 
-	if( ok )
-	{
+        if( ok )
+        {
 
-	  const aString & regionType = regionPar.dbase.get<aString>("regionType");
+          const aString & regionType = regionPar.dbase.get<aString>("regionType");
           // -- todo : fill in bodyForce with region, profile etc. ---
 
-	  BodyForce & bodyForce = boundaryForce;
-	  
+          BodyForce & bodyForce = boundaryForce;
+          
           // Here are the statements that assign the local BC coeff's
           // -- do this for now: 
           #perl $statements ="varCoeff(i1,i2,i3,0) = a0; varCoeff(i1,i2,i3,1) = an;";
-	  addBodyForceMacro(boundary,I1,I2,I3);
+          addBodyForceMacro(boundary,I1,I2,I3);
 
           // printF(" ********** FINISH ME **************\n");
-	  
-	}
-	if( true )
-	{
-	  ::display(varCoeff,"varCoeff for temperature BC","%5.2f ");
-	}
-	
+          
+        }
+        if( true )
+        {
+          ::display(varCoeff,"varCoeff for temperature BC","%5.2f ");
+        }
+        
 
       }
       else if( temperatureBoundaryConditionCoefficientsOption==BodyForce::temperatureBoundaryConditionIsVariableCoefficients )
@@ -630,11 +630,11 @@ defineVariableBoundaryValues( int side, int axis, int grid, CompositeGrid & cg )
 // =========================================================================================
 int DomainSolver::
 setVariableBoundaryValues(const real & t, 
-			  GridFunction & gf0,
-			  const int & grid,
-			  int side0 /* = -1 */,
-			  int axis0 /* = -1 */,
-			  ForcingTypeEnum forcingType /* =computeForcing */)
+                          GridFunction & gf0,
+                          const int & grid,
+                          int side0 /* = -1 */,
+                          int axis0 /* = -1 */,
+                          ForcingTypeEnum forcingType /* =computeForcing */)
 {
 
   if( !parameters.dbase.get<bool>("turnOnBoundaryForcing") )
@@ -691,7 +691,7 @@ setVariableBoundaryValues(const real & t,
     {
       iv0[dir]=mg.gridIndexRange(0,dir);
       if( mg.isAllCellCentered() )
-	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+        xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
     }
   }
   else
@@ -770,17 +770,17 @@ setVariableBoundaryValues(const real & t,
       real bodyTemp = temperatureForce;
       if( bodyForce.dbase.has_key("timeFunctionTemperature") )
       {
-	// The temperature is time dependent
-	// *wdh* 2012/10/02 -- CHECK ME --
-	TimeFunction & timeFunction = bodyForce.dbase.get<TimeFunction>("timeFunctionTemperature");
-	timeFunction.eval(t,bodyTemp);
-	printF("BBB timeFunction.eval: t=%9.3e, bodyTemp=%8.2e\n",t,bodyTemp);
+        // The temperature is time dependent
+        // *wdh* 2012/10/02 -- CHECK ME --
+        TimeFunction & timeFunction = bodyForce.dbase.get<TimeFunction>("timeFunctionTemperature");
+        timeFunction.eval(t,bodyTemp);
+        printF("BBB timeFunction.eval: t=%9.3e, bodyTemp=%8.2e\n",t,bodyTemp);
       }
 
       if( true || t==0. || debug() & 4 )
-	printF("setVariableBoundaryValues: grid=%i (side,axis)=(%i,%i) variableTemperature: bf=%i, region=%s, bodyTemp=%g, "
-	       "at time t=%9.3e\n",
-	       grid,side,axis,bf,(const char*)regionType,bodyTemp,t);
+        printF("setVariableBoundaryValues: grid=%i (side,axis)=(%i,%i) variableTemperature: bf=%i, region=%s, bodyTemp=%g, "
+               "at time t=%9.3e\n",
+               grid,side,axis,bf,(const char*)regionType,bodyTemp,t);
 
       // Here are the statements that impose the forcing:
       // Note: the forcing is multipled by profileFactor (defined in the add body force macro)
@@ -796,9 +796,9 @@ setVariableBoundaryValues(const real & t,
       const real *velocityForce = bodyForce.dbase.get<real[3]>("velocityForce");
 
       if( true || t==0. || debug() & 4 )
-	printF("setVariableBoundaryValues: grid=%i (side,axis)=(%i,%i) variableInflow, bf=%i, region=%s, velocityForce=[%g,%g,%g], "
-	       "at time t=%9.3e\n",
-	       grid,side,axis,bf,(const char*)regionType,velocityForce[0],velocityForce[1],velocityForce[2],t);
+        printF("setVariableBoundaryValues: grid=%i (side,axis)=(%i,%i) variableInflow, bf=%i, region=%s, velocityForce=[%g,%g,%g], "
+               "at time t=%9.3e\n",
+               grid,side,axis,bf,(const char*)regionType,velocityForce[0],velocityForce[1],velocityForce[2],t);
 
       // Here are the statements that impose the forcing:
       // Note: the forcing is multipled by profileFactor (defined in the add body force macro)
@@ -812,7 +812,7 @@ setVariableBoundaryValues(const real & t,
 //       ExternalBoundaryData & ebd = *parameters.dbase.get<ExternalBoundaryData*>("externalBoundaryData");
 //       RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
 //       ebd.getBoundaryData( t, cg, side, axis, grid, bd );
-	
+        
 //     }
     else
     {

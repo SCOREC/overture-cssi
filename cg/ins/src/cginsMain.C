@@ -49,17 +49,17 @@ main(int argc, char *argv[])
         continue; // these commands are processed by getGraphicsInterface below 
       else if( line=="-memory" || line=="memory" )
       {
-	reportMemory=true;
+        reportMemory=true;
         Diagnostic_Manager::setTrackArrayData(TRUE);
       }
       else if( line=="loadBalance" || line=="-loadBalance" ) // *old way*
       {
-	loadBalance=true;
+        loadBalance=true;
       }
       else if( len=line.matches("-loadBalance=") ) // *new* way
       {
-	int boolValue=0;
-	
+        int boolValue=0;
+        
        sScanF(line(len,line.length()-1),"%i",&boolValue);
        loadBalance = boolValue!=0;
        printF("cginsMain: setting: loadBalance=%i.\n",(int)loadBalance);
@@ -74,12 +74,12 @@ main(int argc, char *argv[])
       else if( len=line.matches("-numberOfParallelGhost=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("cginsMain: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("cginsMain: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( len=line.matches("-numParallelGhost=") )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("cginsMain: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("cginsMain: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( commandFileName=="" )
       {

@@ -209,8 +209,8 @@ sizeOf( FILE *file /* =NULL */  )
   {
     // 2.2.1  fprintf(outputFile,
     // 2.2.1          ">> PETSC: %e Kbytes in use.  (maximum used=%e Kbytes, total memory use=%e Kbytes)\n"
-    // 2.2.1  	    "  matrix=%e Kbytes, fragments=%e\n",
-    // 2.2.1  	    space*.001,maximumBytes*.001,mem*.001,matInfo.memory*.001,fragments);
+    // 2.2.1        "  matrix=%e Kbytes, fragments=%e\n",
+    // 2.2.1        space*.001,maximumBytes*.001,mem*.001,matInfo.memory*.001,fragments);
     fprintf(outputFile,">> PETSC: maximum memory used=%e (Kbytes)\n",mem/1000);
     
   }
@@ -530,7 +530,7 @@ setPetscParameters()
     if( parameters.preconditioner==OgesParameters::incompleteLUPreconditioner ) // ******* fix other cases *****
     {
       if( Oges::debug & 2 ) 
-	printf(" ********** PETScEquationSolver: set matrix ordering ***********\n");
+        printf(" ********** PETScEquationSolver: set matrix ordering ***********\n");
 
       // 2.2.1 ierr = PCILUSetMatReordering(pc, matOrdering); CHKERRQ(ierr);
 #if (PETSC_VERSION_MAJOR==3)
@@ -543,7 +543,7 @@ setPetscParameters()
     if( isDHPreconditioner ) 
     {
       if( Oges::debug & 2 )
-	printf(" ******** PETScEquationSolver: can NOT set matrix reordering for DHILU ****\n"); 
+        printf(" ******** PETScEquationSolver: can NOT set matrix reordering for DHILU ****\n"); 
     }
     
   }
@@ -821,34 +821,34 @@ solve(realCompositeGridFunction & u,
     {
       if( reason==-3 || reason==-4 || reason==-5 || reason==-6 )
       {
-	printF("--PTSC-- KSP failed, try to solve again with zero initial guess...\n");
+        printF("--PTSC-- KSP failed, try to solve again with zero initial guess...\n");
         PetscBool flg=PETSC_FALSE;  // the initial guess is ZERO
         ierr = KSPSetInitialGuessNonzero(ksp,flg); CHKERRQ(ierr); 
 
         ierr = KSPSolve(ksp,brhs,xsol);CHKERRQ(ierr);
 
-	ierr = KSPGetConvergedReason(ksp,&reason);
-	if( reason<0 )
-	{
-	  printF("--PTSC--- SOLVE AGAIN: ERROR Solution diverged! reason=%i: \n",(int)reason);
-	  printF("     KSP_DIVERGED_NULL                = -2,\n"
-		 "     KSP_DIVERGED_ITS                 = -3,\n"
-		 "     KSP_DIVERGED_DTOL                = -4,\n"
-		 "     KSP_DIVERGED_BREAKDOWN           = -5,\n"
-		 "     KSP_DIVERGED_BREAKDOWN_BICG      = -6,\n"
-		 "     KSP_DIVERGED_NONSYMMETRIC        = -7,\n"
-		 "     KSP_DIVERGED_INDEFINITE_PC       = -8,\n"
-		 "     KSP_DIVERGED_NAN                  = -9,\n"
-		 "     KSP_DIVERGED_INDEFINITE_MAT      = -10\n");
-	  printF("NOTE 1: to see more information turn on the '-info' PETSc option (e.g. in your .petscrc)\n");
-	  printF("NOTE 2: to avoid the divergence error '-4' you can set the Oges option 'maximum allowable increase in the residual' \n");
-	}
-	else
-	{
-	  printF("--PTSC-- Solve again WORKED!\n");
-          	
-	}
-	
+        ierr = KSPGetConvergedReason(ksp,&reason);
+        if( reason<0 )
+        {
+          printF("--PTSC--- SOLVE AGAIN: ERROR Solution diverged! reason=%i: \n",(int)reason);
+          printF("     KSP_DIVERGED_NULL                = -2,\n"
+                 "     KSP_DIVERGED_ITS                 = -3,\n"
+                 "     KSP_DIVERGED_DTOL                = -4,\n"
+                 "     KSP_DIVERGED_BREAKDOWN           = -5,\n"
+                 "     KSP_DIVERGED_BREAKDOWN_BICG      = -6,\n"
+                 "     KSP_DIVERGED_NONSYMMETRIC        = -7,\n"
+                 "     KSP_DIVERGED_INDEFINITE_PC       = -8,\n"
+                 "     KSP_DIVERGED_NAN                  = -9,\n"
+                 "     KSP_DIVERGED_INDEFINITE_MAT      = -10\n");
+          printF("NOTE 1: to see more information turn on the '-info' PETSc option (e.g. in your .petscrc)\n");
+          printF("NOTE 2: to avoid the divergence error '-4' you can set the Oges option 'maximum allowable increase in the residual' \n");
+        }
+        else
+        {
+          printF("--PTSC-- Solve again WORKED!\n");
+                
+        }
+        
       }
       
     }
@@ -883,7 +883,7 @@ solve(realCompositeGridFunction & u,
   if( Oges::debug & 1 ) 
   {
     cout << "++Petsc TIMINGS (for "<<oges.numberOfIterations<<" its, "
-	 <<  "size of matrix n = " << numberOfEquations << " ):\n";
+         <<  "size of matrix n = " << numberOfEquations << " ):\n";
     cout << " build="<<timeBuild;
     cout << ", precond="<<timePrecond;
     cout << ", solve="<<timeSolve<<", total="<< timeBuild+timePrecond+timeSolve <<"."<<endl;
@@ -909,7 +909,7 @@ solve(realCompositeGridFunction & u,
     {
       printF("PETSC: sol: ");
       for( i=0; i<oges.numberOfEquations; i++)   // can we avoid this copy?
-	printF("(%i,%7.3f)",i,soln[i]);
+        printF("(%i,%7.3f)",i,soln[i]);
       printF("\n");
     
     }
@@ -955,7 +955,7 @@ getCsortWorkspace(int nWorkSpace00)
   {
     if( Oges::debug & 2 )
       cout << "+++(PetscOverture)Reallocating workrow for Csort,"
-	   << " need "<<nWorkSpace00<<", currently "<<nWorkRow<<endl;
+           << " need "<<nWorkSpace00<<", currently "<<nWorkRow<<endl;
     delete [] iWorkRow;
     iWorkRow = new int[nWorkSpace00];
     assert( iWorkRow != NULL );
@@ -1038,7 +1038,7 @@ buildPetscMatrix()
     if (!isMatrixAllocated)
     {
       if( Oges::debug & 2 )
-	printF("+++(PetscOverture)Allocating the matrix...\n");
+        printF("+++(PetscOverture)Allocating the matrix...\n");
 
       while ( numberOfEquations%parameters.blockSize != 0 ) parameters.blockSize--;
 
@@ -1052,7 +1052,7 @@ buildPetscMatrix()
       }
       else
       {
-	blockSize=parameters.blockSize;
+        blockSize=parameters.blockSize;
         if( Oges::debug & 2 ) printF("PETScEquationSolver:Using blockSize=%i from OgesParameters\n",blockSize);
       }
       
@@ -1060,21 +1060,21 @@ buildPetscMatrix()
 
       if( blockSize==1 )
       {
-	ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,neq,neq,numberOfNonzeros,nzzAlloc,&Amx); CHKERRQ(ierr);
-	//ierr = MatCreate(PETSC_COMM_SELF,neq,neq,&Amx);
+        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,neq,neq,numberOfNonzeros,nzzAlloc,&Amx); CHKERRQ(ierr);
+        //ierr = MatCreate(PETSC_COMM_SELF,neq,neq,&Amx);
       }
       else
       {
-	// for block matrices:
-	// bs=block size
-	// nz=number of non-zero blocks per block row (if same per row)
-	// nnz[] =number of non-zero blocks per block row (different for each row)
+        // for block matrices:
+        // bs=block size
+        // nz=number of non-zero blocks per block row (if same per row)
+        // nnz[] =number of non-zero blocks per block row (different for each row)
 
         if( Oges::debug & 2 )
           printF("\n *** PETScEquationSolver: build a block matrix BAIJ with blockSize=%i **** \n",blockSize);
 
-	int nz=0;  // not used ?
-	ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,blockSize,neq,neq,nz,nzzAlloc,&Amx); CHKERRQ(ierr);
+        int nz=0;  // not used ?
+        ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,blockSize,neq,neq,nz,nzzAlloc,&Amx); CHKERRQ(ierr);
       }
       
 
@@ -1115,13 +1115,13 @@ buildPetscMatrix()
       // rownorm=0.0;
       for( j=ia_[irowm1]; j<=ia_[irowm1+1]-1; j++ ) 
       {
-	v=dsc*aval[ j-1 ];
-	if( fabs(v) <eps ) continue;   // *wdh* May 23, 2015 -- to catch small user supplied eqn coeffs
-	
-	jcolm1=ja_[ j-1 ]-1;
-	// rownorm = rownorm+ fabs(v);
-	// To matrix Amx, Insert row=irow, col=jcol, INSERT (NEW) VALUE 
-	ierr=MatSetValues(Amx,1,&irowm1,1,&jcolm1,&v,insrtOrAdd); CHKERRQ(ierr);
+        v=dsc*aval[ j-1 ];
+        if( fabs(v) <eps ) continue;   // *wdh* May 23, 2015 -- to catch small user supplied eqn coeffs
+        
+        jcolm1=ja_[ j-1 ]-1;
+        // rownorm = rownorm+ fabs(v);
+        // To matrix Amx, Insert row=irow, col=jcol, INSERT (NEW) VALUE 
+        ierr=MatSetValues(Amx,1,&irowm1,1,&jcolm1,&v,insrtOrAdd); CHKERRQ(ierr);
       } 
     }
     //..Finish up Matrix Assembly, set updateMX flag
@@ -1134,8 +1134,8 @@ buildPetscMatrix()
       #ifndef __clang__
         // trouble here with clang on the Mac:
         oges.ia.redim(0);       // these are no longer needed.
-	oges.ja.redim(0);
-	oges.a.redim(0);
+        oges.ja.redim(0);
+        oges.a.redim(0);
       #endif
       
     }
@@ -1202,23 +1202,23 @@ preallocRowStorage(int blockSize)
       // look at all the rows in this row-block b
       for ( int k=0; k<blockSize; k++ )
       {
-	assert( (ia_[i+k]<=nnz+1) && (ia_[i+k+1]<=nnz+1) );
+        assert( (ia_[i+k]<=nnz+1) && (ia_[i+k+1]<=nnz+1) );
 
-	int j1=ia_[i+k], j2=ia_[i+k+1]-1;
-	for( int j=j1; j<=j2; j++ )
-	{
-	  int jblock = (ja_[j-1]-1)/blockSize;   // there is an entry in block "jblock" 
-	  blockIsUsed[jblock]=1;           // mark this block as used
+        int j1=ia_[i+k], j2=ia_[i+k+1]-1;
+        for( int j=j1; j<=j2; j++ )
+        {
+          int jblock = (ja_[j-1]-1)/blockSize;   // there is an entry in block "jblock" 
+          blockIsUsed[jblock]=1;           // mark this block as used
 
-	  // printf(" block=%i row=i+k=%i j=%i ja-1=%i jblock=%i\n",b,i+k,j,ja_[j]-1,jblock);
-	   
-	}
+          // printf(" block=%i row=i+k=%i j=%i ja-1=%i jblock=%i\n",b,i+k,j,ja_[j]-1,jblock);
+           
+        }
       }
       int numberOfBlocksThisRow=0;  // count blocks 
       for( int jb=0; jb<numBlocks; jb++ )
       {
-	numberOfBlocksThisRow+=blockIsUsed[jb];
-	blockIsUsed[jb]=0;  // reset for next row-block
+        numberOfBlocksThisRow+=blockIsUsed[jb];
+        blockIsUsed[jb]=0;  // reset for next row-block
       }
       
       nzzAlloc[b]=numberOfBlocksThisRow;
@@ -1259,7 +1259,7 @@ computeDiagScaling()
       assert( (ia_[i]<=nnz+1) && (ia_[i+1]<=nnz+1) );
       for( j=ia_[i]; j<ia_[i+1]; j++) 
       {
-	rownorm += fabs( aval[j-1] );
+        rownorm += fabs( aval[j-1] );
       } 
       assert( rownorm > 1.0e-15);
       dscale[i] = 1.0/rownorm;
@@ -1273,14 +1273,14 @@ computeDiagScaling()
 #define __FUNC__ "PETScEquationSolver::buildRhsAndSolVector"
 int PETScEquationSolver::
 buildRhsAndSolVector(realCompositeGridFunction & u,
-		     realCompositeGridFunction & f)
+                     realCompositeGridFunction & f)
 // ===========================================================================================================
 /// \brief Transfer the right-hand-side (f) and initial guess (u) to the PETSc vectors
 // ===========================================================================================================
 {
   if( Oges::debug & 2 )
     printF("PETScEquationSolver::buildRhsAndSolVector:START: rescaleRowNorms=%i, copyOfSolutionNeeded=%i\n",
-	   (int)parameters.rescaleRowNorms,(int)copyOfSolutionNeeded);
+           (int)parameters.rescaleRowNorms,(int)copyOfSolutionNeeded);
 
   if (!isMatrixAllocated) 
   {
@@ -1303,7 +1303,7 @@ buildRhsAndSolVector(realCompositeGridFunction & u,
   {
     if( Oges::debug & 2 )
       printF("PETScEquationSolver::buildRhsAndSolVector ++++ scale RHS ++++ rescaleRowNorms=%i, copyOfSolutionNeeded=%i\n",
-	     (int)parameters.rescaleRowNorms,(int)copyOfSolutionNeeded);
+             (int)parameters.rescaleRowNorms,(int)copyOfSolutionNeeded);
 
 
     PetscScalar v;
@@ -1346,9 +1346,9 @@ buildRhsAndSolVector(realCompositeGridFunction & u,
 
       for( int j=0; j<oges.numberOfExtraEquations; j++ )
       {
-	v = extraEquationInitialValues(j);
+        v = extraEquationInitialValues(j);
         int i = oges.extraEquationNumber(j)-1;  // **check me**
-	// printF("--PES-- extra equation %i: set initial value: eqn=%i value=%12.4e [ovSol=%12.4e]\n",j,i,v,ovSol[i]);
+        // printF("--PES-- extra equation %i: set initial value: eqn=%i value=%12.4e [ovSol=%12.4e]\n",j,i,v,ovSol[i]);
         ierr=VecSetValues(xsol,1,&i,&v,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
@@ -1357,7 +1357,7 @@ buildRhsAndSolVector(realCompositeGridFunction & u,
       for( int j=0; j<oges.numberOfExtraEquations; j++ )
       {
         int i = oges.extraEquationNumber(j)-1;  // **check me**
-	// printF("--PES-- extra equation %i: eqn=%i guess in ovSol=%12.4e\n",j,i,ovSol[i]);
+        // printF("--PES-- extra equation %i: eqn=%i guess in ovSol=%12.4e\n",j,i,ovSol[i]);
       }
     }
     
@@ -1442,8 +1442,8 @@ displayMatrix()
 int
 PETScEquationSolver::
 saveBinaryMatrix(aString filename00,
-		 realCompositeGridFunction & u,
-		 realCompositeGridFunction & f)
+                 realCompositeGridFunction & u,
+                 realCompositeGridFunction & f)
 {
   shouldUpdateMatrix=oges.refactor==TRUE;
 
@@ -1534,7 +1534,7 @@ setupPreconditioner(KSP ksp00, Vec brhs00, Vec xsol00 )
       ierr = PCShellSetApply(pc,MyILU_apply,(void*)dh_ctx); CHKERRQ(ierr);
       
       /* "extracts" (i.e, copies) matrix from A, and
-	 optionally applies sparcification */
+         optionally applies sparcification */
       ierr = MyILU_setup(dh_ctx, Amx);  CHKERRQ(ierr);
       
       dh_start();
@@ -1600,7 +1600,7 @@ PETScEquationSolver::dh_setParameters()
     else if ( (dh_ctx ==NULL) && (Oges::debug & 2) )
     {
       cout << "PETScEquationSolver::dh_setParameters WARNING:"
-	   << " DH Preconditioner is  not initialized. \n";
+           << " DH Preconditioner is  not initialized. \n";
     }
   }
 #endif

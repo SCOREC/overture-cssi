@@ -25,7 +25,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
       side<0 || side>1 || axis<0 || axis>interfaceType.getBound(1) )
   {
     printP("Cgad::getInterfaceDataOptions:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
-	   grid,side,axis);
+           grid,side,axis);
     OV_ABORT("Cgad::getInterfaceDataOptions:ERROR");
   }
   if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
@@ -41,7 +41,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
   else
   {
     printP("Cgad::getInterfaceDataOptions:ERROR: interfaceType(grid=%i,side=%i,axis=%i)=%i\n",
-	   grid,side,axis,interfaceType(side,axis,grid));
+           grid,side,axis,interfaceType(side,axis,grid));
     OV_ABORT("Cgad::getInterfaceDataOptions:ERROR");
   }
   return numberOfItems;
@@ -70,8 +70,27 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         int interfaceDataOptions,
                         GridFaceDescriptor & info, 
                         GridFaceDescriptor & gfd,
-			int gfIndex, real t,
+                        int gfIndex, real t,
                         bool saveTimeHistory /* = false */ )
 {
+  // Call base class version to get/set interface data
   return DomainSolver::interfaceRightHandSide(option,interfaceDataOptions,info,gfd,gfIndex,t);
+
+  // bool getChampData=false;        
+  // if( option==getInterfaceRightHandSide && info.dbase.has_key("getChampData") )  
+  // {
+  //     getChampData = info.dbase.get<int>("getChampData");
+  // }    
+  // if( !getChampData )
+  // {
+    // Call base class version to get/set interface data
+    // return DomainSolver::interfaceRightHandSide(option,interfaceDataOptions,info,gfd,gfIndex,t);
+  // }
+
+  // // --- get interface RHS for the CHAMP CHT conditions  -----
+
+  // OV_ABORT("CgAd::interfaceRightHandSide: get RHS for CHAMP -- finish me");
+
+  // return 0;
+
 }

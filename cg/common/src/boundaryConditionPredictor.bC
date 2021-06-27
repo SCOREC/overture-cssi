@@ -36,8 +36,11 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 
     if( getClassName()!="Cgins" )
     {
-      printF("DomainSolver::boundaryConditionPredictor: orderOfAccuracy=% but solver is not Cgins! className=%s\n",
-	     orderOfAccuracy,(const char*)getClassName() );
+      // this is not Cgins
+      return 0;
+
+      // printF("DomainSolver::boundaryConditionPredictor: orderOfAccuracy=%i but solver is not Cgins! className=%s\n",
+      //         orderOfAccuracy,(const char*)getClassName() );
     }
 
 
@@ -51,7 +54,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     if( debug () & 1 ) 
       fPrintF(debugFile,"\n -------- boundaryConditionPredictor: Extrap pressure and ghost velocity to t=%e for "
               "order=%i, bcOption=%i, orderOfExtrapolation=%i ------- \n",gf[mNew].t,
-	      orderOfPredictorCorrector,bcpOption, orderOfExtrapolation);
+              orderOfPredictorCorrector,bcpOption, orderOfExtrapolation);
 
 //     if( !parameters.dbase.get<DataBase >("modelData").has_key("AdamsPCData") )
 //       parameters.dbase.get<DataBase >("modelData").put<AdamsPCData>("AdamsPCData");
@@ -77,13 +80,13 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
     {
       if( twilightZoneFlow() )
       {
-	gf[mNew].u.display(sPrintF("adamsPC: order%i  gf[mNew].u before extrap p and u(ghost) (t=%8.2e)",
-				   orderOfPredictorCorrector,gf[mNew].t),debugFile,"%8.5f ");
-	determineErrors( gf[mNew],sPrintF(" ***Adams PC: before extrapolate t=%e\n",gf[mNew].t) );
+        gf[mNew].u.display(sPrintF("adamsPC: order%i  gf[mNew].u before extrap p and u(ghost) (t=%8.2e)",
+                                   orderOfPredictorCorrector,gf[mNew].t),debugFile,"%8.5f ");
+        determineErrors( gf[mNew],sPrintF(" ***Adams PC: before extrapolate t=%e\n",gf[mNew].t) );
       }
-	
+        
       else
-	outputSolution( gf[mNew].u,gf[mNew].t,sPrintF(" ***Adams PC: before extrapolate t=%e\n",gf[mNew].t) );
+        outputSolution( gf[mNew].u,gf[mNew].t,sPrintF(" ***Adams PC: before extrapolate t=%e\n",gf[mNew].t) );
     }
 
     const int & pc = parameters.dbase.get<int >("pc");
@@ -109,7 +112,7 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
 
     if( (t0 < 3.*dt0) && debug() & 4 )
       fprintf(debugFile, " *** bcPredictor: orderOfPredictorCorrector=%i, orderOfExtrapForP=%i,"
-	      "orderOfExtrapForU=%i \n",orderOfPredictorCorrector,orderOfExtrapForP,orderOfExtrapForU);
+              "orderOfExtrapForU=%i \n",orderOfPredictorCorrector,orderOfExtrapForP,orderOfExtrapForU);
     
     // coefficients for 2nd order extrap:
     const real cex2a=1.+dt0/dtb;       // -> 2.
@@ -209,69 +212,69 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
       bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,I1,I2,I3,includeGhost); 
       if( !ok ) continue;
 
-	
+        
       OGFunction & e = *parameters.dbase.get<OGFunction* >("exactSolution");
 
       if( debug() & 2 && twilightZoneFlow() )
       {
 
-	// real errMax0 = max(fabs(u0(I1,I2,I3,pc)-e(mg0,I1,I2,I3,pc,t0)));
-	// real errMax1 = max(fabs(uOld(I1,I2,I3,pc)-e(mg1,I1,I2,I3,pc,t0-dt1)));
+        // real errMax0 = max(fabs(u0(I1,I2,I3,pc)-e(mg0,I1,I2,I3,pc,t0)));
+        // real errMax1 = max(fabs(uOld(I1,I2,I3,pc)-e(mg1,I1,I2,I3,pc,t0-dt1)));
 
-	realSerialArray pe(I1,I2,I3);
-	const int isRectangular=false;
-	e.gd( pe,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0);
-	real errMax0 = max(fabs(u0Local(I1,I2,I3,pc)-pe));
+        realSerialArray pe(I1,I2,I3);
+        const int isRectangular=false;
+        e.gd( pe,x0Local,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0);
+        real errMax0 = max(fabs(u0Local(I1,I2,I3,pc)-pe));
 
-	e.gd( pe,xOldLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0-dt1);
-	real errMax1 = max(fabs(uOldLocal(I1,I2,I3,pc)-pe));
+        e.gd( pe,xOldLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0-dt1);
+        real errMax1 = max(fabs(uOldLocal(I1,I2,I3,pc)-pe));
 
-	if(orderOfExtrapForP<=2 )
-	{
-	  fprintf(pDebugFile,"*** Before extrap p: error in p(t-dt1=%e)=%e error in p(t=%e)=%e\n"
-		  ,t0-dt1,errMax1,t0,errMax0);
-	}
-	else
-	{
-	  // real errMax2 = max(fabs(ua[grid](I1,I2,I3,pc)-e(mg1,I1,I2,I3,pc,t0-dt1-dt2)));
+        if(orderOfExtrapForP<=2 )
+        {
+          fprintf(pDebugFile,"*** Before extrap p: error in p(t-dt1=%e)=%e error in p(t=%e)=%e\n"
+                  ,t0-dt1,errMax1,t0,errMax0);
+        }
+        else
+        {
+          // real errMax2 = max(fabs(ua[grid](I1,I2,I3,pc)-e(mg1,I1,I2,I3,pc,t0-dt1-dt2)));
 
           // -- We have to guess the correct x for moving grids:
 
           realSerialArray xaLocal(x0Local.dimension(0),x0Local.dimension(1),x0Local.dimension(2),x0Local.dimension(3));
           // x(t-dt1-dt2) = x(t0)  + x(t0-dt1)
-	  xaLocal = 2.*xOldLocal - x0Local; // * fix me -- assumes dt1=dt2 **
+          xaLocal = 2.*xOldLocal - x0Local; // * fix me -- assumes dt1=dt2 **
 
-	  e.gd( pe,xaLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0-dt1-dt2);
+          e.gd( pe,xaLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,pc,t0-dt1-dt2);
 
-	  if( false )
-	  {
-	    Range Rx=numberOfDimensions;
-	    ::display(xaLocal(I1,I2,I3,Rx),sPrintF("x at t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
-	    ::display(pe(I1,I2,I3)        ,sPrintF("pe   t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
-	    ::display(uaLocal(I1,I2,I3,pc),sPrintF("pa   t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
-	  }
+          if( false )
+          {
+            Range Rx=numberOfDimensions;
+            ::display(xaLocal(I1,I2,I3,Rx),sPrintF("x at t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
+            ::display(pe(I1,I2,I3)        ,sPrintF("pe   t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
+            ::display(uaLocal(I1,I2,I3,pc),sPrintF("pa   t0-dt1-dt2=%9.3e",t0-dt1-dt2),pDebugFile,"%7.3f ");
+          }
 
-	  real errMax2 = max(fabs(uaLocal(I1,I2,I3,pc)-pe));
-	  fprintf(pDebugFile,"*** Before extrap p: err-p(t-dt1-dt2=%e)=%e err-p(t-dt1=%e)=%e err-p(t=%e)=%e\n"
-		  ,t0-dt1-dt2,errMax2,t0-dt1,errMax1,t0,errMax0);
+          real errMax2 = max(fabs(uaLocal(I1,I2,I3,pc)-pe));
+          fprintf(pDebugFile,"*** Before extrap p: err-p(t-dt1-dt2=%e)=%e err-p(t-dt1=%e)=%e err-p(t=%e)=%e\n"
+                  ,t0-dt1-dt2,errMax2,t0-dt1,errMax1,t0,errMax0);
 
-	  fprintf(pDebugFile,"*** Before extrap p: cex30,cex31,cex32=%16.14e, %16.14e, %16.14e\n",cex30,cex31,cex32);
-	  fprintf(pDebugFile,"*** Before extrap p: dt0,dt1,dt2=%16.14e, %16.14e, %16.14e\n",dt0,dt1,dt2);
-	    
-	}
-	  
+          fprintf(pDebugFile,"*** Before extrap p: cex30,cex31,cex32=%16.14e, %16.14e, %16.14e\n",cex30,cex31,cex32);
+          fprintf(pDebugFile,"*** Before extrap p: dt0,dt1,dt2=%16.14e, %16.14e, %16.14e\n",dt0,dt1,dt2);
+            
+        }
+          
       }
-	
+        
       if( orderOfPredictorCorrector==2 )
       {
-	// for the next time step ua should be equal to uOld of this time step
-	// but ua of the next time step equals ub of the time step ... therefore save uOld in ub
+        // for the next time step ua should be equal to uOld of this time step
+        // but ua of the next time step equals ub of the time step ... therefore save uOld in ub
         if( orderOfExtrapForP==2 ) // *wdh* Dec 21, 2017
         {
           if( t0<2.*dt0 && debug() & 4 )
             fPrintF(debugFile," ######## boundaryConditionPredictor: Extrap p in time (2-points).  grid=%i, t0=%9.3e &&&&&&&&&& \n",grid,t0);
 
-	    unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
+            unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
 
         }
         else
@@ -289,15 +292,15 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             fPrintF(debugFile," *** advPC:Order4: extrap in time (3-points) DONE.\n");
         }
         
-	  
+          
       }
       else
       {
-	if( false || orderOfExtrapForP==-1 )
-	{
+        if( false || orderOfExtrapForP==-1 )
+        {
           // --- For testing : use exact solution ---
 
-	  if( twilightZoneFlow() )
+          if( twilightZoneFlow() )
           {
             // un(I1,I2,I3,pc)=e(mg0,I1,I2,I3,pc,t0+dt0); // **** do this for now ****
 
@@ -313,75 +316,75 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             
             const Parameters::KnownSolutionsEnum & knownSolution = 
                parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
-	    if( knownSolution==Parameters::userDefinedKnownSolution )
-	    {
+            if( knownSolution==Parameters::userDefinedKnownSolution )
+            {
               // --- known solution ---
               RealArray ue(I1,I2,I3,numberOfComponents);
               #ifndef USE_PPP
-	        parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
+                parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
                 unLocal(I1,I2,I3,pc)=ue(I1,I2,I3,pc);
               #else
-	        OV_ABORT("FIX ME FOR PARALLEL");
+                OV_ABORT("FIX ME FOR PARALLEL");
               #endif
-	    }
+            }
             else
             {
-	      OV_ABORT("error");
+              OV_ABORT("error");
             }
           }
               
-	}
-	else
-	{
-	  // for the next time step ua should be equal to uOld of this time step
-	  // but ua of the next time step equals ud of this time step ... therefore save uOld in ud
-	    
+        }
+        else
+        {
+          // for the next time step ua should be equal to uOld of this time step
+          // but ua of the next time step equals ud of this time step ... therefore save uOld in ud
+            
           // save p(t-dt) : 
-	  udLocal(I1,I2,I3,pc)=uOldLocal(I1,I2,I3,pc); // assumes ud -> ua on the next step 
+          udLocal(I1,I2,I3,pc)=uOldLocal(I1,I2,I3,pc); // assumes ud -> ua on the next step 
 
-	  if( orderOfExtrapForP==2 )
-	  {
-	    unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
-	  }
-	  else if( orderOfExtrapForP==3 )
-	  {
-	    unLocal(I1,I2,I3,pc)=cex30*u0Local(I1,I2,I3,pc)+cex31*uOldLocal(I1,I2,I3,pc)+cex32*uaLocal(I1,I2,I3,pc);
-	  }
-	  else if( orderOfExtrapForP==4 )
-	  {
-	    // 4th order extrap
-	    unLocal(I1,I2,I3,pc)=(cex40*u0Local(I1,I2,I3,pc)+
-				  cex41*uOldLocal(I1,I2,I3,pc)+
-				  cex42*uaLocal(I1,I2,I3,pc)+
-				  cex43*ubLocal(I1,I2,I3,pc));
-	  }
-	  else if( orderOfExtrapForP==5 )
-	  {
-	    unLocal(I1,I2,I3,pc)=(cex50*u0Local(I1,I2,I3,pc)+
-				  cex51*uOldLocal(I1,I2,I3,pc)+
-				  cex52*uaLocal(I1,I2,I3,pc)+
-				  cex53*ubLocal(I1,I2,I3,pc)+
-				  cex54*ucLocal(I1,I2,I3,pc));
-	  }
-	  else
-	  {
-	    OV_ABORT(" unimplemented orderOfExtrapForP");
-	  }
-	  
-	    
+          if( orderOfExtrapForP==2 )
+          {
+            unLocal(I1,I2,I3,pc)=cex2a*u0Local(I1,I2,I3,pc)+cex2b*uOldLocal(I1,I2,I3,pc);
+          }
+          else if( orderOfExtrapForP==3 )
+          {
+            unLocal(I1,I2,I3,pc)=cex30*u0Local(I1,I2,I3,pc)+cex31*uOldLocal(I1,I2,I3,pc)+cex32*uaLocal(I1,I2,I3,pc);
+          }
+          else if( orderOfExtrapForP==4 )
+          {
+            // 4th order extrap
+            unLocal(I1,I2,I3,pc)=(cex40*u0Local(I1,I2,I3,pc)+
+                                  cex41*uOldLocal(I1,I2,I3,pc)+
+                                  cex42*uaLocal(I1,I2,I3,pc)+
+                                  cex43*ubLocal(I1,I2,I3,pc));
+          }
+          else if( orderOfExtrapForP==5 )
+          {
+            unLocal(I1,I2,I3,pc)=(cex50*u0Local(I1,I2,I3,pc)+
+                                  cex51*uOldLocal(I1,I2,I3,pc)+
+                                  cex52*uaLocal(I1,I2,I3,pc)+
+                                  cex53*ubLocal(I1,I2,I3,pc)+
+                                  cex54*ucLocal(I1,I2,I3,pc));
+          }
+          else
+          {
+            OV_ABORT(" unimplemented orderOfExtrapForP");
+          }
+          
+            
 
-	  if( debug() & 2 && twilightZoneFlow() )
-	  {
-	    real maxErr=max(fabs(un(I1,I2,I3,pc)-e(mg0,I1,I2,I3,pc,t0+dt0)));
-	    fprintf(debugFile,"--BCP-- $$$$ Max error in extrapolating p at t=%8.2e is %8.2e\n",t0+dt0,maxErr);
-	    
-	    // unI1,I2,I3,pc)=e(mg0,I1,I2,I3,pc,t0+dt0); // **** do this for now ****
-	  }
-	    
-	}
-	  
+          if( debug() & 2 && twilightZoneFlow() )
+          {
+            real maxErr=max(fabs(un(I1,I2,I3,pc)-e(mg0,I1,I2,I3,pc,t0+dt0)));
+            fprintf(debugFile,"--BCP-- $$$$ Max error in extrapolating p at t=%8.2e is %8.2e\n",t0+dt0,maxErr);
+            
+            // unI1,I2,I3,pc)=e(mg0,I1,I2,I3,pc,t0+dt0); // **** do this for now ****
+          }
+            
+        }
+          
       }
-	
+        
     
       // ------------------------------------------------------------------------------------
       // ---- Optionally extrapolate in time the ghost values of u -- used in the BC's ------
@@ -395,35 +398,35 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
         }
         
 
-	getIndex(gridIndexRange,I1,I2,I3,numberOfGhostLines);
-	Range V(uc,uc+numberOfDimensions-1);
-	for( int axis=0; axis<numberOfDimensions; axis++ )
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    const int is=1-2*side;
-	    if( mg0.boundaryCondition(side,axis)>0 )
-	    {
-	      // set the two ghost points
-	      if( side==0 )
-		Iv[axis]=Range(gridIndexRange(side,axis)-2,gridIndexRange(side,axis)-1);
-	      else
-		Iv[axis]=Range(gridIndexRange(side,axis)+1,gridIndexRange(side,axis)+2);
-		
-	      bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,I1,I2,I3);               
-	      if( !ok ) continue;
+        getIndex(gridIndexRange,I1,I2,I3,numberOfGhostLines);
+        Range V(uc,uc+numberOfDimensions-1);
+        for( int axis=0; axis<numberOfDimensions; axis++ )
+        {
+          for( int side=0; side<=1; side++ )
+          {
+            const int is=1-2*side;
+            if( mg0.boundaryCondition(side,axis)>0 )
+            {
+              // set the two ghost points
+              if( side==0 )
+                Iv[axis]=Range(gridIndexRange(side,axis)-2,gridIndexRange(side,axis)-1);
+              else
+                Iv[axis]=Range(gridIndexRange(side,axis)+1,gridIndexRange(side,axis)+2);
+                
+              bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,I1,I2,I3);               
+              if( !ok ) continue;
 
               // This next section removed -- *wdh* May 6, 2018
-	      // if( orderOfPredictorCorrector==2 )
-	      // {
-	      //   // for the next time step ua should be equal to uOld of this time step
-	      //   // but ua of the next time step equals ub of the time step ... therefore save uOld in ub
-		  
-	      //   ubLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
-	      //   unLocal(I1,I2,I3,V)=cex30*u0Local(I1,I2,I3,V)+cex31*uOldLocal(I1,I2,I3,V)+cex32*uaLocal(I1,I2,I3,V);
+              // if( orderOfPredictorCorrector==2 )
+              // {
+              //   // for the next time step ua should be equal to uOld of this time step
+              //   // but ua of the next time step equals ub of the time step ... therefore save uOld in ub
+                  
+              //   ubLocal(I1,I2,I3,V)=uOldLocal(I1,I2,I3,V);
+              //   unLocal(I1,I2,I3,V)=cex30*u0Local(I1,I2,I3,V)+cex31*uOldLocal(I1,I2,I3,V)+cex32*uaLocal(I1,I2,I3,V);
 
-	      // }
-	      // else // fourth order in time
+              // }
+              // else // fourth order in time
               if( false || orderOfExtrapForU==-1 )
               {
                 // u1Local(I1,I2,I3,V)=e(mg0,I1,I2,I3,V,t0+dt0); // **** do this for now ****
@@ -442,20 +445,20 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             
                   const Parameters::KnownSolutionsEnum & knownSolution = 
                      parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
-      	          if( knownSolution==Parameters::userDefinedKnownSolution )
-      	          {
+                  if( knownSolution==Parameters::userDefinedKnownSolution )
+                  {
                     // --- known solution ---
                     RealArray ue(I1,I2,I3,numberOfComponents);
                     #ifndef USE_PPP
-     	              parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
+                      parameters.getUserDefinedKnownSolution( t0+dt0,gf[mCur].cg, grid, ue, I1,I2,I3 );
                       unLocal(I1,I2,I3,V)=ue(I1,I2,I3,V);
                     #else
-	             OV_ABORT("FIX ME FOR PARALLEL");
+                     OV_ABORT("FIX ME FOR PARALLEL");
                     #endif
-	          }
+                  }
                   else
                   {
-	            OV_ABORT("error");
+                    OV_ABORT("error");
                   }
                 }
                   
@@ -502,51 +505,51 @@ boundaryConditionPredictor( const BoundaryConditionPredictorEnum bcpOption,
             }
           }
 
-	  // set back to gridIndexRange to avoid re-doing corners: *** is this ok for 3D ???
-	  Iv[axis]=Range(gridIndexRange(0,axis),gridIndexRange(1,axis));
-	}
-	
+          // set back to gridIndexRange to avoid re-doing corners: *** is this ok for 3D ???
+          Iv[axis]=Range(gridIndexRange(0,axis),gridIndexRange(1,axis));
+        }
+        
 
-	// we need initial guesses for \uv at all ghost points
-	// Could use div(u) here
+        // we need initial guesses for \uv at all ghost points
+        // Could use div(u) here
 
-	// *** fix this ***
+        // *** fix this ***
 //          Range V(uc,uc+numberOfDimensions-1);
 //          u1.applyBoundaryCondition(V,BCTypes::dirichlet,Parameters::noSlipWall,0,gf[mNew].t);
 
 //          BoundaryConditionParameters extrapParams;
-//  	extrapParams.dbase.get< >("ghostLineToAssign")=1;
-//  	extrapParams.dbase.get< >("orderOfExtrapolation")=orderOfAccuracy+1;
-//  	u1.applyBoundaryCondition(V,BCTypes::extrapolate,BCTypes::allBoundaries,0.,gf[mNew].t,extrapParams);
+//      extrapParams.dbase.get< >("ghostLineToAssign")=1;
+//      extrapParams.dbase.get< >("orderOfExtrapolation")=orderOfAccuracy+1;
+//      u1.applyBoundaryCondition(V,BCTypes::extrapolate,BCTypes::allBoundaries,0.,gf[mNew].t,extrapParams);
 
-//  	extrapParams.dbase.get< >("ghostLineToAssign")=2;
-//  	extrapParams.dbase.get< >("orderOfExtrapolation")=orderOfAccuracy+1; // 3;
-//  	u1.applyBoundaryCondition(V,BCTypes::extrapolate,BCTypes::allBoundaries,0.,gf[mNew].t,extrapParams);
+//      extrapParams.dbase.get< >("ghostLineToAssign")=2;
+//      extrapParams.dbase.get< >("orderOfExtrapolation")=orderOfAccuracy+1; // 3;
+//      u1.applyBoundaryCondition(V,BCTypes::extrapolate,BCTypes::allBoundaries,0.,gf[mNew].t,extrapParams);
 //          u1.finishBoundaryConditions();
-	
+        
 #ifndef USE_PPP
-	if( debug() & 2 && parameters.dbase.get<bool >("twilightZoneFlow") )
-	{
-	  MappedGrid & mgNew=gf[mNew].cg[grid];
+        if( debug() & 2 && parameters.dbase.get<bool >("twilightZoneFlow") )
+        {
+          MappedGrid & mgNew=gf[mNew].cg[grid];
 
-	  getIndex(gridIndexRange,I1,I2,I3,numberOfGhostLines);
-	  real errMax0 = max(fabs(un(I1,I2,I3,V)-e(mgNew,I1,I2,I3,V,gf[mNew].t)));
-	  fPrintF(debugFile,"*** After extrap ghost error in uv(t=%e)=%e (orderOfExtrapForU=%i)\n",gf[mNew].t,errMax0,
+          getIndex(gridIndexRange,I1,I2,I3,numberOfGhostLines);
+          real errMax0 = max(fabs(un(I1,I2,I3,V)-e(mgNew,I1,I2,I3,V,gf[mNew].t)));
+          fPrintF(debugFile,"*** After extrap ghost error in uv(t=%e)=%e (orderOfExtrapForU=%i)\n",gf[mNew].t,errMax0,
                            orderOfExtrapForU);
-	}
-	if( debug() & 4  && parameters.dbase.get<bool >("twilightZoneFlow") )
-	{
-	  Range PV(pc,uc+numberOfDimensions-1);
-	  MappedGrid & mgNew=gf[mNew].cg[grid];
-	  display(fabs(un(I1,I2,I3,PV)-e(mgNew,I1,I2,I3,PV,gf[mNew].t)),
+        }
+        if( debug() & 4  && parameters.dbase.get<bool >("twilightZoneFlow") )
+        {
+          Range PV(pc,uc+numberOfDimensions-1);
+          MappedGrid & mgNew=gf[mNew].cg[grid];
+          display(fabs(un(I1,I2,I3,PV)-e(mgNew,I1,I2,I3,PV,gf[mNew].t)),
                   sPrintF("--BCP-- ERROR after extrap p and ghost u in time to t=%9.3e",gf[mNew].t),debugFile,"%8.2e ");
-	}
+        }
 #endif
-	
+        
       } // end if bcpOption==predictPressureAndVelocity
       
       // *set to true* unI1,I2,I3,pc)=e(gf[mNew].cg[grid],I1,I2,I3,pc,gf[mNew].t);
-	
+        
     }
   } // end orderOfAccuracy==4 
 

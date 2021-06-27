@@ -54,12 +54,12 @@ main(int argc, char *argv[])
         continue; // these commands are processed by getGraphicsInterface below 
       else if( line=="memory" )
       {
-	reportMemory=true;
+        reportMemory=true;
         Diagnostic_Manager::setTrackArrayData(TRUE);
       }
       else if( line=="loadBalance" || line=="-loadBalance" )
       {
-	loadBalance=true;
+        loadBalance=true;
       }
       else if( line=="release" )
       {

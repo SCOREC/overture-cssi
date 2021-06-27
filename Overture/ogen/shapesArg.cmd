@@ -15,18 +15,22 @@ $prefix="shapes";
 $order=2; $factor=1; $interp="i"; # default values
 $orderOfAccuracy = "second order"; $ng=2; $interpType = "implicit for all grids";
 $name=""; $xa=-1.25; $xb=1.25; $ya=-1.; $yb=1.;
-$rgd="var"; $dist=.175; 
+$rgd="var"; $dist=.175;
+$numGhost=-1;  # if this value is set, then use this number of ghost points
 # 
 # get command line arguments
 GetOptions( "order=i"=>\$order,"factor=f"=> \$factor,"xa=f"=> \$xa,"xb=f"=> \$xb,"ya=f"=> \$ya,"yb=f"=> \$yb,\
-            "interp=s"=> \$interp,"name=s"=> \$name,"prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"dist=f"=> \$dist );
+            "interp=s"=> \$interp,"name=s"=> \$name,"prefix=s"=> \$prefix,"rgd=s"=> \$rgd,"dist=f"=> \$dist,\
+            "numGhost=i"=>\$numGhost );
 # 
 if( $order eq 4 ){ $orderOfAccuracy="fourth order"; $ng=2; }\
 elsif( $order eq 6 ){ $orderOfAccuracy="sixth order"; $ng=4; }\
 elsif( $order eq 8 ){ $orderOfAccuracy="eighth order"; $ng=6; }
 if( $interp eq "e" ){ $interpType = "explicit for all grids"; }
 # 
-$suffix = ".order$order"; 
+$suffix = ".order$order";
+if( $numGhost ne -1 ){ $ng = $numGhost; } # overide number of ghost
+if( $numGhost ne -1 ){ $suffix .= ".ng$numGhost"; } 
 if( $name eq "" ){$name = $prefix . "$interp$factor" . $suffix . ".hdf";}
 # 
 $ds=.05/$factor;

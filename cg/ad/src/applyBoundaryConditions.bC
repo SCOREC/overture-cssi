@@ -1,0 +1,1137 @@
+#include "Cgad.h"
+#include "AdParameters.h"
+#include "App.h"
+#include "ParallelUtility.h"
+#include "ParallelGridUtility.h"
+#include "Interface.h"  
+
+#Include "../../ins/src/boundaryMacros.h"
+
+#define ForBoundary(side,axis)   for( int axis=0; axis<numberOfDimensions; axis++ ) \
+                                 for( int side=0; side<=1; side++ )
+
+#define bcOptAd EXTERN_C_NAME(bcoptad)
+extern "C"
+{
+
+void bcOptAd( const int&nd, 
+              const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+              const int&gridIndexRange, const int& dimRange, const int &isPeriodic, real&u, const int&mask,
+              const real&rsxy, const real&xy, const int&boundaryCondition, 
+              const int&addBoundaryForcing, const int&interfaceType, const int&ndb, const real&bcData,  
+              const int&dim, const real&bcf0, const int64_t & bcfOffset, 
+              const int&ipar, const real&rpar, int&ierr );
+
+}
+
+//    Mixed-derivative BC for component i: 
+//          mixedCoeff(i)*u(i) + mixedNormalCoeff(i)*u_n(i) = mixedRHS(i)
+#define mixedRHS(component,side,axis,grid)         bcData(component+numberOfComponents*(0),side,axis,grid)
+#define mixedCoeff(component,side,axis,grid)       bcData(component+numberOfComponents*(1),side,axis,grid)
+#define mixedNormalCoeff(component,side,axis,grid) bcData(component+numberOfComponents*(2),side,axis,grid)
+
+// =======================================================================================
+// Macro: get the parameters for calling the optimized fortran BC routine
+// =======================================================================================
+#beginMacro getBcOptParameters()   
+  IntegerArray indexRangeLocal(2,3), dimLocal(2,3), bcLocal(2,3);
+  ParallelGridUtility::getLocalIndexBoundsAndBoundaryConditions( u,indexRangeLocal,dimLocal,bcLocal );
+
+  real dx[3]={1.,1.,1.};
+  if( isRectangular )
+    mg.getDeltaX(dx);
+
+  int gridType = isRectangular ? 0 : 1;
+  int tc=0; // first component
+  int ipar[] = {
+    tc                  ,            // ipar( 0)
+    numberOfComponents  ,            // ipar( 1)
+    grid                ,            // ipar( 2)
+    gridType            ,            // ipar( 3)
+    orderOfAccuracy     ,            // ipar( 4)
+    gridIsMoving        ,            // ipar( 5)
+    gridIsImplicit      ,            // ipar( 6)
+    twilightZoneFlow    ,            // ipar( 7)
+    np                  ,            // ipar( 8)
+    debug()             ,            // ipar( 9)
+    myid                ,            // ipar(10)
+    applyChampInterfaceConditions,   // ipar(11)
+    assignKnownSolutionAtBoundaries  // ipar(12)
+               };
+  real rpar[] = {
+    t                , //  rpar( 0)
+    dt               , //  rpar( 1)
+    dx[0]            , //  rpar( 2)
+    dx[1]            , //  rpar( 3)
+    dx[2]            , //  rpar( 4)
+    mg.gridSpacing(0), //  rpar( 5)
+    mg.gridSpacing(1), //  rpar( 6)
+    mg.gridSpacing(2), //  rpar( 7)
+    (real &)(parameters.dbase.get<OGFunction* >("exactSolution")) ,        //  rpar( 8) ! pointer for exact solution -- new : 110311 
+    REAL_MIN           //  rpar( 9)
+                };
+
+  // The next macro extracts the boundary data arrays for use in Fortran
+  extractBoundaryDataArrays();
+
+  real *pu = uLocal.getDataPointer();
+  int *pmask = maskLocal.getDataPointer();
+  real temp, *pxy=&temp, *prsxy=&temp;
+  if( !isRectangular )
+  {
+    #ifdef USE_PPP
+     prsxy=mg.inverseVertexDerivative().getLocalArray().getDataPointer();
+    #else
+     prsxy=mg.inverseVertexDerivative().getDataPointer();
+    #endif    
+  }
+  bool vertexNeeded = twilightZoneFlow;
+  if( vertexNeeded )
+  {
+    #ifdef USE_PPP
+     pxy=mg.vertex().getLocalArray().getDataPointer();
+    #else
+     pxy=mg.vertex().getDataPointer();
+    #endif    
+  }
+#endMacro
+
+int Cgad::
+applyBoundaryConditions(const real & t, realMappedGridFunction & u, 
+                        realMappedGridFunction & gridVelocity,
+                        const int & grid,
+                        const int & option /* =-1 */,
+                        realMappedGridFunction *puOld /* =NULL */,  
+                        realMappedGridFunction *pGridVelocityOld /* =NULL */,
+                        const real & dt /* =-1. */ )
+//=========================================================================================
+// /Description:
+//   Apply boundary conditions for the advection diffusion equations
+// 
+// /t (input):
+// /u (input/output) : apply to this grid function.
+// /gridIsMoving (input) : true if this grid is moving.
+// /gridVelocity (input) : the grid velocity if gridIsMoving==true.
+// /variableBoundaryData (input) : true if there is boundary data that depends on the position along the boundary.
+// /boundaryData (input) : boundary data used if variableBoundaryData==true.
+// grid (input) : the grid number if this MappedGridFunction is part of a CompositeGridFunction.
+// option (input): not used here.
+//
+// /Note:
+// ***Remember to also change the BC routine for implicit time stepping if changes are made here
+// applyBoundaryConditionsForImplicitTimeStepping
+//
+// 
+//\end{MappedGridSolverInclude.tex}  
+//=========================================================================================
+{
+  real time0=getCPU();
+
+  // WE SHOULD BE ABLE TO JUST RETURN FOR IMPLICIT GRIDS  -- *wdh* April 24, 2020
+  if( parameters.getGridIsImplicit(grid) )
+    return 0;
+
+
+  const int & myid = parameters.dbase.get<int>("myid");
+  const int np= max(1,Communication_Manager::numberOfProcessors());
+
+  const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem"); 
+  const bool twilightZoneFlow = parameters.dbase.get<bool>("twilightZoneFlow");
+  const int & gridIsImplicit = parameters.getGridIsImplicit(grid);
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
+
+
+  const int orderOfAccuracy=parameters.dbase.get<int >("orderOfAccuracy");
+  assert( orderOfAccuracy==2 || orderOfAccuracy==4 );
+
+  BoundaryConditionParameters bcParams;
+  const int numberOfComponents=parameters.dbase.get<int >("numberOfComponents");
+  Range C(0,numberOfComponents-1);
+
+  const RealArray & bcData = parameters.dbase.get<RealArray>("bcData");
+  BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
+
+  const bool & gridIsMoving = parameters.gridIsMoving(grid);
+
+  MappedGrid & mg = *u.getMappedGrid();
+  const int numberOfDimensions = mg.numberOfDimensions();
+  const bool isRectangular=mg.isRectangular();
+
+  // -- evaluate the known solution where needed ----
+  const Parameters::KnownSolutionsEnum & knownSolution = parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
+  const bool & assignKnownSolutionAtBoundaries = parameters.dbase.get<bool>("assignKnownSolutionAtBoundaries");
+
+  if( knownSolution == Parameters::userDefinedKnownSolution && assignKnownSolutionAtBoundaries )
+  {
+    // Fill in Dirichlet BCs with the known solution
+    OV_GET_SERIAL_ARRAY(real,u,uLocal);
+    RealArray ua; 
+
+    Index Ib1,Ib2,Ib3;
+    ForBoundary(side,axis)
+    {
+      if( mg.boundaryCondition(side,axis) == AdParameters::dirichletBoundaryCondition )
+      {
+        printF("))))))))) CGAD:applyExplicitBC:  Set Known solution at dirichlet BC (side,axis,grid)=(%dm%dm%d) t=%9.3e  (((((((((\n",side,axis,grid,t);
+
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 );  
+        uLocal(Ib1,Ib2,Ib3,C) = ua(Ib1,Ib2,Ib3,C); 
+
+
+        //  getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
+        // const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives = 0 );        
+
+      }
+
+    }
+
+  }
+
+
+  // New optimized version -- currently for explicit TS, and 1 component only  *wdh* April 17, 2021
+  bool useOpt= multiDomainProblem==0 && numberOfComponents==1 && !(parameters.getGridIsImplicit(grid));  // **FIX ME**
+  
+  if( t<=2*dt )
+    printF("CGAD: applyBC: useOpt=%d, numberOfComponents=%d\n",(int)useOpt,numberOfComponents);
+  if( useOpt )
+  {
+    // ----- Optimized Boundary Conditions ------
+    // *wdh* April 17, 2021
+    const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+
+    OV_GET_SERIAL_ARRAY(real,u,uLocal);
+    OV_GET_SERIAL_ARRAY(int,mg.mask(),maskLocal);
+
+    // get parameters for calling fortran
+    getBcOptParameters();
+
+    int ierr=0;
+    bcOptAd(mg.numberOfDimensions(),
+           uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+           uLocal.getBase(2),uLocal.getBound(2),
+           indexRangeLocal(0,0), dimLocal(0,0), mg.isPeriodic(0),
+           *pu, *pmask, *prsxy, *pxy,  bcLocal(0,0),  
+           *pAddBoundaryForcing, *interfaceType.getDataPointer(), 
+           bcData.getLength(0), *bcData.getDataPointer(), 
+           *pdbc, *pbcf[0][0], pbcfOffset[0], ipar[0],rpar[0], ierr );
+
+    // ...swap periodic edges 
+    u.periodicUpdate();
+    u.updateGhostBoundaries();
+    return 0;
+
+  }
+
+  if( parameters.getGridIsImplicit(grid) )
+  {
+    // *wdh* 080829 -- only apply some BC's for implicit time stepping grids
+
+    if( !assignKnownSolutionAtBoundaries )
+      u.applyBoundaryCondition(C,BCTypes::dirichlet,Parameters::dirichletBoundaryCondition,bcData,pBoundaryData,t,bcParams,grid); 
+
+    u.applyBoundaryCondition(C,BCTypes::neumann,Parameters::neumannBoundaryCondition,bcData,pBoundaryData,t,bcParams,grid);
+
+    // assigned extended boundaries: *wdh* 080829 -- treat the case when a dirichlet-BC is next to an interface
+    if( false )
+    {
+      bcParams.extraInTangentialDirections= orderOfAccuracy==2 ? 1 : 2;
+      u.applyBoundaryCondition(C,BCTypes::dirichlet,Parameters::dirichletBoundaryCondition,bcData,pBoundaryData,t,
+                               bcParams,grid); 
+      bcParams.extraInTangentialDirections=0;
+    }
+    
+    return 0;
+  }
+  
+
+  if( debug() & 8 )
+  {
+    printF(">>>>> Cgad::applyBoundaryConditions <<<<<<<\n");
+  }
+  checkArrayIDs("  Cgad::applyBoundaryConditions: start"); 
+
+  const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+
+
+  for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) 
+  {
+    for( int side=0; side<=1; side++ )
+    {
+      int bc = mg.boundaryCondition(side,axis);
+      if( !(bc==AdParameters::dirichletBoundaryCondition ||
+            bc==AdParameters::neumannBoundaryCondition ||
+            bc==AdParameters::mixedBoundaryCondition ||
+            bc == AdParameters::interfaceBoundaryCondition ||
+            bc == AdParameters::axisymmetric ||
+            bc <=0 ) )
+      {
+        printF("Cgad:applyBoundaryConditions:ERROR: unexpected boundary condition bc=%i for (grid,side,axis)=(%i,%i,%i)\n",
+               bc,grid,side,axis);
+        Overture::abort("error");
+      }
+      // --- check that interface boundaries use the correct bc ---
+      if( parameters.dbase.get<int>("applyInterfaceBoundaryConditions")==1 &&
+          interfaceType(side,axis,grid)!=Parameters::noInterface &&
+          bc!=AdParameters::mixedBoundaryCondition )
+      {
+        printP("Cgad:applyBoundaryConditions:ERROR:the interface on (side,axis,grid)=(%i,%i,%i)\n"
+               " should have a mixed boundary condition associated with it, but bc=%i\n",
+               side,axis,grid,bc);
+        Overture::abort("error");
+      }
+    }
+  }
+  
+
+
+  u.applyBoundaryCondition(C,BCTypes::dirichlet,Parameters::dirichletBoundaryCondition,bcData,pBoundaryData,t,
+                           bcParams,grid); 
+
+  BoundaryConditionParameters extrapParams;
+  extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfAccuracy")+1;
+  // *wdh* 071125 u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+  u.applyBoundaryCondition(C,BCTypes::extrapolate,Parameters::dirichletBoundaryCondition,0.,t,extrapParams);
+
+
+  u.applyBoundaryCondition(C,BCTypes::neumann,Parameters::neumannBoundaryCondition,bcData,pBoundaryData,t,bcParams,grid);
+
+  // An interface could have a mixed-BC which is really a dirichlet BC -- we need to check this 
+  // u.applyBoundaryCondition(C,BCTypes::neumann,Parameters::mixedBoundaryCondition,bcData,pBoundaryData,t,bcParams,grid);
+  for( int axis=0; axis<mg.numberOfDimensions(); axis++ ) 
+  {
+    for( int side=0; side<=1; side++ )
+    {
+      // printP("applyBC: interfaceType(side=%i,axis=%i,grid=%i)=%i (noInterface=%i)\n",side,axis,grid,interfaceType(side,axis,grid),
+      //             (int)Parameters::noInterface );
+      
+      if( mg.boundaryCondition(side,axis)==AdParameters::mixedBoundaryCondition )
+      {
+        if( interfaceType(side,axis,grid)!=Parameters::noInterface )
+        { // This is an interface between domains
+
+          if( parameters.dbase.get<int>("applyInterfaceBoundaryConditions")==0 )
+          {
+            printP("Cgad:applyBC:skip interface bc: interfaceType(side=%i,axis=%i,grid=%i)=%i\n",
+                   side,axis,grid,interfaceType(side,axis,grid));
+            continue;
+          }
+
+          // what about BC's applied at t=0 before the boundary data is set ??
+          // if( parameters.dbase.get<int >("globalStepNumber") < 2 ) continue; // ********************* TEMP *****
+
+          // if this is an interface we should turn off the TZ forcing for the boundary condition since we want
+          // to use the boundary data instead.
+          if( debug() & 4 )
+            printP("Cgad:applyBC: apply a mixed BC on the interface (side,axis,grid)=(%i,%i,%i) %f*T + %f*T.n \n",
+                   side,axis,grid,mixedCoeff(0,side,axis,grid),mixedNormalCoeff(0,side,axis,grid));
+
+          // RealArray *&pBoundaryData = boundaryData[grid].boundaryData[side][axis];
+          // if( pBoundaryData!=NULL )
+          if( pBoundaryData[side][axis]!=NULL )
+            u.getOperators()->setTwilightZoneFlow( false );
+          else
+          {
+            printP("$$$$ Cgad:applyBC:INFO:interface: pBoundaryData is NULL for [side,axis,grid]=[%i,%i,%i], "
+                   "t=%9.3e.\n",
+                   side,axis,grid,t );
+          }
+          
+        }
+        for( int c=0; c<numberOfComponents; c++ )
+        {
+          if( mixedNormalCoeff(c,side,axis,grid)!=0. ) // coeff of T.n is non-zero
+          {
+            real a0=mixedCoeff(c,side,axis,grid);
+            real a1=mixedNormalCoeff(c,side,axis,grid);
+            bcParams.a.redim(3);
+            bcParams.a(0)=a0;
+            bcParams.a(1)=a1;
+            bcParams.a(2)=0.;
+            u.applyBoundaryCondition(c,BCTypes::mixed,BCTypes::boundary(side,axis),bcData,pBoundaryData,
+                                     t,bcParams,grid);
+          }
+          else
+          {
+            printP("Cgad:applyBC: apply a dirichlet BC on the interface (side,axis,grid)=(%i,%i,%i)\n",side,axis,grid);
+            real a0=mixedCoeff(c,side,axis,grid);
+            assert( a0==1. );
+            u.applyBoundaryCondition(c,BCTypes::dirichlet,BCTypes::boundary(side,axis),bcData,pBoundaryData,
+                                     t,bcParams,grid);
+
+            // do this for now:  -- we could do better --
+            u.applyBoundaryCondition(c,BCTypes::extrapolate,BCTypes::boundary(side,axis),0.,t,extrapParams);
+          }
+        }
+        if( interfaceType(side,axis,grid)!=Parameters::noInterface )
+        { // reset TZ
+          u.getOperators()->setTwilightZoneFlow( parameters.dbase.get<bool >("twilightZoneFlow") );
+        }
+      }
+    }
+  }
+  
+
+
+  u.applyBoundaryCondition(C,BCTypes::neumann,Parameters::axisymmetric,0.,t);
+
+  // --- Extrapolate the second ghost line for fourth-order -----
+  if( orderOfAccuracy > 2 )
+  {
+    // **check me *** April 16, 2021
+    extrapParams.ghostLineToAssign=2;
+    u.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+  }
+
+  u.finishBoundaryConditions();
+
+  parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForBoundaryConditions"))+=getCPU()-time0;
+
+  return 0;
+}
+
+// ====================================================================================
+// Macro: Add twilght-zone corrections
+// ====================================================================================
+#beginMacro addTwilightZoneCorrection()              
+  printF("**** ADD TZ Correction to results from getData **CHECK ME**\n");
+  // fix me for parallel
+
+  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+  
+  int rectangular=0;
+  if( a0!=0. )
+  {
+    RealArray ue(Ib1,Ib2,Ib3,N);
+    e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+    interfaceData.u(Ib1,Ib2,Ib3,N) += a0*ue;
+  }
+
+  if( a1!=0. )
+  {
+    OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
+
+    // #ifdef USE_PPP
+    //   const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+    // #else
+    //   const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+    // #endif
+
+    RealArray uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N);
+    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+    if( mg.numberOfDimensions()==2 )
+    {
+      for( int n=N.getBase(); n<=N.getBound(); n++ )
+        interfaceData.u(Ib1,Ib2,Ib3,n) += a1*( normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n) + normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n) );
+    }
+    else
+    {
+      RealArray uez(Ib1,Ib2,Ib3,N);
+      e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,N,t);
+      for( int n=N.getBase(); n<=N.getBound(); n++ )
+        interfaceData.u(Ib1,Ib2,Ib3,n) += a1*( normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n) + normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n) + normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,n) );
+    }
+  }
+#endMacro
+
+#Include "champMacros.h"
+
+// // ====================================================================================
+// // Macro: Add twilght-zone corrections for CHAMP
+// // ====================================================================================
+// #beginMacro addTwilightZoneCorrectionForChamp()              
+
+//   OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+
+//   const RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
+//   // const real Sl    = champParameters(0,side,axis,grid);
+//   // const real theta = champParameters(2,side,axis,grid);
+//   // const real beta  = champParameters(3,side,axis,grid);  
+//   const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+//   const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+//   const Real theta = champParameters(2,side,axis,grid);    // K1/K2
+//   const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
+//   const Real Sl    = champParameters(4,side,axis,grid);    // pl/dxs; 
+
+//   printP("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g *********************************\n",Sl,theta,beta);                  
+
+//   OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
+
+//   RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N), uexx(Ib1,Ib2,Ib3,N), ueyy(Ib1,Ib2,Ib3,N);
+//   int rectangular=0;
+//   e.gd( ue  ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+//   e.gd( uex ,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+//   e.gd( uey ,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+//   e.gd( uexx,xLocal,mg.numberOfDimensions(),rectangular,0,2,0,0,Ib1,Ib2,Ib3,N,t);
+//   e.gd( ueyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,N,t);
+
+
+//   if( isRectangular )
+//   {
+
+//     // ONLY VALID FOR CARTESIAN AND  axis==0 
+//     assert( axis==0 );
+
+//     const Real dxs = dx[axis]; 
+
+//     const real a0 = Sl;
+//     const real a1 = theta + Sl*dxs*theta;
+
+
+//     const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+//     const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+//     const real a4 = a3; // for 3D 
+
+//     int n=0;
+//     assert( N.getLength()==1 );
+//     interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + a2*uexx + a3*ueyy;
+//   }
+//   else
+//   {
+//     // -------- CURVILINEAR GRID ---------
+
+//     const Real dxs = mg.gridSpacing(axis);
+
+//     const real a0 = Sl;
+//     const real a1 = theta + Sl*dxs*theta;
+
+
+//     const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+//     const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+//     const real a4 = a3; // for 3D 
+
+//     printP("**** ADD TZ Correction to results from getData for CHAMP:  Sl=%g, theta=%g, beta=%g **************** FINISH ME *****************\n",Sl,theta,beta);  
+//     int n=0;
+//     assert( N.getLength()==1 );
+//     interfaceData.u(Ib1,Ib2,Ib3,n) += a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + a2*uexx + a3*ueyy;
+
+
+//   }
+// #endMacro
+
+
+// =======================================================================================================
+// / \brief  Fill in the RHS values for implicit time-stepping.
+///
+/// \param u (output) : the RHS
+/// \param  (input) : for linearized equations
+/// 
+/// \note See ins/src/implicit.C for another example of this function is written.
+// =======================================================================================================
+int Cgad::
+applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
+                                               realMappedGridFunction & uL,
+                                               realMappedGridFunction & uOld, // *wdh* Dec 20, 2017 -- added uOld
+                                               realMappedGridFunction & gridVelocity,
+                                               real t,
+                                               int scalarSystem,
+                                               int grid )
+
+{
+//  Overture::abort("Cgad::applyBoundaryConditionsForImplicitTimeStepping:ERROR: not implemented");
+//  return 0;
+
+  MappedGrid & mg = *u.getMappedGrid();
+  const int & numberOfDimensions = mg.numberOfDimensions();
+
+  const bool twilightZoneFlow = parameters.dbase.get<bool >("twilightZoneFlow");
+
+  Range N = parameters.dbase.get<Range >("Rt");   // time dependent variables
+
+  const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem"); 
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
+
+  typedef int BoundaryCondition;
+  
+  const BoundaryCondition & dirichletBoundaryCondition = Parameters::dirichletBoundaryCondition;
+  const BoundaryCondition & neumannBoundaryCondition = Parameters::neumannBoundaryCondition;
+  const Parameters::BoundaryCondition & interfaceBoundaryCondition= Parameters::interfaceBoundaryCondition;
+  
+  BCTypes::BCNames dirichlet             = BCTypes::dirichlet,
+                   neumann               = BCTypes::neumann,
+  //   extrapolate           = BCTypes::extrapolate,
+  //   allBoundaries         = BCTypes::allBoundaries,
+    normalComponent       = BCTypes::normalComponent;
+
+  const RealArray & bcData = parameters.dbase.get<RealArray >("bcData");
+  const int & numberOfComponents = parameters.dbase.get<int >("numberOfComponents");
+
+#define mixedRHS(component,side,axis,grid)         bcData(component+numberOfComponents*(0),side,axis,grid)
+#define mixedCoeff(component,side,axis,grid)       bcData(component+numberOfComponents*(1),side,axis,grid)
+#define mixedNormalCoeff(component,side,axis,grid) bcData(component+numberOfComponents*(2),side,axis,grid)
+
+  // *** assign boundary conditions for the implicit method ***** 
+
+  if( parameters.getGridIsImplicit(grid) )
+  {
+    // ** Note that we are assigning the RHS for the implicit solve ***
+    if( debug() & 2 )
+      printP("AD: applyBCForImplicitTimeStepping: fill RHS for implicit solve, t=%9.3e\n",t);
+
+    // The RHS for the interface equations is placed in the BoundaryDataArray
+    BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid);
+
+
+    const Parameters::KnownSolutionsEnum & knownSolution = parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
+    const bool & assignKnownSolutionAtBoundaries = parameters.dbase.get<bool>("assignKnownSolutionAtBoundaries");
+    if( knownSolution == Parameters::userDefinedKnownSolution && assignKnownSolutionAtBoundaries  )
+    {
+      // ----- Fill in Dirichlet BCs with the known solution ------
+      OV_GET_SERIAL_ARRAY(real,u,uLocal);
+      RealArray ua; 
+
+      Index Ib1,Ib2,Ib3;
+      ForBoundary(side,axis)
+      {
+        if( mg.boundaryCondition(side,axis) == AdParameters::dirichletBoundaryCondition )
+        {
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          ua = parameters.getKnownSolution(t, grid, Ib1,Ib2,Ib3 );  
+          uLocal(Ib1,Ib2,Ib3,N) = ua(Ib1,Ib2,Ib3,N); 
+
+
+          //  getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
+          // const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives = 0 );        
+
+        }
+
+      }
+
+    }
+    else
+    {
+      u.applyBoundaryCondition(N,dirichlet,dirichletBoundaryCondition,bcData,pBoundaryData,t,
+                               Overture::defaultBoundaryConditionParameters(),grid);
+    }
+
+    // ** Note: neumann BC is applied below since we fill in the RHS 
+    // u.applyBoundaryCondition(N,neumann,neumannBoundaryCondition,bcData,t,
+    //                          Overture::defaultBoundaryConditionParameters(),grid);
+    // u.applyBoundaryCondition(N,dirichlet,interfaceBoundaryCondition,bcData,t,
+    //                       Overture::defaultBoundaryConditionParameters(),grid);
+    
+
+    const bool isRectangular=mg.isRectangular();
+    if( !isRectangular || twilightZoneFlow ) // we need this now
+      mg.update(MappedGrid::THEvertexBoundaryNormal); 
+
+    OV_GET_SERIAL_ARRAY(real,u,uLocal);
+    // #ifdef USE_PPP
+    //   const realSerialArray & uLocal = u.getLocalArray();
+    // #else
+    //   realSerialArray & uLocal = u; 
+    // #endif
+
+
+    real dx[3]={1.,1.,1.};
+    if( isRectangular )
+      mg.getDeltaX(dx);
+
+    const bool rectangular= mg.isRectangular() && !twilightZoneFlow;
+      
+    realArray & x= mg.center();
+    #ifdef USE_PPP
+      realSerialArray xLocal; 
+      if( !rectangular || twilightZoneFlow ) 
+        getLocalArrayWithGhostBoundaries(x,xLocal);
+    #else
+      const realSerialArray & xLocal = x;
+    #endif
+    
+    const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
+
+    const bool interfaceBoundaryConditionsAreSpecified=parameters.dbase.has_key("interfaceCondition");
+    IntegerArray & interfaceCondition = (interfaceBoundaryConditionsAreSpecified ? 
+                                         parameters.dbase.get<IntegerArray>("interfaceCondition") :
+                                         Overture::nullIntArray() );
+
+    int side,axis;
+    Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
+    Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
+
+    Index Jbv[3], &Jb1=Jbv[0], &Jb2=Jbv[1], &Jb3=Jbv[2];
+    Index Jgv[3], &Jg1=Jgv[0], &Jg2=Jgv[1], &Jg3=Jgv[2];
+
+    Index Ip1,Ip2,Ip3;
+    for( axis=0; axis<mg.numberOfDimensions(); axis++ ) 
+    {
+      for( side=0; side<=1; side++ )
+      {
+
+        int bc = mg.boundaryCondition(side,axis);
+        // if( bc == Parameters::interfaceBoundaryCondition && interfaceBoundaryConditionsAreSpecified )
+        if( interfaceType(side,axis,grid) != Parameters::noInterface )
+        {
+          // this face is on a domain interface
+          bc = interfaceCondition(side,axis,grid);
+          assert( bc==Parameters::dirichletInterface || bc==Parameters::neumannInterface );
+        }
+
+
+        // **NEW** April 8, 2021 -- ADD OPTION FOR REQUEST DATA ON DEMAND --   ... FINISH ME 
+        const Parameters::InterfaceCommunicationModeEnum & interfaceCommunicationMode = 
+                          parameters.dbase.get<Parameters::InterfaceCommunicationModeEnum>("interfaceCommunicationMode");
+        if( interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded && 
+            interfaceType(side,axis,grid) != Parameters::noInterface )
+        {
+
+          if( debug() & 4 && interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded  )
+          {
+            printP("applyBCIMP:INFO: interfaceCommunicationMode==requestInterfaceDataWhenNeeded\n");
+          }
+
+          bool testNew=true;
+          if( true && (testNew || interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded) )
+          {
+            // *** TEST NEW WAY **** April 8, 2021 
+            if( debug() & 4 )
+            {
+              printP("REQUEST DATA for (grid,side,axis)=(%d,%d,%d) interfaceType(side,axis,grid)=%d\n",grid,side,axis,interfaceType(side,axis,grid));
+              if( bc==Parameters::dirichletInterface )
+                printP("applyBCImp: dirichletInterface: TEST:request heatFluxInterface interface data, t=%9.3e\n",t);
+              else
+                printP("applyBCImp: neumannInterface: TEST:request heatFluxInterface data, t=%9.3e\n",t);
+            }
+
+            InterfaceData interfaceData;
+            // Range Rx=numberOfDimensions;
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+            getGhostIndex(   mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+
+            interfaceData.u.redim(Ib1,Ib2,Ib3,N); // heat flux is returned here 
+            interfaceData.t=t;
+            interfaceData.u=0;
+            // ::display(interfaceData.u(Ib1,Ib2,Ib3,N),"BEFORE REQUEST DATA FOR INTERFACE","%7.4f ");
+
+            // Boundary data should go here
+            RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+            // bd=0;
+
+            if( debug() & 4 )
+            {
+              printF("\n");
+              printP(" >>>> REQUEST INTERFACE DATA for (grid,side,axis)=(%d,%d,%d) t=%9.3e\n",grid,side,axis,t);
+            }
+            
+            // We pass the coefficients in the dirichlet, neumann or mixed BC
+            // *** THIS IS NOT CORRECT -- FIX ME ***
+
+            // From ins/src/addedMassImplicitBoundaryConditions.bC: 
+            //Parameters & bulkSolidParams = getInterfaceParameters( grid,side,axis,parameters );
+
+            GridFaceDescriptor & myGFD = getInterfaceGridFaceDescriptor( grid, side, axis, parameters );
+            real *sourceMixedBC = myGFD.dbase.get<real[2]>("sourceMixedBC");
+
+            if( debug() & 8 )
+              printF("After getInterfaceGridFaceDescriptor: myGFD.a=[%g,%g], sourceMixedBC=[%g,%g]\n",myGFD.a[0],myGFD.a[1],sourceMixedBC[0],sourceMixedBC[1]);
+
+
+
+            GridFaceDescriptor targetInfo(-1,grid,side,axis);
+            const int n=0; // component -- FIX ME
+            const real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+            // targetInfo.a[0]=a0; targetInfo.a[1]=-a1; targetInfo.a[2]=0.;  // **NOTE*** flip sign of a1 for normal for other side, *check me*
+
+            targetInfo.a[0]=sourceMixedBC[0]; targetInfo.a[1]=sourceMixedBC[1]; targetInfo.a[2]=0.; 
+            // const real a0 = targetInfo.a[0], a1= targetInfo.a[1]; 
+
+            if( applyChampInterfaceConditions )
+            { 
+               // CHAMP CONDITIONS
+              // Evaluate   S*uR(dx) + n.grad( uR(dx) ) 
+              // for the solution on the other side ("right") of the interface, at ONE grid line inside the domain
+              const RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
+              const Real Sl    = champParameters(4,side,axis,grid);    // pl/dxs; 
+              // const real Sl    = champParameters(0,side,axis,grid);
+              // const real theta = champParameters(2,side,axis,grid);
+              // const real beta  = champParameters(3,side,axis,grid);  
+
+              targetInfo.a[0] =  Sl;  // optimized Schwartz parameter for this domain ("left")
+              targetInfo.a[1] = -1.;  // flip sign of normal
+              // Do this for now: 
+              targetInfo.dbase.put<int>("getChampData")=1;
+            }
+
+            int interfaceDataOptions = Parameters::heatFluxInterfaceData;
+            bool saveTimeHistory=true;
+
+            if( debug() & 8 )
+            {
+              printF("\n");
+              printP(" >>>> REQUEST INTERFACE DATA for (grid,side,axis)=(%d,%d,%d) t=%9.3e. source: (a0,a1)=(%g,%g),  target: (a0,a1)=(%g,%g) (champ=%d)\n",
+                     grid,side,axis,t,a0,a1,targetInfo.a[0],targetInfo.a[1],(int)applyChampInterfaceConditions);
+            }
+
+            getInterfaceData( t, grid, side, axis, 
+                              interfaceDataOptions,
+                              interfaceData.u,
+                              parameters,saveTimeHistory,
+                              &targetInfo );
+
+            if( twilightZoneFlow  )
+            {
+              if( applyChampInterfaceConditions )
+              {
+                addTwilightZoneCorrectionForChamp(); 
+                // OV_ABORT("Cgad::applyBoundaryConditionsForImplicitTimeStepping get RHS for CHAMP -- STOP HERE FOR NOW");  
+              }
+              else
+              {
+                addTwilightZoneCorrection();
+              }
+    
+            }
+
+            if( debug() & 8 )
+            {
+              ::display(interfaceData.u(Ib1,Ib2,Ib3,N),"AFTER REQUEST DATA FOR INTERFACE + TZ FIX","%7.4f ");
+              ::display(bd,"bd: existing boundary data","%7.4f ");
+              printP("MAX DIFF getInterface - bd = %8.2e\n",max(fabs(bd(Ib1,Ib2,Ib3,N)-interfaceData.u(Ib1,Ib2,Ib3,N))));
+            }
+
+            if( true && interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded  )
+            {
+              if( multiDomainProblem )
+              {  // FILL IN RHS FOR implicit CHAMP condition
+                uLocal(Ig1,Ig2,Ig3,N) = interfaceData.u(Ib1,Ib2,Ib3,N);
+                if( debug() & 8 )
+                {
+                  ::display(uLocal(Ib1,Ib2,Ib3,N),"RHS ON BOUNDARY FOR CHAMP face uLocal(Ib1,Ib2,Ib3,N)","%7.4f ");
+                }
+              }
+              else
+              { // FOR TESTING IN A SINGLE DOMAIN 
+                bd(Ib1,Ib2,Ib3,N) = interfaceData.u(Ib1,Ib2,Ib3,N);
+              }
+            }
+            // bd.redim(Ib1,Ib2,Ib3,N);
+            // bd=interfaceData.u;
+
+          } // end if interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded
+
+        } // end if interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded
+
+
+        if( (bc==Parameters::neumannInterface || bc==Parameters::dirichletInterface ) && applyChampInterfaceConditions && ( multiDomainProblem == 0 || false ) )
+        {
+          // **** ASSIGN RHS FOR FAKE CHAMP CONDITIONS *****
+
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+
+          // OV_ABORT("CHAMP: RHS - FINISH ME ");
+
+          OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
+          if( twilightZoneFlow )
+          {
+
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N), uexx(Ib1,Ib2,Ib3,N), ueyy(Ib1,Ib2,Ib3,N);
+            int rectangular=0;
+            e.gd( ue  ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( uex ,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( uey ,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( uexx,xLocal,mg.numberOfDimensions(),rectangular,0,2,0,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( ueyy,xLocal,mg.numberOfDimensions(),rectangular,0,0,2,0,Ib1,Ib2,Ib3,N,t);
+
+            const RealArray & champParameters = parameters.dbase.get<RealArray>("champParameters");
+            const Real pl    = champParameters(0,side,axis,grid);    // optimized Scwartz Parameter for side 1
+            const Real pr    = champParameters(1,side,axis,grid);    // optimized Scwartz Parameter for side 2
+            const Real theta = champParameters(2,side,axis,grid);    // K1/K2
+            const Real beta  = champParameters(3,side,axis,grid);    // D1/D2    
+            const Real Sl    = champParameters(4,side,axis,grid);    // pl/dxs; 
+
+            const Real dxs = dx[axis]; 
+
+            // const real Sl    = champParameters(0,side,axis,grid);
+            // const real theta = champParameters(2,side,axis,grid);
+            // const real beta  = champParameters(3,side,axis,grid);  
+
+            printP("APPLY FAKE CHAMP BC's for TESTING Sl=%g, theta=%g, beta=%g *************************************************************\n",Sl,theta,beta);                  
+
+            const real a0 = Sl;
+            const real a1 = theta + Sl*dxs*theta;
+            // ONLY VALID FOR CARTESIAN : axis==0 
+            const real a2 = dxs*( beta      ) + Sl*( .5*SQR(dxs)*beta      );
+            const real a3 = dxs*( (beta-1.) ) + Sl*( .5*SQR(dxs)*(beta-1.) );
+            const real a4 = a3; // for 3D 
+
+            int n=0;
+            assert( N.getLength()==1 );
+            uLocal(Ig1,Ig2,Ig3,n)= a0*ue + a1*( normal(Ib1,Ib2,Ib3,0)*uex + normal(Ib1,Ib2,Ib3,1)*uey ) + a2*uexx + a3*ueyy;
+
+          }
+        }
+        else if( bc==Parameters::dirichletInterface  && !applyChampInterfaceConditions )
+        {
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          const int includeGhost=1;
+          bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+          if( !ok ) continue;
+            
+          if( debug() & 4 )
+            printP("** Cgad:applyImpBC: setting RHS for a dirichlet interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc);
+          // u.applyBoundaryCondition(N,dirichlet,BCTypes::boundary(side,axis),bcData,pBoundaryData,t,
+          //                       Overture::defaultBoundaryConditionParameters(),grid);
+
+          RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+          
+          if( debug() & 4 )
+          {
+            ::display(uLocal(Ib1,Ib2,Ib3,N),"RHS for dirichlet BC: uLocal(Ib1,Ib2,Ib3,N)","%7.4f ");
+
+            if( twilightZoneFlow )
+            {
+              
+              OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+              RealArray ue(Ib1,Ib2,Ib3,N);
+              int rectangular=0;
+              e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+
+              ::display(ue(Ib1,Ib2,Ib3,N),"Cgad:imp: EXACT RHS for dirichlet BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+
+              // printP("Cgad:imp: set RHS to exact\n");
+              // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // *****************************************************************
+
+            }
+          }
+
+          uLocal(Ib1,Ib2,Ib3,N)=bd(Ib1,Ib2,Ib3,N);
+          
+        }
+        else if( bc==neumannBoundaryCondition || 
+                 bc==AdParameters::mixedBoundaryCondition ||
+                 ( bc==Parameters::neumannInterface && !applyChampInterfaceConditions ) ||
+                 bc==Parameters::axisymmetric )
+        {
+          // ****** neumann boundary condition or neumann interface (but not CHAMP) *****
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+
+          #ifdef USE_PPP
+           RealArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
+           const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+          #else
+           const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+          #endif
+
+          const int includeGhost=1;
+          bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+          ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+          if( !ok ) continue;
+            
+          if( bc==Parameters::neumannInterface )
+          {
+            // The RHS for the interface equations is placed in the BoundaryDataArray
+            // (This includes TZ forcing)
+            if( debug() & 4 )
+              printP("** Cgad:applyImpBC: setting RHS for a neumann interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc);
+            RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+
+
+
+
+            if( debug() & 4 && twilightZoneFlow )
+            {
+              ::display(bd(Ib1,Ib2,Ib3,N),"Cgad:imp: RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+
+              OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+              RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N);
+              int rectangular=0;
+              e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+              e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+              e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+
+              if( mg.numberOfDimensions()==2 )
+              {
+                for( int n=N.getBase(); n<=N.getBound(); n++ )
+                {
+                  real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                  ue(Ib1,Ib2,Ib3,n)=a1*(uex(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,0)+
+                                        uey(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,1))+ a0*ue(Ib1,Ib2,Ib3,n);
+                  ::display(ue(Ib1,Ib2,Ib3,n),"Cgad:imp: EXACT RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+                  ::display(fabs(bd(Ib1,Ib2,Ib3,n)-ue(Ib1,Ib2,Ib3,n)),
+                           "Cgad:imp: ERROR in RHS for Neumann BC: bd(Ib1,Ib2,Ib3,N)","%7.4f ");
+
+                  // ** bd(Ib1,Ib2,Ib3,N) *= 1./a1;
+                  
+                }
+              }
+              // printP("Cgad:imp: set RHS to exact\n");
+              // bd(Ib1,Ib2,Ib3,N)=ue(Ib1,Ib2,Ib3,N);  // ***********************************************************
+            }
+            
+            uLocal(Ig1,Ig2,Ig3,N)=bd(Ib1,Ib2,Ib3,N);
+
+            // If the adjacent face is a dirichlet BC then we change the right-hand-side on the extended
+            // boundary point: 
+            // 
+            //   bc=dirichlet
+            //       ------c--o   <-  adjust RHS to neuman interface here 
+            //             |
+            //       ------+--+   <- interface side 
+            //             |
+            // Since the interior equation is not applied at the corner pt "c" we can not just impose
+            // [ k T.n ]=0 since we need another equation to determine the 2 ghost point values (there is
+            // another ghost pt value on the other side of the interface ). Therefore we set 
+            //  k*T.n = given at point "c" 
+
+            // loop over adjacent sides
+            for( int dir=1; dir<mg.numberOfDimensions(); dir++ ) for( int side2=0; side2<=1; side2++ )
+            {
+              int dir2 = (axis+dir) % mg.numberOfDimensions();
+              if( mg.boundaryCondition(side2,dir2)==dirichletBoundaryCondition )
+              {
+                Jb1=Ib1, Jb2=Ib2, Jb3=Ib3;
+                Jg1=Ig1, Jg2=Ig2, Jg3=Ig3;
+                // check for parallel: 
+                if( Jbv[dir2].getBase()  > mg.gridIndexRange(side2,dir2) ||
+                    Jbv[dir2].getBound() < mg.gridIndexRange(side2,dir2) )
+                {  
+                  ok=false;
+                  continue;
+                }
+                Jbv[dir2]=mg.gridIndexRange(side2,dir2);
+                Jgv[dir2]=mg.gridIndexRange(side2,dir2);
+
+                if( debug() & 8 )
+                {
+                  printP("Cgad:imp: set RHS to exact where interface meets adj-dirichlet "
+                         " (side,axis)=(%i,%i) (side2,dir2)=(%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+                         side,axis,side2,dir2,Jb1.getBase(),Jb1.getBound(),Jb2.getBase(),Jb2.getBound(),
+                         Jb3.getBase(),Jb3.getBound() );
+                }
+                
+                if( twilightZoneFlow )
+                {
+                  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                  RealArray ue(Jb1,Jb2,Jb3,N), uex(Jb1,Jb2,Jb3,N), uey(Jb1,Jb2,Jb3,N);
+                  int rectangular=0;
+                  e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Jb1,Jb2,Jb3,N,t);
+                  e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Jb1,Jb2,Jb3,N,t);
+                  e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Jb1,Jb2,Jb3,N,t);
+
+                  if( mg.numberOfDimensions()==2 )
+                  {
+                    for( int n=N.getBase(); n<=N.getBound(); n++ )
+                    {
+                      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
+                                            uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1))+ a0*ue(Jb1,Jb2,Jb3,n);
+                    }
+                    uLocal(Jg1,Jg2,Jg3,N)=ue(Jb1,Jb2,Jb3,N);
+                  }
+                  else 
+                  {
+                    RealArray uez(Jb1,Jb2,Jb3,N);
+                    e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Jb1,Jb2,Jb3,N,t);
+                    for( int n=N.getBase(); n<=N.getBound(); n++ )
+                    {
+                      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
+                                            uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1)+
+                                            uez(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,2))+ a0*ue(Jb1,Jb2,Jb3,n);
+                    }
+                    uLocal(Jg1,Jg2,Jg3,N)=ue(Jb1,Jb2,Jb3,N);
+                  }
+                  
+                }
+                else
+                {
+                  //MappedGridOperators & op = *(u.getOperators());
+                  //op.derivative(MappedGridOperators::xDerivative,uLocal,ux  ,Jb1,Jb2,Jb3,N);
+                  //op.derivative(MappedGridOperators::yDerivative,uLocal,uy  ,Jb1,Jb2,Jb3,N);
+                  //op.derivative(MappedGridOperators::zDerivative,uLocal,uz  ,Jb1,Jb2,Jb3,N);
+
+                  // Here we assume the Dirichlet BC is a constant value so that the normal derivative  *fix me*
+                  // of the solution along the Dirichlet BC is zero: 
+                  // *NOTE* if we fix this for the case of a variable Dirichlet BC then we must also adjust the 
+                  //   interface getRHS to eval   k*u.n - k*ue.n so that the residuals in the interface equations 
+                  //   will go to zero. 
+                  for( int n=N.getBase(); n<=N.getBound(); n++ )
+                  {
+                    real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                    // note: uLocal(Jb1,Jb2,Jb3,n) has been set above by the Dirichlet BC 
+                    uLocal(Jg1,Jg2,Jg3,n)=a0*uLocal(Jb1,Jb2,Jb3,n);
+                  }
+                    
+                }
+              }
+            }
+              
+
+
+          }
+          else if( !twilightZoneFlow )
+          {
+            if( bc==neumannBoundaryCondition || 
+                bc==AdParameters::mixedBoundaryCondition )
+            {
+              for( int n=N.getBase(); n<=N.getBound(); n++ )
+              {
+                uLocal(Ig1,Ig2,Ig3,n)=mixedRHS(n,side,axis,grid);  // set ghost value to RHS for neumann oe mixed BC
+              }
+            }
+            else
+            {
+              uLocal(Ig1,Ig2,Ig3,N)=0.;                          // axisymmetric
+            }
+          }
+          else
+          {
+            // Twilight-zone forcing:
+
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            RealArray ue(Ib1,Ib2,Ib3,N), uex(Ib1,Ib2,Ib3,N), uey(Ib1,Ib2,Ib3,N);
+            int rectangular=0;
+            e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,N,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,N,t);
+
+            if( mg.numberOfDimensions()==2 )
+            {
+              for( int n=N.getBase(); n<=N.getBound(); n++ )
+              {
+                real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                // printF(" ***** BC: a0=%8.2e a1=%8.2e\n",a0,a1);
+                
+                uLocal(Ig1,Ig2,Ig3,n)=a1*(uex(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,0)+
+                                          uey(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,1)) + a0*ue(Ib1,Ib2,Ib3,n);
+              }
+            }
+            else
+            {
+              RealArray uez(Ib1,Ib2,Ib3,N);
+              e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,N,t);
+              for( int n=N.getBase(); n<=N.getBound(); n++ )
+              {
+                real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                uLocal(Ig1,Ig2,Ig3,n)=a1*(uex(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,0)+
+                                          uey(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,1)+
+                                          uez(Ib1,Ib2,Ib3,n)*normal(Ib1,Ib2,Ib3,2)) + a0*ue(Ib1,Ib2,Ib3,n);
+              }
+            }
+
+          }
+        }
+      }
+    } // end for axis
+        
+    // ************ try this for interfaces ********* 080909
+    u.updateGhostBoundaries();
+
+
+   if( debug() & 8 )
+   {
+     display(uLocal,"RHS AFTER FILLING IN BCs uLocal(Ib1,Ib2,Ib3,N)","%7.4f ");
+   }
+
+  } // end if grid is implicit
+  
+
+  return 0;
+
+
+}
+

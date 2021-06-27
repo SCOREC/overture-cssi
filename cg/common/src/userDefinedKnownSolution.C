@@ -32,10 +32,10 @@ extern "C"
 
   // fsi shear motion exact solution (implemented in cBessel.f)
   void evalFibShearSolid( const real & ksr, const real & ksi,
-			  const real & ar, const real & ai,
-			  const real & br, const real & bi,
-			  const real & y, 
-			  real & ur, real & ui, real & uyr, real & uyi);
+                          const real & ar, const real & ai,
+                          const real & br, const real & bi,
+                          const real & y, 
+                          real & ur, real & ui, real & uyr, real & uyi);
   void evalFibShearSolidFull( const real & ksr, const real & ksi,
                               const real & ar, const real & ai,
                               const real & br, const real & bi,
@@ -97,7 +97,7 @@ for(i1=I1Base; i1<=I1Bound; i1++)
 // ==========================================================================================
 int Parameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
-			    const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives /* = 0 */ )
+                            const Index & I1, const Index &I2, const Index &I3, int numberOfTimeDerivatives /* = 0 */ )
 {
 
   // printF("--PAR-- getUserDefinedKnownSolution: START---\n");
@@ -477,7 +477,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       int numberOfComponents=8;  // number of components needed in 1D solution: we compute u, v, and sigma 
       if( uDisk.getLength(0)!=numberOfGridPoints )
       {
-	uDisk.redim(numberOfGridPoints,numberOfComponents);
+        uDisk.redim(numberOfGridPoints,numberOfComponents);
       }
       
       // call the fortran routine here to evaluate the solution at time t and return the result in uDisk     
@@ -580,7 +580,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
     if( false )
       printF("-- userDefinedKnownSolution: rotatingElasticDiskInFluid: t=%9.3e, domain=%i, grid=%i.\n",t,
-	     domain,grid);
+             domain,grid);
 
     // -- pass parameters to FlowSolutions: 
     const int ndip=15, ndrp=15;
@@ -634,7 +634,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     FlowSolutions & flowSolutions = *pFLowSolutions;
     
     flowSolutions.getRotatingElasticDiskInFluid( FlowSolutions::rotatingElasticDiskInFluid,
-						 cg, grid, ua, ip,rp,I1,I2,I3);
+                                                 cg, grid, ua, ip,rp,I1,I2,I3);
 
   }
 
@@ -678,7 +678,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   else
   {
     printF("getUserDefinedKnownSolution:ERROR: unknown value for userDefinedKnownSolution=%s\n",
-	   (const char*)userKnownSolution);
+           (const char*)userKnownSolution);
     OV_ABORT("ERROR");
   }
   
@@ -694,11 +694,11 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 // ===================================================================================================================
 int Parameters::
 getUserDefinedKnownSolutionRigidBody( int body, real t, 
-				      RealArray & xCM      /* = Overture::nullRealArray() */, 
-				      RealArray & vCM      /* = Overture::nullRealArray() */,
-				      RealArray & aCM      /* = Overture::nullRealArray() */,
-				      RealArray & omega    /* = Overture::nullRealArray() */, 
-				      RealArray & omegaDot /* = Overture::nullRealArray() */ )
+                                      RealArray & xCM      /* = Overture::nullRealArray() */, 
+                                      RealArray & vCM      /* = Overture::nullRealArray() */,
+                                      RealArray & aCM      /* = Overture::nullRealArray() */,
+                                      RealArray & omega    /* = Overture::nullRealArray() */, 
+                                      RealArray & omegaDot /* = Overture::nullRealArray() */ )
 {
 
   const KnownSolutionsEnum & knownSolution = dbase.get<KnownSolutionsEnum >("knownSolution");
@@ -934,10 +934,10 @@ getUserDefinedDeformingBodyKnownSolution(
         //                = tr*[cos,sin] + tt*[-sin,cos]
         // real tr = sigmarr*ct + sigmart*st;
         // real tt = sigmart*ct + sigmatt*st;
-	real s11 = sigmarr*ct*ct - 2.*sigmart*ct*st + sigmatt*st*st;
-	real s12 = sigmarr*ct*st + sigmart*(ct*ct-st*st) - sigmatt*ct*st ;
-	real s21 = s12;
-	real s22 = sigmarr*st*st + 2.*sigmart*ct*st + sigmatt*ct*ct;
+        real s11 = sigmarr*ct*ct - 2.*sigmart*ct*st + sigmatt*st*st;
+        real s12 = sigmarr*ct*st + sigmart*(ct*ct-st*st) - sigmatt*ct*st ;
+        real s21 = s12;
+        real s22 = sigmarr*st*st + 2.*sigmart*ct*st + sigmatt*ct*ct;
         state(i1,i2,i3,c0)= s11*ct + s12*st;
         state(i1,i2,i3,c1)= s21*ct + s22*st;
 
@@ -945,10 +945,10 @@ getUserDefinedDeformingBodyKnownSolution(
       else if( stateOption==boundaryTractionRate )
       {
         // traction-rate: 
-	real s11 = sigmarr*ct*ct - 2.*sigmart*ct*st + sigmatt*st*st;
-	real s12 = sigmarr*ct*st + sigmart*(ct*ct-st*st) - sigmatt*ct*st ;
-	real s21 = s12;
-	real s22 = sigmarr*st*st + 2.*sigmart*ct*st + sigmatt*ct*ct;
+        real s11 = sigmarr*ct*ct - 2.*sigmart*ct*st + sigmatt*st*st;
+        real s12 = sigmarr*ct*st + sigmart*(ct*ct-st*st) - sigmatt*ct*st ;
+        real s21 = s12;
+        real s22 = sigmarr*st*st + 2.*sigmart*ct*st + sigmatt*ct*ct;
         state(i1,i2,i3,c0)= s11*ct + s12*st;
         state(i1,i2,i3,c1)= s21*ct + s22*st;
 
@@ -1001,9 +1001,9 @@ getUserDefinedDeformingBodyKnownSolution(
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
         real yRef = -st*x+ct*y;
 
@@ -1016,36 +1016,36 @@ getUserDefinedDeformingBodyKnownSolution(
         // get the time dependent solution
         evalFibShearSolidFull(ksr,ksi,ar,ai,br,bi,yRef,t,ur,ui,vr,vi,uyr,uyi,omegar,omegai);
 
-	if( stateOption==boundaryPosition )
-	  {
-	    state(i1,i2,i3,c0)=x+amp*ur*ct;
-	    state(i1,i2,i3,c1)=y+amp*ur*st;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
-	    state(i1,i2,i3,c0)=amp*vr*ct;
-	    state(i1,i2,i3,c1)=amp*vr*st;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
-	    state(i1,i2,i3,c0)=amp*(omegai*vr+omegar*vi)*ct;
-	    state(i1,i2,i3,c1)=amp*(omegai*vr+omegar*vi)*st;
-	  }
-	else if( stateOption==boundaryTraction )
-	  {
-	    state(i1,i2,i3,c0)= amp*mu*uyr*ct;
-	    state(i1,i2,i3,c1)= amp*mu*uyr*st;
-	  }
-	else if( stateOption==boundaryTractionRate )
-	  {
-	    // traction-rate: 
-	    state(i1,i2,i3,c0)= amp*mu*(omegai*uyr+omegar*uyi)*ct;
-	    state(i1,i2,i3,c1)= amp*mu*(omegai*uyr+omegar*uyi)*st;
-	  }
-	else
-	  {
-	    OV_ABORT("Unknown state option");
-	  }
+        if( stateOption==boundaryPosition )
+          {
+            state(i1,i2,i3,c0)=x+amp*ur*ct;
+            state(i1,i2,i3,c1)=y+amp*ur*st;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
+            state(i1,i2,i3,c0)=amp*vr*ct;
+            state(i1,i2,i3,c1)=amp*vr*st;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
+            state(i1,i2,i3,c0)=amp*(omegai*vr+omegar*vi)*ct;
+            state(i1,i2,i3,c1)=amp*(omegai*vr+omegar*vi)*st;
+          }
+        else if( stateOption==boundaryTraction )
+          {
+            state(i1,i2,i3,c0)= amp*mu*uyr*ct;
+            state(i1,i2,i3,c1)= amp*mu*uyr*st;
+          }
+        else if( stateOption==boundaryTractionRate )
+          {
+            // traction-rate: 
+            state(i1,i2,i3,c0)= amp*mu*(omegai*uyr+omegar*uyi)*ct;
+            state(i1,i2,i3,c1)= amp*mu*(omegai*uyr+omegar*uyi)*st;
+          }
+        else
+          {
+            OV_ABORT("Unknown state option");
+          }
       }
 
   }
@@ -1086,9 +1086,9 @@ getUserDefinedDeformingBodyKnownSolution(
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
         real r= sqrt(SQR(x) + SQR(y));
 
         // compute trig functions
@@ -1115,50 +1115,50 @@ getUserDefinedDeformingBodyKnownSolution(
           OV_ABORT("error");
         }    
 
-	if( stateOption==boundaryPosition )
-	  {
+        if( stateOption==boundaryPosition )
+          {
             real u1 = -sinTheta*ut;
             real u2 =  cosTheta*ut;
 
-	    state(i1,i2,i3,c0)=x+amp*u1;
-	    state(i1,i2,i3,c1)=y+amp*u2;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
+            state(i1,i2,i3,c0)=x+amp*u1;
+            state(i1,i2,i3,c1)=y+amp*u2;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
             real v1 = -sinTheta*vt;
             real v2 =  cosTheta*vt;
 
-	    state(i1,i2,i3,c0)=amp*v1;
-	    state(i1,i2,i3,c1)=amp*v2;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
+            state(i1,i2,i3,c0)=amp*v1;
+            state(i1,i2,i3,c1)=amp*v2;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
             real a1 = -sinTheta*at;
             real a2 =  cosTheta*at;
 
-	    state(i1,i2,i3,c0)=amp*a1;
-	    state(i1,i2,i3,c1)=amp*a2;
-	  }
-	else if( stateOption==boundaryTraction )
-	  {
+            state(i1,i2,i3,c0)=amp*a1;
+            state(i1,i2,i3,c1)=amp*a2;
+          }
+        else if( stateOption==boundaryTraction )
+          {
             // check me: negative or positive?
-	    state(i1,i2,i3,c0)= -amp*muBar*srt*sinTheta;
-	    state(i1,i2,i3,c1)= +amp*muBar*srt*cosTheta;
-	  }
-	else if( stateOption==boundaryTractionRate )
-	  {
-	    // traction-rate: 
-	    state(i1,i2,i3,c0)= -amp*muBar*sdrt*sinTheta;
-	    state(i1,i2,i3,c1)= +amp*muBar*sdrt*cosTheta;
+            state(i1,i2,i3,c0)= -amp*muBar*srt*sinTheta;
+            state(i1,i2,i3,c1)= +amp*muBar*srt*cosTheta;
+          }
+        else if( stateOption==boundaryTractionRate )
+          {
+            // traction-rate: 
+            state(i1,i2,i3,c0)= -amp*muBar*sdrt*sinTheta;
+            state(i1,i2,i3,c1)= +amp*muBar*sdrt*cosTheta;
 
             // printF("--DS-- UDKS:RadialFibShear: amp=%e muBar=%e sdrt=%e boundaryTractionRate=%e,%e\n",
             //        amp,muBar,sdrt,state(i1,i2,i3,c0),state(i1,i2,i3,c1));
 
-	  }
-	else
-	  {
-	    OV_ABORT("Unknown state option");
-	  }
+          }
+        else
+          {
+            OV_ABORT("Unknown state option");
+          }
       }
 
 
@@ -1205,9 +1205,9 @@ getUserDefinedDeformingBodyKnownSolution(
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
         real u1Barr, u2Barr, v1Barr, v2Barr, s11Barr, s12Barr, s22Barr;
 
@@ -1218,39 +1218,39 @@ getUserDefinedDeformingBodyKnownSolution(
                              v2Barr, s11Barr, 
                              s12Barr, s22Barr);
 
-	if( stateOption==boundaryPosition )
-	  {
-	    state(i1,i2,i3,c0)=x+u1Barr;
-	    state(i1,i2,i3,c1)=u2Barr;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
-	    state(i1,i2,i3,c0)=v1Barr;
-	    state(i1,i2,i3,c1)=v2Barr;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
+        if( stateOption==boundaryPosition )
+          {
+            state(i1,i2,i3,c0)=x+u1Barr;
+            state(i1,i2,i3,c1)=u2Barr;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
+            state(i1,i2,i3,c0)=v1Barr;
+            state(i1,i2,i3,c1)=v2Barr;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
             // OV_ABORT("finish me");
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	  }
-	else if( stateOption==boundaryTraction )
-	  {
-	    state(i1,i2,i3,c0)= s12Barr;
-	    state(i1,i2,i3,c1)= s22Barr;
-	  }
-	else if( stateOption==boundaryTractionRate )
-	  {
-	    // traction-rate: 
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+          }
+        else if( stateOption==boundaryTraction )
+          {
+            state(i1,i2,i3,c0)= s12Barr;
+            state(i1,i2,i3,c1)= s22Barr;
+          }
+        else if( stateOption==boundaryTractionRate )
+          {
+            // traction-rate: 
             // OV_ABORT("finish me");
             
-	    state(i1,i2,i3,c0)= 0.;
-	    state(i1,i2,i3,c1)= 0.;
-	  }
-	else
-	  {
-	    OV_ABORT("Unknown state option");
-	  }
+            state(i1,i2,i3,c0)= 0.;
+            state(i1,i2,i3,c1)= 0.;
+          }
+        else
+          {
+            OV_ABORT("Unknown state option");
+          }
       }
 
 
@@ -1315,64 +1315,64 @@ getUserDefinedDeformingBodyKnownSolution(
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
         const real r= sqrt(SQR(x)+SQR(y));
 
-	real ct,st;
-	// compute trig functions
-	real theta = atan2(y,x);
-	if( r>eps ) {
-	  ct=x/r; st=y/r;
-	} else {
-	  ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
-	}
+        real ct,st;
+        // compute trig functions
+        real theta = atan2(y,x);
+        if( r>eps ) {
+          ct=x/r; st=y/r;
+        } else {
+          ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
+        }
 
         real ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt;
         evalFibRadialWaveSolid(omegar,omegai,d1r,d1i,d2r,d2i,d3r,d3i,d4r,d4i,
                                n,scf,scf,scf,r,theta,t,
                                ur,ut,vr,vt,ar,at,srr,srt,stt,sdrr,sdrt,sdtt);
 
-	if( stateOption==boundaryPosition )
-	  {
+        if( stateOption==boundaryPosition )
+          {
             real u1 = ct*ur-st*ut;
             real u2 = st*ur+ct*ut;
 
-	    state(i1,i2,i3,c0)=x+amp*u1;
-	    state(i1,i2,i3,c1)=y+amp*u2;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
+            state(i1,i2,i3,c0)=x+amp*u1;
+            state(i1,i2,i3,c1)=y+amp*u2;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
             real v1 = ct*vr-st*vt;
             real v2 = st*vr+ct*vt;
 
-	    state(i1,i2,i3,c0)=amp*v1;
-	    state(i1,i2,i3,c1)=amp*v2;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
+            state(i1,i2,i3,c0)=amp*v1;
+            state(i1,i2,i3,c1)=amp*v2;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
             real a1 = ct*ar-st*at;
             real a2 = st*ar+ct*at;
 
-	    state(i1,i2,i3,c0)=amp*a1;
-	    state(i1,i2,i3,c1)=amp*a2;
-	  }
-	else if( stateOption==boundaryTraction )
-	  {
-	    state(i1,i2,i3,c0)= -amp*(srr*ct-srt*st);
-	    state(i1,i2,i3,c1)= -amp*(srr*st+srt*ct);
-	  }
-	else if( stateOption==boundaryTractionRate )
-	  {
-	    // traction-rate: 
-	    state(i1,i2,i3,c0)= -amp*(sdrr*ct-sdrt*st);
-	    state(i1,i2,i3,c1)= -amp*(sdrr*st+sdrt*ct);
-	  }
-	else
-	  {
-	    OV_ABORT("Unknown state option");
-	  }
+            state(i1,i2,i3,c0)=amp*a1;
+            state(i1,i2,i3,c1)=amp*a2;
+          }
+        else if( stateOption==boundaryTraction )
+          {
+            state(i1,i2,i3,c0)= -amp*(srr*ct-srt*st);
+            state(i1,i2,i3,c1)= -amp*(srr*st+srt*ct);
+          }
+        else if( stateOption==boundaryTractionRate )
+          {
+            // traction-rate: 
+            state(i1,i2,i3,c0)= -amp*(sdrr*ct-sdrt*st);
+            state(i1,i2,i3,c1)= -amp*(sdrr*st+sdrt*ct);
+          }
+        else
+          {
+            OV_ABORT("Unknown state option");
+          }
       }
 
 
@@ -1557,7 +1557,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       rpar[5]=p0; 
 
       gi.inputString(answer,sPrintF("Enter the inflow state: rho0,u0,v0,p0 (default: rho0=%g, u0=%g, v0=%g, p0=%g)",
-				    rpar[2],rpar[3],rpar[4],rpar[5]));
+                                    rpar[2],rpar[3],rpar[4],rpar[5]));
       sScanF(answer,"%e %e %e %e %e",&rpar[2],&rpar[3],&rpar[4],&rpar[5]);
       printF("supersonic expansion: rho0=%g, u0=%g, v0=%g, p0=%g\n",rpar[2],rpar[3],rpar[4],rpar[5]);
 
@@ -1708,11 +1708,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       if( !db.has_key("tDisk") )
       { // Create parameters for the rotating disk solution
-	db.put<real>("tDisk");
-	db.put<int>("numberOfGridPointsDisk");
-	db.put<real>("omegaDisk");
-	db.put<real>("innerRadiusDisk");
-	db.put<real>("outerRadiusDisk");
+        db.put<real>("tDisk");
+        db.put<int>("numberOfGridPointsDisk");
+        db.put<real>("omegaDisk");
+        db.put<real>("innerRadiusDisk");
+        db.put<real>("outerRadiusDisk");
         db.put<RealArray>("uDisk"); // exact solution is stored here
       }
       
@@ -1740,7 +1740,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       sScanF(answer,"%i %e %e %e",&numberOfGridPoints,&omega,&innerRadius,&outerRadius);
 
       printF("rotatingDisk: setting n=%i, omega=%9.3e, ra=%9.3e, rb=%9.3e\n",
-	     numberOfGridPoints,omega,innerRadius,outerRadius);
+             numberOfGridPoints,omega,innerRadius,outerRadius);
 
 //       // We need to keep a FlowSolutions object around
 //       db.put<FlowSolutions*>("flowSolutions",NULL);
@@ -1766,20 +1766,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       if( !db.has_key("omegaDisk") )
       { // Create parameters for the rotating disk solution
-	// db.put<int>("numberOfGridPointsSolid");
-	// db.put<int>("numberOfGridPointsFluid");
-	db.put<real>("omegaDisk");
-	db.put<real>("innerRadiusDisk");
-	db.put<real>("outerRadiusDisk");
-	db.put<real>("outerRadiusFluid");
+        // db.put<int>("numberOfGridPointsSolid");
+        // db.put<int>("numberOfGridPointsFluid");
+        db.put<real>("omegaDisk");
+        db.put<real>("innerRadiusDisk");
+        db.put<real>("outerRadiusDisk");
+        db.put<real>("outerRadiusFluid");
 
-	db.put<real>("lambdas");
-	db.put<real>("mus");
-	db.put<real>("rho0");
-	db.put<real>("pOffset");
-	db.put<real>("gamma");
-	db.put<real>("Rg");
-	db.put<real>("gridRatio");
+        db.put<real>("lambdas");
+        db.put<real>("mus");
+        db.put<real>("rho0");
+        db.put<real>("pOffset");
+        db.put<real>("gamma");
+        db.put<real>("Rg");
+        db.put<real>("gridRatio");
       }
 
       // -- we need to save component numbers from both domains (saved in file scope global variables)--
@@ -1797,9 +1797,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
         // put defaults in for the fluid: (in case we only are solving for the solid)
         if( rc==-1 )
-	{
+        {
           rc=0; uc=1; vc=2; tc=3;
-	}
+        }
 
       }
       else
@@ -1811,9 +1811,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
         // put defaults in for the solid: (in case we only are solving for the fluid)
         if( v1c==-1 )
-	{
+        {
           v1c=0; v2c=1; s11c=2; s12c=3; s21c=4; u1c=5; u2c=6;
-	}
+        }
 
       }
       
@@ -1864,8 +1864,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("rotatingElasticDiskInFluid: setting omega=%9.3e, r0=%9.3e, r1=%9.3e, r2=%9.3e gridRatio=%g\n"
              "  lambda=%g, mu=%g, rho0=%g, pOffset=%g, gamma=%g, Rg=%g\n",
-	     omegaDisk,innerRadiusDisk,outerRadiusDisk,outerRadiusFluid,gridRatio,
-	     lambdas,mus,rho0,pOffset,gamma,Rg );
+             omegaDisk,innerRadiusDisk,outerRadiusDisk,outerRadiusFluid,gridRatio,
+             lambdas,mus,rho0,pOffset,gamma,Rg );
 
     }
     
@@ -1887,17 +1887,17 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution IS time dependent 
 
       printF("INFO:The FSI traveling wave solution is an exact solution for a solid (shell or bulk)\n"
-	     "coupled to a linearized incompressible fluid\n"
-	     "See: `An analysis of a new stable partitioned algorithm for FSI problems.\n"
+             "coupled to a linearized incompressible fluid\n"
+             "See: `An analysis of a new stable partitioned algorithm for FSI problems.\n"
              "      Part I: Incompressible flow and elastic solids'. \n"
-	     "      J.W. Banks, W.D. Henshaw and D.W. Schwendeman, JCP 2014.\n");
+             "      J.W. Banks, W.D. Henshaw and D.W. Schwendeman, JCP 2014.\n");
     
       
       if( !dbase.has_key("travelingWaveFsi") )
-	dbase.put<TravelingWaveFsi*>("travelingWaveFsi")=NULL;
+        dbase.put<TravelingWaveFsi*>("travelingWaveFsi")=NULL;
 
       if( dbase.get<TravelingWaveFsi*>("travelingWaveFsi")==NULL )
-	dbase.get<TravelingWaveFsi*>("travelingWaveFsi")= new TravelingWaveFsi; // who will delete ???
+        dbase.get<TravelingWaveFsi*>("travelingWaveFsi")= new TravelingWaveFsi; // who will delete ???
       TravelingWaveFsi & travelingWaveFsi = *dbase.get<TravelingWaveFsi*>("travelingWaveFsi");
 
       travelingWaveFsi.update(gi );
@@ -1908,16 +1908,16 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       if( userKnownSolution=="travelingWaveFSIsolid" )
       {
         // -- set the component numbers ---
-	travelingWaveFsi.dbase.get<int>("u1c") =dbase.get<int>("u1c") ;
-	travelingWaveFsi.dbase.get<int>("u2c") =dbase.get<int>("u2c") ;
-						                      
-	travelingWaveFsi.dbase.get<int>("v1c") =dbase.get<int>("v1c") ;
-	travelingWaveFsi.dbase.get<int>("v2c") =dbase.get<int>("v2c") ;
-						                      
-	travelingWaveFsi.dbase.get<int>("s11c")=dbase.get<int>("s11c");
-	travelingWaveFsi.dbase.get<int>("s12c")=dbase.get<int>("s12c");
-	travelingWaveFsi.dbase.get<int>("s21c")=dbase.get<int>("s21c");
-	travelingWaveFsi.dbase.get<int>("s22c")=dbase.get<int>("s22c");
+        travelingWaveFsi.dbase.get<int>("u1c") =dbase.get<int>("u1c") ;
+        travelingWaveFsi.dbase.get<int>("u2c") =dbase.get<int>("u2c") ;
+                                                                      
+        travelingWaveFsi.dbase.get<int>("v1c") =dbase.get<int>("v1c") ;
+        travelingWaveFsi.dbase.get<int>("v2c") =dbase.get<int>("v2c") ;
+                                                                      
+        travelingWaveFsi.dbase.get<int>("s11c")=dbase.get<int>("s11c");
+        travelingWaveFsi.dbase.get<int>("s12c")=dbase.get<int>("s12c");
+        travelingWaveFsi.dbase.get<int>("s21c")=dbase.get<int>("s21c");
+        travelingWaveFsi.dbase.get<int>("s22c")=dbase.get<int>("s22c");
       }
       
 
@@ -1959,7 +1959,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
              " rampOrder, ra,rb : order-of-ramp (1,2,3,4), start and end of ramp transition\n"
              "--------------------------------------------------------------------------------\n"
-	);
+        );
       gi.inputString(answer,"Enter amp, k,t0,H,Hbar,rho,rhoBar,lambdaBar,muBar,thetaR");
       sScanF(answer,"%e %e %e %e %e %e %e %e %e %e",&amp,&k,&t0,&H,&Hbar,&rho,&rhoBar,&lambdaBar,&muBar,&thetaR);
 
@@ -2039,7 +2039,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " t0 : determines the phase for time dependence\n"
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
              "--------------------------------------------------------------------------------\n"
-	);
+        );
       gi.inputString(answer,"Enter amp, k,t0,R,Rbar,rho,rhoBar,lambdaBar,muBar");
       sScanF(answer,"%e %e %e %e %e %e %e %e %e",&amp,&k,&t0,&R,&Rbar,&rho,&rhoBar,&lambdaBar,&muBar);
 
@@ -2119,9 +2119,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       printF("--------------------------------------------------------------------------------\n"
              "------ Exact solution for a parallel flow shearing a bulk elastic solid --------\n\n"
              " \bar{u}_1(y,t) = amp         exp(i omega t) (A cos(ks y) + B sin( ks y))\n"
-	     "     {v}_1(y,t) = amp i omega exp(i omega t) (C exp(kf y) + D exp(-kf y))\n"
-	     "             ks = omega / cs\n"
-	     "             kf = sqrt(i rho omega / mu)\n"
+             "     {v}_1(y,t) = amp i omega exp(i omega t) (C exp(kf y) + D exp(-kf y))\n"
+             "             ks = omega / cs\n"
+             "             kf = sqrt(i rho omega / mu)\n"
              " Parameters: \n"
              " amp    : maximum amplitude of the displacement \n"
              " omega  : time frequency of solution \n"
@@ -2129,7 +2129,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
              " thetaR : rotation angle of reference frame\n"
              "--------------------------------------------------------------------------------\n"
-	);
+        );
 
       real H, Hbar, rho, rhoBar, lambdaBar;
       
@@ -2187,28 +2187,28 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       
 
       if (caseid == 0) {
-	H      =  1.0;
-	Hbar   =  0.5;
-	rho    =  1.0;
-	rhoBar = 10.0;
-	muBar  = 10.0;
-	mu     = 10.0;
+        H      =  1.0;
+        Hbar   =  0.5;
+        rho    =  1.0;
+        rhoBar = 10.0;
+        muBar  = 10.0;
+        mu     = 10.0;
 
-	ksr =  2.3696802625735396e+00; ksi =  2.7422804696932346e+00; 
-	kfr =  2.1000127772389374e-01; kfi =  5.6420615347139857e-01; 
-	omegar =  2.3696802625735396e+00; omegai =  2.7422804696932346e+00; 
-	ar =  9.9999999999999978e-01; ai =  0.0000000000000000e+00; 
-	br =  8.1963580548694320e-02; bi = -9.0822504122626635e-01; 
-	cr =  1.7307707579616807e-01; ci =  6.8318696356195785e-01; 
-	dr =  8.2692292420383173e-01; di = -6.8318696356195796e-01; 
+        ksr =  2.3696802625735396e+00; ksi =  2.7422804696932346e+00; 
+        kfr =  2.1000127772389374e-01; kfi =  5.6420615347139857e-01; 
+        omegar =  2.3696802625735396e+00; omegai =  2.7422804696932346e+00; 
+        ar =  9.9999999999999978e-01; ai =  0.0000000000000000e+00; 
+        br =  8.1963580548694320e-02; bi = -9.0822504122626635e-01; 
+        cr =  1.7307707579616807e-01; ci =  6.8318696356195785e-01; 
+        dr =  8.2692292420383173e-01; di = -6.8318696356195796e-01; 
       } else if (caseid == 1) {
         printF("caseid = 1\n");
         H      =  1.0;
-	Hbar   =  0.5;
-	rho    =  1.0;
-	rhoBar = 1000.0;
-	muBar  = 1000.0;
-	mu     = 10.0;
+        Hbar   =  0.5;
+        rho    =  1.0;
+        rhoBar = 1000.0;
+        muBar  = 1000.0;
+        mu     = 10.0;
 
         ksr =  3.1395001947395866e+00; ksi =  2.0031082446118849e-02; 
         kfr =  3.9493879362588946e-01; kfi =  3.9746667653437917e-01; 
@@ -2221,11 +2221,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       } else if (caseid == 2) {
         printF("caseid = 2\n");
         H      =  1.0;
-	Hbar   =  0.5;
-	rho    =  1.0;
-	rhoBar = .001;
-	muBar  = .001;
-	mu     = .1;
+        Hbar   =  0.5;
+        rho    =  1.0;
+        rhoBar = .001;
+        muBar  = .001;
+        mu     = .1;
 
         ksr = -2.2805529212348262e-03; ksi =  2.8199257008559516e-02; 
         kfr =  2.1455425699964142e-02; kfi = -5.3146298589606578e-01; 
@@ -2238,11 +2238,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       } else if (caseid == 3) {
         printF("caseid = 3\n");
         H      =  1.0;
-	Hbar   =  0.5;
-	rho    =  1.0;
-	rhoBar = 1000.;
-	muBar  = 1000.;
-	mu     = .1;
+        Hbar   =  0.5;
+        rho    =  1.0;
+        rhoBar = 1000.;
+        muBar  = 1000.;
+        mu     = .1;
         
         ksr =  3.1408006015076433e+00; ksi =  7.9299546151544880e-04; 
         kfr =  3.9623274133737652e+00; kfi =  3.9633279558205103e+00; 
@@ -2254,11 +2254,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       } else if (caseid == 4) {
         printF("caseid = 4\n");
         H      =  1.0;
-	Hbar   =  0.5;
-	rho    =  1.0;
-	rhoBar = 1.;
-	muBar  = 1.;
-	mu     = .1;
+        Hbar   =  0.5;
+        rho    =  1.0;
+        rhoBar = 1.;
+        muBar  = 1.;
+        mu     = .1;
 
         ksr =  2.3506891360808524e+00; ksi =  5.4334304641413600e-01; 
         kfr =  3.0572240284970760e+00; kfi =  3.8444829593277232e+00; 
@@ -2270,7 +2270,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       }
 
       printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g, thetaR=%f\n",
-	     amp,H,Hbar,rho,rhoBar,muBar,mu,thetaR);
+             amp,H,Hbar,rho,rhoBar,muBar,mu,thetaR);
       printF("*** WARNING: these may not be the same as the solver parameters ***\n");
 
       
@@ -2310,16 +2310,16 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       printF("--------------------------------------------------------------------------------\n"
              "------ Exact solution for a radial flow shearing a bulk elastic solid ----------\n\n"
              " \\bar{u}_theta(y,t) = amp exp(i omega t) (A J1(ks y) + B Y1(ks y))\n"
-	     "     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))\n"
-	     "             ks = omega / cs\n"
-	     "             kf = sqrt(- i rho omega / mu)\n"
+             "     {v}_theta(y,t) = amp exp(i omega t) (C J1(kf y) + D Y1(kf y))\n"
+             "             ks = omega / cs\n"
+             "             kf = sqrt(- i rho omega / mu)\n"
              " Parameters: \n"
              " amp    : maximum amplitude of the displacement \n"
              " omega  : time frequency of solution \n"
              " H,Hbar : Height of fluid and solid domains\n"
              " rhoBar,lambaBar,muBar : solid density and Lame parameters\n"
              "--------------------------------------------------------------------------------\n"
-	);
+        );
 
       real rho, rhoBar;
       
@@ -2378,9 +2378,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       Rbar   =  0.5;
       rho    =  1.0;
       if (caseid == 0) {
-	rhoBar = 10.0;
-	muBar  = 10.0;
-	mu     = 10.0;
+        rhoBar = 10.0;
+        muBar  = 10.0;
+        mu     = 10.0;
 
         ksr = 7.6999492454582601e+00; ksi = 3.7460608153022529e-01;
         kfr = 6.3575397445543058e-01; kfi = -6.0557617843080136e-01;
@@ -2390,9 +2390,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
 
       } else if (caseid == 1) {
-	rhoBar = 1000.0;
-	muBar  = 1000.0;
-	mu     = 1000.0;
+        rhoBar = 1000.0;
+        muBar  = 1000.0;
+        mu     = 1000.0;
 
         ksr = 1.0266332477575125e+01; ksi = 1.0666190506338059e-01;
         kfr = 7.2019262870453926e-01; kfi = -7.1274906659638360e-01;
@@ -2403,9 +2403,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       } else if (caseid == 2) {
         // delta = .001
-	rhoBar = .001;
-	muBar  = .001;
-	mu     = .1;
+        rhoBar = .001;
+        muBar  = .001;
+        mu     = .1;
 
         // ksr = 7.6643963616989641e+00; ksi = 1.4971482952951449e-03;
         // kfr = 6.1910797346744273e+00; kfi = -6.1898704993031517e+00;
@@ -2423,9 +2423,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       } else if (caseid == 3) {
         // delta = .1
-	rhoBar = .1;
-	muBar  = .1;
-	mu     = .1;
+        rhoBar = .1;
+        muBar  = .1;
+        mu     = .1;
 
         ksr = 7.7650928271414807e+00; ksi = 1.4265661636307109e-01;
         kfr = 6.2885052846156997e+00; kfi = -6.1740369735699572e+00;
@@ -2437,9 +2437,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       } else if (caseid == 4) {
         // delta = 1
-	rhoBar = 1.;
-	muBar  = 1.;
-	mu     = .1;
+        rhoBar = 1.;
+        muBar  = 1.;
+        mu     = .1;
 
         // ksr = 8.7781435918240884e+00; ksi = 7.8543421854498385e-01;
         // kfr = 6.9277148335894969e+00; kfi = -6.3355260736647683e+00;
@@ -2457,9 +2457,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       } else if (caseid == 5) {
         // delta = 10
-	rhoBar = 10.;
-	muBar  = 10.;
-	mu     = .1;
+        rhoBar = 10.;
+        muBar  = 10.;
+        mu     = .1;
 
         ksr = 1.0125285525095206e+01; ksi = 1.9453071796036750e-01;
         kfr = 7.1839003224493521e+00; kfi = -7.0472063020238203e+00;
@@ -2469,9 +2469,9 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         cr =  1.0000000000000000e-04; ci =  0.0000000000000000e+00; 
       } else if (caseid == 6) {
         // delta = 1000
-	rhoBar = 1000.;
-	muBar  = 1000.;
-	mu     = .1;
+        rhoBar = 1000.;
+        muBar  = 1000.;
+        mu     = .1;
 
         // ksr = 1.0269827226818917e+01; ksi = 2.0553833970137778e-03;
         // kfr = 7.1665482681330488e+00; kfi = -7.1651141125254005e+00;
@@ -2490,7 +2490,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       }
 
       printF("Setting amp=%g, R=%g, Rbar=%g, rho=%g, rhoBar=%g, muBar=%g, mu=%g\n",
-	     amp,R,Rbar,rho,rhoBar,muBar,mu);
+             amp,R,Rbar,rho,rhoBar,muBar,mu);
       printF("*** WARNING: these may not be the same as the solver parameters ***\n");
 
       
@@ -2574,7 +2574,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       }
 
       printF("Setting amp=%g, H=%g, Hbar=%g, rho=%g, rhoBar=%g, mu=%g\n",
-	     amp,H,HBar,rho,rhoBar,mu);
+             amp,H,HBar,rho,rhoBar,mu);
       
     }
     else if (answer == "fib radial traveling wave") 

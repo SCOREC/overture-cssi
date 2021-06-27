@@ -56,12 +56,12 @@ class Oges
   } sparseStorageFormat;
 
 
-  Oges();	
+  Oges();       
   Oges( CompositeGrid & cg );
   Oges( MappedGrid & mg );
   Oges(const Oges & X);
   Oges & operator=( const Oges & x );
-  virtual ~Oges();	
+  virtual ~Oges();      
    
   // define a predefined equation
   int setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation, 
@@ -70,19 +70,19 @@ class Oges
                                         const RealArray & bcData, 
                                         RealArray & constantCoeff=Overture::nullRealArray(),
                                         realCompositeGridFunction *variableCoeff=NULL,
-				        realCompositeGridFunction *advectionCoeff=NULL );
+                                        realCompositeGridFunction *advectionCoeff=NULL );
 
   // supply matrix coefficients and boundary conditions
   int setCoefficientsAndBoundaryConditions( realCompositeGridFunction & coeff,
                                             const IntegerArray & boundaryConditions,
-					    const RealArray & bcData );
+                                            const RealArray & bcData );
 
   // specify boundary data: 
   int setBoundaryData( std::vector<BoundaryData> & boundaryData );
 
   void determineErrors(realCompositeGridFunction & u,  // is this needed?
                        OGFunction & exactSolution,
-		       int & printOptions );
+                       int & printOptions );
 
   aString getErrorMessage( const int errorNumber );    // is this needed?
 
@@ -119,11 +119,11 @@ class Oges
   int set( OgesParameters::SolverMethodEnum option );
   int set( OgesParameters::MatrixOrderingEnum option );
   int set( OgesParameters::PreconditionerEnum option );
-	   
+           
   int set( OgesParameters::OptionEnum option, int value=0 );
   int set( OgesParameters::OptionEnum option, float value );
   int set( OgesParameters::OptionEnum option, double value );
-	   		      
+                              
   int setOgesParameters( const OgesParameters & opar );
   
   // return a list of the extra equation numbers 
@@ -174,17 +174,17 @@ class Oges
   int writeMatrixToFile( aString fileName );
   int writeMatrixGridInformationToFile( aString fileName );
   int writePetscMatrixToFile( aString filename,
-			      realCompositeGridFunction & u,
-			      realCompositeGridFunction & f);
+                              realCompositeGridFunction & u,
+                              realCompositeGridFunction & f);
 
   void reference(const Oges &); 
 
-  // Supply the coefficient matrix (and optionally boundary conditions, needed buy multigrid for e.g.): 
+  // Supply the coefficient matrix (and optionally boundary conditions, needed by multigrid for e.g.): 
   int setCoefficientArray( realCompositeGridFunction & coeff,
-			   const IntegerArray & boundaryConditions=Overture::nullIntArray(),
+                           const IntegerArray & boundaryConditions=Overture::nullIntArray(),
                            const RealArray & bcData=Overture::nullRealArray() );
   int setCoefficientArray( realMappedGridFunction & coeff,
-			   const IntegerArray & boundaryConditions=Overture::nullIntArray(),
+                           const IntegerArray & boundaryConditions=Overture::nullIntArray(),
                            const RealArray & bcData=Overture::nullRealArray() );
 
   // only solve the equations on some grids:
@@ -235,11 +235,11 @@ class Oges
 
   int formMatrix(int & numberOfEquations, int & numberOfNonzeros,
                  SparseStorageFormatEnum storageFormat,
-		 bool allocateSpace = TRUE,
-		 bool factorMatrixInPlace = FALSE );
+                 bool allocateSpace = TRUE,
+                 bool factorMatrixInPlace = FALSE );
 
   int formRhsAndSolutionVectors(realCompositeGridFunction & u, 
-				realCompositeGridFunction & f );
+                                realCompositeGridFunction & f );
   int storeSolutionIntoGridFunction();
 
 
@@ -345,7 +345,7 @@ class Oges
   inline int arrayDims(const int grid, const int side, const int axis );
 
   IntegerDistributedArray equationNo(const int n, const Index & I1, const Index & I2, const Index & I3, 
-		      const int grid );
+                      const int grid );
 
  public:
   static int debug;

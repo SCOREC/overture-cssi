@@ -10,9 +10,9 @@
 
 
 
-#define UR2A(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*d12(axis1) )
-#define US2A(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*d12(axis2) )
-#define UT2A(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*d12(axis3) )
+#define UR2A(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*d12(0) )
+#define US2A(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*d12(1) )
+#define UT2A(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*d12(2) )
 
 #undef  RX
 #define RX(I1,I2,I3) inverseVertexDerivative(I1,I2,I3,0)
@@ -27,33 +27,33 @@
 
 
 
-#define RXR2(I1,I2,I3) ( (RX(I1+1,I2,I3)-RX(I1-1,I2,I3))*d12(axis1) )
-#define RYR2(I1,I2,I3) ( (RY(I1+1,I2,I3)-RY(I1-1,I2,I3))*d12(axis1) )
-#define RZR2(I1,I2,I3) ( (RZ(I1+1,I2,I3)-RZ(I1-1,I2,I3))*d12(axis1) )
-#define RXS2(I1,I2,I3) ( (RX(I1,I2+1,I3)-RX(I1,I2-1,I3))*d12(axis2) )
-#define RYS2(I1,I2,I3) ( (RY(I1,I2+1,I3)-RY(I1,I2-1,I3))*d12(axis2) )
-#define RZS2(I1,I2,I3) ( (RZ(I1,I2+1,I3)-RZ(I1,I2-1,I3))*d12(axis2) )
-#define RXT2(I1,I2,I3) ( (RX(I1,I2,I3+1)-RX(I1,I2,I3-1))*d12(axis3) )
-#define RYT2(I1,I2,I3) ( (RY(I1,I2,I3+1)-RY(I1,I2,I3-1))*d12(axis3) )
-#define RZT2(I1,I2,I3) ( (RZ(I1,I2,I3+1)-RZ(I1,I2,I3-1))*d12(axis3) )
-#define SXR2(I1,I2,I3) ( (SX(I1+1,I2,I3)-SX(I1-1,I2,I3))*d12(axis1) )
-#define SYR2(I1,I2,I3) ( (SY(I1+1,I2,I3)-SY(I1-1,I2,I3))*d12(axis1) )
-#define SZR2(I1,I2,I3) ( (SZ(I1+1,I2,I3)-SZ(I1-1,I2,I3))*d12(axis1) )
-#define SXS2(I1,I2,I3) ( (SX(I1,I2+1,I3)-SX(I1,I2-1,I3))*d12(axis2) )
-#define SYS2(I1,I2,I3) ( (SY(I1,I2+1,I3)-SY(I1,I2-1,I3))*d12(axis2) )
-#define SZS2(I1,I2,I3) ( (SZ(I1,I2+1,I3)-SZ(I1,I2-1,I3))*d12(axis2) )
-#define SXT2(I1,I2,I3) ( (SX(I1,I2,I3+1)-SX(I1,I2,I3-1))*d12(axis3) )
-#define SYT2(I1,I2,I3) ( (SY(I1,I2,I3+1)-SY(I1,I2,I3-1))*d12(axis3) )
-#define SZT2(I1,I2,I3) ( (SZ(I1,I2,I3+1)-SZ(I1,I2,I3-1))*d12(axis3) )
-#define TXR2(I1,I2,I3) ( (TX(I1+1,I2,I3)-TX(I1-1,I2,I3))*d12(axis1) )
-#define TYR2(I1,I2,I3) ( (TY(I1+1,I2,I3)-TY(I1-1,I2,I3))*d12(axis1) )
-#define TZR2(I1,I2,I3) ( (TZ(I1+1,I2,I3)-TZ(I1-1,I2,I3))*d12(axis1) )
-#define TXS2(I1,I2,I3) ( (TX(I1,I2+1,I3)-TX(I1,I2-1,I3))*d12(axis2) )
-#define TYS2(I1,I2,I3) ( (TY(I1,I2+1,I3)-TY(I1,I2-1,I3))*d12(axis2) )
-#define TZS2(I1,I2,I3) ( (TZ(I1,I2+1,I3)-TZ(I1,I2-1,I3))*d12(axis2) )
-#define TXT2(I1,I2,I3) ( (TX(I1,I2,I3+1)-TX(I1,I2,I3-1))*d12(axis3) )
-#define TYT2(I1,I2,I3) ( (TY(I1,I2,I3+1)-TY(I1,I2,I3-1))*d12(axis3) )
-#define TZT2(I1,I2,I3) ( (TZ(I1,I2,I3+1)-TZ(I1,I2,I3-1))*d12(axis3) )
+#define RXR2(I1,I2,I3) ( (RX(I1+1,I2,I3)-RX(I1-1,I2,I3))*d12(0) )
+#define RYR2(I1,I2,I3) ( (RY(I1+1,I2,I3)-RY(I1-1,I2,I3))*d12(0) )
+#define RZR2(I1,I2,I3) ( (RZ(I1+1,I2,I3)-RZ(I1-1,I2,I3))*d12(0) )
+#define RXS2(I1,I2,I3) ( (RX(I1,I2+1,I3)-RX(I1,I2-1,I3))*d12(1) )
+#define RYS2(I1,I2,I3) ( (RY(I1,I2+1,I3)-RY(I1,I2-1,I3))*d12(1) )
+#define RZS2(I1,I2,I3) ( (RZ(I1,I2+1,I3)-RZ(I1,I2-1,I3))*d12(1) )
+#define RXT2(I1,I2,I3) ( (RX(I1,I2,I3+1)-RX(I1,I2,I3-1))*d12(2) )
+#define RYT2(I1,I2,I3) ( (RY(I1,I2,I3+1)-RY(I1,I2,I3-1))*d12(2) )
+#define RZT2(I1,I2,I3) ( (RZ(I1,I2,I3+1)-RZ(I1,I2,I3-1))*d12(2) )
+#define SXR2(I1,I2,I3) ( (SX(I1+1,I2,I3)-SX(I1-1,I2,I3))*d12(0) )
+#define SYR2(I1,I2,I3) ( (SY(I1+1,I2,I3)-SY(I1-1,I2,I3))*d12(0) )
+#define SZR2(I1,I2,I3) ( (SZ(I1+1,I2,I3)-SZ(I1-1,I2,I3))*d12(0) )
+#define SXS2(I1,I2,I3) ( (SX(I1,I2+1,I3)-SX(I1,I2-1,I3))*d12(1) )
+#define SYS2(I1,I2,I3) ( (SY(I1,I2+1,I3)-SY(I1,I2-1,I3))*d12(1) )
+#define SZS2(I1,I2,I3) ( (SZ(I1,I2+1,I3)-SZ(I1,I2-1,I3))*d12(1) )
+#define SXT2(I1,I2,I3) ( (SX(I1,I2,I3+1)-SX(I1,I2,I3-1))*d12(2) )
+#define SYT2(I1,I2,I3) ( (SY(I1,I2,I3+1)-SY(I1,I2,I3-1))*d12(2) )
+#define SZT2(I1,I2,I3) ( (SZ(I1,I2,I3+1)-SZ(I1,I2,I3-1))*d12(2) )
+#define TXR2(I1,I2,I3) ( (TX(I1+1,I2,I3)-TX(I1-1,I2,I3))*d12(0) )
+#define TYR2(I1,I2,I3) ( (TY(I1+1,I2,I3)-TY(I1-1,I2,I3))*d12(0) )
+#define TZR2(I1,I2,I3) ( (TZ(I1+1,I2,I3)-TZ(I1-1,I2,I3))*d12(0) )
+#define TXS2(I1,I2,I3) ( (TX(I1,I2+1,I3)-TX(I1,I2-1,I3))*d12(1) )
+#define TYS2(I1,I2,I3) ( (TY(I1,I2+1,I3)-TY(I1,I2-1,I3))*d12(1) )
+#define TZS2(I1,I2,I3) ( (TZ(I1,I2+1,I3)-TZ(I1,I2-1,I3))*d12(1) )
+#define TXT2(I1,I2,I3) ( (TX(I1,I2,I3+1)-TX(I1,I2,I3-1))*d12(2) )
+#define TYT2(I1,I2,I3) ( (TY(I1,I2,I3+1)-TY(I1,I2,I3-1))*d12(2) )
+#define TZT2(I1,I2,I3) ( (TZ(I1,I2,I3+1)-TZ(I1,I2,I3-1))*d12(2) )
 
 #define UX21(I1,I2,I3,KD)  ( RX(I1,I2,I3)*UR2(I1,I2,I3,KD) )
 
@@ -142,19 +142,19 @@
 
 #define URR2(I1,I2,I3,KD)                                          \
        ( ( -2.*U(I1,I2,I3,KD)                                      \
-          +   (U(I1+1,I2,I3,KD)+U(I1-1,I2,I3,KD))  )*d22(axis1) )
+          +   (U(I1+1,I2,I3,KD)+U(I1-1,I2,I3,KD))  )*d22(0) )
 #define USS2(I1,I2,I3,KD)                                          \
        ( ( -2.*U(I1,I2,I3,KD)                                      \
-          +    (U(I1,I2+1,I3,KD)+U(I1,I2-1,I3,KD)) )*d22(axis2) )
+          +    (U(I1,I2+1,I3,KD)+U(I1,I2-1,I3,KD)) )*d22(1) )
 #define URS2(I1,I2,I3,KD)                                          \
-       (  (UR2(I1,I2+1,I3,KD)-UR2(I1,I2-1,I3,KD))*d12(axis2) )
+       (  (UR2(I1,I2+1,I3,KD)-UR2(I1,I2-1,I3,KD))*d12(1) )
 #define UTT2(I1,I2,I3,KD)                                          \
        ( ( -2.*U(I1,I2,I3,KD)                                      \
-          +   (U(I1,I2,I3+1,KD)+U(I1,I2,I3-1,KD))  )*d22(axis3) )
+          +   (U(I1,I2,I3+1,KD)+U(I1,I2,I3-1,KD))  )*d22(2) )
 #define URT2(I1,I2,I3,KD)                                          \
-       (   (UR2(I1,I2,I3+1,KD)-UR2(I1,I2,I3-1,KD))*d12(axis3) )
+       (   (UR2(I1,I2,I3+1,KD)-UR2(I1,I2,I3-1,KD))*d12(2) )
 #define UST2(I1,I2,I3,KD)                                          \
-       (  (US2(I1,I2,I3+1,KD)-US2(I1,I2,I3-1,KD))*d12(axis3) )
+       (  (US2(I1,I2,I3+1,KD)-US2(I1,I2,I3-1,KD))*d12(2) )
 
 #define UXX21(I1,I2,I3,KD) (SQR(RX(I1,I2,I3))*URR2(I1,I2,I3,KD))
 
@@ -467,23 +467,23 @@
 
 // 22 means 2nd order, 2D:
 
-#define UX22R(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*h21(axis1) )
-#define UY22R(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*h21(axis2) )
-#define UZ22R(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*h21(axis3) )
+#define UX22R(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))*h21(0) )
+#define UY22R(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))*h21(1) )
+#define UZ22R(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD))*h21(2) )
 
-#define UXX22R(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-2.*U(I1,I2,I3,KD)+U(I1-1,I2,I3,KD))*h22(axis1) )
-#define UYY22R(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-2.*U(I1,I2,I3,KD)+U(I1,I2-1,I3,KD))*h22(axis2) )
-#define UZZ22R(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-2.*U(I1,I2,I3,KD)+U(I1,I2,I3-1,KD))*h22(axis3) )
+#define UXX22R(I1,I2,I3,KD) ( (U(I1+1,I2,I3,KD)-2.*U(I1,I2,I3,KD)+U(I1-1,I2,I3,KD))*h22(0) )
+#define UYY22R(I1,I2,I3,KD) ( (U(I1,I2+1,I3,KD)-2.*U(I1,I2,I3,KD)+U(I1,I2-1,I3,KD))*h22(1) )
+#define UZZ22R(I1,I2,I3,KD) ( (U(I1,I2,I3+1,KD)-2.*U(I1,I2,I3,KD)+U(I1,I2,I3-1,KD))*h22(2) )
 
 
 #define UXY22R(I1,I2,I3,KD) ( (U(I1+1,I2+1,I3,KD)-U(I1-1,I2+1,I3,KD)                 \
-                              -U(I1+1,I2-1,I3,KD)+U(I1-1,I2-1,I3,KD))*(h21(axis1)*h21(axis2)) )
+                              -U(I1+1,I2-1,I3,KD)+U(I1-1,I2-1,I3,KD))*(h21(0)*h21(1)) )
 
 #define UXZ22R(I1,I2,I3,KD) ( (U(I1+1,I2,I3+1,KD)-U(I1-1,I2,I3+1,KD)                 \
-                              -U(I1+1,I2,I3-1,KD)+U(I1-1,I2,I3-1,KD))*(h21(axis1)*h21(axis3)) )
+                              -U(I1+1,I2,I3-1,KD)+U(I1-1,I2,I3-1,KD))*(h21(0)*h21(2)) )
 
 #define UYZ22R(I1,I2,I3,KD) ( (U(I1,I2+1,I3+1,KD)-U(I1,I2+1,I3-1,KD)                 \
-                              -U(I1,I2-1,I3+1,KD)+U(I1,I2-1,I3-1,KD))*(h21(axis2)*h21(axis3)) )
+                              -U(I1,I2-1,I3+1,KD)+U(I1,I2-1,I3-1,KD))*(h21(1)*h21(2)) )
 
 
 #define LAPLACIAN22R(I1,I2,I3,KD)  ( UXX22R(I1,I2,I3,KD)+UYY22R(I1,I2,I3,KD) )

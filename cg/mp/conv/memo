@@ -1,3 +1,170 @@
+
+********************************
+***** Wed/Thurs May 5/6, 2021
+
+>>> PLANE INTER MODE -- tables for mpRef
+
+conv.p twoDomainsCHT.conv -problem=planeInterfaceModeChamp -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -ng=5
+
+
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=0 -domain1=leftDomain -domain2=rightDomain -tp=.7 -tf=.7 -ng=5
+
+
+
+
+>>>>>>>>>>>  CONTINUE ON CONCENTRIC CYLINDERS CHT solution
+
+SIGHNS BUGS FIXED IN  Lc operator 
+
+### CHAMP: looks OK -- champ is moe accurate than DN (?)
+conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 1.73e-03 &       
+ doubleAnnulusGride2 &     2 & 6.79e-04 &  2.55 
+ doubleAnnulusGride4 &     4 & 2.33e-04 &  2.91 
+ doubleAnnulusGride8 &     8 & 6.56e-05 &  3.55 
+doubleAnnulusGride16 &    16 & 1.73e-05 &  3.79 
+doubleAnnulusGride32 &    32 & 4.44e-06 &  3.90 
+Convergence rates: c0=1.74 
+
+
+## NO CHAMP:
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=0 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 7.54e-03 &       
+ doubleAnnulusGride2 &     2 & 2.38e-03 &  3.17 
+ doubleAnnulusGride4 &     4 & 6.70e-04 &  3.55 
+ doubleAnnulusGride8 &     8 & 1.78e-04 &  3.76 
+doubleAnnulusGride16 &    16 & 4.58e-05 &  3.89 
+doubleAnnulusGride32 &    32 & 1.16e-05 &  3.95 
+Convergence rates: c0=1.88 
+
+
+
+>>>>>>>>> PLANAR INTERFACE 
+
+########## NON-SQUARES ##############
+cgmp -noplot twoDomainsCHT.cmd -g=twoNonSquaresInterfacee1.order2.hdf -dtMax=.05 -useChamp=1 -kappa1=.3 -ktc1=.1 -kappa2=.1 -ktc2=.2 -known=planeInterfaceMode -uMin=-1.5 -uMax=1.2 -tf=.05 -tp=.05 -ts=im -useMultiStage=1 -nc=21 -coupled=0 -itol=1e-12 -debug=3 -go=go > junk2
+
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoNonSquaresInterface -known=planeInterfaceMode -useChamp=1 -domain1=leftDomain -domain2=rightDomain -tp=.1 -tf=.1 -ng=4
+
+                grid  & N &  $ & r 
+twoNonSquaresInterfacee1 &     1 & 4.01e-04 &       
+twoNonSquaresInterfacee2 &     2 & 1.37e-04 &  2.93 
+twoNonSquaresInterfacee4 &     4 & 2.73e-05 &  5.02 
+twoNonSquaresInterfacee8 &     8 & 4.90e-06 &  5.57 
+Convergence rates: c0=2.14 
+
+
+#############  TWO SQUARES ##################
+
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=1 -domain1=leftDomain -domain2=rightDomain -tp=.3 -tf=.3 -ng=4
+
+CHAMP tf=1
+
+                grid  & N &  $ & r 
+twoSquaresInterfacee1 &     1 & 9.56e-04 &       
+twoSquaresInterfacee2 &     2 & 1.56e-04 &  6.13 
+twoSquaresInterfacee4 &     4 & 2.77e-05 &  5.63 
+twoSquaresInterfacee8 &     8 & 5.65e-06 &  4.90 
+twoSquaresInterfacee16 &    16 & 1.27e-06 &  4.45 
+Convergence rates: c0=2.39 
+
+
+CHAMP tf=.3 
+                grid  & N &  $ & r 
+twoSquaresInterfacee1 &     1 & 8.86e-04 &       
+twoSquaresInterfacee2 &     2 & 1.70e-04 &  5.21 
+twoSquaresInterfacee4 &     4 & 2.92e-05 &  5.82 
+twoSquaresInterfacee8 &     8 & 5.66e-06 &  5.16 
+Convergence rates: c0=2.44
+
+
+CHAMP: tf=.1
+                grid  & N &  $ & r 
+twoSquaresInterfacee1 &     1 & 4.01e-04 &       
+twoSquaresInterfacee2 &     2 & 1.37e-04 &  2.93 
+twoSquaresInterfacee4 &     4 & 2.73e-05 &  5.02 
+twoSquaresInterfacee8 &     8 & 4.90e-06 &  5.57 
+twoSquaresInterfacee16 &    16 & 9.77e-07 &  5.02 
+Convergence rates: c0=2.22 
+
+NO CHAMP
+conv.p twoDomainsCHT.conv -problem=planeInterfaceMode -cg=twoSquaresInterface -known=planeInterfaceMode -useChamp=0 -domain1=leftDomain -domain2=rightDomain -tp=.1 -tf=.1 -ng=4
+
+                grid  & N &  $ & r 
+twoSquaresInterfacee1 &     1 & 5.13e-04 &       
+twoSquaresInterfacee2 &     2 & 1.44e-04 &  3.56 
+twoSquaresInterfacee4 &     4 & 3.67e-05 &  3.92 
+twoSquaresInterfacee8 &     8 & 9.24e-06 &  3.97 
+twoSquaresInterfacee16 &    16 & 2.32e-06 &  3.98 
+Convergence rates: c0=1.95 
+
+
+
+>>>>>>>>>>>   START ON CONCENTRIC CYLINDERS CHT solution
+
+### CHAMP: *trouble* looks first-order
+conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.1 -tf=.1 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 4.20e-03 &       
+ doubleAnnulusGride2 &     2 & 2.82e-03 &  1.49 
+ doubleAnnulusGride4 &     4 & 1.61e-03 &  1.75 
+ doubleAnnulusGride8 &     8 & 8.22e-04 &  1.96 
+Convergence rates: c0=0.79 
+
+
+#### NO CHAMP: ... looks 2nd-order
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -tp=.3 -tf=.3 -nMode=2 -mRoot=0 -ng=4
+
+
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 7.26e-03 &       
+ doubleAnnulusGride2 &     2 & 2.31e-03 &  3.14 
+ doubleAnnulusGride4 &     4 & 6.54e-04 &  3.53 
+ doubleAnnulusGride8 &     8 & 1.74e-04 &  3.76 
+doubleAnnulusGride16 &    16 & 4.49e-05 &  3.88 
+Convergence rates: c0=1.84 
+
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 7.54e-03 &       
+ doubleAnnulusGride2 &     2 & 2.38e-03 &  3.17 
+ doubleAnnulusGride4 &     4 & 6.70e-04 &  3.55 
+ doubleAnnulusGride8 &     8 & 1.78e-04 &  3.76 
+Convergence rates: c0=1.80 
+
+
+conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -tp=.1 -tf=.1 -nMode=1 -mRoot=0 -ng=4
+
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 5.69e-03 &       
+ doubleAnnulusGride2 &     2 & 1.96e-03 &  2.90 
+ doubleAnnulusGride4 &     4 & 5.66e-04 &  3.46 
+ doubleAnnulusGride8 &     8 & 1.52e-04 &  3.72 
+doubleAnnulusGride16 &    16 & 3.93e-05 &  3.87 
+Convergence rates: c0=1.80 
+
+
+
+
+-n=0 -m=0 
+                grid  & N &  $ & r 
+ doubleAnnulusGride1 &     1 & 5.64e-03 &       
+ doubleAnnulusGride2 &     2 & 1.94e-03 &  2.91 
+ doubleAnnulusGride4 &     4 & 5.60e-04 &  3.46 
+ doubleAnnulusGride8 &     8 & 1.50e-04 &  3.73 
+Convergence rates: c0=1.75 
+
+
 ********************************
 ***** Dec 6, 2018
 

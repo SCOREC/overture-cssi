@@ -54,57 +54,57 @@ findDataBaseFile(aString & fileName,
        {
          // look for the file in some common locations
 
-	 aString dirs,dir;
+         aString dirs,dir;
          char *env;
-	 env=getenv("OvertureGridDirectories");
+         env=getenv("OvertureGridDirectories");
          if( env!=NULL )
            dirs=env;
          if( dirs!="" && printInfo>0 )
-	   printF("Searching for grids in locations specified by the `OvertureGridDirectories' environment variable\n");
-	   
+           printF("Searching for grids in locations specified by the `OvertureGridDirectories' environment variable\n");
+           
          for( int m=0; m<10; m++ )
-	 {
+         {
            if( dirs=="" )
              break;
            int length=dirs.length();
            int i=0;
-	   while( i<length && dirs[i]!=':' ) i++;
-	   dir=dirs(0,i-1);
-	   name=dir + "/" + fileName;
-	   if( printInfo>0 ) printF("look for %s \n",(const char*)name);
-	   
-	   if( findDataBaseFile( name,FALSE,printInfo )==0 )  // add FALSE to prevent further recursion
-	   {
-	     fileName=name;
-	     return 0;
-	   }
+           while( i<length && dirs[i]!=':' ) i++;
+           dir=dirs(0,i-1);
+           name=dir + "/" + fileName;
+           if( printInfo>0 ) printF("look for %s \n",(const char*)name);
+           
+           if( findDataBaseFile( name,FALSE,printInfo )==0 )  // add FALSE to prevent further recursion
+           {
+             fileName=name;
+             return 0;
+           }
 
            if( i<length )
              dirs=dirs(i+1,length-1);
            else
              break;
-	 }
+         }
          const int numberOfDirectories=4;
          const aString directory[numberOfDirectories]=
-	 {
+         {
            OVERTURE_HOME "/sampleGrids/",
            "../sampleGrids/",
-	   "../ogen/",
+           "../ogen/",
            OVERTURE_HOME "/../Overture/ogen/"
-	 };
-	 
+         };
+         
          for( int n=0; n<numberOfDirectories; n++ )
-	 {
-	   name=directory[n] + fileName;
-	   if( printInfo>0 ) printF("look for %s \n",(const char*)name);
-	   
-	   if( findDataBaseFile( name,FALSE,printInfo )==0 )  // add FALSE to prevent further recursion
-	   {
-	     fileName=name;
-	     return 0;
-	   }
-	 }
-	 
+         {
+           name=directory[n] + fileName;
+           if( printInfo>0 ) printF("look for %s \n",(const char*)name);
+           
+           if( findDataBaseFile( name,FALSE,printInfo )==0 )  // add FALSE to prevent further recursion
+           {
+             fileName=name;
+             return 0;
+           }
+         }
+         
        }
      }
    }
@@ -119,7 +119,7 @@ findDataBaseFile(aString & fileName,
      if( searchCommonLocations )
        printF("INFO: To have Overture search for grids in other locations you can set the \n"
               " environment variable OvertureGridDirectories to be a list of colon separated directories as in\n"
-	      "  setenv OvertureGridDirectories \"/home/joeUser/sampleGrids:/home/janeUser/ogen\"\n");
+              "  setenv OvertureGridDirectories \"/home/joeUser/sampleGrids:/home/janeUser/ogen\"\n");
 
      return 1;
    }
@@ -129,8 +129,8 @@ findDataBaseFile(aString & fileName,
 //\begin{>DataBaseAccessFunctionsInclude.tex}{\subsection{getFromADataBase(CompositeGrid \& cg,...)}}  
 int 
 getFromADataBase(CompositeGrid & cg, 
-		 aString & fileName, 
-		 const aString & gridName /* =nullString */,
+                 aString & fileName, 
+                 const aString & gridName /* =nullString */,
                  const bool & checkTheGrid /* =FALSE */,
                  int printInfo /* =1 */ )
 //==========================================================================================
@@ -215,9 +215,9 @@ getFromADataBase(CompositeGrid & cg,
     if( myid==0 )
     {
       cout << "getFromADataBase:ERROR: unable to open an old file = " 
-	   << (const char *)fileName
-	   << " (or " << (const char *)(fileName+".hdf") << " ), " 
-	   << " (or " << (const char *)(fileName+".show") << " )" << endl;
+           << (const char *)fileName
+           << " (or " << (const char *)(fileName+".hdf") << " ), " 
+           << " (or " << (const char *)(fileName+".show") << " )" << endl;
     }
     return 1;
   }
@@ -261,9 +261,9 @@ getFromADataBase(CompositeGrid & cg,
 //\begin{>DataBaseAccessFunctionsInclude.tex}{\subsection{getFromADataBase(CompositeGrid \& cg,...,LoadBalancer,...)}}  
 int 
 getFromADataBase(CompositeGrid & cg, 
-		 aString & fileName, 
+                 aString & fileName, 
                  LoadBalancer & loadBalancer, 
-		 const aString & gridName /* =nullString */,
+                 const aString & gridName /* =nullString */,
                  const bool & checkTheGrid /* =FALSE */,
                  int printInfo /* =1 */ )
 //==========================================================================================
@@ -311,9 +311,9 @@ getFromADataBase(CompositeGrid & cg,
 //\begin{>DataBaseAccessFunctionsInclude.tex}{\subsection{getFromADataBase(CompositeGrid \& cg,...,loadBalance,...)}}  
 int 
 getFromADataBase(CompositeGrid & cg, 
-		 aString & fileName, 
+                 aString & fileName, 
                  bool loadBalance, 
-		 const aString & gridName /* =nullString */,
+                 const aString & gridName /* =nullString */,
                  const bool & checkTheGrid /* =FALSE */,
                  int printInfo /* =1 */ )
 //==================================================================================================

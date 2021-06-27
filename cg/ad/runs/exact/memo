@@ -1,0 +1,257 @@
+FIX: 
+   (1)  Neumann order=4 corners
+
+
+***************************************************
+******* Wed May 5, 2021
+
+REVISIT ANNULUS EXACT SOLUTION -- bug fixed
+
+DIRICHLET
+cgad -noplot exact -g=annulus2.order4 -known=annulusEigen -n=2 -m=0 -a=1.0 -amp=1.0 -bcOpt=0 -go=og
+
+-n=2 -m=1
+     t    err(T)    uMax     dt       cpu    mem (Mb) (59 steps)
+   0.100 5.01e-05 5.41e-02 1.67e-03 1.15e+01        0
+
+-n=2 -m=0
+---- determineErrors at t=1.000e-01,  maxNorm errors: [8.78e-06]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (59 steps)
+   0.100 8.78e-06 2.30e-01 1.67e-03 2.37e+01        0
+
+
+***************************************************
+******* Sat April 24, 2021
+
+>>>>>>>>>>> **NEW** SKIP EXPLICIT BCs for IMPLICT GRIDS <<<<<<<<<<<<<<<<<<<<<<<<
+
+FIX "dirichlet BC" for KNOWN SOLUTION
+
+IMPLICIT:
+
+cgad -noplot exact -g=square8.order2 -ts=im -known=planeInterfaceMode -ky=2 -kappa=.1 -dtMax=.01 -tp=.01 -tf=.02 -debug=15 -go=go >! junk
+
+Implicit: --> looks OK
+cgad -noplot exact -g=square32.order2 -ts=im -known=planeInterfaceMode -ky=2 -kappa=.1 -tp=.1 -tf=2 -dtMax=.02 -go=og
+
+---- determineErrors at t=1.000e-01,  maxNorm errors: [1.43e-03]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.100 1.43e-03 2.22e+00 2.00e-02 1.01e+01        0
+
+
+
+EXPLICIT  -- OK
+cgad -noplot exact -g=square32.order2 -known=planeInterfaceMode -ky=2 -kappa=.1 -go=og
+
+G32
+     t    err(T)    uMax     dt       cpu    mem (Mb) (50 steps)
+   0.100 1.42e-03 2.22e+00 1.96e-03 1.04e+01        0
+
+G64:
+     t    err(T)    uMax     dt       cpu    mem (Mb) (202 steps)
+   0.100 3.58e-04 2.22e+00 3.74e-04 1.41e+01        0
+
+
+*********************************************************************************************
+******* Wed April 21, 2021
+
+
+
+
+cgad -noplot exact -g=square64.order4 -known=squareEigen -kx=2 -ky=2 -ts=bdf -bdfOrder=4 -dtMax=.0125 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+cgad -noplot exact -g=square32.order4 -known=squareEigen -kx=2 -ky=2 -ts=bdf -bdfOrder=4 -dtMax=.025 -tp=.2 -tf=.2 -bc=d -bcOpt=0 -go=go
+G64:
+     t    err(T)    uMax     dt       cpu    mem (Mb) (16 steps)
+   0.200 6.87e-06 2.06e-01 1.25e-02 9.22e+00        0
+G32:
+     t    err(T)    uMax     dt       cpu    mem (Mb) (8 steps)
+   0.200 1.28e-04 2.06e-01 2.50e-02 1.75e-02        0
+
+
+BUGS FIXED -- pcMacros.h --> past times for BDF count backward
+              advanceStepsBDF.bf --> mMinus3 formal looks wrong
+CHECK BDF4 -- noew exact for solution const in time
+cgad -noplot exact -g=square32.order4 -known=squareEigen -kx=1 -ky=1 -kappa=0 -ts=bdf -bdfOrder=4 -dtMax=.01 -tp=.01 -tf=.02 -bc=d -bcOpt=0 -go=og
+
+
+*********************************************************************************************
+******* Tues April 20, 2021
+
+TEST IMPLICIT
+
+useNewTimeSteppingStartup
+getPastTimeSolutions( mCur, numberOfPastTimes, previous  ); 
+
+FIX ME --> use new startup
+ -- BDF-- USE OLD STARTUP, Set past time solutions to t=0 solution 
+
+TEST TZ: 
+BDF44 -- exact degree=(4,4)
+ cgad -noplot tz -g=square16.order4 -degreex=4 -degreet=4 -kappa=.1 -ts=bdf -bdfOrder=4 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go
+     t    err(T)    uMax     dt       cpu    mem (Mb) (5 steps)
+   0.050 1.07e-14 5.27e+00 1.00e-02 1.22e-02        0
+
+
+BDF2 = exact 
+cgad -noplot tz -g=square16.order2 -degreex=2 -degreet=1 -kappa=.1 -ts=bdf -bdfOrder=3 -a=0 -b=0 -c=0 -tp=.01 -tf=.05 -bc=d -go=go 
+
+
+
+BDF3 and BDF4 ARE BROKEN!
+cgad -noplot exact -g=square64.order4 -known=squareEigen -kx=2 -ky=2 -ts=bdf -bdfOrder=4 -dtMax=.0125 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+
+cgad -noplot exact -g=square64.order4 -known=squareEigen -kx=2 -ky=2 -ts=bdf -bdfOrder=2 -dtMax=.0125 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+
+FIXED STARTUP:
+     t    err(T)    uMax     dt       cpu    mem (Mb) (16 steps)
+   0.200 1.10e-03 2.05e-01 1.25e-02 2.59e+01        0
+
+
+---- determineErrors at t=2.000e-01,  maxNorm errors: [1.08e-02]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (16 steps)
+   0.200 1.08e-02 2.17e-01 1.25e-02 1.02e+01        0
+
+
+cgad -noplot exact -g=square32.order4 -known=squareEigen -kx=2 -ky=2 -ts=bdf -bdfOrder=2 -dtMax=.025 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+
+---- determineErrors at t=2.000e-01,  maxNorm errors: [2.36e-02]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (8 steps)
+   0.200 2.36e-02 2.30e-01 2.50e-02 1.04e+01        0
+
+G4 BDF2
+     t    err(T)    uMax     dt       cpu    mem (Mb) (4 steps)
+   0.200 5.95e-02 2.66e-01 5.00e-02 1.06e+01        0
+
+
+OK: CN
+cgad -noplot exact -g=square32.order4 -known=squareEigen -kx=2 -ky=2 -ts=im -dtMax=.05 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+     t    err(T)    uMax     dt       cpu    mem (Mb) (3 steps)
+   0.200 4.28e-03 2.02e-01 5.00e-02 1.06e+01        0
+
+OK: CN
+cgad -noplot exact -g=square32.order2 -known=squareEigen -kx=2 -ky=2 -ts=im -dtMax=.05 -tp=.2 -tf=1 -bc=d -bcOpt=0 -go=og
+
+
+
+
+
+FIX PLOTTING ... FIXED 
+
+PC24 --> something funny in plotting 
+cgad -noplot exact -g=square32.order4 -known=squareEigen -orderInTime=4 -cfl=.9 -go=og
+
+
+CONTINUE ON USER DEFINED KNOWN SOLUTION
+
+Start ON PLANE INTERFACE MODE -- single domain only to start
+
+cgad -noplot exact -g=square32.order2 -known=planeInterfaceMode -ky=2 -go=og
+
+Square Neumann
+
+Neumann Order=4 -- trouble at corners  ** CHECK ME ***  lower CFL .. OK -- maybe fix corner treatment
+CFL=.5 OK (.7 no)
+cgad -noplot exact -g=square16.order4 -known=squareEigen -kx=2 -ky=3 -bc=n -bcOpt=1 -tp=.1 -cfl=.5 -go=og
+
+Neumann, order=2 : OK 
+cgad -noplot exact -g=square32.order2 -known=squareEigen -kx=2 -ky=3 -bc=n -bcOpt=1 -go=og
+
+cgad -noplot exact -g=square32.order4 -known=squareEigen -kx=2 -ky=3 -bc=d -bcOpt=0 -go=og
+
+*********************************************************************************************
+******* Mon April 19, 2021
+
+CONTINUE ON USER DEFINED KNOWN SOLUTION
+
+
+---- ANNULUS EIGS -----
+
+NEUMANN
+cgad -noplot exact -g=annulus2.order4 -known=annulusEigen -m=0 -n=2 -a=1.0 -amp=1.0 -bc=n -bcOpt=1 -go=og
+---- determineErrors at t=1.000e-01,  maxNorm errors: [2.27e-06]
+     t    err(T)    uMax     dt       cpu    mem (Mb) (59 steps)
+   0.100 2.27e-06 2.72e-01 1.67e-03 3.45e+01        0
+
+
+DIRICHLET
+cgad -noplot exact -g=annulus2.order4 -known=annulusEigen -m=0 -n=2 -a=1.0 -amp=1.0 -bcOpt=0 -go=og
+     t    err(T)    uMax     dt       cpu    mem (Mb) (59 steps)
+   0.100 8.77e-06 2.30e-01 1.67e-03 1.50e+01        0
+
+
+cgad -noplot exact -g=annulus2.order2 -known=annulusEigen -m=0 -n=2 -a=1.0 -amp=1.0 -go=og
+
+----- DISK EIGENFUNCTIONS ----
+
+ORDER=4 Neumann
+cgad -noplot exact -g=sice4.order4 -known=diskEigen -m=0 -n=0 -a=1.0 -amp=1.0 -bc=n -bcOpt=1 -go=og
+cgad -noplot exact -g=sice2.order4 -known=diskEigen -m=0 -n=0 -a=1.0 -amp=1.0 -bc=n -bcOpt=1 -go=og
+
+G2: 
+     t    err(T)    uMax     dt       cpu    mem (Mb) (32 steps)
+   0.100 9.29e-04 8.63e-01 3.03e-03 3.17e+01        0
+G4: 
+     t    err(T)    uMax     dt       cpu    mem (Mb) (114 steps)
+   0.100 6.92e-06 8.63e-01 8.60e-04 1.02e+01        0
+
+
+
+
+ORDER=2
+cgad -noplot exact -g=sice2.order2 -known=diskEigen -m=0 -n=0 -a=1.0 -amp=1.0 -go=og
+cgad -noplot exact -g=sice4.order2 -known=diskEigen -m=0 -n=0 -a=1.0 -amp=1.0 -go=og
+
+G2
+     t    err(T)    uMax     dt       cpu    mem (Mb) (24 steps)
+   0.100 6.25e-05 9.44e-01 4.00e-03 1.52e+01        0
+
+G4 
+     t    err(T)    uMax     dt       cpu    mem (Mb) (86 steps)
+   0.100 1.23e-05 9.44e-01 1.15e-03 1.13e+01        0
+
+
+--- 3D ---
+cgad -noplot exact -g=box2.order2 -known=squareEigen -kx=1 -ky=1 -kz=1 -go=og
+
+--- 2D --
+cgad -noplot exact -g=square32.order2 -known=squareEigen -kx=2 -ky=3 -go=og
+
+
+*********************************************************************************************
+******* Sun April 18, 2021
+
+
+TEST SHOW: -- save errors in show?
+
+cgad -noplot exact -g=square32.order4 -known=squareEigen -orderInTime=4 -cfl=.9 -tp=.1 -tf=.5 -show=se44.show -go=go
+
+cgad -noplot exact -g=square32.order4 -known=squareEigen -cfl=.9 -tp=.1 -tf=.5 -show=se24.show -go=go
+
+cgad -noplot exact -g=square32.order2 -known=squareEigen -cfl=.9 -tp=.1 -tf=.5 -show=se22.show -go=go
+
+START ON USER DEFINED KNOWN SOLUTION
+
+PLOT ERRORS IN KNOWN:
+
+FIX CFL FOR ORDER=4 
+
+PC44 -- something funny in plotting ??
+PC24 --> something funny in plotting 
+cgad -noplot exact -g=square32.order4 -known=squareEigen -orderInTime=4 -cfl=.9 -go=og
+
+PC24:
+unstable at cfl=1.2
+stable at cfl=1.1 
+cgad -noplot exact -g=square32.order4 -known=squareEigen -cfl=.9 -go=og
+
+PC22 
+cgad -noplot exact -g=square32.order2 -known=squareEigen -cfl=.9 -go=og
+
+
+cgad -noplot exact -g=square32.order4 -known=squareEigen -cfl=.5 -go=og
+
+     t    err(T)    uMax     dt       cpu    mem (Mb) (50 steps)
+   0.100 5.92e-07 8.21e-01 1.96e-03 2.32e+01        0
+
+SQUARE EIGEN FUNCTION STARTS TO WORK: 
+cgad -noplot exact -g=square16.order2 -known=squareEigen -go=og

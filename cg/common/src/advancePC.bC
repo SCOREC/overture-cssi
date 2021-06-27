@@ -81,7 +81,7 @@ if( debug() & 4 || debug() & 64 )
   {
     // --- This gridVelocity is not correct:
     determineErrors( uc,gf[mOld].gridVelocity, t0-2.*dtb, 1, error,
-		     sPrintF(" adams: errors in ut (uc) at t=%e \n",t0-2*dtb) );
+                     sPrintF(" adams: errors in ut (uc) at t=%e \n",t0-2*dtb) );
     determineErrors( ud,gf[mOld].gridVelocity, t0-3.*dtb, 1, error,
               sPrintF(" adams: errors in ut (ud) at t=%e \n",t0-3*dtb) );
   }
@@ -348,7 +348,7 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
 
       printF("\n ***** AdamsPC: AMR regrid at step %i ***** \n\n",parameters.dbase.get<int >("globalStepNumber"));
       if( debug() & 2 )
-	fPrintF(debugFile,"\n ***** AdamsPC: AMR regrid at step %i ***** \n\n",parameters.dbase.get<int >("globalStepNumber"));
+        fPrintF(debugFile,"\n ***** AdamsPC: AMR regrid at step %i ***** \n\n",parameters.dbase.get<int >("globalStepNumber"));
       
       real timea=getCPU();
 
@@ -356,27 +356,27 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       GridFunction & gf1= gf[mOld];
       
       if( parameters.useConservativeVariables() )
-	gf0.primitiveToConservative();  // *wdh* 010318  -- do amr interpolation on conservative variables.
+        gf0.primitiveToConservative();  // *wdh* 010318  -- do amr interpolation on conservative variables.
 
       const int numberToUpdate=1; // we update one extra grid-function to live on the new AMR grid
 
       if( !useNew || !parameters.isMovingGridProblem() )  // 
       { // for non-moving grids we interpolate uNew=du/dt(t-dt)
-	
-	// we need to extrapolate values on uNew since the interpolator may use these values
-	uNew.setOperators(*gf[mCur].u.getOperators());
-	uNew.interpolate(); // we need to interpolate uNew since we may use these values.
-	uNew.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.);
-	uNew.finishBoundaryConditions();
+        
+        // we need to extrapolate values on uNew since the interpolator may use these values
+        uNew.setOperators(*gf[mCur].u.getOperators());
+        uNew.interpolate(); // we need to interpolate uNew since we may use these values.
+        uNew.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.);
+        uNew.finishBoundaryConditions();
 
-	adaptGrids( gf0, numberToUpdate,&uNew ); 
+        adaptGrids( gf0, numberToUpdate,&uNew ); 
         gf1.updateToMatchGrid(gf0.cg);  // *wdh* 040928
       }
       else
       { // for moving grids we interpolate gf1 = u(t-dt)
         // du/dt(t-dt) will be recomputed below in the moving grid section
 
-	adaptGrids( gf0, numberToUpdate,&gf1.u ); 
+        adaptGrids( gf0, numberToUpdate,&gf1.u ); 
         gf1.updateToMatchGrid(gf0.cg);
       }
 
@@ -405,14 +405,14 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       
       if( debug() & 16 )
       {
-	if( parameters.dbase.get<bool >("twilightZoneFlow") )
-	{
-	  determineErrors( gf0,sPrintF(" AdamsPC: errors after regrid, t=%e \n",gf0.t) ) ;
-	}
-	else
-	{
-	  outputSolution( gf0.u,gf0.t,sPrintF(" ***after regrid: solution ***\n") );
-	}
+        if( parameters.dbase.get<bool >("twilightZoneFlow") )
+        {
+          determineErrors( gf0,sPrintF(" AdamsPC: errors after regrid, t=%e \n",gf0.t) ) ;
+        }
+        else
+        {
+          outputSolution( gf0.u,gf0.t,sPrintF(" ***after regrid: solution ***\n") );
+        }
       }
 
       ua.updateToMatchGrid(gf0.cg);
@@ -432,26 +432,26 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       
       if( numberOfGridFunctions==3 )
       { 
-	// update gf2
+        // update gf2
         // ***note: if we want to retain u(t-dt) then we must interpolate here instead, as was done
         //          for uNew in the call to adaptGrids
 
         GridFunction & gf2= gf[mNew];
 
-	if( parameters.isMovingGridProblem() )
-	{
-	  gf2.cg=gf0.cg;  // we make a copy in this case
-	}
-	else
-	{
-	  gf2.updateToMatchGrid(gf0.cg);
-	}
-	gf2.u.updateToMatchGrid(gf2.cg);
-	gf2.u=0.;
-	gf2.u.setOperators(*gf0.u.getOperators());
+        if( parameters.isMovingGridProblem() )
+        {
+          gf2.cg=gf0.cg;  // we make a copy in this case
+        }
+        else
+        {
+          gf2.updateToMatchGrid(gf0.cg);
+        }
+        gf2.u.updateToMatchGrid(gf2.cg);
+        gf2.u=0.;
+        gf2.u.setOperators(*gf0.u.getOperators());
       
-	updateForMovingGrids(gf2);
-	gf2.gridVelocityTime=gf2.t -1.e10;
+        updateForMovingGrids(gf2);
+        gf2.gridVelocityTime=gf2.t -1.e10;
 
       }
       
@@ -462,23 +462,23 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       if( true )
       {
 
-	if( parameters.useConservativeVariables() )
-	  gf0.conservativeToPrimitive();  // *wdh* 010318
+        if( parameters.useConservativeVariables() )
+          gf0.conservativeToPrimitive();  // *wdh* 010318
 
-	real dtNew= getTimeStep( gf0 ); //       ===Choose time step====
+        real dtNew= getTimeStep( gf0 ); //       ===Choose time step====
 
 
         int numberOfSteps;
         real nextTimeToPrint=gf0.t+(numberOfSubSteps-mst+1)*dt;
-	real tFinal=nextTimeToPrint;
+        real tFinal=nextTimeToPrint;
         computeNumberOfStepsAndAdjustTheTimeStep(gf0.t,tFinal,nextTimeToPrint,numberOfSteps,dtNew);
-	
+        
         numberOfSubSteps=mst+numberOfSteps-1;
 
         if( true || debug() & 1 )
-   	  printf("AdamsPC:recompute dt: dt(old)=%8.3e, dtNew = %8.3e, t=%9.3e (step=%i)\n",dt,dtNew,gf0.t,
+          printf("AdamsPC:recompute dt: dt(old)=%8.3e, dtNew = %8.3e, t=%9.3e (step=%i)\n",dt,dtNew,gf0.t,
                  parameters.dbase.get<int >("globalStepNumber"));
-	dt=dtNew;  // *********************** should this be dt0 ???????????????????????????????????
+        dt=dtNew;  // *********************** should this be dt0 ???????????????????????????????????
       }
       timing(parameters.dbase.get<int>("timeForAmrRegrid"))+=getCPU()-timea;
 
@@ -539,12 +539,12 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     // ab44 = ( -9./24.)*dt0;
     const real ab41 = (6.0*dt0*dt2*dt2+12.0*dt2*dt2*dt1+8.0*dt0*dt0*dt2+24.0*dt2*dt0*dt1+
                        12.0*dt2*dt1*dt3+6.0*dt3*dt2*dt0+24.0*dt1*dt1*dt2+12.0*dt0*dt3*dt1+18.0*dt0*dt1
-		       *dt1+4.0*dt0*dt0*dt3+12.0*dt1*dt1*dt3+3.0*dt0*dt0*dt0+12.0*dt0*dt0*dt1+12.0*dt1
-		       *dt1*dt1)*dt0/(dt1+dt2+dt3)/dt1/(dt1+dt2)/12.0;
+                       *dt1+4.0*dt0*dt0*dt3+12.0*dt1*dt1*dt3+3.0*dt0*dt0*dt0+12.0*dt0*dt0*dt1+12.0*dt1
+                       *dt1*dt1)*dt0/(dt1+dt2+dt3)/dt1/(dt1+dt2)/12.0;
     const real ab42 = -dt0*dt0*(6.0*dt1*dt1+6.0*dt3*dt1+12.0*dt2*dt1+8.0*dt0*dt1+3.0*dt0*
-				dt0+6.0*dt2*dt3+4.0*dt0*dt3+8.0*dt2*dt0+6.0*dt2*dt2)/dt1/(dt2+dt3)/dt2/12.0;
+                                dt0+6.0*dt2*dt3+4.0*dt0*dt3+8.0*dt2*dt0+6.0*dt2*dt2)/dt1/(dt2+dt3)/dt2/12.0;
     const real ab43 = dt0*dt0*(6.0*dt1*dt1+6.0*dt2*dt1+6.0*dt3*dt1+8.0*dt0*dt1+3.0*dt0*dt0
-			       +4.0*dt2*dt0+4.0*dt0*dt3)/dt3/dt2/(dt1+dt2)/12.0;
+                               +4.0*dt2*dt0+4.0*dt0*dt3)/dt3/dt2/(dt1+dt2)/12.0;
     const real ab44 = -(6.0*dt1*dt1+6.0*dt2*dt1+8.0*dt0*dt1+4.0*dt2*dt0+3.0*dt0*dt0)*dt0*
                         dt0/(dt1+dt2+dt3)/(dt2+dt3)/dt3/12.0;
 
@@ -614,14 +614,14 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     
     for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
     {
-	rparam[0]=gf[mCur].t;
-	rparam[1]=gf[mCur].t; // tForce
-	rparam[2]=gf[mCur].t; // tImplicit
-	iparam[0]=grid;
+        rparam[0]=gf[mCur].t;
+        rparam[1]=gf[mCur].t; // tForce
+        rparam[2]=gf[mCur].t; // tImplicit
+        iparam[0]=grid;
         iparam[1]=gf[mCur].cg.refinementLevelNumber(grid);
         iparam[2]=numberOfStepsTaken;
 
-	getUt(gf[mCur].u[grid],gf[mCur].getGridVelocity(grid),ua[grid],iparam,rparam,
+        getUt(gf[mCur].u[grid],gf[mCur].getGridVelocity(grid),ua[grid],iparam,rparam,
               Overture::nullRealMappedGridFunction(),&gf[mNew].cg[grid]);
 
     }
@@ -645,10 +645,10 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     if( debug() & 64 )
     {
       for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
-	::display(gf[mCur].u[grid],sPrintF(" ***Adams PC: u for predictor"
+        ::display(gf[mCur].u[grid],sPrintF(" ***Adams PC: u for predictor"
                    " t=%9.4e grid=%i\n",gf[mCur].t,grid),debugFile,"%10.7f ");
       for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
-	::display(ua[grid],sPrintF(" ***Adams PC: du/dt (ua) for predictor"
+        ::display(ua[grid],sPrintF(" ***Adams PC: du/dt (ua) for predictor"
                    " t=%9.4e grid=%i\n",gf[mCur].t,grid),debugFile,"%10.7f ");
     }
 
@@ -688,68 +688,68 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
         const int n1a=max(u1.getBase(0),I1.getBase()), n1b=min(u1.getBound(0),I1.getBound());  
         const int n2a=max(u1.getBase(1),I2.getBase()), n2b=min(u1.getBound(1),I2.getBound());
         const int n3a=max(u1.getBase(2),I3.getBase()), n3b=min(u1.getBound(2),I3.getBound());
-	
+        
         int ierr=0;
         const int maskOption=0; // assign pts where mask>0
         int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
         real rpar[5]={0.,0.,0.,0.,0.};
-	if( orderOfPredictorCorrector==2 )
-	{
-	  // u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab1*uta(I1,I2,I3,N) + ab2*utb(I1,I2,I3,N);
+        if( orderOfPredictorCorrector==2 )
+        {
+          // u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab1*uta(I1,I2,I3,N) + ab2*utb(I1,I2,I3,N);
           ipar[0]=2;
-	  rpar[0]=ab1; rpar[1]=ab2;
-	}
-	else if( orderOfPredictorCorrector==4 )
-	{
-	  // here is the 4th-order predictor
-	  //  gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
-	  //  ab41*ua[grid](I1,I2,I3,N) + ab42*ub[grid](I1,I2,I3,N) + ab43*uc[grid](I1,I2,I3,N) + ab44*ud[grid](I1,I2,I3,N);
+          rpar[0]=ab1; rpar[1]=ab2;
+        }
+        else if( orderOfPredictorCorrector==4 )
+        {
+          // here is the 4th-order predictor
+          //  gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
+          //  ab41*ua[grid](I1,I2,I3,N) + ab42*ub[grid](I1,I2,I3,N) + ab43*uc[grid](I1,I2,I3,N) + ab44*ud[grid](I1,I2,I3,N);
 
-	  // Here is the 3rd order predictor
-	  // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
-	  //   ab31*ua[grid](I1,I2,I3,N) + ab32*ub[grid](I1,I2,I3,N) + ab33*uc[grid](I1,I2,I3,N);
+          // Here is the 3rd order predictor
+          // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
+          //   ab31*ua[grid](I1,I2,I3,N) + ab32*ub[grid](I1,I2,I3,N) + ab33*uc[grid](I1,I2,I3,N);
 
-	  // u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab31*uta(I1,I2,I3,N) + ab32*utb(I1,I2,I3,N) + ab33*utc(I1,I2,I3,N);
+          // u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab31*uta(I1,I2,I3,N) + ab32*utb(I1,I2,I3,N) + ab33*utc(I1,I2,I3,N);
           ipar[0]=3;
-	  rpar[0]=ab31; rpar[1]=ab32; rpar[2]=ab33;
-	}
-	else
-	{
-	  Overture::abort();
-	}
-	updateOpt(u0.getBase(0),u0.getBound(0),u0.getBase(1),u0.getBound(1),
-		  u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
-		  *mask1.getDataPointer(),  
-		  *u0.getDataPointer(),*u1.getDataPointer(), 
-		  *uta.getDataPointer(),*utb.getDataPointer(),*utc.getDataPointer(),*utc.getDataPointer(),
-		  ipar[0], rpar[0], ierr );
+          rpar[0]=ab31; rpar[1]=ab32; rpar[2]=ab33;
+        }
+        else
+        {
+          Overture::abort();
+        }
+        updateOpt(u0.getBase(0),u0.getBound(0),u0.getBase(1),u0.getBound(1),
+                  u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
+                  *mask1.getDataPointer(),  
+                  *u0.getDataPointer(),*u1.getDataPointer(), 
+                  *uta.getDataPointer(),*utb.getDataPointer(),*utc.getDataPointer(),*utc.getDataPointer(),
+                  ipar[0], rpar[0], ierr );
 
       }
       else
       {
-	if( orderOfPredictorCorrector==2 ) 
-	{
-	  // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
-	  //   ab1*ua[grid](I1,I2,I3,N) + ab2*ub[grid](I1,I2,I3,N);
+        if( orderOfPredictorCorrector==2 ) 
+        {
+          // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
+          //   ab1*ua[grid](I1,I2,I3,N) + ab2*ub[grid](I1,I2,I3,N);
 
-	  u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab1*uta(I1,I2,I3,N) + ab2*utb(I1,I2,I3,N);
-	}
-	else if( orderOfPredictorCorrector==4 )
-	{
-	  // here is the 4th-order predictor
-	  //  gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
-	  //  ab41*ua[grid](I1,I2,I3,N) + ab42*ub[grid](I1,I2,I3,N) + ab43*uc[grid](I1,I2,I3,N) + ab44*ud[grid](I1,I2,I3,N);
+          u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab1*uta(I1,I2,I3,N) + ab2*utb(I1,I2,I3,N);
+        }
+        else if( orderOfPredictorCorrector==4 )
+        {
+          // here is the 4th-order predictor
+          //  gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
+          //  ab41*ua[grid](I1,I2,I3,N) + ab42*ub[grid](I1,I2,I3,N) + ab43*uc[grid](I1,I2,I3,N) + ab44*ud[grid](I1,I2,I3,N);
 
-	  // Here is the 3rd order predictor
-	  // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
-	  //   ab31*ua[grid](I1,I2,I3,N) + ab32*ub[grid](I1,I2,I3,N) + ab33*uc[grid](I1,I2,I3,N);
+          // Here is the 3rd order predictor
+          // gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N) + 
+          //   ab31*ua[grid](I1,I2,I3,N) + ab32*ub[grid](I1,I2,I3,N) + ab33*uc[grid](I1,I2,I3,N);
 
-	  u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab31*uta(I1,I2,I3,N) + ab32*utb(I1,I2,I3,N) + ab33*utc(I1,I2,I3,N);
-	}
-	else
-	{
-	  Overture::abort();
-	}
+          u1(I1,I2,I3,N)=u0(I1,I2,I3,N) + ab31*uta(I1,I2,I3,N) + ab32*utb(I1,I2,I3,N) + ab33*utc(I1,I2,I3,N);
+        }
+        else
+        {
+          Overture::abort();
+        }
       }
       
     }
@@ -762,7 +762,7 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     if( debug() & 16 )
     {
       for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
-	::display(gf[mNew].u[grid],sPrintF(" ***Adams PC: uNew after predictor update"
+        ::display(gf[mNew].u[grid],sPrintF(" ***Adams PC: uNew after predictor update"
                    " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
     }
 
@@ -782,9 +782,9 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     {
       label=sPrintF(" ***Adams PC: predictor: before interpolate t=%e\n",gf[mNew].t);
       if( twilightZoneFlow() )
-	determineErrors( gf[mNew],label );
+        determineErrors( gf[mNew],label );
       else
-	outputSolution( gf[mNew].u,gf[mNew].t,label );
+        outputSolution( gf[mNew].u,gf[mNew].t,label );
     }
     timing(parameters.dbase.get<int>("timeForAddUt"))+=getCPU()-cpu0;
 
@@ -796,14 +796,14 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
     {
       label=sPrintF(" ***Adams PC: after boundary conditions in predictor, t=%e\n",gf[mNew].t);
       if( twilightZoneFlow() )
-	determineErrors( gf[mNew],label );
+        determineErrors( gf[mNew],label );
       else
-	outputSolution( gf[mNew].u,gf[mNew].t,label );
+        outputSolution( gf[mNew].u,gf[mNew].t,label );
     }
     if( debug() & 4 || debug() & 64 )
     {
       for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
-	::display(gf[mNew].u[grid],sPrintF(" ***Adams PC: after apply boundary conditions in predictor"
+        ::display(gf[mNew].u[grid],sPrintF(" ***Adams PC: after apply boundary conditions in predictor"
                    " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
     }
     if( debug() & 4 )
@@ -827,19 +827,19 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
   
       if( poisson!=NULL && poisson->isSolverIterative() && orderOfAccuracy!=4 )
       {
-	// extrapolate p in time as an initial guess for iterative solvers
-	const int & pc = parameters.dbase.get<int >("pc");
-	assert( pc>= 0 );
-	for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
-	{
-	  getIndex(gf[mCur].cg[grid].dimension(),I1,I2,I3);
-	  // note that initially gf[mNew](.,.,.,pc) = p(t-dt)
-	  // **** check this -- it's doesn't seem to make much difference whether we
-	  // extrpolate or use the old value ??
+        // extrapolate p in time as an initial guess for iterative solvers
+        const int & pc = parameters.dbase.get<int >("pc");
+        assert( pc>= 0 );
+        for( grid=0; grid<gf[mCur].cg.numberOfComponentGrids(); grid++ )
+        {
+          getIndex(gf[mCur].cg[grid].dimension(),I1,I2,I3);
+          // note that initially gf[mNew](.,.,.,pc) = p(t-dt)
+          // **** check this -- it's doesn't seem to make much difference whether we
+          // extrpolate or use the old value ??
 #ifdef USE_PPP
-	  realSerialArray uNew; getLocalArrayWithGhostBoundaries(gf[mNew].u[grid],uNew);
-	  realSerialArray uCur; getLocalArrayWithGhostBoundaries(gf[mCur].u[grid],uCur);
-	  realSerialArray uOld; getLocalArrayWithGhostBoundaries(gf[mOld].u[grid],uOld);
+          realSerialArray uNew; getLocalArrayWithGhostBoundaries(gf[mNew].u[grid],uNew);
+          realSerialArray uCur; getLocalArrayWithGhostBoundaries(gf[mCur].u[grid],uCur);
+          realSerialArray uOld; getLocalArrayWithGhostBoundaries(gf[mOld].u[grid],uOld);
           bool ok = ParallelUtility::getLocalArrayBounds(gf[mNew].u[grid],uNew,I1,I2,I3); 
           if( !ok ) continue;
 #else
@@ -848,19 +848,19 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
           const realSerialArray & uOld=gf[mOld].u[grid];
 #endif
 
-	  uNew(I1,I2,I3,pc)=cex2a*uCur(I1,I2,I3,pc)+cex2b*uOld(I1,I2,I3,pc);
-	  //  gf[mNew].u[grid](I1,I2,I3,pc)=cex2a*gf[mCur].u[grid](I1,I2,I3,pc)+cex2b*gf[mOld].u[grid](I1,I2,I3,pc);
+          uNew(I1,I2,I3,pc)=cex2a*uCur(I1,I2,I3,pc)+cex2b*uOld(I1,I2,I3,pc);
+          //  gf[mNew].u[grid](I1,I2,I3,pc)=cex2a*gf[mCur].u[grid](I1,I2,I3,pc)+cex2b*gf[mOld].u[grid](I1,I2,I3,pc);
 
-	  if( debug() & 4 )
-	  {
-	    Range all;
-	    for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
-	      ::display(gf[mNew].u[grid](all,all,all,pc),sPrintF(" ***Adams PC: after extrap p in time"
-								 " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
-	  }
+          if( debug() & 4 )
+          {
+            Range all;
+            for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
+              ::display(gf[mNew].u[grid](all,all,all,pc),sPrintF(" ***Adams PC: after extrap p in time"
+                                                                 " t=%9.4e grid=%i\n",gf[mNew].t,grid),debugFile,"%10.7f ");
+          }
 
-// **	gf[mNew].u[grid](I1,I2,I3,pc)=gf[mCur].u[grid](I1,I2,I3,pc);
-	}
+// **   gf[mNew].u[grid](I1,I2,I3,pc)=gf[mCur].u[grid](I1,I2,I3,pc);
+        }
       }
     }
   ---- */
@@ -883,19 +883,19 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       real max1=max(fabs(gf[mNew].u)), max2=max(fabs(gf[mCur].u));
       if( parameters.dbase.get<int >("myid")==0 )
       {
-	fprintf(debugFile,
-		"AdamsPredictorCorrector After solve for time indep. vars: "
-		"max(fabs(gf[mNew]))=%e, max(fabs(gf[mCur]))=%e \n",
-		max1,max2); 
+        fprintf(debugFile,
+                "AdamsPredictorCorrector After solve for time indep. vars: "
+                "max(fabs(gf[mNew]))=%e, max(fabs(gf[mCur]))=%e \n",
+                max1,max2); 
       }
     }
     if( debug() & 8 )
     {
       label=sPrintF(" AdamsPC: After Predictor, t0+dt0: t0=%e, dt0=%e  \n",t0,dt0);
       if( twilightZoneFlow() )
-	determineErrors( gf[mNew],label );
+        determineErrors( gf[mNew],label );
       else
-	outputSolution( gf[mNew].u,gf[mNew].t,label );
+        outputSolution( gf[mNew].u,gf[mNew].t,label );
     }
 
     // For constant dt the coefficients would be
@@ -941,58 +941,58 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
 
       for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
       {
-	rparam[0]=gf[mNew].t;
-	rparam[1]=gf[mNew].t; // tForce
-	rparam[2]=gf[mNew].t; // tImplicit
-	iparam[0]=grid;
+        rparam[0]=gf[mNew].t;
+        rparam[1]=gf[mNew].t; // tForce
+        rparam[2]=gf[mNew].t; // tImplicit
+        iparam[0]=grid;
         iparam[1]=gf[mNew].cg.refinementLevelNumber(grid);
         iparam[2]=numberOfStepsTaken;
 
-	// mappedGridSolver[grid]->getUt(gf[mNew].u[grid],gf[mNew].getGridVelocity(grid),uNew[grid],iparam,rparam,
+        // mappedGridSolver[grid]->getUt(gf[mNew].u[grid],gf[mNew].getGridVelocity(grid),uNew[grid],iparam,rparam,
         //                 Overture::nullRealMappedGridFunction(),&gf[mNew].cg[grid]);
-	getUt(gf[mNew].u[grid],gf[mNew].getGridVelocity(grid),uNew[grid],iparam,rparam,
+        getUt(gf[mNew].u[grid],gf[mNew].getGridVelocity(grid),uNew[grid],iparam,rparam,
                          Overture::nullRealMappedGridFunction(),&gf[mNew].cg[grid]);
       }
 
       if( debug() & 8 || debug() & 64 )
       {
-	determineErrors( ua,gf[mCur].gridVelocity, t0, 1, error,
+        determineErrors( ua,gf[mCur].gridVelocity, t0, 1, error,
            sPrintF(" adams:corrector: errors in ut (ua) at t=%e \n",t0) );
 
-	if( parameters.dbase.get<int >("myid")==0 )
-	  fprintf(debugFile," ****>> &uNew=%i &ub=%i\n",&uNew,&ub);
-	
+        if( parameters.dbase.get<int >("myid")==0 )
+          fprintf(debugFile," ****>> &uNew=%i &ub=%i\n",&uNew,&ub);
+        
         display(uNew[0],sPrintF("uNew[0] at t=%e\n",gf[mNew].t),debugFile,"%5.2f ");
         if( parameters.isMovingGridProblem() )
           display(gf[mNew].getGridVelocity(0),sPrintF("gridVelocity[0] at t=%e\n",gf[mNew].t),
                                                       debugFile,"%5.2f ");
-	
-	determineErrors( uNew,gf[mNew].gridVelocity, gf[mNew].t, 1, error,
+        
+        determineErrors( uNew,gf[mNew].gridVelocity, gf[mNew].t, 1, error,
                sPrintF(" adams:corrector: errors in ut (uNew) at t=%e \n",gf[mNew].t) );
 
-	if( orderOfPredictorCorrector==4 )
-	{
-	  if( parameters.isMovingGridProblem() )
+        if( orderOfPredictorCorrector==4 )
+        {
+          if( parameters.isMovingGridProblem() )
             determineErrors( uc,gf[mNew].gridVelocity, t0-2.*dtb, 1, error,
                  sPrintF(" adams:corrector: errors in ut (uc) at t=%e \n",t0-2*dtb) );
 
-	  determineErrors( ud,gf[mNew].gridVelocity, t0+dtb, 1, error,
+          determineErrors( ud,gf[mNew].gridVelocity, t0+dtb, 1, error,
                       sPrintF(" adams:corrector: errors in ut (ud) at t=%e \n",t0+dt) );
-	}
+        }
       }
     
       addArtificialDissipation(gf[mNew].u,dt0);  // add "implicit" dissipation to u 
      
       if( Parameters::checkForFloatingPointErrors )
-	checkSolution(gf[mNew].u,"AdamsPC: u1 before corrector",true);
+        checkSolution(gf[mNew].u,"AdamsPC: u1 before corrector",true);
 
       real cpu0=getCPU();
       for( grid=0; grid<gf[mNew].cg.numberOfComponentGrids(); grid++ )
       {
-	getIndex(gf[mNew].cg[grid].extendedIndexRange(),I1,I2,I3);
+        getIndex(gf[mNew].cg[grid].extendedIndexRange(),I1,I2,I3);
 
-	if( useOptUpdate )
-	{
+        if( useOptUpdate )
+        {
          #ifdef USE_PPP
           RealArray u0;  getLocalArrayWithGhostBoundaries(gf[mCur].u[grid],u0);
           RealArray u1;  getLocalArrayWithGhostBoundaries(gf[mNew].u[grid],u1);
@@ -1015,83 +1015,83 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
           const int n1a=max(u1.getBase(0),I1.getBase()), n1b=min(u1.getBound(0),I1.getBound());  
           const int n2a=max(u1.getBase(1),I2.getBase()), n2b=min(u1.getBound(1),I2.getBound());
           const int n3a=max(u1.getBase(2),I3.getBase()), n3b=min(u1.getBound(2),I3.getBound());
-	
-	  int ierr=0;
+        
+          int ierr=0;
           const int maskOption=0; // assign pts where mask>0
-	  int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
-	  real rpar[5]={0.,0.,0.,0.,0.};
+          int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
+          real rpar[5]={0.,0.,0.,0.,0.};
           real *ut1p, *ut2p, *ut3p, *ut4p;
-	  if( orderOfPredictorCorrector==2 )
-	  {
-	    ipar[0]=2;
-	    rpar[0]=am1; rpar[1]=am2;
+          if( orderOfPredictorCorrector==2 )
+          {
+            ipar[0]=2;
+            rpar[0]=am1; rpar[1]=am2;
             ut1p=utb.getDataPointer();
-	    ut2p=uta.getDataPointer();
+            ut2p=uta.getDataPointer();
             ut3p=ut2p;  // not used
-	    ut4p=ut2p;  // not used
-	  }
-	  else if( orderOfPredictorCorrector==4 )
-	  {
-	    ipar[0]=4;
-	    rpar[0]=am41; rpar[1]=am42; rpar[2]=am43; rpar[3]=am44;
+            ut4p=ut2p;  // not used
+          }
+          else if( orderOfPredictorCorrector==4 )
+          {
+            ipar[0]=4;
+            rpar[0]=am41; rpar[1]=am42; rpar[2]=am43; rpar[3]=am44;
             ut1p=utd.getDataPointer();
             ut2p=uta.getDataPointer();
             ut3p=utb.getDataPointer();
             ut4p=utc.getDataPointer();
-	  }
-	  else
-	  {
-	    Overture::abort();
-	  }
-	  updateOpt(u0.getBase(0),u0.getBound(0),u0.getBase(1),u0.getBound(1),
-		    u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
-		    *mask1.getDataPointer(),  
-		    *u0.getDataPointer(),*u1.getDataPointer(), 
-		    *ut1p, *ut2p, *ut3p, *ut4p,
-		    ipar[0], rpar[0], ierr );
+          }
+          else
+          {
+            Overture::abort();
+          }
+          updateOpt(u0.getBase(0),u0.getBound(0),u0.getBase(1),u0.getBound(1),
+                    u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
+                    *mask1.getDataPointer(),  
+                    *u0.getDataPointer(),*u1.getDataPointer(), 
+                    *ut1p, *ut2p, *ut3p, *ut4p,
+                    ipar[0], rpar[0], ierr );
 
-	}
-	else
-	{
-	  if( orderOfPredictorCorrector==2 )
-	  {
-	    gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N)+am1*ub[grid](I1,I2,I3,N) 
-	      + am2*ua[grid](I1,I2,I3,N);
-	  }
-	  else if( orderOfPredictorCorrector==4 )
-	  {
-	    gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N)+am41*ud[grid](I1,I2,I3,N) 
-	      +am42*ua[grid](I1,I2,I3,N) 
-	      +am43*ub[grid](I1,I2,I3,N) 
-	      +am44*uc[grid](I1,I2,I3,N);
+        }
+        else
+        {
+          if( orderOfPredictorCorrector==2 )
+          {
+            gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N)+am1*ub[grid](I1,I2,I3,N) 
+              + am2*ua[grid](I1,I2,I3,N);
+          }
+          else if( orderOfPredictorCorrector==4 )
+          {
+            gf[mNew].u[grid](I1,I2,I3,N)=gf[mCur].u[grid](I1,I2,I3,N)+am41*ud[grid](I1,I2,I3,N) 
+              +am42*ua[grid](I1,I2,I3,N) 
+              +am43*ub[grid](I1,I2,I3,N) 
+              +am44*uc[grid](I1,I2,I3,N);
 
-	  }
-	}
-	
+          }
+        }
+        
       }
       // * gf[mNew].t=t0+dt0;  //  gf[mNew] now lives at this time
       timing(parameters.dbase.get<int>("timeForAddUt"))+=getCPU()-cpu0;
 
       if( Parameters::checkForFloatingPointErrors )
-	checkSolution(gf[mNew].u,"AdamsPC: u1 after corrector",true);
+        checkSolution(gf[mNew].u,"AdamsPC: u1 after corrector",true);
 
       if( debug() & 16  )
       {
-	label=sPrintF(" ***Adams PC: corrector: before interpolate t=%e\n",gf[mNew].t);
-	if( twilightZoneFlow() )
-	  determineErrors( gf[mNew],label );
-	else
-	  outputSolution( gf[mNew].u,gf[mNew].t,label );
+        label=sPrintF(" ***Adams PC: corrector: before interpolate t=%e\n",gf[mNew].t);
+        if( twilightZoneFlow() )
+          determineErrors( gf[mNew],label );
+        else
+          outputSolution( gf[mNew].u,gf[mNew].t,label );
       }
 
       interpolateAndApplyBoundaryConditions( gf[mNew],&gf[mCur],dt0 );
 
       if( debug() & 8 )
       {
-	label=sPrintF("======advance2 After boundary conditions in corrector, t=%e \n",t0+dt0);
-	if( twilightZoneFlow() )
-	  determineErrors( gf[mNew],label );
-	else
+        label=sPrintF("======advance2 After boundary conditions in corrector, t=%e \n",t0+dt0);
+        if( twilightZoneFlow() )
+          determineErrors( gf[mNew],label );
+        else
           outputSolution( gf[mNew].u,gf[mNew].t,label );
       }
     
@@ -1107,46 +1107,46 @@ advanceAdamsPredictorCorrector( real & t0, real & dt0, int & numberOfSubSteps, i
       
       // if( movingGridProblem() && (correction+1)<numberOfCorrections)
       // {
-      // 	correctMovingGrids( t0,t0+dt0,gf[mCur],gf[mNew] ); 
+      //        correctMovingGrids( t0,t0+dt0,gf[mCur],gf[mNew] ); 
 
-      // 	// Check if the correction step has converged
-      // 	movingGridCorrectionsHaveConverged = getMovingGridCorrectionHasConverged();
-      // 	real delta = getMovingGridMaximumRelativeCorrection();
-      // 	if( debug() & 2 )
-      // 	  printF("PC: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
-      // 		 delta,correction+1,(int)movingGridCorrectionsHaveConverged);
+      //        // Check if the correction step has converged
+      //        movingGridCorrectionsHaveConverged = getMovingGridCorrectionHasConverged();
+      //        real delta = getMovingGridMaximumRelativeCorrection();
+      //        if( debug() & 2 )
+      //          printF("PC: moving grid correction step : delta =%8.2e (correction=%i, isConverged=%i)\n",
+      //                 delta,correction+1,(int)movingGridCorrectionsHaveConverged);
 
-      // 	if( movingGridCorrectionsHaveConverged && (correction+1) >=minimumNumberOfPCcorrections )  // note correction+1 
-      // 	{
-      // 	  if( debug() & 1 )
-      // 	    printF("PC: moving grid correction step : sub-iterations converged after %i corrections, rel-err =%8.2e\n",
-      // 		   correction+1,delta);
-      // 	  break;  // we have converged -- break from correction steps
-      // 	}
+      //        if( movingGridCorrectionsHaveConverged && (correction+1) >=minimumNumberOfPCcorrections )  // note correction+1 
+      //        {
+      //          if( debug() & 1 )
+      //            printF("PC: moving grid correction step : sub-iterations converged after %i corrections, rel-err =%8.2e\n",
+      //                   correction+1,delta);
+      //          break;  // we have converged -- break from correction steps
+      //        }
       // }
       // if( (correction+1)==numberOfCorrections && !movingGridCorrectionsHaveConverged )
       // {
       //   real delta = getMovingGridMaximumRelativeCorrection();
-      // 	printF("PC:ERROR: moving grid corrections have not converged! numberOfCorrections=%i, rel-err =%8.2e\n",
-      // 		   correction+1,delta);
+      //        printF("PC:ERROR: moving grid corrections have not converged! numberOfCorrections=%i, rel-err =%8.2e\n",
+      //                   correction+1,delta);
       // }
       
 
     
       if( debug() & 4 )
-	printf("AdamsPredictorCorrector After correction: max(fabs(gf[mNew]))=%e, max(fabs(gf[mCur]))=%e \n",
-	       max(fabs(gf[mNew].u)),max(fabs(gf[mCur].u)));
+        printf("AdamsPredictorCorrector After correction: max(fabs(gf[mNew]))=%e, max(fabs(gf[mCur]))=%e \n",
+               max(fabs(gf[mNew].u)),max(fabs(gf[mCur].u)));
 
       if( debug() & 8 )
       {
-	if( twilightZoneFlow() )
-	{
-	  determineErrors( gf[mNew],sPrintF("======advance2 Errors After PECE, t0+dt0=%e \n",t0+dt0) );
-	}
-	else
-	{
+        if( twilightZoneFlow() )
+        {
+          determineErrors( gf[mNew],sPrintF("======advance2 Errors After PECE, t0+dt0=%e \n",t0+dt0) );
+        }
+        else
+        {
           outputSolution( gf[mNew].u,gf[mNew].t,sPrintF( " ======advance2 solution after PECE, t0+dt0=%e \n",t0+dt0));
-	}
+        }
       }
     }// end for correction.
     

@@ -128,7 +128,7 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
   // ********* allocate space for marching arrays, assign initial conditions: **********
   // ***********************************************************************************
   initializeMarchingArrays( i3Start,numberOfAdditionalSteps, x, xt,
-			    xr, normal, xrr, s, ss, xrrDotN, kappa);
+                            xr, normal, xrr, s, ss, xrrDotN, kappa);
   
   Index I1,I2,I3;
   ::getIndex(indexRange,I1,I2,I3);
@@ -212,16 +212,16 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
       if( applyBoundaryConditionsToStartCurve )
       {
         if( debug & 3 )
-  	  printF("hype:generate:apply BC's to the start curve\n");
+          printF("hype:generate:apply BC's to the start curve\n");
         returnCode=applyBoundaryConditions( x1,x0,marchingDirection,normal,xr,initialStep,i3Start );
         x(D1,D2,i3Start,xAxes)=x1;
       }
       else
       {
-	// We must always apply some BC's to get the tangents defined at boundaries that match to other Mappings.
-	// These tangent vectors will be used later in getNormalAndSurfaceArea in order to adjust the
-	// marching vector at boundaries.
-	returnCode=applyBoundaryConditionMatchToMapping(x0, marchingDirection, normal, xr, initialStep, option);
+        // We must always apply some BC's to get the tangents defined at boundaries that match to other Mappings.
+        // These tangent vectors will be used later in getNormalAndSurfaceArea in order to adjust the
+        // marching vector at boundaries.
+        returnCode=applyBoundaryConditionMatchToMapping(x0, marchingDirection, normal, xr, initialStep, option);
       }
       
       if( returnCode!=0 ) return returnCode;
@@ -267,121 +267,121 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
         int i3Mod2=(i3+subStep) % 2;
 
 
-	// ------ compute the normal (i.e. marching vector) to the curve or surface -----
-	bool firstStep=(i3+subStep)==0;
-	int returnValue = getNormalAndSurfaceArea(x0,firstStep,normal,s,xr,xrr, dSign,normXr,normXs,ss,
+        // ------ compute the normal (i.e. marching vector) to the curve or surface -----
+        bool firstStep=(i3+subStep)==0;
+        int returnValue = getNormalAndSurfaceArea(x0,firstStep,normal,s,xr,xrr, dSign,normXr,normXs,ss,
                               marchingDirection,i3 );
 
-	if( returnValue!=0 )
-	{
-	  printF("HyperbolicMapping::INFO: marching stopped at step=%i since the grid spacing became too small",i3);
-	  break;
-	}
+        if( returnValue!=0 )
+        {
+          printF("HyperbolicMapping::INFO: marching stopped at step=%i since the grid spacing became too small",i3);
+          break;
+        }
     
-	real time1=getCPU();
+        real time1=getCPU();
       
-	getDistanceToStep(abs(i3-i3Begin),ds,growthDirection);          // get marching distance ds
-	getCurvatureDependentSpeed(ds,kappa, xrr,normal,normXr,normXs); // adjust ds by the curvature
+        getDistanceToStep(abs(i3-i3Begin),ds,growthDirection);          // get marching distance ds
+        getCurvatureDependentSpeed(ds,kappa, xrr,normal,normXr,normXs); // adjust ds by the curvature
 
         // estimate the explicit time step parameter:
         real gamma = deltaT*max(ds(I1,I2)/normXr(I1,I2));
 
-	if( (i3+subStep)==i3Start )
-	{ // first time thru we need a value for xt
-	  if( numberOfAdditionalSteps==0 )
-	  {
-	    // use this guess:
-	    if( !surfaceGrid )
-	    {
+        if( (i3+subStep)==i3Start )
+        { // first time thru we need a value for xt
+          if( numberOfAdditionalSteps==0 )
+          {
+            // use this guess:
+            if( !surfaceGrid )
+            {
               if( debug & 4 )
-	      {
-		fPrintF(debugFile,"*** set xt at initial step to volume*normal**** \n");
-		if( surface!=NULL )
-		  fPrintF(debugFile,"*** surface.getSignForJacobian=%e\n",surface->getSignForJacobian());
-	      }
-	      
-	      for( axis=0; axis<rangeDimension; axis++ )
-		xt(I1,I2,i3Mod2,axis)=VOLUME(ds)*normal(I1,I2,0,axis);   // old value for xt
-	    }
-	  }
-	  else
-	  {
-	    // continuation run, just difference to get xt:
-	    xt(I1,I2,i3Mod2,xAxes)=x(I1,I2,i3,xAxes)-x(I1,I2,i3-i3Increment,xAxes);
-	  }
-	}
+              {
+                fPrintF(debugFile,"*** set xt at initial step to volume*normal**** \n");
+                if( surface!=NULL )
+                  fPrintF(debugFile,"*** surface.getSignForJacobian=%e\n",surface->getSignForJacobian());
+              }
+              
+              for( axis=0; axis<rangeDimension; axis++ )
+                xt(I1,I2,i3Mod2,axis)=VOLUME(ds)*normal(I1,I2,0,axis);   // old value for xt
+            }
+          }
+          else
+          {
+            // continuation run, just difference to get xt:
+            xt(I1,I2,i3Mod2,xAxes)=x(I1,I2,i3,xAxes)-x(I1,I2,i3-i3Increment,xAxes);
+          }
+        }
 
-	RealArray normXt;
-	if(rangeDimension==2)
-	  normXt=SQRT(SQR(xt(I1,I2,i3Mod2,0))+SQR(xt(I1,I2,i3Mod2,1)));
-	else
-	  normXt=SQRT(SQR(xt(I1,I2,i3Mod2,0))+SQR(xt(I1,I2,i3Mod2,1))+SQR(xt(I1,I2,i3Mod2,2)));
+        RealArray normXt;
+        if(rangeDimension==2)
+          normXt=SQRT(SQR(xt(I1,I2,i3Mod2,0))+SQR(xt(I1,I2,i3Mod2,1)));
+        else
+          normXt=SQRT(SQR(xt(I1,I2,i3Mod2,0))+SQR(xt(I1,I2,i3Mod2,1))+SQR(xt(I1,I2,i3Mod2,2)));
 
         const real dissipationCoefficient=getDissipationCoefficient(stepNumber);
-	
-	// implicit time stepping
-	// form the RHS
-	for( axis=0; axis<rangeDimension; axis++ )
-	{
-	  xte=VOLUME(ds)*normal(I1,I2,0,axis)+dissipationCoefficient*xrr(I1,I2,0,axis,0);
-	  if( domainDimension==3 )
-	    xte+=dissipationCoefficient*xrr(I1,I2,0,axis,1);
+        
+        // implicit time stepping
+        // form the RHS
+        for( axis=0; axis<rangeDimension; axis++ )
+        {
+          xte=VOLUME(ds)*normal(I1,I2,0,axis)+dissipationCoefficient*xrr(I1,I2,0,axis,0);
+          if( domainDimension==3 )
+            xte+=dissipationCoefficient*xrr(I1,I2,0,axis,1);
 
-	  if( removeNormalSmoothing )
-	  { 
+          if( removeNormalSmoothing )
+          { 
             // this didn't seem to work very well.
             removeNormalComponentOfSmoothing(axis,I1,I2,I3, xrr, xrrDotN, normal, xte );
-	  }
-	
-	  xte.reshape(1,I1,I2);
-	  xTri(axis,I1,I2)=xte(0,I1,I2)*deltaT;
-	  xte.reshape(I1,I2);
-	  if( debug & 4 )
-	  {
-	    // ::display(ds,sPrintF("Here is ds for xte for axis=%i at step %i",axis,i3p),debugFile);
-	    // ::display(ss,sPrintF("Here is ss for xte for axis=%i at step %i",axis,i3p),debugFile);
-	    // ::display(s,sPrintF("Here is s for xte for axis=%i at step %i",axis,i3p),debugFile);
-	    ::display(normal(I1,I2,0,axis),sPrintF("Here is the normal for xte for axis=%i at step %i",axis,i3p),debugFile);
-	    ::display(xrr(I1,I2,0,axis,0),sPrintF("Here is xrr for the xte for axis=%i at step %i",axis,i3p),debugFile);
-	    ::display(xte,sPrintF("Here is the RHS xte for axis=%i at step %i",axis,i3p),debugFile);
-	  }
-	} 
-	timing[timeForSetupRHS]+=getCPU()-time1;
+          }
+        
+          xte.reshape(1,I1,I2);
+          xTri(axis,I1,I2)=xte(0,I1,I2)*deltaT;
+          xte.reshape(I1,I2);
+          if( debug & 4 )
+          {
+            // ::display(ds,sPrintF("Here is ds for xte for axis=%i at step %i",axis,i3p),debugFile);
+            // ::display(ss,sPrintF("Here is ss for xte for axis=%i at step %i",axis,i3p),debugFile);
+            // ::display(s,sPrintF("Here is s for xte for axis=%i at step %i",axis,i3p),debugFile);
+            ::display(normal(I1,I2,0,axis),sPrintF("Here is the normal for xte for axis=%i at step %i",axis,i3p),debugFile);
+            ::display(xrr(I1,I2,0,axis,0),sPrintF("Here is xrr for the xte for axis=%i at step %i",axis,i3p),debugFile);
+            ::display(xte,sPrintF("Here is the RHS xte for axis=%i at step %i",axis,i3p),debugFile);
+          }
+        } 
+        timing[timeForSetupRHS]+=getCPU()-time1;
 
 
-	implicitSolve(xTri, i3Mod2,xr,xt,normal,normXr,normXs,normXt,tri,stepNumber);
+        implicitSolve(xTri, i3Mod2,xr,xt,normal,normXr,normXs,normXt,tri,stepNumber);
 
-	x0.reshape(1,D1,D2,1,xAxes); x1.reshape(1,D1,D2,1,xAxes);
+        x0.reshape(1,D1,D2,1,xAxes); x1.reshape(1,D1,D2,1,xAxes);
 
-	for( axis=0; axis<rangeDimension; axis++ )
-	  x1(0,I1,I2,0,axis)=x0(0,I1,I2,0,axis)+xTri(axis,I1,I2);  // *** update the solution ****
+        for( axis=0; axis<rangeDimension; axis++ )
+          x1(0,I1,I2,0,axis)=x0(0,I1,I2,0,axis)+xTri(axis,I1,I2);  // *** update the solution ****
 
-	x0.reshape(D1,D2,1,xAxes); x1.reshape(D1,D2,1,xAxes);
+        x0.reshape(D1,D2,1,xAxes); x1.reshape(D1,D2,1,xAxes);
   
-	time1=getCPU();
+        time1=getCPU();
       
-	if( debug & 2 )
-	  ::display(x1,sPrintF("***Here is x at BEFORE BC at step %i",i3p),debugFile,"%10.3e ");
+        if( debug & 2 )
+          ::display(x1,sPrintF("***Here is x at BEFORE BC at step %i",i3p),debugFile,"%10.3e ");
 
 
-	// boundary conditions (and projection onto a surface grid)
-	returnCode=applyBoundaryConditions( x1,x0,marchingDirection,normal,xr,false,i3p );
+        // boundary conditions (and projection onto a surface grid)
+        returnCode=applyBoundaryConditions( x1,x0,marchingDirection,normal,xr,false,i3p );
         if( returnCode!=0 )
-	{
-	  break;
-	}
+        {
+          break;
+        }
 
-	i3Mod2=(i3Mod2+1) % 2;
-	xt(I1,I2,i3Mod2,xAxes)=x1(I1,I2,0,xAxes)-x0(I1,I2,0,xAxes);
+        i3Mod2=(i3Mod2+1) % 2;
+        xt(I1,I2,i3Mod2,xAxes)=x1(I1,I2,0,xAxes)-x0(I1,I2,0,xAxes);
     
-	computeCellVolumes(xt,i3Mod2,minCellVolume,maxCellVolume,dSign );
+        computeCellVolumes(xt,i3Mod2,minCellVolume,maxCellVolume,dSign );
 
 
-	if( debug & 2 )
-	  ::display(x1,sPrintF("\n *** Here is x at step %i",i3p),debugFile,"%10.3e ");
+        if( debug & 2 )
+          ::display(x1,sPrintF("\n *** Here is x at step %i",i3p),debugFile,"%10.3e ");
 
-	if( info & 1 ) 
-	{
+        if( info & 1 ) 
+        {
           printF("...done step %4i (substep %i) min(dn)=%6.1e, max(dn)=%6.1e, min(vol)=%6.1e, max(vol)=%6.1e, "
                "cfl=%8.1e \n",i3p,subStep,min(fabs(ds)),max(fabs(ds)),minCellVolume,maxCellVolume,gamma);
 
@@ -390,21 +390,21 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
           int numberOfComponentsToOutput=3;
           fPrintF(checkFile,"%9.2e %i  ",real(i3p),numberOfComponentsToOutput);
           int n=0;
-	  fPrintF(checkFile,"%i %9.2e %10.3e  ",n,min(fabs(ds)),max(fabs(ds))); n++;
-	  fPrintF(checkFile,"%i %9.2e %10.3e  ",n,minCellVolume,maxCellVolume); n++;
-	  fPrintF(checkFile,"%i %9.2e %10.3e  ",n,gamma,gamma);
+          fPrintF(checkFile,"%i %9.2e %10.3e  ",n,min(fabs(ds)),max(fabs(ds))); n++;
+          fPrintF(checkFile,"%i %9.2e %10.3e  ",n,minCellVolume,maxCellVolume); n++;
+          fPrintF(checkFile,"%i %9.2e %10.3e  ",n,gamma,gamma);
           fPrintF(checkFile,"\n");
-	}
-	
+        }
+        
       
-	totalNumberOfSteps+=1;
-	
+        totalNumberOfSteps+=1;
+        
         if( subStep<numberOfSubSteps-1 )
-	{
-	  x0=x1;
-	}
+        {
+          x0=x1;
+        }
         timing[timeForUpdate]+=getCPU()-time1;
-	
+        
       }  // end for subStep
       
       x(D1,D2,i3p,xAxes)=x1(D1,D2,0,xAxes);
@@ -413,50 +413,50 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
       {
         plotNegativeCells=true;   // set to true in generate if there are negative cells detected
 
-	printF("HyperbolicMapping:ERROR: A negative volume has been detected at step i3p=%i (|i3p-i3Start|=%i).\n ",
+        printF("HyperbolicMapping:ERROR: A negative volume has been detected at step i3p=%i (|i3p-i3Start|=%i).\n ",
                i3p,abs(i3p-i3Start));
         // **** we should have a more careful check of the cell volume --- it may not be correct especially
         // for surface grids that start on corners since the original normalCC may not correspond to the
         // corrected marching direction ****
 
         if( stopOnNegativeCells )
-	{
+        {
           if( i3==i3Start )
-	  {
+          {
             i3=i3p;
-	    printF("generate:INFO: I am stopping at the current line since this is the first step. \n"
-		   "               Change parameters to fix this or turn off `stop on negative cells' to avoid this.\n");
-	  }
-	  else
-	  {
-	    printF("generate:INFO: I am stopping at the previous line. \n"
-		   "               Change parameters to fix this or turn off `stop on negative cells' to avoid this.\n");
-	    i3=i3p-i3Increment;
-	  }
+            printF("generate:INFO: I am stopping at the current line since this is the first step. \n"
+                   "               Change parameters to fix this or turn off `stop on negative cells' to avoid this.\n");
+          }
+          else
+          {
+            printF("generate:INFO: I am stopping at the previous line. \n"
+                   "               Change parameters to fix this or turn off `stop on negative cells' to avoid this.\n");
+            i3=i3p-i3Increment;
+          }
           returnCode=1;
-	  
-	  break;
-	}
+          
+          break;
+        }
       }
       else if( returnCode!=0 )
       {
-	printF("\n"
+        printF("\n"
                "generate:ERROR:There was an error from applyBoundaryConditions at "
                " step i3p=%i (|i3p-i3Start|=%i).\n",i3p,abs(i3p-i3Start));
         if( surfaceGrid )
-	{
+        {
           printF("        :It could be that there are ghost points that cannot be projected onto the surface\n"
                  "        :You may want to turn off `project ghost [left/right]' for the appropriate side\n");
-	}
-	if( i3==i3Start )
-	{
-	  i3=i3p;
-	}
-	else
-	{
-	  i3=i3p-i3Increment;
-	}
-	break;
+        }
+        if( i3==i3Start )
+        {
+          i3=i3p;
+        }
+        else
+        {
+          i3=i3p-i3Increment;
+        }
+        break;
       }
       
     }  // end for i3
@@ -492,18 +492,18 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
       if( (numberOfAdditionalSteps==0 || (abs(growthOption)==1 && side==End ) || abs(growthOption)==2 ) && 
              boundaryCondition(side,domainDimension-1)==0 )
       {
-	const int is=2*side-1;
-	int i3 = gridIndexRange(side,axis3);
-	x(I1,I2,i3+is,xAxes)=2.*x(I1,I2,i3,xAxes)-x(I1,I2,i3-is,xAxes);
+        const int is=2*side-1;
+        int i3 = gridIndexRange(side,axis3);
+        x(I1,I2,i3+is,xAxes)=2.*x(I1,I2,i3,xAxes)-x(I1,I2,i3-is,xAxes);
 
-	if( debug & 2 )
-	  printF("Projecting ghost lines on side=%i of the marching direction since bc=%i\n",side,
+        if( debug & 2 )
+          printF("Projecting ghost lines on side=%i of the marching direction since bc=%i\n",side,
                  boundaryCondition(side,domainDimension-1));
-	// *** only project if bc==0 ??
-	// first extrap ghost line
-	// now project the ghost line
-	int marchingDirection=is;
-	project(x(D1,D2,i3+is,xAxes),marchingDirection,xr);
+        // *** only project if bc==0 ??
+        // first extrap ghost line
+        // now project the ghost line
+        int marchingDirection=is;
+        project(x(D1,D2,i3+is,xAxes),marchingDirection,xr);
       }
     }
 
@@ -529,12 +529,12 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
     printF(" D1=[%i,%i] D2=[%i,%i] D3=[%i,%i]\n",D1.getBase(),D1.getBound(),D2.getBase(),D2.getBound(),D3.getBase(),D3.getBound());
   
     printF("boundaryOffset = %i %i %i %i\n",boundaryOffset[0][0],boundaryOffset[1][0],
-	   boundaryOffset[0][1],boundaryOffset[1][1]);
+           boundaryOffset[0][1],boundaryOffset[1][1]);
   
     printF("     bc=%i %i %i %i \n",getBoundaryCondition(0,0),getBoundaryCondition(1,0),
-	   getBoundaryCondition(0,1),getBoundaryCondition(1,1));
+           getBoundaryCondition(0,1),getBoundaryCondition(1,1));
     printF(" dpm:bc=%i %i %i %i \n",dpm->getBoundaryCondition(0,0),dpm->getBoundaryCondition(1,0),
-	   dpm->getBoundaryCondition(0,1),dpm->getBoundaryCondition(1,1));
+           dpm->getBoundaryCondition(0,1),dpm->getBoundaryCondition(1,1));
   }
   
 
@@ -564,10 +564,10 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
     {
       for( dir=0; dir<domainDimension; dir++ )
       {
-	if( getBoundaryCondition(0,dir)==0 )
-	  gid(0,dir)+=1;
-	if( getBoundaryCondition(1,dir)==0 )
-	  gid(1,dir)-=1;
+        if( getBoundaryCondition(0,dir)==0 )
+          gid(0,dir)+=1;
+        if( getBoundaryCondition(1,dir)==0 )
+          gid(1,dir)-=1;
       }
     }
   }
@@ -642,7 +642,7 @@ generateSerial(const int & numberOfAdditionalSteps /* = 0 */)
     printF("\n time to generate the hyperbolic grid = %e\n",getCPU()-time0);
     printF("After adjustment for boundary offset: gridIndexRange=[%i,%i]x[%i,%i]x[%i,%i]"
            " Possible multigrid levels=%i\n",gid(0,0),
-	   gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+           gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
            numberOfPossibleMultigridLevels(gid));
   }
   
@@ -680,8 +680,8 @@ initializeMarchingParameters(int numberOfAdditionalSteps, int & i3Start )
       dpm->setIsPeriodic(axis,getIsPeriodic(axis));
       for( int side=Start; side<=End; side++ )
       {
-	dpm->setBoundaryCondition(side,axis,getBoundaryCondition(side,axis));
-	dpm->setShare(side,axis,getShare(side,axis));
+        dpm->setBoundaryCondition(side,axis,getBoundaryCondition(side,axis));
+        dpm->setShare(side,axis,getShare(side,axis));
       }
     }
 
@@ -698,18 +698,18 @@ initializeMarchingParameters(int numberOfAdditionalSteps, int & i3Start )
         //      a  a*r  a*r^2 ...  a*r^{n-1}    n=steps = numLines-1
         //   distance = SUM_{i=0,n} a*r^i  = a*(1-r^n)/(1-r)   , n=lines-1
         //   initial spacing:  ds = a
-	geometricNormalization[growthDirection]=distance[growthDirection]*
-	  (geometricFactor-1.)/(pow(geometricFactor,linesToMarch[growthDirection]-1.)-1.);
+        geometricNormalization[growthDirection]=distance[growthDirection]*
+          (geometricFactor-1.)/(pow(geometricFactor,linesToMarch[growthDirection]-1.)-1.);
 
         if( debug & 2 )
-	  printf(" ++++ initial spacing=%8.2e (from distance=%8.2e lines=%i, gamma=%8.2e)\n",
-		 geometricNormalization[growthDirection],distance[growthDirection],
-		 linesToMarch[growthDirection],geometricFactor);
+          printf(" ++++ initial spacing=%8.2e (from distance=%8.2e lines=%i, gamma=%8.2e)\n",
+                 geometricNormalization[growthDirection],distance[growthDirection],
+                 linesToMarch[growthDirection],geometricFactor);
 
       }
       else
       {
-	geometricNormalization[growthDirection]= initialSpacing;
+        geometricNormalization[growthDirection]= initialSpacing;
       }
     }
   }
@@ -841,7 +841,7 @@ evaluateStartCurve( RealArray & xStart )
     {
       real h2=1./max(1.,(gridIndexRange(End,axis2)-gridIndexRange(Start,axis2)));
       for( int i1=D1.getBase(); i1<=D1.getBound(); i1++ )
-	r(i1,D2,0,axis2).seqAdd(dimension(Start,axis2)*h2,h2);
+        r(i1,D2,0,axis2).seqAdd(dimension(Start,axis2)*h2,h2);
     }
     if( debug & 1 ) printf("evaluateStartCurve: evaluate points on initial curve or surface\n");
 
@@ -900,18 +900,18 @@ evaluateStartCurve( RealArray & xStart )
       real distMin=DIST(gridLine);
       while( gridLine>0 && DIST(gridLine-1)<distMin )
       {
-	gridLine--;
-	distMin=DIST(gridLine);
+        gridLine--;
+        distMin=DIST(gridLine);
       }
       while( gridLine<(numberOfPointsOnStartCurve-1) && DIST(gridLine+1)<distMin )
       {
-	gridLine++;
-	distMin=DIST(gridLine);
+        gridLine++;
+        distMin=DIST(gridLine);
       }
 #undef DIST      
 
       printf("***startCurve:adjust  pt %i (%8.2e,%8.2e,%8.2e) -> (%8.2e,%8.2e,%8.2e) for interior matching curve %i\n",
-	     gridLine,xStart(gridLine,0,0,0),xStart(gridLine,0,0,1),(rangeDimension==2? 0. :
+             gridLine,xStart(gridLine,0,0,0),xStart(gridLine,0,0,1),(rangeDimension==2? 0. :
              xStart(gridLine,0,0,2)),match.x[0],match.x[1],match.x[2], i);
 
 
@@ -985,21 +985,21 @@ initializeMarchingArrays( int i3Start, int numberOfAdditionalSteps, RealArray & 
 //        else
 //        {
 //           // first compute r:
-//  	RealArray r(D1,D2,1,domainDimension-1);
-//  	real h1=1./max(1.,(gridIndexRange(End,axis1)-gridIndexRange(Start,axis1)));
-//  	if( domainDimension==2 )
-//  	  r(D1,0,0,0).seqAdd(dimension(Start,axis1)*h1,h1);
-//  	else
-//  	{
-//  	  for( int i2=D2.getBase(); i2<=D2.getBound(); i2++ )
-//  	    r(D1,i2,0,0).seqAdd(dimension(Start,axis1)*h1,h1);
-//  	  real h2=1./max(1.,(gridIndexRange(End,axis2)-gridIndexRange(Start,axis2)));
-//  	  for( int i1=D1.getBase(); i1<=D1.getBound(); i1++ )
-//  	    r(i1,D2,0,axis2).seqAdd(dimension(Start,axis2)*h2,h2);
-//  	}
+//      RealArray r(D1,D2,1,domainDimension-1);
+//      real h1=1./max(1.,(gridIndexRange(End,axis1)-gridIndexRange(Start,axis1)));
+//      if( domainDimension==2 )
+//        r(D1,0,0,0).seqAdd(dimension(Start,axis1)*h1,h1);
+//      else
+//      {
+//        for( int i2=D2.getBase(); i2<=D2.getBound(); i2++ )
+//          r(D1,i2,0,0).seqAdd(dimension(Start,axis1)*h1,h1);
+//        real h2=1./max(1.,(gridIndexRange(End,axis2)-gridIndexRange(Start,axis2)));
+//        for( int i1=D1.getBase(); i1<=D1.getBound(); i1++ )
+//          r(i1,D2,0,axis2).seqAdd(dimension(Start,axis2)*h2,h2);
+//      }
 
-//  	if( debug & 1 ) printf("initializeMarchingArrays: evaluate points on initial curve or surface\n");
-//  	surface->mapGrid(r,xSurface);
+//      if( debug & 1 ) printf("initializeMarchingArrays: evaluate points on initial curve or surface\n");
+//      surface->mapGrid(r,xSurface);
 //        }
 
     }
@@ -1134,7 +1134,7 @@ initializeSurfaceGrid(int direction,
 
       // ** force a robust projection here (with initialStep==true) ***
       project( x(D1,D2,i3Start,xAxes),marchingDirection,xr,true,initialStep ); 
-	
+        
       // If we don't project ghost points we need initial values for the ghost points.
       // We cannot use applyBoundaryConditions since we don't have the normal computed yet.
       // We can't compute the normal without the ghost point values, thus just extrapolate
@@ -1148,19 +1148,19 @@ initializeSurfaceGrid(int direction,
       int is[2];
       for( axis=0; axis<domainDimension-1; axis++ )
       {
-	for( int side=Start; side<=End; side++ )
-	{
+        for( int side=Start; side<=End; side++ )
+        {
           if( boundaryCondition(side,axis)==trailingEdge || getIsPeriodic(axis)==notPeriodic )  // *wdh* 011021
-	  {
-	    is[0]=is[1]=0;
-	    getGhostIndex(gridIndexRange,side,axis,Ig1,Ig2,Ig3,1,extra);
-	    is[axis]=1-2*side;
-	    x(Ig1,Ig2,i3Start,xAxes)=2.*x(Ig1+is[0],Ig2+is[1],i3Start,xAxes)-x(Ig1+2*is[0],Ig2+2*is[1],i3Start,xAxes);
-	  }
-	  
-	}
+          {
+            is[0]=is[1]=0;
+            getGhostIndex(gridIndexRange,side,axis,Ig1,Ig2,Ig3,1,extra);
+            is[axis]=1-2*side;
+            x(Ig1,Ig2,i3Start,xAxes)=2.*x(Ig1+is[0],Ig2+is[1],i3Start,xAxes)-x(Ig1+2*is[0],Ig2+2*is[1],i3Start,xAxes);
+          }
+          
+        }
       }
-	
+        
     }
       
     if( Mapping::debug & 4 )
@@ -1175,29 +1175,29 @@ initializeSurfaceGrid(int direction,
       int i3p=i3+i3Increment;
       bool firstStep=i3==0;
       getNormalAndSurfaceArea(x(D1,D2,i3Start,xAxes),firstStep,normal,s,xr,xrr, dSign,normXr,normXs,ss,
-			      marchingDirection,i3Start );
+                              marchingDirection,i3Start );
       getDistanceToStep(abs(i3-i3Begin),ds,growthDirection);                    // get marching distance ds
 
       const real delta=.25; // take this fraction of a step
       x(D1,D2,i3p,xAxes)=0.;
       for( axis=0; axis<rangeDimension; axis++ )
-	x(I1,I2,i3p,axis)=x(I1,I2,i3,axis)+delta*VOLUME(ds)*normal(I1,I2,0,axis);
+        x(I1,I2,i3p,axis)=x(I1,I2,i3,axis)+delta*VOLUME(ds)*normal(I1,I2,0,axis);
 
       // Now recompute the normal
       // *not needed? **turn off project onto reference surface to avoid problems when starting on corners. *wdh* 010504
         
       if( Mapping::debug & 4 )
-	::display(x(D1,D2,i3p,xAxes),sPrintF("Here is x after small step"),debugFile,"%10.3e ");
+        ::display(x(D1,D2,i3p,xAxes),sPrintF("Here is x after small step"),debugFile,"%10.3e ");
 
       if( false )
       {
-	bool projectOntoReferenceSurfaceSave=projectOntoReferenceSurface;
-	projectOntoReferenceSurface=false;
-	// force a robust projection here with initialStep==true
-	applyBoundaryConditions( x(D1,D2,i3p,xAxes),x(D1,D2,i3p,xAxes),marchingDirection,normal,xr,initialStep,i3p );
-	projectOntoReferenceSurface=projectOntoReferenceSurfaceSave;
+        bool projectOntoReferenceSurfaceSave=projectOntoReferenceSurface;
+        projectOntoReferenceSurface=false;
+        // force a robust projection here with initialStep==true
+        applyBoundaryConditions( x(D1,D2,i3p,xAxes),x(D1,D2,i3p,xAxes),marchingDirection,normal,xr,initialStep,i3p );
+        projectOntoReferenceSurface=projectOntoReferenceSurfaceSave;
       }
-	
+        
       // compute the initial guess for xt:
       int i3Mod2=i3 % 2;
       xt(I1,I2,i3Mod2,xAxes)=(x(I1,I2,i3p,xAxes)-x(I1,I2,i3,xAxes))*(1./delta);
@@ -1230,15 +1230,15 @@ removeNormalComponentOfSmoothing(int axis, const Index & I1, const Index & I2, c
 // the grid from marching in the wrong direction -- *** but doesn't seem to work very well. ****
 // ==================================================================================================
 {
-	    
+            
   if( axis==0 )
   {
     for( int dir=0; dir<domainDimension-1; dir++ )
     {
       xrrDotN(I1,I2,0,dir)=(xrr(I1,I2,0,axis1,dir)*normal(I1,I2,0,axis1)+
-			    xrr(I1,I2,0,axis2,dir)*normal(I1,I2,0,axis2));
+                            xrr(I1,I2,0,axis2,dir)*normal(I1,I2,0,axis2));
       if( rangeDimension==3 )
-	xrrDotN(I1,I2,0,dir)+=xrr(I1,I2,0,axis3,dir)*normal(I1,I2,0,axis3); 
+        xrrDotN(I1,I2,0,dir)+=xrr(I1,I2,0,axis3,dir)*normal(I1,I2,0,axis3); 
     }
     xrrDotN=min(0,xrrDotN);
   }

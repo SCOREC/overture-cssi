@@ -25,39 +25,39 @@ extern "C"
 {
   // rotating disk (SVK) exact solution:
   void rotatingDiskSVK( const real & t, const int & numberOfGridPoints, real & uDisk, real & param,
-			const int & nrwk, real & rwk );
+                        const int & nrwk, real & rwk );
 
   void cBesselJ( const real& nu, const real&zr, const real &zi, real &jr,real &ji );
   void cBesselY( const real& nu, const real&zr, const real &zi, real &yr,real &yi );
   void evalOscillatingBubble(const real& r, const real&R, 
-			     const int& n, const real& mu,
+                             const int& n, const real& mu,
                              const real& omegar, const real& omegai,
-			     const real& cr, const real& ci,
-			     const real& dr, const real& di,
-			     real& vrr, real& vri,
-			     real& vtr, real& vti,
-			     real& pr, real& pi);
+                             const real& cr, const real& ci,
+                             const real& dr, const real& di,
+                             real& vrr, real& vri,
+                             real& vtr, real& vti,
+                             real& pr, real& pi);
   void evalCylindricalStream(const real & r, const real & kz, const real & n, const real & mu,
                              const real & Ar, const real & Ai, const real & Br, const real & Bi,
                              const real & Cr, const real & Ci, 
                              const real & alphar, const real & alphai, 
                              const real & lambdar, const real & lambdai,
-			     real& vrr, real& vri,real& vtr, real& vti, real& vzr, real& vzi,
-			     real& pr, real& pi);
+                             real& vrr, real& vri,real& vtr, real& vti, real& vzr, real& vzi,
+                             real& pr, real& pi);
 
   void evalCapillaryFlow(const real& k, const real& y, const real& mu, 
-			 const real& alphar, const real& alphai, 
-			 const real& ar, const real& ai, const real& br, const real& bi,
-			 const real& cr, const real& ci, const real& dr, const real& di,
-			 real& uhr, real& uhi, real& vhr, real& vhi, real& phr, real& phi);
+                         const real& alphar, const real& alphai, 
+                         const real& ar, const real& ai, const real& br, const real& bi,
+                         const real& cr, const real& ci, const real& dr, const real& di,
+                         real& uhr, real& uhi, real& vhr, real& vhi, real& phr, real& phi);
 
   // exact fsi solution for shear flow
   void evalFibShearFluid( const real & kfr, const real & kfi,
-			  const real & omegar, const real & omegai,
-			  const real & cr, const real & ci,
-			  const real & dr, const real & di,
-			  const real & y, 
-			  real & vr, real & vi);
+                          const real & omegar, const real & omegai,
+                          const real & cr, const real & ci,
+                          const real & dr, const real & di,
+                          const real & y, 
+                          real & vr, real & vi);
 
   void evalRadialFibShearFluid( const real & kfr, const real & kfi,
                                 const real & omegar, const real & omegai,
@@ -174,11 +174,11 @@ real translatingDiskFunction(const real & k )
 
 
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3)					\
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++)					\
-  for(i2=I2Base; i2<=I2Bound; i2++)					\
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
     for(i1=I1Base; i1<=I1Bound; i1++)
 
 
@@ -387,7 +387,7 @@ evalPressure( real r )
 
 int InsParameters::
 getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua, 
-			    const Index & I1_, const Index &I2_, const Index &I3_, 
+                            const Index & I1_, const Index &I2_, const Index &I3_, 
                             int numberOfTimeDerivatives /* = 0 */ )
 // ==========================================================================================
 ///  \brief Evaluate a user defined known solution.
@@ -430,8 +430,8 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   if( userKnownSolution=="pipeFlow" )
   {
     // --- pipe flow (Hagen-Poiseuille flow) ---
-    // 	  u(r) = -(1/(4*nu)* dp/dx *( R^2 - r^2 )
-    // 	  dp/dx = (pInflow-pOutflow)/length = const
+    //    u(r) = -(1/(4*nu)* dp/dx *( R^2 - r^2 )
+    //    dp/dx = (pInflow-pOutflow)/length = const
 
     const real & pInflow  = rpar[0];
     const real & pOutflow = rpar[1];
@@ -455,7 +455,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     if( t<=3.*dt )
       printF("pipe flow: pInflow=%g, pOutflow=%g, radius=%g, s0=%g, length=%g, ua=%g, ub=%g, axialAxis=%i, "
              "amp1=%g, nFreq1=%g, omega=%g, amp2=%g, nFreq2=%g, t=%9.3e\n",
-	     pInflow,pOutflow,radius,s0,length,Ua,Ub,axialAxis,amp1,nFreq1,omega,amp2,nFreq2,t);
+             pInflow,pOutflow,radius,s0,length,Ua,Ub,axialAxis,amp1,nFreq1,omega,amp2,nFreq2,t);
 
     // -- we could avoid building the vertex array on Cartesian grids ---
     GET_VERTEX_ARRAY(x);
@@ -476,7 +476,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       // Poiseulle-Couette flow: 
       ua(I1,I2,I3,uca)=( (-(pOutflow-pInflow)/length/(2.*nu))*( radius*radius - SQR(x(I1,I2,I3,axisp1)) ) 
-			 + Ua + ((Ub-Ua)/(2.*radius))*(x(I1,I2,I3,axisp1)+radius) );
+                         + Ua + ((Ub-Ua)/(2.*radius))*(x(I1,I2,I3,axisp1)+radius) );
       ua(I1,I2,I3,ucb)=0.;
       if( amp1 != 0. )
       { // add on a time-dependent eigenfunction 
@@ -803,24 +803,24 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     double omegar = 0.8907148069, omegai = -0.9135887123e-2;
     for ( int i3=I3.getBase(); i3<=I3.getBound(); i3++ ) {
       for ( int i2=I2.getBase(); i2<=I2.getBound(); i2++ ) {
-	for ( int i1=I1.getBase(); i1<=I1.getBound(); i1++ ) {
-	  
-	  double y = vertex(i1,i2,i3,1);
-	  double x = vertex(i1,i2,i3,0);
-	  
-	  BeamModel::exactSolutionVelocity(x,y,t,k,H,
-					   omegar,omegai, 
-					   omega0,nu,
-					   what,u(i1,i2,i3,uc),
-					   u(i1,i2,i3,vc));
+        for ( int i1=I1.getBase(); i1<=I1.getBound(); i1++ ) {
+          
+          double y = vertex(i1,i2,i3,1);
+          double x = vertex(i1,i2,i3,0);
+          
+          BeamModel::exactSolutionVelocity(x,y,t,k,H,
+                                           omegar,omegai, 
+                                           omega0,nu,
+                                           what,u(i1,i2,i3,uc),
+                                           u(i1,i2,i3,vc));
 
-	  BeamModel::exactSolutionPressure(x,y,t,k,H,
-					   omegar,omegai, 
-					   omega0,nu,
-					   what,u(i1,i2,i3,pc));
+          BeamModel::exactSolutionPressure(x,y,t,k,H,
+                                           omegar,omegai, 
+                                           omega0,nu,
+                                           what,u(i1,i2,i3,pc));
 
-	  //std::cout << x << " " << y << " " << u(i1,i2,i3,uc) << " " << u(i1,i2,i3,vc) << std::endl;
-	}
+          //std::cout << x << " " << y << " " << u(i1,i2,i3,uc) << " " << u(i1,i2,i3,vc) << std::endl;
+        }
       }
     }   
   }
@@ -904,18 +904,18 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
         const int i1a = max(gid(0,0),min(gid(0,1),i1));
-	const int i2a = max(gid(0,1),min(gid(1,1),i2));
-	
-	const real y0 = xLocal(i1a,i2a,i3,1);
-	const real y = xLocal(i1,i2,i3,1);
-	ua(i1,i2,i3,uc)=0.;
-	ua(i1,i2,i3,vc)=wt;
-	if( y0>w )
-	  ua(i1,i2,i3,pc)=pb + dpdy*( y-yb);   // upper fluid 
-	else 
-	  ua(i1,i2,i3,pc)=pa + dpdy*( y-ya);   // lower fluid 
+        const int i2a = max(gid(0,1),min(gid(1,1),i2));
+        
+        const real y0 = xLocal(i1a,i2a,i3,1);
+        const real y = xLocal(i1,i2,i3,1);
+        ua(i1,i2,i3,uc)=0.;
+        ua(i1,i2,i3,vc)=wt;
+        if( y0>w )
+          ua(i1,i2,i3,pc)=pb + dpdy*( y-yb);   // upper fluid 
+        else 
+          ua(i1,i2,i3,pc)=pa + dpdy*( y-ya);   // lower fluid 
       
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
       }
     }
     else if( numberOfTimeDerivatives==1 )
@@ -927,18 +927,18 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
         const int i1a = max(gid(0,0),min(gid(0,1),i1));
-	const int i2a = max(gid(0,1),min(gid(1,1),i2));
+        const int i2a = max(gid(0,1),min(gid(1,1),i2));
 
-	const real y0 = xLocal(i1a,i2a,i3,1);
-	const real y = xLocal(i1,i2,i3,1);
-	ua(i1,i2,i3,uc)=0.;
-	ua(i1,i2,i3,vc)=wtt;
-	if( y0>w )
-	  ua(i1,i2,i3,pc)=dpdyt*( y-yb);   // upper fluid 
-	else 
-	  ua(i1,i2,i3,pc)=dpdyt*( y-ya);   // lower fluid 
+        const real y0 = xLocal(i1a,i2a,i3,1);
+        const real y = xLocal(i1,i2,i3,1);
+        ua(i1,i2,i3,uc)=0.;
+        ua(i1,i2,i3,vc)=wtt;
+        if( y0>w )
+          ua(i1,i2,i3,pc)=dpdyt*( y-yb);   // upper fluid 
+        else 
+          ua(i1,i2,i3,pc)=dpdyt*( y-ya);   // lower fluid 
       
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
       }
     }
     else
@@ -968,7 +968,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     if( t <= dt )
       printF("--UDKS-- Rigid Body Piston Solution at t=%9.3e, amp=%8.2e, freq=%8.2e, depth=%8.2e, bodyMass=%8.2e"
              " numberOfTimeDerivatives=%i\n",
-	     t,amp,freq,depth,bodyMass,numberOfTimeDerivatives);
+             t,amp,freq,depth,bodyMass,numberOfTimeDerivatives);
 
     // --- evaluate the solution ----
     real fluidDensity=1.;
@@ -988,14 +988,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	const real x = xLocal(i1,i2,i3,0);
+        const real x = xLocal(i1,i2,i3,0);
 
-	ua(i1,i2,i3,uc)=vBody; // fluid velocity is constant in space
-	ua(i1,i2,i3,vc)=0.;
+        ua(i1,i2,i3,uc)=vBody; // fluid velocity is constant in space
+        ua(i1,i2,i3,vc)=0.;
 
         ua(i1,i2,i3,pc)= (-fluidDensity*aBody)*(x-length) + pressureBC; // pressure is a linear function
 
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
       }
       
     }
@@ -1010,14 +1010,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
 
-	const real x = xLocal(i1,i2,i3,0);
+        const real x = xLocal(i1,i2,i3,0);
 
-	ua(i1,i2,i3,uc)=aBody; // fluid velocity is constant in space
-	ua(i1,i2,i3,vc)=0.;
+        ua(i1,i2,i3,uc)=aBody; // fluid velocity is constant in space
+        ua(i1,i2,i3,vc)=0.;
 
         ua(i1,i2,i3,pc)= (-fluidDensity*xBodyttt)*(x-length) + pressureBCt;
 
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
 
       }
     }
@@ -1051,7 +1051,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     if( t <= dt )
       printF("--UDKS-- Shear-block exact INS-RB solution at t=%9.3e, amp=%8.2e, H=%8.2e, bodyMass=%8.2e, k=%g"
              " ntd=%i\n",
-	     t,amp,height,bodyMass,k,numberOfTimeDerivatives);
+             t,amp,height,bodyMass,k,numberOfTimeDerivatives);
 
     // --- evaluate the solution ----
     // const real & fluidDensity = dbase.get<real >("fluidDensity");
@@ -1066,14 +1066,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       const real aFactor = (amp/cos(k*height))*expnut;
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	const real y = xLocal(i1,i2,i3,1);
+        const real y = xLocal(i1,i2,i3,1);
 
-	ua(i1,i2,i3,uc)=aFactor*cos(k*(y-height));
-	ua(i1,i2,i3,vc)=0.;
+        ua(i1,i2,i3,uc)=aFactor*cos(k*(y-height));
+        ua(i1,i2,i3,vc)=0.;
 
         ua(i1,i2,i3,pc)=0.;
 
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
       }
       
     }
@@ -1085,14 +1085,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
 
-	const real y = xLocal(i1,i2,i3,1);
+        const real y = xLocal(i1,i2,i3,1);
 
-	ua(i1,i2,i3,uc)=aFactor*cos(k*(y-height));
-	ua(i1,i2,i3,vc)=0.;
+        ua(i1,i2,i3,uc)=aFactor*cos(k*(y-height));
+        ua(i1,i2,i3,vc)=0.;
 
         ua(i1,i2,i3,pc)=0.;
 
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
 
       }
     }
@@ -1121,7 +1121,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       printF("--UDKS-- rotating-disk-in-disk exact INS-RB solution at t=%9.3e, amp=%8.2e, a=%8.2e, b=%8.2e, k=%12.4e"
              " numberOfTimeDerivatives=%i\n",
-	     t,amp,a,b,k,numberOfTimeDerivatives);
+             t,amp,a,b,k,numberOfTimeDerivatives);
       printF("    grid=%i I1=[%i,%i] I2=[%i,%i]\n",grid,I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound());
       
     }
@@ -1130,7 +1130,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       int i1=0, i2=0, i3=0;
       printF("--UDKS--  grid=%i: t=%12.5e, point (i1=0,i2=0) (x,y)=(%20.12e,%20.12e)\n",
-	     grid,t,xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1));
+             grid,t,xLocal(i1,i2,i3,0),xLocal(i1,i2,i3,1));
     }
 
     // --- evaluate the solution ----
@@ -1150,39 +1150,39 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       const real pFactor = fluidDensity*(amp*expnukt)*(amp*expnukt);
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	if( mask(i1,i2,i3)!=0 ) // We need to avoid evaluating Yn at r=0 
-	{
-	  const real x = xLocal(i1,i2,i3,0);
-	  const real y = xLocal(i1,i2,i3,1);
-	  const real r = sqrt(x*x+y*y);
+        if( mask(i1,i2,i3)!=0 ) // We need to avoid evaluating Yn at r=0 
+        {
+          const real x = xLocal(i1,i2,i3,0);
+          const real y = xLocal(i1,i2,i3,1);
+          const real r = sqrt(x*x+y*y);
         
-	  const real uTheta = aFactor*( jn(n,k*r)*Ynb - Jnb*yn(n,k*r) ); // angular velocity 
+          const real uTheta = aFactor*( jn(n,k*r)*Ynb - Jnb*yn(n,k*r) ); // angular velocity 
 
-	  // thetaHat = (-sin(theta),cos(theta)
-	  ua(i1,i2,i3,uc)=-uTheta*y/r;
-	  ua(i1,i2,i3,vc)= uTheta*x/r; 
+          // thetaHat = (-sin(theta),cos(theta)
+          ua(i1,i2,i3,uc)=-uTheta*y/r;
+          ua(i1,i2,i3,vc)= uTheta*x/r; 
 
-	  // Pressure satisfies p_r = rho*uTheta^2/r -- but assume amp is scaled to be small so p=0
+          // Pressure satisfies p_r = rho*uTheta^2/r -- but assume amp is scaled to be small so p=0
 
-	  // Pressure is defined in a maple generated file:
+          // Pressure is defined in a maple generated file:
 #include "rotatingDiskPressure.h"
 
-	  ua(i1,i2,i3,pc)=pFactor*pv;
-	  if( ua(i1,i2,i3,pc) != ua(i1,i2,i3,pc) )
-	  {
-	    printF("--UDKS-- ERROR: p=nan for (i1,i2,i3)=(%i,%i,%i) r=%g \n",i1,i2,i3,r);
-	    OV_ABORT("error");
-	  }
-	
-	}
-	else
-	{
-	  ua(i1,i2,i3,uc)=0.;
-	  ua(i1,i2,i3,vc)=0.;
-	  ua(i1,i2,i3,pc)=0.;
-	}
+          ua(i1,i2,i3,pc)=pFactor*pv;
+          if( ua(i1,i2,i3,pc) != ua(i1,i2,i3,pc) )
+          {
+            printF("--UDKS-- ERROR: p=nan for (i1,i2,i3)=(%i,%i,%i) r=%g \n",i1,i2,i3,r);
+            OV_ABORT("error");
+          }
+        
+        }
+        else
+        {
+          ua(i1,i2,i3,uc)=0.;
+          ua(i1,i2,i3,vc)=0.;
+          ua(i1,i2,i3,pc)=0.;
+        }
         if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
-	
+        
       }
       
     }
@@ -1192,28 +1192,28 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       const real aFactor = -nu*k*k*amp*expnukt/scale;
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	if( mask(i1,i2,i3)!=0 ) // We need to avoid evaluating Yn at r=0 
-	{
-	  const real x = xLocal(i1,i2,i3,0);
-	  const real y = xLocal(i1,i2,i3,1);
-	  const real r = sqrt(x*x+y*y);
+        if( mask(i1,i2,i3)!=0 ) // We need to avoid evaluating Yn at r=0 
+        {
+          const real x = xLocal(i1,i2,i3,0);
+          const real y = xLocal(i1,i2,i3,1);
+          const real r = sqrt(x*x+y*y);
         
-	  const real uTheta = aFactor*( jn(n,k*r)*Ynb - Jnb*yn(n,k*r) ); // angular velocity 
+          const real uTheta = aFactor*( jn(n,k*r)*Ynb - Jnb*yn(n,k*r) ); // angular velocity 
 
-	  // thetaHat = (-sin(theta),cos(theta)
-	  ua(i1,i2,i3,uc)=-uTheta*y/r;
-	  ua(i1,i2,i3,vc)= uTheta*x/r; 
+          // thetaHat = (-sin(theta),cos(theta)
+          ua(i1,i2,i3,uc)=-uTheta*y/r;
+          ua(i1,i2,i3,vc)= uTheta*x/r; 
 
-	  ua(i1,i2,i3,pc)=0.;
-	}
-	else
-	{
-	  ua(i1,i2,i3,uc)=0.;
-	  ua(i1,i2,i3,vc)=0.;
-	  ua(i1,i2,i3,pc)=0.;
-	}
-	
-	if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
+          ua(i1,i2,i3,pc)=0.;
+        }
+        else
+        {
+          ua(i1,i2,i3,uc)=0.;
+          ua(i1,i2,i3,vc)=0.;
+          ua(i1,i2,i3,pc)=0.;
+        }
+        
+        if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
       }
     }
     else
@@ -1241,7 +1241,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     if( t <= dt )
       printF("--UDKS-- translating-disk-in-disk exact INS-RB solution at t=%9.3e, amp=%8.2e, a=%8.2e, b=%8.2e, k=%12.4e"
              " numberOfTimeDerivatives=%i\n",
-	     t,amp,a,b,k,numberOfTimeDerivatives);
+             t,amp,a,b,k,numberOfTimeDerivatives);
 
     // --- evaluate the solution ----
     // const real & fluidDensity = dbase.get<real >("fluidDensity");
@@ -1292,32 +1292,32 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     {
       if( mask(i1,i2,i3)!=0 ) // We need to avoid evaluating Yn at r=0 
       {
-	const real x = xLocal(i1,i2,i3,0);
-	const real y = xLocal(i1,i2,i3,1);
-	const real r = sqrt(x*x+y*y);
-	const real cosTheta=x/r, sinTheta=y/r;
+        const real x = xLocal(i1,i2,i3,0);
+        const real y = xLocal(i1,i2,i3,1);
+        const real r = sqrt(x*x+y*y);
+        const real cosTheta=x/r, sinTheta=y/r;
         
-	const real z=alam*r, z2=z*z;
-	const real j1=jn(1,z),         y1=yn(1,z);
-	const real j1p=jn(0,z)-j1/z,  y1p=yn(0,z)-y1/z;
+        const real z=alam*r, z2=z*z;
+        const real j1=jn(1,z),         y1=yn(1,z);
+        const real j1p=jn(0,z)-j1/z,  y1p=yn(0,z)-y1/z;
 
-	const real uhat=(k1hat*j1+k2hat*y1)/r+ahat/alam2-bhat/z2;         // Q(r)/r
-	const real vhat=alam*(k1hat*j1p+k2hat*y1p)+ahat/alam2+bhat/z2;    //  Q'(r)
-	const real phat=ahat*r+bhat/r;
+        const real uhat=(k1hat*j1+k2hat*y1)/r+ahat/alam2-bhat/z2;         // Q(r)/r
+        const real vhat=alam*(k1hat*j1p+k2hat*y1p)+ahat/alam2+bhat/z2;    //  Q'(r)
+        const real phat=ahat*r+bhat/r;
 
         const real uRadial = uhat*aFactor*cosTheta;
-	const real uTheta  =-vhat*aFactor*sinTheta;
+        const real uTheta  =-vhat*aFactor*sinTheta;
 
-	ua(i1,i2,i3,uc)= uRadial*cosTheta - uTheta*sinTheta;
-	ua(i1,i2,i3,vc)= uRadial*sinTheta + uTheta*cosTheta;
+        ua(i1,i2,i3,uc)= uRadial*cosTheta - uTheta*sinTheta;
+        ua(i1,i2,i3,vc)= uRadial*sinTheta + uTheta*cosTheta;
 
-	ua(i1,i2,i3,pc)= aFactor*mu*phat*cosTheta;  // note mu
+        ua(i1,i2,i3,pc)= aFactor*mu*phat*cosTheta;  // note mu
       }
       else
       {
-	ua(i1,i2,i3,uc)=0.;
-	ua(i1,i2,i3,vc)=0.;
-	ua(i1,i2,i3,pc)=0.;
+        ua(i1,i2,i3,uc)=0.;
+        ua(i1,i2,i3,vc)=0.;
+        ua(i1,i2,i3,pc)=0.;
       }
       if( numberOfDimensions==3 ) ua(i1,i2,i3,wc)=0.;
     }
@@ -1578,111 +1578,111 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
     if (numberOfDimensions == 2) { // --- BEGIN 2D --- //
       if( numberOfTimeDerivatives==0 )
-	{
-	  FOR_3D(i1,i2,i3,I1,I2,I3)
-	    {
-	      // **** JUST MAKE SOMETHING UP FOR NOW -- FINISH ME ***
+        {
+          FOR_3D(i1,i2,i3,I1,I2,I3)
+            {
+              // **** JUST MAKE SOMETHING UP FOR NOW -- FINISH ME ***
 
-	      real x= xLocal(i1,i2,i3,0);
-	      real y= xLocal(i1,i2,i3,1);
-	      real r = sqrt( SQR(x) + SQR(y) );
-	      real cosTheta, sinTheta;
-	      real vrr, vri, vtr, vti, pr, pi;
-	      real vr, vt, p;
+              real x= xLocal(i1,i2,i3,0);
+              real y= xLocal(i1,i2,i3,1);
+              real r = sqrt( SQR(x) + SQR(y) );
+              real cosTheta, sinTheta;
+              real vrr, vri, vtr, vti, pr, pi;
+              real vr, vt, p;
 
-	      // compute trig functions
-	      real theta = atan2(y,x);
-	      if( fabs(r)>eps )
-		{
-		  cosTheta=x/r; sinTheta=y/r;
-		}
-	      else
-		{
-		  cosTheta=1.; sinTheta=0.;
-		}
+              // compute trig functions
+              real theta = atan2(y,x);
+              if( fabs(r)>eps )
+                {
+                  cosTheta=x/r; sinTheta=y/r;
+                }
+              else
+                {
+                  cosTheta=1.; sinTheta=0.;
+                }
 
 
-	      // get vrhat and vthetahat
-	      // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-	      //   		     cr,ci,dr,di,
-	      //   		     vrr,vri,vtr,vti,pr,pi);
-	      evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
-				     cr,ci,dr,di,
-				     vrr,vri,vtr,vti,pr,pi);
+              // get vrhat and vthetahat
+              // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+              //                     cr,ci,dr,di,
+              //                     vrr,vri,vtr,vti,pr,pi);
+              evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
+                                     cr,ci,dr,di,
+                                     vrr,vri,vtr,vti,pr,pi);
 
-	      // compute phase
-	      real phi = n*theta-omegar*t;
+              // compute phase
+              real phi = n*theta-omegar*t;
 
-	      // compute decay factor
-	      real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+              // compute decay factor
+              real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	      // evaluate real part
-	      vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	      vt = (vtr*cos(phi)-vti*sin(phi))*A;
-	      p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
+              // evaluate real part
+              vr = (vrr*cos(phi)-vri*sin(phi))*A;
+              vt = (vtr*cos(phi)-vti*sin(phi))*A;
+              p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
 
-	      ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
-	      ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
-	      ua(i1,i2,i3,pc) = p;
+              ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
+              ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
+              ua(i1,i2,i3,pc) = p;
 
-	    }
-	} else {
-	// some options may need a time derivative ...
-	OV_ABORT("FINISH ME");
+            }
+        } else {
+        // some options may need a time derivative ...
+        OV_ABORT("FINISH ME");
       }
     } else { // --- BEGIN 3D --- //
       if( numberOfTimeDerivatives==0 ) {
-	FOR_3D(i1,i2,i3,I1,I2,I3) {
-	  real x= xLocal(i1,i2,i3,0);
-	  real y= xLocal(i1,i2,i3,1);
-	  real r = sqrt( SQR(x) + SQR(y) );
-	  real z= xLocal(i1,i2,i3,2);
+        FOR_3D(i1,i2,i3,I1,I2,I3) {
+          real x= xLocal(i1,i2,i3,0);
+          real y= xLocal(i1,i2,i3,1);
+          real r = sqrt( SQR(x) + SQR(y) );
+          real z= xLocal(i1,i2,i3,2);
 
-	  const int wc = dbase.get<int >("wc");
+          const int wc = dbase.get<int >("wc");
 
-	  real cosTheta, sinTheta;
-	  real vrr, vri, vtr, vti, pr, pi;
-	  real vr, vt, p;
+          real cosTheta, sinTheta;
+          real vrr, vri, vtr, vti, pr, pi;
+          real vr, vt, p;
 
-	  // compute trig functions
-	  real theta = atan2(y,x);
-	  if( fabs(r)>eps )
-	    {
-	      cosTheta=x/r; sinTheta=y/r;
-	    }
-	  else
-	    {
-	      cosTheta=1.; sinTheta=0.;
-	    }
+          // compute trig functions
+          real theta = atan2(y,x);
+          if( fabs(r)>eps )
+            {
+              cosTheta=x/r; sinTheta=y/r;
+            }
+          else
+            {
+              cosTheta=1.; sinTheta=0.;
+            }
 
-	  // get vrhat and vthetahat
-	  // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-	  //       		 cr,ci,dr,di,
-	  //       		 vrr,vri,vtr,vti,pr,pi);
-	  evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
-				 cr,ci,dr,di,
-				 vrr,vri,vtr,vti,pr,pi);
+          // get vrhat and vthetahat
+          // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+          //                     cr,ci,dr,di,
+          //                     vrr,vri,vtr,vti,pr,pi);
+          evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
+                                 cr,ci,dr,di,
+                                 vrr,vri,vtr,vti,pr,pi);
 
-	  // compute phase
-	  real phi = n*theta-omegar*t;
+          // compute phase
+          real phi = n*theta-omegar*t;
 
-	  // compute decay factor
-	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+          // compute decay factor
+          real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	  // evaluate real part
-	  vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	  vt = (vtr*cos(phi)-vti*sin(phi))*A;
-	  p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
+          // evaluate real part
+          vr = (vrr*cos(phi)-vri*sin(phi))*A;
+          vt = (vtr*cos(phi)-vti*sin(phi))*A;
+          p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
 
-	  ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
-	  ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
-	  ua(i1,i2,i3,wc) = 0.;
-	  ua(i1,i2,i3,pc) = p;
+          ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
+          ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
+          ua(i1,i2,i3,wc) = 0.;
+          ua(i1,i2,i3,pc) = p;
 
-	}
+        }
 
       } else {
-	OV_ABORT("FINISH ME");
+        OV_ABORT("FINISH ME");
       }
 
     }
@@ -1731,48 +1731,48 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       real vr, vt, vz, p;
       
       if( numberOfTimeDerivatives==0 ) {
-	FOR_3D(i1,i2,i3,I1,I2,I3) {
-	  x= xLocal(i1,i2,i3,0);
-	  y= xLocal(i1,i2,i3,1);
-	  r = sqrt( SQR(x) + SQR(y) );
-	  z= xLocal(i1,i2,i3,2);
+        FOR_3D(i1,i2,i3,I1,I2,I3) {
+          x= xLocal(i1,i2,i3,0);
+          y= xLocal(i1,i2,i3,1);
+          r = sqrt( SQR(x) + SQR(y) );
+          z= xLocal(i1,i2,i3,2);
 
 
-	  // compute trig functions
-	  theta = atan2(y,x);
-	  if( fabs(r)>eps )
-	    {
-	      cosTheta=x/r; sinTheta=y/r;
-	    }
-	  else
-	    {
-	      cosTheta=1.; sinTheta=0.;
-	    }
+          // compute trig functions
+          theta = atan2(y,x);
+          if( fabs(r)>eps )
+            {
+              cosTheta=x/r; sinTheta=y/r;
+            }
+          else
+            {
+              cosTheta=1.; sinTheta=0.;
+            }
 
-	  // get vrhat and vthetahat
-	  evalCylindricalStream( r, kz, n, mu, 
-				 Ar,Ai,Br,Bi,Cr,Ci,
+          // get vrhat and vthetahat
+          evalCylindricalStream( r, kz, n, mu, 
+                                 Ar,Ai,Br,Bi,Cr,Ci,
                                  alphar,alphai,lr,li,
-				 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
+                                 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
 
-	  // compute phase
-	  real phi = n*theta+kz*z-omegar*t;
+          // compute phase
+          real phi = n*theta+kz*z-omegar*t;
 
-	  // compute decay factor
-	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+          // compute decay factor
+          real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	  // evaluate real part
-	  vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	  vt = (vtr*cos(phi)-vti*sin(phi))*A;
+          // evaluate real part
+          vr = (vrr*cos(phi)-vri*sin(phi))*A;
+          vt = (vtr*cos(phi)-vti*sin(phi))*A;
           vz = (vzr*cos(phi)-vzi*sin(phi))*A;
-	  p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
+          p  = ((pr)*cos(phi)-(pi)*sin(phi))*A  +gamma/R;
 
-	  ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
-	  ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
-	  // ua(i1,i2,i3,uc) = vr;
-	  // ua(i1,i2,i3,vc) = vt;
-	  ua(i1,i2,i3,wc) = vz+V;
-	  ua(i1,i2,i3,pc) = p;
+          ua(i1,i2,i3,uc) = vr*cosTheta-vt*sinTheta;
+          ua(i1,i2,i3,vc) = vr*sinTheta+vt*cosTheta;
+          // ua(i1,i2,i3,uc) = vr;
+          // ua(i1,i2,i3,vc) = vt;
+          ua(i1,i2,i3,wc) = vz+V;
+          ua(i1,i2,i3,pc) = p;
 
         }
       }
@@ -1839,34 +1839,34 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     int i1,i2,i3;
     if( numberOfTimeDerivatives==0 ) {
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
-	real uhr,uhi,vhr,vhi,phr,phi;
-	real v1,v2,p;
+        real uhr,uhi,vhr,vhi,phr,phi;
+        real v1,v2,p;
 
-	// get real and imag parts of hat variables
-	evalCapillaryFlow(k, y, mu, 
-			  alphar, alphai, 
-			  ar, ai, br, bi,
-			  cr, ci, dr, di,
-			  uhr, uhi, vhr, vhi, phr, phi);
+        // get real and imag parts of hat variables
+        evalCapillaryFlow(k, y, mu, 
+                          alphar, alphai, 
+                          ar, ai, br, bi,
+                          cr, ci, dr, di,
+                          uhr, uhi, vhr, vhi, phr, phi);
 
-	// compute phase
-	real phase = k*x-omegar*t;
+        // compute phase
+        real phase = k*x-omegar*t;
 
-	// compute decay factor
-	real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+        // compute decay factor
+        real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	// evaluate real part
-	v1 = (uhr*cos(phase)-uhi*sin(phase))*A;
-	v2 = (vhr*cos(phase)-vhi*sin(phase))*A;
-	p  = (phr*cos(phase)-phi*sin(phase))*A;
+        // evaluate real part
+        v1 = (uhr*cos(phase)-uhi*sin(phase))*A;
+        v2 = (vhr*cos(phase)-vhi*sin(phase))*A;
+        p  = (phr*cos(phase)-phi*sin(phase))*A;
 
-	// combine
-	ua(i1,i2,i3,uc) = v1;
-	ua(i1,i2,i3,vc) = v2;
-	ua(i1,i2,i3,pc) =  p-gravity*y;
+        // combine
+        ua(i1,i2,i3,uc) = v1;
+        ua(i1,i2,i3,vc) = v2;
+        ua(i1,i2,i3,pc) =  p-gravity*y;
       }
     } else {
       // some options may need a time derivative ...
@@ -1875,7 +1875,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
 
   } else if ( userKnownSolution=="freeSurfacePiston") {
-	
+        
     real & amp = rpar[0];
     real & k   = rpar[1];
     real & nu  = rpar[2];
@@ -1893,58 +1893,58 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 
     if (numberOfDimensions == 2) { // --- BEGIN 2D --- //
       if( numberOfTimeDerivatives==0 ) {
-	FOR_3D(i1,i2,i3,I1,I2,I3) {
-	  real x= xLocal(i1,i2,i3,0);
-	  real y= xLocal(i1,i2,i3,1);
-	
-	  real yI = amp*sin(k*t) + amp1*t*t + amp2*t;
-	  real v2 = k*amp*cos(k*t) + 2*amp1*t + amp2;
-	  real v2p = -k*k*amp*sin(k*t) + 2*amp1;
-	
-	  real p = -(y-yI)*(v2p);
+        FOR_3D(i1,i2,i3,I1,I2,I3) {
+          real x= xLocal(i1,i2,i3,0);
+          real y= xLocal(i1,i2,i3,1);
+        
+          real yI = amp*sin(k*t) + amp1*t*t + amp2*t;
+          real v2 = k*amp*cos(k*t) + 2*amp1*t + amp2;
+          real v2p = -k*k*amp*sin(k*t) + 2*amp1;
+        
+          real p = -(y-yI)*(v2p);
 
-	  ua(i1,i2,i3,uc) = 0.;
-	  ua(i1,i2,i3,vc) = v2;
-	  ua(i1,i2,i3,pc) = p;
+          ua(i1,i2,i3,uc) = 0.;
+          ua(i1,i2,i3,vc) = v2;
+          ua(i1,i2,i3,pc) = p;
 
-	}
+        }
       } else {
-	// some options may need a time derivative ...
-	printF("\n\n >>>>> --UDKS-- ERROR: FINISH ME -- time derivative <<<<<\n\n ");
-	// OV_ABORT("FINISH ME");
+        // some options may need a time derivative ...
+        printF("\n\n >>>>> --UDKS-- ERROR: FINISH ME -- time derivative <<<<<\n\n ");
+        // OV_ABORT("FINISH ME");
       }
     } else { // --- BEGIN 3D --- //
       if( numberOfTimeDerivatives==0 ) {
-	FOR_3D(i1,i2,i3,I1,I2,I3) {
-	  real x= xLocal(i1,i2,i3,0);
-	  real y= xLocal(i1,i2,i3,1);
-	  real z= xLocal(i1,i2,i3,2);
+        FOR_3D(i1,i2,i3,I1,I2,I3) {
+          real x= xLocal(i1,i2,i3,0);
+          real y= xLocal(i1,i2,i3,1);
+          real z= xLocal(i1,i2,i3,2);
 
-	  const int wc = dbase.get<int >("wc");
+          const int wc = dbase.get<int >("wc");
 
-	  real zI = amp*sin(k*t) + amp1*t*t + amp2*t;
-	  real v3 = k*amp*cos(k*t) + 2*amp1*t + amp2;
-	  real v3p = -k*k*amp*sin(k*t) + 2*amp1;
-	
-	  real p = -(z-zI)*(v3p);
+          real zI = amp*sin(k*t) + amp1*t*t + amp2*t;
+          real v3 = k*amp*cos(k*t) + 2*amp1*t + amp2;
+          real v3p = -k*k*amp*sin(k*t) + 2*amp1;
+        
+          real p = -(z-zI)*(v3p);
 
-	  ua(i1,i2,i3,uc) = 0.;
-	  ua(i1,i2,i3,vc) = 0.;
-	  ua(i1,i2,i3,wc) = v3;
-	  ua(i1,i2,i3,pc) = p;
+          ua(i1,i2,i3,uc) = 0.;
+          ua(i1,i2,i3,vc) = 0.;
+          ua(i1,i2,i3,wc) = v3;
+          ua(i1,i2,i3,pc) = p;
 
-	}
+        }
       } else {
-	// some options may need a time derivative ...
-	printF("\n\n >>>>> --UDKS-- ERROR: FINISH ME -- time derivative <<<<<\n\n ");
-	// OV_ABORT("FINISH ME");
+        // some options may need a time derivative ...
+        printF("\n\n >>>>> --UDKS-- ERROR: FINISH ME -- time derivative <<<<<\n\n ");
+        // OV_ABORT("FINISH ME");
       }
 
     }
 
 
   } else if ( userKnownSolution=="parallelFlow") {
-	
+        
     real & amp = rpar[0];
     real & n   = rpar[1];
     real & nu  = rpar[2];
@@ -1957,14 +1957,14 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     int i1,i2,i3;
     if( numberOfTimeDerivatives==0 ) {
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
-	ua(i1,i2,i3,uc) = amp
-	  *sin((2.*n-1.) * Pi * (y+1.) / (2.*H))
-	  *exp(-nu * pow((2.*n-1.)*Pi/(2.*H),2) * t);
-	ua(i1,i2,i3,vc) = 0.;
-	ua(i1,i2,i3,pc) = 0.;
+        ua(i1,i2,i3,uc) = amp
+          *sin((2.*n-1.) * Pi * (y+1.) / (2.*H))
+          *exp(-nu * pow((2.*n-1.)*Pi/(2.*H),2) * t);
+        ua(i1,i2,i3,vc) = 0.;
+        ua(i1,i2,i3,pc) = 0.;
       }
     } else {
       // some options may need a time derivative ...
@@ -2018,15 +2018,15 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     int i1,i2,i3;
     if( numberOfTimeDerivatives==0 ) {
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	const real x= xLocal(i1,i2,i3,0);
-	const real y= xLocal(i1,i2,i3,1);
-	
-	real vr, vi;
+        const real x= xLocal(i1,i2,i3,0);
+        const real y= xLocal(i1,i2,i3,1);
+        
+        real vr, vi;
         real yRef = -st*(x-.5)+ct*y;
-	evalFibShearFluid(kfr,kfi,omegar,omegai,cr,ci,dr,di,yRef,vr,vi);
-	ua(i1,i2,i3,uc) = (vr*u0_r-vi*u0_i)*ct;
-	ua(i1,i2,i3,vc) = (vr*u0_r-vi*u0_i)*st;
-	ua(i1,i2,i3,pc) = 0.;
+        evalFibShearFluid(kfr,kfi,omegar,omegai,cr,ci,dr,di,yRef,vr,vi);
+        ua(i1,i2,i3,uc) = (vr*u0_r-vi*u0_i)*ct;
+        ua(i1,i2,i3,vc) = (vr*u0_r-vi*u0_i)*st;
+        ua(i1,i2,i3,pc) = 0.;
       }
     } else {
       // some options may need a time derivative ...
@@ -2034,9 +2034,9 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
           numberOfTimeDerivatives);
       FOR_3D(i1,i2,i3,I1,I2,I3) 
       {
-	ua(i1,i2,i3,uc) = 0.;
-	ua(i1,i2,i3,vc) = 0.;
-	ua(i1,i2,i3,pc) = 0.;
+        ua(i1,i2,i3,uc) = 0.;
+        ua(i1,i2,i3,vc) = 0.;
+        ua(i1,i2,i3,pc) = 0.;
       }
       
       // OV_ABORT("FINISH ME");
@@ -2087,10 +2087,10 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
     int i1,i2,i3;
     if( numberOfTimeDerivatives==0 ) {
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
         real r = sqrt( SQR(x) + SQR(y) );
-	
+        
         // compute trig functions
         real cosTheta, sinTheta;
         if( fabs(r)>eps )
@@ -2103,10 +2103,10 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
           }
 
 
-	real vt, p;
+        real vt, p;
         real r0  = Rbar;
         real rho = 1.;
-	evalRadialFibShearFluid(kfr,kfi,omegar,omegai,ar,ai,br,bi,
+        evalRadialFibShearFluid(kfr,kfi,omegar,omegai,ar,ai,br,bi,
                                 rho,r,r0,t,vt,p);
 
         // printF("--DS-- UDKS:RadialFibShear: vt=%e p=%e \n",vt,p);
@@ -2122,18 +2122,18 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
         real v1 = -sinTheta*vt;
         real v2 =  cosTheta*vt;
 
-	ua(i1,i2,i3,uc) = amp*v1;
-	ua(i1,i2,i3,vc) = amp*v2;
-	ua(i1,i2,i3,pc) = SQR(amp)*p;
+        ua(i1,i2,i3,uc) = amp*v1;
+        ua(i1,i2,i3,vc) = amp*v2;
+        ua(i1,i2,i3,pc) = SQR(amp)*p;
       }
     } else {
       // some options may need a time derivative ...
       printF("\n --INS-- UDKS: ERROR numberOfTimeDerivatives=%d NOT IMPLEMENTED\n \n");
       FOR_3D(i1,i2,i3,I1,I2,I3) 
       {
-	ua(i1,i2,i3,uc) = 0.;
-	ua(i1,i2,i3,vc) = 0.;
-	ua(i1,i2,i3,pc) = 0.;
+        ua(i1,i2,i3,uc) = 0.;
+        ua(i1,i2,i3,vc) = 0.;
+        ua(i1,i2,i3,pc) = 0.;
 
       }
       
@@ -2177,7 +2177,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
       FOR_3D(i1,i2,i3,I1,I2,I3) {
         real x= xLocal(i1,i2,i3,0);
         real y= xLocal(i1,i2,i3,1);
-	
+        
         real v1r, v2r, pr;
 
         // need:
@@ -2303,7 +2303,7 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
   // else
   // {
   //   printF("getUserDefinedKnownSolution:ERROR: unknown value for userDefinedKnownSolution=%s\n",
-  // 	   (const char*)userKnownSolution);
+  //       (const char*)userKnownSolution);
   //   OV_ABORT("ERROR");
   // }
   
@@ -2317,11 +2317,11 @@ getUserDefinedKnownSolution(real t, CompositeGrid & cg, int grid, RealArray & ua
 // ===================================================================================================================
 int InsParameters::
 getUserDefinedKnownSolutionRigidBody( int body, real t, 
-				      RealArray & xCM      /* = Overture::nullRealArray() */, 
-				      RealArray & vCM      /* = Overture::nullRealArray() */,
-				      RealArray & aCM      /* = Overture::nullRealArray() */,
-				      RealArray & omega    /* = Overture::nullRealArray() */, 
-				      RealArray & omegaDot /* = Overture::nullRealArray() */ )
+                                      RealArray & xCM      /* = Overture::nullRealArray() */, 
+                                      RealArray & vCM      /* = Overture::nullRealArray() */,
+                                      RealArray & aCM      /* = Overture::nullRealArray() */,
+                                      RealArray & omega    /* = Overture::nullRealArray() */, 
+                                      RealArray & omegaDot /* = Overture::nullRealArray() */ )
 {
 
   if( ! dbase.get<DataBase >("modelData").has_key("userDefinedKnownSolutionData") )
@@ -2632,163 +2632,163 @@ getUserDefinedDeformingBodyKnownSolution(
     if ( numberOfDimensions==2 ) {
       /// --- loop over the grid points on the interface ---
       FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	  real x= xLocal(i1,i2,i3,0);
-	  real y= xLocal(i1,i2,i3,1);
-	  real r = sqrt( SQR(x) + SQR(y) );
-	  real vrr, vri, vtr, vti, pr, pi;
-	  real ct,st;
-	  // compute trig functions
-	  real theta = atan2(y,x);
-	  if( r>eps )
-	    {
-	      ct=x/r; st=y/r;
-	    }
-	  else
-	    {
-	      ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
-	    }
+        {
+          // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+          real x= xLocal(i1,i2,i3,0);
+          real y= xLocal(i1,i2,i3,1);
+          real r = sqrt( SQR(x) + SQR(y) );
+          real vrr, vri, vtr, vti, pr, pi;
+          real ct,st;
+          // compute trig functions
+          real theta = atan2(y,x);
+          if( r>eps )
+            {
+              ct=x/r; st=y/r;
+            }
+          else
+            {
+              ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
+            }
 
-	  // get vrhat and vthetahat
-	  // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-	  //       		 cr,ci,dr,di,
-	  //       		 vrr,vri,vtr,vti,pr,pi);
-	  evalOscillatingBubble( r, R, (int)round(n), mu,omegar,omegai,
-				 cr,ci,dr,di,
-				 vrr,vri,vtr,vti,pr,pi);
+          // get vrhat and vthetahat
+          // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+          //                     cr,ci,dr,di,
+          //                     vrr,vri,vtr,vti,pr,pi);
+          evalOscillatingBubble( r, R, (int)round(n), mu,omegar,omegai,
+                                 cr,ci,dr,di,
+                                 vrr,vri,vtr,vti,pr,pi);
 
-	  // compute phase
-	  real phi = n*theta-omegar*t;
+          // compute phase
+          real phi = n*theta-omegar*t;
 
-	  // compute decay factor
-	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+          // compute decay factor
+          real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	  if( stateOption==boundaryPosition )
-	    {
-	      // compute displacement
-	      real ur = (A/(omegar*omegar+omegai*omegai)) 
-		*(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
-		    - omegar*(vrr*sin(phi)+vri*cos(phi)));
-	      real ut = (A/(omegar*omegar+omegai*omegai)) 
-		*(  omegai*(vtr*cos(phi)-vti*sin(phi)) 
-		    - omegar*(vtr*sin(phi)+vti*cos(phi)));
+          if( stateOption==boundaryPosition )
+            {
+              // compute displacement
+              real ur = (A/(omegar*omegar+omegai*omegai)) 
+                *(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
+                    - omegar*(vrr*sin(phi)+vri*cos(phi)));
+              real ut = (A/(omegar*omegar+omegai*omegai)) 
+                *(  omegai*(vtr*cos(phi)-vti*sin(phi)) 
+                    - omegar*(vtr*sin(phi)+vti*cos(phi)));
 
-	      // position of the interface:
-	      state(i1,i2,i3,c0)=(ur+R)*ct-ut*st;
-	      state(i1,i2,i3,c1)=(ur+R)*st+ut*ct;
+              // position of the interface:
+              state(i1,i2,i3,c0)=(ur+R)*ct-ut*st;
+              state(i1,i2,i3,c1)=(ur+R)*st+ut*ct;
 
-	    }
-	  else if( stateOption==boundaryVelocity )
-	    {
-	      // compute velocity
-	      real vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	      // real vt = (vtr*cos(phi)-vri*sin(phi))*A; 
-	      real vt = (vtr*cos(phi)-vti*sin(phi))*A; // *** DS 2/4/19 ***
+            }
+          else if( stateOption==boundaryVelocity )
+            {
+              // compute velocity
+              real vr = (vrr*cos(phi)-vri*sin(phi))*A;
+              // real vt = (vtr*cos(phi)-vri*sin(phi))*A; 
+              real vt = (vtr*cos(phi)-vti*sin(phi))*A; // *** DS 2/4/19 ***
 
-	      // velocity of the interface:
-	      state(i1,i2,i3,c0)=vr*ct-vt*st; 
-	      state(i1,i2,i3,c1)=vr*st+vt*ct;
-	    }
-	  else if( stateOption==boundaryAcceleration )
-	    {
-	      // compute acceleration
-	      real ar = (A/(omegar*omegar+omegai*omegai)) 
-		*(  omegai*(-vrr*cos(phi)+vri*sin(phi)) 
-		    - omegar*( vrr*sin(phi)+vri*cos(phi)));
-	      real at = (A/(omegar*omegar+omegai*omegai)) 
-		*(  omegai*(-vtr*cos(phi)+vti*sin(phi)) 
-		    - omegar*( vtr*sin(phi)+vti*cos(phi)));
+              // velocity of the interface:
+              state(i1,i2,i3,c0)=vr*ct-vt*st; 
+              state(i1,i2,i3,c1)=vr*st+vt*ct;
+            }
+          else if( stateOption==boundaryAcceleration )
+            {
+              // compute acceleration
+              real ar = (A/(omegar*omegar+omegai*omegai)) 
+                *(  omegai*(-vrr*cos(phi)+vri*sin(phi)) 
+                    - omegar*( vrr*sin(phi)+vri*cos(phi)));
+              real at = (A/(omegar*omegar+omegai*omegai)) 
+                *(  omegai*(-vtr*cos(phi)+vti*sin(phi)) 
+                    - omegar*( vtr*sin(phi)+vti*cos(phi)));
 
-	      // acceleration of the interface:
-	      state(i1,i2,i3,c0)=ar*ct-at*st; 
-	      state(i1,i2,i3,c1)=ar*st+at*ct;
-	    }
+              // acceleration of the interface:
+              state(i1,i2,i3,c0)=ar*ct-at*st; 
+              state(i1,i2,i3,c1)=ar*st+at*ct;
+            }
 
-	  else
-	    {
-	      OV_ABORT("--INS-- UDKS: Unknown state option");
-	    }
-	} 
+          else
+            {
+              OV_ABORT("--INS-- UDKS: Unknown state option");
+            }
+        } 
     } else {
       /// --- loop over the grid points on the interface ---
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	// Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
-	real r = sqrt( SQR(x) + SQR(y) );
-	real z= xLocal(i1,i2,i3,2);
-	real vrr, vri, vtr, vti, pr, pi;
-	real ct,st;
-	// compute trig functions
-	real theta = atan2(y,x);
-	if( r>eps ) {
-	  ct=x/r; st=y/r;
-	} else {
-	  ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
-	}
+        // Reference coordinates for solid or grid positions for the fluid -- we only need angle theta
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
+        real r = sqrt( SQR(x) + SQR(y) );
+        real z= xLocal(i1,i2,i3,2);
+        real vrr, vri, vtr, vti, pr, pi;
+        real ct,st;
+        // compute trig functions
+        real theta = atan2(y,x);
+        if( r>eps ) {
+          ct=x/r; st=y/r;
+        } else {
+          ct=1.; st=0.;  // at the origin we just pick an angle, should not matter
+        }
 
-	// get vrhat and vthetahat
-	// evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
-	// 		       cr,ci,dr,di,
-	// 		       vrr,vri,vtr,vti,pr,pi);
-	evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
-			       cr,ci,dr,di,
-			       vrr,vri,vtr,vti,pr,pi);
+        // get vrhat and vthetahat
+        // evalOscillatingBubble( r, R, (int)round(n), mu, lr,li,
+        //                     cr,ci,dr,di,
+        //                     vrr,vri,vtr,vti,pr,pi);
+        evalOscillatingBubble( r, R, (int)round(n), mu, omegar,omegai,
+                               cr,ci,dr,di,
+                               vrr,vri,vtr,vti,pr,pi);
 
-	// compute phase
-	real phi = n*theta-omegar*t;
+        // compute phase
+        real phi = n*theta-omegar*t;
 
-	// compute decay factor
-	real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+        // compute decay factor
+        real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	const int c2=c1+1;
-	if( stateOption==boundaryPosition )
-	  {
-	    // compute displacement
-	    real ur = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
-		  - omegar*(vrr*sin(phi)+vri*cos(phi)));
-	    real ut = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(vtr*cos(phi)-vti*sin(phi)) 
-		  - omegar*(vtr*sin(phi)+vti*cos(phi)));
+        const int c2=c1+1;
+        if( stateOption==boundaryPosition )
+          {
+            // compute displacement
+            real ur = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
+                  - omegar*(vrr*sin(phi)+vri*cos(phi)));
+            real ut = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vtr*cos(phi)-vti*sin(phi)) 
+                  - omegar*(vtr*sin(phi)+vti*cos(phi)));
 
-	    // position of the interface:
-	    state(i1,i2,i3,c0)=(ur+R)*ct-ut*st;
-	    state(i1,i2,i3,c1)=(ur+R)*st+ut*ct;
-	    state(i1,i2,i3,c2)=z;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
-	    // compute velocity
-	    real vr = (vrr*cos(phi)-vri*sin(phi))*A;
-	    real vt = (vtr*cos(phi)-vri*sin(phi))*A;
+            // position of the interface:
+            state(i1,i2,i3,c0)=(ur+R)*ct-ut*st;
+            state(i1,i2,i3,c1)=(ur+R)*st+ut*ct;
+            state(i1,i2,i3,c2)=z;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
+            // compute velocity
+            real vr = (vrr*cos(phi)-vri*sin(phi))*A;
+            real vt = (vtr*cos(phi)-vri*sin(phi))*A;
 
-	    // velocity of the interface:
-	    state(i1,i2,i3,c0)=vr*ct-vt*st; 
-	    state(i1,i2,i3,c1)=vr*st+vt*ct;
-	    state(i1,i2,i3,c2)=0.;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
-	    // compute acceleration
-	    real ar = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(-vrr*cos(phi)+vri*sin(phi)) 
-		  - omegar*( vrr*sin(phi)+vri*cos(phi)));
-	    real at = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(-vtr*cos(phi)+vti*sin(phi)) 
-		  - omegar*( vtr*sin(phi)+vti*cos(phi)));
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=vr*ct-vt*st; 
+            state(i1,i2,i3,c1)=vr*st+vt*ct;
+            state(i1,i2,i3,c2)=0.;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
+            // compute acceleration
+            real ar = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(-vrr*cos(phi)+vri*sin(phi)) 
+                  - omegar*( vrr*sin(phi)+vri*cos(phi)));
+            real at = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(-vtr*cos(phi)+vti*sin(phi)) 
+                  - omegar*( vtr*sin(phi)+vti*cos(phi)));
 
-	    // acceleration of the interface:
-	    state(i1,i2,i3,c0)=ar*ct-at*st; 
-	    state(i1,i2,i3,c1)=ar*st+at*ct;
-	    state(i1,i2,i3,c2)=0.;
-	  }
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=ar*ct-at*st; 
+            state(i1,i2,i3,c1)=ar*st+at*ct;
+            state(i1,i2,i3,c2)=0.;
+          }
 
-	else
-	  {
-	    OV_ABORT("--INS-- UDKS: Unknown state option");
-	  }
+        else
+          {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
 
       } 
     }
@@ -2867,20 +2867,20 @@ getUserDefinedDeformingBodyKnownSolution(
             ct=1.; st=0.;
           }
 
-	  // get vrhat and vthetahat
-	  evalCylindricalStream( r, kz, n, mu, 
-				 Ar,Ai,Br,Bi,Cr,Ci,
+          // get vrhat and vthetahat
+          evalCylindricalStream( r, kz, n, mu, 
+                                 Ar,Ai,Br,Bi,Cr,Ci,
                                  alphar,alphai,lr,li,
-				 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
+                                 vrr,vri,vtr,vti,vzr,vzi,pr,pi);
 
 
-	  // compute phase
-	  real phi = n*theta+kz*z-omegar*t;
+          // compute phase
+          real phi = n*theta+kz*z-omegar*t;
 
-	  // compute decay factor
-	  real A = exp(omegai*t)*amp; // *wdh* scale by amp too
+          // compute decay factor
+          real A = exp(omegai*t)*amp; // *wdh* scale by amp too
 
-	  if( stateOption==boundaryPosition ) {
+          if( stateOption==boundaryPosition ) {
             // compute displacement
             real ur = (A/(omegar*omegar+omegai*omegai)) 
               *(  omegai*(vrr*cos(phi)-vri*sin(phi)) 
@@ -3023,78 +3023,78 @@ getUserDefinedDeformingBodyKnownSolution(
       /// --- loop over the grid points on the interface ---
       int i1,i2,i3;
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
-	real yI = amp*sin(k*t) + amp1*t*t + amp2*t;
-	real v2 = k*amp*cos(k*t) + 2*amp1*t + amp2;
-	real v2p = -k*k*amp*sin(k*t) + 2*amp1;
+        real yI = amp*sin(k*t) + amp1*t*t + amp2*t;
+        real v2 = k*amp*cos(k*t) + 2*amp1*t + amp2;
+        real v2p = -k*k*amp*sin(k*t) + 2*amp1;
 
-	if( stateOption==boundaryPosition )
-	  {
-	    // position of the interface:
-	    state(i1,i2,i3,c0)=x;
-	    state(i1,i2,i3,c1)=yI;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
-	    // velocity of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=v2;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
-	    // acceleration of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=v2p;
-	  }
+        if( stateOption==boundaryPosition )
+          {
+            // position of the interface:
+            state(i1,i2,i3,c0)=x;
+            state(i1,i2,i3,c1)=yI;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=v2;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=v2p;
+          }
 
-	else
-	  {
-	    OV_ABORT("--INS-- UDKS: Unknown state option");
-	  }
+        else
+          {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
       }
     } else { // --- BEGIN 3D --- //
       /// --- loop over the grid points on the interface ---
       int i1,i2,i3;
       FOR_3D(i1,i2,i3,I1,I2,I3) {
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
-	real z= xLocal(i1,i2,i3,2);
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
+        real z= xLocal(i1,i2,i3,2);
 
-	real zI = amp*sin(k*t) + amp1*t*t + amp2*t;
-	real v3 = k*amp*cos(k*t) + 2*amp1*t + amp2;
-	real v3p = -k*k*amp*sin(k*t) + 2*amp1;
-	
-	// printF("---UDKS--- compute 3D deformation of fluid\n");
+        real zI = amp*sin(k*t) + amp1*t*t + amp2*t;
+        real v3 = k*amp*cos(k*t) + 2*amp1*t + amp2;
+        real v3p = -k*k*amp*sin(k*t) + 2*amp1;
+        
+        // printF("---UDKS--- compute 3D deformation of fluid\n");
 
-	if( stateOption==boundaryPosition )
-	  {
-	    // position of the interface:
-	    state(i1,i2,i3,c0)=x;
-	    state(i1,i2,i3,c1)=y;
-	    state(i1,i2,i3,c2)=zI;
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
-	    // velocity of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	    state(i1,i2,i3,c2)=v3;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
-	    // acceleration of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	    state(i1,i2,i3,c2)=v3p;
-	  }
+        if( stateOption==boundaryPosition )
+          {
+            // position of the interface:
+            state(i1,i2,i3,c0)=x;
+            state(i1,i2,i3,c1)=y;
+            state(i1,i2,i3,c2)=zI;
+          }
+        else if( stateOption==boundaryVelocity )
+          {
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+            state(i1,i2,i3,c2)=v3;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+            state(i1,i2,i3,c2)=v3p;
+          }
 
-	else
-	  {
-	    OV_ABORT("--INS-- UDKS: Unknown state option");
-	  }
-	
+        else
+          {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
+        
       }
     }
 
@@ -3135,62 +3135,62 @@ getUserDefinedDeformingBodyKnownSolution(
     /// --- loop over the grid points on the interface ---
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	  
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+          
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
-	real uhr,uhi,vhr,vhi,phr,phi;
-	real v1,v2,p;
+        real uhr,uhi,vhr,vhi,phr,phi;
+        real v1,v2,p;
 
-	// get real and imag parts of hat variables
-	evalCapillaryFlow(k, y, mu, 
-			  alphar, alphai, 
-			  ar, ai, br, bi,
-			  cr, ci, dr, di,
-			  uhr, uhi, vhr, vhi, phr, phi);
+        // get real and imag parts of hat variables
+        evalCapillaryFlow(k, y, mu, 
+                          alphar, alphai, 
+                          ar, ai, br, bi,
+                          cr, ci, dr, di,
+                          uhr, uhi, vhr, vhi, phr, phi);
 
-	// compute phase
-	real phase = k*x-omegar*t;
+        // compute phase
+        real phase = k*x-omegar*t;
 
-	// compute decay factor
-	real A = exp(omegai*t)*amp; 
+        // compute decay factor
+        real A = exp(omegai*t)*amp; 
 
 
-	// left off here!
-	if( stateOption==boundaryPosition )
-	  {
-	    // compute displacement
-	    real u1 = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(uhr*cos(phase)-uhi*sin(phase)) 
-		  - omegar*(uhr*sin(phase)+uhi*cos(phase)));
-	    real u2 = (A/(omegar*omegar+omegai*omegai)) 
-	      *(  omegai*(vhr*cos(phase)-vhi*sin(phase)) 
-		  - omegar*(vhr*sin(phase)+vhi*cos(phase)));
+        // left off here!
+        if( stateOption==boundaryPosition )
+          {
+            // compute displacement
+            real u1 = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(uhr*cos(phase)-uhi*sin(phase)) 
+                  - omegar*(uhr*sin(phase)+uhi*cos(phase)));
+            real u2 = (A/(omegar*omegar+omegai*omegai)) 
+              *(  omegai*(vhr*cos(phase)-vhi*sin(phase)) 
+                  - omegar*(vhr*sin(phase)+vhi*cos(phase)));
 
-	    // position of the interface:
-	    state(i1,i2,i3,c0)=x +u1;
-	    state(i1,i2,i3,c1)=0.+u2;
+            // position of the interface:
+            state(i1,i2,i3,c0)=x +u1;
+            state(i1,i2,i3,c1)=0.+u2;
 
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
+          }
+        else if( stateOption==boundaryVelocity )
+          {
 
-	    // velocity of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
 
-	    // acceleration of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	  }
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+          }
 
-	else
-	  {
-	    OV_ABORT("--INS-- UDKS: Unknown state option");
-	  }
+        else
+          {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
       }
   } else if (userKnownSolution=="parallelFlow") {
     
@@ -3217,41 +3217,41 @@ getUserDefinedDeformingBodyKnownSolution(
     /// --- loop over the grid points on the interface ---
     FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	  
-	real x= xLocal(i1,i2,i3,0);
-	real y= xLocal(i1,i2,i3,1);
+          
+        real x= xLocal(i1,i2,i3,0);
+        real y= xLocal(i1,i2,i3,1);
 
 
-	if( stateOption==boundaryPosition )
-	  {
+        if( stateOption==boundaryPosition )
+          {
 
-	    // position of the interface:
-	    state(i1,i2,i3,c0)=x;
-	    state(i1,i2,i3,c1)=0.;
-	    // printF("(x,y)=(%f,%f)\n",x,y);
+            // position of the interface:
+            state(i1,i2,i3,c0)=x;
+            state(i1,i2,i3,c1)=0.;
+            // printF("(x,y)=(%f,%f)\n",x,y);
 
-	  }
-	else if( stateOption==boundaryVelocity )
-	  {
+          }
+        else if( stateOption==boundaryVelocity )
+          {
 
-	    // velocity of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	    // printF("boundary velocity\n");
-	  }
-	else if( stateOption==boundaryAcceleration )
-	  {
+            // velocity of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+            // printF("boundary velocity\n");
+          }
+        else if( stateOption==boundaryAcceleration )
+          {
 
-	    // acceleration of the interface:
-	    state(i1,i2,i3,c0)=0.;
-	    state(i1,i2,i3,c1)=0.;
-	    // printF("boundary acceleration\n");
-	  }
+            // acceleration of the interface:
+            state(i1,i2,i3,c0)=0.;
+            state(i1,i2,i3,c1)=0.;
+            // printF("boundary acceleration\n");
+          }
 
-	else
-	  {
-	    OV_ABORT("--INS-- UDKS: Unknown state option");
-	  }
+        else
+          {
+            OV_ABORT("--INS-- UDKS: Unknown state option");
+          }
       }
 
 
@@ -3265,7 +3265,7 @@ getUserDefinedDeformingBodyKnownSolution(
   if( !found )
   {
     printF("--INS-- UDKS: getUserDefinedDeformingBodyKnownSolution:ERROR: unknown userKnownSolution=[%s]\n",
-	   (const char*)userKnownSolution);
+           (const char*)userKnownSolution);
     OV_ABORT("error");
   }
   
@@ -3384,7 +3384,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
              " pGrad : imposed pressure gradient (for periodic problems), default=1\n"
              " amp1,nFreq1 : amplitude and mode-frequency of a time-dependent eigenmode, default: amp1=0\n"
              " omega,amp2,nFre2 : for rotating component of the flow.\n"
-	);
+        );
       
       gi.inputString(answer,"Enter radius, pInflow, pOutflow, s0, length, ua,ub, axialAxis, pGrad, amp1, nFreq1 for the exact solution");
       sScanF(answer,"%e %e %e %e %e %e %e %i %e %e %e %e %e %e",&radius,&pInflow,&pOutflow,&s0,&length,&ua,&ub,&axialAxis,
@@ -3392,7 +3392,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("Pipe flow: radius=%g, s0=%g, pInflow=%g, pOutflow=%g, length=%g, ua=%g, ub=%g, axialAxis=%i, "
              "pGrad=%g, amp1=%g, nFreq1=%g, omega=%g, amp2=%g, nFreq2=%g\n",
-	     radius,s0,pInflow,pOutflow,length,ua,ub,axialAxis,pGrad,amp1,nFreq1, omega,amp2,nFreq2);
+             radius,s0,pInflow,pOutflow,length,ua,ub,axialAxis,pGrad,amp1,nFreq1, omega,amp2,nFreq2);
 
 
       dbase.get<bool>("knownSolutionIsTimeDependent")= (amp1!= 0. || amp2!=0.) ? true :false;  // known solution is MAY BE time dependent
@@ -3429,7 +3429,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       
 
       printF("Rotating Couette flow: rInner=%g, rOuter=%g, omegaInner=%g, omegaOuter=%g, axialAxis=%i, amp1=%g, nFreq1=%g\n",
-	     rInner,rOuter,omegaInner,omegaOuter,axialAxis,amp1,nFreq1);
+             rInner,rOuter,omegaInner,omegaOuter,axialAxis,amp1,nFreq1);
 
       dbase.get<bool>("knownSolutionIsTimeDependent")= amp1!= 0. ? true :false;  // known solution is MAY BE time dependent
 
@@ -3497,8 +3497,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       // if( scale==0 ){ scale=.00001; }  // 
       // if( !db.has_key("exactSolutionScaleFactorFSI") ) 
       // { 
-      // 	dbase.put<real>("exactSolutionScaleFactorFSI");
-      // 	dbase.get<real>("exactSolutionScaleFactorFSI")=scale; // scale FSI solution so linearized approximation is valid 
+      //        dbase.put<real>("exactSolutionScaleFactorFSI");
+      //        dbase.get<real>("exactSolutionScaleFactorFSI")=scale; // scale FSI solution so linearized approximation is valid 
       // }
       // printF("INFO:Setting the exact FSI solution scale factor to %9.3e\n",scale);
       // MovingGrids & move = dbase.get<MovingGrids >("movingGrids");
@@ -3627,8 +3627,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       real f0=shearBlockFunction(kH0), f1=shearBlockFunction(kH1);
       if( f0*f1 > 0 )
       {
-	printF("ERROR locating root for shear-block exact solution!\n");
-	OV_ABORT("error");
+        printF("ERROR locating root for shear-block exact solution!\n");
+        OV_ABORT("error");
       }
      
       printF("...look for a root on the interval k*H in [%g,%g], [f0,f1]=[%g,%g]\n",kH0,kH1,f0,f1);
@@ -3696,15 +3696,15 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       const int maxIt=20;
       for( int it=0; it<maxIt; it++ )
       {
-	if( f0*f1 <= 0. ) break; // root is bracketed between [k0,k1]
+        if( f0*f1 <= 0. ) break; // root is bracketed between [k0,k1]
         k0=k1; f0=f1;
         k1=k0+dk;
         f1=rotatingDiskFunction(k1);
       }
       if( f0*f1 > 0 )
       {
-	printF("ERROR locating root for exact solution!\n");
-	OV_ABORT("error");
+        printF("ERROR locating root for exact solution!\n");
+        OV_ABORT("error");
       }
       printF("...look for a root on the interval [k0,k1]=[%g,%g] [f0,f1]=[%g,%g]\n",k0,k1,f0,f1);
 
@@ -3761,15 +3761,15 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       const int maxIt=20;
       for( int it=0; it<maxIt; it++ )
       {
-	if( f0*f1 <= 0. ) break; // root is bracketed between [k0,k1]
+        if( f0*f1 <= 0. ) break; // root is bracketed between [k0,k1]
         k0=k1; f0=f1;
         k1=k0+dk;
         f1=translatingDiskFunction(k1);
       }
       if( f0*f1 > 0 )
       {
-	printF("ERROR locating root for exact solution!\n");
-	OV_ABORT("error");
+        printF("ERROR locating root for exact solution!\n");
+        OV_ABORT("error");
       }
       printF("...look for a root on the interval [k0,k1]=[%g,%g] [f0,f1]=[%g,%g]\n",k0,k1,f0,f1);
 
@@ -3793,7 +3793,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       // const real rho = dbase.get<real>("fluidDensity");
       real surfaceTension;
       dbase.get<ListOfShowFileParameters >("pdeParameters")
-	.getParameter("surfaceTension",surfaceTension);
+        .getParameter("surfaceTension",surfaceTension);
 
       // define our needed parameters and get amp and casenumber 
       real & amp = rpar[0];
@@ -3801,16 +3801,16 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("---  Bubble oscillating under surface tension ---\n"
              "   amp        = amplitude of the motion  (solution only valid \n"
-	     "                for small amp, eg. amp=1.e-4)\n"
+             "                for small amp, eg. amp=1.e-4)\n"
              "   casenumber = choose parameter set to use (n, rho, R, mu, gamma)\n"
-	     "                where n   = number of periods, \n"
-	     "                      rho = fluid density, \n"
-	     "                      R   = outer radius, \n"
-	     "                      mu  = viscosity, \n"
-	     "                      gamma = surface tension. \n"
+             "                where n   = number of periods, \n"
+             "                      rho = fluid density, \n"
+             "                      R   = outer radius, \n"
+             "                      mu  = viscosity, \n"
+             "                      gamma = surface tension. \n"
              "                1: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 1.0)\n"
-	     "                2: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
-	     "                3: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
+             "                2: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
+             "                3: (n, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
 
       gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
       sScanF(answer,"%e %d",&amp,&casenumber);
@@ -3880,47 +3880,47 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       } else if (casenumber == 4) {
         // this is an old case
 
-	// parameters
-	n     = 3.0;
-	R     = 1.0;
-	rho   = 1.0;
-	mu    = 0.1;
-	gamma = 1.0;
-	
-	// solution to dispersion relation
-	omegar =  4.6468563337943198e+00;
-	omegai = -9.1284130939664321e-01;
-	lr = 5.3143717795319771e+00;
-	li = 4.3719714451399900e+00;
+        // parameters
+        n     = 3.0;
+        R     = 1.0;
+        rho   = 1.0;
+        mu    = 0.1;
+        gamma = 1.0;
+        
+        // solution to dispersion relation
+        omegar =  4.6468563337943198e+00;
+        omegai = -9.1284130939664321e-01;
+        lr = 5.3143717795319771e+00;
+        li = 4.3719714451399900e+00;
 
-	cr =  6.1496830686969157e-05;
-	ci =  2.5445807007528146e-04;
-	dr = -9.2591940315355399e-03;
-	di = -4.4862330257864754e-03;
+        cr =  6.1496830686969157e-05;
+        ci =  2.5445807007528146e-04;
+        dr = -9.2591940315355399e-03;
+        di = -4.4862330257864754e-03;
 
       } else {
-	printF("***WARNING*** invalid casenumber entered. \n");
+        printF("***WARNING*** invalid casenumber entered. \n");
         OV_ABORT("stop for now");
       }
 
       // check if parameters agree with set parameters
       real tol = 1.0e-12;
       if (abs(nu*rho-mu) > tol) {
-	printF("***WARNING*** input viscosity does not agree with parameters in casenumber\n");
+        printF("***WARNING*** input viscosity does not agree with parameters in casenumber\n");
       } 
       if (abs(surfaceTension-gamma) > tol) {
-	printF("***WARNING*** input surface tension does not agree with parameters in casenumber\n");
+        printF("***WARNING*** input surface tension does not agree with parameters in casenumber\n");
       }
 
       // print all parameters
       printF("oscillatingBubble parameters: \n"
-	     "  amp        = %9.3e \n"
-	     "  casenumber = %d \n"
-	     "  R          = %9.3e \n"
-	     "  n          = %9.3e \n"
-	     "  mu         = %9.3e \n"
-	     "  gamma      = %9.3e \n"
-	     "  rho        = %9.3e \n",amp,casenumber,R,n,mu,gamma,rho);
+             "  amp        = %9.3e \n"
+             "  casenumber = %d \n"
+             "  R          = %9.3e \n"
+             "  n          = %9.3e \n"
+             "  mu         = %9.3e \n"
+             "  gamma      = %9.3e \n"
+             "  rho        = %9.3e \n",amp,casenumber,R,n,mu,gamma,rho);
 
       // OV_ABORT("stop for now");
       
@@ -3937,7 +3937,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       real surfaceTension;
       dbase.get<ListOfShowFileParameters >("pdeParameters")
-	.getParameter("surfaceTension",surfaceTension);
+        .getParameter("surfaceTension",surfaceTension);
 
       // define our needed parameters and get amp and casenumber 
       real & amp = rpar[0];
@@ -3945,17 +3945,17 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("---  Cylindrical stream under surface tension ---\n"
              "   amp        = amplitude of the motion  (solution only valid \n"
-	     "                for small amp, eg. amp=1.e-4)\n"
+             "                for small amp, eg. amp=1.e-4)\n"
              "   casenumber = choose parameter set to use (n, kz, rho, R, mu, gamma)\n"
-	     "                where n   = number of periods in theta, \n"
+             "                where n   = number of periods in theta, \n"
              "                      kz  = wavenumber in z, \n"
-	     "                      rho = fluid density, \n"
-	     "                      R   = outer radius, \n"
-	     "                      mu  = viscosity, \n"
-	     "                      gamma = surface tension. \n"
+             "                      rho = fluid density, \n"
+             "                      R   = outer radius, \n"
+             "                      mu  = viscosity, \n"
+             "                      gamma = surface tension. \n"
              "                1: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 1.0)\n"
-	     "                2: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
-	     "                3: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
+             "                2: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 0.5)\n"
+             "                3: (n, kz, rho, R, mu, gamma) = (3, 1.0, 1.0, .1, 2.0)\n"); 
 
       gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
       sScanF(answer,"%e %d",&amp,&casenumber);
@@ -4116,29 +4116,29 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         rho= 1.00;
         V  = -1.00;
       } else {
-	printF("***WARNING*** invalid casenumber entered. \n");
+        printF("***WARNING*** invalid casenumber entered. \n");
         OV_ABORT("stop for now");
       }
 
       // check if parameters agree with set parameters
       real tol = 1.0e-12;
       if (abs(nu*rho-mu) > tol) {
-	printF("***WARNING*** input viscosity does not agree with parameters in casenumber\n");
+        printF("***WARNING*** input viscosity does not agree with parameters in casenumber\n");
       } 
       if (abs(surfaceTension-gamma) > tol) {
-	printF("***WARNING*** input surface tension does not agree with parameters in casenumber\n");
+        printF("***WARNING*** input surface tension does not agree with parameters in casenumber\n");
       }
 
       // print all parameters
       printF("cylindricalStream parameters: \n"
-	     "  amp        = %9.3e \n"
-	     "  casenumber = %d \n"
-	     "  R          = %9.3e \n"
-	     "  n          = %9.3e \n"
+             "  amp        = %9.3e \n"
+             "  casenumber = %d \n"
+             "  R          = %9.3e \n"
+             "  n          = %9.3e \n"
              "  kz         = %9.3e \n"
-	     "  mu         = %9.3e \n"
-	     "  gamma      = %9.3e \n"
-	     "  rho        = %9.3e \n",amp,casenumber,R,n,kz,mu,gamma,rho);
+             "  mu         = %9.3e \n"
+             "  gamma      = %9.3e \n"
+             "  rho        = %9.3e \n",amp,casenumber,R,n,kz,mu,gamma,rho);
 
       // OV_ABORT("stop for now");
 
@@ -4155,7 +4155,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       real surfaceTension;
       dbase.get<ListOfShowFileParameters >("pdeParameters")
-	.getParameter("surfaceTension",surfaceTension);
+        .getParameter("surfaceTension",surfaceTension);
 
       // define our needed parameters and get amp and casenumber 
       real & amp = rpar[0];
@@ -4163,13 +4163,13 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("---  Bubble oscillating under surface tension ---\n"
              "   amp        = amplitude of the motion  (solution only valid \n"
-	     "                for small amp, eg. amp=1.e-4)\n"
+             "                for small amp, eg. amp=1.e-4)\n"
              "   casenumber = choose parameter set to use (n, rho, R, mu, gamma)\n"
-	     "                where n   = number of periods, \n"
-	     "                      rho = fluid density, \n"
-	     "                      R   = outer radius, \n"
-	     "                      mu  = viscosity, \n"
-	     "                      gamma = surface tension. \n"); 
+             "                where n   = number of periods, \n"
+             "                      rho = fluid density, \n"
+             "                      R   = outer radius, \n"
+             "                      mu  = viscosity, \n"
+             "                      gamma = surface tension. \n"); 
 
       gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
       sScanF(answer,"%e %d",&amp,&casenumber);
@@ -4192,7 +4192,7 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       real surfaceTension;
       dbase.get<ListOfShowFileParameters >("pdeParameters")
-	.getParameter("surfaceTension",surfaceTension);
+        .getParameter("surfaceTension",surfaceTension);
 
       // define our needed parameters and get amp and casenumber 
       real & amp = rpar[0];
@@ -4219,13 +4219,13 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
 
       printF("---  capillary waves in rectangular geometry ---\n"
              "   amp        = amplitude of the motion  (solution only valid \n"
-	     "                for small amp, eg. amp=1.e-4)\n"
+             "                for small amp, eg. amp=1.e-4)\n"
              "   casenumber = choose parameter set to use (n, rho, H, mu, gamma)\n"
-	     "                where n   = number of periods, \n"
-	     "                      rho = fluid density, \n"
-	     "                      H   = height of domain, \n"
-	     "                      mu  = viscosity, \n"
-	     "                      gamma = surface tension. \n"
+             "                where n   = number of periods, \n"
+             "                      rho = fluid density, \n"
+             "                      H   = height of domain, \n"
+             "                      mu  = viscosity, \n"
+             "                      gamma = surface tension. \n"
              "                1: (n, rho, H, mu, gamma) = (1, 1.0, 1.0, .1, .1)\n");
 
       gi.inputString(answer,"Enter amp, casenumber (amplitude, casenumber)");
@@ -4289,21 +4289,21 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         mu = 0.05;
       } else if (casenumber == 4) {
         // OLD!
-	omegar =  2.6327730371658089e+00;
-	omegai = -2.5705601835278751e+00;
-	alphar =  4.6629087846975636e+00;
-	alphai = -2.8231015860806408e+00;
-	ar = ( 1.6408189489495698e-01);
-	ai = ( 5.7724681448045732e-02);
-	br = (-7.2006869928791420e-06);
-	bi = ( 1.3988177151996081e-05);
-	cr = (-3.9473503009392136e-01);
-	ci = ( 1.3347862201341571e-04);
-	dr = (-4.9145949653947911e-05);
-	di = (-1.3347862201368001e-04);
-	gamma = .1;
-	n = 1.;
-	mu = .1;
+        omegar =  2.6327730371658089e+00;
+        omegai = -2.5705601835278751e+00;
+        alphar =  4.6629087846975636e+00;
+        alphai = -2.8231015860806408e+00;
+        ar = ( 1.6408189489495698e-01);
+        ai = ( 5.7724681448045732e-02);
+        br = (-7.2006869928791420e-06);
+        bi = ( 1.3988177151996081e-05);
+        cr = (-3.9473503009392136e-01);
+        ci = ( 1.3347862201341571e-04);
+        dr = (-4.9145949653947911e-05);
+        di = (-1.3347862201368001e-04);
+        gamma = .1;
+        n = 1.;
+        mu = .1;
       } else if (casenumber == 5) {
         omegar =  4.3085986516317618e+00;
         omegai = -2.0431384082155248e+00;
@@ -4357,20 +4357,20 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
         mu = 0.05;
         gravity = 1.00;
       } else {
-	printF("***WARNING*** invalid casenumber entered. \n");
-	OV_ABORT("stop for now");
+        printF("***WARNING*** invalid casenumber entered. \n");
+        OV_ABORT("stop for now");
       }
       k = 2*Pi*n/H;
 
       // print all parameters
       printF("capillaryFlow parameters: \n"
-	     "  amp        = %9.3e \n"
-	     "  casenumber = %d \n"
-	     "  H          = %9.3e \n"
-	     "  k          = %9.3e \n"
-	     "  mu         = %9.3e \n"
-	     "  gamma      = %9.3e \n"
-	     "  rho        = %9.3e \n",amp,casenumber,R,k,mu,gamma,rho);
+             "  amp        = %9.3e \n"
+             "  casenumber = %d \n"
+             "  H          = %9.3e \n"
+             "  k          = %9.3e \n"
+             "  mu         = %9.3e \n"
+             "  gamma      = %9.3e \n"
+             "  rho        = %9.3e \n",amp,casenumber,R,k,mu,gamma,rho);
 
 
       }
@@ -4394,11 +4394,11 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       H  = 1.;
 
       printF("--- free surface piston ---\n"
-	     "Interface position = yI(t) = amp sin(k t) + amp1 t^2 + amp2 t\n"
-	     "   amp = amplitude of interface displacement \n"
-	     "   amp1 = amplitude of t^2\n"
-	     "   amp2 = amplitude of t\n"
-	     "   k   = frequency of interface displacement\n");
+             "Interface position = yI(t) = amp sin(k t) + amp1 t^2 + amp2 t\n"
+             "   amp = amplitude of interface displacement \n"
+             "   amp1 = amplitude of t^2\n"
+             "   amp2 = amplitude of t\n"
+             "   k   = frequency of interface displacement\n");
       
       gi.inputString(answer,"Enter (amp,amp1,amp2,k)");
       sScanF(answer,"%e %e %e %e",&amp,&amp1,&amp2,&k);
@@ -4423,8 +4423,8 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
       H  = 1.;
 
       printF("--- Parallel flow with free surface ---\n"
-	     "   amp = amplitude of initial "
-	     "   n   = number of periods");
+             "   amp = amplitude of initial "
+             "   n   = number of periods");
       
       gi.inputString(answer,"Enter amp and n (amp,n)");
       sScanF(answer,"%e %e",&amp,&n);

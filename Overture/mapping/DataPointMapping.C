@@ -44,20 +44,20 @@ extern "C"
 {
 
 void DPM1(char filename[], int & idata, int & nd, int & ndrsab, int & nrsab, int & bc, int & share, 
-	  int & per, int & ndr, const int & fileform, const int & dataform, char errmes[], int & ierr,
-	  const int len_filename, const int len_errmes );
+          int & per, int & ndr, const int & fileform, const int & dataform, char errmes[], int & ierr,
+          const int len_filename, const int len_errmes );
 
 void DPM2(int & ndra, int & ndrb, int & ndsa, int & ndsb, int & ndta, int & ndtb, int & ndr, 
-	  int & ndrsab, int & nrsab, int & nd, real & xy, int & per, int & idata, char errmes[], 
-	  const int & fileform, const int & dataform, int & ierr,
-	  const int len_errmes );
+          int & ndrsab, int & nrsab, int & nd, real & xy, int & per, int & idata, char errmes[], 
+          const int & fileform, const int & dataform, int & ierr,
+          const int len_errmes );
   
 void OPPLT3D(char  filename[], int & iunit,int & fileFormat,int & ngd, int & ng,
-	     int & nx,int & ny,int & nz, const int len_filename);
+             int & nx,int & ny,int & nz, const int len_filename);
 
 void RDPLT3D(int & fileFormat,int & iunit, const int & grid, int & nx, int & ny, int & nz,
-	     int & nd, int & ndra, int & ndrb, int & ndsa, int & ndsb, int & ndta, int & ndtb, real & xy,
-	     int & ierr );
+             int & nd, int & ndra, int & ndrb, int & ndsa, int & ndsb, int & ndta, int & ndtb, real & xy,
+             int & ierr );
 
 void CLOSEPLT3D(const int & iunit);
 }
@@ -66,39 +66,39 @@ void CLOSEPLT3D(const int & iunit);
 //  tri-linear interpolant: 
 //    INT_2D means the domain dimension is 2
 // *************************************
-#define INT_1D_ORDER_2(dr,x111,x211)		\
+#define INT_1D_ORDER_2(dr,x111,x211)            \
 ( (1.-dr)*(x111)+dr*(x211) )
 
-#define INT_1D_ORDER_2_R(dr,x111,x211)		\
+#define INT_1D_ORDER_2_R(dr,x111,x211)          \
 ( delta[0]*( (x211)-(x111) ) )
 
-#define INT_2D_ORDER_2(dr,ds,x111,x211,x121,x221)			\
+#define INT_2D_ORDER_2(dr,ds,x111,x211,x121,x221)                       \
 ( (1.-ds)*((1.-dr)*(x111)+dr*(x211))+ds*((1.-dr)*(x121)+dr*(x221)) )
 
-#define INT_2D_ORDER_2_R(dr,ds,x111,x211,x121,x221)		\
+#define INT_2D_ORDER_2_R(dr,ds,x111,x211,x121,x221)             \
 ( ((1.-ds)*( (x211)-(x111) ) +ds*( (x221)-(x121) ))*delta[0] )
 
-#define INT_2D_ORDER_2_S(dr,ds,x111,x211,x121,x221)		\
+#define INT_2D_ORDER_2_S(dr,ds,x111,x211,x121,x221)             \
 ( ((1.-dr)*( (x121)-(x111) ) +dr*( (x221)-(x211) ))*delta[1] )
 
 #define INT_3D_ORDER_2(dr,ds,dt,x111,x211,x121,x221,x112,x212,x122,x222) \
-(									\
+(                                                                       \
   (1.-dt)*((1.-ds)*((1.-dr)*(x111)+dr*(x211))+ds*((1.-dr)*(x121)+dr*(x221))) \
   +   dt *((1.-ds)*((1.-dr)*(x112)+dr*(x212))+ds*((1.-dr)*(x122)+dr*(x222))) )
 
 #define INT_3D_ORDER_2_R(dr,ds,dt,x111,x211,x121,x221,x112,x212,x122,x222) \
-(									\
-  ( (1.-dt)*((1.-ds)*((x211)-(x111))+ds*((x221)-(x121)))		\
+(                                                                       \
+  ( (1.-dt)*((1.-ds)*((x211)-(x111))+ds*((x221)-(x121)))                \
     +       dt *((1.-ds)*((x212)-(x112))+ds*((x222)-(x122))) )*delta[0])
 
 #define INT_3D_ORDER_2_S(dr,ds,dt,x111,x211,x121,x221,x112,x212,x122,x222) \
-(									\
-  ( (1.-dt)*((1.-dr)*((x121)-(x111))+dr*((x221)-(x211)))		\
+(                                                                       \
+  ( (1.-dt)*((1.-dr)*((x121)-(x111))+dr*((x221)-(x211)))                \
     +       dt *((1.-dr)*((x122)-(x112))+dr*((x222)-(x212))) )*delta[1] )
 
 #define INT_3D_ORDER_2_T(dr,ds,dt,x111,x211,x121,x221,x112,x212,x122,x222) \
-(									\
-  ( (1.-dr)*((1.-ds)*((x112)-(x111))+ds*((x122)-(x121)))		\
+(                                                                       \
+  ( (1.-dr)*((1.-ds)*((x112)-(x111))+ds*((x122)-(x121)))                \
     +        dr *((1.-ds)*((x212)-(x211))+ds*((x222)-(x221))) )*delta[2] )
 
 /* ---
@@ -288,7 +288,7 @@ DataPointMapping( const DataPointMapping & map, const CopyType copyType )
   }
 
   printF("DPM::Copy constructor for mapping %s, numGhost=[%i,%i]\n",
-	 (const char*)getName(mappingName),numberOfGhostPoints(0,0),numberOfGhostPoints(1,0));
+         (const char*)getName(mappingName),numberOfGhostPoints(0,0),numberOfGhostPoints(1,0));
 }
 
 DataPointMapping::~DataPointMapping()
@@ -487,10 +487,10 @@ setDataPoints(const realArray & xd,
 
 int DataPointMapping::
 setDataPoints(const realArray & xd, 
-	      const int positionOfCoordinates, 
-	      const int domainDimension_,
-	      const int numberOfGhostLinesInData[2][3],
-	      const IntegerArray & xGridIndexRange /* = Overture::nullIntArray() */ )
+              const int positionOfCoordinates, 
+              const int domainDimension_,
+              const int numberOfGhostLinesInData[2][3],
+              const IntegerArray & xGridIndexRange /* = Overture::nullIntArray() */ )
 // ===========================================================================================
 /// \details 
 ///     Supply data points: Same as above routine except that the numberOfGhostLinesInData can
@@ -508,7 +508,7 @@ setDataPoints(const realArray & xd,
   {
     cout << "DataPointMapping: error: array xd being passed to setDataPoints has positionOfCoodinates = " <<
       positionOfCoordinates << "\n but the length of that position in xd is not 1,2,3, xd.getLength(positionOfCoordinates)="
-	 << xd.getLength(positionOfCoordinates) << endl;
+         << xd.getLength(positionOfCoordinates) << endl;
     Overture::abort("error");
   }
   setRangeDimension(nd);
@@ -580,7 +580,7 @@ setDataPoints(const realArray & xd,
   }
   
 //     printF("DPM:setDataPoints: num-ghost-in-data: ngid=[%i,%i][%i,%i][%i,%i]\n",ngid(0,0),ngid(1,0),
-// 	   ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
+//         ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
   
 
   int xdBase1=xd.getBase(axis1+offset)+ngid(0,0);
@@ -612,7 +612,7 @@ setDataPoints(const realArray & xd,
       // this is used for grids from hype that specify a large boundary offset. (we don't always do this
       // for backward compatibility)
       if( ngid(Start,axis)>=2 )
-	nga = max(defaultNumberOfGhostLines,ngid(Start,axis)+1);
+        nga = max(defaultNumberOfGhostLines,ngid(Start,axis)+1);
       if( ngid(End  ,axis)>=2 )
         ngb = max(defaultNumberOfGhostLines,ngid(End  ,axis)+1);
     }
@@ -630,9 +630,9 @@ setDataPoints(const realArray & xd,
   }
 
 //   printF("DPM:setDataPoints: gridIndexRange=[%i,%i][%i,%i][%i,%i]\n",gridIndexRange(0,0),gridIndexRange(1,0),
-// 	   gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
+//         gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
 //   printF("DPM:setDataPoints: dimension=[%i,%i][%i,%i][%i,%i]\n",dimension(0,0),dimension(1,0),
-// 	   dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
+//         dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
 
   // save points in the local array
   xy.partition(partition);
@@ -658,9 +658,9 @@ setDataPoints(const realArray & xd,
   {
     for( int axis=0; axis<rangeDimension; axis++ )
       for( int i3=gridIndexRange(Start,axis3)-ngid(0,2); i3<=gridIndexRange(End,axis3)+ngid(1,2); i3++ )
-	for( int i2=gridIndexRange(Start,axis2)-ngid(0,1); i2<=gridIndexRange(End,axis2)+ngid(1,1); i2++ )
-	  for( int i1=gridIndexRange(Start,axis1)-ngid(0,0); i1<=gridIndexRange(End,axis1)+ngid(1,0); i1++ )
-	    xyLocal(i1,i2,i3,axis)=xdLocal(axis,i1+xdBase1,i2+xdBase2,i3+xdBase3);
+        for( int i2=gridIndexRange(Start,axis2)-ngid(0,1); i2<=gridIndexRange(End,axis2)+ngid(1,1); i2++ )
+          for( int i1=gridIndexRange(Start,axis1)-ngid(0,0); i1<=gridIndexRange(End,axis1)+ngid(1,0); i1++ )
+            xyLocal(i1,i2,i3,axis)=xdLocal(axis,i1+xdBase1,i2+xdBase2,i3+xdBase3);
   }
   else if( positionOfCoordinates==1 )
   {
@@ -668,10 +668,10 @@ setDataPoints(const realArray & xd,
     {
       // for( int i1=gridIndexRange(Start,axis1)-ngid(0,0); i1<=gridIndexRange(End,axis1)+ngid(1,0); i1++ )
       I1=Range(max(xy.getBase(0),gridIndexRange(Start,axis1)-ngid(0,0)),
-	       min(xy.getBound(0),gridIndexRange(End,axis1)+ngid(1,0)));
+               min(xy.getBound(0),gridIndexRange(End,axis1)+ngid(1,0)));
       bool ok=ParallelUtility::getLocalArrayBounds(xy,xyLocal, I1,I2,I3, 1);//include parallel ghost
       if(ok)
-	xyLocal(I1,0,0,axis)=xdLocal(I1+xdBase1,axis);
+        xyLocal(I1,0,0,axis)=xdLocal(I1+xdBase1,axis);
     }
   }
   else if( positionOfCoordinates==2 )
@@ -681,13 +681,13 @@ setDataPoints(const realArray & xd,
       // for( int i2=gridIndexRange(Start,axis2)-ngid(0,1); i2<=gridIndexRange(End,axis2)+ngid(1,1); i2++ )
       // for( int i1=gridIndexRange(Start,axis1)-ngid(0,0); i1<=gridIndexRange(End,axis1)+ngid(1,0); i1++ )
       I1=Range(max(xy.getBase(0),gridIndexRange(Start,axis1)-ngid(0,0)),
-	       min(xy.getBound(0),gridIndexRange(End,axis1)+ngid(1,0)));
+               min(xy.getBound(0),gridIndexRange(End,axis1)+ngid(1,0)));
       I2=Range(max(xy.getBase(1),gridIndexRange(Start,axis2)-ngid(0,1)),
-	       min(xy.getBound(1),gridIndexRange(End,axis2)+ngid(1,1)));
+               min(xy.getBound(1),gridIndexRange(End,axis2)+ngid(1,1)));
       I3 = xy.getBase(2);
       bool ok=ParallelUtility::getLocalArrayBounds(xy,xyLocal, I1,I2,I3, 1);//include parallel ghost
       if(ok)
-	xyLocal(I1,I2,0,axis)=xdLocal(I1+xdBase1,I2+xdBase2,axis);
+        xyLocal(I1,I2,0,axis)=xdLocal(I1+xdBase1,I2+xdBase2,axis);
     }
   }
   else if( positionOfCoordinates==3 )
@@ -716,15 +716,15 @@ setDataPoints(const realArray & xd,
   // xy.display("xy before extrap");
   
 //   printF(" KKKKKKK dpm:setDataPoints:            dimension=[%i,%i][%i,%i][%i,%i]\n",dimension(0,0),dimension(1,0),
-//  	 dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
+//       dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
 //   printF(" KKKKKKK dpm:setDataPoints:       gridIndexRange=[%i,%i][%i,%i][%i,%i]\n",
 //          gridIndexRange(0,0),gridIndexRange(1,0),
-//  	 gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
+//       gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
 //   printF(" KKKKKKK dpm:setDataPoints:                 ngid=[%i,%i][%i,%i][%i,%i]\n",ngid(0,0),ngid(1,0),
-//  	 ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
+//       ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
 //   printF(" KKKKKKK dpm:setDataPoints:  numberOfGhostPoints=[%i,%i][%i,%i][%i,%i]\n",
 //          numberOfGhostPoints(0,0),numberOfGhostPoints(1,0),
-//  	 numberOfGhostPoints(0,1),numberOfGhostPoints(1,1),numberOfGhostPoints(0,2),numberOfGhostPoints(1,2));
+//       numberOfGhostPoints(0,1),numberOfGhostPoints(1,1),numberOfGhostPoints(0,2),numberOfGhostPoints(1,2));
 
 //   if( true )
 //   {
@@ -764,7 +764,7 @@ setDataPoints(const realArray & xd,
 //         // extrapolate in a different way that work better on stretched grids so that the grid is reflected.
 //         const int m=ghost, m2=2*m;
 //         xy(I1,I2,I3,R)=2.*xy(I1+m*is[0],I2+m*is[1],I3+m*is[2],R)-xy(I1+m2*is[0],I2+m2*is[1],I3+m2*is[2],R);
-	
+        
 //       }
       
 //     }
@@ -796,7 +796,7 @@ int DataPointMapping::
 setDataPoints(const realSerialArray & x, 
               const int domainDimension_, const int rangeDimension_,
               const IntegerArray & xDimension,
-	      const IntegerArray & xGridIndexRange  )
+              const IntegerArray & xGridIndexRange  )
 // ===========================================================================================
 /// /brief: (Parallel version)  Supply data points in a serial array (for ech processor).
 ///
@@ -847,7 +847,7 @@ setDataPoints(const realSerialArray & x,
   }
   
 //     printF("DPM:setDataPoints: num-ghost-in-data: ngid=[%i,%i][%i,%i][%i,%i]\n",ngid(0,0),ngid(1,0),
-// 	   ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
+//         ngid(0,1),ngid(1,1),ngid(0,2),ngid(1,2));
   
 
   // *** NOTE: WE MAY NEED TO INCREASE THE NUMBER OF GHOST FROM THOSE SUPPLIED **** -- see comments in above routine
@@ -873,7 +873,7 @@ setDataPoints(const realSerialArray & x,
       // this is used for grids from hype that specify a large boundary offset. (we don't always do this
       // for backward compatibility)
       if( ngid(Start,axis)>=2 )
-	nga = max(defaultNumberOfGhostLines,ngid(Start,axis)+1);
+        nga = max(defaultNumberOfGhostLines,ngid(Start,axis)+1);
       if( ngid(End  ,axis)>=2 )
         ngb = max(defaultNumberOfGhostLines,ngid(End  ,axis)+1);
     }
@@ -888,9 +888,9 @@ setDataPoints(const realSerialArray & x,
   {
     printF("DPM:setDataPoints: domainDimension=%i, rangeDimension=%i\n",domainDimension,rangeDimension);
     printF("DPM:setDataPoints: gridIndexRange=[%i,%i][%i,%i][%i,%i]\n",gridIndexRange(0,0),gridIndexRange(1,0),
- 	   gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
+           gridIndexRange(0,1),gridIndexRange(1,1),gridIndexRange(0,2),gridIndexRange(1,2));
     printF("DPM:setDataPoints: dimension=[%i,%i][%i,%i][%i,%i]\n",dimension(0,0),dimension(1,0),
- 	   dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
+           dimension(0,1),dimension(1,1),dimension(0,2),dimension(1,2));
   }
   
   if( evalAsNurbs )
@@ -915,7 +915,7 @@ setDataPoints(const realSerialArray & x,
     // here is the new interpolate: 
     int xDegree[3] ={ nurbsDegree,nurbsDegree,nurbsDegree };  // 
     nurbs.interpolate(x,domainDimension,rangeDimension,xDimension,xGridIndexRange,
-		      NurbsMapping::parameterizeByIndex,xDegree);
+                      NurbsMapping::parameterizeByIndex,xDegree);
     
     reinitialize();            // we have to re-initialize the inverse -- is this needed with nurbs?
     mappingInitialized=true;
@@ -932,9 +932,9 @@ setDataPoints(const realSerialArray & x,
     initializePartition();
     xy.partition(partition);
     xy.redim(Range(dimension(Start,0),dimension(End,0)),
-	     Range(dimension(Start,1),dimension(End,1)),
-	     Range(dimension(Start,2),dimension(End,2)),
-	     rangeDimension);
+             Range(dimension(Start,1),dimension(End,1)),
+             Range(dimension(Start,2),dimension(End,2)),
+             rangeDimension);
 
     OV_GET_SERIAL_ARRAY(real,xy,xyLocal);
   
@@ -964,8 +964,8 @@ setDataPoints(const realSerialArray & x,
     {
       for( int axis=0; axis<rangeDimension; axis++ )
       {
-	xMin[axis]=min(xyLocal(I1,I2,I3,axis));
-	xMax[axis]=max(xyLocal(I1,I2,I3,axis));
+        xMin[axis]=min(xyLocal(I1,I2,I3,axis));
+        xMax[axis]=max(xyLocal(I1,I2,I3,axis));
       }
     }
   
@@ -1030,7 +1030,7 @@ computeGhostPoints( IndexRangeType & numberOfGhostLinesOld,
     for( side=0; side<=1; side++ )
     {
       if( numberOfGhostLinesNew(side,axis)!= numberOfGhostLinesOld(side,axis) )
-	numberOfGhostLinesHasChanged=true;
+        numberOfGhostLinesHasChanged=true;
     }
   }
   if( !numberOfGhostLinesHasChanged )
@@ -1059,7 +1059,7 @@ computeGhostPoints( IndexRangeType & numberOfGhostLinesOld,
     }
     // only need to assign ghostline that are new.
     // printF("DPM:computeGhost: (side,axis)=(%i,%i) numberOfGhostLinesOld=%i numberOfGhostLinesNew=%i\n",
-    // 	   side,axis,numberOfGhostLinesOld(side,axis),numberOfGhostLinesNew(side,axis));
+    //     side,axis,numberOfGhostLinesOld(side,axis),numberOfGhostLinesNew(side,axis));
     
     // We assign all ghost lines that appear in the xy *wdh* 2012/04/13
     int lastGhost = side==0 ? gridIndexRange(side,axis)-xy.getBase(axis) : xy.getBound(axis)-gridIndexRange(side,axis);
@@ -1074,20 +1074,20 @@ computeGhostPoints( IndexRangeType & numberOfGhostLinesOld,
       if( (side == 0 && Ipv[axis].getBase() > xy.getBound(axis) ) ||
           (side == 1 && Ipv[axis].getBase() < xy.getBase(axis) ) )
       {
-	Ipv[axis] = side==0 ? xy.getBound(axis) : xy.getBase(axis);
+        Ipv[axis] = side==0 ? xy.getBound(axis) : xy.getBase(axis);
       }
       
       for( dir=0; dir<domainDimension; dir++ )
       { // include ghost lines in tangential direction.
-	if( dir!=axis )
-	{
+        if( dir!=axis )
+        {
           // Assign all ghost points in the tangential direction *wdh* 2012/04/13 
           Iv[dir]=xy.dimension(dir); 
-	  // Iv[dir]=Range(Iv[dir].getBase() -numberOfGhostLinesNew(0,dir),  // old
-	  //		Iv[dir].getBound()+numberOfGhostLinesNew(1,dir));
+          // Iv[dir]=Range(Iv[dir].getBase() -numberOfGhostLinesNew(0,dir),  // old
+          //            Iv[dir].getBound()+numberOfGhostLinesNew(1,dir));
           Ibv[dir]=Iv[dir];
           Ipv[dir]=Iv[dir];
-	}
+        }
       }
       bool ok = ParallelUtility::getLocalArrayBounds(xy, xyLocal, I1,I2,I3, 1);//include parallel ghost
 
@@ -1096,48 +1096,48 @@ computeGhostPoints( IndexRangeType & numberOfGhostLinesOld,
         ok = ParallelUtility::getLocalArrayBounds(xy, xyLocal, Ib1,Ib2,Ib3, 1); assert( ok );
         ok = ParallelUtility::getLocalArrayBounds(xy, xyLocal, Ip1,Ip2,Ip3, 1); assert( ok );
 
-	if( getIsPeriodic(axis)==functionPeriodic )
-	{
-	  xyLocal(I1,I2,I3,Rx)=xyLocal(I1+ip[0],I2+ip[1],I3+ip[2],Rx);
-	}
-	else if( getIsPeriodic(axis)==derivativePeriodic )
-	{
-	  // *wdh* 050818 -- add a shift for derivative periodic
-	  // printf(" DPM: assign ghost values for deriv periodic, side,axis,ghost=%i,%i,%i\n",side,axis,ghost);
-	
-	  xyLocal(I1,I2,I3,Rx)=xyLocal(I1+ip[0],I2+ip[1],I3+ip[2],Rx) +
-	    (xyLocal(Ib1,Ib2,Ib3,Rx) - xyLocal(Ib1+ip[0],Ib2+ip[1],Ib3+ip[2],Rx));
-	
-	}
-	else 
-	{
-	  // if( true ) // seems to be needed by filletTwoCyl
-	  if( false &&  // *wdh* 040502 this leads to poor derivatives near the boundary!! as pointed out by Petri.
-	      ghost>1 ) // *wdh* turn off for tdpm test 
-	  {
-	    // x(-1) = x(0) + stretchFactor*(x(0)-x(1))
-	    const real stretchFactor= getBoundaryCondition(side,axis)>0 ? 1.4 : 1.;
-	    const real alpha=1.+stretchFactor, beta=-stretchFactor;
-	  
-	    xyLocal(I1,I2,I3,Rx)=alpha*xyLocal(I1+is[0],I2+is[1],I3+is[2],Rx)+beta*xyLocal(I1+2*is[0],I2+2*is[1],I3+2*is[2],Rx);
-	  }
-	  else
-	  {
-	    // *wdh* 000926
-	    // extrapolate in a different way that work better on stretched grids so that the grid is reflected.
-	    // x(-g) = x(0) + (x(0)-x(g))
-	    xyLocal(I1,I2,I3,Rx)=2.*xyLocal(Ib1,Ib2,Ib3,Rx)-xyLocal(Ip1,Ip2,Ip3,Rx);
-	    // if( true )
-	    // {
-	    //   printF("DPM:computeGhost ghost=%i (side,axis)=(%i,%i) [%i,%i][%i,%i][%i,%i]\n",ghost,side,axis,
+        if( getIsPeriodic(axis)==functionPeriodic )
+        {
+          xyLocal(I1,I2,I3,Rx)=xyLocal(I1+ip[0],I2+ip[1],I3+ip[2],Rx);
+        }
+        else if( getIsPeriodic(axis)==derivativePeriodic )
+        {
+          // *wdh* 050818 -- add a shift for derivative periodic
+          // printf(" DPM: assign ghost values for deriv periodic, side,axis,ghost=%i,%i,%i\n",side,axis,ghost);
+        
+          xyLocal(I1,I2,I3,Rx)=xyLocal(I1+ip[0],I2+ip[1],I3+ip[2],Rx) +
+            (xyLocal(Ib1,Ib2,Ib3,Rx) - xyLocal(Ib1+ip[0],Ib2+ip[1],Ib3+ip[2],Rx));
+        
+        }
+        else 
+        {
+          // if( true ) // seems to be needed by filletTwoCyl
+          if( false &&  // *wdh* 040502 this leads to poor derivatives near the boundary!! as pointed out by Petri.
+              ghost>1 ) // *wdh* turn off for tdpm test 
+          {
+            // x(-1) = x(0) + stretchFactor*(x(0)-x(1))
+            const real stretchFactor= getBoundaryCondition(side,axis)>0 ? 1.4 : 1.;
+            const real alpha=1.+stretchFactor, beta=-stretchFactor;
+          
+            xyLocal(I1,I2,I3,Rx)=alpha*xyLocal(I1+is[0],I2+is[1],I3+is[2],Rx)+beta*xyLocal(I1+2*is[0],I2+2*is[1],I3+2*is[2],Rx);
+          }
+          else
+          {
+            // *wdh* 000926
+            // extrapolate in a different way that work better on stretched grids so that the grid is reflected.
+            // x(-g) = x(0) + (x(0)-x(g))
+            xyLocal(I1,I2,I3,Rx)=2.*xyLocal(Ib1,Ib2,Ib3,Rx)-xyLocal(Ip1,Ip2,Ip3,Rx);
+            // if( true )
+            // {
+            //   printF("DPM:computeGhost ghost=%i (side,axis)=(%i,%i) [%i,%i][%i,%i][%i,%i]\n",ghost,side,axis,
             //          I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound());
-	    //   // ::display(xyLocal(I1,I2,I3,Rx),"x","%5.2f ");
-	    // }
-	    
+            //   // ::display(xyLocal(I1,I2,I3,Rx),"x","%5.2f ");
+            // }
+            
 
-	  }
-	
-	}
+          }
+        
+        }
       } // end if ok
       
     }
@@ -1176,7 +1176,7 @@ setNumberOfGhostLines( IndexRangeType & numberOfGhostLinesNew )
     for( side=0; side<=1; side++ )
     {
       if( numberOfGhostLinesNew(side,axis)!= numberOfGhostPoints(side,axis) )
-	numberOfGhostLinesHasChanged=TRUE;
+        numberOfGhostLinesHasChanged=TRUE;
     }
   }
   if( !mappingInitialized && numberOfGhostLinesHasChanged )
@@ -1236,40 +1236,40 @@ setNumberOfGhostLines( IndexRangeType & numberOfGhostLinesNew )
 //       int dir;
 //       for( dir=0; dir<3; dir++ )
 //       {
-// 	is[dir] = dir!=axis ? 0 : ( side==Start ? +1 : -1 );
-// 	ip[dir] = (gridIndexRange(End,dir)-gridIndexRange(Start,dir))*is[dir];
+//      is[dir] = dir!=axis ? 0 : ( side==Start ? +1 : -1 );
+//      ip[dir] = (gridIndexRange(End,dir)-gridIndexRange(Start,dir))*is[dir];
 //       }
 //       // only need to assign ghostline that are new.
 //       for( int ghost=1+numberOfGhostLines[side][axis]; ghost<=numberOfGhostLines_[side][axis]; ghost++ )
 //       {
-// 	// getGhostIndex(gridIndexRange,side,axis,I1,I2,I3,ghost,numberOfGhostLines_[side][axis]);
-// 	getGhostIndex(gridIndexRange,side,axis,I1,I2,I3,ghost);
-// 	for( dir=0; dir<domainDimension; dir++ )
-// 	{ // include ghost lines in tangential direction.
+//      // getGhostIndex(gridIndexRange,side,axis,I1,I2,I3,ghost,numberOfGhostLines_[side][axis]);
+//      getGhostIndex(gridIndexRange,side,axis,I1,I2,I3,ghost);
+//      for( dir=0; dir<domainDimension; dir++ )
+//      { // include ghost lines in tangential direction.
 //           if( dir!=axis )
-// 	    Iv[dir]=Range(Iv[dir].getBase() -numberOfGhostLines_[0][dir],
+//          Iv[dir]=Range(Iv[dir].getBase() -numberOfGhostLines_[0][dir],
 //                           Iv[dir].getBound()+numberOfGhostLines_[1][dir]);
-// 	}
-// 	if( getIsPeriodic(axis)==functionPeriodic )
-// 	  xy(I1,I2,I3,Rx)=xy(I1+ip[0],I2+ip[1],I3+ip[2],Rx);
-// 	else 
-// 	{
+//      }
+//      if( getIsPeriodic(axis)==functionPeriodic )
+//        xy(I1,I2,I3,Rx)=xy(I1+ip[0],I2+ip[1],I3+ip[2],Rx);
+//      else 
+//      {
 //           // x(-1) = x(0) + stretchFactor*(x(0)-x(1))
 //           const real stretchFactor=1.4, alpha=1.+stretchFactor, beta=-stretchFactor;
-	  
-// 	  xy(I1,I2,I3,Rx)=alpha*xy(I1+is[0],I2+is[1],I3+is[2],Rx)+beta*xy(I1+2*is[0],I2+2*is[1],I3+2*is[2],Rx);
-// 	  // extrapolate in a different way that work better on stretched grids so that the grid is reflected.
+          
+//        xy(I1,I2,I3,Rx)=alpha*xy(I1+is[0],I2+is[1],I3+is[2],Rx)+beta*xy(I1+2*is[0],I2+2*is[1],I3+2*is[2],Rx);
+//        // extrapolate in a different way that work better on stretched grids so that the grid is reflected.
 
 // /* ------
-// 	  const int m=ghost, m2=2*ghost;
+//        const int m=ghost, m2=2*ghost;
 //           printf("setNumberOfGhostLines: m=%i, m2=%i, I1=(%i,%i)\n",m,m2,I1.getBase(),I1.getBound());
-	  
-// 	  xy(I1,I2,I3,Rx)=2.*xy(I1+m*is[0],I2+m*is[1],I3+m*is[2],Rx)-xy(I1+m2*is[0],I2+m2*is[1],I3+m2*is[2],Rx);
-	
+          
+//        xy(I1,I2,I3,Rx)=2.*xy(I1+m*is[0],I2+m*is[1],I3+m*is[2],Rx)-xy(I1+m2*is[0],I2+m2*is[1],I3+m2*is[2],Rx);
+        
 //           ::display(xy(I1,I2,I3,Rx),"xy at ghost");
 // ------ */
 
-// 	}
+//      }
       
 //       }
 //     }
@@ -1282,7 +1282,7 @@ setNumberOfGhostLines( IndexRangeType & numberOfGhostLinesNew )
 //     for( side=0; side<=1; side++ )
 //     {
 //       if( numberOfGhostLines_[side][axis]!= numberOfGhostLines[side][axis] )
-// 	numberOfGhostLinesHasChanged=TRUE;
+//      numberOfGhostLinesHasChanged=TRUE;
 //       numberOfGhostLines[side][axis]=numberOfGhostLines_[side][axis];
 //     }
 //   }
@@ -1326,159 +1326,159 @@ projectGhostPoints(MappingInformation & mapInfo )
       const int shareFlag = share[side][axis];
       if( getBoundaryCondition(side,axis) > 0 &&  shareFlag!=0 )
       {
-	
-	Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
-	Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
-	Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
+        
+        Index Iv[3], &I1=Iv[0], &I2=Iv[1], &I3=Iv[2];
+        Index Jv[3], &J1=Jv[0], &J2=Jv[1], &J3=Jv[2];
+        Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
 
-	getBoundaryIndex(dimension,side,axis,Ib1,Ib2,Ib3);  
-	Range Rx=getRangeDimension();
+        getBoundaryIndex(dimension,side,axis,Ib1,Ib2,Ib3);  
+        Range Rx=getRangeDimension();
 
-	for( int dir=0; dir<domainDimension; dir++ )
-	{
-	  I1=Ib1; I2=Ib2; I3=Ib3;
-	  if( dir!=axis )
-	  {
-	    Iv[axis]=gridIndexRange(side,axis);
-	    for( int side2=Start; side2<=End; side2++ )
-	    {
-	      Iv[dir]=side2==0 ? 
-		Range(dimension(0,dir),gridIndexRange(0,dir)-1) :     // all ghost points
-		Range(gridIndexRange(1,dir)+1,dimension(1,dir));
+        for( int dir=0; dir<domainDimension; dir++ )
+        {
+          I1=Ib1; I2=Ib2; I3=Ib3;
+          if( dir!=axis )
+          {
+            Iv[axis]=gridIndexRange(side,axis);
+            for( int side2=Start; side2<=End; side2++ )
+            {
+              Iv[dir]=side2==0 ? 
+                Range(dimension(0,dir),gridIndexRange(0,dir)-1) :     // all ghost points
+                Range(gridIndexRange(1,dir)+1,dimension(1,dir));
 
 
-	      int num=I1.getLength()*I2.getLength()*I3.getLength();
+              int num=I1.getLength()*I2.getLength()*I3.getLength();
               if( num<=0 )
                 continue;
-	      Range R=num;
-	      realArray x(I1,I2,I3,Rx),r(R,Rx),xNew(R,Rx),drOpt(R);
+              Range R=num;
+              realArray x(I1,I2,I3,Rx),r(R,Rx),xNew(R,Rx),drOpt(R);
 
               // drMax: only project points if |dr(normal direction)| < drMax. We allow quite a big value to 
               //        allow for highly stretched grids.
               const real drMax=1.;
               drOpt=drMax;  // holds dr for the best correction so far
-	      x(I1,I2,I3,Rx)=xy(I1,I2,I3,Rx); 
-	      x.reshape(R,Rx);
+              x(I1,I2,I3,Rx)=xy(I1,I2,I3,Rx); 
+              x.reshape(R,Rx);
               xNew=x;
 
-	      // try to project the points x(I1,I2,I3)
+              // try to project the points x(I1,I2,I3)
 
-	      // **** should probably project onto the same Mapping that the the boundary points lie on *****
+              // **** should probably project onto the same Mapping that the the boundary points lie on *****
 
-	      for( int m=0; m<numberOfMappings; m++ )
-	      {
-		Mapping & map = mapInfo.mappingList[m].getMapping();
-		if( &map == this || 
+              for( int m=0; m<numberOfMappings; m++ )
+              {
+                Mapping & map = mapInfo.mappingList[m].getMapping();
+                if( &map == this || 
                     map.getRangeDimension()!=rangeDimension ||
                     map.getDomainDimension()!=domainDimension )
-		  continue;
-	      
-		for( int dirm=0; dirm<map.getDomainDimension(); dirm++ )
-		{
-		  for( int sidem=Start; sidem<=End; sidem++ )
-		  {
-		    if( map.getShare(sidem,dirm)==shareFlag && map.getBoundaryCondition(sidem,dirm)>0 &&
+                  continue;
+              
+                for( int dirm=0; dirm<map.getDomainDimension(); dirm++ )
+                {
+                  for( int sidem=Start; sidem<=End; sidem++ )
+                  {
+                    if( map.getShare(sidem,dirm)==shareFlag && map.getBoundaryCondition(sidem,dirm)>0 &&
                         intersects( map, side,axis,sidem,dirm,.1 ) )
-		    {
-		      // face (side,axis) of "this" shares a face and intersects with (sidem,dirm) of map
+                    {
+                      // face (side,axis) of "this" shares a face and intersects with (sidem,dirm) of map
                       if( TRUE || debug & 4 )
-  		        printf(" (side,axis,share)=(%i,%i,%i) (side2,dir)=(%i,%i) shares with "
+                        printf(" (side,axis,share)=(%i,%i,%i) (side2,dir)=(%i,%i) shares with "
                            "(sidem,dirm,map)=(%i,%i,%s)\n",
-			       side,axis,shareFlag,side2,dir,sidem,dirm,(const char*)map.getName(mappingName));
+                               side,axis,shareFlag,side2,dir,sidem,dirm,(const char*)map.getName(mappingName));
 
-		      r=-1.;
-		      map.inverseMap(x,r);
-	              const int dirmp1 = (dirm+1) % map.getDomainDimension(); // tangential direction
-	              const int dirmp2 = (dirm+2) % map.getDomainDimension(); // tangential direction
-   		      intArray mask;
+                      r=-1.;
+                      map.inverseMap(x,r);
+                      const int dirmp1 = (dirm+1) % map.getDomainDimension(); // tangential direction
+                      const int dirmp2 = (dirm+2) % map.getDomainDimension(); // tangential direction
+                      intArray mask;
                       if( domainDimension==2 )
-  		        mask=  fabs(r(R,dirmp1)-.5)<=.5;  // inside in the tangential direction
+                        mask=  fabs(r(R,dirmp1)-.5)<=.5;  // inside in the tangential direction
                       else
                         mask=  fabs(r(R,dirmp1)-.5)<=.5 && fabs(r(R,dirmp2)-.5)<=.5;
-		      
-		      int numOk=sum(mask);
-		      if( numOk > 0 ) 
-		      {
-			// ::display(x,"Here are ghost points x");
-			// ::display(r,"Here is r");
-		    
-			// inverse should be inside in the tangential directions
+                      
+                      int numOk=sum(mask);
+                      if( numOk > 0 ) 
+                      {
+                        // ::display(x,"Here are ghost points x");
+                        // ::display(r,"Here is r");
+                    
+                        // inverse should be inside in the tangential directions
 
-		        // choose the best possible answer from the list of mappings.
+                        // choose the best possible answer from the list of mappings.
                 
-		        // check the normal
+                        // check the normal
 
-		        // project onto the boundary of "map"
+                        // project onto the boundary of "map"
                         realArray rp(R,Rx),xp(R,Rx);
                         rp=r;
-			rp(R,dirm)=(real)sidem;
-			map.mapGrid(rp,xp);
+                        rp(R,dirm)=(real)sidem;
+                        map.mapGrid(rp,xp);
                         if( debug & 4 )
-			{
-			  for( int i=0; i<num; i++ )
-			  {
-			    if( mask(i) )
-			    {
-			      printf(" i=%i, point x=(%8.2e,%8.2e) projected to x=(%8.2e,%8.2e)"
-				     " (r=(%8.2e,%8.2e)->rp=(%8.2e,%8.2e))\n",
-				     i,x(i,0),x(i,1),xp(i,0),xp(i,1),r(i,0),r(i,1),rp(i,0),rp(i,1));
-			    }
-			  }
-			}
-			
-			where( mask && fabs(r(R,dirm)-rp(R,dirm))< drOpt )
-			{
-			  drOpt=fabs(r(R,dirm)-rp(R,dirm));
-			  for( int ax=0; ax<rangeDimension; ax++ )
-			    xNew(R,ax)=xp(R,ax);
-			}
-		      
-		      }
+                        {
+                          for( int i=0; i<num; i++ )
+                          {
+                            if( mask(i) )
+                            {
+                              printf(" i=%i, point x=(%8.2e,%8.2e) projected to x=(%8.2e,%8.2e)"
+                                     " (r=(%8.2e,%8.2e)->rp=(%8.2e,%8.2e))\n",
+                                     i,x(i,0),x(i,1),xp(i,0),xp(i,1),r(i,0),r(i,1),rp(i,0),rp(i,1));
+                            }
+                          }
+                        }
+                        
+                        where( mask && fabs(r(R,dirm)-rp(R,dirm))< drOpt )
+                        {
+                          drOpt=fabs(r(R,dirm)-rp(R,dirm));
+                          for( int ax=0; ax<rangeDimension; ax++ )
+                            xNew(R,ax)=xp(R,ax);
+                        }
                       
-		      // xy(I1,I2,I3,Rx)=x(I1,I2,I3,Rx);
-		      
-		    } // if share
-		  } // for sidem
-		} // for dirm
+                      }
+                      
+                      // xy(I1,I2,I3,Rx)=x(I1,I2,I3,Rx);
+                      
+                    } // if share
+                  } // for sidem
+                } // for dirm
 
-	      } // for m
+              } // for m
               numberProjected+=sum(drOpt<drMax);
               if( debug & 4 )
-	      {
-		printf("Points projected on (side,axis,name)=(%i,%i,%s) for edge (side2,dir)=(%i,%i)\n",
-		       side,axis,(const char*)getName(mappingName),side2,dir);
-		for( int i=0; i<num; i++ )
-		{
-		  if( drOpt(i)<drMax )
-		  {
-		    printf(" *final* i=%i, point x=(%8.2e,%8.2e) projected to x=(%8.2e,%8.2e) (drOpt=%8.2e)\n",
-			   i,x(i,0),x(i,1),xNew(i,0),xNew(i,1),drOpt(i));
-		  }
-		}
-	      }
-	      
-	      xNew-=x;  // xNew= dx
+              {
+                printf("Points projected on (side,axis,name)=(%i,%i,%s) for edge (side2,dir)=(%i,%i)\n",
+                       side,axis,(const char*)getName(mappingName),side2,dir);
+                for( int i=0; i<num; i++ )
+                {
+                  if( drOpt(i)<drMax )
+                  {
+                    printf(" *final* i=%i, point x=(%8.2e,%8.2e) projected to x=(%8.2e,%8.2e) (drOpt=%8.2e)\n",
+                           i,x(i,0),x(i,1),xNew(i,0),xNew(i,1),drOpt(i));
+                  }
+                }
+              }
+              
+              xNew-=x;  // xNew= dx
               xNew.reshape(I1,I2,I3,Rx);
               // xy(I1,I2,I3,Rx)+=xNew(I1,I2,I3,Rx);
-	      
+              
               // now adjust all points in the normal direction.
               // adjust points off the boundary by a smaller amount: use a factor delta
               // We should be careful that the grid points don't overlap each other, this might
               // happen if dx is larger than the grid spacing and we change delta too rapidly
               J1=I1, J2=I2, J3=I3;
               const real dr0=1./max(1,gridIndexRange(End,axis)-gridIndexRange(Start,axis));
-	      for( int i=dimension(Start,axis); i<=dimension(End,axis); i++ )
-	      {
-		Jv[axis]=i;
-		real deltar = (i-gridIndexRange(side,axis))*dr0; 
-		deltar = 1.- SQR(deltar);                        // delta=1 on the bndry, 0 on opposite bndry
+              for( int i=dimension(Start,axis); i<=dimension(End,axis); i++ )
+              {
+                Jv[axis]=i;
+                real deltar = (i-gridIndexRange(side,axis))*dr0; 
+                deltar = 1.- SQR(deltar);                        // delta=1 on the bndry, 0 on opposite bndry
                 deltar =max(0.,min(1.,deltar));
                 xy(J1,J2,J3,Rx)+=deltar*xNew;
               }
-	      
-	    } // for side2
-	  }
-	} // for dir
+              
+            } // for side2
+          }
+        } // for dir
 
       } // if bc > 0
     }  // end for side 
@@ -1611,8 +1611,8 @@ setMapping( Mapping & map )
       // evaluate function-periodic points for r>=1 at the periodic values so that
       // these values will be the same (?)
       if( rval>=1. && map.getIsPeriodic(axis)==Mapping::functionPeriodic )
-	rval = dr[axis]*(k - gridIndexRange(1,axis));
-	 
+        rval = dr[axis]*(k - gridIndexRange(1,axis));
+         
       r(J1,J2,J3,axis) = rval;
     } // end for
     Jv[axis] = Jaxis; // reset
@@ -1704,14 +1704,14 @@ setMapping( Mapping & map )
 //      if( domainDimension>1 )
 //      {
 //        for( i1=gridPoints.getBase(axis1); i1<=gridPoints.getBound(axis1); i1++ )
-//  	r(i1,R2,i3,1).seqAdd(-numberOfGhostLines[Start][axis2]*deltaR[axis2],deltaR[axis2]);
+//      r(i1,R2,i3,1).seqAdd(-numberOfGhostLines[Start][axis2]*deltaR[axis2],deltaR[axis2]);
 //      }
 //    }
 //    if( domainDimension>2 )
 //    {
 //      for( i2=gridPoints.getBase(axis2); i2<=gridPoints.getBound(axis2); i2++ )
 //        for( i1=gridPoints.getBase(axis1); i1<=gridPoints.getBound(axis1); i1++ )
-//  	r(i1,i2,R3,2).seqAdd(-numberOfGhostLines[Start][axis3]*deltaR[axis3),deltaR[axis3]);
+//      r(i1,i2,R3,2).seqAdd(-numberOfGhostLines[Start][axis3]*deltaR[axis3),deltaR[axis3]);
 //    }
 
   map.mapGrid(r,gridPoints);
@@ -1745,7 +1745,7 @@ setOrderOfInterpolation( const int order )
   if( order!=2 && order!=4 )
   {
     printf("DataPointMapping::setOrderOfInterpolation:ERROR: not implemented for orderOfInterpoaltion=%i\n",
-	   orderOfInterpolation);
+           orderOfInterpolation);
     return;
   }
   
@@ -2150,7 +2150,7 @@ specifyTopology(GenericGraphicsInterface & gi, GraphicsParameters & parameters )
       // printf("The c-grid matching tolerance is scaled by xBound=%9.2e\n",xBound);
       gi.inputString(answer,sPrintF(buff,"Enter the c-grid matching tolerance (current=%9.2e)",cGridTolerance));
       if( answer!="" )
-	sScanF(answer,"%e",&cGridTolerance);
+        sScanF(answer,"%e",&cGridTolerance);
     }
     else if( answer=="specify c-grid points manually" )
     {
@@ -2159,7 +2159,7 @@ specifyTopology(GenericGraphicsInterface & gi, GraphicsParameters & parameters )
       sScanF(answer,"%i %i",&cSide,&cAxis);
       gi.inputString(answer,sPrintF(buff,"Enter the index numbers of the trailing edge point"));
       if( answer!="" )
-	sScanF(answer,"%i %i",&index1,&index2);
+        sScanF(answer,"%i %i",&index1,&index2);
 
       plotPartialPeriodicPoints=TRUE;
     }
@@ -2181,49 +2181,49 @@ specifyTopology(GenericGraphicsInterface & gi, GraphicsParameters & parameters )
 
       for( int axis=0; axis<domainDimension; axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  if( getTopology(side,axis)==topologyIsPartiallyPeriodic )
-	  {
-	    const intArray & mask = topologyMask();
-	    const realArray & x = getGrid();
-	    Index I1,I2,I3;
-	    getBoundaryIndex(gridIndexRange,side,axis,I1,I2,I3);
+        for( int side=0; side<=1; side++ )
+        {
+          if( getTopology(side,axis)==topologyIsPartiallyPeriodic )
+          {
+            const intArray & mask = topologyMask();
+            const realArray & x = getGrid();
+            Index I1,I2,I3;
+            getBoundaryIndex(gridIndexRange,side,axis,I1,I2,I3);
 
-	    realArray points(I1,I2,I3,rangeDimension);
-	    Range Rx(0,rangeDimension-1);
-	      
-	    points=REAL_MAX;
-	    where( mask(I1,I2,I3)!=0 )
-	    {
-	      for( int dir=0; dir<rangeDimension; dir++ )
-		points(I1,I2,I3,dir)=x(I1,I2,I3,dir);
-	    }
-	      
-	    int numberOfPoints=I1.getLength()*I2.getLength()*I3.getLength();
-	    points.reshape(numberOfPoints,rangeDimension);
-	    realArray pt(numberOfPoints,3); pt=.1;  // raise up off 2d plot
-	    int j=0;
-	    for( int i=0; i<numberOfPoints; i++ )
-	    {
-	      if( points(i,0)<REAL_MAX )
-	      {
-		pt(j,Rx)=points(i,Rx);
-		j++;
-	      }
-	    }
-	    numberOfPoints=j;
-	    if( numberOfPoints>0 )
-	    {
-	      pt.resize(numberOfPoints,3);
+            realArray points(I1,I2,I3,rangeDimension);
+            Range Rx(0,rangeDimension-1);
+              
+            points=REAL_MAX;
+            where( mask(I1,I2,I3)!=0 )
+            {
+              for( int dir=0; dir<rangeDimension; dir++ )
+                points(I1,I2,I3,dir)=x(I1,I2,I3,dir);
+            }
+              
+            int numberOfPoints=I1.getLength()*I2.getLength()*I3.getLength();
+            points.reshape(numberOfPoints,rangeDimension);
+            realArray pt(numberOfPoints,3); pt=.1;  // raise up off 2d plot
+            int j=0;
+            for( int i=0; i<numberOfPoints; i++ )
+            {
+              if( points(i,0)<REAL_MAX )
+              {
+                pt(j,Rx)=points(i,Rx);
+                j++;
+              }
+            }
+            numberOfPoints=j;
+            if( numberOfPoints>0 )
+            {
+              pt.resize(numberOfPoints,3);
 
-	      parameters.set(GI_POINT_SIZE,(real)6.);  // size in pixels
+              parameters.set(GI_POINT_SIZE,(real)6.);  // size in pixels
 
-	      gi.plotPoints(pt,parameters);
-	    }
-	      
-	  }
-	}
+              gi.plotPoints(pt,parameters);
+            }
+              
+          }
+        }
       }
       parameters.set(GI_USE_PLOT_BOUNDS,FALSE); 
 
@@ -2278,9 +2278,9 @@ setTopologyMask(real cGridTolerance /* = -1. */ )
       getBoundaryIndex(gridIndexRange,side,axis,I1,I2,I3);
       if( max(fabs(x(I1.getBase(),I2.getBase(),i3,Rx)-x(I1.getBound(),I2.getBound(),i3,Rx))) < cGridTolerance*xBound )
       {
-	cAxis=axis;
+        cAxis=axis;
         cSide=side;
-	break;
+        break;
       }
     }
   }
@@ -2314,11 +2314,11 @@ setTopologyMask(real cGridTolerance /* = -1. */ )
       
       if( maxDiff < cGridTolerance*xBound )
       {
-	mask(i1a+i1,i2,i3)=1;
-	mask(i1b-i1,i2,i3)=1;
+        mask(i1a+i1,i2,i3)=1;
+        mask(i1b-i1,i2,i3)=1;
       }
       else
-	break;
+        break;
     }
   }
   else if( cAxis==axis1 )
@@ -2330,11 +2330,11 @@ setTopologyMask(real cGridTolerance /* = -1. */ )
       real maxDiff=max(fabs(x(i1,i2a+i2,i3,Rx)-x(i1,i2b-i2,i3,Rx)));
       if( maxDiff < cGridTolerance*xBound )
       {
-	mask(i1,i2a+i2,i3)=1;
-	mask(i1,i2b-i2,i3)=1;
+        mask(i1,i2a+i2,i3)=1;
+        mask(i1,i2b-i2,i3)=1;
       }
       else
-	break;
+        break;
     }
   }
   // mask.display("Here is the topology mask");
@@ -2504,7 +2504,7 @@ update( MappingInformation & mapInfo )
     {
       int returnValue=DataFormats::readPlot3d(*this);
       if( returnValue==0 )
-	mappingInitialized=TRUE;
+        mappingInitialized=TRUE;
 
       // gi.inputString(fileName,"Enter the file name to read");
       // newFileToRead=TRUE;
@@ -2517,8 +2517,8 @@ update( MappingInformation & mapInfo )
       if( line!="" ) sScanF( line,"%i",&orderOfInterpolation );
       if( orderOfInterpolation!=2 && orderOfInterpolation!=4 )
       {
-	printf("Sorry, invalid orderOfInterpolation=%i, only orders 2 or 4 are available.\n",orderOfInterpolation);
-	orderOfInterpolation=2;
+        printf("Sorry, invalid orderOfInterpolation=%i, only orders 2 or 4 are available.\n",orderOfInterpolation);
+        orderOfInterpolation=2;
       }
       
     }
@@ -2526,9 +2526,9 @@ update( MappingInformation & mapInfo )
     {
       printF("numberOfGhostLines[side][axis]=[%i,%i],[%i,%i],[%i,%i]\n"
              "(must be at least orderOfInterpolation/2=%i)\n",
-	     numberOfGhostPoints(0,0),numberOfGhostPoints(1,0),
-	     numberOfGhostPoints(0,1),numberOfGhostPoints(1,1),
-	     numberOfGhostPoints(0,2),numberOfGhostPoints(1,2),
+             numberOfGhostPoints(0,0),numberOfGhostPoints(1,0),
+             numberOfGhostPoints(0,1),numberOfGhostPoints(1,1),
+             numberOfGhostPoints(0,2),numberOfGhostPoints(1,2),
              orderOfInterpolation/2);
       gi.inputString(line,"Enter number of ghost lines for each face, 6 values");
       if( line!="" )
@@ -2536,15 +2536,15 @@ update( MappingInformation & mapInfo )
         IndexRangeType ngl;
         sScanF( line,"%i %i %i %i %i %i",
                 &ngl(0,0),&ngl(1,0),
-		&ngl(0,1),&ngl(1,1),
-		&ngl(0,2),&ngl(1,2));
+                &ngl(0,1),&ngl(1,1),
+                &ngl(0,2),&ngl(1,2));
         for( int axis=0; axis<3; axis++ )
-	  for( int side=0; side<=1; side++ )
-	    ngl(side,axis)=max(ngl(side,axis),orderOfInterpolation/2);
-	printf("numberOfGhostPoints(side,axis)=[%i,%i],[%i,%i],[%i,%i]\n",
-	       ngl(0,0),ngl(1,0),
-	       ngl(0,1),ngl(1,1),
-	       ngl(0,2),ngl(1,2));
+          for( int side=0; side<=1; side++ )
+            ngl(side,axis)=max(ngl(side,axis),orderOfInterpolation/2);
+        printf("numberOfGhostPoints(side,axis)=[%i,%i],[%i,%i],[%i,%i]\n",
+               ngl(0,0),ngl(1,0),
+               ngl(0,1),ngl(1,1),
+               ngl(0,2),ngl(1,2));
 
         setNumberOfGhostLines(ngl);
       }
@@ -2563,25 +2563,25 @@ update( MappingInformation & mapInfo )
       int offset[2][3]={0,0,0,0,0,0};
       sScanF( line,"%i %i %i %i %i %i",
                 &offset[0][0],&offset[1][0],
-		&offset[0][1],&offset[1][1],
-		&offset[0][2],&offset[1][2]);
+                &offset[0][1],&offset[1][1],
+                &offset[0][2],&offset[1][2]);
       
       for( int axis=0; axis<domainDimension; axis++ )
       {
-	dimension(0,axis)-=offset[0][axis];  // shift dimension so gridIndexRange(0,axis) remains zero
-	dimension(1,axis)-=offset[0][axis];  
-	// gridIndexRange(0,axis)+=offset[0][axis];
-	gridIndexRange(1,axis)+=-offset[1][axis]-offset[0][axis];
+        dimension(0,axis)-=offset[0][axis];  // shift dimension so gridIndexRange(0,axis) remains zero
+        dimension(1,axis)-=offset[0][axis];  
+        // gridIndexRange(0,axis)+=offset[0][axis];
+        gridIndexRange(1,axis)+=-offset[1][axis]-offset[0][axis];
 
 
         setGridDimensions(axis,gridIndexRange(1,axis)-gridIndexRange(0,axis)+1);
 
-	delta[axis]=gridIndexRange(End,axis)-gridIndexRange(Start,axis);
-	deltaByTwo[axis]=.5*max(1.,delta[axis]);
+        delta[axis]=gridIndexRange(End,axis)-gridIndexRange(Start,axis);
+        deltaByTwo[axis]=.5*max(1.,delta[axis]);
       }
       xy.reshape(Range(dimension(0,0),dimension(1,0)),
-		 Range(dimension(0,1),dimension(1,1)),
-		 Range(dimension(0,2),dimension(1,2)),xy.dimension(3));
+                 Range(dimension(0,1),dimension(1,1)),
+                 Range(dimension(0,2),dimension(1,2)),xy.dimension(3));
 
       printf("New values: gridIndexRange=[%i,%i]x[%i,%i]x[%i,%i] dimension=[%i,%i]x[%i,%i]x[%i,%i]\n",
              gridIndexRange(0,0),gridIndexRange(1,0),gridIndexRange(0,1),gridIndexRange(1,1),
@@ -2600,7 +2600,7 @@ update( MappingInformation & mapInfo )
       sScanF( line,"%i %i",&side,&axis);
       if( side>=0 && side<=1 && axis>=0 && axis<=1 )
       {
-	printf("Setting side=%i axis=%i to be a polar singularity\n",side,axis);
+        printf("Setting side=%i axis=%i to be a polar singularity\n",side,axis);
         setTypeOfCoordinateSingularity( side,axis,polarSingularity );
 
 //         printf(" ***INFO**** using old inverse since the mapping is singular (*fix* this Bill) \n");
@@ -2610,7 +2610,7 @@ update( MappingInformation & mapInfo )
       }
       else
       {
-	printf("Invalid values for side=%i or axis=%i. Nothing changed.\n",side,axis);
+        printf("Invalid values for side=%i or axis=%i. Nothing changed.\n",side,axis);
       }
       
     }
@@ -2624,20 +2624,20 @@ update( MappingInformation & mapInfo )
       if( line!="" ) sScanF(line,"%i %i ",&domainDimension,&rangeDimension);
       if( domainDimension<1 || domainDimension>3 )
       {
-	gi.outputString(sPrintF(buff,"Invalid domainDimension = %i",domainDimension));
-	domainDimension=max(1,min(3,domainDimension));
-	gi.outputString(sPrintF(buff,"setting to %i",domainDimension));
+        gi.outputString(sPrintF(buff,"Invalid domainDimension = %i",domainDimension));
+        domainDimension=max(1,min(3,domainDimension));
+        gi.outputString(sPrintF(buff,"setting to %i",domainDimension));
       }
       if( rangeDimension<domainDimension || rangeDimension>3 )
       {
-	gi.outputString(sPrintF(buff,"Invalid rangeDimension = %i",rangeDimension));
-	rangeDimension=max(domainDimension,min(3,rangeDimension));
-	gi.outputString(sPrintF(buff,"setting to %i",rangeDimension));
+        gi.outputString(sPrintF(buff,"Invalid rangeDimension = %i",rangeDimension));
+        rangeDimension=max(domainDimension,min(3,rangeDimension));
+        gi.outputString(sPrintF(buff,"setting to %i",rangeDimension));
       }
       gi.inputString(line,sPrintF(buff,"Enter the number of points in each direction: (%i integers)",domainDimension));
       if( line!="" )
       {
-	if( domainDimension==1 )
+        if( domainDimension==1 )
           sScanF(line,"%i ",&nx(0));
         else if( domainDimension==2 )
           sScanF(line,"%i %i ",&nx(0),&nx(1));
@@ -2684,30 +2684,30 @@ update( MappingInformation & mapInfo )
       for( int i=0; i<num; i++ )
       {
         if( &(mapInfo.mappingList[i].getMapping()) != this )
-	{
+        {
           menu2[j]=mapInfo.mappingList[i].getName(mappingName);
           j++;
-	}
+        }
       }
       menu2[j]="";   // null string terminates the menu
       for( ;; )
       {
-	int mapNumber = gi.getMenuItem(menu2,line);
+        int mapNumber = gi.getMenuItem(menu2,line);
         if( mapNumber<0 )
-	{
-	  printf("DataPointMapping::ERROR:unknown mapping to turn into a DataPointMapping!\n");
-	  gi.stopReadingCommandFile();
-	}
-	else if( mapInfo.mappingList[mapNumber].mapPointer==this )
-	{
-	  cout << "DataPointMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
-	  continue;
-	}
-	else
-	{
+        {
+          printf("DataPointMapping::ERROR:unknown mapping to turn into a DataPointMapping!\n");
+          gi.stopReadingCommandFile();
+        }
+        else if( mapInfo.mappingList[mapNumber].mapPointer==this )
+        {
+          cout << "DataPointMapping::ERROR: you cannot use this mapping, this would be recursive!\n";
+          continue;
+        }
+        else
+        {
           setMapping( *mapInfo.mappingList[mapNumber].mapPointer );
           break;
-	}
+        }
       }
       delete [] menu2;
     }
@@ -2729,7 +2729,7 @@ update( MappingInformation & mapInfo )
       const int mappingListStart=i;
       int j;
       for( j=0; j<numberOfMappings; j++ )
-	menu[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
+        menu[i++]=mapInfo.mappingList[j].getName(Mapping::mappingName);
 
       const int mappingListEnd=i-1;
       // add extra menu items
@@ -2747,33 +2747,33 @@ update( MappingInformation & mapInfo )
       MappingInformation mapInfoForProjection;
       for( ;; )
       {
-	int map = gi.getMenuItem(menu,answer,"project onto which mappings?");
-	if( map>=mappingListStart && map<=mappingListEnd )
-	{
-	  mapInfoForProjection.mappingList.addElement(mapInfo.mappingList[map-mappingListStart]);
+        int map = gi.getMenuItem(menu,answer,"project onto which mappings?");
+        if( map>=mappingListStart && map<=mappingListEnd )
+        {
+          mapInfoForProjection.mappingList.addElement(mapInfo.mappingList[map-mappingListStart]);
           numberChosen++;
-	}
-	else if( answer=="choose all" )
-	{
+        }
+        else if( answer=="choose all" )
+        {
           for( map=0; map<numberOfMappings; map++ )
             mapInfoForProjection.mappingList.addElement(mapInfo.mappingList[map]); 
           break;
-	}
-	else if( answer=="choose none" )
-	{
+        }
+        else if( answer=="choose none" )
+        {
           numberChosen=0;
-	  break;
-	}
-	else if( answer=="done" || answer=="exit" )
-	{
           break;
-	}
+        }
+        else if( answer=="done" || answer=="exit" )
+        {
+          break;
+        }
       }
       if( numberChosen>0 )
       {
-	for( int map=0; map<numberChosen; map++ )
-	  printf("project onto mapping %s\n",(const char*) mapInfoForProjection.mappingList[map].getName(mappingName));
-	  
+        for( int map=0; map<numberChosen; map++ )
+          printf("project onto mapping %s\n",(const char*) mapInfoForProjection.mappingList[map].getName(mappingName));
+          
         projectGhostPoints(mapInfoForProjection);
       }
       else if( answer!="choose none" )
@@ -2786,10 +2786,10 @@ update( MappingInformation & mapInfo )
       int sameDimensions =TRUE;
       for( int axis=0; axis<domainDimension; axis++ )
       {
-	sameDimensions= sameDimensions && 
-	  ( gridIndexRange(End,axis)-gridIndexRange(Start,axis) == getGridDimensions(axis)-1 );
-	if( !sameDimensions )
-	  break;
+        sameDimensions= sameDimensions && 
+          ( gridIndexRange(End,axis)-gridIndexRange(Start,axis) == getGridDimensions(axis)-1 );
+        if( !sameDimensions )
+          break;
       }
       if( !sameDimensions )
       {
@@ -2803,7 +2803,7 @@ update( MappingInformation & mapInfo )
       else
       {
         printf("DataPointMapping::INFO: data points already match the current grid\n");
-	
+        
       }
     }
     else if( answer=="change plot parameters" )
@@ -2846,22 +2846,22 @@ update( MappingInformation & mapInfo )
     
       for( ;; )
       {
-	if( getRangeDimension()==2 )
-	{
-	  printf("enter a point (x,y) to invert\n");
-	  cin >> x(0,0) >> x(0,1);
-	}
-	else
-	{
-	  printf("enter a point (x,y,z) to invert\n");
-	  cin >> x(0,0) >> x(0,1) >> x(0,2);
-	}
+        if( getRangeDimension()==2 )
+        {
+          printf("enter a point (x,y) to invert\n");
+          cin >> x(0,0) >> x(0,1);
+        }
+        else
+        {
+          printf("enter a point (x,y,z) to invert\n");
+          cin >> x(0,0) >> x(0,1) >> x(0,2);
+        }
       
-	// dpm.inverseMap(x,r,xr);
-	inverseMap(x,r);
-	map(r,x2);
-	printf(" x=(%6.2e,%6.2e,%6.2e) r=(%6.2e,%6.2e,%6.2e) map(r)=(%6.2e,%6.2e,%6.2e)\n",
-	       x(0,0),x(0,1),x(0,2),r(0,0),r(0,1),r(0,2), x2(0,0),x2(0,1),x2(0,2));
+        // dpm.inverseMap(x,r,xr);
+        inverseMap(x,r);
+        map(r,x2);
+        printf(" x=(%6.2e,%6.2e,%6.2e) r=(%6.2e,%6.2e,%6.2e) map(r)=(%6.2e,%6.2e,%6.2e)\n",
+               x(0,0),x(0,1),x(0,2),r(0,0),r(0,1),r(0,2), x2(0,0),x2(0,1),x2(0,2));
       }
     }
     else if( answer=="use robust inverse" )

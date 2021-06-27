@@ -1,0 +1,15 @@
+******************************************************
+******* Friday April 2, 2021
+
+
+GET CURVED PIPE FROM mp/cmd
+GET GRID from ogen
+
+ogen -noplot curvedPipeGrid -angle=90 -interp=e -factor=1
+ogen -noplot curvedPipeGrid -angle=90 -interp=e -factor=2
+
+explicit-TS
+cgmp -noplot curvedPipe.cmd -g=curvedPipeGrid90e1.order2.hdf -solver=best -tf=1 -tp=.1 -show=curvedPipeA.show -go=go
+
+implicit-TS
+cgmp curvedPipe.cmd -g=curvedPipeGrid90e1.order2.hdf -tp=.01 -ts=im -nu=.1 -kappa=.025 -solver=best -coupled=0 -nc=15 -debug=3 -go=halt

@@ -75,6 +75,16 @@ buildRunTimeDialog()
     realCompositeGridFunction & u = *pu;
 
     const int numberOfComponents = u.getComponentBound(0)-u.getComponentBase(0)+1;
+
+    printF("############## buildRunTimeDialog: numberOfComponents=%d ##########################\n",numberOfComponents);
+
+    // --- keep track of how many components are being plotted since this may change ---
+    if( !parameters.dbase.has_key("runTimeComponents") )
+      parameters.dbase.put<int>("runTimeComponents");
+
+    int & runTimeComponents = parameters.dbase.get<int>("runTimeComponents");
+    runTimeComponents = numberOfComponents;
+
     // create a new menu with options for choosing a component.
     aString *cmd = new aString[numberOfComponents+1];
     aString *label = new aString[numberOfComponents+1];
@@ -126,13 +136,13 @@ buildRunTimeDialog()
       textLabels[nt] = "plot iterations"; sPrintF(textStrings[nt], "%i",parameters.dbase.get<int >("plotIterations"));  nt++; 
     }
     if ( parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")!=Parameters::steadyStateNewton )
-      {
-	textLabels[nt] = "cfl";  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real >("cfl"));  nt++; 
-      }
+    {
+      textLabels[nt] = "cfl";  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real >("cfl"));  nt++; 
+    }
     else
-      {
-	textLabels[nt] = "implicit factor";  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real >("implicitFactor"));  nt++; 
-      }
+    {
+      textLabels[nt] = "implicit factor";  sPrintF(textStrings[nt], "%g",parameters.dbase.get<real >("implicitFactor"));  nt++; 
+    }
 
 
     textLabels[nt] = "debug";  sPrintF(textStrings[nt], "%i",parameters.dbase.get<int >("debug"));  nt++; 
@@ -309,17 +319,17 @@ buildRunTimeDialog()
     {
       menu[j]=menu0[i];
       if( menu[j]=="" )
-	break;
+        break;
       if( menu[j]==">choose a component" )
       {
-	chooseAComponentMenuItem=j;
-	for( int n=0; n<numberOfComponents; n++ )
-	{
-	  menu[++j]=u.getName(n);
-	  if( menu[j]=="" )
-	    menu[j]="unknown";
-	  
-	}
+        chooseAComponentMenuItem=j;
+        for( int n=0; n<numberOfComponents; n++ )
+        {
+          menu[++j]=u.getName(n);
+          if( menu[j]=="" )
+            menu[j]="unknown";
+          
+        }
       }
       j++;
     }
@@ -429,6 +439,33 @@ plot(const real & t,
 
   const int numberOfComponents = u.getComponentBound(0)-u.getComponentBase(0)+1;
 
+  int & runTimeComponents = parameters.dbase.get<int>("runTimeComponents");
+  if( runTimeComponents != numberOfComponents )
+  { 
+    // --- adjust the "plot component:" dialog for more or less components --- *wdh* April 20, 2021
+    // printF("\n @@@@@@@@@ plot: numberOfComponents=%d is DIFFERENT from runTimeComponents=%d @@@@@@@@\n\n",numberOfComponents,runTimeComponents);
+    runTimeComponents = numberOfComponents;
+
+    const int nc = numberOfComponents;
+    // create a new menu with options for choosing a component.
+    aString *cmd = new aString[nc+1];
+    aString *label = new aString[nc+1];
+    for( int n=0; n<nc; n++ )
+    {
+      label[n]=u.getName(n);
+      cmd[n]="plot:"+u.getName(n);
+    }
+    cmd[nc]="";
+    label[nc]="";
+      
+    int component;
+    psp.get(GI_COMPONENT_FOR_CONTOURS,component);      
+    dialog.changeOptionMenu("plot component:",cmd,label,component);
+    delete [] cmd;
+    delete [] label;
+
+  }
+
   if( movieFrame>=0   )
   { // save a ppm file as part of a movie.
     psp.set(GI_HARD_COPY_TYPE,GraphicsParameters::ppm);
@@ -459,23 +496,23 @@ plot(const real & t,
     {
       // Plot all the the things that the user has previously plotted
       // printF("plotObjects: itemsToPlot bits=[%i%i%i%i]\n",(itemsToPlot & 1),(itemsToPlot & 2),(itemsToPlot & 4),(itemsToPlot & 8));
-	  
+          
       psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
       if( itemsToPlot & 8 ) // plot this first since title is wrong in body force graphics parameters
       {
         // Plot body/boundary forcing regions and immersed boundaries. 
-	BodyForce::plotForcingRegions(ps, parameters.dbase, solution.cg, psp); 
+        BodyForce::plotForcingRegions(ps, parameters.dbase, solution.cg, psp); 
       }
       if( itemsToPlot & 1 )
-	PlotIt::plot(ps, solution.cg,psp);
+        PlotIt::plot(ps, solution.cg,psp);
       if( itemsToPlot & 2 )
-	PlotIt::contour(ps,u,psp);
+        PlotIt::contour(ps,u,psp);
       if( itemsToPlot & 4 )
-	PlotIt::streamLines(ps,u,psp);
+        PlotIt::streamLines(ps,u,psp);
 
       if( parameters.dbase.get<bool >("plotStructures") )
       {
-	parameters.dbase.get<MovingGrids >("movingGrids").plot(ps,solution,psp);
+        parameters.dbase.get<MovingGrids >("movingGrids").plot(ps,solution,psp);
       }
     }
 
@@ -503,7 +540,7 @@ plot(const real & t,
       
       if( answer=="break" )
       {
-	programHalted=true;
+        programHalted=true;
 
       }
     }
@@ -517,7 +554,7 @@ plot(const real & t,
     {
       if( plotOption==3 )
       {
-	setSensitivity( dialog,true );
+        setSensitivity( dialog,true );
       }
       
       plotOption=1; // reset movie mode if set.
@@ -539,559 +576,559 @@ plot(const real & t,
       for(;;)
       {
         real time1=getCPU();
-	
-	if( plotObjects )
-	{
-	  // Plot all the the things that the user has previously plotted
-	  // printF("plotObjects: itemsToPlot bits=[%i%i%i%i]\n",(itemsToPlot & 1),(itemsToPlot & 2),(itemsToPlot & 4),(itemsToPlot & 8));
-	  
+        
+        if( plotObjects )
+        {
+          // Plot all the the things that the user has previously plotted
+          // printF("plotObjects: itemsToPlot bits=[%i%i%i%i]\n",(itemsToPlot & 1),(itemsToPlot & 2),(itemsToPlot & 4),(itemsToPlot & 8));
+          
           ps.erase();
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
-	  if( itemsToPlot & 8 ) 
-	  {
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+          if( itemsToPlot & 8 ) 
+          {
             // plot this first since title is wrong in body force graphics parameters
-	    BodyForce::plotForcingRegions(ps, parameters.dbase, solution.cg, psp); 
-	  }
-	  if( itemsToPlot & 1 )
-	    PlotIt::plot(ps, solution.cg,psp);
-	  if( itemsToPlot & 2 )
-	    PlotIt::contour(ps,u,psp);
-	  if( itemsToPlot & 4 )
-	    PlotIt::streamLines(ps,u,psp);
+            BodyForce::plotForcingRegions(ps, parameters.dbase, solution.cg, psp); 
+          }
+          if( itemsToPlot & 1 )
+            PlotIt::plot(ps, solution.cg,psp);
+          if( itemsToPlot & 2 )
+            PlotIt::contour(ps,u,psp);
+          if( itemsToPlot & 4 )
+            PlotIt::streamLines(ps,u,psp);
 
           if( parameters.dbase.get<bool >("plotStructures") )
-	  {
-	    parameters.dbase.get<MovingGrids >("movingGrids").plot(ps,solution,psp);
-	  }
+          {
+            parameters.dbase.get<MovingGrids >("movingGrids").plot(ps,solution,psp);
+          }
 
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
           plotObjects=false;
-	}
+        }
 
 
-	int menuItem = ps.getAnswer(answer,"choose answer");       // query for an input 
+        int menuItem = ps.getAnswer(answer,"choose answer");       // query for an input 
 
         parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForWaiting"))+=getCPU()-time1;  // do not count waiting in timing
 
         if( answer=="" )
-	{ // *wdh* 110319 
-	  printF("DomainSolver::plot:WARNING: answer is null!\n");
-	}
-	else if( answer=="contour" )
-	{
+        { // *wdh* 110319 
+          printF("DomainSolver::plot:WARNING: answer is null!\n");
+        }
+        else if( answer=="contour" )
+        {
           if( itemsToPlot & 2 )
             ps.erase();
 
           PlotIt::contour(ps,u,psp);
 
-	  if( psp.getObjectWasPlotted() ) 
-	    itemsToPlot |= 2;
+          if( psp.getObjectWasPlotted() ) 
+            itemsToPlot |= 2;
           else
             itemsToPlot &= ~2;
 
-	  plotObjects=true; // replot objects
-	  
+          plotObjects=true; // replot objects
+          
           int component;
-	  psp.get(GI_COMPONENT_FOR_CONTOURS,component);
+          psp.get(GI_COMPONENT_FOR_CONTOURS,component);
           dialog.getOptionMenu("plot component:").setCurrentChoice(component);
 
-	}
-	else if( menuItem > chooseAComponentMenuItem && 
+        }
+        else if( menuItem > chooseAComponentMenuItem && 
                  menuItem <= chooseAComponentMenuItem+numberOfComponents )
-	{
+        {
           // plot a new component
-	  int component=menuItem-chooseAComponentMenuItem-1;
+          int component=menuItem-chooseAComponentMenuItem-1;
  
           dialog.getOptionMenu("plot component:").setCurrentChoice(component);
 
           if( itemsToPlot & 2 )
-	  {
-   	    plotObjects=true; // replot objects
-	  }
-	}
+          {
+            plotObjects=true; // replot objects
+          }
+        }
         else if( answer=="grid" )
-	{
+        {
 
           PlotIt::plot(ps,solution.cg,psp);
 
-	  if( psp.getObjectWasPlotted() ) 
-	    itemsToPlot |= 1;
+          if( psp.getObjectWasPlotted() ) 
+            itemsToPlot |= 1;
           else
             itemsToPlot &= ~1;
 
-	  plotObjects=true; // replot objects
-	}
-	else if( answer=="streamlines" )
-	{
+          plotObjects=true; // replot objects
+        }
+        else if( answer=="streamlines" )
+        {
           PlotIt::streamLines(ps,u,psp);
-	  if( psp.getObjectWasPlotted() ) 
-	    itemsToPlot |= 4;
+          if( psp.getObjectWasPlotted() ) 
+            itemsToPlot |= 4;
           else
             itemsToPlot &= ~4;
 
           plotObjects=true; // replot objects
-	}
+        }
         else if( answer=="plot distance to walls" )
-	{
+        {
           if( parameters.dbase.get<realCompositeGridFunction* >("pDistanceToBoundary")!=NULL )
-	  {
-	    ps.erase();
-	    psp.set(GI_TOP_LABEL,"distance to walls");
-	    PlotIt::contour(ps, *parameters.dbase.get<realCompositeGridFunction* >("pDistanceToBoundary"), psp);
+          {
+            ps.erase();
+            psp.set(GI_TOP_LABEL,"distance to walls");
+            PlotIt::contour(ps, *parameters.dbase.get<realCompositeGridFunction* >("pDistanceToBoundary"), psp);
 
-	    plotObjects=true; // replot objects
+            plotObjects=true; // replot objects
 
-	  }
-	  else
-	  {
-	    printF("Sorry: the distance to the boundary has not been computed yet.\n");
-	  }
-	}
-	else if( answer=="plot parallel dist." )
-	{
-	  ps.erase();
-	  psp.set(GI_TOP_LABEL,"Parallel distribution");
-	  PlotIt::plotParallelGridDistribution(solution.cg,ps,psp);
-	  ps.erase();
+          }
+          else
+          {
+            printF("Sorry: the distance to the boundary has not been computed yet.\n");
+          }
+        }
+        else if( answer=="plot parallel dist." )
+        {
+          ps.erase();
+          psp.set(GI_TOP_LABEL,"Parallel distribution");
+          PlotIt::plotParallelGridDistribution(solution.cg,ps,psp);
+          ps.erase();
 
-	  plotObjects=true; // replot objects
+          plotObjects=true; // replot objects
 
-	}
+        }
         else if( answer=="forcing regions plot options" )
-	{
+        {
           // change options for plotting body/boundary forcing regions
-	  ps.erase();
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+          ps.erase();
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
           // Plot body/boundary forcing regions and immersed boundaries. 
           BodyForce::plotForcingRegions(ps, parameters.dbase,solution.cg,psp);
-	  psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-	  plotObjects=true; // replot objects
-	}
-	
+          psp.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+          plotObjects=true; // replot objects
+        }
+        
 
         else if( answer=="plot material properties" )
-	{
+        {
           // --- plot material properties ---
           realCompositeGridFunction matPropValues;
 
-	  int rt = getMaterialProperties( solution, matPropValues );
-	  if( rt==-1 )
-	  {
-	    printF("Sorry: there are no variable material properties defined.\n");
-	    continue;
-	  }
-	  
-	  ps.erase();
-	  psp.set(GI_TOP_LABEL,"Material properties");
+          int rt = getMaterialProperties( solution, matPropValues );
+          if( rt==-1 )
+          {
+            printF("Sorry: there are no variable material properties defined.\n");
+            continue;
+          }
+          
+          ps.erase();
+          psp.set(GI_TOP_LABEL,"Material properties");
 
-	  PlotIt::contour(ps,matPropValues, psp);
+          PlotIt::contour(ps,matPropValues, psp);
 
-	  plotObjects=true; // replot objects
-	}
+          plotObjects=true; // replot objects
+        }
         else if( answer=="plot body force mask" )
-	{
-	  if( !parameters.dbase.get<bool >("turnOnBodyForcing") )
-	  {
-	    printF("plot body force mask: there are no body forcings defined!\n");
-	    continue;
-	  }
+        {
+          if( !parameters.dbase.get<bool >("turnOnBodyForcing") )
+          {
+            printF("plot body force mask: there are no body forcings defined!\n");
+            continue;
+          }
 
-	  if( !parameters.dbase.has_key("bodyForceMaskGridFunction") )
-	  {
-	    printF("plot body force mask: there is no body force mask defined!\n");
-	    continue;
-	  }
-	  realCompositeGridFunction & bodyForceMask = 
+          if( !parameters.dbase.has_key("bodyForceMaskGridFunction") )
+          {
+            printF("plot body force mask: there is no body force mask defined!\n");
+            continue;
+          }
+          realCompositeGridFunction & bodyForceMask = 
                           *parameters.dbase.get<realCompositeGridFunction*>("bodyForceMaskGridFunction");
 
           // The body force mask iso surface has its own graphics parameter:
           if( !parameters.dbase.has_key("bodyForceMaskGraphicsParameters") )
-	  {
+          {
             parameters.dbase.put<GraphicsParameters>("bodyForceMaskGraphicsParameters");
-	  }
-	      
+          }
+              
           GraphicsParameters & gp = parameters.dbase.get<GraphicsParameters>("bodyForceMaskGraphicsParameters");
-	  
+          
 
-	  ps.erase();
-	  gp.set(GI_TOP_LABEL,"Body force mask");
-
-	  PlotIt::contour(ps,bodyForceMask, gp);
-
-	  plotObjects=true; // replot objects
-	}
-
- 	else if( answer=="erase" )
-	{
           ps.erase();
-	  itemsToPlot=0;
+          gp.set(GI_TOP_LABEL,"Body force mask");
+
+          PlotIt::contour(ps,bodyForceMask, gp);
+
+          plotObjects=true; // replot objects
+        }
+
+        else if( answer=="erase" )
+        {
+          ps.erase();
+          itemsToPlot=0;
 
           itemsToPlot |= 8;  // turn on body force regions 
-	}
+        }
         else if( answer=="save a restart file" )
-	{
-	  ps.inputFileName(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
-					  (const char *)parameters.dbase.get<aString >("restartFileName")));
-	  if( answer!="" )
-	    parameters.dbase.get<aString >("restartFileName")=answer;
+        {
+          ps.inputFileName(answer,sPrintF(buff,"Enter the restart file name (default value=%s)",
+                                          (const char *)parameters.dbase.get<aString >("restartFileName")));
+          if( answer!="" )
+            parameters.dbase.get<aString >("restartFileName")=answer;
 
-	  saveRestartFile(solution,parameters.dbase.get<aString >("restartFileName"));
-	}
+          saveRestartFile(solution,parameters.dbase.get<aString >("restartFileName"));
+        }
         else if( answer=="save restart file" ) // new way, do not prompt for restart file name
-	{
-	  saveRestartFile(solution,parameters.dbase.get<aString >("restartFileName"));
-	}
+        {
+          saveRestartFile(solution,parameters.dbase.get<aString >("restartFileName"));
+        }
         else if( answer=="output to a file" )
-	{
-	  FileOutput fileOutput;
-	  fileOutput.update(u,ps);
-	}
-	else if( answer=="output periodically to a file" || answer=="output periodically to a file..." )
-	{
+        {
+          FileOutput fileOutput;
+          fileOutput.update(u,ps);
+        }
+        else if( answer=="output periodically to a file" || answer=="output periodically to a file..." )
+        {
           if( parameters.dbase.get<int >("numberOfOutputFiles")>=Parameters::maximumNumberOfOutputFiles )
-	  {
-	    printF("ERROR: too many files open\n");
-	    continue;
-	  }
+          {
+            printF("ERROR: too many files open\n");
+            continue;
+          }
           parameters.dbase.get<ArraySimpleFixed<int,Parameters::maximumNumberOfOutputFiles,1,1,1> >("fileOutputFrequency")[parameters.dbase.get<int >("numberOfOutputFiles")]=1;
           ps.inputString(answer,"Save to the file every how many steps? (default=1)");
           sScanF(answer,"%i",&parameters.dbase.get<ArraySimpleFixed<int,Parameters::maximumNumberOfOutputFiles,1,1,1> >("fileOutputFrequency")[parameters.dbase.get<int >("numberOfOutputFiles")]);
-	  
+          
           FileOutput & fileOutput = * new FileOutput;
-	  parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[parameters.dbase.get<int >("numberOfOutputFiles")] = &fileOutput;
-	  parameters.dbase.get<int >("numberOfOutputFiles")++;
+          parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[parameters.dbase.get<int >("numberOfOutputFiles")] = &fileOutput;
+          parameters.dbase.get<int >("numberOfOutputFiles")++;
           
           fileOutput.update(u,ps);
 
-	  
-	}
-	else if( answer=="close an output file" )
-	{
+          
+        }
+        else if( answer=="close an output file" )
+        {
           aString *fileMenu = new aString [parameters.dbase.get<int >("numberOfOutputFiles")+2];
           int n;
-	  for( n=0; n<parameters.dbase.get<int >("numberOfOutputFiles"); n++ )
-	  {
-	    fileMenu[n]=parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n]->getFileName();
-	  }
+          for( n=0; n<parameters.dbase.get<int >("numberOfOutputFiles"); n++ )
+          {
+            fileMenu[n]=parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n]->getFileName();
+          }
           fileMenu[parameters.dbase.get<int >("numberOfOutputFiles")]="none";
           fileMenu[parameters.dbase.get<int >("numberOfOutputFiles")+1]="";
-	  int fileChosen = ps.getMenuItem(fileMenu,answer,"Choose a file to close");
-	  if( fileChosen>=0 && fileChosen<parameters.dbase.get<int >("numberOfOutputFiles") )
-	  {
+          int fileChosen = ps.getMenuItem(fileMenu,answer,"Choose a file to close");
+          if( fileChosen>=0 && fileChosen<parameters.dbase.get<int >("numberOfOutputFiles") )
+          {
             printF("close file %s\n",(const char*)fileMenu[fileChosen]);
-	    delete parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[fileChosen];
+            delete parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[fileChosen];
             parameters.dbase.get<int >("numberOfOutputFiles")--;
-	    for( n=fileChosen; n<parameters.dbase.get<int >("numberOfOutputFiles"); n++ )
-	      parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n]=parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n+1];
-	    parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[parameters.dbase.get<int >("numberOfOutputFiles")]=NULL;
-	  }
-	}
-	else if( answer=="file output" )
-	{
+            for( n=fileChosen; n<parameters.dbase.get<int >("numberOfOutputFiles"); n++ )
+              parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n]=parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[n+1];
+            parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[parameters.dbase.get<int >("numberOfOutputFiles")]=NULL;
+          }
+        }
+        else if( answer=="file output" )
+        {
           fileOutput(ps,u);  // old way
-	}
-	else if( answer=="continue" )
-	{
-	  if( !parameters.isSteadyStateSolver() )
-	  {
-	    if( t >= tFinal-dt/10. )
-	    {
-	      printF("WARNING: t=tFinal. Choose `finish' if you really want to end\n");
-	    }
-	    else
-	      break;
-	  }
-	  else
-	  {
-            if( parameters.dbase.get<int >("globalStepNumber")+1>=parameters.dbase.get<int >("maxIterations") )
-	    {
-	      printF("WARNING: %i steps (maxIterations=%i) have been taken. Choose `finish' if you really want to end\n",
-                parameters.dbase.get<int >("globalStepNumber")+1,parameters.dbase.get<int >("maxIterations") );
-	    }
-	    else
+        }
+        else if( answer=="continue" )
+        {
+          if( !parameters.isSteadyStateSolver() )
+          {
+            if( t >= tFinal-dt/10. )
+            {
+              printF("WARNING: t=tFinal. Choose `finish' if you really want to end\n");
+            }
+            else
               break;
-	  }
-	  
- 	}
-	else if( answer=="save current grid to a file" )
-	{
-	  aString gridFileName="cgGrid.hdf", gridName="currentGrid";
-	  printF("Saving the current grid in the file %s\n",(const char*)gridFileName);
-	  printF("You can use ogen to re-generate this grid using the commands: \n"
-		 "ogen\ngenerate an overlapping grid\n read in an old grid\n  %s\n  reset grid"
-		 "\n display intermediate results\n compute overlap\n",
-		 (const char*)gridFileName); 
-	  Ogen::saveGridToAFile( solution.cg, gridFileName,gridName );
-	}
-	else if( answer=="movie mode" )
-	{
+          }
+          else
+          {
+            if( parameters.dbase.get<int >("globalStepNumber")+1>=parameters.dbase.get<int >("maxIterations") )
+            {
+              printF("WARNING: %i steps (maxIterations=%i) have been taken. Choose `finish' if you really want to end\n",
+                parameters.dbase.get<int >("globalStepNumber")+1,parameters.dbase.get<int >("maxIterations") );
+            }
+            else
+              break;
+          }
+          
+        }
+        else if( answer=="save current grid to a file" )
+        {
+          aString gridFileName="cgGrid.hdf", gridName="currentGrid";
+          printF("Saving the current grid in the file %s\n",(const char*)gridFileName);
+          printF("You can use ogen to re-generate this grid using the commands: \n"
+                 "ogen\ngenerate an overlapping grid\n read in an old grid\n  %s\n  reset grid"
+                 "\n display intermediate results\n compute overlap\n",
+                 (const char*)gridFileName); 
+          Ogen::saveGridToAFile( solution.cg, gridFileName,gridName );
+        }
+        else if( answer=="movie mode" )
+        {
           plotOption= 3;  // don't wait
 
-  	  setSensitivity( dialog,false );
+          setSensitivity( dialog,false );
           break;
- 	}
+        }
         else if( answer=="movie and save" )
-	{
-	  ps.inputString(answer,"Enter basic name for the ppm files (default=plot)");
-	  if( answer !="" && answer!=" ")
-	    movieFileName=answer;
+        {
+          ps.inputString(answer,"Enter basic name for the ppm files (default=plot)");
+          if( answer !="" && answer!=" ")
+            movieFileName=answer;
           else
-	    movieFileName="plot";
+            movieFileName="plot";
           ps.outputString(sPrintF(buff,"pictures will be named %s0.ppm, %s1.ppm, ...",
             (const char*)movieFileName,(const char*)movieFileName));
-	  movieFrame=0;
+          movieFrame=0;
           plotOption=3;  // don't wait
 
-  	  setSensitivity( dialog,false );
+          setSensitivity( dialog,false );
           break;
-	}
+        }
         else if( answer=="change the grid" || answer=="change the grid..." )
-	{
+        {
           addGrids();
 
-	  getAugmentedSolution(solution,v);  /// recompute augmented solution
+          getAugmentedSolution(solution,v);  /// recompute augmented solution
 
-	  plotObjects=true; // replot objects
-	}
-	else if( answer=="turn on adaptive grids" )
-	{
-	  parameters.dbase.get<bool >("adaptiveGridProblem")=true;
-	  printF("Using adaptive mesh refinement.\n");
-	}
-	else if( answer=="turn off adaptive grids" )
-	{
-	  parameters.dbase.get<bool >("adaptiveGridProblem")=false;
-	  printF("Do NOT use adaptive mesh refinement.\n");
-	}
+          plotObjects=true; // replot objects
+        }
+        else if( answer=="turn on adaptive grids" )
+        {
+          parameters.dbase.get<bool >("adaptiveGridProblem")=true;
+          printF("Using adaptive mesh refinement.\n");
+        }
+        else if( answer=="turn off adaptive grids" )
+        {
+          parameters.dbase.get<bool >("adaptiveGridProblem")=false;
+          printF("Do NOT use adaptive mesh refinement.\n");
+        }
         else if( adaptiveGridDialog.getTextValue(answer,"error threshold","%e",parameters.dbase.get<real >("errorThreshold")) )
-	{
-	  printF(" Setting errorThreshold=%9.3e\n",parameters.dbase.get<real >("errorThreshold"));
-	}
+        {
+          printF(" Setting errorThreshold=%9.3e\n",parameters.dbase.get<real >("errorThreshold"));
+        }
         else if( adaptiveGridDialog.getTextValue(answer,"regrid frequency","%i",parameters.dbase.get<int >("amrRegridFrequency")) )
-	{
-	  printF(" Setting amrGridFrequency=%i\n",parameters.dbase.get<int >("amrRegridFrequency"));
-	}
+        {
+          printF(" Setting amrGridFrequency=%i\n",parameters.dbase.get<int >("amrRegridFrequency"));
+        }
         else if( answer=="show file options" || answer=="show file options..." )
-	{
+        {
            parameters.updateShowFile();
-	}
-	else if( answer=="finish" )
-	{
+        }
+        else if( answer=="finish" )
+        {
           tFinal=t;
           parameters.dbase.get<int >("maxIterations")=parameters.dbase.get<int >("globalStepNumber")+1;
-	  
+          
           returnValue=1;
           break;
- 	}
-	else if( answer=="set final time" )
-	{
+        }
+        else if( answer=="set final time" )
+        {
           ps.inputString(answer,sPrintF(buff,"Enter the final time (current=%e)",tFinal));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e",&tFinal);
-	    printF("New tFinal=%e \n",tFinal);
-	  }
- 	}
-	else if( answer=="set plot interval" )
-	{
+          if( answer!="" )
+          {
+            sScanF(answer,"%e",&tFinal);
+            printF("New tFinal=%e \n",tFinal);
+          }
+        }
+        else if( answer=="set plot interval" )
+        {
           real & tPrint = parameters.dbase.get<real >("tPrint");
           ps.inputString(answer,sPrintF(buff,"Enter plot interval (current=%e)",tPrint));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e",&tPrint);
-	    printF("New plot interval=%e \n",tPrint);
-	  }
- 	}
-	else if( answer=="debug" )
-	{
-	  ps.inputString(answer,sPrintF(buff,"Enter debug (default value=%i)",parameters.dbase.get<int >("debug")));
-	  if( answer!="" )
-	    sScanF(answer,"%i",&parameters.dbase.get<int >("debug"));
-	  cout << " debug=" << parameters.dbase.get<int >("debug") << endl;
-	}
+          if( answer!="" )
+          {
+            sScanF(answer,"%e",&tPrint);
+            printF("New plot interval=%e \n",tPrint);
+          }
+        }
+        else if( answer=="debug" )
+        {
+          ps.inputString(answer,sPrintF(buff,"Enter debug (default value=%i)",parameters.dbase.get<int >("debug")));
+          if( answer!="" )
+            sScanF(answer,"%i",&parameters.dbase.get<int >("debug"));
+          cout << " debug=" << parameters.dbase.get<int >("debug") << endl;
+        }
         else if( len=answer.matches("final time") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("tFinal"));
+        {
+          sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("tFinal"));
           dialog.setTextLabel("final time",sPrintF(answer,"%g", parameters.dbase.get<real >("tFinal"))); 
-	}
+        }
         else if( len=answer.matches("times to plot") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("tPrint"));
+        {
+          sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("tPrint"));
           dialog.setTextLabel("times to plot",sPrintF(answer,"%g", parameters.dbase.get<real >("tPrint"))); 
-	}
+        }
         else if( len=answer.matches("max iterations") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("maxIterations"));
+        {
+          sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("maxIterations"));
           dialog.setTextLabel("max iterations",sPrintF(answer,"%i", parameters.dbase.get<int >("maxIterations"))); 
-	}
+        }
         else if( len=answer.matches("plot iterations") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("plotIterations"));
+        {
+          sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("plotIterations"));
           dialog.setTextLabel("plot iterations",sPrintF(answer,"%i", parameters.dbase.get<int >("plotIterations"))); 
-	}
+        }
         else if( len=answer.matches("cfl") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("cfl"));
+        {
+          sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("cfl"));
           dialog.setTextLabel("cfl",sPrintF(answer,"%g", parameters.dbase.get<real >("cfl"))); 
-	}
+        }
         else if( len=answer.matches("implicit factor") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("implicitFactor"));
+        {
+          sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("implicitFactor"));
           dialog.setTextLabel("implicit factor",sPrintF(answer,"%g", parameters.dbase.get<real >("implicitFactor"))); 
-	}
+        }
         else if( len=answer.matches("debug") )
-	{
-	  sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("debug"));
+        {
+          sScanF(answer(len,answer.length()-1),"%i",&parameters.dbase.get<int >("debug"));
           dialog.setTextLabel("debug",sPrintF(answer,"%i", parameters.dbase.get<int >("debug"))); 
-	}
-	else if( len=answer.matches("plot:") )
-	{
+        }
+        else if( len=answer.matches("plot:") )
+        {
           // plot a new component
           aString name = answer(len,answer.length()-1);
           int component=-1;
-	  for( int n=0; n<numberOfComponents; n++ )
-	  {
-	    if( name==u.getName(n) )
-	    {
-	      component=n;
-	      break;
-	    }
-	  }
+          for( int n=0; n<numberOfComponents; n++ )
+          {
+            if( name==u.getName(n) )
+            {
+              component=n;
+              break;
+            }
+          }
           if( component==-1 )
-	  {
+          {
             printF("ERROR: unknown component name =[%s]\n",(const char*)name);
-	    component=0;
-	  }
+            component=0;
+          }
           dialog.getOptionMenu(0).setCurrentChoice(component);
-	  psp.set(GI_COMPONENT_FOR_CONTOURS,component);
+          psp.set(GI_COMPONENT_FOR_CONTOURS,component);
 
           if( itemsToPlot & 2 )
-	  {
-	    plotObjects=true;
-	  }
-	}
-	else if( answer=="adaptive grids..." )
-	{
+          {
+            plotObjects=true;
+          }
+        }
+        else if( answer=="adaptive grids..." )
+        {
           adaptiveGridDialog.showSibling();
-	}
+        }
         else if( answer=="close adaptive grid dialog" )
-	{
+        {
           adaptiveGridDialog.hideSibling();
-	}
-	else if( answer=="file output..." )
-	{
+        }
+        else if( answer=="file output..." )
+        {
           fileOutputDialog.showSibling();
-	}
+        }
         else if( answer=="close file output dialog" )
-	{
+        {
           fileOutputDialog.hideSibling();
-	}
+        }
         else if( adaptiveGridDialog.getToggleValue(answer,"use adaptive grids",parameters.dbase.get<bool >("adaptiveGridProblem")) )
-	{
+        {
           if( parameters.dbase.get<bool >("adaptiveGridProblem") )
-    	    printF("Using adaptive mesh refinement.\n");
+            printF("Using adaptive mesh refinement.\n");
           else
-    	    printF("Not using adaptive mesh refinement.\n");
-	}
-	else if( len=answer.matches("error threshold") )
-	{
-	  ps.outputString("The error threshold should be in the range (0,1). ");
-	  sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("errorThreshold"));
+            printF("Not using adaptive mesh refinement.\n");
+        }
+        else if( len=answer.matches("error threshold") )
+        {
+          ps.outputString("The error threshold should be in the range (0,1). ");
+          sScanF(answer(len,answer.length()-1),"%e",&parameters.dbase.get<real >("errorThreshold"));
           adaptiveGridDialog.setTextLabel(0,sPrintF(answer,"%g", parameters.dbase.get<real >("errorThreshold")));
 
-	  printF(" Setting errorThreshold=%9.3e\n",parameters.dbase.get<real >("errorThreshold"));
-	}
-	else if( answer=="pde parameters..." )
-	{
-	  pdeDialog.showSibling();
-	}
-	else if( answer=="close pde options" )
-	{
-	  pdeDialog.hideSibling();  // pop timeStepping
-	}
-	else if( parameters.setPdeParameters(gf[current].cg,answer,&pdeDialog)==0 )
-	{
-	  printF("Answer was found in setPdeParameters\n");
-	}
-	else if( answer=="time stepping params..." || answer=="time stepping parameters..." || 
+          printF(" Setting errorThreshold=%9.3e\n",parameters.dbase.get<real >("errorThreshold"));
+        }
+        else if( answer=="pde parameters..." )
+        {
+          pdeDialog.showSibling();
+        }
+        else if( answer=="close pde options" )
+        {
+          pdeDialog.hideSibling();  // pop timeStepping
+        }
+        else if( parameters.setPdeParameters(gf[current].cg,answer,&pdeDialog)==0 )
+        {
+          printF("Answer was found in setPdeParameters\n");
+        }
+        else if( answer=="time stepping params..." || answer=="time stepping parameters..." || 
                  answer=="time stepping parameters" )
-	{
-	  timeSteppingDialog.showSibling();
-	}
-	else if( answer=="close time stepping" )
-	{
-	  timeSteppingDialog.hideSibling();  // pop timeStepping
-	}
-	else if( getTimeSteppingOption(answer,timeSteppingDialog ) )
-	{
-	  printF("plot: answer=%s found in getTimeSteppingOption\n",(const char*)answer);
-	}
+        {
+          timeSteppingDialog.showSibling();
+        }
+        else if( answer=="close time stepping" )
+        {
+          timeSteppingDialog.hideSibling();  // pop timeStepping
+        }
+        else if( getTimeSteppingOption(answer,timeSteppingDialog ) )
+        {
+          printF("plot: answer=%s found in getTimeSteppingOption\n",(const char*)answer);
+        }
 
-// 	else if( answer=="solver parameters..." )
-// 	{
-// 	  solverDialog.showSibling();
-// 	}
-// 	else if( answer=="close solver options" )
-// 	{
-// 	  solverDialog.hideSibling();  // pop timeStepping
-// 	}
-// 	else if( setSolverParameters(answer,&solverDialog)==0 )
-// 	{
-// 	  printF("Answer was found in setSolverParameters\n");
-// 	}
+//      else if( answer=="solver parameters..." )
+//      {
+//        solverDialog.showSibling();
+//      }
+//      else if( answer=="close solver options" )
+//      {
+//        solverDialog.hideSibling();  // pop timeStepping
+//      }
+//      else if( setSolverParameters(answer,&solverDialog)==0 )
+//      {
+//        printF("Answer was found in setSolverParameters\n");
+//      }
 
-	else if( answer=="general options..." )
-	{
-	  generalOptionsDialog.showSibling();
-	}
-	else if( answer=="close general options" )
-	{
-	  generalOptionsDialog.hideSibling(); 
-	}
-	else if( getGeneralOption(answer,generalOptionsDialog ) )
-	{
-	  printF("Answer=%s found in getGeneralOption\n",(const char*)answer);
-	}
+        else if( answer=="general options..." )
+        {
+          generalOptionsDialog.showSibling();
+        }
+        else if( answer=="close general options" )
+        {
+          generalOptionsDialog.hideSibling(); 
+        }
+        else if( getGeneralOption(answer,generalOptionsDialog ) )
+        {
+          printF("Answer=%s found in getGeneralOption\n",(const char*)answer);
+        }
 
-	else if( answer=="plot options..." )
-	{
-	  plotOptionsDialog.showSibling();
-	}
-	else if( answer=="close plot options" )
-	{
-	  plotOptionsDialog.hideSibling(); 
-	}
-	else if( getPlotOption(answer,plotOptionsDialog ) )
-	{
-	  printF("Answer=%s found in getPlotOption\n",(const char*)answer);
-	}
+        else if( answer=="plot options..." )
+        {
+          plotOptionsDialog.showSibling();
+        }
+        else if( answer=="close plot options" )
+        {
+          plotOptionsDialog.hideSibling(); 
+        }
+        else if( getPlotOption(answer,plotOptionsDialog ) )
+        {
+          printF("Answer=%s found in getPlotOption\n",(const char*)answer);
+        }
 
-	else if( answer=="moving grid options..." )
-	{
-	  movingGridOptionsDialog.showSibling();
-	}
-	else if( answer=="close moving grid options" )
-	{
-	  movingGridOptionsDialog.hideSibling(); 
-	}
-	else if( getMovingGridOption(answer,movingGridOptionsDialog ) )
-	{
-	  printF("Answer=%s found in getMovingGridOption\n",(const char*)answer);
-	}
+        else if( answer=="moving grid options..." )
+        {
+          movingGridOptionsDialog.showSibling();
+        }
+        else if( answer=="close moving grid options" )
+        {
+          movingGridOptionsDialog.hideSibling(); 
+        }
+        else if( getMovingGridOption(answer,movingGridOptionsDialog ) )
+        {
+          printF("Answer=%s found in getMovingGridOption\n",(const char*)answer);
+        }
 
-	else if( len=answer.matches("use local time stepping") )
-	{
-	  sScanF(&answer[len],"%i",&parameters.dbase.get<int >("useLocalTimeStepping"));
-	  dialog.setToggleState("use local time stepping",parameters.dbase.get<int >("useLocalTimeStepping"));      
-	}
+        else if( len=answer.matches("use local time stepping") )
+        {
+          sScanF(&answer[len],"%i",&parameters.dbase.get<int >("useLocalTimeStepping"));
+          dialog.setToggleState("use local time stepping",parameters.dbase.get<int >("useLocalTimeStepping"));      
+        }
         else if( answer=="break" )
-	{
-	}
+        {
+        }
         else
-	{
-	  printF("DomainSolver::plot: unknown response=[%s]\n",(const char*)answer);
+        {
+          printF("DomainSolver::plot: unknown response=[%s]\n",(const char*)answer);
           ps.stopReadingCommandFile();
-	}
+        }
       }
     }
   }

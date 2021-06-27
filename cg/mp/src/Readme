@@ -72,10 +72,15 @@ setParametersInteractively.C:
    setParametersInteractively: 
        --> setup parameters for each domain
        --> initialize interfaces
-   setup: output header info
+   setup: 
 
 
 solve.C:
  solve() : main routine to advance and plot the solution
  printStatistics : output final stats
+
+ writeParameterSummary.C  
+    output header info
+
+
 

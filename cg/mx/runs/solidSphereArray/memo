@@ -1,4 +1,113 @@
 
+
+*********************************************
+*************** Wed May 5, 2021
+
+RUN ELLIPSOID ORDER=4 again for Qing
+
+SHOW FILE BUG: FIX ME: 
+Choosing solution 4
+--SFR-- getFrame: solution 4 found in file 0.
+--SFR-- getFrame:ERROR solution 5 NOT found in file 0 (from list).
+Error occured in file ShowFileReader.C, function getFrame, line 827.
+ERROR -- this should not happen
+Overture::abort: I am now going to purposely abort so that you can get a traceback from a debugger
+
+
+--- G16: Todo
+make ellipsoidGrid1Order4G16
+make runEllipsoid1Order4G16
+
+plotStuff plotSolution.cmd -show=oneSolidEllipsoidMLAOrder4G16.show -name=oneSolidEllipsoidMLAOrder4G16 -y1=0 -y2=0 -z1=0 -solution=21
+
+--- G8: OK 
+make ellipsoidGrid1Order4G8
+make runEllipsoid1Order4G8
+
+plotStuff plotSolution.cmd -show=oneSolidEllipsoidMLAOrder4G8.show -name=oneSolidEllipsoidMLAOrder4G8 -y1=0 -y2=0 -z1=0 -solution=21
+
+--- G4: OK
+make ellipsoidGrid1Order4G4
+make runEllipsoid1Order4G4
+
+plotStuff plotSolution.cmd -show=oneSolidEllipsoidMLAOrder4G4 -name=oneSolidEllipsoidMLAOrder4G4 -y1=0 -y2=0 -z1=0 -solution=21
+
+
+
+*********************************************
+*************** Fri April 30, 2021
+
+
+check ellipsoid for Qing 
+
+
+++++++++++++++++++++ ONE MLA ELLIPSOID ++++++++++++++++++++++++++++++++++++++++
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ORDER =4 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,
+
+1) GRID G16 : note: use nrExtra=6
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=4 -per=npp -rFactor=.7 -nrExtra=6 -orthographicPatchParameter=.7 -interp=e -numGhost=3 -factor=16
+
+(2) RUN G16 
+setsid $cgmx -noplot mxScript -g=1SolidEllipsoidsGride16.order4.ng3.hdf -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=rbcNonLocal -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.1 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -show=oneSolidEllpsoidMLAO4G16.show -go=go > oneSolidEllpsoidMLAO4G16.out 
+
+
+1) GRID G8 : nrExtra=5 OK  (nrExtra=4 not ok)
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=4 -per=npp -rFactor=.7 -nrExtra=5 -orthographicPatchParameter=.7 -interp=e -numGhost=3 -factor=8
+
+(2) RUN G8 running .... looks ok
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGride8.order4.ng3.hdf -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=rbcNonLocal -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.05 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h  -go=og
+
+
+
+(1) GRID G4 OK. 
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=4 -per=npp -rFactor=.7 -nrExtra=4 -orthographicPatchParameter=.7 -interp=e -numGhost=3 -factor=4 
+
+(2) OK till t=3 
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGride4.order4.ng3.hdf -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=rbcNonLocal -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.05 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h  -go=og
+
+OK till t=3 (ABCEM2)
+$cgmx -noplot mxScript $cgmx -noplot mxScript -g=1SolidEllipsoidsGride4.order4.ng3.hdf -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.05 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h  -go=og
+
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ORDER=2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+(1) GRID G16 
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -interp=e -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=16
+
+(2) Run G16 ok
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGride16.order2 -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -cfl=.5 -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.1 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -go=og
+
+(1) GRID G8
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -interp=e -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=8
+
+(2) Run G8 running .... OK
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGride8.order2 -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.1 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4  -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -go=og
+
+
+(1) GRID G4
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -interp=e -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7 -factor=4
+
+(2) Run G4 : OK 
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGride4.order2 -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround  -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.1 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4  -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -go=og
+
+
+(1) GRID G2 
+ogen -noplot solidEllipsoidArrayGrid -prefix=1SolidEllipsoidsGrid -nsx=1 -nsy=1 -nsz=1 -configFile=solidEllipsoidArrayConfig3d.h -order=2 -per=npp -interp=i -factor=2  -rFactor=.65 -nrExtra=3 -orthographicPatchParameter=.7
+
+(2) Run -- trouble at 1.9 -- P gets large -- maybe a nonlinear time -step issue --> reduce cfl
+CFL=.5 OK 
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGridi2.order2 -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -cfl=.5 -rbc=abcEM2 -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.1 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -go=og
+
+TRY nlrbc -- NO 
+$cgmx -noplot mxScript -g=1SolidEllipsoidsGridi2.order2 -domainBaseName=ellipsoid -numBodies=1 -dm=gdm -nm=mla -materialFile=ellipsoidMlaMaterials.h -backGround=backGround -rbc=rbcNonLocal -kx=.5 -eps0=1 -eps1=2 -useSosupDissipation=1 -tf=3 -tp=.05 -ic=gp -x0=-1.0 -beta=120 -flushFrequency=4 -yContour=0 -zContour=0 -extraCommandsEnd=plotSpheres.h -go=og
+
+
+
+
 *********************************************
 *************** Sat March 20,  2021
 

@@ -131,10 +131,13 @@ buildGrids: tube1.order4.hdf square16.order4.hdf cici1.order4.hdf box16.order4.h
             square20.order4.ng3.hdf square20.order6.ng4.hdf \
             solidSphereInABoxe2.order2.hdf solidSphereInABoxe2.order4.ng3.hdf square20.order2.hdf \
             nonSquare20.order2.hdf nonSquare20.order4.ng3.hdf box1.order2.hdf nonBox1.order2.hdf \
+            twoSquaresInterfacee1.order2.hdf \
             twoSquaresInterfacee1.order4.ng3.hdf twoSquaresInterfacee2.order4.ng3.hdf \
+            twoNonSquaresInterfacee1.order2.hdf \
             twoNonSquaresInterfacee1.order4.ng3.hdf twoNonSquaresInterfacee2.order4.ng3.hdf \
-            twoBoxesInterfacee1.order4.ng3.hdf twoBoxesInterfacee2.order4.ng3.hdf \
-            twoNonBoxesInterfacee1.order4.ng3.hdf twoNonBoxesInterfacee2.order4.ng3.hdf 
+            twoBoxesInterfacee1.order2.hdf twoBoxesInterfacee1.order4.ng3.hdf twoBoxesInterfacee2.order4.ng3.hdf \
+            twoNonBoxesInterfacee1.order4.ng3.hdf twoNonBoxesInterfacee2.order4.ng3.hdf \
+            twoNonBoxesInterfacee1.order2.hdf
 	touch buildGrids
 
 

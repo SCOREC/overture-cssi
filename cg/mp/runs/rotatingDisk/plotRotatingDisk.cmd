@@ -8,8 +8,10 @@
 #
 # -- revisit : June 16, 2017: 
 #   plotStuff plotRotatingDisk -show=rotatingDisk4a.show
+# -- revisit : April 6, 2021
+#   plotStuff plotRotatingDisk -show=rotatingDiskSVKG4.show -solution=6 -name=rotatingDiskSVK_sNorm_p_t0p5
 #
-$show="rotatingDisk4.show"; $name="rotatingDisk4"; 
+$show="rotatingDisk4.show"; $name="rotatingDisk4"; $solution=1; $name="rotatingDisk"; 
 $sc="stressNorm"; $fc="p"; # component names
 * ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "show=s"=>\$show, "name=s"=>\$name,"solution=i"=>\$solution );
@@ -42,6 +44,14 @@ contour
   # min max .5 1.0001 
  exit
 # 
+pause
+DISPLAY COLOUR BAR:0 0
+DISPLAY AXES:0 0
+set view:0 -0.00598171 -0.0691154 0 1.10155 1 0 0 0 1 0 0 0 1
+solution: $solution
+$plotName = $name . ".ps";
+hardcopy file name:0 $plotName
+hardcopy save:0
 
 
 DISPLAY COLOUR BAR:0 0

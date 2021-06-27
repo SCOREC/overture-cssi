@@ -1,0 +1,263 @@
+\subsection{Overture global variables.}
+ 
+\newlength{\OvertureIncludeArgIndent}
+ 
+  The Overture class contains global variables that can be used as default arguments
+  to functions. For example, {\tt Overture::nullRealArray() }, can be used as a default
+  argument for a {\tt RealArray}. These instances of classes are accessed as function calls
+  as opposed to building static global variables. Initially the later approach was taken
+  but his caused difficulties since the loader would build the classes in some unknown order.
+
+\begin{description}
+\item[{\bf floatSerialArray \& nullFloatArray():}] 
+\item[{\bf doubleSerialArray \& nullDoubleArray():}] 
+\item[{\bf RealArray \& nullRealArray():}] 
+\item[{\bf intSerialArray \& nullIntArray():}] 
+	 
+\item[{\bf floatDistributedArray \& nullFloatDistributedArray():}] 
+\item[{\bf doubleDistributedArray \& nullDoubleDistributedArray():}] 
+\item[{\bf RealDistributedArray \& nullRealDistributedArray():}] 
+\item[{\bf IntegerDistributedArray \& nullIntegerDistributedArray():}] 
+	 
+\item[{\bf MappingParameters \& nullMappingParameters():}] 
+	 
+\item[{\bf floatMappedGridFunction \& nullFloatMappedGridFunction():}] 
+\item[{\bf doubleMappedGridFunction \& nullDoubleMappedGridFunction():}] 
+\item[{\bf realMappedGridFunction \& nullRealMappedGridFunction():}] 
+\item[{\bf intMappedGridFunction \& nullIntMappedGridFunction():}] 
+	 
+\item[{\bf floatGridCollectionFunction \& nullFloatGridCollectionFunction():}] 
+\item[{\bf realGridCollectionFunction \& nullRealGridCollectionFunction():}] 
+\item[{\bf doubleGridCollectionFunction \& nullDoubleGridCollectionFunction():}] 
+\item[{\bf intGridCollectionFunction \& nullIntGridCollectionFunction():}] 
+	 
+\item[{\bf BoundaryConditionParameters \& defaultBoundaryConditionParameters():}] 
+\item[{\bf GraphicsParameters \& defaultGraphicsParameters():}] 
+
+\end{description}
+\subsection{start}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OvertureIncludeArgIndent}{start(}%
+start(int \& argc, char **\&argv)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Overture initialization function. Call this routine before calling any Overture functions.
+
+\item[{\bf NOTES:}] 
+    In parallel the value of argc and the values in argv will be sent to all processors.
+   Thus argc and argv will be changed on all processors except processor 0. 
+ 
+ In parallel call 
+     ParallelUtility::broadCastArgsCleanup(argc,argv);
+ to delete the argv arrays created by the parallel broad-cast
+
+\end{description}
+\subsection{finish}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OvertureIncludeArgIndent}{finish(}%
+finish()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Overture cleanup function. Call this routine when you are done using Overture.
+\end{description}
+\subsection{getAbortOption}
+ 
+\begin{flushleft} \textbf{%
+AbortEnum  \\ 
+\settowidth{\OvertureIncludeArgIndent}{getAbortOption(}%
+getAbortOption()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Return the current abort option.
+ \begin{verbatim}
+    enum AbortEnum
+    {
+      abortOnAbort,
+      throwErrorOnAbort
+    };
+ \end{verbatim}
+\end{description}
+\subsection{setAbortOption}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{setAbortOption(}%
+setAbortOption( AbortEnum action )
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Specify the action to take when the Overture::abort() function is called.
+\end{description}
+\subsection{abort}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{abort(}%
+abort()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Abort the program or throw an error depending on the value of getAbortOption
+\end{description}
+\subsection{abort}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{abort(}%
+abort(const aString \& message)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Abort the program or throw an error depending on the value of getAbortOption
+\item[{\bf message (input) :}]  print this message.
+\end{description}
+\subsection{getGraphicsInterface}
+ 
+\begin{flushleft} \textbf{%
+GenericGraphicsInterface*  \\ 
+\settowidth{\OvertureIncludeArgIndent}{getGraphicsInterface(}%
+getGraphicsInterface(const aString \& windowTitle/*="Your Slogan Here"*/, const bool initialize/*=true*/,\\ 
+\hspace{\OvertureIncludeArgIndent}int argc/* = 0*/, char *argv[] /*=NULL*/)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Return a pointer to the one and only graphics interface. If the pointer is null,
+   a new graphics interface will be built.
+\end{description}
+\subsection{setGraphicsInterface}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{setGraphicsInterface(}%
+setGraphicsInterface( GenericGraphicsInterface *ps)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Set the default graphics interface. This is normally called by the GenericGraphicsInterface constructor,
+ there is no need for a typical user to call this function.
+\end{description}
+\subsection{getMappingList}
+ 
+\begin{flushleft} \textbf{%
+ListOfMappingRC*  \\ 
+\settowidth{\OvertureIncludeArgIndent}{getMappingList(}%
+getMappingList()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Return a pointer to the default list of mappings. This pointer may be NULL.
+\end{description}
+\subsection{setMappingList}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{setMappingList(}%
+setMappingList(ListOfMappingRC *list)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Set the default list of mappings.
+\end{description}
+\subsection{setDefaultGraphicsParameters}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{setDefaultGraphicsParameters(}%
+setDefaultGraphicsParameters( GraphicsParameters *gp  =NULL)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Set the default graphics parameters. By default reset the graphics parameters to
+ the standard one.
+
+\end{description}
+\subsection{openDebugFile}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OvertureIncludeArgIndent}{openDebugFile(}%
+openDebugFile()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+    Open the file Overture::debugFile for writing debugging info to.
+  On a serial machine the file is named "overture.debug"
+  On a parallel machine the file on processor 0 is named "overture.debug"
+  while the file on processor X is named "overtureX.debug"
+\end{description}
+\subsection{checkMemoryUsage}
+ 
+\begin{flushleft} \textbf{%
+real  \\ 
+\settowidth{\OvertureIncludeArgIndent}{checkMemoryUsage(}%
+checkMemoryUsage(const aString \& label, FILE *file  =stdout)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Check the current memory usage in Mega-bytes and print a message if the memory use
+  has increased by 10 percent. You must first call turnOnMemoryChecking(true) for this
+  function to be turned on.
+
+\item[{\bf label (input) :}]  use this label on message
+\item[{\bf file (input):}]  output messages to this file. If NULL, output no message.
+\item[{\bf Return value:}]  current memory use (Mb).
+ 
+\end{description}
+\subsection{getMaximumMemoryUsage}
+ 
+\begin{flushleft} \textbf{%
+real  \\ 
+\settowidth{\OvertureIncludeArgIndent}{getMaximumMemoryUsage(}%
+getMaximumMemoryUsage()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Return the maximum memory use recorded by calls to checkMemoryUsage.
+ 
+\item[{\bf Return value:}]  maximum memory use detected (Mb).
+ 
+\end{description}
+\subsection{checkMemoryUsage}
+ 
+\begin{flushleft} \textbf{%
+real  \\ 
+\settowidth{\OvertureIncludeArgIndent}{printMemoryUsage(}%
+printMemoryUsage(const aString \& label, FILE *file  =stdout)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Display the current memory usage.
+
+\item[{\bf label (input) :}]  use this label on message
+\item[{\bf file (input):}]  output messages to this file. If NULL, output no message.
+ 
+\end{description}
+\subsection{incrementReferenceCountForPETSc}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OvertureIncludeArgIndent}{incrementReferenceCountForPETSc(}%
+incrementReferenceCountForPETSc()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Increment the reference count for objects that use PETSc.
+\end{description}
+\subsection{decrementReferenceCountForPETSc}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OvertureIncludeArgIndent}{decrementReferenceCountForPETSc(}%
+decrementReferenceCountForPETSc()
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+   Decrement the reference count for objects that use PETSc.
+\end{description}

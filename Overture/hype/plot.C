@@ -34,9 +34,9 @@ tetVolume6(real *p1, real*p2, real *p3, real *p4 )
   // (p2-p1)x(p3-p1) points in the direction of p4 ( p1,p2,p3 are counter clockwise viewed from p4 )
   // 6 vol = (p4-p1) . ( (p2-p1)x(p3-p1) )
   return  ( (p4[0]-p1[0])*( (p2[1]-p1[1])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[1]-p1[1]) ) -
-	    (p4[1]-p1[1])*( (p2[0]-p1[0])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[0]-p1[0]) ) +
-	    (p4[2]-p1[2])*( (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0]) ) ) ;
-	  
+            (p4[1]-p1[1])*( (p2[0]-p1[0])*(p3[2]-p1[2]) - (p2[2]-p1[2])*(p3[0]-p1[0]) ) +
+            (p4[2]-p1[2])*( (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0]) ) ) ;
+          
 }
 
 inline 
@@ -78,12 +78,12 @@ drawReferenceSurface(GenericGraphicsInterface & gi,
     referenceSurfaceParameters.set(GI_TOP_LABEL,getName(mappingName)+" (reference surface)");
   else
     referenceSurfaceParameters.set(GI_TOP_LABEL,"" );
-	
+        
 //        referenceSurfaceParameters.set(GI_SURFACE_OFFSET, initialOffset);  
   referenceSurfaceParameters.set(GI_SURFACE_OFFSET,surfaceOffset);  
   // referenceSurfaceParameters.get(GI_SURFACE_OFFSET, offSet);  
   // printF("hypeUpdate: offset for reference surface: %f\n", offSet);
-	
+        
 
   referenceSurfaceParameters.set(GI_MAPPING_COLOUR,referenceSurfaceColour);
   // in 2D draw thicker lines:
@@ -101,7 +101,7 @@ drawReferenceSurface(GenericGraphicsInterface & gi,
     CompositeTopology & compositeTopology = *cs.getCompositeTopology();
     UnstructuredMapping *uns=compositeTopology.getTriangulation();
     assert( uns!=NULL );
-	  
+          
 
     // *wdh* Always plot original surface in case we need to pick points
 
@@ -136,12 +136,12 @@ drawReferenceSurface(GenericGraphicsInterface & gi,
       // printF(" edge=%i status=%i\n",e,int(compositeTopology.getEdgeCurveStatus(e)));
       // if( int(compositeTopology.getEdgeCurveStatus(e)) <= 2 )
       Mapping & edge = compositeTopology.getEdgeCurve(e);
-	    
-	    
+            
+            
       if( compositeTopology.getEdgeCurveStatus(e)==CompositeTopology::edgeCurveIsMerged )
-	PlotIt::plot(gi,compositeTopology.getEdgeCurve(e),referenceSurfaceParameters);
+        PlotIt::plot(gi,compositeTopology.getEdgeCurve(e),referenceSurfaceParameters);
     }
-	  
+          
 
 
   }
@@ -177,13 +177,13 @@ drawReferenceSurfaceEdges(GenericGraphicsInterface & gi,
     {
       for( int axis=0; axis<domainDimension-1; axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  ReductionMapping edge(*surface,axis,(real)side);
+        for( int side=0; side<=1; side++ )
+        {
+          ReductionMapping edge(*surface,axis,(real)side);
 
-	  parameters.set(GI_MAPPING_COLOUR,boundaryColour[side+2*axis]);
-	  PlotIt::plot(gi,edge,parameters);
-	}
+          parameters.set(GI_MAPPING_COLOUR,boundaryColour[side+2*axis]);
+          PlotIt::plot(gi,edge,parameters);
+        }
       }
     }
     parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
@@ -194,7 +194,7 @@ drawReferenceSurfaceEdges(GenericGraphicsInterface & gi,
 int HyperbolicMapping::
 drawHyperbolicGrid(GenericGraphicsInterface & gi, 
                    GraphicsParameters & parameters, 
-		   bool plotNonPhysicalBoundaries,
+                   bool plotNonPhysicalBoundaries,
                    const real & initialOffset, 
                    const aString & hyperbolicMappingColour )
 // ==============================================================================================
@@ -213,16 +213,16 @@ drawHyperbolicGrid(GenericGraphicsInterface & gi,
     parameters.set(GI_MAPPING_COLOUR,hyperbolicMappingColour);
     parameters.set(GI_PLOT_BLOCK_BOUNDARIES,false);
     parameters.set(GI_PLOT_MAPPING_EDGES,false);
-	
+        
     aString name;
     parameters.set(GI_TOP_LABEL,sPrintF(name,"%s: vs=%i eps=%4.3f imp=%3.2f",
-					(const char*)getName(mappingName),
-					numberOfVolumeSmoothingIterations,
-					uniformDissipationCoefficient,
-					implicitCoefficient));
+                                        (const char*)getName(mappingName),
+                                        numberOfVolumeSmoothingIterations,
+                                        uniformDissipationCoefficient,
+                                        implicitCoefficient));
     parameters.set(GI_TOP_LABEL_SUB_1,sPrintF("cs=%3.2f uw=%3.2f eq=%3.2f",
-					      curvatureSpeedCoefficient,
-					      upwindDissipationCoefficient,equidistributionWeight));
+                                              curvatureSpeedCoefficient,
+                                              upwindDissipationCoefficient,equidistributionWeight));
 
     //        parameters.set(GI_SURFACE_OFFSET,(real)3.);  // offset the surface so we can see it better
     parameters.set(GI_SURFACE_OFFSET,(real).5);  // offset the surface so we can see it better
@@ -262,7 +262,7 @@ drawHyperbolicGrid(GenericGraphicsInterface & gi,
       ::getIndex(indexRange,I1,I2,I3,numberOfGhostLinesToPlot); 
 
       for( int axis=0; axis<3; axis++ )
-	Iv[axis]=Range(max(x.getBase(axis),Iv[axis].getBase()),
+        Iv[axis]=Range(max(x.getBase(axis),Iv[axis].getBase()),
                        min(x.getBound(axis),Iv[axis].getBound())-1);  // only compute at cell centres.
 
       if( domainDimension==2 )
@@ -278,13 +278,13 @@ drawHyperbolicGrid(GenericGraphicsInterface & gi,
 
       printF("--HYP-- check for negative cells [%i,%i][%i,%i][%i,%i] numGhost=%i orientation=%f\n",
              I1.getBase(),I1.getBound(),
-	     I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),numberOfGhostLinesToPlot,orientation);
+             I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),numberOfGhostLinesToPlot,orientation);
      
       // ::display(x,"x","%5.2f ");
       int numberOfBadCells=0, numberOfLinesToPlot=0;
       if( domainDimension==2 && rangeDimension==2 )
       {
-	// --- check the signed area of each triangle forming the cell
+        // --- check the signed area of each triangle forming the cell
         //       
         //     x4 ----------- x3
         //        |\        |
@@ -294,69 +294,69 @@ drawHyperbolicGrid(GenericGraphicsInterface & gi,
         //        |________\|
         //       x1        x2
         int j=0; // counts lines to plot on bad cells
-	int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
-	  real x1[2]={x(i1  ,i2  ,i3  ,0),x(i1  ,i2  ,i3  ,1)};  // 
-	  real x2[2]={x(i1+1,i2  ,i3  ,0),x(i1+1,i2  ,i3  ,1)};  // 
-	  real x3[2]={x(i1+1,i2  ,i3+1,0),x(i1+1,i2  ,i3+1,1)};  // 
-	  real x4[2]={x(i1  ,i2  ,i3+1,0),x(i1  ,i2  ,i3+1,1)};  // 
+        int i1,i2,i3;
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
+          real x1[2]={x(i1  ,i2  ,i3  ,0),x(i1  ,i2  ,i3  ,1)};  // 
+          real x2[2]={x(i1+1,i2  ,i3  ,0),x(i1+1,i2  ,i3  ,1)};  // 
+          real x3[2]={x(i1+1,i2  ,i3+1,0),x(i1+1,i2  ,i3+1,1)};  // 
+          real x4[2]={x(i1  ,i2  ,i3+1,0),x(i1  ,i2  ,i3+1,1)};  // 
 
           // Triangle [x1,x2,x4] 
           real area1 =  (x2[0]-x1[0])*(x4[1]-x1[1]) - (x2[1]-x1[1])*(x4[0]-x1[0]);
 
           // Triangle [x2,x3,x4] 
-	  // real area2 =  (x2b[0]-x1b[0])*(x3b[1]-x1b[1]) - (x2b[1]-x1b[1])*(x3b[0]-x1b[0]);
+          // real area2 =  (x2b[0]-x1b[0])*(x3b[1]-x1b[1]) - (x2b[1]-x1b[1])*(x3b[0]-x1b[0]);
           real area2 =  (x3[0]-x2[0])*(x4[1]-x2[1]) - (x3[1]-x2[1])*(x4[0]-x2[0]);
 
-	  // printF("--HYP-- (i1,i3)=(%i,%i) area1=%9.2e area2=%9.2e\n",i1,i3,area1,area2);
+          // printF("--HYP-- (i1,i3)=(%i,%i) area1=%9.2e area2=%9.2e\n",i1,i3,area1,area2);
 
-	  real signForArea=-orientation;// WHY???
-	  
+          real signForArea=-orientation;// WHY???
+          
 
-	  if( area1*signForArea <=0. || area2*signForArea<=0.  )
-	  {
-	    if( area1*area2 <=0. )
-	    {
-	      printF("--HYP-- *bad quad* bow-tie found: (i1,i3)=(%i,%i):"
-		     " signed areas of triangles forming quad: area1=%9.2e area2=%9.2e have OPPOSITE sign.\n",
-		     i1,i3,area1,area2);
-	    }
-	    else
-	    {
-	      printF("--HYP-- *bad quad* negative quad: (i1,i3)=(%i,%i):"
-		     " areas of triangles forming quad: area1=%9.2e area2=%9.2e are NEGATIVE.\n",
-		     i1,i3,area1*signForArea,area2*signForArea);
-	    }
-	    
-	    for( int axis=0; axis<=1; axis++ )
-	    {
-	      line(j  ,axis,0)=x1[axis];   // start
-	      line(j  ,axis,1)=x2[axis];   // end 
+          if( area1*signForArea <=0. || area2*signForArea<=0.  )
+          {
+            if( area1*area2 <=0. )
+            {
+              printF("--HYP-- *bad quad* bow-tie found: (i1,i3)=(%i,%i):"
+                     " signed areas of triangles forming quad: area1=%9.2e area2=%9.2e have OPPOSITE sign.\n",
+                     i1,i3,area1,area2);
+            }
+            else
+            {
+              printF("--HYP-- *bad quad* negative quad: (i1,i3)=(%i,%i):"
+                     " areas of triangles forming quad: area1=%9.2e area2=%9.2e are NEGATIVE.\n",
+                     i1,i3,area1*signForArea,area2*signForArea);
+            }
+            
+            for( int axis=0; axis<=1; axis++ )
+            {
+              line(j  ,axis,0)=x1[axis];   // start
+              line(j  ,axis,1)=x2[axis];   // end 
 
-	      line(j+1,axis,0)=x2[axis];   // start
-	      line(j+1,axis,1)=x3[axis];   // end 
+              line(j+1,axis,0)=x2[axis];   // start
+              line(j+1,axis,1)=x3[axis];   // end 
 
-	      line(j+2,axis,0)=x3[axis];   // start
-	      line(j+2,axis,1)=x4[axis];   // end 
+              line(j+2,axis,0)=x3[axis];   // start
+              line(j+2,axis,1)=x4[axis];   // end 
 
-	      line(j+3,axis,0)=x4[axis];   // start
-	      line(j+3,axis,1)=x1[axis];   // end 
+              line(j+3,axis,0)=x4[axis];   // start
+              line(j+3,axis,1)=x1[axis];   // end 
 
-	    }
+            }
             j+=4;
-	  
-	    if( j>= maxNumberOfNegativeCells-4 )
-	    {
-	      maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	      line.resize(maxNumberOfNegativeCells,rangeDimension,2);
-	    }
-	  }
+          
+            if( j>= maxNumberOfNegativeCells-4 )
+            {
+              maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
+              line.resize(maxNumberOfNegativeCells,rangeDimension,2);
+            }
+          }
 
-	}
+        }
         numberOfLinesToPlot=j;
-	numberOfBadCells=j/4;
-	
+        numberOfBadCells=j/4;
+        
       }
       else if( false &&   // **** finish this ****
                domainDimension==2 && rangeDimension==3 )
@@ -364,146 +364,146 @@ drawHyperbolicGrid(GenericGraphicsInterface & gi,
         Iv[axis3]=Range(Iv[axis3].getBase(),Iv[axis3].getBound()-1);  // only compute at cell centres.
 
         Range Rx=rangeDimension;
-	
-	RealArray a(I1,I2,I3,Rx),b(I1,I2,I3,Rx);
-	a=x(I1+1,I2  ,I3  ,Rx)-x(I1,I2,I3,Rx);
-	RealArray cc(I1,I2,I3,Rx);
-	b=x(I1  ,I2  ,I3+1,Rx)-x(I1,I2,I3,Rx);
+        
+        RealArray a(I1,I2,I3,Rx),b(I1,I2,I3,Rx);
+        a=x(I1+1,I2  ,I3  ,Rx)-x(I1,I2,I3,Rx);
+        RealArray cc(I1,I2,I3,Rx);
+        b=x(I1  ,I2  ,I3+1,Rx)-x(I1,I2,I3,Rx);
 
-	cc(I1,I2,I3,0)=a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1);
-	cc(I1,I2,I3,1)=a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2);
-	cc(I1,I2,I3,2)=a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0);
+        cc(I1,I2,I3,0)=a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1);
+        cc(I1,I2,I3,1)=a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2);
+        cc(I1,I2,I3,2)=a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0);
     
-	a=x(I1+1,I2  ,I3+1,Rx)-x(I1,I2,I3+1,Rx);
+        a=x(I1+1,I2  ,I3+1,Rx)-x(I1,I2,I3+1,Rx);
 
-	RealArray vol(I1,I2,I3);
-	vol=(( a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1) )*cc(I1,I2,I3,0)+
-	     ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
-	     ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
+        RealArray vol(I1,I2,I3);
+        vol=(( a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1) )*cc(I1,I2,I3,0)+
+             ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
+             ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
 
-	const int m1a[4] = {0,0,0,1}; //
-	const int m2a[4] = {0,1,0,0}; //
-	const int m1b[4] = {1,1,0,1}; //
-	const int m2b[4] = {0,1,1,1}; //
+        const int m1a[4] = {0,0,0,1}; //
+        const int m2a[4] = {0,1,0,0}; //
+        const int m1b[4] = {1,1,0,1}; //
+        const int m2b[4] = {0,1,1,1}; //
 
         printF("Checking for bad quads on the surface: [%i,%i][%i,%i][%i,%i] orientation=%8.2e\n",I1.getBase(),I1.getBound(),
-	       I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),orientation);
-	
+               I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),orientation);
+        
         real v[2][2][3];  // hold the 4 vertices of the quad
 
-	int j=0;
+        int j=0;
         int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
           // printF(" i=(%i,%i,%i)",i1,i2,i3);
-	  if( vol(i1,i2,i3)<= 0. )
-	  {
-	    for( int axis=0; axis<3; axis++ )
-	    {
-	      v[0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-	      v[1][0][axis]=x(i1+1,i2  ,i3  ,axis);
-	      v[0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-	      v[1][1][axis]=x(i1+1,i2  ,i3+1,axis);
-	    }
-	    // make a list of line-segments for the 4 edges of this quad
+          if( vol(i1,i2,i3)<= 0. )
+          {
+            for( int axis=0; axis<3; axis++ )
+            {
+              v[0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+              v[1][0][axis]=x(i1+1,i2  ,i3  ,axis);
+              v[0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+              v[1][1][axis]=x(i1+1,i2  ,i3+1,axis);
+            }
+            // make a list of line-segments for the 4 edges of this quad
             for( int m=0; m<12; m++ )
-	    {
-	      line(j,0,0)=v[m1a[m]][m2a[m]][0];
-	      line(j,1,0)=v[m1a[m]][m2a[m]][1];
-	      line(j,2,0)=v[m1a[m]][m2a[m]][2];
-	      line(j,0,1)=v[m1b[m]][m2b[m]][0];
-	      line(j,1,1)=v[m1b[m]][m2b[m]][1];
-	      line(j,2,1)=v[m1b[m]][m2b[m]][2];
-	      j++;
-	    }
+            {
+              line(j,0,0)=v[m1a[m]][m2a[m]][0];
+              line(j,1,0)=v[m1a[m]][m2a[m]][1];
+              line(j,2,0)=v[m1a[m]][m2a[m]][2];
+              line(j,0,1)=v[m1b[m]][m2b[m]][0];
+              line(j,1,1)=v[m1b[m]][m2b[m]][1];
+              line(j,2,1)=v[m1b[m]][m2b[m]][2];
+              j++;
+            }
             if( j>= maxNumberOfNegativeCells-12 )
-	    {
+            {
               maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	      line.resize(maxNumberOfNegativeCells,3,2);
-	    }
-	  }
-	}
-	numberOfLinesToPlot=j;
+              line.resize(maxNumberOfNegativeCells,3,2);
+            }
+          }
+        }
+        numberOfLinesToPlot=j;
         numberOfBadCells=j/12;
       }
       else if( domainDimension==3 && rangeDimension==3 )
       {
-	
-	const int m1a[12] = {0,0,0,1, 0,0,0,1, 0,1,0,1}; //
-	const int m2a[12] = {0,1,0,0, 0,1,0,0, 0,0,1,1}; //
-	const int m3a[12] = {0,0,0,0, 1,1,1,1, 0,0,0,0}; //
+        
+        const int m1a[12] = {0,0,0,1, 0,0,0,1, 0,1,0,1}; //
+        const int m2a[12] = {0,1,0,0, 0,1,0,0, 0,0,1,1}; //
+        const int m3a[12] = {0,0,0,0, 1,1,1,1, 0,0,0,0}; //
 
-	const int m1b[12] = {1,1,0,1, 1,1,0,1, 0,1,0,1}; //
-	const int m2b[12] = {0,1,1,1, 0,1,1,1, 0,0,1,1}; //
-	const int m3b[12] = {0,0,0,0, 1,1,1,1, 1,1,1,1}; //
+        const int m1b[12] = {1,1,0,1, 1,1,0,1, 0,1,0,1}; //
+        const int m2b[12] = {0,1,1,1, 0,1,1,1, 0,0,1,1}; //
+        const int m3b[12] = {0,0,0,0, 1,1,1,1, 1,1,1,1}; //
 
         printF("Checking for bad cells: [%i,%i][%i,%i][%i,%i] orientation=%8.2e\n",I1.getBase(),I1.getBound(),
-	       I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),orientation);
-	
+               I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),orientation);
+        
         real v[2][2][2][3];  // hold the 8 vertices of the hex
-	
+        
         int j=0;
         int i1,i2,i3;
-	FOR_3D(i1,i2,i3,I1,I2,I3)
-	{
+        FOR_3D(i1,i2,i3,I1,I2,I3)
+        {
           // printF(" i=(%i,%i,%i)",i1,i2,i3);
-	  
-	  for( int axis=0; axis<3; axis++ )
-	  {
-	    v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-	    v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
-	    v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
-	    v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
-	    v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-	    v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
-	    v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
-	    v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
-	  }
-	  if( hexIsBad(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
+          
+          for( int axis=0; axis<3; axis++ )
+          {
+            v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+            v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
+            v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
+            v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
+            v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+            v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
+            v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
+            v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
+          }
+          if( hexIsBad(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
                        v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1], orientation) )
-	  {
-	    // make a list of line-segments for the 12 edges of this hex
+          {
+            // make a list of line-segments for the 12 edges of this hex
             
 
             for( int m=0; m<12; m++ )
-	    {
-	      line(j,0,0)=v[m1a[m]][m2a[m]][m3a[m]][0];
-	      line(j,1,0)=v[m1a[m]][m2a[m]][m3a[m]][1];
-	      line(j,2,0)=v[m1a[m]][m2a[m]][m3a[m]][2];
-	      line(j,0,1)=v[m1b[m]][m2b[m]][m3b[m]][0];
-	      line(j,1,1)=v[m1b[m]][m2b[m]][m3b[m]][1];
-	      line(j,2,1)=v[m1b[m]][m2b[m]][m3b[m]][2];
-	      j++;
-	    }
+            {
+              line(j,0,0)=v[m1a[m]][m2a[m]][m3a[m]][0];
+              line(j,1,0)=v[m1a[m]][m2a[m]][m3a[m]][1];
+              line(j,2,0)=v[m1a[m]][m2a[m]][m3a[m]][2];
+              line(j,0,1)=v[m1b[m]][m2b[m]][m3b[m]][0];
+              line(j,1,1)=v[m1b[m]][m2b[m]][m3b[m]][1];
+              line(j,2,1)=v[m1b[m]][m2b[m]][m3b[m]][2];
+              j++;
+            }
             if( j>= maxNumberOfNegativeCells-12 )
-	    {
+            {
               maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	      line.resize(maxNumberOfNegativeCells,3,2);
-	    }
-	  }
-	}
+              line.resize(maxNumberOfNegativeCells,3,2);
+            }
+          }
+        }
         numberOfLinesToPlot=j;
         numberOfBadCells=j/12;
       }
       if( numberOfBadCells>0 )
       {
-	printF("--HYP-- Plotting %i cells with negative volumes with thick red lines.\n",numberOfBadCells);
-	Range R=numberOfLinesToPlot;
-	Range all;
+        printF("--HYP-- Plotting %i cells with negative volumes with thick red lines.\n",numberOfBadCells);
+        Range R=numberOfLinesToPlot;
+        Range all;
       
-	// add line colour, line width
-	parameters.set(GI_LINE_COLOUR,"red");
-	real oldCurveLineWidth;
-	parameters.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-	parameters.set(GraphicsParameters::curveLineWidth,4.);
+        // add line colour, line width
+        parameters.set(GI_LINE_COLOUR,"red");
+        real oldCurveLineWidth;
+        parameters.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+        parameters.set(GraphicsParameters::curveLineWidth,4.);
 
         #ifndef USE_PPP
-	  gi.plotLines(line(R,all,all),parameters);
+          gi.plotLines(line(R,all,all),parameters);
         #else
-  	  printF("FINISH ME: gi.plotLines(line(R,all,all),parameters);\n");
+          printF("FINISH ME: gi.plotLines(line(R,all,all),parameters);\n");
         #endif
 
-	parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+        parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
       }
       
     }
@@ -543,7 +543,7 @@ plotInvertedCells(GenericGraphicsInterface & gi,
 
   for( int axis=0; axis<domainDimension; axis++ )
     Iv[axis]=Range(max(x.getBase(axis),Iv[axis].getBase()),
-		   min(x.getBound(axis),Iv[axis].getBound())-1);  // only compute at cell centres.
+                   min(x.getBound(axis),Iv[axis].getBound())-1);  // only compute at cell centres.
 
   int maxNumberOfNegativeCells=1000;  // This will be increased below if needed.
   RealArray line(maxNumberOfNegativeCells,rangeDimension,2);
@@ -551,8 +551,8 @@ plotInvertedCells(GenericGraphicsInterface & gi,
   const real signForJacobian = dpm->getSignForJacobian();
   
   printF("--HYP-- check for inverted cells [%i,%i][%i,%i][%i,%i] numGhost=%i signForJacobian=%f\n",
-	 I1.getBase(),I1.getBound(),
-	 I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),numberOfGhostLinesToPlot,signForJacobian);
+         I1.getBase(),I1.getBound(),
+         I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),numberOfGhostLinesToPlot,signForJacobian);
      
   // ::display(x,"x","%5.2f ");
   int numberOfBadCells=0, numberOfLinesToPlot=0;
@@ -589,58 +589,58 @@ plotInvertedCells(GenericGraphicsInterface & gi,
 
       if( area1*signForArea <=0. || area2*signForArea<=0.  )
       {
-	if( area1*area2 <=0. )
-	{
-	  printF("--HYP-- *bad quad* bow-tie found: (i1,i2)=(%i,%i):"
-		 " signed areas of triangles forming quad: area1=%9.2e area2=%9.2e have OPPOSITE sign.\n",
-		 i1,i2,area1,area2);
-	}
-	else
-	{
-	  printF("--HYP-- *bad quad* negative quad: (i1,i2)=(%i,%i):"
-		 " areas of triangles forming quad: area1=%9.2e area2=%9.2e are NEGATIVE.\n",
-		 i1,i2,area1*signForArea,area2*signForArea);
-	  printF(" x1=(%9.2e,%9.2e) x2=(%9.2e,%9.2e) x3=(%9.2e,%9.2e)  x4=(%9.2e,%9.2e)\n",
-		 x1[0],x1[1],  x2[0],x2[1],  x3[0],x3[1],  x4[0],x4[1]);
-	  
-	}
-	    
-	for( int axis=0; axis<rangeDimension; axis++ )
-	{
-	  line(j  ,axis,0)=x1[axis];   // start
-	  line(j  ,axis,1)=x2[axis];   // end 
+        if( area1*area2 <=0. )
+        {
+          printF("--HYP-- *bad quad* bow-tie found: (i1,i2)=(%i,%i):"
+                 " signed areas of triangles forming quad: area1=%9.2e area2=%9.2e have OPPOSITE sign.\n",
+                 i1,i2,area1,area2);
+        }
+        else
+        {
+          printF("--HYP-- *bad quad* negative quad: (i1,i2)=(%i,%i):"
+                 " areas of triangles forming quad: area1=%9.2e area2=%9.2e are NEGATIVE.\n",
+                 i1,i2,area1*signForArea,area2*signForArea);
+          printF(" x1=(%9.2e,%9.2e) x2=(%9.2e,%9.2e) x3=(%9.2e,%9.2e)  x4=(%9.2e,%9.2e)\n",
+                 x1[0],x1[1],  x2[0],x2[1],  x3[0],x3[1],  x4[0],x4[1]);
+          
+        }
+            
+        for( int axis=0; axis<rangeDimension; axis++ )
+        {
+          line(j  ,axis,0)=x1[axis];   // start
+          line(j  ,axis,1)=x2[axis];   // end 
 
-	  line(j+1,axis,0)=x2[axis];   // start
-	  line(j+1,axis,1)=x3[axis];   // end 
+          line(j+1,axis,0)=x2[axis];   // start
+          line(j+1,axis,1)=x3[axis];   // end 
 
-	  line(j+2,axis,0)=x3[axis];   // start
-	  line(j+2,axis,1)=x4[axis];   // end 
+          line(j+2,axis,0)=x3[axis];   // start
+          line(j+2,axis,1)=x4[axis];   // end 
 
-	  line(j+3,axis,0)=x4[axis];   // start
-	  line(j+3,axis,1)=x1[axis];   // end 
+          line(j+3,axis,0)=x4[axis];   // start
+          line(j+3,axis,1)=x1[axis];   // end 
 
-	}
-	j+=4;
-	  
-	if( j>= maxNumberOfNegativeCells-4 )
-	{
-	  maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	  line.resize(maxNumberOfNegativeCells,rangeDimension,2);
-	}
+        }
+        j+=4;
+          
+        if( j>= maxNumberOfNegativeCells-4 )
+        {
+          maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
+          line.resize(maxNumberOfNegativeCells,rangeDimension,2);
+        }
       }
 
     }
     numberOfLinesToPlot=j;
     numberOfBadCells=j/4;
-	
+        
   }
   else if( false &&   // **** finish this ****
-	   domainDimension==2 && rangeDimension==3 )
+           domainDimension==2 && rangeDimension==3 )
   {
     Iv[axis3]=Range(Iv[axis3].getBase(),Iv[axis3].getBound()-1);  // only compute at cell centres.
 
     Range Rx=rangeDimension;
-	
+        
     RealArray a(I1,I2,I3,Rx),b(I1,I2,I3,Rx);
     a=x(I1+1,I2  ,I3  ,Rx)-x(I1,I2,I3,Rx);
     RealArray cc(I1,I2,I3,Rx);
@@ -654,8 +654,8 @@ plotInvertedCells(GenericGraphicsInterface & gi,
 
     RealArray vol(I1,I2,I3);
     vol=(( a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1) )*cc(I1,I2,I3,0)+
-	 ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
-	 ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
+         ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
+         ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
 
     const int m1a[4] = {0,0,0,1}; //
     const int m2a[4] = {0,1,0,0}; //
@@ -663,8 +663,8 @@ plotInvertedCells(GenericGraphicsInterface & gi,
     const int m2b[4] = {0,1,1,1}; //
 
     printF("Checking for bad quads on the surface: [%i,%i][%i,%i][%i,%i] signForJacobian=%8.2e\n",I1.getBase(),I1.getBound(),
-	   I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),signForJacobian);
-	
+           I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),signForJacobian);
+        
     real v[2][2][3];  // hold the 4 vertices of the quad
 
     int j=0;
@@ -674,29 +674,29 @@ plotInvertedCells(GenericGraphicsInterface & gi,
       // printF(" i=(%i,%i,%i)",i1,i2,i3);
       if( vol(i1,i2,i3)<= 0. )
       {
-	for( int axis=0; axis<3; axis++ )
-	{
-	  v[0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-	  v[1][0][axis]=x(i1+1,i2  ,i3  ,axis);
-	  v[0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-	  v[1][1][axis]=x(i1+1,i2  ,i3+1,axis);
-	}
-	// make a list of line-segments for the 4 edges of this quad
-	for( int m=0; m<12; m++ )
-	{
-	  line(j,0,0)=v[m1a[m]][m2a[m]][0];
-	  line(j,1,0)=v[m1a[m]][m2a[m]][1];
-	  line(j,2,0)=v[m1a[m]][m2a[m]][2];
-	  line(j,0,1)=v[m1b[m]][m2b[m]][0];
-	  line(j,1,1)=v[m1b[m]][m2b[m]][1];
-	  line(j,2,1)=v[m1b[m]][m2b[m]][2];
-	  j++;
-	}
-	if( j>= maxNumberOfNegativeCells-12 )
-	{
-	  maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	  line.resize(maxNumberOfNegativeCells,3,2);
-	}
+        for( int axis=0; axis<3; axis++ )
+        {
+          v[0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+          v[1][0][axis]=x(i1+1,i2  ,i3  ,axis);
+          v[0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+          v[1][1][axis]=x(i1+1,i2  ,i3+1,axis);
+        }
+        // make a list of line-segments for the 4 edges of this quad
+        for( int m=0; m<12; m++ )
+        {
+          line(j,0,0)=v[m1a[m]][m2a[m]][0];
+          line(j,1,0)=v[m1a[m]][m2a[m]][1];
+          line(j,2,0)=v[m1a[m]][m2a[m]][2];
+          line(j,0,1)=v[m1b[m]][m2b[m]][0];
+          line(j,1,1)=v[m1b[m]][m2b[m]][1];
+          line(j,2,1)=v[m1b[m]][m2b[m]][2];
+          j++;
+        }
+        if( j>= maxNumberOfNegativeCells-12 )
+        {
+          maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
+          line.resize(maxNumberOfNegativeCells,3,2);
+        }
       }
     }
     numberOfLinesToPlot=j;
@@ -704,7 +704,7 @@ plotInvertedCells(GenericGraphicsInterface & gi,
   }
   else if( domainDimension==3 && rangeDimension==3 )
   {
-	
+        
     const int m1a[12] = {0,0,0,1, 0,0,0,1, 0,1,0,1}; //
     const int m2a[12] = {0,1,0,0, 0,1,0,0, 0,0,1,1}; //
     const int m3a[12] = {0,0,0,0, 1,1,1,1, 0,0,0,0}; //
@@ -714,48 +714,48 @@ plotInvertedCells(GenericGraphicsInterface & gi,
     const int m3b[12] = {0,0,0,0, 1,1,1,1, 1,1,1,1}; //
 
     printF("Checking for bad cells: [%i,%i][%i,%i][%i,%i] signForJacobian=%8.2e\n",I1.getBase(),I1.getBound(),
-	   I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),signForJacobian);
-	
+           I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),signForJacobian);
+        
     real v[2][2][2][3];  // hold the 8 vertices of the hex
-	
+        
     int j=0;
     int i1,i2,i3;
     FOR_3D(i1,i2,i3,I1,I2,I3)
     {
       // printF(" i=(%i,%i,%i)",i1,i2,i3);
-	  
+          
       for( int axis=0; axis<3; axis++ )
       {
-	v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
-	v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
-	v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
-	v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
-	v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
-	v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
-	v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
-	v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
+        v[0][0][0][axis]=x(i1  ,i2  ,i3  ,axis);
+        v[1][0][0][axis]=x(i1+1,i2  ,i3  ,axis);
+        v[0][1][0][axis]=x(i1  ,i2+1,i3  ,axis);
+        v[1][1][0][axis]=x(i1+1,i2+1,i3  ,axis);
+        v[0][0][1][axis]=x(i1  ,i2  ,i3+1,axis);
+        v[1][0][1][axis]=x(i1+1,i2  ,i3+1,axis);
+        v[0][1][1][axis]=x(i1  ,i2+1,i3+1,axis);
+        v[1][1][1][axis]=x(i1+1,i2+1,i3+1,axis);
       }
       if( hexIsBad(v[0][0][0],v[1][0][0],v[0][1][0],v[1][1][0],
-		   v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1], signForJacobian) )
+                   v[0][0][1],v[1][0][1],v[0][1][1],v[1][1][1], signForJacobian) )
       {
-	// make a list of line-segments for the 12 edges of this hex
+        // make a list of line-segments for the 12 edges of this hex
             
 
-	for( int m=0; m<12; m++ )
-	{
-	  line(j,0,0)=v[m1a[m]][m2a[m]][m3a[m]][0];
-	  line(j,1,0)=v[m1a[m]][m2a[m]][m3a[m]][1];
-	  line(j,2,0)=v[m1a[m]][m2a[m]][m3a[m]][2];
-	  line(j,0,1)=v[m1b[m]][m2b[m]][m3b[m]][0];
-	  line(j,1,1)=v[m1b[m]][m2b[m]][m3b[m]][1];
-	  line(j,2,1)=v[m1b[m]][m2b[m]][m3b[m]][2];
-	  j++;
-	}
-	if( j>= maxNumberOfNegativeCells-12 )
-	{
-	  maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
-	  line.resize(maxNumberOfNegativeCells,3,2);
-	}
+        for( int m=0; m<12; m++ )
+        {
+          line(j,0,0)=v[m1a[m]][m2a[m]][m3a[m]][0];
+          line(j,1,0)=v[m1a[m]][m2a[m]][m3a[m]][1];
+          line(j,2,0)=v[m1a[m]][m2a[m]][m3a[m]][2];
+          line(j,0,1)=v[m1b[m]][m2b[m]][m3b[m]][0];
+          line(j,1,1)=v[m1b[m]][m2b[m]][m3b[m]][1];
+          line(j,2,1)=v[m1b[m]][m2b[m]][m3b[m]][2];
+          j++;
+        }
+        if( j>= maxNumberOfNegativeCells-12 )
+        {
+          maxNumberOfNegativeCells=int(maxNumberOfNegativeCells*1.5);
+          line.resize(maxNumberOfNegativeCells,3,2);
+        }
       }
     }
     numberOfLinesToPlot=j;
@@ -794,11 +794,11 @@ plotInvertedCells(GenericGraphicsInterface & gi,
 
 int HyperbolicMapping::
 drawBoundariesAndCurves(GenericGraphicsInterface & gi, 
-			GraphicsParameters & parameters, 
-			GraphicsParameters & referenceSurfaceParameters, 
+                        GraphicsParameters & parameters, 
+                        GraphicsParameters & referenceSurfaceParameters, 
                         const real & surfaceOffset, 
                         const real & initialOffset,
-			const aString & boundaryConditionMappingColour,
+                        const aString & boundaryConditionMappingColour,
                         const aString & referenceSurfaceColour,
                         const aString & edgeCurveColour,
                         const aString & buildCurveColour,
@@ -822,10 +822,10 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
     {
       for( int side=0; side<=1; side++ )
       {
-	if( boundaryCondition(side,axis)==matchToMapping  && boundaryConditionMapping[side][axis]!=NULL  )
-	{
-	  PlotIt::plot(gi,*boundaryConditionMapping[side][axis],parameters);
-	}
+        if( boundaryCondition(side,axis)==matchToMapping  && boundaryConditionMapping[side][axis]!=NULL  )
+        {
+          PlotIt::plot(gi,*boundaryConditionMapping[side][axis],parameters);
+        }
       }
     }
     parameters.set(GI_PLOT_LINES_ON_MAPPING_BOUNDARIES,TRUE);
@@ -868,25 +868,25 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
     {
       if( (growthOption>=1 && (  // forward
           (boundaryCondition(0,0)==matchToABoundaryCurve && boundaryConditionMapping[0][0]==boundaryCurves[b]) || 
-	  (boundaryCondition(1,0)==matchToABoundaryCurve && boundaryConditionMapping[1][0]==boundaryCurves[b]) )) ||
+          (boundaryCondition(1,0)==matchToABoundaryCurve && boundaryConditionMapping[1][0]==boundaryCurves[b]) )) ||
           (growthOption!=1 && (  // backward
-	  (boundaryCondition(0,1)==matchToABoundaryCurve && boundaryConditionMapping[0][1]==boundaryCurves[b]) ||
-	  (boundaryCondition(1,1)==matchToABoundaryCurve && boundaryConditionMapping[1][1]==boundaryCurves[b]) )) )
+          (boundaryCondition(0,1)==matchToABoundaryCurve && boundaryConditionMapping[0][1]==boundaryCurves[b]) ||
+          (boundaryCondition(1,1)==matchToABoundaryCurve && boundaryConditionMapping[1][1]==boundaryCurves[b]) )) )
       {
         // this is a boundary curve that is used as a BC mapping.
-	parameters.set(GI_MAPPING_COLOUR,boundaryConditionMappingColour);
-	parameters.set(GraphicsParameters::curveLineWidth,5.);
+        parameters.set(GI_MAPPING_COLOUR,boundaryConditionMappingColour);
+        parameters.set(GraphicsParameters::curveLineWidth,5.);
       }
       else
       {
-	aString colour=((GL_GraphicsInterface &)gi).colourNames[col % (GL_GraphicsInterface::numberOfColourNames-1)];
-	while( colour==referenceSurfaceColour || colour==edgeCurveColour ||
+        aString colour=((GL_GraphicsInterface &)gi).colourNames[col % (GL_GraphicsInterface::numberOfColourNames-1)];
+        while( colour==referenceSurfaceColour || colour==edgeCurveColour ||
                colour==boundaryConditionMappingColour || colour==buildCurveColour ) // skip these colours
-	{
-	  col++;
-	  colour=((GL_GraphicsInterface &)gi).colourNames[col % (GL_GraphicsInterface::numberOfColourNames-1)];
-	}
-	parameters.set(GI_MAPPING_COLOUR,colour);
+        {
+          col++;
+          colour=((GL_GraphicsInterface &)gi).colourNames[col % (GL_GraphicsInterface::numberOfColourNames-1)];
+        }
+        parameters.set(GI_MAPPING_COLOUR,colour);
       }
       // printF("draw boundary curve b=%i\n",b);
 
@@ -897,7 +897,7 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
     parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
     // parameters.set(GI_MAPPING_COLOUR,"red");
     parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
-	
+        
   }
 
     
@@ -914,18 +914,18 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
       int numberOfEdgeCurves=compositeTopology.getNumberOfEdgeCurves();
       for( int e=0; e<numberOfEdgeCurves; e++ )
       {
-	Mapping & edge = compositeTopology.getEdgeCurve(e);
-	if( (boundaryCondition(Start,0)==matchToABoundaryCurve && boundaryConditionMapping[Start][0]==&edge) || 
-	    (boundaryCondition(Start,1)==matchToABoundaryCurve && boundaryConditionMapping[Start][1]==&edge) ||
-	    (boundaryCondition(End  ,0)==matchToABoundaryCurve && boundaryConditionMapping[End  ][0]==&edge) ||
-	    (boundaryCondition(End  ,1)==matchToABoundaryCurve && boundaryConditionMapping[End  ][1]==&edge) )
-	{
-	  referenceSurfaceParameters.set(GraphicsParameters::curveLineWidth,4.);
-	  referenceSurfaceParameters.set(GI_MAPPING_COLOUR,boundaryConditionMappingColour);
+        Mapping & edge = compositeTopology.getEdgeCurve(e);
+        if( (boundaryCondition(Start,0)==matchToABoundaryCurve && boundaryConditionMapping[Start][0]==&edge) || 
+            (boundaryCondition(Start,1)==matchToABoundaryCurve && boundaryConditionMapping[Start][1]==&edge) ||
+            (boundaryCondition(End  ,0)==matchToABoundaryCurve && boundaryConditionMapping[End  ][0]==&edge) ||
+            (boundaryCondition(End  ,1)==matchToABoundaryCurve && boundaryConditionMapping[End  ][1]==&edge) )
+        {
+          referenceSurfaceParameters.set(GraphicsParameters::curveLineWidth,4.);
+          referenceSurfaceParameters.set(GI_MAPPING_COLOUR,boundaryConditionMappingColour);
 
-	  PlotIt::plot(gi,compositeTopology.getEdgeCurve(e),referenceSurfaceParameters);
-	}
-	parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+          PlotIt::plot(gi,compositeTopology.getEdgeCurve(e),referenceSurfaceParameters);
+        }
+        parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
 
       }
     }
@@ -943,7 +943,7 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
       {
         MatchingCurve & match = matchingCurves[i];
         if( match.curve!=NULL )
-	  PlotIt::plot(gi,*match.curve,referenceSurfaceParameters);
+          PlotIt::plot(gi,*match.curve,referenceSurfaceParameters);
       }
       parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
     }
@@ -966,12 +966,12 @@ drawBoundariesAndCurves(GenericGraphicsInterface & gi,
       {
          // if the grid fails with a negative volume there may be only on grid line
         if( dpm->getGridDimensions((axis+1)%domainDimension) > 1 ) 
-	{
-	  ReductionMapping edge(*dpm,axis,(real)side);
+        {
+          ReductionMapping edge(*dpm,axis,(real)side);
 
-	  parameters.set(GI_MAPPING_COLOUR,boundaryColour[side+2*axis]);
-	  PlotIt::plot(gi,edge,parameters);
-	}
+          parameters.set(GI_MAPPING_COLOUR,boundaryColour[side+2*axis]);
+          PlotIt::plot(gi,edge,parameters);
+        }
       }
     }
     parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
@@ -1137,7 +1137,7 @@ plotDirectionArrows(GenericGraphicsInterface & gi, GraphicsParameters & params)
 
 int HyperbolicMapping::
 plotCellQuality(GenericGraphicsInterface & gi, 
-		GraphicsParameters & parameters)
+                GraphicsParameters & parameters)
 // =============================================================================
 /// \brief plot negative volumes.
 // =============================================================================
@@ -1180,14 +1180,14 @@ plotCellQuality(GenericGraphicsInterface & gi,
     RealArray cc(I1,I2,I3,Rx);
     cc=x(I1  ,I2  ,I3+1,Rx)-x(I1,I2,I3,Rx);
     vol=(a(I1,I2,I3,0)*(b(I1,I2,I3,1)*cc(I1,I2,I3,2)-b(I1,I2,I3,2)*cc(I1,I2,I3,1))+
-	 a(I1,I2,I3,1)*(b(I1,I2,I3,2)*cc(I1,I2,I3,0)-b(I1,I2,I3,0)*cc(I1,I2,I3,2))+
-	 a(I1,I2,I3,2)*(b(I1,I2,I3,0)*cc(I1,I2,I3,1)-b(I1,I2,I3,1)*cc(I1,I2,I3,0)))*dSign;
+         a(I1,I2,I3,1)*(b(I1,I2,I3,2)*cc(I1,I2,I3,0)-b(I1,I2,I3,0)*cc(I1,I2,I3,2))+
+         a(I1,I2,I3,2)*(b(I1,I2,I3,0)*cc(I1,I2,I3,1)-b(I1,I2,I3,1)*cc(I1,I2,I3,0)))*dSign;
     a=x(I1+1,I2  ,I3+1,Rx)-x(I1,I2,I3+1,Rx);
     b=x(I1  ,I2+1,I3+1,Rx)-x(I1,I2,I3+1,Rx);
     vol=min(vol,
-	    (a(I1,I2,I3,0)*(b(I1,I2,I3,1)*cc(I1,I2,I3,2)-b(I1,I2,I3,2)*cc(I1,I2,I3,1))+
-	     a(I1,I2,I3,1)*(b(I1,I2,I3,2)*cc(I1,I2,I3,0)-b(I1,I2,I3,0)*cc(I1,I2,I3,2))+
-	     a(I1,I2,I3,2)*(b(I1,I2,I3,0)*cc(I1,I2,I3,1)-b(I1,I2,I3,1)*cc(I1,I2,I3,0)))*dSign );
+            (a(I1,I2,I3,0)*(b(I1,I2,I3,1)*cc(I1,I2,I3,2)-b(I1,I2,I3,2)*cc(I1,I2,I3,1))+
+             a(I1,I2,I3,1)*(b(I1,I2,I3,2)*cc(I1,I2,I3,0)-b(I1,I2,I3,0)*cc(I1,I2,I3,2))+
+             a(I1,I2,I3,2)*(b(I1,I2,I3,0)*cc(I1,I2,I3,1)-b(I1,I2,I3,1)*cc(I1,I2,I3,0)))*dSign );
     
   }
   else if( domainDimension==2 && rangeDimension==2 )
@@ -1215,8 +1215,8 @@ plotCellQuality(GenericGraphicsInterface & gi,
     a=x(I1+1,I2  ,I3+1,Rx)-x(I1,I2,I3+1,Rx);
 
     vol=(( a(I1,I2,I3,1)*b(I1,I2,I3,2)-a(I1,I2,I3,2)*b(I1,I2,I3,1) )*cc(I1,I2,I3,0)+
-	 ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
-	 ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
+         ( a(I1,I2,I3,2)*b(I1,I2,I3,0)-a(I1,I2,I3,0)*b(I1,I2,I3,2) )*cc(I1,I2,I3,1)+
+         ( a(I1,I2,I3,0)*b(I1,I2,I3,1)-a(I1,I2,I3,1)*b(I1,I2,I3,0) )*cc(I1,I2,I3,2));
   }
   else
   {
@@ -1239,8 +1239,8 @@ plotCellQuality(GenericGraphicsInterface & gi,
       numberOfCells++;
       if( numberOfCells>=maximumNumberToPlot )
       {
-	maximumNumberToPlot*=2;
-	point.resize(maximumNumberToPlot,rangeDimension);
+        maximumNumberToPlot*=2;
+        point.resize(maximumNumberToPlot,rangeDimension);
       }
     }
   }

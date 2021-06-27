@@ -1,5 +1,6 @@
 #
 # cgmp:   Incompressible flow past a bulk solid disk
+echo to terminal 0
 # 
 # Usage:
 #    cgmp [-noplot] solidDiskInAChannel -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
@@ -192,7 +193,7 @@ $domainName=$domain1; $solverName="fluid";
 #  ******  Cgins ********
 #
 # $ic = "uniform flow\n p=0., u=$u0";
-$ic = "uniform flow\n p=0., u=0.";
+$ic = "uniform flow\n p=0., u=0."; $rampOrder=3;
 $halfH=0.2; $cpn=1.;
 # --- inflow with velocity given:
 $bc = "all=noSlipWall\n  bcNumber1=inflowWithVelocityGiven, parabolic(d=$halfH, p=1.,u=$u0,T=1.), ramp(ta=0.,tb=1.,ua=0,ub=1)\n bcNumber2=outflow, pressure(10.*p+$cpn*p.n=0.)\n bcNumber100=noSlipWall\n bcNumber100=tractionInterface";
@@ -204,7 +205,7 @@ $bc = "all=noSlipWall\n" . \
       " ramp function\n" . \
       "   ramp end values: 0,$p0 (start,end)\n". \
       "   ramp times: $ta,$tb (start,end)\n" .\
-      "   ramp order: 3\n" . \
+      "   ramp order: $rampOrder\n" . \
       "  exit\n" . \
       "done\n" . \
       "bcNumber2=outflow, pressure(1.*p+0.*p.n=0.)\n" . \
@@ -311,6 +312,8 @@ continue
         exit
         plot:solid : v2
         plot all
+#
+echo to terminal 1        
 $go
 
 

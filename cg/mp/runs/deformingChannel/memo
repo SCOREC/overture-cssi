@@ -1,4 +1,16 @@
 *************************************
+******* Sun April 4, 2021
+
+REVISIT FSI EXAMPLES FOR DOCUMENTATION AND RE-ORGANIZATION
+
+AMP
+$cgmpx deformingChannel -method=ins -g=deformingChannelGrid2.order2 -addedMass=1 -scf=1. -u0=0. -nu=.01 -tp=.2 -tf=20 -nc=1 -pOffset=0. -smVariation=g -rhoSolid=100 -lambdaSolid=1.0 -muSolid=1.0 -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -go=halt
+
+ogen -noplot deformingChannelGrid -dsx=.2 -prefix=deformingChannelGridX5 -factor=4 
+
+cgmpx deformingChannel -method=ins -g=deformingChannelGridX51.order2 -addedMass=1 -scf=1. -u0=0. -nu=.01 -tp=.1 -tf=20 -nc=1 -pOffset=0. -smVariation=g -rhoSolid=100. -lambdaSolid=1. -muSolid=1. -debug=1 -pi=0 -multiDomainAlgorithm=1 -uShock=0. -ap=.1 -flushFrequency=2 -bcOption=4 -debug=3 -sideBC=slipWall -go=halt
+
+*************************************
 ******* April 22, 2017 
 
      REVISIT FIBR -- INS + SM -- elastic piston problem

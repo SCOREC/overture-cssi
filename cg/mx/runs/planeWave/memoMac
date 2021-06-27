@@ -1,4 +1,19 @@
 *******************
+**** May 11, 2021
+
+CHECK OUT UPW SCHEME FOR 2nd ORDER -- cgWave has trouble
+
+
+cgmx planeWave -g=square64.order2 -useSosupDissipation=1 -tp=.1 -tf=1 -cfl=1 -kx=1 -ky=1 -checkErrors=1 -go=og -debug=3
+
+ +++++ FD t=4.000e-02 STAGE 0: computeUt=0 updateInterior=0 addDissipation=1 applyBCs=0
+advMxUp>>>FD22r-UP...update-un-with-     dissipation
+
+ +++++ FD t=4.000e-02 STAGE 1: computeUt=0 updateInterior=1 addDissipation=0 applyBCs=1
+
+
+
+*******************
 **** Dec 6, 2020
 
 

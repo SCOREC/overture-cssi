@@ -28,22 +28,22 @@ public:
 
   // supply data points as xd(0:d,I,J[,K]) or xd(I,J,K,0:d-1) or xd(I,J,0:d-1) etc, d=number of dimensions
   int setDataPoints(const realArray & xd, 
-		    const int positionOfCoordinates = 3, 
-		    const int domainDimension  = -1,
-		    const int numberOfGhostLinesInData = 0,
+                    const int positionOfCoordinates = 3, 
+                    const int domainDimension  = -1,
+                    const int numberOfGhostLinesInData = 0,
                     const IntegerArray & xGridIndexRange = Overture::nullIntArray() );
   int setDataPoints(const realArray & xd, 
-		    const int positionOfCoordinates, 
-		    const int domainDimension,
-		    const int numberOfGhostLinesInData[2][3],
+                    const int positionOfCoordinates, 
+                    const int domainDimension,
+                    const int numberOfGhostLinesInData[2][3],
                     const IntegerArray & xGridIndexRange = Overture::nullIntArray() );
   int setDataPoints(const aString & fileName );  // set data points from a file of data
 
   // This next version can also be used in parallel: 
   int setDataPoints(const realSerialArray & x, 
-		    const int domainDimension, const int rangeDimension,
-		    const IntegerArray & xDimension,
-		    const IntegerArray & xGridIndexRange  );
+                    const int domainDimension, const int rangeDimension,
+                    const IntegerArray & xDimension,
+                    const IntegerArray & xGridIndexRange  );
 
   int setMapping( Mapping & map );               // acquire data points from this mapping.
 
@@ -68,17 +68,17 @@ public:
 
   // we define a fast inverse for linear interpolation
   virtual void basicInverse(const realArray & x, 
-			    realArray & r,
-			    realArray & rx =Overture::nullRealDistributedArray(),
-			    MappingParameters & params =Overture::nullMappingParameters());
+                            realArray & r,
+                            realArray & rx =Overture::nullRealDistributedArray(),
+                            MappingParameters & params =Overture::nullMappingParameters());
 
   virtual void mapS( const RealArray & r, RealArray & x, RealArray &xr = Overture::nullRealArray(),
                     MappingParameters & params =Overture::nullMappingParameters());
 
   virtual void basicInverseS(const RealArray & x, 
-			    RealArray & r,
-			    RealArray & rx =Overture::nullRealArray(),
-			    MappingParameters & params =Overture::nullMappingParameters());
+                            RealArray & r,
+                            RealArray & rx =Overture::nullRealArray(),
+                            MappingParameters & params =Overture::nullMappingParameters());
 
   virtual int get( const GenericDataBase & dir, const aString & name);    // get from a database file
   virtual int put( GenericDataBase & dir, const aString & name) const;    // put to a database file

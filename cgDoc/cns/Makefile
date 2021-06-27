@@ -10,7 +10,6 @@ user: CgcnsUserGuide.tex $(CgcnsFiles)
 	extract.p $(CgcnsFiles)
 	pdflatex CgcnsUserGuide
 	bibtex CgcnsUserGuide
-	pdflatex CgcnsUserGuide
 	makeindex CgcnsUserGuide.idx
 
 #	mv CgcnsUserGuide.pdf $(WEBPAGE)/documentation

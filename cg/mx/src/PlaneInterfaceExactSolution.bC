@@ -18,9 +18,9 @@
 // {
 
 // void scatSphere(const int&nd ,
-// 	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
-// 	     const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
-// 	     const real& xy, real&u, const int&ipar, const real&rpar );
+//           const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
+//           const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
+//           const real& xy, real&u, const int&ipar, const real&rpar );
 
 // }
 
@@ -134,7 +134,7 @@ PlaneInterfaceExactSolution::
 // ===============================================================================
 int PlaneInterfaceExactSolution::
 initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveMaterialParameters & dmp2,
-	    real *av_, real *kvr_, real *kvi_ )
+            real *av_, real *kvr_, real *kvi_ )
 {
   int & numberOfDimensions = dbase.get<int>("numberOfDimensions");
   numberOfDimensions=cg.numberOfDimensions();
@@ -185,7 +185,7 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
     // --- evaluate the normal to the interface and a point on the interface ---
     // *new* way for parallel Nov. 18, 2020 *wdh*
     Mapping & map = mg.mapping().getMapping();
-		  
+                  
     RealArray r(1,3), x(1,3), rx(1,3,3);
     r=.5; r(0,axis)=side;    // r-coords for a point on the middle of the face of (grid,side,axis)
     map.mapS(r,x); 
@@ -347,9 +347,9 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
   if( true )
   {
     printF(" s=(%16.10e,%16.10e) kx=(%16.10e,%16.10e) ky=(%16.10e,%16.10e) \n"
-	   "   -> k2=(kr,ki)=(%16.10e,%16.10e) \n"
-	   " Right: kxp=(%16.10e,%16.10e) kyp=(%16.10e,%16.10e)\n"
-	   ,sr,si,kxr,kxi,kyr,kyi,kr,ki,kxpr,kxpi,kypr,kypi);
+           "   -> k2=(kr,ki)=(%16.10e,%16.10e) \n"
+           " Right: kxp=(%16.10e,%16.10e) kyp=(%16.10e,%16.10e)\n"
+           ,sr,si,kxr,kxi,kyr,kyi,kr,ki,kxpr,kxpi,kypr,kypi);
     for( int i=0; i<numberOfPolarizationVectors1; i++ )
       printF("    chi1=(%16.10e,%16.10e) \n",chi1r[i],chi1i[i]);
     for( int i=0; i<numberOfPolarizationVectors2; i++ )
@@ -372,8 +372,8 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
     #Include "dispersivePlaneWaveInterface.h"
 
     printF("chiSum1=(%9.3e,%9.3e) chiSum2=(%9.3e,%9.3e) r=(%8.2e,%8.2e) "
-	   "tau=(%8.2e,%8.2e) khy=(%8.2e,%8.2e) khpy=(%8.2e,%8.2e): ",
-	   chiSum1r,chiSum1i,chiSum2r,chiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
+           "tau=(%8.2e,%8.2e) khy=(%8.2e,%8.2e) khpy=(%8.2e,%8.2e): ",
+           chiSum1r,chiSum1i,chiSum2r,chiSum2i,rr,ri,taur,taui,khyr,khyi,khypr,khypi);
 
 
     checkPlaneMaterialInterfaceJumps( 
@@ -412,11 +412,11 @@ initialize( CompositeGrid & cg, DispersiveMaterialParameters & dmp1, DispersiveM
     real (&kti)[3] = dbase.get<real[3]>("kti");
 
     printF("chiSum1=(%9.3e,%9.3e) chiSum2=(%9.3e,%9.3e)\n",
-	   chiSum1r,chiSum1i,chiSum2r,chiSum2i);
+           chiSum1r,chiSum1i,chiSum2r,chiSum2i);
 
     evalMaterialInterfaceSolution3d( sr,si, chiSum1r, chiSum1i, chiSum2r, chiSum2i,
-				     av[0],nv[0],kv[0], eps1,eps2,mu1,mu2, 
-				     krr[0],kri[0], ktr[0],kti[0], arr[0],ari[0], atr[0],ati[0] );
+                                     av[0],nv[0],kv[0], eps1,eps2,mu1,mu2, 
+                                     krr[0],kri[0], ktr[0],kti[0], arr[0],ari[0], atr[0],ati[0] );
     
      if( true )
      {
@@ -557,13 +557,13 @@ eval( real xv[3], real *Ev, real *Hv /*= NULL */  )
       for( int i=0; i<6; i++ ){ Hv[i]=0.; }  
       if( myDomain==0 )
       {
-	Hv[2]=Hzr;
-	Hv[5]=Hzi;
+        Hv[2]=Hzr;
+        Hv[5]=Hzi;
       }
       else
       {
-	Hv[2]=Hzpr;
-	Hv[5]=Hzpi;
+        Hv[2]=Hzpr;
+        Hv[5]=Hzpi;
       }
       
     }
@@ -606,13 +606,13 @@ eval( real xv[3], real *Ev, real *Hv /*= NULL */  )
 
       if( myDomain==0 )
       {
-	Ev[0]=Exr; Ev[1]=Eyr; Ev[2]=Ezr;
-	Ev[3]=Exi; Ev[4]=Eyi; Ev[5]=Ezi;
+        Ev[0]=Exr; Ev[1]=Eyr; Ev[2]=Ezr;
+        Ev[3]=Exi; Ev[4]=Eyi; Ev[5]=Ezi;
       }
       else
       {
-	Ev[0]=Etxr; Ev[1]=Etyr; Ev[2]=Etzr;
-	Ev[3]=Etxi; Ev[4]=Etyi; Ev[5]=Etzi;
+        Ev[0]=Etxr; Ev[1]=Etyr; Ev[2]=Etzr;
+        Ev[3]=Etxi; Ev[4]=Etyi; Ev[5]=Etzi;
       }
     }
     
@@ -627,13 +627,13 @@ eval( real xv[3], real *Ev, real *Hv /*= NULL */  )
       
       if( myDomain==0 )
       {
-	Hv[0]=Hxr; Hv[1]=Hyr; Hv[2]=Hzr;
-	Hv[3]=Hxi; Hv[4]=Hyi; Hv[5]=Hzi;
+        Hv[0]=Hxr; Hv[1]=Hyr; Hv[2]=Hzr;
+        Hv[3]=Hxi; Hv[4]=Hyi; Hv[5]=Hzi;
       }
       else
       {
-	Hv[0]=Htxr; Hv[1]=Htyr; Hv[2]=Htzr;
-	Hv[3]=Htxi; Hv[4]=Htyi; Hv[5]=Htzi;
+        Hv[0]=Htxr; Hv[1]=Htyr; Hv[2]=Htzr;
+        Hv[3]=Htxi; Hv[4]=Htyi; Hv[5]=Htzi;
       }
 
     }
@@ -699,7 +699,7 @@ eval(real t, CompositeGrid & cg, int grid,
     {
       iv0[dir]=mg.gridIndexRange(0,dir);
       if( mg.isAllCellCentered() )
-	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+        xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
     }
   }
   // This macro defines the grid points for rectangular grids:
@@ -794,86 +794,86 @@ eval(real t, CompositeGrid & cg, int grid,
       // ----------- 2D --------------
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	if( !isRectangular )
-	{
-	  x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
-	  y= xLocal(i1,i2,i3,1)-x0[1];
-	}
-	else
-	{
-	  x=XC(iv,0)-x0[0];
-	  y=XC(iv,1)-x0[1];
-	}
+        if( !isRectangular )
+        {
+          x= xLocal(i1,i2,i3,0)-x0[0];   // shift point to reference coordinates 
+          y= xLocal(i1,i2,i3,1)-x0[1];
+        }
+        else
+        {
+          x=XC(iv,0)-x0[0];
+          y=XC(iv,1)-x0[1];
+        }
 
-	// -- un-rotate the point (x,y) to the reference space and evaluate the solution 
-	real ct= nv[0], st=nv[1];  // cos(theta), sin(theta)
-	// real xa=x-x0[0], ya=y-x0[1];
-	real xa=x, ya=y;
-	x =  ct*xa + st*ya;
-	y = -st*xa + ct*ya;
+        // -- un-rotate the point (x,y) to the reference space and evaluate the solution 
+        real ct= nv[0], st=nv[1];  // cos(theta), sin(theta)
+        // real xa=x-x0[0], ya=y-x0[1];
+        real xa=x, ya=y;
+        x =  ct*xa + st*ya;
+        y = -st*xa + ct*ya;
           
 
-	// Here are the statements to eval the solution: 
+        // Here are the statements to eval the solution: 
 #Include "dispersivePlaneWaveInterface.h"
 
-	// ---- rotate the field from the reference space to the rotated space ---
-	real Exra=Exr, Eyra=Eyr;
-	Exr =  ct*Exra - st*Eyra;
-	Eyr =  st*Exra + ct*Eyra;
+        // ---- rotate the field from the reference space to the rotated space ---
+        real Exra=Exr, Eyra=Eyr;
+        Exr =  ct*Exra - st*Eyra;
+        Eyr =  st*Exra + ct*Eyra;
           
-	real Exia=Exi, Eyia=Eyi;
-	Exi =  ct*Exia - st*Eyia;
-	Eyi =  st*Exia + ct*Eyia;
+        real Exia=Exi, Eyia=Eyi;
+        Exi =  ct*Exia - st*Eyia;
+        Eyi =  st*Exia + ct*Eyia;
           
-	real Expra=Expr, Eypra=Eypr;
-	Expr =  ct*Expra - st*Eypra;
-	Eypr =  st*Expra + ct*Eypra;
+        real Expra=Expr, Eypra=Eypr;
+        Expr =  ct*Expra - st*Eypra;
+        Eypr =  st*Expra + ct*Eypra;
           
-	real Expia=Expi, Eypia=Eypi;
-	Expi =  ct*Expia - st*Eypia;
-	Eypi =  st*Expia + ct*Eypia;
-          
-
-          
-	if( false )
-	{
-	  printF("(i1,i2)=(%3i,%3i): kNorm=%g, kpNorm=%g, kappa=(%g,%g) beta=(%g,%g)\n",
-		 i1,i2,kNorm,kpNorm,kappar,kappai,betar,betai);
-	  printF("    : eps1=%g, eps2=%g, r=(%g,%g) tau=(%g,%g) \n",eps1,eps2,rr,ri,taur,taui);
-	  // printF("    : chiSum1=(%g,%g) chiSum2=(%g,%g) \n",chiSum1r,chiSum1i,chiSum2r,chiSum2i);
-	  printF("    : Exr=%g, Eyr=%g, Exi=%g, Eyi=%g Hzr=%g Hzi=%g\n",Exr,Eyr,Exi,Eyi,Hzr,Hzi);
-	  printF("    : Expr=%g, Eypr=%g, Expi=%g, Eypi=%g Hzpr=%g Hzpi=%g\n",Expr,Eypr,Expi,Eypi,Hzpr,Hzpi);
-
-	  OV_ABORT("finish me");
-	}
+        real Expia=Expi, Eypia=Eypi;
+        Expi =  ct*Expia - st*Eypia;
+        Eypi =  st*Expia + ct*Eypia;
           
 
-	if( myDomain==0 )
-	{
-	  uLocal(i1,i2,i3,ex) = Exr;
-	  uLocal(i1,i2,i3,ey) = Eyr;
-	  uLocal(i1,i2,i3,hz) = Hzr;
+          
+        if( false )
+        {
+          printF("(i1,i2)=(%3i,%3i): kNorm=%g, kpNorm=%g, kappa=(%g,%g) beta=(%g,%g)\n",
+                 i1,i2,kNorm,kpNorm,kappar,kappai,betar,betai);
+          printF("    : eps1=%g, eps2=%g, r=(%g,%g) tau=(%g,%g) \n",eps1,eps2,rr,ri,taur,taui);
+          // printF("    : chiSum1=(%g,%g) chiSum2=(%g,%g) \n",chiSum1r,chiSum1i,chiSum2r,chiSum2i);
+          printF("    : Exr=%g, Eyr=%g, Exi=%g, Eyi=%g Hzr=%g Hzi=%g\n",Exr,Eyr,Exi,Eyi,Hzr,Hzi);
+          printF("    : Expr=%g, Eypr=%g, Expi=%g, Eypi=%g Hzpr=%g Hzpi=%g\n",Expr,Eypr,Expi,Eypi,Hzpr,Hzpi);
 
-	  for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
-	  {
-	    const int pc= iv*numberOfDimensions;
-	    pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
-	    pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
-	  }
+          OV_ABORT("finish me");
+        }
+          
 
-	}
-	else
-	{
-	  uLocal(i1,i2,i3,ex) = Expr;
-	  uLocal(i1,i2,i3,ey) = Eypr;
-	  uLocal(i1,i2,i3,hz) = Hzpr;
-	  for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
-	  {
-	    const int pc= iv*numberOfDimensions;
-	    pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Expr - chi2i[iv]*Expi );
-	    pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Eypr - chi2i[iv]*Eypi );
-	  }
-	}
+        if( myDomain==0 )
+        {
+          uLocal(i1,i2,i3,ex) = Exr;
+          uLocal(i1,i2,i3,ey) = Eyr;
+          uLocal(i1,i2,i3,hz) = Hzr;
+
+          for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+            pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+          }
+
+        }
+        else
+        {
+          uLocal(i1,i2,i3,ex) = Expr;
+          uLocal(i1,i2,i3,ey) = Eypr;
+          uLocal(i1,i2,i3,hz) = Hzpr;
+          for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Expr - chi2i[iv]*Expi );
+            pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Eypr - chi2i[iv]*Eypi );
+          }
+        }
 
       }
     }
@@ -898,70 +898,70 @@ eval(real t, CompositeGrid & cg, int grid,
 
       FOR_3D(i1,i2,i3,I1,I2,I3)
       { 
-	if( !isRectangular )
-	{
-	  x= xLocal(i1,i2,i3,0)-x0[0];
-	  y= xLocal(i1,i2,i3,1)-x0[1];
-	  z= xLocal(i1,i2,i3,2)-x0[2];
-	}
-	else
-	{
-	  x=XC(iv,0)-x0[0];
-	  y=XC(iv,1)-x0[1];
-	  z=XC(iv,2)-x0[2];
-	}
+        if( !isRectangular )
+        {
+          x= xLocal(i1,i2,i3,0)-x0[0];
+          y= xLocal(i1,i2,i3,1)-x0[1];
+          z= xLocal(i1,i2,i3,2)-x0[2];
+        }
+        else
+        {
+          x=XC(iv,0)-x0[0];
+          y=XC(iv,1)-x0[1];
+          z=XC(iv,2)-x0[2];
+        }
 
-	// Here are the statements to eval the time-dependent solution: 
+        // Here are the statements to eval the time-dependent solution: 
         #Include "dispersivePlaneWaveInterface3d.h"
 
-	if( myDomain==0 )
-	{
-	  uLocal(i1,i2,i3,ex) = Exr;
-	  uLocal(i1,i2,i3,ey) = Eyr;
-	  uLocal(i1,i2,i3,ez) = Ezr;
+        if( myDomain==0 )
+        {
+          uLocal(i1,i2,i3,ex) = Exr;
+          uLocal(i1,i2,i3,ey) = Eyr;
+          uLocal(i1,i2,i3,ez) = Ezr;
 
-	  for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
-	  {
-	    const int pc= iv*numberOfDimensions;
-	    pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
-	    pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
-	    pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
-	  }
+          for( int iv=0; iv<numberOfPolarizationVectors1; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            pLocal(i1,i2,i3,pc  ) = eps1*( chi1r[iv]*Exr - chi1i[iv]*Exi );
+            pLocal(i1,i2,i3,pc+1) = eps1*( chi1r[iv]*Eyr - chi1i[iv]*Eyi );
+            pLocal(i1,i2,i3,pc+2) = eps1*( chi1r[iv]*Ezr - chi1i[iv]*Ezi );
+          }
 
-	}
-	else
-	{
-	  uLocal(i1,i2,i3,ex) = Etxr;
-	  uLocal(i1,i2,i3,ey) = Etyr;
-	  uLocal(i1,i2,i3,ez) = Etzr;
-	  for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
-	  {
-	    const int pc= iv*numberOfDimensions;
-	    pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Etxr - chi2i[iv]*Etxi );
-	    pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Etyr - chi2i[iv]*Etyi );
-	    pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Etzr - chi2i[iv]*Etzi );
-	  }
-	}
+        }
+        else
+        {
+          uLocal(i1,i2,i3,ex) = Etxr;
+          uLocal(i1,i2,i3,ey) = Etyr;
+          uLocal(i1,i2,i3,ez) = Etzr;
+          for( int iv=0; iv<numberOfPolarizationVectors2; iv++ )
+          {
+            const int pc= iv*numberOfDimensions;
+            pLocal(i1,i2,i3,pc  ) = eps2*( chi2r[iv]*Etxr - chi2i[iv]*Etxi );
+            pLocal(i1,i2,i3,pc+1) = eps2*( chi2r[iv]*Etyr - chi2i[iv]*Etyi );
+            pLocal(i1,i2,i3,pc+2) = eps2*( chi2r[iv]*Etzr - chi2i[iv]*Etzi );
+          }
+        }
           
 
-	if( computeMagneticField )
-	{
-  	  // Here are the statements to eval the time-dependent solution: 
+        if( computeMagneticField )
+        {
+          // Here are the statements to eval the time-dependent solution: 
           #Include "dispersivePlaneWaveInterfaceH3d.h"
-	  if( myDomain==0 )
-	  {
-	    uLocal(i1,i2,i3,hx) = Hxr;
-	    uLocal(i1,i2,i3,hy) = Hyr;
-	    uLocal(i1,i2,i3,hz) = Hzr;
-	  }
-	  else
-	  {
-	    uLocal(i1,i2,i3,hx) = Htxr;
-	    uLocal(i1,i2,i3,hy) = Htyr;
-	    uLocal(i1,i2,i3,hz) = Htzr;
-	  }
-	}
-	
+          if( myDomain==0 )
+          {
+            uLocal(i1,i2,i3,hx) = Hxr;
+            uLocal(i1,i2,i3,hy) = Hyr;
+            uLocal(i1,i2,i3,hz) = Hzr;
+          }
+          else
+          {
+            uLocal(i1,i2,i3,hx) = Htxr;
+            uLocal(i1,i2,i3,hy) = Htyr;
+            uLocal(i1,i2,i3,hz) = Htzr;
+          }
+        }
+        
 
       } // end FOR
       
@@ -1175,7 +1175,7 @@ PlaneInterfaceExactSolution::check()
 
     printF(" Point: (x,y,z)=(%g,%g,%g) beta%d=(%g,%g) s=(%g,%g) epsHat%d=(%g,%g)\n",
            x[0],x[1],x[2],ip+1,std::real(beta),std::imag(beta),std::real(ss),std::imag(ss),
-	                  ip+1,std::real(epsHat),std::imag(epsHat));
+                          ip+1,std::real(epsHat),std::imag(epsHat));
     printF(" SOS(E):  |Delta(E)|=%9.2e, | Delta(E) + beta^2*E|/|Delta(E)| =%9.2e\n",normDeltaE,errE);
     printF(" SOS(H):  |Delta(H)|=%9.2e, | Delta(H) + beta^2*H|/|Delta(H)| =%9.2e\n",normDeltaH,errH);
     printF(" FOS(E):  |curl(H) |=%9.2e, | s*eps*E - curl(H)  |/|curl(H) | =%9.2e\n",normCurlH,errEt);
@@ -1240,11 +1240,11 @@ PlaneInterfaceExactSolution::check()
 
     printF("JUMPS: abs([n.E]) = %10.2e\n",abs(nDotE));
     printF("JUMPS: [E] =(%10.2e,%10.2e,%10.2e)+ I*(%10.2e,%10.2e,%10.2e) \n",
-	   std::real(E[0]),std::real(E[1]),std::real(E[2]), imag(E[0]), imag(E[1]), imag(E[2]) );
+           std::real(E[0]),std::real(E[1]),std::real(E[2]), imag(E[0]), imag(E[1]), imag(E[2]) );
     printF("JUMPS: abs([E])     =(%10.2e,%10.2e,%10.2e)  [H]    =(%10.2e,%10.2e,%10.2e) \n",
-	       abs(E[0]),abs(E[1]),abs(E[2]), abs(H[0]),abs(H[1]),abs(H[2]) );
+               abs(E[0]),abs(E[1]),abs(E[2]), abs(H[0]),abs(H[1]),abs(H[2]) );
     printF("JUMPS: abs([n X E]) =(%10.2e,%10.2e,%10.2e) abs([n X H]) =(%10.2e,%10.2e,%10.2e) \n",
-	   abs(nCrossE[0]),abs(nCrossE[1]),abs(nCrossE[2]), abs(nCrossH[0]),abs(nCrossH[1]),abs(nCrossH[2]) );
+           abs(nCrossE[0]),abs(nCrossE[1]),abs(nCrossE[2]), abs(nCrossH[0]),abs(nCrossH[1]),abs(nCrossH[2]) );
     maxErr = max(maxErr,abs(nCrossE[0]),abs(nCrossE[1]),abs(nCrossE[2]));
     maxErr = max(maxErr,abs(nCrossH[0]),abs(nCrossH[1]),abs(nCrossH[2]));
 
@@ -1315,7 +1315,7 @@ getDispersiveParameters( LocalReal beta0v[2], LocalReal beta1v[2] )
   m1   = 1./cHat1;              // index of refraction in the inner domain 
   eta1 = sqrt(muHat1/epsHat1);    // impedance
 
-				   
+                                   
   beta0 = m0*kx;   // complex wave number (outer domain) 
 
   beta0v[0]=std::real(beta0);

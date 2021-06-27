@@ -82,26 +82,26 @@ setupDomainSolverParameters( int domain, std::vector<aString> & modelNames )
     {
       aString solverType;
       aString s = substring(answer,len+1,answer.length()-1);
-      //	  sScanF(s.c_str(),"%s %s",dName, solverType);
+      //          sScanF(s.c_str(),"%s %s",dName, solverType);
       istrstream is(s);
       is>>solverType;
 
       if( domainSolver[domain] ) 
       {
-	delete domainSolver[domain];
-	domainSolver[domain] = 0;
+        delete domainSolver[domain];
+        domainSolver[domain] = 0;
       }
       CompositeGrid &cgd = cg.domain[domain];
       if( solverType!="none" )
       {
-        const int &plotOption = parameters.dbase.get<int>("plotOption");	
+        const int &plotOption = parameters.dbase.get<int>("plotOption");        
         domainSolver[domain] = buildModel(solverType,cg.domain[domain],&gi,
                                           parameters.dbase.get<Ogshow*>("show"),plotOption);
-	// Note: the name of debug files are based on the solverName.
-	domainSolver[domain]->setName(solverName);
+        // Note: the name of debug files are based on the solverName.
+        domainSolver[domain]->setName(solverName);
 
-	// Set the grid file name for all domains to be the same file as that supplied to Cgmp
-	domainSolver[domain]->setNameOfGridFile(parameters.dbase.get<aString>("nameOfGridFile"));
+        // Set the grid file name for all domains to be the same file as that supplied to Cgmp
+        domainSolver[domain]->setNameOfGridFile(parameters.dbase.get<aString>("nameOfGridFile"));
 
         // Assign the domain number: 
         domainSolver[domain]->parameters.dbase.get<int>("domainNumber")=domain;
@@ -112,13 +112,13 @@ setupDomainSolverParameters( int domain, std::vector<aString> & modelNames )
     {
       if ( domainSolver[domain] )
       {
-	// Assign solver parameters:
-	domainSolver[domain]->setParametersInteractively(false);
+        // Assign solver parameters:
+        domainSolver[domain]->setParametersInteractively(false);
       }
   
       else
       {
-	gi.outputString("a domain solver has not been chosen yet");
+        gi.outputString("a domain solver has not been chosen yet");
       }
     }
     else if( setupDialog.getTextValue(answer,"solver name","%s",solverName) )
@@ -128,9 +128,9 @@ setupDomainSolverParameters( int domain, std::vector<aString> & modelNames )
       int i=0;
       while( i<solverName.length() && solverName[i]==' ' ) i++;
       solverName=solverName(i,solverName.length()-1);
-	// Note: the name of debug files are based on the solverName.
+        // Note: the name of debug files are based on the solverName.
       if( domainSolver[domain] )
-	domainSolver[domain]->setName(solverName);
+        domainSolver[domain]->setName(solverName);
     }
     else
     {
@@ -157,7 +157,7 @@ Cgmp::
 setParametersInteractively(bool callSetup)
 {
   //  KK::AssertAlways<CgTH_Err>(parameters.dbase.get<GenericGraphicsInterface*>("ps"),
-  //  			     "interactive interface not initialized for Cgmp");
+  //                         "interactive interface not initialized for Cgmp");
   
   const int &plotOption = parameters.dbase.get<int>("plotOption");
     
@@ -222,13 +222,13 @@ setParametersInteractively(bool callSetup)
   for( int d=0; d<nDomains; d++ )
   {
     aString modelLabel=sPrintF(buff,"%s : %s ",(const char*)cg.getDomainName(d),
-		       (domainSolver[d] ? (const char*)domainSolver[d]->getClassName() : "none"));
+                       (domainSolver[d] ? (const char*)domainSolver[d]->getClassName() : "none"));
     gui.addInfoLabel(modelLabel);
   }
 
   aString tbLabels[] = {"use preferred order of domains",
                         "match interfaces geometrically",
-			""};
+                        ""};
   int tbState[10];
   tbState[0] = parameters.dbase.get<bool>("usePreferredOrderOfDomains");
   tbState[1] = parameters.dbase.get<bool>("matchInterfacesGeometrically");
@@ -249,32 +249,32 @@ setParametersInteractively(bool callSetup)
     else if ( (len=answer.matches("setup")) )
     {
       aString dName = substring(answer,len+1,answer.length()-1);
-      //	  DEBUG_LOG1("setting up parameters for "<<dName);
+      //          DEBUG_LOG1("setting up parameters for "<<dName);
       int domain=-1;
       for( int d=0; d<nDomains; d++ )
       {
-	if( cg.getDomainName(d)==dName )
-	{
-	  domain=d;
-	  break;
-	}
+        if( cg.getDomainName(d)==dName )
+        {
+          domain=d;
+          break;
+        }
       }
       if( domain>=0 )
       {
-	// domainSetupDialog[domain]->showSibling();
+        // domainSetupDialog[domain]->showSibling();
         setupDomainSolverParameters( domain,modelNames );
       }
       else
       {
         printF("ERROR: unknown setup command [%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        gi.stopReadingCommandFile();
       }
       // set the label field with names of the domains and corresponding pde model
       for( int d=0; d<nDomains; d++ )
       {
-	aString modelLabel=sPrintF(buff,"%s : %s ",(const char*)cg.getDomainName(d),
-			   (domainSolver[d] ? (const char*)domainSolver[d]->getClassName() : "none"));
-	gui.setInfoLabel(d,modelLabel);
+        aString modelLabel=sPrintF(buff,"%s : %s ",(const char*)cg.getDomainName(d),
+                           (domainSolver[d] ? (const char*)domainSolver[d]->getClassName() : "none"));
+        gui.setInfoLabel(d,modelLabel);
       }
     }
     else if( answer=="setup general parameters" )
@@ -286,10 +286,10 @@ setParametersInteractively(bool callSetup)
     else if( gui.getToggleValue(answer,"match interfaces geometrically",
                                    parameters.dbase.get<bool>("matchInterfacesGeometrically")) ){} //
     else if( (len=answer.matches("define real parameter"))     ||
-	     (len=answer.matches("define integer parameter"))  ||
-	     (len=answer.matches("define string parameter")) )
+             (len=answer.matches("define integer parameter"))  ||
+             (len=answer.matches("define string parameter")) )
     {
-	  
+          
       const int length=answer.length();
       int iStart=len;
       while(  iStart<length && answer[iStart]==' ' ) iStart++;  // skip leading blanks
@@ -298,32 +298,32 @@ setParametersInteractively(bool callSetup)
       iEnd--;
       if( iStart<=iEnd )
       {
-	aString name = answer(iStart,iEnd);
-	if( answer.matches("define real parameter") )
-	{
-	  real value;
-	  sScanF(answer(iEnd+1,answer.length()),"%e",&value);
-	  printF(" Adding the real parameter [%s] with value [%e]\n",(const char*)name,value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
-	else if( answer.matches("define integer parameter") )
-	{
-	  int value;
-	  sScanF(answer(iEnd+1,answer.length()),"%i",&value);
-	  printF(" Adding the integer parameter [%s] with value [%i]\n",(const char*)name,value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
-	else
-	{
-	  iStart=iEnd+1;
-	  iEnd=length-1;
-	  while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
-	  while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
-	  aString value=answer(iStart,iEnd);
-		  
-	  printF(" Adding the string parameter [%s] with value [%s]\n",(const char*)name,(const char*)value);
-	  parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
-	}
+        aString name = answer(iStart,iEnd);
+        if( answer.matches("define real parameter") )
+        {
+          real value;
+          sScanF(answer(iEnd+1,answer.length()),"%e",&value);
+          printF(" Adding the real parameter [%s] with value [%e]\n",(const char*)name,value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
+        else if( answer.matches("define integer parameter") )
+        {
+          int value;
+          sScanF(answer(iEnd+1,answer.length()),"%i",&value);
+          printF(" Adding the integer parameter [%s] with value [%i]\n",(const char*)name,value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
+        else
+        {
+          iStart=iEnd+1;
+          iEnd=length-1;
+          while( iStart<iEnd && answer[iStart]==' ' ) iStart++;
+          while( iEnd>iStart && answer[iEnd]==' ' ) iEnd--;
+          aString value=answer(iStart,iEnd);
+                  
+          printF(" Adding the string parameter [%s] with value [%s]\n",(const char*)name,(const char*)value);
+          parameters.dbase.get<ListOfShowFileParameters >("pdeParameters").push_back(ShowFileParameter(name,value));
+        }
       }
     }
   }
@@ -374,7 +374,7 @@ setParametersInteractively(bool callSetup)
     {
       if( tInitial==0. )
       {
-	tInitial=t0;
+        tInitial=t0;
         printF("INFO: taking initial time =%9.3e from domain d=%i\n",tInitial,d);
       }
       else
@@ -395,23 +395,23 @@ setParametersInteractively(bool callSetup)
     {
       if( domainSolver[d]!=NULL && domainSolver[d]->getClassName()=="Cgsm" )   // *** fix me : need a better way to check for solids
       {
-	domainOrder[d]=domain;
-	domain++;
+        domainOrder[d]=domain;
+        domain++;
       }
     }
     for( int d=0; d<domainSolver.size(); d++ )
     {
       if( domainSolver[d]==NULL || (domainSolver[d]!=NULL && domainSolver[d]->getClassName()!="Cgsm") )
       {
-	domainOrder[d]=domain;
-	domain++;
+        domainOrder[d]=domain;
+        domain++;
       }
     }
     if( true || debug() & 1 )
     {
       printF("Cgmp:INFO: The preferred domain order is ");
       for( int d=0; d<domainSolver.size(); d++ )
-	printF("%i ",domainOrder[d]);
+        printF("%i ",domainOrder[d]);
       printF("\n");
       printF("Cgmp:INFO: The domains are re-ordered to put solid domains before fluid domains\n.");
       printF("Cgmp:INFO: To use the default ordering turn off the toggle `use preferred order of domains'\n");
@@ -433,7 +433,7 @@ setParametersInteractively(bool callSetup)
     {
       domainSolver[d]->parameters.dbase.get<real>("dtMax")=parameters.dbase.get<real >("dtMax");
     }
-	  
+          
   }
 
 }
@@ -476,21 +476,21 @@ setup(const real & time)
     {
       for( side=Start; side<=End; side++ )
       {
-	if( parameters.bcType(side,axis,grid)==Parameters::parabolicInflow )
-	  parameters.dbase.get<IntegerArray>("variableBoundaryData")(grid)=TRUE;  // **** why can't this be in setBoundaryConditions ?
-	  
-	// **** set the data to default for any BC's that were not set 
-	/* -------
-	   if( bc=cg[grid].boundaryCondition()(side,axis) > 0 )
-	   {
-	   for( n=0; n<parameters.dbase.get<int >("numberOfComponents"); n++ )
-	   {
-	   if( bcData(n,side,axis,grid)==defaultValue )
-	   {
-	   }
-	   }
-	   }
-	   ------ */
+        if( parameters.bcType(side,axis,grid)==Parameters::parabolicInflow )
+          parameters.dbase.get<IntegerArray>("variableBoundaryData")(grid)=TRUE;  // **** why can't this be in setBoundaryConditions ?
+          
+        // **** set the data to default for any BC's that were not set 
+        /* -------
+           if( bc=cg[grid].boundaryCondition()(side,axis) > 0 )
+           {
+           for( n=0; n<parameters.dbase.get<int >("numberOfComponents"); n++ )
+           {
+           if( bcData(n,side,axis,grid)==defaultValue )
+           {
+           }
+           }
+           }
+           ------ */
       }
     }
   }
@@ -510,6 +510,7 @@ setup(const real & time)
     }
   }
   
+
   MpParameters::MultiDomainAlgorithmEnum multiDomainAlgorithm=
                  parameters.dbase.get<MpParameters::MultiDomainAlgorithmEnum>("multiDomainAlgorithm");
   
@@ -524,57 +525,59 @@ setup(const real & time)
 
     FILE *file = output==0 ? stdout : parameters.dbase.get<FILE* >("logFile");
 
+    // ---- Output Cgmp header comments ----
+    writeParameterSummary(file);
     
-    fprintf(file,"\n"
-	    "******************************************************************\n");
-    fprintf(file,
-	    "             %s Version 0.1                                 \n"
-	    "             -----------------                              \n",
-	    (const char*)getClassName()   );
+    // fprintf(file,"\n"
+    //         "******************************************************************\n");
+    // fprintf(file,
+    //         "             %s Version 0.1                                 \n"
+    //         "             -----------------                              \n",
+    //         (const char*)getClassName()   );
     
 
-    fprintf(file,"\n"
-	    " cfl = %f, tFinal=%e, tPrint = %e \n"
-	    " time stepping method: %s.\n"
-	    " number of PC corrections = %i.\n"
-	    " solve coupled interface equations = %i.\n"
-            " use %s interface transfer.\n"
-            " relax correction steps = %i.\n"
-	    " multi-domain algorithm = %s.\n"
-            " interface communication mode= %s,\n"
-            " project interface = %s. (interfaceProjectionOption=%i, interface-ghost=%s)\n"
-            " project initial conditions = %i\n"
-	    ,
-	    parameters.dbase.get<real >("cfl"),
-	    parameters.dbase.get<real >("tFinal"),
-	    parameters.dbase.get<real >("tPrint"),
-	    (const char*)Parameters::timeSteppingName[timeSteppingMethod],
-            (int)parameters.dbase.get<int>("numberOfPCcorrections"),
-            (int)parameters.dbase.get<bool>("solveCoupledInterfaceEquations"),
-	    (parameters.dbase.get<bool>("useNewInterfaceTransfer") ? "new" : "old"),
-	    (int)parameters.dbase.get<bool>("relaxCorrectionSteps"),
-            (multiDomainAlgorithm==MpParameters::defaultMultiDomainAlgorithm          ? "default" :
-             multiDomainAlgorithm==MpParameters::stepAllThenMatchMultiDomainAlgorithm ? "step all then match" : 
-             multiDomainAlgorithm==MpParameters::multiStageAlgorithm                  ? "multi-stage" : 
-                                                                                        "unknown"),
-            (interfaceCommunicationMode==Parameters::autoRequestInterfaceData       ? "autoRequestInterfaceData" :
-             interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded ? "requestInterfaceDataWhenNeeded" :
-                                                                                      "unknown"),
-            (parameters.dbase.get<bool>("projectInterface")? "true" : "false"),
-            parameters.dbase.get<int>("interfaceProjectionOption"),
-            (interfaceProjectionGhostOption==0 ? "extrapolate" : 
-             interfaceProjectionGhostOption==1 ? "compatibility" : 
-             interfaceProjectionGhostOption==2 ? "exact" : "domain BC" ),
-             parameters.dbase.get<bool>("projectMultiDomainInitialConditions")
-             );
+    // fprintf(file,"\n"
+    //         " cfl = %f, tFinal=%e, tPrint = %e \n"
+    //         " time stepping method: %s.\n"
+    //         " number of PC corrections = %i.\n"
+    //         " solve coupled interface equations = %i.\n"
+    //         " use %s interface transfer.\n"
+    //         " relax correction steps = %i.\n"
+    //         " multi-domain algorithm = %s.\n"
+    //         " interface communication mode= %s,\n"
+    //         " project interface = %s. (interfaceProjectionOption=%i, interface-ghost=%s)\n"
+    //         " project initial conditions = %i\n"
+    //         ,
+    //         parameters.dbase.get<real >("cfl"),
+    //         parameters.dbase.get<real >("tFinal"),
+    //         parameters.dbase.get<real >("tPrint"),
+    //         (const char*)Parameters::timeSteppingName[timeSteppingMethod],
+    //         (int)parameters.dbase.get<int>("numberOfPCcorrections"),
+    //         (int)parameters.dbase.get<bool>("solveCoupledInterfaceEquations"),
+    //         (parameters.dbase.get<bool>("useNewInterfaceTransfer") ? "new" : "old"),
+    //         (int)parameters.dbase.get<bool>("relaxCorrectionSteps"),
+    //         (multiDomainAlgorithm==MpParameters::defaultMultiDomainAlgorithm          ? "default" :
+    //          multiDomainAlgorithm==MpParameters::stepAllThenMatchMultiDomainAlgorithm ? "step all then match" : 
+    //          multiDomainAlgorithm==MpParameters::multiStageAlgorithm                  ? "multi-stage" : 
+    //                                                                                     "unknown"),
+    //         (interfaceCommunicationMode==Parameters::autoRequestInterfaceData       ? "autoRequestInterfaceData" :
+    //          interfaceCommunicationMode==Parameters::requestInterfaceDataWhenNeeded ? "requestInterfaceDataWhenNeeded" :
+    //                                                                                   "unknown"),
+    //         (parameters.dbase.get<bool>("projectInterface")? "true" : "false"),
+    //         parameters.dbase.get<int>("interfaceProjectionOption"),
+    //         (interfaceProjectionGhostOption==0 ? "extrapolate" : 
+    //          interfaceProjectionGhostOption==1 ? "compatibility" : 
+    //          interfaceProjectionGhostOption==2 ? "exact" : "domain BC" ),
+    //          parameters.dbase.get<bool>("projectMultiDomainInitialConditions")
+    //          );
 
 
-    if( parameters.dbase.get<bool >("twilightZoneFlow") )
-    {
-      fprintf(file," Twilight zone flow\n");
-    }
+    // if( parameters.dbase.get<bool >("twilightZoneFlow") )
+    // {
+    //   fprintf(file," Twilight zone flow\n");
+    // }
 
-    fprintf(file,"******************************************************************\n\n");
+    // fprintf(file,"******************************************************************\n\n");
   }
   
   real cpu1=getCPU();

@@ -169,7 +169,7 @@ computeTimeStep()
     if( !dbase.has_key("materialRegionParameters") )
     {
       std::vector<DispersiveMaterialParameters> & dmpVector =
-	dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+        dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
       // Material "0" is the background material: 
       const int grid=0;
@@ -196,7 +196,7 @@ computeTimeStep()
       cMax=max(cMax,c);
 
       printF("CgMx:computeTimeStep: BA material region %d : c=%9.3e (imLambda=%9.3e) cMax=%9.3e\n",mr,c,
-	     imLambda,cMax );
+             imLambda,cMax );
 
     }
     
@@ -229,7 +229,7 @@ computeTimeStep()
       // // imLambda better be zero or the problem is ill-posed !
       // c = reLambda;  // maximum wave speed
       // printF("CgMx:computeTimeStep: grid=%d - BA max wave speed c=%9.3e (reLambda=%9.3e, imLambda=%9.3e)\n",grid,c,
-      // 	     reLambda,imLambda);
+      //             reLambda,imLambda);
 
       // // OV_ABORT("stop here for now");
       
@@ -238,7 +238,7 @@ computeTimeStep()
 
     if( method==yee && numberOfMaterialRegions>1 )
       c=cMax;
-	
+        
 
     real dtg=REAL_MAX*.01;
     if( mg.getGridType()==MappedGrid::structuredGrid )
@@ -246,65 +246,65 @@ computeTimeStep()
       real dx[3];
       if( mg.isRectangular() )
       {
-	mg.getDeltaX(dx);
+        mg.getDeltaX(dx);
 
-	if( method==nfdtd || method==yee  )
-	{
-	  if( numberOfDimensions==2 )
-	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
-	  else
-	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
-	}
-	else if( method==bamx )
-	{
+        if( method==nfdtd || method==yee  )
+        {
+          if( numberOfDimensions==2 )
+            dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
+          else
+            dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
+        }
+        else if( method==bamx )
+        {
           // **Check me** New Oct 2019
-	  if( numberOfDimensions==2 )
-	    dtg=cfl*1./( c*( 1./dx[0] + 1./dx[1] ) );  
-	  else
-	    dtg=cfl*1./( c*( 1./dx[0] +1./dx[1] +1./dx[2] ) ); 
-	}
-	else if( method==sosup )
-	{
+          if( numberOfDimensions==2 )
+            dtg=cfl*1./( c*( 1./dx[0] + 1./dx[1] ) );  
+          else
+            dtg=cfl*1./( c*( 1./dx[0] +1./dx[1] +1./dx[2] ) ); 
+        }
+        else if( method==sosup )
+        {
           // SOSUP: dt depends on the order of accuracy: 
-	  if( numberOfDimensions==2 )
-	  {
-	    const real lambda = sosupLambda2d[orderOfAccuracyInSpace], sp = sosupPower2d[orderOfAccuracyInSpace];
-	    dtg = cfl*(lambda/c)/( pow( pow(1./dx[0],sp) + pow(1./dx[1],sp) , 1./sp ) );
-	  }
-	  else
-	  {
-	    const real lambda = sosupLambda3d[orderOfAccuracyInSpace], sp = sosupPower3d[orderOfAccuracyInSpace];
-	    dtg = cfl*(lambda/c)/( pow( pow(1./dx[0],sp) + pow(1./dx[1],sp) + pow(1./dx[2],sp) , 1./sp ) );
-	  }
-			       
-	}
-	else
-	{
-	  OV_ABORT("computeTimeSTep::ERROR: unknown method");
-	}
-	
-	dxMinMax(grid,0)=numberOfDimensions==2 ? min(dx[0],dx[1]) : min(dx[0],dx[1],dx[2]);
-	dxMinMax(grid,1)=numberOfDimensions==2 ? max(dx[0],dx[1]) : max(dx[0],dx[1],dx[2]);
-	
-	printf(" computeTimeStep: grid=%d dx=%8.2e dy=%8.2e c=%8.2e, dtg=%8.2e\n",grid,dx[0],dx[1],c,dtg);
+          if( numberOfDimensions==2 )
+          {
+            const real lambda = sosupLambda2d[orderOfAccuracyInSpace], sp = sosupPower2d[orderOfAccuracyInSpace];
+            dtg = cfl*(lambda/c)/( pow( pow(1./dx[0],sp) + pow(1./dx[1],sp) , 1./sp ) );
+          }
+          else
+          {
+            const real lambda = sosupLambda3d[orderOfAccuracyInSpace], sp = sosupPower3d[orderOfAccuracyInSpace];
+            dtg = cfl*(lambda/c)/( pow( pow(1./dx[0],sp) + pow(1./dx[1],sp) + pow(1./dx[2],sp) , 1./sp ) );
+          }
+                               
+        }
+        else
+        {
+          OV_ABORT("computeTimeSTep::ERROR: unknown method");
+        }
+        
+        dxMinMax(grid,0)=numberOfDimensions==2 ? min(dx[0],dx[1]) : min(dx[0],dx[1],dx[2]);
+        dxMinMax(grid,1)=numberOfDimensions==2 ? max(dx[0],dx[1]) : max(dx[0],dx[1],dx[2]);
+        
+        printf(" computeTimeStep: grid=%d dx=%8.2e dy=%8.2e c=%8.2e, dtg=%8.2e\n",grid,dx[0],dx[1],c,dtg);
       }
       else // curvilinear grids 
       {  // curvilinear grids 
 
-	mg.update(MappedGrid::THEinverseVertexDerivative);
-	const realArray & rx = mg.inverseVertexDerivative();
-	const intArray & mask = mg.mask();
-	
+        mg.update(MappedGrid::THEinverseVertexDerivative);
+        const realArray & rx = mg.inverseVertexDerivative();
+        const intArray & mask = mg.mask();
+        
       
-	Index I1,I2,I3;
-	getIndex( mg.indexRange(),I1,I2,I3);
+        Index I1,I2,I3;
+        getIndex( mg.indexRange(),I1,I2,I3);
 
-	// Grid spacings on unit square:
-	real dr1 = mg.gridSpacing(axis1);
-	real dr2 = mg.gridSpacing(axis2);
-	real dr3 = mg.gridSpacing(axis3);
+        // Grid spacings on unit square:
+        real dr1 = mg.gridSpacing(axis1);
+        real dr2 = mg.gridSpacing(axis2);
+        real dr3 = mg.gridSpacing(axis3);
 
-	// parallel version here --- also broadcast max error in forcing.bC *************************
+        // parallel version here --- also broadcast max error in forcing.bC *************************
         #ifdef USE_PPP
           realSerialArray rxLocal; getLocalArrayWithGhostBoundaries(rx,rxLocal);
           intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(mask,maskLocal);
@@ -313,158 +313,158 @@ computeTimeStep()
           const intSerialArray & maskLocal = mask;
         #endif
 
-	real *rxp = rxLocal.Array_Descriptor.Array_View_Pointer3;
-	const int rxDim0=rxLocal.getRawDataSize(0);
-	const int rxDim1=rxLocal.getRawDataSize(1);
-	const int rxDim2=rxLocal.getRawDataSize(2);
-	const int rxDim3=mg.numberOfDimensions();   // note
+        real *rxp = rxLocal.Array_Descriptor.Array_View_Pointer3;
+        const int rxDim0=rxLocal.getRawDataSize(0);
+        const int rxDim1=rxLocal.getRawDataSize(1);
+        const int rxDim2=rxLocal.getRawDataSize(2);
+        const int rxDim3=mg.numberOfDimensions();   // note
 #undef RX
 #define RX(i0,i1,i2,i3,i4) rxp[i0+rxDim0*(i1+rxDim1*(i2+rxDim2*(i3+rxDim3*(i4))))]
 
-	const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
-	const int maskDim0=maskLocal.getRawDataSize(0);
-	const int maskDim1=maskLocal.getRawDataSize(1);
-	const int md1=maskDim0, md2=md1*maskDim1; 
+        const int *maskp = maskLocal.Array_Descriptor.Array_View_Pointer2;
+        const int maskDim0=maskLocal.getRawDataSize(0);
+        const int maskDim1=maskLocal.getRawDataSize(1);
+        const int md1=maskDim0, md2=md1*maskDim1; 
 #define MASK(i0,i1,i2) maskp[(i0)+(i1)*md1+(i2)*md2]
 
 
-	int includeGhost=0;
-	bool ok = ParallelUtility::getLocalArrayBounds(rx,rxLocal,I1,I2,I3,includeGhost);
+        int includeGhost=0;
+        bool ok = ParallelUtility::getLocalArrayBounds(rx,rxLocal,I1,I2,I3,includeGhost);
 
-	int i1,i2,i3;
-	real a11Min=REAL_MAX*.001;
-	real a11Max=-a11Min;
-	//  **** this is a guess **** check this.
-	const real alpha0=1.;
+        int i1,i2,i3;
+        real a11Min=REAL_MAX*.001;
+        real a11Max=-a11Min;
+        //  **** this is a guess **** check this.
+        const real alpha0=1.;
 
-	dxMinMax(grid,0)=REAL_MAX*.01; 
-	dxMinMax(grid,1)=0.;
-	dtg = REAL_MAX*.01;
+        dxMinMax(grid,0)=REAL_MAX*.01; 
+        dxMinMax(grid,1)=0.;
+        dtg = REAL_MAX*.01;
 
-	real a11,a12,a22;
-	if( ok )
-	{
-	  if( numberOfDimensions==2 )
-	  {
+        real a11,a12,a22;
+        if( ok )
+        {
+          if( numberOfDimensions==2 )
+          {
 
-	    if( method!=sosup )
-	    {
-	      FOR_3D(i1,i2,i3,I1,I2,I3)
-	      {
-	      
-		if( MASK(i1,i2,i3)>0 )
-		{
-		  a11 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,0,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,0,1) );
-		  a12 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,1,1) )*2.;
-		  a22 = ( RX(i1,i2,i3,1,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,1,1)*RX(i1,i2,i3,1,1) );
+            if( method!=sosup )
+            {
+              FOR_3D(i1,i2,i3,I1,I2,I3)
+              {
+              
+                if( MASK(i1,i2,i3)>0 )
+                {
+                  a11 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,0,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,0,1) );
+                  a12 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,1,1) )*2.;
+                  a22 = ( RX(i1,i2,i3,1,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,1,1)*RX(i1,i2,i3,1,1) );
 
                   // we could save work by delaying the sqrt to after the loop
-		  a11=1./sqrt( a11 *(1./(alpha0*dr1*dr1)) 
-			       +abs(a12)*(.25/(alpha0*dr1*dr2))
-			       +a22 *(1./(alpha0*dr2*dr2)) 
-		    );
+                  a11=1./sqrt( a11 *(1./(alpha0*dr1*dr1)) 
+                               +abs(a12)*(.25/(alpha0*dr1*dr2))
+                               +a22 *(1./(alpha0*dr2*dr2)) 
+                    );
 
-		  a11Min=min(a11Min,a11);
-		  a11Max=max(a11Max,a11);
+                  a11Min=min(a11Min,a11);
+                  a11Max=max(a11Max,a11);
           
-		}
+                }
 
-	      }
-	    }
-	    else
-	    {
+              }
+            }
+            else
+            {
               // sosup:
 
               // FIX dxMin dxMax !
               const real lambda = sosupLambda2d[orderOfAccuracyInSpace], sp = sosupPower2d[orderOfAccuracyInSpace];
               const real spBy2=sp*.5;
-	      FOR_3D(i1,i2,i3,I1,I2,I3)
-	      {
-	      
-		if( MASK(i1,i2,i3)>0 )
-		{
-		  a11 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,0,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,0,1) );
-		  a12 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,1,1) )*2.;
-		  a22 = ( RX(i1,i2,i3,1,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,1,1)*RX(i1,i2,i3,1,1) );
+              FOR_3D(i1,i2,i3,I1,I2,I3)
+              {
+              
+                if( MASK(i1,i2,i3)>0 )
+                {
+                  a11 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,0,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,0,1) );
+                  a12 = ( RX(i1,i2,i3,0,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,0,1)*RX(i1,i2,i3,1,1) )*2.;
+                  a22 = ( RX(i1,i2,i3,1,0)*RX(i1,i2,i3,1,0) + RX(i1,i2,i3,1,1)*RX(i1,i2,i3,1,1) );
 
                   // we could save work by delaying the outer pow to after the loop
-		  a11=lambda/pow( pow(a11 *(1./(alpha0*dr1*dr1)),spBy2) +
-				  pow(abs(a12)*(.25/(alpha0*dr1*dr2)),spBy2) +
-				  pow(a22 *(1./(alpha0*dr2*dr2)),spBy2), 1./sp );
+                  a11=lambda/pow( pow(a11 *(1./(alpha0*dr1*dr1)),spBy2) +
+                                  pow(abs(a12)*(.25/(alpha0*dr1*dr2)),spBy2) +
+                                  pow(a22 *(1./(alpha0*dr2*dr2)),spBy2), 1./sp );
 
-		  a11Min=min(a11Min,a11);
-		  a11Max=max(a11Max,a11);
+                  a11Min=min(a11Min,a11);
+                  a11Max=max(a11Max,a11);
           
-		}
-	      }
-	    }
-	    
-	    
-	  }
-	  else  //   ***** 3D ********
-	  { //   ***** 3D ********
+                }
+              }
+            }
+            
+            
+          }
+          else  //   ***** 3D ********
+          { //   ***** 3D ********
 
 #define rxDotRx(axis,dir) (RX(i1,i2,i3,axis,0)*RX(i1,i2,i3,dir,0) \
-			 + RX(i1,i2,i3,axis,1)*RX(i1,i2,i3,dir,1) \
-			 + RX(i1,i2,i3,axis,2)*RX(i1,i2,i3,dir,2))
+                         + RX(i1,i2,i3,axis,1)*RX(i1,i2,i3,dir,1) \
+                         + RX(i1,i2,i3,axis,2)*RX(i1,i2,i3,dir,2))
       
-	    if( method!=sosup )
-	    {
-	      // There would be a factor of 4 for the worst case plus/minus wave but we also
-	      // divide by a factor of 4 for the 2nd-order time stepping.
-	      FOR_3D(i1,i2,i3,I1,I2,I3)
-	      {
-		if( MASK(i1,i2,i3)>0 )
-		{
+            if( method!=sosup )
+            {
+              // There would be a factor of 4 for the worst case plus/minus wave but we also
+              // divide by a factor of 4 for the 2nd-order time stepping.
+              FOR_3D(i1,i2,i3,I1,I2,I3)
+              {
+                if( MASK(i1,i2,i3)>0 )
+                {
                  // we could save work by delaying the sqrt to after the loop
-		  a11=1./sqrt(   rxDotRx(0,0) *(1./(dr1*dr1)) 
-				 +rxDotRx(1,1) *(1./(dr2*dr2))
-				 +rxDotRx(2,2) *(1./(dr3*dr3))
-				 +abs(rxDotRx(1,0))*(.5/(dr2*dr1))  
-				 +abs(rxDotRx(2,0))*(.5/(dr3*dr1)) 
-				 +abs(rxDotRx(2,1))*(.5/(dr3*dr2)) );
+                  a11=1./sqrt(   rxDotRx(0,0) *(1./(dr1*dr1)) 
+                                 +rxDotRx(1,1) *(1./(dr2*dr2))
+                                 +rxDotRx(2,2) *(1./(dr3*dr3))
+                                 +abs(rxDotRx(1,0))*(.5/(dr2*dr1))  
+                                 +abs(rxDotRx(2,0))*(.5/(dr3*dr1)) 
+                                 +abs(rxDotRx(2,1))*(.5/(dr3*dr2)) );
 
-		  // ** a11 =  pow(a11,-.5);
-		
-		  a11Min=min(a11Min,a11);
-		  a11Max=max(a11Max,a11);
+                  // ** a11 =  pow(a11,-.5);
+                
+                  a11Min=min(a11Min,a11);
+                  a11Max=max(a11Max,a11);
 
-		}
-	      }
-	    }
-	    else
-	    { // sosup: 
+                }
+              }
+            }
+            else
+            { // sosup: 
               const real lambda = sosupLambda3d[orderOfAccuracyInSpace], sp = sosupPower3d[orderOfAccuracyInSpace];
               const real spBy2=sp*.5;
-	      FOR_3D(i1,i2,i3,I1,I2,I3)
-	      {
-		if( MASK(i1,i2,i3)>0 )
-		{
+              FOR_3D(i1,i2,i3,I1,I2,I3)
+              {
+                if( MASK(i1,i2,i3)>0 )
+                {
                   // we could save work by delaying the outer pow to after the loop
-		  a11=lambda/pow( pow(rxDotRx(0,0) *(1./(dr1*dr1)),spBy2) +
-				  pow(rxDotRx(1,1) *(1./(dr2*dr2)),spBy2) +
-				  pow(rxDotRx(2,2) *(1./(dr3*dr3)),spBy2) +
-				  pow(abs(rxDotRx(1,0))*(.5/(dr2*dr1)),spBy2) + 
-				  pow(abs(rxDotRx(2,0))*(.5/(dr3*dr1)),spBy2) + 
-				  pow(abs(rxDotRx(2,1))*(.5/(dr3*dr2)),spBy2), 1./sp );
+                  a11=lambda/pow( pow(rxDotRx(0,0) *(1./(dr1*dr1)),spBy2) +
+                                  pow(rxDotRx(1,1) *(1./(dr2*dr2)),spBy2) +
+                                  pow(rxDotRx(2,2) *(1./(dr3*dr3)),spBy2) +
+                                  pow(abs(rxDotRx(1,0))*(.5/(dr2*dr1)),spBy2) + 
+                                  pow(abs(rxDotRx(2,0))*(.5/(dr3*dr1)),spBy2) + 
+                                  pow(abs(rxDotRx(2,1))*(.5/(dr3*dr2)),spBy2), 1./sp );
 
-		  // ** a11 =  pow(a11,-.5);
-		
-		  a11Min=min(a11Min,a11);
-		  a11Max=max(a11Max,a11);
+                  // ** a11 =  pow(a11,-.5);
+                
+                  a11Min=min(a11Min,a11);
+                  a11Max=max(a11Max,a11);
 
-		}
-	      }
-	    }
-	    
+                }
+              }
+            }
+            
 #undef rxDotRx
-	  } // end if 3D
+          } // end if 3D
           
           
 
-	}
+        }
         // end if OK 
-	
+        
         if( useNewTimeStep )
         {
           // *wdh* Oct. 1, 2020 -- more accurate time step (e.g. nonSquare now matches square)
@@ -477,10 +477,10 @@ computeTimeStep()
           // Nov 23, 2020 *fixed* formula
           dx[0]=dsMin[0]; dx[1]=dsMin[1]; dx[2]=dsMin[2];
           
-	  if( numberOfDimensions==2 )
-	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
-	  else
-	    dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
+          if( numberOfDimensions==2 )
+            dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1]) ) );  
+          else
+            dtg=cfl*1./( c*sqrt( 1./(dx[0]*dx[0])+1./(dx[1]*dx[1])+1./(dx[2]*dx[2]) ) ); 
 
           dxMinMax(grid,0) = numberOfDimensions == 2 ? min(dsMin[0],dsMin[1]) : min(dsMin[0],dsMin[1],dsMin[2]);
           dxMinMax(grid,1) = numberOfDimensions == 2 ? max(dsMax[0],dsMax[1]) : max(dsMax[0],dsMax[1],dsMax[2]);
@@ -492,7 +492,7 @@ computeTimeStep()
   
           dtg = (cfl/c) * dxMinMax(grid,0); 
         }
-	  
+          
 
 
 
@@ -522,14 +522,14 @@ computeTimeStep()
        
       if( useSosupDissipation!=0 && artDiss !=0. )
       {
-	printF("--MX-- getTimeStep: ERROR: useSosupDissipaton but normal artificial dissipation is also on!\n");
-	OV_ABORT("error");
+        printF("--MX-- getTimeStep: ERROR: useSosupDissipaton but normal artificial dissipation is also on!\n");
+        OV_ABORT("error");
       }
       
 
       if( artDiss>0. )
       {
-	// Here is the correction for artificial dissipation
+        // Here is the correction for artificial dissipation
         //
         // The equation for dt looks like
         //   dt*dt *c*c*(  1/dx^2 + 1/dy^2 ) = 1 - beta*dt
@@ -541,126 +541,126 @@ computeTimeStep()
 
         beta = .5*adc*( numberOfDimensions*pow(2.,real(orderOfArtificialDissipation)) );
         real factor=2.;  // safety factor
-	beta *=factor;
+        beta *=factor;
 
         dtg = sqrt( gamma + pow(beta*gamma*.5,2.) ) - beta*gamma*.5;
 
         if( debug & 4 )
-	  fprintf(pDebugFile," getTimeStep: Correct for art. dissipation: new dt=%9.3e (old = %9.3e, new/old=%4.2f) myid=%i\n",
-		 dtg,sqrt(gamma),dtg/sqrt(gamma),myid);
+          fprintf(pDebugFile," getTimeStep: Correct for art. dissipation: new dt=%9.3e (old = %9.3e, new/old=%4.2f) myid=%i\n",
+                 dtg,sqrt(gamma),dtg/sqrt(gamma),myid);
 
-	if( true )
-	  printF("***** getTimeStep: Correct for art. dissipation: new dt=%9.3e (old = %9.3e, new/old=%4.2f)\n",
-		 dtg,sqrt(gamma),dtg/sqrt(gamma));
-	
+        if( true )
+          printF("***** getTimeStep: Correct for art. dissipation: new dt=%9.3e (old = %9.3e, new/old=%4.2f)\n",
+                 dtg,sqrt(gamma),dtg/sqrt(gamma));
+        
       }
       
       if( timeSteppingMethod==modifiedEquationTimeStepping )
       {
-	if( true || orderOfAccuracyInTime==2 || orderOfAccuracyInTime==4 )
-	{
-	  dtg*=1.; // Check this for 3D
-	}
-	else
-	{
+        if( true || orderOfAccuracyInTime==2 || orderOfAccuracyInTime==4 )
+        {
+          dtg*=1.; // Check this for 3D
+        }
+        else
+        {
           printF("getTimeStep:ERROR: modifiedEquationTimeStepping -- orderOfAccuracyInTime=%i ??\n",
           orderOfAccuracyInTime);
-	  
+          
           Overture::abort("getTimeStep:ERROR: modifiedEquationTimeStepping -- orderOfAccuracyInTime?? ");
-	}
-	
+        }
+        
       }
       else if( timeSteppingMethod==rungeKutta )
       {
         // MOL RK stability bounds -- Oct 20, 2019 
 
         const int & orderOfRungeKutta = dbase.get<int>("orderOfRungeKutta");
-	if( orderOfRungeKutta == 1 || orderOfRungeKutta==2 )
-	{
+        if( orderOfRungeKutta == 1 || orderOfRungeKutta==2 )
+        {
           // formally unstable with no-dissipation 
-	}
-	else if( orderOfRungeKutta == 3 )
-	{
+        }
+        else if( orderOfRungeKutta == 3 )
+        {
           if( !useSosupDissipation && artDiss==0. )
-	  {
+          {
             dtg *= 1.7;   //  approximate RK3-SPP, maybe 1.7 on axis 
-	  }
+          }
           else
-	  {
-    	     dtg *= 2.3; //  approximate RK3-SPP with dissipation -- **FIX ME** 
-	  }
-	  
-	  
-	  if( orderOfAccuracyInSpace==4 )
+          {
+             dtg *= 2.3; //  approximate RK3-SPP with dissipation -- **FIX ME** 
+          }
+          
+          
+          if( orderOfAccuracyInSpace==4 )
             dtg = dtg/1.4;   // approximate for four-order first derivative *check me*
 
-	}
-	else if( orderOfRungeKutta == 4 )
-	{
+        }
+        else if( orderOfRungeKutta == 4 )
+        {
           const real rk4ImBound = 2.8;  // RK stability bound on the imaginary axis 
 
 
-	  if( orderOfAccuracyInSpace==2 )
-	  {	
-	    dtg *= rk4ImBound; 
-	  }
-	  else if( orderOfAccuracyInSpace==4 )
-	  {
+          if( orderOfAccuracyInSpace==2 )
+          {     
+            dtg *= rk4ImBound; 
+          }
+          else if( orderOfAccuracyInSpace==4 )
+          {
             const real firstDerivSymbolBound = 1.4; // approximate bound on the symbol of D0( I - h^2/6 D+D-) operator 
             dtg = rk4ImBound*dtg/firstDerivSymbolBound;  
-	  }
-	  else
-	  {
-	    OV_ABORT("finish me");
-	  }
-	  
-	  
-	}
-	else
-	{
+          }
+          else
+          {
+            OV_ABORT("finish me");
+          }
+          
+          
+        }
+        else
+        {
           OV_ABORT("ERROR: getTimeStep: unexpected orderOfRungeKutta");
-	}
-	
+        }
+        
 
       }
       else
 
       {
 
-	if( orderOfAccuracyInSpace==2 )
-	{
-	}
-	else if( orderOfAccuracyInSpace==4 )
-	  dtg*=sqrt(3./4.);
-	else if( orderOfAccuracyInSpace==6 )
-	  dtg*=sqrt(.6618);
-	else if( orderOfAccuracyInSpace==8 )
-	  dtg*=sqrt(.6152);
-	else
-	{
+        if( orderOfAccuracyInSpace==2 )
+        {
+        }
+        else if( orderOfAccuracyInSpace==4 )
+          dtg*=sqrt(3./4.);
+        else if( orderOfAccuracyInSpace==6 )
+          dtg*=sqrt(.6618);
+        else if( orderOfAccuracyInSpace==8 )
+          dtg*=sqrt(.6152);
+        else
+        {
           Overture::abort("getTimeStep:ERROR: modifiedEquationTimeStepping -- orderOfAccuracyInSpace?? ");
-	}
+        }
 
-	if( orderOfAccuracyInTime==4 )
-	{
-	  dtg*=1.41/2.;
-	}
-	else if( orderOfAccuracyInTime==6 )
-	{
-	  dtg*=.84/2.;
-	}
-	else if( orderOfAccuracyInTime==8 )
-	{
-	  dtg*=.46/2.;
-	}
-	else if( orderOfAccuracyInTime==3 && method==dsi )
-	{
-	  dtg*=(12./7.)/2.;   // ABS3
-	}
-	else if( orderOfAccuracyInTime!=2 )
-	{
-	  Overture::abort();
-	}
+        if( orderOfAccuracyInTime==4 )
+        {
+          dtg*=1.41/2.;
+        }
+        else if( orderOfAccuracyInTime==6 )
+        {
+          dtg*=.84/2.;
+        }
+        else if( orderOfAccuracyInTime==8 )
+        {
+          dtg*=.46/2.;
+        }
+        else if( orderOfAccuracyInTime==3 && method==dsi )
+        {
+          dtg*=(12./7.)/2.;   // ABS3
+        }
+        else if( orderOfAccuracyInTime!=2 )
+        {
+          Overture::abort();
+        }
       }
       
       
@@ -685,23 +685,23 @@ computeTimeStep()
 //        int e;
 //        for( e=0; e<numberOfElements; e++ )
 //        {
-//  	const int numFacesThisElement=map.getNumberOfFacesThisElement(e);      
+//      const int numFacesThisElement=map.getNumberOfFacesThisElement(e);      
 
-//  	// select two faces from the element:
-//  	int f1=elementFace(e,0);
-//  	int f2=elementFace(e,numFacesThisElement-1);
+//      // select two faces from the element:
+//      int f1=elementFace(e,0);
+//      int f2=elementFace(e,numFacesThisElement-1);
       
-//  	int n0=faces(f1,0), n1=faces(f1,1);
-//  	real ds1=SQR( nodes(n1,0)-nodes(n0,0) )+SQR( nodes(n1,1)-nodes(n0,1) );
-//  	n0=faces(f2,0), n1=faces(f2,1);
-//  	real ds2=SQR( nodes(n1,0)-nodes(n0,0) )+SQR( nodes(n1,1)-nodes(n0,1) );
+//      int n0=faces(f1,0), n1=faces(f1,1);
+//      real ds1=SQR( nodes(n1,0)-nodes(n0,0) )+SQR( nodes(n1,1)-nodes(n0,1) );
+//      n0=faces(f2,0), n1=faces(f2,1);
+//      real ds2=SQR( nodes(n1,0)-nodes(n0,0) )+SQR( nodes(n1,1)-nodes(n0,1) );
 
-//  	dsMax = max( dsMax, 1./ds1+1./ds2 );
+//      dsMax = max( dsMax, 1./ds1+1./ds2 );
 //        }
     
 //        if( map.getNumberOfFacesThisElement(0)==3 )
 //        {
-//  	dsMax*=4.;  // **** fudge for triangular grids -- fix this ---
+//      dsMax*=4.;  // **** fudge for triangular grids -- fix this ---
 //        }
     
 #if 0
@@ -744,59 +744,59 @@ computeTimeStep()
       real minFEL = REAL_MAX;
       for ( iter = umap.begin(UnstructuredMapping::Face); iter!=iter_end; iter++ )
       {
-	int f=*iter;
-	real area = cFArea(f,0,0);
-	real lsum = 0.;
-	aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Edge);
-	for ( aiter = umap.adjacency_begin(iter, UnstructuredMapping::Edge); aiter!=aiter_end; aiter++ )
-	{
-	  int e = *aiter;
-	  real edgeL = 0;
-	  int v1 = edges(e,0);
-	  int v2 = edges(e,1);
-	  for ( int a=0; a<rDim; a++ )
-	    edgeL += ( nodes(v2,a)-nodes(v1,a) )*( nodes(v2,a)-nodes(v1,a) );
-	  //	      lsum += sqrt(edgeL);
-	  lsum = max(lsum,edgeL);
-	}
+        int f=*iter;
+        real area = cFArea(f,0,0);
+        real lsum = 0.;
+        aiter_end = umap.adjacency_end(iter, UnstructuredMapping::Edge);
+        for ( aiter = umap.adjacency_begin(iter, UnstructuredMapping::Edge); aiter!=aiter_end; aiter++ )
+        {
+          int e = *aiter;
+          real edgeL = 0;
+          int v1 = edges(e,0);
+          int v2 = edges(e,1);
+          for ( int a=0; a<rDim; a++ )
+            edgeL += ( nodes(v2,a)-nodes(v1,a) )*( nodes(v2,a)-nodes(v1,a) );
+          //          lsum += sqrt(edgeL);
+          lsum = max(lsum,edgeL);
+        }
 
-	lsum = sqrt(lsum);
+        lsum = sqrt(lsum);
 
-	minLen = min(minLen, area/lsum);
-	minFEL = min(lsum,minFEL);
+        minLen = min(minLen, area/lsum);
+        minFEL = min(lsum,minFEL);
       }
 
       iter_end = umap.end(cellBdyType);
       real minCCL = REAL_MAX;
       for ( iter=umap.begin(cellBdyType); iter!=iter_end; iter++ )
       {
-	int e = *iter;
-	aiter_end = umap.adjacency_end(iter,cellType);
-	real edgeL = 0;
-	for ( aiter=umap.adjacency_begin(iter,cellType); aiter!=aiter_end; aiter++ )
-	{
-	  real L = 0;
-	  int c = *aiter;
-	  for ( int a=0; a<rDim; a++ )
-	    L += (cellCenters(c,a)-cellBdyCenters(e,a))*(cellCenters(c,a)-cellBdyCenters(e,a));
-	  edgeL += sqrt(L);
-	}
+        int e = *iter;
+        aiter_end = umap.adjacency_end(iter,cellType);
+        real edgeL = 0;
+        for ( aiter=umap.adjacency_begin(iter,cellType); aiter!=aiter_end; aiter++ )
+        {
+          real L = 0;
+          int c = *aiter;
+          for ( int a=0; a<rDim; a++ )
+            L += (cellCenters(c,a)-cellBdyCenters(e,a))*(cellCenters(c,a)-cellBdyCenters(e,a));
+          edgeL += sqrt(L);
+        }
 
-	minCCL = min(minCCL, edgeL);
-	if ( rDim==2 )
-	  minLen = min(edgeL,minLen);
-	else
-	{
-	  aiter_end = umap.adjacency_end(iter,edgeType);
-	  for ( aiter=umap.adjacency_begin(iter,edgeType); aiter!=aiter_end; aiter++ )
-	  {
-	    real area=0;
-	    for ( int a=0; a<rDim; a++ )
-	      area+=edgeAreaNormals(*aiter,0,0,a)*edgeAreaNormals(*aiter,0,0,a);
-	    minLen = min(minLen, sqrt(area)/(2*edgeL));
-	  }
-	}
-	  
+        minCCL = min(minCCL, edgeL);
+        if ( rDim==2 )
+          minLen = min(edgeL,minLen);
+        else
+        {
+          aiter_end = umap.adjacency_end(iter,edgeType);
+          for ( aiter=umap.adjacency_begin(iter,edgeType); aiter!=aiter_end; aiter++ )
+          {
+            real area=0;
+            for ( int a=0; a<rDim; a++ )
+              area+=edgeAreaNormals(*aiter,0,0,a)*edgeAreaNormals(*aiter,0,0,a);
+            minLen = min(minLen, sqrt(area)/(2*edgeL));
+          }
+        }
+          
       }
 
       minLen = min(minLen,minCCL);
@@ -895,11 +895,11 @@ computeTimeStepBA()
     {
       if( artificialDissipation==0. )
       {
-	imStabilityBound = 1.7;   //  approximate RK3-SPP, maybe 1.7 on axis 
+        imStabilityBound = 1.7;   //  approximate RK3-SPP, maybe 1.7 on axis 
       }
       else
       {
-	imStabilityBound = 2.; //  approximate RK3-SPP with dissipation -- **check me** 
+        imStabilityBound = 2.; //  approximate RK3-SPP with dissipation -- **check me** 
       }
     }
     else if( orderOfRungeKutta == 4 )
@@ -930,7 +930,7 @@ computeTimeStepBA()
       
       dtBA = cfl*imStabilityBound/imLambda;
       printF("CgMx: computeTimeStepBA: grid=%d, region=%d: estimated dt= cfl*imStabilityBound/imLambda = %9.3e\n",
-	     grid,mr,dtBA);
+             grid,mr,dtBA);
 
       deltaT=min(deltaT,dtBA);
 

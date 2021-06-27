@@ -69,6 +69,10 @@ if( $k0              eq "" ){ $k0=0; }
 if( $show              eq "" ){ $show=" "; }
 if( $compareToShowFile eq "" ){ $compareToShowFile=""; }
 if( $flushFrequency    eq "" ){ $flushFrequency=10; }
+# 3D contour plotIntensit
+if( $xContour          eq "" ){ $xContour=""; }
+if( $yContour          eq "" ){ $yContour=""; }
+if( $zContour          eq "" ){ $zContour=""; }
 #
 # ---- interface parameters -------
 if( $interfaceEquationOption eq "" ){ $interfaceEquationOption=1; }
@@ -145,7 +149,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,"k0=f"=>\$k0,\
-  "probeFrequency=i"=>\$probeFrequency,\
+  "probeFrequency=i"=>\$probeFrequency,"xContour=f"=>\$xContour,"yContour=f"=>\$yContour,"zContour=f"=>\$zContour,\
   "materialFile=s"=>\$materialFile,"numBodies=i"=>\$numBodies,"matFileArray=s{1,}"=>\@matFileArray,\
   "bcCmds=s{1,}"=>\@bcCmds,"nm=s"=>\$nm,"plotNonlinearComponents=f"=>\$plotNonlinearComponents,\
   "tallCellRatioBound=f"=>\$tallCellRatioBound,"extraCommandsStart=s"=>\$extraCommandsStart,"extraCommandsEnd=s"=>\$extraCommandsEnd, \

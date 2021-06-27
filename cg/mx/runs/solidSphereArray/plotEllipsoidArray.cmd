@@ -7,6 +7,7 @@
 #     plotStuff plotEllipsoidArray.cmd -show=36SolidEllipsoidsGride4.order2.hdf -name=36SolidEllipsoidsGrid.ps -ns=36 
 #     plotStuff plotEllipsoidArray.cmd -show=125SolidEllipsoidsGride4.order2.hdf -name=125SolidEllipsoidsGrid.ps -ns=125 
 #
+#
 $show="fourSolidEllipsoidsGride3.order2.hdf"; $name="fourSolidEllipsoidsGride3.ps"; $ns=8; 
 #
 GetOptions( "show=s"=>\$show,"name=s"=>\$name,"ns=i"=>\$ns );

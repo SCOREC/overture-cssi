@@ -46,6 +46,8 @@
 
 % define the clipFig commands:
 \input ../common/trimFig.tex
+\usepackage{xargs}% for optional args to \newcommandx
+\input ../common/plotFigureMacros.tex
 
 % --------------------------------------------
 \usepackage[usenames]{color} % e.g. \color{red}
@@ -56,6 +58,14 @@
 
 \usepackage{tikz}
 
+\usepackage{listings}
+\lstset{
+basicstyle=\footnotesize\ttfamily,
+columns=flexible,
+breaklines=true,
+commentstyle=\color{red},
+keywordstyle=\color{black}\bfseries
+}
 
 \usepackage{makeidx} % index
 \makeindex

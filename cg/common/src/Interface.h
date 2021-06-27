@@ -19,20 +19,27 @@
 #include "DBase.hh"
 using namespace DBase;
 
-// forward declaration
+// forward declarations
 class Parameters;
+class GridFaceDescriptor;
 
-// ------------------- forward declaration:
+// ------------------- forward declarations ------------------------
+// Note: These next functions are defined in getIntefaceData.C
 int
 getInterfaceData( real tSource, int grid, int side, int axis, 
-		  int interfaceDataOptions,
-		  RealArray & data,
+                  int interfaceDataOptions,
+                  RealArray & data,
                   Parameters & parameters,
-                  bool saveTimeHistory = false );
+                  bool saveTimeHistory = false,
+                  GridFaceDescriptor *targetInfo = NULL );
 
-// ------------------- forward declaration:
 Parameters & 
 getInterfaceParameters( int grid, int side, int axis, Parameters & parameters);
+
+GridFaceDescriptor&
+getInterfaceGridFaceDescriptor( int grid, int side, int axis, Parameters & parameters, bool sameSide =true );
+
+// --------------------- end forward declarations ----------------------
 
 // ==============================================================================
 /// \brief This class holds past interface values

@@ -1,0 +1,12 @@
+\section{Notes on the CHAMP interface conditions} \label{sec:champNotes}
+
+Files in CgAd related to implementation of the CHAMP interface conditions.
+\begin{itemize}
+  \item champBoundaryConditions.bC - fill CHAMP interface equations into the coefficient matrix.
+  \item getChampResidual.bC - compute the Champ residual.
+  \item champResidualOpt.bf90 - optimized routines for computing the residual in the CHAMP conditions.
+  \item champMacros.h - holds some common champ bpp macros.
+  \item implicit.C - calls champBoundaryConditions
+  \item applyBoundaryConditions.bC : function applyBoundaryConditionsForImplicitTimeStepping() - assigns RHS for
+      the Champ conditions.
+\end{itemize}

@@ -18,7 +18,7 @@ if ($numberOfParameters eq 0)
   printf("================================================================================\n");
   printf("This perl script will run cg regression tests\n");
   printf("  Usage: \n");
-  printf("    conv.p  -conv=<convDir> file \n");
+  printf("    conv.p  -convDir=<convDir> file \n");
   printf("  where \n");
   printf("    file = the name of a conv file that contains a list of cases to run \n");
   printf("    -conv= conv directory (and directory for output)\n");
@@ -31,8 +31,13 @@ $convFile="";
 $convDir =".";  # conv directory (and where we save results)
 foreach $arg ( @ARGV )
 {
-  if( $arg =~ /-conv=(.*)/ )
+  if( $arg =~ /-convDir=(.*)/ )
   {
+    $convDir = $1;
+    printf("Using conv directory [%s]\n",$convDir);
+  }
+  elsif( $arg =~ /-conv=(.*)/ )
+  { # old way for backward compatibility
     $convDir = $1;
     printf("Using conv directory [%s]\n",$convDir);
   }
@@ -107,7 +112,7 @@ while( <FILE> )
     # --- Process Include file ----
     $includeFile = $line;
     $includeFile =~ s/^Include //; 
-    printf("conv.p: Include filefound, name=[$includeFile]\n");
+    printf("conv.p: Include filefound, name=[$includeFile], convDir=[$convDir]\n");
     open(IFILE,"$convDir/$includeFile") || die print "unable to open $convDir/$includeFile\n";
     while( <IFILE> )
     {

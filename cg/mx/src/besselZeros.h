@@ -1,7 +1,7 @@
 /* Zeros of the Bessel Function Jn(z) */
 
  const int ndbz=10, mdbz=10;
- real besselZeros[ndbz][mdbz]={
+ Real besselZeros[ndbz][mdbz]={
  { // n=0
     2.40482555769577e+00,
     5.52007811028631e+00,

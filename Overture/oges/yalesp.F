@@ -54,6 +54,7 @@ c process error message: find message number
 
         write(mssg(itype)(41:50),'(i10)') irem
         write(em,'('' path:'',i1,2x,a)') ipath,mssg(itype)
+        
         return
         end
 c

@@ -117,7 +117,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
         {
             iv0[dir]=mg.gridIndexRange(0,dir);
             if( mg.isAllCellCentered() )
-      	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+                xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
         }
     }
   // This macro defines the grid points for rectangular grids:
@@ -144,69 +144,69 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
         {
             if( numberOfDimensions==2 )
             {
-      	FOR_3D(i1,i2,i3,I1,I2,I3)
-      	{
-        	  if( !isRectangular )
-        	  {
+                FOR_3D(i1,i2,i3,I1,I2,I3)
+                {
+                    if( !isRectangular )
+                    {
                         x= xLocal(i1,i2,i3,0);
                         y= xLocal(i1,i2,i3,1);
-        	  }
-        	  else
-        	  {
+                    }
+                    else
+                    {
                         x=XC(iv,0);
                         y=XC(iv,1);
-        	  }
-        	  
-        	  real psi = amp*exp(-beta*( SQR(x-x0-cx*t) + SQR(y-y0-cy*t) ));
-        	  uLocal(i1,i2,i3,ex) = -(y-y0-cy*t)*psi;    // Ex =  psi_y * const 
-        	  uLocal(i1,i2,i3,ey) =  (x-x0-cx*t)*psi;    // Ey = -psi_x * const
-        	  uLocal(i1,i2,i3,hz) =  psi;
+                    }
+                    
+                    real psi = amp*exp(-beta*( SQR(x-x0-cx*t) + SQR(y-y0-cy*t) ));
+                    uLocal(i1,i2,i3,ex) = -(y-y0-cy*t)*psi;    // Ex =  psi_y * const 
+                    uLocal(i1,i2,i3,ey) =  (x-x0-cx*t)*psi;    // Ey = -psi_x * const
+                    uLocal(i1,i2,i3,hz) =  psi;
                     if( method==sosup )
-        	  {
-	    // supply time-derivatives for sosup scheme
+                    {
+            // supply time-derivatives for sosup scheme
 
             // **check me**
-          	    real psit = (2.*beta)*( cx*(x-x0-cx*t) + cy*(y-y0-cy*t) )*psi;
-          	    uLocal(i1,i2,i3,ext) =  cy*psi  -(y-y0-cy*t)*psit;    
-          	    uLocal(i1,i2,i3,eyt) = -cx*psi  +(x-x0-cx*t)*psit;    
-          	    uLocal(i1,i2,i3,hzt) =  psit;
-        	  }
-      	}
+                        real psit = (2.*beta)*( cx*(x-x0-cx*t) + cy*(y-y0-cy*t) )*psi;
+                        uLocal(i1,i2,i3,ext) =  cy*psi  -(y-y0-cy*t)*psit;    
+                        uLocal(i1,i2,i3,eyt) = -cx*psi  +(x-x0-cx*t)*psit;    
+                        uLocal(i1,i2,i3,hzt) =  psit;
+                    }
+                }
             }
             else
             {
-      	FOR_3D(i1,i2,i3,I1,I2,I3)
-      	{
-        	  if( !isRectangular )
-        	  {
-          	    x= xLocal(i1,i2,i3,0);
-          	    y= xLocal(i1,i2,i3,1);
-          	    z= xLocal(i1,i2,i3,2);
-        	  }
-        	  else
-        	  {
-          	    x=XC(iv,0);
-          	    y=XC(iv,1);
-          	    z=XC(iv,2);
-        	  }
+                FOR_3D(i1,i2,i3,I1,I2,I3)
+                {
+                    if( !isRectangular )
+                    {
+                        x= xLocal(i1,i2,i3,0);
+                        y= xLocal(i1,i2,i3,1);
+                        z= xLocal(i1,i2,i3,2);
+                    }
+                    else
+                    {
+                        x=XC(iv,0);
+                        y=XC(iv,1);
+                        z=XC(iv,2);
+                    }
 
-        	  real psi = amp*exp(-beta*( SQR(x-x0-cx*t) + SQR(y-y0-cy*t) + SQR(z-z0-cz*t) ));
-        	  uLocal(i1,i2,i3,ex) = ((z-z0-cz*t)-(y-y0-cy*t))*psi;    // Ex = ( psi_z - psi_y ) * const
-        	  uLocal(i1,i2,i3,ey) = ((x-x0-cx*t)-(z-z0-cz*t))*psi;    // Ey = ( psi_x - psi_z ) * const
-        	  uLocal(i1,i2,i3,ez) = ((y-y0-cy*t)-(x-x0-cx*t))*psi;    // Ez = ( psi_y - psi_x ) * const
+                    real psi = amp*exp(-beta*( SQR(x-x0-cx*t) + SQR(y-y0-cy*t) + SQR(z-z0-cz*t) ));
+                    uLocal(i1,i2,i3,ex) = ((z-z0-cz*t)-(y-y0-cy*t))*psi;    // Ex = ( psi_z - psi_y ) * const
+                    uLocal(i1,i2,i3,ey) = ((x-x0-cx*t)-(z-z0-cz*t))*psi;    // Ey = ( psi_x - psi_z ) * const
+                    uLocal(i1,i2,i3,ez) = ((y-y0-cy*t)-(x-x0-cx*t))*psi;    // Ez = ( psi_y - psi_x ) * const
                     if( method==sosup )
-        	  {
-	    // supply time-derivatives for sosup scheme
+                    {
+            // supply time-derivatives for sosup scheme
 
             // **check me**
-          	    real psit = (2.*beta)*( cx*(x-x0-cx*t) + cy*(y-y0-cy*t) +cz*(z-z0-cz*t))*psi;
-          	    uLocal(i1,i2,i3,ext) = (-cz+cy)*psi + ((z-z0-cz*t)-(y-y0-cy*t))*psit;    
-          	    uLocal(i1,i2,i3,eyt) = (-cx+cz)*psi + ((x-x0-cx*t)-(z-z0-cz*t))*psit;    
+                        real psit = (2.*beta)*( cx*(x-x0-cx*t) + cy*(y-y0-cy*t) +cz*(z-z0-cz*t))*psi;
+                        uLocal(i1,i2,i3,ext) = (-cz+cy)*psi + ((z-z0-cz*t)-(y-y0-cy*t))*psit;    
+                        uLocal(i1,i2,i3,eyt) = (-cx+cz)*psi + ((x-x0-cx*t)-(z-z0-cz*t))*psit;    
                         uLocal(i1,i2,i3,ezt) = (-cy+cx)*psi + ((y-y0-cy*t)-(x-x0-cx*t))*psit;
-        	  }	  
-        	  
+                    }       
+                    
 
-      	}
+                }
             }
         }
         else
@@ -252,36 +252,36 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             if( numberOfDimensions==2 )
             {
         // ----------- 2D --------------
-      	FOR_3D(i1,i2,i3,I1,I2,I3)
-      	{
-        	  if( !isRectangular )
-        	  {
+                FOR_3D(i1,i2,i3,I1,I2,I3)
+                {
+                    if( !isRectangular )
+                    {
                         x= xLocal(i1,i2,i3,0);
                         y= xLocal(i1,i2,i3,1);
-        	  }
-        	  else
-        	  {
+                    }
+                    else
+                    {
                         x=XC(iv,0);
                         y=XC(iv,1);
-        	  }
-          	  
+                    }
+                    
                     real xi = t - (kx*(x-cpwX0)+ky*(y-cpwY0))/cc - xi0;
 
-        	  real tanha = tanh(cpwBeta*(xi+.5*cpwTau));
-        	  real tanhb = tanh(cpwBeta*(xi-.5*cpwTau));
-        	  real amp = cpwAmp*.5*( tanha - tanhb );
+                    real tanha = tanh(cpwBeta*(xi+.5*cpwTau));
+                    real tanhb = tanh(cpwBeta*(xi-.5*cpwTau));
+                    real amp = cpwAmp*.5*( tanha - tanhb );
 
-        	  real phi = cc*xi + cpwAlpha*xi*xi;
+                    real phi = cc*xi + cpwAlpha*xi*xi;
                     real sinPhi = sin(twoPi*phi);
 
-        	  real  chirp = signForField*amp*sinPhi;
-        	  
-        	  uLocal(i1,i2,i3,ex) = chirp*pwc[0];
-        	  uLocal(i1,i2,i3,ey) = chirp*pwc[1];
-        	  uLocal(i1,i2,i3,hz) = chirp*pwc[5];
+                    real  chirp = signForField*amp*sinPhi;
+                    
+                    uLocal(i1,i2,i3,ex) = chirp*pwc[0];
+                    uLocal(i1,i2,i3,ey) = chirp*pwc[1];
+                    uLocal(i1,i2,i3,hz) = chirp*pwc[5];
                     if( method==sosup )
-        	  {
-	    // supply time-derivatives for sosup scheme
+                    {
+            // supply time-derivatives for sosup scheme
                         
             // tanh' = 1 - tanh^2
                         real damp= cpwAmp*.5*cpwBeta*( -tanha*tanha + tanhb*tanhb );
@@ -289,62 +289,62 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 
                         chirp = signForField*( damp*sinPhi + amp*twoPi*dphi*cos(twoPi*phi) );
 
-          	    uLocal(i1,i2,i3,ext) = chirp*pwc[0];
-          	    uLocal(i1,i2,i3,eyt) = chirp*pwc[1];
-          	    uLocal(i1,i2,i3,hzt) = chirp*pwc[5];
-        	  }
-      	}
+                        uLocal(i1,i2,i3,ext) = chirp*pwc[0];
+                        uLocal(i1,i2,i3,eyt) = chirp*pwc[1];
+                        uLocal(i1,i2,i3,hzt) = chirp*pwc[5];
+                    }
+                }
             }
             else
             {
         // ----------- 3D --------------
-      	FOR_3D(i1,i2,i3,I1,I2,I3)
-      	{
-        	  if( !isRectangular )
-        	  {
-          	    x= xLocal(i1,i2,i3,0);
-          	    y= xLocal(i1,i2,i3,1);
-          	    z= xLocal(i1,i2,i3,2);
-        	  }
-        	  else
-        	  {
-          	    x=XC(iv,0);
-          	    y=XC(iv,1);
-          	    z=XC(iv,2);
-        	  }
+                FOR_3D(i1,i2,i3,I1,I2,I3)
+                {
+                    if( !isRectangular )
+                    {
+                        x= xLocal(i1,i2,i3,0);
+                        y= xLocal(i1,i2,i3,1);
+                        z= xLocal(i1,i2,i3,2);
+                    }
+                    else
+                    {
+                        x=XC(iv,0);
+                        y=XC(iv,1);
+                        z=XC(iv,2);
+                    }
 
                     real xi = t - (kx*(x-cpwX0)+ky*(y-cpwY0))/cc - xi0;
 
           // these next formulae are the same as in 2D
-        	  real tanha = tanh(cpwBeta*(xi+.5*cpwTau));
-        	  real tanhb = tanh(cpwBeta*(xi-.5*cpwTau));
-        	  real amp = cpwAmp*.5*( tanha - tanhb );
+                    real tanha = tanh(cpwBeta*(xi+.5*cpwTau));
+                    real tanhb = tanh(cpwBeta*(xi-.5*cpwTau));
+                    real amp = cpwAmp*.5*( tanha - tanhb );
 
-        	  real phi = cc*xi + cpwAlpha*xi*xi;
+                    real phi = cc*xi + cpwAlpha*xi*xi;
                     real sinPhi = sin(twoPi*phi);
 
-        	  real  chirp = signForField*amp*sinPhi;
-        	  
-        	  uLocal(i1,i2,i3,ex) =  chirp*pwc[0];
-        	  uLocal(i1,i2,i3,ey) =  chirp*pwc[1];
-        	  uLocal(i1,i2,i3,ez) =  chirp*pwc[2];
+                    real  chirp = signForField*amp*sinPhi;
+                    
+                    uLocal(i1,i2,i3,ex) =  chirp*pwc[0];
+                    uLocal(i1,i2,i3,ey) =  chirp*pwc[1];
+                    uLocal(i1,i2,i3,ez) =  chirp*pwc[2];
                     if( method==sosup )
-        	  {
-	    // supply time-derivatives for sosup scheme
+                    {
+            // supply time-derivatives for sosup scheme
             // tanh' = 1 - tanh^2
                         real damp= cpwAmp*.5*cpwBeta*( -tanha*tanha + tanhb*tanhb );
                         real dphi = cc + 2.*cpwAlpha*xi;
 
                         chirp = signForField*( damp*sinPhi + amp*twoPi*dphi*cos(twoPi*phi) );
 
-          	    uLocal(i1,i2,i3,ext) = chirp*pwc[0];
-          	    uLocal(i1,i2,i3,eyt) = chirp*pwc[1];
-          	    uLocal(i1,i2,i3,ezt) = chirp*pwc[2];
+                        uLocal(i1,i2,i3,ext) = chirp*pwc[0];
+                        uLocal(i1,i2,i3,eyt) = chirp*pwc[1];
+                        uLocal(i1,i2,i3,ezt) = chirp*pwc[2];
 
-        	  }	  
-        	  
+                    }       
+                    
 
-      	}
+                }
             }
         }
         else
@@ -476,48 +476,48 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       // *new* way : July 6, 2019 - use version from the class
             if( !dbase.has_key("planeInterfaceExactSolution") )
             {
-	// -- first time through: create class and initialize
-      	PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+        // -- first time through: create class and initialize
+                PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
             
-      	const int domain1 = 0, domain2=1;
-      	DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain1);
-      	DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain2);
+                const int domain1 = 0, domain2=1;
+                DispersiveMaterialParameters & dmp1 = getDomainDispersiveMaterialParameters(domain1);
+                DispersiveMaterialParameters & dmp2 = getDomainDispersiveMaterialParameters(domain2);
 
       
-      	real kvr[3]={kx,ky,kz};  // no factor of twoPi 
-      	real kvi[3]={0.,0.,0.};  // 
+                real kvr[3]={kx,ky,kz};  // no factor of twoPi 
+                real kvi[3]={0.,0.,0.};  // 
 
-      	real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
-      	real av[3]={ax,ay,az}; // 
+                real &ax=pwc[0], &ay=pwc[1], &az=pwc[2]; // Is this correct?
+                real av[3]={ax,ay,az}; // 
     
-	// // chosee av: *FIX ME** add update to pies to set    
-	// if( cg.numberOfDimensions()==2 )
-	// {
-	// 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
-	// 	av[0]=-kvr[1]/kNorm;  // do this for now
-	// 	av[1]= kvr[0]/kNorm;
-	// }
-	// else
-	// {
-	// 	real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
-	// 	av[0]=-kvr[1]/kNorm;  // do this for now
-	// 	av[1]= kvr[0]/kNorm;
+        // // chosee av: *FIX ME** add update to pies to set    
+        // if( cg.numberOfDimensions()==2 )
+        // {
+        //      real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+        //      av[0]=-kvr[1]/kNorm;  // do this for now
+        //      av[1]= kvr[0]/kNorm;
+        // }
+        // else
+        // {
+        //      real kNorm=sqrt( SQR(kvr[0]) + SQR(kvr[1]) + SQR(kvr[2]) );
+        //      av[0]=-kvr[1]/kNorm;  // do this for now
+        //      av[1]= kvr[0]/kNorm;
 
-	// 	if( false )
-	// 	{
-	// 	  real bv[3]= {1.,-1.,1.};
-	// 	  real kDotB= kvr[0]*bv[0]+kvr[1]*bv[1]+kvr[2]*bv[2];
-	// 	  assert( fabs(kDotB)>1.e-10 );
+        //      if( false )
+        //      {
+        //        real bv[3]= {1.,-1.,1.};
+        //        real kDotB= kvr[0]*bv[0]+kvr[1]*bv[1]+kvr[2]*bv[2];
+        //        assert( fabs(kDotB)>1.e-10 );
               
-	// 	  av[0]= (kvr[1]*bv[2]-kvr[2]*bv[1])/kDotB;
-	// 	  av[1]= (kvr[2]*bv[0]-kvr[0]*bv[2])/kDotB;
-	// 	  av[2]= (kvr[0]*bv[1]-kvr[1]*bv[0])/kDotB;
-	// 	}
-      	
-	// }
+        //        av[0]= (kvr[1]*bv[2]-kvr[2]*bv[1])/kDotB;
+        //        av[1]= (kvr[2]*bv[0]-kvr[0]*bv[2])/kDotB;
+        //        av[2]= (kvr[0]*bv[1]-kvr[1]*bv[0])/kDotB;
+        //      }
+                
+        // }
 
           
-      	pies.initialize( cg, dmp1,dmp2,av,kvr,kvi );
+                pies.initialize( cg, dmp1,dmp2,av,kvr,kvi );
 
             }
 
@@ -533,7 +533,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
       // ----- BA Plane material interface ----
             assert( numberOfMaterialRegions==2 );
             std::vector<DispersiveMaterialParameters> & dmpVector = 
-      	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
             DispersiveMaterialParameters & dmp1 = dmpVector[0];
             DispersiveMaterialParameters & dmp2 = dmpVector[1];
@@ -541,17 +541,17 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 
             if( !dbase.has_key("planeInterfaceExactSolution") )
             {
-	// -- first time through: create class and initialize
-      	PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
+        // -- first time through: create class and initialize
+                PlaneInterfaceExactSolution & pies = dbase.put<PlaneInterfaceExactSolution>("planeInterfaceExactSolution");
 
-      	Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
+                Real kvp[3]= { kx*twoPi, ky*twoPi, kz*twoPi}; // 
 
         // -- when computing k given s, choose this s: 
-      	Real sr=0.;
-      	Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
+                Real sr=0.;
+                Real si = -sqrt( SQR(kvp[0]) + SQR(kvp[1]) + SQR(kvp[2]) );
 
-      	Real skr=sr, ski=si;
-      	pies.initializeBAPlaneInterfaceSolution( dmp1, dmp2, kvp, skr, ski );
+                Real skr=sr, ski=si;
+                pies.initializeBAPlaneInterfaceSolution( dmp1, dmp2, kvp, skr, ski );
 
             }
         
@@ -565,15 +565,15 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 
             if( numberOfMaterialRegions>1 )
             {
-	// assert( cg.numberOfComponentGrids()==1 );
-	// assert( pBodyMask!=NULL );
+        // assert( cg.numberOfComponentGrids()==1 );
+        // assert( pBodyMask!=NULL );
                 intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
                 OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
-      	pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
+                pies.evalBA( dmp1, dmp2, t, cg, grid, matMask, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
             }
             else
             {
-      	pies.evalBA( dmp1, dmp2, t, cg, grid, maskLocal, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
+                pies.evalBA( dmp1, dmp2, t, cg, grid, maskLocal, ua, pv,I1a,I2a,I3a, numberOfTimeDerivatives, solveForAllFields);
             }
 
       // IntegerArray & matMask = numberOfMaterialRegions>1 ? *pBodyMask : maskLocal;
@@ -599,17 +599,17 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
 
             assert( numberOfMaterialRegions==2 );
             std::vector<DispersiveMaterialParameters> & dmpVector = 
-      	dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
             DispersiveMaterialParameters & dmp1 = dmpVector[0];
             DispersiveMaterialParameters & dmp2 = dmpVector[1];
 
             if( !dbase.has_key("surfaceWaveExactSolution") )
             {
-	// -- first time through: create class and initialize
+        // -- first time through: create class and initialize
                 const aString & caseName = dbase.get<aString>("caseName");
-      	SurfaceWaveExactSolution & swes = dbase.put<SurfaceWaveExactSolution>("surfaceWaveExactSolution");
-      	swes.initialize( cg,dmp1, dmp2,caseName );
+                SurfaceWaveExactSolution & swes = dbase.put<SurfaceWaveExactSolution>("surfaceWaveExactSolution");
+                swes.initialize( cg,dmp1, dmp2,caseName );
             }
 
             SurfaceWaveExactSolution & swes = dbase.get<SurfaceWaveExactSolution>("surfaceWaveExactSolution");
@@ -619,7 +619,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             OV_GET_SERIAL_ARRAY(int,cg[grid].mask(),maskLocal);
             if( numberOfMaterialRegions>1 )
             {
-      	assert( cg.numberOfComponentGrids()==1 );
+                assert( cg.numberOfComponentGrids()==1 );
             }
             intCompositeGridFunction & materialMask = parameters.dbase.get<intCompositeGridFunction>("materialMask");
             OV_GET_SERIAL_ARRAY(int,materialMask[grid],matMask);
@@ -638,63 +638,63 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
         {
             if( !dbase.has_key("slabsExactSolution") )
             {
-	// -- first time through: create class and initialize
-      	SlabsExactSolution & ses = dbase.put<SlabsExactSolution>("slabsExactSolution");
+        // -- first time through: create class and initialize
+                SlabsExactSolution & ses = dbase.put<SlabsExactSolution>("slabsExactSolution");
 
                 int numberOfDomains=cg.numberOfComponentGrids();
 
-      	if( !parameters.dbase.has_key("materialRegionParameters") )
-      	{
+                if( !parameters.dbase.has_key("materialRegionParameters") )
+                {
           // **** put this some where else ****
-        	  printF("\n ################ UDKS : CREATE DMP VECTOR ##################\n\n");
-        	  
-        	  std::vector<DispersiveMaterialParameters> & dmpVector =
-          	    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                    printF("\n ################ UDKS : CREATE DMP VECTOR ##################\n\n");
+                    
+                    std::vector<DispersiveMaterialParameters> & dmpVector =
+                        parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
-	  // const int domain1 = 0, domain2=1, domain3=2;
-        	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-        	  {
-          	    int domain = grid;
-                    	    DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-          	    dmpVector.push_back(dmp);
-        	  }
-        	  
+          // const int domain1 = 0, domain2=1, domain3=2;
+                    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+                    {
+                        int domain = grid;
+                        DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+                        dmpVector.push_back(dmp);
+                    }
+                    
 
-	  // for( int domain=0; domain<cg.numberOfDomains(); domain++ )
-	  // {
-	  //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
-	  //   dmpVector.push_back(dmp0);
-	  // }
-	  // if( cg.numberOfDomains()<numberOfDomains )
-	  // {
+          // for( int domain=0; domain<cg.numberOfDomains(); domain++ )
+          // {
+          //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+          //   dmpVector.push_back(dmp0);
+          // }
+          // if( cg.numberOfDomains()<numberOfDomains )
+          // {
           //   int domain=0;  // first domain equals last 
-	  //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
-	  //   dmpVector.push_back(dmp0);
-	  // }
-        	  
+          //   const DispersiveMaterialParameters & dmp0 = getDomainDispersiveMaterialParameters(domain);
+          //   dmpVector.push_back(dmp0);
+          // }
+                    
 
-      	}
-      	
-      	std::vector<DispersiveMaterialParameters> & dmpVector = 
-        	  parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                }
+                
+                std::vector<DispersiveMaterialParameters> & dmpVector = 
+                    parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
-      	RealArray kvI(3);
+                RealArray kvI(3);
         // real kx=1., ky=.5;
-	// kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=0.;
+        // kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=0.;
         
 
-      	kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=kz*twoPi;
+                kvI(0)=kx*twoPi; kvI(1)=ky*twoPi; kvI(2)=kz*twoPi;
                 real c0=1.;  // *fix me**
                 real omega= c0*sqrt( SQR(kvI(0)) + SQR(kvI(1)) + SQR(kvI(2)) );
                 const int & solveForAllFields = dbase.get<int>("solveForAllFields");
 
                 ses.initialize( cg, numberOfDomains,dmpVector,omega,kvI,solveForAllFields );
 
-        //  -- **make this an option**:	
+        //  -- **make this an option**: 
                 int scatCase=0;  // forward TEz
         // int scatCase=2;  // backward TEz
                 ses.setScatteringCase( scatCase );
-      	
+                
                 printF(" SLABS: kx/(2*pi)=%g, ky/(2*pi)=%g, kz/(2*pi)=%g, omega/(2*pi)=%g\n",kx,ky,kz,omega/(twoPi));
 
             }
@@ -728,23 +728,23 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
             int numberOfDomains=cg.numberOfComponentGrids();
             if( !parameters.dbase.has_key("materialRegionParameters") )
             {
-	// **** put this some where else ****
-      	printF("\n ################ UDKS : NONLINEAR PULSE: CREATE DMP VECTOR ##################\n\n");
-        	  
-      	std::vector<DispersiveMaterialParameters> & dmpVector =
-        	  parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+        // **** put this some where else ****
+                printF("\n ################ UDKS : NONLINEAR PULSE: CREATE DMP VECTOR ##################\n\n");
+                    
+                std::vector<DispersiveMaterialParameters> & dmpVector =
+                    parameters.dbase.put<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
-      	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-      	{
-        	  int domain = grid;
-        	  DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
-        	  dmpVector.push_back(dmp);
-      	}
-        	  
+                for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+                {
+                    int domain = grid;
+                    DispersiveMaterialParameters & dmp = getDomainDispersiveMaterialParameters(domain);
+                    dmpVector.push_back(dmp);
+                }
+                    
             }
-      	
+                
             std::vector<DispersiveMaterialParameters> & dmpVector = 
-      	parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
+                parameters.dbase.get<std::vector<DispersiveMaterialParameters> >("materialRegionParameters");
 
             RealArray kvI(3);
             RealArray asymParams(4);
@@ -777,7 +777,7 @@ getUserDefinedKnownSolution(int current, real t, CompositeGrid & cg, int grid,
     else
     {
         printF("getUserDefinedKnownSolution:ERROR: unknown value for userDefinedKnownSolution=%s\n",
-         	   (const char*)userKnownSolution);
+                      (const char*)userKnownSolution);
         OV_ABORT("ERROR");
     }
     
@@ -848,18 +848,18 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
             printF("The manufactured pulse is based on \n"
                           "    psi = amp*( -beta*( (x-x0-cx*t)^2 + (y-y0-cy*t)^2 + (z-z0-cz*t)^2 ) )\n"
                           " ---2D ---\n"
-           	     "   Ex = -(y-y0-cy*t)*psi   ( Ex =  psi_y * const )\n"
+                          "   Ex = -(y-y0-cy*t)*psi   ( Ex =  psi_y * const )\n"
                           "   Ey =  (x-x0-cx*t)*psi   ( Ey = -psi_x * const )\n"
-           	     "   Hz =   psi;\n"
+                          "   Hz =   psi;\n"
                           " --- 3D ---\n"
-           	     "  Ex = ((z-z0-cz*t)-(y-y0-cy*t))*psi    ( Ex = ( psi_z - psi_y ) * const)\n"
-           	     "  Ey = ((x-x0-cx*t)-(z-z0-cz*t))*psi    ( Ey = ( psi_x - psi_z ) * const)\n"
-           	     "  Ez = ((y-y0-cy*t)-(x-x0-cx*t))*psi    ( Ez = ( psi_y - psi_x ) * const)\n"
+                          "  Ex = ((z-z0-cz*t)-(y-y0-cy*t))*psi    ( Ex = ( psi_z - psi_y ) * const)\n"
+                          "  Ey = ((x-x0-cx*t)-(z-z0-cz*t))*psi    ( Ey = ( psi_x - psi_z ) * const)\n"
+                          "  Ez = ((y-y0-cy*t)-(x-x0-cx*t))*psi    ( Ez = ( psi_y - psi_x ) * const)\n"
                                   );
             gi.inputString(answer,"Enter amp,beta,x0,y0,z0, cx,cy,cz");
             sScanF(answer,"%e %e %e %e %e %e %e %e",&rpar[0],&rpar[1],&rpar[2],&rpar[3],&rpar[4],&rpar[5],&rpar[6],&rpar[7]);
             printF(" Setting amp=%g, beta=%g, [x0,y0,z0]=[%g,%g,%g] [cx,cy,cz]=[%g,%g,%g]\n",
-           	     rpar[0],rpar[1],rpar[2],rpar[3],rpar[4],rpar[5],rpar[6],rpar[7]);
+                          rpar[0],rpar[1],rpar[2],rpar[3],rpar[4],rpar[5],rpar[6],rpar[7]);
             
         }
         else if( answer=="chirped plane wave" ) 
@@ -903,15 +903,15 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
             dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
             
             if( !dbase.has_key("caseName") )
-      	dbase.put<aString>("caseName");
+                dbase.put<aString>("caseName");
 
             aString & caseName = dbase.get<aString>("caseName");
             
             printF("The interface surface wave is an exact solution for a traveling surface wave between two interfaces.\n"
-           	     " Available caseNames:\n"
-           	     "  (1) surfaceWaveCase1SpacePeriodic \n"
-           	     "  (2) surfaceWaveCase1TimePeriodic \n"
-      	);
+                          " Available caseNames:\n"
+                          "  (1) surfaceWaveCase1SpacePeriodic \n"
+                          "  (2) surfaceWaveCase1TimePeriodic \n"
+                );
             gi.inputString(caseName,"Enter the caseName");
             
         }
@@ -922,14 +922,14 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
             dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
             
             if( !dbase.has_key("caseName") )
-      	dbase.put<aString>("caseName");
+                dbase.put<aString>("caseName");
 
             aString & caseName = dbase.get<aString>("caseName");
             
             printF("Slabs is an exact solution for a plane wave scattering from one or more slabs.\n"
-           	     " Available caseNames:\n"
-           	     "  (1) oneSlabIsoEps2 \n"
-      	);
+                          " Available caseNames:\n"
+                          "  (1) oneSlabIsoEps2 \n"
+                );
             gi.inputString(caseName,"Enter the caseName");
             
         }
@@ -940,15 +940,15 @@ updateUserDefinedKnownSolution(GenericGraphicsInterface & gi, CompositeGrid & cg
             dbase.get<bool>("knownSolutionIsTimeDependent")=true;  // known solution depends on time
             
             if( !dbase.has_key("caseName") )
-      	dbase.put<aString>("caseName");
+                dbase.put<aString>("caseName");
 
             aString & caseName = dbase.get<aString>("caseName");
             
             printF("Choose the case:\n"
-           	     " Available caseNames:\n"
-           	     "    soliton \n",
+                          " Available caseNames:\n"
+                          "    soliton \n",
                           "    asymptoticSoliton"
-      	);
+                );
             gi.inputString(caseName,"Enter the caseName");
             if( caseName == "asymptotic soliton" )
             {

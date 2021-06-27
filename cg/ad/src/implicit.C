@@ -11,6 +11,10 @@
 #include "App.h"
 #include "ParallelUtility.h"
 
+// forward declarations
+int champBoundaryConditions( realCompositeGridFunction & coeffcg, Parameters & parameters, Real dt );
+real getChampResidual( realCompositeGridFunction & u, Parameters & parameters, Real t, Real dt );
+
 void Cgad::
 buildImplicitSolvers(CompositeGrid & cg)
 // ==========================================================================================
@@ -44,8 +48,8 @@ buildImplicitSolvers(CompositeGrid & cg)
 //\begin{>>CompositeGridSolverInclude.tex}{\subsection{implicitSolve}} 
 void Cgad::
 formMatrixForImplicitSolve(const real & dt0,
-			   GridFunction & cgf1,
-			   GridFunction & cgf0 )
+                           GridFunction & cgf1,
+                           GridFunction & cgf0 )
 // ==========================================================================================
 // /Description: This function was once part of implicitSolve.  It was
 // broken out to allow the construction of the matrix independently of
@@ -94,7 +98,7 @@ formMatrixForImplicitSolve(const real & dt0,
     std::vector<real> & b = parameters.dbase.get<std::vector<real> >("b");
     std::vector<real> & c = parameters.dbase.get<std::vector<real> >("c");    
     if( variableAdvection ||
-	a[0]!=0. || b[0]!=0. || c[0]!=0. )
+        a[0]!=0. || b[0]!=0. || c[0]!=0. )
     {
       printF("--AD--formMatrixForImplicitSolve: BDF timeStepping requires implicitAdvection=true for advection.\n");
       OV_ABORT("ERROR");
@@ -107,7 +111,8 @@ formMatrixForImplicitSolve(const real & dt0,
     
   }
 
-  
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
+
 
   if( parameters.dbase.get<int >("initializeImplicitTimeStepping") )
   {
@@ -133,7 +138,7 @@ formMatrixForImplicitSolve(const real & dt0,
     if( true || debug() & 4 )
       printF("--AD--formMatrixForImplicitSolve: form implicit time stepping matrix, "
              "t=%9.3e dt0=%8.2e implicitFactor=%9.3e *** \n",
-	     cgf1.t,dt0,implicitFactor);
+             cgf1.t,dt0,implicitFactor);
 
     // ***** Use predefined equations *****
 
@@ -156,7 +161,7 @@ formMatrixForImplicitSolve(const real & dt0,
 
 
       if( parameters.isAxisymmetric() )
-	implicitSolver[imp].set(OgesParameters::THEisAxisymmetric,true);
+        implicitSolver[imp].set(OgesParameters::THEisAxisymmetric,true);
 
       Range G=cg.numberOfComponentGrids();
 
@@ -164,151 +169,151 @@ formMatrixForImplicitSolve(const real & dt0,
 
       if( debug() & 4 )
       {
-	fPrintF(debugFile,">>>> setEquationAndBoundaryConditions for implicit solver %i \n",imp);
-	::display(boundaryConditions,"boundaryConditions for Oges",debugFile);
+        fPrintF(debugFile,">>>> setEquationAndBoundaryConditions for implicit solver %i \n",imp);
+        ::display(boundaryConditions,"boundaryConditions for Oges",debugFile);
       }
 
       if( implicitAdvection )
       {
         // ---- treat advection terms implicitly ----
 
-	// --- For now we need to build grid functions that hold the advection and diffusion coefficients ---
+        // --- For now we need to build grid functions that hold the advection and diffusion coefficients ---
 
-	printF("--AD-- INFO: form implicit matrix including the ADVECTION terms cgf1.t=%9.3e\n",cgf1.t);
+        printF("--AD-- INFO: form implicit matrix including the ADVECTION terms cgf1.t=%9.3e\n",cgf1.t);
 
         // create a work space to hold the diffusion coefficients (times dt etc.)
-	if( !parameters.dbase.has_key("varCoeff") )
-	{
-	  realCompositeGridFunction *& pVarCoeff=parameters.dbase.put<realCompositeGridFunction*>("varCoeff"); 
-	  pVarCoeff = new realCompositeGridFunction(cg);
-	}
+        if( !parameters.dbase.has_key("varCoeff") )
+        {
+          realCompositeGridFunction *& pVarCoeff=parameters.dbase.put<realCompositeGridFunction*>("varCoeff"); 
+          pVarCoeff = new realCompositeGridFunction(cg);
+        }
         realCompositeGridFunction & varCoeff = *parameters.dbase.get<realCompositeGridFunction*>("varCoeff");
 
         // create a work space to hold the advection coefficients (times dt etc.)
-	if( !parameters.dbase.has_key("advectionCoeff") )
-	{
-	  realCompositeGridFunction *& pAdvectionCoeff=parameters.dbase.put<realCompositeGridFunction*>("advectionCoeff"); 
-   	  Range all;
-	  pAdvectionCoeff = new realCompositeGridFunction(cg,all,all,all,numberOfDimensions);
-	}
+        if( !parameters.dbase.has_key("advectionCoeff") )
+        {
+          realCompositeGridFunction *& pAdvectionCoeff=parameters.dbase.put<realCompositeGridFunction*>("advectionCoeff"); 
+          Range all;
+          pAdvectionCoeff = new realCompositeGridFunction(cg,all,all,all,numberOfDimensions);
+        }
         realCompositeGridFunction & advectionCoeff = *parameters.dbase.get<realCompositeGridFunction*>("advectionCoeff");
         // realCompositeGridFunction advectionCoeff(cg,all,all,all,numberOfDimensions);
-	
-	realCompositeGridFunction*& pKappaVar= parameters.dbase.get<realCompositeGridFunction*>("kappaVar");
-	if( variableDiffusivity && pKappaVar==NULL )
-	{
-	  OV_ABORT("--AD-- formMatrixForImplicitSolve:ERROR:kappaVar not created! ");
-	}
+        
+        realCompositeGridFunction*& pKappaVar= parameters.dbase.get<realCompositeGridFunction*>("kappaVar");
+        if( variableDiffusivity && pKappaVar==NULL )
+        {
+          OV_ABORT("--AD-- formMatrixForImplicitSolve:ERROR:kappaVar not created! ");
+        }
         realCompositeGridFunction & kappaVar = *pKappaVar;
 
-	// -- look for variable advection velocity ---
-	realCompositeGridFunction*& pAdvectVar= parameters.dbase.get<realCompositeGridFunction*>("advectVar");
-	if( variableAdvection && pAdvectVar==NULL )
-	{
-	  OV_ABORT("--AD-- formMatrixForImplicitSolve:ERROR:advectVar not created! ");
-	}
+        // -- look for variable advection velocity ---
+        realCompositeGridFunction*& pAdvectVar= parameters.dbase.get<realCompositeGridFunction*>("advectVar");
+        if( variableAdvection && pAdvectVar==NULL )
+        {
+          OV_ABORT("--AD-- formMatrixForImplicitSolve:ERROR:advectVar not created! ");
+        }
 
 
-	std::vector<real> & a = parameters.dbase.get<std::vector<real> >("a");
-	std::vector<real> & b = parameters.dbase.get<std::vector<real> >("b");
-	std::vector<real> & c = parameters.dbase.get<std::vector<real> >("c");    
-	
+        std::vector<real> & a = parameters.dbase.get<std::vector<real> >("a");
+        std::vector<real> & b = parameters.dbase.get<std::vector<real> >("b");
+        std::vector<real> & c = parameters.dbase.get<std::vector<real> >("c");    
+        
         // The Operator is 
         //    I + advectionCoeff.grad + div( varCoeff grad() )
         //
         // Note: we need to include dt in the coefficients
         Index I1,I2,I3;
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) 
-	{
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) 
+        {
           getIndex(cg[grid].dimension(),I1,I2,I3);
 
           OV_GET_SERIAL_ARRAY(real,varCoeff[grid],varCoeffLocal);
           OV_GET_SERIAL_ARRAY(real,advectionCoeff[grid],advectionCoeffLocal);
 
-	  bool ok = ParallelUtility::getLocalArrayBounds(advectionCoeff[grid],advectionCoeffLocal,I1,I2,I3);
-	  if( !ok ) continue;
+          bool ok = ParallelUtility::getLocalArrayBounds(advectionCoeff[grid],advectionCoeffLocal,I1,I2,I3);
+          if( !ok ) continue;
   
-	  if( !variableDiffusivity )
-	  {
-	    // -- constant coefficient of diffusivity --
-	    varCoeffLocal = (-implicitFactor*dt0)*kappa[imp];  
-	  }
-	  else
-	  {
+          if( !variableDiffusivity )
+          {
+            // -- constant coefficient of diffusivity --
+            varCoeffLocal = (-implicitFactor*dt0)*kappa[imp];  
+          }
+          else
+          {
             // -- variable coefficient of diffusivity --
-	    OV_GET_SERIAL_ARRAY_CONST(real,kappaVar[grid],kappaVarLocal);
-	    varCoeffLocal = (-implicitFactor*dt0)*kappaVarLocal;
-	  }	 
-	  // if we do no have variableAdvection, set advectVar to varCoeff[grid] (unused)
-	  realArray & advectVar = variableAdvection ? (*pAdvectVar)[grid] : varCoeff[grid]; 
-	  OV_GET_SERIAL_ARRAY_CONDITIONAL(real,advectVar,advectVarLocal,variableAdvection);
-	
-	  for( int axis=0; axis<numberOfDimensions; axis++ )
-	  {
-	    if( !variableAdvection )
-	    {
-	      // -- constant coefficient of advection --
-	      real adv = axis==0 ? a[imp] : axis==1 ? b[imp] : c[imp];
-	      advectionCoeffLocal(I1,I2,I3,axis)= (implicitFactor*dt0)*adv;
-	    }
-	    else
-	    {
-	      // -- variable coefficient of advection --
-	      advectionCoeffLocal(I1,I2,I3,axis)= (implicitFactor*dt0)*advectVarLocal(I1,I2,I3,axis);
-	    }
-	    
+            OV_GET_SERIAL_ARRAY_CONST(real,kappaVar[grid],kappaVarLocal);
+            varCoeffLocal = (-implicitFactor*dt0)*kappaVarLocal;
+          }      
+          // if we do no have variableAdvection, set advectVar to varCoeff[grid] (unused)
+          realArray & advectVar = variableAdvection ? (*pAdvectVar)[grid] : varCoeff[grid]; 
+          OV_GET_SERIAL_ARRAY_CONDITIONAL(real,advectVar,advectVarLocal,variableAdvection);
+        
+          for( int axis=0; axis<numberOfDimensions; axis++ )
+          {
+            if( !variableAdvection )
+            {
+              // -- constant coefficient of advection --
+              real adv = axis==0 ? a[imp] : axis==1 ? b[imp] : c[imp];
+              advectionCoeffLocal(I1,I2,I3,axis)= (implicitFactor*dt0)*adv;
+            }
+            else
+            {
+              // -- variable coefficient of advection --
+              advectionCoeffLocal(I1,I2,I3,axis)= (implicitFactor*dt0)*advectVarLocal(I1,I2,I3,axis);
+            }
+            
 
-	    const bool & gridIsMoving = parameters.gridIsMoving(grid);
-	    const Parameters::ReferenceFrameEnum referenceFrame = parameters.getReferenceFrame();
-	    const bool adjustForMovingGrids = gridIsMoving && referenceFrame==Parameters::fixedReferenceFrame;
+            const bool & gridIsMoving = parameters.gridIsMoving(grid);
+            const Parameters::ReferenceFrameEnum referenceFrame = parameters.getReferenceFrame();
+            const bool adjustForMovingGrids = gridIsMoving && referenceFrame==Parameters::fixedReferenceFrame;
 
-	    if( adjustForMovingGrids )
-	    {
-	      realArray & gridVelocity = *cgf1.gridVelocity[grid];  // is this the right gridVelocity ? or use the one in cgf0?
-	      OV_GET_SERIAL_ARRAY(real,gridVelocity,gvLocal);
-	      advectionCoeffLocal(I1,I2,I3,axis) += (-implicitFactor*dt0)*gvLocal(I1,I2,I3,axis);
-	    }
+            if( adjustForMovingGrids )
+            {
+              realArray & gridVelocity = *cgf1.gridVelocity[grid];  // is this the right gridVelocity ? or use the one in cgf0?
+              OV_GET_SERIAL_ARRAY(real,gridVelocity,gvLocal);
+              advectionCoeffLocal(I1,I2,I3,axis) += (-implicitFactor*dt0)*gvLocal(I1,I2,I3,axis);
+            }
 
-	  }
-	}
+          }
+        }
 
         OgesParameters::EquationEnum equation = OgesParameters::advectionDiffusionEquationOperator;
-	implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
-							     equationCoefficients,&varCoeff,&advectionCoeff );
+        implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                             equationCoefficients,&varCoeff,&advectionCoeff );
       }
       else if( variableDiffusivity )
       {
         // --- variable kappa  ---
-	printF("--Cgad::formMatrixForImplicitSolve: form matrix for variable diffusivity at t=%9.3e\n",cgf1.t);
-	
-	realCompositeGridFunction*& pKappaVar= parameters.dbase.get<realCompositeGridFunction*>("kappaVar");
-	if( variableDiffusivity && pKappaVar==NULL )
-	{
-	  OV_ABORT(" Cgad::formMatrixForImplicitSolve:ERROR:kappaVar not created! ");
-	}
+        printF("--Cgad::formMatrixForImplicitSolve: form matrix for variable diffusivity at t=%9.3e\n",cgf1.t);
+        
+        realCompositeGridFunction*& pKappaVar= parameters.dbase.get<realCompositeGridFunction*>("kappaVar");
+        if( variableDiffusivity && pKappaVar==NULL )
+        {
+          OV_ABORT(" Cgad::formMatrixForImplicitSolve:ERROR:kappaVar not created! ");
+        }
         realCompositeGridFunction & kappaVar = *pKappaVar;
-	
+        
         // *fix me: 
-	realCompositeGridFunction & varCoeff = poissonCoefficients;
+        realCompositeGridFunction & varCoeff = poissonCoefficients;
         Range all;
         varCoeff.updateToMatchGrid(cg,all,all,all,numberOfComponents);
-	
+        
 
         // Oges will form
         //       I + div( scalar grad ) 
         // We set:
         //    scalar = (-implicitFactor*dt)*kappaVar : 
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
-	{
-   	  OV_GET_SERIAL_ARRAY_CONST(real,kappaVar[grid],kappaVarLocal);
-   	  OV_GET_SERIAL_ARRAY(real,varCoeff[grid],varCoeffLocal);
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
+        {
+          OV_GET_SERIAL_ARRAY_CONST(real,kappaVar[grid],kappaVarLocal);
+          OV_GET_SERIAL_ARRAY(real,varCoeff[grid],varCoeffLocal);
 
-	  varCoeffLocal = (-implicitFactor*dt0)*kappaVarLocal;
-	}
-	
+          varCoeffLocal = (-implicitFactor*dt0)*kappaVarLocal;
+        }
+        
         OgesParameters::EquationEnum equation = OgesParameters::divScalarGradHeatEquationOperator;
-	implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
-							     equationCoefficients,&varCoeff );
+        implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                             equationCoefficients,&varCoeff );
       }
       else
       {
@@ -316,20 +321,33 @@ formMatrixForImplicitSolve(const real & dt0,
  
         OgesParameters::EquationEnum equation = OgesParameters::heatEquationOperator;
 
-	real kappaDt = implicitFactor*kappa[imp]*dt0;
-	equationCoefficients(0,G)= 1.;  // for heat equation solve I - alpha*nu*dt* Delta
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
-	{
-	  if( parameters.getGridIsImplicit(grid) )
-	    equationCoefficients(1,grid)=-kappaDt;
-	  else
-	    equationCoefficients(1,grid)=0.;
-	}
+        real kappaDt = implicitFactor*kappa[imp]*dt0;
+        equationCoefficients(0,G)= 1.;  // for heat equation solve I - alpha*nu*dt* Delta
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
+        {
+          if( parameters.getGridIsImplicit(grid) )
+            equationCoefficients(1,grid)=-kappaDt;
+          else
+            equationCoefficients(1,grid)=0.;
+        }
 
-	implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
-							     equationCoefficients );
+        implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                             equationCoefficients );
       }
       
+
+      if( applyChampInterfaceConditions )
+      {
+        printF("\n -- CGAD-- formMatrixForImplicitSolve INFO: applyChampInterfaceConditions=%d\n\n",applyChampInterfaceConditions);
+        realCompositeGridFunction & coeff = implicitSolver[imp].coeff;
+
+        champBoundaryConditions( coeff, parameters, dt0 );
+
+
+        
+      }
+
+
       implicitSolver[imp].set(OgesParameters::THEkeepCoefficientGridFunction,false); 
 
     } // end for( imp
@@ -345,7 +363,7 @@ formMatrixForImplicitSolve(const real & dt0,
 //\begin{>>CginsInclude.tex}{\subsection{implicitSolve}} 
 void Cgad::
 implicitSolve(const real & dt0,
-	      GridFunction & cgf1,
+              GridFunction & cgf1,
               GridFunction & cgf0)
 // ==========================================================================================
 // /Description:
@@ -442,94 +460,94 @@ implicitSolve(const real & dt0,
         v.link(cgf1.u,Range(n,n));   // link to a component
       else
       {
-	for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
-	{
-	  // *wdh* 050418 v[grid]=cgf1.u[grid](all,all,all,n);
-	  if( implicitSolver[imp].isSolverIterative() )
-	  {
-	    assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
-	    assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
-	  }
-	  else
-	  {
-	    assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
-	  }
-	}
+        for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+        {
+          // *wdh* 050418 v[grid]=cgf1.u[grid](all,all,all,n);
+          if( implicitSolver[imp].isSolverIterative() )
+          {
+            assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
+            assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
+          }
+          else
+          {
+            assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
+          }
+        }
       }
 
       
       if( debug() & 4 )
-	printF("solve implicit time step for component n=%i., imp=%i..\n",n,imp);
+        printF("solve implicit time step for component n=%i., imp=%i..\n",n,imp);
 
       if( implicitSolver[imp].isSolverIterative() )
       {
         // for iterative solvers we need a separate RHS! since the rhs will have points zeroed out.
 
         // if( !useLink ) w=v;  // rhs
-// 	for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+//      for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
 //           v[grid]=cgf0.u[grid](nullRange,nullRange,nullRange,n);   // ***** initial guess ****
-	
+        
 
         if( debug() & 4 ) 
-	{
-	  cgf1.u.display(sPrintF("cgf1.u before implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
-	  w.display(sPrintF("RHS w=cgf1.u(n) before implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
-	}
-	
-	implicitSolver[imp].solve( v,w );  
+        {
+          cgf1.u.display(sPrintF("cgf1.u before implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
+          w.display(sPrintF("RHS w=cgf1.u(n) before implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
+        }
+        
+        implicitSolver[imp].solve( v,w );  
 
         numberOfIterations+=implicitSolver[imp].getNumberOfIterations();
 
         if( debug() & 4 ) 
-	{
-	  v.display(sPrintF("Solution after implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
-	}
-	
+        {
+          v.display(sPrintF("Solution after implicit solve (n=%i)",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
+        }
+        
 
         if( debug() & 2 )
-	  printP(" ** implicit time stepping: component %i iterations= %i (t=%e, dt=%8.1e, step=%i, "
+          printP(" ** implicit time stepping: component %i iterations= %i (t=%e, dt=%8.1e, step=%i, "
                  "max residual=%8.2e)\n",n,implicitSolver[imp].getNumberOfIterations(),
                   cgf1.t,dt,parameters.dbase.get<int >("globalStepNumber"),implicitSolver[imp].getMaximumResidual());
 
         if( FALSE && implicitSolver[imp].getNumberOfIterations() > 10 )
-	{
+        {
           fprintf(parameters.dbase.get<FILE* >("debugFile"),"***WARNING*** % iterations required to implicit solve of component n=%i\n",
-		  implicitSolver[imp].getNumberOfIterations(),n);
-	  v.display("\n ****v (left hand side for implicit solve)",parameters.dbase.get<FILE* >("debugFile"));
-	  w.display("\n ****w (right hand side for implicit solve)",parameters.dbase.get<FILE* >("debugFile"));
+                  implicitSolver[imp].getNumberOfIterations(),n);
+          v.display("\n ****v (left hand side for implicit solve)",parameters.dbase.get<FILE* >("debugFile"));
+          w.display("\n ****w (right hand side for implicit solve)",parameters.dbase.get<FILE* >("debugFile"));
           char buff[80];
-	  for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+          for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
             display(coeff[grid].sparse->classify,sPrintF(buff,"\n ****classify on grid=%i",grid),parameters.dbase.get<FILE* >("debugFile"));
 
-	}
-	
+        }
+        
       }
       else
       {
         if( debug() & 4 ) 
-	{
+        {
           v.display(sPrintF("RHS before implicit solve, component=%i",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
-	  // fprintf(parameters.dbase.get<FILE* >("debugFile")," ***Errors before solve for component=%i\n",n);
-	  // determineErrors( cgf1 );
-	}
-	
-	implicitSolver[imp].solve( v,v );  
+          // fprintf(parameters.dbase.get<FILE* >("debugFile")," ***Errors before solve for component=%i\n",n);
+          // determineErrors( cgf1 );
+        }
+        
+        implicitSolver[imp].solve( v,v );  
 
         if( debug() & 4 )
-	{
+        {
           v.display(sPrintF("Solution after implicit solve, component=%i",n),parameters.dbase.get<FILE* >("debugFile"),"%6.3f ");
-	  // fprintf(parameters.dbase.get<FILE* >("debugFile")," ***Errors after solve for component=%i\n",n);
-	  // determineErrors( cgf1 );
-	}
+          // fprintf(parameters.dbase.get<FILE* >("debugFile")," ***Errors after solve for component=%i\n",n);
+          // determineErrors( cgf1 );
+        }
       }
       if( !useLink )
       {
-	for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
-	{
-	  // cgf1.u[grid](all,all,all,n)=v[grid];
+        for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+        {
+          // cgf1.u[grid](all,all,all,n)=v[grid];
           assign(cgf1.u[grid],all,all,all,n, v[grid],all,all,all,0);
-	}
-	
+        }
+        
       }
 
     }
@@ -545,18 +563,18 @@ implicitSolve(const real & dt0,
       if(implicitSolver[0].isSolverIterative() )
       { // in this case we need an initial guess and a rhs
         w.updateToMatchGrid(cgf1.cg,all,all,all,Rt);
-	for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
-	{
-	  assign(w[grid],all,all,all,Rt, cgf1.u[grid],all,all,all,Rt); // rhs
-	  assign(v[grid],all,all,all,Rt, cgf0.u[grid],all,all,all,Rt); // initial guess
-	}
+        for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+        {
+          assign(w[grid],all,all,all,Rt, cgf1.u[grid],all,all,all,Rt); // rhs
+          assign(v[grid],all,all,all,Rt, cgf0.u[grid],all,all,all,Rt); // initial guess
+        }
       }
       else
       {
-	for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
-	{
-	  assign(v[grid],all,all,all,Rt, cgf1.u[grid],all,all,all,Rt); // rhs
-	}
+        for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+        {
+          assign(v[grid],all,all,all,Rt, cgf1.u[grid],all,all,all,Rt); // rhs
+        }
       }
       
     }
@@ -592,7 +610,7 @@ implicitSolve(const real & dt0,
       // cgf1.u = v;
       for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
       {
-	assign(cgf1.u[grid],all,all,all,Rt, v[grid],all,all,all,Rt);
+        assign(cgf1.u[grid],all,all,all,Rt, v[grid],all,all,all,Rt);
       }
     }
     
@@ -602,6 +620,15 @@ implicitSolve(const real & dt0,
 
   }
   
+  const int & multiDomainProblem = parameters.dbase.get<int>("multiDomainProblem"); 
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
+  if( (true || debug() & 4 ) && multiDomainProblem && applyChampInterfaceConditions )
+  {
+    real maxRes = getChampResidual( cgf1.u, parameters,cgf1.t,dt0 );
+    printP("CGAD: After implicit solve at t=%9.3e: Max residual in champ interface conditions = %8.2e\n",cgf1.t,maxRes);
+
+  }
+
   parameters.dbase.get<int >("numberOfIterationsForImplicitTimeStepping")+=numberOfIterations;
   
   parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForImplicitSolve"))+=getCPU()-cpu0;
@@ -638,10 +665,23 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
 
   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
 
+  const int applyChampInterfaceConditions = parameters.dbase.get<int>("applyChampInterfaceConditions");
+  if( applyChampInterfaceConditions && !parameters.dbase.has_key("interfaceCondition")) 
+  {
+    // For testing, the CHAMP conditions are allowed for a problem without real interfaces. *wdh* April 16, 2021
+    // We thus need to create the interfaceCondition array:
+
+    parameters.dbase.put<IntegerArray>("interfaceCondition");
+    IntegerArray & interfaceCondition = parameters.dbase.get<IntegerArray>("interfaceCondition");
+
+    interfaceCondition.redim(2,3,cg.numberOfComponentGrids());
+    interfaceCondition=Parameters::neumannInterface;  // CHoose this -- the champ conditions will over-write the Neumann condition in the matrix
+  }
+
   const bool interfaceBoundaryConditionsAreSpecified=parameters.dbase.has_key("interfaceCondition");
   IntegerArray & interfaceCondition = (interfaceBoundaryConditionsAreSpecified ? 
-				       parameters.dbase.get<IntegerArray>("interfaceCondition") :
-				       Overture::nullIntArray() );
+                                       parameters.dbase.get<IntegerArray>("interfaceCondition") :
+                                       Overture::nullIntArray() );
   
 #define mixedRHS(component,side,axis,grid)         bcData(component+numberOfComponents*(0),side,axis,grid)
 #define mixedCoeff(component,side,axis,grid)       bcData(component+numberOfComponents*(1),side,axis,grid)
@@ -659,7 +699,7 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
     const bool isRectanglar=mg.isRectangular();
 
     mg.update(MappedGrid::THEvertexBoundaryNormal );
-	  
+          
     ForBoundary( side,axis )
     {
       int bc = mg.boundaryCondition(side,axis);
@@ -667,19 +707,28 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
       if( interfaceType(side,axis,grid) != Parameters::noInterface ) 
       {
         // This is an interface
-	if( bc!=AdParameters::mixedBoundaryCondition )
-	{
-	  printP("Cgad:setOgesBC:ERROR:the interface on (side,axis,grid)=(%i,%i,%i)\n"
-		 " should have a mixed boundary condition associated with it, but bc=%i\n",
-		 side,axis,grid,bc);
-	  Overture::abort("error");
-	}
+        if( bc!=AdParameters::mixedBoundaryCondition )
+        {
+          printP("Cgad:setOgesBC:ERROR:the interface on (side,axis,grid)=(%i,%i,%i)\n"
+                 " should have a mixed boundary condition associated with it, but bc=%i\n",
+                 side,axis,grid,bc);
+          OV_ABORT("error");
+        }
+        if( !interfaceBoundaryConditionsAreSpecified )
+        {
+           printP("Cgad:setOgesBC:ERROR:there is an interface on (side,axis,grid)=(%i,%i,%i)\n"
+                 " BUT there is no `interfaceCondition' array. This should not happen.\n"
+                 " Maybe an interface condition has been set for a problem with no interfaces.\n",
+                 side,axis,grid,bc);
+          OV_ABORT("error");
+        }
 
         // *** here is the BC we actually use: *** --> we could instead just look at the 
         //   mixedNormalCoeff and mixedCoeff and not use interfaceCondition ?
-	bc = interfaceCondition(side,axis,grid);
+
+        bc = interfaceCondition(side,axis,grid);
         assert( bc==Parameters::dirichletInterface || bc==Parameters::neumannInterface );
-	printP("** Cgad:setOgesBC: setting an interface bc(%i,%i,%i)=%i, (%s)\n",side,axis,grid,bc,
+        printP("** Cgad:setOgesBC: setting an interface bc(%i,%i,%i)=%i, (%s)\n",side,axis,grid,bc,
                   (bc==Parameters::dirichletInterface ? "dirichlet" : "neumann"));
       }
       
@@ -688,44 +737,44 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
       case Parameters::dirichletBoundaryCondition:
       case Parameters::interfaceBoundaryCondition:  // for now treat an interface with dirichlet
       case Parameters::dirichletInterface:
-	boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  
-	break;
+        boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  
+        break;
       case Parameters::axisymmetric:
-	boundaryConditions(side,axis,grid)=OgesParameters::axisymmetric;  // *wdh* 080718
-	break;
+        boundaryConditions(side,axis,grid)=OgesParameters::axisymmetric;  // *wdh* 080718
+        break;
       case Parameters::neumannBoundaryCondition:
       case AdParameters::mixedBoundaryCondition:
       case Parameters::neumannInterface:
-	boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
-	
+        boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+        
         if( bc!=Parameters::neumannBoundaryCondition )
-	{ // assign the mixed-BC coefficients if appropriate
-	  real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
+        { // assign the mixed-BC coefficients if appropriate
+          real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
           if( a0!=0. || a1!=1. )
-	  {
-	    boundaryConditions(side,axis,grid)=OgesParameters::mixed; 
-	    boundaryConditionData(0,side,axis,grid)=a0;
-	    boundaryConditionData(1,side,axis,grid)=a1;
-	    if( debug() & 2 )
-	      printP("*****Cgad:setOgesBC: Set a mixed BC : %f*u + %f*u.n \n",a0,a1);
+          {
+            boundaryConditions(side,axis,grid)=OgesParameters::mixed; 
+            boundaryConditionData(0,side,axis,grid)=a0;
+            boundaryConditionData(1,side,axis,grid)=a1;
+            if( debug() & 2 )
+              printP("*****Cgad:setOgesBC: Set a mixed BC : %f*u + %f*u.n \n",a0,a1);
 
-	  }
+          }
           else
-	  {
-	    if( debug() & 2 )
+          {
+            if( debug() & 2 )
               printP("*****Cgad:setOgesBC: Set a neumann BC : %f*u + %f*u.n \n",a0,a1);
-	  }
-	  
-	}
-	break;
+          }
+          
+        }
+        break;
       default:
       {
-	if( mg.boundaryCondition(side,axis)>0 )
-	{
-	  printf(" Cgad::setOgesBoundaryConditions:ERROR: unknown boundary condition, mg.boundaryCondition(%i,%i)=%i\n",
+        if( mg.boundaryCondition(side,axis)>0 )
+        {
+          printf(" Cgad::setOgesBoundaryConditions:ERROR: unknown boundary condition, mg.boundaryCondition(%i,%i)=%i\n",
                  side,axis,mg.boundaryCondition(side,axis));
-	  Overture::abort("error");
-	}
+          Overture::abort("error");
+        }
       }
       }
     }

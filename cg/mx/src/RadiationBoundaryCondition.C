@@ -33,12 +33,12 @@ void radEval(const int &nd, const int &nd1a,const int &nd1b,
 
              const int &sd1a,const int &sd1b, const int &sd2a,const int &sd2b, 
              const int &sd3a,const int &sd3b, const int &sd4a,const int &sd4b, const int &sd5a,const int &sd5b,
-	     real& uSave,
-	     
+             real& uSave,
+             
              const int &bd1a,const int &bd1b, const int &bd2a,const int &bd2b, 
              const int &bd3a,const int &bd3b, const int &bd4a,const int &bd4b, const int &bd5a,const int &bd5b,
-	     real& bd,
-	     
+             real& bd,
+             
              const int &ipar,const real& rpar, const int &ierr );
 
 }
@@ -206,11 +206,11 @@ int RadiationBoundaryCondition::useParallelVersion( bool trueOrFalse )
 
 int RadiationBoundaryCondition::
 initialize( realMappedGridFunction & u, 
-	    int side, int axis,
-	    int nc1_/* =0 */, int nc2_/* =0 */, 
-	    real c_ /* =1. */, real period_ /* = -1. */, 
-	    int numberOfModes_ /* =-1 */, 
-	    int orderOfTimeStepping_ /* =-1 */, int numberOfPoles_ /* =-1 */ )
+            int side, int axis,
+            int nc1_/* =0 */, int nc2_/* =0 */, 
+            real c_ /* =1. */, real period_ /* = -1. */, 
+            int numberOfModes_ /* =-1 */, 
+            int orderOfTimeStepping_ /* =-1 */, int numberOfPoles_ /* =-1 */ )
 // ===============================================================================================
 // /Description:
 //     Initialize the boundary conditions.
@@ -339,7 +339,7 @@ initialize( realMappedGridFunction & u,
 
       period2=dx[axisp2]*numberOfGridPoints2; 
       if( mg.numberOfDimensions()==3 )
-	printF("RadiationBoundaryCondition:INFO the periodic interval was computed to be period2=%9.3e\n",period2);
+        printF("RadiationBoundaryCondition:INFO the periodic interval was computed to be period2=%9.3e\n",period2);
 
     }
   }
@@ -373,7 +373,7 @@ initialize( realMappedGridFunction & u,
     radius = sqrt( x(0,0)*x(0,0) + x(0,1)*x(0,1) );
       
     printF("RaditionBoundaryCondition:INFO kernelType is cylindrical and the radius was computed to be %10.4e\n",
-	   radius);
+           radius);
 
 
   }
@@ -427,7 +427,7 @@ initialize( realMappedGridFunction & u,
       dbase.put<RealArray>("boundaryData");
 
     // printF("\n **** RADBC: INIT boundaryData: numberOfDerivatives=%d numberOfComponents=%d numberOfFields=%d\n",
-    // 	   numberOfDerivatives,numberOfComponents,numberOfFields);
+    //     numberOfDerivatives,numberOfComponents,numberOfFields);
     
 
     RealArray & boundaryData = dbase.get<RealArray>("boundaryData");
@@ -452,11 +452,11 @@ initialize( realMappedGridFunction & u,
   {
     // *old serial code*
     radiationKernel->initialize( numberOfDimensions,
-				 numberOfGridPoints1, numberOfGridPoints2,
-				 numberOfFields, 
-				 numberOfModes1, numberOfModes2,
-				 period1, period2, c, 
-				 orderOfTimeStepping, numberOfPoles, radius );
+                                 numberOfGridPoints1, numberOfGridPoints2,
+                                 numberOfFields, 
+                                 numberOfModes1, numberOfModes2,
+                                 period1, period2, c, 
+                                 orderOfTimeStepping, numberOfPoles, radius );
 
 
     if( numberOfDimensions==2 )
@@ -476,7 +476,7 @@ initialize( realMappedGridFunction & u,
 
 int RadiationBoundaryCondition::
 assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
-			  realMappedGridFunction & u2 )
+                          realMappedGridFunction & u2 )
 // ==============================================================================================================
 // /Description:
 //     Assign the radiation boundary conditions.
@@ -511,7 +511,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   if( debug>0 && t<=5*dt )
   {
     printF("RadiationBoundaryCondition::assignBoundaryConditions t=%9.3e dt=%8.2e rside=%i raxis=%i useParallelVersion=%d\n",
-	   t,dt,rside,raxis,useParallelVersion);
+           t,dt,rside,raxis,useParallelVersion);
   }
   
  FILE *pDebugFile= dbase.get<FILE*>("pDebugFile");
@@ -584,7 +584,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   Range R1(mg.dimension(0,axisp1),mg.dimension(1,axisp1));
   Range R2(mg.dimension(0,axisp2),mg.dimension(1,axisp2));
 
-	  
+          
   const int m=currentTimeLevel;
   const int mm1= (m-1+numberOfTimeLevels) % numberOfTimeLevels;
   const int mm2= (m-2+numberOfTimeLevels) % numberOfTimeLevels;
@@ -616,8 +616,8 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
       // --- Save u boundary data at current time level m (derivative data is saved below in radEval)
       for( int n=nc1; n<=nc2; n++ )
       {
-	int mc = 0 + numberOfDerivatives*(n);
-	boundaryData(I1,I2,I3,mc,m) = uLocal(I1,I2,I3,n); 
+        int mc = 0 + numberOfDerivatives*(n);
+        boundaryData(I1,I2,I3,mc,m) = uLocal(I1,I2,I3,n); 
       }
     
       vv.redim(I1,I2,I3,N);
@@ -627,35 +627,35 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
 
       if( useOldRadEval )
       {
-	vv2.redim(vv); huv2.redim(huv);
-	vv2=vv;  huv2=huv;
-	// reshape to support old way : 
-	if( numberOfDimensions==2 )
-	{
-	  if( axis==0 )
-	  {
-	    vv2.reshape(I2,N); huv2.reshape(I2,N);
-	  }
-	  else
-	  {
-	    vv2.reshape(I1,N); huv2.reshape(I1,N);
-	  }
-	}
-	else
-	{
-	  if( axis==0 )
-	  {
-	    vv2.reshape(I2,I3,N); huv2.reshape(I2,I3,N);
-	  }
-	  else if( axis==1 )
-	  {
-	    vv2.reshape(I1,I3,N); huv2.reshape(I1,I3,N);
-	  }
-	  else
-	  {
-	    vv2.reshape(I1,I2,N); huv2.reshape(I1,I2,N);
-	  }
-	}
+        vv2.redim(vv); huv2.redim(huv);
+        vv2=vv;  huv2=huv;
+        // reshape to support old way : 
+        if( numberOfDimensions==2 )
+        {
+          if( axis==0 )
+          {
+            vv2.reshape(I2,N); huv2.reshape(I2,N);
+          }
+          else
+          {
+            vv2.reshape(I1,N); huv2.reshape(I1,N);
+          }
+        }
+        else
+        {
+          if( axis==0 )
+          {
+            vv2.reshape(I2,I3,N); huv2.reshape(I2,I3,N);
+          }
+          else if( axis==1 )
+          {
+            vv2.reshape(I1,I3,N); huv2.reshape(I1,I3,N);
+          }
+          else
+          {
+            vv2.reshape(I1,I2,N); huv2.reshape(I1,I2,N);
+          }
+        }
       }
     }
     // end if ok 
@@ -667,7 +667,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
       // ----------------------------------------
       // this next call will assign periodic images on hu also.
       if( useOldRadEval )
-	radiationKernel->evaluateKernel( dt, vv2, huv2 ); 
+        radiationKernel->evaluateKernel( dt, vv2, huv2 ); 
 
       radiationKernel->evaluateKernelParallel( dt, vv, huv ); 
 
@@ -682,33 +682,33 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
       // reshape to support old way :   (**fix me ?) 
       if( numberOfDimensions==2 )
       {
-	if( axis==0 )
-	  huv.reshape(I2,N);
-	else
-	  huv.reshape(I1,N);
+        if( axis==0 )
+          huv.reshape(I2,N);
+        else
+          huv.reshape(I1,N);
       }
       else
       {
-	if( axis==0 )
-	  huv.reshape(I2,I3,N);
-	else if( axis==1 )
-	  huv.reshape(I1,I3,N);
-	else
-	  huv.reshape(I1,I2,N);
+        if( axis==0 )
+          huv.reshape(I2,I3,N);
+        else if( axis==1 )
+          huv.reshape(I1,I3,N);
+        else
+          huv.reshape(I1,I2,N);
       }
       if( useOldRadEval )
       {
-	if( false )
-	{
-	  RealArray err(huv);
-	  err=huv-huv2;
-	  ::display(huv2,"huv2","%9.3e ");
-	  ::display(huv,"huv","%9.3e ");
-	  ::display(err,"err","%9.3e ");
-	}
+        if( false )
+        {
+          RealArray err(huv);
+          err=huv-huv2;
+          ::display(huv2,"huv2","%9.3e ");
+          ::display(huv,"huv","%9.3e ");
+          ::display(err,"err","%9.3e ");
+        }
       
-	real maxDiff = max(fabs(huv-huv2));
-	printF("RBC: t=%9.3e: |huv-huv2| = %9.3e\n",t,maxDiff);
+        real maxDiff = max(fabs(huv-huv2));
+        printF("RBC: t=%9.3e: |huv-huv2| = %9.3e\n",t,maxDiff);
       }
     }
     
@@ -727,28 +727,28 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
       i1=side==0 ? n1a : n1b;
       for( int n=nc1; n<=nc2; n++ )
       {
-	if( numberOfDimensions==2 )
-	{
-	  for( int i2=n2a; i2<=n2b; i2++ )
-	    ub(i2,m,0,n)=uLocal(i1,i2,i3,n);              // save solution at time t, m=currentLevel 
-	}
-	else
-	{
-	  for( int i3=n3a; i3<=n3b; i3++ )
-	  {
-	    for( int i2=n2a; i2<=n2b; i2++ )
-	    {
-	      ub(i2,i3,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
-	    }
-	  }
-	}
+        if( numberOfDimensions==2 )
+        {
+          for( int i2=n2a; i2<=n2b; i2++ )
+            ub(i2,m,0,n)=uLocal(i1,i2,i3,n);              // save solution at time t, m=currentLevel 
+        }
+        else
+        {
+          for( int i3=n3a; i3<=n3b; i3++ )
+          {
+            for( int i2=n2a; i2<=n2b; i2++ )
+            {
+              ub(i2,i3,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
+            }
+          }
+        }
       }// end for n 
 
       if( false )
       {
-	printF("RBC: t=%9.3e: [n2a,n2b][n3a,n3b]=[%d,%d][%d,%d]\n",t,n2a,n2b,n3a,n3b);
-	int ey=1;
-	display(uLocal(i1,R1,R2,ey),sPrintF("Ey on side=%d at t=%9.3e",side,t),"%9.2e ");
+        printF("RBC: t=%9.3e: [n2a,n2b][n3a,n3b]=[%d,%d][%d,%d]\n",t,n2a,n2b,n3a,n3b);
+        int ey=1;
+        display(uLocal(i1,R1,R2,ey),sPrintF("Ey on side=%d at t=%9.3e",side,t),"%9.2e ");
       }
     
     }
@@ -757,17 +757,17 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
       i2=side==0 ? n2a : n2b;
       for( int n=nc1; n<=nc2; n++ )
       {
-	if( numberOfDimensions==2 )
-	{
-	  for( int i1=n1a; i1<=n1b; i1++ )
-	    ub(i1,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
-	}
-	else
-	{
-	  for( int i3=n3a; i3<=n3b; i3++ )
-	    for( int i1=n1a; i1<=n1b; i1++ )
-	      ub(i1,i3,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
-	}
+        if( numberOfDimensions==2 )
+        {
+          for( int i1=n1a; i1<=n1b; i1++ )
+            ub(i1,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
+        }
+        else
+        {
+          for( int i3=n3a; i3<=n3b; i3++ )
+            for( int i1=n1a; i1<=n1b; i1++ )
+              ub(i1,i3,m,0,n)=uLocal(i1,i2,i3,n);         // save solution at time t
+        }
       }
     
     }
@@ -817,16 +817,16 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
     {
       for( int i=0; i<numberOfDerivatives; i++ )  // loop over derivatives 
       {
-	if( numberOfDimensions==2 )
-	{
-	  vvn(I1,i,n)=ub(I1,mm1,i,n); 
-	  // vvn(R1,i,n)=ub(R1,mm1,i,n);   // assign over R1 just so there are some values in ghost when debugging 
-	}
-	else
-	{
-	  vvn3(I1,I2,i,n)=ub(I1,I2,mm1,i,n); 
-	}
-	
+        if( numberOfDimensions==2 )
+        {
+          vvn(I1,i,n)=ub(I1,mm1,i,n); 
+          // vvn(R1,i,n)=ub(R1,mm1,i,n);   // assign over R1 just so there are some values in ghost when debugging 
+        }
+        else
+        {
+          vvn3(I1,I2,i,n)=ub(I1,I2,mm1,i,n); 
+        }
+        
       }
     }
     
@@ -908,7 +908,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   int ierr=0;
   int ipar[30];
   real rpar[30];
-			  
+                          
   int grid=0;
   int gridType=0;  // rectangular
 
@@ -940,7 +940,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   ipar[16]= (int)kernelType;
   ipar[17]= useParallelVersion;
   
-     	      			   
+                                   
   rpar[0] = dx[0];
   rpar[1] = dx[1];
   rpar[2] = dx[2];
@@ -950,7 +950,7 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   rpar[6] = alpha;
   // assert( tz!=NULL );
   rpar[7]=(real &)tz;  // twilight zone pointer
-     	      			   
+                                   
   rpar[10]= t;
   rpar[11]= dt;
   rpar[12]= eps;
@@ -963,25 +963,25 @@ assignBoundaryConditions( realMappedGridFunction & u, real t, real dt,
   if( ok )
   {
     radEval( mg.numberOfDimensions(), 
-	     // dim(0,0),dim(1,0),dim(0,1),dim(1,1),dim(0,2),dim(1,2),
-	     uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),uLocal.getBase(2),uLocal.getBound(2),
-	     mg.gridIndexRange(0,0), *uptr, *u2ptr, *pxy, *prsxy,
-	     mg.boundaryCondition(0,0),
-	     huv.getBase(0),huv.getBound(0),                               0,numberOfDerivatives-1,*phuv,
-	     huv.getBase(0),huv.getBound(0),huv.getBase(1),huv.getBound(1),0,numberOfDerivatives-1,*phuv,
-	     uSave.getBase(0),uSave.getBound(0),
-	     uSave.getBase(1),uSave.getBound(1),
-	     uSave.getBase(2),uSave.getBound(2),
-	     uSave.getBase(3),uSave.getBound(3),
-	     uSave.getBase(4),uSave.getBound(4),
-	     *puSave,
-	     bd.getBase(0),bd.getBound(0),
-	     bd.getBase(1),bd.getBound(1),
-	     bd.getBase(2),bd.getBound(2),
-	     bd.getBase(3),bd.getBound(3),
-	     bd.getBase(4),bd.getBound(4),
-	     *bd.getDataPointer(),
-	     ipar[0], rpar[0], ierr );
+             // dim(0,0),dim(1,0),dim(0,1),dim(1,1),dim(0,2),dim(1,2),
+             uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),uLocal.getBase(2),uLocal.getBound(2),
+             mg.gridIndexRange(0,0), *uptr, *u2ptr, *pxy, *prsxy,
+             mg.boundaryCondition(0,0),
+             huv.getBase(0),huv.getBound(0),                               0,numberOfDerivatives-1,*phuv,
+             huv.getBase(0),huv.getBound(0),huv.getBase(1),huv.getBound(1),0,numberOfDerivatives-1,*phuv,
+             uSave.getBase(0),uSave.getBound(0),
+             uSave.getBase(1),uSave.getBound(1),
+             uSave.getBase(2),uSave.getBound(2),
+             uSave.getBase(3),uSave.getBound(3),
+             uSave.getBase(4),uSave.getBound(4),
+             *puSave,
+             bd.getBase(0),bd.getBound(0),
+             bd.getBase(1),bd.getBound(1),
+             bd.getBase(2),bd.getBound(2),
+             bd.getBase(3),bd.getBound(3),
+             bd.getBase(4),bd.getBound(4),
+             *bd.getDataPointer(),
+             ipar[0], rpar[0], ierr );
   }
   
 

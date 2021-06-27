@@ -139,73 +139,73 @@ buildImplicitSolvers(CompositeGrid & cg)
     {
       if( parameters.getGridIsImplicit(grid) )
       {
-	for( int axis=0; axis<cg.numberOfDimensions() && scalarSystemForImplicitTimeStepping ; axis++ )
-	{
-	  for( int side=Start; side<=End; side++ )
-	  {
-	    int bc=cg[grid].boundaryCondition(side,axis);
-	    if( bc>0 && 
-		bc!=Parameters::noSlipWall && 
-		bc!=InsParameters::inflowWithVelocityGiven &&
-		bc!=InsParameters::outflow &&
-		bc!=Parameters::dirichletBoundaryCondition 
+        for( int axis=0; axis<cg.numberOfDimensions() && scalarSystemForImplicitTimeStepping ; axis++ )
+        {
+          for( int side=Start; side<=End; side++ )
+          {
+            int bc=cg[grid].boundaryCondition(side,axis);
+            if( bc>0 && 
+                bc!=Parameters::noSlipWall && 
+                bc!=InsParameters::inflowWithVelocityGiven &&
+                bc!=InsParameters::outflow &&
+                bc!=Parameters::dirichletBoundaryCondition 
                 // && bc!=Parameters::freeSurfaceBoundaryCondition // *wdh* Sept 29, 2017 -- done below now 
               )
-	    {
-	      if( bc==Parameters::slipWall ||
+            {
+              if( bc==Parameters::slipWall ||
                   bc==InsParameters::inflowWithPressureAndTangentialVelocityGiven ) // *wdh* 090725
-	      {
-		// if( cg[grid].isRectangular() && 
+              {
+                // if( cg[grid].isRectangular() && 
                 //     !parameters.gridIsMoving(grid) ) // added check or moving grid *wdh* 2015/11/28
 
-		int normalAxis=-1;
-		if( faceIsACoordinatePlane(side, axis, grid, cg, normalAxis ) ) // *new* May 13, 2017
-		{
-		  if( !cg[grid].isRectangular() )
-		  {
+                int normalAxis=-1;
+                if( faceIsACoordinatePlane(side, axis, grid, cg, normalAxis ) ) // *new* May 13, 2017
+                {
+                  if( !cg[grid].isRectangular() )
+                  {
                     // -- Save the info about this face : used later when setting Oges boundary conditions --
                     if( !parameters.dbase.has_key("specialBoundaryInfo") )
-		    {
-		      IntegerArray & specialBoundaryInfo = parameters.dbase.put<IntegerArray>("specialBoundaryInfo");
+                    {
+                      IntegerArray & specialBoundaryInfo = parameters.dbase.put<IntegerArray>("specialBoundaryInfo");
                       specialBoundaryInfo.redim(1,2,3,cg.numberOfComponentGrids());
-		      specialBoundaryInfo=-1;
-		    }
-		    IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
+                      specialBoundaryInfo=-1;
+                    }
+                    IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
                     specialBoundaryInfo(0,side,axis,grid)=normalAxis;
 
-		    printF("--buildImplicitSolvers--INFO: face (side,axis,grid,name)=(%i,%i,%i,%s) was found to be a"
+                    printF("--buildImplicitSolvers--INFO: face (side,axis,grid,name)=(%i,%i,%i,%s) was found to be a"
                            "flat-face parallel to coordinate plane normalAxis=%i => Implicit solvers are de-coupled.\n",
-			   side,axis,grid,(const char*)cg[grid].getName(),normalAxis);
-		  }
-		  
-		  // BC's are not the same but they are decoupled -- we can use multiple scalar solvers.
-		  numberOfImplicitSolversNeeded=cg.numberOfDimensions();
-		}
-		else
-		{
-		    printF("--buildImplicitSolvers--INFO: face (side,axis,grid,name)=(%i,%i,%i,%s) was a slipWall\n"
+                           side,axis,grid,(const char*)cg[grid].getName(),normalAxis);
+                  }
+                  
+                  // BC's are not the same but they are decoupled -- we can use multiple scalar solvers.
+                  numberOfImplicitSolversNeeded=cg.numberOfDimensions();
+                }
+                else
+                {
+                    printF("--buildImplicitSolvers--INFO: face (side,axis,grid,name)=(%i,%i,%i,%s) was a slipWall\n"
                            "  or inflowWithPressureAndTangentialVelocityGiven => Implicit solvers are COUPLED.\n",
                             side,axis,grid,(const char*)cg[grid].getName());
 
-		  numberOfImplicitSolversNeeded=1;
-		  scalarSystemForImplicitTimeStepping=false;
+                  numberOfImplicitSolversNeeded=1;
+                  scalarSystemForImplicitTimeStepping=false;
                   useFullSystemForImplicitTimeStepping=true;  // *wdh* 110318
-		  break;
-		}
-	      }
-	      else if(  bc==Parameters::axisymmetric ) // *wdh* 080817 
-	      {
+                  break;
+                }
+              }
+              else if(  bc==Parameters::axisymmetric ) // *wdh* 080817 
+              {
                 numberOfImplicitSolversNeeded=cg.numberOfDimensions();
                 assert( cg.numberOfDimensions()==2 );
-	      }
+              }
               else if( bc==Parameters::freeSurfaceBoundaryCondition )
               {
                 // *** FREE SURFACE : this boundary condition couples the velocity components ****
                 if( decoupleImplicitBoundaryConditions )
                 {
-		  // We approximately decouple the coupled BC's -- but we need separate scale solvers: 
-		  numberOfImplicitSolversNeeded=cg.numberOfDimensions();
-		}
+                  // We approximately decouple the coupled BC's -- but we need separate scale solvers: 
+                  numberOfImplicitSolversNeeded=cg.numberOfDimensions();
+                }
                 else
                 {
                   // --Solve a coupled implicit system for the velocity ---
@@ -220,17 +220,17 @@ buildImplicitSolvers(CompositeGrid & cg)
                        bc==Parameters::axisymmetric )
               {
                 // *** these boundary conditions couple the velocity components ****
- 		numberOfImplicitSolversNeeded=1;
-		scalarSystemForImplicitTimeStepping=false;
+                numberOfImplicitSolversNeeded=1;
+                scalarSystemForImplicitTimeStepping=false;
                 useFullSystemForImplicitTimeStepping=true;  // *wdh* 110318
-		break;
+                break;
               }
               else
               {
                 printF("Cgins:implicitSolve:implicit time stepping: unknown boundary condition bc(%i,%i)=%i "
                        "grid=%s\n",side,axis,bc,(const char*)cg[grid].getName());
                 Overture::abort("error");
-	      }
+              }
             }
             else if( bc==Parameters::noSlipWall && useImplicitAmpBCs && useAddedMassAlgorithm )
             {
@@ -256,11 +256,11 @@ buildImplicitSolvers(CompositeGrid & cg)
   // *wdh* 080817 -- we can now handle multiple scalar implicit solvers and artificial diffusion or axisymmetric
 //  if( scalarSystemForImplicitTimeStepping && numberOfImplicitSolversNeeded>1 &&
 //      ( ( parameters.dbase.get<bool >("useSecondOrderArtificialDiffusion") &&
-//	  parameters.dbase.get<int>("useNewImplicitMethod")==0 )
+//        parameters.dbase.get<int>("useNewImplicitMethod")==0 )
 ////        || 
-// 	( parameters.isAxisymmetric() &&
-// 	  parameters.dbase.get<int>("useNewImplicitMethod")==0 )) 
-//	))
+//      ( parameters.isAxisymmetric() &&
+//        parameters.dbase.get<int>("useNewImplicitMethod")==0 )) 
+//      ))
   // *wdh* 090726 -- new implicit method insImp is not implemented for AD with scalar systems
   if( false &&   // *wdh* 100406 -- insImpINS now seems to support AD
       parameters.dbase.get<bool >("useSecondOrderArtificialDiffusion") )
@@ -268,8 +268,8 @@ buildImplicitSolvers(CompositeGrid & cg)
     if( scalarSystemForImplicitTimeStepping )
     {
       printF("Cgins:buildImplicitSolvers: INFO: I could use a scalar system with %i number of solvers but\n"
-	     "  this case is not implemented for 2nd-order artificial diffusion.\n",
-	     numberOfImplicitSolversNeeded);
+             "  this case is not implemented for 2nd-order artificial diffusion.\n",
+             numberOfImplicitSolversNeeded);
     }
     scalarSystemForImplicitTimeStepping=false;
     numberOfImplicitSolversNeeded=1;
@@ -339,8 +339,8 @@ buildImplicitSolvers(CompositeGrid & cg)
 //\begin{>>CompositeGridSolverInclude.tex}{\subsection{implicitSolve}} 
 void Cgins::
 formMatrixForImplicitSolve(const real & dt0,
-			   GridFunction & cgf1,
-			   GridFunction & cgf0 )
+                           GridFunction & cgf1,
+                           GridFunction & cgf0 )
 // ==========================================================================================
 // /Description: This function was once part of implicitSolve.  It was
 // broken out to allow the construction of the matrix independently of
@@ -385,7 +385,7 @@ formMatrixForImplicitSolve(const real & dt0,
   if( debug() & 2 )
   {
     printF(">>>Cgins::formMatrixForImplicitSolve: recompute matrix: globalStepNumber=%i refactorFrequency=%i recomputeMatrix=%i\n",
-	   globalStepNumber,parameters.dbase.get<int >("refactorFrequency"),recomputeMatrix);
+           globalStepNumber,parameters.dbase.get<int >("refactorFrequency"),recomputeMatrix);
   }
 
   real cpu0=getCPU();
@@ -408,7 +408,7 @@ formMatrixForImplicitSolve(const real & dt0,
   // *******************************************
   if( debug() & 4 )
     printF(" ***Cgins::formMatrix... initialize implicit time stepping for viscous terms, "
-	   "t=%9.3e dt0=%8.2e ***** \n",cgf1.t,dt0);
+           "t=%9.3e dt0=%8.2e ***** \n",cgf1.t,dt0);
 
   CompositeGrid & cg = cgf1.cg;  // for moving grids this is the grid at the new time 
 
@@ -431,15 +431,15 @@ formMatrixForImplicitSolve(const real & dt0,
     {
       if( pGridVelocityLinearized==NULL )
       {
-	pGridVelocityLinearized = new realMappedGridFunction [cg.numberOfComponentGrids()];
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
+        pGridVelocityLinearized = new realMappedGridFunction [cg.numberOfComponentGrids()];
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
           if( parameters.gridIsMoving(grid) )
-	  {
+          {
             realMappedGridFunction & gv = cgf0.getGridVelocity(grid);
             pGridVelocityLinearized[grid].updateToMatchGridFunction(gv);
-	  }
-	}
+          }
+        }
       }
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
@@ -472,7 +472,7 @@ formMatrixForImplicitSolve(const real & dt0,
                                 parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel")!=Parameters::LargeEddySimulation);
       
       assert( !scalarSystemForImplicitTimeStepping || !useTurbulenceModel );
-	
+        
 
       bool usePredefinedEquations = scalarSystemForImplicitTimeStepping && !useSecondOrderArtificialDiffusion;
 
@@ -484,11 +484,11 @@ formMatrixForImplicitSolve(const real & dt0,
       if( pdeModel==InsParameters::BoussinesqModel && imp==implicitSolverForTemperature &&
           parameters.dbase.get<int>("variableMaterialPropertiesOption")!=0 )
       {
-	usePredefinedEquations=false; 
+        usePredefinedEquations=false; 
       }
       
       if( false )
-	printF("Cgins::formMatrix... Implicit time stepping: numberOfImplicitSolvers=%i, imp=%i usePredefinedEquations=%i\n",
+        printF("Cgins::formMatrix... Implicit time stepping: numberOfImplicitSolvers=%i, imp=%i usePredefinedEquations=%i\n",
                 numberOfImplicitSolvers,imp,(int)usePredefinedEquations);
 
 
@@ -499,166 +499,166 @@ formMatrixForImplicitSolve(const real & dt0,
 
       if( usePredefinedEquations )
       {
-	if( debug() & 4 ) 
-	  printF("Cgins::formMatrix... Implicit time stepping: use predefined equations for imp=%i, t=%9.3e\n",
+        if( debug() & 4 ) 
+          printF("Cgins::formMatrix... Implicit time stepping: use predefined equations for imp=%i, t=%9.3e\n",
             imp,cgf1.t);
 
-	// **** Constant viscosity case *****
+        // **** Constant viscosity case *****
 
-	RealArray equationCoefficients(2,cg.numberOfComponentGrids());
+        RealArray equationCoefficients(2,cg.numberOfComponentGrids());
 
-	OgesParameters::EquationEnum equation = OgesParameters::heatEquationOperator;
-	if( parameters.isAxisymmetric() )
-	  implicitSolver[imp].set(OgesParameters::THEisAxisymmetric,true);
+        OgesParameters::EquationEnum equation = OgesParameters::heatEquationOperator;
+        if( parameters.isAxisymmetric() )
+          implicitSolver[imp].set(OgesParameters::THEisAxisymmetric,true);
 
-	Range G=cg.numberOfComponentGrids();
+        Range G=cg.numberOfComponentGrids();
 
 
-	real diffusionCoefficent=parameters.dbase.get<real >("nu");
-	if( pdeModel==InsParameters::BoussinesqModel && imp==implicitSolverForTemperature )
-	{
-	  // --- Temperature equation ---
+        real diffusionCoefficent=parameters.dbase.get<real >("nu");
+        if( pdeModel==InsParameters::BoussinesqModel && imp==implicitSolverForTemperature )
+        {
+          // --- Temperature equation ---
 
-	  diffusionCoefficent=parameters.dbase.get<real >("kThermal");
+          diffusionCoefficent=parameters.dbase.get<real >("kThermal");
 
-	  if( debug() & 2 )
-	    printF(" ***Cgins::formMatrix: form matrix for Temperature equation kThermal=%f\n",diffusionCoefficent);
-	}
-	    
-	real nuDt;
-	if( implicitMethod==Parameters::crankNicolson )
-	{
+          if( debug() & 2 )
+            printF(" ***Cgins::formMatrix: form matrix for Temperature equation kThermal=%f\n",diffusionCoefficent);
+        }
+            
+        real nuDt;
+        if( implicitMethod==Parameters::crankNicolson )
+        {
           nuDt = parameters.dbase.get<real >("implicitFactor")*diffusionCoefficent*dt0;
-	}
-	else if( implicitMethod==Parameters::implicitExplicitMultistep )
-	{
+        }
+        else if( implicitMethod==Parameters::implicitExplicitMultistep )
+        {
           // IMEX: uses BDF for implicit part by default
-	  const int orderOfTimeAccuracy=parameters.dbase.get<int >("orderOfTimeAccuracy");
-	  real bdfFactor;
+          const int orderOfTimeAccuracy=parameters.dbase.get<int >("orderOfTimeAccuracy");
+          real bdfFactor;
           if( orderOfTimeAccuracy==2 )
             bdfFactor=2./3.;
-	  else if( orderOfTimeAccuracy==4 )
+          else if( orderOfTimeAccuracy==4 )
             bdfFactor=12./25;
-	  else
-	  {
+          else
+          {
             OV_ABORT(" BDF - finish me");
-	  }
-	  printF("__formMatrixForImplicitSolve: form implicit matrix for BDF -- bdfFactor=%9.3e\n",bdfFactor);
-	  
+          }
+          printF("__formMatrixForImplicitSolve: form implicit matrix for BDF -- bdfFactor=%9.3e\n",bdfFactor);
+          
           nuDt= bdfFactor*diffusionCoefficent*dt0;
-	}
-	else
-	{
-	  OV_ABORT("implicit: unexpected implicitMethod");
-	}
-	
-	
-	equationCoefficients(0,G)= 1.;  // for heat equation solve I - nuDt* Delta
+        }
+        else
+        {
+          OV_ABORT("implicit: unexpected implicitMethod");
+        }
+        
+        
+        equationCoefficients(0,G)= 1.;  // for heat equation solve I - nuDt* Delta
 
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
-	{
-	  if( parameters.getGridIsImplicit(grid) )
-	    equationCoefficients(1,grid)=-nuDt;
-	  else
-	    equationCoefficients(1,grid)=0.;
-	}
-	    
-	if( debug() & 1 && imp==implicitSolverForTemperature )
-	  printF(">>>> Cgins: implicit: set predefined equations for TEMPERATURE \n");
-	
-	implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
-							     equationCoefficients );
-	    
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ ) // *wdh* 040910 
+        {
+          if( parameters.getGridIsImplicit(grid) )
+            equationCoefficients(1,grid)=-nuDt;
+          else
+            equationCoefficients(1,grid)=0.;
+        }
+            
+        if( debug() & 1 && imp==implicitSolverForTemperature )
+          printF(">>>> Cgins: implicit: set predefined equations for TEMPERATURE \n");
+        
+        implicitSolver[imp].setEquationAndBoundaryConditions(equation,op,boundaryConditions, boundaryConditionData,
+                                                             equationCoefficients );
+            
         implicitSolver[imp].set(OgesParameters::THEkeepCoefficientGridFunction,false); 
       }
       else
       {
         // **********************************************
-	// *** We do not use the predefined equations ***
+        // *** We do not use the predefined equations ***
         // **********************************************
 
-	Range & Rt = parameters.dbase.get<Range >("Rt");       // time dependent components
-	Range & Rtimp = parameters.dbase.get<Range >("Rtimp"); // time dependent components that may be treated implicitly
+        Range & Rt = parameters.dbase.get<Range >("Rt");       // time dependent components
+        Range & Rtimp = parameters.dbase.get<Range >("Rtimp"); // time dependent components that may be treated implicitly
 
-	int numberOfTimeDependentComponents = Rt.getLength();
-	int numberOfImplicitTimeDependentComponents = Rtimp.getLength();
-	const int numberOfComponentsForCoefficients = scalarSystemForImplicitTimeStepping ? 1 : 
-	  numberOfImplicitTimeDependentComponents;
+        int numberOfTimeDependentComponents = Rt.getLength();
+        int numberOfImplicitTimeDependentComponents = Rtimp.getLength();
+        const int numberOfComponentsForCoefficients = scalarSystemForImplicitTimeStepping ? 1 : 
+          numberOfImplicitTimeDependentComponents;
 
-	if( debug() & 4 )
-	{
-	  printF(" @@@@@@@@@@ formImplicit: imp=%i numberOfComponentsForCoefficients=%i,"
-		 " useSecondOrderArtificialDiffusion=%i @@@@@@@@@@@\n",
-		 imp,numberOfComponentsForCoefficients,(int)useSecondOrderArtificialDiffusion);
-	}
-	
-	// make a grid function to hold the coefficients
-	Range all;
-	// *wdh* 060929 int stencilWidth = 2*parameters.dbase.get<int >("orderOfAccuracy") + 1;
-	int stencilWidth = parameters.dbase.get<int >("orderOfAccuracy") + 1;
-	const int numberOfGhostLines=parameters.numberOfGhostPointsNeededForImplicitMatrix();
-	if( numberOfGhostLines==2 && parameters.dbase.get<int >("orderOfAccuracy")==2 )
-	  stencilWidth=5;
+        if( debug() & 4 )
+        {
+          printF(" @@@@@@@@@@ formImplicit: imp=%i numberOfComponentsForCoefficients=%i,"
+                 " useSecondOrderArtificialDiffusion=%i @@@@@@@@@@@\n",
+                 imp,numberOfComponentsForCoefficients,(int)useSecondOrderArtificialDiffusion);
+        }
+        
+        // make a grid function to hold the coefficients
+        Range all;
+        // *wdh* 060929 int stencilWidth = 2*parameters.dbase.get<int >("orderOfAccuracy") + 1;
+        int stencilWidth = parameters.dbase.get<int >("orderOfAccuracy") + 1;
+        const int numberOfGhostLines=parameters.numberOfGhostPointsNeededForImplicitMatrix();
+        if( numberOfGhostLines==2 && parameters.dbase.get<int >("orderOfAccuracy")==2 )
+          stencilWidth=5;
 
-	int stencilSize=int( pow(stencilWidth,cg.numberOfDimensions())+1 );   // add 1 for interpolation equations
+        int stencilSize=int( pow(stencilWidth,cg.numberOfDimensions())+1 );   // add 1 for interpolation equations
 
-	int stencilDimension=stencilSize*SQR(numberOfComponentsForCoefficients);
+        int stencilDimension=stencilSize*SQR(numberOfComponentsForCoefficients);
     
         if( implicitCoeff==NULL )
-	{
-	  implicitCoeff = new realCompositeGridFunction [numberOfImplicitSolvers];
-	}
-	
+        {
+          implicitCoeff = new realCompositeGridFunction [numberOfImplicitSolvers];
+        }
+        
         // use this coeff matrix: 
-	realCompositeGridFunction & coeff = implicitCoeff[imp];
+        realCompositeGridFunction & coeff = implicitCoeff[imp];
 
-	coeff.updateToMatchGrid(cg,stencilDimension,all,all,all); 
-	coeff.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines,numberOfComponentsForCoefficients);
+        coeff.updateToMatchGrid(cg,stencilDimension,all,all,all); 
+        coeff.setIsACoefficientMatrix(true,stencilSize,numberOfGhostLines,numberOfComponentsForCoefficients);
     
-	// We need to change the stencil size from that used by the pressure solve.
-	op.setStencilSize(stencilSize);
-	op.setNumberOfComponentsForCoefficients(numberOfComponentsForCoefficients);
-	coeff.setOperators(op);
-	coeff = 0.0;
-	// Form the implicit system on each grid.
-	int grid;
-	bool isSingular = isImplicitMatrixSingular( cgf0.u );
-	for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  MappedGrid &mg = cg[grid];
+        // We need to change the stencil size from that used by the pressure solve.
+        op.setStencilSize(stencilSize);
+        op.setNumberOfComponentsForCoefficients(numberOfComponentsForCoefficients);
+        coeff.setOperators(op);
+        coeff = 0.0;
+        // Form the implicit system on each grid.
+        int grid;
+        bool isSingular = isImplicitMatrixSingular( cgf0.u );
+        for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          MappedGrid &mg = cg[grid];
 
-	  realMappedGridFunction & gridVelocity = parameters.gridIsMoving(grid) ? cgf0.getGridVelocity(grid) : cgf0.u[grid];
-	  formImplicitTimeSteppingMatrix(coeff[grid],dt0,scalarSystemForImplicitTimeStepping,
-					 cgf0.u[grid],gridVelocity,grid,imp );
+          realMappedGridFunction & gridVelocity = parameters.gridIsMoving(grid) ? cgf0.getGridVelocity(grid) : cgf0.u[grid];
+          formImplicitTimeSteppingMatrix(coeff[grid],dt0,scalarSystemForImplicitTimeStepping,
+                                         cgf0.u[grid],gridVelocity,grid,imp );
 
-	}
+        }
 
-	coeff.finishBoundaryConditions(); //kkc 060406
-	// coeff.display("Here is coeff after finishBoundaryConditions");
+        coeff.finishBoundaryConditions(); //kkc 060406
+        // coeff.display("Here is coeff after finishBoundaryConditions");
 
-	if ( isSingular )  //kkc 060728
-	{ 
-	  addConstraintEquation(parameters,implicitSolver[imp],coeff,cgf0.u,cgf1.u,numberOfComponentsForCoefficients);
-	}
-	else
-	{
+        if ( isSingular )  //kkc 060728
+        { 
+          addConstraintEquation(parameters,implicitSolver[imp],coeff,cgf0.u,cgf1.u,numberOfComponentsForCoefficients);
+        }
+        else
+        {
            // supply coefficients
-	  if( true )
-	  {
+          if( true )
+          {
             if( false )
-	      ::display(boundaryConditions,"boundaryConditions BEFORE implicitSolver[imp].setCoefficientsAndBoundaryConditions");
-	    
-	    implicitSolver[imp].setCoefficientsAndBoundaryConditions( coeff, boundaryConditions, boundaryConditionData );  
-	  }
-	  else
-	  { // old way:
-	    implicitSolver[imp].setCoefficientArray( coeff, boundaryConditions, boundaryConditionData );  
-	    implicitSolver[imp].updateToMatchGrid( cg ); // kkc 060731 does this need to be called even if we have rebuilt the matrix? 
-	  }
-	  
-	}
+              ::display(boundaryConditions,"boundaryConditions BEFORE implicitSolver[imp].setCoefficientsAndBoundaryConditions");
+            
+            implicitSolver[imp].setCoefficientsAndBoundaryConditions( coeff, boundaryConditions, boundaryConditionData );  
+          }
+          else
+          { // old way:
+            implicitSolver[imp].setCoefficientArray( coeff, boundaryConditions, boundaryConditionData );  
+            implicitSolver[imp].updateToMatchGrid( cg ); // kkc 060731 does this need to be called even if we have rebuilt the matrix? 
+          }
+          
+        }
 
-	}
+        }
       
 
       } // end for( imp
@@ -711,13 +711,13 @@ formMatrixForImplicitSolve(const real & dt0,
 // * 
 // *       realMappedGridFunction & gridVelocity = parameters.gridIsMoving(grid) ? cgf0.getGridVelocity(grid) : cgf0.u[grid];
 // *       formImplicitTimeSteppingMatrix(coeff[grid],dt0,scalarSystemForImplicitTimeStepping,
-// * 				     cgf0.u[grid],gridVelocity,grid,0 );
+// *                                 cgf0.u[grid],gridVelocity,grid,0 );
 // * 
 // *     }
 // * 
-// *     //	  BoundaryConditionParameters bcp;
-// *     //	  bcp.setCornerBoundaryCondition(BoundaryConditionParameters::symmetryCorner);
-// *     //	  coeff.finishBoundaryConditions(bcp); //kkc 060406
+// *     //       BoundaryConditionParameters bcp;
+// *     //       bcp.setCornerBoundaryCondition(BoundaryConditionParameters::symmetryCorner);
+// *     //       coeff.finishBoundaryConditions(bcp); //kkc 060406
 // *     coeff.finishBoundaryConditions(); //kkc 060406
 // *     // coeff.display("Here is coeff after finishBoundaryConditions");
 // * 
@@ -746,8 +746,8 @@ formMatrixForImplicitSolve(const real & dt0,
 //\begin{>>CginsInclude.tex}{\subsection{implicitSolve}} 
 void Cgins::
 implicitSolve(const real & dt0,
-	      GridFunction & cgf1,
-	      GridFunction & cgf0)
+              GridFunction & cgf1,
+              GridFunction & cgf0)
 // ==========================================================================================
 // /Description:
 //    The implicit method can be optionally used on only some grids. To implement this
@@ -812,7 +812,7 @@ implicitSolve(const real & dt0,
 //     parameters.dbase.get<int >("initializeImplicitTimeStepping")=1;
 //     if( debug() & 2 )
 //       printF(">>>Cgins::implicitSolve: recompute matrix: parameters.dbase.get<int >("globalStepNumber")=%i refactorFrequency=%i recomputeMatrix=%i\n",
-// 	     parameters.dbase.get<int >("globalStepNumber"),parameters.dbase.get<int >("refactorFrequency"),recomputeMatrix);
+//           parameters.dbase.get<int >("globalStepNumber"),parameters.dbase.get<int >("refactorFrequency"),recomputeMatrix);
 //   }
   
 //   if( parameters.dbase.get<int >("initializeImplicitTimeStepping") )
@@ -880,80 +880,80 @@ implicitSolve(const real & dt0,
 
       for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
       {
-	if( implicitSolver[imp].isSolverIterative() )
-	{
-	  assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
-	  assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
-	}
-	else
-	{
-	  assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
-	}
+        if( implicitSolver[imp].isSolverIterative() )
+        {
+          assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
+          assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
+        }
+        else
+        {
+          assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
+        }
       }
 
       
       if( debug() & 4 )
-	printP("solve implicit time step for component n=%i (%s), imp=%i..\n",n,(const char*)cgf0.u.getName(n),imp);
+        printP("solve implicit time step for component n=%i (%s), imp=%i..\n",n,(const char*)cgf0.u.getName(n),imp);
 
       if( implicitSolver[imp].isSolverIterative() )
       {
-	// for iterative solvers we need a separate RHS! since the rhs will have points zeroed out.
+        // for iterative solvers we need a separate RHS! since the rhs will have points zeroed out.
 
-	if( debug() & 4 ) 
-	{
-	  cgf1.u.display(sPrintF("cgf1.u before implicit solve (n=%i)",n),debugFile,"%6.3f ");
-	  w.display(sPrintF("RHS w=cgf1.u(n) before implicit solve (n=%i)",n),debugFile,"%6.3f ");
-	}
-	
-	implicitSolver[imp].solve( v,w );  
+        if( debug() & 4 ) 
+        {
+          cgf1.u.display(sPrintF("cgf1.u before implicit solve (n=%i)",n),debugFile,"%6.3f ");
+          w.display(sPrintF("RHS w=cgf1.u(n) before implicit solve (n=%i)",n),debugFile,"%6.3f ");
+        }
+        
+        implicitSolver[imp].solve( v,w );  
 
-	numberOfIterations+=implicitSolver[imp].getNumberOfIterations();
+        numberOfIterations+=implicitSolver[imp].getNumberOfIterations();
 
-	if( debug() & 4 ) 
-	{
-	  v.display(sPrintF("Solution after implicit solve (n=%i) t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
-	}
-	
+        if( debug() & 4 ) 
+        {
+          v.display(sPrintF("Solution after implicit solve (n=%i) t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
+        }
+        
 
-	if( debug() & 2 )
-	  printP(" ** implicit time stepping: component %i iterations= %i (t=%e, dt=%8.1e, step=%i, "
-		 "max residual=%8.2e)\n",n,implicitSolver[imp].getNumberOfIterations(),
-		 cgf1.t,dt,parameters.dbase.get<int >("globalStepNumber"),implicitSolver[imp].getMaximumResidual());
+        if( debug() & 2 )
+          printP(" ** implicit time stepping: component %i iterations= %i (t=%e, dt=%8.1e, step=%i, "
+                 "max residual=%8.2e)\n",n,implicitSolver[imp].getNumberOfIterations(),
+                 cgf1.t,dt,parameters.dbase.get<int >("globalStepNumber"),implicitSolver[imp].getMaximumResidual());
 
-	if( FALSE && implicitSolver[imp].getNumberOfIterations() > 10 )
-	{
-	  fprintf(debugFile,"***WARNING*** % iterations required to implicit solve of component n=%i\n",
-		  implicitSolver[imp].getNumberOfIterations(),n);
-	  v.display("\n ****v (left hand side for implicit solve)",debugFile);
-	  w.display("\n ****w (right hand side for implicit solve)",debugFile);
-	  char buff[80];
-	  for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
-	    display(coeff[grid].sparse->classify,sPrintF(buff,"\n ****classify on grid=%i",grid),debugFile);
+        if( FALSE && implicitSolver[imp].getNumberOfIterations() > 10 )
+        {
+          fprintf(debugFile,"***WARNING*** % iterations required to implicit solve of component n=%i\n",
+                  implicitSolver[imp].getNumberOfIterations(),n);
+          v.display("\n ****v (left hand side for implicit solve)",debugFile);
+          w.display("\n ****w (right hand side for implicit solve)",debugFile);
+          char buff[80];
+          for( grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
+            display(coeff[grid].sparse->classify,sPrintF(buff,"\n ****classify on grid=%i",grid),debugFile);
 
-	}
-	
+        }
+        
       }
       else
       {
-	if( debug() & 4 ) 
-	{
-	  v.display(sPrintF("RHS before implicit solve, component=%i, t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
-	  // fprintf(debugFile," ***Errors before solve for component=%i\n",n);
-	  // determineErrors( cgf1 );
-	}
-	
-	implicitSolver[imp].solve( v,v );  
+        if( debug() & 4 ) 
+        {
+          v.display(sPrintF("RHS before implicit solve, component=%i, t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
+          // fprintf(debugFile," ***Errors before solve for component=%i\n",n);
+          // determineErrors( cgf1 );
+        }
+        
+        implicitSolver[imp].solve( v,v );  
 
-	if( debug() & 4 )
-	{
-	  v.display(sPrintF("Solution after implicit solve, component=%i t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
-	  // fprintf(debugFile," ***Errors after solve for component=%i\n",n);
-	  // determineErrors( cgf1 );
-	}
+        if( debug() & 4 )
+        {
+          v.display(sPrintF("Solution after implicit solve, component=%i t=%8.2e",n,cgf1.t),debugFile,"%6.3f ");
+          // fprintf(debugFile," ***Errors after solve for component=%i\n",n);
+          // determineErrors( cgf1 );
+        }
       }
       for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
       {
-	assign(cgf1.u[grid],all,all,all,n, v[grid],all,all,all,0);
+        assign(cgf1.u[grid],all,all,all,n, v[grid],all,all,all,0);
       }
 
     }
@@ -974,15 +974,15 @@ implicitSolve(const real & dt0,
       w.updateToMatchGrid(cgf1.cg,all,all,all,Rv);
       for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
       {
-	assign(w[grid],all,all,all,Rv, cgf1.u[grid],all,all,all,Rv); // rhs
-	assign(v[grid],all,all,all,Rv, cgf0.u[grid],all,all,all,Rv); // initial guess
+        assign(w[grid],all,all,all,Rv, cgf1.u[grid],all,all,all,Rv); // rhs
+        assign(v[grid],all,all,all,Rv, cgf0.u[grid],all,all,all,Rv); // initial guess
       }
     }
     else
     {
       for( int grid=0; grid<cgf1.cg.numberOfComponentGrids(); grid++ )
       {
-	assign(v[grid],all,all,all,Rv, cgf1.u[grid],all,all,all,Rv); // rhs
+        assign(v[grid],all,all,all,Rv, cgf1.u[grid],all,all,all,Rv); // rhs
       }
     }
       
@@ -996,9 +996,9 @@ implicitSolve(const real & dt0,
 
       if( false )
       {
-	printF("Cgins::implicitSolve: its = %i ** \n",implicitSolver[0].getNumberOfIterations());
-	implicitSolver[0].solve( v,w );  
-	printF("Cgins::implicitSolve: its = %i (AGAIN) ** \n",implicitSolver[0].getNumberOfIterations());
+        printF("Cgins::implicitSolve: its = %i ** \n",implicitSolver[0].getNumberOfIterations());
+        implicitSolver[0].solve( v,w );  
+        printF("Cgins::implicitSolve: its = %i (AGAIN) ** \n",implicitSolver[0].getNumberOfIterations());
       }
       
       numberOfIterations+=implicitSolver[0].getNumberOfIterations();
@@ -1029,22 +1029,22 @@ implicitSolve(const real & dt0,
     if( implicitSolver[0].isSolverIterative() && ( debug() & 1 || debug() & 2 ) )
     {
       if( false && debug() & 1 ) 
-	printF("Cgins::implicitSolve: number of iterations to solve implicit time step matrix = %i ** \n",
-	       numberOfIterations);
+        printF("Cgins::implicitSolve: number of iterations to solve implicit time step matrix = %i ** \n",
+               numberOfIterations);
 
       if( true || debug() & 2 )
       {
-	real absoluteTolerance,relativeTolerance;
-	implicitSolver[0].get(OgesParameters::THEabsoluteTolerance,absoluteTolerance);
-	implicitSolver[0].get(OgesParameters::THErelativeTolerance,relativeTolerance);
+        real absoluteTolerance,relativeTolerance;
+        implicitSolver[0].get(OgesParameters::THEabsoluteTolerance,absoluteTolerance);
+        implicitSolver[0].get(OgesParameters::THErelativeTolerance,relativeTolerance);
 
-	// compute the max-residual if needed
-	real maxResidual = implicitSolver[0].getMaximumResidual();
+        // compute the max-residual if needed
+        real maxResidual = implicitSolver[0].getMaximumResidual();
     
-	printF(" ** Cgins::implicitSolve its = %i (t=%9.3e, dt=%8.1e, step=%i, max res=%8.2e "
-	       "rel-tol=%7.1e, abs-tol=%7.1e)\n",
-	       implicitSolver[0].getNumberOfIterations(),cgf1.t,dt,parameters.dbase.get<int >("globalStepNumber"),maxResidual,
-	       relativeTolerance,absoluteTolerance);
+        printF(" ** Cgins::implicitSolve its = %i (t=%9.3e, dt=%8.1e, step=%i, max res=%8.2e "
+               "rel-tol=%7.1e, abs-tol=%7.1e)\n",
+               implicitSolver[0].getNumberOfIterations(),cgf1.t,dt,parameters.dbase.get<int >("globalStepNumber"),maxResidual,
+               relativeTolerance,absoluteTolerance);
       }
     }
   }
@@ -1066,12 +1066,12 @@ implicitSolve(const real & dt0,
     {
       if( implicitSolver[imp].isSolverIterative() )
       {
-	assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
-	assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
+        assign(w[grid],all,all,all,0, cgf1.u[grid],all,all,all,n); // This will be the RHS
+        assign(v[grid],all,all,all,0, cgf0.u[grid],all,all,all,n); // ***** initial guess ****
       }
       else
       {
-	assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
+        assign(v[grid],all,all,all,0, cgf1.u[grid],all,all,all,n);
       }
     }
 
@@ -1084,19 +1084,19 @@ implicitSolve(const real & dt0,
     {
       if( debug() & 4 ) 
       {
-	v.display(sPrintF("solution before implicit solve for T"),debugFile,"%6.3f ");
-	w.display(sPrintF("RHS before implicit solve for T"),debugFile,"%6.3f ");
+        v.display(sPrintF("solution before implicit solve for T"),debugFile,"%6.3f ");
+        w.display(sPrintF("RHS before implicit solve for T"),debugFile,"%6.3f ");
       }
       
       implicitSolver[imp].solve( v,w );  
 
       if( debug() & 2 ) printF(" ..number of iterations to solve the implicit T eqn = %i\n",
-			       implicitSolver[imp].getNumberOfIterations());
+                               implicitSolver[imp].getNumberOfIterations());
     }
     else
     {
       if( debug() & 4 ) 
-	v.display(sPrintF("RHS before implicit solve for T"),debugFile,"%6.3f ");
+        v.display(sPrintF("RHS before implicit solve for T"),debugFile,"%6.3f ");
 
       implicitSolver[imp].solve( v,v );  
     }
@@ -1181,12 +1181,12 @@ getResidual( real t, real dt, GridFunction & cgf, realCompositeGridFunction & re
     
     // *wdh* Dec 20, 2017 -- the 3rd arg below should be uOld -- used for some BC's -- may not be needed currently
     applyBoundaryConditionsForImplicitTimeStepping(f,
-						   cgf.u[grid],  // -- fix this -- should be uL
-						   cgf.u[grid],  // -- fix this -- should be uOld *wdh& Dec 20,2017
-						   cgf.getGridVelocity(grid),
-						   cgf.t,
-						   parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping"),
-						   grid );
+                                                   cgf.u[grid],  // -- fix this -- should be uL
+                                                   cgf.u[grid],  // -- fix this -- should be uOld *wdh& Dec 20,2017
+                                                   cgf.getGridVelocity(grid),
+                                                   cgf.t,
+                                                   parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping"),
+                                                   grid );
 
     insImplicitMatrix(InsParameters::evalResidualForBoundaryConditions,coeffg,dt,u0,resid,f,gridVelocity,grid);
 
@@ -1210,13 +1210,13 @@ getResidual( real t, real dt, GridFunction & cgf, realCompositeGridFunction & re
 // ===================================================================================================================
 int Cgins::
 insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
-		  realMappedGridFunction & coeff,
-		  const real & dt0, 
-		  const realMappedGridFunction & u0,
-		  realMappedGridFunction & fe,
-		  realMappedGridFunction & fi,
-		  const realMappedGridFunction & gridVelocity,
-		  const int & grid)
+                  realMappedGridFunction & coeff,
+                  const real & dt0, 
+                  const realMappedGridFunction & u0,
+                  realMappedGridFunction & fe,
+                  realMappedGridFunction & fi,
+                  const realMappedGridFunction & gridVelocity,
+                  const int & grid)
 {
 
   FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
@@ -1247,7 +1247,7 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
   Parameters::TurbulenceModel & turbulenceModel=parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel");
   InsParameters::PDEModel & pdeModel = parameters.dbase.get<InsParameters::PDEModel >("pdeModel");
   const bool computeTemperature = (pdeModel==InsParameters::BoussinesqModel ||
-				   pdeModel==InsParameters::viscoPlasticModel);
+                                   pdeModel==InsParameters::viscoPlasticModel);
   const Parameters::ImplicitMethod & implicitMethod = 
              parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod");  
 
@@ -1276,7 +1276,7 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     printF("\n===== insImplicitMatrix: **new** call insimp =====\n");
     if( option==InsParameters::buildMatrix )
       printF("===== numberOfComponentsForCoefficients = %i, dt=%e dt0=%e =====\n",
-	     numberOfComponentsForCoefficients,dt,dt0);
+             numberOfComponentsForCoefficients,dt,dt0);
   }
   
 #ifdef USE_PPP
@@ -1319,8 +1319,8 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
 
     // we don't need uL for evaluating the residual: 
     bool linearizedSolutionIsNeeded = (parameters.saveLinearizedSolution() && 
-				       option!=InsParameters::evalResidual &&
-				       option!=InsParameters::evalResidualForBoundaryConditions);
+                                       option!=InsParameters::evalResidual &&
+                                       option!=InsParameters::evalResidualForBoundaryConditions);
 
 #ifdef USE_PPP
     RealArray xLocal; if( vertexNeeded ) getLocalArrayWithGhostBoundaries(mg.vertex(),xLocal);
@@ -1355,8 +1355,8 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
       getLocalArrayWithGhostBoundaries(gridVelocity,gridVelocityLocal);
       if( linearizedSolutionIsNeeded )
       {
-	assert( pGridVelocityLinearized!=NULL );
-	getLocalArrayWithGhostBoundaries(pGridVelocityLinearized[grid],gridVelocityLinearizedLocal);
+        assert( pGridVelocityLinearized!=NULL );
+        getLocalArrayWithGhostBoundaries(pGridVelocityLinearized[grid],gridVelocityLinearizedLocal);
       }
     }
     
@@ -1386,8 +1386,8 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
       gridVelocityLocal.reference(gridVelocity);
       if( linearizedSolutionIsNeeded )
       {
-	assert( pGridVelocityLinearized!=NULL );
-	gridVelocityLinearizedLocal.reference(pGridVelocityLinearized[grid]);
+        assert( pGridVelocityLinearized!=NULL );
+        gridVelocityLinearizedLocal.reference(pGridVelocityLinearized[grid]);
       }
     }
 #endif
@@ -1405,20 +1405,20 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
       Index Ib1,Ib2,Ib3;
       for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  if( mg.boundaryCondition(side,axis)==Parameters::axisymmetric )
-	  {
-	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	    int includeGhost=1;
-	    bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,Ib1,Ib2,Ib3,includeGhost);
-	    radiusInverse(Ib1,Ib2,Ib3)=0.;
-	  }
-	}
+        for( int side=0; side<=1; side++ )
+        {
+          if( mg.boundaryCondition(side,axis)==Parameters::axisymmetric )
+          {
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+            int includeGhost=1;
+            bool ok = ParallelUtility::getLocalArrayBounds(u0,u0Local,Ib1,Ib2,Ib3,includeGhost);
+            radiusInverse(Ib1,Ib2,Ib3)=0.;
+          }
+        }
       }
       if( debug() & 8 )
       {
-	display(radiusInverse,sPrintF("insImplicitMatrix: radiusInverse, grid=%i",grid),pDebugFile,"%8.5f ");
+        display(radiusInverse,sPrintF("insImplicitMatrix: radiusInverse, grid=%i",grid),pDebugFile,"%8.5f ");
       }
     }
 
@@ -1444,17 +1444,17 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
       // Material properties do vary 
 
       if( debug() & 4 )
-	printF("Cgins::insImplicitMatrix: Material properties do vary\n");
+        printF("Cgins::insImplicitMatrix: Material properties do vary\n");
 
       std::vector<GridMaterialProperties> & materialProperties = 
-	parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
+        parameters.dbase.get<std::vector<GridMaterialProperties> >("materialProperties");
 
       GridMaterialProperties & matProp = materialProperties[grid];
       materialFormat = matProp.getMaterialFormat();
       
       if( materialFormat==GridMaterialProperties::piecewiseConstantMaterialProperties )
       {
-	IntegerArray & matIndex = matProp.getMaterialIndexArray();
+        IntegerArray & matIndex = matProp.getMaterialIndexArray();
         matIndexPtr = matIndex.getDataPointer();
       }
       
@@ -1678,7 +1678,7 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
     rpar[13]=parameters.dbase.get<real >("nuPassiveScalar");
     const real adcPassiveScalar=1.; // coeff or linear artificial diffusion for the passive scalar ** add to params
     rpar[14]=adcPassiveScalar;
-           			
+                                
     rpar[15]= parameters.dbase.get<real >("ad21n");
     rpar[16]= parameters.dbase.get<real >("ad22n");
     rpar[17]= parameters.dbase.get<real >("ad41n");
@@ -1714,25 +1714,25 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
 
     int ierr=0;
     insimp(numberOfDimensions,
-	   u0Local.getBase(0),u0Local.getBound(0),
-	   u0Local.getBase(1),u0Local.getBound(1),
-	   u0Local.getBase(2),u0Local.getBound(2),
-	   u0Local.getBase(3),u0Local.getBound(3),
-	   *maskLocal.getDataPointer(),
-	   *pxy, *prsxy, *radiusInverse.getDataPointer(), *u0Local.getDataPointer(),
-	   coeffLocal.getLength(0),*coeffLocal.getDataPointer(),
-	   *pfe, *pfi, *uLinearized.getDataPointer(), *pgv, *pgvLinearized, *pdw, 
+           u0Local.getBase(0),u0Local.getBound(0),
+           u0Local.getBase(1),u0Local.getBound(1),
+           u0Local.getBase(2),u0Local.getBound(2),
+           u0Local.getBase(3),u0Local.getBound(3),
+           *maskLocal.getDataPointer(),
+           *pxy, *prsxy, *radiusInverse.getDataPointer(), *u0Local.getDataPointer(),
+           coeffLocal.getLength(0),*coeffLocal.getDataPointer(),
+           *pfe, *pfi, *uLinearized.getDataPointer(), *pgv, *pgvLinearized, *pdw, 
            ndMatProp,*matIndexPtr,*matValPtr,*matValPtr,
            bcLocal(0,0), mg.boundaryCondition(0,0),
-	   bcData.getBase(0),bcData.getBound(0),
-	   bcData.getBase(1),bcData.getBound(1),
-	   bcData.getBase(2),bcData.getBound(2),
-	   bcData.getBase(3),bcData.getBound(3),*bcData.getDataPointer(),
-	   equationNumberLocal.getLength(0),*equationNumberLocal.getDataPointer(),
-	   *classifyLocal.getDataPointer(),
+           bcData.getBase(0),bcData.getBound(0),
+           bcData.getBase(1),bcData.getBound(1),
+           bcData.getBase(2),bcData.getBound(2),
+           bcData.getBase(3),bcData.getBound(3),*bcData.getDataPointer(),
+           equationNumberLocal.getLength(0),*equationNumberLocal.getDataPointer(),
+           *classifyLocal.getDataPointer(),
            *interfaceType.getDataPointer(),
-	   n1a,n1b,n2a,n2b,n3a,n3b, 
-	   ipar[0], rpar[0], pdb, ierr );
+           n1a,n1b,n2a,n2b,n3a,n3b, 
+           ipar[0], rpar[0], pdb, ierr );
       
 
 
@@ -1767,12 +1767,12 @@ insImplicitMatrix(InsParameters::InsImplicitMatrixOptionsEnum option,
 //\begin{>>MappedGridSolverInclude.tex}{\subsection{formImplicitTimeSteppingMatrixINS}} 
 int Cgins::
 formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
-			       const real & dt0, 
-			       int scalarSystem,
-			       realMappedGridFunction & u0,
-			       const realMappedGridFunction & gridVelocity,
-			       const int & grid,
-			       const int & imp )
+                               const real & dt0, 
+                               int scalarSystem,
+                               realMappedGridFunction & u0,
+                               const realMappedGridFunction & gridVelocity,
+                               const int & grid,
+                               const int & imp )
 // ==========================================================================================
 // /Description:
 //    Form the implicit time steping matrix for the INS equations on a single grid.
@@ -1878,10 +1878,10 @@ int Cgins::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
                                                realMappedGridFunction &uL,
                                                realMappedGridFunction &uOld,  // *wdh* Dec 20, 2017
-					       realMappedGridFunction & gridVelocity,
-					       real t,
-					       int scalarSystem,
-					       int grid )
+                                               realMappedGridFunction & gridVelocity,
+                                               real t,
+                                               int scalarSystem,
+                                               int grid )
 // ======================================================================================
 //  /Description:
 //      Apply boundary conditions to the rhs side grid function used in the implicit solve.
@@ -1967,8 +1967,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
   const bool interfaceBoundaryConditionsAreSpecified=parameters.dbase.has_key("interfaceCondition");
   IntegerArray & interfaceCondition = (interfaceBoundaryConditionsAreSpecified ? 
-				       parameters.dbase.get<IntegerArray>("interfaceCondition") :
-				       Overture::nullIntArray() );
+                                       parameters.dbase.get<IntegerArray>("interfaceCondition") :
+                                       Overture::nullIntArray() );
 
   const Parameters::KnownSolutionsEnum & knownSolution = 
             parameters.dbase.get<Parameters::KnownSolutionsEnum >("knownSolution");
@@ -1998,27 +1998,27 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     {
       for( int side=0; side<=1; side++ )
       {
-	const int bc=mg.boundaryCondition(side,axis);
-	switch (bc)
-	{
-	case 0 : break;
-	case -1: break;
-	case Parameters::slipWall:                   assignSlipWall=true; break;
-	case Parameters::noSlipWall :                assignNoSlipWall=true; break;
-	case InsParameters::inflowWithVelocityGiven: assignInflowWithVelocityGiven=true; break;
-	case InsParameters::outflow:                 assignOutflow=true; break;
-	case InsParameters::freeSurfaceBoundaryCondition: assignFreeSurfaceBoundaryCondition=true; break;
-//	case InsParameters::tractionFree:            assignTractionFree=true; break;
-	case Parameters::axisymmetric:               assignAxisymmetric=true; break;
-//	case Parameters::symmetry :                  assignSymmetry=true; break;
-	case Parameters::dirichletBoundaryCondition: assignDirichletBoundaryCondition=true; break;
-	case InsParameters::inflowWithPressureAndTangentialVelocityGiven :
-	  assignInflowWithPressureAndTangentialVelocityGiven=true; break;
-	default: 
-	  printF("applyBoundaryConditionsForImplicitTimeStepping:ERROR: unknown boundary condition =%i "
+        const int bc=mg.boundaryCondition(side,axis);
+        switch (bc)
+        {
+        case 0 : break;
+        case -1: break;
+        case Parameters::slipWall:                   assignSlipWall=true; break;
+        case Parameters::noSlipWall :                assignNoSlipWall=true; break;
+        case InsParameters::inflowWithVelocityGiven: assignInflowWithVelocityGiven=true; break;
+        case InsParameters::outflow:                 assignOutflow=true; break;
+        case InsParameters::freeSurfaceBoundaryCondition: assignFreeSurfaceBoundaryCondition=true; break;
+//      case InsParameters::tractionFree:            assignTractionFree=true; break;
+        case Parameters::axisymmetric:               assignAxisymmetric=true; break;
+//      case Parameters::symmetry :                  assignSymmetry=true; break;
+        case Parameters::dirichletBoundaryCondition: assignDirichletBoundaryCondition=true; break;
+        case InsParameters::inflowWithPressureAndTangentialVelocityGiven :
+          assignInflowWithPressureAndTangentialVelocityGiven=true; break;
+        default: 
+          printF("applyBoundaryConditionsForImplicitTimeStepping:ERROR: unknown boundary condition =%i "
                  "on grid %i, side=%i, axis=%i\n",bc,grid,side,axis);
-	  OV_ABORT("error");
-	}
+          OV_ABORT("error");
+        }
       }
     }
 
@@ -2073,41 +2073,41 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     {
       if( knownSolution!=InsParameters::noKnownSolution ) 
       {
-	if( false )// ************** TEMP ********************
-	{
-	  printF("--INSBC-IMP--  *** assign dirichletBoundaryCondition to known at t=%9.3e\n",t);
+        if( false )// ************** TEMP ********************
+        {
+          printF("--INSBC-IMP--  *** assign dirichletBoundaryCondition to known at t=%9.3e\n",t);
 
-	  realArray & x = mg.vertex();
-	  int i1=0, i2=0, i3=0;
+          realArray & x = mg.vertex();
+          int i1=0, i2=0, i3=0;
           printF("  ...  grid=%i: t=%12.5e, point (i1=0,i2=0) (x,y)=(%20.12e,%20.12e)\n",
-		 grid,t,x(i1,i2,i3,0),x(i1,i2,i3,1));
-	}
-	
+                 grid,t,x(i1,i2,i3,0),x(i1,i2,i3,1));
+        }
+        
 
-	realArray *uKnownPointer=NULL;
-	int extra=2;
-	Index I1,I2,I3;
-	getIndex(mg.gridIndexRange(),I1,I2,I3,extra);  // **************** fix this -- only evaluate near boundaries --
+        realArray *uKnownPointer=NULL;
+        int extra=2;
+        Index I1,I2,I3;
+        getIndex(mg.gridIndexRange(),I1,I2,I3,extra);  // **************** fix this -- only evaluate near boundaries --
 
-	uKnownPointer = &parameters.getKnownSolution( t,grid,I1,I2,I3 );
-	realArray & uKnown = uKnownPointer!=NULL ? *uKnownPointer : u;
-	OV_GET_SERIAL_ARRAY(real,uKnown,uKnownLocal);
+        uKnownPointer = &parameters.getKnownSolution( t,grid,I1,I2,I3 );
+        realArray & uKnown = uKnownPointer!=NULL ? *uKnownPointer : u;
+        OV_GET_SERIAL_ARRAY(real,uKnown,uKnownLocal);
 
-	BoundaryConditionParameters bcParams;
-	bcParams.extraInTangentialDirections=2;
-	bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
+        BoundaryConditionParameters bcParams;
+        bcParams.extraInTangentialDirections=2;
+        bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
 
-	u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,bcParams);
+        u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,bcParams);
       
-	bcParams.lineToAssign=0;  // reset
-	bcParams.extraInTangentialDirections=0;
-	bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
+        bcParams.lineToAssign=0;  // reset
+        bcParams.extraInTangentialDirections=0;
+        bcParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
 
       }
       else
       {
-	u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,bcData,t,
-				 Overture::defaultBoundaryConditionParameters(),grid);
+        u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,bcData,t,
+                                 Overture::defaultBoundaryConditionParameters(),grid);
       }
     }
     
@@ -2129,13 +2129,13 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                                  Overture::defaultBoundaryConditionParameters(),grid);
 
         // *wdh* 2016/07/03 u.applyBoundaryCondition(V,dirichlet,dirichletBoundaryCondition,bcData,t,
-        //				Overture::defaultBoundaryConditionParameters(),grid);
+        //                              Overture::defaultBoundaryConditionParameters(),grid);
       }
     }
     
 
     if( turbulenceModel==Parameters::kEpsilon ||
-	turbulenceModel==Parameters::kOmega ||
+        turbulenceModel==Parameters::kOmega ||
         pdeModel==InsParameters::twoPhaseFlowModel )
     {
       u.applyBoundaryCondition(K,dirichlet,dirichletBoundaryCondition,bcData,t,Overture::defaultBoundaryConditionParameters(),grid);
@@ -2147,10 +2147,10 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     
 
 //     u.applyBoundaryCondition(V,dirichlet,inflowWithVelocityGiven,
-// 			      bcData,t,Overture::defaultBoundaryConditionParameters(),grid);
+//                            bcData,t,Overture::defaultBoundaryConditionParameters(),grid);
 
     u.applyBoundaryCondition(V,dirichlet,inflowWithVelocityGiven,bcData,pBoundaryData,t,
-			     Overture::defaultBoundaryConditionParameters(),grid);
+                             Overture::defaultBoundaryConditionParameters(),grid);
 
 
     if( parameters.isAxisymmetric() )
@@ -2194,27 +2194,27 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
     ForBoundary( side,axis )
     {
       if( false &&   // set this to true for debugging
-	  mg.boundaryCondition(side,axis)==noSlipWall && parameters.gridIsMoving(grid) )
+          mg.boundaryCondition(side,axis)==noSlipWall && parameters.gridIsMoving(grid) )
       {
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	const intArray & mask = mg.mask();
-	real uMin=0., uMax=0., vMin=0., vMax=0., guMin=0., guMax=0., gvMin=0., gvMax=0., err=0.;
-	assert( gridVelocity.getBase(3)==0 && gridVelocity.getBound(3)==mg.numberOfDimensions()-1 );
-	where( mask(Ib1,Ib2,Ib3)>0 )
-	{
-	  uMin = min(u(Ib1,Ib2,Ib3,uc));
-	  uMax = max(u(Ib1,Ib2,Ib3,uc));
-	  vMin = min(u(Ib1,Ib2,Ib3,vc));
-	  vMax = max(u(Ib1,Ib2,Ib3,vc));
-	  guMin=min(gridVelocity(Ib1,Ib2,Ib3,0));
-	  guMax=max(gridVelocity(Ib1,Ib2,Ib3,0));
-	  gvMin=min(gridVelocity(Ib1,Ib2,Ib3,1));
-	  gvMax=max(gridVelocity(Ib1,Ib2,Ib3,1));
-	  err = max(fabs(u(Ib1,Ib2,Ib3,vc)-gridVelocity(Ib1,Ib2,Ib3,1)));
-	}
-	printF("implicitBC: t=%9.3e: (grid,side,axis)=(%i,%i,%i) (uMin,uMax)=(%9.2e,%9.2e) (vMin,vMax)=(%9.2e,%9.2e)"
-	       "\n   (guMin,guMax)=(%9.2e,%9.2e) (gvMin,gvMax)=(%9.2e,%9.2e) err=%8.2e <<<< \n",
-	       t,grid,side,axis,uMin,uMax,vMin,vMax,guMin,guMax,gvMin,gvMax,err);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        const intArray & mask = mg.mask();
+        real uMin=0., uMax=0., vMin=0., vMax=0., guMin=0., guMax=0., gvMin=0., gvMax=0., err=0.;
+        assert( gridVelocity.getBase(3)==0 && gridVelocity.getBound(3)==mg.numberOfDimensions()-1 );
+        where( mask(Ib1,Ib2,Ib3)>0 )
+        {
+          uMin = min(u(Ib1,Ib2,Ib3,uc));
+          uMax = max(u(Ib1,Ib2,Ib3,uc));
+          vMin = min(u(Ib1,Ib2,Ib3,vc));
+          vMax = max(u(Ib1,Ib2,Ib3,vc));
+          guMin=min(gridVelocity(Ib1,Ib2,Ib3,0));
+          guMax=max(gridVelocity(Ib1,Ib2,Ib3,0));
+          gvMin=min(gridVelocity(Ib1,Ib2,Ib3,1));
+          gvMax=max(gridVelocity(Ib1,Ib2,Ib3,1));
+          err = max(fabs(u(Ib1,Ib2,Ib3,vc)-gridVelocity(Ib1,Ib2,Ib3,1)));
+        }
+        printF("implicitBC: t=%9.3e: (grid,side,axis)=(%i,%i,%i) (uMin,uMax)=(%9.2e,%9.2e) (vMin,vMax)=(%9.2e,%9.2e)"
+               "\n   (guMin,guMax)=(%9.2e,%9.2e) (gvMin,gvMax)=(%9.2e,%9.2e) err=%8.2e <<<< \n",
+               t,grid,side,axis,uMin,uMax,vMin,vMax,guMin,guMax,gvMin,gvMax,err);
       }
       else if( mg.boundaryCondition(side,axis)==Parameters::freeSurfaceBoundaryCondition )
       {
@@ -2223,9 +2223,9 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
 
         getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
-	if( !ok ) continue;
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        if( !ok ) continue;
 
 
         if( decoupleImplicitBoundaryConditions )
@@ -2311,11 +2311,11 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         }
         
 
-	if( twilightZoneFlow )
-	{
+        if( twilightZoneFlow )
+        {
           // *** ADD ON TWILIGHT_ZONE *****
 
-	  // ----- freeSurfaceBoundaryCondition -------
+          // ----- freeSurfaceBoundaryCondition -------
           // Rectangular:
           //     u_y + v_x = 0  
           //     v_z + w_y = 0 
@@ -2323,19 +2323,19 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
           //     
 
           // printF("\n--INS-- IMP-BC: set free surface BC **NEW** t=%9.3e\n\n",t);
-	    
-	  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	  ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
-	  if( !ok ) continue;
-
-	  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
             
-	  if(  isRectangular )
-	  {
-	    int rectangular=0;
-	    realSerialArray uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V);
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t); // u.x 
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t); // u.y 
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+          ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+          if( !ok ) continue;
+
+          OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            
+          if(  isRectangular )
+          {
+            int rectangular=0;
+            realSerialArray uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t); // u.x 
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t); // u.y 
 
             if( numberOfDimensions==2 )
             {
@@ -2351,8 +2351,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
               {
                 // u_y + v_x = 0 
                 // u_x + v_y = 0   // (div=0 comes second as BC for v)
-      	        uLocal(Ig1,Ig2,Ig3,uc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) )*(2*side-1);
-      	        uLocal(Ig1,Ig2,Ig3,vc)+= 0.;
+                uLocal(Ig1,Ig2,Ig3,uc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc) )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,vc)+= 0.;
               }
             }
             else // 3D 
@@ -2364,40 +2364,40 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                 // u_x + v_y + w_z = 0   // (div=0 comes first as BC for u)
                 // u_y + v_x       = 0 
                 // u_z       + w_x = 0 
-      	        uLocal(Ig1,Ig2,Ig3,uc)+= 0.;
-      	        uLocal(Ig1,Ig2,Ig3,vc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc)                       )*(2*side-1);
-      	        uLocal(Ig1,Ig2,Ig3,wc)+=( uez(Ib1,Ib2,Ib3,uc)                       + uex(Ib1,Ib2,Ib3,wc) )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,uc)+= 0.;
+                uLocal(Ig1,Ig2,Ig3,vc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc)                       )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,wc)+=( uez(Ib1,Ib2,Ib3,uc)                       + uex(Ib1,Ib2,Ib3,wc) )*(2*side-1);
               }
               else if( axis==1 )
               {
                 // u_y + v_x       = 0 
                 // u_x + v_y + w_z = 0   // (div=0 comes second as BC for v)
                 //       v_z + w_y = 0 
-      	        uLocal(Ig1,Ig2,Ig3,uc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc)                       )*(2*side-1);
-      	        uLocal(Ig1,Ig2,Ig3,vc)+= 0.;
-      	        uLocal(Ig1,Ig2,Ig3,wc)+=(                       uez(Ib1,Ib2,Ib3,vc) + uey(Ib1,Ib2,Ib3,wc) )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,uc)+=( uey(Ib1,Ib2,Ib3,uc) + uex(Ib1,Ib2,Ib3,vc)                       )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,vc)+= 0.;
+                uLocal(Ig1,Ig2,Ig3,wc)+=(                       uez(Ib1,Ib2,Ib3,vc) + uey(Ib1,Ib2,Ib3,wc) )*(2*side-1);
               }
               else 
               {
                 // u_z       + w_x = 0 
                 //       v_z + w_y = 0 
                 // u_x + v_y + w_z = 0   // (div=0 comes third as BC for w)
-      	        uLocal(Ig1,Ig2,Ig3,uc)+=( uez(Ib1,Ib2,Ib3,uc) +                       uex(Ib1,Ib2,Ib3,wc) )*(2*side-1);
-      	        uLocal(Ig1,Ig2,Ig3,vc)+=(                       uez(Ib1,Ib2,Ib3,vc) + uey(Ib1,Ib2,Ib3,wc) )*(2*side-1);
-      	        uLocal(Ig1,Ig2,Ig3,wc)+= 0.;
+                uLocal(Ig1,Ig2,Ig3,uc)+=( uez(Ib1,Ib2,Ib3,uc) +                       uex(Ib1,Ib2,Ib3,wc) )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,vc)+=(                       uez(Ib1,Ib2,Ib3,vc) + uey(Ib1,Ib2,Ib3,wc) )*(2*side-1);
+                uLocal(Ig1,Ig2,Ig3,wc)+= 0.;
               }
 
             }
             
-	  }
-	  else
-	  {
+          }
+          else
+          {
             OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
             
-	    realSerialArray uex(Ib1,Ib2,Ib3,V),uey(Ib1,Ib2,Ib3,V);
-	    int rectangular=0;
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+            realSerialArray uex(Ib1,Ib2,Ib3,V),uey(Ib1,Ib2,Ib3,V);
+            int rectangular=0;
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
 
             // See formula for stress-free BCs in surfins.pdf
             //   (div(v))*n + (I-n n^T)(tauv.n )/mu = RHS 
@@ -2407,8 +2407,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 #define delta(i,j) deltav[(i)+3*(j)]
 #define CSF(n,a,b) (delta(a,b)*nv[n] + delta(n,a)*nv[b] + delta(n,b)*nv[a] - 2.*nv[n]*nv[a]*nv[b])
 
-	    if( mg.numberOfDimensions()==2 )
-	    {
+            if( mg.numberOfDimensions()==2 )
+            {
               FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Ig1,Ig2,Ig3)
               {
                 real nv[2] = {normal(i1,i2,i3,0), normal(i1,i2,i3,1)};
@@ -2420,16 +2420,16 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                 }
               }
               
-	      // for( int n=V.getBase(); n<=V.getBound(); n++ )
-	      // {
-	      //   uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
-	      //   		       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n));
-	      // }
-	    }
-	    else
-	    {
-	      realSerialArray uez(Ib1,Ib2,Ib3,V);
-	      e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
+              // for( int n=V.getBase(); n<=V.getBound(); n++ )
+              // {
+              //   uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
+              //                       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n));
+              // }
+            }
+            else
+            {
+              realSerialArray uez(Ib1,Ib2,Ib3,V);
+              e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
 
               FOR_3IJD(i1,i2,i3,Ib1,Ib2,Ib3,j1,j2,j3,Ig1,Ig2,Ig3)
               {
@@ -2444,487 +2444,487 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
               }
 
 
-	      // for( int n=V.getBase(); n<=V.getBound(); n++ )
-	      // {
-	      //   uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
-	      //   		       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n)+
-	      //   		       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,n));
-	      // }
-	    }
-	  }
-	}
+              // for( int n=V.getBase(); n<=V.getBound(); n++ )
+              // {
+              //   uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
+              //                       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n)+
+              //                       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,n));
+              // }
+            }
+          }
+        }
       }
 #undef delta
 #undef CSF
 
       else if( mg.boundaryCondition(side,axis)==outflow )
       {
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
-	if( !ok ) continue;
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        if( !ok ) continue;
 
-	if( turbulenceModel==Parameters::kEpsilon ||
-	    turbulenceModel==Parameters::kOmega )
-	{
-	  uLocal(Ig1,Ig2,Ig3,K)=0.;   // for extrapolation (or Neumann)
-	}
+        if( turbulenceModel==Parameters::kEpsilon ||
+            turbulenceModel==Parameters::kOmega )
+        {
+          uLocal(Ig1,Ig2,Ig3,K)=0.;   // for extrapolation (or Neumann)
+        }
 
 
-	if( !twilightZoneFlow )
-	{
-	  uLocal(Ig1,Ig2,Ig3,V)=0.;   // for extrapolation (or Neumann)
-	}
-	else
-	{
-	  if( parameters.dbase.get<int>("outflowOption")==0 && 
+        if( !twilightZoneFlow )
+        {
+          uLocal(Ig1,Ig2,Ig3,V)=0.;   // for extrapolation (or Neumann)
+        }
+        else
+        {
+          if( parameters.dbase.get<int>("outflowOption")==0 && 
               parameters.dbase.get<int >("checkForInflowAtOutFlow")!=2  )
-	  {
+          {
             // extrapolation at outflow
             // printF(" implicit:RHS BC: extrapolation BC for outflow\n");
             uLocal(Ig1,Ig2,Ig3,V)=0.;
-	  }
-	  else 
-	  {
-	    // Neumann BC 
+          }
+          else 
+          {
+            // Neumann BC 
             // printF(" implicit:RHS BC: neumman BC for outflow\n");
-	    
-	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	    ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
-	    if( !ok ) continue;
-
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    // should be extrapolation at outflow ? -- for now is Neumann
             
-	    if(  isRectangular )
-	    {
-	      realSerialArray uex(Ib1,Ib2,Ib3,V);
-	      int rectangular=0;
-	      int nxd[3]={0,0,0}; //
-	      nxd[axis]=1;  // x,y, or z derivative
-	      e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,V,t);
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+            ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+            if( !ok ) continue;
 
-	      uLocal(Ig1,Ig2,Ig3,V)=uex(Ib1,Ib2,Ib3,V)*(2*side-1);
-	    }
-	    else
-	    {
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            // should be extrapolation at outflow ? -- for now is Neumann
+            
+            if(  isRectangular )
+            {
+              realSerialArray uex(Ib1,Ib2,Ib3,V);
+              int rectangular=0;
+              int nxd[3]={0,0,0}; //
+              nxd[axis]=1;  // x,y, or z derivative
+              e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,V,t);
+
+              uLocal(Ig1,Ig2,Ig3,V)=uex(Ib1,Ib2,Ib3,V)*(2*side-1);
+            }
+            else
+            {
 #ifdef USE_PPP
-	      const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
 #else
-	      const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
 #endif
            
-	      realSerialArray uex(Ib1,Ib2,Ib3,V),uey(Ib1,Ib2,Ib3,V);
-	      int rectangular=0;
-	      e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-	      e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+              realSerialArray uex(Ib1,Ib2,Ib3,V),uey(Ib1,Ib2,Ib3,V);
+              int rectangular=0;
+              e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+              e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
 
-	      if( mg.numberOfDimensions()==2 )
-	      {
-		for( int n=V.getBase(); n<=V.getBound(); n++ )
-		{
-		  uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
-					 normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n));
-		}
-	      }
-	      else
-	      {
-		realSerialArray uez(Ib1,Ib2,Ib3,V);
-		e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
-		for( int n=V.getBase(); n<=V.getBound(); n++ )
-		{
-		  uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
-					 normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n)+
-					 normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,n));
-		}
+              if( mg.numberOfDimensions()==2 )
+              {
+                for( int n=V.getBase(); n<=V.getBound(); n++ )
+                {
+                  uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n));
+                }
+              }
+              else
+              {
+                realSerialArray uez(Ib1,Ib2,Ib3,V);
+                e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
+                for( int n=V.getBase(); n<=V.getBound(); n++ )
+                {
+                  uLocal(Ig1,Ig2,Ig3,n)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,n)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,n)+
+                                         normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,n));
+                }
 
 
-	      }
+              }
 
-	    }
-	  
-	  }
-	}
+            }
+          
+          }
+        }
       }
       else if( mg.boundaryCondition(side,axis)==slipWall )
       {
         // ----------------------
-	// ------ slipWall ------
+        // ------ slipWall ------
         // ----------------------
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
-	ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
-	if( !ok ) continue;
-	    
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+        ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        if( !ok ) continue;
+            
 
-	if( turbulenceModel==Parameters::kEpsilon ||
-	    turbulenceModel==Parameters::kOmega )
-	{
-	  uLocal(Ig1,Ig2,Ig3,K)=0.;   // for Neumann
-	}
+        if( turbulenceModel==Parameters::kEpsilon ||
+            turbulenceModel==Parameters::kOmega )
+        {
+          uLocal(Ig1,Ig2,Ig3,K)=0.;   // for Neumann
+        }
 
-	bool useNewSlipWall=true;
-	if( !scalarSystem && useNewSlipWall )
-	{
+        bool useNewSlipWall=true;
+        if( !scalarSystem && useNewSlipWall )
+        {
 #ifdef USE_PPP
-//	  RealArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
-	  const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
-	  const RealArray & tangent = mg.centerBoundaryTangentArray(side,axis);
+//        RealArray uLocal; getLocalArrayWithGhostBoundaries(u,uLocal);
+          const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+          const RealArray & tangent = mg.centerBoundaryTangentArray(side,axis);
 #else
-	  const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
-	  const RealArray & tangent = mg.centerBoundaryTangent(side,axis);
+          const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+          const RealArray & tangent = mg.centerBoundaryTangent(side,axis);
 #endif
 
-// 	     printf(" slipWallBC: tangent dims=[%i,%i][%i,%i][%i,%i][%i,%i][%i,%i]\n",
-// 		    tangent.getBase(0),tangent.getBound(0),
-// 		    tangent.getBase(1),tangent.getBound(1),
-// 		    tangent.getBase(2),tangent.getBound(2),
-// 		    tangent.getBase(3),tangent.getBound(3),
-// 		    tangent.getBase(4),tangent.getBound(4));
+//           printf(" slipWallBC: tangent dims=[%i,%i][%i,%i][%i,%i][%i,%i][%i,%i]\n",
+//                  tangent.getBase(0),tangent.getBound(0),
+//                  tangent.getBase(1),tangent.getBound(1),
+//                  tangent.getBase(2),tangent.getBound(2),
+//                  tangent.getBase(3),tangent.getBound(3),
+//                  tangent.getBase(4),tangent.getBound(4));
 
-	  RealArray nDotU(Ib1,Ib2,Ib3);
-	    
-	  if( !twilightZoneFlow )
-	  {
-	    // project u(Ib1,Ib2,Ib3,V) --> n.u=0
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      nDotU=(uLocal(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0)+
-		     uLocal(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1));
-	    }
-	    else
-	    {
-	      nDotU=(uLocal(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0)+
-		     uLocal(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1)+
-		     uLocal(Ib1,Ib2,Ib3,wc)*normal(Ib1,Ib2,Ib3,2));
-	    }
-	    // now project the boundary values
-	    uLocal(Ib1,Ib2,Ib3,uc) -= nDotU*normal(Ib1,Ib2,Ib3,0);
-	    uLocal(Ib1,Ib2,Ib3,vc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
-	    if( mg.numberOfDimensions()==3 )
-	      uLocal(Ib1,Ib2,Ib3,wc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
+          RealArray nDotU(Ib1,Ib2,Ib3);
+            
+          if( !twilightZoneFlow )
+          {
+            // project u(Ib1,Ib2,Ib3,V) --> n.u=0
+            if( mg.numberOfDimensions()==2 )
+            {
+              nDotU=(uLocal(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0)+
+                     uLocal(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1));
+            }
+            else
+            {
+              nDotU=(uLocal(Ib1,Ib2,Ib3,uc)*normal(Ib1,Ib2,Ib3,0)+
+                     uLocal(Ib1,Ib2,Ib3,vc)*normal(Ib1,Ib2,Ib3,1)+
+                     uLocal(Ib1,Ib2,Ib3,wc)*normal(Ib1,Ib2,Ib3,2));
+            }
+            // now project the boundary values
+            uLocal(Ib1,Ib2,Ib3,uc) -= nDotU*normal(Ib1,Ib2,Ib3,0);
+            uLocal(Ib1,Ib2,Ib3,vc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
+            if( mg.numberOfDimensions()==3 )
+              uLocal(Ib1,Ib2,Ib3,wc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
 
-	    uLocal(Ig1,Ig2,Ig3,V)=0.;   // vector symmetry RHS
-	  }
-	  else
-	  {
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    RealArray ue(Ib1,Ib2,Ib3,V);
-	    int rectangular=0;
-	    e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
+            uLocal(Ig1,Ig2,Ig3,V)=0.;   // vector symmetry RHS
+          }
+          else
+          {
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            RealArray ue(Ib1,Ib2,Ib3,V);
+            int rectangular=0;
+            e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
 
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      nDotU=((uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-		     (uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1));
-	    }
-	    else
-	    {
-	      nDotU=((uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
-		     (uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+
-		     (uLocal(Ib1,Ib2,Ib3,wc)-ue(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2));
-	    }
-	    // now project the boundary values
-	    uLocal(Ib1,Ib2,Ib3,uc) -= nDotU*normal(Ib1,Ib2,Ib3,0);
-	    uLocal(Ib1,Ib2,Ib3,vc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
-	    if( mg.numberOfDimensions()==3 )
-	      uLocal(Ib1,Ib2,Ib3,wc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
-	      
+            if( mg.numberOfDimensions()==2 )
+            {
+              nDotU=((uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                     (uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1));
+            }
+            else
+            {
+              nDotU=((uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc))*normal(Ib1,Ib2,Ib3,0)+
+                     (uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))*normal(Ib1,Ib2,Ib3,1)+
+                     (uLocal(Ib1,Ib2,Ib3,wc)-ue(Ib1,Ib2,Ib3,wc))*normal(Ib1,Ib2,Ib3,2));
+            }
+            // now project the boundary values
+            uLocal(Ib1,Ib2,Ib3,uc) -= nDotU*normal(Ib1,Ib2,Ib3,0);
+            uLocal(Ib1,Ib2,Ib3,vc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
+            if( mg.numberOfDimensions()==3 )
+              uLocal(Ib1,Ib2,Ib3,wc) -= nDotU*normal(Ib1,Ib2,Ib3,1);
+              
 
-	    // vector symmetry RHS:
+            // vector symmetry RHS:
 
-	    getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1); // first line in
-	    ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ip1,Ip2,Ip3,includeGhost);
-	    if( !ok ) continue;
+            getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1); // first line in
+            ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ip1,Ip2,Ip3,includeGhost);
+            if( !ok ) continue;
 
-	    RealArray up(Ip1,Ip2,Ip3,V),ug(Ig1,Ig2,Ig3,V);
-	      
-	    // exact soln on the first ghost line:
-	    e.gd( ug,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ig1,Ig2,Ig3,V,t); 
-	    // exact soln on the first line in:
-	    e.gd( up,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ip1,Ip2,Ip3,V,t); 
+            RealArray up(Ip1,Ip2,Ip3,V),ug(Ig1,Ig2,Ig3,V);
+              
+            // exact soln on the first ghost line:
+            e.gd( ug,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ig1,Ig2,Ig3,V,t); 
+            // exact soln on the first line in:
+            e.gd( up,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ip1,Ip2,Ip3,V,t); 
 
 
-	    RealArray tau1DotU(Ib1,Ib2,Ib3);
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      nDotU=(normal(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
-		     normal(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc));
-	      tau1DotU=(tangent(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
-			tangent(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc));
-	      for( int d=0; d<mg.numberOfDimensions(); d++ )
-	      {
-		uLocal(Ig1,Ig2,Ig3,uc+d)=(ug(Ig1,Ig2,Ig3,uc+d)+ 
-					  nDotU*normal(Ib1,Ib2,Ib3,d) -
-					  tau1DotU*tangent(Ib1,Ib2,Ib3,d));
-	      }
-	    }
-	    else if( mg.numberOfDimensions()==3 )
-	    {
-	      RealArray tau2DotU(Ib1,Ib2,Ib3);
-	      nDotU=(normal(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
-		     normal(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc)+
-		     normal(Ib1,Ib2,Ib3,2)*up(Ip1,Ip2,Ip3,wc));
-		  
-	      tau1DotU=(tangent(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
-			tangent(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc)+
-			tangent(Ib1,Ib2,Ib3,2)*up(Ip1,Ip2,Ip3,wc));
-		  
-	      tau2DotU=(tangent(Ib1,Ib2,Ib3,3)*up(Ip1,Ip2,Ip3,uc)+
-			tangent(Ib1,Ib2,Ib3,4)*up(Ip1,Ip2,Ip3,vc)+
-			tangent(Ib1,Ib2,Ib3,5)*up(Ip1,Ip2,Ip3,wc));
+            RealArray tau1DotU(Ib1,Ib2,Ib3);
+            if( mg.numberOfDimensions()==2 )
+            {
+              nDotU=(normal(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
+                     normal(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc));
+              tau1DotU=(tangent(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
+                        tangent(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc));
+              for( int d=0; d<mg.numberOfDimensions(); d++ )
+              {
+                uLocal(Ig1,Ig2,Ig3,uc+d)=(ug(Ig1,Ig2,Ig3,uc+d)+ 
+                                          nDotU*normal(Ib1,Ib2,Ib3,d) -
+                                          tau1DotU*tangent(Ib1,Ib2,Ib3,d));
+              }
+            }
+            else if( mg.numberOfDimensions()==3 )
+            {
+              RealArray tau2DotU(Ib1,Ib2,Ib3);
+              nDotU=(normal(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
+                     normal(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc)+
+                     normal(Ib1,Ib2,Ib3,2)*up(Ip1,Ip2,Ip3,wc));
+                  
+              tau1DotU=(tangent(Ib1,Ib2,Ib3,0)*up(Ip1,Ip2,Ip3,uc)+
+                        tangent(Ib1,Ib2,Ib3,1)*up(Ip1,Ip2,Ip3,vc)+
+                        tangent(Ib1,Ib2,Ib3,2)*up(Ip1,Ip2,Ip3,wc));
+                  
+              tau2DotU=(tangent(Ib1,Ib2,Ib3,3)*up(Ip1,Ip2,Ip3,uc)+
+                        tangent(Ib1,Ib2,Ib3,4)*up(Ip1,Ip2,Ip3,vc)+
+                        tangent(Ib1,Ib2,Ib3,5)*up(Ip1,Ip2,Ip3,wc));
 
-	      for( int d=0; d<mg.numberOfDimensions(); d++ )
-	      {
-		uLocal(Ig1,Ig2,Ig3,uc+d)=(ug(Ig1,Ig2,Ig3,uc+d)+
-					  nDotU*normal(Ib1,Ib2,Ib3,d) -
-					  tau1DotU*tangent(Ib1,Ib2,Ib3,d) - 
-					  tau2DotU*tangent(Ib1,Ib2,Ib3,3+d));
-	      }
-	    }
+              for( int d=0; d<mg.numberOfDimensions(); d++ )
+              {
+                uLocal(Ig1,Ig2,Ig3,uc+d)=(ug(Ig1,Ig2,Ig3,uc+d)+
+                                          nDotU*normal(Ib1,Ib2,Ib3,d) -
+                                          tau1DotU*tangent(Ib1,Ib2,Ib3,d) - 
+                                          tau2DotU*tangent(Ib1,Ib2,Ib3,3+d));
+              }
+            }
 
-	  }
-	    
-	}
-	else
-	{
-	  // old way for slip wall
-	  const int unc=uc+axis;  // normal component
-	  if( !twilightZoneFlow )
-	  {
-	    uLocal(Ig1,Ig2,Ig3,V)=0.;   // (t.u).n = 0
-	    uLocal(Ib1,Ib2,Ib3,unc)=0.;   // n.u=   *********************** should be grid velocity *****
-	  }
-	  else
-	  {
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    if( isRectangular )
-	    {
-	      uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component  // *** should use u.x+v.y=0
-	      if( scalarSystem )
-	      {
-		// u(Ib1,Ib2,Ib3,unc)=e(mg,Ib1,Ib2,Ib3,unc,t);  // just dirichlet, not \nv\cdot\uv
-		e.gd(uLocal,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,unc,t);  
-	      }
-	      else 
-	      {
-		// u(Ib1,Ib2,Ib3,unc)=e(mg,Ib1,Ib2,Ib3,unc,t)*(2*side-1);
-		e.gd(uLocal,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,unc,t); 
-		uLocal(Ib1,Ib2,Ib3,unc)*=(2*side-1);
-	      }
-	      
-	      int nxd[3]={0,0,0}; //
-	      nxd[axis]=1;  // x,y, or z derivative
+          }
+            
+        }
+        else
+        {
+          // old way for slip wall
+          const int unc=uc+axis;  // normal component
+          if( !twilightZoneFlow )
+          {
+            uLocal(Ig1,Ig2,Ig3,V)=0.;   // (t.u).n = 0
+            uLocal(Ib1,Ib2,Ib3,unc)=0.;   // n.u=   *********************** should be grid velocity *****
+          }
+          else
+          {
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            if( isRectangular )
+            {
+              uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component  // *** should use u.x+v.y=0
+              if( scalarSystem )
+              {
+                // u(Ib1,Ib2,Ib3,unc)=e(mg,Ib1,Ib2,Ib3,unc,t);  // just dirichlet, not \nv\cdot\uv
+                e.gd(uLocal,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,unc,t);  
+              }
+              else 
+              {
+                // u(Ib1,Ib2,Ib3,unc)=e(mg,Ib1,Ib2,Ib3,unc,t)*(2*side-1);
+                e.gd(uLocal,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,unc,t); 
+                uLocal(Ib1,Ib2,Ib3,unc)*=(2*side-1);
+              }
+              
+              int nxd[3]={0,0,0}; //
+              nxd[axis]=1;  // x,y, or z derivative
 
-	      if( true )
-	      {
-		// *wdh* 100329 -- new way for parallel
-		realSerialArray ue(Ib1,Ib2,Ib3,V);
-		e.gd(ue,xLocal,mg.numberOfDimensions(),rectangular,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,V,t);
-		uLocal(Ig1,Ig2,Ig3,V) = ue(Ib1,Ib2,Ib3,V)*(2*side-1);
-	      }
-	      else
-	      {
-		// old way
-		for( int m=0; m<mg.numberOfDimensions()-1; m++ )
-		{
-		  int c= uc + ((axis+1+m) % mg.numberOfDimensions());
-		  // ::display( u(Ig1,Ig2,Ig3,c), "ghost value before implicit BC", "%5.2f ");
-		  e.gd(u,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,c, Ig1,Ig2,Ig3,c,t);  
-		  u(Ig1,Ig2,Ig3,c)*=(2*side-1);
-		  // ::display( u(Ig1,Ig2,Ig3,c), "ghost value after implicit BC", "%5.2f ");
-		}
-	      }
-	      
-	    }
-	    else
-	    {
-	      // **** not rectangular ****
-	      
-	      const int ut1c=uc + ((axis+1)%mg.numberOfDimensions());
-	      const int ut2c=uc + ((axis+2)%mg.numberOfDimensions());
-	  
+              if( true )
+              {
+                // *wdh* 100329 -- new way for parallel
+                realSerialArray ue(Ib1,Ib2,Ib3,V);
+                e.gd(ue,xLocal,mg.numberOfDimensions(),rectangular,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,V,t);
+                uLocal(Ig1,Ig2,Ig3,V) = ue(Ib1,Ib2,Ib3,V)*(2*side-1);
+              }
+              else
+              {
+                // old way
+                for( int m=0; m<mg.numberOfDimensions()-1; m++ )
+                {
+                  int c= uc + ((axis+1+m) % mg.numberOfDimensions());
+                  // ::display( u(Ig1,Ig2,Ig3,c), "ghost value before implicit BC", "%5.2f ");
+                  e.gd(u,0,nxd[0],nxd[1],nxd[2],Ib1,Ib2,Ib3,c, Ig1,Ig2,Ig3,c,t);  
+                  u(Ig1,Ig2,Ig3,c)*=(2*side-1);
+                  // ::display( u(Ig1,Ig2,Ig3,c), "ghost value after implicit BC", "%5.2f ");
+                }
+              }
+              
+            }
+            else
+            {
+              // **** not rectangular ****
+              
+              const int ut1c=uc + ((axis+1)%mg.numberOfDimensions());
+              const int ut2c=uc + ((axis+2)%mg.numberOfDimensions());
+          
 #ifdef USE_PPP
-	      const realSerialArray & normal  = mg.vertexBoundaryNormalArray(side,axis);
-	      const realSerialArray & tangent = mg.centerBoundaryTangentArray(side,axis);
+              const realSerialArray & normal  = mg.vertexBoundaryNormalArray(side,axis);
+              const realSerialArray & tangent = mg.centerBoundaryTangentArray(side,axis);
 #else
-	      const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
-	      const realArray & tangent = mg.centerBoundaryTangent(side,axis);
+              const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
+              const realArray & tangent = mg.centerBoundaryTangent(side,axis);
 #endif
 
 
-	      if( mg.numberOfDimensions()==2 )
-	      {
-		uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component
+              if( mg.numberOfDimensions()==2 )
+              {
+                uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component
 
-		realSerialArray ue(Ib1,Ib2,Ib3,V), &uex=ue, uey(Ib1,Ib2,Ib3,V); 
-		e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
+                realSerialArray ue(Ib1,Ib2,Ib3,V), &uex=ue, uey(Ib1,Ib2,Ib3,V); 
+                e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
                 
-		// uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*e(mg,Ib1,Ib2,Ib3,uc,t)+
-		//		             normal(Ib1,Ib2,Ib3,1)*e(mg,Ib1,Ib2,Ib3,vc,t));
-		uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*ue(Ib1,Ib2,Ib3,uc)+
-					  normal(Ib1,Ib2,Ib3,1)*ue(Ib1,Ib2,Ib3,vc));
+                // uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*e(mg,Ib1,Ib2,Ib3,uc,t)+
+                //                           normal(Ib1,Ib2,Ib3,1)*e(mg,Ib1,Ib2,Ib3,vc,t));
+                uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*ue(Ib1,Ib2,Ib3,uc)+
+                                          normal(Ib1,Ib2,Ib3,1)*ue(Ib1,Ib2,Ib3,vc));
 
-// 		uLocal(Ig1,Ig2,Ig3,ut1c)=
-// 		  tangent(Ib1,Ib2,Ib3,0)*(
-// 		    normal(Ib1,Ib2,Ib3,0)*e.x(mg,Ib1,Ib2,Ib3,uc,t)
-// 		    +normal(Ib1,Ib2,Ib3,1)*e.y(mg,Ib1,Ib2,Ib3,uc,t)
-// 		    )
-// 		  +tangent(Ib1,Ib2,Ib3,1)*(
-// 		    normal(Ib1,Ib2,Ib3,0)*e.x(mg,Ib1,Ib2,Ib3,vc,t)
-// 		    +normal(Ib1,Ib2,Ib3,1)*e.y(mg,Ib1,Ib2,Ib3,vc,t)
-// 		    );
+//              uLocal(Ig1,Ig2,Ig3,ut1c)=
+//                tangent(Ib1,Ib2,Ib3,0)*(
+//                  normal(Ib1,Ib2,Ib3,0)*e.x(mg,Ib1,Ib2,Ib3,uc,t)
+//                  +normal(Ib1,Ib2,Ib3,1)*e.y(mg,Ib1,Ib2,Ib3,uc,t)
+//                  )
+//                +tangent(Ib1,Ib2,Ib3,1)*(
+//                  normal(Ib1,Ib2,Ib3,0)*e.x(mg,Ib1,Ib2,Ib3,vc,t)
+//                  +normal(Ib1,Ib2,Ib3,1)*e.y(mg,Ib1,Ib2,Ib3,vc,t)
+//                  );
 
-		e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-		e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
-		uLocal(Ig1,Ig2,Ig3,ut1c)=(tangent(Ib1,Ib2,Ib3,0)*(
-					    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
-					    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)
-					    )
-					  +tangent(Ib1,Ib2,Ib3,1)*(
-					    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
-					    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)
-					    ));
+                e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+                e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+                uLocal(Ig1,Ig2,Ig3,ut1c)=(tangent(Ib1,Ib2,Ib3,0)*(
+                                            normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
+                                            normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)
+                                            )
+                                          +tangent(Ib1,Ib2,Ib3,1)*(
+                                            normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
+                                            normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)
+                                            ));
 
-	      }
-	      else
-	      {
-		uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component
+              }
+              else
+              {
+                uLocal(Ig1,Ig2,Ig3,unc)=0.; // extrap normal component
 
-		realSerialArray ue(Ib1,Ib2,Ib3,V), &uex=ue, uey(Ib1,Ib2,Ib3,V), uez(Ib1,Ib2,Ib3,V); 
-		e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
+                realSerialArray ue(Ib1,Ib2,Ib3,V), &uex=ue, uey(Ib1,Ib2,Ib3,V), uez(Ib1,Ib2,Ib3,V); 
+                e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
 
-		uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*ue(Ib1,Ib2,Ib3,uc)+
-					  normal(Ib1,Ib2,Ib3,1)*ue(Ib1,Ib2,Ib3,vc)+
-					  normal(Ib1,Ib2,Ib3,2)*ue(Ib1,Ib2,Ib3,wc));
+                uLocal(Ib1,Ib2,Ib3,unc)= (normal(Ib1,Ib2,Ib3,0)*ue(Ib1,Ib2,Ib3,uc)+
+                                          normal(Ib1,Ib2,Ib3,1)*ue(Ib1,Ib2,Ib3,vc)+
+                                          normal(Ib1,Ib2,Ib3,2)*ue(Ib1,Ib2,Ib3,wc));
 
-		e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-		e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
-		e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
+                e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+                e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+                e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
 
-		uLocal(Ig1,Ig2,Ig3,ut1c)=
-		  tangent(Ib1,Ib2,Ib3,0)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,uc)
-		    )
-		  +tangent(Ib1,Ib2,Ib3,1)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,vc)
-		    )
-		  +tangent(Ib1,Ib2,Ib3,2)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,wc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,wc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,wc)
-		    );
-		uLocal(Ig1,Ig2,Ig3,ut2c)=
-		  tangent(Ib1,Ib2,Ib3,3)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,uc)
-		    )
-		  +tangent(Ib1,Ib2,Ib3,4)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,vc)
-		    )
-		  +tangent(Ib1,Ib2,Ib3,5)*(
-		    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,wc)+
-		    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,wc)+
-		    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,wc)
-		    );
+                uLocal(Ig1,Ig2,Ig3,ut1c)=
+                  tangent(Ib1,Ib2,Ib3,0)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,uc)
+                    )
+                  +tangent(Ib1,Ib2,Ib3,1)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,vc)
+                    )
+                  +tangent(Ib1,Ib2,Ib3,2)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,wc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,wc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,wc)
+                    );
+                uLocal(Ig1,Ig2,Ig3,ut2c)=
+                  tangent(Ib1,Ib2,Ib3,3)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,uc)
+                    )
+                  +tangent(Ib1,Ib2,Ib3,4)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,vc)
+                    )
+                  +tangent(Ib1,Ib2,Ib3,5)*(
+                    normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,wc)+
+                    normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,wc)+
+                    normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,wc)
+                    );
 
-	      }
-	    }
-	  }
-	}
+              }
+            }
+          }
+        }
       }
       else if( mg.boundaryCondition(side,axis)==Parameters::axisymmetric )
       {
-	// u.n =  v.n=
-	assert( mg.numberOfDimensions()==2 );
-	  
+        // u.n =  v.n=
+        assert( mg.numberOfDimensions()==2 );
+          
 #ifdef USE_PPP
-	assert( mg.rcData->pVertexBoundaryNormal[axis][side]!=NULL );
-	const realSerialArray & normal = *mg.rcData->pVertexBoundaryNormal[axis][side];
+        assert( mg.rcData->pVertexBoundaryNormal[axis][side]!=NULL );
+        const realSerialArray & normal = *mg.rcData->pVertexBoundaryNormal[axis][side];
 #else
-	const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
+        const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
 #endif
 
 
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
 
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
-	if( !ok ) continue;
-	ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+        if( !ok ) continue;
+        ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
 
-	if( !twilightZoneFlow )
-	{
-	  uLocal(Ig1,Ig2,Ig3,uc)=0.; 
-	  uLocal(Ig1,Ig2,Ig3,vc)=0.; 
-	}
-	else
-	{
-	  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	  realSerialArray uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
+        if( !twilightZoneFlow )
+        {
+          uLocal(Ig1,Ig2,Ig3,uc)=0.; 
+          uLocal(Ig1,Ig2,Ig3,vc)=0.; 
+        }
+        else
+        {
+          OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+          realSerialArray uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
 
-	  e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,uc,t);
-	  e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,uc,t);
+          e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,uc,t);
+          e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,uc,t);
 
 
-	  uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex+
-				  normal(Ib1,Ib2,Ib3,1)*uey);
-	  uLocal(Ig1,Ig2,Ig3,vc)=0.; // v.yy=0
-	}
+          uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex+
+                                  normal(Ib1,Ib2,Ib3,1)*uey);
+          uLocal(Ig1,Ig2,Ig3,vc)=0.; // v.yy=0
+        }
       }
       else if( mg.boundaryCondition(side,axis)==InsParameters::inflowWithPressureAndTangentialVelocityGiven )
       {
         // ----------------------------------------------------------------
-	// ------ inflow with pressure and tangential velocity given ------
+        // ------ inflow with pressure and tangential velocity given ------
         // ----------------------------------------------------------------
 
-	// printF("insIMPBC: assign RHS for inflow with pressure and tangential velocity given, t=%8.2e\n",t);
-	
+        // printF("insIMPBC: assign RHS for inflow with pressure and tangential velocity given, t=%8.2e\n",t);
+        
         // Tangential components of the velocity are zero:
         //    tau.u = 0 
         // Neumann BC on all components (we could also extrapolate)
         //    u.n = 0 
 
         #ifdef USE_PPP
-	  assert( mg.rcData->pVertexBoundaryNormal[axis][side]!=NULL );
-	  const realSerialArray & normal = *mg.rcData->pVertexBoundaryNormal[axis][side];
+          assert( mg.rcData->pVertexBoundaryNormal[axis][side]!=NULL );
+          const realSerialArray & normal = *mg.rcData->pVertexBoundaryNormal[axis][side];
         #else
-	  const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
+          const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
         #endif
 
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
-	if( !ok ) continue;
-	ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+        if( !ok ) continue;
+        ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
 
 
-	if( isRectangular )
-	{
+        if( isRectangular )
+        {
           // normal and tangential components: 
           const int unc  = uc+axis;
-	  const int ut1c = uc + ( (axis+1) % numberOfDimensions );
-	  const int ut2c = uc + ( (axis+2) % numberOfDimensions );
-	  
-	  if( !twilightZoneFlow )
-	  {
-	    uLocal(Ib1,Ib2,Ib3,ut1c)=0.;   // RHS for tau.u = 0 
+          const int ut1c = uc + ( (axis+1) % numberOfDimensions );
+          const int ut2c = uc + ( (axis+2) % numberOfDimensions );
+          
+          if( !twilightZoneFlow )
+          {
+            uLocal(Ib1,Ib2,Ib3,ut1c)=0.;   // RHS for tau.u = 0 
             if( numberOfDimensions>2 )
              uLocal(Ib1,Ib2,Ib3,ut2c)=0.;
 
-	    uLocal(Ig1,Ig2,Ig3,V)=0.;   // RHS for u.n = 0 
-	  }
-	  else
-	  {
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    realSerialArray ue(Ib1,Ib2,Ib3,V), uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V); 
+            uLocal(Ig1,Ig2,Ig3,V)=0.;   // RHS for u.n = 0 
+          }
+          else
+          {
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            realSerialArray ue(Ib1,Ib2,Ib3,V), uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V); 
 
             e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
             uLocal(Ib1,Ib2,Ib3,ut1c)=ue(Ib1,Ib2,Ib3,ut1c);   // RHS for tau.u = 0 
@@ -2932,118 +2932,118 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
              uLocal(Ib1,Ib2,Ib3,ut2c)=ue(Ib1,Ib2,Ib3,ut2c);
 
 
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
 
             // we don't need the normals here *** fix me ***
-	    if( numberOfDimensions==2 )
-	    {
-	      uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
-				      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc));
-	      uLocal(Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
-				      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc));
-	    }
-	    else
-	    {
+            if( numberOfDimensions==2 )
+            {
+              uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
+                                      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc));
+              uLocal(Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
+                                      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc));
+            }
+            else
+            {
               realSerialArray & uez = ue;
-	      e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
-	      for( int dir=0; dir<numberOfDimensions; dir++ )
-	      {
-		int c = uc+dir;
-		uLocal(Ig1,Ig2,Ig3,c)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,c)+
-				       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,c)+
-				       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,c));
-	      }
-	      
-	    }
-	    
+              e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
+              for( int dir=0; dir<numberOfDimensions; dir++ )
+              {
+                int c = uc+dir;
+                uLocal(Ig1,Ig2,Ig3,c)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,c)+
+                                       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,c)+
+                                       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,c));
+              }
+              
+            }
+            
 
-	  }
-	  
-	}
-	else  // not rectangular 
-	{
-	  if( !twilightZoneFlow )
-	  {
+          }
+          
+        }
+        else  // not rectangular 
+        {
+          if( !twilightZoneFlow )
+          {
             // We assume the the values on the boundary are the correct RHS for the interior PDE
             // Here we set the tangential components to zero : 
 
             // rhs = (n.u)n + (tau.u) tau 
             //     = (n.u)n
-	    realSerialArray nDotU(Ib1,Ib2,Ib3);
-	    
+            realSerialArray nDotU(Ib1,Ib2,Ib3);
+            
             if( numberOfDimensions==2 )
               nDotU = (normal(Ib1,Ib2,Ib3,0)*uLocal(Ib1,Ib2,Ib3,uc) + 
-		       normal(Ib1,Ib2,Ib3,1)*uLocal(Ib1,Ib2,Ib3,vc));
+                       normal(Ib1,Ib2,Ib3,1)*uLocal(Ib1,Ib2,Ib3,vc));
             else
               nDotU = (normal(Ib1,Ib2,Ib3,0)*uLocal(Ib1,Ib2,Ib3,uc) + 
-		       normal(Ib1,Ib2,Ib3,1)*uLocal(Ib1,Ib2,Ib3,vc)+ 
-		       normal(Ib1,Ib2,Ib3,2)*uLocal(Ib1,Ib2,Ib3,wc));
-	    for( int dir=0; dir<numberOfDimensions; dir++ )
-	    {
-	      int c = uc+dir;
-	      uLocal(Ib1,Ib2,Ib3,c) = nDotU*normal(Ib1,Ib2,Ib3,dir);
-	    }
+                       normal(Ib1,Ib2,Ib3,1)*uLocal(Ib1,Ib2,Ib3,vc)+ 
+                       normal(Ib1,Ib2,Ib3,2)*uLocal(Ib1,Ib2,Ib3,wc));
+            for( int dir=0; dir<numberOfDimensions; dir++ )
+            {
+              int c = uc+dir;
+              uLocal(Ib1,Ib2,Ib3,c) = nDotU*normal(Ib1,Ib2,Ib3,dir);
+            }
 
-	    uLocal(Ig1,Ig2,Ig3,V)=0.;   // RHS for u.n = 0 
-	  }
-	  else
-	  {
+            uLocal(Ig1,Ig2,Ig3,V)=0.;   // RHS for u.n = 0 
+          }
+          else
+          {
             // Here we need to set the tangental component of u : 
             //   tau.u = tau.ue 
             // u <- ue + ( n.u - n.ue) n 
 
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    realSerialArray ue(Ib1,Ib2,Ib3,V);
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            realSerialArray ue(Ib1,Ib2,Ib3,V);
 
             e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,V,t);
 
-	    realSerialArray nDotU(Ib1,Ib2,Ib3);
-	    
+            realSerialArray nDotU(Ib1,Ib2,Ib3);
+            
             if( numberOfDimensions==2 )
               nDotU = (normal(Ib1,Ib2,Ib3,0)*(uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc)) + 
-		       normal(Ib1,Ib2,Ib3,1)*(uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc)));
-            else			      								       
+                       normal(Ib1,Ib2,Ib3,1)*(uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc)));
+            else                                                                                               
               nDotU = (normal(Ib1,Ib2,Ib3,0)*(uLocal(Ib1,Ib2,Ib3,uc)-ue(Ib1,Ib2,Ib3,uc)) + 
-		       normal(Ib1,Ib2,Ib3,1)*(uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))+ 
-		       normal(Ib1,Ib2,Ib3,2)*(uLocal(Ib1,Ib2,Ib3,wc)-ue(Ib1,Ib2,Ib3,wc)));
+                       normal(Ib1,Ib2,Ib3,1)*(uLocal(Ib1,Ib2,Ib3,vc)-ue(Ib1,Ib2,Ib3,vc))+ 
+                       normal(Ib1,Ib2,Ib3,2)*(uLocal(Ib1,Ib2,Ib3,wc)-ue(Ib1,Ib2,Ib3,wc)));
 
-	    for( int dir=0; dir<numberOfDimensions; dir++ )
-	    {
-	      int c = uc+dir;
-	      uLocal(Ib1,Ib2,Ib3,c) = ue(Ib1,Ib2,Ib3,c) + nDotU*normal(Ib1,Ib2,Ib3,dir);
-	    }
+            for( int dir=0; dir<numberOfDimensions; dir++ )
+            {
+              int c = uc+dir;
+              uLocal(Ib1,Ib2,Ib3,c) = ue(Ib1,Ib2,Ib3,c) + nDotU*normal(Ib1,Ib2,Ib3,dir);
+            }
 
-	    // Neumann BC: 
+            // Neumann BC: 
             realSerialArray uex(Ib1,Ib2,Ib3,V), uey(Ib1,Ib2,Ib3,V);
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,V,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,V,t);
 
-	    if( numberOfDimensions==2 )
-	    {
-	      uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
-				      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc));
-	      uLocal(Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
-				      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc));
-	    }
-	    else
-	    {
+            if( numberOfDimensions==2 )
+            {
+              uLocal(Ig1,Ig2,Ig3,uc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,uc)+
+                                      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,uc));
+              uLocal(Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,vc)+
+                                      normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,vc));
+            }
+            else
+            {
               realSerialArray & uez = ue;
-	      e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
-	      for( int dir=0; dir<numberOfDimensions; dir++ )
-	      {
-		int c = uc+dir;
-		uLocal(Ig1,Ig2,Ig3,c)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,c)+
-				       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,c)+
-				       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,c));
-	      }
-	      
-	    }
-	    
+              e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,V,t);
+              for( int dir=0; dir<numberOfDimensions; dir++ )
+              {
+                int c = uc+dir;
+                uLocal(Ig1,Ig2,Ig3,c)=(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3,c)+
+                                       normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3,c)+
+                                       normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3,c));
+              }
+              
+            }
+            
 
-	  }
+          }
 
-	}
+        }
 
       }
       else if( mg.boundaryCondition(side,axis)>0 &&
@@ -3051,8 +3051,8 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
                mg.boundaryCondition(side,axis)!=noSlipWall && 
                mg.boundaryCondition(side,axis)!=inflowWithVelocityGiven )
       {
-	printF(" ***Cgins::implicitBC:ERROR: bc=%i not implemented yet\n",mg.boundaryCondition(side,axis));
-	OV_ABORT("finish me");
+        printF(" ***Cgins::implicitBC:ERROR: bc=%i not implemented yet\n",mg.boundaryCondition(side,axis));
+        OV_ABORT("finish me");
       }
       
 
@@ -3063,27 +3063,27 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
         // === Assign the RHS for the Temperature ===
         // ==========================================
 
-	if( debug() & 4 )
-	  printF(" ***Cgins::implicitBC: Assign RHS for the Temperature equation.\n");
+        if( debug() & 4 )
+          printF(" ***Cgins::implicitBC: Assign RHS for the Temperature equation.\n");
 
 
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3);
 
-	bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
+        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,includeGhost);
 
-	// if( debug() & 4 )
-	//   printF(" ***Cgins::implicitBC: (side,axis,grid)=(%i,%i,%i) ok=%i\n",side,axis,grid,ok);
+        // if( debug() & 4 )
+        //   printF(" ***Cgins::implicitBC: (side,axis,grid)=(%i,%i,%i) ok=%i\n",side,axis,grid,ok);
 
-	if( !ok ) continue;
-	ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
-	if( !ok ) continue;
-	      
+        if( !ok ) continue;
+        ok = ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,includeGhost);
+        if( !ok ) continue;
+              
 
         int bc0 = mg.boundaryCondition(side,axis);
 
-	if( interfaceType(side,axis,grid) != Parameters::noInterface ) 
-	{
+        if( interfaceType(side,axis,grid) != Parameters::noInterface ) 
+        {
           // This face is a domain interface 
 
           // We only support interfaces on no-slip walls:
@@ -3091,13 +3091,13 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
 
           // When solving the interface equations by iteration, the BC on this face may be 
           // dirichlet or mixed: 
-	  bc0 = interfaceCondition(side,axis,grid);
-	  assert( bc0==Parameters::dirichletInterface || bc0==Parameters::neumannInterface );
-	  // printP("** Cgins:implicitBC: setting an interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
-	}
+          bc0 = interfaceCondition(side,axis,grid);
+          assert( bc0==Parameters::dirichletInterface || bc0==Parameters::neumannInterface );
+          // printP("** Cgins:implicitBC: setting an interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
+        }
 
         bool assignDirichlet=false, assignNeumann=false, assignExtrapolate=false;
-	if( bc0==slipWall || 
+        if( bc0==slipWall || 
             bc0==noSlipWall || 
             bc0==inflowWithVelocityGiven || 
             bc0==dirichletBoundaryCondition ||
@@ -3105,108 +3105,108 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             bc0==Parameters::neumannInterface ||
             bc0==inflowWithPressureAndTangentialVelocityGiven ||
             bc0==Parameters::freeSurfaceBoundaryCondition )
-	{
-	  assert( mixedCoeff(tc,side,axis,grid)!=0. || mixedNormalCoeff(tc,side,axis,grid)!=0. );
-	  
-	  if( debug() & 4 )
-	    printF("++++Cgins::implicitBC: Mixed BC for T: (grid,side,axis)=(%i,%i,%i), %3.2f*T+%3.2f*T.n=%3.2f \n",
-		   grid,side,axis, 
-		   mixedCoeff(tc,side,axis,grid), mixedNormalCoeff(tc,side,axis,grid), mixedRHS(tc,side,axis,grid));
+        {
+          assert( mixedCoeff(tc,side,axis,grid)!=0. || mixedNormalCoeff(tc,side,axis,grid)!=0. );
+          
+          if( debug() & 4 )
+            printF("++++Cgins::implicitBC: Mixed BC for T: (grid,side,axis)=(%i,%i,%i), %3.2f*T+%3.2f*T.n=%3.2f \n",
+                   grid,side,axis, 
+                   mixedCoeff(tc,side,axis,grid), mixedNormalCoeff(tc,side,axis,grid), mixedRHS(tc,side,axis,grid));
 
-	  assignDirichlet = mixedNormalCoeff(tc,side,axis,grid)==0.;  // coeff of T.n 
-	  assignNeumann=!assignDirichlet;
-	}
-	else if( bc0==symmetry || bc0==Parameters::axisymmetric || bc0==InsParameters::tractionFree )
-	{
+          assignDirichlet = mixedNormalCoeff(tc,side,axis,grid)==0.;  // coeff of T.n 
+          assignNeumann=!assignDirichlet;
+        }
+        else if( bc0==symmetry || bc0==Parameters::axisymmetric || bc0==InsParameters::tractionFree )
+        {
           assignNeumann=true;
           if( !(mixedCoeff(tc,side,axis,grid)==0. || mixedNormalCoeff(tc,side,axis,grid)==1.) )
-	  {
-	    printF("ERROR: mixedCoeff(tc,side,axis,grid)=%8.2e mixedNormalCoeff(tc,side,axis,grid)=%8.2e for bc0=%i\n",
-		   mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid),bc0);
-	    Overture::abort("error");
-	  }
-	}
-	else if( bc0==outflow  || bc0==InsParameters::convectiveOutflow )
-	{
-	  assert( mixedCoeff(tc,side,axis,grid)!=0. || mixedNormalCoeff(tc,side,axis,grid)!=0. );
+          {
+            printF("ERROR: mixedCoeff(tc,side,axis,grid)=%8.2e mixedNormalCoeff(tc,side,axis,grid)=%8.2e for bc0=%i\n",
+                   mixedCoeff(tc,side,axis,grid),mixedNormalCoeff(tc,side,axis,grid),bc0);
+            Overture::abort("error");
+          }
+        }
+        else if( bc0==outflow  || bc0==InsParameters::convectiveOutflow )
+        {
+          assert( mixedCoeff(tc,side,axis,grid)!=0. || mixedNormalCoeff(tc,side,axis,grid)!=0. );
           assignNeumann=true;  // ******* do this for now --> change this to extrapolate
           // assignExtrapolate=true;
-	}
-	else if( bc0 > 0 )
-	{
-	  printF("Cgins::applyBCforImplicitTimeStepping:ERROR unknown BC value for T! \n"
-		 "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
-		 mg.boundaryCondition(side,axis));
-	  Overture::abort("Cgins::applyBCforImplicitTimeStepping:ERROR unknown BC value for T");
-	}
+        }
+        else if( bc0 > 0 )
+        {
+          printF("Cgins::applyBCforImplicitTimeStepping:ERROR unknown BC value for T! \n"
+                 "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
+                 mg.boundaryCondition(side,axis));
+          Overture::abort("Cgins::applyBCforImplicitTimeStepping:ERROR unknown BC value for T");
+        }
 
-	// if( debug() & 4 )
-	//   printF(" ***Cgins::implicitBC: (side,axis,grid)=(%i,%i,%i) assignDirichlet=%i, assignNeumann=%i\n",
+        // if( debug() & 4 )
+        //   printF(" ***Cgins::implicitBC: (side,axis,grid)=(%i,%i,%i) assignDirichlet=%i, assignNeumann=%i\n",
         //            side,axis,grid,assignDirichlet,assignNeumann);
-	
+        
 
         if( bc0==Parameters::dirichletInterface )
-	{
-	  assert( assignDirichlet );
-	  
-	  if( debug() & 4 )
-	    printP("** Cgins:applyImpBC:T: setting RHS for a dirichlet interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
+        {
+          assert( assignDirichlet );
+          
+          if( debug() & 4 )
+            printP("** Cgins:applyImpBC:T: setting RHS for a dirichlet interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
           RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
-	  uLocal(Ib1,Ib2,Ib3,tc)=bd(Ib1,Ib2,Ib3,tc);
+          uLocal(Ib1,Ib2,Ib3,tc)=bd(Ib1,Ib2,Ib3,tc);
 
-	  if( debug() & 4 ) 
+          if( debug() & 4 ) 
             ::display(bd(Ib1,Ib2,Ib3,tc),"Cgins:applyImpBC:T: RHS for Dirichlet interface BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%5.2f ");
-	}
+        }
         else if( bc0==Parameters::neumannInterface )
-	{
+        {
           assert( assignNeumann );
-	  
-	  if( debug() & 4 )
-	    printP("** Cgins:applyImpBC: setting RHS for a neumann interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
-	  RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+          
+          if( debug() & 4 )
+            printP("** Cgins:applyImpBC: setting RHS for a neumann interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc0);
+          RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
 
-	  if( debug() & 4 ) 
+          if( debug() & 4 ) 
             ::display(bd(Ib1,Ib2,Ib3,tc),"Cgins:applyImpBC:T: RHS for Neumann interface BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%6.3f ");
 
           uLocal(Ig1,Ig2,Ig3,tc)=bd(Ib1,Ib2,Ib3,tc);
 
-	  if( false && twilightZoneFlow ) //  TEMP *******************************************************
-	  {
+          if( false && twilightZoneFlow ) //  TEMP *******************************************************
+          {
             #ifdef USE_PPP
-  	      const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
             #else
-	      const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
             #endif
 
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    realSerialArray ue(Ib1,Ib2,Ib3), uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
-	    e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,tc,t);
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,tc,t);
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            realSerialArray ue(Ib1,Ib2,Ib3), uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
+            e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,tc,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,tc,t);
 
             real a0=mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
-	    }
-	    else
-	    {
+            if( mg.numberOfDimensions()==2 )
+            {
+              uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
+            }
+            else
+            {
               realSerialArray uez(Ib1,Ib2,Ib3);
               e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,tc,t);
-	      uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
-	    }
-	    if( debug() & 4 ) 
-	      ::display(uLocal(Ig1,Ig2,Ig3,tc),"Cgins:applyImpBC:T: TRUE RHS for Neumann interface BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%6.3f ");
+              uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
+            }
+            if( debug() & 4 ) 
+              ::display(uLocal(Ig1,Ig2,Ig3,tc),"Cgins:applyImpBC:T: TRUE RHS for Neumann interface BC: bd(Ib1,Ib2,Ib3,tc)",pDebugFile,"%6.3f ");
 
-	  } // *******************************************
-	  
+          } // *******************************************
+          
 
-	  if( true )
-	  {
-	    // new way  -- this code is duplicated from ad/src/applyBoundaryConditions.C  -- we should share this ---
+          if( true )
+          {
+            // new way  -- this code is duplicated from ad/src/applyBoundaryConditions.C  -- we should share this ---
 
             // If the adjacent face is a dirichlet BC then we change the right-hand-side on the extended
             // boundary point: 
@@ -3222,186 +3222,186 @@ applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u,
             //  k*T.n = given at point "c" 
 
             #ifdef USE_PPP
-	      const realSerialArray & normal  = mg.vertexBoundaryNormalArray(side,axis);
+              const realSerialArray & normal  = mg.vertexBoundaryNormalArray(side,axis);
             #else
-	      const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
+              const realArray & normal  = mg.vertexBoundaryNormal(side,axis);
             #endif
 
             Range N(tc,tc);
-	    Index Jbv[3], &Jb1=Jbv[0], &Jb2=Jbv[1], &Jb3=Jbv[2];
-	    Index Jgv[3], &Jg1=Jgv[0], &Jg2=Jgv[1], &Jg3=Jgv[2];
+            Index Jbv[3], &Jb1=Jbv[0], &Jb2=Jbv[1], &Jb3=Jbv[2];
+            Index Jgv[3], &Jg1=Jgv[0], &Jg2=Jgv[1], &Jg3=Jgv[2];
 
             // loop over adjacent sides
-	    for( int dir=1; dir<mg.numberOfDimensions(); dir++ ) for( int side2=0; side2<=1; side2++ )
-	    {
-	      int dir2 = (axis+dir) % mg.numberOfDimensions();
+            for( int dir=1; dir<mg.numberOfDimensions(); dir++ ) for( int side2=0; side2<=1; side2++ )
+            {
+              int dir2 = (axis+dir) % mg.numberOfDimensions();
               if( mg.boundaryCondition(side2,dir2)==dirichletBoundaryCondition )
-	      {
-		Jb1=Ib1, Jb2=Ib2, Jb3=Ib3;
-		Jg1=Ig1, Jg2=Ig2, Jg3=Ig3;
+              {
+                Jb1=Ib1, Jb2=Ib2, Jb3=Ib3;
+                Jg1=Ig1, Jg2=Ig2, Jg3=Ig3;
                 // check for parallel: 
                 if( Jbv[dir2].getBase()  > mg.gridIndexRange(side2,dir2) ||
                     Jbv[dir2].getBound() < mg.gridIndexRange(side2,dir2) )
-		{  
-		  ok=false;
-		  continue;
-		}
+                {  
+                  ok=false;
+                  continue;
+                }
                 Jbv[dir2]=mg.gridIndexRange(side2,dir2);
-		Jgv[dir2]=mg.gridIndexRange(side2,dir2);
+                Jgv[dir2]=mg.gridIndexRange(side2,dir2);
 
-		if( debug() & 8 )
-		{
-		  printP("Cgins:impBC: set RHS to exact where interface meets adj-dirichlet "
-			 " (side,axis)=(%i,%i) (side2,dir2)=(%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
-			 side,axis,side2,dir2,Jb1.getBase(),Jb1.getBound(),Jb2.getBase(),Jb2.getBound(),
-			 Jb3.getBase(),Jb3.getBound() );
-		}
-		
-		if( twilightZoneFlow )
-		{
-		  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-		  RealArray ue(Jb1,Jb2,Jb3,N), uex(Jb1,Jb2,Jb3,N), uey(Jb1,Jb2,Jb3,N);
-		  int rectangular=0;
-		  e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Jb1,Jb2,Jb3,N,t);
-		  e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Jb1,Jb2,Jb3,N,t);
-		  e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Jb1,Jb2,Jb3,N,t);
+                if( debug() & 8 )
+                {
+                  printP("Cgins:impBC: set RHS to exact where interface meets adj-dirichlet "
+                         " (side,axis)=(%i,%i) (side2,dir2)=(%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+                         side,axis,side2,dir2,Jb1.getBase(),Jb1.getBound(),Jb2.getBase(),Jb2.getBound(),
+                         Jb3.getBase(),Jb3.getBound() );
+                }
+                
+                if( twilightZoneFlow )
+                {
+                  OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+                  RealArray ue(Jb1,Jb2,Jb3,N), uex(Jb1,Jb2,Jb3,N), uey(Jb1,Jb2,Jb3,N);
+                  int rectangular=0;
+                  e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Jb1,Jb2,Jb3,N,t);
+                  e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Jb1,Jb2,Jb3,N,t);
+                  e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Jb1,Jb2,Jb3,N,t);
 
-		  if( mg.numberOfDimensions()==2 )
-		  {
-		    for( int n=N.getBase(); n<=N.getBound(); n++ )
-		    {
-		      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
-		      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
-					    uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1))+ a0*ue(Jb1,Jb2,Jb3,n);
-		    }
+                  if( mg.numberOfDimensions()==2 )
+                  {
+                    for( int n=N.getBase(); n<=N.getBound(); n++ )
+                    {
+                      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
+                                            uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1))+ a0*ue(Jb1,Jb2,Jb3,n);
+                    }
                     uLocal(Jg1,Jg2,Jg3,N)=ue(Jb1,Jb2,Jb3,N);
-		  }
+                  }
                   else 
-		  {
+                  {
                     RealArray uez(Jb1,Jb2,Jb3,N);
-		    e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Jb1,Jb2,Jb3,N,t);
-		    for( int n=N.getBase(); n<=N.getBound(); n++ )
-		    {
-		      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
-		      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
-					    uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1)+
-					    uez(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,2))+ a0*ue(Jb1,Jb2,Jb3,n);
-		    }
+                    e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Jb1,Jb2,Jb3,N,t);
+                    for( int n=N.getBase(); n<=N.getBound(); n++ )
+                    {
+                      real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                      ue(Jb1,Jb2,Jb3,n)=a1*(uex(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,0)+
+                                            uey(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,1)+
+                                            uez(Jb1,Jb2,Jb3,n)*normal(Jb1,Jb2,Jb3,2))+ a0*ue(Jb1,Jb2,Jb3,n);
+                    }
                     uLocal(Jg1,Jg2,Jg3,N)=ue(Jb1,Jb2,Jb3,N);
-		  }
-		  
-		}
-		else
-		{
+                  }
+                  
+                }
+                else
+                {
                   //MappedGridOperators & op = *(u.getOperators());
-		  //op.derivative(MappedGridOperators::xDerivative,uLocal,ux  ,Jb1,Jb2,Jb3,N);
-		  //op.derivative(MappedGridOperators::yDerivative,uLocal,uy  ,Jb1,Jb2,Jb3,N);
-		  //op.derivative(MappedGridOperators::zDerivative,uLocal,uz  ,Jb1,Jb2,Jb3,N);
+                  //op.derivative(MappedGridOperators::xDerivative,uLocal,ux  ,Jb1,Jb2,Jb3,N);
+                  //op.derivative(MappedGridOperators::yDerivative,uLocal,uy  ,Jb1,Jb2,Jb3,N);
+                  //op.derivative(MappedGridOperators::zDerivative,uLocal,uz  ,Jb1,Jb2,Jb3,N);
 
                   // Here we assume the Dirichlet BC is a constant value so that the normal derivative  *fix me*
                   // of the solution along the Dirichlet BC is zero: 
                   // *NOTE* if we fix this for the case of a variable Dirichlet BC then we must also adjust the 
                   //   interface getRHS to eval   k*u.n - k*ue.n so that the residuals in the interface equations 
                   //   will go to zero. 
-		  for( int n=N.getBase(); n<=N.getBound(); n++ )
-		  {
-		    real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
+                  for( int n=N.getBase(); n<=N.getBound(); n++ )
+                  {
+                    real a0=mixedCoeff(n,side,axis,grid), a1=mixedNormalCoeff(n,side,axis,grid);
                     // note: uLocal(Jb1,Jb2,Jb3,n) has been set above by the Dirichlet BC 
-		    uLocal(Jg1,Jg2,Jg3,n)=a0*uLocal(Jb1,Jb2,Jb3,n);
-		  }
-		    
-		}
-	      }
-	    }
+                    uLocal(Jg1,Jg2,Jg3,n)=a0*uLocal(Jb1,Jb2,Jb3,n);
+                  }
+                    
+                }
+              }
+            }
 
 
-	  }
+          }
 
-	  
-	}  // end of bc0==neumannInterface
-	else if( assignDirichlet )
-	{
-	  if( !twilightZoneFlow )
-	  {
+          
+        }  // end of bc0==neumannInterface
+        else if( assignDirichlet )
+        {
+          if( !twilightZoneFlow )
+          {
             // *wdh* 110803 - fixed to use boundaryData if supplied
             if( pBoundaryData[side][axis]==NULL )
-	    {
+            {
               // printF(" $$$$$$$$$$$$ applyBC DIRICHLET for implicit TEMPERATURE system : mixedRHS $$$$$$$$$$\n");
-	      uLocal(Ib1,Ib2,Ib3,tc)=mixedRHS(tc,side,axis,grid);
-	    }
-	    else
-	    {  
+              uLocal(Ib1,Ib2,Ib3,tc)=mixedRHS(tc,side,axis,grid);
+            }
+            else
+            {  
               RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
-  	      // printF(" $$$$$$$$$$$$ applyBC DIRICHLET for implicit TEMPERATURE system : boundaryData $$$$$$$$$$\n");
+              // printF(" $$$$$$$$$$$$ applyBC DIRICHLET for implicit TEMPERATURE system : boundaryData $$$$$$$$$$\n");
               uLocal(Ib1,Ib2,Ib3,tc)=bd(Ib1,Ib2,Ib3,tc);
-	    }
-	  
-	  }
-	  else
-	  {
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    realSerialArray ue(Ib1,Ib2,Ib3);
-	    e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
-	    uLocal(Ib1,Ib2,Ib3,tc)=ue;
-	  }
-	  
-	}
-	else if( assignNeumann )
-	{
-	  if( !twilightZoneFlow )
-	  {
+            }
+          
+          }
+          else
+          {
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            realSerialArray ue(Ib1,Ib2,Ib3);
+            e.gd( ue,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
+            uLocal(Ib1,Ib2,Ib3,tc)=ue;
+          }
+          
+        }
+        else if( assignNeumann )
+        {
+          if( !twilightZoneFlow )
+          {
             // *wdh* 110803 - fixed to use boundaryData if supplied
-   	    if( pBoundaryData[side][axis]==NULL )
-	    {
-  	      // printF(" $$$$$$$$$$$$ applyBC for implicit TEMPERATURE system : mixedRHS $$$$$$$$$$\n");
-	      uLocal(Ig1,Ig2,Ig3,tc)=mixedRHS(tc,side,axis,grid);  // set ghost value to RHS for neumann BC
-	    }
-	    else
-	    {  
+            if( pBoundaryData[side][axis]==NULL )
+            {
+              // printF(" $$$$$$$$$$$$ applyBC for implicit TEMPERATURE system : mixedRHS $$$$$$$$$$\n");
+              uLocal(Ig1,Ig2,Ig3,tc)=mixedRHS(tc,side,axis,grid);  // set ghost value to RHS for neumann BC
+            }
+            else
+            {  
               RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
-  	      // printF(" $$$$$$$$$$$$ applyBC for implicit TEMPERATURE system : boundaryData $$$$$$$$$$\n");
+              // printF(" $$$$$$$$$$$$ applyBC for implicit TEMPERATURE system : boundaryData $$$$$$$$$$\n");
               uLocal(Ig1,Ig2,Ig3,tc)=bd(Ib1,Ib2,Ib3,tc);
-	    }
-	    
-	  }
-	  else
-	  {
-	    if( debug() & 4 ) printF("Cgins::applyBCForImplicit: apply neumann BC for T, (side,axis,grid)=(%i,%i,%i)\n",
-				     side,axis,grid);
-	    
+            }
+            
+          }
+          else
+          {
+            if( debug() & 4 ) printF("Cgins::applyBCForImplicit: apply neumann BC for T, (side,axis,grid)=(%i,%i,%i)\n",
+                                     side,axis,grid);
+            
             #ifdef USE_PPP
-  	      const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormalArray(side,axis);
             #else
-	      const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
+              const RealArray & normal = mg.vertexBoundaryNormal(side,axis);
             #endif
 
-	    OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
-	    realSerialArray ue(Ib1,Ib2,Ib3), uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
-	    e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
-	    e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,tc,t);
-	    e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,tc,t);
+            OGFunction & e = *(parameters.dbase.get<OGFunction* >("exactSolution"));
+            realSerialArray ue(Ib1,Ib2,Ib3), uex(Ib1,Ib2,Ib3), uey(Ib1,Ib2,Ib3); 
+            e.gd( ue ,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,0,Ib1,Ib2,Ib3,tc,t);
+            e.gd( uex,xLocal,mg.numberOfDimensions(),rectangular,0,1,0,0,Ib1,Ib2,Ib3,tc,t);
+            e.gd( uey,xLocal,mg.numberOfDimensions(),rectangular,0,0,1,0,Ib1,Ib2,Ib3,tc,t);
 
             real a0=mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
-	    }
-	    else
-	    {
+            if( mg.numberOfDimensions()==2 )
+            {
+              uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
+            }
+            else
+            {
               realSerialArray uez(Ib1,Ib2,Ib3);
               e.gd( uez,xLocal,mg.numberOfDimensions(),rectangular,0,0,0,1,Ib1,Ib2,Ib3,tc,t);
-	      uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)+
-				         normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
-	    }
-	  }
-	}
-	else if( bc0>0 )
-	{
-	  assert( assignExtrapolate==true );
-	  uLocal(Ig1,Ig2,Ig3,tc)=0.;
-	}
+              uLocal(Ig1,Ig2,Ig3,tc)=a1*(normal(Ib1,Ib2,Ib3,0)*uex(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,1)*uey(Ib1,Ib2,Ib3)+
+                                         normal(Ib1,Ib2,Ib3,2)*uez(Ib1,Ib2,Ib3)) + a0*ue(Ib1,Ib2,Ib3);
+            }
+          }
+        }
+        else if( bc0>0 )
+        {
+          assert( assignExtrapolate==true );
+          uLocal(Ig1,Ig2,Ig3,tc)=0.;
+        }
 
       }
 
@@ -3471,14 +3471,14 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
   const IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");
   const bool interfaceBoundaryConditionsAreSpecified=parameters.dbase.has_key("interfaceCondition");
   IntegerArray & interfaceCondition = (interfaceBoundaryConditionsAreSpecified ? 
-				       parameters.dbase.get<IntegerArray>("interfaceCondition") :
-				       Overture::nullIntArray() );
+                                       parameters.dbase.get<IntegerArray>("interfaceCondition") :
+                                       Overture::nullIntArray() );
   int grid,side,axis;
   for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
     MappedGrid & mg = cg[grid];
     const bool isRectanglar=mg.isRectangular();
-	  
+          
     if( !solveForTemperture )
     {
       // ========================================
@@ -3486,145 +3486,145 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
       // ========================================
       ForBoundary( side,axis )
       {
-	boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  // default
+        boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  // default
       
-	switch( mg.boundaryCondition(side,axis) )
-	{
-	case Parameters::slipWall:
-	{
-	  int normalAxis=axis;
-	  if( !(isRectanglar && numberOfImplicitSolvers>0) && !useFullSystemForImplicitTimeStepping )
-	  {
+        switch( mg.boundaryCondition(side,axis) )
+        {
+        case Parameters::slipWall:
+        {
+          int normalAxis=axis;
+          if( !(isRectanglar && numberOfImplicitSolvers>0) && !useFullSystemForImplicitTimeStepping )
+          {
             // -- this may be a face on a non-rectangular grid -- we have detemrined previously if this
             //   face is parallel to a coordinate plane.
-	    normalAxis=-1; // assume invalid face
+            normalAxis=-1; // assume invalid face
             if( parameters.dbase.has_key("specialBoundaryInfo") )
-	    {
-	      IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
-	      normalAxis=specialBoundaryInfo(0,side,axis,grid);
-	    }
-	    
-	    if( normalAxis<0 )
-	    {
-	      printF("Cgins::setOgesBoundaryConditions:ERROR:A slip wall BC cannot be treated with scalar\n"
-		     " implicit system on a grid that is not Cartesian since the boundary conditions \n"
-		     " do not decouple. This case should not happen!\n");
-	      printF(" numberOfImplicitSolvers=%i\n"
-		     " numberOfImplicitVelocitySolvers=%i \n"
-		     " useFullSystemForImplicitTimeStepping=%i\n"
-		     " scalarSystemForImplicitTimeStepping=%i\n",
-		     numberOfImplicitSolvers,numberOfImplicitVelocitySolvers,
-		     useFullSystemForImplicitTimeStepping,(int)scalarSystemForImplicitTimeStepping);
-	    
-	      OV_ABORT("error");
-	    }
-	  }
-	  
-	  if( normalAxis==imp )
-	  { // The normal component to a horizontal or vertical wall has a dirichlet BC
-	    boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
-	  }
-	  else
-	  { // tangential components of velocity have Neumann BCs
-	    boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
-	  }
-	  break;
-	}
-	
-	case Parameters::noSlipWall:
-	case InsParameters::inflowWithVelocityGiven:
-	case Parameters::dirichletBoundaryCondition:
-	  // these are all dirichlet BC's for \uv
-	  break;
-	case Parameters::axisymmetric:
-	  // boundaryConditions(side,axis,grid)=OgesParameters::axisymmetric;  // *wdh* 080718
+            {
+              IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
+              normalAxis=specialBoundaryInfo(0,side,axis,grid);
+            }
+            
+            if( normalAxis<0 )
+            {
+              printF("Cgins::setOgesBoundaryConditions:ERROR:A slip wall BC cannot be treated with scalar\n"
+                     " implicit system on a grid that is not Cartesian since the boundary conditions \n"
+                     " do not decouple. This case should not happen!\n");
+              printF(" numberOfImplicitSolvers=%i\n"
+                     " numberOfImplicitVelocitySolvers=%i \n"
+                     " useFullSystemForImplicitTimeStepping=%i\n"
+                     " scalarSystemForImplicitTimeStepping=%i\n",
+                     numberOfImplicitSolvers,numberOfImplicitVelocitySolvers,
+                     useFullSystemForImplicitTimeStepping,(int)scalarSystemForImplicitTimeStepping);
+            
+              OV_ABORT("error");
+            }
+          }
+          
+          if( normalAxis==imp )
+          { // The normal component to a horizontal or vertical wall has a dirichlet BC
+            boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
+          }
+          else
+          { // tangential components of velocity have Neumann BCs
+            boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+          }
+          break;
+        }
+        
+        case Parameters::noSlipWall:
+        case InsParameters::inflowWithVelocityGiven:
+        case Parameters::dirichletBoundaryCondition:
+          // these are all dirichlet BC's for \uv
+          break;
+        case Parameters::axisymmetric:
+          // boundaryConditions(side,axis,grid)=OgesParameters::axisymmetric;  // *wdh* 080718
 
           assert( numberOfImplicitVelocitySolvers==2 || useFullSystemForImplicitTimeStepping );  // *wdh* 080817
-	  if( imp==0 )
-	  { // u has a Neumann BC
-	    boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
-	  }
-	  else
-	  { // v has a dirichlet
+          if( imp==0 )
+          { // u has a Neumann BC
+            boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+          }
+          else
+          { // v has a dirichlet
             boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
-	  }
-	  
-	  break;
-	case Parameters::symmetry:
-	  Overture::abort("implicit method not implemented for this BC");
-	  break;
-	case InsParameters::inflowWithPressureAndTangentialVelocityGiven:
-	{
-	  // assert( isRectanglar && numberOfImplicitSolvers>0 );
-	  assert( numberOfImplicitSolvers>0 );
+          }
+          
+          break;
+        case Parameters::symmetry:
+          Overture::abort("implicit method not implemented for this BC");
+          break;
+        case InsParameters::inflowWithPressureAndTangentialVelocityGiven:
+        {
+          // assert( isRectanglar && numberOfImplicitSolvers>0 );
+          assert( numberOfImplicitSolvers>0 );
           // For now we require the grid to be rectangular, possibly stretched.
 
-	  int normalAxis=axis;
+          int normalAxis=axis;
           if( !isRectanglar )
-	  {
+          {
            // -- this may be a face on a non-rectangular grid -- we have detemrined previously if this
             //   face is parallel to a coordinate plane.
-	    normalAxis=-1; // assume invalid face
+            normalAxis=-1; // assume invalid face
             if( parameters.dbase.has_key("specialBoundaryInfo") )
-	    {
-	      IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
-	      normalAxis=specialBoundaryInfo(0,side,axis,grid);
-	    }
-	    
-	    if( normalAxis<0 )
-	    {
-	      printF("\n --INS--WARNING: implicitMatrix: BC=inflowWithPressureAndTangentialVelocityGiven"
-		     " grid=%i is not rectangular : this case only works if boundary is parallel to an axis\n\n",grid);
-	      // OV_ABORT("ERROR");
-	    }
-	  }
+            {
+              IntegerArray & specialBoundaryInfo = parameters.dbase.get<IntegerArray>("specialBoundaryInfo");
+              normalAxis=specialBoundaryInfo(0,side,axis,grid);
+            }
+            
+            if( normalAxis<0 )
+            {
+              printF("\n --INS--WARNING: implicitMatrix: BC=inflowWithPressureAndTangentialVelocityGiven"
+                     " grid=%i is not rectangular : this case only works if boundary is parallel to an axis\n\n",grid);
+              // OV_ABORT("ERROR");
+            }
+          }
 
-	  if( normalAxis!=imp )
-	  {// The tangential component to a horizontal or vertical wall has a dirichlet BC
-	    boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
-	  }
-	  else
-	  {
+          if( normalAxis!=imp )
+          {// The tangential component to a horizontal or vertical wall has a dirichlet BC
+            boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
+          }
+          else
+          {
             // normal component is Neumann
-	    boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
-	  }
-	  break;
-	}
-	
-	case InsParameters::outflow:
-	case InsParameters::tractionFree:
-	case InsParameters::convectiveOutflow:
+            boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+          }
+          break;
+        }
+        
+        case InsParameters::outflow:
+        case InsParameters::tractionFree:
+        case InsParameters::convectiveOutflow:
           if( parameters.dbase.get<int>("outflowOption")==1 ||
               parameters.dbase.get<int >("checkForInflowAtOutFlow")==2 )
-	  {
+          {
             // printF("implicitMatrix: use Neumann BC at outflow\n");
-  	    boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
-	  }
+            boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+          }
           else
-	  {
+          {
             // printF("implicitMatrix: use extrapolate BC at outflow\n");
             // Specify the order of extrapolation at outflow: *wdh* 100814
             boundaryConditionData(0,side,axis,grid)=parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
-	    
+            
             boundaryConditions(side,axis,grid)=OgesParameters::extrapolate; 
-	  }
-	  break;
+          }
+          break;
 
         case Parameters::freeSurfaceBoundaryCondition:
-	  // do this for now: *FIX ME*
+          // do this for now: *FIX ME*
           boundaryConditions(side,axis,grid)=OgesParameters::neumann;
-	  break;
+          break;
 
-	default:
-	  boundaryConditions(side,axis,grid)=mg.boundaryCondition(side,axis);
-	  if( mg.boundaryCondition(side,axis) > 0 )
-	  {
-	    printF("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for velocities! \n"
-	           "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
-		   mg.boundaryCondition(side,axis));
-	    Overture::abort("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for velocities");
-	  }
-	}
+        default:
+          boundaryConditions(side,axis,grid)=mg.boundaryCondition(side,axis);
+          if( mg.boundaryCondition(side,axis) > 0 )
+          {
+            printF("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for velocities! \n"
+                   "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
+                   mg.boundaryCondition(side,axis));
+            Overture::abort("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for velocities");
+          }
+        }
       }
     }
     else
@@ -3634,14 +3634,14 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
       // ==== Assign BC's for the Temperature ====
       // =========================================
 
-	if( debug() & 4 )
-	  printF(" ***Cgins::setOgesBC: Set Oges BC's for the Temperature equation.\n");
+        if( debug() & 4 )
+          printF(" ***Cgins::setOgesBC: Set Oges BC's for the Temperature equation.\n");
 
       ForBoundary( side,axis )
       {
-	int bc = mg.boundaryCondition(side,axis);
-	if( interfaceType(side,axis,grid)!=Parameters::noInterface )
-	{
+        int bc = mg.boundaryCondition(side,axis);
+        if( interfaceType(side,axis,grid)!=Parameters::noInterface )
+        {
           // This face is a domain interface 
 
           // We only support interfaces on no-slip walls:
@@ -3649,96 +3649,96 @@ setOgesBoundaryConditions( GridFunction &cgf, IntegerArray & boundaryConditions,
 
           // When solving the interface equations by iteration, the BC on this face may be 
           // dirichlet or mixed: 
-	  bc = interfaceCondition(side,axis,grid);
-	  assert( bc==Parameters::dirichletInterface || bc==Parameters::neumannInterface );
-	  printP("** Cgins:setOgesBC: setting an interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc);
-	}
+          bc = interfaceCondition(side,axis,grid);
+          assert( bc==Parameters::dirichletInterface || bc==Parameters::neumannInterface );
+          printP("** Cgins:setOgesBC: setting an interface bc(%i,%i,%i)=%i\n",side,axis,grid,bc);
+        }
 
-	boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  // default
+        boundaryConditions(side,axis,grid)=OgesParameters::dirichlet;  // default
       
-	switch( bc )
-	{
-	case Parameters::slipWall:
-	case Parameters::noSlipWall:
-	case InsParameters::inflowWithVelocityGiven:
-	case Parameters::dirichletBoundaryCondition:
-	case InsParameters::inflowWithPressureAndTangentialVelocityGiven:
-	{
+        switch( bc )
+        {
+        case Parameters::slipWall:
+        case Parameters::noSlipWall:
+        case InsParameters::inflowWithVelocityGiven:
+        case Parameters::dirichletBoundaryCondition:
+        case InsParameters::inflowWithPressureAndTangentialVelocityGiven:
+        {
           if( mixedNormalCoeff(tc,side,axis,grid)==0. ) // coeff of T.n 
-	  {
-	    boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
-	  }
-	  else
-	  {
+          {
+            boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
+          }
+          else
+          {
             if( mixedCoeff(tc,side,axis,grid)==0. )
-	    {
-	      // Neumann BC
-	      boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+            {
+              // Neumann BC
+              boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
 
-	      if( debug() & 4 ) printP("Cgins::setOgesBC: imp=%i set neumann BC for T, (side,axis,grid)=(%i,%i,%i)\n",
-				       imp, side,axis,grid);
-	    }
-	    else
-	    {
-	      // Mixed BC *wdh* 110202
-	      boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
-	      real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
-	      
-	      boundaryConditionData(0,side,axis,grid)=a0;
-	      boundaryConditionData(1,side,axis,grid)=a1;
-	      if( debug() & 2 )
-		printP("*****Cgins:setOgesBC: imp=%i, set mixed BC for T : %f*T + %f*T.n, "
-		       "(side,axis,grid)=(%i,%i,%i) \n", imp,a0,a1,side,axis,grid);
+              if( debug() & 4 ) printP("Cgins::setOgesBC: imp=%i set neumann BC for T, (side,axis,grid)=(%i,%i,%i)\n",
+                                       imp, side,axis,grid);
+            }
+            else
+            {
+              // Mixed BC *wdh* 110202
+              boundaryConditions(side,axis,grid)=OgesParameters::mixed;  
+              real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
+              
+              boundaryConditionData(0,side,axis,grid)=a0;
+              boundaryConditionData(1,side,axis,grid)=a1;
+              if( debug() & 2 )
+                printP("*****Cgins:setOgesBC: imp=%i, set mixed BC for T : %f*T + %f*T.n, "
+                       "(side,axis,grid)=(%i,%i,%i) \n", imp,a0,a1,side,axis,grid);
 
-	    }
+            }
 
-	  }
-	  break;
-	}
+          }
+          break;
+        }
         case Parameters::dirichletInterface:
           printP("*****Cgins:setOgesBC: Dirichlet interface BC is set\n");
-	  boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
+          boundaryConditions(side,axis,grid)=OgesParameters::dirichlet; 
           break;
         case Parameters::neumannInterface:
-	{
-	  boundaryConditions(side,axis,grid)=OgesParameters::neumann;
-	  real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
+        {
+          boundaryConditions(side,axis,grid)=OgesParameters::neumann;
+          real a0 = mixedCoeff(tc,side,axis,grid), a1=mixedNormalCoeff(tc,side,axis,grid);
           if( a0!=0. || a1!=1. )
-	  {
-	    boundaryConditions(side,axis,grid)=OgesParameters::mixed; 
-	    boundaryConditionData(0,side,axis,grid)=a0;
-	    boundaryConditionData(1,side,axis,grid)=a1;
-	    if( debug() & 2 )
-	      printP("*****Cgins:setOgesBC: Set a mixed interface BC: %f*T + %f*T.n \n",a0,a1);
+          {
+            boundaryConditions(side,axis,grid)=OgesParameters::mixed; 
+            boundaryConditionData(0,side,axis,grid)=a0;
+            boundaryConditionData(1,side,axis,grid)=a1;
+            if( debug() & 2 )
+              printP("*****Cgins:setOgesBC: Set a mixed interface BC: %f*T + %f*T.n \n",a0,a1);
 
-	  }
+          }
           else
-	  {
+          {
             if( debug() & 2 )
               printP("*****Cgins:setOgesBC: Neumann interface BC is : %f*T + %f*T.n \n",a0,a1);
-	  }
-	  
+          }
+          
           break;
-	}
-	case Parameters::symmetry:
-	case Parameters::axisymmetric:
-	case InsParameters::tractionFree:
-	  boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
+        }
+        case Parameters::symmetry:
+        case Parameters::axisymmetric:
+        case InsParameters::tractionFree:
+          boundaryConditions(side,axis,grid)=OgesParameters::neumann;  
           break;
-	case InsParameters::outflow:
-	case InsParameters::convectiveOutflow:
-	  boundaryConditions(side,axis,grid)=OgesParameters::neumann; // leave this for now, could be extrapolate
-	  break;
-	default:
-	  boundaryConditions(side,axis,grid)=mg.boundaryCondition(side,axis);
-	  if( mg.boundaryCondition(side,axis) > 0 )
-	  {
-	    printF("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for T! \n"
-	           "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
-		   mg.boundaryCondition(side,axis));
-	    Overture::abort("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for T");
-	  }
-	}
+        case InsParameters::outflow:
+        case InsParameters::convectiveOutflow:
+          boundaryConditions(side,axis,grid)=OgesParameters::neumann; // leave this for now, could be extrapolate
+          break;
+        default:
+          boundaryConditions(side,axis,grid)=mg.boundaryCondition(side,axis);
+          if( mg.boundaryCondition(side,axis) > 0 )
+          {
+            printF("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for T! \n"
+                   "cg0[grid=%i].boundaryCondition()(side=%i,axis=%i)=%i\n",grid,side,axis,
+                   mg.boundaryCondition(side,axis));
+            Overture::abort("Cgins::setOgesBoundaryConditions:ERROR unknown BC value for T");
+          }
+        }
       }
 
     }

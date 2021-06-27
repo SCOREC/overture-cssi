@@ -23,6 +23,10 @@ CgmxUsersGuideOld: CgmxUsersGuide.tex
 	dvips -P pdf -G0 -o CgmxUsersGuide.ps CgmxUsersGuide
 	ps2pdf CgmxUsersGuide.ps
 
+# Notes on interfaces 
+interfaceNotes: interfaceNotes.tex
+	pdflatex interfaceNotes
+
 
 slac03: slac03.pdf
 	acroread -geometry 900x800 slac03.pdf&

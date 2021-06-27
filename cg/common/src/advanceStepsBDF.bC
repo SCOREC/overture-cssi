@@ -75,7 +75,7 @@ implicitTimeStep(  real & t0, real & dt0, int correction, AdvanceOptions & advan
   FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
   const int & orderOfBDF = parameters.dbase.get<int>("orderOfBDF");
 
-  if( true || debug() & 4 )
+  if( debug() & 4 )
     printP("--DS-- implicitTimeStep t0=%e, dt0=%e, correction=%i BDF%i++++\n",t0,dt0,correction,orderOfBDF );
   if( debug() & 2 )
   {
@@ -113,8 +113,15 @@ implicitTimeStep(  real & t0, real & dt0, int correction, AdvanceOptions & advan
   const int mNew   = (mCur + 1 + numberOfGridFunctions ) % numberOfGridFunctions; // holds u(t+dt)
   const int mOld   = (mCur - 1 + numberOfGridFunctions ) % numberOfGridFunctions; // holds u(t-dt)
   const int mOlder = (mCur - 2 + numberOfGridFunctions ) % numberOfGridFunctions; // holds u(t-2*dt)
-  const int mMinus3= (mCur - 3 + numberOfGridFunctions*2) % numberOfGridFunctions; // holds u(t-3*dt)
+  // const int mMinus3= (mCur - 3 + numberOfGridFunctions*2) % numberOfGridFunctions; // holds u(t-3*dt)
+  const int mMinus3= (mCur - 3 + numberOfGridFunctions ) % numberOfGridFunctions; // holds u(t-3*dt) *wdh* fixed April 21, 2021
 
+  if( false )
+  {
+    printF("advanceStepsBDF bdf%d: mNew=%d, mCur=%d, mOld=%d, mOlder=%d, mMinus3=%d at t=%9.3e (numberOfGridFunctions=%d)\n",
+            orderOfBDF,mNew,mCur,mOld,mOlder,mMinus3,t0,numberOfGridFunctions);
+  }
+  
   Parameters::ImplicitOption & implicitOption = parameters.dbase.get<Parameters::ImplicitOption >("implicitOption");
   
   implicitOption=Parameters::doNotComputeImplicitTerms; // no need to compute during initialization
@@ -491,7 +498,7 @@ takeTimeStepBDF( real & t0, real & dt0, int correction, AdvanceOptions & advance
 
   const int & orderOfBDF = parameters.dbase.get<int>("orderOfBDF");
 
-  if( true || debug() & 4 )
+  if( debug() & 4 )
     printP("DomainSolver::takeTimeStepBDF t0=%e, dt0=%e, correction=%i BDF%i ++++\n",t0,dt0,correction,orderOfBDF );
   if( debug() & 2 )
   {

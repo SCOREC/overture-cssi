@@ -41,7 +41,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
             side<0 || side>1 || axis<0 || axis>interfaceType.getBound(1) )
     {
         printP("Cgsm::getInterfaceDataOptions:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
-         	   grid,side,axis);
+                      grid,side,axis);
         OV_ABORT("Cgsm::getInterfaceDataOptions:ERROR");
     }
     if( interfaceType(side,axis,grid)==Parameters::heatFluxInterface )
@@ -79,7 +79,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
       // *wdh* May 26 2017
       // We want the interface traction and velocity for the INS-SM amp-scheme
             interfaceDataOptions = ( Parameters::velocityInterfaceData     |
-                         			       Parameters::tractionInterfaceData    
+                                                              Parameters::tractionInterfaceData    
                                                           );
 
             numberOfItems+=2*numberOfDimensions;    
@@ -91,8 +91,8 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
       // if we project the interface values then we need the following from the fluid:
 
             interfaceDataOptions = ( Parameters::positionInterfaceData     |
-                         			       Parameters::velocityInterfaceData     |
-                         			       Parameters::tractionInterfaceData    
+                                                              Parameters::velocityInterfaceData     |
+                                                              Parameters::tractionInterfaceData    
                                                           );
 
             numberOfItems+=3*numberOfDimensions;
@@ -114,7 +114,7 @@ getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions )
     else
     {
         printP("Cgsm::getInterfaceDataOptions:ERROR: interfaceType(grid=%i,side=%i,axis=%i)=%i\n",
-         	   grid,side,axis,interfaceType(side,axis,grid));
+                      grid,side,axis,interfaceType(side,axis,grid));
         OV_ABORT("Cgsm::getInterfaceDataOptions:ERROR");
     }
 
@@ -153,7 +153,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                                                 int interfaceDataOptions,
                                                 GridFaceDescriptor & info, 
                                                 GridFaceDescriptor & gfd, 
-                  			int gfIndex, real t,
+                                                int gfIndex, real t,
                                                 bool saveTimeHistory /* = false */ )
 {
 
@@ -179,30 +179,30 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         
             if( !(currentGF>=0 && nextGF>=0) )
             {
-      	printF("Cgsm: interfaceRightHandSide:ERROR: t=%9.2e, current=%i gf[current].t=%9.2e, currentGF=%i, nextGF=%i\n",
-             	       t,current,gf[current].t,currentGF,nextGF);
-      	OV_ABORT("FIX ME");
+                printF("Cgsm: interfaceRightHandSide:ERROR: t=%9.2e, current=%i gf[current].t=%9.2e, currentGF=%i, nextGF=%i\n",
+                              t,current,gf[current].t,currentGF,nextGF);
+                OV_ABORT("FIX ME");
             }
 
             if( gf[currentGF].t == t )
             {
-      	gfIndex=currentGF;
+                gfIndex=currentGF;
             }
             else if( gf[nextGF].t == t )
             {
-      	gfIndex=nextGF;
+                gfIndex=nextGF;
             }
             else 
             {
-	// ************** FIX ME ************
-      	printF("Cgsm: interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e\n"
-             	       "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e\n",
-             	       t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t);
-      	if( fabs(gf[currentGF].t-t) <  fabs(gf[nextGF].t-t) )
-        	  gfIndex=currentGF; 
-      	else
-        	  gfIndex=nextGF; 
-	// OV_ABORT("fix me");
+        // ************** FIX ME ************
+                printF("Cgsm: interfaceRightHandSide:WARNING cannot find gfIndex to match t=%9.3e\n"
+                              "      currentGF=%i, gf[currentGF].t=%9.3e, nextGF=%i, gf[nextGF].t=%9.3e\n",
+                              t,currentGF,gf[currentGF].t,nextGF,gf[nextGF].t);
+                if( fabs(gf[currentGF].t-t) <  fabs(gf[nextGF].t-t) )
+                    gfIndex=currentGF; 
+                else
+                    gfIndex=nextGF; 
+        // OV_ABORT("fix me");
             }
         }
         
@@ -223,7 +223,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             side<0 || side>1 || axis<0 || axis>=cg.numberOfDimensions() )
     {
         printP("Cgsm::interfaceRightHandSide:ERROR: invalid values: (grid,side,axis)=(%i,%i,%i)\n",
-         	   grid,side,axis);
+                      grid,side,axis);
         OV_ABORT("Cgsm::interfaceRightHandSide:ERROR");
     }
 
@@ -399,8 +399,8 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
         if( debug() & 2 )
             printP("Cgsm::interfaceRightHandSide:traction: %s RHS for (grid,side,axis)=(%i,%i,%i) "
-           	     " t=%9.3e gfIndex=%i (current=%i)\n",
-           	     (option==0 ? "get" : "set"),grid,side,axis,t,gfIndex,current);
+                          " t=%9.3e gfIndex=%i (current=%i)\n",
+                          (option==0 ? "get" : "set"),grid,side,axis,t,gfIndex,current);
 
 
         const int uc = parameters.dbase.get<int >("uc");
@@ -426,12 +426,12 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             {
         // --- interface position is given ---
                 if( debug() & 4 )
-        	  printP("Cgsm:interfaceRightHandSide: interface position provided t=%9.3e\n",t);
+                    printP("Cgsm:interfaceRightHandSide: interface position provided t=%9.3e\n",t);
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);
+                C=Range(numSaved,numSaved+numberOfDimensions-1);
 
         // the interface position is currently not used.
-	// bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);        // where should we put this?        
+        // bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);        // where should we put this?        
 
                 numSaved+=numberOfDimensions;
             }
@@ -440,31 +440,31 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             {
         // --- interface velocity is given ---
                 if( debug() & 4 )
-        	  printP("Cgsm:interfaceRightHandSide: interface velocity provided t=%9.3e\n",t);
+                    printP("Cgsm:interfaceRightHandSide: interface velocity provided t=%9.3e\n",t);
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);
+                C=Range(numSaved,numSaved+numberOfDimensions-1);
 
                 if( true || debug() & 4 )
-      	{
-        	  printP(">>> --SM-- interfaceRHS: interface velocity provided t=%9.3e  in C=[%i,%i]<<<\n",
+                {
+                    printP(">>> --SM-- interfaceRHS: interface velocity provided t=%9.3e  in C=[%i,%i]<<<\n",
                                   t,C.getBase(),C.getBound());
-      	}
-	// -- for now save the velocity data in the dbase *wdh* May 26, 2017
+                }
+        // -- for now save the velocity data in the dbase *wdh* May 26, 2017
                 aString velocityDataName;
-      	sPrintF(velocityDataName,"velocityG%iS%iA%i",grid,side,axis);
-      	if( !parameters.dbase.has_key(velocityDataName) )
-      	{
-        	  InterfaceData & interfaceData = parameters.dbase.put<InterfaceData>(velocityDataName);
-        	  interfaceData.u.redim(bd.dimension(0),bd.dimension(1),bd.dimension(2),numberOfDimensions);
-        	  interfaceData.u=0;
-      	}
-      	InterfaceData & interfaceData = parameters.dbase.get<InterfaceData>(velocityDataName);
-      	interfaceData.t=t;
-      	interfaceData.u(I1,I2,I3,Rx)=f(I1,I2,I3,C);  
+                sPrintF(velocityDataName,"velocityG%iS%iA%i",grid,side,axis);
+                if( !parameters.dbase.has_key(velocityDataName) )
+                {
+                    InterfaceData & interfaceData = parameters.dbase.put<InterfaceData>(velocityDataName);
+                    interfaceData.u.redim(bd.dimension(0),bd.dimension(1),bd.dimension(2),numberOfDimensions);
+                    interfaceData.u=0;
+                }
+                InterfaceData & interfaceData = parameters.dbase.get<InterfaceData>(velocityDataName);
+                interfaceData.t=t;
+                interfaceData.u(I1,I2,I3,Rx)=f(I1,I2,I3,C);  
 
 
         // the interface velocity is currently not used.
-	// bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);     // where should we put this?          
+        // bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);     // where should we put this?          
 
                 numSaved+=numberOfDimensions;
             }
@@ -473,12 +473,12 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             {
         // --- interface acceleration is given ---
                 if( debug() & 4 )
-        	  printP("Cgsm:interfaceRightHandSide: interface acceleration provided t=%9.3e\n",t);
+                    printP("Cgsm:interfaceRightHandSide: interface acceleration provided t=%9.3e\n",t);
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);
+                C=Range(numSaved,numSaved+numberOfDimensions-1);
 
         // the interface acceleration is currently not used.
-	// bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);    // where should we put this?
+        // bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);    // where should we put this?
 
                 numSaved+=numberOfDimensions;
             }
@@ -487,24 +487,24 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             {
         // --- interface traction is given ---
                 if( debug() & 4 )
-        	  printP("Cgsm:interfaceRightHandSide: interface traction provided t=%9.3e\n",t);
+                    printP("Cgsm:interfaceRightHandSide: interface traction provided t=%9.3e\n",t);
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);
+                C=Range(numSaved,numSaved+numberOfDimensions-1);
 
-	// bd(I1,I2,I3,Dc)=f(I1,I2,I3,Dc);   // old
-      	bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);    // ***** save traction data here for now -- FIX ME 
+        // bd(I1,I2,I3,Dc)=f(I1,I2,I3,Dc);   // old
+                bd(I1,I2,I3,Dc)=f(I1,I2,I3,C);    // ***** save traction data here for now -- FIX ME 
 
-	// ::display(bd(I1,I2,I3,Dc),"Cgsm::interface traction from fluid");
-      	
+        // ::display(bd(I1,I2,I3,Dc),"Cgsm::interface traction from fluid");
+                
 
                 numSaved+=numberOfDimensions;
             }
 
             if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
             {
-	// save the time derivative of the traction:
+        // save the time derivative of the traction:
                 if( debug() & 4 )
-        	  printP("Cgsm:interfaceRightHandSide: the tractionRate is provided at t=%9.3e\n",t);
+                    printP("Cgsm:interfaceRightHandSide: the tractionRate is provided at t=%9.3e\n",t);
 
                 C=Range(numSaved,numSaved+numberOfDimensions-1);
 
@@ -513,12 +513,12 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         // bd(I1,I2,I3,Vc)=f(I1,I2,I3,Dc+numberOfDimensions);      // ************** fix me bases
                 bd(I1,I2,I3,Vc)=f(I1,I2,I3,C);
 
-      	if( debug() & 8 )
-      	{
-        	  ::display(bd(I1,I2,I3,Vc),sPrintF("Cgsm::interfaceRightHandSide: time derivative of the traction, t=%9.3e",t),"%8.2e ");
-      	}
+                if( debug() & 8 )
+                {
+                    ::display(bd(I1,I2,I3,Vc),sPrintF("Cgsm::interfaceRightHandSide: time derivative of the traction, t=%9.3e",t),"%8.2e ");
+                }
 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
             }
             
 
@@ -574,19 +574,19 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
             if( interfaceDataOptions & Parameters::positionInterfaceData )
             {
-	// -- return the position of the boundary --
+        // -- return the position of the boundary --
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
+                C=Range(numSaved,numSaved+numberOfDimensions-1); // save displacement in these components of f
                 Cd=C;  // Save me for TZ below
 
-      	if( !parameters.dbase.has_key("u1c") )
-      	{
-        	  printP("interfaceRightHandSide:ERROR: unable to find displacement component u1c in the data-base\n");
-        	  OV_ABORT("error");
-      	}
-      	const int u1c = parameters.dbase.get<int >("u1c");
-      	assert( u1c>=0 );
-      	Range Dc(u1c,u1c+numberOfDimensions-1);  // displacement components
+                if( !parameters.dbase.has_key("u1c") )
+                {
+                    printP("interfaceRightHandSide:ERROR: unable to find displacement component u1c in the data-base\n");
+                    OV_ABORT("error");
+                }
+                const int u1c = parameters.dbase.get<int >("u1c");
+                assert( u1c>=0 );
+                Range Dc(u1c,u1c+numberOfDimensions-1);  // displacement components
                 RealArray displacement(I1,I2,I3,Rx);
                 
                 bool initialStateAssigned=false;
@@ -627,7 +627,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 if( !initialStateAssigned )
                 {
 
-          // Some solid-mechanics solvers compute the displacements, others the full deformation.	
+          // Some solid-mechanics solvers compute the displacements, others the full deformation.       
                     bool methodComputesDisplacements=true;
                     if( parameters.dbase.has_key("methodComputesDisplacements") )
                     {
@@ -674,11 +674,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         {
                             displacement=uLocal(I1,I2,I3,Dc);
                         }
-         	   
+                      
                     }
                 }
                 
-      	f(I1,I2,I3,C)=displacement;
+                f(I1,I2,I3,C)=displacement;
                 if( t<=2.*dt & debug() & 4 )
                 {
                     display(f(I1,I2,I3,C),sPrintF("--SM-- interface positions at t=%9.3e",t),debugFile,"%.2e ");
@@ -706,31 +706,31 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
                 }
 
-      	if( debug() & 8 )
-      	{
-        	  f(I1,I2,I3,C).display("interfaceRightHandSide:get: Here is the RHS (vertex+displacement)");
-      	}
+                if( debug() & 8 )
+                {
+                    f(I1,I2,I3,C).display("interfaceRightHandSide:get: Here is the RHS (vertex+displacement)");
+                }
 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
             }
             
             
             if( interfaceDataOptions & Parameters::velocityInterfaceData )
             {
         // ------------------------------------
-	// --- save the interface velocity ----
+        // --- save the interface velocity ----
         // ------------------------------------
 
                 bool useTimeHistoryForPredictorStage=false;
 
-      	if( debug() & 2 )
-        	  printP("Cgsm:interfaceRightHandSide: Save the interface velocity.\n");
-      	
+                if( debug() & 2 )
+                    printP("Cgsm:interfaceRightHandSide: Save the interface velocity.\n");
+                
                 C=Range(numSaved,numSaved+numberOfDimensions-1);   // save velocity in these components of f
 
                 baseVelocity=C.getBase();  // save for TZ correction
 
-      	const int v1c = parameters.dbase.get<int >("v1c");
+                const int v1c = parameters.dbase.get<int >("v1c");
                 Range Rx=numberOfDimensions;
                 RealArray velocity(I1,I2,I3,Rx);
 
@@ -794,7 +794,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 if( relaxCorrectionSteps && t>0. )
                 {
                     const real & omega = parameters.dbase.get<real>("addedMassRelaxationFactor");
-        	  const real & tol = parameters.dbase.get<real>("subIterationConvergenceTolerance");
+                    const real & tol = parameters.dbase.get<real>("subIterationConvergenceTolerance");
                     const int correctionStage = parameters.dbase.get<int>("correctionStage");
 
                     ArrayEvolution & velocityHistory = gfd.dbase.get<ArrayEvolution>("velocityHistory");
@@ -816,7 +816,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                       f(I1,I2,I3,C)=velocity;
                 }
                 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
 
 
         // Save a time history of the velocity on the interface that can be used to
@@ -899,13 +899,13 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
         
             if( interfaceDataOptions & Parameters::accelerationInterfaceData )
             {
-	// -- save the interface acceleration --
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save acceleration in these components of f
+        // -- save the interface acceleration --
+                C=Range(numSaved,numSaved+numberOfDimensions-1);   // save acceleration in these components of f
                 baseAcceleration=C.getBase();  // save for TZ correction
 
-      	if( debug() & 2 )
+                if( debug() & 2 )
                 {
-        	  printP("Cgsm:interfaceRightHandSide: return the interface acceleration, t=%9.3e.\n",t);
+                    printP("Cgsm:interfaceRightHandSide: return the interface acceleration, t=%9.3e.\n",t);
                     fprintf(debugFile,"Cgsm:interfaceRightHandSide: return the interface acceleration t=%9.3e.\n",t);
                 }
                 
@@ -923,19 +923,19 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 }
                 
 
-	// f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
+        // f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
             }
         
             if( interfaceDataOptions & Parameters::tractionInterfaceData )
             {
-	// -- save the interface traction --
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction in these components of f
+        // -- save the interface traction --
+                C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction in these components of f
                 baseTraction=C.getBase();  // save for TZ correction
 
-      	if( debug() & 2 )
-        	  printP(">>>Cgsm:interfaceRHS: Save interface traction.. t=%9.3e in C=[%i,%i] <<<\n",
+                if( debug() & 2 )
+                    printP(">>>Cgsm:interfaceRHS: Save interface traction.. t=%9.3e in C=[%i,%i] <<<\n",
                                     t,C.getBase(),C.getBound());
 
                 bool initialStateAssigned=false;
@@ -953,6 +953,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                     if(  pdeTypeForGodunovMethod!=0 ) // nonlinear solid
                     {
                         printF("--SM-- get interface traction: WARNING: Not implemented for a nonlinear solid\n");
+            // OV_ABORT("FINISH ME"); // should abort here, but breaks mp checks FIX ME: April 7, 2021
                     }
                     else if(  pdeTypeForGodunovMethod==0 ) // linear-elasticity
                     {
@@ -973,11 +974,11 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             // We need the normal and Cauchy stress tensor
                         if( numberOfDimensions==2 )
                         {
-          	    
+                        
                             int c0=numSaved, c1=c0+1;
                             f(I1,I2,I3,c0)=( normal(I1,I2,I3,0)*uLocal(I1,I2,I3,s11c) +
                                                               normal(I1,I2,I3,1)*uLocal(I1,I2,I3,s12c) );
-      	
+                
                             f(I1,I2,I3,c1)=( normal(I1,I2,I3,0)*uLocal(I1,I2,I3,s12c) +
                                                               normal(I1,I2,I3,1)*uLocal(I1,I2,I3,s22c) );
                         }
@@ -1082,7 +1083,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                     }
                 } // end if saveTimeHistory 
                 
-      	
+                
 
 //- // compute the solid normal (n1s,n2s)
 //- #beginMacro getSolidNormal()
@@ -1094,37 +1095,37 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 //- #endMacro
 //- 
 //-         // -- linear elasticity: 
-//- 	s11s =u2(j1,j2,j3,s11c);
-//- 	s12s =u2(j1,j2,j3,s12c);
-//- 	s22s =u2(j1,j2,j3,s22c);
+//-     s11s =u2(j1,j2,j3,s11c);
+//-     s12s =u2(j1,j2,j3,s12c);
+//-     s22s =u2(j1,j2,j3,s22c);
 //-         // compute the solid normal (n1s,n2s)
-//- 	getSolidNormal();
+//-     getSolidNormal();
 //-         //  solid traction is ns.sigmas:
 //-         traction1 = n1s*s11s + n2s*s12s  
 //-         traction2 = n1s*s12s + n2s*s22s
 
 
         // OV_ABORT("Finish me: save the traction");
-      	
-	// f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
+                
+        // f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
             }
         
             if( interfaceDataOptions & Parameters::tractionRateInterfaceData )
             {
-	// -- save the interface traction rate --
-      	if( debug() & 2 )
-        	  printP("Cgsm:interfaceRightHandSide: Save the interface traction rate. FINISH ME \n");
+        // -- save the interface traction rate --
+                if( debug() & 2 )
+                    printP("Cgsm:interfaceRightHandSide: Save the interface traction rate. FINISH ME \n");
 
-      	C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction rate in these components of f
+                C=Range(numSaved,numSaved+numberOfDimensions-1);   // save traction rate in these components of f
                 baseTractionRate=C.getBase();  // save for TZ correction
 
                 OV_ABORT("ERROR");
                 
-	// f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
+        // f(I1,I2,I3,C)=uLocal(I1,I2,I3,V);
 
-      	numSaved+=numberOfDimensions;
+                numSaved+=numberOfDimensions;
             }
         
 
@@ -1152,13 +1153,13 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             const bool isRectangular = false; // ** do this for now ** mg.isRectangular();
 
             if( !isRectangular )
-      	mg.update(MappedGrid::THEcenter | MappedGrid::THEvertexBoundaryNormal );
+                mg.update(MappedGrid::THEcenter | MappedGrid::THEvertexBoundaryNormal );
 
             realArray & x= mg.center();
 #ifdef USE_PPP
             realSerialArray xLocal; 
             if( !isRectangular ) 
-      	getLocalArrayWithGhostBoundaries(x,xLocal);
+                getLocalArrayWithGhostBoundaries(x,xLocal);
 #else
             const realSerialArray & xLocal = x;
 #endif
@@ -1181,8 +1182,8 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
 
             if( option==setInterfaceRightHandSide )
             { // set 
-	//   add on TZ flow:
-	//   bd <- bd + (true boundary traction)
+        //   add on TZ flow:
+        //   bd <- bd + (true boundary traction)
 
                 
         // -- adjust the traction and/or tractionRate by adding on the TZ traction
@@ -1219,14 +1220,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                             e.gd( uey,xLocal,numberOfDimensions,isRectangular,1,0,1,0,I1,I2,I3,Dc,t);  // v.y : exact solution 
               // *note* uex is really vex
                                 bd(I1,I2,I3,v1c+0) += (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
-                                                       			       normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+                                                                              normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
                                 bd(I1,I2,I3,v1c+1) += (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
-                                             			       normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+                                                                              normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
                         }
                     }
                     else if( pdeVariation==SmParameters::godunov )
                     {
-            // TZ forcing for traction for FOS codes: compute traction from stress	  
+            // TZ forcing for traction for FOS codes: compute traction from stress        
                         Range Sc(s11c,s22c);
                         realSerialArray ue(I1,I2,I3,Sc);
                         e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Sc,t);   // exact values for the stress
@@ -1274,13 +1275,13 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                         OV_ABORT("error");
                     }
 
-      	
+                
         // bd(I1,I2,I3,V) += xe(I1,I2,I3,V);
-      	
+                
             }
             else if( option==getInterfaceRightHandSide )
             { // get 
-	//   subtract off TZ flow:
+        //   subtract off TZ flow:
         //   f <- f - ( sm-boundary-position )  +  ( TZ-interface-position)
 
                 if( interfaceDataOptions & Parameters::positionInterfaceData ) // *wdh* April 20, 2018
@@ -1295,7 +1296,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                     if( parameters.dbase.has_key("methodComputesDisplacements") )
                         methodComputesDisplacements=parameters.dbase.get<bool>("methodComputesDisplacements");
 
-          // Some solid-mechanics solvers compute the displacements, others the full deformation.	
+          // Some solid-mechanics solvers compute the displacements, others the full deformation.       
                     if( methodComputesDisplacements )
                     {
                         f(I1,I2,I3,Cd) -= xLocal(I1,I2,I3,D) + ue(I1,I2,I3,Dc); 
@@ -1315,7 +1316,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                             }
                         
                         }
-        	  
+                    
                         for( int axis=0; axis<numberOfDimensions; axis++ )
                         {
                             f(I1,I2,I3,Cd.getBase()+axis) += xLocal(I1,I2,I3,axis) + t*( v0[axis] + t*( a0[axis] ) );
@@ -1381,14 +1382,14 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
                 // *note* uex is really vex
                                     assert( baseTractionRate>=0 );
                                     f(I1,I2,I3,baseTractionRate+0) -= (normal(I1,I2,I3,0)*( alpha*uex(I1,I2,I3,uc)+lambda*uey(I1,I2,I3,vc)) +
-                                                                       			                   normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
+                                                                                                          normal(I1,I2,I3,1)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) ) ) );
                                     f(I1,I2,I3,baseTractionRate+1) -= (normal(I1,I2,I3,0)*( mu*( uey(I1,I2,I3,uc)+uex(I1,I2,I3,vc) )) +
-                                                             			                   normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
+                                                                                                          normal(I1,I2,I3,1)*( alpha*uey(I1,I2,I3,vc)+lambda*uex(I1,I2,I3,uc) ) );
                             }
                         }
                         else if( pdeVariation==SmParameters::godunov )
                         {
-              // TZ forcing for traction for FOS codes: compute traction from stress	  
+              // TZ forcing for traction for FOS codes: compute traction from stress        
                             Range Sc(s11c,s22c);
                             realSerialArray ue(I1,I2,I3,Sc);
                             e.gd( ue,xLocal,numberOfDimensions,isRectangular,0,0,0,0,I1,I2,I3,Sc,t);   // exact values for the stress
@@ -1507,7 +1508,7 @@ interfaceRightHandSide( InterfaceOptionsEnum option,
             }
             else
             {
-      	OV_ABORT("error");
+                OV_ABORT("error");
             }
         
         } // end if TZ 
@@ -1560,11 +1561,11 @@ projectInterface( int grid, real dt, int current )
     if( t<2.*dt )
     {
         printF("--SM-- projectInterface: t=%9.2e, grid=%i useAddedMassAlgorithm=%i projectInterface=%i\n",
-         	   t,grid,useAddedMassAlgorithm,projectInterface);
+                      t,grid,useAddedMassAlgorithm,projectInterface);
         if( debug() & 4 )
         {
             fPrintF(debugFile,"\n--SM-- projectInterface: t=%9.2e, grid=%i useAddedMassAlgorithm=%i projectInterface=%i\n",
-         	   t,grid,useAddedMassAlgorithm,projectInterface);
+                      t,grid,useAddedMassAlgorithm,projectInterface);
         }
         
     }
@@ -1592,7 +1593,7 @@ projectInterface( int grid, real dt, int current )
     Range Dc(uc,uc+numberOfDimensions-1);    // displacement components
     Range Vc(v1c,v1c+numberOfDimensions-1);
     Range Rx = numberOfDimensions;
-      	
+                
     const real rho   =parameters.dbase.get<real>("rho");
     const real lambda=parameters.dbase.get<real>("lambda");
     const real mu    =parameters.dbase.get<real>("mu");
@@ -1609,10 +1610,10 @@ projectInterface( int grid, real dt, int current )
         {
             if( interfaceType(side,axis,grid)==Parameters::tractionInterface )
             {
-      	if( t <= 2.*dt && debug() & 4 )
+                if( t <= 2.*dt && debug() & 4 )
                 {
-        	  fPrintF(debugFile,"--SM-- projectInterface for (side,axis,grid)=(%i,%i,%i) bc=%i\n",
-             		 side,axis,grid,mg.boundaryCondition(side,axis));
+                    fPrintF(debugFile,"--SM-- projectInterface for (side,axis,grid)=(%i,%i,%i) bc=%i\n",
+                                  side,axis,grid,mg.boundaryCondition(side,axis));
                 }
                 
                 int extra=1;
@@ -2006,7 +2007,7 @@ projectInterface( int grid, real dt, int current )
                             OV_GET_SERIAL_ARRAY(real,mg.vertex(),xLocal);
                             realSerialArray ve(Ib1,Ib2,Ib3,Vc);
 
-                    	      e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,Vc,t);  
+                            e.gd( ve,xLocal,numberOfDimensions,isRectangular,0,0,0,0,Ib1,Ib2,Ib3,Vc,t);  
 
                             if( !useImpedanceProjection )
                             {
@@ -2146,7 +2147,7 @@ getInterfaceAcceleration( GridFaceDescriptor & gfd, const real t, const int side
       // printF("--SM-- getInterfaceAcceleration: knownSolution=%i\n",(int)knownSolution);
 
             int bodyNumber=0; // fix me for multiple deforming bodies
-          	    
+                        
       // RealArray state(I1,I2,I3,Rx);   // Fix me -- could avoid a copy by passing C to the next function:
             parameters.getUserDefinedDeformingBodyKnownSolution( 
                 bodyNumber,
@@ -2377,7 +2378,7 @@ getKnownInterfaceState( Parameters::DeformingBodyStateOptionEnum stateOption,
                       (int)stateOption,(int)knownSolution,t);
 
         int bodyNumber=0; // fix me for multiple deforming bodies
-          	    
+                        
         parameters.getUserDefinedDeformingBodyKnownSolution( 
             bodyNumber,
             stateOption,

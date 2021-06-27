@@ -166,33 +166,33 @@ getUt(const realMappedGridFunction & v,
       Index Ib1,Ib2,Ib3;
       for( int axis=0; axis<mg.numberOfDimensions(); axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  if( mg.boundaryCondition(side,axis)==Parameters::axisymmetric ) // we should use bcLocal here 
-	  {
-	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        for( int side=0; side<=1; side++ )
+        {
+          if( mg.boundaryCondition(side,axis)==Parameters::axisymmetric ) // we should use bcLocal here 
+          {
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
             bool ok = ParallelUtility::getLocalArrayBounds(v,uLocal,Ib1,Ib2,Ib3);
             if( ok )
-	    {
-  	      radiusInverse(Ib1,Ib2,Ib3)=0.;
+            {
+              radiusInverse(Ib1,Ib2,Ib3)=0.;
               RealArray uyy(Ib1,Ib2,Ib3,N);
               op.derivative(MappedGridOperators::yyDerivative,uLocal,uyy,Ib1,Ib2,Ib3,N);
 
               uLap(Ib1,Ib2,Ib3,N)+=uyy(Ib1,Ib2,Ib3,N);
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
-	
+        
       if( debug() & 8 )
       {
-	display(radiusInverse,sPrintF("Cgad::getUt: radiusInverse, grid=%i",grid),pDebugFile,"%8.5f ");
+        display(radiusInverse,sPrintF("Cgad::getUt: radiusInverse, grid=%i",grid),pDebugFile,"%8.5f ");
       }
 
       if( !firstDerivNeeded )
       {
-	uy.redim(I1,I2,I3,N); 
-	op.derivative(MappedGridOperators::yDerivative,uLocal,uy  ,I1,I2,I3,N);
+        uy.redim(I1,I2,I3,N); 
+        op.derivative(MappedGridOperators::yDerivative,uLocal,uy  ,I1,I2,I3,N);
       }
       for( int m=0; m<numberOfComponents; m++ )
        uLap(I1,I2,I3,m) += uy(I1,I2,I3,m)*radiusInverse;
@@ -201,187 +201,187 @@ getUt(const realMappedGridFunction & v,
     if( !variableDiffusivity )
     { // For constant diffusivity, multiply by kappa
       for( int m=0; m<numberOfComponents; m++ )
-	uLap(I1,I2,I3,m)*=kappa[m];
+        uLap(I1,I2,I3,m)*=kappa[m];
     }
     
     if( mg.numberOfDimensions()==2 )
     {
       if( firstDerivNeeded )
       {
-	for( int m=0; m<numberOfComponents; m++ )
-	{
-	  // printf("getUt: convectionDiffusion: m=%i, a,b,kappa=%5.3f, %5.3f, %8.2e\n",m,a[m],b[m],kappa[m]);
-	  if( !gridIsImplicit )
-	  {
-	    if( variableAdvection )
-	    {
-	      utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m) 
-		- ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) );
-	    }
+        for( int m=0; m<numberOfComponents; m++ )
+        {
+          // printf("getUt: convectionDiffusion: m=%i, a,b,kappa=%5.3f, %5.3f, %8.2e\n",m,a[m],b[m],kappa[m]);
+          if( !gridIsImplicit )
+          {
+            if( variableAdvection )
+            {
+              utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m) 
+                - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) );
+            }
             else
-	    {
-	      utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+uLap(I1,I2,I3,m);
-	    }
-	    
-	  }
-	  else 
-	  {
-	    // Here are the terms that we treat explicitly:
+            {
+              utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+uLap(I1,I2,I3,m);
+            }
+            
+          }
+          else 
+          {
+            // Here are the terms that we treat explicitly:
             // utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m);
-	    if( !implicitAdvection )
-	    {
-	      // --- advection terms: explicit
+            if( !implicitAdvection )
+            {
+              // --- advection terms: explicit
               // --- diffusion terms: implicit
-	      if( variableAdvection )
-	      {
-		utLocal(I1,I2,I3,m)=
-		  - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) );
-	      }
-	      else
-	      {
-		utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m);
-	      }
+              if( variableAdvection )
+              {
+                utLocal(I1,I2,I3,m)=
+                  - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) );
+              }
+              else
+              {
+                utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m);
+              }
 
-	      if( implicitOption==Parameters::computeImplicitTermsSeparately )
-	      {
-		// Here are the terms for the part treated implicitly
+              if( implicitOption==Parameters::computeImplicitTermsSeparately )
+              {
+                // Here are the terms for the part treated implicitly
               
-		// real nuE = kappa[m]*(1.-implicitFactor);   // This is no longer done here *wdh* 0711122
-		// utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
-		utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	      }
-	    }
-	    else
-	    {
-	      // --- advection terms: implicit
+                // real nuE = kappa[m]*(1.-implicitFactor);   // This is no longer done here *wdh* 0711122
+                // utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
+                utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
+              }
+            }
+            else
+            {
+              // --- advection terms: implicit
               // --- diffusion terms: implicit
-	      utLocal(I1,I2,I3,m)=0.;  // no terms are entirely explicit 
+              utLocal(I1,I2,I3,m)=0.;  // no terms are entirely explicit 
 
-	      if( implicitOption==Parameters::computeImplicitTermsSeparately )
-	      {
-		// Here are the terms for the part treated implicitly
+              if( implicitOption==Parameters::computeImplicitTermsSeparately )
+              {
+                // Here are the terms for the part treated implicitly
               
-		if( variableAdvection )
-		{
-		  utiLocal(I1,I2,I3,m)=
-		    - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) ) + uLap(I1,I2,I3,m);
-		}
-		else
-		{
-		  utiLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m) + uLap(I1,I2,I3,m);
-		}
-	      }
+                if( variableAdvection )
+                {
+                  utiLocal(I1,I2,I3,m)=
+                    - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) ) + uLap(I1,I2,I3,m);
+                }
+                else
+                {
+                  utiLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m) + uLap(I1,I2,I3,m);
+                }
+              }
 
-	    }
+            }
 
-	  }
+          }
 
           if( adjustForMovingGrids )
-	  {
-	    utLocal(I1,I2,I3,m) += gvLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + gvLocal(I1,I2,I3,1)*uy(I1,I2,I3,m);
-	  }
-	  
-	}
+          {
+            utLocal(I1,I2,I3,m) += gvLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + gvLocal(I1,I2,I3,1)*uy(I1,I2,I3,m);
+          }
+          
+        }
       }
       else
       {
-	for( int m=0; m<numberOfComponents; m++ )
-	{
-	  if( !gridIsImplicit )
-	  {
-	    utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	  }
-	  else 
-	  {
-	    // Here are the terms that we treat explicitly:
+        for( int m=0; m<numberOfComponents; m++ )
+        {
+          if( !gridIsImplicit )
+          {
+            utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
+          }
+          else 
+          {
+            // Here are the terms that we treat explicitly:
             utLocal(I1,I2,I3,m)=0.;
-	    if( implicitOption==Parameters::computeImplicitTermsSeparately )
-	    {
+            if( implicitOption==Parameters::computeImplicitTermsSeparately )
+            {
               // Here are the terms for the part treated implicitly
-	      // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
-	      // utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
+              // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
+              // utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
               utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
     else // *********** 3D ***************
     {
       if( firstDerivNeeded )
       {
-	uz.redim(I1,I2,I3,N);
-	op.derivative(MappedGridOperators::zDerivative,uLocal,uz ,I1,I2,I3,N);
+        uz.redim(I1,I2,I3,N);
+        op.derivative(MappedGridOperators::zDerivative,uLocal,uz ,I1,I2,I3,N);
 
-	for( int m=0; m<numberOfComponents; m++ )
-	{
-	  if( !gridIsImplicit )
-	  {
-	    if( variableAdvection )
-	    {
-	      utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m) 
-		- ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
+        for( int m=0; m<numberOfComponents; m++ )
+        {
+          if( !gridIsImplicit )
+          {
+            if( variableAdvection )
+            {
+              utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m) 
+                - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
                     advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) + 
                     advectVarLocal(I1,I2,I3,2)*uz(I1,I2,I3,m) );
-	    }
+            }
             else
-	    {
-	      utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+(-c[m])*uz(I1,I2,I3,m)
+            {
+              utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+(-c[m])*uz(I1,I2,I3,m)
                     +uLap(I1,I2,I3,m);
-	    }
-	  }
-	  else 
-	  {
-	    // Here are the terms that we treat explicitly:
+            }
+          }
+          else 
+          {
+            // Here are the terms that we treat explicitly:
             // utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+(-c[m])*uz(I1,I2,I3,m);
-	    if( variableAdvection )
-	    {
-	      utLocal(I1,I2,I3,m)=
-		- ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
+            if( variableAdvection )
+            {
+              utLocal(I1,I2,I3,m)=
+                - ( advectVarLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
                     advectVarLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) + 
                     advectVarLocal(I1,I2,I3,2)*uz(I1,I2,I3,m) );
-	    }
+            }
             else
-	    {
-	      utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+(-c[m])*uz(I1,I2,I3,m);
-	    }
+            {
+              utLocal(I1,I2,I3,m)=(-a[m])*ux(I1,I2,I3,m)+(-b[m])*uy(I1,I2,I3,m)+(-c[m])*uz(I1,I2,I3,m);
+            }
 
-	    if( implicitOption==Parameters::computeImplicitTermsSeparately )
-	    {
+            if( implicitOption==Parameters::computeImplicitTermsSeparately )
+            {
               // Here are the terms for the part treated implicitly
-	      // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
-	      // utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
-	      utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	    }
-	  }
+              // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
+              // utiLocal(I1,I2,I3,m)=nuE*uLap(I1,I2,I3,m);
+              utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
+            }
+          }
           if( adjustForMovingGrids )
-	  {
-	    utLocal(I1,I2,I3,m) += (gvLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
+          {
+            utLocal(I1,I2,I3,m) += (gvLocal(I1,I2,I3,0)*ux(I1,I2,I3,m) + 
                                     gvLocal(I1,I2,I3,1)*uy(I1,I2,I3,m) +
                                     gvLocal(I1,I2,I3,2)*uz(I1,I2,I3,m));
-	  }
-	}
+          }
+        }
       }
       else
       {
-	for( int m=0; m<numberOfComponents; m++ )
-	{
-	  if( !gridIsImplicit )
-	  {
-	    utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	  }
-	  else 
-	  {
-	    // Here are the terms that we treat explicitly:
+        for( int m=0; m<numberOfComponents; m++ )
+        {
+          if( !gridIsImplicit )
+          {
+            utLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
+          }
+          else 
+          {
+            // Here are the terms that we treat explicitly:
             utLocal(I1,I2,I3,m)=0.;
-	    if( implicitOption==Parameters::computeImplicitTermsSeparately )
-	    {
+            if( implicitOption==Parameters::computeImplicitTermsSeparately )
+            {
               // Here are the terms for the part treated implicitly
-	      // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
-	      utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
-	    }
-	  }
-	}
+              // real nuE = kappa[m]*(1.-implicitFactor);  // This is no longer done here *wdh* 0711122
+              utiLocal(I1,I2,I3,m)=uLap(I1,I2,I3,m);
+            }
+          }
+        }
       }
       
     }

@@ -2,9 +2,9 @@
 % User's Guide for CGAD -- Advection diffusion solver
 % 
 %-----------------------------------------------------------------------
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
+% \usepackage[bookmarks=true]{hyperref}  % this changes the page location !
 \usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
-
 
 % \input documentationPageSize.tex
 \hbadness=10000 
@@ -18,106 +18,195 @@
 \usepackage{calc}
 \usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
 
-\input homeHenshaw
+% \input homeHenshaw
+
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+
+% \input{pstricks}\input{pst-node}
+% \input{colours}
+\newcommand{\blue}{\color{blue}}
+\newcommand{\green}{\color{green}}
+\newcommand{\red}{\color{red}}
+\newcommand{\black}{\color{black}}
+
+
+% \documentclass[11pt]{article}
+% \usepackage{times}  % for embeddable fonts, Also use: dvips -P pdf -G0
+
+% \input documentationPageSize.tex
+
+% \input homeHenshaw
+
+% % \input{pstricks}\input{pst-node}
+% \input{colours}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-\usepackage{verbatim}
+\usepackage{fancyvrb}% fancy verbatim
+% \usepackage{verbatim}
 \usepackage{moreverb}
 
-% \usepackage{epsfig}    
-% This next section will allow graphics files to be ps or pdf  -- from Jeff via Jeff
-% \usepackage{ifpdf}
-% \ifpdf
-%     \usepackage[pdftex]{graphicx}
-%     \usepackage{epstopdf}
-%     \pdfcompresslevel=9
-%     \pdfpagewidth=8.5 true in
-%     \pdfpageheight=11 true in
-%     \pdfhorigin=1 true in
-%     \pdfvorigin=1.25 true in
-% \else
-%     \usepackage{graphicx}
-% \fi
+\usepackage{enumitem}% to reduce separation in itemize
 
-% \input{pstricks}\input{pst-node}
-% \input{colours}
-
-% define the clipFig commands:
-\input trimFig.tex
-
-% --------------------------------------------
-\usepackage[usenames]{color} % e.g. \color{red}
-\newcommand{\red}{\color{red}}
-\newcommand{\blue}{\color{blue}}
-\newcommand{\green}{\color{green}}
-\newcommand{\jwb}[2]{{\color{red}(old: #1) }{\color{green} #2}}
-
-\usepackage{tikz}
-
+\usepackage{graphics}    
+\usepackage{epsfig}    
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage{float}
+% the next one cause the table of contents to disappear!
+% * \usepackage{fancybox}
 
 \usepackage{makeidx} % index
 \makeindex
 \newcommand{\Index}[1]{#1\index{#1}}
 
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{xargs}% for optional args to \newcommandx
+% define the trimming commands:
+\input ../common/trimFig.tex
+\input ../common/plotFigureMacros
 
-% ---- we have lemmas and theorems in this paper ----
-\newtheorem{assumption}{Assumption}
-\newtheorem{definition}{Definition}
+\input ../common/defs.tex
 
-% \newcommand{\homeHenshaw}{/home/henshaw.0}
-
-\newcommand{\primer}{/users/henshaw/res/primer}
-\newcommand{\GF}{/users/\-henshaw/\-res/\-gf}
-\newcommand{\gf}{/users/henshaw/res/gf}
-\newcommand{\mapping}{/users/henshaw/res/mapping}
-
-\newcommand{\docFigures}{\homeHenshaw/OvertureFigures}
-\newcommand{\figures}{\homeHenshaw/res/OverBlown/docFigures}
-\newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % note: local version for OverBlown
-\newcommand{\maxDoc}{\homeHenshaw/res/maxwell/doc}
-
-\newcommand{\OVERTUREOVERTURE}{/users/\-henshaw/\-Overture/\-Overture}
-\newcommand{\OvertureOverture}{/users/henshaw/Overture/Overture}
-
-\newcommand{\Overture}{{\bf Overture\ }}
-\newcommand{\OverBlown}{{\bf OverBlown\ }}
-\newcommand{\overBlown}{{\bf overBlown\ }}
+\usepackage{listings}
+\lstset{language=C++,
+                basicstyle=\ttfamily\scriptsize,
+                keywordstyle=\color{blue}\ttfamily,
+                stringstyle=\color{red}\ttfamily,
+                commentstyle=\color{orange}\ttfamily,
+                numbers=left,
+                stepnumber=1,
+                xleftmargin=.5cm,
+                morecomment=[l][\color{magenta}]{\#}
+}
 
 
-% *** See http://www.eng.cam.ac.uk/help/tpl/textprocessing/squeeze.html
-% By default, LaTeX doesn't like to fill more than 0.7 of a text page with tables and graphics, nor does it like too many figures per page. This behaviour can be changed by placing lines like the following before \begin{document}
-
-\renewcommand\floatpagefraction{.9}
-\renewcommand\topfraction{.9}
-\renewcommand\bottomfraction{.9}
-\renewcommand\textfraction{.1}   
-\setcounter{totalnumber}{50}
-\setcounter{topnumber}{50}
-\setcounter{bottomnumber}{50}
-
-
+% ------------------------------ BEGIN DOCUMENT ---------------------------------------------------------------------------
 \begin{document}
 
 
-% -----definitions-----
-\input wdhDefinitions.tex
+% \documentclass[11pt]{article}
+% \usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
 
-\def\ud     {{    U}}
-\def\pd     {{    P}}
 
-\newcommand{\mbar}{\bar{m}}
-\newcommand{\Rbar}{\bar{R}}
-\newcommand{\Ru}{R_u}         % universal gas constant
-% \newcommand{\Iv}{{\bf I}}
-% \newcommand{\qv}{{\bf q}}
-\newcommand{\Div}{\grad\cdot}
-\newcommand{\tauv}{\boldsymbol{\tau}}
-\newcommand{\sumi}{\sum_{i=1}^n}
-% \newcommand{\half}{{1\over2}}
-\newcommand{\dt}{{\Delta t}}
-\newcommand{\eps}{\epsilon}
+% % \input documentationPageSize.tex
+% \hbadness=10000 
+% \sloppy \hfuzz=30pt
+
+% % \voffset=-.25truein
+% % \hoffset=-1.25truein
+% % \setlength{\textwidth}{7in}      % page width
+% % \setlength{\textheight}{9.5in}    % page height
+
+% \usepackage{calc}
+% \usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
+
+% \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+% % \input homeHenshaw
+
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+
+% \usepackage{verbatim}
+% \usepackage{moreverb}
+
+
+% % \usepackage{epsfig}    
+% % This next section will allow graphics files to be ps or pdf  -- from Jeff via Jeff
+% % \usepackage{ifpdf}
+% % \ifpdf
+% %     \usepackage[pdftex]{graphicx}
+% %     \usepackage{epstopdf}
+% %     \pdfcompresslevel=9
+% %     \pdfpagewidth=8.5 true in
+% %     \pdfpageheight=11 true in
+% %     \pdfhorigin=1 true in
+% %     \pdfvorigin=1.25 true in
+% % \else
+% %     \usepackage{graphicx}
+% % \fi
+
+% % \input{pstricks}\input{pst-node}
+% % \input{colours}
+
+% % define the clipFig commands:
+% \input trimFig.tex
+
+% % --------------------------------------------
+% \usepackage[usenames]{color} % e.g. \color{red}
+% \newcommand{\red}{\color{red}}
+% \newcommand{\blue}{\color{blue}}
+% \newcommand{\green}{\color{green}}
+% \newcommand{\jwb}[2]{{\color{red}(old: #1) }{\color{green} #2}}
+
+% \usepackage{tikz}
+
+
+% \usepackage{makeidx} % index
+% \makeindex
+% \newcommand{\Index}[1]{#1\index{#1}}
+
+
+% % ---- we have lemmas and theorems in this paper ----
+% \newtheorem{assumption}{Assumption}
+% \newtheorem{definition}{Definition}
+
+% % \newcommand{\homeHenshaw}{/home/henshaw.0}
+
+% \newcommand{\primer}{/users/henshaw/res/primer}
+% \newcommand{\GF}{/users/\-henshaw/\-res/\-gf}
+% \newcommand{\gf}{/users/henshaw/res/gf}
+% \newcommand{\mapping}{/users/henshaw/res/mapping}
+
+% \newcommand{\docFigures}{\homeHenshaw/OvertureFigures}
+% \newcommand{\figures}{\homeHenshaw/res/OverBlown/docFigures}
+% \newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % note: local version for OverBlown
+% \newcommand{\maxDoc}{\homeHenshaw/res/maxwell/doc}
+
+% \newcommand{\OVERTUREOVERTURE}{/users/\-henshaw/\-Overture/\-Overture}
+% \newcommand{\OvertureOverture}{/users/henshaw/Overture/Overture}
+
+% \newcommand{\Overture}{{\bf Overture\ }}
+% \newcommand{\OverBlown}{{\bf OverBlown\ }}
+% \newcommand{\overBlown}{{\bf overBlown\ }}
+
+
+% % *** See http://www.eng.cam.ac.uk/help/tpl/textprocessing/squeeze.html
+% % By default, LaTeX doesn't like to fill more than 0.7 of a text page with tables and graphics, nor does it like too many figures per page. This behaviour can be changed by placing lines like the following before \begin{document}
+
+% \renewcommand\floatpagefraction{.9}
+% \renewcommand\topfraction{.9}
+% \renewcommand\bottomfraction{.9}
+% \renewcommand\textfraction{.1}   
+% \setcounter{totalnumber}{50}
+% \setcounter{topnumber}{50}
+% \setcounter{bottomnumber}{50}
+
+
+% \begin{document}
+
+
+% % -----definitions-----
+% \input wdhDefinitions.tex
+
+% \def\ud     {{    U}}
+% \def\pd     {{    P}}
+
+% \newcommand{\mbar}{\bar{m}}
+% \newcommand{\Rbar}{\bar{R}}
+% \newcommand{\Ru}{R_u}         % universal gas constant
+% % \newcommand{\Iv}{{\bf I}}
+% % \newcommand{\qv}{{\bf q}}
+% \newcommand{\Div}{\grad\cdot}
+% \newcommand{\tauv}{\boldsymbol{\tau}}
+% \newcommand{\sumi}{\sum_{i=1}^n}
+% % \newcommand{\half}{{1\over2}}
+% \newcommand{\dt}{{\Delta t}}
+% \newcommand{\eps}{\epsilon}
 
 \vglue 10\baselineskip
 \begin{flushleft}
@@ -157,11 +246,20 @@ transfer problems in conjuction with the Cgins flow solver.
 \section{Introduction}
 
    Cgad is a program that can solve the advection diffusion equations on overlapping grids and is based
-on the Overture framework\footnote{More information about
-{\bf Overture} can be found on the \Overture home page, {\tt www.overtureFramework.org}.}.
+on the Overture framework\cite{Brown97,Henshaw96a,iscope97}. 
+A block diagram of the main components of Overture is given in Figure~\ref{fig:OvertureBlockDiagram}.
+Overture provides support for solving PDEs on overset grids.
+More information about
+{\bf Overture} can be found on the \Overture home page, {\tt www.overtureFramework.org}.
 Cgad can solve problems on moving and deforming domains.
 Cgad can also be used with Cgmp to solve the heat equation in solid regions, when performing conjugate heat
-transfer problems in conjuction with the Cgins flow solver.
+transfer problems in conjuction with the Cgins flow solver (see Figure~\ref{fig:CgMpBlockDiagram}).
+
+
+
+\input ../mp/tex/OvertureBlockDiagram
+
+\input ../mp/tex/cgmpBlockDiagram
 
 
 Cgad can solve for $m$ unknowns dependent variables $u_j=u_j(\xv,t)$, $j=1,2,\ldots,m$ where the {\em components}
@@ -341,9 +439,9 @@ and move upward where $u$ is greater than $u_e$.
 \begin{center}
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.5) rectangle (17,5.75);  % set the bounding box (so we have less surrounding white space)
-  \draw ( 0.0, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_sinusoid0}{\figWidth}};
-  \draw ( 5.7, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_sinusoid1}{\figWidth}};
-  \draw (11.4, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_sinusoid2}{\figWidth}};
+  \draw ( 0.0, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_sinusoid0}{\figWidth}};
+  \draw ( 5.7, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_sinusoid1}{\figWidth}};
+  \draw (11.4, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_sinusoid2}{\figWidth}};
  % - labels
  %   \draw (\txa,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=0.5$};
  %   \draw (\txb,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=1.0$};
@@ -366,9 +464,9 @@ a pulse advects (upward and to the right) and diffuses.}
 \begin{center}
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.5) rectangle (17,5.75);  % set the bounding box (so we have less surrounding white space)
-  \draw ( 0.0, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_concentration0}{\figWidth}};
-  \draw ( 5.7, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_concentration1}{\figWidth}};
-  \draw (11.4, 0) node[anchor=south west] {\trimfig{figures/cgadDeform_concentration2}{\figWidth}};
+  \draw ( 0.0, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_concentration0}{\figWidth}};
+  \draw ( 5.7, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_concentration1}{\figWidth}};
+  \draw (11.4, 0) node[anchor=south west] {\trimfig{fig/cgadDeform_concentration2}{\figWidth}};
  % - labels
  %   \draw (\txa,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=0.5$};
  %   \draw (\txb,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=1.0$};
@@ -391,10 +489,10 @@ current concentration on the interface.}
 \begin{center}
 \begin{tikzpicture}[scale=1]
   \useasboundingbox (0,.5) rectangle (17,11.5);  % set the bounding box (so we have less surrounding white space)
-  \draw ( 0.0,4.0) node[anchor=south west] {\trimfig{figures/deformingEye0p0}{\figWidth}};
-  \draw ( 8.0,4.0) node[anchor=south west] {\trimfig{figures/deformingEye0p1}{\figWidth}};
-  \draw ( 0.0,  0) node[anchor=south west] {\trimfig{figures/deformingEye0p25}{\figWidth}};
-  \draw ( 8.0,  0) node[anchor=south west] {\trimfig{figures/deformingEye0p5}{\figWidth}};
+  \draw ( 0.0,4.0) node[anchor=south west] {\trimfig{fig/deformingEye0p0}{\figWidth}};
+  \draw ( 8.0,4.0) node[anchor=south west] {\trimfig{fig/deformingEye0p1}{\figWidth}};
+  \draw ( 0.0,  0) node[anchor=south west] {\trimfig{fig/deformingEye0p25}{\figWidth}};
+  \draw ( 8.0,  0) node[anchor=south west] {\trimfig{fig/deformingEye0p5}{\figWidth}};
  % - labels
  %   \draw (\txa,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=0.5$};
  %   \draw (\txb,4.75) node[draw,fill=white,anchor=east] {\scriptsize $t=1.0$};
@@ -445,6 +543,7 @@ for use with Cgad. Here are the steps to take to add your own forcing:
   \item Run Cgad and choose the {\em userDefinedForcing} option from the {\em forcing options...} menu.
     (see the example command file {\tt ad/cmd/userDefinedForcing.cmd}).
 \end{enumerate}
+
 
 %  {
 %  \begin{figure}[hbt]
@@ -543,11 +642,17 @@ done
 \end{description}
 
 
+% ------------- Examples ------------
+\clearpage
+\input tex/examples
 
 
+% ------------- CHAMP -----
+\clearpage
+\input tex/champNotes.tex
 
-\vfill\eject
-\bibliography{\homeHenshaw/papers/henshaw}
+% -------------------------------------------------------------------------------------------------
+\bibliography{../common/journalISI,../common/henshaw,../common/henshawPapers}
 \bibliographystyle{siam}
 
 \printindex

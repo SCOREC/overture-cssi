@@ -110,11 +110,12 @@ $numberOfVolumeSmooths=50;
 #
 #  -- The curve for the shape is defined in an include file ---
 #
+$MYDIR = "$ENV{'CG'}/mx/runs/dielectricBodies"; # this directory
 $cmd ="include $shape";  # default 
-if( $shape eq "ellipse" ){ $cmd="include ellipseCurve.h"; }
-if( $shape eq "cross" ){ $cmd="include crossCurve.h"; }
-if( $shape eq "IBeam" ){ $cmd="include IBeamCurve.h"; }
-if( $shape eq "starFish" ){ $cmd="include starFishCurve.h"; }
+if( $shape eq "ellipse" ){ $cmd="include $MYDIR/ellipseCurve.h"; }
+if( $shape eq "cross" ){ $cmd="include $MYDIR/crossCurve.h"; }
+if( $shape eq "IBeam" ){ $cmd="include $MYDIR/IBeamCurve.h"; }
+if( $shape eq "starFish" ){ $cmd="include $MYDIR/starFishCurve.h"; }
 $cmd
 # 
 # -- Make a hyperbolic grid --

@@ -1,3 +1,13 @@
+**************************************************
+****** THURS APRIL 15, 2021
+
+NOTE: CHANGED defineDiffOrder{2,4,6,8}f.h 
+              defineDiffNewerOrder{2,4,6,8}f.h
+  REPLACE COMMEN T "c" By "!" for fortran 90
+NEED TO FIX PERL SCRIPTS THAT CREATE THESE FILES!!
+WARNING: makeInclude.p does not seem to generate defineDiffOrder{2,4,6,8}f.h  ???
+
+
 
 New difference macros:
 

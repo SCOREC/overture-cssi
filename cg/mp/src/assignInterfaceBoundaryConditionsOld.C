@@ -67,16 +67,16 @@ for(i1=I1Base,j1=J1Base; i1<=I1Bound; i1++,j1++)
 extern "C"
 {
 void interfaceCgCm( const int&nd, 
-		    const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-		    const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
-		    const int&boundaryCondition1, 
-		    const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
-		    const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
-		    const int&boundaryCondition2,
-		    const int&ipar, const real&rpar, 
-		    real&aa2, real&aa4, real&aa8, 
-		    int&ipvt2, int&ipvt4, int&ipvt8,
-		    int&ierr );
+                    const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+                    const int&gridIndexRange1, real&u1, const int&mask1,const real&rsxy1, const real&xy1, 
+                    const int&boundaryCondition1, 
+                    const int&md1a,const int&md1b,const int&md2a,const int&md2b,const int&md3a,const int&md3b,
+                    const int&gridIndexRange2, real&u2, const int&mask2,const real&rsxy2, const real&xy2, 
+                    const int&boundaryCondition2,
+                    const int&ipar, const real&rpar, 
+                    real&aa2, real&aa4, real&aa8, 
+                    int&ipvt2, int&ipvt4, int&ipvt8,
+                    int&ierr );
 }
 
 
@@ -127,7 +127,7 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
     if( interfaceList.size()>0 )
     {
       printF("**** assignInterfaceBoundaryConditions:initializeInterfaces: number of interfaces =%i\n",
-	     interfaceList.size());
+             interfaceList.size());
     }
   }
   const int np= max(1,Communication_Manager::numberOfProcessors());
@@ -212,11 +212,11 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
 
       if( ( debug() & 4 ) && correct==0 )
       {
-	printF("Cgmp::assignInterfaceRightHandSide: interface found (t=%e):\n"
-	       "  (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i)\n"
-	       "  (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i)\n",t,
-	       d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
-	       d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2));
+        printF("Cgmp::assignInterfaceRightHandSide: interface found (t=%e):\n"
+               "  (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i)\n"
+               "  (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i)\n",t,
+               d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+               d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2));
       }
       
 
@@ -233,21 +233,21 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
       bool pointsOnInterfaceMatch=true;
       for( int dir=1; dir<mg1.numberOfDimensions(); dir++ )
       {
-	int dir1p = (dir1+dir) % mg1.numberOfDimensions();
-	int dir2p = (dir2+dir) % mg2.numberOfDimensions();
-	if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
-	{
+        int dir1p = (dir1+dir) % mg1.numberOfDimensions();
+        int dir2p = (dir2+dir) % mg2.numberOfDimensions();
+        if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
+        {
           pointsOnInterfaceMatch=false;  
 
-	  printF("assignInterfaceRightHandSide:INFO: The number of grid points on the two interfaces do not match\n"
-	         " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
-		 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
-		 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+          printF("assignInterfaceRightHandSide:INFO: The number of grid points on the two interfaces do not match\n"
+                 " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
+                 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+                 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
                    I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
                  d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
                    J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
-	  // Overture::abort("error");
-	}
+          // Overture::abort("error");
+        }
       }
 
 
@@ -296,154 +296,154 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
       if( interfaceType1(side1,dir1,grid1)==Parameters::heatFluxInterface )
       {
         // ********************************************
-	// ********** Heat Flux Interface *************
+        // ********** Heat Flux Interface *************
         // ********************************************
 
-	const int tc1 = domainSolver[d1]->parameters.dbase.get<int >("tc");  
-	const int tc2 = domainSolver[d2]->parameters.dbase.get<int >("tc");
+        const int tc1 = domainSolver[d1]->parameters.dbase.get<int >("tc");  
+        const int tc2 = domainSolver[d2]->parameters.dbase.get<int >("tc");
 
-	real ktc[2]={1.,1.};
+        real ktc[2]={1.,1.};
 
-	ktc[0] = domainSolver[d1]->parameters.dbase.get<real>("thermalConductivity");
-	ktc[1] = domainSolver[d2]->parameters.dbase.get<real>("thermalConductivity");
-	if( ktc[0] <=0. || ktc[1]<=0. )
-	{
-	  printF("assignInterfaceRightHandSide:ERROR: a negative thermal conductivity was found, "
-		 "ktc[0]=%e ktc[1]=%e\n",ktc[0],ktc[1]);
-	  Overture::abort("error");
-	}
+        ktc[0] = domainSolver[d1]->parameters.dbase.get<real>("thermalConductivity");
+        ktc[1] = domainSolver[d2]->parameters.dbase.get<real>("thermalConductivity");
+        if( ktc[0] <=0. || ktc[1]<=0. )
+        {
+          printF("assignInterfaceRightHandSide:ERROR: a negative thermal conductivity was found, "
+                 "ktc[0]=%e ktc[1]=%e\n",ktc[0],ktc[1]);
+          Overture::abort("error");
+        }
 
-	real ktd[2]={-1.,-1.}; //  coefficient of thermal diffusion 
-	for( int dd=0; dd<=1; dd++ )
-	{
-	  const int d = dd==0 ? d1 : d2;
-	  if( domainSolver[d]->parameters.dbase.has_key("kappa") )
-	  {
-	    ktd[dd]=domainSolver[d]->parameters.dbase.get<std::vector<real> >("kappa")[0];
-	  } 
-	  else if( domainSolver[d]->parameters.dbase.has_key("kThermal") )
-	  {
-	    ktd[dd]=domainSolver[d]->parameters.dbase.get<real>("kThermal");
-	  }
-	}
+        real ktd[2]={-1.,-1.}; //  coefficient of thermal diffusion 
+        for( int dd=0; dd<=1; dd++ )
+        {
+          const int d = dd==0 ? d1 : d2;
+          if( domainSolver[d]->parameters.dbase.has_key("kappa") )
+          {
+            ktd[dd]=domainSolver[d]->parameters.dbase.get<std::vector<real> >("kappa")[0];
+          } 
+          else if( domainSolver[d]->parameters.dbase.has_key("kThermal") )
+          {
+            ktd[dd]=domainSolver[d]->parameters.dbase.get<real>("kThermal");
+          }
+        }
 
-	real ktc1=ktc[0], ktc2=ktc[1];
+        real ktc1=ktc[0], ktc2=ktc[1];
 
-	Range C1(tc1,tc1), C2(tc2,tc2);
+        Range C1(tc1,tc1), C2(tc2,tc2);
         Iv[3]=C1; Jv[3]=C2;
-	if( ok1 ) u1.redim(I1,I2,I3,C1);
-	if( ok2 ) u2.redim(J1,J2,J3,C2);
+        if( ok1 ) u1.redim(I1,I2,I3,C1);
+        if( ok2 ) u2.redim(J1,J2,J3,C2);
 
-	if( d==d1 )
-	{
+        if( d==d1 )
+        {
           Ca=C1; Cb=C2;
-	  Ia[0]=I1; Ia[1]=I2; Ia[2]=I3; Ia[3]=Range(tc1,tc1);
-	  Ib[0]=J1; Ib[1]=J2; Ib[2]=J3; Ib[3]=Range(tc2,tc2);
-	}
-	else
-	{
+          Ia[0]=I1; Ia[1]=I2; Ia[2]=I3; Ia[3]=Range(tc1,tc1);
+          Ib[0]=J1; Ib[1]=J2; Ib[2]=J3; Ib[3]=Range(tc2,tc2);
+        }
+        else
+        {
           Ca=C2; Cb=C1;
-	  Ia[0]=J1; Ia[1]=J2; Ia[2]=J3; Ia[3]=Range(tc2,tc2);
-	  Ib[0]=I1; Ib[1]=I2; Ib[2]=I3; Ib[3]=Range(tc1,tc1);
-	}
-	
+          Ia[0]=J1; Ia[1]=J2; Ia[2]=J3; Ia[3]=Range(tc2,tc2);
+          Ib[0]=I1; Ib[1]=I2; Ib[2]=I3; Ib[3]=Range(tc1,tc1);
+        }
+        
         // *wdh* 080717 -- just use:  (?)
         //       infob.a[0]=  gridDescriptora.a[0];
         //       infob.a[1]= -gridDescriptora.a[1];  // flip sign of normal to match 
 
 
-	// -- fix this for a mixed BC ---
-	if( parameters.dbase.get<bool>("useMixedInterfaceConditions") )
-	{
+        // -- fix this for a mixed BC ---
+        if( parameters.dbase.get<bool>("useMixedInterfaceConditions") )
+        {
           // *note* flip the sign of the normal to match normal from domain da: 
           // *note* flip k1 <--> k2 
           infob.a[0]=gridDescriptora.a[0]; infob.a[1]=-gridDescriptora.a[1]*ktc[db]/ktc[da];
-	}
-	else if( matchFlux )
-	{
-	  // *note* flip the sign of the normal to match normal from domain 1
+        }
+        else if( matchFlux )
+        {
+          // *note* flip the sign of the normal to match normal from domain 1
 
           const real kRatio =  (ktc[0]/ktc[1])*sqrt(ktd[1]/ktd[0]);
 
-	  // if( ktc1 > ktc2 ) // *wdh* 080522 
-	  if( kRatio > 1. ) // *wdh* 080522 
-	  {
-  	    infob.a[0]=0.; infob.a[1]=-ktc2;
-	  }
+          // if( ktc1 > ktc2 ) // *wdh* 080522 
+          if( kRatio > 1. ) // *wdh* 080522 
+          {
+            infob.a[0]=0.; infob.a[1]=-ktc2;
+          }
           else
-	  {
-  	    infob.a[0]=0.; infob.a[1]=-ktc1;
-	  }
+          {
+            infob.a[0]=0.; infob.a[1]=-ktc1;
+          }
 
 
           // infob.a[1]=-ktc[db];  // **** use this ? **********************************************************************
-	  
-	}
-	else
-	{
-	  infob.a[0]=1.; infob.a[1]=0.;
-	}
+          
+        }
+        else
+        {
+          infob.a[0]=1.; infob.a[1]=0.;
+        }
 
         // -- get the data from domain db : (save in infob.u == ub ) --
-	if( okb )
+        if( okb )
           domainSolver[db]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,infob,gridDescriptorb,gfIndex[db],t );
 
       }
       else if( interfaceType1(side1,dir1,grid1)==Parameters::tractionInterface )
       {
         // *******************************************
-	// ********** Traction Interface *************
+        // ********** Traction Interface *************
         // *******************************************
 
         // If domain "d" is an elastic-solid, we need to get the surface traction from the other domain
         // If domain "d" is a fluid, we need to get the interface position from the other domain
 
-	// if( domainSolver[da]->getClassName()=="Cgsm" )
+        // if( domainSolver[da]->getClassName()=="Cgsm" )
 
-	// const int uc1 = domainSolver[d1]->parameters.dbase.get<int >("uc");
-	// const int uc2 = domainSolver[d2]->parameters.dbase.get<int >("uc");
+        // const int uc1 = domainSolver[d1]->parameters.dbase.get<int >("uc");
+        // const int uc2 = domainSolver[d2]->parameters.dbase.get<int >("uc");
 
-	// *wdh* 081201 Range C1(uc1,uc1+numberOfDimensions-1), C2(uc2,uc2+numberOfDimensions-1); // *** fix me *****
+        // *wdh* 081201 Range C1(uc1,uc1+numberOfDimensions-1), C2(uc2,uc2+numberOfDimensions-1); // *** fix me *****
         // for now add some extra space: 
-	// Range C1(uc1,uc1+2*numberOfDimensions-1), C2(uc2,uc2+2*numberOfDimensions-1); // ** fix me *******
+        // Range C1(uc1,uc1+2*numberOfDimensions-1), C2(uc2,uc2+2*numberOfDimensions-1); // ** fix me *******
         // *new* 110706: dimension source and target arrays based on numDataItems
         Range C1=numDataItems, C2=numDataItems;
-	
+        
         Iv[3]=C1; Jv[3]=C2;
-	if( ok1 ) u1.redim(I1,I2,I3,C1);
-	if( ok2 ) u2.redim(J1,J2,J3,C2);
+        if( ok1 ) u1.redim(I1,I2,I3,C1);
+        if( ok2 ) u2.redim(J1,J2,J3,C2);
 
         if( ok1 ) u1=0.;
-	if( ok2 ) u2=0.;
+        if( ok2 ) u2=0.;
 
         // The source domain is db
         // The target domain is da
 
-	if( d==d1 )
-	{
+        if( d==d1 )
+        {
           Ca=C1; Cb=C2;
-	  Ia[0]=I1; Ia[1]=I2; Ia[2]=I3; Ia[3]=C1;
-	  Ib[0]=J1; Ib[1]=J2; Ib[2]=J3; Ib[3]=C2;
-	}
-	else
-	{
+          Ia[0]=I1; Ia[1]=I2; Ia[2]=I3; Ia[3]=C1;
+          Ib[0]=J1; Ib[1]=J2; Ib[2]=J3; Ib[3]=C2;
+        }
+        else
+        {
           Ca=C2; Cb=C1;
-	  Ia[0]=J1; Ia[1]=J2; Ia[2]=J3; Ia[3]=C2;
-	  Ib[0]=I1; Ib[1]=I2; Ib[2]=I3; Ib[3]=C1;
-	}
+          Ia[0]=J1; Ia[1]=J2; Ia[2]=J3; Ia[3]=C2;
+          Ib[0]=I1; Ib[1]=I2; Ib[2]=I3; Ib[3]=C1;
+        }
 
         // -- get the data from the source domain db : (save in infob.u == ub ) --
         bool saveTimeHistory=true;
         if( okb )
-  	  domainSolver[db]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,infob,
+          domainSolver[db]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,infob,
                                                     gridDescriptorb,gfIndex[db],t,saveTimeHistory );
 
       }
       else
       {
-	printF("Cgmp::assignInterfaceRightHandSide:ERROR:unexpected interfaceType=%i\n",
-	       interfaceType1(side1,dir1,grid1));
-	Overture::abort("error");
+        printF("Cgmp::assignInterfaceRightHandSide:ERROR:unexpected interfaceType=%i\n",
+               interfaceType1(side1,dir1,grid1));
+        Overture::abort("error");
       }
 
       //  --- Copy source array u2 to the target array u1  ---
@@ -456,79 +456,79 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
       {
         // **NEW WAY** (not done yet)
         if( interfaceDescriptor.interfaceTransfer==NULL )
-	{
+        {
           interfaceDescriptor.interfaceTransfer = new InterfaceTransfer;
-	}
-	
+        }
+        
         InterfaceTransfer & interfaceTransfer = *interfaceDescriptor.interfaceTransfer;
 
-	// interfaceTransfer.initialize(interfaceDescriptor,domainSolver,gfIndex,parameters);
+        // interfaceTransfer.initialize(interfaceDescriptor,domainSolver,gfIndex,parameters);
 
-	const int numberOfComponentGridsa = d==d1 ? cg1.numberOfComponentGrids() : cg2.numberOfComponentGrids();
-	const int numberOfComponentGridsb = d==d1 ? cg2.numberOfComponentGrids() : cg1.numberOfComponentGrids();
+        const int numberOfComponentGridsa = d==d1 ? cg1.numberOfComponentGrids() : cg2.numberOfComponentGrids();
+        const int numberOfComponentGridsb = d==d1 ? cg2.numberOfComponentGrids() : cg1.numberOfComponentGrids();
         const int grida = d==d1 ? grid1 : grid2;
         const int gridb = d==d1 ? grid2 : grid1;
-	
+        
         RealArray **sourceArray = new RealArray * [numberOfComponentGridsb];
         RealArray **targetArray = new RealArray * [numberOfComponentGridsa];
-	for( int grid=0; grid<numberOfComponentGridsa; grid++ )
-	  targetArray[grid]=NULL;
-	for( int grid=0; grid<numberOfComponentGridsb; grid++ )
-	  sourceArray[grid]=NULL;
-	
+        for( int grid=0; grid<numberOfComponentGridsa; grid++ )
+          targetArray[grid]=NULL;
+        for( int grid=0; grid<numberOfComponentGridsb; grid++ )
+          sourceArray[grid]=NULL;
+        
         sourceArray[gridb]=&ub;
-	targetArray[grida]=&ua;
+        targetArray[grida]=&ua;
 
-	interfaceTransfer.transferData( db,da, // domainSource, domainTarget, 
-					sourceArray, Cb, // source
-					targetArray, Ca,  // target
-					interfaceDescriptor,
-					domainSolver,
-					gfIndex,
-					parameters );
+        interfaceTransfer.transferData( db,da, // domainSource, domainTarget, 
+                                        sourceArray, Cb, // source
+                                        targetArray, Ca,  // target
+                                        interfaceDescriptor,
+                                        domainSolver,
+                                        gfIndex,
+                                        parameters );
 
-	if( false )
-	{ // ********* TESTING ***********
+        if( false )
+        { // ********* TESTING ***********
           RealArray ua1;
           ua1=ua;
 
-	  ua=0.;
-	  if( Ia[0].getLength()==Ib[0].getLength() && 
-	      Ia[1].getLength()==Ib[1].getLength() &&
-	      Ia[2].getLength()==Ib[2].getLength() )
-	  {
-	    ua(Ia[0],Ia[1],Ia[2],Ia[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);
-	  }
-	  else if( Ia[0].getLength()==Ib[1].getLength() && 
-		   Ia[1].getLength()==Ib[0].getLength() &&
-		   Ia[2].getLength()==Ib[2].getLength()  )
-	  {
-	    int i1,i2,i3,i4,j1,j2,j3,j4;
-	    // FOR_3D(i1,i2,i3,Ia[0],Ia[1],Ia[2]) 
-	    // {
-	    //   for( int i4=Ia[3].getBase(), j4=Ib[3].getBase(); i4<=Ia[3].getBound(); i4++, j4++ )
-	    //     ua(i1,i2,i3,i4)=ub(i2,i1,i3,j4);  // note switch of i1,i2 in ub 
-	    // }
-	    FOR_4IJD(i1,i2,i3,i4,Ia[0],Ia[1],Ia[2],Ia[3],j1,j2,j3,j4,Ib[0],Ib[1],Ib[2],Ib[3])
-	    {
-	      ua(i1,i2,i3,i4)=ub(j2,j1,j3,j4);  // note switch of j1,j2 in ub 
-	    }
+          ua=0.;
+          if( Ia[0].getLength()==Ib[0].getLength() && 
+              Ia[1].getLength()==Ib[1].getLength() &&
+              Ia[2].getLength()==Ib[2].getLength() )
+          {
+            ua(Ia[0],Ia[1],Ia[2],Ia[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);
+          }
+          else if( Ia[0].getLength()==Ib[1].getLength() && 
+                   Ia[1].getLength()==Ib[0].getLength() &&
+                   Ia[2].getLength()==Ib[2].getLength()  )
+          {
+            int i1,i2,i3,i4,j1,j2,j3,j4;
+            // FOR_3D(i1,i2,i3,Ia[0],Ia[1],Ia[2]) 
+            // {
+            //   for( int i4=Ia[3].getBase(), j4=Ib[3].getBase(); i4<=Ia[3].getBound(); i4++, j4++ )
+            //     ua(i1,i2,i3,i4)=ub(i2,i1,i3,j4);  // note switch of i1,i2 in ub 
+            // }
+            FOR_4IJD(i1,i2,i3,i4,Ia[0],Ia[1],Ia[2],Ia[3],j1,j2,j3,j4,Ib[0],Ib[1],Ib[2],Ib[3])
+            {
+              ua(i1,i2,i3,i4)=ub(j2,j1,j3,j4);  // note switch of j1,j2 in ub 
+            }
 
-	    printF("*** max(fabs(ua-ua1))=%8.2e ***\n",max(fabs(ua-ua1)));
-	    
+            printF("*** max(fabs(ua-ua1))=%8.2e ***\n",max(fabs(ua-ua1)));
+            
             ::display(ua,"ua from copy (old way)","%6.2f ");
             ::display(ua1,"ua from copy (new way)","%6.2f ");
-	    
+            
 
-	  }
-	  else
-	  {
-	    printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
-	    OV_ABORT("error");
-	  }
-	}
-	
-	// OV_ABORT("finish me");
+          }
+          else
+          {
+            printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
+            OV_ABORT("error");
+          }
+        }
+        
+        // OV_ABORT("finish me");
       }
       else
       {
@@ -536,94 +536,94 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
 
       #ifdef USE_PPP 
 
-	  // parallel :  we need to transfer the local ub arrays onto the parallel distribution of ua
+          // parallel :  we need to transfer the local ub arrays onto the parallel distribution of ua
     
           // **** --- check me ----
 
           Index D1,D2,D3;
 
           realArray u2d; 
-	  u2d.partition(gf2.u[grid2].getPartition());
+          u2d.partition(gf2.u[grid2].getPartition());
           getIndex(mg2.dimension(),D1,D2,D3);
-	  u2d.redim(D1,D2,D3,Jv[3]);
+          u2d.redim(D1,D2,D3,Jv[3]);
           RealArray u2Local; getLocalArrayWithGhostBoundaries(u2d,u2Local);
-	  
+          
           realArray u1d;
-	  u1d.partition(gf1.u[grid1].getPartition());
+          u1d.partition(gf1.u[grid1].getPartition());
           getIndex(mg1.dimension(),D1,D2,D3);
-	  u1d.redim(D1,D2,D3,Iv[3]);
+          u1d.redim(D1,D2,D3,Iv[3]);
           RealArray u1Local; getLocalArrayWithGhostBoundaries(u1d,u1Local);
 
           Iav[3]=Iv[3]; Jav[3]=Jv[3];
 
-	  if( Ia1.getLength()==Ja1.getLength() && 
-	      Ia2.getLength()==Ja2.getLength() &&
-	      Ia3.getLength()==Ja3.getLength() )
-	  {
-	  }
-	  else if( Ia1.getLength()==Ja1.getLength() && 
-		   Ia2.getLength()==Ja2.getLength() &&
-		   Ia3.getLength()==Ja3.getLength()  )
-	  {
-	    printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n"
+          if( Ia1.getLength()==Ja1.getLength() && 
+              Ia2.getLength()==Ja2.getLength() &&
+              Ia3.getLength()==Ja3.getLength() )
+          {
+          }
+          else if( Ia1.getLength()==Ja1.getLength() && 
+                   Ia2.getLength()==Ja2.getLength() &&
+                   Ia3.getLength()==Ja3.getLength()  )
+          {
+            printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n"
                    "  The first two Index's are switched -- finish me for parallel. \n");
-	    Overture::abort("error");
-	  }
-	  else
-	  {
-	    printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
+            Overture::abort("error");
+          }
+          else
+          {
+            printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
             printF(" Ia1=[%i,%i] Ia2=[%i,%i] Ia3=[%i,%i]  Ja1=[%i,%i] Ja2=[%i,%i] Ja3=[%i,%i] \n",
-		   Ia1.getBase(),Ia1.getBound(),Ia2.getBase(),Ia2.getBound(),Ia3.getBase(),Ia3.getBound(), 
-		   Ja1.getBase(),Ja1.getBound(),Ja2.getBase(),Ja2.getBound(),Ja3.getBase(),Ja3.getBound());
-	    Overture::abort("error");
-	  }
-	
-	  if( d==d1 )
-	  {
-	    if( ok2) u2Local(Ib[0],Ib[1],Ib[2],Ib[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);  
-	    CopyArray::copyArray( u1d, Iav, u2d, Jav );  
-  	    if( oka ) ua(Ia[0],Ia[1],Ia[2],Ia[3])=u1Local(Ia[0],Ia[1],Ia[2],Ia[3]);
-	  }
-	  else
-	  {
-	    if( ok1) u1Local(Ib[0],Ib[1],Ib[2],Ib[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);  
-	    CopyArray::copyArray( u2d, Jav, u1d, Iav );  
-  	    if( oka ) ua(Ia[0],Ia[1],Ia[2],Ia[3])=u2Local(Ia[0],Ia[1],Ia[2],Ia[3]);
-	  }
-	  
+                   Ia1.getBase(),Ia1.getBound(),Ia2.getBase(),Ia2.getBound(),Ia3.getBase(),Ia3.getBound(), 
+                   Ja1.getBase(),Ja1.getBound(),Ja2.getBase(),Ja2.getBound(),Ja3.getBase(),Ja3.getBound());
+            Overture::abort("error");
+          }
+        
+          if( d==d1 )
+          {
+            if( ok2) u2Local(Ib[0],Ib[1],Ib[2],Ib[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);  
+            CopyArray::copyArray( u1d, Iav, u2d, Jav );  
+            if( oka ) ua(Ia[0],Ia[1],Ia[2],Ia[3])=u1Local(Ia[0],Ia[1],Ia[2],Ia[3]);
+          }
+          else
+          {
+            if( ok1) u1Local(Ib[0],Ib[1],Ib[2],Ib[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);  
+            CopyArray::copyArray( u2d, Jav, u1d, Iav );  
+            if( oka ) ua(Ia[0],Ia[1],Ia[2],Ia[3])=u2Local(Ia[0],Ia[1],Ia[2],Ia[3]);
+          }
+          
 
 
       #else
         // serial 
 
         ua=0.;
-	if( Ia[0].getLength()==Ib[0].getLength() && 
-	    Ia[1].getLength()==Ib[1].getLength() &&
-	    Ia[2].getLength()==Ib[2].getLength() )
-	{
-	  ua(Ia[0],Ia[1],Ia[2],Ia[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);
-	}
-	else if( Ia[0].getLength()==Ib[1].getLength() && 
-		 Ia[1].getLength()==Ib[0].getLength() &&
-		 Ia[2].getLength()==Ib[2].getLength()  )
-	{
-	  int i1,i2,i3,i4,j1,j2,j3,j4;
-	  // FOR_3D(i1,i2,i3,Ia[0],Ia[1],Ia[2]) 
-	  // {
-	  //   for( int i4=Ia[3].getBase(), j4=Ib[3].getBase(); i4<=Ia[3].getBound(); i4++, j4++ )
-	  //     ua(i1,i2,i3,i4)=ub(i2,i1,i3,j4);  // note switch of i1,i2 in ub 
-	  // }
-	  FOR_4IJD(i1,i2,i3,i4,Ia[0],Ia[1],Ia[2],Ia[3],j1,j2,j3,j4,Ib[0],Ib[1],Ib[2],Ib[3])
-	  {
+        if( Ia[0].getLength()==Ib[0].getLength() && 
+            Ia[1].getLength()==Ib[1].getLength() &&
+            Ia[2].getLength()==Ib[2].getLength() )
+        {
+          ua(Ia[0],Ia[1],Ia[2],Ia[3])=ub(Ib[0],Ib[1],Ib[2],Ib[3]);
+        }
+        else if( Ia[0].getLength()==Ib[1].getLength() && 
+                 Ia[1].getLength()==Ib[0].getLength() &&
+                 Ia[2].getLength()==Ib[2].getLength()  )
+        {
+          int i1,i2,i3,i4,j1,j2,j3,j4;
+          // FOR_3D(i1,i2,i3,Ia[0],Ia[1],Ia[2]) 
+          // {
+          //   for( int i4=Ia[3].getBase(), j4=Ib[3].getBase(); i4<=Ia[3].getBound(); i4++, j4++ )
+          //     ua(i1,i2,i3,i4)=ub(i2,i1,i3,j4);  // note switch of i1,i2 in ub 
+          // }
+          FOR_4IJD(i1,i2,i3,i4,Ia[0],Ia[1],Ia[2],Ia[3],j1,j2,j3,j4,Ib[0],Ib[1],Ib[2],Ib[3])
+          {
             ua(i1,i2,i3,i4)=ub(j2,j1,j3,j4);  // note switch of j1,j2 in ub 
-	  }
-	  
-	}
-	else
-	{
-	  printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
-	  OV_ABORT("error");
-	}
+          }
+          
+        }
+        else
+        {
+          printF("Cgmp::assignInterfaceRightHandSide:ERROR: arrays on interface do not match conformally\n");
+          OV_ABORT("error");
+        }
        #endif
 
       }  // end old way 
@@ -631,10 +631,10 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
       
       if( debug() & 8 )
       {
-	::display(ub,"RHS ub (from get)");
-	::display(ua,"RHS ua (=ub) (for set)");
+        ::display(ub,"RHS ub (from get)");
+        ::display(ua,"RHS ua (=ub) (for set)");
       }
-	
+        
 
       // *********************************************************
       // *********** Extrapolate the initial guess ***************
@@ -646,7 +646,7 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
           interfaceType2(side2,dir2,grid2)==Parameters::tractionInterface )
       {
         // we currently don't extrapolate for traction interfaces
-	extrapolateFirstGuess=false;
+        extrapolateFirstGuess=false;
       }
       
 
@@ -657,7 +657,7 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
 
       if( extrapolateFirstGuess && correct==0 )
       {
-	// We have saved both u and k*u.n from previous times (for TZ we have saved u-ue, k*u.n - k*ue.n ).
+        // We have saved both u and k*u.n from previous times (for TZ we have saved u-ue, k*u.n - k*ue.n ).
         // We can extrapolate, in time, the RHS for the interface condition
 
         //  If we are solving the interface condition by iteration: (j= iteration number)
@@ -670,68 +670,68 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
         // OR
         //    f(t) = a*k1*u.n(t) + b*u(t)   <- this is better to use for parallel
        
-	// a history of interface values at past times: 
+        // a history of interface values at past times: 
         // **** For parallel: I think we can use gridDescriptora here and switch sign of a1 below ****
-	// ** InterfaceDataHistory & idh = gridDescriptorb.interfaceDataHistory;   // values from the opposite side of the interface
+        // ** InterfaceDataHistory & idh = gridDescriptorb.interfaceDataHistory;   // values from the opposite side of the interface
  
         // consistency check: we currently don't extrapolate for traction interfaces
         assert( interfaceType1(side1,dir1,grid1)!=Parameters::tractionInterface );
         assert( interfaceType2(side2,dir2,grid2)!=Parameters::tractionInterface );
-	
+        
 
-	InterfaceDataHistory & idh = gridDescriptora.interfaceDataHistory;   // values from the same side of the interface
+        InterfaceDataHistory & idh = gridDescriptora.interfaceDataHistory;   // values from the same side of the interface
 
-	if( idh.interfaceDataList.size()>=2 )
-	{
-	  const int prev = ( idh.current -1 + numberOfInterfaceHistoryValuesToSave ) % 
-	    numberOfInterfaceHistoryValuesToSave;
-	    
-	  real tc = idh.interfaceDataList[idh.current].t;
-	  real tp = idh.interfaceDataList[prev       ].t;
-	    
-	    
-	  // extrap in time: f(t) = (t-t1)/(t2-t1)*u2 + (t2-t)/(t2-t1)*u1
+        if( idh.interfaceDataList.size()>=2 )
+        {
+          const int prev = ( idh.current -1 + numberOfInterfaceHistoryValuesToSave ) % 
+            numberOfInterfaceHistoryValuesToSave;
+            
+          real tc = idh.interfaceDataList[idh.current].t;
+          real tp = idh.interfaceDataList[prev       ].t;
+            
+            
+          // extrap in time: f(t) = (t-t1)/(t2-t1)*u2 + (t2-t)/(t2-t1)*u1
 
-	  // 2nd order extrap in time:
-	  real cex1=2., cex2=-1.;
-	  real dtex = tc-tp;
-	  if( dtex > dt*.1 )
-	  { // adjust for variable time step (if dtex is not too small)
-	    cex1=(t-tp)/dtex; cex2=(tc-t)/dtex;
-	  }
-	  if( debug() & 2 )
-	    fPrintF(interfaceFile," +++interfaceRHS: interface %i: domain d=%i, t=%9.3e extrap RHS in time from "
-		    " tc=%8.2e tp=%8.2e cex=(%8.2e,%8.2e)\n",
-		    inter,d,t,tc,tp,cex1,cex2);
-	    
-	  if( oka )
-	  {
-	    // new way 
-	    RealArray & uc = idh.interfaceDataList[idh.current].u;
-	    RealArray & fc = idh.interfaceDataList[idh.current].f;
-	    RealArray & up = idh.interfaceDataList[prev       ].u;
-	    RealArray & fp = idh.interfaceDataList[prev       ].f;
+          // 2nd order extrap in time:
+          real cex1=2., cex2=-1.;
+          real dtex = tc-tp;
+          if( dtex > dt*.1 )
+          { // adjust for variable time step (if dtex is not too small)
+            cex1=(t-tp)/dtex; cex2=(tc-t)/dtex;
+          }
+          if( debug() & 2 )
+            fPrintF(interfaceFile," +++interfaceRHS: interface %i: domain d=%i, t=%9.3e extrap RHS in time from "
+                    " tc=%8.2e tp=%8.2e cex=(%8.2e,%8.2e)\n",
+                    inter,d,t,tc,tp,cex1,cex2);
+            
+          if( oka )
+          {
+            // new way 
+            RealArray & uc = idh.interfaceDataList[idh.current].u;
+            RealArray & fc = idh.interfaceDataList[idh.current].f;
+            RealArray & up = idh.interfaceDataList[prev       ].u;
+            RealArray & fp = idh.interfaceDataList[prev       ].f;
 
             // const real a0 = gridDescriptora.a[0], a1=-gridDescriptora.a[1];  // note: flip sign of the normal
-	    // ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( cex1*( a0*uc(Ib[0],Ib[1],Ib[2],Ib[3]) + a1*fc(Ib[0],Ib[1],Ib[2],Ib[3]) ) + 
-	    // 				    cex2*( a0*up(Ib[0],Ib[1],Ib[2],Ib[3]) + a1*fp(Ib[0],Ib[1],Ib[2],Ib[3]) ) );
+            // ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( cex1*( a0*uc(Ib[0],Ib[1],Ib[2],Ib[3]) + a1*fc(Ib[0],Ib[1],Ib[2],Ib[3]) ) + 
+            //                              cex2*( a0*up(Ib[0],Ib[1],Ib[2],Ib[3]) + a1*fp(Ib[0],Ib[1],Ib[2],Ib[3]) ) );
 
             const real a0 = gridDescriptora.a[0], a1=gridDescriptora.a[1]; 
-	    ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( cex1*( a0*uc(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fc(Ia[0],Ia[1],Ia[2],Ia[3]) ) + 
-					    cex2*( a0*up(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fp(Ia[0],Ia[1],Ia[2],Ia[3]) ) );
+            ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( cex1*( a0*uc(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fc(Ia[0],Ia[1],Ia[2],Ia[3]) ) + 
+                                            cex2*( a0*up(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fp(Ia[0],Ia[1],Ia[2],Ia[3]) ) );
 
-	  }
+          }
 
-// 	  else
-// 	  {
-// 	    // old way
+//        else
+//        {
+//          // old way
 //             InterfaceDataHistory & idh = gridDescriptora.interfaceDataHistory;   
-// 	    RealArray & uc = matchFlux ? idh.interfaceDataList[idh.current].f : idh.interfaceDataList[idh.current].u;
-// 	    RealArray & up = matchFlux ? idh.interfaceDataList[prev       ].f : idh.interfaceDataList[prev       ].u;
-// 	    ua(Ia[0],Ia[1],Ia[2],Ia[3]) = cex1*uc(Ia[0],Ia[1],Ia[2],Ia[3])+cex2*up(Ia[0],Ia[1],Ia[2],Ia[3]);
-// 	  }
-	  
-	}
+//          RealArray & uc = matchFlux ? idh.interfaceDataList[idh.current].f : idh.interfaceDataList[idh.current].u;
+//          RealArray & up = matchFlux ? idh.interfaceDataList[prev       ].f : idh.interfaceDataList[prev       ].u;
+//          ua(Ia[0],Ia[1],Ia[2],Ia[3]) = cex1*uc(Ia[0],Ia[1],Ia[2],Ia[3])+cex2*up(Ia[0],Ia[1],Ia[2],Ia[3]);
+//        }
+          
+        }
       }
 
       // *********************************************************
@@ -745,29 +745,29 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
       bool underRelaxGuess=false;
       if( parameters.dbase.get<bool>("useMixedInterfaceConditions") )
       { // with mixed-conditions we under-relax the RHS for one side of the interface
-	underRelaxGuess= d==d1;
+        underRelaxGuess= d==d1;
       }
       else if( matchFlux )
       { // for D-N conditions we under-relax the Neumann condition
-	underRelaxGuess=true;
+        underRelaxGuess=true;
       }
       if( interfaceType1(side1,dir1,grid1)==Parameters::tractionInterface ||
           interfaceType2(side2,dir2,grid2)==Parameters::tractionInterface )
       {
         // we sometimes under-relax for traction interfaces
-	if(  domainSolver[d]->getClassName()=="Cgsm" )
-	{
-	  underRelaxGuess=relaxCorrectionSteps;
-	  relaxPredictor=true;
-	  if( underRelaxGuess )
-	    fPrintF(interfaceFile,"--MP-- tractionInterface: under-relax traction values, domain d=%i, correct=%i\n",
+        if(  domainSolver[d]->getClassName()=="Cgsm" )
+        {
+          underRelaxGuess=relaxCorrectionSteps;
+          relaxPredictor=true;
+          if( underRelaxGuess )
+            fPrintF(interfaceFile,"--MP-- tractionInterface: under-relax traction values, domain d=%i, correct=%i\n",
                 d,correct);
-	}
-	
+        }
+        
       }      
       if( FALSE && underRelaxGuess && debug() & 1 )
       {
-	::display(ua(I1,I2,I3,Range(1,3,2))," ua : Traction + traction-rate NEW",interfaceFile,"%9.3e ");
+        ::display(ua(I1,I2,I3,Range(1,3,2))," ua : Traction + traction-rate NEW",interfaceFile,"%9.3e ");
       }
       
 
@@ -786,112 +786,112 @@ assignInterfaceRightHandSideOld( int d, real t, real dt, int correct, std::vecto
         // assert( interfaceType2(side2,dir2,grid2)!=Parameters::tractionInterface );
 
 
-	// interface values at past iterates for the current time:
-	InterfaceDataHistory & idi  = gridDescriptora.interfaceDataIterates;
-	InterfaceDataHistory & idib = gridDescriptorb.interfaceDataIterates;
+        // interface values at past iterates for the current time:
+        InterfaceDataHistory & idi  = gridDescriptora.interfaceDataIterates;
+        InterfaceDataHistory & idib = gridDescriptorb.interfaceDataIterates;
 
-	if( idi.interfaceDataList.size()>=1 )
-	{
-	  real tp = idi.interfaceDataList[idi.current].t;
+        if( idi.interfaceDataList.size()>=1 )
+        {
+          real tp = idi.interfaceDataList[idi.current].t;
           real & omega = interfaceDescriptor.interfaceOmega;
-	  if( omega != 1. )
-	  {
-	    if( debug() & 4 )
-	      fPrintF(interfaceFile,"+++interfaceRHS: interface %i: relax flux RHS, t=%9.3e, omega=%5.2f "
-		      "(data iterates: current=%i,tp=%9.3e)\n",inter,t,omega,idi.current,tp);
+          if( omega != 1. )
+          {
+            if( debug() & 4 )
+              fPrintF(interfaceFile,"+++interfaceRHS: interface %i: relax flux RHS, t=%9.3e, omega=%5.2f "
+                      "(data iterates: current=%i,tp=%9.3e)\n",inter,t,omega,idi.current,tp);
 
 
-	    if( interfaceType1(side1,dir1,grid1)==Parameters::heatFluxInterface )
-	    {
-	      // new way 
-	      RealArray & up = idi.interfaceDataList[idi.current].u; 
-	      RealArray & fp = idi.interfaceDataList[idi.current].f; 
+            if( interfaceType1(side1,dir1,grid1)==Parameters::heatFluxInterface )
+            {
+              // new way 
+              RealArray & up = idi.interfaceDataList[idi.current].u; 
+              RealArray & fp = idi.interfaceDataList[idi.current].f; 
 
-	      real a0 = gridDescriptora.a[0], a1=gridDescriptora.a[1];  
+              real a0 = gridDescriptora.a[0], a1=gridDescriptora.a[1];  
               // fp already includes the factor of k so we need to divide a1 by this amount
               real ktca = domainSolver[da]->parameters.dbase.get<real>("thermalConductivity");
               a1 = a1/ktca;
-	      if( oka )
-	      {
-		ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( omega*ua(Ia[0],Ia[1],Ia[2],Ia[3]) + 
-			      (1.-omega)*( a0*up(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fp(Ia[0],Ia[1],Ia[2],Ia[3]) ) );
-	      }
-	    }
+              if( oka )
+              {
+                ua(Ia[0],Ia[1],Ia[2],Ia[3]) = ( omega*ua(Ia[0],Ia[1],Ia[2],Ia[3]) + 
+                              (1.-omega)*( a0*up(Ia[0],Ia[1],Ia[2],Ia[3]) + a1*fp(Ia[0],Ia[1],Ia[2],Ia[3]) ) );
+              }
+            }
             else if( interfaceType1(side1,dir1,grid1)==Parameters::tractionInterface )
-	    {
+            {
               // --- NOTE: we get f from the other side!!
 
               // ******* FIX ME ************
               // NOTE: We save tractions in f
-	      RealArray & uPrev = idib.interfaceDataList[idi.current].f;   // current iterate
+              RealArray & uPrev = idib.interfaceDataList[idi.current].f;   // current iterate
 
               InterfaceDataHistory & idh  = gridDescriptorb.interfaceDataHistory; // Note "b"
               RealArray & uOld = idh.interfaceDataList[idh.current].f;          // previous time values 
 
               // RealArray & up = correct==0 ? uOld : uPrev;
               RealArray & up = uPrev;
-	      
-	      // Range Sc(numberOfDimensions,2*numberOfDimensions-1);  // traction (stress) components are stored here (traction-rates are first)
-	      Range Sc(0,2*numberOfDimensions-1);  // traction-rates and traction (stress) 
-	      
-	      printF("--MP-AIRHS-- relax traction on interface, d=%i, correct=%i, omega=%6.3f, t=%9.3e\n",
-		     d,correct,omega,t);
-	      if( true )
-	      {
-		fprintf(interfaceFile,"--MP-AIRHS-- relax traction on interface, d=%i, correct=%i, omega=%6.3f,"
-			" t=%9.3e (inter=%i, face=%i)\n", d,correct,omega,t,inter,face);
-		if( correct<=1 )
-		{
-		  ::display(up(I1,I2,I3,Range(1,3,2))," up : Traction + traction-rate OLD",interfaceFile,"%9.3e ");
-		  ::display(ua(I1,I2,I3,Range(1,3,2))," ua : Traction + traction-rate NEW",interfaceFile,"%9.3e ");
-		}
-	      }
-	      
-	      if( false )
-	      {
-		Range all;
-		::display(ua(I1,I2,I3,Sc),"ua");
-		::display(up(I1,I2,I3,Sc),"up");
-		real maxDiff = max(fabs(ua(I1,I2,I3,Sc)-up(I1,I2,I3,Sc)));
-		printF("       max-diff=%8.2e\n",maxDiff);
-		OV_ABORT("stop here for now");
-	      }
-	      real maxDiff = max(fabs(ua(I1,I2,I3,Sc)-up(I1,I2,I3,Sc)));
-	      printF("       max-diff=%8.2e\n",maxDiff);
+              
+              // Range Sc(numberOfDimensions,2*numberOfDimensions-1);  // traction (stress) components are stored here (traction-rates are first)
+              Range Sc(0,2*numberOfDimensions-1);  // traction-rates and traction (stress) 
+              
+              printF("--MP-AIRHS-- relax traction on interface, d=%i, correct=%i, omega=%6.3f, t=%9.3e\n",
+                     d,correct,omega,t);
+              if( true )
+              {
+                fprintf(interfaceFile,"--MP-AIRHS-- relax traction on interface, d=%i, correct=%i, omega=%6.3f,"
+                        " t=%9.3e (inter=%i, face=%i)\n", d,correct,omega,t,inter,face);
+                if( correct<=1 )
+                {
+                  ::display(up(I1,I2,I3,Range(1,3,2))," up : Traction + traction-rate OLD",interfaceFile,"%9.3e ");
+                  ::display(ua(I1,I2,I3,Range(1,3,2))," ua : Traction + traction-rate NEW",interfaceFile,"%9.3e ");
+                }
+              }
+              
+              if( false )
+              {
+                Range all;
+                ::display(ua(I1,I2,I3,Sc),"ua");
+                ::display(up(I1,I2,I3,Sc),"up");
+                real maxDiff = max(fabs(ua(I1,I2,I3,Sc)-up(I1,I2,I3,Sc)));
+                printF("       max-diff=%8.2e\n",maxDiff);
+                OV_ABORT("stop here for now");
+              }
+              real maxDiff = max(fabs(ua(I1,I2,I3,Sc)-up(I1,I2,I3,Sc)));
+              printF("       max-diff=%8.2e\n",maxDiff);
 
               // // -------------- Assign interface residual here ?? ----------------
               // // *FIX ME* use a relative measure
-	      if( face==0 )
-	       	maxResidual[inter]=maxDiff;
-	      else
-	       	maxResidual[inter]=max(maxResidual[inter],maxDiff);
+              if( face==0 )
+                maxResidual[inter]=maxDiff;
+              else
+                maxResidual[inter]=max(maxResidual[inter],maxDiff);
 
-	      if( oka )
-	      {
-		ua(I1,I2,I3,Sc) = omega*ua(I1,I2,I3,Sc) + (1.-omega)*up(I1,I2,I3,Sc);
-	      }
-	    }
-	    
-// 	    else
-// 	    {
-// 	      // old way 
-// 	      RealArray & up = matchFlux ? idi.interfaceDataList[idi.current].f : idi.interfaceDataList[idi.current].u; 
-// 	      if( debug() & 8 )
-// 	      {
-// 		::display(ua(Ia[0],Ia[1],Ia[2],Ia[3]),"ua",interfaceFile,"%8.2e ");
-// 		::display(up(Ia[0],Ia[1],Ia[2],Ia[3]),"up",interfaceFile,"%8.2e ");
-// 	      }
-	  
-// 	      ua(Ia[0],Ia[1],Ia[2],Ia[3]) = omega*ua(Ia[0],Ia[1],Ia[2],Ia[3]) + (1.-omega)*up(Ia[0],Ia[1],Ia[2],Ia[3]);
-//	    }
-	  }
-	}
+              if( oka )
+              {
+                ua(I1,I2,I3,Sc) = omega*ua(I1,I2,I3,Sc) + (1.-omega)*up(I1,I2,I3,Sc);
+              }
+            }
+            
+//          else
+//          {
+//            // old way 
+//            RealArray & up = matchFlux ? idi.interfaceDataList[idi.current].f : idi.interfaceDataList[idi.current].u; 
+//            if( debug() & 8 )
+//            {
+//              ::display(ua(Ia[0],Ia[1],Ia[2],Ia[3]),"ua",interfaceFile,"%8.2e ");
+//              ::display(up(Ia[0],Ia[1],Ia[2],Ia[3]),"up",interfaceFile,"%8.2e ");
+//            }
+          
+//            ua(Ia[0],Ia[1],Ia[2],Ia[3]) = omega*ua(Ia[0],Ia[1],Ia[2],Ia[3]) + (1.-omega)*up(Ia[0],Ia[1],Ia[2],Ia[3]);
+//          }
+          }
+        }
       }
 
       if( false )
       {
-	RealArray & ua = *infoa.u;
-	::display(ua,"****OLD: targetArray: ua ");
+        RealArray & ua = *infoa.u;
+        ::display(ua,"****OLD: targetArray: ua ");
       }
 
 
@@ -942,7 +942,7 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
     printF("\n   ----------- ENTERING *OLD* getInterfaceResidualsOld t=%9.3e saveInterfaceValues=%i --------------\n\n"             ,t,(int)saveInterfaceValues);
 
     fPrintF(interfaceFile,"\n****** Entering *OLD* getInterfaceResidualsOld t=%9.3e saveInterfaceValues=%i********\n",
-	    t,(int)saveInterfaceValues);
+            t,(int)saveInterfaceValues);
   }
 
   const int numberOfDomains=domainSolver.size();
@@ -1026,11 +1026,11 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
 
       if( debug() & 8 )
       {
-	printF("Cgmp::getInterfaceResiduals: interface found (t=%e):\n"
-	       "  (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i)\n"
-	       "  (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i)\n",t,
-	       d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
-	       d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2));
+        printF("Cgmp::getInterfaceResiduals: interface found (t=%e):\n"
+               "  (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i)\n"
+               "  (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i)\n",t,
+               d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+               d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2));
       }
       
 
@@ -1048,31 +1048,31 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
         const intSerialArray & mask1Local = mask1;
         const intSerialArray & mask2Local = mask2;
       #endif
-	
+        
 
       // check that the number of points in the tangential directions match -- eventually we will fix this
       bool pointsOnInterfaceMatch=true;
       for( int dir=1; dir<mg1.numberOfDimensions(); dir++ )
       {
-	int dir1p = (dir1+dir) % mg1.numberOfDimensions();
-	int dir2p = (dir2+dir) % mg2.numberOfDimensions();
-	if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
-	{
+        int dir1p = (dir1+dir) % mg1.numberOfDimensions();
+        int dir2p = (dir2+dir) % mg2.numberOfDimensions();
+        if( Iv[dir1p].getLength()!=Jv[dir2p].getLength() )
+        {
           pointsOnInterfaceMatch=false; 
-	  printF("getInterfaceResiduals:ERROR: The number of grid points on the two interfaces do not match\n"
-	         " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
-		 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
-		 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
+          printF("getInterfaceResiduals:ERROR: The number of grid points on the two interfaces do not match\n"
+                 " (d1,grid1,side1,dir1,bc1)=(%i,%i,%i,%i,%i) Iv=[%i,%i][%i,%i][%i,%i]\n"
+                 " (d2,grid2,side2,dir2,bc2)=(%i,%i,%i,%i,%i) Jv=[%i,%i][%i,%i][%i,%i]\n",
+                 d1,grid1,side1,dir1,mg1.boundaryCondition(side1,dir1),
                    I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),  
                  d2,grid2,side2,dir2,mg2.boundaryCondition(side2,dir2),
                    J1.getBase(),J1.getBound(),J2.getBase(),J2.getBound(),J3.getBase(),J3.getBound());
-	  // Overture::abort("error");
-	}
+          // Overture::abort("error");
+        }
       }
 
       if( !pointsOnInterfaceMatch )
       {
-	maxResidual[inter]=1.;  // do this for now 
+        maxResidual[inter]=1.;  // do this for now 
         printF("getInterfaceResiduals:WARNING: NOT computing the residual on the interface for non-matching. FINISH ME ***\n");
         continue;
       }
@@ -1090,118 +1090,118 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
       if( interfaceType1(side1,dir1,grid1)==Parameters::heatFluxInterface )
       {
         // ********************************************
-	// ********** Heat Flux Interface *************
+        // ********** Heat Flux Interface *************
         // ********************************************
 
 
-	const int tc1 = domainSolver[d1]->parameters.dbase.get<int >("tc");    
-	const int tc2 = domainSolver[d2]->parameters.dbase.get<int >("tc");
+        const int tc1 = domainSolver[d1]->parameters.dbase.get<int >("tc");    
+        const int tc2 = domainSolver[d2]->parameters.dbase.get<int >("tc");
 
 
-	real ktc[2]={1.,1.};
+        real ktc[2]={1.,1.};
 
-	ktc[0] = domainSolver[d1]->parameters.dbase.get<real>("thermalConductivity");
-	ktc[1] = domainSolver[d2]->parameters.dbase.get<real>("thermalConductivity");
-	if( ktc[0] <=0. || ktc[1]<=0. )
-	{
-	  printF("getInterfaceResiduals:ERROR: a negative thermal conductivity was found, "
-		 "ktc[0]=%e ktc[1]=%e\n",ktc[0],ktc[1]);
-	  Overture::abort("error");
-	}
-	real ktc1=ktc[0], ktc2=ktc[1];
+        ktc[0] = domainSolver[d1]->parameters.dbase.get<real>("thermalConductivity");
+        ktc[1] = domainSolver[d2]->parameters.dbase.get<real>("thermalConductivity");
+        if( ktc[0] <=0. || ktc[1]<=0. )
+        {
+          printF("getInterfaceResiduals:ERROR: a negative thermal conductivity was found, "
+                 "ktc[0]=%e ktc[1]=%e\n",ktc[0],ktc[1]);
+          Overture::abort("error");
+        }
+        real ktc1=ktc[0], ktc2=ktc[1];
 
-	// **** finish this ****
+        // **** finish this ****
       
-	GridFaceDescriptor info2(d2,grid2,side2,dir2);
-	// info2.component=tc2;
-	Range N2(tc2,tc2);
-	RealArray u2;
+        GridFaceDescriptor info2(d2,grid2,side2,dir2);
+        // info2.component=tc2;
+        Range N2(tc2,tc2);
+        RealArray u2;
         if( ok2 ) u2.redim(J1,J2,J3,N2);
-	info2.u=&u2;
+        info2.u=&u2;
 
-	GridFaceDescriptor info1(d1,grid1,side1,dir1);
-	// info1.component=tc1;
-	Range N1(tc1,tc1);
-	RealArray u1;
+        GridFaceDescriptor info1(d1,grid1,side1,dir1);
+        // info1.component=tc1;
+        Range N1(tc1,tc1);
+        RealArray u1;
         if( ok1 ) u1.redim(I1,I2,I3,N1);
-	info1.u=&u1;
+        info1.u=&u1;
 
        
-	// --- Evaluate [u] ---
+        // --- Evaluate [u] ---
         int interfaceDataOptions=Parameters::heatFluxInterfaceData;
-	info1.a[0]=1.; info1.a[1]=0.;
+        info1.a[0]=1.; info1.a[1]=0.;
         if( ok1 )
-  	  domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
+          domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
 
-	info2.a[0]=1.; info2.a[1]=0.;
+        info2.a[0]=1.; info2.a[1]=0.;
         if( ok2 )
-  	  domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t );
-	
+          domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t );
+        
       
 
 
-	if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
-	    saveInterfaceValues==saveInterfaceIterateValues )
-	{ // *** save the interface solution values  ****
-	  for( int iface=0; iface<=1; iface++ )
-	  {
-	    GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
-	    RealArray & ui = iface==0 ? u1 : u2;
-	    InterfaceDataHistory & idh = 
-	      (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory
-	       : gfd.interfaceDataIterates);
-	
-	    const int numToSave = 
-	      (saveInterfaceValues==saveInterfaceTimeHistoryValues ? numberOfInterfaceHistoryValuesToSave :
-	       numberOfInterfaceIterateValuesToSave );
+        if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
+            saveInterfaceValues==saveInterfaceIterateValues )
+        { // *** save the interface solution values  ****
+          for( int iface=0; iface<=1; iface++ )
+          {
+            GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
+            RealArray & ui = iface==0 ? u1 : u2;
+            InterfaceDataHistory & idh = 
+              (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory
+               : gfd.interfaceDataIterates);
+        
+            const int numToSave = 
+              (saveInterfaceValues==saveInterfaceTimeHistoryValues ? numberOfInterfaceHistoryValuesToSave :
+               numberOfInterfaceIterateValuesToSave );
 
-	    if( idh.interfaceDataList.size()<numToSave )
-	    {
-	      idh.interfaceDataList.push_back(InterfaceData());
-	      idh.current = idh.interfaceDataList.size()-1;
-	    }
-	    else
-	    {
-	      idh.current = (idh.current+1) % numToSave;
-	    }
-	    if( debug() & 4 )
-	    {
-	      if( saveInterfaceValues==saveInterfaceTimeHistoryValues )
-	      {
-		fPrintF(interfaceFile,"interfaceRes: interface %i (face=%i): save interface history data, "
+            if( idh.interfaceDataList.size()<numToSave )
+            {
+              idh.interfaceDataList.push_back(InterfaceData());
+              idh.current = idh.interfaceDataList.size()-1;
+            }
+            else
+            {
+              idh.current = (idh.current+1) % numToSave;
+            }
+            if( debug() & 4 )
+            {
+              if( saveInterfaceValues==saveInterfaceTimeHistoryValues )
+              {
+                fPrintF(interfaceFile,"interfaceRes: interface %i (face=%i): save interface history data, "
                        "t=%9.2e, current=%i\n",inter,iface,t,idh.current);
-	      }
-	      else
-	      {
-		fPrintF(interfaceFile,"interfaceRes: interface %i (face=%i): save interface iterate data, "
+              }
+              else
+              {
+                fPrintF(interfaceFile,"interfaceRes: interface %i (face=%i): save interface iterate data, "
                        "t=%9.2e, current=%i\n",inter,iface,t,idh.current);
-	      }
-	    }
-	    
-	    InterfaceData & id = idh.interfaceDataList[idh.current];
-	    id.t=t;
-	    id.u=ui;
-	  }
-	
-	}
+              }
+            }
+            
+            InterfaceData & id = idh.interfaceDataList[idh.current];
+            id.t=t;
+            id.u=ui;
+          }
+        
+        }
       
 
 
-	if( false )
-	{
-	  ::display(u1(I1,I2,I3,N1) ,"interface-residual u1 for [u]");
-	  ::display(u2(J1,J2,J3,N2) ,"interface-residual u2 for [u]");
-	}
+        if( false )
+        {
+          ::display(u1(I1,I2,I3,N1) ,"interface-residual u1 for [u]");
+          ::display(u2(J1,J2,J3,N2) ,"interface-residual u2 for [u]");
+        }
       
-	// *fix this* for mask , parallel, etc.
-	// real jumpInU = max(fabs(u1(I1,I2,I3,N1)-u2(J1,J2,J3,N2)));
+        // *fix this* for mask , parallel, etc.
+        // real jumpInU = max(fabs(u1(I1,I2,I3,N1)-u2(J1,J2,J3,N2)));
 
         int i1,i2,i3,i4, j1,j2,j3,j4;
         real jumpInU=0.;
 
         #ifdef USE_PPP
 
-	  // parallel :  we need to transfer the local u2 arrays onto the parallel distribution of u1
+          // parallel :  we need to transfer the local u2 arrays onto the parallel distribution of u1
           // 
           //     Allocate distributed arrays u22d(mg2),  u21d(mg1)
           //        u22Local = u2; 
@@ -1210,80 +1210,80 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
           //        
     
           realArray u22d; 
-	  u22d.partition(gf2.u[grid2].getPartition());
+          u22d.partition(gf2.u[grid2].getPartition());
           Index D1,D2,D3;
           getIndex(mg2.dimension(),D1,D2,D3);
-	  u22d.redim(D1,D2,D3,N2);
-	  
+          u22d.redim(D1,D2,D3,N2);
+          
           RealArray u22Local; getLocalArrayWithGhostBoundaries(u22d,u22Local);
           if( ok2 ) u22Local(J1,J2,J3,N2)=u2(J1,J2,J3,N2);  // fill the boundary of u22d 
-	  
+          
           realArray u21d;
-	  u21d.partition(gf1.u[grid1].getPartition());
+          u21d.partition(gf1.u[grid1].getPartition());
           getIndex(mg1.dimension(),D1,D2,D3);
-	  u21d.redim(D1,D2,D3,N1);
+          u21d.redim(D1,D2,D3,N1);
 
           Iv[3]=N1; Jv[3]=N2;
           Iav[3]=N1; Jav[3]=N2;
           // copy the boundary of u22d to u21d :  u21d(I1,I2,I3,I4) = u22d(J1,J2,J3,J4) (requires communication)
-	  CopyArray::copyArray( u21d, Iav, u22d, Jav );  
+          CopyArray::copyArray( u21d, Iav, u22d, Jav );  
  
           RealArray u21Local; getLocalArrayWithGhostBoundaries(u21d,u21Local);
           
           int J1Base, J2Base, J3Base, J4Base; 
-	  if( ok1 )
-	  {
-	    FOR_4D(i1,i2,i3,i4,I1,I2,I3,I4)
-	    {
-	      if( mask1Local(i1,i2,i3) > 0 )
-	      {
-		jumpInU=max(jumpInU,fabs(u1(i1,i2,i3,i4)-u21Local(i1,i2,i3,i4)));
-	      }
-	    }
-	  }
-	  jumpInU=ParallelUtility::getMaxValue(jumpInU);
-	  
+          if( ok1 )
+          {
+            FOR_4D(i1,i2,i3,i4,I1,I2,I3,I4)
+            {
+              if( mask1Local(i1,i2,i3) > 0 )
+              {
+                jumpInU=max(jumpInU,fabs(u1(i1,i2,i3,i4)-u21Local(i1,i2,i3,i4)));
+              }
+            }
+          }
+          jumpInU=ParallelUtility::getMaxValue(jumpInU);
+          
         #else
           // serial case:           
 
           FOR_4IJD(i1,i2,i3,i4,I1,I2,I3,N1,j1,j2,j3,j4,J1,J2,J3,N2)
-	  {
+          {
             if( mask1Local(i1,i2,i3) > 0 )
-	    {
-	      jumpInU=max(jumpInU,fabs(u1(i1,i2,i3,i4)-u2(j1,j2,j3,j4)));
-	    }
-	  }
-	#endif
+            {
+              jumpInU=max(jumpInU,fabs(u1(i1,i2,i3,i4)-u2(j1,j2,j3,j4)));
+            }
+          }
+        #endif
 
 
-	// --- Evaluate [ktc*u.n] ---
-	info1.a[0]=0.; info1.a[1]= ktc1;
-	if( ok1 )
-  	  domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
+        // --- Evaluate [ktc*u.n] ---
+        info1.a[0]=0.; info1.a[1]= ktc1;
+        if( ok1 )
+          domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
 
-	info2.a[0]=0.; info2.a[1]= ktc2;  // do not flip sign here (since we may save u2 below)
+        info2.a[0]=0.; info2.a[1]= ktc2;  // do not flip sign here (since we may save u2 below)
         if( ok2 )
-  	  domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t );
+          domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t );
 
-	if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
-	    saveInterfaceValues==saveInterfaceIterateValues )
-	{ // *** save the interface RHS values  ****
-	  for( int iface=0; iface<=1; iface++ )
-	  {
-	    GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
-	    RealArray & ui = iface==0 ? u1 : u2;
-	    InterfaceDataHistory & idh = 
-	      (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory
-	       : gfd.interfaceDataIterates);
-	
-	    InterfaceData & id = idh.interfaceDataList[idh.current];
-	    id.t=t;
-	    id.f=ui;
-	  }
-	
-	}
+        if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
+            saveInterfaceValues==saveInterfaceIterateValues )
+        { // *** save the interface RHS values  ****
+          for( int iface=0; iface<=1; iface++ )
+          {
+            GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
+            RealArray & ui = iface==0 ? u1 : u2;
+            InterfaceDataHistory & idh = 
+              (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory
+               : gfd.interfaceDataIterates);
+        
+            InterfaceData & id = idh.interfaceDataList[idh.current];
+            id.t=t;
+            id.f=ui;
+          }
+        
+        }
 
-	//  *note* flip the sign of the normal to match normal from domain 1
+        //  *note* flip the sign of the normal to match normal from domain 1
         if( ok2 ) 
           u2(J1,J2,J3,N2)=-u2(J1,J2,J3,N2);
 
@@ -1291,26 +1291,26 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
 
         #ifdef USE_PPP
 
-	  // parallel :  we need to transfer the local u2 arrays onto the parallel distribution of u1
+          // parallel :  we need to transfer the local u2 arrays onto the parallel distribution of u1
     
           if( ok2 ) 
             u22Local(J1,J2,J3,N2)=u2(J1,J2,J3,N2);  // fill the boundary of u22d 
-	  
+          
           // copy the boundary of u22d to u21d :  u21d(I1,I2,I3,I4) = u22d(J1,J2,J3,J4) (requires communication)
-	  CopyArray::copyArray( u21d, Iav, u22d, Jav );  
+          CopyArray::copyArray( u21d, Iav, u22d, Jav );  
  
           // *** NOTE: for now we do not check the consistency of the mask's ***** fix me !
-	  if( ok1 )
-	  {
-	    FOR_4D(i1,i2,i3,i4,I1,I2,I3,I4)
-	    {
-	      if( mask1Local(i1,i2,i3) > 0 )
-	      {
-		jumpInUn=max(jumpInUn,fabs(u1(i1,i2,i3,i4)-u21Local(i1,i2,i3,i4)));
-	      }
-	    }
-	  }
-	  jumpInUn=ParallelUtility::getMaxValue(jumpInUn);
+          if( ok1 )
+          {
+            FOR_4D(i1,i2,i3,i4,I1,I2,I3,I4)
+            {
+              if( mask1Local(i1,i2,i3) > 0 )
+              {
+                jumpInUn=max(jumpInUn,fabs(u1(i1,i2,i3,i4)-u21Local(i1,i2,i3,i4)));
+              }
+            }
+          }
+          jumpInUn=ParallelUtility::getMaxValue(jumpInUn);
 
         #else
           // serial case:           
@@ -1318,174 +1318,174 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
           // do not check the residual on end-pts with adjacent dirichlet BC's   *** fix me **
           // int dir1p1 = (dir1+1) % mg1.numberOfDimensions();
           // int dir2p1 = (dir2+1) % mg2.numberOfDimensions();
-	  // Iv[dir1p1]=Range(Iv[dir1p1].getBase()+1,Iv[dir1p1].getBound()-1);
-	  // Jv[dir2p1]=Range(Jv[dir2p1].getBase()+1,Jv[dir2p1].getBound()-1);
-	  
+          // Iv[dir1p1]=Range(Iv[dir1p1].getBase()+1,Iv[dir1p1].getBound()-1);
+          // Jv[dir2p1]=Range(Jv[dir2p1].getBase()+1,Jv[dir2p1].getBound()-1);
+          
 
           FOR_4IJ(i1,i2,i3,i4,I1,I2,I3,N1,j1,j2,j3,j4,J1,J2,J3,N2)
-	  {
+          {
             // the mask's must both be positive at the same points : 
             if(  int(mask1Local(i1,i2,i3)>0) + int(mask2(j1,j2,j3)>0) == 1 )
-	    {
-	      printF("Cgmp::getInterfaceResiduals: mask's do not agree!\n"
-		     " The interface equation solvers currently require the masks on opposite sides of\n"
-		     " the interface to agree\n");
-	      printF(" domain1=%i (%s) grid1=%i (%s) mask1(%i,%i,%i)=%i\n"
-		     " domain2=%i (%s) grid2=%i (%s) mask2(%i,%i,%i)=%i\n",
-		     d1,(const char*)domainSolver[d1]->getName(),grid1,(const char*)mg1.getName(),i1,i2,i3,mask1Local(i1,i2,i3), 
-		     d2,(const char*)domainSolver[d2]->getName(),grid2,(const char*)mg2.getName(),j1,j2,j3,mask2(j1,j2,j3) );
-	      Overture::abort("error");
-	    }
-	  
-	  
-	    if( mask1Local(i1,i2,i3) > 0 )
-	    {
-	      jumpInUn=max(jumpInUn,fabs(u1(i1,i2,i3,i4)-u2(j1,j2,j3,j4)));
-	    }
-	  }
+            {
+              printF("Cgmp::getInterfaceResiduals: mask's do not agree!\n"
+                     " The interface equation solvers currently require the masks on opposite sides of\n"
+                     " the interface to agree\n");
+              printF(" domain1=%i (%s) grid1=%i (%s) mask1(%i,%i,%i)=%i\n"
+                     " domain2=%i (%s) grid2=%i (%s) mask2(%i,%i,%i)=%i\n",
+                     d1,(const char*)domainSolver[d1]->getName(),grid1,(const char*)mg1.getName(),i1,i2,i3,mask1Local(i1,i2,i3), 
+                     d2,(const char*)domainSolver[d2]->getName(),grid2,(const char*)mg2.getName(),j1,j2,j3,mask2(j1,j2,j3) );
+              Overture::abort("error");
+            }
+          
+          
+            if( mask1Local(i1,i2,i3) > 0 )
+            {
+              jumpInUn=max(jumpInUn,fabs(u1(i1,i2,i3,i4)-u2(j1,j2,j3,j4)));
+            }
+          }
 
         #endif
 
-	if( false )
-	{
-	  ::display(u1(I1,I2,I3,N1) ,"interface-residual: nu1*u1.n");
-	  ::display(u2(J1,J2,J3,N2) ,"interface-residual: nu2*u2.n");
-	}
+        if( false )
+        {
+          ::display(u1(I1,I2,I3,N1) ,"interface-residual: nu1*u1.n");
+          ::display(u2(J1,J2,J3,N2) ,"interface-residual: nu2*u2.n");
+        }
 
         real interfaceResidual=max(jumpInU,jumpInUn);
-	if( debug() & 2 )
-	{
-	  fPrintF(interfaceFile,
-		  "interface %i step=%i: residuals: [u]=%8.2e [k*u.n]=%8.2e (omega=%9.3e,tol=%8.2e)\n",
-		  inter,parameters.dbase.get<int >("globalStepNumber"),jumpInU,jumpInUn,
+        if( debug() & 2 )
+        {
+          fPrintF(interfaceFile,
+                  "interface %i step=%i: residuals: [u]=%8.2e [k*u.n]=%8.2e (omega=%9.3e,tol=%8.2e)\n",
+                  inter,parameters.dbase.get<int >("globalStepNumber"),jumpInU,jumpInUn,
                   parameters.dbase.get<real>("interfaceOmega"),interfaceDescriptor.interfaceTolerance);
-	}
+        }
 
-	if( face==0 )
-	  maxResidual[inter]=interfaceResidual;
+        if( face==0 )
+          maxResidual[inter]=interfaceResidual;
         else
-  	  maxResidual[inter]=max(maxResidual[inter],interfaceResidual);
+          maxResidual[inter]=max(maxResidual[inter],interfaceResidual);
       
       }
       else if( interfaceType1(side1,dir1,grid1)==Parameters::tractionInterface )
       {
         // *******************************************
-	// ********** Traction Interface *************
+        // ********** Traction Interface *************
         // *******************************************
 
         // For now we do not compute residuals, just save a time history 
-	if( !(saveInterfaceValues==saveInterfaceTimeHistoryValues ||  parameters.dbase.get<bool>("relaxCorrectionSteps") ) )
-	{
-	  continue;
-	}
+        if( !(saveInterfaceValues==saveInterfaceTimeHistoryValues ||  parameters.dbase.get<bool>("relaxCorrectionSteps") ) )
+        {
+          continue;
+        }
  
-	// --- Evaluate the interface data ---
+        // --- Evaluate the interface data ---
 
-	// const int uc1 = domainSolver[d1]->parameters.dbase.get<int >("uc");
-	// const int uc2 = domainSolver[d2]->parameters.dbase.get<int >("uc");
+        // const int uc1 = domainSolver[d1]->parameters.dbase.get<int >("uc");
+        // const int uc2 = domainSolver[d2]->parameters.dbase.get<int >("uc");
 
-	// *wdh* 081201 Range C1(uc1,uc1+numberOfDimensions-1), C2(uc2,uc2+numberOfDimensions-1); // ************ fix me **************
+        // *wdh* 081201 Range C1(uc1,uc1+numberOfDimensions-1), C2(uc2,uc2+numberOfDimensions-1); // ************ fix me **************
         // for now add some extra space: 
-	// Range C1(uc1,uc1+2*numberOfDimensions-1), C2(uc2,uc2+2*numberOfDimensions-1); // ************ fix me **************
+        // Range C1(uc1,uc1+2*numberOfDimensions-1), C2(uc2,uc2+2*numberOfDimensions-1); // ************ fix me **************
         Range C1, C2;
 
-	GridFaceDescriptor info2(d2,grid2,side2,dir2);
-	RealArray u2;
+        GridFaceDescriptor info2(d2,grid2,side2,dir2);
+        RealArray u2;
         // if( ok2 ) u2.redim(J1,J2,J3,C2);
-	info2.u=&u2;
+        info2.u=&u2;
 
-	GridFaceDescriptor info1(d1,grid1,side1,dir1);
-	RealArray u1;
+        GridFaceDescriptor info1(d1,grid1,side1,dir1);
+        RealArray u1;
         // if( ok1 ) u1.redim(I1,I2,I3,C1);
-	info1.u=&u1;
+        info1.u=&u1;
 
-	int interfaceDataOptions=0;
+        int interfaceDataOptions=0;
 
-	if( ok1 )
-	{
-	  // find out from domain d2 what interface data it wants: 
-	  int numDataItems=domainSolver[d2]->getInterfaceDataOptions( info2,interfaceDataOptions );
+        if( ok1 )
+        {
+          // find out from domain d2 what interface data it wants: 
+          int numDataItems=domainSolver[d2]->getInterfaceDataOptions( info2,interfaceDataOptions );
           C1=numDataItems;
-	  u1.redim(I1,I2,I3,C1);
+          u1.redim(I1,I2,I3,C1);
 
           // evaluate the interface data:
-	  domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
-	}
+          domainSolver[d1]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info1,gridDescriptor1,gfIndex[d1],t );
+        }
       
         if( ok2 )
-	{
-	  // find out from domain d1 what interface data it wants:
-	  int numDataItems=domainSolver[d1]->getInterfaceDataOptions( info1,interfaceDataOptions );
+        {
+          // find out from domain d1 what interface data it wants:
+          int numDataItems=domainSolver[d1]->getInterfaceDataOptions( info1,interfaceDataOptions );
           C2=numDataItems;
-	  u2.redim(J1,J2,J3,C2);
+          u2.redim(J1,J2,J3,C2);
 
           // evaluate the interface data:
           bool saveTimeHistory=true;
-  	  domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t,
+          domainSolver[d2]->interfaceRightHandSide( getInterfaceRightHandSide,interfaceDataOptions,info2,gridDescriptor2,gfIndex[d2],t,
                                                     saveTimeHistory );
-	}
-	
-	if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
-	    saveInterfaceValues==saveInterfaceIterateValues )
-	{ 
+        }
+        
+        if( saveInterfaceValues==saveInterfaceTimeHistoryValues ||
+            saveInterfaceValues==saveInterfaceIterateValues )
+        { 
           // *** save the interface RHS values  ****
 
-	  if( true || debug() & 4 )
-	  {
-	    if( saveInterfaceValues==saveInterfaceTimeHistoryValues )
+          if( true || debug() & 4 )
+          {
+            if( saveInterfaceValues==saveInterfaceTimeHistoryValues )
             {
-	      fPrintF(interfaceFile,"Cgmp::getInterfaceResidualsOld: save time history for traction interface=%i,"
+              fPrintF(interfaceFile,"Cgmp::getInterfaceResidualsOld: save time history for traction interface=%i,"
                       " t=%9.3e (numData1=%i, numData2=%i)\n",inter,t,C1.getLength(),C2.getLength());
               }
             else
             {
-	      fPrintF(interfaceFile,"Cgmp::getInterfaceResidualsOld: saving interface iterate of traction: interface=%i, t=%9.3e\n",inter,t);
+              fPrintF(interfaceFile,"Cgmp::getInterfaceResidualsOld: saving interface iterate of traction: interface=%i, t=%9.3e\n",inter,t);
             }
             
-	  }
-	  
-	  for( int iface=0; iface<=1; iface++ )
-	  {
-	    GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
-	    RealArray & ui = iface==0 ? u1 : u2;
-	    InterfaceDataHistory & idh = 
-	      (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory : gfd.interfaceDataIterates);
-	
-	    const int numToSave = 
-	      (saveInterfaceValues==saveInterfaceTimeHistoryValues ? numberOfInterfaceHistoryValuesToSave : numberOfInterfaceIterateValuesToSave );
+          }
+          
+          for( int iface=0; iface<=1; iface++ )
+          {
+            GridFaceDescriptor & gfd = iface==0 ? gridDescriptor1 : gridDescriptor2;
+            RealArray & ui = iface==0 ? u1 : u2;
+            InterfaceDataHistory & idh = 
+              (saveInterfaceValues==saveInterfaceTimeHistoryValues ? gfd.interfaceDataHistory : gfd.interfaceDataIterates);
+        
+            const int numToSave = 
+              (saveInterfaceValues==saveInterfaceTimeHistoryValues ? numberOfInterfaceHistoryValuesToSave : numberOfInterfaceIterateValuesToSave );
 
-	    // *wdh* 2015/08/26 -- overwrite time history if value are for the same time. THIS IS PROBABLY NOT NEEDED FOR ITERATES
+            // *wdh* 2015/08/26 -- overwrite time history if value are for the same time. THIS IS PROBABLY NOT NEEDED FOR ITERATES
             bool overwriteHistory=false;
-	    if( idh.interfaceDataList.size()>0 )
-	    {
-	      InterfaceData & idCurrent = idh.interfaceDataList[idh.current];
-	      if( FALSE && idCurrent.t ==t )
-	      {
-		overwriteHistory=true;
-	      }
-	    }
-	    
-	    if( !overwriteHistory )
-	    {
-	      if( idh.interfaceDataList.size()<numToSave )
-	      { // add a new entry: 
-		idh.interfaceDataList.push_back(InterfaceData());
-		idh.current = idh.interfaceDataList.size()-1;
-	      }
-	      else
-	      { // over-write oldest entry: 
-		idh.current = (idh.current+1) % numToSave;
-	      }
-	    }
-	    
-	    InterfaceData & id = idh.interfaceDataList[idh.current];
-	    id.t=t;
-	    id.f=ui;
+            if( idh.interfaceDataList.size()>0 )
+            {
+              InterfaceData & idCurrent = idh.interfaceDataList[idh.current];
+              if( FALSE && idCurrent.t ==t )
+              {
+                overwriteHistory=true;
+              }
+            }
+            
+            if( !overwriteHistory )
+            {
+              if( idh.interfaceDataList.size()<numToSave )
+              { // add a new entry: 
+                idh.interfaceDataList.push_back(InterfaceData());
+                idh.current = idh.interfaceDataList.size()-1;
+              }
+              else
+              { // over-write oldest entry: 
+                idh.current = (idh.current+1) % numToSave;
+              }
+            }
+            
+            InterfaceData & id = idh.interfaceDataList[idh.current];
+            id.t=t;
+            id.f=ui;
 
-	    if( TRUE ) // *wdh* turn on June 19, 2017
-	    {
-	      aString label = saveInterfaceValues==saveInterfaceTimeHistoryValues ? "HISTORY" : "ITERATE";
-	      aString buff;
+            if( debug() & 4 )
+            {
+              aString label = saveInterfaceValues==saveInterfaceTimeHistoryValues ? "HISTORY" : "ITERATE";
+              aString buff;
               for( int io=0; io<=1; io++ )
               {
                 FILE *file = io==0 ? stdout : interfaceFile;
@@ -1497,18 +1497,18 @@ getInterfaceResidualsOld( real t, real dt, std::vector<int> & gfIndex, std::vect
                           file,"%9.3e ");
               }
               
-	    }
-	    
+            }
+            
 
-	  }
-	
-	} // end saveInterfaceValues
+          }
+        
+        } // end saveInterfaceValues
 
       }
       else
       {
-	printF("Cgmp::getInterfaceResiduals:ERROR:unexpected interfaceType=%i\n",interfaceType1(side1,dir1,grid1));
-	OV_ABORT("error");
+        printF("Cgmp::getInterfaceResiduals:ERROR:unexpected interfaceType=%i\n",interfaceType1(side1,dir1,grid1));
+        OV_ABORT("error");
       }
 
 

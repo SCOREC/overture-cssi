@@ -129,69 +129,69 @@ main(int argc, char *argv[])
 
       if( line[0]=='%' )
       { // echo a comment
-	fprintf(outputFile,"%s\n",(const char*)line);
+        fprintf(outputFile,"%s\n",(const char*)line);
       }
       else if( tableIsOn )
       {
-	if( line(0,7)=="\\caption" )
-	{
-	  tableIsOn=FALSE;
-	  Range N(0,grid-1), M(0,numberOfComponents-1);
+        if( line(0,7)=="\\caption" )
+        {
+          tableIsOn=FALSE;
+          Range N(0,grid-1), M(0,numberOfComponents-1);
 
           // *****************************************
-	  // ***** compute the convergence rates *****
+          // ***** compute the convergence rates *****
           // *****************************************
-	  convergenceRate( h(N),e(N,M),sigma);
+          convergenceRate( h(N),e(N,M),sigma);
 
           printf("Convergence rates: ");
-	  fprintf(outputFile,"    rate             &       ");
-	  for( int j=0; j<numberOfComponents; j++ )
-	  {
-	    fprintf(outputFile,"&  $%4.2f$       &      ",sigma(j));
-	    // fprintf(outputFile,"& $%5.3f$       &      ",sigma(j));
-	    printf("c%i=%4.2f ",j,sigma(j));
-	  }
+          fprintf(outputFile,"    rate             &       ");
+          for( int j=0; j<numberOfComponents; j++ )
+          {
+            fprintf(outputFile,"&  $%4.2f$       &      ",sigma(j));
+            // fprintf(outputFile,"& $%5.3f$       &      ",sigma(j));
+            printf("c%i=%4.2f ",j,sigma(j));
+          }
           printf("\n");
-	  
-	  fprintf(outputFile," \\\\ \\hline\n");
+          
+          fprintf(outputFile," \\\\ \\hline\n");
 
-	  fprintf(outputFile,"\\end{tabular}\n");
-	  // fprintf(outputFile,"\\hfill\n");
+          fprintf(outputFile,"\\end{tabular}\n");
+          // fprintf(outputFile,"\\hfill\n");
 
-	  fprintf(outputFile,buff); fprintf(outputFile,"\n");   // caption
+          fprintf(outputFile,buff); fprintf(outputFile,"\n");   // caption
 
-	  fprintf(outputFile,"\\end{center}\n");
-	  fprintf(outputFile,"\\end{table}\n");
+          fprintf(outputFile,"\\end{center}\n");
+          fprintf(outputFile,"\\end{table}\n");
 
-	}
-	else
-	{
-	  // extract errors
-	  real e1,e2,e3,e4;
-	  numberOfComponents=sScanF(buff,"%s & %i & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e",
+        }
+        else
+        {
+          // extract errors
+          real e1,e2,e3,e4;
+          numberOfComponents=sScanF(buff,"%s & %i & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e & %e",
                                     buff2,&gridLines,
-				    &e(grid,0),&e(grid,1),&e(grid,2),&e(grid,3),&e(grid,4),&e(grid,5),&e(grid,6),&e(grid,7),
+                                    &e(grid,0),&e(grid,1),&e(grid,2),&e(grid,3),&e(grid,4),&e(grid,5),&e(grid,6),&e(grid,7),
                                     &e(grid,8),&e(grid,9),&e(grid,10),&e(grid,11),&e(grid,12),&e(grid,13),&e(grid,14),
                                     &e(grid,15));
-	  numberOfComponents-=2;
-	  if( numberOfComponents>maximumNumberOfComponents )
-	  {
-	    printF("convRate:ERROR: numberOfComponents=%i > maximumNumberOfComponents=%i\n",
-		   numberOfComponents,maximumNumberOfComponents);
-	    OV_ABORT("error");
-	  }
-	  else if( numberOfComponents != numberOfComponentsFromHeader )
-	  {
-	    printF("convRate:ERROR: numberOfComponents=%i <> numberOfComponentsFromHeader=%i\n",
-		   numberOfComponents,numberOfComponentsFromHeader);
+          numberOfComponents-=2;
+          if( numberOfComponents>maximumNumberOfComponents )
+          {
+            printF("convRate:ERROR: numberOfComponents=%i > maximumNumberOfComponents=%i\n",
+                   numberOfComponents,maximumNumberOfComponents);
+            OV_ABORT("error");
+          }
+          else if( numberOfComponents != numberOfComponentsFromHeader )
+          {
+            printF("convRate:ERROR: numberOfComponents=%i <> numberOfComponentsFromHeader=%i\n",
+                   numberOfComponents,numberOfComponentsFromHeader);
             printF(" header=[%s]\n",buff);
-	    OV_ABORT("error");
-	  }
-	  
-	  h(grid)=1./gridLines;
-	  if( false )
-	    printf(" grid=%i, numberOfComponents=%i, gridLines=%i, e1=%e, e2=%e\n",grid,numberOfComponents,gridLines,
-		   e(grid,0),e(grid,1));
+            OV_ABORT("error");
+          }
+          
+          h(grid)=1./gridLines;
+          if( false )
+            printf(" grid=%i, numberOfComponents=%i, gridLines=%i, e1=%e, e2=%e\n",grid,numberOfComponents,gridLines,
+                   e(grid,0),e(grid,1));
 
 
 
@@ -223,121 +223,121 @@ main(int argc, char *argv[])
             fprintf(stdout    ,"%20s & %5i ",buff2,gridLines);  // grid-name and 'N'
           }
           
-	  for( int j=0; j<numberOfComponents; j++ )
-	  {
+          for( int j=0; j<numberOfComponents; j++ )
+          {
             // convert the number into a fraction and exponent
-	    int exp=1;
-	    real frac=0.;
+            int exp=1;
+            real frac=0.;
             if( e(grid,j)!=0. )
-	    {
-	      exp = int( log10(e(grid,j))-.999999999999999);
-	      frac = e(grid,j)/pow(10.,exp);
-	    }
-	    
-	    // fprintf(outputFile,"& ~$%2.1f\\times10^{%3i}$~ ",frac,exp);
-	    fprintf(outputFile,"& \\num{%2.1f}{%i} ",frac,exp);
-	    fprintf(stdout    ,"& %8.2e ",e(grid,j));
+            {
+              exp = int( log10(e(grid,j))-.999999999999999);
+              frac = e(grid,j)/pow(10.,exp);
+            }
+            
+            // fprintf(outputFile,"& ~$%2.1f\\times10^{%3i}$~ ",frac,exp);
+            fprintf(outputFile,"& \\num{%2.1f}{%i} ",frac,exp);
+            fprintf(stdout    ,"& %8.2e ",e(grid,j));
 
             // compute the ratio of the errors:
             //    e(coarse)/e(fine)  
-	    if( grid==0 )
-	    {
+            if( grid==0 )
+            {
               fprintf(outputFile,"&       ");  // no factor for first entry
               fprintf(stdout    ,"&       ");  // no factor for first entry
-	    }
-	    else
-	    {
+            }
+            else
+            {
               real factor = e(grid-1,j)/max( REAL_MIN*1000., e(grid,j));
-	      if( fabs(factor)<1.e4 )
-	      {
-		// wdh Feb 4, 2020 fprintf(outputFile,"&%5.1f ",factor);
-		// wdh Feb 4, 2020 fprintf(stdout    ,"&%5.1f ",factor);
-		fprintf(outputFile,"&%6.2f ",factor);
-		fprintf(stdout    ,"&%6.2f ",factor);
-	      }
-	      else
-	      {
-		// fprintf(outputFile,"& ~$%8.2e$~ ",factor);  // could do better here
-		fprintf(outputFile,"& %8.2e ",factor);  // could do better here
-		fprintf(stdout    ,"& %8.2e ",factor);  // could do better here
-	      }
-	    }
-	  }
-//    	  fprintf(outputFile,"&  $%7.1e$  ",e(grid,j));
-	  fprintf(outputFile," \\\\ \\hline\n");
-	  fprintf(stdout,"\n");
-	  grid++;
-	}
+              if( fabs(factor)<1.e4 )
+              {
+                // wdh Feb 4, 2020 fprintf(outputFile,"&%5.1f ",factor);
+                // wdh Feb 4, 2020 fprintf(stdout    ,"&%5.1f ",factor);
+                fprintf(outputFile,"&%6.2f ",factor);
+                fprintf(stdout    ,"&%6.2f ",factor);
+              }
+              else
+              {
+                // fprintf(outputFile,"& ~$%8.2e$~ ",factor);  // could do better here
+                fprintf(outputFile,"& %8.2e ",factor);  // could do better here
+                fprintf(stdout    ,"& %8.2e ",factor);  // could do better here
+              }
+            }
+          }
+//        fprintf(outputFile,"&  $%7.1e$  ",e(grid,j));
+          fprintf(outputFile," \\\\ \\hline\n");
+          fprintf(stdout,"\n");
+          grid++;
+        }
       }
       else if( line(0,3)=="grid" )
       {
-	// this marks the start of a table
-	// fprintf(outputFile,"\\begin{table}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
-	fprintf(outputFile,"\\begin{table}[H]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
-	fprintf(outputFile,"%% \\newcommand{\\num}[2]{#1e{#2}} %% use this command to set the format of numbers in the table.\n");
-	fprintf(outputFile,"\\begin{center}\n");
-	// fprintf(outputFile,"\\hfill\n");
-	if( false )
-	{
-	  numberOfComponents=sscanf(buff,"%s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s",
-				    buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2);
-	  numberOfComponents-=2;
-	}
-	else
-	{
-	  // count number of components from the header
+        // this marks the start of a table
+        // fprintf(outputFile,"\\begin{table}[hbt]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
+        fprintf(outputFile,"\\begin{table}[H]\\tableFont %% you should set \\tableFont to \\footnotesize or other size\n");
+        fprintf(outputFile,"%% \\newcommand{\\num}[2]{#1e{#2}} %% use this command to set the format of numbers in the table.\n");
+        fprintf(outputFile,"\\begin{center}\n");
+        // fprintf(outputFile,"\\hfill\n");
+        if( false )
+        {
+          numberOfComponents=sscanf(buff,"%s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s",
+                                    buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2,buff2);
+          numberOfComponents-=2;
+        }
+        else
+        {
+          // count number of components from the header
           numberOfComponents=0;
           for( int i=0; buff[i]!=0; i++ )
-	  {
+          {
             if( buff[i]=='&' ) numberOfComponents++;
-	  }
+          }
           numberOfComponents-=1;
-	}
+        }
 
         numberOfComponentsFromHeader=numberOfComponents;
 
         printf("convRate: header=[%s]\n",buff);
         printf("convRate: numberOfComponents=%i (from header)\n",numberOfComponents);
-	
-	fprintf(outputFile,"\\begin{tabular}{|l|c|");
-	for( int j=0; j<numberOfComponents; j++ )
-	  fprintf(outputFile,"c|c|");
-	fprintf(outputFile,"} \\hline \n");
+        
+        fprintf(outputFile,"\\begin{tabular}{|l|c|");
+        for( int j=0; j<numberOfComponents; j++ )
+          fprintf(outputFile,"c|c|");
+        fprintf(outputFile,"} \\hline \n");
 
         // Here is the header line for the table, of the form: 
         //     "grid & N & u & v ..."
 
         // --- Add additional columns in the header for the ratio of errors --- *wdh* 090903
         int j=0,numAmpersands=0;
-	for( int i=0; buff[i]!=0; i++ )
-	{
+        for( int i=0; buff[i]!=0; i++ )
+        {
           header[j]=buff[i]; j++;
-	  if( buff[i]=='&' )
-	  {
-	    numAmpersands++;
-	    if( numAmpersands>2 )
-	    { // add a column: 
+          if( buff[i]=='&' )
+          {
+            numAmpersands++;
+            if( numAmpersands>2 )
+            { // add a column: 
               header[j]=' '; j++; header[j]='r'; j++; header[j]=' '; j++;
               header[j]='&'; j++;
-	    }
-	  }
-	}
-	header[j]='&'; j++;
-	header[j]=' '; j++; header[j]='r'; j++; header[j]=' '; j++;
+            }
+          }
+        }
+        header[j]='&'; j++;
+        header[j]=' '; j++; header[j]='r'; j++; header[j]=' '; j++;
         header[j]=0;
         // printf("*** convRate: old : header=[%s] \n"
         //        "              new : header=[%s] \n",buff,header);
         printf("                %s\n",header);
-	
-	// fprintf(outputFile,buff);  fprintf(outputFile,"\\\\ \\hline \n");
-	fprintf(outputFile,header);  fprintf(outputFile,"\\\\ \\hline \n");
-	tableIsOn=true;
+        
+        // fprintf(outputFile,buff);  fprintf(outputFile,"\\\\ \\hline \n");
+        fprintf(outputFile,header);  fprintf(outputFile,"\\\\ \\hline \n");
+        tableIsOn=true;
 
-	grid=0;
+        grid=0;
       }
       else 
       {
-	fprintf(outputFile,buff); fprintf(outputFile,"\n");
+        fprintf(outputFile,buff); fprintf(outputFile,"\n");
       }
     
       if( false )

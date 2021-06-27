@@ -147,12 +147,12 @@ fillInBoundaryConditions( realCompositeGridFunction & coeffcg )
     {
       if( mg.boundaryCondition(side,axis)>0 )
       {
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
       
-	is1=is2=is3=0;
-	isv[axis]=1-2*side;
+        is1=is2=is3=0;
+        isv[axis]=1-2*side;
 
-	
+        
         // --- Apply the "interior" equation as the boundary condition: 
         //         eq1:       u_xx + u_yy -v = 
         //         eq2:       v_xx + v_yy +u =   ** do not do this if use a Neumann BC for v **
@@ -165,48 +165,48 @@ fillInBoundaryConditions( realCompositeGridFunction & coeffcg )
         const int eqnStart=eq1, eqnEnd=eq1;       // impose interior equation as a BC for u only (if v.n=gv is given)
 
         // Evaluate the (single component) Laplace operator for points on the boundary 
-	realSerialArray lapCoeff(M0,Ib1,Ib2,Ib3);
-	mgop.assignCoefficients(MappedGridOperators::laplacianOperator,lapCoeff,Ib1,Ib2,Ib3,0,0); // 
+        realSerialArray lapCoeff(M0,Ib1,Ib2,Ib3);
+        mgop.assignCoefficients(MappedGridOperators::laplacianOperator,lapCoeff,Ib1,Ib2,Ib3,0,0); // 
 
-	FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) // loop over points on the boundary 
-	{
-	  i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
+        FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) // loop over points on the boundary 
+        {
+          i1m=i1-is1, i2m=i2-is2, i3m=i3-is3; //  ghost point is (i1m,i2m,i3m)
 
-	  for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
-	  {
+          for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
+          {
             int c=e;               
-	    ForStencil(m1,m2,m3)
-	    {
-	      int m  = M123(m1,m2,m3);        // the single-component coeff-index
+            ForStencil(m1,m2,m3)
+            {
+              int m  = M123(m1,m2,m3);        // the single-component coeff-index
               int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index 
 
-	      coeff(mm,i1m,i2m,i3m) = lapCoeff(m,i1,i2,i3);
-	      
-	      // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
-	      j1=i1+m1, j2=i2+m2, j3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
-	      setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
-	    }
+              coeff(mm,i1m,i2m,i3m) = lapCoeff(m,i1,i2,i3);
+              
+              // Specify that the above coeff value is the coefficient of component c at the grid point (j1,j2,j3).
+              j1=i1+m1, j2=i2+m2, j3=i3+m3;   // the stencil is centred on the boundary pt (i1,i2,i3)
+              setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
+            }
 
-	    if( true )
-	    { // add on the "-v" term for eq1, or the "+u" for eqn2
+            if( true )
+            { // add on the "-v" term for eq1, or the "+u" for eqn2
               c= e==eq1 ? vc : uc;                // we are specifying coefficients of "v" or "u"
               real val = e==eq1 ? -1. : 1.;
               m1=m2=m3=0;          // diagonal entry in the stencil
-	      int m  = M123(m1,m2,m3);        // the single-component coeff-index
+              int m  = M123(m1,m2,m3);        // the single-component coeff-index
               int mm = M123CE(m1,m2,m3,c,e);  // the system coeff-index 
 
-	      coeff(mm,i1m,i2m,i3m) = val;
-	      j1=i1+m1, j2=i2+m2, j3=i3+m3;
-	      setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
-	    }
-	    
+              coeff(mm,i1m,i2m,i3m) = val;
+              j1=i1+m1, j2=i2+m2, j3=i3+m3;
+              setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 );  // macro to set equationNumber
+            }
+            
 
             // Specify that this a "real" equation on the first ghost line: 
             // (A "real" equation has a possible non-zero right-hand-side)
-	    setClassify(e,i1m,i2m,i3m, SparseRepForMGF::ghost1);  
+            setClassify(e,i1m,i2m,i3m, SparseRepForMGF::ghost1);  
 
-	  }
-	} // end FOR_3D
+          }
+        } // end FOR_3D
 
 
         // -- At corners between two physical boundaries we cannot apply the interior equation on the points
@@ -228,20 +228,20 @@ fillInBoundaryConditions( realCompositeGridFunction & coeffcg )
         const int ghost=1;  // ghost point to fill in 
         const int axisp = (axis+1) % numberOfDimensions;       // tangential direction
         assert( numberOfDimensions==2 );                        // -- finish me for 3D
-	for( int side2=0; side2<=1; side2++ )                  // in 2D there are two adjacent boundaries, left and right 
-	{
-	  if( mg.boundaryCondition(side2,axisp)>0 ) // adjacent boundary is a physical boundary 
-	  {
-	    Ibv[axisp] = mg.gridIndexRange(side2,axisp);  // set loop bounds to the "left-side" or "right-side"
+        for( int side2=0; side2<=1; side2++ )                  // in 2D there are two adjacent boundaries, left and right 
+        {
+          if( mg.boundaryCondition(side2,axisp)>0 ) // adjacent boundary is a physical boundary 
+          {
+            Ibv[axisp] = mg.gridIndexRange(side2,axisp);  // set loop bounds to the "left-side" or "right-side"
 
-	    FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) // loop over points (in 2D there will just be point to assign)
-	    {
-	      i1m=i1-is1*(ghost); // ghost point
-	      i2m=i2-is2*(ghost);
-	      i3m=i3-is3*(ghost);
-	      for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
-	      {
-		// fill in the extrapolation equations
+            FOR_3D(i1,i2,i3,Ib1,Ib2,Ib3) // loop over points (in 2D there will just be point to assign)
+            {
+              i1m=i1-is1*(ghost); // ghost point
+              i2m=i2-is2*(ghost);
+              i3m=i3-is3*(ghost);
+              for( int e=eqnStart; e<=eqnEnd; e++ ) // equation eq1, eq2, ...
+              {
+                // fill in the extrapolation equations
                 int c=e;   // extrapolate this component of the solution 
 
                 // first zero all coefficients for this equation: 
@@ -250,24 +250,24 @@ fillInBoundaryConditions( realCompositeGridFunction & coeffcg )
                 // For extrapolation we just fill in the first orderOfExtrap+1 values into the coeff matrix.
                 // We do NOT think of the values as arranged in a stencil as we did in the above case. 
                 for( int m=0; m<=orderOfExtrap; m++ )
-		{
-		  j1=i1m+is1*m; //  m-th point moving inward from the ghost point (i1,i2,i3)
-		  j2=i2m+is2*m;
-		  j3=i3m+is3*m;
-		  
-		  int mm = CE(c,e)+m;
-		  
-		  coeff(mm,i1m,i2m,i3m)=extrapCoeff[m];  //  m=0,1,2,..
+                {
+                  j1=i1m+is1*m; //  m-th point moving inward from the ghost point (i1,i2,i3)
+                  j2=i2m+is2*m;
+                  j3=i3m+is3*m;
+                  
+                  int mm = CE(c,e)+m;
+                  
+                  coeff(mm,i1m,i2m,i3m)=extrapCoeff[m];  //  m=0,1,2,..
 
-		  setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 ); // set the global equation number 
-		}
+                  setEquationNumber(mm, e,i1m,i2m,i3m,  c,j1,j2,j3 ); // set the global equation number 
+                }
                 // classify this equation as extrapolation (will always have a zero right-hand-side)
-		setClassify(e,i1m,i2m,i3m, SparseRepForMGF::extrapolation);
-	      }
-	    }
-	  }
-	}
-	
+                setClassify(e,i1m,i2m,i3m, SparseRepForMGF::extrapolation);
+              }
+            }
+          }
+        }
+        
 
       } // end if( mg.boundaryCondition(side,axis)>0 )
     } // end ForBoundary 
@@ -375,19 +375,19 @@ main(int argc, char **argv)
     {
       solverName=arg(len,arg.length()-1);
       if( solverName=="yale" )
-	solverType=OgesParameters::yale;
+        solverType=OgesParameters::yale;
       else if( solverName=="harwell" )
-	solverType=OgesParameters::harwell;
+        solverType=OgesParameters::harwell;
       else if( solverName=="slap" )
-	solverType=OgesParameters::SLAP;
+        solverType=OgesParameters::SLAP;
       else if( solverName=="petsc" )
-	solverType=OgesParameters::PETSc;
+        solverType=OgesParameters::PETSc;
       else
       {
-	printf("Unknown solverName=%s \n",(const char*)solverName);
-	throw "error";
+        printf("Unknown solverName=%s \n",(const char*)solverName);
+        throw "error";
       }
-	
+        
       printf("Setting solverType=%i\n",solverType);
     }
   }
@@ -428,7 +428,7 @@ main(int argc, char **argv)
     int degreeOfSpacePolynomial = 2;
     int degreeOfTimePolynomial = 0;
     exactPointer = new OGPolyFunction(degreeOfSpacePolynomial,cg.numberOfDimensions(),numberOfComponents,
-			 degreeOfTimePolynomial);
+                         degreeOfTimePolynomial);
     RealArray c,a;
     int ndc=degreeOfSpacePolynomial+1;
     c.redim(ndc,ndc,ndc,numberOfComponents); c=0.;
@@ -436,8 +436,8 @@ main(int argc, char **argv)
     {
       for( int n=0; n<numberOfComponents; n++ )
       {
-	if( (m1+m2+m3) <= degreeOfSpacePolynomial )
-	  c(m1,m2,m3,n)=1./( .25*m1*m1 + .5*m2*m2 + 3.*m3*m3 + n+1.);
+        if( (m1+m2+m3) <= degreeOfSpacePolynomial )
+          c(m1,m2,m3,n)=1./( .25*m1*m1 + .5*m2*m2 + 3.*m3*m3 + n+1.);
       }
     }
     int ndt=degreeOfTimePolynomial+1;
@@ -470,21 +470,21 @@ main(int argc, char **argv)
   //  Solve bi-harmonic equation as a system: 
 
   printF(" ***************************************************************\n"
-	 "       Solving the bi-harmonic like system of equations:        \n"
-	 "            u_xx + u_yy - v = f_0                               \n"
-	 "            v_xx + v_yy + u = f_1                               \n"
+         "       Solving the bi-harmonic like system of equations:        \n"
+         "            u_xx + u_yy - v = f_0                               \n"
+         "            v_xx + v_yy + u = f_1                               \n"
          " Boundary conditions: u=gu, v.n=gv\n"
          " Numerical BC's: impose u_xx + u_yy - v = f_0 on the boundary\n"
-	 "       Grid = %s, solver=%s              \n"
-	 " ***************************************************************\n",
-	 (const char*)nameOfOGFile,(const char*)solverName);
+         "       Grid = %s, solver=%s              \n"
+         " ***************************************************************\n",
+         (const char*)nameOfOGFile,(const char*)solverName);
 
   const int eq1=0, eq2=1;   // equation numbers
   const int uc=0, vc=1;      // component numbers
 
   // Here are the interior equations: 
   coeff=( op.laplacianCoefficients(eq1,uc)-op.identityCoefficients(eq1,vc)+
-	  op.laplacianCoefficients(eq2,vc)+op.identityCoefficients(eq2,uc)                                 );
+          op.laplacianCoefficients(eq2,vc)+op.identityCoefficients(eq2,uc)                                 );
 
   // Here are the boundary conditions we can impose with the high-level operators: 
   coeff.applyBoundaryConditionCoefficients(eq1,uc,dirichlet,  allBoundaries);  
@@ -542,19 +542,19 @@ main(int argc, char **argv)
       {
         // NOTE: The RHS for any extrapolation equations will be set to zero by Oges 
 
-	getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,1);
+        getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+        getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,1);
 
-	f[grid](Ib1,Ib2,Ib3,uc)=exact(mg,Ib1,Ib2,Ib3,uc);
-	// f[grid](Ib1,Ib2,Ib3,vc)=exact(mg,Ib1,Ib2,Ib3,vc);
+        f[grid](Ib1,Ib2,Ib3,uc)=exact(mg,Ib1,Ib2,Ib3,uc);
+        // f[grid](Ib1,Ib2,Ib3,vc)=exact(mg,Ib1,Ib2,Ib3,vc);
 
-	const realSerialArray & normal  = mg.vertexBoundaryNormal(side,axis);
-	f[grid](Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*exact.x(mg,Ib1,Ib2,Ib3,vc)+
-				 normal(Ib1,Ib2,Ib3,1)*exact.y(mg,Ib1,Ib2,Ib3,vc));
+        const realSerialArray & normal  = mg.vertexBoundaryNormal(side,axis);
+        f[grid](Ig1,Ig2,Ig3,vc)=(normal(Ib1,Ib2,Ib3,0)*exact.x(mg,Ib1,Ib2,Ib3,vc)+
+                                 normal(Ib1,Ib2,Ib3,1)*exact.y(mg,Ib1,Ib2,Ib3,vc));
 
-	// The equations for the ghost line are the interior equations centered on the boundary: 
-	f[grid](Ig1,Ig2,Ig3,uc)=exact.xx(mg,Ib1,Ib2,Ib3,uc)+exact.yy(mg,Ib1,Ib2,Ib3,uc) - exact(mg,Ib1,Ib2,Ib3,vc);
-	// f[grid](Ig1,Ig2,Ig3,vc)=exact.xx(mg,Ib1,Ib2,Ib3,vc)+exact.yy(mg,Ib1,Ib2,Ib3,vc) + exact(mg,Ib1,Ib2,Ib3,uc);
+        // The equations for the ghost line are the interior equations centered on the boundary: 
+        f[grid](Ig1,Ig2,Ig3,uc)=exact.xx(mg,Ib1,Ib2,Ib3,uc)+exact.yy(mg,Ib1,Ib2,Ib3,uc) - exact(mg,Ib1,Ib2,Ib3,vc);
+        // f[grid](Ig1,Ig2,Ig3,vc)=exact.xx(mg,Ib1,Ib2,Ib3,vc)+exact.yy(mg,Ib1,Ib2,Ib3,vc) + exact(mg,Ib1,Ib2,Ib3,uc);
 
       }
     }
@@ -573,7 +573,7 @@ main(int argc, char **argv)
     solver.solve( u,f );   // solve the equations
 
     printf("residual=%8.2e, time for 2nd solve = %8.2e (iterations=%i)\n",
-	   solver.getMaximumResidual(),getCPU()-time0,solver.getNumberOfIterations());
+           solver.getMaximumResidual(),getCPU()-time0,solver.getNumberOfIterations());
 
   }
     
@@ -591,11 +591,11 @@ main(int argc, char **argv)
       where( cg[grid].mask()(I1,I2,I3)!=0 )
       {
         err(I1,I2,I3,n) = u[grid](I1,I2,I3,n)-exact(cg[grid],I1,I2,I3,n);
-	error=max(error,max(abs(err(I1,I2,I3,n))));
+        error=max(error,max(abs(err(I1,I2,I3,n))));
       }
 
       if( Oges::debug & 4 ) 
-	abs(err(I1,I2,I3,n)).display("abs(error)");
+        abs(err(I1,I2,I3,n)).display("abs(error)");
     }
     printf("Maximum error in component %i = %e\n",n,error);  
   }

@@ -2,6 +2,44 @@ REMEMBER TO UNALIAS OGEN
 alias ogen $ov/ogen/ogen
 
 *************************************
+******* Fri April 9, 2021
+
+use ogen as a test for adjusting command line args to fix -tf=1. perl errors
+
+ogen -noplot squareArg -xa=1. -xb=2. -nx=10 -za=23.e2 -zb=2.3 -va=245. -vb=2.e+5 -wwa=23.4e-05 -wwb=23.e-05
+argv[1]=[-noplot], len=7
+argv[2]=[squareArg], len=9
+argv[3]=[-xa=1.], len=6
+. found at char 5
+FP: REPLACED: s=[-xa=1.] with r=[-xa=1.0]
+argv[4]=[-xb=2.], len=6
+. found at char 5
+FP: REPLACED: s=[-xb=2.] with r=[-xb=2.0]
+argv[5]=[-nx=10], len=6
+argv[6]=[-za=23.e2], len=9
+. found at char 6
+EXP: REPLACED: s=[-za=23.e2] with r=[-za=23.0e2]
+argv[7]=[-zb=2.3], len=7
+. found at char 5
+argv[8]=[-va=245.], len=8
+. found at char 7
+FP: REPLACED: s=[-va=245.] with r=[-va=245.0]
+argv[9]=[-vb=2.e+5], len=9
+. found at char 5
+EXP: REPLACED: s=[-vb=2.e+5] with r=[-vb=2.0e+5]
+Error occured in file ogenDriver.C, function main, line 86.
+STOP HERE FOR NOW
+
+
+
+
+ogen -noplot squareArg -xa=1. -xb=2. -nx=10
+
+ogen -noplot squareArg -xa=1.0 -xb=2.0 -nx=10
+
+
+
+*************************************
 ******* Tues March 16, 2021
 
 CONTINUE ON MATCHING INTERFACES
@@ -24,7 +62,7 @@ ogen -noplot splitDiskInABoxGrid -factor1 -order=2 -interp=e
 START ON MATCHING INTERFACES
 
 
-ogen -noplot splitDiskInABoxGrid -factor1 -order=2 -interp=e
+ogen -noplot splitDiskInABoxGrid -factor=1 -order=2 -interp=e
 
 
 

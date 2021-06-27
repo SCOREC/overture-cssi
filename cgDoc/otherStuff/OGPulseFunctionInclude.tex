@@ -1,0 +1,131 @@
+\subsubsection{Constructor}
+ 
+\newlength{\OGPulseFunctionIncludeArgIndent}
+\begin{flushleft} \textbf{%
+\settowidth{\OGPulseFunctionIncludeArgIndent}{OGPulseFunction(}% 
+OGPulseFunction(int numberOfDimensions\_  = 2,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}int numberOfComponents\_  =1,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real a0\_  =1., \\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real a1\_  =5.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c0\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c1\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c2\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v0\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v1\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v2\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real p\_   =1.)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}]  
+    
+    Define a pulse.
+
+  \begin{align*}
+    U &=  a_0 \exp( - a_1 | \xv-\bv(t) |^{2p} )  \\
+    \bv(t) &= \cv_0 + \vv t
+  \end{align*}
+
+\item[{\bf numberOfDimensions\_ (input):}]  number of space dimensions, 1,2, or 3.
+\item[{\bf numberOfComponents\_ (input):}]  maximum number of components required.
+\item[{\bf a0\_,a1\_,...p\_ (input):}]  pulse parameters
+ 
+
+\end{description}
+\subsubsection{setRadius}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OGPulseFunctionIncludeArgIndent}{setRadius(}%
+setRadius( real radius )
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+  Set the approximte radius of the pulse. This will set the parameter $a_1$
+   according to the formula $\mbox{radius} = 1/\sqrt{a_1}$.
+  
+\item[{\bf radius (input):}]  approximate radius.
+ 
+\item[{\bf Author:}]  WDH
+\end{description}
+\subsubsection{setRadius}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OGPulseFunctionIncludeArgIndent}{setShape(}%
+setShape( real p\_ )
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+  Set the {\it shape} parameter p. $p=1$ gives a Gaussian pulse, choosing a larger value of $p$
+  will cause the pulse to flatten on the top and approach a top-hat function as $p$ tends to infinity.
+  
+\item[{\bf p\_ (input):}]  shape parameter, $p>{1\over2}$.
+ 
+\item[{\bf Author:}]  WDH
+\end{description}
+\subsubsection{setCentre}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OGPulseFunctionIncludeArgIndent}{setCentre(}%
+setCentre( real c0\_   =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c1\_   =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c2\_   =0.)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+  Set the pulse centre.
+  
+\item[{\bf c0\_,c1\_,c2\_ (input):}]  centre.
+ 
+\item[{\bf Author:}]  WDH
+\end{description}
+\subsubsection{setVelocity}
+ 
+\begin{flushleft} \textbf{%
+int  \\ 
+\settowidth{\OGPulseFunctionIncludeArgIndent}{setVelocity(}%
+setVelocity( real v0\_   =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v1\_   =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v2\_   =1.)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}] 
+  Set the pulse velocity.
+  
+\item[{\bf v0\_,v1\_,v2\_ (input):}]  velocity.
+ 
+\item[{\bf Author:}]  WDH
+\end{description}
+\subsubsection{setCoefficients}
+ 
+\begin{flushleft} \textbf{%
+void  \\ 
+\settowidth{\OGPulseFunctionIncludeArgIndent}{setParameters(}%
+setParameters( int numberOfDimensions\_  = 2,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}int numberOfComponents\_  =1,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real a0\_  =1., \\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real a1\_  =5.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c0\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c1\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real c2\_  =0.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v0\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v1\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real v2\_  =1.,\\ 
+\hspace{\OGPulseFunctionIncludeArgIndent}real p\_   =1.)
+}\end{flushleft}
+\begin{description}
+\item[{\bf Description:}]  Use this member function to set parameters.
+
+    Define a pulse.
+  \begin{align*}
+    U &=  a_0 \exp( - a_1 | \xv-\cv(t) |^p )  \qquad p>{1\over2}\\
+    \cv(t) &= \cv_0 + \vv t
+  \end{align*}
+
+\item[{\bf numberOfDimensions\_ (input):}]  number of space dimensions, 1,2, or 3.
+\item[{\bf numberOfComponents\_ (input):}]  maximum number of components required.
+\item[{\bf a0\_,a1\_,...p\_ (input):}]  pulse parameters. 
+ 
+\item[{\bf Author:}]  WDH
+\end{description}

@@ -13,6 +13,26 @@ cgmp:
 
 DropBox = $(HOME)/Dropbox
 
+ogen = $(Overture)/bin/ogen
+cgmp = $(CGBUILDPREFIX)/mp/bin/cgmp
+
+
+# double annulus grids
+doubleAnnulusGrids:
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=1
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=2
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=4
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=8
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=16
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=32
+	$(ogen) -noplot doubleAnnulusGrid -order=2 -interp=e -factor=64
+
+# convergence for concentric annulii, CHAMP and DN 
+doubleAnnulus:
+	conv.p twoDomainsCHT.conv -problem=doubleAnnulusChamp -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=1 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
+	conv.p twoDomainsCHT.conv -problem=doubleAnnulus -cg=doubleAnnulusGrid -known=concentricCylinders -useChamp=0 -tp=.3 -tf=.3 -nMode=1 -mRoot=0 -ng=6
+
+
 
 # Radial traveling wave
 # caseid=0 scf=1 and nu=.1

@@ -15,17 +15,17 @@
 extern "C"
 {
   void bcOptSmFOS(const int&nd,
-	       const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
-	       const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
+               const int&nd1a,const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,
+               const int& gridIndexRange,real& u, const int&mask,const real&rsxy, const real&xy, 
                const int & ndMatProp, const int& matIndex, const real& matValpc, const real& matVal,
                const real&det,
-	       const int&boundaryCondition, const int&addBoundaryForcing, const int& interfaceType, const int&dim,
+               const int&boundaryCondition, const int&addBoundaryForcing, const int& interfaceType, const int&dim,
                const real & bcf00, const real & bcf10, 
                const real & bcf01, const real & bcf11, 
                const real & bcf02, const real & bcf12, 
                const real & bcf0, const int64_t & bcfOffset,
-	       const int & ndpin, const int & pinbc,
-	       const int & ndpv, const real & pinValues,
+               const int & ndpin, const int & pinbc,
+               const int & ndpv, const real & pinValues,
                const int&ipar, const real&rpar, const DataBase *pdb, const int&ierr );
 }
 
@@ -95,17 +95,17 @@ if( ok && useOpt )
   if( debug & 16 )
   {
     fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
-	  
-	  
+            " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+            gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+            bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+            bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+          
+          
     fprintf(pDebugFile,"\n **** uu=[%i,%i] xy=[%i,%i] rsxy=[%i,%i]\n",
-	    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
-	  
+            uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
+          
   }
-	
+        
         
 #else
   const realSerialArray & uu    = u;
@@ -120,17 +120,17 @@ if( ok && useOpt )
   const IntegerArray & gid = mg.gridIndexRange();
   const IntegerArray & dim = mg.dimension();
   const IntegerArray & bc = mg.boundaryCondition();
-	
+        
   if( debug & 16 )
   {
     const IntegerArray & bcg = mg.boundaryCondition();
     fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+            " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+            gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+            bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+            bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
   }
-	
+        
 #endif
         
 
@@ -146,8 +146,8 @@ if( ok && useOpt )
 
   // Do this for now -- assumes all sides are PML
   bool usePML = (bc(0,0)==SmParameters::abcPML || bc(1,0)==SmParameters::abcPML ||
-		 bc(0,1)==SmParameters::abcPML || bc(1,1)==SmParameters::abcPML ||
-		 bc(0,2)==SmParameters::abcPML || bc(1,2)==SmParameters::abcPML);
+                 bc(0,1)==SmParameters::abcPML || bc(1,1)==SmParameters::abcPML ||
+                 bc(0,2)==SmParameters::abcPML || bc(1,2)==SmParameters::abcPML);
       
 
   // *** need to fix gridIndex Range and bc ***********************
@@ -207,18 +207,18 @@ if( ok && useOpt )
   {
     DataBase *pdb = &parameters.dbase;
     bcOptSmFOS( numberOfDimensions, 
-		uu.getBase(0),uu.getBound(0),
-		uu.getBase(1),uu.getBound(1),
-		uu.getBase(2),uu.getBound(2),
-		gid(0,0), *uptr, *maskptr, *rxptr, *xyptr, 
+                uu.getBase(0),uu.getBound(0),
+                uu.getBase(1),uu.getBound(1),
+                uu.getBase(2),uu.getBound(2),
+                gid(0,0), *uptr, *maskptr, *rxptr, *xyptr, 
                 ndMatProp,*matIndexPtr,*matValPtr,*matValPtr, 
                 *jacptr, *bc.getDataPointer(),
-		*pAddBoundaryForcing,*interfaceType.getDataPointer(),*pdbc, 
-		*pbcf[0][0],*pbcf[1][0], *pbcf[0][1],*pbcf[1][1], *pbcf[0][2],*pbcf[1][2],
-		*pbcf[0][0],pbcfOffset[0],
-		pinBoundaryCondition.getLength(0),*pinBoundaryCondition.getDataPointer(),
+                *pAddBoundaryForcing,*interfaceType.getDataPointer(),*pdbc, 
+                *pbcf[0][0],*pbcf[1][0], *pbcf[0][1],*pbcf[1][1], *pbcf[0][2],*pbcf[1][2],
+                *pbcf[0][0],pbcfOffset[0],
+                pinBoundaryCondition.getLength(0),*pinBoundaryCondition.getDataPointer(),
                 pinValues.getLength(0),*pinValues.getDataPointer(),
-		ipar[0], rpar[0], pdb, ierr );
+                ipar[0], rpar[0], pdb, ierr );
     
   }
   
@@ -273,7 +273,7 @@ if( ok && useOpt )
     {
       for( int side=Start; side<=End; side++ )
       {
-	if( knownSolution==Parameters::userDefinedKnownSolution && 
+        if( knownSolution==Parameters::userDefinedKnownSolution && 
             (mg.boundaryCondition(side,axis)==SmParameters::tractionBC ||
              mg.boundaryCondition(side,axis)==SmParameters::displacementBC ) 
             && interfaceType(side,axis,grid)==Parameters::noInterface )
@@ -283,7 +283,7 @@ if( ok && useOpt )
           getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
 
           // -- here is where the boundary data is put:
-    	  RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
+          RealArray & bd = parameters.getBoundaryData(side,axis,grid,mg);
       
           Range Rx=numberOfDimensions, C=numberOfDimensions;
           RealArray state(Ib1,Ib2,Ib3,C);
@@ -355,86 +355,86 @@ if( ok && useOpt )
 
         }
         else if( mg.boundaryCondition(side,axis)==SmParameters::dirichletBoundaryCondition )
-	{
-	  int numberOfGhostLines = max(2,orderOfAccuracyInSpace/2);  // for godunov we need 2 ghost lines
-	  int extra=numberOfGhostLines;
-	  getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+        {
+          int numberOfGhostLines = max(2,orderOfAccuracyInSpace/2);  // for godunov we need 2 ghost lines
+          int extra=numberOfGhostLines;
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
 
-	  // for now assign dirichlet at ghost lines too.
-	  Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
-	    Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
-	      
-	  if( mg.boundaryCondition(side,axis)==SmParameters::interfaceBoundaryCondition )
-	  { // do not include the boundary
-	    Iv[axis] = side==0 ? Range(Iv[axis].getBase(),Iv[axis].getBound()-1) : 
-	      Range(Iv[axis].getBase()+1,Iv[axis].getBound());
-	  }
+          // for now assign dirichlet at ghost lines too.
+          Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
+            Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
+              
+          if( mg.boundaryCondition(side,axis)==SmParameters::interfaceBoundaryCondition )
+          { // do not include the boundary
+            Iv[axis] = side==0 ? Range(Iv[axis].getBase(),Iv[axis].getBound()-1) : 
+              Range(Iv[axis].getBase()+1,Iv[axis].getBound());
+          }
 
-	  const int includeGhost=1;
-	  bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
-	  if( !ok ) continue;
+          const int includeGhost=1;
+          bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+          if( !ok ) continue;
 
-	  real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
-	  const int uDim0=uLocal.getRawDataSize(0);
-	  const int uDim1=uLocal.getRawDataSize(1);
-	  const int uDim2=uLocal.getRawDataSize(2);
+          real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
+          const int uDim0=uLocal.getRawDataSize(0);
+          const int uDim1=uLocal.getRawDataSize(1);
+          const int uDim2=uLocal.getRawDataSize(2);
 #undef U
 #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
-	  real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
-	  const int xDim0=xLocal.getRawDataSize(0);
-	  const int xDim1=xLocal.getRawDataSize(1);
-	  const int xDim2=xLocal.getRawDataSize(2);
+          real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
+          const int xDim0=xLocal.getRawDataSize(0);
+          const int xDim1=xLocal.getRawDataSize(1);
+          const int xDim2=xLocal.getRawDataSize(2);
 #undef X
 #define X(i0,i1,i2,i3) xp[i0+xDim0*(i1+xDim1*(i2+xDim2*(i3)))]
 
-	  if( specialInitialConditionOption == "travelingWave" )
-	  {
-	    // --- traveling wave solution ---
-	    bool evalSolution = true;
-	    // macro: 
-	    getTravelingWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
-	  }
-	  else if( specialInitialConditionOption == "planeTravelingWave" )
-	  {
-	    // --- traveling sine wave solution ---
-	    bool evalSolution = true;
-	    // macro: 
-	    getPlaneTravelingWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
-	  }
-	  else if( specialInitialConditionOption == "translationAndRotation" )
-	  {
-	    // Here is the solution for large translation and rotation 
-	    bool evalSolution = true;
-	    // macro: 
-	    getTranslationAndRotationSolution(evalSolution,U,U,X,t,I1,I2,I3);
-	  }
-	  else if( specialInitialConditionOption == "RayleighWave" )
-	  {
-	    // --- Rayleigh wave solution ---
-	    bool evalSolution = true;
-	    // macro: 
-	    getRayleighWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
-	  }
-	  else if( specialInitialConditionOption == "pistonMotion" )
-	  {
-	    // --- piston motion (for FSI) ---
-	    bool evalSolution = true;
-	    getPistonMotionSolution(evalSolution,U,U,X,t,I1,I2,I3);
-	  }
+          if( specialInitialConditionOption == "travelingWave" )
+          {
+            // --- traveling wave solution ---
+            bool evalSolution = true;
+            // macro: 
+            getTravelingWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
+          }
+          else if( specialInitialConditionOption == "planeTravelingWave" )
+          {
+            // --- traveling sine wave solution ---
+            bool evalSolution = true;
+            // macro: 
+            getPlaneTravelingWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
+          }
+          else if( specialInitialConditionOption == "translationAndRotation" )
+          {
+            // Here is the solution for large translation and rotation 
+            bool evalSolution = true;
+            // macro: 
+            getTranslationAndRotationSolution(evalSolution,U,U,X,t,I1,I2,I3);
+          }
+          else if( specialInitialConditionOption == "RayleighWave" )
+          {
+            // --- Rayleigh wave solution ---
+            bool evalSolution = true;
+            // macro: 
+            getRayleighWaveSolution(evalSolution,U,U,X,t,I1,I2,I3);
+          }
+          else if( specialInitialConditionOption == "pistonMotion" )
+          {
+            // --- piston motion (for FSI) ---
+            bool evalSolution = true;
+            getPistonMotionSolution(evalSolution,U,U,X,t,I1,I2,I3);
+          }
           else if( initialConditionOption == knownSolutionInitialCondition )
-	  {
+          {
             // Assign dirichlet BC from know solution *wdh* 2014/01/09 
-	    parameters.getUserDefinedKnownSolution(t,cg, grid, uLocal, I1,I2,I3 );
-	  }
-	  else
-	  {
-	    printF("assignBoundaryConditionsFOS:ERROR: unknown specialInitialConditionOption=%s\n",
+            parameters.getUserDefinedKnownSolution(t,cg, grid, uLocal, I1,I2,I3 );
+          }
+          else
+          {
+            printF("assignBoundaryConditionsFOS:ERROR: unknown specialInitialConditionOption=%s\n",
                    (const char*)specialInitialConditionOption);
-	    OV_ABORT("error");
-	  }
-	 
+            OV_ABORT("error");
+          }
+         
 
-	}
+        }
       }
     }
   }
@@ -453,7 +453,7 @@ if( ok && useOpt )
 // =========================================================================================================
 void Cgsm::
 assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGridFunction & u, 
-			     realMappedGridFunction & uOld, int current )
+                             realMappedGridFunction & uOld, int current )
 {
 
   SmParameters::PDEVariation & pdeVariation = parameters.dbase.get<SmParameters::PDEVariation>("pdeVariation");
@@ -616,7 +616,7 @@ assignBoundaryConditionsFOS( int option, int grid, real t, real dt, realMappedGr
   if( !isRectangular )
   {
     mg.update( MappedGrid::THEinverseVertexDerivative | 
-	       MappedGrid::THEinverseCenterDerivative |
+               MappedGrid::THEinverseCenterDerivative |
                MappedGrid::THEcenterJacobian );  
   }
 

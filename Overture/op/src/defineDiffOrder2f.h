@@ -1,5 +1,5 @@
-c Use this next macro to declare the statement functions that are defined below
-c To include derivatives of rx use OPTION=RX
+! Use this next macro to declare the statement functions that are defined below
+! To include derivatives of rx use OPTION=RX
 #beginMacro declareDifferenceOrder2(u,OPTION)
 #If #OPTION == "RX"
  real d12
@@ -212,8 +212,8 @@ c To include derivatives of rx use OPTION=RX
 #endMacro
 
 
-c Define statement functions for difference approximations of order 2 
-c To include derivatives of rx use OPTION=RX
+! Define statement functions for difference approximations of order 2 
+! To include derivatives of rx use OPTION=RX
 #beginMacro defineDifferenceOrder2Components0(u,OPTION)
 
 #If #OPTION == "RX"
@@ -373,10 +373,10 @@ u ## xy23(i1,i2,i3)=rx(i1,i2,i3)*ry(i1,i2,i3)*u ## rr2(i1,i2,i3)+sx(i1,i2,i3)*sy
 u ## xz23(i1,i2,i3)=rx(i1,i2,i3)*rz(i1,i2,i3)*u ## rr2(i1,i2,i3)+sx(i1,i2,i3)*sz(i1,i2,i3)*u ## ss2(i1,i2,i3)+tx(i1,i2,i3)*tz(i1,i2,i3)*u ## tt2(i1,i2,i3)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,i3)*sx(i1,i2,i3))*u ## rs2(i1,i2,i3)+(rx(i1,i2,i3)*tz(i1,i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*u ## rt2(i1,i2,i3)+(sx(i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*u ## st2(i1,i2,i3)+rxz23(i1,i2,i3)*u ## r2(i1,i2,i3)+sxz23(i1,i2,i3)*u ## s2(i1,i2,i3)+txz23(i1,i2,i3)*u ## t2(i1,i2,i3)
 u ## yz23(i1,i2,i3)=ry(i1,i2,i3)*rz(i1,i2,i3)*u ## rr2(i1,i2,i3)+sy(i1,i2,i3)*sz(i1,i2,i3)*u ## ss2(i1,i2,i3)+ty(i1,i2,i3)*tz(i1,i2,i3)*u ## tt2(i1,i2,i3)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,i3)*sy(i1,i2,i3))*u ## rs2(i1,i2,i3)+(ry(i1,i2,i3)*tz(i1,i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*u ## rt2(i1,i2,i3)+(sy(i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*u ## st2(i1,i2,i3)+ryz23(i1,i2,i3)*u ## r2(i1,i2,i3)+syz23(i1,i2,i3)*u ## s2(i1,i2,i3)+tyz23(i1,i2,i3)*u ## t2(i1,i2,i3)
 u ## laplacian23(i1,i2,i3)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(i1,i2,i3)**2)*u ## rr2(i1,i2,i3)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**2+sz(i1,i2,i3)**2)*u ## ss2(i1,i2,i3)+(tx(i1,i2,i3)**2+ty(i1,i2,i3)**2+tz(i1,i2,i3)**2)*u ## tt2(i1,i2,i3)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,i3))*u ## rs2(i1,i2,i3)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*u ## rt2(i1,i2,i3)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+sz(i1,i2,i3)*tz(i1,i2,i3))*u ## st2(i1,i2,i3)+(rxx23(i1,i2,i3)+ryy23(i1,i2,i3)+rzz23(i1,i2,i3))*u ## r2(i1,i2,i3)+(sxx23(i1,i2,i3)+syy23(i1,i2,i3)+szz23(i1,i2,i3))*u ## s2(i1,i2,i3)+(txx23(i1,i2,i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*u ## t2(i1,i2,i3)
-c============================================================================================
-c Define derivatives for a rectangular grid
-c
-c============================================================================================
+!============================================================================================
+! Define derivatives for a rectangular grid
+!
+!============================================================================================
 #If #OPTION == "RX"
 h12(kd) = 1./(2.*dx(kd))
 h22(kd) = 1./(dx(kd)**2)
@@ -475,7 +475,7 @@ u ## yyzz23r(i1,i2,i3)=( 4.*u ## (i1,i2,i3)     \
    +   (u ## (i1,i2+1,i3+1)+u ## (i1,i2-1,i3+1)+u ## (i1,i2+1,i3-1)+u ## (i1,i2-1,i3-1)) )/(dx(1)**2*dx(2)**2)
 
 #endMacro
-c To include derivatives of rx use OPTION=RX
+! To include derivatives of rx use OPTION=RX
 #beginMacro defineDifferenceOrder2Components1(u,OPTION)
 
 #If #OPTION == "RX"
@@ -635,10 +635,10 @@ u ## xy23(i1,i2,i3,kd)=rx(i1,i2,i3)*ry(i1,i2,i3)*u ## rr2(i1,i2,i3,kd)+sx(i1,i2,
 u ## xz23(i1,i2,i3,kd)=rx(i1,i2,i3)*rz(i1,i2,i3)*u ## rr2(i1,i2,i3,kd)+sx(i1,i2,i3)*sz(i1,i2,i3)*u ## ss2(i1,i2,i3,kd)+tx(i1,i2,i3)*tz(i1,i2,i3)*u ## tt2(i1,i2,i3,kd)+(rx(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,i3)*sx(i1,i2,i3))*u ## rs2(i1,i2,i3,kd)+(rx(i1,i2,i3)*tz(i1,i2,i3)+rz(i1,i2,i3)*tx(i1,i2,i3))*u ## rt2(i1,i2,i3,kd)+(sx(i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*tx(i1,i2,i3))*u ## st2(i1,i2,i3,kd)+rxz23(i1,i2,i3)*u ## r2(i1,i2,i3,kd)+sxz23(i1,i2,i3)*u ## s2(i1,i2,i3,kd)+txz23(i1,i2,i3)*u ## t2(i1,i2,i3,kd)
 u ## yz23(i1,i2,i3,kd)=ry(i1,i2,i3)*rz(i1,i2,i3)*u ## rr2(i1,i2,i3,kd)+sy(i1,i2,i3)*sz(i1,i2,i3)*u ## ss2(i1,i2,i3,kd)+ty(i1,i2,i3)*tz(i1,i2,i3)*u ## tt2(i1,i2,i3,kd)+(ry(i1,i2,i3)*sz(i1,i2,i3)+rz(i1,i2,i3)*sy(i1,i2,i3))*u ## rs2(i1,i2,i3,kd)+(ry(i1,i2,i3)*tz(i1,i2,i3)+rz(i1,i2,i3)*ty(i1,i2,i3))*u ## rt2(i1,i2,i3,kd)+(sy(i1,i2,i3)*tz(i1,i2,i3)+sz(i1,i2,i3)*ty(i1,i2,i3))*u ## st2(i1,i2,i3,kd)+ryz23(i1,i2,i3)*u ## r2(i1,i2,i3,kd)+syz23(i1,i2,i3)*u ## s2(i1,i2,i3,kd)+tyz23(i1,i2,i3)*u ## t2(i1,i2,i3,kd)
 u ## laplacian23(i1,i2,i3,kd)=(rx(i1,i2,i3)**2+ry(i1,i2,i3)**2+rz(i1,i2,i3)**2)*u ## rr2(i1,i2,i3,kd)+(sx(i1,i2,i3)**2+sy(i1,i2,i3)**2+sz(i1,i2,i3)**2)*u ## ss2(i1,i2,i3,kd)+(tx(i1,i2,i3)**2+ty(i1,i2,i3)**2+tz(i1,i2,i3)**2)*u ## tt2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*sx(i1,i2,i3)+ ry(i1,i2,i3)*sy(i1,i2,i3)+rz(i1,i2,i3)*sz(i1,i2,i3))*u ## rs2(i1,i2,i3,kd)+2.*(rx(i1,i2,i3)*tx(i1,i2,i3)+ ry(i1,i2,i3)*ty(i1,i2,i3)+rz(i1,i2,i3)*tz(i1,i2,i3))*u ## rt2(i1,i2,i3,kd)+2.*(sx(i1,i2,i3)*tx(i1,i2,i3)+ sy(i1,i2,i3)*ty(i1,i2,i3)+sz(i1,i2,i3)*tz(i1,i2,i3))*u ## st2(i1,i2,i3,kd)+(rxx23(i1,i2,i3)+ryy23(i1,i2,i3)+rzz23(i1,i2,i3))*u ## r2(i1,i2,i3,kd)+(sxx23(i1,i2,i3)+syy23(i1,i2,i3)+szz23(i1,i2,i3))*u ## s2(i1,i2,i3,kd)+(txx23(i1,i2,i3)+tyy23(i1,i2,i3)+tzz23(i1,i2,i3))*u ## t2(i1,i2,i3,kd)
-c============================================================================================
-c Define derivatives for a rectangular grid
-c
-c============================================================================================
+!============================================================================================
+! Define derivatives for a rectangular grid
+!
+!============================================================================================
 #If #OPTION == "RX"
 h12(kd) = 1./(2.*dx(kd))
 h22(kd) = 1./(dx(kd)**2)

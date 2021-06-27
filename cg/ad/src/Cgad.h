@@ -79,6 +79,10 @@ getDiffusionCoefficients( GridFunction & cgf );
 virtual int
 getInterfaceDataOptions( GridFaceDescriptor & info, int & interfaceDataOptions ) const;
 
+// Optionally evaluate the max residual in any interface conditions (only used for some interface conditions such as CHAMP)
+virtual int
+getInterfaceResidual( real t, real dt, GridFunction & cgf, Real & residual );
+
 virtual int
 getUt(const realMappedGridFunction & v, 
 	  const realMappedGridFunction & gridVelocity, 

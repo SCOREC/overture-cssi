@@ -45,12 +45,12 @@ takeOneStep( real & t, real & dt, int stepNumber, int & numberOfSubSteps )
     GridFunction & gf0 = gf[current];
     GridFunction & gf1 = gf[next];
     realCompositeGridFunction & fn0 = fn[0];
-	  
+          
     eulerStep(t,t,t+dt,dt,gf0,gf0,gf1,fn0,fn0,stepNumber  ,numberOfSubSteps);
   }
   else if( timeSteppingMethod==Parameters::adamsBashforth2 ||
-	   timeSteppingMethod==Parameters::adamsPredictorCorrector2 ||
-	   timeSteppingMethod==Parameters::adamsPredictorCorrector4 )
+           timeSteppingMethod==Parameters::adamsPredictorCorrector2 ||
+           timeSteppingMethod==Parameters::adamsPredictorCorrector4 )
   {
     advanceAdamsPredictorCorrector( t,dt, numberOfSubSteps,init,stepNumber ); 
   }
@@ -102,7 +102,7 @@ printStatistics(FILE *file /* = stdout */)
   FILE *& logFile =parameters.dbase.get<FILE* >("logFile");
 
   fPrintF(logFile,"\n"
-	  " -------------- Final Statistics for %s  ---------------\n",(const char*)getClassName());
+          " -------------- Final Statistics for %s  ---------------\n",(const char*)getClassName());
 
   if( np>1 )
   { // output parallel distribution: 
@@ -113,13 +113,13 @@ printStatistics(FILE *file /* = stdout */)
   if( poisson!=0 )
   {
     fPrintF(logFile,"\n"
-	    " ----------------- Poisson Solver -------------------------------------- \n");
+            " ----------------- Poisson Solver -------------------------------------- \n");
     poisson->printStatistics(logFile);
   }
   for( int imp=0; imp<numberOfImplicitSolvers; imp++ )
   {
     fPrintF(logFile,"\n"
-	    "&&&&&&&&&&&&&&&&&&&&&&&&&&& Implicit Solver %i &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& \n",imp);
+            "&&&&&&&&&&&&&&&&&&&&&&&&&&& Implicit Solver %i &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& \n",imp);
     implicitSolver[imp].printStatistics(logFile);
     fPrintF(logFile,"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
   }
@@ -193,7 +193,7 @@ printStatistics(FILE *file /* = stdout */)
   }
   timing(parameters.dbase.get<int>("timeForOther"))=timing(totalTimeIndex)-totalMeasured;
   printP(" ****  CPU: totalTime=%9.3e totalMeasured=%9.3e, timeForOther=%8.2e \n",
-	 timing(totalTimeIndex),totalMeasured,timing(parameters.dbase.get<int>("timeForOther")));
+         timing(totalTimeIndex),totalMeasured,timing(parameters.dbase.get<int>("timeForOther")));
   
 
   timing(totalTimeIndex)=max(timing(totalTimeIndex),REAL_MIN*10.);   // total time 
@@ -248,96 +248,96 @@ printStatistics(FILE *file /* = stdout */)
       if( parameters.dbase.get<real >("numberOfRegrids")==0 )
       {
         // === No AMR ===
-	fprintf(output,
+        fprintf(output,
                 "\n"
                 "         ---%s Summary : %s --- \n"
                 "            %s"          
                 "            Grid file=[%s]\n"
-		"  ==== numberOfStepsTaken =%i, number of grids=%i, number of gridpts =%g, Np=%i (procs) ==== \n",
-		(const char*)getClassName(),(const char*)getName(),
+                "  ==== numberOfStepsTaken =%i, number of grids=%i, number of gridpts =%g, Np=%i (procs) ==== \n",
+                (const char*)getClassName(),(const char*)getName(),
                 dateString,
                 (const char*)parameters.dbase.get<aString>("nameOfGridFile"),
-		numSteps,cg.numberOfComponentGrids(),totalNumberOfGridPoints,np);
+                numSteps,cg.numberOfComponentGrids(),totalNumberOfGridPoints,np);
       }
       else
       {
         // === AMR ===
-	int levels = 1, ratio=1;
-	aString loadBalanceName="off";
-	if( parameters.dbase.get<Regrid* >("regrid")!=NULL )
-	{
-	  levels=parameters.dbase.get<Regrid* >("regrid")->getDefaultNumberOfRefinementLevels();
-	  ratio=parameters.dbase.get<Regrid* >("regrid")->getRefinementRatio();
-	  if( parameters.dbase.get<Regrid* >("regrid")->loadBalancingIsOn() )
-	    loadBalanceName=parameters.dbase.get<Regrid* >("regrid")->getLoadBalancer().getLoadBalancerTypeName();
-	}
+        int levels = 1, ratio=1;
+        aString loadBalanceName="off";
+        if( parameters.dbase.get<Regrid* >("regrid")!=NULL )
+        {
+          levels=parameters.dbase.get<Regrid* >("regrid")->getDefaultNumberOfRefinementLevels();
+          ratio=parameters.dbase.get<Regrid* >("regrid")->getRefinementRatio();
+          if( parameters.dbase.get<Regrid* >("regrid")->loadBalancingIsOn() )
+            loadBalanceName=parameters.dbase.get<Regrid* >("regrid")->getLoadBalancer().getLoadBalancerTypeName();
+        }
       
-	fprintf(output,
+        fprintf(output,
                 "\n"
                 "         ---%s Summary : %s --- \n"
                 "           %s"          
-		"  ==== numberOfStepsTaken =%i, processors=%i\n"
-		"  ==== AMR levels=%i, AMR ratio=%i, load-balance=%s\n"
-		"  ==== number of grids:   [min=%g,max=%g,ave=%g] (number of regrid steps=%g)\n"
-		"  ==== number of gridpts: [min=%g,max=%g,ave=%g], \n",
-		(const char*)getClassName(),(const char*)getName(),
+                "  ==== numberOfStepsTaken =%i, processors=%i\n"
+                "  ==== AMR levels=%i, AMR ratio=%i, load-balance=%s\n"
+                "  ==== number of grids:   [min=%g,max=%g,ave=%g] (number of regrid steps=%g)\n"
+                "  ==== number of gridpts: [min=%g,max=%g,ave=%g], \n",
+                (const char*)getClassName(),(const char*)getName(),
                 dateString,
-		numSteps,np,
-		levels,ratio,(const char*)loadBalanceName,
-		parameters.dbase.get<real >("minimumNumberOfGrids"),
-		parameters.dbase.get<real >("maximumNumberOfGrids"),
-		parameters.dbase.get<real >("totalNumberOfGrids")/parameters.dbase.get<real >("numberOfRegrids"),
-		parameters.dbase.get<real >("numberOfRegrids"),
-		parameters.dbase.get<real >("minimumNumberOfGridPoints"),parameters.dbase.get<real >("maximumNumberOfGridPoints"),
-		parameters.dbase.get<real >("sumTotalNumberOfGridPoints")/parameters.dbase.get<real >("numberOfRegrids"));
+                numSteps,np,
+                levels,ratio,(const char*)loadBalanceName,
+                parameters.dbase.get<real >("minimumNumberOfGrids"),
+                parameters.dbase.get<real >("maximumNumberOfGrids"),
+                parameters.dbase.get<real >("totalNumberOfGrids")/parameters.dbase.get<real >("numberOfRegrids"),
+                parameters.dbase.get<real >("numberOfRegrids"),
+                parameters.dbase.get<real >("minimumNumberOfGridPoints"),parameters.dbase.get<real >("maximumNumberOfGridPoints"),
+                parameters.dbase.get<real >("sumTotalNumberOfGridPoints")/parameters.dbase.get<real >("numberOfRegrids"));
       }
 
       fprintf(output,"  ==== tFinal=%8.3e, tInitial=%8.3e, dt(ave)=%7.2e ====\n",tf,ti,dtAve);
 
       fprintf(output,
-	      "  ==== memory/proc: [min=%g,ave=%g,max=%g]Mb, max-recorded=%g Mb, total=%g Mb, %5.1f reals/(grid-pt)\n"
-	      "   Timings:           (ave-sec/proc:) seconds   sec/step    TPSM     TTS       %%    [max-s/proc] [min-s/proc]\n",
-	      minMem,aveMem,maxMem,maxMemRecorded,totalMem,realsPerGridPoint);
+              "  ==== memory/proc: [min=%g,ave=%g,max=%g]Mb, max-recorded=%g Mb, total=%g Mb, %5.1f reals/(grid-pt)\n"
+              "   Timings:           (ave-sec/proc:) seconds   sec/step    TPSM     TTS       %%    [max-s/proc] [min-s/proc]\n",
+              minMem,aveMem,maxMem,maxMemRecorded,totalMem,realsPerGridPoint);
   
       int nSpace=35;
       aString dots="........................................................................";
       if( maxTiming(0)==0. )
-	maxTiming(0)=REAL_MIN;
+        maxTiming(0)=REAL_MIN;
       for( int i=0; i<maximumNumberOfTimings; i++ )
-	if( timingName[i]!="" && aveTiming(i)!=0. )    
-	  fprintf(output,"%s%s%9.2e  %9.2e %8.1e %8.1e  %7.3f  %9.2e    %9.2e\n",(const char*)timingName[i],
-		  (const char*)dots(0,max(0,nSpace-timingName[i].length())),
-		  aveTiming(i),
+        if( timingName[i]!="" && aveTiming(i)!=0. )    
+          fprintf(output,"%s%s%9.2e  %9.2e %8.1e %8.1e  %7.3f  %9.2e    %9.2e\n",(const char*)timingName[i],
+                  (const char*)dots(0,max(0,nSpace-timingName[i].length())),
+                  aveTiming(i),
                   aveTiming(i)/numSteps,
                   np*aveTiming(i)/numSteps/(totalNumberOfGridPoints/1.e6),
                   np*aveTiming(i)/numSteps/(totalNumberOfGridPoints/1.e6)/max(REAL_MIN*10.,dtNormalized),
-		  100.*aveTiming(i)/aveTiming(totalTimeIndex),maxTiming(i),minTiming(i));
+                  100.*aveTiming(i)/aveTiming(totalTimeIndex),maxTiming(i),minTiming(i));
 
       fprintf(output,
-	      "\n"
-	      "TPSM = Np * (seconds/step)/( number-of-grid-points / 10^6 ), (time-per-step-per-million-grid-points),\n"
-	      "TTS = TPSM/dtNormalized  (normalized measure of total time to solve),\n"
-	      "dtNormalized = %8.1e = dtAve/( targetGridSpacing/velocityScale ), targetGridSpacing=%8.1e, velocityScale=%8.1e,\n",
-	      dtNormalized,targetGridSpacing,velocityScale );
+              "\n"
+              "TPSM = Np * (seconds/step)/( number-of-grid-points / 10^6 ), (time-per-step-per-million-grid-points),\n"
+              "TTS = TPSM/dtNormalized  (normalized measure of total time to solve),\n"
+              "dtNormalized = %8.1e = dtAve/( targetGridSpacing/velocityScale ), targetGridSpacing=%8.1e, velocityScale=%8.1e,\n",
+              dtNormalized,targetGridSpacing,velocityScale );
 
       if( timeSteppingMethod==Parameters::implicit )
-	fprintf(output,"implicit time stepping: average number of iterations to solve implicit system =%5.1f/step\n",
-		real(parameters.dbase.get<int >("numberOfIterationsForImplicitTimeStepping"))/max(1.,numSteps));
+        fprintf(output,"implicit time stepping: average number of iterations to solve implicit system =%5.1f/step\n",
+                real(parameters.dbase.get<int >("numberOfIterationsForImplicitTimeStepping"))/max(1.,numSteps));
 
       if( timeSteppingMethod==Parameters::implicit || 
           timeSteppingMethod==Parameters::adamsPredictorCorrector2 || 
           timeSteppingMethod==Parameters::adamsPredictorCorrector4)
       {
-	fprintf(output,"Predictor-corrector time stepping: average number of corrector steps =%5.2f.\n",
-		real(parameters.dbase.get<int>("totalNumberOfPCcorrections"))/max(1.,numSteps));
+        fprintf(output,"Predictor-corrector time stepping: average number of corrector steps =%5.2f.\n",
+                real(parameters.dbase.get<int>("totalNumberOfPCcorrections"))/max(1.,numSteps));
       }
       
 
       if( poisson )//parameters.dbase.get<Parameters::PDE >("pde")==Parameters::incompressibleNavierStokes ||
-	//	  parameters.dbase.get<Parameters::PDE >("pde")==Parameters::allSpeedNavierStokes )
-	fprintf(output,"pressure equation: average number of iterations to solve =%f/solve (%3.2f solves/step)\n",
-		real(parameters.dbase.get<int >("numberOfIterationsForConstraints"))/max(1,parameters.dbase.get<int >("numberOfSolvesForConstraints")),
-		real(parameters.dbase.get<int >("numberOfSolvesForConstraints"))/max(1,numSteps));
+        //        parameters.dbase.get<Parameters::PDE >("pde")==Parameters::allSpeedNavierStokes )
+        fprintf(output,"pressure equation: average number of iterations to solve =%f/solve (%3.2f solves/step)\n",
+                real(parameters.dbase.get<int >("numberOfIterationsForConstraints"))/max(1,parameters.dbase.get<int >("numberOfSolvesForConstraints")),
+                real(parameters.dbase.get<int >("numberOfSolvesForConstraints"))/max(1,numSteps));
     
 #ifdef USE_PPP
       fprintf(output," Total: messages sent=%i messages received=%i\n",
@@ -361,38 +361,38 @@ printStatistics(FILE *file /* = stdout */)
       FILE *output = fileio==0 ? logFile : file;
       fflush(output);
       fPrintF(output,"\n"
-	      " ------- Summary: Timings per processor -----------\n"
-	      "   p   ");
+              " ------- Summary: Timings per processor -----------\n"
+              "   p   ");
       for( int i=0; i<maximumNumberOfTimings; i++ )
       { // output a short-form name (7 chars)
-	if( timingName[i]!="" && maxTiming(i)!=0. )  
-	{
+        if( timingName[i]!="" && maxTiming(i)!=0. )  
+        {
           aString shortName="       ";
           int m=0;
-	  for( int s=0; m<7 && s<timingName[i].length(); s++ ) 
-	  { // strip off blanks
-	    if( timingName[i][s]!=' ' ) {shortName[m]=timingName[i][s]; m++;} //
-	  }
+          for( int s=0; m<7 && s<timingName[i].length(); s++ ) 
+          { // strip off blanks
+            if( timingName[i][s]!=' ' ) {shortName[m]=timingName[i][s]; m++;} //
+          }
           fPrintF(output,"%7.7s ",(const char*)shortName);
-	}
+        }
       }
       fPrintF(output,"\n");
       fflush(output);
       RealArray timingLocal(timing.dimension(0));
       for( int p=0; p<np; p++ )
       {
-	// Note -- it did not work very well to have processor p try to write results, so instead
+        // Note -- it did not work very well to have processor p try to write results, so instead
         // we copy results to processor 0 to print 
         timingLocal=timing;
         broadCast(timingLocal,p);  // send timing info from processor p   -- don't need a broad cast here **fix**
-	fPrintF(output,"%4i : ",p);
-	for( int i=0; i<maximumNumberOfTimings; i++ )
-	{
-	  if( timingName[i]!="" && maxTiming(i)!=0. )    
-	    fPrintF(output,"%7.1e ",timingLocal(i));
-	}
-	fflush(output);
-	fPrintF(output,"\n");
+        fPrintF(output,"%4i : ",p);
+        for( int i=0; i<maximumNumberOfTimings; i++ )
+        {
+          if( timingName[i]!="" && maxTiming(i)!=0. )    
+            fPrintF(output,"%7.1e ",timingLocal(i));
+        }
+        fflush(output);
+        fPrintF(output,"\n");
       }
       fPrintF(output,"\n");
       fflush(output);
@@ -444,8 +444,8 @@ printMemoryUsage(FILE *file /* = stdout */)
   aString dots="...................................................................";
 
   fPrintF(file,"\n\n"
-	  "  --------------------------------------------------------- \n"
-	  "   Memory usage                   Mbytes    real/point   percent   \n");
+          "  --------------------------------------------------------- \n"
+          "   Memory usage                   Mbytes    real/point   percent   \n");
   enum
   {
     memoryForCompositeGrid,
@@ -522,7 +522,7 @@ printMemoryUsage(FILE *file /* = stdout */)
 //     for( grid=0; grid<cg.numberOfComponentGrids(); grid++)
 //     {
 //       if( grid==0 || min(abs( workSpaceIndex(grid)-workSpaceIndex(Range(0,grid-1)))) !=0 )
-// 	wSize+=workSpace(grid).sizeOf();
+//      wSize+=workSpace(grid).sizeOf();
 //     }
 //     memory[memoryForWorkSpace]=wSize;
 //   }
@@ -535,11 +535,11 @@ printMemoryUsage(FILE *file /* = stdout */)
   for( i=0; i<numberOfMemoryItems; i++ )
   {
     fPrintF(file," %s%s%9.2f  %9.2f     %5.1f  \n",
-	    (const char*)memoryName[i],(const char*)dots(0,max(0,nSpace-memoryName[i].length())),
-	    memory[i]/megaByte,memory[i]/sizeof(real)/totalNumberOfGridPoints, 100.*memory[i]/memory[memoryTotal]);
+            (const char*)memoryName[i],(const char*)dots(0,max(0,nSpace-memoryName[i].length())),
+            memory[i]/megaByte,memory[i]/sizeof(real)/totalNumberOfGridPoints, 100.*memory[i]/memory[memoryTotal]);
   }
   fPrintF(file,"\n **Bytes per grid point = %9.3e/%i = %9.3e\n",
-	  memory[memoryTotal],totalNumberOfGridPoints,memory[memoryTotal]/totalNumberOfGridPoints);
+          memory[memoryTotal],totalNumberOfGridPoints,memory[memoryTotal]/totalNumberOfGridPoints);
   fPrintF(file," **number of reals per grid point = %9.3e\n\n",
           memory[memoryTotal]/sizeof(real)/totalNumberOfGridPoints);
   
@@ -554,14 +554,14 @@ printMemoryUsage(FILE *file /* = stdout */)
     fPrintF(file," +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
   }
   fPrintF(file,"===== memory per-proc: [min=%g,ave=%g,max=%g](Mb), max-recorded=%g (Mb), total=%g (Mb)\n",
-	  minMem,aveMem,maxMem,maxMemRecorded,totalMem);
+          minMem,aveMem,maxMem,maxMemRecorded,totalMem);
 
 //     fPrintF(file,"************************************************************************* \n"
-// 	    " Here is what memory is used by A++ arrays \n"
-// 	    " total array memory in use = %10.3fM, (%10.3fM including overhead)\n"
-// 	    " (This info is obtained by running cg with the `memory' option)\n"
-// 	    "*************************************************************************\n\n",
-// 	    totalArrayMemoryInUse/megaByte,totalMemoryInUse/megaByte);
+//          " Here is what memory is used by A++ arrays \n"
+//          " total array memory in use = %10.3fM, (%10.3fM including overhead)\n"
+//          " (This info is obtained by running cg with the `memory' option)\n"
+//          "*************************************************************************\n\n",
+//          totalArrayMemoryInUse/megaByte,totalMemoryInUse/megaByte);
     
   return 0;
 }

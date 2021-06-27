@@ -3,23 +3,18 @@
 
 # User Guide and Reference manual
 mp: mp.tex
-	latex mp
+	pdflatex mp
 	makeindex mp.idx
 	bibtex mp
-	latex mp
-	dvips -P pdf -G0 -o mp.ps mp.dvi
-	ps2pdf mp.ps
+
 #	mv mp.pdf $(WEBPAGE)/documentation
 
 
 # mp reference guide
-ref: ref.tex
-	latex ref
-	makeindex ref.idx
-	bibtex ref
-	latex ref
-	dvips -P pdf -G0 -o ref.ps ref.dvi
-	ps2pdf ref.ps
+mpRef: mpRef.tex
+	pdflatex mpRef
+	makeindex mpRef.idx
+	bibtex mpRef
 
 # Notes on solving multi-domain problems
 multiDomain: multiDomain.tex

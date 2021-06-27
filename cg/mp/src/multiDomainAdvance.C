@@ -91,14 +91,14 @@ multiDomainAdvance( real &t, real & tFinal )
     {
       if( domainSolver[d]->parameters.isAdaptiveGridProblem() )
       {
-	parameters.dbase.get<bool>("adaptiveGridProblem")=true;
-	break;
+        parameters.dbase.get<bool>("adaptiveGridProblem")=true;
+        break;
       }
     }
     if( parameters.isAdaptiveGridProblem() )
     {
       if( true || debug() & 2 )
-	printF("Cgmp::::multiDomainAdvance: AMR is being used in at least one domain\n");
+        printF("Cgmp::::multiDomainAdvance: AMR is being used in at least one domain\n");
     }
   }
   
@@ -114,7 +114,7 @@ multiDomainAdvance( real &t, real & tFinal )
       // For AMR we need to re-define the interface since the AMR grids for the initial conditions were created
       // after the interfaces were initially constructed
       if( parameters.isAdaptiveGridProblem() )
-	initializeInterfaces(gfIndex); // this will re-define the interfaces
+        initializeInterfaces(gfIndex); // this will re-define the interfaces
 
       initializeInterfaceBoundaryConditions( t,dt,gfIndex );
     }
@@ -131,7 +131,7 @@ multiDomainAdvance( real &t, real & tFinal )
       {
         std::vector<int> gfIndex(numberOfDomains,current); // ** fix this ** get gfIndex from each domain solver
         const int correct=0;
-	assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );
+        assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );
       }
     }
       
@@ -182,7 +182,7 @@ multiDomainAdvance( real &t, real & tFinal )
       if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
       {
         initializeInterfaces(gfIndex); // this will re-define the interfaces
-	initializeInterfaceBoundaryConditions( t,dt,gfIndex );  // assign boundary conditions at the interface
+        initializeInterfaceBoundaryConditions( t,dt,gfIndex );  // assign boundary conditions at the interface
       }      
     }
     
@@ -195,12 +195,12 @@ multiDomainAdvance( real &t, real & tFinal )
 
     if( debug() & 2 )
       printF(" @@@@ Cgmp::multiDomainAdvance: maximum numberOfCorrectorSteps=%i (required=%i)\n",
-	     numberOfCorrectorSteps,numberOfRequiredCorrectorSteps);
+             numberOfCorrectorSteps,numberOfRequiredCorrectorSteps);
     if( debug() & 2 )
     {
       fPrintF(interfaceFile,
               "\n --- Start of step: t=%9.3e globalStep=%i numberOfCorrectorSteps=%i required=%i coupled=%i ---\n",
-	      t,parameters.dbase.get<int >("globalStepNumber"),numberOfCorrectorSteps,numberOfRequiredCorrectorSteps,
+              t,parameters.dbase.get<int >("globalStepNumber"),numberOfCorrectorSteps,numberOfRequiredCorrectorSteps,
               int(solveCoupledInterfaceEquations));
     }
 
@@ -211,11 +211,11 @@ multiDomainAdvance( real &t, real & tFinal )
       getInterfaceResiduals( t, dt, gfIndex, maxResidual, saveInterfaceTimeHistoryValues );
       if( debug() & 2 )
       {
-	for( int inter=0; inter<maxResidual.size(); inter++ )
-	{
-	  printF(" --- Before time step %i (t=%9.3e) : interface %i : max-interface-residual=%8.2e\n",
-		 parameters.dbase.get<int >("globalStepNumber"),t,inter,maxResidual[inter]);
-	}
+        for( int inter=0; inter<maxResidual.size(); inter++ )
+        {
+          printF(" --- Before time step %i (t=%9.3e) : interface %i : max-interface-residual=%8.2e\n",
+                 parameters.dbase.get<int >("globalStepNumber"),t,inter,maxResidual[inter]);
+        }
       }
     }
 
@@ -227,51 +227,51 @@ multiDomainAdvance( real &t, real & tFinal )
 
       ForDomainOrdered(d)
       {
-	// Assign the RHS for the interface equations on domain d 
+        // Assign the RHS for the interface equations on domain d 
         // We could extrapolate the values of the RHS from previous times as an inital guess (correct=0)
         // or use the current guess (correct >0)
-	if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
-	{
-	  assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex );
-	}
-	
-	if( debug() & 2 )
+        if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
+        {
+          assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex );
+        }
+        
+        if( debug() & 2 )
           printF("\n *** multiDomainAdvance: takeTimeStep for domain %s (d=%i,dd=%i) correct=%i t=%8.2e ***\n\n",
                 (const char*)domainSolver[d]->getName(),d,dd,correct,t);
 
-	domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );
+        domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );
 
 
-	gfIndex[d]=gfIndexNext[d]; // Domain d now has a solution at the next time level we can use
-	
-	if( debug() & 4 )
-	{
-	  // Now check how well the interface equations are satisfied
+        gfIndex[d]=gfIndexNext[d]; // Domain d now has a solution at the next time level we can use
+        
+        if( debug() & 4 )
+        {
+          // Now check how well the interface equations are satisfied
           fPrintF(interfaceFile,"\n --- After takeTimeStep for domain d=%i (correction=%i t=%9.3e)\n",d,correct,t+dt);
-	  getInterfaceResiduals( t+dt, dt, gfIndex, maxResidual );
-	}
-	
+          getInterfaceResiduals( t+dt, dt, gfIndex, maxResidual );
+        }
+        
       } // for domain 
       
       
       // Solve the coupled interface equations: 
       if( solveCoupledInterfaceEquations )
       {
-	if( debug() & 2 )
+        if( debug() & 2 )
           printF("=== multiDomainAdvance: solve the coupled interface equations\n");
-	assignInterfaceBoundaryConditions(gfIndex, dt );
+        assignInterfaceBoundaryConditions(gfIndex, dt );
       }
 
       // -- check for convergence --
       bool hasConverged = checkInterfaceForConvergence( correct,
-							numberOfCorrectorSteps,
-							numberOfRequiredCorrectorSteps,
-							t+dt,
-							alwaysSetBoundaryData,
-							gfIndex,
-							oldResidual,initialResidual,firstResidual,
-							maxResidual,
-							interfaceIterationsHaveConverged );
+                                                        numberOfCorrectorSteps,
+                                                        numberOfRequiredCorrectorSteps,
+                                                        t+dt,
+                                                        alwaysSetBoundaryData,
+                                                        gfIndex,
+                                                        oldResidual,initialResidual,firstResidual,
+                                                        maxResidual,
+                                                        interfaceIterationsHaveConverged );
       if( hasConverged ) break;
 
       
@@ -283,7 +283,7 @@ multiDomainAdvance( real &t, real & tFinal )
       domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] );
     }
     
-    t+=dt; 	
+    t+=dt;      
     numberOfStepsTaken++; 
     current=next;
 
@@ -339,6 +339,7 @@ checkInterfaceForConvergence( const int correct,
     if( debug() & 2 )
       fPrintF(interfaceFile,"--checkConvergence-- After takeTimeStep for all domains: (correction=%i t=%9.3e)\n",correct,tNew);
 
+    // ----------- GET THE CURRENT RESIDUALS IN THE INTERFACE CONDITIONS ----------
     // NOTE: the history of interface iterates are saved here 
     getInterfaceResiduals( tNew, dt, gfIndex, maxResidual, saveInterfaceIterateValues );
 
@@ -354,55 +355,55 @@ checkInterfaceForConvergence( const int correct,
     for( int inter=0; inter<interfaceList.size(); inter++ )
     {
       if( correct==0 ) 
-	initialResidual[inter]=maxResidual[inter];
+        initialResidual[inter]=maxResidual[inter];
       else if( correct==1 )  
-	firstResidual[inter]=maxResidual[inter];
+        firstResidual[inter]=maxResidual[inter];
 
       interfaceIterationsHaveConverged = interfaceIterationsHaveConverged && 
-	maxResidual[inter] < interfaceList[inter].interfaceTolerance;
+        maxResidual[inter] < interfaceList[inter].interfaceTolerance;
       if( !interfaceIterationsHaveConverged ) break;
     }
-	
+        
     if( debug() & 2 )
     {
       assert( maxResidual.size()==interfaceList.size() );
-	  
+          
       for( int inter=0; inter<interfaceList.size(); inter++ )
       {
-	real resRatio=min(1000., maxResidual[inter]/max(REAL_MIN*100.,oldResidual[inter]));
-	oldResidual[inter]=maxResidual[inter];
-	    
-	printF("--MP-- After takeTimeStep: interface %i: (correction=%i t=%9.3e) :  max-interface-residual=%8.2e, "
-	       "ratio=%7.4f tol=%8.2e\n",
-	       inter,correct,tNew,maxResidual[inter],resRatio,interfaceList[inter].interfaceTolerance);
-	fPrintF(interfaceFile,
-		" interface %i : t=%9.3e correction=%i max-interface-residual=%8.2e ratio=%7.4f tol=%8.2e [%i]\n",
-		inter,tNew,correct,maxResidual[inter],resRatio,interfaceList[inter].interfaceTolerance,inter);
+        real resRatio=min(1000., maxResidual[inter]/max(REAL_MIN*100.,oldResidual[inter]));
+        oldResidual[inter]=maxResidual[inter];
+            
+        printF("--MP-- After takeTimeStep: interface %i: (correction=%i t=%9.3e) :  max-interface-residual=%8.2e, "
+               "ratio=%7.4f tol=%8.2e\n",
+               inter,correct,tNew,maxResidual[inter],resRatio,interfaceList[inter].interfaceTolerance);
+        fPrintF(interfaceFile,
+                " interface %i : t=%9.3e correction=%i max-interface-residual=%8.2e ratio=%7.4f tol=%8.2e [%i]\n",
+                inter,tNew,correct,maxResidual[inter],resRatio,interfaceList[inter].interfaceTolerance,inter);
             
       }
     }
-	
+        
   }
 
   bool correctionsAreDone= correct==numberOfCorrectorSteps;
   if( interfaceIterationsHaveConverged && !solveCoupledInterfaceEquations )
   {
-	
+        
     if( correct >= numberOfRequiredCorrectorSteps )
     {
       if( debug() & 1 )
-	printF("*** Cgmp: t=%9.3e interface iterations have converged (%i iterations)****\n",tNew,correct+1);
+        printF("*** Cgmp: t=%9.3e interface iterations have converged (%i iterations)****\n",tNew,correct+1);
       fPrintF(interfaceFile,"****t=%9.3e correction=%i : interface iterations have converged****\n",tNew,correct);
     }
     else
     {
       if( debug() & 1 )
-	printF("*** Cgmp: t=%9.3e interface iterations have converged BEFORE PC corrections are done (%i iterations)****\n",
-	       tNew,correct+1);
+        printF("*** Cgmp: t=%9.3e interface iterations have converged BEFORE PC corrections are done (%i iterations)****\n",
+               tNew,correct+1);
       fPrintF(interfaceFile,"****t=%9.3e correction=%i : interface iterations have converged BEFORE PC corrections are done****\n",
-	      tNew,correct);
+              tNew,correct);
     }
-	
+        
     if( correct >= numberOfRequiredCorrectorSteps ) // we can stop if we have corrected enough times.
     {
       correctionsAreDone=true;
@@ -415,23 +416,23 @@ checkInterfaceForConvergence( const int correct,
       // save the current convergence rate: 
       for( int inter=0; inter<interfaceList.size(); inter++ )
       {
-	real cr;
-	if( correct<=1 )
-	{
-	  cr=pow( maxResidual[inter]/max(REAL_MIN*100.,initialResidual[inter]), 1./max(correct,1));
-	}
-	else
-	{
-	  // start measuring the CR at the first residual
-	  cr=pow( maxResidual[inter]/max(REAL_MIN*100.,firstResidual[inter]), 1./max(correct-1,1));
-	}
-	interfaceList[inter].estimatedConvergenceRate +=cr;
+        real cr;
+        if( correct<=1 )
+        {
+          cr=pow( maxResidual[inter]/max(REAL_MIN*100.,initialResidual[inter]), 1./max(correct,1));
+        }
+        else
+        {
+          // start measuring the CR at the first residual
+          cr=pow( maxResidual[inter]/max(REAL_MIN*100.,firstResidual[inter]), 1./max(correct-1,1));
+        }
+        interfaceList[inter].estimatedConvergenceRate +=cr;
 
-	// printF(" ** estimatedConvergenceRate: interface=%i maxRes=%8.2e initialRes=%8.2e rate=%8.2e\n",
-	//    inter,maxResidual[inter],initialResidual[inter],cr);
-	    
-	interfaceList[inter].numberOfInterfaceSolves++;
-	interfaceList[inter].totalNumberOfInterfaceIterations+=correct+1;
+        // printF(" ** estimatedConvergenceRate: interface=%i maxRes=%8.2e initialRes=%8.2e rate=%8.2e\n",
+        //    inter,maxResidual[inter],initialResidual[inter],cr);
+            
+        interfaceList[inter].numberOfInterfaceSolves++;
+        interfaceList[inter].totalNumberOfInterfaceIterations+=correct+1;
       }
     }
     // break;

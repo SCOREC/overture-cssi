@@ -13,6 +13,9 @@
 #
 #  plotStuff plotDisk.cmd -show=diskInAChannelScf10G8 -name=diskInAChannelScf10G8 -solution=21 -tp=1p0
 #
+#  plotStuff plotDisk.cmd -show=diskInAChannelScf10G2.show -name=diskInChannelScf10G2
+#  plotStuff plotDisk.cmd -show=diskInAChannelScf10G4.show -name=diskInChannelScf10G4 -solution=16
+#
 $show="balloon.show"; $vMax=""; $solution=1; $name="balloon";  $tp=""; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "show=s"=>\$show,"name=s"=>\$name,"vMax=f"=>\$vMax,"solution=i"=>\$solution,"tp=s"=>\$tp );

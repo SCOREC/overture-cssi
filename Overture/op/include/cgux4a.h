@@ -13,66 +13,66 @@
 #define TZ(I1,I2,I3) inverseVertexDerivative(I1,I2,I3,8)
 
 #define UR4A(I1,I2,I3,KD) ( (8.*(U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))  \
-                               -(U(I1+2,I2,I3,KD)-U(I1-2,I2,I3,KD)))*d14(axis1) )
+                               -(U(I1+2,I2,I3,KD)-U(I1-2,I2,I3,KD)))*d14(0) )
 #define US4A(I1,I2,I3,KD) ( (8.*(U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))  \
-                               -(U(I1,I2+2,I3,KD)-U(I1,I2-2,I3,KD)))*d14(axis2) )
+                               -(U(I1,I2+2,I3,KD)-U(I1,I2-2,I3,KD)))*d14(1) )
 #define UT4A(I1,I2,I3,KD) ( (8.*(U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD)) \
-                               -(U(I1,I2,I3+2,KD)-U(I1,I2,I3-2,KD)))*d14(axis3) )
+                               -(U(I1,I2,I3+2,KD)-U(I1,I2,I3-2,KD)))*d14(2) )
 
 #define RXR4(I1,I2,I3) ( (8.*(RX(I1+1,I2,I3)-RX(I1-1,I2,I3))    \
-                            -(RX(I1+2,I2,I3)-RX(I1-2,I2,I3)))*d14(axis1) )
+                            -(RX(I1+2,I2,I3)-RX(I1-2,I2,I3)))*d14(0) )
 #define RYR4(I1,I2,I3) ( (8.*(RY(I1+1,I2,I3)-RY(I1-1,I2,I3))    \
-                            -(RY(I1+2,I2,I3)-RY(I1-2,I2,I3)))*d14(axis1) )
+                            -(RY(I1+2,I2,I3)-RY(I1-2,I2,I3)))*d14(0) )
 #define RZR4(I1,I2,I3) ( (8.*(RZ(I1+1,I2,I3)-RZ(I1-1,I2,I3))    \
-                            -(RZ(I1+2,I2,I3)-RZ(I1-2,I2,I3)))*d14(axis1) )
+                            -(RZ(I1+2,I2,I3)-RZ(I1-2,I2,I3)))*d14(0) )
 #define RXS4(I1,I2,I3) ( (8.*(RX(I1,I2+1,I3)-RX(I1,I2-1,I3))    \
-                            -(RX(I1,I2+2,I3)-RX(I1,I2-2,I3)))*d14(axis2) )
+                            -(RX(I1,I2+2,I3)-RX(I1,I2-2,I3)))*d14(1) )
 #define RYS4(I1,I2,I3) ( (8.*(RY(I1,I2+1,I3)-RY(I1,I2-1,I3))    \
-                            -(RY(I1,I2+2,I3)-RY(I1,I2-2,I3)))*d14(axis2) )
+                            -(RY(I1,I2+2,I3)-RY(I1,I2-2,I3)))*d14(1) )
 #define RZS4(I1,I2,I3) ( (8.*(RZ(I1,I2+1,I3)-RZ(I1,I2-1,I3))    \
-                            -(RZ(I1,I2+2,I3)-RZ(I1,I2-2,I3)))*d14(axis2) )
+                            -(RZ(I1,I2+2,I3)-RZ(I1,I2-2,I3)))*d14(1) )
 #define RXT4(I1,I2,I3) ( (8.*(RX(I1,I2,I3+1)-RX(I1,I2,I3-1))    \
-                            -(RX(I1,I2,I3+2)-RX(I1,I2,I3-2)))*d14(axis3) )
+                            -(RX(I1,I2,I3+2)-RX(I1,I2,I3-2)))*d14(2) )
 #define RYT4(I1,I2,I3) ( (8.*(RY(I1,I2,I3+1)-RY(I1,I2,I3-1))    \
-                            -(RY(I1,I2,I3+2)-RY(I1,I2,I3-2)))*d14(axis3) )
+                            -(RY(I1,I2,I3+2)-RY(I1,I2,I3-2)))*d14(2) )
 #define RZT4(I1,I2,I3) ( (8.*(RZ(I1,I2,I3+1)-RZ(I1,I2,I3-1))    \
-                            -(RZ(I1,I2,I3+2)-RZ(I1,I2,I3-2)))*d14(axis3) )
+                            -(RZ(I1,I2,I3+2)-RZ(I1,I2,I3-2)))*d14(2) )
 #define SXR4(I1,I2,I3) ( (8.*(SX(I1+1,I2,I3)-SX(I1-1,I2,I3))    \
-                            -(SX(I1+2,I2,I3)-SX(I1-2,I2,I3)))*d14(axis1) )
+                            -(SX(I1+2,I2,I3)-SX(I1-2,I2,I3)))*d14(0) )
 #define SYR4(I1,I2,I3) ( (8.*(SY(I1+1,I2,I3)-SY(I1-1,I2,I3))    \
-                            -(SY(I1+2,I2,I3)-SY(I1-2,I2,I3)))*d14(axis1) )
+                            -(SY(I1+2,I2,I3)-SY(I1-2,I2,I3)))*d14(0) )
 #define SZR4(I1,I2,I3) ( (8.*(SZ(I1+1,I2,I3)-SZ(I1-1,I2,I3))    \
-                            -(SZ(I1+2,I2,I3)-SZ(I1-2,I2,I3)))*d14(axis1) )
+                            -(SZ(I1+2,I2,I3)-SZ(I1-2,I2,I3)))*d14(0) )
 #define SXS4(I1,I2,I3) ( (8.*(SX(I1,I2+1,I3)-SX(I1,I2-1,I3))    \
-                            -(SX(I1,I2+2,I3)-SX(I1,I2-2,I3)))*d14(axis2) )
+                            -(SX(I1,I2+2,I3)-SX(I1,I2-2,I3)))*d14(1) )
 #define SYS4(I1,I2,I3) ( (8.*(SY(I1,I2+1,I3)-SY(I1,I2-1,I3))    \
-                            -(SY(I1,I2+2,I3)-SY(I1,I2-2,I3)))*d14(axis2) )
+                            -(SY(I1,I2+2,I3)-SY(I1,I2-2,I3)))*d14(1) )
 #define SZS4(I1,I2,I3) ( (8.*(SZ(I1,I2+1,I3)-SZ(I1,I2-1,I3))    \
-                            -(SZ(I1,I2+2,I3)-SZ(I1,I2-2,I3)))*d14(axis2) )
+                            -(SZ(I1,I2+2,I3)-SZ(I1,I2-2,I3)))*d14(1) )
 #define SXT4(I1,I2,I3) ( (8.*(SX(I1,I2,I3+1)-SX(I1,I2,I3-1))    \
-                            -(SX(I1,I2,I3+2)-SX(I1,I2,I3-2)))*d14(axis3) )
+                            -(SX(I1,I2,I3+2)-SX(I1,I2,I3-2)))*d14(2) )
 #define SYT4(I1,I2,I3) ( (8.*(SY(I1,I2,I3+1)-SY(I1,I2,I3-1))    \
-                            -(SY(I1,I2,I3+2)-SY(I1,I2,I3-2)))*d14(axis3) )
+                            -(SY(I1,I2,I3+2)-SY(I1,I2,I3-2)))*d14(2) )
 #define SZT4(I1,I2,I3) ( (8.*(SZ(I1,I2,I3+1)-SZ(I1,I2,I3-1))    \
-                            -(SZ(I1,I2,I3+2)-SZ(I1,I2,I3-2)))*d14(axis3) )
+                            -(SZ(I1,I2,I3+2)-SZ(I1,I2,I3-2)))*d14(2) )
 #define TXR4(I1,I2,I3) ( (8.*(TX(I1+1,I2,I3)-TX(I1-1,I2,I3))    \
-                            -(TX(I1+2,I2,I3)-TX(I1-2,I2,I3)))*d14(axis1) )
+                            -(TX(I1+2,I2,I3)-TX(I1-2,I2,I3)))*d14(0) )
 #define TYR4(I1,I2,I3) ( (8.*(TY(I1+1,I2,I3)-TY(I1-1,I2,I3))    \
-                            -(TY(I1+2,I2,I3)-TY(I1-2,I2,I3)))*d14(axis1) )
+                            -(TY(I1+2,I2,I3)-TY(I1-2,I2,I3)))*d14(0) )
 #define TZR4(I1,I2,I3) ( (8.*(TZ(I1+1,I2,I3)-TZ(I1-1,I2,I3))    \
-                            -(TZ(I1+2,I2,I3)-TZ(I1-2,I2,I3)))*d14(axis1) )
+                            -(TZ(I1+2,I2,I3)-TZ(I1-2,I2,I3)))*d14(0) )
 #define TXS4(I1,I2,I3) ( (8.*(TX(I1,I2+1,I3)-TX(I1,I2-1,I3))    \
-                            -(TX(I1,I2+2,I3)-TX(I1,I2-2,I3)))*d14(axis2) )
+                            -(TX(I1,I2+2,I3)-TX(I1,I2-2,I3)))*d14(1) )
 #define TYS4(I1,I2,I3) ( (8.*(TY(I1,I2+1,I3)-TY(I1,I2-1,I3))    \
-                            -(TY(I1,I2+2,I3)-TY(I1,I2-2,I3)))*d14(axis2) )
+                            -(TY(I1,I2+2,I3)-TY(I1,I2-2,I3)))*d14(1) )
 #define TZS4(I1,I2,I3) ( (8.*(TZ(I1,I2+1,I3)-TZ(I1,I2-1,I3))    \
-                            -(TZ(I1,I2+2,I3)-TZ(I1,I2-2,I3)))*d14(axis2) )
+                            -(TZ(I1,I2+2,I3)-TZ(I1,I2-2,I3)))*d14(1) )
 #define TXT4(I1,I2,I3) ( (8.*(TX(I1,I2,I3+1)-TX(I1,I2,I3-1))    \
-                            -(TX(I1,I2,I3+2)-TX(I1,I2,I3-2)))*d14(axis3) )
+                            -(TX(I1,I2,I3+2)-TX(I1,I2,I3-2)))*d14(2) )
 #define TYT4(I1,I2,I3) ( (8.*(TY(I1,I2,I3+1)-TY(I1,I2,I3-1))    \
-                            -(TY(I1,I2,I3+2)-TY(I1,I2,I3-2)))*d14(axis3) )
+                            -(TY(I1,I2,I3+2)-TY(I1,I2,I3-2)))*d14(2) )
 #define TZT4(I1,I2,I3) ( (8.*(TZ(I1,I2,I3+1)-TZ(I1,I2,I3-1))    \
-                            -(TZ(I1,I2,I3+2)-TZ(I1,I2,I3-2)))*d14(axis3) )
+                            -(TZ(I1,I2,I3+2)-TZ(I1,I2,I3-2)))*d14(2) )
 
 #define UX41(I1,I2,I3,KD)  (RX(I1,I2,I3)*UR4(I1,I2,I3,KD))
 
@@ -161,29 +161,29 @@
 #define URR4(I1,I2,I3,KD)   (   \
        ( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1+1,I2,I3,KD)+U(I1-1,I2,I3,KD))     \
-            -(U(I1+2,I2,I3,KD)+U(I1-2,I2,I3,KD)) )*d24(axis1)  \
+            -(U(I1+2,I2,I3,KD)+U(I1-2,I2,I3,KD)) )*d24(0)  \
                             )
 #define USS4(I1,I2,I3,KD)   (    \
       +( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1,I2+1,I3,KD)+U(I1,I2-1,I3,KD))     \
-            -(U(I1,I2+2,I3,KD)+U(I1,I2-2,I3,KD)) )*d24(axis2) \
+            -(U(I1,I2+2,I3,KD)+U(I1,I2-2,I3,KD)) )*d24(1) \
                             )
 #define URS4(I1,I2,I3,KD)   (   \
         (8.*(UR4(I1,I2+1,I3,KD)-UR4(I1,I2-1,I3,KD))     \
-           -(UR4(I1,I2+2,I3,KD)-UR4(I1,I2-2,I3,KD)))*d14(axis2) \
+           -(UR4(I1,I2+2,I3,KD)-UR4(I1,I2-2,I3,KD)))*d14(1) \
                             )
 #define UTT4(I1,I2,I3,KD)   (   \
        ( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1,I2,I3+1,KD)+U(I1,I2,I3-1,KD))     \
-            -(U(I1,I2,I3+2,KD)+U(I1,I2,I3-2,KD)) )*d24(axis3) \
+            -(U(I1,I2,I3+2,KD)+U(I1,I2,I3-2,KD)) )*d24(2) \
                             )
 #define URT4(I1,I2,I3,KD)   (   \
          (8.*(UR4(I1,I2,I3+1,KD)-UR4(I1,I2,I3-1,KD))     \
-            -(UR4(I1,I2,I3+2,KD)-UR4(I1,I2,I3-2,KD)))*d14(axis3) \
+            -(UR4(I1,I2,I3+2,KD)-UR4(I1,I2,I3-2,KD)))*d14(2) \
                             )
 #define UST4(I1,I2,I3,KD)   (   \
         (8.*(US4(I1,I2,I3+1,KD)-US4(I1,I2,I3-1,KD))     \
-           -(US4(I1,I2,I3+2,KD)-US4(I1,I2,I3-2,KD)))*d14(axis3) \
+           -(US4(I1,I2,I3+2,KD)-US4(I1,I2,I3-2,KD)))*d14(2) \
                             )
 
 #define UXX41(I1,I2,I3,KD) (SQR(RX(I1,I2,I3))*URR4(I1,I2,I3,KD))
@@ -526,26 +526,26 @@
 // 42 means 4th order, 2D:
 
 #define UX42R(I1,I2,I3,KD) ( (8.*(U(I1+1,I2,I3,KD)-U(I1-1,I2,I3,KD))  \
-                                -(U(I1+2,I2,I3,KD)-U(I1-2,I2,I3,KD)))*h41(axis1) )
+                                -(U(I1+2,I2,I3,KD)-U(I1-2,I2,I3,KD)))*h41(0) )
 #define UY42R(I1,I2,I3,KD) ( (8.*(U(I1,I2+1,I3,KD)-U(I1,I2-1,I3,KD))  \
-                                -(U(I1,I2+2,I3,KD)-U(I1,I2-2,I3,KD)))*h41(axis2) )
+                                -(U(I1,I2+2,I3,KD)-U(I1,I2-2,I3,KD)))*h41(1) )
 #define UZ42R(I1,I2,I3,KD) ( (8.*(U(I1,I2,I3+1,KD)-U(I1,I2,I3-1,KD)) \
-                                -(U(I1,I2,I3+2,KD)-U(I1,I2,I3-2,KD)))*h41(axis3) )
+                                -(U(I1,I2,I3+2,KD)-U(I1,I2,I3-2,KD)))*h41(2) )
 
 #define UXX42R(I1,I2,I3,KD) ( \
        ( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1+1,I2,I3,KD)+U(I1-1,I2,I3,KD))     \
-            -(U(I1+2,I2,I3,KD)+U(I1-2,I2,I3,KD)) )*h42(axis1)  \
+            -(U(I1+2,I2,I3,KD)+U(I1-2,I2,I3,KD)) )*h42(0)  \
                             )
 #define UYY42R(I1,I2,I3,KD) ( \
        ( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1,I2+1,I3,KD)+U(I1,I2-1,I3,KD))     \
-            -(U(I1,I2+2,I3,KD)+U(I1,I2-2,I3,KD)) )*h42(axis2) \
+            -(U(I1,I2+2,I3,KD)+U(I1,I2-2,I3,KD)) )*h42(1) \
                             )
 #define UZZ42R(I1,I2,I3,KD) ( \
        ( -30.*U(I1,I2,I3,KD)     \
         +16.*(U(I1,I2,I3+1,KD)+U(I1,I2,I3-1,KD))     \
-            -(U(I1,I2,I3+2,KD)+U(I1,I2,I3-2,KD)) )*h42(axis3) \
+            -(U(I1,I2,I3+2,KD)+U(I1,I2,I3-2,KD)) )*h42(2) \
                             )
 
 #define UXY42R(I1,I2,I3,KD) ( \
@@ -553,21 +553,21 @@
  +8.*(U(I1-1,I2+2,I3,KD)-U(I1-1,I2-2,I3,KD)-U(I1+1,I2+2,I3,KD)+U(I1+1,I2-2,I3,KD)  \
      +U(I1+2,I2-1,I3,KD)-U(I1-2,I2-1,I3,KD)-U(I1+2,I2+1,I3,KD)+U(I1-2,I2+1,I3,KD)) \
 +64.*(U(I1+1,I2+1,I3,KD)-U(I1-1,I2+1,I3,KD)-U(I1+1,I2-1,I3,KD)+U(I1-1,I2-1,I3,KD)) \
-                     )*(h41(axis1)*h41(axis2)) )
+                     )*(h41(0)*h41(1)) )
 
 #define UXZ42R(I1,I2,I3,KD) ( \
    ( (U(I1+2,I2,I3+2,KD)-U(I1-2,I2,I3+2,KD)-U(I1+2,I2,I3-2,KD)+U(I1-2,I2,I3-2,KD)) \
  +8.*(U(I1-1,I2,I3+2,KD)-U(I1-1,I2,I3-2,KD)-U(I1+1,I2,I3+2,KD)+U(I1+1,I2,I3-2,KD)  \
      +U(I1+2,I2,I3-1,KD)-U(I1-2,I2,I3-1,KD)-U(I1+2,I2,I3+1,KD)+U(I1-2,I2,I3+1,KD)) \
 +64.*(U(I1+1,I2,I3+1,KD)-U(I1-1,I2,I3+1,KD)-U(I1+1,I2,I3-1,KD)+U(I1-1,I2,I3-1,KD)) \
-                )*(h41(axis1)*h41(axis3)) )
+                )*(h41(0)*h41(2)) )
                             
 #define UYZ42R(I1,I2,I3,KD)  ( \
    ( (U(I1,I2+2,I3+2,KD)-U(I1,I2-2,I3+2,KD)-U(I1,I2+2,I3-2,KD)+U(I1,I2-2,I3-2,KD)) \
  +8.*(U(I1,I2-1,I3+2,KD)-U(I1,I2-1,I3-2,KD)-U(I1,I2+1,I3+2,KD)+U(I1,I2+1,I3-2,KD)  \
      +U(I1,I2+2,I3-1,KD)-U(I1,I2-2,I3-1,KD)-U(I1,I2+2,I3+1,KD)+U(I1,I2-2,I3+1,KD)) \
 +64.*(U(I1,I2+1,I3+1,KD)-U(I1,I2-1,I3+1,KD)-U(I1,I2+1,I3-1,KD)+U(I1,I2-1,I3-1,KD)) \
-                )*(h41(axis2)*h41(axis3)) )
+                )*(h41(1)*h41(2)) )
 
 
 #define LAPLACIAN42R(I1,I2,I3,KD)  ( UXX42R(I1,I2,I3,KD)+UYY42R(I1,I2,I3,KD) )

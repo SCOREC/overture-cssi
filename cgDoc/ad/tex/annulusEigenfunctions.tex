@@ -1,0 +1,35 @@
+% ------------------------------------------------------------------------------------
+\subsection{Eigenfunctions of the heat equation on an annulus}  \label{sec:annulusEig}
+
+In this section we describe some exact solutions for the heat equation, $u_t = \Dc \Delta u$, in an annular region.
+These solutions are implemented in {\tt cgad/src/userDefinedKnownSolutions.bC}.
+
+\mni
+The eigenfunctions for the heat equation on annulus of inner radius $a$ and outer radius $b$ take the form
+\ba
+   & u(\xv,t) = a \, e^{- \Dc \lambda^2 t} \, \Big( c_J J_n(\lambda r) + c_Y Y_n( \lambda r) \Big) \, \sin( n\theta)  ,
+\ea
+for $n=0,1,2,3,\ldots$, 
+where $\lambda = \lambda_{m,n}$, $m=1,2,3,\ldots$ is the m'th root of 
+\bat
+   & J_n(\lambda a) Y_n(\lambda b) - J_n(\lambda b) Y_n(\lambda a) = 0 ,         \qquad && \text{for Dirichlet BCs at $r=a$, $r=b$} , \\
+   & J_n'(\lambda a) Y_n'(\lambda b) - J_n'(\lambda b) Y_n'(\lambda a)  = 0 ,    \qquad && \text{for Neumann BCs at $r=a$, $r=b$} , 
+\eat
+and where
+\bat
+  &  c_J = \alpha \, Y_n(\lambda a),  \quad c_Y = \alpha\, J_n(\lambda a),     \qquad && \text{for Dirichlet BCs at $r=a$, $r=b$} , \\
+  &  c_J = \alpha \, Y_n'(\lambda a), \quad c_Y = \alpha\, J_n'(\lambda a),    \qquad && \text{for Neumann BCs at $r=a$, $r=b$} , 
+\eat
+for any scale factor $\alpha$. The roots are computed in {\tt cgad/codes/annulusEigenvalues.maple} and saved in some files.
+
+\mni
+Here are some results from grid convergence studies. See {\tt cg/ad/conv/Makefile} for commands to generate these tables.
+
+
+\mni \textbf{CN+FD2}:
+\input tables/annulusEigenIMAnnulusDirichletOrder2MaxNormConvTable.tex
+
+\mni \textbf{BD4+FD4}:
+\input tables/annulusEigenBDF4AnnulusDirichletOrder4MaxNormConvTable.tex
+
+

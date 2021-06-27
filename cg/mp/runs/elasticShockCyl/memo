@@ -1,3 +1,27 @@
+
+*************************************************************
+************* Mon April 5, 2021 
+
+REVISIT FOR DOCUMENTATION
+
+
+ogen -noplot multiDiskDeformGrid -factor=2 -width=.4
+ogen -noplot multiDiskDeformGrid -interp=e -factor=4
+
+$cgmp -noplot shockMultiDisk -method=cns -cnsVariation=godunov -smVariation=g -g=multiDiskDeformGridi2 -scf=5.0 -tp=.01 -tf=2. -nc=1 -fic=shock -pOffset=.71440 -lambdaSolid=4.0 -muSolid=2.0 -diss=5.0 -cnsGodunovOrder=1 -debug=1 -show=shockMultiDisk2m.show -flushFrequency=50 -go=go >! shockMultiDisk2m.out 
+
+
+G16 - OK
+cgmp shockMultiDisk -method=cns -cnsVariation=godunov -smVariation=g -g=multiDiskDeformGride16 -scf=5.0 -tp=.05 -tf=2. -nc=1 -fic=shock -pOffset=.71440 -lambdaSolid=4.0 -muSolid=2.0 -diss=5.0 -cnsGodunovOrder=1 -debug=1 -go=og
+
+
+G4 - OK
+cgmp shockMultiDisk -method=cns -cnsVariation=godunov -smVariation=g -g=multiDiskDeformGride4 -scf=5.0 -tp=.05 -tf=2. -nc=1 -fic=shock -pOffset=.71440 -lambdaSolid=4.0 -muSolid=2.0 -diss=5.0 -cnsGodunovOrder=1 -debug=1 -go=og
+
+COARSE GRID LOOKS OK:
+$cgmp shockMultiDisk -method=cns -cnsVariation=godunov -smVariation=g -g=multiDiskDeformGridi2 -scf=5.0 -tp=.01 -tf=2. -nc=1 -fic=shock -pOffset=.71440 -lambdaSolid=4.0 -muSolid=2.0 -diss=5.0 -cnsGodunovOrder=1 -debug=1 -go=og
+
+
 *************************************************************
 ************* sept 30, 2016
 

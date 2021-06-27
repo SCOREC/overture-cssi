@@ -73,9 +73,9 @@ $topHeight=0.25;
 $cx=2; $cy=$edgeWidth;
 $coreRadius=.25; $xCore=.5*$middleWidth; $yCore=0.; # offset core from center
 # --- define curve ---
-include solidRBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidRBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 #
 #   ---- P-Beam ----
 #
@@ -85,9 +85,9 @@ $topHeight=0.25;
 $cx=4.25; $cy=$edgeWidth;
 $coreRadius=.25; $xCore=.5*$middleWidth; $yCore=0.; # offset core from center
 # --- define curve ---
-include solidPBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidPBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 #
 #   ---- I-Beam ----
 #
@@ -98,9 +98,9 @@ $angle=0;
 $cx=6.5; $cy=0;
 $coreRadius=.15; $xCore=0; $yCore=.5*$centerHeight+.25*$edgeHeight; # offset core from center
 # --- define curve ---
-include solidIBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidIBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 # 
 exit 
 #

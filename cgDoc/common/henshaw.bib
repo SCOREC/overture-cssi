@@ -18,6 +18,21 @@
 @string{aiaa-journal-of-aircraft = {AIAA J. Aircraft}}
 
 
+@article{insfemLi2020,
+title = "A split-step finite-element method for incompressible {Navier-Stokes} equations with high-order accuracy up-to the boundary",
+journal = "Journal of Computational Physics",
+volume = "408",
+pages = "109274",
+year = "2020",
+issn = "0021-9991",
+doi = "https://doi.org/10.1016/j.jcp.2020.109274",
+url = "http://www.sciencedirect.com/science/article/pii/S0021999120300486",
+author = "Longfei Li",
+keywords = "Navier-Stokes equations, Pressure-Poisson reformulation, Split-step method, Finite-element method, Normal-mode analysis",
+abstract = "An efficient and accurate finite-element algorithm is described for the numerical solution of the incompressible Navier-Stokes (INS) equations. The new algorithm that solves the INS equations in a velocity-pressure reformulation is based on a split-step scheme in conjunction with the standard finite-element method. The split-step scheme employed for the temporal discretization of our algorithm completely separates the pressure updates from the solution of velocity variables. When the pressure equation is formed explicitly, the algorithm avoids solving a saddle-point problem; therefore, our algorithm has more flexibility in choosing finite-element spaces. In contrast, popular mixed finite-element methods that solve the INS equations in the primitive variables (or velocity-divergence formulation) lead to discrete saddle-point problems whose solution depends on the choice of finite-element spaces for velocity and pressure that is subject to the well-known Ladyzenskaja-Babuška-Brezzi (LBB) (or inf-sup) condition. For efficiency and robustness, Lagrange (piecewise-polynomial) finite elements of equal order for both velocity and pressure are used. Accurate numerical boundary condition for the pressure equation is also investigated. Motivated by a post-processing technique that calculates derivatives of a finite element solution with super-convergent error estimates, an alternative numerical boundary condition is proposed for the pressure equation at the discrete level. The new numerical pressure boundary condition that can be regarded as a better implementation of the compatibility boundary condition improves the boundary-layer errors of the pressure solution. A normal-mode analysis is performed using a simplified model problem on a uniform mesh to demonstrate the numerical properties of our methods. Convergence studies using P1 elements support the analytical results and demonstrates that our algorithm with the new numerical boundary condition achieves the optimal second-order accuracy for both velocity and pressure up-to the boundary. Benchmark problems are also computed and carefully compared with existing studies. Finally, as an example to illustrate that our approach can be easily adapted for higher-order finite elements, we solve the classical flow-past-a-cylinder problem using Pn finite elements with n≥1."
+}
+
+
 @MISC(CRNARE2007,
       title = {{U.S. DOE} Workshop: Computational Research Needs in Alternative and Renewable Energy},
       note = {http://www.nrel.gov/crnare\_workshop},
@@ -197,6 +212,31 @@
 
 
 %------------------------ A ------------------------------------
+
+@misc{appelo2019waveholtz,
+    title={WaveHoltz: Iterative Solution of the Helmholtz Equation via the Wave Equation},
+    author={Daniel Appelo and Fortino Garcia and Olof Runborg},
+    year={2019},
+    eprint={1910.10148},
+    archivePrefix={arXiv},
+    primaryClass={math.NA}
+}
+
+@article{AppeloColoniusSuperGrid2009,
+title = "A high-order super-grid-scale absorbing layer and its application to linear hyperbolic systems",
+journal = "Journal of Computational Physics",
+volume = "228",
+number = "11",
+pages = "4200 - 4217",
+year = "2009",
+issn = "0021-9991",
+doi = "https://doi.org/10.1016/j.jcp.2009.02.030",
+url = "http://www.sciencedirect.com/science/article/pii/S0021999109001089",
+author = {Daniel Appel\"o and Tim Colonius},
+keywords = "Absorbing layers, Non-reflecting boundary conditions, Perfectly matched layers, Maxwell’s equations, Elastic waves",
+abstract = "We continue the development of the super-grid-scale model initiated in [T. Colonius, H. Ran, A super-grid-scale model for simulating compressible flow on unbounded domains, J. Comput. Phys. 182 (1) (2002) 191–212] and consider its application to linear hyperbolic systems. The super-grid-scale model consists of two parts: reduction of an unbounded to a bounded domain by a smooth coordinate transformation and a damping of those scales. For linear problems the super-grid scales are analogous to spurious numerical waves. We damp these waves by high-order undivided differences. We compute reflection coefficients for different orders of the damping and find that significant improvements are obtained when high-order damping is used. In numerical experiments with Maxwell’s equations, we show that when the damping is of high order, the error from the boundary condition converges at the order of the interior scheme. We also demonstrate that the new method achieves perfectly matched layer-like accuracy. When applied to linear hyperbolic systems the stability of the super-grid-scale method follows from its construction. This makes our method particularly suitable for problems for which perfectly matched layers are unstable. We present results for two such problems: elastic waves in anisotropic media and isotropic elastic waves in wave guides with traction-free surfaces."
+}
+
 
 @book(Ames,
    author = "William F. Ames",
@@ -578,6 +618,7 @@ abstract = "We present an iterative semi-implicit scheme for the incompressible 
 
 % @article{Broering_Lian_2010, title={Numerical Study of Two Flapping Airfoils in Tandem Configuration}, number={January}, journal={Mechanical Engineering}, author={Broering, Timothy M and Lian, Yongsheng}, year={2010}, pages={2010--2010}}
 
+                  
 @inbook{BanksFCT2012,
   author =  {J.W. Banks and J. N. Shadid},
   chapter =   {An Evaluation of a Structured Overlapping Grid Implementation of {FCT} for High-Speed Flows},
@@ -787,6 +828,16 @@ keywords = "Riemann problem"
    note = "accepted for publication",
    year = 2008)
 
+
+@article{BanksHagstrom2016,
+title = "On Galerkin difference methods ",
+author = "J.W. Banks and T. Hagstrom",
+journal = "Journal of Computational Physics ",
+volume = "313",
+number = "",
+pages = "310 - 327",
+year = "2016"
+}
 
 @article{BanksAslamRider2008,
  author = {J. W. Banks and T. Aslam and W. J. Rider},
@@ -1321,6 +1372,14 @@ and Message Aggregation in Parallel Object-Oriented Frameworks for Scientific Co
    year = 1989}
 
 %------------------------ C ------------------------------------
+
+
+@book{Carslaw1945,
+   author = {Horatio Scott Carslaw},
+   title = "Introduction to the Mathematical Theory of the Conduction of Heat in Solids",
+   publisher = "Dover",
+   address = "New York",
+   year = 1945}
 
 @book{CeliaAndGray,
    author = {Michael A. Celia and William G. Gray},
@@ -2248,6 +2307,25 @@ doi = {10.1137/S0036142999361529}
 %------------------------ G ------------------------------------
 
 
+@article{Gander2006,
+   author = "Martin J. Gander",
+   title = "Optimized {S}chwarz Methods",
+   journal = siam-journal-on-numerical-analysis,
+   volume = 44,
+   number = 2, 
+   pages = "699--731",
+   year = 2006}
+                  
+@article{GanderDubois2015,
+  title={Optimized {Schwarz} methods for a diffusion problem with discontinuous coefficient},
+  author={Martin J. Gander and Olivier Dubois},
+  journal={Numerical Algorithms},
+  year={2015},
+  volume={69},
+  pages={109-144}
+}
+
+
 %Wake signature and aerodynamic performance of finite-span root flapping rigid wings
 %Journal of Bionic Engeering, Volume 7, Supplement 1, Septmeber 2010, pages S109-S122
 %Joel E. Guerrero
@@ -2481,6 +2559,12 @@ Year = {1999}}
    pages = "272--293",
    year = 2004)
 
+@book{GustafssonHighOrderDifferenceMethodsBook2008,
+   author = {B. Gutsafsson},
+   title = "High Order Difference Methods for Time Dependent PDE",
+   publisher = "Springer",
+   series = "Springer Series in Computational Mathematics",
+   year = 2008}
 
 %  T.-W. Pan, D. D. Joseph, R. Bai, R. Glowinski, V. Sarin, Fluidization of 1204 spheres: simulation and experiments, J. Fluid Mech., 451 (2002), pp. 169-191.
 
@@ -2626,6 +2710,22 @@ Method that also Introduces a Nearly Consistent Mass Matrix. Part 1: Theory",
 
 %------------------------ H ------------------------------------
 
+@article{HesthavenReview,
+  title={High-order accurate methods in time-domain computational electromagnetics: A review},
+  author={Hesthaven, Jan S},
+  journal={Advances in imaging and electron physics},
+  volume={127},
+  pages={59--123},
+  year={2003}}
+
+
+@BOOK(HughesFEMbook,
+   author = "Thomas J.R Hughes",
+   title = "The Finite Element Method",
+   publisher = "Dover Publications",
+   year = 2000)
+
+
 @article{HuangChenChen2011,
 title = "Numerical scheme for riser motion calculation during {3-D VIV} simulation ",
 journal = journal-of-fluids-and-structures,
@@ -2770,7 +2870,7 @@ author = "A. Harten"
 
 @article{HuPatankarZhu2001,
  author = {Hu, Howard H. and Patankar, N. A. and Zhu, M. Y.},
- title = {Direct numerical simulations of fluid-solid systems using the arbitrary Langrangian-Eulerian technique},
+ title = {Direct numerical simulations of fluid-solid systems using the arbitrary {Lagrangian-Eulerian} technique},
  journal = JCP,
  volume = {169},
  number = {2},
@@ -2880,6 +2980,16 @@ author = "A. Harten"
    year = 1983)
 
 
+@ARTICLE{HagstromLau2007,
+    author = {Thomas Hagstrom and Stephen Lau},
+    title = {Radiation Boundary Conditions for {Maxwell}'s Equations: A Review of Accurate Time-domain Formulations},
+    journal = {J. Comp. Math},
+    volume = 25,
+    number =3,                    
+    year = {2007},
+    pages = {305--336}
+}
+
 @article{Hagstrom1999,
   author =  {T. Hagstrom},
   title =   {Radiation Boundary Conditions for the Numerical Simulation of Waves},
@@ -2910,6 +3020,20 @@ author = "A. Harten"
    title = "Center for {Extended Magnetohydrodynamic Modeling (CEMM)} Challenge Problems",
    number = {http://w3.pppl.gov/cemm/Project.html}
            )
+
+@misc{oversetGridSymposiumWebSite,
+title = {Overset {Grid} {Symposium} web page},
+howpublished = {oversetGridSymposium.org}
+}
+                  
+@misc{OvertureWebPageNoURL,
+title = {OvertureFramework web page}
+}
+                  
+@misc{OvertureWebPage,
+title = {Overture web page},
+howpublished = {OvertureFramework.org}
+}
 
 @techreport(Overture,
    author = "Overture and Team",
@@ -3093,6 +3217,15 @@ keywords = "Weak solutions"
 
 %------------------------ J ------------------------------------
 
+@article{JenkinsonBanks2018,
+author = {M.J. Jenkinson and J.W. Banks},
+title = "High-order accurate {FDTD} schemes for dispersive {Maxwell}'s in second-order form using recursive convolutions",
+journal = "Journal of Computational and Applied Mathematics",
+volume = "336",
+pages = "192 - 218",
+year = "2018"
+}
+
 @article{JohnstonLui2004,
 title = "Accurate, stable and efficient {Navier-Stokes} solvers based on explicit treatment of the pressure term ",
 journal = JCP,
@@ -3103,7 +3236,6 @@ year = "2004",
 note = "",
 issn = "0021-9991",
 doi = "http://dx.doi.org/10.1016/j.jcp.2004.02.009",
-url = "http://www.sciencedirect.com/science/article/pii/S002199910400083X",
 author = "Hans Johnston and Jian-Guo Liu",
 keywords = "Incompressible flow",
 keywords = "Navier–Stokes",
@@ -3619,7 +3751,38 @@ YEAR   ="2000"
 
 %------------------------ L ------------------------------------
 
-                  
+@techreport{ViqueratKlemmLanteriviqueratScheid2013,
+  TITLE = {{Theoretical and numerical analysis of local dispersion models coupled to a discontinuous Galerkin time-domain method for Maxwell's equations}},
+  AUTHOR = {Viquerat, Jonathan and Klemm, Maciej and Lanteri, St{\'e}phane and Scheid, Claire},
+  URL = {https://hal.inria.fr/hal-00819758},
+  TYPE = {Research Report},
+  NUMBER = {RR-8298},
+  PAGES = {79},
+  INSTITUTION = {{INRIA}},
+  YEAR = {2013},
+  MONTH = May,
+  PDF = {https://hal.inria.fr/hal-00819758/file/main.pdf},
+  HAL_ID = {hal-00819758},
+  HAL_VERSION = {v2},
+}
+
+@article{LanteriScheidViquerat2017,
+author = {Lanteri, S. and Scheid, C. and Viquerat, J.},
+title = {Analysis of a Generalized Dispersive Model Coupled to a {DGTD} Method with Application to Nanophotonics},
+journal = {SIAM Journal on Scientific Computing},
+volume = {39},
+number = {3},
+pages = {A831--A859},
+year = {2017},
+doi = {10.1137/15M105207X},
+}
+
+@book{LeVeque2007,
+   author = {Randall J. LeVeque},
+   title = "Finite Difference Methods for Ordinary and Partial Differential Equations: Steady-State and Time-Dependent Problems",
+   publisher = "Society for Industrial and Applied Mathematics",
+   year = 2007}
+
 @article{LiuLiuPego2010,
 title = "Stable and accurate pressure approximation for unsteady incompressible viscous flow ",
 journal = JCP,
@@ -3928,18 +4091,6 @@ Solutions",
    pages = "1105-1108",
    year = 1999}
 %------------------------ M ------------------------------------
-
-% -- early overset grid ---
-@article(MagnusYoshihara1970,
-   author   = "R. Magnus and H. Yoshihara",
-   title    = "Inviscid Transonic Flows over Airfoils",
-   journal  = "AIAA Journal",
-   volume   = "8",
-   number   = "12",
-   pages    = "2157--2162",
-   year     = 1970 )
-
-
 
 
 @book{MarsdenAndTrombaVectorCalculus,
@@ -4454,6 +4605,17 @@ year = {2012},
 
 %------------------------ P ------------------------------------
 
+
+
+
+@article{PeterssonSjogreenSupergridElasticWave2014,
+   title={Super-Grid Modeling of the Elastic Wave Equation in Semi-Bounded Domains},
+   volume={16}, DOI={10.4208/cicp.290113.220514a},
+   number={4},
+   journal={Communications in Computational Physics}, publisher={Cambridge University Press},
+   author={Petersson, N. Anders and Sj\"ogreen, Bj\"orn},
+   year={2014}, pages={913--955}}
+		  
 @book{Panton1984,
    author = {R. L. Panton},
    title = "Incompressible Flow",
@@ -4841,7 +5003,6 @@ year = {2012},
  issn = {0021-9991},
  pages = {1547--1566},
  numpages = {20},
- url = {http://dx.doi.org/10.1016/j.jcp.2010.11.021},
  doi = {10.1016/j.jcp.2010.11.021},
  acmid = {1923075},
  publisher = {Academic Press Professional, Inc.},
@@ -5592,12 +5753,46 @@ note = {From the First ACM Workshop on Applied Computational Geometry}
 
 %  Taylor, G. I. and Green, A. E., Mechanism of the Production of Small Eddies from Large Ones, Proc. R. Soc. Lond. A, 158, 499\u2013521 (1937).
 
+@incollection{ShuTan2017,
+title = "Chapter 2 - {Inverse Lax--Wendroff} Procedure for Numerical Boundary Treatment of Hyperbolic Equations",
+editor = "R\'emi Abgrall and Chi-Wang Shu",
+series = "Handbook of Numerical Analysis",
+publisher = "Elsevier",
+volume = "18",
+pages = "23 - 52",
+year = "2017",
+booktitle = "Handbook of Numerical Methods for Hyperbolic Problems",
+issn = "1570-8659",
+doi = "https://doi.org/10.1016/bs.hna.2016.10.001",
+url = "http://www.sciencedirect.com/science/article/pii/S1570865916300321",
+author = "C.-W. Shu and S. Tan",
+keywords = "Cartesian mesh, Compressible inviscid flow, Extrapolation, Hyperbolic conservation law, Inverse Lax–Wendroff procedure, No-penetration condition, Numerical boundary condition, 65M06",
+abstract = "We discuss a high-order accurate numerical boundary condition for solving hyperbolic conservation laws on fixed Cartesian grids, while the physical domain can be arbitrarily shaped and moving. Compared with body-fitted meshes, the biggest advantage of Cartesian grids is that the grid generation is trivial. The challenge is, however, that the physical boundary does not usually coincide with grid lines. The wide stencil of the high-order interior scheme makes a stable boundary treatment even harder to realize. There are two main ingredients of this method. The first one is an inverse Lax–Wendroff procedure for inflow boundary conditions and the other one is a robust and high-order accurate extrapolation for outflow boundary conditions. This method is high-order accurate, stable, and easy to implement. It has been successfully applied to simulate interactions between compressible inviscid flows and rigid (static or moving) bodies with complex geometry."
+}
+
+
+@article{TanShu2010,
+title = "Inverse {Lax-Wendroff} procedure for numerical boundary conditions of conservation laws",
+journal = "Journal of Computational Physics",
+volume = "229",
+number = "21",
+pages = "8144 - 8166",
+year = "2010",
+issn = "0021-9991",
+doi = "https://doi.org/10.1016/j.jcp.2010.07.014",
+url = "http://www.sciencedirect.com/science/article/pii/S0021999110003979",
+author = "Sirui Tan and Chi-Wang Shu",
+keywords = "Numerical boundary conditions, Hyperbolic conservation laws, Finite difference method, Cartesian mesh, Lax-Wendroff procedure, Extrapolation, Solid wall",
+abstract = "We develop a high order finite difference numerical boundary condition for solving hyperbolic conservation laws on a Cartesian mesh. The challenge results from the wide stencil of the interior high order scheme and the fact that the boundary intersects the grids in an arbitrary fashion. Our method is based on an inverse Lax-Wendroff procedure for the inflow boundary conditions. We repeatedly use the partial differential equation to write the normal derivatives to the inflow boundary in terms of the time derivatives and the tangential derivatives. With these normal derivatives, we can then impose accurate values of ghost points near the boundary by a Taylor expansion. At outflow boundaries, we use Lagrange extrapolation or least squares extrapolation if the solution is smooth, or a weighted essentially non-oscillatory (WENO) type extrapolation if a shock is close to the boundary. Extensive numerical examples are provided to illustrate that our method is high order accurate and has good performance when applied to one and two-dimensional scalar or system cases with the physical boundary not aligned with the grids and with various boundary conditions including the solid wall boundary condition. Additional numerical cost due to our boundary treatment is discussed in some of the examples."
+}
+
+
 @article {TaylorGreen1937,
 author = {Taylor, G. I. and Green, A. E.},
 title = {Mechanism of the Production of Small Eddies from Large Ones},
 journal = {Proc. R. Soc. Lond. A},
 volume = {158},
-number = {499--521},
+pages = {499--521},
 year = {1937},
 }
 

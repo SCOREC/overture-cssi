@@ -1,10 +1,52 @@
 SRC_FILES += Cgad.C getUt.C addForcing.C getTimeSteppingEigenvalue.C AdParameters.C applyBoundaryConditions.C \
              setupPde.C timeSteppingDialog.C setupGridFunctions.C implicit.C advanceADI.C interface.C \
-	     userDefinedInitialConditions.C userDefinedBoundaryValues.C getCoefficients.C updateStateVariables.C \
-             userDefinedDeformingSurface.C implicitTimeStep.C thinFilmSolver.C
+	           userDefinedInitialConditions.C userDefinedBoundaryValues.C getCoefficients.C updateStateVariables.C \
+             userDefinedDeformingSurface.C implicitTimeStep.C thinFilmSolver.C userDefinedKnownSolution.C \
+             getChampParameters.C getChampResidual.C
+
+
+# champ files: 
+SRC_FILES += champBoundaryConditions.C
+
+# --- FNSRCO: fortran 90 files that we always compile optimized ---
+FNSRCO += bcOptAd.f90
+
+# CHAMP files:
+FNSRCO += champResidualOpt.f90 
+# FNSRCO += champResidual2dOrder2r.f90 champResidual2dOrder2c.f90 champResidual3dOrder2r.f90 champResidual3dOrder2c.f90 
+
 
 src/interface.C : src/interface.bC; $(BPP) -quiet -clean $<
+
+
 
 COMMON_SRC := ../common/src
 
 src/implicitTimeStep.C : src/implicitTimeStep.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
+
+src/champBoundaryConditions.C : src/champBoundaryConditions.bC; $(BPP) -quiet -clean $<	
+src/getChampResidual.C : src/getChampResidual.bC champMacros.h; $(BPP) -quiet -clean $< 
+src/applyBoundaryConditions.C : src/applyBoundaryConditions.bC champMacros.h; $(BPP) -quiet -clean $< 
+
+# optimized BCs
+src/bcOptAd.f90 : src/bcOptAd.bf90; $(BPP) -quiet -clean -I$(Overture)/include $< 
+
+
+# -- optimized routines for evaluating the residual in the champ conditions
+src/interface.f: src/interface.bf src/bcDefineFortranInclude.h 
+	@cd src; $(BPP) -clean -quiet -I$(Overture)/include interface.bf
+
+# Note special target so generated files get put uint src/
+src/champResidualOpt.f90: src/champResidualOpt.bf90
+	@cd src; $(BPP) -clean -quiet -I$(Overture)/include champResidualOpt.bf90
+
+# src/champResidual2dOrder2r.f90 : src/champResidualOpt.f90
+# src/champResidual3dOrder2r.f90 : src/champResidualOpt.f90
+# src/champResidual2dOrder4r.f90 : src/champResidualOpt.f90
+# src/champResidual3dOrder4r.f90 : src/champResidualOpt.f90
+# 
+# src/champResidual2dOrder2c.f90 : src/champResidualOpt.f90
+# src/champResidual3dOrder2c.f90 : src/champResidualOpt.f90
+# src/champResidual2dOrder4c.f90 : src/champResidualOpt.f90
+# src/champResidual3dOrder4c.f90 : src/champResidualOpt.f90
+# 

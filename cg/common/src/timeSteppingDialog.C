@@ -44,36 +44,36 @@ buildTimeSteppingDialog(DialogData & dialog )
   delete [] cmd;
     
   aString accuracyCommands[] =  { "second order accurate",
-				  "fourth order accurate",
-				  ""     };
+                                  "fourth order accurate",
+                                  ""     };
       
   dialog.addOptionMenu("accuracy", accuracyCommands, accuracyCommands,
-				      parameters.dbase.get<int >("orderOfAccuracy")==2 ? 0 : 1);
+                                      parameters.dbase.get<int >("orderOfAccuracy")==2 ? 0 : 1);
 
   aString timeAccuracyCommands[] =  { "solve for steady state",
-				      "second order accurate in time",
-				      "fourth order accurate in time",
-				      "sixth order accurate in time",
-				      "eighth order accurate in time",
-				      ""     };
+                                      "second order accurate in time",
+                                      "fourth order accurate in time",
+                                      "sixth order accurate in time",
+                                      "eighth order accurate in time",
+                                      ""     };
       
   dialog.addOptionMenu("time accuracy", timeAccuracyCommands, timeAccuracyCommands,
-				      parameters.dbase.get<int >("orderOfTimeAccuracy")==2 ? 1 : 
-				      parameters.dbase.get<int >("orderOfTimeAccuracy")==4 ? 2 : 0);
+                                      parameters.dbase.get<int >("orderOfTimeAccuracy")==2 ? 1 : 
+                                      parameters.dbase.get<int >("orderOfTimeAccuracy")==4 ? 2 : 0);
 
   aString predictorOrderCommands[] =  { "default order predictor",
                                         "first order predictor",
-					"second order predictor",
-					"third order predictor",
-					"fourth order predictor",
-					 ""     };
+                                        "second order predictor",
+                                        "third order predictor",
+                                        "fourth order predictor",
+                                         ""     };
       
   dialog.addOptionMenu("predictor order", predictorOrderCommands, predictorOrderCommands,
-		       parameters.dbase.get<int>("predictorOrder"));
+                       parameters.dbase.get<int>("predictorOrder"));
 
   // push buttons
   aString pbCommands[] = {"choose grids for implicit",
-			  ""};
+                          ""};
 
   const int numRows=1;
   dialog.setPushButtons( pbCommands, pbCommands, numRows ); 
@@ -323,7 +323,7 @@ buildTimeSteppingDialog(DialogData & dialog )
 //\begin{>>DomainSolverInclude.tex}{\subsection{getTimeSteppingOption}}   
 int DomainSolver::
 getTimeSteppingOption(const aString & answer,
-		      DialogData & dialog )  
+                      DialogData & dialog )  
 //================================================================================
 // /Description:
 //    Look for time stepping options in the string "answer"
@@ -374,13 +374,13 @@ getTimeSteppingOption(const aString & answer,
   else if( len=answer.matches("cflMin, cflMax") )
   {
     printF("INFO: cflMin and cflMax are used to determine when the time step for implicit\n"
-	   "      time stepping should be changed. Decrease cflMin and increase cflMax to\n"
-	   "      reduce the frequency of refactors -- but don't make cflMax too large.\n");
+           "      time stepping should be changed. Decrease cflMin and increase cflMax to\n"
+           "      reduce the frequency of refactors -- but don't make cflMax too large.\n");
       
     sScanF(answer(len,answer.length()),"%e %e",&parameters.dbase.get<real >("cflMin"),&parameters.dbase.get<real >("cflMax"));
     printF(" cflMin=%g cflMax=%g \n",parameters.dbase.get<real >("cflMin"),parameters.dbase.get<real >("cflMax"));
     dialog.setTextLabel("cflMin, cflMax",
-				       sPrintF(answer2,"%g, %g",parameters.dbase.get<real >("cflMin"),parameters.dbase.get<real >("cflMax")));
+                                       sPrintF(answer2,"%g, %g",parameters.dbase.get<real >("cflMin"),parameters.dbase.get<real >("cflMax")));
   }
   else if( answer.matches("cfl") )
   {
@@ -390,7 +390,7 @@ getTimeSteppingOption(const aString & answer,
     parameters.dbase.get<real >("cflMax")=min(max(parameters.dbase.get<real >("cfl"),.95),parameters.dbase.get<real >("cfl")*1.1);
     dialog.setTextLabel("cfl",sPrintF(answer2,"%g", parameters.dbase.get<real >("cfl")));
     dialog.setTextLabel("cflMin, cflMax",
-				       sPrintF(answer2,"%g, %g",parameters.dbase.get<real >("cflMin"),parameters.dbase.get<real >("cflMax")));
+                                       sPrintF(answer2,"%g, %g",parameters.dbase.get<real >("cflMin"),parameters.dbase.get<real >("cflMax")));
   }
   else if( answer=="forwardEuler" || answer=="forward Euler" )
   {
@@ -478,7 +478,7 @@ getTimeSteppingOption(const aString & answer,
     if( mg.discretizationWidth(0)<5 )
     {
       printf("ERROR: This grid does not have a discretization width of at least 5. Current width=%i\n",
-	     "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
+             "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
     }
     else
     {
@@ -492,7 +492,7 @@ getTimeSteppingOption(const aString & answer,
     if( mg.discretizationWidth(0)<5 )
     {
       printf("ERROR: This grid does not have a discretization width of at least 5. Current width=%i\n",
-	     "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
+             "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
     }
     else
     {
@@ -506,7 +506,7 @@ getTimeSteppingOption(const aString & answer,
     if( mg.discretizationWidth(0)<5 )
     {
       printf("ERROR: This grid does not have a discretization width of at least 5. Current width=%i\n",
-	     "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
+             "   The order of accuracy will not be changed\n", mg.discretizationWidth(0));
     }
     else
     {
@@ -515,13 +515,13 @@ getTimeSteppingOption(const aString & answer,
     }
   }
   else if( answer=="second order accurate in time" || 
-	   answer=="fourth order accurate in time" ||
-	   answer=="solve for steady state" )
+           answer=="fourth order accurate in time" ||
+           answer=="solve for steady state" )
   {
     parameters.dbase.get<int >("orderOfTimeAccuracy")= answer=="second order accurate in time" ? 2 : 
       answer== "fourth order accurate in time" ? 4 : 0;
     dialog.getOptionMenu("time accuracy").setCurrentChoice(parameters.dbase.get<int >("orderOfAccuracy")==0 ? 0 :
-									  parameters.dbase.get<int >("orderOfAccuracy")==2 ? 1 : 2);
+                                                                          parameters.dbase.get<int >("orderOfAccuracy")==2 ? 1 : 2);
   }
   else if( answer=="implicit" )
   {
@@ -541,7 +541,7 @@ getTimeSteppingOption(const aString & answer,
   else if( answer=="implicit factor" )
   {
     gi.inputString(answer2,sPrintF(buff,"Enter the implicit factor .5=CN, 1=BE (default value=%e)",
-				   parameters.dbase.get<real >("implicitFactor")));
+                                   parameters.dbase.get<real >("implicitFactor")));
     if( answer2!="" )
       sScanF(answer2,"%e",&parameters.dbase.get<real >("implicitFactor"));
     printF(" implicitFactor=%9.3e\n",parameters.dbase.get<real >("implicitFactor"));
@@ -551,12 +551,12 @@ getTimeSteppingOption(const aString & answer,
     sScanF(answer,"implicit factor %e",&parameters.dbase.get<real >("implicitFactor")); 
     printF(" implicit factor=%9.3e\n",parameters.dbase.get<real >("implicitFactor"));
     dialog.setTextLabel("implicit factor",
-				       sPrintF(answer2,"%9.3e (1=BE,0=FE)", parameters.dbase.get<real >("implicitFactor")));
+                                       sPrintF(answer2,"%9.3e (1=BE,0=FE)", parameters.dbase.get<real >("implicitFactor")));
   }
   else if( answer=="slow start time interval" )
   {
     gi.inputString(answer2,sPrintF(buff,"Enter the slow start time interval (default value=%e)",
-				   parameters.dbase.get<real >("slowStartTime")));
+                                   parameters.dbase.get<real >("slowStartTime")));
     if( answer2!="" )
       sScanF(answer2,"%e",&parameters.dbase.get<real >("slowStartTime"));
     printF(" slowStartTime=%9.3e\n",parameters.dbase.get<real >("slowStartTime"));
@@ -564,7 +564,7 @@ getTimeSteppingOption(const aString & answer,
   else if( answer=="slow start cfl" )
   {
     gi.inputString(answer2,sPrintF(buff,"Enter the slow start initial cfl value (default value=%e)",
-				   parameters.dbase.get<real >("slowStartCFL")));
+                                   parameters.dbase.get<real >("slowStartCFL")));
     if( answer2!="" )
       sScanF(answer2,"%e",&parameters.dbase.get<real >("slowStartCFL"));
     printF(" slowStartCFL=%9.3e\n",parameters.dbase.get<real >("slowStartCFL"));
@@ -606,7 +606,7 @@ getTimeSteppingOption(const aString & answer,
   else if( dialog.getToggleValue(answer,"project interface",parameters.dbase.get<bool>("projectInterface")) ){ }
   else if( dialog.getToggleValue(answer,"project rigid body interface",parameters.dbase.get<bool>("projectRigidBodyInterface")) ){ }
   else if( dialog.getToggleValue(answer,"adjust dt for moving bodies",
-						parameters.dbase.get<bool >("adjustTimeStepForMovingBodies")) ){}//
+                                                parameters.dbase.get<bool >("adjustTimeStepForMovingBodies")) ){}//
   else if( answer.matches("recompute dt every") )
   {
     printF("The time step, dt,  is recomputed every time the solution is plotted/saved \n");
@@ -615,7 +615,7 @@ getTimeSteppingOption(const aString & answer,
     sScanF(answer,"recompute dt every %i",&parameters.dbase.get<int >("maximumStepsBetweenComputingDt"));
     printF(" recompute dt=%i\n",parameters.dbase.get<int >("maximumStepsBetweenComputingDt"));
     dialog.setTextLabel("recompute dt every",
-				       sPrintF(answer2,"%i steps", parameters.dbase.get<int >("maximumStepsBetweenComputingDt"))); 
+                                       sPrintF(answer2,"%i steps", parameters.dbase.get<int >("maximumStepsBetweenComputingDt"))); 
   }
   else if( answer=="recompute dt interval" ) // old way
   {
@@ -623,7 +623,7 @@ getTimeSteppingOption(const aString & answer,
     printF("In addition you may specify the maximum number of steps that will be taken \n");
     printF("before dt is recomputed. Use this if the solution is not plotted very often. \n");
     gi.inputString(answer2,sPrintF(buff,"Enter the max number of steps between recomputing dt"
-				   "(current=%i)",parameters.dbase.get<int >("maximumStepsBetweenComputingDt")));
+                                   "(current=%i)",parameters.dbase.get<int >("maximumStepsBetweenComputingDt")));
     if( answer2!="" )
       sScanF(answer2,"%i",&parameters.dbase.get<int >("maximumStepsBetweenComputingDt"));
     if( parameters.dbase.get<int >("maximumStepsBetweenComputingDt")>0 )
@@ -642,7 +642,7 @@ getTimeSteppingOption(const aString & answer,
     sScanF(answer,"recompute dt every %i",&parameters.dbase.get<int >("maximumStepsBetweenComputingDt"));
     printF(" recompute dt=%i\n",parameters.dbase.get<int >("maximumStepsBetweenComputingDt"));
     dialog.setTextLabel("recompute dt every",
-				       sPrintF(answer2,"%i steps", parameters.dbase.get<int >("maximumStepsBetweenComputingDt"))); 
+                                       sPrintF(answer2,"%i steps", parameters.dbase.get<int >("maximumStepsBetweenComputingDt"))); 
   }
   else if( len=answer.matches("refactor frequency") )
   {
@@ -710,8 +710,8 @@ getTimeSteppingOption(const aString & answer,
       if( filter.filterType==GridFunctionFilter::explicitFilter &&
           orderOfFilter> orderOfAccuracyInSpace )
       {
-	printF("INFO: I will extrapolate interpolation neighbours for the explicit filter.\n");
-	parameters.dbase.get<int >("extrapolateInterpolationNeighbours")=true;
+        printF("INFO: I will extrapolate interpolation neighbours for the explicit filter.\n");
+        parameters.dbase.get<int >("extrapolateInterpolationNeighbours")=true;
       }
     }
   }
@@ -916,16 +916,16 @@ getTimeSteppingOption(const aString & answer,
 //\end{setParametersInclude.tex}
     // *** scLC
     if( (parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")!=Parameters::implicit) &&  
-	(parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")!=Parameters::rKutta) )
+        (parameters.dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")!=Parameters::rKutta) )
     {
       printF("WARNING: This option only currently only works for timeSteppingMethod==implicit or timeSteppingMethod==rKutta! \n");
       parameters.setGridIsImplicit(-1,0);
       parameters.dbase.get<IntegerArray >("timeStepType")=0;
     }
     printF("Set grids to be implicit, semi-implicit or explicit. Examples: \n"
-	   "  square=explicit \n"
-	   "  annulus=semi \n"
-	   "  all=implicit \n" );
+           "  square=explicit \n"
+           "  annulus=semi \n"
+           "  all=implicit \n" );
 
     gi.appendToTheDefaultPrompt("implicit>");
     aString gridName;
@@ -934,90 +934,90 @@ getTimeSteppingOption(const aString & answer,
     {
       gi.inputString(answer2,"Specify grids to be implicit, semi-implicit or explicit. (or type `help' or `done')");
       if( answer2=="done" || answer2=="exit" )
-	break;
+        break;
       else if( answer2=="help" )
       {
-	printF("Specify grids to be implicit, semi-implicit or explicit. Type a string of the form     \n"
-	       "                                                                             \n"
-	       "       <grid name>=[explicit][semi][implicit]\n"
-	       "                                                                             \n"
-	       " By default all grids are implicit.                                          \n"
-	       " Examples: \n"
-	       "     square=explicit                            \n"
-	       "     annulus=semi                            \n"
-	       "     all=implicit                               \n"
-	  );
-	// *** ecLC
-	printF("Here are the names of the grids: \n");
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	  printF(" grid %i : name=%s \n",grid,(const char*)cg[grid].mapping().getName(Mapping::mappingName));
+        printF("Specify grids to be implicit, semi-implicit or explicit. Type a string of the form     \n"
+               "                                                                             \n"
+               "       <grid name>=[explicit][semi][implicit]\n"
+               "                                                                             \n"
+               " By default all grids are implicit.                                          \n"
+               " Examples: \n"
+               "     square=explicit                            \n"
+               "     annulus=semi                            \n"
+               "     all=implicit                               \n"
+          );
+        // *** ecLC
+        printF("Here are the names of the grids: \n");
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+          printF(" grid %i : name=%s \n",grid,(const char*)cg[grid].mapping().getName(Mapping::mappingName));
       }
       else
       {
-	int length=answer2.length();
-	int i,mark=-1;
-	for( i=0; i<length; i++ )
-	{
-	  if( answer2[i]=='=' )
-	  {
-	    mark=i-1;
-	    break;
-	  }
-	}
-	if( mark<0 )
-	{
-	  printF("unknown form of answer=[%s]. Try again or type `help' for examples.\n",(const char *)answer2);
-	  gi.stopReadingCommandFile();
-	  continue;
-	}
-	else
-	{
-	  gridName=answer2(0,mark);  // this is the name of the grid or `all'
-	  Range G(-1,-1);
-	  if( gridName=="all" )
-	    G=Range(0,cg.numberOfComponentGrids()-1);
-	  else
-	  {
-	    // search for the name of the grid
-	    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	    {
-	      if( gridName==cg[grid].mapping().getName(Mapping::mappingName) )
-	      {
-		G=Range(grid,grid);
-		break;
-	      }
-	    }
-	  }
-	  if( G.getBase()==-1  )
-	  {
-	    printF("Unknown grid name = <%s> \n",(const char *)gridName);
-	    gi.stopReadingCommandFile();
-	    continue;
-	  }
+        int length=answer2.length();
+        int i,mark=-1;
+        for( i=0; i<length; i++ )
+        {
+          if( answer2[i]=='=' )
+          {
+            mark=i-1;
+            break;
+          }
+        }
+        if( mark<0 )
+        {
+          printF("unknown form of answer=[%s]. Try again or type `help' for examples.\n",(const char *)answer2);
+          gi.stopReadingCommandFile();
+          continue;
+        }
+        else
+        {
+          gridName=answer2(0,mark);  // this is the name of the grid or `all'
+          Range G(-1,-1);
+          if( gridName=="all" )
+            G=Range(0,cg.numberOfComponentGrids()-1);
+          else
+          {
+            // search for the name of the grid
+            for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+            {
+              if( gridName==cg[grid].mapping().getName(Mapping::mappingName) )
+              {
+                G=Range(grid,grid);
+                break;
+              }
+            }
+          }
+          if( G.getBase()==-1  )
+          {
+            printF("Unknown grid name = <%s> \n",(const char *)gridName);
+            gi.stopReadingCommandFile();
+            continue;
+          }
 
 // *** scLC
-	  //This could probably be done in a better way! 
-	  if( answer2(mark+2,mark+3)=="im" ){
-	    implicit=1;
-	  }
-	  else if( answer2(mark+2,mark+3)=="se" ){
-	    implicit=2;
-	  }
-	  else {
-	    implicit=0;
-	  }
-		   
-	  for( int grid=G.getBase(); grid<=G.getBound(); grid++ )
-	  {
-	    parameters.setGridIsImplicit(grid,implicit);
-	    printF("Setting time stepping to be %s for grid %s\n",
-		   (parameters.getGridIsImplicit(grid)==1 ? "implicit" : 
-		    (parameters.getGridIsImplicit(grid)==2 ? "semi-implicit" : 
-		     "explicit")),
-		   (const char*)cg[grid].mapping().getName(Mapping::mappingName));
-	  }
-	  // *** ecLC
-	}
+          //This could probably be done in a better way! 
+          if( answer2(mark+2,mark+3)=="im" ){
+            implicit=1;
+          }
+          else if( answer2(mark+2,mark+3)=="se" ){
+            implicit=2;
+          }
+          else {
+            implicit=0;
+          }
+                   
+          for( int grid=G.getBase(); grid<=G.getBound(); grid++ )
+          {
+            parameters.setGridIsImplicit(grid,implicit);
+            printF("Setting time stepping to be %s for grid %s\n",
+                   (parameters.getGridIsImplicit(grid)==1 ? "implicit" : 
+                    (parameters.getGridIsImplicit(grid)==2 ? "semi-implicit" : 
+                     "explicit")),
+                   (const char*)cg[grid].mapping().getName(Mapping::mappingName));
+          }
+          // *** ecLC
+        }
       }
     }
     gi.unAppendTheDefaultPrompt();
@@ -1043,8 +1043,8 @@ getTimeSteppingOption(const aString & answer,
 //       toggleState = gridName=="all" ? 1 : 0;
 //       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
 //       {
-// 	parameters.setGridIsImplicit(grid,toggleState);
-// 	pulldown.setToggleState(grid,toggleState);
+//      parameters.setGridIsImplicit(grid,toggleState);
+//      pulldown.setToggleState(grid,toggleState);
 //       }
 //     }
 //     else
@@ -1052,16 +1052,16 @@ getTimeSteppingOption(const aString & answer,
 
 //       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
 //       {
-// 	if( gridName==cg[grid].getName() )
-// 	{
-// 	  parameters.setGridIsImplicit(grid,toggleState);
-// 	  printF("Setting time stepping to be %s for grid %s\n",
-// 		 (parameters.getGridIsImplicit(grid)==1 ? "implicit" : 
-// 		  (parameters.getGridIsImplicit(grid)==2 ? "semi-implicit" : 
-// 		   "explicit")),(const char*)cg[grid].getName());
+//      if( gridName==cg[grid].getName() )
+//      {
+//        parameters.setGridIsImplicit(grid,toggleState);
+//        printF("Setting time stepping to be %s for grid %s\n",
+//               (parameters.getGridIsImplicit(grid)==1 ? "implicit" : 
+//                (parameters.getGridIsImplicit(grid)==2 ? "semi-implicit" : 
+//                 "explicit")),(const char*)cg[grid].getName());
 
-// 	  pulldown.setToggleState(grid,toggleState);
-// 	}
+//        pulldown.setToggleState(grid,toggleState);
+//      }
 //       }
 //     }
 //   }

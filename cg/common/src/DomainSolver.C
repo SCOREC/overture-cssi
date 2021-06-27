@@ -121,8 +121,8 @@ DomainSolver(Parameters & par,
 // =======================================================================================================
 void DomainSolver::
 getGridInfo( real & totalNumberOfGridPoints, 
-	     real dsMin[3], real dsAve[3], real dsMax[3], 
-	     real & maxMax, real & maxMin, real & minMin )
+             real dsMin[3], real dsAve[3], real dsMax[3], 
+             real & maxMax, real & maxMin, real & minMin )
 {
 
   totalNumberOfGridPoints=0.;
@@ -178,8 +178,8 @@ getGridInfo( real & totalNumberOfGridPoints,
       int i1,i2,i3;
       FOR_3D(i1,i2,i3,I1,I2,I3)
       {
-	if( maskLocal(i1,i2,i3)!=0 )
-	  numPoints++;
+        if( maskLocal(i1,i2,i3)!=0 )
+          numPoints++;
       }
     }
     numberOfGridPoints[grid]=ParallelUtility::getSum(numPoints);
@@ -227,21 +227,21 @@ outputHeader()
 
 
     fPrintF(file,"\n"
-	    "***********************************************************************************\n");
+            "***********************************************************************************\n");
     if( parameters.dbase.get<int>("multiDomainProblem")==0  )
     {
       fPrintF(file,
-	      "             %s version 1.0                                 \n"
-	      "             -----------------                              \n",
-	      (const char*)getClassName()   );
+              "             %s version 1.0                                 \n"
+              "             -----------------                              \n",
+              (const char*)getClassName()   );
     
     }
     else
     { // multi-domain problem 
       fPrintF(file,
-	      "             %s : %s version 1.0                            \n"
-	      "             -----------------------------                  \n",
-	      (const char*)name,(const char*)getClassName());
+              "             %s : %s version 1.0                            \n"
+              "             -----------------------------                  \n",
+              (const char*)name,(const char*)getClassName());
     
     }
     
@@ -249,7 +249,7 @@ outputHeader()
     { 
       // In this case we are solving one set of equations in one domain
       fPrintF(file,
-	      " Solving: %s                                                      \n",(const char*)fullPdeName);
+              " Solving: %s                                                      \n",(const char*)fullPdeName);
     
     }
     else
@@ -260,20 +260,20 @@ outputHeader()
       // ListOfEquationDomains:iterator iter; 
       for( int domain=0; domain<equationDomainList.size(); domain++ )
       {
-	const EquationDomain & equationDomain = equationDomainList[domain];
-	aString fullPdeName=equationDomain.getPDE()->pdeName;
-	if ( parameters.dbase.has_key("pdeNameModifier") )
-	  fullPdeName += ", "+parameters.dbase.get<aString>("pdeNameModifier");
+        const EquationDomain & equationDomain = equationDomainList[domain];
+        aString fullPdeName=equationDomain.getPDE()->pdeName;
+        if ( parameters.dbase.has_key("pdeNameModifier") )
+          fullPdeName += ", "+parameters.dbase.get<aString>("pdeNameModifier");
 
-	fPrintF(file,"Equation Domain %i: name=%s, pde=%s\n",domain,
-		(const char*)equationDomain.getName(),
-		(const char*)fullPdeName); 
-	for( int ged=0; ged<equationDomain.gridList.size(); ged++ )
-	{
-	  int grid=equationDomain.gridList[ged];
-	  assert( grid>=0 && grid<cg.numberOfComponentGrids() );
-	  fPrintF(file,"    ... contains grid %i (%s)\n",grid,(const char*)cg[grid].getName());
-	}
+        fPrintF(file,"Equation Domain %i: name=%s, pde=%s\n",domain,
+                (const char*)equationDomain.getName(),
+                (const char*)fullPdeName); 
+        for( int ged=0; ged<equationDomain.gridList.size(); ged++ )
+        {
+          int grid=equationDomain.gridList[ged];
+          assert( grid>=0 && grid<cg.numberOfComponentGrids() );
+          fPrintF(file,"    ... contains grid %i (%s)\n",grid,(const char*)cg[grid].getName());
+        }
       
       }
     }
@@ -305,29 +305,29 @@ outputHeader()
       fPrintF(file," pressure equation solver: solver=%s, \n",(const char*)pressureSolverParameters.getSolverName());
       if(  poisson->isSolverIterative() )
       {
-	real rtol,atol;
-	int maximumNumberOfIterations;
-	if( poisson->parameters.getSolverType()!=OgesParameters::multigrid )
-	{
-	  pressureSolverParameters.get(OgesParameters::THErelativeTolerance,rtol);
-	  pressureSolverParameters.get(OgesParameters::THEabsoluteTolerance,atol);
-	  pressureSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
-	}
-	else
-	{
-	  OgmgParameters* ogmgPar = poisson->parameters.getOgmgParameters();
-	  assert( ogmgPar!=NULL );
-	  ogmgPar->get(OgmgParameters::THEresidualTolerance,rtol);  // note: residual
-	  ogmgPar->get(OgmgParameters::THEabsoluteTolerance,atol);
-	  ogmgPar->get(OgmgParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
-	}
-	fPrintF(file,"                         : rel-tol=%8.2e, abs-tol=%8.2e, max iterations=%i (0=choose default)\n",
-		rtol,atol,maximumNumberOfIterations);
-	if( poisson->parameters.getSolverType()==OgesParameters::multigrid )
-	{ // Here is the MG convergence criteria: 
+        real rtol,atol;
+        int maximumNumberOfIterations;
+        if( poisson->parameters.getSolverType()!=OgesParameters::multigrid )
+        {
+          pressureSolverParameters.get(OgesParameters::THErelativeTolerance,rtol);
+          pressureSolverParameters.get(OgesParameters::THEabsoluteTolerance,atol);
+          pressureSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+        }
+        else
+        {
+          OgmgParameters* ogmgPar = poisson->parameters.getOgmgParameters();
+          assert( ogmgPar!=NULL );
+          ogmgPar->get(OgmgParameters::THEresidualTolerance,rtol);  // note: residual
+          ogmgPar->get(OgmgParameters::THEabsoluteTolerance,atol);
+          ogmgPar->get(OgmgParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+        }
+        fPrintF(file,"                         : rel-tol=%8.2e, abs-tol=%8.2e, max iterations=%i (0=choose default)\n",
+                rtol,atol,maximumNumberOfIterations);
+        if( poisson->parameters.getSolverType()==OgesParameters::multigrid )
+        { // Here is the MG convergence criteria: 
           fPrintF(file,"                         : convergence: max-defect < (rel-tol)*L2NormRHS + abs-tol.\n");
-	}
-	
+        }
+        
       }
     }
   
@@ -356,9 +356,9 @@ outputHeader()
 
     aString blanks="                                                                           ";
     fPrintF(file,"               Grid Data\n"
-	   "               ---------\n"
-	   "grid     name%s  gridIndexRange(0:1,0:2)           gridPoints   hmx      hmn  \n",
-	   (const char *)blanks(0,min(maxNameLength-3,blanks.length()-1)));
+           "               ---------\n"
+           "grid     name%s  gridIndexRange(0:1,0:2)           gridPoints   hmx      hmn  \n",
+           (const char *)blanks(0,min(maxNameLength-3,blanks.length()-1)));
     
     sPrintF(buff,"%%4i: %%%is   ([%%2i:%%5i],[%%2i:%%5i],[%%2i:%%5i]) %%10g   %%8.2e %%8.2e \n",maxNameLength);
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
@@ -367,13 +367,13 @@ outputHeader()
     
       // fPrintF(file,"%4i: %20s ([%2i:%5i],[%2i:%5i],[%2i:%5i])  %8i   %8.2e %8.2e \n",
       fPrintF(file,buff,grid, (const char *)cg[grid].getName(),
-	     c.gridIndexRange(Start,axis1),c.gridIndexRange(End,axis1),
-	     c.gridIndexRange(Start,axis2),c.gridIndexRange(End,axis2),
-	     c.gridIndexRange(Start,axis3),c.gridIndexRange(End,axis3),
-	     numberOfGridPoints[grid],hMax[grid],hMin[grid]);
+             c.gridIndexRange(Start,axis1),c.gridIndexRange(End,axis1),
+             c.gridIndexRange(Start,axis2),c.gridIndexRange(End,axis2),
+             c.gridIndexRange(Start,axis3),c.gridIndexRange(End,axis3),
+             numberOfGridPoints[grid],hMax[grid],hMin[grid]);
     }
     fPrintF(file," total number of grid points =%g (egir), min(hmn)=%6.2e, max(hmn)=%6.2e, max(hmx)=%6.2e,  \n",
-	   totalNumberOfGridPoints,minMin,maxMin,maxMax);
+           totalNumberOfGridPoints,minMin,maxMin,maxMax);
 
     int mgLevels=cg.numberOfPossibleMultigridLevels();
     fPrintF(file," number of possible multigrid levels=%i.\n\n",mgLevels);
@@ -444,8 +444,8 @@ setup(const real & time /* = 0. */ )
     {
       for( int side=Start; side<=End; side++ )
       {
-	if( parameters.bcType(side,axis,grid)==Parameters::parabolicInflow )
-	  parameters.dbase.get<IntegerArray>("variableBoundaryData")(grid)=true;  // **** why can't this be in setBoundaryConditions ?
+        if( parameters.bcType(side,axis,grid)==Parameters::parabolicInflow )
+          parameters.dbase.get<IntegerArray>("variableBoundaryData")(grid)=true;  // **** why can't this be in setBoundaryConditions ?
       }
     }
   }
@@ -479,7 +479,7 @@ setup(const real & time /* = 0. */ )
     if( !parameters.dbase.get<bool >("twilightZoneFlow") )
     {
       assert( initialConditions(rc)!=(real)Parameters::defaultValue &&
-	      initialConditions(tc)!=(real)Parameters::defaultValue );
+              initialConditions(tc)!=(real)Parameters::defaultValue );
       // pressureLevel: subtract off a mean value of the pressure
       // p=rho*Rg*T :
       pressureLevel=initialConditions(rc)*parameters.dbase.get<real >("Rg")*initialConditions(tc);
@@ -591,7 +591,7 @@ setup(const real & time /* = 0. */ )
   // Initialize the solution (project the solution if required) and updateToMatchGrid
   printF("DomainSolver::setup: initialize the solution: initializeSolution() ...\n");
   initializeSolution();
-  printF("DomainSolver::setup: ... done\n");
+  printF("DomainSolver::setup: ... done initializeSolution...\n");
 
   cleanupInitialConditions();
   userDefinedInitialConditionsCleanup();  // *wdh* 050514 -- cleanup user defined initial conditions
@@ -615,53 +615,53 @@ setup(const real & time /* = 0. */ )
       DomainSolver *pCgmp = parameters.dbase.get<DomainSolver*>("multiDomainSolver");
       if( pCgmp!=NULL )
       {
-	DomainSolver & cgmp = *pCgmp;
-	
-	int numberOfDomains = cgmp.domainSolver.size();
-	
-	printP("--SETUP-- This is a multi-domain problem: multiDomainSolver!=NULL, numberOfDomains=%i \n",numberOfDomains);
+        DomainSolver & cgmp = *pCgmp;
+        
+        int numberOfDomains = cgmp.domainSolver.size();
+        
+        printP("--SETUP-- This is a multi-domain problem: multiDomainSolver!=NULL, numberOfDomains=%i \n",numberOfDomains);
         // InterfaceList & interfaceList = pCgmp->parameters.dbase.get<InterfaceList>("interfaceList");
 
-	BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid); // this will create the BDA if it is not there
-	std::vector<BoundaryData> & boundaryDataArray = parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
-	BoundaryData & bd = boundaryDataArray[grid];
+        BoundaryData::BoundaryDataArray & pBoundaryData = parameters.getBoundaryData(grid); // this will create the BDA if it is not there
+        std::vector<BoundaryData> & boundaryDataArray = parameters.dbase.get<std::vector<BoundaryData> >("boundaryData");
+        BoundaryData & bd = boundaryDataArray[grid];
 
 
-        IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");	
-	for( int side=0; side<=1; side++ )
-	{
-	  for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
-	  {
-	    if( interfaceType(side,axis,grid)==Parameters::tractionInterface ) 
-	    {
-	      printP("--SETUP-- (grid,side,axis)=(%i,%i,%i) is a tractionInterface\n",grid,side,axis);
-	    }
-	  }
-	}
-	if( bd.dbase.has_key("interfaceDescriptorArray") )
-	{
-	  typedef InterfaceDescriptor* (InterfaceDescriptorType)[2][3];
-	  InterfaceDescriptorType & interfaceDescriptorArray = bd.dbase.get<InterfaceDescriptorType>("interfaceDescriptorArray");
-	  for( int side=0; side<=1; side++ )
-	  {
-	    for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
-	    {
-	      if( interfaceDescriptorArray[side][axis] !=NULL )
-	      {
-		InterfaceDescriptor & interfaceDescriptor = *interfaceDescriptorArray[side][axis];
-		const int domain1=interfaceDescriptor.domain1, domain2=interfaceDescriptor.domain2;
-		printP("--SETUP-- (grid,side,axis)=(%i,%i,%i) has an interfaceDescriptor: domain1=%i, domain2=%i\n",grid,side,axis,domain1,domain2);
-		printP("--SETUP-- domain1 : %s, domain2 : %s\n",(const char*)cgmp.domainSolver[domain1]->className, 
+        IntegerArray & interfaceType = parameters.dbase.get<IntegerArray >("interfaceType");    
+        for( int side=0; side<=1; side++ )
+        {
+          for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+          {
+            if( interfaceType(side,axis,grid)==Parameters::tractionInterface ) 
+            {
+              printP("--SETUP-- (grid,side,axis)=(%i,%i,%i) is a tractionInterface\n",grid,side,axis);
+            }
+          }
+        }
+        if( bd.dbase.has_key("interfaceDescriptorArray") )
+        {
+          typedef InterfaceDescriptor* (InterfaceDescriptorType)[2][3];
+          InterfaceDescriptorType & interfaceDescriptorArray = bd.dbase.get<InterfaceDescriptorType>("interfaceDescriptorArray");
+          for( int side=0; side<=1; side++ )
+          {
+            for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+            {
+              if( interfaceDescriptorArray[side][axis] !=NULL )
+              {
+                InterfaceDescriptor & interfaceDescriptor = *interfaceDescriptorArray[side][axis];
+                const int domain1=interfaceDescriptor.domain1, domain2=interfaceDescriptor.domain2;
+                printP("--SETUP-- (grid,side,axis)=(%i,%i,%i) has an interfaceDescriptor: domain1=%i, domain2=%i\n",grid,side,axis,domain1,domain2);
+                printP("--SETUP-- domain1 : %s, domain2 : %s\n",(const char*)cgmp.domainSolver[domain1]->className, 
                                                                 (const char*)cgmp.domainSolver[domain2]->className);
 
 
-	      }
-	    
-	    }
+              }
+            
+            }
 
-	  }
-	}
-	
+          }
+        }
+        
       }
       
     }
@@ -675,7 +675,7 @@ setup(const real & time /* = 0. */ )
       cg[grid].displayComputedGeometry();
   }
   
-
+  printF("DomainSolver::setup: ... done.\n");
 }
 
 
@@ -717,7 +717,7 @@ DomainSolver::
 
 void DomainSolver::
 addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u, int iparam[], real rparam[],
-	   realMappedGridFunction & dvdtImplicit /* = Overture::nullRealMappedGridFunction() */,
+           realMappedGridFunction & dvdtImplicit /* = Overture::nullRealMappedGridFunction() */,
            realMappedGridFunction *referenceFrameVelocity /* =NULL */ )
 {
   printF("DomainSolver::addForcing:ERROR: base class function called!\n");
@@ -726,12 +726,12 @@ addForcing(realMappedGridFunction & dvdt, const realMappedGridFunction & u, int 
 
 int DomainSolver::
 advanceLineSolve(LineSolve & lineSolve,
-		 const int grid, const int direction, 
-		 realCompositeGridFunction & u0, 
-		 realMappedGridFunction & f, 
-		 realMappedGridFunction & residual,
-		 const bool refactor,
-		 const bool computeTheResidual /*  =false */ )
+                 const int grid, const int direction, 
+                 realCompositeGridFunction & u0, 
+                 realMappedGridFunction & f, 
+                 realMappedGridFunction & residual,
+                 const bool refactor,
+                 const bool computeTheResidual /*  =false */ )
 {
   printF("DomainSolver::advanceLineSolve:ERROR: base class function called!\n");
   Overture::abort("error");
@@ -740,10 +740,10 @@ advanceLineSolve(LineSolve & lineSolve,
 
 void DomainSolver::
 allSpeedImplicitTimeStep(GridFunction & gf,              // ** get rid of this **
-			 real & t, 
-			 real & dt0, 
-			 int & numberOfTimeSteps,
-			 const real & nextTimeToPrint )
+                         real & t, 
+                         real & dt0, 
+                         int & numberOfTimeSteps,
+                         const real & nextTimeToPrint )
 {
   printF("DomainSolver::allSpeedImplicitTimeStep:ERROR: base class function called!\n");
   Overture::abort("error");
@@ -753,12 +753,12 @@ allSpeedImplicitTimeStep(GridFunction & gf,              // ** get rid of this *
 // Here is where boundary conditions are implemented
 int DomainSolver::
 applyBoundaryConditions(const real & t, realMappedGridFunction & u, 
-			    realMappedGridFunction & gridVelocity,
-			    const int & grid,
-			    const int & option /* =-1 */,
-			    realMappedGridFunction *puOld /* =NULL */, 
-			    realMappedGridFunction *pGridVelocityOld /* =NULL */,
-			    const real & dt /* =-1. */)
+                            realMappedGridFunction & gridVelocity,
+                            const int & grid,
+                            const int & option /* =-1 */,
+                            realMappedGridFunction *puOld /* =NULL */, 
+                            realMappedGridFunction *pGridVelocityOld /* =NULL */,
+                            const real & dt /* =-1. */)
 {
   printF("DomainSolver::applyBoundaryConditions:ERROR: base class function called!\n");
   Overture::abort("error");
@@ -768,10 +768,10 @@ int DomainSolver::
 applyBoundaryConditionsForImplicitTimeStepping(realMappedGridFunction & u, 
                                                realMappedGridFunction &uL,
                                                realMappedGridFunction &uOld, // *wdh* Dec 20, 2017 -- added uOld
-					       realMappedGridFunction & gridVelocity,
-					       real t,
-					       int scalarSystem,
-					       int grid )
+                                               realMappedGridFunction & gridVelocity,
+                                               real t,
+                                               int scalarSystem,
+                                               int grid )
 {
   printF("DomainSolver::applyBoundaryConditionsForImplicitTimeStepping:ERROR: base class function called!\n");
   Overture::abort("error");
@@ -804,7 +804,7 @@ checkArrays(const aString & label)
 
 // void DomainSolver::
 // determineErrors(GridFunction & cgf,
-// 		const aString & label /* =nullString */)
+//              const aString & label /* =nullString */)
 // {
 //   OB_CompositeGridSolver::determineErrors(cgf,label);
 // }
@@ -812,11 +812,11 @@ checkArrays(const aString & label)
 
 // void DomainSolver::
 // determineErrors(realCompositeGridFunction & u,
-// 		realMappedGridFunction **gridVelocity,
-// 		const real & t, 
-// 		const int options,
+//              realMappedGridFunction **gridVelocity,
+//              const real & t, 
+//              const int options,
 //                 RealArray & err,
-// 		const aString & label /* =nullString */ )
+//              const aString & label /* =nullString */ )
 // {
 //   OB_CompositeGridSolver::determineErrors(u,gridVelocity,t,options,err,label);
 // }
@@ -832,10 +832,10 @@ determineErrors(realMappedGridFunction & v, const real & t)
 
 // int DomainSolver::
 // formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
-// 			       const real & dt0, 
-// 			       int scalarSystem,
-// 			       realMappedGridFunction & uL,
-// 			       const int & grid )
+//                             const real & dt0, 
+//                             int scalarSystem,
+//                             realMappedGridFunction & uL,
+//                             const int & grid )
 // {
 //   printF("DomainSolver::formImplicitTimeSteppingMatrix:ERROR: base class function called!\n");
 //   Overture::abort("error"); 
@@ -874,6 +874,23 @@ getPdeName() const
 // ========================================================================================
 {
   return pdeName;
+}
+
+// =======================================================================================================================
+/// \brief Optionally evaluate the max residual in any interface conditions.
+///
+/// \details Normally Cgmp will compute the residual in the heat flux jump conditions. The CHAMP conditions, however,
+///    do not exactly satisfy the normal jump conditions in Temperaure and heat-flux. In this case each Domain solver
+///    is called to compute the residual in the CHAMP conditions.
+///
+/// \return Return a value of 0 if NO interface residual is available, Return 1 if the residual was computed
+// =======================================================================================================================
+int DomainSolver::
+getInterfaceResidual( real t, real dt, GridFunction & cgf, Real & residual )
+{
+  // -- No interface residual is computed
+  residual=-1.;
+  return 0;
 }
 
 // ======================================================================
@@ -959,10 +976,10 @@ getResidualInfo( real t0, const realCompositeGridFunction & residual, real & max
   {
     if( parameters.isSteadyStateSolver() )
       fPrintF(file," ----> t=%8.3e: step=%i resid[max, l2]: all=[%5.1e, %5.1e]",
-	      t0,parameters.dbase.get<int >("globalStepNumber"),maximumResidual,maximuml2);
+              t0,parameters.dbase.get<int >("globalStepNumber"),maximumResidual,maximuml2);
     else
       fPrintF(file," ----> t=%8.3e, dt=%7.2e: step=%i |u.t|[max,l2]: all=[%5.1e, %5.1e]",t0,dt,
-	      parameters.dbase.get<int >("globalStepNumber"),maximumResidual,maximuml2);
+              parameters.dbase.get<int >("globalStepNumber"),maximumResidual,maximuml2);
   
     for( int n=N.getBase(); n<=N.getBound(); n++ )
       fPrintF(file," %s=[%8.2e, %8.2e]",(const char*)residual.getName(n),maxRes(n),l2Res(n));
@@ -1017,10 +1034,10 @@ getSolutionBounds(const realMappedGridFunction & u, realArray & uMin, realArray 
 // // determine the time step based on a given solution
 // real DomainSolver:: 
 // getTimeStep(MappedGrid & mg,
-// 	    realMappedGridFunction & u, 
-// 	    realMappedGridFunction & gridVelocity,
-// 	    const Parameters::TimeSteppingMethod & timeSteppingMethod,
-// 	    const int & grid  )
+//          realMappedGridFunction & u, 
+//          realMappedGridFunction & gridVelocity,
+//          const Parameters::TimeSteppingMethod & timeSteppingMethod,
+//          const int & grid  )
 // {
 //   printF("DomainSolver::getTimeStep:ERROR: base class function called!\n");
 //   Overture::abort("error");
@@ -1032,11 +1049,11 @@ getSolutionBounds(const realMappedGridFunction & u, realArray & uMin, realArray 
 // // using
 // void DomainSolver:: 
 // getTimeSteppingEigenvalue(MappedGrid & mg, 
-// 			  realMappedGridFunction & u, 
-// 			  realMappedGridFunction & gridVelocity,  
-// 			  real & reLambda,
-// 			  real & imLambda, 
-// 			  const int & grid)
+//                        realMappedGridFunction & u, 
+//                        realMappedGridFunction & gridVelocity,  
+//                        real & reLambda,
+//                        real & imLambda, 
+//                        const int & grid)
 // {
 //   printF("DomainSolver::getTimeSteppingEigenvalue:ERROR: base class function called!\n");
 //   Overture::abort("error");
@@ -1070,7 +1087,7 @@ getUt(const realMappedGridFunction & v,
 
 // void DomainSolver::
 // outputSolution( realCompositeGridFunction & u, const real & t,
-// 		const aString & label /* =nullString */,
+//              const aString & label /* =nullString */,
 //                 int printOption /* = 0 */  )
 // {
 //   printF("DomainSolver::outputSolution:ERROR: base class function called!\n");
@@ -1137,10 +1154,10 @@ initializeInterfaces(GridFunction & cgf)
 //============================================================================================
 int DomainSolver::
 assignInterfaceBoundaryConditions(GridFunction & cgf,
-				  const int & option /* =-1 */,
-				  int grid_ /* = -1 */,
-				  GridFunction *puOld /* =NULL */, 
-				  const real & dt /* =-1. */ )
+                                  const int & option /* =-1 */,
+                                  int grid_ /* = -1 */,
+                                  GridFunction *puOld /* =NULL */, 
+                                  const real & dt /* =-1. */ )
 {
 //  printF("DomainSolver::assignInterfaceBoundaryConditions:WARNING: base class function called!\n");
 //  Overture::abort("error");
@@ -1181,12 +1198,12 @@ assignInterfaceBoundaryConditions(GridFunction & cgf,
 
 // int DomainSolver::
 // userDefinedBoundaryValues(const real & t, 
-// 			  realMappedGridFunction & u, 
-// 			  realMappedGridFunction & gridVelocity,
-// 			  const int & grid,
-// 			  int side0  /* = -1 */,
-// 			  int axis0  /* = -1 */,
-// 			  ForcingTypeEnum forcingType /* =computeForcing */ )
+//                        realMappedGridFunction & u, 
+//                        realMappedGridFunction & gridVelocity,
+//                        const int & grid,
+//                        int side0  /* = -1 */,
+//                        int axis0  /* = -1 */,
+//                        ForcingTypeEnum forcingType /* =computeForcing */ )
 // {
 //   printF("DomainSolver::userDefinedBoundaryValues:ERROR: base class function called!\n");
 //   Overture::abort("error");
@@ -1218,29 +1235,29 @@ writeParameterSummary( FILE * file )
   if( parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel")!=Parameters::noTurbulenceModel )
   {
     fPrintF(file," Turbulence Model : %s\n",
-	    (const char*)Parameters::turbulenceModelName[(int)parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel")]);
+            (const char*)Parameters::turbulenceModelName[(int)parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel")]);
   }
   fPrintF(file,"\n"
-	  " cfl = %f, tFinal=%10.4e, tPrint = %10.4e \n"
+          " cfl = %f, tFinal=%10.4e, tPrint = %10.4e \n"
           " Slow start is %s. (slowStartCFL=%9.3e, slowStartTime=%10.4e, slowStartSteps=%i, slowStartRecomputeDt=%i).\n"
-	  " Time stepping method: %s."
-	  ,
-	  parameters.dbase.get<real >("cfl"),
-	  parameters.dbase.get<real >("tFinal"),
-	  parameters.dbase.get<real >("tPrint"),
-	  ((parameters.dbase.get<real >("slowStartTime")>0. || parameters.dbase.get<int  >("slowStartSteps")>0) ? "on" : "off"),
-	  parameters.dbase.get<real >("slowStartCFL"),
-	  parameters.dbase.get<real >("slowStartTime"),
-	  parameters.dbase.get<int  >("slowStartSteps"),
-	  parameters.dbase.get<int  >("slowStartRecomputeDtSteps"),
-	  (const char*)parameters.getTimeSteppingName());
+          " Time stepping method: %s."
+          ,
+          parameters.dbase.get<real >("cfl"),
+          parameters.dbase.get<real >("tFinal"),
+          parameters.dbase.get<real >("tPrint"),
+          ((parameters.dbase.get<real >("slowStartTime")>0. || parameters.dbase.get<int  >("slowStartSteps")>0) ? "on" : "off"),
+          parameters.dbase.get<real >("slowStartCFL"),
+          parameters.dbase.get<real >("slowStartTime"),
+          parameters.dbase.get<int  >("slowStartSteps"),
+          parameters.dbase.get<int  >("slowStartRecomputeDtSteps"),
+          (const char*)parameters.getTimeSteppingName());
   
 
   if( implicitMethod==Parameters::approximateFactorization )
     fPrintF(file," Approximate factorization scheme.\n");
   else if( implicitMethod==Parameters::backwardDifferentiationFormula )
     fPrintF(file," Backward differentiation formula scheme, order=%i (BDF%i).\n",
-	    parameters.dbase.get<int>("orderOfBDF"), parameters.dbase.get<int>("orderOfBDF"));
+            parameters.dbase.get<int>("orderOfBDF"), parameters.dbase.get<int>("orderOfBDF"));
   else if( implicitMethod==Parameters::implicitExplicitMultistep )
     fPrintF(file," Implicit-Explicit Multistep method (AB-BDF).\n");
   else
@@ -1253,7 +1270,7 @@ writeParameterSummary( FILE * file )
       timeSteppingMethod==Parameters::variableTimeStepAdamsPredictorCorrector ||
       timeSteppingMethod==Parameters::implicit )
     fPrintF(file," predictor order = %i (0=use default), useNewImplicitMethod=%i (1=eval RHS with implicit routines).\n"
-	    " number of corrections=%i. \n",
+            " number of corrections=%i. \n",
             parameters.dbase.get<int >("predictorOrder"),parameters.dbase.get<int>("useNewImplicitMethod"),
             parameters.dbase.get<int>("numberOfPCcorrections") );
 
@@ -1277,38 +1294,38 @@ writeParameterSummary( FILE * file )
   if( parameters.dbase.get<bool >("useSecondOrderArtificialDiffusion") )
   {
     fPrintF(file," use 2nd order artificial dissipation, ad21=%8.2e ad22=%8.2e\n",parameters.dbase.get<real >("ad21"),
-	    parameters.dbase.get<real >("ad22"));
+            parameters.dbase.get<real >("ad22"));
   }
   if( parameters.dbase.get<bool >("useFourthOrderArtificialDiffusion") )
   {
     fPrintF(file," use 4th order artificial dissipation, ad41=%8.2e ad42=%8.2e\n",parameters.dbase.get<real >("ad41"),
-	    parameters.dbase.get<real >("ad42"));
+            parameters.dbase.get<real >("ad42"));
   }
 
   fPrintF(file," Interpolation type: %s \n",(
-	    parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::defaultInterpolationType ? 
-	    "interpolate computational variables" :
-	    parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolateConservativeVariables ? 
-	    "interpolate conservative variables" :
-	    parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolatePrimitiveVariables ? 
-	    "interpolate primitive variables" :
-	    parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolatePrimitiveAndPressure ? 
-	    "interpolate primitive variables and pressure" :  "unknown"));
+            parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::defaultInterpolationType ? 
+            "interpolate computational variables" :
+            parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolateConservativeVariables ? 
+            "interpolate conservative variables" :
+            parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolatePrimitiveVariables ? 
+            "interpolate primitive variables" :
+            parameters.dbase.get<Parameters::InterpolationTypeEnum >("interpolationType")==Parameters::interpolatePrimitiveAndPressure ? 
+            "interpolate primitive variables and pressure" :  "unknown"));
   
   if( parameters.dbase.get<Parameters::TurbulenceModel >("turbulenceModel")==Parameters::SpalartAllmaras )
   {
     fPrintF(file," Spalart-Allmaras eddy viscosity `n': use 2nd order artificial dissipation, "
-	    "ad21n=%8.2e ad22n=%8.2e\n", parameters.dbase.get<real >("ad21n"),parameters.dbase.get<real >("ad22n"));
+            "ad21n=%8.2e ad22n=%8.2e\n", parameters.dbase.get<real >("ad21n"),parameters.dbase.get<real >("ad22n"));
   }
 
   fPrintF(file," Order of accuracy in space = %i\n",parameters.dbase.get<int >("orderOfAccuracy"));
   fPrintF(file," Order of accuracy in time = %i\n",parameters.dbase.get<int >("orderOfTimeAccuracy"));
   fPrintF(file," Order of extrapolation for interpolation neighbours = %i\n",
-	  parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours"));
+          parameters.dbase.get<int >("orderOfExtrapolationForInterpolationNeighbours"));
   fPrintF(file," Order of extrapolation for second ghost line = %i\n",
-	  parameters.dbase.get<int >("orderOfExtrapolationForSecondGhostLine"));
+          parameters.dbase.get<int >("orderOfExtrapolationForSecondGhostLine"));
   fPrintF(file," Order of extrapolation for outflow = %i\n", 
-	  parameters.dbase.get<int >("orderOfExtrapolationForOutflow"));
+          parameters.dbase.get<int >("orderOfExtrapolationForOutflow"));
   const int rwidth=parameters.dbase.get<int >("reducedInterpolationWidth");
   if( rwidth==0 )
     fPrintF(file," The interpolation width is the default value from the grid.\n");
@@ -1317,14 +1334,14 @@ writeParameterSummary( FILE * file )
   if( parameters.dbase.get<bool >("advectPassiveScalar") )
   {
     fPrintF(file," Advect a passive scalar with diffussion coefficient = %8.2e\n",
-	    parameters.dbase.get<real >("nuPassiveScalar"));
+            parameters.dbase.get<real >("nuPassiveScalar"));
   }
     
   if( parameters.isAxisymmetric() && parameters.dbase.get<int >("numberOfDimensions")==2 )
   {
     fPrintF(file," Solving an axisymmetric problem %sabout the %s axis\n",
-	    (parameters.dbase.get<bool >("axisymmetricWithSwirl") ? "with swirl " : "" ),
-	    (parameters.dbase.get<int >("radialAxis")==axis1 ? "y" : "x") );
+            (parameters.dbase.get<bool >("axisymmetricWithSwirl") ? "with swirl " : "" ),
+            (parameters.dbase.get<int >("radialAxis")==axis1 ? "y" : "x") );
   }
   if( timeSteppingMethod==Parameters::implicit )
   {
@@ -1348,30 +1365,30 @@ writeParameterSummary( FILE * file )
     {
       real rtol,atol;
       int maximumNumberOfIterations;
-	
+        
       if( implicitTimeStepSolverParameters.getSolverType()!=OgesParameters::multigrid )
       {
-	implicitTimeStepSolverParameters.get(OgesParameters::THErelativeTolerance,rtol);
-	implicitTimeStepSolverParameters.get(OgesParameters::THEabsoluteTolerance,atol);
-	implicitTimeStepSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+        implicitTimeStepSolverParameters.get(OgesParameters::THErelativeTolerance,rtol);
+        implicitTimeStepSolverParameters.get(OgesParameters::THEabsoluteTolerance,atol);
+        implicitTimeStepSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
       }
       else
       {
-	OgmgParameters* ogmgPar = implicitTimeStepSolverParameters.getOgmgParameters();
-	assert( ogmgPar!=NULL );
-	ogmgPar->get(OgmgParameters::THEresidualTolerance,rtol);
-	ogmgPar->get(OgmgParameters::THEabsoluteTolerance,atol);
-	ogmgPar->get(OgmgParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
+        OgmgParameters* ogmgPar = implicitTimeStepSolverParameters.getOgmgParameters();
+        assert( ogmgPar!=NULL );
+        ogmgPar->get(OgmgParameters::THEresidualTolerance,rtol);
+        ogmgPar->get(OgmgParameters::THEabsoluteTolerance,atol);
+        ogmgPar->get(OgmgParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
       }
 
       fPrintF(file,"   Implicit solver =%s, rel-tol=%8.2e, abs-tol=%8.2e max iterations=%s \n",
-	      (const char*)implicitTimeStepSolverParameters.getSolverName(),rtol,atol,
-	      maximumNumberOfIterations==0 ? "default" : 
-	      sPrintF(buff,"%i",maximumNumberOfIterations));
-	if( implicitTimeStepSolverParameters.getSolverType()==OgesParameters::multigrid )
-	{ // Here is the MG convergence criteria: 
+              (const char*)implicitTimeStepSolverParameters.getSolverName(),rtol,atol,
+              maximumNumberOfIterations==0 ? "default" : 
+              sPrintF(buff,"%i",maximumNumberOfIterations));
+        if( implicitTimeStepSolverParameters.getSolverType()==OgesParameters::multigrid )
+        { // Here is the MG convergence criteria: 
           fPrintF(file,"                         : convergence: max-defect < (rel-tol)*L2NormRHS + abs-tol.\n");
-	}
+        }
 
     }
     else  
@@ -1386,8 +1403,8 @@ writeParameterSummary( FILE * file )
     {
       if( parameters.getGridIsImplicit(grid)==0 || parameters.getGridIsImplicit(grid)==2 )
       {
-	semiImplicitBeingUsed=true;
-	break;
+        semiImplicitBeingUsed=true;
+        break;
       }
     }
     if( semiImplicitBeingUsed )
@@ -1395,25 +1412,25 @@ writeParameterSummary( FILE * file )
       fPrintF(file,"   Implicit time stepping with some grids time integrated explicitly or semi-implicitly\n");
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	fPrintF(file,"    %20s is time integrated %s \n",(const char *)cg[grid].getName(),
-		(parameters.getGridIsImplicit(grid)==1 ? "implicitly" : 
-		 (parameters.getGridIsImplicit(grid)==2 ? "semi-implicitly" :
-		  "explicitly")));
-	if ( timeSteppingMethod==Parameters::rKutta )
-	{
-	  if ( parameters.getGridIsImplicit(grid)==1 )
-	  {
-	    parameters.dbase.get<IntegerArray>("timeStepType")(grid)=2;
-	  }
-	  else if ( parameters.getGridIsImplicit(grid)==2 )
-	  {
-	    parameters.dbase.get<IntegerArray>("timeStepType")(grid)=1;
-	  } 
-	  else 
-	  {
-	    parameters.dbase.get<IntegerArray>("timeStepType")(grid)=0;
-	  }
-	}
+        fPrintF(file,"    %20s is time integrated %s \n",(const char *)cg[grid].getName(),
+                (parameters.getGridIsImplicit(grid)==1 ? "implicitly" : 
+                 (parameters.getGridIsImplicit(grid)==2 ? "semi-implicitly" :
+                  "explicitly")));
+        if ( timeSteppingMethod==Parameters::rKutta )
+        {
+          if ( parameters.getGridIsImplicit(grid)==1 )
+          {
+            parameters.dbase.get<IntegerArray>("timeStepType")(grid)=2;
+          }
+          else if ( parameters.getGridIsImplicit(grid)==2 )
+          {
+            parameters.dbase.get<IntegerArray>("timeStepType")(grid)=1;
+          } 
+          else 
+          {
+            parameters.dbase.get<IntegerArray>("timeStepType")(grid)=0;
+          }
+        }
       }
     }
     else
@@ -1425,8 +1442,8 @@ writeParameterSummary( FILE * file )
 
   const int & numberOfSolutionLevels = parameters.dbase.get<int>("numberOfSolutionLevels");
   fPrintF(file,"\n Storage: numberOfGridFunctionsToUse=%i (numberOfSolutionLevels=%i), (holds u at different times)\n"
-	  "          numberOfExtraFunctionsToUse=%i (Holds RHS f = du/dt)\n\n",
-	  numberOfGridFunctionsToUse,numberOfSolutionLevels,numberOfExtraFunctionsToUse);
+          "          numberOfExtraFunctionsToUse=%i (Holds RHS f = du/dt)\n\n",
+          numberOfGridFunctionsToUse,numberOfSolutionLevels,numberOfExtraFunctionsToUse);
 
   if( parameters.dbase.get<bool >("readRestartFile") )
     fPrintF(file," Read a restart file, restartFileName=%s \n",(const char *)parameters.dbase.get<aString >("restartFileName"));
@@ -1435,11 +1452,11 @@ writeParameterSummary( FILE * file )
   {
     if( parameters.dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice")==Parameters::trigonometric )
       fPrintF(file," Twilight zone flow, trigonometric polynomial, fx=%8.2e, fy=%8.2e, fz=%8.2e, ft=%8.2e\n",
-	      parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[0],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[1],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[2],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[3]);
+              parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[0],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[1],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[2],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[3]);
     else    
       fPrintF(file," Twilight zone flow, polynomial, degree in space=%i, degree in time=%i \n",
-	      parameters.dbase.get<int >("tzDegreeSpace"), 
-	      parameters.dbase.get<int >("tzDegreeTime"));
+              parameters.dbase.get<int >("tzDegreeSpace"), 
+              parameters.dbase.get<int >("tzDegreeTime"));
   }
   
   if( parameters.dbase.get<real >("advectionCoefficient")!=1. )
@@ -1451,9 +1468,9 @@ writeParameterSummary( FILE * file )
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       if( parameters.gridIsMoving(grid) )
       {
-	fPrintF(file,"  Grid %15s is moving : %s\n",(const char*)cg[grid].getName(),
-		(const char*)parameters.dbase.get<MovingGrids >("movingGrids").movingGridOptionName(
-		  parameters.dbase.get<MovingGrids >("movingGrids").movingGridOption(grid)));
+        fPrintF(file,"  Grid %15s is moving : %s\n",(const char*)cg[grid].getName(),
+                (const char*)parameters.dbase.get<MovingGrids >("movingGrids").movingGridOptionName(
+                  parameters.dbase.get<MovingGrids >("movingGrids").movingGridOption(grid)));
       }
     fPrintF(file,"  Frequency for full grid generation update for moving grids = %i. \n",
             parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration"));
@@ -1470,9 +1487,9 @@ writeParameterSummary( FILE * file )
   Parameters::ReferenceFrameEnum & referenceFrame = 
           parameters.dbase.get<Parameters::ReferenceFrameEnum>("referenceFrame");
   fPrintF(file,"  The equations are solved in %s\n",
-	  (referenceFrame==Parameters::fixedReferenceFrame ? "a fixed reference frame." :
-	   referenceFrame==Parameters::rigidBodyReferenceFrame ? "a rigid body reference frame." :
-	   "some other specified reference frame."));
+          (referenceFrame==Parameters::fixedReferenceFrame ? "a fixed reference frame." :
+           referenceFrame==Parameters::rigidBodyReferenceFrame ? "a rigid body reference frame." :
+           "some other specified reference frame."));
   fPrintF(file,"\n");
 
   if( parameters.dbase.get<bool >("adaptiveGridProblem") )

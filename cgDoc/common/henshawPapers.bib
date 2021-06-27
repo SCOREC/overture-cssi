@@ -26,6 +26,9 @@
 %	A numerical investigation of the interaction between the large and small scale of the two-dimensional {Navier-Stokes} equations.
 %	CAM Report 98-23, Dep. of Math. University of California, Los Angeles.
 
+
+
+
 @TechReport{browning-al-98,
   author = 	 "G. L. Browning and W. D. Henshaw and H.-O. Kreiss",
   title = 	 "A numerical investigation of the interaction between the large and small scale of the two-dimensional {Navier-Stokes} equations",
@@ -42,8 +45,303 @@
    title = "Collision-induced two-ion chaos",
    journal = "Nature",
    volume = 344,
-   pages = "305--309\citeCount{49}",
+   pages = "305--309\citeCount{71}",
    year = 1990}
+
+% FINISH ME 
+@article{LiBraunDriscollHenshawKingSmith2017,
+  title={Computed Flow and Fluorescence Over the Ocular Surface},
+  author={L. Li and R. J Braun and T. A. Driscoll and W. D. Henshaw and P.E. King-Smith},
+  journal={Mathematical Medicine and Biology},
+  year={2017}
+}
+
+
+@article{AminiAfsharBinghamHenshaw2019,
+title = "Stability analysis of high-order finite-difference discretizations of the linearized forward-speed seakeeping problem",
+journal = "Applied Ocean Research",
+volume = "92",
+pages = "101913",
+year = "2019",
+issn = "0141-1187",
+doi = "https://doi.org/10.1016/j.apor.2019.101913",
+author = "Mostafa Amini-Afshar and Harry B. Bingham and William D. Henshaw",
+keywords = "Stability analysis, Wave resistance, Neumann–Kelvin linearization, Finite difference, Overlapping grids, Forward speed",
+abstract = "A high-order finite-difference method solution of the linearized, potential flow, seakeeping problem for a ship at steady forward speed was recently presented by Amini-Afshar et al. [1,2]. In this paper, we provide a detailed matrix-based eigenvalue stability analysis of this model, highlighting the sources of instability and the effects of possible remedies. In particular, we illustrate how both boundary treatment and grid stretching are important factors which are not typically captured by a von Neumann-type analysis. The new analysis shows that when grid stretching is used together with centered finite difference schemes, the method is generally unstable. The source of the instability can in some cases be traced to an effective downwinding of the convective terms. Stable solutions can be obtained either by introducing upwind-biased schemes for computing the convective derivatives on the free-surface, or by application of a mild filter at each time-step. A second source of instability is associated with the treatment of the convective derivatives of the free-surface elevation at points close to the domain boundaries. Here it is necessary to consider whether the surrounding fluid points lie in an upwind or a downwind direction. For upwinded points, ordinary one-sided differencing can be used, but for downwinded points we instead impose a Neumann-type boundary condition derived from the body and free-surface boundary conditions. As an example application to complement those already given in [1], [2], the method is applied to solve the steady wave resistance problem and comparison is made to reference solutions for a two-dimensional floating cylinder and a submerged sphere. Estimates of the wave resistance of the Wigley hull are also compared with experimental measurements."
+}
+
+
+
+@article{Fedoseyev2016,
+author = {A. Fedoseyev and E. J. Kansa and S. Tsynkov and S. Petropavlovskiy and M. Osintcev and U. Shumlak and W. D. Henshaw},
+title = {A universal framework for non-deteriorating time-domain numerical algorithms in {Maxwell's} electrodynamics},
+journal = {AIP Conference Proceedings},
+volume = {1773},
+number = {1},
+pages = {020001},
+year = {2016}
+}                 
+
+                  
+@incollection{ProkopevaHenshawSchwendemanKildishev2020,
+  author = "Ludmila J. Prokopeva and William D. Henshaw and Donald W. Schwendeman and Alexander V. Kildishev",
+  title = "Time domain modeling with the generalized dispersive material model",
+  booktitle = "Nanoantennas and Plasmonics, Modelling, Design and Fabrication",
+  editor    = "Douglas H. Werner and Sawyer D. Campbell and Lei Kang",                    
+  series = "The ACES Series on Computational Numerical Modelling in Electrical Engineering",
+  publisher = "The Institution of Engineering and Technology",
+  pages = "125--152",
+  year = 2020} 
+
+
+
+% ArXiv Version of r2p                   
+@TechReport{multigridWithNonstandardCoarseningArXiv,
+   author={Kamala Liu and William D. Henshaw},
+   title = {Multigrid with Nonstandard Coarsening},
+   type="preprint",
+   number="arXiv:2008.03885",
+   note= "submitted for publication",                    
+   year = 2020}
+
+
+@article{fins2020,
+   author={Fanlong Meng and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = "Fourth-Order Accurate Fractional-Step {IMEX} Schemes for the Incompressible {Navier-Stokes} Equations on Moving Overlapping Grids",
+   journal = {Computer Methods in Applied Mechanics and Engineering},
+   volume = {366},
+   pages = 113040,
+   year = 2020}
+
+% adegdm: -- basic scheme 
+@article{adegdm2019,
+   author={Jordan Angel and Jeffrey W. Banks and William D. Henshaw and Michael J. Jenkinson and Alexander V. Kildishev and Gregor {Kova\v ci\v c} and Ludmila J. Prokopeva and Donald W. Schwendeman},
+   title = "A High-order Accurate Scheme for {M}axwell's Equations with a Generalized Dispersion Model",
+   journal=JCP,
+   volume = 378,                     
+   pages = "411--444",
+   year = "2019" }
+
+% adegdm: -- basic scheme 
+@TechReport{adegdm2018r,
+   author={Jordan Angel and Jeffrey W. Banks and William D. Henshaw and Michael J. Jenkinson and Ludmila Prokopeva},
+   title = "A High-order Accurate Scheme for {M}axwell's Equations with a Generalized Dispersion Model",
+   institution = "arXiv",                  
+   type="preprint",
+   number="arXiv:??",
+   note= "submitted for publication",                    
+   year = 2018}
+
+% bamx -- final version
+@TechReport{bamx2020,
+   author={Derek Olson and D. Ilbert},
+   title = "A Finite-Difference Time-Domain Solver for the Dispersive Bianistropic Maxwell's Equations",
+  institution = "arXiv",
+  type="Preprint",
+   note= "Submitted for publication",                    
+   year = 2020}
+
+
+
+% adegdmi:  -- interfaces final version: 
+@article{adegdmi2020,
+   author={Jeffrey W. Banks and Benjamin Buckner and  William D. Henshaw and Michael J. Jenkinson and and Alexander V. Kildishev and Gregor {Kova\v ci\v c} and Ludmila J. Prokopeva and Donald W. Schwendeman},
+   title = "A High-order Accurate Scheme for {M}axwell's Equations with a Generalized Dispersive Material ({GDM}) Model and Material Interfaces",
+   journal=JCP,
+   volume = 412,                     
+   pages = "109424",
+   year = "2020" }
+   
+@TechReport{adegdmi2020ArXiv,
+   author={Benjamin Buckner and Jeffrey W. Banks and William D. Henshaw and Michael J. Jenkinson and and Alexander V. Kildishev and Gregor {Kova\v ci\v c} and Ludmila J. Prokopeva and Donald W. Schwendeman},
+   title = "A High-order Accurate Scheme for Maxwell's Equations with a Generalized Dispersive Material (GDM) Model and Material Interfaces",
+  institution = "arXiv",
+  type="Preprint",
+   note= "Submitted for publication",                    
+   year = 2020}
+
+@TechReport{adegdmi2019,
+   author={Benjamin Buckner and Jeffrey W. Banks and William D. Henshaw and Michael J. Jenkinson and and Alexander V. Kildishev and Gregor {Kova\v ci\v c} and Ludmila J. Prokopeva and Donald W. Schwendeman},
+   title = "A High-order Accurate Scheme for Maxwell's Equations with a Generalized Dispersive Material (GDM) Model and Material Interfaces",
+   type="Preprint",
+   note= "Submitted for publication",                    
+   year = 2019}
+
+
+@article{fibrmp2019,
+   author={Daniel A. Serino and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = {A stable added-mass partitioned ({AMP}) algorithm for elastic solids and incompressible flow: {M}odel problem analysis},
+   journal = SISC,
+   volume = "41",
+   number = "4",                    
+   pages = "A2464--A2484",
+   year = "2019"}
+   
+@TechReport{fibrmparXiv,
+   author={Daniel A. Serino and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = {A stable added-mass partitioned ({AMP}) algorithm for elastic solids and incompressible flow: {M}odel problem analysis},
+   type="preprint",
+   number="arXiv:1812.03192",
+   note= "submitted for publication",                    
+   year = 2019}
+                  
+
+@article{fibr2019,
+   author={Daniel A. Serino and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = {A stable added-mass partitioned ({AMP}) algorithm for elastic solids and incompressible flow},
+   journal= JCP,
+   volume ="399",
+   pages = "1--30",
+   year = "2019"}
+   
+@TechReport{fibrarXiv,
+   author={Daniel A. Serino and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = {A stable added-mass partitioned ({AMP}) algorithm for elastic solids and incompressible flow},
+   type="preprint",
+   number="arXiv:1812.05208",
+   note= "submitted for publication",                    
+   year = 2019}
+
+
+@inproceedings{aces2020,
+   author={J. W. Banks and B.B. Buckner and W. D. Henshaw and A. V. Kildishev and G. {Kova\v ci\v c} and L. J. Prokopeva and D. W. Schwendeman}, 
+   title = "A High-order Accurate Scheme for the Dispersive {M}axwell's Equations and Material Interfaces on Overset Grids",
+   booktitle="Proceedings of the 2020 International Applied Computational Electromagnetics Society Symposium (ACES)",
+   note = "(2 pages)",
+   year = 2020
+   }
+
+@inproceedings{aces2019,
+   author={J. W. Banks and W. D. Henshaw and A. V. Kildishev and G. {Kova\v ci\v c} and L. J. Prokopeva and D. W. Schwendeman}, 
+   title = "Solving {M}axwell's Equations with a Generalized Dispersive Material Model on Overset Grids",
+   booktitle="Proceedings of the 2019 International Applied Computational Electromagnetics Society Symposium (ACES)",
+   note = "(2 pages)",
+   year = 2019
+   }
+
+
+@inproceedings{aces2018,
+   author={J. B. Angel and J. W. Banks and W. D. Henshaw},
+   title = {A High-Order Accurate {FDTD} Scheme for {Maxwell}'s Equations on Overset Grids},
+   booktitle=" Proceedings of the 2018 International Applied Computational Electromagnetics Society Symposium (ACES)",
+   note = "(2 pages)",
+   year = 2018
+   }
+
+% rbins 3D -- JCP version 
+% A stable partitioned FSI algorithm for rigid bodies and incompressible flow in three dimensions
+@article{rbins3d2018,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow in three dimensions",
+   journal=JCP,
+   volume = {373},
+   pages = "455--492\citeCount{2}",
+   year = 2018}
+                  
+% deprecated: 
+@article{rbins3d2017,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow in three dimensions",
+   journal=JCP,
+   volume = {373},
+   pages = "455--492",
+   year = 2018}
+                  
+@TechReport{rbins3d2017arXiv,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow in three dimensions",
+   institution = "arXiv",                  
+   type="preprint",
+   number="arXiv:1711.04742",
+   note= "submitted for publication",                    
+   year = 2017}
+
+
+% rbinsmp (Part I)  -- JCP:
+@article{rbinsmp2017,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow.
+       {Part I}: Model problem analysis",
+   journal=JCP,
+   volume = {343},
+   pages = "432--468",
+   year = 2017}
+                  
+% rbinsmp: -- research report 
+@TechReport{rbinsmp2016r,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow.
+       {Part I}: Model problem analysis",
+   institution = "arXiv",                  
+   type="preprint",
+   number="arXiv:??",
+   note= "submitted for publication",                    
+   year = 2016}
+
+% rbins (Part II) -- JCP: 
+@article{rbins2017,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow.
+       {Part II}: General formulation",
+   journal=JCP,
+   volume = {343},
+   pages = "469--500",
+   year = 2017}
+                  
+% rbins: -- research report 
+@TechReport{rbins2016r,
+   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman and Qi Tang},
+   title = "A stable partitioned {FSI} algorithm for rigid bodies and incompressible flow.
+       {Part II}: General formulation",
+   institution = "arXiv",                  
+   type="preprint",
+   number="arXiv:??",
+   note= "submitted for publication",                    
+   year = 2016}
+
+@TechReport{ssmx2018,
+   author={Jordan Angel and Jeffrey W. Banks and William D. Henshaw},
+   title = "Efficient high-order upwind difference schemes for the second-order wave equation on overlapping grids",
+   note= "In preparation",  
+   year = 2018}                  
+
+
+@article{mxsosup2018,
+   author={Jordan Angel and Jeffrey W. Banks and William D. Henshaw},
+   title = "High-order upwind schemes for the wave equation on overlapping grids: {Maxwell}'s equations in second-order form",
+   journal=JCP,
+   volume = "352",
+   pages = "534--567",
+   year = 2018}                  
+                  
+%  deprecate:                  
+@article{mxsosup2017,
+   author={Jordan Angel and Jeffrey W. Banks and William D. Henshaw},
+   title = "High-order upwind schemes for the wave equation on overlapping grids: {Maxwell}'s equations in second-order form",
+   journal=JCP,
+   volume = "352",
+   pages = "534--567",
+   year = 2018}                  
+
+                  
+@article{champ2016,
+   author={Fanlong Meng and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = "A stable and accurate partitioned algorithm for conjugate heat transfer",
+   journal=JCP,
+   volume = {344},
+   pages = "51--85\citeCount{7}",
+   year = 2017}
+
+                  
+
+@TechReport{champ2016r,
+   author={Fanlong Meng and Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   title = "CHAMP: A stable partitioned algorithm for conjugate heat transfer",
+   type="arXiv preprint",
+   number="arXiv:??",
+   note= "submitted for publication",                    
+   year = 2016}
+
 
 
 @article{KapilaSchwendemanGambinoHenshaw2015,
@@ -55,12 +353,29 @@
    pages = "545--572",                    
    year = 2015}
                   
+                  
+@article{Koblitz2017,
+   author={A.R. Koblitz and S. Lovett and N. Nikiforakis and William D. Henshaw},
+   title = "Direct numerical simulation of particulate flows with an overset grid method",
+   journal=JCP,
+   volume = 343,                     
+   pages = "414--431",                     
+   year = "2017"}
+                  
+% arXiv long version
+@article{Koblitz2016a,
+   author={A.R. Koblitz and S. Lovett and N. Nikiforakis and William D. Henshaw},
+   title = "Direct numerical simulation of particulate flows with an overset grid method",
+   journal= "arXiv 1702.01021",          
+   year = "2016"}
+                  
 % Make this the final article
 @article{beamins2016,
    author={Longfei Li and William D. Henshaw and Jeffrey W. Banks and Donald W. Schwendeman and Geoffrey A. Main},
    title = "A stable partitioned {FSI} algorithm for incompressible flow and deforming beams",
-   type="arXiv preprint",
-   number="arXiv:1507.06041",
+   journal=JCP,
+   volume = 312,                     
+   pages = "272--306\citeCount{10}",                     
    year = "2016"}
 
                   
@@ -76,16 +391,16 @@
 
 % Make this the final article
 @article{flunsi2016,
-   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   author={Jeffrey W. Banks and William D. Henshaw and A.K. Kapila and Donald W. Schwendeman},
    title = "An Added-Mass Partitioned Algorithm for Fluid-Structure Interactions of Compressible Fluids and Nonlinear Solids",
    journal=JCP,
    volume = 305,                     
-   pages = "1037--1064\citeCount{0}",                     
+   pages = "1037--1064\citeCount{8}",                     
    year = "2016"}
                   
 % research report
 @TechReport{flunsi2014r,
-   author={Jeffrey W. Banks and William D. Henshaw and Donald W. Schwendeman},
+   author={Jeffrey W. Banks and William D. Henshaw  and A.K. Kapila and Donald W. Schwendeman},
    title = "An Added-Mass Partitioned Algorithm for Fluid-Structure Interactions of Compressible Fluids and Nonlinear Solids",
    Institution = "Lawrence Livermore National Laboratory",
    type=" (submitted to J. Comput. Phys.), Research Report",
@@ -110,6 +425,15 @@
    year = "2015"}                 
 
 
+@incollection{BanksHenshaw2015,
+  author = "J. W. Banks and W. D. Henshaw",
+  title = "High-order upwind methods for wave equations on curvilinear and overlapping grids",
+  booktitle = "{Spectral and High Order Methods for Partial Differential Equations - ICOSAHOM 14}",
+  series = "Lecture Notes in Computational Science and Engineering",
+  publisher = "Springer",
+  volume = 107,
+  pages = "137--145",
+  year = 2015} 
 
 % Make this the final article
 @article{fis2014,
@@ -141,7 +465,7 @@
             {Part I}: Incompressible flow and elastic solids",
    journal=JCP,
    volume = 269,
-   pages = "108--137\citeCount{2}",                     
+   pages = "108--137\citeCount{39}",                     
    year = "2014"}
 
 
@@ -161,7 +485,7 @@
    title = "A stable {FSI} algorithm for light rigid bodies in compressible flow",
    journal=JCP,
    volume = "245",
-   pages = "399--430\citeCount{1}",
+   pages = "399--430\citeCount{21}",
    year = "2013"}
 
 @article{lrb2012a,
@@ -336,7 +660,7 @@
 		  for Partial Differential Equations",
    publisher = "Springer-Verlag",
    address = "New York",
-   pages = "\citeCount{43}",
+   pages = "\citeCount{315}",
    year = 1995}
 
 @techreport(getsmart,
@@ -373,8 +697,8 @@
    title="{CgWind}: A high-order accurate simulation tool for wind turbines and wind farms",
    booktitle="The Fifth International Symposium on Computational Wind Engineering (CWE2010)",
    place="North Carolina",
-   year = 2010)
-
+   year = 2010
+)
 
 @article(CGNS,
    author = "G. S. Chesshire and W. D. Henshaw",
@@ -382,7 +706,7 @@
    journal = JCP,
    volume ="90",
    number = "1",
-   pages = "1--64\citeCount{349}",
+   pages = "1--64\citeCount{527}",
    year = 1990)
 
 @techreport(CGCN,
@@ -399,7 +723,7 @@
    journal = SISC,
    volume ="15",
    number = "4",
-   pages = "819--845\citeCount{60}",
+   pages = "819--845\citeCount{90}",
    month = "July",
    year = 1994) 
 
@@ -431,6 +755,76 @@
 
 
 %% ----- Talks ---                   
+
+@misc{aces2020Henshaw,
+   author = "W. D. Henshaw",
+   title = "A High-Order Accurate Scheme for Dispersive Maxwell Equations with Material Interfaces",
+   note = {Talk, 2020 International Applied Computational Electromagnetics Society (ACES) Symposium (virtual) 2020.},
+   year = "2020"}
+
+
+@misc{aces2019Henshaw,
+   author = "W. D. Henshaw",
+   title = "Solving Maxwell's Equations with a Generalized Dispersive Material Model on Overset Grids",
+   note = {Talk, 2019 International Applied Computational Electromagnetics Society (ACES) Symposium, Miami FL, USA April 2019.},
+   year = "2019"}
+                  
+@misc{cse2019Henshaw,
+   author = "W. D. Henshaw",
+   title = "High-order upwind schemes for the dispersive Maxwell equations",
+   note = {Talk, SIAM conference on Computational Science and Engineering, Spokane, Washington, Feb, 2019.},
+   year = "2019"}
+                  
+@misc{icosahom2018Henshaw,
+   author = "W. D. Henshaw",
+   title = "High-order Upwind schemes for Wave Equations on Overlapping Grids",
+   note = {Talk,  International Conference on Spectral and High Order Methods (ICOSAHOM), London, United Kingdom, July, 2018.},
+   year = "2018"}
+                  
+@misc{overset2018Henshaw,
+   author = "W. D. Henshaw",
+   title = "Solving Fluid-Structure Interaction Problems using Overture",
+   note = {Talk ,14th Symposium on Overset Composite Grids and Solution Technology,  University of Maryland, College Park, Maryland, October 1--4, 2018.},
+   year = "2018"}
+                  
+@misc{SDSU2018Henshaw,
+   author = "W. D. Henshaw",
+   title = "Over-coming fluid-structure instabilities for incompressible flows and light bodies",
+   note = {Talk, (invited) San Diego State University,  San Diego, California, April 13, 2018.},
+   year = "2018"}
+                  
+@misc{aces2018Henshaw,
+   author = "W. D. Henshaw",
+   title = "A High-Order Accurate FDTD Scheme for Maxwell's Equations on Overset Grids",
+   note = {Talk, (invited) Applied Computational Electromagnetics Society (ACES) Conference,  Denver Colorado, March 29, 2018.},
+   year = "2018"}
+                  
+@misc{CSU2017Henshaw,
+   author = "W. D. Henshaw",
+   title = "Over-coming fluid-structure instabilities for incompressible flows and light bodies",
+   note = {Talk, (invited)  U. of Colorado, Boulder, invited, Applied Mathematics Colloqium, Sept, 2017.},
+   year = "2017"}
+   
+   
+@misc{PSU2017Henshaw,
+   author = "W. D. Henshaw",
+   title = " Overture and the Cgmx Electromagnetics Solver",
+   note = {Talk,  (invited)  Penn State University, August 2017.},
+   year = "2017"}
+   
+@misc{mit2016Henshaw,
+   author = "W. D. Henshaw",
+   title = "Over-coming fluid-structure instabilities for incompressible flows and light bodies",
+   note = {Talk, (invited) Massachusetts Institute of Technology, Cambridge Massachusetts, September 21, 2016.},
+   year = "2016"}
+
+@misc{overset2016Henshaw,
+   author = "W. D. Henshaw",
+   title = "Recent Developments in PDE Solvers using Overture",
+   note = {Talk, 13th Symposium on Overset Composite Grids and Solution Technology, October 17--20, 2016.},
+   year = "2016"}
+
+
 @misc{njit2015Henshaw,
    author = "W. D. Henshaw",
    title = "Over-coming the fluid-structure added-mass instability for incompressible flows",
@@ -473,10 +867,6 @@
    year = "2010"}
 
 
-@techreport(overtureWebPage,
-   author = "William D. Henshaw",
-   title = "Overture",
-   year = "2013")
 
 @techreport(overtureWebPagePrev,
    author = "William D. Henshaw",
@@ -557,7 +947,7 @@
    journal = SISSC,
    volume = 8,
    number = 6,
-   pages = "914--923\citeCount{34}",
+   pages = "914--923\citeCount{47}",
    year = 1987)
 
 
@@ -574,7 +964,7 @@
    journal = "Theoretical and Computational Fluid Dynamics",
    volume = 1,
    year = 1989,
-   pages = "65--95\citeCount{41}")
+   pages = "65--95\citeCount{49}")
 
 @ARTICLE(HKR2,
    author = "William D. Henshaw and H.-O. Kreiss and L. G. M. Reyna",
@@ -583,7 +973,7 @@
    journal = "Arch. Rational Mech. Anal.",
    volume = 112,
    year = 1990,
-   pages = "21--44\citeCount{56}")
+   pages = "21--44\citeCount{68}")
 
 @techreport(CG3D,
    author = "William D. Henshaw and G. S. Chesshire and M. E. Henderson",
@@ -688,7 +1078,7 @@
    journal=JCP,
    volume = 113,
    number = 1,
-   pages = "13--25\citeCount{154}",
+   pages = "13--25\citeCount{240}",
    month = "July",
    year = 1994)
 
@@ -711,7 +1101,7 @@
    journal = "Comput. Fluids",
    volume = 23,
    number = 4,
-   pages = "575--593\citeCount{40}",
+   pages = "575--593\citeCount{52}",
    year = 1994 )
 %   Institution = "IBM Research Division, Yorktown Heights, NY",
 %   type = "Research Report",
@@ -744,6 +1134,14 @@
    number = "UCRL-MA-134300",
    year = 1999)
 
+@techreport{OgenDocumentation,
+   author = "William D. Henshaw",
+   title = "Ogen: An Overlapping Grid Generator for {O}verture",
+   Institution = "Rensselear Polytechnic Institute",
+   type = "www.OvertureFramework.org"
+   }
+
+
 @techreport(OgenLANL,
    author = "William D. Henshaw",
    title = "Ogen: An Overlapping Grid Generator for {O}verture",
@@ -758,7 +1156,7 @@
    Institution = "Lawrence Livermore National Laboratory",
    type = "Research Report",
    number = "UCRL-MA-132237",
-   pages = "\citeCount{32}",
+   pages = "\citeCount{75}",
    year = 1998)
 %  number = "LA-UR-96-3466",
 %  year = 1996)
@@ -1026,7 +1424,7 @@
     of Conservation Laws",
    journal=JCP,
    volume = 68,
-   pages = "25--47\citeCount{25}",
+   pages = "25--47\citeCount{27}",
    year = 1987)
 
 @Article(Henshaw86,
@@ -1034,7 +1432,7 @@
    title = "Numerical Shock Propagation Using Geometrical Shock Dynamics",
    journal="Journal of Fluid Mechanics",
    volume = 171,
-   pages = "519--545\citeCount{28}",
+   pages = "519--545\citeCount{57}",
    year = 1986)
 
 
@@ -1150,7 +1548,7 @@
    booktitle="Numerical Simulation of Incompressible Flows",
    publisher = "World Scientific", 
    editor = "M. M. Hafez",
-   pages = "108--125\citeCount{30}",
+   pages = "108--125\citeCount{50}",
    year = 2003)
 
 @techreport(halfMoonBay01,
@@ -1203,7 +1601,7 @@
    journal = "SIAM Journal of Multiscale Modeling and Simulation",
    volume = "1",
    number="1",
-   pages = "119--149\citeCount{13}",
+   pages = "119--149\citeCount{24}",
    year = 2003}
 
 %    booktitle="Proceedings of the Parallel CFD 2005 Conference",
@@ -1262,7 +1660,7 @@
    journal=JCP,
    volume = "231",
    number = "9",
-   pages = "3518--3547\citeCount{5}",
+   pages = "3518--3547\citeCount{34}",
    doi = "10.1016/j.jcp.2011.12.034",
    year = 2012}
 
@@ -1286,7 +1684,7 @@
    journal=JCP,
    volume="231",
    number="18",
-   pages = "6012--6050\citeCount{5}",
+   pages = "6012--6050\citeCount{24}",
    year = 2012}
 
 @techreport{smog2010a,
@@ -1304,7 +1702,7 @@
    title = "A Composite Grid Solver for Conjugate Heat Transfer in Fluid-Structure Systems",
    journal=JCP,
    volume = "228",
-   pages = "3708--3741\citeCount{18}",
+   pages = "3708--3741\citeCount{75}",
    year = 2009}
 
 @techreport{th2008,
@@ -1325,7 +1723,7 @@
    journal=JCP,
    volume = 227,
    number = 16,
-   pages = "7469--7502\citeCount{45}",
+   pages = "7469--7502\citeCount{86}",
    year = 2008}
 
 
@@ -1354,7 +1752,7 @@
    journal=JCP,
    volume = 216,
    number = 2,
-   pages = "744--779\citeCount{54}",
+   pages = "744--779\citeCount{96}",
    year = 2006)
 
 
@@ -1404,7 +1802,7 @@ year = {2006},
 journal = SISC,
 volume = {28},
 number = {5},
-pages = {1730--1765\citeCount{13}},
+pages = {1730--1765\citeCount{55}},
 keywords = {Maxwell's equations; overlapping grids; high-order accurate; symmetric finite difference},
 doi = {10.1137/050644379},
 }
@@ -1431,7 +1829,7 @@ doi = {10.1137/050644379},
    title = "An Adaptive Numerical Scheme for High-Speed Reactive Flow on Overlapping Grids",
    journal=JCP,
    volume = 191,
-   pages = "420--447\citeCount{66}",
+   pages = "420--447\citeCount{96}",
    year = 2003}
 
 
@@ -1449,7 +1847,7 @@ doi = {10.1137/050644379},
    journal = SISC,
    volume = "26",
    number = "5",
-   pages = "1547--1572\citeCount{16}",
+   pages = "1547--1572\citeCount{28}",
    year = 2005}
 
 @techreport{ogmgFourthOrder,
@@ -1525,7 +1923,7 @@ doi = {10.1137/050644379},
    journal = "Combustion Theory and Modeling",
    volume = "11",
    number = "5",
-   pages = "781--822\citeCount{32}",
+   pages = "781--822\citeCount{54}",
    year = 2007}
 
 @inproceedings{Oliveira2006,
@@ -1552,6 +1950,15 @@ doi = {10.1137/050644379},
   doi = {10.1093/imammb/dqv013},
   year={2015}
 }
+
+
+@article{MakiHenshawMcManusBraunChappDriscoll2018,
+   title={A Model for Tear Film Dynamics During a Realistic Blink},
+   author={K. L. Maki and W. D. Henshaw and A. McManus and R. J. Braun and D.M. Chapp and T.A. Driscoll},
+   journal={Journal for Modeling in Ophthalmology},
+   number = ??,                     
+   year = 2018}
+
 
 
 % Paper to Physics of FLuids
@@ -1604,8 +2011,18 @@ doi = {10.1137/050644379},
    year = 2011)
 
 
+@article{LiBraunHenshawKingSmith2017,
+ author = {Longfei Li and R. J. Braun and W. D. Henshaw and P. E. King-Smith},
+ title = {Computed Flow and Fluorescence over the Ocular Surface},
+ journal = {Mathematical Medicine and Biology},
+  volume={27},
+  number={3},
+  pages={1--35},
+  year={2017}
+ }                  
+
 @article{MakiBraunHenshawKingSmith2009a,
- author = {K. L. Maki and R. L. Braun and W. D. Henshaw and P. E. King-Smith},
+ author = {K. L. Maki and R. J. Braun and W. D. Henshaw and P. E. King-Smith},
  title = {Tear Film Dynamics on an Eye-Shaped Domain {I}: Pressure Boundary Conditions},
  journal = {Mathematical Medicine and Biology},
  volume={27},
@@ -1616,7 +2033,7 @@ doi = {10.1137/050644379},
  }
 
 @article{MakiBraunUcciferroHenshawKingSmith2009b,
- author = {K. L. Maki and R. L. Braun  and P. Ucciferro and W. D. Henshaw and P. E. King-Smith},
+ author = {K. L. Maki and R. J. Braun  and P. Ucciferro and W. D. Henshaw and P. E. King-Smith},
  title = {Tear Film Dynamics on an Eye-Shaped Domain {II}: Flux Boundary Conditions},
  journal = {Journal of Fluid Mechanics},
  volume ="647",
@@ -1733,7 +2150,7 @@ doi = {10.1137/050644379},
    Journal = "{SIAM} J. of Applied Math",
    volume = 53,
    number = 3,
-   pages = "799--828\citeCount{76}",
+   pages = "799--828\citeCount{120}",
    year = 1993)
 
 

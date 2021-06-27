@@ -573,8 +573,11 @@ Parameters(const int & numberOfDimensions0) : pdeName("unknown"), numberOfBCName
   // We sometimes need to turn off application of the interface boundary conditions
   if( !dbase.has_key("applyInterfaceBoundaryConditions") ) dbase.put<int>("applyInterfaceBoundaryConditions",1);
 
-  // We sometimes need to turn off application of the interface boundary conditions
+  // The interface communication mode defines how data is transfered between different domains for FSI or CHT problems
   if( !dbase.has_key("interfaceCommunicationMode") ) dbase.put<InterfaceCommunicationModeEnum>("interfaceCommunicationMode")=autoRequestInterfaceData;
+
+  // applyChampInterfaceConditions: use CHAMP interface conditions at CHT interfaces
+  if( !dbase.has_key("applyChampInterfaceConditions") ) dbase.put<int>("applyChampInterfaceConditions",0);
 
   // Apply a projection to the interface values
   if (!dbase.has_key("projectInterface")) dbase.put<bool>("projectInterface",false);
@@ -1457,7 +1460,7 @@ boundaryDistance(CompositeGrid & cg, realCompositeGridFunction & d, const Intege
 // ==================================================================================================================
 int Parameters::
 updateToMatchGrid( CompositeGrid & cg, 
-		   IntegerArray & sharedBoundaryCondition /* = Overture::nullIntArray() */ )
+                   IntegerArray & sharedBoundaryCondition /* = Overture::nullIntArray() */ )
 {
   //  dbase.get<IntegerArray >("variableBoundaryData")(grid) is true if variable BC data is required; such as 
   //  a parabolic inflow profile
@@ -1501,16 +1504,16 @@ updateToMatchGrid( CompositeGrid & cg,
      bcData=0.;
      for( int grid=0; grid<cg.numberOfComponentGrids(); grid++) 
        for( int axis=0; axis<numberOfDimensions; axis++ ) for( int side=0; side<=1; side++ )
-	 for( int n=0; n<numberOfComponents; n++ )
-	 { // Default is a Dirichlet BC: 
-	   mixedRHS(n,side,axis,grid)=0.;
-	   mixedCoeff(n,side,axis,grid)=1.;
-	   mixedNormalCoeff(n,side,axis,grid)=0.;
+         for( int n=0; n<numberOfComponents; n++ )
+         { // Default is a Dirichlet BC: 
+           mixedRHS(n,side,axis,grid)=0.;
+           mixedCoeff(n,side,axis,grid)=1.;
+           mixedNormalCoeff(n,side,axis,grid)=0.;
            if( dbase.get<int >("debug") & 8 )
-	     printF("*** Parameters::updateToMatchGrid: Set bcData for mixed BC (side,axis,grid)=(%i,%i,%i)"
-		    " n=%i (%g,%g,%g) (Dirichlet BC)******\n",
+             printF("*** Parameters::updateToMatchGrid: Set bcData for mixed BC (side,axis,grid)=(%i,%i,%i)"
+                    " n=%i (%g,%g,%g) (Dirichlet BC)******\n",
                     side,axis,grid,n,mixedRHS(n,side,axis,grid),mixedCoeff(n,side,axis,grid),mixedNormalCoeff(n,side,axis,grid));
-	 }
+         }
 
      bcParameters.redim(max(9, numberOfComponents),2, numberOfDimensions,cg.numberOfComponentGrids());
      bcParameters=0.;
@@ -1532,13 +1535,13 @@ updateToMatchGrid( CompositeGrid & cg,
     {
       bcData(all,all,all,R)=0.;
       for( int grid=oldNumber; grid<cg.numberOfComponentGrids(); grid++) 
-	for( int axis=0; axis<numberOfDimensions; axis++ ) for( int side=0; side<=1; side++ )
-	  for( int n=0; n<numberOfComponents; n++ )
-	  { // Default is a Dirichlet BC: 
-	    mixedRHS(n,side,axis,grid)=0.;
-	    mixedCoeff(n,side,axis,grid)=1.;
-	    mixedNormalCoeff(n,side,axis,grid)=0.;
-	  }
+        for( int axis=0; axis<numberOfDimensions; axis++ ) for( int side=0; side<=1; side++ )
+          for( int n=0; n<numberOfComponents; n++ )
+          { // Default is a Dirichlet BC: 
+            mixedRHS(n,side,axis,grid)=0.;
+            mixedCoeff(n,side,axis,grid)=1.;
+            mixedNormalCoeff(n,side,axis,grid)=0.;
+          }
     }
      
     bcData(all,all,all,Rold)=bcDataOld;
@@ -1567,27 +1570,27 @@ updateToMatchGrid( CompositeGrid & cg,
     {
       if( cg.refinementLevelNumber(grid)>0 ) // this is a refinement grid 
       {
-	int baseGrid = cg.baseGridNumber(grid);
-	for( int axis=0; axis<cg.numberOfDimensions(); axis++ ) 
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    if( cg[grid].boundaryCondition(side,axis) > 0 )
-	    {
+        int baseGrid = cg.baseGridNumber(grid);
+        for( int axis=0; axis<cg.numberOfDimensions(); axis++ ) 
+        {
+          for( int side=0; side<=1; side++ )
+          {
+            if( cg[grid].boundaryCondition(side,axis) > 0 )
+            {
               assert( cg[grid].boundaryCondition(side,axis)==cg[baseGrid].boundaryCondition(side,axis) );
-	      
-	      bcData(all,side,axis,grid)= bcData(all,side,axis,baseGrid);
-	      bcParameters(all,side,axis,grid)= bcParameters(all,side,axis,baseGrid);
-	      bcInfo(all,side,axis,grid)= bcInfo(all,side,axis,baseGrid);
-	      interfaceType(side,axis,grid)= interfaceType(side,axis,baseGrid);
-	    }
-	    else
-	    {  // *wdh* 100803 -- reset the interface type
+              
+              bcData(all,side,axis,grid)= bcData(all,side,axis,baseGrid);
+              bcParameters(all,side,axis,grid)= bcParameters(all,side,axis,baseGrid);
+              bcInfo(all,side,axis,grid)= bcInfo(all,side,axis,baseGrid);
+              interfaceType(side,axis,grid)= interfaceType(side,axis,baseGrid);
+            }
+            else
+            {  // *wdh* 100803 -- reset the interface type
               interfaceType(side,axis,grid)=noInterface;
-	    }
-	    
-	  }
-	}
+            }
+            
+          }
+        }
       }
     }
 
@@ -1598,30 +1601,30 @@ updateToMatchGrid( CompositeGrid & cg,
     {
       for( int grid=oldNumber; grid<newNumber; grid++ )
       {
-	for( int axis=0; axis<cg.numberOfDimensions(); axis++ ) 
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    if( cg[grid].boundaryCondition(side,axis) > 0 && sharedBoundaryCondition(side,axis,grid)>=0 )
-	    {
+        for( int axis=0; axis<cg.numberOfDimensions(); axis++ ) 
+        {
+          for( int side=0; side<=1; side++ )
+          {
+            if( cg[grid].boundaryCondition(side,axis) > 0 && sharedBoundaryCondition(side,axis,grid)>=0 )
+            {
               // sharedBoundaryCondition(side,axis,grid) = side2+2*(axis2+3*grid2) : match to (side2,axis2,grid2)
 
-	      
-	      int grid2=sharedBoundaryCondition(side,axis,grid)/6;
+              
+              int grid2=sharedBoundaryCondition(side,axis,grid)/6;
               int dir2=(sharedBoundaryCondition(side,axis,grid)-6*grid2)/2;
               int side2=sharedBoundaryCondition(side,axis,grid) % 2;
-	      assert( grid2>=0 && grid2<oldNumber );
-	      assert(dir2>=0 && dir2<=2 );
-	      
+              assert( grid2>=0 && grid2<oldNumber );
+              assert(dir2>=0 && dir2<=2 );
+              
               printF("Parameters: assign BC for new grid %i from old grid %i\n",grid,grid2);
 
-	       bcData(all,side,axis,grid)= bcData(all,side2,dir2,grid2);
-	       bcParameters(all,side,axis,grid)= bcParameters(all,side2,dir2,grid2);
-	       bcInfo(all,side,axis,grid)= bcInfo(all,side2,dir2,grid2);
-	       interfaceType(side,axis,grid)= interfaceType(side2,dir2,grid2);
-	    }
-	  }
-	}
+               bcData(all,side,axis,grid)= bcData(all,side2,dir2,grid2);
+               bcParameters(all,side,axis,grid)= bcParameters(all,side2,dir2,grid2);
+               bcInfo(all,side,axis,grid)= bcInfo(all,side2,dir2,grid2);
+               interfaceType(side,axis,grid)= interfaceType(side2,dir2,grid2);
+            }
+          }
+        }
       }
     }
     
@@ -1669,17 +1672,17 @@ updateTurbulenceModels(CompositeGrid & cg)
     {
       for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
+        for( int side=0; side<=1; side++ )
+        {
           int bc=cg[grid].boundaryCondition(side,axis);
-	  if( bc==noSlipWall )
-	  {
-	    wall(nw,0)=grid;
-	    wall(nw,1)=side;
-	    wall(nw,2)=axis;
-	    nw++;
-	  }
-	}
+          if( bc==noSlipWall )
+          {
+            wall(nw,0)=grid;
+            wall(nw,1)=side;
+            wall(nw,2)=axis;
+            nw++;
+          }
+        }
       }
     }
     if( nw>0 )
@@ -1805,9 +1808,9 @@ bcType(int side, int axis, int grid) const
 // ==================================================================================================================
 int Parameters::
 howManyBcTypes(const Index & side, 
-	       const Index & axis, 
-	       const Index & grid, 
-	       BoundaryConditionType bc) const
+               const Index & axis, 
+               const Index & grid, 
+               BoundaryConditionType bc) const
 {
   int numberOfFaces=sum( ( dbase.get<IntegerArray >("bcInfo")(0,side,axis,grid)-(int)bc)==0 );
   return numberOfFaces;
@@ -1821,8 +1824,8 @@ howManyBcTypes(const Index & side,
 // ==================================================================================================================
 int Parameters::
 thereAreTimeDependentUserBoundaryConditions(const Index & Side, 
-					    const Index & Axis, 
-					    const Index & Grid ) const  
+                                            const Index & Axis, 
+                                            const Index & Grid ) const  
 {
   const int numberOfGrids= dbase.get<IntegerArray >("bcInfo").getLength(3);
   Index S = Side.getLength()<=0 ? Index(0,2) : Side;
@@ -1835,12 +1838,12 @@ thereAreTimeDependentUserBoundaryConditions(const Index & Side,
     {
       for(int grid=G.getBase(); grid<=G.getBound(); grid++ )
       {
-	// if(  dbase.get<IntegerArray >("bcInfo")(0,side,axis,grid)>=numberOfPredefinedBoundaryConditionTypes && bcIsTimeDependent(side,axis,grid) )
+        // if(  dbase.get<IntegerArray >("bcInfo")(0,side,axis,grid)>=numberOfPredefinedBoundaryConditionTypes && bcIsTimeDependent(side,axis,grid) )
         // *wdh* 2015/03/27 -- do this for now *fix me*
-	if( bcIsTimeDependent(side,axis,grid) )
-	{
-	  return true;
-	}
+        if( bcIsTimeDependent(side,axis,grid) )
+        {
+          return true;
+        }
       }
     }
   }
@@ -1916,8 +1919,8 @@ bcVariesInSpace(int side, int axis, int grid) const
 // ===================================================================================================================
 int Parameters::
 bcVariesInSpace(const Index & side /*= nullIndex */, 
-		const Index & axis /*= nullIndex */, 
-		const Index & grid /*= nullIndex */ ) const
+                const Index & axis /*= nullIndex */, 
+                const Index & grid /*= nullIndex */ ) const
 {
   return max(  dbase.get<IntegerArray >("bcInfo")(1,side,axis,grid) & 2 ); 
 }
@@ -1989,7 +1992,7 @@ bcIsTimeDependent( int grid ) const
     for( int axis=0; axis<numberOfDimensions; axis++ )
     {
       if( bcInfo(1,side,axis,grid) & 4 )
-	return true; // there is at least one face on this grid with a time-dependent BC
+        return true; // there is at least one face on this grid with a time-dependent BC
     }
   }
   
@@ -2109,7 +2112,7 @@ getTimeDependenceBoundaryConditionParameters(int side, int axis, int grid, RealA
   {
     printF("Parameters::getTimeDependenceBoundaryConditionParameters:ERROR: requesting too many parameters\n");
     printF("Requesting %i values but there are only %i available\n",values.getLength(0),
-	    dbase.get<RealArray >("timeDependenceBoundaryConditionParameters").getLength(0));
+            dbase.get<RealArray >("timeDependenceBoundaryConditionParameters").getLength(0));
     
     Overture::abort("error");
   }
@@ -2242,7 +2245,7 @@ getGravityVector( real gravityVector[3], real t )
       gravityVector[axis]=gravity[axis]*timeValue;
 
     // printF("--PAR-- getGravityVector: t=%9.3e value=%9.2e gravityVector=[%9.2e,%9.2e,%9.2e]\n",t,timeValue,
-    // 	   gravityVector[0],gravityVector[1],gravityVector[2] );
+    //     gravityVector[0],gravityVector[1],gravityVector[2] );
 
   }
   else
@@ -2251,7 +2254,7 @@ getGravityVector( real gravityVector[3], real t )
       gravityVector[axis]=gravity[axis];
 
     // printF("--PAR-- getGravityVector: t=%9.3e gravityVector=[%9.2e,%9.2e,%9.2e]\n",t,
-    //	   gravityVector[0],gravityVector[1],gravityVector[2] );
+    //     gravityVector[0],gravityVector[1],gravityVector[2] );
   }
   
   
@@ -2272,7 +2275,7 @@ getGridIsImplicit(int grid) const
            dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==implicitAllSpeed || 
            dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==implicitAllSpeed ||
            dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==steadyStateRungeKutta ||
-	   dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==steadyStateNewton ) &&  dbase.get<IntegerArray >("gridIsImplicit")(grid);
+           dbase.get<Parameters::TimeSteppingMethod >("timeSteppingMethod")==steadyStateNewton ) &&  dbase.get<IntegerArray >("gridIsImplicit")(grid);
 }
 
 
@@ -2380,7 +2383,7 @@ setParameters(const int & numberOfDimensions0 /* =2 */ ,
     {
       assert(  dbase.get<Reactions* >("reactions")!=NULL );
       for( int s=0; s<numberOfActiveSpecies; s++ )
-	 dbase.get<aString* >("componentName")[scp+s]= dbase.get<Reactions* >("reactions")->getName(s);
+         dbase.get<aString* >("componentName")[scp+s]= dbase.get<Reactions* >("reactions")->getName(s);
     }
     
   }
@@ -2526,22 +2529,22 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
         // spatialCoefficientsForTZ(0,1,0, dbase.get<int >("kc"))=.2;
         // spatialCoefficientsForTZ(0,1,0, dbase.get<int >("epsc"))=.1;
         if( degreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(2,0,0, dbase.get<int >("kc"))=.2;
-	  spatialCoefficientsForTZ(0,2,0, dbase.get<int >("kc"))=.3;
-	  spatialCoefficientsForTZ(2,0,0, dbase.get<int >("epsc"))=.8;
-	  spatialCoefficientsForTZ(0,2,0, dbase.get<int >("epsc"))=.6;
-	}
+        {
+          spatialCoefficientsForTZ(2,0,0, dbase.get<int >("kc"))=.2;
+          spatialCoefficientsForTZ(0,2,0, dbase.get<int >("kc"))=.3;
+          spatialCoefficientsForTZ(2,0,0, dbase.get<int >("epsc"))=.8;
+          spatialCoefficientsForTZ(0,2,0, dbase.get<int >("epsc"))=.6;
+        }
       }
       if(  numberOfDimensions>2 )
       {
         // spatialCoefficientsForTZ(0,0,1, dbase.get<int >("kc"))=.15;
         // spatialCoefficientsForTZ(0,0,1, dbase.get<int >("epsc"))=.25;
         if( degreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(0,0,2, dbase.get<int >("kc"))=.5;
-	  spatialCoefficientsForTZ(0,0,2, dbase.get<int >("epsc"))=.5;
-	}
+        {
+          spatialCoefficientsForTZ(0,0,2, dbase.get<int >("kc"))=.5;
+          spatialCoefficientsForTZ(0,0,2, dbase.get<int >("epsc"))=.5;
+        }
       }
     }
     else if(  dbase.get<Parameters::TurbulenceModel >("turbulenceModel")==SpalartAllmaras )
@@ -2556,27 +2559,27 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       if(  numberOfDimensions>1 )
       {
         if( degreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,nc)=.25; // .4;
-	  spatialCoefficientsForTZ(0,2,0,nc)=.15; // .6;
-	}
+        {
+          spatialCoefficientsForTZ(2,0,0,nc)=.25; // .4;
+          spatialCoefficientsForTZ(0,2,0,nc)=.15; // .6;
+        }
         // Do no add  a linear term since this could cause the viscosity coeff to be negative
 //      else if( degreeSpace==1 )
-//   	{
-//   	  spatialCoefficientsForTZ(1,0,0,nc)=.1;
-//   	  spatialCoefficientsForTZ(0,1,0,nc)=.1;
-//   	}
+//      {
+//        spatialCoefficientsForTZ(1,0,0,nc)=.1;
+//        spatialCoefficientsForTZ(0,1,0,nc)=.1;
+//      }
       }
       if(  numberOfDimensions>2 )
       {
         if( degreeSpace==2 )
-	{
-	  spatialCoefficientsForTZ(0,0,2,nc)=.5;
-	}
+        {
+          spatialCoefficientsForTZ(0,0,2,nc)=.5;
+        }
 //          else if( degreeSpace==1 )
-//  	{
-//  	  spatialCoefficientsForTZ(0,0,2,nc)=.5;
-//  	}
+//      {
+//        spatialCoefficientsForTZ(0,0,2,nc)=.5;
+//      }
       }
     }
 
@@ -2585,37 +2588,37 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       // default case:
       for( int n=0; n< numberOfComponents; n++ )
       {
-	real ni =1./(n+1);
+        real ni =1./(n+1);
     
-	spatialCoefficientsForTZ(0,0,0,n)=2.+n;      
-	if( degreeSpace>0 )
-	{
-	  spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
-	  spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
-	  spatialCoefficientsForTZ(0,0,1,n)=  numberOfDimensions==3 ? .25*ni : 0.;
-	}
-	if( degreeSpace>1 )
-	{
-	  spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
-	  spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
-	  spatialCoefficientsForTZ(0,0,2,n)=  numberOfDimensions==3 ? .125*ni : 0.;
+        spatialCoefficientsForTZ(0,0,0,n)=2.+n;      
+        if( degreeSpace>0 )
+        {
+          spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
+          spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
+          spatialCoefficientsForTZ(0,0,1,n)=  numberOfDimensions==3 ? .25*ni : 0.;
+        }
+        if( degreeSpace>1 )
+        {
+          spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
+          spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
+          spatialCoefficientsForTZ(0,0,2,n)=  numberOfDimensions==3 ? .125*ni : 0.;
 
           if( false ) // *wdh* 050610
-	  {
-	    // add cross terms
+          {
+            // add cross terms
             printF("\n\n ************* add cross terms to TZ ************** \n\n");
-	    
+            
 
             spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
             if(  numberOfDimensions>2 )
-	    {
-	      spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
-	      spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
-	    }
-	    
+            {
+              spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
+              spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
+            }
+            
           }
-	  
-	}
+          
+        }
       }
     }
 
@@ -2623,9 +2626,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
     {
       for( int i=0; i<=4; i++ )
       {
-	timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
+        timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
       }
-	  
+          
     }
   
     // ::display(spatialCoefficientsForTZ,"spatialCoefficientsForTZ","%6.2f ");
@@ -2868,35 +2871,35 @@ updateShowFile(const aString & command /* = nullString */,
       if( answer2!="" )
       {
         if(  show!=NULL )
-	{
+        {
           printF("INFO:closing the currently open show file\n");
-	   show->close();
-	}
+           show->close();
+        }
         if( dbase.get<int >("appendToOldShowFile")==0 )
-	{
-	  printF("Opening the new show file %s.\n",(const char*)answer2);
-	  show = new Ogshow( answer2,".", dbase.get<int >("useStreamMode") );      
-	}
-	else
-	{
-	  printF("Appending results to the old show file %s.\n",(const char*)answer2);
-	  show = new Ogshow( answer2,".", dbase.get<int >("useStreamMode"),Ogshow::openOldFileForWriting );      
+        {
+          printF("Opening the new show file %s.\n",(const char*)answer2);
+          show = new Ogshow( answer2,".", dbase.get<int >("useStreamMode") );      
+        }
+        else
+        {
+          printF("Appending results to the old show file %s.\n",(const char*)answer2);
+          show = new Ogshow( answer2,".", dbase.get<int >("useStreamMode"),Ogshow::openOldFileForWriting );      
           int & numberOfInitialFramesInShowFile= dbase.get<int>("numberOfInitialFramesInShowFile");
-	  numberOfInitialFramesInShowFile=show->getNumberOfFrames();
-	}
+          numberOfInitialFramesInShowFile=show->getNumberOfFrames();
+        }
       }
     }
     else if( answer=="close" )
     {
       if(  show!=NULL )
       {
-	 show->close();
+         show->close();
         delete  show;
          show=NULL;
       }
       else
       {
-	printF("ERROR:There is no open show file\n");
+        printF("ERROR:There is no open show file\n");
       }
     }
     else if( answer=="uncompressed" )
@@ -2918,12 +2921,12 @@ updateShowFile(const aString & command /* = nullString */,
       int i=-1;
       for( int n=0;  dbase.get<aString* >("showVariableName")[n]!=""; n++ )
       {
-	if( answer2== dbase.get<aString* >("showVariableName")[n] )
-	{
+        if( answer2== dbase.get<aString* >("showVariableName")[n] )
+        {
            dbase.get<IntegerArray >("showVariable")(n)= onOff==1 ? abs( dbase.get<IntegerArray >("showVariable")(n)) : -abs( dbase.get<IntegerArray >("showVariable")(n)); // - dbase.get<IntegerArray >("showVariable")(n);
           i=n;
           break;
-	}
+        }
       }
       if( i<0 )
         printF("ERROR: unknown response: answer=[%s], answer2=[%s]\n",(const char*)answer,(const char*)answer2);
@@ -2940,27 +2943,27 @@ updateShowFile(const aString & command /* = nullString */,
       aString *showMenu= new aString[maximumNumberOfNames];
       for( ;; )
       {
-	int i=0;
-	for( int n=0;  dbase.get<aString* >("showVariableName")[n]!=""; n++ )
-	{
-	  showMenu[i]= dbase.get<aString* >("showVariableName")[n] + ( dbase.get<IntegerArray >("showVariable")(i)>0 ? " (on)" : " (off)");
+        int i=0;
+        for( int n=0;  dbase.get<aString* >("showVariableName")[n]!=""; n++ )
+        {
+          showMenu[i]= dbase.get<aString* >("showVariableName")[n] + ( dbase.get<IntegerArray >("showVariable")(i)>0 ? " (on)" : " (off)");
           i++;
           assert( i+2 < maximumNumberOfNames );
-	}
-	showMenu[i++]="done";
-	showMenu[i]="";
+        }
+        showMenu[i++]="done";
+        showMenu[i]="";
 
-	int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
+        int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
         if( answer2=="done" || answer2=="exit" )
-	  break;
-	else if( response>=0 && response<i-1 )
-	   dbase.get<IntegerArray >("showVariable")(response)=- dbase.get<IntegerArray >("showVariable")(response);
-	else
-	{
-	  printF("Unknown response: [%s]\n",(const char*)answer2);
-	  gi.stopReadingCommandFile();
-	}
-	
+          break;
+        else if( response>=0 && response<i-1 )
+           dbase.get<IntegerArray >("showVariable")(response)=- dbase.get<IntegerArray >("showVariable")(response);
+        else
+        {
+          printF("Unknown response: [%s]\n",(const char*)answer2);
+          gi.stopReadingCommandFile();
+        }
+        
       }
       delete [] showMenu;
     }
@@ -2980,7 +2983,7 @@ updateShowFile(const aString & command /* = nullString */,
     {
       if( show!=NULL )
       {
-	printF("WARNING: The option 'maximum number of parallel sub-files' will only apply to a show file\n"
+        printF("WARNING: The option 'maximum number of parallel sub-files' will only apply to a show file\n"
                "         that is subsequently opened, not to an already opened show file.\n");
       }
       const int np = Communication_Manager::numberOfProcessors();
@@ -2995,7 +2998,7 @@ updateShowFile(const aString & command /* = nullString */,
       gi.inputString(answer2,sPrintF(buff,"Enter the frequencyToSaveInShowFile (default value=%i)",
               dbase.get<int >("frequencyToSaveInShowFile")));
       if( answer2!="" )
-	sScanF(answer2,"%i",& dbase.get<int >("frequencyToSaveInShowFile"));
+        sScanF(answer2,"%i",& dbase.get<int >("frequencyToSaveInShowFile"));
       printF(" frequencyToSaveInShowFile=%i\n", dbase.get<int >("frequencyToSaveInShowFile"));
     }
     else if( answer(0,16)=="frequency to save" )
@@ -3009,7 +3012,7 @@ updateShowFile(const aString & command /* = nullString */,
       int flushFrequency;
       gi.inputString(answer2,"Enter the frequency to flush the show file");
       if( answer2!="" )
-	sScanF(answer2,"%i",&flushFrequency);
+        sScanF(answer2,"%i",&flushFrequency);
       flushFrequency=max(1,flushFrequency);
       if(  show!=NULL )
          show->setFlushFrequency( flushFrequency );
@@ -3037,13 +3040,13 @@ updateShowFile(const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing  a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing  a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response: [%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response: [%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }
@@ -3502,37 +3505,37 @@ assignParameterValues(const aString & label, RealArray & values,
   for( i=0; i<numRead; i++ )
   {
     bool found=false;
-    name =  c[i];	
+    name =  c[i];       
     for( n=0; n< dbase.get<int >("numberOfComponents"); n++ )
     {
       if( name== dbase.get<aString* >("componentName")[n] )
       {
-	values(n)=val[i];
-	printF("assigning %s: %s=%e \n",(const char *)label,c[i],val[i]);
-	found=true;
-	break;
+        values(n)=val[i];
+        printF("assigning %s: %s=%e \n",(const char *)label,c[i],val[i]);
+        found=true;
+        break;
       }
     }
     if( !found )
     {
       for( int n=0; n<numberOfExtraNames; n++ )
       {
-	if( extraName[n]!=0 && name==*extraName[n] )
-	{
-	  values(extraValueLocation[n])=val[i];
-	  found=true;
+        if( extraName[n]!=0 && name==*extraName[n] )
+        {
+          values(extraValueLocation[n])=val[i];
+          found=true;
           break;
-	}
+        }
       }
       if( !found )
       {
-	if( name=="e" )
-	{
-	  energy = val[i];
-	  ie=i;
-	  printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",(const char *)label,c[i],val[i]);
-	  found=true;
-	}
+        if( name=="e" )
+        {
+          energy = val[i];
+          ie=i;
+          printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",(const char *)label,c[i],val[i]);
+          found=true;
+        }
       }
     }
     if( !found )
@@ -3619,39 +3622,39 @@ assignParameterValues(const aString & label, RealArray & values,
   for( i=0; i<numRead; i++ )
   {
     bool found=false;
-    name = c[i];	
+    name = c[i];        
     for( n=0; n< dbase.get<int >("numberOfComponents"); n++ )
     {
       if( name== dbase.get<aString* >("componentName")[n] )
       {
-	values(n)=val[i];
-	printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",
+        values(n)=val[i];
+        printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",
                 (const char *)label,(const char *)c[i],val[i]);
-	found=true;
-	break;
+        found=true;
+        break;
       }
     }
     if( !found )
     {
       for( int n=0; n<numberOfExtraNames; n++ )
       {
-	if( extraName[n]!=0 && name==*extraName[n] )
-	{
-	  values(extraValueLocation[n])=val[i];
-	  found=true;
+        if( extraName[n]!=0 && name==*extraName[n] )
+        {
+          values(extraValueLocation[n])=val[i];
+          found=true;
           break;
-	}
+        }
       }
       if( !found )
       {
-	if( name=="e" )
-	{
-	  energy = val[i];
-	  ie=i;
-	  printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",
+        if( name=="e" )
+        {
+          energy = val[i];
+          ie=i;
+          printF("Parameters::assignParameterValues:assigning %s: %s=%e \n",
                  (const char *)label,(const char *)c[i],val[i]);
-	  found=true;
-	}
+          found=true;
+        }
       }
     }
     if( !found )
@@ -3794,25 +3797,25 @@ displayPolynomialCoefficients(RealArray & cx, RealArray & ct, aString * componen
     fprintf(file,"%s(x,y,z,t)=[",(const char*)componentName[n]);
     for( int mz=0; mz<ndp; mz++ )
       for( int my=0; my<ndp; my++ )
-	for( int mx=0; mx<ndp; mx++ )
-	{
-	  if( cx(mx,my,mz,n)!=0. )
-	  {
-	    fprintf(file," %+6.4f ",cx(mx,my,mz,n));
-	    if( mx!=0 )
-	      fprintf(file,"x^%i",mx); 
-	    if( my!=0 )
-	      fprintf(file,"y^%i",my);
-	    if( mz!=0 )
-	      fprintf(file,"z^%i\n",mz);
-	  }
-	}
+        for( int mx=0; mx<ndp; mx++ )
+        {
+          if( cx(mx,my,mz,n)!=0. )
+          {
+            fprintf(file," %+6.4f ",cx(mx,my,mz,n));
+            if( mx!=0 )
+              fprintf(file,"x^%i",mx); 
+            if( my!=0 )
+              fprintf(file,"y^%i",my);
+            if( mz!=0 )
+              fprintf(file,"z^%i\n",mz);
+          }
+        }
     fprintf(file,"][ ",(const char*) componentName[n]);
     for( int mt=0; mt<ndp; mt++ )
     {
       if( ct(mt,n)!=0. )
       {
-	fprintf(file," %+6.4f t^%i",ct(mt,n),mt);
+        fprintf(file," %+6.4f t^%i",ct(mt,n),mt);
       }
     }
     fprintf(file,"]\n");
@@ -3830,7 +3833,7 @@ displayPolynomialCoefficients(RealArray & cx, RealArray & ct, aString * componen
 int Parameters::
 setTwilightZoneParameters(CompositeGrid & cg, 
                           const aString & command /* = nullString */,
-			  DialogData *interface /* =NULL */ )
+                          DialogData *interface /* =NULL */ )
 {
   int returnValue=0;
   
@@ -3882,16 +3885,16 @@ setTwilightZoneParameters(CompositeGrid & cg,
     dialog.addOptionMenu("type", cmd,label, (int) dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice"));
 
     aString label2[] = {"no known solution",
-			// "axisymmetric rigid body rotation",
-			"user defined known solution",
+                        // "axisymmetric rigid body rotation",
+                        "user defined known solution",
                         "known solution from a show file",
                         ""}; //
     addPrefix(label2,prefix,cmd,maxCommands);
     dialog.addOptionMenu("known solution", cmd,label2, (int) knownSolution);
 
     aString label3[] = {"maximum norm",
-			"l1 norm",
-			"l2 norm",""}; //
+                        "l1 norm",
+                        "l2 norm",""}; //
     addPrefix(label3,prefix,cmd,maxCommands);
     dialog.addOptionMenu("Error Norm", cmd,label3, ( dbase.get<int >("errorNorm")>2 ? 0 :  dbase.get<int >("errorNorm")));
 
@@ -3922,7 +3925,7 @@ setTwilightZoneParameters(CompositeGrid & cg,
 
     textLabels[nt] = "frequencies (x,y,z,t)"; 
     sPrintF(textStrings[nt], "%g, %g, %g, %g", omega[0], omega[1], omega[2],
-	     omega[3]); 
+             omega[3]); 
     nt++; 
 
     // Pulse TZ function: 
@@ -4026,23 +4029,23 @@ setTwilightZoneParameters(CompositeGrid & cg,
     else if( answer=="frequencies" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the x,y,z,t frequencies (default =%f,%f,%f,%f)",
-				      omega[0], omega[1], omega[2], omega[3]));
+                                      omega[0], omega[1], omega[2], omega[3]));
       if( answer2!="" )
-	sScanF(answer2,"%e %e %e %e",& omega[0],& omega[1],& omega[2],& omega[3]);
+        sScanF(answer2,"%e %e %e %e",& omega[0],& omega[1],& omega[2],& omega[3]);
       printF("(omegaX,omegaY,omegaZ,omegaT)=(%e,%e,%e,%e)\n", omega[0], omega[1], omega[2], omega[3]);
     }
     else if( answer=="degree in space" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter degree in space (default =%i)", dbase.get<int >("tzDegreeSpace")));
       if( answer2!="" )
-	sScanF(answer2,"%i",& dbase.get<int >("tzDegreeSpace"));
+        sScanF(answer2,"%i",& dbase.get<int >("tzDegreeSpace"));
       printF(" tzDegreeSpace= %i\n", dbase.get<int >("tzDegreeSpace"));
     }
     else if( answer=="degree in time" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter degree in time (default =%i)", dbase.get<int >("tzDegreeTime")));
       if( answer2!="" )
-	sScanF(answer2,"%i",& dbase.get<int >("tzDegreeTime"));
+        sScanF(answer2,"%i",& dbase.get<int >("tzDegreeTime"));
       printF(" tzDegreeTime=%i \n", dbase.get<int >("tzDegreeTime"));
     }
     else if( answer=="use 2D function in 3D" )
@@ -4117,63 +4120,63 @@ setTwilightZoneParameters(CompositeGrid & cg,
       if(  dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice")==polynomial )
       {
         if(  dbase.get<OGFunction* >("exactSolution")==NULL )
-	{
-	  setTwilightZoneFunction( dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice"), dbase.get<int >("tzDegreeSpace"), dbase.get<int >("tzDegreeTime"));
-	}
-	
+        {
+          setTwilightZoneFunction( dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice"), dbase.get<int >("tzDegreeSpace"), dbase.get<int >("tzDegreeTime"));
+        }
+        
         // get the current values of the coefficients
-	((OGPolyFunction*) dbase.get<OGFunction* >("exactSolution"))->getCoefficients( cx,ct );  // for u
+        ((OGPolyFunction*) dbase.get<OGFunction* >("exactSolution"))->getCoefficients( cx,ct );  // for u
 
-	displayPolynomialCoefficients(cx,ct, dbase.get<aString* >("componentName"), dbase.get<int >("numberOfComponents"),stdout);
+        displayPolynomialCoefficients(cx,ct, dbase.get<aString* >("componentName"), dbase.get<int >("numberOfComponents"),stdout);
 
       }
       else
       { // we allow changes to the coefficients even if we don't have  a polynomial TZ function -- this means we
         // can keep these changes in the command file even if they are not used.
-	cx=0.;
-	ct=0.;
+        cx=0.;
+        ct=0.;
       }
       
       printF("Make changes to the current coefficients of the polynomial twilight-zone function.\n"
              "Enter cx(mx,my,mz,mc)=value to set the coefficient of x^{mx} y^{my} z^mz for component mc \n"
-	     "Enter ct(mt,mc)=value to set the coefficient of t^{mt} for component mc \n"
-	     "Enter `done' to finish\n");
+             "Enter ct(mt,mc)=value to set the coefficient of t^{mt} for component mc \n"
+             "Enter `done' to finish\n");
     
       int i0,i1,i2,i3;
       aString name;
       // ==========Loop for changing coefficients========================
       for( ;; ) 
       {
-	gi.inputString(answer,"Enter changes to cx or ct or `done' to finish\n"); 
-	if( answer=="done" || answer=="continue" || answer=="exit" ) break;
-	nl.getVariableName( answer, name );   // parse the answer
+        gi.inputString(answer,"Enter changes to cx or ct or `done' to finish\n"); 
+        if( answer=="done" || answer=="continue" || answer=="exit" ) break;
+        nl.getVariableName( answer, name );   // parse the answer
 
-	if( name== "cx" )   
-	{
-	  nl.getRealArray( answer,cx,i0,i1,i2,i3 );
+        if( name== "cx" )   
+        {
+          nl.getRealArray( answer,cx,i0,i1,i2,i3 );
           printF(" Setting cx(%i,%i,%i,%i)=%9.3e\n",i0,i1,i2,i3,cx(i0,i1,i2,i3));
 
-	   dbase.get<bool >("userDefinedTwilightZoneCoefficients")=true;
-	}
-	else if( name== "ct" )   
-	{
-	  nl.getRealArray( answer,ct,i0,i1 );
+           dbase.get<bool >("userDefinedTwilightZoneCoefficients")=true;
+        }
+        else if( name== "ct" )   
+        {
+          nl.getRealArray( answer,ct,i0,i1 );
           printF(" Setting ct(%i,%i)=%9.3e\n",i0,i1,ct(i0,i1));
 
-	   dbase.get<bool >("userDefinedTwilightZoneCoefficients")=true;
-	}
-	else
-	  printF("unknown response: answer=[%s]\n",(const char*)answer);
+           dbase.get<bool >("userDefinedTwilightZoneCoefficients")=true;
+        }
+        else
+          printF("unknown response: answer=[%s]\n",(const char*)answer);
       }
 
       if(  dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice")==polynomial )
       {
-	((OGPolyFunction*) dbase.get<OGFunction* >("exactSolution"))->setCoefficients( cx,ct );  // for u
-	displayPolynomialCoefficients(cx,ct, dbase.get<aString* >("componentName"), dbase.get<int >("numberOfComponents"),stdout);
+        ((OGPolyFunction*) dbase.get<OGFunction* >("exactSolution"))->setCoefficients( cx,ct );  // for u
+        displayPolynomialCoefficients(cx,ct, dbase.get<aString* >("componentName"), dbase.get<int >("numberOfComponents"),stdout);
       }
       else
       {
-	printF("WARNING: To set the polynomial coefficients th twilightzone function must be a polynomial\n"
+        printF("WARNING: To set the polynomial coefficients th twilightzone function must be a polynomial\n"
                " The coefficients have not been changed");
       }
       
@@ -4184,18 +4187,18 @@ setTwilightZoneParameters(CompositeGrid & cg,
       int state=0;
       sScanF(answer(len,answer.length()-1),"%i",&state);
       if( state==1 )
-	 dbase.get<int >("dimensionOfTZFunction")=2;
+         dbase.get<int >("dimensionOfTZFunction")=2;
       else
-	 dbase.get<int >("dimensionOfTZFunction")= dbase.get<int >("numberOfDimensions"); // is this set?
+         dbase.get<int >("dimensionOfTZFunction")= dbase.get<int >("numberOfDimensions"); // is this set?
       dialog.setToggleState("use 2D function in 3D",state);
     }
     else if( len=answer.matches("compare 3D run to 2D") )
     {
       sScanF(answer(len,answer.length()-1),"%i",& dbase.get<int >("compare3Dto2D"));
       if(  dbase.get<int >("compare3Dto2D") )
-	 dbase.get<int >("dimensionOfTZFunction")=2;
+         dbase.get<int >("dimensionOfTZFunction")=2;
       else
-	 dbase.get<int >("dimensionOfTZFunction")= dbase.get<int >("numberOfDimensions");
+         dbase.get<int >("dimensionOfTZFunction")= dbase.get<int >("numberOfDimensions");
       dialog.setToggleState("compare 3D run to 2D", dbase.get<int >("compare3Dto2D"));
     }
     else if( len=answer.matches("assign TZ initial conditions") )
@@ -4216,61 +4219,61 @@ setTwilightZoneParameters(CompositeGrid & cg,
       if( knownSolution==userDefinedKnownSolution )
       { // choose a user defined known solution:
 
-	int returnValue=updateUserDefinedKnownSolution(gi,cg);
-	
+        int returnValue=updateUserDefinedKnownSolution(gi,cg);
+        
         if( returnValue==0 )
-	{
+        {
            knownSolution=noKnownSolution; // reset -- no known solution chosen.
-	}
+        }
       }
       else if( knownSolution==knownSolutionFromAShowFile )
       {
         // new: 100808
-	ShowFileReader showFileReader;
-	CompositeGrid cgSF;
+        ShowFileReader showFileReader;
+        CompositeGrid cgSF;
         realCompositeGridFunction uSF;
-	int solutionNumber=-1;
+        int solutionNumber=-1;
 
         dbase.get<bool>("knownSolutionIsTimeDependent")=false;  // known solution does NOT depend on time
 
- 	readFromAShowFile(showFileReader,cg,cgSF,uSF,solutionNumber);
+        readFromAShowFile(showFileReader,cg,cgSF,uSF,solutionNumber);
 
         // Interpolate the show file known solution onto current grid 
-	printF("Transfer the known solution from the show file to the current grid...\n");
-	
-	realCompositeGridFunction *& pKnownSolution = dbase.get<realCompositeGridFunction* >("pKnownSolution");
-	if( pKnownSolution==NULL )
-	{
-	  pKnownSolution = new realCompositeGridFunction;
-	}
-	realCompositeGridFunction & uKnown = *pKnownSolution;
-	Range all;
+        printF("Transfer the known solution from the show file to the current grid...\n");
+        
+        realCompositeGridFunction *& pKnownSolution = dbase.get<realCompositeGridFunction* >("pKnownSolution");
+        if( pKnownSolution==NULL )
+        {
+          pKnownSolution = new realCompositeGridFunction;
+        }
+        realCompositeGridFunction & uKnown = *pKnownSolution;
+        Range all;
         uKnown.updateToMatchGrid(cg,all,all,all,dbase.get<int >("numberOfComponents"));
-	uKnown=0.;
-	
+        uKnown=0.;
+        
         InterpolatePointsOnAGrid interp;
         int interpWidth=3;    // default is 2  // *wdh* 101117
         interp.setInterpolationWidth( interpWidth );  // *wdh* 101117
-	interp.setAssignAllPoints(true);
-	interp.interpolateAllPoints(uSF,uKnown);
+        interp.setAssignAllPoints(true);
+        interp.interpolateAllPoints(uSF,uKnown);
 
 
-	  if( false  ) // ********************************************************* TEMP
-	  {
-	    printF("\n **** INFO: extrap ghost on uKnown ****");
-	    
-	    // for testing extrap boundary values
+          if( false  ) // ********************************************************* TEMP
+          {
+            printF("\n **** INFO: extrap ghost on uKnown ****");
+            
+            // for testing extrap boundary values
             CompositeGridOperators cgop(cg);
-	    uKnown.setOperators(cgop);
-	    Range C=dbase.get<int >("numberOfComponents");
+            uKnown.setOperators(cgop);
+            Range C=dbase.get<int >("numberOfComponents");
 
-	    BoundaryConditionParameters extrapParams;
-	    extrapParams.orderOfExtrapolation=3;  // what should this be? 
+            BoundaryConditionParameters extrapParams;
+            extrapParams.orderOfExtrapolation=3;  // what should this be? 
 
-	    extrapParams.ghostLineToAssign=1;  // extrap 1st ghost
-	    uKnown.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,0.,extrapParams); 
+            extrapParams.ghostLineToAssign=1;  // extrap 1st ghost
+            uKnown.applyBoundaryCondition(C,BCTypes::extrapolate,BCTypes::allBoundaries,0.,0.,extrapParams); 
 
-	  }
+          }
 
 
 
@@ -4280,7 +4283,7 @@ setTwilightZoneParameters(CompositeGrid & cg,
       printF(" Setting the known solution to %i (%s) \n",(int) knownSolution,(const char*)answer);
       if( knownSolution!=noKnownSolution )
       {
-	 dbase.get<Parameters::InitialConditionOption >("initialConditionOption")=knownSolutionInitialCondition;
+         dbase.get<Parameters::InitialConditionOption >("initialConditionOption")=knownSolutionInitialCondition;
       }
       
     }
@@ -4296,13 +4299,13 @@ setTwilightZoneParameters(CompositeGrid & cg,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response: [%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response: [%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
     }
   }
@@ -4488,8 +4491,8 @@ getKnownSolution(real t, int grid, const Index & I1, const Index &I2, const Inde
   if( dbase.get<int >("debug") & 16 )
   {
     printF("getKnownSolution: t=%9.3e : grid=%i gridIsMoving=%i knownSolutionIsTimeDependent=%i "
-	   "evaluate known solution=%i\n",t,grid,
-	   (int)gridIsMoving(grid),(int)dbase.get<bool>("knownSolutionIsTimeDependent"),(int)initialCall);
+           "evaluate known solution=%i\n",t,grid,
+           (int)gridIsMoving(grid),(int)dbase.get<bool>("knownSolutionIsTimeDependent"),(int)initialCall);
   }
   
   if( !initialCall ) // *wdh* 110103 
@@ -4537,11 +4540,11 @@ getKnownSolution(real t, int grid, const Index & I1, const Index &I2, const Inde
 // ===================================================================================================================
 int Parameters::
 getKnownSolutionRigidBody( int body, real t, 
-			   RealArray & xCM      /* = Overture::nullRealArray() */, 
-			   RealArray & vCM      /* = Overture::nullRealArray() */,
-			   RealArray & aCM      /* = Overture::nullRealArray() */,
-			   RealArray & omega    /* = Overture::nullRealArray() */, 
-			   RealArray & omegaDot /* = Overture::nullRealArray() */ )
+                           RealArray & xCM      /* = Overture::nullRealArray() */, 
+                           RealArray & vCM      /* = Overture::nullRealArray() */,
+                           RealArray & aCM      /* = Overture::nullRealArray() */,
+                           RealArray & omega    /* = Overture::nullRealArray() */, 
+                           RealArray & omegaDot /* = Overture::nullRealArray() */ )
 {
 
   const KnownSolutionsEnum & knownSolution = dbase.get<KnownSolutionsEnum >("knownSolution");
@@ -4739,7 +4742,7 @@ registerBCModifier(const aString &name, Parameters::CreateBCModifierFromName cre
 // ===================================================================================================================
 int Parameters::
 getNormalForce( realCompositeGridFunction & u, realSerialArray & normalForce, int *ipar, real *rpar,
-		bool includeViscosity /* = true */ )
+                bool includeViscosity /* = true */ )
 {
   printF("Parameters::getNormalForce:ERROR base class called!\n");
   Overture::abort("error");
@@ -4804,13 +4807,13 @@ getBoundaryData(int side, int axis, int grid, MappedGrid & mg )
     {
       if( false )
       {
-	printF("******* getBoundaryData:INFO: re-allocate boundary data for (grid,side,axis)=(%i,%i,%i)"
-	       " as the dimensions have changed\n",grid,side,axis);
-	printF(" bd=[%i,%i][%i,%i][%i,%i][%i,%i]  I1=[%i,%i] I2=[%i,%i] I3=[%i,%i]\n",
-	       bd.getBase(0),bd.getBound(0),bd.getBase(1),bd.getBound(1),bd.getBase(2),bd.getBound(2),
+        printF("******* getBoundaryData:INFO: re-allocate boundary data for (grid,side,axis)=(%i,%i,%i)"
+               " as the dimensions have changed\n",grid,side,axis);
+        printF(" bd=[%i,%i][%i,%i][%i,%i][%i,%i]  I1=[%i,%i] I2=[%i,%i] I3=[%i,%i]\n",
+               bd.getBase(0),bd.getBound(0),bd.getBase(1),bd.getBound(1),bd.getBase(2),bd.getBound(2),
                bd.getBase(3),bd.getBound(3),
                I1.getBase(),I1.getBound(), I2.getBase(),I2.getBound(), I3.getBase(),I3.getBound());
-	
+        
       }
       
 
@@ -4917,11 +4920,11 @@ getNormalGridSpacing( MappedGrid & mg, int side, int axis, real & dn )
 }
 
 
-#define FOR_3D(i1,i2,i3,I1,I2,I3)					\
+#define FOR_3D(i1,i2,i3,I1,I2,I3)                                       \
 int I1Base =I1.getBase(),   I2Base =I2.getBase(),  I3Base =I3.getBase(); \
 int I1Bound=I1.getBound(),  I2Bound=I2.getBound(), I3Bound=I3.getBound(); \
-for(i3=I3Base; i3<=I3Bound; i3++)					\
-  for(i2=I2Base; i2<=I2Bound; i2++)					\
+for(i3=I3Base; i3<=I3Bound; i3++)                                       \
+  for(i2=I2Base; i2<=I2Bound; i2++)                                     \
     for(i1=I1Base; i1<=I1Bound; i1++)
 
 // ===========================================================================================================

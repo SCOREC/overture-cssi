@@ -1,5 +1,5 @@
-# include ../../config/Makefile.$(VENDOR)
-include ../../config/Makefile.intel
+include ../../config/Makefile.$(VENDOR)
+# include ../../config/Makefile.intel
 
 # over-ride defaults here
 # PURIFY  = purify $(PFLAGS) 
@@ -346,6 +346,10 @@ tcm3 = tcm3.o Checker.o $(PETSC)
 tcm3: $(tcm3) 
 	$(CC) $(CCFLAGS) -o tcm3 $(tcm3) \
          $(CLIBS) $(PETSC_LIBS) $(FLIBS) $(GLIBS)
+
+# TEST fitting a wider stencil 
+tcmWideStencil = tcmWideStencil.o
+tcmWideStencil: $(tcmWideStencil); $(CC) $(CCFLAGS) -o tcmWideStencil $(tcmWideStencil) $(CLIBS) $(PETSC_LIBS) $(FLIBS) $(GLIBS)         
 
 # Test changing the singular problem by changing an equation at one point
 tcm3a = tcm3a.o Checker.o $(PETSC)

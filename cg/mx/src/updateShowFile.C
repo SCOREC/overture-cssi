@@ -210,12 +210,12 @@ updateShowFile(const aString & command /* = nullString */,
       if( answer2!="" )
       {
         if( show!=NULL )
-	{
+        {
           printF("INFO:closing the currently open show file\n");
-	  show->close();
-	}
-	printF("Opening the show file %s\n",(const char*)answer2);
-	show = new Ogshow( answer2,".",useStreamMode );      
+          show->close();
+        }
+        printF("Opening the show file %s\n",(const char*)answer2);
+        show = new Ogshow( answer2,".",useStreamMode );      
 
         // saveParametersToShowFile();  ** moved since ez note defined yet Dec 2, 2019 *wdh* 
       }
@@ -224,13 +224,13 @@ updateShowFile(const aString & command /* = nullString */,
     {
       if( show!=NULL )
       {
-	show->close();
+        show->close();
         delete show;
         show=NULL;
       }
       else
       {
-	printf("ERROR:There is no open show file\n");
+        printf("ERROR:There is no open show file\n");
       }
     }
     else if( answer=="uncompressed" )
@@ -253,12 +253,12 @@ updateShowFile(const aString & command /* = nullString */,
       int i=-1;
       for( int n=0; showVariableName[n]!=""; n++ )
       {
-	if( answer2==showVariableName[n] )
-	{
+        if( answer2==showVariableName[n] )
+        {
           showVariable(n)=-showVariable(n);
           i=n;
           break;
-	}
+        }
       }
       if( i<0 )
         printF("ERROR: unknown response: answer=[%s], answer2=[%s]\n",(const char*)answer,(const char*)answer2);
@@ -270,27 +270,27 @@ updateShowFile(const aString & command /* = nullString */,
       aString *showMenu= new aString[maximumNumberOfNames];
       for( ;; )
       {
-	int i=0;
-	for( int n=0; showVariableName[n]!=""; n++ )
-	{
-	  showMenu[i]=showVariableName[n] + (showVariable(i)>0 ? " (on)" : " (off)");
+        int i=0;
+        for( int n=0; showVariableName[n]!=""; n++ )
+        {
+          showMenu[i]=showVariableName[n] + (showVariable(i)>0 ? " (on)" : " (off)");
           i++;
           assert( i+2 < maximumNumberOfNames );
-	}
-	showMenu[i++]="done";
-	showMenu[i]="";
+        }
+        showMenu[i++]="done";
+        showMenu[i]="";
 
-	int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
+        int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
         if( answer2=="done" || answer2=="exit" )
-	  break;
-	else if( response>=0 && response<i-1 )
-	  showVariable(response)=-showVariable(response);
-	else
-	{
-	  cout << "Unknown response: [" << answer2 << "]\n";
-	  gi.stopReadingCommandFile();
-	}
-	
+          break;
+        else if( response>=0 && response<i-1 )
+          showVariable(response)=-showVariable(response);
+        else
+        {
+          cout << "Unknown response: [" << answer2 << "]\n";
+          gi.stopReadingCommandFile();
+        }
+        
       }
       delete [] showMenu;
     }
@@ -300,7 +300,7 @@ updateShowFile(const aString & command /* = nullString */,
       gi.inputString(answer2,sPrintF(buff,"Enter the frequencyToSaveInShowFile (default value=%i)",
              frequencyToSaveInShowFile));
       if( answer2!="" )
-	sScanF(answer2,"%i",&frequencyToSaveInShowFile);
+        sScanF(answer2,"%i",&frequencyToSaveInShowFile);
       printF("frequencyToSaveInShowFile=%i\n",frequencyToSaveInShowFile);
     }
     else if( answer(0,16)=="frequency to save" )
@@ -314,7 +314,7 @@ updateShowFile(const aString & command /* = nullString */,
       int flushFrequency;
       gi.inputString(answer2,"Enter the frequency to flush the show file");
       if( answer2!="" )
-	sScanF(answer2,"%i",&flushFrequency);
+        sScanF(answer2,"%i",&flushFrequency);
       flushFrequency=max(1,flushFrequency);
       if( show!=NULL )
         show->setFlushFrequency( flushFrequency );
@@ -334,13 +334,13 @@ updateShowFile(const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response: [%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response: [%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }

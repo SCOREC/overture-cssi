@@ -15,9 +15,9 @@ extern "C"
 {
 
 void scatSphere(const int&nd ,
-	     const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
-	     const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
-	     const real& xy, real&u, const int&ipar, const real&rpar );
+             const int&n1a,const int&n1b,const int&n2a,const int&n2b,const int&n3a,const int&n3b,const int&nd1a,
+             const int&nd1b,const int&nd2a,const int&nd2b,const int&nd3a,const int&nd3b,const int&nd4a,const int&nd4b,
+             const real& xy, real&u, const int&ipar, const real&rpar );
 
 }
 
@@ -172,12 +172,12 @@ eval( real x[3], real *Ev, real *Hv /*= NULL */  )
   // printF("SphereExactSolutions::eval: call scatSphere x=(%g,%g,%g), rad=%g, domain=%d ...\n",x[0],x[1],x[2],rad,domain);
   const int numberOfDimensions=3;
   scatSphere(numberOfDimensions, 
-	     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-	     uLocal.getBase(0),uLocal.getBound(0),
-	     uLocal.getBase(1),uLocal.getBound(1),
-	     uLocal.getBase(2),uLocal.getBound(2),
-	     uLocal.getBase(3),uLocal.getBound(3),
-	     *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
+             I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+             uLocal.getBase(0),uLocal.getBound(0),
+             uLocal.getBase(1),uLocal.getBound(1),
+             uLocal.getBase(2),uLocal.getBound(2),
+             uLocal.getBase(3),uLocal.getBound(3),
+             *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
 
   for( int i=0; i<6; i++ )
   {
@@ -232,12 +232,12 @@ eval( realMappedGridFunction & u, int domain, int grid, bool computeMagneticFiel
   
   printF("SphereExactSolutions::eval: call scatSphere domain=%d grid=%d...\n",domain,grid);
   scatSphere(mg.numberOfDimensions(), 
-	     I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
-	     uLocal.getBase(0),uLocal.getBound(0),
-	     uLocal.getBase(1),uLocal.getBound(1),
-	     uLocal.getBase(2),uLocal.getBound(2),
-	     uLocal.getBase(3),uLocal.getBound(3),
-	     *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
+             I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound(),
+             uLocal.getBase(0),uLocal.getBound(0),
+             uLocal.getBase(1),uLocal.getBound(1),
+             uLocal.getBase(2),uLocal.getBound(2),
+             uLocal.getBase(3),uLocal.getBound(3),
+             *(xLocal.getDataPointer()),*(uLocal.getDataPointer()),ipar[0],rpar[0] );
 
   return 0;
 }
@@ -406,7 +406,7 @@ SphereExactSolutions::check()
   m1   = 1./cHat1;              // index of refraction in the inner domain 
   eta1 = sqrt(muHat1/epsHat1);    // impedance
 
-				   
+                                   
   // beta0 = m0*kx;   // complex wave number (outer domain) 
   // beta1 = m1*kx;   // complex wave number (inner domain)
 
@@ -943,7 +943,7 @@ getDispersiveParameters( LocalReal beta0v[2], LocalReal beta1v[2] )
   m1   = 1./cHat1;              // index of refraction in the inner domain 
   eta1 = sqrt(muHat1/epsHat1);    // impedance
 
-				   
+                                   
   beta0 = m0*kx;   // complex wave number (outer domain) 
 
   beta0v[0]=std::real(beta0);

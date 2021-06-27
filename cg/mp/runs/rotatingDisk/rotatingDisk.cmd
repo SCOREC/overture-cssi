@@ -1,5 +1,6 @@
 #
 # cgmp: rotating SVK solid -- compare to an "exact" solution
+echo to terminal 0
 # 
 # Usage:
 #    cgmp [-noplot] rotatingSolid -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
@@ -246,6 +247,7 @@ continue
   continue
 #
 continue
+echo to terminal 1
 # --
 $go
 

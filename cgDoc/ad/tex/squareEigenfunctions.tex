@@ -1,0 +1,28 @@
+% ------------------------------------------------------------------------------------
+\subsection{Eigenfunctions of the heat equation on a square}  \label{sec:squareEig}
+
+The eigenfunctions for the heat equation on the square $[0,1]^2$ take the form
+\bat
+   & u(\xv,t) = a \, e^{-\beta t} \, \sin(k_x \pi x) \, \sin(k_y \pi y), \qquad&& \text{for Dirichlet BCs} ,\\
+   & u(\xv,t) = a \, e^{-\beta t} \, \cos(k_x \pi x) \, \cos(k_y \pi y), \qquad&& \text{for Neumann BCs} ,
+\eat
+where $k_x$ and $k_y$ are integers and 
+\ba
+  \beta = \kappa ( k_x^2 + k_y^2)
+\ea
+The form of the eigenfunctions in a 3D box are similar.
+
+\mni
+Here are some results from grid convergence studies. See {\tt cg/ad/conv/Makefile} for commands to generate these tables.
+
+\mni \textbf{PC2+FD2}:
+\input tables/squareEigenPC2SquareNeumannOrder2MaxNormConvTable.tex
+
+\mni \textbf{PC2+FD4}:
+\input tables/squareEigenPC2SquareDirichletOrder4MaxNormConvTable.tex
+
+\mni \textbf{PC2+FD4}:
+\input tables/squareEigenPC2SquareDirichletOrder4MaxNormConvTable.tex
+
+\mni \textbf{BDF4+FD4}:
+\input tables/squareEigenBDF4SquareDirichletOrder4MaxNormConvTable.tex

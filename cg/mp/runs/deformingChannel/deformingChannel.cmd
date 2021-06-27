@@ -1,5 +1,6 @@
 #
 # cgmp: incompressible flow through a deforming channel
+echo to terminal 0
 # 
 # Usage:
 #    cgmp [-noplot] elasticCyl -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
@@ -238,6 +239,8 @@ continue
         exit
         plot:solid : v2
         plot all
+#
+echo to terminal 0
 $go
 
 

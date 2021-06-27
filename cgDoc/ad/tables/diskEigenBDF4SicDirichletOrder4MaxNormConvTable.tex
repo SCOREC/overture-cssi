@@ -1,0 +1,14 @@
+\begin{table}[H]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+\begin{center}
+\begin{tabular}{|l|c|c|c|} \hline 
+grid  & N &  $ u $ & r \\ \hline 
+      sic2 &     1 & \num{1.2}{-4} &        \\ \hline
+      sic4 &     2 & \num{5.9}{-6} & 19.69  \\ \hline
+      sic8 &     4 & \num{3.3}{-7} & 17.63  \\ \hline
+     sic16 &     8 & \num{2.0}{-8} & 16.78  \\ \hline
+    rate             &       &  $4.17$       &       \\ \hline
+\end{tabular}
+\caption{Cgad, diskEigen, method=bdf4, Max norm, method=bdf4, known=diskEigen, ts=bdf, order=$4$, bdfOrder=4, dtMax=$.05$, $t=.5$, cfl=$0.9$, kappa=$.1$, m=1, n=1 kx=1, ky=1, kz=1,  tz=poly degreex=2 degreet=2 fx=0.5 fy=0.5 fz=0.5 -ft=0.5 Thu Apr 22 07:46:13 2021}\label{table:diskEigenbdf4Order4Max}
+\end{center}
+\end{table}

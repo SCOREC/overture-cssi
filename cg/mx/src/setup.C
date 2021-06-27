@@ -66,7 +66,7 @@ setupGrids()
     {
       mapPointer->setGridDimensions(axis,nx[axis]);
       if( bcOption==useAllPeriodicBoundaryConditions )
-	mapPointer->setIsPeriodic(axis,Mapping::derivativePeriodic);
+        mapPointer->setIsPeriodic(axis,Mapping::derivativePeriodic);
     }
 
     if ( elementType!=structuredElements )
@@ -76,24 +76,24 @@ setupGrids()
       mapPointer->decrementReferenceCount();
       mapPointer= &uns;  mapPointer->incrementReferenceCount();
       if ( bcOption==useAllPeriodicBoundaryConditions )
-	uns.addGhostElements(true);
+        uns.addGhostElements(true);
       else
-	uns.addGhostElements(false);
+        uns.addGhostElements(false);
 
       printF(" **** elementType=%i \n",elementType);
-	  
-      //	  UnstructuredMapping etype;
+          
+      //          UnstructuredMapping etype;
       uns.addGhostElements(true);
       uns.buildFromAMapping(bmap);
       verifyUnstructuredConnectivity(uns,true);
       for( int axis=0; axis<bmap.getDomainDimension() && bcOption==useAllPeriodicBoundaryConditions; axis++ )
       {
-	uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
-	uns.setBoundaryCondition(Start,axis,-1);
-	uns.setBoundaryCondition(End  ,axis,-1);
+        uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        uns.setBoundaryCondition(Start,axis,-1);
+        uns.setBoundaryCondition(End  ,axis,-1);
       }
-      //	  if ( !bcOption==useAllPeriodicBoundaryConditions )
-      //	    uns.expandGhostBoundary();
+      //          if ( !bcOption==useAllPeriodicBoundaryConditions )
+      //            uns.expandGhostBoundary();
 
     }
   }
@@ -135,11 +135,11 @@ setupGrids()
     {
       uns.buildFromAMapping(mat);
       for( int axis=0; axis<uns.getDomainDimension() && 
-	     bcOption==useAllPeriodicBoundaryConditions; axis++ )
+             bcOption==useAllPeriodicBoundaryConditions; axis++ )
       {
-	uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
-	uns.setBoundaryCondition(Start,axis,-1);
-	uns.setBoundaryCondition(End  ,axis,-1);
+        uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        uns.setBoundaryCondition(Start,axis,-1);
+        uns.setBoundaryCondition(End  ,axis,-1);
       }
     }
     
@@ -189,8 +189,8 @@ setupGrids()
       int i2=0, i3=0;
       for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
       {
-	x(I1,i2,i3,0)=r1(I1);
-	x(I1,i2,i3,1)=bottom(I1)+r2(i2);
+        x(I1,i2,i3,0)=r1(I1);
+        x(I1,i2,i3,1)=bottom(I1)+r2(i2);
       }
     }
     else if( gridType==chevron || gridType==chevbox)
@@ -219,8 +219,8 @@ setupGrids()
       int extra=numberOfGhostLines+5;
       if( removePerturbationAtEdges )
       {
-	yShift(Range(I1.getBase(),I1.getBase()+extra))=0.;
-	yShift(Range(I1.getBound()-extra,I1.getBound()))=0.;
+        yShift(Range(I1.getBase(),I1.getBase()+extra))=0.;
+        yShift(Range(I1.getBound()-extra,I1.getBound()))=0.;
       }
       
       // here is a perturbation in the x-direction
@@ -235,182 +235,182 @@ setupGrids()
       
       if( removePerturbationAtEdges )
       {
-	xShift(Range(I2.getBase(),I2.getBase()+extra))=0.;
-	xShift(Range(I2.getBound()-extra,I2.getBound()))=0.;
+        xShift(Range(I2.getBase(),I2.getBase()+extra))=0.;
+        xShift(Range(I2.getBound()-extra,I2.getBound()))=0.;
       }
 
       int i2=0, i3=0;
       if ( gridType==chevron )
       {
         if( true )
-	{
-	  // box with random perturbations
+        {
+          // box with random perturbations
           int seed=184273654;
           srand(seed);
-	  int i1;
-	  for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	    for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	    {
-	      real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
-	      real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
-		
-	      x(i1,i2,i3,0)= i1*dx[0]+d1;
-	      x(i1,i2,i3,1)= i2*dx[1]+d2;
-	    }
+          int i1;
+          for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+            for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+            {
+              real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
+              real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
+                
+              x(i1,i2,i3,0)= i1*dx[0]+d1;
+              x(i1,i2,i3,1)= i2*dx[1]+d2;
+            }
 
           // make periodic
           real xba=1., yba=1., zba=1.;
           Range Rx=2;
           for( i1=I1.getBase(); i1<0; i1++ )
-	  {
+          {
             x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
             x(i1,I2,I3,0)-=xba; 
-	  }
+          }
           for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
-	  {
+          {
             x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
             x(i1,I2,I3,0)+=xba; 
-	  }
-	  
+          }
+          
           for( i2=I2.getBase(); i2<0; i2++ )
-	  {
+          {
             x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
             x(I1,i2,I3,1)-=yba; 
-	  }
+          }
           for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
-	  {
+          {
             x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
             x(I1,i2,I3,1)+=yba; 
-	  }
-	  
-	}
-	else
-	{
-	  for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	  {
-	    x(I1,i2,i3,0)=r1(I1);
-	    if( !removePerturbationAtEdges ||
-		(i2>=I2.getBase() + extra &&
-		 i2<=I2.getBound()- extra) )
-	    {
-	      x(I1,i2,i3,1)=yShift(I1)+r2(i2);
-	    }
-	    else
-	    {
-	      x(I1,i2,i3,1)=r2(i2);
-	    }
-	  
-	  }
-	  if( amplitudeX != 0. )
-	  {
-	    for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	      x(I1,i2,i3,0)+=xShift(i2);
-	  }
-	}
-	
+          }
+          
+        }
+        else
+        {
+          for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+          {
+            x(I1,i2,i3,0)=r1(I1);
+            if( !removePerturbationAtEdges ||
+                (i2>=I2.getBase() + extra &&
+                 i2<=I2.getBound()- extra) )
+            {
+              x(I1,i2,i3,1)=yShift(I1)+r2(i2);
+            }
+            else
+            {
+              x(I1,i2,i3,1)=r2(i2);
+            }
+          
+          }
+          if( amplitudeX != 0. )
+          {
+            for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+              x(I1,i2,i3,0)+=xShift(i2);
+          }
+        }
+        
       }
       else 
       {
         // chevBox
         if( true )
-	{
-	  // box with random perturbations
+        {
+          // box with random perturbations
           int seed=184273654;
           srand(seed);
-	  int i1;
-	  for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	    for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	      for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	      {
+          int i1;
+          for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+            for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+              for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+              {
                 real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
                 real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
                 real d3=(-1.+2.*rand()/RAND_MAX)*.25*dx[2];
-		
+                
                 // if( i1<=0 || i1>=nx[0]-1 ) d1=0.;
                 // if( i2<=0 || i2>=nx[1]-1 ) d2=0.;
                 // if( i3<=0 || i3>=nx[2]-1 ) d3=0.;
 
-		x(i1,i2,i3,0)= i1*dx[0]+d1;
-		x(i1,i2,i3,1)= i2*dx[1]+d2;
-		x(i1,i2,i3,2)= i3*dx[2]+d3;
-	      }
+                x(i1,i2,i3,0)= i1*dx[0]+d1;
+                x(i1,i2,i3,1)= i2*dx[1]+d2;
+                x(i1,i2,i3,2)= i3*dx[2]+d3;
+              }
 
           // make periodic
           real xba=1., yba=1., zba=1.;
           Range Rx=3;
           for( int mm=0; mm<=1; mm++ )
-	  {
-	    for( i1=I1.getBase(); i1<0; i1++ )
-	    {
-	      x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
-	      x(i1,I2,I3,0)-=xba; 
-	    }
-	    for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
-	    {
-	      x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
-	      x(i1,I2,I3,0)+=xba; 
-	    }
-	  
-	    for( i2=I2.getBase(); i2<0; i2++ )
-	    {
-	      x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
-	      x(I1,i2,I3,1)-=yba; 
-	    }
-	    for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
-	    {
-	      x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
-	      x(I1,i2,I3,1)+=yba; 
-	    }
-	  
-	    for( i3=I3.getBase(); i3<0; i3++ )
-	    {
-	      x(I1,I2,i3,Rx)=x(I1,I2,i3+nx[2]-1,Rx);
-	      x(I1,I2,i3,2)-=zba; 
-	    }
-	    for( i3=nx[2]-3; i3<=I3.getBound(); i3++ )
-	    {
-	      x(I1,I2,i3,Rx)=x(I1,I2,i3-nx[2]+1,Rx);
-	      x(I1,I2,i3,2)+=zba; 
-	    }
-	  }
-	  
+          {
+            for( i1=I1.getBase(); i1<0; i1++ )
+            {
+              x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
+              x(i1,I2,I3,0)-=xba; 
+            }
+            for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
+            {
+              x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
+              x(i1,I2,I3,0)+=xba; 
+            }
+          
+            for( i2=I2.getBase(); i2<0; i2++ )
+            {
+              x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
+              x(I1,i2,I3,1)-=yba; 
+            }
+            for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
+            {
+              x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
+              x(I1,i2,I3,1)+=yba; 
+            }
+          
+            for( i3=I3.getBase(); i3<0; i3++ )
+            {
+              x(I1,I2,i3,Rx)=x(I1,I2,i3+nx[2]-1,Rx);
+              x(I1,I2,i3,2)-=zba; 
+            }
+            for( i3=nx[2]-3; i3<=I3.getBound(); i3++ )
+            {
+              x(I1,I2,i3,Rx)=x(I1,I2,i3-nx[2]+1,Rx);
+              x(I1,I2,i3,2)+=zba; 
+            }
+          }
+          
 
-	}
-	else
-	{
-	  for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	    for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	    {
-	      x(I1,i2,i3,0)=r1(I1);
-	      x(I1,i2,i3,1)=yShift(I1)+r2(i2);
-	    }
+        }
+        else
+        {
+          for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+            for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+            {
+              x(I1,i2,i3,0)=r1(I1);
+              x(I1,i2,i3,1)=yShift(I1)+r2(i2);
+            }
 
-	  for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	    x(I1,I2,i3,2)=r3(i3);
+          for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+            x(I1,I2,i3,2)=r3(i3);
 
-	  if( amplitudeX != 0. )
-	  {
-	    for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	      x(I1,i2,I3,0)+=xShift(i2);
-	  }
-	  real amplitudeZ=dx[2]*chevronAmplitude;  
-	  if( amplitudeZ != 0. )
-	  {
-	
-	    realArray zShift(I3);
-	    real freqY=(Pi/dx[1])*chevronFrequency; 
-	    zShift=cos(freqY*r3)*amplitudeZ; 
-	    if( useMoreFrequencies )
-	    {
-	      zShift=cos(freqY*r3)*amplitudeZ+ cos(.5*freqY*r3)*amplitudeZ*1.5;
-	    }
-	    for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	    {
-	      x(I1,I2,i3,2)+=zShift(i3);
-	    }
-	  }
-	}
-	
+          if( amplitudeX != 0. )
+          {
+            for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+              x(I1,i2,I3,0)+=xShift(i2);
+          }
+          real amplitudeZ=dx[2]*chevronAmplitude;  
+          if( amplitudeZ != 0. )
+          {
+        
+            realArray zShift(I3);
+            real freqY=(Pi/dx[1])*chevronFrequency; 
+            zShift=cos(freqY*r3)*amplitudeZ; 
+            if( useMoreFrequencies )
+            {
+              zShift=cos(freqY*r3)*amplitudeZ+ cos(.5*freqY*r3)*amplitudeZ*1.5;
+            }
+            for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
+            {
+              x(I1,I2,i3,2)+=zShift(i3);
+            }
+          }
+        }
+        
       }
 
     }
@@ -437,9 +437,9 @@ setupGrids()
     {
       for( int axis=0; axis<domainDimension; axis++ )
       {
- 	dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
- 	dpm.setBoundaryCondition(Start,axis,-1);
- 	dpm.setBoundaryCondition(End  ,axis,-1);
+        dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        dpm.setBoundaryCondition(Start,axis,-1);
+        dpm.setBoundaryCondition(End  ,axis,-1);
       }
     }
 
@@ -450,42 +450,42 @@ setupGrids()
       int axis;
       for( axis=0; axis<domainDimension; axis++ )
       {
-	dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
-	dpm.setBoundaryCondition(Start,axis,-1);
-	dpm.setBoundaryCondition(End  ,axis,-1);
+        dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        dpm.setBoundaryCondition(Start,axis,-1);
+        dpm.setBoundaryCondition(End  ,axis,-1);
       }
 
       UnstructuredMapping & uns = * new UnstructuredMapping;
       mapPointer->decrementReferenceCount();
       mapPointer= &uns;  mapPointer->incrementReferenceCount();
       if ( bcOption==useAllPeriodicBoundaryConditions )
-	uns.addGhostElements(true);
+        uns.addGhostElements(true);
       else
-	uns.addGhostElements(false);
+        uns.addGhostElements(false);
 
       printF(" **** elementType=%i \n",elementType);
       
 
       if ( elementType==defaultUnstructured && domainDimension==2)
-	uns.buildFromARegularMapping(dpm);
+        uns.buildFromARegularMapping(dpm);
       else if ( domainDimension==2 )
       {
-	uns.buildFromARegularMapping(dpm,elementType==triangles ? UnstructuredMapping::triangle : elementType==quadrilaterals ? UnstructuredMapping::quadrilateral : UnstructuredMapping::hexahedron);
+        uns.buildFromARegularMapping(dpm,elementType==triangles ? UnstructuredMapping::triangle : elementType==quadrilaterals ? UnstructuredMapping::quadrilateral : UnstructuredMapping::hexahedron);
       }
       else
       {
-// 	  uns.buildFromAMapping(dpm);
-// 	  verifyUnstructuredConnectivity(uns,true);
+//        uns.buildFromAMapping(dpm);
+//        verifyUnstructuredConnectivity(uns,true);
 
-	uns.addGhostElements(true);
-	uns.buildFromAMapping(dpm);
-	for( int axis=0; axis<uns.getDomainDimension() && 
-	       bcOption==useAllPeriodicBoundaryConditions; axis++ )
-	{
-	  uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
-	  uns.setBoundaryCondition(Start,axis,-1);
-	  uns.setBoundaryCondition(End  ,axis,-1);
-	}
+        uns.addGhostElements(true);
+        uns.buildFromAMapping(dpm);
+        for( int axis=0; axis<uns.getDomainDimension() && 
+               bcOption==useAllPeriodicBoundaryConditions; axis++ )
+        {
+          uns.setIsPeriodic(axis,Mapping::derivativePeriodic);
+          uns.setBoundaryCondition(Start,axis,-1);
+          uns.setBoundaryCondition(End  ,axis,-1);
+        }
       }
 
       //            verifyUnstructuredConnectivity(uns,true);
@@ -526,99 +526,99 @@ setupGrids()
       //  === square with random perturbations ===
 
       for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	{
-	  real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
-	  real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
-		
-	  x(i1,i2,i3,0)= i1*dx[0]+d1;
-	  x(i1,i2,i3,1)= i2*dx[1]+d2;
-	}
+        for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+        {
+          real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
+          real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
+                
+          x(i1,i2,i3,0)= i1*dx[0]+d1;
+          x(i1,i2,i3,1)= i2*dx[1]+d2;
+        }
 
       // make periodic
       real xba=1., yba=1., zba=1.;
       Range Rx=2;
       for( i1=I1.getBase(); i1<0; i1++ )
       {
-	x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
-	x(i1,I2,I3,0)-=xba; 
+        x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
+        x(i1,I2,I3,0)-=xba; 
       }
       for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
       {
-	x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
-	x(i1,I2,I3,0)+=xba; 
+        x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
+        x(i1,I2,I3,0)+=xba; 
       }
-	  
+          
       for( i2=I2.getBase(); i2<0; i2++ )
       {
-	x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
-	x(I1,i2,I3,1)-=yba; 
+        x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
+        x(I1,i2,I3,1)-=yba; 
       }
       for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
       {
-	x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
-	x(I1,i2,I3,1)+=yba; 
+        x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
+        x(I1,i2,I3,1)+=yba; 
       }
-	
+        
     }
     else 
     {
       //  === Box with random perturbations ===
       // box with random perturbations
       for( i3=I3.getBase(); i3<=I3.getBound(); i3++ )
-	for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	  for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  {
-	    real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
-	    real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
-	    real d3=(-1.+2.*rand()/RAND_MAX)*.25*dx[2];
-		
-	    // if( i1<=0 || i1>=nx[0]-1 ) d1=0.;
-	    // if( i2<=0 || i2>=nx[1]-1 ) d2=0.;
-	    // if( i3<=0 || i3>=nx[2]-1 ) d3=0.;
+        for( i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+          for( i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          {
+            real d1=(-1.+2.*rand()/RAND_MAX)*.25*dx[0];  // random number between [-.25,.25]*dx[0]
+            real d2=(-1.+2.*rand()/RAND_MAX)*.25*dx[1];
+            real d3=(-1.+2.*rand()/RAND_MAX)*.25*dx[2];
+                
+            // if( i1<=0 || i1>=nx[0]-1 ) d1=0.;
+            // if( i2<=0 || i2>=nx[1]-1 ) d2=0.;
+            // if( i3<=0 || i3>=nx[2]-1 ) d3=0.;
 
-	    x(i1,i2,i3,0)= i1*dx[0]+d1;
-	    x(i1,i2,i3,1)= i2*dx[1]+d2;
-	    x(i1,i2,i3,2)= i3*dx[2]+d3;
-	  }
+            x(i1,i2,i3,0)= i1*dx[0]+d1;
+            x(i1,i2,i3,1)= i2*dx[1]+d2;
+            x(i1,i2,i3,2)= i3*dx[2]+d3;
+          }
 
       // make periodic
       real xba=1., yba=1., zba=1.;
       Range Rx=3;
       for( int mm=0; mm<=1; mm++ )  // loop twice to make sure all corners points are correct
       {
-	for( i1=I1.getBase(); i1<0; i1++ )
-	{
-	  x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
-	  x(i1,I2,I3,0)-=xba; 
-	}
-	for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
-	{
-	  x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
-	  x(i1,I2,I3,0)+=xba; 
-	}
-	  
-	for( i2=I2.getBase(); i2<0; i2++ )
-	{
-	  x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
-	  x(I1,i2,I3,1)-=yba; 
-	}
-	for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
-	{
-	  x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
-	  x(I1,i2,I3,1)+=yba; 
-	}
-	  
-	for( i3=I3.getBase(); i3<0; i3++ )
-	{
-	  x(I1,I2,i3,Rx)=x(I1,I2,i3+nx[2]-1,Rx);
-	  x(I1,I2,i3,2)-=zba; 
-	}
-	for( i3=nx[2]-3; i3<=I3.getBound(); i3++ )
-	{
-	  x(I1,I2,i3,Rx)=x(I1,I2,i3-nx[2]+1,Rx);
-	  x(I1,I2,i3,2)+=zba; 
-	}
+        for( i1=I1.getBase(); i1<0; i1++ )
+        {
+          x(i1,I2,I3,Rx)=x(i1+nx[0]-1,I2,I3,Rx);
+          x(i1,I2,I3,0)-=xba; 
+        }
+        for( i1=nx[0]-1; i1<=I1.getBound(); i1++ )
+        {
+          x(i1,I2,I3,Rx)=x(i1-nx[0]+1,I2,I3,Rx); 
+          x(i1,I2,I3,0)+=xba; 
+        }
+          
+        for( i2=I2.getBase(); i2<0; i2++ )
+        {
+          x(I1,i2,I3,Rx)=x(I1,i2+nx[1]-1,I3,Rx);
+          x(I1,i2,I3,1)-=yba; 
+        }
+        for( i2=nx[1]-1; i2<=I2.getBound(); i2++ )
+        {
+          x(I1,i2,I3,Rx)=x(I1,i2-nx[1]+1,I3,Rx); 
+          x(I1,i2,I3,1)+=yba; 
+        }
+          
+        for( i3=I3.getBase(); i3<0; i3++ )
+        {
+          x(I1,I2,i3,Rx)=x(I1,I2,i3+nx[2]-1,Rx);
+          x(I1,I2,i3,2)-=zba; 
+        }
+        for( i3=nx[2]-3; i3<=I3.getBound(); i3++ )
+        {
+          x(I1,I2,i3,Rx)=x(I1,I2,i3-nx[2]+1,Rx);
+          x(I1,I2,i3,2)+=zba; 
+        }
       }
       
     }
@@ -637,9 +637,9 @@ setupGrids()
     {
       for( int axis=0; axis<domainDimension; axis++ )
       {
- 	dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
- 	dpm.setBoundaryCondition(Start,axis,-1);
- 	dpm.setBoundaryCondition(End  ,axis,-1);
+        dpm.setIsPeriodic(axis,Mapping::derivativePeriodic);
+        dpm.setBoundaryCondition(Start,axis,-1);
+        dpm.setBoundaryCondition(End  ,axis,-1);
       }
     }
 
@@ -648,7 +648,7 @@ setupGrids()
     
   }
   else if( gridType==squareByTriangles || gridType==squareByQuads ||
-	   (gridType==square && elementType==Maxwell::defaultUnstructured) )
+           (gridType==square && elementType==Maxwell::defaultUnstructured) )
   {
     Mapping & sq= *new SquareMapping(xa,xb,ya,yb); 
     sq.incrementReferenceCount();
@@ -678,7 +678,7 @@ setupGrids()
 //        UnstructuredMappingIterator iter;
 //        for( iter=uns.begin(UnstructuredMapping::Region); iter!=uns.end(UnstructuredMapping::Region); iter++ )
 //        {
-//  	printf(" Element %i is valid \n",*iter);
+//      printf(" Element %i is valid \n",*iter);
 //        }
 
     }
@@ -732,26 +732,26 @@ setupGrids()
     {
       for( axis=0; axis<map.getDomainDimension(); axis++ )
       {
-	map.setGridDimensions(axis,nx[axis]);
-	if( map.getIsPeriodic(axis)==Mapping::notPeriodic )
-	{
-	  if( bcOption==useAllPeriodicBoundaryConditions )
-	  {
-	    map.setIsPeriodic(axis,Mapping::derivativePeriodic);
-	    map.setBoundaryCondition(Start,axis,-1);
-	    map.setBoundaryCondition(End  ,axis,-1);
-	  }
-	  else if( bcOption==useAllDirichletBoundaryConditions )
-	  {
-	    map.setBoundaryCondition(Start,axis,dirichlet);
-	    map.setBoundaryCondition(End  ,axis,dirichlet);
-	  }
-	  else if( bcOption==useAllPerfectElectricalConductorBoundaryConditions )
-	  {
-	    map.setBoundaryCondition(Start,axis,perfectElectricalConductor);
-	    map.setBoundaryCondition(End  ,axis,perfectElectricalConductor);
-	  }
-	}
+        map.setGridDimensions(axis,nx[axis]);
+        if( map.getIsPeriodic(axis)==Mapping::notPeriodic )
+        {
+          if( bcOption==useAllPeriodicBoundaryConditions )
+          {
+            map.setIsPeriodic(axis,Mapping::derivativePeriodic);
+            map.setBoundaryCondition(Start,axis,-1);
+            map.setBoundaryCondition(End  ,axis,-1);
+          }
+          else if( bcOption==useAllDirichletBoundaryConditions )
+          {
+            map.setBoundaryCondition(Start,axis,dirichlet);
+            map.setBoundaryCondition(End  ,axis,dirichlet);
+          }
+          else if( bcOption==useAllPerfectElectricalConductorBoundaryConditions )
+          {
+            map.setBoundaryCondition(Start,axis,perfectElectricalConductor);
+            map.setBoundaryCondition(End  ,axis,perfectElectricalConductor);
+          }
+        }
       
       }
     }
@@ -764,11 +764,11 @@ setupGrids()
     {
       const int numberOfGhostPoints=max(2,orderOfAccuracyInSpace/2); 
       printF(">>>>Create the MappedGrid with %i ghost points, orderOfAccuracyInSpace=%i\n",numberOfGhostPoints,
-	     orderOfAccuracyInSpace  );
+             orderOfAccuracyInSpace  );
       
       for( axis=0; axis<map.getDomainDimension(); axis++ )
-	for( side=Start; side<=End; side++ )
-	  mg.setNumberOfGhostPoints(side,axis,numberOfGhostPoints);
+        for( side=Start; side<=End; side++ )
+          mg.setNumberOfGhostPoints(side,axis,numberOfGhostPoints);
   
     }
 
@@ -788,30 +788,30 @@ setupGrids()
 
       for ( int g=0; false && bcOption==useAllPeriodicBoundaryConditions && g<cg.numberOfGrids(); g++ )
       {
-	// we do this trick for convenience when working with periodic boundaries and dsi schemes
-	bool vCent = mg.isAllVertexCentered();
-	realArray &cFArea = vCent ? mg.centerArea() : mg.faceArea();
-	realArray &cFNorm = vCent ? mg.centerNormal() : mg.faceNormal();
-	realArray &cEArea = vCent ? mg.faceArea() : mg.centerArea();
-	realArray &cENorm = vCent ? mg.faceNormal() : mg.centerNormal();
+        // we do this trick for convenience when working with periodic boundaries and dsi schemes
+        bool vCent = mg.isAllVertexCentered();
+        realArray &cFArea = vCent ? mg.centerArea() : mg.faceArea();
+        realArray &cFNorm = vCent ? mg.centerNormal() : mg.faceNormal();
+        realArray &cEArea = vCent ? mg.faceArea() : mg.centerArea();
+        realArray &cENorm = vCent ? mg.faceNormal() : mg.centerNormal();
 
-	MappedGrid &mg = cg[g];
-	const IntegerArray &perEImages = *mg.getUnstructuredPeriodicBC(UnstructuredMapping::Edge);
-	    
-	for ( int e=perEImages.getBase(0); e<=perEImages.getBound(0); e++ )
-	{
-	  cEArea(perEImages(e,0),0,0) = cEArea(perEImages(e,1),0,0);
-	  for ( int r=0; r<mg.numberOfDimensions(); r++ )
-	    cENorm(perEImages(e,0),0,0,r) = cENorm(perEImages(e,1),0,0,r);
-	}
+        MappedGrid &mg = cg[g];
+        const IntegerArray &perEImages = *mg.getUnstructuredPeriodicBC(UnstructuredMapping::Edge);
+            
+        for ( int e=perEImages.getBase(0); e<=perEImages.getBound(0); e++ )
+        {
+          cEArea(perEImages(e,0),0,0) = cEArea(perEImages(e,1),0,0);
+          for ( int r=0; r<mg.numberOfDimensions(); r++ )
+            cENorm(perEImages(e,0),0,0,r) = cENorm(perEImages(e,1),0,0,r);
+        }
 
-	const IntegerArray &perHImages = *mg.getUnstructuredPeriodicBC(UnstructuredMapping::Face);
-	for ( int h=perHImages.getBase(0); mg.numberOfDimensions()>2 &&h<=perHImages.getBound(0); h++ )
-	{
-	  cFArea(perHImages(h,0),0,0) = cFArea(perHImages(h,1),0,0);
-	  for ( int r=0; r<mg.numberOfDimensions(); r++ )
-	    cFNorm(perHImages(h,0),0,0,r) = cFNorm(perHImages(h,1),0,0,r);
-	}
+        const IntegerArray &perHImages = *mg.getUnstructuredPeriodicBC(UnstructuredMapping::Face);
+        for ( int h=perHImages.getBase(0); mg.numberOfDimensions()>2 &&h<=perHImages.getBound(0); h++ )
+        {
+          cFArea(perHImages(h,0),0,0) = cFArea(perHImages(h,1),0,0);
+          for ( int r=0; r<mg.numberOfDimensions(); r++ )
+            cFNorm(perHImages(h,0),0,0,r) = cFNorm(perHImages(h,1),0,0,r);
+        }
 
       }
     }
@@ -836,9 +836,9 @@ setupGrids()
     if( method==defaultMethod )
     {
       if( mg.isRectangular() )
-	method=yee;
+        method=yee;
       else
-	method=dsi;
+        method=dsi;
     }
   
     if( mapPointer->decrementReferenceCount()==0 ) delete mapPointer;
@@ -859,18 +859,18 @@ setupGrids()
       UnstructuredMapping &umap = (UnstructuredMapping &) cg[0].mapping().getMapping();
       umap.expandGhostBoundary();
       verifyUnstructuredConnectivity(umap,true);
-      //	umap.expandGhostBoundary();
-      //	verifyUnstructuredConnectivity(umap,true);
+      //        umap.expandGhostBoundary();
+      //        verifyUnstructuredConnectivity(umap,true);
 
       cg.destroy( MappedGrid::THEcenter | MappedGrid::THEvertex | MappedGrid::THEmask |
-		  MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
-		  MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
-		  MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );	
+                  MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
+                  MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
+                  MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );     
 
       cg.update( MappedGrid::THEcenter | MappedGrid::THEvertex | MappedGrid::THEmask |
-		 MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
-		 MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
-		 MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );	
+                 MappedGrid::THEcorner | MappedGrid::THEcellVolume | MappedGrid::THEcenterNormal |
+                 MappedGrid::THEfaceArea | MappedGrid::THEfaceNormal | 
+                 MappedGrid::THEcellVolume  | MappedGrid::THEcenterArea );      
 
     }
     else
@@ -912,12 +912,12 @@ setupGrids()
       for( int grid2=0; grid2<cg.numberOfComponentGrids(); grid2++ )
       {
         if( grid!=grid2 )
-  	  minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
+          minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
       }
     }
     if( minInterpolationWidth==INT_MAX ) minInterpolationWidth=minDiscretizationWidth;
     printF(" *** minDiscretizationWidth=%i, minInterpolationWidth=%i ****\n",minDiscretizationWidth,
-	   minInterpolationWidth);
+           minInterpolationWidth);
 
     const int maxOrderOfAccuracy=8;  // *************
     
@@ -929,7 +929,7 @@ setupGrids()
     orderOfArtificialDissipation=orderOfAccuracyInSpace;
     
     printF("***Setting orderOfAccuracyInSpace=%i, orderOfAccuracyInTime=%i, orderOfArtificialDissipation=%i\n",
-	   orderOfAccuracyInSpace,orderOfAccuracyInTime,orderOfArtificialDissipation);
+           orderOfAccuracyInSpace,orderOfAccuracyInTime,orderOfArtificialDissipation);
 
     if( orderOfAccuracyInSpace>4 )
     {

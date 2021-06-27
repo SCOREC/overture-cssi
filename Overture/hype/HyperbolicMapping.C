@@ -63,10 +63,10 @@ HyperbolicMapping() : Mapping(2,2,parameterSpace,cartesianSpace)
     debugFile = fopen(sPrintF("hypeNP%i.debug",np),"w" ); 
     pDebugFile= fopen(sPrintF("hypeNP%i.%i.debug",np,myid),"w" ); 
     fprintf(pDebugFile,
-	    " ******************************************************************************* \n"
-	    " *********** Hype debug file, processor=%i, number of processors=%i ************ \n"
-	    " ******************************************************************************* \n\n",
-	    myid,np);
+            " ******************************************************************************* \n"
+            " *********** Hype debug file, processor=%i, number of processors=%i ************ \n"
+            " ******************************************************************************* \n\n",
+            myid,np);
    #else
     debugFile = fopen("hype.debug","w" );      // Here is the debug file, who closes this?
     pDebugFile=debugFile;
@@ -325,7 +325,7 @@ printStatistics(FILE *file /* =stdout */ )
     if( timingName[i]!="" )    
       fprintf(file,"%s%s%10.2e  %10.2e  %10.2e   %7.3f\n",(const char*)timingName[i],
          (const char*)dots(0,max(0,nSpace-timingName[i].length())),
-	  timing[i],timing[i]/numberOfStepsTaken,timing[i]/numberOfStepsTaken/numberOfGridPoints,
+          timing[i],timing[i]/numberOfStepsTaken,timing[i]/numberOfStepsTaken/numberOfGridPoints,
           100.*timing[i]/timing[totalTime]);
 
 
@@ -350,10 +350,10 @@ printStatistics(FILE *file /* =stdout */ )
 //============================================================================================
 int HyperbolicMapping::
 setBoundaryConditionMapping(const int & side, 
-			    const int & axis,
-			    Mapping & map,
+                            const int & axis,
+                            Mapping & map,
                             const int & mapSide /* =-1 */, 
-			    const int & mapAxis /* =-1 */)
+                            const int & mapAxis /* =-1 */)
 //===========================================================================
 /// \brief  
 ///    Supply a mapping to match a boundary condition to.
@@ -605,15 +605,15 @@ setup()
     {
       if( (bool)getIsPeriodic(axis) )
       {
-	boundaryCondition(side,axis)=periodic;
+        boundaryCondition(side,axis)=periodic;
       }
       else if( getTypeOfCoordinateSingularity(side,axis)==polarSingularity )
       {
-	boundaryCondition(side,axis)=singularAxis;
+        boundaryCondition(side,axis)=singularAxis;
       }
       else if( boundaryCondition(side,axis)==periodic )
       {
-	boundaryCondition(side,axis)=domainDimension==3 ? outwardSplay : freeFloating;
+        boundaryCondition(side,axis)=domainDimension==3 ? outwardSplay : freeFloating;
       }
     }
   }
@@ -799,8 +799,8 @@ operator=( const HyperbolicMapping & X )
   projectGhostPoints                 = X.projectGhostPoints;
   //  for( axis=0; axis<domainDimension-1; axis++ ) {
   //    for( side=Start; side<=End; side++ )  {
-  //	boundaryCondition(side,axis)   = X.boundaryCondition(side,axis);
-  //	projectGhostPoints(side,axis)  = X.projectGhostPoints(side,axis);
+  //    boundaryCondition(side,axis)   = X.boundaryCondition(side,axis);
+  //    projectGhostPoints(side,axis)  = X.projectGhostPoints(side,axis);
   //}}
 
   //....These are IntegerArrays --> should redim before using?
@@ -865,14 +865,14 @@ operator=( const HyperbolicMapping & X )
       
       if( dpm==NULL )
       {
-	dpm = new DataPointMapping; dpm->incrementReferenceCount();
+        dpm = new DataPointMapping; dpm->incrementReferenceCount();
       }
       *dpm = *X.dpm;
     }
     else
     {
       if( dpm!=NULL && dpm->decrementReferenceCount()==0 )
-	delete dpm;
+        delete dpm;
       dpm = NULL;
     }
     
@@ -938,8 +938,8 @@ operator=( const HyperbolicMapping & X )
 
 int HyperbolicMapping::
 setParameters(const HyperbolicParameter & par, 
-		    real value,
-	      const Direction & direction /* = bothDirections */ )
+                    real value,
+              const Direction & direction /* = bothDirections */ )
 {
   IntegerArray ipar;
   RealArray rpar(1);
@@ -950,8 +950,8 @@ setParameters(const HyperbolicParameter & par,
 
 int HyperbolicMapping::
 setParameters(const HyperbolicParameter & par, 
-	      int  value,
-	      const Direction & direction /* = bothDirections */ )
+              int  value,
+              const Direction & direction /* = bothDirections */ )
 {
   IntegerArray ipar(1);
   RealArray rpar;
@@ -962,8 +962,8 @@ setParameters(const HyperbolicParameter & par,
 
 int HyperbolicMapping::
 setParameters(const HyperbolicParameter & par, 
-	      const IntegerArray & ipar /* = Overture::nullIntArray() */, 
-	      const RealArray & rpar /* = Overture::nullRealDistributedArray() */ ,
+              const IntegerArray & ipar /* = Overture::nullIntArray() */, 
+              const RealArray & rpar /* = Overture::nullRealDistributedArray() */ ,
               const Direction & direction /* = bothDirections */ )
 //===========================================================================
 /// \brief  
@@ -1149,8 +1149,8 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
   aString answer,line;
   aString menu[] = { "generate",
                     "new generate",
-		    "grow grid in opposite direction",
-		    "grow grid in both directions (toggle)",
+                    "grow grid in opposite direction",
+                    "grow grid in both directions (toggle)",
                     "upwind dissipation coefficient",
                     "number of regions in normal direction (NZREG)",
                     "stretching in normal direction (IZSTRT)",
@@ -1162,7 +1162,7 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
                     "volume parameters (IVSPEC,EPSSS,ITSVOL)",
                     "Barth implicitness factors (TIMJ,TIMK)",
                     "axis bc parameters (IAXIS,EXAXIS,VOLRES)",
-		    "exit",
+                    "exit",
                     "" };                       // empty string denotes the end of the menu
 
   int numberOfDirectionsToGrow = abs(growthOption)>1 ? 2 : 1;
@@ -1228,14 +1228,14 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
 //       gi.outputString("NPZREG = number of points (including ends) in each L-region");
 //       for( int dir=0; dir<numberOfDirectionsToGrow; dir++ )
 //       {
-// 	int direction= growthOption==-1 ? 1 : dir;
-// 	for( int l=0; l<nzreg; l++ )
-// 	{
-// 	  gi.inputString(line,
+//      int direction= growthOption==-1 ? 1 : dir;
+//      for( int l=0; l<nzreg; l++ )
+//      {
+//        gi.inputString(line,
 //              sPrintF(buff,"Enter npzreg(%i) for direction=%i (number of lines in the normal direction, current=%i)",
-// 				      l,1-2*direction,npzreg(l,direction)));
-// 	  if( line!="" ) sScanF( line,"%i",&npzreg(l,direction));
-// 	}
+//                                    l,1-2*direction,npzreg(l,direction)));
+//        if( line!="" ) sScanF( line,"%i",&npzreg(l,direction));
+//      }
 //       }
 //     }
 //     else if( answer=="number of regions in normal direction (NZREG)" )
@@ -1246,8 +1246,8 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
 //       {
 //         sScanF( line,"%i",&nzreg);
 //         npzreg.resize(nzreg,2);
-// 	dz0.resize(nzreg,2);
-// 	dz1.resize(nzreg,2);
+//      dz0.resize(nzreg,2);
+//      dz1.resize(nzreg,2);
 //         zreg.resize(nzreg,2);
 //       }
 //     }
@@ -1257,11 +1257,11 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
 //       gi.outputString("          <=0  variable far field distance specified in file zetavar.i (#)");
 //       for( int dir=0; dir<numberOfDirectionsToGrow; dir++ )
 //       {
-// 	for( int l=0; l<nzreg; l++ )
-// 	{
-// 	  gi.inputString(line,sPrintF(buff,"Enter zreg(%i) for direction=%i (current=%e)",1-2*dir,l,zreg(l,dir)));
-// 	  if( line!="" ) sScanF( line,"%e",&zreg(l,dir));
-// 	}
+//      for( int l=0; l<nzreg; l++ )
+//      {
+//        gi.inputString(line,sPrintF(buff,"Enter zreg(%i) for direction=%i (current=%e)",1-2*dir,l,zreg(l,dir)));
+//        if( line!="" ) sScanF( line,"%e",&zreg(l,dir));
+//      }
 //       }
 //     }
 //     else if( answer=="spacing (DZ0,DZ1)" )
@@ -1275,12 +1275,12 @@ hypgen(GenericGraphicsInterface & gi, GraphicsParameters & parameters)
 //       gi.outputString("   (#) Applied to first L-region only");
 //       for( int dir=0; dir<numberOfDirectionsToGrow; dir++ )
 //       {
-// 	for( int l=0; l<nzreg; l++ )
-// 	{
-// 	  gi.inputString(line,sPrintF(buff,"Enter dz0(%i),dz1(%i) for direction=%i (current=%e,%e)",
+//      for( int l=0; l<nzreg; l++ )
+//      {
+//        gi.inputString(line,sPrintF(buff,"Enter dz0(%i),dz1(%i) for direction=%i (current=%e,%e)",
 //                 l,l,1-2*dir,dz0(l,dir),dz1(l,dir)));
-// 	  if( line!="" ) sScanF( line,"%e %e",&dz0(l,dir),&dz1(l,dir));
-// 	}
+//        if( line!="" ) sScanF( line,"%e %e",&dz0(l,dir),&dz1(l,dir));
+//      }
 //       }
 //     }
 //     else if( answer=="volume parameters (IVSPEC,EPSSS,ITSVOL)" )
@@ -1515,10 +1515,10 @@ generateOld()
     else
     {
       for( int j=0; j<kmax; j++ )
-	r(Range(0,jmax-1),j,0).seqAdd(0.,h1);
+        r(Range(0,jmax-1),j,0).seqAdd(0.,h1);
       real h2=1./(kmax-1.);
       for( int i=0; i<jmax; i++ )
-	r(i,Range(0,kmax-1),1).seqAdd(0.,h2);  
+        r(i,Range(0,kmax-1),1).seqAdd(0.,h2);  
     }
     xSurface=0.;  
     surface->mapGrid(r,xSurface);
@@ -1557,13 +1557,13 @@ generateOld()
       Range R3(0,2);
       if( domainDimension==2 )
       {
-	for( int j=0; j<jmax; j++ )
-	  x0(j,K,R3)=xSurface(jmax-j-1,K,R3);  // x0 holds a copy of the surface ?why? does hypgen change these values?
+        for( int j=0; j<jmax; j++ )
+          x0(j,K,R3)=xSurface(jmax-j-1,K,R3);  // x0 holds a copy of the surface ?why? does hypgen change these values?
       }
       else
       { // flip k as this may be faster
-	for( int k=0; k<kmax; k++ )
-	  x0(J,k,R3)=xSurface(J,kmax-k-1,R3);  // x0 holds a copy of the surface ?why? does hypgen change these values?
+        for( int k=0; k<kmax; k++ )
+          x0(J,k,R3)=xSurface(J,kmax-k-1,R3);  // x0 holds a copy of the surface ?why? does hypgen change these values?
       }
     }
     else
@@ -1575,16 +1575,16 @@ generateOld()
     int lmax0=lmax;
 #ifndef USE_PPP    
     returnValue=hyper(iform,izstrt,nzreg,
-		      npzreg(0,dir),zreg(0,dir),dz0(0,dir),dz1(0,dir), 
-		      ibcja, ibcjb, ibcka, ibckb,
-		      ivspec, epsss, itsvol,
-		      imeth, smu2,
-		      timj, timk,
-		      iaxis,exaxis,volres,
-		      jmax,kmax,
-		      jdim,kdim,lmax,
-		      x0(0,0,0), x0(0,0,1), x0(0,0,2),
-		      xw,yw,zw );
+                      npzreg(0,dir),zreg(0,dir),dz0(0,dir),dz1(0,dir), 
+                      ibcja, ibcjb, ibcka, ibckb,
+                      ivspec, epsss, itsvol,
+                      imeth, smu2,
+                      timj, timk,
+                      iaxis,exaxis,volres,
+                      jmax,kmax,
+                      jdim,kdim,lmax,
+                      x0(0,0,0), x0(0,0,1), x0(0,0,2),
+                      xw,yw,zw );
 #else
     returnValue=1;
     printf("Cannot call hyper with P++ yet\n");
@@ -1606,16 +1606,16 @@ generateOld()
       Range J(0,jmax-1), L(0,lmax-1), L0;
       Range J1; 
       if( ibcja!=10 )
-	J1=J+1;  // skip ghost line on a non-periodic boundary
+        J1=J+1;  // skip ghost line on a non-periodic boundary
       else
-	J1=J; 
+        J1=J; 
       xw.reshape(jdim,kdim,lmax0+2);
       yw.reshape(jdim,kdim,lmax0+2);
       if( dir==0 )
       {
         if( growBothDirections )
-	  L0=L+lmaxReverse-1;
-	else
+          L0=L+lmaxReverse-1;
+        else
           L0=L;
         xyz(J,0,L0,axis1)=xw(J1,1,L);   // 1=skip ghost point
         xyz(J,0,L0,axis2)=yw(J1,1,L); 
@@ -1625,10 +1625,10 @@ generateOld()
         int jmax1=jmax-1+J1.getBase();
         for( int l=0; l<lmax-1; l++ )    // skip l=lmax-1 as this will be the initial surface again
         for( int j=0; j<jmax; j++ )
-	{
+        {
           xyz(j,0,l,axis1)=xw(jmax1-j,1,lmax-l-1);   // flip back j and reverse l
           xyz(j,0,l,axis2)=yw(jmax1-j,1,lmax-l-1); 
-	}
+        }
       }
       
       xw.reshape(jdim*kdim*(lmax0+2));
@@ -1640,25 +1640,25 @@ generateOld()
       Range J(0,jmax-1), K(0,kmax-1), L(0,lmax-1), L0;
       Range J1,K1; 
       if( ibcja!=10 )
-	J1=J+1;  // skip ghost line on a non-periodic boundary
+        J1=J+1;  // skip ghost line on a non-periodic boundary
       else
-	J1=J; 
+        J1=J; 
       if( ibcka!=10 )
-	K1=K+1;  // skip ghost line on a non-periodic boundary
+        K1=K+1;  // skip ghost line on a non-periodic boundary
       else
-	K1=K; 
+        K1=K; 
       xw.reshape(jdim,kdim,lmax0+2);
       yw.reshape(jdim,kdim,lmax0+2);
       zw.reshape(jdim,kdim,lmax0+2);
       if( dir==0 )
       {
         if( growBothDirections )
-	  L0=L+lmaxReverse-1;
-	else
+          L0=L+lmaxReverse-1;
+        else
           L0=L;
-	xyz(J,K,L0,axis1)=xw(J1,K1,L); 
-	xyz(J,K,L0,axis2)=yw(J1,K1,L); 
-	xyz(J,K,L0,axis3)=zw(J1,K1,L); 
+        xyz(J,K,L0,axis1)=xw(J1,K1,L); 
+        xyz(J,K,L0,axis2)=yw(J1,K1,L); 
+        xyz(J,K,L0,axis3)=zw(J1,K1,L); 
 
       }
       else
@@ -1666,11 +1666,11 @@ generateOld()
         int kmax1=kmax-1+K1.getBase();
         for( int l=0; l<lmax-1; l++ ) // skip l=lmax-1 as this will be the initial surface again
         for( int k=0; k<kmax; k++ )
-	{
-	  xyz(J,k,l,axis1)=xw(J1,kmax1-k,lmax-l-1);  // flip back k and reverse l
-	  xyz(J,k,l,axis2)=yw(J1,kmax1-k,lmax-l-1); 
-	  xyz(J,k,l,axis3)=zw(J1,kmax1-k,lmax-l-1); 
-	}
+        {
+          xyz(J,k,l,axis1)=xw(J1,kmax1-k,lmax-l-1);  // flip back k and reverse l
+          xyz(J,k,l,axis2)=yw(J1,kmax1-k,lmax-l-1); 
+          xyz(J,k,l,axis3)=zw(J1,kmax1-k,lmax-l-1); 
+        }
       }
 
       xw.reshape(jdim*kdim*(lmax0+2));
@@ -1734,7 +1734,7 @@ map( const realArray & r, realArray & x, realArray & xr, MappingParameters & par
       for( int axis=0; axis<domainDimension; axis++ )
         xr(I,axis,axis)=1.;
       if( domainDimension==2  && rangeDimension==3 )
-	xr(I,2,0)=1.;
+        xr(I,2,0)=1.;
     }
   }
   else 
@@ -1791,7 +1791,7 @@ mapS( const RealArray & r, RealArray & x, RealArray & xr, MappingParameters & pa
       for( int axis=0; axis<domainDimension; axis++ )
         xr(I,axis,axis)=1.;
       if( domainDimension==2  && rangeDimension==3 )
-	xr(I,2,0)=1.;
+        xr(I,2,0)=1.;
     }
   }
   else 
@@ -1867,8 +1867,8 @@ get( const GenericDataBase & dir, const aString & name)
 //  subDir.get((int*)surfaceMappingProjectionParameters,"surfaceMappingProjectionParameters",3);
   subDir.get(numberOfLinesForNormalBlend[0],"numberOfLinesForNormalBlend",4);
 //   printF("\n ***** HyperMap: get: numberOfLinesForNormalBlend=%i,%i,%i,%i\n\n",
-// 	 numberOfLinesForNormalBlend[0][0],numberOfLinesForNormalBlend[0][1],numberOfLinesForNormalBlend[1][0],
-// 	 numberOfLinesForNormalBlend[1][1]);
+//       numberOfLinesForNormalBlend[0][0],numberOfLinesForNormalBlend[0][1],numberOfLinesForNormalBlend[1][0],
+//       numberOfLinesForNormalBlend[1][1]);
 
   subDir.get(splayFactor[0],"splayFactor",4);
   subDir.get(boundaryOffset[0],"boundaryOffset",6);
@@ -1908,7 +1908,7 @@ get( const GenericDataBase & dir, const aString & name)
     if( dpm == NULL )
     {
       printF("HyperbolicMapping::get:ERROR unable to make the mapping with className=%s\n",
-	     (const char *)mappingClassName);
+             (const char *)mappingClassName);
       OV_ABORT("error");
     }
     dpm->setPartition(partition);  // The dpm should get the same partition *wdh* 110820
@@ -1925,7 +1925,7 @@ get( const GenericDataBase & dir, const aString & name)
     if( normalDistribution == NULL )
     {
       printF("HyperbolicMapping::get:ERROR unable to make the mapping with className=%s\n",
-	     (const char *)mappingClassName);
+             (const char *)mappingClassName);
       OV_ABORT("error");
     }
     normalDistribution->get(subDir,"normalDistribution");
@@ -1947,11 +1947,11 @@ get( const GenericDataBase & dir, const aString & name)
       assert( boundaryConditionMappingExists==0 || boundaryConditionMappingExists==1 );
       if( boundaryConditionMappingExists )
       {
-	//kkc 060707	subDir.get(mappingClassName,"curveClassName");
-	subDir.get(mappingClassName, sPrintF("curveClassName%i%i",side,axis));
-	boundaryConditionMapping[side][axis] = Mapping::makeMapping( mappingClassName );
+        //kkc 060707    subDir.get(mappingClassName,"curveClassName");
+        subDir.get(mappingClassName, sPrintF("curveClassName%i%i",side,axis));
+        boundaryConditionMapping[side][axis] = Mapping::makeMapping( mappingClassName );
         boundaryConditionMappingWasNewed[side][axis]=true;
-	boundaryConditionMapping[side][axis]->get( subDir,sPrintF("boundaryConditionMapping%i%i",side,axis) );
+        boundaryConditionMapping[side][axis]->get( subDir,sPrintF("boundaryConditionMapping%i%i",side,axis) );
       }
     }
   }
@@ -1964,7 +1964,7 @@ get( const GenericDataBase & dir, const aString & name)
     if( surface == NULL )
     {
       cout << "HyperbolicMapping::get:ERROR unable to make the mapping with className="
-	   << (const char *)mappingClassName << endl;
+           << (const char *)mappingClassName << endl;
       OV_ABORT("error");
     }
     surface->get(subDir,"surface");
@@ -1979,7 +1979,7 @@ get( const GenericDataBase & dir, const aString & name)
     if( startCurve == NULL )
     {
       cout << "HyperbolicMapping::get:ERROR unable to make the mapping with className="
-	   << (const char *)mappingClassName << endl;
+           << (const char *)mappingClassName << endl;
       OV_ABORT("error");
     }
     startCurve->get(subDir,"startCurve");
@@ -1998,7 +1998,7 @@ get( const GenericDataBase & dir, const aString & name)
 
   if( debug & 8 )
     printF("HyperbolicMapping:get: name=%s, usesDistributedInverse=%i usesDistributedMap=%i\n",
-	   (const char*)getName(mappingName),
+           (const char*)getName(mappingName),
            (int)usesDistributedInverse(),(int)usesDistributedMap());
 
   return 0;
@@ -2038,8 +2038,8 @@ put( GenericDataBase & dir, const aString & name) const
 //  subDir.put((int*)surfaceMappingProjectionParameters,"surfaceMappingProjectionParameters",3);
   subDir.put(numberOfLinesForNormalBlend[0],"numberOfLinesForNormalBlend",4);
 //   printF("\n ***** HyperMap: put: numberOfLinesForNormalBlend=%i,%i,%i,%i\n\n",
-// 	 numberOfLinesForNormalBlend[0][0],numberOfLinesForNormalBlend[0][1],numberOfLinesForNormalBlend[1][0],
-// 	 numberOfLinesForNormalBlend[1][1]);
+//       numberOfLinesForNormalBlend[0][0],numberOfLinesForNormalBlend[0][1],numberOfLinesForNormalBlend[1][0],
+//       numberOfLinesForNormalBlend[1][1]);
 
   subDir.put(splayFactor[0],"splayFactor",4);
   subDir.put(boundaryOffset[0],"boundaryOffset",6);
@@ -2096,10 +2096,10 @@ put( GenericDataBase & dir, const aString & name) const
       subDir.put(boundaryConditionMappingExists,sPrintF("boundaryConditionMapping%i%iExists",side,axis));
       if( boundaryConditionMappingExists )
       {
-	
-	//kkc 060707	subDir.put(boundaryConditionMapping[side][axis]->getClassName(), "curveClassName");
-	subDir.put(boundaryConditionMapping[side][axis]->getClassName(), sPrintF("curveClassName%i%i",side,axis));
-	boundaryConditionMapping[side][axis]->put( subDir,sPrintF("boundaryConditionMapping%i%i",side,axis) );
+        
+        //kkc 060707    subDir.put(boundaryConditionMapping[side][axis]->getClassName(), "curveClassName");
+        subDir.put(boundaryConditionMapping[side][axis]->getClassName(), sPrintF("curveClassName%i%i",side,axis));
+        boundaryConditionMapping[side][axis]->put( subDir,sPrintF("boundaryConditionMapping%i%i",side,axis) );
       }
     }
   }
@@ -2125,7 +2125,7 @@ put( GenericDataBase & dir, const aString & name) const
 
   if( true || debug & 8 )
     printF("HyperbolicMapping:put: name=%s, usesDistributedInverse=%i usesDistributedMap=%i\n",
-	   (const char*)getName(mappingName),
+           (const char*)getName(mappingName),
            (int)usesDistributedInverse(),(int)usesDistributedMap());
 
 

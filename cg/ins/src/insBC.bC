@@ -53,10 +53,10 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
     // on a slip wall we need to extrapolate points that lie outside interpolation pts on the bndry.
     u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent0, slipWall,0.,t);
     if( numberOfDimensions==3 )
-	u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1, slipWall,0.,t);
+        u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1, slipWall,0.,t);
 
     if( !isRectangular ) // rectangular case is already done
-      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,Parameters::slipWall,0.,t); 	
+      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,Parameters::slipWall,0.,t);     
   }
   
   if( assignNoSlipWall )
@@ -64,15 +64,15 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
     
     if( false )
     { // for testing
-	BoundaryConditionParameters bcParams;
-	bcParams.lineToAssign=1;
-	u.applyBoundaryCondition(vc,dirichlet,noSlipWall,0.,t,bcParams);
-      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,noSlipWall,0.,t); 	
+        BoundaryConditionParameters bcParams;
+        bcParams.lineToAssign=1;
+        u.applyBoundaryCondition(vc,dirichlet,noSlipWall,0.,t,bcParams);
+      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,noSlipWall,0.,t);       
     }
     else
     {
       u.applyBoundaryCondition(V,extrapolate,noSlipWall,0.,t);
-      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,noSlipWall,0.,t); 	
+      u.applyBoundaryCondition(V,BCTypes::generalizedDivergence,noSlipWall,0.,t);       
     }
     
     // NOTE: dirichlet or neumann BC's for T are already done in the lineSolver
@@ -107,50 +107,50 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
     if( !twilightZoneFlow &&  assignOutflow && orderOfAccuracy==2 )
     {
   
-	for( axis=0; axis<mg.numberOfDimensions(); axis++ )
-	{
-	  for( side=Start; side<=End; side++ )
-	  {
-	    if( mg.boundaryCondition(side,axis)==outflow )
-	    {
-	      RealDistributedArray & normal  = mg.vertexBoundaryNormal(side,axis);  
+        for( axis=0; axis<mg.numberOfDimensions(); axis++ )
+        {
+          for( side=Start; side<=End; side++ )
+          {
+            if( mg.boundaryCondition(side,axis)==outflow )
+            {
+              RealDistributedArray & normal  = mg.vertexBoundaryNormal(side,axis);  
 
-	      getGhostIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-	      intArray & mask = bcParams.mask();
-	      mask.redim(I1,I2,I3);   // mask lives on ghost line.
-	      getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-	      if( isRectangular )
-	      {
-		mask = u(I1,I2,I3,uc+axis)*(2*side-1) <0.;
-	      }
-	      else
-	      {
-		if( mg.numberOfDimensions()==2 )
-		{
-		  mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
-			  u(I1,I2,I3,vc)*normal(I1,I2,I3,1)) <0; 
-		}
-		else
-		{
-		  mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
-			  u(I1,I2,I3,vc)*normal(I1,I2,I3,1)+
-			  u(I1,I2,I3,wc)*normal(I1,I2,I3,2)) <0; 
-		}
-	      }
-	
-	      int count=sum(mask);
-	      if( count>0 )
-	      {
-		if( debug() & 4 )
-		  printf("insBC: number of outflow points that are inflow = %i\n",count);
-		bcParams.setUseMask(TRUE);
-		// u.applyBoundaryCondition(V,neumann,outflow,0.,t,bcParams);
-		u.applyBoundaryCondition(V,neumann,BCTypes::boundary(side,axis),0.,t,bcParams);
-		bcParams.setUseMask(FALSE);
-	      }
-	    }
-	  }
-	}
+              getGhostIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+              intArray & mask = bcParams.mask();
+              mask.redim(I1,I2,I3);   // mask lives on ghost line.
+              getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+              if( isRectangular )
+              {
+                mask = u(I1,I2,I3,uc+axis)*(2*side-1) <0.;
+              }
+              else
+              {
+                if( mg.numberOfDimensions()==2 )
+                {
+                  mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
+                          u(I1,I2,I3,vc)*normal(I1,I2,I3,1)) <0; 
+                }
+                else
+                {
+                  mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
+                          u(I1,I2,I3,vc)*normal(I1,I2,I3,1)+
+                          u(I1,I2,I3,wc)*normal(I1,I2,I3,2)) <0; 
+                }
+              }
+        
+              int count=sum(mask);
+              if( count>0 )
+              {
+                if( debug() & 4 )
+                  printf("insBC: number of outflow points that are inflow = %i\n",count);
+                bcParams.setUseMask(TRUE);
+                // u.applyBoundaryCondition(V,neumann,outflow,0.,t,bcParams);
+                u.applyBoundaryCondition(V,neumann,BCTypes::boundary(side,axis),0.,t,bcParams);
+                bcParams.setUseMask(FALSE);
+              }
+            }
+          }
+        }
     }
 
 
@@ -166,30 +166,30 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
 
     // the inflow value can be time dependent
     u.applyBoundaryCondition(V,dirichlet,inflowWithVelocityGiven,bcData,pBoundaryData,t,
-			       Overture::defaultBoundaryConditionParameters(),grid);
+                               Overture::defaultBoundaryConditionParameters(),grid);
 
 
     bool assignGhostWithDirichlet=false;
     
     for( axis=0; axis<mg.numberOfDimensions(); axis++ )
     {
-	for( side=0; side<=1; side++ )
-	{ // this could fail if there are two inflow sides!
+        for( side=0; side<=1; side++ )
+        { // this could fail if there are two inflow sides!
         if( mg.boundaryCondition(side,axis)==inflowWithVelocityGiven &&
             parameters.bcType(side,axis,grid)==Parameters::blasiusProfile  )
-	  {
-	    assignGhostWithDirichlet=true;
-	  }
-	}
+          {
+            assignGhostWithDirichlet=true;
+          }
+        }
     }
     if( assignGhostWithDirichlet )
     {
       // this only works for Blasius (or parabolic inflow)
 
       // ** added by Kyle for Blasius inflow ***
-	BoundaryConditionParameters gDirParams;
-	gDirParams.lineToAssign=1;
-	u.applyBoundaryCondition(V,dirichlet,inflowWithVelocityGiven,bcData,pBoundaryData,t, gDirParams,grid);
+        BoundaryConditionParameters gDirParams;
+        gDirParams.lineToAssign=1;
+        u.applyBoundaryCondition(V,dirichlet,inflowWithVelocityGiven,bcData,pBoundaryData,t, gDirParams,grid);
     }
     else
     {
@@ -198,11 +198,11 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
       u.applyBoundaryCondition(V,generalizedDivergence,inflowWithVelocityGiven,0.,t);
       // add for 4th order dissipation
       if( parameters.dbase.get<bool >("useFourthOrderArtificialDiffusion") )
-	{
-	  u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent0,inflowWithVelocityGiven,0.,t);
-	  if( numberOfDimensions==3 )
-	    u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1,inflowWithVelocityGiven,0.,t);
-	}
+        {
+          u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent0,inflowWithVelocityGiven,0.,t);
+          if( numberOfDimensions==3 )
+            u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1,inflowWithVelocityGiven,0.,t);
+        }
     }
 
     // NOTE: dirichlet or neumann BC's for T are already done in the lineSolver
@@ -250,8 +250,8 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
 
     if( true )
     {
-	// printF("insBC: extrapolate 2nd ghost line on all boundaries...\n");
-	u.applyBoundaryCondition(C,extrapolate,allBoundaries,0.,t,extrapParams);
+        // printF("insBC: extrapolate 2nd ghost line on all boundaries...\n");
+        u.applyBoundaryCondition(C,extrapolate,allBoundaries,0.,t,extrapParams);
     }
     
     // reset: 
@@ -366,27 +366,27 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
 
   int gridType = isRectangular ? 0 : 1;
   int iparam[] ={parameters.dbase.get<int >("pc"),
-		 parameters.dbase.get<int >("uc"),
-		 parameters.dbase.get<int >("vc"),
-		 parameters.dbase.get<int >("wc"),
-		 parameters.dbase.get<int >("sc"),
-		 grid,
-		 gridType,
-		 min(4,parameters.dbase.get<int >("orderOfAccuracy")),
-		 (int)parameters.gridIsMoving(grid),
-		 useWhereMask,
-		 parameters.getGridIsImplicit(grid),
-		 (int)parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod"),
-		 (int)parameters.dbase.get<Parameters::ImplicitOption >("implicitOption"),
-		 (int)parameters.isAxisymmetric(),
-		 useSecondOrderArtificialDiffusion,
-		 useFourthOrderArtificialDiffusion,
-		 (int)parameters.dbase.get<bool >("twilightZoneFlow"),
-		 np,
-		 parameters.dbase.get<int>("outflowOption"),
+                 parameters.dbase.get<int >("uc"),
+                 parameters.dbase.get<int >("vc"),
+                 parameters.dbase.get<int >("wc"),
+                 parameters.dbase.get<int >("sc"),
+                 grid,
+                 gridType,
+                 min(4,parameters.dbase.get<int >("orderOfAccuracy")),
+                 (int)parameters.gridIsMoving(grid),
+                 useWhereMask,
+                 parameters.getGridIsImplicit(grid),
+                 (int)parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod"),
+                 (int)parameters.dbase.get<Parameters::ImplicitOption >("implicitOption"),
+                 (int)parameters.isAxisymmetric(),
+                 useSecondOrderArtificialDiffusion,
+                 useFourthOrderArtificialDiffusion,
+                 (int)parameters.dbase.get<bool >("twilightZoneFlow"),
+                 np,
+                 parameters.dbase.get<int>("outflowOption"),
                  parameters.dbase.get<int >("orderOfExtrapolationForOutflow"),
                  parameters.dbase.get<int >("debug"),
-		 parameters.dbase.get<int >("myid"),
+                 parameters.dbase.get<int >("myid"),
                  (int)assignTemperature,
                  parameters.dbase.get<int >("tc"),
                  parameters.dbase.get<int >("numberOfComponents")
@@ -419,11 +419,11 @@ void insTractionBC(const int&bcOption,const int&nd,const int&nd1a,const int&nd1b
   int ierr=0;
   int bcOption=0;
   insTractionBC(bcOption,
-	 mg.numberOfDimensions(),
-	 uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
-	 uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
-	 iparam[0],rparam[0], *pu, *pmask, *pxy, *prsxy, *pgt, *pgtt,
-	 bcLocal(0,0), indexRangeLocal(0,0), ierr ) ;
+         mg.numberOfDimensions(),
+         uLocal.getBase(0),uLocal.getBound(0),uLocal.getBase(1),uLocal.getBound(1),
+         uLocal.getBase(2),uLocal.getBound(2),uLocal.getBase(3),uLocal.getBound(3),
+         iparam[0],rparam[0], *pu, *pmask, *pxy, *prsxy, *pgt, *pgtt,
+         bcLocal(0,0), indexRangeLocal(0,0), ierr ) ;
 }
 #endMacro
 
@@ -434,12 +434,12 @@ static int numberOfOutflowPointsAtInflowMessages=0;
 //\begin{>>MappedGridSolverInclude.tex}{\subsection{applyBoundaryConditionsINS}} 
 int Cgins::
 applyBoundaryConditions(const real & t, realMappedGridFunction & u, 
-			realMappedGridFunction & gridVelocity,
-			const int & grid,
-			const int & option /* =-1 */,
-			realMappedGridFunction *puOld /* =NULL */,  
-			realMappedGridFunction *pGridVelocityOld /* =NULL */,
-			const real & dt0 /* =-1. */ )
+                        realMappedGridFunction & gridVelocity,
+                        const int & grid,
+                        const int & option /* =-1 */,
+                        realMappedGridFunction *puOld /* =NULL */,  
+                        realMappedGridFunction *pGridVelocityOld /* =NULL */,
+                        const real & dt0 /* =-1. */ )
 //=========================================================================================
 // /Description:
 //   Apply boundary conditions for the incompressibleNavierStokes (explicit time stepping).
@@ -603,7 +603,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       case Parameters::dirichletBoundaryCondition: assignDirichletBoundaryCondition=true; break;
       case Parameters::neumannBoundaryCondition:   assignNeumannBoundaryCondition=true; break;
       case InsParameters::inflowWithPressureAndTangentialVelocityGiven :
-	assignInflowWithPressureAndTangentialVelocityGiven=true; break;
+        assignInflowWithPressureAndTangentialVelocityGiven=true; break;
       case InsParameters::freeSurfaceBoundaryCondition: assignFreeSurfaceBoundaryCondition=true; break;
       case InsParameters::inflowOutflow:           assignInflowOutflow=true; break;
       case InsParameters::penaltyBoundaryCondition: break;
@@ -675,7 +675,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       realArray & x = mg.vertex();
       int i1=0, i2=0, i3=0;
       printF("--INSBC-- before getKnown: grid=%i: t=%12.5e, point (i1=0,i2=0) (x,y)=(%20.12e,%20.12e)\n",
-	     grid,t,x(i1,i2,i3,0),x(i1,i2,i3,1));
+             grid,t,x(i1,i2,i3,0),x(i1,i2,i3,1));
     }
 
     uKnownPointer = &parameters.getKnownSolution( t,grid,I1,I2,I3 );
@@ -828,8 +828,8 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
       if( debug() & 64 )
       {
-	::display(uKnown,"insBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
-	::display(u,"insBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+        ::display(uKnown,"insBC: known solution: uKnown",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
+        ::display(u,"insBC: after assign dirichlet BC (from known solution)",parameters.dbase.get<FILE* >("pDebugFile"),"%4.2f ");
       }
 
     }
@@ -856,30 +856,30 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
       for ( int ghostLineToAssign=1; ghostLineToAssign<=discretizationHalfWidth; ghostLineToAssign++ )
       {
-	extrapParams.ghostLineToAssign = ghostLineToAssign;
-	extrapParams.lineToAssign = ghostLineToAssign;
+        extrapParams.ghostLineToAssign = ghostLineToAssign;
+        extrapParams.lineToAssign = ghostLineToAssign;
 
-	if( knownSolution!=InsParameters::noKnownSolution ) 
-	{
-	  // apply any known solution at dirichlet BC's   *wdh* 2013/09/28
-	  extrapParams.extraInTangentialDirections=2;
-	  extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
+        if( knownSolution!=InsParameters::noKnownSolution ) 
+        {
+          // apply any known solution at dirichlet BC's   *wdh* 2013/09/28
+          extrapParams.extraInTangentialDirections=2;
+          extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
 
-	  u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,extrapParams);
+          u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,extrapParams);
       
-	  extrapParams.extraInTangentialDirections=0;
-	  extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
+          extrapParams.extraInTangentialDirections=0;
+          extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
 
-	}
-	else
-	{
-	  u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
-	}
+        }
+        else
+        {
+          u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
+        }
 
         extrapParams.lineToAssign=0;  // reset
-	extrapParams.ghostLineToAssign = 1;
-	
-	//u.applyBoundaryCondition(Rt,extrapolate,dirichletBoundaryCondition,0.,t,extrapParams);
+        extrapParams.ghostLineToAssign = 1;
+        
+        //u.applyBoundaryCondition(Rt,extrapolate,dirichletBoundaryCondition,0.,t,extrapParams);
       }
     }
     else
@@ -892,8 +892,8 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
       for ( int ghostLineToAssign=1; ghostLineToAssign<=discretizationHalfWidth; ghostLineToAssign++ )
       {
-	extrapParams.lineToAssign = ghostLineToAssign;
-	u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
+        extrapParams.lineToAssign = ghostLineToAssign;
+        u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
       }
     }
     
@@ -1015,8 +1015,8 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
       if( false )
       {
-	display(u,"--insBC-- u after moving noSlipWall","%6.3f ");
-	display(gridVelocity,"--insBC-- gridVelocity after moving noSlipWall","%6.3f ");
+        display(u,"--insBC-- u after moving noSlipWall","%6.3f ");
+        display(gridVelocity,"--insBC-- gridVelocity after moving noSlipWall","%6.3f ");
       }
       
     }
@@ -1059,10 +1059,10 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       // printF("insBC: apply neumann BC at outflow\n");
       if( true )
       {
-	for( int n=0; n<numberOfDimensions; n++ )
-	{
-	  u.applyBoundaryCondition(uc+n,neumann,outflow,0.,t);
-	}
+        for( int n=0; n<numberOfDimensions; n++ )
+        {
+          u.applyBoundaryCondition(uc+n,neumann,outflow,0.,t);
+        }
       }
       else
       {
@@ -1071,11 +1071,11 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       
       if( assignTemperature )
       {
-	const int orderOfExtrapolation=extrapParams.orderOfExtrapolation;
-	if( parameters.dbase.get<int >("orderOfExtrapolationForOutflow")>= 0 )
-	  extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
-	u.applyBoundaryCondition(tc,extrapolate,outflow,0.,t,extrapParams);
-	extrapParams.orderOfExtrapolation=orderOfExtrapolation;  // reset
+        const int orderOfExtrapolation=extrapParams.orderOfExtrapolation;
+        if( parameters.dbase.get<int >("orderOfExtrapolationForOutflow")>= 0 )
+          extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
+        u.applyBoundaryCondition(tc,extrapolate,outflow,0.,t,extrapParams);
+        extrapParams.orderOfExtrapolation=orderOfExtrapolation;  // reset
       }
       
     }
@@ -1084,7 +1084,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       // default outflow BC's (Note: temperature will be done here too)
       const int orderOfExtrapolation=extrapParams.orderOfExtrapolation;
       if( parameters.dbase.get<int >("orderOfExtrapolationForOutflow")>= 0 )
-	extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
+        extrapParams.orderOfExtrapolation=parameters.dbase.get<int >("orderOfExtrapolationForOutflow");
       u.applyBoundaryCondition(Rt,extrapolate,outflow,0.,t,extrapParams);
       extrapParams.orderOfExtrapolation=orderOfExtrapolation;  // reset
     }
@@ -1152,70 +1152,70 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     {
       for( side=Start; side<=End; side++ )
       {
-	if( mg.boundaryCondition(side,axis)==outflow )
-	{
-	  RealDistributedArray & normal  = mg.vertexBoundaryNormal(side,axis);  
+        if( mg.boundaryCondition(side,axis)==outflow )
+        {
+          RealDistributedArray & normal  = mg.vertexBoundaryNormal(side,axis);  
 
-	  getGhostIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-	  intArray & mask = bcParams.mask();
-	  mask.redim(I1,I2,I3);   // mask lives on ghost line.
-	  getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
-	  if( isRectangular )
-	  {
-	    mask = u(I1,I2,I3,uc+axis)*(2*side-1) <0.;
-	  }
-	  else
-	  {
-	    if( mg.numberOfDimensions()==2 )
-	    {
-	      mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
-		      u(I1,I2,I3,vc)*normal(I1,I2,I3,1)) <0; 
-	    }
-	    else
-	    {
-	      mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
-		      u(I1,I2,I3,vc)*normal(I1,I2,I3,1)+
-		      u(I1,I2,I3,wc)*normal(I1,I2,I3,2)) <0; 
-	    }
-	  }
-	
-	  int count=sum(mask);
-	  // printF("---> insBC: number of outflow points that are inflow = %i\n",count);
-	  if( count>0 )
-	  {
-	    if( numberOfOutflowPointsAtInflowMessages<=50 &&
-		(debug()& 2 || debug() & 4) )
-	    {
-	      numberOfOutflowPointsAtInflowMessages++;
-	      printF("--INSBC-- number of outflow points that are inflow = %i\n",count);
-	      if( numberOfOutflowPointsAtInflowMessages==50 )
-		printF("--INSBC--WARNING: too many 'number of outflow points that are inflow' messages."
+          getGhostIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+          intArray & mask = bcParams.mask();
+          mask.redim(I1,I2,I3);   // mask lives on ghost line.
+          getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3);
+          if( isRectangular )
+          {
+            mask = u(I1,I2,I3,uc+axis)*(2*side-1) <0.;
+          }
+          else
+          {
+            if( mg.numberOfDimensions()==2 )
+            {
+              mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
+                      u(I1,I2,I3,vc)*normal(I1,I2,I3,1)) <0; 
+            }
+            else
+            {
+              mask = (u(I1,I2,I3,uc)*normal(I1,I2,I3,0)+
+                      u(I1,I2,I3,vc)*normal(I1,I2,I3,1)+
+                      u(I1,I2,I3,wc)*normal(I1,I2,I3,2)) <0; 
+            }
+          }
+        
+          int count=sum(mask);
+          // printF("---> insBC: number of outflow points that are inflow = %i\n",count);
+          if( count>0 )
+          {
+            if( numberOfOutflowPointsAtInflowMessages<=50 &&
+                (debug()& 2 || debug() & 4) )
+            {
+              numberOfOutflowPointsAtInflowMessages++;
+              printF("--INSBC-- number of outflow points that are inflow = %i\n",count);
+              if( numberOfOutflowPointsAtInflowMessages==50 )
+                printF("--INSBC--WARNING: too many 'number of outflow points that are inflow' messages."
                        " I will not print anymore.\n");
-	    }
-	    
-	    bcParams.setUseMask(TRUE);
+            }
+            
+            bcParams.setUseMask(TRUE);
 
             if( false )  // add this as an option 
-	    {
+            {
               // *wdh* 2014/06/08 -- try a mixed BC
-	      bcParams.a.redim(3);
-	      bcParams.a(0)=1.;
-	      bcParams.a(1)=.01;
-	      bcParams.a(2)=0.;
+              bcParams.a.redim(3);
+              bcParams.a(0)=1.;
+              bcParams.a(1)=.01;
+              bcParams.a(2)=0.;
 
-	      u.applyBoundaryCondition(V,mixed,BCTypes::boundary(side,axis),0.,t,bcParams);
+              u.applyBoundaryCondition(V,mixed,BCTypes::boundary(side,axis),0.,t,bcParams);
               // real alpha=.1;
-	      // u.applyBoundaryCondition(V,normalComponent,BCTypes::boundary(side,axis),alpha,t);
-	    }
-	    else
-	    {
-	      u.applyBoundaryCondition(V,neumann,BCTypes::boundary(side,axis),0.,t,bcParams);
-	    }
-	    
+              // u.applyBoundaryCondition(V,normalComponent,BCTypes::boundary(side,axis),alpha,t);
+            }
+            else
+            {
+              u.applyBoundaryCondition(V,neumann,BCTypes::boundary(side,axis),0.,t,bcParams);
+            }
+            
 
-	    bcParams.setUseMask(FALSE);
-	  }
-	}
+            bcParams.setUseMask(FALSE);
+          }
+        }
       }
     }
   }
@@ -1233,9 +1233,9 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       u.applyBoundaryCondition(V,extrapolate,    slipWall,0.,t);
       if( true )
       {
-	u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent0, slipWall,0.,t);
-	if( numberOfDimensions==3 )
-	  u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1, slipWall,0.,t);
+        u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent0, slipWall,0.,t);
+        if( numberOfDimensions==3 )
+          u.applyBoundaryCondition(V,BCTypes::normalDerivativeOfTangentialComponent1, slipWall,0.,t);
       }
     }
 
@@ -1362,7 +1362,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     if( !parameters.isAxisymmetric() )
     {
       if( assignNoSlipWall )
-	u.applyBoundaryCondition(V,generalizedDivergence,noSlipWall,0.,t);
+        u.applyBoundaryCondition(V,generalizedDivergence,noSlipWall,0.,t);
     }
     else
     {
@@ -1370,16 +1370,16 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       //   For y>0 and noSlipWall (u=v=0) --> u.x + v.y = 0
 
       if( assignNoSlipWall )
-	u.applyBoundaryCondition(V,generalizedDivergence,noSlipWall,0.,t);
+        u.applyBoundaryCondition(V,generalizedDivergence,noSlipWall,0.,t);
 
       if( assignAxisymmetric )
       {
-	// BC u.x + v.y + v/y =0  at y=0: u.x + 2 v.y =0
-	bcParams.a.redim(3);
-	bcParams.a(0)=1.;
-	bcParams.a(1)=2.;
-	bcParams.a(2)=0.;
-	u.applyBoundaryCondition(V,generalizedDivergence,axisymmetric,0.,t,bcParams);
+        // BC u.x + v.y + v/y =0  at y=0: u.x + 2 v.y =0
+        bcParams.a.redim(3);
+        bcParams.a(0)=1.;
+        bcParams.a(1)=2.;
+        bcParams.a(2)=0.;
+        u.applyBoundaryCondition(V,generalizedDivergence,axisymmetric,0.,t,bcParams);
       }
     }
   }
@@ -1409,13 +1409,13 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       u.applyBoundaryCondition(V,tangentialComponent,inflowWithPressureAndTangentialVelocityGiven,0.,t);
       if( assignTemperature )
       {
-	u.applyBoundaryCondition(tc,dirichlet,inflowWithPressureAndTangentialVelocityGiven,bcData,pBoundaryData,t,
-				 bcParams,grid);
+        u.applyBoundaryCondition(tc,dirichlet,inflowWithPressureAndTangentialVelocityGiven,bcData,pBoundaryData,t,
+                                 bcParams,grid);
       }
       if( pdeModel==InsParameters::twoPhaseFlowModel )
       {
-	u.applyBoundaryCondition(twoPhaseFlowComponents,dirichlet,inflowWithPressureAndTangentialVelocityGiven,bcData,
-				 pBoundaryData,t,bcParams,grid);
+        u.applyBoundaryCondition(twoPhaseFlowComponents,dirichlet,inflowWithPressureAndTangentialVelocityGiven,bcData,
+                                 pBoundaryData,t,bcParams,grid);
       }    
 
       u.applyBoundaryCondition(Rt,extrapolate,inflowWithPressureAndTangentialVelocityGiven,0.,t);
@@ -1440,18 +1440,18 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
           parameters.dbase.get<int >("checkForInflowAtOutFlow")!=2 ) // *wdh* 100607 
       {
         // printF("insBC: apply generalizedDivergence BC at outflow\n");
-	u.applyBoundaryCondition(V,generalizedDivergence,outflow,0.,t); // ****wdh***** 990827
+        u.applyBoundaryCondition(V,generalizedDivergence,outflow,0.,t); // ****wdh***** 990827
       }
       else
       {
-	// div(u) = u.x + v.y + v/y = 0
+        // div(u) = u.x + v.y + v/y = 0
 
         // *** For now do nothing in this case ***
-//  	bcParams.a.redim(3);
-//  	bcParams.a(0)=1.;
-//  	bcParams.a(1)=2.;
-//  	bcParams.a(2)=0.;
-//  	u.applyBoundaryCondition(V,generalizedDivergence,axisymmetric,0.,t,bcParams);
+//      bcParams.a.redim(3);
+//      bcParams.a(0)=1.;
+//      bcParams.a(1)=2.;
+//      bcParams.a(2)=0.;
+//      u.applyBoundaryCondition(V,generalizedDivergence,axisymmetric,0.,t,bcParams);
 
       }
     }
@@ -1471,7 +1471,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
     if( assignInflowWithVelocityGiven )
     {
       u.applyBoundaryCondition(sc,dirichlet,inflowWithVelocityGiven,bcData,pBoundaryData,t,
-			       Overture::defaultBoundaryConditionParameters(),grid);
+                               Overture::defaultBoundaryConditionParameters(),grid);
       u.applyBoundaryCondition(sc,extrapolate,inflowWithVelocityGiven,0.,t);
     }
     if( assignOutflow )
@@ -1479,10 +1479,10 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
     if( assignNoSlipWall )
       u.applyBoundaryCondition(sc,neumann,noSlipWall,bcData,pBoundaryData,t,
-			       Overture::defaultBoundaryConditionParameters(),grid);
+                               Overture::defaultBoundaryConditionParameters(),grid);
     if( assignSlipWall )
       u.applyBoundaryCondition(sc,neumann,slipWall,bcData,pBoundaryData,t,
-			       Overture::defaultBoundaryConditionParameters(),grid);
+                               Overture::defaultBoundaryConditionParameters(),grid);
 
     // ** u.applyBoundaryCondition(sc,extrapolate,allBoundaries,0.,t);
   }
@@ -1521,7 +1521,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       u.applyBoundaryCondition(Rt,BCTypes::extrapolateInterpolationNeighbours,allBoundaries,0.,t,extrapParams);
     }
     else if( timeSteppingMethod==Parameters::rKutta /*|| 
-						      parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")==Parameters::approximateFactorization */)
+                                                      parameters.dbase.get<Parameters::ImplicitMethod >("implicitMethod")==Parameters::approximateFactorization */)
     {
       // semi-implicit method needs du/dt at interpolation points.
       assert( parameters.dbase.get<int >("extrapolateInterpolationNeighbours") );  // consistency check
@@ -1555,14 +1555,14 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t);   
       if( false &&   // *wdh* 110313 - this is done in applyFourthOrderBoundaryConditions now 
           assignTemperature )
-	u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t); 
+        u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t); 
 
       bcParams.ghostLineToAssign=2;
       u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,bcParams);   
       bcParams.ghostLineToAssign=1;
       if( false &&   // *wdh* 110313 - this is done in applyFourthOrderBoundaryConditions now 
           assignTemperature )
-	u.applyBoundaryCondition(tc,BCTypes::evenSymmetry,slipWall,0.,t,bcParams);
+        u.applyBoundaryCondition(tc,BCTypes::evenSymmetry,slipWall,0.,t,bcParams);
     }
       
     if( assignInflowWithPressureAndTangentialVelocityGiven )
@@ -1573,14 +1573,14 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       if( true )
       {
         // Even Symmetry on n.u :  
-	u.applyBoundaryCondition(Rt,BCTypes::evenSymmetry,inflowWithPressureAndTangentialVelocityGiven,0.,t);
+        u.applyBoundaryCondition(Rt,BCTypes::evenSymmetry,inflowWithPressureAndTangentialVelocityGiven,0.,t);
       }
       else
       {
-	// extrapolate 1nd ghost
-	extrapParams.ghostLineToAssign=1;
-	extrapParams.orderOfExtrapolation=orderOfAccuracy+1; 
-	u.applyBoundaryCondition(Rt,extrapolate,inflowWithPressureAndTangentialVelocityGiven,0.,t,extrapParams);
+        // extrapolate 1nd ghost
+        extrapParams.ghostLineToAssign=1;
+        extrapParams.orderOfExtrapolation=orderOfAccuracy+1; 
+        u.applyBoundaryCondition(Rt,extrapolate,inflowWithPressureAndTangentialVelocityGiven,0.,t,extrapParams);
       }
       
       // set tangential components to exact on 1st ghost
@@ -1592,15 +1592,15 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       if( true )
       {
         // Even Symmetry on n.u :  
-	bcParams.lineToAssign=2;
-	bcParams.ghostLineToAssign=2;
-	u.applyBoundaryCondition(Rt,BCTypes::evenSymmetry,inflowWithPressureAndTangentialVelocityGiven,0.,t,bcParams);
+        bcParams.lineToAssign=2;
+        bcParams.ghostLineToAssign=2;
+        u.applyBoundaryCondition(Rt,BCTypes::evenSymmetry,inflowWithPressureAndTangentialVelocityGiven,0.,t,bcParams);
       }
       else
       {
-	extrapParams.ghostLineToAssign=2;
-	extrapParams.orderOfExtrapolation=orderOfAccuracy+1; 
-	u.applyBoundaryCondition(Rt,extrapolate,inflowWithPressureAndTangentialVelocityGiven,0.,t,extrapParams);
+        extrapParams.ghostLineToAssign=2;
+        extrapParams.orderOfExtrapolation=orderOfAccuracy+1; 
+        u.applyBoundaryCondition(Rt,extrapolate,inflowWithPressureAndTangentialVelocityGiven,0.,t,extrapParams);
       }
       
       // do this for now -- set tangential components to exact on 2nd ghost
@@ -1610,7 +1610,7 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       bcParams.extraInTangentialDirections=0;
       
       if( debug() & 8 )
-	::display(u,"u after inflowWithPressureAndTangentialVelocityGiven",parameters.dbase.get<FILE* >("debugFile"));
+        ::display(u,"u after inflowWithPressureAndTangentialVelocityGiven",parameters.dbase.get<FILE* >("debugFile"));
 
     }
     
@@ -1624,38 +1624,38 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       // --- At inflow with fourth-order : set ghost values equal to the boundary values ---
       //  (There can otherwise be trouble at inflow, cf. surfaceFlow.cmd)
       OV_GET_SERIAL_ARRAY(real,u,uLocal);
-	  
+          
       Index Ibv[3], &Ib1=Ibv[0], &Ib2=Ibv[1], &Ib3=Ibv[2];
       Index Igv[3], &Ig1=Igv[0], &Ig2=Igv[1], &Ig3=Igv[2];
       Index Ipv[3], &Ip1=Ipv[0], &Ip2=Ipv[1], &Ip3=Ipv[2];
       for( int axis=0; axis<numberOfDimensions; axis++ )
       {
-	for( int side=0; side<=1; side++ )
-	{
-	  if( mg.boundaryCondition(side,axis)==inflowWithVelocityGiven )
-	  {
-	    // assign 2 ghost : 
-	    const int numGhost=2;
-	    const int extra=numGhost; // extra values in the tangential direction
-	    // const int extra=0; // extra values in the tangential direction
-	    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3,extra);  
-	    bool ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,1);
-	    for( int ghost=1; ghost<=numGhost; ghost++ )
-	    {
-	      getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3, ghost,extra);  
-	      getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-ghost,extra);  
-	      ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,1);
-	      ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ip1,Ip2,Ip3,1);
-	      if( ok )
-	      {
-		// uLocal(Ig1,Ig2,Ig3,V)=uLocal(Ib1,Ib2,Ib3,V);
-		uLocal(Ig1,Ig2,Ig3,V)=2.*uLocal(Ib1,Ib2,Ib3,V)-uLocal(Ip1,Ip2,Ip3,V); // *wdh* 2014/06/02
-	      }
-	      
-	    }
-	      
-	  }
-	}
+        for( int side=0; side<=1; side++ )
+        {
+          if( mg.boundaryCondition(side,axis)==inflowWithVelocityGiven )
+          {
+            // assign 2 ghost : 
+            const int numGhost=2;
+            const int extra=numGhost; // extra values in the tangential direction
+            // const int extra=0; // extra values in the tangential direction
+            getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3,extra);  
+            bool ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ib1,Ib2,Ib3,1);
+            for( int ghost=1; ghost<=numGhost; ghost++ )
+            {
+              getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3, ghost,extra);  
+              getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-ghost,extra);  
+              ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ig1,Ig2,Ig3,1);
+              ok=ParallelUtility::getLocalArrayBounds(u,uLocal,Ip1,Ip2,Ip3,1);
+              if( ok )
+              {
+                // uLocal(Ig1,Ig2,Ig3,V)=uLocal(Ib1,Ib2,Ib3,V);
+                uLocal(Ig1,Ig2,Ig3,V)=2.*uLocal(Ib1,Ib2,Ib3,V)-uLocal(Ip1,Ip2,Ip3,V); // *wdh* 2014/06/02
+              }
+              
+            }
+              
+          }
+        }
       }
     }
 
@@ -1669,13 +1669,13 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
       u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,bcParams);   
       if( false &&   // *wdh* 110313 - this is done in applyFourthOrderBoundaryConditions now 
           assignTemperature )
-	u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t,bcParams); 
+        u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t,bcParams); 
 
       bcParams.ghostLineToAssign=2;
       u.applyBoundaryCondition(V,vectorSymmetry, slipWall,0.,t,bcParams);   
       if( false &&   // *wdh* 110313 - this is done in applyFourthOrderBoundaryConditions now 
           assignTemperature )
-	u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t,bcParams); 
+        u.applyBoundaryCondition(tc,BCTypes::evenSymmetry, slipWall,0.,t,bcParams); 
       bcParams.ghostLineToAssign=1;
       bcParams.extraInTangentialDirections=0; // reset
     }
@@ -1694,25 +1694,25 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
 
       for ( int ghostLineToAssign=0; ghostLineToAssign<=discretizationHalfWidth; ghostLineToAssign++ )
       {
-	extrapParams.ghostLineToAssign = ghostLineToAssign;
-	extrapParams.lineToAssign = ghostLineToAssign;
-	if( knownSolution!=InsParameters::noKnownSolution ) 
-	{
-	  // apply any known solution at dirichlet BC's   *wdh* 2013/09/28
-	  extrapParams.extraInTangentialDirections=2;
-	  extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
+        extrapParams.ghostLineToAssign = ghostLineToAssign;
+        extrapParams.lineToAssign = ghostLineToAssign;
+        if( knownSolution!=InsParameters::noKnownSolution ) 
+        {
+          // apply any known solution at dirichlet BC's   *wdh* 2013/09/28
+          extrapParams.extraInTangentialDirections=2;
+          extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::arrayForcing); 
 
-	  u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,extrapParams);
+          u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,uKnownLocal,t,extrapParams);
       
-	  extrapParams.extraInTangentialDirections=0;
-	  extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
+          extrapParams.extraInTangentialDirections=0;
+          extrapParams.setBoundaryConditionForcingOption(BoundaryConditionParameters::unSpecifiedForcing);
 
-	}
-	else
-	{
-	  u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
-	}
-	
+        }
+        else
+        {
+          u.applyBoundaryCondition(Rt,dirichlet,dirichletBoundaryCondition,0.,t,extrapParams);
+        }
+        
 
       }
     }
@@ -1773,17 +1773,17 @@ applyBoundaryConditions(const real & t, realMappedGridFunction & u,
   for ( int side=0; side<2; side++ )
     for ( int axis=0; axis<cg.numberOfDimensions(); axis++ )
       {
-	if (bcInfo(2,side,axis,grid))
-	  {
-	    Parameters::BCModifier *bcMod = parameters.bcModifiers[bcInfo(2,side,axis,grid)];
-	    bcMod->applyBC(parameters, 
-			   t, dt,
-			   u,
-			   grid,
-			   side,
-			   axis,
-			   (gridIsMoving ? &gridVelocity : 0));
-	  }
+        if (bcInfo(2,side,axis,grid))
+          {
+            Parameters::BCModifier *bcMod = parameters.bcModifiers[bcInfo(2,side,axis,grid)];
+            bcMod->applyBC(parameters, 
+                           t, dt,
+                           u,
+                           grid,
+                           side,
+                           axis,
+                           (gridIsMoving ? &gridVelocity : 0));
+          }
       }
 
   parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForBoundaryConditions"))+=getCPU()-time0;

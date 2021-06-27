@@ -10,7 +10,7 @@ nd:= 10:  # number of Bessel functions
 md:= 10:  # number of zeros of Jn'
 
 fprintf(file," const int ndbpz=%d, mdbpz=%d;\n",nd,md):
-fprintf(file," real besselPrimeZeros[ndbpz][mdbpz]={\n"):
+fprintf(file," Real besselPrimeZeros[ndbpz][mdbpz]={\n"):
  
 assume(n::integer):
 additionally(n>=0):
@@ -57,7 +57,7 @@ file := fopen( "besselZeros.h",WRITE ):
 
 fprintf(file,"/* Zeros of the Bessel Function Jn(z) */\n\n"):
 fprintf(file," const int ndbz=%d, mdbz=%d;\n",nd,md):
-fprintf(file," real besselZeros[ndbz][mdbz]={\n"):
+fprintf(file," Real besselZeros[ndbz][mdbz]={\n"):
  
 # assume(n::integer):
 # additionally(n>=0):

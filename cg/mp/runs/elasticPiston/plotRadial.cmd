@@ -3,6 +3,10 @@
 # 
 #  plotStuff plotRadial.cmd -show=repG4scf1.show -name=radialG4 -solution=10 -vMax=.25
 #
+#  plotStuff plotRadial.cmd -show=repG4Scf1.show -name=radialG4 -solution=19 -tp=0p9 -cs=v1 -cf=u
+#  plotStuff plotRadial.cmd -show=repG4Scf1.show -name=radialG4 -solution=19 -tp=0p9 -cs=v2 -cf=v
+#  plotStuff plotRadial.cmd -show=repG4Scf1.show -name=radialG4 -solution=19 -tp=0p9 -cs=stressNorm -cf=p 
+#
 #  plotStuff plotRadial.cmd -show=repG8Scf1.show -name=radialG8 -solution=7 -tp=0p3 -cs=v1 -cf=u
 #  plotStuff plotRadial.cmd -show=repG8Scf1.show -name=radialG8 -solution=19 -tp=0p9 -cs=v2 -cf=v
 #  plotStuff plotRadial.cmd -show=repG8Scf1.show -name=radialG8 -solution=19 -tp=0p9 -cs=stressNorm -cf=p 
@@ -11,6 +15,7 @@
 #
 # Radial shear:
 #  plotStuff plotRadial.cmd -show=radialShearG4Scf10.show -name=radialShearG4 -solution=7 -tp=0p3 -cs=vTheta -cf=vTheta
+#  plotStuff plotRadial.cmd -show=radialShearG4Scf1.show -name=radialShearG4Scf1 -solution=7 -tp=0p3 -cs=vTheta -cf=vTheta
 #
 #  plotStuff plotRadial.cmd -show=radialShearG8Scf10.show -name=radialShearG8 -solution=3 -tp=0p1 -cs=vTheta -cf=vTheta
 #  plotStuff plotRadial.cmd -show=radialShearG8Scf10.show -name=radialShearG8 -solution=7 -tp=0p3 -cs=vTheta -cf=vTheta
@@ -18,6 +23,7 @@
 # 
 #  plotStuff plotRadial.cmd -show=radialShearG8Scf10.show -name=radialShearG8 -solution=11 -tp=0p5 -cs=stressNorm -cf=p 
 #
+# 
 $show="radialG2.hdf"; $cMin=""; $cMax=""; $solution=1; $cs="v1"; $cf="u"; $tp="0p0"; 
 # ----------------------------- get command line arguments ---------------------------------------
 GetOptions( "show=s"=>\$show,"name=s"=>\$name,"cMin=f"=>\$cMin,"cMax=f"=>\$cMax,"solution=i"=>\$solution,\
@@ -72,10 +78,26 @@ DISPLAY AXES:0 0
 $plotName = $name . "$cs$cf" ."t$tp.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
-
-
+pause
+# Plot streamlines
+  line width scale factor:0 3
+  hardcopy vertical resolution:0 2048
+  hardcopy horizontal resolution:0 2048
+frame series:fluidDomain
+erase
+stream lines
+  arrow size .05
+  exit
+frame series:solidDomain
+stream lines
+  choose first velocity component
+  v1
+  choose second velocity component
+  v2
+  arrow size 0.05
+exit
 #
-$plotName = $name . "SLt0p5.ps"; 
+$plotName = $name . "SLt$tp.ps"; 
 hardcopy file name:0 $plotName
 hardcopy save:0
 

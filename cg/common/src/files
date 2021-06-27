@@ -66,6 +66,8 @@ src/advanceStepsPC.C : src/advanceStepsPC.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -q
 src/advanceFactored.C : src/advanceFactored.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 src/advanceStepsBDF.C : src/advanceStepsBDF.bC $(COMMON_SRC)/pcMacros.h; $(BPP) -quiet -clean $<
 
+src/interfaceBoundaryConditions.C : src/interfaceBoundaryConditions.bC; $(BPP) -quiet -clean $<
+
 src/boundaryConditionPredictor.C : src/boundaryConditionPredictor.bC; $(BPP) -quiet -clean $<
 
 src/defineVariableBoundaryValues.C : src/defineVariableBoundaryValues.bC $(COMMON_SRC)/bodyForcingMacros.h; $(BPP) -quiet -clean $<

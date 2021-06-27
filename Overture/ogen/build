@@ -74,7 +74,7 @@ cp {sib1.order4,sib2.order4,sib3.order4,sib4.order4,blockAnnulus,channelWithBump
 cp {box32,box64,box128,box256}.order4.cmd                                                              $sampleGrids
 cp cic.bbmg{2,3,4,5,6}.cmd                                                                             $sampleGrids
 cp {diskAblate,diskDeform,naca.hype.smooth,curvedPipe,threeValve,multiCylIG}.cmd                       $sampleGrids
-cp {solidFuelAssembly,valveDemo,shapesDemo,valvePortDemo,annulusArg}.cmd                               $sampleGrids
+cp {solidFuelAssemblyGrid,valveDemo,shapesDemo,valvePortDemo,annulusArg}.cmd                           $sampleGrids
 cp {cornerThreeSquares,cavityDeform,divot,afm,lens,solidSphereInABox}.cmd                              $sampleGrids
 cp {interfaceBump3d.cmd,twoSpheresInAChannel.cmd,sphere.h}                                             $sampleGrids
 cp {superseismicGrid,filament,bigSquare,bigBox,box,nonBox,cubeInABox,slider}.cmd                       $sampleGrids

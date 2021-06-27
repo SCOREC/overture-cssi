@@ -793,7 +793,8 @@ getAugmentedSolution(int current, realCompositeGridFunction & v, const real t)
                         if( ok )
                         {
                             const int numberOfPolarizationVectors = dmp.getNumberOfPolarizationVectors();
-                            printF("getAugmentedSolution: grid=%d, save polarization, numberOfPolarizationVectors=%d\n",grid,numberOfPolarizationVectors);
+                            if( false )
+                                printF("getAugmentedSolution: grid=%d, save polarization, numberOfPolarizationVectors=%d\n",grid,numberOfPolarizationVectors);
                             for( int dir=0; dir<numberOfDimensions; dir++ )
                             {
                                 if( plotPolarization )

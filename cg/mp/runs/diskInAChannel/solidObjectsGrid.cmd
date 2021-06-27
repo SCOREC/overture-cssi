@@ -74,53 +74,53 @@ $centerHeight=.5; $centerWidth=.35; $edgeHeight=.25;   $edgeWidth=1.; $angle=45;
 $cx=1.5; $cy=.75;
 $coreRadius=.05; $xCore=0; $yCore=-.3; # offset core from center
 # --- define curve ---
-include solidIBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidIBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 # 
 #  ---- SKIP : Square ---- 
 #
 $edgeHeight=1.; $edgeWidth=1.; $angle=0;
 $coreRadius=.1; $xCore=.25; $yCore=0; # offset core from center
 $cx=1.5; $cy=0;
-#- include solidBeamCurve.h
+#- include $ENV{CG}/mp/runs/diskInAChannel/solidBeamCurve.h
 #  --- build grids ---
-#- include solidBodyGrids.h
+#- include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 # 
 # ---- Beam -----
 # 
 $edgeHeight=.25; $edgeWidth=1.5; $angle=-10;
 $coreRadius=.05; $xCore=.25; $yCore=0; # offset core from center
 $cx=-1.5; $cy=.85;
-include solidBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 # 
 # ---- Beam -----
 # 
 $edgeHeight=.35; $edgeWidth=1.5; $angle=10;
 $coreRadius=.05; $xCore=-.25; $yCore=0; # offset core from center
 $cx=-1.5; $cy=-1.;
-include solidBeamCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBeamCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 #
 # ---- split-ring ---
 #
 $H=.6; $W=.5; $w=.25; $d=.2; $cx=0; $cy=0;  $angle=200;
 $coreRadius=.05; $xCore=-.35; $yCore=-.35; # offset core from center
 $cx=1.5; $cy=-.85;
-include splitRingCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/splitRingCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 #
 # ---- cross ---
 #
 $w=.15; $h=.75; $cx=0; $cy=0; $angle=200;
 $coreRadius=.1; $xCore=0; $yCore=0; # core
-include solidCrossCurve.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidCrossCurve.h
 #  --- build grids ---
-include solidBodyGrids.h
+include $ENV{CG}/mp/runs/diskInAChannel/solidBodyGrids.h
 #
 ## $gridNames = "iBeamExteriorGrid\n iBeamInnerBackGround\n solidCore\n iBeamInteriorGrid"; 
 # 

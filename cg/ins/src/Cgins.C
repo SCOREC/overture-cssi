@@ -76,12 +76,12 @@ insSetup()
     for( int grid2=0; grid2<cg.numberOfComponentGrids(); grid2++ )
     {
       if( grid!=grid2 )
-	minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
+        minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
     }
   }
   if( minInterpolationWidth==INT_MAX ) minInterpolationWidth=minDiscretizationWidth;
   printF("Cgins::setup: minDiscretizationWidth=%i, minInterpolationWidth=%i.\n",minDiscretizationWidth,
-	 minInterpolationWidth);
+         minInterpolationWidth);
 
   const int maxOrderOfAccuracy=8;  // *************
     
@@ -95,7 +95,7 @@ insSetup()
  
 
   printP("Cgins::setup: INFO: setting default order of accuracy=%i based on the input grid parameters\n",
-	 orderOfAccuracyInSpace);
+         orderOfAccuracyInSpace);
   
   
   return 0;
@@ -214,17 +214,17 @@ updateGeometryArrays(GridFunction & cgf)
   for( int grid=0; grid<cgf.cg.numberOfComponentGrids(); grid++ )
   {
     if( !cgf.cg[grid].isRectangular() || twilightZoneFlow() || parameters.isAxisymmetric() ||
-	parameters.gridIsMoving(grid) )
+        parameters.gridIsMoving(grid) )
     {
       cgf.cg[grid].update(MappedGrid::THEcenter | MappedGrid::THEvertex );  
 
-	if( false )// ************** TEMP ********************
-	{
-	  realArray & x = cgf.cg[grid].vertex();
-	  int i1=0, i2=0, i3=0;
+        if( false )// ************** TEMP ********************
+        {
+          realArray & x = cgf.cg[grid].vertex();
+          int i1=0, i2=0, i3=0;
           printF("--INS--updateGeom: grid=%i: t=%12.5e, point (i1=0,i2=0) (x,y)=(%20.12e,%20.12e)\n",
-		 grid,cgf.t,x(i1,i2,i3,0),x(i1,i2,i3,1));
-	}
+                 grid,cgf.t,x(i1,i2,i3,0),x(i1,i2,i3,1));
+        }
 
 
     }
@@ -260,13 +260,13 @@ saveShowFileComments( Ogshow &show )
   aString showFileTitle[5];
   if( parameters.dbase.get<InsParameters::PDEModel >("pdeModel")==InsParameters::BoussinesqModel )
     showFileTitle[0]=sPrintF(buffer,"Incompressible NS (Boussinesq), nu=%8.2e, k=%8.2e",
-			     parameters.dbase.get<real >("nu"),parameters.dbase.get<real >("kThermal"));
+                             parameters.dbase.get<real >("nu"),parameters.dbase.get<real >("kThermal"));
   else if( parameters.dbase.get<InsParameters::PDEModel >("pdeModel")==InsParameters::viscoPlasticModel )
   {
     // declare and lookup visco-plastic parameters (macro)
     declareViscoPlasticParameters;
     showFileTitle[0]=sPrintF(buffer,"INS-VP (eta,yield,exp)=(%.4g,%.4g,%.4g), k=%8.2e",
-			     etaViscoPlastic,yieldStressViscoPlastic,exponentViscoPlastic,
+                             etaViscoPlastic,yieldStressViscoPlastic,exponentViscoPlastic,
                              parameters.dbase.get<real >("kThermal"));
   }
   else 
@@ -305,7 +305,7 @@ writeParameterSummary( FILE * file )
   if ( file==parameters.dbase.get<FILE* >("checkFile") )
   {
     fPrintF(parameters.dbase.get<FILE* >("checkFile"),"\\caption{Incompressible Navier Stokes, gridName, $\\nu=%3.2f$, $t=%2.1f$, ",
-	    parameters.dbase.get<real >("nu"),parameters.dbase.get<real >("tFinal"));
+            parameters.dbase.get<real >("nu"),parameters.dbase.get<real >("tFinal"));
 
     return;
     
@@ -318,7 +318,7 @@ writeParameterSummary( FILE * file )
   fPrintF(file," nu=%e, density=%g, cdv=%g, cDt=%g, dtMax=%g\n",
           parameters.dbase.get<real >("nu"),
           parameters.dbase.get<real >("fluidDensity"),
-	  parameters.dbase.get<real >("cdv"),parameters.dbase.get<real >("cDt"),
+          parameters.dbase.get<real >("cdv"),parameters.dbase.get<real >("cDt"),
           parameters.dbase.get<real >("dtMax"));
       
   if( pdeModel==InsParameters::BoussinesqModel || 
@@ -329,8 +329,8 @@ writeParameterSummary( FILE * file )
     if( parameters.dbase.get<int>("variableMaterialPropertiesOption")==0 )
     {
       fPrintF(file," Boussinesq: kThermal=%g, thermalConductivity=%g (constant material properties)\n",
-	      parameters.dbase.get<real >("kThermal"),
-	      parameters.dbase.get<real >("thermalConductivity"));
+              parameters.dbase.get<real >("kThermal"),
+              parameters.dbase.get<real >("thermalConductivity"));
     }
     else
     {
@@ -401,7 +401,7 @@ writeParameterSummary( FILE * file )
   const InsParameters::AdvectionOptions advectionOption= 
                   parameters.dbase.get<InsParameters::AdvectionOptions>("advectionOption");
   fPrintF(file," Advection option = %s,",
-	  (advectionOption==InsParameters::centeredAdvection ? "centered advection" :
+          (advectionOption==InsParameters::centeredAdvection ? "centered advection" :
            advectionOption==InsParameters::upwindAdvection ? "upwind advection" :
            advectionOption==InsParameters::bwenoAdvection ? "bweno advection" : "unknown"));
   const int upwindOrder = parameters.dbase.get<int>("upwindOrder");
@@ -423,7 +423,7 @@ writeParameterSummary( FILE * file )
       // -- output options for the approximate factorization scheme. --      
       fPrintF(file," method = approximate factorization scheme,");
       if( discretizationOption==InsParameters::standardFiniteDifference )
-	fPrintF(file," standard finite difference.\n");
+        fPrintF(file," standard finite difference.\n");
       else if( discretizationOption==InsParameters::compactDifference )
         fPrintF(file," compact finite difference.\n");
 
@@ -437,10 +437,10 @@ writeParameterSummary( FILE * file )
     {
       // -- "old" semi-implicit method
       fPrintF(file," implicit variation = %s\n",(implicitVariation==InsParameters::implicitViscous ? "implicitViscous" :
-						 implicitVariation==InsParameters::implicitAdvectionAndViscous ? "implicitAdvectionAndViscous" :
-						 implicitVariation==InsParameters::implicitFullLinearized ? "implicitFullLinearized" : "unknown"));
+                                                 implicitVariation==InsParameters::implicitAdvectionAndViscous ? "implicitAdvectionAndViscous" :
+                                                 implicitVariation==InsParameters::implicitFullLinearized ? "implicitFullLinearized" : "unknown"));
       fPrintF(file," useNewImplicitMethod=%i (1=use implicit RHS evaluation for dudt)\n",
-	      parameters.dbase.get<int>("useNewImplicitMethod"));
+              parameters.dbase.get<int>("useNewImplicitMethod"));
     
       fPrintF(file," decouple implicit boundary conditions=%i\n",(int)parameters.dbase.get<bool>("decoupleImplicitBoundaryConditions"));
       fPrintF(file," refactor frequency=%i\n",parameters.dbase.get<int>("refactorFrequency"));
@@ -450,8 +450,8 @@ writeParameterSummary( FILE * file )
       bool & useFullSystemForImplicitTimeStepping = parameters.dbase.get<bool >("useFullSystemForImplicitTimeStepping");
       int & scalarSystemForImplicitTimeStepping = parameters.dbase.get<int >("scalarSystemForImplicitTimeStepping");
       fPrintF(file," number of implicit solvers for velocity=%i. \n"
-	      " useFullSystemForImplicitTimeStepping=%i. scalarSystemForImplicitTimeStepping=%i.\n", numberOfImplicitVelocitySolvers,
-	      (int)useFullSystemForImplicitTimeStepping,scalarSystemForImplicitTimeStepping);
+              " useFullSystemForImplicitTimeStepping=%i. scalarSystemForImplicitTimeStepping=%i.\n", numberOfImplicitVelocitySolvers,
+              (int)useFullSystemForImplicitTimeStepping,scalarSystemForImplicitTimeStepping);
       fPrintF(file,"\n");
     }
     
@@ -467,7 +467,7 @@ writeParameterSummary( FILE * file )
   {
     assert( checkForInflowAtOutFlow!=2 );
     fPrintF(file," Outflow boundary condition is extrapolation (order of extrap.=%i). (Other options: Neumann)\n",
-	    parameters.dbase.get<int >("orderOfExtrapolationForOutflow"));
+            parameters.dbase.get<int >("orderOfExtrapolationForOutflow"));
   }
   else
     fPrintF(file," Outflow boundary condition is Neumann. (Other options: extrapolation)\n");
@@ -498,7 +498,7 @@ writeParameterSummary( FILE * file )
       const bool & useApproximateAMPcondition = parameters.dbase.get<bool>("useApproximateAMPcondition");
       const bool & projectAddedMassVelocity = parameters.dbase.get<bool>("projectAddedMassVelocity");
       const bool & projectNormalComponentOfAddedMassVelocity =
-	parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
+        parameters.dbase.get<bool>("projectNormalComponentOfAddedMassVelocity");
       const bool & projectVelocityOnBeamEnds = parameters.dbase.get<bool>("projectVelocityOnBeamEnds");  
       const bool & projectBeamVelocity = parameters.dbase.get<bool>("projectBeamVelocity");
       const bool & smoothInterfaceVelocity = parameters.dbase.get<bool>("smoothInterfaceVelocity");
@@ -513,22 +513,22 @@ writeParameterSummary( FILE * file )
 
       fPrintF(file,"\n");
       fPrintF(file," useAddedMassAlgorithm=%i, useApproximateAMPcondition=%i,\n"
-	      " projectAddedMassVelocity=%i, projectNormalComponentOfAddedMassVelocity=%i,\n"
-	      " projectVelocityOnBeamEnds=%i, projectBeamVelocity=%i, \n" 
-	      " smoothInterfaceVelocity=%i, numberOfInterfaceVelocitySmooths=%i, fluidAddedMassLengthScale=%9.3e,\n"
+              " projectAddedMassVelocity=%i, projectNormalComponentOfAddedMassVelocity=%i,\n"
+              " projectVelocityOnBeamEnds=%i, projectBeamVelocity=%i, \n" 
+              " smoothInterfaceVelocity=%i, numberOfInterfaceVelocitySmooths=%i, fluidAddedMassLengthScale=%9.3e,\n"
               " useAddedDampingAlgorithm=%i, addedDampingCoefficient=%8.2e, scaleAddedDampingWithDt=%i, addedDampingProjectVelocity=%i.\n"
               " useImplicitAmpBCs=%i, predicted pressure needed=%i, predicted boundary pressure needed=%i\n", 
-	      (int)useAddedMassAlgorithm,
+              (int)useAddedMassAlgorithm,
               (int)useApproximateAMPcondition,
               (int)projectAddedMassVelocity,
-	      (int)projectNormalComponentOfAddedMassVelocity,(int)projectVelocityOnBeamEnds,(int)projectBeamVelocity,
-	      (int)smoothInterfaceVelocity, numberOfInterfaceVelocitySmooths,
-	      fluidAddedMassLengthScale,
+              (int)projectNormalComponentOfAddedMassVelocity,(int)projectVelocityOnBeamEnds,(int)projectBeamVelocity,
+              (int)smoothInterfaceVelocity, numberOfInterfaceVelocitySmooths,
+              fluidAddedMassLengthScale,
               (int)useAddedDampingAlgorithm,addedDampingCoefficient,
               (int)scaleAddedDampingWithDt,(int)addedDampingProjectVelocity,(int)useImplicitAmpBCs,
-	      (int)parameters.dbase.get<bool>("predictedPressureNeeded"),
-	      (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded")
-	);
+              (int)parameters.dbase.get<bool>("predictedPressureNeeded"),
+              (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded")
+        );
       fPrintF(file," fluidSolidCornerFix=%i.\n",parameters.dbase.get<int>("fluidSolidCornerFix"));
 
       int orderOfTimeExtrapolationForBoundaryPressure = parameters.dbase.get<int>("orderOfTimeExtrapolationForBoundaryPressure");
@@ -545,7 +545,7 @@ writeParameterSummary( FILE * file )
       fPrintF(file," Added-mass algorithm is off: useAddedMassAlgorithm=%i.\n",useAddedMassAlgorithm);
       fPrintF(file," predicted pressure needed=%i, predicted boundary pressure needed=%i\n",
               (int)parameters.dbase.get<bool>("predictedPressureNeeded"),
-	      (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded"));
+              (int)parameters.dbase.get<bool>("predictedBoundaryPressureNeeded"));
     }
     
   }
@@ -556,9 +556,9 @@ writeParameterSummary( FILE * file )
     const bool & useImplicitAmpBCs = parameters.dbase.get<bool>("useImplicitAmpBCs");
     fPrintF(file,"\n");
     fPrintF(file," useAddedMassAlgorithm=%i, projectAddedMassVelocity=%i \n"
-	    " predicted pressure needed=%i, useImplicitAmpBCs=%i\n",
-	    (int)useAddedMassAlgorithm,(int)projectAddedMassVelocity,
-	    (int)parameters.dbase.get<bool>("predictedPressureNeeded"),(int)useImplicitAmpBCs
+            " predicted pressure needed=%i, useImplicitAmpBCs=%i\n",
+            (int)useAddedMassAlgorithm,(int)projectAddedMassVelocity,
+            (int)parameters.dbase.get<bool>("predictedPressureNeeded"),(int)useImplicitAmpBCs
       );
     fPrintF(file,"\n");
   }
@@ -594,7 +594,7 @@ Cgins::initializeFactorization()
        type++)
     {
       for ( int d=0; d<ndim; d++ )
-	factors.push_back(new CGINS_ApproximateFactorization::INS_Factor(d,CGINS_ApproximateFactorization::FactorTypes(type),(InsParameters&)parameters));
+        factors.push_back(new CGINS_ApproximateFactorization::INS_Factor(d,CGINS_ApproximateFactorization::FactorTypes(type),(InsParameters&)parameters));
     }
 #endif
   factors.push_back(new CGINS_ApproximateFactorization::INS_Factor(0,CGINS_ApproximateFactorization::Diagonal_Factor,(InsParameters&)parameters));

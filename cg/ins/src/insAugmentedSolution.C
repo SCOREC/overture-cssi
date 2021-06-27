@@ -105,11 +105,11 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
 
         bool isRectangular=false;
         realSerialArray u0(I1,I2,I3);
-	for( int n=N.getBase(), n2=N2.getBase(); n<=N.getBound(); n++, n2++ )
-	{
-	  parameters.dbase.get<OGFunction* >("exactSolution")->gd( u0,xLocal,mg.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,gf0.t);
-	  vLocal(I1,I2,I3,n2)=vLocal(I1,I2,I3,n)-u0;
-	}
+        for( int n=N.getBase(), n2=N2.getBase(); n<=N.getBound(); n++, n2++ )
+        {
+          parameters.dbase.get<OGFunction* >("exactSolution")->gd( u0,xLocal,mg.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,gf0.t);
+          vLocal(I1,I2,I3,n2)=vLocal(I1,I2,I3,n)-u0;
+        }
       }
 
 //       v[grid](I1,I2,I3,N)=u[grid](I1,I2,I3,N);
@@ -273,39 +273,39 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
     if( cg.numberOfDimensions()==2 )
     {
       // fix for axisymmetric
-	
+        
       if( parameters.isAxisymmetric() )
       {
-	// div(u) = u.x + v.y + v/y for y>0   or u.x + 2 v.y at y=0
+        // div(u) = u.x + v.y + v/y for y>0   or u.x + 2 v.y at y=0
 #ifdef USE_PPP
-	realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u[grid],uLocal);
-	realSerialArray xLocal; getLocalArrayWithGhostBoundaries(mg.vertex(),xLocal);
+        realSerialArray uLocal; getLocalArrayWithGhostBoundaries(u[grid],uLocal);
+        realSerialArray xLocal; getLocalArrayWithGhostBoundaries(mg.vertex(),xLocal);
 #else
-	const realSerialArray & uLocal = u[grid];
-	const realSerialArray & xLocal = mg.vertex();
+        const realSerialArray & uLocal = u[grid];
+        const realSerialArray & xLocal = mg.vertex();
 #endif
 
-	RealArray radiusInverse(I1,I2,I3);
-	radiusInverse = 1./max(REAL_MIN,xLocal(I1,I2,I3,axis2));
-	Index Ib1,Ib2,Ib3;
-	for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
-	{
-	  for( int side=0; side<=1; side++ )
-	  {
-	    if( cg[grid].boundaryCondition(side,axis)==Parameters::axisymmetric )
-	    {
-	      getBoundaryIndex(cg[grid].gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
-	      bool ok = ParallelUtility::getLocalArrayBounds(v[grid],vLocal,Ib1,Ib2,Ib3,1);   
-	      if( !ok ) continue;  // no points on this processor
-		
-	      radiusInverse(Ib1,Ib2,Ib3)=0.;
-	      op.derivative(MappedGridOperators::yDerivative,uLocal,ux,Ib1,Ib2,Ib3,vc);  // v.y
-	      vLocal(Ib1,Ib2,Ib3,dc)+=ux(Ib1,Ib2,Ib3);  // add v.y on the axis instead of v/y
-	    }
-	  }
-	}
-	// add v/y (except on the axis where radiusInverse=0)
-	vLocal(I1,I2,I3,dc)+=uLocal(I1,I2,I3,vc)*radiusInverse;     
+        RealArray radiusInverse(I1,I2,I3);
+        radiusInverse = 1./max(REAL_MIN,xLocal(I1,I2,I3,axis2));
+        Index Ib1,Ib2,Ib3;
+        for( int axis=0; axis<cg.numberOfDimensions(); axis++ )
+        {
+          for( int side=0; side<=1; side++ )
+          {
+            if( cg[grid].boundaryCondition(side,axis)==Parameters::axisymmetric )
+            {
+              getBoundaryIndex(cg[grid].gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+              bool ok = ParallelUtility::getLocalArrayBounds(v[grid],vLocal,Ib1,Ib2,Ib3,1);   
+              if( !ok ) continue;  // no points on this processor
+                
+              radiusInverse(Ib1,Ib2,Ib3)=0.;
+              op.derivative(MappedGridOperators::yDerivative,uLocal,ux,Ib1,Ib2,Ib3,vc);  // v.y
+              vLocal(Ib1,Ib2,Ib3,dc)+=ux(Ib1,Ib2,Ib3);  // add v.y on the axis instead of v/y
+            }
+          }
+        }
+        // add v/y (except on the axis where radiusInverse=0)
+        vLocal(I1,I2,I3,dc)+=uLocal(I1,I2,I3,vc)*radiusInverse;     
       }
     }
     else
@@ -389,12 +389,12 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
       Range N=numberOfComponents;
       for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       {
-	// v[grid](all,all,all,N)=u[grid](all,all,all,N);    // copy existing components
+        // v[grid](all,all,all,N)=u[grid](all,all,all,N);    // copy existing components
         assign(v[grid],all,all,all,N, u[grid],all,all,all,N ); // Assign two arrays without communication
       }
       
       for( int n=0; n<numberOfComponents; n++ )
-	v.setName(u.getName(n),n);
+        v.setName(u.getName(n),n);
     }
 
     Range N(0,numberOfComponents-1);
@@ -414,11 +414,11 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
     //    parameters.dbase.get<Parameters::TimeSteppingMethod>("timeSteppingMethod")==Parameters::implicit )
     if( timeSteppingMethod==Parameters::implicit )
     {
-	
+        
       pResidual = &fn[2]; //  uti;  // save residual here -- check this **************
       if( parameters.isMovingGridProblem() )
       {
-	pResidual->updateToMatchGrid(gf0.cg);
+        pResidual->updateToMatchGrid(gf0.cg);
       }
       
       getResidual( gf0.t,dt,gf0,*pResidual );
@@ -445,12 +445,12 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
 
       #ifdef USE_PPP
         intSerialArray maskLocal; getLocalArrayWithGhostBoundaries(cg[grid].mask(),maskLocal);
-	realSerialArray vLocal; getLocalArrayWithGhostBoundaries(v[grid],vLocal);
-	realSerialArray rLocal; getLocalArrayWithGhostBoundaries(residual[grid],rLocal);
+        realSerialArray vLocal; getLocalArrayWithGhostBoundaries(v[grid],vLocal);
+        realSerialArray rLocal; getLocalArrayWithGhostBoundaries(residual[grid],rLocal);
       #else
         const intSerialArray & maskLocal = cg[grid].mask();
-	const realSerialArray & vLocal = v[grid];
-	const realSerialArray & rLocal = residual[grid];
+        const realSerialArray & vLocal = v[grid];
+        const realSerialArray & rLocal = residual[grid];
       #endif
 
       bool ok = ParallelUtility::getLocalArrayBounds(v[grid],vLocal,I1,I2,I3,1);   
@@ -459,8 +459,8 @@ getAugmentedSolution( GridFunction & gf0, realCompositeGridFunction & v )
       vLocal(I1,I2,I3,N+offset)=rLocal(I1,I2,I3,N);
       where( maskLocal(I1,I2,I3)<=0 )
       {
-	for( int n=N.getBase(); n<=N.getBound(); n++ )
-	  vLocal(I1,I2,I3,n+offset)=0.;   // set residual to zero at unused and interp points
+        for( int n=N.getBase(); n<=N.getBound(); n++ )
+          vLocal(I1,I2,I3,n+offset)=0.;   // set residual to zero at unused and interp points
       }
       
     }

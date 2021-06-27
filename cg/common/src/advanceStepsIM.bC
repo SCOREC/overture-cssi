@@ -82,7 +82,7 @@ static bool useNewExposedPoints=true;
   int n1a,n1b,n2a,n2b,n3a,n3b;
   bool ok = ParallelUtility::getLocalArrayBounds(gf[mCur].u[grid],u0,I1,I2,I3,n1a,n1b,n2a,n2b,n3a,n3b);
   if( !ok ) continue;
-	  
+          
   // const intArray & mask1 = gf[mNew].cg[grid].mask();
 
   int ierr=0;
@@ -90,7 +90,7 @@ static bool useNewExposedPoints=true;
   int ipar[]={0,maskOption,n1a,n1b,n2a,n2b,n3a,n3b,N.getBase(),N.getBound()}; //
   real rpar[5]={0.,0.,0.,0.,0.};
   real *ut1p, *ut2p, *ut3p, *ut4p;
-	  
+          
   if( parameters.getGridIsImplicit(grid) )
     ipar[0]=3;  // add three extra "ut" terms if grid is advanced implicitly
   else    
@@ -103,11 +103,11 @@ static bool useNewExposedPoints=true;
   ut4p=ut3p;
 
   updateOpt(u0.getBase(0),u0.getBound(0),u0.getBase(1),u0.getBound(1),
-	    u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
-	    *mask1.getDataPointer(),  
-	    *u0.getDataPointer(),*u1.getDataPointer(), 
-	    *ut1p, *ut2p, *ut3p, *ut4p, 
-	    ipar[0], rpar[0], ierr );
+            u0.getBase(2),u0.getBound(2),u0.getBase(3),u0.getBound(3),
+            *mask1.getDataPointer(),  
+            *u0.getDataPointer(),*u1.getDataPointer(), 
+            *ut1p, *ut2p, *ut3p, *ut4p, 
+            ipar[0], rpar[0], ierr );
 
 #endMacro
 
@@ -281,9 +281,9 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
   FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
 
   const bool takeTimeStep =(advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-			    advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
+                            advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepButDoNotApplyBoundaryConditions);
   const bool applyBC = ( advanceOptions.takeTimeStepOption==AdvanceOptions::takeStepAndApplyBoundaryConditions ||
-			 advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
+                         advanceOptions.takeTimeStepOption==AdvanceOptions::applyBoundaryConditionsOnly );
 
   if( debug() & 2 )
     printP("\n +++++++++++++++ START takeTimeStepIM t0=%8.2e, dt0=%8.2e, correction=%i takeTimeStep=%i applyBC=%i"
@@ -367,7 +367,7 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     else
     {
       if( debug() & 2 )
-	printP("advanceImplicitMultiStep dtb==dt0 : do not re-initialize\n");
+        printP("advanceImplicitMultiStep dtb==dt0 : do not re-initialize\n");
     }
   }
     
@@ -478,7 +478,7 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
             fn[naba][grid],iparam,rparam,uti[grid],&gf[mNew].cg[grid]);
     }
 
-    addArtificialDissipation(gf[maba].u,dt0);	// add "implicit" dissipation to u 
+    addArtificialDissipation(gf[maba].u,dt0);   // add "implicit" dissipation to u 
 
     if( debug() & 16 || debug() & 64 )
     {
@@ -575,7 +575,7 @@ takeTimeStepIM( real & t0, real & dt0, int correction, AdvanceOptions & advanceO
     //       if( mst>1 || correction>0 )
     //       {
     //  // Optionally refactor the matrix : if parameters.dbase.get<int >("globalStepNumber") % refactorFrequency == 0 
-    // 	formMatrixForImplicitSolve(dt0,gf[mNew], gf[mCur] );
+    //  formMatrixForImplicitSolve(dt0,gf[mNew], gf[mCur] );
     //       }
       
 
@@ -807,7 +807,7 @@ advanceImplicitMultiStepNew( real & t0, real & dt0, int & numberOfSubSteps, int 
   FILE *& debugFile =parameters.dbase.get<FILE* >("debugFile");
   FILE *& pDebugFile =parameters.dbase.get<FILE* >("pDebugFile");
 
-  if( true || debug() & 4 )
+  if( debug() & 4 )
     printF(" ---- DomainSolver::advanceImplicitMultiStepNew t0=%e, dt0=%e ----\n",t0,dt0);
   if( debug() & 2 )
     fprintf(debugFile," *** Entering advanceImplicitMultiStep: t0=%e, dt0=%e *** \n",t0,dt0);

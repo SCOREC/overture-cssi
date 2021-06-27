@@ -2,9 +2,242 @@
                   
 
 %% url = {http://dx.doi.org/10.1002/fld.3937},
+
+@string{AIAAJ = {AIAA J.}}
+@string{SISSC = "SIAM J. Sci. Stat. Comput."}
+@string{SISC = "SIAM J. Sci. Comput."}
+@string{JCP   = "J. Comput. Phys."}
+@string{IJNME = {Int. J. Numer. Meth. Eng.}}
+@string{IJNMF = {Int. J. Numer. Meth. Fl.}}
+@string{CMAME = {Comput. Method. Appl. Mech. Engrg.}}
+
+@string{computers-and-fluids = {Comput. Fl.}}
+@string{computers-and-structures = {Comput. Struct.}}
+@string{applied-mathematics-and-computation = {Appl. Math. Comput.}}
+@string{lasers-and-particle-beams = {Lasers Part. Beams}}
+@string{aiaa-journal-of-aircraft = {AIAA J. Aircraft}}
+
+@article{takashi1992,
+	title = "An arbitrary {Lagrangian-Eulerian} finite element method for interaction of fluid and a rigid body",
+	journal = CMAME,
+	volume = "95",
+	number = "1",
+	pages = "115--138",
+	year = "1992",
+	note = "",
+	issn = "0045-7825",
+	doi = "http://dx.doi.org/10.1016/0045-7825(92)90085-X",
+	author = "Nomura Takashi and Thomas J.R. Hughes",
+	abstract = "A computational procedure is developed to solve the problems of coupled motion of a rigid body and a viscous incompressible fluid; the former is mounted on elastic springs, and the latter is surrounding the rigid body. The arbitrary Lagrangian-Eulerian method is employed to incorporate the interface conditions between the body and the fluid. The streamline upwind/Petrov-Galerkin finite element method is used for the spatial discretization of the fluid domain, and the predictor-corrector method is used for the time integration. The method is applied to evaluate the added mass and the added damping of a circular cylinder as well as to simulate the vibration of a circular cylinder induced by vortex sheddings."
+}
+
+@article{lee2008immersed,
+	title={Immersed finite element method for rigid body motions in the incompressible {Navier}--{Stokes} flow},
+	author={Lee, T.-R. and Chang, Y.-S. and Choi, J.-B. and Kim, D. W. and Liu, W. K. and Kim, Y.-J.},
+	journal=CMAME,
+    volume={197},
+ 	number={25},
+ 	pages={2305--2316},
+ 	year={2008},
+ 	publisher={Elsevier}
+}
+
+@article{kim2006immersed,
+  title={Immersed boundary method for flow around an arbitrarily moving body},
+  author={Kim, D. and Choi, H.},
+  journal=JCP,
+  volume={212},
+  number={2},
+  pages={662--680},
+  year={2006},
+  publisher={Elsevier}
+}
+
+@article{breugem2012second,
+  title={A second-order accurate immersed boundary method for fully resolved simulations of particle-laden flows},
+  author={Breugem, W.-P.},
+  journal=JCP,
+  volume={231},
+  number={13},
+  pages={4469--4498},
+  year={2012},
+  publisher={Elsevier}
+}
+
+@article{lacis2016stable,
+  title={A stable fluid--structure-interaction solver for low-density rigid bodies using the immersed boundary projection method},
+  author={L{\=a}cis, U.s and Taira, K. and Bagheri, S.},
+  journal=JCP,
+  volume={305},
+  pages={300--318},
+  year={2016},
+  publisher={Elsevier}
+}
+
+@article{bhalla2013unified,
+  title={A unified mathematical framework and an adaptive numerical method for fluid--structure interaction with rigid, deforming, and elastic bodies},
+  author={Bhalla, A. P. S. and Bale, R. and Griffith, B. E. and Patankar, N. A.},
+  journal=JCP,
+  volume={250},
+  pages={446--476},
+  year={2013},
+  publisher={Elsevier}
+}
+
+@article{borazjani2008curvilinear,
+  title={Curvilinear immersed boundary method for simulating fluid structure interaction with complex {3D} rigid bodies},
+  author={Borazjani, I. and Ge, L. and Sotiropoulos, F.},
+  journal=JCP,
+  volume={227},
+  number={16},
+  pages={7587--7620},
+  year={2008},
+  publisher={Elsevier}
+}
+
+@article{wang2015strongly,
+  title={Strongly coupled dynamics of fluids and rigid-body systems with the immersed boundary projection method},
+  author={Wang, C. and Eldredge, J. D.},
+  journal=JCP,
+  volume={295},
+  pages={87--113},
+  year={2015},
+  publisher={Elsevier}
+}
+
+
+
+
+@article{glowinski2000distributed,
+	Author = {Glowinski, R. and Pan, T.-W. and Hesla, T. I. and Joseph, D. D. and P\'eriaux, J.},
+	Journal = CMAME,
+	Number = {2},
+	Pages = {241--267},
+	Publisher = {Elsevier},
+	Title = {A distributed {Lagrange} multiplier/fictitious domain method for the simulation of flow around moving rigid bodies: application to particulate flow},
+	Volume = {184},
+	Year = {2000}}
+
+@article{glowinski1999distributed,
+	Author = {Glowinski, R. and Pan, T.-W. and Hesla, T. I. and Joseph, D. D.},
+	Journal = {Int. J. Multiphase Flow},
+	Number = {5},
+	Pages = {755--794},
+	Publisher = {Elsevier},
+	Title = {A distributed {Lagrange} multiplier/fictitious domain method for particulate flows},
+	Volume = {25},
+	Year = {1999}}
+
+@article{vierendeels2005analysis,
+  title={Analysis and stabilization of fluid-structure interaction algorithm for rigid-body motion},
+  author={Vierendeels, J. and Dumont, K. and Dick, E. and Verdonck, P.},
+  journal=AIAAJ,
+  volume={43},
+  number={12},
+  pages={2549--2557},
+  year={2005}}	
+
+@article{costarelli2016embedded,
+  title={An embedded strategy for the analysis of fluid structure interaction problems},
+  author={Costarelli, S. D. and Garelli, L. and Cruchaga, M. A. and Storti, M. A. and Ausensi, R. and Idelsohn, S. R.},
+  journal=CMAME,
+  volume={300},
+  pages={106--128},
+  year={2016},
+  publisher={Elsevier}
+}
+
+@article{gibou2012efficient,
+  title={Efficient symmetric positive definite second-order accurate monolithic solver for fluid/solid interactions},
+  author={Gibou, F. and Min, C.},
+  journal=JCP,
+  volume={231},
+  number={8},
+  pages={3246--3263},
+  year={2012},
+  publisher={Elsevier}
+}
+
+@article{coquerelle2008vortex,
+  title={A vortex level set method for the two-way coupling of an incompressible fluid with colliding rigid bodies},
+  author={Coquerelle, M. and Cottet, G.-H.},
+  journal=JCP,
+  volume={227},
+  number={21},
+  pages={9121--9137},
+  year={2008},
+  publisher={Elsevier}
+}
+
+@article{kajishima2002interaction,
+  title={Interaction between particle clusters and particle-induced turbulence},
+  author={Kajishima, T. and Takiguchi, S.},
+  journal={Int. J. Heat Fluid Flow},
+  volume={23},
+  number={5},
+  pages={639--646},
+  year={2002},
+  publisher={Elsevier}
+}
+
+@article{uhlmann2005immersed,
+  title={An immersed boundary method with direct forcing for the simulation of particulate flows},
+  author={Uhlmann, M.},
+  journal=JCP,
+  volume={209},
+  number={2},
+  pages={448--476},
+  year={2005},
+  publisher={Elsevier}
+}
+
+@article{kempe2012improved,
+  title={An improved immersed boundary method with direct forcing for the simulation of particle laden flows},
+  author={Kempe, T. and Fr{\"o}hlich, J.},
+  journal=JCP,
+  volume={231},
+  number={9},
+  pages={3663--3684},
+  year={2012},
+  publisher={Elsevier}
+}
+
+@article{yang2015non,
+  title={A non-iterative direct forcing immersed boundary method for strongly-coupled fluid--solid interactions},
+  author={Yang, J. and Stern, F.},
+  journal=JCP,
+  volume={295},
+  pages={779--804},
+  year={2015},
+  publisher={Elsevier}
+}
+
+@article{yang2012simple,
+  title={A simple and efficient direct forcing immersed boundary framework for fluid--structure interactions},
+  author={Yang, J. and Stern, F.},
+  journal=JCP,
+  volume={231},
+  number={15},
+  pages={5029--5061},
+  year={2012},
+  publisher={Elsevier}
+}
+
+@article{kim2016penalty,
+  title={A penalty immersed boundary method for a rigid body in fluid},
+  author={Kim, Y. and Peskin, C. S.},
+  journal={Phys. Fluids},
+  volume={28},
+  number={3},
+  pages={033603},
+  year={2016},
+  publisher={AIP Publishing}
+}
+
+
 @article {LakshminarayanFarhatMain2014,
 author = {Lakshminarayan, V. and Farhat, C. and Main, A.},
-title = {An embedded boundary framework for compressible turbulent flow and fluid–structure computations on structured and unstructured grids},
+title = {An embedded boundary framework for compressible turbulent flow and fluid--structure computations on structured and unstructured grids},
 journal = IJNMF,
 volume = {76},
 number = {6},
@@ -272,6 +505,17 @@ journal = IJNME,
 volume = "60",
 pages = "213--232",
 year = "2004"
+}
+
+@Article{KuttlerWall2008,
+author="K{\"u}ttler, Ulrich
+and Wall, Wolfgang A.",
+title="Fixed-point fluid--structure interaction solvers with dynamic relaxation",
+journal="Computational Mechanics",
+year="2008",
+volume="43",
+number="1",
+pages="61--72"
 }
 
 @article{GeeKuttlerWall2011,

@@ -81,6 +81,9 @@ multiStageAdvance( real &t, real & tFinal )
     const bool solveCoupledInterfaceEquations = parameters.dbase.get<bool>("solveCoupledInterfaceEquations");
     const int & interfaceProjectionGhostOption = parameters.dbase.get<int>("interfaceProjectionGhostOption");
     const bool relaxCorrectionSteps = parameters.dbase.get<bool>("relaxCorrectionSteps");
+
+    const bool & hasHeatFluxInterfaces = parameters.dbase.get<bool>("hasHeatFluxInterfaces");
+    const bool & hasTractionInterfaces = parameters.dbase.get<bool>("hasTractionInterfaces");
     
     bool & timeStepHasChanged = parameters.dbase.get<bool>("timeStepHasChanged");
 
@@ -106,14 +109,14 @@ multiStageAdvance( real &t, real & tFinal )
         {
             if( domainSolver[d]->parameters.isAdaptiveGridProblem() )
             {
-      	parameters.dbase.get<bool>("adaptiveGridProblem")=true;
-      	break;
+                parameters.dbase.get<bool>("adaptiveGridProblem")=true;
+                break;
             }
         }
         if( parameters.isAdaptiveGridProblem() )
         {
             if( true || debug() & 2 )
-      	printF("--MS-- AMR is being used in at least one domain\n");
+                printF("--MS-- AMR is being used in at least one domain\n");
         }
     }
     
@@ -129,7 +132,7 @@ multiStageAdvance( real &t, real & tFinal )
       // For AMR we need to re-define the interface since the AMR grids for the initial conditions were created
       // after the interfaces were initially constructed
             if( parameters.isAdaptiveGridProblem() )
-      	initializeInterfaces(gfIndex); // this will re-define the interfaces
+                initializeInterfaces(gfIndex); // this will re-define the interfaces
 
             initializeInterfaceBoundaryConditions( t,dt,gfIndex );
         }
@@ -227,12 +230,12 @@ multiStageAdvance( real &t, real & tFinal )
 
         if( debug() & 2 )
             printF(" @@@@ MULTI-STAGE: maximum numberOfCorrectorSteps=%i (required=%i)\n",
-           	     numberOfCorrectorSteps,numberOfRequiredCorrectorSteps);
+                          numberOfCorrectorSteps,numberOfRequiredCorrectorSteps);
         if( debug() & 2 )
         {
             fPrintF(interfaceFile,
                             "\n --- Start of step: t=%9.3e globalStep=%i numberOfCorrectorSteps=%i required=%i coupled=%i ---\n",
-            	      t,globalStepNumber,numberOfCorrectorSteps,numberOfRequiredCorrectorSteps,
+                            t,globalStepNumber,numberOfCorrectorSteps,numberOfRequiredCorrectorSteps,
                             int(solveCoupledInterfaceEquations));
         }
 
@@ -251,11 +254,11 @@ multiStageAdvance( real &t, real & tFinal )
             getInterfaceResiduals( t, dt, gfIndex, maxResidual, saveInterfaceTimeHistoryValues );
             if( debug() & 2 )
             {
-      	for( int inter=0; inter<maxResidual.size(); inter++ )
-      	{
-        	  printF("--MP-- Before time step %i (t=%9.3e) : interface %i : max-interface-residual=%8.2e\n",
-             		 globalStepNumber,t,inter,maxResidual[inter]);
-      	}
+                for( int inter=0; inter<maxResidual.size(); inter++ )
+                {
+                    printF("--MP-- Before time step %i (t=%9.3e) : interface %i : max-interface-residual=%8.2e\n",
+                                  globalStepNumber,t,inter,maxResidual[inter]);
+                }
             }
         }
 
@@ -302,158 +305,55 @@ multiStageAdvance( real &t, real & tFinal )
 
                     if( relaxCorrectionSteps )
                     {
+            // Check convergence of FSI sub-iterations
                         correctionIterationsHaveConverged =  ( correctionIterationsHaveConverged &&  
                                                                                                       advanceOptions[d].correctionIterationsHaveConverged );
 
                         printF(" +++MSA: relaxCorrectionSteps: correction=%i stage=%i domain=%i correctionsHaveConverged=%i\n",
                                       correct,stage,d,(int)advanceOptions[d].correctionIterationsHaveConverged);
                     }
-                    
 
-                }
+
+
+                } // end for dd 
                 
+
+
                 assert( !gridHasChanged );  // finish me for AMR -- see multiDomainAdvanceNew
                   
-            } //  end for stage 
+            } //  end for stage
 
+            bool heatFluxInterfacesHaveConverged=true;
+            if( hasHeatFluxInterfaces )
+            {
+        // -- check for convergence of heat flux interfaces --
+        // *wdh* April 13, 2021 *check me*
+                heatFluxInterfacesHaveConverged = 
+                      checkInterfaceForConvergence( correct,
+                                                                                  numberOfCorrectorSteps,
+                                                                                  numberOfRequiredCorrectorSteps,
+                                                                                  t+dt,
+                                                                                  alwaysSetBoundaryData,
+                                                                                  gfIndex,
+                                                                                  oldResidual,initialResidual,firstResidual,
+                                                                                  maxResidual,
+                                                                                  interfaceIterationsHaveConverged );
 
-    //   // Stage I: advance the solution but do not apply (interface) BC's
-    //   bool gridHasChanged=false;
-    //   ForDomainOrdered(d)
-    //   {
-    //     if( debug() & 2 )
-    //       printF("\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-    //              "++++++ MDA: ASSIGN INTERFACE RHS for domain %s (d=%i,dd=%i) correct=%i t+dt=%8.2e ++++++\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n",
-    //             (const char*)domainSolver[d]->getName(),d,dd,correct,t+dt);
-    //     // For FSI we need a guess for the new solid location *wdh* 101108 
-    //     // -- could do better here: these values are not always needed  ---
-    //     if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
-    //     {
-    //       assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex );
-    //     }
-
-    //     if( debug() & 2 )
-    //       printF("\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-    //              "++++++ MDA: takeTimeStep (no BCs) for domain %s (d=%i,dd=%i) correct=%i t+dt=%8.2e ++++++\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n",
-    //             (const char*)domainSolver[d]->getName(),d,dd,correct,t+dt);
-
-    //     advanceOptions[d].takeTimeStepOption=AdvanceOptions::takeStepButDoNotApplyBoundaryConditions;
-
-    //     domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );
-
-    //     gfIndex[d]=gfIndexNext[d]; // Domain d now has a solution at the next time level we can use
-
-    //     gridHasChanged = gridHasChanged || advanceOptions[d].gridChanges != AdvanceOptions::noChangeToGrid;
-    //   }
-            
-    //   // Update the interfaces if the grids have changed in stage I.
-    //   if( gridHasChanged )
-    //   { 
-    //     // we need to redefine the interfaces if the grid has changed
-    //     printF("\n *-*-* Cgmp::multiDomainAdvanceNew: The grid has CHANGED : re-init the interfaces *-*-*\n\n");
-    //     if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
-    //     {
-    //       initializeInterfaces(gfIndex); // this will re-define the interfaces
-    //       initializeInterfaceBoundaryConditions( t,dt,gfIndex );  // assign boundary conditions at the interface
-    //     }      
-    //   }
-
-    //   // Stage II: optionally project the interface values: option=0 : 0=set values on the interface
-    //   bool turnOnProjection=true;
-    //   if( turnOnProjection )
-    //   {
-    //     interfaceProjection( t+dt, dt, correct, gfIndex, 0 );
-    //     // interfaceProjection( t+dt, dt, correct, gfIndex, 1 );
-    //   }
-            
-
-    //   // Stage III: evaluate the interface conditions and apply the boundary conditions
-    //   ForDomainOrdered(d)
-    //   {
-    //     if( debug() & 2 )
-    //       printF("\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-    //              "++++++ MDA: ASSIGN INTERFACE RHS for domain %s (d=%i,dd=%i) correct=%i t+dt=%8.2e ++++++\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n",
-    //             (const char*)domainSolver[d]->getName(),d,dd,correct,t+dt);
-
-    //     // Assign the RHS for the interface equations on domain d 
-    //     // We could extrapolate the values of the RHS from previous times as an inital guess (correct=0)
-    //     // or use the current guess (correct >0)
-    //     if( alwaysSetBoundaryData || !solveCoupledInterfaceEquations )
-    //     {
-    //       assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex );
-    //     }
-
-    //     if( debug() & 2 )
-    //       printF("\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-    //              "++++++ MDA: APPLY BCS only for domain %s (d=%i,dd=%i) correct=%i t+dt=%8.2e ++++++\n"
-    //              "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n",
-    //             (const char*)domainSolver[d]->getName(),d,dd,correct,t+dt);
-      	
-    //     advanceOptions[d].takeTimeStepOption=AdvanceOptions::applyBoundaryConditionsOnly;
-
-    //     // domainSolver[d]->parameters.dbase.get<int>("applyInterfaceBoundaryConditions")=0;  // *** TESTING
-
-    //     domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );
-
-    //     // domainSolver[d]->parameters.dbase.get<int>("applyInterfaceBoundaryConditions")=1;  // *** TESTING
-
-    //     if( debug() & 4 )
-    //     {
-    //       // Now check how well the interface equations are satisfied
-    //       fPrintF(interfaceFile,"\n --- After takeTimeStep for domain d=%i (correction=%i t=%9.3e)\n",d,correct,t+dt);
-    //       getInterfaceResiduals( t+dt, dt, gfIndex, maxResidual );
-    //     }
-      	
-    //   } // for domain 
-            
-
-    //   if( turnOnProjection && interfaceProjectionGhostOption!=3 ) 
-    //   {
-    //     // Stage IV: assign ghost values at interfaces 
-    //     // printF(">>>multiDomainAdvanceNew: assign ghost values at interfaces\n");
-
-    //     interfaceProjection( t+dt, dt, correct, gfIndex, 1 );
-
-    //   }
-    //   else if( interfaceProjectionGhostOption==3 )
-    //   {
-    //     if( debug() & 4 )
-    //       printF(">>>multiDomainAdvanceNew: Do not assign ghost with interfaceProjection. "
-    //     	 "Use domain solver BC routines\n");
-    //   }
-            
-    // if( debug() & 2 )
-    //   printF("\n"
-    //          "++++++++++++++++++++ STEP=%i t+dt=%8.2e CHECK FOR CONVERGENCE, CORRECTION %i ++++++++++++++++++++++++++++++\n\n",
-    //          globalStepNumber,t+dt,correct);
-            
-
-    //   // -- check for convergence --
-    //   bool hasConverged = checkInterfaceForConvergence( correct,
-    //     						numberOfCorrectorSteps,
-    //     						numberOfRequiredCorrectorSteps,
-    //     						t+dt,
-    //     						alwaysSetBoundaryData,
-    //     						gfIndex,
-    //     						oldResidual,initialResidual,firstResidual,
-    //     						maxResidual,
-    //     						interfaceIterationsHaveConverged );
-    //   if( hasConverged ) break;
+                printF(" +++Cgmp::MSA: hasHeatFluxInterfaces: correction=%i heatFluxInterfacesHaveConverged=%i\n",correct,(int)heatFluxInterfacesHaveConverged);
+            }
 
             
-        if( debug() & 2 )
-            printF("\n"
-                          "+++++++++++++++++++++ STEP=%i t+dt=%8.2e END CORRECTION STAGE %i +++++++++++++++++++++++++++++++++++++\n\n",
-                          globalStepNumber,t+dt,correct);
+            if( debug() & 2 )
+                printF("\n"
+                              "+++++++++++++++++++++ STEP=%i t+dt=%8.2e END CORRECTION STAGE %i +++++++++++++++++++++++++++++++++++++\n\n",
+                              globalStepNumber,t+dt,correct);
         
-            if( relaxCorrectionSteps && correctionIterationsHaveConverged && correct>=minimumNumberOfCorrections )
+            bool hasConverged = heatFluxInterfacesHaveConverged;
+            if( hasTractionInterfaces && relaxCorrectionSteps && !correctionIterationsHaveConverged )
+                hasConverged = false;  // FSI interfaces have not converged
+
+      // if( relaxCorrectionSteps && correctionIterationsHaveConverged  && correct>=minimumNumberOfCorrections ) // changed April 13. 2021
+            if( hasConverged && correct>=minimumNumberOfCorrections )
             {
                 printF(" +++++MSA: relaxCorrectionSteps: all domains have converged at correction step=%i.\n",correct);
                 break;
@@ -467,7 +367,7 @@ multiStageAdvance( real &t, real & tFinal )
             domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] );
         }
         
-        t+=dt; 	
+        t+=dt;      
         numberOfStepsTaken++; 
         current=next;
 

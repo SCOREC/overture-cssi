@@ -1,0 +1,37 @@
+\section{Examples and code verification} \label{sec:examples}
+
+Here are some sample simulations. Some of these examples verify the
+accuracy of the approximations.
+
+\bni
+Notation:
+\begin{description}[noitemsep]
+   \item[\qquad FDm] - order m finite difference approximation in space.
+   \item[\qquad PCm] - Adams predictor-corrector time-stepping, order m
+   \item[\qquad BDFm] - BDF time-stepping, order m
+   \item[\qquad CN] - Crank-Nicolson (trapezoidal rule) time-stepping, order 2
+\end{description}
+
+\mni\textbf{Note:} 
+For grid convergence studies with implicit time-stepping where there is no time-step
+restriction for stability, the time-step is chosen to scale
+like the grid spacing. In particular, the time-step on the coarsest grid is taken as the input
+parameter {\rm dtMax}. Thus the time-step for grid resolution $m=1,2,3,\ldots$, 
+is taken as $\dt_m = {\rm dtMax}/2^{m-1}$, assuming 
+the grid spacing
+decreases by a factor or 2 at each new resolution.
+
+% ------------------------------------------------------------------------------------
+\clearpage
+\input tex/squareEigenfunctions
+
+% ------------------------------------------------------------------------------------
+\clearpage
+\input tex/diskEigenfunctions
+
+% ------------------------------------------------------------------------------------
+\clearpage
+\input tex/annulusEigenfunctions
+
+
+

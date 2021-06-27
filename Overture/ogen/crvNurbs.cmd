@@ -5,11 +5,11 @@
 *  -dw : discretization width : for 2 layers of interpolation points set the dw to 5 
 *  -iw : interpolation width 
 * examples:
-*     ogen noplot crv -factor=1 
-*     ogen noplot crv -factor=2 
-*     ogen noplot crv -factor=2 -dw=5 -iw=5 -interp=e -name="crve2.order4.hdf"
-*     ogen noplot crv -factor=3 -dw=5 -iw=5 -interp=e -name="crve3.order4.hdf"
-*     ogen noplot crv -factor=4 -dw=5 -iw=5 -interp=e -name="crve4.order4.hdf"
+*     ogen -noplot crvNurbs -factor=1 
+*     ogen -noplot crvNurbs -factor=2 
+*     ogen -noplot crvNurbs -factor=2 -dw=5 -iw=5 -interp=e -name="crve2.order4.hdf"
+*     ogen -noplot crvNurbs -factor=3 -dw=5 -iw=5 -interp=e -name="crve3.order4.hdf"
+*     ogen -noplot crvNurbs -factor=4 -dw=5 -iw=5 -interp=e -name="crve4.order4.hdf"
 *
 * srun -N1 -n2 -ppdebug $ogenp noplot crv
 * 

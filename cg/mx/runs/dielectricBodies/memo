@@ -1,3 +1,49 @@
+
+*****************************************
+******* Sat May 1, 2021
+
+CHECK THAT numLayers is passed properly -- OK
+
+ONE DISK TWO LAYERS
+ogen -noplot layeredDiskArrayGrid -prefix=oneDiskTwoLayersGrid -numLayers=2 -layerWidth=.1 .1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+ogen -noplot layeredDiskArrayGrid -prefix=oneDiskTwoLayersGrid -numLayers=2 -layerWidth=.1 .1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=8
+
+MLA disk with GDM layer and ISO layer:
+cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe2.order2 -dm=gdm -nm=mla -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=4 -tp=.1 -useSosupDissipation=1 -ic=gp -k0=4 -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -go=og 
+
+
+*****************************************
+******* Sat April 3, 2021
+
+REVISIT PARALLEL MULA FOR QING
+
+mpirun -np 2 $cgmx -noplot mxScript -g=twoDiskGridnpe2.order2.hdf -dm=none -numBodies=2 -matFileArray=baIsoEps1.txt baIsoEps2.txt baIsoEps4.txt -tf=10 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-.75 -rbc=rbcNonLocal -background=backGround -xLeftProbe=-.7 -xRightProbe=.7 -probeFrequency=1 -probeFileName=twoDiskPolar1Dir1 -extraCommandsEnd=plotEy.h -go=og
+
+mxScript is broken: (*FIXED* extraCommandsStart )
+$cgmx -noplot mxScript -g=twoDiskGridnpe2.order2.hdf -dm=none -numBodies=2 -matFileArray=baIsoEps1.txt baIsoEps2.txt baIsoEps4.txt -tf=10 -tp=.5 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-.75 -rbc=rbcNonLocal -background=backGround -xLeftProbe=-.7 -xRightProbe=.7 -probeFrequency=1 -probeFileName=twoDiskPolar1Dir1 -extraCommandsEnd=plotEy.h -go=og
+
+OK
+mpirun -np 2 $cgmx -noplot dielectricBodies -g=shortSolidDiskGridYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-0.25 -xRightProbe=0.25 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+
+*****************************************
+******* Fri April 2, 2021
+
+REVISIT PARALLEL MULA FOR QING
+
+LOOKS OK: 
+mpirun -np 2 $cgmx -noplot dielectricBodies -g=shortSolidDiskGridYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-0.25 -xRightProbe=0.25 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+mpirun -np 2 $cgmx -noplot dielectricBodies -g=shortSolidDiskGridYpe4.order2.hdf -backGround=outerSquare -rbc=rbcNonLocal -background=OuterSquare -ic=gpw -x0=-2 -kx=1 -eps1=2 -eps2=1. -useSosupDissipation=1 -tf=30 -tp=.1 -xLeftProbe=-0.25 -xRightProbe=0.25 -probeFrequency=1 -probeFileName=baIsoEps1.txt -matFile=mlaMat4levels.txt -go=og -dm=gdm -nm=mla
+
+
+ogen -noplot diskArrayGrid -prefix=fourDiskMLAGrid -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -rad=.5 -nCylx=2 -nCyly=2 -deltaX=1.25 -deltaY=1.25 -order=4 -numGhost=3 -periodic=np -factor=2
+
+MXSCRIPT IS BROKEN ???
+mpirun -np 4 $cgmx -noplot mxScript -g=fourDiskMLAGridnpe2.order4.ng3.hdf -dm=gdm -nm=mla -numBodies=4 -materialFile=disk4MlaMaterials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=backGround -debug=0 -go=og
+
+
+
 *****************************************
 ******* Sun/Mon March 28/29, 2021
 
@@ -5,9 +51,10 @@ ADD A LAYER TO THE DISK AS A MLA-GDM example
 
 ONE DISK TWO LAYERS
 ogen -noplot layeredDiskArrayGrid -prefix=oneDiskTwoLayersGrid -numLayers=2 -layerWidth=.1 .1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=2
+ogen -noplot layeredDiskArrayGrid -prefix=oneDiskTwoLayersGrid -numLayers=2 -layerWidth=.1 .1 -xa=-1.75 -xb=1.75 -ya=-1.5 -yb=1.5 -nCylx=1 -nCyly=1 -deltaX=1.5 -deltaY=1.5 -order=2 -periodic=np -factor=8
 
-MLA:
-cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe2.order2 -dm=gdm -nm=mla -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -go=og
+MLA disk with GDM layer and ISO layer:
+cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe8.order2 -dm=gdm -nm=mla -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=4 -tp=.2 -useSosupDissipation=1 -ic=gp -k0=4 -kx=1 -ay=1 -az=0 -x0=-2 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -show=oneDiskTwoLayersMlaGdm.show -go=go > oneDiskTwoLayersMlaGdm.out
 
 cgmx -noplot mxScript -g=oneDiskTwoLayersGridnpe2.order2 -dm=none -nm=none -numBodies=3 -numLayers=2 -materialFile=layeredDisk4Materials.h -tf=3 -tp=.2 -useSosupDissipation=1 -ic=gp -kx=1 -ay=1 -az=0 -x0=-1.5 -rbc=rbcNonLocal -background=backGround -extraCommandsStart=defExtraVars.h -extraCommandsEnd=plotEy.h -debug=0 -go=og
 

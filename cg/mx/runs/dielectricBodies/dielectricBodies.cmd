@@ -45,7 +45,8 @@ $tFinal=5; $tPlot=.1; $diss=1.; $filter=0; $dissOrder=-1; $cfl=.9; $varDiss=0; $
 $kx=1; $ky=0; $kz=0; $plotIntensity=0; $intensityOption=1; $checkErrors=0; $method="NFDTD"; $dm="none"; $ic="pw"; 
 $plotPolarizationComponents=1;
 $ax=0.; $ay=0.; $az=0.; # plane wave coeffs. all zero -> use default
-$numBlocks=0; # 0 = default case of scattering from a "innerDomain" 
+$numBlocks=0; # 0 = default case of scattering from a "innerDomain"
+$innerDomain="innerDomain"; 
 $x0=.5; $y0=0; $z0=0; $beta=50; # for Gaussian plane wave IC
 $eps0=1.; $mu0=1.; # outer domain 
 $eps1=1.; $mu1=1.; # block 1 
@@ -92,7 +93,7 @@ GetOptions( "g=s"=>\$grid,"tf=f"=>\$tFinal,"diss=f"=>\$diss,"tp=f"=>\$tPlot,"sho
   "useSosupDissipation=i"=>\$useSosupDissipation,"sosupParameter=f"=>\$sosupParameter,\
   "sosupDissipationOption=i"=>\$sosupDissipationOption,"sosupDissipationFrequency=i"=>\$sosupDissipationFrequency,\
   "selectiveDissipation=i"=>\$selectiveDissipation,"x0=f"=>\$x0,"y0=f"=>\$y0,"z0=f"=>\$z0,"beta=f"=>\$beta,\
-  "dmFile=s"=>\$dmFile,"matFile=s"=>\$matFile,"probeFrequency=i"=>\$probeFrequency,"nm=s"=>\$nm );
+  "dmFile=s"=>\$dmFile,"matFile=s"=>\$matFile,"probeFrequency=i"=>\$probeFrequency,"nm=s"=>\$nm,"innerDomain=s"=>\$innerDomain  );
 # -------------------------------------------------------------------------------------------------
 if( $dm eq "none" ){ $dm="no dispersion"; }
 if( $dm eq"drude" || $dm eq "Drude" ){ $dm="Drude"; }

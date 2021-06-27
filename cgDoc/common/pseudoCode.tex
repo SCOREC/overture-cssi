@@ -48,6 +48,14 @@
 \usepackage{amssymb}
 
 \input ../common/wdhDefinitions.tex
+\newcommand{\bni}{\bigskip\noindent}
+\newcommand{\mni}{\medskip\noindent}
+\newcommand{\sni}{\smallskip\noindent}
+\newcommand{\Dc}{{\mathcal D}}
+\newcommand{\Kc}{{\mathcal K}}
+% \input ../common/defs.tex
+
+\usepackage{enumitem}% to reduce separation in itemize
 
 \newcommand{\tableFont}{\footnotesize}% font size for tables
 
@@ -68,11 +76,15 @@
 \title{Pseudo-code for CG routines and algorithms}
 
 \author{
-Bill Henshaw \\
-\  \\
-Centre for Applied Scientific Computing, \\
-Lawrence Livermore National Laboratory, \\
-henshaw@llnl.gov }
+William D. Henshaw,\\
+ ~\\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
+% Centre for Applied Scientific Computing, \\
+% Lawrence Livermore National Laboratory, \\
+% henshaw@llnl.gov 
+}
  
 \maketitle
 
@@ -92,6 +104,8 @@ henshaw@llnl.gov }
 \newcommand{\IF}{{\blue if}}
 \newcommand{\ELSEIF}{{\blue else if}}
 \newcommand{\FOR}{{\blue for}}
+\newcommand{\END}{{\blue end}}
+\newcommand{\ForDomain}{{\blue ForDomain}}
 \newcommand{\COM}[1]{{\red\em #1}}
 
 % ------------------------------------------------------------------------
@@ -260,199 +274,201 @@ DeformingBodyMotion::\FUNC{correct}( t1, t2, GridFunction \& cgf1,GridFunction \
 
 \section{Cgmp}
 
-% ---------------------------------------------------------------------------------------------------
-\subsection{Cgmp::solve}
-Pseudo-code for {\tt Cgmp::solve} (cg/mp/src/solve.C)
+\input cgmpPseudoCode
 
-\begin{flushleft}\tt\small
-Cgmp::\FUNC{solve}() \\
-\{  \\
-\ia  cycleZero(); \\
-\ia  buildRunTimeDialog(); \\
-\ia  \FOR( int step=0; step$<$maximumNumberOfSteps \&\& !finish;  ) \\
-\ib    \IF( t$\ge$ nextTimeToPrint ) \\
-\ic      printTimeStepInfo(step,t,cpuTime); \\
-\ic      saveShow( gf[current] );  \\
-\ic      finish=plot(t, optionIn, tFinal);   \\
-\ic      \IF( finish ) break; \\
-\ib    dtNew = getTimeStep( gf[current] ); \COM{choose time step}  \\
-\ib    computeNumberOfStepsAndAdjustTheTimeStep(t,tFinal,nextTimeToPrint,numberOfSubSteps,dtNew); \\
-\ib \\
-\ib    advance(tFinal); \COM{advance to t=nextTimeToPrint}  \\
-\ib  \\
-\}
-\end{flushleft}
+% % ---------------------------------------------------------------------------------------------------
+% \subsection{Cgmp::solve}
+% Pseudo-code for {\tt Cgmp::solve} (cg/mp/src/solve.C)
 
-
-\clearpage
-% ---------------------------------------------------------------------------------------------------
-\subsection{Cgmp::multiDomainAdvance}\label{sec:Cgmp::multiDomainAdvance}
-
-Pseudo-code for {\tt Cgmp::multiDomainAdvance} (cg/mp/src/multiDomainAdvance.C)
+% \begin{flushleft}\tt\small
+% Cgmp::\FUNC{solve}() \\
+% \{  \\
+% \ia  cycleZero(); \\
+% \ia  buildRunTimeDialog(); \\
+% \ia  \FOR( int step=0; step$<$maximumNumberOfSteps \&\& !finish;  ) \\
+% \ib    \IF( t$\ge$ nextTimeToPrint ) \\
+% \ic      printTimeStepInfo(step,t,cpuTime); \\
+% \ic      saveShow( gf[current] );  \\
+% \ic      finish=plot(t, optionIn, tFinal);   \\
+% \ic      \IF( finish ) break; \\
+% \ib    dtNew = getTimeStep( gf[current] ); \COM{choose time step}  \\
+% \ib    computeNumberOfStepsAndAdjustTheTimeStep(t,tFinal,nextTimeToPrint,numberOfSubSteps,dtNew); \\
+% \ib \\
+% \ib    advance(tFinal); \COM{advance to t=nextTimeToPrint}  \\
+% \ib  \\
+% \}
+% \end{flushleft}
 
 
-\begin{flushleft}\tt\small
-Cgmp::\FUNC{multiDomainAdvance}( real \&t, real \& tFinal ) \\
-\{  \\
-\ia  \IF( initialize ) \\
-\ib    initializeInterfaceBoundaryConditions( t,dt,gfIndex );\\
-\ib    ForDomain( d ) assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );\\
-\ib    ForDomain( d ) domainSolver[d]->initializeTimeStepping( t,dt );\\
-\ia  \COM{Take some time steps:}\\
-\ia  \FOR( int i=0; i<numberOfSubSteps; i++ )\\
-\ib    ForDomain( d )\\
-\ic      domainSolver[d]->startTimeStep( t,dt,... );\\
-\ic      numberOfRequiredCorrectorSteps=...; gridHasChanged=...; \\ 
-\ib    \IF( gridHasChanged ) \\
-\ic     initializeInterfaces(gfIndex); initializeInterfaceBoundaryConditions(...); \\
-\ib \\
-\ib    \FOR( int correct=0; correct<=numberOfCorrectorSteps; correct++ ) \\
-\ic       ForDomain( d )\\
-\id        assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \COM{(Sec.~\ref{sec:Cgmp::assignInterfaceRightHandSide})} \\
-\id        domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );  \\
-\ic      \IF( hasConverged = checkInterfaceForConvergence( .. ) ) break; \\
-\ib \\
-\ib    ForDomain( d ) domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] ); \\
-\ib    t+=dt;  \\
-\}
-\end{flushleft}
+% \clearpage
+% % ---------------------------------------------------------------------------------------------------
+% \subsection{Cgmp::multiDomainAdvance}\label{sec:Cgmp::multiDomainAdvance}
 
-\clearpage
-% ---------------------------------------------------------------------------------------------------
-\subsection{Cgmp::multiDomainAdvanceNew}\label{sec:Cgmp::multiDomainAdvanceNew}
-
-Pseudo-code for {\tt Cgmp::multiDomainAdvanceNew} (cg/mp/src/multiDomainAdvanceNew.bC). This is 
-the new versio of the multi-domain advance routine that supports more general time stepping and
-the use of AMR.
+% Pseudo-code for {\tt Cgmp::multiDomainAdvance} (cg/mp/src/multiDomainAdvance.C)
 
 
-\begin{flushleft}\tt\small
-Cgmp::\FUNC{multiDomainAdvanceNew}( real \&t, real \& tFinal ) \\
-\{  \\
-\ia  \IF( initialize ) \\
-\ib    initializeInterfaceBoundaryConditions( t,dt,gfIndex );\\
-\ib    ForDomain( d ) assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );\\
-\ib    ForDomain( d ) domainSolver[d]->initializeTimeStepping( t,dt );\\
-\ia  \COM{Take some time steps:}\\
-\ia  \FOR( int i=0; i<numberOfSubSteps; i++ )\\
-\ib    ForDomain( d )\\
-\ic      domainSolver[d]->startTimeStep( t,dt,... );\\
-\ic      numberOfRequiredCorrectorSteps=...; gridHasChanged=...; \\ 
-\ib    \IF( gridHasChanged ) \\
-\ic      initializeInterfaces(gfIndex); initializeInterfaceBoundaryConditions(...); \\
-\ib    \COM{Get current interface residual and save current interface values :} \\
-\ib    getInterfaceResiduals( t, dt, gfIndex, maxResidual, saveInterfaceTimeHistoryValues ); \\
-\ib \\
-\ic       \COM{Stage I: advance the solution but do not apply BC's:} \\
-\ic       ForDomain( d )  \\
-\id         assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \\
-% \id         advanceOptions[d].takeTimeStepOption=takeStepButDoNotApplyBoundaryConditions; \\
-\id         domainSolver[d]->takeTimeStep( t,dt,correct,{\em\green step but no BC's} );  \\
-\ic \\
-\ic       \COM{Stage II: Project interface values part 1:} \\
-\ic       interfaceProjection( t+dt, dt, correct, gfIndex,{\em\green set interface values} ); \\
-\ic \\
-\ic       \COM{Stage III: evaluate the interface conditions and apply the boundary conditions:} \\
-\ic       ForDomain( d )\\
-\id        assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \COM{(Sec.~\ref{sec:Cgmp::assignInterfaceRightHandSide})} \\
-% \id        advanceOptions[d].takeTimeStepOption=applyBoundaryConditionsOnly; \\
-\id        domainSolver[d]->takeTimeStep( t,dt,correct,{\em\green apply BC's} );  \\
-\ic \\
-\ic       \COM{Stage IV: Project interface values part 2:} \\
-\ic       interfaceProjection( t+dt, dt, correct, gfIndex,{\em\green set interface ghost values} ); \\
-\ic \\
-\ic      \IF( hasConverged = checkInterfaceForConvergence( .. ) ) break; \\
-\ib \\
-\ib    ForDomain( d ) domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] ); \\
-\ib    t+=dt;  \\
-\}
-\end{flushleft}
+% \begin{flushleft}\tt\small
+% Cgmp::\FUNC{multiDomainAdvance}( real \&t, real \& tFinal ) \\
+% \{  \\
+% \ia  \IF( initialize ) \\
+% \ib    initializeInterfaceBoundaryConditions( t,dt,gfIndex );\\
+% \ib    ForDomain( d ) assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );\\
+% \ib    ForDomain( d ) domainSolver[d]->initializeTimeStepping( t,dt );\\
+% \ia  \COM{Take some time steps:}\\
+% \ia  \FOR( int i=0; i<numberOfSubSteps; i++ )\\
+% \ib    ForDomain( d )\\
+% \ic      domainSolver[d]->startTimeStep( t,dt,... );\\
+% \ic      numberOfRequiredCorrectorSteps=...; gridHasChanged=...; \\ 
+% \ib    \IF( gridHasChanged ) \\
+% \ic     initializeInterfaces(gfIndex); initializeInterfaceBoundaryConditions(...); \\
+% \ib \\
+% \ib    \FOR( int correct=0; correct<=numberOfCorrectorSteps; correct++ ) \\
+% \ic       ForDomain( d )\\
+% \id        assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \COM{(Sec.~\ref{sec:Cgmp::assignInterfaceRightHandSide})} \\
+% \id        domainSolver[d]->takeTimeStep( t,dt,correct,advanceOptions[d] );  \\
+% \ic      \IF( hasConverged = checkInterfaceForConvergence( .. ) ) break; \\
+% \ib \\
+% \ib    ForDomain( d ) domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] ); \\
+% \ib    t+=dt;  \\
+% \}
+% \end{flushleft}
 
-% -------------------------------------------------------------------------
-\clearpage
-\section{Interfaces }
+% \clearpage
+% % ---------------------------------------------------------------------------------------------------
+% \subsection{Cgmp::multiDomainAdvanceNew}\label{sec:Cgmp::multiDomainAdvanceNew}
 
-% ---------------------------------------------------------------------------------------------------------
-\subsection{Cgmp::assignInterfaceRightHandSide} \label{sec:Cgmp::assignInterfaceRightHandSide}
-
-The {\tt Cgmp::assignInterfaceRightHandSide} function is used to get interface values from a source
-domain and set interface values on a target domain. It is used in the Cgmp::multiDomainAdvance routine~\ref{sec:Cgmp::multiDomainAdvance}.
+% Pseudo-code for {\tt Cgmp::multiDomainAdvanceNew} (cg/mp/src/multiDomainAdvanceNew.bC). This is 
+% the new versio of the multi-domain advance routine that supports more general time stepping and
+% the use of AMR.
 
 
-Here is {\tt Cgmp::assignInterfaceRightHandSide} (cg/mp/src/assignInterfaceBoundaryConditions.C)
-\begin{flushleft}\tt\small
-int Cgmp::\FUNC{assignInterfaceRightHandSide}( int d, real t, real dt, int correct, std::vector<int> \& gfIndex ) \\
-\COM{d : target domain, assign the interface RHS for this domain.} \\
-\{  \\
-\ia \IF( interfaceList.size()==0 ) \\
-\ib     initializeInterfaces(gfIndex); \COM{Create the list of interfaces.} \\
-\ib \\
-\ia \FOR( each interface on domain d )\\
-\ib    InterfaceDescriptor \& interfaceDescriptor = interfaceList[inter]; \\
-\ib    \COM{Target and source grid functions:} \\
-\ib    GridFunction \& gfTarget = domainSolver[domainTarget]->gf[gfIndex[domainTarget]]; \\
-\ib    GridFunction \& gfSource = domainSolver[domainSource]->gf[gfIndex[domainSource]]; \\
-\ib    \\
-\ib    \COM{Get source data:} \\
-\ib    for( int face=0; face<gridListSource.size(); face++ ) \\
-\ic      domainSolver[domainSource]->interfaceRightHandSide( getInterfaceRightHandSide, ... ); \\
-\ib     \\
-\ib    \COM{Transfer the source arrays to the target arrays:} \\
-\ib    interfaceTransfer.transferData(... );  \\
-\ib    \\
-\ib    \COM{Adjust the target data before assigning:} \\
-\ib    for( int face=0; face<gridListTarget.size(); face++ ) \\
-\ic      \COM{Extrapolate the initial guess.} \\
-\ic      \COM{Under-relaxed iteration.} \\
-\ib    \\
-\ib    \COM{Assign the target data:} \\
-\ib    for( int face=0; face<gridListTarget.size(); face++ ) \\
-\ic      domainSolver[domainTarget]->interfaceRightHandSide( setInterfaceRightHandSide,...); \\
-\ia \\
-\}
-\end{flushleft}
+% \begin{flushleft}\tt\small
+% Cgmp::\FUNC{multiDomainAdvanceNew}( real \&t, real \& tFinal ) \\
+% \{  \\
+% \ia  \IF( initialize ) \\
+% \ib    initializeInterfaceBoundaryConditions( t,dt,gfIndex );\\
+% \ib    ForDomain( d ) assignInterfaceRightHandSide( d, t, dt, correct, gfIndex );\\
+% \ib    ForDomain( d ) domainSolver[d]->initializeTimeStepping( t,dt );\\
+% \ia  \COM{Take some time steps:}\\
+% \ia  \FOR( int i=0; i<numberOfSubSteps; i++ )\\
+% \ib    ForDomain( d )\\
+% \ic      domainSolver[d]->startTimeStep( t,dt,... );\\
+% \ic      numberOfRequiredCorrectorSteps=...; gridHasChanged=...; \\ 
+% \ib    \IF( gridHasChanged ) \\
+% \ic      initializeInterfaces(gfIndex); initializeInterfaceBoundaryConditions(...); \\
+% \ib    \COM{Get current interface residual and save current interface values :} \\
+% \ib    getInterfaceResiduals( t, dt, gfIndex, maxResidual, saveInterfaceTimeHistoryValues ); \\
+% \ib \\
+% \ic       \COM{Stage I: advance the solution but do not apply BC's:} \\
+% \ic       ForDomain( d )  \\
+% \id         assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \\
+% % \id         advanceOptions[d].takeTimeStepOption=takeStepButDoNotApplyBoundaryConditions; \\
+% \id         domainSolver[d]->takeTimeStep( t,dt,correct,{\em\green step but no BC's} );  \\
+% \ic \\
+% \ic       \COM{Stage II: Project interface values part 1:} \\
+% \ic       interfaceProjection( t+dt, dt, correct, gfIndex,{\em\green set interface values} ); \\
+% \ic \\
+% \ic       \COM{Stage III: evaluate the interface conditions and apply the boundary conditions:} \\
+% \ic       ForDomain( d )\\
+% \id        assignInterfaceRightHandSide( d, t+dt, dt, correct, gfIndex ); \COM{(Sec.~\ref{sec:Cgmp::assignInterfaceRightHandSide})} \\
+% % \id        advanceOptions[d].takeTimeStepOption=applyBoundaryConditionsOnly; \\
+% \id        domainSolver[d]->takeTimeStep( t,dt,correct,{\em\green apply BC's} );  \\
+% \ic \\
+% \ic       \COM{Stage IV: Project interface values part 2:} \\
+% \ic       interfaceProjection( t+dt, dt, correct, gfIndex,{\em\green set interface ghost values} ); \\
+% \ic \\
+% \ic      \IF( hasConverged = checkInterfaceForConvergence( .. ) ) break; \\
+% \ib \\
+% \ib    ForDomain( d ) domainSolver[d]->endTimeStep( td,dt,advanceOptions[d] ); \\
+% \ib    t+=dt;  \\
+% \}
+% \end{flushleft}
+
+% % -------------------------------------------------------------------------
+% \clearpage
+% \section{Interfaces }
+
+% % ---------------------------------------------------------------------------------------------------------
+% \subsection{Cgmp::assignInterfaceRightHandSide} \label{sec:Cgmp::assignInterfaceRightHandSide}
+
+% The {\tt Cgmp::assignInterfaceRightHandSide} function is used to get interface values from a source
+% domain and set interface values on a target domain. It is used in the Cgmp::multiDomainAdvance routine~\ref{sec:Cgmp::multiDomainAdvance}.
+
+
+% Here is {\tt Cgmp::assignInterfaceRightHandSide} (cg/mp/src/assignInterfaceBoundaryConditions.C)
+% \begin{flushleft}\tt\small
+% int Cgmp::\FUNC{assignInterfaceRightHandSide}( int d, real t, real dt, int correct, std::vector<int> \& gfIndex ) \\
+% \COM{d : target domain, assign the interface RHS for this domain.} \\
+% \{  \\
+% \ia \IF( interfaceList.size()==0 ) \\
+% \ib     initializeInterfaces(gfIndex); \COM{Create the list of interfaces.} \\
+% \ib \\
+% \ia \FOR( each interface on domain d )\\
+% \ib    InterfaceDescriptor \& interfaceDescriptor = interfaceList[inter]; \\
+% \ib    \COM{Target and source grid functions:} \\
+% \ib    GridFunction \& gfTarget = domainSolver[domainTarget]->gf[gfIndex[domainTarget]]; \\
+% \ib    GridFunction \& gfSource = domainSolver[domainSource]->gf[gfIndex[domainSource]]; \\
+% \ib    \\
+% \ib    \COM{Get source data:} \\
+% \ib    for( int face=0; face<gridListSource.size(); face++ ) \\
+% \ic      domainSolver[domainSource]->interfaceRightHandSide( getInterfaceRightHandSide, ... ); \\
+% \ib     \\
+% \ib    \COM{Transfer the source arrays to the target arrays:} \\
+% \ib    interfaceTransfer.transferData(... );  \\
+% \ib    \\
+% \ib    \COM{Adjust the target data before assigning:} \\
+% \ib    for( int face=0; face<gridListTarget.size(); face++ ) \\
+% \ic      \COM{Extrapolate the initial guess.} \\
+% \ic      \COM{Under-relaxed iteration.} \\
+% \ib    \\
+% \ib    \COM{Assign the target data:} \\
+% \ib    for( int face=0; face<gridListTarget.size(); face++ ) \\
+% \ic      domainSolver[domainTarget]->interfaceRightHandSide( setInterfaceRightHandSide,...); \\
+% \ia \\
+% \}
+% \end{flushleft}
 
 
 
 
-% ---------------------------------------------------------------------------------------------------------
-\clearpage
-\subsection{DomainSolver::interfaceRightHandSide} \label{sec:DomainSolver::interfaceRightHandSide}
+% % ---------------------------------------------------------------------------------------------------------
+% \clearpage
+% \subsection{DomainSolver::interfaceRightHandSide} \label{sec:DomainSolver::interfaceRightHandSide}
 
 
-The {\tt DomainSolver::interfaceRightHandSide} function is used to get or set interface values.
-Each DomainSolver (cgad, cgcns, cgins, cgsm,...) has a version of this routine. The generic
-version appears in cg/common/src/interfaceBoundaryConditions.C. 
+% The {\tt DomainSolver::interfaceRightHandSide} function is used to get or set interface values.
+% Each DomainSolver (cgad, cgcns, cgins, cgsm,...) has a version of this routine. The generic
+% version appears in cg/common/src/interfaceBoundaryConditions.C. 
 
 
-Here is {\tt Cgcns::interfaceRightHandSide} (cg/cns/src/interface.bC)
-\begin{flushleft}\tt\small
-Cgcns::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
- \qquad\quad       GridFaceDescriptor \& info, GridFaceDescriptor \& gfd, int gfIndex, real t ) \\
-\{  \\
-\ia  RealArray \& bd = parameters.getBoundaryData(side,axis,grid,mg); \COM{Interface data on this domain.}\\
-\ia  RealArray \& f = *info.u; \COM{Interface data from another domain.} \\
-\ia \\
-\ia  \IF( interfaceType(side,axis,grid)==Parameters::heatFluxInterface ) \\
-\ib     \IF( option==setInterfaceRightHandSide ) \\
-\ic       bd(I1,I2,I3,tc)=f(I1,I2,I3,tc);  \COM{Set T (using values from another domain).}  \\
-\ib     \ELSEIF( option==getInterfaceRightHandSide )  \\
-\ic       \COM{Evaluate $a_0 T + a_1 T_n$ (to send to another domain).} \\
-\ic       f(I1,I2,I3,tc) = a[0]*uLocal(I1,I2,I3,tc) + a[1]*( normal(I1,I2,I2,0)*ux + ... ); \\
-\ia \\
-\ia  \ELSEIF( interfaceType(side,axis,grid)==Parameters::tractionInterface ) \\
-\ib     \IF( option==setInterfaceRightHandSide ) \\
-\ic       bd(I1,I2,I3,V)=f(I1,I2,I3,V);  \COM{Set positions of the interface.}  \\
-\ib     \ELSEIF( option==getInterfaceRightHandSide )  \\
-\ic       parameters.getNormalForce( gf[gfIndex].u,traction,ipar,rpar ); \\
-\ic       f(I1,I2,I3,V)=traction(I1,I2,I3,D); \\
-\ic       InterfaceDataHistory \& idh = gfd.interfaceDataHistory; \COM{Holds interface history.} \\
-\ic       \IF( interfaceDataOptions \& Parameters::tractionRateInterfaceData )\\
-\id         RealArray \& f0 = idh.interfaceDataList[prev].f;  \\
-\id         f(I1,I2,I3,Vt)= (f(I1,I2,I3,V) - f0(I1,I2,I3,V))/dt; \COM{Time derivative of the traction.} \\
-\ia   \\
-\}
-\end{flushleft}
+% Here is {\tt Cgcns::interfaceRightHandSide} (cg/cns/src/interface.bC)
+% \begin{flushleft}\tt\small
+% Cgcns::\FUNC{interfaceRightHandSide}( InterfaceOptionsEnum option, int interfaceDataOptions,  \\
+%  \qquad\quad       GridFaceDescriptor \& info, GridFaceDescriptor \& gfd, int gfIndex, real t ) \\
+% \{  \\
+% \ia  RealArray \& bd = parameters.getBoundaryData(side,axis,grid,mg); \COM{Interface data on this domain.}\\
+% \ia  RealArray \& f = *info.u; \COM{Interface data from another domain.} \\
+% \ia \\
+% \ia  \IF( interfaceType(side,axis,grid)==Parameters::heatFluxInterface ) \\
+% \ib     \IF( option==setInterfaceRightHandSide ) \\
+% \ic       bd(I1,I2,I3,tc)=f(I1,I2,I3,tc);  \COM{Set T (using values from another domain).}  \\
+% \ib     \ELSEIF( option==getInterfaceRightHandSide )  \\
+% \ic       \COM{Evaluate $a_0 T + a_1 T_n$ (to send to another domain).} \\
+% \ic       f(I1,I2,I3,tc) = a[0]*uLocal(I1,I2,I3,tc) + a[1]*( normal(I1,I2,I2,0)*ux + ... ); \\
+% \ia \\
+% \ia  \ELSEIF( interfaceType(side,axis,grid)==Parameters::tractionInterface ) \\
+% \ib     \IF( option==setInterfaceRightHandSide ) \\
+% \ic       bd(I1,I2,I3,V)=f(I1,I2,I3,V);  \COM{Set positions of the interface.}  \\
+% \ib     \ELSEIF( option==getInterfaceRightHandSide )  \\
+% \ic       parameters.getNormalForce( gf[gfIndex].u,traction,ipar,rpar ); \\
+% \ic       f(I1,I2,I3,V)=traction(I1,I2,I3,D); \\
+% \ic       InterfaceDataHistory \& idh = gfd.interfaceDataHistory; \COM{Holds interface history.} \\
+% \ic       \IF( interfaceDataOptions \& Parameters::tractionRateInterfaceData )\\
+% \id         RealArray \& f0 = idh.interfaceDataList[prev].f;  \\
+% \id         f(I1,I2,I3,Vt)= (f(I1,I2,I3,V) - f0(I1,I2,I3,V))/dt; \COM{Time derivative of the traction.} \\
+% \ia   \\
+% \}
+% \end{flushleft}
 
 
 

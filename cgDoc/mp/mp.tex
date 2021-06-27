@@ -2,15 +2,44 @@
 % Cgmp: The multi-physics solver
 %        USER GUIDE
 %-----------------------------------------------------------------------
-\documentclass[11pt]{article}
-\usepackage{times}  % for embeddable fonts, Also use: dvips -P pdf -G0
+\documentclass[10pt]{article}
+% \usepackage[bookmarks=true]{hyperref}  % this changes the page location !
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue]{hyperref}
 
-\input documentationPageSize.tex
+% \input documentationPageSize.tex
+\hbadness=10000 
+\sloppy \hfuzz=30pt
 
-\input homeHenshaw
+% \voffset=-.25truein
+% \hoffset=-1.25truein
+% \setlength{\textwidth}{7in}      % page width
+% \setlength{\textheight}{9.5in}    % page height
 
-\input{pstricks}\input{pst-node}
-\input{colours}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+\usepackage{calc}
+\usepackage[lmargin=.75in,rmargin=.75in,tmargin=.75in,bmargin=.75in]{geometry}
+
+% \input homeHenshaw
+
+% \input{pstricks}\input{pst-node}
+% \input{colours}
+\newcommand{\blue}{\color{blue}}
+\newcommand{\green}{\color{green}}
+\newcommand{\red}{\color{red}}
+\newcommand{\black}{\color{black}}
+
+
+
+% \documentclass[11pt]{article}
+% \usepackage{times}  % for embeddable fonts, Also use: dvips -P pdf -G0
+
+% \input documentationPageSize.tex
+
+% \input homeHenshaw
+
+% \input{pstricks}\input{pst-node}
+% \input{colours}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -30,76 +59,93 @@
 \makeindex
 \newcommand{\Index}[1]{#1\index{#1}}
 
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{xargs}% for optional args to \newcommandx
+% define the trimming commands:
+\input ../common/trimFig.tex
+\input ../common/plotFigureMacros
 
 
-% ---- we have lemmas and theorems in this paper ----
-\newtheorem{assumption}{Assumption}
-\newtheorem{definition}{Definition}
+% % ---- we have lemmas and theorems in this paper ----
+% \newtheorem{assumption}{Assumption}
+% \newtheorem{definition}{Definition}
 
-% \newcommand{\homeHenshaw}{/home/henshaw.0}
+% % \newcommand{\homeHenshaw}{/home/henshaw.0}
 
-\newcommand{\Overture}{{\bf Over\-ture\ }}
-\newcommand{\ogenDir}{\homeHenshaw/Overture/ogen}
+% \newcommand{\Overture}{{\bf Over\-ture\ }}
+% \newcommand{\ogenDir}{\homeHenshaw/Overture/ogen}
 
-\newcommand{\cgDoc}{\homeHenshaw/cgDoc}
-\newcommand{\vpDir}{\homeHenshaw/cgDoc/ins/viscoPlastic}
+% \newcommand{\cgDoc}{\homeHenshaw/cgDoc}
+% \newcommand{\vpDir}{\homeHenshaw/cgDoc/ins/viscoPlastic}
 
-\newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % for figures
-\newcommand{\convDir}{.}
+% \newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % for figures
+% \newcommand{\convDir}{.}
 
+\input ../common/defs
+% \input ../common/wdhDefinitions.tex
+
+% \def\comma  {~~~,~~}
+% \newcommand{\uvd}{\mathbf{U}}
+% \def\ud     {{    U}}
+% \def\pd     {{    P}}
+% \def\calo{{\cal O}}
+
+% \newcommand{\mbar}{\bar{m}}
+% \newcommand{\Rbar}{\bar{R}}
+% \newcommand{\Ru}{R_u}         % universal gas constant
+% % \newcommand{\Iv}{{\bf I}}
+% % \newcommand{\qv}{{\bf q}}
+% \newcommand{\Div}{\grad\cdot}
+% \newcommand{\tauv}{\boldsymbol{\tau}}
+% \newcommand{\thetav}{\boldsymbol{\theta}}
+% % \newcommand{\omegav}{\mathbf{\omega}}
+% % \newcommand{\Omegav}{\mathbf{\Omega}}
+
+% \newcommand{\Omegav}{\boldsymbol{\Omega}}
+% \newcommand{\omegav}{\boldsymbol{\omega}}
+% \newcommand{\sigmav}{\boldsymbol{\sigma}}
+% \newcommand{\cm}{{\rm cm}}
+% \newcommand{\Jc}{{\mathcal J}}
+
+% \newcommand{\sumi}{\sum_{i=1}^n}
+% % \newcommand{\half}{{1\over2}}
+% \newcommand{\dt}{{\Delta t}}
+
+% \def\ff {\tt} % font for fortran variables
+
+% % define the clipFig commands:
+% \input clipFig.tex
+
+% \newcommand{\bogus}[1]{}  % removes is argument completely
+
+
+
+% ------------------------------------------- BEGIN DOCUMENT ---------------------------
 \begin{document}
 
-\input wdhDefinitions.tex
 
-\def\comma  {~~~,~~}
-\newcommand{\uvd}{\mathbf{U}}
-\def\ud     {{    U}}
-\def\pd     {{    P}}
-\def\calo{{\cal O}}
-
-\newcommand{\mbar}{\bar{m}}
-\newcommand{\Rbar}{\bar{R}}
-\newcommand{\Ru}{R_u}         % universal gas constant
-% \newcommand{\Iv}{{\bf I}}
-% \newcommand{\qv}{{\bf q}}
-\newcommand{\Div}{\grad\cdot}
-\newcommand{\tauv}{\boldsymbol{\tau}}
-\newcommand{\thetav}{\boldsymbol{\theta}}
-% \newcommand{\omegav}{\mathbf{\omega}}
-% \newcommand{\Omegav}{\mathbf{\Omega}}
-
-\newcommand{\Omegav}{\boldsymbol{\Omega}}
-\newcommand{\omegav}{\boldsymbol{\omega}}
-\newcommand{\sigmav}{\boldsymbol{\sigma}}
-\newcommand{\cm}{{\rm cm}}
-\newcommand{\Jc}{{\mathcal J}}
-
-\newcommand{\sumi}{\sum_{i=1}^n}
-% \newcommand{\half}{{1\over2}}
-\newcommand{\dt}{{\Delta t}}
-
-\def\ff {\tt} % font for fortran variables
-
-% define the clipFig commands:
-\input clipFig.tex
-
-\newcommand{\bogus}[1]{}  % removes is argument completely
 
 \vspace{5\baselineskip}
 \begin{flushleft}
 {\Large
-{\bf Cgmp}: A Multi-Physics Multi-Domain Solver \\
+{\bf Cgmp}: A Multi-Physics Multi-Domain Solver for FSI and CHT \\
     User Guide and Reference Manual \\
 }
 \vspace{2\baselineskip}
-Kyle K. Chand  \\
-William D. Henshaw  \\
-Centre for Applied Scientific Computing  \\
-Lawrence Livermore National Laboratory      \\
-Livermore, CA, 94551.  \\
-henshaw@llnl.gov \\
-% http://www.llnl.gov/casc/people/henshaw \\
-http://www.llnl.gov/casc/Overture\\
+William D. Henshaw,\\
+Department of Mathematical Sciences, \\
+Rensselaer Polytechnic Institute, \\
+Troy, NY, USA, 12180.
+
+% Kyle K. Chand  \\
+% William D. Henshaw  \\
+% Centre for Applied Scientific Computing  \\
+% Lawrence Livermore National Laboratory      \\
+% Livermore, CA, 94551.  \\
+% henshaw@llnl.gov \\
+% % http://www.llnl.gov/casc/people/henshaw \\
+% http://www.llnl.gov/casc/Overture\\
 \vspace{\baselineskip}
 \today\\
 \vspace{\baselineskip}
@@ -109,10 +155,11 @@ http://www.llnl.gov/casc/Overture\\
 
 \noindent{\bf\large Abstract:}
 
-This document describes {\bf Cgmp}, a solver written using the \Overture framework
+This document describes {\bf Cgmp}, a solver written using the \Overture framework 
 to solve multi-physics multi-domain problems. The solver can be used, for example,
-to solve thermal hydraulics problems where fluid flow in one domain is coupled to heat transfer
-in another {\em solid} domain.
+to solve conjugate heat transfer (CHT) problems where fluid flow in one domain is coupled to heat transfer
+in another {\em solid} domain. CgMp can also be used to solve fluid-structure interaction (FSI) problems
+such as deforming solids in an incompressible fluid.
 
 \end{flushleft}
 
@@ -128,11 +175,30 @@ in another {\em solid} domain.
 This document is currently under development. 
 
 
-Cgmp solves problmes on overlapping grids and is built upon the \Overture 
-framework~\cite{Brown97},\cite{Henshaw96a},\cite{iscope97}. 
+\bigskip
+\input tex/cgmpIntro 
 
+% Cgmp solves problems on overset (overlapping/composite/Chimera) grids and is built upon the \Overture 
+% framework~\cite{Brown97},\cite{Henshaw96a},\cite{iscope97}. 
+% A block diagram of the main components of Overture is given in Figure~\ref{fig:OvertureBlockDiagram}.
+% Overture provides support for solving PDEs on overset grids.
+% CgMp is primarily a driver program that calls different CG (Composite Grid) solvers: (see Figure~\ref{fig:CgMpBlockDiagram}),
+% \begin{description}
+%    \item[\quad CgAd:] solves for heat transfer in solids.
+%    \item[\quad CgCns:] solves compressible flow (reacting, multi-fluid, multi-phase). 
+%    \item[\quad Cgins:] solves for incompressible flow and heat transfer. 
+%    \item[\quad CgSm:] solves the equations of linear and nonlinear elasticity for the deformation solids.
+% \end{description}
+% CgMp also coordinates the transfer of information between different domain solvers (e.g. the temperature and 
+% fluxes at the interface between two heat conducting materials.)
+% CgMp can join any number of domain solvers. There can be multiple instances of CgAd/CgCns/CgIns/CgSm solvers, for example, 
+% for different types of fluid and solids.
 
+% \input tex/OvertureBlockDiagram
 
+% \input tex/cgmpBlockDiagram
+
+% ---------------------------------------------------------------------------------------------------------
 \section{The Equations}
 
 
@@ -151,8 +217,10 @@ framework~\cite{Brown97},\cite{Henshaw96a},\cite{iscope97}.
 
 % -------------------------------------------------------------------------------------------------
 \vfill\eject
-\bibliography{\homeHenshaw/papers/henshaw}
+% -------------------------------------------------------------------------------------------------
+\bibliography{../common/journalISI,../common/henshaw,../common/henshawPapers}
 \bibliographystyle{siam}
+
 
 
 \printindex

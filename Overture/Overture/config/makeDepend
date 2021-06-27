@@ -1,7 +1,8 @@
+eval 'exec perl -S $0 ${1+"$@"}'
+if 0;
 #!/usr/bin/perl
 # perl program to run makedepend and redirect the warning messages.
 # there must be an easier way!
-
 
 printf("run makedepend ...\n");
 

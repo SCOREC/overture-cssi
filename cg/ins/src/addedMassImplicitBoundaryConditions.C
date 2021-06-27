@@ -378,23 +378,23 @@ addedMassImplicitBoundaryConditions(int option,
             for( int axis=0; axis<numberOfDimensions; axis++ )
             {
 
-      	if( deformingBodyNumber[side][axis]>=0 )
-      	{
+                if( deformingBodyNumber[side][axis]>=0 )
+                {
                     if( false )
                         printF("WWWWW implicit: apply MOVING noSlipWall BC to a DEFORMING BULK SOLID, grid=%i (side,axis)=(%i,%i), t=%.2e\n",
                                       grid,side,axis,t);
 
-        	  int body=deformingBodyNumber[side][axis];
-        	  if( t<=0. )
-          	    printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
+                    int body=deformingBodyNumber[side][axis];
+                    if( t<=0. )
+                        printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
 
-        	  DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+                    DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
 
-        	  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+                    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
                     getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,+1);  // first ghost line 
                     getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1);  // first line in
 
-        	  realArray vSolid(Ib1,Ib2,Ib3,Rx); // holds velocity of solid on the boundary
+                    realArray vSolid(Ib1,Ib2,Ib3,Rx); // holds velocity of solid on the boundary
                     #ifndef USE_PPP
                     deform.getVelocityBC( t, side,axis,grid, mg, Ib1,Ib2,Ib3, vSolid );
                     #else
@@ -402,23 +402,23 @@ addedMassImplicitBoundaryConditions(int option,
                     #endif
 
           // OV_GET_SERIAL_ARRAY(real,gridVelocity,gridVelocityLocal);
-        	  OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
+                    OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
                     OV_GET_SERIAL_ARRAY(real,uOld,uOldLocal);
-        	  OV_GET_SERIAL_ARRAY(real,vSolid,vSolidLocal);
+                    OV_GET_SERIAL_ARRAY(real,vSolid,vSolidLocal);
 
                     if( projectNormalComponentOfAddedMassVelocity )
                         mg.update(MappedGrid::THEvertexBoundaryNormal);
 
                     OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
-        	  
+                    
                     if( !deform.isBulkSolidModel() && !deform.isBeamModel() )
-        	  {
+                    {
 
-          	    OV_ABORT("addedMassImplicitBoundaryConditions::ERROR: un-expected deformation type");
+                        OV_ABORT("addedMassImplicitBoundaryConditions::ERROR: un-expected deformation type");
 
-        	  }
-        	  else if( deform.isBulkSolidModel() )
-        	  {
+                    }
+                    else if( deform.isBulkSolidModel() )
+                    {
 
             // **********************************************************************
             // *************** ADDED MASS BC FOR A BULK SOLID ***********************
@@ -459,7 +459,7 @@ addedMassImplicitBoundaryConditions(int option,
                         real zs,zp,zf,alpha;
                         getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
 
-	    // real zpOld;
+            // real zpOld;
             // // old way:
             // deform.getBulkSolidParameters( zpOld );
 
@@ -484,10 +484,10 @@ addedMassImplicitBoundaryConditions(int option,
             //   // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
             // }
                         
-	    // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
-          	    
+            // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+                        
             // // fluid impedance = rho*H/dt 
-	    // assert( dt>0. );
+            // assert( dt>0. );
                         
             // const real zfOld=fluidDensity*fluidAddedMassLengthScale/dt; 
             // // *new* June 30, 2018: 
@@ -1352,19 +1352,19 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
         {
             for( int axis=0; axis<numberOfDimensions; axis++ )
             {
-      	if( deformingBodyNumber[side][axis]>=0 )
-      	{
-        	  int body=deformingBodyNumber[side][axis];
-        	  if( t<=0. )
-          	    printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
+                if( deformingBodyNumber[side][axis]>=0 )
+                {
+                    int body=deformingBodyNumber[side][axis];
+                    if( t<=0. )
+                        printF("--INS-- grid=%i, (side,axis)=(%i,%i) belongs to deforming body %i\n",grid,side,axis,body);
 
-        	  DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
+                    DeformingBodyMotion & deform = movingGrids.getDeformingBody(body);
 
-        	  getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
+                    getBoundaryIndex(mg.gridIndexRange(),side,axis,Ib1,Ib2,Ib3);
                     getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,+1);  // first ghost line 
                     getGhostIndex(mg.gridIndexRange(),side,axis,Ip1,Ip2,Ip3,-1);  // first line in
 
-        	  realArray vSolid(Ib1,Ib2,Ib3,Rx); // holds velocity of solid on the boundary
+                    realArray vSolid(Ib1,Ib2,Ib3,Rx); // holds velocity of solid on the boundary
                     #ifndef USE_PPP
                     deform.getVelocityBC( t, side,axis,grid, mg, Ib1,Ib2,Ib3, vSolid );
                     #else
@@ -1372,23 +1372,23 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                     #endif
 
           // OV_GET_SERIAL_ARRAY(real,gridVelocity,gridVelocityLocal);
-        	  OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
+                    OV_GET_SERIAL_ARRAY(real,u   ,uLocal);
                     OV_GET_SERIAL_ARRAY(real,uOld,uOldLocal);
-        	  OV_GET_SERIAL_ARRAY(real,vSolid,vSolidLocal);
+                    OV_GET_SERIAL_ARRAY(real,vSolid,vSolidLocal);
 
                     if( projectNormalComponentOfAddedMassVelocity )
                         mg.update(MappedGrid::THEvertexBoundaryNormal);
 
                     OV_GET_VERTEX_BOUNDARY_NORMAL(mg,side,axis,normal);
-        	  
+                    
                     if( !deform.isBulkSolidModel() && !deform.isBeamModel() )
-        	  {
+                    {
 
-          	    OV_ABORT("addedMassImplicitBoundaryConditions::ERROR: un-expected deformation type");
+                        OV_ABORT("addedMassImplicitBoundaryConditions::ERROR: un-expected deformation type");
 
-        	  }
-        	  else if( deform.isBulkSolidModel() )
-        	  {
+                    }
+                    else if( deform.isBulkSolidModel() )
+                    {
 
             // **********************************************************************
             // *************** ADDED MASS BC FOR A BULK SOLID ***********************
@@ -1427,7 +1427,7 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
                         real zs,zp,zf,alpha;
                         getBulkSolidAmpParameters( mg,grid,side,axis,dt, zs,zp,zf,alpha );
 
-	    // real zpOld;
+            // real zpOld;
             // // old way:
             // deform.getBulkSolidParameters( zpOld );
 
@@ -1451,10 +1451,10 @@ checkAddedMassImplicitBoundaryConditions(realMappedGridFunction & u,
             //   // printF("  fluidAddedMassLengthScale=%9.3e\n",fluidAddedMassLengthScale);
             // }
                         
-	    // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
-          	    
+            // // const real & fluidDensity = parameters.dbase.get<real >("fluidDensity");
+                        
             // // fluid impedance = rho*H/dt 
-	    // assert( dt>0. );
+            // assert( dt>0. );
             // const real zf=fluidDensity*fluidAddedMassLengthScale/dt; 
             // const real alpha = zf/(zf+zp);
 

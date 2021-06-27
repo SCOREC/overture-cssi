@@ -56,6 +56,15 @@
 \usepackage{tikz}
 \input ../common/trimFig.tex
 
+\usepackage{xargs}% for optional args to \newcommandx
+\input ../common/plotFigureMacros.tex
+
+\newcommand{\scriptsizess}{\scriptsize\sffamily}
+% skip and noindent:
+\newcommand{\bni}{\bigskip\noindent}
+\newcommand{\mni}{\medskip\noindent}
+\newcommand{\sni}{\smallskip\noindent}
+
 \newcommand{\bogus}[1]{}  % begin a section that will not be printed
 
 \usepackage{makeidx} % index
@@ -215,6 +224,11 @@ Papers that describe some of the results obtained with Cgcns include~\cite{pog20
 \end{figure}
 
 
+\clearpage
+% ================================================================================================
+\input ../common/specifyingBoundaryConditionsCorrectly.tex
+
+
 
 \clearpage
 % ------------------------------------------------------------------------------------------------
@@ -259,7 +273,6 @@ are two command lines that run a problem with different grids and parameters:
   cgcns stir -g=stir2.hdf -nu=.01 -tf=1. -tp=.002 -rate=8.
 \end{verbatim}
 See the comments at the top of {\tt stir.cmd} for further explanation and examples.
-
 
 
 
@@ -427,6 +440,12 @@ A detonation forms at the hot spot, expands and reflects off the boundaries.
 }
 
 
+
+% ==============================================================================================================
+\clearpage
+\input tex/sampleSimulations
+
+
 %- \begin{figure}[hb]
 %- \begin{center}
 %-   \epsfig{file=\obFigures/circleDetonation.grid.1p9.ps,width=.5\linewidth}
@@ -486,9 +505,6 @@ A detonation forms at the hot spot, expands and reflects off the boundaries.
 %- 
 %- 
 
-\clearpage
-% ================================================================================================
-\input ../common/specifyingBoundaryConditionsCorrectly.tex
 
 
 \clearpage

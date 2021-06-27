@@ -44,6 +44,8 @@ grid
   plot non-physical boundaries 1
   colour boundaries by refinement level number
 exit this menu
+solution: $solution
+
 ##
 # time t=.5
 solution: 6

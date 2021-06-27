@@ -1,4 +1,22 @@
 ***********************
+***** Tues May 25, 2021
+
+TEST CASE TO COMPARE TO CGWAVE
+
+$cgmx planeWave.cmd -g=box4.order2 -useSosupDissipation=1 -cons=0 -kx=1 -ky=1 -kz=1 -tp=1 -tf=100 -checkErrors=1 -debug=1 -go=og -cfl=.975
+
+$cgmx planeWave.cmd -g=square32.order2 -useSosupDissipation=1 -cons=0 -kx=1 -ky=1 -tp=1 -tf=100 -checkErrors=1 -debug=1 -go=og -cfl=.975
+
+
+$cgmx planeWave.cmd -g=square32.order2 -useSosupDissipation=1 -cons=0 -dm=none -tp=.1 -tf=.1 -checkErrors=1 -debug=1 -go=go
+
+
+ computeTimeStep: grid=0 dx=3.12e-02 dy=3.12e-02 c=1.00e+00, dtg=1.99e-02
+ computeTimeStep: grid=0 c=1.00e+00, dtg=1.99e-02 min-dx=3.12e-02 max-dx=3.12e-02
+==== computeTimeStep: deltaT=1.99e-02
+
+
+***********************
 ***** Fri Nov 27, 2020
 
 START ON SAVE POLARIZATIONS TO THE SHOW FILE

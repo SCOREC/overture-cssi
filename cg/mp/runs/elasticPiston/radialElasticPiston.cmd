@@ -1,5 +1,6 @@
 #
 # cgmp:   INS + Elasticity: RADIAL elastic piston with exact solution
+echo to terminal 0
 # 
 # Usage:
 #    cgmp [-noplot] radialElasticPiston -g=<name> -method=[ins|cns] -nu=<> -mu=<> -kappa=<num> -tf=<tFinal> -tp=<tPlot> ...
@@ -348,6 +349,8 @@ continue
         exit
         plot:solid : v2
         plot all
+#
+echo to terminal 1
 $go
 
 

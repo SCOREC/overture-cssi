@@ -7,6 +7,8 @@
 # 
 #   plotStuff plotSolution.cmd -show=64DiskG4.show -name=64Disk -solution=16 -emin=0 -emax=.35 
 #
+#   plotStuff plotSolution.cmd -show=oneDiskTwoLayersMlaGdm.show -name=oneDiskTwoLayersMlaGdm -solution=13 -emin=0 -emax=.85 
+#
 $show="ellipseG8.hdf"; $solution="-1"; $name="plot"; $field="Ey"; $emin=0; $emax=-1; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 # get command line arguments
@@ -20,7 +22,6 @@ derived types
 exit
 contour
   plot:eFieldNorm
-  
   plot contour lines (toggle)
   # set view:0 0.0694864 -0.0362538 0 2.34381 1 0 0 0 1 0 0 0 1
   coarsening factor 1 (<0 : adaptive)

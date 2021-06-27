@@ -259,7 +259,7 @@ setGridsToUse( const IntegerArray & gridsToUse )
     else
     {
       printf("Oges::setGridsToUse:ERROR: gridsToUse(%i)=%i is not a valid grid, numberOfComponentGrids=%i\n",
-	     g,grid,cg.numberOfComponentGrids());
+             g,grid,cg.numberOfComponentGrids());
     }
   }
   useAllGrids=min(useThisGrid)==1;
@@ -338,11 +338,11 @@ getUseThisGrid() const
 int Oges::
 setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation, 
                                   CompositeGridOperators & op,
-				  const IntegerArray & boundaryConditions_,
-				  const RealArray & bcData_, 
+                                  const IntegerArray & boundaryConditions_,
+                                  const RealArray & bcData_, 
                                   RealArray & constantCoeff,
-				  realCompositeGridFunction *varCoeff /* =NULL */,
-				  realCompositeGridFunction *advectionCoeff /* =NULL */ )
+                                  realCompositeGridFunction *varCoeff /* =NULL */,
+                                  realCompositeGridFunction *advectionCoeff /* =NULL */ )
 {
   equationToSolve=equation;
   boundaryConditions.redim(0);
@@ -371,7 +371,7 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
   {
     // The multigrid solver knows how to handle this
     equationSolver[parameters.solver]->setEquationAndBoundaryConditions(equation,op,boundaryConditions_,bcData,
-									constantCoeff,varCoeff);
+                                                                        constantCoeff,varCoeff);
   }
   else
   {
@@ -410,23 +410,23 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
       MappedGrid & c = cg[grid];
       if( !c.isRectangular() )
       {
-	c.update(MappedGrid::THEvertex );
+        c.update(MappedGrid::THEvertex );
       }
 
       int md; // diagonal term
       if( c.numberOfDimensions()==2 )
-	md=(width*width)/2; // 4 or 12 ;
+        md=(width*width)/2; // 4 or 12 ;
       else if( c.numberOfDimensions()==3 )
-	md=(width*width*width)/2; // 13 or 62;
+        md=(width*width*width)/2; // 13 or 62;
       else
-	md=width/2; // 1;
+        md=width/2; // 1;
 
       if( parameters.isAxisymmetric )
       {
         assert( equation==OgesParameters::laplaceEquation ||
                 equation==OgesParameters::heatEquationOperator );  // fix this 
-	if( debug & 2 )
-	  printF("***Oges: predefined axisymmetric equation ****\n");
+        if( debug & 2 )
+          printF("***Oges: predefined axisymmetric equation ****\n");
 
       }
 
@@ -439,93 +439,93 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
 
           // // --- do this for now for higher order --- 
           // coeff[grid]=op[grid].laplacianCoefficients(); 
-	  // assert( ! parameters.isAxisymmetric );
+          // assert( ! parameters.isAxisymmetric );
 
-	if( parameters.isAxisymmetric )
-	{
-	  // add on corrections for a cylindrically symmetric problem
-	  // Delta p = p.xx + p.yy + (1/y) p.y
-	  // note that p.y=0 on y=0 and p.y/y = p.yy at r=0
+        if( parameters.isAxisymmetric )
+        {
+          // add on corrections for a cylindrically symmetric problem
+          // Delta p = p.xx + p.yy + (1/y) p.y
+          // note that p.y=0 on y=0 and p.y/y = p.yy at r=0
 
-	  const bool isRectangular = c.isRectangular();
-	   
+          const bool isRectangular = c.isRectangular();
+           
 #ifdef USE_PPP
-	  intSerialArray maskLocal;   getLocalArrayWithGhostBoundaries(c.mask(),maskLocal);
-	  realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff[grid],coeffLocal);
-	  realSerialArray xLocal; if( !isRectangular ) getLocalArrayWithGhostBoundaries(c.vertex(),xLocal);
+          intSerialArray maskLocal;   getLocalArrayWithGhostBoundaries(c.mask(),maskLocal);
+          realSerialArray coeffLocal; getLocalArrayWithGhostBoundaries(coeff[grid],coeffLocal);
+          realSerialArray xLocal; if( !isRectangular ) getLocalArrayWithGhostBoundaries(c.vertex(),xLocal);
 #else
-	  const intSerialArray & maskLocal = c.mask();
-	  const realSerialArray & coeffLocal = coeff[grid];
-	  const realSerialArray & xLocal = c.vertex();
+          const intSerialArray & maskLocal = c.mask();
+          const realSerialArray & coeffLocal = coeff[grid];
+          const realSerialArray & xLocal = c.vertex();
 #endif
-	   
-	  getIndex(c.dimension(),I1,I2,I3);
-	  bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,I1,I2,I3);
-	  if( ok )
-	  {
-	    realSerialArray radiusInverse(I1,I2,I3);  
-	    if( c.isRectangular() )
-	    {
-	      real dx[3],xab[2][3];
+           
+          getIndex(c.dimension(),I1,I2,I3);
+          bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,I1,I2,I3);
+          if( ok )
+          {
+            realSerialArray radiusInverse(I1,I2,I3);  
+            if( c.isRectangular() )
+            {
+              real dx[3],xab[2][3];
 #define YY(i2) (xab[0][1]+dx[1]*(i2-i2a))
-	      c.getRectangularGridParameters( dx, xab );
-	      const int i2a=c.gridIndexRange(0,1);
-	      for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	      {
-		radiusInverse(I1,i2,I3)=1./max(REAL_MIN,YY(i2));
-	      }
+              c.getRectangularGridParameters( dx, xab );
+              const int i2a=c.gridIndexRange(0,1);
+              for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
+              {
+                radiusInverse(I1,i2,I3)=1./max(REAL_MIN,YY(i2));
+              }
 #undef YY
-	    }
-	    else
-	    {
-	      radiusInverse=1./max(REAL_MIN,xLocal(I1,I2,I3,axis2));  
-	    }
-	    ForBoundary(side,axis)
-	    {
-	      if( boundaryConditions(side,axis,grid)==OgesParameters::axisymmetric )
-	      {
-		if( debug & 2 ) 
-		  printF("***Oges: predefined axisymmetric boundary grid,side,axis=%3i %2i %2i \n",grid,side,axis);
-	    
-		getBoundaryIndex( c.gridIndexRange(),side,axis,Ib1,Ib2,Ib3); 
-		bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,Ib1,Ib2,Ib3);
-		if( ok )
-		{
-		  realSerialArray yyCoeff(M,Ib1,Ib2,Ib3);
-		  yyCoeff=0.;
-		  op[grid].assignCoefficients(MappedGridOperators::yyDerivative,yyCoeff,Ib1,Ib2,Ib3,0,0);
-		  // coeff[grid](M,Ib1,Ib2,Ib3)+=op[grid].yyCoefficients(Ib1,Ib2,Ib3)(M,Ib1,Ib2,Ib3); // add p.yy on axis
-		  coeffLocal(M,Ib1,Ib2,Ib3)+=yyCoeff;   // add p.yy on axis
-		  radiusInverse(Ib1,Ib2,Ib3)=0.;  // this will remove p.y/y term below from boundary
-		}
-	      }
-	    }
-	    // add p.y/y term
+            }
+            else
+            {
+              radiusInverse=1./max(REAL_MIN,xLocal(I1,I2,I3,axis2));  
+            }
+            ForBoundary(side,axis)
+            {
+              if( boundaryConditions(side,axis,grid)==OgesParameters::axisymmetric )
+              {
+                if( debug & 2 ) 
+                  printF("***Oges: predefined axisymmetric boundary grid,side,axis=%3i %2i %2i \n",grid,side,axis);
+            
+                getBoundaryIndex( c.gridIndexRange(),side,axis,Ib1,Ib2,Ib3); 
+                bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,Ib1,Ib2,Ib3);
+                if( ok )
+                {
+                  realSerialArray yyCoeff(M,Ib1,Ib2,Ib3);
+                  yyCoeff=0.;
+                  op[grid].assignCoefficients(MappedGridOperators::yyDerivative,yyCoeff,Ib1,Ib2,Ib3,0,0);
+                  // coeff[grid](M,Ib1,Ib2,Ib3)+=op[grid].yyCoefficients(Ib1,Ib2,Ib3)(M,Ib1,Ib2,Ib3); // add p.yy on axis
+                  coeffLocal(M,Ib1,Ib2,Ib3)+=yyCoeff;   // add p.yy on axis
+                  radiusInverse(Ib1,Ib2,Ib3)=0.;  // this will remove p.y/y term below from boundary
+                }
+              }
+            }
+            // add p.y/y term
 
-	    // ::display(coeff[grid],"Oges: coeff before adding Dy/y","%6.2f ");
+            // ::display(coeff[grid],"Oges: coeff before adding Dy/y","%6.2f ");
 
-	    realSerialArray yCoeff(M,I1,I2,I3);
-	    yCoeff=0.;
-	    op[grid].assignCoefficients(MappedGridOperators::yDerivative,yCoeff,I1,I2,I3,0,0);
-	    radiusInverse.reshape(1,I1,I2,I3);
-	    // *wdh* 040228 for( int m=M.getBase(); m<=M.getBound()-1; m++ )
-	    for( int m=M.getBase(); m<=M.getBound(); m++ )
-	      yCoeff(m,I1,I2,I3)*=radiusInverse(0,I1,I2,I3);
+            realSerialArray yCoeff(M,I1,I2,I3);
+            yCoeff=0.;
+            op[grid].assignCoefficients(MappedGridOperators::yDerivative,yCoeff,I1,I2,I3,0,0);
+            radiusInverse.reshape(1,I1,I2,I3);
+            // *wdh* 040228 for( int m=M.getBase(); m<=M.getBound()-1; m++ )
+            for( int m=M.getBase(); m<=M.getBound(); m++ )
+              yCoeff(m,I1,I2,I3)*=radiusInverse(0,I1,I2,I3);
 
-	    coeffLocal(M,I1,I2,I3)+=yCoeff;
-	
-	    // ::display(yCoeff,"Oges: Dy/y before BC","%6.2f ");
-	    // ::display(coeff[grid],"Oges: coeff before BC","%6.2f ");
+            coeffLocal(M,I1,I2,I3)+=yCoeff;
+        
+            // ::display(yCoeff,"Oges: Dy/y before BC","%6.2f ");
+            // ::display(coeff[grid],"Oges: coeff before BC","%6.2f ");
 
-	  }
-	}  // end if isAxisymmetric
+          }
+        }  // end if isAxisymmetric
 
       }
       
 
       if( equation==OgesParameters::laplaceEquation )
       {
-	// done above: op[grid].coefficients(MappedGridOperators::laplacianOperator,coeff[grid]); 
+        // done above: op[grid].coefficients(MappedGridOperators::laplacianOperator,coeff[grid]); 
       }
       else if( equation==OgesParameters::heatEquationOperator )
       {
@@ -533,10 +533,10 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
 
         // done above: op[grid].coefficients(MappedGridOperators::laplacianOperator,coeff[grid]);
         coeff[grid]*=constantCoeff(1,grid);
-	coeff[grid](md,all,all,all)+=constantCoeff(0,grid);
+        coeff[grid](md,all,all,all)+=constantCoeff(0,grid);
 
-	isSingular=isSingular && constantCoeff(0,grid)==0.;
-	
+        isSingular=isSingular && constantCoeff(0,grid)==0.;
+        
       }
       else if( equation==OgesParameters::divScalarGradOperator )
       {
@@ -551,21 +551,21 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
         assert( varCoeff!=NULL );
         realMappedGridFunction & variableCoeff = (*varCoeff)[grid];
         const realArray & var = variableCoeff;
-	realArray & coeffa = coeff[grid];
-	
+        realArray & coeffa = coeff[grid];
+        
         op[grid].coefficients(MappedGridOperators::laplacianOperator,coeff[grid],variableCoeff ); 
 
         multiply(coeff[grid],variableCoeff);
-	
+        
 //          getIndex(mg.dimension(),I1,I2,I3);
-//  	const int stencilSize=coeffa.getLength(0)-1;
-//  	for( int m=0; m<stencilSize; m++ )
-//  	  coeffa(m,I1,I2,I3)*=var(I1,I2,I3);
-	
+//      const int stencilSize=coeffa.getLength(0)-1;
+//      for( int m=0; m<stencilSize; m++ )
+//        coeffa(m,I1,I2,I3)*=var(I1,I2,I3);
+        
         coeffa(md,all,all,all)+=1.;  // add the Identity.
 
-	isSingular=false;
-	
+        isSingular=false;
+        
       }
       else if( equation==OgesParameters::divScalarGradHeatEquationOperator )
       {
@@ -574,10 +574,10 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
         realMappedGridFunction & variableCoeff = (*varCoeff)[grid];
         op[grid].coefficients(MappedGridOperators::divergenceScalarGradient,coeff[grid],variableCoeff);
 
-	realArray & coeffa = coeff[grid];
+        realArray & coeffa = coeff[grid];
         coeffa(md,all,all,all)+=1.; // add the Identity.
 
-	isSingular=false;
+        isSingular=false;
       }
       else if( equation==OgesParameters::advectionDiffusionEquationOperator )
       {
@@ -596,27 +596,27 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
 
         coeffLocal(md,all,all,all)+=1.; // add the Identity.
 
-	getIndex(c.dimension(),I1,I2,I3);
-	bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,I1,I2,I3);
-	if( ok )
-	{
-	  realSerialArray xCoeff(M,I1,I2,I3);
+        getIndex(c.dimension(),I1,I2,I3);
+        bool ok = ParallelUtility::getLocalArrayBounds(c.mask(),maskLocal,I1,I2,I3);
+        if( ok )
+        {
+          realSerialArray xCoeff(M,I1,I2,I3);
           advCoeffLocal.reshape(1,advCoeffLocal.dimension(0),advCoeffLocal.dimension(1),advCoeffLocal.dimension(2),advCoeffLocal.dimension(3));
-	  for( int dir=0; dir<numberOfDimensions; dir++ )
-	  {
-	    xCoeff=0.;
+          for( int dir=0; dir<numberOfDimensions; dir++ )
+          {
+            xCoeff=0.;
             MappedGridOperators::derivativeTypes derivType = MappedGridOperators::derivativeTypes(MappedGridOperators::xDerivative+dir);
-	    op[grid].assignCoefficients(derivType,xCoeff,I1,I2,I3,0,0);  // coefficients for x, y or z derivative operator
+            op[grid].assignCoefficients(derivType,xCoeff,I1,I2,I3,0,0);  // coefficients for x, y or z derivative operator
 
-	    for( int m=M.getBase(); m<=M.getBound(); m++ )
-	      xCoeff(m,I1,I2,I3)*=advCoeffLocal(0,I1,I2,I3,dir);
+            for( int m=M.getBase(); m<=M.getBound(); m++ )
+              xCoeff(m,I1,I2,I3)*=advCoeffLocal(0,I1,I2,I3,dir);
 
-	    coeffLocal(M,I1,I2,I3)+=xCoeff;
-	  }
-	  advCoeffLocal.reshape(advCoeffLocal.dimension(1),advCoeffLocal.dimension(2),advCoeffLocal.dimension(3),advCoeffLocal.dimension(4));
-	}
-	
-	isSingular=false;
+            coeffLocal(M,I1,I2,I3)+=xCoeff;
+          }
+          advCoeffLocal.reshape(advCoeffLocal.dimension(1),advCoeffLocal.dimension(2),advCoeffLocal.dimension(3),advCoeffLocal.dimension(4));
+        }
+        
+        isSingular=false;
       }
       else
       {
@@ -630,133 +630,133 @@ setEquationAndBoundaryConditions( OgesParameters::EquationEnum equation,
 //       {  
 //         // **** do this for now **** fix for Neumann.
 //         // extrap 2nd ghost line 
-// 	extrapParams.ghostLineToAssign=2;
-// 	coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,extrapParams); 
-// 	extrapParams.ghostLineToAssign=1;
-	
+//      extrapParams.ghostLineToAssign=2;
+//      coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::allBoundaries,extrapParams); 
+//      extrapParams.ghostLineToAssign=1;
+        
 //       }
 
       ForBoundary(side,axis)
       {
-	  
-	if( boundaryConditions(side,axis,grid)==OgesParameters::dirichlet ||
+          
+        if( boundaryConditions(side,axis,grid)==OgesParameters::dirichlet ||
             boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndEvenSymmetry ||
             boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndOddSymmetry )
-	{
+        {
           isSingular=false;
-	  coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary1+side+2*axis);
+          coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary1+side+2*axis);
           if(  boundaryConditions(side,axis,grid)==OgesParameters::dirichlet )
-	  {
-	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,extrapParams);
-	  }
-	  else if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndEvenSymmetry )
-	  {
-	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis);
-	  }
-	  else
-	  {
+          {
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,extrapParams);
+          }
+          else if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndEvenSymmetry )
+          {
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis);
+          }
+          else
+          {
             coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::oddSymmetry,BCTypes::boundary1+side+2*axis);
-	  }
-	}
-	else if( boundaryConditions(side,axis,grid)==OgesParameters::extrapolate )
-	{
+          }
+        }
+        else if( boundaryConditions(side,axis,grid)==OgesParameters::extrapolate )
+        {
           // *wdh* new 100814 : look for the order of extrapolation to be optionally specified.
           int orderOfExtrapolation=int( bcData(0,side,axis,grid) +.5 );
           if( orderOfExtrapolation<=0 || orderOfExtrapolation>100 )
-	  {
+          {
             orderOfExtrapolation=orderOfAccuracy+1;
-	  }
-	  extrapParams.orderOfExtrapolation=orderOfExtrapolation;
-	  // printF("Oges:predefined: extrap BC: orderOfExtrapolation=%i\n",orderOfExtrapolation);
+          }
+          extrapParams.orderOfExtrapolation=orderOfExtrapolation;
+          // printF("Oges:predefined: extrap BC: orderOfExtrapolation=%i\n",orderOfExtrapolation);
 
-	  coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,extrapParams); 
-	}
-	else if( boundaryConditions(side,axis,grid)==OgesParameters::neumann || 
-		 boundaryConditions(side,axis,grid)==OgesParameters::axisymmetric )
-	{
-	  // printF("XXXXX OGES: Set a Neumann BC (side,axis,grid)=(%i,%i,%i)\n",side,axis,grid);
-	  coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::neumann,BCTypes::boundary1+side+2*axis);
-	}
-	else if( boundaryConditions(side,axis,grid)==OgesParameters::mixed )
-	{
-	  bcParams.a(0)=bcData(0,side,axis,grid);  // coeff of u
-	  bcParams.a(1)=bcData(1,side,axis,grid);  // coeff of du/dn
+          coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,extrapParams); 
+        }
+        else if( boundaryConditions(side,axis,grid)==OgesParameters::neumann || 
+                 boundaryConditions(side,axis,grid)==OgesParameters::axisymmetric )
+        {
+          // printF("XXXXX OGES: Set a Neumann BC (side,axis,grid)=(%i,%i,%i)\n",side,axis,grid);
+          coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::neumann,BCTypes::boundary1+side+2*axis);
+        }
+        else if( boundaryConditions(side,axis,grid)==OgesParameters::mixed )
+        {
+          bcParams.a(0)=bcData(0,side,axis,grid);  // coeff of u
+          bcParams.a(1)=bcData(1,side,axis,grid);  // coeff of du/dn
           // printf("*** Oges: mixed BC: %f*u+%f*u.n : for grid=%i side=%i axis=%i\n",bcParams.a(0),bcParams.a(1),
           //    grid,side,axis );
-	  
+          
           if( bcParams.a(0)==0. && bcParams.a(1)==0. )
-	  {
-	    printf("Oges::setEquationAndBoundaryConditions::ERROR: mixed BC a0*u+a1*u.n has a0 and a1 equal to zero\n"
-		   "for grid=%i side=%i axis=%i. Setting a0=1 and a1=1\n", grid,side,axis );
+          {
+            printf("Oges::setEquationAndBoundaryConditions::ERROR: mixed BC a0*u+a1*u.n has a0 and a1 equal to zero\n"
+                   "for grid=%i side=%i axis=%i. Setting a0=1 and a1=1\n", grid,side,axis );
             bcParams.a(0)=1.;
-	    bcParams.a(1)=1.;
-	  }
+            bcParams.a(1)=1.;
+          }
           if( bcParams.a(0)==0. && bcParams.a(1)==1. )
-	  {
+          {
             // printf("**** Oges::setEquationAndBoundaryConditions:: set neumann instead of mixed. a(0)=%f\n",bcParams.a(0));
-    	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::neumann,BCTypes::boundary1+side+2*axis);
-	  }
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::neumann,BCTypes::boundary1+side+2*axis);
+          }
           else if( bcParams.a(0)==1. && bcParams.a(1)==0. )
-	  {
+          {
             // printf("**** Oges::setEquationAndBoundaryConditions:: set dirichlet instead of mixed. a(1)=%f\n",bcParams.a(0));
-	    isSingular=false;
-	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary1+side+2*axis);
-	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
+            isSingular=false;
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::dirichlet,BCTypes::boundary1+side+2*axis);
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
                                                            extrapParams);
             
-	  }
-	  else if( bcParams.a(1)!=0. )
-	  {
-	    // *wdh* 080619 isSingular=bcParams.a(0)==0.;
-	    isSingular=isSingular && bcParams.a(0)==0.;
-	    coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::mixed,BCTypes::boundary1+side+2*axis,bcParams);
-	  }
+          }
+          else if( bcParams.a(1)!=0. )
+          {
+            // *wdh* 080619 isSingular=bcParams.a(0)==0.;
+            isSingular=isSingular && bcParams.a(0)==0.;
+            coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::mixed,BCTypes::boundary1+side+2*axis,bcParams);
+          }
           else
-	  {
-	    printf("Oges::setEquationAndBoundaryConditions::ERROR: mixed BC a0*u+a1*u.n has a0=%e and a1=%e "
-		   "for grid=%i side=%i axis=%i is really a Dirichlet like BC. \n" 
-		   " I do not know how to handle a Dirichlet BC with coefficient a0 not equal to 1. \n",
+          {
+            printf("Oges::setEquationAndBoundaryConditions::ERROR: mixed BC a0*u+a1*u.n has a0=%e and a1=%e "
+                   "for grid=%i side=%i axis=%i is really a Dirichlet like BC. \n" 
+                   " I do not know how to handle a Dirichlet BC with coefficient a0 not equal to 1. \n",
                    bcParams.a(0),bcParams.a(1),grid,side,axis );
-	    Overture::abort("Oges:ERROR: option not implemented");
-	  }
-	  
-	}
-	else if( boundaryConditions(side,axis,grid)>0 )
-	{
-	  printf("Oges::setEquationAndBoundaryConditions::ERROR: unknown bc=%i for grid=%i side=%i axis=%i\n",
-		 boundaryConditions(side,axis,grid),grid,side,axis);
-	  Overture::abort("error");
-	}
+            Overture::abort("Oges:ERROR: option not implemented");
+          }
+          
+        }
+        else if( boundaryConditions(side,axis,grid)>0 )
+        {
+          printf("Oges::setEquationAndBoundaryConditions::ERROR: unknown bc=%i for grid=%i side=%i axis=%i\n",
+                 boundaryConditions(side,axis,grid),grid,side,axis);
+          Overture::abort("error");
+        }
 
         // *** assign ghost line 2 and higher for higher-order schemes ****
         // -- for now we extrapolate --
-	if( orderOfAccuracy>=4 )
-	{
-	  int numGhost= orderOfAccuracy/2; // 
-	  for( int ghost=2; ghost<=numGhost; ghost++ )  // assign ghost lines 2,3,..
-	  {
-	    extrapParams.ghostLineToAssign=ghost;
+        if( orderOfAccuracy>=4 )
+        {
+          int numGhost= orderOfAccuracy/2; // 
+          for( int ghost=2; ghost<=numGhost; ghost++ )  // assign ghost lines 2,3,..
+          {
+            extrapParams.ghostLineToAssign=ghost;
 
-	    if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndEvenSymmetry )
-	    {
-	      coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis,
-		 extrapParams);
-	    }
-	    else if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndOddSymmetry )
-	    {
-	      coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::oddSymmetry,BCTypes::boundary1+side+2*axis,
-		 extrapParams);
-	    }
-	    else
-	    {
-	      coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
-		 extrapParams);
-	    }
-	    extrapParams.ghostLineToAssign=1; // reset 
-	  }
-	  
-	}
-	
+            if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndEvenSymmetry )
+            {
+              coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::evenSymmetry,BCTypes::boundary1+side+2*axis,
+                 extrapParams);
+            }
+            else if( boundaryConditions(side,axis,grid)==OgesParameters::dirichletAndOddSymmetry )
+            {
+              coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::oddSymmetry,BCTypes::boundary1+side+2*axis,
+                 extrapParams);
+            }
+            else
+            {
+              coeff[grid].applyBoundaryConditionCoefficients(0,0,BCTypes::extrapolate,BCTypes::boundary1+side+2*axis,
+                 extrapParams);
+            }
+            extrapParams.ghostLineToAssign=1; // reset 
+          }
+          
+        }
+        
       }  // end ForBoundary
       
     } // end for grid
@@ -1205,13 +1205,13 @@ writeMatrixToFile( aString filename )
       // rownorm=0.0;
       for( j=ia_[irowm1]; j<=ia_[irowm1+1]-1; j++ ) 
       {
-	real v=aval[ j-1 ];
-	jcolm1=ja_[ j-1 ]-1;
+        real v=aval[ j-1 ];
+        jcolm1=ja_[ j-1 ]-1;
 
-	int i=irowm1+1;
-	int j=jcolm1+1;
-	//printf(" %i    %i   %24.16f\n", i,j,v);
-	fprintf(fpMatrix," %i    %i   %24.16f\n", i,j,v);
+        int i=irowm1+1;
+        int j=jcolm1+1;
+        //printf(" %i    %i   %24.16f\n", i,j,v);
+        fprintf(fpMatrix," %i    %i   %24.16f\n", i,j,v);
       } 
     }
   }
@@ -1376,56 +1376,56 @@ writeMatrixGridInformationToFile( aString filename )
       case SparseRepForMGF::extrapolation: 
       case SparseRepForMGF::interpolation: 
       case SparseRepForMGF::periodic:
-	iSimpleClassify=-1;
-	break;
+        iSimpleClassify=-1;
+        break;
       case SparseRepForMGF::interior: 
-	iSimpleClassify=1;
-	break;
+        iSimpleClassify=1;
+        break;
       case SparseRepForMGF::boundary: 
       case SparseRepForMGF::ghost1: 
       case SparseRepForMGF::ghost2: 
       case SparseRepForMGF::ghost3: 
       case SparseRepForMGF::ghost4:
-	iSimpleClassify=2;
-	break;
+        iSimpleClassify=2;
+        break;
       case SparseRepForMGF::unused:
-	iSimpleClassify=0;
-	break;
+        iSimpleClassify=0;
+        break;
     }
 
     //..SimpleClassify: using a switch to ensure the enum can be changed
     int iFullClassify=-99; //=unknown
     switch( classifyFlag ) {
       case SparseRepForMGF::extrapolation:
-	iFullClassify=-3;
-	break;
+        iFullClassify=-3;
+        break;
       case SparseRepForMGF::periodic:
-	iFullClassify=-2;
-	break;
+        iFullClassify=-2;
+        break;
       case SparseRepForMGF::interpolation:
-	iFullClassify=-1;
-	break;
+        iFullClassify=-1;
+        break;
       case SparseRepForMGF::interior: 
-	iFullClassify=1;
-	break;
+        iFullClassify=1;
+        break;
       case SparseRepForMGF::boundary: 
-	iFullClassify=2;
-	break;
+        iFullClassify=2;
+        break;
       case SparseRepForMGF::ghost1: 
-	iFullClassify=3;
-	break;
+        iFullClassify=3;
+        break;
       case SparseRepForMGF::ghost2: 
-	iFullClassify=4;
-	break;
+        iFullClassify=4;
+        break;
       case SparseRepForMGF::ghost3: 
-	iFullClassify=5;
-	break;
+        iFullClassify=5;
+        break;
       case SparseRepForMGF::ghost4: 
-	iFullClassify=6;
-	break;
+        iFullClassify=6;
+        break;
       case SparseRepForMGF::unused:
-	iFullClassify=0;
-	break;
+        iFullClassify=0;
+        break;
     }
 
     fprintf(fpMatrix," %8i  %8i \n ", iSimpleClassify, iFullClassify);
@@ -1439,8 +1439,8 @@ writeMatrixGridInformationToFile( aString filename )
 //\begin{>>OgesInclude.tex}{\subsection{writePetscMatrixToFile}} 
 int Oges::
 writePetscMatrixToFile( aString filename,
-			realCompositeGridFunction & u,
-			realCompositeGridFunction & f)
+                        realCompositeGridFunction & u,
+                        realCompositeGridFunction & f)
 //==================================================================================
 // /Description:
 //    Only available when linked with PETSc (-DOVERTURE\_USE\_PETSC)
@@ -1514,8 +1514,8 @@ canSolveInPlace() const
 //=====================================================================================
 int Oges::
 setCoefficientsAndBoundaryConditions( realCompositeGridFunction & coeff0,
-				      const IntegerArray & boundaryConditions,
-				      const RealArray & bcData )
+                                      const IntegerArray & boundaryConditions,
+                                      const RealArray & bcData )
 {
   if( equationSolver[parameters.solver]==NULL )
     buildEquationSolvers(parameters.solver);  
@@ -1539,8 +1539,8 @@ setCoefficientsAndBoundaryConditions( realCompositeGridFunction & coeff0,
 //\begin{>>OgesInclude.tex}{\subsection{setCoefficientArray}}
 int Oges::
 setCoefficientArray( realCompositeGridFunction & coeff0,
-		     const IntegerArray & boundaryConditions /* =Overture::nullIntArray() */,
-		     const RealArray & bcData /* =Overture::nullRealArray() */ )
+                     const IntegerArray & boundaryConditions /* =Overture::nullIntArray() */,
+                     const RealArray & bcData /* =Overture::nullRealArray() */ )
 //=====================================================================================
 // /Purpose: Supply a coefficient grid function to be used to discretize the equations.
 // /coeff0 (input): Here are the coefficients. Oges will keep a reference to this
@@ -1571,26 +1571,26 @@ setCoefficientArray( realCompositeGridFunction & coeff0,
       int grid0=0;
       if( !useAllGrids )
       {
-	for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-	{
-	  if( useThisGrid(grid) )
-	  {
-	    grid0=grid;
-	    break;
-	  }
-	}
+        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+        {
+          if( useThisGrid(grid) )
+          {
+            grid0=grid;
+            break;
+          }
+        }
       }
       if( coeff[grid0].sparse!=NULL )
       {
-	numberOfComponents=coeff[grid0].sparse->numberOfComponents;
-	stencilSize=coeff[grid0].sparse->stencilSize;
-	// printf("Oges::setCoefficientArray: stencilSize=%i\n",stencilSize);
+        numberOfComponents=coeff[grid0].sparse->numberOfComponents;
+        stencilSize=coeff[grid0].sparse->stencilSize;
+        // printf("Oges::setCoefficientArray: stencilSize=%i\n",stencilSize);
       }
       else
       {
-	printf("Oges::setCoefficientArray:ERROR: there is no sparseRep available with the coefficient matrix\n"
-	       "                                 Maybe it is not a coefficient matrix?\n");
-	Overture::abort("Oges::setCoefficientArray:ERROR");
+        printf("Oges::setCoefficientArray:ERROR: there is no sparseRep available with the coefficient matrix\n"
+               "                                 Maybe it is not a coefficient matrix?\n");
+        Overture::abort("Oges::setCoefficientArray:ERROR");
       }
     }
     shouldBeInitialized=true;
@@ -1602,8 +1602,8 @@ setCoefficientArray( realCompositeGridFunction & coeff0,
 //\begin{>>OgesInclude.tex}{\subsection{setCoefficientArray}}
 int Oges::
 setCoefficientArray( realMappedGridFunction & coeff0,
-		     const IntegerArray & boundaryConditions /* =Overture::nullIntArray() */,
-		     const RealArray & bcData /* =Overture::nullRealArray() */ )
+                     const IntegerArray & boundaryConditions /* =Overture::nullIntArray() */,
+                     const RealArray & bcData /* =Overture::nullRealArray() */ )
 //=====================================================================================
 // /Purpose: Supply a coefficient grid function (single grid only)
 //  to be used to discretize the equations.
@@ -1616,7 +1616,7 @@ setCoefficientArray( realMappedGridFunction & coeff0,
 //=====================================================================================
 {
   coeff.updateToMatchGrid(cg,Range(coeff0.getComponentBase(0),coeff0.getComponentBound(0)),
-			  nullRange,nullRange,nullRange);
+                          nullRange,nullRange,nullRange);
   coeff[0].reference(coeff0);
   if( coeff0.getIsACoefficientMatrix() )
   {
@@ -1828,8 +1828,8 @@ set( OgesParameters::MatrixOrderingEnum option )
   return parameters.set(option);
 }
 
-	   
-	   		      
+           
+                              
 //\begin{>>OgesInclude.tex}{\subsection{get(OptionEnum,int\&)}}
 int Oges::
 get( OgesParameters::OptionEnum option, int & value ) const
@@ -1939,12 +1939,12 @@ sizeOf( FILE *file /* =NULL */ ) const
   if( file!=NULL )
   {
     fprintf(file,
-	    "                                          Kbytes       %% \n"
-	    " sizeof(*this).........................%11.1f  %5.2f\n"
+            "                                          Kbytes       %% \n"
+            " sizeof(*this).........................%11.1f  %5.2f\n"
             "   sizeof(cg) (no data)................%11.1f  %5.2f\n"
-	    " Oges matrix (ia,ja,a).................%11.1f  %5.2f\n"
+            " Oges matrix (ia,ja,a).................%11.1f  %5.2f\n"
             " reference to coeff matrix.............%11.1f  %5.2f\n"
-	    " Oges other stuff.(sol,rhs,null).......%11.1f  %5.2f\n"
+            " Oges other stuff.(sol,rhs,null).......%11.1f  %5.2f\n"
             " sparse solver.........................%11.1f  %5.2f\n"
             " total counted.........................%11.1f  %5.2f\n"
             " bytes/unknown = %7.2f\n",
@@ -2049,7 +2049,7 @@ privateUpdateToMatchGrid()
 
 int Oges::
 equationNo( const int n, const int i1, const int i2, const int i3, 
-	    const int grid )
+            const int grid )
 //=============================================================================
 /// \brief Return the equation number for given indices
 /// \param  n (input) : component number ( n=0,1,..,numberOfComponents-1 )
@@ -2064,7 +2064,7 @@ equationNo( const int n, const int i1, const int i2, const int i3,
   return n+1+   numberOfComponents*(i1-cg[grid].dimension(Start,axis1)+
         (cg[grid].dimension(End,axis1)-cg[grid].dimension(Start,axis1)+1)*(i2-cg[grid].dimension(Start,axis2)+
         (cg[grid].dimension(End,axis2)-cg[grid].dimension(Start,axis2)+1)*(i3-cg[grid].dimension(Start,axis3)
-        						 ))) + gridEquationBase(grid);
+                                                         ))) + gridEquationBase(grid);
   // #endif
 }
 
@@ -2113,7 +2113,7 @@ equationToIndex( const int eqnNo0, int & n, int & i1, int & i2, int & i3, int & 
 
 IntegerDistributedArray Oges::
 equationNo(const int n, const Index & I1, const Index & I2, const Index & I3, 
-			    const int grid )
+                            const int grid )
 {
   //=============================================================================
   // Return an IntegerArray of equation numbers for given indices
@@ -2128,7 +2128,7 @@ equationNo(const int n, const Index & I1, const Index & I2, const Index & I3,
 
   IntegerDistributedArray Eqn(Range(I1.getBase(),I1.getBound()),
                Range(I2.getBase(),I2.getBound()),
-	       Range(I3.getBase(),I3.getBound()));
+               Range(I3.getBase(),I3.getBound()));
 
   for( int i3=I3.getBase(); i3<=I3.getBound(); i3++ )
   for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
@@ -2227,11 +2227,11 @@ int Oges::
 computeResidual( int n, real *x, real *b, real *r )
 {
   OGES_RESIDUAL( numberOfEquations,
-		*x, *b, *r,
-		numberOfNonzeros, 
-		*ia.getDataPointer(),
-		*ja.getDataPointer(),
-		*a.getDataPointer() );
+                *x, *b, *r,
+                numberOfNonzeros, 
+                *ia.getDataPointer(),
+                *ja.getDataPointer(),
+                *a.getDataPointer() );
   return 0;
 }
 

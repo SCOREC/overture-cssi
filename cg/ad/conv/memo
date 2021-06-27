@@ -1,0 +1,122 @@
+***************************************************
+******* Wed May 5, 2021
+
+REVISIT ANNULUS EXACT SOLUTION -- bug fixed
+
+
+IMPLICIT -- BDF4
+conv.p exact.conv -known=annulusEigen -cg=annulus -ts=bdf -bdfOrder=4 -order=4 -n=1 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -dtMax=.05 -ng=4
+
+                grid  & N &  $ u $ & r 
+  annulus2 &     1 & 2.31e-04 &       
+  annulus4 &     2 & 7.66e-06 & 30.16 
+  annulus8 &     4 & 3.41e-07 & 22.46 
+ annulus16 &     8 & 1.81e-08 & 18.84 
+Convergence rates: c0=4.54 
+
+conv.p exact.conv -known=annulusEigen -cg=annulus -ts=bdf -bdfOrder=4 -order=4 -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -dtMax=.05 -ng=4
+
+                grid  & N &  $ u $ & r 
+  annulus2 &     1 & 2.42e-04 &       
+  annulus4 &     2 & 7.86e-06 & 30.79 
+  annulus8 &     4 & 3.52e-07 & 22.33 
+ annulus16 &     8 & 1.87e-08 & 18.82 
+Convergence rates: c0=4.55 
+
+***************************************************
+******* Thurs April 22, 2021
+
+CONTINUE ON NEW CONV TESTS for Cgad documentation
+
++++++++++++ ANNULUS EIGEN
+
+IMPLICIT -- BDF4
+conv.p exact.conv -known=annulusEigen -cg=annulus -ts=bdf -bdfOrder=4 -order=4 -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -dtMax=.05 -ng=4
+
+                grid  & N &  $ u $ & r 
+  annulus2 &     1 & 2.42e-04 &       
+  annulus4 &     2 & 7.86e-06 & 30.79 
+  annulus8 &     4 & 3.52e-07 & 22.33 
+  annulus1 &     8 & 1.87e-08 & 18.82 
+Convergence rates: c0=4.55 
+
+***************************************************
+******* Wed April 21, 2021
+
+START ON NEW CONV TESTS
+
+
+
++++++++++++ ANNULUS EIGEN
+
+IMPLICIT -- set dtMax and reduce by 2 each resolution
+conv.p exact.conv -known=annulusEigen -cg=annulus -ts=im -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -dtMax=.05 -ng=4
+
+                grid  & N &  $ u $ & r 
+  annulus2 &     1 & 2.89e-05 &       
+  annulus4 &     2 & 7.77e-06 &  3.72 
+  annulus8 &     4 & 1.97e-06 &  3.94 
+  annulus1 &     8 & 4.95e-07 &  3.98 
+Convergence rates: c0=1.96 
+
+conv.p exact.conv -known=annulusEigen -cg=annulus -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -ng=4
+
+                grid  & N &  $ u $ & r 
+  annulus2 &     1 & 1.29e-05 &       
+  annulus4 &     2 & 3.16e-06 &  4.08 
+  annulus8 &     4 & 7.83e-07 &  4.04 
+  annulus1 &     8 & 1.96e-07 &  3.99 
+Convergence rates: c0=2.01 
+
++++++++++++ DISK EIGEN
+
+ORDER=4
+conv.p exact.conv -known=diskEigen -ts=pc2 -order=4 -cg=sic -n=1 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -ng=4
+
+IMPLICIT:
+conv.p exact.conv -known=diskEigen -ts=im -cg=sic -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -ng=4
+
+                grid  & N &  $ u $ & r 
+      sic2 &     1 & 9.95e-04 &       
+      sic4 &     2 & 2.48e-04 &  4.01 
+      sic8 &     4 & 6.18e-05 &  4.01 
+     sic16 &     8 & 1.54e-05 &  4.01 
+Convergence rates: c0=2.00 
+
+conv.p exact.conv -known=diskEigen -cg=sic -n=0 -m=1 -tf=.5 -tp=.1 -kappa=.1 -bc=d -ng=3
+
+                grid  & N &  $ u $ & r 
+      sic2 &     1 & 1.36e-03 &       
+      sic4 &     2 & 3.95e-04 &  3.44 
+      sic8 &     4 & 9.88e-05 &  4.00 
+Convergence rates: c0=1.89 
+
+
+
++++++++++++   SQUARE EIGEN
+
+IMPLICIT -- check me --
+conv.p exact.conv -known=squareEigen -cg=square -ts=im -tf=.5 -tp=.1 -kappa=.1 -kx=2 -ky=2 -bc=n -ng=3
+
+
+
+conv.p exact.conv -known=squareEigen -cg=square -tf=.5 -tp=.1 -kappa=.1 -kx=2 -ky=2 -bc=n -ng=3
+
+                grid  & N &  $ u $ & r 
+   square8 &     1 & 3.81e-03 &       
+  square16 &     2 & 9.71e-04 &  3.92 
+  square32 &     4 & 2.44e-04 &  3.98 
+Convergence rates: c0=1.98 
+
+ ****Output written to ./squareEigenPC2SquareNeumannOrder2MaxNormConvTable.tex *****
+
+conv.p exact.conv -known=squareEigen -cg=square -tf=.5 -tp=.1 -kappa=.1 -kx=2 -ky=2 -ng=3
+
+                grid  & N &  $ u $ & r 
+   square8 &     1 & 3.81e-03 &       
+  square16 &     2 & 9.71e-04 &  3.92 
+  square32 &     4 & 2.44e-04 &  3.98 
+Convergence rates: c0=1.98 
+
+ ****Output written to ./squareEigenPC2SquareOrder2maxNormConvTable.tex *****
+

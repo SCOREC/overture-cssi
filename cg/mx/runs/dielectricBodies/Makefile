@@ -2,7 +2,6 @@
 #   Makefile for dielectric bodies
 #
 
-
 # ogen = /home/henshw/Overture.g/bin/ogen
 ogen = $(Overture)/bin/ogen
 

@@ -30,6 +30,8 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
   RealArray error(numberOfComponents+5);  
   error = 0.;
   // ===Check errors, print results====
+  // printF("\n >>>>>>> printTimeStepInfo t=%9.3e \n\n ",t);
+
   determineErrors( solution.u,solution.gridVelocity,t,0,error );
 
   // determine the max/min of all components: uMax, uMin, uvMax
@@ -69,18 +71,18 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
 
       if( numberOfComponents<10 )
       {
-	if( step<=2 || ((step-1) % 10 == 0) || true ) // always print header *wdh* 080509
-	{
-	  if( !parameters.isSteadyStateSolver() )
+        if( step<=2 || ((step-1) % 10 == 0) || true ) // always print header *wdh* 080509
+        {
+          if( !parameters.isSteadyStateSolver() )
             fprintf(file,"     t ");
           else
             fprintf(file,"     it");
 
-	  for( n=0; n<numberOfComponents; n++)
-	    fprintf(file,"   err(%s)",(const char*)parameters.dbase.get<aString* >("componentName")[n]);
-	  fprintf(file,"    uMax     dt       cpu    mem (Mb) (%i steps)\n",parameters.dbase.get<int >("globalStepNumber"));
-	}
-	if( !parameters.isSteadyStateSolver() )
+          for( n=0; n<numberOfComponents; n++)
+            fprintf(file,"   err(%s)",(const char*)parameters.dbase.get<aString* >("componentName")[n]);
+          fprintf(file,"    uMax     dt       cpu    mem (Mb) (%i steps)\n",parameters.dbase.get<int >("globalStepNumber"));
+        }
+        if( !parameters.isSteadyStateSolver() )
         {
           if( t==0. || t>5.e-3 )
             fprintf(file," %7.3f",t);
@@ -89,28 +91,28 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
         }
         else
           fprintf(file,"%10i",parameters.dbase.get<int >("globalStepNumber")+1);
-	for( n=0; n<numberOfComponents; n++)
-	  fprintf(file," %8.2e",error(n));
-	fprintf(file," %8.2e %8.2e %8.2e %8.2g\n",uvMax,dt,cpu,maxMem);
+        for( n=0; n<numberOfComponents; n++)
+          fprintf(file," %8.2e",error(n));
+        fprintf(file," %8.2e %8.2e %8.2e %8.2g\n",uvMax,dt,cpu,maxMem);
       }
       else
       {
-	if( !parameters.isSteadyStateSolver() )
-	  fprintf(file," >>> t = %10.3e, dt =%9.2e, cpu =%9.2e seconds, max-mem=%g (Mb) (%i steps)\n",
+        if( !parameters.isSteadyStateSolver() )
+          fprintf(file," >>> t = %10.3e, dt =%9.2e, cpu =%9.2e seconds, max-mem=%g (Mb) (%i steps)\n",
                   t,dt,cpu,maxMem,parameters.dbase.get<int >("globalStepNumber")+1);
-	else
-	  fprintf(file," >>> it= %10i, dt =%9.2e, cpu =%9.2e seconds, max-mem=%g (Mb) \n",
+        else
+          fprintf(file," >>> it= %10i, dt =%9.2e, cpu =%9.2e seconds, max-mem=%g (Mb) \n",
                   parameters.dbase.get<int >("globalStepNumber")+1,dt,cpu,maxMem);
 
-	for( n=0; n<numberOfComponents; n++ )
-	  fprintf(file," %s%s : (min,max)=(%13.6e,%13.6e), error=%10.3e \n",
-		 (const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
-		 (const char*)parameters.dbase.get<aString* >("componentName")[n],
-		 uMin(n),uMax(n),error(n));
-	fprintf(file,"Max errors:");
-	for( n=0; n<numberOfComponents; n++ )
-	  fprintf(file," %10.3e  &",error(n));
-	fprintf(file,"\n");
+        for( n=0; n<numberOfComponents; n++ )
+          fprintf(file," %s%s : (min,max)=(%13.6e,%13.6e), error=%10.3e \n",
+                 (const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
+                 (const char*)parameters.dbase.get<aString* >("componentName")[n],
+                 uMin(n),uMax(n),error(n));
+        fprintf(file,"Max errors:");
+        for( n=0; n<numberOfComponents; n++ )
+          fprintf(file," %10.3e  &",error(n));
+        fprintf(file,"\n");
       }
     }
 
@@ -119,7 +121,7 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
 //      for( n=0; n<numberOfComponents; n++ )
 //        fprintf(debugFile," %s%s : (min,max)=(%13.6e,%13.6e), error=%16.9e \n",
 //                (const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
-//  	      (const char*)parameters.dbase.get<aString* >("componentName")[n],
+//            (const char*)parameters.dbase.get<aString* >("componentName")[n],
 //                   uMin(n),uMax(n),error(n));
 
     // output results to the check file
@@ -156,16 +158,16 @@ printTimeStepInfo( const int & step, const real & t, const real & cpuTime )
                      parameters.dbase.get<int >("globalStepNumber")+1,dt,cpu,maxMem);
       for( n=0; n<numberOfComponents; n++ )
         fprintf(file," %s%s : (min,max)=(%13.6e,%13.6e) \n",
-		(const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
-		(const char*)parameters.dbase.get<aString* >("componentName")[n],
-		uMin(n),uMax(n));
+                (const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
+                (const char*)parameters.dbase.get<aString* >("componentName")[n],
+                uMin(n),uMax(n));
 
 //        fprintf(file," >>> t = %10.3e, dt =%9.2e, cpu =%9.2e seconds \n",t,dt,cpu);
 //        for( n=0; n<numberOfComponents; n++ )
 //          fprintf(file," %s%s : (min,max)=(%14.7e,%14.7e) \n",
-//  		(const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
-//  		(const char*)parameters.dbase.get<aString* >("componentName")[n],
-//  		uMin(n),uMax(n));
+//              (const char*)blanks(0,max(0,10-parameters.dbase.get<aString* >("componentName")[n].length())),
+//              (const char*)parameters.dbase.get<aString* >("componentName")[n],
+//              uMin(n),uMax(n));
 
       // *wdh* 030317 fprintf(file," maximum divergence on all interior points: divMax = %e \n",divMax);
       

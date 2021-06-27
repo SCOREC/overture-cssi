@@ -10,6 +10,10 @@
 #   plotStuff plotSolution.cmd -show=eightMlaEllipsoids.show -name=eightSolidMlaEllipsoids -solution=6
 #   plotStuff plotSolution.cmd -show=36MlaEllipsoids.show -name=36SolidMlaEllipsoids -solution=6 -y1=-1.3 -y2=1.3 -z1=-1.95 
 #
+#  plotStuff plotSolution.cmd -show=oneSolidEllipsoidMLAOrder2G8.show -name=oneSolidEllipsoidMLAOrder2G8 -y1=0 -y2=0 -z1=0 -solution=21
+# One ellipsoid, Fine grid
+#   plotStuff plotSolution.cmd -show=oneSolidEllpsoidMLAO4G16.show -name=oneSolidEllpsoidMLA -y1=0 -y2=0 -z1=0 -solution=21
+#
 $show="fourSolidEllipsoids.hdf"; $solution="-1"; $name="fourSolidEllipsoids"; $field="Ey"; 
 $tSave=1; $numPerTime=2; $numToSave=5; # save solution at these time intervals
 $y1=-.65; $y2=.65; $z1=-.65; $eMax=""; $view=1;
@@ -49,7 +53,8 @@ $cmd="set view:0 -0.00241692 -0.00483384 0 1.27701 0.866025 0.17101 -0.469846 0 
 # 125 : 
 if( $view eq 2 ){ $cmd="set view:0 0.0465255 -0.0997615 0 1.06004 0.866025 0.17101 -0.469846 0 0.939693 0.34202 0.5 -0.296198 0.813798"; }
 $cmd
-# pause
+pause
+#
 DISPLAY AXES:0 0
 DISPLAY LABELS:0 0
 DISPLAY COLOUR BAR:0 0

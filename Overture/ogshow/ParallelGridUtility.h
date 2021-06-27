@@ -29,38 +29,38 @@ public:
 
 // redistribute a grid and grid function to a new set of processors
 static void redistribute(const realGridCollectionFunction & u, 
-			 GridCollection & gcP,
-			 realGridCollectionFunction & v, 
-			 const Range & Processors );
+                         GridCollection & gcP,
+                         realGridCollectionFunction & v, 
+                         const Range & Processors );
 
 static void redistribute(const realCompositeGridFunction & u, 
-			 CompositeGrid & gcP,
-			 realCompositeGridFunction & v, 
-			 const Range & Processors );
+                         CompositeGrid & gcP,
+                         realCompositeGridFunction & v, 
+                         const Range & Processors );
 
 // redistribute a grid to a new set of processors
 static void redistribute(const GridCollection & gc,
-			 GridCollection & gcP,
-			 const Range & Processors );
+                         GridCollection & gcP,
+                         const Range & Processors );
 
 static void redistribute(const CompositeGrid & gc,
-			 CompositeGrid & gcP,
-			 const Range & Processors );
+                         CompositeGrid & gcP,
+                         const Range & Processors );
 
 
 static void getLocalIndexBoundsAndBoundaryConditions( const realMappedGridFunction & a, 
-						      IntegerArray & indexRangeLocal, 
-						      IntegerArray & dimensionLocal, 
-						      IntegerArray & bcLocal,
-						      int internalGhostBC = -1); // 101102 kkc added internalGhostBC
+                                                      IntegerArray & indexRangeLocal, 
+                                                      IntegerArray & dimensionLocal, 
+                                                      IntegerArray & bcLocal,
+                                                      int internalGhostBC = -1); // 101102 kkc added internalGhostBC
 
 static void getLocalBoundaryConditions( const MappedGrid & mg,
-					IntegerArray & bcLocal,
-					int internalGhostBC = -1 );
+                                        IntegerArray & bcLocal,
+                                        int internalGhostBC = -1 );
 
 static void getLocalBoundaryConditions( const realMappedGridFunction & a, 
-					IntegerArray & bcLocal,
-					int internalGhostBC = -1 );
+                                        IntegerArray & bcLocal,
+                                        int internalGhostBC = -1 );
 
 static int 
 getLocalInterpolationData( CompositeGrid & cg, InterpolationData *&interpData );

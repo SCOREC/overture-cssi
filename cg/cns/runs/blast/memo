@@ -1,0 +1,151 @@
+*************************************************
+******* Thurs Jun 24, 2021 
+
+>>> DOWNTOWN:
+
+INCREASE BACKGROUND GRID SPACING
+
+
+setsid $cgcns -noplot blast.cmd -g=downTownGrid.hdf -numBubbles=2 -rad=.03 .03 -x0=.175 .49 -y0=.015 .1 -amr=1 -l=2 -r=4 -tol=.05 -tf=.2 -tp=.01 -cfl=1 -flushFrequency=1 -show=downTownl2r4.show -go=go > downTownl2r4.out
+
+
+*************************************************
+******* Tues/Wed Jun 22/23, 2021 
+
+>>> shapes:
+   ADD more sources
+cgcns blast.cmd -g=shapese4.order2.hdf -numBubbles=2 -rad=.15 .2 -x0=.2 .25 -y0=.5 -.6 -amr=0 -l=2 -r=4 -tf=1. -tol=.1 -tp=.01   
+
+
+>>> 2D DOWNTOWN: 
+
+  CHANGE smp.p --> decrease tstretch, increase $ns
+
+TRY THIS: L=3 r=2
+setsid $cgcns -noplot blast.cmd -g=downTownGrid.hdf -numBubbles=2 -rad=.03 .03 -x0=.175 .49 -y0=.015 .1 -amr=1 -l=3 -r=2 -tol=.05 -tf=.2 -tp=.01 -cfl=1 -show=downTownl3r2.show -go=go > downTownl3r2.out 
+
+
+
+AMR -- two bubbles: USE cfl=1 -- trouble with updateRefinement !! see updateRefinementDebug.cmd
+setsid $cgcns -noplot blast.cmd -g=downTownGrid.hdf -numBubbles=2 -rad=.03 .03 -x0=.175 .49 -y0=.015 .1 -amr=1 -l=2 -r=4 -tol=.05 -tf=.2 -tp=.01 -cfl=1 -show=downTownl2r4.show -go=go > downTownl2r4.out 
+
+
+cgcns blast.cmd -g=downTownGrid.hdf -rad=.03 -x0=.175 -y0=.015 -amr=0 -l=2 -r=2 -tf=.5 -tol=.05 -tp=.05 -cfl=10 -show=downTown.show  
+
+CFL=10
+ >>> t =  0.000e+00, dt = 8.73e-05, cpu = 7.30e-05 seconds, (cur,max)-mem=(154.184,154.184) (Mb) (0 steps)
+
+ CFFL=1
+>>> t =  0.000e+00, dt = 8.73e-06, cpu = 6.60e-05 seconds, (cur,max)-mem=(153.961,153.961) (Mb) (0 steps)
+
+
+
+#  ogen -noplot multipleBuildingsGrid.cmd -prefix=eightBuildings -wakeGrid=0 -factor=1
+#  ogen -noplot multipleBuildingsGrid.cmd -prefix=eightBuildings -wakeGrid=0 -factor=2  [ 4.7 M pts]
+ogen -noplot multipleBuildingsGrid.cmd -prefix=eightBuildings -wakeGrid=0 -factor=4     [ 32 M]
+
+>>>> 3D BUILDINGS:
+
+G4: l=2 r=2
+setsid $cgcns -noplot blast.cmd -g=eightBuildingse4.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=1 -l=2 -r=2 -tf=.5 -tol=.05 -tp=.05 -flushFrequency=1 -show=eightBuildingsG4l2r2.show -go=go > eightBuildingsG4l2r2.out
+
+G2: l=2 r=4
+setsid $cgcns -noplot blast.cmd -g=eightBuildingse2.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=1 -l=2 -r=4 -tf=.5 -tol=.05 -tp=.05 -flushFrequency=1 -show=eightBuildingsG2l2r4.show -go=go > eightBuildingsG2l2r4.out
+
+*************************************************
+******* Tues Jun 22, 2021 
+
+>>> 2D DOWNTOWN: 
+
+$ns=9:
+ >>> t =  0.000e+00, dt = 6.90e-05, cpu = 6.00e-05 seconds, (cur,max)-mem=(93.0898,93.0898) (Mb) (0 steps)
+
+$ns=15: reduce sharpness and tstretch
+>>> t =  0.000e+00, dt = 6.77e-05, cpu = 4.90e-05 seconds, (cur,max)-mem=(93.5273,93.5273) (Mb) (0 steps)
+
+$ns=27:
+>>> t =  0.000e+00, dt = 4.80e-05, cpu = 6.00e-05 seconds, (cur,max)-mem=(93.3672,93.3672) (Mb) (0 steps)
+
+$ns=21:
+>>> t =  0.000e+00, dt = 4.62e-05, cpu = 5.00e-05 seconds, (cur,max)-mem=(93.8438,93.8438) (Mb) (0 steps)
+total number of grid points =166616 (egir), min(hmn)=1.23e-04, max(hmn)=2.00e-03, max(hmx)=2.34e-03,
+
+$ns=15:
+total number of grid points =165681 (egir), min(hmn)=1.23e-04, max(hmn)=2.00e-03, max(hmx)=2.34e-03,  
+>>> t =  0.000e+00, dt = 3.54e-05, cpu = 6.10e-05 seconds, (cur,max)-mem=(92.7578,92.7578) (Mb) (0 steps)
+
+
+building1:
+>>> t =  0.000e+00, dt = 3.81e-06, cpu = 5.20e-05 seconds, (cur,max)-mem=(93.3203,93.3203) (Mb) (0 steps)
+
+
+
+Time-step dt is very small!! dt=7.4e-9 
+THE METRICS MUST BE BAD NEAR CORNERS --> fix grid we can run at CFL=2000 !!
+
+cgcns blast.cmd -g=downTownGrid.hdf -rad=.03 -x0=.175 -y0=.015 -amr=0 -l=2 -r=2 -tf=1. -tol=.05 -tp=.05 -cfl=2000 -show=downTown.show
+
+
+49:  building22-4   ([ 0:   29],[ 0:    8],[ 0:    0])        165   2.49e-03 9.67e-05 
+ 50:  building22-5   ([ 0:   85],[ 0:    8],[ 0:    0])        654   1.98e-03 2.19e-04 
+ total number of grid points =195975 (egir), min(hmn)=9.39e-05, max(hmn)=2.00e-03, max(hmx)=4.01e-03, 
+
+
+
+>>>> 3D BUILDINGS:
+
+
+AMR - 1 level r=4 (dt is the same)
+cgcns blast.cmd -g=eightBuildingse1.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=1 -l=2 -r=4 -tf=1. -tol=.1 -tp=.05 -show=eightBuildings.show -go=halt
+
+AMR - 1 level r=2 (dt is the same)
+setsid $cgcns -noplot blast.cmd -g=eightBuildingse2.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=1 -l=2 -r=2 -tf=.5 -tol=.1 -tp=.05 -show=eightBuildingsG2l2r2.show -go=go > eightBuildingsG2l2r2.out
+
+G2:
+setsid $cgcns -noplot blast.cmd -g=eightBuildingse2.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=0 -l=2 -r=2 -tf=.5 -tp=.05 -flushFrequency=1 -show=eightBuildingsG2.show -go=go > eightBuildingsG2.out 
+
+No AMR
+setsid $cgcns -noplot blast.cmd -g=eightBuildingse1.order2.hdf -rad=.25 -x0=.85 -y0=.5 -z0=0. -amr=0 -l=2 -r=2 -tf=.5 -tp=.05 -flushFrequency=1 -show=eightBuildingsl0.show -go=go > eightBuildingsl0.out 
+ >>> t =  1.000e-02, dt = 1.75e-04, cpu = 1.23e+02 seconds, (cur,max)-mem=(259.18,259.18) (Mb) (57 steps)
+
+
++++ multiBuildings.cmd : CN tower + 7 buildings , fine background, coarser down stream grid
+
+EXTENT OF MAIN Buildings:  [-1.5,2] x [-1,1.25] x [0,2]
+ogen -noplot multiBuildings
+
+
+++++ buildingsGrid: CN tower  + 2 buildings 
+ogen -noplot buildingsGrid -interp=e -factor=2    
+
+
+
+
+Blast wave around  three 3D buildings: 
+cgcns -noplot blast.cmd -g=building3.hdf -rad=.25 -x0=.0 -y0=1.75 -z0=1. -amr=0 -l=2 -r=2 -tf=1. -tp=.05 -show=blastBuildings.show > blastBuildings.out
+cgcns blast.cmd -g=building3.hdf -rad=.25 -x0=.0 -y0=1.75 -z0=1. -amr=0 -l=2 -r=2 -tf=1. -tp=.05 -show=blastBuildings.show 
+
+
+cgcns blast.cmd -g=shapese8.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=2 -tf=1. -tol=.05 -tp=.05 -show=blastShapesG8.show 
+
+
+Shapes: reduce tol, set r=4: 
+cgcns -noplot blast.cmd -g=shapese4.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=4 -tf=1. -tol=.1 -tp=.05 -show=blastShapesl1r4.show > blastShapesl1r4.out
+
+cgcns blast.cmd -g=shapese4.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=4 -tf=1. -tol=.1 -tp=.05 -show=blastShapesl1r4.show 
+
+*************************************************
+******* Mon Jun 21, 2021 
+
+REVISIT BLAST examples for nnsa proposal.
+
+
+Blast wave around  three 3D buildings: 
+cgcns -noplot blast.cmd -g=building3.hdf -rad=.25 -x0=.0 -y0=1.75 -z0=1. -amr=0 -l=2 -r=2 -tf=1. -tp=.05 -show=blastBuildings.show > blastBuildings.out
+
+
+Bast wave around 3 shapes:
+
+
+AMR:
+cgcns blast.cmd -g=shapese4.order2.hdf -rad=.15 -x0=.2 -y0=.5 -amr=1 -l=2 -r=2 -tf=1. -tp=.05 -show=blastShapes.show

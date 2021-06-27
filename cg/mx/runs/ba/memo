@@ -2,6 +2,29 @@
 WORKS: Oct 4, 2019 mpiexec -n 4 xterm -e gdb --args $cgmxp -noplot diskeigen -g=sice4.order4.hdf
 -m=1 -n=1 -tp=.5 -tf=2 -go=go
 
+
+*****************************************
+******* Wed Mar 31, 2021
+
+valgrind $cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-2 -xb=1.5 -ya=-1.5 -yb=1.5 -factor=8 -order=4 -numGhost=3 -method=bamx -numMatRegions=2 -nxBox=1 -nyBox=2 -nzBox=1 -xc=-.5 -yc=-1.5 -xWidth=1 -yWidth=1.5 -xSep=0 -ySep=0 -dm=gdm -regionFile=boxRegionArray.h -matFile=baIsoEps1.txt -matFileArray=diskEps4GDMfp1BAH.txt diskEps4GDMfp1BAH.txt -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=.2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-1.5 -xLeftProbe=-1 -xRightProbe=1 -go=go
+
+valgrind $cgmx -noplot baScat.cmd -g=ogen -gridCmd=rectangleArg.cmd -periodic=np -xa=-5 -xb=5 -ya=-3.0 -yb=3.0 -factor=4 -order=4 -numGhost=3 -method=bamx -numMatRegions=4 -nxBox=4 -nyBox=4 -nzBox=1 -xc=-2.75 -yc=-3.0 -xWidth=1 -yWidth=1.5 -xSep=0.5 -ySep=0 -dm=none -regionFile=boxRegionArray.h -materialFile=disk16Materials.h -ts=rk4 -ic=gp -beta=50 -solveForAllFields=1 -rbc=absorbing -useSuperGrid=1 -superGridWidth=.2 -tp=.1 -tf=2 -diss=1 -kx=1 -ay=1 -az=0 -x0=-4 -xLeftProbe=-4 -xRightProbe=4 -probeFileName=junk -go=go
+
+
+QING SEES MEMORY TYPE ERRORS ON BASCAT CASE ON THE MAC -- one of these
+
+valgrind $cgmx -noplot baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go 
+
+valgrind $cgmx noplot baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=boxRegion.h -matFile=baIsoEps2.txt -matFile2=baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go
+
+running:  /home/henshw/cg.g/mx/bin/cgmx noplot ./../runs/ba/baScat.cmd -g=square20.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/materials/baIsoEps2.txt -matFile2=../runs/materials/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go >! baScatTwoMat.out
+checkCheckFiles: files mx.check and baScatTwoMat.check agree at 2 times , maxDiff=0.00e+00, (tol=1.00e-05)
+      ... "baScatTwoMat" appears to be correct
+running:  /home/henshw/cg.g/mx/bin/cgmx noplot ./../runs/ba/baScat.cmd -g=box1.order4.ng3 -method=bamx -dm=gdm -npv=1 -numMatRegions=2 -regionFile=../runs/ba/boxRegion.h -matFile=../runs/materials/baIsoEps2.txt -matFile2=../runs/materials/baMatGDM.txt -ts=rk4 -ic=gp -x0=.6 -beta=200 -solveForAllFields=1 -tp=.2 -tf=.2 -diss=1 -go=go >! baScatTwoMatBox.out
+checkCheckFiles: files mx.check and baScatTwoMatBox.check agree at 2 times , maxDiff=0.00e+00, (tol=1.00e-05)
+      ... "baScatTwoMatBox" appears to be correct
+
+
 *****************************************
 ******* Wed Mar 3, 2021
 

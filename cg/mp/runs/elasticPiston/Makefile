@@ -4,8 +4,22 @@
 
 
 ogen = $(Overture)/bin/ogen
-# ogen = /home/dan/Documents/Overture.sf3/bin/ogen
+cgmp = $(CGBUILDPREFIX)/mp/bin/cgmp
 conv = $(CG)/common/src/conv.p
+
+# radial elastic piston example (light solid):
+radialElasticPiston: radialElasticPistonGride4.order2.hdf
+	$(cgmp) -noplot radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -addedMass=1 -useImplicitAmpBCs=1 -scf=1.0 -nu=.05 -tp=.05 -tf=1.0 -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=repG4Scf1.show -go=go >! repG4Scf1.out
+
+# annular SHEAR example (medium solid):
+annularShearMedium: radialElasticPistonGride4.order2.hdf
+	$(cgmp) -noplot radialElasticPiston -g=radialElasticPistonGride4.order2.hdf -known=shear -addedMass=1 -numberOfCorrections=1 -useImplicitAmpBCs=1 -scf=1 -nu=0.1 -tp=.05 -tf=.5 -smVariation=g -debug=1 -tsINS=im -stressRelaxation=4 -diss=.5  -setGhostByExtrapolation=1 -show=radialShearG4Scf1.show -go=go >! radialShearG4Scf1.out
+
+# grid
+radialElasticPistonGride4.order2.hdf:
+	$(ogen) -noplot radialElasticPistonGrid -interp=e -factor=4
+
+
 
 grids: elasticPiston radial rotated
 
@@ -80,45 +94,49 @@ rotated:
 	# $(ogen) -noplot elasticPistonGridRotated -factor=8 -per=1 -thetad=45
 
 
+# 
+# NOTE: To run the following convergence tests:
+#      (1) Make a symbolic link to cgmp/conv/insElasticPiston.conv
+#      (2) Make a sub-directory results to hold results
 radialWaveConv:
 	# radial traveling wave
-	$(conv) ../../conv/insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=7 -scf=0.1 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
-	$(conv) ../../conv/insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=0 -scf=1 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
-	$(conv) ../../conv/insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=8 -scf=10 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
+	$(conv) insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=7 -scf=0.1 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
+	$(conv) insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=0 -scf=1 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
+	$(conv) insElasticPiston.conv -known=radialTravelingWave -cg=rtw -tp=0.3 -tf=0.3 -showAllComponents=0 -tsINS=im -smVariation=g -caseid=8 -scf=10 -nu=0.1  -zfMuByH=1 -amp=1e-7 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4 -zfOption=m -zfMono=1
 
 radialShearConv:
 	# radial shear
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0  -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -startCurve=spline  -setGhostByExtrapolation=1 -ng=4
 
 radialPistonConv:
 	# radial piston
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=rep -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfOption=m -zfMono=1 -zfMuByH=1 -zfRhoHByDt=0 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4  -setGhostByExtrapolation=1 -ng=4
 
 blockShearConv:
 	# block shear
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -known=shear -nu=0.1 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=4 -setGhostByExtrapolation=1 -ng=4
 
 blockPistonConv:
 	# block piston
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e-3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1e3 -zfMuByH=1 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
 
 blockPistonConvTP:
-	#$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=0.001 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	#$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	#$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=0.001 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	#$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -addedMass=0 -tsSM=improvedEuler -useTP=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
 
 blockPistonConvAMP:
-	#$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
-	#$(conv) ../../conv/insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=0.001 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=1000 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
+	$(conv) insElasticPiston.conv -nu=0.05 -tp=0.6 -tf=0.6 -cg=epgp -showAllComponents=0 -tsINS=im -smVariation=g -scf=0.001 -zfMuByH=0 -zfRhoHByDt=0 -zfOption=m -zfMono=1 -addedMass=1 -useImplicitAmpBCs=1 -numberOfCorrections=1 -cfl=0.9 -diss=0.5 -stressRelaxation=0 -setGhostByExtrapolation=1 -ng=4
 
 
 mp:

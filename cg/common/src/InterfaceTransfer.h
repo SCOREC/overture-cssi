@@ -46,10 +46,10 @@ int
 transferData( int domainSource, int domainTarget, 
               RealArray **sourceDataArray, Range & Cs,
               RealArray **targetDataArray, Range & Ct,
-	      InterfaceDescriptor & interfaceDescriptor,
-	      std::vector<DomainSolver*> domainSolver,
-	      std::vector<int> & gfIndex,
-	      Parameters & parameters );
+              InterfaceDescriptor & interfaceDescriptor,
+              std::vector<DomainSolver*> domainSolver,
+              std::vector<int> & gfIndex,
+              Parameters & parameters );
 
 
 protected:

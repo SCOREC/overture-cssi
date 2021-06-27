@@ -63,6 +63,8 @@ AdParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
 
  if( !dbase.has_key("manufacturedTearFilm") ) dbase.put<bool >("manufacturedTearFilm")=false;
 
+ dbase.put<bool>("assignKnownSolutionAtBoundaries")=false; // if true set values at Dirichlet BCs to the known solution
+
   // initialize the items that we time: 
   initializeTimings();
 }
@@ -162,9 +164,9 @@ setParameters(const int & numberOfDimensions0 /* =2 */,const aString & reactionN
       aString buff;
       for( int e=0; e< numberOfExtraVariables; e++ )
       {
-	int n= numberOfComponents- numberOfExtraVariables+e;
-	componentName[n]=sPrintF(buff,"Var%i",e);
-	addShowVariable(  componentName[n],n );
+        int n= numberOfComponents- numberOfExtraVariables+e;
+        componentName[n]=sPrintF(buff,"Var%i",e);
+        addShowVariable(  componentName[n],n );
       }
 
     }
@@ -243,40 +245,40 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
       spatialCoefficientsForTZ(0,0,0,n)=2.+n;      
       if( degreeSpace>0 )
       {
-	spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
-	spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
-	spatialCoefficientsForTZ(0,0,1,n)=  numberOfDimensions==3 ? .25*ni : 0.;
+        spatialCoefficientsForTZ(1,0,0,n)=1.*ni;
+        spatialCoefficientsForTZ(0,1,0,n)=.5*ni;
+        spatialCoefficientsForTZ(0,0,1,n)=  numberOfDimensions==3 ? .25*ni : 0.;
       }
       if( degreeSpace>1 )
       {
-	spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
-	spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
-	spatialCoefficientsForTZ(0,0,2,n)=  numberOfDimensions==3 ? .125*ni : 0.;
+        spatialCoefficientsForTZ(2,0,0,n)=.5*ni;
+        spatialCoefficientsForTZ(0,2,0,n)=.25*ni;
+        spatialCoefficientsForTZ(0,0,2,n)=  numberOfDimensions==3 ? .125*ni : 0.;
 
-	if( false ) // *wdh* 050610
-	{
-	  // add cross terms
-	  printF("\n\n ************* add cross terms to TZ ************** \n\n");
-	    
+        if( false ) // *wdh* 050610
+        {
+          // add cross terms
+          printF("\n\n ************* add cross terms to TZ ************** \n\n");
+            
 
-	  spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
-	  if(  numberOfDimensions>2 )
-	  {
-	    spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
-	    spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
-	  }
-	}
+          spatialCoefficientsForTZ(1,1,0,n)=.125*ni;
+          if(  numberOfDimensions>2 )
+          {
+            spatialCoefficientsForTZ(1,0,1,n)=.1*ni;
+            spatialCoefficientsForTZ(0,1,1,n)=-.15*ni;
+          }
+        }
       }
       if( degreeSpace>2 )
       {
-	const int degreeSpace3 = numberOfDimensions==3 ? degreeSpace : 0;
+        const int degreeSpace3 = numberOfDimensions==3 ? degreeSpace : 0;
         for( int m1=0; m1<=degreeSpace; m1++ )for( int m2=0; m2<=degreeSpace; m2++ )for( int m3=0; m3<=degreeSpace3; m3++ )
-	{
-	  if( (m1+m2+m3)==degreeSpace )
-	  { // choose "random" coefficients
-	    spatialCoefficientsForTZ(m1,m2,m3,n)=ni/(m1+2.*m2+1.5*m3);
-	  }
-	}
+        {
+          if( (m1+m2+m3)==degreeSpace )
+          { // choose "random" coefficients
+            spatialCoefficientsForTZ(m1,m2,m3,n)=ni/(m1+2.*m2+1.5*m3);
+          }
+        }
       }
 
     }
@@ -285,9 +287,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
     {
       for( int i=0; i<=4; i++ )
       {
-	timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
+        timeCoefficientsForTZ(i,n)= i<=degreeTime ? 1./(i+1) : 0. ;
       }
-	  
+          
     }
   
     // ::display(spatialCoefficientsForTZ,"spatialCoefficientsForTZ","%6.2f ");
@@ -364,9 +366,9 @@ setTwilightZoneFunction(const TwilightZoneChoice & choice_,
 // ============================================================================================
 int AdParameters::
 setDefaultDataForABoundaryCondition(const int & side,
-				    const int & axis,
-				    const int & grid,
-				    CompositeGrid & cg)
+                                    const int & axis,
+                                    const int & grid,
+                                    CompositeGrid & cg)
 {
   const int & numberOfComponents = dbase.get<int >("numberOfComponents");
   RealArray & bcData = dbase.get<RealArray>("bcData");
@@ -439,6 +441,8 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
   real & thinFilmBoundaryThickness= dbase.get<real>("thinFilmBoundaryThickness");
   real & thinFilmLidThickness     = dbase.get<real>("thinFilmLidThickness");
 
+  bool & assignKnownSolutionAtBoundaries = dbase.get<bool>("assignKnownSolutionAtBoundaries"); // could go in base clase ?
+
   aString answer,line;
   char buff[100];
 //  const int numberOfDimensions = cg.numberOfDimensions();
@@ -456,7 +460,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
     // push buttons
     aString pbCommands[] = {"user defined coefficients",
-			    ""};
+                            ""};
 
     const int numRows=2;
     addPrefix(pbCommands,prefix,cmd,maxCommands);
@@ -475,7 +479,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       textLabels[nt] = name; 
       line="";
       for( int m=0; m<numberOfComponents; m++ )
-	line += sPrintF(buff,"%g ",par[m]);
+        line += sPrintF(buff,"%g ",par[m]);
       textStrings[nt]=line;  nt++;
     }
     
@@ -496,11 +500,13 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     aString tbLabels[] = {"variable diffusivity",
                           "variable advection", 
                           "treat advection implicitly",
-			  ""};
-    int tbState[3];
+                          "assign known solution at boundaries",
+                          ""};
+    int tbState[4];
     tbState[0] = dbase.get<bool >("variableDiffusivity");
     tbState[1] = dbase.get<bool >("variableAdvection");
     tbState[2] = implicitAdvection;
+    tbState[3] = assignKnownSolutionAtBoundaries; 
 
     int numColumns=1;
     addPrefix(tbLabels,prefix,cmd,maxCommands);
@@ -545,7 +551,15 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     
 
     if( answer=="done" )
+    {
       break;
+    }
+    // Put this before "a" answer 
+    else if( dialog.getToggleValue(answer,"assign known solution at boundaries", dbase.get<bool>("assignKnownSolutionAtBoundaries")) )
+    {
+      printF("CGAD: setting assignKnownSolutionAtBoundaries=%d\n",assignKnownSolutionAtBoundaries);
+    }
+
     else if( answer.matches("kappa") ||
              answer.matches("a") ||
              answer.matches("b") ||
@@ -565,12 +579,12 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       line="";
       for( int m=0; m<numberOfComponents; m++ )
       {
-	if( numberOfComponents==1 )
-	  printF(" set %s=%g \n",(const char*)name,val[m]);
+        if( numberOfComponents==1 )
+          printF(" set %s=%g \n",(const char*)name,val[m]);
         else
-	  printF(" set %s[%i]=%g \n",(const char*)name,m,val[m]);
+          printF(" set %s[%i]=%g \n",(const char*)name,m,val[m]);
         par[m]=val[m];
-	line += sPrintF(buff,"%g ",par[m]);
+        line += sPrintF(buff,"%g ",par[m]);
       }
       
       dialog.setTextLabel(name,line);
@@ -598,16 +612,16 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       printF("INFO: thinFilmLidThickness=%g  (thin film he).\n",thinFilmLidThickness);
     }
 
-    else if( dialog.getToggleValue(answer,"variable diffusivity", dbase.get<bool >("variableDiffusivity")) ){}//
-    else if( dialog.getToggleValue(answer,"variable advection", dbase.get<bool >("variableAdvection")) ){}//
+    else if( dialog.getToggleValue(answer,"variable diffusivity", dbase.get<bool>("variableDiffusivity")) ){}//
+    else if( dialog.getToggleValue(answer,"variable advection", dbase.get<bool>("variableAdvection")) ){}//
     else if( dialog.getToggleValue(answer,"treat advection implicitly",implicitAdvection) )
     {
       if( implicitAdvection )
-	printF("--AD-- INFO: advection terms will be treated IMPLICITLY when using implicit time stepping.\n");
+        printF("--AD-- INFO: advection terms will be treated IMPLICITLY when using implicit time stepping.\n");
       else
-	printF("--AD-- INFO: advection terms will be treated EXPLICITLY when using implicit time stepping.\n");
+        printF("--AD-- INFO: advection terms will be treated EXPLICITLY when using implicit time stepping.\n");
     }
-    
+
 
     else if( answer=="user defined coefficients" ) 
     {
@@ -624,13 +638,13 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response=[%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response=[%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }
@@ -660,14 +674,14 @@ displayPdeParameters(FILE *file /* = stdout */ )
   int & numberOfComponents     = dbase.get<int>("numberOfComponents");
 
   fprintf(file,
-	  "PDE parameters: equation is `advection diffusion'.\n");
+          "PDE parameters: equation is `advection diffusion'.\n");
 
   // The  dbase.get<DataBase >("modelParameters") will be displayed here:
   Parameters::displayPdeParameters(file);
 
   fprintf(file,
-	  "  number of components is %i\n",
-	  numberOfComponents);
+          "  number of components is %i\n",
+          numberOfComponents);
 
   std::vector<real> & kappa = dbase.get<std::vector<real> >("kappa");
   std::vector<real> & a = dbase.get<std::vector<real> >("a");
@@ -680,9 +694,9 @@ displayPdeParameters(FILE *file /* = stdout */ )
     for( int m=0; m<numberOfComponents; m++ )
     {
       if( numberOfComponents==1 )
-	fprintf(file," %s=%g",(const char*)name,par[m]);
+        fprintf(file," %s=%g",(const char*)name,par[m]);
       else
-	fprintf(file," %s[%i]=%g,",(const char*)name,m,par[m]);
+        fprintf(file," %s[%i]=%g,",(const char*)name,m,par[m]);
     }
     fprintf(file,"\n");
   }

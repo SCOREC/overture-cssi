@@ -45,31 +45,31 @@ checkForSymmetry(realCompositeGridFunction & u, Parameters & parameters, const a
             const int i20=mg.gridIndexRange(0,axis2);
             for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
             {
-      	diff=max(diff,max(fabs(uu(I1,i2,I3,n)-uu(I1,i20,I3,n))));
-      	if( diff>tol )
-      	{
-        	  bool found=false;
-        	  for( int i1=I1.getBase(); i1<=I1.getBound() && !found ; i1++ )
-          	    for( int i3=I3.getBase(); i3<=I3.getBound() && !found ; i3++ )
-          	    {
-            	      if( fabs(uu(i1,i2,i3,n)-uu(i1,i20,i3,n)) > tol )
-            	      {
-            		printf("symmetry broken: grid=%i n=%i (i1,i2,i3)=(%i,%i,%i)\n",grid,n,i1,i2,i3);
+                diff=max(diff,max(fabs(uu(I1,i2,I3,n)-uu(I1,i20,I3,n))));
+                if( diff>tol )
+                {
+                    bool found=false;
+                    for( int i1=I1.getBase(); i1<=I1.getBound() && !found ; i1++ )
+                        for( int i3=I3.getBase(); i3<=I3.getBound() && !found ; i3++ )
+                        {
+                            if( fabs(uu(i1,i2,i3,n)-uu(i1,i20,i3,n)) > tol )
+                            {
+                                printf("symmetry broken: grid=%i n=%i (i1,i2,i3)=(%i,%i,%i)\n",grid,n,i1,i2,i3);
 
                                 if( false || nc==1 )
-            		{
-              		  uu(i1,i2,i3,n)=uu(i1,i20,i3,n);  // ************** do this for a test **************
-            		}
-            		else
-            		{
-              		  found=true;
-              		  break;
-            		}
-            		
-            	      }
-          	    }
-      	}
-          	    
+                                {
+                                    uu(i1,i2,i3,n)=uu(i1,i20,i3,n);  // ************** do this for a test **************
+                                }
+                                else
+                                {
+                                    found=true;
+                                    break;
+                                }
+                                
+                            }
+                        }
+                }
+                        
             }
             maxDiff=max(maxDiff,diff);
             printf("%s grid=%i check for 2D  n=%i diff=%9.3e\n",(const char*)label,grid,n,diff);
@@ -106,7 +106,9 @@ advance(real & tFinal )
     {
         checkSolution(gf[current].u,"advance:start (gf[current])");
     }
-    
+    if( debug() & 8 )
+        printF("DomainSolver::advance: START...\n");
+
     real t=gf[current].t;
     real cpu0=getCPU();
 
@@ -147,8 +149,8 @@ advance(real & tFinal )
     int numberOfSubSteps=1;
     int finish=0;
     
-    buildRunTimeDialog();
-
+  // buildRunTimeDialog();
+    bool firstTime=true; // delay building run-time dialog until we have computed any errors *wdh* April 18, 2021
 
     numberOfStepsTaken=max(0,numberOfStepsTaken);  // numberOfStepsTaken==-1 : for initialization steps
 
@@ -175,16 +177,22 @@ advance(real & tFinal )
 
             if( false )
             {
-      	FILE *file = stdout;
-      	fprintf(file,"\n ++++++++++++advance before plot+++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-      	for( int grid=0; grid<gf[current].cg.numberOfComponentGrids(); grid++ )
-        	  gf[current].cg[grid].displayComputedGeometry(file);
-      	fprintf(file," +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+                FILE *file = stdout;
+                fprintf(file,"\n ++++++++++++advance before plot+++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+                for( int grid=0; grid<gf[current].cg.numberOfComponentGrids(); grid++ )
+                    gf[current].cg[grid].displayComputedGeometry(file);
+                fprintf(file," +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
             }
 
             output( gf[current],step );  // *wdh* 081104
             
             checkArrayIDs(sPrintF("advance: step=%i, before plot",step) ); 
+
+            if( firstTime )
+            { // delay building run-time dialog until any errors have been computed in printTimeStepInfo
+                firstTime=false;
+                buildRunTimeDialog();  
+            }
 
             int optionIn = step==0 && plotOption ? 1 : plotOption; // wait on first step
             finish=plot(t, optionIn, tFinal);  // optionIn: 0=wait, 1=plot-and-wait, 2=plot-but-don't-wait
@@ -196,32 +204,33 @@ advance(real & tFinal )
             if( (!parameters.isSteadyStateSolver() && t >tFinal-.5*dt) ||
                     ( parameters.isSteadyStateSolver() && parameters.dbase.get<int >("globalStepNumber")+1>=maxIterations) )
             {
-	// we are done (unless tFinal is increased in plot). plot solution at final time
-      	if( true || parameters.dbase.get<int >("plotOption") & 1 )
-        	  plot(t,1, tFinal);
+
+        // we are done (unless tFinal is increased in plot). plot solution at final time
+                if( true || parameters.dbase.get<int >("plotOption") & 1 )
+                    plot(t,1, tFinal);
 
          // tFinal may have been increased, so check again
                 if( (!parameters.isSteadyStateSolver() && t >tFinal-.5*dt) ||
                         ( parameters.isSteadyStateSolver() && parameters.dbase.get<int >("globalStepNumber")+1>=maxIterations) )
-      	{ 
-        	  finish=true;
-        	  break;
-      	}
+                { 
+                    finish=true;
+                    break;
+                }
             }
             if( parameters.dbase.get<Ogshow* >("show")!=NULL )
             {
-	// this will close any open sub-file if it contains the max number of solutions allowed.
+        // this will close any open sub-file if it contains the max number of solutions allowed.
         // do this here since we save sequences if we finish, so we cannot do this in saveShow.
         // printF("\n *********** parameters.dbase.get<Ogshow* >("show")->endFrame(); *********\n");
                 real timea=getCPU();
                 parameters.dbase.get<Ogshow* >("show")->endFrame();  
                 timea=getCPU()-timea;
                 timing(parameters.dbase.get<int>("timeForShowFile"))+=timea;
-      	if( debug() & 1 )
-      	{
-        	  printF("advance: time to endFrame and save show=%8.2e.\n",timea);
-        	  fflush(0);
-      	}    
+                if( debug() & 1 )
+                {
+                    printF("advance: time to endFrame and save show=%8.2e.\n",timea);
+                    fflush(0);
+                }    
             }
             
             if( printArray(nextPrintValue) != (int)Parameters::defaultValue )
@@ -230,19 +239,19 @@ advance(real & tFinal )
             {
         // **** this next line is possibly wrong if tPrint has changed!!  *****
         // ***** or if t/tPrint > MAX_INT
-      	if( !parameters.isSteadyStateSolver() )
-      	{
+                if( !parameters.isSteadyStateSolver() )
+                {
           // nextTimeToPrint=min(int(t/tPrint+.5)*tPrint+tPrint,tFinal);   //  ...new time to print:
           // *wdh* avoid integer overflows: 
           // nextTimeToPrint=min(ceil(t/tPrint)*tPrint+tPrint,tFinal);   //  ...new time to print:
                     nextTimeToPrint=min(ceil(t/tPrint-.5)*tPrint+tPrint,tFinal);   //  ...new time to print:
-      	}
+                }
                 else
-        	  nextTimeToPrint=min(int(nextTimeToPrint+parameters.dbase.get<int >("plotIterations")+.5),maxIterations);
+                    nextTimeToPrint=min(int(nextTimeToPrint+parameters.dbase.get<int >("plotIterations")+.5),maxIterations);
             }
             if( debug() & 8 )
             {
-      	printF("advance: nextTimeToPrint=%18.10e, t=%18.10e \n",nextTimeToPrint,t);
+                printF("advance: nextTimeToPrint=%18.10e, t=%18.10e \n",nextTimeToPrint,t);
             }
             
 
@@ -252,24 +261,24 @@ advance(real & tFinal )
 
 
         if(  timeSteppingMethod!=Parameters::steadyStateNewton
-       	 && timeSteppingMethod!=Parameters::implicit 
-       	 && timeSteppingMethod!=Parameters::implicitAllSpeed 
-       	 && timeSteppingMethod!=Parameters::rKutta ) 
+                  && timeSteppingMethod!=Parameters::implicit 
+                  && timeSteppingMethod!=Parameters::implicitAllSpeed 
+                  && timeSteppingMethod!=Parameters::rKutta ) 
         {  //   ===Choose a new time step====
             if( TRUE || step==0 || timeSteppingMethod!=Parameters::implicitAllSpeed2 )
             {
                 checkArrayIDs(sPrintF("advance: step=%i, before get dt",step) ); 
 
-      	real dtNew= getTimeStep( gf[current] ); //       ===Choose time step====
+                real dtNew= getTimeStep( gf[current] ); //       ===Choose time step====
                 computeNumberOfStepsAndAdjustTheTimeStep(t,tFinal,nextTimeToPrint,numberOfSubSteps,dtNew);
-      	
+                
                 checkArrayIDs(sPrintF("advance: step=%i, after get dt",step) ); 
 
                 if( debug() & 4 )
-      	{
-              	  printF("advance:recompute dt: dt(old)=%8.3e, dtNew = %8.3e numberOfSubSteps=%i\n",dt,dtNew,numberOfSubSteps);
-      	}
-      	dt=dtNew;
+                {
+                    printF("advance:recompute dt: dt(old)=%8.3e, dtNew = %8.3e numberOfSubSteps=%i\n",dt,dtNew,numberOfSubSteps);
+                }
+                dt=dtNew;
             }
         }
     // *** scLC
@@ -296,8 +305,8 @@ advance(real & tFinal )
             computeNumberOfStepsAndAdjustTheTimeStep(t,tFinal,nextTimeToPrint,numberOfSubSteps,dtNew);
 
             if( debug() & 1 )
-      	printF("recompute dt: dt(old)=%8.3e, dtNew = %8.3e, (explicit dt=%8.3e, ratio=%8.3e) \n",
-             	       dt,dtNew,dtExplicit,dtNew/dtExplicit);
+                printF("recompute dt: dt(old)=%8.3e, dtNew = %8.3e, (explicit dt=%8.3e, ratio=%8.3e) \n",
+                              dt,dtNew,dtExplicit,dtNew/dtExplicit);
             
       // --- only change the time step if we exceed the cfl limit or we could increase the time step substantially --
 
@@ -320,8 +329,8 @@ advance(real & tFinal )
         }
 //     else if ( timeSteppingMethod==Parameters::steadyStateNewton )
 //       {
-// 	dt = 1;
-// 	numberOfSubSteps = 1;
+//      dt = 1;
+//      numberOfSubSteps = 1;
 //       }
 
         
@@ -340,59 +349,59 @@ advance(real & tFinal )
         {
             if( parameters.dbase.get<int >("useNewAdvanceStepsVersions") )
             { 
-      	advanceForwardEulerNew( t,dt, numberOfSubSteps,init,step );
+                advanceForwardEulerNew( t,dt, numberOfSubSteps,init,step );
 
                 step+=numberOfSubSteps; numberOfStepsTaken+=numberOfSubSteps; // *wdh* 101106
-      	
+                
             }
             else if( true )
             {
-	// new way -- no need to take an even number of steps
-      	for( int i=0; i<numberOfSubSteps; i++ )
-      	{
-        	  const int next = (current + 1) % 2;
+        // new way -- no need to take an even number of steps
+                for( int i=0; i<numberOfSubSteps; i++ )
+                {
+                    const int next = (current + 1) % 2;
 
-        	  eulerStep(t,t,t+dt,dt,gf[current],gf[current],gf[next],fn[0],fn[0],i,numberOfSubSteps);
-        	  t+=dt;
-        	  step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
-        	  current=next;
+                    eulerStep(t,t,t+dt,dt,gf[current],gf[current],gf[next],fn[0],fn[0],i,numberOfSubSteps);
+                    t+=dt;
+                    step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
+                    current=next;
 
-        	  output( gf[current],step );
-      	
-        	  if( (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 0 )
-        	  {
-          	    if( !parameters.isAdaptiveGridProblem() )  // fn[0] is not valid for AMR (?) -- fix this
-          	    {
-            	      saveSequenceInfo(t,fn[0]);
-          	    }
-        	  }
-      	}
+                    output( gf[current],step );
+                
+                    if( (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 0 )
+                    {
+                        if( !parameters.isAdaptiveGridProblem() )  // fn[0] is not valid for AMR (?) -- fix this
+                        {
+                            saveSequenceInfo(t,fn[0]);
+                        }
+                    }
+                }
             }
             else
             {
-	// old way
-	// take an even number of sub-steps so the solution remains in gf[0]
-      	assert( (numberOfSubSteps % 2) == 0 );
-      	for( int i=0; i<numberOfSubSteps; i+=2 )
-      	{
-        	  eulerStep(t,t,t+dt,dt,gf[0],gf[0],gf[1],fn[0],fn[0],i  ,numberOfSubSteps);
-        	  t+=dt;
-        	  step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
-        	  output( gf[1],step );
-        	  eulerStep(t,t,t+dt,dt,gf[1],gf[1],gf[0],fn[0],fn[0],i+1,numberOfSubSteps);
-        	  t+=dt;
-        	  step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
-        	  output( gf[0],step );
+        // old way
+        // take an even number of sub-steps so the solution remains in gf[0]
+                assert( (numberOfSubSteps % 2) == 0 );
+                for( int i=0; i<numberOfSubSteps; i+=2 )
+                {
+                    eulerStep(t,t,t+dt,dt,gf[0],gf[0],gf[1],fn[0],fn[0],i  ,numberOfSubSteps);
+                    t+=dt;
+                    step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
+                    output( gf[1],step );
+                    eulerStep(t,t,t+dt,dt,gf[1],gf[1],gf[0],fn[0],fn[0],i+1,numberOfSubSteps);
+                    t+=dt;
+                    step++; numberOfStepsTaken++; // parameters.dbase.get<int >("globalStepNumber")++;
+                    output( gf[0],step );
 
-        	  if( (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 0 ||
-            	      (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 1 )
-        	  {
-          	    if( !parameters.isAdaptiveGridProblem() )  // fn[0] is not valid for AMR (?) -- fix this
-          	    {
-            	      saveSequenceInfo(t,fn[0]);
-          	    }
-        	  }
-      	}
+                    if( (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 0 ||
+                            (numberOfStepsTaken-1) % parameters.dbase.get<int >("frequencyToSaveSequenceInfo") == 1 )
+                    {
+                        if( !parameters.isAdaptiveGridProblem() )  // fn[0] is not valid for AMR (?) -- fix this
+                        {
+                            saveSequenceInfo(t,fn[0]);
+                        }
+                    }
+                }
             }
             
         }
@@ -412,11 +421,11 @@ advance(real & tFinal )
         {
             if( parameters.dbase.get<int >("useNewAdvanceStepsVersions") )
             { // here is the new way: 
-      	advanceAdamsPredictorCorrectorNew( t,dt, numberOfSubSteps,init,step );
+                advanceAdamsPredictorCorrectorNew( t,dt, numberOfSubSteps,init,step );
             }
             else
             {
-      	advanceAdamsPredictorCorrector( t,dt, numberOfSubSteps,init,step ); 
+                advanceAdamsPredictorCorrector( t,dt, numberOfSubSteps,init,step ); 
             }
             step+=numberOfSubSteps; numberOfStepsTaken+=numberOfSubSteps; 
         }
@@ -454,19 +463,19 @@ advance(real & tFinal )
         else if( timeSteppingMethod==Parameters::implicit )
         {
             if ( implicitMethod==Parameters::trapezoidal )
-      	advanceTrapezoidal(t,dt,numberOfSubSteps,init,step);
+                advanceTrapezoidal(t,dt,numberOfSubSteps,init,step);
             else
             {
-      	if( parameters.dbase.get<int >("useNewAdvanceStepsVersions") ||
+                if( parameters.dbase.get<int >("useNewAdvanceStepsVersions") ||
                           implicitMethod==Parameters::approximateFactorization ||
                           implicitMethod==Parameters::backwardDifferentiationFormula )
-      	{ // here is the new way: 
-        	  advanceImplicitMultiStepNew( t,dt, numberOfSubSteps,init,step );
-      	}
-      	else
-      	{
-        	  advanceImplicitMultiStep( t,dt, numberOfSubSteps,init,step );
-      	}
+                { // here is the new way: 
+                    advanceImplicitMultiStepNew( t,dt, numberOfSubSteps,init,step );
+                }
+                else
+                {
+                    advanceImplicitMultiStep( t,dt, numberOfSubSteps,init,step );
+                }
             }
             
             step+=numberOfSubSteps; numberOfStepsTaken+=numberOfSubSteps; 
@@ -486,7 +495,7 @@ advance(real & tFinal )
             Overture::abort("ERROR -- fix this Bill!");
 
 //       for( int grid=0; grid<solution.u.numberOfComponentGrids(); grid++)
-// 	mappedGridSolver[grid]->advance(t,dt,solution.u[grid],grid);
+//      mappedGridSolver[grid]->advance(t,dt,solution.u[grid],grid);
 
             gf[current].t+=dt;  // ???
             gf[current].u.interpolate();
@@ -624,7 +633,7 @@ getUt( GridFunction & cgf,
 //     mappedGridSolver[grid]->getUt(cgf.u[grid],cgf.getGridVelocity(grid),ut[grid],iparam,rparam,
 //                Overture::nullRealMappedGridFunction(),&cgf.cg[grid]);
         getUt(cgf.u[grid],cgf.getGridVelocity(grid),ut[grid],iparam,rparam,
-        	  Overture::nullRealMappedGridFunction(),&cgf.cg[grid]);
+                    Overture::nullRealMappedGridFunction(),&cgf.cg[grid]);
     }
     
 }
@@ -695,9 +704,9 @@ interpolateAndApplyBoundaryConditions( GridFunction & cgf,
             realArray & un = cgf.u[grid];
             if( debug() & 16 )
             {
-      	realSerialArray unLocal; getLocalArrayWithGhostBoundaries(un,unLocal);
-      	display(unLocal,sPrintF("interpAndApplyBC: before updateGhostBoundaries: processor=%i t=%e",
-                        				myid,cgf.t),pDebugFile,"%8.2e ");
+                realSerialArray unLocal; getLocalArrayWithGhostBoundaries(un,unLocal);
+                display(unLocal,sPrintF("interpAndApplyBC: before updateGhostBoundaries: processor=%i t=%e",
+                                                                myid,cgf.t),pDebugFile,"%8.2e ");
             }
         
       // **** at this point we really only need to update interior-ghost points needed for
@@ -713,9 +722,9 @@ interpolateAndApplyBoundaryConditions( GridFunction & cgf,
 
             if( debug() & 16 )
             {
-      	realSerialArray unLocal; getLocalArrayWithGhostBoundaries(un,unLocal);
-      	display(unLocal,sPrintF("interpAndApplyBC: after updateGhostBoundaries: processor=%i t=%e",
-                        				myid,cgf.t),pDebugFile,"%8.2e ");
+                realSerialArray unLocal; getLocalArrayWithGhostBoundaries(un,unLocal);
+                display(unLocal,sPrintF("interpAndApplyBC: after updateGhostBoundaries: processor=%i t=%e",
+                                                                myid,cgf.t),pDebugFile,"%8.2e ");
             }
         }
 

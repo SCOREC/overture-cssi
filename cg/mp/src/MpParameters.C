@@ -108,6 +108,13 @@ MpParameters(const int & numberOfDimensions0) : Parameters(numberOfDimensions0)
   if (!dbase.has_key("projectMultiDomainInitialConditions")) 
       dbase.put<bool>("projectMultiDomainInitialConditions")=false;
 
+  // Keep track if there are any heatFlux interfaces
+  if (!dbase.has_key("hasHeatFluxInterfaces")) dbase.put<bool>("hasHeatFluxInterfaces")=false;
+
+    // Keep track if there are any traction interfaces
+  if (!dbase.has_key("hasHeatTractionInterfaces")) dbase.put<bool>("hasTractionInterfaces")=false;
+
+
   // initialize the items that we time: 
   initializeTimings();
 }
@@ -209,6 +216,9 @@ setupMultiStageAlgorithm(CompositeGrid & cg, DialogData & dialog )
         stageInfo.action=AdvanceOptions::applyBoundaryConditionsOnly;
       else
       {
+        printF("CgMp::setupMultiStageAlgorithm:ERROR: takeStep=%d, applyBC=%d (both false??)\n",(int)takeStep,(int)applyBC);
+        printF(" answer=[%s]\n",(const char*) answer);
+        printF("Did you forget to finish stage commands with `done' ?\n");
         OV_ABORT("fix me");
       }
 
@@ -337,23 +347,23 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
 
     // --- options for multi-domain advance:
     aString opCmd[] = {"default advance", 
-		       "step all then match advance" ,
+                       "step all then match advance" ,
                        "multi-stage",
-		       "" };
+                       "" };
     addPrefix(opCmd,prefix,cmd,maxCommands);
     dialog.addOptionMenu("Multi-domain advance", cmd, opCmd,multiDomainAlgorithm);
 
     // --- options for setting ghost points with the interface projection ---
     aString opCmd2[] = {"interface ghost from extrapolation", 
-			"interface ghost from compatibility" ,
-			"interface ghost from exact" ,
+                        "interface ghost from compatibility" ,
+                        "interface ghost from exact" ,
                         "interface ghost from domain solvers",
-			"" };
+                        "" };
     addPrefix(opCmd2,prefix,cmd,maxCommands);
     dialog.addOptionMenu("Interface ghost:", cmd, opCmd2,interfaceProjectionGhostOption);
 
     aString pbLabels[] = {"show interface parameters",
-			    ""};
+                            ""};
     addPrefix(pbLabels,prefix,cmd,maxCommands);
 
     int numRows=3;
@@ -368,7 +378,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
                           "use nonlinear interface projection",
                           "relax correction steps",
                           "project initial conditions",
-			    ""};
+                            ""};
     int tbState[10];
     tbState[0] = dbase.get<bool>("solveCoupledInterfaceEquations");
     tbState[1] = dbase.get<bool>("useMixedInterfaceConditions");
@@ -460,36 +470,36 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     else if( dialog.getTextValue(answer,"interface tolerance","%e", dbase.get<real>("interfaceTolerance")) )
     {
       if( activeInterface==-1 )
-	printF("Setting the interfaceTolerance=%8.2e for all %i interfaces\n",dbase.get<real>("interfaceTolerance"),
-	       interfaceList.size());
+        printF("Setting the interfaceTolerance=%8.2e for all %i interfaces\n",dbase.get<real>("interfaceTolerance"),
+               interfaceList.size());
       else
         printF("Setting the interfaceTolerance=%8.2e for interface %i.\n",dbase.get<real>("interfaceTolerance"),
                 activeInterface);
       for( int inter=0; inter < interfaceList.size(); inter++ )
       {
         if( activeInterface==-1 || activeInterface==inter )
-	{
-	  InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
-	  interfaceDescriptor.interfaceTolerance=dbase.get<real>("interfaceTolerance");
-	}
+        {
+          InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
+          interfaceDescriptor.interfaceTolerance=dbase.get<real>("interfaceTolerance");
+        }
       }
     }
     else if( dialog.getTextValue(answer,"interface omega","%e", dbase.get<real>("interfaceOmega")) )
     {
       if( activeInterface==-1 )
-	printF("Setting the interfaceOmega=%8.2e for all %i interfaces\n",dbase.get<real>("interfaceOmega"),
-	       interfaceList.size());
+        printF("Setting the interfaceOmega=%8.2e for all %i interfaces\n",dbase.get<real>("interfaceOmega"),
+               interfaceList.size());
       else
-	printF("Setting the interfaceOmega=%8.2e for interface %i.\n",dbase.get<real>("interfaceOmega"),
-	       activeInterface);
+        printF("Setting the interfaceOmega=%8.2e for interface %i.\n",dbase.get<real>("interfaceOmega"),
+               activeInterface);
 
       for( int inter=0; inter < interfaceList.size(); inter++ )
       {
         if( activeInterface==-1 || activeInterface==inter )
-	{
-	  InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
-	  interfaceDescriptor.interfaceOmega=dbase.get<real>("interfaceOmega");
-	}
+        {
+          InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
+          interfaceDescriptor.interfaceOmega=dbase.get<real>("interfaceOmega");
+        }
       }
     }
     else if( dialog.getToggleValue(answer,"solve coupled interface equations",
@@ -505,7 +515,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     else if( dialog.getToggleValue(answer,"use nonlinear interface projection",useNonlinearInterfaceProjection) )
     {
       if( useNonlinearInterfaceProjection )
-	dbase.get<int >("interfaceProjectionOption")=5;
+        dbase.get<int >("interfaceProjectionOption")=5;
     }
     else if( dialog.getToggleValue(answer,"relax correction steps",relaxCorrectionSteps) ){} // 
     // else if( dialog.getTextValue(answer,"dtMax","%e",dbase.get<real >("dtMax")) ){} //
@@ -521,36 +531,36 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       {
         int domain=-1;
         const int length = answer.length();
-	while( len<length && answer[len]==' ' ) len++;  // skip blanks
-	int numChars = sScanF(answer(len,answer.length()-1),"%i",&domain);
-	len+=numChars;
-	if( domain>=0 && domain<domainOrder.size() )
-	{
+        while( len<length && answer[len]==' ' ) len++;  // skip blanks
+        int numChars = sScanF(answer(len,answer.length()-1),"%i",&domain);
+        len+=numChars;
+        if( domain>=0 && domain<domainOrder.size() )
+        {
           domainOrder[d]=domain;
-	}
-	else
-	{
+        }
+        else
+        {
           printF("Error: invalid domain number=%i\n",domain);
-	  ok=false;
+          ok=false;
           gi.stopReadingCommandFile();
-	  break;
-	}
-	
+          break;
+        }
+        
       }
       if( !ok )
       {
-	printF("I am reseting the domain order to the default.\n");
-	for( int d=0; d<domainOrder.size(); d++ ) domainOrder[d]=d;
+        printF("I am reseting the domain order to the default.\n");
+        for( int d=0; d<domainOrder.size(); d++ ) domainOrder[d]=d;
       }
       else
       {
         // We should also check that all domains are accounted for
-	printF(" New domainOrder = ");
-	for( int d=0; d<domainOrder.size(); d++ )
-	{
-	  printF("%i ",domainOrder[d]);
-	}
-	printF("\n");
+        printF(" New domainOrder = ");
+        for( int d=0; d<domainOrder.size(); d++ )
+        {
+          printF("%i ",domainOrder[d]);
+        }
+        printF("\n");
       }
     }
     else if( answer == "show interface parameters" )
@@ -568,11 +578,11 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       if( answer=="default advance" )
       {
-	multiDomainAlgorithm=defaultMultiDomainAlgorithm;
+        multiDomainAlgorithm=defaultMultiDomainAlgorithm;
       }
       else if( answer=="step all then match advance" )
       {
-	multiDomainAlgorithm=stepAllThenMatchMultiDomainAlgorithm;
+        multiDomainAlgorithm=stepAllThenMatchMultiDomainAlgorithm;
         printF("Setting multiDomainAlgorithm=stepAllThenMatchMultiDomainAlgorithm\n");
       }
       else if( answer=="multi-stage" )
@@ -587,7 +597,7 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
       
       else
       {
-	OV_ABORT("ERROR: unexpected answer");
+        OV_ABORT("ERROR: unexpected answer");
       }
     }
 
@@ -601,19 +611,19 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
                                         answer=="interface ghost from exact" ? 2 : 3);
       if( interfaceProjectionGhostOption==0 )
       {
-	printF("Ghost points at interfaces will be extrapolated (this only applies to the fluid-solid projection scheme).\n");
+        printF("Ghost points at interfaces will be extrapolated (this only applies to the fluid-solid projection scheme).\n");
       }
       else if( interfaceProjectionGhostOption==1 )
       {
-	printF("Ghost points at interfaces will be obtained from compatibility conditions (this only applies to the fluid-solid projection scheme).\n");
+        printF("Ghost points at interfaces will be obtained from compatibility conditions (this only applies to the fluid-solid projection scheme).\n");
       }
       else if( interfaceProjectionGhostOption==2 )
       {
-	printF("Ghost points at interfaces will be set to exact values (for testing with TZ only).\n");
+        printF("Ghost points at interfaces will be set to exact values (for testing with TZ only).\n");
       }
       else
       {
-	printF("Ghost points at interfaces will be set from domain solver BC routines (e.g. cgcns, cgsm, cgins).\n");
+        printF("Ghost points at interfaces will be set from domain solver BC routines (e.g. cgcns, cgsm, cgins).\n");
       }
       
       
@@ -623,13 +633,13 @@ setPdeParameters(CompositeGrid & cg, const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing  dbase.get<real >("a") single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response=[%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response=[%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }
@@ -658,16 +668,16 @@ displayPdeParameters(FILE *file /* = stdout */ )
   const char *offOn[2] = { "off","on" };
 
   fPrintF(file,
-	  "PDE parameters: equation is `multi-physics'.\n");
+          "PDE parameters: equation is `multi-physics'.\n");
 
   // The  dbase.get<DataBase >("modelParameters") will be displayed here:
   Parameters::displayPdeParameters(file);
 
   fPrintF(file,
-	  "  interface tolerance = %e\n"
-	  "  interface omega=%e\n",
-	   dbase.get<real >("interfaceTolerance"),
-	   dbase.get<real >("interfaceOmega"));
+          "  interface tolerance = %e\n"
+          "  interface omega=%e\n",
+           dbase.get<real >("interfaceTolerance"),
+           dbase.get<real >("interfaceOmega"));
 
   return 0;
 }
@@ -684,13 +694,13 @@ displayInterfaceInfo(FILE *file /* = stdout */ )
   {
     InterfaceDescriptor & interfaceDescriptor = interfaceList[inter]; 
     fPrintF(file,
-	    "Interface %i : tol=%9.3e, omega=%9.3e, max iterations=%i, ave-CR=%8.2e, ave-Its=%i\n",
-	    inter,
-	    interfaceDescriptor.interfaceTolerance,
-	    interfaceDescriptor.interfaceOmega,
-	    interfaceDescriptor.maximumNumberOfIntefaceIterations,
-	    interfaceDescriptor.estimatedConvergenceRate/max(1,interfaceDescriptor.numberOfInterfaceSolves),
-	    interfaceDescriptor.totalNumberOfInterfaceIterations/max(1,dbase.get<int >("globalStepNumber")));
+            "Interface %i : tol=%9.3e, omega=%9.3e, max iterations=%i, ave-CR=%8.2e, ave-Its=%i\n",
+            inter,
+            interfaceDescriptor.interfaceTolerance,
+            interfaceDescriptor.interfaceOmega,
+            interfaceDescriptor.maximumNumberOfIntefaceIterations,
+            interfaceDescriptor.estimatedConvergenceRate/max(1,interfaceDescriptor.numberOfInterfaceSolves),
+            interfaceDescriptor.totalNumberOfInterfaceIterations/max(1,dbase.get<int >("globalStepNumber")));
   }
   return 0;
 }

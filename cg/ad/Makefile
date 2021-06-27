@@ -93,8 +93,12 @@ $(BINDIR)cgad: $(LIBDIR)libCgad.a $(OBJDIR)cgadMain.o $(OBJ)  $(CGAD_EXTRA_FILES
 lib_build: $(LIBDIR)libCgad.a
 	touch lib_build
 
+LIB_OBJS = $(OBJ) $(OBJCO) $(OBJN) $(OBJO) $(OBJSO) $(FNOBJO)
+
+e:; -@echo "FNOBJO=$(FNOBJO), OBJ=$(OBJ) OBJO=$(OBJO) OBJN=$(OBJN) OBJSO=$(OBJSO)"
+
 # build the Cgad library
-$(LIBDIR)libCgad.a: $(OBJ)
+$(LIBDIR)libCgad.a: $(LIB_OBJS)
 	$(AR) $(AR_FLAGS) $(LIBDIR)libCgad.a $?
 
 # build the library in cg/common

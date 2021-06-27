@@ -33,11 +33,58 @@
 int addToMappingList(Mapping & map);
 #endif
 
+#include <regex>
+
 int ogen(MappingInformation & mappingInfo, GenericGraphicsInterface & ps, const aString & commandFileName, CompositeGrid *cgp=0 );
 
 int 
 main(int argc, char *argv[])
 {
+  // // TEMP
+  // // char regex_filename[] = “[a-zA-Z_] [a-zA-Z_0-9]*\\.[a-zA-Z0-9]+”;
+  // // string regexNumber = "[0-9]+\\."; 
+  // regex regexNumber("(.*[= ])([0-9]+)\\.([ ]*)");
+  // regex exponentialFormat("(.*[= ])([0-9]+)\\.(e[+-]?[0-9]+[ ]*)");
+  // for( int arg=1; arg<argc; arg++ )
+  // {
+  //   aString line=argv[arg];
+  //   int len = line.length();
+  //   printF("argv[%d]=[%s], len=%d\n",arg,argv[arg],len);
+    
+  //   for( int i=0; i<len; i++  )
+  //   {
+  //     if( line[i]=='.' )
+  //     {
+  //       printF(". found at char %d\n",i);
+  //     }
+  //   }
+  //   std::string s = line;
+  //   if( regex_match(s,regexNumber) )
+  //   {
+  //     // printF("MATCHED a floating point. s=[%s]\n",s.c_str());
+  //     std::string r;
+  //     r = regex_replace(s,regexNumber,"$1$2.0$3");
+  //     aString rl = r;
+  //     printF("FP: REPLACED: s=[%s] with r=[%s]\n",s.c_str(),(const char*)rl);
+  //   }
+  //   else if( regex_match(s,exponentialFormat) )
+  //   {
+  //     // printF("MATCHED a floating point. s=[%s]\n",s.c_str());
+  //     std::string r;
+  //     r = regex_replace(s,exponentialFormat,"$1$2.0$3");
+  //     aString rl = r;
+  //     printF("EXP: REPLACED: s=[%s] with r=[%s]\n",s.c_str(),(const char*)rl);
+  //   }
+  //   else
+  //   {
+  //     // printF("NO MATCH to a floating point\n");
+  //   }
+
+   
+
+  // }
+  // // OV_ABORT("STOP HERE FOR NOW");
+
   Overture::start(argc,argv);
   // Index::setBoundsCheck(off); 
 
@@ -62,12 +109,12 @@ main(int argc, char *argv[])
       else if( (len=line.matches("-numberOfParallelGhost=")) )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("ogenDriver: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("ogenDriver: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( (len=line.matches("-numParallelGhost=")) )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("ogenDriver: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("ogenDriver: will use %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( commandFileName=="" )
         commandFileName=line;    
@@ -76,10 +123,10 @@ main(int argc, char *argv[])
   else
   {
     printF("Usage: `ogen [-noplot][-nopause][-abortOnEnd][-numParallelGhost=<val>][file.cmd]' \n"
-	   "          -noplot:   run without graphics \n" 
-	   "          -nopause: do not pause \n" 
-	   "          -abortOnEnd: abort if command file ends \n" 
-	   "          file.cmd: read this command file \n");
+           "          -noplot:   run without graphics \n" 
+           "          -nopause: do not pause \n" 
+           "          -abortOnEnd: abort if command file ends \n" 
+           "          file.cmd: read this command file \n");
     
   }
   

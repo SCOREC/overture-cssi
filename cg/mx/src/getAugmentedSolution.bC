@@ -319,8 +319,9 @@ for(i1=I1Base; i1<=I1Bound; i1++)
         if( ok )
         {
           const int numberOfPolarizationVectors = dmp.getNumberOfPolarizationVectors();
-          
-          printF("getAugmentedSolution: grid=%d, save polarization, numberOfPolarizationVectors=%d\n",grid,numberOfPolarizationVectors);
+
+          if( false )
+            printF("getAugmentedSolution: grid=%d, save polarization, numberOfPolarizationVectors=%d\n",grid,numberOfPolarizationVectors);
 
           for( int dir=0; dir<numberOfDimensions; dir++ )
           {

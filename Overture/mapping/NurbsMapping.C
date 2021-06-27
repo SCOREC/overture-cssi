@@ -157,7 +157,7 @@ NurbsMapping(const int & domainDimension_ , const int & rangeDimension_ )
   if( rangeDimension_<2 || rangeDimension_>3 )
   {
     printf("NurbsMapping:constructor:ERROR: rangeDimension should be 2 or 3, the value %i is invalid. \n",
-	   rangeDimension);
+           rangeDimension);
     OV_ABORT("error");
   }
   
@@ -252,9 +252,9 @@ NurbsMapping(const int & domainDimension_ , const int & rangeDimension_ )
     {
       for( int i1=0; i1<=n1; i1++ )
       {
-	cPoint(i1,i2,0)=pPoint(i1,0);
-	cPoint(i1,i2,1)=pPoint(i2,1);
-	cPoint(i1,i2,2)=pPoint(i1,2)*pPoint(i2,2);
+        cPoint(i1,i2,0)=pPoint(i1,0);
+        cPoint(i1,i2,1)=pPoint(i2,1);
+        cPoint(i1,i2,2)=pPoint(i1,2)*pPoint(i2,2);
         cPoint(i1,i2,3)=1.; // +i1*(n1-i1)+i2*(n2-i2);  // weight
       }
     }
@@ -435,7 +435,7 @@ int NurbsMapping::
 intersect3DLines( const RealArray & pt0, const RealArray &  t0, 
                   const RealArray & pt1, const RealArray & t1,
                   real & alpha0, real & alpha1,
-		  RealArray & pt2) const
+                  RealArray & pt2) const
 // ================================================================================
 /// \details 
 ///     Intersect two lines in 3D:
@@ -536,10 +536,10 @@ buildCurveOnSurface(NurbsMapping & curve,
     {
       for( int ii=0; ii<=p1; ii++ )
       {
-	cp(i2,0)+=uDers(0,ii)*cPoint(span-p1+ii,i2,0);
-	cp(i2,1)+=uDers(0,ii)*cPoint(span-p1+ii,i2,1);
-	cp(i2,2)+=uDers(0,ii)*cPoint(span-p1+ii,i2,2);
-	cp(i2,3)+=uDers(0,ii)*cPoint(span-p1+ii,i2,3);
+        cp(i2,0)+=uDers(0,ii)*cPoint(span-p1+ii,i2,0);
+        cp(i2,1)+=uDers(0,ii)*cPoint(span-p1+ii,i2,1);
+        cp(i2,2)+=uDers(0,ii)*cPoint(span-p1+ii,i2,2);
+        cp(i2,3)+=uDers(0,ii)*cPoint(span-p1+ii,i2,3);
       }
     }
   }
@@ -699,9 +699,9 @@ circle(RealArray & o,
     else
     {
       if( theta<=1.5*Pi )
-	narcs = 3;
+        narcs = 3;
       else
-	narcs = 4;
+        narcs = 4;
     }
   }
 
@@ -711,7 +711,7 @@ circle(RealArray & o,
     printf("NurbsMapping::circle:WARNING: trying to make a circular arc with angle theta=%e -- too small!\n"
            "     radius=%e,  startAngle=%e, endAngle=%e, theta=endAngle-startAngle=%e \n"
            "     *** I am going to make theta small but finite\n",
-	   theta,r,startAngle,endAngle,theta);
+           theta,r,startAngle,endAngle,theta);
 
     dtheta=1.e-3; // REAL_EPSILON*100.;
   }
@@ -949,7 +949,7 @@ conic( const real a, const real b, const real c, const real d, const real e, con
   else
   {
     printf("NurbsMapping::conic: ERROR unknown conic type: a,b,c,d,e,f=%f,%f,%f,%f,%f,%f, q1=%e, q2=%e q3=%e\n",
-	   a,b,c,d,e,f,q1,q2,q3);
+           a,b,c,d,e,f,q1,q2,q3);
     Overture::abort("error");
   }
 
@@ -968,18 +968,18 @@ conic( const real a, const real b, const real c, const real d, const real e, con
     {
       if( x1<x2 )
       {
-	x1t=1.;
-	y1t=-(a/e)*2.*x1;
+        x1t=1.;
+        y1t=-(a/e)*2.*x1;
 
-	x2t=1.;
-	y2t=-(a/e)*2.*x2;
+        x2t=1.;
+        y2t=-(a/e)*2.*x2;
       }
       else
       {
-	x1t=-1.;
-	y1t= (a/e)*2.*x1;
-	x2t=-1.;
-	y2t= (a/e)*2.*x2;
+        x1t=-1.;
+        y1t= (a/e)*2.*x1;
+        x2t=-1.;
+        y2t= (a/e)*2.*x2;
 
       }
       // here is another point on the parabola
@@ -990,18 +990,18 @@ conic( const real a, const real b, const real c, const real d, const real e, con
     {
       if( y1<y2 )
       {
-	y1t=1.;
-	x1t=-(c/d)*2.*y1;
+        y1t=1.;
+        x1t=-(c/d)*2.*y1;
 
-	y2t=1.;
-	x2t=-(c/d)*2.*y2;
+        y2t=1.;
+        x2t=-(c/d)*2.*y2;
       }
       else
       {
-	y1t=-1.;
-	x1t= (c/d)*2.*y1;
-	y2t=-1.;
-	x2t= (c/d)*2.*y2;
+        y1t=-1.;
+        x1t= (c/d)*2.*y1;
+        y2t=-1.;
+        x2t= (c/d)*2.*y2;
       }
       // here is another point on the parabola
       yp = (y1+y2)/2.;
@@ -1060,17 +1060,17 @@ conic( const real a, const real b, const real c, const real d, const real e, con
       
       if( s1<s2 )
       {
-	// C(t) = ( ae*sec(s),be*tan(s) )    s1<= s <= s2
+        // C(t) = ( ae*sec(s),be*tan(s) )    s1<= s <= s2
         x1t=ae*sin1/(cos1*cos1);
         y1t=     be/(cos1*cos1);
 
         x2t=ae*sin2/(cos2*cos2);
         y2t=     be/(cos2*cos2);
-	
+        
       }
       else
       { 
-	// C(t) = ( ae*sec(-s),be*tan(-s) )    -s1 <= s <= -s2
+        // C(t) = ( ae*sec(-s),be*tan(-s) )    -s1 <= s <= -s2
         x1t=-ae*sin1/(cos1*cos1);
         y1t=     -be/(cos1*cos1);
 
@@ -1098,17 +1098,17 @@ conic( const real a, const real b, const real c, const real d, const real e, con
       
       if( s1<s2 )
       {
-	// C(t) = ( ae*tan(s),be*sec(s) )    s1<= s <= s2
+        // C(t) = ( ae*tan(s),be*sec(s) )    s1<= s <= s2
         y1t=be*sin1/(cos1*cos1);
         x1t=     ae/(cos1*cos1);
 
         y2t=be*sin2/(cos2*cos2);
         x2t=     ae/(cos2*cos2);
-	
+        
       }
       else
       { 
-	// C(t) = ( ae*tan(-s),be*sec(-s) )    -s1 <= s <= -s2
+        // C(t) = ( ae*tan(-s),be*sec(-s) )    -s1 <= s <= -s2
         y1t=-be*sin1/(cos1*cos1);
         x1t=     -ae/(cos1*cos1);
 
@@ -1171,7 +1171,7 @@ conic( const RealArray &pt0, const RealArray &t0, const RealArray &pt2, const Re
     printf("conic: pt0=(%10.3e,%10.3e,%10.3e) t0=(%10.3e,%10.3e,%10.3e) \n"
            "       pt2=(%10.3e,%10.3e,%10.3e) t2=(%10.3e,%10.3e,%10.3e) \n"
            "         p=(%10.3e,%10.3e,%10.3e) \n",pt0(0,0),pt0(0,1),pt0(0,2),t0(0,0),t0(0,1),t0(0,2),
-	   pt2(0,0),pt2(0,1),pt2(0,2),t2(0,0),t2(0,1),t2(0,2), p(0,0),p(0,1),p(0,2));
+           pt2(0,0),pt2(0,1),pt2(0,2),t2(0,0),t2(0,1),t2(0,2), p(0,0),p(0,1),p(0,2));
   }
   
 
@@ -1659,20 +1659,20 @@ insertKnot(const real & uBar,
       int L;
       int j;
       for ( j=1; j<=numberOfTimesToInsert; j++ )
-	{
-	  L = k-p1+j;
-	  for ( i=0; i<=p1-j-s; i++ )
-	    {
-	      real alpha = ( uBar-uKnot(L+i) )/( uKnot(i+k+1)-uKnot(L+i) );
-	      adjCP(i,AXES) = alpha*adjCP(i+1,AXES) + (1.0-alpha)*adjCP(i,AXES);
-	    }
-	  newCP(L,AXES) = adjCP(0,AXES);
-	  newCP(k+numberOfTimesToInsert-j-s,AXES) = adjCP(p1-j-s,AXES);
-	}
+        {
+          L = k-p1+j;
+          for ( i=0; i<=p1-j-s; i++ )
+            {
+              real alpha = ( uBar-uKnot(L+i) )/( uKnot(i+k+1)-uKnot(L+i) );
+              adjCP(i,AXES) = alpha*adjCP(i+1,AXES) + (1.0-alpha)*adjCP(i,AXES);
+            }
+          newCP(L,AXES) = adjCP(0,AXES);
+          newCP(k+numberOfTimesToInsert-j-s,AXES) = adjCP(p1-j-s,AXES);
+        }
       
       // copy over the remaining points
       for ( i=L+1; i<k-s; i++ )
-	newCP(i,AXES) = adjCP(i-L,AXES);
+        newCP(i,AXES) = adjCP(i-L,AXES);
       
       uKnot.redim(newKnots);  uKnot=newKnots;
       cPoint.redim(newCP);   cPoint=newCP;
@@ -1769,7 +1769,7 @@ normalizeKnots()
   if( d==0. )
   {
     printf("NurbsMapping::normalizeKnots:FATAL error: The knots have all the same value. min(u)=%e, max(u)=%e\n",
-	   ua,ub);
+           ua,ub);
   }
   uKnot=(uKnot-ua)*(1./d);
   if( domainDimension>1 )
@@ -1780,7 +1780,7 @@ normalizeKnots()
     if( d==0. )
     {
       printf("NurbsMapping::normalizeKnots:FATAL error: The knots have all the same value. min(v)=%e, max(v)=%e\n",
-	     va,vb);
+             va,vb);
     }
     vKnot=(vKnot-va)*(1./d);
   }
@@ -1877,8 +1877,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       {
         printf("NurbsMapping::readFromIgesFile:WARNING: uMin=%e >= uMax=%e ! I am setting uMin=0, uMax=1.\n",
                 uMin,uMax);
-	uMin = 0.;
-	uMax=1.;
+        uMin = 0.;
+        uMax=1.;
       }
 
       // ************************************************ *wdh* 050610 
@@ -1887,13 +1887,13 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
           (uMin!=min(uKnot) || uMax!=max(uKnot)) )
       {
         if( debug & 2 )
-	  printf(" ***NurbsMapping::readFromIgesFile:INFO: truncateToDomainBounds: [uMin,uMax]=[%9.3e,%9.3e]\n",
-		 uMin,uMax);
+          printf(" ***NurbsMapping::readFromIgesFile:INFO: truncateToDomainBounds: [uMin,uMax]=[%9.3e,%9.3e]\n",
+                 uMin,uMax);
         rStart[0]=uMin;
-	rEnd[0]=uMax;
-	truncateToDomainBounds();
-	rStart[0]=0.;
-	rEnd[0]=1.;
+        rEnd[0]=uMax;
+        truncateToDomainBounds();
+        rStart[0]=0.;
+        rEnd[0]=1.;
         // reparameterize(uMin,uMax);
         
       }
@@ -1909,11 +1909,11 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       // *wdh* 2017/04/05 -- read the transform  *** FINISH ME ***
       if( false )
       {
-	printF("--NRBS-- item=%i  matrix=iges.matrix(item)=trans_mtr=%i\n",item,iges.matrix(item));
+        printF("--NRBS-- item=%i  matrix=iges.matrix(item)=trans_mtr=%i\n",item,iges.matrix(item));
       
-	printF("--NRBS-- item name  =%s\n",(const char*)iges.entityName(iges.entity(item)));
-	printF("--NRBS-- matrix-name=%s\n",(const char*)iges.entityName(iges.entity(matrix)));
-	printF("--NRBS-- matrix-name=%s\n",(const char*)iges.entityName(iges.entity(iges.sequenceToItem(matrix))));
+        printF("--NRBS-- item name  =%s\n",(const char*)iges.entityName(iges.entity(item)));
+        printF("--NRBS-- matrix-name=%s\n",(const char*)iges.entityName(iges.entity(matrix)));
+        printF("--NRBS-- matrix-name=%s\n",(const char*)iges.entityName(iges.entity(iges.sequenceToItem(matrix))));
       }
       
       matrix=iges.sequenceToItem(matrix);
@@ -1922,8 +1922,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       if( returnValue==0 && (true || Mapping::debug & 1) )
       {
         printF("***NurbsMapping::readFromIgesFile:WARNING: matrixTransform!=0 for a rationalBSplineCurve\n");
-      	::display(matrixTransform,"rationalBSplineCurve: matrixTransform");
-       	::display(translation,"rationalBSplineCurve: translation");
+        ::display(matrixTransform,"rationalBSplineCurve: matrixTransform");
+        ::display(translation,"rationalBSplineCurve: translation");
       }
     }
     
@@ -1940,20 +1940,20 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       {
         if( Mapping::debug & 4 )
           printf("NurbsMapping::readFromIgesFile:INFO: periodic NURBS with uMin=%e and uMax=%e \n",uKnot(0),uKnot(m1));
-	reallyNormalizeKnots=false;
+        reallyNormalizeKnots=false;
       }
       else
       { // make sure this is true, see volvo surface 209 for a false case
-	Range AXES(rangeDimension);
+        Range AXES(rangeDimension);
 // AP: This test assumes that the NURBS is clamped!
-	if ( sqrt(sum(pow(cPoint(0,AXES)-cPoint(n1,AXES),2)))>FLT_EPSILON ) 
-	{
-	  // hey! its not really periodic!
-	  if (Mapping::debug & 2 )
-	    cout<<"NurbsMapping:::readFromIgesFile:curve was not really periodic"<<endl;
+        if ( sqrt(sum(pow(cPoint(0,AXES)-cPoint(n1,AXES),2)))>FLT_EPSILON ) 
+        {
+          // hey! its not really periodic!
+          if (Mapping::debug & 2 )
+            cout<<"NurbsMapping:::readFromIgesFile:curve was not really periodic"<<endl;
 
-	  setIsPeriodic(axis1, notPeriodic);
-	}
+          setIsPeriodic(axis1, notPeriodic);
+        }
       }
     }
   }
@@ -2077,11 +2077,11 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       cPointLocal(i,3,2) = Az(i) + dt*Bz(i) + dt2*Cz(i) + dt3*Dz(i);
 
 //        printf("Segment %i: local control points:\n(%e, %e, %e)\n(%e, %e, %e)\n(%e, %e, %e)\n(%e, %e, %e)\n",
-//  	     i, 
-//  	     cPointLocal(i,0,0), cPointLocal(i,0,1), cPointLocal(i,0,2),
-//  	     cPointLocal(i,1,0), cPointLocal(i,1,1), cPointLocal(i,1,2),
-//  	     cPointLocal(i,2,0), cPointLocal(i,2,1), cPointLocal(i,2,2),
-//  	     cPointLocal(i,3,0), cPointLocal(i,3,1), cPointLocal(i,3,2));
+//           i, 
+//           cPointLocal(i,0,0), cPointLocal(i,0,1), cPointLocal(i,0,2),
+//           cPointLocal(i,1,0), cPointLocal(i,1,1), cPointLocal(i,1,2),
+//           cPointLocal(i,2,0), cPointLocal(i,2,1), cPointLocal(i,2,2),
+//           cPointLocal(i,3,0), cPointLocal(i,3,1), cPointLocal(i,3,2));
     }
 
 // turn the local Bezier functions into a global B-spline (with many internal knots)    
@@ -2114,9 +2114,9 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
     {
       for (j=0; j<3; j++)
       {
-	cPoint(i*3,j)   = cPointLocal(i,0,j);
-	cPoint(i*3+1,j) = cPointLocal(i,1,j);
-	cPoint(i*3+2,j) = cPointLocal(i,2,j);
+        cPoint(i*3,j)   = cPointLocal(i,0,j);
+        cPoint(i*3+1,j) = cPointLocal(i,1,j);
+        cPoint(i*3+2,j) = cPointLocal(i,2,j);
       }
       cPoint(i*3,3) = 1.; // weight
       cPoint(i*3+1,3) = 1.; // weight
@@ -2148,14 +2148,14 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       j=-1;
       for (j=m1; j>=0; j--)
       {
-	if (fabs(T(i)-uKnot(j)) <= 10*FLT_EPSILON)
-	  break;
+        if (fabs(T(i)-uKnot(j)) <= 10*FLT_EPSILON)
+          break;
       }
       if (j>=0 && j<=m1)
       {
-	removeKnot(j, p1-1, numberRemoved, tolerance);
-	if (numberRemoved != p1-1)
-	  printf("Knot %i was removed %i times, m1=%i\n", j, numberRemoved, m1);
+        removeKnot(j, p1-1, numberRemoved, tolerance);
+        if (numberRemoved != p1-1)
+          printf("Knot %i was removed %i times, m1=%i\n", j, numberRemoved, m1);
       }
     }
     
@@ -2222,8 +2222,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
     {
       if( closedInU || closedInV || periodicInU || periodicInV )
       {
-	printf("NurbsMapping:: closedInU=%i, closedInV=%i, periodicInU=%i, periodicInV=%i form=%i\n",
-	       closedInU,closedInV,periodicInU,periodicInV,iges.formData(item));
+        printf("NurbsMapping:: closedInU=%i, closedInV=%i, periodicInU=%i, periodicInV=%i form=%i\n",
+               closedInU,closedInV,periodicInU,periodicInV,iges.formData(item));
       }
     }
     
@@ -2265,11 +2265,11 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
 
       if(ii == n1)
       {
-	ii=0;
-	jj++;
+        ii=0;
+        jj++;
       }
       else
-	ii++;
+        ii++;
     }
 
 
@@ -2300,15 +2300,15 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
 
       if( Mapping::debug & 2 )
         printf("NurbsMapping: dist1=%e, curvature1=%e, dist2=%e, curvature2=%e\n",
-  	     dist1,curvature1,dist2,curvature2);
+             dist1,curvature1,dist2,curvature2);
       
       if( dist1==0. || dist2==0. )
       {
-	if( dist1>0. )
+        if( dist1>0. )
           dist2=dist1;
-	else if( dist2>0. )
+        else if( dist2>0. )
           dist1=dist2;
-	else
+        else
           dist1=dist2=1.;
       }
       // The ratio curvature1/dist1 should always be less than 2.
@@ -2337,15 +2337,15 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       uMax = data(13+m1+m2+4*c);
       if( uMin >= uMax )
       {
-	uMin = 0.;
-	uMax=1.;
+        uMin = 0.;
+        uMax=1.;
       }
       vMin = data(14+m1+m2+4*c);
       vMax = data(15+m1+m2+4*c);
       if( vMin>vMax )
       {
-	vMin=0.;
-	vMax=1.;
+        vMin=0.;
+        vMax=1.;
       }
     }
     const real ua=uKnot(0);  // min(uKnot);
@@ -2367,14 +2367,14 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       int returnValue=MappingsFromCAD::getTransformationMatrix(matrix,iges,transform,translation);
       if( returnValue==0 && (true || Mapping::debug & 8) )
       {
-	::display(transform,"rationalBSplineSurface: transform");
-	::display(translation,"rationalBSplineSurface: translation");
+        ::display(transform,"rationalBSplineSurface: transform");
+        ::display(translation,"rationalBSplineSurface: translation");
       }
     }
     
     if( Mapping::debug & 4 )
       printf(" n1=%i, n2=%i, p1=%i, p2=%i, uMin=%e, uMax=%e, vMin=%e, vMax=%e, periodic= %i,%i, mt=%i  \n",n1,n2,p1,p2,
-	   uMin,uMax,vMin,vMax,periodicInU,periodicInV,matrix);
+           uMin,uMax,vMin,vMax,periodicInU,periodicInV,matrix);
 
 
 
@@ -2422,13 +2422,13 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       if( Mapping::debug & 8 ) printf("***NurbsMapping::readFromIgesFile:INFO: matrixTransform!=0 for a circularArc\n");
       if( matrix!=0 )
       {
-	matrix=iges.sequenceToItem(matrix);
-	int returnValue=MappingsFromCAD::getTransformationMatrix(matrix,iges,transform,translation);
-	if( returnValue==0 && Mapping::debug & 8 )
-	{
-	  ::display(transform,"circularArc: transform");
-	  ::display(translation,"circularArc: translation");
-	}
+        matrix=iges.sequenceToItem(matrix);
+        int returnValue=MappingsFromCAD::getTransformationMatrix(matrix,iges,transform,translation);
+        if( returnValue==0 && Mapping::debug & 8 )
+        {
+          ::display(transform,"circularArc: transform");
+          ::display(translation,"circularArc: translation");
+        }
       }
     }
     if( Mapping::debug & 4 )
@@ -2436,8 +2436,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       
       printf("NurbsMapping:: circularArc: radius=%e, centre=(%e,%e,%e)\n",radius,o(0),o(1),o(2));
       printf("                          : pt1=(%e,%e,%e) pt2=(%e,%e,%e) matrixTransformation=%i\n",
-	     pt1(0)+o(0),pt1(1)+o(1),pt1(2)+o(2),
-	     pt2(0)+o(0),pt2(1)+o(1),pt2(2)+o(2),matrix );
+             pt1(0)+o(0),pt1(1)+o(1),pt1(2)+o(2),
+             pt2(0)+o(0),pt2(1)+o(1),pt2(2)+o(2),matrix );
     }
     
     real cosTheta=sum(pt1*pt2)/SQR(radius);
@@ -2453,9 +2453,9 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       real pDist = sqrt( SQR(pt1(0)-pt2(0))+SQR(pt1(1)-pt2(1))+SQR(pt1(2)-pt2(2)) );
       if( pDist>radius )
       {
-	// theta is close to zero but the two points are almost 2*radius apart -- the angle must be near Pi
-	// *wdh* 050618
-	theta+=Pi;
+        // theta is close to zero but the two points are almost 2*radius apart -- the angle must be near Pi
+        // *wdh* 050618
+        theta+=Pi;
       }
       
     }
@@ -2492,7 +2492,7 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
       map(r,x);
     
       printf("  : x(r=0)=(%e,%e,%e) x(r=.5)=(%e,%e,%e) x(r=1)=(%e,%e,%e)\n",
-	     x(0,0),x(0,1),x(0,2),x(1,0),x(1,1),x(1,2),x(2,0),x(2,1),x(2,2));
+             x(0,0),x(0,1),x(0,2),x(1,0),x(1,1),x(1,2),x(2,0),x(2,1),x(2,2));
       
     }
     
@@ -2524,7 +2524,7 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
     num=4*4*3;
     for( int n=0; n<mv; n++ )
       for( int m=0; m<mu; m++ )
-	poly(R,m,n)=data(R+7+mu+mv + num*(n+(mv+1)*m));   // data is stored as (m,n) transposed 
+        poly(R,m,n)=data(R+7+mu+mv + num*(n+(mv+1)*m));   // data is stored as (m,n) transposed 
     
     poly.reshape(4,4,3,mu,mv);
     parametricSplineSurface(mu,mv,tu,tv,poly);
@@ -2552,7 +2552,7 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
     
     if( Mapping::debug & 1 )
       printf(" NurbsMapping::readFromIgesFile:create a line from p1=(%8.2e,%8.2e,%8.2e) to p2=(%8.2e,%8.2e,%8.2e)\n",
-	     p1(0,0),p1(0,1),p1(0,2),p2(0,0),p2(0,1),p2(0,2));
+             p1(0,0),p1(0,1),p1(0,2),p2(0,0),p2(0,1),p2(0,2));
     
     line( p1,p2 );
     
@@ -2594,11 +2594,11 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
     {
       if( fabs(uKnot(k)-uKnot(0))<knotEpsilon )
       {
-	num0++;
+        num0++;
       }
       if( fabs(uKnot(m1-k)-uKnot(m1))<knotEpsilon )
       {
-	num1++;
+        num1++;
       }
     }
     if( num0!=(p1+1) || num1!=(p1+1) )
@@ -2686,8 +2686,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
 //       real scale = (real)getRangeBound(End,axis2)-(real)getRangeBound(Start,axis2);
 //       if( dist <= scale*REAL_EPSILON*10. )
 //       {
-// 	if( debug & 2 ) printf("***INFO*** setting this NURBS surface to be periodic along axis=0\n");
-// 	setIsPeriodic(axis1,functionPeriodic);
+//      if( debug & 2 ) printf("***INFO*** setting this NURBS surface to be periodic along axis=0\n");
+//      setIsPeriodic(axis1,functionPeriodic);
 //       }
 //     }
 //     if( !getIsPeriodic(axis2) )
@@ -2697,8 +2697,8 @@ readFromIgesFile( IgesReader & iges, const int & item, bool normKnots /*=true*/ 
 //       real scale = (real)getRangeBound(End,axis1)-(real)getRangeBound(Start,axis1);
 //       if( dist <= scale*REAL_EPSILON*10. )
 //       {
-// 	if( debug & 2 ) printf("***INFO*** setting this NURBS surface to be periodic along axis=1\n");
-// 	setIsPeriodic(axis2,functionPeriodic);
+//      if( debug & 2 ) printf("***INFO*** setting this NURBS surface to be periodic along axis=1\n");
+//      setIsPeriodic(axis2,functionPeriodic);
 //       }
 //     }
 //  }
@@ -2770,8 +2770,8 @@ parametricSplineSurface(int mu, int mv, RealArray & u, RealArray & v, RealArray 
       dv[3]=dv[2]*dv[1];
       
       for( int j=0; j<4; j++ )
-	for( int i=0; i<4; i++ )
-	  a0(i,j,Rx,m,n)=poly(i,j,Rx,m,n)*du[i]*dv[j];
+        for( int i=0; i<4; i++ )
+          a0(i,j,Rx,m,n)=poly(i,j,Rx,m,n)*du[i]*dv[j];
     }
   }
 
@@ -2869,7 +2869,7 @@ parametricSplineSurface(int mu, int mv, RealArray & u, RealArray & v, RealArray 
       cin >> r(0,0) >> r(0,1);
       
       if( r(0,0)<0. )
-	break;
+        break;
       
       map(r,x);
   
@@ -2878,11 +2878,11 @@ parametricSplineSurface(int mu, int mv, RealArray & u, RealArray & v, RealArray 
           
       m=0;  // patch number
       while( m<mu-1 && t(0)>u(m+1) )
-	m++;
+        m++;
 
       n=0;  // patch number
       while( n<mv-1 && t(1)>v(n+1) )
-	n++;
+        n++;
 
       du[0]=1.;
       du[1]=t(0)-u(m);
@@ -2895,13 +2895,13 @@ parametricSplineSurface(int mu, int mv, RealArray & u, RealArray & v, RealArray 
       
       xp=0.;
       for( int j=0; j<4; j++ )
-	for( int i=0; i<4; i++ )
-	  for( int axis=0; axis<rangeDimension; axis++ )
-	    xp(axis)+=poly(i,j,axis,m,n)*du[i]*dv[j];
+        for( int i=0; i<4; i++ )
+          for( int axis=0; axis<rangeDimension; axis++ )
+            xp(axis)+=poly(i,j,axis,m,n)*du[i]*dv[j];
 
       printf(" r=(%8.2e,%8.2e) x=(%e,%e,%e) t=(%8.2e,%8.2e) m=%i,n=%i, xp=(%e,%e,%e)\n",
              r(0,0),r(0,1),x(0,0),x(0,1),x(0,2),
-	     t(0),t(1),m,n,xp(0),xp(1),xp(2));
+             t(0),t(1),m,n,xp(0),xp(1),xp(2));
     }
     
   }
@@ -2961,7 +2961,7 @@ parametricCurve(const NurbsMapping & nurbs,
     if( Mapping::debug & 4 )
     {
       printF(" ----parametricCurve: cPoint after scaling nurbs=[%s]\n",
-	     (const char*)getName(mappingName));
+             (const char*)getName(mappingName));
       cout << " --> this = " << this << endl;
       ::display(cPoint,"parametricCurve: cPoint after scaling nurbs");
     }
@@ -3170,7 +3170,7 @@ lowerRangeDimension()
   if (domainDimension != 1 || rangeDimension != 3)
   {
     printf("NurbsMapping:: lowerRangeDimension: Error, domainDim = %i, rangeDim = %i\n", 
-	   domainDimension, rangeDimension);
+           domainDimension, rangeDimension);
     return;
   }
   printf("NurbsMapping:: lowerRangeDimension: reshuffling the weights in the control point array\n");
@@ -3183,12 +3183,12 @@ lowerRangeDimension()
 
 int NurbsMapping::
 specify(const int &  m,
-	const int & n,
-	const int & p,
-	const RealArray & knot,
-	const RealArray & controlPoint,
-	const int & rangeDimension_ /* =3 */,
-	bool normalizeTheKnots /* =true*/  )
+        const int & n,
+        const int & p,
+        const RealArray & knot,
+        const RealArray & controlPoint,
+        const int & rangeDimension_ /* =3 */,
+        bool normalizeTheKnots /* =true*/  )
 //===========================================================================
 /// \brief  Specify a {\bf curve} in 2D or 3D using knots and control points
 /// \param m (input) : The number of knots is m+1
@@ -3226,14 +3226,14 @@ specify(const int &  m,
 
 int NurbsMapping::
 specify(const int & n1_, 
-	const int & n2_,
-	const int & p1_, 
-	const int & p2_, 
-	const RealArray & uKnot_, 
-	const RealArray & vKnot_,
-	const RealArray & controlPoint,
-	const int & rangeDimension_ /* =3 */,
-	bool normalizeTheKnots /* =true*/  )
+        const int & n2_,
+        const int & p1_, 
+        const int & p2_, 
+        const RealArray & uKnot_, 
+        const RealArray & vKnot_,
+        const RealArray & controlPoint,
+        const int & rangeDimension_ /* =3 */,
+        bool normalizeTheKnots /* =true*/  )
 //===========================================================================
 /// \brief  Specify a NURBS with domainDimension==2 using knots and control points
 /// \param n1_,n2_ (input) : the number of control points is n1+1 by n2+1
@@ -3304,7 +3304,7 @@ setDomainInterval(const real & r1Start /* =0. */,
   
     rStart[axis]=ra[axis];
     rEnd[axis]=rb[axis];
-	
+        
     const real rMin = nurbsIsPeriodic[axis] ? -1. : 0.;
     if( rStart[axis]<rMin )
     {
@@ -3321,11 +3321,11 @@ setDomainInterval(const real & r1Start /* =0. */,
     {
       if( fabs(rEnd[axis]-rStart[axis])!=1. )
       {
-	setIsPeriodic(axis,notPeriodic);
+        setIsPeriodic(axis,notPeriodic);
       }
       else
       {
-	setIsPeriodic(axis,(periodicType)nurbsIsPeriodic[axis]);
+        setIsPeriodic(axis,(periodicType)nurbsIsPeriodic[axis]);
       }
     }
   }
@@ -3451,21 +3451,21 @@ initialize( bool setMappingHasChanged /* =true */  )
       printF("\n\n NurbsMapping: &&&&&&&&&&&&&&& weights constant but not one!! &&&&&&&&&&&&& \n\n");
       if( wgtMax<=0. )
       {
-	printF("NurbsMapping::initialize:ERROR: weights are zero or negative!! \n");
-	::display(cPoint,"cPoint","%5.2f ");
-	OV_ABORT("error");
+        printF("NurbsMapping::initialize:ERROR: weights are zero or negative!! \n");
+        ::display(cPoint,"cPoint","%5.2f ");
+        OV_ABORT("error");
       }
       if( domainDimension==1 )
       {
-	Range R1(0,n1);
-	for( int axis=0; axis<rangeDimension; axis++ )
-	  cPoint(R1,axis)/=cPoint(R1,3); // divide by constant weight
+        Range R1(0,n1);
+        for( int axis=0; axis<rangeDimension; axis++ )
+          cPoint(R1,axis)/=cPoint(R1,3); // divide by constant weight
       }
       else if (domainDimension==2 )
       {
-	Range R1(0,n1), R2(0,n2);
-	for( int axis=0; axis<rangeDimension; axis++ )
-	  cPoint(R1,R2,axis)/=cPoint(R1,R2,3); // divide by constant weight
+        Range R1(0,n1), R2(0,n2);
+        for( int axis=0; axis<rangeDimension; axis++ )
+          cPoint(R1,R2,axis)/=cPoint(R1,R2,3); // divide by constant weight
       }
     }
   }
@@ -3496,7 +3496,7 @@ initialize( bool setMappingHasChanged /* =true */  )
     if (diff < 100*REAL_MIN && getIsPeriodic(axis1) != functionPeriodic)
     {
       printf("Nurbsmapping: periodicity test axis1: diff=%e. Making the mapping functionPeriodic "
-	     "along axis1!\n", diff);
+             "along axis1!\n", diff);
       setIsPeriodic(axis1, functionPeriodic);
       nurbsIsPeriodic[axis1]=functionPeriodic;
     }
@@ -3514,7 +3514,7 @@ initialize( bool setMappingHasChanged /* =true */  )
     if (diff < 100*REAL_MIN && getIsPeriodic(axis2) != functionPeriodic)
     {
       printf("Nurbsmapping: periodicity test axis2: diff=%e. Making the mapping functionPeriodic "
-	     "along axis2!\n", diff);
+             "along axis2!\n", diff);
       setIsPeriodic(axis2, functionPeriodic);
       nurbsIsPeriodic[axis2]=functionPeriodic;
     }
@@ -3741,7 +3741,7 @@ removeKnot(const int & index,
     if( Mapping::debug & 4 )
     {
       printF("--NRBS--removeKnot: index=%i numberOfTimesToRemove=%i multiplicity=%i p1=%i first=%i last=%i fout=%i.\n",
-	     index,numberOfTimesToRemove,multiplicity,p1,first,last,fout);
+             index,numberOfTimesToRemove,multiplicity,p1,first,last,fout);
     }
 
     int ord = p1+1;
@@ -3764,47 +3764,47 @@ removeKnot(const int & index,
       while( j-i > t )
       {
         // Compute new control points for one removal step 
-	alfi = (u-uKnot(i))/(uKnot(i+ord+t)-uKnot(i));
-	alfj = (u-uKnot(j-t))/(uKnot(j+ord)-uKnot(j-t));
-	temp(ii,Rw)=(cPoint(i,Rw)-(1.-alfi)*temp(ii-1,Rw))/alfi;
-	temp(jj,Rw)=(cPoint(j,Rw)-alfj*temp(jj+1,Rw))/(1.-alfj);
-	i++; ii++; j--; jj--;
+        alfi = (u-uKnot(i))/(uKnot(i+ord+t)-uKnot(i));
+        alfj = (u-uKnot(j-t))/(uKnot(j+ord)-uKnot(j-t));
+        temp(ii,Rw)=(cPoint(i,Rw)-(1.-alfi)*temp(ii-1,Rw))/alfi;
+        temp(jj,Rw)=(cPoint(j,Rw)-alfj*temp(jj+1,Rw))/(1.-alfj);
+        i++; ii++; j--; jj--;
       }
       if( j-i < t )
       { // check if the knot is removable
-	if( (dist4=distance4D(temp(ii-1,Rw),temp(jj+1,Rw))) <= tolerance )
-	{
-	  remFlag=1;
+        if( (dist4=distance4D(temp(ii-1,Rw),temp(jj+1,Rw))) <= tolerance )
+        {
+          remFlag=1;
           if( Mapping::debug & 4 )
-	    printF("   knot removed (A) : dist4=%9.3e <= tol=%9.3e\n",dist4,tolerance);
-	}
+            printF("   knot removed (A) : dist4=%9.3e <= tol=%9.3e\n",dist4,tolerance);
+        }
       }
       else
       {
-	alfi=(u-uKnot(i))/(uKnot(i+ord+t)-uKnot(i));
-	if( (dist4=distance4D(cPoint(i,Rw),alfi*temp(ii+t+1,Rw)+(1.-alfi)*temp(ii-1,Rw))) <= tolerance )
-	{
-	  remFlag=1;
+        alfi=(u-uKnot(i))/(uKnot(i+ord+t)-uKnot(i));
+        if( (dist4=distance4D(cPoint(i,Rw),alfi*temp(ii+t+1,Rw)+(1.-alfi)*temp(ii-1,Rw))) <= tolerance )
+        {
+          remFlag=1;
           if( Mapping::debug & 4 )
-	    printF("   knot removed (B) : dist4=%9.3e <= tol=%9.3e\n",dist4,tolerance);
-	}
+            printF("   knot removed (B) : dist4=%9.3e <= tol=%9.3e\n",dist4,tolerance);
+        }
       }
 
       if( remFlag==0 )
       {
-//	printf("removeKnot: Cant' remove any more than knots %i. dist4=%e, tolerance=%e\n", t, dist4, tolerance);
-	break;   // cannot remove any more knots
+//      printf("removeKnot: Cant' remove any more than knots %i. dist4=%e, tolerance=%e\n", t, dist4, tolerance);
+        break;   // cannot remove any more knots
       }
       else
       {
-	// knot can be removed, save new control points
-	i=first; j=last;
-	while( j-i > t )
-	{
-	  cPoint(i,Rw)=temp(i-off,Rw);
-	  cPoint(j,Rw)=temp(j-off,Rw);
-	  i++; j--;
-	}
+        // knot can be removed, save new control points
+        i=first; j=last;
+        while( j-i > t )
+        {
+          cPoint(i,Rw)=temp(i-off,Rw);
+          cPoint(j,Rw)=temp(j-off,Rw);
+          i++; j--;
+        }
       }
       first--;  last++;
     }
@@ -3823,9 +3823,9 @@ removeKnot(const int & index,
     for( k=1; k<t; k++ )
     {
       if( (k % 2) == 1 )
-	i++;
+        i++;
       else
-	j--;
+        j--;
     }
     for( k=i+1; k<=n1; k++ )
     {
@@ -3871,9 +3871,9 @@ getParameterBounds( int axis, real & rStart_, real & rEnd_ ) const
 
 int NurbsMapping:: 
 reparameterize(const real & uMin_, 
-	       const real & uMax_,
-	       const real & vMin_ /* =0. */ , 
-	       const real & vMax_ /* =1. */ )
+               const real & uMax_,
+               const real & vMin_ /* =0. */ , 
+               const real & vMax_ /* =1. */ )
 //=====================================================================================
 /// \brief  Reparameterize the nurb to only use a sub-rectangle of the parameter space.
 ///     This function can also be used to reverse the direction of the parameterization by choosing
@@ -3899,7 +3899,7 @@ reparameterize(const real & uMin_,
     {
       cout << "NurbsMapping::reparameterize: invalid input values \n";
       printf("uMin=%e, uMax=%e, vMin=%e, vMax=%e. rStart[0]=%e, rEnd[0]=%e, rStart[1]=%e, rEnd[1]=%e \n",
-	     uMin_,uMax_,vMin_,vMax_,rStart[0],rEnd[0],rStart[1],rEnd[1]);
+             uMin_,uMax_,vMin_,vMax_,rStart[0],rEnd[0],rStart[1],rEnd[1]);
       return 1;
     }
   }
@@ -3967,13 +3967,13 @@ reparameterize(const real & uMin_,
       RealArray temp(vKnot);
       int i;
       for( i=0; i<=m2; i++ )
-	temp(i)=1.-vKnot(m2-i);
+        temp(i)=1.-vKnot(m2-i);
       vKnot=temp;
       temp.redim(cPoint);
       Range R(0,rangeDimension);
       Range R1(0,n1);
       for( i=0; i<=n2; i++ )
-	temp(R1,i,R)=cPoint(R1,n2-i,R);
+        temp(R1,i,R)=cPoint(R1,n2-i,R);
 
       cPoint=temp;
     }
@@ -3981,10 +3981,10 @@ reparameterize(const real & uMin_,
     {
       if( !((fabs(va)<eps && fabs(vb-1.)<eps ) || (fabs(vb)<eps && fabs(va-1.)<eps)) )
       {
-	printf("NurbsMapping::reparameterization: Is no longer periodic in v.");
-	setIsPeriodic(axis2,notPeriodic);
+        printf("NurbsMapping::reparameterization: Is no longer periodic in v.");
+        setIsPeriodic(axis2,notPeriodic);
         nurbsIsPeriodic[axis2]=(int)notPeriodic;
-	
+        
       }
     }
 
@@ -4000,9 +4000,9 @@ reparameterize(const real & uMin_,
   
 int NurbsMapping:: 
 transformKnots(const real & uScale, 
-	       const real & uShift,
-	       const real & vScale /* =1. */ , 
-	       const real & vShift /* =0. */ )
+               const real & uShift,
+               const real & vScale /* =1. */ , 
+               const real & vShift /* =0. */ )
 //=====================================================================================
 /// \brief  
 ///     Apply a scaling and shift to the to the knots: uScale*uKnots+uShift.
@@ -4038,10 +4038,10 @@ transformKnots(const real & uScale,
       real va=vKnot(0), vb=vKnot(m2);
       if( !((fabs(va)<eps && fabs(vb-1.)<eps ) || (fabs(vb)<eps && fabs(va-1.)<eps)) )
       {
-	printf("NurbsMapping::reparameterization: Is no longer periodic in v.");
-	setIsPeriodic(axis2,notPeriodic);
+        printf("NurbsMapping::reparameterization: Is no longer periodic in v.");
+        setIsPeriodic(axis2,notPeriodic);
         nurbsIsPeriodic[axis2]=(int)notPeriodic;
-	
+        
       }
     }
 
@@ -4189,9 +4189,9 @@ elevateDegree(const int increment)
         alfs(k-mul-1)=numer/(uKnot(aa+k)-ua);
       for( j=1; j<=r; j++ )
       {
-	int save=r-j, s=mul+j;
-	for( k=p; k>=s; k-- )
-	  bpts(k,Rx)=alfs(k-s)*bpts(k,Rx)+(1.-alfs(k-s))*bpts(k-1,Rx);
+        int save=r-j, s=mul+j;
+        for( k=p; k>=s; k-- )
+          bpts(k,Rx)=alfs(k-s)*bpts(k,Rx)+(1.-alfs(k-s))*bpts(k-1,Rx);
         nextBpts(save,Rx)=bpts(p,Rx);
       }
     }
@@ -4203,7 +4203,7 @@ elevateDegree(const int increment)
       mpi=min(p,i);
       for( j=max(0,i-increment); j<=mpi; j++ )
       {
-	// printf(" use bezalf(%i,%i)=%e, bpts=(%6.2e,%6.2e) \n",i,j,bezalfs(i,j),bpts(j,0),bpts(j,1));
+        // printf(" use bezalf(%i,%i)=%e, bpts=(%6.2e,%6.2e) \n",i,j,bezalfs(i,j),bpts(j,0),bpts(j,1));
         ebpts(i,Rx)+=bezalfs(i,j)*bpts(j,Rx);
       }
     }
@@ -4216,41 +4216,41 @@ elevateDegree(const int increment)
       real bet=(ub-uh(kind-1))/den;
       for( int tr=1; tr<oldr; tr++ )
       {
-	// knot removal loop
+        // knot removal loop
         i=first;  j=last;
-	int kj=j-kind+1;
-	while( j-i > tr )
-	{
-	  // compute the control points for one removal step.
+        int kj=j-kind+1;
+        while( j-i > tr )
+        {
+          // compute the control points for one removal step.
           if( i<cind )
-	  {
-	    real alf=(ub-uh(i))/(ua-uh(i));
+          {
+            real alf=(ub-uh(i))/(ua-uh(i));
             // printf(" **** alf=%e \n",alf);
-	    qw(i,Rx)=alf*qw(i,Rx)+(1.-alf)*qw(i-1,Rx);
-	  }
-	  if( j>=lbz )
-	  {
-	    if( j-tr<=kind-ph+oldr )
-	    {
-	      real gam=(ub-uh(j-tr))/den;
-	      ebpts(kj,Rx)=gam*ebpts(kj,Rx)+(1.-gam)*ebpts(kj+1,Rx);
-	    }
-	    else
-	    {
-	      ebpts(kj,Rx)=bet*ebpts(kj,Rx)+(1.-bet)*ebpts(kj+1,Rx);
-	    }
-	  }
-	  i++; j--;  kj--;
-	}
-	first--; last++;
+            qw(i,Rx)=alf*qw(i,Rx)+(1.-alf)*qw(i-1,Rx);
+          }
+          if( j>=lbz )
+          {
+            if( j-tr<=kind-ph+oldr )
+            {
+              real gam=(ub-uh(j-tr))/den;
+              ebpts(kj,Rx)=gam*ebpts(kj,Rx)+(1.-gam)*ebpts(kj+1,Rx);
+            }
+            else
+            {
+              ebpts(kj,Rx)=bet*ebpts(kj,Rx)+(1.-bet)*ebpts(kj+1,Rx);
+            }
+          }
+          i++; j--;  kj--;
+        }
+        first--; last++;
       }
     }
     if( aa!=p )
     { // load the knot ua
       for( i=0; i<ph-oldr; i++ )
       {
-	uh(kind)=ua;
-	kind++;
+        uh(kind)=ua;
+        kind++;
       }
     }
     for( j=lbz; j<=rbz; j++ )
@@ -4271,10 +4271,10 @@ elevateDegree(const int increment)
         // printf(" WARNING r=%i, b=%i, p=%i \n",r,b,p);
         // *wdh* this fix for when r<0 seems to work but I am not sure if it is really correct.
         for( j=r; j<0; j++ )
-	{
+        {
           qw(cind,Rx)=ebpts(rbz,Rx);
           cind++;
-	}
+        }
         bpts(Range(0,p),Rx)=cPoint(Range(0,p)+b-p,Rx);  // *wdh* Is this correct??
       }
       aa=b;  b++;
@@ -4437,7 +4437,7 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
     }
     
 //     printf("NurbsMapping::merge: startDist=%8.2e, endDist=%8.2e, startDistRev=%8.2e, endDistRev=%8.2e small=%8.2e\n",
-// 	   startDist,endDist,startDistRev,endDistRev,small);
+//         startDist,endDist,startDistRev,endDistRev,small);
     
 
     if( endDist<=tol && endDist<=min(startDist,startDistRev,endDistRev) )
@@ -4466,8 +4466,8 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
     if( addNurb==toNeither )
     {
       if ( Mapping::debug & 2 )
-	printf("**** NurbsMapping::merge:end points don't match !! startDist=%e, endDist=%e, tol=%e********\n",
-	       startDist,endDist,tol);
+        printf("**** NurbsMapping::merge:end points don't match !! startDist=%e, endDist=%e, tol=%e********\n",
+               startDist,endDist,tol);
 #if 0
       ::display(x10,"Start of curve i-1","%e ");
       ::display(x11,"End   of curve i-1","%e ");
@@ -4476,8 +4476,8 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
 #endif
 
       if ( !keepFailed ) 
-	deleteSubCurve(newcurveIndex);
-	
+        deleteSubCurve(newcurveIndex);
+        
       return 1;
     }
     
@@ -4491,70 +4491,70 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
       const real epsSplit=1000.*REAL_EPSILON;
       if( addNurb==toEnd )
       {
-	real uMax0=uKnot(m1);
-	real uMin1=nurbs.uKnot(0);
-	if( uMax0>1.+epsSplit )
-	{
-	  // split this at 1
-	  // printf("NurbsMapping::merge: split this at 1\n");
+        real uMax0=uKnot(m1);
+        real uMin1=nurbs.uKnot(0);
+        if( uMax0>1.+epsSplit )
+        {
+          // split this at 1
+          // printf("NurbsMapping::merge: split this at 1\n");
 //           printf("**BEFORE split\n");
-// 	  ::display(uKnot,"uKnot");
-// 	  ::display(cPoint,"cPoint");
-	  
-	  NurbsMapping nurbLeft,nurbRight;
+//        ::display(uKnot,"uKnot");
+//        ::display(cPoint,"cPoint");
+          
+          NurbsMapping nurbLeft,nurbRight;
 //           PlotStuff & gi = *Overture::getGraphicsInterface();
 //           gi.erase();
-// 	  PlotIt::plot(gi,*this);
-	  
-	  this->split(1.,nurbLeft,nurbRight);
-	  // Copy relevant data (do not use the '=' operator as this would destroy the sub-curves)
-	  m1=nurbLeft.m1;
-	  n1=nurbLeft.n1;
-	  uKnot.redim(0);
-	  uKnot=nurbLeft.uKnot;  
-	  cPoint.redim(0);
-	  cPoint=nurbLeft.cPoint;
+//        PlotIt::plot(gi,*this);
+          
+          this->split(1.,nurbLeft,nurbRight);
+          // Copy relevant data (do not use the '=' operator as this would destroy the sub-curves)
+          m1=nurbLeft.m1;
+          n1=nurbLeft.n1;
+          uKnot.redim(0);
+          uKnot=nurbLeft.uKnot;  
+          cPoint.redim(0);
+          cPoint=nurbLeft.cPoint;
 
-	  mappingHasChanged();
-	  
-	}
-	if( uMin1<-epsSplit )
-	{
-	  // split nurbs at 0.
-	  // printf("NurbsMapping::merge: split nurbs at 0\n");
-	  NurbsMapping nurbLeft,nurbRight;
-	  nurbs.split(0.,nurbLeft,nurbRight);
-	  nurbs=nurbRight;
-	}
+          mappingHasChanged();
+          
+        }
+        if( uMin1<-epsSplit )
+        {
+          // split nurbs at 0.
+          // printf("NurbsMapping::merge: split nurbs at 0\n");
+          NurbsMapping nurbLeft,nurbRight;
+          nurbs.split(0.,nurbLeft,nurbRight);
+          nurbs=nurbRight;
+        }
       }
       else if( addNurb==toStart )
       {
-	real uMin0=uKnot(0);
-	real uMax1=nurbs.uKnot(nurbs.m1);
-	if( uMin0<-epsSplit )
-	{
-	  // split this at 0
-	  // printf("NurbsMapping::merge: split this at 0\n");
-	  NurbsMapping nurbLeft,nurbRight;
-	  this->split(0.,nurbLeft,nurbRight);
-	  // Copy relevant data (do not use the '=' operator as this would destroy the sub-curves)
-	  m1=nurbRight.m1;
-	  n1=nurbRight.n1;
-	  uKnot.redim(0);
-	  uKnot=nurbRight.uKnot; 
-	  cPoint.redim(0);
-	  cPoint=nurbRight.cPoint;
-	  mappingHasChanged();
+        real uMin0=uKnot(0);
+        real uMax1=nurbs.uKnot(nurbs.m1);
+        if( uMin0<-epsSplit )
+        {
+          // split this at 0
+          // printf("NurbsMapping::merge: split this at 0\n");
+          NurbsMapping nurbLeft,nurbRight;
+          this->split(0.,nurbLeft,nurbRight);
+          // Copy relevant data (do not use the '=' operator as this would destroy the sub-curves)
+          m1=nurbRight.m1;
+          n1=nurbRight.n1;
+          uKnot.redim(0);
+          uKnot=nurbRight.uKnot; 
+          cPoint.redim(0);
+          cPoint=nurbRight.cPoint;
+          mappingHasChanged();
 
-	}
-	if( uMax1>1.+epsSplit )
-	{
-	  // split nurbs at 1.
-	  // printf("NurbsMapping::merge: split nurbs at 1\n");
-	  NurbsMapping nurbLeft,nurbRight;
-	  nurbs.split(1.,nurbLeft,nurbRight);
-	  nurbs=nurbLeft;
-	}
+        }
+        if( uMax1>1.+epsSplit )
+        {
+          // split nurbs at 1.
+          // printf("NurbsMapping::merge: split nurbs at 1\n");
+          NurbsMapping nurbLeft,nurbRight;
+          nurbs.split(1.,nurbLeft,nurbRight);
+          nurbs=nurbLeft;
+        }
       }
       
       // ::display(uKnot,"After split, uKnot");
@@ -4575,39 +4575,39 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
       Mapping *map;
       for( int c=0; c<=1; c++ )
       {
-	map = c==0 ? this : &nurbs;
-	int n= map->getGridDimensions(axis1);
-	real h=1./(n-1.);
-	realArray r(n,1), x(n,rangeDimension);
+        map = c==0 ? this : &nurbs;
+        int n= map->getGridDimensions(axis1);
+        real h=1./(n-1.);
+        realArray r(n,1), x(n,rangeDimension);
 
-	r.seqAdd(0.,h);
-	map->map(r,x);
-	arc[c]=0.;
-	Range I(1,n-1);
-	if( rangeDimension==1 )
-	{
-	  // for( i=1; i<n; i++ )
-	  //   arc[c]+=fabs(x(i,0)-x(i-1,0));
-	  arc[c]=sum(fabs(x(I,0)-x(I-1,0)));
-	}
-	else if( rangeDimension==2 )
-	{
-	  // for( i=1; i<n; i++ )
-	  //  arc[c]+=SQRT( SQR( x(i,0)-x(i-1,0) ) + SQR( x(i,1)-x(i-1,1) ) );
-	  arc[c]=sum( SQRT( SQR( x(I,0)-x(I-1,0) ) + SQR( x(I,1)-x(I-1,1) ) ));
-	}
-	else
-	{
-	  // for( i=1; i<n; i++ )
-	  //  arc[c]+=SQRT( SQR( x(i,0)-x(i-1,0) ) + SQR( x(i,1)-x(i-1,1) ) +  SQR( x(i,2)-x(i-1,2) ) );
-	  arc[c]=sum(SQRT( SQR( x(I,0)-x(I-1,0) ) + SQR( x(I,1)-x(I-1,1) ) +  SQR( x(I,2)-x(I-1,2) ) ));
-	}
-	// printf(" ******* curve c=%i (0=this, 1=nurbs) arc=%e ******* \n",c,arc[c]);
-	// ::display(x,"Here are the curve coordinates");
+        r.seqAdd(0.,h);
+        map->map(r,x);
+        arc[c]=0.;
+        Range I(1,n-1);
+        if( rangeDimension==1 )
+        {
+          // for( i=1; i<n; i++ )
+          //   arc[c]+=fabs(x(i,0)-x(i-1,0));
+          arc[c]=sum(fabs(x(I,0)-x(I-1,0)));
+        }
+        else if( rangeDimension==2 )
+        {
+          // for( i=1; i<n; i++ )
+          //  arc[c]+=SQRT( SQR( x(i,0)-x(i-1,0) ) + SQR( x(i,1)-x(i-1,1) ) );
+          arc[c]=sum( SQRT( SQR( x(I,0)-x(I-1,0) ) + SQR( x(I,1)-x(I-1,1) ) ));
+        }
+        else
+        {
+          // for( i=1; i<n; i++ )
+          //  arc[c]+=SQRT( SQR( x(i,0)-x(i-1,0) ) + SQR( x(i,1)-x(i-1,1) ) +  SQR( x(i,2)-x(i-1,2) ) );
+          arc[c]=sum(SQRT( SQR( x(I,0)-x(I-1,0) ) + SQR( x(I,1)-x(I-1,1) ) +  SQR( x(I,2)-x(I-1,2) ) ));
+        }
+        // printf(" ******* curve c=%i (0=this, 1=nurbs) arc=%e ******* \n",c,arc[c]);
+        // ::display(x,"Here are the curve coordinates");
       }
       if( true || Mapping::debug & 4 )
-	printf("merge: arcLength[this] = %e(new=%e), arcLength[nurbs]=%e(new=%e) \n",arc[0],
-	       getArcLength(),arc[1],nurbs.getArcLength());
+        printf("merge: arcLength[this] = %e(new=%e), arcLength[nurbs]=%e(new=%e) \n",arc[0],
+               getArcLength(),arc[1],nurbs.getArcLength());
     }
     else
     {
@@ -4663,8 +4663,8 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
       char tstate = subCurveState[newcurveIndex];
       for( int n=newcurveIndex; n>0; n-- )
       {
-	subCurves[n]=subCurves[n-1];
-	subCurveState[n] = subCurveState[n-1];
+        subCurves[n]=subCurves[n-1];
+        subCurveState[n] = subCurveState[n-1];
       }
       
       subCurves[0]=tempNurb;
@@ -4693,7 +4693,7 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
     uMin=uKnot(0);  // min(uKnot); *wdh* 010829
     uMax=uKnot(m1); // max(uKnot);
 
-    // now try and remove duplicate knots	
+    // now try and remove duplicate knots       
     if( true )
     {
       // *wdh* Reduce the tolerance for knot removeable since this was too big for the Wigley hull
@@ -4704,15 +4704,15 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
       int numberRemoved=0;
       if( addNurb==toEnd )
       {
-	removeKnot( m1Old,p1Old,numberRemoved, toleranceForKnotRemoval );            // only 1 should be removeable (?)
+        removeKnot( m1Old,p1Old,numberRemoved, toleranceForKnotRemoval );            // only 1 should be removeable (?)
         if( Mapping::debug & 4 )
-	  cout << "NurbsMapping::merge: number of common knots removed = " << numberRemoved << endl;
+          cout << "NurbsMapping::merge: number of common knots removed = " << numberRemoved << endl;
       }
       if( addNurb==toStart )
       {
-	removeKnot( nurbs.m1,nurbs.p1,numberRemoved,toleranceForKnotRemoval );       // only 1 should be removeable
+        removeKnot( nurbs.m1,nurbs.p1,numberRemoved,toleranceForKnotRemoval );       // only 1 should be removeable
         if( Mapping::debug & 4 )
-  	  cout << "NurbsMapping::merge: number of common knots removed = " << numberRemoved << endl;
+          cout << "NurbsMapping::merge: number of common knots removed = " << numberRemoved << endl;
       }
     }
     
@@ -4757,7 +4757,7 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
     if( nurbIsPeriodic && attemptPeriodic )
     {
       if( Mapping::debug & 4 )
-	cout << "============NurbsMapping: merged nurbs is periodic =============\n";
+        cout << "============NurbsMapping: merged nurbs is periodic =============\n";
 
       
       // forcePeriodic();  // *wdh* 010427 why do we need to force??
@@ -4767,13 +4767,13 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
       RealArray endpt(1,rangeDimension);
       if ( addNurb==toEnd )
       {
-	for( int dir=0; dir<rangeDimension; dir++ )
-  	  endpt(0,dir) = x10(0,dir);
+        for( int dir=0; dir<rangeDimension; dir++ )
+          endpt(0,dir) = x10(0,dir);
       }
       else
       {
-	for( int dir=0; dir<rangeDimension; dir++ )
-	  endpt(0,dir) = reversed ? x21(0,dir) : x20(0,dir);
+        for( int dir=0; dir<rangeDimension; dir++ )
+          endpt(0,dir) = reversed ? x21(0,dir) : x20(0,dir);
       }
       
       subCurve(numberOfSubCurves()-1).moveEndpoint(End,endpt);
@@ -4811,13 +4811,13 @@ merge(NurbsMapping & nurbs, bool keepFailed /* = true */, real eps /*=-1*/, bool
   for ( int k=0; k<m1+1; k++ )
     if ( uKnot(k) == kprev )
       {
-	multiplicity++;
+        multiplicity++;
       }
     else
       {
-	cout <<"multiplicity "<<multiplicity<<endl;
-	multiplicity = 1;
-	kprev = uKnot(k);
+        cout <<"multiplicity "<<multiplicity<<endl;
+        multiplicity = 1;
+        kprev = uKnot(k);
       }
   cout<<"multiplicity "<<multiplicity<<endl;
   cout<<"multiplicity end"<<endl;
@@ -4943,18 +4943,18 @@ forcedMerge(NurbsMapping & nurbs  )
       addNurb=toEnd;
       // if( endDist<endDistRev ) // *wdh* really force a merge   ( endDist<(10.*tol) )
       if( endDist<(10.*tol) )
-	createLineAsNurbs(newPatch, x11, x20);
+        createLineAsNurbs(newPatch, x11, x20);
       // else if( true ) // *wdh* 
       else if( endDistRev<(10.*tol) )
       {
-	nurbs.reparameterize(1.,0.);
-	return merge(nurbs) ;
+        nurbs.reparameterize(1.,0.);
+        return merge(nurbs) ;
       }
       else
       {
-	cout<<"Could not force a connection between two nurbs curve, gap is too large "<<endl;
-	if ( newPatch->decrementReferenceCount() ==0 ) delete newPatch;
-	return 1;
+        cout<<"Could not force a connection between two nurbs curve, gap is too large "<<endl;
+        if ( newPatch->decrementReferenceCount() ==0 ) delete newPatch;
+        return 1;
       }
       
     }
@@ -4963,18 +4963,18 @@ forcedMerge(NurbsMapping & nurbs  )
       addNurb=toStart;
       // if( startDist < startDistRev ) // *wdh*  ( startDist<(10.*tol) )
       if( startDist<(10.*tol) )
-	createLineAsNurbs(newPatch, x21, x10);
+        createLineAsNurbs(newPatch, x21, x10);
       // else if( true ) // *wdh* if ( startDistRev<(10.*tol) )
       else if( startDistRev<(10.*tol) )
       {
-	nurbs.reparameterize(1.,0.);
-	return merge(nurbs);
+        nurbs.reparameterize(1.,0.);
+        return merge(nurbs);
       }
       else
       {
-	cout<<"Could not force a connection between two nurbs curve, gap is too large "<<endl;
-	if ( newPatch->decrementReferenceCount() ==0 ) delete newPatch;
-	return 1;
+        cout<<"Could not force a connection between two nurbs curve, gap is too large "<<endl;
+        if ( newPatch->decrementReferenceCount() ==0 ) delete newPatch;
+        return 1;
       }
     }
 
@@ -5020,33 +5020,33 @@ forcePeriodic()
       real currentUEnd = oldEnd;
       
       while ( currentUBegin==oldBegin || currentUEnd==oldEnd )
-	{
-	  if ( currentUBegin == oldBegin ) 
-	    {
-	      currentUBegin = uKnot(multBegin);
-	      multBegin++;
-	    }
+        {
+          if ( currentUBegin == oldBegin ) 
+            {
+              currentUBegin = uKnot(multBegin);
+              multBegin++;
+            }
 
-	  if ( currentUEnd == oldEnd )
-	    {
-	      currentUEnd = uKnot(m1-(multEnd));
-	      multEnd++;
-	    }
-	}
+          if ( currentUEnd == oldEnd )
+            {
+              currentUEnd = uKnot(m1-(multEnd));
+              multEnd++;
+            }
+        }
 
       if ( multBegin!=multEnd ) return 1;
 
       RealArray pt(rangeDimension);
       for ( int aa=0; aa<rangeDimension; aa++ )
-	pt(aa) = cPoint(0,aa);
+        pt(aa) = cPoint(0,aa);
 
       if( moveEndpoint(End, pt)!=0 )  // *wdh* 010427 check for error return
       {
-	printf("NurbsMapping::forcePeriodic: **unable to moveEndpoint\n");
+        printf("NurbsMapping::forcePeriodic: **unable to moveEndpoint\n");
         return 1;
       }
       //for ( int ax=0; ax<rangeDimension+1; ax++ )
-      //	cPoint(n1, ax) = cPoint(0,ax);
+      //        cPoint(n1, ax) = cPoint(0,ax);
     }
   else
     return 1;
@@ -5149,7 +5149,7 @@ split(real uSplit, NurbsMapping &c1, NurbsMapping&c2, bool normalizePieces /* =t
     {
       real uScale=1./max(REAL_MIN*100.,uSplit-uKnot(0));
       for ( k=0; k<nNewKnotsLeft; k++ )
-	newKnots(k)=(newKnots(k)-uKnot(0))*uScale;
+        newKnots(k)=(newKnots(k)-uKnot(0))*uScale;
     }
     if( Mapping::debug & 2 ) 
       newKnots.display("NurbsMapping::split: newKnots for left piece");
@@ -5190,7 +5190,7 @@ split(real uSplit, NurbsMapping &c1, NurbsMapping&c2, bool normalizePieces /* =t
     {
       real uScale=1./max(REAL_MIN*100.,uKnot(uKnot.getBound(0))-uSplit);
       for ( k=0; k<nNewKnotsRight; k++ )
-	newKnots(k)=(newKnots(k)-uSplit)*uScale;   // rescale knots
+        newKnots(k)=(newKnots(k)-uSplit)*uScale;   // rescale knots
     }
     
     if( Mapping::debug & 2 ) 
@@ -5224,7 +5224,7 @@ splitSubCurve( int subCurveNumber, real rSplit )
   if( subCurveNumber<0 || subCurveNumber>=numberOfCurves )
   {
     printf("NurbsMapping::splitSubCurve:ERROR invalid subCurveNumber=%i, numberOfSubCurves=%i\n",
-	   subCurveNumber,numberOfCurves);
+           subCurveNumber,numberOfCurves);
   }
   
   NurbsMapping & curve = subCurve(subCurveNumber);  // this is the curve we split
@@ -5313,7 +5313,7 @@ joinSubCurves( int subCurveNumber )
   if( subCurveNumber<0 || subCurveNumber>=numberOfCurves )
   {
     printf("NurbsMapping::joinSubCurve:ERROR invalid subCurveNumber=%i, numberOfSubCurves=%i\n",
-	   subCurveNumber, numberOfCurves);
+           subCurveNumber, numberOfCurves);
     return -1;
   }
   int newCurveNumber=-1;
@@ -5452,37 +5452,37 @@ moveEndpoint( int end, const RealArray &endPoint, real tol /*=-1*/ )
 
     if( ((end==0 && r(0,0)>(uKnot(0) +tol)) ||   // *wdh* 010427 restrict allowable movements
         (end==1 && r(0,0)<(uKnot(m1)-tol))) && // *kkc* 020919 allow user specified tolerance  
-	( fabs(r(0,0))>tol && fabs(r(0,0)-1)>tol ) ) // *kkc* make sure we are not sitting right on the endpoint    
+        ( fabs(r(0,0))>tol && fabs(r(0,0)-1)>tol ) ) // *kkc* make sure we are not sitting right on the endpoint    
     {
 //      printf("moveEndpoint: attempting to split the curve...\n");
       NurbsMapping leftCurve, rightCurve;
       if ( split(r(0,0), leftCurve, rightCurve)==0 )
       {
-	if ( end==Start ) 
-	{
-	  // *wdh* 010427 *this = rightCurve;  // avoid this copy since it will destroy sub-curves
-	  m1=rightCurve.m1;
-	  n1=rightCurve.n1;
-	  uKnot.redim(0);
-	  uKnot=rightCurve.uKnot;  
-	  cPoint.redim(0);
-	  cPoint=rightCurve.cPoint;
-	}
-	else
-	{
-	  // *wdh* 010427 *this = leftCurve; // avoid this copy since it will destroy sub-curves
-	  m1=leftCurve.m1;
-	  n1=leftCurve.n1;
-	  uKnot.redim(0);
-	  uKnot=leftCurve.uKnot;  
-	  cPoint.redim(0);
-	  cPoint=leftCurve.cPoint;
+        if ( end==Start ) 
+        {
+          // *wdh* 010427 *this = rightCurve;  // avoid this copy since it will destroy sub-curves
+          m1=rightCurve.m1;
+          n1=rightCurve.n1;
+          uKnot.redim(0);
+          uKnot=rightCurve.uKnot;  
+          cPoint.redim(0);
+          cPoint=rightCurve.cPoint;
+        }
+        else
+        {
+          // *wdh* 010427 *this = leftCurve; // avoid this copy since it will destroy sub-curves
+          m1=leftCurve.m1;
+          n1=leftCurve.n1;
+          uKnot.redim(0);
+          uKnot=leftCurve.uKnot;  
+          cPoint.redim(0);
+          cPoint=leftCurve.cPoint;
 
-	}
-	      
+        }
+              
       }
       else
-	return 1;
+        return 1;
     }
     
 //      else
@@ -5502,7 +5502,7 @@ moveEndpoint( int end, const RealArray &endPoint, real tol /*=-1*/ )
 //      for (j=0; j<rangeDimension; j++)
 //      {
 //        for (i=0; i<=n1; i++)
-//  	printf("%e ", cPoint(i,j));
+//      printf("%e ", cPoint(i,j));
 //        printf("\n");
 //      }
 //      printf(")\n");
@@ -5510,25 +5510,25 @@ moveEndpoint( int end, const RealArray &endPoint, real tol /*=-1*/ )
     while ( !finishedMoving )
     {
       int p = end*n1 + dir*cpmove;
-	
+        
       if ( p >= cPoint.getBase(0) && p <= cPoint.getBound(0) && // prevents array bounds error
-	   sum(pow(originalEnd-cPoint(p,AXES),2))<100*REAL_MIN ) 
+           sum(pow(originalEnd-cPoint(p,AXES),2))<100*REAL_MIN ) 
       {
-	// there could be multiple control points at the end and each one
-	//   needs to be shifted
-	//  (ie in a piecwise linear curve represented by a cubic NURBS)
-//	    printf("Moving control point %i\n", p);
-	for ( int a=0; a<rangeDimension; a++ )
-	{
-	  // *wdh* 100207  cPoint( p, a ) = endPoint(a);
+        // there could be multiple control points at the end and each one
+        //   needs to be shifted
+        //  (ie in a piecwise linear curve represented by a cubic NURBS)
+//          printf("Moving control point %i\n", p);
+        for ( int a=0; a<rangeDimension; a++ )
+        {
+          // *wdh* 100207  cPoint( p, a ) = endPoint(a);
           // *wdh* 100207 (Chatillon France) -- the cPoint array is scaled by the weight so we
           // need to scale the end point 
-	  cPoint( p, a ) = endPoint(a)*cPoint(p,rangeDimension);
-	}
+          cPoint( p, a ) = endPoint(a)*cPoint(p,rangeDimension);
+        }
       }
       else
-	finishedMoving = true;
-	
+        finishedMoving = true;
+        
       cpmove++;
     }
 //    printf("After moveEndPoint: cpmove=%i, order=%i\n", cpmove, getOrder());
@@ -5537,7 +5537,7 @@ moveEndpoint( int end, const RealArray &endPoint, real tol /*=-1*/ )
 //      for (j=0; j<rangeDimension; j++)
 //      {
 //        for (i=0; i<=n1; i++)
-//  	printf("%e ", cPoint(i,j));
+//      printf("%e ", cPoint(i,j));
 //        printf("\n");
 //      }
 //      printf(")\n");
@@ -5597,7 +5597,7 @@ subCurve(int subCurveNumber)
   else
   {
     printf("NurbsMapping:subCurve:ERROR:Invalid subCurveNumber = %i . The number of subCurves is %i \n",
-	   subCurveNumber,numberOfCurves);
+           subCurveNumber,numberOfCurves);
     {throw "error";}
   }
 }
@@ -5625,7 +5625,7 @@ subCurveFromList(int subCurveNumber)
   else
   {
     printf("NurbsMapping:subCurve:ERROR:Invalid subCurveNumber = %i . The number of subCurves is %i \n",
-	   subCurveNumber,numberOfCurves);
+           subCurveNumber,numberOfCurves);
     {throw "error";}
   }
 }
@@ -5672,7 +5672,7 @@ put( FILE *file, const FileFormat & fileFormat /* = xxww */ )
     {
       fprintf(file,"%e ",knot(i));
       if( i % 10 == 9 || i==m )
-	fprintf(file,"\n");
+        fprintf(file,"\n");
     }
   }
   const int nw=rangeDimension;
@@ -5684,17 +5684,17 @@ put( FILE *file, const FileFormat & fileFormat /* = xxww */ )
     {
       for( int i2=0; i2<=n2; i2++ )
       {
-	for( i=0; i<=n1; i++ )
-	{
-	  // save control points unscaled by the weight factor, (x,y,z,w)
-	  fprintf(file,"%e ",axis!=nw && cPoint(i,i2,nw)!=0. ? cPoint(i,i2,axis)/cPoint(i,i2,nw) :cPoint(i,i2,axis) );
-	  j++;
-	  if( j % 10 == 9 || i==n1 )
-	  {
-	    j=0;
-	    fprintf(file,"\n");
-	  }
-	}
+        for( i=0; i<=n1; i++ )
+        {
+          // save control points unscaled by the weight factor, (x,y,z,w)
+          fprintf(file,"%e ",axis!=nw && cPoint(i,i2,nw)!=0. ? cPoint(i,i2,axis)/cPoint(i,i2,nw) :cPoint(i,i2,axis) );
+          j++;
+          if( j % 10 == 9 || i==n1 )
+          {
+            j=0;
+            fprintf(file,"\n");
+          }
+        }
       }
     }
   }
@@ -5706,11 +5706,11 @@ put( FILE *file, const FileFormat & fileFormat /* = xxww */ )
       {
         real w = cPoint(i1,i2,nw)==0. ? 1. : 1./cPoint(i1,i2,nw);
         if( rangeDimension==1 )
-	  fprintf(file,"%e %e ",cPoint(i1,i2,0)*w,1./w);//cPoint(i1,i2,nw));
+          fprintf(file,"%e %e ",cPoint(i1,i2,0)*w,1./w);//cPoint(i1,i2,nw));
         else if( rangeDimension==2 )
-	  fprintf(file,"%e %e %e ",cPoint(i1,i2,0)*w,cPoint(i1,i2,1)*w,1./w);//cPoint(i1,i2,nw));
+          fprintf(file,"%e %e %e ",cPoint(i1,i2,0)*w,cPoint(i1,i2,1)*w,1./w);//cPoint(i1,i2,nw));
         else
-	  fprintf(file,"%e %e %e %e ",cPoint(i1,i2,0)*w,cPoint(i1,i2,1)*w,cPoint(i1,i2,2)*w,1./w);//cPoint(i1,i2,nw));
+          fprintf(file,"%e %e %e %e ",cPoint(i1,i2,0)*w,cPoint(i1,i2,1)*w,cPoint(i1,i2,2)*w,1./w);//cPoint(i1,i2,nw));
 
       }
     }
@@ -5831,7 +5831,7 @@ get( FILE *file, const FileFormat & fileFormat /* = xxww */ )
       numberRead=fScanF(file,"%e",&knot(i));
       if( numberRead==0 )
       {
-	printf("NurbsMapping::get:ERROR reading knots\n");
+        printf("NurbsMapping::get:ERROR reading knots\n");
         return 1;
       }
     }
@@ -5846,18 +5846,18 @@ get( FILE *file, const FileFormat & fileFormat /* = xxww */ )
     {
       for( int i2=0; i2<=n2; i2++ )
       {
-	for( int i1=0; i1<=n1; i1++ )
-	{
-	  numberRead=fScanF(file,"%e",&cPoint(i1,i2,n));
-	  if( numberRead<=0 )
-	  {
-	    printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
-	    printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
-	    printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
-		   domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
-	    throw "error";
-	  }
-	}
+        for( int i1=0; i1<=n1; i1++ )
+        {
+          numberRead=fScanF(file,"%e",&cPoint(i1,i2,n));
+          if( numberRead<=0 )
+          {
+            printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
+            printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
+            printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
+                   domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
+            throw "error";
+          }
+        }
       }
     }
   }
@@ -5867,21 +5867,21 @@ get( FILE *file, const FileFormat & fileFormat /* = xxww */ )
     {
       for( int i1=0; i1<=n1; i1++ )
       {
-	if( rangeDimension==1 )
-	  numberRead=fScanF(file,"%e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1));
-	else if( rangeDimension==2 )
-	  numberRead=fScanF(file,"%e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2));
-	else 
-	  numberRead=fScanF(file,"%e %e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
+        if( rangeDimension==1 )
+          numberRead=fScanF(file,"%e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1));
+        else if( rangeDimension==2 )
+          numberRead=fScanF(file,"%e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2));
+        else 
+          numberRead=fScanF(file,"%e %e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
 
-	if( numberRead<=0 )
-	{
-	  printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
-	  printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
-	  printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
-		 domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
-	  throw "error";
-	}
+        if( numberRead<=0 )
+        {
+          printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
+          printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
+          printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
+                 domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
+          throw "error";
+        }
       }
     }
   }
@@ -5898,22 +5898,22 @@ get( FILE *file, const FileFormat & fileFormat /* = xxww */ )
       {
         numberRead=fscanf(file,iformat,&i1,&i2);
         assert( numberRead>0 && i1>=0 && i1<=n1 && i2>=0 && i2<=n2 );
-	
-	if( rangeDimension==1 )
-	  numberRead=fScanF(file,"%e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1));
-	else if( rangeDimension==2 )
-	  numberRead=fScanF(file,"%e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2));
-	else 
-	  numberRead=fscanf(file,e4format,&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
+        
+        if( rangeDimension==1 )
+          numberRead=fScanF(file,"%e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1));
+        else if( rangeDimension==2 )
+          numberRead=fScanF(file,"%e %e %e ",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2));
+        else 
+          numberRead=fscanf(file,e4format,&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
 
-	if( numberRead<=0 )
-	{
-	  printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
-	  printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
-	  printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
-		 domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
-	  throw "error";
-	}
+        if( numberRead<=0 )
+        {
+          printf("NurbsMapping::get:ERROR reading file. Error occured while reading control points\n");
+          printf("currently reading point i1=%i, i2=%i. \n",i1,i2);
+          printf("domainDimension=%i, rangeDimension=%i, p1=%i, n1=%i, m1=%i, p2=%i, n2=%i, m2=%i, \n",
+                 domainDimension,rangeDimension,p1,n1,m1,p2,n2,m2);
+          throw "error";
+        }
       }
     }
   }
@@ -6005,8 +6005,8 @@ buildSubCurves( real angle /* =60. */ )
       int c;
       for( c=0; c<numberOfSubCurves(); c++ )
       {
-	subCurves[c]->buildSubCurves(angle);
-	newNumberOfCurves+=subCurves[c]->numberOfSubCurves();
+        subCurves[c]->buildSubCurves(angle);
+        newNumberOfCurves+=subCurves[c]->numberOfSubCurves();
       }
       // Now make a list of all the new ones.
       NurbsMapping **temp = new NurbsMapping *[newNumberOfCurves];
@@ -6015,28 +6015,28 @@ buildSubCurves( real angle /* =60. */ )
       for( c=0; c<numberOfSubCurves(); c++ )
       {
         NurbsMapping & map = *subCurves[c];
-	for( int sc=0; sc<map.numberOfSubCurves(); sc++ )
-	{
-	  temp[cc]=&map.subCurve(sc); temp[cc]->incrementReferenceCount();
-	  tmpstate[cc] = subCurveState[cc];
-	  cc++;
-	}
+        for( int sc=0; sc<map.numberOfSubCurves(); sc++ )
+        {
+          temp[cc]=&map.subCurve(sc); temp[cc]->incrementReferenceCount();
+          tmpstate[cc] = subCurveState[cc];
+          cc++;
+        }
       }
 
       // delete old ones, including invisible ones which will now disappear forever.
       //      for( c=0; c<numberOfSubCurvesInList(); c++ )
-      //	deleteSubCurve(c);
+      //        deleteSubCurve(c);
       for( c=0; c<numberOfSubCurvesInList(); c++ )
-	if( subCurves[c]->decrementReferenceCount()==0 )
-	  delete subCurves[c];
+        if( subCurves[c]->decrementReferenceCount()==0 )
+          delete subCurves[c];
       delete [] subCurves;
       delete [] subCurveState;
 
       //      for ( c=0; c<newNumberOfCurves; c++ )
-      //	{
-      //	  addSubCurve(*temp[c]);
-      //	  subCurveState[c] = tmpstate[c];
-      //	}
+      //        {
+      //          addSubCurve(*temp[c]);
+      //          subCurveState[c] = tmpstate[c];
+      //        }
       //deleteSubCurve(0);
       subCurves=temp;
       subCurveState = tmpstate;
@@ -6052,57 +6052,57 @@ buildSubCurves( real angle /* =60. */ )
       //if ( numberOfSubCurves()==1 ) newNumberOfCurves = 0;
       for( int i=1; i<n1; i++ )
       {
-	d0[0]=cPoint(i,0)-cPoint(i-1,0);
-	d0[1]=cPoint(i,1)-cPoint(i-1,1);
+        d0[0]=cPoint(i,0)-cPoint(i-1,0);
+        d0[1]=cPoint(i,1)-cPoint(i-1,1);
 
-	d1[0]=cPoint(i+1,0)-cPoint(i,0);
-	d1[1]=cPoint(i+1,1)-cPoint(i,1);
+        d1[0]=cPoint(i+1,0)-cPoint(i,0);
+        d1[1]=cPoint(i+1,1)-cPoint(i,1);
               
-	real dot = (d0[0]*d1[0]+d0[1]*d1[1])/
-	  max(REAL_MIN,SQRT( (d0[0]*d0[0]+d0[1]*d0[1])*(d1[0]*d1[0]+d1[1]*d1[1])));
-	if( dot<tol )
-	{
-	  // printf("NurbsMapping::buildSubCurves i=%i, dot=%e, corner found. (d0=(%8.2e,%8.2e),"
+        real dot = (d0[0]*d1[0]+d0[1]*d1[1])/
+          max(REAL_MIN,SQRT( (d0[0]*d0[0]+d0[1]*d0[1])*(d1[0]*d1[0]+d1[1]*d1[1])));
+        if( dot<tol )
+        {
+          // printf("NurbsMapping::buildSubCurves i=%i, dot=%e, corner found. (d0=(%8.2e,%8.2e),"
           //      "d1=(%8.2e,%8.2e)\n",i,dot,d0[0],d0[1],d1[0],d1[1]);
-	  split(newNumberOfCurves)=i;
-	  newNumberOfCurves++;
-	}
+          split(newNumberOfCurves)=i;
+          newNumberOfCurves++;
+        }
       }
 
       split(newNumberOfCurves)=n1;
     
       if( newNumberOfCurves>1 )
       {
-	numberOfCurves = newNumberOfCurves;
-	subCurves = new NurbsMapping*[numberOfCurves];
-	subCurveState = new char[numberOfCurves];
-	for( int c=0; c<newNumberOfCurves; c++ )
-	{
-	  int ia=split(c), ib=split(c+1);
+        numberOfCurves = newNumberOfCurves;
+        subCurves = new NurbsMapping*[numberOfCurves];
+        subCurveState = new char[numberOfCurves];
+        for( int c=0; c<newNumberOfCurves; c++ )
+        {
+          int ia=split(c), ib=split(c+1);
     
-	  int n=ib-ia;
-	  int m=n+p1+1;
-	  RealArray cp(n+1,3), knot(m+1);
-	  cp=cPoint(Range(ia,ib),Range(0,2));
+          int n=ib-ia;
+          int m=n+p1+1;
+          RealArray cp(n+1,3), knot(m+1);
+          cp=cPoint(Range(ia,ib),Range(0,2));
 
-	  knot(Range(1,m-1)).seqAdd(0.,1./max(1.,m-2));
-	  knot(0)=0.;  // double knot at ends
-	  knot(1)=0.;
-	  knot(m-1)=1.;
-	  knot(m  )=1.;
-		  
-	  NurbsMapping & nurb = *new NurbsMapping(); nurb.incrementReferenceCount();
-	
-	  // ::display(knot,"knot");
-	  // ::display(cp,"cp");
-	
-	  nurb.specify(m,n,p1,knot,cp,rangeDimension);
-	  
-	  // nurb.getGrid();
-	  subCurves[c]=&nurb;
-	  subCurveState[c] = 01;
-	}
-	lastVisible = numberOfCurves -1;
+          knot(Range(1,m-1)).seqAdd(0.,1./max(1.,m-2));
+          knot(0)=0.;  // double knot at ends
+          knot(1)=0.;
+          knot(m-1)=1.;
+          knot(m  )=1.;
+                  
+          NurbsMapping & nurb = *new NurbsMapping(); nurb.incrementReferenceCount();
+        
+          // ::display(knot,"knot");
+          // ::display(cp,"cp");
+        
+          nurb.specify(m,n,p1,knot,cp,rangeDimension);
+          
+          // nurb.getGrid();
+          subCurves[c]=&nurb;
+          subCurveState[c] = 01;
+        }
+        lastVisible = numberOfCurves -1;
       }
     }
   }
@@ -6222,9 +6222,9 @@ toggleSubCurveVisibility( int sc )
       char tc = subCurveState[sc];
       for ( n=sc+1; n<numberOfCurves; n++ )
       {
-	subCurves[nn] = subCurves[n];
-	subCurveState[nn] = subCurveState[n];
-	nn++;
+        subCurves[nn] = subCurves[n];
+        subCurveState[nn] = subCurveState[n];
+        nn++;
       }
       subCurves[nn] = temp;
       subCurveState[nn] = tc;
@@ -6281,9 +6281,9 @@ toggleSubCurveOriginal( int sc )
   if ( sc>=0 && sc<numberOfCurves && numberOfCurves>1 )
     {
       if ( subCurveState[sc] == 01 )
-	subCurveState[sc] = 0;
+        subCurveState[sc] = 0;
       else
-	subCurveState[sc] = 01;
+        subCurveState[sc] = 01;
     }
 }
 
@@ -6311,8 +6311,8 @@ addSubCurve(NurbsMapping &nurbs)
   else
     for( int n=0; n<numberOfCurves; n++ )
       {
-	temp[n]=subCurves[n];
-	scstat[n] = subCurveState[n];
+        temp[n]=subCurves[n];
+        scstat[n] = subCurveState[n];
       }
   
   temp[numberOfCurves]=new NurbsMapping;
@@ -6345,24 +6345,24 @@ deleteSubCurve(int sc)
       NurbsMapping **temp;
       char * scstat;
       if ( numberOfCurves>2 )
-	{
-	  temp = new NurbsMapping* [numberOfCurves-1];
-	  scstat = new char[numberOfCurves-1];
-	  int nn=0;
-	  for( int n=0; n<numberOfCurves; n++ )
-	    if ( n!=sc )
-	      {
-		temp[nn]=subCurves[n];
-		scstat[nn] = subCurveState[n];
-		nn++;
-	      }
-	  
-	}
+        {
+          temp = new NurbsMapping* [numberOfCurves-1];
+          scstat = new char[numberOfCurves-1];
+          int nn=0;
+          for( int n=0; n<numberOfCurves; n++ )
+            if ( n!=sc )
+              {
+                temp[nn]=subCurves[n];
+                scstat[nn] = subCurveState[n];
+                nn++;
+              }
+          
+        }
       else
-	{
-	  temp = NULL;
-	  scstat = NULL;
-	}
+        {
+          temp = NULL;
+          scstat = NULL;
+        }
 
       if ( (subCurves[sc]->decrementReferenceCount())==0 ) delete subCurves[sc];
 
@@ -6421,7 +6421,7 @@ display( const aString & label /* =blankString */ ) const
     printF("******** %s *************\n",(const char*)label);
 
   printF("axis1: number of knots = %i, number of control points =%i, order of B-spline =%i \n",
-	 m1+1,n1+1,p1);
+         m1+1,n1+1,p1);
   if( domainDimension==1 )
     printF("number of sub curves = %i \n",numberOfSubCurves());
   
@@ -6433,7 +6433,7 @@ display( const aString & label /* =blankString */ ) const
   if( domainDimension>1 )
   {
     printF("axis2: number of knots = %i, number of control points =%i, order of B-spline =%i \n",
-	   m2+1,n2+1,p2);
+           m2+1,n2+1,p2);
     // ::display(vKnot,"Here are the knots along axis2");
     for( i=0; i<=m2; i++ )
       printF(" vKnot i=%i : %e\n",i,vKnot(i));
@@ -6441,7 +6441,7 @@ display( const aString & label /* =blankString */ ) const
   if( domainDimension>2 )
   {
     printF("axis3: number of knots = %i, number of control points =%i, order of B-spline =%i \n",
-	   m3+1,n3+1,p3);
+           m3+1,n3+1,p3);
     for( i=0; i<=m3; i++ )
       printF(" wKnot i=%i : %e\n",i,wKnot(i));
   }
@@ -6453,7 +6453,7 @@ display( const aString & label /* =blankString */ ) const
       // *wdh* 100208 real w = cPoint(i,rangeDimension)!=0. ? 1./cPoint(i,rangeDimension) : 1.;
       real w = cPoint(i,rangeDimension)!=0. ? cPoint(i,rangeDimension) : 1.;
       printF(" control-point/weight i=%5i : (%14.6e,%14.6e,%14.6e)  weight=%e \n",i,cPoint(i,0)/w,cPoint(i,1)/w,
-	     (rangeDimension==2 ? 0. : cPoint(i,2)/w),cPoint(i,rangeDimension));
+             (rangeDimension==2 ? 0. : cPoint(i,2)/w),cPoint(i,rangeDimension));
     }
   }
   else if ( domainDimension==2 )
@@ -6461,9 +6461,9 @@ display( const aString & label /* =blankString */ ) const
     for ( int j=0; j<=n2; j++ )
       for( i=0; i<=n1; i++ )
       {
-	real w = cPoint(i,j,rangeDimension)!=0. ? cPoint(i,j,rangeDimension) : 1.;
-	printF(" control-point/weight i,j=%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,cPoint(i,j,0)/w,cPoint(i,j,1)/w,
-	       (rangeDimension==2 ? 0. : cPoint(i,j,2)/w),cPoint(i,j,rangeDimension));
+        real w = cPoint(i,j,rangeDimension)!=0. ? cPoint(i,j,rangeDimension) : 1.;
+        printF(" control-point/weight i,j=%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,cPoint(i,j,0)/w,cPoint(i,j,1)/w,
+               (rangeDimension==2 ? 0. : cPoint(i,j,2)/w),cPoint(i,j,rangeDimension));
       }
   }
   else if ( domainDimension==3 )
@@ -6472,10 +6472,10 @@ display( const aString & label /* =blankString */ ) const
     for ( int j=0; j<=n2; j++ )
       for( i=0; i<=n1; i++ )
       {
-	real w = cPoint(i,j,k,rangeDimension)!=0. ? cPoint(i,j,k,rangeDimension) : 1.;
-	printF(" control-point/weight i,j,k=%5i,%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,k,
+        real w = cPoint(i,j,k,rangeDimension)!=0. ? cPoint(i,j,k,rangeDimension) : 1.;
+        printF(" control-point/weight i,j,k=%5i,%5i,%5i : (%14.6e,%14.6e,%14.6e) weight=%e \n",i,j,k,
                cPoint(i,j,k,0)/w,cPoint(i,j,k,1)/w,
-	       (rangeDimension==2 ? 0. : cPoint(i,j,k,2)/w),cPoint(i,j,k,rangeDimension));
+               (rangeDimension==2 ? 0. : cPoint(i,j,k,2)/w),cPoint(i,j,k,rangeDimension));
       }
   }
 
@@ -6613,11 +6613,11 @@ put( GenericDataBase & dir, const aString & name) const
     subDir.put(lastVisible,"lastVisible");   
     for( int cs=0; cs<numberOfCurves; cs++ )
       {
-	buff = "";
-	subCurves[cs]->put( subDir,sPrintF(buff,"subCurve %i",cs) );
-	buff="";
-	int scs = subCurveState[cs] & 01 ? 1 : 0;
-	subDir.put(scs,sPrintF(buff,"subCurveState %i",cs));
+        buff = "";
+        subCurves[cs]->put( subDir,sPrintF(buff,"subCurve %i",cs) );
+        buff="";
+        int scs = subCurveState[cs] & 01 ? 1 : 0;
+        subDir.put(scs,sPrintF(buff,"subCurveState %i",cs));
       }
   }
 
@@ -6665,7 +6665,7 @@ plot(GenericGraphicsInterface & gi, GraphicsParameters & parameters, bool plotCo
       for( int axis=0; axis<rangeDimension; axis++ )
       {
         #ifndef USE_PPP
-    	xd(R1,axis)=cPoint(R1,axis)/cPoint(R1,rangeDimension);  // un-normalize by the weight
+        xd(R1,axis)=cPoint(R1,axis)/cPoint(R1,rangeDimension);  // un-normalize by the weight
         #else
         for( int i1=0; i1<=n1; i1++ )
           xd(i1,axis)=cPoint(i1,axis)/cPoint(i1,rangeDimension); 
@@ -6682,11 +6682,11 @@ plot(GenericGraphicsInterface & gi, GraphicsParameters & parameters, bool plotCo
       for( int axis=0; axis<rangeDimension; axis++ )
       {
         #ifndef USE_PPP
-	xd(R1,R2,axis)=cPoint(R1,R2,axis)/cPoint(R1,R2,rangeDimension);  // un-normalize by the weight
+        xd(R1,R2,axis)=cPoint(R1,R2,axis)/cPoint(R1,R2,rangeDimension);  // un-normalize by the weight
         #else
         for( int i2=0; i2<=n2; i2++ )
         for( int i1=0; i1<=n1; i1++ )
-  	  xd(i1,i2,axis)=cPoint(i1,i2,axis)/cPoint(i1,i2,rangeDimension);  // un-normalize by the weight
+          xd(i1,i2,axis)=cPoint(i1,i2,axis)/cPoint(i1,i2,rangeDimension);  // un-normalize by the weight
         #endif
       }
     }
@@ -6739,16 +6739,16 @@ update( MappingInformation & mapInfo )
   dialog.setExitCommand("exit", "exit");
 
   aString opCmd[] =   {"parameterize by chord length",
-		       "parameterize by index (uniform)",
-		       ""}; //
+                       "parameterize by index (uniform)",
+                       ""}; //
   int parOption =  (parameterizationType==parameterizeByChordLength ? 0 : 
-		    parameterizationType==parameterizeByIndex ? 1 : 2);
+                    parameterizationType==parameterizeByIndex ? 1 : 2);
   dialog.addOptionMenu("Parameterization:", opCmd,opCmd,parOption);
 
 
   aString cmds[] = {"enter points",
                     "enter control points",
-		    "change control points",
+                    "change control points",
                     "interpolate from a mapping",
                     "interpolate from mapping with options",
                     "interpolate lofted surface",
@@ -6757,9 +6757,9 @@ update( MappingInformation & mapInfo )
                     "merge",
                     "save to a data base file",
                     "show parameters",
-		    "plot",
+                    "plot",
                     "help",
-		    ""};
+                    ""};
 
   int numberOfPushButtons=13;  // number of entries in cmds
   int numRows=(numberOfPushButtons+1)/2;
@@ -6770,7 +6770,7 @@ update( MappingInformation & mapInfo )
                           "plot sub curves",
                           "plot points on curves",
                           "use robust inverse",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = plotControlPoints;
   tbState[1] = plotCurve;
@@ -6931,40 +6931,40 @@ update( MappingInformation & mapInfo )
     { 
       if( domainDimension==1 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter degree p >0 (default=%i) :",p1));
-	if( line!="" ) sScanF(line,"%i ",&p1);
-	gi.inputString(line,sPrintF(buff,"Enter the number of control points :"));
-	if( line!="" ) 
-	{
-	  sScanF(line,"%i ",&n1);
-	  n1--;
-	}
+        gi.inputString(line,sPrintF(buff,"Enter degree p >0 (default=%i) :",p1));
+        if( line!="" ) sScanF(line,"%i ",&p1);
+        gi.inputString(line,sPrintF(buff,"Enter the number of control points :"));
+        if( line!="" ) 
+        {
+          sScanF(line,"%i ",&n1);
+          n1--;
+        }
         p2=0;
-	n2=0;
+        n2=0;
       }
       else if( domainDimension==2 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter degrees p1,p2 >0 (default=%i,%i) :",p1,p2));
-	if( line!="" ) sScanF(line,"%i %i",&p1,&p2);
-	gi.inputString(line,sPrintF(buff,"Enter the number of control points n1,n2"));
-	if( line!="" ) 
-	{
-	  sScanF(line,"%i %i",&n1,&n2);
-	  n1--; n2--;
-	}
+        gi.inputString(line,sPrintF(buff,"Enter degrees p1,p2 >0 (default=%i,%i) :",p1,p2));
+        if( line!="" ) sScanF(line,"%i %i",&p1,&p2);
+        gi.inputString(line,sPrintF(buff,"Enter the number of control points n1,n2"));
+        if( line!="" ) 
+        {
+          sScanF(line,"%i %i",&n1,&n2);
+          n1--; n2--;
+        }
       }
       else
       {
-	printf("Sorry: the case domainDimension=%i is not implemented\n",domainDimension);
-	continue;
+        printf("Sorry: the case domainDimension=%i is not implemented\n",domainDimension);
+        continue;
       }
       if( n1<p1 || n2<p2 )
       {
-	printf("ERROR: The number of control points must be greater than the degree\n"
-	       "       p1=%i, number of control points =n1+1=%i \n"
-	       "       p2=%i, number of control points =n2+1=%i \n",
-	       p1,n1+1,p2,n2+1);
-	gi.stopReadingCommandFile();
+        printf("ERROR: The number of control points must be greater than the degree\n"
+               "       p1=%i, number of control points =n1+1=%i \n"
+               "       p2=%i, number of control points =n2+1=%i \n",
+               p1,n1+1,p2,n2+1);
+        gi.stopReadingCommandFile();
       }
       
    
@@ -6972,10 +6972,10 @@ update( MappingInformation & mapInfo )
       uKnot.redim(m1+1);
       int i;
       for( i=0; i<=p1; i++ )
-	uKnot(i)=0;
+        uKnot(i)=0;
       for( i=p1+1; i<m1-p1; i++ )
       {
-	gi.inputString(line,sPrintF(buff,"Enter uKnot %i (Knots 0...%i are clamped to 0, %i,..,%i to 1.)",i,p1,
+        gi.inputString(line,sPrintF(buff,"Enter uKnot %i (Knots 0...%i are clamped to 0, %i,..,%i to 1.)",i,p1,
               m1-p1,m1));
         if( line!="" ) sScanF(line,"%e ",&uKnot(i));
       }
@@ -6984,72 +6984,72 @@ update( MappingInformation & mapInfo )
 
       if( domainDimension==2 )
       {
-	m2=n2+p2+1;
-	vKnot.redim(m2+1);
-	for( i=0; i<=p2; i++ )
-	  vKnot(i)=0;
-	for( i=p2+1; i<m2-p2; i++ )
-	{
-	  gi.inputString(line,sPrintF(buff,"Enter vKnot %i (Knots 0...%i are clamped to 0, %i,..,%i to 1.)",i,p2,
-				      m2-p2,m2));
-	  if( line!="" ) sScanF(line,"%e ",&vKnot(i));
-	}
-	for( i=m2-p2; i<=m2; i++ )
-	  vKnot(i)=1.;
+        m2=n2+p2+1;
+        vKnot.redim(m2+1);
+        for( i=0; i<=p2; i++ )
+          vKnot(i)=0;
+        for( i=p2+1; i<m2-p2; i++ )
+        {
+          gi.inputString(line,sPrintF(buff,"Enter vKnot %i (Knots 0...%i are clamped to 0, %i,..,%i to 1.)",i,p2,
+                                      m2-p2,m2));
+          if( line!="" ) sScanF(line,"%e ",&vKnot(i));
+        }
+        for( i=m2-p2; i<=m2; i++ )
+          vKnot(i)=1.;
       }
       
       if( domainDimension==1 )
       {
-	cPoint.redim(n1+1,rangeDimension+1);
-	for( i=0; i<n1+1; i++ )
-	{
-	  if( rangeDimension==2 )
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point %i and weight : x1,x2,w",i));
-	    if( line!="" ) sScanF(line,"%e %e %e ",&cPoint(i,0),&cPoint(i,1),&cPoint(i,2));
-	  }
-	  else
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point %i and weight : x1,x2,x3,w",i));
-	    if( line!="" ) sScanF(line,"%e %e %e %e",&cPoint(i,0),&cPoint(i,1),&cPoint(i,2),&cPoint(i,3));
-	  }
-	}
-	Range R1(0,n1);
-	for( int axis=0; axis<rangeDimension; axis++ )
-	  cPoint(R1,axis)*=cPoint(R1,rangeDimension); // multiply by the weight
+        cPoint.redim(n1+1,rangeDimension+1);
+        for( i=0; i<n1+1; i++ )
+        {
+          if( rangeDimension==2 )
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point %i and weight : x1,x2,w",i));
+            if( line!="" ) sScanF(line,"%e %e %e ",&cPoint(i,0),&cPoint(i,1),&cPoint(i,2));
+          }
+          else
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point %i and weight : x1,x2,x3,w",i));
+            if( line!="" ) sScanF(line,"%e %e %e %e",&cPoint(i,0),&cPoint(i,1),&cPoint(i,2),&cPoint(i,3));
+          }
+        }
+        Range R1(0,n1);
+        for( int axis=0; axis<rangeDimension; axis++ )
+          cPoint(R1,axis)*=cPoint(R1,rangeDimension); // multiply by the weight
 
       }
       else if( domainDimension==2 )
       {
-	cPoint.redim(n1+1,n2+1,rangeDimension+1);
-	for( int j=0; j<n2+1; j++ )
-	for( i=0; i<n1+1; i++ )
-	{
-	  if( rangeDimension==2 )
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) and weight : x1,x2,w",i,j));
-	    if( line!="" ) sScanF(line,"%e %e %e ",&cPoint(i,j,0),&cPoint(i,j,1),&cPoint(i,j,2));
-	  }
-	  else
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) and weight : x1,x2,x3,w",i,j));
-	    if( line!="" ) sScanF(line,"%e %e %e %e",&cPoint(i,j,0),&cPoint(i,j,1),&cPoint(i,j,2),&cPoint(i,j,3));
-	  }
-	}
-	Range R1(0,n1), R2(0,n2);
-	for( int axis=0; axis<rangeDimension; axis++ )
-	  cPoint(R1,R2,axis)*=cPoint(R1,R2,rangeDimension); // multiply by the weight
+        cPoint.redim(n1+1,n2+1,rangeDimension+1);
+        for( int j=0; j<n2+1; j++ )
+        for( i=0; i<n1+1; i++ )
+        {
+          if( rangeDimension==2 )
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) and weight : x1,x2,w",i,j));
+            if( line!="" ) sScanF(line,"%e %e %e ",&cPoint(i,j,0),&cPoint(i,j,1),&cPoint(i,j,2));
+          }
+          else
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) and weight : x1,x2,x3,w",i,j));
+            if( line!="" ) sScanF(line,"%e %e %e %e",&cPoint(i,j,0),&cPoint(i,j,1),&cPoint(i,j,2),&cPoint(i,j,3));
+          }
+        }
+        Range R1(0,n1), R2(0,n2);
+        for( int axis=0; axis<rangeDimension; axis++ )
+          cPoint(R1,R2,axis)*=cPoint(R1,R2,rangeDimension); // multiply by the weight
       }
       
-	
+        
       mappingHasChanged();
       initialized=false;
       uMin=uKnot(0);  // min(uKnot);
       uMax=uKnot(m1); // max(uKnot);
       if( domainDimension==2 )
       {
-	vMin=vKnot(0);  // min(vKnot);
-	vMax=vKnot(m2); // max(vKnot);
+        vMin=vKnot(0);  // min(vKnot);
+        vMax=vKnot(m2); // max(vKnot);
       }
       
       initialize();
@@ -7068,61 +7068,61 @@ update( MappingInformation & mapInfo )
         else
           gi.getMenuItem(menu2,line,sPrintF(buff,"Change which control point i1,i2? ([0,%i],[0,%i])\n",n1,n2));
         if( line=="show control points" )
-	{
+        {
           NurbsMapping::display();
           continue;
-	}
+        }
         if( line=="done" || line=="" )
           break;
         int i=-1;
         if( domainDimension==1 )
-	{
-	  sScanF(line,"%i",&i);
-	  if( i<0 || i>n1 )
-	  {
-	    printf("Invalid number for a control point, i=%i. Should be in the range [0,%i]\n",i,n1);
-	    continue;
-	  }
-	}
-	else
-	{
-	  sScanF(line,"%i %i",&i1,&i2);
-	  if( i1<0 || i1>n1 || i2<0 || i2>n2 )
-	  {
-	    printf("Invalid number for a control point, (i1,i2)=(%i,%i). "
+        {
+          sScanF(line,"%i",&i);
+          if( i<0 || i>n1 )
+          {
+            printf("Invalid number for a control point, i=%i. Should be in the range [0,%i]\n",i,n1);
+            continue;
+          }
+        }
+        else
+        {
+          sScanF(line,"%i %i",&i1,&i2);
+          if( i1<0 || i1>n1 || i2<0 || i2>n2 )
+          {
+            printf("Invalid number for a control point, (i1,i2)=(%i,%i). "
                "Should be in the range ([0,%i],[0,%i])\n",i1,i2,n1,n2);
-	    continue;
-	  }
-	}
-	
+            continue;
+          }
+        }
+        
         if( domainDimension==1 && rangeDimension==2 )
-	{
+        {
           real w=max(REAL_MIN*10.,cPoint(i,2));
           gi.inputString(line,sPrintF(buff,"current=(%6.2e,%6.2e,%6.2e) Enter new point and weight : x1,x2,w",
                   cPoint(i,0)/w,cPoint(i,1)/w,cPoint(i,2)));
           if( line!="" )
-	  {
+          {
             sScanF(line,"%e %e %e ",&cPoint(i,0),&cPoint(i,1),&cPoint(i,2));
-	    cPoint(i,Range(0,1))*=cPoint(i,2);
-	  }
-	}
-	else if( domainDimension==2 && rangeDimension==3 )
-	{
+            cPoint(i,Range(0,1))*=cPoint(i,2);
+          }
+        }
+        else if( domainDimension==2 && rangeDimension==3 )
+        {
           real w=max(REAL_MIN*10.,cPoint(i1,i2,3));
           gi.inputString(line,sPrintF(buff,"current=(%6.2e,%6.2e,%6.2e,%6.2e) Enter new point and weight : x1,x2,x3,w",
                   cPoint(i1,i2,0)/w,cPoint(i1,i2,1)/w,cPoint(i1,i2,2)/w,cPoint(i1,i2,3)));
           if( line!="" ) 
-	  {
-	    sScanF(line,"%e %e %e %e",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
-	    cPoint(i1,i2,Range(0,2))*=cPoint(i1,i2,3);
-	  }
-	  
-	}
+          {
+            sScanF(line,"%e %e %e %e",&cPoint(i1,i2,0),&cPoint(i1,i2,1),&cPoint(i1,i2,2),&cPoint(i1,i2,3));
+            cPoint(i1,i2,Range(0,2))*=cPoint(i1,i2,3);
+          }
+          
+        }
         else
-	{
+        {
           printf("Sorry: not implemented for domainDimension=%i rangeDimension=%i\n",domainDimension,rangeDimension);
-	}
-	
+        }
+        
       }
       mappingHasChanged();
       initialized=false;
@@ -7143,89 +7143,89 @@ update( MappingInformation & mapInfo )
       n3=0;
       if( domainDimension==1 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter the number of points and the order of the nurb (default=3)"));
-	if( line!="" ) sScanF(line,"%i %i",&n1, &degree);
-	n1--;
-	printf("Setting n1=%i, degree=%i\n",n1,degree);
+        gi.inputString(line,sPrintF(buff,"Enter the number of points and the order of the nurb (default=3)"));
+        if( line!="" ) sScanF(line,"%i %i",&n1, &degree);
+        n1--;
+        printf("Setting n1=%i, degree=%i\n",n1,degree);
       }
       else if( domainDimension==2 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter nr1,nr2, order (the number of points in each direction and the order of the nurb (default=3)"));
-	if( line!="" ) sScanF(line,"%i %i %i",&n1,&n2, &degree);
-	n1--; n2--;
-	printf("Setting n1=%i, n2=%i, degree=%i\n",n1,n2,degree);
+        gi.inputString(line,sPrintF(buff,"Enter nr1,nr2, order (the number of points in each direction and the order of the nurb (default=3)"));
+        if( line!="" ) sScanF(line,"%i %i %i",&n1,&n2, &degree);
+        n1--; n2--;
+        printf("Setting n1=%i, n2=%i, degree=%i\n",n1,n2,degree);
       }
       else
       {
-	gi.inputString(line,sPrintF(buff,"Enter nr1,nr2,nr3, order (the number of points in each direction and the order of the nurb (default=3)"));
-	if( line!="" ) sScanF(line,"%i %i %i %i",&n1,&n2,&n3, &degree);
-	n1--; n2--; n3--;
-	printf("Setting n1=%i, n2=%i, n3=%i, degree=%i\n",n1,n2,n3,degree);
+        gi.inputString(line,sPrintF(buff,"Enter nr1,nr2,nr3, order (the number of points in each direction and the order of the nurb (default=3)"));
+        if( line!="" ) sScanF(line,"%i %i %i %i",&n1,&n2,&n3, &degree);
+        n1--; n2--; n3--;
+        printf("Setting n1=%i, n2=%i, n3=%i, degree=%i\n",n1,n2,n3,degree);
       }
-	
+        
       if( degree<=0 )
       {
-	degree=3;
+        degree=3;
       }
-	
+        
 
       RealArray x;  // we save the points here
       if( domainDimension==1 )
       {
-	x.redim(n1+1,rangeDimension);  
+        x.redim(n1+1,rangeDimension);  
 
-	for( int i1=0; i1<n1+1; i1++ )
-	{
-	  if( rangeDimension==2 )
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point %i : (x1,x2)",i1));
-	    if( line!="" ) sScanF(line,"%e %e ",&x(i1,0),&x(i1,1));
-	  }
-	  else
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point %i : (x1,x2,x3)",i1));
-	    if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,0),&x(i1,1),&x(i1,2));
-	  }
-	}
+        for( int i1=0; i1<n1+1; i1++ )
+        {
+          if( rangeDimension==2 )
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point %i : (x1,x2)",i1));
+            if( line!="" ) sScanF(line,"%e %e ",&x(i1,0),&x(i1,1));
+          }
+          else
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point %i : (x1,x2,x3)",i1));
+            if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,0),&x(i1,1),&x(i1,2));
+          }
+        }
       }
       else if( domainDimension==2 )
       {
-	x.redim(n1+1,n2+1,rangeDimension);  // we save the points here
+        x.redim(n1+1,n2+1,rangeDimension);  // we save the points here
 
-	for( int i2=0; i2<n2+1; i2++ )
-	for( int i1=0; i1<n1+1; i1++ )
-	{
-	  if( rangeDimension==2 )
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) : (x1,x2)",i1,i2));
-	    if( line!="" ) sScanF(line,"%e %e ",&x(i1,i2,0),&x(i1,i2,1));
-	  }
-	  else
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) : (x1,x2,x3)",i1,i2));
-	    if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,i2,0),&x(i1,i2,1),&x(i1,i2,2));
-	  }
-	}
+        for( int i2=0; i2<n2+1; i2++ )
+        for( int i1=0; i1<n1+1; i1++ )
+        {
+          if( rangeDimension==2 )
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) : (x1,x2)",i1,i2));
+            if( line!="" ) sScanF(line,"%e %e ",&x(i1,i2,0),&x(i1,i2,1));
+          }
+          else
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i) : (x1,x2,x3)",i1,i2));
+            if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,i2,0),&x(i1,i2,1),&x(i1,i2,2));
+          }
+        }
       }
       else
       {
-	x.redim(n1+1,n2+1,n3+1,rangeDimension);  // we can save the points here
+        x.redim(n1+1,n2+1,n3+1,rangeDimension);  // we can save the points here
 
-	for( int i3=0; i3<n3+1; i3++ )
-	for( int i2=0; i2<n2+1; i2++ )
-	for( int i1=0; i1<n1+1; i1++ )
-	{
-	  if( rangeDimension==2 )
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i,%i) : (x1,x2)",i1,i2,i3));
-	    if( line!="" ) sScanF(line,"%e %e ",&x(i1,i2,i3,0),&x(i1,i2,i3,1));
-	  }
-	  else
-	  {
-	    gi.inputString(line,sPrintF(buff,"Enter point (%i,%i,%i) : (x1,x2,x3)",i1,i2,i3));
-	    if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,i2,i3,0),&x(i1,i2,i3,1),&x(i1,i2,i3,2));
-	  }
-	}
+        for( int i3=0; i3<n3+1; i3++ )
+        for( int i2=0; i2<n2+1; i2++ )
+        for( int i1=0; i1<n1+1; i1++ )
+        {
+          if( rangeDimension==2 )
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i,%i) : (x1,x2)",i1,i2,i3));
+            if( line!="" ) sScanF(line,"%e %e ",&x(i1,i2,i3,0),&x(i1,i2,i3,1));
+          }
+          else
+          {
+            gi.inputString(line,sPrintF(buff,"Enter point (%i,%i,%i) : (x1,x2,x3)",i1,i2,i3));
+            if( line!="" ) sScanF(line,"%e %e %e ",&x(i1,i2,i3,0),&x(i1,i2,i3,1),&x(i1,i2,i3,2));
+          }
+        }
       }
       
       // *wdh* 090413 interpolate( x,0,Overture::nullRealArray(),degree);
@@ -7267,8 +7267,8 @@ update( MappingInformation & mapInfo )
       if( domainDimension!=1 || rangeDimension!=3 )
       {
         printf("project to 2d: This option only valid for 3D curves.\n");
-	continue;
-	
+        continue;
+        
       }
       real t1[3]={1.,0.,0.}, t2[3]={0.,1.,0.};  //
       gi.inputString(line,"Enter the tangent vectors of the plane: x1,y1,z1, x2,y2,z2");
@@ -7290,7 +7290,7 @@ update( MappingInformation & mapInfo )
       rangeDimension=2;
       initialize();
       plotObject=true;
-	    
+            
 
     }
     else if( answer=="parameterize by chord length" )
@@ -7320,8 +7320,8 @@ update( MappingInformation & mapInfo )
     {
       if( domainDimension!=1 )
       {
-	printf("NURBSMAPPING:Sorry: can only currently elevate the degree for curves\n");
-	continue;
+        printf("NURBSMAPPING:Sorry: can only currently elevate the degree for curves\n");
+        continue;
       }
       gi.inputString(line,sPrintF(buff,"Enter the increment"));
       int increment=1;
@@ -7337,10 +7337,10 @@ update( MappingInformation & mapInfo )
         gi.inputString(line,sPrintF(buff,"Enter uMin,uMax (range [0,1], current=[%f,%f])",ua,ub));
       else
       {
-	va=(0.-vKnot(0))/(vKnot(m2)-vKnot(0));
-	vb=(1.-vKnot(0))/(vKnot(m2)-vKnot(0));
+        va=(0.-vKnot(0))/(vKnot(m2)-vKnot(0));
+        vb=(1.-vKnot(0))/(vKnot(m2)-vKnot(0));
         gi.inputString(line,sPrintF(buff,"Enter uMin,uMax, vMin,vMax (range [0,1]x[0,1], current=[%f,%f]x[%f,%f])",
-				    ua,ub,va,vb ));
+                                    ua,ub,va,vb ));
       }
       if( line!="" )
       {
@@ -7367,8 +7367,8 @@ update( MappingInformation & mapInfo )
       una = -ua/(ub-ua); unb = (1.-ua)/(ub-ua);
       if( domainDimension>1 )
       {
-	va=(0.-vKnot(0))/(vKnot(m2)-vKnot(0));
-	vb=(1.-vKnot(0))/(vKnot(m2)-vKnot(0));
+        va=(0.-vKnot(0))/(vKnot(m2)-vKnot(0));
+        vb=(1.-vKnot(0))/(vKnot(m2)-vKnot(0));
         vna = -va/(vb-va), vnb = (1.-va)/(vb-va);
       }
       
@@ -7384,27 +7384,27 @@ update( MappingInformation & mapInfo )
  
       if( domainDimension==1 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter the new interval rStart,rEnd  current=[%6.2e,%6.2e]\n",
+        gi.inputString(line,sPrintF(buff,"Enter the new interval rStart,rEnd  current=[%6.2e,%6.2e]\n",
               rStart[0],rEnd[0]));
-	if( line!="" )
-	{
-	  real rStart_=0., rEnd_=1.;
-	  sScanF(line,"%e %e",&rStart_,&rEnd_);
-	  setDomainInterval(rStart_,rEnd_);
-	  mappingHasChanged();
-	}
+        if( line!="" )
+        {
+          real rStart_=0., rEnd_=1.;
+          sScanF(line,"%e %e",&rStart_,&rEnd_);
+          setDomainInterval(rStart_,rEnd_);
+          mappingHasChanged();
+        }
       }
       else if( domainDimension==2 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter the new interval ra,rb, sa,sb, current=[%6.2e,%6.2e]x[%6.2e,%6.2e]n",
+        gi.inputString(line,sPrintF(buff,"Enter the new interval ra,rb, sa,sb, current=[%6.2e,%6.2e]x[%6.2e,%6.2e]n",
               rStart[0],rEnd[0],rStart[1],rEnd[1]));
-	if( line!="" )
-	{
-	  real r1Start_=0., r1End_=1., r2Start_=0., r2End_=1.;
-	  sScanF(line,"%e %e %e %e",&r1Start_,&r1End_,&r2Start_,&r2End_);
-	  setDomainInterval(r1Start_,r1End_,r2Start_,r2End_);
-	  mappingHasChanged();
-	}
+        if( line!="" )
+        {
+          real r1Start_=0., r1End_=1., r2Start_=0., r2End_=1.;
+          sScanF(line,"%e %e %e %e",&r1Start_,&r1End_,&r2Start_,&r2End_);
+          setDomainInterval(r1Start_,r1End_,r2Start_,r2End_);
+          mappingHasChanged();
+        }
       }
       else
         {throw "error";}
@@ -7422,13 +7422,13 @@ update( MappingInformation & mapInfo )
       }
       if( domainDimension>1 )
       {
-	real va=vKnot(0); // min(vKnot);
-	real vb=vKnot(m2); // max(vKnot);
-	real vba=vb-va;
-	if( (va!=vMin || vb!=vMax) && vba!=0.  )
-	{
-	  vKnot=vMin+(vKnot-va)*((vMax-vMin)/vba);
-	}
+        real va=vKnot(0); // min(vKnot);
+        real vb=vKnot(m2); // max(vKnot);
+        real vba=vb-va;
+        if( (va!=vMin || vb!=vMax) && vba!=0.  )
+        {
+          vKnot=vMin+(vKnot-va)*((vMax-vMin)/vba);
+        }
       }
       initialize();
       reinitialize(); 
@@ -7457,15 +7457,15 @@ update( MappingInformation & mapInfo )
       real xShift=0., yShift=0., zShift=0.;
       if( rangeDimension==2 )
       {
-	gi.inputString(line,sPrintF(buff,"Enter xShift, yShift (default=(%e,%e)): ",
-				    xShift,yShift));
-	if( line!="" ) sScanF(line,"%e %e",&xShift,&yShift);
+        gi.inputString(line,sPrintF(buff,"Enter xShift, yShift (default=(%e,%e)): ",
+                                    xShift,yShift));
+        if( line!="" ) sScanF(line,"%e %e",&xShift,&yShift);
       }
       else
       {
-	gi.inputString(line,sPrintF(buff,"Enter xShift, yShift, zShift (default=(%e,%e,%e)): ",
-				    xShift,yShift,zShift));
-	if( line!="" ) sScanF(line,"%e %e %e",&xShift,&yShift,&zShift);
+        gi.inputString(line,sPrintF(buff,"Enter xShift, yShift, zShift (default=(%e,%e,%e)): ",
+                                    xShift,yShift,zShift));
+        if( line!="" ) sScanF(line,"%e %e %e",&xShift,&yShift,&zShift);
       }
       shift(xShift,yShift,zShift);
       mappingHasChanged();
@@ -7486,15 +7486,15 @@ update( MappingInformation & mapInfo )
       else
       {
         gi.inputString(line,sPrintF(buff,"Enter rotation angle(degrees) and axis to rotate about(0,1, or 2)"
-				    "(default=(%e,%i)): ",rotationAngle,rotationAxis));
+                                    "(default=(%e,%i)): ",rotationAngle,rotationAxis));
         if( line!="" ) sScanF(line,"%e %i",&rotationAngle,&rotationAxis);
-	if( rotationAxis<0 || rotationAxis>2 )
-	{
-	  cout << "Invalid rotation axis = " << rotationAxis << endl;
-	  continue;
-	}
+        if( rotationAxis<0 || rotationAxis>2 )
+        {
+          cout << "Invalid rotation axis = " << rotationAxis << endl;
+          continue;
+        }
         gi.inputString(line,sPrintF(buff,"Enter the point to rotate around (default=%e,%e,%e): ",
-				    centerOfRotation[0],centerOfRotation[1],centerOfRotation[2]));
+                                    centerOfRotation[0],centerOfRotation[1],centerOfRotation[2]));
         if( line!="" ) sScanF(line,"%e %e %e",&centerOfRotation[0],&centerOfRotation[1],
                               &centerOfRotation[2]);
       }
@@ -7525,12 +7525,12 @@ update( MappingInformation & mapInfo )
       aString menu2[]=
       {
         "!circle",
-	"centre",
+        "centre",
         "radius",
         "angles",
         "basis vectors",
         "done",
-	"exit",
+        "exit",
         ""
       };
 
@@ -7541,55 +7541,55 @@ update( MappingInformation & mapInfo )
         gi.erase();
         plot(gi,parameters,true);
 
-	
-	gi.getMenuItem(menu2,answer,"Choose an item");
+        
+        gi.getMenuItem(menu2,answer,"Choose an item");
         if( answer=="done" || answer=="exit" )
-	{
-	  break;
-	}
-	else if( answer=="centre" || answer=="center" )
-	{
-	  gi.inputString(answer,sPrintF(buff,"Enter the center (current=(%7.2e,%7.2e,%7.2e)",o(0),o(1),o(2)));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e %e %e",&o(0),&o(1),&o(2));
-	  }
-	}
-	else if( answer=="radius" )
-	{
-	  gi.inputString(answer,sPrintF(buff,"Enter the radius (current=(%7.2e)",r));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e ",&r);
-	  }
-	}
-	else if( answer=="angles" )
-	{
-	  gi.inputString(answer,sPrintF(buff,"Enter the start and end angles (degrees) (current=(%7.2e,%7.2e)",
+        {
+          break;
+        }
+        else if( answer=="centre" || answer=="center" )
+        {
+          gi.inputString(answer,sPrintF(buff,"Enter the center (current=(%7.2e,%7.2e,%7.2e)",o(0),o(1),o(2)));
+          if( answer!="" )
+          {
+            sScanF(answer,"%e %e %e",&o(0),&o(1),&o(2));
+          }
+        }
+        else if( answer=="radius" )
+        {
+          gi.inputString(answer,sPrintF(buff,"Enter the radius (current=(%7.2e)",r));
+          if( answer!="" )
+          {
+            sScanF(answer,"%e ",&r);
+          }
+        }
+        else if( answer=="angles" )
+        {
+          gi.inputString(answer,sPrintF(buff,"Enter the start and end angles (degrees) (current=(%7.2e,%7.2e)",
                  startAngle*conversion,endAngle*conversion));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e %e",&startAngle,&endAngle);
+          if( answer!="" )
+          {
+            sScanF(answer,"%e %e",&startAngle,&endAngle);
             startAngle/=conversion;
-	    endAngle/=conversion;
-	  }
-	}
-	else if( answer=="basis vectors" )
-	{
-	  gi.inputString(answer,sPrintF(buff,"Enter the basis vectors (6 numbers)"));
-	  if( answer!="" )
-	  {
-	    sScanF(answer,"%e %e %e %e %e %e",&x(0),&x(1),&x(2),&y(0),&y(1),&y(2));
-	    printf(" vector1=(%7.3e,%7.3e,%7.3e) vector2=(%7.3e,%7.3e,%7.3e) \n",
+            endAngle/=conversion;
+          }
+        }
+        else if( answer=="basis vectors" )
+        {
+          gi.inputString(answer,sPrintF(buff,"Enter the basis vectors (6 numbers)"));
+          if( answer!="" )
+          {
+            sScanF(answer,"%e %e %e %e %e %e",&x(0),&x(1),&x(2),&y(0),&y(1),&y(2));
+            printf(" vector1=(%7.3e,%7.3e,%7.3e) vector2=(%7.3e,%7.3e,%7.3e) \n",
                x(0),x(1),x(2),y(0),y(1),y(2));
-	  }
-	}
-	else
-	{
-	  gi.outputString( sPrintF(buff,"Unknown response=%s",(const char*)answer) );
-	  gi.stopReadingCommandFile();
-	}
-	
+          }
+        }
+        else
+        {
+          gi.outputString( sPrintF(buff,"Unknown response=%s",(const char*)answer) );
+          gi.stopReadingCommandFile();
+        }
+        
       }
     }
     else if( answer=="conic" )
@@ -7602,37 +7602,37 @@ update( MappingInformation & mapInfo )
       {
         "parabola",
         "parabola2",
-	"ellipse",
-	"ellipse2",
+        "ellipse",
+        "ellipse2",
         "hyperbola",
         "hyperbola2",
         "done",
-	"exit",
+        "exit",
         ""
       };
 
       for( int it=0; ; it++ )
       {
         if( it>0 )
-	{
+        {
 
-	  gi.erase();
-	  plot(gi,parameters,true);
+          gi.erase();
+          plot(gi,parameters,true);
 
-	
-	  gi.getMenuItem(menu2,answer,"Choose an item");
-	}
-	else
-	{
-	  answer="parabola";
-	}
-	
+        
+          gi.getMenuItem(menu2,answer,"Choose an item");
+        }
+        else
+        {
+          answer="parabola";
+        }
+        
         if( answer=="done" || answer=="exit" )
-	{
-	  break;
-	}
-	else if( answer=="parabola" )
-	{
+        {
+          break;
+        }
+        else if( answer=="parabola" )
+        {
           // x=t         t=[-1,1]
           // y=t^2  
 #define XP(t) (t)
@@ -7642,15 +7642,15 @@ update( MappingInformation & mapInfo )
           pt0(0,0)=XP(-1.);
           pt0(0,1)=YP(-1.);
           pt0(0,2)=ZP(-1.);
-	  
+          
           pt2(0,0)=XP( 1.);
           pt2(0,1)=YP( 1.);
           pt2(0,2)=ZP( 1.);
-	  
+          
           p(0,0)=XP( 0.);
           p(0,1)=YP( 0.);
           p(0,2)=ZP( 0.);
-	  
+          
           t0(0,0)=1.;
           t0(0,1)=-2.;
           t0(0,2)=0.;
@@ -7660,19 +7660,19 @@ update( MappingInformation & mapInfo )
           t2(0,1)=2.;
           t2(0,2)=0.;
           t2/=sqrt(sum(t2*t2));
-	  
-	  conic( pt0,t0,pt2,t2,p );
+          
+          conic( pt0,t0,pt2,t2,p );
 
-	}
+        }
         else if( answer=="parabola2" )
-	{
-	  //   a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
+        {
+          //   a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
           real a=0.,b=0.,c=0.,d=0.,e=0.,f=0.,x1=0.,y1=0.,x2=0.,y2=0.,z=0.;
-	  
+          
           // x^2 - y = 0
           a=1.;
-	  e=-1.;
-	  
+          e=-1.;
+          
           x1=XP(-1.);
           y1=YP(-1.);
 
@@ -7680,12 +7680,12 @@ update( MappingInformation & mapInfo )
           y2=YP( 1.);
 
           conic( a,b,c,d,e,f,z,x1,y1,x2,y2 );
-	}
-	else if( answer=="ellipse" )
-	{
+        }
+        else if( answer=="ellipse" )
+        {
           const real ae=1., be=2.;
 
-	  // x = a*cos(Pi*t)
+          // x = a*cos(Pi*t)
           // y = b*sin(Pi*t)   0<= t <= 1
 #undef XP
 #undef YP
@@ -7695,20 +7695,20 @@ update( MappingInformation & mapInfo )
 #define ZP(t) 0.
 
           real ta=.1;
-	  real tb=.9;
+          real tb=.9;
 
           pt0(0,0)=XP(ta);
           pt0(0,1)=YP(ta);
           pt0(0,2)=ZP(ta);
-	  
+          
           pt2(0,0)=XP(tb);
           pt2(0,1)=YP(tb);
           pt2(0,2)=ZP(tb);
-	  
+          
           p(0,0)=XP(.5);
           p(0,1)=YP(.5);
           p(0,2)=ZP(.5);
-	  
+          
           t0(0,0)=-ae*sin(Pi*ta);
           t0(0,1)= be*cos(Pi*ta);
           t0(0,2)=0.;
@@ -7718,26 +7718,26 @@ update( MappingInformation & mapInfo )
           t2(0,1)= be*cos(Pi*tb);
           t2(0,2)=0.;
           t2/=sqrt(sum(t2*t2));
-	  
+          
           // ** p=-p;  // flip sign to get other part of the ellipse
-	  
+          
 
-	  conic( pt0,t0,pt2,t2,p );
+          conic( pt0,t0,pt2,t2,p );
 
-	}
+        }
         else if( answer=="ellipse2" )
-	{
+        {
           const real ae=1., be=2.;
 
-	  //   a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
+          //   a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0
           real a=0.,b=0.,c=0.,d=0.,e=0.,f=0.,x1=0.,y1=0.,x2=0.,y2=0.,z=0.;
 
 
           // x^2 - y = 0
 
           real ta=.1;
-	  real tb=.9;
-	  
+          real tb=.9;
+          
           x1=XP(ta);
           y1=YP(ta);
 
@@ -7745,15 +7745,15 @@ update( MappingInformation & mapInfo )
           y2=YP(tb);
 
           a=1./(ae*ae);
-	  c=1./(be*be);
+          c=1./(be*be);
           f = -1.;
-	  
+          
           conic( a,b,c,d,e,f,z,x1,y1,x2,y2 );
-	}
-	else if( answer=="hyperbola" )
-	{
+        }
+        else if( answer=="hyperbola" )
+        {
           // y^2 - x^2 =  1
-	  // x = t 
+          // x = t 
           // y = sqrt(1+x^2)   -1 <= t <= 1
 #undef XP
 #undef YP
@@ -7765,15 +7765,15 @@ update( MappingInformation & mapInfo )
           pt0(0,0)=XP(-1.);
           pt0(0,1)=YP(-1.);
           pt0(0,2)=ZP(-1.);
-	  
+          
           pt2(0,0)=XP( 1.);
           pt2(0,1)=YP( 1.);
           pt2(0,2)=ZP( 1.);
-	  
+          
           p(0,0)=XP( 0.);
           p(0,1)=YP( 0.);
           p(0,2)=ZP( 0.);
-	  
+          
           t0(0,0)=1.;
           t0(0,1)=YPT(-1.);
           t0(0,2)=0.;
@@ -7783,22 +7783,22 @@ update( MappingInformation & mapInfo )
           t2(0,1)=YPT(1.);
           t2(0,2)=0.;
           t2/=sqrt(sum(t2*t2));
-	  conic( pt0,t0,pt2,t2,p );
+          conic( pt0,t0,pt2,t2,p );
 
-	}
+        }
 
         else if( answer=="hyperbola2" )
-	{
-	  //   - x^2 + y^2  - 1 = 0 
+        {
+          //   - x^2 + y^2  - 1 = 0 
           real a=0.,b=0.,c=0.,d=0.,e=0.,f=0.,x1=0.,y1=0.,x2=0.,y2=0.,z=0.;
 
           a=-1.;
-	  c=1.;
-	  f=-1.;
+          c=1.;
+          f=-1.;
 
           real ta=-1.;
-	  real tb=1.;
-	  
+          real tb=1.;
+          
           x1=XP(ta);
           y1=YP(ta);
 
@@ -7806,14 +7806,14 @@ update( MappingInformation & mapInfo )
           y2=YP(tb);
 
           conic( a,b,c,d,e,f,z,x1,y1,x2,y2 );
-	}
+        }
 
-	else
-	{
-	  gi.outputString( sPrintF(buff,"Unknown response=%s",(const char*)answer) );
-	  gi.stopReadingCommandFile();
-	}
-	
+        else
+        {
+          gi.outputString( sPrintF(buff,"Unknown response=%s",(const char*)answer) );
+          gi.stopReadingCommandFile();
+        }
+        
       }
 #undef XP
 #undef YP
@@ -7828,59 +7828,59 @@ update( MappingInformation & mapInfo )
       int i,j=0;
       for( i=0; i<num; i++ )
       {
-	MappingRC & map = mapInfo.mappingList[i];
-	// kkc 051031 removed the domainDimension check since we can build volumes now
-	if(map.getDomainDimension()==1 && map.getRangeDimension()==3 && map.mapPointer!=this )
-	{
-	  subListNumbering(j)=i;
+        MappingRC & map = mapInfo.mappingList[i];
+        // kkc 051031 removed the domainDimension check since we can build volumes now
+        if(map.getDomainDimension()==1 && map.getRangeDimension()==3 && map.mapPointer!=this )
+        {
+          subListNumbering(j)=i;
           menu2[j++]=map.getName(mappingName);
-	}
+        }
       }
       menu2[j++]="done"; 
       menu2[j]="";   // null string terminates the menu
-	
+        
       vector<Mapping*> curves;
       while(true)
-	{
-	  int mapNumber = gi.getMenuItem(menu2,answer2,"choose a mapping");
-	  assert( mapNumber>=0 && mapNumber<j );
-	  if( answer2=="done" )
-	    break;
+        {
+          int mapNumber = gi.getMenuItem(menu2,answer2,"choose a mapping");
+          assert( mapNumber>=0 && mapNumber<j );
+          if( answer2=="done" )
+            break;
 
-	  curves.push_back(&mapInfo.mappingList[subListNumbering(mapNumber)].getMapping());
-	}
+          curves.push_back(&mapInfo.mappingList[subListNumbering(mapNumber)].getMapping());
+        }
 
       int degree1=3,degree2=3;
       int numberOfGhostPoints=0;
       parameterizationType=parameterizeByChordLength;
       {
-	aString menu2[] = {"parameterize by chord length",
-			   "parameterize by index (uniform)",
-			   "degree",
-			   "done",
-			   ""};
-	
-	int len=0;
-	for( ;; )
-	{
-	  gi.getMenuItem(menu2,answer2,"choose an option");
-	  if( answer2=="done" )
-	  {
-	    break;
-	  }
-	  else if( answer2=="parameterize by chord length" )
-	  {
-	    parameterizationType=parameterizeByChordLength;
-	  }
-	  else if( answer2=="parameterize by index (uniform)" )
-	  {
-	    parameterizationType=parameterizeByIndex;
-	  }
-	  else if ( (len=answer2.matches("degree")) )
-	  {
-	    sScanF(answer2(len,answer2.length()-1),"%i %i",&degree1, &degree2);
-	  }
-	}
+        aString menu2[] = {"parameterize by chord length",
+                           "parameterize by index (uniform)",
+                           "degree",
+                           "done",
+                           ""};
+        
+        int len=0;
+        for( ;; )
+        {
+          gi.getMenuItem(menu2,answer2,"choose an option");
+          if( answer2=="done" )
+          {
+            break;
+          }
+          else if( answer2=="parameterize by chord length" )
+          {
+            parameterizationType=parameterizeByChordLength;
+          }
+          else if( answer2=="parameterize by index (uniform)" )
+          {
+            parameterizationType=parameterizeByIndex;
+          }
+          else if ( (len=answer2.matches("degree")) )
+          {
+            sScanF(answer2(len,answer2.length()-1),"%i %i",&degree1, &degree2);
+          }
+        }
       }
       interpolateLoftedSurface(curves, degree1,degree2,parameterizationType, numberOfGhostPoints
 );
@@ -7896,18 +7896,18 @@ update( MappingInformation & mapInfo )
       int i,j=0;
       for( i=0; i<num; i++ )
       {
-	MappingRC & map = mapInfo.mappingList[i];
-	// kkc 051031 removed the domainDimension check since we can build volumes now
-	if( /*(map.getDomainDimension()==1 || map.getDomainDimension()==2 ) 
-	      &&*/ map.mapPointer!=this )
-	{
-	  subListNumbering(j)=i;
+        MappingRC & map = mapInfo.mappingList[i];
+        // kkc 051031 removed the domainDimension check since we can build volumes now
+        if( /*(map.getDomainDimension()==1 || map.getDomainDimension()==2 ) 
+              &&*/ map.mapPointer!=this )
+        {
+          subListNumbering(j)=i;
           menu2[j++]=map.getName(mappingName);
-	}
+        }
       }
       menu2[j++]="none"; 
       menu2[j]="";   // null string terminates the menu
-	
+        
       int mapNumber = gi.getMenuItem(menu2,answer2,"choose a mapping");
 
       if( answer2=="none" )
@@ -7925,7 +7925,7 @@ update( MappingInformation & mapInfo )
       int ni[3]={1,1,1};
       for( int dir=0; dir<map.getDomainDimension(); dir++ )
       {
-	ni[dir]=map.getGridDimensions(dir);
+        ni[dir]=map.getGridDimensions(dir);
       }
       
 
@@ -7941,73 +7941,73 @@ update( MappingInformation & mapInfo )
                                "number of points to interpolate",
                                "done",""};  //
         for( ;; )
-	{
+        {
           gi.getMenuItem(menu2,answer2,"choose an option");
           if( answer2=="done" )
-	  {
-	    break;
-	  }
-	  else if( answer2=="parameterize by chord length" )
-	  {
+          {
+            break;
+          }
+          else if( answer2=="parameterize by chord length" )
+          {
             parameterizationType=parameterizeByChordLength;
-	  }
+          }
           else if( answer2=="parameterize by index (uniform)" )
-	  {
+          {
             parameterizationType=parameterizeByIndex;
-	  }
-	  else if( answer2=="choose degree" )
-	  {
+          }
+          else if( answer2=="choose degree" )
+          {
             gi.inputString(answer2,sPrintF("Enter the degree (default=%i)",degree));
-	    sScanF(answer2,"%i",&degree);
+            sScanF(answer2,"%i",&degree);
             printF("Using degree =%i\n",degree);
-	  }
-	  else if( answer2=="number of ghost points to include" )
-	  {
+          }
+          else if( answer2=="number of ghost points to include" )
+          {
             printF("INFO:You may specify how many ghost points from the source Mapping to be interpolated\n"
                    " onto the target NurbsMapping. In this way the ghost points of the NurbsMapping will match\n"
                    " the source Mapping.\n");
             gi.inputString(answer2,sPrintF("Enter the number of ghost points to include (default=%i)",
                        numberOfGhostPoints));
-	    sScanF(answer2,"%i",&numberOfGhostPoints);
+            sScanF(answer2,"%i",&numberOfGhostPoints);
             printF("Using number of ghost points =%i\n",numberOfGhostPoints);
-	  }
+          }
           else if( answer2=="number of points to interpolate" )
-	  {
+          {
             printF("INFO: By default the target mapping will be interpolated with the number of grid points\n"
                    " specified in the source mapping. You may change the number of points used to interpolate here.\n"
                    " This can save space and time by defining the Nurbs with fewer control points. The number\n"
                    " of grid points in the target mapping will still equal that of the source even though the\n"
                    " number of control points will be different.\n");
-	    if( map.getDomainDimension()==1 )
-	    {
-	      gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1 (default=%i)",
-					     ni[0]));
-	      sScanF(answer2,"%i",&ni[0]);
-	      printF("Will interpolate with %i points\n",ni[0]);
-	    }
-	    else if( map.getDomainDimension()==2 )
-	    {
-	      gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1,n2 (default=%i,%i)",
-					     ni[0],ni[1]));
-	      sScanF(answer2,"%i %i",&ni[0],&ni[1]);
-	      printF("Will interpolate with %i, %i points\n",ni[0],ni[1]);
-	    }
-	    else
-	    {
-	      gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1,n2,n3 (default=%i,%i,%i)",
-					     ni[0],ni[1],ni[2]));
-	      sScanF(answer2,"%i %i %i",&ni[0],&ni[1],&ni[2]);
-	      printF("Will interpolate with %i, %i, %i points\n",ni[0],ni[1],ni[2]);
-	    }
-	    
-	  }
-	  
-	  else
-	  {
-	    printf("Unknown response=%s",(const char*)answer2);
-	    gi.stopReadingCommandFile();	  
-	  }
-	}
+            if( map.getDomainDimension()==1 )
+            {
+              gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1 (default=%i)",
+                                             ni[0]));
+              sScanF(answer2,"%i",&ni[0]);
+              printF("Will interpolate with %i points\n",ni[0]);
+            }
+            else if( map.getDomainDimension()==2 )
+            {
+              gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1,n2 (default=%i,%i)",
+                                             ni[0],ni[1]));
+              sScanF(answer2,"%i %i",&ni[0],&ni[1]);
+              printF("Will interpolate with %i, %i points\n",ni[0],ni[1]);
+            }
+            else
+            {
+              gi.inputString(answer2,sPrintF("Enter the number of points to interpolate: n1,n2,n3 (default=%i,%i,%i)",
+                                             ni[0],ni[1],ni[2]));
+              sScanF(answer2,"%i %i %i",&ni[0],&ni[1],&ni[2]);
+              printF("Will interpolate with %i, %i, %i points\n",ni[0],ni[1],ni[2]);
+            }
+            
+          }
+          
+          else
+          {
+            printf("Unknown response=%s",(const char*)answer2);
+            gi.stopReadingCommandFile();          
+          }
+        }
       }
       
 
@@ -8023,17 +8023,17 @@ update( MappingInformation & mapInfo )
       int i,j=0;
       for( i=0; i<num; i++ )
       {
-	MappingRC & map = mapInfo.mappingList[i];
-	if( map.getDomainDimension()==1 && map.mapPointer!=this &&
+        MappingRC & map = mapInfo.mappingList[i];
+        if( map.getDomainDimension()==1 && map.mapPointer!=this &&
             map.getClassName()=="NurbsMapping" )
-	{
-	  subListNumbering(j)=i;
+        {
+          subListNumbering(j)=i;
           menu2[j++]=map.getName(mappingName);
-	}
+        }
       }
       menu2[j++]="none"; 
       menu2[j]="";   // null string terminates the menu
-	
+        
       int mapNumber = gi.getMenuItem(menu2,answer2,"merge with which mapping?");
 
       if( answer2=="none" )
@@ -8051,11 +8051,11 @@ update( MappingInformation & mapInfo )
     }
     else if ( answer=="use Eleven eval" )
       {
-	use_kk_nrb_eval = true;
+        use_kk_nrb_eval = true;
       }
     else if ( answer=="do not use Eleven eval" )
       {
-	use_kk_nrb_eval = false;
+        use_kk_nrb_eval = false;
       }
     else if( answer=="general cylinder" )
     {
@@ -8066,16 +8066,16 @@ update( MappingInformation & mapInfo )
       int i,j=0;
       for( i=0; i<num; i++ )
       {
-	MappingRC & map = mapInfo.mappingList[i];
-	if( map.getDomainDimension()==1 && map.getRangeDimension()==3 && map.mapPointer!=this )
-	{
-	  subListNumbering(j)=i;
+        MappingRC & map = mapInfo.mappingList[i];
+        if( map.getDomainDimension()==1 && map.getRangeDimension()==3 && map.mapPointer!=this )
+        {
+          subListNumbering(j)=i;
           menu2[j++]=map.getName(mappingName);
-	}
+        }
       }
       menu2[j++]="none"; 
       menu2[j]="";   // null string terminates the menu
-	
+        
       int mapNumber = gi.getMenuItem(menu2,answer2,"Extrude which curve?");
 
       if( answer2=="none" )
@@ -8116,7 +8116,7 @@ update( MappingInformation & mapInfo )
         returnValue=get(answer2,answer=="read NURBS data, format xwxw" ? xwxw : 
                         answer=="read NURBS data, format xxww" ? xxww : cheryl);
         if( returnValue!=0 )
-	  gi.stopReadingCommandFile();
+          gi.stopReadingCommandFile();
       }
     }
     else if( answer=="save points in matlab format" )
@@ -8126,26 +8126,26 @@ update( MappingInformation & mapInfo )
       FILE *file = fopen((const char*)fileName,"w");
       if( file ==NULL )
       {
-	printF("ERROR: unable to open the file %s\n",(const char*)fileName);
-	continue;
+        printF("ERROR: unable to open the file %s\n",(const char*)fileName);
+        continue;
       }
       const realArray & x = getGrid();
       if( domainDimension==1 )
       {
-	for( int dir=0; dir<rangeDimension; dir++ )
-	{
-	  fprintf(file,"x%i=[",dir);
-	  for( int i1=x.getBase(0); i1<=x.getBound(0); i1++ )
-	  {
-	    fprintf(file," %18.12e \n",x(i1,0,0,dir));
-	  }
-	  fprintf(file,"];\n");
-	}
-	
+        for( int dir=0; dir<rangeDimension; dir++ )
+        {
+          fprintf(file,"x%i=[",dir);
+          for( int i1=x.getBase(0); i1<=x.getBound(0); i1++ )
+          {
+            fprintf(file," %18.12e \n",x(i1,0,0,dir));
+          }
+          fprintf(file,"];\n");
+        }
+        
       }
       else
       {
-	printF("ERROR: save points in matlab format not yet implemented for domainDimension>1 \n");
+        printF("ERROR: save points in matlab format not yet implemented for domainDimension>1 \n");
       }
       fclose(file);
       printF("Wrote file %s\n",(const char*)fileName);
@@ -8178,8 +8178,8 @@ update( MappingInformation & mapInfo )
     {
       if( domainDimension<1 || domainDimension>3 )
       {
-	printF("ERROR: domainDimension=%i is invalid. Must be 1,2, or 3\n");
-	domainDimension=max(1,min(3,domainDimension));
+        printF("ERROR: domainDimension=%i is invalid. Must be 1,2, or 3\n");
+        domainDimension=max(1,min(3,domainDimension));
       }
       initialized=false;
       plotObject=false;
@@ -8188,8 +8188,8 @@ update( MappingInformation & mapInfo )
     {
       if( rangeDimension<1 || rangeDimension>3 )
       {
-	printF("ERROR: rangeDimension=%i is invalid. Must be 1,2, or 3\n");
-	rangeDimension=max(1,min(3,rangeDimension));
+        printF("ERROR: rangeDimension=%i is invalid. Must be 1,2, or 3\n");
+        rangeDimension=max(1,min(3,rangeDimension));
       }
       initialized=false;
       plotObject=false;
@@ -8231,24 +8231,24 @@ update( MappingInformation & mapInfo )
 
 //       for( ;; )
 //       {
-// 	real r0=0.;
-// 	real r1=-1.;
-// 	cout << "enter r0 and r1 (one must be -1., enter -1. -1. to stop)\n";
+//      real r0=0.;
+//      real r1=-1.;
+//      cout << "enter r0 and r1 (one must be -1., enter -1. -1. to stop)\n";
 //         cin >> r0 >> r1;
 //         if( r0<-.5 && r1<-.5 )
 //          break;
-	
-// 	buildCurveOnSurface(curve,r0,r1);
+        
+//      buildCurveOnSurface(curve,r0,r1);
 
-// 	parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
+//      parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
 
-// 	parameters.set(GI_MAPPING_COLOUR,"green");
-// 	real oldCurveLineWidth;
-// 	parameters.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-// 	parameters.set(GraphicsParameters::curveLineWidth,3.);
-// 	PlotIt::plot(gi,curve,parameters);
-// 	parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
-// 	parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
+//      parameters.set(GI_MAPPING_COLOUR,"green");
+//      real oldCurveLineWidth;
+//      parameters.get(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+//      parameters.set(GraphicsParameters::curveLineWidth,3.);
+//      PlotIt::plot(gi,curve,parameters);
+//      parameters.set(GraphicsParameters::curveLineWidth,oldCurveLineWidth);
+//      parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
 //       }
       
 //     }
@@ -8260,7 +8260,7 @@ update( MappingInformation & mapInfo )
 //       Range Rx(0,2);
 //       aString menu2[]=
 //       {
-// 	"enter a point",
+//      "enter a point",
 //         "exit",
 //         ""
 //       };
@@ -8269,45 +8269,45 @@ update( MappingInformation & mapInfo )
 //       for( int i=0;;i++ )
 //       {
 //         gi.getMenuItem(menu2,answer,"choose");
-// 	if( answer=="enter a point" )
-// 	{
-// 	  gi.inputString(answer,"Enter a point (x,y,z) to invert (null string to terminate)");
-// 	  if( answer!="" )
-// 	  {
-// 	    sScanF(answer,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
+//      if( answer=="enter a point" )
+//      {
+//        gi.inputString(answer,"Enter a point (x,y,z) to invert (null string to terminate)");
+//        if( answer!="" )
+//        {
+//          sScanF(answer,"%e %e %e",&x(0,0),&x(0,1),&x(0,2));
 //             r=-1;
-// 	    inverseMap(x(0,Rx),r);
-// 	    map(r,xx,xxr);
-// 	    x(1,Rx)=xx(0,Rx);
-// 	    printf(" x=(%6.2e,%6.2e,%6.2e), r=(%6.2e,%6.2e), projected x=(%6.2e,%6.2e,%6.2e)\n",
-// 		   x(0,0),x(0,1),x(0,2), r(0,0),r(0,1), x(1,0),x(1,1),x(1,2));
-// 	    gi.erase();
-// 	    PlotIt::plot(gi,*this,parameters);   // *** recompute every time ?? ***
-// 	    parameters.set(GI_USE_PLOT_BOUNDS,true);
-// 	    parameters.set(GI_POINT_SIZE,(real)6.);
-// 	    gi.plotPoints(x,parameters);
+//          inverseMap(x(0,Rx),r);
+//          map(r,xx,xxr);
+//          x(1,Rx)=xx(0,Rx);
+//          printf(" x=(%6.2e,%6.2e,%6.2e), r=(%6.2e,%6.2e), projected x=(%6.2e,%6.2e,%6.2e)\n",
+//                 x(0,0),x(0,1),x(0,2), r(0,0),r(0,1), x(1,0),x(1,1),x(1,2));
+//          gi.erase();
+//          PlotIt::plot(gi,*this,parameters);   // *** recompute every time ?? ***
+//          parameters.set(GI_USE_PLOT_BOUNDS,true);
+//          parameters.set(GI_POINT_SIZE,(real)6.);
+//          gi.plotPoints(x,parameters);
 
 //             // plot the normal
-// 	    n(0,0)=xxr(0,1,0)*xxr(0,2,1)-xxr(0,2,0)*xxr(0,1,1);
-// 	    n(0,1)=xxr(0,2,0)*xxr(0,0,1)-xxr(0,0,0)*xxr(0,2,1);
-// 	    n(0,2)=xxr(0,0,0)*xxr(0,1,1)-xxr(0,1,0)*xxr(0,0,1);
+//          n(0,0)=xxr(0,1,0)*xxr(0,2,1)-xxr(0,2,0)*xxr(0,1,1);
+//          n(0,1)=xxr(0,2,0)*xxr(0,0,1)-xxr(0,0,0)*xxr(0,2,1);
+//          n(0,2)=xxr(0,0,0)*xxr(0,1,1)-xxr(0,1,0)*xxr(0,0,1);
 
-// 	    real l2Norm=SQRT(SQR(n(0,0))+SQR(n(0,1))+SQR(n(0,2)));
+//          real l2Norm=SQRT(SQR(n(0,0))+SQR(n(0,1))+SQR(n(0,2)));
 //             n/=l2Norm;
 //             real dist=SQRT(sum(SQR(xx(0,Rx)-x(0,Rx))));
-// 	    for( int i=0; i<11; i++ )
-// 	    {
+//          for( int i=0; i<11; i++ )
+//          {
 //               real alpha=i*.1;
-// 	      nn(i,Rx)=xx(0,Rx)+alpha*dist*n(0,Rx);
-// 	    }
-// 	    parameters.set(GI_POINT_SIZE,(real)4.);
-// 	    gi.plotPoints(nn,parameters);
-	    
+//            nn(i,Rx)=xx(0,Rx)+alpha*dist*n(0,Rx);
+//          }
+//          parameters.set(GI_POINT_SIZE,(real)4.);
+//          gi.plotPoints(nn,parameters);
+            
 
-// 	    parameters.set(GI_USE_PLOT_BOUNDS,false);
-// 	  }
-// 	}
-// 	else if( answer=="exit" )
+//          parameters.set(GI_USE_PLOT_BOUNDS,false);
+//        }
+//      }
+//      else if( answer=="exit" )
 //           break;
 //       }
 //     }
@@ -8315,8 +8315,8 @@ update( MappingInformation & mapInfo )
     {
       if( domainDimension!=1 )
       {
-	gi.outputString("Sorry: Can only plot derivatives of curves");
-	continue;
+        gi.outputString("Sorry: Can only plot derivatives of curves");
+        continue;
       }
       
       const int order = answer=="plot first derivatives" ? 1 : 2;
@@ -8337,8 +8337,8 @@ update( MappingInformation & mapInfo )
       else
       {
         Index I = Range(n);
-	for(  int axis=0; axis<rangeDimension; axis++ )
-	  secondOrderDerivative(I,r,xr,axis,0);
+        for(  int axis=0; axis<rangeDimension; axis++ )
+          secondOrderDerivative(I,r,xr,axis,0);
       }
     
       real xrMax=max(fabs(xr));
@@ -8349,23 +8349,23 @@ update( MappingInformation & mapInfo )
       Range R=n;
       for( int axis=0; axis<rangeDimension; axis++ )
       {
-	xrd(R,0,0,0)=r(R,0);
-	xrd(R,0,0,1)=xr(R,axis);
+        xrd(R,0,0,0)=r(R,0);
+        xrd(R,0,0,1)=xr(R,axis);
       
-	DataPointMapping xrMap;
-	xrMap.setDataPoints(xrd,3,1);
-	xrMap.setIsPeriodic(axis1,getIsPeriodic(axis1));
+        DataPointMapping xrMap;
+        xrMap.setDataPoints(xrd,3,1);
+        xrMap.setIsPeriodic(axis1,getIsPeriodic(axis1));
 
-	if( axis==0 )
-	  parameters.set(GI_MAPPING_COLOUR,"green");
-	else if( axis==1 )
-	  parameters.set(GI_MAPPING_COLOUR,"red");
-	else 
-	  parameters.set(GI_MAPPING_COLOUR,"yellow");
+        if( axis==0 )
+          parameters.set(GI_MAPPING_COLOUR,"green");
+        else if( axis==1 )
+          parameters.set(GI_MAPPING_COLOUR,"red");
+        else 
+          parameters.set(GI_MAPPING_COLOUR,"yellow");
 
         if( axis==rangeDimension-1 )
           parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,false);
-	PlotIt::plot(gi,xrMap,parameters);  
+        PlotIt::plot(gi,xrMap,parameters);  
       }
       parameters.set(GI_PLOT_THE_OBJECT_AND_EXIT,true);
     }
@@ -8373,21 +8373,21 @@ update( MappingInformation & mapInfo )
     {
       if( numberOfSubCurves()<=1 )
       {
-	printF("There is no sub-curves to add to the mapping list.\n");
+        printF("There is no sub-curves to add to the mapping list.\n");
       }
       else
       {
-	for ( int sc=0; sc<numberOfSubCurves(); sc++ )
-	{
+        for ( int sc=0; sc<numberOfSubCurves(); sc++ )
+        {
           // -- rename sub-curves 
           aString mapName = getName(Mapping::mappingName);
           aString name = subCurve(sc).getName(Mapping::mappingName);
-	  name = mapName + sPrintF("%i",sc);
-	  printF("Adding sub-curve %i name=[%s] to the mapping list.\n",
-		 sc,(const char*)name);
+          name = mapName + sPrintF("%i",sc);
+          printF("Adding sub-curve %i name=[%s] to the mapping list.\n",
+                 sc,(const char*)name);
           subCurve(sc).setName(Mapping::mappingName,name);
-	  mapInfo.mappingList.addElement(subCurve(sc));
-	}
+          mapInfo.mappingList.addElement(subCurve(sc));
+        }
       }
     }
     else if( answer=="help" )
@@ -8412,11 +8412,11 @@ update( MappingInformation & mapInfo )
       if( answer=="periodicity" )
       {
         initialized=false;
-	for( int axis=0; axis<domainDimension; axis++ )
-	{
-	  if( fabs(rEnd[axis]-rStart[axis])==1. )
-	    nurbsIsPeriodic[axis]=getIsPeriodic(axis);
-	}
+        for( int axis=0; axis<domainDimension; axis++ )
+        {
+          if( fabs(rEnd[axis]-rStart[axis])==1. )
+            nurbsIsPeriodic[axis]=getIsPeriodic(axis);
+        }
       }
       // Since the plotter plots the sub-curves we change the resolution there too if the lines
       // have increased; so that we get an improved plot.
@@ -8426,16 +8426,16 @@ update( MappingInformation & mapInfo )
         if( numberOfSubCurves()>1 ) // *wdh* Oct 28, 2018 -- only increase if there are sub-curves
         {
           printf("Increase resolution on sub-curves, ratio=%8.2e\n",ratio);
-	
+        
           if( ratio>1. )
           {
             for( int sc=0; sc<numberOfSubCurves(); sc++ )
             {
               int nx=subCurve(sc).getGridDimensions(0);
-	    
+            
               subCurve(sc).setGridDimensions(axis1,int(nx*ratio+.5));
               // printf(" sc=%i nx=%i new=%i, newGrid=%i\n",sc,nx,int(nx*ratio+.5),subCurve(sc).getGrid().getLength(0));
-	    
+            
             }
           }
         }
@@ -8456,26 +8456,26 @@ update( MappingInformation & mapInfo )
       gi.erase();
       if( plotSubCurves )
       {
-	aString originalColour;
-	parameters.get(GI_MAPPING_COLOUR, originalColour);
+        aString originalColour;
+        parameters.get(GI_MAPPING_COLOUR, originalColour);
 
-	for ( int sc=0; sc<numberOfSubCurves(); sc++ )
-	{
-	  parameters.set(GI_MAPPING_COLOUR, gi.getColourName(sc));
-	  if ( !isSubCurveHidden(sc) )
-	    subCurve(sc).plot( gi, parameters, plotControlPoints );
-	}
-	parameters.set(GI_MAPPING_COLOUR, originalColour);
+        for ( int sc=0; sc<numberOfSubCurves(); sc++ )
+        {
+          parameters.set(GI_MAPPING_COLOUR, gi.getColourName(sc));
+          if ( !isSubCurveHidden(sc) )
+            subCurve(sc).plot( gi, parameters, plotControlPoints );
+        }
+        parameters.set(GI_MAPPING_COLOUR, originalColour);
       }
       if( plotCurve )
       {
-	int plotAsSubCurves;
-	parameters.get(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,plotAsSubCurves);
-	parameters.set(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,false);
+        int plotAsSubCurves;
+        parameters.get(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,plotAsSubCurves);
+        parameters.set(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,false);
       
-	plot(gi,parameters,plotControlPoints);
+        plot(gi,parameters,plotControlPoints);
 
-	parameters.set(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,plotAsSubCurves);  // reset
+        parameters.set(GI_PLOT_NURBS_CURVES_AS_SUBCURVES,plotAsSubCurves);  // reset
       }
     }
   }
@@ -8491,9 +8491,9 @@ update( MappingInformation & mapInfo )
 
 int NurbsMapping::
 interpolateLoftedSurface(vector<Mapping*> &curves, int degree1 /*=3*/, 
-			 int degree2 /*=3*/ ,
-			 ParameterizationTypeEnum  parameterizationType /* =parameterizeByChordLength */,
-			 int numberOfGhostPoints /* =0 */)
+                         int degree2 /*=3*/ ,
+                         ParameterizationTypeEnum  parameterizationType /* =parameterizeByChordLength */,
+                         int numberOfGhostPoints /* =0 */)
 //===========================================================================
 /// \details 
 ///     Interpolate a list of curves to make a lofted surface.  Note this actually
@@ -8516,10 +8516,10 @@ interpolateLoftedSurface(vector<Mapping*> &curves, int degree1 /*=3*/,
     {
       Mapping &map = **curve;
       if ( map.getDomainDimension()!=1 || map.getRangeDimension()!=3 ) 
-	{
-	  printF("NurbsMapping::interpolateLoftedSurface:: ERROR : all curves must have domainDimension==1 and rangeDimension==3");
-	  return -1;
-	}
+        {
+          printF("NurbsMapping::interpolateLoftedSurface:: ERROR : all curves must have domainDimension==1 and rangeDimension==3");
+          return -1;
+        }
 
       maxN = max(maxN, map.getGridDimensions(0));
     }
@@ -8534,8 +8534,8 @@ interpolateLoftedSurface(vector<Mapping*> &curves, int degree1 /*=3*/,
 
       const realArray &map_x = map.getGrid();
       for ( int a=0; a<3; a++ )
-	for ( int n=0; n<maxN; n++ )
-	  x(n,c,a) = map_x(n,a);
+        for ( int n=0; n<maxN; n++ )
+          x(n,c,a) = map_x(n,a);
     }
 
   interpolateSurface(x,degree1,parameterizationType, numberOfGhostPoints, degree2);

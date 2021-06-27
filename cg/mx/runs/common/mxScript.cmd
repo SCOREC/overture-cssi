@@ -44,7 +44,8 @@ $numBodies=1;
 # ------- get common command line arguments --------
 include getCommonOptions.h
 # --------------------------------------------------
-include $extraCommandsStart
+if( $extraCommandsStart ne "" ) { $cmd="include $extraCommandsStart"; }else{ $cmd="#"; }
+$cmd
 # 
 $grid
 #

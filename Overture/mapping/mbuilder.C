@@ -45,7 +45,7 @@ main(int argc, char *argv[])
       else if( (len=line.matches("-numParallelGhost=")) )
       {
         sScanF(line(len,line.length()-1),"%i",&numberOfParallelGhost);
-	printF("ogenDriver: will use %i parallel ghost points.\n",numberOfParallelGhost);
+        printF("mbuilder: Using %i parallel ghost points.\n",numberOfParallelGhost);
       }
       else if( commandFileName=="" )
         commandFileName=line;    

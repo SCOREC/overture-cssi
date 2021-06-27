@@ -41,44 +41,44 @@ displayParameters(FILE *file /* = stdout */ )
   
   fprintf(file,
           "twilight zone: twilight zone is %s.\n"
-	  "               polynomial is %s. degree in space=%i, degree in time=%i\n"
-	  "               trigonometric is %s. frequencies (fx,fy,fz,ft)=(%f,%f,%f,%f)\n"
+          "               polynomial is %s. degree in space=%i, degree in time=%i\n"
+          "               trigonometric is %s. frequencies (fx,fy,fz,ft)=(%f,%f,%f,%f)\n"
           "               use 2D function in 3D is %s\n",
           offOn[int(parameters.dbase.get<bool >("twilightZoneFlow")==true)],
           offOn[int(parameters.dbase.get<bool >("twilightZoneFlow")==true && parameters.dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice")==Parameters::polynomial)],
-	  parameters.dbase.get<int >("tzDegreeSpace"),parameters.dbase.get<int >("tzDegreeTime"),
+          parameters.dbase.get<int >("tzDegreeSpace"),parameters.dbase.get<int >("tzDegreeTime"),
           offOn[int(parameters.dbase.get<bool >("twilightZoneFlow")==true && parameters.dbase.get<Parameters::TwilightZoneChoice >("twilightZoneChoice")==Parameters::trigonometric)],
-	  parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[0],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[1],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[2],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[3],
-	  offOn[int(parameters.dbase.get<int >("dimensionOfTZFunction")==2)]);
+          parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[0],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[1],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[2],parameters.dbase.get<ArraySimpleFixed<real,4,1,1,1> >("omega")[3],
+          offOn[int(parameters.dbase.get<int >("dimensionOfTZFunction")==2)]);
   
   fprintf(file,
           "time stepping options: final time=%e, cfl=%f, dtMax=%e, recompute dt interval=%i,\n"
           "    implicit factor=%f, (.5=Crank-Nicolson, 1.=Backward Euler)\n"
           "    slow start time interval=%f, slow start cfl=%f\n"
           "    time stepping method=%s \n",
-	  parameters.dbase.get<real >("tFinal"),parameters.dbase.get<real >("cfl"),parameters.dbase.get<real >("dtMax"), parameters.dbase.get<int >("maximumStepsBetweenComputingDt"),
+          parameters.dbase.get<real >("tFinal"),parameters.dbase.get<real >("cfl"),parameters.dbase.get<real >("dtMax"), parameters.dbase.get<int >("maximumStepsBetweenComputingDt"),
           parameters.dbase.get<real >("implicitFactor"),parameters.dbase.get<real >("slowStartTime"),parameters.dbase.get<real >("slowStartCFL"),
-	  (const char*)parameters.getTimeSteppingName());
+          (const char*)parameters.getTimeSteppingName());
 
   real tolerance;
   int maximumNumberOfIterations;
   implicitTimeStepSolverParameters.get(OgesParameters::THEtolerance,tolerance);
   implicitTimeStepSolverParameters.get(OgesParameters::THEmaximumNumberOfIterations,maximumNumberOfIterations);
-	
+        
   fprintf(file,"  If implicit time stepping is on, here is how each grid will be treated:\n");
   fprintf(file,"    implicit solver =%s, tolerance=%e, max number of iterations=%s \n",
-	  (const char*)implicitTimeStepSolverParameters.getSolverName(),tolerance,
-	  maximumNumberOfIterations==0 ? "default" : 
-	  sPrintF(buff,"%i",maximumNumberOfIterations));
+          (const char*)implicitTimeStepSolverParameters.getSolverName(),tolerance,
+          maximumNumberOfIterations==0 ? "default" : 
+          sPrintF(buff,"%i",maximumNumberOfIterations));
 
   int grid;
   for( grid=0; grid<cg.numberOfComponentGrids(); grid++ )
   {
 // *** scLC
     fprintf(file,"    %20s is time integrated %s \n",(const char *)cg[grid].getName(),
-	    (parameters.getGridIsImplicit(grid)==1 ? "implicitly" : 
-	     (parameters.getGridIsImplicit(grid)==2 ? "semi-implicitly" :
-	      "explicitly")));
+            (parameters.getGridIsImplicit(grid)==1 ? "implicitly" : 
+             (parameters.getGridIsImplicit(grid)==2 ? "semi-implicitly" :
+              "explicitly")));
 // *** ecLC
   }
 
@@ -91,7 +91,7 @@ displayParameters(FILE *file /* = stdout */ )
           parameters.dbase.get<int >("plotOption")==0 ? "no plotting" :  
           parameters.dbase.get<int >("plotOption")==1 ? "plot and always wait" :
           parameters.dbase.get<int >("plotOption")==2 ? "plot with no waiting" : "plot and wait first time",
-	  offOn[int(parameters.dbase.get<bool >("saveRestartFile")==true)]);
+          offOn[int(parameters.dbase.get<bool >("saveRestartFile")==true)]);
 
   fprintf(file,
          "initial conditions: (need to be specified when not using twilight zone flow)\n"
@@ -124,7 +124,7 @@ displayParameters(FILE *file /* = stdout */ )
     fprintf(file,"\n");
     
     fprintf(file,"  plotting of the amr error function is %s\n",
-	    offOn[int(parameters.dbase.get<int >("showAmrErrorFunction")==true)]);
+            offOn[int(parameters.dbase.get<int >("showAmrErrorFunction")==true)]);
     
     if( parameters.dbase.get<Regrid* >("regrid")==NULL )
       parameters.dbase.get<Regrid* >("regrid") = new Regrid();
@@ -138,43 +138,43 @@ displayParameters(FILE *file /* = stdout */ )
 
   }
   fprintf(file,
-	  "Debugging: \n"
-	  "  debug=%i   (bit flag)\n"
-	  "  info=%i    (bit flag)\n"
-	  "  Oges::debug=%i (for sparse solvers)\n"
-	  "  Reactions::debug=%i (for chemical reactions)\n"
+          "Debugging: \n"
+          "  debug=%i   (bit flag)\n"
+          "  info=%i    (bit flag)\n"
+          "  Oges::debug=%i (for sparse solvers)\n"
+          "  Reactions::debug=%i (for chemical reactions)\n"
           "  checkForFloatingPointErrors=%i\n"
-	  "  compare 3D run to 2D is %s\n",
-	  parameters.dbase.get<int >("debug"),parameters.dbase.get<int >("info"),Oges::debug,Reactions::debug,
+          "  compare 3D run to 2D is %s\n",
+          parameters.dbase.get<int >("debug"),parameters.dbase.get<int >("info"),Oges::debug,Reactions::debug,
           Parameters::checkForFloatingPointErrors,
           offOn[int(parameters.dbase.get<int >("compare3Dto2D")==true)]);
   
   if( cg.rcData->interpolant!=NULL )
   {
     fprintf(file,
-	    "use iterative implicit interpolation is %s.\n",
-	    offOn[int(cg.rcData->interpolant->getImplicitInterpolationMethod()==Interpolant::iterateToInterpolate)]);
+            "use iterative implicit interpolation is %s.\n",
+            offOn[int(cg.rcData->interpolant->getImplicitInterpolationMethod()==Interpolant::iterateToInterpolate)]);
   }
   
   fprintf(file,
           "reduced interpolation width is %s, reduced width is %i. \n",
-	  offOn[int(parameters.dbase.get<int >("reducedInterpolationWidth")>0)],
+          offOn[int(parameters.dbase.get<int >("reducedInterpolationWidth")>0)],
           parameters.dbase.get<int >("reducedInterpolationWidth"));
 
   fprintf(file," Moving grids are turned %s. \n",offOn[int(parameters.isMovingGridProblem()==true)]);
   fprintf(file,
-	  "  collision detection is %s.\n"
-	  "  minimum separation for collisions is %f (grid lines).\n",
-	  offOn[int(parameters.dbase.get<bool >("detectCollisions"))],
-	  parameters.dbase.get<real >("collisionDistance") );
+          "  collision detection is %s.\n"
+          "  minimum separation for collisions is %f (grid lines).\n",
+          offOn[int(parameters.dbase.get<bool >("detectCollisions"))],
+          parameters.dbase.get<real >("collisionDistance") );
   if( parameters.isMovingGridProblem() )
   {
     for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
       if( parameters.gridIsMoving(grid) )
       {
-	fprintf(file,"  Grid %15s is moving : %s\n",(const char*)cg[grid].getName(),
-		(const char*)parameters.dbase.get<MovingGrids >("movingGrids").movingGridOptionName(
-		  parameters.dbase.get<MovingGrids >("movingGrids").movingGridOption(grid)));
+        fprintf(file,"  Grid %15s is moving : %s\n",(const char*)cg[grid].getName(),
+                (const char*)parameters.dbase.get<MovingGrids >("movingGrids").movingGridOptionName(
+                  parameters.dbase.get<MovingGrids >("movingGrids").movingGridOption(grid)));
       }
   }
 
@@ -210,27 +210,27 @@ getOriginalBoundaryConditions(CompositeGrid & cg, IntegerArray & originalBoundar
     {
       for( side=Start; side<=End; side++ )
       {
-	if( cg[grid].boundaryCondition()(side,axis) != 0 )
-	{
-	  if( cg[grid].numberOfGhostPoints(side,axis)<2 )
-	  {
-	    printF("DomainSolver:ERROR: The grid must be made with numberOfGhostPoints>=2 on all boundaries\n");
+        if( cg[grid].boundaryCondition()(side,axis) != 0 )
+        {
+          if( cg[grid].numberOfGhostPoints(side,axis)<2 )
+          {
+            printF("DomainSolver:ERROR: The grid must be made with numberOfGhostPoints>=2 on all boundaries\n");
             display(cg[grid].boundaryCondition(),sPrintF(buff,"boundaryCondition on grid %i\n",grid));
             display(cg[grid].dimension(),sPrintF(buff,"dimension on grid %i\n",grid));
             display(cg[grid].indexRange(),sPrintF(buff,"indexRange on grid %i\n",grid));
             display(cg[grid].gridIndexRange(),sPrintF(buff,"gridIndexRange on grid %i\n",grid));
-	    Overture::abort("error");
-	  }
+            Overture::abort("error");
+          }
           if( abs(cg[grid].dimension(side,axis)-cg[grid].indexRange(side,axis))<2 )
-	  {
-	    printF("DomainSolver:ERROR: The grid must be made with numberOfGhostPoints>=2 on all boundaries\n");
+          {
+            printF("DomainSolver:ERROR: The grid must be made with numberOfGhostPoints>=2 on all boundaries\n");
             cg[grid].dimension().display(sPrintF(buff,"dimension on grid %i\n",grid));
             cg[grid].indexRange().display(sPrintF(buff,"indexRange on grid %i\n",grid));
             cg[grid].gridIndexRange().display(sPrintF(buff,"gridIndexRange on grid %i\n",grid));
-	    
-	    Overture::abort("error");
-	  }
-	}
+            
+            Overture::abort("error");
+          }
+        }
       }
     }
   }
@@ -248,7 +248,7 @@ buildForcingOptionsDialog(DialogData & dialog )
                           "user defined forcing...",
                           "user defined material properties...",
                           "controls...",
-			  ""};
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=2;
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
@@ -265,7 +265,7 @@ buildForcingOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getForcingOption(const aString & answer,
-		 DialogData & dialog )
+                 DialogData & dialog )
 {
   return false;
 }
@@ -280,31 +280,31 @@ buildPlotOptionsDialog(DialogData & dialog )
 {
 
   aString cmd[] = {"plot and wait first time", "plot with no waiting",
-		   "plot and always wait","no plotting","" };
+                   "plot and always wait","no plotting","" };
 
   int & plotOption = parameters.dbase.get<int>("plotOption");
   int & plotMode   = parameters.dbase.get<int>("plotMode");
   dialog.addOptionMenu("plot option", cmd, cmd, plotOption);
 
   aString pbCommands[] = {"plot parallel dist.",
-			  "plot material properties",
+                          "plot material properties",
                           "plot body force mask",
                           "forcing regions plot options",
-			  ""};
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=4;
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
 
 
   aString tbCommands[] = {"disable plotting",
-			  "plot residuals",
+                          "plot residuals",
                           "adjust grid for displacement",
                           "plot grid velocity", 
                           "plot body force mask surface",
                           "plot structures",  // plot beams and shells
                           "plot body force",
                           "output yPlus",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = plotMode==1;
   tbState[1] = parameters.dbase.get<int>("showResiduals"); 
@@ -355,7 +355,7 @@ buildPlotOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getPlotOption(const aString & answer,
-		 DialogData & dialog )
+                 DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
@@ -462,8 +462,8 @@ buildOutputOptionsDialog(DialogData & dialog )
 {
 
   aString tbCommands[] = {"save a restart file",
-			  "allow user defined output",
-			  ""};
+                          "allow user defined output",
+                          ""};
   int tbState[10];
   tbState[0] = parameters.dbase.get<bool >("saveRestartFile"); 
   tbState[1] = parameters.dbase.get<int >("allowUserDefinedOutput"); 
@@ -475,7 +475,7 @@ buildOutputOptionsDialog(DialogData & dialog )
                           "create a probe...",
                           "check probes...",
                           "output periodically to a file",
-			  ""};
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=3;
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
@@ -519,7 +519,7 @@ buildOutputOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getOutputOption(const aString & answer,
-		 DialogData & dialog )
+                 DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
@@ -538,7 +538,7 @@ getOutputOption(const aString & answer,
       printF("A restart file will be saved. Actually, two files will be saved, `ob1.restart' and `ob2.restart',\n"
               "just in case the program crashes while writing the restart file. \n"                  
               "At least one of these files should be valid for restarting. \n"
-	     "You can run cg using a restart file for initial conditions\n");
+             "You can run cg using a restart file for initial conditions\n");
   }
   else if( dialog.getToggleValue(answer,"allow user defined output",parameters.dbase.get<int >("allowUserDefinedOutput") ) ){} //
   // else if( answer=="output periodically to a file" ) do not trap this here
@@ -602,8 +602,8 @@ int DomainSolver::
 buildGeneralOptionsDialog(DialogData & dialog )
 {
   aString pbCommands[] = {"pressure solver options",
-			  "implicit time step solver options",
-			  ""};
+                          "implicit time step solver options",
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=2;
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
@@ -614,7 +614,7 @@ buildGeneralOptionsDialog(DialogData & dialog )
                           "check for floating point errors",
                           "use interactive grid generator",
                           "use new time-stepping startup",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = parameters.dbase.get<bool >("axisymmetricProblem"); 
   tbState[1] = cg.rcData->interpolant!=NULL ? 
@@ -659,7 +659,7 @@ buildGeneralOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getGeneralOption(const aString & answer,
-		 DialogData & dialog )
+                 DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
@@ -686,9 +686,9 @@ getGeneralOption(const aString & answer,
     if( cg.rcData->interpolant!=NULL )
     {
       if( iterativeImplicitInterpolation )
-	cg.rcData->interpolant->setImplicitInterpolationMethod(Interpolant::iterateToInterpolate);
+        cg.rcData->interpolant->setImplicitInterpolationMethod(Interpolant::iterateToInterpolate);
       else
-	cg.rcData->interpolant->setImplicitInterpolationMethod(Interpolant::directSolve);
+        cg.rcData->interpolant->setImplicitInterpolationMethod(Interpolant::directSolve);
     }
   }
   else if( dialog.getToggleValue(answer,"check for floating point errors",Parameters::checkForFloatingPointErrors ) ){}//
@@ -723,13 +723,13 @@ getGeneralOption(const aString & answer,
       sScanF(answer2,"%i",&width);
       if( width<oldWidth )
       {
-	printF("Changing width to %i\n",width);
-	cg.changeInterpolationWidth(width);
-	parameters.dbase.get<int >("reducedInterpolationWidth")=width;
+        printF("Changing width to %i\n",width);
+        cg.changeInterpolationWidth(width);
+        parameters.dbase.get<int >("reducedInterpolationWidth")=width;
       }
       else
       {
-	printF("Sorry, the requested width=%i should be <= %i\n",width,oldWidth);
+        printF("Sorry, the requested width=%i should be <= %i\n",width,oldWidth);
       }
     }
   }
@@ -769,13 +769,13 @@ buildAdaptiveGridOptionsDialog(DialogData & dialog )
   aString pbCommands[] = {"change adaptive grid parameters",
                           "change error estimator parameters",
                           "top hat parameters",
-			  ""};
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=3;
   dialog.setPushButtons( pbCommands, pbLabels, numRows ); 
 
   aString opCommands[] = {"use default error function",
-		          "use top-hat for error function",
+                          "use top-hat for error function",
                           "" };
 
   dialog.addOptionMenu("error function", opCommands, opCommands, parameters.dbase.get<int>("amrErrorFunctionOption"));
@@ -786,7 +786,7 @@ buildAdaptiveGridOptionsDialog(DialogData & dialog )
                           "use user defined error estimator",
                           "use default error estimator",
                           "use front tracking",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = parameters.dbase.get<bool >("adaptiveGridProblem");
   tbState[1] = parameters.dbase.get<int >("showAmrErrorFunction");
@@ -836,7 +836,7 @@ buildAdaptiveGridOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getAdaptiveGridOption(const aString & answer,
-		      DialogData & dialog )
+                      DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
@@ -923,7 +923,7 @@ getAdaptiveGridOption(const aString & answer,
   {
     // gi.outputString("The error threshold should be in the range (0,1). ");
     gi.inputString(answer2,sPrintF(buff,"Enter the AMR error threshold (default value=%e)",
-				   parameters.dbase.get<real >("errorThreshold")));
+                                   parameters.dbase.get<real >("errorThreshold")));
     if( answer2!="" )
       sScanF(answer2,"%e",&parameters.dbase.get<real >("errorThreshold"));
     printF(" parameters.errorThreshold=%9.3e\n",parameters.dbase.get<real >("errorThreshold"));
@@ -933,7 +933,7 @@ getAdaptiveGridOption(const aString & answer,
   {
     gi.outputString("By default the regrid frequency is equal to the refinement ratio");
     gi.inputString(answer2,sPrintF(buff,"Enter the regrid frequency, -1=default (current=%i)",
-				   parameters.dbase.get<int >("amrRegridFrequency")));
+                                   parameters.dbase.get<int >("amrRegridFrequency")));
     if( answer2!="" )
       sScanF(answer2,"%i",&parameters.dbase.get<int >("amrRegridFrequency"));
     printF(" parameters.amrRegridFrequency=%i\n",parameters.dbase.get<int >("amrRegridFrequency"));
@@ -942,7 +942,7 @@ getAdaptiveGridOption(const aString & answer,
   else if( answer=="truncation error coefficient" ) // old
   {
     gi.inputString(answer2,sPrintF(buff,"Enter the AMR truncation error coefficient (default value=%e)",
-				   parameters.dbase.get<real >("truncationErrorCoefficient")));
+                                   parameters.dbase.get<real >("truncationErrorCoefficient")));
     if( answer2!="" )
       sScanF(answer2,"%e",&parameters.dbase.get<real >("truncationErrorCoefficient"));
     printF(" parameters.truncationErrorCoefficient=%9.3e\n",parameters.dbase.get<real >("truncationErrorCoefficient"));
@@ -953,7 +953,7 @@ getAdaptiveGridOption(const aString & answer,
   {
     gi.outputString("The order of interpolation should be 2 or 3");
     gi.inputString(answer2,sPrintF(buff,"Enter the order of interpolation for AMR grids (current=%i)",
-				   parameters.dbase.get<int >("orderOfAdaptiveGridInterpolation")));
+                                   parameters.dbase.get<int >("orderOfAdaptiveGridInterpolation")));
     if( answer2!="" )
       sScanF(answer2,"%i",&parameters.dbase.get<int >("orderOfAdaptiveGridInterpolation"));
     printF(" parameters.orderOfAdaptiveGridInterpolation=%i\n",parameters.dbase.get<int >("orderOfAdaptiveGridInterpolation"));
@@ -992,13 +992,13 @@ buildMovingGridOptionsDialog(DialogData & dialog )
 {
   MovingGrids & movingGrids = parameters.dbase.get<MovingGrids >("movingGrids");
   dialog.addInfoLabel(sPrintF("Bodies: %i matrix, %i rigid, %i deforming",
-			      movingGrids.getNumberOfMatrixMotionBodies(),
+                              movingGrids.getNumberOfMatrixMotionBodies(),
                               movingGrids.getNumberOfRigidBodies(),
                               movingGrids.getNumberOfDeformingBodies()));
   
 
   aString pbCommands[] = {"specify grids to move",
-			  ""};
+                          ""};
   aString *pbLabels = pbCommands;
   int numRows=3;
   dialog.setPushButtons( pbCommands, pbLabels, numRows );
@@ -1006,7 +1006,7 @@ buildMovingGridOptionsDialog(DialogData & dialog )
   aString tbCommands[] = {"use moving grids",
                           "detect collisions",
                           "project initial conditions for moving grids",
-			  ""};
+                          ""};
   int tbState[10];
   tbState[0] = parameters.dbase.get<MovingGrids >("movingGrids").isMovingGridProblem();
   tbState[1] = parameters.dbase.get<bool >("detectCollisions");
@@ -1053,7 +1053,7 @@ buildMovingGridOptionsDialog(DialogData & dialog )
 //====================================================================
 int DomainSolver::
 getMovingGridOption(const aString & answer,
-		    DialogData & dialog )
+                    DialogData & dialog )
 {
   GenericGraphicsInterface & gi = *parameters.dbase.get<GenericGraphicsInterface* >("ps");
   GraphicsParameters & psp = parameters.dbase.get<GraphicsParameters >("psp");
@@ -1081,12 +1081,12 @@ getMovingGridOption(const aString & answer,
   else if( dialog.getTextValue(answer,"minimum separation for collisions","%e",
                                        parameters.dbase.get<real >("collisionDistance")) ){}//
   else if( dialog.getTextValue(answer,"frequency for full grid gen update","%i",
-			       parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration")) )
+                               parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration")) )
   {
           printF("INFO: For moving grids, the overlapping grid generator is called at every time step.\n"
              "      An optimized grid generation algorithm is used which will not minimize the overlap.\n"
              "      Once in a while the full algorithm is used -- you can change the frequency \n"
-		 "      this occurs here. Choosing a value of 1 will mean the full update is always called.\n");
+                 "      this occurs here. Choosing a value of 1 will mean the full update is always called.\n");
   }
   else if( dialog.getTextValue(answer,"edit rigid body:","%i",bodyToEdit) )
   {
@@ -1101,7 +1101,7 @@ getMovingGridOption(const aString & answer,
     else
     {
       printF("getMovingGridOption:ERROR: rigid body number %i is invalid. Should be in the range [0,%i]\n",
-	     bodyToEdit,numRigidBodies-1);
+             bodyToEdit,numRigidBodies-1);
     }
     
   }
@@ -1118,7 +1118,7 @@ getMovingGridOption(const aString & answer,
     else
     {
       printF("getMovingGridOption:ERROR: rigid body number %i is invalid. Should be in the range [0,%i]\n",
-	     bodyToEdit,numMatrixMotionBodies-1);
+             bodyToEdit,numMatrixMotionBodies-1);
     }
     
   }
@@ -1138,7 +1138,7 @@ getMovingGridOption(const aString & answer,
     else
     {
       printF("getMovingGridOption:ERROR: deforming body number %i is invalid. Should be in the range [0,%i]\n",
-	     bodyToEdit,numDeformingBodies-1);
+             bodyToEdit,numDeformingBodies-1);
     }
     
   }
@@ -1666,14 +1666,14 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
                             "boundary conditions...",
                             "initial conditions options...",
                             "forcing options...",
-			    "twilight zone options...",
-			    "showfile options...",
+                            "twilight zone options...",
+                            "showfile options...",
                             "general options...",
                             "adaptive grid options...",
                             "moving grid options...",
                             "plot the grid",
                             "display parameters",
-			    ""};
+                            ""};
     aString *pbLabels = pbCommands;
     int numRows=7;
     mainMenuInterface.setPushButtons( pbCommands, pbLabels,numRows ); // default is 2 rows
@@ -1796,10 +1796,10 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       if( !parameters.dbase.get<bool >("twilightZoneFlow") && !restartChosen && (!initialConditionsSpecified  || !bcDataSpecified) )
       {
-	if( !initialConditionsSpecified )
-	  printF("DomainSolver:WARNING: You should specify initial conditions before you can run\n");
+        if( !initialConditionsSpecified )
+          printF("DomainSolver:WARNING: You should specify initial conditions before you can run\n");
         if( !bcDataSpecified )
-	  printF("DomainSolver:WARNING: There are some boundary conditions for which you should specify"
+          printF("DomainSolver:WARNING: There are some boundary conditions for which you should specify"
                  " data before you can run\n");
       }
       break;
@@ -1835,10 +1835,10 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
 //     {
 //       if( !parameters.dbase.get<bool >("twilightZoneFlow") && !restartChosen && (!initialConditionsSpecified  || !bcDataSpecified) )
 //       {
-// 	if( !initialConditionsSpecified )
-// 	  printF("DomainSolver:WARNING: You should specify initial conditions before you can run\n");
+//      if( !initialConditionsSpecified )
+//        printF("DomainSolver:WARNING: You should specify initial conditions before you can run\n");
 //         if( !bcDataSpecified )
-// 	  printF("DomainSolver:WARNING: There are some boundary conditions for which you should specify"
+//        printF("DomainSolver:WARNING: There are some boundary conditions for which you should specify"
 //                  " data before you can run\n");
 //       }
 //       break;
@@ -2053,10 +2053,10 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       if( plotMode==0 )
       {
-	gi.inputString(answer2,sPrintF(buff,"Enter the plot option (default value=%i)",plotOption));
-	if( answer2!="" )
-	  sScanF(answer2,"%i",&plotOption);
-	printF(" plotOption=%i\n",plotOption);
+        gi.inputString(answer2,sPrintF(buff,"Enter the plot option (default value=%i)",plotOption));
+        if( answer2!="" )
+          sScanF(answer2,"%i",&plotOption);
+        printF(" plotOption=%i\n",plotOption);
       }
       else
         printF("Not changing the plot option since plotting is disabled (plotMode=%i).\n",plotMode);
@@ -2103,20 +2103,20 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       if( parameters.dbase.get<int >("numberOfOutputFiles")>=Parameters::maximumNumberOfOutputFiles )
       {
-	printF("ERROR: too many files open\n");
-	continue;
+        printF("ERROR: too many files open\n");
+        continue;
       }
       parameters.dbase.get<ArraySimpleFixed<int,Parameters::maximumNumberOfOutputFiles,1,1,1> >("fileOutputFrequency")[parameters.dbase.get<int >("numberOfOutputFiles")]=1;
       gi.inputString(answer,"Save to the file every how many steps? (default=1)");
       sScanF(answer,"%i",&parameters.dbase.get<ArraySimpleFixed<int,Parameters::maximumNumberOfOutputFiles,1,1,1> >("fileOutputFrequency")[parameters.dbase.get<int >("numberOfOutputFiles")]);
-	  
+          
       FileOutput & fileOutput = * new FileOutput;
       parameters.dbase.get<ArraySimpleFixed<FileOutput*,Parameters::maximumNumberOfOutputFiles,1,1,1> >("outputFile")[parameters.dbase.get<int >("numberOfOutputFiles")] = &fileOutput;
       parameters.dbase.get<int >("numberOfOutputFiles")++;
           
       fileOutput.update(u,gi);
 
-	  
+          
     }
     else if( answer=="frequency to save in show file (fsf=)" )
     {
@@ -2124,7 +2124,7 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
       gi.inputString(answer2,sPrintF(buff,"Enter the frequencyToSaveInShowFile (default value=%i)",
              parameters.dbase.get<int >("frequencyToSaveInShowFile")));
       if( answer2!="" )
-	sScanF(answer2,"%i",&parameters.dbase.get<int >("frequencyToSaveInShowFile"));
+        sScanF(answer2,"%i",&parameters.dbase.get<int >("frequencyToSaveInShowFile"));
       printF(" frequencyToSaveInShowFile=%i\n",parameters.dbase.get<int >("frequencyToSaveInShowFile"));
     }
     else if( answer=="frequency to flush the show file" )
@@ -2133,7 +2133,7 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
       int flushFrequency;
       gi.inputString(answer2,"Enter the frequency to flush the show file");
       if( answer2!="" )
-	sScanF(answer2,"%i",&flushFrequency);
+        sScanF(answer2,"%i",&flushFrequency);
       flushFrequency=max(1,flushFrequency);
       if( parameters.dbase.get<Ogshow* >("show")!=NULL )
         parameters.dbase.get<Ogshow* >("show")->setFlushFrequency( flushFrequency );
@@ -2155,10 +2155,10 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
 //       parameters.dbase.get<bool >("saveRestartFile")=value;
 //       if( parameters.dbase.get<bool >("saveRestartFile") )
 //       {
-// 	printF("A restart file will be saved. Actually, two files will be saved, `ob1.restart' and `ob2.restart',\n"
-// 	  "just in case the program crashes while writing the restart file. \n"                  
-// 	  "At least one of these files should be valid for restarting. \n"
-// 	  "You can run cg using a restart file for initial conditions\n");
+//      printF("A restart file will be saved. Actually, two files will be saved, `ob1.restart' and `ob2.restart',\n"
+//        "just in case the program crashes while writing the restart file. \n"                  
+//        "At least one of these files should be valid for restarting. \n"
+//        "You can run cg using a restart file for initial conditions\n");
 //       }
 //     }
 //     else if( len=answer.matches("allow user defined output") )
@@ -2168,9 +2168,9 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
 //       outputOptionsDialog.setToggleState("allow user defined output",value);      
 //       parameters.dbase.get<int >("allowUserDefinedOutput")=value;
 //       if( parameters.dbase.get<int >("allowUserDefinedOutput") )
-// 	printf("allow user defined output\n");
+//      printf("allow user defined output\n");
 //       else
-// 	printf("Do not allow user defined output\n");
+//      printf("Do not allow user defined output\n");
 //     }
 //     else if( len=answer.matches("disable plotting") )
 //     {
@@ -2195,9 +2195,9 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     else if( len=answer.matches("tracking frequency") )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the tracking frequency (default value=%e)",
-				     parameters.dbase.get<int >("trackingFrequency")));
+                                     parameters.dbase.get<int >("trackingFrequency")));
       if( answer2!="" )
-	sScanF(answer2,"%i",&parameters.dbase.get<int >("trackingFrequency"));
+        sScanF(answer2,"%i",&parameters.dbase.get<int >("trackingFrequency"));
       printF(" parameters.trackingFrequency=%i\n",parameters.dbase.get<int >("trackingFrequency"));
 
     }
@@ -2214,7 +2214,7 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       if( parameters.dbase.get<int >("numberOfDimensions")!=2 )
       {
-	printf("Sorry: axisymmetric flow option is only valid for a 2D grid\n");
+        printf("Sorry: axisymmetric flow option is only valid for a 2D grid\n");
       }
       else
       {
@@ -2230,20 +2230,20 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     }
     else if( answer=="cylindrical axis is x axis" )
     {
-	parameters.dbase.get<int >("radialAxis")=axis2;
-	printf("cylindrical axis is now the x axis, y=0 (radialAxis=%i)\n",parameters.dbase.get<int >("radialAxis"));
+        parameters.dbase.get<int >("radialAxis")=axis2;
+        printf("cylindrical axis is now the x axis, y=0 (radialAxis=%i)\n",parameters.dbase.get<int >("radialAxis"));
     }
     else if( answer=="cylindrical axis is y axis" )
     {
-	parameters.dbase.get<int >("radialAxis")=axis1;
-	printf("cylindrical axis is now the y axis, x=0 (radialAxis=%i)\n",parameters.dbase.get<int >("radialAxis"));
+        parameters.dbase.get<int >("radialAxis")=axis1;
+        printf("cylindrical axis is now the y axis, x=0 (radialAxis=%i)\n",parameters.dbase.get<int >("radialAxis"));
     }
     else if( answer=="turn on adaptive grids" )
     {
       parameters.dbase.get<bool >("adaptiveGridProblem")=true;
       printF("Using adaptive mesh refinement.\n");
       if( parameters.dbase.get<InterpolateRefinements* >("interpolateRefinements")==NULL )
-	parameters.dbase.get<InterpolateRefinements* >("interpolateRefinements")= new InterpolateRefinements( cg.numberOfDimensions() );
+        parameters.dbase.get<InterpolateRefinements* >("interpolateRefinements")= new InterpolateRefinements( cg.numberOfDimensions() );
       cg.getInterpolant()->setInterpolateRefinements( *parameters.dbase.get<InterpolateRefinements* >("interpolateRefinements") );
     }
     else if( answer=="turn off adaptive grids" )
@@ -2272,14 +2272,14 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
 //     else if( answer=="change adaptive grid parameters" )
 //     {
 //       if( parameters.dbase.get<Regrid* >("regrid")==NULL )
-// 	parameters.dbase.get<Regrid* >("regrid") = new Regrid();
+//      parameters.dbase.get<Regrid* >("regrid") = new Regrid();
 
 //       parameters.dbase.get<Regrid* >("regrid")->update(gi);
 //     }
 //     else if( answer=="change error estimator parameters" )
 //     {
 //       if( parameters.dbase.get<ErrorEstimator* >("errorEstimator")==NULL )
-// 	parameters.buildErrorEstimator();
+//      parameters.buildErrorEstimator();
 
 //       parameters.dbase.get<ErrorEstimator* >("errorEstimator")->update(gi);
 //     }
@@ -2306,9 +2306,9 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     else if( answer=="advectionCoefficient (ac=)" ) // old way 
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the advection coefficientReynolds (default value=%e)",
-				     parameters.dbase.get<real >("advectionCoefficient")));
+                                     parameters.dbase.get<real >("advectionCoefficient")));
       if( answer2!="" )
-	sScanF(answer2,"%e",&parameters.dbase.get<real >("advectionCoefficient"));
+        sScanF(answer2,"%e",&parameters.dbase.get<real >("advectionCoefficient"));
       printF(" parameters.advectionCoefficient=%9.3e\n",parameters.dbase.get<real >("advectionCoefficient"));
     }
     else if ( len=answer.matches("advectionCoefficient") ) // new way *** this should go in a menu *****
@@ -2329,27 +2329,27 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
       aString *showMenu= new aString[maximumNumberOfNames];
       for( ;; )
       {
-	int i=0;
-	for( int n=0; showVariableName[n]!=""; n++ )
-	{
-	  showMenu[i]=showVariableName[n] + (parameters.dbase.get<IntegerArray>("showVariable")(i)>0 ? " (on)" : " (off)");
+        int i=0;
+        for( int n=0; showVariableName[n]!=""; n++ )
+        {
+          showMenu[i]=showVariableName[n] + (parameters.dbase.get<IntegerArray>("showVariable")(i)>0 ? " (on)" : " (off)");
           i++;
           assert( i+2 < maximumNumberOfNames );
-	}
-	showMenu[i++]="done";
-	showMenu[i]="";
+        }
+        showMenu[i++]="done";
+        showMenu[i]="";
 
-	int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
+        int response=gi.getMenuItem(showMenu,answer2,"toggle variables to save in the show file");
         if( answer2=="done" || answer2=="exit" )
-	  break;
-	else if( response>=0 && response<i-1 )
-	  parameters.dbase.get<IntegerArray>("showVariable")(response)=-parameters.dbase.get<IntegerArray>("showVariable")(response);
-	else
-	{
-	  printF("Unknown response: [%s]\n",(const char*)answer2);
-	  gi.stopReadingCommandFile();
-	}
-	
+          break;
+        else if( response>=0 && response<i-1 )
+          parameters.dbase.get<IntegerArray>("showVariable")(response)=-parameters.dbase.get<IntegerArray>("showVariable")(response);
+        else
+        {
+          printF("Unknown response: [%s]\n",(const char*)answer2);
+          gi.stopReadingCommandFile();
+        }
+        
       }
     }
 //     else if( answer=="pressure solver options" )
@@ -2384,7 +2384,7 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       gi.inputString(answer2,sPrintF(buff,"Enter 0 or 1 (default value=%i)",parameters.dbase.get<int >("checkErrorsAtGhostPoints")));
       if( answer2!="" )
-	sScanF(answer2,"%i",&parameters.dbase.get<int >("checkErrorsAtGhostPoints"));
+        sScanF(answer2,"%i",&parameters.dbase.get<int >("checkErrorsAtGhostPoints"));
       printF(" checkErrorsAtGhostPoints=%i\n",parameters.dbase.get<int >("checkErrorsAtGhostPoints"));
     }
     else if( answer=="turn on memory checking" )
@@ -2393,20 +2393,20 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     }
     else if ( answer.matches("refactor frequency") )
     {
-	sScanF(answer,"refactor frequency %i",&parameters.dbase.get<int >("refactorFrequency"));
+        sScanF(answer,"refactor frequency %i",&parameters.dbase.get<int >("refactorFrequency"));
     }
     else if( answer=="Oges::debug (od=)")
     {
       gi.inputString(answer2,sPrintF(buff,"Enter Oges::debug (default value=%i)",Oges::debug));
       if( answer2!="" )
-	sScanF(answer2,"%i",&Oges::debug);
+        sScanF(answer2,"%i",&Oges::debug);
       printF(" Oges::debug=%i\n",Oges::debug);
     }
     else if( answer=="Reactions::debug (rd=)" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter Reactions::debug (default value=%i)",Reactions::debug));
       if( answer2!="" )
-	sScanF(answer2,"%i",&Reactions::debug);
+        sScanF(answer2,"%i",&Reactions::debug);
       printF(" Reactions::debug=%i\n",Reactions::debug);
     }
 
@@ -2488,9 +2488,9 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     else if( answer=="minimum separation for collisions" )
     {
       gi.inputString(answer2,sPrintF(buff,"Enter the minimum separation in grid lines (default=%e)",
-				     parameters.dbase.get<real >("collisionDistance")));
+                                     parameters.dbase.get<real >("collisionDistance")));
       if( answer2!="" )
-	sScanF(answer2,"%e",&parameters.dbase.get<real >("collisionDistance"));
+        sScanF(answer2,"%e",&parameters.dbase.get<real >("collisionDistance"));
       printF("  minimum separation=%9.3e\n",parameters.dbase.get<real >("collisionDistance"));
     }
     else if( answer=="frequency for full grid gen update" )
@@ -2501,9 +2501,9 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
              "      this occurs here. Choosing a value of 1 will mean the full update is always called.\n");
 
       gi.inputString(answer2,sPrintF(buff,"Enter frequency for full grid gen update for moving grids (current=%i)",
-				     parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration")));
+                                     parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration")));
       if( answer2!="" )
-	sScanF(answer2,"%i",&parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration"));
+        sScanF(answer2,"%i",&parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration"));
 
       parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration")=
                  max(1,parameters.dbase.get<int >("frequencyToUseFullUpdateForMovingGridGeneration"));
@@ -2522,8 +2522,8 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
       // Create a Controller object if it does not already exist.
       if( !parameters.dbase.has_key("Controller") )
       {
-	Controller controller(parameters);
-	parameters.dbase.put<Controller>("Controller",controller);
+        Controller controller(parameters);
+        parameters.dbase.put<Controller>("Controller",controller);
       }
       Controller & controller = parameters.dbase.get<Controller>("Controller");
 
@@ -2544,7 +2544,7 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     {
       PlotIt::plot(gi,cg,psp);
       if( psp.getObjectWasPlotted() ) 
-	gridWasPlotted=true;
+        gridWasPlotted=true;
     }
     else if( answer=="erase" )
     {
@@ -2561,20 +2561,20 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
     
       if( name=="printArray" )
       {
-	int i0;
-	nl.getRealArray(answer,printArray,i0);  
-	printf(" printArray(%i)=%g\n",i0,printArray(i0));
-	if( i0 >= printArray.getBound(0) )  // add more entries if this index is the last
-	{
-	  int n=printArray.getLength(0);
-	  printArray.resize(n+10);
-	  printArray(Range(n,n+9))=defaultValue;
-	}
+        int i0;
+        nl.getRealArray(answer,printArray,i0);  
+        printf(" printArray(%i)=%g\n",i0,printArray(i0));
+        if( i0 >= printArray.getBound(0) )  // add more entries if this index is the last
+        {
+          int n=printArray.getLength(0);
+          printArray.resize(n+10);
+          printArray(Range(n,n+9))=defaultValue;
+        }
       }
       else
       {
-	printF("unknown response: name=[%s], answer=[%s]\n",(const char*)name,(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("unknown response: name=[%s], answer=[%s]\n",(const char*)name,(const char*)answer);
+        gi.stopReadingCommandFile();
       }
       
     }
@@ -2602,7 +2602,8 @@ setParametersInteractively(bool runSetupOnExit/*=true*/)
   if( runSetupOnExit ) 
     setup(parameters.dbase.get<real >("tInitial"));  // now we know enough that we can create the grid functions etc.
 
-
+  printF("... setParametersInteractively done.\n");
+  
   return 0;
 }
 
@@ -2644,10 +2645,10 @@ buildAmrGridsForInitialConditions()
       
 //        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
 //        {
-//  	if(  parameters.gridIsMoving(grid) )
-//  	{
-//  	  gf0.getGridVelocity(grid);
-//  	}
+//      if(  parameters.gridIsMoving(grid) )
+//      {
+//        gf0.getGridVelocity(grid);
+//      }
 //        }
     }
     
@@ -2668,21 +2669,21 @@ buildAmrGridsForInitialConditions()
       printF(" *****Build AMR level = %i \n",gf0.cg.numberOfRefinementLevels());
 
       if( parameters.dbase.has_key("amrNeedsTimeStepInfo") &&
-	  parameters.dbase.get<bool>("amrNeedsTimeStepInfo") ) 
+          parameters.dbase.get<bool>("amrNeedsTimeStepInfo") ) 
       {
         // for some methods we need to compute a truncation error and/or time-stepping eigenvalues
         //  so we call the dudt routine
-	Range all;
-	realCompositeGridFunction fn(gf0.cg,all,all,all,parameters.dbase.get<int >("numberOfComponents"));
+        Range all;
+        realCompositeGridFunction fn(gf0.cg,all,all,all,parameters.dbase.get<int >("numberOfComponents"));
     
-	parameters.dbase.get<real >("dt")=1.e-5;  // we need an initial value
-	getUt( gf0,gf0.t,fn,gf0.t);
-	gf0.conservativeToPrimitive();
-	parameters.dbase.get<real >("dt") = getTimeStep( gf0 ); 
+        parameters.dbase.get<real >("dt")=1.e-5;  // we need an initial value
+        getUt( gf0,gf0.t,fn,gf0.t);
+        gf0.conservativeToPrimitive();
+        parameters.dbase.get<real >("dt") = getTimeStep( gf0 ); 
 
         // we need to call again since now we have the correct dt -- the error estimate depends on dt
-	getUt( gf0,gf0.t,fn,gf0.t);   
-	gf0.conservativeToPrimitive();
+        getUt( gf0,gf0.t,fn,gf0.t);   
+        gf0.conservativeToPrimitive();
       }
       
       adaptGrids( gf0 );
@@ -2699,19 +2700,19 @@ buildAmrGridsForInitialConditions()
       // gi.contour(gf0.u);
       
       printF("cg.numberOfRefinementLevels()=%i gf0.cg.numberOfRefinementLevels()=%i\n",
-	     cg.numberOfRefinementLevels(),gf0.cg.numberOfRefinementLevels());
+             cg.numberOfRefinementLevels(),gf0.cg.numberOfRefinementLevels());
 
       if( parameters.isMovingGridProblem() )
       {
-  	// update cgf0.gridVelocity arrays
-  	gf0.updateGridVelocityArrays();
+        // update cgf0.gridVelocity arrays
+        gf0.updateGridVelocityArrays();
         gf0.gridVelocityTime=gf0.t -1.e10;  // force a recomputation of the grid velocity
       }
 
       if( cg.numberOfRefinementLevels()!=gf0.cg.numberOfRefinementLevels() )
       {
         printF("New levels were added -- recompute the initial conditions\n");
-	
+        
         realCompositeGridFunction & u = gf[current].u;
 
         // new levels were added
@@ -2719,27 +2720,27 @@ buildAmrGridsForInitialConditions()
 
         assignInitialConditions(current);
         assert( gf0.form==GridFunction::primitiveVariables );
-	
-	if( movingGridProblem() )  // *wdh* 040312
-	{
+        
+        if( movingGridProblem() )  // *wdh* 040312
+        {
           getGridVelocity( gf0, gf0.t );
 
           if( parameters.dbase.get<int >("debug") & 8 )
-	  {
-	    if( cg.numberOfComponentGrids()==2 )
-	      display(gf0.getGridVelocity(1),"buildAMR: gridVelocity(grid=1)","%8.2e ");
-	  }
-	  
+          {
+            if( cg.numberOfComponentGrids()==2 )
+              display(gf0.getGridVelocity(1),"buildAMR: gridVelocity(grid=1)","%8.2e ");
+          }
+          
 //            // *** really on necessary to do new grids *** -- check refinement level?? ---
-//  	  CompositeGrid & cg = gf0.cg;
-//  	  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
-//  	  {
-//  	    if(  parameters.gridIsMoving(grid) )
-//  	    {
-//  	      gf0.getGridVelocity(grid);
-//  	    }
-//  	  }
-	}
+//        CompositeGrid & cg = gf0.cg;
+//        for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+//        {
+//          if(  parameters.gridIsMoving(grid) )
+//          {
+//            gf0.getGridVelocity(grid);
+//          }
+//        }
+        }
 
         interpolateAndApplyBoundaryConditions( gf0 );
 
@@ -2748,7 +2749,7 @@ buildAmrGridsForInitialConditions()
       }
       else // if( gf0.cg.numberOfRefinementLevels()>=maxNumberOfRefinementLevels )
       {
-	done=true;
+        done=true;
       }
 
       
@@ -2804,7 +2805,7 @@ setSolverParameters(const aString & command /* = nullString */,
     dialog.setWindowTitle("Solver parameters");
 
     aString pbLabels[] = {"display parameters",
-			  "" };
+                          "" };
 
     addPrefix(pbLabels,prefix,cmd,maxCommands);
     int numRows=1;
@@ -2847,13 +2848,13 @@ setSolverParameters(const aString & command /* = nullString */,
     {
       if( executeCommand )
       {
-	returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
+        returnValue= 1;  // when executing a single command, return 1 if the command was not recognised.
         break;
       }
       else
       {
-	printF("Unknown response=[%s]\n",(const char*)answer);
-	gi.stopReadingCommandFile();
+        printF("Unknown response=[%s]\n",(const char*)answer);
+        gi.stopReadingCommandFile();
       }
        
     }

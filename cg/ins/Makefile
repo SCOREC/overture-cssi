@@ -150,7 +150,8 @@ lib_build: $(CginsBuildLibrary)
 
 LIB_OBJS = $(OBJ) $(OBJCO) $(OBJN) $(OBJO) $(OBJSO) $(FNOBJO)
 
-e:; -@echo "FNOBJO=$(FNOBJO)"
+# e:; -@echo "FNOBJO=$(FNOBJO)"
+e:; -@echo "FNOBJO=$(FNOBJO), OBJ=$(OBJ) OBJO=$(OBJO) OBJN=$(OBJN) OBJSO=$(OBJSO)"
 
 f:; -@echo "OBJCO=$(OBJCO)"
 

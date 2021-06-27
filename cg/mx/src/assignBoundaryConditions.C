@@ -465,8 +465,8 @@ bool Maxwell::
 getBoundsForPML( MappedGrid & mg, Index Iv[3], int extra /* =0 */ )
 {
     bool usePML = (mg.boundaryCondition(0,0)==abcPML || mg.boundaryCondition(1,0)==abcPML ||
-             		 mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
-             		 mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
+                                  mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
+                                  mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
     
     if( !usePML ) return false;
     
@@ -496,8 +496,8 @@ bool Maxwell::
 adjustBoundsForPML( MappedGrid & mg, Index Iv[3], int extra /* =0 */ )
 {
     bool usePML = (mg.boundaryCondition(0,0)==abcPML || mg.boundaryCondition(1,0)==abcPML ||
-             		 mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
-             		 mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
+                                  mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
+                                  mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
     
     if( !usePML ) return false;
 
@@ -570,7 +570,7 @@ adjustBoundsForPML( MappedGrid & mg, Index Iv[3], int extra /* =0 */ )
 // ================================================================================================================
 void Maxwell::
 assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridFunction & u, 
-                    			  realMappedGridFunction & uOld, int current )
+                                                    realMappedGridFunction & uOld, int current )
 // Note: uOld = u[current]
 {
     assert( method!=yee );
@@ -654,7 +654,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             dx[dir]=dvx[dir];
             iv0[dir]=mg.gridIndexRange(0,dir);
             if( mg.isAllCellCentered() )
-      	xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
+                xab[0][dir]+=.5*dvx[dir];  // offset for cell centered
         }
     }
   // This macro defines the grid points for rectangular (Cartesian) grids:
@@ -730,12 +730,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             int i1=gid(0,0)+(gid(1,0)-gid(0,0))/2;
             int i2=gid(0,1)+(gid(1,1)-gid(0,1))/2;
             int i3=gid(0,2)+(gid(1,2)-gid(0,2))/2;
-        	  
+                    
             if( i1>=uLocal.getBase(0) && i1<=uLocal.getBound(0) &&
                     i2>=uLocal.getBase(1) && i2<=uLocal.getBound(1) &&
                     i3>=uLocal.getBase(2) && i3<=uLocal.getBound(2) )
             {
-      	uLocal(i1,i2,i3,hz)=sin(twoPi*frequency*(t+dt));
+                uLocal(i1,i2,i3,hz)=sin(twoPi*frequency*(t+dt));
             }
             
         }
@@ -780,603 +780,603 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 const int bc0 = bc(side,axis);
 
                 const int is1= axis==axis1 ? (side==0 ? 1 : -1) : 0 ;
-      	const int is2= axis==axis2 ? (side==0 ? 1 : -1) : 0 ;
+                const int is2= axis==axis2 ? (side==0 ? 1 : -1) : 0 ;
         // printF("applyBC (side,axis)=(%i,%i) t=%e bc=%i\n",side,axis,t,mg.boundaryCondition(side,axis));
 
                 if( bc0<=0 )
                     continue;
-      	
+                
         // *wdh* 041018 
         // const int ng=orderOfAccuracyInSpace/2;
         // const int ng3 = mg.numberOfDimensions()==2 ? 0 : ng;
                 const int ng=0, ng3=0;  // *wdh* 041018 assign BC's on ghost points too
 
                                 
-      	if( method==nfdtd || method==sosup  || method==bamx )
-      	{
+                if( method==nfdtd || method==sosup  || method==bamx )
+                {
           // *****************************************************************
           // **************** NFDTD Method ***********************************
           // *****************************************************************
 
-        	  if( mg.boundaryCondition(side,axis)==dirichlet ||
+                    if( mg.boundaryCondition(side,axis)==dirichlet ||
                             mg.boundaryCondition(side,axis)==planeWaveBoundaryCondition ) 
-        	  {
+                    {
                         assignPlaneWaveBoundaryCondition=mg.boundaryCondition(side,axis)==planeWaveBoundaryCondition;
 
-	    // this is a fake BC where we give all variables equal to the true solution
-	    // assign all variables, vertex centred
+            // this is a fake BC where we give all variables equal to the true solution
+            // assign all variables, vertex centred
     
               // printF("method==nfdtd:applyBC dirichlet to (side,axis)=(%i,%i) t=%e\n",side,axis,t);
-          	    
-          	    int numberOfGhostLines = orderOfAccuracyInSpace/2;
+                        
+                        int numberOfGhostLines = orderOfAccuracyInSpace/2;
                         if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
-          	    
-          	    int extra=numberOfGhostLines;
-          	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+                        
+                        int extra=numberOfGhostLines;
+                        getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
 
             // for now assign dirichlet at ghost lines too.
-          	    Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
-            	      Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
-            	      
+                        Iv[axis] = side==0 ? Range(Iv[axis].getBase()-numberOfGhostLines,Iv[axis].getBound()) : 
+                            Range(Iv[axis].getBase(),Iv[axis].getBound()+numberOfGhostLines);
+                            
                         if( mg.boundaryCondition(side,axis)==interfaceBoundaryCondition )
-          	    { // do not include the boundary
+                        { // do not include the boundary
                             Iv[axis] = side==0 ? Range(Iv[axis].getBase(),Iv[axis].getBound()-1) : 
-                               		                   Range(Iv[axis].getBase()+1,Iv[axis].getBound());
-          	    }
-          	    
-          	    bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
-          	    if( !ok ) continue;
+                                                                      Range(Iv[axis].getBase()+1,Iv[axis].getBound());
+                        }
+                        
+                        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+                        if( !ok ) continue;
 
-          	    real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
-          	    const int uDim0=uLocal.getRawDataSize(0);
-          	    const int uDim1=uLocal.getRawDataSize(1);
-          	    const int uDim2=uLocal.getRawDataSize(2);
+                        real *up = uLocal.Array_Descriptor.Array_View_Pointer3;
+                        const int uDim0=uLocal.getRawDataSize(0);
+                        const int uDim1=uLocal.getRawDataSize(1);
+                        const int uDim2=uLocal.getRawDataSize(2);
 #undef U
 #define U(i0,i1,i2,i3) up[i0+uDim0*(i1+uDim1*(i2+uDim2*(i3)))]
-          	    real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
-          	    const int xDim0=xLocal.getRawDataSize(0);
-          	    const int xDim1=xLocal.getRawDataSize(1);
-          	    const int xDim2=xLocal.getRawDataSize(2);
+                        real *xp = xLocal.Array_Descriptor.Array_View_Pointer3;
+                        const int xDim0=xLocal.getRawDataSize(0);
+                        const int xDim1=xLocal.getRawDataSize(1);
+                        const int xDim2=xLocal.getRawDataSize(2);
 #undef X
 #define X(i0,i1,i2,i3) xp[i0+xDim0*(i1+xDim1*(i2+xDim2*(i3)))]
 
                         
-          	    if( initialConditionOption==planeWaveInitialCondition ||
+                        if( initialConditionOption==planeWaveInitialCondition ||
                                 mg.boundaryCondition(side,axis)==planeWaveBoundaryCondition ||
                                 initialConditionOption==planeMaterialInterfaceInitialCondition ||
                                 initialConditionOption==gaussianIntegralInitialCondition ||
                                 initialConditionOption==annulusEigenfunctionInitialCondition ||
                                 knownSolutionOption==userDefinedKnownSolution )
-          	    {
-            	      if( debug & 16 )
-            	      {
-            		printF("Dirichlet:BC: (grid,side,axis)=(%i,%i,%i) assign BC: I1,I2,I3=[%i,%i][%i,%i][%i,%i] \n",
+                        {
+                            if( debug & 16 )
+                            {
+                                printF("Dirichlet:BC: (grid,side,axis)=(%i,%i,%i) assign BC: I1,I2,I3=[%i,%i][%i,%i][%i,%i] \n",
                                               grid,side,axis,I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound());
-            	      }
-            	      if( initialConditionOption==planeMaterialInterfaceInitialCondition )
-            	      {
-            // ------------ macro for the plane material interface -------------------------
-            // boundaryCondition: initialCondition, error, boundaryCondition
-            // -----------------------------------------------------------------------------
-                        int i1,i2,i3;
-                        real tm=t-dt,x,y,z;
-                        const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
-              // NOTE: dispersion version is a user defined known solution
-                            if( dispersionModel != noDispersion )
-                            {
-                                printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
-                                OV_ABORT("error");
                             }
-                            if( method==bamx )
+                            if( initialConditionOption==planeMaterialInterfaceInitialCondition )
                             {
-                // =================== BA MAXWELL ======================
-                                if( numberOfDimensions==2 )
+                // ------------ macro for the plane material interface -------------------------
+                // boundaryCondition: initialCondition, error, boundaryCondition
+                // -----------------------------------------------------------------------------
+                                int i1,i2,i3;
+                                real tm=t-dt,x,y,z;
+                                const real pmct=pmc[18]*twoPi; // for time derivative of exact solution
+                  // NOTE: dispersion version is a user defined known solution
+                                    if( dispersionModel != noDispersion )
+                                    {
+                                        printF("PlaneMaterialInterface: for GDM materials use the user defined known solution instead!\n");
+                                        OV_ABORT("error");
+                                    }
+                                    if( method==bamx )
+                                    {
+                    // =================== BA MAXWELL ======================
+                                        if( numberOfDimensions==2 )
+                                        {
+                                            assert( !solveForAllFields );  // finish me 
+                                            z=0.;
+                                            FOR_3D(i1,i2,i3,I1,I2,I3)
+                                            {
+                                      	x = X(i1,i2,i3,0);
+                                      	y = X(i1,i2,i3,1);
+                                                real u1,u2,u3;
+                                                if( x < 0. ) // **fix me**
+                                      	{
+                                        	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                        	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                        	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                      	}
+                                      	else
+                                      	{
+                                                    u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                                    u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                                    u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                      	}
+                                            	  uLocal(i1,i2,i3,ex)=u1;
+                                        	  uLocal(i1,i2,i3,ey)=u2;
+                                        	  uLocal(i1,i2,i3,hz)=u3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
+                                        }
+                                    }
+                  // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
+                                    else if( numberOfDimensions==2 )
+                                    {
+                                      z=0.;
+                                      if( grid < numberOfComponentGrids/2 )
+                                      { // incident plus reflected wave.
+                                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                                        {
+                                            x = X(i1,i2,i3,0);
+                                            y = X(i1,i2,i3,1);
+                                            real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                              U(i1,i2,i3,ex)= u1;
+                                              U(i1,i2,i3,ey)= u2;
+                                              U(i1,i2,i3,hz)= u3;
+                                              if( method==sosup )
+                                              {
+                                       	 uLocal(i1,i2,i3,ext) = pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,eyt) = pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,hzt) = pmct*(pmc[10]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                              }
+                                        }
+                                      }
+                                      else
+                                      {
+                    // transmitted wave
+                                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                                        {
+                                            x = X(i1,i2,i3,0);
+                                            y = X(i1,i2,i3,1);
+                                            real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u3 = (pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                              U(i1,i2,i3,ex)= u1;
+                                              U(i1,i2,i3,ey)= u2;
+                                              U(i1,i2,i3,hz)= u3;
+                                              if( method==sosup )
+                                              {
+                                       	 uLocal(i1,i2,i3,ext) = (pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,eyt) = (pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,hzt) = (pmct*pmc[17]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                              }
+                                        }
+                                      }
+                                    }
+                                    else // --- 3D -- 
+                                    {
+                                      if( grid < numberOfComponentGrids/2 )
+                                      { // incident plus reflected wave.
+                                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                                        {
+                                            x = X(i1,i2,i3,0);
+                                            y = X(i1,i2,i3,1);
+                                            z = X(i1,i2,i3,2);
+                                            real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u3 = (pmc[4]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                              U(i1,i2,i3,ex)= u1;
+                                              U(i1,i2,i3,ey)= u2;
+                                              U(i1,i2,i3,ez)= u3;
+                                              if( method==sosup )
+                                              {
+                                       	 uLocal(i1,i2,i3,ext) = pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,eyt) = pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,ezt) = pmct*(pmc[4]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
+                                              }
+                                        }
+                                      }
+                                      else
+                                      {
+                    // transmitted wave
+                                        FOR_3D(i1,i2,i3,I1,I2,I3)
+                                        {
+                                            x = X(i1,i2,i3,0);
+                                            y = X(i1,i2,i3,1);
+                                            z = X(i1,i2,i3,2);
+                                            real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                            real u3 = (pmc[14]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                              U(i1,i2,i3,ex)= u1;
+                                              U(i1,i2,i3,ey)= u2;
+                                              U(i1,i2,i3,ez)= u3;
+                                              if( method==sosup )
+                                              {
+                                       	 uLocal(i1,i2,i3,ext) = (pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,eyt) = (pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                       	 uLocal(i1,i2,i3,ezt) = (pmct*pmc[14]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
+                                              }
+                                        }
+                                      }
+                                    }
+                                if( debug & 8 )
                                 {
-                                    assert( !solveForAllFields );  // finish me 
-                                    z=0.;
+                                    ::display(u(I1,I2,I3,ey),sPrintF("After PMIBC: grid=%i,side=%i,axis=%i t=%e",grid,side,axis,t),debugFile,"%8.1e ");
+                                }
+                            }
+                            else if( initialConditionOption==gaussianIntegralInitialCondition )
+                            {
+                                if( initialConditionOption==gaussianIntegralInitialCondition )
+                                {
+                                    double wt,wx,wy;
+                                    const int nsources=1;
+                                    double xs[nsources], ys[nsources], tau[nsources], var[nsources], amp[nsources];
+                                    xs[0]=0.;
+                                    ys[0]=1.e-8*1./3.;  // should not be on a grid point
+                                    tau[0]=-.95;
+                                    var[0]=30.;
+                                    amp[0]=1.;
+                                    double period= 1.;  // period in y
+                                    double time=t;
+                                    int i1,i2,i3;
                                     FOR_3D(i1,i2,i3,I1,I2,I3)
                                     {
-                              	x = X(i1,i2,i3,0);
-                              	y = X(i1,i2,i3,1);
-                                        real u1,u2,u3;
-                                        if( x < 0. ) // **fix me**
-                              	{
-                                	  u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                	  u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                	  u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                              	}
-                              	else
-                              	{
-                                            u1=(pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                            u2=(pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                            u3=(pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                              	}
-                                    	  uLocal(i1,i2,i3,ex)=u1;
-                                	  uLocal(i1,i2,i3,ey)=u2;
-                                	  uLocal(i1,i2,i3,hz)=u3;
+                                        double x=X(i1,i2,i3,0); 
+                                        double y=X(i1,i2,i3,1);
+                                        exmax(wt,wx,wy,nsources,xs[0],ys[0],tau[0],var[0],amp[0],period,x,y,time);
+                                            U(i1,i2,i3,ex) = wy;
+                                            U(i1,i2,i3,ey) =-wx;
+                                            U(i1,i2,i3,hz) = wt;
                                     }
                                 }
-                                else
-                                {
-                                    OV_ABORT("PlaneMaterialInterface : finish me BA 3D");
-                                }
                             }
-              // ========= NON-DISPERSIVE PLANE MATERIAL INTERFACE ============
-                            else if( numberOfDimensions==2 )
+                            else if( initialConditionOption==annulusEigenfunctionInitialCondition )
                             {
-                              z=0.;
-                              if( grid < numberOfComponentGrids/2 )
-                              { // incident plus reflected wave.
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    x = X(i1,i2,i3,0);
-                                    y = X(i1,i2,i3,1);
-                                    real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u3 = (pmc[10]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                      U(i1,i2,i3,ex)= u1;
-                                      U(i1,i2,i3,ey)= u2;
-                                      U(i1,i2,i3,hz)= u3;
-                                      if( method==sosup )
-                                      {
-                               	 uLocal(i1,i2,i3,ext) = pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,eyt) = pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,hzt) = pmct*(pmc[10]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[11]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                      }
-                                }
-                              }
-                              else
-                              {
-                // transmitted wave
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    x = X(i1,i2,i3,0);
-                                    y = X(i1,i2,i3,1);
-                                    real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u3 = (pmc[17]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                      U(i1,i2,i3,ex)= u1;
-                                      U(i1,i2,i3,ey)= u2;
-                                      U(i1,i2,i3,hz)= u3;
-                                      if( method==sosup )
-                                      {
-                               	 uLocal(i1,i2,i3,ext) = (pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,eyt) = (pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,hzt) = (pmct*pmc[17]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                      }
-                                }
-                              }
-                            }
-                            else // --- 3D -- 
-                            {
-                              if( grid < numberOfComponentGrids/2 )
-                              { // incident plus reflected wave.
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    x = X(i1,i2,i3,0);
-                                    y = X(i1,i2,i3,1);
-                                    z = X(i1,i2,i3,2);
-                                    real u1 = (pmc[0]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u2 = (pmc[2]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u3 = (pmc[4]*cos(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*cos(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                      U(i1,i2,i3,ex)= u1;
-                                      U(i1,i2,i3,ey)= u2;
-                                      U(i1,i2,i3,ez)= u3;
-                                      if( method==sosup )
-                                      {
-                               	 uLocal(i1,i2,i3,ext) = pmct*(pmc[0]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[1]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,eyt) = pmct*(pmc[2]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[3]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,ezt) = pmct*(pmc[4]*sin(twoPi*(pmc[19]*(x-pmc[28])+pmc[20]*(y-pmc[29])+pmc[21]*(z-pmc[30])-pmc[18]*(t)))+pmc[5]*sin(twoPi*(pmc[22]*(x-pmc[28])+pmc[23]*(y-pmc[29])+pmc[24]*(z-pmc[30])-pmc[18]*(t))));
-                                      }
-                                }
-                              }
-                              else
-                              {
-                // transmitted wave
-                                FOR_3D(i1,i2,i3,I1,I2,I3)
-                                {
-                                    x = X(i1,i2,i3,0);
-                                    y = X(i1,i2,i3,1);
-                                    z = X(i1,i2,i3,2);
-                                    real u1 = (pmc[12]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u2 = (pmc[13]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                    real u3 = (pmc[14]*cos(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                      U(i1,i2,i3,ex)= u1;
-                                      U(i1,i2,i3,ey)= u2;
-                                      U(i1,i2,i3,ez)= u3;
-                                      if( method==sosup )
-                                      {
-                               	 uLocal(i1,i2,i3,ext) = (pmct*pmc[12]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,eyt) = (pmct*pmc[13]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                               	 uLocal(i1,i2,i3,ezt) = (pmct*pmc[14]*sin(twoPi*(pmc[25]*(x-pmc[28])+pmc[26]*(y-pmc[29])+pmc[27]*(z-pmc[30])-pmc[18]*(t))));
-                                      }
-                                }
-                              }
-                            }
-            		if( debug & 8 )
-            		{
-              		  ::display(u(I1,I2,I3,ey),sPrintF("After PMIBC: grid=%i,side=%i,axis=%i t=%e",grid,side,axis,t),debugFile,"%8.1e ");
-            		}
-            	      }
-            	      else if( initialConditionOption==gaussianIntegralInitialCondition )
-            	      {
-                        if( initialConditionOption==gaussianIntegralInitialCondition )
-                        {
-                            double wt,wx,wy;
-                            const int nsources=1;
-                            double xs[nsources], ys[nsources], tau[nsources], var[nsources], amp[nsources];
-                            xs[0]=0.;
-                            ys[0]=1.e-8*1./3.;  // should not be on a grid point
-                            tau[0]=-.95;
-                            var[0]=30.;
-                            amp[0]=1.;
-                            double period= 1.;  // period in y
-                            double time=t;
-                            int i1,i2,i3;
-                            FOR_3D(i1,i2,i3,I1,I2,I3)
-                            {
-                                double x=X(i1,i2,i3,0); 
-                                double y=X(i1,i2,i3,1);
-                                exmax(wt,wx,wy,nsources,xs[0],ys[0],tau[0],var[0],amp[0],period,x,y,time);
-                                    U(i1,i2,i3,ex) = wy;
-                                    U(i1,i2,i3,ey) =-wx;
-                                    U(i1,i2,i3,hz) = wt;
-                            }
-                        }
-            	      }
-            	      else if( initialConditionOption==annulusEigenfunctionInitialCondition )
-            	      {
-            //   printF(" I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0)=%i %i %i %i \n",
-            // 	 I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0));
-                          if( numberOfDimensions==2 )
-                          {
-                        #include "besselPrimeZeros.h"
-                              const int n = int(initialConditionParameters[0]+.5);  // angular number, n=0,1,... --> Jn(omega*r)
-                              const int m = int(initialConditionParameters[1]+.5);  // radial number m=0,... 
-                              assert( m<mdbpz && n<ndbpz );
-                              real omega = besselPrimeZeros[n][m];  // m'th zero of Jn' (excluding r=0 for J0)
-            // printF("Annulus: Bessel function solution: n=%i, m=%i, omega=%e (c=%8.2e)\n",n,m,omega,c);
-                              const real epsilon=sqrt(REAL_EPSILON);
-                              real np1Factorial=1.;
-                              for( int k=2; k<=n+1; k++ )
-                                  np1Factorial*=k;              //  (n+1)!
-                              int i1,i2,i3;
-                              real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
-                              real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn;
-               // real sint = sin(omega*t), cost = cos(omega*t);
-               // real sintp = omega*cost, costp = -omega*sint;
-               // real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                                real sint = sin(omega*t), cost = cos(omega*t);
-                                real sintp = omega*cost, costp = -omega*sint;
-                                real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                                real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
-                                real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
-                                real ampP[10], ampPm[10];
-                                if( dispersionModel==noDispersion )
-                                {
-                                    if( numberOfDimensions==2 )
-                                    {
-                                        ampH  = cost;   ampHp  =-omega*sint;
-                                        ampE  = sint;   ampEp  = omega*cost;
-                                        ampHm = costm;  ampHmp =-omega*sintm;
-                                        ampEm = sintm;  ampEmp = omega*costm;
-                                    }
-                                    else
-                                    {
-                                        ampE  = cost;   ampEp  = -omega*sint; 
-                                        ampEm = costm;  ampEmp = -omega*sintm;
-                                  }
-                                }
-                                else 
-                                {
-                  // --- DISPERSIVE ----
-                                    DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-                  // Evaluate the dispersion relation for "s"
-                                    assert( dmp.numberOfPolarizationVectors<10 );
-                                    const real kk = omega/c; //  *CHECK ME* 
-                  // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
-                                    dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                                    if( t<3.*dt )
-                                        printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
-                                    expt =exp(sr*t);
-                                    st=sin(si*t)*expt; ct=cos(si*t)*expt;
-                  // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
-                                    const real tm=t-dt;
-                                    exptm =exp(sr*tm);
-                                    stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
-                  // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
-                                    const real sNormSq = sr*sr+si*si;
-                                    ampH = ct;   
-                  // ampHp = -si*st + sr*ct;
-                  // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-                  //   Pv_j = chi_j * Ev   
-                  // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
-                  // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
-                  //   = Re( (phir+i*phii)*( ct + i sint )
-                  // const real alphaP = dmp.alphaP;
-                  // real chirSum=0., chiiSum=0.;
-                  // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                  // {
-                  //   chirSum += chir[iv]; 
-                  //   chiiSum += chii[iv];
-                  // }
-                  // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
-                                    real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
-                  //  phi = (1/(eps*s) * 1/( 1+chi)
-                  //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
-                  //      = phir +i*phii 
-                                    real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
-                                    real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
-                                    ampE = phir*ct - phii*st;
-                  // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
-                  //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-                  //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
-                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                    {
-                                        ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
-                                    }
-                  // tm = t-dt 
-                                    ampHm = ctm;  
-                  // ampHp = -si*stm + sr*ctm;
-                                    ampEm = phir*ctm - phii*stm;
-                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                    {
-                                        ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
-                                    }
-                                }
-                              FOR_3D(i1,i2,i3,I1,I2,I3)
-                              {
-                                  xd=X(i1,i2,i3,0);
-                                  yd=X(i1,i2,i3,1);
-                                  r = sqrt(xd*xd+yd*yd);
-                                  theta=atan2(yd,xd);
-                 // if( theta<0. ) theta+=2.*Pi;
-                                  cosTheta=cos(theta);
-                                  sinTheta=sin(theta);
-                                  cosn=cos(n*theta);
-                                  sinn=sin(n*theta);
-                                  gr=omega*r;
-                                  rx = cosTheta;  // x/r
-                                  ry = sinTheta;  // y/r
-                                  bj=jn(n,gr);  // Bessel function J of order n
-                                  if( gr>epsilon )  // need asymptotic expansion for small gr ??
+                //   printF(" I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0)=%i %i %i %i \n",
+                // 	 I1.getBase(),uLocal.getBase(0),I1.getBound(),uLocal.getBound(0));
+                                  if( numberOfDimensions==2 )
                                   {
-                                      bjp = -jn(n+1,gr) + n*bj/gr;  // from the recursion relation for Jn'
-                                      thetay= cosTheta/r;
-                                      thetax=-sinTheta/r;
-                                      if( dispersionModel==noDispersion )
-                                      {
-                                          uex =  (1./omega)*(omega*ry*bjp*cosn -n*bj*thetay*sinn); // Ex.t = Hz.y
-                                          uey = -(1./omega)*(omega*rx*bjp*cosn -n*bj*thetax*sinn); // Ey.t = - Hz.x
-                                      }
-                                      else
-                                      {
-                                          uex =  (omega*ry*bjp*cosn -n*bj*thetay*sinn); // Ex.t = Hz.y
-                                          uey = -(omega*rx*bjp*cosn -n*bj*thetax*sinn); // Ey.t = - Hz.x
-                                      }
-                                  }
-                                  else
-                                  {
-                   // Jn(z) = (.5*z)^n *( 1 - (z*z/4)/(n+1)! + .. 
-                   // At r=0 all the Jn'(0) are zero except for n=1
-                   // bjp = n==1 ? 1./2. : 0.;
-                                      bjp = n==0 ? 0. : pow(.5,double(n))*pow(gr,n-1.)*( 1. - (gr*gr)/(4.*np1Factorial) );
-                   // bj/r = omega*bjp at r=0
-                                      bjThetay= omega*bjp*cosTheta;
-                                      bjThetax=-omega*bjp*sinTheta;
-                                      if( dispersionModel==noDispersion )
-                                      {
-                                          uex =  (1./omega)*(omega*ry*bjp*cosn -n*bjThetay*sinn);  // Ex.t = Hz.y
-                                          uey = -(1./omega)*(omega*rx*bjp*cosn -n*bjThetax*sinn);  // Ey.t = - Hz.x
-                                      }
-                                      else
-                                      {
-                                          uex =  (omega*ry*bjp*cosn -n*bjThetay*sinn);  // Ex.t = Hz.y
-                                          uey = -(omega*rx*bjp*cosn -n*bjThetax*sinn);  // Ey.t = - Hz.x
-                                      }
-                                  }
-                   // *check me*
-                                      uLocal(i1,i2,i3,hz) = bj*cosn*ampH;
-                                      uLocal(i1,i2,i3,ex) = uex*ampE; 
-                                      uLocal(i1,i2,i3,ey) = uey*ampE; 
-                                      if( dispersionModel!=noDispersion )
-                                      { // -- dispersive ---
-                                          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                          {
-                                              const int pc= iv*numberOfDimensions;
-                       // Do this for now -- set all vectors to be the same: 
-                                              pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
-                                              pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+                                #include "besselPrimeZeros.h"
+                                      const int n = int(initialConditionParameters[0]+.5);  // angular number, n=0,1,... --> Jn(omega*r)
+                                      const int m = int(initialConditionParameters[1]+.5);  // radial number m=0,... 
+                                      assert( m<mdbpz && n<ndbpz );
+                                      real omega = besselPrimeZeros[n][m];  // m'th zero of Jn' (excluding r=0 for J0)
+                // printF("Annulus: Bessel function solution: n=%i, m=%i, omega=%e (c=%8.2e)\n",n,m,omega,c);
+                                      const real epsilon=sqrt(REAL_EPSILON);
+                                      real np1Factorial=1.;
+                                      for( int k=2; k<=n+1; k++ )
+                                          np1Factorial*=k;              //  (n+1)!
+                                      int i1,i2,i3;
+                                      real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
+                                      real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn;
+                   // real sint = sin(omega*t), cost = cos(omega*t);
+                   // real sintp = omega*cost, costp = -omega*sint;
+                   // real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                                        real sint = sin(omega*t), cost = cos(omega*t);
+                                        real sintp = omega*cost, costp = -omega*sint;
+                                        real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                                        real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
+                                        real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
+                                        real ampP[10], ampPm[10];
+                                        if( dispersionModel==noDispersion )
+                                        {
+                                            if( numberOfDimensions==2 )
+                                            {
+                                                ampH  = cost;   ampHp  =-omega*sint;
+                                                ampE  = sint;   ampEp  = omega*cost;
+                                                ampHm = costm;  ampHmp =-omega*sintm;
+                                                ampEm = sintm;  ampEmp = omega*costm;
+                                            }
+                                            else
+                                            {
+                                                ampE  = cost;   ampEp  = -omega*sint; 
+                                                ampEm = costm;  ampEmp = -omega*sintm;
                                           }
-                     // uLocal(i1,i2,i3,pxc) = uex*ampP;
-                     // uLocal(i1,i2,i3,pyc) = uey*ampP;
-                                      }
-                                      if( method==sosup )
+                                        }
+                                        else 
+                                        {
+                      // --- DISPERSIVE ----
+                                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                      // Evaluate the dispersion relation for "s"
+                                            assert( dmp.numberOfPolarizationVectors<10 );
+                                            const real kk = omega/c; //  *CHECK ME* 
+                      // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
+                                            dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
+                                            if( t<3.*dt )
+                                                printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
+                                            expt =exp(sr*t);
+                                            st=sin(si*t)*expt; ct=cos(si*t)*expt;
+                      // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
+                                            const real tm=t-dt;
+                                            exptm =exp(sr*tm);
+                                            stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
+                      // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
+                                            const real sNormSq = sr*sr+si*si;
+                                            ampH = ct;   
+                      // ampHp = -si*st + sr*ct;
+                      // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
+                      //   Pv_j = chi_j * Ev   
+                      // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
+                      // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
+                      //   = Re( (phir+i*phii)*( ct + i sint )
+                      // const real alphaP = dmp.alphaP;
+                      // real chirSum=0., chiiSum=0.;
+                      // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                      // {
+                      //   chirSum += chir[iv]; 
+                      //   chiiSum += chii[iv];
+                      // }
+                      // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
+                                            real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
+                      //  phi = (1/(eps*s) * 1/( 1+chi)
+                      //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
+                      //      = phir +i*phii 
+                                            real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
+                                            real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
+                                            ampE = phir*ct - phii*st;
+                      // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
+                      //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+                      //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
+                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                            {
+                                                ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
+                                            }
+                      // tm = t-dt 
+                                            ampHm = ctm;  
+                      // ampHp = -si*stm + sr*ctm;
+                                            ampEm = phir*ctm - phii*stm;
+                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                            {
+                                                ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
+                                            }
+                                        }
+                                      FOR_3D(i1,i2,i3,I1,I2,I3)
                                       {
-                                          uLocal(i1,i2,i3,hzt) = bj*cosn*ampHp;
-                                          uLocal(i1,i2,i3,ext) = uex*ampEp;
-                                          uLocal(i1,i2,i3,eyt) = uey*ampEp;
-                                      }
-                            }
-                          }
-                          else /* 3D */
-                          {
-                        #include "besselZeros.h"
-                              const real cylinderLength=cylinderAxisEnd-cylinderAxisStart;
-                              const int n = int(initialConditionParameters[0]+.5);  // angular number, n=0,1,... --> Jn(omega*r)
-                              const int m = int(initialConditionParameters[1]+.5);  // radial number m=0,... 
-                              const int k = int(initialConditionParameters[2]+.5);  // axial number k=1,2,3,...
-                              assert( m<mdbz && n<ndbz );
-                              real lambda = besselZeros[n][m];  // m'th zero of Jn (excluding r=0 for J0)
-                              real omega = sqrt( SQR(k*Pi/cylinderLength) + lambda*lambda );
-                              printF("***Cylinder: Bessel function soln: n=%i, m=%i, k=%i, lambda=%e, omega=%e (c=%8.2e) [za,zb]=[%4.2f,%4.2f]\n",
-                                            n,m,k,lambda,omega,c,cylinderAxisStart,cylinderAxisEnd);
-                              const real epsilon=sqrt(REAL_EPSILON);
-                              real np1Factorial=1.;
-                              for( int k=2; k<=n+1; k++ )
-                                  np1Factorial*=k;              //  (n+1)!
-                              int i1,i2,i3;
-                              real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
-                              real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz;
-                                real sint = sin(omega*t), cost = cos(omega*t);
-                                real sintp = omega*cost, costp = -omega*sint;
-                                real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
-                                real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
-                                real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
-                                real ampP[10], ampPm[10];
-                                if( dispersionModel==noDispersion )
-                                {
-                                    if( numberOfDimensions==2 )
-                                    {
-                                        ampH  = cost;   ampHp  =-omega*sint;
-                                        ampE  = sint;   ampEp  = omega*cost;
-                                        ampHm = costm;  ampHmp =-omega*sintm;
-                                        ampEm = sintm;  ampEmp = omega*costm;
-                                    }
-                                    else
-                                    {
-                                        ampE  = cost;   ampEp  = -omega*sint; 
-                                        ampEm = costm;  ampEmp = -omega*sintm;
-                                  }
-                                }
-                                else 
-                                {
-                  // --- DISPERSIVE ----
-                                    DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
-                  // Evaluate the dispersion relation for "s"
-                                    assert( dmp.numberOfPolarizationVectors<10 );
-                                    const real kk = omega/c; //  *CHECK ME* 
-                  // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
-                                    dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
-                                    if( t<3.*dt )
-                                        printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
-                                    expt =exp(sr*t);
-                                    st=sin(si*t)*expt; ct=cos(si*t)*expt;
-                  // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
-                                    const real tm=t-dt;
-                                    exptm =exp(sr*tm);
-                                    stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
-                  // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
-                                    const real sNormSq = sr*sr+si*si;
-                                    ampH = ct;   
-                  // ampHp = -si*st + sr*ct;
-                  // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
-                  //   Pv_j = chi_j * Ev   
-                  // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
-                  // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
-                  //   = Re( (phir+i*phii)*( ct + i sint )
-                  // const real alphaP = dmp.alphaP;
-                  // real chirSum=0., chiiSum=0.;
-                  // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                  // {
-                  //   chirSum += chir[iv]; 
-                  //   chiiSum += chii[iv];
-                  // }
-                  // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
-                                    real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
-                  //  phi = (1/(eps*s) * 1/( 1+chi)
-                  //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
-                  //      = phir +i*phii 
-                                    real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
-                                    real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
-                                    ampE = phir*ct - phii*st;
-                  // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
-                  //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
-                  //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
-                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                    {
-                                        ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
-                                    }
-                  // tm = t-dt 
-                                    ampHm = ctm;  
-                  // ampHp = -si*stm + sr*ctm;
-                                    ampEm = phir*ctm - phii*stm;
-                                    for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
-                                    {
-                                        ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
-                                    }
-                                }
-                              FOR_3D(i1,i2,i3,I1,I2,I3)
-                              {
-                                  xd=X(i1,i2,i3,0);
-                                  yd=X(i1,i2,i3,1);
-                                  zd=(X(i1,i2,i3,2)-cylinderAxisStart)/cylinderLength; // *wdh* 040626 -- allow for any length
-                                  sinkz=sin(Pi*k*zd);   
-                                  coskz=cos(Pi*k*zd); 
-                                  r = sqrt(xd*xd+yd*yd);
-                                  theta=atan2(yd,xd);
-                                  cosTheta=cos(theta);
-                                  sinTheta=sin(theta);
-                                  cosn=cos(n*theta);
-                                  sinn=sin(n*theta);
-                 //  cost=cos(omega*t);
-                                  gr=lambda*r;
-                                  rx = cosTheta;  // x/r
-                                  ry = sinTheta;  // y/r
-                                  bj=jn(n,gr);  // Bessel function J of order n
-                                  if( gr>epsilon )  // need asymptotic expansion for small gr ??
-                                  {
-                                      bjp = -jn(n+1,gr) + n*bj/gr;  // from the recursion relation for Jn'
-                                      thetay= cosTheta/r;
-                                      thetax=-sinTheta/r;
-                                      uex = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*rx*bjp*cosn - n*bj*thetax*sinn );
-                                      uey = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*ry*bjp*cosn - n*bj*thetay*sinn );
-                                  }
-                                  else
-                                  {
-                   // Jn(z) = (.5*z)^n *( 1 - (z*z/4)/(n+1)! + .. 
-                   // At r=0 all the Jn'(0) are zero except for n=1
-                   // bjp = n==1 ? 1./2. : 0.;
-                                      bjp = n==0 ? 0. : pow(.5,double(n))*pow(gr,n-1.)*( 1. - (gr*gr)/(4.*np1Factorial) );
-                   // bj/r = lambda*bjp at r=0
-                                      bjThetay= lambda*bjp*cosTheta;
-                                      bjThetax=-lambda*bjp*sinTheta;
-                                      uex = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*rx*bjp*cosn -n*bjThetax*sinn);  // Ex.t = Hz.y
-                                      uey = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*ry*bjp*cosn -n*bjThetay*sinn);  // Ey.t = - Hz.x
-                                  }
-                                  uex = uex*sinkz;
-                                  uey = uey*sinkz;
-                                  real uez = bj*cosn*coskz;
-                   // *check me*
-                                      uLocal(i1,i2,i3,ex) = uex*ampE;
-                                      uLocal(i1,i2,i3,ey) = uey*ampE;
-                                      uLocal(i1,i2,i3,ez) = uez*ampE;
-                   // uLocal(i1,i2,i3,ex) = uex*sinkz*cost;
-                   // uLocal(i1,i2,i3,ey) = uey*sinkz*cost;
-                   // uLocal(i1,i2,i3,ez) = bj*cosn*coskz*cost;
-                                      if( method==sosup )
-                                      {
-                                          assert( dispersionModel==noDispersion );
-                                          sint=sin(omega*t); 
-                                          uLocal(i1,i2,i3,ext) = -omega*uex*sint;
-                                          uLocal(i1,i2,i3,eyt) = -omega*uey*sint;
-                                          uLocal(i1,i2,i3,ezt) = -omega*uez*sint;
-                                      }
-                                      if( dispersionModel!=noDispersion )
-                                      { // -- dispersive ---
-                                          for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                          xd=X(i1,i2,i3,0);
+                                          yd=X(i1,i2,i3,1);
+                                          r = sqrt(xd*xd+yd*yd);
+                                          theta=atan2(yd,xd);
+                     // if( theta<0. ) theta+=2.*Pi;
+                                          cosTheta=cos(theta);
+                                          sinTheta=sin(theta);
+                                          cosn=cos(n*theta);
+                                          sinn=sin(n*theta);
+                                          gr=omega*r;
+                                          rx = cosTheta;  // x/r
+                                          ry = sinTheta;  // y/r
+                                          bj=jn(n,gr);  // Bessel function J of order n
+                                          if( gr>epsilon )  // need asymptotic expansion for small gr ??
                                           {
-                                              const int pc= iv*numberOfDimensions;
-                       // Do this for now -- set all vectors to be the same: 
-                                              pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
-                                              pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
-                                              pLocal(i1,i2,i3,pc+2) = uez*ampP[iv];
+                                              bjp = -jn(n+1,gr) + n*bj/gr;  // from the recursion relation for Jn'
+                                              thetay= cosTheta/r;
+                                              thetax=-sinTheta/r;
+                                              if( dispersionModel==noDispersion )
+                                              {
+                                                  uex =  (1./omega)*(omega*ry*bjp*cosn -n*bj*thetay*sinn); // Ex.t = Hz.y
+                                                  uey = -(1./omega)*(omega*rx*bjp*cosn -n*bj*thetax*sinn); // Ey.t = - Hz.x
+                                              }
+                                              else
+                                              {
+                                                  uex =  (omega*ry*bjp*cosn -n*bj*thetay*sinn); // Ex.t = Hz.y
+                                                  uey = -(omega*rx*bjp*cosn -n*bj*thetax*sinn); // Ey.t = - Hz.x
+                                              }
                                           }
-                                      }
+                                          else
+                                          {
+                       // Jn(z) = (.5*z)^n *( 1 - (z*z/4)/(n+1)! + .. 
+                       // At r=0 all the Jn'(0) are zero except for n=1
+                       // bjp = n==1 ? 1./2. : 0.;
+                                              bjp = n==0 ? 0. : pow(.5,double(n))*pow(gr,n-1.)*( 1. - (gr*gr)/(4.*np1Factorial) );
+                       // bj/r = omega*bjp at r=0
+                                              bjThetay= omega*bjp*cosTheta;
+                                              bjThetax=-omega*bjp*sinTheta;
+                                              if( dispersionModel==noDispersion )
+                                              {
+                                                  uex =  (1./omega)*(omega*ry*bjp*cosn -n*bjThetay*sinn);  // Ex.t = Hz.y
+                                                  uey = -(1./omega)*(omega*rx*bjp*cosn -n*bjThetax*sinn);  // Ey.t = - Hz.x
+                                              }
+                                              else
+                                              {
+                                                  uex =  (omega*ry*bjp*cosn -n*bjThetay*sinn);  // Ex.t = Hz.y
+                                                  uey = -(omega*rx*bjp*cosn -n*bjThetax*sinn);  // Ey.t = - Hz.x
+                                              }
+                                          }
+                       // *check me*
+                                              uLocal(i1,i2,i3,hz) = bj*cosn*ampH;
+                                              uLocal(i1,i2,i3,ex) = uex*ampE; 
+                                              uLocal(i1,i2,i3,ey) = uey*ampE; 
+                                              if( dispersionModel!=noDispersion )
+                                              { // -- dispersive ---
+                                                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                                  {
+                                                      const int pc= iv*numberOfDimensions;
+                           // Do this for now -- set all vectors to be the same: 
+                                                      pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
+                                                      pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+                                                  }
+                         // uLocal(i1,i2,i3,pxc) = uex*ampP;
+                         // uLocal(i1,i2,i3,pyc) = uey*ampP;
+                                              }
+                                              if( method==sosup )
+                                              {
+                                                  uLocal(i1,i2,i3,hzt) = bj*cosn*ampHp;
+                                                  uLocal(i1,i2,i3,ext) = uex*ampEp;
+                                                  uLocal(i1,i2,i3,eyt) = uey*ampEp;
+                                              }
+                                    }
+                                  }
+                                  else /* 3D */
+                                  {
+                                #include "besselZeros.h"
+                                      const real cylinderLength=cylinderAxisEnd-cylinderAxisStart;
+                                      const int n = int(initialConditionParameters[0]+.5);  // angular number, n=0,1,... --> Jn(omega*r)
+                                      const int m = int(initialConditionParameters[1]+.5);  // radial number m=0,... 
+                                      const int k = int(initialConditionParameters[2]+.5);  // axial number k=1,2,3,...
+                                      assert( m<mdbz && n<ndbz );
+                                      real lambda = besselZeros[n][m];  // m'th zero of Jn (excluding r=0 for J0)
+                                      real omega = sqrt( SQR(k*Pi/cylinderLength) + lambda*lambda );
+                                      printF("***Cylinder: Bessel function soln: n=%i, m=%i, k=%i, lambda=%e, omega=%e (c=%8.2e) [za,zb]=[%4.2f,%4.2f]\n",
+                                                    n,m,k,lambda,omega,c,cylinderAxisStart,cylinderAxisEnd);
+                                      const real epsilon=sqrt(REAL_EPSILON);
+                                      real np1Factorial=1.;
+                                      for( int k=2; k<=n+1; k++ )
+                                          np1Factorial*=k;              //  (n+1)!
+                                      int i1,i2,i3;
+                                      real r,gr,xd,yd,zd,bj,bjp,rx,ry,theta,thetax,thetay;
+                                      real cosTheta,sinTheta,bjThetax,bjThetay,uex,uey,cosn,sinn,sinkz,coskz;
+                                        real sint = sin(omega*t), cost = cos(omega*t);
+                                        real sintp = omega*cost, costp = -omega*sint;
+                                        real sintm = sin(omega*(t-dt)), costm = cos(omega*(t-dt));
+                                        real sr,si,chir[10],chii[10], chiSumr, chiSumi, ct,st,expt, ctm,stm,exptm;
+                                        real ampH, ampE, ampHm, ampEm, ampHp, ampEp, ampHmp, ampEmp;
+                                        real ampP[10], ampPm[10];
+                                        if( dispersionModel==noDispersion )
+                                        {
+                                            if( numberOfDimensions==2 )
+                                            {
+                                                ampH  = cost;   ampHp  =-omega*sint;
+                                                ampE  = sint;   ampEp  = omega*cost;
+                                                ampHm = costm;  ampHmp =-omega*sintm;
+                                                ampEm = sintm;  ampEmp = omega*costm;
+                                            }
+                                            else
+                                            {
+                                                ampE  = cost;   ampEp  = -omega*sint; 
+                                                ampEm = costm;  ampEmp = -omega*sintm;
+                                          }
+                                        }
+                                        else 
+                                        {
+                      // --- DISPERSIVE ----
+                                            DispersiveMaterialParameters & dmp = getDispersiveMaterialParameters(grid);
+                      // Evaluate the dispersion relation for "s"
+                                            assert( dmp.numberOfPolarizationVectors<10 );
+                                            const real kk = omega/c; //  *CHECK ME* 
+                      // printF("initAnnulusEig: t=%.3e, c=%.4e, omega=%.4e kk=%.4e\n",t,c,omega,kk);
+                                            dmp.evaluateDispersionRelation( c,kk, sr, si, chir,chii,chiSumr,chiSumi ); 
+                                            if( t<3.*dt )
+                                                printF("--DISK-EIGEN-- (dispersive) t=%10.3e, sr=%g, si=%g chir[0]=%g chii[0]=%g\n",t,sr,si,chir[0],chii[0] );
+                                            expt =exp(sr*t);
+                                            st=sin(si*t)*expt; ct=cos(si*t)*expt;
+                      // const real stp= si*ct+sr*st , ctp=-si*st+sr*ct;
+                                            const real tm=t-dt;
+                                            exptm =exp(sr*tm);
+                                            stm=sin(si*tm)*exptm; ctm=cos(si*tm)*exptm;
+                      // const real stmp= si*ctm+sr*stm , ctmp=-si*stm+sr*ctm;
+                                            const real sNormSq = sr*sr+si*si;
+                                            ampH = ct;   
+                      // ampHp = -si*st + sr*ct;
+                      // eps Ev_t = curl( Hv ) - alphaP*eps* SUM (Pv_j).t 
+                      //   Pv_j = chi_j * Ev   
+                      // eps*( 1 + Sum chi_j) \Ev_t = curl ( Hv ) 
+                      // E = Re( (1/(eps*s) * 1/( 1+alphaP*chi) * ( ct + i sint ) )
+                      //   = Re( (phir+i*phii)*( ct + i sint )
+                      // const real alphaP = dmp.alphaP;
+                      // real chirSum=0., chiiSum=0.;
+                      // for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                      // {
+                      //   chirSum += chir[iv]; 
+                      //   chiiSum += chii[iv];
+                      // }
+                      // real chiNormSq = SQR(1.+alphaP*chirSum)+SQR(alphaP*chiiSum); //   | 1+alphaP*chi|^2 
+                                            real chiNormSq = SQR(1.+chiSumr)+SQR(chiSumi); //   | 1+alphaP*chi|^2 
+                      //  phi = (1/(eps*s) * 1/( 1+chi)
+                      //      = (sr-i*si)*( 1+chir - i*chii)/(eps* sNormSq*chiNormSq )
+                      //      = phir +i*phii 
+                                            real phir = ( sr*(1.+chiSumr)-si*chiSumi)/( eps*sNormSq*chiNormSq );
+                                            real phii = (-si*(1.+chiSumr)-sr*chiSumi)/( eps*sNormSq*chiNormSq );
+                                            ampE = phir*ct - phii*st;
+                      // P = Re( (chir+i*chii)*(phir+i*phii)*( ct + i sint ) )
+                      //   = Re( (chir+i*chii)*( phir*ct-phii*st + i*( phir*st +phii*ct )
+                      //   = chir*( phir*ct-phii*st) -chii*(  phir*st +phii*ct )
+                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                            {
+                                                ampP[iv] = eps*( chir[iv]*(phir*ct-phii*st ) - chii[iv]*( phir*st +phii*ct) );
+                                            }
+                      // tm = t-dt 
+                                            ampHm = ctm;  
+                      // ampHp = -si*stm + sr*ctm;
+                                            ampEm = phir*ctm - phii*stm;
+                                            for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                            {
+                                                ampPm[iv] = eps*( chir[iv]*(phir*ctm-phii*stm ) - chii[iv]*( phir*stm +phii*ctm) );
+                                            }
+                                        }
+                                      FOR_3D(i1,i2,i3,I1,I2,I3)
+                                      {
+                                          xd=X(i1,i2,i3,0);
+                                          yd=X(i1,i2,i3,1);
+                                          zd=(X(i1,i2,i3,2)-cylinderAxisStart)/cylinderLength; // *wdh* 040626 -- allow for any length
+                                          sinkz=sin(Pi*k*zd);   
+                                          coskz=cos(Pi*k*zd); 
+                                          r = sqrt(xd*xd+yd*yd);
+                                          theta=atan2(yd,xd);
+                                          cosTheta=cos(theta);
+                                          sinTheta=sin(theta);
+                                          cosn=cos(n*theta);
+                                          sinn=sin(n*theta);
+                     //  cost=cos(omega*t);
+                                          gr=lambda*r;
+                                          rx = cosTheta;  // x/r
+                                          ry = sinTheta;  // y/r
+                                          bj=jn(n,gr);  // Bessel function J of order n
+                                          if( gr>epsilon )  // need asymptotic expansion for small gr ??
+                                          {
+                                              bjp = -jn(n+1,gr) + n*bj/gr;  // from the recursion relation for Jn'
+                                              thetay= cosTheta/r;
+                                              thetax=-sinTheta/r;
+                                              uex = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*rx*bjp*cosn - n*bj*thetax*sinn );
+                                              uey = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*ry*bjp*cosn - n*bj*thetay*sinn );
+                                          }
+                                          else
+                                          {
+                       // Jn(z) = (.5*z)^n *( 1 - (z*z/4)/(n+1)! + .. 
+                       // At r=0 all the Jn'(0) are zero except for n=1
+                       // bjp = n==1 ? 1./2. : 0.;
+                                              bjp = n==0 ? 0. : pow(.5,double(n))*pow(gr,n-1.)*( 1. - (gr*gr)/(4.*np1Factorial) );
+                       // bj/r = lambda*bjp at r=0
+                                              bjThetay= lambda*bjp*cosTheta;
+                                              bjThetax=-lambda*bjp*sinTheta;
+                                              uex = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*rx*bjp*cosn -n*bjThetax*sinn);  // Ex.t = Hz.y
+                                              uey = -(k*Pi/(cylinderLength*lambda*lambda))*( lambda*ry*bjp*cosn -n*bjThetay*sinn);  // Ey.t = - Hz.x
+                                          }
+                                          uex = uex*sinkz;
+                                          uey = uey*sinkz;
+                                          real uez = bj*cosn*coskz;
+                       // *check me*
+                                              uLocal(i1,i2,i3,ex) = uex*ampE;
+                                              uLocal(i1,i2,i3,ey) = uey*ampE;
+                                              uLocal(i1,i2,i3,ez) = uez*ampE;
+                       // uLocal(i1,i2,i3,ex) = uex*sinkz*cost;
+                       // uLocal(i1,i2,i3,ey) = uey*sinkz*cost;
+                       // uLocal(i1,i2,i3,ez) = bj*cosn*coskz*cost;
+                                              if( method==sosup )
+                                              {
+                                                  assert( dispersionModel==noDispersion );
+                                                  sint=sin(omega*t); 
+                                                  uLocal(i1,i2,i3,ext) = -omega*uex*sint;
+                                                  uLocal(i1,i2,i3,eyt) = -omega*uey*sint;
+                                                  uLocal(i1,i2,i3,ezt) = -omega*uez*sint;
+                                              }
+                                              if( dispersionModel!=noDispersion )
+                                              { // -- dispersive ---
+                                                  for( int iv=0; iv<numberOfPolarizationVectors; iv++ )
+                                                  {
+                                                      const int pc= iv*numberOfDimensions;
+                           // Do this for now -- set all vectors to be the same: 
+                                                      pLocal(i1,i2,i3,pc  ) = uex*ampP[iv];
+                                                      pLocal(i1,i2,i3,pc+1) = uey*ampP[iv];
+                                                      pLocal(i1,i2,i3,pc+2) = uez*ampP[iv];
+                                                  }
+                                              }
+                                    }
+                                  }
                             }
-                          }
-            	      }
-            	      else if( knownSolutionOption==userDefinedKnownSolution )
-            	      {
+                            else if( knownSolutionOption==userDefinedKnownSolution )
+                            {
 
                                 int numberOfTimeDerivatives=0;
                                 CompositeGrid & cg = *(cgfields[next].getCompositeGrid());
-            		getUserDefinedKnownSolution( next, t, cg,grid, u,pv,qv,I1,I2,I3,numberOfTimeDerivatives);
+                                getUserDefinedKnownSolution( next, t, cg,grid, u,pv,qv,I1,I2,I3,numberOfTimeDerivatives);
   
-            	      }
-            	      else
-            	      { //planeWaveInitialCondition or planeWaveBoundaryCondition
-              		  
+                            }
+                            else
+                            { //planeWaveInitialCondition or planeWaveBoundaryCondition
+                                    
                                 {
                   // printF("+++++ assignBC:  assignDirichletPlaneWaveBC\n");
                                     int i1,i2,i3;
@@ -1441,29 +1441,29 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                       //   DispersiveMaterialParameters::noPolarization;
                       // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi,polarization );
                       // printF("BA plane wave BC: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g]\n",
-                      // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
+                      //             sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5]);
                                             if( !solveForAllFields )
                                             {
-                	// TEz mode: 
-                                      	evr[2]=evr[5];  evi[2]=evi[5];
+                        // TEz mode: 
+                                                evr[2]=evr[5];  evi[2]=evi[5];
                                             }
                       // const real expt  =exp(sr*t);
                                             RealArray kDotx(I1,I2,I3);
                                             kDotx = kv[0]*xLocal(I1,I2,I3,0) + kv[1]*xLocal(I1,I2,I3,1);
                                             for( int m=ex; m<=hz; m++ )
                                             {
-                                      	uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
-                                                            	                      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);  
-                	// sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) - omega*t )*ev[m];
+                                                uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
+                                                                                            cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);  
+                        // sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) - omega*t )*ev[m];
                                             }
                                             if( dmp.isDispersiveMaterial() )
                                             {
-                                      	const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
-                                      	for( int m=0; m<numPolarizationTerms; m++ )
-                                      	{
-                                        	  pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
-                                                        				cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
-                                      	}
+                                                const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                                                for( int m=0; m<numPolarizationTerms; m++ )
+                                                {
+                                                    pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
+                                                                                                cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
+                                                }
                                             }
                                         }
                                         else if( localDispersionModel==noDispersion )
@@ -1620,24 +1620,24 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                       // RealArray chi;
                       // dmp.getBianisotropicPlaneWaveSolution( kv, sr,si,evr,evi,chi );
                       // printF("BA plane wave BC 3D: s=%9.3e + %9.3e I evr=[%g,%g,%g,%g,%g,%g] evi=[%g,%g,%g,%g,%g,%g]\n",
-                      // 	     sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5],evi[1],evi[2],evi[3],evi[4],evi[5]);
+                      //             sr,si,evr[0],evr[1],evr[2],evr[3],evr[4],evr[5],evi[1],evi[2],evi[3],evi[4],evi[5]);
                       // const real expt  =exp(sr*t);
                                             RealArray kDotx(I1,I2,I3);
                                             kDotx = kv[0]*xLocal(I1,I2,I3,0) + kv[1]*xLocal(I1,I2,I3,1) + kv[2]*xLocal(I1,I2,I3,2);
                                             for( int m=ex; m<=hz; m++ )
                                             {
-                                      	uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
-                                                            	                      cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);
-                 	// uLocal(I1,I2,I3,m) = sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) +kv[2]*xLocal(I1,I2,I3,2) + si*t )*evr[m];
+                                                uLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*evr[m] +
+                                                                                            cos( kr*kDotx + si*t )*evi[m])*exp( sr*t - ki*kDotx);
+                        // uLocal(I1,I2,I3,m) = sin( kv[0]*xLocal(I1,I2,I3,0) +kv[1]*xLocal(I1,I2,I3,1) +kv[2]*xLocal(I1,I2,I3,2) + si*t )*evr[m];
                                             }
                                             if( dmp.isDispersiveMaterial() )
                                             {
-                                      	const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
-                                      	for( int m=0; m<numPolarizationTerms; m++ )
-                                      	{
-                                        	  pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
-                                                        				cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
-                                      	}
+                                                const int numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                                                for( int m=0; m<numPolarizationTerms; m++ )
+                                                {
+                                                    pLocal(I1,I2,I3,m) = (sin( kr*kDotx + si*t )*chi(m,0) +
+                                                                                                cos( kr*kDotx + si*t )*chi(m,1) )*exp( sr*t - ki*kDotx);
+                                                }
                                             }
                                         }
                                         else if( localDispersionModel==noDispersion )
@@ -1760,16 +1760,16 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
 
                             }
                                 
-            	      
+                            
               // printF(" assign BC: I1,I2,I3=[%i,%i][%i,%i][%i,%i] \n",
               //            I1.getBase(),I1.getBound(),I2.getBase(),I2.getBound(),I3.getBase(),I3.getBound());
 
               // display(u(I1,I2,I3,C),"u(I1,I2,I3,C) after BC new:");
 
-          	    
-          	    } // end if( initialConditionOption==planeWaveInitialCondition || ...
-          	    else if( forcingOption==twilightZoneForcing )
-          	    {
+                        
+                        } // end if( initialConditionOption==planeWaveInitialCondition || ...
+                        else if( forcingOption==twilightZoneForcing )
+                        {
                             {
                                 assert( tz!=NULL );
                                 OGFunction & e = *tz;
@@ -1837,50 +1837,50 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 }
                             }
 
-          	    }
-          	    else if( initialConditionOption==gaussianPlaneWave )
-          	    {
-            	      realSerialArray xi;
+                        }
+                        else if( initialConditionOption==gaussianPlaneWave )
+                        {
+                            realSerialArray xi;
                             if( numberOfDimensions==2 && !solveForAllFields )
-            	      {
-            		xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)+ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
+                            {
+                                xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)+ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
 
-            		uLocal(I1,I2,I3,hz)=hzGaussianPulse(xi); 
-            		uLocal(I1,I2,I3,ex)=uLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
-            		uLocal(I1,I2,I3,ey)=uLocal(I1,I2,I3,hz)*( kx/(eps*cc));
-            	      }
-            	      else
-            	      {
-		// Use pwc[] coefficients so we can assign TEz and TMz modes 
-		// *new* May 16, 2020
+                                uLocal(I1,I2,I3,hz)=hzGaussianPulse(xi); 
+                                uLocal(I1,I2,I3,ex)=uLocal(I1,I2,I3,hz)*(-ky/(eps*cc));
+                                uLocal(I1,I2,I3,ey)=uLocal(I1,I2,I3,hz)*( kx/(eps*cc));
+                            }
+                            else
+                            {
+                // Use pwc[] coefficients so we can assign TEz and TMz modes 
+                // *new* May 16, 2020
                                 if( numberOfDimensions==2 )
-              		  xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
-                		    +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
+                                    xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
+                                        +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave) -cc*t;
                                 else
-              		  xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
-                		    +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave)
-                		    +kz*(xLocal(I1,I2,I3,2)-z0GaussianPlaneWave) -cc*t;
+                                    xi=kx*(xLocal(I1,I2,I3,0)-x0GaussianPlaneWave)
+                                        +ky*(xLocal(I1,I2,I3,1)-y0GaussianPlaneWave)
+                                        +kz*(xLocal(I1,I2,I3,2)-z0GaussianPlaneWave) -cc*t;
 
-            		RealArray gpw(I1,I2,I3);
-            		gpw(I1,I2,I3) = exp(-betaGaussianPlaneWave*((xi)*(xi)));
+                                RealArray gpw(I1,I2,I3);
+                                gpw(I1,I2,I3) = exp(-betaGaussianPlaneWave*((xi)*(xi)));
 
-            		uLocal(I1,I2,I3,ex)=gpw(I1,I2,I3) * pwc[0];
-            		uLocal(I1,I2,I3,ey)=gpw(I1,I2,I3) * pwc[1];
-            		uLocal(I1,I2,I3,ez)=gpw(I1,I2,I3) * pwc[2];
+                                uLocal(I1,I2,I3,ex)=gpw(I1,I2,I3) * pwc[0];
+                                uLocal(I1,I2,I3,ey)=gpw(I1,I2,I3) * pwc[1];
+                                uLocal(I1,I2,I3,ez)=gpw(I1,I2,I3) * pwc[2];
                                 if( solveForAllFields )
-            		{
-                	  	  uLocal(I1,I2,I3,hx)=gpw(I1,I2,I3) * pwc[3];
-              		  uLocal(I1,I2,I3,hy)=gpw(I1,I2,I3) * pwc[4];
-              		  uLocal(I1,I2,I3,hz)=gpw(I1,I2,I3) * pwc[5];
-            		}
-            		
+                                {
+                                    uLocal(I1,I2,I3,hx)=gpw(I1,I2,I3) * pwc[3];
+                                    uLocal(I1,I2,I3,hy)=gpw(I1,I2,I3) * pwc[4];
+                                    uLocal(I1,I2,I3,hz)=gpw(I1,I2,I3) * pwc[5];
+                                }
+                                
         
-            	      }
-            	      
-          	    }
+                            }
+                            
+                        }
                         else if( boundaryForcingOption==planeWaveBoundaryForcing ||
                                           initialConditionOption==planeWaveScatteredFieldInitialCondition )
-          	    {
+                        {
               // --- Assign the dirichlet (i.e. exact solution) BC for a plane wave or plane wave scattered field ---
 
                             {
@@ -1893,7 +1893,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 // const real cost = cos(-twoPi*cc0*t);
                 // const real sint = sin(-twoPi*cc0*t);
                 // const real dcost =  twoPi*cc0*sint;  // d(sin(..))/dt 
-                // const real dsint = -twoPi*cc0*cost;  // d(sin(..))/dt 	    
+                // const real dsint = -twoPi*cc0*cost;  // d(sin(..))/dt          
                                     real cost,sint,costm,sintm,dcost,dsint;
                                     real phiPc,phiPs, phiPcm,phiPsm;
                   // define coefficients of the real(E), Im(E), Re(H) and Im(H)
@@ -2120,97 +2120,97 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             OV_ABORT("Maxwell::assignBoundaryConditions:dirichlet unknown forcing option");
                         }
 
-        	  } // end if( bc(side,axis)==dirichlet || bc(side,axis)==planeWaveBoundaryCondition ) 
-        	  
-        	  else if( mg.boundaryCondition(side,axis)==perfectElectricalConductor )
-        	  {
+                    } // end if( bc(side,axis)==dirichlet || bc(side,axis)==planeWaveBoundaryCondition ) 
+                    
+                    else if( mg.boundaryCondition(side,axis)==perfectElectricalConductor )
+                    {
             // =================================================================================
             // =========== NOTE: PEC BOUNDARY CONDITIONS ARE ASSIGNED IN MXCORNERS =============
             // =================================================================================
 
                         assert( useOpt );
-          	    
-        	  }
+                        
+                    }
                     else if( mg.boundaryCondition(side,axis)==symmetry )
-        	  {
-          	    if( FALSE ) // *WDH* June 16, 2016
-          	    {
-	      // THIS IS AN OLD INCORRECT SYMMETRY BC -- only did even symmetry
-	      // Symmetry conditions are now performed elsewhere in bcSymmetry 
+                    {
+                        if( FALSE ) // *WDH* June 16, 2016
+                        {
+              // THIS IS AN OLD INCORRECT SYMMETRY BC -- only did even symmetry
+              // Symmetry conditions are now performed elsewhere in bcSymmetry 
 
-            	      if( t<=2*dt )
-            	      {
-            		printF("Apply symmetry BC on (side,axis)=(%i,%i) t=%8.2e is1,is2=(%i,%i)\n"
-                   		       " ************ This symmetry BC should not be used any more! *********\n",
-                   		       side,axis,t,is1,is2);
-            	      }
+                            if( t<=2*dt )
+                            {
+                                printF("Apply symmetry BC on (side,axis)=(%i,%i) t=%8.2e is1,is2=(%i,%i)\n"
+                                              " ************ This symmetry BC should not be used any more! *********\n",
+                                              side,axis,t,is1,is2);
+                            }
 
-	      //              Range V(ex,ey);
-	      //              mgop.applyBoundaryCondition(u,V,BCTypes::vectorSymmetry,symmetry,0.,t);
-	      //              Range H(hz,hz);
-	      //              mgop.applyBoundaryCondition(u,H,BCTypes::evenSymmetry,symmetry,0.,t);
-            	      Range C(ex,hz);
-            	      mgop.applyBoundaryCondition(u,C,BCTypes::evenSymmetry,symmetry,0.,t);
-            	      if( orderOfAccuracyInSpace==4 )
-            	      {
-            		bcParams.ghostLineToAssign=2;
-            		mgop.applyBoundaryCondition(u,C,BCTypes::evenSymmetry,symmetry,0.,t,bcParams);
-            	      }
+              //              Range V(ex,ey);
+              //              mgop.applyBoundaryCondition(u,V,BCTypes::vectorSymmetry,symmetry,0.,t);
+              //              Range H(hz,hz);
+              //              mgop.applyBoundaryCondition(u,H,BCTypes::evenSymmetry,symmetry,0.,t);
+                            Range C(ex,hz);
+                            mgop.applyBoundaryCondition(u,C,BCTypes::evenSymmetry,symmetry,0.,t);
+                            if( orderOfAccuracyInSpace==4 )
+                            {
+                                bcParams.ghostLineToAssign=2;
+                                mgop.applyBoundaryCondition(u,C,BCTypes::evenSymmetry,symmetry,0.,t,bcParams);
+                            }
 
-            	      if( orderOfAccuracyInSpace!=2 && orderOfAccuracyInSpace!=4 )
-            	      {
-            		printF("cgmx: assignBC: symmetry BC : ERROR: orderOfAccuracyInSpace=%i\n",orderOfAccuracyInSpace);
-            		OV_ABORT("FINISH ME");
-            	      }
-          	    }
-          	    
-        	  }
+                            if( orderOfAccuracyInSpace!=2 && orderOfAccuracyInSpace!=4 )
+                            {
+                                printF("cgmx: assignBC: symmetry BC : ERROR: orderOfAccuracyInSpace=%i\n",orderOfAccuracyInSpace);
+                                OV_ABORT("FINISH ME");
+                            }
+                        }
+                        
+                    }
                     else if( mg.boundaryCondition(side,axis)==interfaceBoundaryCondition )
-        	  {
+                    {
             // do nothing here
-        	  }
+                    }
                     else if( (mg.boundaryCondition(side,axis)>=abcEM2 && mg.boundaryCondition(side,axis)<=abc5) ||
                                         mg.boundaryCondition(side,axis)==rbcNonLocal || mg.boundaryCondition(side,axis)==rbcLocal )
-        	  {
+                    {
             // do nothing here
-        	  }
+                    }
                     else if( mg.boundaryCondition(side,axis)==characteristic )
-        	  {
+                    {
             // characteristic BC -- *new* 2Dec 2019 
                         OV_ABORT("characteristic BC: finish me");
                         
-          	    int numberOfGhostLines = orderOfAccuracyInSpace/2;
+                        int numberOfGhostLines = orderOfAccuracyInSpace/2;
                         if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
-          	    int extra=numberOfGhostLines;
-          	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+                        int extra=numberOfGhostLines;
+                        getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
                         uLocal(I1,I2,I3,C)=0.;
 
-        	  }
+                    }
                     else if( mg.boundaryCondition(side,axis)==absorbing )
-        	  {
+                    {
             // absorbing BC: e.g. supergrid
             //  -- *new* Dec 2019 do this for now
-          	    int numberOfGhostLines = orderOfAccuracyInSpace/2;
+                        int numberOfGhostLines = orderOfAccuracyInSpace/2;
                         if( addedExtraGhostLine ) numberOfGhostLines++;  // sosup uses one extra ghost line
-          	    int extra=numberOfGhostLines;
-          	    getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
-          	    bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
-          	    if( !ok ) continue;
+                        int extra=numberOfGhostLines;
+                        getBoundaryIndex(mg.gridIndexRange(),side,axis,I1,I2,I3,extra);
+                        bool ok = ParallelUtility::getLocalArrayBounds(u,uLocal,I1,I2,I3,includeGhost);
+                        if( !ok ) continue;
                         uLocal(I1,I2,I3,C)=0.;
 
-        	  }
-        	  else // bc== ?
-        	  {
-          	    printF("assignBoundaryConditions:ERROR: unknown boundaryCondition(%i,%i)=%i\n",
-               		   side,axis,mg.boundaryCondition(side,axis));
-          	    OV_ABORT("assignBoundaryConditions:ERROR");
-        	  }
-      	}
+                    }
+                    else // bc== ?
+                    {
+                        printF("assignBoundaryConditions:ERROR: unknown boundaryCondition(%i,%i)=%i\n",
+                                      side,axis,mg.boundaryCondition(side,axis));
+                        OV_ABORT("assignBoundaryConditions:ERROR");
+                    }
+                }
 
 
 
-      	else if( method==yee )
-      	{
+                else if( method==yee )
+                {
           // *****************************************************************
           // **************** Yee Method *************************************
           // *****************************************************************
@@ -2330,10 +2330,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         }
                     }
 
-      	}  // *********************** END YEE ************************
-      	
-      	else if( method==dsi )
-      	{
+                }  // *********************** END YEE ************************
+                
+                else if( method==dsi )
+                {
           // *****************************************************************
           // **************** DSI Method *************************************
           // *****************************************************************
@@ -2414,12 +2414,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                     uLocal(I1,I2,I3,ex)=0.;  // **** finish this ****
                                     uLocal(I1,I2,I3,ey)=0.;
                   // extrapolate ghost line values for plotting:
-                  //		uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
-                  //		uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
+                  //              uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
+                  //              uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
                                     if( side==1 ) // adjust for face-centredness
                                         getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,0);
-                  //		uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
-                  //		uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
+                  //              uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
+                  //              uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
                                 }
                                 else if( axis==1 )
                                 {
@@ -2430,8 +2430,8 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                   //uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
                                     if( side==1 ) // adjust for face-centredness
                                         getGhostIndex(mg.gridIndexRange(),side,axis,Ig1,Ig2,Ig3,0);
-                  //		uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
-                  //		uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
+                  //              uLocal(Ig1,Ig2,Ig3,ex)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ex)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ex);
+                  //              uLocal(Ig1,Ig2,Ig3,ey)=2.*uLocal(Ig1+is1,Ig2+is2,Ig3,ey)-uLocal(Ig1+2*is1,Ig2+2*is2,Ig3,ey);
                                 }
                                 else
                                 {
@@ -2492,15 +2492,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     }
 
 
-      	} // ************************** END DSI ************************************
-      	
-      	else
-      	{
-        	  printF("applyBoundaryConditions:ERROR: unknown boundaryCondition(%i,%i)=%i\n",
-             		 side,axis,mg.boundaryCondition(side,axis));
-        	  Overture::abort("applyBoundaryConditions:ERROR");
-      	}
-      	
+                } // ************************** END DSI ************************************
+                
+                else
+                {
+                    printF("applyBoundaryConditions:ERROR: unknown boundaryCondition(%i,%i)=%i\n",
+                                  side,axis,mg.boundaryCondition(side,axis));
+                    Overture::abort("applyBoundaryConditions:ERROR");
+                }
+                
             } // end side
         }  // end axis
 
@@ -2689,12 +2689,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 if( debug & 4 )
                 {
                     fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                      	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                      	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                      	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                      	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                     fprintf(pDebugFile,"\n **** uu=[%i,%i] xy=[%i,%i] rsxy=[%i,%i]\n",
-                      	    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
+                                    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
                 }
             #else
                 const realSerialArray & uu    = u;
@@ -2710,10 +2710,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 {
                     const IntegerArray & bcg = mg.boundaryCondition();
                     fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                      	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                      	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                      	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                      	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                 }
             #endif
                 real *uptr   = uu.getDataPointer();
@@ -2730,20 +2730,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 }
         // Do this for now -- assumes all sides are PML
                 bool usePML = (mg.boundaryCondition(0,0)==abcPML || mg.boundaryCondition(1,0)==abcPML ||
-                         		 mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
-                         		 mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
+                                              mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
+                                              mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
                 const int bc0=-1;  // do all boundaries.
                 int ierr=0;
         // *wdh* 090509 -- symmetry BC's (like a straight PEC wall)
                 int bcOption=0;     // 0=assign all faces, 1=assign corners and edges
                 ipar[26]=bcOption;
                 bcSymmetry( mg.numberOfDimensions(), 
-                        	      uu.getBase(0),uu.getBound(0),
-                        	      uu.getBase(1),uu.getBound(1),
-                        	      uu.getBase(2),uu.getBound(2),
-                        	      *gid.getDataPointer(),
-                        	      *uptr, *maskptr,*rxptr, *xyptr,
-                        	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                        uu.getBase(0),uu.getBound(0),
+                                        uu.getBase(1),uu.getBound(1),
+                                        uu.getBase(2),uu.getBound(2),
+                                        *gid.getDataPointer(),
+                                        *uptr, *maskptr,*rxptr, *xyptr,
+                                        bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
         // *** need to fix gridIndex Range and bc ***********************
                 if( debug & 4 )
                 {
@@ -2774,15 +2774,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 }
         // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                 bcOptMaxwell( mg.numberOfDimensions(), 
-                        		uu.getBase(0),uu.getBound(0),
-                        		uu.getBase(1),uu.getBound(1),
-                        		uu.getBase(2),uu.getBound(2),
-                        		ff.getBase(0),ff.getBound(0),
-                        		ff.getBase(1),ff.getBound(1),
-                        		ff.getBase(2),ff.getBound(2),
-                        		*gid.getDataPointer(),*dim.getDataPointer(),
-                        		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
-                        		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            ff.getBase(0),ff.getBound(0),
+                                            ff.getBase(1),ff.getBound(1),
+                                            ff.getBase(2),ff.getBound(2),
+                                            *gid.getDataPointer(),*dim.getDataPointer(),
+                                            *uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                 if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                 real *uOldptr = uuOld.getDataPointer();
         // Here we subtract off the incident field on points near non-reflecting boundaries
@@ -2832,13 +2832,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     rpar[34]=xv0[1];
                     rpar[35]=xv0[2];
                     adjustForIncident( mg.numberOfDimensions(),  
-                        		uu.getBase(0),uu.getBound(0),
-                        		uu.getBase(1),uu.getBound(1),
-                        		uu.getBase(2),uu.getBound(2),
-                        		*gid.getDataPointer(),
-                        		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
-                        		*initialConditionBoundingBox.getDataPointer(),
-                        		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                            *initialConditionBoundingBox.getDataPointer(),
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     ipar[25]=0;
                     if( debug & 4 )
                     {
@@ -2850,15 +2850,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
         // Non-reflecting and Absorbing boundary conditions
         // ***NOTE*** symmetry corners and edges are assigned in this next routine *fix me*
                 abcMaxwell( mg.numberOfDimensions(), 
-                        	      uu.getBase(0),uu.getBound(0),
-                        	      uu.getBase(1),uu.getBound(1),
-                        	      uu.getBase(2),uu.getBound(2),
-                        	      ff.getBase(0),ff.getBound(0),
-                        	      ff.getBase(1),ff.getBound(1),
-                        	      ff.getBase(2),ff.getBound(2),
-                        	      *gid.getDataPointer(),
-                        	      *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
-                        	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                        uu.getBase(0),uu.getBound(0),
+                                        uu.getBase(1),uu.getBound(1),
+                                        uu.getBase(2),uu.getBound(2),
+                                        ff.getBase(0),ff.getBound(0),
+                                        ff.getBase(1),ff.getBound(1),
+                                        ff.getBase(2),ff.getBound(2),
+                                        *gid.getDataPointer(),
+                                        *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
+                                        bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
         // ** we should probably assign the PML before all the other BC's since it is like an interior equation **
         //   ** but watch out for the adjustment for the incident field ***
                 if( usePML )
@@ -2913,7 +2913,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         {
                             pmlWasIntitialized[grid]=true;
                             printF(" ****** assignBC: allocate vpml arrays grid=%i, numberOfTimeLevels=%i numberOfPMLFunctions=%i ***** \n",
-                           	 grid,numberOfTimeLevels,numberOfPMLFunctions);
+                                      grid,numberOfTimeLevels,numberOfPMLFunctions);
                             const int numGhost = orderOfAccuracyInSpace/2;  // we need ghost values in the PML functions *wdh* 2011/12/02
                             for( int side=0; side<=1; side++ )
                             {
@@ -2921,34 +2921,34 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 {
                                     if( mg.boundaryCondition(side,axis)==abcPML )
                                     {
-                            	  for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
-                              	    for( int n=0; n<numberOfTimeLevels; n++ )
-                              	    {
-                                	      RealArray & vw = PML(n,m,side,axis,grid);
-                                	      int ndr[2][3];
-                                	      for( int dir=0; dir<3; dir++ )
-                                	      {
-                                		ndr[0][dir]=mg.dimension(0,dir);
-                                		ndr[1][dir]=mg.dimension(1,dir);
-                                	      }
-                                	      if( side==0 )
-                                	      {
-                                		ndr[0][axis]=mg.dimension(side,axis);
-                                		ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
-                                	      }
-                                	      else
-                                	      {
-                                		ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
-                                		ndr[1][axis]=mg.dimension(side,axis);
-                                	      }
-          	      // RealArray a;
-          	      // a.redim(Range(-2,10),Range(0,0));
-                                	      vw .redim(Range(ndr[0][0],ndr[1][0]),
-                                      			Range(ndr[0][1],ndr[1][1]),
-                                      			Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
-                                	      vw=0.;
-                              	    }
-                          	}
+                                        for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
+                                            for( int n=0; n<numberOfTimeLevels; n++ )
+                                            {
+                                                RealArray & vw = PML(n,m,side,axis,grid);
+                                                int ndr[2][3];
+                                                for( int dir=0; dir<3; dir++ )
+                                                {
+                                                    ndr[0][dir]=mg.dimension(0,dir);
+                                                    ndr[1][dir]=mg.dimension(1,dir);
+                                                }
+                                                if( side==0 )
+                                                {
+                                                    ndr[0][axis]=mg.dimension(side,axis);
+                                                    ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
+                                                }
+                                                else
+                                                {
+                                                    ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
+                                                    ndr[1][axis]=mg.dimension(side,axis);
+                                                }
+                        // RealArray a;
+                        // a.redim(Range(-2,10),Range(0,0));
+                                                vw .redim(Range(ndr[0][0],ndr[1][0]),
+                                                                    Range(ndr[0][1],ndr[1][1]),
+                                                                    Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
+                                                vw=0.;
+                                            }
+                                    }
                                 }
                             }
                         } // end if pmlWasInitialized
@@ -3025,43 +3025,43 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             const int firstComponent=ipar[12];  // normally ex (or ext)
                             for( int m=0; m<numberOfComponentsPML; m++ )
                             {
-                          	ipar[12]=firstComponent+m; // assign this component
-                          	pmlMaxwell( mg.numberOfDimensions(), 
-                                    		    uu.getBase(0),uu.getBound(0),
-                                    		    uu.getBase(1),uu.getBound(1),
-                                    		    uu.getBase(2),uu.getBound(2),
-                                    		    ff.getBase(0),ff.getBound(0),
-                                    		    ff.getBase(1),ff.getBound(1),
-                                    		    ff.getBase(2),ff.getBound(2),
-                                    		    *gid.getDataPointer(),
-                                    		    *dim.getDataPointer(),
-                                    		    *umptr, *uuptr, *unptr, 
-          		    // vra (left)
-                                    		    vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
-                                    		    *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
-                                    		    *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
-          		    // vrb (right)
-                                    		    vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
-                                    		    *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
-                                    		    *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
-          		    // vsa (bottom)
-                                    		    vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
-                                    		    *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
-                                    		    *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
-          		    // vsb 
-                                    		    vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
-                                    		    *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
-                                    		    *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
-          		    // vta
-                                    		    vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
-                                    		    *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
-                                    		    *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
-          		    // vtb 
-                                    		    vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
-                                    		    *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
-                                    		    *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
-                                    		    *fptr,*maskptr,*rxptr, *xyptr,
-                                    		    bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                    ipar[12]=firstComponent+m; // assign this component
+                                    pmlMaxwell( mg.numberOfDimensions(), 
+                                                            uu.getBase(0),uu.getBound(0),
+                                                            uu.getBase(1),uu.getBound(1),
+                                                            uu.getBase(2),uu.getBound(2),
+                                                            ff.getBase(0),ff.getBound(0),
+                                                            ff.getBase(1),ff.getBound(1),
+                                                            ff.getBase(2),ff.getBound(2),
+                                                            *gid.getDataPointer(),
+                                                            *dim.getDataPointer(),
+                                                            *umptr, *uuptr, *unptr, 
+                              // vra (left)
+                                                            vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
+                                                            *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
+                                                            *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
+                              // vrb (right)
+                                                            vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
+                                                            *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
+                                                            *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
+                              // vsa (bottom)
+                                                            vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
+                                                            *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
+                                                            *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
+                              // vsb 
+                                                            vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
+                                                            *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
+                                                            *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
+                              // vta
+                                                            vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
+                                                            *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
+                                                            *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
+                              // vtb 
+                                                            vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
+                                                            *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
+                                                            *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
+                                                            *fptr,*maskptr,*rxptr, *xyptr,
+                                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                             }  // end m
                             ipar[12]=firstComponent; // reset 
                         }
@@ -3076,12 +3076,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                 bcOption=1; // 1=assign corners and edges only
                 ipar[26]=bcOption; 
                 bcSymmetry( mg.numberOfDimensions(), 
-                        	      uu.getBase(0),uu.getBound(0),
-                        	      uu.getBase(1),uu.getBound(1),
-                        	      uu.getBase(2),uu.getBound(2),
-                        	      *gid.getDataPointer(),
-                        	      *uptr, *maskptr,*rxptr, *xyptr,
-                        	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                        uu.getBase(0),uu.getBound(0),
+                                        uu.getBase(1),uu.getBound(1),
+                                        uu.getBase(2),uu.getBound(2),
+                                        *gid.getDataPointer(),
+                                        *uptr, *maskptr,*rxptr, *xyptr,
+                                        bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
         // ::display(u,"u after pml BC's","%9.2e ");
         // assign any radiation BC's
                 for( int i=0; i<2; i++ )
@@ -3101,13 +3101,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     ipar[26]=numberLinesForPML;
                     ipar[27]=adjustThreeLevels;
                     adjustForIncident( mg.numberOfDimensions(),  
-                        		uu.getBase(0),uu.getBound(0),
-                        		uu.getBase(1),uu.getBound(1),
-                        		uu.getBase(2),uu.getBound(2),
-                        		*gid.getDataPointer(),
-                        		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
                                             *initialConditionBoundingBox.getDataPointer(),
-                        		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     ipar[25]=0;
                 }
             } // end ok 
@@ -3277,12 +3277,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     if( debug & 4 )
                     {
                         fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                          	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                          	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                          	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                          	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                        " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                        gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                        bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                        bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                         fprintf(pDebugFile,"\n **** uu=[%i,%i] xy=[%i,%i] rsxy=[%i,%i]\n",
-                          	    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
+                                        uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
                     }
                 #else
                     const realSerialArray & uu    = u;
@@ -3298,10 +3298,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     {
                         const IntegerArray & bcg = mg.boundaryCondition();
                         fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                          	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                          	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                          	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                          	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                        " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                        gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                        bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                        bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                     }
                 #endif
                     real *uptr   = uu.getDataPointer();
@@ -3318,20 +3318,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     }
           // Do this for now -- assumes all sides are PML
                     bool usePML = (mg.boundaryCondition(0,0)==abcPML || mg.boundaryCondition(1,0)==abcPML ||
-                             		 mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
-                             		 mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
+                                                  mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
+                                                  mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
                     const int bc0=-1;  // do all boundaries.
                     int ierr=0;
           // *wdh* 090509 -- symmetry BC's (like a straight PEC wall)
                     int bcOption=0;     // 0=assign all faces, 1=assign corners and edges
                     ipar[26]=bcOption;
                     bcSymmetry( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uptr, *maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uptr, *maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // *** need to fix gridIndex Range and bc ***********************
                     if( debug & 4 )
                     {
@@ -3362,15 +3362,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     }
           // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                     bcOptMaxwell( mg.numberOfDimensions(), 
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		ff.getBase(0),ff.getBound(0),
-                            		ff.getBase(1),ff.getBound(1),
-                            		ff.getBase(2),ff.getBound(2),
-                            		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                ff.getBase(0),ff.getBound(0),
+                                                ff.getBase(1),ff.getBound(1),
+                                                ff.getBase(2),ff.getBound(2),
+                                                *gid.getDataPointer(),*dim.getDataPointer(),
+                                                *uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();
           // Here we subtract off the incident field on points near non-reflecting boundaries
@@ -3420,13 +3420,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         rpar[34]=xv0[1];
                         rpar[35]=xv0[2];
                         adjustForIncident( mg.numberOfDimensions(),  
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		*gid.getDataPointer(),
-                            		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
-                            		*initialConditionBoundingBox.getDataPointer(),
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                *gid.getDataPointer(),
+                                                *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                                *initialConditionBoundingBox.getDataPointer(),
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                         ipar[25]=0;
                         if( debug & 4 )
                         {
@@ -3438,15 +3438,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           // Non-reflecting and Absorbing boundary conditions
           // ***NOTE*** symmetry corners and edges are assigned in this next routine *fix me*
                     abcMaxwell( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      ff.getBase(0),ff.getBound(0),
-                            	      ff.getBase(1),ff.getBound(1),
-                            	      ff.getBase(2),ff.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            ff.getBase(0),ff.getBound(0),
+                                            ff.getBase(1),ff.getBound(1),
+                                            ff.getBase(2),ff.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // ** we should probably assign the PML before all the other BC's since it is like an interior equation **
           //   ** but watch out for the adjustment for the incident field ***
                     if( usePML )
@@ -3501,7 +3501,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             {
                                 pmlWasIntitialized[grid]=true;
                                 printF(" ****** assignBC: allocate vpml arrays grid=%i, numberOfTimeLevels=%i numberOfPMLFunctions=%i ***** \n",
-                               	 grid,numberOfTimeLevels,numberOfPMLFunctions);
+                                          grid,numberOfTimeLevels,numberOfPMLFunctions);
                                 const int numGhost = orderOfAccuracyInSpace/2;  // we need ghost values in the PML functions *wdh* 2011/12/02
                                 for( int side=0; side<=1; side++ )
                                 {
@@ -3509,34 +3509,34 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                     {
                                         if( mg.boundaryCondition(side,axis)==abcPML )
                                         {
-                                	  for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
-                                  	    for( int n=0; n<numberOfTimeLevels; n++ )
-                                  	    {
-                                    	      RealArray & vw = PML(n,m,side,axis,grid);
-                                    	      int ndr[2][3];
-                                    	      for( int dir=0; dir<3; dir++ )
-                                    	      {
-                                    		ndr[0][dir]=mg.dimension(0,dir);
-                                    		ndr[1][dir]=mg.dimension(1,dir);
-                                    	      }
-                                    	      if( side==0 )
-                                    	      {
-                                    		ndr[0][axis]=mg.dimension(side,axis);
-                                    		ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
-                                    	      }
-                                    	      else
-                                    	      {
-                                    		ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
-                                    		ndr[1][axis]=mg.dimension(side,axis);
-                                    	      }
-            	      // RealArray a;
-            	      // a.redim(Range(-2,10),Range(0,0));
-                                    	      vw .redim(Range(ndr[0][0],ndr[1][0]),
-                                          			Range(ndr[0][1],ndr[1][1]),
-                                          			Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
-                                    	      vw=0.;
-                                  	    }
-                              	}
+                                            for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
+                                                for( int n=0; n<numberOfTimeLevels; n++ )
+                                                {
+                                                    RealArray & vw = PML(n,m,side,axis,grid);
+                                                    int ndr[2][3];
+                                                    for( int dir=0; dir<3; dir++ )
+                                                    {
+                                                        ndr[0][dir]=mg.dimension(0,dir);
+                                                        ndr[1][dir]=mg.dimension(1,dir);
+                                                    }
+                                                    if( side==0 )
+                                                    {
+                                                        ndr[0][axis]=mg.dimension(side,axis);
+                                                        ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
+                                                    }
+                                                    else
+                                                    {
+                                                        ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
+                                                        ndr[1][axis]=mg.dimension(side,axis);
+                                                    }
+                          // RealArray a;
+                          // a.redim(Range(-2,10),Range(0,0));
+                                                    vw .redim(Range(ndr[0][0],ndr[1][0]),
+                                                                        Range(ndr[0][1],ndr[1][1]),
+                                                                        Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
+                                                    vw=0.;
+                                                }
+                                        }
                                     }
                                 }
                             } // end if pmlWasInitialized
@@ -3613,43 +3613,43 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 const int firstComponent=ipar[12];  // normally ex (or ext)
                                 for( int m=0; m<numberOfComponentsPML; m++ )
                                 {
-                              	ipar[12]=firstComponent+m; // assign this component
-                              	pmlMaxwell( mg.numberOfDimensions(), 
-                                        		    uu.getBase(0),uu.getBound(0),
-                                        		    uu.getBase(1),uu.getBound(1),
-                                        		    uu.getBase(2),uu.getBound(2),
-                                        		    ff.getBase(0),ff.getBound(0),
-                                        		    ff.getBase(1),ff.getBound(1),
-                                        		    ff.getBase(2),ff.getBound(2),
-                                        		    *gid.getDataPointer(),
-                                        		    *dim.getDataPointer(),
-                                        		    *umptr, *uuptr, *unptr, 
-            		    // vra (left)
-                                        		    vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
-                                        		    *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
-                                        		    *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
-            		    // vrb (right)
-                                        		    vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
-                                        		    *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
-                                        		    *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
-            		    // vsa (bottom)
-                                        		    vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
-                                        		    *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
-                                        		    *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
-            		    // vsb 
-                                        		    vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
-                                        		    *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
-                                        		    *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
-            		    // vta
-                                        		    vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
-                                        		    *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
-                                        		    *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
-            		    // vtb 
-                                        		    vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
-                                        		    *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
-                                        		    *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
-                                        		    *fptr,*maskptr,*rxptr, *xyptr,
-                                        		    bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                        ipar[12]=firstComponent+m; // assign this component
+                                        pmlMaxwell( mg.numberOfDimensions(), 
+                                                                uu.getBase(0),uu.getBound(0),
+                                                                uu.getBase(1),uu.getBound(1),
+                                                                uu.getBase(2),uu.getBound(2),
+                                                                ff.getBase(0),ff.getBound(0),
+                                                                ff.getBase(1),ff.getBound(1),
+                                                                ff.getBase(2),ff.getBound(2),
+                                                                *gid.getDataPointer(),
+                                                                *dim.getDataPointer(),
+                                                                *umptr, *uuptr, *unptr, 
+                                // vra (left)
+                                                                vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
+                                                                *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
+                                                                *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
+                                // vrb (right)
+                                                                vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
+                                                                *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
+                                                                *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
+                                // vsa (bottom)
+                                                                vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
+                                                                *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
+                                                                *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
+                                // vsb 
+                                                                vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
+                                                                *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
+                                                                *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
+                                // vta
+                                                                vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
+                                                                *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
+                                                                *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
+                                // vtb 
+                                                                vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
+                                                                *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
+                                                                *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
+                                                                *fptr,*maskptr,*rxptr, *xyptr,
+                                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                                 }  // end m
                                 ipar[12]=firstComponent; // reset 
                             }
@@ -3664,12 +3664,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     bcOption=1; // 1=assign corners and edges only
                     ipar[26]=bcOption; 
                     bcSymmetry( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uptr, *maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uptr, *maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // ::display(u,"u after pml BC's","%9.2e ");
           // assign any radiation BC's
                     for( int i=0; i<2; i++ )
@@ -3689,13 +3689,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         ipar[26]=numberLinesForPML;
                         ipar[27]=adjustThreeLevels;
                         adjustForIncident( mg.numberOfDimensions(),  
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		*gid.getDataPointer(),
-                            		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                *gid.getDataPointer(),
+                                                *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
                                                 *initialConditionBoundingBox.getDataPointer(),
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                         ipar[25]=0;
                     }
                 } // end ok 
@@ -3869,12 +3869,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     if( debug & 4 )
                     {
                         fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                          	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                          	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                          	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                          	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                        " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                        gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                        bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                        bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                         fprintf(pDebugFile,"\n **** uu=[%i,%i] xy=[%i,%i] rsxy=[%i,%i]\n",
-                          	    uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
+                                        uu.getBase(0),uu.getBound(0),xy.getBase(0),xy.getBound(0),rx.getBase(0),rx.getBound(0));
                     }
                 #else
                     const realSerialArray & uu    = u;
@@ -3890,10 +3890,10 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     {
                         const IntegerArray & bcg = mg.boundaryCondition();
                         fprintf(pDebugFile,"\n **** grid=%i p=%i assignBC: gid=[%i,%i][%i,%i][%i,%i] bc=[%i,%i][%i,%i][%i,%i]"
-                          	    " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
-                          	    gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
-                          	    bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
-                          	    bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
+                                        " bcg=[%i,%i][%i,%i][%i,%i]******\n\n",grid,Communication_Manager::My_Process_Number,
+                                        gid(0,0),gid(1,0),gid(0,1),gid(1,1),gid(0,2),gid(1,2),
+                                        bc(0,0),bc(1,0),bc(0,1),bc(1,1),bc(0,2),bc(1,2),
+                                        bcg(0,0),bcg(1,0),bcg(0,1),bcg(1,1),bcg(0,2),bcg(1,2));
                     }
                 #endif
                     real *uptr   = uu.getDataPointer();
@@ -3910,20 +3910,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     }
           // Do this for now -- assumes all sides are PML
                     bool usePML = (mg.boundaryCondition(0,0)==abcPML || mg.boundaryCondition(1,0)==abcPML ||
-                             		 mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
-                             		 mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
+                                                  mg.boundaryCondition(0,1)==abcPML || mg.boundaryCondition(1,1)==abcPML ||
+                                                  mg.boundaryCondition(0,2)==abcPML || mg.boundaryCondition(1,2)==abcPML);
                     const int bc0=-1;  // do all boundaries.
                     int ierr=0;
           // *wdh* 090509 -- symmetry BC's (like a straight PEC wall)
                     int bcOption=0;     // 0=assign all faces, 1=assign corners and edges
                     ipar[26]=bcOption;
                     bcSymmetry( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uptr, *maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uptr, *maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // *** need to fix gridIndex Range and bc ***********************
                     if( debug & 4 )
                     {
@@ -3954,15 +3954,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     }
           // ***** NOTE: PEC boundary values are set in cornersMx routines *******
                     bcOptMaxwell( mg.numberOfDimensions(), 
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		ff.getBase(0),ff.getBound(0),
-                            		ff.getBase(1),ff.getBound(1),
-                            		ff.getBase(2),ff.getBound(2),
-                            		*gid.getDataPointer(),*dim.getDataPointer(),
-                            		*uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                ff.getBase(0),ff.getBound(0),
+                                                ff.getBase(1),ff.getBound(1),
+                                                ff.getBase(2),ff.getBound(2),
+                                                *gid.getDataPointer(),*dim.getDataPointer(),
+                                                *uptr,*fptr,*maskptr,*rxptr, *xyptr, *vptr, *ppv,
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                     if( debug & 4  ) ::display(uu,sPrintF("uu after bcOptMaxwell, grid=%i, t=%e",grid,t),pDebugFile,"%8.1e ");
                     real *uOldptr = uuOld.getDataPointer();
           // Here we subtract off the incident field on points near non-reflecting boundaries
@@ -4012,13 +4012,13 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         rpar[34]=xv0[1];
                         rpar[35]=xv0[2];
                         adjustForIncident( mg.numberOfDimensions(),  
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		*gid.getDataPointer(),
-                            		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
-                            		*initialConditionBoundingBox.getDataPointer(),
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                *gid.getDataPointer(),
+                                                *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                                *initialConditionBoundingBox.getDataPointer(),
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                         ipar[25]=0;
                         if( debug & 4 )
                         {
@@ -4030,15 +4030,15 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
           // Non-reflecting and Absorbing boundary conditions
           // ***NOTE*** symmetry corners and edges are assigned in this next routine *fix me*
                     abcMaxwell( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      ff.getBase(0),ff.getBound(0),
-                            	      ff.getBase(1),ff.getBound(1),
-                            	      ff.getBase(2),ff.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            ff.getBase(0),ff.getBound(0),
+                                            ff.getBase(1),ff.getBound(1),
+                                            ff.getBase(2),ff.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uOldptr, *uptr, *fptr,*maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // ** we should probably assign the PML before all the other BC's since it is like an interior equation **
           //   ** but watch out for the adjustment for the incident field ***
                     if( usePML )
@@ -4093,7 +4093,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                             {
                                 pmlWasIntitialized[grid]=true;
                                 printF(" ****** assignBC: allocate vpml arrays grid=%i, numberOfTimeLevels=%i numberOfPMLFunctions=%i ***** \n",
-                               	 grid,numberOfTimeLevels,numberOfPMLFunctions);
+                                          grid,numberOfTimeLevels,numberOfPMLFunctions);
                                 const int numGhost = orderOfAccuracyInSpace/2;  // we need ghost values in the PML functions *wdh* 2011/12/02
                                 for( int side=0; side<=1; side++ )
                                 {
@@ -4101,34 +4101,34 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                     {
                                         if( mg.boundaryCondition(side,axis)==abcPML )
                                         {
-                                	  for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
-                                  	    for( int n=0; n<numberOfTimeLevels; n++ )
-                                  	    {
-                                    	      RealArray & vw = PML(n,m,side,axis,grid);
-                                    	      int ndr[2][3];
-                                    	      for( int dir=0; dir<3; dir++ )
-                                    	      {
-                                    		ndr[0][dir]=mg.dimension(0,dir);
-                                    		ndr[1][dir]=mg.dimension(1,dir);
-                                    	      }
-                                    	      if( side==0 )
-                                    	      {
-                                    		ndr[0][axis]=mg.dimension(side,axis);
-                                    		ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
-                                    	      }
-                                    	      else
-                                    	      {
-                                    		ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
-                                    		ndr[1][axis]=mg.dimension(side,axis);
-                                    	      }
-            	      // RealArray a;
-            	      // a.redim(Range(-2,10),Range(0,0));
-                                    	      vw .redim(Range(ndr[0][0],ndr[1][0]),
-                                          			Range(ndr[0][1],ndr[1][1]),
-                                          			Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
-                                    	      vw=0.;
-                                  	    }
-                              	}
+                                            for( int m=0; m<numberOfPMLFunctions; m++ )  // ********* FIX ********
+                                                for( int n=0; n<numberOfTimeLevels; n++ )
+                                                {
+                                                    RealArray & vw = PML(n,m,side,axis,grid);
+                                                    int ndr[2][3];
+                                                    for( int dir=0; dir<3; dir++ )
+                                                    {
+                                                        ndr[0][dir]=mg.dimension(0,dir);
+                                                        ndr[1][dir]=mg.dimension(1,dir);
+                                                    }
+                                                    if( side==0 )
+                                                    {
+                                                        ndr[0][axis]=mg.dimension(side,axis);
+                                                        ndr[1][axis]=mg.gridIndexRange(side,axis)+numberLinesForPML-1 +numGhost;
+                                                    }
+                                                    else
+                                                    {
+                                                        ndr[0][axis]=mg.gridIndexRange(side,axis)-numberLinesForPML+1 -numGhost;
+                                                        ndr[1][axis]=mg.dimension(side,axis);
+                                                    }
+                          // RealArray a;
+                          // a.redim(Range(-2,10),Range(0,0));
+                                                    vw .redim(Range(ndr[0][0],ndr[1][0]),
+                                                                        Range(ndr[0][1],ndr[1][1]),
+                                                                        Range(ndr[0][2],ndr[1][2]),numberOfComponentsPML);  // ********* FIX ********
+                                                    vw=0.;
+                                                }
+                                        }
                                     }
                                 }
                             } // end if pmlWasInitialized
@@ -4205,43 +4205,43 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                                 const int firstComponent=ipar[12];  // normally ex (or ext)
                                 for( int m=0; m<numberOfComponentsPML; m++ )
                                 {
-                              	ipar[12]=firstComponent+m; // assign this component
-                              	pmlMaxwell( mg.numberOfDimensions(), 
-                                        		    uu.getBase(0),uu.getBound(0),
-                                        		    uu.getBase(1),uu.getBound(1),
-                                        		    uu.getBase(2),uu.getBound(2),
-                                        		    ff.getBase(0),ff.getBound(0),
-                                        		    ff.getBase(1),ff.getBound(1),
-                                        		    ff.getBase(2),ff.getBound(2),
-                                        		    *gid.getDataPointer(),
-                                        		    *dim.getDataPointer(),
-                                        		    *umptr, *uuptr, *unptr, 
-            		    // vra (left)
-                                        		    vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
-                                        		    *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
-                                        		    *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
-            		    // vrb (right)
-                                        		    vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
-                                        		    *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
-                                        		    *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
-            		    // vsa (bottom)
-                                        		    vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
-                                        		    *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
-                                        		    *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
-            		    // vsb 
-                                        		    vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
-                                        		    *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
-                                        		    *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
-            		    // vta
-                                        		    vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
-                                        		    *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
-                                        		    *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
-            		    // vtb 
-                                        		    vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
-                                        		    *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
-                                        		    *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
-                                        		    *fptr,*maskptr,*rxptr, *xyptr,
-                                        		    bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                        ipar[12]=firstComponent+m; // assign this component
+                                        pmlMaxwell( mg.numberOfDimensions(), 
+                                                                uu.getBase(0),uu.getBound(0),
+                                                                uu.getBase(1),uu.getBound(1),
+                                                                uu.getBase(2),uu.getBound(2),
+                                                                ff.getBase(0),ff.getBound(0),
+                                                                ff.getBase(1),ff.getBound(1),
+                                                                ff.getBase(2),ff.getBound(2),
+                                                                *gid.getDataPointer(),
+                                                                *dim.getDataPointer(),
+                                                                *umptr, *uuptr, *unptr, 
+                                // vra (left)
+                                                                vra.getBase(0),vra.getBound(0),vra.getBase(1),vra.getBound(1),vra.getBase(2),vra.getBound(2),
+                                                                *vram.getDataPointer(),*vra.getDataPointer(),*vran.getDataPointer(),
+                                                                *wram.getDataPointer(),*wra.getDataPointer(),*wran.getDataPointer(),
+                                // vrb (right)
+                                                                vrb.getBase(0),vrb.getBound(0),vrb.getBase(1),vrb.getBound(1),vrb.getBase(2),vrb.getBound(2),
+                                                                *vrbm.getDataPointer(),*vrb.getDataPointer(),*vrbn.getDataPointer(),
+                                                                *wrbm.getDataPointer(),*wrb.getDataPointer(),*wrbn.getDataPointer(),
+                                // vsa (bottom)
+                                                                vsa.getBase(0),vsa.getBound(0),vsa.getBase(1),vsa.getBound(1),vsa.getBase(2),vsa.getBound(2),
+                                                                *vsam.getDataPointer(),*vsa.getDataPointer(),*vsan.getDataPointer(),
+                                                                *wsam.getDataPointer(),*wsa.getDataPointer(),*wsan.getDataPointer(),
+                                // vsb 
+                                                                vsb.getBase(0),vsb.getBound(0),vsb.getBase(1),vsb.getBound(1),vsb.getBase(2),vsb.getBound(2),
+                                                                *vsbm.getDataPointer(),*vsb.getDataPointer(),*vsbn.getDataPointer(),
+                                                                *wsbm.getDataPointer(),*wsb.getDataPointer(),*wsbn.getDataPointer(),
+                                // vta
+                                                                vta.getBase(0),vta.getBound(0),vta.getBase(1),vta.getBound(1),vta.getBase(2),vta.getBound(2),
+                                                                *vtam.getDataPointer(),*vta.getDataPointer(),*vtan.getDataPointer(),
+                                                                *wtam.getDataPointer(),*wta.getDataPointer(),*wtan.getDataPointer(),
+                                // vtb 
+                                                                vtb.getBase(0),vtb.getBound(0),vtb.getBase(1),vtb.getBound(1),vtb.getBase(2),vtb.getBound(2),
+                                                                *vtbm.getDataPointer(),*vtb.getDataPointer(),*vtbn.getDataPointer(),
+                                                                *wtbm.getDataPointer(),*wtb.getDataPointer(),*wtbn.getDataPointer(),
+                                                                *fptr,*maskptr,*rxptr, *xyptr,
+                                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                                 }  // end m
                                 ipar[12]=firstComponent; // reset 
                             }
@@ -4256,12 +4256,12 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                     bcOption=1; // 1=assign corners and edges only
                     ipar[26]=bcOption; 
                     bcSymmetry( mg.numberOfDimensions(), 
-                            	      uu.getBase(0),uu.getBound(0),
-                            	      uu.getBase(1),uu.getBound(1),
-                            	      uu.getBase(2),uu.getBound(2),
-                            	      *gid.getDataPointer(),
-                            	      *uptr, *maskptr,*rxptr, *xyptr,
-                            	      bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                            uu.getBase(0),uu.getBound(0),
+                                            uu.getBase(1),uu.getBound(1),
+                                            uu.getBase(2),uu.getBound(2),
+                                            *gid.getDataPointer(),
+                                            *uptr, *maskptr,*rxptr, *xyptr,
+                                            bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
           // ::display(u,"u after pml BC's","%9.2e ");
           // assign any radiation BC's
                     for( int i=0; i<2; i++ )
@@ -4281,20 +4281,20 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
                         ipar[26]=numberLinesForPML;
                         ipar[27]=adjustThreeLevels;
                         adjustForIncident( mg.numberOfDimensions(),  
-                            		uu.getBase(0),uu.getBound(0),
-                            		uu.getBase(1),uu.getBound(1),
-                            		uu.getBase(2),uu.getBound(2),
-                            		*gid.getDataPointer(),
-                            		*uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
+                                                uu.getBase(0),uu.getBound(0),
+                                                uu.getBase(1),uu.getBound(1),
+                                                uu.getBase(2),uu.getBound(2),
+                                                *gid.getDataPointer(),
+                                                *uum.getDataPointer(), *uOldptr, *uptr, *maskptr,*rxptr, *xyptr,
                                                 *initialConditionBoundingBox.getDataPointer(),
-                            		bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
+                                                bc0, *bc.getDataPointer(), ipar[0], rpar[0], ierr );
                         ipar[25]=0;
                     }
                 } // end ok 
             }
             
             if( debugGhost && grid==1 )
-        	  fprintf(debugFile,"\n --DBG--- AFter optBC: u[1](-1,-1,0,ey)=%8.2e\n",uLocal(-1,-1,0,ey));
+                    fprintf(debugFile,"\n --DBG--- AFter optBC: u[1](-1,-1,0,ey)=%8.2e\n",uLocal(-1,-1,0,ey));
             
         }
     }
@@ -4318,7 +4318,7 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
       // Range Pc = numberOfPolarizationVectors*numberOfDimensions;
             int numPolarizationTerms = numberOfPolarizationVectors*numberOfDimensions;
             if( method==bamx )
-      	numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
+                numPolarizationTerms=totalNumberOfPolarizationComponents(grid)*2;
 
             Range Pc = numPolarizationTerms;
 
@@ -4348,23 +4348,23 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
             const int numberOfAtomicLevels = dmp.getNumberOfAtomicLevels();
             if( numberOfAtomicLevels>0 )
             {
-      	realMappedGridFunction & q = getNonlinearModelMappedGridFunction( grid,next );
+                realMappedGridFunction & q = getNonlinearModelMappedGridFunction( grid,next );
                 q.setOperators(mgop);
 
                 Range Nc = numberOfAtomicLevels;
-      	int ghostStart=1, ghostEnd=orderOfAccuracyInSpace/2;
-      	BoundaryConditionParameters extrapParams;
-      	extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1;  // what should this be ?
-      	extrapParams.extraInTangentialDirections=ghostEnd;
-      	for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
-      	{
-        	  extrapParams.ghostLineToAssign=ghost;
-        	  q.applyBoundaryCondition(Nc,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
-      	}
+                int ghostStart=1, ghostEnd=orderOfAccuracyInSpace/2;
+                BoundaryConditionParameters extrapParams;
+                extrapParams.orderOfExtrapolation=orderOfAccuracyInSpace+1;  // what should this be ?
+                extrapParams.extraInTangentialDirections=ghostEnd;
+                for( int ghost=ghostStart; ghost<=ghostEnd; ghost++ )
+                {
+                    extrapParams.ghostLineToAssign=ghost;
+                    q.applyBoundaryCondition(Nc,BCTypes::extrapolate,BCTypes::allBoundaries,0.,t,extrapParams);
+                }
 
-      	extrapParams.ghostLineToAssign=1;  // reset 
-      	extrapParams.numberOfCornerGhostLinesToAssign= ghostEnd+1;
-      	q.finishBoundaryConditions(extrapParams,Nc);
+                extrapParams.ghostLineToAssign=1;  // reset 
+                extrapParams.numberOfCornerGhostLinesToAssign= ghostEnd+1;
+                q.finishBoundaryConditions(extrapParams,Nc);
 
 
             }
@@ -4430,16 +4430,16 @@ assignBoundaryConditions( int option, int grid, real t, real dt, realMappedGridF
         {
             extrapParams.ghostLineToAssign=ghost;
             if( debug & 4 )
-      	printF("assignBC: sosup: extrap ghost-line %i to order %i\n",
-             	       extrapParams.ghostLineToAssign,extrapParams.orderOfExtrapolation);
+                printF("assignBC: sosup: extrap ghost-line %i to order %i\n",
+                              extrapParams.ghostLineToAssign,extrapParams.orderOfExtrapolation);
 
             for( int axis=0; axis<mg.numberOfDimensions(); axis++ )for( int side=0; side<=1; side++ )
             {
-      	const int bc = mg.boundaryCondition(side,axis);
-      	if( bc!=dirichlet && bc!=symmetry && bc>=0 ) // **wdh* added bc>0 Nov. 26, 2019 -- may make no difference
-      	{
-        	  u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
-      	}
+                const int bc = mg.boundaryCondition(side,axis);
+                if( bc!=dirichlet && bc!=symmetry && bc>=0 ) // **wdh* added bc>0 Nov. 26, 2019 -- may make no difference
+                {
+                    u.applyBoundaryCondition(Ca,BCTypes::extrapolate,BCTypes::boundary1+side+2*(axis),0.,t,extrapParams);
+                }
             }
         }
         

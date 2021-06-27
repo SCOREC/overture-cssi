@@ -1,3 +1,47 @@
+*****************************************
+******** Sun April 4, 2021
+
+>>>>>>>>>>> REVISIT FSI 
+
+VERSION OF solidObjectGrid.cmd in HOME/runs/mp/diskInAChannel was out of date
+
+THIS SEEMS TO RUN -- waht is zfMono ?? 
+cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride4.order2  -addedMass=1 -scf=10.0 -zfMuByH=1 -p0=1 -tp=.05 -tf=11.0 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.00005 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -go=halt -solver=best
+
+
+Revisit elastic disk -- SELF CONVERGENCE
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride8.order2  -addedMass=1 -scf=10 -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G8a.show -dtMax=1.25e-3 -go=go >! diskInAChannelScf10G8a.out
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride4.order2  -addedMass=1 -scf=10 -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G4a.show -dtMax=2.5e-3 -go=go >! diskInAChannelScf10G4a.out
+
+$cgmp -noplot solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10 -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0  -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2a.show -dtMax=5e-3 -go=go >! diskInAChannelScf10G2a.out
+
+MAX u-f looks liek .13 at t=1 --> paper more like .26 (?)
+$cgmp solidDiskInAChannel -method=ins -smVariation=g  -g=diskInAChannelGride2.order2  -addedMass=1 -scf=10 -zfMuByH=1 -p0=1 -tp=.1 -tf=1.5 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.05 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=4 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -show=diskInAChannelScf10G2a.show -dtMax=5e-3 -go=og
+
+
+
+ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=4 
+ogen -noplot solidObjectsGrid -interp=e -order=2 -factor=8
+
+
+G16: Looks OK
+cgmp fiveBodies.cmd -g=solidObjectsGride16.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=10 -scf2=2 -scf3=.1 -scf4=1000 -scf5=1 -fluidSolidCornerFix=0 -tp=.01 -tf=10.0 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.1 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=20 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -rtolp=1.e-6 -atolp=1.e-8 -rtoli=1.e-7 -atoli=1.e-9  -solver=best -go=og 
+
+
+G4: -- use default tolerences -- trouble at start : dt0 <=0 || dt1 <=0 ...
+cgmp -noplot fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=10 -scf2=2 -scf3=.1 -scf4=1000 -scf5=1 -fluidSolidCornerFix=0 -tp=.1 -tf=10.0 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.1 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=20 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -solver=best -rtolp=1.e-4 -atolp=1.e-6 -rtoli=1.e-5 -atoli=1.e-7 -go=og
+
+G4 -- trouble at start :  dt0 <=0 || dt1 <=0 ...
+cgmp fiveBodies.cmd -g=solidObjectsGride4.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=10 -scf2=2 -scf3=.1 -scf4=1000 -scf5=1 -fluidSolidCornerFix=0 -tp=.1 -tf=10.0 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.1 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=20 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -rtolp=1.e-5 -atolp=1.e-7 -rtoli=1.e-6 -atoli=1.e-8 -solver=best -go=og
+
+G8 -- this seems to run
+cgmp fiveBodies.cmd -g=solidObjectsGride8.order2.hdf -method=ins -smVariation=g -addedMass=1 -scf1=10 -scf2=2 -scf3=.1 -scf4=1000 -scf5=1 -fluidSolidCornerFix=0 -tp=.01 -tf=10.0 -tsINS=im -useImplicitAmpBCs=1 -nc=1 -nu=.1 -pOffset=.0 -diss=.5 -debug=1 -rampedInflow=1 -flushFrequency=20 -multiDomainAlgorithm=1 -cfl=.9 -setGhostByExtrapolation=1 -zfMono=1 -p0=.1 -tb=.5 -psolver=best -rtolp=1.e-5 -atolp=1.e-7 -rtoli=1.e-6 -atoli=1.e-8 -solver=best -go=og
+
+
+
+
 **************************
 *** Oct 30, 2018
 

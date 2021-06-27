@@ -62,7 +62,7 @@ saveShow( int current, real t, real dt )
       if( isDispersiveMultiDomain ) break;
     }
     
-    if( isDispersiveMultiDomain )
+    if( false && isDispersiveMultiDomain )
       printF("\n +++++ saveShow: MULTI-DOMAIN PROBLEM AND DISPERSIVE +++++++\n\n");
 
   }
@@ -124,22 +124,22 @@ saveShow( int current, real t, real dt )
     {
       if( parameters.dbase.get<bool >("turnOnBoundaryForcing") )
       {
-	printF("\n @@@ saveShow: Save material region boundaries to the show file @@@@ \n\n");
+        printF("\n @@@ saveShow: Save material region boundaries to the show file @@@@ \n\n");
 
-	// Here is the array of boundary forcings:
-	std::vector<BodyForce*> & boundaryForcings =  parameters.dbase.get<std::vector<BodyForce*> >("boundaryForcings");
-	// -- save the number of regions:
-	db.put((int)boundaryForcings.size(),"numberOfBoundaryForceRegions");
+        // Here is the array of boundary forcings:
+        std::vector<BodyForce*> & boundaryForcings =  parameters.dbase.get<std::vector<BodyForce*> >("boundaryForcings");
+        // -- save the number of regions:
+        db.put((int)boundaryForcings.size(),"numberOfBoundaryForceRegions");
 
-	for( int bf=0; bf<boundaryForcings.size(); bf++ )
-	{
-	  const BodyForce & boundaryForce = *boundaryForcings[bf];
-	  boundaryForce.put(db,sPrintF("BoundaryForce%i",bf));
-	}
+        for( int bf=0; bf<boundaryForcings.size(); bf++ )
+        {
+          const BodyForce & boundaryForce = *boundaryForcings[bf];
+          boundaryForce.put(db,sPrintF("BoundaryForce%i",bf));
+        }
       }
       else
       {
-	db.put(0,"numberOfBoundaryForceRegions"); // there are no boundary force regions
+        db.put(0,"numberOfBoundaryForceRegions"); // there are no boundary force regions
       }
 
     }
@@ -184,7 +184,7 @@ saveShow( int current, real t, real dt )
     {
       if( debug & 4 )
         printF("***Save solution in the show file: showFileFrameForGrid=%i (-2=default)\n",
-	     showFileFrameForGrid);
+             showFileFrameForGrid);
       showFile.saveSolution( u,"u",showFileFrameForGrid );  // save the grid function
     }
   }
@@ -204,7 +204,7 @@ saveShow( int current, real t, real dt )
     {
       if( debug & 4 )
         printF("***Save solution in the show file: showFileFrameForGrid=%i (-2=default)\n",
-	     showFileFrameForGrid);
+             showFileFrameForGrid);
       showFile.saveSolution( u,"u",showFileFrameForGrid );  // save the grid function
     }
   }
@@ -360,7 +360,7 @@ saveSequencesToShowFile()
     { // change blanks to underscores (for matlab)
       if( name[n][i]==' ' )
       {
-	name[n][i]='_';
+        name[n][i]='_';
       }
     }
   }

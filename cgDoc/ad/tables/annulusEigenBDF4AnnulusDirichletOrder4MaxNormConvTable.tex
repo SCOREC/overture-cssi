@@ -1,0 +1,15 @@
+\begin{table}[H]\tableFont % you should set \tableFont to \footnotesize or other size
+% \newcommand{\num}[2]{#1e{#2}} % use this command to set the format of numbers in the table.
+\begin{center}
+\begin{tabular}{|l|c|c|c|} \hline 
+grid  & N &  $ u $ & r \\ \hline 
+  annulus2 &     1 & \num{2.4}{-4} &        \\ \hline
+  annulus4 &     2 & \num{7.9}{-6} & 30.79  \\ \hline
+  annulus8 &     4 & \num{3.5}{-7} & 22.33  \\ \hline
+ annulus16 &     8 & \num{1.9}{-8} & 18.82  \\ \hline
+ annulus32 &    16 & \num{1.1}{-9} & 17.31  \\ \hline
+    rate             &       &  $4.43$       &       \\ \hline
+\end{tabular}
+\caption{Cgad, annulusEigen, method=bdf4, Max norm, method=bdf4, known=annulusEigen, ts=bdf, order=$4$, bdfOrder=4. $t=.5$, cfl=$0.9$, kappa=$.1$, m=1, n=0 kx=1, ky=1, kz=1,  tz=poly degreex=2 degreet=2 fx=0.5 fy=0.5 fz=0.5 -ft=0.5 Thu Apr 22 07:05:46 2021}\label{table:annulusEigenbdf4Order4Max}
+\end{center}
+\end{table}

@@ -1,0 +1,165 @@
+% ---- we have lemmas and theorems in this paper ----
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}{Definition}
+
+% \newcommand{\homeHenshaw}{/home/henshaw.0}
+\newcommand{\tableFont}{\scriptsize}
+\newcommand{\tableFontSize}{\small}
+\newcommand{\num}[2]{#1e#2} % Use this macro to define the format of the numbers in the table
+\newcommand{\eem}{e^{(j)}}
+\newcommand{\rateLabel}{rate}
+
+\newcommand{\bni}{\bigskip\noindent}
+\newcommand{\mni}{\medskip\noindent}
+\newcommand{\sni}{\smallskip\noindent}
+
+
+\newcommand{\f}[2]{\frac{#1}{#2}}
+
+% short for for begin{align} and \end{align}
+\def\ba#1\ea{\begin{align}#1\end{align}}
+
+% short for for begin{align*} and \end{align*}
+\def\bas#1\eas{\begin{align*}#1\end{align*}}
+
+% short for for begin{alignat}{3} and \end{alignat}
+\def\bat#1\eat{\begin{alignat}{3}#1\end{alignat}}
+
+% short for for begin{alignat*}{3} and \end{alignat*}
+\def\bats#1\eats{\begin{alignat*}{3}#1\end{alignat*}}
+
+
+\newcommand{\bse}{\begin{subequations}}
+\newcommand{\ese}{\end{subequations}}
+
+
+\newcommand{\jumpI}[1]{\left[#1\right]_I}% jump at interfaces 
+
+
+\newcommand{\Overture}{{\bf Over\-ture\ }}
+\newcommand{\ogenDir}{\homeHenshaw/Overture/ogen}
+
+\newcommand{\cgDoc}{\homeHenshaw/cgDoc}
+\newcommand{\vpDir}{\homeHenshaw/cgDoc/ins/viscoPlastic}
+
+\newcommand{\obFigures}{\homeHenshaw/res/OverBlown/docFigures}  % for figures
+\newcommand{\convDir}{.}
+
+\input ../common/wdhDefinitions.tex
+
+\def\comma  {~~~,~~}
+\newcommand{\uvd}{\mathbf{U}}
+\def\ud     {{    U}}
+\def\pd     {{    P}}
+\def\calo{{\cal O}}
+
+\newcommand{\mbar}{\bar{m}}
+\newcommand{\Rbar}{\bar{R}}
+\newcommand{\Ru}{R_u}         % universal gas constant
+% \newcommand{\Iv}{{\bf I}}
+% \newcommand{\qv}{{\bf q}}
+\newcommand{\Div}{\grad\cdot}
+\newcommand{\tauv}{\boldsymbol{\tau}}
+\newcommand{\thetav}{\boldsymbol{\theta}}
+% \newcommand{\omegav}{\mathbf{\omega}}
+% \newcommand{\Omegav}{\mathbf{\Omega}}
+
+\newcommand{\Omegav}{\boldsymbol{\Omega}}
+\newcommand{\omegav}{\boldsymbol{\omega}}
+\newcommand{\sigmav}{\boldsymbol{\sigma}}
+\newcommand{\cm}{{\rm cm}}
+%\newcommand{\Jc}{{\mathcal J}}
+
+\newcommand{\sumi}{\sum_{i=1}^n}
+% \newcommand{\half}{{1\over2}}
+\newcommand{\dt}{{\Delta t}}
+
+\def\ff {\tt} % font for fortran variables
+
+
+
+
+\newcommand{\bogus}[1]{}  % removes is argument completely
+
+\newcommand{\scriptsizess}{\scriptsize\sffamily}
+
+
+\newcommand{\afont}{\LARGE\sffamily}
+\newcommand{\cfont}{\Large\sffamily}
+\newcommand{\nfont}{\sffamily}
+\newcommand{\dfont}{\footnotesize\sffamily}
+
+
+% 
+\newcommand{\bc}[1]{\mbox{\bfss#1}}   % bold name
+\newcommand{\cc}[1]{\mbox{$//$  #1}}  % comment
+%
+\newcommand{\ia}{\quad}        % indent level 1
+\newcommand{\ib}{\ia\quad}     % indent level 2
+\newcommand{\ic}{\ib\quad}     % indent level 3
+\newcommand{\id}{\ic\quad}     % indent level 4
+\newcommand{\ie}{\id\quad}     % indent level 5
+
+\newcommand{\FUNC}[1]{{\blue#1}}
+\newcommand{\IF}{{\blue if}}
+\newcommand{\ELSEIF}{{\blue else if}}
+\newcommand{\FOR}{{\blue for}}
+\newcommand{\END}{{\blue end}}
+\newcommand{\ForDomain}{{\blue ForDomain}}
+\newcommand{\COM}[1]{{\red\em #1}}
+
+
+% \newcommand{\Real}{{\mathbb R}}
+\newcommand{\Imag}{\text{Im}}
+%\newcommand{\Complex}{{\mathbb C}}
+\newcommand{\Integers}{{\mathbb Z}}
+
+\newcommand{\zerov}{\mathbf{0}}
+
+
+\newcommand{\Ac}{{\mathcal A}}
+\newcommand{\Bc}{{\mathcal B}}
+\newcommand{\Cc}{{\mathcal C}}
+\newcommand{\Dc}{{\mathcal D}}
+\newcommand{\Ec}{{\mathcal E}}
+\newcommand{\Fc}{{\mathcal F}}
+\newcommand{\Gc}{{\mathcal G}}
+\newcommand{\Gs}{{\mathcal G}}
+\newcommand{\Ic}{{\mathcal I}}
+\newcommand{\Jc}{{\mathcal J}}
+\newcommand{\Kc}{{\mathcal K}}
+\newcommand{\Rc}{{\mathcal R}}
+\newcommand{\Lc}{{\mathcal L}}
+\newcommand{\Nc}{{\mathcal N}}
+\newcommand{\Oc}{{\mathcal O}}
+\newcommand{\Pc}{{\mathcal P}}
+\newcommand{\Qc}{{\mathcal Q}}
+\newcommand{\Sc}{{\mathcal S}}
+\newcommand{\Tc}{{\mathcal T}}
+
+\newcommand{\us}{\bar{u}}
+\newcommand{\vs}{\bar{v}}
+\newcommand{\usv}{\bar{\uv}}
+\newcommand{\uvs}{\bar{\uv}}
+\newcommand{\vsv}{\bar{\vv}}
+\newcommand{\vvs}{\bar{\vv}}
+
+
+\newcommand{\deltav}{\boldsymbol{\delta}}
+%\newcommand{\omegav}{\boldsymbol{\omega}}
+% \newcommand{\tauv}{\boldsymbol{\tau}}
+% \newcommand{\phiv}{\boldsymbol{\phi}}
+% \newcommand{\thetav}{\boldsymbol{\theta}}
+% \newcommand{\psiv}{\boldsymbol{\psi}}
+% \newcommand{\sigmav}{\boldsymbol{\sigma}}
+% \newcommand{\chiv}{\boldsymbol{\chi}}
+% \newcommand{\epsilonv}{\boldsymbol{\varepsilon}}
+% \newcommand{\epsilonsv}{\bar{\boldsymbol{\varepsilon}}}
+
+
+\newcommand{\sigmas}{\bar{\sigma}}
+\newcommand{\sigmasv}{\bar{\sigmav}}
+\newcommand{\sigmavs}{\bar{\sigmav}}
+
+
+

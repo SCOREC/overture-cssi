@@ -504,12 +504,10 @@ end do
                           addBoundaryForcing, interfaceType, ndb, bcData,  \
                           dim, bcf0, bcOffset, ipar, rpar, ierr )
 ! ===================================================================================
-!  Boundary conditions for solid mechanics
+!  Tempertaure Boundary conditions for INS
 !
 !  gridType : 0=rectangular, 1=curvilinear
 !
-!  c2= mu/rho, c1=(mu+lambda)/rho;
-! 
 ! The forcing for the boundary conditions can be accessed using the statement function:
 !         bcf(side,axis,i1,i2,i3,m)
 ! which is defined below. 
@@ -717,8 +715,8 @@ end do
                  boundaryCondition(side,axis).eq.inflowWithPandTV  \
                 )then
           ! BC: a0*T + a1*T.n = 
-	  a0=mixedCoeff(tc,side,axis,grid)
-	  a1=mixedNormalCoeff(tc,side,axis,grid)
+          a0=mixedCoeff(tc,side,axis,grid)
+          a1=mixedNormalCoeff(tc,side,axis,grid)
 
           if( boundaryCondition(side,axis).eq.slipWall .or.  \
               boundaryCondition(side,axis).eq.axisymmetric)then
@@ -855,8 +853,8 @@ end do
        if( tbc(side,axis).eq.neumann )then
 
          ! BC: a0*T + a1*T.n = 
-	 a0=mixedCoeff(tc,side,axis,grid)
-	 a1=mixedNormalCoeff(tc,side,axis,grid)
+         a0=mixedCoeff(tc,side,axis,grid)
+         a1=mixedNormalCoeff(tc,side,axis,grid)
 
          if( boundaryCondition(side,axis).eq.slipWall .or.  \
              boundaryCondition(side,axis).eq.axisymmetric .or.\

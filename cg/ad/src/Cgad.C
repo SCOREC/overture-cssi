@@ -26,6 +26,49 @@ Cgad(CompositeGrid & cg_,
     realPartOfEigenvalue.resize(cg.numberOfComponentGrids(),-1.);
   if( imaginaryPartOfEigenvalue.size() != cg.numberOfComponentGrids() )
     imaginaryPartOfEigenvalue.resize(cg.numberOfComponentGrids(),-1.);
+
+
+  // ------- Set the default order of accuracy from the grid parameters  ------
+  //  Added April 16, 2021 *wdh*
+  
+  int minDiscretizationWidth=INT_MAX;
+  int minInterpolationWidth=INT_MAX;
+  Range R=cg.numberOfDimensions();
+  const IntegerArray & iw = cg.interpolationWidth;
+  // iw.display("iw");
+  for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+  {
+    MappedGrid & mg = cg[grid];
+    const IntegerArray & dw = mg.discretizationWidth();
+      
+    // dw.display("dw");
+      
+    minDiscretizationWidth=min(minDiscretizationWidth,min(dw(R)));
+      
+    for( int grid2=0; grid2<cg.numberOfComponentGrids(); grid2++ )
+    {
+      if( grid!=grid2 )
+        minInterpolationWidth=min( minInterpolationWidth,min(iw(R,grid,grid2)));
+    }
+  }
+  if( minInterpolationWidth==INT_MAX ) minInterpolationWidth=minDiscretizationWidth;
+  printF("Cgad::constructor: minDiscretizationWidth=%i, minInterpolationWidth=%i.\n",minDiscretizationWidth,
+         minInterpolationWidth);
+
+  const int maxOrderOfAccuracy=8;  // *************
+    
+  int & orderOfAccuracyInSpace = parameters.dbase.get<int>("orderOfAccuracy");
+  int & orderOfAccuracyInTime  = parameters.dbase.get<int>("orderOfTimeAccuracy");
+  
+
+  orderOfAccuracyInSpace=min(maxOrderOfAccuracy,minDiscretizationWidth-1,minInterpolationWidth-1);
+  if( orderOfAccuracyInSpace%2 ==1 )
+    orderOfAccuracyInSpace--;   // must be even
+ 
+
+  printP("Cgad::constructor: INFO: setting default order of accuracy=%i based on the input grid parameters\n",
+         orderOfAccuracyInSpace);
+  
 }
 
 
@@ -57,10 +100,10 @@ updateToMatchGrid(CompositeGrid & cg)
 
 // int Cgad::
 // formImplicitTimeSteppingMatrix(realMappedGridFunction & coeff,
-// 			       const real & dt0, 
-// 			       int scalarSystem, 
-// 			       realMappedGridFunction & uL,
-// 			       const int & grid )
+//                             const real & dt0, 
+//                             int scalarSystem, 
+//                             realMappedGridFunction & uL,
+//                             const int & grid )
 // {
 //   Overture::abort("Cgad::formImplicitTimeSteppingMatrix:ERROR: not implemented");
 //   return 0;
@@ -77,7 +120,7 @@ updateGeometryArrays(GridFunction & cgf)
   int grid;
   for( grid=0; grid<cgf.cg.numberOfComponentGrids(); grid++ )
   {
-    if( !cgf.cg[grid].isRectangular() || twilightZoneFlow() ||	parameters.gridIsMoving(grid) )
+    if( !cgf.cg[grid].isRectangular() || twilightZoneFlow() ||  parameters.gridIsMoving(grid) )
       cgf.cg[grid].update(MappedGrid::THEcenter | MappedGrid::THEvertex );  
   }
   parameters.dbase.get<RealArray>("timing")(parameters.dbase.get<int>("timeForUpdatePressureEquation"))+=getCPU()-cpu0;
@@ -120,7 +163,7 @@ saveShowFileComments( Ogshow &show )
       showFileTitle[0]=sPrintF(buffer,"Convection Diffusion, a=%g, b=%g, kappa=%g",a[0],b[0],kappa[0]);
     else
       showFileTitle[0]=sPrintF(buffer,"Convection Diffusion, a=%g, b=%g, c=%g, kappa=%g",
-			       a[0],b[0],c[0],kappa[0]);
+                               a[0],b[0],c[0],kappa[0]);
   }
   
   showFileTitle[1]=timeLine;
@@ -154,7 +197,7 @@ writeParameterSummary( FILE * file )
     if( pdeName=="advection diffusion" || pdeName=="convection diffusion" )
     {
       fPrintF(file,"\\caption{advection-diffusion, gridName, $\\kappa=%3.2g$, $t=%2.1f$, ",
-	      kappa[0],parameters.dbase.get<real >("tFinal"));
+              kappa[0],parameters.dbase.get<real >("tFinal"));
     }
     else
     {
@@ -184,10 +227,10 @@ writeParameterSummary( FILE * file )
       aString name = "kappa";
       for( int m=0; m<numberOfComponents; m++ )
       {
-	if( numberOfComponents==1 )
-	  fPrintF(file," %s=%g",(const char*)name,kappa[m]);
-	else
-	  fPrintF(file," %s[%i]=%g,",(const char*)name,m,kappa[m]);
+        if( numberOfComponents==1 )
+          fPrintF(file," %s=%g",(const char*)name,kappa[m]);
+        else
+          fPrintF(file," %s[%i]=%g,",(const char*)name,m,kappa[m]);
       }
       fPrintF(file,"\n");
 
@@ -202,19 +245,21 @@ writeParameterSummary( FILE * file )
       fPrintF(file," The advection coefficients are constant:\n");
       for( int n=1; n<4; n++ )
       {
-	std::vector<real> & par = n==1 ? a : n==2 ? b : c;
-	aString name = n==1 ? "a" : n==2 ? "b" : "c";
-	for( int m=0; m<numberOfComponents; m++ )
-	{
-	  if( numberOfComponents==1 )
-	    fPrintF(file,"   %s=%g",(const char*)name,par[m]);
-	  else
-	    fPrintF(file,"   %s[%i]=%g,",(const char*)name,m,par[m]);
-	}
-	fPrintF(file,"\n");
+        std::vector<real> & par = n==1 ? a : n==2 ? b : c;
+        aString name = n==1 ? "a" : n==2 ? "b" : "c";
+        for( int m=0; m<numberOfComponents; m++ )
+        {
+          if( numberOfComponents==1 )
+            fPrintF(file,"   %s=%g",(const char*)name,par[m]);
+          else
+            fPrintF(file,"   %s[%i]=%g,",(const char*)name,m,par[m]);
+        }
+        fPrintF(file,"\n");
       }
-    
+
+      fPrintF(file," applyChampInterfaceConditions=%d (for multi-domain problems).\n",parameters.dbase.get<int>("applyChampInterfaceConditions"));
     }
+
   }
   else if( pdeName=="thinFilmEquations" )
   {

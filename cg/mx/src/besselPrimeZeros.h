@@ -1,5 +1,5 @@
  const int ndbpz=10, mdbpz=10;
- real besselPrimeZeros[ndbpz][mdbpz]={
+ Real besselPrimeZeros[ndbpz][mdbpz]={
  { // n=0
     3.83170597020751e+00,
     7.01558666981562e+00,

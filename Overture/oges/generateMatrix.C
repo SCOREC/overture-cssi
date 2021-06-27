@@ -147,9 +147,9 @@ generateMatrix( int & errorNumber )
       // If this grid is NOT used then we shift all grids that follow.
       const int shift=numberOfComponents* arraySize(grid,axis1)*arraySize(grid,axis2)*arraySize(grid,axis3);
       if( grid==0 )
-	activeGridShift[grid]=-shift;
+        activeGridShift[grid]=-shift;
       else        
-	activeGridShift[grid]=activeGridShift[grid-1]-shift;
+        activeGridShift[grid]=activeGridShift[grid-1]-shift;
     }
 
     if( debug & 8 ) printf("+++ activeGridShift[%i]=%i\n",grid,activeGridShift[grid]);
@@ -191,10 +191,10 @@ generateMatrix( int & errorNumber )
     { // equationType == userSuppliedArray )
       if (coeff[grid].getLength(axis1) < stencilLength*SQR(numberOfComponents)) 
       {
-	cout << "Oges:GenerateMatrix:ERROR first dimension of user supplied coeff array"
-	  << " is too small " << endl;
-	cout << "  ...need at least stencilLength*SQR(numberOfComponents) = " 
-	  << stencilLength*SQR(numberOfComponents) << endl;
+        cout << "Oges:GenerateMatrix:ERROR first dimension of user supplied coeff array"
+          << " is too small " << endl;
+        cout << "  ...need at least stencilLength*SQR(numberOfComponents) = " 
+          << stencilLength*SQR(numberOfComponents) << endl;
         cout << "(one extra point is needed for extrapolation and interpolation)\n";
         exit(1);
       }
@@ -213,7 +213,7 @@ generateMatrix( int & errorNumber )
     int iExtraEquation=0; // counts extra equations
 
     bool addDenseExtraEquations = (coefficientsOfDenseExtraEquations != NULL &&
-				   (*coefficientsOfDenseExtraEquations).numberOfComponentGrids()>0 ) 
+                                   (*coefficientsOfDenseExtraEquations).numberOfComponentGrids()>0 ) 
                                   && numberOfExtraEquations > 0 ;
 
     const int ndra=cg[grid].dimension(Start,axis1), ndrb=cg[grid].dimension(End,axis1);
@@ -240,12 +240,12 @@ generateMatrix( int & errorNumber )
       numberOfDenseExtraEquations=1;
       numberOfExtraEquationCoeffs = (*coefficientsOfDenseExtraEquations)[grid].getLength(3);
       if( debug & 4 )
-	printF("--OGES-- addDenseExtraEquations=%i numberOfDenseExtraEquations=%i, numCoeff=%i \n",
-	       (int)addDenseExtraEquations,numberOfDenseExtraEquations,numberOfExtraEquationCoeffs);
+        printF("--OGES-- addDenseExtraEquations=%i numberOfDenseExtraEquations=%i, numCoeff=%i \n",
+               (int)addDenseExtraEquations,numberOfDenseExtraEquations,numberOfExtraEquationCoeffs);
       
       // *wdh* 2015/10/12 -- for case when there are dense + extra equations
       if( userSuppliedEquations )
-	currentExtraEquation=numberOfExtraEquationCoeffs-1;
+        currentExtraEquation=numberOfExtraEquationCoeffs-1;
       currentExtraEquationCoeff = min(currentExtraEquationCoeff, numberOfExtraEquationCoeffs-1);
     }
 
@@ -280,12 +280,12 @@ generateMatrix( int & errorNumber )
         {
           // get equations in discrete form
 
-	  int rightNullCoeff = 0;
-	  int rightNullEqn = 0;
+          int rightNullCoeff = 0;
+          int rightNullEqn = 0;
           //....load the matrix into (ia,ja,a) (Throw away small elements)
           for( n=0; n<numberOfComponents; n++) 
           {
-	    ieqn=EQUATION_NO(n,i1,i2,i3);
+            ieqn=EQUATION_NO(n,i1,i2,i3);
             if (n==0) ieqn0=ieqn;
             if (ieqn<=0 || ieqn>numberOfEquations) 
             {
@@ -295,39 +295,39 @@ generateMatrix( int & errorNumber )
             if( isparse==0 ) IA(ieqn)=ii+1;
 
             if( iExtraEquation<extraEquations.neq && eqnExtra(iExtraEquation)==ieqn )
-	    {
+            {
               // --- user has defined this equation ---
               // This is either an extra "constraint" equation or an over-riden equation
-	      if( false )
-		printF("--OGES-- Add user extra equation %i: ieqn=%i (num-extra=%i)\n",
-		       iExtraEquation,ieqn,extraEquations.neq);
-	      
+              if( false )
+                printF("--OGES-- Add user extra equation %i: ieqn=%i (num-extra=%i)\n",
+                       iExtraEquation,ieqn,extraEquations.neq);
+              
               for( int kk=iaExtra(iExtraEquation); kk<=iaExtra(iExtraEquation+1)-1; kk++ )
-	      {
-		ii++;
+              {
+                ii++;
                 if( isparse==1 ) IA(ii)=ieqn;
-		JA(ii)=jaExtra(kk);
-		A(ii)=aExtra(kk);
+                JA(ii)=jaExtra(kk);
+                A(ii)=aExtra(kk);
 
-	  	if( false )
-		{
-		  printF("  Extra eqn=%i kk=%5i : (i,j,a)=(%i,%i,%12.4e)\n",iExtraEquation,kk,ieqn,jaExtra(kk),aExtra(kk));
-		}
-	  
+                if( false )
+                {
+                  printF("  Extra eqn=%i kk=%5i : (i,j,a)=(%i,%i,%12.4e)\n",iExtraEquation,kk,ieqn,jaExtra(kk),aExtra(kk));
+                }
+          
 
-	      }
-	      iExtraEquation++;
-	    }
+              }
+              iExtraEquation++;
+            }
             else if( CLASSIFYX(i1,i2,i3,n)==SparseRepForMGF::unused ) 
             {
-	      // null equation, set to the identity
-	      ii++;
-	      if( ii > Oges::ndja ) 
-	      {
-		cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
-		generateMatrixError( Oges::nda,ieqn );
-		return;
-	      }
+              // null equation, set to the identity
+              ii++;
+              if( ii > Oges::ndja ) 
+              {
+                cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
+                generateMatrixError( Oges::nda,ieqn );
+                return;
+              }
               if( isparse==1 ) IA(ii)=ieqn;
               if( sparseStorageFormat!=other ) 
               {
@@ -338,98 +338,98 @@ generateMatrix( int & errorNumber )
               {
                 equationSolver[parameters.solver]->setMatrixElement(ii,ieqn,ieqn,1.0);
               }
-	    }
-	    else if( CLASSIFYX(i1,i2,i3,n)<10 ) // *wdh* 010227: don't fill in extra equation, problem if extra is not last
-	    {
-	      // compute a scale factor; used to throw away small values
-	      // *wdh* scale = max(fabs(COEFF(S,n,i1,i2,i3)))*2.*parameters.matrixCutoff;
+            }
+            else if( CLASSIFYX(i1,i2,i3,n)<10 ) // *wdh* 010227: don't fill in extra equation, problem if extra is not last
+            {
+              // compute a scale factor; used to throw away small values
+              // *wdh* scale = max(fabs(COEFF(S,n,i1,i2,i3)))*2.*parameters.matrixCutoff;
               scale=0;
               for( int s=0; s<stencilDim; s++)
                 scale=max(scale,fabs(COEFF(s,n,i1,i2,i3)));
-	      scale*=2.*parameters.matrixCutoff;
-	      if (scale==0.) 
-	      {
+              scale*=2.*parameters.matrixCutoff;
+              if (scale==0.) 
+              {
                 if( CLASSIFYX(i1,i2,i3,n)<10 ) 
                 {// ***** >=10 : extra equation point **** should be classifyX
-  		  cout << "Oges:generateMatrix:ERROR matrix has a row with all zero coefficients \n";
+                  cout << "Oges:generateMatrix:ERROR matrix has a row with all zero coefficients \n";
                   printf("The offending equation is (i1,i2,i3,n,grid)=(%i,%i,%i,%i,%i)\n",i1,i2,i3,n,grid);
                   printf("...classify(i1,i2,i3,n)=%i\n",CLASSIFYX(i1,i2,i3,n));
-		  Overture::abort("Oges:ERROR");
+                  Overture::abort("Oges:ERROR");
                 }
-		else 
-		{
+                else 
+                {
                   break;
-		}
-	      }
+                }
+              }
 
-	      for( i=0; i<stencilDim; i++ ) 
-	      {
-		//  printf("i1=%i,I2=%i,i3=%i, ieqn=%i, coeff=%e \n",i1,i2,i3,ieqn,COEFF(i,n,i1,i2,i3));
+              for( i=0; i<stencilDim; i++ ) 
+              {
+                //  printf("i1=%i,I2=%i,i3=%i, ieqn=%i, coeff=%e \n",i1,i2,i3,ieqn,COEFF(i,n,i1,i2,i3));
                 coeffn = COEFF(i,n,i1,i2,i3);
-		if( fabs(coeffn)>scale ) 
-		{
+                if( fabs(coeffn)>scale ) 
+                {
                   // ***NOTE*** here we assume jeqn is an equation on "grid"=grid --
                   //   This is usually always the case (except for interpolation equations)
                   //   unless the user plays some funny games.
 
-		  jeqn = EQUATIONNUMBER(i,n,i1,i2,i3);
+                  jeqn = EQUATIONNUMBER(i,n,i1,i2,i3);
                   if( useSomeGrids )
-		  { 
+                  { 
                     // jeqn may refer to a point on the current grid or another grid (e.g. interpolation equation)
                     int grid2=grid;
                     if( jeqn>=gridEqnBase(grid) && jeqn<=gridEqnBase(grid+1) )
-		    {
-		      // this equation is on the same grid
+                    {
+                      // this equation is on the same grid
                     }
-		    else
-		    {
+                    else
+                    {
                       // this equation does not refer to a point on this grid
                       // find grid2 ... check if it is active, if not, do not include
                       // *** we could do better here for interpolation points ****
                       if( jeqn < gridEqnBase(grid2) )
-		      {
+                      {
                         grid2--;
-			while( grid2>=0 && jeqn < gridEqnBase(grid2) )
-			  grid2--;
-		      }
-		      else
-		      {
+                        while( grid2>=0 && jeqn < gridEqnBase(grid2) )
+                          grid2--;
+                      }
+                      else
+                      {
                         grid2++;
-			while( grid2<numberOfGrids && jeqn > gridEqnBase(grid2+1) )
-			  grid2++;
-		      }
+                        while( grid2<numberOfGrids && jeqn > gridEqnBase(grid2+1) )
+                          grid2++;
+                      }
                       if( grid2<0 || grid2>=numberOfGrids )
-		      {
+                      {
                         cout << "Oges::generateMatrix:useSomeGrids: error looking for grid2" << endl;
-		        generateMatrixError(Oges::nda,ieqn);
-		        return;
-		      }
+                        generateMatrixError(Oges::nda,ieqn);
+                        return;
+                      }
 
                       // printf("grid=%i: ieqn=%i jeqn=%i -> grid2=%i\n",grid,ieqn,jeqn,grid2);
-		      
+                      
                       if( !useThisGrid(grid2) )
-		      {
+                      {
                         continue;  // skip this coefficient, it is not on an active grid
-		      }
-		    }
-		    jeqn+=activeGridShift[grid2];
-		  } // end if useSomeGrids
+                      }
+                    }
+                    jeqn+=activeGridShift[grid2];
+                  } // end if useSomeGrids
 
-		  if( jeqn<=0 || jeqn>numberOfEquations ) 
-		  {
-		    cout << "generateMatrix: jeqn out of range, jeqn=" << jeqn 
-		      << " <0 or > numberOfEquations=" << numberOfEquations<< endl;
-		    printf(" i1=%i, i2=%i, i3=%i, grid=%i, i=%i, classify=%i "
-			   " stencilLength=%i, coeff=%e \n", i1,i2,i3,grid,i,
-			   CLASSIFYX(n,i1,i2,i3),stencilLength,COEFF(i,n,i1,i2,i3) );
-		  }
-		  ii++;
-		  if( ii>Oges::ndja ) 
-		  {
-		    cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
-		    generateMatrixError(Oges::nda,ieqn);
-		    return;
-		  }
+                  if( jeqn<=0 || jeqn>numberOfEquations ) 
+                  {
+                    cout << "generateMatrix: jeqn out of range, jeqn=" << jeqn 
+                      << " <0 or > numberOfEquations=" << numberOfEquations<< endl;
+                    printf(" i1=%i, i2=%i, i3=%i, grid=%i, i=%i, classify=%i "
+                           " stencilLength=%i, coeff=%e \n", i1,i2,i3,grid,i,
+                           CLASSIFYX(n,i1,i2,i3),stencilLength,COEFF(i,n,i1,i2,i3) );
+                  }
+                  ii++;
+                  if( ii>Oges::ndja ) 
+                  {
+                    cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
+                    generateMatrixError(Oges::nda,ieqn);
+                    return;
+                  }
                   if( isparse==1 ) IA(ii)=ieqn;
                   if( sparseStorageFormat!=other ) 
                   {
@@ -440,35 +440,35 @@ generateMatrix( int & errorNumber )
                   {
                     equationSolver[parameters.solver]->setMatrixElement(ii,ieqn,jeqn,coeffn);
                   }
-		}
-	      } // end for i...stencilDim
-	      
-	      // kkc 090903 generalized the following section for multiple dense constraint equations
-	      //            Note that we assume that there are at most numberOfComponents extra equations right now and
-	      //            that these contraint equations are like integral constraints, i.e. vector * soln(n) = value.
-	      //            The last comment implies that the coefficients must be nonzero... (see the value!=0. thing below)
+                }
+              } // end for i...stencilDim
+              
+              // kkc 090903 generalized the following section for multiple dense constraint equations
+              //            Note that we assume that there are at most numberOfComponents extra equations right now and
+              //            that these contraint equations are like integral constraints, i.e. vector * soln(n) = value.
+              //            The last comment implies that the coefficients must be nonzero... (see the value!=0. thing below)
               if( parameters.compatibilityConstraint && rightNullCoeff<numberOfExtraEquationCoeffs //&&
-		  //		  		  rightNullEqn<numberOfExtraEquations  // kkc 100308 added this last bit
-		  /*n<numberOfExtraEquations*/ /*kkc 090903 n==0*/  ) //!!! kkc 060731 shouldn't RIGHTNULL have "n" as a subscript!?
+                  //                              rightNullEqn<numberOfExtraEquations  // kkc 100308 added this last bit
+                  /*n<numberOfExtraEquations*/ /*kkc 090903 n==0*/  ) //!!! kkc 060731 shouldn't RIGHTNULL have "n" as a subscript!?
               {
 
                 // --------------------------------------------------------------------------------
-	        // -- add compatibility constraint as the last entry in the matrix for this row ---
+                // -- add compatibility constraint as the last entry in the matrix for this row ---
                 // --------------------------------------------------------------------------------
 
                 real value = RIGHTNULL(i1,i2,i3,rightNullCoeff); // kkc 090903 RIGHTNULL now has the extra subscript
-		//		extraEquationNumber0 = extraEquationNumber(n); // and we need to get the correct extra equation number for this component
-		//                if( value != 0. ) 
+                //              extraEquationNumber0 = extraEquationNumber(n); // and we need to get the correct extra equation number for this component
+                //                if( value != 0. ) 
                 if( fabs(value) > 10*REAL_MIN )// != 0. ) 
                 {
-		  extraEquationNumber0 = extraEquationNumber(rightNullEqn);
-		  ii++;
-		  if( ii>Oges::ndja ) 
-		  {
-		    cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
-		    generateMatrixError(Oges::nda,ieqn);
-		    return;
-		  }
+                  extraEquationNumber0 = extraEquationNumber(rightNullEqn);
+                  ii++;
+                  if( ii>Oges::ndja ) 
+                  {
+                    cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
+                    generateMatrixError(Oges::nda,ieqn);
+                    return;
+                  }
                   if( isparse==1 ) IA(ii)=ieqn;
                   if( sparseStorageFormat!=other ) 
                   {
@@ -479,123 +479,123 @@ generateMatrix( int & errorNumber )
                   {
                     equationSolver[parameters.solver]->setMatrixElement(ii,ieqn,extraEquationNumber0,value);
                   }
-		  rightNullEqn++;
-		} // if value!=0.
-		rightNullCoeff++;
-	      } // if add the right null vector coeffs
+                  rightNullEqn++;
+                } // if value!=0.
+                rightNullCoeff++;
+              } // if add the right null vector coeffs
 
             } // end if CLASSIFYX<10
-	  } // end for n
-	  
-	  
+          } // end for n
+          
+          
           // ------------------------------------------------------------------------------
           // Add in "dense" extra equations such as those equations that define
           // an "integral" type constraint (e.g. setting the mean pressure to zero)
           // *** Fix this -- only works for one dense equation **** FIXED 090903
           // ------------------------------------------------------------------------------
 
-	  //          if (ieqn0==extraEquationNumber0 && addDenseExtraEquations ) 
-	  // kkc 060801 !!!!! for coeff functions with more than one component, the extra equation
-	  //                  needs to be placed in the last equation otherwise the current sparse matrix
-	  //                  formatting gets messed up (or skipped depending on what findExtraEquations does)
-	  //                  This issue should probably be fixed when fix the code to allow more than one extra eqn.
-	  //                  See findExtraEquations for some more detail.
-	  //
-	  //                  Also note that the code only seemed to work with one component meaning that eqn0==eqn always.
+          //          if (ieqn0==extraEquationNumber0 && addDenseExtraEquations ) 
+          // kkc 060801 !!!!! for coeff functions with more than one component, the extra equation
+          //                  needs to be placed in the last equation otherwise the current sparse matrix
+          //                  formatting gets messed up (or skipped depending on what findExtraEquations does)
+          //                  This issue should probably be fixed when fix the code to allow more than one extra eqn.
+          //                  See findExtraEquations for some more detail.
+          //
+          //                  Also note that the code only seemed to work with one component meaning that eqn0==eqn always.
 
-	  // kkc 090903 fixed to work with up to numberOfComponents dense equations
-	  // kkc 090903         if (ieqn==extraEquationNumber0 && addDenseExtraEquations ) 
+          // kkc 090903 fixed to work with up to numberOfComponents dense equations
+          // kkc 090903         if (ieqn==extraEquationNumber0 && addDenseExtraEquations ) 
                                         //this part of the if statement should not be executed when addDenseExtraEquations==false
           if (addDenseExtraEquations && ieqn==extraEquationNumber(currentExtraEquation) )
           {
             // NOTE: coefficientsOfDenseExtraEquations can point to the rightNullVector 
 
 
-	    extraEquationNumber0 = extraEquationNumber(currentExtraEquation);
+            extraEquationNumber0 = extraEquationNumber(currentExtraEquation);
             if( debug & 2 ) 
             {
               printF("--OGES-- generate: adding denseExtraEquation currentExtraEquation=%i ieqn=%i ...\n",
-		     currentExtraEquation,ieqn);
+                     currentExtraEquation,ieqn);
             }
             real cdc;
             scale=parameters.matrixCutoff;  // *******
-            int gridc;	      
-	    int nExtraCoeffAdded = 0;
-	    bool found = false;
-	    while ( !found && currentExtraEquationCoeff>=0 )
-	      { 
-		for (gridc=0;gridc<(*coefficientsOfDenseExtraEquations).numberOfComponentGrids();gridc++) 
-		  {
-		    RealDistributedArray & c = (*coefficientsOfDenseExtraEquations)[gridc];
-		    const real *cp = c.Array_Descriptor.Array_View_Pointer3;
-		    const int cDim0=c.getRawDataSize(0);
-		    const int cDim1=c.getRawDataSize(1);
-		    const int cDim2=c.getRawDataSize(2);
+            int gridc;        
+            int nExtraCoeffAdded = 0;
+            bool found = false;
+            while ( !found && currentExtraEquationCoeff>=0 )
+              { 
+                for (gridc=0;gridc<(*coefficientsOfDenseExtraEquations).numberOfComponentGrids();gridc++) 
+                  {
+                    RealDistributedArray & c = (*coefficientsOfDenseExtraEquations)[gridc];
+                    const real *cp = c.Array_Descriptor.Array_View_Pointer3;
+                    const int cDim0=c.getRawDataSize(0);
+                    const int cDim1=c.getRawDataSize(1);
+                    const int cDim2=c.getRawDataSize(2);
 #define CC(i0,i1,i2,i3) cp[i0+cDim0*(i1+cDim1*(i2+cDim2*(i3)))]
 
-		    int base4=c.getBase(axis3+1);
-		    // **** should the nc loop go outside or inside
-		    const int c1a=c.getBase(axis1), c1b=c.getBound(axis1);
-		    const int c2a=c.getBase(axis2), c2b=c.getBound(axis2);
-		    const int c3a=c.getBase(axis3), c3b=c.getBound(axis3);
-		    
-		    //kkc 090903   for (int nc=c.getBase(axis3+1);nc<=c.getBound(axis3+1);nc++) 
-		    int nc = currentExtraEquationCoeff;
-		    // if( true )
-		    // {  // ********** TEMP **********
-		    //   Range all;
-		    //   ::display(c(all,all,all,nc),"extra","%6.2f ");
-		    // }
-		    
-		    {
-		      for(int i3c=c3a; i3c<=c3b; i3c++ ) 
-			{
-			  for(int i2c=c2a; i2c<=c2b; i2c++ ) 
-			    {
-			      for( int i1c=c1a; i1c<=c1b; i1c++ ) 
-				{
-				  cdc = CC(i1c,i2c,i3c,nc);
-				  if( fabs(cdc)>scale ) 
-				    {
-				      jeqn = equationNo(nc-base4,i1c,i2c,i3c,gridc); 
+                    int base4=c.getBase(axis3+1);
+                    // **** should the nc loop go outside or inside
+                    const int c1a=c.getBase(axis1), c1b=c.getBound(axis1);
+                    const int c2a=c.getBase(axis2), c2b=c.getBound(axis2);
+                    const int c3a=c.getBase(axis3), c3b=c.getBound(axis3);
+                    
+                    //kkc 090903   for (int nc=c.getBase(axis3+1);nc<=c.getBound(axis3+1);nc++) 
+                    int nc = currentExtraEquationCoeff;
+                    // if( true )
+                    // {  // ********** TEMP **********
+                    //   Range all;
+                    //   ::display(c(all,all,all,nc),"extra","%6.2f ");
+                    // }
+                    
+                    {
+                      for(int i3c=c3a; i3c<=c3b; i3c++ ) 
+                        {
+                          for(int i2c=c2a; i2c<=c2b; i2c++ ) 
+                            {
+                              for( int i1c=c1a; i1c<=c1b; i1c++ ) 
+                                {
+                                  cdc = CC(i1c,i2c,i3c,nc);
+                                  if( fabs(cdc)>scale ) 
+                                    {
+                                      jeqn = equationNo(nc-base4,i1c,i2c,i3c,gridc); 
 
-				      // printF("--OGES-- extra-eqn: nc=%i base4=%i ieqn=%i jeqn=%i cdc=%9.3e\n",nc,base4,ieqn,jeqn,cdc);
-				      
-				      if (jeqn<0 || jeqn>numberOfEquations) 
-					{
-					  cout << "generate:2 jeqn out of range, jeqn=" << jeqn << endl;
-					}
-				      ii++;
-				      if( ii>Oges::ndja ) 
-					{
-					  cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
-					  generateMatrixError(Oges::nda,ieqn);
-					  return;
-					}
-				      if( isparse==1 ) IA(ii)=ieqn;
-				      if( sparseStorageFormat!=other ) 
-					{
-					  JA(ii)=jeqn;
-					  A(ii)=cdc;
-					}
-				      else 
-					{
-					  equationSolver[parameters.solver]->setMatrixElement(ii,ieqn,jeqn,cdc);
-					}
-				      nExtraCoeffAdded++;
-				    }
-				} // end for i1c
-			    }// end for i2c
-			}// end for i3c
-		    }// end for nc
-		  }// end for gridc
-		currentExtraEquationCoeff--;
-		found = nExtraCoeffAdded>0;
-	      } // while !found
-	    if ( found ) currentExtraEquation--;
-	    addDenseExtraEquations = currentExtraEquation>=0;
-	  } // end if add extra eqn
-	} // end for i1
+                                      // printF("--OGES-- extra-eqn: nc=%i base4=%i ieqn=%i jeqn=%i cdc=%9.3e\n",nc,base4,ieqn,jeqn,cdc);
+                                      
+                                      if (jeqn<0 || jeqn>numberOfEquations) 
+                                        {
+                                          cout << "generate:2 jeqn out of range, jeqn=" << jeqn << endl;
+                                        }
+                                      ii++;
+                                      if( ii>Oges::ndja ) 
+                                        {
+                                          cout << "Oges::generateMatrix: ...not enough space to store matrix" << endl;
+                                          generateMatrixError(Oges::nda,ieqn);
+                                          return;
+                                        }
+                                      if( isparse==1 ) IA(ii)=ieqn;
+                                      if( sparseStorageFormat!=other ) 
+                                        {
+                                          JA(ii)=jeqn;
+                                          A(ii)=cdc;
+                                        }
+                                      else 
+                                        {
+                                          equationSolver[parameters.solver]->setMatrixElement(ii,ieqn,jeqn,cdc);
+                                        }
+                                      nExtraCoeffAdded++;
+                                    }
+                                } // end for i1c
+                            }// end for i2c
+                        }// end for i3c
+                    }// end for nc
+                  }// end for gridc
+                currentExtraEquationCoeff--;
+                found = nExtraCoeffAdded>0;
+              } // while !found
+            if ( found ) currentExtraEquation--;
+            addDenseExtraEquations = currentExtraEquation>=0;
+          } // end if add extra eqn
+        } // end for i1
       } // end for i2
     } // end for i3
     cpuFill+=getCPU()-cpu1;
@@ -674,9 +674,9 @@ generateMatrix( int & errorNumber )
     {
       if( parameters.solveForTranspose )
       {
-	// sort new ia
-	int kflag=1;
-	QS2I1( IA(1), JA(1), A(1), numberOfNonzeros, kflag );
+        // sort new ia
+        int kflag=1;
+        QS2I1( IA(1), JA(1), A(1), numberOfNonzeros, kflag );
       }
 
       int j=1;

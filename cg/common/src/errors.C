@@ -8,7 +8,7 @@
 
 void DomainSolver::
 determineErrors(GridFunction & cgf,
-		const aString & label /* =nullString */)
+                const aString & label /* =nullString */)
 //===================================================================
 /// \brief 
 ///     Compute the errors in the computed solution
@@ -31,11 +31,11 @@ determineErrors(GridFunction & cgf,
 
 void DomainSolver::
 determineErrors(realCompositeGridFunction & u,
-		realMappedGridFunction **gridVelocity,
-		const real & t, 
-		const int options,
+                realMappedGridFunction **gridVelocity,
+                const real & t, 
+                const int options,
                 RealArray & err,
-		const aString & label /* =nullString */  )
+                const aString & label /* =nullString */  )
 //===================================================================
 /// \brief 
 ///     Compute the errors in the computed solution
@@ -53,7 +53,7 @@ determineErrors(realCompositeGridFunction & u,
   Index I1,I2,I3;
   
   bool outputErrors = ( !parameters.dbase.get<bool >("twilightZoneFlow") &&  
-			!parameters.dbase.get<realCompositeGridFunction* >("pKnownSolution") );
+                        !parameters.dbase.get<realCompositeGridFunction* >("pKnownSolution") );
 
   if( debug() & 2 )
     fPrintF(parameters.dbase.get<FILE* >("debugFile"),"--DS-- determineErrors: outputErrors=%i\n",(int)outputErrors);
@@ -65,8 +65,8 @@ determineErrors(realCompositeGridFunction & u,
     {
       if( parameters.dbase.get<int >("myid")==0 )
       {
-	fprintf(parameters.dbase.get<FILE* >("debugFile"),(const char*)label);
-	if( parameters.dbase.get<FILE* >("debugFile")!=parameters.dbase.get<FILE* >("pDebugFile") )
+        fprintf(parameters.dbase.get<FILE* >("debugFile"),(const char*)label);
+        if( parameters.dbase.get<FILE* >("debugFile")!=parameters.dbase.get<FILE* >("pDebugFile") )
           fprintf(parameters.dbase.get<FILE* >("pDebugFile"),(const char*)label);
       }
     }
@@ -81,11 +81,11 @@ determineErrors(realCompositeGridFunction & u,
 
       if( parameters.dbase.get<int >("myid")==0 )
       {
-	fprintf(parameters.dbase.get<FILE* >("debugFile")," -----  t = %10.3e \n",t);
-	int n;
-	for( n=0; n<parameters.dbase.get<int >("numberOfComponents"); n++ )
-	  fprintf(parameters.dbase.get<FILE* >("debugFile"),"   %10s : (min,max)=(%14.7e,%14.7e) \n",(const char*)parameters.dbase.get<aString* >("componentName")[n],
-		  uMin(n),uMax(n));
+        fprintf(parameters.dbase.get<FILE* >("debugFile")," -----  t = %10.3e \n",t);
+        int n;
+        for( n=0; n<numberOfComponents; n++ )
+          fprintf(parameters.dbase.get<FILE* >("debugFile"),"   %10s : (min,max)=(%14.7e,%14.7e) \n",(const char*)parameters.dbase.get<aString* >("componentName")[n],
+                  uMin(n),uMax(n));
       }
       
     }
@@ -106,8 +106,32 @@ determineErrors(realCompositeGridFunction & u,
     realCompositeGridFunction & uKnown = parameters.getKnownSolution( cg, t );
     
 
-    realCompositeGridFunction v;  // **fix me for parallel**
-    v=u-uKnown;
+    // realCompositeGridFunction v;  // **fix me for parallel**
+    // v=u-uKnown;
+
+    // printF("determineErrors: Compute error in the known solution at time t=%9.3e\n",t);
+
+    // realCompositeGridFunction v;  // **fix me for parallel**
+    // v=u-uKnown;
+
+    /// April 18, 2021 -- save errors in a grid function for plotting *wdh*
+    if( !parameters.dbase.has_key("errorGridFunction") )
+    {
+      parameters.dbase.put<realCompositeGridFunction>("errorGridFunction");
+    }
+    realCompositeGridFunction & v = parameters.dbase.get<realCompositeGridFunction>("errorGridFunction"); 
+    Range all;
+    v.updateToMatchGrid(cg,all,all,all,numberOfComponents);
+    
+    for( int grid=0; grid<cg.numberOfComponentGrids(); grid++ )
+    {
+      OV_GET_SERIAL_ARRAY(real,u[grid],uLocal);
+      OV_GET_SERIAL_ARRAY(real,uKnown[grid],uKnownLocal);
+      OV_GET_SERIAL_ARRAY(real,v[grid],vLocal);
+
+      vLocal = uLocal - uKnownLocal;
+    }
+
     const int maskOption=0;  // check points where mask != 0
 
     // We print the max norm and optionally some lp norms
@@ -118,27 +142,37 @@ determineErrors(realCompositeGridFunction & u,
     { // inorm==0 : max-norm, otherwise Lp-norm with p=norm
       int pNorm = inorm==0 ? INT_MAX : inorm;
       err=0.;
-      for( int n=0; n<parameters.dbase.get<int >("numberOfComponents"); n++ )
+      for( int n=0; n<numberOfComponents; n++ )
       {
-	if( pNorm<10000 )
-	{
-	  err(n)=lpNorm(pNorm,v,n,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
-	}
-	else
-	{ // assume this is the max-norm
-	  err(n)=maxNorm(v,n,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
-	}
+        if( pNorm<10000 )
+        {
+          err(n)=lpNorm(pNorm,v,n,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+        }
+        else
+        { // assume this is the max-norm
+          err(n)=maxNorm(v,n,maskOption,parameters.dbase.get<int >("checkErrorsAtGhostPoints") );
+        }
       }
 
       aString normName;
       if( pNorm<1000 )
-	sPrintF(normName,"l%i-norm",pNorm);
+        sPrintF(normName,"l%i-norm",pNorm);
       else
-	normName="maxNorm";
-      printf("determineErrors: t=%9.3e, %s errors: [rho,u,v,T]=[%8.2e,%8.2e,%8.2e,%8.2e]\n",t,(const char*)normName,
-	     err(0),err(1),err(2),err(3));
+        normName="maxNorm";
+
+      // printf("determineErrors: t=%9.3e, %s errors: [rho,u,v,T]=[%8.2e,%8.2e,%8.2e,%8.2e]\n",t,(const char*)normName,
+      //        err(0),err(1),err(2),err(3));
+      const int numFilesToWrite = debug()>0 ? 2 : 1;
+      for( int io=0; io<numFilesToWrite; io++ )
+      {
+        FILE *file = io==0 ? stdout : parameters.dbase.get<FILE* >("debugFile");
+        fPrintF(file,"---- determineErrors at t=%9.3e,  %s errors: [%8.2e",t,(const char*)normName,err(0));
+        for( int n=1; n<numberOfComponents; n++ )
+          fPrintF(file,",%8.2e",err(n));
+        fPrintF(file,"]\n");
+      }
     }
-    
+
 
 //     errk=0.;
 //     err=0.;
@@ -148,16 +182,16 @@ determineErrors(realCompositeGridFunction & u,
 //       getIndex(cg[grid].gridIndexRange(),I1,I2,I3,parameters.dbase.get<int >("checkErrorsAtGhostPoints"));
 //       where( mask(I1,I2,I3)!=0 )
 //       {
-// 	for( int n=0; n<parameters.dbase.get<int >("numberOfComponents"); n++ )
-// 	{
-// 	  errk(grid,n)=max(errk(grid,n),max(fabs(u[grid](I1,I2,I3,n)-uKnown[grid](I1,I2,I3,n)))); 
-// 	  err(n)=max(err(n),errk(grid,n));
-// 	}
-	  
+//      for( int n=0; n<numberOfComponents; n++ )
+//      {
+//        errk(grid,n)=max(errk(grid,n),max(fabs(u[grid](I1,I2,I3,n)-uKnown[grid](I1,I2,I3,n)))); 
+//        err(n)=max(err(n),errk(grid,n));
+//      }
+          
 //       }
 //     }
 //     printf("determineErrors: t=%9.3e, Max errors: [rho,u,v,T]=[%8.2e,%8.2e,%8.2e,%8.2e]\n",t,
-//     	   err(0),err(1),err(2),err(3));
+//         err(0),err(1),err(2),err(3));
 
 
     return;
@@ -236,186 +270,186 @@ determineErrors(realCompositeGridFunction & u,
       if( n1a<=n1b && n2a<=n2b && n3a<=n3b )
       {
 
-	I1=Range(n1a,n1b);
-	I2=Range(n2a,n2b);
-	I3=Range(n3a,n3b);
+        I1=Range(n1a,n1b);
+        I2=Range(n2a,n2b);
+        I3=Range(n3a,n3b);
 
-	realSerialArray ee(I1,I2,I3,Range(n,n));
-	const bool isRectangular=false; // do this for now
-	if( options==0 )
-	{
+        realSerialArray ee(I1,I2,I3,Range(n,n));
+        const bool isRectangular=false; // do this for now
+        if( options==0 )
+        {
 
           // get the exact solution
-	  e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,t);
+          e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,t);
 
-	  // ee=e(c,I1,I2,I3,n,t);
-	  
-	}
-	else
-	{
-	  if( !parameters.useConservativeVariables() )
-	  {
+          // ee=e(c,I1,I2,I3,n,t);
+          
+        }
+        else
+        {
+          if( !parameters.useConservativeVariables() )
+          {
             // get the time derivative of the exact solution
-	    e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
+            e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
 
-	    // ee=e.t(c,I1,I2,I3,n,t);
-	  }
-	  else
-	  {
+            // ee=e.t(c,I1,I2,I3,n,t);
+          }
+          else
+          {
             // ***** errors for conservative variables ******
-	    const int rc = parameters.dbase.get<int >("rc");
-	    const int uc = parameters.dbase.get<int >("uc");
-	    const int vc = parameters.dbase.get<int >("vc");
-	    const int wc = parameters.dbase.get<int >("wc");
-	    const int tc = parameters.dbase.get<int >("tc");
-	  
-	    if( n==rc )
-	    {
-	      e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
-	      // ee=e.t(c,I1,I2,I3,rc,t);
-	    }
-	    else if( n==uc || n==vc || n==wc )
-	    {
-	      realSerialArray r(I1,I2,I3), rt(I1,I2,I3), u(I1,I2,I3), ut(I1,I2,I3);
-	      e.gd( r ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,rc,t);
-	      e.gd( rt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,rc,t);
+            const int rc = parameters.dbase.get<int >("rc");
+            const int uc = parameters.dbase.get<int >("uc");
+            const int vc = parameters.dbase.get<int >("vc");
+            const int wc = parameters.dbase.get<int >("wc");
+            const int tc = parameters.dbase.get<int >("tc");
+          
+            if( n==rc )
+            {
+              e.gd( ee,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
+              // ee=e.t(c,I1,I2,I3,rc,t);
+            }
+            else if( n==uc || n==vc || n==wc )
+            {
+              realSerialArray r(I1,I2,I3), rt(I1,I2,I3), u(I1,I2,I3), ut(I1,I2,I3);
+              e.gd( r ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,rc,t);
+              e.gd( rt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,rc,t);
 
-	      e.gd( u ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,t);
-	      e.gd( ut,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
+              e.gd( u ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,n,t);
+              e.gd( ut,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,n,t);
 
-	      ee=rt*u+r*ut; 
-	    }
-	    else
-	    {
-	      // Energy = rho*( (Rg/(gamma-1.))*te+ .5*(uu*uu+v*v) ); 
-	      const real Rg = parameters.dbase.get<real >("Rg");
-	      const real gamma = parameters.dbase.get<real >("gamma");
-	    
-	      realSerialArray r(I1,I2,I3), rt(I1,I2,I3), u(I1,I2,I3), ut(I1,I2,I3), v(I1,I2,I3), vt(I1,I2,I3),
-		te(I1,I2,I3), tet(I1,I2,I3);
-	      e.gd( r ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,rc,t);
-	      e.gd( rt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,rc,t);
+              ee=rt*u+r*ut; 
+            }
+            else
+            {
+              // Energy = rho*( (Rg/(gamma-1.))*te+ .5*(uu*uu+v*v) ); 
+              const real Rg = parameters.dbase.get<real >("Rg");
+              const real gamma = parameters.dbase.get<real >("gamma");
+            
+              realSerialArray r(I1,I2,I3), rt(I1,I2,I3), u(I1,I2,I3), ut(I1,I2,I3), v(I1,I2,I3), vt(I1,I2,I3),
+                te(I1,I2,I3), tet(I1,I2,I3);
+              e.gd( r ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,rc,t);
+              e.gd( rt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,rc,t);
 
-	      e.gd( te ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,tc,t);
-	      e.gd( tet,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,tc,t);
+              e.gd( te ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,tc,t);
+              e.gd( tet,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,tc,t);
 
-	      e.gd( u ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,uc,t);
-	      e.gd( ut,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,uc,t);
+              e.gd( u ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,uc,t);
+              e.gd( ut,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,uc,t);
 
-	      e.gd( v ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,vc,t);
-	      e.gd( vt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,vc,t);
+              e.gd( v ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,vc,t);
+              e.gd( vt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,vc,t);
 
-	      realSerialArray energy; 
-	      if( c.numberOfDimensions()==2 )
-	      {
-		energy = r*( Rg/(gamma-1.)*te + .5*( u*u+v*v ) );
-		ee=rt*energy/r+r*( (Rg/(gamma-1.))*tet +  u*ut +v*vt );
-	      
-	      }
-	      else
-	      {
-		realSerialArray w(I1,I2,I3), wt(I1,I2,I3);
-		e.gd( w ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,wc,t);
-		e.gd( wt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,wc,t);
-	      
-		energy = r*( Rg/(gamma-1.)*te + .5*( u*u+v*v+w*w ) );
-		ee=rt*energy/r+r*( (Rg/(gamma-1.))*tet +  u*ut + v*vt + w*wt );
-	      }
-	    
-// 	    const realArray & r  = e(c,I1,I2,I3,rc,t);
-// 	    const realArray & uu = e(c,I1,I2,I3,uc,t);
-// 	    const realArray & vv = e(c,I1,I2,I3,vc,t);
-// 	    const realArray & te = e(c,I1,I2,I3,tc,t);
-	  
-// 	    const realArray & energy = evaluate( r*( Rg/(gamma-1.)*te + .5*( uu*uu+vv*vv ) ) );
-// 	    ee=e.t(c,I1,I2,I3,rc,t)*energy/r+r*( (Rg/(gamma-1.))*e.t(c,I1,I2,I3,tc,t) +
-// 						 uu*e.t(c,I1,I2,I3,uc,t)+vv*e.t(c,I1,I2,I3,vc,t) );
-	    }
-	  }
-	  if( parameters.gridIsMoving(grid) )
-	  {
+              realSerialArray energy; 
+              if( c.numberOfDimensions()==2 )
+              {
+                energy = r*( Rg/(gamma-1.)*te + .5*( u*u+v*v ) );
+                ee=rt*energy/r+r*( (Rg/(gamma-1.))*tet +  u*ut +v*vt );
+              
+              }
+              else
+              {
+                realSerialArray w(I1,I2,I3), wt(I1,I2,I3);
+                e.gd( w ,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,0,I1,I2,I3,wc,t);
+                e.gd( wt,xLocal,c.numberOfDimensions(),isRectangular,1,0,0,0,I1,I2,I3,wc,t);
+              
+                energy = r*( Rg/(gamma-1.)*te + .5*( u*u+v*v+w*w ) );
+                ee=rt*energy/r+r*( (Rg/(gamma-1.))*tet +  u*ut + v*vt + w*wt );
+              }
+            
+//          const realArray & r  = e(c,I1,I2,I3,rc,t);
+//          const realArray & uu = e(c,I1,I2,I3,uc,t);
+//          const realArray & vv = e(c,I1,I2,I3,vc,t);
+//          const realArray & te = e(c,I1,I2,I3,tc,t);
+          
+//          const realArray & energy = evaluate( r*( Rg/(gamma-1.)*te + .5*( uu*uu+vv*vv ) ) );
+//          ee=e.t(c,I1,I2,I3,rc,t)*energy/r+r*( (Rg/(gamma-1.))*e.t(c,I1,I2,I3,tc,t) +
+//                                               uu*e.t(c,I1,I2,I3,uc,t)+vv*e.t(c,I1,I2,I3,vc,t) );
+            }
+          }
+          if( parameters.gridIsMoving(grid) )
+          {
             #ifdef USE_PPP
-	     realSerialArray gridVelocityLocal; getLocalArrayWithGhostBoundaries((*gridVelocity[grid]),gridVelocityLocal);
-	    #else
-	     const realSerialArray & gridVelocityLocal =(*gridVelocity[grid]); 
+             realSerialArray gridVelocityLocal; getLocalArrayWithGhostBoundaries((*gridVelocity[grid]),gridVelocityLocal);
+            #else
+             const realSerialArray & gridVelocityLocal =(*gridVelocity[grid]); 
             #endif
 
 
-	    realSerialArray ux(I1,I2,I3),uy(I1,I2,I3);
-	    e.gd( ux,xLocal,c.numberOfDimensions(),isRectangular,0,1,0,0,I1,I2,I3,n,t);
-	    e.gd( uy,xLocal,c.numberOfDimensions(),isRectangular,0,0,1,0,I1,I2,I3,n,t);
-	  
-	    if( c.numberOfDimensions()==2 )
-	    {
-	      ee+=gridVelocityLocal(I1,I2,I3,0)*ux+gridVelocityLocal(I1,I2,I3,1)*uy;
-	    }
-	    else
-	    {
-	      realSerialArray uz(I1,I2,I3); 
-	      e.gd( uz,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,1,I1,I2,I3,n,t);
+            realSerialArray ux(I1,I2,I3),uy(I1,I2,I3);
+            e.gd( ux,xLocal,c.numberOfDimensions(),isRectangular,0,1,0,0,I1,I2,I3,n,t);
+            e.gd( uy,xLocal,c.numberOfDimensions(),isRectangular,0,0,1,0,I1,I2,I3,n,t);
+          
+            if( c.numberOfDimensions()==2 )
+            {
+              ee+=gridVelocityLocal(I1,I2,I3,0)*ux+gridVelocityLocal(I1,I2,I3,1)*uy;
+            }
+            else
+            {
+              realSerialArray uz(I1,I2,I3); 
+              e.gd( uz,xLocal,c.numberOfDimensions(),isRectangular,0,0,0,1,I1,I2,I3,n,t);
 
-	      ee+=gridVelocityLocal(I1,I2,I3,0)*ux+gridVelocityLocal(I1,I2,I3,1)*uy+
-		gridVelocityLocal(I1,I2,I3,2)*uz; 
-	    }
+              ee+=gridVelocityLocal(I1,I2,I3,0)*ux+gridVelocityLocal(I1,I2,I3,1)*uy+
+                gridVelocityLocal(I1,I2,I3,2)*uz; 
+            }
 
-	    if( (debug() & 8) && n==1 )
-	    {
-	      display(gridVelocityLocal,sPrintF("determineErrors: **** gridVelocity *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
-	      display(xLocal,sPrintF("determineErrors: **** xLocal *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
-	      display(ee,sPrintF("determineErrors: **** ee *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
-	    }
-	    
-// 	  ee+=(*gridVelocity[grid])(I1,I2,I3,0)*e.x(c,I1,I2,I3,n,t)+
-// 	        (*gridVelocity[grid])(I1,I2,I3,1)*e.y(c,I1,I2,I3,n,t);
-// 	  if( c.numberOfDimensions()>2 )
-// 	    ee+=(*gridVelocity[grid])(I1,I2,I3,2)*e.z(c,I1,I2,I3,n,t);
-	  }
-	}
+            if( (debug() & 8) && n==1 )
+            {
+              display(gridVelocityLocal,sPrintF("determineErrors: **** gridVelocity *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
+              display(xLocal,sPrintF("determineErrors: **** xLocal *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
+              display(ee,sPrintF("determineErrors: **** ee *** t=%e, grid=%i",t,grid),pDebugFile,"%12.9f ");
+            }
+            
+//        ee+=(*gridVelocity[grid])(I1,I2,I3,0)*e.x(c,I1,I2,I3,n,t)+
+//              (*gridVelocity[grid])(I1,I2,I3,1)*e.y(c,I1,I2,I3,n,t);
+//        if( c.numberOfDimensions()>2 )
+//          ee+=(*gridVelocity[grid])(I1,I2,I3,2)*e.z(c,I1,I2,I3,n,t);
+          }
+        }
       
 
         realSerialArray es;
-	es=ee;
-	
-	um=max(abs(ee));
+        es=ee;
+        
+        um=max(abs(ee));
 
-	ee=abs(ee-uLocal(I1,I2,I3,n));
-	if( options==0 )
-	{
-	  where( maskLocal(I1,I2,I3)==0 )
-	    ee=0.;
-	}
-	else
-	{
-	  where( maskLocal(I1,I2,I3)<=0 )
-	    ee=0.;
-	}
+        ee=abs(ee-uLocal(I1,I2,I3,n));
+        if( options==0 )
+        {
+          where( maskLocal(I1,I2,I3)==0 )
+            ee=0.;
+        }
+        else
+        {
+          where( maskLocal(I1,I2,I3)<=0 )
+            ee=0.;
+        }
 
       
-	/// These next loops need to be fixed for parallel
-	for( int i3=n3a; i3<=n3b; i3++ )
+        /// These next loops need to be fixed for parallel
+        for( int i3=n3a; i3<=n3b; i3++ )
 
 
-	{
-	  if( debug() & 4 && c.numberOfDimensions() == 3 ) 
-	    fprintf(pDebugFile,"   ++++ i3= %6i +++\n",i3);
-	  for( int i2=n2a; i2<=n2b; i2++ )
-	  {
-	    for( int i1=n1a; i1<=n1b; i1++ )
-	    {
-	      error=ee(i1,i2,i3);
-	      if( fabs(error) > er )
-	      {
-		er=fabs(error);
-		ive(0,grid,n)=i1;
-		ive(1,grid,n)=i2;
-		ive(2,grid,n)=i3;
-	      }
-	      if( debug() & 4 ) fprintf(pDebugFile,"%9.1e (%5.2f)",error,es(i1,i2,i3));
-	      // if( debug() & 4 ) fprintf(pDebugFile,"%9.1e ",error);
-	    }
-	    if( debug() & 4  ) fprintf(pDebugFile,"\n");
-	  }
-	}
+        {
+          if( debug() & 4 && c.numberOfDimensions() == 3 ) 
+            fprintf(pDebugFile,"   ++++ i3= %6i +++\n",i3);
+          for( int i2=n2a; i2<=n2b; i2++ )
+          {
+            for( int i1=n1a; i1<=n1b; i1++ )
+            {
+              error=ee(i1,i2,i3);
+              if( fabs(error) > er )
+              {
+                er=fabs(error);
+                ive(0,grid,n)=i1;
+                ive(1,grid,n)=i2;
+                ive(2,grid,n)=i3;
+              }
+              if( debug() & 4 ) fprintf(pDebugFile,"%9.1e (%5.2f)",error,es(i1,i2,i3));
+              // if( debug() & 4 ) fprintf(pDebugFile,"%9.1e ",error);
+            }
+            if( debug() & 4  ) fprintf(pDebugFile,"\n");
+          }
+        }
       }
 
 
@@ -425,7 +459,7 @@ determineErrors(realCompositeGridFunction & u,
       umax0=max(umax0,umaxk(grid,n));
     }
   }
-	     
+             
   if( parameters.dbase.get<int >("myid")==0 && debug() & 2 )
   {
     const int numFiles = parameters.dbase.get<FILE* >("debugFile")!=parameters.dbase.get<FILE* >("pDebugFile") ? 2 : 1;
@@ -435,16 +469,16 @@ determineErrors(realCompositeGridFunction & u,
       if( label!=nullString )
         fprintf(file,(const char*)label);
       fprintf(file,
-	      "     Maximum Errors at t =%12.4e,  umax =%12.4e\n"
-	      "    n  grid  i1  i2  i3  uMax(grid,n) err(grid,n)\n",t,umax0);
+              "     Maximum Errors at t =%12.4e,  umax =%12.4e\n"
+              "    n  grid  i1  i2  i3  uMax(grid,n) err(grid,n)\n",t,umax0);
       for( int n=0; n<numberOfComponents; n++ )
       {
-	for( int grid=0; grid<numberOfComponentGrids; grid++)
-	{
-	  fprintf(file,
-		  "  %3s %4i  %3i %3i %3i  %10.3e   %14.7e\n",(const char*)parameters.dbase.get<aString* >("componentName")[n],
-		  grid,ive(0,grid,n),ive(1,grid,n),ive(2,grid,n),umaxk(grid,n),errk(grid,n));
-	}
+        for( int grid=0; grid<numberOfComponentGrids; grid++)
+        {
+          fprintf(file,
+                  "  %3s %4i  %3i %3i %3i  %10.3e   %14.7e\n",(const char*)parameters.dbase.get<aString* >("componentName")[n],
+                  grid,ive(0,grid,n),ive(1,grid,n),ive(2,grid,n),umaxk(grid,n),errk(grid,n));
+        }
       }
     }
   }
@@ -454,7 +488,7 @@ determineErrors(realCompositeGridFunction & u,
 
 void DomainSolver::
 outputSolution( realCompositeGridFunction & u, const real & t,
-		const aString & label /* =nullString */,
+                const aString & label /* =nullString */,
                 int printOption /* = 0 */  )
 //==============================================================================
 /// \brief 
@@ -511,15 +545,15 @@ outputSolution( realCompositeGridFunction & u, const real & t,
       const realArray & x = u[grid];
       if( x.getInternalPartitionPointer()!=NULL )
       {
-	Partitioning_Type xPartition=x.getPartition();
-	for( int axis=0; axis<MAX_ARRAY_DIMENSION; axis++ )
-	{
-	  int ghost=xPartition.getGhostBoundaryWidth(axis);
-	  if( ghost>0 )
-	    partition.partitionAlongAxis(axis, true , ghost);
-	  else
-	    partition.partitionAlongAxis(axis, false, 0);
-	}
+        Partitioning_Type xPartition=x.getPartition();
+        for( int axis=0; axis<MAX_ARRAY_DIMENSION; axis++ )
+        {
+          int ghost=xPartition.getGhostBoundaryWidth(axis);
+          if( ghost>0 )
+            partition.partitionAlongAxis(axis, true , ghost);
+          else
+            partition.partitionAlongAxis(axis, false, 0);
+        }
       }
   
       realArray & ub = *new realArray;  
@@ -573,20 +607,20 @@ outputSolution( realCompositeGridFunction & u, const real & t,
       {
         if( c.numberOfDimensions() == 3 ) fprintf(debugFile,"   ++++ i3= %6i +++\n",i3);
         for( int i2=I2.getBase(); i2<=I2.getBound(); i2++ )
-	{
-	  for( int i1=I1.getBase(); i1<=I1.getBound(); i1++ )
-	  {
+        {
+          for( int i1=I1.getBase(); i1<=I1.getBound(); i1++ )
+          {
             if( showMasked || mask(i1,i2,i3)!=0 )
-	    {
+            {
               if( printOnThisProcessor ) fprintf(debugFile,format,ug(i1,i2,i3,n));
-	    }
-	    else
-	    {
+            }
+            else
+            {
               if( printOnThisProcessor ) fprintf(debugFile,format,0.);
-	    }
-	  }
+            }
+          }
           if( printOnThisProcessor ) fprintf(debugFile,"\n");
-	}
+        }
       }
     }
 
