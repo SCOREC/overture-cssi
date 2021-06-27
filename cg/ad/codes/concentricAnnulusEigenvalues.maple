@@ -1,0 +1,149 @@
+#
+# Determine eigenvalues for eigenfunctions of the heat equation on two concentric annuluses
+#    See cgDoc/ad/CgadUsersGuide
+#
+# Author: WDH May 3, 2021
+#
+# restart; currentdir("/Users/henshaw/Dropbox/CG6backup/overtureFramework/cg/ad/codes"); currentdir("/Users/henshaw/Dropbox/CG6backup/overtureFramework/cg/ad/codes"); read "concentricAnnulusEigenvalues.maple";
+#
+#
+clear:
+interface(quiet=true,echo=0):
+
+# a = inner radius
+# b = middle radius
+# c = outer radius
+# Kr = K2/K2 , ratio of thermal conductivities
+
+Digits:=15;
+j:=BesselJ(m,rr):
+y:=BesselY(m,rr):
+
+jp:=diff(BesselJ(m,rr),rr):
+yp:=diff(BesselY(m,rr),rr):
+
+numBC:=1; # Dirichlet and Neumann BC's 
+
+#  alpha1 = 1/sqrt(D1)
+#  alpha2 = 1/sqrt(D2)
+
+z1 := alpha1*z; 
+z2 := alpha2*z; 
+Ar := alpha2/alpha1; 
+
+for ibc from 1 by 1 to numBC do
+
+  if( ibc=1 )then
+
+    # Dirichlet BC's on both sides
+    fileName := "concentricAnnulusEigenvaluesHeatEquationDirichlet.h"; 
+
+    f:= Kr*Ar*( subs(rr=z1*b,j)*subs(rr=z1*a,y) - subs(rr=z1*a,j)*subs(rr=z1*b,y) )*( subs(rr=z2*b,jp)*subs(rr=z2*c,y) - subs(rr=z2*c,j)*subs(rr=z2*b,yp)  )
+            - ( subs(rr=z2*b,j)*subs(rr=z2*c,y) - subs(rr=z2*c,j)*subs(rr=z2*b,y) )*( subs(rr=z1*b,jp)*subs(rr=z1*a,y) - subs(rr=z1*a,j)*subs(rr=z1*b,yp)  ):
+
+  else
+
+    # Neumann BC's on both sides
+    # FINISH ME 
+    stop; 
+
+    fileName := "concentricAnnulusEigenvaluesHeatEquationNeumann.h"; 
+    f:=subs(rr=a*z,jp)*subs(rr=b*z,yp) - subs(rr=b*z,jp)*subs(rr=a*z,yp):
+  fi:
+
+
+
+  a:=1/2; b:=1; c:=3/2; Kr:=2; 
+  D1 := 1/10; D2 := 1/20; 
+  alpha1 := 1/sqrt(D1);
+  alpha2 := 1/sqrt(D2); 
+
+  # --- compute roots to f(z,m)=0 
+  nr:=4: # first nr roots of f
+  nm:=3: # first nm bessel functions 
+
+  # plot f(z) for different m
+  pl := [ subs(m=mm,f) $mm=0..nm-1]:
+  plot( pl,z=1..10 ):
+  # plot( f,z=0..20);
+
+# ----------------------------------------------------------
+if( 1=1 )then
+  # --- WRITE INCUDE FILE WITH ROOTS -----
+
+  w:=array(1..nm,1..nr):
+  # n = Bessel order : Jn, Yn 
+  for n from 0 by 1 to nm-1 do
+    # NOTE: choose initial guess (lower bound) guess as lastr (see graph)
+    # NOTE: Note : Choose approcixate spacing between roots (see graph)
+    lastr:=1.5:  # first root, approx.
+    rootSpacing := 1.5;  
+    toavoid:={}:
+    # r = root number 
+    for r from 1 by 1 to nr do
+      # Find the next root, avoiding previous roots 
+      w[n+1,r] := fsolve( subs(m=n,f)=0,z, avoid=toavoid, lastr..max(rootSpacing,lastr+rootSpacing));
+      # printf(" w[%d,%d]=%s\n",n+1,r,convert(w[n+1,r],string));
+
+      printf(" Bessel order n=%d, root r=%d is s_{n,m}=%20.8e\n",n,r,w[n+1,r]);
+
+      toavoid:= toavoid union {z=w[n+1,r]}:
+      lastr := w[n+1,r]:
+      # print(toavoid):
+    end do:
+  end do:
+
+
+  file:=fopen(fileName, WRITE):
+  fprintf(file,"// ---- Two concentric annulii : Eigenvalues for eigenfunctions of the heat equation ----\n"):
+  fprintf(file,"// See documenation for CgAd in cgDoc/ad for derivation and formulae. \n"):
+  fprintf(file,"// File written by cg/ad/codes/concentricAannulusEigenvalues.maple \n"):
+  fprintf(file,"// numBesselOrderDBC  : Bessel orders are m=0,1,2,...,numBesselOrderDBC-1 \n"):
+  fprintf(file,"// numRootDBC         : number of roots\n"):
+  if( ibc=1 )then
+    fprintf(file,"// ----------- DIRCHLET BCs at r=ra and r=rc, INTERFACE at r=rb ----- \n"):
+  else
+    fprintf(file,"// ----------- NEUMANN BCs at r=ra and r=rc, INTERFACE at r=rb ----- \n"):
+  fi;
+  fprintf(file,"// Solution is u = [ c1J*Jn(lam1*r) + c1Y*Yn(lam1*r) ] cos(n*theta) exp(- s^2*t ),   a < r < b\n");
+  fprintf(file,"//             u = [ c2J*Jn(lam2*r) + c2Y*Yn(lam2*r) ] cos(n*theta) exp(- s^2*t),   b < r < c\n");
+  fprintf(file,"// where s_{mn} is the eigenvalue for n=0,1,2,3... and m=,1,2,3,... \n");
+  fprintf(file,"//  c1J = Jn(lam2*b) - (Jn(lam2*c)/(Yn(lam2*c)*Yn(lam2*b) \n");
+  fprintf(file,"//  c2J = Jn(lam1*b) - (Jn(lam1*a)/(Yn(lam1*a)*Yn(lam1*b) \n");
+  fprintf(file,"//  c1Y = -Jn(lam1*a)/Yn(lam1*a) * c1J \n");
+  fprintf(file,"//  c2Y = -Jn(lam2*c)/Yn(lam2*c) * c2J \n");
+  fprintf(file,"//  lam1=alpha1*s, lam2=alpha2*s, alpha1=1/sqrt{D1} alpha2=1/sqrt{D2} \n");
+
+  fprintf(file," // Note: Kr = K2/K1 : ratio of thermal conductivitites (K1=inner, K2=outer).\n",a,b,c,Kr):
+  fprintf(file," const Real ra=%19.14e, rb=%19.14e, rc=%19.14e, Kr=%19.14e; \n",a,b,c,Kr):
+  fprintf(file," const Real D1=%19.14e, D2=%19.14e; \n",D1,D2):
+  fprintf(file," const int numBesselOrder=%d, numRoot=%d;\n",nm,nr):
+  fprintf(file," Real concentricAnnulusEigs[numBesselOrder][numRoot]={\n"):
+
+  for n from 0 to nm-1 do
+
+    fprintf(file," { // Roots of determinant condition for n=%d\n",n):
+
+    for mr from 1 to nr do
+
+      z1 := w[n+1, mr]:
+
+      # printf(" Jn(%e)=%e : n=%d m=%d xp =%19.14e \n",z1,BesselJ(n,z1),n,mr,z1):
+      
+      fprintf(file,"    %19.14e",z1):
+      if mr<nr then
+        fprintf(file,",\n"):
+      else
+        fprintf(file,"}, // end n=%d\n",n):
+      fi:
+
+    od:
+  od:
+
+  fprintf(file,"                               };\n"):
+  fclose(file):
+  printf(" *** output written to file %s\n",convert(fileName,string)):
+
+fi;
+
+od; # for ibc 
